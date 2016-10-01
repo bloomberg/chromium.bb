@@ -732,11 +732,6 @@ PassRefPtr<Image> WebGLRenderingContextBase::getImage(
 
 namespace {
 
-// ES2 enums
-static const GLenum kSupportedInternalFormatsES2[] = {
-    GL_RGB, GL_RGBA, GL_LUMINANCE_ALPHA, GL_LUMINANCE, GL_ALPHA,
-};
-
 // Exposed by GL_ANGLE_depth_texture
 static const GLenum kSupportedInternalFormatsOESDepthTex[] = {
     GL_DEPTH_COMPONENT, GL_DEPTH_STENCIL,
@@ -786,7 +781,17 @@ static const GLenum kSupportedInternalFormatsTexImageES3[] = {
     GL_DEPTH32F_STENCIL8,
 };
 
+// ES3 enums supported by TexImageSource
+static const GLenum kSupportedInternalFormatsTexImageSourceES3[] = {
+    GL_R8,      GL_R16F,           GL_R32F,         GL_R8UI,    GL_RG8,
+    GL_RG16F,   GL_RG32F,          GL_RG8UI,        GL_RGB8,    GL_SRGB8,
+    GL_RGB565,  GL_R11F_G11F_B10F, GL_RGB9_E5,      GL_RGB16F,  GL_RGB32F,
+    GL_RGB8UI,  GL_RGBA8,          GL_SRGB8_ALPHA8, GL_RGB5_A1, GL_RGBA4,
+    GL_RGBA16F, GL_RGBA32F,        GL_RGBA8UI,
+};
+
 // ES2 enums
+// Internalformat must equal format in ES2.
 static const GLenum kSupportedFormatsES2[] = {
     GL_RGB, GL_RGBA, GL_LUMINANCE_ALPHA, GL_LUMINANCE, GL_ALPHA,
 };
@@ -807,6 +812,12 @@ static const GLenum kSupportedFormatsES3[] = {
     GL_RG_INTEGER,    GL_RGB,          GL_RGB_INTEGER,
     GL_RGBA,          GL_RGBA_INTEGER, GL_DEPTH_COMPONENT,
     GL_DEPTH_STENCIL,
+};
+
+// ES3 enums supported by TexImageSource
+static const GLenum kSupportedFormatsTexImageSourceES3[] = {
+    GL_RED, GL_RED_INTEGER, GL_RG,   GL_RG_INTEGER,
+    GL_RGB, GL_RGB_INTEGER, GL_RGBA, GL_RGBA_INTEGER,
 };
 
 // ES2 enums
@@ -844,6 +855,11 @@ static const GLenum kSupportedTypesES3[] = {
     GL_UNSIGNED_INT_5_9_9_9_REV,
     GL_UNSIGNED_INT_24_8,
     GL_FLOAT_32_UNSIGNED_INT_24_8_REV,
+};
+
+// ES3 enums supported by TexImageSource
+static const GLenum kSupportedTypesTexImageSourceES3[] = {
+    GL_HALF_FLOAT, GL_FLOAT, GL_UNSIGNED_INT_10F_11F_11F_REV,
 };
 
 bool isUnsignedIntegerFormat(GLenum internalformat) {
@@ -962,6 +978,7 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
       m_numGLErrorsToConsoleAllowed(maxGLErrorsAllowedToConsole),
       m_onePlusMaxNonDefaultTextureUnit(0),
       m_isWebGL2FormatsTypesAdded(false),
+      m_isWebGL2TexImageSourceFormatsTypesAdded(false),
       m_isWebGL2InternalFormatsCopyTexImageAdded(false),
       m_isOESTextureFloatFormatsTypesAdded(false),
       m_isOESTextureHalfFloatFormatsTypesAdded(false),
@@ -1001,11 +1018,15 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
     set.insert(values[i]);                                \
   }
 
-  ADD_VALUES_TO_SET(m_supportedInternalFormats, kSupportedInternalFormatsES2);
+  ADD_VALUES_TO_SET(m_supportedInternalFormats, kSupportedFormatsES2);
+  ADD_VALUES_TO_SET(m_supportedTexImageSourceInternalFormats,
+                    kSupportedFormatsES2);
   ADD_VALUES_TO_SET(m_supportedInternalFormatsCopyTexImage,
-                    kSupportedInternalFormatsES2);
+                    kSupportedFormatsES2);
   ADD_VALUES_TO_SET(m_supportedFormats, kSupportedFormatsES2);
+  ADD_VALUES_TO_SET(m_supportedTexImageSourceFormats, kSupportedFormatsES2);
   ADD_VALUES_TO_SET(m_supportedTypes, kSupportedTypesES2);
+  ADD_VALUES_TO_SET(m_supportedTexImageSourceTypes, kSupportedTypesES2);
 }
 
 PassRefPtr<DrawingBuffer> WebGLRenderingContextBase::createDrawingBuffer(
@@ -1140,6 +1161,7 @@ void WebGLRenderingContextBase::initializeNewContext() {
     m_extensionEnabled[i] = false;
 
   m_isWebGL2FormatsTypesAdded = false;
+  m_isWebGL2TexImageSourceFormatsTypesAdded = false;
   m_isWebGL2InternalFormatsCopyTexImageAdded = false;
   m_isOESTextureFloatFormatsTypesAdded = false;
   m_isOESTextureHalfFloatFormatsTypesAdded = false;
@@ -1147,14 +1169,21 @@ void WebGLRenderingContextBase::initializeNewContext() {
   m_isEXTsRGBFormatsTypesAdded = false;
 
   m_supportedInternalFormats.clear();
-  ADD_VALUES_TO_SET(m_supportedInternalFormats, kSupportedInternalFormatsES2);
+  ADD_VALUES_TO_SET(m_supportedInternalFormats, kSupportedFormatsES2);
+  m_supportedTexImageSourceInternalFormats.clear();
+  ADD_VALUES_TO_SET(m_supportedTexImageSourceInternalFormats,
+                    kSupportedFormatsES2);
   m_supportedInternalFormatsCopyTexImage.clear();
   ADD_VALUES_TO_SET(m_supportedInternalFormatsCopyTexImage,
-                    kSupportedInternalFormatsES2);
+                    kSupportedFormatsES2);
   m_supportedFormats.clear();
   ADD_VALUES_TO_SET(m_supportedFormats, kSupportedFormatsES2);
+  m_supportedTexImageSourceFormats.clear();
+  ADD_VALUES_TO_SET(m_supportedTexImageSourceFormats, kSupportedFormatsES2);
   m_supportedTypes.clear();
   ADD_VALUES_TO_SET(m_supportedTypes, kSupportedTypesES2);
+  m_supportedTexImageSourceTypes.clear();
+  ADD_VALUES_TO_SET(m_supportedTexImageSourceTypes, kSupportedTypesES2);
 
   activateContext(this);
 }
@@ -4357,9 +4386,9 @@ bool WebGLRenderingContextBase::validateTexFunc(
   if (!validateTexFuncLevel(functionName, target, level))
     return false;
 
-  if (!validateTexFuncParameters(functionName, functionType, target, level,
-                                 internalformat, width, height, depth, border,
-                                 format, type))
+  if (!validateTexFuncParameters(functionName, functionType, sourceType, target,
+                                 level, internalformat, width, height, depth,
+                                 border, format, type))
     return false;
 
   if (functionType == TexSubImage) {
@@ -6243,6 +6272,96 @@ bool WebGLRenderingContextBase::validateShaderSource(const String& string) {
   return true;
 }
 
+void WebGLRenderingContextBase::addExtensionSupportedFormatsTypes() {
+  if (!m_isOESTextureFloatFormatsTypesAdded &&
+      extensionEnabled(OESTextureFloatName)) {
+    ADD_VALUES_TO_SET(m_supportedTypes, kSupportedTypesOESTexFloat);
+    ADD_VALUES_TO_SET(m_supportedTexImageSourceTypes,
+                      kSupportedTypesOESTexFloat);
+    m_isOESTextureFloatFormatsTypesAdded = true;
+  }
+
+  if (!m_isOESTextureHalfFloatFormatsTypesAdded &&
+      extensionEnabled(OESTextureHalfFloatName)) {
+    ADD_VALUES_TO_SET(m_supportedTypes, kSupportedTypesOESTexHalfFloat);
+    ADD_VALUES_TO_SET(m_supportedTexImageSourceTypes,
+                      kSupportedTypesOESTexHalfFloat);
+    m_isOESTextureHalfFloatFormatsTypesAdded = true;
+  }
+
+  if (!m_isWebGLDepthTextureFormatsTypesAdded &&
+      extensionEnabled(WebGLDepthTextureName)) {
+    ADD_VALUES_TO_SET(m_supportedInternalFormats,
+                      kSupportedInternalFormatsOESDepthTex);
+    ADD_VALUES_TO_SET(m_supportedTexImageSourceInternalFormats,
+                      kSupportedInternalFormatsOESDepthTex);
+    ADD_VALUES_TO_SET(m_supportedFormats, kSupportedFormatsOESDepthTex);
+    ADD_VALUES_TO_SET(m_supportedTexImageSourceFormats,
+                      kSupportedFormatsOESDepthTex);
+    ADD_VALUES_TO_SET(m_supportedTypes, kSupportedTypesOESDepthTex);
+    ADD_VALUES_TO_SET(m_supportedTexImageSourceTypes,
+                      kSupportedTypesOESDepthTex);
+    m_isWebGLDepthTextureFormatsTypesAdded = true;
+  }
+
+  if (!m_isEXTsRGBFormatsTypesAdded && extensionEnabled(EXTsRGBName)) {
+    ADD_VALUES_TO_SET(m_supportedInternalFormats,
+                      kSupportedInternalFormatsEXTsRGB);
+    ADD_VALUES_TO_SET(m_supportedTexImageSourceInternalFormats,
+                      kSupportedInternalFormatsEXTsRGB);
+    ADD_VALUES_TO_SET(m_supportedFormats, kSupportedFormatsEXTsRGB);
+    ADD_VALUES_TO_SET(m_supportedTexImageSourceFormats,
+                      kSupportedFormatsEXTsRGB);
+    m_isEXTsRGBFormatsTypesAdded = true;
+  }
+}
+
+bool WebGLRenderingContextBase::validateTexImageSourceFormatAndType(
+    const char* functionName,
+    TexImageFunctionType functionType,
+    GLenum internalformat,
+    GLenum format,
+    GLenum type) {
+  if (!m_isWebGL2TexImageSourceFormatsTypesAdded && isWebGL2OrHigher()) {
+    ADD_VALUES_TO_SET(m_supportedTexImageSourceInternalFormats,
+                      kSupportedInternalFormatsTexImageSourceES3);
+    ADD_VALUES_TO_SET(m_supportedTexImageSourceFormats,
+                      kSupportedFormatsTexImageSourceES3);
+    ADD_VALUES_TO_SET(m_supportedTexImageSourceTypes,
+                      kSupportedTypesTexImageSourceES3);
+    m_isWebGL2TexImageSourceFormatsTypesAdded = true;
+  }
+
+  if (!isWebGL2OrHigher()) {
+    addExtensionSupportedFormatsTypes();
+  }
+
+  if (internalformat != 0 &&
+      m_supportedTexImageSourceInternalFormats.find(internalformat) ==
+          m_supportedTexImageSourceInternalFormats.end()) {
+    if (functionType == TexImage) {
+      synthesizeGLError(GL_INVALID_VALUE, functionName,
+                        "invalid internalformat");
+    } else {
+      synthesizeGLError(GL_INVALID_ENUM, functionName,
+                        "invalid internalformat");
+    }
+    return false;
+  }
+  if (m_supportedTexImageSourceFormats.find(format) ==
+      m_supportedTexImageSourceFormats.end()) {
+    synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid format");
+    return false;
+  }
+  if (m_supportedTexImageSourceTypes.find(type) ==
+      m_supportedTexImageSourceTypes.end()) {
+    synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid type");
+    return false;
+  }
+
+  return true;
+}
+
 bool WebGLRenderingContextBase::validateTexFuncFormatAndType(
     const char* functionName,
     TexImageFunctionType functionType,
@@ -6260,33 +6379,7 @@ bool WebGLRenderingContextBase::validateTexFuncFormatAndType(
   }
 
   if (!isWebGL2OrHigher()) {
-    if (!m_isOESTextureFloatFormatsTypesAdded &&
-        extensionEnabled(OESTextureFloatName)) {
-      ADD_VALUES_TO_SET(m_supportedTypes, kSupportedTypesOESTexFloat);
-      m_isOESTextureFloatFormatsTypesAdded = true;
-    }
-
-    if (!m_isOESTextureHalfFloatFormatsTypesAdded &&
-        extensionEnabled(OESTextureHalfFloatName)) {
-      ADD_VALUES_TO_SET(m_supportedTypes, kSupportedTypesOESTexHalfFloat);
-      m_isOESTextureHalfFloatFormatsTypesAdded = true;
-    }
-
-    if (!m_isWebGLDepthTextureFormatsTypesAdded &&
-        extensionEnabled(WebGLDepthTextureName)) {
-      ADD_VALUES_TO_SET(m_supportedInternalFormats,
-                        kSupportedInternalFormatsOESDepthTex);
-      ADD_VALUES_TO_SET(m_supportedFormats, kSupportedFormatsOESDepthTex);
-      ADD_VALUES_TO_SET(m_supportedTypes, kSupportedTypesOESDepthTex);
-      m_isWebGLDepthTextureFormatsTypesAdded = true;
-    }
-
-    if (!m_isEXTsRGBFormatsTypesAdded && extensionEnabled(EXTsRGBName)) {
-      ADD_VALUES_TO_SET(m_supportedInternalFormats,
-                        kSupportedInternalFormatsEXTsRGB);
-      ADD_VALUES_TO_SET(m_supportedFormats, kSupportedFormatsEXTsRGB);
-      m_isEXTsRGBFormatsTypesAdded = true;
-    }
+    addExtensionSupportedFormatsTypes();
   }
 
   if (internalformat != 0 &&
@@ -6431,6 +6524,7 @@ bool WebGLRenderingContextBase::validateTexFuncDimensions(
 bool WebGLRenderingContextBase::validateTexFuncParameters(
     const char* functionName,
     TexImageFunctionType functionType,
+    TexFuncValidationSourceType sourceType,
     GLenum target,
     GLint level,
     GLenum internalformat,
@@ -6443,9 +6537,20 @@ bool WebGLRenderingContextBase::validateTexFuncParameters(
   // We absolutely have to validate the format and type combination.
   // The texImage2D entry points taking HTMLImage, etc. will produce
   // temporary data based on this combination, so it must be legal.
-  if (!validateTexFuncFormatAndType(functionName, functionType, internalformat,
-                                    format, type, level))
-    return false;
+  if (sourceType == SourceHTMLImageElement ||
+      sourceType == SourceHTMLCanvasElement ||
+      sourceType == SourceHTMLVideoElement || sourceType == SourceImageData ||
+      sourceType == SourceImageBitmap) {
+    if (!validateTexImageSourceFormatAndType(functionName, functionType,
+                                             internalformat, format, type)) {
+      return false;
+    }
+  } else {
+    if (!validateTexFuncFormatAndType(functionName, functionType,
+                                      internalformat, format, type, level)) {
+      return false;
+    }
+  }
 
   if (!validateTexFuncDimensions(functionName, functionType, target, level,
                                  width, height, depth))

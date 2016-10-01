@@ -916,6 +916,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext {
   Vector<GLenum> m_syntheticErrors;
 
   bool m_isWebGL2FormatsTypesAdded;
+  bool m_isWebGL2TexImageSourceFormatsTypesAdded;
   bool m_isWebGL2InternalFormatsCopyTexImageAdded;
   bool m_isOESTextureFloatFormatsTypesAdded;
   bool m_isOESTextureHalfFloatFormatsTypesAdded;
@@ -923,9 +924,12 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext {
   bool m_isEXTsRGBFormatsTypesAdded;
 
   std::set<GLenum> m_supportedInternalFormats;
+  std::set<GLenum> m_supportedTexImageSourceInternalFormats;
   std::set<GLenum> m_supportedInternalFormatsCopyTexImage;
   std::set<GLenum> m_supportedFormats;
+  std::set<GLenum> m_supportedTexImageSourceFormats;
   std::set<GLenum> m_supportedTypes;
+  std::set<GLenum> m_supportedTexImageSourceTypes;
 
   // Helpers for getParameter and others
   ScriptValue getBooleanParameter(ScriptState*, GLenum);
@@ -1057,7 +1061,17 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext {
   WebGLTexture* validateTexture2DBinding(const char* functionName,
                                          GLenum target);
 
-  // Helper function to check input internalformat/format/type for functions {copy}Tex{Sub}Image.
+  void addExtensionSupportedFormatsTypes();
+
+  // Helper function to check input internalformat/format/type for functions Tex{Sub}Image taking TexImageSource source data.
+  // Generates GL error and returns false if parameters are invalid.
+  bool validateTexImageSourceFormatAndType(const char* functionName,
+                                           TexImageFunctionType,
+                                           GLenum internalformat,
+                                           GLenum format,
+                                           GLenum type);
+
+  // Helper function to check input internalformat/format/type for functions Tex{Sub}Image.
   // Generates GL error and returns false if parameters are invalid.
   bool validateTexFuncFormatAndType(const char* functionName,
                                     TexImageFunctionType,
@@ -1144,6 +1158,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext {
   // Generates GL error and returns false if parameters are invalid.
   bool validateTexFuncParameters(const char* functionName,
                                  TexImageFunctionType,
+                                 TexFuncValidationSourceType,
                                  GLenum target,
                                  GLint level,
                                  GLenum internalformat,
