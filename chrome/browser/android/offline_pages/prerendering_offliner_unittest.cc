@@ -11,10 +11,14 @@
 #include "base/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/android/offline_pages/prerendering_loader.h"
+#include "chrome/browser/net/prediction_options.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/content_settings/core/common/pref_names.h"
 #include "components/offline_pages/background/offliner.h"
 #include "components/offline_pages/background/save_page_request.h"
 #include "components/offline_pages/stub_offline_page_model.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -149,6 +153,7 @@ class PrerenderingOfflinerTest : public testing::Test {
 
   void SetUp() override;
 
+  Profile* profile() { return &profile_; }
   PrerenderingOffliner* offliner() const { return offliner_.get(); }
   Offliner::CompletionCallback const callback() {
     return base::Bind(&PrerenderingOfflinerTest::OnCompletion,
@@ -166,6 +171,7 @@ class PrerenderingOfflinerTest : public testing::Test {
                     Offliner::RequestStatus status);
 
   content::TestBrowserThreadBundle thread_bundle_;
+  TestingProfile profile_;
   std::unique_ptr<PrerenderingOffliner> offliner_;
   // Not owned.
   MockPrerenderingLoader* loader_;
@@ -185,7 +191,7 @@ PrerenderingOfflinerTest::~PrerenderingOfflinerTest() {}
 
 void PrerenderingOfflinerTest::SetUp() {
   model_ = new MockOfflinePageModel();
-  offliner_.reset(new PrerenderingOffliner(nullptr, nullptr, model_));
+  offliner_.reset(new PrerenderingOffliner(profile(), nullptr, model_));
   std::unique_ptr<MockPrerenderingLoader> mock_loader(
       new MockPrerenderingLoader(nullptr));
   loader_ = mock_loader.get();
@@ -212,6 +218,30 @@ TEST_F(PrerenderingOfflinerTest, LoadAndSavePrerenderingDisabled) {
   SavePageRequest request(
       kRequestId, kHttpUrl, kClientId, creation_time, kUserRequested);
   loader()->DisablePrerendering();
+  EXPECT_FALSE(offliner()->LoadAndSave(request, callback()));
+  EXPECT_TRUE(loader()->IsIdle());
+}
+
+TEST_F(PrerenderingOfflinerTest,
+       LoadAndSaveBlockThirdPartyCookiesForCustomTabs) {
+  base::Time creation_time = base::Time::Now();
+  ClientId custom_tabs_client_id("custom_tabs", "88");
+  SavePageRequest request(kRequestId, kHttpUrl, custom_tabs_client_id,
+                          creation_time, kUserRequested);
+  profile()->GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies, true);
+  EXPECT_FALSE(offliner()->LoadAndSave(request, callback()));
+  EXPECT_TRUE(loader()->IsIdle());
+}
+
+TEST_F(PrerenderingOfflinerTest,
+       LoadAndSaveBlockOnDisabledPrerendererForCustomTabs) {
+  base::Time creation_time = base::Time::Now();
+  ClientId custom_tabs_client_id("custom_tabs", "88");
+  SavePageRequest request(kRequestId, kHttpUrl, custom_tabs_client_id,
+                          creation_time, kUserRequested);
+  profile()->GetPrefs()->SetInteger(
+      prefs::kNetworkPredictionOptions,
+      chrome_browser_net::NETWORK_PREDICTION_NEVER);
   EXPECT_FALSE(offliner()->LoadAndSave(request, callback()));
   EXPECT_TRUE(loader()->IsIdle());
 }

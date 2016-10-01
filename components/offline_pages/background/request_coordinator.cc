@@ -480,6 +480,10 @@ void RequestCoordinator::SendRequestToOffliner(const SavePageRequest& request) {
       base::Bind(&RequestCoordinator::UpdateRequestCallback,
                  weak_ptr_factory_.GetWeakPtr(), updated_request.client_id()));
   active_request_.reset(new SavePageRequest(updated_request));
+  queue_->UpdateRequest(
+      updated_request,
+      base::Bind(&RequestCoordinator::UpdateRequestCallback,
+                 weak_ptr_factory_.GetWeakPtr(), updated_request.client_id()));
 
   // Start the load and save process in the offliner (Async).
   if (offliner_->LoadAndSave(
