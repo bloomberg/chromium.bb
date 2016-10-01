@@ -139,7 +139,7 @@ void ActionUpdate::DoInstallOnBlockingTaskRunner(
     CrxUpdateItem* item,
     const base::FilePath& crx_path) {
   unpacker_ = new ComponentUnpacker(
-      item->component.pk_hash, crx_path, item->component.fingerprint,
+      item->component.pk_hash, crx_path, item->next_fp,
       item->component.installer,
       update_context->config->CreateOutOfProcessPatcher(),
       update_context->blocking_task_runner);
