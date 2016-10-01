@@ -361,8 +361,8 @@ audio::-webkit-media-controls-fullscreen-volume-max-button, video::-webkit-media
 
 video::-internal-media-controls-text-track-list, video::-internal-media-controls-overflow-menu-list, audio::-internal-media-controls-overflow-menu-list {
     position: absolute;
-    bottom: 48px;
-    right: 0px;
+    bottom: 4px;
+    right: 4px;
     background-color: #fafafa;
     max-width: 50%;
     max-height: 250px;
@@ -371,7 +371,8 @@ video::-internal-media-controls-text-track-list, video::-internal-media-controls
     overflow-y: auto;
     white-space: nowrap;
     font-size: 14px;
-    padding: 8px 0px;
+    border-radius: 3px;
+    box-shadow: 0px 0px 3px black;
 }
 
 video::-internal-media-controls-text-track-list-item {
