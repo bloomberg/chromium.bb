@@ -5,3 +5,8 @@
 # Exclude these git specific files from archives created via git-archive.
 .gitignore      export-ignore
 .gitattributes  export-ignore
+
+# TODO(thakis): Remove this after a while.
+*.cpp merge=clang-format
+*.h   merge=clang-format
+*.mm  merge=clang-format
