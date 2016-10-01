@@ -51,7 +51,7 @@ class WTF_EXPORT Collator {
 
   // Parsing is lenient; e.g. language identifiers (such as "en-US") are
   // accepted, too.
-  Collator(const char* locale);
+  explicit Collator(const char* locale);
 
   ~Collator();
   void setOrderLowerFirst(bool);
