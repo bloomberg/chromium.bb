@@ -6,8 +6,7 @@
 
 dictionary TouchInit {
     required long        identifier;
-    // TODO(foolip): |target| should not be nullable. https://crbug.com/647693
-    required EventTarget? target;
+    required EventTarget target;
              double      clientX = 0;
              double      clientY = 0;
              double      screenX = 0;
