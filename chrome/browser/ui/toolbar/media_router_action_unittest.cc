@@ -110,16 +110,10 @@ class MediaRouterActionUnitTest : public MediaRouterTest {
             -1)),
         fake_source1_("fakeSource1"),
         fake_source2_("fakeSource2"),
-        active_icon_(
-            gfx::CreateVectorIcon(gfx::VectorIconId::MEDIA_ROUTER_ACTIVE,
-                                  gfx::kPlaceholderColor)),
-        error_icon_(gfx::CreateVectorIcon(gfx::VectorIconId::MEDIA_ROUTER_ERROR,
-                                          gfx::kPlaceholderColor)),
-        idle_icon_(gfx::CreateVectorIcon(gfx::VectorIconId::MEDIA_ROUTER_IDLE,
-                                         gfx::kPlaceholderColor)),
-        warning_icon_(
-            gfx::CreateVectorIcon(gfx::VectorIconId::MEDIA_ROUTER_WARNING,
-                                  gfx::kPlaceholderColor)) {}
+        active_icon_(GetIcon(gfx::VectorIconId::MEDIA_ROUTER_ACTIVE)),
+        error_icon_(GetIcon(gfx::VectorIconId::MEDIA_ROUTER_ERROR)),
+        idle_icon_(GetIcon(gfx::VectorIconId::MEDIA_ROUTER_IDLE)),
+        warning_icon_(GetIcon(gfx::VectorIconId::MEDIA_ROUTER_WARNING)) {}
 
   ~MediaRouterActionUnitTest() override {}
 
@@ -154,6 +148,11 @@ class MediaRouterActionUnitTest : public MediaRouterTest {
     action_.reset();
     browser_action_test_util_.reset();
     MediaRouterTest::TearDown();
+  }
+
+  gfx::Image GetIcon(gfx::VectorIconId icon_id) {
+    return gfx::Image(gfx::CreateVectorIcon(
+        icon_id, MediaRouterAction::GetIconColor(icon_id)));
   }
 
   TestMediaRouterAction* action() { return action_.get(); }

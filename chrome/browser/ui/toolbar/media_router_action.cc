@@ -61,6 +61,23 @@ MediaRouterAction::~MediaRouterAction() {
   UnregisterObserver();
 }
 
+// static
+SkColor MediaRouterAction::GetIconColor(gfx::VectorIconId icon_id) {
+  switch (icon_id) {
+    case gfx::VectorIconId::MEDIA_ROUTER_IDLE:
+      return gfx::kChromeIconGrey;
+    case gfx::VectorIconId::MEDIA_ROUTER_ACTIVE:
+      return gfx::kGoogleBlue500;
+    case gfx::VectorIconId::MEDIA_ROUTER_WARNING:
+      return gfx::kGoogleYellow700;
+    case gfx::VectorIconId::MEDIA_ROUTER_ERROR:
+      return gfx::kGoogleRed700;
+    default:
+      NOTREACHED();
+      return gfx::kPlaceholderColor;
+  }
+}
+
 std::string MediaRouterAction::GetId() const {
   return ComponentToolbarActionsFactory::kMediaRouterActionId;
 }
@@ -77,9 +94,8 @@ void MediaRouterAction::SetDelegate(ToolbarActionViewDelegate* delegate) {
 
 gfx::Image MediaRouterAction::GetIcon(content::WebContents* web_contents,
                                       const gfx::Size& size) {
-  // Color is defined in the icon.
   return gfx::Image(
-      gfx::CreateVectorIcon(current_icon_, gfx::kPlaceholderColor));
+      gfx::CreateVectorIcon(current_icon_, GetIconColor(current_icon_)));
 }
 
 base::string16 MediaRouterAction::GetActionName() const {

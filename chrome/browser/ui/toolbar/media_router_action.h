@@ -38,6 +38,8 @@ class MediaRouterAction : public ToolbarActionViewController,
   MediaRouterAction(Browser* browser, ToolbarActionsBar* toolbar_actions_bar);
   ~MediaRouterAction() override;
 
+  static SkColor GetIconColor(gfx::VectorIconId icon_id);
+
   // ToolbarActionViewController implementation.
   std::string GetId() const override;
   void SetDelegate(ToolbarActionViewDelegate* delegate) override;
