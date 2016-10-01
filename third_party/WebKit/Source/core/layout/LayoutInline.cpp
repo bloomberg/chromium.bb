@@ -195,6 +195,23 @@ void LayoutInline::styleDidChange(StyleDifference diff,
     setAlwaysCreateLineBoxes(alwaysCreateLineBoxesNew);
   }
 
+  // If we are changing to/from static, we need to reposition
+  // out-of-flow positioned descendants.
+  if (oldStyle && oldStyle->position() != newStyle.position() &&
+      (newStyle.position() == StaticPosition ||
+       oldStyle->position() == StaticPosition)) {
+    LayoutBlock* absContainingBlock = nullptr;
+    if (oldStyle->position() == StaticPosition) {
+      absContainingBlock = containingBlockForAbsolutePosition();
+    } else {
+      // When position was not static, containingBlockForAbsolutePosition
+      // for our children is our existing containingBlock.
+      absContainingBlock = containingBlock();
+    }
+    if (absContainingBlock)
+      absContainingBlock->removePositionedObjects(this, NewContainingBlock);
+  }
+
   propagateStyleToAnonymousChildren();
 }
 

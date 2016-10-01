@@ -983,7 +983,7 @@ PaintInvalidationReason LayoutBlock::invalidatePaintIfNeeded(
 }
 
 void LayoutBlock::removePositionedObjects(
-    LayoutBlock* o,
+    LayoutObject* o,
     ContainingBlockState containingBlockState) {
   TrackedLayoutBoxListHashSet* positionedDescendants = positionedObjects();
   if (!positionedDescendants)

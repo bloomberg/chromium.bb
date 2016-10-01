@@ -155,7 +155,7 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
 
   void insertPositionedObject(LayoutBox*);
   static void removePositionedObject(LayoutBox*);
-  void removePositionedObjects(LayoutBlock*,
+  void removePositionedObjects(LayoutObject*,
                                ContainingBlockState = SameContainingBlock);
 
   TrackedLayoutBoxListHashSet* positionedObjects() const {
