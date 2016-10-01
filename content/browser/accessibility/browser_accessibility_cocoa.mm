@@ -290,6 +290,13 @@ NSAttributedString* GetAttributedTextForTextMarkerRange(
     trim_length = static_cast<int>(end_object->GetText().length()) - end_offset;
   }
   int range_length = [text length] - start_offset - trim_length;
+
+  // http://crbug.com/651145
+  // This shouldn't happen, so this is a temporary workaround to prevent
+  // hard crashes.
+  if (range_length < 0)
+    return nil;
+
   DCHECK_GE(range_length, 0);
   NSRange range = NSMakeRange(start_offset, range_length);
   DCHECK_LE(NSMaxRange(range), [text length]);
