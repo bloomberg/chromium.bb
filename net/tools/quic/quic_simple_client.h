@@ -54,21 +54,22 @@ class QuicSimpleClient : public QuicClientBase,
 
   ~QuicSimpleClient() override;
 
-  // From QuicClientBase
-  bool WaitForEvents() override;
-
-  // Migrate to a new socket during an active connection.
-  bool MigrateSocket(const IPAddress& new_host);
-
   // QuicChromiumPacketReader::Visitor
   void OnReadError(int result, const DatagramClientSocket* socket) override;
   bool OnPacket(const QuicReceivedPacket& packet,
                 IPEndPoint local_address,
                 IPEndPoint peer_address) override;
 
+  // From QuicClientBase
+  IPEndPoint GetLatestClientAddress() const override;
+
  protected:
+  // From QuicClientBase
   QuicPacketWriter* CreateQuicPacketWriter() override;
-  bool CreateUDPSocketAndBind() override;
+  void RunEventLoop() override;
+  bool CreateUDPSocketAndBind(IPEndPoint server_address,
+                              IPAddress bind_to_address,
+                              int bind_to_port) override;
   void CleanUpAllUDPSockets() override;
 
  private:

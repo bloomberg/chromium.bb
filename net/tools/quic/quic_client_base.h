@@ -133,7 +133,10 @@ class QuicClientBase : public QuicClientPushPromiseIndex::Delegate,
 
   // Wait up to 50ms, and handle any events which occur.
   // Returns true if there are any outstanding requests.
-  virtual bool WaitForEvents() = 0;
+  bool WaitForEvents();
+
+  // Migrate to a new socket during an active connection.
+  bool MigrateSocket(const IPAddress& new_host);
 
   QuicClientSession* session() { return session_.get(); }
 
@@ -285,16 +288,25 @@ class QuicClientBase : public QuicClientPushPromiseIndex::Delegate,
   // Creates a packet writer to be used for the next connection.
   virtual QuicPacketWriter* CreateQuicPacketWriter() = 0;
 
+  // Takes ownership of |connection|.
+  virtual QuicClientSession* CreateQuicClientSession(
+      QuicConnection* connection);
+
+  // Runs one iteration of the event loop.
+  virtual void RunEventLoop() = 0;
+
   // Used during initialization: creates the UDP socket FD, sets socket options,
   // and binds the socket to our address.
-  virtual bool CreateUDPSocketAndBind() = 0;
+  virtual bool CreateUDPSocketAndBind(IPEndPoint server_address,
+                                      IPAddress bind_to_address,
+                                      int bind_to_port) = 0;
 
   // Unregister and close all open UDP sockets.
   virtual void CleanUpAllUDPSockets() = 0;
 
-  // Takes ownership of |connection|.
-  virtual QuicClientSession* CreateQuicClientSession(
-      QuicConnection* connection);
+  // If the client has at least one UDP socket, return address of the latest
+  // created one. Otherwise, return an empty socket address.
+  virtual IPEndPoint GetLatestClientAddress() const = 0;
 
   // Generates the next ConnectionId for |server_id_|.  By default, if the
   // cached server config contains a server-designated ID, that ID will be

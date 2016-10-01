@@ -56,12 +56,6 @@ class QuicClient : public QuicClientBase,
 
   ~QuicClient() override;
 
-  // From QuicClientBase
-  bool WaitForEvents() override;
-
-  // Migrate to a new socket during an active connection.
-  bool MigrateSocket(const IPAddress& new_host);
-
   // From EpollCallbackInterface
   void OnRegistration(EpollServer* eps, int fd, int event_mask) override {}
   void OnModification(int fd, int event_mask) override {}
@@ -72,13 +66,12 @@ class QuicClient : public QuicClientBase,
   void OnUnregistration(int fd, bool replaced) override {}
   void OnShutdown(EpollServer* eps, int fd) override {}
 
-  // If the client has at least one UDP socket, return address of the latest
-  // created one. Otherwise, return an empty socket address.
-  const IPEndPoint GetLatestClientAddress() const;
-
   // If the client has at least one UDP socket, return the latest created one.
   // Otherwise, return -1.
   int GetLatestFD() const;
+
+  // From QuicClientBase
+  IPEndPoint GetLatestClientAddress() const override;
 
   // Implements ProcessPacketInterface. This will be called for each received
   // packet.
@@ -87,8 +80,12 @@ class QuicClient : public QuicClientBase,
                      const QuicReceivedPacket& packet) override;
 
  protected:
+  // From QuicClientBase
   QuicPacketWriter* CreateQuicPacketWriter() override;
-  bool CreateUDPSocketAndBind() override;
+  void RunEventLoop() override;
+  bool CreateUDPSocketAndBind(IPEndPoint server_address,
+                              IPAddress bind_to_address,
+                              int bind_to_port) override;
   void CleanUpAllUDPSockets() override;
 
   // If |fd| is an open UDP socket, unregister and close it. Otherwise, do

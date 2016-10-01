@@ -86,23 +86,24 @@ QuicClient::~QuicClient() {
   CleanUpAllUDPSockets();
 }
 
-bool QuicClient::CreateUDPSocketAndBind() {
+bool QuicClient::CreateUDPSocketAndBind(IPEndPoint server_address,
+                                        IPAddress bind_to_address,
+                                        int bind_to_port) {
   epoll_server_->set_timeout_in_us(50 * 1000);
 
   int fd =
-      QuicSocketUtils::CreateUDPSocket(server_address(), &overflow_supported_);
+      QuicSocketUtils::CreateUDPSocket(server_address, &overflow_supported_);
   if (fd < 0) {
     return false;
   }
 
   IPEndPoint client_address;
-  if (bind_to_address().size() != 0) {
-    client_address = IPEndPoint(bind_to_address(), local_port());
-  } else if (server_address().GetSockAddrFamily() == AF_INET) {
-    client_address = IPEndPoint(IPAddress::IPv4AllZeros(), local_port());
+  if (bind_to_address.size() != 0) {
+    client_address = IPEndPoint(bind_to_address, bind_to_port);
+  } else if (server_address.GetSockAddrFamily() == AF_INET) {
+    client_address = IPEndPoint(IPAddress::IPv4AllZeros(), bind_to_port);
   } else {
-    IPAddress any6 = IPAddress::IPv6AllZeros();
-    client_address = IPEndPoint(any6, local_port());
+    client_address = IPEndPoint(IPAddress::IPv6AllZeros(), bind_to_port);
   }
 
   sockaddr_storage raw_addr;
@@ -148,43 +149,9 @@ void QuicClient::CleanUpUDPSocketImpl(int fd) {
   }
 }
 
-bool QuicClient::WaitForEvents() {
-  DCHECK(connected());
-
-  epoll_server_->WaitForEventsAndExecuteCallbacks();
+void QuicClient::RunEventLoop() {
   base::RunLoop().RunUntilIdle();
-
-  DCHECK(session() != nullptr);
-  if (!connected() &&
-      session()->error() == QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT) {
-    DCHECK(FLAGS_enable_quic_stateless_reject_support);
-    DVLOG(1) << "Detected stateless reject while waiting for events.  "
-             << "Attempting to reconnect.";
-    Connect();
-  }
-
-  return session()->num_active_requests() != 0;
-}
-
-bool QuicClient::MigrateSocket(const IPAddress& new_host) {
-  if (!connected()) {
-    return false;
-  }
-
-  CleanUpUDPSocket(GetLatestFD());
-
-  set_bind_to_address(new_host);
-  if (!CreateUDPSocketAndBind()) {
-    return false;
-  }
-
-  session()->connection()->SetSelfAddress(GetLatestClientAddress());
-
-  QuicPacketWriter* writer = CreateQuicPacketWriter();
-  set_writer(writer);
-  session()->connection()->SetQuicPacketWriter(writer, false);
-
-  return true;
+  epoll_server_->WaitForEventsAndExecuteCallbacks();
 }
 
 void QuicClient::OnEvent(int fd, EpollEvent* event) {
@@ -212,7 +179,7 @@ QuicPacketWriter* QuicClient::CreateQuicPacketWriter() {
   return new QuicDefaultPacketWriter(GetLatestFD());
 }
 
-const IPEndPoint QuicClient::GetLatestClientAddress() const {
+IPEndPoint QuicClient::GetLatestClientAddress() const {
   if (fd_address_map_.empty()) {
     return IPEndPoint();
   }

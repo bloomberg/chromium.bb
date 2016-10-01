@@ -99,7 +99,7 @@ bool QuicClientBase::Initialize() {
         kSessionMaxRecvWindowSize);
   }
 
-  if (!CreateUDPSocketAndBind()) {
+  if (!CreateUDPSocketAndBind(server_address_, bind_to_address_, local_port_)) {
     return false;
   }
 
@@ -260,6 +260,44 @@ QuicSpdyClientStream* QuicClientBase::CreateReliableClientStream() {
     stream->set_visitor(this);
   }
   return stream;
+}
+
+bool QuicClientBase::WaitForEvents() {
+  DCHECK(connected());
+
+  RunEventLoop();
+
+  DCHECK(session() != nullptr);
+  if (!connected() &&
+      session()->error() == QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT) {
+    DCHECK(FLAGS_enable_quic_stateless_reject_support);
+    DVLOG(1) << "Detected stateless reject while waiting for events.  "
+             << "Attempting to reconnect.";
+    Connect();
+  }
+
+  return session()->num_active_requests() != 0;
+}
+
+bool QuicClientBase::MigrateSocket(const IPAddress& new_host) {
+  if (!connected()) {
+    return false;
+  }
+
+  CleanUpAllUDPSockets();
+
+  set_bind_to_address(new_host);
+  if (!CreateUDPSocketAndBind(server_address_, bind_to_address_, local_port_)) {
+    return false;
+  }
+
+  session()->connection()->SetSelfAddress(GetLatestClientAddress());
+
+  QuicPacketWriter* writer = CreateQuicPacketWriter();
+  set_writer(writer);
+  session()->connection()->SetQuicPacketWriter(writer, false);
+
+  return true;
 }
 
 void QuicClientBase::WaitForStreamToClose(QuicStreamId id) {

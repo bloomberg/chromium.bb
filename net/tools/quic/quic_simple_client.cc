@@ -69,21 +69,23 @@ QuicSimpleClient::~QuicSimpleClient() {
   }
 }
 
-bool QuicSimpleClient::CreateUDPSocketAndBind() {
+bool QuicSimpleClient::CreateUDPSocketAndBind(IPEndPoint server_address,
+                                              IPAddress bind_to_address,
+                                              int bind_to_port) {
   std::unique_ptr<UDPClientSocket> socket(
       new UDPClientSocket(DatagramSocket::DEFAULT_BIND, RandIntCallback(),
                           &net_log_, NetLog::Source()));
 
-  int address_family = server_address().GetSockAddrFamily();
-  if (bind_to_address().size() != 0) {
-    client_address_ = IPEndPoint(bind_to_address(), local_port());
+  int address_family = server_address.GetSockAddrFamily();
+  if (bind_to_address.size() != 0) {
+    client_address_ = IPEndPoint(bind_to_address, bind_to_port);
   } else if (address_family == AF_INET) {
-    client_address_ = IPEndPoint(IPAddress::IPv4AllZeros(), local_port());
+    client_address_ = IPEndPoint(IPAddress::IPv4AllZeros(), bind_to_port);
   } else {
-    client_address_ = IPEndPoint(IPAddress::IPv6AllZeros(), local_port());
+    client_address_ = IPEndPoint(IPAddress::IPv6AllZeros(), bind_to_port);
   }
 
-  int rc = socket->Connect(server_address());
+  int rc = socket->Connect(server_address);
   if (rc != OK) {
     LOG(ERROR) << "Connect failed: " << ErrorToShortString(rc);
     return false;
@@ -134,41 +136,9 @@ void QuicSimpleClient::StartPacketReaderIfNotStarted() {
   }
 }
 
-bool QuicSimpleClient::WaitForEvents() {
-  DCHECK(connected());
-
+void QuicSimpleClient::RunEventLoop() {
   StartPacketReaderIfNotStarted();
   base::RunLoop().RunUntilIdle();
-
-  DCHECK(session() != nullptr);
-  if (!connected() &&
-      session()->error() == QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT) {
-    DCHECK(FLAGS_enable_quic_stateless_reject_support);
-    DVLOG(1) << "Detected stateless reject while waiting for events.  "
-             << "Attempting to reconnect.";
-    Connect();
-  }
-
-  return session()->num_active_requests() != 0;
-}
-
-bool QuicSimpleClient::MigrateSocket(const IPAddress& new_host) {
-  if (!connected()) {
-    return false;
-  }
-
-  set_bind_to_address(new_host);
-  if (!CreateUDPSocketAndBind()) {
-    return false;
-  }
-
-  session()->connection()->SetSelfAddress(client_address_);
-
-  QuicPacketWriter* writer = CreateQuicPacketWriter();
-  set_writer(writer);
-  session()->connection()->SetQuicPacketWriter(writer, false);
-
-  return true;
 }
 
 QuicChromiumConnectionHelper* QuicSimpleClient::CreateQuicConnectionHelper() {
@@ -188,6 +158,10 @@ void QuicSimpleClient::OnReadError(int result,
                                    const DatagramClientSocket* socket) {
   LOG(ERROR) << "QuicSimpleClient read failed: " << ErrorToShortString(result);
   Disconnect();
+}
+
+IPEndPoint QuicSimpleClient::GetLatestClientAddress() const {
+  return client_address_;
 }
 
 bool QuicSimpleClient::OnPacket(const QuicReceivedPacket& packet,
