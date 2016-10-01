@@ -70,6 +70,9 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
   // Returns a pointer to shadowed data.
   const void* GetRange(GLintptr offset, GLsizeiptr size) const;
 
+  // Check if an offset, size range is valid for the current buffer.
+  bool CheckRange(GLintptr offset, GLsizeiptr size) const;
+
   bool IsDeleted() const {
     return deleted_;
   }
@@ -173,9 +176,6 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
 
   // Clears any cache of index ranges.
   void ClearCache();
-
-  // Check if an offset, size range is valid for the current buffer.
-  bool CheckRange(GLintptr offset, GLsizeiptr size) const;
 
   // The manager that owns this Buffer.
   BufferManager* manager_;

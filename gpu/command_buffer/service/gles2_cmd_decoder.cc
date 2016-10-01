@@ -16836,12 +16836,21 @@ error::Error GLES2DecoderImpl::HandleMapBufferRange(
       (access & GL_MAP_INVALIDATE_RANGE_BIT) == 0) {
     access = (access | GL_MAP_READ_BIT);
   }
+  Buffer* buffer = buffer_manager()->GetBufferInfoForTarget(&state_, target);
+  if (!buffer) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "MapBufferRange",
+                       "no buffer bound to target");
+    return error::kNoError;
+  }
+  if (!buffer->CheckRange(offset, size)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "MapBufferRange",
+                       "invalid range");
+    return error::kNoError;
+  }
   void* ptr = glMapBufferRange(target, offset, size, access);
   if (ptr == nullptr) {
     return error::kNoError;
   }
-  Buffer* buffer = buffer_manager()->GetBufferInfoForTarget(&state_, target);
-  DCHECK(buffer);
   buffer->SetMappedRange(offset, size, access, ptr,
                          GetSharedMemoryBuffer(data_shm_id));
   if ((access & GL_MAP_INVALIDATE_RANGE_BIT) == 0) {

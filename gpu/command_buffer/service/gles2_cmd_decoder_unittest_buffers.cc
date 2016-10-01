@@ -81,6 +81,7 @@ TEST_P(GLES2DecoderTest, MapBufferRangeUnmapBufferReadSucceeds) {
   uint32_t data_shm_offset = kSharedMemoryOffset + sizeof(uint32_t);
 
   DoBindBuffer(kTarget, client_buffer_id_, kServiceBufferId);
+  DoBufferData(kTarget, kSize + kOffset);
 
   std::vector<int8_t> data(kSize);
   for (GLsizeiptr ii = 0; ii < kSize; ++ii) {
@@ -141,6 +142,7 @@ TEST_P(GLES2DecoderTest, MapBufferRangeUnmapBufferWriteSucceeds) {
   uint32_t data_shm_offset = kSharedMemoryOffset + sizeof(uint32_t);
 
   DoBindBuffer(kTarget, client_buffer_id_, kServiceBufferId);
+  DoBufferData(kTarget, kSize + kOffset);
 
   std::vector<int8_t> data(kSize);
   for (GLsizeiptr ii = 0; ii < kSize; ++ii) {
@@ -217,6 +219,7 @@ TEST_P(GLES2DecoderTest, MapBufferRangeWriteInvalidateRangeSucceeds) {
   const GLbitfield kAccess = GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT;
 
   DoBindBuffer(kTarget, client_buffer_id_, kServiceBufferId);
+  DoBufferData(kTarget, kSize + kOffset);
 
   std::vector<int8_t> data(kSize);
   for (GLsizeiptr ii = 0; ii < kSize; ++ii) {
@@ -256,6 +259,7 @@ TEST_P(GLES2DecoderTest, MapBufferRangeWriteInvalidateBufferSucceeds) {
       GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_RANGE_BIT;
 
   DoBindBuffer(kTarget, client_buffer_id_, kServiceBufferId);
+  DoBufferData(kTarget, kSize + kOffset);
 
   std::vector<int8_t> data(kSize);
   for (GLsizeiptr ii = 0; ii < kSize; ++ii) {
@@ -293,6 +297,7 @@ TEST_P(GLES2DecoderTest, MapBufferRangeWriteUnsynchronizedBit) {
   const GLbitfield kFilteredAccess = GL_MAP_WRITE_BIT | GL_MAP_READ_BIT;
 
   DoBindBuffer(kTarget, client_buffer_id_, kServiceBufferId);
+  DoBufferData(kTarget, kSize + kOffset);
 
   std::vector<int8_t> data(kSize);
   for (GLsizeiptr ii = 0; ii < kSize; ++ii) {
@@ -331,10 +336,6 @@ TEST_P(GLES2DecoderTest, MapBufferRangeWithError) {
   for (GLsizeiptr ii = 0; ii < kSize; ++ii) {
     data[ii] = static_cast<int8_t>(ii % 255);
   }
-  EXPECT_CALL(*gl_,
-              MapBufferRange(kTarget, kOffset, kSize, kAccess))
-      .WillOnce(Return(nullptr))  // Return nullptr to indicate a GL error.
-      .RetiresOnSaturation();
 
   typedef MapBufferRange::Result Result;
   Result* result = GetSharedMemoryAs<Result*>();
@@ -356,6 +357,7 @@ TEST_P(GLES2DecoderTest, MapBufferRangeWithError) {
   // Mem is untouched.
   EXPECT_EQ(0, memcmp(&data[0], mem, kSize));
   EXPECT_EQ(0u, *result);
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
 TEST_P(GLES2DecoderTest, MapBufferRangeBadSharedMemoryFails) {
@@ -432,6 +434,7 @@ TEST_P(GLES2DecoderTest, BufferDataDestroysDataStore) {
   uint32_t data_shm_offset = kSharedMemoryOffset + sizeof(uint32_t);
 
   DoBindBuffer(kTarget, client_buffer_id_, kServiceBufferId);
+  DoBufferData(kTarget, kSize + kOffset);
 
   std::vector<int8_t> data(kSize);
 
@@ -481,6 +484,7 @@ TEST_P(GLES2DecoderTest, DeleteBuffersDestroysDataStore) {
   uint32_t data_shm_offset = kSharedMemoryOffset + sizeof(uint32_t);
 
   DoBindBuffer(kTarget, client_buffer_id_, kServiceBufferId);
+  DoBufferData(kTarget, kSize + kOffset);
 
   std::vector<int8_t> data(kSize);
 

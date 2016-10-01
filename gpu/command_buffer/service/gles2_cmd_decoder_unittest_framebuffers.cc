@@ -819,6 +819,9 @@ TEST_P(GLES3DecoderTest, ReadPixelsPixelPackBufferMapped) {
   GLint size = kWidth * kHeight * kBytesPerPixel;
 
   DoBindBuffer(GL_PIXEL_PACK_BUFFER, client_buffer_id_, kServiceBufferId);
+  DoBufferData(GL_PIXEL_PACK_BUFFER, size);
+
+  std::vector<int8_t> mapped_data(size);
 
   uint32_t result_shm_id = kSharedMemoryId;
   uint32_t result_shm_offset = kSharedMemoryOffset;
@@ -827,6 +830,7 @@ TEST_P(GLES3DecoderTest, ReadPixelsPixelPackBufferMapped) {
   uint32_t data_shm_offset = kSharedMemoryOffset + sizeof(uint32_t);
   EXPECT_CALL(*gl_,
               MapBufferRange(GL_PIXEL_PACK_BUFFER, 0, size, GL_MAP_READ_BIT))
+        .WillOnce(Return(mapped_data.data()))
         .RetiresOnSaturation();
   MapBufferRange map_buffer_range;
   map_buffer_range.Init(GL_PIXEL_PACK_BUFFER, 0, size, GL_MAP_READ_BIT,
