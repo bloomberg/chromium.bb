@@ -890,15 +890,6 @@ void ChromeBrowserMainParts::SetupFieldTrials() {
   // deleted after the Task is executed.
   field_trial_synchronizer_ = new FieldTrialSynchronizer();
 
-  // Register a synthetic field trial for the sampling profiler configuration
-  // that was already chosen.
-  std::string trial_name, group_name;
-  if (sampling_profiler_config_.GetSyntheticFieldTrial(&trial_name,
-                                                       &group_name)) {
-    ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(trial_name,
-                                                              group_name);
-  }
-
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   metrics::DesktopSessionDurationTracker::Initialize();
@@ -946,6 +937,15 @@ void ChromeBrowserMainParts::StartMetricsRecording() {
 
   g_browser_process->metrics_service()->CheckForClonedInstall(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE));
+
+  // Register a synthetic field trial for the sampling profiler configuration
+  // that was already chosen.
+  std::string trial_name, group_name;
+  if (sampling_profiler_config_.GetSyntheticFieldTrial(&trial_name,
+                                                       &group_name)) {
+    ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(trial_name,
+                                                              group_name);
+  }
 
   g_browser_process->GetMetricsServicesManager()->UpdateUploadPermissions(true);
 }
