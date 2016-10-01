@@ -46,6 +46,10 @@ using testing::SetArgPointee;
 
 namespace {
 
+const char kProductName[] = "TestProduct";
+const char kVersionNumber[] = "TestVersionNumber";
+const char kChannelName[] = "TestChannel";
+
 // Exposes a public constructor in order to create a dummy database.
 class MockCrashReportDatabase : public CrashReportDatabase {
  public:
@@ -91,7 +95,8 @@ class MockCrashReportDatabase : public CrashReportDatabase {
 // Used for testing CollectAndSubmitForUpload.
 class MockPostmortemReportCollector : public PostmortemReportCollector {
  public:
-  MockPostmortemReportCollector() {}
+  MockPostmortemReportCollector()
+      : PostmortemReportCollector(kProductName, kVersionNumber, kChannelName) {}
 
   // A function that returns a unique_ptr cannot be mocked, so mock a function
   // that returns a raw pointer instead.
@@ -263,7 +268,8 @@ TEST(PostmortemReportCollectorTest, GetDebugStateFilePaths) {
     ASSERT_NE(file.get(), nullptr);
   }
 
-  PostmortemReportCollector collector;
+  PostmortemReportCollector collector(kProductName, kVersionNumber,
+                                      kChannelName);
   EXPECT_THAT(
       collector.GetDebugStateFilePaths(
           temp_dir.GetPath(), FILE_PATH_LITERAL("foo*.pma"), excluded_paths),
@@ -282,7 +288,8 @@ TEST(PostmortemReportCollectorTest, CollectEmptyFile) {
   ASSERT_TRUE(PathExists(file_path));
 
   // Validate collection: an empty file cannot suppport an analyzer.
-  PostmortemReportCollector collector;
+  PostmortemReportCollector collector(kProductName, kVersionNumber,
+                                      kChannelName);
   std::unique_ptr<StabilityReport> report;
   ASSERT_EQ(PostmortemReportCollector::ANALYZER_CREATION_FAILED,
             collector.Collect(file_path, &report));
@@ -308,7 +315,8 @@ TEST(PostmortemReportCollectorTest, CollectRandomFile) {
 
   // Validate collection: random content appears as though there is not
   // stability data.
-  PostmortemReportCollector collector;
+  PostmortemReportCollector collector(kProductName, kVersionNumber,
+                                      kChannelName);
   std::unique_ptr<StabilityReport> report;
   ASSERT_EQ(PostmortemReportCollector::DEBUG_FILE_NO_DATA,
             collector.Collect(file_path, &report));
@@ -402,7 +410,8 @@ class PostmortemReportCollectorCollectionTest : public testing::Test {
 
 TEST_F(PostmortemReportCollectorCollectionTest, CollectSuccess) {
   // Validate collection returns the expected report.
-  PostmortemReportCollector collector;
+  PostmortemReportCollector collector(kProductName, kVersionNumber,
+                                      kChannelName);
   std::unique_ptr<StabilityReport> report;
   ASSERT_EQ(PostmortemReportCollector::SUCCESS,
             collector.Collect(debug_file_path(), &report));

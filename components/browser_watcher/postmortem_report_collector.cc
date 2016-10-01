@@ -12,8 +12,8 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/browser_watcher/postmortem_minidump_writer.h"
-#include "components/version_info/version_info.h"
 #include "third_party/crashpad/crashpad/client/settings.h"
 #include "third_party/crashpad/crashpad/util/misc/uuid.h"
 
@@ -24,6 +24,14 @@ namespace browser_watcher {
 using base::debug::GlobalActivityAnalyzer;
 using base::debug::ThreadActivityAnalyzer;
 using crashpad::CrashReportDatabase;
+
+PostmortemReportCollector::PostmortemReportCollector(
+    const std::string& product_name,
+    const std::string& version_number,
+    const std::string& channel_name)
+    : product_name_(product_name),
+      version_number_(version_number),
+      channel_name_(channel_name) {}
 
 int PostmortemReportCollector::CollectAndSubmitForUpload(
     const base::FilePath& debug_info_dir,
@@ -190,8 +198,18 @@ bool PostmortemReportCollector::WriteReportToMinidump(
   MinidumpInfo minidump_info;
   minidump_info.client_id = client_id;
   minidump_info.report_id = report_id;
-  minidump_info.product_name = version_info::GetProductName();
-  minidump_info.version_number = version_info::GetVersionNumber();
+  // TODO(manzagop): replace this information, i.e. the reporter's attributes,
+  // by that of the reportee. Doing so requires adding this information to the
+  // stability report. In the meantime, there is a tolerable information
+  // mismatch after upgrades.
+  minidump_info.product_name = product_name();
+  minidump_info.version_number = version_number();
+  minidump_info.channel_name = channel_name();
+#if defined(ARCH_CPU_X86)
+  minidump_info.platform = std::string("Win32");
+#elif defined(ARCH_CPU_X86_64)
+  minidump_info.platform = std::string("Win64");
+#endif
 
   return WritePostmortemDump(minidump_file, report, minidump_info);
 }

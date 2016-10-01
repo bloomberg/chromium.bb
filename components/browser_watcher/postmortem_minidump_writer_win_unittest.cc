@@ -25,6 +25,8 @@ using crashpad::UUID;
 const char kProductName[] = "some-product";
 const char kExpectedProductName[] = "some-product_Postmortem";
 const char kVersion[] = "51.0.2704.106";
+const char kChannel[] = "some-channel";
+const char kPlatform[] = "some-platform";
 
 class WritePostmortemDumpTest : public testing::Test {
  public:
@@ -54,14 +56,16 @@ class WritePostmortemDumpTest : public testing::Test {
     if (!file_handle.IsValid())
       return false;
 
-    MinidumpInfo mindump_info;
-    mindump_info.client_id = expected_client_id_;
-    mindump_info.report_id = expected_report_id_;
-    mindump_info.product_name = kProductName;
-    mindump_info.version_number = kVersion;
+    MinidumpInfo minidump_info;
+    minidump_info.client_id = expected_client_id_;
+    minidump_info.report_id = expected_report_id_;
+    minidump_info.product_name = kProductName;
+    minidump_info.version_number = kVersion;
+    minidump_info.channel_name = kChannel;
+    minidump_info.platform = kPlatform;
 
     return WritePostmortemDump(file_handle.Get(), expected_report_,
-                               mindump_info);
+                               minidump_info);
   }
 
   const base::FilePath& minidump_path() { return minidump_path_; }
@@ -136,13 +140,21 @@ TEST_F(WritePostmortemDumpTest, CrashpadCanReadTest) {
 
   std::map<std::string, std::string> parameters =
       minidump_process_snapshot.AnnotationsSimpleMap();
-  auto it = parameters.find("product");
+  auto it = parameters.find("prod");
   ASSERT_NE(parameters.end(), it);
   ASSERT_EQ(kExpectedProductName, it->second);
 
-  it = parameters.find("version");
+  it = parameters.find("ver");
   ASSERT_NE(parameters.end(), it);
   ASSERT_EQ(kVersion, it->second);
+
+  it = parameters.find("channel");
+  ASSERT_NE(parameters.end(), it);
+  ASSERT_EQ(kChannel, it->second);
+
+  it = parameters.find("plat");
+  ASSERT_NE(parameters.end(), it);
+  ASSERT_EQ(kPlatform, it->second);
 }
 
 }  // namespace browser_watcher

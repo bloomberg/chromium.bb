@@ -12,12 +12,14 @@
 
 #include <memory>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "components/browser_watcher/stability_report.pb.h"
 #include "third_party/crashpad/crashpad/client/crash_report_database.h"
 
@@ -41,7 +43,9 @@ class PostmortemReportCollector {
     COLLECTION_STATUS_MAX = 8
   };
 
-  PostmortemReportCollector() = default;
+  PostmortemReportCollector(const std::string& product_name,
+                            const std::string& version_number,
+                            const std::string& channel_name);
   virtual ~PostmortemReportCollector() = default;
 
   // Collects postmortem stability reports from files found in |debug_info_dir|,
@@ -55,6 +59,10 @@ class PostmortemReportCollector {
       const base::FilePath::StringType& debug_file_pattern,
       const std::set<base::FilePath>& excluded_debug_files,
       crashpad::CrashReportDatabase* report_database);
+
+  const std::string& product_name() const { return product_name_; }
+  const std::string& version_number() const { return version_number_; }
+  const std::string& channel_name() const { return channel_name_; }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PostmortemReportCollectorTest,
@@ -84,6 +92,10 @@ class PostmortemReportCollector {
                                      const crashpad::UUID& client_id,
                                      const crashpad::UUID& report_id,
                                      base::PlatformFile minidump_file);
+
+  std::string product_name_;
+  std::string version_number_;
+  std::string channel_name_;
 
   DISALLOW_COPY_AND_ASSIGN(PostmortemReportCollector);
 };

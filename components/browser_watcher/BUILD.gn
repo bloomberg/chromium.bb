@@ -68,7 +68,6 @@ static_library("postmortem_report_collector") {
     ":postmortem_minidump_writer",
     ":stability_report_proto",
     "//base",
-    "//components/version_info",
     "//third_party/crashpad/crashpad/client",
     "//third_party/crashpad/crashpad/util",
   ]

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_BROWSER_WATCHER_WATCHER_METRICS_PROVIDER_WIN_H_
 #define COMPONENTS_BROWSER_WATCHER_WATCHER_METRICS_PROVIDER_WIN_H_
 
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -19,6 +20,10 @@ namespace browser_watcher {
 // process exit codes.
 class WatcherMetricsProviderWin : public metrics::MetricsProvider {
  public:
+  // A callback that provides product name, version number and channel name.
+  using GetExecutableDetailsCallback =
+      base::Callback<void(base::string16*, base::string16*, base::string16*)>;
+
   static const char kBrowserExitCodeHistogramName[];
 
   // Initializes the reporter. |io_task_runner| is used for collecting
@@ -27,6 +32,7 @@ class WatcherMetricsProviderWin : public metrics::MetricsProvider {
   WatcherMetricsProviderWin(const base::string16& registry_path,
                             const base::FilePath& user_data_dir,
                             const base::FilePath& crash_dir,
+                            const GetExecutableDetailsCallback& exe_details_cb,
                             base::TaskRunner* io_task_runner);
   ~WatcherMetricsProviderWin() override;
 
@@ -60,6 +66,7 @@ class WatcherMetricsProviderWin : public metrics::MetricsProvider {
   const base::string16 registry_path_;
   const base::FilePath user_data_dir_;
   const base::FilePath crash_dir_;
+  GetExecutableDetailsCallback exe_details_cb_;
   scoped_refptr<base::TaskRunner> io_task_runner_;
   base::WeakPtrFactory<WatcherMetricsProviderWin> weak_ptr_factory_;
 

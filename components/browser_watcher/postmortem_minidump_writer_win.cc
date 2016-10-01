@@ -197,8 +197,10 @@ bool PostmortemMinidumpWriter::WriteDumpImpl(
   // TODO(manzagop): use product and version from the stability report. The
   // current executable's values are an (imperfect) proxy.
   std::map<std::string, std::string> crash_keys = {
-      {"product", minidump_info.product_name + "_Postmortem"},
-      {"version", minidump_info.version_number}};
+      {"prod", minidump_info.product_name + "_Postmortem"},
+      {"ver", minidump_info.version_number},
+      {"channel", minidump_info.channel_name},
+      {"plat", minidump_info.platform}};
   if (!AppendCrashpadInfo(minidump_info.client_id, minidump_info.report_id,
                           crash_keys))
     return false;
@@ -402,6 +404,10 @@ void PostmortemMinidumpWriter::RegisterDirectoryEntry(uint32_t stream_type,
 }
 
 }  // namespace
+
+MinidumpInfo::MinidumpInfo() {}
+
+MinidumpInfo::~MinidumpInfo() {}
 
 bool WritePostmortemDump(base::PlatformFile minidump_file,
                          const StabilityReport& report,

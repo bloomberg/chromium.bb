@@ -217,12 +217,14 @@ WatcherMetricsProviderWin::WatcherMetricsProviderWin(
     const base::string16& registry_path,
     const base::FilePath& user_data_dir,
     const base::FilePath& crash_dir,
+    const GetExecutableDetailsCallback& exe_details_cb,
     base::TaskRunner* io_task_runner)
     : recording_enabled_(false),
       cleanup_scheduled_(false),
       registry_path_(registry_path),
       user_data_dir_(user_data_dir),
       crash_dir_(crash_dir),
+      exe_details_cb_(exe_details_cb),
       io_task_runner_(io_task_runner),
       weak_ptr_factory_(this) {
   DCHECK(io_task_runner_);
@@ -309,12 +311,14 @@ void WatcherMetricsProviderWin::CollectPostmortemReportsOnBlockingPool() {
     return;
   }
 
-  // Note: not caching the histogram pointer as this function isn't expected to
-  // be called multiple times.
   LogCollectionInitStatus(INIT_SUCCESS);
 
   // TODO(manzagop): fix incorrect version attribution on update.
-  PostmortemReportCollector collector;
+  base::string16 product_name, version_number, channel_name;
+  exe_details_cb_.Run(&product_name, &version_number, &channel_name);
+  PostmortemReportCollector collector(base::UTF16ToUTF8(product_name),
+                                      base::UTF16ToUTF8(version_number),
+                                      base::UTF16ToUTF8(channel_name));
   collector.CollectAndSubmitForUpload(stability_dir, GetStabilityFilePattern(),
                                       excluded_debug_files,
                                       crashpad_database.get());
