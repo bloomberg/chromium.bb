@@ -449,8 +449,15 @@ public class ItemChooserDialog {
     }
 
     private void showDialogForView(View view) {
-        mDialog = new Dialog(mActivity);
+        mDialog = new Dialog(mActivity) {
+            @Override
+            public void onWindowFocusChanged(boolean hasFocus) {
+                super.onWindowFocusChanged(hasFocus);
+                if (!hasFocus) super.dismiss();
+            }
+        };
         mDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        mDialog.setCanceledOnTouchOutside(true);
         mDialog.addContentView(view,
                 new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
                                               LinearLayout.LayoutParams.MATCH_PARENT));
