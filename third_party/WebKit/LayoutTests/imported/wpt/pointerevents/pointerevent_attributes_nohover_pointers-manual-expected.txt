@@ -1,0 +1,447 @@
+This is a testharness.js-based test.
+PASS touch pointerevent attributes 
+PASS PointerEvent Automation 
+PASS  touch pointerover's type should be pointerover 
+PASS  touch pointerover's button attribute is 0 when left mouse button is pressed. 
+PASS  touch pointerover's buttons attribute is 1 when left mouse button is pressed. 
+PASS  touch pointerover's ClientX and ClientY attributes are correct. 
+PASS  touch pointerover event pointerType is correct. 
+PASS  touch pointerover event is a PointerEvent event 
+PASS  touch pointerover.pointerId attribute exists 
+PASS  touch pointerover.pointerId is readonly 
+PASS  touch pointerover.pointerId IDL type long (JS type was number) 
+PASS  touch pointerover.width attribute exists 
+PASS  touch pointerover.width is readonly 
+PASS  touch pointerover.width IDL type float (JS type was number) 
+PASS  touch pointerover.height attribute exists 
+PASS  touch pointerover.height is readonly 
+PASS  touch pointerover.height IDL type float (JS type was number) 
+PASS  touch pointerover.pressure attribute exists 
+PASS  touch pointerover.pressure is readonly 
+PASS  touch pointerover.pressure IDL type float (JS type was number) 
+PASS  touch pointerover.tiltX attribute exists 
+PASS  touch pointerover.tiltX is readonly 
+PASS  touch pointerover.tiltX IDL type long (JS type was number) 
+PASS  touch pointerover.tiltY attribute exists 
+PASS  touch pointerover.tiltY is readonly 
+PASS  touch pointerover.tiltY IDL type long (JS type was number) 
+PASS  touch pointerover.pointerType attribute exists 
+PASS  touch pointerover.pointerType is readonly 
+PASS  touch pointerover.pointerType IDL type string (JS type was string) 
+PASS  touch pointerover.isPrimary attribute exists 
+PASS  touch pointerover.isPrimary is readonly 
+PASS  touch pointerover.isPrimary IDL type boolean (JS type was boolean) 
+PASS  touch pointerover.detail attribute exists 
+PASS  touch pointerover.detail is readonly 
+PASS  touch pointerover.detail IDL type long (JS type was number) 
+PASS  touch pointerover.detail value is 0. 
+PASS  touch pointerover.pressure value is valid 
+PASS  touch pointerover.isPrimary attribute is correct. 
+PASS  touch pointerenter's type should be pointerenter 
+PASS  touch pointerenter's button attribute is 0 when left mouse button is pressed. 
+PASS  touch pointerenter's buttons attribute is 1 when left mouse button is pressed. 
+PASS  touch pointerenter's ClientX and ClientY attributes are correct. 
+PASS  touch pointerenter event pointerType is correct. 
+PASS  touch pointerenter event is a PointerEvent event 
+PASS  touch pointerenter.pointerId attribute exists 
+PASS  touch pointerenter.pointerId is readonly 
+PASS  touch pointerenter.pointerId IDL type long (JS type was number) 
+PASS  touch pointerenter.width attribute exists 
+PASS  touch pointerenter.width is readonly 
+PASS  touch pointerenter.width IDL type float (JS type was number) 
+PASS  touch pointerenter.height attribute exists 
+PASS  touch pointerenter.height is readonly 
+PASS  touch pointerenter.height IDL type float (JS type was number) 
+PASS  touch pointerenter.pressure attribute exists 
+PASS  touch pointerenter.pressure is readonly 
+PASS  touch pointerenter.pressure IDL type float (JS type was number) 
+PASS  touch pointerenter.tiltX attribute exists 
+PASS  touch pointerenter.tiltX is readonly 
+PASS  touch pointerenter.tiltX IDL type long (JS type was number) 
+PASS  touch pointerenter.tiltY attribute exists 
+PASS  touch pointerenter.tiltY is readonly 
+PASS  touch pointerenter.tiltY IDL type long (JS type was number) 
+PASS  touch pointerenter.pointerType attribute exists 
+PASS  touch pointerenter.pointerType is readonly 
+PASS  touch pointerenter.pointerType IDL type string (JS type was string) 
+PASS  touch pointerenter.isPrimary attribute exists 
+PASS  touch pointerenter.isPrimary is readonly 
+PASS  touch pointerenter.isPrimary IDL type boolean (JS type was boolean) 
+PASS  touch pointerenter.detail attribute exists 
+PASS  touch pointerenter.detail is readonly 
+PASS  touch pointerenter.detail IDL type long (JS type was number) 
+PASS  touch pointerenter.detail value is 0. 
+PASS  touch pointerenter.pressure value is valid 
+PASS  touch pointerenter.isPrimary attribute is correct. 
+PASS  touch pointerenter.pointerId should be the same as previous pointer events for this active pointer. 
+PASS  touch pointerdown's type should be pointerdown 
+PASS  touch pointerdown's button attribute is 0 when left mouse button is pressed. 
+PASS  touch pointerdown's buttons attribute is 1 when left mouse button is pressed. 
+PASS  touch pointerdown's ClientX and ClientY attributes are correct. 
+PASS  touch pointerdown event pointerType is correct. 
+PASS  touch pointerdown event is a PointerEvent event 
+PASS  touch pointerdown.pointerId attribute exists 
+PASS  touch pointerdown.pointerId is readonly 
+PASS  touch pointerdown.pointerId IDL type long (JS type was number) 
+PASS  touch pointerdown.width attribute exists 
+PASS  touch pointerdown.width is readonly 
+PASS  touch pointerdown.width IDL type float (JS type was number) 
+PASS  touch pointerdown.height attribute exists 
+PASS  touch pointerdown.height is readonly 
+PASS  touch pointerdown.height IDL type float (JS type was number) 
+PASS  touch pointerdown.pressure attribute exists 
+PASS  touch pointerdown.pressure is readonly 
+PASS  touch pointerdown.pressure IDL type float (JS type was number) 
+PASS  touch pointerdown.tiltX attribute exists 
+PASS  touch pointerdown.tiltX is readonly 
+PASS  touch pointerdown.tiltX IDL type long (JS type was number) 
+PASS  touch pointerdown.tiltY attribute exists 
+PASS  touch pointerdown.tiltY is readonly 
+PASS  touch pointerdown.tiltY IDL type long (JS type was number) 
+PASS  touch pointerdown.pointerType attribute exists 
+PASS  touch pointerdown.pointerType is readonly 
+PASS  touch pointerdown.pointerType IDL type string (JS type was string) 
+PASS  touch pointerdown.isPrimary attribute exists 
+PASS  touch pointerdown.isPrimary is readonly 
+PASS  touch pointerdown.isPrimary IDL type boolean (JS type was boolean) 
+PASS  touch pointerdown.detail attribute exists 
+PASS  touch pointerdown.detail is readonly 
+PASS  touch pointerdown.detail IDL type long (JS type was number) 
+PASS  touch pointerdown.detail value is 0. 
+PASS  touch pointerdown.pressure value is valid 
+PASS  touch pointerdown.isPrimary attribute is correct. 
+PASS  touch pointerdown.pointerId should be the same as previous pointer events for this active pointer. 
+PASS  touch pointerup's type should be pointerup 
+PASS  touch pointerup's button attribute is 0 when left mouse button is pressed. 
+PASS  touch pointerup's buttons is 0 when mouse buttons are in released state. 
+PASS  touch pointerup's ClientX and ClientY attributes are correct. 
+PASS  touch pointerup event pointerType is correct. 
+PASS  touch pointerup event is a PointerEvent event 
+PASS  touch pointerup.pointerId attribute exists 
+PASS  touch pointerup.pointerId is readonly 
+PASS  touch pointerup.pointerId IDL type long (JS type was number) 
+PASS  touch pointerup.width attribute exists 
+PASS  touch pointerup.width is readonly 
+PASS  touch pointerup.width IDL type float (JS type was number) 
+PASS  touch pointerup.height attribute exists 
+PASS  touch pointerup.height is readonly 
+PASS  touch pointerup.height IDL type float (JS type was number) 
+PASS  touch pointerup.pressure attribute exists 
+PASS  touch pointerup.pressure is readonly 
+PASS  touch pointerup.pressure IDL type float (JS type was number) 
+PASS  touch pointerup.tiltX attribute exists 
+PASS  touch pointerup.tiltX is readonly 
+PASS  touch pointerup.tiltX IDL type long (JS type was number) 
+PASS  touch pointerup.tiltY attribute exists 
+PASS  touch pointerup.tiltY is readonly 
+PASS  touch pointerup.tiltY IDL type long (JS type was number) 
+PASS  touch pointerup.pointerType attribute exists 
+PASS  touch pointerup.pointerType is readonly 
+PASS  touch pointerup.pointerType IDL type string (JS type was string) 
+PASS  touch pointerup.isPrimary attribute exists 
+PASS  touch pointerup.isPrimary is readonly 
+PASS  touch pointerup.isPrimary IDL type boolean (JS type was boolean) 
+PASS  touch pointerup.detail attribute exists 
+PASS  touch pointerup.detail is readonly 
+PASS  touch pointerup.detail IDL type long (JS type was number) 
+PASS  touch pointerup.detail value is 0. 
+FAIL  touch pointerup.pressure value is valid assert_equals: pressure is 0 during pointerup expected 0 but got 1
+PASS  touch pointerup.isPrimary attribute is correct. 
+PASS  touch pointerup.pointerId should be the same as previous pointer events for this active pointer. 
+PASS  touch pointerout's type should be pointerout 
+PASS  touch pointerout's button attribute is 0 when left mouse button is pressed. 
+PASS  touch pointerout's buttons is 0 when mouse buttons are in released state. 
+PASS  touch pointerout's ClientX and ClientY attributes are correct. 
+PASS  touch pointerout event pointerType is correct. 
+PASS  touch pointerout event is a PointerEvent event 
+PASS  touch pointerout.pointerId attribute exists 
+PASS  touch pointerout.pointerId is readonly 
+PASS  touch pointerout.pointerId IDL type long (JS type was number) 
+PASS  touch pointerout.width attribute exists 
+PASS  touch pointerout.width is readonly 
+PASS  touch pointerout.width IDL type float (JS type was number) 
+PASS  touch pointerout.height attribute exists 
+PASS  touch pointerout.height is readonly 
+PASS  touch pointerout.height IDL type float (JS type was number) 
+PASS  touch pointerout.pressure attribute exists 
+PASS  touch pointerout.pressure is readonly 
+PASS  touch pointerout.pressure IDL type float (JS type was number) 
+PASS  touch pointerout.tiltX attribute exists 
+PASS  touch pointerout.tiltX is readonly 
+PASS  touch pointerout.tiltX IDL type long (JS type was number) 
+PASS  touch pointerout.tiltY attribute exists 
+PASS  touch pointerout.tiltY is readonly 
+PASS  touch pointerout.tiltY IDL type long (JS type was number) 
+PASS  touch pointerout.pointerType attribute exists 
+PASS  touch pointerout.pointerType is readonly 
+PASS  touch pointerout.pointerType IDL type string (JS type was string) 
+PASS  touch pointerout.isPrimary attribute exists 
+PASS  touch pointerout.isPrimary is readonly 
+PASS  touch pointerout.isPrimary IDL type boolean (JS type was boolean) 
+PASS  touch pointerout.detail attribute exists 
+PASS  touch pointerout.detail is readonly 
+PASS  touch pointerout.detail IDL type long (JS type was number) 
+PASS  touch pointerout.detail value is 0. 
+PASS  touch pointerout.pressure value is valid 
+PASS  touch pointerout.isPrimary attribute is correct. 
+PASS  touch pointerout.pointerId should be the same as previous pointer events for this active pointer. 
+PASS  touch pointerleave's type should be pointerleave 
+PASS  touch pointerleave's button attribute is 0 when left mouse button is pressed. 
+PASS  touch pointerleave's buttons is 0 when mouse buttons are in released state. 
+PASS  touch pointerleave's ClientX and ClientY attributes are correct. 
+PASS  touch pointerleave event pointerType is correct. 
+PASS  touch pointerleave event is a PointerEvent event 
+PASS  touch pointerleave.pointerId attribute exists 
+PASS  touch pointerleave.pointerId is readonly 
+PASS  touch pointerleave.pointerId IDL type long (JS type was number) 
+PASS  touch pointerleave.width attribute exists 
+PASS  touch pointerleave.width is readonly 
+PASS  touch pointerleave.width IDL type float (JS type was number) 
+PASS  touch pointerleave.height attribute exists 
+PASS  touch pointerleave.height is readonly 
+PASS  touch pointerleave.height IDL type float (JS type was number) 
+PASS  touch pointerleave.pressure attribute exists 
+PASS  touch pointerleave.pressure is readonly 
+PASS  touch pointerleave.pressure IDL type float (JS type was number) 
+PASS  touch pointerleave.tiltX attribute exists 
+PASS  touch pointerleave.tiltX is readonly 
+PASS  touch pointerleave.tiltX IDL type long (JS type was number) 
+PASS  touch pointerleave.tiltY attribute exists 
+PASS  touch pointerleave.tiltY is readonly 
+PASS  touch pointerleave.tiltY IDL type long (JS type was number) 
+PASS  touch pointerleave.pointerType attribute exists 
+PASS  touch pointerleave.pointerType is readonly 
+PASS  touch pointerleave.pointerType IDL type string (JS type was string) 
+PASS  touch pointerleave.isPrimary attribute exists 
+PASS  touch pointerleave.isPrimary is readonly 
+PASS  touch pointerleave.isPrimary IDL type boolean (JS type was boolean) 
+PASS  touch pointerleave.detail attribute exists 
+PASS  touch pointerleave.detail is readonly 
+PASS  touch pointerleave.detail IDL type long (JS type was number) 
+PASS  touch pointerleave.detail value is 0. 
+PASS  touch pointerleave.pressure value is valid 
+PASS  touch pointerleave.isPrimary attribute is correct. 
+PASS  touch pointerleave.pointerId should be the same as previous pointer events for this active pointer. 
+PASS Inner frame  touch pointerover's type should be pointerover 
+PASS Inner frame  touch pointerover's button attribute is 0 when left mouse button is pressed. 
+PASS Inner frame  touch pointerover's buttons attribute is 1 when left mouse button is pressed. 
+PASS Inner frame  touch pointerover's ClientX and ClientY attributes are correct. 
+PASS Inner frame  touch pointerover event pointerType is correct. 
+PASS Inner frame  touch pointerover event is a PointerEvent event 
+PASS Inner frame  touch pointerover.pointerId attribute exists 
+PASS Inner frame  touch pointerover.pointerId is readonly 
+PASS Inner frame  touch pointerover.pointerId IDL type long (JS type was number) 
+PASS Inner frame  touch pointerover.width attribute exists 
+PASS Inner frame  touch pointerover.width is readonly 
+PASS Inner frame  touch pointerover.width IDL type float (JS type was number) 
+PASS Inner frame  touch pointerover.height attribute exists 
+PASS Inner frame  touch pointerover.height is readonly 
+PASS Inner frame  touch pointerover.height IDL type float (JS type was number) 
+PASS Inner frame  touch pointerover.pressure attribute exists 
+PASS Inner frame  touch pointerover.pressure is readonly 
+PASS Inner frame  touch pointerover.pressure IDL type float (JS type was number) 
+PASS Inner frame  touch pointerover.tiltX attribute exists 
+PASS Inner frame  touch pointerover.tiltX is readonly 
+PASS Inner frame  touch pointerover.tiltX IDL type long (JS type was number) 
+PASS Inner frame  touch pointerover.tiltY attribute exists 
+PASS Inner frame  touch pointerover.tiltY is readonly 
+PASS Inner frame  touch pointerover.tiltY IDL type long (JS type was number) 
+PASS Inner frame  touch pointerover.pointerType attribute exists 
+PASS Inner frame  touch pointerover.pointerType is readonly 
+PASS Inner frame  touch pointerover.pointerType IDL type string (JS type was string) 
+PASS Inner frame  touch pointerover.isPrimary attribute exists 
+PASS Inner frame  touch pointerover.isPrimary is readonly 
+PASS Inner frame  touch pointerover.isPrimary IDL type boolean (JS type was boolean) 
+PASS Inner frame  touch pointerover.detail attribute exists 
+PASS Inner frame  touch pointerover.detail is readonly 
+PASS Inner frame  touch pointerover.detail IDL type long (JS type was number) 
+PASS Inner frame  touch pointerover.detail value is 0. 
+PASS Inner frame  touch pointerover.pressure value is valid 
+PASS Inner frame  touch pointerover.isPrimary attribute is correct. 
+PASS Inner frame  touch pointerenter's type should be pointerenter 
+PASS Inner frame  touch pointerenter's button attribute is 0 when left mouse button is pressed. 
+PASS Inner frame  touch pointerenter's buttons attribute is 1 when left mouse button is pressed. 
+PASS Inner frame  touch pointerenter's ClientX and ClientY attributes are correct. 
+PASS Inner frame  touch pointerenter event pointerType is correct. 
+PASS Inner frame  touch pointerenter event is a PointerEvent event 
+PASS Inner frame  touch pointerenter.pointerId attribute exists 
+PASS Inner frame  touch pointerenter.pointerId is readonly 
+PASS Inner frame  touch pointerenter.pointerId IDL type long (JS type was number) 
+PASS Inner frame  touch pointerenter.width attribute exists 
+PASS Inner frame  touch pointerenter.width is readonly 
+PASS Inner frame  touch pointerenter.width IDL type float (JS type was number) 
+PASS Inner frame  touch pointerenter.height attribute exists 
+PASS Inner frame  touch pointerenter.height is readonly 
+PASS Inner frame  touch pointerenter.height IDL type float (JS type was number) 
+PASS Inner frame  touch pointerenter.pressure attribute exists 
+PASS Inner frame  touch pointerenter.pressure is readonly 
+PASS Inner frame  touch pointerenter.pressure IDL type float (JS type was number) 
+PASS Inner frame  touch pointerenter.tiltX attribute exists 
+PASS Inner frame  touch pointerenter.tiltX is readonly 
+PASS Inner frame  touch pointerenter.tiltX IDL type long (JS type was number) 
+PASS Inner frame  touch pointerenter.tiltY attribute exists 
+PASS Inner frame  touch pointerenter.tiltY is readonly 
+PASS Inner frame  touch pointerenter.tiltY IDL type long (JS type was number) 
+PASS Inner frame  touch pointerenter.pointerType attribute exists 
+PASS Inner frame  touch pointerenter.pointerType is readonly 
+PASS Inner frame  touch pointerenter.pointerType IDL type string (JS type was string) 
+PASS Inner frame  touch pointerenter.isPrimary attribute exists 
+PASS Inner frame  touch pointerenter.isPrimary is readonly 
+PASS Inner frame  touch pointerenter.isPrimary IDL type boolean (JS type was boolean) 
+PASS Inner frame  touch pointerenter.detail attribute exists 
+PASS Inner frame  touch pointerenter.detail is readonly 
+PASS Inner frame  touch pointerenter.detail IDL type long (JS type was number) 
+PASS Inner frame  touch pointerenter.detail value is 0. 
+PASS Inner frame  touch pointerenter.pressure value is valid 
+PASS Inner frame  touch pointerenter.isPrimary attribute is correct. 
+PASS Inner frame  touch pointerenter.pointerId should be the same as previous pointer events for this active pointer. 
+PASS Inner frame  touch pointerdown's type should be pointerdown 
+PASS Inner frame  touch pointerdown's button attribute is 0 when left mouse button is pressed. 
+PASS Inner frame  touch pointerdown's buttons attribute is 1 when left mouse button is pressed. 
+PASS Inner frame  touch pointerdown's ClientX and ClientY attributes are correct. 
+PASS Inner frame  touch pointerdown event pointerType is correct. 
+PASS Inner frame  touch pointerdown event is a PointerEvent event 
+PASS Inner frame  touch pointerdown.pointerId attribute exists 
+PASS Inner frame  touch pointerdown.pointerId is readonly 
+PASS Inner frame  touch pointerdown.pointerId IDL type long (JS type was number) 
+PASS Inner frame  touch pointerdown.width attribute exists 
+PASS Inner frame  touch pointerdown.width is readonly 
+PASS Inner frame  touch pointerdown.width IDL type float (JS type was number) 
+PASS Inner frame  touch pointerdown.height attribute exists 
+PASS Inner frame  touch pointerdown.height is readonly 
+PASS Inner frame  touch pointerdown.height IDL type float (JS type was number) 
+PASS Inner frame  touch pointerdown.pressure attribute exists 
+PASS Inner frame  touch pointerdown.pressure is readonly 
+PASS Inner frame  touch pointerdown.pressure IDL type float (JS type was number) 
+PASS Inner frame  touch pointerdown.tiltX attribute exists 
+PASS Inner frame  touch pointerdown.tiltX is readonly 
+PASS Inner frame  touch pointerdown.tiltX IDL type long (JS type was number) 
+PASS Inner frame  touch pointerdown.tiltY attribute exists 
+PASS Inner frame  touch pointerdown.tiltY is readonly 
+PASS Inner frame  touch pointerdown.tiltY IDL type long (JS type was number) 
+PASS Inner frame  touch pointerdown.pointerType attribute exists 
+PASS Inner frame  touch pointerdown.pointerType is readonly 
+PASS Inner frame  touch pointerdown.pointerType IDL type string (JS type was string) 
+PASS Inner frame  touch pointerdown.isPrimary attribute exists 
+PASS Inner frame  touch pointerdown.isPrimary is readonly 
+PASS Inner frame  touch pointerdown.isPrimary IDL type boolean (JS type was boolean) 
+PASS Inner frame  touch pointerdown.detail attribute exists 
+PASS Inner frame  touch pointerdown.detail is readonly 
+PASS Inner frame  touch pointerdown.detail IDL type long (JS type was number) 
+PASS Inner frame  touch pointerdown.detail value is 0. 
+PASS Inner frame  touch pointerdown.pressure value is valid 
+PASS Inner frame  touch pointerdown.isPrimary attribute is correct. 
+PASS Inner frame  touch pointerdown.pointerId should be the same as previous pointer events for this active pointer. 
+PASS Inner frame  touch pointerup's type should be pointerup 
+PASS Inner frame  touch pointerup's button attribute is 0 when left mouse button is pressed. 
+PASS Inner frame  touch pointerup's buttons is 0 when mouse buttons are in released state. 
+PASS Inner frame  touch pointerup's ClientX and ClientY attributes are correct. 
+PASS Inner frame  touch pointerup event pointerType is correct. 
+PASS Inner frame  touch pointerup event is a PointerEvent event 
+PASS Inner frame  touch pointerup.pointerId attribute exists 
+PASS Inner frame  touch pointerup.pointerId is readonly 
+PASS Inner frame  touch pointerup.pointerId IDL type long (JS type was number) 
+PASS Inner frame  touch pointerup.width attribute exists 
+PASS Inner frame  touch pointerup.width is readonly 
+PASS Inner frame  touch pointerup.width IDL type float (JS type was number) 
+PASS Inner frame  touch pointerup.height attribute exists 
+PASS Inner frame  touch pointerup.height is readonly 
+PASS Inner frame  touch pointerup.height IDL type float (JS type was number) 
+PASS Inner frame  touch pointerup.pressure attribute exists 
+PASS Inner frame  touch pointerup.pressure is readonly 
+PASS Inner frame  touch pointerup.pressure IDL type float (JS type was number) 
+PASS Inner frame  touch pointerup.tiltX attribute exists 
+PASS Inner frame  touch pointerup.tiltX is readonly 
+PASS Inner frame  touch pointerup.tiltX IDL type long (JS type was number) 
+PASS Inner frame  touch pointerup.tiltY attribute exists 
+PASS Inner frame  touch pointerup.tiltY is readonly 
+PASS Inner frame  touch pointerup.tiltY IDL type long (JS type was number) 
+PASS Inner frame  touch pointerup.pointerType attribute exists 
+PASS Inner frame  touch pointerup.pointerType is readonly 
+PASS Inner frame  touch pointerup.pointerType IDL type string (JS type was string) 
+PASS Inner frame  touch pointerup.isPrimary attribute exists 
+PASS Inner frame  touch pointerup.isPrimary is readonly 
+PASS Inner frame  touch pointerup.isPrimary IDL type boolean (JS type was boolean) 
+PASS Inner frame  touch pointerup.detail attribute exists 
+PASS Inner frame  touch pointerup.detail is readonly 
+PASS Inner frame  touch pointerup.detail IDL type long (JS type was number) 
+PASS Inner frame  touch pointerup.detail value is 0. 
+FAIL Inner frame  touch pointerup.pressure value is valid assert_equals: pressure is 0 during pointerup expected 0 but got 1
+PASS Inner frame  touch pointerup.isPrimary attribute is correct. 
+PASS Inner frame  touch pointerup.pointerId should be the same as previous pointer events for this active pointer. 
+PASS Inner frame  touch pointerout's type should be pointerout 
+PASS Inner frame  touch pointerout's button attribute is 0 when left mouse button is pressed. 
+PASS Inner frame  touch pointerout's buttons is 0 when mouse buttons are in released state. 
+PASS Inner frame  touch pointerout's ClientX and ClientY attributes are correct. 
+PASS Inner frame  touch pointerout event pointerType is correct. 
+PASS Inner frame  touch pointerout event is a PointerEvent event 
+PASS Inner frame  touch pointerout.pointerId attribute exists 
+PASS Inner frame  touch pointerout.pointerId is readonly 
+PASS Inner frame  touch pointerout.pointerId IDL type long (JS type was number) 
+PASS Inner frame  touch pointerout.width attribute exists 
+PASS Inner frame  touch pointerout.width is readonly 
+PASS Inner frame  touch pointerout.width IDL type float (JS type was number) 
+PASS Inner frame  touch pointerout.height attribute exists 
+PASS Inner frame  touch pointerout.height is readonly 
+PASS Inner frame  touch pointerout.height IDL type float (JS type was number) 
+PASS Inner frame  touch pointerout.pressure attribute exists 
+PASS Inner frame  touch pointerout.pressure is readonly 
+PASS Inner frame  touch pointerout.pressure IDL type float (JS type was number) 
+PASS Inner frame  touch pointerout.tiltX attribute exists 
+PASS Inner frame  touch pointerout.tiltX is readonly 
+PASS Inner frame  touch pointerout.tiltX IDL type long (JS type was number) 
+PASS Inner frame  touch pointerout.tiltY attribute exists 
+PASS Inner frame  touch pointerout.tiltY is readonly 
+PASS Inner frame  touch pointerout.tiltY IDL type long (JS type was number) 
+PASS Inner frame  touch pointerout.pointerType attribute exists 
+PASS Inner frame  touch pointerout.pointerType is readonly 
+PASS Inner frame  touch pointerout.pointerType IDL type string (JS type was string) 
+PASS Inner frame  touch pointerout.isPrimary attribute exists 
+PASS Inner frame  touch pointerout.isPrimary is readonly 
+PASS Inner frame  touch pointerout.isPrimary IDL type boolean (JS type was boolean) 
+PASS Inner frame  touch pointerout.detail attribute exists 
+PASS Inner frame  touch pointerout.detail is readonly 
+PASS Inner frame  touch pointerout.detail IDL type long (JS type was number) 
+PASS Inner frame  touch pointerout.detail value is 0. 
+PASS Inner frame  touch pointerout.pressure value is valid 
+PASS Inner frame  touch pointerout.isPrimary attribute is correct. 
+PASS Inner frame  touch pointerout.pointerId should be the same as previous pointer events for this active pointer. 
+PASS Inner frame  touch pointerleave's type should be pointerleave 
+PASS Inner frame  touch pointerleave's button attribute is 0 when left mouse button is pressed. 
+PASS Inner frame  touch pointerleave's buttons is 0 when mouse buttons are in released state. 
+PASS Inner frame  touch pointerleave's ClientX and ClientY attributes are correct. 
+PASS Inner frame  touch pointerleave event pointerType is correct. 
+PASS Inner frame  touch pointerleave event is a PointerEvent event 
+PASS Inner frame  touch pointerleave.pointerId attribute exists 
+PASS Inner frame  touch pointerleave.pointerId is readonly 
+PASS Inner frame  touch pointerleave.pointerId IDL type long (JS type was number) 
+PASS Inner frame  touch pointerleave.width attribute exists 
+PASS Inner frame  touch pointerleave.width is readonly 
+PASS Inner frame  touch pointerleave.width IDL type float (JS type was number) 
+PASS Inner frame  touch pointerleave.height attribute exists 
+PASS Inner frame  touch pointerleave.height is readonly 
+PASS Inner frame  touch pointerleave.height IDL type float (JS type was number) 
+PASS Inner frame  touch pointerleave.pressure attribute exists 
+PASS Inner frame  touch pointerleave.pressure is readonly 
+PASS Inner frame  touch pointerleave.pressure IDL type float (JS type was number) 
+PASS Inner frame  touch pointerleave.tiltX attribute exists 
+PASS Inner frame  touch pointerleave.tiltX is readonly 
+PASS Inner frame  touch pointerleave.tiltX IDL type long (JS type was number) 
+PASS Inner frame  touch pointerleave.tiltY attribute exists 
+PASS Inner frame  touch pointerleave.tiltY is readonly 
+PASS Inner frame  touch pointerleave.tiltY IDL type long (JS type was number) 
+PASS Inner frame  touch pointerleave.pointerType attribute exists 
+PASS Inner frame  touch pointerleave.pointerType is readonly 
+PASS Inner frame  touch pointerleave.pointerType IDL type string (JS type was string) 
+PASS Inner frame  touch pointerleave.isPrimary attribute exists 
+PASS Inner frame  touch pointerleave.isPrimary is readonly 
+PASS Inner frame  touch pointerleave.isPrimary IDL type boolean (JS type was boolean) 
+PASS Inner frame  touch pointerleave.detail attribute exists 
+PASS Inner frame  touch pointerleave.detail is readonly 
+PASS Inner frame  touch pointerleave.detail IDL type long (JS type was number) 
+PASS Inner frame  touch pointerleave.detail value is 0. 
+PASS Inner frame  touch pointerleave.pressure value is valid 
+PASS Inner frame  touch pointerleave.isPrimary attribute is correct. 
+PASS Inner frame  touch pointerleave.pointerId should be the same as previous pointer events for this active pointer. 
+Harness: the test ran to completion.
+

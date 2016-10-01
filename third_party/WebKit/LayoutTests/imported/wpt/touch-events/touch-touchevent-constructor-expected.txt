@@ -1,0 +1,11 @@
+This is a testharness.js-based test.
+PASS Touch constructor with insufficient properties 
+FAIL Touch constructor with non-EventTarget target assert_throws: Touch constructor with null target function "function () {new Touch({
+        identifier: testIdentifier,
+        target: null
+    });}" did not throw
+PASS Touch constructor exists and creates a Touch object with minimum properties 
+PASS Touch constructor exists and creates a Touch object with requested properties 
+PASS TouchEvent constructor exists and creates a TouchEvent object with requested properties 
+Harness: the test ran to completion.
+

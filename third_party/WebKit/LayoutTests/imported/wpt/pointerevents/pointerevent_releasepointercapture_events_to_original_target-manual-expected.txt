@@ -1,0 +1,70 @@
+This is a testharness.js-based test.
+Harness Error. harness_status.status = 2 , harness_status.message = null
+NOTRUN lostpointercapture: subsequent events to target. 
+PASS PointerEvent Automation 
+PASS  mouse gotpointercapture event is a PointerEvent event 
+PASS  mouse gotpointercapture.pointerId attribute exists 
+PASS  mouse gotpointercapture.pointerId is readonly 
+PASS  mouse gotpointercapture.pointerId IDL type long (JS type was number) 
+PASS  mouse gotpointercapture.width attribute exists 
+PASS  mouse gotpointercapture.width is readonly 
+PASS  mouse gotpointercapture.width IDL type float (JS type was number) 
+PASS  mouse gotpointercapture.height attribute exists 
+PASS  mouse gotpointercapture.height is readonly 
+PASS  mouse gotpointercapture.height IDL type float (JS type was number) 
+PASS  mouse gotpointercapture.pressure attribute exists 
+PASS  mouse gotpointercapture.pressure is readonly 
+PASS  mouse gotpointercapture.pressure IDL type float (JS type was number) 
+PASS  mouse gotpointercapture.tiltX attribute exists 
+PASS  mouse gotpointercapture.tiltX is readonly 
+PASS  mouse gotpointercapture.tiltX IDL type long (JS type was number) 
+PASS  mouse gotpointercapture.tiltY attribute exists 
+PASS  mouse gotpointercapture.tiltY is readonly 
+PASS  mouse gotpointercapture.tiltY IDL type long (JS type was number) 
+PASS  mouse gotpointercapture.pointerType attribute exists 
+PASS  mouse gotpointercapture.pointerType is readonly 
+PASS  mouse gotpointercapture.pointerType IDL type string (JS type was string) 
+PASS  mouse gotpointercapture.isPrimary attribute exists 
+PASS  mouse gotpointercapture.isPrimary is readonly 
+PASS  mouse gotpointercapture.isPrimary IDL type boolean (JS type was boolean) 
+PASS  mouse gotpointercapture.detail attribute exists 
+PASS  mouse gotpointercapture.detail is readonly 
+PASS  mouse gotpointercapture.detail IDL type long (JS type was number) 
+PASS  mouse gotpointercapture.detail value is 0. 
+FAIL  mouse gotpointercapture.pressure value is valid assert_equals: pressure is 0.5 for mouse with a button pressed expected 0.5 but got 0
+PASS  mouse gotpointercapture properties for pointerType = mouse 
+PASS pointerover/enter should not be received when the target doesn't have capture and pointer is not over it. 
+PASS  mouse lostpointercapture event is a PointerEvent event 
+PASS  mouse lostpointercapture.pointerId attribute exists 
+PASS  mouse lostpointercapture.pointerId is readonly 
+PASS  mouse lostpointercapture.pointerId IDL type long (JS type was number) 
+PASS  mouse lostpointercapture.width attribute exists 
+PASS  mouse lostpointercapture.width is readonly 
+PASS  mouse lostpointercapture.width IDL type float (JS type was number) 
+PASS  mouse lostpointercapture.height attribute exists 
+PASS  mouse lostpointercapture.height is readonly 
+PASS  mouse lostpointercapture.height IDL type float (JS type was number) 
+PASS  mouse lostpointercapture.pressure attribute exists 
+PASS  mouse lostpointercapture.pressure is readonly 
+PASS  mouse lostpointercapture.pressure IDL type float (JS type was number) 
+PASS  mouse lostpointercapture.tiltX attribute exists 
+PASS  mouse lostpointercapture.tiltX is readonly 
+PASS  mouse lostpointercapture.tiltX IDL type long (JS type was number) 
+PASS  mouse lostpointercapture.tiltY attribute exists 
+PASS  mouse lostpointercapture.tiltY is readonly 
+PASS  mouse lostpointercapture.tiltY IDL type long (JS type was number) 
+PASS  mouse lostpointercapture.pointerType attribute exists 
+PASS  mouse lostpointercapture.pointerType is readonly 
+PASS  mouse lostpointercapture.pointerType IDL type string (JS type was string) 
+PASS  mouse lostpointercapture.isPrimary attribute exists 
+PASS  mouse lostpointercapture.isPrimary is readonly 
+PASS  mouse lostpointercapture.isPrimary IDL type boolean (JS type was boolean) 
+PASS  mouse lostpointercapture.detail attribute exists 
+PASS  mouse lostpointercapture.detail is readonly 
+PASS  mouse lostpointercapture.detail IDL type long (JS type was number) 
+PASS  mouse lostpointercapture.detail value is 0. 
+PASS  mouse lostpointercapture.pressure value is valid 
+PASS  mouse lostpointercapture properties for pointerType = mouse 
+FAIL No other events should be recieved by capturing node after release assert_unreached: listener-pointerup should be handled by target element handler Reached unreachable code
+Harness: the test ran to completion.
+
