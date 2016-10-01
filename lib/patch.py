@@ -464,7 +464,7 @@ def ParsePatchDep(text, no_change_id=False, no_sha1=False,
     no_full_change_id: Do not allow full change-ID.
     no_gerrit_number: Do not allow gerrit_number.
 
-  Retruns:
+  Returns:
     A PatchQuery object.
   """
   original_text = text

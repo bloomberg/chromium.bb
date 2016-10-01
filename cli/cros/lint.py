@@ -229,7 +229,7 @@ class DocStringChecker(BaseChecker):
     invalid_sections = (
         # Handle common misnamings.
         'arg', 'argument', 'arguments',
-        'ret', 'rets', 'return', 'result', 'results',
+        'ret', 'rets', 'return', 'retrun', 'retruns', 'result', 'results',
         'yield', 'yeild', 'yeilds',
         'raise', 'riase', 'riases', 'throw', 'throws',
     )

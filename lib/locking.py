@@ -350,7 +350,7 @@ class PipeLock(object):
       size: How many bytes to read.  It must match the length of |data| passed
         by the other end during its call to Post.
 
-    Retruns:
+    Returns:
       The data read back.
     """
     return os.read(self.read_fd, size)
