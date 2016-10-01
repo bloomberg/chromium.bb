@@ -228,6 +228,33 @@ crbug.com/248938 [ Mac ] virtual/threaded/transitions/interrupted-all-transition
 
 crbug.com/637264 fast/hidpi/scrollbar-appearance-increase-device-scale-factor.html [ NeedsRebaseline ]
 crbug.com/637264 fast/hidpi/scrollbar-appearance-decrease-device-scale-factor.html  [ NeedsRebaseline ]
+crbug.com/640256 [ Linux ] compositing/tiled-layers-hidpi.html [ NeedsRebaseline ]
+crbug.com/640256 [ Linux ] css3/filters/effect-reference-hidpi-hw.html [ NeedsRebaseline ]
+crbug.com/640256 [ Linux ] css3/filters/effect-reference-hidpi.html [ NeedsRebaseline ]
+crbug.com/640256 [ Linux ] editing/spelling/grammar-markers-hidpi.html [ NeedsRebaseline ]
+crbug.com/640256 [ Linux ] editing/spelling/inline-spelling-markers-hidpi-composited.html [ NeedsRebaseline ]
+crbug.com/640256 [ Linux ] editing/spelling/inline-spelling-markers-hidpi.html [ NeedsRebaseline ]
+crbug.com/640256 [ Linux ] fast/backgrounds/gradient-background-leakage-hidpi.html [ NeedsRebaseline ]
+crbug.com/640256 [ Linux ] fast/canvas/canvas-hidpi-blurry.html [ NeedsRebaseline ]
+crbug.com/640256 [ Linux ] fast/hidpi/broken-image-icon-hidpi.html [ NeedsRebaseline ]
+crbug.com/640256 [ Linux ] fast/hidpi/broken-image-with-size-hidpi.html [ NeedsRebaseline ]
+crbug.com/640256 [ Linux ] fast/hidpi/clip-text-in-hidpi.html [ NeedsRebaseline ]
+crbug.com/640256 [ Linux ] fast/hidpi/device-scale-factor-paint.html [ NeedsRebaseline ]
+crbug.com/640256 [ Linux ] fast/hidpi/focus-rings.html [ NeedsRebaseline ]
+crbug.com/640256 [ Linux ] fast/hidpi/gradient-with-scaled-ancestor.html [ NeedsRebaseline ]
+crbug.com/640256 [ Linux ] fast/hidpi/image-srcset-intrinsic-size-zero.html [ NeedsRebaseline ]
+crbug.com/640256 [ Linux ] fast/hidpi/resize-corner-hidpi.html [ NeedsRebaseline ]
+crbug.com/640256 [ Linux ] fast/sub-pixel/shadows-hidpi.html [ NeedsRebaseline ]
+crbug.com/640256 [ Linux ] svg/as-image/image-respects-deviceScaleFactor.html [ NeedsRebaseline ]
+crbug.com/640256 [ Linux ] svg/custom/masking-clipping-hidpi.svg [ NeedsRebaseline ]
+crbug.com/640256 [ Linux ] virtual/display_list_2d_canvas/fast/canvas/canvas-hidpi-blurry.html [ NeedsRebaseline ]
+crbug.com/640256 [ Linux ] virtual/gpu/fast/canvas/canvas-hidpi-blurry.html [ NeedsRebaseline ]
+crbug.com/640256 [ Linux ] virtual/scalefactor150/fast/hidpi/static/calendar-picker-appearance.html [ NeedsRebaseline ]
+crbug.com/640256 [ Linux ] virtual/scalefactor150/fast/hidpi/static/data-suggestion-picker-appearance.html [ NeedsRebaseline ]
+crbug.com/640256 [ Linux ] virtual/scalefactor150/fast/hidpi/static/popup-menu-appearance.html [ NeedsRebaseline ]
+crbug.com/640256 [ Linux ] virtual/scalefactor200/fast/hidpi/static/calendar-picker-appearance.html [ NeedsRebaseline ]
+crbug.com/640256 [ Linux ] virtual/scalefactor200/fast/hidpi/static/data-suggestion-picker-appearance.html [ NeedsRebaseline ]
+crbug.com/640256 [ Linux ] virtual/scalefactor200/fast/hidpi/static/popup-menu-appearance.html [ NeedsRebaseline ]
 
 # TODO(oshima): Mac Android are currently not supported.
 crbug.com/567837 [ Mac Android ] virtual/scalefactor200withzoom/fast/hidpi/static [ Skip ]
@@ -1118,9 +1145,6 @@ crbug.com/619978 fast/css/giant-stylesheet-crash.html [ Skip ]
 crbug.com/624430 [ Win10 ] fast/text/font-features/caps-casemapping.html [ Failure ]
 
 crbug.com/620432 accessibility/aria-activedescendant.html [ Failure ]
-
-crbug.com/593567 [ Linux ] virtual/scalefactor150/fast/hidpi/static/calendar-picker-appearance.html [ Skip ]
-crbug.com/593567 [ Linux ] virtual/scalefactor150/fast/hidpi/static/data-suggestion-picker-appearance.html [ Skip ]
 
 # Very slight rendering changes caused by Skia rect clipping change.
 crbug.com/627844 virtual/gpu/fast/canvas/canvas-createImageBitmap-colorClamping.html [ Pass Failure ]
