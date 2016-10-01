@@ -1,0 +1,55 @@
+<html>
+<head>
+
+<link rel="stylesheet" href="resources/diff-before.css">
+<link rel="stylesheet" href="resources/diff-after.css">
+
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/debugger-test.js"></script>
+<script src="../../http/tests/inspector/sources-test.js"></script>
+<script>
+function test()
+{
+    Runtime.experiments.enableForTest("sourceDiff");
+    var textAfter;
+    InspectorTest.showScriptSource("diff-after.css", onAfter);
+
+    function onAfter(afterFrame)
+    {
+        textAfter = afterFrame.textEditor.text();
+        InspectorTest.showScriptSource("diff-before.css", onBefore);
+    }
+
+    function onBefore(beforeFrame)
+    {
+        InspectorTest.addSniffer(WebInspector.SourceCodeDiff.prototype, "_decorationsSetForTest", decorationsSet);
+        beforeFrame.setContent(textAfter);
+    }
+
+    function decorationsSet(decorations)
+    {
+        Array.from(decorations).sort((a, b) => a[0] - b[0]).forEach(print);
+        InspectorTest.completeTest();
+
+        function print(decoration)
+        {
+            var type = decoration[1].type;
+            var name = "Unknown";
+            if (type === WebInspector.SourceCodeDiff.GutterDecorationType.Insert)
+                name = "Insert";
+            else if (type === WebInspector.SourceCodeDiff.GutterDecorationType.Delete)
+                name = "Delete";
+            else if (type === WebInspector.SourceCodeDiff.GutterDecorationType.Modify)
+                name = "Modify";
+
+            InspectorTest.addResult(decoration[0] + ":" + name)
+        }
+    }
+}
+</script>
+</head>
+
+<body onload="runTest()">
+<p>Tests that diff markers correctly appear in the gutter.</p>
+</body>
+</html>
