@@ -18,11 +18,13 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/crx_file/id_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
@@ -699,20 +701,25 @@ void ArcAppListPrefs::AddAppAndShortcut(
     const arc::mojom::OrientationLock orientation_lock) {
   const std::string app_id = shortcut ? GetAppId(package_name, intent_uri)
                                       : GetAppId(package_name, activity);
+  std::string updated_name = name;
+  // Add "(beta)" string to Play Store. See crbug.com/644576 for details.
+  if (app_id == arc::kPlayStoreAppId)
+    updated_name = l10n_util::GetStringUTF8(IDS_ARC_PLAYSTORE_ICON_TITLE_BETA);
+
   const bool was_registered = IsRegistered(app_id);
   if (was_registered) {
     std::unique_ptr<ArcAppListPrefs::AppInfo> app_old_info = GetApp(app_id);
     DCHECK(app_old_info);
     DCHECK(launchable);
-    if (name != app_old_info->name) {
+    if (updated_name != app_old_info->name) {
       FOR_EACH_OBSERVER(Observer, observer_list_,
-                        OnAppNameUpdated(app_id, name));
+                        OnAppNameUpdated(app_id, updated_name));
     }
   }
 
   ScopedArcPrefUpdate update(prefs_, app_id, prefs::kArcApps);
   base::DictionaryValue* app_dict = update.Get();
-  app_dict->SetString(kName, name);
+  app_dict->SetString(kName, updated_name);
   app_dict->SetString(kPackageName, package_name);
   app_dict->SetString(kActivity, activity);
   app_dict->SetString(kIntentUri, intent_uri);
@@ -742,9 +749,9 @@ void ArcAppListPrefs::AddAppAndShortcut(
                         OnAppReadyChanged(app_id, true));
     }
   } else {
-    AppInfo app_info(name, package_name, activity, intent_uri, icon_resource_id,
-                     base::Time(), GetInstallTime(app_id), sticky,
-                     notifications_enabled, true,
+    AppInfo app_info(updated_name, package_name, activity, intent_uri,
+                     icon_resource_id, base::Time(), GetInstallTime(app_id),
+                     sticky, notifications_enabled, true,
                      launchable && arc::ShouldShowInLauncher(app_id), shortcut,
                      launchable, orientation_lock);
     FOR_EACH_OBSERVER(Observer,

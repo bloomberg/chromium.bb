@@ -6205,7 +6205,10 @@ All users must sign out to continue.
 
   <!-- Android Apps -->
   <message name="IDS_OPTIONS_ARC_TITLE" desc="The title of Google Play Store section.">
-    Google Play Store
+    Google Play Store (beta)
+  </message>
+  <message name="IDS_ARC_PLAYSTORE_ICON_TITLE_BETA" desc="The Play Store icon title with the beta label in the launcher.">
+    Play Store (beta)
   </message>
   <message name="IDS_OPTIONS_ARC_ENABLE" desc="Label for the checkbox that enables Google Play Store apps.">
     Enable Google Play Store on your Chromebook.
