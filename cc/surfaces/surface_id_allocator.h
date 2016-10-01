@@ -18,15 +18,16 @@ namespace cc {
 // class in a mutex.
 class CC_SURFACES_EXPORT SurfaceIdAllocator {
  public:
-  explicit SurfaceIdAllocator(uint32_t client_id);
+  explicit SurfaceIdAllocator(const FrameSinkId& frame_sink_id);
   ~SurfaceIdAllocator();
 
   SurfaceId GenerateId();
 
-  uint32_t client_id() const { return client_id_; }
+  const FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
 
  private:
-  const uint32_t client_id_;
+  const FrameSinkId frame_sink_id_;
+
   uint32_t next_id_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceIdAllocator);

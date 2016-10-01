@@ -101,7 +101,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
       std::unique_ptr<base::Value> value,
       const base::Callback<void(std::unique_ptr<base::Value>)>& callback);
   bool SendMessageToMicroBenchmark(int id, std::unique_ptr<base::Value> value);
-  void SetSurfaceClientId(uint32_t surface_id_namespace);
+  void SetFrameSinkId(const cc::FrameSinkId& frame_sink_id);
   void OnHandleCompositorProto(const std::vector<uint8_t>& proto);
   void SetPaintedDeviceScaleFactor(float device_scale);
   void SetDeviceColorSpace(const gfx::ColorSpace& color_space);

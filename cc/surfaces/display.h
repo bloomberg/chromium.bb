@@ -13,6 +13,7 @@
 #include "cc/resources/returned_resource.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/display_scheduler.h"
+#include "cc/surfaces/frame_sink_id.h"
 #include "cc/surfaces/surface_aggregator.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_manager.h"
@@ -66,7 +67,7 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
 
   void Initialize(DisplayClient* client,
                   SurfaceManager* surface_manager,
-                  uint32_t compositor_surface_namespace);
+                  const FrameSinkId& frame_sink_id);
 
   // device_scale_factor is used to communicate to the external window system
   // what scale this was rendered at.
@@ -118,7 +119,7 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
 
   DisplayClient* client_ = nullptr;
   SurfaceManager* surface_manager_ = nullptr;
-  uint32_t compositor_surface_namespace_;
+  FrameSinkId frame_sink_id_;
   SurfaceId current_surface_id_;
   gfx::Size current_surface_size_;
   float device_scale_factor_ = 1.f;

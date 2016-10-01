@@ -35,10 +35,10 @@
 namespace cc {
 namespace {
 
-static constexpr uint32_t kArbitraryClientId = 0;
+static constexpr FrameSinkId kArbitraryFrameSinkId(1, 1);
 
 SurfaceId InvalidSurfaceId() {
-  static SurfaceId invalid(kArbitraryClientId, 0xdeadbeef, 0);
+  static SurfaceId invalid(kArbitraryFrameSinkId, 0xdeadbeef, 0);
   return invalid;
 }
 
@@ -79,7 +79,7 @@ class SurfaceAggregatorTest : public testing::Test {
 };
 
 TEST_F(SurfaceAggregatorTest, ValidSurfaceNoFrame) {
-  SurfaceId one_id(kArbitraryClientId, 7, 0);
+  SurfaceId one_id(kArbitraryFrameSinkId, 7, 0);
   factory_.Create(one_id);
 
   CompositorFrame frame = aggregator_.Aggregate(one_id);
@@ -92,8 +92,8 @@ class SurfaceAggregatorValidSurfaceTest : public SurfaceAggregatorTest {
  public:
   explicit SurfaceAggregatorValidSurfaceTest(bool use_damage_rect)
       : SurfaceAggregatorTest(use_damage_rect),
-        allocator_(1u),
-        child_allocator_(2u) {}
+        allocator_(FrameSinkId(1, 1)),
+        child_allocator_(FrameSinkId(2, 2)) {}
   SurfaceAggregatorValidSurfaceTest()
       : SurfaceAggregatorValidSurfaceTest(false) {}
 
@@ -1912,7 +1912,7 @@ void SubmitCompositorFrameWithResources(ResourceId* resource_ids,
 TEST_F(SurfaceAggregatorWithResourcesTest, TakeResourcesOneSurface) {
   ResourceTrackingSurfaceFactoryClient client;
   SurfaceFactory factory(&manager_, &client);
-  SurfaceId surface_id(kArbitraryClientId, 7u, 0);
+  SurfaceId surface_id(kArbitraryFrameSinkId, 7u, 0);
   factory.Create(surface_id);
 
   ResourceId ids[] = {11, 12, 13};
@@ -1942,7 +1942,7 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TakeResourcesOneSurface) {
 TEST_F(SurfaceAggregatorWithResourcesTest, TakeInvalidResources) {
   ResourceTrackingSurfaceFactoryClient client;
   SurfaceFactory factory(&manager_, &client);
-  SurfaceId surface_id(kArbitraryClientId, 7u, 0);
+  SurfaceId surface_id(kArbitraryFrameSinkId, 7u, 0);
   factory.Create(surface_id);
 
   std::unique_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
@@ -1976,10 +1976,10 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TakeInvalidResources) {
 TEST_F(SurfaceAggregatorWithResourcesTest, TwoSurfaces) {
   ResourceTrackingSurfaceFactoryClient client;
   SurfaceFactory factory(&manager_, &client);
-  SurfaceId surface1_id(kArbitraryClientId, 7u, 0);
+  SurfaceId surface1_id(kArbitraryFrameSinkId, 7u, 0);
   factory.Create(surface1_id);
 
-  SurfaceId surface2_id(kArbitraryClientId, 8u, 0);
+  SurfaceId surface2_id(kArbitraryFrameSinkId, 8u, 0);
   factory.Create(surface2_id);
 
   ResourceId ids[] = {11, 12, 13};
@@ -2017,11 +2017,11 @@ TEST_F(SurfaceAggregatorWithResourcesTest, TwoSurfaces) {
 TEST_F(SurfaceAggregatorWithResourcesTest, InvalidChildSurface) {
   ResourceTrackingSurfaceFactoryClient client;
   SurfaceFactory factory(&manager_, &client);
-  SurfaceId root_surface_id(kArbitraryClientId, 7u, 0);
+  SurfaceId root_surface_id(kArbitraryFrameSinkId, 7u, 0);
   factory.Create(root_surface_id);
-  SurfaceId middle_surface_id(kArbitraryClientId, 8u, 0);
+  SurfaceId middle_surface_id(kArbitraryFrameSinkId, 8u, 0);
   factory.Create(middle_surface_id);
-  SurfaceId child_surface_id(kArbitraryClientId, 9u, 0);
+  SurfaceId child_surface_id(kArbitraryFrameSinkId, 9u, 0);
   factory.Create(child_surface_id);
 
   ResourceId ids[] = {14, 15, 16};
@@ -2065,10 +2065,10 @@ TEST_F(SurfaceAggregatorWithResourcesTest, InvalidChildSurface) {
 TEST_F(SurfaceAggregatorWithResourcesTest, SecureOutputTexture) {
   ResourceTrackingSurfaceFactoryClient client;
   SurfaceFactory factory(&manager_, &client);
-  SurfaceId surface1_id(kArbitraryClientId, 7u, 0);
+  SurfaceId surface1_id(kArbitraryFrameSinkId, 7u, 0);
   factory.Create(surface1_id);
 
-  SurfaceId surface2_id(kArbitraryClientId, 8u, 0);
+  SurfaceId surface2_id(kArbitraryFrameSinkId, 8u, 0);
   factory.Create(surface2_id);
 
   ResourceId ids[] = {11, 12, 13};

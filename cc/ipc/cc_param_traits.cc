@@ -568,15 +568,49 @@ void ParamTraits<cc::RenderPass>::Log(const param_type& p, std::string* l) {
   l->append("])");
 }
 
+void ParamTraits<cc::FrameSinkId>::GetSize(base::PickleSizer* s,
+                                           const param_type& p) {
+  GetParamSize(s, p.client_id());
+  GetParamSize(s, p.sink_id());
+}
+
+void ParamTraits<cc::FrameSinkId>::Write(base::Pickle* m, const param_type& p) {
+  WriteParam(m, p.client_id());
+  WriteParam(m, p.sink_id());
+}
+
+bool ParamTraits<cc::FrameSinkId>::Read(const base::Pickle* m,
+                                        base::PickleIterator* iter,
+                                        param_type* p) {
+  uint32_t client_id;
+  if (!ReadParam(m, iter, &client_id))
+    return false;
+
+  uint32_t sink_id;
+  if (!ReadParam(m, iter, &sink_id))
+    return false;
+
+  *p = cc::FrameSinkId(client_id, sink_id);
+  return true;
+}
+
+void ParamTraits<cc::FrameSinkId>::Log(const param_type& p, std::string* l) {
+  l->append("FrameSinkId(");
+  LogParam(p.client_id(), l);
+  l->append(", ");
+  LogParam(p.sink_id(), l);
+  l->append(")");
+}
+
 void ParamTraits<cc::SurfaceId>::GetSize(base::PickleSizer* s,
                                          const param_type& p) {
-  GetParamSize(s, p.client_id());
+  GetParamSize(s, p.frame_sink_id());
   GetParamSize(s, p.local_id());
   GetParamSize(s, p.nonce());
 }
 
 void ParamTraits<cc::SurfaceId>::Write(base::Pickle* m, const param_type& p) {
-  WriteParam(m, p.client_id());
+  WriteParam(m, p.frame_sink_id());
   WriteParam(m, p.local_id());
   WriteParam(m, p.nonce());
 }
@@ -584,8 +618,8 @@ void ParamTraits<cc::SurfaceId>::Write(base::Pickle* m, const param_type& p) {
 bool ParamTraits<cc::SurfaceId>::Read(const base::Pickle* m,
                                       base::PickleIterator* iter,
                                       param_type* p) {
-  uint32_t client_id;
-  if (!ReadParam(m, iter, &client_id))
+  cc::FrameSinkId frame_sink_id;
+  if (!ReadParam(m, iter, &frame_sink_id))
     return false;
 
   uint32_t local_id;
@@ -596,13 +630,13 @@ bool ParamTraits<cc::SurfaceId>::Read(const base::Pickle* m,
   if (!ReadParam(m, iter, &nonce))
     return false;
 
-  *p = cc::SurfaceId(client_id, local_id, nonce);
+  *p = cc::SurfaceId(frame_sink_id, local_id, nonce);
   return true;
 }
 
 void ParamTraits<cc::SurfaceId>::Log(const param_type& p, std::string* l) {
   l->append("SurfaceId(");
-  LogParam(p.client_id(), l);
+  LogParam(p.frame_sink_id(), l);
   l->append(", ");
   LogParam(p.local_id(), l);
   l->append(", ");

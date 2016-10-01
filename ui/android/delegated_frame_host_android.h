@@ -50,7 +50,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
 
   bool HasDelegatedContent() const;
 
-  uint32_t GetSurfaceClientId() const;
+  cc::FrameSinkId GetFrameSinkId() const;
 
   // Should only be called when the host has a content layer.
   void RequestCopyOfSurface(
@@ -66,8 +66,8 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
 
   // Called when this DFH is attached/detached from a parent browser compositor
   // and needs to be attached to the surface hierarchy.
-  void RegisterSurfaceNamespaceHierarchy(uint32_t parent_id);
-  void UnregisterSurfaceNamespaceHierarchy();
+  void RegisterFrameSinkHierarchy(const cc::FrameSinkId& parent_id);
+  void UnregisterFrameSinkHierarchy();
 
  private:
   // cc::SurfaceFactoryClient implementation.
@@ -80,7 +80,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
 
   cc::SurfaceManager* surface_manager_;
   std::unique_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
-  uint32_t registered_parent_client_id_ = 0u;
+  cc::FrameSinkId registered_parent_frame_sink_id_;
   ReturnResourcesCallback return_resources_callback_;
 
   std::unique_ptr<cc::SurfaceFactory> surface_factory_;

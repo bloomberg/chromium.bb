@@ -12,6 +12,7 @@
 #include "cc/scheduler/delay_based_time_source.h"
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/display_scheduler.h"
+#include "cc/surfaces/frame_sink_id.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/test/fake_compositor_frame_sink_client.h"
@@ -25,18 +26,18 @@
 namespace cc {
 namespace {
 
-static constexpr int kArbitraryClientId = 0;
+static constexpr FrameSinkId kArbitraryFrameSinkId(1, 1);
 
 class DirectCompositorFrameSinkTest : public testing::Test {
  public:
   DirectCompositorFrameSinkTest()
       : now_src_(new base::SimpleTestTickClock()),
         task_runner_(new OrderedSimpleTaskRunner(now_src_.get(), true)),
-        allocator_(kArbitraryClientId),
+        allocator_(kArbitraryFrameSinkId),
         display_size_(1920, 1080),
         display_rect_(display_size_),
         context_provider_(TestContextProvider::Create()) {
-    surface_manager_.RegisterSurfaceClientId(allocator_.client_id());
+    surface_manager_.RegisterFrameSinkId(allocator_.frame_sink_id());
 
     std::unique_ptr<FakeOutputSurface> display_output_surface =
         FakeOutputSurface::Create3d();

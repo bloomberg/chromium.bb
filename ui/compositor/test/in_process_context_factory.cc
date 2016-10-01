@@ -253,8 +253,8 @@ cc::TaskGraphRunner* InProcessContextFactory::GetTaskGraphRunner() {
   return &task_graph_runner_;
 }
 
-uint32_t InProcessContextFactory::AllocateSurfaceClientId() {
-  return next_surface_client_id_++;
+cc::FrameSinkId InProcessContextFactory::AllocateFrameSinkId() {
+  return cc::FrameSinkId(next_surface_client_id_++, 0);
 }
 
 cc::SurfaceManager* InProcessContextFactory::GetSurfaceManager() {

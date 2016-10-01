@@ -12,6 +12,7 @@
 #include "cc/scheduler/delay_based_time_source.h"
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/display_scheduler.h"
+#include "cc/surfaces/frame_sink_id.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "services/ui/surfaces/direct_output_surface.h"
 #include "services/ui/surfaces/surfaces_context_provider.h"
@@ -31,10 +32,10 @@ DisplayCompositor::DisplayCompositor(
     : task_runner_(task_runner),
       surfaces_state_(surfaces_state),
       factory_(surfaces_state->manager(), this),
-      allocator_(surfaces_state->next_client_id()) {
-  surfaces_state_->manager()->RegisterSurfaceClientId(allocator_.client_id());
+      allocator_(cc::FrameSinkId(surfaces_state->next_client_id(), 0)) {
+  surfaces_state_->manager()->RegisterFrameSinkId(allocator_.frame_sink_id());
   surfaces_state_->manager()->RegisterSurfaceFactoryClient(
-      allocator_.client_id(), this);
+      allocator_.frame_sink_id(), this);
 
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager =
       gpu_channel->gpu_memory_buffer_manager();
@@ -75,14 +76,14 @@ DisplayCompositor::DisplayCompositor(
       std::move(display_output_surface), std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(task_runner_.get())));
   display_->Initialize(this, surfaces_state_->manager(),
-                       allocator_.client_id());
+                       allocator_.frame_sink_id());
   display_->SetVisible(true);
 }
 
 DisplayCompositor::~DisplayCompositor() {
   surfaces_state_->manager()->UnregisterSurfaceFactoryClient(
-      allocator_.client_id());
-  surfaces_state_->manager()->InvalidateSurfaceClientId(allocator_.client_id());
+      allocator_.frame_sink_id());
+  surfaces_state_->manager()->InvalidateFrameSinkId(allocator_.frame_sink_id());
 }
 
 void DisplayCompositor::SubmitCompositorFrame(

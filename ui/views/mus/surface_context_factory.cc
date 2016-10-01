@@ -89,8 +89,8 @@ cc::TaskGraphRunner* SurfaceContextFactory::GetTaskGraphRunner() {
   return raster_thread_helper_.task_graph_runner();
 }
 
-uint32_t SurfaceContextFactory::AllocateSurfaceClientId() {
-  return next_surface_id_namespace_++;
+cc::FrameSinkId SurfaceContextFactory::AllocateFrameSinkId() {
+  return cc::FrameSinkId(next_surface_id_namespace_++, 0);
 }
 
 cc::SurfaceManager* SurfaceContextFactory::GetSurfaceManager() {

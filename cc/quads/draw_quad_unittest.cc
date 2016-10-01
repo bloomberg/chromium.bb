@@ -32,6 +32,8 @@
 namespace cc {
 namespace {
 
+static constexpr FrameSinkId kArbitraryFrameSinkId(1, 1);
+
 TEST(DrawQuadTest, CopySharedQuadState) {
   gfx::Transform quad_transform = gfx::Transform(1.0, 0.0, 0.5, 1.0, 0.5, 0.0);
   gfx::Size layer_bounds(26, 28);
@@ -522,7 +524,7 @@ TEST(DrawQuadTest, CopyStreamVideoDrawQuad) {
 
 TEST(DrawQuadTest, CopySurfaceDrawQuad) {
   gfx::Rect visible_rect(40, 50, 30, 20);
-  SurfaceId surface_id(0, 1234, 0);
+  SurfaceId surface_id(kArbitraryFrameSinkId, 1234, 0);
   CREATE_SHARED_STATE();
 
   CREATE_QUAD_2_NEW(SurfaceDrawQuad, visible_rect, surface_id);
@@ -811,7 +813,7 @@ TEST_F(DrawQuadIteratorTest, StreamVideoDrawQuad) {
 
 TEST_F(DrawQuadIteratorTest, SurfaceDrawQuad) {
   gfx::Rect visible_rect(40, 50, 30, 20);
-  SurfaceId surface_id(0, 4321, 0);
+  SurfaceId surface_id(kArbitraryFrameSinkId, 4321, 0);
 
   CREATE_SHARED_STATE();
   CREATE_QUAD_2_NEW(SurfaceDrawQuad, visible_rect, surface_id);

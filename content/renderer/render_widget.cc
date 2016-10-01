@@ -520,7 +520,7 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SetTextDirection, OnSetTextDirection)
     IPC_MESSAGE_HANDLER(ViewMsg_Move_ACK, OnRequestMoveAck)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateScreenRects, OnUpdateScreenRects)
-    IPC_MESSAGE_HANDLER(ViewMsg_SetSurfaceClientId, OnSetSurfaceClientId)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetFrameSinkId, OnSetFrameSinkId)
     IPC_MESSAGE_HANDLER(ViewMsg_WaitForNextFrameForTests,
                         OnWaitNextFrameForTests)
     IPC_MESSAGE_HANDLER(InputMsg_RequestCompositionUpdate,
@@ -1527,9 +1527,9 @@ void RenderWidget::OnUpdateWindowScreenRect(
   }
 }
 
-void RenderWidget::OnSetSurfaceClientId(uint32_t surface_id_namespace) {
+void RenderWidget::OnSetFrameSinkId(const cc::FrameSinkId& frame_sink_id) {
   if (compositor_)
-    compositor_->SetSurfaceClientId(surface_id_namespace);
+    compositor_->SetFrameSinkId(frame_sink_id);
 }
 
 void RenderWidget::OnHandleCompositorProto(const std::vector<uint8_t>& proto) {

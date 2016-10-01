@@ -10,9 +10,11 @@
 namespace cc {
 namespace {
 
+static constexpr FrameSinkId kArbitraryFrameSinkId(1, 1);
+
 TEST(SurfaceSequenceGeneratorTest, Basic) {
   SurfaceSequenceGenerator generator;
-  generator.set_surface_client_id(5);
+  generator.set_frame_sink_id(kArbitraryFrameSinkId);
   SurfaceSequence sequence1 = generator.CreateSurfaceSequence();
   SurfaceSequence sequence2 = generator.CreateSurfaceSequence();
   EXPECT_NE(sequence1, sequence2);

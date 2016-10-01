@@ -75,6 +75,7 @@ struct WebPoint;
 
 namespace cc {
 class CompositorFrameSink;
+class FrameSinkId;
 class SwapPromise;
 }
 
@@ -512,7 +513,7 @@ class CONTENT_EXPORT RenderWidget
                            const gfx::Rect& window_screen_rect);
   void OnUpdateWindowScreenRect(const gfx::Rect& window_screen_rect);
   void OnShowImeIfNeeded();
-  void OnSetSurfaceClientId(uint32_t surface_id_namespace);
+  void OnSetFrameSinkId(const cc::FrameSinkId& frame_sink_id);
   void OnHandleCompositorProto(const std::vector<uint8_t>& proto);
 
 #if defined(OS_ANDROID)

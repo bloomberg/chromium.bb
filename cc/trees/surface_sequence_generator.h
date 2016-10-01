@@ -7,8 +7,12 @@
 
 #include <stdint.h>
 
+#include <tuple>
+
 #include "base/macros.h"
 #include "cc/base/cc_export.h"
+
+#include "cc/surfaces/frame_sink_id.h"
 
 namespace cc {
 struct SurfaceSequence;
@@ -19,14 +23,14 @@ class CC_EXPORT SurfaceSequenceGenerator {
   SurfaceSequenceGenerator();
   ~SurfaceSequenceGenerator();
 
-  void set_surface_client_id(uint32_t client_id) {
-    surface_client_id_ = client_id;
+  void set_frame_sink_id(const FrameSinkId& frame_sink_id) {
+    frame_sink_id_ = frame_sink_id;
   }
 
   SurfaceSequence CreateSurfaceSequence();
 
  private:
-  uint32_t surface_client_id_;
+  FrameSinkId frame_sink_id_;
   uint32_t next_surface_sequence_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceSequenceGenerator);

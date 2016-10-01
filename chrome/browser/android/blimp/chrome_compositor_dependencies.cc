@@ -65,8 +65,8 @@ cc::SurfaceManager* ChromeCompositorDependencies::GetSurfaceManager() {
   return context_provider_factory_->GetSurfaceManager();
 }
 
-uint32_t ChromeCompositorDependencies::AllocateSurfaceClientId() {
-  return context_provider_factory_->AllocateSurfaceClientId();
+cc::FrameSinkId ChromeCompositorDependencies::AllocateFrameSinkId() {
+  return context_provider_factory_->AllocateFrameSinkId();
 }
 
 void ChromeCompositorDependencies::GetContextProviders(

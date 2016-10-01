@@ -38,7 +38,7 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
  public:
   static scoped_refptr<SurfacesInstance> GetOrCreateInstance();
 
-  uint32_t AllocateSurfaceClientId();
+  cc::FrameSinkId AllocateFrameSinkId();
   cc::SurfaceManager* GetSurfaceManager();
 
   void DrawAndSwap(const gfx::Size& viewport,
@@ -69,7 +69,7 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
 
   void SetEmptyRootFrame();
 
-  uint32_t next_surface_client_id_;
+  uint32_t next_frame_sink_id_;
 
   std::unique_ptr<cc::SurfaceManager> surface_manager_;
   std::unique_ptr<cc::Display> display_;

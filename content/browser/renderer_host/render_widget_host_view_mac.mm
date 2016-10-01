@@ -484,9 +484,8 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
   // namespace for surface-based hit testing.
   if (render_widget_host_->delegate() &&
       render_widget_host_->delegate()->GetInputEventRouter()) {
-    render_widget_host_->delegate()
-        ->GetInputEventRouter()
-        ->AddSurfaceClientIdOwner(GetSurfaceClientId(), this);
+    render_widget_host_->delegate()->GetInputEventRouter()->AddFrameSinkIdOwner(
+        GetFrameSinkId(), this);
   }
 
   RenderViewHost* rvh = RenderViewHost::From(render_widget_host_);
@@ -1014,7 +1013,7 @@ void RenderWidgetHostViewMac::RenderProcessGone(base::TerminationStatus status,
 }
 
 void RenderWidgetHostViewMac::Destroy() {
-  // SurfaceClientIds registered with RenderWidgetHostInputEventRouter
+  // FrameSinkIds registered with RenderWidgetHostInputEventRouter
   // have already been cleared when RenderWidgetHostViewBase notified its
   // observers of our impending destruction.
   [[NSNotificationCenter defaultCenter]
@@ -1486,11 +1485,11 @@ RenderWidgetHostViewMac::CreateSyntheticGestureTarget() {
       new SyntheticGestureTargetMac(host, cocoa_view_));
 }
 
-uint32_t RenderWidgetHostViewMac::GetSurfaceClientId() {
-  return browser_compositor_->GetDelegatedFrameHost()->GetSurfaceClientId();
+cc::FrameSinkId RenderWidgetHostViewMac::GetFrameSinkId() {
+  return browser_compositor_->GetDelegatedFrameHost()->GetFrameSinkId();
 }
 
-uint32_t RenderWidgetHostViewMac::SurfaceClientIdAtPoint(
+cc::FrameSinkId RenderWidgetHostViewMac::FrameSinkIdAtPoint(
     cc::SurfaceHittestDelegate* delegate,
     const gfx::Point& point,
     gfx::Point* transformed_point) {
@@ -1508,8 +1507,8 @@ uint32_t RenderWidgetHostViewMac::SurfaceClientIdAtPoint(
   // It is possible that the renderer has not yet produced a surface, in which
   // case we return our current namespace.
   if (id.is_null())
-    return GetSurfaceClientId();
-  return id.client_id();
+    return GetFrameSinkId();
+  return id.frame_sink_id();
 }
 
 bool RenderWidgetHostViewMac::ShouldRouteEvent(

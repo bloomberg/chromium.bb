@@ -86,11 +86,11 @@ BlimpEmbedderCompositor::BlimpEmbedderCompositor(
     CompositorDependencies* compositor_dependencies)
     : compositor_dependencies_(compositor_dependencies),
       surface_id_allocator_(base::MakeUnique<cc::SurfaceIdAllocator>(
-          compositor_dependencies->AllocateSurfaceClientId())),
+          compositor_dependencies->AllocateFrameSinkId())),
       compositor_frame_sink_request_pending_(false),
       root_layer_(cc::Layer::Create()) {
-  compositor_dependencies_->GetSurfaceManager()->RegisterSurfaceClientId(
-      surface_id_allocator_->client_id());
+  compositor_dependencies_->GetSurfaceManager()->RegisterFrameSinkId(
+      surface_id_allocator_->frame_sink_id());
 
   cc::LayerTreeHostInProcess::InitParams params;
   params.client = this;
@@ -105,14 +105,14 @@ BlimpEmbedderCompositor::BlimpEmbedderCompositor(
 
   root_layer_->SetBackgroundColor(SK_ColorWHITE);
   host_->GetLayerTree()->SetRootLayer(root_layer_);
-  host_->SetSurfaceClientId(surface_id_allocator_->client_id());
+  host_->SetFrameSinkId(surface_id_allocator_->frame_sink_id());
   host_->SetVisible(true);
 }
 
 BlimpEmbedderCompositor::~BlimpEmbedderCompositor() {
   SetContextProvider(nullptr);
-  compositor_dependencies_->GetSurfaceManager()->InvalidateSurfaceClientId(
-      surface_id_allocator_->client_id());
+  compositor_dependencies_->GetSurfaceManager()->InvalidateFrameSinkId(
+      surface_id_allocator_->frame_sink_id());
 }
 
 void BlimpEmbedderCompositor::SetContentLayer(

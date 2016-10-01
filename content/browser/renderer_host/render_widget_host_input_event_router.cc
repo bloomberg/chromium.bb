@@ -156,10 +156,9 @@ RenderWidgetHostViewBase* RenderWidgetHostInputEventRouter::FindEventTarget(
   // hit testing, and reflect transformations that would normally be applied in
   // the renderer process if the event was being routed between frames within a
   // single process with only one RenderWidgetHost.
-  uint32_t surface_client_id =
-      root_view->SurfaceClientIdAtPoint(&delegate, point, transformed_point);
-  const SurfaceClientIdOwnerMap::iterator iter =
-      owner_map_.find(surface_client_id);
+  cc::FrameSinkId frame_sink_id =
+      root_view->FrameSinkIdAtPoint(&delegate, point, transformed_point);
+  const FrameSinkIdOwnerMap::iterator iter = owner_map_.find(frame_sink_id);
   // If the point hit a Surface whose namspace is no longer in the map, then
   // it likely means the RenderWidgetHostView has been destroyed but its
   // parent frame has not sent a new compositor frame since that happened.
@@ -567,8 +566,8 @@ void RenderWidgetHostInputEventRouter::CancelScrollBubbling(
   }
 }
 
-void RenderWidgetHostInputEventRouter::AddSurfaceClientIdOwner(
-    uint32_t id,
+void RenderWidgetHostInputEventRouter::AddFrameSinkIdOwner(
+    const cc::FrameSinkId& id,
     RenderWidgetHostViewBase* owner) {
   DCHECK(owner_map_.find(id) == owner_map_.end());
   // We want to be notified if the owner is destroyed so we can remove it from
@@ -577,7 +576,8 @@ void RenderWidgetHostInputEventRouter::AddSurfaceClientIdOwner(
   owner_map_.insert(std::make_pair(id, owner));
 }
 
-void RenderWidgetHostInputEventRouter::RemoveSurfaceClientIdOwner(uint32_t id) {
+void RenderWidgetHostInputEventRouter::RemoveFrameSinkIdOwner(
+    const cc::FrameSinkId& id) {
   auto it_to_remove = owner_map_.find(id);
   if (it_to_remove != owner_map_.end()) {
     it_to_remove->second->RemoveObserver(this);
@@ -585,7 +585,7 @@ void RenderWidgetHostInputEventRouter::RemoveSurfaceClientIdOwner(uint32_t id) {
   }
 
   for (auto it = hittest_data_.begin(); it != hittest_data_.end();) {
-    if (it->first.client_id() == id)
+    if (it->first.frame_sink_id() == id)
       it = hittest_data_.erase(it);
     else
       ++it;
@@ -594,7 +594,7 @@ void RenderWidgetHostInputEventRouter::RemoveSurfaceClientIdOwner(uint32_t id) {
 
 void RenderWidgetHostInputEventRouter::OnHittestData(
     const FrameHostMsg_HittestData_Params& params) {
-  if (owner_map_.find(params.surface_id.client_id()) == owner_map_.end()) {
+  if (owner_map_.find(params.surface_id.frame_sink_id()) == owner_map_.end()) {
     return;
   }
   HittestData data;

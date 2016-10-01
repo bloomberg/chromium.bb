@@ -114,7 +114,7 @@ void RenderWidgetHostViewGuest::Show() {
     // the renderer.
     if (!surface_id_.is_null()) {
       cc::SurfaceSequence sequence = cc::SurfaceSequence(
-          id_allocator_->client_id(), next_surface_sequence_++);
+          id_allocator_->frame_sink_id(), next_surface_sequence_++);
       GetSurfaceManager()
           ->GetSurfaceForId(surface_id_)
           ->AddDestructionDependency(sequence);
@@ -301,7 +301,7 @@ void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
     surface_factory_->Create(surface_id_);
 
     cc::SurfaceSequence sequence = cc::SurfaceSequence(
-        id_allocator_->client_id(), next_surface_sequence_++);
+        id_allocator_->frame_sink_id(), next_surface_sequence_++);
     // The renderer process will satisfy this dependency when it creates a
     // SurfaceLayer.
     cc::SurfaceManager* manager = GetSurfaceManager();

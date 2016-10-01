@@ -66,7 +66,7 @@ ContextProviderFactoryImpl::ContextProviderFactoryImpl(
     : gpu_channel_factory_(gpu_channel_factory),
       in_handle_pending_requests_(false),
       in_shutdown_(false),
-      surface_client_id_(0),
+      next_client_id_(1u),
       weak_factory_(this) {
   DCHECK(gpu_channel_factory_);
 }
@@ -135,8 +135,8 @@ cc::SurfaceManager* ContextProviderFactoryImpl::GetSurfaceManager() {
   return surface_manager_.get();
 }
 
-uint32_t ContextProviderFactoryImpl::AllocateSurfaceClientId() {
-  return ++surface_client_id_;
+cc::FrameSinkId ContextProviderFactoryImpl::AllocateFrameSinkId() {
+  return cc::FrameSinkId(++next_client_id_, 0 /* sink_id */);
 }
 
 cc::SharedBitmapManager* ContextProviderFactoryImpl::GetSharedBitmapManager() {

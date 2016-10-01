@@ -136,7 +136,7 @@ class COMPOSITOR_EXPORT ContextFactory {
   virtual cc::TaskGraphRunner* GetTaskGraphRunner() = 0;
 
   // Allocate a new client ID for the display compositor.
-  virtual uint32_t AllocateSurfaceClientId() = 0;
+  virtual cc::FrameSinkId AllocateFrameSinkId() = 0;
 
   // Gets the surface manager.
   virtual cc::SurfaceManager* GetSurfaceManager() = 0;
@@ -210,8 +210,8 @@ class COMPOSITOR_EXPORT Compositor
 
   ui::ContextFactory* context_factory() { return context_factory_; }
 
-  void AddSurfaceClient(uint32_t client_id);
-  void RemoveSurfaceClient(uint32_t client_id);
+  void AddFrameSink(const cc::FrameSinkId& frame_sink_id);
+  void RemoveFrameSink(const cc::FrameSinkId& frame_sink_id);
 
   void SetCompositorFrameSink(std::unique_ptr<cc::CompositorFrameSink> surface);
 
@@ -413,7 +413,8 @@ class COMPOSITOR_EXPORT Compositor
   ui::Window* window_;
 #endif
   // A map from child id to parent id.
-  std::unordered_map<uint32_t, uint32_t> surface_clients_;
+  std::unordered_map<cc::FrameSinkId, cc::FrameSinkId, cc::FrameSinkIdHash>
+      frame_sinks_;
   bool widget_valid_;
   bool compositor_frame_sink_requested_;
   std::unique_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;

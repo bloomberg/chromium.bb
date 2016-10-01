@@ -24,7 +24,7 @@ OffscreenCanvasCompositorFrameSink::~OffscreenCanvasCompositorFrameSink() {
       // avoid its destruction error.
       surface_factory_->DidDestroySurfaceManager();
     } else {
-      manager->InvalidateSurfaceClientId(surface_id_.client_id());
+      manager->InvalidateFrameSinkId(surface_id_.frame_sink_id());
     }
     surface_factory_->Destroy(surface_id_);
   }
@@ -48,7 +48,7 @@ void OffscreenCanvasCompositorFrameSink::SubmitCompositorFrame(
     surface_factory_ = base::MakeUnique<cc::SurfaceFactory>(manager, this);
     surface_factory_->Create(surface_id_);
 
-    manager->RegisterSurfaceClientId(surface_id_.client_id());
+    manager->RegisterFrameSinkId(surface_id_.frame_sink_id());
   }
   surface_factory_->SubmitCompositorFrame(surface_id_, std::move(frame),
                                           callback);

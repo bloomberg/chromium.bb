@@ -650,8 +650,8 @@ ui::ContextFactory* GpuProcessTransportFactory::GetContextFactory() {
   return this;
 }
 
-uint32_t GpuProcessTransportFactory::AllocateSurfaceClientId() {
-  return next_surface_client_id_++;
+cc::FrameSinkId GpuProcessTransportFactory::AllocateFrameSinkId() {
+  return cc::FrameSinkId(next_surface_client_id_++, 0);
 }
 
 void GpuProcessTransportFactory::SetDisplayVisible(ui::Compositor* compositor,

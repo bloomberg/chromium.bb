@@ -21,7 +21,7 @@
 namespace cc {
 namespace {
 
-static constexpr uint32_t kArbitraryClientId = 1u;
+static constexpr FrameSinkId kArbitraryFrameSinkId(1, 1);
 
 class EmptySurfaceFactoryClient : public SurfaceFactoryClient {
  public:
@@ -32,7 +32,7 @@ class EmptySurfaceFactoryClient : public SurfaceFactoryClient {
 class SurfacesPixelTest : public RendererPixelTest<GLRenderer> {
  public:
   SurfacesPixelTest()
-      : allocator_(kArbitraryClientId), factory_(&manager_, &client_) {}
+      : allocator_(kArbitraryFrameSinkId), factory_(&manager_, &client_) {}
 
  protected:
   SurfaceManager manager_;

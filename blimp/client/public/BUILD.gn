@@ -44,6 +44,7 @@ source_set("public_headers") {
 
   public_deps = [
     "//base",
+    "//cc/surfaces:surface_id",
     "//components/keyed_service/core",
     "//net",
     "//ui/gfx:native_widget_types",

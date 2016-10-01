@@ -8,12 +8,12 @@
 namespace cc {
 
 SurfaceSequenceGenerator::SurfaceSequenceGenerator()
-    : surface_client_id_(0u), next_surface_sequence_(1u) {}
+    : next_surface_sequence_(1u) {}
 
 SurfaceSequenceGenerator::~SurfaceSequenceGenerator() = default;
 
 SurfaceSequence SurfaceSequenceGenerator::CreateSurfaceSequence() {
-  return SurfaceSequence(surface_client_id_, next_surface_sequence_++);
+  return SurfaceSequence(frame_sink_id_, next_surface_sequence_++);
 }
 
 }  // namespace cc

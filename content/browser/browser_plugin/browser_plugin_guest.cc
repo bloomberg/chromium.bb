@@ -414,7 +414,7 @@ void BrowserPluginGuest::OnSatisfySequence(
   std::vector<uint32_t> sequences;
   sequences.push_back(sequence.sequence);
   cc::SurfaceManager* manager = GetSurfaceManager();
-  manager->DidSatisfySequences(sequence.client_id, &sequences);
+  manager->DidSatisfySequences(sequence.frame_sink_id, &sequences);
 }
 
 void BrowserPluginGuest::OnRequireSequence(

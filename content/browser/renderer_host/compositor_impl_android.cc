@@ -398,9 +398,8 @@ bool CompositorImpl::IsInitialized() {
 
 CompositorImpl::CompositorImpl(CompositorClient* client,
                                gfx::NativeWindow root_window)
-    : surface_id_allocator_(
-          new cc::SurfaceIdAllocator(ui::ContextProviderFactory::GetInstance()
-                                         ->AllocateSurfaceClientId())),
+    : surface_id_allocator_(new cc::SurfaceIdAllocator(
+          ui::ContextProviderFactory::GetInstance()->AllocateFrameSinkId())),
       resource_manager_(root_window),
       has_transparent_background_(false),
       device_scale_factor_(1),
@@ -416,7 +415,7 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
       weak_factory_(this) {
   ui::ContextProviderFactory::GetInstance()
       ->GetSurfaceManager()
-      ->RegisterSurfaceClientId(surface_id_allocator_->client_id());
+      ->RegisterFrameSinkId(surface_id_allocator_->frame_sink_id());
   DCHECK(client);
   DCHECK(root_window);
   DCHECK(root_window->GetLayer() == nullptr);
@@ -436,7 +435,7 @@ CompositorImpl::~CompositorImpl() {
   SetSurface(NULL);
   ui::ContextProviderFactory::GetInstance()
       ->GetSurfaceManager()
-      ->InvalidateSurfaceClientId(surface_id_allocator_->client_id());
+      ->InvalidateFrameSinkId(surface_id_allocator_->frame_sink_id());
 }
 
 ui::UIResourceProvider& CompositorImpl::GetUIResourceProvider() {
@@ -521,7 +520,7 @@ void CompositorImpl::CreateLayerTreeHost() {
   host_ = cc::LayerTreeHostInProcess::CreateSingleThreaded(this, &params);
   DCHECK(!host_->IsVisible());
   host_->GetLayerTree()->SetRootLayer(root_window_->GetLayer());
-  host_->SetSurfaceClientId(surface_id_allocator_->client_id());
+  host_->SetFrameSinkId(surface_id_allocator_->frame_sink_id());
   host_->GetLayerTree()->SetViewportSize(size_);
   host_->GetLayerTree()->set_has_transparent_background(
       has_transparent_background_);
@@ -826,8 +825,8 @@ void CompositorImpl::SetNeedsAnimate() {
   host_->SetNeedsAnimate();
 }
 
-uint32_t CompositorImpl::GetSurfaceClientId() {
-  return surface_id_allocator_->client_id();
+cc::FrameSinkId CompositorImpl::GetFrameSinkId() {
+  return surface_id_allocator_->frame_sink_id();
 }
 
 bool CompositorImpl::HavePendingReadbacks() {

@@ -374,8 +374,8 @@ const LayerTreeSettings& LayerTreeHostInProcess::GetSettings() const {
   return settings_;
 }
 
-void LayerTreeHostInProcess::SetSurfaceClientId(uint32_t client_id) {
-  surface_sequence_generator_.set_surface_client_id(client_id);
+void LayerTreeHostInProcess::SetFrameSinkId(const FrameSinkId& frame_sink_id) {
+  surface_sequence_generator_.set_frame_sink_id(frame_sink_id);
 }
 
 void LayerTreeHostInProcess::QueueSwapPromise(

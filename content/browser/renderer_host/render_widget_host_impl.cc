@@ -338,8 +338,7 @@ void RenderWidgetHostImpl::SetView(RenderWidgetHostViewBase* view) {
   // If the renderer has not yet been initialized, then the surface ID
   // namespace will be sent during initialization.
   if (view_ && renderer_initialized_) {
-    Send(new ViewMsg_SetSurfaceClientId(routing_id_,
-                                        view_->GetSurfaceClientId()));
+    Send(new ViewMsg_SetFrameSinkId(routing_id_, view_->GetFrameSinkId()));
   }
 
   synthetic_gesture_controller_.reset();
@@ -411,8 +410,7 @@ void RenderWidgetHostImpl::Init() {
   // If the RWHV has not yet been set, the surface ID namespace will get
   // passed down by the call to SetView().
   if (view_) {
-    Send(new ViewMsg_SetSurfaceClientId(routing_id_,
-                                        view_->GetSurfaceClientId()));
+    Send(new ViewMsg_SetFrameSinkId(routing_id_, view_->GetFrameSinkId()));
   }
 
   SendScreenRects();

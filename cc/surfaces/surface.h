@@ -19,6 +19,7 @@
 #include "base/memory/weak_ptr.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/quads/render_pass_id.h"
+#include "cc/surfaces/frame_sink_id.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_sequence.h"
@@ -79,7 +80,7 @@ class CC_SURFACES_EXPORT Surface {
   // remove them from sequences.
   void SatisfyDestructionDependencies(
       std::unordered_set<SurfaceSequence, SurfaceSequenceHash>* sequences,
-      std::unordered_set<uint32_t>* valid_id_namespaces);
+      std::unordered_set<FrameSinkId, FrameSinkIdHash>* valid_id_namespaces);
   size_t GetDestructionDependencyCount() const {
     return destruction_dependencies_.size();
   }

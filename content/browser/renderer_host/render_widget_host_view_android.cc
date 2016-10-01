@@ -1391,8 +1391,8 @@ void RenderWidgetHostViewAndroid::StartObservingRootWindow() {
   ui::WindowAndroidCompositor* compositor =
       content_view_core_->GetWindowAndroid()->GetCompositor();
   if (compositor) {
-    delegated_frame_host_->RegisterSurfaceNamespaceHierarchy(
-        compositor->GetSurfaceClientId());
+    delegated_frame_host_->RegisterFrameSinkHierarchy(
+        compositor->GetFrameSinkId());
   }
 }
 
@@ -1415,7 +1415,7 @@ void RenderWidgetHostViewAndroid::StopObservingRootWindow() {
   // If the DFH has already been destroyed, it will have cleaned itself up.
   // This happens in some WebView cases.
   if (delegated_frame_host_)
-    delegated_frame_host_->UnregisterSurfaceNamespaceHierarchy();
+    delegated_frame_host_->UnregisterFrameSinkHierarchy();
 }
 
 void RenderWidgetHostViewAndroid::SendBeginFrame(base::TimeTicks frame_time,
@@ -1673,11 +1673,11 @@ void RenderWidgetHostViewAndroid::DidStopFlinging() {
     content_view_core_->DidStopFlinging();
 }
 
-uint32_t RenderWidgetHostViewAndroid::GetSurfaceClientId() {
+cc::FrameSinkId RenderWidgetHostViewAndroid::GetFrameSinkId() {
   if (!delegated_frame_host_)
-    return 0;
+    return cc::FrameSinkId();
 
-  return delegated_frame_host_->GetSurfaceClientId();
+  return delegated_frame_host_->GetFrameSinkId();
 }
 
 void RenderWidgetHostViewAndroid::SetContentViewCore(
@@ -1814,8 +1814,8 @@ void RenderWidgetHostViewAndroid::OnAttachCompositor() {
         content_view_core_, ui::GetScaleFactorForNativeView(GetNativeView()));
   ui::WindowAndroidCompositor* compositor =
       content_view_core_->GetWindowAndroid()->GetCompositor();
-  delegated_frame_host_->RegisterSurfaceNamespaceHierarchy(
-      compositor->GetSurfaceClientId());
+  delegated_frame_host_->RegisterFrameSinkHierarchy(
+      compositor->GetFrameSinkId());
 }
 
 void RenderWidgetHostViewAndroid::OnDetachCompositor() {
@@ -1823,7 +1823,7 @@ void RenderWidgetHostViewAndroid::OnDetachCompositor() {
   DCHECK(using_browser_compositor_);
   RunAckCallbacks();
   overscroll_controller_.reset();
-  delegated_frame_host_->UnregisterSurfaceNamespaceHierarchy();
+  delegated_frame_host_->UnregisterFrameSinkHierarchy();
 }
 
 void RenderWidgetHostViewAndroid::OnVSync(base::TimeTicks frame_time,

@@ -41,7 +41,7 @@ void SatisfyCallback(cc::SurfaceManager* manager,
                      const cc::SurfaceSequence& sequence) {
   std::vector<uint32_t> sequences;
   sequences.push_back(sequence.sequence);
-  manager->DidSatisfySequences(sequence.client_id, &sequences);
+  manager->DidSatisfySequences(sequence.frame_sink_id, &sequences);
 }
 
 void RequireCallback(cc::SurfaceManager* manager,
@@ -73,9 +73,9 @@ BlimpCompositor::BlimpCompositor(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   surface_id_allocator_ = base::MakeUnique<cc::SurfaceIdAllocator>(
-      GetEmbedderDeps()->AllocateSurfaceClientId());
-  GetEmbedderDeps()->GetSurfaceManager()->RegisterSurfaceClientId(
-      surface_id_allocator_->client_id());
+      GetEmbedderDeps()->AllocateFrameSinkId());
+  GetEmbedderDeps()->GetSurfaceManager()->RegisterFrameSinkId(
+      surface_id_allocator_->frame_sink_id());
   CreateLayerTreeHost();
 }
 
@@ -83,8 +83,8 @@ BlimpCompositor::~BlimpCompositor() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   DestroyLayerTreeHost();
-  GetEmbedderDeps()->GetSurfaceManager()->InvalidateSurfaceClientId(
-      surface_id_allocator_->client_id());
+  GetEmbedderDeps()->GetSurfaceManager()->InvalidateFrameSinkId(
+      surface_id_allocator_->frame_sink_id());
 
   CheckPendingCommitCounts(true /* flush */);
 }

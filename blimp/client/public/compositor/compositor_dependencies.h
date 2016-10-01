@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
+#include "cc/surfaces/frame_sink_id.h"
 
 namespace cc {
 class ContextProvider;
@@ -33,7 +34,7 @@ class CompositorDependencies {
   // Settings used to create all BlimpCompositor instances.
   virtual gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() = 0;
   virtual cc::SurfaceManager* GetSurfaceManager() = 0;
-  virtual uint32_t AllocateSurfaceClientId() = 0;
+  virtual cc::FrameSinkId AllocateFrameSinkId() = 0;
 
   // This call may return synchronously if the ContextProvider has already been
   // created.

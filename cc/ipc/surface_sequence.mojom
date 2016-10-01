@@ -4,11 +4,13 @@
 
 module cc.mojom;
 
+import "cc/ipc/frame_sink_id.mojom";
+
 // A per-surface-namespace sequence number that's used to coordinate
 // dependencies between frames. A sequence number may be satisfied once, and
 // may be depended on once.
 struct SurfaceSequence {
-  uint32 client_id;
+  FrameSinkId frame_sink_id;
   uint32 sequence;
 };
  

@@ -119,7 +119,7 @@ class CONTENT_EXPORT CompositorImpl
   void OnVSync(base::TimeTicks frame_time,
                base::TimeDelta vsync_period) override;
   void SetNeedsAnimate() override;
-  uint32_t GetSurfaceClientId() override;
+  cc::FrameSinkId GetFrameSinkId() override;
 
   void SetVisible(bool visible);
   void CreateLayerTreeHost();

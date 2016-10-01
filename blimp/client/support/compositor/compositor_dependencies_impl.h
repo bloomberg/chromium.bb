@@ -26,7 +26,7 @@ class CompositorDependenciesImpl : public CompositorDependencies {
   // CompositorDependencies implementation.
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
   cc::SurfaceManager* GetSurfaceManager() override;
-  uint32_t AllocateSurfaceClientId() override;
+  cc::FrameSinkId AllocateFrameSinkId() override;
   void GetContextProviders(const ContextProviderCallback& callback) override;
 
  private:

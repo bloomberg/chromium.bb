@@ -14,7 +14,7 @@
 namespace content {
 
 OffscreenCanvasSurfaceImpl::OffscreenCanvasSurfaceImpl()
-    : id_allocator_(new cc::SurfaceIdAllocator(AllocateSurfaceClientId())) {}
+    : id_allocator_(new cc::SurfaceIdAllocator(AllocateFrameSinkId())) {}
 
 OffscreenCanvasSurfaceImpl::~OffscreenCanvasSurfaceImpl() {}
 
@@ -49,7 +49,7 @@ void OffscreenCanvasSurfaceImpl::Satisfy(const cc::SurfaceSequence& sequence) {
   std::vector<uint32_t> sequences;
   sequences.push_back(sequence.sequence);
   cc::SurfaceManager* manager = GetSurfaceManager();
-  manager->DidSatisfySequences(sequence.client_id, &sequences);
+  manager->DidSatisfySequences(sequence.frame_sink_id, &sequences);
 }
 
 }  // namespace content

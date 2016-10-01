@@ -31,8 +31,8 @@ cc::SurfaceManager* CompositorDependenciesImpl::GetSurfaceManager() {
   return surface_manager_.get();
 }
 
-uint32_t CompositorDependenciesImpl::AllocateSurfaceClientId() {
-  return ++next_surface_id_;
+cc::FrameSinkId CompositorDependenciesImpl::AllocateFrameSinkId() {
+  return cc::FrameSinkId(++next_surface_id_, 0 /* sink_id */);
 }
 
 void CompositorDependenciesImpl::GetContextProviders(

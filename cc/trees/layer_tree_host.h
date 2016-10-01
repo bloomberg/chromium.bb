@@ -20,6 +20,7 @@ class Rect;
 }  // namespace gfx
 
 namespace cc {
+class FrameSinkId;
 class InputHandler;
 class LayerTree;
 class LayerTreeDebugState;
@@ -65,7 +66,7 @@ class CC_EXPORT LayerTreeHost {
 
   // Sets the client id used to generate the SurfaceId that uniquely identifies
   // the Surfaces produced by this compositor.
-  virtual void SetSurfaceClientId(uint32_t client_id) = 0;
+  virtual void SetFrameSinkId(const FrameSinkId& frame_sink_id) = 0;
 
   // Sets the LayerTreeMutator interface used to directly mutate the compositor
   // state on the compositor thread. (Compositor-Worker)

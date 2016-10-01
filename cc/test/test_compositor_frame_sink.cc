@@ -15,6 +15,7 @@
 #include "cc/output/texture_mailbox_deleter.h"
 
 static constexpr uint32_t kCompositorClientId = 1;
+static constexpr uint32_t kCompositorSinkId = 1;
 
 namespace cc {
 
@@ -31,7 +32,8 @@ TestCompositorFrameSink::TestCompositorFrameSink(
     : CompositorFrameSink(std::move(compositor_context_provider),
                           std::move(worker_context_provider)),
       surface_manager_(new SurfaceManager),
-      surface_id_allocator_(new SurfaceIdAllocator(kCompositorClientId)),
+      surface_id_allocator_(new SurfaceIdAllocator(
+          FrameSinkId(kCompositorClientId, kCompositorSinkId))),
       surface_factory_(new SurfaceFactory(surface_manager_.get(), this)) {
   std::unique_ptr<SyntheticBeginFrameSource> begin_frame_source;
   std::unique_ptr<DisplayScheduler> scheduler;
@@ -87,11 +89,11 @@ bool TestCompositorFrameSink::BindToClient(CompositorFrameSinkClient* client) {
   if (!capabilities_.delegated_sync_points_required && context_provider())
     context_provider()->SetLostContextCallback(base::Closure());
 
-  surface_manager_->RegisterSurfaceClientId(surface_id_allocator_->client_id());
+  surface_manager_->RegisterFrameSinkId(surface_id_allocator_->frame_sink_id());
   surface_manager_->RegisterSurfaceFactoryClient(
-      surface_id_allocator_->client_id(), this);
+      surface_id_allocator_->frame_sink_id(), this);
   display_->Initialize(this, surface_manager_.get(),
-                       surface_id_allocator_->client_id());
+                       surface_id_allocator_->frame_sink_id());
   display_->renderer_for_testing()->SetEnlargePassTextureAmountForTesting(
       enlarge_pass_texture_amount_);
   display_->SetVisible(true);
@@ -105,9 +107,9 @@ void TestCompositorFrameSink::DetachFromClient() {
     if (!delegated_surface_id_.is_null())
       surface_factory_->Destroy(delegated_surface_id_);
     surface_manager_->UnregisterSurfaceFactoryClient(
-        surface_id_allocator_->client_id());
-    surface_manager_->InvalidateSurfaceClientId(
-        surface_id_allocator_->client_id());
+        surface_id_allocator_->frame_sink_id());
+    surface_manager_->InvalidateFrameSinkId(
+        surface_id_allocator_->frame_sink_id());
     bound_ = false;
   }
   display_ = nullptr;

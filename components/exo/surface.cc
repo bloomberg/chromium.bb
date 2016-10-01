@@ -145,7 +145,7 @@ void SatisfyCallback(cc::SurfaceManager* manager,
                      const cc::SurfaceSequence& sequence) {
   std::vector<uint32_t> sequences;
   sequences.push_back(sequence.sequence);
-  manager->DidSatisfySequences(sequence.client_id, &sequences);
+  manager->DidSatisfySequences(sequence.frame_sink_id, &sequences);
 }
 
 void RequireCallback(cc::SurfaceManager* manager,
@@ -194,8 +194,8 @@ void SurfaceFactoryOwner::SetBeginFrameSource(
 
 SurfaceFactoryOwner::~SurfaceFactoryOwner() {
   if (surface_factory_->manager()) {
-    surface_factory_->manager()->InvalidateSurfaceClientId(
-        id_allocator_->client_id());
+    surface_factory_->manager()->InvalidateFrameSinkId(
+        id_allocator_->frame_sink_id());
   }
 }
 
@@ -216,9 +216,9 @@ Surface::Surface()
   window_->set_owned_by_parent(false);
   factory_owner_->surface_ = this;
   factory_owner_->id_allocator_.reset(new cc::SurfaceIdAllocator(
-      aura::Env::GetInstance()->context_factory()->AllocateSurfaceClientId()));
-  surface_manager_->RegisterSurfaceClientId(
-      factory_owner_->id_allocator_->client_id());
+      aura::Env::GetInstance()->context_factory()->AllocateFrameSinkId()));
+  surface_manager_->RegisterFrameSinkId(
+      factory_owner_->id_allocator_->frame_sink_id());
   factory_owner_->surface_factory_.reset(
       new cc::SurfaceFactory(surface_manager_, factory_owner_.get()));
   aura::Env::GetInstance()->context_factory()->AddObserver(this);

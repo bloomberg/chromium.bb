@@ -30,7 +30,9 @@ OffscreenCanvasFrameDispatcherImpl::OffscreenCanvasFrameDispatcherImpl(
     uint64_t nonce,
     int width,
     int height)
-    : m_surfaceId(cc::SurfaceId(clientId, localId, nonce)),
+    : m_surfaceId(cc::SurfaceId(cc::FrameSinkId(clientId, 0 /* sink_id */),
+                                localId,
+                                nonce)),
       m_width(width),
       m_height(height),
       m_nextResourceId(1u),

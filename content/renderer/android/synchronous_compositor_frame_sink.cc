@@ -45,7 +45,7 @@ namespace content {
 namespace {
 
 const int64_t kFallbackTickTimeoutInMilliseconds = 100;
-const uint32_t kCompositorClientId = 1;
+const cc::FrameSinkId kCompositorFrameSinkId(1, 1);
 
 // Do not limit number of resources, so use an unrealistically high value.
 const size_t kNumResourcesLimit = 10 * 1000 * 1000;
@@ -120,7 +120,7 @@ SynchronousCompositorFrameSink::SynchronousCompositorFrameSink(
       memory_policy_(0u),
       frame_swap_message_queue_(frame_swap_message_queue),
       surface_manager_(new cc::SurfaceManager),
-      surface_id_allocator_(new cc::SurfaceIdAllocator(kCompositorClientId)),
+      surface_id_allocator_(new cc::SurfaceIdAllocator(kCompositorFrameSinkId)),
       surface_factory_(new cc::SurfaceFactory(surface_manager_.get(), this)),
       begin_frame_source_(std::move(begin_frame_source)) {
   DCHECK(registry_);
@@ -167,9 +167,9 @@ bool SynchronousCompositorFrameSink::BindToClient(
   registry_->RegisterCompositorFrameSink(routing_id_, this);
   registered_ = true;
 
-  surface_manager_->RegisterSurfaceClientId(surface_id_allocator_->client_id());
+  surface_manager_->RegisterFrameSinkId(surface_id_allocator_->frame_sink_id());
   surface_manager_->RegisterSurfaceFactoryClient(
-      surface_id_allocator_->client_id(), this);
+      surface_id_allocator_->frame_sink_id(), this);
 
   cc::RendererSettings software_renderer_settings;
 
@@ -188,7 +188,7 @@ bool SynchronousCompositorFrameSink::BindToClient(
       nullptr /* begin_frame_source */, std::move(compositor_frame_sink),
       nullptr /* scheduler */, nullptr /* texture_mailbox_deleter */));
   display_->Initialize(&display_client_, surface_manager_.get(),
-                       surface_id_allocator_->client_id());
+                       surface_id_allocator_->frame_sink_id());
   display_->SetVisible(true);
   return true;
 }
@@ -204,9 +204,9 @@ void SynchronousCompositorFrameSink::DetachFromClient() {
   if (!delegated_surface_id_.is_null())
     surface_factory_->Destroy(delegated_surface_id_);
   surface_manager_->UnregisterSurfaceFactoryClient(
-      surface_id_allocator_->client_id());
-  surface_manager_->InvalidateSurfaceClientId(
-      surface_id_allocator_->client_id());
+      surface_id_allocator_->frame_sink_id());
+  surface_manager_->InvalidateFrameSinkId(
+      surface_id_allocator_->frame_sink_id());
   software_compositor_frame_sink_ = nullptr;
   display_ = nullptr;
   surface_factory_ = nullptr;

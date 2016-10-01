@@ -417,16 +417,16 @@ ScreenOrientationValues RenderWidgetHostViewBase::GetOrientationTypeForDesktop(
 void RenderWidgetHostViewBase::OnDidNavigateMainFrameToNewPage() {
 }
 
-uint32_t RenderWidgetHostViewBase::GetSurfaceClientId() {
-  return 0;
+cc::FrameSinkId RenderWidgetHostViewBase::GetFrameSinkId() {
+  return cc::FrameSinkId();
 }
 
-uint32_t RenderWidgetHostViewBase::SurfaceClientIdAtPoint(
+cc::FrameSinkId RenderWidgetHostViewBase::FrameSinkIdAtPoint(
     cc::SurfaceHittestDelegate* delegate,
     const gfx::Point& point,
     gfx::Point* transformed_point) {
   NOTREACHED();
-  return 0;
+  return cc::FrameSinkId();
 }
 
 gfx::Point RenderWidgetHostViewBase::TransformPointToRootCoordSpace(

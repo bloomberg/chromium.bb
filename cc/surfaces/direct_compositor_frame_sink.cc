@@ -59,7 +59,7 @@ bool DirectCompositorFrameSink::BindToClient(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   surface_manager_->RegisterSurfaceFactoryClient(
-      surface_id_allocator_->client_id(), this);
+      surface_id_allocator_->frame_sink_id(), this);
 
   if (!CompositorFrameSink::BindToClient(client))
     return false;
@@ -73,7 +73,7 @@ bool DirectCompositorFrameSink::BindToClient(
   // Avoid initializing GL context here, as this should be sharing the
   // Display's context.
   display_->Initialize(this, surface_manager_,
-                       surface_id_allocator_->client_id());
+                       surface_id_allocator_->frame_sink_id());
   return true;
 }
 
@@ -83,7 +83,7 @@ void DirectCompositorFrameSink::DetachFromClient() {
   // Unregister the SurfaceFactoryClient here instead of the dtor so that only
   // one client is alive for this namespace at any given time.
   surface_manager_->UnregisterSurfaceFactoryClient(
-      surface_id_allocator_->client_id());
+      surface_id_allocator_->frame_sink_id());
   if (!delegated_surface_id_.is_null())
     factory_.Destroy(delegated_surface_id_);
 

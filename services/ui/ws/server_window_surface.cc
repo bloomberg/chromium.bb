@@ -22,15 +22,16 @@ ServerWindowSurface::ServerWindowSurface(
     mojo::InterfaceRequest<Surface> request,
     mojom::SurfaceClientPtr client)
     : manager_(manager),
-      surface_id_allocator_(
-          manager->window()->delegate()->GetSurfacesState()->next_client_id()),
+      surface_id_allocator_(cc::FrameSinkId(
+          manager->window()->delegate()->GetSurfacesState()->next_client_id(),
+          0)),
       surface_factory_(manager_->GetSurfaceManager(), this),
       client_(std::move(client)),
       binding_(this, std::move(request)) {
   cc::SurfaceManager* surface_manager = manager_->GetSurfaceManager();
-  surface_manager->RegisterSurfaceClientId(surface_id_allocator_.client_id());
+  surface_manager->RegisterFrameSinkId(surface_id_allocator_.frame_sink_id());
   surface_manager->RegisterSurfaceFactoryClient(
-      surface_id_allocator_.client_id(), this);
+      surface_id_allocator_.frame_sink_id(), this);
 }
 
 ServerWindowSurface::~ServerWindowSurface() {
@@ -40,8 +41,8 @@ ServerWindowSurface::~ServerWindowSurface() {
   surface_factory_.DestroyAll();
   cc::SurfaceManager* surface_manager = manager_->GetSurfaceManager();
   surface_manager->UnregisterSurfaceFactoryClient(
-      surface_id_allocator_.client_id());
-  surface_manager->InvalidateSurfaceClientId(surface_id_allocator_.client_id());
+      surface_id_allocator_.frame_sink_id());
+  surface_manager->InvalidateFrameSinkId(surface_id_allocator_.frame_sink_id());
 }
 
 void ServerWindowSurface::SubmitCompositorFrame(

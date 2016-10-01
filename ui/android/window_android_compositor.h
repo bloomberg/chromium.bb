@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "cc/output/copy_output_request.h"
+#include "cc/surfaces/frame_sink_id.h"
 #include "ui/android/ui_android_export.h"
 
 namespace cc {
@@ -30,7 +31,7 @@ class UI_ANDROID_EXPORT WindowAndroidCompositor {
                        base::TimeDelta vsync_period) = 0;
   virtual void SetNeedsAnimate() = 0;
   virtual ResourceManager& GetResourceManager() = 0;
-  virtual uint32_t GetSurfaceClientId() = 0;
+  virtual cc::FrameSinkId GetFrameSinkId() = 0;
 };
 
 }  // namespace ui

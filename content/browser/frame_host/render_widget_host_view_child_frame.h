@@ -122,7 +122,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
                               InputEventAckState ack_result) override;
   bool LockMouse() override;
   void UnlockMouse() override;
-  uint32_t GetSurfaceClientId() override;
+  cc::FrameSinkId GetFrameSinkId() override;
   void ProcessKeyboardEvent(const NativeWebKeyboardEvent& event) override;
   void ProcessMouseEvent(const blink::WebMouseEvent& event,
                          const ui::LatencyInfo& latency) override;
@@ -243,7 +243,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   cc::BeginFrameSource* begin_frame_source_;
   cc::BeginFrameArgs last_begin_frame_args_;
   // The surface client ID of the parent RenderWidgetHostView.  0 if none.
-  uint32_t parent_surface_client_id_;
+  cc::FrameSinkId parent_frame_sink_id_;
 
   base::WeakPtrFactory<RenderWidgetHostViewChildFrame> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewChildFrame);

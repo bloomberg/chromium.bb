@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "cc/surfaces/frame_sink_id.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/readback_types.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
@@ -19,7 +20,7 @@ class SurfaceManager;
 
 namespace content {
 
-CONTENT_EXPORT uint32_t AllocateSurfaceClientId();
+CONTENT_EXPORT cc::FrameSinkId AllocateFrameSinkId();
 
 CONTENT_EXPORT cc::SurfaceManager* GetSurfaceManager();
 

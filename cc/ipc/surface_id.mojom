@@ -4,6 +4,8 @@
 
 module cc.mojom;
 
+import "cc/ipc/frame_sink_id.mojom";
+
 // A surface ID is composed of three parts: a client ID, a local ID, and a
 // nonce. The local part and nonce are allocated by the client using any scheme
 // that avoids duplicates and makes IDs unguessable respectively. The client ID
@@ -15,8 +17,7 @@ module cc.mojom;
 // client. The actual client ID must be used to pass surface ids to other
 // clients for them to reference.
 struct SurfaceId {
-  // A service allocated ID identifying a client.
-  uint32 client_id;
+  FrameSinkId frame_sink_id;
 
   // An identifier allocated by the client uniquely identifying a surface within
   // a client process.

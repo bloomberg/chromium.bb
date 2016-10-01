@@ -16,6 +16,7 @@
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/display_client.h"
 #include "cc/surfaces/display_scheduler.h"
+#include "cc/surfaces/frame_sink_id.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_factory_client.h"
@@ -31,6 +32,8 @@ using testing::AnyNumber;
 
 namespace cc {
 namespace {
+
+static constexpr FrameSinkId kArbitraryFrameSinkId(3, 3);
 
 class FakeSurfaceFactoryClient : public SurfaceFactoryClient {
  public:
@@ -97,13 +100,13 @@ class DisplayTest : public testing::Test {
  public:
   DisplayTest()
       : factory_(&manager_, &surface_factory_client_),
-        id_allocator_(kArbitraryClientId),
+        id_allocator_(kArbitraryFrameSinkId),
         task_runner_(new base::NullTaskRunner) {
-    manager_.RegisterSurfaceClientId(id_allocator_.client_id());
+    manager_.RegisterFrameSinkId(id_allocator_.frame_sink_id());
   }
 
   ~DisplayTest() override {
-    manager_.InvalidateSurfaceClientId(id_allocator_.client_id());
+    manager_.InvalidateFrameSinkId(id_allocator_.frame_sink_id());
   }
 
   void SetUpDisplay(const RendererSettings& settings,
@@ -147,8 +150,6 @@ class DisplayTest : public testing::Test {
                                    SurfaceFactory::DrawCallback());
   }
 
-  static constexpr int kArbitraryClientId = 3;
-
   SurfaceManager manager_;
   FakeSurfaceFactoryClient surface_factory_client_;
   SurfaceFactory factory_;
@@ -181,7 +182,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
   SetUpDisplay(settings, nullptr);
 
   StubDisplayClient client;
-  display_->Initialize(&client, &manager_, id_allocator_.client_id());
+  display_->Initialize(&client, &manager_, id_allocator_.frame_sink_id());
 
   SurfaceId surface_id(id_allocator_.GenerateId());
   EXPECT_FALSE(scheduler_->damaged);
@@ -444,7 +445,7 @@ TEST_F(DisplayTest, Finish) {
   SetUpDisplay(settings, std::move(context));
 
   StubDisplayClient client;
-  display_->Initialize(&client, &manager_, id_allocator_.client_id());
+  display_->Initialize(&client, &manager_, id_allocator_.frame_sink_id());
 
   display_->SetSurfaceId(surface_id, 1.f);
 

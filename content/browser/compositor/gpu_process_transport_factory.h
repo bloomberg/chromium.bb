@@ -62,7 +62,7 @@ class GpuProcessTransportFactory
   cc::SharedBitmapManager* GetSharedBitmapManager() override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
-  uint32_t AllocateSurfaceClientId() override;
+  cc::FrameSinkId AllocateFrameSinkId() override;
   void SetDisplayVisible(ui::Compositor* compositor, bool visible) override;
   void ResizeDisplay(ui::Compositor* compositor,
                      const gfx::Size& size) override;

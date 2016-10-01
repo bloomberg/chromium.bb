@@ -159,12 +159,12 @@ void PrepareBitmapCopyOutputResult(
 
 namespace content {
 
-uint32_t AllocateSurfaceClientId() {
+cc::FrameSinkId AllocateFrameSinkId() {
 #if defined(OS_ANDROID)
-  return ContextProviderFactoryImpl::GetInstance()->AllocateSurfaceClientId();
+  return ContextProviderFactoryImpl::GetInstance()->AllocateFrameSinkId();
 #else
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  return factory->GetContextFactory()->AllocateSurfaceClientId();
+  return factory->GetContextFactory()->AllocateFrameSinkId();
 #endif
 }
 

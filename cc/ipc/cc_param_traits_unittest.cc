@@ -45,6 +45,8 @@ using gfx::Transform;
 namespace content {
 namespace {
 
+static constexpr cc::FrameSinkId kArbitraryFrameSinkId(1, 1);
+
 class CCParamTraitsTest : public testing::Test {
  protected:
   void Compare(const RenderPass* a, const RenderPass* b) {
@@ -359,7 +361,7 @@ TEST_F(CCParamTraitsTest, AllQuads) {
   pass_cmp->CopyFromAndAppendDrawQuad(streamvideo_in,
                                       streamvideo_in->shared_quad_state);
 
-  cc::SurfaceId arbitrary_surface_id(0, 3, 0);
+  cc::SurfaceId arbitrary_surface_id(kArbitraryFrameSinkId, 3, 0);
   SurfaceDrawQuad* surface_in =
       pass_in->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
   surface_in->SetAll(shared_state3_in, arbitrary_rect2,

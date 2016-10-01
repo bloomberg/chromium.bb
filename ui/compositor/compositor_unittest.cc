@@ -28,18 +28,19 @@ namespace {
 
 class FakeCompositorFrameSink : public cc::SurfaceFactoryClient {
  public:
-  FakeCompositorFrameSink(uint32_t client_id, cc::SurfaceManager* manager)
-      : client_id_(client_id),
+  FakeCompositorFrameSink(const cc::FrameSinkId& frame_sink_id,
+                          cc::SurfaceManager* manager)
+      : frame_sink_id_(frame_sink_id),
         manager_(manager),
         source_(nullptr),
         factory_(manager, this) {
-    manager_->RegisterSurfaceClientId(client_id_);
-    manager_->RegisterSurfaceFactoryClient(client_id_, this);
+    manager_->RegisterFrameSinkId(frame_sink_id_);
+    manager_->RegisterSurfaceFactoryClient(frame_sink_id_, this);
   }
 
   ~FakeCompositorFrameSink() override {
-    manager_->UnregisterSurfaceFactoryClient(client_id_);
-    manager_->InvalidateSurfaceClientId(client_id_);
+    manager_->UnregisterSurfaceFactoryClient(frame_sink_id_);
+    manager_->InvalidateFrameSinkId(frame_sink_id_);
   }
 
   void ReturnResources(const cc::ReturnedResourceArray& resources) override {}
@@ -49,7 +50,7 @@ class FakeCompositorFrameSink : public cc::SurfaceFactoryClient {
   };
 
  private:
-  const uint32_t client_id_;
+  const cc::FrameSinkId frame_sink_id_;
   cc::SurfaceManager* const manager_;
   cc::BeginFrameSource* source_;
   cc::SurfaceFactory factory_;

@@ -44,7 +44,7 @@ void SatisfyCallback(cc::SurfaceManager* manager,
                      const cc::SurfaceSequence& sequence) {
   std::vector<uint32_t> sequences;
   sequences.push_back(sequence.sequence);
-  manager->DidSatisfySequences(sequence.client_id, &sequences);
+  manager->DidSatisfySequences(sequence.frame_sink_id, &sequences);
 }
 
 void RequireCallback(cc::SurfaceManager* manager,
@@ -77,11 +77,11 @@ DelegatedFrameHost::DelegatedFrameHost(DelegatedFrameHostClient* client)
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   factory->GetContextFactory()->AddObserver(this);
   id_allocator_.reset(new cc::SurfaceIdAllocator(
-      factory->GetContextFactory()->AllocateSurfaceClientId()));
-  factory->GetSurfaceManager()->RegisterSurfaceClientId(
-      id_allocator_->client_id());
+      factory->GetContextFactory()->AllocateFrameSinkId()));
+  factory->GetSurfaceManager()->RegisterFrameSinkId(
+      id_allocator_->frame_sink_id());
   factory->GetSurfaceManager()->RegisterSurfaceFactoryClient(
-      id_allocator_->client_id(), this);
+      id_allocator_->frame_sink_id(), this);
 }
 
 void DelegatedFrameHost::WasShown(const ui::LatencyInfo& latency_info) {
@@ -207,8 +207,8 @@ void DelegatedFrameHost::EndFrameSubscription() {
   frame_subscriber_.reset();
 }
 
-uint32_t DelegatedFrameHost::GetSurfaceClientId() {
-  return id_allocator_->client_id();
+cc::FrameSinkId DelegatedFrameHost::GetFrameSinkId() {
+  return id_allocator_->frame_sink_id();
 }
 
 cc::SurfaceId DelegatedFrameHost::SurfaceIdAtPoint(
@@ -831,9 +831,9 @@ DelegatedFrameHost::~DelegatedFrameHost() {
   if (!surface_id_.is_null())
     surface_factory_->Destroy(surface_id_);
   factory->GetSurfaceManager()->UnregisterSurfaceFactoryClient(
-      id_allocator_->client_id());
-  factory->GetSurfaceManager()->InvalidateSurfaceClientId(
-      id_allocator_->client_id());
+      id_allocator_->frame_sink_id());
+  factory->GetSurfaceManager()->InvalidateFrameSinkId(
+      id_allocator_->frame_sink_id());
 
   DCHECK(!vsync_manager_.get());
 }
@@ -848,7 +848,7 @@ void DelegatedFrameHost::SetCompositor(ui::Compositor* compositor) {
   vsync_manager_ = compositor_->vsync_manager();
   vsync_manager_->AddObserver(this);
 
-  compositor_->AddSurfaceClient(id_allocator_->client_id());
+  compositor_->AddFrameSink(id_allocator_->frame_sink_id());
 }
 
 void DelegatedFrameHost::ResetCompositor() {
@@ -865,7 +865,7 @@ void DelegatedFrameHost::ResetCompositor() {
     vsync_manager_ = nullptr;
   }
 
-  compositor_->RemoveSurfaceClient(id_allocator_->client_id());
+  compositor_->RemoveFrameSink(id_allocator_->frame_sink_id());
   compositor_ = nullptr;
 }
 

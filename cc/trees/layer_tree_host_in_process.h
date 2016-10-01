@@ -132,7 +132,7 @@ class CC_EXPORT LayerTreeHostInProcess : public LayerTreeHost {
   UIResourceManager* GetUIResourceManager() const override;
   TaskRunnerProvider* GetTaskRunnerProvider() const override;
   const LayerTreeSettings& GetSettings() const override;
-  void SetSurfaceClientId(uint32_t client_id) override;
+  void SetFrameSinkId(const FrameSinkId& frame_sink_id) override;
   void SetLayerTreeMutator(std::unique_ptr<LayerTreeMutator> mutator) override;
   void QueueSwapPromise(std::unique_ptr<SwapPromise> swap_promise) override;
   SwapPromiseManager* GetSwapPromiseManager() override;

@@ -14,7 +14,7 @@
 namespace cc {
 namespace {
 
-static constexpr uint32_t kArbitraryClientId = 0;
+static constexpr FrameSinkId kArbitraryFrameSinkId(1, 1);
 
 class FakeSurfaceFactoryClient : public SurfaceFactoryClient {
  public:
@@ -37,7 +37,7 @@ TEST(SurfaceTest, SurfaceLifetime) {
   FakeSurfaceFactoryClient surface_factory_client;
   SurfaceFactory factory(&manager, &surface_factory_client);
 
-  SurfaceId surface_id(kArbitraryClientId, 6, 0);
+  SurfaceId surface_id(kArbitraryFrameSinkId, 6, 0);
   {
     factory.Create(surface_id);
     EXPECT_TRUE(manager.GetSurfaceForId(surface_id));
@@ -48,14 +48,15 @@ TEST(SurfaceTest, SurfaceLifetime) {
 }
 
 TEST(SurfaceTest, SurfaceIds) {
-  uint32_t client_ids[] = {0u, 37u, ~0u};
+  FrameSinkId frame_sink_ids[] = {FrameSinkId(0, 0), FrameSinkId(37, 37),
+                                  FrameSinkId(1337, 1234)};
   for (size_t i = 0; i < 3; ++i) {
-    uint32_t client_id = client_ids[i];
-    SurfaceIdAllocator allocator(client_id);
+    const FrameSinkId& frame_sink_id = frame_sink_ids[i];
+    SurfaceIdAllocator allocator(frame_sink_id);
     SurfaceId id1 = allocator.GenerateId();
-    EXPECT_EQ(id1.client_id(), client_id);
+    EXPECT_EQ(id1.frame_sink_id(), frame_sink_id);
     SurfaceId id2 = allocator.GenerateId();
-    EXPECT_EQ(id2.client_id(), client_id);
+    EXPECT_EQ(id2.frame_sink_id(), frame_sink_id);
     EXPECT_NE(id1.local_id(), id2.local_id());
     EXPECT_NE(id1.nonce(), id2.nonce());
   }

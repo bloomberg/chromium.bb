@@ -1089,8 +1089,9 @@ void RenderWidgetCompositor::SendCompositorProto(
   delegate_->ForwardCompositorProto(serialized);
 }
 
-void RenderWidgetCompositor::SetSurfaceClientId(uint32_t surface_client_id) {
-  layer_tree_host_->SetSurfaceClientId(surface_client_id);
+void RenderWidgetCompositor::SetFrameSinkId(
+    const cc::FrameSinkId& frame_sink_id) {
+  layer_tree_host_->SetFrameSinkId(frame_sink_id);
 }
 
 void RenderWidgetCompositor::OnHandleCompositorProto(

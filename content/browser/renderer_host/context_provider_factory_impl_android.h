@@ -63,7 +63,7 @@ class CONTENT_EXPORT ContextProviderFactoryImpl
       cc::ContextProvider* shared_context_provider,
       scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) override;
   cc::SurfaceManager* GetSurfaceManager() override;
-  uint32_t AllocateSurfaceClientId() override;
+  cc::FrameSinkId AllocateFrameSinkId() override;
   cc::SharedBitmapManager* GetSharedBitmapManager() override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
 
@@ -105,7 +105,7 @@ class CONTENT_EXPORT ContextProviderFactoryImpl
   base::OneShotTimer establish_gpu_channel_timeout_;
 
   std::unique_ptr<cc::SurfaceManager> surface_manager_;
-  int surface_client_id_;
+  uint32_t next_client_id_;
 
   base::WeakPtrFactory<ContextProviderFactoryImpl> weak_factory_;
 

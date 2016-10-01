@@ -81,8 +81,8 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
 #endif
       widget_valid_(false),
       compositor_frame_sink_requested_(false),
-      surface_id_allocator_(new cc::SurfaceIdAllocator(
-          context_factory->AllocateSurfaceClientId())),
+      surface_id_allocator_(base::MakeUnique<cc::SurfaceIdAllocator>(
+          context_factory->AllocateFrameSinkId())),
       task_runner_(task_runner),
       vsync_manager_(new CompositorVSyncManager()),
       device_scale_factor_(0.0f),
@@ -90,8 +90,8 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
       compositor_lock_(NULL),
       layer_animator_collection_(this),
       weak_ptr_factory_(this) {
-  context_factory->GetSurfaceManager()->RegisterSurfaceClientId(
-      surface_id_allocator_->client_id());
+  context_factory->GetSurfaceManager()->RegisterFrameSinkId(
+      surface_id_allocator_->frame_sink_id());
   root_web_layer_ = cc::Layer::Create();
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -206,7 +206,7 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
       animation_timeline_.get());
 
   host_->GetLayerTree()->SetRootLayer(root_web_layer_);
-  host_->SetSurfaceClientId(surface_id_allocator_->client_id());
+  host_->SetFrameSinkId(surface_id_allocator_->frame_sink_id());
   host_->SetVisible(true);
 }
 
@@ -235,27 +235,28 @@ Compositor::~Compositor() {
 
   context_factory_->RemoveCompositor(this);
   auto* manager = context_factory_->GetSurfaceManager();
-  for (auto& client : surface_clients_) {
-    DCHECK(client.second);
-    manager->UnregisterSurfaceNamespaceHierarchy(client.second, client.first);
+  for (auto& client : frame_sinks_) {
+    DCHECK(!client.second.is_null());
+    manager->UnregisterFrameSinkHierarchy(client.second, client.first);
   }
-  manager->InvalidateSurfaceClientId(surface_id_allocator_->client_id());
+  manager->InvalidateFrameSinkId(surface_id_allocator_->frame_sink_id());
 }
 
-void Compositor::AddSurfaceClient(uint32_t client_id) {
-  uint32_t parent_client_id = surface_id_allocator_->client_id();
-  context_factory_->GetSurfaceManager()->RegisterSurfaceNamespaceHierarchy(
-      parent_client_id, client_id);
-  surface_clients_[client_id] = parent_client_id;
+void Compositor::AddFrameSink(const cc::FrameSinkId& frame_sink_id) {
+  const cc::FrameSinkId& parent_frame_sink_id =
+      surface_id_allocator_->frame_sink_id();
+  context_factory_->GetSurfaceManager()->RegisterFrameSinkHierarchy(
+      parent_frame_sink_id, frame_sink_id);
+  frame_sinks_[frame_sink_id] = parent_frame_sink_id;
 }
 
-void Compositor::RemoveSurfaceClient(uint32_t client_id) {
-  auto it = surface_clients_.find(client_id);
-  DCHECK(it != surface_clients_.end());
-  DCHECK(it->second);
-  context_factory_->GetSurfaceManager()->UnregisterSurfaceNamespaceHierarchy(
+void Compositor::RemoveFrameSink(const cc::FrameSinkId& frame_sink_id) {
+  auto it = frame_sinks_.find(frame_sink_id);
+  DCHECK(it != frame_sinks_.end());
+  DCHECK(!it->second.is_null());
+  context_factory_->GetSurfaceManager()->UnregisterFrameSinkHierarchy(
       it->second, it->first);
-  surface_clients_.erase(it);
+  frame_sinks_.erase(it);
 }
 
 void Compositor::SetCompositorFrameSink(
