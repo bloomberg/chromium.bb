@@ -11,7 +11,7 @@
 
 namespace extensions {
 
-static base::LazyInstance<PermissionsInfo> g_permissions_info =
+static base::LazyInstance<PermissionsInfo>::Leaky g_permissions_info =
     LAZY_INSTANCE_INITIALIZER;
 
 // static
