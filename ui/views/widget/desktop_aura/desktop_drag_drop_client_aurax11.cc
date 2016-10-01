@@ -1326,7 +1326,7 @@ void DesktopDragDropClientAuraX11::CreateDragWidget(
     const gfx::ImageSkia& image) {
   Widget* widget = new Widget;
   Widget::InitParams params(Widget::InitParams::TYPE_DRAG);
-  params.opacity = Widget::InitParams::OPAQUE_WINDOW;
+  params.opacity = Widget::InitParams::TRANSLUCENT_WINDOW;
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.accept_events = false;
 

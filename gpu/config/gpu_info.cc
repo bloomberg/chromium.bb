@@ -81,7 +81,13 @@ GPUInfo::GPUInfo()
 #if defined(OS_WIN)
       dx_diagnostics_info_state(kCollectInfoNone),
 #endif
-      jpeg_decode_accelerator_supported(false) {
+      jpeg_decode_accelerator_supported(false)
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
+      ,
+      system_visual(0),
+      rgba_visual(0)
+#endif
+{
 }
 
 GPUInfo::GPUInfo(const GPUInfo& other) = default;
@@ -129,6 +135,10 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
     VideoEncodeAcceleratorSupportedProfiles
         video_encode_accelerator_supported_profiles;
     bool jpeg_decode_accelerator_supported;
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
+    VisualID system_visual;
+    VisualID rgba_visual;
+#endif
   };
 
   // If this assert fails then most likely something below needs to be updated.
@@ -193,6 +203,10 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
     EnumerateVideoEncodeAcceleratorSupportedProfile(profile, enumerator);
   enumerator->AddBool("jpegDecodeAcceleratorSupported",
       jpeg_decode_accelerator_supported);
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
+  enumerator->AddInt64("systemVisual", system_visual);
+  enumerator->AddInt64("rgbaVisual", rgba_visual);
+#endif
   enumerator->EndAuxAttributes();
 }
 

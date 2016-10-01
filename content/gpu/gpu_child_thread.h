@@ -65,6 +65,7 @@ class GpuChildThread : public ChildThreadImpl,
                  gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory);
 
   GpuChildThread(const InProcessChildThreadParams& params,
+                 const gpu::GPUInfo& gpu_info,
                  gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory);
 
   ~GpuChildThread() override;

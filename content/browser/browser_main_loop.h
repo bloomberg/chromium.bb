@@ -89,6 +89,12 @@ class ScreenOrientationDelegate;
 class ScreenOrientationDelegate;
 #endif
 
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
+namespace internal {
+class GpuDataManagerVisualProxy;
+}
+#endif
+
 // Implements the main browser loop stages called from BrowserMainRunner.
 // See comments in browser_main_parts.h for additional info.
 class CONTENT_EXPORT BrowserMainLoop {
@@ -257,6 +263,10 @@ class CONTENT_EXPORT BrowserMainLoop {
   // Members initialized in |PreCreateThreads()| -------------------------------
   // Torn down in ShutdownThreadsAndCleanUp.
   std::unique_ptr<base::MemoryPressureMonitor> memory_pressure_monitor_;
+#if defined(USE_X11) && !(OS_CHROMEOS)
+  std::unique_ptr<internal::GpuDataManagerVisualProxy>
+      gpu_data_manager_visual_proxy_;
+#endif
 
   // Members initialized in |CreateThreads()| ----------------------------------
   std::unique_ptr<BrowserProcessSubThread> db_thread_;

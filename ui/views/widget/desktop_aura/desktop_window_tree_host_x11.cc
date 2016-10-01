@@ -1359,28 +1359,33 @@ void DesktopWindowTreeHostX11::InitX11Window(
   if (swa.override_redirect)
     attribute_mask |= CWOverrideRedirect;
 
-  const bool enable_transparent_visuals =
-      params.type == Widget::InitParams::TYPE_DRAG ||
-      params.type == Widget::InitParams::TYPE_WINDOW;
+  bool enable_transparent_visuals;
+  switch (params.opacity) {
+    case Widget::InitParams::OPAQUE_WINDOW:
+      enable_transparent_visuals = false;
+      break;
+    case Widget::InitParams::TRANSLUCENT_WINDOW:
+      enable_transparent_visuals = true;
+      break;
+    case Widget::InitParams::INFER_OPACITY:
+    default:
+      enable_transparent_visuals = params.type == Widget::InitParams::TYPE_DRAG;
+  }
 
   Visual* visual = CopyFromParent;
   int depth = CopyFromParent;
-  ui::ChooseVisualForWindow(enable_transparent_visuals, &visual, &depth);
-  if (enable_transparent_visuals && depth == 32) {
-    attribute_mask |= CWColormap;
-    swa.colormap =
-        XCreateColormap(xdisplay_, x_root_window_, visual, AllocNone);
+  Colormap colormap = CopyFromParent;
+  ui::XVisualManager::GetInstance()->ChooseVisualForWindow(
+      enable_transparent_visuals, &visual, &depth, &colormap,
+      &use_argb_visual_);
 
-    // x.org will BadMatch if we don't set a border when the depth isn't the
-    // same as the parent depth.
-    attribute_mask |= CWBorderPixel;
-    swa.border_pixel = 0;
+  attribute_mask |= CWColormap;
+  swa.colormap = colormap;
 
-    // A compositing manager is required to support transparency.
-    use_argb_visual_ =
-        XGetSelectionOwner(xdisplay_, atom_cache_.GetAtom("_NET_WM_CM_S0")) !=
-        None;
-  }
+  // x.org will BadMatch if we don't set a border when the depth isn't the
+  // same as the parent depth.
+  attribute_mask |= CWBorderPixel;
+  swa.border_pixel = 0;
 
   bounds_in_pixels_ = ToPixelRect(params.bounds);
   bounds_in_pixels_.set_size(AdjustSize(bounds_in_pixels_.size()));

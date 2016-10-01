@@ -580,7 +580,7 @@ class HasTransparentVisualsGpuProcessPage(DriverBugWorkaroundsTestsPage):
       shared_page_state_class=HasTransparentVisualsShared,
       expectations=expectations,
       expected_workaround=None,
-      unexpected_workaround='disable_transparent_visuals')
+      unexpected_workaround=None)
 
   def Validate(self, tab, results):
     if sys.platform.startswith('linux'):
@@ -591,9 +591,6 @@ class NoTransparentVisualsShared(GpuProcessSharedPageState):
   def __init__(self, test, finder_options, story_set):
     super(NoTransparentVisualsShared, self).__init__(
       test, finder_options, story_set)
-    options = finder_options.browser_options
-    if sys.platform.startswith('linux'):
-      options.AppendExtraBrowserArgs('--disable_transparent_visuals=1')
 
 class NoTransparentVisualsGpuProcessPage(DriverBugWorkaroundsTestsPage):
   def __init__(self, story_set, expectations):
@@ -602,7 +599,7 @@ class NoTransparentVisualsGpuProcessPage(DriverBugWorkaroundsTestsPage):
       page_set=story_set,
       shared_page_state_class=NoTransparentVisualsShared,
       expectations=expectations,
-      expected_workaround='disable_transparent_visuals',
+      expected_workaround=None,
       unexpected_workaround=None)
 
   def Validate(self, tab, results):

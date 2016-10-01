@@ -110,4 +110,6 @@ struct GpuInfo {
   array<VideoEncodeAcceleratorSupportedProfile>
     video_encode_accelerator_supported_profiles;
   bool jpeg_decode_accelerator_supported;
+  uint64 system_visual;
+  uint64 rgba_visual;
 };

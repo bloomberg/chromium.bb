@@ -152,9 +152,7 @@ static const char* const kSwitchNames[] = {
     switches::kOzonePlatform,
 #endif
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
-    switches::kWindowDepth,
     switches::kX11Display,
-    switches::kX11VisualID,
 #endif
     switches::kGpuTestingGLVendor,
     switches::kGpuTestingGLRenderer,
@@ -800,7 +798,7 @@ void GpuProcessHost::OnInitialized(bool result, const gpu::GPUInfo& gpu_info) {
 
   if (!initialized_)
     GpuDataManagerImpl::GetInstance()->OnGpuProcessInitFailure();
-  else if (!in_process_)
+  else
     GpuDataManagerImpl::GetInstance()->UpdateGpuInfo(gpu_info);
 }
 

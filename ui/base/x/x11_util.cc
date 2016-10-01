@@ -1412,67 +1412,110 @@ void LogErrorEventDescription(XDisplay* dpy,
 }
 
 #if !defined(OS_CHROMEOS)
-void ChooseVisualForWindow(bool enable_transparent_visuals,
-                           Visual** visual,
-                           int* depth) {
-  static Visual* s_default_visual = nullptr;
-  static Visual* s_transparent_visual = nullptr;
-  static int s_default_depth = 0;
-  static int s_transparent_depth = 0;
 
-  if (!s_default_visual || !s_transparent_visual) {
-    XDisplay* display = gfx::GetXDisplay();
-    XAtom NET_WM_CM_S0 = XInternAtom(display, "_NET_WM_CM_S0", False);
-
-    if (enable_transparent_visuals &&
-        XGetSelectionOwner(display, NET_WM_CM_S0) != None) {
-      // Choose the first ARGB8888 visual
-      XVisualInfo visual_template;
-      visual_template.screen = 0;
-
-      int visuals_len;
-      gfx::XScopedPtr<XVisualInfo[]> visual_list(XGetVisualInfo(
-          display, VisualScreenMask, &visual_template, &visuals_len));
-      for (int i = 0; i < visuals_len; ++i) {
-        // Why support only 8888 ARGB? Because it's all that GTK+ supports. In
-        // gdkvisual-x11.cc, they look for this specific visual and use it for
-        // all their alpha channel using needs.
-        const XVisualInfo& info = visual_list[i];
-        if (info.depth == 32 && info.visual->red_mask == 0xff0000 &&
-            info.visual->green_mask == 0x00ff00 &&
-            info.visual->blue_mask == 0x0000ff) {
-          s_transparent_visual = info.visual;
-          s_transparent_depth = info.depth;
-          DCHECK(s_transparent_visual);
-          break;
-        }
-      }
-    }
-
-    XWindowAttributes attribs;
-    Window root = XDefaultRootWindow(display);
-    Status status = XGetWindowAttributes(display, root, &attribs);
-    DCHECK_NE(0, status);
-    s_default_visual = attribs.visual;
-    s_default_depth = attribs.depth;
-
-    if (!s_transparent_visual) {
-      s_transparent_visual = s_default_visual;
-      s_transparent_depth = s_default_depth;
-    }
-  }  // !s_default_visual || !s_transparent_visual
-
-  DCHECK(s_default_visual);
-  DCHECK(s_default_depth > 0);
-  DCHECK(s_transparent_visual);
-  DCHECK(s_transparent_depth > 0);
-
-  if (visual)
-    *visual =
-        enable_transparent_visuals ? s_transparent_visual : s_default_visual;
-  if (depth)
-    *depth = enable_transparent_visuals ? s_transparent_depth : s_default_depth;
+// static
+XVisualManager* XVisualManager::GetInstance() {
+  return base::Singleton<XVisualManager>::get();
 }
+
+XVisualManager::XVisualManager()
+    : display_(gfx::GetXDisplay()),
+      system_visual_id_(0),
+      transparent_visual_id_(0),
+      using_software_rendering_(false),
+      have_gpu_argb_visual_(false) {
+  int visuals_len;
+  XVisualInfo visual_template;
+  visual_template.screen = DefaultScreen(display_);
+  gfx::XScopedPtr<XVisualInfo[]> visual_list(XGetVisualInfo(
+      display_, VisualScreenMask, &visual_template, &visuals_len));
+  for (int i = 0; i < visuals_len; ++i)
+    visuals_[visual_list[i].visualid].reset(new XVisualData(visual_list[i]));
+
+  XAtom NET_WM_CM_S0 = XInternAtom(display_, "_NET_WM_CM_S0", False);
+  using_compositing_wm_ = XGetSelectionOwner(display_, NET_WM_CM_S0) != None;
+
+  // Choose the opaque visual.
+  XWindowAttributes attribs;
+  Window root = XDefaultRootWindow(display_);
+  Status status = XGetWindowAttributes(display_, root, &attribs);
+  DCHECK_NE(0, status);
+  system_visual_id_ = attribs.visual->visualid;
+  DCHECK(system_visual_id_);
+  DCHECK(visuals_.find(system_visual_id_) != visuals_.end());
+
+  // Choose the transparent visual.
+  for (const auto& pair : visuals_) {
+    // Why support only 8888 ARGB? Because it's all that GTK+ supports. In
+    // gdkvisual-x11.cc, they look for this specific visual and use it for
+    // all their alpha channel using needs.
+    const XVisualInfo& info = pair.second->visual_info;
+    if (info.depth == 32 && info.visual->red_mask == 0xff0000 &&
+        info.visual->green_mask == 0x00ff00 &&
+        info.visual->blue_mask == 0x0000ff) {
+      transparent_visual_id_ = info.visualid;
+      break;
+    }
+  }
+  DCHECK(transparent_visual_id_);
+  DCHECK(visuals_.find(transparent_visual_id_) != visuals_.end());
+}
+
+XVisualManager::~XVisualManager() {}
+
+void XVisualManager::ChooseVisualForWindow(bool want_argb_visual,
+                                           Visual** visual,
+                                           int* depth,
+                                           Colormap* colormap,
+                                           bool* using_argb_visual) {
+  bool use_argb = want_argb_visual && using_compositing_wm_ &&
+                  (using_software_rendering_ || have_gpu_argb_visual_);
+  XVisualData& visual_data =
+      *visuals_[use_argb ? transparent_visual_id_ : system_visual_id_];
+  if (visual)
+    *visual = visual_data.visual_info.visual;
+  if (depth)
+    *depth = visual_data.visual_info.depth;
+  if (colormap)
+    *colormap = visual_data.GetColormap();
+  if (using_argb_visual)
+    *using_argb_visual = use_argb;
+}
+
+bool XVisualManager::OnGPUInfoChanged(bool software_rendering,
+                                      VisualID system_visual_id,
+                                      VisualID transparent_visual_id) {
+  // TODO(thomasanderson): Cache these visual IDs as a property of the root
+  // window so that newly created browser processes can get them immediately.
+  if ((system_visual_id && !visuals_.count(system_visual_id)) ||
+      (transparent_visual_id && !visuals_.count(transparent_visual_id)))
+    return false;
+  using_software_rendering_ = software_rendering;
+  have_gpu_argb_visual_ = have_gpu_argb_visual_ || transparent_visual_id;
+  if (system_visual_id)
+    system_visual_id_ = system_visual_id;
+  if (transparent_visual_id)
+    transparent_visual_id_ = transparent_visual_id;
+  return true;
+}
+
+XVisualManager::XVisualData::XVisualData(XVisualInfo visual_info)
+    : visual_info(visual_info), colormap_(CopyFromParent) {}
+
+XVisualManager::XVisualData::~XVisualData() {
+  // Do not XFreeColormap as this would uninstall the colormap even for
+  // non-Chromium clients.
+}
+
+Colormap XVisualManager::XVisualData::GetColormap() {
+  XDisplay* display = gfx::GetXDisplay();
+  if (colormap_ == CopyFromParent) {
+    colormap_ = XCreateColormap(display, DefaultRootWindow(display),
+                                visual_info.visual, AllocNone);
+  }
+  return colormap_;
+}
+
 #endif
 
 // ----------------------------------------------------------------------------

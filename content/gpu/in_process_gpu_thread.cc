@@ -8,8 +8,10 @@
 #include "build/build_config.h"
 #include "content/gpu/gpu_child_thread.h"
 #include "content/gpu/gpu_process.h"
+#include "gpu/config/gpu_info_collector.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
+#include "ui/gl/init/gl_factory.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
@@ -48,10 +50,16 @@ void InProcessGpuThread::Init() {
 
   gpu_process_ = new GpuProcess(io_thread_priority);
 
+  gpu::GPUInfo gpu_info;
+  if (!gl::init::InitializeGLOneOff())
+    VLOG(1) << "gl::init::InitializeGLOneOff failed";
+  else
+    gpu::CollectContextGraphicsInfo(&gpu_info);
+
   // The process object takes ownership of the thread object, so do not
   // save and delete the pointer.
   GpuChildThread* child_thread =
-      new GpuChildThread(params_, gpu_memory_buffer_factory_.get());
+      new GpuChildThread(params_, gpu_info, gpu_memory_buffer_factory_.get());
 
   // Since we are in the browser process, use the thread start time as the
   // process start time.

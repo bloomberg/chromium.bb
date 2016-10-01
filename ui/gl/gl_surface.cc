@@ -130,6 +130,10 @@ void* GLSurface::GetConfig() {
   return NULL;
 }
 
+unsigned long GLSurface::GetCompatibilityKey() {
+  return 0;
+}
+
 GLSurface::Format GLSurface::GetFormat() {
   NOTIMPLEMENTED();
   return SURFACE_DEFAULT;
@@ -318,6 +322,10 @@ void* GLSurfaceAdapter::GetDisplay() {
 
 void* GLSurfaceAdapter::GetConfig() {
   return surface_->GetConfig();
+}
+
+unsigned long GLSurfaceAdapter::GetCompatibilityKey() {
+  return surface_->GetCompatibilityKey();
 }
 
 GLSurface::Format GLSurfaceAdapter::GetFormat() {

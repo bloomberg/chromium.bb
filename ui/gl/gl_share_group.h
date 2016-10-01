@@ -6,6 +6,7 @@
 #define UI_GL_GL_SHARE_GROUP_H_
 
 #include <set>
+#include <unordered_map>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -15,6 +16,7 @@
 namespace gl {
 
 class GLContext;
+class GLSurface;
 
 // A group of GL contexts that share an ID namespace.
 class GL_EXPORT GLShareGroup : public base::RefCounted<GLShareGroup> {
@@ -34,10 +36,9 @@ class GL_EXPORT GLShareGroup : public base::RefCounted<GLShareGroup> {
   // or NULL if there are no initialized contexts in the share group.
   GLContext* GetContext();
 
-  // Sets and returns the unique shared GL context. Used for context
-  // virtualization.
-  void SetSharedContext(GLContext* context);
-  GLContext* GetSharedContext();
+  // Sets and returns the shared GL context. Used for context virtualization.
+  void SetSharedContext(GLSurface* compatible, GLContext* context);
+  GLContext* GetSharedContext(GLSurface* compatible);
 
 #if defined(OS_MACOSX)
   // Sets and returns the ID of the renderer that all contexts in this share
@@ -56,7 +57,7 @@ class GL_EXPORT GLShareGroup : public base::RefCounted<GLShareGroup> {
   typedef std::set<GLContext*> ContextSet;
   ContextSet contexts_;
 
-  GLContext* shared_context_;
+  std::unordered_map<unsigned long, GLContext*> shared_contexts_;
 
 #if defined(OS_MACOSX)
   int renderer_id_;

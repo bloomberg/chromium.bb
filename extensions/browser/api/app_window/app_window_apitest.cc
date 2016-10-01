@@ -24,10 +24,6 @@
 #include "ui/base/win/shell.h"
 #endif
 
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
-#include "ui/gfx/x/x11_switches.h"
-#endif
-
 namespace extensions {
 
 namespace {
@@ -151,13 +147,6 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   }
 #endif  // OS_WIN
 #endif  // USE_AURA && (OS_CHROMEOS || !OS_LINUX)
-
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
-  if (base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kWindowDepth) == "32") {
-    test_dir = kHasAlphaDir;
-  }
-#endif  // USE_X11 && !OS_CHROMEOS
 
   EXPECT_TRUE(RunPlatformAppTest(test_dir)) << message_;
 }

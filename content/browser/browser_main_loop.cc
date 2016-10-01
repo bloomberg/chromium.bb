@@ -71,6 +71,7 @@
 #include "content/common/mojo/mojo_shell_connection_impl.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/tracing_controller.h"
 #include "content/public/common/content_client.h"
@@ -184,7 +185,6 @@
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "ui/base/x/x11_util_internal.h"  // nogncheck
 #include "ui/gfx/x/x11_connection.h"  // nogncheck
-#include "ui/gfx/x/x11_switches.h"  // nogncheck
 #include "ui/gfx/x/x11_types.h"  // nogncheck
 #endif
 
@@ -364,6 +364,44 @@ base::win::MemoryPressureMonitor* CreateWinMemoryPressureMonitor(
 #endif  // defined(OS_WIN)
 
 }  // namespace
+
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
+namespace internal {
+
+// Forwards GPUInfo updates to ui::XVisualManager
+class GpuDataManagerVisualProxy : public GpuDataManagerObserver {
+ public:
+  explicit GpuDataManagerVisualProxy(GpuDataManagerImpl* gpu_data_manager)
+      : gpu_data_manager_(gpu_data_manager) {
+    gpu_data_manager_->AddObserver(this);
+  }
+
+  ~GpuDataManagerVisualProxy() override {
+    gpu_data_manager_->RemoveObserver(this);
+  }
+
+  void OnGpuInfoUpdate() override {
+    gpu::GPUInfo gpu_info = gpu_data_manager_->GetGPUInfo();
+    if (!ui::XVisualManager::GetInstance()->OnGPUInfoChanged(
+            gpu_info.software_rendering ||
+                !gpu_data_manager_->GpuAccessAllowed(nullptr),
+            gpu_info.system_visual, gpu_info.rgba_visual)) {
+      // The GPU process sent back bad visuals, which should never happen.
+      auto* gpu_process_host = GpuProcessHost::Get(
+          GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED, false);
+      if (gpu_process_host)
+        gpu_process_host->ForceShutdown();
+    }
+  }
+
+ private:
+  GpuDataManagerImpl* gpu_data_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(GpuDataManagerVisualProxy);
+};
+
+}  // namespace internal
+#endif
 
 // The currently-running BrowserMainLoop.  There can be one or zero.
 BrowserMainLoop* g_current_browser_main_loop = NULL;
@@ -746,30 +784,12 @@ int BrowserMainLoop::PreCreateThreads() {
   // It's unsafe to append the gpu command line switches to the global
   // CommandLine::ForCurrentProcess object after threads are created.
   // 2) Must be after parts_->PreCreateThreads to pick up chrome://flags.
-  GpuDataManagerImpl::GetInstance()->Initialize();
+  GpuDataManagerImpl* gpu_data_manager = GpuDataManagerImpl::GetInstance();
+  gpu_data_manager->Initialize();
 
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
-  // PreCreateThreads is called before CreateStartupTasks which starts the gpu
-  // process.
-  bool enable_transparent_visuals =
-      !GpuDataManagerImpl::GetInstance()->IsDriverBugWorkaroundActive(
-          gpu::DISABLE_TRANSPARENT_VISUALS);
-
-  // Prevent this flag to be turned off later since it is only used here.
-  if (!enable_transparent_visuals &&
-      !GpuDataManagerImpl::GetInstance()->IsCompleteGpuInfoAvailable()) {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        "disable_transparent_visuals");
-  }
-
-  Visual* visual = NULL;
-  int depth = 0;
-  ui::ChooseVisualForWindow(enable_transparent_visuals, &visual, &depth);
-  DCHECK(depth > 0);
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kWindowDepth, base::IntToString(depth));
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kX11VisualID, base::UintToString(visual->visualid));
+  gpu_data_manager_visual_proxy_.reset(
+      new internal::GpuDataManagerVisualProxy(gpu_data_manager));
 #endif
 
 #if !defined(GOOGLE_CHROME_BUILD) || defined(OS_ANDROID)

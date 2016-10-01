@@ -284,6 +284,20 @@ struct StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo> {
   static bool jpeg_decode_accelerator_supported(const gpu::GPUInfo& input) {
     return input.jpeg_decode_accelerator_supported;
   }
+
+  static uint64_t system_visual(const gpu::GPUInfo& input) {
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
+    return input.system_visual;
+#endif
+    return 0;
+  }
+
+  static uint64_t rgba_visual(const gpu::GPUInfo& input) {
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
+    return input.rgba_visual;
+#endif
+    return 0;
+  }
 };
 
 }  // namespace mojo

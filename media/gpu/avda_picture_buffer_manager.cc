@@ -139,7 +139,8 @@ gl::ScopedJavaSurface AVDAPictureBufferManager::Initialize(
   bool using_virtual_context = false;
   if (gl::GLContext* context = gl::GLContext::GetCurrent()) {
     if (gl::GLShareGroup* share_group = context->share_group())
-      using_virtual_context = !!share_group->GetSharedContext();
+      using_virtual_context =
+          !!share_group->GetSharedContext(gl::GLSurface::GetCurrent());
   }
   UMA_HISTOGRAM_BOOLEAN("Media.AVDA.VirtualContext", using_virtual_context);
 

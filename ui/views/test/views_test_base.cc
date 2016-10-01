@@ -23,8 +23,9 @@ namespace {
 
 bool InitializeVisuals() {
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
-  static int depth = 0;
-  static bool has_compositing_manager = false;
+  bool has_compositing_manager = false;
+  int depth = 0;
+  bool using_argb_visual;
 
   if (depth > 0)
     return has_compositing_manager;
@@ -32,12 +33,13 @@ bool InitializeVisuals() {
   // testing/xvfb.py runs xvfb and xcompmgr.
   std::unique_ptr<base::Environment> env(base::Environment::Create());
   has_compositing_manager = env->HasVar("_CHROMIUM_INSIDE_XVFB");
-  ui::ChooseVisualForWindow(has_compositing_manager, NULL, &depth);
+  ui::XVisualManager::GetInstance()->ChooseVisualForWindow(
+      has_compositing_manager, nullptr, &depth, nullptr, &using_argb_visual);
 
-  if (has_compositing_manager)
+  if (using_argb_visual)
     EXPECT_EQ(32, depth);
 
-  return has_compositing_manager;
+  return using_argb_visual;
 #else
   return false;
 #endif

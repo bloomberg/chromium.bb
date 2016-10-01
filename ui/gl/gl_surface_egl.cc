@@ -31,16 +31,16 @@
 #include "ui/gl/scoped_make_current.h"
 #include "ui/gl/sync_control_vsync_provider.h"
 
-#if defined(OS_ANDROID)
-#include <android/native_window_jni.h>
-#endif
-
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
 extern "C" {
 #include <X11/Xlib.h>
 #define Status int
 }
-#include "ui/gfx/x/x11_switches.h"  // nogncheck
+#include "ui/base/x/x11_util_internal.h"  // nogncheck
+#endif
+
+#if defined(OS_ANDROID)
+#include <android/native_window_jni.h>
 #endif
 
 #if !defined(EGL_FIXED_SIZE_ANGLE)
@@ -177,14 +177,11 @@ EGLDisplay GetPlatformANGLEDisplay(EGLNativeDisplayType native_display,
   }
 
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
-  std::string visualid_str =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kX11VisualID);
-  unsigned int visualid = 0;
-  bool succeed = base::StringToUint(visualid_str, &visualid);
-  DCHECK(succeed);
+  Visual* visual;
+  ui::XVisualManager::GetInstance()->ChooseVisualForWindow(
+      true, &visual, nullptr, nullptr, nullptr);
   display_attribs.push_back(EGL_X11_VISUAL_ID_ANGLE);
-  display_attribs.push_back((EGLint)visualid);
+  display_attribs.push_back(static_cast<EGLint>(XVisualIDFromVisual(visual)));
 #endif
 
   display_attribs.push_back(EGL_NONE);
@@ -270,17 +267,9 @@ EGLConfig ChooseConfig(GLSurface::Format format) {
   EGLint alpha_size = 8;
 
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kWindowDepth)) {
-    std::string depth =
-        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kWindowDepth);
-
-    bool succeed = base::StringToInt(depth, &buffer_size);
-    DCHECK(succeed);
-
-    alpha_size = buffer_size == 32 ? 8 : 0;
-  }
+  ui::XVisualManager::GetInstance()->ChooseVisualForWindow(
+      true, nullptr, &buffer_size, nullptr, nullptr);
+  alpha_size = buffer_size == 32 ? 8 : 0;
 #endif
 
   EGLint surface_type = (format == GLSurface::SURFACE_SURFACELESS)

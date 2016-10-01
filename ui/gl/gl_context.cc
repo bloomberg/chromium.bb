@@ -51,7 +51,7 @@ GLContext::GLContext(GLShareGroup* share_group)
       swap_interval_(1),
       force_swap_interval_zero_(false) {
   if (!share_group_.get())
-    share_group_ = new GLShareGroup;
+    share_group_ = new gl::GLShareGroup();
 
   share_group_->AddContext(this);
 }

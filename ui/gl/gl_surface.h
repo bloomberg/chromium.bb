@@ -160,6 +160,10 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // Get the platfrom specific configuration for this surface, if available.
   virtual void* GetConfig();
 
+  // Get the key corresponding to the set of GLSurfaces that can be made current
+  // with this GLSurface.
+  virtual unsigned long GetCompatibilityKey();
+
   // Get the GL pixel format of the surface, if available.
   virtual GLSurface::Format GetFormat();
 
@@ -267,6 +271,7 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   void* GetShareHandle() override;
   void* GetDisplay() override;
   void* GetConfig() override;
+  unsigned long GetCompatibilityKey() override;
   GLSurface::Format GetFormat() override;
   gfx::VSyncProvider* GetVSyncProvider() override;
   bool ScheduleOverlayPlane(int z_order,

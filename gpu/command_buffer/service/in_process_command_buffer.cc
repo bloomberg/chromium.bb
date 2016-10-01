@@ -166,7 +166,7 @@ InProcessCommandBuffer::Service::gpu_driver_bug_workarounds() {
 
 scoped_refptr<gl::GLShareGroup> InProcessCommandBuffer::Service::share_group() {
   if (!share_group_.get())
-    share_group_ = new gl::GLShareGroup;
+    share_group_ = new gl::GLShareGroup();
   return share_group_;
 }
 
@@ -362,11 +362,11 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
           ->feature_info()
           ->workarounds()
           .use_virtualized_gl_contexts) {
-    context_ = gl_share_group_->GetSharedContext();
+    context_ = gl_share_group_->GetSharedContext(surface_.get());
     if (!context_.get()) {
       context_ = gl::init::CreateGLContext(
           gl_share_group_.get(), surface_.get(), params.attribs.gpu_preference);
-      gl_share_group_->SetSharedContext(context_.get());
+      gl_share_group_->SetSharedContext(surface_.get(), context_.get());
     }
 
     context_ = new GLContextVirtual(

@@ -535,9 +535,9 @@ bool GpuCommandBufferStub::Initialize(
   scoped_refptr<gl::GLContext> context;
   gl::GLShareGroup* gl_share_group = channel_->share_group();
   if (use_virtualized_gl_context_ && gl_share_group) {
-    context = gl_share_group->GetSharedContext();
+    context = gl_share_group->GetSharedContext(surface_.get());
     if (!context.get()) {
-      context = gl::init::CreateGLContext(gl_share_group, default_surface,
+      context = gl::init::CreateGLContext(gl_share_group, surface_.get(),
                                           init_params.attribs.gpu_preference);
       if (!context.get()) {
         DLOG(ERROR) << "Failed to create shared context for virtualization.";
@@ -546,7 +546,7 @@ bool GpuCommandBufferStub::Initialize(
       // Ensure that context creation did not lose track of the intended
       // gl_share_group.
       DCHECK(context->share_group() == gl_share_group);
-      gl_share_group->SetSharedContext(context.get());
+      gl_share_group->SetSharedContext(surface_.get(), context.get());
     }
     // This should be either:
     // (1) a non-virtual GL context, or

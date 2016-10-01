@@ -163,6 +163,7 @@ GpuChildThread::GpuChildThread(
 
 GpuChildThread::GpuChildThread(
     const InProcessChildThreadParams& params,
+    const gpu::GPUInfo& gpu_info,
     gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory)
     : ChildThreadImpl(ChildThreadImpl::Options::Builder()
                           .InBrowserProcess(params)
@@ -172,6 +173,7 @@ GpuChildThread::GpuChildThread(
                           .ConnectToBrowser(true)
                           .Build()),
       dead_on_arrival_(false),
+      gpu_info_(gpu_info),
       in_browser_process_(true),
       gpu_memory_buffer_factory_(gpu_memory_buffer_factory) {
 #if defined(OS_WIN)
@@ -181,9 +183,6 @@ GpuChildThread::GpuChildThread(
              switches::kSingleProcess) ||
          base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kInProcessGPU));
-
-  if (!gl::init::InitializeGLOneOff())
-    VLOG(1) << "gl::init::InitializeGLOneOff failed";
 
   g_thread_safe_sender.Get() = thread_safe_sender();
 }

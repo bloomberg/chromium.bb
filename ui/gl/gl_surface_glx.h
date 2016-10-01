@@ -46,6 +46,8 @@ class GL_EXPORT GLSurfaceGLX : public GLSurface {
   // a GLX drawable.
   void* GetConfig() override = 0;
 
+  unsigned long GetCompatibilityKey() override = 0;
+
  protected:
   ~GLSurfaceGLX() override;
 
@@ -70,8 +72,10 @@ class GL_EXPORT NativeViewGLSurfaceGLX : public GLSurfaceGLX {
   void* GetHandle() override;
   bool SupportsPostSubBuffer() override;
   void* GetConfig() override;
+  unsigned long GetCompatibilityKey() override;
   gfx::SwapResult PostSubBuffer(int x, int y, int width, int height) override;
   gfx::VSyncProvider* GetVSyncProvider() override;
+  VisualID GetVisualID() const { return visual_id_; }
 
  protected:
   ~NativeViewGLSurfaceGLX() override;
@@ -103,6 +107,7 @@ class GL_EXPORT NativeViewGLSurfaceGLX : public GLSurfaceGLX {
 
   GLXFBConfig config_;
   gfx::Size size_;
+  VisualID visual_id_;
 
   std::unique_ptr<gfx::VSyncProvider> vsync_provider_;
 
@@ -122,6 +127,7 @@ class GL_EXPORT UnmappedNativeViewGLSurfaceGLX : public GLSurfaceGLX {
   gfx::Size GetSize() override;
   void* GetHandle() override;
   void* GetConfig() override;
+  unsigned long GetCompatibilityKey() override;
 
  protected:
   ~UnmappedNativeViewGLSurfaceGLX() override;

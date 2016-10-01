@@ -186,6 +186,8 @@ component("gl") {
       "gl_surface_osmesa_x11.h",
     ]
 
+    deps += [ "//ui/base/x" ]
+
     data_deps = [
       "//third_party/angle:libEGL",
       "//third_party/angle:libGLESv2",
@@ -203,6 +205,8 @@ component("gl") {
       "gl_image_glx.h",
       "gl_surface_glx.cc",
       "gl_surface_glx.h",
+      "gl_visual_picker_glx.cc",
+      "gl_visual_picker_glx.h",
     ]
 
     configs += [

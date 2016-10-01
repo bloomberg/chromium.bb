@@ -18,8 +18,18 @@ extern "C" {
 #include <X11/Xlib.h>
 }
 
+#include <memory>
+#include <unordered_map>
+
+#include "base/macros.h"
 #include "build/build_config.h"
 #include "ui/base/x/ui_base_x_export.h"
+#include "ui/gfx/x/x11_types.h"
+
+namespace base {
+template <typename T>
+struct DefaultSingletonTraits;
+}
 
 namespace ui {
 
@@ -47,13 +57,59 @@ UI_BASE_X_EXPORT void LogErrorEventDescription(Display* dpy,
 
 // --------------------------------------------------------------------------
 // Selects a visual with a preference for alpha support on compositing window
-// managers. The caller must compare depth to 32 to know if the returned visual
-// supports transparency. NULL parameters are allowed to install or query the
-// cached visual and depth.
+// managers.
 #if !defined(OS_CHROMEOS)
-UI_BASE_X_EXPORT void ChooseVisualForWindow(bool enable_transparent_visuals,
-                                            Visual** visual,
-                                            int* depth);
+class UI_BASE_X_EXPORT XVisualManager {
+ public:
+  static XVisualManager* GetInstance();
+
+  void ChooseVisualForWindow(bool want_argb_visual,
+                             Visual** visual,
+                             int* depth,
+                             Colormap* colormap,
+                             bool* using_argb_visual);
+
+  // Called by GpuDataManagerImplPrivate when GPUInfo becomes available.  It is
+  // necessary for the GPU process to find out which visuals are best for GL
+  // because we don't want to load GL in the browser process.  Returns false iff
+  // |default_visual_id| or |transparent_visual_id| are invalid.
+  bool OnGPUInfoChanged(bool software_rendering,
+                        VisualID default_visual_id,
+                        VisualID transparent_visual_id);
+
+  ~XVisualManager();
+
+ private:
+  friend struct base::DefaultSingletonTraits<XVisualManager>;
+
+  class XVisualData {
+   public:
+    explicit XVisualData(XVisualInfo visual_info);
+    ~XVisualData();
+
+    Colormap GetColormap();
+
+    const XVisualInfo visual_info;
+
+   private:
+    Colormap colormap_;
+  };
+
+  XVisualManager();
+
+  std::unordered_map<VisualID, std::unique_ptr<XVisualData>> visuals_;
+
+  XDisplay* display_;
+
+  VisualID system_visual_id_;
+  VisualID transparent_visual_id_;
+
+  bool using_compositing_wm_;
+  bool using_software_rendering_;
+  bool have_gpu_argb_visual_;
+
+  DISALLOW_COPY_AND_ASSIGN(XVisualManager);
+};
 #endif
 
 }  // namespace ui

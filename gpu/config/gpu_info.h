@@ -20,6 +20,10 @@
 #include "gpu/gpu_export.h"
 #include "ui/gfx/geometry/size.h"
 
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
+typedef unsigned long VisualID;
+#endif
+
 namespace gpu {
 
 // Result for the various Collect*Info* functions below.
@@ -235,6 +239,11 @@ struct GPU_EXPORT GPUInfo {
   VideoEncodeAcceleratorSupportedProfiles
       video_encode_accelerator_supported_profiles;
   bool jpeg_decode_accelerator_supported;
+
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
+  VisualID system_visual;
+  VisualID rgba_visual;
+#endif
 
   // Note: when adding new members, please remember to update EnumerateFields
   // in gpu_info.cc.
