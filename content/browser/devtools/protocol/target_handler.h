@@ -44,6 +44,7 @@ class TargetHandler : public DevToolsAgentHostClient,
   Response ActivateTarget(const std::string& target_id);
 
  private:
+  void UpdateServiceWorkers(bool waiting_for_debugger);
   void AttachToTargetInternal(DevToolsAgentHost* host,
                               bool waiting_for_debugger);
   void DetachFromTargetInternal(DevToolsAgentHost* host);
@@ -63,6 +64,7 @@ class TargetHandler : public DevToolsAgentHostClient,
 
   std::unique_ptr<Client> client_;
   bool enabled_;
+  bool wait_for_debugger_on_start_;
   RenderFrameHostImpl* render_frame_host_;
   std::map<std::string, scoped_refptr<DevToolsAgentHost>> attached_hosts_;
   std::set<GURL> frame_urls_;

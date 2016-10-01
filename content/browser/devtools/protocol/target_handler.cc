@@ -87,6 +87,7 @@ ServiceWorkerDevToolsAgentHost::Map GetMatchingServiceWorkers(
 
 TargetHandler::TargetHandler()
     : enabled_(false),
+      wait_for_debugger_on_start_(false),
       render_frame_host_(nullptr) {
 }
 
@@ -107,6 +108,10 @@ void TargetHandler::Detached() {
 }
 
 void TargetHandler::UpdateServiceWorkers() {
+  UpdateServiceWorkers(false);
+}
+
+void TargetHandler::UpdateServiceWorkers(bool waiting_for_debugger) {
   if (!enabled_)
     return;
 
@@ -135,7 +140,7 @@ void TargetHandler::UpdateServiceWorkers() {
 
   for (const auto& pair : new_hosts) {
     if (old_hosts.find(pair.first) == old_hosts.end())
-      AttachToTargetInternal(pair.second.get(), true);
+      AttachToTargetInternal(pair.second.get(), waiting_for_debugger);
   }
 }
 
@@ -177,6 +182,7 @@ Response TargetHandler::Disable() {
   if (!enabled_)
     return Response::OK();
   enabled_ = false;
+  wait_for_debugger_on_start_ = false;
   ServiceWorkerDevToolsManager::GetInstance()->RemoveObserver(this);
   for (const auto& pair : attached_hosts_)
     pair.second->DetachClient(this);
@@ -185,7 +191,7 @@ Response TargetHandler::Disable() {
 }
 
 Response TargetHandler::SetWaitForDebuggerOnStart(bool value) {
-  // TODO(dgozman): implement this.
+  wait_for_debugger_on_start_ = value;
   return Response::OK();
 }
 
@@ -255,7 +261,7 @@ void TargetHandler::WorkerCreated(
     browser_context = render_frame_host_->GetProcess()->GetBrowserContext();
   auto hosts = GetMatchingServiceWorkers(browser_context, frame_urls_);
   if (hosts.find(host->GetId()) != hosts.end() && !host->IsAttached() &&
-      !host->IsPausedForDebugOnStart()) {
+      !host->IsPausedForDebugOnStart() && wait_for_debugger_on_start_) {
     host->PauseForDebugOnStart();
   }
 }
@@ -268,7 +274,7 @@ void TargetHandler::WorkerReadyForInspection(
     // be opened in ServiceWorkerDevToolsManager::WorkerReadyForInspection.
     return;
   }
-  UpdateServiceWorkers();
+  UpdateServiceWorkers(host->IsPausedForDebugOnStart());
 }
 
 void TargetHandler::WorkerVersionInstalled(
