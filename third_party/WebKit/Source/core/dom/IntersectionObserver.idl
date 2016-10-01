@@ -2,22 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(szager): Update the doc link when the spec has an official home; for now it's:
-//   https://github.com/WICG/IntersectionObserver
+// https://wicg.github.io/IntersectionObserver/#intersection-observer-callback
 
 callback IntersectionObserverCallback = void (sequence<IntersectionObserverEntry> entries, IntersectionObserver observer);
 
+// https://wicg.github.io/IntersectionObserver/#intersection-observer-interface
+
 [
-    CustomConstructor(IntersectionObserverCallback callback, IntersectionObserverInit options),
+    CustomConstructor(IntersectionObserverCallback callback, optional IntersectionObserverInit options),
     Custom=VisitDOMWrapper,
     MeasureAs=IntersectionObserver_Constructor,
     RuntimeEnabled=IntersectionObserver,
 ] interface IntersectionObserver {
+    readonly attribute Element? root;
+    readonly attribute DOMString rootMargin;
+    // https://github.com/WICG/IntersectionObserver/issues/114
+    readonly attribute FrozenArray<double> thresholds;
     [RaisesException] void observe(Element target);
     [RaisesException] void unobserve(Element target);
     [RaisesException] void disconnect();
     [RaisesException] sequence<IntersectionObserverEntry> takeRecords();
-    readonly attribute Element? root;
-    readonly attribute DOMString rootMargin;
-    readonly attribute FrozenArray<double> thresholds;
 };

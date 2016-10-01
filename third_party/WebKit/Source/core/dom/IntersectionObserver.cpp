@@ -107,13 +107,13 @@ void parseRootMargin(String rootMarginParameter,
   }
 }
 
-void parseThresholds(const DoubleOrDoubleArray& thresholdParameter,
+void parseThresholds(const DoubleOrDoubleSequence& thresholdParameter,
                      Vector<float>& thresholds,
                      ExceptionState& exceptionState) {
   if (thresholdParameter.isDouble()) {
     thresholds.append(static_cast<float>(thresholdParameter.getAsDouble()));
   } else {
-    for (auto thresholdValue : thresholdParameter.getAsDoubleArray())
+    for (auto thresholdValue : thresholdParameter.getAsDoubleSequence())
       thresholds.append(static_cast<float>(thresholdValue));
   }
 
@@ -159,16 +159,12 @@ IntersectionObserver* IntersectionObserver::create(
   }
 
   Vector<Length> rootMargin;
-  if (observerInit.hasRootMargin())
-    parseRootMargin(observerInit.rootMargin(), rootMargin, exceptionState);
+  parseRootMargin(observerInit.rootMargin(), rootMargin, exceptionState);
   if (exceptionState.hadException())
     return nullptr;
 
   Vector<float> thresholds;
-  if (observerInit.hasThreshold())
-    parseThresholds(observerInit.threshold(), thresholds, exceptionState);
-  else
-    thresholds.append(0);
+  parseThresholds(observerInit.threshold(), thresholds, exceptionState);
   if (exceptionState.hadException())
     return nullptr;
 
