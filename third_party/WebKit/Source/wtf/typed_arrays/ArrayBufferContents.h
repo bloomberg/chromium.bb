@@ -58,10 +58,10 @@ class WTF_EXPORT ArrayBufferContents {
                       ArrayBufferContents::InitializationPolicy);
 
   // Use with care. data must be allocated with allocateMemory.
-  // ArrayBufferContents will take ownership of the data and free it (using freeMemory)
-  // upon destruction.
-  // This constructor will not call observer->StartObserving(), so it is a responsibility
-  // of the caller to make sure JS knows about external memory.
+  // ArrayBufferContents will take ownership of the data and free it (using
+  // freeMemory) upon destruction.
+  // This constructor will not call observer->StartObserving(), so it is a
+  // responsibility of the caller to make sure JS knows about external memory.
   ArrayBufferContents(void* data, unsigned sizeInBytes, SharingType isShared);
 
   ~ArrayBufferContents();

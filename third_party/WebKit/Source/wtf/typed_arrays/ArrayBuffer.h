@@ -49,8 +49,8 @@ class WTF_EXPORT ArrayBuffer : public RefCounted<ArrayBuffer> {
   static inline PassRefPtr<ArrayBuffer> createOrNull(unsigned numElements,
                                                      unsigned elementByteSize);
 
-  // Only for use by XMLHttpRequest::responseArrayBuffer and Internals::serializeObject
-  // (through DOMArrayBuffer::createUninitialized).
+  // Only for use by XMLHttpRequest::responseArrayBuffer and
+  // Internals::serializeObject (through DOMArrayBuffer::createUninitialized).
   static inline PassRefPtr<ArrayBuffer> createUninitialized(
       unsigned numElements,
       unsigned elementByteSize);
@@ -121,7 +121,8 @@ PassRefPtr<ArrayBuffer> ArrayBuffer::create(unsigned numElements,
 }
 
 PassRefPtr<ArrayBuffer> ArrayBuffer::create(ArrayBuffer* other) {
-  // TODO(binji): support creating a SharedArrayBuffer by copying another ArrayBuffer?
+  // TODO(binji): support creating a SharedArrayBuffer by copying another
+  // ArrayBuffer?
   ASSERT(!other->isShared());
   return ArrayBuffer::create(other->data(), other->byteLength());
 }
