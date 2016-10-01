@@ -1279,7 +1279,10 @@ int LayoutTableSection::paginationStrutForRow(LayoutTableRow* row,
     // completely. No point in leaving a page completely blank.
     return 0;
   }
-  return paginationStrut.toInt();
+  // Table layout parts only work on integers, so we have to round. Round up, to
+  // make sure that no fraction ever gets left behind in the previous
+  // fragmentainer.
+  return paginationStrut.ceil();
 }
 
 void LayoutTableSection::computeOverflowFromCells() {
