@@ -2598,8 +2598,6 @@ void RenderProcessHostImpl::RegisterProcessHostForSite(
 }
 
 void RenderProcessHostImpl::CreateSharedRendererHistogramAllocator() {
-  DCHECK(!metrics_allocator_);
-
   // Create a persistent memory segment for renderer histograms only if
   // they're active in the browser.
   if (!base::GlobalHistogramAllocator::Get())
@@ -2610,12 +2608,17 @@ void RenderProcessHostImpl::CreateSharedRendererHistogramAllocator() {
   if (destination == base::kNullProcessHandle)
     return;
 
-  // TODO(bcwhite): Update this with the correct memory size.
-  std::unique_ptr<base::SharedMemory> shm(new base::SharedMemory());
-  if (!shm->CreateAndMapAnonymous(2 << 20))  // 2 MiB
-    return;
-  metrics_allocator_.reset(new base::SharedPersistentMemoryAllocator(
-      std::move(shm), GetID(), "RendererMetrics", /*readonly=*/false));
+  // If a renderer crashes before completing startup and gets restarted, this
+  // method will get called a second time meaning that a metrics-allocator
+  // already exists. Don't recreate it.
+  if (!metrics_allocator_) {
+    // TODO(bcwhite): Update this with the correct memory size.
+    std::unique_ptr<base::SharedMemory> shm(new base::SharedMemory());
+    if (!shm->CreateAndMapAnonymous(2 << 20))  // 2 MiB
+      return;
+    metrics_allocator_.reset(new base::SharedPersistentMemoryAllocator(
+        std::move(shm), GetID(), "RendererMetrics", /*readonly=*/false));
+  }
 
   base::SharedMemoryHandle shm_handle;
   metrics_allocator_->shared_memory()->ShareToProcess(destination, &shm_handle);
