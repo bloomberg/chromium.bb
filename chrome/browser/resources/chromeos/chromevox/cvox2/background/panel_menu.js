@@ -9,8 +9,10 @@
 goog.provide('PanelMenu');
 goog.provide('PanelNodeMenu');
 
+goog.require('Output');
 goog.require('PanelMenuItem');
 goog.require('constants');
+goog.require('cursors.Range');
 
 /**
  * @param {string} menuMsg The msg id of the menu.
@@ -241,7 +243,11 @@ PanelNodeMenu = function(menuMsg, node, pred) {
           selectNext = true;
 
         if (pred(n)) {
-          this.addMenuItem(n.name, '', function() {
+          var output = new Output();
+          var range = cursors.Range.fromNode(n);
+          output.withSpeech(range, range, Output.EventType.NAVIGATE);
+          var label = output.toString();
+          this.addMenuItem(label, '', function() {
             chrome.extension.getBackgroundPage().ChromeVoxState
                 .instance['navigateToRange'](cursors.Range.fromNode(n));
           });

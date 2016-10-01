@@ -449,9 +449,11 @@ Output.RULES = {
     },
     heading: {
       enter: '!relativePitch(hierarchicalLevel) ' +
-          '$nameFromNode= @tag_h+$hierarchicalLevel',
-      speak: '!relativePitch(hierarchicalLevel)' +
-          ' $nameOrDescendants= @tag_h+$hierarchicalLevel $state'
+          '$nameFromNode= ' +
+          '$if($hierarchicalLevel, @tag_h+$hierarchicalLevel, $role) $state',
+      speak: '!relativePitch(hierarchicalLevel) ' +
+          '$nameOrDescendants= ' +
+          '$if($hierarchicalLevel, @tag_h+$hierarchicalLevel, $role) $state'
     },
     inlineTextBox: {
       speak: '$name='
@@ -693,28 +695,6 @@ Output.forceModeForNextSpeechUtterance = function(mode) {
 };
 
 Output.prototype = {
-  /**
-   * Gets the spoken output with separator '|'.
-   * @return {!Spannable}
-   */
-  get speechOutputForTest() {
-    return this.speechBuffer_.reduce(function(prev, cur) {
-      if (prev === null)
-        return cur;
-      prev.append('|');
-      prev.append(cur);
-      return prev;
-    }, null);
-  },
-
-  /**
-   * Gets the output buffer for braille.
-   * @return {!Spannable}
-   */
-  get brailleOutputForTest() {
-    return this.createBrailleOutput_();
-  },
-
   /**
    * @return {boolean} True if there's any speech that will be output.
    */
@@ -1696,6 +1676,41 @@ Output.prototype = {
       }
     }
     return null;
+  },
+
+  /**
+   * Gets a human friendly string with the contents of output.
+   * @return {string}
+   */
+  toString: function() {
+    return this.speechBuffer_.reduce(function(prev, cur) {
+      if (prev === null)
+        return cur.toString();
+      prev += ' ' + cur.toString();
+      return prev;
+    }, null);
+  },
+
+  /**
+   * Gets the spoken output with separator '|'.
+   * @return {!Spannable}
+   */
+  get speechOutputForTest() {
+    return this.speechBuffer_.reduce(function(prev, cur) {
+      if (prev === null)
+        return cur;
+      prev.append('|');
+      prev.append(cur);
+      return prev;
+    }, null);
+  },
+
+  /**
+   * Gets the output buffer for braille.
+   * @return {!Spannable}
+   */
+  get brailleOutputForTest() {
+    return this.createBrailleOutput_();
   }
 };
 
