@@ -774,7 +774,6 @@ void MediaControls::computeWhichControlsFit() {
   std::list<MediaControlElement*> overflowElements;
   MediaControlElement* firstDisplacedElement = nullptr;
   // For each control that fits, enable it in order of decreasing priority.
-  bool droppedCastButton = false;
   for (MediaControlElement* element : elements) {
     if (!element)
       continue;
@@ -788,10 +787,6 @@ void MediaControls::computeWhichControlsFit() {
         usedWidth += width;
       } else {
         element->setDoesFit(false);
-        // TODO(mlamouri): we should probably no longer mark the cast
-        // button as dropped, it should appear in the overflow menu.
-        if (element == m_castButton.get())
-          droppedCastButton = true;
         element->shouldShowButtonInOverflowMenu(true);
         if (element->hasOverflowButton())
           overflowElements.push_front(element);
@@ -821,15 +816,6 @@ void MediaControls::computeWhichControlsFit() {
   } else if (overflowElements.size() == 1) {
     m_overflowMenu->setIsWanted(false);
     overflowElements.front()->setDoesFit(true);
-  }
-
-  // Special case for cast: if we want a cast button but dropped it, then
-  // show the overlay cast button instead.
-  if (m_castButton->isWanted()) {
-    if (droppedCastButton)
-      m_overlayCastButton->tryShowOverlay();
-    else
-      m_overlayCastButton->setIsWanted(false);
   }
 }
 

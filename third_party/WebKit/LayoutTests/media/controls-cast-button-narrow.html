@@ -16,16 +16,12 @@ async_test(function(t) {
 
         // Video should not have a cast button since the video is too narrow
         var button = castButton(video);
-        assert_equals(button.style.display, "none", "button should not be visible with no cast devices");
+        assert_equals(button.style.display, "none", "button should not be visible");
 
-        // It should, however, have an overlay cast button instead
+        // It should not have an overlay cast button too. Instead, the button
+        // should appear in the overflow menu. Tested somewhere else.
         button = overlayCastButton(video);
-        var rect = button.getBoundingClientRect();
-        var videoRect = video.getBoundingClientRect();
-        assert_greater_than_equal(rect.top, videoRect.top, "button should be at top left of video");
-        assert_greater_than_equal(rect.left, videoRect.left, "button should be at top left of video");
-        assert_less_than_equal(rect.bottom, videoRect.top + videoRect.height / 2, "button should be at top left of video");
-        assert_less_than_equal(rect.right, videoRect.left + videoRect.width / 2, "button should be at top left of video");
+        assert_equals(button.style.display, "none", "button should not be visible");
     });
 
     function castButton(element) {
@@ -38,7 +34,8 @@ async_test(function(t) {
 
     function overlayCastButton(element) {
         var controlID = "-internal-media-controls-overlay-cast-button";
-        var button = mediaControlsElement(internals.shadowRoot(element).firstChild, controlID);
+        return mediaControlsElement(internals.shadowRoot(element).firstChild, controlID);
+        return button
         if (!button)
             throw "Failed to find cast button";
         return button;
