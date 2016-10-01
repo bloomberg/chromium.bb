@@ -113,8 +113,8 @@ TEST(StringBuilderTest, Append) {
   // Test appending UChar32 characters to StringBuilder.
   StringBuilder builderForUChar32Append;
   UChar32 frakturAChar = 0x1D504;
-  builderForUChar32Append.append(
-      frakturAChar);  // The fraktur A is not in the BMP, so it's two UTF-16 code units long.
+  // The fraktur A is not in the BMP, so it's two UTF-16 code units long.
+  builderForUChar32Append.append(frakturAChar);
   EXPECT_FALSE(builderForUChar32Append.is8Bit());
   EXPECT_EQ(2U, builderForUChar32Append.length());
   builderForUChar32Append.append(static_cast<UChar32>('A'));
@@ -145,18 +145,21 @@ TEST(StringBuilderTest, ToString) {
   EXPECT_EQ(String("0123456789"), string);
   EXPECT_EQ(string.impl(), builder.toString().impl());
 
-  // Changing the StringBuilder should not affect the original result of toString().
+  // Changing the StringBuilder should not affect the original result of
+  // toString().
   builder.append("abcdefghijklmnopqrstuvwxyz");
   EXPECT_EQ(String("0123456789"), string);
 
-  // Changing the StringBuilder should not affect the original result of toString() in case the capacity is not changed.
+  // Changing the StringBuilder should not affect the original result of
+  // toString() in case the capacity is not changed.
   builder.reserveCapacity(200);
   string = builder.toString();
   EXPECT_EQ(String("0123456789abcdefghijklmnopqrstuvwxyz"), string);
   builder.append("ABC");
   EXPECT_EQ(String("0123456789abcdefghijklmnopqrstuvwxyz"), string);
 
-  // Changing the original result of toString() should not affect the content of the StringBuilder.
+  // Changing the original result of toString() should not affect the content of
+  // the StringBuilder.
   String string1 = builder.toString();
   EXPECT_EQ(String("0123456789abcdefghijklmnopqrstuvwxyzABC"), string1);
   string1.append("DEF");
@@ -164,7 +167,8 @@ TEST(StringBuilderTest, ToString) {
             builder.toString());
   EXPECT_EQ(String("0123456789abcdefghijklmnopqrstuvwxyzABCDEF"), string1);
 
-  // Resizing the StringBuilder should not affect the original result of toString().
+  // Resizing the StringBuilder should not affect the original result of
+  // toString().
   string1 = builder.toString();
   builder.resize(10);
   builder.append("###");

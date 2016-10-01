@@ -63,7 +63,8 @@ enum FlushBehavior {
   // More bytes are coming, don't flush the codec.
   DoNotFlush = 0,
 
-  // A fetch has hit EOF. Some codecs handle fetches differently, for compat reasons.
+  // A fetch has hit EOF. Some codecs handle fetches differently, for compat
+  // reasons.
   FetchEOF,
 
   // Do a full flush of the codec.

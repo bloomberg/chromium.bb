@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2013 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2013 Apple Inc. All rights
+ * reserved.
  * Copyright (C) 2010 Patrick Gansterer <paroga@paroga.com>
  * Copyright (C) 2012 Google Inc. All rights reserved.
  *

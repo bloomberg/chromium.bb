@@ -215,7 +215,8 @@ const char* nonGreekLocales[] = {
 const char* lithuanianLocales[] = {
     "lt", "lt-LT", "lt_LT", "lt@foo=bar", "lt-US", "LT", "lt-lt", "lT",
 };
-// Should not have "tr" or "az" because "lt" and 'tr/az' rules conflict with each other.
+// Should not have "tr" or "az" because "lt" and 'tr/az' rules conflict with
+// each other.
 const char* nonLithuanianLocales[] = {
     "en", "en-US", "en_US", "en@foo=bar", "EN", "En", "ja", "fil", "fi", "el",
 };

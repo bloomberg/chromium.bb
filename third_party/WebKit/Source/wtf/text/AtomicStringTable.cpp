@@ -82,7 +82,8 @@ struct HashAndUTF8CharactersTranslator {
     if (buffer.utf16Length != string->length())
       return false;
 
-    // If buffer contains only ASCII characters UTF-8 and UTF16 length are the same.
+    // If buffer contains only ASCII characters UTF-8 and UTF16 length are the
+    // same.
     if (buffer.utf16Length != buffer.length) {
       if (string->is8Bit()) {
         const LChar* characters8 = string->characters8();

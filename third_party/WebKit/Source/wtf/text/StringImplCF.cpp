@@ -96,11 +96,11 @@ static void deallocate(void* pointer, void*) {
 }
 
 static CFIndex preferredSize(CFIndex size, CFOptionFlags, void*) {
-  // FIXME: If FastMalloc provided a "good size" callback, we'd want to use it here.
-  // Note that this optimization would help performance for strings created with the
-  // allocator that are mutable, and those typically are only created by callers who
-  // make a new string using the old string's allocator, such as some of the call
-  // sites in CFURL.
+  // FIXME: If FastMalloc provided a "good size" callback, we'd want to use it
+  // here.  Note that this optimization would help performance for strings
+  // created with the allocator that are mutable, and those typically are only
+  // created by callers who make a new string using the old string's allocator,
+  // such as some of the call sites in CFURL.
   return size;
 }
 
@@ -131,7 +131,8 @@ RetainPtr<CFStringRef> StringImpl::createCFString() {
   }
   CFAllocatorRef allocator = StringWrapperCFAllocator::allocator();
 
-  // Put pointer to the StringImpl in a global so the allocator can store it with the CFString.
+  // Put pointer to the StringImpl in a global so the allocator can store it
+  // with the CFString.
   ASSERT(!StringWrapperCFAllocator::currentString);
   StringWrapperCFAllocator::currentString = this;
 
@@ -144,17 +145,19 @@ RetainPtr<CFStringRef> StringImpl::createCFString() {
     string = CFStringCreateWithCharactersNoCopy(
         allocator, reinterpret_cast<const UniChar*>(characters16()), m_length,
         kCFAllocatorNull);
-  // CoreFoundation might not have to allocate anything, we clear currentString in case we did not execute allocate().
+  // CoreFoundation might not have to allocate anything, we clear currentString
+  // in case we did not execute allocate().
   StringWrapperCFAllocator::currentString = 0;
 
   return adoptCF(string);
 }
 
-// On StringImpl creation we could check if the allocator is the StringWrapperCFAllocator.
-// If it is, then we could find the original StringImpl and just return that. But to
-// do that we'd have to compute the offset from CFStringRef to the allocated block;
-// the CFStringRef is *not* at the start of an allocated block. Testing shows 1000x
-// more calls to createCFString than calls to the create functions with the appropriate
+// On StringImpl creation we could check if the allocator is the
+// StringWrapperCFAllocator.  If it is, then we could find the original
+// StringImpl and just return that.  But to do that we'd have to compute the
+// offset from CFStringRef to the allocated block; the CFStringRef is *not* at
+// the start of an allocated block. Testing shows 1000x more calls to
+// createCFString than calls to the create functions with the appropriate
 // allocator, so it's probably not urgent optimize that case.
 
 }  // namespace WTF

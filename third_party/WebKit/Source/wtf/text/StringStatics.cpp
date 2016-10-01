@@ -56,8 +56,8 @@ WTF_EXPORT DEFINE_GLOBAL(AtomicString, nullAtom) WTF_EXPORT
     DEFINE_GLOBAL(AtomicString, xlinkAtom)
 
     // This is not an AtomicString because it is unlikely to be used as an
-    // event/element/attribute name, so it shouldn't pollute the AtomicString hash
-    // table.
+    // event/element/attribute name, so it shouldn't pollute the AtomicString
+    // hash table.
     WTF_EXPORT DEFINE_GLOBAL(String, xmlnsWithColon)
 
         NEVER_INLINE unsigned StringImpl::hashSlowCase() const {

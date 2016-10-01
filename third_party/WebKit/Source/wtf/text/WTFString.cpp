@@ -1,6 +1,7 @@
 /*
  * (C) 1999 Lars Knoll (knoll@kde.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2010, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2010, 2012 Apple Inc. All rights
+ * reserved.
  * Copyright (C) 2007-2009 Torch Mobile, Inc.
  *
  * This library is free software; you can redistribute it and/or
@@ -590,7 +591,8 @@ CString String::latin1() const {
   return result;
 }
 
-// Helper to write a three-byte UTF-8 code point to the buffer, caller must check room is available.
+// Helper to write a three-byte UTF-8 code point to the buffer, caller must
+// check room is available.
 static inline void putUTF8Triple(char*& buffer, UChar ch) {
   ASSERT(ch >= 0x0800);
   *buffer++ = static_cast<char>(((ch >> 12) & 0x0F) | 0xE0);
@@ -626,10 +628,8 @@ CString String::utf8(UTF8ConversionMode mode) const {
     ConversionResult result =
         convertLatin1ToUTF8(&characters, characters + length, &buffer,
                             buffer + bufferVector.size());
-    ASSERT_UNUSED(
-        result,
-        result !=
-            targetExhausted);  // (length * 3) should be sufficient for any conversion
+    // (length * 3) should be sufficient for any conversion
+    ASSERT_UNUSED(result, result != targetExhausted);
   } else {
     const UChar* characters = this->characters16();
 
@@ -658,9 +658,8 @@ CString String::utf8(UTF8ConversionMode mode) const {
       ConversionResult result =
           convertUTF16ToUTF8(&characters, characters + length, &buffer,
                              buffer + bufferVector.size(), strict);
-      ASSERT(
-          result !=
-          targetExhausted);  // (length * 3) should be sufficient for any conversion
+      // (length * 3) should be sufficient for any conversion
+      ASSERT(result != targetExhausted);
 
       // Only produced from strict conversion.
       if (result == sourceIllegal) {

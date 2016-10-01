@@ -101,7 +101,8 @@ CString TextCodecUserDefined::encodeCommon(const CharType* characters,
   char* bytes;
   CString result = CString::newUninitialized(length, bytes);
 
-  // Convert the string a fast way and simultaneously do an efficient check to see if it's all ASCII.
+  // Convert the string a fast way and simultaneously do an efficient check to
+  // see if it's all ASCII.
   UChar ored = 0;
   for (size_t i = 0; i < length; ++i) {
     UChar c = characters[i];

@@ -60,7 +60,8 @@ class WTF_EXPORT AtomicString {
   explicit AtomicString(StringImpl* impl) : m_string(add(impl)) {}
   explicit AtomicString(const String& s) : m_string(add(s.impl())) {}
 
-  // Hash table deleted values, which are only constructed and never copied or destroyed.
+  // Hash table deleted values, which are only constructed and never copied or
+  // destroyed.
   AtomicString(WTF::HashTableDeletedValueType)
       : m_string(WTF::HashTableDeletedValue) {}
   bool isHashTableDeletedValue() const {

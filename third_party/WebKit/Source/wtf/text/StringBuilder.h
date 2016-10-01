@@ -66,9 +66,9 @@ class WTF_EXPORT StringBuilder {
       append(other.characters16(), other.m_length);
   }
 
-  // NOTE: The semantics of this are different than StringView(..., offset, length)
-  // in that an invalid offset or invalid length is a no-op instead of an
-  // error.
+  // NOTE: The semantics of this are different than StringView(..., offset,
+  // length) in that an invalid offset or invalid length is a no-op instead of
+  // an error.
   // TODO(esprehn): We should probably unify the semantics instead.
   void append(const StringView& string, unsigned offset, unsigned length) {
     unsigned extent = offset + length;

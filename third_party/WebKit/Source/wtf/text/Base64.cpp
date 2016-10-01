@@ -15,7 +15,8 @@
 
    You should have received a copy of the GNU Library General Public
    License along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
+   USA.
 
    This code is based on the java implementation in HTTPClient
    package by Ronald Tschalaer Copyright (C) 1996-1999.
@@ -185,7 +186,8 @@ static inline bool base64DecodeInternal(
     return !equalsSignCount;
 
   // There should be no padding if length is a multiple of 4.
-  // We use (outLength + equalsSignCount) instead of length because we don't want to account for ignored characters.
+  // We use (outLength + equalsSignCount) instead of length because we don't
+  // want to account for ignored characters.
   if (policy == Base64ValidatePadding && equalsSignCount &&
       (outLength + equalsSignCount) % 4)
     return false;

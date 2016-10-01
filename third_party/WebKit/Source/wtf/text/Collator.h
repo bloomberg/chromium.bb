@@ -49,9 +49,10 @@ class WTF_EXPORT Collator {
   // From ICU's uloc.h (ULOC_FULLNAME_CAPACITY)
   static const size_t ulocFullnameCapacity = 157;
 
-  Collator(
-      const char*
-          locale);  // Parsing is lenient; e.g. language identifiers (such as "en-US") are accepted, too.
+  // Parsing is lenient; e.g. language identifiers (such as "en-US") are
+  // accepted, too.
+  Collator(const char* locale);
+
   ~Collator();
   void setOrderLowerFirst(bool);
 

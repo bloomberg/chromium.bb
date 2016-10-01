@@ -150,8 +150,9 @@ CString TextCodecUTF16::encode(const UChar* characters,
   char* bytes;
   CString result = CString::newUninitialized(length * 2, bytes);
 
-  // FIXME: CString is not a reasonable data structure for encoded UTF-16, which will have
-  // null characters inside it. Perhaps the result of encode should not be a CString.
+  // FIXME: CString is not a reasonable data structure for encoded UTF-16, which
+  // will have null characters inside it. Perhaps the result of encode should
+  // not be a CString.
   if (m_littleEndian) {
     for (size_t i = 0; i < length; ++i) {
       UChar c = characters[i];
@@ -172,7 +173,7 @@ CString TextCodecUTF16::encode(const UChar* characters,
 CString TextCodecUTF16::encode(const LChar* characters,
                                size_t length,
                                UnencodableHandling) {
-  // In the LChar case, we do actually need to perform this check in release.  :)
+  // In the LChar case, we do actually need to perform this check in release. :)
   RELEASE_ASSERT(length <= numeric_limits<size_t>::max() / 2);
 
   char* bytes;

@@ -145,12 +145,14 @@ static void checkExistingName(const char* alias, const char* atomicName) {
 #endif
 
 static bool isUndesiredAlias(const char* alias) {
-  // Reject aliases with version numbers that are supported by some back-ends (such as "ISO_2022,locale=ja,version=0" in ICU).
+  // Reject aliases with version numbers that are supported by some back-ends
+  // (such as "ISO_2022,locale=ja,version=0" in ICU).
   for (const char* p = alias; *p; ++p) {
     if (*p == ',')
       return true;
   }
-  // 8859_1 is known to (at least) ICU, but other browsers don't support this name - and having it caused a compatibility
+  // 8859_1 is known to (at least) ICU, but other browsers don't support this
+  // name - and having it caused a compatibility
   // problem, see bug 43554.
   if (0 == strcmp(alias, "8859_1"))
     return true;

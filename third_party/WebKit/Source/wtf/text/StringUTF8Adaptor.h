@@ -49,10 +49,10 @@ class StringUTF8Adaptor final {
   explicit StringUTF8Adaptor(const String& string) : m_data(0), m_length(0) {
     if (string.isEmpty())
       return;
-    // Unfortunately, 8 bit WTFStrings are encoded in Latin-1 and GURL uses UTF-8
-    // when processing 8 bit strings. If |relative| is entirely ASCII, we luck out
-    // and can avoid mallocing a new buffer to hold the UTF-8 data because UTF-8
-    // and Latin-1 use the same code units for ASCII code points.
+    // Unfortunately, 8 bit WTFStrings are encoded in Latin-1 and GURL uses
+    // UTF-8 when processing 8 bit strings. If |relative| is entirely ASCII, we
+    // luck out and can avoid mallocing a new buffer to hold the UTF-8 data
+    // because UTF-8 and Latin-1 use the same code units for ASCII code points.
     if (string.is8Bit() && string.containsOnlyASCII()) {
       m_data = reinterpret_cast<const char*>(string.characters8());
       m_length = string.length();

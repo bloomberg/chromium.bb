@@ -2,7 +2,8 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller ( mueller@kde.org )
- * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2013 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2013 Apple Inc. All
+ * rights reserved.
  * Copyright (C) 2006 Andrew Wellington (proton@wiretapped.net)
  *
  * This library is free software; you can redistribute it and/or
@@ -67,7 +68,8 @@ static Mutex& statsMutex() {
 }
 
 static HashSet<void*>& liveStrings() {
-  // Notice that we can't use HashSet<StringImpl*> because then HashSet would dedup identical strings.
+  // Notice that we can't use HashSet<StringImpl*> because then HashSet would
+  // dedup identical strings.
   DEFINE_STATIC_LOCAL(HashSet<void*>, strings, ());
   return strings;
 }
@@ -684,11 +686,13 @@ PassRefPtr<StringImpl> StringImpl::upper() {
     if (!(ored & ~0x7F))
       return newImpl.release();
 
-    // Do a slower implementation for cases that include non-ASCII Latin-1 characters.
+    // Do a slower implementation for cases that include non-ASCII Latin-1
+    // characters.
     int numberSharpSCharacters = 0;
 
     // There are two special cases.
-    //  1. latin-1 characters when converted to upper case are 16 bit characters.
+    //  1. latin-1 characters when converted to upper case are 16 bit
+    //     characters.
     //  2. Lower case sharp-S converts to "SS" (two characters)
     for (int32_t i = 0; i < length; ++i) {
       LChar c = characters8()[i];
@@ -696,7 +700,8 @@ PassRefPtr<StringImpl> StringImpl::upper() {
         ++numberSharpSCharacters;
       UChar upper = static_cast<UChar>(Unicode::toUpper(c));
       if (UNLIKELY(upper > 0xff)) {
-        // Since this upper-cased character does not fit in an 8-bit string, we need to take the 16-bit path.
+        // Since this upper-cased character does not fit in an 8-bit string, we
+        // need to take the 16-bit path.
         goto upconvert;
       }
       data8[i] = static_cast<LChar>(upper);
@@ -705,7 +710,8 @@ PassRefPtr<StringImpl> StringImpl::upper() {
     if (!numberSharpSCharacters)
       return newImpl.release();
 
-    // We have numberSSCharacters sharp-s characters, but none of the other special characters.
+    // We have numberSSCharacters sharp-s characters, but none of the other
+    // special characters.
     newImpl = createUninitialized(m_length + numberSharpSCharacters, data8);
 
     LChar* dest = data8;
@@ -898,7 +904,8 @@ PassRefPtr<StringImpl> StringImpl::foldCase() {
     if (!(ored & ~0x7F))
       return newImpl.release();
 
-    // Do a slower implementation for cases that include non-ASCII Latin-1 characters.
+    // Do a slower implementation for cases that include non-ASCII Latin-1
+    // characters.
     for (int32_t i = 0; i < length; ++i)
       data[i] = static_cast<LChar>(Unicode::toLower(characters8()[i]));
 
@@ -1267,7 +1274,8 @@ ALWAYS_INLINE static size_t findInternal(
   // Optimization: keep a running hash of the strings,
   // only call equal() if the hashes match.
 
-  // delta is the number of additional times to test; delta == 0 means test only once.
+  // delta is the number of additional times to test; delta == 0 means test only
+  // once.
   unsigned delta = searchLength - matchLength;
 
   unsigned searchHash = 0;
@@ -1335,7 +1343,8 @@ ALWAYS_INLINE static size_t findIgnoringCaseInternal(
     unsigned index,
     unsigned searchLength,
     unsigned matchLength) {
-  // delta is the number of additional times to test; delta == 0 means test only once.
+  // delta is the number of additional times to test; delta == 0 means test only
+  // once.
   unsigned delta = searchLength - matchLength;
 
   unsigned i = 0;
@@ -1390,7 +1399,8 @@ ALWAYS_INLINE static size_t findIgnoringASCIICaseInternal(
     unsigned index,
     unsigned searchLength,
     unsigned matchLength) {
-  // delta is the number of additional times to test; delta == 0 means test only once.
+  // delta is the number of additional times to test; delta == 0 means test only
+  // once.
   unsigned delta = searchLength - matchLength;
 
   unsigned i = 0;
@@ -1454,7 +1464,8 @@ ALWAYS_INLINE static size_t reverseFindInternal(
   // Optimization: keep a running hash of the strings,
   // only call equal if the hashes match.
 
-  // delta is the number of additional times to test; delta == 0 means test only once.
+  // delta is the number of additional times to test; delta == 0 means test only
+  // once.
   unsigned delta = min(index, length - matchLength);
 
   unsigned searchHash = 0;

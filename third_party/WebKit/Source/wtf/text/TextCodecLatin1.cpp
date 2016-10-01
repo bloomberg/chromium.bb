@@ -99,7 +99,8 @@ static std::unique_ptr<TextCodec> newStreamingTextDecoderWindowsLatin1(
 void TextCodecLatin1::registerCodecs(TextCodecRegistrar registrar) {
   registrar("windows-1252", newStreamingTextDecoderWindowsLatin1, 0);
 
-  // ASCII and Latin-1 both decode as Windows Latin-1 although they retain unique identities.
+  // ASCII and Latin-1 both decode as Windows Latin-1 although they retain
+  // unique identities.
   registrar("ISO-8859-1", newStreamingTextDecoderWindowsLatin1, 0);
   registrar("US-ASCII", newStreamingTextDecoderWindowsLatin1, 0);
 }
@@ -245,7 +246,8 @@ CString TextCodecLatin1::encodeCommon(const CharType* characters,
     char* bytes;
     CString string = CString::newUninitialized(length, bytes);
 
-    // Convert the string a fast way and simultaneously do an efficient check to see if it's all ASCII.
+    // Convert the string a fast way and simultaneously do an efficient check to
+    // see if it's all ASCII.
     UChar ored = 0;
     for (size_t i = 0; i < length; ++i) {
       UChar c = characters[i];

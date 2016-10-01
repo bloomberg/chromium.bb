@@ -55,7 +55,8 @@ void TextCodecUTF8::registerEncodingNames(EncodingNameRegistrar registrar) {
   registrar("utf8", "UTF-8");
   registrar("x-unicode20utf8", "UTF-8");
 
-  // Additional aliases present in the WHATWG Encoding Standard (http://encoding.spec.whatwg.org/)
+  // Additional aliases present in the WHATWG Encoding Standard
+  // (http://encoding.spec.whatwg.org/)
   // and Firefox (24), but not in ICU 4.6.
   registrar("unicode-1-1-utf-8", "UTF-8");
 }
@@ -191,9 +192,9 @@ bool TextCodecUTF8::handlePartialSequence<LChar>(LChar*& destination,
           m_partialSequenceSize += end - source;
           return false;
         }
-        // An incomplete partial sequence at the end is an error, but it will create
-        // a 16 bit string due to the replacementCharacter. Let the 16 bit path handle
-        // the error.
+        // An incomplete partial sequence at the end is an error, but it will
+        // create a 16 bit string due to the replacementCharacter. Let the 16
+        // bit path handle the error.
         return true;
       }
       memcpy(m_partialSequence + m_partialSequenceSize, source,
@@ -286,9 +287,9 @@ String TextCodecUTF8::decode(const char* bytes,
 
   do {
     if (m_partialSequenceSize) {
-      // Explicitly copy destination and source pointers to avoid taking pointers to the
-      // local variables, which may harm code generation by disabling some optimizations
-      // in some compilers.
+      // Explicitly copy destination and source pointers to avoid taking
+      // pointers to the local variables, which may harm code generation by
+      // disabling some optimizations in some compilers.
       LChar* destinationForHandlePartialSequence = destination;
       const uint8_t* sourceForHandlePartialSequence = source;
       if (handlePartialSequence(destinationForHandlePartialSequence,
@@ -370,9 +371,9 @@ upConvertTo16Bit:
 
   do {
     if (m_partialSequenceSize) {
-      // Explicitly copy destination and source pointers to avoid taking pointers to the
-      // local variables, which may harm code generation by disabling some optimizations
-      // in some compilers.
+      // Explicitly copy destination and source pointers to avoid taking
+      // pointers to the local variables, which may harm code generation by
+      // disabling some optimizations in some compilers.
       UChar* destinationForHandlePartialSequence = destination16;
       const uint8_t* sourceForHandlePartialSequence = source;
       handlePartialSequence(destinationForHandlePartialSequence,
@@ -443,8 +444,10 @@ upConvertTo16Bit:
 template <typename CharType>
 CString TextCodecUTF8::encodeCommon(const CharType* characters, size_t length) {
   // The maximum number of UTF-8 bytes needed per UTF-16 code unit is 3.
-  // BMP characters take only one UTF-16 code unit and can take up to 3 bytes (3x).
-  // Non-BMP characters take two UTF-16 code units and can take up to 4 bytes (2x).
+  // BMP characters take only one UTF-16 code unit and can take up to 3 bytes
+  // (3x).
+  // Non-BMP characters take two UTF-16 code units and can take up to 4 bytes
+  // (2x).
   if (length > std::numeric_limits<size_t>::max() / 3)
     CRASH();
   Vector<uint8_t> bytes(length * 3);
@@ -454,8 +457,9 @@ CString TextCodecUTF8::encodeCommon(const CharType* characters, size_t length) {
   while (i < length) {
     UChar32 character;
     U16_NEXT(characters, i, length, character);
-    // U16_NEXT will simply emit a surrogate code point if an unmatched surrogate
-    // is encountered; we must convert it to a U+FFFD (REPLACEMENT CHARACTER) here.
+    // U16_NEXT will simply emit a surrogate code point if an unmatched
+    // surrogate is encountered; we must convert it to a
+    // U+FFFD (REPLACEMENT CHARACTER) here.
     if (0xD800 <= character && character <= 0xDFFF)
       character = replacementCharacter;
     U8_APPEND_UNSAFE(bytes.data(), bytesWritten, character);

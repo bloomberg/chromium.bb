@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
- * Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2013 Apple Inc. All rights reserved.
+ * Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2013 Apple Inc. All rights
+ * reserved.
  * Copyright (C) 2009 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
@@ -59,7 +60,8 @@ typedef bool (*CharacterMatchFunctionPtr)(UChar);
 typedef bool (*IsWhiteSpaceFunctionPtr)(UChar);
 typedef HashMap<unsigned, StringImpl*, AlreadyHashed> StaticStringsTable;
 
-// Define STRING_STATS to turn on run time statistics of string sizes and memory usage
+// Define STRING_STATS to turn on run time statistics of string sizes and memory
+// usage
 #undef STRING_STATS
 
 #ifdef STRING_STATS
@@ -350,7 +352,8 @@ class WTF_EXPORT StringImpl {
   PassRefPtr<StringImpl> upper(const AtomicString& localeIdentifier);
 
   PassRefPtr<StringImpl> fill(UChar);
-  // FIXME: Do we need fill(char) or can we just do the right thing if UChar is ASCII?
+  // FIXME: Do we need fill(char) or can we just do the right thing if UChar is
+  // ASCII?
   PassRefPtr<StringImpl> foldCase();
 
   PassRefPtr<StringImpl> truncate(unsigned length);

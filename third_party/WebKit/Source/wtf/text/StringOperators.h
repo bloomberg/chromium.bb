@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights
+ * reserved.
  * Copyright (C) Research In Motion Limited 2011. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or

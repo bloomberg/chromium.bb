@@ -88,9 +88,11 @@ void TextCodecICU::registerEncodingNames(EncodingNameRegistrar registrar) {
 // A number of these aliases are handled in Chrome's copy of ICU, but
 // Chromium can be compiled with the system ICU.
 
-// 1. Treat GB2312 encoding as GBK (its more modern superset), to match other browsers.
-// 2. On the Web, GB2312 is encoded as EUC-CN or HZ, while ICU provides a native encoding
-//    for encoding GB_2312-80 and several others. So, we need to override this behavior, too.
+// 1. Treat GB2312 encoding as GBK (its more modern superset), to match other
+//    browsers.
+// 2. On the Web, GB2312 is encoded as EUC-CN or HZ, while ICU provides a native
+//    encoding for encoding GB_2312-80 and several others. So, we need to
+//    override this behavior, too.
 #if defined(USING_SYSTEM_ICU)
     if (!strcmp(standardName, "GB2312") || !strcmp(standardName, "GB_2312-80"))
       standardName = "GBK";
@@ -101,10 +103,8 @@ void TextCodecICU::registerEncodingNames(EncodingNameRegistrar registrar) {
              !strcmp(standardName, "cp1363"))
       standardName = "EUC-KR";
     // And so on.
-    else if (
-        !strcasecmp(
-            standardName,
-            "iso-8859-9"))  // This name is returned in different case by ICU 3.2 and 3.6.
+    else if (!strcasecmp(standardName, "iso-8859-9"))
+      // This name is returned in different case by ICU 3.2 and 3.6.
       standardName = "windows-1254";
     else if (!strcmp(standardName, "TIS-620"))
       standardName = "windows-874";
@@ -182,7 +182,7 @@ void TextCodecICU::registerEncodingNames(EncodingNameRegistrar registrar) {
   registrar("ISO8859-14", "ISO-8859-14");
   registrar("ISO8859-15", "ISO-8859-15");
   // No need to have an entry for ISO8859-16. ISO-8859-16 has just one label
-  // listed in WHATWG Encoding Living Standard (http://encoding.spec.whatwg.org/ ).
+  // listed in WHATWG Encoding Living Standard, http://encoding.spec.whatwg.org/
 
   // Additional aliases present in the WHATWG Encoding Standard
   // and Firefox (as of Oct 2014), but not in the upstream ICU.
@@ -379,7 +379,8 @@ String TextCodecICU::decode(const char* bytes,
   } while (err == U_BUFFER_OVERFLOW_ERROR);
 
   if (U_FAILURE(err)) {
-    // flush the converter so it can be reused, and not be bothered by this error.
+    // flush the converter so it can be reused, and not be bothered by this
+    // error.
     do {
       decodeToBuffer(buffer, bufferLimit, source, sourceLimit, offsets, true,
                      err);
@@ -394,7 +395,8 @@ String TextCodecICU::decode(const char* bytes,
   String resultString = result.toString();
 
   // <http://bugs.webkit.org/show_bug.cgi?id=17014>
-  // Simplified Chinese pages use the code A3A0 to mean "full-width space", but ICU decodes it as U+E5E5.
+  // Simplified Chinese pages use the code A3A0 to mean "full-width space", but
+  // ICU decodes it as U+E5E5.
   if (!strcmp(m_encoding.name(), "GBK")) {
     if (!strcasecmp(m_encoding.name(), "gb18030"))
       resultString.replace(0xE5E5, ideographicSpaceCharacter);
@@ -422,7 +424,8 @@ static UChar fallbackForGBK(UChar32 character) {
 }
 #endif
 
-// Generic helper for writing escaped entities using the specfied UnencodableHandling.
+// Generic helper for writing escaped entities using the specfied
+// UnencodableHandling.
 static void formatEscapedEntityCallback(const void* context,
                                         UConverterFromUnicodeArgs* fromUArgs,
                                         const UChar* codeUnits,
@@ -456,7 +459,8 @@ static void numericEntityCallback(const void* context,
 }
 
 // Invalid character handler when writing escaped entities in CSS encoding for
-// unrepresentable characters. See the declaration of TextCodec::encode for more.
+// unrepresentable characters. See the declaration of TextCodec::encode for
+// more.
 static void cssEscapedEntityCallback(const void* context,
                                      UConverterFromUnicodeArgs* fromUArgs,
                                      const UChar* codeUnits,
@@ -468,8 +472,9 @@ static void cssEscapedEntityCallback(const void* context,
                               reason, err, CSSEncodedEntitiesForUnencodables);
 }
 
-// Invalid character handler when writing escaped entities in HTML/XML encoding for
-// unrepresentable characters. See the declaration of TextCodec::encode for more.
+// Invalid character handler when writing escaped entities in HTML/XML encoding
+// for unrepresentable characters. See the declaration of TextCodec::encode for
+// more.
 static void urlEscapedEntityCallback(const void* context,
                                      UConverterFromUnicodeArgs* fromUArgs,
                                      const UChar* codeUnits,
