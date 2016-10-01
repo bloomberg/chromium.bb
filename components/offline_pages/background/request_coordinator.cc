@@ -294,26 +294,16 @@ void RequestCoordinator::UpdateRequestCallback(
   }
 }
 
-// Called in response to updating multiple requests in the request queue.
 void RequestCoordinator::UpdateMultipleRequestsCallback(
-    const RequestQueue::UpdateMultipleRequestResults& results,
-    std::vector<std::unique_ptr<SavePageRequest>> requests) {
+    std::unique_ptr<UpdateRequestsResult> result) {
+  for (const auto& request : result->updated_items)
+    NotifyChanged(request);
+
   bool available_user_request = false;
-  for (const auto& request : requests) {
-    NotifyChanged(*(request));
-    if (!available_user_request && request->user_requested() &&
-        request->request_state() == SavePageRequest::RequestState::AVAILABLE) {
-      // TODO(dougarnett): Consider avoiding prospect of N^2 in case
-      // size of bulk requests can get large (perhaps with easier to consume
-      // callback interface).
-      for (std::pair<int64_t, RequestQueue::UpdateRequestResult> pair :
-           results) {
-        if (pair.first == request->request_id() &&
-            pair.second == RequestQueue::UpdateRequestResult::SUCCESS) {
-          // We have a successfully updated, available, user request.
-          available_user_request = true;
-        }
-      }
+  for (const auto& request : result->updated_items) {
+    if (!available_user_request && request.user_requested() &&
+        request.request_state() == SavePageRequest::RequestState::AVAILABLE) {
+      available_user_request = true;
     }
   }
 

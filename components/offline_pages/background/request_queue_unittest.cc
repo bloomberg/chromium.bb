@@ -53,11 +53,8 @@ class RequestQueueTest : public testing::Test {
       const RequestQueue::UpdateMultipleRequestResults& results,
       std::vector<std::unique_ptr<SavePageRequest>> requests);
 
-  void UpdateMultipleRequestsDone(
-      const RequestQueue::UpdateMultipleRequestResults& results,
-      std::vector<std::unique_ptr<SavePageRequest>> requests);
-
   void UpdateRequestDone(UpdateRequestResult result);
+  void UpdateRequestsDone(std::unique_ptr<UpdateRequestsResult> result);
 
   RequestQueue* queue() { return queue_.get(); }
 
@@ -81,13 +78,19 @@ class RequestQueueTest : public testing::Test {
   GetRequestsResult last_get_requests_result() const {
     return last_get_requests_result_;
   }
+
   const std::vector<std::unique_ptr<SavePageRequest>>& last_requests() const {
     return last_requests_;
+  }
+
+  UpdateRequestsResult* update_requests_result() const {
+    return update_requests_result_.get();
   }
 
  private:
   AddRequestResult last_add_result_;
   std::unique_ptr<SavePageRequest> last_added_request_;
+  std::unique_ptr<UpdateRequestsResult> update_requests_result_;
   RequestQueue::UpdateMultipleRequestResults last_remove_results_;
   RequestQueue::UpdateMultipleRequestResults last_multiple_update_results_;
   UpdateRequestResult last_update_result_;
@@ -139,15 +142,13 @@ void RequestQueueTest::RemoveRequestsDone(
   last_requests_ = std::move(requests);
 }
 
-void RequestQueueTest::UpdateMultipleRequestsDone(
-    const RequestQueue::UpdateMultipleRequestResults& results,
-    std::vector<std::unique_ptr<SavePageRequest>> requests) {
-  last_multiple_update_results_ = results;
-  last_requests_ = std::move(requests);
-}
-
 void RequestQueueTest::UpdateRequestDone(UpdateRequestResult result) {
   last_update_result_ = result;
+}
+
+void RequestQueueTest::UpdateRequestsDone(
+    std::unique_ptr<UpdateRequestsResult> result) {
+  update_requests_result_ = std::move(result);
 }
 
 TEST_F(RequestQueueTest, GetRequestsEmpty) {
@@ -258,14 +259,18 @@ TEST_F(RequestQueueTest, PauseAndResume) {
   request_ids.push_back(kRequestId);
 
   // Pause the request.
-  queue()->ChangeRequestsState(
-      request_ids, SavePageRequest::RequestState::PAUSED,
-      base::Bind(&RequestQueueTest::UpdateMultipleRequestsDone,
-                 base::Unretained(this)));
+  queue()->ChangeRequestsState(request_ids,
+                               SavePageRequest::RequestState::PAUSED,
+                               base::Bind(&RequestQueueTest::UpdateRequestsDone,
+                                          base::Unretained(this)));
   PumpLoop();
-  ASSERT_EQ(1ul, last_multiple_update_results().size());
-  ASSERT_EQ(UpdateRequestResult::SUCCESS,
-            last_multiple_update_results().at(0).second);
+  ASSERT_EQ(1ul, update_requests_result()->item_statuses.size());
+  ASSERT_EQ(kRequestId, update_requests_result()->item_statuses.at(0).first);
+  ASSERT_EQ(ItemActionStatus::SUCCESS,
+            update_requests_result()->item_statuses.at(0).second);
+  ASSERT_EQ(1ul, update_requests_result()->updated_items.size());
+  ASSERT_EQ(SavePageRequest::RequestState::PAUSED,
+            update_requests_result()->updated_items.at(0).request_state());
 
   queue()->GetRequests(
       base::Bind(&RequestQueueTest::GetRequestsDone, base::Unretained(this)));
@@ -278,14 +283,18 @@ TEST_F(RequestQueueTest, PauseAndResume) {
             last_requests().at(0)->request_state());
 
   // Resume the request.
-  queue()->ChangeRequestsState(
-      request_ids, SavePageRequest::RequestState::AVAILABLE,
-      base::Bind(&RequestQueueTest::UpdateMultipleRequestsDone,
-                 base::Unretained(this)));
+  queue()->ChangeRequestsState(request_ids,
+                               SavePageRequest::RequestState::AVAILABLE,
+                               base::Bind(&RequestQueueTest::UpdateRequestsDone,
+                                          base::Unretained(this)));
   PumpLoop();
-  ASSERT_EQ(1ul, last_multiple_update_results().size());
-  ASSERT_EQ(UpdateRequestResult::SUCCESS,
-            last_multiple_update_results().at(0).second);
+  ASSERT_EQ(1ul, update_requests_result()->item_statuses.size());
+  ASSERT_EQ(kRequestId, update_requests_result()->item_statuses.at(0).first);
+  ASSERT_EQ(ItemActionStatus::SUCCESS,
+            update_requests_result()->item_statuses.at(0).second);
+  ASSERT_EQ(1ul, update_requests_result()->updated_items.size());
+  ASSERT_EQ(SavePageRequest::RequestState::AVAILABLE,
+            update_requests_result()->updated_items.at(0).request_state());
 
   queue()->GetRequests(
       base::Bind(&RequestQueueTest::GetRequestsDone, base::Unretained(this)));

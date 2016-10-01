@@ -15,8 +15,6 @@
 
 namespace offline_pages {
 
-typedef StoreUpdateResult<SavePageRequest> UpdateRequestsResult;
-
 // Interface for classes storing save page requests.
 class RequestQueueStore {
  public:
@@ -26,17 +24,13 @@ class RequestQueueStore {
     FAILED,   // Add or update attempt failed.
   };
 
+  using UpdateCallback = RequestQueue::UpdateCallback;
+
   typedef base::Callback<void(
       bool /* success */,
       std::vector<std::unique_ptr<SavePageRequest>> /* requests */)>
       GetRequestsCallback;
   typedef base::Callback<void(ItemActionStatus)> AddCallback;
-  typedef base::Callback<void(std::unique_ptr<UpdateRequestsResult>)>
-      UpdateCallback;
-  typedef base::Callback<void(
-      const RequestQueue::UpdateMultipleRequestResults& /* statuses*/,
-      std::vector<std::unique_ptr<SavePageRequest>> /* requests */)>
-      UpdateMultipleRequestsCallback;
   typedef base::Callback<void(
       const RequestQueue::UpdateMultipleRequestResults& /* statuses */,
       std::vector<std::unique_ptr<SavePageRequest>> /* requests */)>
@@ -64,13 +58,6 @@ class RequestQueueStore {
   // be deleted, e.g. because it was missing.
   virtual void RemoveRequests(const std::vector<int64_t>& request_ids,
                               const RemoveCallback& callback) = 0;
-
-  // Asynchronously changes the state of requests from the store using their
-  // request id.
-  virtual void ChangeRequestsState(
-      const std::vector<int64_t>& request_ids,
-      const SavePageRequest::RequestState new_state,
-      const UpdateMultipleRequestsCallback& callback) = 0;
 
   // Resets the store.
   virtual void Reset(const ResetCallback& callback) = 0;

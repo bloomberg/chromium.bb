@@ -188,8 +188,7 @@ class RequestCoordinator : public KeyedService,
                              RequestQueue::UpdateRequestResult result);
 
   void UpdateMultipleRequestsCallback(
-      const RequestQueue::UpdateMultipleRequestResults& result,
-      std::vector<std::unique_ptr<SavePageRequest>> requests);
+      std::unique_ptr<UpdateRequestsResult> result);
 
   void HandleRemovedRequestsAndCallback(
       const RemoveRequestsCallback& callback,

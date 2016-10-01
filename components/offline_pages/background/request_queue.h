@@ -15,11 +15,14 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/offline_pages/background/save_page_request.h"
+#include "components/offline_pages/core/task_queue.h"
 #include "components/offline_pages/offline_page_item.h"
+#include "components/offline_pages/offline_store_types.h"
 
 namespace offline_pages {
 
 class RequestQueueStore;
+typedef StoreUpdateResult<SavePageRequest> UpdateRequestsResult;
 
 // Class responsible for managing save page requests.
 class RequestQueue {
@@ -57,6 +60,10 @@ class RequestQueue {
   // Callback used for |AddRequest|.
   typedef base::Callback<void(AddRequestResult, const SavePageRequest& request)>
       AddRequestCallback;
+
+  // Callback used by |ChangeRequestsState|.
+  typedef base::Callback<void(std::unique_ptr<UpdateRequestsResult>)>
+      UpdateCallback;
 
   // Callback used by |UdpateRequest|.
   typedef base::Callback<void(UpdateRequestResult)> UpdateRequestCallback;
@@ -98,14 +105,11 @@ class RequestQueue {
   void RemoveRequests(const std::vector<int64_t>& request_ids,
                       const RemoveRequestsCallback& callback);
 
-  // Changes the state to |new_state_ for requests matching the
+  // Changes the state to |new_state| for requests matching the
   // |request_ids|. Results are returned through |callback|.
-  // TODO(petewil): Instead of having one function per property,
-  // modify this to have a single update function that updates an entire
-  // request, and doesn't need to care what updates.
   void ChangeRequestsState(const std::vector<int64_t>& request_ids,
                            const SavePageRequest::RequestState new_state,
-                           const UpdateMultipleRequestsCallback& callback);
+                           const UpdateCallback& callback);
 
   void GetForUpdateDone(
       const RequestQueue::UpdateRequestCallback& update_callback,
@@ -125,6 +129,9 @@ class RequestQueue {
   void PurgeRequests(const PurgeRequestsCallback& callback);
 
   std::unique_ptr<RequestQueueStore> store_;
+
+  // Task queue to serialize store access.
+  TaskQueue task_queue_;
 
   // Allows us to pass a weak pointer to callbacks.
   base::WeakPtrFactory<RequestQueue> weak_ptr_factory_;

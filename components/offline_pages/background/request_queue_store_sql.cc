@@ -135,18 +135,6 @@ RequestQueue::UpdateRequestResult DeleteRequestById(sql::Connection* db,
     return RequestQueue::UpdateRequestResult::SUCCESS;
 }
 
-bool ChangeRequestState(sql::Connection* db,
-                        const int64_t request_id,
-                        const SavePageRequest::RequestState new_state) {
-  const char kSql[] = "UPDATE " REQUEST_QUEUE_TABLE_NAME
-                      " SET state=?"
-                      " WHERE request_id=?";
-  sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
-  statement.BindInt64(0, static_cast<int64_t>(new_state));
-  statement.BindInt64(1, request_id);
-  return statement.Run();
-}
-
 // Helper function to delete requests corresponding to passed in requestIds,
 // and fill an outparam with the removed requests.
 bool DeleteRequestsByIds(
@@ -175,43 +163,6 @@ bool DeleteRequestsByIds(
 
   if (!transaction.Commit()) {
     requests->clear();
-    BuildFailedResultList(request_ids, results);
-    return false;
-  }
-
-  return true;
-}
-
-bool ChangeRequestsState(
-    sql::Connection* db,
-    const std::vector<int64_t>& request_ids,
-    SavePageRequest::RequestState new_state,
-    RequestQueue::UpdateMultipleRequestResults& results,
-    std::vector<std::unique_ptr<SavePageRequest>>& requests) {
-  // If you create a transaction but don't Commit() it is automatically
-  // rolled back by its destructor when it falls out of scope.
-  sql::Transaction transaction(db);
-  if (!transaction.Begin()) {
-    BuildFailedResultList(request_ids, results);
-    return false;
-  }
-
-  // Update a request, then get it, and put the item we got on the output list.
-  for (const auto& request_id : request_ids) {
-    RequestQueue::UpdateRequestResult status;
-    if (!ChangeRequestState(db, request_id, new_state))
-      status = RequestQueue::UpdateRequestResult::REQUEST_DOES_NOT_EXIST;
-    else
-      status = RequestQueue::UpdateRequestResult::SUCCESS;
-
-    // Make output request_id/status pair, and put a copy of the updated request
-    // on output list.
-    results.push_back(std::make_pair(request_id, status));
-    requests.push_back(GetOneRequest(db, request_id));
-  }
-
-  if (!transaction.Commit()) {
-    requests.clear();
     BuildFailedResultList(request_ids, results);
     return false;
   }
@@ -384,21 +335,6 @@ void RemoveRequestsSync(sql::Connection* db,
                    base::Bind(callback, results, base::Passed(&requests)));
 }
 
-void ChangeRequestsStateSync(
-    sql::Connection* db,
-    scoped_refptr<base::SingleThreadTaskRunner> runner,
-    const std::vector<int64_t>& request_ids,
-    const SavePageRequest::RequestState new_state,
-    const RequestQueue::UpdateMultipleRequestsCallback& callback) {
-  RequestQueue::UpdateMultipleRequestResults results;
-  std::vector<std::unique_ptr<SavePageRequest>> requests;
-  // TODO(fgorski): add UMA metrics here.
-  offline_pages::ChangeRequestsState(db, request_ids, new_state, results,
-                                     requests);
-  runner->PostTask(FROM_HERE,
-                   base::Bind(callback, results, base::Passed(&requests)));
-}
-
 void OpenConnectionSync(sql::Connection* db,
                         scoped_refptr<base::SingleThreadTaskRunner> runner,
                         const base::FilePath& path,
@@ -503,22 +439,6 @@ void RequestQueueStoreSQL::RemoveRequests(
       FROM_HERE,
       base::Bind(&RemoveRequestsSync, db_.get(),
                  base::ThreadTaskRunnerHandle::Get(), request_ids, callback));
-}
-
-void RequestQueueStoreSQL::ChangeRequestsState(
-    const std::vector<int64_t>& request_ids,
-    const SavePageRequest::RequestState new_state,
-    const UpdateMultipleRequestsCallback& callback) {
-  RequestQueue::UpdateMultipleRequestResults results;
-  std::vector<std::unique_ptr<SavePageRequest>> requests;
-  if (!CheckDb(base::Bind(callback, results, base::Passed(&requests)))) {
-    return;
-  }
-
-  background_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ChangeRequestsStateSync, db_.get(),
-                            base::ThreadTaskRunnerHandle::Get(), request_ids,
-                            new_state, callback));
 }
 
 void RequestQueueStoreSQL::Reset(const ResetCallback& callback) {

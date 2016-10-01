@@ -45,7 +45,7 @@ void RequestQueueInMemoryStore::AddRequest(const SavePageRequest& request,
 
 void RequestQueueInMemoryStore::UpdateRequests(
     const std::vector<SavePageRequest>& requests,
-    const UpdateCallback& callback) {
+    const RequestQueue::UpdateCallback& callback) {
   std::unique_ptr<UpdateRequestsResult> result(
       new UpdateRequestsResult(StoreState::LOADED));
 
@@ -88,35 +88,6 @@ void RequestQueueInMemoryStore::RemoveRequests(
     } else {
       result = RequestQueue::UpdateRequestResult::REQUEST_DOES_NOT_EXIST;
     }
-    results.push_back(std::make_pair(request_id, result));
-  }
-
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(callback, results, base::Passed(std::move(requests))));
-}
-
-void RequestQueueInMemoryStore::ChangeRequestsState(
-    const std::vector<int64_t>& request_ids,
-    const SavePageRequest::RequestState new_state,
-    const UpdateMultipleRequestsCallback& callback) {
-  RequestQueue::UpdateMultipleRequestResults results;
-  std::vector<std::unique_ptr<SavePageRequest>> requests;
-  RequestQueue::UpdateRequestResult result;
-  for (int64_t request_id : request_ids) {
-    auto pair = requests_.find(request_id);
-    // If we find this request id, modify it, and return the modified request in
-    // the request list.
-    if (pair != requests_.end()) {
-      pair->second.set_request_state(new_state);
-      std::unique_ptr<SavePageRequest> request(
-          new SavePageRequest(pair->second));
-      requests.push_back(std::move(request));
-      result = RequestQueue::UpdateRequestResult::SUCCESS;
-    } else {
-      result = RequestQueue::UpdateRequestResult::REQUEST_DOES_NOT_EXIST;;
-    }
-
     results.push_back(std::make_pair(request_id, result));
   }
 

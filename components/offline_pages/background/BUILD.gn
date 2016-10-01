@@ -8,6 +8,8 @@ if (is_android) {
 
 static_library("background_offliner") {
   sources = [
+    "change_requests_state_task.cc",
+    "change_requests_state_task.h",
     "device_conditions.h",
     "offliner.h",
     "offliner_factory.h",
@@ -34,6 +36,7 @@ static_library("background_offliner") {
     "//base",
     "//components/keyed_service/core",
     "//components/offline_pages:offline_pages",
+    "//components/offline_pages/core",
     "//net",
     "//sql:sql",
     "//url",
@@ -43,6 +46,7 @@ static_library("background_offliner") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "change_requests_state_task_unittest.cc",
     "request_coordinator_event_logger_unittest.cc",
     "request_coordinator_unittest.cc",
     "request_picker_unittest.cc",

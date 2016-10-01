@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/offline_pages/background/change_requests_state_task.h"
 #include "components/offline_pages/background/request_queue_store.h"
 #include "components/offline_pages/background/save_page_request.h"
 
@@ -70,14 +71,6 @@ void UpdateRequestsDone(const RequestQueue::UpdateRequestCallback& callback,
   }
 
   callback.Run(result);
-}
-
-// Handles updating multiple requests at the same time.
-void UpdateMultipleRequestsDone(
-    const RequestQueue::UpdateMultipleRequestsCallback& callback,
-    const RequestQueue::UpdateMultipleRequestResults& results,
-    std::vector<std::unique_ptr<SavePageRequest>> requests) {
-  callback.Run(results, std::move(requests));
 }
 
 // Completes the remove request call.
@@ -165,9 +158,10 @@ void RequestQueue::RemoveRequests(const std::vector<int64_t>& request_ids,
 void RequestQueue::ChangeRequestsState(
     const std::vector<int64_t>& request_ids,
     const SavePageRequest::RequestState new_state,
-    const UpdateMultipleRequestsCallback& callback) {
-  store_->ChangeRequestsState(request_ids, new_state,
-                              base::Bind(UpdateMultipleRequestsDone, callback));
+    const RequestQueue::UpdateCallback& callback) {
+  std::unique_ptr<Task> task(new ChangeRequestsStateTask(
+      store_.get(), request_ids, new_state, callback));
+  task_queue_.AddTask(std::move(task));
 }
 
 void RequestQueue::PurgeRequests(const PurgeRequestsCallback& callback) {}
