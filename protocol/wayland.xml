@@ -259,7 +259,7 @@
 
   <interface name="wl_shm" version="1">
     <description summary="shared memory support">
-      A global singleton object that provides support for shared
+      A singleton global object that provides support for shared
       memory.
 
       Clients can create wl_shm_pool objects using the create_pool
