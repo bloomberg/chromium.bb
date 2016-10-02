@@ -13,6 +13,8 @@ import hashlib
 import os
 import shutil
 
+from chromite.lib import osutils
+
 
 class MissingFileError(RuntimeError):
   """Raised when required file is missing."""
@@ -49,7 +51,7 @@ def Copy(src_path, dest_path):
   """
   dest_dir = os.path.dirname(dest_path)
   if dest_dir and not Exists(dest_dir, as_dir=True):
-    Makedir(dest_dir, fill_path=True)
+    osutils.SafeMakedirs(dest_dir)
 
   shutil.copy2(src_path, dest_path)
 
@@ -88,30 +90,6 @@ def Exists(path, as_dir=False):
     return os.path.isdir(path)
   else:
     return os.path.isfile(path)
-
-
-def Makedir(*args, **kwargs):
-  """Make the directory at path or paths.
-
-  Args:
-    args: One or more local or /cns paths.
-    fill_path: Create parent directories as necessary.
-      Same as 'mkdir -p' option.  Defaults to False.
-
-  Raises:
-    MissingDirectoryError if fill_path not given and directory above a
-      given path does not exist.
-  """
-  fill_path = kwargs.pop('fill_path', False)
-
-  for path in args:
-    if not fill_path:
-      path_dir = os.path.dirname(path)
-      if not Exists(path_dir, as_dir=True):
-        raise MissingDirectoryError('Cannot create directory %r without'
-                                    ' fill_path option.' % path)
-
-    os.makedirs(path)
 
 
 def Remove(*args, **kwargs):

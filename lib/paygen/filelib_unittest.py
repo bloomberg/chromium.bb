@@ -12,6 +12,7 @@ import subprocess
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import osutils
 from chromite.lib.paygen import filelib
 from chromite.lib.paygen import utils
 
@@ -37,7 +38,7 @@ class TestFileManipulation(cros_test_lib.TestCase):
       out2.write(self.FILE2_CONTENTS)
 
     subdir = os.path.join(tempdir, self.SUBDIR)
-    filelib.Makedir(subdir)
+    osutils.SafeMakedirs(subdir)
 
     with open(os.path.join(tempdir, self.SUBFILE), 'w') as out3:
       out3.write(self.SUBFILE_CONTENTS)
@@ -197,7 +198,7 @@ class TestFileLib(cros_test_lib.MoxTempDirTestCase):
     relative_path = 'relative.bin'
 
     self.mox.StubOutWithMock(filelib, 'Exists')
-    self.mox.StubOutWithMock(filelib, 'Makedir')
+    self.mox.StubOutWithMock(osutils, 'SafeMakedirs')
     self.mox.StubOutWithMock(filelib.shutil, 'copy2')
 
     # Set up the test replay script.
@@ -206,7 +207,7 @@ class TestFileLib(cros_test_lib.MoxTempDirTestCase):
     filelib.shutil.copy2(path1, path2)
     # Run 2, path2 directory does not exist.
     filelib.Exists(os.path.dirname(path2), as_dir=True).AndReturn(False)
-    filelib.Makedir(os.path.dirname(path2), fill_path=True)
+    osutils.SafeMakedirs(os.path.dirname(path2))
     filelib.shutil.copy2(path1, path2)
 
     # Run 3, there is target directory is '.', don't test existence.
