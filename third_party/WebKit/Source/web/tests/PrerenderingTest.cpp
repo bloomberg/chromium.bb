@@ -281,7 +281,8 @@ TEST_F(PrerenderingTest, AbandonPrerender) {
   EXPECT_EQ(1u, prerenderingSupport()->abandonCount(webPrerender));
   EXPECT_EQ(2u, prerenderingSupport()->totalCount());
 
-  // Check that the prerender does not emit an extra cancel when garbage-collecting everything.
+  // Check that the prerender does not emit an extra cancel when
+  // garbage-collecting everything.
   close();
 
   EXPECT_EQ(2u, prerenderingSupport()->totalCount());
@@ -401,12 +402,14 @@ TEST_F(PrerenderingTest, FastRemoveElement) {
   EXPECT_EQ(1u, prerenderingSupport()->addCount(webPrerender));
   EXPECT_EQ(1u, prerenderingSupport()->totalCount());
 
-  // Race removing & starting the prerender against each other, as if the element was removed very quickly.
+  // Race removing & starting the prerender against each other, as if the
+  // element was removed very quickly.
   executeScript("removePrerender()");
   EXPECT_FALSE(webPrerender.isNull());
   webPrerender.didStartPrerender();
 
-  // The page should be totally disconnected from the Prerender at this point, so the console should not have updated.
+  // The page should be totally disconnected from the Prerender at this point,
+  // so the console should not have updated.
   EXPECT_EQ(0u, consoleLength());
 }
 
@@ -421,7 +424,8 @@ TEST_F(PrerenderingTest, MutateTarget) {
   EXPECT_EQ(0u, prerenderingSupport()->cancelCount(webPrerender));
   EXPECT_EQ(1u, prerenderingSupport()->totalCount());
 
-  // Change the href of this prerender, make sure this is treated as a remove and add.
+  // Change the href of this prerender, make sure this is treated as a remove
+  // and add.
   executeScript("mutateTarget()");
   EXPECT_EQ(1u, prerenderingSupport()->cancelCount(webPrerender));
 

@@ -10,16 +10,16 @@
  *     notice, this list of conditions and the following disclaimer in the
  *     documentation and/or other materials provided with the distribution.
  *
- * THIS SOFTWARE IS PROVIDED BY APPLE INC. AND ITS CONTRIBUTORS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * THIS SOFTWARE IS PROVIDED BY APPLE INC. AND ITS CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL APPLE INC. OR ITS CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
- * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * DISCLAIMED. IN NO EVENT SHALL APPLE INC. OR ITS CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "core/page/scrolling/ScrollingCoordinator.h"
@@ -58,8 +58,8 @@ class ScrollingCoordinatorTest : public testing::Test {
                         &configureSettings);
     webViewImpl()->resize(IntSize(320, 240));
 
-    // OSX attaches main frame scrollbars to the VisualViewport so the VisualViewport layers need
-    // to be initialized.
+    // macOS attaches main frame scrollbars to the VisualViewport so the
+    // VisualViewport layers need to be initialized.
     webViewImpl()->updateAllLifecyclePhases();
     WebFrameWidgetBase* mainFrameWidget =
         webViewImpl()->mainFrameImpl()->frameWidget();
@@ -420,8 +420,8 @@ TEST_F(ScrollingCoordinatorTest, overflowScrolling) {
   navigateTo(m_baseURL + "overflow-scrolling.html");
   forceFullCompositingUpdate();
 
-  // Verify the properties of the accelerated scrolling element starting from the LayoutObject
-  // all the way to the WebLayer.
+  // Verify the properties of the accelerated scrolling element starting from
+  // the LayoutObject all the way to the WebLayer.
   Element* scrollableElement =
       frame()->document()->getElementById("scrollable");
   DCHECK(scrollableElement);
@@ -466,8 +466,8 @@ TEST_F(ScrollingCoordinatorTest, overflowHidden) {
   navigateTo(m_baseURL + "overflow-hidden.html");
   forceFullCompositingUpdate();
 
-  // Verify the properties of the accelerated scrolling element starting from the LayoutObject
-  // all the way to the WebLayer.
+  // Verify the properties of the accelerated scrolling element starting from
+  // the LayoutObject all the way to the WebLayer.
   Element* overflowElement =
       frame()->document()->getElementById("unscrollable-y");
   DCHECK(overflowElement);
@@ -528,8 +528,8 @@ TEST_F(ScrollingCoordinatorTest, iframeScrolling) {
   navigateTo(m_baseURL + "iframe-scrolling.html");
   forceFullCompositingUpdate();
 
-  // Verify the properties of the accelerated scrolling element starting from the LayoutObject
-  // all the way to the WebLayer.
+  // Verify the properties of the accelerated scrolling element starting from
+  // the LayoutObject all the way to the WebLayer.
   Element* scrollableFrame = frame()->document()->getElementById("scrollable");
   ASSERT_TRUE(scrollableFrame);
 
@@ -572,8 +572,8 @@ TEST_F(ScrollingCoordinatorTest, rtlIframe) {
   navigateTo(m_baseURL + "rtl-iframe.html");
   forceFullCompositingUpdate();
 
-  // Verify the properties of the accelerated scrolling element starting from the LayoutObject
-  // all the way to the WebLayer.
+  // Verify the properties of the accelerated scrolling element starting from
+  // the LayoutObject all the way to the WebLayer.
   Element* scrollableFrame = frame()->document()->getElementById("scrollable");
   ASSERT_TRUE(scrollableFrame);
 

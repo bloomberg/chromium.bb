@@ -108,11 +108,13 @@ class SettingOverrider {
   virtual void overrideSettings(WebSettings*) = 0;
 };
 
-// Forces to use mocked overlay scrollbars instead of the default native theme scrollbars to avoid
-// crash in Chromium code when it tries to load UI resources that are not available when running
-// blink unit tests, and to ensure consistent layout regardless of differences between scrollbar themes.
-// WebViewHelper includes this, so this is only needed if a test doesn't use WebViewHelper or the test
-// needs a bigger scope of mock scrollbar settings than the scope of WebViewHelper.
+// Forces to use mocked overlay scrollbars instead of the default native theme
+// scrollbars to avoid crash in Chromium code when it tries to load UI
+// resources that are not available when running blink unit tests, and to
+// ensure consistent layout regardless of differences between scrollbar themes.
+// WebViewHelper includes this, so this is only needed if a test doesn't use
+// WebViewHelper or the test needs a bigger scope of mock scrollbar settings
+// than the scope of WebViewHelper.
 class UseMockScrollbarSettings {
  public:
   UseMockScrollbarSettings()
@@ -181,7 +183,8 @@ class TestWebViewClient : public WebViewClient {
   bool m_animationScheduled;
 };
 
-// Convenience class for handling the lifetime of a WebView and its associated mainframe in tests.
+// Convenience class for handling the lifetime of a WebView and its associated
+// mainframe in tests.
 class WebViewHelper {
   WTF_MAKE_NONCOPYABLE(WebViewHelper);
 
@@ -229,8 +232,9 @@ class WebViewHelper {
   TestWebViewClient* m_testWebViewClient;
 };
 
-// Minimal implementation of WebFrameClient needed for unit tests that load frames. Tests that load
-// frames and need further specialization of WebFrameClient behavior should subclass this.
+// Minimal implementation of WebFrameClient needed for unit tests that load
+// frames. Tests that load frames and need further specialization of
+// WebFrameClient behavior should subclass this.
 class TestWebFrameClient : public WebFrameClient {
  public:
   TestWebFrameClient();
@@ -250,8 +254,9 @@ class TestWebFrameClient : public WebFrameClient {
   int m_loadsInProgress = 0;
 };
 
-// Minimal implementation of WebRemoteFrameClient needed for unit tests that load remote frames. Tests that load
-// frames and need further specialization of WebFrameClient behavior should subclass this.
+// Minimal implementation of WebRemoteFrameClient needed for unit tests that
+// load remote frames. Tests that load frames and need further specialization
+// of WebFrameClient behavior should subclass this.
 class TestWebRemoteFrameClient : public WebRemoteFrameClient {
  public:
   TestWebRemoteFrameClient();

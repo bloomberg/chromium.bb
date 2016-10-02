@@ -44,9 +44,9 @@ class VirtualTimeTest : public SimTest {
   }
 
   void TearDown() override {
-    // The SimTest destructor calls runPendingTasks. This is a problem because if there are
-    // any repeating tasks, advancing virtual time will cause the runloop to busy loop. Pausing
-    // virtual time here fixes that.
+    // The SimTest destructor calls runPendingTasks. This is a problem because
+    // if there are any repeating tasks, advancing virtual time will cause the
+    // runloop to busy loop. Pausing virtual time here fixes that.
     webView().scheduler()->setVirtualTimePolicy(
         WebViewScheduler::VirtualTimePolicy::PAUSE);
   }
@@ -57,7 +57,8 @@ void quitRunLoop() {
   base::MessageLoop::current()->QuitNow();
 }
 
-// Some task queues may have repeating v8 tasks that run forever so we impose a hard time limit.
+// Some task queues may have repeating v8 tasks that run forever so we impose a
+// hard time limit.
 void runTasksForPeriod(double delayMs) {
   Platform::current()->currentThread()->getWebTaskRunner()->postDelayedTask(
       BLINK_FROM_HERE, WTF::bind(&quitRunLoop), delayMs);
@@ -162,7 +163,8 @@ TEST_F(VirtualTimeTest,
   webView().scheduler()->setVirtualTimePolicy(
       WebViewScheduler::VirtualTimePolicy::DETERMINISTIC_LOADING);
 
-  // To ensure determinism virtual time is not allowed to advance until we have seen at least one load.
+  // To ensure determinism virtual time is not allowed to advance until we have
+  // seen at least one load.
   EXPECT_FALSE(webView().scheduler()->virtualTimeAllowedToAdvance());
 
   SimRequest mainResource("https://example.com/test.html", "text/html");

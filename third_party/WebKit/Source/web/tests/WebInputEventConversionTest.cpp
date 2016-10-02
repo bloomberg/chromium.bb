@@ -485,8 +485,8 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
                     platformTouchBuilder.touchPoints()[0].radius().height());
   }
 
-  // Reverse builders should *not* go back to physical pixels, as they are used for plugins
-  // which expect CSS pixel coordinates.
+  // Reverse builders should *not* go back to physical pixels, as they are used
+  // for plugins which expect CSS pixel coordinates.
   {
     PlatformMouseEvent platformMouseEvent(
         IntPoint(10, 10), IntPoint(10, 10), WebPointerProperties::Button::Left,

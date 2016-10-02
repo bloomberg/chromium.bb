@@ -58,8 +58,9 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithScale) {
   loader.currentItem()->setPageScaleFactor(2);
   loader.currentItem()->setScrollPoint(WebPoint(0, 200));
 
-  // Flip back the wasScrolledByUser flag which was set to true by setPageScaleFactor
-  // because otherwise FrameLoader::restoreScrollPositionAndViewState does nothing.
+  // Flip back the wasScrolledByUser flag which was set to true by
+  // setPageScaleFactor because otherwise
+  // FrameLoader::restoreScrollPositionAndViewState does nothing.
   loader.documentLoader()->initialScrollState().wasScrolledByUser = false;
   loader.restoreScrollPositionAndViewState();
 
@@ -87,7 +88,8 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithoutScale) {
   loader.currentItem()->setPageScaleFactor(0);
   loader.currentItem()->setScrollPoint(WebPoint(0, 400));
 
-  // FrameLoader::restoreScrollPositionAndViewState flows differently if scale is zero.
+  // FrameLoader::restoreScrollPositionAndViewState flows differently if scale
+  // is zero.
   loader.restoreScrollPositionAndViewState();
 
   // Expect that only the scroll position was restored.

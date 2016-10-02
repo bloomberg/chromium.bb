@@ -218,7 +218,8 @@ TEST_P(CompositorWorkerTest, noProxies) {
 
 TEST_P(CompositorWorkerTest, disconnectedProxies) {
   // This case is identical to compositor-proxy-basic, but the proxies are
-  // disconnected (the result should be the same as compositor-proxy-plumbing-no-proxies).
+  // disconnected (the result should be the same as
+  // compositor-proxy-plumbing-no-proxies).
   registerMockedHttpURLLoad("compositor-proxy-basic-disconnected.html");
   navigateTo(m_baseURL + "compositor-proxy-basic-disconnected.html");
 

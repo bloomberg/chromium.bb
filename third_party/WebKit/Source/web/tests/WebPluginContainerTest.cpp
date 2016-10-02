@@ -107,7 +107,8 @@ class CustomPluginWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
 
 class TestPluginWebFrameClient;
 
-// Subclass of FakeWebPlugin that has a selection of 'x' as plain text and 'y' as markup text.
+// Subclass of FakeWebPlugin that has a selection of 'x' as plain text and 'y'
+// as markup text.
 class TestPlugin : public FakeWebPlugin {
  public:
   TestPlugin(WebFrame* frame,
@@ -385,7 +386,8 @@ TEST_F(WebPluginContainerTest, CopyFromContextMenu) {
   webView->handleInputEvent(event);
   // 2) document blurs the plugin, because it can.
   webView->clearFocusedElement();
-  // 3) Copy should still operate on the context node, even though the focus had shifted.
+  // 3) Copy should still operate on the context node, even though the focus had
+  //    shifted.
   EXPECT_TRUE(webView->mainFrame()->toWebLocalFrame()->executeCommand("Copy"));
   EXPECT_EQ(WebString("x"), Platform::current()->clipboard()->readPlainText(
                                 WebClipboard::Buffer()));
@@ -500,7 +502,8 @@ TEST_F(WebPluginContainerTest, GestureLongPressReachesPlugin) {
 
   EXPECT_EQ(WebInputEvent::Undefined, testPlugin->getLastInputEventType());
 
-  // Next, send an event that does hit the plugin, and verify it does receive it.
+  // Next, send an event that does hit the plugin, and verify it does receive
+  // it.
   WebRect rect = pluginContainerOneElement.boundsInViewport();
   event.x = rect.x + rect.width / 2;
   event.y = rect.y + rect.height / 2;

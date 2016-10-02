@@ -271,8 +271,9 @@ TEST_F(DocumentLoadingRenderingTest,
                                                ->graphicsLayerBacking()
                                                ->getPaintController()
                                                .getDisplayItemList();
-  // Check that the DisplayItemList has no subsequene caching markers. These are not allowed in pending-style-sheets mode
-  // since otherwise caching would be incorrect.
+  // Check that the DisplayItemList has no subsequene caching markers. These are
+  // not allowed in pending-style-sheets mode since otherwise caching would be
+  // incorrect.
   ASSERT_EQ(2u, displayItemList.size());
   EXPECT_EQ(DisplayItem::kDocumentBackground, displayItemList[0].getType());
   EXPECT_EQ(DisplayItem::kBoxDecorationBackground,

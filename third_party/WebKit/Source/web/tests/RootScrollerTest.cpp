@@ -762,8 +762,8 @@ TEST_F(RootScrollerTest, RemoveClippingOnCompositorLayers) {
   }
 
   // Now reset the iframe's root scroller. Since the iframe itself is now the
-  // global root scroller we want it to behave as if it were the main frame, which
-  // means it should clip only on its root content layer.
+  // global root scroller we want it to behave as if it were the main frame,
+  // which means it should clip only on its root content layer.
   {
     iframe->contentDocument()->setRootScroller(nullptr, nonThrow);
     mainFrameView()->updateAllLifecyclePhases();

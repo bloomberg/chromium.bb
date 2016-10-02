@@ -209,7 +209,8 @@ TEST_F(MHTMLTest, TestMHTMLEncoding) {
   RefPtr<SharedBuffer> data = serialize("Test Serialization", "text/html",
                                         MHTMLArchive::UseDefaultEncoding);
 
-  // Read the MHTML data line per line and do some pseudo-parsing to make sure the right encoding is used for the different sections.
+  // Read the MHTML data line per line and do some pseudo-parsing to make sure
+  // the right encoding is used for the different sections.
   LineReader lineReader(std::string(data->data(), data->size()));
   int sectionCheckedCount = 0;
   const char* expectedEncoding = 0;
@@ -248,7 +249,8 @@ TEST_F(MHTMLTest, MHTMLFromScheme) {
   KURL fileURL = toKURL("file://foo");
   KURL specialSchemeURL = toKURL("fooscheme://bar");
 
-  // MHTMLArchives can only be initialized from local schemes, http/https schemes, and content scheme(Android specific).
+  // MHTMLArchives can only be initialized from local schemes, http/https
+  // schemes, and content scheme(Android specific).
   EXPECT_NE(nullptr, MHTMLArchive::create(httpURL, data.get()));
 #if OS(ANDROID)
   EXPECT_NE(nullptr, MHTMLArchive::create(contentURL, data.get()));

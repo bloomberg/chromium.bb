@@ -419,7 +419,8 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
   WebViewImpl* webView =
       WebViewImpl::create(&webViewClient, WebPageVisibilityStateVisible);
   EXPECT_NE(kBlue, webView->backgroundColor());
-  // webView does not have a frame yet, but we should still be able to set the background color.
+  // webView does not have a frame yet, but we should still be able to set the
+  // background color.
   webView->setBaseBackgroundColor(kBlue);
   EXPECT_EQ(kBlue, webView->backgroundColor());
   FrameTestHelpers::TestWebFrameClient webFrameClient;
@@ -451,7 +452,8 @@ TEST_F(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent) {
 
   SkPictureBuilder pictureBuilder(FloatRect(0, 0, kWidth, kHeight));
 
-  // Paint the root of the main frame in the way that CompositedLayerMapping would.
+  // Paint the root of the main frame in the way that CompositedLayerMapping
+  // would.
   FrameView* view = m_webViewHelper.webView()->mainFrameImpl()->frameView();
   PaintLayer* rootLayer = view->layoutViewItem().layer();
   LayoutRect paintRect(0, 0, kWidth, kHeight);
@@ -656,8 +658,8 @@ void WebViewTest::testAutoResize(
             client.testData().getVerticalScrollbarState());
 #endif
 
-  m_webViewHelper
-      .reset();  // Explicitly reset to break dependency on locally scoped client.
+  // Explicitly reset to break dependency on locally scoped client.
+  m_webViewHelper.reset();
 }
 
 TEST_F(WebViewTest, AutoResizeMinimumSize) {
@@ -767,11 +769,11 @@ TEST_F(WebViewTest, TextInputInfoUpdateStyleAndLayout) {
 
   WebURL baseURL = URLTestHelpers::toKURL("http://example.com/");
   // Here, we need to construct a document that has a special property:
-  // Adding id="foo" to the <path> element will trigger creation of an SVG instance tree
-  // for the use <use> element.
+  // Adding id="foo" to the <path> element will trigger creation of an SVG
+  // instance tree for the use <use> element.
   // This is significant, because SVG instance trees are actually created lazily
-  // during Document::updateStyleAndLayout code, thus incrementing the DOM tree version
-  // and freaking out the EphemeralRange (invalidating it).
+  // during Document::updateStyleAndLayout code, thus incrementing the DOM tree
+  // version and freaking out the EphemeralRange (invalidating it).
   FrameTestHelpers::loadHTMLString(
       webViewImpl->mainFrame(),
       "<svg height='100%' version='1.1' viewBox='0 0 14 14' width='100%'>"
@@ -1526,7 +1528,8 @@ TEST_F(WebViewTest, BackForwardRestoreScroll) {
       ResourceRequest(mainFrameLocal->document()->completeURL("#b"))));
   Persistent<HistoryItem> item3 = mainFrameLocal->loader().currentItem();
 
-  // Go back, then forward. The scroll position should be properly set on the forward navigation.
+  // Go back, then forward. The scroll position should be properly set on the
+  // forward navigation.
   mainFrameLocal->loader().load(
       FrameLoadRequest(
           nullptr, FrameLoader::resourceRequestFromHistoryItem(
@@ -1748,7 +1751,8 @@ TEST_F(WebViewTest, DragDropURL) {
   // Disable navigation on drag-and-drop.
   webView->settingsImpl()->setNavigateOnDragDrop(false);
 
-  // Attempt to drag and drop to barUrl and verify that no navigation has occurred.
+  // Attempt to drag and drop to barUrl and verify that no navigation has
+  // occurred.
   DragAndDropURL(webView, barUrl);
   EXPECT_EQ(fooUrl, webView->mainFrame()->document().url().string().utf8());
 }
@@ -1802,7 +1806,8 @@ bool WebViewTest::tapElement(WebInputEvent::Type type, Element* element) {
   DCHECK(m_webViewHelper.webView());
   element->scrollIntoViewIfNeeded();
 
-  // TODO(bokan): Technically incorrect, event positions should be in viewport space. crbug.com/371902.
+  // TODO(bokan): Technically incorrect, event positions should be in viewport
+  // space. crbug.com/371902.
   IntPoint center =
       m_webViewHelper.webView()
           ->mainFrameImpl()
@@ -1881,8 +1886,8 @@ TEST_F(WebViewTest, DetectContentAroundPosition) {
   runPendingTasks();
   EXPECT_TRUE(client.pendingIntentsCancelled());
 
-  m_webViewHelper
-      .reset();  // Explicitly reset to break dependency on locally scoped client.
+  // Explicitly reset to break dependency on locally scoped client.
+  m_webViewHelper.reset();
 }
 
 TEST_F(WebViewTest, ContentDetectionInIframe) {
@@ -1909,8 +1914,8 @@ TEST_F(WebViewTest, ContentDetectionInIframe) {
   EXPECT_TRUE(client.scheduledIntentURL() == intentURL);
   EXPECT_FALSE(client.wasInMainFrame());
 
-  m_webViewHelper
-      .reset();  // Explicitly reset to break dependency on locally scoped client.
+  // Explicitly reset to break dependency on locally scoped client.
+  m_webViewHelper.reset();
 }
 
 TEST_F(WebViewTest, ClientTapHandling) {
@@ -1936,8 +1941,8 @@ TEST_F(WebViewTest, ClientTapHandling) {
   EXPECT_EQ(25, client.longpressX());
   EXPECT_EQ(7, client.longpressY());
 
-  m_webViewHelper
-      .reset();  // Explicitly reset to break dependency on locally scoped client.
+  // Explicitly reset to break dependency on locally scoped client.
+  m_webViewHelper.reset();
 }
 
 TEST_F(WebViewTest, ClientTapHandlingNullWebViewClient) {
@@ -2454,8 +2459,8 @@ TEST_F(WebViewTest, LosingFocusDoesNotTriggerAutofillTextChange) {
   EXPECT_EQ(8, info.compositionStart);
   EXPECT_EQ(12, info.compositionEnd);
 
-  // Clear the focus and track that the subsequent composition commit does not trigger a
-  // text changed notification for autofill.
+  // Clear the focus and track that the subsequent composition commit does not
+  // trigger a text changed notification for autofill.
   client.clearChangeCounts();
   webView->setFocus(false);
   EXPECT_EQ(0, client.textChangesWhileNotIgnored());
@@ -2496,8 +2501,8 @@ TEST_F(WebViewTest, CompositionNotCancelledByBackspace) {
     frame->setEditableSelectionOffsets(11, 11);
     verifySelectionAndComposition(webView, 11, 11, 6, 11, "initial case");
 
-    // Press Backspace and verify composition didn't get cancelled. This is to verify the fix
-    // for crbug.com/429916.
+    // Press Backspace and verify composition didn't get cancelled. This is to
+    // verify the fix for crbug.com/429916.
     WebKeyboardEvent keyEvent;
     keyEvent.domKey = Platform::current()->domKeyEnumFromString("\b");
     keyEvent.windowsKeyCode = VKEY_BACK;
@@ -2650,7 +2655,8 @@ TEST_F(WebViewTest, FocusExistingFrameOnNavigate) {
   ASSERT_TRUE(client.createdWebView());
   EXPECT_FALSE(client.didFocusCalled());
 
-  // Make a request from the new window that will navigate the original window. The original window should be focused.
+  // Make a request from the new window that will navigate the original window.
+  // The original window should be focused.
   WebURLRequest webURLRequestWithTargetStart;
   FrameLoadRequest requestWithTargetStart(
       0, webURLRequestWithTargetStart.toResourceRequest(), "_start");
@@ -2788,8 +2794,8 @@ TEST_F(WebViewTest, MAYBE_ChooseValueFromDateTimeChooser) {
   client.clearChooserCompletion();
   EXPECT_STREQ("", inputElement->value().utf8().data());
 
-  // Clear the WebViewClient from the webViewHelper to avoid use-after-free in the
-  // WebViewHelper destructor.
+  // Clear the WebViewClient from the webViewHelper to avoid use-after-free in
+  // the WebViewHelper destructor.
   m_webViewHelper.reset();
   RuntimeEnabledFeatures::setInputMultipleFieldsUIEnabled(
       originalMultipleFieldsFlag);
@@ -3065,9 +3071,9 @@ TEST_F(WebViewTest, HasTouchEventHandlers) {
       EventHandlerRegistry::TouchStartOrMoveEventBlocking;
 
   // The page is initialized with at least one no-handlers call.
-  // In practice we get two such calls because WebViewHelper::initializeAndLoad first
-  // initializes and empty frame, and then loads a document into it, so there are two
-  // FrameLoader::commitProvisionalLoad calls.
+  // In practice we get two such calls because WebViewHelper::initializeAndLoad
+  // first initializes and empty frame, and then loads a document into it, so
+  // there are two FrameLoader::commitProvisionalLoad calls.
   EXPECT_GE(client.getAndResetHasTouchEventHandlerCallCount(false), 1);
   EXPECT_EQ(0, client.getAndResetHasTouchEventHandlerCallCount(true));
 
@@ -3137,8 +3143,8 @@ TEST_F(WebViewTest, HasTouchEventHandlers) {
   EXPECT_EQ(0, client.getAndResetHasTouchEventHandlerCallCount(false));
   EXPECT_EQ(1, client.getAndResetHasTouchEventHandlerCallCount(true));
 
-  // Adding and clearing handlers in the parent doc or elsewhere in the child doc
-  // has no impact.
+  // Adding and clearing handlers in the parent doc or elsewhere in the child
+  // doc has no impact.
   registry->didAddEventHandler(*document, touchEvent);
   registry->didAddEventHandler(*childFrame, touchEvent);
   registry->didAddEventHandler(*childDocument, touchEvent);
@@ -3148,7 +3154,8 @@ TEST_F(WebViewTest, HasTouchEventHandlers) {
   EXPECT_EQ(0, client.getAndResetHasTouchEventHandlerCallCount(false));
   EXPECT_EQ(0, client.getAndResetHasTouchEventHandlerCallCount(true));
 
-  // Removing the final handler inside the child frame results in a no-handlers call.
+  // Removing the final handler inside the child frame results in a no-handlers
+  // call.
   registry->didRemoveAllEventHandlers(*childDiv);
   EXPECT_EQ(1, client.getAndResetHasTouchEventHandlerCallCount(false));
   EXPECT_EQ(0, client.getAndResetHasTouchEventHandlerCallCount(true));
@@ -3167,7 +3174,8 @@ TEST_F(WebViewTest, HasTouchEventHandlers) {
   EXPECT_EQ(0, client.getAndResetHasTouchEventHandlerCallCount(false));
   EXPECT_EQ(0, client.getAndResetHasTouchEventHandlerCallCount(true));
 
-  // Now removing the handler in the parent document results in a no-handlers call.
+  // Now removing the handler in the parent document results in a no-handlers
+  // call.
   registry->didRemoveEventHandler(*childFrame, touchEvent);
   EXPECT_EQ(1, client.getAndResetHasTouchEventHandlerCallCount(false));
   EXPECT_EQ(0, client.getAndResetHasTouchEventHandlerCallCount(true));
@@ -3197,10 +3205,10 @@ TEST_F(WebViewTest, DeleteElementWithRegisteredHandler) {
   TrackExceptionState exceptionState;
   div->remove(exceptionState);
 
-  // For oilpan we have to force a GC to ensure the event handlers have been removed when
-  // checking below. We do a precise GC (collectAllGarbage does not scan the stack)
-  // to ensure the div element dies. This is also why the Document is in a Persistent
-  // since we want that to stay around.
+  // For oilpan we have to force a GC to ensure the event handlers have been
+  // removed when checking below. We do a precise GC (collectAllGarbage does not
+  // scan the stack) to ensure the div element dies. This is also why the
+  // Document is in a Persistent since we want that to stay around.
   ThreadState::current()->collectAllGarbage();
 
   EXPECT_FALSE(registry.hasEventHandlers(EventHandlerRegistry::ScrollEvent));
@@ -3281,8 +3289,9 @@ TEST_F(WebViewTest, TextInputFlags) {
   m_webViewHelper.reset();
 }
 
-// This test verifies that WebWidgetClient::didUpdateTextOfFocusedElementByNonUserInput is
-// called iff value of a focused element is modified via script.
+// This test verifies that
+// WebWidgetClient::didUpdateTextOfFocusedElementByNonUserInput is called iff
+// value of a focused element is modified via script.
 TEST_F(WebViewTest, NonUserInputTextUpdate) {
   NonUserInputTextUpdateWebWidgetClient client;
   std::string url = m_baseURL + "non_user_input_text_update.html";
@@ -3494,8 +3503,9 @@ TEST_F(WebViewTest, AutoResizeSubtreeLayout) {
   FrameView* frameView =
       m_webViewHelper.webView()->mainFrameImpl()->frameView();
 
-  // Auto-resizing used to DCHECK(needsLayout()) in LayoutBlockFlow::layout. This EXPECT is
-  // merely a dummy. The real test is that we don't trigger asserts in debug builds.
+  // Auto-resizing used to DCHECK(needsLayout()) in LayoutBlockFlow::layout.
+  // This EXPECT is merely a dummy. The real test is that we don't trigger
+  // asserts in debug builds.
   EXPECT_FALSE(frameView->needsLayout());
 };
 
@@ -3596,7 +3606,8 @@ TEST_F(WebViewTest, ShowUnhandledTapUIIfNeeded) {
   webView->updateAllLifecyclePhases();
   runPendingTasks();
 
-  // Scroll the bottom into view so we can distinguish window coordinates from document coordinates.
+  // Scroll the bottom into view so we can distinguish window coordinates from
+  // document coordinates.
   EXPECT_TRUE(
       tapElementById(WebInputEvent::GestureTap, WebString::fromUTF8("bottom")));
   EXPECT_TRUE(client.getWasCalled());
@@ -3614,7 +3625,8 @@ TEST_F(WebViewTest, ShowUnhandledTapUIIfNeeded) {
   EXPECT_EQ(82, client.getTappedYPos());
   EXPECT_FALSE(client.isTappedNodeNull());
   EXPECT_TRUE(client.getWebNode().isTextNode());
-  // Make sure the returned text node has the parent element that was our target.
+  // Make sure the returned text node has the parent element that was our
+  // target.
   EXPECT_EQ(webView->mainFrame()->document().getElementById("target"),
             client.getWebNode().parentNode());
 

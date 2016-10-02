@@ -141,8 +141,8 @@ void TouchActionTest::runTouchActionTest(std::string file) {
       static_cast<Document*>(webView->mainFrame()->document());
   runTestOnTree(document.get(), webView, client);
 
-  m_webViewHelper
-      .reset();  // Explicitly reset to break dependency on locally scoped client.
+  // Explicitly reset to break dependency on locally scoped client.
+  m_webViewHelper.reset();
 }
 
 void TouchActionTest::runShadowDOMTest(std::string file) {
@@ -152,7 +152,8 @@ void TouchActionTest::runShadowDOMTest(std::string file) {
 
   TrackExceptionState es;
 
-  // Oilpan: see runTouchActionTest() comment why these are persistent references.
+  // Oilpan: see runTouchActionTest() comment why these are persistent
+  // references.
   Persistent<Document> document =
       static_cast<Document*>(webView->mainFrame()->document());
   Persistent<StaticElementList> hostNodes =
@@ -168,8 +169,8 @@ void TouchActionTest::runShadowDOMTest(std::string file) {
   // Projections show up in the main document.
   runTestOnTree(document.get(), webView, client);
 
-  m_webViewHelper
-      .reset();  // Explicitly reset to break dependency on locally scoped client.
+  // Explicitly reset to break dependency on locally scoped client.
+  m_webViewHelper.reset();
 }
 
 void TouchActionTest::runIFrameTest(std::string file) {
@@ -180,14 +181,15 @@ void TouchActionTest::runIFrameTest(std::string file) {
   ASSERT_TRUE(curFrame);
 
   for (; curFrame; curFrame = curFrame->nextSibling()) {
-    // Oilpan: see runTouchActionTest() comment why these are persistent references.
+    // Oilpan: see runTouchActionTest() comment why these are persistent
+    // references.
     Persistent<Document> contentDoc =
         static_cast<Document*>(curFrame->document());
     runTestOnTree(contentDoc.get(), webView, client);
   }
 
-  m_webViewHelper
-      .reset();  // Explicitly reset to break dependency on locally scoped client.
+  // Explicitly reset to break dependency on locally scoped client.
+  m_webViewHelper.reset();
 }
 
 WebView* TouchActionTest::setupTest(std::string file,
@@ -198,7 +200,8 @@ WebView* TouchActionTest::setupTest(std::string file,
   WebView* webView =
       m_webViewHelper.initializeAndLoad(m_baseURL + file, true, 0, &client);
 
-  // Set size to enable hit testing, and avoid line wrapping for consistency with browser.
+  // Set size to enable hit testing, and avoid line wrapping for consistency
+  // with browser.
   webView->resize(WebSize(800, 1200));
 
   // Scroll to verify the code properly transforms windows to client co-ords.
@@ -225,7 +228,8 @@ void TouchActionTest::runTestOnTree(ContainerNode* root,
   // Find all elements to test the touch-action of in the document.
   TrackExceptionState es;
 
-  // Oilpan: see runTouchActionTest() comment why these are persistent references.
+  // Oilpan: see runTouchActionTest() comment why these are persistent
+  // references.
   Persistent<StaticElementList> elements =
       root->querySelectorAll("[expected-action]", es);
   ASSERT_FALSE(es.hadException());
@@ -250,9 +254,10 @@ void TouchActionTest::runTestOnTree(ContainerNode* root,
     }
 
     // Run each test three times at different positions in the element.
-    // Note that we don't want the bounding box because our tests sometimes have elements with
-    // multiple border boxes with other elements in between. Use the first border box (which
-    // we can easily visualize in a browser for debugging).
+    // Note that we don't want the bounding box because our tests sometimes have
+    // elements with multiple border boxes with other elements in between. Use
+    // the first border box (which we can easily visualize in a browser for
+    // debugging).
     Persistent<ClientRectList> rects = element->getClientRects();
     ASSERT_GE(rects->length(), 0u) << failureContext;
     Persistent<ClientRect> r = rects->item(0);
@@ -296,10 +301,10 @@ void TouchActionTest::runTestOnTree(ContainerNode* root,
           << "," << visibleRect.y() << "-" << visibleRect.maxX() << ","
           << visibleRect.maxY();
 
-      // First validate that a hit test at this point will really hit the element
-      // we intended. This is the easiest way for a test to be broken, but has nothing really
-      // to do with touch action.
-      // Note that we can't use WebView's hit test API because it doesn't look into shadow DOM.
+      // First validate that a hit test at this point will really hit the
+      // element we intended. This is the easiest way for a test to be broken,
+      // but has nothing really to do with touch action.  Note that we can't use
+      // WebView's hit test API because it doesn't look into shadow DOM.
       IntPoint docPoint(mainFrameView->frameToContents(windowPoint));
       HitTestResult result = mainFrame->eventHandler().hitTestResultAtPoint(
           docPoint, HitTestRequest::ReadOnly | HitTestRequest::Active);

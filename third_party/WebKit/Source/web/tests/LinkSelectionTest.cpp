@@ -127,8 +127,8 @@ class LinkSelectionTest : public LinkSelectionTestBase {
         "foobar</a>"
         "<div id='page_text'>Lorem ipsum dolor sit amet</div>";
 
-    // We need to set deviceSupportsMouse setting to true and page's focus controller to active
-    // so that FrameView can set the mouse cursor.
+    // We need to set deviceSupportsMouse setting to true and page's focus
+    // controller to active so that FrameView can set the mouse cursor.
     m_webView = m_helper.initialize(
         false, &m_testFrameClient, nullptr, nullptr,
         [](WebSettings* settings) { settings->setDeviceSupportsMouse(true); });
@@ -142,8 +142,8 @@ class LinkSelectionTest : public LinkSelectionTestBase {
     ASSERT_NE(nullptr, document);
     auto* linkToSelect = document->getElementById("link")->firstChild();
     ASSERT_NE(nullptr, linkToSelect);
-    // We get larger range that we actually want to select, because we need a slightly larger
-    // rect to include the last character to the selection.
+    // We get larger range that we actually want to select, because we need a
+    // slightly larger rect to include the last character to the selection.
     const auto rangeToSelect =
         Range::create(*document, linkToSelect, 5, linkToSelect, 16);
 
@@ -196,8 +196,8 @@ TEST_F(LinkSelectionTest, HandCursorOverLinkAfterContextMenu) {
   // Move mouse.
   emulateMouseDrag(m_rightPointInLink, m_leftPointInLink, 0, 0);
 
-  // Show context menu. We don't send mouseup event here since in browser it doesn't reach
-  // blink because of shown context menu.
+  // Show context menu. We don't send mouseup event here since in browser it
+  // doesn't reach blink because of shown context menu.
   emulateMouseDown(m_leftPointInLink, WebMouseEvent::Button::Right, 0, 1);
 
   LocalFrame* frame = m_mainFrame->frame();

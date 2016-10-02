@@ -291,7 +291,8 @@ TEST_F(LayoutGeometryMapTest, ContainsFixedPositionTest) {
   FloatRect rect(0.0f, 0.0f, 100.0f, 100.0f);
   LayoutGeometryMap rgm;
 
-  // This fixed position element is not contained and so is attached at the top of the viewport.
+  // This fixed position element is not contained and so is attached at the top
+  // of the viewport.
   rgm.pushMappingsToAncestor(getLayoutBox(webView, "simple-container"), 0);
   EXPECT_EQ(FloatQuad(FloatRect(8.0f, 100.0f, 100.0f, 100.0f)),
             rgm.mapToAncestor(rect, nullptr));

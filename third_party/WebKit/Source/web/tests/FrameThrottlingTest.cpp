@@ -466,7 +466,8 @@ TEST_F(FrameThrottlingTest, ScrollingCoordinatorShouldSkipThrottledFrame) {
   compositeFrame();
   EXPECT_TRUE(frameElement->contentDocument()->view()->canThrottleRendering());
 
-  // Change style of the frame's content to make it in VisualUpdatePending state.
+  // Change style of the frame's content to make it in VisualUpdatePending
+  // state.
   frameElement->contentDocument()->body()->setAttribute(styleAttr,
                                                         "background: green");
   // Change root frame's layout so that the next lifecycle update will call
@@ -477,13 +478,15 @@ TEST_F(FrameThrottlingTest, ScrollingCoordinatorShouldSkipThrottledFrame) {
 
   DocumentLifecycle::AllowThrottlingScope throttlingScope(
       document().lifecycle());
-  // This will call ScrollingCoordinator::updateAfterCompositingChangeIfNeeded() and should not
-  // cause assert failure about isAllowedToQueryCompositingState() in the throttled frame.
+  // This will call ScrollingCoordinator::updateAfterCompositingChangeIfNeeded()
+  // and should not cause assert failure about
+  // isAllowedToQueryCompositingState() in the throttled frame.
   document().view()->updateAllLifecyclePhases();
   testing::runPendingTasks();
   EXPECT_EQ(DocumentLifecycle::VisualUpdatePending,
             frameElement->contentDocument()->lifecycle().state());
-  // The fixed background in the throttled sub frame should not cause main thread scrolling.
+  // The fixed background in the throttled sub frame should not cause main
+  // thread scrolling.
   EXPECT_FALSE(document().view()->shouldScrollOnMainThread());
 
   // Make the frame visible by changing its transform. This doesn't cause a
@@ -519,7 +522,8 @@ TEST_F(FrameThrottlingTest, ScrollingCoordinatorShouldSkipThrottledLayer) {
   compositeFrame();
   EXPECT_TRUE(frameElement->contentDocument()->view()->canThrottleRendering());
 
-  // Change style of the frame's content to make it in VisualUpdatePending state.
+  // Change style of the frame's content to make it in VisualUpdatePending
+  // state.
   frameElement->contentDocument()->body()->setAttribute(styleAttr,
                                                         "background: green");
   // Change root frame's layout so that the next lifecycle update will call
@@ -530,8 +534,9 @@ TEST_F(FrameThrottlingTest, ScrollingCoordinatorShouldSkipThrottledLayer) {
 
   DocumentLifecycle::AllowThrottlingScope throttlingScope(
       document().lifecycle());
-  // This will call ScrollingCoordinator::updateAfterCompositingChangeIfNeeded() and should not
-  // cause assert failure about isAllowedToQueryCompositingState() in the throttled frame.
+  // This will call ScrollingCoordinator::updateAfterCompositingChangeIfNeeded()
+  // and should not cause assert failure about
+  // isAllowedToQueryCompositingState() in the throttled frame.
   document().view()->updateAllLifecyclePhases();
   testing::runPendingTasks();
   EXPECT_EQ(DocumentLifecycle::VisualUpdatePending,
@@ -558,7 +563,8 @@ TEST_F(FrameThrottlingTest,
   compositeFrame();
   EXPECT_TRUE(frameElement->contentDocument()->view()->canThrottleRendering());
 
-  // Change style of the frame's content to make it in VisualUpdatePending state.
+  // Change style of the frame's content to make it in VisualUpdatePending
+  // state.
   frameElement->contentDocument()->body()->setAttribute(styleAttr,
                                                         "background: green");
   // Change root frame's layout so that the next lifecycle update will call
@@ -569,8 +575,9 @@ TEST_F(FrameThrottlingTest,
 
   DocumentLifecycle::AllowThrottlingScope throttlingScope(
       document().lifecycle());
-  // This will call ScrollingCoordinator::updateAfterCompositingChangeIfNeeded() and should not
-  // cause assert failure about isAllowedToQueryCompositingState() in the throttled frame.
+  // This will call ScrollingCoordinator::updateAfterCompositingChangeIfNeeded()
+  // and should not cause assert failure about
+  // isAllowedToQueryCompositingState() in the throttled frame.
   compositeFrame();
   EXPECT_EQ(DocumentLifecycle::VisualUpdatePending,
             frameElement->contentDocument()->lifecycle().state());
@@ -579,7 +586,8 @@ TEST_F(FrameThrottlingTest,
   // layout, but should still unthrottle the frame.
   frameElement->setAttribute(styleAttr, "transform: translateY(0px)");
   compositeFrame();  // Unthrottle the frame.
-  compositeFrame();  // Handle the pending visual update of the unthrottled frame.
+  compositeFrame();  // Handle the pending visual update of the unthrottled
+                     // frame.
   EXPECT_EQ(DocumentLifecycle::PaintClean,
             frameElement->contentDocument()->lifecycle().state());
   EXPECT_TRUE(
@@ -651,7 +659,8 @@ TEST_F(FrameThrottlingTest, ThrottledEventHandlerIgnored) {
   webView().settings()->setJavaScriptEnabled(true);
   EXPECT_EQ(0u, touchHandlerRegionSize());
 
-  // Create a frame which is throttled and has a non-top-level touchstart handler.
+  // Create a frame which is throttled and has a non-top-level touchstart
+  // handler.
   SimRequest mainResource("https://example.com/", "text/html");
   SimRequest frameResource("https://example.com/iframe.html", "text/html");
 

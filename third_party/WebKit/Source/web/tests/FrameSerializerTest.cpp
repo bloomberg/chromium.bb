@@ -288,7 +288,8 @@ TEST_F(FrameSerializerTest, IFrames) {
                    .contains("\xE4\xC5\xE4\xC5"));
 }
 
-// Tests that when serializing a page with blank frames these are reported with their resources.
+// Tests that when serializing a page with blank frames these are reported with
+// their resources.
 TEST_F(FrameSerializerTest, BlankFrames) {
   setBaseFolder("frameserializer/frames/");
 
