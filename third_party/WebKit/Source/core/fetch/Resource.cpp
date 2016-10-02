@@ -794,7 +794,12 @@ void Resource::finishPendingClients() {
     if (!m_clientsAwaitingCallback.remove(client))
       continue;
     m_clients.add(client);
-    didAddClient(client);
+
+    // When revalidation starts after waiting clients are scheduled and
+    // before they are added here. In such cases, we just add the clients
+    // to |m_clients| without didAddClient(), as in Resource::addClient().
+    if (!m_isRevalidating)
+      didAddClient(client);
   }
 
   // It is still possible for the above loop to finish a new client synchronously.

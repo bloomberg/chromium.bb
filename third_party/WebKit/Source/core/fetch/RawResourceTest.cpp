@@ -34,15 +34,62 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "platform/SharedBuffer.h"
 #include "platform/heap/Handle.h"
+#include "platform/network/ResourceTimingInfo.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLResponse.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
+
+using ::testing::InSequence;
+using ::testing::_;
+using Checkpoint = ::testing::StrictMock<::testing::MockFunction<void(int)>>;
+
+class MockRawResourceClient
+    : public GarbageCollectedFinalized<MockRawResourceClient>,
+      public RawResourceClient {
+  USING_GARBAGE_COLLECTED_MIXIN(MockRawResourceClient);
+
+ public:
+  static MockRawResourceClient* create() {
+    return new ::testing::StrictMock<MockRawResourceClient>;
+  }
+
+  MOCK_METHOD3(dataSent,
+               void(Resource*, unsigned long long, unsigned long long));
+  MOCK_METHOD3(responseReceivedInternal,
+               void(Resource*,
+                    const ResourceResponse&,
+                    WebDataConsumerHandle*));
+  MOCK_METHOD3(setSerializedCachedMetadata,
+               void(Resource*, const char*, size_t));
+  MOCK_METHOD3(dataReceived, void(Resource*, const char*, size_t));
+  MOCK_METHOD3(redirectReceived,
+               void(Resource*, ResourceRequest&, const ResourceResponse&));
+  MOCK_METHOD0(redirectBlocked, void());
+  MOCK_METHOD2(dataDownloaded, void(Resource*, int));
+  MOCK_METHOD2(didReceiveResourceTiming,
+               void(Resource*, const ResourceTimingInfo&));
+
+  void responseReceived(
+      Resource* resource,
+      const ResourceResponse& response,
+      std::unique_ptr<WebDataConsumerHandle> handle) override {
+    responseReceivedInternal(resource, response, handle.get());
+  }
+
+  String debugName() const override { return "MockRawResourceClient"; }
+
+  DEFINE_INLINE_VIRTUAL_TRACE() { RawResourceClient::trace(visitor); }
+
+ protected:
+  MockRawResourceClient() = default;
+};
 
 TEST(RawResourceTest, DontIgnoreAcceptForCacheReuse) {
   ResourceRequest jpegRequest;
@@ -412,6 +459,97 @@ TEST(RawResourceTest, RemoveClientDuringCallback) {
   raw->addClient(removingClient);
   testing::runPendingTasks();
   EXPECT_FALSE(raw->isAlive());
+}
+
+// ResourceClient can be added to |m_clients| asynchronously via
+// ResourceCallback. When revalidation is started after ResourceCallback is
+// scheduled and before it is dispatched, ResourceClient's callbacks should be
+// called appropriately.
+TEST(RawResourceTest, StartFailedRevalidationWhileResourceCallback) {
+  KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.html");
+
+  ResourceResponse response;
+  response.setURL(url);
+  response.setHTTPStatusCode(200);
+
+  ResourceResponse newResponse;
+  newResponse.setURL(url);
+  newResponse.setHTTPStatusCode(201);
+
+  Resource* resource =
+      RawResource::create(ResourceRequest("data:text/html,"), Resource::Raw);
+  resource->responseReceived(response, nullptr);
+  resource->appendData("oldData", 8);
+  resource->finish();
+
+  InSequence s;
+  Checkpoint checkpoint;
+
+  MockRawResourceClient* client = MockRawResourceClient::create();
+
+  EXPECT_CALL(checkpoint, Call(1));
+  EXPECT_CALL(*client, responseReceivedInternal(resource, newResponse, _));
+  EXPECT_CALL(*client, dataReceived(resource, ::testing::StrEq("newData"), 8));
+
+  // Add a client. No callbacks are made here because ResourceCallback is
+  // scheduled asynchronously.
+  resource->addClient(client);
+  EXPECT_FALSE(resource->isCacheValidator());
+
+  // Start revalidation.
+  resource->setRevalidatingRequest(ResourceRequest(url));
+  EXPECT_TRUE(resource->isCacheValidator());
+
+  // Make the ResourceCallback to be dispatched.
+  testing::runPendingTasks();
+
+  checkpoint.Call(1);
+
+  resource->responseReceived(newResponse, nullptr);
+  resource->appendData("newData", 8);
+}
+
+TEST(RawResourceTest, StartSuccessfulRevalidationWhileResourceCallback) {
+  KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.html");
+
+  ResourceResponse response;
+  response.setURL(url);
+  response.setHTTPStatusCode(200);
+
+  ResourceResponse newResponse;
+  newResponse.setURL(url);
+  newResponse.setHTTPStatusCode(304);
+
+  Resource* resource =
+      RawResource::create(ResourceRequest("data:text/html,"), Resource::Raw);
+  resource->responseReceived(response, nullptr);
+  resource->appendData("oldData", 8);
+  resource->finish();
+
+  InSequence s;
+  Checkpoint checkpoint;
+
+  MockRawResourceClient* client = MockRawResourceClient::create();
+
+  EXPECT_CALL(checkpoint, Call(1));
+  EXPECT_CALL(*client, responseReceivedInternal(resource, response, _));
+  EXPECT_CALL(*client, dataReceived(resource, ::testing::StrEq("oldData"), 8));
+
+  // Add a client. No callbacks are made here because ResourceCallback is
+  // scheduled asynchronously.
+  resource->addClient(client);
+  EXPECT_FALSE(resource->isCacheValidator());
+
+  // Start revalidation.
+  resource->setRevalidatingRequest(ResourceRequest(url));
+  EXPECT_TRUE(resource->isCacheValidator());
+
+  // Make the ResourceCallback to be dispatched.
+  testing::runPendingTasks();
+
+  checkpoint.Call(1);
+
+  resource->responseReceived(newResponse, nullptr);
 }
 
 TEST(RawResourceTest, CanReuseDevToolsEmulateNetworkConditionsClientIdHeader) {
