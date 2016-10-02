@@ -40,8 +40,9 @@ void cryptographicallyRandomValues(void* buffer, size_t length) {
     return;
   }
 
-  // This should really be crypto::RandBytes(), but WTF can't depend on crypto. The implementation of
-  // crypto::RandBytes() is just calling base::RandBytes(), so both are actually same.
+  // This should really be crypto::RandBytes(), but WTF can't depend on crypto.
+  // The implementation of crypto::RandBytes() is just calling
+  // base::RandBytes(), so both are actually same.
   base::RandBytes(buffer, length);
 }
 

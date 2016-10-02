@@ -258,7 +258,8 @@ template <typename Value,
 template <typename HashTranslator, typename T>
 inline typename HashSet<Value, HashFunctions, Traits, Allocator>::AddResult
 HashSet<Value, HashFunctions, Traits, Allocator>::addWithTranslator(T&& value) {
-  // Forward only the first argument, because the second argument isn't actually used in HashSetTranslatorAdapter.
+  // Forward only the first argument, because the second argument isn't actually
+  // used in HashSetTranslatorAdapter.
   return m_impl
       .template addPassingHashCode<HashSetTranslatorAdapter<HashTranslator>>(
           std::forward<T>(value), value);

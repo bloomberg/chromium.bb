@@ -39,10 +39,11 @@
 
 namespace WTF {
 
-// Verifies that a class is used in a way that respects its lack of thread-safety.
-// The default mode is to verify that the object will only be used on a single thread. The
-// thread gets captured when setShared(true) is called.
-// The mode may be changed by calling useMutexMode (or turnOffVerification).
+// Verifies that a class is used in a way that respects its lack of
+// thread-safety.  The default mode is to verify that the object will only be
+// used on a single thread. The thread gets captured when setShared(true) is
+// called.  The mode may be changed by calling useMutexMode (or
+// turnOffVerification).
 class ThreadRestrictionVerifier {
  public:
   ThreadRestrictionVerifier() : m_shared(false), m_owningThread(0) {}
@@ -88,7 +89,8 @@ class ThreadRestrictionVerifier {
       return;
 
     ASSERT_UNUSED(previouslyShared, shared != previouslyShared);
-    // Capture the current thread to verify that subsequent ref/deref happen on this thread.
+    // Capture the current thread to verify that subsequent ref/deref happen on
+    // this thread.
     m_owningThread = currentThread();
   }
 

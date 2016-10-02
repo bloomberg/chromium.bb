@@ -46,13 +46,15 @@ enum WeakHandlingFlag {
   WeakHandlingInCollections
 };
 
-// Compilers behave differently on __has_trivial_assign(T) if T has a user-deleted copy assignment operator:
+// Compilers behave differently on __has_trivial_assign(T) if T has a
+// user-deleted copy assignment operator:
 //
 //     * MSVC returns false; but
 //     * The others return true.
 //
-// To workaround that, here we have IsAssignable<T, From> class template, but unfortunately, MSVC 2013 cannot compile
-// it due to the lack of expression SFINAE.
+// To workaround that, here we have IsAssignable<T, From> class template, but
+// unfortunately, MSVC 2013 cannot compile it due to the lack of expression
+// SFINAE.
 //
 // Thus, IsAssignable is only defined on non-MSVC compilers.
 #if !COMPILER(MSVC) || COMPILER(CLANG)
@@ -100,19 +102,23 @@ struct IsTriviallyCopyAssignable {
 
 template <typename T>
 struct IsTriviallyMoveAssignable {
-  // TODO(yutak): This isn't really correct, because __has_trivial_assign appears to look only at copy assignment.
-  // However, std::is_trivially_move_assignable isn't available at this moment, and there isn't a good way to
-  // write that ourselves.
+  // TODO(yutak): This isn't really correct, because __has_trivial_assign
+  // appears to look only at copy assignment.  However,
+  // std::is_trivially_move_assignable isn't available at this moment, and
+  // there isn't a good way to write that ourselves.
   //
-  // Here we use IsTriviallyCopyAssignable as a conservative approximation: if T is trivially copy assignable,
-  // T is trivially move assignable, too. This definition misses a case where T is trivially move-only assignable,
-  // but such cases should be rare.
+  // Here we use IsTriviallyCopyAssignable as a conservative approximation: if T
+  // is trivially copy assignable, T is trivially move assignable, too. This
+  // definition misses a case where T is trivially move-only assignable, but
+  // such cases should be rare.
   static const bool value = IsTriviallyCopyAssignable<T>::value;
 };
 
-// Same as above, but for __has_trivial_constructor and __has_trivial_destructor. For IsTriviallyDefaultConstructible,
-// we don't have to write IsDefaultConstructible ourselves since we can use std::is_constructible<T>. For
-// IsTriviallyDestructible, though, we can't rely on std::is_destructible<T> right now.
+// Same as above, but for __has_trivial_constructor and
+// __has_trivial_destructor. For IsTriviallyDefaultConstructible, we don't have
+// to write IsDefaultConstructible ourselves since we can use
+// std::is_constructible<T>. For IsTriviallyDestructible, though, we can't rely
+// on std::is_destructible<T> right now.
 #if !COMPILER(MSVC) || COMPILER(CLANG)
 template <typename T>
 class IsDestructible {

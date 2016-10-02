@@ -37,15 +37,16 @@ class PrintStream;
 
 // This is a space-efficient, resizeable bitvector class. In the common case it
 // occupies one word, but if necessary, it will inflate this one word to point
-// to a single chunk of out-of-line allocated storage to store an arbitrary number
-// of bits.
+// to a single chunk of out-of-line allocated storage to store an arbitrary
+// number of bits.
 //
 // - The bitvector remembers the bound of how many bits can be stored, but this
 //   may be slightly greater (by as much as some platform-specific constant)
 //   than the last argument passed to ensureSize().
 //
-// - The bitvector can resize itself automatically (set, clear, get) or can be used
-//   in a manual mode, which is faster (quickSet, quickClear, quickGet, ensureSize).
+// - The bitvector can resize itself automatically (set, clear, get) or can be
+//   used in a manual mode, which is faster (quickSet, quickClear, quickGet,
+//   ensureSize).
 //
 // - Accesses ASSERT that you are within bounds.
 //

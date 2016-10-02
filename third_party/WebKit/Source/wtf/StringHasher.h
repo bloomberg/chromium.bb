@@ -35,7 +35,8 @@ namespace WTF {
 // NOTE: The hash computation here must stay in sync with
 // build/scripts/hasher.py.
 
-// Golden ratio. Arbitrary start value to avoid mapping all zeros to a hash value of zero.
+// Golden ratio. Arbitrary start value to avoid mapping all zeros to a hash
+// value of zero.
 static const unsigned stringHashingStartValue = 0x9E3779B9U;
 
 class StringHasher {
@@ -50,9 +51,10 @@ class StringHasher {
         m_hasPendingCharacter(false),
         m_pendingCharacter(0) {}
 
-  // The hasher hashes two characters at a time, and thus an "aligned" hasher is one
-  // where an even number of characters have been added. Callers that always add
-  // characters two at a time can use the "assuming aligned" functions.
+  // The hasher hashes two characters at a time, and thus an "aligned" hasher is
+  // one where an even number of characters have been added. Callers that
+  // always add characters two at a time can use the "assuming aligned"
+  // functions.
   void addCharactersAssumingAligned(UChar a, UChar b) {
     ASSERT(!m_hasPendingCharacter);
     m_hash += a;
@@ -178,9 +180,10 @@ class StringHasher {
   }
 
   static unsigned hashMemory(const void* data, unsigned length) {
-    // FIXME: Why does this function use the version of the hash that drops the top 8 bits?
-    // We want that for all string hashing so we can use those bits in StringImpl and hash
-    // strings consistently, but I don't see why we'd want that for general memory hashing.
+    // FIXME: Why does this function use the version of the hash that drops the
+    // top 8 bits?  We want that for all string hashing so we can use those
+    // bits in StringImpl and hash strings consistently, but I don't see why
+    // we'd want that for general memory hashing.
     ASSERT(!(length % 2));
     return computeHashAndMaskTop8Bits<UChar>(static_cast<const UChar*>(data),
                                              length / sizeof(UChar));

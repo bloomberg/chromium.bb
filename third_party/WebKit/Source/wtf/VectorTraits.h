@@ -55,8 +55,8 @@ struct VectorTraitsBase {
   struct IsTraceableInCollection {
     static const bool value = IsTraceable<T>::value;
   };
-  static const WeakHandlingFlag weakHandlingFlag =
-      NoWeakHandlingInCollections;  // We don't support weak handling in vectors.
+  // We don't support weak handling in vectors.
+  static const WeakHandlingFlag weakHandlingFlag = NoWeakHandlingInCollections;
 };
 
 template <typename T>
@@ -73,16 +73,18 @@ struct SimpleClassVectorTraits : VectorTraitsBase<T> {
   static const bool canCompareWithMemcmp = true;
 };
 
-// We know std::unique_ptr and RefPtr are simple enough that initializing to 0 and moving
-// with memcpy (and then not destructing the original) will totally work.
+// We know std::unique_ptr and RefPtr are simple enough that initializing to 0
+// and moving with memcpy (and then not destructing the original) will totally
+// work.
 template <typename P>
 struct VectorTraits<RefPtr<P>> : SimpleClassVectorTraits<RefPtr<P>> {};
 
 template <typename P>
 struct VectorTraits<std::unique_ptr<P>>
     : SimpleClassVectorTraits<std::unique_ptr<P>> {
-  // std::unique_ptr -> std::unique_ptr has a very particular structure that tricks the
-  // normal type traits into thinking that the class is "trivially copyable".
+  // std::unique_ptr -> std::unique_ptr has a very particular structure that
+  // tricks the normal type traits into thinking that the class is "trivially
+  // copyable".
   static const bool canCopyWithMemcpy = false;
 };
 static_assert(VectorTraits<RefPtr<int>>::canInitializeWithMemset,
@@ -124,8 +126,8 @@ struct VectorTraits<std::pair<First, Second>> {
         IsTraceableInCollectionTrait<FirstTraits>::value ||
         IsTraceableInCollectionTrait<SecondTraits>::value;
   };
-  static const WeakHandlingFlag weakHandlingFlag =
-      NoWeakHandlingInCollections;  // We don't support weak handling in vectors.
+  // We don't support weak handling in vectors.
+  static const WeakHandlingFlag weakHandlingFlag = NoWeakHandlingInCollections;
 };
 
 }  // namespace WTF

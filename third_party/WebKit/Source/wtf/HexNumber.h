@@ -59,7 +59,8 @@ inline void appendUnsignedAsHex(unsigned number,
   destination.append(result.data(), result.size());
 }
 
-// Same as appendUnsignedAsHex, but using exactly 'desiredDigits' for the conversion.
+// Same as appendUnsignedAsHex, but using exactly 'desiredDigits' for the
+// conversion.
 template <typename T>
 inline void appendUnsignedAsHexFixedSize(unsigned number,
                                          T& destination,

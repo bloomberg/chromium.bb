@@ -25,7 +25,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  *
  * Alternatively, the contents of this file may be used under the terms
  * of either the Mozilla Public License Version 1.1, found at
@@ -102,8 +102,8 @@ static const double maxUnixTime = 2145859200.0;  // 12/31/2037
 static const double kMinimumECMADateInMs = -8640000000000000.0;
 static const double kMaximumECMADateInMs = 8640000000000000.0;
 
-// Day of year for the first day of each month, where index 0 is January, and day 0 is January 1.
-// First for non-leap years, then for leap years.
+// Day of year for the first day of each month, where index 0 is January, and
+// day 0 is January 1.  First for non-leap years, then for leap years.
 static const int firstDayOfMonth[2][12] = {
     {0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334},
     {0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335}};
@@ -133,8 +133,10 @@ static inline int daysInYear(int year) {
 static inline double daysFrom1970ToYear(int year) {
   // The Gregorian Calendar rules for leap years:
   // Every fourth year is a leap year.  2004, 2008, and 2012 are leap years.
-  // However, every hundredth year is not a leap year.  1900 and 2100 are not leap years.
-  // Every four hundred years, there's a leap year after all.  2000 and 2400 are leap years.
+  // However, every hundredth year is not a leap year.  1900 and 2100 are not
+  // leap years.
+  // Every four hundred years, there's a leap year after all.  2000 and 2400 are
+  // leap years.
 
   static const int leapDaysBefore1971By4Rule = 1970 / 4;
   static const int excludedLeapDaysBefore1971By100Rule = 1970 / 100;
@@ -295,20 +297,18 @@ static inline int minimumYearForDST() {
   return std::min(msToYear(jsCurrentTime()), maximumYearForDST() - 27);
 }
 
-/*
- * Find an equivalent year for the one given, where equivalence is deterined by
- * the two years having the same leapness and the first day of the year, falling
- * on the same day of the week.
- *
- * This function returns a year between this current year and 2037, however this
- * function will potentially return incorrect results if the current year is after
- * 2010, (rdar://problem/5052975), if the year passed in is before 1900 or after
- * 2100, (rdar://problem/5055038).
- */
+// Find an equivalent year for the one given, where equivalence is deterined by
+// the two years having the same leapness and the first day of the year, falling
+// on the same day of the week.
+//
+// This function returns a year between this current year and 2037, however this
+// function will potentially return incorrect results if the current year is
+// after 2010, (rdar://problem/5052975), if the year passed in is before 1900
+// or after 2100, (rdar://problem/5055038).
 static int equivalentYearForDST(int year) {
   // It is ok if the cached year is not the current year as long as the rules
-  // for DST did not change between the two years; if they did the app would need
-  // to be restarted.
+  // for DST did not change between the two years; if they did the app would
+  // need to be restarted.
   static int minYear = minimumYearForDST();
   int maxYear = maximumYearForDST();
 
@@ -369,11 +369,12 @@ static double calculateDSTOffsetSimple(double localTimeSeconds,
 
 // Get the DST offset, given a time in UTC
 static double calculateDSTOffset(double ms, double utcOffset) {
-  // On Mac OS X, the call to localtime (see calculateDSTOffsetSimple) will return historically accurate
-  // DST information (e.g. New Zealand did not have DST from 1946 to 1974) however the JavaScript
-  // standard explicitly dictates that historical information should not be considered when
-  // determining DST. For this reason we shift away from years that localtime can handle but would
-  // return historically accurate information.
+  // On macOS, the call to localtime (see calculateDSTOffsetSimple) will return
+  // historically accurate DST information (e.g. New Zealand did not have DST
+  // from 1946 to 1974) however the JavaScript standard explicitly dictates
+  // that historical information should not be considered when determining DST.
+  // For this reason we shift away from years that localtime can handle but
+  // would return historically accurate information.
   int year = msToYear(ms);
   int equivalentYear = equivalentYearForDST(year);
   if (year != equivalentYear) {

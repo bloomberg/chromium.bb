@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2005, 2006, 2007, 2008, 2011, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2005, 2006, 2007, 2008, 2011, 2012 Apple Inc. All rights
+ * reserved.
  * Copyright (C) 2011, Benjamin Poulain <ikipou@gmail.com>
  *
  * This library is free software; you can redistribute it and/or
@@ -422,9 +423,8 @@ class ListHashSetNode : public ListHashSetNodeBase<ValueArg> {
   }
 
   static void finalize(void* pointer) {
-    ASSERT(
-        !IsTriviallyDestructible<ValueArg>::
-            value);  // No need to waste time calling finalize if it's not needed.
+    // No need to waste time calling finalize if it's not needed.
+    ASSERT(!IsTriviallyDestructible<ValueArg>::value);
     ListHashSetNode* self = reinterpret_cast_ptr<ListHashSetNode*>(pointer);
 
     // Check whether this node was already destructed before being unlinked

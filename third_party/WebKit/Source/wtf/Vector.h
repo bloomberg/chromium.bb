@@ -35,7 +35,8 @@
 #include <string.h>
 #include <utility>
 
-// For ASAN builds, disable inline buffers completely as they cause various issues.
+// For ASAN builds, disable inline buffers completely as they cause various
+// issues.
 #ifdef ANNOTATE_CONTIGUOUS_CONTAINER
 #define INLINE_CAPACITY 0
 #else
@@ -463,7 +464,8 @@ class VectorBuffer<T, 0, Allocator>
     m_capacity = 0;
   }
 
-  // See the other specialization for the meaning of |thisHole| and |otherHole|. They are irrelevant in this case.
+  // See the other specialization for the meaning of |thisHole| and |otherHole|.
+  // They are irrelevant in this case.
   void swapVectorBuffer(VectorBuffer<T, 0, Allocator>& other,
                         OffsetRange thisHole,
                         OffsetRange otherHole) {
@@ -582,23 +584,28 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
     return Base::allocationSize(capacity);
   }
 
-  // Swap two vector buffers, both of which have the same non-zero inline capacity.
+  // Swap two vector buffers, both of which have the same non-zero inline
+  // capacity.
   //
-  // If the data is in an out-of-line buffer, we can just pass the pointers across the two buffers.
-  // If the data is in an inline buffer, we need to either swap or move each element, depending on whether each
-  // slot is occupied or not.
+  // If the data is in an out-of-line buffer, we can just pass the pointers
+  // across the two buffers.  If the data is in an inline buffer, we need to
+  // either swap or move each element, depending on whether each slot is
+  // occupied or not.
   //
-  // Further complication comes from the fact that VectorBuffer is also used as the backing store of a Deque.
-  // Deque allocates the objects like a ring buffer, so there may be a "hole" (unallocated region) in the middle
-  // of the buffer. This function assumes elements in a range [m_buffer, m_buffer + m_size) are all allocated
-  // except for elements within |thisHole|. The same applies for |other.m_buffer| and |otherHole|.
+  // Further complication comes from the fact that VectorBuffer is also used as
+  // the backing store of a Deque.  Deque allocates the objects like a ring
+  // buffer, so there may be a "hole" (unallocated region) in the middle of the
+  // buffer. This function assumes elements in a range [m_buffer, m_buffer +
+  // m_size) are all allocated except for elements within |thisHole|. The same
+  // applies for |other.m_buffer| and |otherHole|.
   void swapVectorBuffer(VectorBuffer<T, inlineCapacity, Allocator>& other,
                         OffsetRange thisHole,
                         OffsetRange otherHole) {
     using TypeOperations = VectorTypeOperations<T>;
 
     if (buffer() != inlineBuffer() && other.buffer() != other.inlineBuffer()) {
-      // The easiest case: both buffers are non-inline. We just need to swap the pointers.
+      // The easiest case: both buffers are non-inline. We just need to swap the
+      // pointers.
       std::swap(m_buffer, other.m_buffer);
       std::swap(m_capacity, other.m_capacity);
       std::swap(m_size, other.m_size);
@@ -607,14 +614,17 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
 
     Allocator::enterGCForbiddenScope();
 
-    // Otherwise, we at least need to move some elements from one inline buffer to another.
+    // Otherwise, we at least need to move some elements from one inline buffer
+    // to another.
     //
-    // Terminology: "source" is a place from which elements are copied, and "destination" is a place to which
-    // elements are copied. thisSource or otherSource can be empty (represented by nullptr) when this range or
+    // Terminology: "source" is a place from which elements are copied, and
+    // "destination" is a place to which elements are copied. thisSource or
+    // otherSource can be empty (represented by nullptr) when this range or
     // other range is in an out-of-line buffer.
     //
-    // We first record which range needs to get moved and where elements in such a range will go. Elements in
-    // an inline buffer will go to the other buffer's inline buffer. Elements in an out-of-line buffer won't move,
+    // We first record which range needs to get moved and where elements in such
+    // a range will go. Elements in an inline buffer will go to the other
+    // buffer's inline buffer. Elements in an out-of-line buffer won't move,
     // because we can just swap pointers of out-of-line buffers.
     T* thisSourceBegin = nullptr;
     size_t thisSourceSize = 0;
@@ -646,8 +656,9 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
       otherHole.begin = otherHole.end = 0;
     }
 
-    // Next, we mutate members and do other bookkeeping. We do pointer swapping (for out-of-line buffers) here if
-    // we can. From now on, don't assume buffer() or capacity() maintains their original values.
+    // Next, we mutate members and do other bookkeeping. We do pointer swapping
+    // (for out-of-line buffers) here if we can. From now on, don't assume
+    // buffer() or capacity() maintains their original values.
     std::swap(m_capacity, other.m_capacity);
     if (thisSourceBegin &&
         !otherSourceBegin) {  // Our buffer is inline, theirs is not.
@@ -677,11 +688,13 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
       std::swap(m_size, other.m_size);
     }
 
-    // We are ready to move elements. We determine an action for each "section", which is a contiguous range such
-    // that all elements in the range are treated similarly.
+    // We are ready to move elements. We determine an action for each "section",
+    // which is a contiguous range such that all elements in the range are
+    // treated similarly.
     size_t sectionBegin = 0;
     while (sectionBegin < inlineCapacity) {
-      // To determine the end of this section, we list up all the boundaries where the "occupiedness" may change.
+      // To determine the end of this section, we list up all the boundaries
+      // where the "occupiedness" may change.
       size_t sectionEnd = inlineCapacity;
       if (thisSourceBegin && sectionBegin < thisSourceSize)
         sectionEnd = std::min(sectionEnd, thisSourceSize);
@@ -714,8 +727,8 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
       }
 
       if (thisOccupied && otherOccupied) {
-        // Both occupied; swap them. In this case, one's destination must be the other's source (i.e. both
-        // ranges are in inline buffers).
+        // Both occupied; swap them. In this case, one's destination must be the
+        // other's source (i.e. both ranges are in inline buffers).
         ASSERT(thisDestinationBegin == otherSourceBegin);
         ASSERT(otherDestinationBegin == thisSourceBegin);
         TypeOperations::swap(thisSourceBegin + sectionBegin,
@@ -769,12 +782,10 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
   template <typename U, size_t inlineBuffer, typename V>
   friend class Deque;
 };
-
-template <
-    typename T,
-    size_t inlineCapacity = 0,
-    typename Allocator =
-        PartitionAllocator>  // Heap-allocated vectors with no inlineCapacity never need a destructor.
+// Heap-allocated vectors with no inlineCapacity never need a destructor.
+template <typename T,
+          size_t inlineCapacity = 0,
+          typename Allocator = PartitionAllocator>
 class Vector
     : private VectorBuffer<T, INLINE_CAPACITY, Allocator>,
       public ConditionalDestructor<Vector<T, INLINE_CAPACITY, Allocator>,

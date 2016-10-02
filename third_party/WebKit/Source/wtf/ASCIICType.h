@@ -34,13 +34,15 @@
 
 // The behavior of many of the functions in the <ctype.h> header is dependent
 // on the current locale. But in the WebKit project, all uses of those functions
-// are in code processing something that's not locale-specific. These equivalents
-// for some of the <ctype.h> functions are named more explicitly, not dependent
-// on the C library locale, and we should also optimize them as needed.
+// are in code processing something that's not locale-specific. These
+// equivalents for some of the <ctype.h> functions are named more explicitly,
+// not dependent on the C library locale, and we should also optimize them as
+// needed.
 
-// All functions return false or leave the character unchanged if passed a character
-// that is outside the range 0-7F. So they can be used on Unicode strings or
-// characters if the intent is to do processing only if the character is ASCII.
+// All functions return false or leave the character unchanged if passed a
+// character that is outside the range 0-7F. So they can be used on Unicode
+// strings or characters if the intent is to do processing only if the
+// character is ASCII.
 
 namespace WTF {
 

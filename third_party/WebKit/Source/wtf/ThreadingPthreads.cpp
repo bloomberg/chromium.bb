@@ -65,8 +65,8 @@ void initializeThreading() {
   // This should only be called once.
   ASSERT(!atomicallyInitializedStaticMutex);
 
-  // StringImpl::empty() does not construct its static string in a threadsafe fashion,
-  // so ensure it has been initialized from here.
+  // StringImpl::empty() does not construct its static string in a threadsafe
+  // fashion, so ensure it has been initialized from here.
   StringImpl::empty();
   StringImpl::empty16Bit();
   atomicallyInitializedStaticMutex = new Mutex;

@@ -73,7 +73,8 @@ TEST(StringHasherTest, StringHasher_addCharacter) {
   EXPECT_EQ(singleNullCharacterHash & 0xFFFFFF,
             hasher.hashWithTop8BitsMasked());
 
-  // Hashing five characters, checking the intermediate state after each is added.
+  // Hashing five characters, checking the intermediate state after each is
+  // added.
   hasher = StringHasher();
   hasher.addCharacter(testAUChars[0]);
   EXPECT_EQ(testAHash1, hasher.hash());

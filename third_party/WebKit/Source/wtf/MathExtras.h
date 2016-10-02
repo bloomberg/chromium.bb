@@ -62,12 +62,14 @@ const float twoPiFloat = piFloat * 2.0f;
 #if OS(ANDROID) || COMPILER(MSVC)
 // ANDROID and MSVC's math.h does not currently supply log2 or log2f.
 inline double log2(double num) {
-  // This constant is roughly M_LN2, which is not provided by default on Windows and Android.
+  // This constant is roughly M_LN2, which is not provided by default on Windows
+  // and Android.
   return log(num) / 0.693147180559945309417232121458176568;
 }
 
 inline float log2f(float num) {
-  // This constant is roughly M_LN2, which is not provided by default on Windows and Android.
+  // This constant is roughly M_LN2, which is not provided by default on Windows
+  // and Android.
   return logf(num) / 0.693147180559945309417232121458176568f;
 }
 #endif
@@ -77,7 +79,8 @@ inline float log2f(float num) {
 // VS2013 has most of the math functions now, but we still need to work
 // around various differences in behavior of Inf.
 
-// Work around a bug in Win, where atan2(+-infinity, +-infinity) yields NaN instead of specific values.
+// Work around a bug in Win, where atan2(+-infinity, +-infinity) yields NaN
+// instead of specific values.
 inline double wtf_atan2(double x, double y) {
   double posInf = std::numeric_limits<double>::infinity();
   double negInf = -std::numeric_limits<double>::infinity();
@@ -99,12 +102,14 @@ inline double wtf_atan2(double x, double y) {
   return result;
 }
 
-// Work around a bug in the Microsoft CRT, where fmod(x, +-infinity) yields NaN instead of x.
+// Work around a bug in the Microsoft CRT, where fmod(x, +-infinity) yields NaN
+// instead of x.
 inline double wtf_fmod(double x, double y) {
   return (!std::isinf(x) && std::isinf(y)) ? x : fmod(x, y);
 }
 
-// Work around a bug in the Microsoft CRT, where pow(NaN, 0) yields NaN instead of 1.
+// Work around a bug in the Microsoft CRT, where pow(NaN, 0) yields NaN instead
+// of 1.
 inline double wtf_pow(double x, double y) {
   return y == 0 ? 1 : pow(x, y);
 }
@@ -411,7 +416,9 @@ inline void doubleToInteger(double d, unsigned long long& value) {
       // 0 < fmodValueInUnsignedLongLong < 2^{64}. This cast causes no loss.
       unsigned long long fmodValueInUnsignedLongLong =
           static_cast<unsigned long long>(-fmodValue);
-      // -1 < (std::numeric_limits<unsigned long long>::max() - fmodValueInUnsignedLongLong) < 2^{64} - 1.
+      // -1 < (std::numeric_limits<unsigned long long>::max() -
+      //       fmodValueInUnsignedLongLong)
+      //    < 2^{64} - 1.
       // 0 < value < 2^{64}.
       value = std::numeric_limits<unsigned long long>::max() -
               fmodValueInUnsignedLongLong + 1;

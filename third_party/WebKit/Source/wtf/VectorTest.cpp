@@ -440,8 +440,8 @@ TEST(VectorTest, AppendFirst) {
 //
 // https://bugs.chromium.org/p/chromium/issues/detail?id=592767
 //
-// where deleted copy assignment operator made canMoveWithMemcpy true because of the implementation of
-// IsTriviallyMoveAssignable<T>.
+// where deleted copy assignment operator made canMoveWithMemcpy true because
+// of the implementation of IsTriviallyMoveAssignable<T>.
 
 class MojoMoveOnlyType final {
  public:
@@ -631,11 +631,13 @@ TEST(VectorTest, InitializerList) {
   EXPECT_EQ(2, oneTwoThree[1]);
   EXPECT_EQ(3, oneTwoThree[2]);
 
-  // Other ways of construction: as a function parameter and in a return statement.
+  // Other ways of construction: as a function parameter and in a return
+  // statement.
   EXPECT_TRUE(isOneTwoThree({1, 2, 3}));
   EXPECT_TRUE(isOneTwoThree(returnOneTwoThree()));
 
-  // The tests below correspond to the cases in the "if" branch in operator=(std::initializer_list<T>).
+  // The tests below correspond to the cases in the "if" branch in
+  // operator=(std::initializer_list<T>).
 
   // Shrinking.
   Vector<int, 1> vector1(3);  // capacity = 3.

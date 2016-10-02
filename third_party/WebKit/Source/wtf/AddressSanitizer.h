@@ -29,9 +29,9 @@
 #endif
 
 // TODO(sof): Have to handle (ADDRESS_SANITIZER && _WIN32) differently as it
-// uses both Clang (which supports the __attribute__ syntax) and CL (which doesn't)
-// as long as we use "clang-cl /fallback". This shouldn't be needed when Clang
-// handles all the code without falling back to CL.
+// uses both Clang (which supports the __attribute__ syntax) and CL (which
+// doesn't) as long as we use "clang-cl /fallback". This shouldn't be needed
+// when Clang handles all the code without falling back to CL.
 #if defined(ADDRESS_SANITIZER) && (!OS(WIN) || COMPILER(CLANG))
 #define NO_SANITIZE_ADDRESS __attribute__((no_sanitize_address))
 #define NO_LAZY_SWEEP_SANITIZE_ADDRESS NO_SANITIZE_ADDRESS

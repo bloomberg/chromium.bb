@@ -39,12 +39,17 @@ namespace WTF {
 // TreeNode is generic, ContainerNode-like linked tree data structure.
 // There are a few notable difference between TreeNode and Node:
 //
-//  * Each TreeNode node is NOT ref counted. The user have to retain its lifetime somehow.
-//    FIXME: lifetime management could be parameterized so that ref counted implementations can be used.
-//  * It ASSERT()s invalid input. The callers have to ensure that given parameter is sound.
-//  * There is no branch-leaf difference. Every node can be a parent of other node.
+//  * Each TreeNode node is NOT ref counted. The user have to retain its
+//    lifetime somehow.
+//    FIXME: lifetime management could be parameterized so that ref counted
+//    implementations can be used.
+//  * It ASSERT()s invalid input. The callers have to ensure that given
+//    parameter is sound.
+//  * There is no branch-leaf difference. Every node can be a parent of other
+//    node.
 //
-// FIXME: oilpan: Trace tree node edges to ensure we don't have dangling pointers.
+// FIXME: oilpan: Trace tree node edges to ensure we don't have dangling
+// pointers.
 // As it is used in HTMLImport it is safe since they all die together.
 template <class T>
 class TreeNode {

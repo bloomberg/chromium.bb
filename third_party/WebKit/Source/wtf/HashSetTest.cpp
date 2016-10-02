@@ -58,7 +58,8 @@ void testReserveCapacity() {
     EXPECT_EQ(initialCapacity, testSet.capacity());
   }
 
-  // Adding items up to less than half the capacity should not change the capacity.
+  // Adding items up to less than half the capacity should not change the
+  // capacity.
   unsigned capacityLimit = initialCapacity / 2 - 1;
   for (size_t i = size; i < capacityLimit; ++i) {
     testSet.add(i + 1);
@@ -275,7 +276,8 @@ TEST(HashSetTest, MoveShouldNotMakeCopy) {
 
 class MoveOnly {
  public:
-  // kEmpty and kDeleted have special meanings when MoveOnly is used as the key of a hash table.
+  // kEmpty and kDeleted have special meanings when MoveOnly is used as the key
+  // of a hash table.
   enum { kEmpty = 0, kDeleted = -1, kMovedOut = -2 };
 
   explicit MoveOnly(int value = kEmpty, int id = 0)
@@ -305,7 +307,8 @@ class MoveOnly {
 };
 
 struct MoveOnlyHashTraits : public GenericHashTraits<MoveOnly> {
-  // This is actually true, but we pretend that it's false to disable the optimization.
+  // This is actually true, but we pretend that it's false to disable the
+  // optimization.
   static const bool emptyValueIsZero = false;
 
   static const bool hasIsEmptyValueFunction = true;
@@ -492,7 +495,8 @@ TEST(HashSetTest, InitializerList) {
   EXPECT_TRUE(oneTwoThree.contains(2));
   EXPECT_TRUE(oneTwoThree.contains(3));
 
-  // Other ways of construction: as a function parameter and in a return statement.
+  // Other ways of construction: as a function parameter and in a return
+  // statement.
   EXPECT_TRUE(isOneTwoThree({1, 2, 3}));
   EXPECT_TRUE(isOneTwoThree(returnOneTwoThree()));
 }

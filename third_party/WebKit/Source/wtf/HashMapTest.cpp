@@ -68,9 +68,10 @@ int bucketForKey(double key) {
 }
 
 TEST(HashMapTest, DoubleHashCollisions) {
-  // The "clobber" key here is one that ends up stealing the bucket that the -0 key
-  // originally wants to be in. This makes the 0 and -0 keys collide and the test then
-  // fails unless the FloatHash::equals() implementation can distinguish them.
+  // The "clobber" key here is one that ends up stealing the bucket that the -0
+  // key originally wants to be in. This makes the 0 and -0 keys collide and
+  // the test then fails unless the FloatHash::equals() implementation can
+  // distinguish them.
   const double clobberKey = 6;
   const double zeroKey = 0;
   const double negativeZeroKey = -zeroKey;
@@ -294,7 +295,8 @@ TEST(HashMapTest, ValueTypeDestructed) {
 
 class MoveOnly {
  public:
-  // kEmpty and kDeleted have special meanings when MoveOnly is used as the key of a hash table.
+  // kEmpty and kDeleted have special meanings when MoveOnly is used as the key
+  // of a hash table.
   enum { kEmpty = 0, kDeleted = -1, kMovedOut = -2 };
 
   explicit MoveOnly(int value = kEmpty) : m_value(value) {}
@@ -317,7 +319,8 @@ class MoveOnly {
 };
 
 struct MoveOnlyHashTraits : public GenericHashTraits<MoveOnly> {
-  // This is actually true, but we pretend that it's false to disable the optimization.
+  // This is actually true, but we pretend that it's false to disable the
+  // optimization.
   static const bool emptyValueIsZero = false;
 
   static const bool hasIsEmptyValueFunction = true;
@@ -409,7 +412,8 @@ TEST(HashMapTest, MoveOnlyValueType) {
 }
 
 TEST(HashMapTest, MoveOnlyKeyType) {
-  // The content of this test is similar to the test above, except that the types of key and value are swapped.
+  // The content of this test is similar to the test above, except that the
+  // types of key and value are swapped.
   using TheMap = HashMap<MoveOnly, int>;
   TheMap map;
   {

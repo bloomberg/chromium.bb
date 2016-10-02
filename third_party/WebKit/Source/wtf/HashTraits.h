@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2005, 2006, 2007, 2008, 2011, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2005, 2006, 2007, 2008, 2011, 2012 Apple Inc. All rights
+ * reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -247,8 +248,8 @@ struct HashTraits<std::unique_ptr<T>>
   static PeekOutType peek(std::nullptr_t) { return nullptr; }
 
   static void constructDeletedValue(std::unique_ptr<T>& slot, bool) {
-    // Dirty trick: implant an invalid pointer to unique_ptr. Destructor isn't called for deleted buckets,
-    // so this is okay.
+    // Dirty trick: implant an invalid pointer to unique_ptr. Destructor isn't
+    // called for deleted buckets, so this is okay.
     new (NotNull, &slot) std::unique_ptr<T>(reinterpret_cast<T*>(1u));
   }
   static bool isDeletedValue(const std::unique_ptr<T>& value) {

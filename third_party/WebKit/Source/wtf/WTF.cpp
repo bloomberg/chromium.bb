@@ -60,8 +60,8 @@ bool isMainThread() {
 }
 
 void initialize(void (*callOnMainThreadFunction)(MainThreadFunction, void*)) {
-  // WTF, and Blink in general, cannot handle being re-initialized, even if shutdown first.
-  // Make that explicit here.
+  // WTF, and Blink in general, cannot handle being re-initialized, even if
+  // shutdown first.  Make that explicit here.
   RELEASE_ASSERT(!s_initialized);
   RELEASE_ASSERT(!s_shutdown);
   s_initialized = true;

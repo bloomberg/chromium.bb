@@ -54,7 +54,9 @@ const size_t stringWithTypeNamePostfixLength = sizeof(">(void)") - 1;
 #endif
 
 // This function is used to stringify a typename T without using RTTI.
-// The result of stringWithTypeName<T>() is given as |funcName|. |extractTypeNameFromFunctionName| then extracts a typename string from |funcName|.
+// The result of stringWithTypeName<T>() is given as |funcName|.
+// |extractTypeNameFromFunctionName| then extracts a typename string from
+// |funcName|.
 String extractTypeNameFromFunctionName(const char* funcName) {
 #if COMPILER(CLANG) || COMPILER(GCC) || COMPILER(MSVC)
   size_t funcNameLength = strlen(funcName);

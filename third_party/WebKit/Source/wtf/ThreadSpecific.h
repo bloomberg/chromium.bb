@@ -58,7 +58,8 @@
 namespace WTF {
 
 #if OS(WIN)
-// ThreadSpecificThreadExit should be called each time when a thread is detached.
+// ThreadSpecificThreadExit should be called each time when a thread is
+// detached.
 // This is done automatically for threads created with WTF::createThread.
 WTF_EXPORT void ThreadSpecificThreadExit();
 #endif
@@ -81,10 +82,12 @@ class ThreadSpecific {
   WTF_EXPORT friend void ThreadSpecificThreadExit();
 #endif
 
-  // Not implemented. It's technically possible to destroy a thread specific key, but one would need
-  // to make sure that all values have been destroyed already (usually, that all threads that used it
-  // have exited). It's unlikely that any user of this call will be in that situation - and having
-  // a destructor defined can be confusing, given that it has such strong pre-requisites to work correctly.
+  // Not implemented. It's technically possible to destroy a thread specific
+  // key, but one would need to make sure that all values have been destroyed
+  // already (usually, that all threads that used it have exited). It's
+  // unlikely that any user of this call will be in that situation - and having
+  // a destructor defined can be confusing, given that it has such strong
+  // pre-requisites to work correctly.
   ~ThreadSpecific();
 
   T* get();
@@ -162,9 +165,12 @@ inline void ThreadSpecific<T>::set(T* ptr) {
 #define TLS_OUT_OF_INDEXES 0xffffffff
 #endif
 
-// The maximum number of TLS keys that can be created. For simplification, we assume that:
-// 1) Once the instance of ThreadSpecific<> is created, it will not be destructed until the program dies.
-// 2) We do not need to hold many instances of ThreadSpecific<> data. This fixed number should be far enough.
+// The maximum number of TLS keys that can be created. For simplification, we
+// assume that:
+// 1) Once the instance of ThreadSpecific<> is created, it will not be
+//    destructed until the program dies.
+// 2) We do not need to hold many instances of ThreadSpecific<> data. This fixed
+//    number should be far enough.
 const int kMaxTlsKeySize = 256;
 
 WTF_EXPORT long& tlsKeyCount();
@@ -192,7 +198,8 @@ inline ThreadSpecific<T>::ThreadSpecific() : m_index(-1) {
 
 template <typename T>
 inline ThreadSpecific<T>::~ThreadSpecific() {
-  // Does not invoke destructor functions. They will be called from ThreadSpecificThreadExit when the thread is detached.
+  // Does not invoke destructor functions. They will be called from
+  // ThreadSpecificThreadExit when the thread is detached.
   TlsFree(tlsKeys()[m_index]);
 }
 
@@ -222,8 +229,9 @@ inline void ThreadSpecific<T>::destroy(void* ptr) {
   Data* data = static_cast<Data*>(ptr);
 
 #if OS(POSIX)
-  // We want get() to keep working while data destructor works, because it can be called indirectly by the destructor.
-  // Some pthreads implementations zero out the pointer before calling destroy(), so we temporarily reset it.
+  // We want get() to keep working while data destructor works, because it can
+  // be called indirectly by the destructor.  Some pthreads implementations
+  // zero out the pointer before calling destroy(), so we temporarily reset it.
   pthread_setspecific(data->owner->m_key, ptr);
 #endif
 
@@ -250,7 +258,8 @@ template <typename T>
 inline ThreadSpecific<T>::operator T*() {
   T* ptr = static_cast<T*>(get());
   if (!ptr) {
-    // Set up thread-specific value's memory pointer before invoking constructor, in case any function it calls
+    // Set up thread-specific value's memory pointer before invoking
+    // constructor, in case any function it calls
     // needs to access the value, to avoid recursion.
     ptr = static_cast<T*>(Partitions::fastZeroedMalloc(
         sizeof(T), WTF_HEAP_PROFILER_TYPE_NAME(T)));

@@ -81,9 +81,10 @@ class StaticLocalWrapper<T, true> {
 
   static T& unwrap(blink::Persistent<T>* singleton) {
     ASSERT(singleton);
-    // If this assert triggers, you're supplying an empty ("()") 'Arguments' argument
-    // to DEFINE_STATIC_LOCAL() - it must be the heap object you wish to create
-    // as a static singleton and wrapped up with a Persistent reference.
+    // If this assert triggers, you're supplying an empty ("()") 'Arguments'
+    // argument to DEFINE_STATIC_LOCAL() - it must be the heap object you wish
+    // to create as a static singleton and wrapped up with a Persistent
+    // reference.
     ASSERT(*singleton);
     return **singleton;
   }
@@ -118,10 +119,11 @@ class StaticLocalWrapper<T, true> {
           WrappedTypeFor##Name, new WrappedTypeFor##Name Arguments); \
   Type& Name = StaticLocalWrapper<Type>::unwrap(WrappedInstanceFor##Name);
 
-// Use this to declare and define a static local pointer to a ref-counted object so that
-// it is leaked so that the object's destructors are not called at exit.
-// This macro should be used with ref-counted objects rather than DEFINE_STATIC_LOCAL macro,
-// as this macro does not lead to an extra memory allocation.
+// Use this to declare and define a static local pointer to a ref-counted object
+// so that it is leaked so that the object's destructors are not called at
+// exit.  This macro should be used with ref-counted objects rather than
+// DEFINE_STATIC_LOCAL macro, as this macro does not lead to an extra memory
+// allocation.
 #define DEFINE_STATIC_REF(type, name, arguments) \
   static type* name = PassRefPtr<type>(arguments).leakRef();
 
@@ -219,7 +221,8 @@ inline To safeCast(From value) {
                 "Unsigned to signed conversion not allowed for types with " \
                 "identical size (could overflow).");
 
-// Macro that returns a compile time constant with the length of an array, but gives an error if passed a non-array.
+// Macro that returns a compile time constant with the length of an array, but
+// gives an error if passed a non-array.
 template <typename T, size_t Size>
 char (&ArrayLengthHelperFunction(T (&)[Size]))[Size];
 // GCC needs some help to deduce a 0 length array.

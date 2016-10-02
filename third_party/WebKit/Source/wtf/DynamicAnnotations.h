@@ -45,14 +45,16 @@
  * The dynamic analysis tools can intercept these functions and replace them
  * with their own implementations.
  *
- * See http://code.google.com/p/data-race-test/wiki/DynamicAnnotations for more information.
+ * See http://code.google.com/p/data-race-test/wiki/DynamicAnnotations for more
+ * information.
  */
 
 #include "wtf/WTFExport.h"
 #include "wtf/build_config.h"
 
 #if USE(DYNAMIC_ANNOTATIONS)
-/* Tell data race detector that we're not interested in reports on the given address range. */
+/* Tell data race detector that we're not interested in reports on the given
+ * address range. */
 #define WTF_ANNOTATE_BENIGN_RACE_SIZED(address, size, description) \
   WTFAnnotateBenignRaceSized(__FILE__, __LINE__, address, size, description)
 #define WTF_ANNOTATE_BENIGN_RACE(pointer, description)                        \

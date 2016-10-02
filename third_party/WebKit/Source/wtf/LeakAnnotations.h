@@ -77,20 +77,22 @@ class LeakSanitizerDisabler {
 // If the object pointed to by the static local is on the Oilpan heap, a strong
 // Persistent<> is created to keep the pointed-to heap object alive. This makes
 // both the Persistent<> and the heap object _reachable_ by LeakSanitizer's leak
-// detection pass. We do not want these intentional leaks to be reported by LSan,
-// hence the static local is registered with Oilpan
+// detection pass. We do not want these intentional leaks to be reported by
+// LSan, hence the static local is registered with Oilpan
 // (see RegisterStaticLocalReference<> below.)
 //
-// Upon Blink shutdown, all the registered statics are released and a final round
-// of GCs are performed to sweep out their now-unreachable object graphs. The end
-// result being a tidied heap that the LeakSanitizer can then scan to report real leaks.
+// Upon Blink shutdown, all the registered statics are released and a final
+// round of GCs are performed to sweep out their now-unreachable object graphs.
+// The end result being a tidied heap that the LeakSanitizer can then scan to
+// report real leaks.
 //
-// The CanRegisterStaticLocalReference<> and RegisterStaticLocalReference<> templates
-// arrange for this -- for a class type T, a registerStatic() implementation is
-// provided if "T* T::registerAsStaticReference(T*)" is a method on T
-// (inherited or otherwise.)
+// The CanRegisterStaticLocalReference<> and RegisterStaticLocalReference<>
+// templates arrange for this -- for a class type T, a registerStatic()
+// implementation is provided if "T* T::registerAsStaticReference(T*)" is a
+// method on T (inherited or otherwise.)
 //
-// An empty, trivial registerStatic() method is provided for all other class types T.
+// An empty, trivial registerStatic() method is provided for all other class
+// types T.
 template <typename T>
 class CanRegisterStaticLocalReference {
   typedef char YesType;

@@ -29,29 +29,42 @@
  */
 
 /*
- * There are numerous academic and practical works on how to implement pthread_cond_wait/pthread_cond_signal/pthread_cond_broadcast
- * functions on Win32. Here is one example: http://www.cs.wustl.edu/~schmidt/win32-cv-1.html which is widely credited as a 'starting point'
- * of modern attempts. There are several more or less proven implementations, one in Boost C++ library (http://www.boost.org) and another
+ * There are numerous academic and practical works on how to implement
+ * pthread_cond_wait/pthread_cond_signal/pthread_cond_broadcast
+ * functions on Win32. Here is one example:
+ * http://www.cs.wustl.edu/~schmidt/win32-cv-1.html which is widely credited as
+ * a 'starting point' of modern attempts. There are several more or less proven
+ * implementations, one in Boost C++ library (http://www.boost.org) and another
  * in pthreads-win32 (http://sourceware.org/pthreads-win32/).
  *
- * The number of articles and discussions is the evidence of significant difficulties in implementing these primitives correctly.
- * The brief search of revisions, ChangeLog entries, discussions in comp.programming.threads and other places clearly documents
- * numerous pitfalls and performance problems the authors had to overcome to arrive to the suitable implementations.
- * Optimally, WebKit would use one of those supported/tested libraries directly. To roll out our own implementation is impractical,
- * if even for the lack of sufficient testing. However, a faithful reproduction of the code from one of the popular supported
- * libraries seems to be a good compromise.
+ * The number of articles and discussions is the evidence of significant
+ * difficulties in implementing these primitives correctly.  The brief search
+ * of revisions, ChangeLog entries, discussions in comp.programming.threads and
+ * other places clearly documents numerous pitfalls and performance problems
+ * the authors had to overcome to arrive to the suitable implementations.
+ * Optimally, WebKit would use one of those supported/tested libraries
+ * directly.  To roll out our own implementation is impractical, if even for
+ * the lack of sufficient testing. However, a faithful reproduction of the code
+ * from one of the popular supported libraries seems to be a good compromise.
  *
- * The early Boost implementation (http://www.boxbackup.org/trac/browser/box/nick/win/lib/win32/boost_1_32_0/libs/thread/src/condition.cpp?rev=30)
- * is identical to pthreads-win32 (http://sourceware.org/cgi-bin/cvsweb.cgi/pthreads/pthread_cond_wait.c?rev=1.10&content-type=text/x-cvsweb-markup&cvsroot=pthreads-win32).
- * Current Boost uses yet another (although seemingly equivalent) algorithm which came from their 'thread rewrite' effort.
+ * The early Boost implementation
+ * (http://www.boxbackup.org/trac/browser/box/nick/win/lib/win32/boost_1_32_0/libs/thread/src/condition.cpp?rev=30)
+ * is identical to pthreads-win32
+ * (http://sourceware.org/cgi-bin/cvsweb.cgi/pthreads/pthread_cond_wait.c?rev=1.10&content-type=text/x-cvsweb-markup&cvsroot=pthreads-win32).
+ * Current Boost uses yet another (although seemingly equivalent) algorithm
+ * which came from their 'thread rewrite' effort.
  *
- * This file includes timedWait/signal/broadcast implementations translated to WebKit coding style from the latest algorithm by
- * Alexander Terekhov and Louis Thomas, as captured here: http://sourceware.org/cgi-bin/cvsweb.cgi/pthreads/pthread_cond_wait.c?rev=1.10&content-type=text/x-cvsweb-markup&cvsroot=pthreads-win32
- * It replaces the implementation of their previous algorithm, also documented in the same source above.
- * The naming and comments are left very close to original to enable easy cross-check.
+ * This file includes timedWait/signal/broadcast implementations translated to
+ * WebKit coding style from the latest algorithm by Alexander Terekhov and
+ * Louis Thomas, as captured here:
+ * http://sourceware.org/cgi-bin/cvsweb.cgi/pthreads/pthread_cond_wait.c?rev=1.10&content-type=text/x-cvsweb-markup&cvsroot=pthreads-win32
+ * It replaces the implementation of their previous algorithm, also documented
+ * in the same source above.  The naming and comments are left very close to
+ * original to enable easy cross-check.
  *
- * The corresponding Pthreads-win32 License is included below, and CONTRIBUTORS file which it refers to is added to
- * source directory (as CONTRIBUTORS.pthreads-win32).
+ * The corresponding Pthreads-win32 License is included below, and CONTRIBUTORS
+ * file which it refers to is added to source directory (as
+ * CONTRIBUTORS.pthreads-win32).
  */
 
 /*
@@ -101,7 +114,8 @@
 
 namespace WTF {
 
-// THREADNAME_INFO comes from <http://msdn.microsoft.com/en-us/library/xcb2z8hs.aspx>.
+// THREADNAME_INFO comes from
+// <http://msdn.microsoft.com/en-us/library/xcb2z8hs.aspx>.
 #pragma pack(push, 8)
 typedef struct tagTHREADNAME_INFO {
   DWORD dwType;      // must be 0x1000
@@ -126,8 +140,8 @@ void initializeThreading() {
   // This should only be called once.
   ASSERT(!atomicallyInitializedStaticMutex);
 
-  // StringImpl::empty() does not construct its static string in a threadsafe fashion,
-  // so ensure it has been initialized from here.
+  // StringImpl::empty() does not construct its static string in a threadsafe
+  // fashion, so ensure it has been initialized from here.
   StringImpl::empty();
   StringImpl::empty16Bit();
   atomicallyInitializedStaticMutex = new Mutex;
@@ -344,8 +358,8 @@ bool ThreadCondition::timedWait(MutexBase& mutex, double absoluteTime) {
   DWORD interval = absoluteTimeToWaitTimeoutInterval(absoluteTime);
 
   if (!interval) {
-    // Consider the wait to have timed out, even if our condition has already been signaled, to
-    // match the pthreads implementation.
+    // Consider the wait to have timed out, even if our condition has already
+    // been signaled, to match the pthreads implementation.
     return false;
   }
 
@@ -367,7 +381,8 @@ DWORD absoluteTimeToWaitTimeoutInterval(double absoluteTime) {
   if (absoluteTime < currentTime)
     return 0;
 
-  // Time is too far in the future (and would overflow unsigned long) - wait forever.
+  // Time is too far in the future (and would overflow unsigned long) - wait
+  // forever.
   if (absoluteTime - currentTime > static_cast<double>(INT_MAX) / 1000.0)
     return INFINITE;
 

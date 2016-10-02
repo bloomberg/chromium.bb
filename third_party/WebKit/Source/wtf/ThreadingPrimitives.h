@@ -139,8 +139,10 @@ class WTF_EXPORT ThreadCondition final {
   ~ThreadCondition();
 
   void wait(MutexBase&);
-  // Returns true if the condition was signaled before absoluteTime, false if the absoluteTime was reached or is in the past.
-  // The absoluteTime is in seconds, starting on January 1, 1970. The time is assumed to use the same time zone as WTF::currentTime().
+  // Returns true if the condition was signaled before absoluteTime, false if
+  // the absoluteTime was reached or is in the past.
+  // The absoluteTime is in seconds, starting on January 1, 1970. The time is
+  // assumed to use the same time zone as WTF::currentTime().
   bool timedWait(MutexBase&, double absoluteTime);
   void signal();
   void broadcast();
@@ -150,8 +152,10 @@ class WTF_EXPORT ThreadCondition final {
 };
 
 #if OS(WIN)
-// The absoluteTime is in seconds, starting on January 1, 1970. The time is assumed to use the same time zone as WTF::currentTime().
-// Returns an interval in milliseconds suitable for passing to one of the Win32 wait functions (e.g., ::WaitForSingleObject).
+// The absoluteTime is in seconds, starting on January 1, 1970. The time is
+// assumed to use the same time zone as WTF::currentTime().
+// Returns an interval in milliseconds suitable for passing to one of the Win32
+// wait functions (e.g., ::WaitForSingleObject).
 DWORD absoluteTimeToWaitTimeoutInterval(double absoluteTime);
 #endif
 

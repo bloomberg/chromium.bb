@@ -27,7 +27,7 @@ namespace WTF {
 // part of object.  If it has Members you need a trace method and the containing
 // object needs to call that trace method.
 //
-// DISALLOW_NEW_EXCEPT_PLACEMENT_NEW(): Allows only placement new operator.  This
+// DISALLOW_NEW_EXCEPT_PLACEMENT_NEW(): Allows only placement new operator. This
 // disallows general allocation of this object but allows to put the object as a
 // value object in collections.  If these have Members you need to have a trace
 // method. That trace method will be called automatically by the on-heap
@@ -82,7 +82,8 @@ namespace WTF {
 #define STACK_ALLOCATED() DISALLOW_NEW()
 #endif
 
-// Provides customizable overrides of fastMalloc/fastFree and operator new/delete
+// Provides customizable overrides of fastMalloc/fastFree and operator
+// new/delete
 //
 // Provided functionality:
 //    Macro: USING_FAST_MALLOC

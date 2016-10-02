@@ -54,7 +54,8 @@ struct IntTypes<8> {
 
 // integer hash function
 
-// Thomas Wang's 32 Bit Mix Function: http://www.cris.com/~Ttwang/tech/inthash.htm
+// Thomas Wang's 32 Bit Mix Function:
+// http://www.cris.com/~Ttwang/tech/inthash.htm
 inline unsigned hashInt(uint8_t key8) {
   unsigned key = key8;
   key += ~(key << 15);
@@ -66,7 +67,8 @@ inline unsigned hashInt(uint8_t key8) {
   return key;
 }
 
-// Thomas Wang's 32 Bit Mix Function: http://www.cris.com/~Ttwang/tech/inthash.htm
+// Thomas Wang's 32 Bit Mix Function:
+// http://www.cris.com/~Ttwang/tech/inthash.htm
 inline unsigned hashInt(uint16_t key16) {
   unsigned key = key16;
   key += ~(key << 15);
@@ -78,7 +80,8 @@ inline unsigned hashInt(uint16_t key16) {
   return key;
 }
 
-// Thomas Wang's 32 Bit Mix Function: http://www.cris.com/~Ttwang/tech/inthash.htm
+// Thomas Wang's 32 Bit Mix Function:
+// http://www.cris.com/~Ttwang/tech/inthash.htm
 inline unsigned hashInt(uint32_t key) {
   key += ~(key << 15);
   key ^= (key >> 10);
@@ -89,7 +92,8 @@ inline unsigned hashInt(uint32_t key) {
   return key;
 }
 
-// Thomas Wang's 64 bit Mix Function: http://www.cris.com/~Ttwang/tech/inthash.htm
+// Thomas Wang's 64 bit Mix Function:
+// http://www.cris.com/~Ttwang/tech/inthash.htm
 inline unsigned hashInt(uint64_t key) {
   key += ~(key << 32);
   key ^= (key >> 22);
@@ -102,7 +106,8 @@ inline unsigned hashInt(uint64_t key) {
   return static_cast<unsigned>(key);
 }
 
-// Compound integer hash method: http://opendatastructures.org/versions/edition-0.1d/ods-java/node33.html#SECTION00832000000000000000
+// Compound integer hash method:
+// http://opendatastructures.org/versions/edition-0.1d/ods-java/node33.html#SECTION00832000000000000000
 inline unsigned hashInts(unsigned key1, unsigned key2) {
   unsigned shortRandom1 = 277951225;          // A random 32-bit value.
   unsigned shortRandom2 = 95187966;           // A random 32-bit value.
@@ -141,8 +146,8 @@ struct PtrHash {
   static unsigned hash(T* key) {
 #if COMPILER(MSVC)
 #pragma warning(push)
-#pragma warning( \
-    disable : 4244)  // work around what seems to be a bug in MSVC's conversion warnings
+// work around what seems to be a bug in MSVC's conversion warnings
+#pragma warning(disable : 4244)
 #endif
     return IntHash<uintptr_t>::hash(reinterpret_cast<uintptr_t>(key));
 #if COMPILER(MSVC)
@@ -192,8 +197,10 @@ struct DefaultHash;
 
 // Actual implementation of DefaultHash.
 //
-// The case of |isIntegral| == false is not implemented. If you see a compile error saying DefaultHashImpl<T, false>
-// is not defined, that's because the default hash functions for T are not defined. You need to implement them yourself.
+// The case of |isIntegral| == false is not implemented. If you see a compile
+// error saying DefaultHashImpl<T, false> is not defined, that's because the
+// default hash functions for T are not defined. You need to implement them
+// yourself.
 template <typename T, bool isIntegral>
 struct DefaultHashImpl;
 

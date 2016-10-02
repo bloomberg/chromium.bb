@@ -498,7 +498,8 @@ typename HashMap<T, U, V, W, X, Y>::AddResult HashMap<T, U, V, W, X, Y>::set(
     // The inlineAdd call above found an existing hash table entry; we need
     // to set the mapped value.
     //
-    // It's safe to call std::forward again, because |mapped| isn't moved if there's an existing entry.
+    // It's safe to call std::forward again, because |mapped| isn't moved if
+    // there's an existing entry.
     MappedTraits::store(std::forward<IncomingMappedType>(mapped),
                         result.storedValue->value);
   }

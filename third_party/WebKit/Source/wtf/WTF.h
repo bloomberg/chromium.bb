@@ -38,7 +38,8 @@ namespace WTF {
 
 typedef void MainThreadFunction(void*);
 
-// This function must be called exactly once from the main thread before using anything else in WTF.
+// This function must be called exactly once from the main thread before using
+// anything else in WTF.
 WTF_EXPORT void initialize(void (*)(MainThreadFunction, void*));
 WTF_EXPORT void shutdown();
 WTF_EXPORT bool isShutdown();

@@ -32,9 +32,9 @@
 
 namespace WTF {
 
-// Counting bloom filter with k=2 and 8 bit counters. Uses 2^keyBits bytes of memory.
-// False positive rate is approximately (1-e^(-2n/m))^2, where n is the number of unique
-// keys and m is the table size (==2^keyBits).
+// Counting bloom filter with k=2 and 8 bit counters. Uses 2^keyBits bytes of
+// memory.  False positive rate is approximately (1-e^(-2n/m))^2, where n is
+// the number of unique keys and m is the table size (==2^keyBits).
 template <unsigned keyBits>
 class BloomFilter {
   USING_FAST_MALLOC(BloomFilter);

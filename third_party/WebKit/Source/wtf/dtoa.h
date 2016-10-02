@@ -28,7 +28,8 @@
 
 namespace WTF {
 
-// Size = 80 for sizeof(DtoaBuffer) + some sign bits, decimal point, 'e', exponent digits.
+// Size = 80 for sizeof(DtoaBuffer) + some sign bits, decimal point, 'e',
+// exponent digits.
 const unsigned NumberToStringBufferLength = 96;
 typedef char NumberToStringBuffer[NumberToStringBufferLength];
 

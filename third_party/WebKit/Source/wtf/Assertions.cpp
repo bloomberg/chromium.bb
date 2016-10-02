@@ -27,7 +27,8 @@
 
 // The vprintf_stderr_common function triggers this error in the Mac build.
 // Feel free to remove this pragma if this file builds on Mac.
-// According to http://gcc.gnu.org/onlinedocs/gcc-4.2.1/gcc/Diagnostic-Pragmas.html#Diagnostic-Pragmas
+// According to
+// http://gcc.gnu.org/onlinedocs/gcc-4.2.1/gcc/Diagnostic-Pragmas.html#Diagnostic-Pragmas
 // we need to place this directive before any data or functions are defined.
 #pragma GCC diagnostic ignored "-Wmissing-format-attribute"
 
@@ -143,9 +144,10 @@ static void printCallSite(const char* file, int line, const char* function) {
 #if OS(WIN) && defined(_DEBUG)
   _CrtDbgReport(_CRT_WARN, file, line, nullptr, "%s\n", function);
 #else
-  // By using this format, which matches the format used by MSVC for compiler errors, developers
-  // using Visual Studio can double-click the file/line number in the Output Window to have the
-  // editor navigate to that line of code. It seems fine for other developers, too.
+  // By using this format, which matches the format used by MSVC for compiler
+  // errors, developers using Visual Studio can double-click the file/line
+  // number in the Output Window to have the editor navigate to that line of
+  // code. It seems fine for other developers, too.
   printf_stderr_common("%s(%d) : %s\n", file, line, function);
 #endif
 }
@@ -165,9 +167,9 @@ void WTFGetBacktrace(void** stack, int* size) {
 #if OS(MACOSX) || (OS(LINUX) && !defined(__UCLIBC__))
   *size = backtrace(stack, *size);
 #elif OS(WIN)
-  // The CaptureStackBackTrace function is available in XP, but it is not defined
-  // in the Windows Server 2003 R2 Platform SDK. So, we'll grab the function
-  // through GetProcAddress.
+  // The CaptureStackBackTrace function is available in XP, but it is not
+  // defined in the Windows Server 2003 R2 Platform SDK. So, we'll grab the
+  // function through GetProcAddress.
   typedef WORD(NTAPI * RtlCaptureStackBackTraceFunc)(DWORD, DWORD, PVOID*,
                                                      PDWORD);
   HMODULE kernel32 = ::GetModuleHandleW(L"Kernel32.dll");
@@ -189,7 +191,8 @@ void WTFGetBacktrace(void** stack, int* size) {
 
 void WTFReportBacktrace(int framesToShow) {
   static const int framesToSkip = 2;
-  // Use alloca to allocate on the stack since this function is used in OOM situations.
+  // Use alloca to allocate on the stack since this function is used in OOM
+  // situations.
   void** samples = static_cast<void**>(
       alloca((framesToShow + framesToSkip) * sizeof(void*)));
   int frames = framesToShow + framesToSkip;

@@ -46,8 +46,9 @@ class WeakMember;
 
 namespace WTF {
 
-// Functional.h provides a very simple way to bind a function pointer and arguments together into a function object
-// that can be stored, copied and invoked, similar to how boost::bind and std::bind in C++11.
+// Functional.h provides a very simple way to bind a function pointer and
+// arguments together into a function object that can be stored, copied and
+// invoked, similar to boost::bind and std::bind in C++11.
 
 // Thread Safety:
 //
@@ -60,28 +61,34 @@ namespace WTF {
 // WTF::bind() and move semantics
 // ==============================
 //
-// For unbound parameters (arguments supplied later on the bound functor directly), there are two ways to pass movable
-// arguments:
+// For unbound parameters (arguments supplied later on the bound functor
+// directly), there are two ways to pass movable arguments:
 //
 //     1) Pass by rvalue reference.
 //
 //            void yourFunction(Argument&& argument) { ... }
-//            std::unique_ptr<Function<void(Argument&&)>> functor = bind<Argument&&>(yourFunction);
+//            std::unique_ptr<Function<void(Argument&&)>> functor =
+//                bind<Argument&&>(yourFunction);
 //
 //     2) Pass by value.
 //
 //            void yourFunction(Argument argument) { ... }
-//            std::unique_ptr<Function<void(Argument)>> functor = bind<Argument>(yourFunction);
+//            std::unique_ptr<Function<void(Argument)>> functor =
+//                bind<Argument>(yourFunction);
 //
-// Note that with the latter there will be *two* move constructions happening, because there needs to be at least one
-// intermediary function call taking an argument of type "Argument" (i.e. passed by value). The former case does not
+// Note that with the latter there will be *two* move constructions happening,
+// because there needs to be at least one intermediary function call taking an
+// argument of type "Argument" (i.e. passed by value). The former case does not
 // require any move constructions inbetween.
 //
-// For bound parameters (arguments supplied on the creation of a functor), you can move your argument into the internal
-// storage of the functor by supplying an rvalue to that argument (this is done in wrap() of ParamStorageTraits).
-// However, to make the functor be able to get called multiple times, the stored object does not get moved out
-// automatically when the underlying function is actually invoked. If you want to make an argument "auto-passed",
-// you can do so by wrapping your bound argument with passed() function, as shown below:
+// For bound parameters (arguments supplied on the creation of a functor), you
+// can move your argument into the internal storage of the functor by supplying
+// an rvalue to that argument (this is done in wrap() of ParamStorageTraits).
+// However, to make the functor be able to get called multiple times, the
+// stored object does not get moved out automatically when the underlying
+// function is actually invoked. If you want to make an argument "auto-passed",
+// you can do so by wrapping your bound argument with passed() function, as
+// shown below:
 //
 //     void yourFunction(Argument argument)
 //     {
@@ -90,14 +97,16 @@ namespace WTF {
 //     }
 //
 //     ...
-//     std::unique_ptr<Function<void()>> functor = bind(yourFunction, passed(Argument()));
+//     std::unique_ptr<Function<void()>> functor = bind(yourFunction,
+//         passed(Argument()));
 //     ...
 //     (*functor)();
 //
-// The underlying function must receive the argument wrapped by passed() by rvalue reference or by value.
+// The underlying function must receive the argument wrapped by passed() by
+// rvalue reference or by value.
 //
-// Obviously, if you create a functor this way, you shouldn't call the functor twice or more; after the second call,
-// the passed argument may be invalid.
+// Obviously, if you create a functor this way, you shouldn't call the functor
+// twice or more; after the second call, the passed argument may be invalid.
 
 enum FunctionThreadAffinity { CrossThreadAffinity, SameThreadAffinity };
 

@@ -32,10 +32,12 @@
 
 #define DATA_LOG_TO_FILE 0
 
-// Uncomment to force logging to the given file regardless of what the environment variable says. Note that
-// we will append ".<pid>.txt" where <pid> is the PID.
+// Uncomment to force logging to the given file regardless of what the
+// environment variable says. Note that we will append ".<pid>.txt" where <pid>
+// is the PID.
 
-// This path won't work on Windows, make sure to change to something like C:\\Users\\<more path>\\log.txt.
+// This path won't work on Windows, make sure to change to something like
+// C:\\Users\\<more path>\\log.txt.
 #define DATA_LOG_FILENAME "/tmp/WTFLog"
 
 namespace WTF {
@@ -68,9 +70,9 @@ static void initializeLogFileOnce() {
   if (!file)
     file = new FilePrintStream(stderr, FilePrintStream::Borrow);
 
-  setvbuf(
-      file->file(), 0, _IONBF,
-      0);  // Prefer unbuffered output, so that we get a full log upon crash or deadlock.
+  // Prefer unbuffered output, so that we get a full log upon crash or
+  // deadlock.
+  setvbuf(file->file(), 0, _IONBF, 0);
 }
 
 static void initializeLogFile() {

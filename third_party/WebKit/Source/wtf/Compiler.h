@@ -37,12 +37,14 @@
 #define WTF_COMPILER_CLANG 1
 #endif
 
-/* COMPILER(MSVC) - Microsoft Visual C++ (and Clang when compiling for Windows). */
+/* COMPILER(MSVC) - Microsoft Visual C++ (and Clang when compiling for Windows).
+ */
 #if defined(_MSC_VER)
 #define WTF_COMPILER_MSVC 1
 #endif
 
-/* COMPILER(GCC) - GNU Compiler Collection (and Clang when compiling for platforms other than Windows). */
+/* COMPILER(GCC) - GNU Compiler Collection (and Clang when compiling for
+ * platforms other than Windows). */
 #if defined(__GNUC__)
 #define WTF_COMPILER_GCC 1
 #define GCC_VERSION \
@@ -50,7 +52,8 @@
 #define GCC_VERSION_AT_LEAST(major, minor, patch) \
   (GCC_VERSION >= (major * 10000 + minor * 100 + patch))
 #else
-/* Define this for !GCC compilers, just so we can write things like GCC_VERSION_AT_LEAST(4, 1, 0). */
+/* Define this for !GCC compilers, just so we can write things like
+ * GCC_VERSION_AT_LEAST(4, 1, 0). */
 #define GCC_VERSION_AT_LEAST(major, minor, patch) 0
 #endif
 
@@ -154,7 +157,8 @@
 #define NO_SANITIZE_UNRELATED_CAST
 #endif
 
-/* WTF_NON_EXPORTED_BASE; similar NON_EXPORTED_BASE in base/compiler_specific.h */
+/* WTF_NON_EXPORTED_BASE; similar NON_EXPORTED_BASE in base/compiler_specific.h
+ */
 
 #if COMPILER(MSVC)
 #define WTF_NON_EXPORTED_BASE(code) __pragma(warning(suppress : 4275)) code

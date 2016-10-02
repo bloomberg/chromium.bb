@@ -557,8 +557,9 @@ class CountCopy final {
 };
 
 TEST(DequeTest, MoveShouldNotMakeCopy) {
-  // Because data in inline buffer may be swapped or moved individually, we force the creation of out-of-line buffer
-  // so we can make sure there's no element-wise copy/move.
+  // Because data in inline buffer may be swapped or moved individually, we
+  // force the creation of out-of-line buffer so we can make sure there's no
+  // element-wise copy/move.
   Deque<CountCopy, 1> deque;
   int counter = 0;
   deque.append(CountCopy(&counter));

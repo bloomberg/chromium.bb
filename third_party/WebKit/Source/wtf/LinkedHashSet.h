@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2005, 2006, 2007, 2008, 2011, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2005, 2006, 2007, 2008, 2011, 2012 Apple Inc. All rights
+ * reserved.
  * Copyright (C) 2011, Benjamin Poulain <ikipou@gmail.com>
  *
  * This library is free software; you can redistribute it and/or
@@ -246,8 +247,8 @@ class LinkedHashSet {
   const_iterator find(ValuePeekInType) const;
   bool contains(ValuePeekInType) const;
 
-  // An alternate version of find() that finds the object by hashing and comparing
-  // with some other type, to avoid the cost of type conversion.
+  // An alternate version of find() that finds the object by hashing and
+  // comparing with some other type, to avoid the cost of type conversion.
   // The HashTranslator interface is defined in HashSet.
   template <typename HashTranslator, typename T>
   iterator find(const T&);
@@ -273,8 +274,8 @@ class LinkedHashSet {
   template <typename IncomingValueType>
   AddResult appendOrMoveToLast(IncomingValueType&&);
 
-  // Add the value to the beginning of the collection. If the value was already in
-  // the list, it is moved to the beginning.
+  // Add the value to the beginning of the collection. If the value was already
+  // in the list, it is moved to the beginning.
   template <typename IncomingValueType>
   AddResult prependOrMoveToFirst(IncomingValueType&&);
 

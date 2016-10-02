@@ -40,10 +40,12 @@ TEST(MathExtrasTest, Lrint) {
   EXPECT_EQ(0, lrint(0));
   EXPECT_EQ(0, lrint(-0));
   if (sizeof(long int) == 8) {
-    // Largest double number with 0.5 precision and one halfway rounding case below.
+    // Largest double number with 0.5 precision and one halfway rounding case
+    // below.
     EXPECT_EQ(pow(2.0, 52), lrint(pow(2.0, 52) - 0.5));
     EXPECT_EQ(pow(2.0, 52) - 2, lrint(pow(2.0, 52) - 1.5));
-    // Smallest double number with 0.5 precision and one halfway rounding case above.
+    // Smallest double number with 0.5 precision and one halfway rounding case
+    // above.
     EXPECT_EQ(-pow(2.0, 52), lrint(-pow(2.0, 52) + 0.5));
     EXPECT_EQ(-pow(2.0, 52) + 2, lrint(-pow(2.0, 52) + 1.5));
   }

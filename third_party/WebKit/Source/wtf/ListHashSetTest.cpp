@@ -695,7 +695,8 @@ TYPED_TEST(ListOrLinkedHashSetCountCopyTest, MoveAssignmentShouldNotMakeACopy) {
 
 class MoveOnly {
  public:
-  // kEmpty and kDeleted have special meanings when MoveOnly is used as the key of a hash table.
+  // kEmpty and kDeleted have special meanings when MoveOnly is used as the key
+  // of a hash table.
   enum { kEmpty = 0, kDeleted = -1, kMovedOut = -2 };
 
   explicit MoveOnly(int value = kEmpty, int id = 0)

@@ -478,9 +478,8 @@ TEST(FunctionalTest, BindMoveOnlyObjects) {
       bind(singleMoveOnlyByRvalueReference, passed(std::move(one)));
   EXPECT_EQ(0, one.value());  // Should be moved away.
   EXPECT_EQ(1, (*bound)());
-  EXPECT_EQ(
-      0,
-      (*bound)());  // The stored value must be cleared in the first function call.
+  // The stored value must be cleared in the first function call.
+  EXPECT_EQ(0, (*bound)());
 
   bound = bind(singleMoveOnlyByValue, passed(MoveOnly(1)));
   EXPECT_EQ(1, (*bound)());
@@ -530,9 +529,8 @@ TEST(FunctionalTest, CountCopiesOfBoundArguments) {
   EXPECT_EQ(2, (*bound)());
 
   bound = bind(takeCountCopyAsValue, lvalue);
-  EXPECT_EQ(
-      3,
-      (*bound)());  // wrapping, unwrapping and copying in the final function argument.
+  // wrapping, unwrapping and copying in the final function argument.
+  EXPECT_EQ(3, (*bound)());
 
   bound = bind(takeCountCopyAsValue, CountCopy());
   EXPECT_EQ(3, (*bound)());
@@ -566,13 +564,11 @@ TEST(FunctionalTest, CountCopiesOfUnboundArguments) {
   EXPECT_EQ(0, (*bound1)(CountCopy()));
 
   std::unique_ptr<Function<int(CountCopy)>> bound2 = bind(takeCountCopyAsValue);
-  EXPECT_EQ(
-      3,
-      (*bound2)(
-          lvalue));  // At Function::operator(), at Callback::Run() and at the destination function.
-  EXPECT_LE(
-      (*bound2)(CountCopy()),
-      2);  // Compiler is allowed to optimize one copy away if the argument is rvalue.
+  // At Function::operator(), at Callback::Run() and at the destination
+  // function.
+  EXPECT_EQ(3, (*bound2)(lvalue));
+  // Compiler is allowed to optimize one copy away if the argument is rvalue.
+  EXPECT_LE((*bound2)(CountCopy()), 2);
 }
 
 TEST(FunctionalTest, WeakPtr) {

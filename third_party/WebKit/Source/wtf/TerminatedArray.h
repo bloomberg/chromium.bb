@@ -75,7 +75,8 @@ class TerminatedArray {
     return count;
   }
 
-  // Match Allocator semantics to be able to use std::unique_ptr<TerminatedArray>.
+  // Match Allocator semantics to be able to use
+  // std::unique_ptr<TerminatedArray>.
   void operator delete(void* p) { ::WTF::Partitions::fastFree(p); }
 
  private:

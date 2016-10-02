@@ -123,8 +123,8 @@ class WTF_EXPORT ScopedLogger {
   static ScopedLogger*& current();
 
   ScopedLogger* const m_parent;
-  bool
-      m_multiline;  // The ')' will go on the same line if there is only one entry.
+  bool m_multiline;  // The ')' will go on the same line if there is only one
+                     // entry.
   static PrintFunctionPtr m_printFunc;
 };
 
