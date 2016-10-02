@@ -452,6 +452,7 @@ Resource* ResourceFetcher::requestResource(
     FetchRequest& request,
     const ResourceFactory& factory,
     const SubstituteData& substituteData) {
+  SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.Fetch.RequestResourceTime");
   DCHECK(request.options().synchronousPolicy == RequestAsynchronously ||
          factory.type() == Resource::Raw ||
          factory.type() == Resource::XSLStyleSheet);
