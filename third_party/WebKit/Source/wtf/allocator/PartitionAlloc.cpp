@@ -100,8 +100,8 @@ static uint8_t partitionBucketNumSystemPages(size_t size) {
     size_t pageSize = kSystemPageSize * i;
     size_t numSlots = pageSize / size;
     size_t waste = pageSize - (numSlots * size);
-    // Leaving a page unfaulted is not free; the page will occupy an empty page table entry.
-    // Make a simple attempt to account for that.
+    // Leaving a page unfaulted is not free; the page will occupy an empty page
+    // table entry.  Make a simple attempt to account for that.
     size_t numRemainderPages = i & (kNumSystemPagesPerPartitionPage - 1);
     size_t numUnfaultedPages =
         numRemainderPages
@@ -192,7 +192,8 @@ void partitionAllocGenericInit(PartitionRootGeneric* root) {
   // Example: malloc(41) == 101001 binary.
   // Order is 6 (1 << 6-1)==32 is highest bit set.
   // orderIndex is the next three MSB == 010 == 2.
-  // subOrderIndexMask is a mask for the remaining bits == 11 (masking to 01 for the subOrderIndex).
+  // subOrderIndexMask is a mask for the remaining bits == 11 (masking to 01 for
+  // the subOrderIndex).
   size_t order;
   for (order = 0; order <= kBitsPerSizet; ++order) {
     size_t orderIndexShift;
@@ -444,7 +445,8 @@ static ALWAYS_INLINE void* partitionAllocPartitionPages(
 
   // Need a new super page. We want to allocate super pages in a continguous
   // address region as much as possible. This is important for not causing
-  // page table bloat and not fragmenting address spaces in 32 bit architectures.
+  // page table bloat and not fragmenting address spaces in 32 bit
+  // architectures.
   char* requestedAddress = root->nextSuperPage;
   char* superPage = reinterpret_cast<char*>(allocPages(
       requestedAddress, kSuperPageSize, kSuperPageSize, PageAccessible));
@@ -507,7 +509,8 @@ static ALWAYS_INLINE void* partitionAllocPartitionPages(
     latestExtent->superPageBase = superPage;
     latestExtent->superPagesEnd = superPage + kSuperPageSize;
   } else {
-    // We allocated next to an existing extent so just nudge the size up a little.
+    // We allocated next to an existing extent so just nudge the size up a
+    // little.
     ASSERT(currentExtent->superPagesEnd);
     currentExtent->superPagesEnd += kSuperPageSize;
     ASSERT(ret >= currentExtent->superPageBase &&
@@ -563,7 +566,8 @@ static ALWAYS_INLINE char* partitionPageAllocAndFillFreelist(
   ASSERT(numSlots);
   PartitionBucket* bucket = page->bucket;
   // We should only get here when _every_ slot is either used or unprovisioned.
-  // (The third state is "on the freelist". If we have a non-empty freelist, we should not get here.)
+  // (The third state is "on the freelist". If we have a non-empty freelist, we
+  // should not get here.)
   ASSERT(numSlots + page->numAllocatedSlots == partitionBucketSlots(bucket));
   // Similarly, make explicitly sure that the freelist is empty.
   ASSERT(!page->freelistHead);
@@ -598,7 +602,8 @@ static ALWAYS_INLINE char* partitionPageAllocAndFillFreelist(
   }
 
   // We always return an object slot -- that's the +1 below.
-  // We do not neccessarily create any new freelist entries, because we cross sub page boundaries frequently for large bucket sizes.
+  // We do not neccessarily create any new freelist entries, because we cross
+  // sub page boundaries frequently for large bucket sizes.
   ASSERT(numNewFreelistEntries + 1 <= numSlots);
   numSlots -= (numNewFreelistEntries + 1);
   page->numUnprovisionedSlots = numSlots;

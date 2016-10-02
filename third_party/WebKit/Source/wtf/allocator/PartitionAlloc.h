@@ -66,16 +66,16 @@
 //
 // The allocators are designed to be extremely fast, thanks to the following
 // properties and design:
-// - Just two single (reasonably predicatable) branches in the hot / fast path for
-// both allocating and (significantly) freeing.
+// - Just two single (reasonably predicatable) branches in the hot / fast path
+//   for both allocating and (significantly) freeing.
 // - A minimal number of operations in the hot / fast path, with the slow paths
-// in separate functions, leading to the possibility of inlining.
+//   in separate functions, leading to the possibility of inlining.
 // - Each partition page (which is usually multiple physical pages) has a
-// metadata structure which allows fast mapping of free() address to an
-// underlying bucket.
+//   metadata structure which allows fast mapping of free() address to an
+//   underlying bucket.
 // - Supports a lock-free API for fast performance in single-threaded cases.
 // - The freelist for a given bucket is split across a number of partition
-// pages, enabling various simple tricks to try and minimize fragmentation.
+//   pages, enabling various simple tricks to try and minimize fragmentation.
 // - Fine-grained bucket sizes leading to less waste and better packing.
 //
 // The following security properties could be investigated in the future:
@@ -149,7 +149,14 @@ static const size_t kMaxSystemPagesPerSlotSpan =
 // The layout of the super page is as follows. The sizes below are the same
 // for 32 bit and 64 bit.
 //
-//   | Guard page (4KB) | Metadata page (4KB) | Guard pages (8KB) | Slot span | Slot span | ... | Slot span | Guard page (4KB) |
+//   | Guard page (4KB)    |
+//   | Metadata page (4KB) |
+//   | Guard pages (8KB)   |
+//   | Slot span           |
+//   | Slot span           |
+//   | ...                 |
+//   | Slot span           |
+//   | Guard page (4KB)    |
 //
 //   - Each slot span is a contiguous range of one or more PartitionPages.
 //   - The metadata page has the following format. Note that the PartitionPage
@@ -158,15 +165,30 @@ static const size_t kMaxSystemPagesPerSlotSpan =
 //     of the slot span. Metadata accesses to other PartitionPages are
 //     redirected to the first PartitionPage.
 //
-//     | SuperPageExtentEntry (32B) | PartitionPage of slot span 1 (32B, used) | PartitionPage of slot span 1 (32B, unused) | PartitionPage of slot span 1 (32B, unused) | PartitionPage of slot span 2 (32B, used) | PartitionPage of slot span 3 (32B, used) | ... | PartitionPage of slot span N (32B, unused) |
+//     | SuperPageExtentEntry (32B)                 |
+//     | PartitionPage of slot span 1 (32B, used)   |
+//     | PartitionPage of slot span 1 (32B, unused) |
+//     | PartitionPage of slot span 1 (32B, unused) |
+//     | PartitionPage of slot span 2 (32B, used)   |
+//     | PartitionPage of slot span 3 (32B, used)   |
+//     | ...                                        |
+//     | PartitionPage of slot span N (32B, unused) |
 //
-// A direct mapped page has a similar layout to fake it looking like a super page:
+// A direct mapped page has a similar layout to fake it looking like a super
+// page:
 //
-//     | Guard page (4KB) | Metadata page (4KB) | Guard pages (8KB) | Direct mapped object | Guard page (4KB) |
+//     | Guard page (4KB)     |
+//     | Metadata page (4KB)  |
+//     | Guard pages (8KB)    |
+//     | Direct mapped object |
+//     | Guard page (4KB)     |
 //
 //    - The metadata page has the following layout:
 //
-//     | SuperPageExtentEntry (32B) | PartitionPage (32B) | PartitionBucket (32B) | PartitionDirectMapExtent (8B) |
+//     | SuperPageExtentEntry (32B)    |
+//     | PartitionPage (32B)           |
+//     | PartitionBucket (32B)         |
+//     | PartitionDirectMapExtent (8B) |
 static const size_t kSuperPageShift = 21;  // 2MB
 static const size_t kSuperPageSize = 1 << kSuperPageShift;
 static const size_t kSuperPageOffsetMask = kSuperPageSize - 1;
@@ -189,8 +211,9 @@ static const size_t kGenericMaxBucketedOrder =
     20;  // Largest bucketed order is 1<<(20-1) (storing 512KB -> almost 1MB)
 static const size_t kGenericNumBucketedOrders =
     (kGenericMaxBucketedOrder - kGenericMinBucketedOrder) + 1;
-static const size_t kGenericNumBucketsPerOrderBits =
-    3;  // Eight buckets per order (for the higher orders), e.g. order 8 is 128, 144, 160, ..., 240
+// Eight buckets per order (for the higher orders), e.g. order 8 is 128, 144,
+// 160, ..., 240:
+static const size_t kGenericNumBucketsPerOrderBits = 3;
 static const size_t kGenericNumBucketsPerOrder =
     1 << kGenericNumBucketsPerOrderBits;
 static const size_t kGenericNumBuckets =
@@ -265,8 +288,8 @@ struct PartitionPage {
   PartitionFreelistEntry* freelistHead;
   PartitionPage* nextPage;
   PartitionBucket* bucket;
-  int16_t
-      numAllocatedSlots;  // Deliberately signed, 0 for empty or decommitted page, -n for full pages.
+  // Deliberately signed, 0 for empty or decommitted page, -n for full pages:
+  int16_t numAllocatedSlots;
   uint16_t numUnprovisionedSlots;
   uint16_t pageOffset;
   int16_t emptyCacheIndex;  // -1 if not in the empty cache.
@@ -302,7 +325,8 @@ struct WTF_EXPORT PartitionRootBase {
   size_t totalSizeOfCommittedPages;
   size_t totalSizeOfSuperPages;
   size_t totalSizeOfDirectMappedPages;
-  // Invariant: totalSizeOfCommittedPages <= totalSizeOfSuperPages + totalSizeOfDirectMappedPages.
+  // Invariant: totalSizeOfCommittedPages <=
+  //                totalSizeOfSuperPages + totalSizeOfDirectMappedPages.
   unsigned numBuckets;
   unsigned maxAllocation;
   bool initialized;
@@ -339,16 +363,18 @@ struct PartitionRoot : public PartitionRootBase {
   }
 };
 
-// Never instantiate a PartitionRootGeneric directly, instead use PartitionAllocatorGeneric.
+// Never instantiate a PartitionRootGeneric directly, instead use
+// PartitionAllocatorGeneric.
 struct PartitionRootGeneric : public PartitionRootBase {
   SpinLock lock;
   // Some pre-computed constants.
   size_t orderIndexShifts[kBitsPerSizet + 1];
   size_t orderSubIndexMasks[kBitsPerSizet + 1];
   // The bucket lookup table lets us map a size_t to a bucket quickly.
-  // The trailing +1 caters for the overflow case for very large allocation sizes.
-  // It is one flat array instead of a 2D array because in the 2D world, we'd
-  // need to index array[blah][max+1] which risks undefined behavior.
+  // The trailing +1 caters for the overflow case for very large allocation
+  // sizes.  It is one flat array instead of a 2D array because in the 2D
+  // world, we'd need to index array[blah][max+1] which risks undefined
+  // behavior.
   PartitionBucket*
       bucketLookups[((kBitsPerSizet + 1) * kGenericNumBucketsPerOrder) + 1];
   PartitionBucket buckets[kGenericNumBuckets];
@@ -373,23 +399,23 @@ struct PartitionMemoryStats {
 // Struct used to retrieve memory statistics about a partition bucket. Used by
 // PartitionStatsDumper implementation.
 struct PartitionBucketMemoryStats {
-  bool isValid;  // Used to check if the stats is valid.
-  bool
-      isDirectMap;  // True if this is a direct mapping; size will not be unique.
-  uint32_t bucketSlotSize;  // The size of the slot in bytes.
-  uint32_t
-      allocatedPageSize;  // Total size the partition page allocated from the system.
-  uint32_t activeBytes;         // Total active bytes used in the bucket.
-  uint32_t residentBytes;       // Total bytes provisioned in the bucket.
-  uint32_t decommittableBytes;  // Total bytes that could be decommitted.
-  uint32_t discardableBytes;    // Total bytes that could be discarded.
-  uint32_t numFullPages;        // Number of pages with all slots allocated.
-  uint32_t
-      numActivePages;  // Number of pages that have at least one provisioned slot.
-  uint32_t
-      numEmptyPages;  // Number of pages that are empty but not decommitted.
-  uint32_t
-      numDecommittedPages;  // Number of pages that are empty and decommitted.
+  bool isValid;      // Used to check if the stats is valid.
+  bool isDirectMap;  // True if this is a direct mapping; size will not be
+                     // unique.
+  uint32_t bucketSlotSize;       // The size of the slot in bytes.
+  uint32_t allocatedPageSize;    // Total size the partition page allocated from
+                                 // the system.
+  uint32_t activeBytes;          // Total active bytes used in the bucket.
+  uint32_t residentBytes;        // Total bytes provisioned in the bucket.
+  uint32_t decommittableBytes;   // Total bytes that could be decommitted.
+  uint32_t discardableBytes;     // Total bytes that could be discarded.
+  uint32_t numFullPages;         // Number of pages with all slots allocated.
+  uint32_t numActivePages;       // Number of pages that have at least one
+                                 // provisioned slot.
+  uint32_t numEmptyPages;        // Number of pages that are empty
+                                 // but not decommitted.
+  uint32_t numDecommittedPages;  // Number of pages that are empty
+                                 // and decommitted.
 };
 
 // Interface that is passed to partitionDumpStats and
@@ -578,7 +604,8 @@ ALWAYS_INLINE PartitionPage* partitionPointerToPageNoAlignmentCheck(void* ptr) {
   PartitionPage* page = reinterpret_cast<PartitionPage*>(
       partitionSuperPageToMetadataArea(superPagePtr) +
       (partitionPageIndex << kPageMetadataShift));
-  // Partition pages in the same slot span can share the same page object. Adjust for that.
+  // Partition pages in the same slot span can share the same page object.
+  // Adjust for that.
   size_t delta = page->pageOffset << kPageMetadataShift;
   page =
       reinterpret_cast<PartitionPage*>(reinterpret_cast<char*>(page) - delta);
@@ -593,7 +620,8 @@ ALWAYS_INLINE void* partitionPageToPointer(const PartitionPage* page) {
                                               kPageMetadataSize));
   uintptr_t partitionPageIndex =
       (superPageOffset - kSystemPageSize) >> kPageMetadataShift;
-  // Index 0 is invalid because it is the metadata area and the last index is invalid because it is a guard page.
+  // Index 0 is invalid because it is the metadata area and the last index is
+  // invalid because it is a guard page.
   ASSERT(partitionPageIndex);
   ASSERT(partitionPageIndex < kNumPartitionPagesPerSuperPage - 1);
   uintptr_t superPageBase = (pointerAsUint & kSuperPageBaseMask);
@@ -740,12 +768,9 @@ ALWAYS_INLINE void partitionFreeWithPage(void* ptr, PartitionPage* page) {
   PartitionFreelistEntry* freelistHead = page->freelistHead;
   ASSERT(!freelistHead || partitionPointerIsValid(freelistHead));
   SECURITY_CHECK(ptr != freelistHead);  // Catches an immediate double free.
+  // Look for double free one level deeper in debug.
   ASSERT_WITH_SECURITY_IMPLICATION(
-      !freelistHead ||
-      ptr !=
-          partitionFreelistMask(
-              freelistHead
-                  ->next));  // Look for double free one level deeper in debug.
+      !freelistHead || ptr != partitionFreelistMask(freelistHead->next));
   PartitionFreelistEntry* entry = static_cast<PartitionFreelistEntry*>(ptr);
   entry->next = partitionFreelistMask(freelistHead);
   page->freelistHead = entry;

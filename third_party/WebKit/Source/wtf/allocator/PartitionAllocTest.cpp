@@ -921,7 +921,8 @@ TEST(PartitionAllocTest, PartialPageFreelists) {
   EXPECT_TRUE(page2->freelistHead);
   EXPECT_EQ(0, page2->numAllocatedSlots);
 
-  // And test a couple of sizes that do not cross kSystemPageSize with a single allocation.
+  // And test a couple of sizes that do not cross kSystemPageSize with a single
+  // allocation.
   size_t mediumSize = (kSystemPageSize / 2) - kExtraAllocSize;
   bucketIdx = (mediumSize + kExtraAllocSize) >> kBucketShift;
   bucket = &allocator.root()->buckets()[bucketIdx];

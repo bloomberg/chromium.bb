@@ -131,7 +131,8 @@ class WTF_EXPORT PartitionAllocator {
 };
 
 // Specializations for heap profiling, so type profiling of |char| is possible
-// even in official builds (because |char| makes up a large portion of the heap.)
+// even in official builds (because |char| makes up a large portion of the
+// heap.)
 template <>
 WTF_EXPORT char* PartitionAllocator::allocateVectorBacking<char>(size_t);
 template <>

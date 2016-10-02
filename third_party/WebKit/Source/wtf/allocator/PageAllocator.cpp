@@ -99,7 +99,8 @@ static void* systemAllocPages(
   return ret;
 }
 
-// Trims base to given length and alignment. Windows returns null on failure and frees base.
+// Trims base to given length and alignment. Windows returns null on failure and
+// frees base.
 static void* trimMapping(void* base,
                          size_t baseLen,
                          size_t trimLen,
@@ -178,15 +179,16 @@ void* allocPages(void* addr,
 #endif
     }
 
-#if !CPU( \
-    32BIT)  // Keep trying random addresses on systems that have a large address space.
+#if !CPU(32BIT)
+    // Keep trying random addresses on systems that have a large address space.
     addr = getRandomPageBase();
     addr = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(addr) &
                                    alignBaseMask);
 #endif
   }
 
-  // Map a larger allocation so we can force alignment, but continue randomizing only on 64-bit POSIX.
+  // Map a larger allocation so we can force alignment, but continue randomizing
+  // only on 64-bit POSIX.
   size_t tryLen = len + (align - kPageAllocationGranularity);
   RELEASE_ASSERT(tryLen >= len);
   void* ret;
@@ -195,7 +197,8 @@ void* allocPages(void* addr,
     // Don't continue to burn cycles on mandatory hints (Windows).
     addr = kHintIsAdvisory ? getRandomPageBase() : nullptr;
     ret = systemAllocPages(addr, tryLen, pageAccessibility);
-    // The retries are for Windows, where a race can steal our mapping on resize.
+    // The retries are for Windows, where a race can steal our mapping on
+    // resize.
   } while (ret &&
            !(ret = trimMapping(ret, tryLen, len, align, pageAccessibility)));
 
@@ -274,11 +277,13 @@ void discardSystemPages(void* addr, size_t len) {
     discardVirtualMemory =
         reinterpret_cast<DiscardVirtualMemoryFunction>(GetProcAddress(
             GetModuleHandle(L"Kernel32.dll"), "DiscardVirtualMemory"));
-  // Use DiscardVirtualMemory when available because it releases faster than MEM_RESET.
+  // Use DiscardVirtualMemory when available because it releases faster than
+  // MEM_RESET.
   DWORD ret = 1;
   if (discardVirtualMemory)
     ret = discardVirtualMemory(addr, len);
-  // DiscardVirtualMemory is buggy in Win10 SP0, so fall back to MEM_RESET on failure.
+  // DiscardVirtualMemory is buggy in Win10 SP0, so fall back to MEM_RESET on
+  // failure.
   if (ret) {
     void* ret = VirtualAlloc(addr, len, MEM_RESET, PAGE_READWRITE);
     RELEASE_ASSERT(ret);
