@@ -299,7 +299,7 @@ static void setup_rtcd_internal(void)
     vp8_dequantize_b = vp8_dequantize_b_c;
     if (flags & HAS_MMX) vp8_dequantize_b = vp8_dequantize_b_mmx;
     vp8_diamond_search_sad = vp8_diamond_search_sad_c;
-    if (flags & HAS_SSE3) vp8_diamond_search_sad = vp8_diamond_search_sadx4;
+    if (flags & HAS_SSE2) vp8_diamond_search_sad = vp8_diamond_search_sadx4;
     vp8_fast_quantize_b = vp8_fast_quantize_b_c;
     if (flags & HAS_SSE2) vp8_fast_quantize_b = vp8_fast_quantize_b_sse2;
     if (flags & HAS_SSSE3) vp8_fast_quantize_b = vp8_fast_quantize_b_ssse3;

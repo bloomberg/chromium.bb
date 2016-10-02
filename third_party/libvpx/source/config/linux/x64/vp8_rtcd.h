@@ -114,7 +114,7 @@ void vp8_dequantize_b_mmx(struct blockd*, short *dqc);
 
 int vp8_diamond_search_sad_c(struct macroblock *x, struct block *b, struct blockd *d, union int_mv *ref_mv, union int_mv *best_mv, int search_param, int sad_per_bit, int *num00, struct variance_vtable *fn_ptr, int *mvcost[2], union int_mv *center_mv);
 int vp8_diamond_search_sadx4(struct macroblock *x, struct block *b, struct blockd *d, union int_mv *ref_mv, union int_mv *best_mv, int search_param, int sad_per_bit, int *num00, struct variance_vtable *fn_ptr, int *mvcost[2], union int_mv *center_mv);
-RTCD_EXTERN int (*vp8_diamond_search_sad)(struct macroblock *x, struct block *b, struct blockd *d, union int_mv *ref_mv, union int_mv *best_mv, int search_param, int sad_per_bit, int *num00, struct variance_vtable *fn_ptr, int *mvcost[2], union int_mv *center_mv);
+#define vp8_diamond_search_sad vp8_diamond_search_sadx4
 
 void vp8_fast_quantize_b_c(struct block *, struct blockd *);
 void vp8_fast_quantize_b_sse2(struct block *, struct blockd *);
@@ -261,8 +261,6 @@ static void setup_rtcd_internal(void)
     if (flags & HAS_SSSE3) vp8_bilinear_predict8x8 = vp8_bilinear_predict8x8_ssse3;
     vp8_copy32xn = vp8_copy32xn_sse2;
     if (flags & HAS_SSE3) vp8_copy32xn = vp8_copy32xn_sse3;
-    vp8_diamond_search_sad = vp8_diamond_search_sad_c;
-    if (flags & HAS_SSE3) vp8_diamond_search_sad = vp8_diamond_search_sadx4;
     vp8_fast_quantize_b = vp8_fast_quantize_b_sse2;
     if (flags & HAS_SSSE3) vp8_fast_quantize_b = vp8_fast_quantize_b_ssse3;
     vp8_full_search_sad = vp8_full_search_sad_c;
