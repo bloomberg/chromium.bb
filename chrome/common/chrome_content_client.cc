@@ -280,13 +280,12 @@ content::PepperPluginInfo CreatePepperFlashInfo(const base::FilePath& path,
   return plugin;
 }
 
-void AddPepperFlashFromCommandLine(
-    std::vector<content::PepperPluginInfo>* plugins) {
+bool GetCommandLinePepperFlash(content::PepperPluginInfo* plugin) {
   const base::CommandLine::StringType flash_path =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(
           switches::kPpapiFlashPath);
   if (flash_path.empty())
-    return;
+    return false;
 
   // Also get the version from the command-line. Should be something like 11.2
   // or 11.2.123.45.
@@ -294,9 +293,9 @@ void AddPepperFlashFromCommandLine(
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kPpapiFlashVersion);
 
-  plugins->push_back(
-      CreatePepperFlashInfo(base::FilePath(flash_path),
-                            flash_version, false, true, false));
+  *plugin = CreatePepperFlashInfo(base::FilePath(flash_path),
+                                  flash_version, false, true, false);
+  return true;
 }
 
 #if defined(OS_LINUX)
@@ -480,10 +479,9 @@ void ChromeContentClient::AddPepperPlugins(
     std::vector<content::PepperPluginInfo>* plugins) {
 #if defined(ENABLE_PLUGINS)
   ComputeBuiltInPlugins(plugins);
-  AddPepperFlashFromCommandLine(plugins);
 
 #if defined(OS_LINUX)
-  // Depending on the sandbox configurtion, the user data directory
+  // Depending on the sandbox configuration, the user data directory
   // is not always available. If it is not available, do not try and load any
   // flash plugin. The flash player, if any, preloaded before the sandbox
   // initialization will continue to be used.
@@ -493,6 +491,10 @@ void ChromeContentClient::AddPepperPlugins(
 #endif  // defined(OS_LINUX)
 
   ScopedVector<content::PepperPluginInfo> flash_versions;
+  std::unique_ptr<content::PepperPluginInfo> command_line_flash(
+      new content::PepperPluginInfo);
+  if (GetCommandLinePepperFlash(command_line_flash.get()))
+    flash_versions.push_back(command_line_flash.release());
 
 #if defined(OS_LINUX)
   std::unique_ptr<content::PepperPluginInfo> component_flash(
