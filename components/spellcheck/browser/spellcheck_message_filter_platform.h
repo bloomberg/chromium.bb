@@ -57,14 +57,19 @@ class SpellCheckMessageFilterPlatform : public content::BrowserMessageFilter {
   int render_process_id_;
 
 #if defined(OS_ANDROID)
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::UI>;
+  friend class base::DeleteHelper<SpellCheckMessageFilterPlatform>;
+
   void OnToggleSpellCheck(bool enabled, bool checked);
+  void OnDestruct() const override;
 
   // Android-specific object used to query the Android spellchecker.
   std::unique_ptr<SpellCheckerSessionBridge> impl_;
-#endif
-
+#else
   // A JSON-RPC client that calls the Spelling service in the background.
   std::unique_ptr<SpellingServiceClient> client_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(SpellCheckMessageFilterPlatform);
 };

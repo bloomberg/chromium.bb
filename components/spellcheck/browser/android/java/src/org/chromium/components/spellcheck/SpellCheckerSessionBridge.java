@@ -21,7 +21,7 @@ import java.util.ArrayList;
  * JNI interface for native SpellCheckerSessionBridge to use Android's spellchecker.
  */
 public class SpellCheckerSessionBridge implements SpellCheckerSessionListener {
-    private final long mNativeSpellCheckerSessionBridge;
+    private long mNativeSpellCheckerSessionBridge;
     private final SpellCheckerSession mSpellCheckerSession;
 
     /**
@@ -61,6 +61,16 @@ public class SpellCheckerSessionBridge implements SpellCheckerSessionListener {
     }
 
     /**
+     * Reset the native brigde pointer, called when the native counterpart is destroyed.
+     */
+    @CalledByNative
+    private void disconnect() {
+        mNativeSpellCheckerSessionBridge = 0;
+        mSpellCheckerSession.cancel();
+        mSpellCheckerSession.close();
+    }
+
+    /**
      * Queries the input text against the SpellCheckerSession.
      * @param text Text to be queried.
      */
@@ -82,6 +92,10 @@ public class SpellCheckerSessionBridge implements SpellCheckerSessionListener {
      */
     @Override
     public void onGetSentenceSuggestions(SentenceSuggestionsInfo[] results) {
+        if (mNativeSpellCheckerSessionBridge == 0) {
+            return;
+        }
+
         ArrayList<Integer> offsets = new ArrayList<Integer>();
         ArrayList<Integer> lengths = new ArrayList<Integer>();
 
@@ -96,7 +110,6 @@ public class SpellCheckerSessionBridge implements SpellCheckerSessionListener {
                 }
             }
         }
-
         nativeProcessSpellCheckResults(mNativeSpellCheckerSessionBridge,
                 convertListToArray(offsets), convertListToArray(lengths));
     }

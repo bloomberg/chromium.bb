@@ -11,6 +11,7 @@
 #include "base/android/jni_string.h"
 #include "components/spellcheck/common/spellcheck_messages.h"
 #include "components/spellcheck/common/spellcheck_result.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "jni/SpellCheckerSessionBridge_jni.h"
 
@@ -20,7 +21,11 @@ SpellCheckerSessionBridge::SpellCheckerSessionBridge(int render_process_id)
     : render_process_id_(render_process_id),
       java_object_initialization_failed_(false) {}
 
-SpellCheckerSessionBridge::~SpellCheckerSessionBridge() {}
+SpellCheckerSessionBridge::~SpellCheckerSessionBridge() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // Clean-up java side to avoid any stale JNI callbacks.
+  DisconnectSession();
+}
 
 // static
 bool SpellCheckerSessionBridge::RegisterJNI(JNIEnv* env) {
@@ -30,6 +35,7 @@ bool SpellCheckerSessionBridge::RegisterJNI(JNIEnv* env) {
 void SpellCheckerSessionBridge::RequestTextCheck(int route_id,
                                                  int identifier,
                                                  const base::string16& text) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // SpellCheckerSessionBridge#create() will return null if spell checker
   // service is unavailable.
   if (java_object_initialization_failed_)
@@ -70,6 +76,7 @@ void SpellCheckerSessionBridge::ProcessSpellCheckResults(
     const JavaParamRef<jobject>& jobj,
     const JavaParamRef<jintArray>& offset_array,
     const JavaParamRef<jintArray>& length_array) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   std::vector<int> offsets;
   std::vector<int> lengths;
 
@@ -101,7 +108,18 @@ void SpellCheckerSessionBridge::ProcessSpellCheckResults(
 }
 
 void SpellCheckerSessionBridge::DisconnectSession() {
-  java_object_.Reset();
+  // Needs to be executed on the same thread as the RequestTextCheck and
+  // ProcessSpellCheckResults methods, which is the UI thread.
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  active_request_.reset();
+  pending_request_.reset();
+
+  if (!java_object_.is_null()) {
+    Java_SpellCheckerSessionBridge_disconnect(
+        base::android::AttachCurrentThread(), java_object_);
+    java_object_.Reset();
+  }
 }
 
 SpellCheckerSessionBridge::SpellingRequest::SpellingRequest(

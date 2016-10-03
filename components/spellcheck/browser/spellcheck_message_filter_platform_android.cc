@@ -19,8 +19,14 @@ SpellCheckMessageFilterPlatform::SpellCheckMessageFilterPlatform(
 
 void SpellCheckMessageFilterPlatform::OverrideThreadForMessage(
     const IPC::Message& message, BrowserThread::ID* thread) {
-  if (message.type() == SpellCheckHostMsg_RequestTextCheck::ID)
-    *thread = BrowserThread::UI;
+  switch (message.type()) {
+    case SpellCheckHostMsg_RequestTextCheck::ID:
+    case SpellCheckHostMsg_ToggleSpellCheck::ID:
+      *thread = BrowserThread::UI;
+      break;
+    default:
+      break;
+  }
 }
 
 bool SpellCheckMessageFilterPlatform::OnMessageReceived(
@@ -90,4 +96,10 @@ void SpellCheckMessageFilterPlatform::OnToggleSpellCheck(
     bool checked) {
   if (!enabled)
     impl_->DisconnectSession();
+}
+
+void SpellCheckMessageFilterPlatform::OnDestruct() const {
+  // Needs to be destroyed on the UI thread, to avoid race conditions
+  // on the java side during clean-up.
+  BrowserThread::DeleteOnUIThread::Destruct(this);
 }
