@@ -289,6 +289,9 @@
   "blimp/engine/app/blimp_browser_resources.grd": {
     "includes": [30680],
   },
+  "chromecast/browser/cast_browser_resources.grd": {
+    "includes": [30690],
+  },
 
   # Resource ids starting at 31000 are reserved for projects built on Chromium.
 }

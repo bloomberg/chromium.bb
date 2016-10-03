@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/files/scoped_file.h"
 #include "base/i18n/rtl.h"
+#include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
@@ -30,6 +31,7 @@
 #include "chromecast/browser/cast_quota_permission_context.h"
 #include "chromecast/browser/cast_resource_dispatcher_host_delegate.h"
 #include "chromecast/browser/devtools/cast_devtools_delegate.h"
+#include "chromecast/browser/grit/cast_browser_resources.h"
 #include "chromecast/browser/media/media_caps_impl.h"
 #include "chromecast/browser/service/cast_service_simple.h"
 #include "chromecast/browser/url_request_context_factory.h"
@@ -48,11 +50,13 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/service_names.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/shell/public/cpp/interface_registry.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gl/gl_switches.h"
@@ -429,6 +433,18 @@ void CastContentBrowserClient::RegisterInProcessMojoApplications(
   app_info.application_task_runner = GetMediaTaskRunner();
   apps->insert(std::make_pair("mojo:media", app_info));
 #endif
+}
+
+std::unique_ptr<base::Value>
+CastContentBrowserClient::GetServiceManifestOverlay(
+    const std::string& service_name) {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  if (service_name != content::kBrowserMojoApplicationName)
+    return nullptr;
+  base::StringPiece manifest_contents =
+      rb.GetRawDataResourceForScale(IDR_CAST_CONTENT_BROWSER_MANIFEST_OVERLAY,
+                                    ui::ScaleFactor::SCALE_FACTOR_NONE);
+  return base::JSONReader::Read(manifest_contents);
 }
 
 #if defined(OS_ANDROID)

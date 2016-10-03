@@ -2995,6 +2995,7 @@ void RenderProcessHostImpl::OnMojoError(
     task_runner->PostTask(FROM_HERE,
                           base::Bind(&RenderProcessHostImpl::OnMojoError,
                                      process, task_runner, error));
+    return;
   }
   if (!process)
     return;

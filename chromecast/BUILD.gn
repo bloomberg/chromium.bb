@@ -321,6 +321,7 @@ repack("cast_shell_pak") {
     "$root_gen_dir/blink/public/resources/blink_image_resources_100_percent.pak",
     "$root_gen_dir/blink/public/resources/blink_resources.pak",
     "$root_gen_dir/chromecast/app/shell_resources.pak",
+    "$root_gen_dir/chromecast/browser/cast_browser_resources.pak",
     "$root_gen_dir/content/app/resources/content_resources_100_percent.pak",
     "$root_gen_dir/content/app/strings/content_strings_en-US.pak",
     "$root_gen_dir/content/content_resources.pak",
@@ -335,6 +336,7 @@ repack("cast_shell_pak") {
 
   deps = [
     "//chromecast/app:resources",
+    "//chromecast/browser:resources",
     "//content:resources",
     "//content/app/resources",
     "//content/app/strings",

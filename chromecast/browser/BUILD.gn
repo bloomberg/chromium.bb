@@ -2,9 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/ui.gni")
 import("//chromecast/chromecast.gni")
 import("//testing/test.gni")
-import("//build/config/ui.gni")
+import("//tools/grit/grit_rule.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")
@@ -85,6 +86,7 @@ source_set("browser") {
     "//chromecast/base",
     "//chromecast/base:cast_sys_info",
     "//chromecast/base:cast_version",
+    "//chromecast/browser:resources",
     "//chromecast/common",
     "//chromecast/common/media",
     "//chromecast/graphics",
@@ -138,6 +140,20 @@ source_set("browser") {
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
   }
+}
+
+grit("resources") {
+  visibility = [
+    ":browser",
+    "//chromecast:cast_shell_pak",
+  ]
+  source = "cast_browser_resources.grd"
+  use_qualified_include = true
+  output_dir = "$root_gen_dir/chromecast/browser"
+  outputs = [
+    "grit/cast_browser_resources.h",
+    "cast_browser_resources.pak",
+  ]
 }
 
 source_set("test_support") {

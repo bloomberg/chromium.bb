@@ -1,0 +1,9 @@
+{
+  "capabilities": {
+    "provided": {
+      "renderer": [
+        "chromecast::media::mojom::MediaCaps"
+      ]
+    }
+  }
+}

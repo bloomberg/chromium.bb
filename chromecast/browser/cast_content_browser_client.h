@@ -153,6 +153,8 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
       content::RenderProcessHost* render_process_host) override;
   void RegisterInProcessMojoApplications(
       StaticMojoApplicationMap* apps) override;
+  std::unique_ptr<base::Value> GetServiceManifestOverlay(
+      const std::string& service_name) override;
 #if defined(OS_ANDROID)
   void GetAdditionalMappedFilesForChildProcess(
       const base::CommandLine& command_line,
