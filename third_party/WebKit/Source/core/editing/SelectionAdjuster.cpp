@@ -208,7 +208,7 @@ void SelectionAdjuster::adjustSelectionInDOMTree(
   const Position& extent = toPositionInDOMTree(selectionInFlatTree.extent());
 
   if (isCrossingShadowBoundaries(selectionInFlatTree)) {
-    *selection = createVisibleSelectionDeprecated(base, extent);
+    *selection = createVisibleSelection(base, extent);
     return;
   }
 

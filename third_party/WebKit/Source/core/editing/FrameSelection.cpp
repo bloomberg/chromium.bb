@@ -314,6 +314,10 @@ void FrameSelection::setSelectionAlgorithm(
       visibleSelection<Strategy>();
   const VisibleSelection oldSelectionInDOMTree = selection();
 
+  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  document().updateStyleAndLayoutIgnorePendingStylesheets();
+
   m_selectionEditor->setVisibleSelection(s, options);
   m_frameCaret->setCaretRectNeedsUpdate();
 
