@@ -245,16 +245,8 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         # Tests for the default of using one locked shard even in the case of more than one child process.
         if not self.should_test_processes:
             return
-        save_env_webkit_test_max_locked_shards = None
-        if "WEBKIT_TEST_MAX_LOCKED_SHARDS" in os.environ:
-            save_env_webkit_test_max_locked_shards = os.environ["WEBKIT_TEST_MAX_LOCKED_SHARDS"]
-            del os.environ["WEBKIT_TEST_MAX_LOCKED_SHARDS"]
         _, regular_output, _ = logging_run(['--debug-rwt-logging', '--child-processes', '2'], shared_port=False)
-        try:
-            self.assertTrue(any(['1 locked' in line for line in regular_output.buflist]))
-        finally:
-            if save_env_webkit_test_max_locked_shards:
-                os.environ["WEBKIT_TEST_MAX_LOCKED_SHARDS"] = save_env_webkit_test_max_locked_shards
+        self.assertTrue(any('1 locked' in line for line in regular_output.buflist))
 
     def test_child_processes_2(self):
         if self.should_test_processes:
@@ -518,18 +510,15 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         tests_to_run = ['passes/error.html', 'passes/image.html', 'passes/platform_image.html', 'passes/text.html']
         host = MockHost()
 
-        os.environ['GTEST_SHARD_INDEX'] = '0'
-        os.environ['GTEST_TOTAL_SHARDS'] = '1'
+        host.environ['GTEST_SHARD_INDEX'] = '0'
+        host.environ['GTEST_TOTAL_SHARDS'] = '1'
         shard_0_tests_run = get_tests_run(tests_to_run, host=host)
         self.assertEqual(shard_0_tests_run, ['passes/error.html', 'passes/image.html'])
 
-        os.environ['GTEST_SHARD_INDEX'] = '1'
-        os.environ['GTEST_TOTAL_SHARDS'] = '1'
+        host.environ['GTEST_SHARD_INDEX'] = '1'
+        host.environ['GTEST_TOTAL_SHARDS'] = '1'
         shard_1_tests_run = get_tests_run(tests_to_run, host=host)
         self.assertEqual(shard_1_tests_run, ['passes/platform_image.html', 'passes/text.html'])
-
-        del os.environ['GTEST_SHARD_INDEX']
-        del os.environ['GTEST_TOTAL_SHARDS']
 
     def test_smoke_test(self):
         host = MockHost()
