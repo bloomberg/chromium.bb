@@ -14,7 +14,7 @@
 #include "modules/fetch/Body.h"
 #include "modules/fetch/BytesConsumerForDataConsumerHandle.h"
 #include "modules/fetch/DataConsumerHandleUtil.h"
-#include "modules/fetch/ReadableStreamDataConsumerHandle.h"
+#include "modules/fetch/ReadableStreamBytesConsumer.h"
 #include "platform/blob/BlobData.h"
 #include "platform/network/EncodedFormData.h"
 #include <memory>
@@ -372,9 +372,7 @@ BytesConsumer* BodyStreamBuffer::releaseHandle() {
     NonThrowableExceptionState exceptionState;
     ScriptValue reader = ReadableStreamOperations::getReader(
         m_scriptState.get(), stream(), exceptionState);
-    return new BytesConsumerForDataConsumerHandle(
-        m_scriptState->getExecutionContext(),
-        ReadableStreamDataConsumerHandle::create(m_scriptState.get(), reader));
+    return new ReadableStreamBytesConsumer(m_scriptState.get(), reader);
   }
   // We need to call these before calling closeAndLockAndDisturb.
   const bool isClosed = isStreamClosed();

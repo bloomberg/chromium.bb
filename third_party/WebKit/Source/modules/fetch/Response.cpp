@@ -24,7 +24,6 @@
 #include "modules/fetch/BodyStreamBuffer.h"
 #include "modules/fetch/DataConsumerHandleUtil.h"
 #include "modules/fetch/FormDataBytesConsumer.h"
-#include "modules/fetch/ReadableStreamDataConsumerHandle.h"
 #include "modules/fetch/ResponseInit.h"
 #include "platform/network/EncodedFormData.h"
 #include "platform/network/HTTPHeaderMap.h"
@@ -182,7 +181,7 @@ Response* Response::create(ScriptState* scriptState,
              ResponseInit(init, exceptionState), exceptionState);
   if (!exceptionState.hadException() && !reader.isEmpty()) {
     // Add a hidden reference so that the weak persistent in the
-    // ReadableStreamDataConsumerHandle will be valid as long as the
+    // ReadableStreamBytesConsumer will be valid as long as the
     // Response is valid.
     v8::Local<v8::Value> wrapper = toV8(response, scriptState);
     if (wrapper.IsEmpty()) {

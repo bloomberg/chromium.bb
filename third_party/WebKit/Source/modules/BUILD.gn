@@ -239,7 +239,7 @@ source_set("unit_tests") {
     "fetch/FetchDataLoaderTest.cpp",
     "fetch/FetchResponseDataTest.cpp",
     "fetch/FormDataBytesConsumerTest.cpp",
-    "fetch/ReadableStreamDataConsumerHandleTest.cpp",
+    "fetch/ReadableStreamBytesConsumerTest.cpp",
     "fetch/RequestTest.cpp",
     "fetch/ResponseTest.cpp",
     "filesystem/DOMFileSystemBaseTest.cpp",
