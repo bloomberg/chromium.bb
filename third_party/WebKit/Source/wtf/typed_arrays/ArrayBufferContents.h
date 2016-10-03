@@ -37,13 +37,13 @@
 
 namespace WTF {
 
-typedef void (*AdjustAmountOfExternalAllocatedMemoryFunction)(int64_t size);
-
 class WTF_EXPORT ArrayBufferContents {
   WTF_MAKE_NONCOPYABLE(ArrayBufferContents);
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
+  using AdjustAmountOfExternalAllocatedMemoryFunction = void (*)(int64_t diff);
+
   enum InitializationPolicy { ZeroInitialize, DontInitialize };
 
   enum SharingType {
@@ -55,7 +55,7 @@ class WTF_EXPORT ArrayBufferContents {
   ArrayBufferContents(unsigned numElements,
                       unsigned elementByteSize,
                       SharingType isShared,
-                      ArrayBufferContents::InitializationPolicy);
+                      InitializationPolicy);
 
   // Use with care. data must be allocated with allocateMemory.
   // ArrayBufferContents will take ownership of the data and free it (using
@@ -83,8 +83,9 @@ class WTF_EXPORT ArrayBufferContents {
   static void freeMemory(void*, size_t);
   static void initialize(
       AdjustAmountOfExternalAllocatedMemoryFunction function) {
-    ASSERT(isMainThread());
-    ASSERT(!s_adjustAmountOfExternalAllocatedMemoryFunction);
+    DCHECK(isMainThread());
+    DCHECK_EQ(s_adjustAmountOfExternalAllocatedMemoryFunction,
+              defaultAdjustAmountOfExternalAllocatedMemoryFunction);
     s_adjustAmountOfExternalAllocatedMemoryFunction = function;
   }
 
@@ -93,6 +94,10 @@ class WTF_EXPORT ArrayBufferContents {
                                       InitializationPolicy,
                                       int,
                                       void*&);
+
+  static void defaultAdjustAmountOfExternalAllocatedMemoryFunction(
+      int64_t diff);
+
   class DataHolder : public ThreadSafeRefCounted<DataHolder> {
     WTF_MAKE_NONCOPYABLE(DataHolder);
 
@@ -113,12 +118,26 @@ class WTF_EXPORT ArrayBufferContents {
 
    private:
     void adjustAmountOfExternalAllocatedMemory(int64_t diff) {
-      if (ArrayBufferContents::s_adjustAmountOfExternalAllocatedMemoryFunction)
-        ArrayBufferContents::s_adjustAmountOfExternalAllocatedMemoryFunction(
-            diff);
+      checkIfAdjustAmountOfExternalAllocatedMemoryIsConsistent();
+      s_adjustAmountOfExternalAllocatedMemoryFunction(diff);
     }
     void adjustAmountOfExternalAllocatedMemory(unsigned diff) {
       adjustAmountOfExternalAllocatedMemory(static_cast<int64_t>(diff));
+    }
+
+    void checkIfAdjustAmountOfExternalAllocatedMemoryIsConsistent() {
+      DCHECK(s_adjustAmountOfExternalAllocatedMemoryFunction);
+
+#if ENABLE(ASSERT)
+      // Make sure that the function actually used is always the same.
+      // Shouldn't be updated during its use.
+      if (!s_lastUsedAdjustAmountOfExternalAllocatedMemoryFunction) {
+        s_lastUsedAdjustAmountOfExternalAllocatedMemoryFunction =
+            s_adjustAmountOfExternalAllocatedMemoryFunction;
+      }
+      DCHECK_EQ(s_adjustAmountOfExternalAllocatedMemoryFunction,
+                s_lastUsedAdjustAmountOfExternalAllocatedMemoryFunction);
+#endif
     }
 
     void* m_data;
@@ -129,6 +148,10 @@ class WTF_EXPORT ArrayBufferContents {
   RefPtr<DataHolder> m_holder;
   static AdjustAmountOfExternalAllocatedMemoryFunction
       s_adjustAmountOfExternalAllocatedMemoryFunction;
+#if ENABLE(ASSERT)
+  static AdjustAmountOfExternalAllocatedMemoryFunction
+      s_lastUsedAdjustAmountOfExternalAllocatedMemoryFunction;
+#endif
 };
 
 }  // namespace WTF

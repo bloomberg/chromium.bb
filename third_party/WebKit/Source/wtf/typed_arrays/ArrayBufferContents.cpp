@@ -33,8 +33,20 @@
 
 namespace WTF {
 
-AdjustAmountOfExternalAllocatedMemoryFunction
-    ArrayBufferContents::s_adjustAmountOfExternalAllocatedMemoryFunction;
+void ArrayBufferContents::defaultAdjustAmountOfExternalAllocatedMemoryFunction(
+    int64_t diff) {
+  // Do nothing by default.
+}
+
+ArrayBufferContents::AdjustAmountOfExternalAllocatedMemoryFunction
+    ArrayBufferContents::s_adjustAmountOfExternalAllocatedMemoryFunction =
+        defaultAdjustAmountOfExternalAllocatedMemoryFunction;
+
+#if ENABLE(ASSERT)
+ArrayBufferContents::AdjustAmountOfExternalAllocatedMemoryFunction
+    ArrayBufferContents::
+        s_lastUsedAdjustAmountOfExternalAllocatedMemoryFunction;
+#endif
 
 ArrayBufferContents::ArrayBufferContents()
     : m_holder(adoptRef(new DataHolder())) {}
@@ -63,7 +75,7 @@ ArrayBufferContents::ArrayBufferContents(void* data,
   if (data) {
     m_holder->adopt(data, sizeInBytes, isShared);
   } else {
-    ASSERT(!sizeInBytes);
+    DCHECK_EQ(sizeInBytes, 0u);
     sizeInBytes = 0;
     // Allow null data if size is 0 bytes, make sure data is valid pointer.
     // (PartitionAlloc guarantees valid pointer for size 0)
@@ -78,20 +90,20 @@ void ArrayBufferContents::neuter() {
 }
 
 void ArrayBufferContents::transfer(ArrayBufferContents& other) {
-  ASSERT(!isShared());
-  ASSERT(!other.m_holder->data());
+  DCHECK(!isShared());
+  DCHECK(!other.m_holder->data());
   other.m_holder = m_holder;
   neuter();
 }
 
 void ArrayBufferContents::shareWith(ArrayBufferContents& other) {
-  ASSERT(isShared());
-  ASSERT(!other.m_holder->data());
+  DCHECK(isShared());
+  DCHECK(!other.m_holder->data());
   other.m_holder = m_holder;
 }
 
 void ArrayBufferContents::copyTo(ArrayBufferContents& other) {
-  ASSERT(!m_holder->isShared() && !other.m_holder->isShared());
+  DCHECK(!m_holder->isShared() && !other.m_holder->isShared());
   other.m_holder->copyMemoryFrom(*m_holder);
 }
 
@@ -142,7 +154,10 @@ void ArrayBufferContents::DataHolder::allocateNew(unsigned sizeInBytes,
   DCHECK_EQ(m_sizeInBytes, 0u);
 
   ArrayBufferContents::allocateMemory(sizeInBytes, policy, m_data);
-  m_sizeInBytes = m_data ? sizeInBytes : 0;
+  if (!m_data)
+    return;
+
+  m_sizeInBytes = sizeInBytes;
   m_isShared = isShared;
 
   adjustAmountOfExternalAllocatedMemory(m_sizeInBytes);
@@ -167,9 +182,10 @@ void ArrayBufferContents::DataHolder::copyMemoryFrom(const DataHolder& source) {
 
   ArrayBufferContents::allocateMemory(source.sizeInBytes(), DontInitialize,
                                       m_data);
-  m_sizeInBytes = m_data ? source.sizeInBytes() : 0;
   if (!m_data)
     return;
+
+  m_sizeInBytes = source.sizeInBytes();
   memcpy(m_data, source.data(), source.sizeInBytes());
 
   adjustAmountOfExternalAllocatedMemory(m_sizeInBytes);

@@ -359,14 +359,20 @@ class ArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
 
 }  // namespace
 
-static void adjustAmountOfExternalAllocatedMemory(int64_t size) {
+static void adjustAmountOfExternalAllocatedMemory(int64_t diff) {
 #if ENABLE(ASSERT)
-  static int64_t totalSize = 0;
-  totalSize += size;
-  DCHECK_GE(totalSize, 0);
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(int64_t, processTotal, new int64_t(0));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, new Mutex);
+  {
+    MutexLocker locker(mutex);
+
+    processTotal += diff;
+    DCHECK_GE(processTotal, 0) << "total amount = " << processTotal
+                               << ", diff = " << diff;
+  }
 #endif
 
-  v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(size);
+  v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(diff);
 }
 
 void V8Initializer::initializeMainThread() {
