@@ -2,7 +2,8 @@
     Copyright (C) 1998 Lars Knoll (knoll@mpi-hd.mpg.de)
     Copyright (C) 2001 Dirk Mueller (mueller@kde.org)
     Copyright (C) 2002 Waldo Bastian (bastian@kde.org)
-    Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
+    Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All
+    rights reserved.
     Copyright (C) 2009 Torch Mobile Inc. http://www.torchmobile.com/
 
     This library is free software; you can redistribute it and/or
@@ -20,8 +21,8 @@
     the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
     Boston, MA 02110-1301, USA.
 
-    This class provides all functionality needed for loading images, style sheets and html
-    pages from the web. It has a memory cache for these objects.
+    This class provides all functionality needed for loading images, style
+    sheets and html pages from the web. It has a memory cache for these objects.
 */
 
 #include "core/fetch/ResourceFetcher.h"
@@ -120,7 +121,8 @@ static ResourceLoadPriority typeToPriority(Resource::Type type) {
       // Also visible resources/images (set explicitly in loadPriority)
       return ResourceLoadPriorityHigh;
     case Resource::Manifest:
-      // Also late-body scripts discovered by the preload scanner (set explicitly in loadPriority)
+      // Also late-body scripts discovered by the preload scanner (set
+      // explicitly in loadPriority)
       return ResourceLoadPriorityMedium;
     case Resource::Image:
     case Resource::TextTrack:
@@ -146,10 +148,11 @@ ResourceLoadPriority ResourceFetcher::computeLoadPriority(
   if (visibility == ResourcePriority::Visible)
     priority = ResourceLoadPriorityHigh;
 
-  // Resources before the first image are considered "early" in the document
-  // and resources after the first image are "late" in the document.  Important to
+  // Resources before the first image are considered "early" in the document and
+  // resources after the first image are "late" in the document.  Important to
   // note that this is based on when the preload scanner discovers a resource
-  // for the most part so the main parser may not have reached the image element yet.
+  // for the most part so the main parser may not have reached the image element
+  // yet.
   if (type == Resource::Image)
     m_imageFetched = true;
 
@@ -157,7 +160,8 @@ ResourceLoadPriority ResourceFetcher::computeLoadPriority(
     priority = ResourceLoadPriorityVeryLow;
   } else if (type == Resource::Script) {
     // Special handling for scripts.
-    // Default/Parser-Blocking/Preload early in document: High (set in typeToPriority)
+    // Default/Parser-Blocking/Preload early in document: High (set in
+    // typeToPriority)
     // Async/Defer: Low Priority (applies to both preload and parser-inserted)
     // Preload late in document: Medium
     if (FetchRequest::LazyLoad == request.defer())
@@ -168,10 +172,11 @@ ResourceLoadPriority ResourceFetcher::computeLoadPriority(
     priority = ResourceLoadPriorityVeryLow;
   }
 
-  // A manually set priority acts as a floor. This is used to ensure that synchronous requests
-  // are always given the highest possible priority, as well as to ensure that there isn't priority
-  // churn if images move in and out of the viewport, or is displayed more than once, both in and out
-  // of the viewport.
+  // A manually set priority acts as a floor. This is used to ensure that
+  // synchronous requests are always given the highest possible priority, as
+  // well as to ensure that there isn't priority churn if images move in and out
+  // of the viewport, or is displayed more than once, both in and out of the
+  // viewport.
   return std::max(context().modifyPriorityForExperiments(priority),
                   request.resourceRequest().priority());
 }
@@ -189,7 +194,8 @@ static WebURLRequest::RequestContext requestContextFromType(
     case Resource::MainResource:
       if (!isMainFrame)
         return WebURLRequest::RequestContextIframe;
-      // FIXME: Change this to a context frame type (once we introduce them): http://fetch.spec.whatwg.org/#concept-request-context-frame-type
+      // FIXME: Change this to a context frame type (once we introduce them):
+      // http://fetch.spec.whatwg.org/#concept-request-context-frame-type
       return WebURLRequest::RequestContextHyperlink;
     case Resource::XSLStyleSheet:
       DCHECK(RuntimeEnabledFeatures::xsltEnabled());
@@ -258,7 +264,8 @@ bool ResourceFetcher::canAccessResponse(
   if (sourceOrigin->canRequestNoSuborigin(response.url()))
     return true;
 
-  // Use the original response instead of the 304 response for a successful revaldiation.
+  // Use the original response instead of the 304 response for a successful
+  // revaldiation.
   const ResourceResponse& responseForAccessControl =
       (resource->isCacheValidator() && response.httpStatusCode() == 304)
           ? resource->response()
@@ -318,7 +325,8 @@ void ResourceFetcher::requestLoadStarted(unsigned long identifier,
 
   if (type == ResourceLoadingFromCache && !resource->stillNeedsLoad() &&
       !m_validatedURLs.contains(request.resourceRequest().url())) {
-    // Resources loaded from memory cache should be reported the first time they're used.
+    // Resources loaded from memory cache should be reported the first time
+    // they're used.
     std::unique_ptr<ResourceTimingInfo> info = ResourceTimingInfo::create(
         request.options().initiatorInfo.name, monotonicallyIncreasingTime(),
         resource->getType() == Resource::MainResource);
@@ -349,10 +357,12 @@ Resource* ResourceFetcher::resourceForStaticData(
   const KURL& url = request.resourceRequest().url();
   DCHECK(url.protocolIsData() || substituteData.isValid() || m_archive);
 
-  // TODO(japhet): We only send main resource data: urls through WebURLLoader for the benefit of
-  // a service worker test (RenderViewImplTest.ServiceWorkerNetworkProviderSetup), which is at a
-  // layer where it isn't easy to mock out a network load. It uses data: urls to emulate the
-  // behavior it wants to test, which would otherwise be reserved for network loads.
+  // TODO(japhet): We only send main resource data: urls through WebURLLoader
+  // for the benefit of a service worker test
+  // (RenderViewImplTest.ServiceWorkerNetworkProviderSetup), which is at a layer
+  // where it isn't easy to mock out a network load. It uses data: urls to
+  // emulate the behavior it wants to test, which would otherwise be reserved
+  // for network loads.
   if (!m_archive && !substituteData.isValid() &&
       (factory.type() == Resource::MainResource ||
        factory.type() == Resource::Raw))
@@ -361,7 +371,8 @@ Resource* ResourceFetcher::resourceForStaticData(
   const String cacheIdentifier = getCacheIdentifier();
   if (Resource* oldResource =
           memoryCache()->resourceForURL(url, cacheIdentifier)) {
-    // There's no reason to re-parse if we saved the data from the previous parse.
+    // There's no reason to re-parse if we saved the data from the previous
+    // parse.
     if (request.options().dataBufferingPolicy != DoNotBufferData)
       return oldResource;
     memoryCache()->remove(oldResource);
@@ -415,7 +426,8 @@ Resource* ResourceFetcher::resourceForStaticData(
 void ResourceFetcher::moveCachedNonBlockingResourceToBlocking(
     Resource* resource,
     const FetchRequest& request) {
-  // TODO(yoav): Test that non-blocking resources (video/audio/track) continue to not-block even after being preloaded and discovered.
+  // TODO(yoav): Test that non-blocking resources (video/audio/track) continue
+  // to not-block even after being preloaded and discovered.
   if (resource && resource->loader() &&
       resource->isLoadEventBlockingResourceType() &&
       resource->isLinkPreload() && !request.forPreload()) {
@@ -438,10 +450,10 @@ void ResourceFetcher::updateMemoryCacheStats(Resource* resource,
     DEFINE_RESOURCE_HISTOGRAM("");
   }
 
-  // Aims to count Resource only referenced from MemoryCache (i.e. what
-  // would be dead if MemoryCache holds weak references to Resource).
-  // Currently we check references to Resource from ResourceClient and
-  // |m_preloads| only, because they are major sources of references.
+  // Aims to count Resource only referenced from MemoryCache (i.e. what would be
+  // dead if MemoryCache holds weak references to Resource). Currently we check
+  // references to Resource from ResourceClient and |m_preloads| only, because
+  // they are major sources of references.
   if (resource && !resource->isAlive() &&
       (!m_preloads || !m_preloads->contains(resource))) {
     DEFINE_RESOURCE_HISTOGRAM("Dead.");
@@ -511,10 +523,10 @@ Resource* ResourceFetcher::requestResource(
   Resource* resource(nullptr);
   if (isStaticData) {
     resource = resourceForStaticData(request, factory, substituteData);
-    // Abort the request if the archive doesn't contain the resource, except
-    // in the case of data URLs which might have resources such as fonts
-    // that need to be decoded only on demand.  These data URLs are allowed
-    // to be processed using the normal ResourceFetcher machinery.
+    // Abort the request if the archive doesn't contain the resource, except in
+    // the case of data URLs which might have resources such as fonts that need
+    // to be decoded only on demand.  These data URLs are allowed to be
+    // processed using the normal ResourceFetcher machinery.
     if (!resource && !isDataUrl && m_archive)
       return nullptr;
   }
@@ -522,7 +534,8 @@ Resource* ResourceFetcher::requestResource(
     resource =
         memoryCache()->resourceForURL(request.url(), getCacheIdentifier());
 
-  // See if we can use an existing resource from the cache. If so, we need to move it to be load blocking.
+  // See if we can use an existing resource from the cache. If so, we need to
+  // move it to be load blocking.
   moveCachedNonBlockingResourceToBlocking(resource, request);
 
   const RevalidationPolicy policy = determineRevalidationPolicy(
@@ -566,11 +579,12 @@ Resource* ResourceFetcher::requestResource(
     resource->setIdentifier(identifier);
 
   if (!request.forPreload() || policy != Use) {
-    // When issuing another request for a resource that is already in-flight make
-    // sure to not demote the priority of the in-flight request. If the new request
-    // isn't at the same priority as the in-flight request, only allow promotions.
-    // This can happen when a visible image's priority is increased and then another
-    // reference to the image is parsed (which would be at a lower priority).
+    // When issuing another request for a resource that is already in-flight
+    // make sure to not demote the priority of the in-flight request. If the new
+    // request isn't at the same priority as the in-flight request, only allow
+    // promotions. This can happen when a visible image's priority is increased
+    // and then another reference to the image is parsed (which would be at a
+    // lower priority).
     if (request.resourceRequest().priority() >
         resource->resourceRequest().priority())
       resource->didChangePriority(request.resourceRequest().priority(), 0);
@@ -586,9 +600,9 @@ Resource* ResourceFetcher::requestResource(
       MemoryCache::removeFragmentIdentifierIfNeeded(request.url()), resource);
 
   // Returns with an existing resource if the resource does not need to start
-  // loading immediately.
-  // If revalidation policy was determined as |Revalidate|, the resource was
-  // already initialized for the revalidation here, but won't start loading.
+  // loading immediately. If revalidation policy was determined as |Revalidate|,
+  // the resource was already initialized for the revalidation here, but won't
+  // start loading.
   if (!resourceNeedsLoad(resource, request, policy))
     return resource;
 
@@ -736,20 +750,19 @@ ResourceFetcher::determineRevalidationPolicy(Resource::Type type,
   // Checks if the resource has an explicit policy about integrity metadata.
   // Currently only applies to ScriptResources.
   //
-  // This is necessary because ScriptResource objects do not keep the raw
-  // data around after the source is accessed once, so if the resource is
-  // accessed from the MemoryCache for a second time, there is no way to redo
-  // an integrity check.
+  // This is necessary because ScriptResource objects do not keep the raw data
+  // around after the source is accessed once, so if the resource is accessed
+  // from the MemoryCache for a second time, there is no way to redo an
+  // integrity check.
   //
-  // Thus, Blink implements a scheme where it caches the integrity
-  // information for a ScriptResource after the first time it is checked, and
-  // if there is another request for that resource, with the same integrity
-  // metadata, Blink skips the integrity calculation. However, if the
-  // integrity metadata is a mismatch, the MemoryCache must be skipped here,
-  // and a new request for the resource must be made to get the raw data.
-  // This is expected to be an uncommon case, however, as it implies two
-  // same-origin requests to the same resource, but with different integrity
-  // metadata.
+  // Thus, Blink implements a scheme where it caches the integrity information
+  // for a ScriptResource after the first time it is checked, and if there is
+  // another request for that resource, with the same integrity metadata, Blink
+  // skips the integrity calculation. However, if the integrity metadata is a
+  // mismatch, the MemoryCache must be skipped here, and a new request for the
+  // resource must be made to get the raw data. This is expected to be an
+  // uncommon case, however, as it implies two same-origin requests to the same
+  // resource, but with different integrity metadata.
   RecordSriResourceIntegrityMismatchEvent(CheckingForIntegrityMismatch);
   if (existingResource->mustRefetchDueToIntegrityMetadata(fetchRequest)) {
     RecordSriResourceIntegrityMismatchEvent(RefetchDueToIntegrityMismatch);
@@ -775,30 +788,31 @@ ResourceFetcher::determineRevalidationPolicy(Resource::Type type,
     return Reload;
   }
 
-  // Do not load from cache if images are not enabled.
-  // There are two general cases:
-  // 1. Images are disabled. Don't ever load images, even if the image is
-  //    cached or it is a data: url. In this case, we "Reload" the image,
-  //    then defer it with resourceNeedsLoad() so that it never actually
-  //    goes to the network.
-  // 2. Images are enabled, but not loaded automatically. In this case, we
-  //    will Use cached resources or data: urls, but will similarly fall back
-  //    to a deferred network load if we don't have the data available
-  //    without a network request. We check allowImage() here, which is
-  //    affected by m_imagesEnabled but not m_autoLoadImages, in order to
-  //    allow for this differing behavior.
+  // Do not load from cache if images are not enabled. There are two general
+  // cases:
+  //
+  // 1. Images are disabled. Don't ever load images, even if the image is cached
+  // or it is a data: url. In this case, we "Reload" the image, then defer it
+  // with resourceNeedsLoad() so that it never actually goes to the network.
+  //
+  // 2. Images are enabled, but not loaded automatically. In this case, we will
+  // Use cached resources or data: urls, but will similarly fall back to a
+  // deferred network load if we don't have the data available without a network
+  // request. We check allowImage() here, which is affected by m_imagesEnabled
+  // but not m_autoLoadImages, in order to allow for this differing behavior.
+  //
   // TODO(japhet): Can we get rid of one of these settings?
   if (existingResource->isImage() &&
       !context().allowImage(m_imagesEnabled, existingResource->url()))
     return Reload;
 
-  // Never use cache entries for downloadToFile / useStreamOnResponse
-  // requests. The data will be delivered through other paths.
+  // Never use cache entries for downloadToFile / useStreamOnResponse requests.
+  // The data will be delivered through other paths.
   if (request.downloadToFile() || request.useStreamOnResponse())
     return Reload;
 
-  // Never reuse opaque responses from a service worker for requests that
-  // are not no-cors. https://crbug.com/625575
+  // Never reuse opaque responses from a service worker for requests that are
+  // not no-cors. https://crbug.com/625575
   if (existingResource->response().wasFetchedViaServiceWorker() &&
       existingResource->response().serviceWorkerResponseType() ==
           WebServiceWorkerResponseTypeOpaque &&
@@ -812,17 +826,17 @@ ResourceFetcher::determineRevalidationPolicy(Resource::Type type,
   if (!existingResource->canReuse(request))
     return Reload;
 
-  // Certain requests (e.g., XHRs) might have manually set headers that require revalidation.
-  // In theory, this should be a Revalidate case. In practice, the MemoryCache revalidation path assumes a whole bunch
-  // of things about how revalidation works that manual headers violate, so punt to Reload instead.
+  // Certain requests (e.g., XHRs) might have manually set headers that require
+  // revalidation. In theory, this should be a Revalidate case. In practice, the
+  // MemoryCache revalidation path assumes a whole bunch of things about how
+  // revalidation works that manual headers violate, so punt to Reload instead.
   //
-  // Similarly, a request with manually added revalidation headers can lead
-  // to a 304 response for a request that wasn't flagged as a revalidation
-  // attempt. Normally, successful revalidation will maintain the original
-  // response's status code, but for a manual revalidation the response code
-  // remains 304. In this case, the Resource likely has insufficient context
-  // to provide a useful cache hit or revalidation.
-  // See http://crbug.com/643659
+  // Similarly, a request with manually added revalidation headers can lead to a
+  // 304 response for a request that wasn't flagged as a revalidation attempt.
+  // Normally, successful revalidation will maintain the original response's
+  // status code, but for a manual revalidation the response code remains 304.
+  // In this case, the Resource likely has insufficient context to provide a
+  // useful cache hit or revalidation. See http://crbug.com/643659
   if (request.isConditional() ||
       existingResource->response().httpStatusCode() == 304)
     return Reload;
@@ -855,12 +869,12 @@ ResourceFetcher::determineRevalidationPolicy(Resource::Type type,
     return Reload;
   }
 
-  // If credentials were sent with the previous request and won't be
-  // with this one, or vice versa, re-fetch the resource.
+  // If credentials were sent with the previous request and won't be with this
+  // one, or vice versa, re-fetch the resource.
   //
   // This helps with the case where the server sends back
-  // "Access-Control-Allow-Origin: *" all the time, but some of the
-  // client's requests are made without CORS and some with.
+  // "Access-Control-Allow-Origin: *" all the time, but some of the client's
+  // requests are made without CORS and some with.
   if (existingResource->resourceRequest().allowStoredCredentials() !=
       request.allowStoredCredentials()) {
     RESOURCE_LOADING_DVLOG(1) << "ResourceFetcher::determineRevalidationPolicy "
@@ -869,11 +883,11 @@ ResourceFetcher::determineRevalidationPolicy(Resource::Type type,
     return Reload;
   }
 
-  // During the initial load, avoid loading the same resource multiple times for a single document,
-  // even if the cache policies would tell us to.
-  // We also group loads of the same resource together.
-  // Raw resources are exempted, as XHRs fall into this category and may have user-set Cache-Control:
-  // headers or other factors that require separate requests.
+  // During the initial load, avoid loading the same resource multiple times for
+  // a single document, even if the cache policies would tell us to. We also
+  // group loads of the same resource together. Raw resources are exempted, as
+  // XHRs fall into this category and may have user-set Cache-Control: headers
+  // or other factors that require separate requests.
   if (type != Resource::Raw) {
     if (!context().isLoadComplete() &&
         m_validatedURLs.contains(existingResource->url()))
@@ -900,8 +914,9 @@ ResourceFetcher::determineRevalidationPolicy(Resource::Type type,
     return Reload;
   }
 
-  // List of available images logic allows images to be re-used without cache validation. We restrict this only to images
-  // from memory cache which are the same as the version in the current document.
+  // List of available images logic allows images to be re-used without cache
+  // validation. We restrict this only to images from memory cache which are the
+  // same as the version in the current document.
   if (type == Resource::Image &&
       existingResource == cachedResource(request.url()))
     return Use;
@@ -910,23 +925,27 @@ ResourceFetcher::determineRevalidationPolicy(Resource::Type type,
   if (existingResource->hasVaryHeader())
     return Reload;
 
-  // If any of the redirects in the chain to loading the resource were not cacheable, we cannot reuse our cached resource.
+  // If any of the redirects in the chain to loading the resource were not
+  // cacheable, we cannot reuse our cached resource.
   if (!existingResource->canReuseRedirectChain()) {
     RESOURCE_LOADING_DVLOG(1) << "ResourceFetcher::determineRevalidationPolicy "
                                  "reloading due to an uncacheable redirect";
     return Reload;
   }
 
-  // Check if the cache headers requires us to revalidate (cache expiration for example).
+  // Check if the cache headers requires us to revalidate (cache expiration for
+  // example).
   if (cachePolicy == CachePolicyRevalidate ||
       existingResource->mustRevalidateDueToCacheHeaders() ||
       request.cacheControlContainsNoCache()) {
-    // See if the resource has usable ETag or Last-modified headers.
-    // If the page is controlled by the ServiceWorker, we choose the Reload policy because the revalidation headers should not be exposed to the ServiceWorker.(crbug.com/429570)
+    // See if the resource has usable ETag or Last-modified headers. If the page
+    // is controlled by the ServiceWorker, we choose the Reload policy because
+    // the revalidation headers should not be exposed to the
+    // ServiceWorker.(crbug.com/429570)
     if (existingResource->canUseCacheValidator() &&
         !context().isControlledByServiceWorker()) {
-      // If the resource is already a cache validator but not started yet,
-      // the |Use| policy should be applied to subsequent requests.
+      // If the resource is already a cache validator but not started yet, the
+      // |Use| policy should be applied to subsequent requests.
       if (existingResource->isCacheValidator()) {
         DCHECK(existingResource->stillNeedsLoad());
         return Use;
@@ -1072,8 +1091,8 @@ void ResourceFetcher::didFinishLoading(Resource* resource,
   TRACE_EVENT_ASYNC_END0("blink.net", "Resource", resource->identifier());
   DCHECK(resource);
 
-  // When loading a multipart resource, make the loader non-block when
-  // finishing loading the first part.
+  // When loading a multipart resource, make the loader non-block when finishing
+  // loading the first part.
   if (finishReason == DidFinishFirstPartInMultipart)
     moveResourceLoaderToNonBlocking(resource->loader());
   else
@@ -1090,8 +1109,8 @@ void ResourceFetcher::didFinishLoading(Resource* resource,
       info->setLoadFinishTime(finishTime);
       // encodedDataLength == -1 means "not available".
       // TODO(ricea): Find cases where it is not available but the
-      // PerformanceResourceTiming spec requires it to be available and
-      // fix them.
+      // PerformanceResourceTiming spec requires it to be available and fix
+      // them.
       info->addFinalTransferSize(encodedDataLength == -1 ? 0
                                                          : encodedDataLength);
       if (resource->options().requestInitiatorContext == DocumentContext)
@@ -1131,10 +1150,10 @@ void ResourceFetcher::didReceiveResponse(Resource* resource,
       DCHECK_EQ(request.skipServiceWorker(),
                 WebURLRequest::SkipServiceWorker::None);
       // This code handles the case when a regular controlling service worker
-      // doesn't handle a cross origin request. When this happens we still
-      // want to give foreign fetch a chance to handle the request, so
-      // only skip the controlling service worker for the fallback request.
-      // This is currently safe because of http://crbug.com/604084 the
+      // doesn't handle a cross origin request. When this happens we still want
+      // to give foreign fetch a chance to handle the request, so only skip the
+      // controlling service worker for the fallback request. This is currently
+      // safe because of http://crbug.com/604084 the
       // wasFallbackRequiredByServiceWorker flag is never set when foreign fetch
       // handled a request.
       request.setSkipServiceWorker(
@@ -1143,8 +1162,9 @@ void ResourceFetcher::didReceiveResponse(Resource* resource,
       return;
     }
 
-    // If the response is fetched via ServiceWorker, the original URL of the response could be different from the URL of the request.
-    // We check the URL not to load the resources which are forbidden by the page CSP.
+    // If the response is fetched via ServiceWorker, the original URL of the
+    // response could be different from the URL of the request. We check the URL
+    // not to load the resources which are forbidden by the page CSP.
     // https://w3c.github.io/webappsec-csp/#should-block-response
     const KURL& originalURL = response.originalURLViaServiceWorker();
     if (!originalURL.isEmpty() &&
@@ -1212,9 +1232,9 @@ bool ResourceFetcher::startLoad(Resource* resource) {
   willSendRequest(resource->identifier(), request, ResourceResponse(),
                   resource->options());
 
-  // Resource requests from suborigins should not be intercepted by the
-  // service worker of the physical origin. This has the effect that, for
-  // now, suborigins do not work with service workers. See
+  // Resource requests from suborigins should not be intercepted by the service
+  // worker of the physical origin. This has the effect that, for now,
+  // suborigins do not work with service workers. See
   // https://w3c.github.io/webappsec-suborigins/.
   SecurityOrigin* sourceOrigin = context().getSecurityOrigin();
   if (sourceOrigin && sourceOrigin->hasSuborigin())

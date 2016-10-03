@@ -126,8 +126,8 @@ class TestResourceFactory : public ResourceFactory {
 
 TEST_F(ResourceFetcherTest, StartLoadAfterFrameDetach) {
   KURL secureURL(ParsedURLString, "https://secureorigin.test/image.png");
-  // Try to request a url. The request should fail, no resource should be returned,
-  // and no resource should be present in the cache.
+  // Try to request a url. The request should fail, no resource should be
+  // returned, and no resource should be present in the cache.
   ResourceFetcher* fetcher = ResourceFetcher::create(nullptr);
   FetchRequest fetchRequest =
       FetchRequest(ResourceRequest(secureURL), FetchInitiatorInfo());
@@ -356,7 +356,8 @@ TEST_F(ResourceFetcherTest, RevalidateDeferedResourceFromTwoInitiators) {
   EXPECT_TRUE(resource3->isCacheValidator());
   EXPECT_TRUE(resource3->stillNeedsLoad());
 
-  // startLoad() can be called from any initiator. Here, call it from the latter.
+  // startLoad() can be called from any initiator. Here, call it from the
+  // latter.
   fetcher->startLoad(resource3);
   Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
   EXPECT_TRUE(resource3->isLoaded());
@@ -393,8 +394,8 @@ class ServeRequestsOnCompleteClient final
     Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
   }
 
-  // No callbacks should be received except for the notifyFinished()
-  // triggered by ResourceLoader::cancel().
+  // No callbacks should be received except for the notifyFinished() triggered
+  // by ResourceLoader::cancel().
   void dataSent(Resource*, unsigned long long, unsigned long long) override {
     ASSERT_TRUE(false);
   }

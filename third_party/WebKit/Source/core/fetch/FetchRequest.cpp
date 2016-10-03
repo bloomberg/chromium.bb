@@ -79,7 +79,8 @@ void FetchRequest::setCrossOriginAccessControl(
   const bool isSameOriginRequest =
       origin && origin->canRequestNoSuborigin(m_resourceRequest.url());
 
-  // Currently FetchRequestMode and FetchCredentialsMode are only used when the request goes to Service Worker.
+  // Currently FetchRequestMode and FetchCredentialsMode are only used when the
+  // request goes to Service Worker.
   m_resourceRequest.setFetchRequestMode(WebURLRequest::FetchRequestModeCORS);
   m_resourceRequest.setFetchCredentialsMode(
       useCredentials ? WebURLRequest::FetchCredentialsModeInclude
@@ -111,7 +112,8 @@ void FetchRequest::setForPreload(bool forPreload, double discoveryTime) {
 }
 
 void FetchRequest::makeSynchronous() {
-  // Synchronous requests should always be max priority, lest they hang the renderer.
+  // Synchronous requests should always be max priority, lest they hang the
+  // renderer.
   m_resourceRequest.setPriority(ResourceLoadPriorityHighest);
   m_resourceRequest.setTimeoutInterval(10);
   m_options.synchronousPolicy = RequestSynchronously;

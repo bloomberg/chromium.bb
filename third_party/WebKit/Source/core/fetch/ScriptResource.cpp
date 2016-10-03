@@ -20,8 +20,8 @@
     the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
     Boston, MA 02110-1301, USA.
 
-    This class provides all functionality needed for loading images, style sheets and html
-    pages from the web. It has a memory cache for these objects.
+    This class provides all functionality needed for loading images, style
+    sheets and html pages from the web. It has a memory cache for these objects.
 */
 
 #include "core/fetch/ScriptResource.h"
@@ -90,9 +90,11 @@ const String& ScriptResource::script() {
   if (m_script.isNull() && data()) {
     String script = decodedText();
     clearData();
-    // We lie a it here and claim that script counts as encoded data (even though it's really decoded data).
-    // That's because the MemoryCache thinks that it can clear out decoded data by calling destroyDecodedData(),
-    // but we can't destroy script in destroyDecodedData because that's our only copy of the data!
+    // We lie a bit here and claim that script counts as encoded data (even
+    // though it's really decoded data). That's because the MemoryCache thinks
+    // that it can clear out decoded data by calling destroyDecodedData(), but
+    // we can't destroy script in destroyDecodedData because that's our only
+    // copy of the data!
     setEncodedSize(script.charactersSizeInBytes());
     m_script = AtomicString(script);
   }

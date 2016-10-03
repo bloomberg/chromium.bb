@@ -1,7 +1,8 @@
 /*
     Copyright (C) 1998 Lars Knoll (knoll@mpi-hd.mpg.de)
     Copyright (C) 2001 Dirk Mueller <mueller@kde.org>
-    Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
+    Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All
+    rights reserved.
     Copyright (C) 2009 Torch Mobile Inc. http://www.torchmobile.com/
 
     This library is free software; you can redistribute it and/or
@@ -19,8 +20,8 @@
     the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
     Boston, MA 02110-1301, USA.
 
-    This class provides all functionality needed for loading images, style sheets and html
-    pages from the web. It has a memory cache for these objects.
+    This class provides all functionality needed for loading images, style
+    sheets and html pages from the web. It has a memory cache for these objects.
 */
 
 #ifndef ResourceFetcher_h
@@ -57,13 +58,13 @@ class XSLStyleSheetResource;
 class KURL;
 class ResourceTimingInfo;
 
-// The ResourceFetcher provides a per-context interface to the MemoryCache
-// and enforces a bunch of security checks and rules for resource revalidation.
-// Its lifetime is roughly per-DocumentLoader, in that it is generally created
-// in the DocumentLoader constructor and loses its ability to generate network
+// The ResourceFetcher provides a per-context interface to the MemoryCache and
+// enforces a bunch of security checks and rules for resource revalidation. Its
+// lifetime is roughly per-DocumentLoader, in that it is generally created in
+// the DocumentLoader constructor and loses its ability to generate network
 // requests when the DocumentLoader is destroyed. Documents also hold a pointer
-// to ResourceFetcher for their lifetime (and will create one if they
-// are initialized without a LocalFrame), so a Document can keep a ResourceFetcher
+// to ResourceFetcher for their lifetime (and will create one if they are
+// initialized without a LocalFrame), so a Document can keep a ResourceFetcher
 // alive past detach if scripts still reference the Document.
 class CORE_EXPORT ResourceFetcher
     : public GarbageCollectedFinalized<ResourceFetcher> {
@@ -88,7 +89,8 @@ class CORE_EXPORT ResourceFetcher
     return m_documentResources;
   }
 
-  // Actually starts loading a Resource if it wasn't started during requestResource().
+  // Actually starts loading a Resource if it wasn't started during
+  // requestResource().
   bool startLoad(Resource*);
 
   void setAutoLoadImages(bool);

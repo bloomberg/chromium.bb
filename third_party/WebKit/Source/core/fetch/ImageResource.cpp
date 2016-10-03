@@ -137,13 +137,13 @@ void ImageResource::addObserver(ImageResourceObserver* observer) {
     return;
 
   // When the response is not multipart, if |data()| exists, |m_image| must be
-  // created. This is assured that |updateImage()| is called when
-  // |appendData()| is called.
+  // created. This is assured that |updateImage()| is called when |appendData()|
+  // is called.
   //
-  // On the other hand, when the response is multipart, |updateImage()| is
-  // not called in |appendData()|, which means |m_image| might not be created
-  // even when |data()| exists. This is intentional since creating a |m_image|
-  // on receiving data might destroy an existing image in a previous part.
+  // On the other hand, when the response is multipart, |updateImage()| is not
+  // called in |appendData()|, which means |m_image| might not be created even
+  // when |data()| exists. This is intentional since creating a |m_image| on
+  // receiving data might destroy an existing image in a previous part.
   DCHECK((m_multipartParser && isLoading()) || !data() || m_image);
 
   if (m_image && !m_image->isNull()) {
@@ -213,9 +213,9 @@ void ImageResource::doResetAnimation() {
 void ImageResource::allClientsAndObserversRemoved() {
   if (m_image) {
     CHECK(!errorOccurred());
-    // If possible, delay the resetting until back at the event loop.
-    // Doing so after a conservative GC prevents resetAnimation() from
-    // upsetting ongoing animation updates (crbug.com/613709)
+    // If possible, delay the resetting until back at the event loop. Doing so
+    // after a conservative GC prevents resetAnimation() from upsetting ongoing
+    // animation updates (crbug.com/613709)
     if (!ThreadHeap::willObjectBeLazilySwept(this))
       Platform::current()->currentThread()->getWebTaskRunner()->postTask(
           BLINK_FROM_HERE, WTF::bind(&ImageResource::doResetAnimation,
@@ -265,9 +265,10 @@ bool ImageResource::willPaintBrokenImage() const {
 
 blink::Image* ImageResource::getImage() {
   if (errorOccurred()) {
-    // Returning the 1x broken image is non-ideal, but we cannot reliably access the appropriate
-    // deviceScaleFactor from here. It is critical that callers use ImageResource::brokenImage()
-    // when they need the real, deviceScaleFactor-appropriate broken image icon.
+    // Returning the 1x broken image is non-ideal, but we cannot reliably access
+    // the appropriate deviceScaleFactor from here. It is critical that callers
+    // use ImageResource::brokenImage() when they need the real,
+    // deviceScaleFactor-appropriate broken image icon.
     return brokenImage(1).first;
   }
 
@@ -358,8 +359,8 @@ inline void ImageResource::clearImage() {
   int64_t length = m_image->data() ? m_image->data()->size() : 0;
   v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(-length);
 
-  // If our Image has an observer, it's always us so we need to clear the back pointer
-  // before dropping our reference.
+  // If our Image has an observer, it's always us so we need to clear the back
+  // pointer before dropping our reference.
   m_image->clearImageObserver();
   m_image.clear();
 }
@@ -372,18 +373,17 @@ void ImageResource::updateImage(bool allDataReceived) {
 
   Image::SizeAvailability sizeAvailable = Image::SizeUnavailable;
 
-  // Have the image update its data from its internal buffer.
-  // It will not do anything now, but will delay decoding until
-  // queried for info (like size or specific image frames).
+  // Have the image update its data from its internal buffer. It will not do
+  // anything now, but will delay decoding until queried for info (like size or
+  // specific image frames).
   if (data()) {
     DCHECK(m_image);
     sizeAvailable = m_image->setData(data(), allDataReceived);
   }
 
-  // Go ahead and tell our observers to try to draw if we have either
-  // received all the data or the size is known. Each chunk from the
-  // network causes observers to repaint, which will force that chunk
-  // to decode.
+  // Go ahead and tell our observers to try to draw if we have either received
+  // all the data or the size is known. Each chunk from the network causes
+  // observers to repaint, which will force that chunk to decode.
   if (sizeAvailable == Image::SizeUnavailable && !allDataReceived)
     return;
   if (!m_image || m_image->isNull()) {
@@ -396,8 +396,8 @@ void ImageResource::updateImage(bool allDataReceived) {
     memoryCache()->remove(this);
   }
 
-  // It would be nice to only redraw the decoded band of the image, but with the current design
-  // (decoding delayed until painting) that seems hard.
+  // It would be nice to only redraw the decoded band of the image, but with the
+  // current design (decoding delayed until painting) that seems hard.
   notifyObservers();
 }
 
@@ -474,9 +474,9 @@ void ImageResource::decodedSizeChangedTo(const blink::Image* image,
 void ImageResource::didDraw(const blink::Image* image) {
   if (!image || image != m_image)
     return;
-  // decodedSize() == 0 indicates that the image is decoded into DiscardableMemory,
-  // not in MemoryCache. So we don't need to call Resource::didAccessDecodedData()
-  // to update MemoryCache.
+  // decodedSize() == 0 indicates that the image is decoded into
+  // DiscardableMemory, not in MemoryCache. So we don't need to call
+  // Resource::didAccessDecodedData() to update MemoryCache.
   if (decodedSize() != 0)
     Resource::didAccessDecodedData();
 }

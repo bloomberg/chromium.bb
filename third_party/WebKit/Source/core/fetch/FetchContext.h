@@ -111,7 +111,8 @@ class CORE_EXPORT FetchContext
                                bool isInternalRequest);
 
   virtual bool shouldLoadNewResource(Resource::Type) const { return false; }
-  // Called when a resource load is first requested, which may not be when the load actually begins.
+  // Called when a resource load is first requested, which may not be when the
+  // load actually begins.
   virtual void willStartLoadingResource(unsigned long identifier,
                                         ResourceRequest&,
                                         Resource::Type);

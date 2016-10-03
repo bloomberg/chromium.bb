@@ -12,8 +12,8 @@ namespace blink {
 namespace {
 
 TEST(ResourceLoaderOptionsTest, DeepCopy) {
-  // Check that the fields of ResourceLoaderOptions are enums,
-  // except for initiatorInfo and securityOrigin.
+  // Check that the fields of ResourceLoaderOptions are enums, except for
+  // initiatorInfo and securityOrigin.
   static_assert(std::is_enum<DataBufferingPolicy>::value,
                 "DataBufferingPolicy should be an enum");
   static_assert(std::is_enum<StoredCredentials>::value,
@@ -87,7 +87,8 @@ TEST(ResourceLoaderOptionsTest, DeepCopy) {
 
   // Check that pointers are different between |original| and |copy|
   // FIXME: When |original| and |copy| are in different threads, then
-  // EXPECT_NE(original.initiatorInfo.name.impl(), copy.initiatorInfo.name.impl());
+  // EXPECT_NE(original.initiatorInfo.name.impl(),
+  //           copy.initiatorInfo.name.impl());
   // should pass. However, in the unit test here, these two pointers are the
   // same, because initiatorInfo.name is AtomicString.
   EXPECT_NE(original.securityOrigin.get(), copy.securityOrigin.get());
@@ -99,8 +100,8 @@ TEST(ResourceLoaderOptionsTest, DeepCopy) {
             copy.securityOrigin->domain().impl());
 
   // FIXME: The checks for content equality/pointer inequality for
-  // securityOrigin here is not complete (i.e. m_filePath is not checked).
-  // A unit test for SecurityOrigin::isolatedCopy() that covers these checks
+  // securityOrigin here is not complete (i.e. m_filePath is not checked). A
+  // unit test for SecurityOrigin::isolatedCopy() that covers these checks
   // should be added.
 }
 

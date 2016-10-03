@@ -53,10 +53,9 @@ enum RequestInitiatorContext {
 
 enum StoredCredentials { AllowStoredCredentials, DoNotAllowStoredCredentials };
 
-// APIs like XMLHttpRequest and EventSource let the user decide
-// whether to send credentials, but they're always sent for
-// same-origin requests. Additional information is needed to handle
-// cross-origin redirects correctly.
+// APIs like XMLHttpRequest and EventSource let the user decide whether to send
+// credentials, but they're always sent for same-origin requests. Additional
+// information is needed to handle cross-origin redirects correctly.
 enum CredentialRequest {
   ClientRequestedCredentials,
   ClientDidNotRequestCredentials
@@ -64,8 +63,8 @@ enum CredentialRequest {
 
 enum SynchronousPolicy { RequestSynchronously, RequestAsynchronously };
 
-// A resource fetch can be marked as being CORS enabled. The loader
-// must perform an access check upon seeing the response.
+// A resource fetch can be marked as being CORS enabled. The loader must perform
+// an access check upon seeing the response.
 enum CORSEnabled { NotCORSEnabled, IsCORSEnabled };
 
 struct ResourceLoaderOptions {
@@ -95,9 +94,9 @@ struct ResourceLoaderOptions {
         synchronousPolicy(RequestAsynchronously),
         corsEnabled(NotCORSEnabled) {}
 
-  // Answers the question "can a separate request with these
-  // different options be re-used" (e.g. preload request)
-  // The safe (but possibly slow) answer is always false.
+  // Answers the question "can a separate request with these different options
+  // be re-used" (e.g. preload request) The safe (but possibly slow) answer is
+  // always false.
   bool canReuseRequest(const ResourceLoaderOptions& other) const {
     // dataBufferingPolicy differences are believed to be safe for re-use.
     // FIXME: check allowCredentials.
@@ -107,22 +106,28 @@ struct ResourceLoaderOptions {
     // requestInitiatorContext is benign (indicates document vs. worker)
     // synchronousPolicy (safe to re-use an async XHR response for sync, etc.)
     return corsEnabled == other.corsEnabled;
-    // securityOrigin has more complicated checks which callers are responsible for.
+    // securityOrigin has more complicated checks which callers are responsible
+    // for.
   }
 
   // When adding members, CrossThreadResourceLoaderOptionsData should be
   // updated.
   DataBufferingPolicy dataBufferingPolicy;
-  StoredCredentials
-      allowCredentials;  // Whether HTTP credentials and cookies are sent with the request.
-  CredentialRequest
-      credentialsRequested;  // Whether the client (e.g. XHR) wanted credentials in the first place.
+
+  // Whether HTTP credentials and cookies are sent with the request.
+  StoredCredentials allowCredentials;
+
+  // Whether the client (e.g. XHR) wanted credentials in the first place.
+  CredentialRequest credentialsRequested;
+
   ContentSecurityPolicyDisposition contentSecurityPolicyOption;
   FetchInitiatorInfo initiatorInfo;
   RequestInitiatorContext requestInitiatorContext;
   SynchronousPolicy synchronousPolicy;
-  CORSEnabled
-      corsEnabled;  // If the resource is loaded out-of-origin, whether or not to use CORS.
+
+  // If the resource is loaded out-of-origin, whether or not to use CORS.
+  CORSEnabled corsEnabled;
+
   RefPtr<SecurityOrigin> securityOrigin;
   String contentSecurityPolicyNonce;
   IntegrityMetadataSet integrityMetadata;

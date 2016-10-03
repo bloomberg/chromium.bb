@@ -94,9 +94,9 @@ class CachingCorrectnessTest : public ::testing::Test {
     }
     resource->setResponse(response);
     resource->finish();
-    // Because we didn't give any real data, an image will have set its
-    // status to DecodeError. Override it so the resource is cacaheable
-    // for testing purposes.
+    // Because we didn't give any real data, an image will have set its status
+    // to DecodeError. Override it so the resource is cacaheable for testing
+    // purposes.
     if (type == Resource::Image)
       resource->setStatus(Resource::Cached);
     memoryCache()->add(resource);
@@ -174,7 +174,8 @@ TEST_F(CachingCorrectnessTest, FreshFromLastModified) {
 
   Resource* fresh200 = resourceFromResourceResponse(fresh200Response);
 
-  // Advance the clock within the implicit freshness period of this resource before we make a request.
+  // Advance the clock within the implicit freshness period of this resource
+  // before we make a request.
   advanceClock(600.);
 
   Resource* fetched = fetch();
@@ -189,7 +190,8 @@ TEST_F(CachingCorrectnessTest, FreshFromExpires) {
 
   Resource* fresh200 = resourceFromResourceResponse(fresh200Response);
 
-  // Advance the clock within the freshness period of this resource before we make a request.
+  // Advance the clock within the freshness period of this resource before we
+  // make a request.
   advanceClock(24. * 60. * 60. - 15.);
 
   Resource* fetched = fetch();
@@ -204,14 +206,16 @@ TEST_F(CachingCorrectnessTest, FreshFromMaxAge) {
 
   Resource* fresh200 = resourceFromResourceResponse(fresh200Response);
 
-  // Advance the clock within the freshness period of this resource before we make a request.
+  // Advance the clock within the freshness period of this resource before we
+  // make a request.
   advanceClock(500.);
 
   Resource* fetched = fetch();
   EXPECT_EQ(fresh200, fetched);
 }
 
-// The strong validator causes a revalidation to be launched, and the proxy and original resources leak because of their reference loop.
+// The strong validator causes a revalidation to be launched, and the proxy and
+// original resources leak because of their reference loop.
 TEST_F(CachingCorrectnessTest, DISABLED_ExpiredFromLastModified) {
   ResourceResponse expired200Response;
   expired200Response.setHTTPStatusCode(200);
@@ -236,14 +240,16 @@ TEST_F(CachingCorrectnessTest, ExpiredFromExpires) {
 
   Resource* expired200 = resourceFromResourceResponse(expired200Response);
 
-  // Advance the clock within the expiredness period of this resource before we make a request.
+  // Advance the clock within the expiredness period of this resource before we
+  // make a request.
   advanceClock(24. * 60. * 60. + 15.);
 
   Resource* fetched = fetch();
   EXPECT_NE(expired200, fetched);
 }
 
-// If the image hasn't been loaded in this "document" before, then it shouldn't have list of available images logic.
+// If the image hasn't been loaded in this "document" before, then it shouldn't
+// have list of available images logic.
 TEST_F(CachingCorrectnessTest, NewImageExpiredFromExpires) {
   ResourceResponse expired200Response;
   expired200Response.setHTTPStatusCode(200);
@@ -253,15 +259,17 @@ TEST_F(CachingCorrectnessTest, NewImageExpiredFromExpires) {
   Resource* expired200 =
       resourceFromResourceResponse(expired200Response, Resource::Image);
 
-  // Advance the clock within the expiredness period of this resource before we make a request.
+  // Advance the clock within the expiredness period of this resource before we
+  // make a request.
   advanceClock(24. * 60. * 60. + 15.);
 
   Resource* fetched = fetchImage();
   EXPECT_NE(expired200, fetched);
 }
 
-// If the image has been loaded in this "document" before, then it should have list of available images logic, and so
-// normal cache testing should be bypassed.
+// If the image has been loaded in this "document" before, then it should have
+// list of available images logic, and so normal cache testing should be
+// bypassed.
 TEST_F(CachingCorrectnessTest, ReuseImageExpiredFromExpires) {
   ResourceResponse expired200Response;
   expired200Response.setHTTPStatusCode(200);
@@ -271,12 +279,14 @@ TEST_F(CachingCorrectnessTest, ReuseImageExpiredFromExpires) {
   Resource* expired200 =
       resourceFromResourceResponse(expired200Response, Resource::Image);
 
-  // Advance the clock within the freshness period, and make a request to add this image to the document resources.
+  // Advance the clock within the freshness period, and make a request to add
+  // this image to the document resources.
   advanceClock(15.);
   Resource* firstFetched = fetchImage();
   EXPECT_EQ(expired200, firstFetched);
 
-  // Advance the clock within the expiredness period of this resource before we make a request.
+  // Advance the clock within the expiredness period of this resource before we
+  // make a request.
   advanceClock(24. * 60. * 60. + 15.);
 
   Resource* fetched = fetchImage();
@@ -291,7 +301,8 @@ TEST_F(CachingCorrectnessTest, ExpiredFromMaxAge) {
 
   Resource* expired200 = resourceFromResourceResponse(expired200Response);
 
-  // Advance the clock within the expiredness period of this resource before we make a request.
+  // Advance the clock within the expiredness period of this resource before we
+  // make a request.
   advanceClock(700.);
 
   Resource* fetched = fetch();
@@ -311,7 +322,8 @@ TEST_F(CachingCorrectnessTest, FreshButNoCache) {
   Resource* fresh200Nocache =
       resourceFromResourceResponse(fresh200NocacheResponse);
 
-  // Advance the clock within the freshness period of this resource before we make a request.
+  // Advance the clock within the freshness period of this resource before we
+  // make a request.
   advanceClock(24. * 60. * 60. - 15.);
 
   Resource* fetched = fetch();
@@ -339,7 +351,8 @@ TEST_F(CachingCorrectnessTest, FreshButNoStore) {
   Resource* fresh200Nostore =
       resourceFromResourceResponse(fresh200NostoreResponse);
 
-  // Advance the clock within the freshness period of this resource before we make a request.
+  // Advance the clock within the freshness period of this resource before we
+  // make a request.
   advanceClock(24. * 60. * 60. - 15.);
 
   Resource* fetched = fetch();
@@ -369,7 +382,8 @@ TEST_F(CachingCorrectnessTest, DISABLED_FreshButMustRevalidate) {
   Resource* fresh200MustRevalidate =
       resourceFromResourceResponse(fresh200MustRevalidateResponse);
 
-  // Advance the clock within the freshness period of this resource before we make a request.
+  // Advance the clock within the freshness period of this resource before we
+  // make a request.
   advanceClock(24. * 60. * 60. - 15.);
 
   Resource* fetched = fetch();

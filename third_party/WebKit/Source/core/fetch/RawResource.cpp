@@ -183,15 +183,14 @@ void RawResource::responseReceived(
   ResourceClientWalker<RawResourceClient> w(clients());
   DCHECK(clients().size() <= 1 || !handle);
   while (RawResourceClient* c = w.next()) {
-    // |handle| is cleared when passed, but it's not a problem because
-    // |handle| is null when there are two or more clients, as asserted.
+    // |handle| is cleared when passed, but it's not a problem because |handle|
+    // is null when there are two or more clients, as asserted.
     c->responseReceived(this, this->response(), std::move(handle));
   }
 
-  // If we successfully revalidated, we won't get appendData() calls.
-  // Forward the data to clients now instead.
-  // Note: |m_data| can be null when no data is appended to the original
-  // resource.
+  // If we successfully revalidated, we won't get appendData() calls. Forward
+  // the data to clients now instead. Note: |m_data| can be null when no data is
+  // appended to the original resource.
   if (isSuccessfulRevalidation && data()) {
     ResourceClientWalker<RawResourceClient> w(clients());
     while (RawResourceClient* c = w.next())
@@ -232,7 +231,8 @@ void RawResource::setDefersLoading(bool defers) {
 }
 
 static bool shouldIgnoreHeaderForCacheReuse(AtomicString headerName) {
-  // FIXME: This list of headers that don't affect cache policy almost certainly isn't complete.
+  // FIXME: This list of headers that don't affect cache policy almost certainly
+  // isn't complete.
   DEFINE_STATIC_LOCAL(
       HashSet<AtomicString>, headers,
       ({
@@ -265,10 +265,11 @@ bool RawResource::canReuse(const ResourceRequest& newRequest) const {
       newRequest.allowStoredCredentials())
     return false;
 
-  // Ensure most headers match the existing headers before continuing.
-  // Note that the list of ignored headers includes some headers explicitly related to caching.
-  // A more detailed check of caching policy will be performed later, this is simply a list of
-  // headers that we might permit to be different and still reuse the existing Resource.
+  // Ensure most headers match the existing headers before continuing. Note that
+  // the list of ignored headers includes some headers explicitly related to
+  // caching. A more detailed check of caching policy will be performed later,
+  // this is simply a list of headers that we might permit to be different and
+  // still reuse the existing Resource.
   const HTTPHeaderMap& newHeaders = newRequest.httpHeaderFields();
   const HTTPHeaderMap& oldHeaders = resourceRequest().httpHeaderFields();
 

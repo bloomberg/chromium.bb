@@ -83,8 +83,7 @@ ResourceRequest createAccessControlPreflightRequest(
   const HTTPHeaderMap& requestHeaderFields = request.httpHeaderFields();
 
   if (requestHeaderFields.size() > 0) {
-    // Fetch API Spec:
-    //   https://fetch.spec.whatwg.org/#cors-preflight-fetch-0
+    // Fetch API Spec: https://fetch.spec.whatwg.org/#cors-preflight-fetch-0
     Vector<String> headers;
     for (const auto& header : requestHeaderFields) {
       if (FetchUtils::isSimpleHeader(header.key, header.value)) {
@@ -92,8 +91,8 @@ ResourceRequest createAccessControlPreflightRequest(
         continue;
       }
       if (equalIgnoringCase(header.key, "referer")) {
-        // When the request is from a Worker, referrer header was added
-        // by WorkerThreadableLoader. But it should not be added to
+        // When the request is from a Worker, referrer header was added by
+        // WorkerThreadableLoader. But it should not be added to
         // Access-Control-Request-Headers header.
         continue;
       }
@@ -120,9 +119,8 @@ static bool isOriginSeparator(UChar ch) {
 }
 
 static bool isInterestingStatusCode(int statusCode) {
-  // Predicate that gates what status codes should be included in
-  // console error messages for responses containing no access
-  // control headers.
+  // Predicate that gates what status codes should be included in console error
+  // messages for responses containing no access control headers.
   return statusCode >= 400;
 }
 
@@ -162,8 +160,8 @@ bool passesAccessControlCheck(const ResourceResponse& response,
   const AtomicString& allowOriginHeaderValue =
       response.httpHeaderField(allowOriginHeaderName);
 
-  // Check Suborigins, unless the Access-Control-Allow-Origin is '*',
-  // which implies that all Suborigins are okay as well.
+  // Check Suborigins, unless the Access-Control-Allow-Origin is '*', which
+  // implies that all Suborigins are okay as well.
   if (securityOrigin->hasSuborigin() && allowOriginHeaderValue != starAtom) {
     const AtomicString& allowSuboriginHeaderValue =
         response.httpHeaderField(allowSuboriginHeaderName);
@@ -180,8 +178,8 @@ bool passesAccessControlCheck(const ResourceResponse& response,
   }
 
   if (allowOriginHeaderValue == starAtom) {
-    // A wildcard Access-Control-Allow-Origin can not be used if credentials are to be sent,
-    // even with Access-Control-Allow-Credentials set to true.
+    // A wildcard Access-Control-Allow-Origin can not be used if credentials are
+    // to be sent, even with Access-Control-Allow-Credentials set to true.
     if (includeCredentials == DoNotAllowStoredCredentials)
       return true;
     if (response.isHTTP()) {
@@ -266,10 +264,8 @@ bool passesAccessControlCheck(const ResourceResponse& response,
 bool passesPreflightStatusCheck(const ResourceResponse& response,
                                 String& errorDescription) {
   // CORS preflight with 3XX is considered network error in
-  // Fetch API Spec:
-  //   https://fetch.spec.whatwg.org/#cors-preflight-fetch
-  // CORS Spec:
-  //   http://www.w3.org/TR/cors/#cross-origin-request-with-preflight-0
+  // Fetch API Spec: https://fetch.spec.whatwg.org/#cors-preflight-fetch
+  // CORS Spec: http://www.w3.org/TR/cors/#cross-origin-request-with-preflight-0
   // https://crbug.com/452394
   if (response.httpStatusCode() < 200 || response.httpStatusCode() >= 300) {
     errorDescription = "Response for preflight has invalid HTTP status code " +
@@ -319,8 +315,8 @@ void extractCorsExposedHeaderNamesList(const ResourceResponse& response,
                                        HTTPHeaderSet& headerSet) {
   // If a response was fetched via a service worker, it will always have
   // corsExposedHeaderNames set, either from the Access-Control-Expose-Headers
-  // header, or explicitly via foreign fetch. For requests that didn't come
-  // from a service worker, foreign fetch doesn't apply so just parse the CORS
+  // header, or explicitly via foreign fetch. For requests that didn't come from
+  // a service worker, foreign fetch doesn't apply so just parse the CORS
   // header.
   if (response.wasFetchedViaServiceWorker()) {
     for (const auto& header : response.corsExposedHeaderNames())
@@ -339,8 +335,8 @@ bool CrossOriginAccessControl::isLegalRedirectLocation(
   // https://fetch.spec.whatwg.org/#http-redirect-fetch. Chromium also allows
   // the data scheme.
   //
-  // TODO(tyoshino): This check should be performed regardless of the CORS
-  // flag and request's mode.
+  // TODO(tyoshino): This check should be performed regardless of the CORS flag
+  // and request's mode.
   if (!SchemeRegistry::shouldTreatURLSchemeAsCORSEnabled(
           requestURL.protocol())) {
     errorDescription = "Redirect location '" + requestURL.getString() +
@@ -412,8 +408,8 @@ bool CrossOriginAccessControl::handleRedirect(
     newRequest.clearHTTPOrigin();
     newRequest.setHTTPOrigin(newSecurityOrigin.get());
 
-    // Unset credentials flag if request's credentials mode is
-    // "same-origin" as request's response tainting becomes "cors".
+    // Unset credentials flag if request's credentials mode is "same-origin" as
+    // request's response tainting becomes "cors".
     //
     // This is equivalent to the step 2 in
     // https://fetch.spec.whatwg.org/#http-network-or-cache-fetch

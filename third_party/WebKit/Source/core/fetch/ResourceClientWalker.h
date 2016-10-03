@@ -18,8 +18,8 @@
     the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
     Boston, MA 02110-1301, USA.
 
-    This class provides all functionality needed for loading images, style sheets and html
-    pages from the web. It has a memory cache for these objects.
+    This class provides all functionality needed for loading images, style
+    sheets and html pages from the web. It has a memory cache for these objects.
 */
 
 #ifndef ResourceClientWalker_h
@@ -31,8 +31,9 @@
 
 namespace blink {
 
-// Call this "walker" instead of iterator so people won't expect Qt or STL-style iterator interface.
-// Just keep calling next() on this. It's safe from deletions of items.
+// Call this "walker" instead of iterator so people won't expect Qt or STL-style
+// iterator interface. Just keep calling next() on this. It's safe from
+// deletions of items.
 template <typename T>
 class ResourceClientWalker {
   STACK_ALLOCATED();

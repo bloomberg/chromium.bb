@@ -75,8 +75,8 @@ class CORE_EXPORT ImageResource final
   bool hasImage() const { return m_image.get(); }
 
   static std::pair<blink::Image*, float> brokenImage(
-      float
-          deviceScaleFactor);  // Returns an image and the image's resolution scale factor.
+      float deviceScaleFactor);  // Returns an image and the image's resolution
+                                 // scale factor.
   bool willPaintBrokenImage() const;
 
   bool usesImageContainerSize() const;
@@ -90,10 +90,15 @@ class CORE_EXPORT ImageResource final
   }
 
   enum SizeType {
-    IntrinsicSize,  // Report the intrinsic size.
-    IntrinsicCorrectedToDPR,  // Report the intrinsic size corrected to account for image density.
+    // Report the intrinsic size.
+    IntrinsicSize,
+
+    // Report the intrinsic size corrected to account for image density.
+    IntrinsicCorrectedToDPR,
   };
-  // This method takes a zoom multiplier that can be used to increase the natural size of the image by the zoom.
+
+  // This method takes a zoom multiplier that can be used to increase the
+  // natural size of the image by the zoom.
   LayoutSize imageSize(
       RespectImageOrientationEnum shouldRespectImageOrientation,
       float multiplier,
@@ -103,8 +108,8 @@ class CORE_EXPORT ImageResource final
 
   void updateImageAnimationPolicy();
 
-  // If this ImageResource has the Lo-Fi response headers, reload it with
-  // the Lo-Fi state set to off and bypassing the cache.
+  // If this ImageResource has the Lo-Fi response headers, reload it with the
+  // Lo-Fi state set to off and bypassing the cache.
   void reloadIfLoFi(ResourceFetcher*);
 
   void didAddClient(ResourceClient*) override;

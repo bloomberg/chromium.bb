@@ -200,7 +200,8 @@ TEST(ImageResourceTest, MultipartImage) {
   URLTestHelpers::registerMockedURLLoad(testURL, "cancelTest.html",
                                         "text/html");
 
-  // Emulate starting a real load, but don't expect any "real" WebURLLoaderClient callbacks.
+  // Emulate starting a real load, but don't expect any "real"
+  // WebURLLoaderClient callbacks.
   ImageResource* cachedImage = ImageResource::create(ResourceRequest(testURL));
   cachedImage->setIdentifier(createUniqueIdentifier());
   fetcher->startLoad(cachedImage);
@@ -210,9 +211,9 @@ TEST(ImageResourceTest, MultipartImage) {
       new MockImageResourceClient(cachedImage);
   EXPECT_EQ(Resource::Pending, cachedImage->getStatus());
 
-  // Send the multipart response. No image or data buffer is created.
-  // Note that the response must be routed through ResourceLoader to
-  // ensure the load is flagged as multipart.
+  // Send the multipart response. No image or data buffer is created. Note that
+  // the response must be routed through ResourceLoader to ensure the load is
+  // flagged as multipart.
   ResourceResponse multipartResponse(KURL(), "multipart/x-mixed-replace", 0,
                                      nullAtom, String());
   multipartResponse.setMultipartBoundary("boundary", strlen("boundary"));
@@ -228,7 +229,8 @@ TEST(ImageResourceTest, MultipartImage) {
       "--boundary\n"
       "Content-Type: image/svg+xml\n\n";
   cachedImage->appendData(firstPart, strlen(firstPart));
-  // Send the response for the first real part. No image or data buffer is created.
+  // Send the response for the first real part. No image or data buffer is
+  // created.
   EXPECT_FALSE(cachedImage->resourceBuffer());
   EXPECT_FALSE(cachedImage->hasImage());
   EXPECT_EQ(0, client->imageChangedCount());
@@ -238,7 +240,8 @@ TEST(ImageResourceTest, MultipartImage) {
   const char secondPart[] =
       "<svg xmlns='http://www.w3.org/2000/svg' width='1' height='1'><rect "
       "width='1' height='1' fill='green'/></svg>\n";
-  // The first bytes arrive. The data buffer is created, but no image is created.
+  // The first bytes arrive. The data buffer is created, but no image is
+  // created.
   cachedImage->appendData(secondPart, strlen(secondPart));
   EXPECT_TRUE(cachedImage->resourceBuffer());
   EXPECT_FALSE(cachedImage->hasImage());
@@ -257,7 +260,8 @@ TEST(ImageResourceTest, MultipartImage) {
   ASSERT_TRUE(cachedImage->resourceBuffer());
   EXPECT_EQ(strlen(secondPart) - 1, cachedImage->resourceBuffer()->size());
 
-  // This part finishes. The image is created, callbacks are sent, and the data buffer is cleared.
+  // This part finishes. The image is created, callbacks are sent, and the data
+  // buffer is cleared.
   cachedImage->loader()->didFinishLoading(nullptr, 0.0, 0);
   EXPECT_TRUE(cachedImage->resourceBuffer());
   EXPECT_FALSE(cachedImage->errorOccurred());
@@ -290,12 +294,14 @@ TEST(ImageResourceTest, CancelOnDetach) {
       new MockImageResourceClient(cachedImage);
   EXPECT_EQ(Resource::Pending, cachedImage->getStatus());
 
-  // The load should still be alive, but a timer should be started to cancel the load inside removeClient().
+  // The load should still be alive, but a timer should be started to cancel the
+  // load inside removeClient().
   client->removeAsClient();
   EXPECT_EQ(Resource::Pending, cachedImage->getStatus());
   EXPECT_TRUE(memoryCache()->resourceForURL(testURL));
 
-  // Trigger the cancel timer, ensure the load was cancelled and the resource was evicted from the cache.
+  // Trigger the cancel timer, ensure the load was cancelled and the resource
+  // was evicted from the cache.
   blink::testing::runPendingTasks();
   EXPECT_EQ(Resource::LoadError, cachedImage->getStatus());
   EXPECT_FALSE(memoryCache()->resourceForURL(testURL));
@@ -328,7 +334,8 @@ TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients) {
   EXPECT_FALSE(cachedImage->getImage()->isNull());
   EXPECT_TRUE(client->notifyFinishedCalled());
 
-  // The prune comes when the ImageResource still has clients. The image should not be deleted.
+  // The prune comes when the ImageResource still has clients. The image should
+  // not be deleted.
   cachedImage->prune();
   EXPECT_TRUE(cachedImage->isAlive());
   ASSERT_TRUE(cachedImage->hasImage());

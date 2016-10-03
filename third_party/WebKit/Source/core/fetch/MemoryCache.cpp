@@ -41,8 +41,10 @@ static const unsigned cDefaultCacheCapacity = 8192 * 1024;
 static const unsigned cDeferredPruneDeadCapacityFactor = 2;
 static const int cMinDelayBeforeLiveDecodedPrune = 1;  // Seconds.
 static const double cMaxPruneDeferralDelay = 0.5;      // Seconds.
-static const float cTargetPrunePercentage =
-    .95f;  // Percentage of capacity toward which we prune, to avoid immediately pruning again.
+
+// Percentage of capacity toward which we prune, to avoid immediately pruning
+// again.
+static const float cTargetPrunePercentage = .95f;
 
 MemoryCache* memoryCache() {
   DCHECK(WTF::isMainThread());
@@ -129,9 +131,9 @@ DEFINE_TRACE(MemoryCache) {
 KURL MemoryCache::removeFragmentIdentifierIfNeeded(const KURL& originalURL) {
   if (!originalURL.hasFragmentIdentifier())
     return originalURL;
-  // Strip away fragment identifier from HTTP URLs.
-  // Data URLs must be unmodified. For file and custom URLs clients may expect resources
-  // to be unique even when they differ by the fragment identifier only.
+  // Strip away fragment identifier from HTTP URLs. Data URLs must be
+  // unmodified. For file and custom URLs clients may expect resources to be
+  // unique even when they differ by the fragment identifier only.
   if (!originalURL.protocolIsInHTTPFamily())
     return originalURL;
   KURL url = originalURL;
@@ -168,8 +170,8 @@ void MemoryCache::add(Resource* resource) {
 }
 
 void MemoryCache::remove(Resource* resource) {
-  // The resource may have already been removed by someone other than our caller,
-  // who needed a fresh copy for a reload.
+  // The resource may have already been removed by someone other than our
+  // caller, who needed a fresh copy for a reload.
   if (MemoryCacheEntry* entry = getEntryForResource(resource))
     evict(entry);
 }
@@ -214,7 +216,8 @@ HeapVector<Member<Resource>> MemoryCache::resourcesForURL(
 }
 
 size_t MemoryCache::deadCapacity() const {
-  // Dead resource capacity is whatever space is not occupied by live resources, bounded by an independent minimum and maximum.
+  // Dead resource capacity is whatever space is not occupied by live resources,
+  // bounded by an independent minimum and maximum.
   size_t capacity =
       m_capacity -
       std::min(m_liveSize, m_capacity);  // Start with available capacity.
@@ -226,7 +229,8 @@ size_t MemoryCache::deadCapacity() const {
 }
 
 size_t MemoryCache::liveCapacity() const {
-  // Live resource capacity is whatever is left over after calculating dead resource capacity.
+  // Live resource capacity is whatever is left over after calculating dead
+  // resource capacity.
   return m_capacity - deadCapacity();
 }
 
@@ -238,19 +242,18 @@ void MemoryCache::pruneLiveResources(PruneStrategy strategy) {
   if (!m_liveSize || (capacity && m_liveSize <= capacity))
     return;
 
-  size_t targetSize = static_cast<size_t>(
-      capacity *
-      cTargetPrunePercentage);  // Cut by a percentage to avoid immediately pruning again.
+  // Cut by a percentage to avoid immediately pruning again.
+  size_t targetSize = static_cast<size_t>(capacity * cTargetPrunePercentage);
 
-  // Destroy any decoded data in live objects that we can.
-  // Start from the tail, since this is the lowest priority
-  // and least recently accessed of the objects.
+  // Destroy any decoded data in live objects that we can. Start from the tail,
+  // since this is the lowest priority and least recently accessed of the
+  // objects.
 
   // The list might not be sorted by the m_lastDecodedFrameTimeStamp. The impact
   // of this weaker invariant is minor as the below if statement to check the
   // elapsedTime will evaluate to false as the current time will be a lot
-  // greater than the current->m_lastDecodedFrameTimeStamp.
-  // For more details see: https://bugs.webkit.org/show_bug.cgi?id=30209
+  // greater than the current->m_lastDecodedFrameTimeStamp. For more details
+  // see: https://bugs.webkit.org/show_bug.cgi?id=30209
 
   MemoryCacheEntry* current = m_liveDecodedResources.m_tail;
   while (current) {
@@ -266,9 +269,9 @@ void MemoryCache::pruneLiveResources(PruneStrategy strategy) {
           elapsedTime < m_delayBeforeLiveDecodedPrune)
         return;
 
-      // Destroy our decoded data if possible. This will remove us
-      // from m_liveDecodedResources, and possibly move us to a
-      // different LRU list in m_allResources.
+      // Destroy our decoded data if possible. This will remove us from
+      // m_liveDecodedResources, and possibly move us to a different LRU list in
+      // m_allResources.
       resource->prune();
 
       if (targetSize && m_liveSize <= targetSize)
@@ -285,9 +288,8 @@ void MemoryCache::pruneDeadResources(PruneStrategy strategy) {
   if (!m_deadSize || (capacity && m_deadSize <= capacity))
     return;
 
-  size_t targetSize = static_cast<size_t>(
-      capacity *
-      cTargetPrunePercentage);  // Cut by a percentage to avoid immediately pruning again.
+  // Cut by a percentage to avoid immediately pruning again.
+  size_t targetSize = static_cast<size_t>(capacity * cTargetPrunePercentage);
 
   int size = m_allResources.size();
   if (targetSize && m_deadSize <= targetSize)
@@ -295,7 +297,8 @@ void MemoryCache::pruneDeadResources(PruneStrategy strategy) {
 
   bool canShrinkLRULists = true;
   for (int i = size - 1; i >= 0; i--) {
-    // Remove from the tail, since this is the least frequently accessed of the objects.
+    // Remove from the tail, since this is the least frequently accessed of the
+    // objects.
     MemoryCacheEntry* current = m_allResources[i].m_tail;
 
     // First flush all the decoded data in this queue.
@@ -303,9 +306,8 @@ void MemoryCache::pruneDeadResources(PruneStrategy strategy) {
       Resource* resource = current->resource();
       MemoryCacheEntry* previous = current->m_previousInAllResourcesList;
 
-      // Decoded data may reference other resources. Skip |current| if
-      // |current| somehow got kicked out of cache during
-      // destroyDecodedData().
+      // Decoded data may reference other resources. Skip |current| if |current|
+      // somehow got kicked out of cache during destroyDecodedData().
       if (!resource || !contains(resource)) {
         current = previous;
         continue;
@@ -314,8 +316,8 @@ void MemoryCache::pruneDeadResources(PruneStrategy strategy) {
       if (!resource->isAlive() && !resource->isPreloaded() &&
           resource->isLoaded()) {
         // Destroy our decoded data. This will remove us from
-        // m_liveDecodedResources, and possibly move us to a different
-        // LRU list in m_allResources.
+        // m_liveDecodedResources, and possibly move us to a different LRU list
+        // in m_allResources.
         resource->prune();
 
         if (targetSize && m_deadSize <= targetSize)
@@ -341,8 +343,8 @@ void MemoryCache::pruneDeadResources(PruneStrategy strategy) {
       current = previous;
     }
 
-    // Shrink the vector back down so we don't waste time inspecting
-    // empty LRU lists on future prunes.
+    // Shrink the vector back down so we don't waste time inspecting empty LRU
+    // lists on future prunes.
     if (m_allResources[i].m_head)
       canShrinkLRULists = false;
     else if (canShrinkLRULists)
@@ -372,8 +374,9 @@ void MemoryCache::evict(MemoryCacheEntry* entry) {
                             << resource->url().getString() << " from cache";
   TRACE_EVENT1("blink", "MemoryCache::evict", "resource",
                resource->url().getString().utf8());
-  // The resource may have already been removed by someone other than our caller,
-  // who needed a fresh copy for a reload. See <http://bugs.webkit.org/show_bug.cgi?id=12479#c6>.
+  // The resource may have already been removed by someone other than our
+  // caller, who needed a fresh copy for a reload. See
+  // <http://bugs.webkit.org/show_bug.cgi?id=12479#c6>.
   update(resource, resource->size(), 0, false);
   removeFromLiveDecodedResourcesList(entry);
 
@@ -541,8 +544,9 @@ void MemoryCache::update(Resource* resource,
   if (!entry)
     return;
 
-  // The object must now be moved to a different queue, since either its size or its accessCount has been changed,
-  // and both of those are used to determine which LRU queue the resource should be in.
+  // The object must now be moved to a different queue, since either its size or
+  // its accessCount has been changed, and both of those are used to determine
+  // which LRU queue the resource should be in.
   if (oldSize)
     removeFromLRUList(entry, lruListFor(entry->m_accessCount, oldSize));
   if (wasAccessed)
@@ -652,13 +656,12 @@ void MemoryCache::prune() {
       m_deadSize <= m_maxDeadCapacity)  // Fast path.
     return;
 
-  // To avoid burdening the current thread with repetitive pruning jobs,
-  // pruning is postponed until the end of the current task. If it has
-  // been more than m_maxPruneDeferralDelay since the last prune,
-  // then we prune immediately.
-  // If the current thread's run loop is not active, then pruning will happen
-  // immediately only if it has been over m_maxPruneDeferralDelay
-  // since the last prune.
+  // To avoid burdening the current thread with repetitive pruning jobs, pruning
+  // is postponed until the end of the current task. If it has been more than
+  // m_maxPruneDeferralDelay since the last prune, then we prune immediately. If
+  // the current thread's run loop is not active, then pruning will happen
+  // immediately only if it has been over m_maxPruneDeferralDelay since the last
+  // prune.
   double currentTime = WTF::currentTime();
   if (m_prunePending) {
     if (currentTime - m_pruneTimeStamp >= m_maxPruneDeferralDelay) {
@@ -695,8 +698,9 @@ void MemoryCache::pruneNow(double currentTime, PruneStrategy strategy) {
   }
 
   AutoReset<bool> reentrancyProtector(&m_inPruneResources, true);
-  pruneDeadResources(
-      strategy);  // Prune dead first, in case it was "borrowing" capacity from live.
+
+  // Prune dead first, in case it was "borrowing" capacity from live.
+  pruneDeadResources(strategy);
   pruneLiveResources(strategy);
   m_pruneFrameTimeStamp = m_lastFramePaintTimeStamp;
   m_pruneTimeStamp = currentTime;

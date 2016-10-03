@@ -20,8 +20,8 @@
     the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
     Boston, MA 02110-1301, USA.
 
-    This class provides all functionality needed for loading images, style sheets and html
-    pages from the web. It has a memory cache for these objects.
+    This class provides all functionality needed for loading images, style
+    sheets and html pages from the web. It has a memory cache for these objects.
 */
 
 #include "core/fetch/XSLStyleSheetResource.h"
@@ -37,8 +37,8 @@ namespace blink {
 
 static void applyXSLRequestProperties(ResourceRequest& request) {
   request.setRequestContext(WebURLRequest::RequestContextXSLT);
-  // TODO(japhet): Accept: headers can be set manually on XHRs from script,
-  // in the browser process, and... here. The browser process can't tell the
+  // TODO(japhet): Accept: headers can be set manually on XHRs from script, in
+  // the browser process, and... here. The browser process can't tell the
   // difference between an XSL stylesheet and a CSS stylesheet, so it assumes
   // stylesheets are all CSS unless they already have an Accept: header set.
   // Should we teach the browser process the difference?

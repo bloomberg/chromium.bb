@@ -55,9 +55,10 @@ class CORE_EXPORT RawResource final : public Resource {
     return new RawResource(request, type, ResourceLoaderOptions());
   }
 
-  // FIXME: AssociatedURLLoader shouldn't be a DocumentThreadableLoader and therefore shouldn't
-  // use RawResource. However, it is, and it needs to be able to defer loading.
-  // This can be fixed by splitting CORS preflighting out of DocumentThreacableLoader.
+  // FIXME: AssociatedURLLoader shouldn't be a DocumentThreadableLoader and
+  // therefore shouldn't use RawResource. However, it is, and it needs to be
+  // able to defer loading. This can be fixed by splitting CORS preflighting out
+  // of DocumentThreadableLoader.
   void setDefersLoading(bool);
 
   bool canReuse(const ResourceRequest&) const override;
@@ -151,9 +152,8 @@ class CORE_EXPORT RawResourceClient : public ResourceClient {
   virtual void didReceiveResourceTiming(Resource*, const ResourceTimingInfo&) {}
 };
 
-// Checks the sequence of callbacks of RawResourceClient.
-// This can be used only when a RawResourceClient is added as a client to
-// at most one RawResource.
+// Checks the sequence of callbacks of RawResourceClient. This can be used only
+// when a RawResourceClient is added as a client to at most one RawResource.
 class CORE_EXPORT RawResourceClientStateChecker final {
  public:
   RawResourceClientStateChecker();

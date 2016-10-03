@@ -18,7 +18,8 @@
     the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
     Boston, MA 02110-1301, USA.
 
-    This class provides all functionality needed for loading images, style sheets and html
+    This class provides all functionality needed for loading images, style
+   sheets and html
     pages from the web. It has a memory cache for these objects.
 */
 
@@ -43,15 +44,21 @@ class Resource;
 class KURL;
 class ExecutionContext;
 
-// This cache holds subresources used by Web pages: images, scripts, stylesheets, etc.
+// This cache holds subresources used by Web pages: images, scripts,
+// stylesheets, etc.
 
-// The cache keeps a flexible but bounded window of dead resources that grows/shrinks
-// depending on the live resource load. Here's an example of cache growth over time,
-// with a min dead resource capacity of 25% and a max dead resource capacity of 50%:
-
-//        |-----|                              Dead: -
-//        |----------|                         Live: +
-//      --|----------|                         Cache boundary: | (objects outside this mark have been evicted)
+// The cache keeps a flexible but bounded window of dead resources that
+// grows/shrinks depending on the live resource load. Here's an example of cache
+// growth over time, with a min dead resource capacity of 25% and a max dead
+// resource capacity of 50%:
+//
+// Dead: -
+// Live: +
+// Cache boundary: | (objects outside this mark have been evicted)
+//
+//        |-----|
+//        |----------|
+//      --|----------|
 //      --|----------++++++++++|
 // -------|-----+++++++++++++++|
 // -------|-----+++++++++++++++|+++++
@@ -174,11 +181,15 @@ class CORE_EXPORT MemoryCache final
 
   static String defaultCacheIdentifier();
 
-  // Sets the cache's memory capacities, in bytes. These will hold only approximately,
-  // since the decoded cost of resources like scripts and stylesheets is not known.
-  //  - minDeadBytes: The maximum number of bytes that dead resources should consume when the cache is under pressure.
-  //  - maxDeadBytes: The maximum number of bytes that dead resources should consume when the cache is not under pressure.
-  //  - totalBytes: The maximum number of bytes that the cache should consume overall.
+  // Sets the cache's memory capacities, in bytes. These will hold only
+  // approximately, since the decoded cost of resources like scripts and
+  // stylesheets is not known.
+  //  - minDeadBytes: The maximum number of bytes that dead resources should
+  //    consume when the cache is under pressure.
+  //  - maxDeadBytes: The maximum number of bytes that dead resources should
+  //    consume when the cache is not under pressure.
+  //  - totalBytes: The maximum number of bytes that the cache should consume
+  //    overall.
   void setCapacities(size_t minDeadBytes,
                      size_t maxDeadBytes,
                      size_t totalBytes);
@@ -256,8 +267,10 @@ class CORE_EXPORT MemoryCache final
   size_t liveCapacity() const;
   size_t deadCapacity() const;
 
-  // pruneDeadResources() - Flush decoded and encoded data from resources not referenced by Web pages.
-  // pruneLiveResources() - Flush decoded data from resources still referenced by Web pages.
+  // pruneDeadResources() - Flush decoded and encoded data from resources not
+  // referenced by Web pages.
+  // pruneLiveResources() - Flush decoded data from resources still referenced
+  // by Web pages.
   void pruneDeadResources(PruneStrategy);
   void pruneLiveResources(PruneStrategy);
   void pruneNow(double currentTime, PruneStrategy);
@@ -273,8 +286,8 @@ class CORE_EXPORT MemoryCache final
   double m_maxPruneDeferralDelay;
   double m_pruneTimeStamp;
   double m_pruneFrameTimeStamp;
-  double
-      m_lastFramePaintTimeStamp;  // used for detecting decoded resource thrash in the cache
+  double m_lastFramePaintTimeStamp;  // used for detecting decoded resource
+                                     // thrash in the cache
 
   size_t m_capacity;
   size_t m_minDeadCapacity;
@@ -282,22 +295,25 @@ class CORE_EXPORT MemoryCache final
   size_t m_maxDeferredPruneDeadCapacity;
   double m_delayBeforeLiveDecodedPrune;
 
-  size_t
-      m_liveSize;  // The number of bytes currently consumed by "live" resources in the cache.
-  size_t
-      m_deadSize;  // The number of bytes currently consumed by "dead" resources in the cache.
+  // The number of bytes currently consumed by "live" resources in the cache.
+  size_t m_liveSize;
+  // The number of bytes currently consumed by "dead" resources in the cache.
+  size_t m_deadSize;
 
-  // Size-adjusted and popularity-aware LRU list collection for cache objects. This collection can hold
-  // more resources than the cached resource map, since it can also hold "stale" multiple versions of objects that are
-  // waiting to die when the clients referencing them go away.
+  // Size-adjusted and popularity-aware LRU list collection for cache objects.
+  // This collection can hold more resources than the cached resource map, since
+  // it can also hold "stale" multiple versions of objects that are waiting to
+  // die when the clients referencing them go away.
   HeapVector<MemoryCacheLRUList, 32> m_allResources;
 
-  // Lists just for live resources with decoded data. Access to this list is based off of painting the resource.
+  // Lists just for live resources with decoded data. Access to this list is
+  // based off of painting the resource.
   MemoryCacheLRUList m_liveDecodedResources;
 
-  // A URL-based map of all resources that are in the cache (including the freshest version of objects that are currently being
-  // referenced by a Web page).
-  // removeFragmentIdentifierIfNeeded() should be called for the url before using it as a key for the map.
+  // A URL-based map of all resources that are in the cache (including the
+  // freshest version of objects that are currently being referenced by a Web
+  // page). removeFragmentIdentifierIfNeeded() should be called for the url
+  // before using it as a key for the map.
   using ResourceMap = HeapHashMap<String, Member<MemoryCacheEntry>>;
   using ResourceMapIndex = HeapHashMap<String, Member<ResourceMap>>;
   ResourceMap* ensureResourceMap(const String& cacheIdentifier);

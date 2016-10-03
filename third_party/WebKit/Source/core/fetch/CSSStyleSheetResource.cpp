@@ -20,8 +20,8 @@
     the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
     Boston, MA 02110-1301, USA.
 
-    This class provides all functionality needed for loading images, style sheets and html
-    pages from the web. It has a memory cache for these objects.
+    This class provides all functionality needed for loading images, style
+    sheets and html pages from the web. It has a memory cache for these objects.
 */
 
 #include "core/fetch/CSSStyleSheetResource.h"
@@ -82,15 +82,15 @@ DEFINE_TRACE(CSSStyleSheetResource) {
 
 void CSSStyleSheetResource::didAddClient(ResourceClient* c) {
   DCHECK(StyleSheetResourceClient::isExpectedType(c));
-  // Resource::didAddClient() must be before setCSSStyleSheet(),
-  // because setCSSStyleSheet() may cause scripts to be executed, which could destroy 'c' if it is an instance of HTMLLinkElement.
-  // see the comment of HTMLLinkElement::setCSSStyleSheet.
+  // Resource::didAddClient() must be before setCSSStyleSheet(), because
+  // setCSSStyleSheet() may cause scripts to be executed, which could destroy
+  // 'c' if it is an instance of HTMLLinkElement. see the comment of
+  // HTMLLinkElement::setCSSStyleSheet.
   Resource::didAddClient(c);
   if (m_didNotifyFirstData)
     static_cast<StyleSheetResourceClient*>(c)->didAppendFirstData(this);
 
-  // |c| might be removed in didAppendFirstData, so ensure it is still a
-  // client.
+  // |c| might be removed in didAppendFirstData, so ensure it is still a client.
   if (hasClient(c) && !isLoading())
     static_cast<StyleSheetResourceClient*>(c)->setCSSStyleSheet(
         resourceRequest().url(), response().url(), encoding(), this);
@@ -104,7 +104,8 @@ const String CSSStyleSheetResource::sheetText(
   if (!m_decodedSheetText.isNull())
     return m_decodedSheetText;
 
-  // Don't cache the decoded text, regenerating is cheap and it can use quite a bit of memory
+  // Don't cache the decoded text, regenerating is cheap and it can use quite a
+  // bit of memory
   return decodedText();
 }
 
@@ -119,7 +120,8 @@ void CSSStyleSheetResource::appendData(const char* data, size_t length) {
 }
 
 void CSSStyleSheetResource::checkNotify() {
-  // Decode the data to find out the encoding and keep the sheet text around during checkNotify()
+  // Decode the data to find out the encoding and keep the sheet text around
+  // during checkNotify()
   if (data())
     m_decodedSheetText = decodedText();
 
@@ -129,7 +131,8 @@ void CSSStyleSheetResource::checkNotify() {
     c->setCSSStyleSheet(resourceRequest().url(), response().url(), encoding(),
                         this);
   }
-  // Clear the decoded text as it is unlikely to be needed immediately again and is cheap to regenerate.
+  // Clear the decoded text as it is unlikely to be needed immediately again and
+  // is cheap to regenerate.
   m_decodedSheetText = String();
 }
 
@@ -147,8 +150,8 @@ bool CSSStyleSheetResource::canUseSheet(MIMETypeCheck mimeTypeCheck) const {
 
   // This check exactly matches Firefox. Note that we grab the Content-Type
   // header directly because we want to see what the value is BEFORE content
-  // sniffing. Firefox does this by setting a "type hint" on the channel.
-  // This implementation should be observationally equivalent.
+  // sniffing. Firefox does this by setting a "type hint" on the channel. This
+  // implementation should be observationally equivalent.
   //
   // This code defaults to allowing the stylesheet for non-HTTP protocols so
   // folks can use standards mode for local HTML documents.
@@ -171,7 +174,8 @@ StyleSheetContents* CSSStyleSheetResource::restoreParsedStyleSheet(
   DCHECK(m_parsedStyleSheetCache->isCacheableForResource());
   DCHECK(m_parsedStyleSheetCache->isReferencedFromResource());
 
-  // Contexts must be identical so we know we would get the same exact result if we parsed again.
+  // Contexts must be identical so we know we would get the same exact result if
+  // we parsed again.
   if (m_parsedStyleSheetCache->parserContext() != context)
     return nullptr;
 
@@ -185,8 +189,8 @@ void CSSStyleSheetResource::saveParsedStyleSheet(StyleSheetContents* sheet) {
   DCHECK(sheet->isCacheableForResource());
 
   if (!memoryCache()->contains(this)) {
-    // This stylesheet resource did conflict with another resource and was
-    // not added to the cache.
+    // This stylesheet resource did conflict with another resource and was not
+    // added to the cache.
     setParsedStyleSheetCache(nullptr);
     return;
   }

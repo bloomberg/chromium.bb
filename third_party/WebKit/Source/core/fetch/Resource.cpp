@@ -3,7 +3,8 @@
     Copyright (C) 2001 Dirk Mueller (mueller@kde.org)
     Copyright (C) 2002 Waldo Bastian (bastian@kde.org)
     Copyright (C) 2006 Samuel Weinig (sam.weinig@gmail.com)
-    Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
+    Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All
+    rights reserved.
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -134,9 +135,9 @@ void Resource::CachedMetadataHandlerImpl::setCachedMetadata(
     const char* data,
     size_t size,
     CachedMetadataHandler::CacheType cacheType) {
-  // Currently, only one type of cached metadata per resource is supported.
-  // If the need arises for multiple types of metadata per resource this could
-  // be enhanced to store types of metadata in a map.
+  // Currently, only one type of cached metadata per resource is supported. If
+  // the need arises for multiple types of metadata per resource this could be
+  // enhanced to store types of metadata in a map.
   DCHECK(!m_cachedMetadata);
   m_cachedMetadata = CachedMetadata::create(dataTypeID, data, size);
   if (cacheType == CachedMetadataHandler::SendToPlatform)
@@ -164,9 +165,9 @@ String Resource::CachedMetadataHandlerImpl::encoding() const {
 void Resource::CachedMetadataHandlerImpl::setSerializedCachedMetadata(
     const char* data,
     size_t size) {
-  // We only expect to receive cached metadata from the platform once.
-  // If this triggers, it indicates an efficiency problem which is most
-  // likely unexpected in code designed to improve performance.
+  // We only expect to receive cached metadata from the platform once. If this
+  // triggers, it indicates an efficiency problem which is most likely
+  // unexpected in code designed to improve performance.
   DCHECK(!m_cachedMetadata);
   m_cachedMetadata = CachedMetadata::createFromSerializedData(data, size);
 }
@@ -215,10 +216,10 @@ DEFINE_TRACE(Resource::ServiceWorkerResponseCachedMetadataHandler) {
 }
 
 void Resource::ServiceWorkerResponseCachedMetadataHandler::sendToPlatform() {
-  // We don't support sending the metadata to the platform when the response
-  // was directly fetched via a ServiceWorker
-  // (eg: FetchEvent.respondWith(fetch(FetchEvent.request))) to prevent an
-  // attacker's Service Worker from poisoning the metadata cache of HTTPCache.
+  // We don't support sending the metadata to the platform when the response was
+  // directly fetched via a ServiceWorker (eg:
+  // FetchEvent.respondWith(fetch(FetchEvent.request))) to prevent an attacker's
+  // Service Worker from poisoning the metadata cache of HTTPCache.
   if (response().cacheStorageCacheName().isNull())
     return;
 
@@ -316,10 +317,8 @@ Resource::Resource(const ResourceRequest& request,
       m_responseTimestamp(currentTime()),
       m_cancelTimer(this, &Resource::cancelTimerFired),
       m_resourceRequest(request) {
-  DCHECK_EQ(
-      m_type,
-      unsigned(
-          type));  // m_type is a bitfield, so this tests careless updates of the enum.
+  // m_type is a bitfield, so this tests careless updates of the enum.
+  DCHECK_EQ(m_type, unsigned(type));
   InstanceCounters::incrementCounter(InstanceCounters::ResourceCounter);
 
   // Currently we support the metadata caching only for HTTP family.
@@ -494,7 +493,8 @@ static double freshnessLifetime(ResourceResponse& response,
   double lastModifiedValue = response.lastModified();
   if (std::isfinite(lastModifiedValue))
     return (creationTime - lastModifiedValue) * 0.1;
-  // If no cache headers are present, the specification leaves the decision to the UA. Other browsers seem to opt for 0.
+  // If no cache headers are present, the specification leaves the decision to
+  // the UA. Other browsers seem to opt for 0.
   return 0;
 }
 
@@ -511,7 +511,8 @@ static bool canUseResponse(ResourceResponse& response,
   if (response.isNull())
     return false;
 
-  // FIXME: Why isn't must-revalidate considered a reason we can't use the response?
+  // FIXME: Why isn't must-revalidate considered a reason we can't use the
+  // response?
   if (response.cacheControlContainsNoCache() ||
       response.cacheControlContainsNoStore())
     return false;
@@ -644,10 +645,10 @@ void Resource::didAddClient(ResourceClient* c) {
 }
 
 static bool shouldSendCachedDataSynchronouslyForType(Resource::Type type) {
-  // Some resources types default to return data synchronously.
-  // For most of these, it's because there are layout tests that
-  // expect data to return synchronously in case of cache hit. In
-  // the case of fonts, there was a performance regression.
+  // Some resources types default to return data synchronously. For most of
+  // these, it's because there are layout tests that expect data to return
+  // synchronously in case of cache hit. In the case of fonts, there was a
+  // performance regression.
   // FIXME: Get to the point where we don't need to special-case sync/async
   // behavior for different resource types.
   if (type == Resource::Image)
@@ -693,7 +694,8 @@ void Resource::addClient(ResourceClient* client,
     return;
   }
 
-  // If we have existing data to send to the new client and the resource type supprts it, send it asynchronously.
+  // If we have existing data to send to the new client and the resource type
+  // supprts it, send it asynchronously.
   if (!m_response.isNull() &&
       !shouldSendCachedDataSynchronouslyForType(getType()) &&
       !m_needsSynchronousCacheHit) {
@@ -731,9 +733,12 @@ void Resource::didRemoveClientOrObserver() {
     allClientsAndObserversRemoved();
 
     // RFC2616 14.9.2:
-    // "no-store: ... MUST make a best-effort attempt to remove the information from volatile storage as promptly as possible"
-    // "... History buffers MAY store such responses as part of their normal operation."
-    // We allow non-secure content to be reused in history, but we do not allow secure content to be reused.
+    // "no-store: ... MUST make a best-effort attempt to remove the information
+    // from volatile storage as promptly as possible"
+    // "... History buffers MAY store such responses as part of their normal
+    // operation."
+    // We allow non-secure content to be reused in history, but we do not allow
+    // secure content to be reused.
     if (hasCacheControlNoStoreHeader() && url().protocolIs("https"))
       memoryCache()->remove(this);
   }
@@ -777,15 +782,16 @@ void Resource::didAccessDecodedData() {
 }
 
 void Resource::finishPendingClients() {
-  // We're going to notify clients one by one. It is simple if the client does nothing.
-  // However there are a couple other things that can happen.
+  // We're going to notify clients one by one. It is simple if the client does
+  // nothing. However there are a couple other things that can happen.
   //
   // 1. Clients can be added during the loop. Make sure they are not processed.
-  // 2. Clients can be removed during the loop. Make sure they are always available to be
-  //    removed. Also don't call removed clients or add them back.
-
-  // Handle case (1) by saving a list of clients to notify. A separate list also ensure
-  // a client is either in m_clients or m_clientsAwaitingCallback.
+  // 2. Clients can be removed during the loop. Make sure they are always
+  //    available to be removed. Also don't call removed clients or add them
+  //    back.
+  //
+  // Handle case (1) by saving a list of clients to notify. A separate list also
+  // ensure a client is either in m_clients or m_clientsAwaitingCallback.
   HeapVector<Member<ResourceClient>> clientsToNotify;
   copyToVector(m_clientsAwaitingCallback, clientsToNotify);
 
@@ -802,8 +808,8 @@ void Resource::finishPendingClients() {
       didAddClient(client);
   }
 
-  // It is still possible for the above loop to finish a new client synchronously.
-  // If there's no client waiting we should deschedule.
+  // It is still possible for the above loop to finish a new client
+  // synchronously. If there's no client waiting we should deschedule.
   bool scheduled = ResourceCallback::callbackHandler().isScheduled(this);
   if (scheduled && m_clientsAwaitingCallback.isEmpty())
     ResourceCallback::callbackHandler().cancel(this);
@@ -914,10 +920,10 @@ void Resource::revalidationSucceeded(
   const HTTPHeaderMap& newHeaders = validatingResponse.httpHeaderFields();
   for (const auto& header : newHeaders) {
     // Entity headers should not be sent by servers when generating a 304
-    // response; misconfigured servers send them anyway. We shouldn't allow
-    // such headers to update the original request. We'll base this on the
-    // list defined by RFC2616 7.1, with a few additions for extension headers
-    // we care about.
+    // response; misconfigured servers send them anyway. We shouldn't allow such
+    // headers to update the original request. We'll base this on the list
+    // defined by RFC2616 7.1, with a few additions for extension headers we
+    // care about.
     if (!shouldUpdateHeaderAfterRevalidation(header.key))
       continue;
     m_response.setHTTPHeaderField(header.key, header.value);

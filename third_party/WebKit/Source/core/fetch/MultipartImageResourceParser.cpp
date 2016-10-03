@@ -18,7 +18,8 @@ MultipartImageResourceParser::MultipartImageResourceParser(
     const Vector<char>& boundary,
     Client* client)
     : m_originalResponse(response), m_boundary(boundary), m_client(client) {
-  // Some servers report a boundary prefixed with "--".  See https://crbug.com/5786.
+  // Some servers report a boundary prefixed with "--".  See
+  // https://crbug.com/5786.
   if (m_boundary.size() < 2 || m_boundary[0] != '-' || m_boundary[1] != '-')
     m_boundary.prepend("--", 2);
 }
@@ -37,8 +38,8 @@ void MultipartImageResourceParser::appendData(const char* bytes, size_t size) {
     size_t pos = skippableLength(m_data, 0);
     // +2 for "--"
     if (m_data.size() < m_boundary.size() + 2 + pos) {
-      // We don't have enough data yet to make a boundary token.  Just
-      // wait until the next chunk of data arrives.
+      // We don't have enough data yet to make a boundary token.  Just wait
+      // until the next chunk of data arrives.
       return;
     }
     if (pos)
@@ -67,8 +68,8 @@ void MultipartImageResourceParser::appendData(const char* bytes, size_t size) {
 
   size_t boundaryPosition;
   while ((boundaryPosition = findBoundary(m_data, &m_boundary)) != kNotFound) {
-    // Strip out trailing \r\n characters in the buffer preceding the
-    // boundary on the same lines as does Firefox.
+    // Strip out trailing \r\n characters in the buffer preceding the boundary
+    // on the same lines as does Firefox.
     size_t dataSize = boundaryPosition;
     if (boundaryPosition > 0 && m_data[boundaryPosition - 1] == '\n') {
       dataSize--;
@@ -102,9 +103,9 @@ void MultipartImageResourceParser::appendData(const char* bytes, size_t size) {
       return;
   }
 
-  // At this point, we should send over any data we have, but keep enough
-  // data buffered to handle a boundary that may have been truncated.
-  // "+2" for CRLF, as we may ignore the last CRLF.
+  // At this point, we should send over any data we have, but keep enough data
+  // buffered to handle a boundary that may have been truncated. "+2" for CRLF,
+  // as we may ignore the last CRLF.
   if (!m_isParsingHeaders && m_data.size() > m_boundary.size() + 2) {
     size_t sendLength = m_data.size() - m_boundary.size() - 2;
     m_client->multipartDataReceived(m_data.data(), sendLength);
@@ -138,8 +139,8 @@ bool MultipartImageResourceParser::parseHeaders() {
   size_t pos = skippableLength(m_data, 0);
 
   // Create a WebURLResponse based on the original set of headers + the
-  // replacement headers. We only replace the same few headers that gecko
-  // does. See netwerk/streamconv/converters/nsMultiMixedConv.cpp.
+  // replacement headers. We only replace the same few headers that gecko does.
+  // See netwerk/streamconv/converters/nsMultiMixedConv.cpp.
   WebURLResponse response(m_originalResponse.url());
   for (const auto& header : m_originalResponse.httpHeaderFields())
     response.addHTTPHeaderField(header.key, header.value);
@@ -165,8 +166,8 @@ size_t MultipartImageResourceParser::findBoundary(const Vector<char>& data,
 
   size_t boundaryPosition = it - data.data();
   // Back up over -- for backwards compat
-  // TODO(tc): Don't we only want to do this once?  Gecko code doesn't
-  // seem to care.
+  // TODO(tc): Don't we only want to do this once?  Gecko code doesn't seem to
+  // care.
   if (boundaryPosition >= 2) {
     if (data[boundaryPosition - 1] == '-' &&
         data[boundaryPosition - 2] == '-') {

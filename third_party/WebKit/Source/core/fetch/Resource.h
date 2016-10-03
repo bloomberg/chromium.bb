@@ -2,7 +2,8 @@
     Copyright (C) 1998 Lars Knoll (knoll@mpi-hd.mpg.de)
     Copyright (C) 2001 Dirk Mueller <mueller@kde.org>
     Copyright (C) 2006 Samuel Weinig (sam.weinig@gmail.com)
-    Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
+    Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All
+    rights reserved.
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -52,9 +53,10 @@ class ResourceTimingInfo;
 class ResourceLoader;
 class SecurityOrigin;
 
-// A resource that is held in the cache. Classes who want to use this object should derive
-// from ResourceClient, to get the function calls in case the requested data has arrived.
-// This class also does the actual communication with the loader to obtain the resource from the network.
+// A resource that is held in the cache. Classes who want to use this object
+// should derive from ResourceClient, to get the function calls in case the
+// requested data has arrived. This class also does the actual communication
+// with the loader to obtain the resource from the network.
 class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
                              public MemoryCoordinatorClient {
   USING_GARBAGE_COLLECTED_MIXIN(Resource);
@@ -62,8 +64,8 @@ class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
  public:
   // |Type| enum values are used in UMAs, so do not change the values of
-  // existing |Type|. When adding a new |Type|, append it at the end and
-  // update |kLastResourceType|.
+  // existing |Type|. When adding a new |Type|, append it at the end and update
+  // |kLastResourceType|.
   enum Type {
     MainResource,
     Image,
@@ -140,7 +142,8 @@ class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
     m_fetcherSecurityOrigin = origin;
   }
 
-  // This url can have a fragment, but it can match resources that differ by the fragment only.
+  // This url can have a fragment, but it can match resources that differ by the
+  // fragment only.
   const KURL& url() const { return m_resourceRequest.url(); }
   Type getType() const { return static_cast<Type>(m_type); }
   const ResourceLoaderOptions& options() const { return m_options; }
@@ -187,12 +190,13 @@ class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   bool shouldBlockLoadEvent() const;
   bool isLoadEventBlockingResourceType() const;
 
-  // Computes the status of an object after loading.
-  // Updates the expire date on the cache entry file
+  // Computes the status of an object after loading. Updates the expire date on
+  // the cache entry file
   virtual void finish(double finishTime);
   void finish() { finish(0.0); }
 
-  // FIXME: Remove the stringless variant once all the callsites' error messages are updated.
+  // FIXME: Remove the stringless variant once all the callsites' error messages
+  // are updated.
   bool passesAccessControlCheck(SecurityOrigin*) const;
   bool passesAccessControlCheck(SecurityOrigin*,
                                 String& errorDescription) const;
@@ -206,8 +210,8 @@ class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   virtual void willFollowRedirect(ResourceRequest&, const ResourceResponse&);
 
-  // Called when a redirect response was received but a decision has
-  // already been made to not follow it.
+  // Called when a redirect response was received but a decision has already
+  // been made to not follow it.
   virtual void willNotFollowRedirect() {}
 
   virtual void responseReceived(const ResourceResponse&,
@@ -236,9 +240,9 @@ class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   }
   void setDataBufferingPolicy(DataBufferingPolicy);
 
-  // The isPreloaded() flag is using a counter in order to make sure that even when
-  // multiple ResourceFetchers are preloading the resource, it will remain marked as
-  // preloaded until *all* of them have used it.
+  // The isPreloaded() flag is using a counter in order to make sure that even
+  // when multiple ResourceFetchers are preloading the resource, it will remain
+  // marked as preloaded until *all* of them have used it.
   bool isUnusedPreload() const {
     return isPreloaded() && getPreloadResult() == PreloadNotReferenced;
   }
