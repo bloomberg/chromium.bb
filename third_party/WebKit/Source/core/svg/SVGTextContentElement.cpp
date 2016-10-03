@@ -225,7 +225,7 @@ void SVGTextContentElement::selectSubString(unsigned charnum,
     end = nextPositionOf(end);
 
   document().frame()->selection().setSelection(
-      createVisibleSelectionDeprecated(start, end));
+      createVisibleSelection(start, end));
 }
 
 bool SVGTextContentElement::isPresentationAttribute(
