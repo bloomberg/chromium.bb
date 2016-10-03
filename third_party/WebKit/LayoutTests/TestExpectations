@@ -316,7 +316,6 @@ crbug.com/475984 [ Mac Debug ] css2.1/t100801-c544-valgn-03-d-agi.html [ Failure
 # expectation files. The following tests with [ Failure ] don't have failure
 # expectation files because they contain local path names.
 # Use crbug.com/490511 for untriaged failures.
-crbug.com/490511 imported/wpt/html/dom/reflection-obsolete.html [ Failure ]
 crbug.com/490511 [ Linux Win ] imported/wpt/html/rendering/bindings/the-input-element-as-a-text-entry-widget/unrecognized-type-should-fallback-as-text-type.html [ Failure ]
 crbug.com/108417 imported/wpt/html/rendering/non-replaced-elements/tables/table-border-1.html [ Failure ]
 crbug.com/490511 imported/wpt/html/rendering/non-replaced-elements/the-hr-element-0/color.html [ Failure Pass ]
@@ -324,10 +323,6 @@ crbug.com/490511 imported/wpt/html/rendering/non-replaced-elements/the-hr-elemen
 crbug.com/490511 imported/wpt/html/rendering/replaced-elements/embedded-content-rendering-rules/canvas-fallback.html [ Failure ]
 crbug.com/490511 imported/wpt/html/semantics/document-metadata/styling/LinkStyle.html [ Failure Pass ]
 crbug.com/627706 imported/wpt/html/semantics/embedded-content/the-img-element/invalid-src.html [ Skip ]
-crbug.com/525889 imported/wpt/html/webappapis/scripting/processing-model-2/compile-error-in-setInterval.html [ Failure ]
-crbug.com/525889 imported/wpt/html/webappapis/scripting/processing-model-2/compile-error-in-setTimeout.html [ Failure ]
-crbug.com/525889 imported/wpt/html/webappapis/scripting/processing-model-2/runtime-error-in-setInterval.html [ Failure ]
-crbug.com/525889 imported/wpt/html/webappapis/scripting/processing-model-2/runtime-error-in-setTimeout.html [ Failure ]
 
 crbug.com/636961 [ Linux Debug ] virtual/threaded/fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-vertical-rl-anchors.html [ Pass Failure ]
 
