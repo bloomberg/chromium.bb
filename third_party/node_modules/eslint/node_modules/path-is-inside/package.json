@@ -1,0 +1,65 @@
+{
+  "name": "path-is-inside",
+  "description": "Tests whether one path is inside another path",
+  "keywords": [
+    "path",
+    "directory",
+    "folder",
+    "inside",
+    "relative"
+  ],
+  "version": "1.0.2",
+  "author": {
+    "name": "Domenic Denicola",
+    "email": "d@domenic.me",
+    "url": "https://domenic.me"
+  },
+  "license": "(WTFPL OR MIT)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/domenic/path-is-inside.git"
+  },
+  "main": "lib/path-is-inside.js",
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "test": "mocha",
+    "lint": "jshint lib"
+  },
+  "devDependencies": {
+    "jshint": "~2.3.0",
+    "mocha": "~1.15.1"
+  },
+  "gitHead": "05a9bf7c5e008505539e14e96c4d2fc8b2c6d058",
+  "bugs": {
+    "url": "https://github.com/domenic/path-is-inside/issues"
+  },
+  "homepage": "https://github.com/domenic/path-is-inside#readme",
+  "_id": "path-is-inside@1.0.2",
+  "_shasum": "365417dede44430d1c11af61027facf074bdfc53",
+  "_from": "path-is-inside@>=1.0.1 <2.0.0",
+  "_npmVersion": "3.9.5",
+  "_nodeVersion": "6.2.2",
+  "_npmUser": {
+    "name": "domenic",
+    "email": "d@domenic.me"
+  },
+  "dist": {
+    "shasum": "365417dede44430d1c11af61027facf074bdfc53",
+    "tarball": "https://registry.npmjs.org/path-is-inside/-/path-is-inside-1.0.2.tgz"
+  },
+  "maintainers": [
+    {
+      "name": "domenic",
+      "email": "domenic@domenicdenicola.com"
+    }
+  ],
+  "_npmOperationalInternal": {
+    "host": "packages-16-east.internal.npmjs.com",
+    "tmp": "tmp/path-is-inside-1.0.2.tgz_1473550509195_0.936812553787604"
+  },
+  "directories": {},
+  "_resolved": "https://registry.npmjs.org/path-is-inside/-/path-is-inside-1.0.2.tgz",
+  "readme": "ERROR: No README data found!"
+}

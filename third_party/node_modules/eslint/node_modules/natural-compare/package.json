@@ -1,0 +1,75 @@
+{
+  "name": "natural-compare",
+  "version": "1.4.0",
+  "stability": 3,
+  "author": {
+    "name": "Lauri Rooden",
+    "url": "https://github.com/litejs/natural-compare-lite"
+  },
+  "license": "MIT",
+  "description": "Compare strings containing a mix of letters and numbers in the way a human being would in sort order.",
+  "keywords": [
+    "string",
+    "natural",
+    "order",
+    "sort",
+    "natsort",
+    "natcmp",
+    "compare",
+    "alphanum",
+    "litejs"
+  ],
+  "main": "index.js",
+  "files": [
+    "index.js"
+  ],
+  "scripts": {
+    "build": "node node_modules/buildman/index.js --all",
+    "test": "node tests/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/litejs/natural-compare-lite.git"
+  },
+  "bugs": {
+    "url": "https://github.com/litejs/natural-compare-lite/issues"
+  },
+  "devDependencies": {
+    "buildman": "*",
+    "testman": "*"
+  },
+  "buildman": {
+    "dist/index-min.js": {
+      "banner": "/*! litejs.com/MIT-LICENSE.txt */",
+      "input": "index.js"
+    }
+  },
+  "gitHead": "eec83eee67cfac84d6db30cdd65363f155673770",
+  "homepage": "https://github.com/litejs/natural-compare-lite#readme",
+  "_id": "natural-compare@1.4.0",
+  "_shasum": "4abebfeed7541f2c27acfb29bdbbd15c8d5ba4f7",
+  "_from": "natural-compare@>=1.4.0 <2.0.0",
+  "_npmVersion": "3.9.5",
+  "_nodeVersion": "6.2.2",
+  "_npmUser": {
+    "name": "megawac",
+    "email": "megawac@gmail.com"
+  },
+  "dist": {
+    "shasum": "4abebfeed7541f2c27acfb29bdbbd15c8d5ba4f7",
+    "tarball": "https://registry.npmjs.org/natural-compare/-/natural-compare-1.4.0.tgz"
+  },
+  "maintainers": [
+    {
+      "name": "megawac",
+      "email": "megawac@gmail.com"
+    }
+  ],
+  "_npmOperationalInternal": {
+    "host": "packages-12-west.internal.npmjs.com",
+    "tmp": "tmp/natural-compare-1.4.0.tgz_1469220490086_0.1379237591754645"
+  },
+  "directories": {},
+  "_resolved": "https://registry.npmjs.org/natural-compare/-/natural-compare-1.4.0.tgz",
+  "readme": "ERROR: No README data found!"
+}

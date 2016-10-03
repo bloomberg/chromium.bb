@@ -1,0 +1,88 @@
+{
+  "name": "shelljs",
+  "version": "0.6.1",
+  "author": {
+    "name": "Artur Adib",
+    "email": "arturadib@gmail.com"
+  },
+  "description": "Portable Unix shell commands for Node.js",
+  "keywords": [
+    "unix",
+    "shell",
+    "makefile",
+    "make",
+    "jake",
+    "synchronous"
+  ],
+  "contributors": [
+    {
+      "name": "Ari Porad",
+      "email": "ari@ariporad.com",
+      "url": "http://ariporad.com/"
+    },
+    {
+      "name": "Nate Fischer",
+      "email": "ntfschr@gmail.com"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/shelljs/shelljs.git"
+  },
+  "license": "BSD-3-Clause",
+  "homepage": "http://github.com/shelljs/shelljs",
+  "main": "./shell.js",
+  "scripts": {
+    "test": "node scripts/run-tests"
+  },
+  "bin": {
+    "shjs": "./bin/shjs"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "coffee-script": "^1.10.0",
+    "jshint": "~2.1.11"
+  },
+  "optionalDependencies": {},
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "gitHead": "a5b9e2a64ffdf9f837d6ceb15d7f42221875542b",
+  "bugs": {
+    "url": "https://github.com/shelljs/shelljs/issues"
+  },
+  "_id": "shelljs@0.6.1",
+  "_shasum": "ec6211bed1920442088fe0f70b2837232ed2c8a8",
+  "_from": "shelljs@>=0.6.0 <0.7.0",
+  "_npmVersion": "3.5.2",
+  "_nodeVersion": "6.0.0",
+  "_npmUser": {
+    "name": "nfischer",
+    "email": "ntfschr@gmail.com"
+  },
+  "dist": {
+    "shasum": "ec6211bed1920442088fe0f70b2837232ed2c8a8",
+    "tarball": "https://registry.npmjs.org/shelljs/-/shelljs-0.6.1.tgz"
+  },
+  "maintainers": [
+    {
+      "name": "ariporad",
+      "email": "ari@ariporad.com"
+    },
+    {
+      "name": "artur",
+      "email": "arturadib@gmail.com"
+    },
+    {
+      "name": "nfischer",
+      "email": "ntfschr@gmail.com"
+    }
+  ],
+  "_npmOperationalInternal": {
+    "host": "packages-16-east.internal.npmjs.com",
+    "tmp": "tmp/shelljs-0.6.1.tgz_1470519555022_0.9348916830495"
+  },
+  "directories": {},
+  "_resolved": "https://registry.npmjs.org/shelljs/-/shelljs-0.6.1.tgz",
+  "readme": "ERROR: No README data found!"
+}
