@@ -105,7 +105,10 @@ Polymer({
       this.offsetParent.removeEventListener('scroll', this.boundScroll_);
       this.boundScroll_ = null;
     } else if (this.overscroll_ && !this.boundScroll_) {
-      this.boundScroll_ = this.setOverscroll_.bind(this, 0);
+      this.boundScroll_ = function() {
+        if (!this.ignoreScroll_)
+          this.setOverscroll_(0);
+      }.bind(this);
       this.offsetParent.addEventListener('scroll', this.boundScroll_);
     }
   },
@@ -114,6 +117,7 @@ Polymer({
    * Sets the overscroll padding. Never forces a scroll, i.e., always leaves
    * any currently visible overflow as-is.
    * @param {number=} opt_minHeight The minimum overscroll height needed.
+   * @private
    */
   setOverscroll_: function(opt_minHeight) {
     var scroller = this.offsetParent;
@@ -126,6 +130,32 @@ Polymer({
     var visibleOverscroll = overscroll.scrollHeight -
                             (overscrollBottom - visibleBottom);
     this.overscroll_ = Math.max(opt_minHeight || 0, visibleOverscroll);
+  },
+
+  /**
+   * Enables or disables user scrolling, via overscroll: hidden. Room for the
+   * hidden scrollbar is added to prevent the page width from changing back and
+   * forth. Also freezes the overscroll height.
+   * @param {!Event} e
+   * @param {boolean} detail True to freeze, false to unfreeze.
+   * @private
+   */
+  onFreezeScroll_: function(e, detail) {
+    if (detail) {
+      // Update the overscroll and ignore scroll events.
+      this.setOverscroll_(this.overscrollHeight_());
+      this.ignoreScroll_ = true;
+
+      // Prevent scrolling the container.
+      var scrollerWidth = this.offsetParent.clientWidth;
+      this.offsetParent.style.overflow = 'hidden';
+      var scrollbarWidth = this.offsetParent.clientWidth - scrollerWidth;
+      this.offsetParent.style.width = 'calc(100% - ' + scrollbarWidth + 'px)';
+    } else {
+      this.ignoreScroll_ = false;
+      this.offsetParent.style.overflow = '';
+      this.offsetParent.style.width = '';
+    }
   },
 
   /**
@@ -207,13 +237,30 @@ Polymer({
       };
     }
 
-    // Wait for any other changes prior to calculating the overflow padding.
+    // Calculate and set the overflow padding.
+    this.updateOverscrollForPage_();
+
+    // Wait for any other changes, then calculate the overflow padding again.
     setTimeout(function() {
       // Ensure any dom-if reflects the current properties.
       Polymer.dom.flush();
-
-      this.setOverscroll_(this.overscrollHeight_());
+      this.updateOverscrollForPage_();
     }.bind(this));
+  },
+
+  /**
+   * Calculates the necessary overscroll and sets the overscroll to that value
+   * (at minimum). For the About page, this just zeroes the overscroll.
+   * @private
+   */
+  updateOverscrollForPage_: function() {
+    if (this.showPages_.about) {
+      // Set overscroll directly to remove any existing overscroll that
+      // setOverscroll_ would otherwise preserve.
+      this.overscroll_ = 0;
+      return;
+    }
+    this.setOverscroll_(this.overscrollHeight_());
   },
 
   /**

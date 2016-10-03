@@ -170,7 +170,7 @@ var MainPageBehaviorImpl = {
 
     // Save the scroller position before freezing it.
     this.origScrollTop_ = this.scroller.scrollTop;
-    this.toggleScrolling_(false);
+    this.fire('freeze-scroll', true);
 
     // Freeze the section's height so its card can be removed from the flow.
     section.setFrozen(true);
@@ -196,7 +196,7 @@ var MainPageBehaviorImpl = {
 
       finished = false;
     }.bind(this)).then(function() {
-      this.toggleScrolling_(true);
+      this.fire('freeze-scroll', false);
       this.currentAnimation_ = null;
     }.bind(this));
   },
@@ -220,7 +220,7 @@ var MainPageBehaviorImpl = {
     // when switching between Basic/Advanced and About.
     var shouldAnimateCollapse = needAnimate && section.canAnimateCollapse();
     if (shouldAnimateCollapse) {
-      this.toggleScrolling_(false);
+      this.fire('freeze-scroll', true);
       // Do the initial collapse setup, which takes the section out of the flow,
       // before showing everything.
       section.setUpAnimateCollapse(this.scroller);
@@ -257,7 +257,7 @@ var MainPageBehaviorImpl = {
           // Clean up after the animation succeeds or cancels.
           section.setFrozen(false);
           section.classList.remove('collapsing');
-          this.toggleScrolling_(true);
+          this.fire('freeze-scroll', false);
           this.currentAnimation_ = null;
           resolve();
         }.bind(this));
@@ -290,25 +290,6 @@ var MainPageBehaviorImpl = {
     return /** @type {?SettingsSectionElement} */(
         this.$$('settings-section[section="' + section + '"]'));
   },
-
-  /**
-   * Enables or disables user scrolling, via overscroll: hidden. Room for the
-   * hidden scrollbar is added to prevent the page width from changing back and
-   * forth.
-   * @param {boolean} enabled
-   * @private
-   */
-  toggleScrolling_: function(enabled) {
-    if (enabled) {
-      this.scroller.style.overflow = '';
-      this.scroller.style.width = '';
-    } else {
-      var scrollerWidth = this.scroller.clientWidth;
-      this.scroller.style.overflow = 'hidden';
-      var scrollbarWidth = this.scroller.clientWidth - scrollerWidth;
-      this.scroller.style.width = 'calc(100% - ' + scrollbarWidth + 'px)';
-    }
-  }
 };
 
 /** @polymerBehavior */
