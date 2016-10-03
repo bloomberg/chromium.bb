@@ -19,12 +19,15 @@
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "build/build_config.h"
 #include "remoting/base/logging.h"
 #include "remoting/host/clipboard.h"
 #include "remoting/host/linux/unicode_to_keysym.h"
+#include "remoting/host/linux/x11_character_injector.h"
+#include "remoting/host/linux/x11_keyboard_impl.h"
 #include "remoting/host/linux/x11_util.h"
 #include "remoting/proto/internal.pb.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
@@ -44,56 +47,6 @@ using protocol::KeyEvent;
 using protocol::TextEvent;
 using protocol::MouseEvent;
 using protocol::TouchEvent;
-
-bool FindKeycodeForKeySym(Display* display,
-                          KeySym key_sym,
-                          uint32_t* keycode,
-                          uint32_t* modifiers) {
-  *keycode = XKeysymToKeycode(display, key_sym);
-
-  const uint32_t kModifiersToTry[] = {
-    0,
-    ShiftMask,
-    Mod2Mask,
-    Mod3Mask,
-    Mod4Mask,
-    ShiftMask | Mod2Mask,
-    ShiftMask | Mod3Mask,
-    ShiftMask | Mod4Mask,
-  };
-
-  // TODO(sergeyu): Is there a better way to find modifiers state?
-  for (size_t i = 0; i < arraysize(kModifiersToTry); ++i) {
-    unsigned long key_sym_with_mods;
-    if (XkbLookupKeySym(display, *keycode, kModifiersToTry[i], nullptr,
-                        &key_sym_with_mods) &&
-        key_sym_with_mods == key_sym) {
-      *modifiers = kModifiersToTry[i];
-      return true;
-    }
-  }
-
-  return false;
-}
-
-// Finds a keycode and set of modifiers that generate character with the
-// specified |code_point|.
-bool FindKeycodeForUnicode(Display* display,
-                          uint32_t code_point,
-                          uint32_t* keycode,
-                          uint32_t* modifiers) {
-  std::vector<uint32_t> keysyms;
-  GetKeySymsForUnicode(code_point, &keysyms);
-
-  for (std::vector<uint32_t>::iterator it = keysyms.begin();
-       it != keysyms.end(); ++it) {
-    if (FindKeycodeForKeySym(display, *it, keycode, modifiers)) {
-      return true;
-    }
-  }
-
-  return false;
-}
 
 bool IsModifierKey(ui::DomCode dom_code) {
   return dom_code == ui::DomCode::CONTROL_LEFT ||
@@ -198,6 +151,8 @@ class InputInjectorX11 : public InputInjector {
 #endif
 
     std::unique_ptr<Clipboard> clipboard_;
+
+    std::unique_ptr<X11CharacterInjector> character_injector_;
 
     bool saved_auto_repeat_enabled_;
 
@@ -364,21 +319,8 @@ void InputInjectorX11::Core::InjectTextEvent(const TextEvent& event) {
             text.c_str(), text.size(), &index, &code_point)) {
       continue;
     }
-
-    uint32_t keycode;
-    uint32_t modifiers;
-    if (!FindKeycodeForUnicode(display_, code_point, &keycode, &modifiers))
-      continue;
-
-    XkbLockModifiers(display_, XkbUseCoreKbd,  modifiers, modifiers);
-
-    XTestFakeKeyEvent(display_, keycode, True, CurrentTime);
-    XTestFakeKeyEvent(display_, keycode, False, CurrentTime);
-
-    XkbLockModifiers(display_, XkbUseCoreKbd, modifiers, 0);
+    character_injector_->Inject(code_point);
   }
-
-  XFlush(display_);
 }
 
 InputInjectorX11::Core::~Core() {
@@ -634,6 +576,9 @@ void InputInjectorX11::Core::Start(
   InitMouseButtonMap();
 
   clipboard_->Start(std::move(client_clipboard));
+
+  character_injector_.reset(
+      new X11CharacterInjector(base::MakeUnique<X11KeyboardImpl>(display_)));
 }
 
 void InputInjectorX11::Core::Stop() {
@@ -643,6 +588,7 @@ void InputInjectorX11::Core::Stop() {
   }
 
   clipboard_.reset();
+  character_injector_.reset();
 }
 
 }  // namespace

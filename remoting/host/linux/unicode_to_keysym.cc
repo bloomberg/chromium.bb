@@ -821,24 +821,25 @@ bool CompareCodePair(const CodePair& pair, uint32_t unicode) {
 
 }  // namespace
 
-void GetKeySymsForUnicode(uint32_t unicode, std::vector<uint32_t>* keysyms) {
-  keysyms->clear();
+std::vector<uint32_t> GetKeySymsForUnicode(uint32_t unicode) {
+  std::vector<uint32_t> keysyms;
 
   // Latin-1 characters have the same values in Unicode and KeySym.
   if ((unicode >= 0x0020 && unicode <= 0x007e) ||
       (unicode >= 0x00a0 && unicode <= 0x00ff)) {
-    keysyms->push_back(unicode);
+    keysyms.push_back(unicode);
   }
 
   const CodePair* map_end = kKeySymUnicodeMap + arraysize(kKeySymUnicodeMap);
   const CodePair* pair =
       std::lower_bound(kKeySymUnicodeMap, map_end, unicode, &CompareCodePair);
   while (pair != map_end && pair->unicode == unicode) {
-    keysyms->push_back(pair->keysym);
+    keysyms.push_back(pair->keysym);
     ++pair;
   }
 
-  keysyms->push_back(0x01000000 | unicode);
+  keysyms.push_back(0x01000000 | unicode);
+  return keysyms;
 }
 
 }  // namespace remoting

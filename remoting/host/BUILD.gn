@@ -208,6 +208,10 @@ static_library("host") {
     "linux/certificate_watcher.h",
     "linux/unicode_to_keysym.cc",
     "linux/unicode_to_keysym.h",
+    "linux/x11_character_injector.cc",
+    "linux/x11_character_injector.h",
+    "linux/x11_keyboard_impl.cc",
+    "linux/x11_keyboard_impl.h",
     "linux/x11_util.cc",
     "linux/x11_util.h",
     "linux/x_server_clipboard.cc",
@@ -348,6 +352,8 @@ static_library("host") {
       # These will already be filtered out on non-Linux.
       sources -= [
         "linux/unicode_to_keysym.cc",
+        "linux/x11_keyboard_impl.cc",
+        "linux/x11_keyboard_impl.h",
         "linux/x11_util.cc",
         "linux/x_server_clipboard.cc",
         "linux/x_server_clipboard.h",
@@ -505,6 +511,7 @@ source_set("unit_tests") {
     "linux/audio_pipe_reader_unittest.cc",
     "linux/certificate_watcher_unittest.cc",
     "linux/unicode_to_keysym_unittest.cc",
+    "linux/x11_character_injector_unittest.cc",
     "linux/x_server_clipboard_unittest.cc",
     "local_input_monitor_unittest.cc",
     "mouse_cursor_monitor_proxy_unittest.cc",

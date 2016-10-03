@@ -12,7 +12,7 @@
 
 namespace remoting {
 
-void GetKeySymsForUnicode(uint32_t code_point, std::vector<uint32_t>* keysyms);
+std::vector<uint32_t> GetKeySymsForUnicode(uint32_t code_point);
 
 }  // namespace remoting
 
