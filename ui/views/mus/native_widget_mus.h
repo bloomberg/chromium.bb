@@ -54,8 +54,12 @@ class FocusController;
 }
 
 namespace views {
+namespace corewm {
+class TooltipController;
+}
 class DropHelper;
 class DropTargetMus;
+class TooltipManagerAura;
 class WidgetDelegate;
 
 // An implementation of NativeWidget that binds to a ui::Window. Because Aura
@@ -299,6 +303,9 @@ class VIEWS_MUS_EXPORT NativeWidgetMus
 
   std::unique_ptr<DropHelper> drop_helper_;
   int last_drop_operation_;
+
+  std::unique_ptr<corewm::TooltipController> tooltip_controller_;
+  std::unique_ptr<TooltipManagerAura> tooltip_manager_;
 
   base::WeakPtrFactory<NativeWidgetMus> close_widget_factory_;
 

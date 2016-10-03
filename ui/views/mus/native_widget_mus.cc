@@ -35,6 +35,9 @@
 #include "ui/gfx/path.h"
 #include "ui/native_theme/native_theme_aura.h"
 #include "ui/platform_window/platform_window_delegate.h"
+#include "ui/views/corewm/tooltip.h"
+#include "ui/views/corewm/tooltip_aura.h"
+#include "ui/views/corewm/tooltip_controller.h"
 #include "ui/views/drag_utils.h"
 #include "ui/views/mus/drag_drop_client_mus.h"
 #include "ui/views/mus/drop_target_mus.h"
@@ -44,6 +47,7 @@
 #include "ui/views/mus/window_tree_host_mus.h"
 #include "ui/views/widget/drop_helper.h"
 #include "ui/views/widget/native_widget_aura.h"
+#include "ui/views/widget/tooltip_manager_aura.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/custom_frame_view.h"
 #include "ui/wm/core/base_focus_rules.h"
@@ -589,6 +593,14 @@ aura::Window* NativeWidgetMus::GetRootWindow() {
 void NativeWidgetMus::OnPlatformWindowClosed() {
   native_widget_delegate_->OnNativeWidgetDestroying();
 
+  tooltip_manager_.reset();
+  if (tooltip_controller_.get()) {
+    window_tree_host_->window()->RemovePreTargetHandler(
+        tooltip_controller_.get());
+    aura::client::SetTooltipClient(window_tree_host_->window(), NULL);
+    tooltip_controller_.reset();
+  }
+
   window_tree_client_.reset();  // Uses |content_|.
   capture_client_.reset();      // Uses |content_|.
 
@@ -719,6 +731,15 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
   drop_helper_ = base::MakeUnique<DropHelper>(GetWidget()->GetRootView());
   aura::client::SetDragDropDelegate(content_, this);
 
+  if (params.type != Widget::InitParams::TYPE_TOOLTIP) {
+    tooltip_manager_ = base::MakeUnique<TooltipManagerAura>(GetWidget());
+    tooltip_controller_ = base::MakeUnique<corewm::TooltipController>(
+        base::MakeUnique<corewm::TooltipAura>());
+    aura::client::SetTooltipClient(window_tree_host_->window(),
+                                   tooltip_controller_.get());
+    window_tree_host_->window()->AddPreTargetHandler(tooltip_controller_.get());
+  }
+
   // TODO(erg): Remove this check when ash/mus/move_event_handler.cc's
   // direct usage of ui::Window::SetPredefinedCursor() is switched to a
   // private method on WindowManagerClient.
@@ -842,8 +863,7 @@ void* NativeWidgetMus::GetNativeWindowProperty(const char* name) const {
 }
 
 TooltipManager* NativeWidgetMus::GetTooltipManager() const {
-  // NOTIMPLEMENTED();
-  return nullptr;
+  return tooltip_manager_.get();
 }
 
 void NativeWidgetMus::SetCapture() {
@@ -1409,8 +1429,12 @@ void NativeWidgetMus::OnKeyEvent(ui::KeyEvent* event) {
 }
 
 void NativeWidgetMus::OnMouseEvent(ui::MouseEvent* event) {
-  // TODO(sky): forward to tooltipmanager. See NativeWidgetDesktopAura.
   DCHECK(content_->IsVisible());
+
+  if (tooltip_manager_.get())
+    tooltip_manager_->UpdateTooltip();
+  TooltipManagerAura::UpdateTooltipManagerForCapture(GetWidget());
+
   native_widget_delegate_->OnMouseEvent(event);
   // WARNING: we may have been deleted.
 }
