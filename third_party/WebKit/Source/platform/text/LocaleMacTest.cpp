@@ -379,7 +379,7 @@ TEST_F(LocaleMacTest, shortMonthLabels) {
   EXPECT_STREQ("\xD0\xBC\xD0\xB0\xD1\x8F",
                shortMonthLabel("ru_RU", 4).utf8().data());
   // The ru_RU locale returns different stand-alone month labels on OS versions.
-  //  "\xD0\xBC\xD0\xB0\xD1\x80\xD1\x82" "\xD0\xBC\xD0\xB0\xD0\xB9" on 10.6 and 10.7
+  //  "\xD0\xBC\xD0\xB0\xD1\x80\xD1\x82" "\xD0\xBC\xD0\xB0\xD0\xB9" on 10.7
   //  "\xD0\x9C\xD0\xB0\xD1\x80\xD1\x82" "\xD0\x9C\xD0\xB0\xD0\xB9" on 10.8
 }
 

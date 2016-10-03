@@ -236,7 +236,8 @@ static void textLatin1MoveInPrimaryContext(UText* text,
       text->chunkNativeStart = text->b;
   }
   int64_t length = text->chunkNativeLimit - text->chunkNativeStart;
-  // Ensure chunk length is well defined if computed length exceeds int32_t range.
+  // Ensure chunk length is well defined if computed length exceeds int32_t
+  // range.
   ASSERT(length <= std::numeric_limits<int32_t>::max());
   text->chunkLength = length <= std::numeric_limits<int32_t>::max()
                           ? static_cast<int32_t>(length)
@@ -273,7 +274,8 @@ static void textLatin1MoveInPriorContext(UText* text,
   text->chunkLength = text->b;
   text->nativeIndexingLimit = text->chunkLength;
   int64_t offset = nativeIndex - text->chunkNativeStart;
-  // Ensure chunk offset is well defined if computed offset exceeds int32_t range or chunk length.
+  // Ensure chunk offset is well defined if computed offset exceeds int32_t
+  // range or chunk length.
   ASSERT(offset <= std::numeric_limits<int32_t>::max());
   text->chunkOffset = std::min(offset <= std::numeric_limits<int32_t>::max()
                                    ? static_cast<int32_t>(offset)
@@ -299,7 +301,8 @@ static inline bool textInChunkOrOutOfRange(UText* text,
     if (nativeIndex >= text->chunkNativeStart &&
         nativeIndex < text->chunkNativeLimit) {
       int64_t offset = nativeIndex - text->chunkNativeStart;
-      // Ensure chunk offset is well formed if computed offset exceeds int32_t range.
+      // Ensure chunk offset is well formed if computed offset exceeds int32_t
+      // range.
       ASSERT(offset <= std::numeric_limits<int32_t>::max());
       text->chunkOffset = offset <= std::numeric_limits<int32_t>::max()
                               ? static_cast<int32_t>(offset)
@@ -316,7 +319,8 @@ static inline bool textInChunkOrOutOfRange(UText* text,
     if (nativeIndex > text->chunkNativeStart &&
         nativeIndex <= text->chunkNativeLimit) {
       int64_t offset = nativeIndex - text->chunkNativeStart;
-      // Ensure chunk offset is well formed if computed offset exceeds int32_t range.
+      // Ensure chunk offset is well formed if computed offset exceeds int32_t
+      // range.
       ASSERT(offset <= std::numeric_limits<int32_t>::max());
       text->chunkOffset = offset <= std::numeric_limits<int32_t>::max()
                               ? static_cast<int32_t>(offset)
@@ -424,14 +428,16 @@ static void textUTF16MoveInPrimaryContext(UText* text,
   text->chunkNativeStart = text->b;
   text->chunkNativeLimit = nativeLength;
   int64_t length = text->chunkNativeLimit - text->chunkNativeStart;
-  // Ensure chunk length is well defined if computed length exceeds int32_t range.
+  // Ensure chunk length is well defined if computed length exceeds int32_t
+  // range.
   ASSERT(length <= std::numeric_limits<int32_t>::max());
   text->chunkLength = length <= std::numeric_limits<int32_t>::max()
                           ? static_cast<int32_t>(length)
                           : 0;
   text->nativeIndexingLimit = text->chunkLength;
   int64_t offset = nativeIndex - text->chunkNativeStart;
-  // Ensure chunk offset is well defined if computed offset exceeds int32_t range or chunk length.
+  // Ensure chunk offset is well defined if computed offset exceeds int32_t
+  // range or chunk length.
   ASSERT(offset <= std::numeric_limits<int32_t>::max());
   text->chunkOffset = std::min(offset <= std::numeric_limits<int32_t>::max()
                                    ? static_cast<int32_t>(offset)
@@ -463,7 +469,8 @@ static void textUTF16MoveInPriorContext(UText* text,
   text->chunkLength = text->b;
   text->nativeIndexingLimit = text->chunkLength;
   int64_t offset = nativeIndex - text->chunkNativeStart;
-  // Ensure chunk offset is well defined if computed offset exceeds int32_t range or chunk length.
+  // Ensure chunk offset is well defined if computed offset exceeds int32_t
+  // range or chunk length.
   ASSERT(offset <= std::numeric_limits<int32_t>::max());
   text->chunkOffset = std::min(offset <= std::numeric_limits<int32_t>::max()
                                    ? static_cast<int32_t>(offset)
@@ -848,16 +855,21 @@ TextBreakIterator* cursorMovementIterator(const UChar* string, int length) {
   // This rule set is based on character-break iterator rules of ICU 4.0
   // <http://source.icu-project.org/repos/icu/icu/tags/release-4-0/source/data/brkitr/char.txt>.
   // The major differences from the original ones are listed below:
-  // * Replaced '[\p{Grapheme_Cluster_Break = SpacingMark}]' with '[\p{General_Category = Spacing Mark} - $Extend]' for ICU 3.8 or earlier;
-  // * Removed rules that prevent a cursor from moving after prepend characters (Bug 24342);
-  // * Added rules that prevent a cursor from moving after virama signs of Indic languages except Tamil (Bug 15790), and;
-  // * Added rules that prevent a cursor from moving before Japanese half-width katakara voiced marks.
+  // * Replaced '[\p{Grapheme_Cluster_Break = SpacingMark}]' with
+  //   '[\p{General_Category = Spacing Mark} - $Extend]' for ICU 3.8 or earlier;
+  // * Removed rules that prevent a cursor from moving after prepend characters
+  //   (Bug 24342);
+  // * Added rules that prevent a cursor from moving after virama signs of Indic
+  //   languages except Tamil (Bug 15790), and;
+  // * Added rules that prevent a cursor from moving before Japanese half-width
+  //   katakara voiced marks.
   // * Added rules for regional indicator symbols.
   static const char* const kRules =
       "$CR      = [\\p{Grapheme_Cluster_Break = CR}];"
       "$LF      = [\\p{Grapheme_Cluster_Break = LF}];"
       "$Control = [\\p{Grapheme_Cluster_Break = Control}];"
-      "$VoiceMarks = [\\uFF9E\\uFF9F];"  // Japanese half-width katakana voiced marks
+      "$VoiceMarks = [\\uFF9E\\uFF9F];"  // Japanese half-width katakana voiced
+                                         // marks
       "$Extend  = [\\p{Grapheme_Cluster_Break = Extend} $VoiceMarks - [\\u0E30 "
       "\\u0E32 \\u0E45 \\u0EB0 \\u0EB2]];"
       "$SpacingMark = [[\\p{General_Category = Spacing Mark}] - $Extend];"

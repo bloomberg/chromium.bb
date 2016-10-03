@@ -93,7 +93,8 @@ void registerMockedURLLoadWithCustomResponse(
     const WebString& fileName,
     const WebString& relativeBaseDirectory,
     WebURLResponse response) {
-  // Physical file path for the mock = <webkitRootDir> + relativeBaseDirectory + fileName.
+  // Physical file path for the mock =
+  // <webkitRootDir> + relativeBaseDirectory + fileName.
   String filePath = testing::blinkRootDir();
   filePath.append("/Source/web/tests/data/");
   filePath.append(relativeBaseDirectory);

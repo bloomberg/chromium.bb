@@ -41,16 +41,17 @@ using namespace blink;
 
 #if defined(_WIN32)
 
-// There is no real platform support herein, so adopt the WIN32 performance counter from
-// WTF http://trac.webkit.org/browser/trunk/Source/WTF/wtf/CurrentTime.cpp?rev=152438
+// There is no real platform support herein, so adopt the WIN32 performance
+// counter from WTF
+// http://trac.webkit.org/browser/trunk/Source/WTF/wtf/CurrentTime.cpp?rev=152438
 
 static double lowResUTCTime() {
   FILETIME fileTime;
   GetSystemTimeAsFileTime(&fileTime);
 
-  // As per Windows documentation for FILETIME, copy the resulting FILETIME structure to a
-  // ULARGE_INTEGER structure using memcpy (using memcpy instead of direct assignment can
-  // prevent alignment faults on 64-bit Windows).
+  // As per Windows documentation for FILETIME, copy the resulting FILETIME
+  // structure to a ULARGE_INTEGER structure using memcpy (using memcpy instead
+  // of direct assignment can prevent alignment faults on 64-bit Windows).
   ULARGE_INTEGER dateTime;
   memcpy(&dateTime, &fileTime, sizeof(dateTime));
 
@@ -66,10 +67,11 @@ static bool syncedTime;
 
 static double highResUpTime() {
   // We use QPC, but only after sanity checking its result, due to bugs:
-  // http://support.microsoft.com/kb/274323 http://support.microsoft.com/kb/895980
-  // http://msdn.microsoft.com/en-us/library/ms644904.aspx ("you can get different results
-  // on different processors due to bugs in the basic input/output system (BIOS) or the
-  // hardware abstraction layer (HAL).").
+  // http://support.microsoft.com/kb/274323
+  // http://support.microsoft.com/kb/895980
+  // http://msdn.microsoft.com/en-us/library/ms644904.aspx ("you can get
+  // different results on different processors due to bugs in the basic
+  // input/output system (BIOS) or the hardware abstraction layer (HAL).").
 
   static LARGE_INTEGER qpcLast;
   static DWORD tickCountLast;
@@ -90,8 +92,9 @@ static double highResUpTime() {
       tickCountElapsed = tickCountLarge - tickCountLast;
     }
 
-    // Force a re-sync if QueryPerformanceCounter differs from GetTickCount() by more than
-    // 500ms. (The 500ms value is from http://support.microsoft.com/kb/274323).
+    // Force a re-sync if QueryPerformanceCounter differs from GetTickCount() by
+    // more than 500ms. (The 500ms value is from
+    // http://support.microsoft.com/kb/274323).
     __int64 diff = tickCountElapsed - qpcElapsed;
     if (diff > 500 || diff < -500)
       syncedTime = false;
@@ -119,11 +122,12 @@ static bool qpcAvailable() {
 
 static double getCurrentTime() {
   // Use a combination of ftime and QueryPerformanceCounter.
-  // ftime returns the information we want, but doesn't have sufficient resolution.
-  // QueryPerformanceCounter has high resolution, but is only usable to measure time intervals.
-  // To combine them, we call ftime and QueryPerformanceCounter initially. Later calls will
-  // use QueryPerformanceCounter by itself, adding the delta to the saved ftime.
-  // We periodically re-sync to correct for drift.
+  // ftime returns the information we want, but doesn't have sufficient
+  // resolution.  QueryPerformanceCounter has high resolution, but is only
+  // usable to measure time intervals.  To combine them, we call ftime and
+  // QueryPerformanceCounter initially. Later calls will use
+  // QueryPerformanceCounter by itself, adding the delta to the saved ftime.  We
+  // periodically re-sync to correct for drift.
   static double syncLowResUTCTime;
   static double syncHighResUpTime;
   static double lastUTCTime;
@@ -151,8 +155,8 @@ static double getCurrentTime() {
   if (fabs(highResElapsed - lowResElapsed) > maximumAllowedDriftMsec)
     syncedTime = false;
 
-  // Make sure time doesn't run backwards (only correct if the difference is < 2 seconds,
-  // since DST or clock changes could occur).
+  // Make sure time doesn't run backwards (only correct if the difference is < 2
+  // seconds, since DST or clock changes could occur).
   const double backwardTimeLimit = 2000.0;
   if (utc < lastUTCTime && (lastUTCTime - utc) < backwardTimeLimit)
     return lastUTCTime * (1.0 / 1000.0);

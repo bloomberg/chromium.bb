@@ -40,7 +40,8 @@ class TextBreakIteratorTest : public testing::Test {
   String m_testString;
 };
 
-// Initializing Vector from an initializer list still not possible, C++ feature banned in Blink.
+// Initializing Vector from an initializer list still not possible, C++ feature
+// banned in Blink.
 #define DECLARE_BREAKSVECTOR(...)                   \
   static const int32_t breaksArray[] = __VA_ARGS__; \
   Vector<int> breaks;                               \

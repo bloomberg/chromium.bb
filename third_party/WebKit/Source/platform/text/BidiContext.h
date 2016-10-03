@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2000 Lars Knoll (knoll@kde.org)
- * Copyright (C) 2003, 2004, 2006, 2007, 2009, 2010 Apple Inc. All right reserved.
+ * Copyright (C) 2003, 2004, 2006, 2007, 2009, 2010 Apple Inc.
+ * All right reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -79,8 +80,9 @@ class PLATFORM_EXPORT BidiContext : public RefCounted<BidiContext> {
                                                 BidiEmbeddingSource,
                                                 BidiContext* parent);
 
-  unsigned
-      m_level : 7;           // The maximium bidi level is 125: http://unicode.org/reports/tr9/#Explicit_Levels_and_Directions
+  // The maximium bidi level is 125:
+  // http://unicode.org/reports/tr9/#Explicit_Levels_and_Directions
+  unsigned m_level : 7;
   unsigned m_direction : 5;  // Direction
   unsigned m_override : 1;
   unsigned m_source : 1;  // BidiEmbeddingSource

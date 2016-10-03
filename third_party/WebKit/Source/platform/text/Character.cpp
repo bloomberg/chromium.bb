@@ -124,17 +124,20 @@ CodePath Character::characterRangeCodePath(const UChar* characters,
       // Malayalam, Sinhala, Thai, Lao, Tibetan, Myanmar
       0x0600, 0x109F,
       // U+1100 through U+11FF Hangul Jamo (only Ancient Korean should be left
-      // here if you precompose; Modern Korean will be precomposed as a result of step A)
+      // here if you precompose; Modern Korean will be precomposed as a result
+      // of step A)
       0x1100, 0x11FF,
       // U+135D through U+135F Ethiopic combining marks
       0x135D, 0x135F,
-      // U+1780 through U+18AF Tagalog, Hanunoo, Buhid, Taghanwa,Khmer, Mongolian
+      // U+1780 through U+18AF Tagalog, Hanunoo, Buhid, Taghanwa, Khmer,
+      // Mongolian
       0x1700, 0x18AF,
       // U+1900 through U+194F Limbu (Unicode 4.0)
       0x1900, 0x194F,
       // U+1980 through U+19DF New Tai Lue
       0x1980, 0x19DF,
-      // U+1A00 through U+1CFF Buginese, Tai Tham, Balinese, Batak, Lepcha, Vedic
+      // U+1A00 through U+1CFF Buginese, Tai Tham, Balinese, Batak, Lepcha,
+      // Vedic
       0x1A00, 0x1CFF,
       // U+1DC0 through U+1DFF Comining diacritical mark supplement
       0x1DC0, 0x1DFF,
@@ -151,7 +154,8 @@ CodePath Character::characterRangeCodePath(const UChar* characters,
       // U+A6F0 through U+A6F1 Combining mark for Bamum
       0xA6F0, 0xA6F1,
       // U+A800 through U+ABFF Nagri, Phags-pa, Saurashtra, Devanagari Extended,
-      // Hangul Jamo Ext. A, Javanese, Myanmar Extended A, Tai Viet, Meetei Mayek
+      // Hangul Jamo Ext. A, Javanese, Myanmar Extended A, Tai Viet,
+      // Meetei Mayek
       0xA800, 0xABFF,
       // U+D7B0 through U+D7FF Hangul Jamo Ext. B
       0xD7B0, 0xD7FF,
@@ -187,7 +191,8 @@ CodePath Character::characterRangeCodePath(const UChar* characters,
       if (supplementaryCharacter <= 0x1F1FF)
         return ComplexPath;
 
-      // Emoji Fitzpatrick modifiers trigger upgrade to complex path for shaping them.
+      // Emoji Fitzpatrick modifiers trigger upgrade to complex path for shaping
+      // them.
       if (supplementaryCharacter < 0x1F3FB)
         continue;
       if (supplementaryCharacter <= 0x1F3FF)
@@ -196,8 +201,8 @@ CodePath Character::characterRangeCodePath(const UChar* characters,
       if (supplementaryCharacter == eyeCharacter)
         return ComplexPath;
 
-      // Man and Woman Emojies,
-      // in order to support emoji joiner combinations for family and couple pictographs.
+      // Man and Woman Emojies, in order to support emoji joiner combinations
+      // for family and couple pictographs.
       // Compare http://unicode.org/reports/tr51/#Emoji_ZWJ_Sequences
       if (supplementaryCharacter < 0x1F468)
         continue;
@@ -225,8 +230,8 @@ CodePath Character::characterRangeCodePath(const UChar* characters,
       if (supplementaryCharacter <= 0x10FFFD)
         return ComplexPath;
 
-      // FIXME: Check for Brahmi (U+11000 block), Kaithi (U+11080 block) and other complex scripts
-      // in plane 1 or higher.
+      // FIXME: Check for Brahmi (U+11000 block), Kaithi (U+11080 block) and
+      // other complex scripts in plane 1 or higher.
 
       continue;
     }
@@ -350,7 +355,8 @@ bool Character::canReceiveTextEmphasis(UChar32 c) {
                   Other_NotAssigned | Other_Control | Other_Format))
     return false;
 
-  // Additional word-separator characters listed in CSS Text Level 3 Editor's Draft 3 November 2010.
+  // Additional word-separator characters listed in CSS Text Level 3 Editor's
+  // Draft 3 November 2010.
   if (c == ethiopicWordspaceCharacter ||
       c == aegeanWordSeparatorLineCharacter ||
       c == aegeanWordSeparatorDotCharacter ||

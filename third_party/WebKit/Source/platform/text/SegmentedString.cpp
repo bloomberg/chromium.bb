@@ -77,7 +77,8 @@ void SegmentedString::push(UChar c) {
 
   // pushIfPossible attempts to rewind the pointer in the SegmentedSubstring,
   // however it will fail if the SegmentedSubstring is empty, or
-  // when we prepended some text while consuming a SegmentedSubstring by document.write().
+  // when we prepended some text while consuming a SegmentedSubstring by
+  // document.write().
   if (m_currentString.pushIfPossible(c)) {
     m_currentChar = c;
     return;
@@ -236,7 +237,8 @@ void SegmentedString::advanceAndUpdateLineNumberSlowCase() {
     if (m_currentString.getCurrentChar() == '\n' &&
         m_currentString.doNotExcludeLineNumbers()) {
       ++m_currentLine;
-      // Plus 1 because numberOfCharactersConsumed value hasn't incremented yet; it does with length() decrement below.
+      // Plus 1 because numberOfCharactersConsumed value hasn't incremented yet;
+      // it does with length() decrement below.
       m_numberOfCharactersConsumedPriorToCurrentLine =
           numberOfCharactersConsumed() + 1;
     }

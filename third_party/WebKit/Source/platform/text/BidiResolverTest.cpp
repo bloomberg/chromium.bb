@@ -78,27 +78,33 @@ void testDirectionality(const TestData& entry) {
 }
 
 TEST(BidiResolver, ParagraphDirectionSurrogates) {
-  const TestData testData[] = {
-      // Test strong RTL, non-BMP. (U+10858 Imperial Aramaic number one, strong RTL)
-      {{0xD802, 0xDC58}, 2, RTL, true},
+  const TestData testData[] = {// Test strong RTL, non-BMP. (U+10858 Imperial
+                               // Aramaic number one, strong RTL)
+                               {{0xD802, 0xDC58}, 2, RTL, true},
 
-      // Test strong LTR, non-BMP. (U+1D15F Musical symbol quarter note, strong LTR)
-      {{0xD834, 0xDD5F}, 2, LTR, true},
+                               // Test strong LTR, non-BMP. (U+1D15F Musical
+                               // symbol quarter note, strong LTR)
+                               {{0xD834, 0xDD5F}, 2, LTR, true},
 
-      // Test broken surrogate: valid leading, invalid trail. (Lead of U+10858, space)
-      {{0xD802, ' '}, 2, LTR, false},
+                               // Test broken surrogate: valid leading, invalid
+                               // trail. (Lead of U+10858, space)
+                               {{0xD802, ' '}, 2, LTR, false},
 
-      // Test broken surrogate: invalid leading. (Trail of U+10858, U+05D0 Hebrew Alef)
-      {{0xDC58, 0x05D0}, 2, RTL, true},
+                               // Test broken surrogate: invalid leading. (Trail
+                               // of U+10858, U+05D0 Hebrew Alef)
+                               {{0xDC58, 0x05D0}, 2, RTL, true},
 
-      // Test broken surrogate: valid leading, invalid trail/valid lead, valid trail.
-      {{0xD802, 0xD802, 0xDC58}, 3, RTL, true},
+                               // Test broken surrogate: valid leading, invalid
+                               // trail/valid lead, valid trail.
+                               {{0xD802, 0xD802, 0xDC58}, 3, RTL, true},
 
-      // Test broken surrogate: valid leading, no trail (string too short). (Lead of U+10858)
-      {{0xD802, 0xDC58}, 1, LTR, false},
+                               // Test broken surrogate: valid leading, no trail
+                               // (string too short). (Lead of U+10858)
+                               {{0xD802, 0xDC58}, 1, LTR, false},
 
-      // Test broken surrogate: trail appearing before lead. (U+10858 units reversed)
-      {{0xDC58, 0xD802}, 2, LTR, false}};
+                               // Test broken surrogate: trail appearing before
+                               // lead. (U+10858 units reversed)
+                               {{0xDC58, 0xD802}, 2, LTR, false}};
   for (size_t i = 0; i < WTF_ARRAY_LENGTH(testData); ++i)
     testDirectionality(testData[i]);
 }
@@ -131,7 +137,8 @@ class BidiTestRunner {
 
 // Blink's UBA does not filter out control characters, etc. Maybe it should?
 // Instead it depends on later layers of Blink to simply ignore them.
-// This function helps us emulate that to be compatible with BidiTest.txt expectations.
+// This function helps us emulate that to be compatible with BidiTest.txt
+// expectations.
 static bool isNonRenderedCodePoint(UChar c) {
   // The tests also expect us to ignore soft-hyphen.
   if (c == 0xAD)
@@ -201,8 +208,8 @@ void BidiTestRunner::runTest(const std::basic_string<UChar>& input,
   actualLevels.assign(input.size(), -1);
   BidiCharacterRun* run = runs.firstRun();
   while (run) {
-    // Blink's UBA just makes runs, the actual ordering of the display of characters
-    // is handled later in our pipeline, so we fake it here:
+    // Blink's UBA just makes runs, the actual ordering of the display of
+    // characters is handled later in our pipeline, so we fake it here:
     bool reversed = run->reversed(false);
     ASSERT(run->stop() >= run->start());
     size_t length = run->stop() - run->start();
@@ -210,7 +217,8 @@ void BidiTestRunner::runTest(const std::basic_string<UChar>& input,
       int inputIndex = reversed ? run->stop() - i - 1 : run->start() + i;
       if (!isNonRenderedCodePoint(input[inputIndex]))
         actualOrder.push_back(inputIndex);
-      // BidiTest.txt gives expected level data in the order of the original input.
+      // BidiTest.txt gives expected level data in the order of the original
+      // input.
       actualLevels[inputIndex] = run->level();
     }
     run = run->next();

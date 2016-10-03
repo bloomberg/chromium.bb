@@ -145,14 +145,17 @@ class TestingPlatformSupportWithMockScheduler : public TestingPlatformSupport {
   // Runs a single task.
   void runSingleTask();
 
-  // Runs all currently queued immediate tasks and delayed tasks whose delay has expired
-  // plus any immediate tasks that are posted as a result of running those tasks.
+  // Runs all currently queued immediate tasks and delayed tasks whose delay has
+  // expired plus any immediate tasks that are posted as a result of running
+  // those tasks.
   //
-  // This function ignores future delayed tasks when deciding if the system is idle.
-  // If you need to ensure delayed tasks run, try runForPeriodSeconds() instead.
+  // This function ignores future delayed tasks when deciding if the system is
+  // idle.  If you need to ensure delayed tasks run, try runForPeriodSeconds()
+  // instead.
   void runUntilIdle();
 
-  // Runs for |seconds|. Note we use a testing clock rather than the wall clock here.
+  // Runs for |seconds|. Note we use a testing clock rather than the wall clock
+  // here.
   void runForPeriodSeconds(double seconds);
 
   // Advances |m_clock| by |seconds|.

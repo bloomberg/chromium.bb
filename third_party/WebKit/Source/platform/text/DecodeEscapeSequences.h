@@ -38,7 +38,8 @@
 
 namespace blink {
 
-// See <http://en.wikipedia.org/wiki/Percent-encoding#Non-standard_implementations>.
+// See
+// <http://en.wikipedia.org/wiki/Percent-encoding#Non-standard_implementations>.
 struct Unicode16BitEscapeSequence {
   STATIC_ONLY(Unicode16BitEscapeSequence);
   enum { sequenceSize = 6 };  // e.g. %u26C4
@@ -63,10 +64,11 @@ struct Unicode16BitEscapeSequence {
   static String decodeRun(const CharType* run,
                           size_t runLength,
                           const WTF::TextEncoding&) {
-    // Each %u-escape sequence represents a UTF-16 code unit.
-    // See <http://www.w3.org/International/iri-edit/draft-duerst-iri.html#anchor29>.
-    // For 16-bit escape sequences, we know that findEndOfRun() has given us a contiguous run of sequences
-    // without any intervening characters, so decode the run without additional checks.
+    // Each %u-escape sequence represents a UTF-16 code unit.  See
+    // <http://www.w3.org/International/iri-edit/draft-duerst-iri.html#anchor29>.
+    // For 16-bit escape sequences, we know that findEndOfRun() has given us a
+    // contiguous run of sequences without any intervening characters, so decode
+    // the run without additional checks.
     size_t numberOfSequences = runLength / sequenceSize;
     StringBuilder builder;
     builder.reserveCapacity(numberOfSequences);
@@ -89,11 +91,12 @@ struct URLEscapeSequence {
   static size_t findEndOfRun(const String& string,
                              size_t startPosition,
                              size_t endPosition) {
-    // Make the simplifying assumption that supported encodings may have up to two unescaped characters
-    // in the range 0x40 - 0x7F as the trailing bytes of their sequences which need to be passed into the
-    // decoder as part of the run. In other words, we end the run at the first value outside of the
-    // 0x40 - 0x7F range, after two values in this range, or at a %-sign that does not introduce a valid
-    // escape sequence.
+    // Make the simplifying assumption that supported encodings may have up to
+    // two unescaped characters in the range 0x40 - 0x7F as the trailing bytes
+    // of their sequences which need to be passed into the decoder as part of
+    // the run. In other words, we end the run at the first value outside of the
+    // 0x40 - 0x7F range, after two values in this range, or at a %-sign that
+    // does not introduce a valid escape sequence.
     size_t runEnd = startPosition;
     int numberOfTrailingCharacters = 0;
     while (runEnd < endPosition) {
@@ -119,8 +122,9 @@ struct URLEscapeSequence {
   static String decodeRun(const CharType* run,
                           size_t runLength,
                           const WTF::TextEncoding& encoding) {
-    // For URL escape sequences, we know that findEndOfRun() has given us a run where every %-sign introduces
-    // a valid escape sequence, but there may be characters between the sequences.
+    // For URL escape sequences, we know that findEndOfRun() has given us a run
+    // where every %-sign introduces a valid escape sequence, but there may be
+    // characters between the sequences.
     Vector<char, 512> buffer;
     buffer.resize(
         runLength);  // Unescaping hex sequences only makes the length smaller.

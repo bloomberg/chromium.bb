@@ -89,7 +89,8 @@ static LCID LCIDFromLocale(const String& locale, bool defaultsForLocale) {
 }
 
 std::unique_ptr<Locale> Locale::create(const String& locale) {
-  // Whether the default settings for the locale should be used, ignoring user overrides.
+  // Whether the default settings for the locale should be used, ignoring user
+  // overrides.
   bool defaultsForLocale = LayoutTestSupport::isRunningLayoutTest();
   return LocaleWin::create(LCIDFromLocale(locale, defaultsForLocale),
                            defaultsForLocale);

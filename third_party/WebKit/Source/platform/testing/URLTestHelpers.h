@@ -46,10 +46,13 @@ inline blink::KURL toKURL(const std::string& url) {
   return blink::KURL(blink::ParsedURLString, wtfString);
 }
 
-// Helper functions for mock URLs. These functions set up the desired URL and mimeType, with a 200 OK return status.
+// Helper functions for mock URLs. These functions set up the desired URL and
+// mimeType, with a 200 OK return status.
 // For the mock URL, fullURL == baseURL + fileName.
-// For the actual file path:  <WebKit root directory> + relativeBaseDirectory + fileName,
-// or, if the relative base directory is not specified:  <WebKit root directory> + fileName.
+// For the actual file path:
+// <WebKit root directory> + relativeBaseDirectory + fileName,
+// or, if the relative base directory is not specified:
+// <WebKit root directory> + fileName.
 //
 void registerMockedURLFromBaseURL(
     const WebString& baseURL,

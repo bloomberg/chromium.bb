@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012 Apple Inc. All
+ * rights reserved.
  * Copyright (C) 2005 Alexey Proskuryakov.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -52,7 +53,8 @@ static inline CharType foldQuoteMarkOrSoftHyphen(CharType c) {
     case rightSingleQuotationMarkCharacter:
       return '\'';
     case softHyphenCharacter:
-      // Replace soft hyphen with an ignorable character so that their presence or absence will
+      // Replace soft hyphen with an ignorable character so that their presence
+      // or absence will
       // not affect string comparison.
       return 0;
     default:
@@ -72,7 +74,8 @@ void foldQuoteMarksAndSoftHyphens(String& s) {
   s.replace(leftSingleQuotationMarkCharacter, '\'');
   s.replace(rightDoubleQuotationMarkCharacter, '"');
   s.replace(rightSingleQuotationMarkCharacter, '\'');
-  // Replace soft hyphen with an ignorable character so that their presence or absence will
+  // Replace soft hyphen with an ignorable character so that their presence or
+  // absence will
   // not affect string comparison.
   s.replace(softHyphenCharacter, static_cast<UChar>('\0'));
 }
@@ -84,31 +87,32 @@ static bool isNonLatin1Separator(UChar32 character) {
 }
 
 bool isSeparator(UChar32 character) {
-  static const bool
-      latin1SeparatorTable[256] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                   0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                                   1, 1, 1,  // space ! " # $ % & ' ( ) * + , - . /
-                                   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1,
-                                   1,  //                         : ; < = > ?
-                                   1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                   0,  //   @
-                                   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,
-                                   1,  //                         [ \ ] ^ _
-                                   1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                   0,  //   `
-                                   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,
-                                   0,  //                           { | } ~
-                                   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                   0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1,
-                                   1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1,
-                                   1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,
-                                   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-                                   0, 0, 0, 0, 0, 0, 0, 0};
-
+  // clang-format off
+  static const bool latin1SeparatorTable[256] = {
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      // space ! " # $ % & ' ( ) * + , - . /
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      //                         : ; < = > ?
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1,
+      //   @
+      1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      //                         [ \ ] ^ _
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1,
+      //   `
+      1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      //                           { | } ~
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1,
+      1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0
+  };
+  // clang-format on
   if (character < 256)
     return latin1SeparatorTable[character];
 
@@ -313,10 +317,11 @@ void normalizeCharactersIntoNFCForm(const UChar* characters,
   ASSERT(status == U_STRING_NOT_TERMINATED_WARNING);
 }
 
-// This function returns kNotFound if |first| and |second| contain different Kana letters.
-// If |first| and |second| contain the same Kana letter
-// then function returns offset in characters from |first|.
-// Pointers to both strings increase simultaneously so so it is possible to use one offset value.
+// This function returns kNotFound if |first| and |second| contain different
+// Kana letters.  If |first| and |second| contain the same Kana letter then
+// function returns offset in characters from |first|.
+// Pointers to both strings increase simultaneously so so it is possible to use
+// one offset value.
 static inline size_t compareKanaLetterAndComposedVoicedSoundMarks(
     const UChar* first,
     const UChar* firstEnd,
@@ -331,7 +336,8 @@ static inline size_t compareKanaLetterAndComposedVoicedSoundMarks(
   ++first;
   ++second;
 
-  // Check for differences in combining voiced sound marks found after the letter.
+  // Check for differences in combining voiced sound marks found after the
+  // letter.
   while (true) {
     const bool secondIsNotSoundMark =
         second == secondEnd || !isCombiningVoicedSoundMark(*second);
@@ -358,16 +364,18 @@ bool checkOnlyKanaLettersInStrings(const UChar* firstData,
   const UChar* bEnd = secondData + secondLength;
   while (true) {
     // Skip runs of non-kana-letter characters. This is necessary so we can
-    // correctly handle strings where the |firstData| and |secondData| have different-length
-    // runs of characters that match, while still double checking the correctness
-    // of matches of kana letters with other kana letters.
+    // correctly handle strings where the |firstData| and |secondData| have
+    // different-length runs of characters that match, while still double
+    // checking the correctness of matches of kana letters with other kana
+    // letters.
     while (a != aEnd && !isKanaLetter(*a))
       ++a;
     while (b != bEnd && !isKanaLetter(*b))
       ++b;
 
     // If we reached the end of either the target or the match, we should have
-    // reached the end of both; both should have the same number of kana letters.
+    // reached the end of both; both should have the same number of kana
+    // letters.
     if (a == aEnd || b == bEnd) {
       return a == aEnd && b == bEnd;
     }
@@ -401,7 +409,8 @@ bool checkKanaStringsEqual(const UChar* firstData,
     }
 
     // If we reached the end of either the target or the match, we should have
-    // reached the end of both; both should have the same number of kana letters.
+    // reached the end of both; both should have the same number of kana
+    // letters.
     if (a == aEnd || b == bEnd) {
       return a == aEnd && b == bEnd;
     }

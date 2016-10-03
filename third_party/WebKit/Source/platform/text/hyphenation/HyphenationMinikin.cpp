@@ -143,11 +143,13 @@ static LocaleMap createLocaleFallbackMap() {
       {"en-PR", "en-us"},  // English (Puerto Rico)
       {"en-UM", "en-us"},  // English (United States Minor Outlying Islands)
       {"en-VI", "en-us"},  // English (Virgin Islands)
-      // All English locales other than those falling back to en-US are mapped to en-GB.
+      // All English locales other than those falling back to en-US are mapped
+      // to en-GB.
       {"en", "en-gb"},
       // For German, we're assuming the 1996 (and later) orthography by default.
       {"de", "de-1996"},
-      // Liechtenstein uses the Swiss hyphenation rules for the 1901 orthography.
+      // Liechtenstein uses the Swiss hyphenation rules for the 1901
+      // orthography.
       {"de-LI-1901", "de-ch-1901"},
       // Norwegian is very probably Norwegian Bokmål.
       {"no", "nb"},

@@ -40,11 +40,13 @@
 
 namespace blink {
 
-static const size_t printBufferSize =
-    100;  // large enough for any integer or floating point value in string format, including trailing null character
+// large enough for any integer or floating point value in string format,
+// including trailing null character
+static const size_t printBufferSize = 100;
 
 static inline bool hasFractions(double val) {
-  // We use 0.011 to more than match the number of significant digits we print out when dumping the render tree.
+  // We use 0.011 to more than match the number of significant digits we print
+  // out when dumping the render tree.
   static const double s_epsilon = 0.011;
   int ival = static_cast<int>(round(val));
   double dval = static_cast<double>(ival);

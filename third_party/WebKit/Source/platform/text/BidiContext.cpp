@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2000 Lars Knoll (knoll@kde.org)
- * Copyright (C) 2003, 2004, 2006, 2007, 2009, 2010 Apple Inc. All right reserved.
+ * Copyright (C) 2003, 2004, 2006, 2007, 2009, 2010 Apple Inc.
+ * All right reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -96,9 +97,9 @@ static inline PassRefPtr<BidiContext> copyContextAndRebaselineLevel(
                              context->source(), parent);
 }
 
-// The BidiContext stack must be immutable -- they're re-used for re-layout after
-// DOM modification/editing -- so we copy all the non-unicode contexts, and
-// recalculate their levels.
+// The BidiContext stack must be immutable -- they're re-used for re-layout
+// after DOM modification/editing -- so we copy all the non-unicode contexts,
+// and recalculate their levels.
 PassRefPtr<BidiContext>
 BidiContext::copyStackRemovingUnicodeEmbeddingContexts() {
   Vector<BidiContext*, 64> contexts;

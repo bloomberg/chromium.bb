@@ -264,13 +264,14 @@ class PLATFORM_EXPORT TextRun final {
     const LChar* characters8;
     const UChar* characters16;
   } m_data;
-  unsigned
-      m_charactersLength;  // Marks the end of the characters buffer. Default equals to m_len.
+  // Marks the end of the characters buffer.  Default equals to m_len.
+  unsigned m_charactersLength;
   unsigned m_len;
 
-  // m_xpos is the x position relative to the left start of the text line, not relative to the left
-  // start of the containing block. In the case of right alignment or center alignment, left start of
-  // the text line is not the same as left start of the containing block.
+  // m_xpos is the x position relative to the left start of the text line, not
+  // relative to the left start of the containing block. In the case of right
+  // alignment or center alignment, left start of the text line is not the same
+  // as left start of the containing block.
   float m_xpos;
   float m_horizontalGlyphStretch;
 
@@ -279,8 +280,8 @@ class PLATFORM_EXPORT TextRun final {
   unsigned m_is8Bit : 1;
   unsigned m_allowTabs : 1;
   unsigned m_direction : 1;
-  unsigned
-      m_directionalOverride : 1;  // Was this direction set by an override character.
+  // Was this direction set by an override character.
+  unsigned m_directionalOverride : 1;
   unsigned m_disableSpacing : 1;
   unsigned m_textJustify : 2;
   unsigned m_normalizeSpace : 1;

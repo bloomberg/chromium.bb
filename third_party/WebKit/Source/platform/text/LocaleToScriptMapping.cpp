@@ -52,10 +52,11 @@ static void createSubtagScriptMap(SubtagScriptMap& map,
 }
 
 UScriptCode scriptNameToCode(const String& scriptName) {
-  // This generally maps an ISO 15924 script code to its UScriptCode, but certain families of script codes are
-  // treated as a single script for assigning a per-script font in Settings. For example, "hira" is mapped to
-  // USCRIPT_KATAKANA_OR_HIRAGANA instead of USCRIPT_HIRAGANA, since we want all Japanese scripts to be rendered
-  // using the same font setting.
+  // This generally maps an ISO 15924 script code to its UScriptCode, but
+  // certain families of script codes are treated as a single script for
+  // assigning a per-script font in Settings. For example, "hira" is mapped to
+  // USCRIPT_KATAKANA_OR_HIRAGANA instead of USCRIPT_HIRAGANA, since we want all
+  // Japanese scripts to be rendered using the same font setting.
   static const SubtagScript scriptNameCodeList[] = {
       {"zyyy", USCRIPT_COMMON},
       {"qaai", USCRIPT_INHERITED},

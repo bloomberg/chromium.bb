@@ -49,7 +49,8 @@ inline bool isFlippedLinesWritingMode(WritingMode writingMode) {
   return writingMode == LeftToRightWritingMode;
 }
 
-// Block progression increases in the opposite direction to normal; modes vertical-rl.
+// Block progression increases in the opposite direction to normal; modes
+// vertical-rl.
 inline bool isFlippedBlocksWritingMode(WritingMode writingMode) {
   return writingMode == RightToLeftWritingMode;
 }

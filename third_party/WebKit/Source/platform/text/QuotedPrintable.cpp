@@ -74,7 +74,8 @@ void quotedPrintableEncode(const char* input,
         currentCharacter != '\t')
       requiresEncoding = true;
 
-    // Space and tab characters have to be encoded if they appear at the end of a line.
+    // Space and tab characters have to be encoded if they appear at the end of
+    // a line.
     if (!requiresEncoding &&
         (currentCharacter == '\t' || currentCharacter == ' ') &&
         (isLastCharacter ||
@@ -149,7 +150,8 @@ void quotedPrintableDecode(const char* data,
       continue;
 
     if (!isASCIIHexDigit(upperCharacter) || !isASCIIHexDigit(lowerCharacter)) {
-      // Invalid sequence, = followed by non hex digits, just insert the characters as is.
+      // Invalid sequence, = followed by non hex digits, just insert the
+      // characters as is.
       out.append('=');
       out.append(upperCharacter);
       out.append(lowerCharacter);

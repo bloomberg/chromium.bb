@@ -15,7 +15,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  *
  * Alternatively, the contents of this file may be used under the terms
  * of either the Mozilla Public License Version 1.1, found at
@@ -109,8 +109,9 @@ const unsigned char cRangeSpecials = 57;
 
 const unsigned char cRangeTableBase =
     128;  // values over 127 are reserved for internal use only
-const unsigned char cRangeTertiaryTable =
-    145;  // leave room for 16 subtable indices (cRangeTableBase + 1 .. cRangeTableBase + 16)
+const unsigned char cRangeTertiaryTable = 145;  // leave room for 16 subtable
+                                                // indices (cRangeTableBase + 1
+                                                // .. cRangeTableBase + 16)
 
 PLATFORM_EXPORT unsigned findCharUnicodeRange(UChar32);
 

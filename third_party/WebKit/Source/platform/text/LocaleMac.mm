@@ -90,7 +90,8 @@ LocaleMac::LocaleMac(NSLocale* locale)
           [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar]),
       m_didInitializeNumberData(false) {
   NSArray* availableLanguages = [NSLocale ISOLanguageCodes];
-  // NSLocale returns a lower case NSLocaleLanguageCode so we don't have care about case.
+  // NSLocale returns a lower case NSLocaleLanguageCode so we don't have care
+  // about case.
   NSString* language = [m_locale.get() objectForKey:NSLocaleLanguageCode];
   if ([availableLanguages indexOfObject:language] == NSNotFound)
     m_locale.adoptNS(

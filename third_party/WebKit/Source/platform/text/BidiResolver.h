@@ -59,7 +59,8 @@ class MidpointState final {
     addMidpoint(midpoint);
   }
 
-  // Adding a pair of midpoints before a character will split it out into a new line box.
+  // Adding a pair of midpoints before a character will split it out into a new
+  // line box.
   void ensureCharacterGetsLineBox(Iterator& textParagraphSeparator) {
     startIgnoringSpaces(Iterator(0, textParagraphSeparator.getLineLayoutItem(),
                                  textParagraphSeparator.offset() - 1));
@@ -68,9 +69,9 @@ class MidpointState final {
   }
 
   void checkMidpoints(Iterator& lBreak) {
-    // Check to see if our last midpoint is a start point beyond the line break. If so,
-    // shave it off the list, and shave off a trailing space if the previous end point doesn't
-    // preserve whitespace.
+    // Check to see if our last midpoint is a start point beyond the line break.
+    // If so, shave it off the list, and shave off a trailing space if the
+    // previous end point doesn't preserve whitespace.
     if (lBreak.getLineLayoutItem() && m_numMidpoints && !(m_numMidpoints % 2)) {
       Iterator* midpointsIterator = m_midpoints.data();
       Iterator& endpoint = midpointsIterator[m_numMidpoints - 2];
@@ -80,7 +81,8 @@ class MidpointState final {
              currpoint != lBreak)
         currpoint.increment();
       if (currpoint == lBreak) {
-        // We hit the line break before the start point. Shave off the start point.
+        // We hit the line break before the start point. Shave off the start
+        // point.
         m_numMidpoints--;
         if (endpoint.getLineLayoutItem().style()->collapseWhiteSpace() &&
             endpoint.getLineLayoutItem().isText())
@@ -100,8 +102,9 @@ class MidpointState final {
 
  private:
   // The goal is to reuse the line state across multiple
-  // lines so we just keep an array around for midpoints and never clear it across multiple
-  // lines. We track the number of items and position using the two other variables.
+  // lines so we just keep an array around for midpoints and never clear it
+  // across multiple lines. We track the number of items and position using the
+  // two other variables.
   Vector<Iterator> m_midpoints;
   unsigned m_numMidpoints;
   unsigned m_currentMidpoint;
@@ -125,8 +128,9 @@ struct BidiStatus final {
         lastStrong(WTF::Unicode::OtherNeutral),
         last(WTF::Unicode::OtherNeutral) {}
 
-  // Creates a BidiStatus representing a new paragraph root with a default direction.
-  // Uses TextDirection as it only has two possibilities instead of WTF::Unicode::Direction which has 19.
+  // Creates a BidiStatus representing a new paragraph root with a default
+  // direction.  Uses TextDirection as it only has two possibilities instead of
+  // WTF::Unicode::Direction which has 19.
   BidiStatus(TextDirection textDirection, bool isOverride) {
     WTF::Unicode::CharDirection direction = textDirection == LTR
                                                 ? WTF::Unicode::LeftToRight
@@ -259,9 +263,9 @@ class BidiResolver final {
 
   MidpointState<Iterator>& midpointState() { return m_midpointState; }
 
-  // The current algorithm handles nested isolates one layer of nesting at a time.
-  // But when we layout each isolated span, we will walk into (and ignore) all
-  // child isolated spans.
+  // The current algorithm handles nested isolates one layer of nesting at a
+  // time.  But when we layout each isolated span, we will walk into (and
+  // ignore) all child isolated spans.
   void enterIsolate() { m_nestedIsolateCount++; }
   void exitIsolate() {
     ASSERT(m_nestedIsolateCount >= 1);
@@ -311,7 +315,8 @@ class BidiResolver final {
  protected:
   void increment() { m_current.increment(); }
   // FIXME: Instead of InlineBidiResolvers subclassing this method, we should
-  // pass in some sort of Traits object which knows how to create runs for appending.
+  // pass in some sort of Traits object which knows how to create runs for
+  // appending.
   void appendRun(BidiRunList<Run>&);
 
   Run* addTrailingRun(BidiRunList<Run>&,
@@ -457,7 +462,8 @@ void BidiResolver<Iterator, Run, IsolatedRun>::lowerExplicitEmbeddingLevel(
 
   if (!m_emptyRun && m_eor != m_last) {
     checkDirectionInLowerRaiseEmbeddingLevel();
-    // bidi.sor ... bidi.eor ... bidi.last eor; need to append the bidi.sor-bidi.eor run or extend it through bidi.last
+    // bidi.sor ... bidi.eor ... bidi.last eor; need to append the
+    // bidi.sor-bidi.eor run or extend it through bidi.last
     if (from == LeftToRight) {
       // bidi.sor ... bidi.eor ... bidi.last L
       if (m_status.eor == EuropeanNumber) {
@@ -498,7 +504,8 @@ void BidiResolver<Iterator, Run, IsolatedRun>::raiseExplicitEmbeddingLevel(
 
   if (!m_emptyRun && m_eor != m_last) {
     checkDirectionInLowerRaiseEmbeddingLevel();
-    // bidi.sor ... bidi.eor ... bidi.last eor; need to append the bidi.sor-bidi.eor run or extend it through bidi.last
+    // bidi.sor ... bidi.eor ... bidi.last eor; need to append the
+    // bidi.sor-bidi.eor run or extend it through bidi.last
     if (to == LeftToRight) {
       // bidi.sor ... bidi.eor ... bidi.last L
       if (m_status.eor == EuropeanNumber) {
@@ -580,7 +587,8 @@ bool BidiResolver<Iterator, Run, IsolatedRun>::commitExplicitEmbedding(
     BidiRunList<Run>& runs) {
   // When we're "inIsolate()" we're resolving the parent context which
   // ignores (skips over) the isolated content, including embedding levels.
-  // We should never accrue embedding levels while skipping over isolated content.
+  // We should never accrue embedding levels while skipping over isolated
+  // content.
   ASSERT(!inIsolate() || m_currentExplicitEmbeddingSequence.isEmpty());
 
   using namespace WTF::Unicode;
@@ -683,8 +691,9 @@ inline void BidiResolver<Iterator, Run, IsolatedRun>::reorderRunsFromLevels(
 
   // This implements reordering of the line (L2 according to Bidi spec):
   // http://unicode.org/reports/tr9/#L2
-  // L2. From the highest level found in the text to the lowest odd level on each line,
-  // reverse any contiguous sequence of characters that are at that level or higher.
+  // L2. From the highest level found in the text to the lowest odd level on
+  // each line, reverse any contiguous sequence of characters that are at that
+  // level or higher.
 
   // Reversing is only done up to the lowest odd level.
   if (!(levelLow % 2))
@@ -723,14 +732,16 @@ BidiResolver<Iterator, Run, IsolatedRun>::determineDirectionalityInternal(
     UChar32 current = m_current.current();
     if (UNLIKELY(U16_IS_SURROGATE(current))) {
       increment();
-      // If this not the high part of the surrogate pair, then drop it and move to the next.
+      // If this not the high part of the surrogate pair, then drop it and move
+      // to the next.
       if (!U16_IS_SURROGATE_LEAD(current))
         continue;
       UChar high = static_cast<UChar>(current);
       if (m_current.atEnd())
         continue;
       UChar low = m_current.current();
-      // Verify the low part. If invalid, then assume an invalid surrogate pair and retry.
+      // Verify the low part. If invalid, then assume an invalid surrogate pair
+      // and retry.
       if (!U16_IS_TRAIL(low))
         continue;
       current = U16_GET_SUPPLEMENTARY(high, low);
@@ -853,8 +864,8 @@ void BidiResolver<Iterator, Run, IsolatedRun>::createBidiRunsForLine(
         dirCurrent = m_status.last;
     }
 
-    // We ignore all character directionality while in unicode-bidi: isolate spans.
-    // We'll handle ordering the isolated characters in a second pass.
+    // We ignore all character directionality while in unicode-bidi: isolate
+    // spans.  We'll handle ordering the isolated characters in a second pass.
     if (inIsolate())
       dirCurrent = OtherNeutral;
 
@@ -893,7 +904,8 @@ void BidiResolver<Iterator, Run, IsolatedRun>::createBidiRunsForLine(
           case OtherNeutral:
             if (m_status.eor == EuropeanNumber) {
               if (m_status.lastStrong != LeftToRight) {
-                // the numbers need to be on a higher embedding level, so let's close that run
+                // the numbers need to be on a higher embedding level, so let's
+                // close that run
                 m_direction = EuropeanNumber;
                 appendRun(m_runs);
                 if (context()->dir() != LeftToRight) {
@@ -904,7 +916,8 @@ void BidiResolver<Iterator, Run, IsolatedRun>::createBidiRunsForLine(
                 }
               }
             } else if (m_status.eor == ArabicNumber) {
-              // Arabic numbers are always on a higher embedding level, so let's close that run
+              // Arabic numbers are always on a higher embedding level, so let's
+              // close that run
               m_direction = ArabicNumber;
               appendRun(m_runs);
               if (context()->dir() != LeftToRight) {
@@ -996,8 +1009,8 @@ void BidiResolver<Iterator, Run, IsolatedRun>::createBidiRunsForLine(
             case OtherNeutral:
               if (m_status.eor == EuropeanNumber) {
                 if (m_status.lastStrong == RightToLeft) {
-                  // ENs on both sides behave like Rs, so the neutrals should be R.
-                  // Terminate the EN run.
+                  // ENs on both sides behave like Rs, so the neutrals should be
+                  // R.  Terminate the EN run.
                   appendRun(m_runs);
                   // Make an R run.
                   m_eor = m_status.last == EuropeanNumberTerminator
@@ -1111,7 +1124,8 @@ void BidiResolver<Iterator, Run, IsolatedRun>::createBidiRunsForLine(
         break;
       // neutrals
       case BlockSeparator:
-        // ### what do we do with newline and paragraph seperators that come to here?
+        // ### what do we do with newline and paragraph seperators that come to
+        // here?
         break;
       case SegmentSeparator:
         // ### implement rule L1

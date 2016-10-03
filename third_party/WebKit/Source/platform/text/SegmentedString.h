@@ -308,8 +308,9 @@ class PLATFORM_EXPORT SegmentedString {
   // The method is moderately slow, comparing to currentLine method.
   OrdinalNumber currentColumn() const;
   OrdinalNumber currentLine() const;
-  // Sets value of line/column variables. Column is specified indirectly by a parameter columnAftreProlog
-  // which is a value of column that we should get after a prolog (first prologLength characters) has been consumed.
+  // Sets value of line/column variables. Column is specified indirectly by a
+  // parameter columnAftreProlog which is a value of column that we should get
+  // after a prolog (first prologLength characters) has been consumed.
   void setCurrentPosition(OrdinalNumber line,
                           OrdinalNumber columnAftreProlog,
                           int prologLength);

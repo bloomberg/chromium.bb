@@ -33,7 +33,8 @@ namespace android {
 
 static const uint16_t CHAR_SOFT_HYPHEN = 0x00AD;
 
-// The following are structs that correspond to tables inside the hyb file format
+// The following are structs that correspond to tables inside the hyb file
+// format
 
 struct AlphabetTable0 {
   uint32_t version;
@@ -131,8 +132,8 @@ void Hyphenator::hyphenate(vector<uint8_t>* result,
   hyphenateSoft(result->data(), word, len);
 }
 
-// If any soft hyphen is present in the word, use soft hyphens to decide hyphenation,
-// as recommended in UAX #14 (Use of Soft Hyphen)
+// If any soft hyphen is present in the word, use soft hyphens to decide
+// hyphenation, as recommended in UAX #14 (Use of Soft Hyphen)
 void Hyphenator::hyphenateSoft(uint8_t* result,
                                const uint16_t* word,
                                size_t len) {
@@ -191,9 +192,10 @@ bool Hyphenator::alphabetLookup(uint16_t* alpha_codes,
 }
 
 /**
- * Internal implementation, after conversion to codes. All case folding and normalization
- * has been done by now, and all characters have been found in the alphabet.
- * Note: len here is the padded length including 0 codes at start and end.
+ * Internal implementation, after conversion to codes. All case folding and
+ * normalization has been done by now, and all characters have been found in the
+ * alphabet.  Note: len here is the padded length including 0 codes at start and
+ * end.
  **/
 void Hyphenator::hyphenateFromCodes(uint8_t* result,
                                     const uint16_t* codes,
@@ -217,8 +219,9 @@ void Hyphenator::hyphenateFromCodes(uint8_t* result,
         break;
       }
       uint32_t pat_ix = trie->data[node] >> pattern_shift;
-      // pat_ix contains a 3-tuple of length, shift (number of trailing zeros), and an offset
-      // into the buf pool. This is the pattern for the substring (i..j) we just matched,
+      // pat_ix contains a 3-tuple of length, shift (number of trailing zeros),
+      // and an offset into the buf pool. This is the pattern for the substring
+      // (i..j) we just matched,
       // which we combine (via point-wise max) into the result vector.
       if (pat_ix != 0) {
         uint32_t pat_entry = pattern->data[pat_ix];
@@ -226,7 +229,8 @@ void Hyphenator::hyphenateFromCodes(uint8_t* result,
         int pat_shift = Pattern::shift(pat_entry);
         const uint8_t* pat_buf = pattern->buf(pat_entry);
         int offset = j + 1 - (pat_len + pat_shift);
-        // offset is the index within result that lines up with the start of pat_buf
+        // offset is the index within result that lines up with the start of
+        // pat_buf
         int start = std::max(MIN_PREFIX - offset, 0);
         int end = std::min(pat_len, (int)maxOffset - offset);
         for (int k = start; k < end; k++) {

@@ -42,8 +42,8 @@
 
 namespace blink {
 
-// We should use this class only for LocalizedNumberICU.cpp, LocalizedDateICU.cpp,
-// and LocalizedNumberICUTest.cpp.
+// We should use this class only for LocalizedNumberICU.cpp,
+// LocalizedDateICU.cpp, and LocalizedNumberICUTest.cpp.
 class PLATFORM_EXPORT LocaleICU : public Locale {
  public:
   static std::unique_ptr<LocaleICU> create(const char* localeString);

@@ -42,7 +42,8 @@
 // Unicode.org provides a reference implmentation, including parser:
 // http://www.unicode.org/Public/PROGRAMS/BidiReferenceC/6.3.0/source/brtest.c
 // But it, like the other implementations I've found, is rather tied to
-// the algorithms it is testing. This file seeks to only implement the parser bits.
+// the algorithms it is testing. This file seeks to only implement the parser
+// bits.
 
 // Other C/C++ implementations of this parser:
 // https://github.com/googlei18n/fribidi-vs-unicode/blob/master/test.c

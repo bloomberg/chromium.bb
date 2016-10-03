@@ -32,7 +32,8 @@ namespace blink {
 
 typedef icu::BreakIterator TextBreakIterator;
 
-// Note: The returned iterator is good only until you get another iterator, with the exception of acquireLineBreakIterator.
+// Note: The returned iterator is good only until you get another iterator, with
+// the exception of acquireLineBreakIterator.
 
 // This is similar to character break iterator in most cases, but is subject to
 // platform UI conventions. One notable example where this can be different
@@ -68,7 +69,8 @@ const int TextBreakDone = -1;
 enum class LineBreakType {
   Normal,
   BreakAll,  // word-break:break-all allows breaks between letters/numbers
-  KeepAll,   // word-break:keep-all doesn't allow breaks between all kind of letters/numbers except some south east asians'.
+  KeepAll,   // word-break:keep-all doesn't allow breaks between all kind of
+             // letters/numbers except some south east asians'.
 };
 
 class PLATFORM_EXPORT LazyLineBreakIterator final {
@@ -142,9 +144,10 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
     return priorContextLength;
   }
 
-  // Obtain text break iterator, possibly previously cached, where this iterator is (or has been)
-  // initialized to use the previously stored string as the primary breaking context and using
-  // previously stored prior context if non-empty.
+  // Obtain text break iterator, possibly previously cached, where this iterator
+  // is (or has been) initialized to use the previously stored string as the
+  // primary breaking context and using previously stored prior context if
+  // non-empty.
   TextBreakIterator* get(unsigned priorContextLength) {
     ASSERT(priorContextLength <= priorContextCapacity);
     const UChar* priorContext =
@@ -215,9 +218,9 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
 };
 
 // Iterates over "extended grapheme clusters", as defined in UAX #29.
-// Note that platform implementations may be less sophisticated - e.g. ICU prior to
-// version 4.0 only supports "legacy grapheme clusters".
-// Use this for general text processing, e.g. string truncation.
+// Note that platform implementations may be less sophisticated - e.g. ICU prior
+// to version 4.0 only supports "legacy grapheme clusters".  Use this for
+// general text processing, e.g. string truncation.
 
 class PLATFORM_EXPORT NonSharedCharacterBreakIterator final {
   STACK_ALLOCATED();

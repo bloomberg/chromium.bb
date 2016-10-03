@@ -43,7 +43,9 @@ namespace blink {
 //     (replace-match "-" nil nil))
 //   (goto-char 0)
 //   ; Pad 4 digit characters, step 1
-//   (while (re-search-forward "\\([^0-9A-F]*\\)\\([0-9A-F]\\{4\\}\\)\\([^0-9A-F]\\)" nil t)
+//   (while (re-search-forward
+//           "\\([^0-9A-F]*\\)\\([0-9A-F]\\{4\\}\\)\\([^0-9A-F]\\)"
+//           nil t)
 //     (replace-match "\\1\\\\U0000\\2\\3" nil nil))
 //   (goto-char 0)
 //   ; Fix up 5 digit characters padding, step 2
