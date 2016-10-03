@@ -515,3 +515,11 @@ fe45a535ea84cba23a9b1355d36525db0d408280
 747f5543ff5e4c201bcba0182bfd24e5e6896d28
 # clang-format blink.
 1c8e1a7719e9d223cc84e838c9a31a0210f5878b
+
+# This block of commits is for blink comment reflows
+# Reformat comments in core/html/parser
+4e1cadabbfa289b8e565114fe51a32980c996d93
+# Reflow comments in core/fetch
+22a064d580892d6032977eff027a25abe132cfa8
+# Reflow comments in core/loader
+4013d22a7d6569f5761b437d88b9cf716909f223
