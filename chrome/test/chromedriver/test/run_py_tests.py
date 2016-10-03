@@ -71,6 +71,7 @@ _VERSION_SPECIFIC_FILTER['HEAD'] = [
     'ChromeDownloadDirTest.testDownloadDirectoryOverridesExistingPreferences',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1503
     'ChromeDriverTest.testShadowDomHover',
+    'ChromeDriverTest.testMouseMoveTo',
 ]
 
 _OS_SPECIFIC_FILTER = {}

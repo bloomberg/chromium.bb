@@ -254,6 +254,9 @@ _OS_NEGATIVE_FILTER['android:chromedriver_webview_shell'] = (
         'WindowSwitchingTest.*',
 
         'TakesScreenshotTest.testShouldCaptureScreenshot',
+        # TODO(gmanikpure): re-enable this test when we stop supporting
+        # WebView on KitKat.
+        'ClickTest.testCanClickAnImageMapArea',
     ]
 )
 
