@@ -1965,7 +1965,7 @@ def check_exit_statement_simplifications(clean_lines, line_number, error):
         return
 
     else_indentation = else_match.group('else_indentation')
-    inner_indentation = else_indentation + ' ' * 4
+    inner_indentation = else_indentation + ' ' * 2
 
     previous_lines = clean_lines.elided[:line_number]
     previous_lines.reverse()

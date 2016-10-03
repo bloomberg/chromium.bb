@@ -510,7 +510,7 @@ class FunctionDetectionTest(CppStyleTestBase):
         # This case exposed an error because the open brace was in quotes.
         self.perform_function_detection(
             ['asm(',
-             '    "stmdb sp!, {r1-r3}" "\n"',
+             '  "stmdb sp!, {r1-r3}" "\n"',
              ');'],
             # This isn't a function but it looks like one to our simple
             # algorithm and that is ok.
@@ -1307,10 +1307,10 @@ class CppStyleTest(CppStyleTestBase):
     # }
     def test_suspicious_usage_of_if(self):
         self.assert_lint(
-            '    if (a == b) {',
+            '  if (a == b) {',
             '')
         self.assert_lint(
-            '    } if (a == b) {',
+            '  } if (a == b) {',
             'Did you mean "else if"? If not, start a new line for "if".'
             '  [readability/braces] [4]')
 
@@ -1319,16 +1319,16 @@ class CppStyleTest(CppStyleTestBase):
     def test_suspicious_usage_of_memset(self):
         # Normal use is okay.
         self.assert_lint(
-            '    memset(buf, 0, sizeof(buf))',
+            '  memset(buf, 0, sizeof(buf))',
             '')
 
         # A 0 as the final argument is almost certainly an error.
         self.assert_lint(
-            '    memset(buf, sizeof(buf), 0)',
+            '  memset(buf, sizeof(buf), 0)',
             'Did you mean "memset(buf, 0, sizeof(buf))"?'
             '  [runtime/memset] [4]')
         self.assert_lint(
-            '    memset(buf, xsize * ysize, 0)',
+            '  memset(buf, xsize * ysize, 0)',
             'Did you mean "memset(buf, 0, xsize * ysize)"?'
             '  [runtime/memset] [4]')
 
@@ -1338,22 +1338,22 @@ class CppStyleTest(CppStyleTestBase):
             "    memset(buf, 'y', 0)",
             '')
         self.assert_lint(
-            '    memset(buf, 4, 0)',
+            '  memset(buf, 4, 0)',
             '')
         self.assert_lint(
-            '    memset(buf, -1, 0)',
+            '  memset(buf, -1, 0)',
             '')
         self.assert_lint(
-            '    memset(buf, 0xF1, 0)',
+            '  memset(buf, 0xF1, 0)',
             '')
         self.assert_lint(
-            '    memset(buf, 0xcd, 0)',
+            '  memset(buf, 0xcd, 0)',
             '')
 
     def test_check_posix_threading(self):
         self.assert_lint('sctime_r()', '')
         self.assert_lint('strtok_r()', '')
-        self.assert_lint('    strtok_r(foo, ba, r)', '')
+        self.assert_lint('  strtok_r(foo, ba, r)', '')
         self.assert_lint('brand()', '')
         self.assert_lint('_rand()', '')
         self.assert_lint('.rand()', '')
@@ -1557,7 +1557,7 @@ class CppStyleTest(CppStyleTestBase):
                          '  [readability/check] [2]')
 
         self.assert_lint(
-            '    EXPECT_TRUE(42 < x) // Random comment.',
+            '  EXPECT_TRUE(42 < x) // Random comment.',
             'Consider using EXPECT_LT instead of EXPECT_TRUE(a < b)'
             '  [readability/check] [2]')
         self.assert_lint(
@@ -1574,7 +1574,7 @@ class CppStyleTest(CppStyleTestBase):
     def test_check_deprecated_macros(self):
         self.assert_lint('ASSERT(foo)', 'ASSERT is deprecated. Use DCHECK or '
                          'its variants instead.  [build/deprecated] [5]')
-        self.assert_lint('    ASSERT_UNUSED(foo, foo)', 'ASSERT_UNUSED is '
+        self.assert_lint('  ASSERT_UNUSED(foo, foo)', 'ASSERT_UNUSED is '
                          'deprecated. Use DCHECK or its variants instead.  '
                          '[build/deprecated] [5]')
         self.assert_lint('ASSERT_NOT_REACHED()', 'ASSERT_NOT_REACHED is '
@@ -1627,7 +1627,7 @@ class CppStyleTest(CppStyleTestBase):
                          'string instead: "char foo[]".'
                          '  [runtime/string] [4]')
         # Should not catch local or member variables.
-        self.assert_lint('    string foo', '')
+        self.assert_lint('  string foo', '')
         # Should not catch functions.
         self.assert_lint('string EmptyString() { return ""; }', '')
         self.assert_lint('string EmptyString () { return ""; }', '')
@@ -1643,12 +1643,12 @@ class CppStyleTest(CppStyleTestBase):
         # should not catch methods of template classes.
         self.assert_lint('string Class<Type>::Method() const\n'
                          '{\n'
-                         '    return "";\n'
+                         '  return "";\n'
                          '}\n', '')
         self.assert_lint('string Class<Type>::Method(\n'
                          '    int arg) const\n'
                          '{\n'
-                         '    return "";\n'
+                         '  return "";\n'
                          '}\n', '')
 
     def test_no_spaces_in_function_calls(self):
@@ -1726,9 +1726,9 @@ class CppStyleTest(CppStyleTestBase):
         self.assert_multi_line_lint(
             'class Foo\n'
             '#ifdef DERIVE_FROM_GOO\n'
-            '    : public Goo {\n'
+            '  : public Goo {\n'
             '#else\n'
-            '    : public Hoo {\n'
+            '  : public Hoo {\n'
             '#endif\n'
             '};',
             'Failed to find complete declaration of class Foo'
@@ -2115,10 +2115,10 @@ class CppStyleTest(CppStyleTestBase):
                         'MyClass', True, ['Omit int when using unsigned  [runtime/unsigned] [1]'])
 
         self.assert_multi_line_lint('class NoProblemsHere {\n'
-                                    '    bool m_boolMember;\n'
-                                    '    unsigned m_unsignedMember;\n'
-                                    '    unsigned m_bitField1 : 1;\n'
-                                    '    unsigned m_bitField4 : 4;\n'
+                                    '  bool m_boolMember;\n'
+                                    '  unsigned m_unsignedMember;\n'
+                                    '  unsigned m_bitField1 : 1;\n'
+                                    '  unsigned m_bitField4 : 4;\n'
                                     '}\n', '')
 
     # Bitfields which are not declared unsigned or bool will generate a warning.
@@ -2664,13 +2664,13 @@ class CheckForFunctionLengthsTest(CppStyleTestBase):
                                                      error_level)
 
     def function_body(self, number_of_lines):
-        return ' {\n' + '    this_is_just_a_test();\n' * number_of_lines + '}'
+        return ' {\n' + '  this_is_just_a_test();\n' * number_of_lines + '}'
 
     def function_body_with_blank_lines(self, number_of_lines):
-        return ' {\n' + '    this_is_just_a_test();\n\n' * number_of_lines + '}'
+        return ' {\n' + '  this_is_just_a_test();\n\n' * number_of_lines + '}'
 
     def function_body_with_no_lints(self, number_of_lines):
-        return ' {\n' + '    this_is_just_a_test();  // NOLINT\n' * number_of_lines + '}'
+        return ' {\n' + '  this_is_just_a_test();  // NOLINT\n' * number_of_lines + '}'
 
     # Test line length checks.
     def test_function_length_check_declaration(self):
@@ -2737,7 +2737,7 @@ class CheckForFunctionLengthsTest(CppStyleTestBase):
         error_level = 1
         error_lines = self.trigger_lines(error_level) + 1
         trigger_level = self.trigger_lines(self.min_confidence)
-        indent_spaces = '    '
+        indent_spaces = '  '
         self.assert_function_lengths_check(
             re.sub(r'(?m)^(.)', indent_spaces + r'\1',
                    'void test_indent(int x)\n' + self.function_body(error_lines)),
@@ -2922,7 +2922,7 @@ class NoNonVirtualDestructorsTest(CppStyleTestBase):
             '')
         self.assert_multi_line_lint(
             'class MyClass {\n'
-            '    int getIntValue() { DCHECK(m_ptr); return *m_ptr; }\n'
+            '  int getIntValue() { DCHECK(m_ptr); return *m_ptr; }\n'
             '};\n',
             '')
 
@@ -3072,7 +3072,7 @@ class PassPtrTest(CppStyleTestBase):
         self.assert_pass_ptr_check(
             'int myFunction()\n'
             '{\n'
-            '    PassRefPtr<Type1> variable = variable2;\n'
+            '  PassRefPtr<Type1> variable = variable2;\n'
             '}',
             'Local variables should never be PassRefPtr (see '
             'http://webkit.org/coding/RefPtr.html).  [readability/pass_ptr] [5]')
@@ -3081,7 +3081,7 @@ class PassPtrTest(CppStyleTestBase):
         self.assert_pass_ptr_check(
             'int myFunction()\n'
             '{\n'
-            '    PassOwnPtr<Type1> variable = variable2;\n'
+            '  PassOwnPtr<Type1> variable = variable2;\n'
             '}',
             'Local variables should never be PassOwnPtr (see '
             'http://webkit.org/coding/RefPtr.html).  [readability/pass_ptr] [5]')
@@ -3090,7 +3090,7 @@ class PassPtrTest(CppStyleTestBase):
         self.assert_pass_ptr_check(
             'int myFunction()\n'
             '{\n'
-            '    PassOtherTypePtr<Type1> variable;\n'
+            '  PassOtherTypePtr<Type1> variable;\n'
             '}',
             'Local variables should never be PassOtherTypePtr (see '
             'http://webkit.org/coding/RefPtr.html).  [readability/pass_ptr] [5]')
@@ -3166,7 +3166,7 @@ class PassPtrTest(CppStyleTestBase):
     def test_ref_ptr_member_variable(self):
         self.assert_pass_ptr_check(
             'class Foo {'
-            '    RefPtr<Type1> m_other;\n'
+            '  RefPtr<Type1> m_other;\n'
             '};\n',
             '')
 
@@ -3230,25 +3230,25 @@ class WebKitStyleTest(CppStyleTestBase):
         #   if statement.
         self.assert_multi_line_lint(
             'if (condition) {\n'
-            '    doSomething();\n'
-            '    doSomethingAgain();\n'
+            '  doSomething();\n'
+            '  doSomethingAgain();\n'
             '} else {\n'
-            '    doSomethingElse();\n'
-            '    doSomethingElseAgain();\n'
+            '  doSomethingElse();\n'
+            '  doSomethingElseAgain();\n'
             '}\n',
             '')
         self.assert_multi_line_lint(
             'if (condition)\n'
-            '    doSomething();\n'
+            '  doSomething();\n'
             'else\n'
-            '    doSomethingElse();\n',
+            '  doSomethingElse();\n',
             '')
         self.assert_multi_line_lint(
             'if (condition) {\n'
-            '    doSomething();\n'
+            '  doSomething();\n'
             '} else {\n'
-            '    doSomethingElse();\n'
-            '    doSomethingElseAgain();\n'
+            '  doSomethingElse();\n'
+            '  doSomethingElseAgain();\n'
             '}\n',
             '')
         self.assert_multi_line_lint(
@@ -3262,14 +3262,14 @@ class WebKitStyleTest(CppStyleTestBase):
             '')
         self.assert_multi_line_lint(
             'if (condition) doSomething(); else {\n'
-            '    doSomethingElse();\n'
+            '  doSomethingElse();\n'
             '}\n',
             'If one part of an if-else statement uses curly braces, the other part must too.  [whitespace/braces] [4]')
         self.assert_multi_line_lint(
             'void func()\n'
             '{\n'
-            '    while (condition) { }\n'
-            '    return 0;\n'
+            '  while (condition) { }\n'
+            '  return 0;\n'
             '}\n',
             '')
 
@@ -3277,63 +3277,63 @@ class WebKitStyleTest(CppStyleTestBase):
         #    when the prior if concludes with a return statement.
         self.assert_multi_line_lint(
             'if (motivated) {\n'
-            '    if (liquid)\n'
-            '        return money;\n'
+            '  if (liquid)\n'
+            '    return money;\n'
             '} else if (tired) {\n'
-            '    break;\n'
+            '  break;\n'
             '}',
             '')
         self.assert_multi_line_lint(
             'if (condition)\n'
-            '    doSomething();\n'
+            '  doSomething();\n'
             'else if (otherCondition)\n'
-            '    doSomethingElse();\n',
+            '  doSomethingElse();\n',
             '')
         self.assert_multi_line_lint(
             'if (condition)\n'
-            '    doSomething();\n'
+            '  doSomething();\n'
             'else\n'
-            '    doSomethingElse();\n',
+            '  doSomethingElse();\n',
             '')
         self.assert_multi_line_lint(
             'if (condition)\n'
-            '    returnValue = foo;\n'
+            '  returnValue = foo;\n'
             'else if (otherCondition)\n'
-            '    returnValue = bar;\n',
+            '  returnValue = bar;\n',
             '')
         self.assert_multi_line_lint(
             'if (condition)\n'
-            '    returnValue = foo;\n'
+            '  returnValue = foo;\n'
             'else\n'
-            '    returnValue = bar;\n',
+            '  returnValue = bar;\n',
             '')
         self.assert_multi_line_lint(
             'if (condition)\n'
-            '    doSomething();\n'
+            '  doSomething();\n'
             'else if (liquid)\n'
-            '    return money;\n'
+            '  return money;\n'
             'else if (broke)\n'
-            '    return favor;\n'
+            '  return favor;\n'
             'else\n'
-            '    sleep(28800);\n',
+            '  sleep(28800);\n',
             '')
         self.assert_multi_line_lint(
             'if (liquid) {\n'
-            '    prepare();\n'
-            '    return money;\n'
+            '  prepare();\n'
+            '  return money;\n'
             '} else if (greedy) {\n'
-            '    keep();\n'
-            '    return nothing;\n'
+            '  keep();\n'
+            '  return nothing;\n'
             '}\n',
             'An else if statement should be written as an if statement when the '
             'prior "if" concludes with a return, break, continue or goto statement.'
             '  [readability/control_flow] [4]')
         self.assert_multi_line_lint(
-            '    if (stupid) {\n'
+            '  if (stupid) {\n'
             'infiniteLoop:\n'
-            '        goto infiniteLoop;\n'
-            '    } else if (evil)\n'
-            '        goto hell;\n',
+            '    goto infiniteLoop;\n'
+            '  } else if (evil)\n'
+            '    goto hell;\n',
             ['If one part of an if-else statement uses curly braces, the other part must too.  [whitespace/braces] [4]',
              'An else if statement should be written as an if statement when the '
              'prior "if" concludes with a return, break, continue or goto statement.'
@@ -3341,48 +3341,48 @@ class WebKitStyleTest(CppStyleTestBase):
         self.assert_multi_line_lint(
             'if (liquid)\n'
             '{\n'
-            '    prepare();\n'
-            '    return money;\n'
+            '  prepare();\n'
+            '  return money;\n'
             '}\n'
             'else if (greedy)\n'
-            '    keep();\n',
+            '  keep();\n',
             ['If one part of an if-else statement uses curly braces, the other part must too.  [whitespace/braces] [4]',
              'An else if statement should be written as an if statement when the '
              'prior "if" concludes with a return, break, continue or goto statement.'
              '  [readability/control_flow] [4]'])
         self.assert_multi_line_lint(
             'if (gone)\n'
-            '    return;\n'
+            '  return;\n'
             'else if (here)\n'
-            '    go();\n',
+            '  go();\n',
             'An else if statement should be written as an if statement when the '
             'prior "if" concludes with a return, break, continue or goto statement.'
             '  [readability/control_flow] [4]')
         self.assert_multi_line_lint(
             'if (gone)\n'
-            '    return;\n'
+            '  return;\n'
             'else\n'
-            '    go();\n',
+            '  go();\n',
             'An else statement can be removed when the prior "if" concludes '
             'with a return, break, continue or goto statement.'
             '  [readability/control_flow] [4]')
         self.assert_multi_line_lint(
             'if (motivated) {\n'
-            '    prepare();\n'
-            '    continue;\n'
+            '  prepare();\n'
+            '  continue;\n'
             '} else {\n'
-            '    cleanUp();\n'
-            '    break;\n'
+            '  cleanUp();\n'
+            '  break;\n'
             '}\n',
             'An else statement can be removed when the prior "if" concludes '
             'with a return, break, continue or goto statement.'
             '  [readability/control_flow] [4]')
         self.assert_multi_line_lint(
             'if (tired)\n'
-            '    break;\n'
+            '  break;\n'
             'else {\n'
-            '    prepare();\n'
-            '    continue;\n'
+            '  prepare();\n'
+            '  continue;\n'
             '}\n',
             ['If one part of an if-else statement uses curly braces, the other part must too.  [whitespace/braces] [4]',
              'An else statement can be removed when the prior "if" concludes '
@@ -3399,106 +3399,106 @@ class WebKitStyleTest(CppStyleTestBase):
         #
         self.assert_multi_line_lint(
             'if (condition1)\n'
-            '    statement1();\n'
+            '  statement1();\n'
             'else\n'
-            '    statement2();\n',
+            '  statement2();\n',
             '')
 
         self.assert_multi_line_lint(
             'if (condition1)\n'
-            '    statement1();\n'
+            '  statement1();\n'
             'else if (condition2)\n'
-            '    statement2();\n',
+            '  statement2();\n',
             '')
 
         self.assert_multi_line_lint(
             'if (condition1)\n'
-            '    statement1();\n'
+            '  statement1();\n'
             'else if (condition2)\n'
-            '    statement2();\n'
+            '  statement2();\n'
             'else\n'
-            '    statement3();\n',
+            '  statement3();\n',
             '')
 
         self.assert_multi_line_lint(
             'for (; foo; bar)\n'
-            '    int foo;\n',
+            '  int foo;\n',
             '')
 
         self.assert_multi_line_lint(
             'for (; foo; bar) {\n'
-            '    int foo;\n'
+            '  int foo;\n'
             '}\n',
             '')
 
         self.assert_multi_line_lint(
             'foreach (foo, foos) {\n'
-            '    int bar;\n'
+            '  int bar;\n'
             '}\n',
             '')
 
         self.assert_multi_line_lint(
             'foreach (foo, foos)\n'
-            '    int bar;\n',
+            '  int bar;\n',
             '')
 
         self.assert_multi_line_lint(
             'while (true) {\n'
-            '    int foo;\n'
+            '  int foo;\n'
             '}\n',
             '')
 
         self.assert_multi_line_lint(
             'while (true)\n'
-            '    int foo;\n',
+            '  int foo;\n',
             '')
 
         self.assert_multi_line_lint(
             'if (condition1) {\n'
-            '    statement1();\n'
+            '  statement1();\n'
             '} else {\n'
-            '    statement2();\n'
+            '  statement2();\n'
             '}\n',
             '')
 
         self.assert_multi_line_lint(
             'if (condition1) {\n'
-            '    statement1();\n'
+            '  statement1();\n'
             '} else if (condition2) {\n'
-            '    statement2();\n'
+            '  statement2();\n'
             '}\n',
             '')
 
         self.assert_multi_line_lint(
             'if (condition1) {\n'
-            '    statement1();\n'
+            '  statement1();\n'
             '} else if (condition2) {\n'
-            '    statement2();\n'
+            '  statement2();\n'
             '} else {\n'
-            '    statement3();\n'
+            '  statement3();\n'
             '}\n',
             '')
 
         self.assert_multi_line_lint(
             'if (condition1) {\n'
-            '    statement1();\n'
-            '    statement1_2();\n'
+            '  statement1();\n'
+            '  statement1_2();\n'
             '} else if (condition2) {\n'
-            '    statement2();\n'
-            '    statement2_2();\n'
+            '  statement2();\n'
+            '  statement2_2();\n'
             '}\n',
             '')
 
         self.assert_multi_line_lint(
             'if (condition1) {\n'
-            '    statement1();\n'
-            '    statement1_2();\n'
+            '  statement1();\n'
+            '  statement1_2();\n'
             '} else if (condition2) {\n'
-            '    statement2();\n'
-            '    statement2_2();\n'
+            '  statement2();\n'
+            '  statement2_2();\n'
             '} else {\n'
-            '    statement3();\n'
-            '    statement3_2();\n'
+            '  statement3();\n'
+            '  statement3_2();\n'
             '}\n',
             '')
 
@@ -3508,50 +3508,50 @@ class WebKitStyleTest(CppStyleTestBase):
 
         self.assert_multi_line_lint(
             'if (condition)\n'
-            '    doSomething(\n'
-            '        spanningMultipleLines);\n',
+            '  doSomething(\n'
+            '      spanningMultipleLines);\n',
             'A conditional or loop body must use braces if the statement is more than one line long.  [whitespace/braces] [4]')
 
         self.assert_multi_line_lint(
             'if (condition)\n'
-            '    // Single-line comment\n'
-            '    doSomething();\n',
+            '  // Single-line comment\n'
+            '  doSomething();\n',
             'A conditional or loop body must use braces if the statement is more than one line long.  [whitespace/braces] [4]')
 
         self.assert_multi_line_lint(
             'if (condition1)\n'
-            '    statement1();\n'
+            '  statement1();\n'
             'else if (condition2)\n'
-            '    // Single-line comment\n'
-            '    statement2();\n',
+            '  // Single-line comment\n'
+            '  statement2();\n',
             'A conditional or loop body must use braces if the statement is more than one line long.  [whitespace/braces] [4]')
 
         self.assert_multi_line_lint(
             'if (condition1)\n'
-            '    statement1();\n'
+            '  statement1();\n'
             'else if (condition2)\n'
-            '    statement2();\n'
+            '  statement2();\n'
             'else\n'
-            '    // Single-line comment\n'
-            '    statement3();\n',
+            '  // Single-line comment\n'
+            '  statement3();\n',
             'A conditional or loop body must use braces if the statement is more than one line long.  [whitespace/braces] [4]')
 
         self.assert_multi_line_lint(
             'for (; foo; bar)\n'
-            '    // Single-line comment\n'
-            '    int foo;\n',
+            '  // Single-line comment\n'
+            '  int foo;\n',
             'A conditional or loop body must use braces if the statement is more than one line long.  [whitespace/braces] [4]')
 
         self.assert_multi_line_lint(
             'foreach (foo, foos)\n'
-            '    // Single-line comment\n'
-            '    int bar;\n',
+            '  // Single-line comment\n'
+            '  int bar;\n',
             'A conditional or loop body must use braces if the statement is more than one line long.  [whitespace/braces] [4]')
 
         self.assert_multi_line_lint(
             'while (true)\n'
-            '    // Single-line comment\n'
-            '    int foo;\n'
+            '  // Single-line comment\n'
+            '  int foo;\n'
             '\n',
             'A conditional or loop body must use braces if the statement is more than one line long.  [whitespace/braces] [4]')
 
@@ -3560,66 +3560,66 @@ class WebKitStyleTest(CppStyleTestBase):
 
         self.assert_multi_line_lint(
             'if (condition1) {\n'
-            '    doSomething1();\n'
-            '    doSomething1_2();\n'
+            '  doSomething1();\n'
+            '  doSomething1_2();\n'
             '} else if (condition2)\n'
-            '    doSomething2();\n'
+            '  doSomething2();\n'
             'else\n'
-            '    doSomething3();\n',
+            '  doSomething3();\n',
             'If one part of an if-else statement uses curly braces, the other part must too.  [whitespace/braces] [4]')
 
         self.assert_multi_line_lint(
             'if (condition1)\n'
-            '    doSomething1();\n'
+            '  doSomething1();\n'
             'else if (condition2) {\n'
-            '    doSomething2();\n'
-            '    doSomething2_2();\n'
+            '  doSomething2();\n'
+            '  doSomething2_2();\n'
             '} else\n'
-            '    doSomething3();\n',
+            '  doSomething3();\n',
             'If one part of an if-else statement uses curly braces, the other part must too.  [whitespace/braces] [4]')
 
         self.assert_multi_line_lint(
             'if (condition1) {\n'
-            '    doSomething1();\n'
+            '  doSomething1();\n'
             '} else if (condition2) {\n'
-            '    doSomething2();\n'
-            '    doSomething2_2();\n'
+            '  doSomething2();\n'
+            '  doSomething2_2();\n'
             '} else\n'
-            '    doSomething3();\n',
+            '  doSomething3();\n',
             'If one part of an if-else statement uses curly braces, the other part must too.  [whitespace/braces] [4]')
 
         self.assert_multi_line_lint(
             'if (condition1)\n'
-            '    doSomething1();\n'
+            '  doSomething1();\n'
             'else if (condition2)\n'
-            '    doSomething2();\n'
+            '  doSomething2();\n'
             'else {\n'
-            '    doSomething3();\n'
-            '    doSomething3_2();\n'
+            '  doSomething3();\n'
+            '  doSomething3_2();\n'
             '}\n',
             'If one part of an if-else statement uses curly braces, the other part must too.  [whitespace/braces] [4]')
 
         self.assert_multi_line_lint(
             'if (condition1) {\n'
-            '    doSomething1();\n'
-            '    doSomething1_2();\n'
+            '  doSomething1();\n'
+            '  doSomething1_2();\n'
             '} else if (condition2)\n'
-            '    doSomething2();\n'
+            '  doSomething2();\n'
             'else {\n'
-            '    doSomething3();\n'
-            '    doSomething3_2();\n'
+            '  doSomething3();\n'
+            '  doSomething3_2();\n'
             '}\n',
             'If one part of an if-else statement uses curly braces, the other part must too.  [whitespace/braces] [4]')
 
         self.assert_multi_line_lint(
             'if (condition1)\n'
-            '    doSomething1();\n'
+            '  doSomething1();\n'
             'else if (condition2) {\n'
-            '    doSomething2();\n'
-            '    doSomething2_2();\n'
+            '  doSomething2();\n'
+            '  doSomething2_2();\n'
             '} else {\n'
-            '    doSomething3();\n'
-            '    doSomething3_2();\n'
+            '  doSomething3();\n'
+            '  doSomething3_2();\n'
             '}\n',
             'If one part of an if-else statement uses curly braces, the other part must too.  [whitespace/braces] [4]')
 
