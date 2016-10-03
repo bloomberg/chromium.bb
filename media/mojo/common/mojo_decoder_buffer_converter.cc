@@ -143,7 +143,10 @@ mojom::DecoderBufferPtr MojoDecoderBufferWriter::WriteDecoderBuffer(
       WriteDataRaw(producer_handle_.get(), media_buffer->data(), &num_bytes,
                    MOJO_WRITE_DATA_FLAG_ALL_OR_NONE);
   if (result != MOJO_RESULT_OK || num_bytes != media_buffer->data_size()) {
-    DVLOG(1) << __FUNCTION__ << ": writing to data pipe failed";
+    DVLOG(1) << __FUNCTION__
+             << ": writing to data pipe failed. result=" << result
+             << ", buffer size=" << media_buffer->data_size()
+             << ", num_bytes(written)=" << num_bytes;
     return nullptr;
   }
 
