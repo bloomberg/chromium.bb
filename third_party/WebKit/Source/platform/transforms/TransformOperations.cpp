@@ -105,7 +105,8 @@ TransformOperations::blendByUsingMatrixInterpolation(
   if (dependsOnBoxSize() || from.dependsOnBoxSize())
     return InterpolatedTransformOperation::create(from, *this, progress);
 
-  // Evaluate blended matrix here to avoid creating a nested data structure of unbounded depth.
+  // Evaluate blended matrix here to avoid creating a nested data structure of
+  // unbounded depth.
   TransformationMatrix fromTransform;
   TransformationMatrix toTransform;
   from.apply(FloatSize(), fromTransform);
@@ -119,7 +120,8 @@ TransformOperations TransformOperations::blend(const TransformOperations& from,
   if (from == *this || (!from.size() && !size()))
     return *this;
 
-  // If either list is empty, use blendByMatchingOperations which has special logic for this case.
+  // If either list is empty, use blendByMatchingOperations which has special
+  // logic for this case.
   if (!from.size() || !size() || from.operationsMatch(*this))
     return blendByMatchingOperations(from, progress);
 

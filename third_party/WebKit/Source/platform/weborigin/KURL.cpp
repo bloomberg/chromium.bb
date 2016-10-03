@@ -55,13 +55,14 @@ static void assertProtocolIsGood(const char* protocol) {
 #endif
 }
 
-// Note: You must ensure that |spec| is a valid canonicalized URL before calling this function.
+// Note: You must ensure that |spec| is a valid canonicalized URL before calling
+// this function.
 static const char* asURLChar8Subtle(const String& spec) {
   ASSERT(spec.is8Bit());
-  // characters8 really return characters in Latin-1, but because we canonicalize
-  // URL strings, we know that everything before the fragment identifier will
-  // actually be ASCII, which means this cast is safe as long as you don't look
-  // at the fragment component.
+  // characters8 really return characters in Latin-1, but because we
+  // canonicalize URL strings, we know that everything before the fragment
+  // identifier will actually be ASCII, which means this cast is safe as long as
+  // you don't look at the fragment component.
   return reinterpret_cast<const char*>(spec.characters8());
 }
 
@@ -92,7 +93,8 @@ class KURLCharsetConverter final : public url::CharsetConverter {
   DISALLOW_NEW();
 
  public:
-  // The encoding parameter may be 0, but in this case the object must not be called.
+  // The encoding parameter may be 0, but in this case the object must not be
+  // called.
   explicit KURLCharsetConverter(const WTF::TextEncoding* encoding)
       : m_encoding(encoding) {}
 
@@ -344,7 +346,8 @@ String KURL::host() const {
 //
 // We treat URL's with out-of-range port numbers as invalid URLs, and they will
 // be rejected by the canonicalizer. KURL.cpp will allow them in parsing, but
-// return invalidPortNumber from this port() function, so we mirror that behavior here.
+// return invalidPortNumber from this port() function, so we mirror that
+// behavior here.
 unsigned short KURL::port() const {
   if (!m_isValid || m_parsed.port.len <= 0)
     return 0;
@@ -781,8 +784,8 @@ bool internalProtocolIs(const url::Component& scheme,
       return false;
   }
 
-  // Both strings are equal (ignoring case) if and only if all of the characters were equal,
-  // and the end of both has been reached.
+  // Both strings are equal (ignoring case) if and only if all of the characters
+  // were equal, and the end of both has been reached.
   return begin == end && !*protocol;
 }
 
@@ -817,9 +820,11 @@ void KURL::initProtocolIsInHTTPFamily() {
 bool KURL::protocolIs(const char* protocol) const {
   assertProtocolIsGood(protocol);
 
-  // JavaScript URLs are "valid" and should be executed even if KURL decides they are invalid.
-  // The free function protocolIsJavaScript() should be used instead.
-  // FIXME: Chromium code needs to be fixed for this assert to be enabled. ASSERT(strcmp(protocol, "javascript"));
+  // JavaScript URLs are "valid" and should be executed even if KURL decides
+  // they are invalid.  The free function protocolIsJavaScript() should be used
+  // instead.
+  // FIXME: Chromium code needs to be fixed for this assert to be enabled.
+  // ASSERT(strcmp(protocol, "javascript"));
 
   if (m_string.isNull() || m_parsed.scheme.len <= 0)
     return *protocol == '\0';

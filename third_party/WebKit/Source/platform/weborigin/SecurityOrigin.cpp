@@ -56,7 +56,9 @@ static SecurityOrigin* getOriginFromMap(const KURL& url) {
 }
 
 bool SecurityOrigin::shouldUseInnerURL(const KURL& url) {
-  // FIXME: Blob URLs don't have inner URLs. Their form is "blob:<inner-origin>/<UUID>", so treating the part after "blob:" as a URL is incorrect.
+  // FIXME: Blob URLs don't have inner URLs. Their form is
+  // "blob:<inner-origin>/<UUID>", so treating the part after "blob:" as a URL
+  // is incorrect.
   if (url.protocolIs("blob"))
     return true;
   if (url.protocolIs("filesystem"))
@@ -223,7 +225,8 @@ bool SecurityOrigin::canAccess(const SecurityOrigin* other) const {
   if (isUnique() || other->isUnique())
     return false;
 
-  // document.domain handling, as per https://html.spec.whatwg.org/multipage/browsers.html#dom-document-domain:
+  // document.domain handling, as per
+  // https://html.spec.whatwg.org/multipage/browsers.html#dom-document-domain:
   //
   // 1) Neither document has set document.domain. In this case, we insist
   //    that the scheme, host, and port of the URLs match.

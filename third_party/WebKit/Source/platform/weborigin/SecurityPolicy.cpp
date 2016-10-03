@@ -165,8 +165,8 @@ Referrer SecurityPolicy::generateReferrer(ReferrerPolicy referrerPolicy,
       break;
     }
     case ReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin: {
-      // If the flag is enabled, and we're dealing with a cross-origin request, strip it.
-      // Otherwise fallthrough to NoReferrerWhenDowngrade behavior.
+      // If the flag is enabled, and we're dealing with a cross-origin request,
+      // strip it.  Otherwise fall through to NoReferrerWhenDowngrade behavior.
       RefPtr<SecurityOrigin> referrerOrigin =
           SecurityOrigin::createFromString(referrer);
       RefPtr<SecurityOrigin> urlOrigin = SecurityOrigin::create(url);

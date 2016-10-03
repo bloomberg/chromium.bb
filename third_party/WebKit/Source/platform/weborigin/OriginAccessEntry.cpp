@@ -98,7 +98,8 @@ OriginAccessEntry::OriginAccessEntry(const String& protocol,
       m_hostIsPublicSuffix = true;
     } else if (subdomainSetting == AllowRegisterableDomains &&
                publicSuffixLength) {
-      // The "2" in the next line is 1 for the '.', plus a 1-char minimum label length.
+      // The "2" in the next line is 1 for the '.', plus a 1-char minimum label
+      // length.
       const size_t dot =
           m_host.reverseFind('.', m_host.length() - publicSuffixLength - 2);
       if (dot == kNotFound)
@@ -122,7 +123,8 @@ OriginAccessEntry::MatchResult OriginAccessEntry::matchesOrigin(
 OriginAccessEntry::MatchResult OriginAccessEntry::matchesDomain(
     const SecurityOrigin& origin) const {
   ASSERT(origin.host() == origin.host().lower());
-  // Special case: Include subdomains and empty host means "all hosts, including ip addresses".
+  // Special case: Include subdomains and empty host means "all hosts, including
+  // ip addresses".
   if (m_subdomainSettings != DisallowSubdomains && m_host.isEmpty())
     return MatchesOrigin;
 
@@ -145,7 +147,8 @@ OriginAccessEntry::MatchResult OriginAccessEntry::matchesDomain(
       break;
 
     case AllowRegisterableDomains:
-      // Fall back to a simple subdomain check if no registerable domain could be found:
+      // Fall back to a simple subdomain check if no registerable domain could
+      // be found:
       if (m_registerableDomain.isEmpty()) {
         if (!IsSubdomainOfHost(origin.host(), m_host))
           return DoesNotMatchOrigin;

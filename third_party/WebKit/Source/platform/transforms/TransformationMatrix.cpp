@@ -51,24 +51,29 @@ namespace blink {
 //
 // Supporting Math Functions
 //
-// This is a set of function from various places (attributed inline) to do things like
-// inversion and decomposition of a 4x4 matrix. They are used throughout the code
+// This is a set of function from various places (attributed inline) to do
+// things like inversion and decomposition of a 4x4 matrix. They are used
+// throughout the code
 //
 
 //
-// Adapted from Matrix Inversion by Richard Carling, Graphics Gems <http://tog.acm.org/GraphicsGems/index.html>.
+// Adapted from Matrix Inversion by Richard Carling, Graphics Gems
+// <http://tog.acm.org/GraphicsGems/index.html>.
 
-// EULA: The Graphics Gems code is copyright-protected. In other words, you cannot claim the text of the code
-// as your own and resell it. Using the code is permitted in any program, product, or library, non-commercial
-// or commercial. Giving credit is not required, though is a nice gesture. The code comes as-is, and if there
-// are any flaws or problems with any Gems code, nobody involved with Gems - authors, editors, publishers, or
-// webmasters - are to be held responsible. Basically, don't be a jerk, and remember that anything free comes
-// with no guarantee.
+// EULA: The Graphics Gems code is copyright-protected. In other words, you
+// cannot claim the text of the code as your own and resell it. Using the code
+// is permitted in any program, product, or library, non-commercial or
+// commercial. Giving credit is not required, though is a nice gesture. The code
+// comes as-is, and if there are any flaws or problems with any Gems code,
+// nobody involved with Gems - authors, editors, publishers, or webmasters - are
+// to be held responsible. Basically, don't be a jerk, and remember that
+// anything free comes with no guarantee.
 
 // A clarification about the storage of matrix elements
 //
-// This class uses a 2 dimensional array internally to store the elements of the matrix.  The first index into
-// the array refers to the column that the element lies in; the second index refers to the row.
+// This class uses a 2 dimensional array internally to store the elements of the
+// matrix.  The first index into the array refers to the column that the element
+// lies in; the second index refers to the row.
 //
 // In other words, this is the layout of the matrix:
 //
@@ -671,8 +676,8 @@ FloatPoint TransformationMatrix::projectPoint(const FloatPoint& p,
     *clamped = false;
 
   if (m33() == 0) {
-    // In this case, the projection plane is parallel to the ray we are trying to
-    // trace, and there is no well-defined value for the projection.
+    // In this case, the projection plane is parallel to the ray we are trying
+    // to trace, and there is no well-defined value for the projection.
     return FloatPoint();
   }
 
@@ -686,8 +691,8 @@ FloatPoint TransformationMatrix::projectPoint(const FloatPoint& p,
 
   double w = x * m14() + y * m24() + z * m34() + m44();
   if (w <= 0) {
-    // Using int max causes overflow when other code uses the projected point. To
-    // represent infinity yet reduce the risk of overflow, we use a large but
+    // Using int max causes overflow when other code uses the projected point.
+    // To represent infinity yet reduce the risk of overflow, we use a large but
     // not-too-large number here when clamping.
     const int largeNumber = 100000000 / kFixedPointDenominator;
     outX = copysign(largeNumber, outX);
@@ -719,7 +724,8 @@ FloatQuad TransformationMatrix::projectQuad(const FloatQuad& q,
   if (clamped)
     *clamped = clamped1 || clamped2 || clamped3 || clamped4;
 
-  // If all points on the quad had w < 0, then the entire quad would not be visible to the projected surface.
+  // If all points on the quad had w < 0, then the entire quad would not be
+  // visible to the projected surface.
   bool everythingWasClipped = clamped1 && clamped2 && clamped3 && clamped4;
   if (everythingWasClipped)
     return FloatQuad();
@@ -878,7 +884,8 @@ TransformationMatrix& TransformationMatrix::rotate3d(double x,
   // Normalize the axis of rotation
   double length = std::sqrt(x * x + y * y + z * z);
   if (length == 0) {
-    // A direction vector that cannot be normalized, such as [0, 0, 0], will cause the rotation to not be applied.
+    // A direction vector that cannot be normalized, such as [0, 0, 0], will
+    // cause the rotation to not be applied.
     return *this;
   } else if (length != 1) {
     x /= length;
@@ -940,7 +947,8 @@ TransformationMatrix& TransformationMatrix::rotate3d(double x,
     // Formula is adapted from Wikipedia article on Rotation matrix,
     // http://en.wikipedia.org/wiki/Rotation_matrix#Rotation_matrix_from_axis_and_angle
     //
-    // An alternate resource with the same matrix: http://www.fastgraph.com/makegames/3drotation/
+    // An alternate resource with the same matrix:
+    // http://www.fastgraph.com/makegames/3drotation/
     //
     double oneMinusCosTheta = 1 - cosTheta;
     mat.m_matrix[0][0] = cosTheta + x * x * oneMinusCosTheta;
@@ -1186,7 +1194,8 @@ TransformationMatrix& TransformationMatrix::multiply(
         "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31", "v0", "v1",
         "v2", "v3", "v4", "v5", "v6", "v7");
 #elif defined(TRANSFORMATION_MATRIX_USE_X86_64_SSE2)
-  // x86_64 has 16 XMM registers which is enough to do the multiplication fully in registers.
+  // x86_64 has 16 XMM registers which is enough to do the multiplication fully
+  // in registers.
   __m128d matrixBlockA = _mm_load_pd(&(m_matrix[0][0]));
   __m128d matrixBlockC = _mm_load_pd(&(m_matrix[1][0]));
   __m128d matrixBlockE = _mm_load_pd(&(m_matrix[2][0]));

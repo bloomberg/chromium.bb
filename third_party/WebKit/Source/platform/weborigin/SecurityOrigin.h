@@ -146,7 +146,8 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   // https://w3c.github.io/webappsec/specs/powerfulfeatures/#is-origin-trustworthy.
   bool isPotentiallyTrustworthy() const;
 
-  // Returns a human-readable error message describing that a non-secure origin's access to a feature is denied.
+  // Returns a human-readable error message describing that a non-secure
+  // origin's access to a feature is denied.
   static String isPotentiallyTrustworthyErrorMessage();
 
   // Returns true if this SecurityOrigin can load local resources, such
@@ -240,7 +241,8 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   AtomicString toRawAtomicString() const;
 
   // This method checks for equality, ignoring the value of document.domain
-  // (and whether it was set) but considering the host. It is used for postMessage.
+  // (and whether it was set) but considering the host. It is used for
+  // postMessage.
   bool isSameSchemeHostPort(const SecurityOrigin*) const;
   bool isSameSchemeHostPortAndSuborigin(const SecurityOrigin*) const;
 

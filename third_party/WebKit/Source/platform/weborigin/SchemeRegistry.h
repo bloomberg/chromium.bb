@@ -92,7 +92,8 @@ class PLATFORM_EXPORT SchemeRegistry {
   // Serialize the registered schemes in a comma-separated list.
   static String listOfCORSEnabledURLSchemes();
 
-  // "Legacy" schemes (e.g. 'ftp:', 'gopher:') which we might want to treat differently from "webby" schemes.
+  // "Legacy" schemes (e.g. 'ftp:', 'gopher:') which we might want to treat
+  // differently from "webby" schemes.
   static bool shouldTreatURLSchemeAsLegacy(const String& scheme);
 
   // Schemes that can register a service worker.

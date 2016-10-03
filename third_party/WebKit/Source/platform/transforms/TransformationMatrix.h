@@ -220,7 +220,8 @@ class PLATFORM_EXPORT TransformationMatrix {
   FloatPoint3D mapPoint(const FloatPoint3D&) const;
 
   // Map a 2D point through the transform, returning a 2D point.
-  // Note that this ignores the z component, effectively projecting the point into the z=0 plane.
+  // Note that this ignores the z component, effectively projecting the point
+  // into the z=0 plane.
   FloatPoint mapPoint(const FloatPoint&) const;
 
   // If the matrix has 3D components, the z component of the result is
@@ -367,7 +368,8 @@ class PLATFORM_EXPORT TransformationMatrix {
   AffineTransform toAffineTransform() const;
 
   // Flatten into a 2-D transformation (non-invertable).
-  // Same as gfx::Transform::FlattenTo2d(); see the docs for that function for details and discussion.
+  // Same as gfx::Transform::FlattenTo2d(); see the docs for that function for
+  // details and discussion.
   void flattenTo2d();
 
   bool operator==(const TransformationMatrix& m2) const {

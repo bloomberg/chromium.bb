@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2011, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2011, 2012 Apple Inc.
+ * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -230,8 +231,9 @@ PLATFORM_EXPORT const KURL& srcdocURL();
 
 // Functions to do URL operations on strings.
 // These are operations that aren't faster on a parsed URL.
-// These are also different from the KURL functions in that they don't require the string to be a valid and parsable URL.
-// This is especially important because valid javascript URLs are not necessarily considered valid by KURL.
+// These are also different from the KURL functions in that they don't require
+// the string to be a valid and parsable URL.  This is especially important
+// because valid javascript URLs are not necessarily considered valid by KURL.
 
 PLATFORM_EXPORT bool protocolIs(const String& url, const char* protocol);
 PLATFORM_EXPORT bool protocolIsJavaScript(const String& url);

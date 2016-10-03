@@ -38,9 +38,8 @@ PassRefPtr<TransformOperation> PerspectiveTransformOperation::blend(
     return this;
 
   if (blendToIdentity) {
-    double p = blink::blend(
-        m_p, 1.,
-        progress);  // FIXME: this seems wrong. https://bugs.webkit.org/show_bug.cgi?id=52700
+    // FIXME: this seems wrong.  https://bugs.webkit.org/show_bug.cgi?id=52700
+    double p = blink::blend(m_p, 1., progress);
     return PerspectiveTransformOperation::create(clampTo<int>(p, 0));
   }
 
