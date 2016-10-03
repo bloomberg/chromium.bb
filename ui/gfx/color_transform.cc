@@ -683,7 +683,7 @@ class QCMSColorTransform : public ColorTransform {
   // Takes ownership of the profiles
   QCMSColorTransform(qcms_profile* from, qcms_profile* to)
       : from_(from), to_(to) {}
-  ~QCMSColorTransform() {
+  ~QCMSColorTransform() override {
     qcms_profile_release(from_);
     qcms_profile_release(to_);
   }

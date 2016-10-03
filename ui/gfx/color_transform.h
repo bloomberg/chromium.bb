@@ -24,6 +24,8 @@ class GFX_EXPORT ColorTransform {
   // Channel order is XYZ, RGB or YUV.
   typedef Point3F TriStim;
 
+  virtual ~ColorTransform() {}
+
   // Perform transformation of colors, |colors| is both input and output.
   virtual void transform(TriStim* colors, size_t num) = 0;
 
