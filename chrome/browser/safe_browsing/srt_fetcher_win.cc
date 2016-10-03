@@ -468,8 +468,8 @@ class UMAHistogramReporter {
 
   void RecordMemoryKBHistogram(const std::string& name, Sample sample) const {
     // See UMA_HISTOGRAM_MEMORY_KB for the parameters to |FactoryGet|.
-    auto histogram = base::LinearHistogram::FactoryGet(
-        FullName(name), 1000, 500000, 50, kUmaHistogramFlag);
+    auto histogram = base::Histogram::FactoryGet(FullName(name), 1000, 500000,
+                                                 50, kUmaHistogramFlag);
     if (histogram)
       histogram->Add(sample);
   }
