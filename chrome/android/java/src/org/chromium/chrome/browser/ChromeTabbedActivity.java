@@ -27,6 +27,7 @@ import android.widget.FrameLayout;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.BuildInfo;
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.MemoryPressureListener;
@@ -106,6 +107,7 @@ import org.chromium.ui.widget.Toast;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Method;
 import java.util.List;
 
 /**
@@ -768,7 +770,11 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                     openNewTab(url, referer, headers, externalAppId, intent, false);
                     break;
                 case OPEN_NEW_TAB:
-                    if (fromLauncherShortcut) recordLauncherShortcutAction(false);
+                    if (fromLauncherShortcut) {
+                        recordLauncherShortcutAction(false);
+                        reportNewTabShortcutUsed(false);
+                    }
+
                     openNewTab(url, referer, headers, externalAppId, intent, true);
                     break;
                 case OPEN_NEW_INCOGNITO_TAB:
@@ -778,6 +784,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                             getTabCreator(true).launchUrl(
                                     UrlConstants.NTP_URL, TabLaunchType.FROM_EXTERNAL_APP);
                             recordLauncherShortcutAction(true);
+                            reportNewTabShortcutUsed(true);
                         } else if (TextUtils.equals(externalAppId, getPackageName())) {
                             // Used by the Account management screen to open a new incognito tab.
                             // Account management screen collects its metrics separately.
@@ -1022,6 +1029,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             getTabModelSelector().getModel(false).commitAllTabClosures();
             RecordUserAction.record("MobileMenuNewTab");
             RecordUserAction.record("MobileNewTabOpened");
+            reportNewTabShortcutUsed(false);
             getTabCreator(false).launchUrl(UrlConstants.NTP_URL, TabLaunchType.FROM_CHROME_UI);
         } else if (id == R.id.new_incognito_tab_menu_id) {
             if (PrefServiceBridge.getInstance().isIncognitoModeEnabled()) {
@@ -1030,6 +1038,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                 // are dropped when an incognito tab is open.
                 RecordUserAction.record("MobileMenuNewIncognitoTab");
                 RecordUserAction.record("MobileNewTabOpened");
+                reportNewTabShortcutUsed(true);
                 getTabCreator(true).launchUrl(UrlConstants.NTP_URL, TabLaunchType.FROM_CHROME_UI);
             }
         } else if (id == R.id.all_bookmarks_menu_id) {
@@ -1547,5 +1556,25 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
         // Enter HTML5 fullscreen to ensure the texture fills the entire composited surface.
         getFullscreenManager().setPersistentFullscreenMode(visibility == View.GONE);
+    }
+
+    /**
+     * Reports that a new tab launcher shortcut was selected or an action equivalent to a shortcut
+     * was performed.
+     * @param isIncognito Whether the shortcut or action created a new incognito tab.
+     */
+    @TargetApi(25)
+    private void reportNewTabShortcutUsed(boolean isIncognito) {
+        if (!BuildInfo.isGreaterThanN()) return;
+
+        try {
+            Class<?> clazz = Class.forName("android.content.pm.ShortcutManager");
+            Method method = clazz.getDeclaredMethod("reportShortcutUsed", String.class);
+            method.invoke(getSystemService(clazz),
+                    isIncognito ? "new-incognito-tab-shortcut" : "new-tab-shortcut");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 }
