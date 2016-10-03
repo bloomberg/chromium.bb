@@ -37,7 +37,8 @@ class ClipList {
     ClipOp(const ClipOp&);
   };
 
-  // Number of clip ops that can be stored in a ClipList without resorting to dynamic allocation
+  // Number of clip ops that can be stored in a ClipList without resorting to
+  // dynamic allocation
   static const size_t cInlineClipOpCapacity = 4;
 
   WTF::Vector<ClipOp, cInlineClipOpCapacity> m_clipList;

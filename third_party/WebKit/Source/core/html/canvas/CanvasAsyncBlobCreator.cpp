@@ -31,7 +31,8 @@ const double SlackBeforeDeadline =
 const int NumChannelsPng = 4;
 const int LongTaskImageSizeThreshold =
     1000 *
-    1000;  // The max image size we expect to encode in 14ms on Linux in PNG format
+    1000;  // The max image size we expect to encode in 14ms on Linux in PNG
+           // format
 
 // The encoding task is highly likely to switch from idle task to alternative
 // code path when the startTimeoutDelay is set to be below 150ms. As we want the
@@ -143,8 +144,10 @@ void CanvasAsyncBlobCreator::scheduleAsyncBlobCreation(
       this->scheduleInitiateJpegEncoding(quality);
     } else {
       // Progressive encoding is only applicable to png and jpeg image format,
-      // and thus idle tasks scheduling can only be applied to these image formats.
-      // TODO(xlai): Progressive encoding on webp image formats (crbug.com/571399)
+      // and thus idle tasks scheduling can only be applied to these image
+      // formats.
+      // TODO(xlai): Progressive encoding on webp image formats
+      // (crbug.com/571399)
       ASSERT_NOT_REACHED();
     }
     // We post the below task to check if the above idle task isn't late.

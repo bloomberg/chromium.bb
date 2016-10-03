@@ -134,7 +134,8 @@ class CanvasRenderingContext2DTest : public ::testing::Test {
     StringOrCanvasGradientOrCanvasPattern m_alphaGradient;
   };
 
-  // TODO(Oilpan): avoid tedious part-object wrapper by supporting on-heap ::testing::Tests.
+  // TODO(Oilpan): avoid tedious part-object wrapper by supporting on-heap
+  // ::testing::Tests.
   Persistent<WrapGradients> m_wrapGradients;
 
  protected:
@@ -481,8 +482,8 @@ TEST_F(CanvasRenderingContext2DTest, detectOverdrawWithCompositeOperations) {
   createContext(NonOpaque);
 
   // Test composite operators with an opaque rect that covers the entire canvas
-  // Note: all the untested composite operations take the same code path as source-in,
-  // which assumes that the destination may not be overwritten
+  // Note: all the untested composite operations take the same code path as
+  // source-in, which assumes that the destination may not be overwritten
   TEST_OVERDRAW_2(1, setGlobalCompositeOperation(String("clear")),
                   fillRect(0, 0, 10, 10));
   TEST_OVERDRAW_2(1, setGlobalCompositeOperation(String("copy")),
@@ -491,7 +492,8 @@ TEST_F(CanvasRenderingContext2DTest, detectOverdrawWithCompositeOperations) {
                   fillRect(0, 0, 10, 10));
   TEST_OVERDRAW_2(0, setGlobalCompositeOperation(String("source-in")),
                   fillRect(0, 0, 10, 10));
-  // Test composite operators with a transparent rect that covers the entire canvas
+  // Test composite operators with a transparent rect that covers the entire
+  // canvas
   TEST_OVERDRAW_3(1, setGlobalAlpha(0.5f),
                   setGlobalCompositeOperation(String("clear")),
                   fillRect(0, 0, 10, 10));
@@ -504,7 +506,8 @@ TEST_F(CanvasRenderingContext2DTest, detectOverdrawWithCompositeOperations) {
   TEST_OVERDRAW_3(0, setGlobalAlpha(0.5f),
                   setGlobalCompositeOperation(String("source-in")),
                   fillRect(0, 0, 10, 10));
-  // Test composite operators with an opaque rect that does not cover the entire canvas
+  // Test composite operators with an opaque rect that does not cover the entire
+  // canvas
   TEST_OVERDRAW_2(0, setGlobalCompositeOperation(String("clear")),
                   fillRect(0, 0, 5, 5));
   TEST_OVERDRAW_2(1, setGlobalCompositeOperation(String("copy")),
@@ -894,8 +897,8 @@ TEST_F(CanvasRenderingContext2DTest, GPUMemoryUpdateForAcceleratedCanvas) {
       fakeAccelerateSurface.get();
   canvasElement().createImageBufferUsingSurfaceForTesting(
       std::move(fakeAccelerateSurface));
-  // 800 = 10 * 10 * 4 * 2 where 10*10 is canvas size, 4 is num of bytes per pixel per buffer,
-  // and 2 is an estimate of num of gpu buffers required
+  // 800 = 10 * 10 * 4 * 2 where 10*10 is canvas size, 4 is num of bytes per
+  // pixel per buffer, and 2 is an estimate of num of gpu buffers required
   EXPECT_EQ(800, getCurrentGPUMemoryUsage());
   EXPECT_EQ(800, getGlobalGPUMemoryUsage());
   EXPECT_EQ(1u, getGlobalAcceleratedImageBufferCount());
@@ -1109,8 +1112,8 @@ TEST_F(CanvasRenderingContext2DTest, DisableAcceleration) {
       std::move(fakeAccelerateSurface));
   CanvasRenderingContext2D* context = context2d();
 
-  // 800 = 10 * 10 * 4 * 2 where 10*10 is canvas size, 4 is num of bytes per pixel per buffer,
-  // and 2 is an estimate of num of gpu buffers required
+  // 800 = 10 * 10 * 4 * 2 where 10*10 is canvas size, 4 is num of bytes per
+  // pixel per buffer, and 2 is an estimate of num of gpu buffers required
   EXPECT_EQ(800, getCurrentGPUMemoryUsage());
   EXPECT_EQ(800, getGlobalGPUMemoryUsage());
   EXPECT_EQ(1u, getGlobalAcceleratedImageBufferCount());

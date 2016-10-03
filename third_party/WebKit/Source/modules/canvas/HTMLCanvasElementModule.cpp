@@ -18,7 +18,8 @@ void HTMLCanvasElementModule::getContext(
     ExceptionState& exceptionState,
     RenderingContext& result) {
   if (canvas.surfaceLayerBridge()) {
-    // The existence of canvas surfaceLayerBridge indicates that HTMLCanvasElement.transferControlToOffscreen() has been called.
+    // The existence of canvas surfaceLayerBridge indicates that
+    // HTMLCanvasElement.transferControlToOffscreen() has been called.
     exceptionState.throwDOMException(InvalidStateError,
                                      "Cannot get context from a canvas that "
                                      "has transferred its control to "

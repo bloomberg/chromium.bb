@@ -38,14 +38,16 @@ class CORE_EXPORT CanvasAsyncBlobCreator
     MimeTypeWebp,
     NumberOfMimeTypeSupported
   };
-  // This enum is used to back an UMA histogram, and should therefore be treated as append-only.
+  // This enum is used to back an UMA histogram, and should therefore be treated
+  // as append-only.
   enum IdleTaskStatus {
     IdleTaskNotStarted,
     IdleTaskStarted,
     IdleTaskCompleted,
     IdleTaskFailed,
     IdleTaskSwitchedToMainThreadTask,
-    IdleTaskNotSupported,  // Idle tasks are not implemented for some image types
+    IdleTaskNotSupported,  // Idle tasks are not implemented for some image
+                           // types
     IdleTaskCount,         // Should not be seen in production
   };
   // Methods are virtual for mocking in unit tests
@@ -105,8 +107,8 @@ class CORE_EXPORT CanvasAsyncBlobCreator
 
   // JPEG
   bool initializeJpegStruct(double quality);
-  void
-  encodeRowsJpegOnMainThread();  // Similar to idleEncodeRowsJpeg without deadline
+  void encodeRowsJpegOnMainThread();  // Similar to idleEncodeRowsJpeg without
+                                      // deadline
 
   // WEBP
   void encodeImageOnEncoderThread(double quality);

@@ -303,8 +303,8 @@ SkImageFilter* CanvasRenderingContext2DState::getFilter(
                                 *m_filterValue);
     resolverState.loadPendingResources();
 
-    // We can't reuse m_fillPaint and m_strokePaint for the filter, since these incorporate
-    // the global alpha, which isn't applicable here.
+    // We can't reuse m_fillPaint and m_strokePaint for the filter, since these
+    // incorporate the global alpha, which isn't applicable here.
     SkPaint fillPaintForFilter;
     m_fillStyle->applyToPaint(fillPaintForFilter);
     fillPaintForFilter.setColor(m_fillStyle->paintColor());
@@ -520,7 +520,8 @@ const SkPaint* CanvasRenderingContext2DState::getPaint(
       break;
     default:
       ASSERT_NOT_REACHED();
-    // no break on purpose: paint needs to be assigned to avoid compiler warning about uninitialized variable
+    // no break on purpose: paint needs to be assigned to avoid compiler warning
+    // about uninitialized variable.
     case FillPaintType:
       updateFillStyle();
       paint = &m_fillPaint;

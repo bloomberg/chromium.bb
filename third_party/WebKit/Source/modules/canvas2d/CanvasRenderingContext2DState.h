@@ -176,7 +176,8 @@ class CanvasRenderingContext2DState final
 
   enum ImageType { NoImage, OpaqueImage, NonOpaqueImage };
 
-  // If paint will not be used for painting a bitmap, set bitmapOpacity to Opaque
+  // If paint will not be used for painting a bitmap, set bitmapOpacity to
+  // Opaque.
   const SkPaint* getPaint(PaintType, ShadowMode, ImageType = NoImage) const;
 
  private:

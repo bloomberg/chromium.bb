@@ -52,10 +52,12 @@ void BaseRenderingContext2D::realizeSaves() {
     m_stateStack.last()->restore();
     m_stateStack.append(CanvasRenderingContext2DState::create(
         state(), CanvasRenderingContext2DState::DontCopyClipList));
-    // Set the new state's unrealized count to 0, because it has no outstanding saves.
-    // We need to do this explicitly because the copy constructor and operator= used
-    // by the Vector operations copy the unrealized count from the previous state (in
-    // turn necessary to support correct resizing and unwinding of the stack).
+    // Set the new state's unrealized count to 0, because it has no outstanding
+    // saves.
+    // We need to do this explicitly because the copy constructor and operator=
+    // used by the Vector operations copy the unrealized count from the previous
+    // state (in turn necessary to support correct resizing and unwinding of the
+    // stack).
     m_stateStack.last()->resetUnrealizedSaveCount();
     SkCanvas* canvas = drawingCanvas();
     if (canvas)
@@ -499,8 +501,10 @@ void BaseRenderingContext2D::resetTransform() {
 
   if (invertibleCTM)
     m_path.transform(ctm);
-  // When else, do nothing because all transform methods didn't update m_path when CTM became non-invertible.
-  // It means that resetTransform() restores m_path just before CTM became non-invertible.
+  // When else, do nothing because all transform methods didn't update m_path
+  // when CTM became non-invertible.
+  // It means that resetTransform() restores m_path just before CTM became
+  // non-invertible.
 }
 
 void BaseRenderingContext2D::setTransform(double m11,
@@ -551,8 +555,8 @@ static bool validateRectForCanvas(double& x,
 
 bool BaseRenderingContext2D::isFullCanvasCompositeMode(SkXfermode::Mode op) {
   // See 4.8.11.1.3 Compositing
-  // CompositeSourceAtop and CompositeDestinationOut are not listed here as the platforms already
-  // implement the specification's behavior.
+  // CompositeSourceAtop and CompositeDestinationOut are not listed here as the
+  // platforms already implement the specification's behavior.
   return op == SkXfermode::kSrcIn_Mode || op == SkXfermode::kSrcOut_Mode ||
          op == SkXfermode::kDstIn_Mode || op == SkXfermode::kDstATop_Mode;
 }
@@ -853,7 +857,8 @@ static inline void clipRectsToImageRect(const FloatRect& imageRect,
 
   srcRect->intersect(imageRect);
 
-  // To clip the destination rectangle in the same proportion, transform the clipped src rect
+  // To clip the destination rectangle in the same proportion, transform the
+  // clipped src rect
   *dstRect = *srcRect;
   dstRect->scale(scale.width(), scale.height());
   dstRect->move(offset);
@@ -1136,7 +1141,8 @@ void BaseRenderingContext2D::drawImage(ExecutionContext* executionContext,
 
   validateStateStack();
 
-  // Heuristic for disabling acceleration based on anticipated texture upload overhead
+  // Heuristic for disabling acceleration based on anticipated texture upload
+  // overhead.
   // See comments in ExpensiveCanvasHeuristicParameters.h for explanation.
   ImageBuffer* buffer = imageBuffer();
   if (buffer && buffer->isAccelerated() && !imageSource->isAccelerated()) {
@@ -1716,7 +1722,8 @@ void BaseRenderingContext2D::checkOverdraw(
         isSourceOver = mode == SkXfermode::kSrcOver_Mode;
         if (!isSourceOver && mode != SkXfermode::kSrc_Mode &&
             mode != SkXfermode::kClear_Mode)
-          return;  // The code below only knows how to handle Src, SrcOver, and Clear
+          return;  // The code below only knows how to handle Src, SrcOver, and
+                   // Clear
       } else {
         // unknown xfermode
         ASSERT_NOT_REACHED();

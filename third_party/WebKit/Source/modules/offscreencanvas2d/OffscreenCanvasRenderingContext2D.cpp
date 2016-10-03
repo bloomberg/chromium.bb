@@ -73,8 +73,9 @@ bool OffscreenCanvasRenderingContext2D::wouldTaintOrigin(
     CanvasImageSource* source,
     ExecutionContext* executionContext) {
   if (executionContext->isWorkerGlobalScope()) {
-    // We only support passing in ImageBitmap and OffscreenCanvases as source images
-    // in drawImage() or createPattern() in a OffscreenCanvas2d in worker.
+    // We only support passing in ImageBitmap and OffscreenCanvases as source
+    // images in drawImage() or createPattern() in a OffscreenCanvas2d in
+    // worker.
     DCHECK(source->isImageBitmap() || source->isOffscreenCanvas());
   }
 
@@ -192,13 +193,15 @@ void OffscreenCanvasRenderingContext2D::didDraw(const SkIRect& dirtyRect) {}
 
 bool OffscreenCanvasRenderingContext2D::stateHasFilter() {
   // TODO: crbug.com/593838 make hasFilter accept nullptr
-  // return state().hasFilter(nullptr, nullptr, IntSize(width(), height()), this);
+  // return state().hasFilter(nullptr, nullptr, IntSize(width(), height()),
+  // this);
   return false;
 }
 
 SkImageFilter* OffscreenCanvasRenderingContext2D::stateGetFilter() {
   // TODO: make getFilter accept nullptr
-  // return state().getFilter(nullptr, nullptr, IntSize(width(), height()), this);
+  // return state().getFilter(nullptr, nullptr, IntSize(width(), height()),
+  // this);
   return nullptr;
 }
 

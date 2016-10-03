@@ -38,9 +38,10 @@ class SecurityOrigin;
 
 enum SourceImageStatus {
   NormalSourceImageStatus,
-  UndecodableSourceImageStatus,  // Image element with a 'broken' image
-  ZeroSizeCanvasSourceImageStatus,  // Source is a canvas with width or heigh of zero
-  IncompleteSourceImageStatus,  // Image element with no source media
+  UndecodableSourceImageStatus,     // Image element with a 'broken' image
+  ZeroSizeCanvasSourceImageStatus,  // Source is a canvas with width or heigh of
+                                    // zero
+  IncompleteSourceImageStatus,      // Image element with no source media
   InvalidSourceImageStatus,
 };
 
@@ -66,7 +67,8 @@ class CORE_EXPORT CanvasImageSource {
   virtual bool isOffscreenCanvas() const { return false; }
 
   // Adjusts the source and destination rectangles for cases where the actual
-  // source image is a subregion of the image returned by getSourceImageForCanvas.
+  // source image is a subregion of the image returned by
+  // getSourceImageForCanvas.
   virtual void adjustDrawRects(FloatRect* srcRect, FloatRect* dstRect) const {}
 
   virtual FloatSize elementSize(const FloatSize& defaultObjectSize) const = 0;

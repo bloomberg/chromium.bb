@@ -67,7 +67,8 @@ class MockCanvasAsyncBlobCreatorWithoutStartPng
 
  protected:
   void scheduleInitiatePngEncoding() override {
-    // Deliberately make scheduleInitiatePngEncoding do nothing so that idle task never starts
+    // Deliberately make scheduleInitiatePngEncoding do nothing so that idle
+    // task never starts
   }
 };
 
@@ -91,7 +92,8 @@ class MockCanvasAsyncBlobCreatorWithoutCompletePng
   }
 
   void idleEncodeRowsPng(double deadlineSeconds) override {
-    // Deliberately make idleEncodeRowsPng do nothing so that idle task never completes
+    // Deliberately make idleEncodeRowsPng do nothing so that idle task never
+    // completes
   }
 };
 
@@ -109,7 +111,8 @@ class MockCanvasAsyncBlobCreatorWithoutStartJpeg
 
  protected:
   void scheduleInitiateJpegEncoding(const double&) override {
-    // Deliberately make scheduleInitiateJpegEncoding do nothing so that idle task never starts
+    // Deliberately make scheduleInitiateJpegEncoding do nothing so that idle
+    // task never starts
   }
 };
 
@@ -134,7 +137,8 @@ class MockCanvasAsyncBlobCreatorWithoutCompleteJpeg
   }
 
   void idleEncodeRowsJpeg(double deadlineSeconds) override {
-    // Deliberately make idleEncodeRowsJpeg do nothing so that idle task never completes
+    // Deliberately make idleEncodeRowsJpeg do nothing so that idle task never
+    // completes
   }
 };
 
@@ -192,8 +196,9 @@ void CanvasAsyncBlobCreatorTest::prepareMockCanvasAsyncBlobCreatorFailPng() {
   IntSize testSize(0, 0);
   ImageData* imageData = ImageData::create(testSize);
 
-  // We reuse the class MockCanvasAsyncBlobCreatorWithoutCompletePng because this
-  // test case is expected to fail at initialization step before completion.
+  // We reuse the class MockCanvasAsyncBlobCreatorWithoutCompletePng because
+  // this test case is expected to fail at initialization step before
+  // completion.
   m_asyncBlobCreator = new MockCanvasAsyncBlobCreatorWithoutCompletePng(
       imageData->data(), testSize, document());
 }
@@ -220,8 +225,9 @@ void CanvasAsyncBlobCreatorTest::prepareMockCanvasAsyncBlobCreatorFailJpeg() {
   IntSize testSize(0, 0);
   ImageData* imageData = ImageData::create(testSize);
 
-  // We reuse the class MockCanvasAsyncBlobCreatorWithoutCompleteJpeg because this
-  // test case is expected to fail at initialization step before completion.
+  // We reuse the class MockCanvasAsyncBlobCreatorWithoutCompleteJpeg because
+  // this test case is expected to fail at initialization step before
+  // completion.
   m_asyncBlobCreator = new MockCanvasAsyncBlobCreatorWithoutCompleteJpeg(
       imageData->data(), testSize, document());
 }

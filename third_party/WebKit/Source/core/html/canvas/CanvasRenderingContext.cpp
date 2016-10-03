@@ -51,7 +51,8 @@ CanvasRenderingContext::CanvasRenderingContext(
              kLinearRGBCanvasColorSpaceName)
       m_colorSpace = kLinearRGBCanvasColorSpace;
   }
-  // Make m_creationAttributes reflect the effective colorSpace rather than the requested one
+  // Make m_creationAttributes reflect the effective colorSpace rather than the
+  // requested one
   m_creationAttributes.setColorSpace(colorSpaceAsString());
 }
 

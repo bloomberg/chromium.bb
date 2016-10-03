@@ -39,8 +39,9 @@ class HTMLCanvasElementModuleTest : public ::testing::Test {
 
 OffscreenCanvas* HTMLCanvasElementModuleTest::transferControlToOffscreen(
     ExceptionState& exceptionState) {
-  // This unit test only tests if the Canvas Id is associated correctly, so we exclude the part that
-  // creates surface layer bridge because a mojo message pipe cannot be tested using webkit unit tests.
+  // This unit test only tests if the Canvas Id is associated correctly, so we
+  // exclude the part that creates surface layer bridge because a mojo message
+  // pipe cannot be tested using webkit unit tests.
   return HTMLCanvasElementModule::transferControlToOffscreenInternal(
       canvasElement(), exceptionState);
 }

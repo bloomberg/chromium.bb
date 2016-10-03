@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012 Apple Inc.
+ * All rights reserved.
  * Copyright (C) 2008, 2010 Nokia Corporation and/or its subsidiary(-ies)
  * Copyright (C) 2007 Alp Toker <alp@atoker.com>
  * Copyright (C) 2008 Eric Seidel <eric@webkit.org>
@@ -80,8 +81,9 @@ static bool contextLostRestoredEventsEnabled() {
   return RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled();
 }
 
-// Drawing methods need to use this instead of SkAutoCanvasRestore in case overdraw
-// detection substitutes the recording canvas (to discard overdrawn draw calls).
+// Drawing methods need to use this instead of SkAutoCanvasRestore in case
+// overdraw detection substitutes the recording canvas (to discard overdrawn
+// draw calls).
 class CanvasRenderingContext2DAutoRestoreSkCanvas {
   STACK_ALLOCATED();
 
@@ -228,8 +230,8 @@ void CanvasRenderingContext2D::dispatchContextLostEvent(TimerBase*) {
     }
   }
 
-  // If RealLostContext, it means the context was not lost due to surface failure
-  // but rather due to a an eviction, which means image buffer exists.
+  // If RealLostContext, it means the context was not lost due to surface
+  // failure but rather due to a an eviction, which means image buffer exists.
   if (m_contextRestorable && m_contextLostMode == RealLostContext) {
     m_tryRestoreContextAttemptCount = 0;
     m_tryRestoreContextEventTimer.startRepeating(TryRestoreContextInterval,
@@ -239,7 +241,8 @@ void CanvasRenderingContext2D::dispatchContextLostEvent(TimerBase*) {
 
 void CanvasRenderingContext2D::tryRestoreContextEvent(TimerBase* timer) {
   if (m_contextLostMode == NotLostContext) {
-    // Canvas was already restored (possibly thanks to a resize), so stop trying.
+    // Canvas was already restored (possibly thanks to a resize), so stop
+    // trying.
     m_tryRestoreContextEventTimer.stop();
     return;
   }
@@ -330,7 +333,8 @@ void CanvasRenderingContext2D::scrollPathIntoViewInternal(const Path& path) {
                                 ScrollAlignment::alignTopAlways);
 
   // TODO: should implement "inform the user" that the caret and/or
-  // selection the specified rectangle of the canvas. See http://crbug.com/357987
+  // selection the specified rectangle of the canvas. See
+  // http://crbug.com/357987
 }
 
 void CanvasRenderingContext2D::clearRect(double x,
@@ -368,7 +372,8 @@ SkImageFilter* CanvasRenderingContext2D::stateGetFilter() {
 }
 
 void CanvasRenderingContext2D::snapshotStateForFilter() {
-  // The style resolution required for fonts is not available in frame-less documents.
+  // The style resolution required for fonts is not available in frame-less
+  // documents.
   if (!canvas()->document().frame())
     return;
 
@@ -417,7 +422,8 @@ String CanvasRenderingContext2D::font() const {
     if (fontFamily != &firstFontFamily)
       serializedFont.append(',');
 
-    // FIXME: We should append family directly to serializedFont rather than building a temporary string.
+    // FIXME: We should append family directly to serializedFont rather than
+    // building a temporary string.
     String family = fontFamily->family();
     if (family.startsWith("-webkit-"))
       family = family.substring(8);
@@ -432,7 +438,8 @@ String CanvasRenderingContext2D::font() const {
 }
 
 void CanvasRenderingContext2D::setFont(const String& newFont) {
-  // The style resolution required for fonts is not available in frame-less documents.
+  // The style resolution required for fonts is not available in frame-less
+  // documents.
   if (!canvas()->document().frame())
     return;
 
@@ -448,8 +455,8 @@ void CanvasRenderingContext2D::setFont(const String& newFont) {
 
   CanvasFontCache* canvasFontCache = canvas()->document().canvasFontCache();
 
-  // Map the <canvas> font into the text style. If the font uses keywords like larger/smaller, these will work
-  // relative to the canvas.
+  // Map the <canvas> font into the text style. If the font uses keywords like
+  // larger/smaller, these will work relative to the canvas.
   RefPtr<ComputedStyle> fontStyle;
   const ComputedStyle* computedStyle = canvas()->ensureComputedStyle();
   if (computedStyle) {
@@ -469,7 +476,8 @@ void CanvasRenderingContext2D::setFont(const String& newFont) {
       fontStyle = ComputedStyle::create();
       FontDescription elementFontDescription(
           computedStyle->getFontDescription());
-      // Reset the computed size to avoid inheriting the zoom factor from the <canvas> element.
+      // Reset the computed size to avoid inheriting the zoom factor from the
+      // <canvas> element.
       elementFontDescription.setComputedSize(
           elementFontDescription.specifiedSize());
       fontStyle->setFontDescription(elementFontDescription);
@@ -493,8 +501,8 @@ void CanvasRenderingContext2D::setFont(const String& newFont) {
   }
 
   // The parse succeeded.
-  String newFontSafeCopy(
-      newFont);  // Create a string copy since newFont can be deleted inside realizeSaves.
+  String newFontSafeCopy(newFont);  // Create a string copy since newFont can be
+                                    // deleted inside realizeSaves.
   modifiableState().setUnparsedFont(newFontSafeCopy);
 }
 
@@ -508,12 +516,12 @@ void CanvasRenderingContext2D::schedulePruneLocalFontCacheIfNeeded() {
 void CanvasRenderingContext2D::didProcessTask() {
   Platform::current()->currentThread()->removeTaskObserver(this);
 
-  // This should be the only place where canvas() needs to be checked for nullness
-  // because the circular refence with HTMLCanvasElement mean the canvas and the
-  // context keep each other alive as long as the pair is referenced the task
-  // observer is the only persisten refernce to this object that is not traced,
-  // so didProcessTask() may be call at a time when the canvas has been garbage
-  // collected but not the context.
+  // This should be the only place where canvas() needs to be checked for
+  // nullness because the circular refence with HTMLCanvasElement mean the
+  // canvas and the context keep each other alive as long as the pair is
+  // referenced the task observer is the only persisten refernce to this object
+  // that is not traced, so didProcessTask() may be call at a time when the
+  // canvas has been garbage collected but not the context.
   if (!canvas())
     return;
 
@@ -726,7 +734,8 @@ void CanvasRenderingContext2D::strokeText(const String& text,
 TextMetrics* CanvasRenderingContext2D::measureText(const String& text) {
   TextMetrics* metrics = TextMetrics::create();
 
-  // The style resolution required for fonts is not available in frame-less documents.
+  // The style resolution required for fonts is not available in frame-less
+  // documents.
   if (!canvas()->document().frame())
     return metrics;
 
@@ -762,8 +771,9 @@ TextMetrics* CanvasRenderingContext2D::measureText(const String& text) {
   metrics->setActualBoundingBoxAscent(-textBounds.y() - baselineY);
   metrics->setActualBoundingBoxDescent(textBounds.maxY() + baselineY);
 
-  // Note : top/bottom and ascend/descend are currently the same, so there's no difference
-  //        between the EM box's top and bottom and the font's ascend and descend
+  // Note : top/bottom and ascend/descend are currently the same, so there's no
+  // difference between the EM box's top and bottom and the font's ascend and
+  // descend
   metrics->setEmHeightAscent(0);
   metrics->setEmHeightDescent(0);
 
@@ -779,13 +789,14 @@ void CanvasRenderingContext2D::drawTextInternal(
     double y,
     CanvasRenderingContext2DState::PaintType paintType,
     double* maxWidth) {
-  // The style resolution required for fonts is not available in frame-less documents.
+  // The style resolution required for fonts is not available in frame-less
+  // documents.
   if (!canvas()->document().frame())
     return;
 
-  // accessFont needs the style to be up to date, but updating style can cause script to run,
-  // (e.g. due to autofocus) which can free the canvas (set size to 0, for example), so update
-  // style before grabbing the drawingCanvas.
+  // accessFont needs the style to be up to date, but updating style can cause
+  // script to run, (e.g. due to autofocus) which can free the canvas (set size
+  // to 0, for example), so update style before grabbing the drawingCanvas.
   canvas()->document().updateStyleAndLayoutTreeForNode(canvas());
 
   SkCanvas* c = drawingCanvas();
@@ -797,10 +808,10 @@ void CanvasRenderingContext2D::drawTextInternal(
   if (maxWidth && (!std::isfinite(*maxWidth) || *maxWidth <= 0))
     return;
 
-  // Currently, SkPictureImageFilter does not support subpixel text anti-aliasing, which
-  // is expected when !creationAttributes().alpha(), so we need to fall out of display
-  // list mode when drawing text to an opaque canvas.
-  // crbug.com/583809
+  // Currently, SkPictureImageFilter does not support subpixel text
+  // anti-aliasing, which is expected when !creationAttributes().alpha(), so we
+  // need to fall out of display list mode when drawing text to an opaque
+  // canvas. crbug.com/583809
   if (!creationAttributes().alpha() && !isAccelerated())
     canvas()->disableDeferral(
         DisableDeferralReasonSubPixelTextAntiAliasingSupport);
@@ -847,7 +858,8 @@ void CanvasRenderingContext2D::drawTextInternal(
       break;
   }
 
-  // The slop built in to this mask rect matches the heuristic used in FontCGWin.cpp for GDI text.
+  // The slop built in to this mask rect matches the heuristic used in
+  // FontCGWin.cpp for GDI text.
   TextRunPaintInfo textRunPaintInfo(textRun);
   textRunPaintInfo.bounds =
       FloatRect(location.x() - fontMetrics.height() / 2,
@@ -860,7 +872,8 @@ void CanvasRenderingContext2D::drawTextInternal(
   if (useMaxWidth) {
     drawingCanvas()->save();
     drawingCanvas()->translate(location.x(), location.y());
-    // We draw when fontWidth is 0 so compositing operations (eg, a "copy" op) still work.
+    // We draw when fontWidth is 0 so compositing operations (eg, a "copy" op)
+    // still work.
     drawingCanvas()->scale((fontWidth > 0 ? (width / fontWidth) : 0), 1);
     location = FloatPoint();
   }
@@ -891,8 +904,10 @@ int CanvasRenderingContext2D::getFontBaseline(
     case TopTextBaseline:
       return fontMetrics.ascent();
     case HangingTextBaseline:
-      // According to http://wiki.apache.org/xmlgraphics-fop/LineLayout/AlignmentHandling
-      // "FOP (Formatting Objects Processor) puts the hanging baseline at 80% of the ascender height"
+      // According to
+      // http://wiki.apache.org/xmlgraphics-fop/LineLayout/AlignmentHandling
+      // "FOP (Formatting Objects Processor) puts the hanging baseline at 80% of
+      // the ascender height"
       return (fontMetrics.ascent() * 4) / 5;
     case BottomTextBaseline:
     case IdeographicTextBaseline:
@@ -1089,8 +1104,8 @@ unsigned CanvasRenderingContext2D::hitRegionsCount() const {
 
 bool CanvasRenderingContext2D::isAccelerationOptimalForCanvasContent() const {
   // Heuristic to determine if the GPU accelerated rendering pipeline is optimal
-  // for performance based on past usage. It has a bias towards suggesting that the
-  // accelerated pipeline is optimal.
+  // for performance based on past usage. It has a bias towards suggesting that
+  // the accelerated pipeline is optimal.
 
   float acceleratedCost = estimateRenderingCost(
       ExpensiveCanvasHeuristicParameters::AcceleratedModeIndex);
