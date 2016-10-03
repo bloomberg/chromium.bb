@@ -99,6 +99,9 @@ http/tests/inspector/indexeddb/resources-panel.html [ Timeout ]
 # layout_test_runtime_flags_.have_top_loading_frame()
 imported/wpt/html/syntax/parsing/html5lib_tests19.html [ Crash Failure ]
 
+# https://crbug.com/652366 - window.internals.settings are not replicated across OOPIFs.
+http/tests/webaudio/autoplay-crossorigin.html [ Failure ]
+
 # TODO(lukasza, alexmos): Triage these failures.
 fast/frames/cached-frame-counter.html [ Timeout ]
 fast/frames/frame-limit.html [ Timeout ]
