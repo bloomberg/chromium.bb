@@ -402,23 +402,41 @@ void WebApkInstaller::OnCreatedSubDirAndSetPermissions(
     return;
   }
 
+  DownloadWebApk(output_dir.AppendASCII(webapk_package_), download_url, true);
+}
+
+void WebApkInstaller::DownloadWebApk(const base::FilePath& output_path,
+                                     const GURL& download_url,
+                                     bool retry_if_fails) {
   timer_.Start(
       FROM_HERE, base::TimeDelta::FromMilliseconds(download_timeout_ms_),
       base::Bind(&WebApkInstaller::OnTimeout, weak_ptr_factory_.GetWeakPtr()));
 
-  base::FilePath output_path = output_dir.AppendASCII(webapk_package_);
   downloader_.reset(new FileDownloader(
       download_url, output_path, true, request_context_getter_,
       base::Bind(&WebApkInstaller::OnWebApkDownloaded,
-                 weak_ptr_factory_.GetWeakPtr(), output_path)));
+                 weak_ptr_factory_.GetWeakPtr(),
+                 output_path, download_url, retry_if_fails)));
 }
 
 void WebApkInstaller::OnWebApkDownloaded(const base::FilePath& file_path,
+                                         const GURL& download_url,
+                                         bool retry_if_fails,
                                          FileDownloader::Result result) {
   timer_.Stop();
 
   if (result != FileDownloader::DOWNLOADED) {
-    OnFailure();
+    if (!retry_if_fails) {
+      OnFailure();
+      return;
+    }
+
+    content::BrowserThread::PostDelayedTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(&WebApkInstaller::DownloadWebApk,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   file_path, download_url, false),
+        base::TimeDelta::FromSeconds(2));
     return;
   }
 
