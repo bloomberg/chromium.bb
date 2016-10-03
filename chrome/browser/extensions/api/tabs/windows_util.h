@@ -21,11 +21,12 @@ class WindowController;
 namespace windows_util {
 
 // Populates |controller| for given |window_id|. If the window is not found,
-// returns false and sets UIThreadExtensionFunction error_.
+// returns false and sets |error|.
 bool GetWindowFromWindowID(UIThreadExtensionFunction* function,
                            int window_id,
                            extensions::WindowController::TypeFilter filter,
-                           extensions::WindowController** controller);
+                           extensions::WindowController** controller,
+                           std::string* error);
 
 // Returns true if |function| (and the profile and extension that it was
 // invoked from) can operate on the window wrapped by |window_controller|.

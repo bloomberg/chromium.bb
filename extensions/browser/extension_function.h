@@ -243,10 +243,6 @@ class ExtensionFunction
   // Retrieves any error string from the function.
   virtual const std::string& GetError() const;
 
-  // Sets the function's error string.
-  // TODO(devlin): This should be handled exclusively through the responses.
-  virtual void SetError(const std::string& error);
-
   bool bad_message() const { return bad_message_; }
   void set_bad_message(bool bad_message) { bad_message_ = bad_message; }
 
@@ -636,8 +632,9 @@ class AsyncExtensionFunction : public UIThreadExtensionFunction {
  public:
   AsyncExtensionFunction();
 
+  void SetError(const std::string& error);
+
   // ExtensionFunction:
-  void SetError(const std::string& error) override;
   const std::string& GetError() const override;
 
  protected:

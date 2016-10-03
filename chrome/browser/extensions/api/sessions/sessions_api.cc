@@ -401,8 +401,8 @@ void SessionsRestoreFunction::SetResultRestoredTab(
 
 bool SessionsRestoreFunction::SetResultRestoredWindow(int window_id) {
   WindowController* controller = NULL;
-  if (!windows_util::GetWindowFromWindowID(this, window_id, 0, &controller)) {
-    // error_ is set by GetWindowFromWindowId function call.
+  if (!windows_util::GetWindowFromWindowID(this, window_id, 0, &controller,
+                                           &error_)) {
     return false;
   }
   std::unique_ptr<base::DictionaryValue> window_value(

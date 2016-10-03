@@ -26,7 +26,9 @@ namespace windows_util {
 bool GetWindowFromWindowID(UIThreadExtensionFunction* function,
                            int window_id,
                            extensions::WindowController::TypeFilter filter,
-                           extensions::WindowController** controller) {
+                           extensions::WindowController** controller,
+                           std::string* error) {
+  DCHECK(error);
   if (window_id == extension_misc::kCurrentWindowId) {
     extensions::WindowController* extension_window_controller =
         function->dispatcher()->GetExtensionWindowController();
@@ -39,7 +41,7 @@ bool GetWindowFromWindowID(UIThreadExtensionFunction* function,
                         ->CurrentWindowForFunctionWithFilter(function, filter);
     }
     if (!(*controller)) {
-      function->SetError(extensions::tabs_constants::kNoCurrentWindowError);
+      *error = extensions::tabs_constants::kNoCurrentWindowError;
       return false;
     }
   } else {
@@ -47,9 +49,9 @@ bool GetWindowFromWindowID(UIThreadExtensionFunction* function,
         extensions::WindowControllerList::GetInstance()
             ->FindWindowForFunctionByIdWithFilter(function, window_id, filter);
     if (!(*controller)) {
-      function->SetError(extensions::ErrorUtils::FormatErrorMessage(
+      *error = extensions::ErrorUtils::FormatErrorMessage(
           extensions::tabs_constants::kWindowNotFoundError,
-          base::IntToString(window_id)));
+          base::IntToString(window_id));
       return false;
     }
   }

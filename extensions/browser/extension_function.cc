@@ -312,10 +312,6 @@ const std::string& ExtensionFunction::GetError() const {
   return error_;
 }
 
-void ExtensionFunction::SetError(const std::string& error) {
-  error_ = error;
-}
-
 bool ExtensionFunction::user_gesture() const {
   return user_gesture_ || UserGestureForTests::GetInstance()->HaveGesture();
 }

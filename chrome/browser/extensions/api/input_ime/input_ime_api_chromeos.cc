@@ -372,10 +372,11 @@ ExtensionFunction::ResponseAction InputImeClearCompositionFunction::Run() {
 
   std::string error;
   bool success = engine->ClearComposition(params.context_id, &error);
-  if (!success)
-    SetError(error);
-  return RespondNow(
-      OneArgument(base::MakeUnique<base::FundamentalValue>(success)));
+  std::unique_ptr<base::ListValue> results =
+      base::MakeUnique<base::ListValue>();
+  results->Append(base::MakeUnique<base::FundamentalValue>(success));
+  return RespondNow(success ? ArgumentList(std::move(results))
+                            : ErrorWithArguments(std::move(results), error));
 }
 
 bool InputImeHideInputViewFunction::RunAsync() {
@@ -411,9 +412,10 @@ InputImeSetCandidateWindowPropertiesFunction::Run() {
   std::string error;
   if (properties.visible &&
       !engine->SetCandidateWindowVisible(*properties.visible, &error)) {
-    SetError(error);
-    return RespondNow(
-        OneArgument(base::MakeUnique<base::FundamentalValue>(false)));
+    std::unique_ptr<base::ListValue> results =
+        base::MakeUnique<base::ListValue>();
+    results->Append(base::MakeUnique<base::FundamentalValue>(false));
+    return RespondNow(ErrorWithArguments(std::move(results), error));
   }
 
   InputMethodEngine::CandidateWindowProperty properties_out =
@@ -493,10 +495,11 @@ ExtensionFunction::ResponseAction InputImeSetCandidatesFunction::Run() {
   std::string error;
   bool success =
       engine->SetCandidates(params.context_id, candidates_out, &error);
-  if (!success)
-    SetError(error);
-  return RespondNow(
-      OneArgument(base::MakeUnique<base::FundamentalValue>(success)));
+  std::unique_ptr<base::ListValue> results =
+      base::MakeUnique<base::ListValue>();
+  results->Append(base::MakeUnique<base::FundamentalValue>(success));
+  return RespondNow(success ? ArgumentList(std::move(results))
+                            : ErrorWithArguments(std::move(results), error));
 }
 
 ExtensionFunction::ResponseAction InputImeSetCursorPositionFunction::Run() {
@@ -515,10 +518,11 @@ ExtensionFunction::ResponseAction InputImeSetCursorPositionFunction::Run() {
   std::string error;
   bool success =
       engine->SetCursorPosition(params.context_id, params.candidate_id, &error);
-  if (!success)
-    SetError(error);
-  return RespondNow(
-      OneArgument(base::MakeUnique<base::FundamentalValue>(success)));
+  std::unique_ptr<base::ListValue> results =
+      base::MakeUnique<base::ListValue>();
+  results->Append(base::MakeUnique<base::FundamentalValue>(success));
+  return RespondNow(success ? ArgumentList(std::move(results))
+                            : ErrorWithArguments(std::move(results), error));
 }
 
 ExtensionFunction::ResponseAction InputImeSetMenuItemsFunction::Run() {
@@ -588,8 +592,7 @@ ExtensionFunction::ResponseAction InputImeDeleteSurroundingTextFunction::Run() {
   std::string error;
   engine->DeleteSurroundingText(params.context_id, params.offset, params.length,
                                 &error);
-  SetError(error);
-  return RespondNow(NoArguments());
+  return RespondNow(error.empty() ? NoArguments() : Error(error));
 }
 
 ExtensionFunction::ResponseAction

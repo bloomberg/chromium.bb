@@ -141,36 +141,25 @@ class ApiParameterExtractor {
   T* params_;
 };
 
-bool GetBrowserFromWindowID(ChromeUIThreadExtensionFunction* function,
+bool GetBrowserFromWindowID(const ChromeExtensionFunctionDetails& details,
                             int window_id,
-                            Browser** browser) {
-  std::string error;
-  Browser* result;
-  result =
-      ExtensionTabUtil::GetBrowserFromWindowID(function, window_id, &error);
-  if (!result) {
-    function->SetError(error);
+                            Browser** browser,
+                            std::string* error) {
+  Browser* result = nullptr;
+  result = ExtensionTabUtil::GetBrowserFromWindowID(details, window_id, error);
+  if (!result)
     return false;
-  }
 
   *browser = result;
   return true;
 }
 
-bool GetBrowserFromWindowID(ChromeExtensionFunctionDetails* details,
+bool GetBrowserFromWindowID(ChromeUIThreadExtensionFunction* function,
                             int window_id,
-                            Browser** browser) {
-  std::string error;
-  Browser* result;
-  result =
-      ExtensionTabUtil::GetBrowserFromWindowID(*details, window_id, &error);
-  if (!result) {
-    details->function()->SetError(error);
-    return false;
-  }
-
-  *browser = result;
-  return true;
+                            Browser** browser,
+                            std::string* error) {
+  return GetBrowserFromWindowID(ChromeExtensionFunctionDetails(function),
+                                window_id, browser, error);
 }
 
 // |error_message| can optionally be passed in and will be set with an
@@ -293,8 +282,9 @@ bool WindowsGetFunction::RunSync() {
 
   ApiParameterExtractor<windows::Get::Params> extractor(params.get());
   WindowController* controller;
-  if (!windows_util::GetWindowFromWindowID(
-          this, params->window_id, extractor.type_filters(), &controller)) {
+  if (!windows_util::GetWindowFromWindowID(this, params->window_id,
+                                           extractor.type_filters(),
+                                           &controller, &error_)) {
     return false;
   }
 
@@ -314,7 +304,7 @@ bool WindowsGetCurrentFunction::RunSync() {
   WindowController* controller;
   if (!windows_util::GetWindowFromWindowID(
           this, extension_misc::kCurrentWindowId, extractor.type_filters(),
-          &controller)) {
+          &controller, &error_)) {
     return false;
   }
   if (extractor.populate_tabs())
@@ -690,7 +680,7 @@ bool WindowsUpdateFunction::RunSync() {
   WindowController* controller;
   if (!windows_util::GetWindowFromWindowID(
           this, params->window_id, WindowController::GetAllWindowFilter(),
-          &controller)) {
+          &controller, &error_)) {
     return false;
   }
 
@@ -794,7 +784,7 @@ bool WindowsRemoveFunction::RunSync() {
   WindowController* controller;
   if (!windows_util::GetWindowFromWindowID(this, params->window_id,
                                            WindowController::kNoWindowFilter,
-                                           &controller)) {
+                                           &controller, &error_)) {
     return false;
   }
 
@@ -821,7 +811,7 @@ bool TabsGetSelectedFunction::RunSync() {
     window_id = *params->window_id;
 
   Browser* browser = NULL;
-  if (!GetBrowserFromWindowID(this, window_id, &browser))
+  if (!GetBrowserFromWindowID(this, window_id, &browser, &error_))
     return false;
 
   TabStripModel* tab_strip = browser->tab_strip_model();
@@ -845,7 +835,7 @@ bool TabsGetAllInWindowFunction::RunSync() {
     window_id = *params->window_id;
 
   Browser* browser = NULL;
-  if (!GetBrowserFromWindowID(this, window_id, &browser))
+  if (!GetBrowserFromWindowID(this, window_id, &browser, &error_))
     return false;
 
   SetResult(ExtensionTabUtil::CreateTabList(browser, extension()));
@@ -1137,7 +1127,7 @@ bool TabsHighlightFunction::RunSync() {
     window_id = *params->highlight_info.window_id;
 
   Browser* browser = NULL;
-  if (!GetBrowserFromWindowID(this, window_id, &browser))
+  if (!GetBrowserFromWindowID(this, window_id, &browser, &error_))
     return false;
 
   TabStripModel* tabstrip = browser->tab_strip_model();
@@ -1483,7 +1473,7 @@ bool TabsMoveFunction::MoveTab(int tab_id,
   if (window_id) {
     Browser* target_browser = NULL;
 
-    if (!GetBrowserFromWindowID(this, *window_id, &target_browser))
+    if (!GetBrowserFromWindowID(this, *window_id, &target_browser, &error_))
       return false;
 
     if (!target_browser->window()->IsTabStripEditable()) {
@@ -1678,7 +1668,7 @@ bool TabsCaptureVisibleTabFunction::ClientAllowsTransparency() {
 
 WebContents* TabsCaptureVisibleTabFunction::GetWebContentsForID(int window_id) {
   Browser* browser = NULL;
-  if (!GetBrowserFromWindowID(&chrome_details_, window_id, &browser))
+  if (!GetBrowserFromWindowID(chrome_details_, window_id, &browser, &error_))
     return NULL;
 
   WebContents* contents = browser->tab_strip_model()->GetActiveWebContents();

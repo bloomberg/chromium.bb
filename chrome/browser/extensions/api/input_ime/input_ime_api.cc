@@ -283,7 +283,6 @@ ExtensionFunction::ResponseAction InputImeKeyEventHandledFunction::Run() {
 }
 
 ExtensionFunction::ResponseAction InputImeSetCompositionFunction::Run() {
-  bool success = false;
   InputImeEventRouter* event_router =
       GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()));
   InputMethodEngineBase* engine =
@@ -319,18 +318,20 @@ ExtensionFunction::ResponseAction InputImeSetCompositionFunction::Run() {
     int selection_end =
         params.selection_end ? *params.selection_end : params.cursor;
     std::string error;
-    success = engine->SetComposition(params.context_id, params.text.c_str(),
-                                     selection_start, selection_end,
-                                     params.cursor, segments, &error);
-    SetError(error);
+    if (!engine->SetComposition(params.context_id, params.text.c_str(),
+                                selection_start, selection_end, params.cursor,
+                                segments, &error)) {
+      std::unique_ptr<base::ListValue> results =
+          base::MakeUnique<base::ListValue>();
+      results->Append(base::MakeUnique<base::FundamentalValue>(false));
+      return RespondNow(ErrorWithArguments(std::move(results), error));
+    }
   }
-  std::unique_ptr<base::ListValue> output =
-      SetComposition::Results::Create(success);
-  return RespondNow(ArgumentList(std::move(output)));
+  return RespondNow(
+      OneArgument(base::MakeUnique<base::FundamentalValue>(true)));
 }
 
 ExtensionFunction::ResponseAction InputImeCommitTextFunction::Run() {
-  bool success = false;
   InputImeEventRouter* event_router =
       GetInputImeEventRouter(Profile::FromBrowserContext(browser_context()));
   InputMethodEngineBase* engine =
@@ -340,13 +341,15 @@ ExtensionFunction::ResponseAction InputImeCommitTextFunction::Run() {
         CommitText::Params::Create(*args_));
     const CommitText::Params::Parameters& params = parent_params->parameters;
     std::string error;
-    success =
-        engine->CommitText(params.context_id, params.text.c_str(), &error);
-    SetError(error);
+    if (!engine->CommitText(params.context_id, params.text.c_str(), &error)) {
+      std::unique_ptr<base::ListValue> results =
+          base::MakeUnique<base::ListValue>();
+      results->Append(base::MakeUnique<base::FundamentalValue>(false));
+      return RespondNow(ErrorWithArguments(std::move(results), error));
+    }
   }
-  std::unique_ptr<base::ListValue> output =
-      CommitText::Results::Create(success);
-  return RespondNow(ArgumentList(std::move(output)));
+  return RespondNow(
+      OneArgument(base::MakeUnique<base::FundamentalValue>(true)));
 }
 
 ExtensionFunction::ResponseAction InputImeSendKeyEventsFunction::Run() {

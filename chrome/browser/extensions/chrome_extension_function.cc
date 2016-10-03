@@ -37,13 +37,13 @@ ChromeUIThreadExtensionFunction::GetExtensionWindowController() {
   return chrome_details_.GetExtensionWindowController();
 }
 
+void ChromeUIThreadExtensionFunction::SetError(const std::string& error) {
+  error_ = error;
+}
+
 content::WebContents*
 ChromeUIThreadExtensionFunction::GetAssociatedWebContents() {
   return chrome_details_.GetAssociatedWebContents();
-}
-
-void ChromeUIThreadExtensionFunction::SetError(const std::string& error) {
-  error_ = error;
 }
 
 const std::string& ChromeUIThreadExtensionFunction::GetError() const {

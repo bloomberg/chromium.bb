@@ -178,10 +178,8 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveAddressFunction::Run() {
   autofill::PersonalDataManager* personal_data =
       autofill::PersonalDataManagerFactory::GetForProfile(
       chrome_details_.GetProfile());
-  if (!personal_data || !personal_data->IsDataLoaded()) {
-    SetError(kErrorDataUnavailable);
-    return RespondNow(NoArguments());
-  }
+  if (!personal_data || !personal_data->IsDataLoaded())
+    return RespondNow(Error(kErrorDataUnavailable));
 
   api::autofill_private::AddressEntry* address = &parameters->address;
 
@@ -367,10 +365,8 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveCreditCardFunction::Run() {
   autofill::PersonalDataManager* personal_data =
       autofill::PersonalDataManagerFactory::GetForProfile(
       chrome_details_.GetProfile());
-  if (!personal_data || !personal_data->IsDataLoaded()) {
-    SetError(kErrorDataUnavailable);
-    return RespondNow(NoArguments());
-  }
+  if (!personal_data || !personal_data->IsDataLoaded())
+    return RespondNow(Error(kErrorDataUnavailable));
 
   api::autofill_private::CreditCardEntry* card = &parameters->card;
 
@@ -426,10 +422,8 @@ ExtensionFunction::ResponseAction AutofillPrivateRemoveEntryFunction::Run() {
   autofill::PersonalDataManager* personal_data =
       autofill::PersonalDataManagerFactory::GetForProfile(
       chrome_details_.GetProfile());
-  if (!personal_data || !personal_data->IsDataLoaded()) {
-    SetError(kErrorDataUnavailable);
-    return RespondNow(NoArguments());
-  }
+  if (!personal_data || !personal_data->IsDataLoaded())
+    return RespondNow(Error(kErrorDataUnavailable));
 
   personal_data->RemoveByGUID(parameters->guid);
 
@@ -478,10 +472,8 @@ ExtensionFunction::ResponseAction AutofillPrivateMaskCreditCardFunction::Run() {
   autofill::PersonalDataManager* personal_data =
       autofill::PersonalDataManagerFactory::GetForProfile(
       chrome_details_.GetProfile());
-  if (!personal_data || !personal_data->IsDataLoaded()) {
-    SetError(kErrorDataUnavailable);
-    return RespondNow(NoArguments());
-  }
+  if (!personal_data || !personal_data->IsDataLoaded())
+    return RespondNow(Error(kErrorDataUnavailable));
 
   personal_data->ResetFullServerCard(parameters->guid);
 

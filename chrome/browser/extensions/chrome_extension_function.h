@@ -54,9 +54,10 @@ class ChromeUIThreadExtensionFunction : public UIThreadExtensionFunction {
   // Same as above but uses WindowControllerList instead of BrowserList.
   extensions::WindowController* GetExtensionWindowController();
 
+  void SetError(const std::string& error);
+
   // ExtensionFunction:
   content::WebContents* GetAssociatedWebContents() override;
-  void SetError(const std::string& error) override;
   const std::string& GetError() const override;
 
  protected:
