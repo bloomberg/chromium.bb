@@ -53,17 +53,6 @@ enum SrcType {
 
 namespace content {
 
-// MSE is available on all desktop platforms and on Android 4.1 and later.
-static bool IsMSESupported() {
-#if defined(OS_ANDROID)
-  if (base::android::BuildInfo::GetInstance()->sdk_int() < 16) {
-    VLOG(0) << "MSE is only supported in Android 4.1 and later.";
-    return false;
-  }
-#endif  // defined(OS_ANDROID)
-  return true;
-}
-
 // Tests encrypted media playback with a combination of parameters:
 // - char*: Key system name.
 // - SrcType: The type of video src used to load media, MSE or SRC.
@@ -96,11 +85,6 @@ class EncryptedMediaTest : public content::MediaBrowserTest,
   }
 
   void TestConfigChange() {
-    if (CurrentSourceType() != MSE || !IsMSESupported()) {
-      VLOG(0) << "Skipping test - config change test requires MSE.";
-      return;
-    }
-
     base::StringPairs query_params;
     query_params.push_back(std::make_pair("keySystem", CurrentKeySystem()));
     query_params.push_back(std::make_pair("runEncrypted", "1"));
@@ -113,11 +97,6 @@ class EncryptedMediaTest : public content::MediaBrowserTest,
                              const std::string& key_system,
                              SrcType src_type,
                              const std::string& expectation) {
-    if (src_type == MSE && !IsMSESupported()) {
-      VLOG(0) << "Skipping test - MSE not supported.";
-      return;
-    }
-
     base::StringPairs query_params;
     query_params.push_back(std::make_pair("mediaFile", media_file));
     query_params.push_back(std::make_pair("mediaType", media_type));

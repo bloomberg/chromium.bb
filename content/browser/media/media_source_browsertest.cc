@@ -30,27 +30,11 @@ const char kMp2tAudioVideo[] = "video/mp2t; codecs=\"mp4a.40.2, avc1.42E01E\"";
 
 namespace content {
 
-// MSE is available on all desktop platforms and on Android 4.1 and later.
-static bool IsMSESupported() {
-#if defined(OS_ANDROID)
-  if (base::android::BuildInfo::GetInstance()->sdk_int() < 16) {
-    VLOG(0) << "MSE is only supported in Android 4.1 and later.";
-    return false;
-  }
-#endif  // defined(OS_ANDROID)
-  return true;
-}
-
 class MediaSourceTest : public content::MediaBrowserTest {
  public:
   void TestSimplePlayback(const std::string& media_file,
                           const std::string& media_type,
                           const std::string& expectation) {
-    if (!IsMSESupported()) {
-      VLOG(0) << "Skipping test - MSE not supported.";
-      return;
-    }
-
     base::StringPairs query_params;
     query_params.push_back(std::make_pair("mediaFile", media_file));
     query_params.push_back(std::make_pair("mediaType", media_type));
@@ -99,10 +83,6 @@ IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_Type_Error) {
 // Flaky test crbug.com/246308
 // Test changed to skip checks resulting in flakiness. Proper fix still needed.
 IN_PROC_BROWSER_TEST_F(MediaSourceTest, ConfigChangeVideo) {
-  if (!IsMSESupported()) {
-    VLOG(0) << "Skipping test - MSE not supported.";
-    return;
-  }
   RunMediaTestPage("mse_config_change.html", base::StringPairs(), kEnded, true);
 }
 
@@ -111,10 +91,6 @@ IN_PROC_BROWSER_TEST_F(MediaSourceTest, ConfigChangeVideo) {
 // TODO(chcunningham): Figure out why this is flaky on android. crbug/607841
 #if !defined(OS_ANDROID)
 IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_Video_MP4_Audio_WEBM) {
-  if (!IsMSESupported()) {
-    VLOG(0) << "Skipping test - MSE not supported.";
-    return;
-  }
   base::StringPairs query_params;
   query_params.push_back(std::make_pair("videoFormat", "CLEAR_MP4"));
   query_params.push_back(std::make_pair("audioFormat", "CLEAR_WEBM"));
@@ -123,10 +99,6 @@ IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_Video_MP4_Audio_WEBM) {
 #endif  // !defined(OS_ANDROID)
 
 IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_Video_WEBM_Audio_MP4) {
-  if (!IsMSESupported()) {
-    VLOG(0) << "Skipping test - MSE not supported.";
-    return;
-  }
   base::StringPairs query_params;
   query_params.push_back(std::make_pair("videoFormat", "CLEAR_WEBM"));
   query_params.push_back(std::make_pair("audioFormat", "CLEAR_MP4"));

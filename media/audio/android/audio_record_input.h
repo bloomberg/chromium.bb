@@ -25,9 +25,6 @@ class AudioManagerAndroid;
 // AudioRecordInput.java. This class is created and lives on the Audio Manager
 // thread but recorded audio buffers are delivered on a thread managed by
 // the Java class.
-//
-// The Java class makes use of AudioEffect features which are first available
-// in Jelly Bean. It should not be instantiated running against earlier SDKs.
 class MEDIA_EXPORT AudioRecordInputStream : public AudioInputStream {
  public:
   AudioRecordInputStream(AudioManagerAndroid* manager,

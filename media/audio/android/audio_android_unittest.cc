@@ -585,16 +585,6 @@ class AudioAndroidOutputTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(AudioAndroidOutputTest);
 };
 
-// AudioRecordInputStream should only be created on Jelly Bean and higher. This
-// ensures we only test against the AudioRecord path when that is satisfied.
-std::vector<bool> RunAudioRecordInputPathTests() {
-  std::vector<bool> tests;
-  tests.push_back(false);
-  if (base::android::BuildInfo::GetInstance()->sdk_int() >= 16)
-    tests.push_back(true);
-  return tests;
-}
-
 // Test fixture class for tests which exercise the input path, or both input and
 // output paths. It is value-parameterized to test against both the Java
 // AudioRecord (when true) and native OpenSLES (when false) input paths.
@@ -612,8 +602,9 @@ class AudioAndroidInputTest : public AudioAndroidOutputTest,
     GetDefaultInputStreamParametersOnAudioThread();
 
     AudioParameters params = audio_input_parameters();
-    // Override the platform effects setting to use the AudioRecord or OpenSLES
-    // path as requested.
+
+    // Only the AudioRecord path supports effects, so we can force it to be
+    // selected for the test by requesting one. OpenSLES is used otherwise.
     params.set_effects(GetParam() ? AudioParameters::ECHO_CANCELLER
                                   : AudioParameters::NO_EFFECTS);
     return params;
@@ -976,7 +967,8 @@ TEST_P(AudioAndroidInputTest,
   StopAndCloseAudioInputStreamOnAudioThread();
 }
 
-INSTANTIATE_TEST_CASE_P(AudioAndroidInputTest, AudioAndroidInputTest,
-    testing::ValuesIn(RunAudioRecordInputPathTests()));
+INSTANTIATE_TEST_CASE_P(AudioAndroidInputTest,
+                        AudioAndroidInputTest,
+                        testing::Bool());
 
 }  // namespace media

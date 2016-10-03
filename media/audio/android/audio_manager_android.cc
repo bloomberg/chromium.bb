@@ -263,12 +263,7 @@ AudioInputStream* AudioManagerAndroid::MakeLowLatencyInputStream(
   if (params.effects() != AudioParameters::NO_EFFECTS) {
     // Platform effects can only be enabled through the AudioRecord path.
     // An effect should only have been requested here if recommended by
-    // AudioManagerAndroid.shouldUse<Effect>.
-    //
-    // Creating this class requires Jelly Bean, which is already guaranteed by
-    // shouldUse<Effect>. Only DCHECK on that condition to allow tests to use
-    // the effect settings as a way to select the input path.
-    DCHECK_GE(base::android::BuildInfo::GetInstance()->sdk_int(), 16);
+    // AudioManagerAndroid#shouldUse...().
     DVLOG(1) << "Creating AudioRecordInputStream";
     return new AudioRecordInputStream(this, params);
   }

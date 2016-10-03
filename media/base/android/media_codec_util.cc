@@ -89,11 +89,7 @@ static bool IsDecoderSupportedByDevice(const std::string& android_mime_type) {
 
 // static
 bool MediaCodecUtil::IsMediaCodecAvailable() {
-  // MediaCodec is only available on JB and greater.
-  if (base::android::BuildInfo::GetInstance()->sdk_int() < 16)
-    return false;
-
-  // Blacklist some devices on Jellybean as for MediaCodec support is buggy.
+  // Blacklist some devices on Jellybean as MediaCodec is buggy.
   // http://crbug.com/365494, http://crbug.com/615872
   if (base::android::BuildInfo::GetInstance()->sdk_int() <= 19) {
     std::string model(base::android::BuildInfo::GetInstance()->model());

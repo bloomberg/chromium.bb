@@ -99,17 +99,6 @@ enum class EncryptedContainer {
   ENCRYPTED_MP4
 };
 
-// MSE is available on all desktop platforms and on Android 4.1 and later.
-static bool IsMSESupported() {
-#if defined(OS_ANDROID)
-  if (base::android::BuildInfo::GetInstance()->sdk_int() < 16) {
-    DVLOG(0) << "MSE is only supported in Android 4.1 and later.";
-    return false;
-  }
-#endif  // defined(OS_ANDROID)
-  return true;
-}
-
 // Base class for encrypted media tests.
 class EncryptedMediaTestBase : public MediaBrowserTest {
  public:
@@ -153,10 +142,6 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
                              bool force_invalid_response,
                              PlayTwice play_twice,
                              const std::string& expected_title) {
-    if (src_type == MSE && !IsMSESupported()) {
-      DVLOG(0) << "Skipping test - MSE not supported.";
-      return;
-    }
     base::StringPairs query_params;
     query_params.push_back(std::make_pair("mediaFile", media_file));
     query_params.push_back(std::make_pair("mediaType", media_type));
@@ -376,7 +361,6 @@ class EncryptedMediaTest : public EncryptedMediaTestBase,
   }
 
   void TestConfigChange() {
-    DCHECK(IsMSESupported());
     base::StringPairs query_params;
     query_params.push_back(std::make_pair("keySystem", CurrentKeySystem()));
     query_params.push_back(std::make_pair("runEncrypted", "1"));
@@ -403,7 +387,6 @@ class EncryptedMediaTest : public EncryptedMediaTestBase,
 
   void TestDifferentContainers(EncryptedContainer video_format,
                                EncryptedContainer audio_format) {
-    DCHECK(IsMSESupported());
     base::StringPairs query_params;
     query_params.push_back(std::make_pair("keySystem", CurrentKeySystem()));
     query_params.push_back(std::make_pair("runEncrypted", "1"));
@@ -515,10 +498,6 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, InvalidResponseKeyError) {
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, ConfigChangeVideo) {
-  if (CurrentSourceType() != MSE || !IsMSESupported()) {
-    DVLOG(0) << "Skipping test - ConfigChange test requires MSE.";
-    return;
-  }
   if (!IsPlayBackPossible(CurrentKeySystem())) {
     DVLOG(0) << "Skipping test - ConfigChange test requires video playback.";
     return;
