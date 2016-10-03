@@ -133,6 +133,9 @@ def ES2AndES3Pages(base_name):
 # Pages that should be run with experimental canvas features.
 def ExperimentalCanvasFeaturesPages(base_name):
   browser_args = ['--enable-experimental-canvas-features']
+  unaccelerated_args = [
+    '--disable-accelerated-2d-canvas',
+    '--disable-gpu-compositing']
 
   return [
     PixelTestPage(
@@ -182,9 +185,14 @@ def ExperimentalCanvasFeaturesPages(base_name):
       base_name + '_OffscreenCanvasUnaccelerated2D',
       test_rect=[0, 0, 350, 350],
       revision=1,
-      browser_args=browser_args + [
-        '--disable-accelerated-2d-canvas',
-        '--disable-gpu-compositing']),
+      browser_args=browser_args + unaccelerated_args),
+
+    PixelTestPage(
+      'pixel_offscreenCanvas_2d_commit_worker.html',
+      base_name + '_OffscreenCanvasUnaccelerated2DWorker',
+      test_rect=[0, 0, 350, 350],
+      revision=1,
+      browser_args=browser_args + unaccelerated_args),
   ]
 
 
