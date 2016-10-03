@@ -28,7 +28,8 @@ content::WebUIDataSource* CreateMdFeedbackUIHTMLSource(Profile* profile) {
   html_source->AddLocalizedString("privacyNote",
                                   IDS_MD_FEEDBACK_PRIVACY_NOTE);
 #endif
-
+  html_source->AddLocalizedString("additionalInfoLabel",
+                                  IDS_MD_FEEDBACK_ADDITIONAL_INFO_LABEL);
   // Input labels.
   html_source->AddLocalizedString("emailLabel",
                                   IDS_MD_FEEDBACK_USER_EMAIL_LABEL);

@@ -6,9 +6,43 @@
 <dom-module name="feedback-container">
   <template>
     <style>
+      #additional-info {
+        margin-top: 10px;
+      }
+
+      #buttons {
+        display: -webkit-flex;
+        justify-content: flex-end;
+      }
+
+      #header {
+        font-size: 1.25em;
+        margin: 12px 0;
+      }
+
       paper-button {
         cursor: pointer;
         text-align: center;
+      }
+
+      paper-checkbox {
+        --paper-checkbox-size: 14px;
+      }
+
+      paper-input,
+      paper-textarea {
+        --paper-input-container-input: {
+          font-size: 1.0em;
+          line-height: 1.0em;
+        };
+        --paper-input-container-label: {
+          font-size: 1.0em;
+          line-height: 1.0em;
+        };
+      }
+
+      paper-input-container {
+        padding: 0;
       }
 
       #submit-button {
@@ -18,21 +52,19 @@
     <div id="header">
       <span>$i18n{headingText}</span>
     </div>
-    <div>
-      <paper-textarea label="$i18n{openEndedLabel}"></paper-textarea>
-      <paper-input label="$i18n{urlLabel}" placeholder="[[url]]"></paper-input>
-      <paper-input label="$i18n{emailLabel}" placeholder="[[email]]"></paper-input>
-    </div>
+    <hr>
+    <paper-textarea label="$i18n{openEndedLabel}"></paper-textarea>
+    <span id="additional-info">$i18n{additionalInfoLabel}</span>
+    <paper-input label="$i18n{urlLabel}" placeholder="[[url]]"></paper-input>
+    <paper-input label="$i18n{emailLabel}" placeholder="[[email]]"></paper-input>
     <div>
       <paper-checkbox>$i18n{includeScreenshotLabel}</paper-checkbox>
     </div>
     <div>
       <paper-checkbox>$i18n{sendSystemInfoLabel}</paper-checkbox>
     </div>
-    <div>
-      <span id="privacyNote"></span>
-    </div>
-    <div>
+    <p id="privacyNote"></p>
+    <div id="buttons">
       <paper-button>$i18n{cancelButton}</paper-button>
       <paper-button id="submit-button">$i18n{sendReportButton}</paper-button>
     </div>
