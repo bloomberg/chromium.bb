@@ -637,7 +637,7 @@ class WindowEventTargetingHelper {
   TestDisplayBinding* display_binding_;
   // Owned by WindowServer's DisplayManager.
   Display* display_;
-  scoped_refptr<SurfacesState> surfaces_state_;
+  scoped_refptr<DisplayCompositor> display_compositor_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowEventTargetingHelper);
 };

@@ -13,8 +13,8 @@
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/ui/display/platform_screen.h"
+#include "services/ui/surfaces/compositor_frame_sink.h"
 #include "services/ui/surfaces/display_compositor.h"
-#include "services/ui/surfaces/surfaces_state.h"
 #include "services/ui/ws/platform_display_factory.h"
 #include "services/ui/ws/platform_display_init_params.h"
 #include "services/ui/ws/server_window.h"
@@ -59,7 +59,8 @@ DefaultPlatformDisplay::DefaultPlatformDisplay(
 #if !defined(OS_ANDROID)
       cursor_loader_(ui::CursorLoader::Create()),
 #endif
-      frame_generator_(new FrameGenerator(this, init_params.surfaces_state)),
+      frame_generator_(
+          new FrameGenerator(this, init_params.display_compositor)),
       metrics_(init_params.metrics) {
 }
 

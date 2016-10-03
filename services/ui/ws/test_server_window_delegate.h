@@ -23,13 +23,13 @@ class TestServerWindowDelegate : public ServerWindowDelegate {
 
  private:
   // ServerWindowDelegate:
-  ui::SurfacesState* GetSurfacesState() override;
+  ui::DisplayCompositor* GetDisplayCompositor() override;
   void OnScheduleWindowPaint(ServerWindow* window) override;
   const ServerWindow* GetRootWindow(const ServerWindow* window) const override;
   void ScheduleSurfaceDestruction(ServerWindow* window) override;
 
   const ServerWindow* root_window_;
-  scoped_refptr<ui::SurfacesState> surfaces_state_;
+  scoped_refptr<ui::DisplayCompositor> display_compositor_;
 
   DISALLOW_COPY_AND_ASSIGN(TestServerWindowDelegate);
 };

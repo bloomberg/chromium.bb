@@ -46,7 +46,7 @@ struct WindowServer::CurrentDragLoopState {
 
 WindowServer::WindowServer(WindowServerDelegate* delegate)
     : delegate_(delegate),
-      surfaces_state_(new SurfacesState()),
+      display_compositor_(new DisplayCompositor()),
       next_client_id_(1),
       display_manager_(new DisplayManager(this, &user_id_tracker_)),
       current_operation_(nullptr),
@@ -529,8 +529,8 @@ WindowManagerState* WindowServer::GetWindowManagerStateForUser(
       user_id);
 }
 
-ui::SurfacesState* WindowServer::GetSurfacesState() {
-  return surfaces_state_.get();
+ui::DisplayCompositor* WindowServer::GetDisplayCompositor() {
+  return display_compositor_.get();
 }
 
 bool WindowServer::GetFrameDecorationsForUser(

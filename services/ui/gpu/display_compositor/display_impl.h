@@ -8,7 +8,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/gpu/display_compositor/compositor_frame_sink_delegate.h"
 #include "services/ui/public/interfaces/gpu/display_compositor_host.mojom.h"
-#include "services/ui/surfaces/surfaces_state.h"
+#include "services/ui/surfaces/display_compositor.h"
 
 namespace ui {
 namespace gpu {
@@ -20,7 +20,7 @@ class DisplayImpl : public mojom::Display, public CompositorFrameSinkDelegate {
               mojom::DisplayHostPtr host,
               mojo::InterfaceRequest<mojom::CompositorFrameSink> sink,
               mojom::CompositorFrameSinkClientPtr client,
-              const scoped_refptr<SurfacesState>& surfaces_state);
+              const scoped_refptr<DisplayCompositor>& display_compositor);
   ~DisplayImpl() override;
 
   // mojom::Display implementation.

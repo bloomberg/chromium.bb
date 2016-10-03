@@ -9,7 +9,7 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/quads/shared_quad_state.h"
 #include "cc/quads/surface_draw_quad.h"
-#include "services/ui/surfaces/surfaces_state.h"
+#include "services/ui/surfaces/display_compositor.h"
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/server_window_delegate.h"
 #include "services/ui/ws/server_window_surface_manager.h"
@@ -22,9 +22,11 @@ ServerWindowSurface::ServerWindowSurface(
     mojo::InterfaceRequest<Surface> request,
     mojom::SurfaceClientPtr client)
     : manager_(manager),
-      surface_id_allocator_(cc::FrameSinkId(
-          manager->window()->delegate()->GetSurfacesState()->next_client_id(),
-          0)),
+      surface_id_allocator_(cc::FrameSinkId(manager->window()
+                                                ->delegate()
+                                                ->GetDisplayCompositor()
+                                                ->GenerateNextClientId(),
+                                            0)),
       surface_factory_(manager_->GetSurfaceManager(), this),
       client_(std::move(client)),
       binding_(this, std::move(request)) {

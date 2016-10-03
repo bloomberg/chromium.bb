@@ -4,7 +4,7 @@
 
 #include "services/ui/ws/server_window_surface_manager.h"
 
-#include "services/ui/surfaces/surfaces_state.h"
+#include "services/ui/surfaces/display_compositor.h"
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/server_window_delegate.h"
 #include "services/ui/ws/server_window_surface.h"
@@ -68,7 +68,7 @@ bool ServerWindowSurfaceManager::HasAnySurface() const {
 }
 
 cc::SurfaceManager* ServerWindowSurfaceManager::GetSurfaceManager() {
-  return window()->delegate()->GetSurfacesState()->manager();
+  return window()->delegate()->GetDisplayCompositor()->manager();
 }
 
 bool ServerWindowSurfaceManager::IsSurfaceReadyAndNonEmpty(

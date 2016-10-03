@@ -12,7 +12,7 @@
 #include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_id.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/ui/surfaces/surfaces_state.h"
+#include "services/ui/surfaces/display_compositor.h"
 
 namespace ui {
 namespace gpu {
@@ -28,7 +28,7 @@ class CompositorFrameSinkImpl : public cc::SurfaceFactoryClient,
   CompositorFrameSinkImpl(
       CompositorFrameSinkDelegate* delegate,
       int sink_id,
-      const scoped_refptr<SurfacesState>& surfaces_state,
+      const scoped_refptr<DisplayCompositor>& display_compositor,
       mojo::InterfaceRequest<mojom::CompositorFrameSink> request,
       mojom::CompositorFrameSinkClientPtr client);
   ~CompositorFrameSinkImpl() override;
@@ -54,7 +54,7 @@ class CompositorFrameSinkImpl : public cc::SurfaceFactoryClient,
   void OnConnectionLost();
 
   CompositorFrameSinkDelegate* const delegate_;
-  scoped_refptr<SurfacesState> surfaces_state_;
+  scoped_refptr<DisplayCompositor> display_compositor_;
   const int sink_id_;
   cc::BeginFrameSource* begin_frame_source_;
   bool needs_begin_frame_;

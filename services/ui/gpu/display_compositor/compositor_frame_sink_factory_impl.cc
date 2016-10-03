@@ -13,9 +13,9 @@ namespace gpu {
 
 CompositorFrameSinkFactoryImpl::CompositorFrameSinkFactoryImpl(
     uint32_t client_id,
-    const scoped_refptr<SurfacesState>& surfaces_state)
+    const scoped_refptr<DisplayCompositor>& display_compositor)
     : client_id_(client_id),
-      surfaces_state_(surfaces_state),
+      display_compositor_(display_compositor),
       allocator_(client_id) {}
 
 CompositorFrameSinkFactoryImpl::~CompositorFrameSinkFactoryImpl() {}
@@ -37,7 +37,7 @@ void CompositorFrameSinkFactoryImpl::CreateCompositorFrameSink(
   // TODO(fsamuel): Use nonce once patch lands:
   // https://codereview.chromium.org/1996783002/
   sinks_[local_id] = base::MakeUnique<CompositorFrameSinkImpl>(
-      this, local_id, surfaces_state_, std::move(sink), std::move(client));
+      this, local_id, display_compositor_, std::move(sink), std::move(client));
 }
 
 }  // namespace gpu

@@ -14,7 +14,7 @@ namespace gpu {
 CompositorFrameSinkImpl::CompositorFrameSinkImpl(
     CompositorFrameSinkDelegate* delegate,
     int sink_id,
-    const scoped_refptr<SurfacesState>& surfaces_state,
+    const scoped_refptr<DisplayCompositor>& surfaces_state,
     mojo::InterfaceRequest<mojom::CompositorFrameSink> request,
     mojom::CompositorFrameSinkClientPtr client)
     : delegate_(delegate),

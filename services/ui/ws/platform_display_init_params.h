@@ -12,7 +12,8 @@
 
 namespace ui {
 
-class SurfacesState;
+class DisplayCompositor;
+class GpuState;
 
 namespace ws {
 
@@ -20,7 +21,9 @@ struct PlatformDisplayInitParams {
   PlatformDisplayInitParams();
   ~PlatformDisplayInitParams();
 
-  scoped_refptr<SurfacesState> surfaces_state;
+  scoped_refptr<DisplayCompositor> display_compositor;
+
+  gfx::Rect display_bounds;
   int64_t display_id;
   ViewportMetrics metrics;
 };

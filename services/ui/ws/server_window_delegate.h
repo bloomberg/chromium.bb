@@ -12,7 +12,7 @@
 
 namespace ui {
 
-class SurfacesState;
+class DisplayCompositor;
 
 namespace ws {
 
@@ -22,7 +22,7 @@ struct WindowId;
 
 class ServerWindowDelegate {
  public:
-  virtual SurfacesState* GetSurfacesState() = 0;
+  virtual DisplayCompositor* GetDisplayCompositor() = 0;
 
   virtual void OnScheduleWindowPaint(ServerWindow* window) = 0;
 

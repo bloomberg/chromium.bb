@@ -5,7 +5,6 @@
 #include "services/ui/ws/window_finder.h"
 
 #include "base/containers/adapters.h"
-#include "services/ui/surfaces/surfaces_state.h"
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/server_window_delegate.h"
 #include "services/ui/ws/server_window_surface.h"

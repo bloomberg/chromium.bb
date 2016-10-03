@@ -74,7 +74,7 @@ void FrameGeneratorTest::SetUp() {
       base::MakeUnique<ServerWindow>(&window_delegate_, WindowId()));
   PlatformDisplayInitParams init_params;
   frame_generator_ = base::MakeUnique<FrameGenerator>(
-      frame_generator_delegate_.get(), init_params.surfaces_state);
+      frame_generator_delegate_.get(), init_params.display_compositor);
   InitWindow(root_window());
 }
 

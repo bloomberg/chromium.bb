@@ -15,10 +15,10 @@ DisplayImpl::DisplayImpl(
     mojom::DisplayHostPtr host,
     mojo::InterfaceRequest<mojom::CompositorFrameSink> sink,
     mojom::CompositorFrameSinkClientPtr client,
-    const scoped_refptr<SurfacesState>& surfaces_state)
+    const scoped_refptr<DisplayCompositor>& display_compositor)
     : binding_(this, std::move(display)) {
   const uint32_t client_id = 1;
-  sink_.reset(new CompositorFrameSinkImpl(this, client_id, surfaces_state,
+  sink_.reset(new CompositorFrameSinkImpl(this, client_id, display_compositor,
                                           std::move(sink), std::move(client)));
 }
 

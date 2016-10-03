@@ -19,7 +19,7 @@
 #include "services/ui/public/interfaces/window_manager_window_tree_factory.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/public/interfaces/window_tree_host.mojom.h"
-#include "services/ui/surfaces/surfaces_state.h"
+#include "services/ui/surfaces/display_compositor.h"
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/gpu_service_proxy_delegate.h"
 #include "services/ui/ws/ids.h"
@@ -232,7 +232,7 @@ class WindowServer : public ServerWindowDelegate,
   WindowManagerState* GetWindowManagerStateForUser(const UserId& user_id);
 
   // ServerWindowDelegate:
-  ui::SurfacesState* GetSurfacesState() override;
+  ui::DisplayCompositor* GetDisplayCompositor() override;
 
   // UserDisplayManagerDelegate:
   bool GetFrameDecorationsForUser(
@@ -345,7 +345,7 @@ class WindowServer : public ServerWindowDelegate,
   WindowServerDelegate* delegate_;
 
   // State for rendering into a Surface.
-  scoped_refptr<ui::SurfacesState> surfaces_state_;
+  scoped_refptr<ui::DisplayCompositor> display_compositor_;
 
   // ID to use for next WindowTree.
   ClientSpecificId next_client_id_;

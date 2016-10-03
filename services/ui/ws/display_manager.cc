@@ -177,7 +177,7 @@ void DisplayManager::OnDisplayAdded(int64_t id,
   params.metrics.bounds = bounds;
   params.metrics.pixel_size = pixel_size;
   params.metrics.device_scale_factor = scale_factor;
-  params.surfaces_state = window_server_->GetSurfacesState();
+  params.display_compositor = window_server_->GetDisplayCompositor();
 
   ws::Display* display = new ws::Display(window_server_, params);
   display->Init(nullptr);

@@ -11,7 +11,7 @@
 #include "cc/quads/shared_quad_state.h"
 #include "cc/quads/surface_draw_quad.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
-#include "services/ui/surfaces/display_compositor.h"
+#include "services/ui/surfaces/compositor_frame_sink.h"
 #include "services/ui/ws/frame_generator_delegate.h"
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/server_window_surface.h"
@@ -21,10 +21,11 @@ namespace ui {
 
 namespace ws {
 
-FrameGenerator::FrameGenerator(FrameGeneratorDelegate* delegate,
-                               scoped_refptr<SurfacesState> surfaces_state)
+FrameGenerator::FrameGenerator(
+    FrameGeneratorDelegate* delegate,
+    scoped_refptr<DisplayCompositor> display_compositor)
     : delegate_(delegate),
-      surfaces_state_(surfaces_state),
+      display_compositor_(display_compositor),
       draw_timer_(false, false),
       weak_factory_(this) {
   DCHECK(delegate_);
@@ -32,17 +33,17 @@ FrameGenerator::FrameGenerator(FrameGeneratorDelegate* delegate,
 
 FrameGenerator::~FrameGenerator() {
   // Invalidate WeakPtrs now to avoid callbacks back into the
-  // FrameGenerator during destruction of |display_compositor_|.
+  // FrameGenerator during destruction of |compositor_frame_sink_|.
   weak_factory_.InvalidateWeakPtrs();
-  display_compositor_.reset();
+  compositor_frame_sink_.reset();
 }
 
 void FrameGenerator::OnGpuChannelEstablished(
     scoped_refptr<gpu::GpuChannelHost> channel) {
   if (widget_ != gfx::kNullAcceleratedWidget) {
-    display_compositor_ = base::MakeUnique<DisplayCompositor>(
+    compositor_frame_sink_ = base::MakeUnique<surfaces::CompositorFrameSink>(
         base::ThreadTaskRunnerHandle::Get(), widget_, std::move(channel),
-        surfaces_state_);
+        display_compositor_);
   } else {
     gpu_channel_ = std::move(channel);
   }
@@ -57,16 +58,16 @@ void FrameGenerator::OnAcceleratedWidgetAvailable(
     gfx::AcceleratedWidget widget) {
   widget_ = widget;
   if (gpu_channel_ && widget != gfx::kNullAcceleratedWidget) {
-    display_compositor_.reset(
-        new DisplayCompositor(base::ThreadTaskRunnerHandle::Get(), widget_,
-                              std::move(gpu_channel_), surfaces_state_));
+    compositor_frame_sink_.reset(new surfaces::CompositorFrameSink(
+        base::ThreadTaskRunnerHandle::Get(), widget_, std::move(gpu_channel_),
+        display_compositor_));
   }
 }
 
 void FrameGenerator::RequestCopyOfOutput(
     std::unique_ptr<cc::CopyOutputRequest> output_request) {
-  if (display_compositor_)
-    display_compositor_->RequestCopyOfOutput(std::move(output_request));
+  if (compositor_frame_sink_)
+    compositor_frame_sink_->RequestCopyOfOutput(std::move(output_request));
 }
 
 void FrameGenerator::WantToDraw() {
@@ -96,9 +97,9 @@ void FrameGenerator::Draw() {
       // is submitted 'soon'.
     }
   }
-  if (display_compositor_) {
+  if (compositor_frame_sink_) {
     frame_pending_ = true;
-    display_compositor_->SubmitCompositorFrame(
+    compositor_frame_sink_->SubmitCompositorFrame(
         std::move(frame),
         base::Bind(&FrameGenerator::DidDraw, weak_factory_.GetWeakPtr()));
   }

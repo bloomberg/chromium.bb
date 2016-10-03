@@ -11,7 +11,7 @@
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
 #include "services/ui/public/interfaces/cursor.mojom.h"
-#include "services/ui/surfaces/surfaces_state.h"
+#include "services/ui/surfaces/display_compositor.h"
 #include "services/ui/ws/display_binding.h"
 #include "services/ui/ws/display_manager.h"
 #include "services/ui/ws/platform_display_init_params.h"
@@ -485,9 +485,9 @@ WindowEventTargetingHelper::WindowEventTargetingHelper()
     : wm_client_(nullptr),
       display_binding_(nullptr),
       display_(nullptr),
-      surfaces_state_(new SurfacesState()) {
+      display_compositor_(new DisplayCompositor()) {
   PlatformDisplayInitParams display_init_params;
-  display_init_params.surfaces_state = surfaces_state_;
+  display_init_params.display_compositor = display_compositor_;
   display_ = new Display(window_server(), display_init_params);
   display_binding_ = new TestDisplayBinding(window_server());
   display_->Init(base::WrapUnique(display_binding_));

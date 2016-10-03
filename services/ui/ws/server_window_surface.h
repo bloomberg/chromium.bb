@@ -20,7 +20,7 @@
 
 namespace ui {
 
-class SurfacesState;
+class DisplayCompositor;
 
 namespace ws {
 

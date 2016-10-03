@@ -13,7 +13,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
 #include "services/ui/common/event_matcher_util.h"
-#include "services/ui/surfaces/surfaces_state.h"
+#include "services/ui/surfaces/display_compositor.h"
 #include "services/ui/ws/accelerator.h"
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/display_binding.h"
