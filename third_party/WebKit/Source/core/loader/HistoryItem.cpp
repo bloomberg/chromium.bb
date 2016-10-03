@@ -143,8 +143,9 @@ const AtomicString& HistoryItem::formContentType() const {
 
 void HistoryItem::setFormInfoFromRequest(const ResourceRequest& request) {
   if (equalIgnoringCase(request.httpMethod(), "POST")) {
-    // FIXME: Eventually we have to make this smart enough to handle the case where
-    // we have a stream for the body to handle the "data interspersed with files" feature.
+    // FIXME: Eventually we have to make this smart enough to handle the case
+    // where we have a stream for the body to handle the "data interspersed with
+    // files" feature.
     m_formData = request.httpBody();
     m_formContentType = request.httpContentType();
   } else {
@@ -166,7 +167,8 @@ EncodedFormData* HistoryItem::formData() {
 }
 
 bool HistoryItem::isCurrentDocument(Document* doc) const {
-  // FIXME: We should find a better way to check if this is the current document.
+  // FIXME: We should find a better way to check if this is the current
+  // document.
   return equalIgnoringFragmentIdentifier(url(), doc->url());
 }
 

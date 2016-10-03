@@ -14,7 +14,8 @@
  *     its contributors may be used to endorse or promote products derived
  *     from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  * DISCLAIMED. IN NO EVENT SHALL APPLE OR ITS CONTRIBUTORS BE LIABLE FOR ANY
@@ -36,8 +37,9 @@
 
 namespace blink {
 
-// Encapsulates a state machine for FrameLoader. Note that this is different from FrameState,
-// which stores the state of the current load that FrameLoader is executing.
+// Encapsulates a state machine for FrameLoader. Note that this is different
+// from FrameState, which stores the state of the current load that FrameLoader
+// is executing.
 class CORE_EXPORT FrameLoaderStateMachine {
   DISALLOW_NEW();
   WTF_MAKE_NONCOPYABLE(FrameLoaderStateMachine);
@@ -45,9 +47,9 @@ class CORE_EXPORT FrameLoaderStateMachine {
  public:
   FrameLoaderStateMachine();
 
-  // Once a load has been committed, the state may
-  // alternate between CommittedFirstRealLoad and FirstLayoutDone.
-  // Otherwise, the states only go down the list.
+  // Once a load has been committed, the state may alternate between
+  // CommittedFirstRealLoad and FirstLayoutDone. Otherwise, the states only go
+  // down the list.
   enum State {
     CreatingInitialEmptyDocument,
     DisplayingInitialEmptyDocument,

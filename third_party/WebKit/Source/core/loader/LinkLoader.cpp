@@ -135,8 +135,9 @@ static void dnsPrefetchIfNeeded(
     if (caller == LinkCalledFromHeader)
       UseCounter::count(document, UseCounter::LinkHeaderDnsPrefetch);
     Settings* settings = document.settings();
-    // FIXME: The href attribute of the link element can be in "//hostname" form, and we shouldn't attempt
-    // to complete that as URL <https://bugs.webkit.org/show_bug.cgi?id=48857>.
+    // FIXME: The href attribute of the link element can be in "//hostname"
+    // form, and we shouldn't attempt to complete that as URL
+    // <https://bugs.webkit.org/show_bug.cgi?id=48857>.
     if (settings && settings->dnsPrefetchingEnabled() && href.isValid() &&
         !href.isEmpty()) {
       if (settings->logDnsPrefetchAndPreconnect())
@@ -387,8 +388,11 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute,
                           const NetworkHintsInterface& networkHintsInterface) {
   // TODO(yoav): Do all links need to load only after they're in document???
 
-  // TODO(yoav): Convert all uses of the CrossOriginAttribute to CrossOriginAttributeValue. crbug.com/486689
-  // FIXME(crbug.com/463266): We're ignoring type here, for everything but preload. Maybe we shouldn't.
+  // TODO(yoav): Convert all uses of the CrossOriginAttribute to
+  // CrossOriginAttributeValue. crbug.com/486689
+
+  // FIXME(crbug.com/463266): We're ignoring type here, for everything but
+  // preload. Maybe we shouldn't.
   dnsPrefetchIfNeeded(relAttribute, href, document, networkHintsInterface,
                       LinkCalledFromMarkup);
 
@@ -440,8 +444,8 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute,
 }
 
 void LinkLoader::released() {
-  // Only prerenders need treatment here; other links either use the Resource interface, or are notionally
-  // atomic (dns prefetch).
+  // Only prerenders need treatment here; other links either use the Resource
+  // interface, or are notionally atomic (dns prefetch).
   if (m_prerender) {
     m_prerender->cancel();
     m_prerender.clear();

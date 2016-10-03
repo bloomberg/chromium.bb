@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
- * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved.
+ * (http://www.torchmobile.com/)
  * Copyright (C) 2009 Adam Barth. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -90,8 +91,9 @@ class CORE_EXPORT NavigationScheduler final
   Member<LocalFrame> m_frame;
   std::unique_ptr<CancellableTaskFactory> m_navigateTaskFactory;
   Member<ScheduledNavigation> m_redirect;
-  WebScheduler::NavigatingFrameType
-      m_frameType;  // Exists because we can't deref m_frame in destructor.
+
+  // Exists because we can't deref m_frame in destructor.
+  WebScheduler::NavigatingFrameType m_frameType;
 };
 
 class NavigationDisablerForUnload {

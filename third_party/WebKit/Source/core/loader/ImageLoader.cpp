@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2009, 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2009, 2010 Apple Inc. All rights
+ * reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -187,8 +188,9 @@ DEFINE_TRACE(ImageLoader) {
 void ImageLoader::setImage(ImageResource* newImage) {
   setImageWithoutConsideringPendingLoadEvent(newImage);
 
-  // Only consider updating the protection ref-count of the Element immediately before returning
-  // from this function as doing so might result in the destruction of this ImageLoader.
+  // Only consider updating the protection ref-count of the Element immediately
+  // before returning from this function as doing so might result in the
+  // destruction of this ImageLoader.
   updatedHasPendingEvent();
 }
 
@@ -269,8 +271,8 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior,
                                       ReferrerPolicy referrerPolicy) {
   // FIXME: According to
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/embedded-content.html#the-img-element:the-img-element-55
-  // When "update image" is called due to environment changes and the load fails, onerror should not be called.
-  // That is currently not the case.
+  // When "update image" is called due to environment changes and the load
+  // fails, onerror should not be called. That is currently not the case.
   //
   // We don't need to call clearLoader here: Either we were called from the
   // task, or our caller updateFromElement cleared the task's loader (and set
@@ -287,7 +289,8 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior,
   AtomicString imageSourceURL = m_element->imageSourceURL();
   ImageResource* newImage = nullptr;
   if (!url.isNull()) {
-    // Unlike raw <img>, we block mixed content inside of <picture> or <img srcset>.
+    // Unlike raw <img>, we block mixed content inside of <picture> or
+    // <img srcset>.
     ResourceLoaderOptions resourceLoaderOptions =
         ResourceFetcher::defaultResourceOptions();
     ResourceRequest resourceRequest(url);
@@ -334,10 +337,12 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior,
       m_hasPendingLoadEvent = false;
     }
 
-    // Cancel error events that belong to the previous load, which is now cancelled by changing the src attribute.
-    // If newImage is null and m_hasPendingErrorEvent is true, we know the error event has been just posted by
-    // this load and we should not cancel the event.
-    // FIXME: If both previous load and this one got blocked with an error, we can receive one error event instead of two.
+    // Cancel error events that belong to the previous load, which is now
+    // cancelled by changing the src attribute. If newImage is null and
+    // m_hasPendingErrorEvent is true, we know the error event has been just
+    // posted by this load and we should not cancel the event.
+    // FIXME: If both previous load and this one got blocked with an error, we
+    // can receive one error event instead of two.
     if (m_hasPendingErrorEvent && newImage) {
       errorEventSender().cancelEvent(this);
       m_hasPendingErrorEvent = false;
@@ -348,8 +353,9 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior,
     m_imageComplete = !newImage;
 
     updateLayoutObject();
-    // If newImage exists and is cached, addObserver() will result in the load event
-    // being queued to fire. Ensure this happens after beforeload is dispatched.
+    // If newImage exists and is cached, addObserver() will result in the load
+    // event being queued to fire. Ensure this happens after beforeload is
+    // dispatched.
     if (newImage) {
       newImage->addObserver(this);
     }
@@ -361,8 +367,9 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior,
   if (LayoutImageResource* imageResource = layoutImageResource())
     imageResource->resetAnimation();
 
-  // Only consider updating the protection ref-count of the Element immediately before returning
-  // from this function as doing so might result in the destruction of this ImageLoader.
+  // Only consider updating the protection ref-count of the Element immediately
+  // before returning from this function as doing so might result in the
+  // destruction of this ImageLoader.
   updatedHasPendingEvent();
 }
 
@@ -377,11 +384,11 @@ void ImageLoader::updateFromElement(UpdateFromElementBehavior updateBehavior,
   if (!m_failedLoadURL.isEmpty() && imageSourceURL == m_failedLoadURL)
     return;
 
-  // Prevent the creation of a ResourceLoader (and therefore a network
-  // request) for ImageDocument loads. In this case, the image contents have already
-  // been requested as a main resource and ImageDocumentParser will take care of
-  // funneling the main resource bytes into m_image, so just create an ImageResource
-  // to be populated later.
+  // Prevent the creation of a ResourceLoader (and therefore a network request)
+  // for ImageDocument loads. In this case, the image contents have already been
+  // requested as a main resource and ImageDocumentParser will take care of
+  // funneling the main resource bytes into m_image, so just create an
+  // ImageResource to be populated later.
   if (m_loadingImageDocument && updateBehavior != UpdateForcedReload) {
     setImage(
         ImageResource::create(imageSourceToKURL(m_element->imageSourceURL())));
@@ -389,8 +396,8 @@ void ImageLoader::updateFromElement(UpdateFromElementBehavior updateBehavior,
     return;
   }
 
-  // If we have a pending task, we have to clear it -- either we're
-  // now loading immediately, or we need to reset the task's state.
+  // If we have a pending task, we have to clear it -- either we're now loading
+  // immediately, or we need to reset the task's state.
   if (m_pendingTask) {
     m_pendingTask->clearLoader();
     m_pendingTask.reset();
@@ -402,8 +409,8 @@ void ImageLoader::updateFromElement(UpdateFromElementBehavior updateBehavior,
                         referrerPolicy);
     return;
   }
-  // Allow the idiom "img.src=''; img.src='.." to clear down the image before
-  // an asynchronous load completes.
+  // Allow the idiom "img.src=''; img.src='.." to clear down the image before an
+  // asynchronous load completes.
   if (imageSourceURL.isEmpty()) {
     ImageResource* image = m_image.get();
     if (image) {
@@ -440,8 +447,9 @@ KURL ImageLoader::imageSourceToKURL(AtomicString imageSourceURL) const {
 }
 
 bool ImageLoader::shouldLoadImmediately(const KURL& url) const {
-  // We force any image loads which might require alt content through the asynchronous path so that we can add the shadow DOM
-  // for the alt-text content when style recalc is over and DOM mutation is allowed again.
+  // We force any image loads which might require alt content through the
+  // asynchronous path so that we can add the shadow DOM for the alt-text
+  // content when style recalc is over and DOM mutation is allowed again.
   if (!url.isNull()) {
     Resource* resource = memoryCache()->resourceForURL(
         url, m_element->document().fetcher()->getCacheIdentifier());
@@ -482,20 +490,23 @@ void ImageLoader::imageNotifyFinished(ImageResource* resource) {
       crossSiteOrCSPViolationOccurred(
           AtomicString(resource->resourceError().failingURL()));
 
-    // The error event should not fire if the image data update is a result of environment change.
+    // The error event should not fire if the image data update is a result of
+    // environment change.
     // https://html.spec.whatwg.org/multipage/embedded-content.html#the-img-element:the-img-element-55
     if (!m_suppressErrorEvents)
       dispatchErrorEvent();
 
-    // Only consider updating the protection ref-count of the Element immediately before returning
-    // from this function as doing so might result in the destruction of this ImageLoader.
+    // Only consider updating the protection ref-count of the Element
+    // immediately before returning from this function as doing so might result
+    // in the destruction of this ImageLoader.
     updatedHasPendingEvent();
     return;
   }
   if (resource->wasCanceled()) {
     m_hasPendingLoadEvent = false;
-    // Only consider updating the protection ref-count of the Element immediately before returning
-    // from this function as doing so might result in the destruction of this ImageLoader.
+    // Only consider updating the protection ref-count of the Element
+    // immediately before returning from this function as doing so might result
+    // in the destruction of this ImageLoader.
     updatedHasPendingEvent();
     return;
   }
@@ -508,8 +519,8 @@ LayoutImageResource* ImageLoader::layoutImageResource() {
   if (!layoutObject)
     return 0;
 
-  // We don't return style generated image because it doesn't belong to the ImageLoader.
-  // See <https://bugs.webkit.org/show_bug.cgi?id=42840>
+  // We don't return style generated image because it doesn't belong to the
+  // ImageLoader. See <https://bugs.webkit.org/show_bug.cgi?id=42840>
   if (layoutObject->isImage() &&
       !static_cast<LayoutImage*>(layoutObject)->isGeneratedContent())
     return toLayoutImage(layoutObject)->imageResource();
@@ -538,10 +549,12 @@ void ImageLoader::updateLayoutObject() {
 }
 
 void ImageLoader::updatedHasPendingEvent() {
-  // If an Element that does image loading is removed from the DOM the load/error event for the image is still observable.
-  // As long as the ImageLoader is actively loading, the Element itself needs to be ref'ed to keep it from being
-  // destroyed by DOM manipulation or garbage collection.
-  // If such an Element wishes for the load to stop when removed from the DOM it needs to stop the ImageLoader explicitly.
+  // If an Element that does image loading is removed from the DOM the
+  // load/error event for the image is still observable. As long as the
+  // ImageLoader is actively loading, the Element itself needs to be ref'ed to
+  // keep it from being destroyed by DOM manipulation or garbage collection. If
+  // such an Element wishes for the load to stop when removed from the DOM it
+  // needs to stop the ImageLoader explicitly.
   bool wasProtected = m_elementIsProtected;
   m_elementIsProtected = m_hasPendingLoadEvent || m_hasPendingErrorEvent;
   if (wasProtected == m_elementIsProtected)
@@ -582,8 +595,9 @@ void ImageLoader::dispatchPendingLoadEvent() {
   if (element()->document().frame())
     dispatchLoadEvent();
 
-  // Only consider updating the protection ref-count of the Element immediately before returning
-  // from this function as doing so might result in the destruction of this ImageLoader.
+  // Only consider updating the protection ref-count of the Element immediately
+  // before returning from this function as doing so might result in the
+  // destruction of this ImageLoader.
   updatedHasPendingEvent();
 }
 
@@ -595,8 +609,9 @@ void ImageLoader::dispatchPendingErrorEvent() {
   if (element()->document().frame())
     element()->dispatchEvent(Event::create(EventTypeNames::error));
 
-  // Only consider updating the protection ref-count of the Element immediately before returning
-  // from this function as doing so might result in the destruction of this ImageLoader.
+  // Only consider updating the protection ref-count of the Element immediately
+  // before returning from this function as doing so might result in the
+  // destruction of this ImageLoader.
   updatedHasPendingEvent();
 }
 

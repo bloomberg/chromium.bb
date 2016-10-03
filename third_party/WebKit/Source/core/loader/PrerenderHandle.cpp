@@ -45,8 +45,8 @@ PrerenderHandle* PrerenderHandle::create(Document& document,
                                          PrerenderClient* client,
                                          const KURL& url,
                                          const unsigned prerenderRelTypes) {
-  // Prerenders are unlike requests in most ways (for instance, they pass down fragments, and they don't return data),
-  // but they do have referrers.
+  // Prerenders are unlike requests in most ways (for instance, they pass down
+  // fragments, and they don't return data), but they do have referrers.
   if (!document.frame())
     return nullptr;
 
@@ -77,8 +77,8 @@ PrerenderHandle::~PrerenderHandle() {
 void PrerenderHandle::cancel() {
   // Avoid both abandoning and canceling the same prerender. In the abandon
   // case, the LinkLoader cancels the PrerenderHandle as the Document is
-  // destroyed, even through the ContextLifecycleObserver has already
-  // abandoned it.
+  // destroyed, even through the ContextLifecycleObserver has already abandoned
+  // it.
   if (!m_prerender)
     return;
   m_prerender->cancel();
@@ -90,8 +90,8 @@ const KURL& PrerenderHandle::url() const {
 }
 
 void PrerenderHandle::contextDestroyed() {
-  // A PrerenderHandle is not removed from LifecycleNotifier::m_observers
-  // until the next GC runs. Thus contextDestroyed() can be called for a
+  // A PrerenderHandle is not removed from LifecycleNotifier::m_observers until
+  // the next GC runs. Thus contextDestroyed() can be called for a
   // PrerenderHandle that is already cancelled (and thus detached). In that
   // case, we should not detach the PrerenderHandle again.
   if (!m_prerender)

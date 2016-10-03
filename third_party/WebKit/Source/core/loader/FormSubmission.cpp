@@ -68,7 +68,8 @@ static void appendMailtoPostFormDataToURL(KURL& url,
   String body = data.flattenToString();
 
   if (equalIgnoringCase(encodingType, "text/plain")) {
-    // Convention seems to be to decode, and s/&/\r\n/. Also, spaces are encoded as %20.
+    // Convention seems to be to decode, and s/&/\r\n/. Also, spaces are encoded
+    // as %20.
     body = decodeURLEscapeSequences(
         body.replace('&', "\r\n").replace('+', ' ') + "\r\n");
   }

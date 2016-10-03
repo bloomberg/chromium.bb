@@ -95,7 +95,8 @@ TEST(LinkLoaderTest, Preload) {
       {"http://example.test/cat.css", "style", "", "",
        ResourceLoadPriorityVeryHigh, WebURLRequest::RequestContextStyle, true,
        true},
-      // TODO(yoav): It doesn't seem like the audio context is ever used. That should probably be fixed (or we can consolidate audio and video).
+      // TODO(yoav): It doesn't seem like the audio context is ever used. That
+      // should probably be fixed (or we can consolidate audio and video).
       {"http://example.test/cat.wav", "media", "", "", ResourceLoadPriorityLow,
        WebURLRequest::RequestContextVideo, true, true},
       {"http://example.test/cat.mp4", "media", "", "", ResourceLoadPriorityLow,
@@ -105,7 +106,8 @@ TEST(LinkLoaderTest, Preload) {
       {"http://example.test/cat.woff", "font", "", "",
        ResourceLoadPriorityVeryHigh, WebURLRequest::RequestContextFont, true,
        true},
-      // TODO(yoav): subresource should be *very* low priority (rather than low).
+      // TODO(yoav): subresource should be *very* low priority (rather than
+      // low).
       {"http://example.test/cat.empty", "", "", "", ResourceLoadPriorityHigh,
        WebURLRequest::RequestContextSubresource, true, true},
       {"http://example.test/cat.blob", "blabla", "", "",

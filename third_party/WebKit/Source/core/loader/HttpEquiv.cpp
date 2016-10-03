@@ -108,7 +108,8 @@ void HttpEquiv::processHttpEquivRefresh(Document& document,
 
 void HttpEquiv::processHttpEquivSetCookie(Document& document,
                                           const AtomicString& content) {
-  // FIXME: make setCookie work on XML documents too; e.g. in case of <html:meta .....>
+  // FIXME: make setCookie work on XML documents too; e.g. in case of
+  // <html:meta.....>
   if (!document.isHTMLDocument())
     return;
 

@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2006, 2007, 2008, 2009, 2011 Apple Inc. All rights reserved.
- * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved.
+ * (http://www.torchmobile.com/)
  * Copyright (C) Research In Motion Limited 2009. All rights reserved.
  * Copyright (C) 2011 Google Inc. All rights reserved.
  *
@@ -87,11 +88,11 @@ class CORE_EXPORT FrameLoader final {
 
   ProgressTracker& progress() const { return *m_progressTracker; }
 
-  // Starts a load. It will eventually call startLoad() or
-  // loadInSameDocument(). For history navigations or reloads, an appropriate
-  // FrameLoadType should be given. Otherwise, FrameLoadTypeStandard should be
-  // used (and the final FrameLoadType will be computed). For history
-  // navigations, a history item and a HistoryLoadType should also be provided.
+  // Starts a load. It will eventually call startLoad() or loadInSameDocument().
+  // For history navigations or reloads, an appropriate FrameLoadType should be
+  // given. Otherwise, FrameLoadTypeStandard should be used (and the final
+  // FrameLoadType will be computed). For history navigations, a history item
+  // and a HistoryLoadType should also be provided.
   void load(const FrameLoadRequest&,
             FrameLoadType = FrameLoadTypeStandard,
             HistoryItem* = nullptr,
@@ -99,20 +100,21 @@ class CORE_EXPORT FrameLoader final {
 
   static void reportLocalLoadFailed(LocalFrame*, const String& url);
 
-  // Warning: stopAllLoaders can and will detach the LocalFrame out from under you. All callers need to either protect the LocalFrame
-  // or guarantee they won't in any way access the LocalFrame after stopAllLoaders returns.
+  // Warning: stopAllLoaders can and will detach the LocalFrame out from under
+  // you. All callers need to either protect the LocalFrame or guarantee they
+  // won't in any way access the LocalFrame after stopAllLoaders returns.
   void stopAllLoaders();
 
-  // FIXME: clear() is trying to do too many things. We should break it down into smaller functions.
+  // FIXME: clear() is trying to do too many things. We should break it down
+  // into smaller functions.
   void clear();
 
   void replaceDocumentWhileExecutingJavaScriptURL(const String& source,
                                                   Document* ownerDocument);
 
-  // Notifies the client that the initial empty document has been accessed,
-  // and thus it is no longer safe to show a provisional URL above the
-  // document without risking a URL spoof. The client must not call back into
-  // JavaScript.
+  // Notifies the client that the initial empty document has been accessed, and
+  // thus it is no longer safe to show a provisional URL above the document
+  // without risking a URL spoof. The client must not call back into JavaScript.
   void didAccessInitialDocument();
 
   DocumentLoader* documentLoader() const { return m_documentLoader.get(); }
@@ -150,8 +152,8 @@ class CORE_EXPORT FrameLoader final {
   void dispatchDocumentElementAvailable();
   void runScriptsAtDocumentElementAvailable();
 
-  // The following sandbox flags will be forced, regardless of changes to
-  // the sandbox attribute of any parent frames.
+  // The following sandbox flags will be forced, regardless of changes to the
+  // sandbox attribute of any parent frames.
   void forceSandboxFlags(SandboxFlags flags) { m_forcedSandboxFlags |= flags; }
   SandboxFlags effectiveSandboxFlags() const;
 
@@ -171,9 +173,9 @@ class CORE_EXPORT FrameLoader final {
 
   void clearProvisionalHistoryItem();
 
-  // This prepares the FrameLoader for the next commit. It will dispatch
-  // unload events, abort XHR requests and detach the document. Returns true
-  // if the frame is ready to receive the next commit, or false otherwise.
+  // This prepares the FrameLoader for the next commit. It will dispatch unload
+  // events, abort XHR requests and detach the document. Returns true if the
+  // frame is ready to receive the next commit, or false otherwise.
   bool prepareForCommit();
 
   void commitProvisionalLoad();
@@ -257,8 +259,8 @@ class CORE_EXPORT FrameLoader final {
 
   Member<LocalFrame> m_frame;
 
-  // FIXME: These should be std::unique_ptr<T> to reduce build times and simplify
-  // header dependencies unless performance testing proves otherwise.
+  // FIXME: These should be std::unique_ptr<T> to reduce build times and
+  // simplify header dependencies unless performance testing proves otherwise.
   // Some of these could be lazily created for memory savings on devices.
   mutable FrameLoaderStateMachine m_stateMachine;
 
@@ -266,10 +268,11 @@ class CORE_EXPORT FrameLoader final {
 
   FrameLoadType m_loadType;
 
-  // Document loaders for the three phases of frame loading. Note that while
-  // a new request is being loaded, the old document loader may still be referenced.
-  // E.g. while a new request is in the "policy" state, the old document loader may
-  // be consulted in particular as it makes sense to imply certain settings on the new loader.
+  // Document loaders for the three phases of frame loading. Note that while a
+  // new request is being loaded, the old document loader may still be
+  // referenced. E.g. while a new request is in the "policy" state, the old
+  // document loader may be consulted in particular as it makes sense to imply
+  // certain settings on the new loader.
   Member<DocumentLoader> m_documentLoader;
   Member<DocumentLoader> m_provisionalDocumentLoader;
 

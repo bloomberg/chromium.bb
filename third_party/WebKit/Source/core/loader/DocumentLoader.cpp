@@ -85,9 +85,9 @@ static bool isArchiveMIMEType(const String& mimeType) {
 static bool shouldInheritSecurityOriginFromOwner(const KURL& url) {
   // https://html.spec.whatwg.org/multipage/browsers.html#origin
   //
-  // If a Document is the initial "about:blank" document
-  //     The origin and effective script origin of the Document are those it
-  //     was assigned when its browsing context was created.
+  // If a Document is the initial "about:blank" document The origin and
+  // effective script origin of the Document are those it was assigned when its
+  // browsing context was created.
   //
   // Note: We generalize this to all "blank" URLs and invalid URLs because we
   // treat all of these URLs as about:blank.
@@ -199,9 +199,8 @@ void DocumentLoader::didRedirect(const KURL& oldURL, const KURL& newURL) {
   timing().addRedirect(oldURL, newURL);
 
   // If a redirection happens during a back/forward navigation, don't restore
-  // any state from the old HistoryItem.
-  // There is a provisional history item for back/forward navigation only.
-  // In the other case, clearing it is a no-op.
+  // any state from the old HistoryItem. There is a provisional history item for
+  // back/forward navigation only. In the other case, clearing it is a no-op.
   DCHECK(frameLoader());
   frameLoader()->clearProvisionalHistoryItem();
 }
@@ -289,8 +288,9 @@ void DocumentLoader::finishedLoading(double finishTime) {
     return;
 
   if (!maybeCreateArchive()) {
-    // If this is an empty document, it will not have actually been created yet. Commit dummy data so that
-    // DocumentWriter::begin() gets called and creates the Document.
+    // If this is an empty document, it will not have actually been created yet.
+    // Commit dummy data so that DocumentWriter::begin() gets called and creates
+    // the Document.
     if (!m_writer)
       commitData(0, 0);
   }
@@ -313,8 +313,8 @@ void DocumentLoader::redirectReceived(
   DCHECK(!redirectResponse.isNull());
   m_request = request;
 
-  // If the redirecting url is not allowed to display content from the target origin,
-  // then block the redirect.
+  // If the redirecting url is not allowed to display content from the target
+  // origin, then block the redirect.
   const KURL& requestURL = m_request.url();
   RefPtr<SecurityOrigin> redirectingOrigin =
       SecurityOrigin::create(redirectResponse.url());
@@ -376,8 +376,8 @@ void DocumentLoader::cancelLoadAfterXFrameOptionsOrCSPDenied(
 
   setWasBlockedAfterXFrameOptionsOrCSP();
 
-  // Pretend that this was an empty HTTP 200 response.  Don't reuse the
-  // original URL for the empty page (https://crbug.com/622385).
+  // Pretend that this was an empty HTTP 200 response.  Don't reuse the original
+  // URL for the empty page (https://crbug.com/622385).
   //
   // TODO(mkwst):  Remove this once XFO moves to the browser.
   // https://crbug.com/555418.
@@ -403,9 +403,10 @@ void DocumentLoader::responseReceived(
 
   m_applicationCacheHost->didReceiveResponseForMainResource(response);
 
-  // The memory cache doesn't understand the application cache or its caching rules. So if a main resource is served
-  // from the application cache, ensure we don't save the result for future use. All responses loaded
-  // from appcache will have a non-zero appCacheID().
+  // The memory cache doesn't understand the application cache or its caching
+  // rules. So if a main resource is served from the application cache, ensure
+  // we don't save the result for future use. All responses loaded from appcache
+  // will have a non-zero appCacheID().
   if (response.appCacheID())
     memoryCache()->remove(m_mainResource.get());
 
@@ -418,7 +419,8 @@ void DocumentLoader::responseReceived(
     return;
   }
 
-  // 'frame-ancestors' obviates 'x-frame-options': https://w3c.github.io/webappsec/specs/content-security-policy/#frame-ancestors-and-frame-options
+  // 'frame-ancestors' obviates 'x-frame-options':
+  // https://w3c.github.io/webappsec/specs/content-security-policy/#frame-ancestors-and-frame-options
   if (!m_contentSecurityPolicy->isFrameAncestorsEnforced()) {
     HTTPHeaderMap::const_iterator it =
         response.httpHeaderFields().find(HTTPNames::X_Frame_Options);
@@ -526,10 +528,9 @@ void DocumentLoader::dataReceived(Resource* resource,
   DCHECK(!m_frame->page()->defersLoading());
 
   if (m_inDataReceived) {
-    // If this function is reentered, defer processing of the additional
-    // data to the top-level invocation. Reentrant calls can occur because
-    // of web platform (mis-)features that require running a nested message
-    // loop:
+    // If this function is reentered, defer processing of the additional data to
+    // the top-level invocation. Reentrant calls can occur because of web
+    // platform (mis-)features that require running a nested message loop:
     // - alert(), confirm(), prompt()
     // - Detach of plugin elements.
     // - Synchronous XMLHTTPRequest
@@ -540,9 +541,9 @@ void DocumentLoader::dataReceived(Resource* resource,
   AutoReset<bool> reentrancyProtector(&m_inDataReceived, true);
   processData(data, length);
 
-  // Process data received in reentrant invocations. Note that the
-  // invocations of processData() may queue more data in reentrant
-  // invocations, so iterate until it's empty.
+  // Process data received in reentrant invocations. Note that the invocations
+  // of processData() may queue more data in reentrant invocations, so iterate
+  // until it's empty.
   const char* segment;
   size_t pos = 0;
   while (size_t length = m_dataBuffer->getSomeData(segment, pos)) {
@@ -564,8 +565,8 @@ void DocumentLoader::processData(const char* data, size_t length) {
     return;
   commitData(data, length);
 
-  // If we are sending data to MediaDocument, we should stop here
-  // and cancel the request.
+  // If we are sending data to MediaDocument, we should stop here and cancel the
+  // request.
   if (m_frame && m_frame->document()->isMediaDocument())
     m_fetcher->stopFetching();
 }
@@ -606,7 +607,8 @@ void DocumentLoader::clearMainResourceHandle() {
 }
 
 bool DocumentLoader::maybeCreateArchive() {
-  // Give the archive machinery a crack at this document. If the MIME type is not an archive type, it will return 0.
+  // Give the archive machinery a crack at this document. If the MIME type is
+  // not an archive type, it will return 0.
   if (!isArchiveMIMEType(m_response.mimeType()))
     return false;
 
@@ -615,8 +617,8 @@ bool DocumentLoader::maybeCreateArchive() {
       m_fetcher->createArchive(m_mainResource.get());
   if (!mainResource)
     return false;
-  // The origin is the MHTML file, we need to set the base URL to the document encoded in the MHTML so
-  // relative URLs are resolved properly.
+  // The origin is the MHTML file, we need to set the base URL to the document
+  // encoded in the MHTML so relative URLs are resolved properly.
   ensureWriter(mainResource->mimeType(), mainResource->url());
 
   // The Document has now been created.
@@ -682,8 +684,9 @@ void DocumentLoader::startLoadingMainResource() {
     maybeLoadEmpty();
     return;
   }
-  // A bunch of headers are set when the underlying resource load begins, and m_request needs to include those.
-  // Even when using a cached resource, we may make some modification to the request, e.g. adding the referer header.
+  // A bunch of headers are set when the underlying resource load begins, and
+  // m_request needs to include those. Even when using a cached resource, we may
+  // make some modification to the request, e.g. adding the referer header.
   m_request = m_mainResource->isLoading() ? m_mainResource->resourceRequest()
                                           : fetchRequest.resourceRequest();
   m_mainResource->addClient(this);
@@ -735,7 +738,8 @@ const AtomicString& DocumentLoader::mimeType() const {
   return m_response.mimeType();
 }
 
-// This is only called by FrameLoader::replaceDocumentWhileExecutingJavaScriptURL()
+// This is only called by
+// FrameLoader::replaceDocumentWhileExecutingJavaScriptURL()
 void DocumentLoader::replaceDocumentWhileExecutingJavaScriptURL(
     const DocumentInit& init,
     const String& source) {

@@ -53,15 +53,18 @@
 
 /*
  This file holds empty Client stubs for use by WebCore.
- Viewless element needs to create a dummy Page->LocalFrame->FrameView tree for use in parsing or executing JavaScript.
- This tree depends heavily on Clients (usually provided by WebKit classes).
 
- This file was first created for SVGImage as it had no way to access the current Page (nor should it,
- since Images are not tied to a page).
- See http://bugs.webkit.org/show_bug.cgi?id=5971 for the original discussion about this file.
+ Viewless element needs to create a dummy Page->LocalFrame->FrameView tree for
+ use in parsing or executing JavaScript. This tree depends heavily on Clients
+ (usually provided by WebKit classes).
+
+ This file was first created for SVGImage as it had no way to access the current
+ Page (nor should it, since Images are not tied to a page). See
+ http://bugs.webkit.org/show_bug.cgi?id=5971 for the original discussion about
+ this file.
 
  Ideally, whenever you change a Client class, you should add a stub here.
- Brittle, yes.  Unfortunate, yes.  Hopefully temporary.
+ Brittle, yes. Unfortunate, yes. Hopefully temporary.
 */
 
 namespace blink {

@@ -13,10 +13,12 @@ namespace blink {
 class Document;
 
 /**
- * Handles a HTTP header equivalent set by a meta tag using <meta http-equiv="..." content="...">. This is called
- * when a meta tag is encountered during document parsing, and also when a script dynamically changes or adds a meta
- * tag. This enables scripts to use meta tags to perform refreshes and set expiry dates in addition to them being
- * specified in a HTML file.
+ * Handles a HTTP header equivalent set by a meta tag using
+ * <meta http-equiv="..." content="...">. This is called when a meta tag is
+ * encountered during document parsing, and also when a script dynamically
+ * changes or adds a meta tag. This enables scripts to use meta tags to perform
+ * refreshes and set expiry dates in addition to them being specified in a HTML
+ * file.
  */
 class HttpEquiv {
   STATIC_ONLY(HttpEquiv);

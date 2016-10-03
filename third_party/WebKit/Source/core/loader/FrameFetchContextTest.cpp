@@ -121,8 +121,9 @@ class FrameFetchContextTest : public ::testing::Test {
   }
 
   std::unique_ptr<DummyPageHolder> dummyPageHolder;
-  // We don't use the DocumentLoader directly in any tests, but need to keep it around as long
-  // as the ResourceFetcher and Document live due to indirect usage.
+  // We don't use the DocumentLoader directly in any tests, but need to keep it
+  // around as long as the ResourceFetcher and Document live due to indirect
+  // usage.
   Persistent<DocumentLoader> documentLoader;
   Persistent<Document> document;
   Persistent<FrameFetchContext> fetchContext;
@@ -134,8 +135,8 @@ class FrameFetchContextTest : public ::testing::Test {
   Persistent<DummyFrameOwner> owner;
 };
 
-// This test class sets up a mock frame loader client that expects a
-// call to didDisplayContentWithCertificateErrors().
+// This test class sets up a mock frame loader client that expects a call to
+// didDisplayContentWithCertificateErrors().
 class FrameFetchContextDisplayedCertificateErrorsTest
     : public FrameFetchContextTest {
  protected:
@@ -218,7 +219,8 @@ class FrameFetchContextUpgradeTest : public FrameFetchContextTest {
               fetchRequest.resourceRequest().httpHeaderField(
                   HTTPNames::Upgrade_Insecure_Requests));
 
-    // Calling upgradeInsecureRequest more than once shouldn't affect the header.
+    // Calling upgradeInsecureRequest more than once shouldn't affect the
+    // header.
     if (shouldPrefer) {
       fetchContext->upgradeInsecureRequest(
           fetchRequest.mutableResourceRequest());
@@ -278,7 +280,8 @@ TEST_F(FrameFetchContextUpgradeTest, UpgradeInsecureResourceRequests) {
     expectUpgrade(test.original, WebURLRequest::RequestContextForm,
                   WebURLRequest::FrameTypeAuxiliary, test.upgraded);
 
-    // Or unless the host of the resource is in the document's InsecureNavigationsSet:
+    // Or unless the host of the resource is in the document's
+    // InsecureNavigationsSet:
     document->addInsecureNavigationUpgrade(
         exampleOrigin->host().impl()->hash());
     expectUpgrade(test.original, WebURLRequest::RequestContextScript,
@@ -332,9 +335,9 @@ TEST_F(FrameFetchContextUpgradeTest, SendHTTPSHeader) {
       {"https://example.test/page.html", WebURLRequest::FrameTypeTopLevel,
        true}};
 
-  // This should work correctly both when the FrameFetchContext has a Document, and
-  // when it doesn't (e.g. during main frame navigations), so run through the tests
-  // both before and after providing a document to the context.
+  // This should work correctly both when the FrameFetchContext has a Document,
+  // and when it doesn't (e.g. during main frame navigations), so run through
+  // the tests both before and after providing a document to the context.
   for (const auto& test : tests) {
     document->setInsecureRequestPolicy(kLeaveInsecureRequestsAlone);
     expectHTTPSHeader(test.toRequest, test.frameType, test.shouldPrefer);
@@ -508,13 +511,15 @@ TEST_F(FrameFetchContextTest, PopulateRequestData) {
       {"http://example.test", true, "", WebURLRequest::FrameTypeNone,
        "http://example.test"},
 
-      // If the request already has a requestor origin, then 'populateRequestData' leaves it alone:
+      // If the request already has a requestor origin, then
+      // 'populateRequestData' leaves it alone:
       {"http://example.test", false, "http://not-example.test",
        WebURLRequest::FrameTypeNone, "http://not-example.test"},
       {"http://example.test", true, "http://not-example.test",
        WebURLRequest::FrameTypeNone, "http://not-example.test"},
 
-      // If the request's frame type is not 'none', then 'populateRequestData' leaves it alone:
+      // If the request's frame type is not 'none', then 'populateRequestData'
+      // leaves it alone:
       {"http://example.test", false, "", WebURLRequest::FrameTypeTopLevel, ""},
       {"http://example.test", false, "", WebURLRequest::FrameTypeAuxiliary, ""},
       {"http://example.test", false, "", WebURLRequest::FrameTypeNested, ""},
@@ -600,8 +605,8 @@ TEST_F(FrameFetchContextTest, DisabledDataSaver) {
   EXPECT_EQ(String(), resourceRequest.httpHeaderField("Save-Data"));
 }
 
-// Tests that when a resource with certificate errors is loaded from the
-// memory cache, the embedder is notified.
+// Tests that when a resource with certificate errors is loaded from the memory
+// cache, the embedder is notified.
 TEST_F(FrameFetchContextDisplayedCertificateErrorsTest,
        MemoryCacheCertificateError) {
   ResourceRequest resourceRequest(url);

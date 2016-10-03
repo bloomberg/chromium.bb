@@ -275,9 +275,9 @@ CachePolicy FrameFetchContext::getCachePolicy() const {
           WebCachePolicy::ReturnCacheDataElseLoad)
     return CachePolicyHistoryBuffer;
 
-  // Returns CachePolicyVerify for other cases, mainly FrameLoadTypeStandard
-  // and FrameLoadTypeReloadMainResource. See public/web/WebFrameLoadType.h
-  // to know how these load types work.
+  // Returns CachePolicyVerify for other cases, mainly FrameLoadTypeStandard and
+  // FrameLoadTypeReloadMainResource. See public/web/WebFrameLoadType.h to know
+  // how these load types work.
   return CachePolicyVerify;
 }
 
@@ -319,10 +319,10 @@ WebCachePolicy FrameFetchContext::resourceRequestCachePolicy(
       if (parentFrameLoadType == FrameLoadTypeReload)
         return WebCachePolicy::ValidatingCacheData;
     }
-    // Returns UseProtocolCachePolicy for other cases, parent frames not
-    // having special kinds of FrameLoadType as they are checked inside
-    // the for loop above, or |frameLoadType| being FrameLoadTypeStandard.
-    // See public/web/WebFrameLoadType.h to know how these load types work.
+    // Returns UseProtocolCachePolicy for other cases, parent frames not having
+    // special kinds of FrameLoadType as they are checked inside the for loop
+    // above, or |frameLoadType| being FrameLoadTypeStandard. See
+    // public/web/WebFrameLoadType.h to know how these load types work.
     return WebCachePolicy::UseProtocolCachePolicy;
   }
 
@@ -337,8 +337,8 @@ WebCachePolicy FrameFetchContext::resourceRequestCachePolicy(
     return WebCachePolicy::ValidatingCacheData;
 
   if (m_documentLoader && m_document && !m_document->loadEventFinished()) {
-    // For POST requests, we mutate the main resource's cache policy to avoid form resubmission.
-    // This policy should not be inherited by subresources.
+    // For POST requests, we mutate the main resource's cache policy to avoid
+    // form resubmission. This policy should not be inherited by subresources.
     WebCachePolicy mainResourceCachePolicy =
         m_documentLoader->request().getCachePolicy();
     if (m_documentLoader->request().httpMethod() == "POST") {
@@ -351,9 +351,10 @@ WebCachePolicy FrameFetchContext::resourceRequestCachePolicy(
   return WebCachePolicy::UseProtocolCachePolicy;
 }
 
-// The |m_documentLoader| is null in the FrameFetchContext of an imported document.
-// FIXME(http://crbug.com/274173): This means Inspector, which uses DocumentLoader
-// as a grouping entity, cannot see imported documents.
+// The |m_documentLoader| is null in the FrameFetchContext of an imported
+// document.
+// FIXME(http://crbug.com/274173): This means Inspector, which uses
+// DocumentLoader as a grouping entity, cannot see imported documents.
 inline DocumentLoader* FrameFetchContext::masterDocumentLoader() const {
   return m_documentLoader ? m_documentLoader.get()
                           : frame()->loader().documentLoader();
@@ -382,8 +383,8 @@ void FrameFetchContext::dispatchWillSendRequest(
     const ResourceResponse& redirectResponse,
     const FetchInitiatorInfo& initiatorInfo) {
   // For initial requests, prepareRequest() is called in
-  // willStartLoadingResource(), before revalidation policy is determined.
-  // That call doesn't exist for redirects, so call preareRequest() here.
+  // willStartLoadingResource(), before revalidation policy is determined. That
+  // call doesn't exist for redirects, so call preareRequest() here.
   if (!redirectResponse.isNull())
     prepareRequest(request);
   else
@@ -456,7 +457,8 @@ void FrameFetchContext::dispatchDidFail(unsigned long identifier,
                        TRACE_EVENT_SCOPE_THREAD, "data",
                        InspectorResourceFinishEvent::data(identifier, 0, true));
   InspectorInstrumentation::didFailLoading(frame(), identifier, error);
-  // Notification to FrameConsole should come AFTER InspectorInstrumentation call, DevTools front-end relies on this.
+  // Notification to FrameConsole should come AFTER InspectorInstrumentation
+  // call, DevTools front-end relies on this.
   if (!isInternalRequest)
     frame()->console().didFailLoading(identifier, error);
   if (frame()->frameScheduler())
@@ -659,12 +661,14 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(
       break;
   }
 
-  // FIXME: Convert this to check the isolated world's Content Security Policy once webkit.org/b/104520 is solved.
+  // FIXME: Convert this to check the isolated world's Content Security Policy
+  // once webkit.org/b/104520 is solved.
   bool shouldBypassMainWorldCSP =
       frame()->script().shouldBypassMainWorldCSP() ||
       options.contentSecurityPolicyOption == DoNotCheckContentSecurityPolicy;
 
-  // Don't send CSP messages for preloads, we might never actually display those items.
+  // Don't send CSP messages for preloads, we might never actually display those
+  // items.
   ContentSecurityPolicy::ReportingStatus cspReporting =
       forPreload ? ContentSecurityPolicy::SuppressReport
                  : ContentSecurityPolicy::SendReport;
@@ -685,9 +689,8 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(
             !frame()->settings() || frame()->settings()->scriptEnabled(),
             url)) {
       frame()->loader().client()->didNotAllowScript();
-      // TODO(estark): Use a different ResourceRequestBlockedReason
-      // here, since this check has nothing to do with
-      // CSP. https://crbug.com/600795
+      // TODO(estark): Use a different ResourceRequestBlockedReason here, since
+      // this check has nothing to do with CSP. https://crbug.com/600795
       return ResourceRequestBlockedReasonCSP;
     }
   } else if (type == Resource::Media || type == Resource::TextTrack) {
@@ -702,9 +705,10 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(
       frame()->chromeClient().isSVGImageChromeClient() && !url.protocolIsData())
     return ResourceRequestBlockedReasonOrigin;
 
-  // Measure the number of legacy URL schemes ('ftp://') and the number of embedded-credential
-  // ('http://user:password@...') resources embedded as subresources. in the hopes that we can
-  // block them at some point in the future.
+  // Measure the number of legacy URL schemes ('ftp://') and the number of
+  // embedded-credential ('http://user:password@...') resources embedded as
+  // subresources. in the hopes that we can block them at some point in the
+  // future.
   if (resourceRequest.frameType() != WebURLRequest::FrameTypeTopLevel) {
     DCHECK(frame()->document());
     if (SchemeRegistry::shouldTreatURLSchemeAsLegacy(url.protocol()) &&
@@ -728,7 +732,8 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(
                                             mixedContentReporting))
     return ResourceRequestBlockedReasonMixedContent;
 
-  // Let the client have the final say into whether or not the load should proceed.
+  // Let the client have the final say into whether or not the load should
+  // proceed.
   DocumentLoader* documentLoader = masterDocumentLoader();
   if (documentLoader && documentLoader->subresourceFilter() &&
       type != Resource::MainResource && type != Resource::ImportResource &&
@@ -745,23 +750,23 @@ bool FrameFetchContext::isControlledByServiceWorker() const {
   // Service workers are bypassed by suborigins (see
   // https://w3c.github.io/webappsec-suborigins/). Since service worker
   // controllers are assigned based on physical origin, without knowledge of
-  // whether the context is in a suborigin, it is necessary to explicitly
-  // bypass service workers on a per-request basis. Additionally, it is
-  // necessary to explicitly return |false| here so that it is clear that the
-  // SW will be bypassed. In particular, this is important for
-  // ResourceFetcher::getCacheIdentifier(), which will return the SW's cache
-  // if the context's isControlledByServiceWorker() returns |true|, and thus
-  // will returned cached resources from the service worker. That would have
-  // the effect of not bypassing the SW.
+  // whether the context is in a suborigin, it is necessary to explicitly bypass
+  // service workers on a per-request basis. Additionally, it is necessary to
+  // explicitly return |false| here so that it is clear that the SW will be
+  // bypassed. In particular, this is important for
+  // ResourceFetcher::getCacheIdentifier(), which will return the SW's cache if
+  // the context's isControlledByServiceWorker() returns |true|, and thus will
+  // returned cached resources from the service worker. That would have the
+  // effect of not bypassing the SW.
   if (getSecurityOrigin() && getSecurityOrigin()->hasSuborigin())
     return false;
 
   if (m_documentLoader)
     return frame()->loader().client()->isControlledByServiceWorker(
         *m_documentLoader);
-  // m_documentLoader is null while loading resources from an HTML import.
-  // In such cases whether the request is controlled by ServiceWorker or not
-  // is determined by the document loader of the frame.
+  // m_documentLoader is null while loading resources from an HTML import. In
+  // such cases whether the request is controlled by ServiceWorker or not is
+  // determined by the document loader of the frame.
   return frame()->loader().client()->isControlledByServiceWorker(
       *frame()->loader().documentLoader());
 }
@@ -797,7 +802,8 @@ bool FrameFetchContext::pageDismissalEventBeingDispatched() const {
 
 bool FrameFetchContext::updateTimingInfoForIFrameNavigation(
     ResourceTimingInfo* info) {
-  // <iframe>s should report the initial navigation requested by the parent document, but not subsequent navigations.
+  // <iframe>s should report the initial navigation requested by the parent
+  // document, but not subsequent navigations.
   // FIXME: Resource timing is broken when the parent is a remote frame.
   if (!frame()->deprecatedLocalOwner() ||
       frame()->deprecatedLocalOwner()->loadedNonEmptyDocument())
@@ -886,10 +892,10 @@ void FrameFetchContext::populateRequestData(ResourceRequest& request) {
                    : SecurityOrigin::urlWithUniqueSecurityOrigin());
   }
 
-  // Subresource requests inherit their requestor origin from |m_document| directly.
-  // Top-level and nested frame types are taken care of in 'FrameLoadRequest()'.
-  // Auxiliary frame types in 'createWindow()' and 'FrameLoader::load'.
-  //
+  // Subresource requests inherit their requestor origin from |m_document|
+  // directly. Top-level and nested frame types are taken care of in
+  // 'FrameLoadRequest()'. Auxiliary frame types in 'createWindow()' and
+  // 'FrameLoader::load'.
   // TODO(mkwst): It would be cleaner to adjust blink::ResourceRequest to
   // initialize itself with a `nullptr` initiator so that this can be a simple
   // `isNull()` check. https://crbug.com/625969
@@ -904,9 +910,9 @@ void FrameFetchContext::populateRequestData(ResourceRequest& request) {
 MHTMLArchive* FrameFetchContext::archive() const {
   DCHECK(!isMainFrame());
   // TODO(nasko): How should this work with OOPIF?
-  // The MHTMLArchive is parsed as a whole, but can be constructed from
-  // frames in mutliple processes. In that case, which process should parse
-  // it and how should the output be spread back across multiple processes?
+  // The MHTMLArchive is parsed as a whole, but can be constructed from frames
+  // in mutliple processes. In that case, which process should parse it and how
+  // should the output be spread back across multiple processes?
   if (!frame()->tree().parent()->isLocalFrame())
     return nullptr;
   return toLocalFrame(frame()->tree().parent())
@@ -962,7 +968,8 @@ void FrameFetchContext::dispatchDidReceiveResponseInternal(
     m_documentLoader->clientHintsPreferences()
         .updateFromAcceptClientHintsHeader(
             response.httpHeaderField(HTTPNames::Accept_CH), fetcher);
-    // When response is received with a provisional docloader, the resource haven't committed yet, and we cannot load resources, only preconnect.
+    // When response is received with a provisional docloader, the resource
+    // haven't committed yet, and we cannot load resources, only preconnect.
     resourceLoadingPolicy = LinkLoader::DoNotLoadResources;
   }
   LinkLoader::loadLinksFromHeader(

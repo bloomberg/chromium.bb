@@ -56,16 +56,20 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
   DECLARE_TRACE();
 
   enum UpdateFromElementBehavior {
-    // This should be the update behavior when the element is attached to a document, or when DOM mutations trigger a new load.
-    // Starts loading if a load hasn't already been started.
+    // This should be the update behavior when the element is attached to a
+    // document, or when DOM mutations trigger a new load. Starts loading if a
+    // load hasn't already been started.
     UpdateNormal,
-    // This should be the update behavior when the resource was changed (via 'src', 'srcset' or 'sizes').
-    // Starts a new load even if a previous load of the same resource have failed, to match Firefox's behavior.
+    // This should be the update behavior when the resource was changed (via
+    // 'src', 'srcset' or 'sizes'). Starts a new load even if a previous load of
+    // the same resource have failed, to match Firefox's behavior.
     // FIXME - Verify that this is the right behavior according to the spec.
     UpdateIgnorePreviousError,
-    // This forces the image to update its intrinsic size, even if the image source has not changed.
+    // This forces the image to update its intrinsic size, even if the image
+    // source has not changed.
     UpdateSizeChanged,
-    // This force the image to refetch and reload the image source, even if it has not changed.
+    // This force the image to refetch and reload the image source, even if it
+    // has not changed.
     UpdateForcedReload
   };
 
@@ -80,8 +84,8 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
   bool imageComplete() const { return m_imageComplete && !m_pendingTask; }
 
   ImageResource* image() const { return m_image.get(); }
-  void setImage(
-      ImageResource*);  // Cancels pending load events, and doesn't dispatch new ones.
+  // Cancels pending load events, and doesn't dispatch new ones.
+  void setImage(ImageResource*);
 
   bool isLoadingImageDocument() { return m_loadingImageDocument; }
   void setLoadingImageDocument() { m_loadingImageDocument = true; }
@@ -134,15 +138,15 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
 
   KURL imageSourceToKURL(AtomicString) const;
 
-  // Used to determine whether to immediately initiate the load
-  // or to schedule a microtask.
+  // Used to determine whether to immediately initiate the load or to schedule a
+  // microtask.
   bool shouldLoadImmediately(const KURL&) const;
 
   // For Oilpan, we must run dispose() as a prefinalizer and call
-  // m_image->removeClient(this) (and more.) Otherwise, the ImageResource can invoke
-  // didAddClient() for the ImageLoader that is about to die in the current
-  // lazy sweeping, and the didAddClient() can access on-heap objects that
-  // have already been finalized in the current lazy sweeping.
+  // m_image->removeClient(this) (and more.) Otherwise, the ImageResource can
+  // invoke didAddClient() for the ImageLoader that is about to die in the
+  // current lazy sweeping, and the didAddClient() can access on-heap objects
+  // that have already been finalized in the current lazy sweeping.
   void dispose();
 
   Member<Element> m_element;

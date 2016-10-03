@@ -118,13 +118,13 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
   // |this| may be dead after calling this method in async mode.
   void cancelWithError(const ResourceError&);
 
-  // Notify Inspector and log to console about resource response. Use
-  // this method if response is not going to be finished normally.
+  // Notify Inspector and log to console about resource response. Use this
+  // method if response is not going to be finished normally.
   void reportResponseReceived(unsigned long identifier,
                               const ResourceResponse&);
 
-  // Methods containing code to handle resource fetch results which are
-  // common to both sync and async mode.
+  // Methods containing code to handle resource fetch results which are common
+  // to both sync and async mode.
   //
   // |this| may be dead after calling these method in async mode.
   void handleResponse(unsigned long identifier,
@@ -135,9 +135,9 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
 
   // |this| may be dead after calling this method.
   void didTimeout(TimerBase*);
-  // Calls the appropriate loading method according to policy and data
-  // about origin. Only for handling the initial load (including fallback
-  // after consulting ServiceWorker).
+  // Calls the appropriate loading method according to policy and data about
+  // origin. Only for handling the initial load (including fallback after
+  // consulting ServiceWorker).
   //
   // |this| may be dead after calling this method in async mode.
   void dispatchInitialRequest(const ResourceRequest&);
@@ -165,15 +165,15 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
 
   void loadRequest(const ResourceRequest&, ResourceLoaderOptions);
   bool isAllowedRedirect(const KURL&) const;
-  // Returns DoNotAllowStoredCredentials
-  // if m_forceDoNotAllowStoredCredentials is set. Otherwise, just
-  // returns allowCredentials value of m_resourceLoaderOptions.
+  // Returns DoNotAllowStoredCredentials if m_forceDoNotAllowStoredCredentials
+  // is set. Otherwise, just returns allowCredentials value of
+  // m_resourceLoaderOptions.
   StoredCredentials effectiveAllowCredentials() const;
 
   // TODO(hiroshige): After crbug.com/633696 is fixed,
   // - Remove RawResourceClientStateChecker logic,
-  // - Make DocumentThreadableLoader to be a ResourceOwner and remove
-  //   this re-implementation of ResourceOwner, and
+  // - Make DocumentThreadableLoader to be a ResourceOwner and remove this
+  //   re-implementation of ResourceOwner, and
   // - Consider re-applying RawResourceClientStateChecker in a more
   //   general fashion (crbug.com/640291).
   RawResource* resource() const { return m_resource.get(); }
@@ -203,23 +203,21 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
   Member<Document> m_document;
 
   const ThreadableLoaderOptions m_options;
-  // Some items may be overridden by m_forceDoNotAllowStoredCredentials
-  // and m_securityOrigin. In such a case, build a ResourceLoaderOptions
-  // with up-to-date values from them and this variable, and use it.
+  // Some items may be overridden by m_forceDoNotAllowStoredCredentials and
+  // m_securityOrigin. In such a case, build a ResourceLoaderOptions with
+  // up-to-date values from them and this variable, and use it.
   const ResourceLoaderOptions m_resourceLoaderOptions;
 
   bool m_forceDoNotAllowStoredCredentials;
   RefPtr<SecurityOrigin> m_securityOrigin;
 
-  // True while the initial URL and all the URLs of the redirects
-  // this object has followed, if any, are same-origin to
-  // getSecurityOrigin().
+  // True while the initial URL and all the URLs of the redirects this object
+  // has followed, if any, are same-origin to getSecurityOrigin().
   bool m_sameOriginRequest;
   // Set to true if the current request is cross-origin and not simple.
   bool m_crossOriginNonSimpleRequest;
 
-  // Set to true when the response data is given to a data consumer
-  // handle.
+  // Set to true when the response data is given to a data consumer handle.
   bool m_isUsingDataConsumerHandle;
 
   const bool m_async;
@@ -231,29 +229,28 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
   // does not respond.
   ResourceRequest m_fallbackRequestForServiceWorker;
 
-  // Holds the original request and options for it during preflight
-  // request handling phase.
+  // Holds the original request and options for it during preflight request
+  // handling phase.
   ResourceRequest m_actualRequest;
   ResourceLoaderOptions m_actualOptions;
 
-  HTTPHeaderMap
-      m_simpleRequestHeaders;  // stores simple request headers in case of a cross-origin redirect.
+  // stores simple request headers in case of a cross-origin redirect.
+  HTTPHeaderMap m_simpleRequestHeaders;
+
   Timer<DocumentThreadableLoader> m_timeoutTimer;
   double
       m_requestStartedSeconds;  // Time an asynchronous fetch request is started
 
   // Max number of times that this DocumentThreadableLoader can follow
-  // cross-origin redirects.
-  // This is used to limit the number of redirects.
-  // But this value is not the max number of total redirects allowed,
-  // because same-origin redirects are not counted here.
+  // cross-origin redirects. This is used to limit the number of redirects. But
+  // this value is not the max number of total redirects allowed, because
+  // same-origin redirects are not counted here.
   int m_corsRedirectLimit;
 
   WebURLRequest::FetchRedirectMode m_redirectMode;
 
-  // Holds the referrer after a redirect response was
-  // received. This referrer is used to populate the HTTP Referer
-  // header when following the redirect.
+  // Holds the referrer after a redirect response was received. This referrer is
+  // used to populate the HTTP Referer header when following the redirect.
   bool m_didRedirect;
   Referrer m_referrerAfterRedirect;
 

@@ -36,9 +36,12 @@
 namespace blink {
 
 // These values are at the discretion of the user agent.
+
 static const unsigned defaultPreflightCacheTimeoutSeconds = 5;
-static const unsigned maxPreflightCacheTimeoutSeconds =
-    600;  // Should be short enough to minimize the risk of using a poisoned cache after switching to a secure network.
+
+// Should be short enough to minimize the risk of using a poisoned cache after
+// switching to a secure network.
+static const unsigned maxPreflightCacheTimeoutSeconds = 600;
 
 static bool parseAccessControlMaxAge(const String& string,
                                      unsigned& expiryDelta) {

@@ -133,9 +133,10 @@ void ProgressTracker::willStartLoading(unsigned long identifier,
                                        ResourceLoadPriority priority) {
   if (!m_frame->isLoading())
     return;
-  // All of the progress bar completion policies besides LoadEvent instead block on parsing
-  // completion, which corresponds to finishing parsing. For those policies, don't consider
-  // resource load that start after DOMContentLoaded finishes.
+  // All of the progress bar completion policies besides LoadEvent instead block
+  // on parsing completion, which corresponds to finishing parsing. For those
+  // policies, don't consider resource load that start after DOMContentLoaded
+  // finishes.
   if (m_frame->settings()->progressBarCompletion() !=
           ProgressBarCompletion::LoadEvent &&
       (m_finishedParsing || priority < ResourceLoadPriorityHigh))

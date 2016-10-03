@@ -76,9 +76,9 @@ ApplicationCacheHost::~ApplicationCacheHost() {
 
 void ApplicationCacheHost::willStartLoadingMainResource(
     ResourceRequest& request) {
-  // We defer creating the outer host object to avoid spurious creation/destruction
-  // around creating empty documents. At this point, we're initiating a main resource
-  // load for the document, so its for real.
+  // We defer creating the outer host object to avoid spurious
+  // creation/destruction around creating empty documents. At this point, we're
+  // initiating a main resource load for the document, so its for real.
 
   if (!isApplicationCacheEnabled())
     return;
@@ -105,10 +105,11 @@ void ApplicationCacheHost::willStartLoadingMainResource(
 
   m_host->willStartMainResourceRequest(wrapped, spawningHost);
 
-  // NOTE: The semantics of this method, and others in this interface, are subtly different
-  // than the method names would suggest. For example, in this method never returns an appcached
-  // response in the SubstituteData out argument, instead we return the appcached response thru
-  // the usual resource loading pipeline.
+  // NOTE: The semantics of this method, and others in this interface, are
+  // subtly different than the method names would suggest. For example, in this
+  // method never returns an appcached response in the SubstituteData out
+  // argument, instead we return the appcached response thru the usual resource
+  // loading pipeline.
 }
 
 void ApplicationCacheHost::selectCacheWithoutManifest() {
@@ -136,11 +137,10 @@ void ApplicationCacheHost::selectCacheWithManifest(const KURL& manifestURL) {
                        ApplicationCacheManifestSelectInsecureHost);
   }
   if (m_host && !m_host->selectCacheWithManifest(manifestURL)) {
-    // It's a foreign entry, restart the current navigation from the top
-    // of the navigation algorithm. The navigation will not result in the
-    // same resource being loaded, because "foreign" entries are never picked
-    // during navigation.
-    // see ApplicationCacheGroup::selectCache()
+    // It's a foreign entry, restart the current navigation from the top of the
+    // navigation algorithm. The navigation will not result in the same resource
+    // being loaded, because "foreign" entries are never picked during
+    // navigation. see ApplicationCacheGroup::selectCache()
     frame->navigate(*document, document->url(), true, UserGestureStatus::None);
   }
 }
@@ -183,7 +183,8 @@ void ApplicationCacheHost::setApplicationCache(
 }
 
 void ApplicationCacheHost::detachFromDocumentLoader() {
-  // Detach from the owning DocumentLoader and let go of WebApplicationCacheHost.
+  // Detach from the owning DocumentLoader and let go of
+  // WebApplicationCacheHost.
   setApplicationCache(nullptr);
   m_host.reset();
   m_documentLoader = nullptr;
@@ -304,7 +305,8 @@ bool ApplicationCacheHost::isApplicationCacheEnabled() {
 }
 
 void ApplicationCacheHost::didChangeCacheAssociation() {
-  // FIXME: Prod the inspector to update its notion of what cache the page is using.
+  // FIXME: Prod the inspector to update its notion of what cache the page is
+  // using.
 }
 
 void ApplicationCacheHost::notifyEventListener(

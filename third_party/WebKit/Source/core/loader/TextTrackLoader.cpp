@@ -128,7 +128,8 @@ bool TextTrackLoader::load(const KURL& url,
     cueRequest.setCrossOriginAccessControl(document().getSecurityOrigin(),
                                            crossOrigin);
   } else if (!document().getSecurityOrigin()->canRequestNoSuborigin(url)) {
-    // Text track elements without 'crossorigin' set on the parent are "No CORS"; report error if not same-origin.
+    // Text track elements without 'crossorigin' set on the parent are "No
+    // CORS"; report error if not same-origin.
     corsPolicyPreventedLoad(document().getSecurityOrigin(), url);
     return false;
   }

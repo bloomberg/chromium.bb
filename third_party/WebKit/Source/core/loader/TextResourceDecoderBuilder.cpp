@@ -101,7 +101,8 @@ TextResourceDecoderBuilder::createDecoderInstance(Document* document) {
       getEncodingFromDomain(document->url());
   if (LocalFrame* frame = document->frame()) {
     if (Settings* settings = frame->settings()) {
-      // Disable autodetection for XML to honor the default encoding (UTF-8) for unlabelled documents.
+      // Disable autodetection for XML to honor the default encoding (UTF-8) for
+      // unlabelled documents.
       return TextResourceDecoder::create(
           m_mimeType,
           encodingFromDomain.isValid() ? encodingFromDomain
@@ -125,15 +126,14 @@ inline void TextResourceDecoderBuilder::setupEncoding(
     decoder->setEncoding(m_encoding.getString(),
                          TextResourceDecoder::EncodingFromHTTPHeader);
 
-  // Set the hint encoding to the parent frame encoding only if
-  // the parent and the current frames share the security origin.
-  // We impose this condition because somebody can make a child frameg63
-  // containing a carefully crafted html/javascript in one encoding
-  // that can be mistaken for hintEncoding (or related encoding) by
-  // an auto detector. When interpreted in the latter, it could be
-  // an attack vector.
-  // FIXME: This might be too cautious for non-7bit-encodings and
-  // we may consider relaxing this later after testing.
+  // Set the hint encoding to the parent frame encoding only if the parent and
+  // the current frames share the security origin. We impose this condition
+  // because somebody can make a child frameg63 containing a carefully crafted
+  // html/javascript in one encoding that can be mistaken for hintEncoding (or
+  // related encoding) by an auto detector. When interpreted in the latter, it
+  // could be an attack vector.
+  // FIXME: This might be too cautious for non-7bit-encodings and we may
+  // consider relaxing this later after testing.
   if (frame && canReferToParentFrameEncoding(frame, parentFrame)) {
     if (parentFrame->document()->encodingWasDetectedHeuristically())
       decoder->setHintEncoding(parentFrame->document()->encoding());

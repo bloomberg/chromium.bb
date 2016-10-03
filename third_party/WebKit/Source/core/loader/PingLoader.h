@@ -55,10 +55,10 @@ class ResourceRequest;
 class SecurityOrigin;
 
 // Issue an asynchronous, one-directional request at some resources, ignoring
-// any response. The request is made independent of any LocalFrame staying alive,
-// and must only stay alive until the transmission has completed successfully
-// (or not -- errors are not propagated back either.) Upon transmission, the
-// the load is cancelled and the loader cancels itself.
+// any response. The request is made independent of any LocalFrame staying
+// alive, and must only stay alive until the transmission has completed
+// successfully (or not -- errors are not propagated back either.) Upon
+// transmission, the the load is cancelled and the loader cancels itself.
 //
 // The ping loader is used by audit pings, beacon transmissions and image loads
 // during page unloading.

@@ -58,9 +58,9 @@ class CrossOriginPreflightResultCacheItem {
  private:
   typedef HashSet<String, CaseFoldingHash> HeadersSet;
 
-  // FIXME: A better solution to holding onto the absolute expiration time might be
-  // to start a timer for the expiration delta that removes this from the cache when
-  // it fires.
+  // FIXME: A better solution to holding onto the absolute expiration time might
+  // be to start a timer for the expiration delta that removes this from the
+  // cache when it fires.
   double m_absoluteExpiryTime;
   StoredCredentials m_credentials;
   HashSet<String> m_methods;

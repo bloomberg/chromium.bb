@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights reserved.
  * Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
- * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved.
+ * (http://www.torchmobile.com/)
  * Copyright (C) 2009 Adam Barth. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -388,7 +389,8 @@ bool NavigationScheduler::isNavigationScheduledWithin(double interval) const {
 // 2. FrameNavigationDisabler / LocalFrame::isNavigationAllowed() are intended
 //    to prevent Documents from being reattached during destruction, since it
 //    can cause bugs with security origin confusion. This is primarily intended
-//    to block /synchronous/ navigations during things lke Document::detachLayoutTree().
+//    to block /synchronous/ navigations during things lke
+//    Document::detachLayoutTree().
 inline bool NavigationScheduler::shouldScheduleReload() const {
   return m_frame->page() && m_frame->isNavigationAllowed() &&
          NavigationDisablerForUnload::isNavigationAllowed();
@@ -416,15 +418,18 @@ void NavigationScheduler::scheduleRedirect(double delay, const String& url) {
 }
 
 bool NavigationScheduler::mustReplaceCurrentItem(LocalFrame* targetFrame) {
-  // Non-user navigation before the page has finished firing onload should not create a new back/forward item.
-  // See https://webkit.org/b/42861 for the original motivation for this.
+  // Non-user navigation before the page has finished firing onload should not
+  // create a new back/forward item. See https://webkit.org/b/42861 for the
+  // original motivation for this.
   if (!targetFrame->document()->loadEventFinished() &&
       !UserGestureIndicator::utilizeUserGesture())
     return true;
 
-  // Navigation of a subframe during loading of an ancestor frame does not create a new back/forward item.
-  // The definition of "during load" is any time before all handlers for the load event have been run.
-  // See https://bugs.webkit.org/show_bug.cgi?id=14957 for the original motivation for this.
+  // Navigation of a subframe during loading of an ancestor frame does not
+  // create a new back/forward item. The definition of "during load" is any time
+  // before all handlers for the load event have been run. See
+  // https://bugs.webkit.org/show_bug.cgi?id=14957 for the original motivation
+  // for this.
   Frame* parentFrame = targetFrame->tree().parent();
   return parentFrame && parentFrame->isLocalFrame() &&
          !toLocalFrame(parentFrame)->loader().allAncestorsAreComplete();
@@ -438,10 +443,10 @@ void NavigationScheduler::scheduleLocationChange(Document* originDocument,
 
   replacesCurrentItem = replacesCurrentItem || mustReplaceCurrentItem(m_frame);
 
-  // If the URL we're going to navigate to is the same as the current one, except for the
-  // fragment part, we don't need to schedule the location change. We'll skip this
-  // optimization for cross-origin navigations to minimize the navigator's ability to
-  // execute timing attacks.
+  // If the URL we're going to navigate to is the same as the current one,
+  // except for the fragment part, we don't need to schedule the location
+  // change. We'll skip this optimization for cross-origin navigations to
+  // minimize the navigator's ability to execute timing attacks.
   if (originDocument->getSecurityOrigin()->canAccess(
           m_frame->document()->getSecurityOrigin())) {
     KURL parsedURL(ParsedURLString, url);
@@ -502,9 +507,11 @@ void NavigationScheduler::navigateTask() {
 void NavigationScheduler::schedule(ScheduledNavigation* redirect) {
   DCHECK(m_frame->page());
 
-  // In a back/forward navigation, we sometimes restore history state to iframes, even though the state was generated
-  // dynamically and JS will try to put something different in the iframe. In this case, we will load stale things
-  // and/or confuse the JS when it shortly thereafter tries to schedule a location change. Let the JS have its way.
+  // In a back/forward navigation, we sometimes restore history state to
+  // iframes, even though the state was generated dynamically and JS will try to
+  // put something different in the iframe. In this case, we will load stale
+  // things and/or confuse the JS when it shortly thereafter tries to schedule a
+  // location change. Let the JS have its way.
   // FIXME: This check seems out of place.
   if (!m_frame->loader().stateMachine()->committedFirstRealDocumentLoad() &&
       m_frame->loader().provisionalDocumentLoader()) {

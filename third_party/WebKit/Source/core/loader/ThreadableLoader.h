@@ -68,8 +68,10 @@ struct ThreadableLoaderOptions {
 
   // When adding members, CrossThreadThreadableLoaderOptionsData should
   // be updated.
-  PreflightPolicy
-      preflightPolicy;  // If AccessControl is used, how to determine if a preflight is needed.
+
+  // If AccessControl is used, how to determine if a preflight is needed.
+  PreflightPolicy preflightPolicy;
+
   CrossOriginRequestPolicy crossOriginRequestPolicy;
   AtomicString initiator;
   ContentSecurityPolicyEnforcement contentSecurityPolicyEnforcement;
@@ -113,8 +115,8 @@ struct CrossThreadCopier<ThreadableLoaderOptions> {
   }
 };
 
-// Useful for doing loader operations from any thread (not threadsafe,
-// just able to run on threads other than the main thread).
+// Useful for doing loader operations from any thread (not threadsafe, just able
+// to run on threads other than the main thread).
 //
 // Arguments common to both loadResourceSynchronously() and create():
 //
@@ -180,11 +182,12 @@ class CORE_EXPORT ThreadableLoader
   // may be called synchronous to start() call.
   virtual void start(const ResourceRequest&) = 0;
 
-  // A ThreadableLoader may have a timeout specified. It is possible, in some cases, for
-  // the timeout to be overridden after the request is sent (for example, XMLHttpRequests
-  // may override their timeout setting after sending).
+  // A ThreadableLoader may have a timeout specified. It is possible, in some
+  // cases, for the timeout to be overridden after the request is sent (for
+  // example, XMLHttpRequests may override their timeout setting after sending).
   //
-  // Set a new timeout relative to the time the request started, in milliseconds.
+  // Set a new timeout relative to the time the request started, in
+  // milliseconds.
   virtual void overrideTimeout(unsigned long timeoutMilliseconds) = 0;
 
   virtual void cancel() = 0;

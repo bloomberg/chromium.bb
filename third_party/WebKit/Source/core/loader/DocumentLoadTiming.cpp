@@ -137,7 +137,8 @@ void DocumentLoadTiming::addRedirect(const KURL& redirectingUrl,
   markRedirectEnd();
   markFetchStart();
 
-  // Check if the redirected url is allowed to access the redirecting url's timing information.
+  // Check if the redirected url is allowed to access the redirecting url's
+  // timing information.
   RefPtr<SecurityOrigin> redirectedSecurityOrigin =
       SecurityOrigin::create(redirectedUrl);
   m_hasCrossOriginRedirect |=

@@ -148,7 +148,8 @@ class BeaconDOMArrayBufferView final : public Beacon {
         EncodedFormData::create(m_data->baseAddress(), m_data->byteLength());
     request.setHTTPBody(entityBody.release());
 
-    // FIXME: a reasonable choice, but not in the spec; should it give a default?
+    // FIXME: a reasonable choice, but not in the spec; should it give a
+    // default?
     request.setHTTPContentType(AtomicString("application/octet-stream"));
   }
 
@@ -268,8 +269,9 @@ PingLoaderImpl::PingLoaderImpl(LocalFrame* frame,
                                            AllowStoredCredentials);
   m_loader->loadAsynchronously(wrappedRequest, this);
 
-  // If the server never responds, FrameLoader won't be able to cancel this load and
-  // we'll sit here waiting forever. Set a very generous timeout, just in case.
+  // If the server never responds, FrameLoader won't be able to cancel this load
+  // and we'll sit here waiting forever. Set a very generous timeout, just in
+  // case.
   m_timeout.startOneShot(60000, BLINK_FROM_HERE);
 }
 
@@ -295,8 +297,8 @@ void PingLoaderImpl::willFollowRedirect(
   if (!m_isBeacon)
     return;
 
-  // TODO(tyoshino): Check if setAllowStoredCredentials() should be called
-  // also for non beacon cases.
+  // TODO(tyoshino): Check if setAllowStoredCredentials() should be called also
+  // for non beacon cases.
   passedNewRequest.setAllowStoredCredentials(true);
   if (m_corsMode == NotCORSEnabled)
     return;
@@ -326,8 +328,8 @@ void PingLoaderImpl::willFollowRedirect(
     passedNewRequest = WebURLRequest();
     return;
   }
-  // FIXME: http://crbug.com/427429 is needed to correctly propagate
-  // updates of Origin: following this successful redirect.
+  // FIXME: http://crbug.com/427429 is needed to correctly propagate updates of
+  // Origin: following this successful redirect.
 }
 
 void PingLoaderImpl::didReceiveResponse(WebURLLoader*,
@@ -413,7 +415,8 @@ bool sendPingCommon(LocalFrame* frame,
   if (MixedContentChecker::shouldBlockFetch(frame, request, request.url()))
     return false;
 
-  // The loader keeps itself alive until it receives a response and disposes itself.
+  // The loader keeps itself alive until it receives a response and disposes
+  // itself.
   PingLoaderImpl* loader = new PingLoaderImpl(frame, request, initiator,
                                               AllowStoredCredentials, true);
   DCHECK(loader);
@@ -479,8 +482,8 @@ void PingLoader::sendLinkAuditPing(LocalFrame* frame,
   finishPingRequestInitialization(request, frame,
                                   WebURLRequest::RequestContextPing);
 
-  // addAdditionalRequestHeaders() will have added a referrer for same origin requests,
-  // but the spec omits the referrer.
+  // addAdditionalRequestHeaders() will have added a referrer for same origin
+  // requests, but the spec omits the referrer.
   request.clearHTTPReferrer();
 
   request.setHTTPHeaderField(HTTPNames::Ping_To,
