@@ -259,6 +259,45 @@ TEST_F(BookmarkEditorControllerUtf8NodeTest, DisplayUtf8Name) {
   [controller_ cancel:nil];
 }
 
+using BookmarkEditorControllerEditKeepsSchemeTest = CocoaProfileTest;
+TEST_F(BookmarkEditorControllerEditKeepsSchemeTest, EditKeepsScheme) {
+  // Edits the bookmark and ensures resulting URL keeps the same scheme, even
+  // when userinfo is present in the URL
+  ASSERT_TRUE(profile());
+
+  BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile());
+  const BookmarkNode* kParent = model->bookmark_bar_node();
+  const base::string16 kTitle = ASCIIToUTF16("EditingKeepsScheme");
+
+  const GURL kUrl = GURL("http://javascript:scripttext@example.com/");
+  const BookmarkNode* kNode = model->AddURL(kParent, 0, base::string16(), kUrl);
+
+  BookmarkEditorController* controller = [[BookmarkEditorController alloc]
+      initWithParentWindow:test_window()
+                   profile:profile()
+                    parent:kParent
+                      node:kNode
+                       url:GURL()
+                     title:base::string16()
+             configuration:BookmarkEditor::SHOW_TREE];
+
+  [controller runAsModalSheet];
+
+  // We expect only the trailing / to be trimmed when userinfo is present
+  EXPECT_NSEQ(base::SysUTF8ToNSString(kUrl.spec()),
+              [[controller displayURL] stringByAppendingString:@"/"]);
+
+  [controller setDisplayName:base::SysUTF16ToNSString(kTitle)];
+
+  EXPECT_TRUE([controller okButtonEnabled]);
+  [controller ok:nil];
+
+  ASSERT_EQ(1, kParent->child_count());
+  const BookmarkNode* kChild = kParent->GetChild(0);
+  EXPECT_EQ(kTitle, kChild->GetTitle());
+  EXPECT_EQ(kUrl, kChild->url());
+}
+
 class BookmarkEditorControllerTreeTest : public CocoaProfileTest {
 
  public:
