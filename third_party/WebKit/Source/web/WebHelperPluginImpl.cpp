@@ -73,7 +73,8 @@ bool WebHelperPluginImpl::initialize(const String& pluginType,
   if (!m_pluginContainer)
     return false;
 
-  // Getting a placeholder plugin is also failure, since it's not the plugin the caller needed.
+  // Getting a placeholder plugin is also failure, since it's not the plugin the
+  // caller needed.
   return !getPlugin()->isPlaceholder();
 }
 
@@ -82,11 +83,12 @@ void WebHelperPluginImpl::reallyDestroy(TimerBase*) {
 }
 
 void WebHelperPluginImpl::destroy() {
-  // Defer deletion so we don't do too much work when called via stopActiveDOMObjects().
-  // FIXME: It's not clear why we still need this. The original code held a Page and a
-  // WebFrame, and destroying it would cause JavaScript triggered by frame detach to run,
-  // which isn't allowed inside stopActiveDOMObjects(). Removing this causes one Chrome test
-  // to fail with a timeout.
+  // Defer deletion so we don't do too much work when called via
+  // stopActiveDOMObjects().
+  // FIXME: It's not clear why we still need this. The original code held a
+  // Page and a WebFrame, and destroying it would cause JavaScript triggered by
+  // frame detach to run, which isn't allowed inside stopActiveDOMObjects().
+  // Removing this causes one Chrome test to fail with a timeout.
   m_destructionTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 

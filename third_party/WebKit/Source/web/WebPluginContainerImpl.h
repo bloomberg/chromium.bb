@@ -144,11 +144,14 @@ class WEB_EXPORT WebPluginContainerImpl final
   // If the plugin content should not be scaled to the printable area of
   // the page, then this method should return true.
   bool isPrintScalingDisabled() const;
-  // Returns true on success and sets the out parameter to the print preset options for the document.
+  // Returns true on success and sets the out parameter to the print preset
+  // options for the document.
   bool getPrintPresetOptionsFromDocument(WebPrintPresetOptions*) const;
-  // Sets up printing at the specified WebPrintParams. Returns the number of pages to be printed at these settings.
+  // Sets up printing at the specified WebPrintParams. Returns the number of
+  // pages to be printed at these settings.
   int printBegin(const WebPrintParams&) const;
-  // Prints the page specified by pageNumber (0-based index) into the supplied canvas.
+  // Prints the page specified by pageNumber (0-based index) into the supplied
+  // canvas.
   void printPage(int pageNumber, GraphicsContext&, const IntRect& paintRect);
   // Ends the print operation.
   void printEnd();
@@ -171,8 +174,10 @@ class WEB_EXPORT WebPluginContainerImpl final
 
  private:
   // Sets |windowRect| to the content rect of the plugin in screen space.
-  // Sets |clippedAbsoluteRect| to the visible rect for the plugin, clipped to the visible screen of the root frame, in local space of the plugin.
-  // Sets |unclippedAbsoluteRect| to the visible rect for the plugin (but without also clipping to the screen), in local space of the plugin.
+  // Sets |clippedAbsoluteRect| to the visible rect for the plugin, clipped to
+  // the visible screen of the root frame, in local space of the plugin.
+  // Sets |unclippedAbsoluteRect| to the visible rect for the plugin (but
+  // without also clipping to the screen), in local space of the plugin.
   void computeClipRectsForPlugin(
       const HTMLFrameOwnerElement* pluginOwnerElement,
       IntRect& windowRect,

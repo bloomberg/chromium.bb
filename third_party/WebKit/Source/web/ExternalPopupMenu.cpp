@@ -100,7 +100,8 @@ bool ExternalPopupMenu::showInternal() {
     m_webExternalPopupMenu->show(rectInViewport);
     return true;
   } else {
-    // The client might refuse to create a popup (when there is already one pending to be shown for example).
+    // The client might refuse to create a popup (when there is already one
+    // pending to be shown for example).
     didCancel();
     return false;
   }

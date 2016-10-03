@@ -230,7 +230,8 @@ const double WebView::minTextSizeMultiplier = 0.5;
 const double WebView::maxTextSizeMultiplier = 3.0;
 
 // Used to defer all page activity in cases where the embedder wishes to run
-// a nested event loop. Using a stack enables nesting of message loop invocations.
+// a nested event loop. Using a stack enables nesting of message loop
+// invocations.
 static Vector<std::unique_ptr<ScopedPageLoadDeferrer>>&
 pageLoadDeferrerStack() {
   DEFINE_STATIC_LOCAL(Vector<std::unique_ptr<ScopedPageLoadDeferrer>>,
@@ -556,8 +557,8 @@ void WebViewImpl::handleMouseDown(LocalFrame& mainFrame,
 
   if (m_pagePopup && pagePopup &&
       m_pagePopup->hasSamePopupClient(pagePopup.get())) {
-    // That click triggered a page popup that is the same as the one we just closed.
-    // It needs to be closed.
+    // That click triggered a page popup that is the same as the one we just
+    // closed.  It needs to be closed.
     cancelPagePopup();
   }
 
@@ -682,7 +683,8 @@ bool WebViewImpl::scrollBy(const WebFloatSize& delta,
         WebInputEventResult::NotHandled)
       return true;
 
-    // TODO(dtapuska): Remove these GSB/GSE sequences when trackpad latching is implemented; see crbug.com/526463.
+    // TODO(dtapuska): Remove these GSB/GSE sequences when trackpad latching is
+    // implemented; see crbug.com/526463.
     WebGestureEvent syntheticScrollBegin = createGestureScrollEventFromFling(
         WebInputEvent::GestureScrollBegin, WebGestureDeviceTouchpad);
     syntheticScrollBegin.data.scrollBegin.deltaXHint = delta.width;
@@ -793,8 +795,9 @@ WebInputEventResult WebViewImpl::handleGestureEvent(
         m_client->cancelScheduledContentIntents();
         animateDoubleTapZoom(platformEvent.position());
       }
-      // GestureDoubleTap is currently only used by Android for zooming. For WebCore,
-      // GestureTap with tap count = 2 is used instead. So we drop GestureDoubleTap here.
+      // GestureDoubleTap is currently only used by Android for zooming. For
+      // WebCore, GestureTap with tap count = 2 is used instead. So we drop
+      // GestureDoubleTap here.
       eventResult = WebInputEventResult::HandledSystem;
       m_client->didHandleGestureEvent(event, eventCancelled);
       return eventResult;
@@ -803,10 +806,11 @@ WebInputEventResult WebViewImpl::handleGestureEvent(
     case WebInputEvent::GestureScrollEnd:
     case WebInputEvent::GestureScrollUpdate:
     case WebInputEvent::GestureFlingStart:
-      // Scrolling-related gesture events invoke EventHandler recursively for each frame down
-      // the chain, doing a single-frame hit-test per frame. This matches handleWheelEvent.
-      // Perhaps we could simplify things by rewriting scroll handling to work inner frame
-      // out, and then unify with other gesture events.
+      // Scrolling-related gesture events invoke EventHandler recursively for
+      // each frame down the chain, doing a single-frame hit-test per frame.
+      // This matches handleWheelEvent.  Perhaps we could simplify things by
+      // rewriting scroll handling to work inner frame out, and then unify with
+      // other gesture events.
       eventResult =
           mainFrameImpl()->frame()->eventHandler().handleGestureScrollEvent(
               platformEvent);
@@ -820,13 +824,14 @@ WebInputEventResult WebViewImpl::handleGestureEvent(
       break;
   }
 
-  // Hit test across all frames and do touch adjustment as necessary for the event type.
+  // Hit test across all frames and do touch adjustment as necessary for the
+  // event type.
   GestureEventWithHitTestResults targetedEvent =
       m_page->deprecatedLocalMainFrame()->eventHandler().targetGestureEvent(
           platformEvent);
 
-  // Handle link highlighting outside the main switch to avoid getting lost in the
-  // complicated set of cases handled below.
+  // Handle link highlighting outside the main switch to avoid getting lost in
+  // the complicated set of cases handled below.
   switch (event.type) {
     case WebInputEvent::GestureShowPress:
       // Queue a highlight animation, then hand off to regular handler.
@@ -857,10 +862,12 @@ WebInputEventResult WebViewImpl::handleGestureEvent(
         break;
       }
 
-      // Don't trigger a disambiguation popup on sites designed for mobile devices.
-      // Instead, assume that the page has been designed with big enough buttons and links.
-      // Don't trigger a disambiguation popup when screencasting, since it's implemented outside of
-      // compositor pipeline and is not being screencasted itself. This leads to bad user experience.
+      // Don't trigger a disambiguation popup on sites designed for mobile
+      // devices.  Instead, assume that the page has been designed with big
+      // enough buttons and links.  Don't trigger a disambiguation popup when
+      // screencasting, since it's implemented outside of compositor pipeline
+      // and is not being screencasted itself. This leads to bad user
+      // experience.
       WebDevToolsAgentImpl* devTools = mainFrameDevToolsAgentImpl();
       VisualViewport& visualViewport = page()->frameHost().visualViewport();
       bool screencastEnabled = devTools && devTools->screencastEnabled();
@@ -872,8 +879,8 @@ WebInputEventResult WebViewImpl::handleGestureEvent(
                     event.y - event.data.tap.height / 2, event.data.tap.width,
                     event.data.tap.height)));
 
-        // TODO(bokan): We shouldn't pass details of the VisualViewport offset to render_view_impl.
-        //              crbug.com/459591
+        // TODO(bokan): We shouldn't pass details of the VisualViewport offset
+        // to render_view_impl.  crbug.com/459591
         WebSize visualViewportOffset =
             flooredIntSize(visualViewport.location());
 
@@ -883,7 +890,8 @@ WebInputEventResult WebViewImpl::handleGestureEvent(
           findGoodTouchTargets(boundingBox, mainFrameImpl()->frame(),
                                goodTargets, highlightNodes);
           // FIXME: replace touch adjustment code when numberOfGoodTargets == 1?
-          // Single candidate case is currently handled by: https://bugs.webkit.org/show_bug.cgi?id=85101
+          // Single candidate case is currently handled by:
+          // https://bugs.webkit.org/show_bug.cgi?id=85101
           if (goodTargets.size() >= 2 && m_client &&
               m_client->didTapMultipleTargets(visualViewportOffset, boundingBox,
                                               goodTargets)) {
@@ -902,8 +910,8 @@ WebInputEventResult WebViewImpl::handleGestureEvent(
 
       if (m_pagePopup && pagePopup &&
           m_pagePopup->hasSamePopupClient(pagePopup.get())) {
-        // The tap triggered a page popup that is the same as the one we just closed.
-        // It needs to be closed.
+        // The tap triggered a page popup that is the same as the one we just
+        // closed.  It needs to be closed.
         cancelPagePopup();
       }
       break;
@@ -945,9 +953,10 @@ WebInputEventResult WebViewImpl::handleSyntheticWheelFromTouchpadPinchEvent(
     const WebGestureEvent& pinchEvent) {
   DCHECK_EQ(pinchEvent.type, WebInputEvent::GesturePinchUpdate);
 
-  // For pinch gesture events, match typical trackpad behavior on Windows by sending fake
-  // wheel events with the ctrl modifier set when we see trackpad pinch gestures.  Ideally
-  // we'd someday get a platform 'pinch' event and send that instead.
+  // For pinch gesture events, match typical trackpad behavior on Windows by
+  // sending fake wheel events with the ctrl modifier set when we see trackpad
+  // pinch gestures.  Ideally we'd someday get a platform 'pinch' event and
+  // send that instead.
   WebMouseWheelEvent wheelEvent;
   wheelEvent.type = WebInputEvent::MouseWheel;
   wheelEvent.timeStampSeconds = pinchEvent.timeStampSeconds;
@@ -1135,13 +1144,14 @@ WebInputEventResult WebViewImpl::handleKeyEvent(const WebKeyboardEvent& event) {
   WebInputEventResult result = frame->eventHandler().keyEvent(event);
   if (result != WebInputEventResult::NotHandled) {
     if (WebInputEvent::RawKeyDown == event.type) {
-      // Suppress the next keypress event unless the focused node is a plugin node.
-      // (Flash needs these keypress events to handle non-US keyboards.)
+      // Suppress the next keypress event unless the focused node is a plugin
+      // node.  (Flash needs these keypress events to handle non-US keyboards.)
       Element* element = focusedElement();
       if (element && element->layoutObject() &&
           element->layoutObject()->isEmbeddedObject()) {
         if (event.windowsKeyCode == VKEY_TAB) {
-          // If the plugin supports keyboard focus then we should not send a tab keypress event.
+          // If the plugin supports keyboard focus then we should not send a tab
+          // keypress event.
           Widget* widget = toLayoutPart(element->layoutObject())->widget();
           if (widget && widget->isPluginContainer()) {
             WebPluginContainerImpl* plugin = toWebPluginContainerImpl(widget);
@@ -1258,7 +1268,8 @@ WebRect WebViewImpl::computeBlockBound(const WebPoint& pointInRootFrame,
     return WebRect();
 
   // Find the block type node based on the hit node.
-  // FIXME: This wants to walk flat tree with LayoutTreeBuilderTraversal::parent().
+  // FIXME: This wants to walk flat tree with
+  // LayoutTreeBuilderTraversal::parent().
   while (node && (!node->layoutObject() || node->layoutObject()->isInline()))
     node = LayoutTreeBuilderTraversal::parent(*node);
 
@@ -1441,10 +1452,11 @@ Node* WebViewImpl::bestTapNode(
     return nullptr;
   }
 
-  // We should pick the largest enclosing node with hand cursor set. We do this by first jumping
-  // up to cursorDefiningAncestor (which is already known to have hand cursor set). Then we locate
-  // the next cursor-defining ancestor up in the the tree and repeat the jumps as long as the node
-  // has hand cursor set.
+  // We should pick the largest enclosing node with hand cursor set. We do this
+  // by first jumping up to cursorDefiningAncestor (which is already known to
+  // have hand cursor set). Then we locate the next cursor-defining ancestor up
+  // in the the tree and repeat the jumps as long as the node has hand cursor
+  // set.
   do {
     bestTouchNode = cursorDefiningAncestor;
     cursorDefiningAncestor = findCursorDefiningAncestor(
@@ -1483,8 +1495,8 @@ void WebViewImpl::enableTapHighlights(
       continue;
 
     Color highlightColor = node->layoutObject()->style()->tapHighlightColor();
-    // Safari documentation for -webkit-tap-highlight-color says if the specified color has 0 alpha,
-    // then tap highlighting is disabled.
+    // Safari documentation for -webkit-tap-highlight-color says if the
+    // specified color has 0 alpha, then tap highlighting is disabled.
     // http://developer.apple.com/library/safari/#documentation/appleapplications/reference/safaricssref/articles/standardcssproperties.html
     if (!highlightColor.alpha())
       continue;
@@ -1530,9 +1542,10 @@ void WebViewImpl::animateDoubleTapZoom(const IntPoint& pointInRootFrame) {
         scroll, false, scale, doubleTapZoomAnimationDurationInSeconds);
   }
 
-  // TODO(dglazkov): The only reason why we're using isAnimating and not just checking for
-  // m_layerTreeView->hasPendingPageScaleAnimation() is because of fake page scale animation plumbing
-  // for testing, which doesn't actually initiate a page scale animation.
+  // TODO(dglazkov): The only reason why we're using isAnimating and not just
+  // checking for m_layerTreeView->hasPendingPageScaleAnimation() is because of
+  // fake page scale animation plumbing for testing, which doesn't actually
+  // initiate a page scale animation.
   if (isAnimating) {
     m_doubleTapZoomPageScaleFactor = scale;
     m_doubleTapZoomPending = true;
@@ -1590,7 +1603,8 @@ void WebViewImpl::hasTouchEventHandlers(bool hasTouchHandlers) {
 }
 
 bool WebViewImpl::hasTouchEventHandlersAt(const WebPoint& point) {
-  // FIXME: Implement this. Note that the point must be divided by pageScaleFactor.
+  // FIXME: Implement this. Note that the point must be divided by
+  // pageScaleFactor.
   return true;
 }
 
@@ -1611,7 +1625,8 @@ WebInputEventResult WebViewImpl::sendContextMenuEvent(
     Frame* focusedFrame = page()->focusController().focusedOrMainFrame();
     if (!focusedFrame->isLocalFrame())
       return WebInputEventResult::NotHandled;
-    // Firefox reveal focus based on "keydown" event but not "contextmenu" event, we match FF.
+    // Firefox reveal focus based on "keydown" event but not "contextmenu"
+    // event, we match FF.
     if (Element* focusedElement =
             toLocalFrame(focusedFrame)->document()->focusedElement())
       focusedElement->scrollIntoViewIfNeeded();
@@ -1954,15 +1969,17 @@ void WebViewImpl::resizeViewWhileAnchored(FrameView* view,
   topControls().setHeight(topControlsHeight, topControlsShrinkLayout);
 
   {
-    // Avoids unnecessary invalidations while various bits of state in TextAutosizer are updated.
+    // Avoids unnecessary invalidations while various bits of state in
+    // TextAutosizer are updated.
     TextAutosizer::DeferUpdatePageInfo deferUpdatePageInfo(page());
     performResize();
   }
 
   m_fullscreenController->updateSize();
 
-  // Update lifecyle phases immediately to recalculate the minimum scale limit for rotation anchoring,
-  // and to make sure that no lifecycle states are stale if this WebView is embedded in another one.
+  // Update lifecyle phases immediately to recalculate the minimum scale limit
+  // for rotation anchoring, and to make sure that no lifecycle states are
+  // stale if this WebView is embedded in another one.
   updateAllLifecyclePhases();
 }
 
@@ -2096,8 +2113,8 @@ void WebViewImpl::updateAllLifecyclePhases() {
   if (m_pageColorOverlay)
     m_pageColorOverlay->graphicsLayer()->paint(nullptr);
 
-  // TODO(chrishtr): link highlights don't currently paint themselves, it's still driven by cc.
-  // Fix this.
+  // TODO(chrishtr): link highlights don't currently paint themselves, it's
+  // still driven by cc.  Fix this.
   for (size_t i = 0; i < m_linkHighlights.size(); ++i)
     m_linkHighlights[i]->updateGeometry();
 
@@ -2235,7 +2252,8 @@ WebInputEventResult WebViewImpl::handleInputEvent(
       return WebInputEventResult::HandledSuppressed;
   }
 
-  // Report the event to be NOT processed by WebKit, so that the browser can handle it appropriately.
+  // Report the event to be NOT processed by WebKit, so that the browser can
+  // handle it appropriately.
   if (m_ignoreInputEvents)
     return WebInputEventResult::NotHandled;
 
@@ -2388,7 +2406,8 @@ void WebViewImpl::setFocus(bool enable) {
         if (autofillClient)
           autofillClient->setIgnoreTextChanges(true);
 
-        // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+        // TODO(xiaochengh): The use of
+        // updateStyleAndLayoutIgnorePendingStylesheets
         // needs to be audited.  See http://crbug.com/590369 for more details.
         focusedFrame->document()
             ->updateStyleAndLayoutIgnorePendingStylesheets();
@@ -2547,8 +2566,8 @@ WebTextInputInfo WebViewImpl::textInputInfo() {
   if (!focused->editor().canEdit())
     return info;
 
-  // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
-  // see http://crbug.com/590369 for more details.
+  // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  see http://crbug.com/590369 for more details.
   focused->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
   DocumentLifecycle::DisallowTransitionScope disallowTransition(
@@ -2596,8 +2615,9 @@ WebTextInputType WebViewImpl::textInputType() {
     return WebTextInputTypeNone;
   }
 
-  // It's important to preserve the equivalence of textInputInfo().type and textInputType(),
-  // so perform the same rootEditableElement() existence check here for consistency.
+  // It's important to preserve the equivalence of textInputInfo().type and
+  // textInputType(), so perform the same rootEditableElement() existence check
+  // here for consistency.
   if (!focusedFrame->selection().selection().rootEditableElement())
     return WebTextInputTypeNone;
 
@@ -2996,7 +3016,8 @@ WebFrame* WebViewImpl::mainFrame() {
 
 WebFrame* WebViewImpl::findFrameByName(const WebString& name,
                                        WebFrame* relativeToFrame) {
-  // FIXME: Either this should only deal with WebLocalFrames or it should move to WebFrame.
+  // FIXME: Either this should only deal with WebLocalFrames or it should move
+  // to WebFrame.
   if (!relativeToFrame)
     relativeToFrame = mainFrame();
   Frame* frame = toWebLocalFrameImpl(relativeToFrame)->frame();
@@ -3117,9 +3138,9 @@ bool WebViewImpl::scrollFocusedEditableElementIntoRect(
       !page()->frameHost().visualViewport().shouldDisableDesktopWorkarounds();
 
   if (zoomInToLegibleScale) {
-    // When deciding whether to zoom in on a focused text box, we should decide not to
-    // zoom in if the user won't be able to zoom out. e.g if the textbox is within a
-    // touch-action: none container the user can't zoom back out.
+    // When deciding whether to zoom in on a focused text box, we should decide
+    // not to zoom in if the user won't be able to zoom out. e.g if the textbox
+    // is within a touch-action: none container the user can't zoom back out.
     TouchAction action = TouchActionUtil::computeEffectiveTouchAction(*element);
     if (!(action & TouchActionPinchZoom))
       zoomInToLegibleScale = false;
@@ -3153,7 +3174,8 @@ void WebViewImpl::computeScaleAndScrollForFocusedNode(Node* focusedNode,
   WebRect caretInViewport, unusedEnd;
   selectionBounds(caretInViewport, unusedEnd);
 
-  // 'caretInDocument' is rect encompassing the blinking cursor relative to the root document.
+  // 'caretInDocument' is rect encompassing the blinking cursor relative to the
+  // root document.
   IntRect caretInDocument = mainFrameImpl()->frameView()->frameToContents(
       visualViewport.viewportToRootFrame(caretInViewport));
   IntRect textboxRectInDocument = mainFrameImpl()->frameView()->frameToContents(
@@ -3280,7 +3302,8 @@ double WebViewImpl::setZoomLevel(double zoomLevel) {
           : static_cast<float>(zoomLevelToZoomFactor(m_zoomLevel));
   if (m_zoomFactorForDeviceScaleFactor) {
     if (m_compositorDeviceScaleFactorOverride) {
-      // Adjust the page's DSF so that DevicePixelRatio becomes m_zoomFactorForDeviceScaleFactor.
+      // Adjust the page's DSF so that DevicePixelRatio becomes
+      // m_zoomFactorForDeviceScaleFactor.
       page()->setDeviceScaleFactor(m_zoomFactorForDeviceScaleFactor /
                                    m_compositorDeviceScaleFactorOverride);
       zoomFactor *= m_compositorDeviceScaleFactorOverride;
@@ -3509,9 +3532,10 @@ void WebViewImpl::refreshPageScaleFactorAfterLayout() {
   updateLayerTreeViewport();
 
   // Changes to page-scale during layout may require an additional frame.
-  // We can't update the lifecycle here because we may be in the middle of layout in the
-  // caller of this method.
-  // TODO(chrishtr): clean all this up. All layout should happen in one lifecycle run (crbug.com/578239).
+  // We can't update the lifecycle here because we may be in the middle of
+  // layout in the caller of this method.
+  // TODO(chrishtr): clean all this up. All layout should happen in one
+  // lifecycle run (crbug.com/578239).
   if (mainFrameImpl()->frameView()->needsLayout())
     mainFrameImpl()->frameWidget()->scheduleAnimation();
 }
@@ -3899,7 +3923,8 @@ WebDragOperation WebViewImpl::dragTargetDragEnterOrOver(
 
   DragOperation dropEffect = dragSession.operation;
 
-  // Mask the drop effect operation against the drag source's allowed operations.
+  // Mask the drop effect operation against the drag source's allowed
+  // operations.
   if (!(dropEffect & dragData.draggingSourceOperationMask()))
     dropEffect = DragOperationNone;
 
@@ -4477,8 +4502,9 @@ void WebViewImpl::initializeLayerTreeView() {
   if (m_layerTreeView)
     m_page->layerTreeViewInitialized(*m_layerTreeView);
 
-  // FIXME: only unittests, click to play, Android printing, and printing (for headers and footers)
-  // make this assert necessary. We should make them not hit this code and then delete allowsBrokenNullLayerTreeView.
+  // FIXME: only unittests, click to play, Android printing, and printing (for
+  // headers and footers) make this assert necessary. We should make them not
+  // hit this code and then delete allowsBrokenNullLayerTreeView.
   DCHECK(m_layerTreeView || !m_client ||
          m_client->widgetClient()->allowsBrokenNullLayerTreeView());
 
@@ -4560,7 +4586,8 @@ bool WebViewImpl::detectContentOnTouch(
   if (!m_page->mainFrame()->isLocalFrame())
     return false;
 
-  // Need a local copy of the hit test as setToShadowHostIfInUserAgentShadowRoot() will modify it.
+  // Need a local copy of the hit test as
+  // setToShadowHostIfInUserAgentShadowRoot() will modify it.
   HitTestResult touchHit = targetedEvent.hitTestResult();
   touchHit.setToShadowHostIfInUserAgentShadowRoot();
 
@@ -4571,8 +4598,9 @@ bool WebViewImpl::detectContentOnTouch(
   if (!node || !node->isTextNode())
     return false;
 
-  // Ignore when tapping on links or nodes listening to click events, unless the click event is on the
-  // body element, in which case it's unlikely that the original node itself was intended to be clickable.
+  // Ignore when tapping on links or nodes listening to click events, unless
+  // the click event is on the body element, in which case it's unlikely that
+  // the original node itself was intended to be clickable.
   for (; node && !isHTMLBodyElement(*node);
        node = LayoutTreeBuilderTraversal::parent(*node)) {
     if (node->isLink() || node->willRespondToTouchEvents() ||
@@ -4584,8 +4612,8 @@ bool WebViewImpl::detectContentOnTouch(
   if (!intent.isValid())
     return false;
 
-  // This code is called directly after hit test code, with no user code running in between,
-  // thus it is assumed that the frame pointer is non-null.
+  // This code is called directly after hit test code, with no user code
+  // running in between, thus it is assumed that the frame pointer is non-null.
   bool isMainFrame = node ? node->document().frame()->isMainFrame() : true;
   m_client->scheduleContentIntent(intent, isMainFrame);
   return true;
@@ -4680,8 +4708,9 @@ void WebViewImpl::updatePageOverlays() {
 }
 
 float WebViewImpl::deviceScaleFactor() const {
-  // TODO(oshima): Investigate if this should return the ScreenInfo's scale factor rather than
-  // page's scale factor, which can be 1 in use-zoom-for-dsf mode.
+  // TODO(oshima): Investigate if this should return the ScreenInfo's scale
+  // factor rather than page's scale factor, which can be 1 in use-zoom-for-dsf
+  // mode.
   if (!page())
     return 1;
 

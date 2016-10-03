@@ -27,10 +27,12 @@ namespace {
 static float calculateDeviceScaleAdjustment(int width,
                                             int height,
                                             float deviceScaleFactor) {
-  // Chromium on Android uses a device scale adjustment for fonts used in text autosizing for
-  // improved legibility. This function computes this adjusted value for text autosizing.
+  // Chromium on Android uses a device scale adjustment for fonts used in text
+  // autosizing for improved legibility. This function computes this adjusted
+  // value for text autosizing.
   // For a description of the Android device scale adjustment algorithm, see:
-  // chrome/browser/chrome_content_browser_client.cc, GetDeviceScaleAdjustment(...)
+  // chrome/browser/chrome_content_browser_client.cc,
+  // GetDeviceScaleAdjustment(...)
   if (!width || !height || !deviceScaleFactor)
     return 1;
 
@@ -343,7 +345,8 @@ void DevToolsEmulator::forceViewport(const WebFloatPoint& position,
   if (!m_viewportOverride) {
     m_viewportOverride = ViewportOverride();
 
-    // Disable clipping on the visual viewport layer, to ensure the whole area is painted.
+    // Disable clipping on the visual viewport layer, to ensure the whole area
+    // is painted.
     if (containerLayer) {
       m_viewportOverride->originalVisualViewportMasking =
           containerLayer->masksToBounds();

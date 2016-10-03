@@ -381,9 +381,9 @@ void FrameLoaderClientImpl::dispatchDidReceiveResponse(
 
 void FrameLoaderClientImpl::dispatchDidFinishDocumentLoad() {
   // TODO(dglazkov): Sadly, workers are WebFrameClients, and they can totally
-  // destroy themselves when didFinishDocumentLoad is invoked, and in turn destroy
-  // the fake WebLocalFrame that they create, which means that you should not
-  // put any code touching `this` after the two lines below.
+  // destroy themselves when didFinishDocumentLoad is invoked, and in turn
+  // destroy the fake WebLocalFrame that they create, which means that you
+  // should not put any code touching `this` after the two lines below.
   if (m_webFrame->client())
     m_webFrame->client()->didFinishDocumentLoad(m_webFrame);
 }

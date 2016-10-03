@@ -100,13 +100,15 @@ void FullscreenController::didExitFullscreen() {
     if (Fullscreen* fullscreen = Fullscreen::fromIfExists(*document)) {
       Element* element = fullscreen->currentFullScreenElement();
       if (element) {
-        // When the client exits from full screen we have to call fullyExitFullscreen to notify
-        // the document. While doing that, suppress notifications back to the client.
+        // When the client exits from full screen we have to call
+        // fullyExitFullscreen to notify the document. While doing that,
+        // suppress notifications back to the client.
         m_isCancelingFullscreen = true;
         Fullscreen::fullyExitFullscreen(*document);
         m_isCancelingFullscreen = false;
 
-        // If the video used overlay fullscreen mode, the background was made transparent. Restore the transparency.
+        // If the video used overlay fullscreen mode, the background was made
+        // transparent. Restore the transparency.
         if (isHTMLVideoElement(element) && m_webViewImpl->layerTreeView())
           m_webViewImpl->layerTreeView()->setHasTransparentBackground(
               m_webViewImpl->isTransparent());
@@ -217,11 +219,13 @@ void FullscreenController::updatePageScaleConstraints(bool removeConstraints) {
       fullscreenConstraints);
   m_webViewImpl->pageScaleConstraintsSet().computeFinalConstraints();
 
-  // Although we called computedFinalConstraints() above, the "final" constraints are not
-  // actually final. They are still subject to scale factor clamping by contents size.
-  // Normally they should be dirtied due to contents size mutation after layout, however the
-  // contents size is not guaranteed to mutate, and the scale factor may remain unclamped.
-  // Just fire the event again to ensure the final constraints pick up the latest contents size.
+  // Although we called computedFinalConstraints() above, the "final"
+  // constraints are not actually final. They are still subject to scale factor
+  // clamping by contents size.  Normally they should be dirtied due to
+  // contents size mutation after layout, however the contents size is not
+  // guaranteed to mutate, and the scale factor may remain unclamped.  Just
+  // fire the event again to ensure the final constraints pick up the latest
+  // contents size.
   m_webViewImpl->didChangeContentsSize();
   if (m_webViewImpl->mainFrameImpl() &&
       m_webViewImpl->mainFrameImpl()->frameView())

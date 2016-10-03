@@ -68,8 +68,8 @@ class PageWidgetDelegate {
  public:
   static void animate(Page&, double monotonicFrameBeginTime);
 
-  // For the following methods, the |root| argument indicates a root localFrame from which
-  // to start performing the specified operation.
+  // For the following methods, the |root| argument indicates a root localFrame
+  // from which to start performing the specified operation.
 
   // See documents of methods with the same names in FrameView class.
   static void updateAllLifecyclePhases(Page&, LocalFrame& root);

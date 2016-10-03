@@ -40,16 +40,19 @@ class LayoutObject;
 
 // Find-in-page coordinate conversion methods.
 //
-// This coordinate system is designed to give consistent tickmarks in cases where find matches
-// are in scrollable areas but might not be visible (e.g. child frames, scroll:overflow).
-// In these cases, using absolute positions might lead to tickmarks pointing outside the visible
-// area of its container, which is counter-intuitive for users.
+// This coordinate system is designed to give consistent tickmarks in cases
+// where find matches are in scrollable areas but might not be visible (e.g.
+// child frames, scroll:overflow).  In these cases, using absolute positions
+// might lead to tickmarks pointing outside the visible area of its container,
+// which is counter-intuitive for users.
 //
-// Find-in-page coordinates are represented as normalized fractions of the main frame document with
-// the property that they are built by composing the relative position of each layoutObject to the maximum
-// effective layout size of its container all the way up the layout tree. The resulting coordinates
-// are scroll-independent, representing any contents scaled to the visible area of their container.
-// The provided methods support scroll:overflow and are CSS position and transform-friendly.
+// Find-in-page coordinates are represented as normalized fractions of the main
+// frame document with the property that they are built by composing the
+// relative position of each layoutObject to the maximum effective layout size
+// of its container all the way up the layout tree. The resulting coordinates
+// are scroll-independent, representing any contents scaled to the visible area
+// of their container.  The provided methods support scroll:overflow and are
+// CSS position and transform-friendly.
 
 WEB_EXPORT FloatRect findInPageRectFromAbsoluteRect(const FloatRect&,
                                                     const LayoutObject*);

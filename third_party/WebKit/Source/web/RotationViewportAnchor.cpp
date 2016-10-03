@@ -114,7 +114,8 @@ void RotationViewportAnchor::setAnchor() {
   m_oldMinimumPageScaleFactor =
       m_pageScaleConstraintsSet.finalConstraints().minimumScale;
 
-  // Save the absolute location in case we won't find the anchor node, we'll fall back to that.
+  // Save the absolute location in case we won't find the anchor node, we'll
+  // fall back to that.
   m_visualViewportInDocument =
       FloatPoint(rootFrameViewport->visibleContentRectDouble().location());
 

@@ -19,10 +19,10 @@ class CompositorProxyClientImpl;
 class CompositorWorkerGlobalScope;
 class CompositorMutatorClient;
 
-// Fans out requests from the compositor to all of the registered ProxyClients which
-// can then mutate layers through their CompositorProxy interfaces. Requests for
-// animation frames are received from ProxyClients and sent to the compositor to
-// generate a new compositor frame.
+// Fans out requests from the compositor to all of the registered ProxyClients
+// which can then mutate layers through their CompositorProxy interfaces.
+// Requests for animation frames are received from ProxyClients and sent to the
+// compositor to generate a new compositor frame.
 //
 // Should be accessed only on the compositor thread.
 class CompositorMutatorImpl final : public CompositorMutator {

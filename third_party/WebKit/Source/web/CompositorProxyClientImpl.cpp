@@ -100,7 +100,8 @@ bool CompositorProxyClientImpl::executeAnimationFrameCallbacks(
                "CompositorProxyClientImpl::executeAnimationFrameCallbacks");
 
   DCHECK(m_globalScope);
-  // Convert to zero based document time in milliseconds consistent with requestAnimationFrame.
+  // Convert to zero based document time in milliseconds consistent with
+  // requestAnimationFrame.
   double highResTimeMs =
       1000.0 * (monotonicTimeNow - m_globalScope->timeOrigin());
   return m_globalScope->executeAnimationFrameCallbacks(highResTimeMs);

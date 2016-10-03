@@ -502,9 +502,10 @@ void WebPluginContainerImpl::loadFrameRequest(const WebURLRequest& request,
 }
 
 bool WebPluginContainerImpl::isRectTopmost(const WebRect& rect) {
-  // Disallow access to the frame during dispose(), because it is not guaranteed to
-  // be valid memory once this object has started disposal. In particular, we might be being
-  // disposed because the frame has already be deleted and then something else dropped the
+  // Disallow access to the frame during dispose(), because it is not guaranteed
+  // to be valid memory once this object has started disposal. In particular,
+  // we might be being disposed because the frame has already be deleted and
+  // then something else dropped the
   // last reference to the this object.
   if (m_isDisposed || !m_element)
     return false;
@@ -517,7 +518,8 @@ bool WebPluginContainerImpl::isRectTopmost(const WebRect& rect) {
   // hitTestResultAtPoint() takes a padding rectangle.
   // FIXME: We'll be off by 1 when the width or height is even.
   LayoutPoint center = documentRect.center();
-  // Make the rect we're checking (the point surrounded by padding rects) contained inside the requested rect. (Note that -1/2 is 0.)
+  // Make the rect we're checking (the point surrounded by padding rects)
+  // contained inside the requested rect. (Note that -1/2 is 0.)
   LayoutSize padding((documentRect.width() - 1) / 2,
                      (documentRect.height() - 1) / 2);
   HitTestResult result = frame->eventHandler().hitTestResultAtPoint(
@@ -913,12 +915,15 @@ void WebPluginContainerImpl::computeClipRectsForPlugin(
 
   LayoutBox* box = toLayoutBox(ownerElement->layoutObject());
 
-  // Note: frameRect() for this plugin is equal to contentBoxRect, mapped to the containing view space, and rounded off.
-  // See LayoutPart.cpp::updateWidgetGeometryInternal. To remove the lossy effect of rounding off, use contentBoxRect directly.
+  // Note: frameRect() for this plugin is equal to contentBoxRect, mapped to the
+  // containing view space, and rounded off.
+  // See LayoutPart.cpp::updateWidgetGeometryInternal. To remove the lossy
+  // effect of rounding off, use contentBoxRect directly.
   LayoutRect unclippedAbsoluteRect(box->contentBoxRect());
   box->mapToVisualRectInAncestorSpace(rootView, unclippedAbsoluteRect);
 
-  // The frameRect is already in absolute space of the local frame to the plugin.
+  // The frameRect is already in absolute space of the local frame to the
+  // plugin.
   windowRect = frameRect();
   // Map up to the root frame.
   LayoutRect layoutWindowRect =
@@ -928,7 +933,8 @@ void WebPluginContainerImpl::computeClipRectsForPlugin(
                      .localToAbsoluteQuad(FloatQuad(FloatRect(frameRect())),
                                           TraverseDocumentBoundaries)
                      .boundingBox());
-  // Finally, adjust for scrolling of the root frame, which the above does not take into account.
+  // Finally, adjust for scrolling of the root frame, which the above does not
+  // take into account.
   layoutWindowRect.moveBy(-rootView->viewRect().location());
   windowRect = pixelSnappedIntRect(layoutWindowRect);
 
@@ -941,7 +947,8 @@ void WebPluginContainerImpl::computeClipRectsForPlugin(
       box->absoluteToLocalQuad(FloatRect(unclippedLayoutLocalRect),
                                TraverseDocumentBoundaries | UseTransforms)
           .enclosingBoundingBox();
-  // As a performance optimization, map the clipped rect separately if is different than the unclipped rect.
+  // As a performance optimization, map the clipped rect separately if is
+  // different than the unclipped rect.
   if (layoutClippedLocalRect != unclippedLayoutLocalRect)
     clippedLocalRect =
         box->absoluteToLocalQuad(FloatRect(layoutClippedLocalRect),

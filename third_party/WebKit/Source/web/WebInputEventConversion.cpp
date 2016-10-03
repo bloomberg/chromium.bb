@@ -65,11 +65,13 @@ FloatSize scaleSizeToWindow(const Widget* widget, FloatSize size) {
                    scaleDeltaToWindow(widget, size.height()));
 }
 
-// This method converts from the renderer's coordinate space into Blink's root frame coordinate space.
-// It's somewhat unique in that it takes into account DevTools emulation, which applies a scale and offset
-// in the root layer (see updateRootLayerTransform in WebViewImpl) as well as the overscroll effect on OSX.
-// This is in addition to the visual viewport "pinch-zoom" transformation and is one of the few cases where
-// the visual viewport is not equal to the renderer's coordinate-space.
+// This method converts from the renderer's coordinate space into Blink's root
+// frame coordinate space.  It's somewhat unique in that it takes into account
+// DevTools emulation, which applies a scale and offset in the root layer (see
+// updateRootLayerTransform in WebViewImpl) as well as the overscroll effect on
+// OSX.  This is in addition to the visual viewport "pinch-zoom" transformation
+// and is one of the few cases where the visual viewport is not equal to the
+// renderer's coordinate-space.
 FloatPoint convertHitPointToRootFrame(const Widget* widget,
                                       FloatPoint pointInRendererViewport) {
   float scale = 1;
@@ -262,7 +264,7 @@ PlatformWheelEventBuilder::PlatformWheelEventBuilder(
 #endif
 }
 
-// PlatformGestureEventBuilder --------------------------------------------------
+// PlatformGestureEventBuilder -----------------------------------------------
 
 PlatformGestureEventBuilder::PlatformGestureEventBuilder(
     Widget* widget,
@@ -334,10 +336,11 @@ PlatformGestureEventBuilder::PlatformGestureEventBuilder(
       m_type = PlatformEvent::GestureTapDownCancel;
       break;
     case WebInputEvent::GestureDoubleTap:
-      // DoubleTap gesture is now handled as PlatformEvent::GestureTap with tap_count = 2. So no
-      // need to convert to a Platfrom DoubleTap gesture. But in WebViewImpl::handleGestureEvent
-      // all WebGestureEvent are converted to PlatformGestureEvent, for completeness and not reach
-      // the NOTREACHED() at the end, convert the DoubleTap to a NoType.
+      // DoubleTap gesture is now handled as PlatformEvent::GestureTap with
+      // tap_count = 2. So no need to convert to a Platfrom DoubleTap gesture.
+      // But in WebViewImpl::handleGestureEvent all WebGestureEvent are
+      // converted to PlatformGestureEvent, for completeness and not reach the
+      // NOTREACHED() at the end, convert the DoubleTap to a NoType.
       m_type = PlatformEvent::NoType;
       break;
     case WebInputEvent::GestureTwoFingerTap:
@@ -496,7 +499,8 @@ static void updateWebMouseEventFromCoreMouseEvent(
   webEvent.modifiers = event.modifiers();
 
   FrameView* view = widget ? toFrameView(widget->parent()) : 0;
-  // TODO(bokan): If view == nullptr, pointInRootFrame will really be pointInRootContent.
+  // TODO(bokan): If view == nullptr, pointInRootFrame will really be
+  // pointInRootContent.
   IntPoint pointInRootFrame = IntPoint(event.absoluteLocation().x().toInt(),
                                        event.absoluteLocation().y().toInt());
   if (view)
@@ -566,8 +570,8 @@ WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget,
     pointerType = event.mouseEvent()->pointerProperties().pointerType;
 }
 
-// Generate a synthetic WebMouseEvent given a TouchEvent (eg. for emulating a mouse
-// with touch input for plugins that don't support touch input).
+// Generate a synthetic WebMouseEvent given a TouchEvent (eg. for emulating a
+// mouse with touch input for plugins that don't support touch input).
 WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget,
                                            const LayoutItem layoutItem,
                                            const TouchEvent& event) {
@@ -597,9 +601,11 @@ WebMouseEventBuilder::WebMouseEventBuilder(const Widget* widget,
   timeStampSeconds = event.platformTimeStamp();
   modifiers = event.modifiers();
 
-  // The mouse event co-ordinates should be generated from the co-ordinates of the touch point.
+  // The mouse event co-ordinates should be generated from the co-ordinates of
+  // the touch point.
   FrameView* view = toFrameView(widget->parent());
-  // FIXME: if view == nullptr, pointInRootFrame will really be pointInRootContent.
+  // FIXME: if view == nullptr, pointInRootFrame will really be
+  // pointInRootContent.
   IntPoint pointInRootFrame = roundedIntPoint(touch->absoluteLocation());
   if (view)
     pointInRootFrame = view->contentsToRootFrame(pointInRootFrame);

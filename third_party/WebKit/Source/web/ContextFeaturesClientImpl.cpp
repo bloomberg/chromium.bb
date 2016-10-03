@@ -66,8 +66,8 @@ class ContextFeaturesCache final
 
    private:
     Value m_value;
-    bool
-        m_defaultValue;  // Needs to be traked as a part of the signature since it can be changed dynamically.
+    bool m_defaultValue;  // Needs to be traked as a part of the signature since
+                          // it can be changed dynamically.
   };
 
   static const char* supplementName();

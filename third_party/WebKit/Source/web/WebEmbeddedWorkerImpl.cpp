@@ -415,7 +415,8 @@ void WebEmbeddedWorkerImpl::startWorkerThread() {
 
   Document* document = m_mainFrame->frame()->document();
 
-  // FIXME: this document's origin is pristine and without any extra privileges. (crbug.com/254993)
+  // FIXME: this document's origin is pristine and without any extra privileges.
+  // (crbug.com/254993)
   SecurityOrigin* starterOrigin = document->getSecurityOrigin();
 
   WorkerClients* workerClients = WorkerClients::create();
@@ -429,7 +430,8 @@ void WebEmbeddedWorkerImpl::startWorkerThread() {
       workerClients,
       wrapUnique(m_workerContextClient->createServiceWorkerProvider()));
 
-  // We need to set the CSP to both the shadow page's document and the ServiceWorkerGlobalScope.
+  // We need to set the CSP to both the shadow page's document and the
+  // ServiceWorkerGlobalScope.
   document->initContentSecurityPolicy(
       m_mainScriptLoader->releaseContentSecurityPolicy());
   if (!m_mainScriptLoader->referrerPolicy().isNull())

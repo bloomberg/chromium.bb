@@ -66,7 +66,8 @@ class WebPepperSocketImpl final : public WebPepperSocket {
   void fail(const WebString& reason) override;
   void disconnect() override;
 
-  // WebSocketChannelClient methods proxied by WebPepperSocketChannelClientProxy.
+  // WebSocketChannelClient methods proxied by
+  // WebPepperSocketChannelClientProxy.
   void didConnect(const String& subprotocol, const String& extensions);
   void didReceiveTextMessage(const String& payload);
   void didReceiveBinaryMessage(std::unique_ptr<Vector<char>> payload);

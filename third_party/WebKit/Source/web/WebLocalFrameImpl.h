@@ -319,13 +319,14 @@ class WEB_EXPORT WebLocalFrameImpl final
   static WebLocalFrameImpl* fromFrame(LocalFrame&);
   static WebLocalFrameImpl* fromFrameOwnerElement(Element*);
 
-  // If the frame hosts a PluginDocument, this method returns the WebPluginContainerImpl
-  // that hosts the plugin.
+  // If the frame hosts a PluginDocument, this method returns the
+  // WebPluginContainerImpl that hosts the plugin.
   static WebPluginContainerImpl* pluginContainerFromFrame(LocalFrame*);
 
-  // If the frame hosts a PluginDocument, this method returns the WebPluginContainerImpl
-  // that hosts the plugin. If the provided node is a plugin, then it runs its
-  // WebPluginContainerImpl. Otherwise, uses the currently focused element (if any).
+  // If the frame hosts a PluginDocument, this method returns the
+  // WebPluginContainerImpl that hosts the plugin. If the provided node is a
+  // plugin, then it runs its WebPluginContainerImpl. Otherwise, uses the
+  // currently focused element (if any).
   static WebPluginContainerImpl* currentPluginContainer(LocalFrame*,
                                                         Node* = nullptr);
 
@@ -422,14 +423,16 @@ class WEB_EXPORT WebLocalFrameImpl final
 
   Member<FrameLoaderClientImpl> m_frameLoaderClientImpl;
 
-  // The embedder retains a reference to the WebCore LocalFrame while it is active in the DOM. This
-  // reference is released when the frame is removed from the DOM or the entire page is closed.
-  // FIXME: These will need to change to WebFrame when we introduce WebFrameProxy.
+  // The embedder retains a reference to the WebCore LocalFrame while it is
+  // active in the DOM. This reference is released when the frame is removed
+  // from the DOM or the entire page is closed.  FIXME: These will need to
+  // change to WebFrame when we introduce WebFrameProxy.
   Member<LocalFrame> m_frame;
 
   Member<WebDevToolsAgentImpl> m_devToolsAgent;
 
-  // This is set if the frame is the root of a local frame tree, and requires a widget for layout.
+  // This is set if the frame is the root of a local frame tree, and requires a
+  // widget for layout.
   WebFrameWidgetBase* m_frameWidget;
 
   WebFrameClient* m_client;
@@ -445,7 +448,8 @@ class WEB_EXPORT WebLocalFrameImpl final
   // information. Is used by PrintPage().
   Member<ChromePrintContext> m_printContext;
 
-  // Stores the additional input events offset and scale when device metrics emulation is enabled.
+  // Stores the additional input events offset and scale when device metrics
+  // emulation is enabled.
   IntSize m_inputEventsOffsetForEmulation;
   float m_inputEventsScaleFactorForEmulation;
 

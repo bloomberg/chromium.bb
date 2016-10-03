@@ -389,8 +389,9 @@ TEST_F(AssociatedURLLoaderTest, CrossOriginWithAccessControlFailure) {
       url, m_expectedResponse, m_frameFilePath);
 
   WebURLLoaderOptions options;
-  // Send credentials. This will cause the CORS checks to fail, because credentials can't be
-  // sent to a server which returns the header "access-control-allow-origin" with "*" as its value.
+  // Send credentials. This will cause the CORS checks to fail, because
+  // credentials can't be sent to a server which returns the header
+  // "access-control-allow-origin" with "*" as its value.
   options.allowCredentials = true;
   options.crossOriginRequestPolicy =
       WebURLLoaderOptions::CrossOriginRequestPolicyUseAccessControl;
@@ -513,10 +514,9 @@ TEST_F(AssociatedURLLoaderTest, RedirectCrossOriginFailure) {
 TEST_F(AssociatedURLLoaderTest, RedirectCrossOriginWithAccessControlFailure) {
   KURL url = toKURL(
       "http://www.test.com/RedirectCrossOriginWithAccessControlFailure.html");
-  char
-      redirect[] =
-          "http://www.other.com/"
-          "RedirectCrossOriginWithAccessControlFailure.html";  // Cross-origin
+  char redirect[] =
+      "http://www.other.com/"
+      "RedirectCrossOriginWithAccessControlFailure.html";  // Cross-origin
   KURL redirectURL = toKURL(redirect);
 
   WebURLRequest request;
@@ -553,14 +553,14 @@ TEST_F(AssociatedURLLoaderTest, RedirectCrossOriginWithAccessControlFailure) {
   EXPECT_TRUE(m_didFail);
 }
 
-// Test that a cross origin redirect response with CORS headers that allow the requesting origin succeeds.
+// Test that a cross origin redirect response with CORS headers that allow the
+// requesting origin succeeds.
 TEST_F(AssociatedURLLoaderTest, RedirectCrossOriginWithAccessControlSuccess) {
   KURL url = toKURL(
       "http://www.test.com/RedirectCrossOriginWithAccessControlSuccess.html");
-  char
-      redirect[] =
-          "http://www.other.com/"
-          "RedirectCrossOriginWithAccessControlSuccess.html";  // Cross-origin
+  char redirect[] =
+      "http://www.other.com/"
+      "RedirectCrossOriginWithAccessControlSuccess.html";  // Cross-origin
   KURL redirectURL = toKURL(redirect);
 
   WebURLRequest request;
@@ -568,7 +568,8 @@ TEST_F(AssociatedURLLoaderTest, RedirectCrossOriginWithAccessControlSuccess) {
   // Add a CORS simple header.
   request.setHTTPHeaderField("accept", "application/json");
 
-  // Create a redirect response that allows the redirect to pass the access control checks.
+  // Create a redirect response that allows the redirect to pass the access
+  // control checks.
   m_expectedRedirectResponse = WebURLResponse();
   m_expectedRedirectResponse.setMIMEType("text/html");
   m_expectedRedirectResponse.setHTTPStatusCode(301);
@@ -685,7 +686,8 @@ TEST_F(AssociatedURLLoaderTest, CrossOriginHeaderWhitelisting) {
   EXPECT_FALSE(CheckAccessControlHeaders("Set-Cookie", true));
 }
 
-// Test that the loader can allow non-whitelisted response headers for trusted CORS loads.
+// Test that the loader can allow non-whitelisted response headers for trusted
+// CORS loads.
 TEST_F(AssociatedURLLoaderTest, CrossOriginHeaderAllowResponseHeaders) {
   WebURLRequest request;
   KURL url =

@@ -180,7 +180,8 @@ static void convertTargetSpaceQuadToCompositedLayer(
         break;
     }
 
-    // FIXME: this does not need to be absolute, just in the paint invalidation container's space.
+    // FIXME: this does not need to be absolute, just in the paint invalidation
+    // container's space.
     point = targetLayoutObject->frame()->view()->contentsToRootFrame(point);
     point =
         paintInvalidationContainer.frame()->view()->rootFrameToContents(point);
@@ -207,7 +208,8 @@ static void convertTargetSpaceQuadToCompositedLayer(
 }
 
 static void addQuadToPath(const FloatQuad& quad, Path& path) {
-  // FIXME: Make this create rounded quad-paths, just like the axis-aligned case.
+  // FIXME: Make this create rounded quad-paths, just like the axis-aligned
+  // case.
   path.moveTo(quad.p1());
   path.addLineTo(quad.p2());
   path.addLineTo(quad.p3());
@@ -222,17 +224,18 @@ void LinkHighlightImpl::computeQuads(const Node& node,
 
   LayoutObject* layoutObject = node.layoutObject();
 
-  // For inline elements, absoluteQuads will return a line box based on the line-height
-  // and font metrics, which is technically incorrect as replaced elements like images
-  // should use their intristic height and expand the linebox  as needed. To get an
-  // appropriately sized highlight we descend into the children and have them add their
-  // boxes.
+  // For inline elements, absoluteQuads will return a line box based on the
+  // line-height and font metrics, which is technically incorrect as replaced
+  // elements like images should use their intristic height and expand the
+  // linebox  as needed. To get an appropriately sized highlight we descend
+  // into the children and have them add their boxes.
   if (layoutObject->isLayoutInline()) {
     for (Node* child = LayoutTreeBuilderTraversal::firstChild(node); child;
          child = LayoutTreeBuilderTraversal::nextSibling(*child))
       computeQuads(*child, outQuads);
   } else {
-    // FIXME: this does not need to be absolute, just in the paint invalidation container's space.
+    // FIXME: this does not need to be absolute, just in the paint invalidation
+    // container's space.
     layoutObject->absoluteQuads(outQuads);
   }
 }
@@ -258,8 +261,8 @@ bool LinkHighlightImpl::computeHighlightLayerPathAndPosition(
   for (size_t quadIndex = 0; quadIndex < quads.size(); ++quadIndex) {
     FloatQuad absoluteQuad = quads[quadIndex];
 
-    // Scrolling content layers have the same offset from layout object as the non-scrolling layers. Thus we need
-    // to adjust for their scroll offset.
+    // Scrolling content layers have the same offset from layout object as the
+    // non-scrolling layers. Thus we need to adjust for their scroll offset.
     if (m_isScrollingGraphicsLayer) {
       DoubleSize adjustedScrollOffset = paintInvalidationContainer.layer()
                                             ->getScrollableArea()
@@ -268,16 +271,18 @@ bool LinkHighlightImpl::computeHighlightLayerPathAndPosition(
                         adjustedScrollOffset.height());
     }
 
-    // Transform node quads in target absolute coords to local coordinates in the compositor layer.
+    // Transform node quads in target absolute coords to local coordinates in
+    // the compositor layer.
     FloatQuad transformedQuad;
     convertTargetSpaceQuadToCompositedLayer(
         absoluteQuad, m_node->layoutObject(), paintInvalidationContainer,
         transformedQuad);
 
-    // FIXME: for now, we'll only use rounded paths if we have a single node quad. The reason for this is that
-    // we may sometimes get a chain of adjacent boxes (e.g. for text nodes) which end up looking like sausage
-    // links: these should ideally be merged into a single rect before creating the path, but that's
-    // another CL.
+    // FIXME: for now, we'll only use rounded paths if we have a single node
+    // quad. The reason for this is that we may sometimes get a chain of
+    // adjacent boxes (e.g. for text nodes) which end up looking like sausage
+    // links: these should ideally be merged into a single rect before creating
+    // the path, but that's another CL.
     if (quads.size() == 1 && transformedQuad.isRectilinear() &&
         !m_owningWebViewImpl->settingsImpl()
              ->mockGestureTapHighlightsEnabled()) {
@@ -349,7 +354,8 @@ void LinkHighlightImpl::startHighlightAnimationIfNeeded() {
       CubicBezierTimingFunction::EaseType::EASE);
 
   curve->addKeyframe(CompositorFloatKeyframe(0, startOpacity, timingFunction));
-  // Make sure we have displayed for at least minPreFadeDuration before starting to fade out.
+  // Make sure we have displayed for at least minPreFadeDuration before starting
+  // to fade out.
   float extraDurationRequired = std::max(
       0.f, minPreFadeDuration -
                static_cast<float>(monotonicallyIncreasingTime() - m_startTime));
@@ -393,8 +399,8 @@ class LinkHighlightDisplayItemClientForTracking : public DisplayItemClient {
 };
 
 void LinkHighlightImpl::updateGeometry() {
-  // To avoid unnecessary updates (e.g. other entities have requested animations from our WebViewImpl),
-  // only proceed if we actually requested an update.
+  // To avoid unnecessary updates (e.g. other entities have requested animations
+  // from our WebViewImpl), only proceed if we actually requested an update.
   if (!m_geometryNeedsUpdate)
     return;
 
@@ -406,8 +412,9 @@ void LinkHighlightImpl::updateGeometry() {
         m_node->layoutObject()->containerForPaintInvalidation();
     attachLinkHighlightToCompositingLayer(paintInvalidationContainer);
     if (computeHighlightLayerPathAndPosition(paintInvalidationContainer)) {
-      // We only need to invalidate the layer if the highlight size has changed, otherwise
-      // we can just re-position the layer without needing to repaint.
+      // We only need to invalidate the layer if the highlight size has changed,
+      // otherwise we can just re-position the layer without needing to
+      // repaint.
       m_contentLayer->layer()->invalidate();
 
       if (m_currentGraphicsLayer)
@@ -430,7 +437,8 @@ void LinkHighlightImpl::clearCurrentGraphicsLayer() {
 }
 
 void LinkHighlightImpl::invalidate() {
-  // Make sure we update geometry on the next callback from WebViewImpl::layout().
+  // Make sure we update geometry on the next callback from
+  // WebViewImpl::layout().
   m_geometryNeedsUpdate = true;
 }
 

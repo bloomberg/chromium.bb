@@ -148,8 +148,8 @@ bool TextFinder::find(int identifier,
       searchText, m_activeMatch.get(), findOptions);
 
   if (!m_activeMatch) {
-    // If we're finding next the next active match might not be in the current frame.
-    // In this case we don't want to clear the matches cache.
+    // If we're finding next the next active match might not be in the current
+    // frame.  In this case we don't want to clear the matches cache.
     if (!options.findNext)
       clearFindMatchesCache();
 
@@ -270,8 +270,9 @@ void TextFinder::scopeStringMatches(int identifier,
                                     const WebString& searchText,
                                     const WebFindOptions& options,
                                     bool reset) {
-  // TODO(dglazkov): The reset/continue cases need to be untangled into two separate functions. This collation of logic
-  // is unnecessary and adds to overall complexity of the code.
+  // TODO(dglazkov): The reset/continue cases need to be untangled into two
+  // separate functions. This collation of logic is unnecessary and adds to
+  // overall complexity of the code.
   if (reset) {
     // This is a brand new search, so we need to reset everything.
     // Scoping is just about to begin.
@@ -325,8 +326,8 @@ void TextFinder::scopeStringMatches(int identifier,
       return;
   }
 
-  // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
-  // see http://crbug.com/590369 for more details.
+  // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  see http://crbug.com/590369 for more details.
   searchStart.document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
   // This timeout controls how long we scope before releasing control. This
@@ -354,8 +355,8 @@ void TextFinder::scopeStringMatches(int identifier,
         result.document(), toPositionInDOMTree(result.startPosition()),
         toPositionInDOMTree(result.endPosition()));
     if (resultRange->collapsed()) {
-      // resultRange will be collapsed if the matched text spans over multiple TreeScopes.
-      // FIXME: Show such matches to users.
+      // resultRange will be collapsed if the matched text spans over multiple
+      // TreeScopes.  FIXME: Show such matches to users.
       searchStart = result.endPosition();
       continue;
     }
@@ -544,7 +545,8 @@ void TextFinder::updateFindMatchRects() {
     m_findMatchesCache.swap(filteredMatches);
   }
 
-  // Invalidate the rects in child frames. Will be updated later during traversal.
+  // Invalidate the rects in child frames. Will be updated later during
+  // traversal.
   if (!m_findMatchRectsAreValid)
     for (WebFrame* child = ownerFrame().firstChild(); child;
          child = child->nextSibling())
@@ -628,7 +630,8 @@ int TextFinder::selectFindMatch(unsigned index, WebRect* selectionRect) {
     m_activeMatch = range;
     setMarkerActive(m_activeMatch.get(), true);
 
-    // Clear any user selection, to make sure Find Next continues on from the match we just activated.
+    // Clear any user selection, to make sure Find Next continues on from the
+    // match we just activated.
     ownerFrame().frame()->selection().clear();
 
     // Make sure no node is focused. See http://crbug.com/38700.

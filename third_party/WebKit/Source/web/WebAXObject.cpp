@@ -644,9 +644,10 @@ int WebAXObject::hierarchicalLevel() const {
   return m_private->hierarchicalLevel();
 }
 
-// FIXME: This method passes in a point that has page scale applied but assumes that (0, 0)
-// is the top left of the visual viewport. In other words, the point has the VisualViewport
-// scale applied, but not the VisualViewport offset. crbug.com/459591.
+// FIXME: This method passes in a point that has page scale applied but assumes
+// that (0, 0) is the top left of the visual viewport. In other words, the
+// point has the VisualViewport scale applied, but not the VisualViewport
+// offset. crbug.com/459591.
 WebAXObject WebAXObject::hitTest(const WebPoint& point) const {
   if (isDetached())
     return WebAXObject();

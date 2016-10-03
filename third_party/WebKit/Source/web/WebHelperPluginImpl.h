@@ -44,9 +44,9 @@ class HTMLObjectElement;
 class WebLocalFrameImpl;
 class WebPluginContainerImpl;
 
-// Utility class to host helper plugins for media. Internally, it creates a detached
-// HTMLPluginElement to host the plugin and uses FrameLoaderClient::createPlugin() to instantiate
-// the requested plugin.
+// Utility class to host helper plugins for media. Internally, it creates a
+// detached HTMLPluginElement to host the plugin and uses
+// FrameLoaderClient::createPlugin() to instantiate the requested plugin.
 class WebHelperPluginImpl final : public WebHelperPlugin {
   WTF_MAKE_NONCOPYABLE(WebHelperPluginImpl);
   USING_FAST_MALLOC(WebHelperPluginImpl);

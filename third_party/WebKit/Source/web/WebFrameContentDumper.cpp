@@ -39,9 +39,9 @@ static void frameContentAsPlainText(size_t maxChars,
         EphemeralRange::rangeOfContents(*document->body());
 
     // The text iterator will walk nodes giving us text. This is similar to
-    // the plainText() function in core/editing/TextIterator.h, but we implement the maximum
-    // size and also copy the results directly into a wstring, avoiding the
-    // string conversion.
+    // the plainText() function in core/editing/TextIterator.h, but we
+    // implement the maximum size and also copy the results directly into a
+    // wstring, avoiding the string conversion.
     for (TextIterator it(range.startPosition(), range.endPosition());
          !it.atEnd(); it.advance()) {
       it.text().appendTextToStringBuilder(output, 0,

@@ -92,8 +92,8 @@ class WEB_EXPORT LinkHighlightImpl final
   void attachLinkHighlightToCompositingLayer(
       const LayoutBoxModelObject& paintInvalidationContainer);
   void clearGraphicsLayerLinkHighlightPointer();
-  // This function computes the highlight path, and returns true if it has changed
-  // size since the last call to this function.
+  // This function computes the highlight path, and returns true if it has
+  // changed size since the last call to this function.
   bool computeHighlightLayerPathAndPosition(const LayoutBoxModelObject&);
 
   std::unique_ptr<WebContentLayer> m_contentLayer;

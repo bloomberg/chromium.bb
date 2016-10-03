@@ -43,26 +43,28 @@
 //                   ||
 //               FrameLoader
 //
-// FrameLoader and LocalFrame are formerly one object that was split apart because
-// it got too big. They basically have the same lifetime, hence the double line.
+// FrameLoader and LocalFrame are formerly one object that was split apart
+// because it got too big. They basically have the same lifetime, hence the
+// double line.
 //
 // From the perspective of the embedder, WebFrame is simply an object that it
 // allocates by calling WebFrame::create() and must be freed by calling close().
 // Internally, WebFrame is actually refcounted and it holds a reference to its
 // corresponding LocalFrame in blink.
 //
-// Oilpan: the middle objects + Page in the above diagram are Oilpan heap allocated,
-// WebView and FrameView are currently not. In terms of ownership and control, the
-// relationships stays the same, but the references from the off-heap WebView to the
-// on-heap Page is handled by a Persistent<>, not a RefPtr<>. Similarly, the mutual
-// strong references between the on-heap LocalFrame and the off-heap FrameView
-// is through a RefPtr (from LocalFrame to FrameView), and a Persistent refers
-// to the LocalFrame in the other direction.
+// Oilpan: the middle objects + Page in the above diagram are Oilpan heap
+// allocated, WebView and FrameView are currently not. In terms of ownership
+// and control, the relationships stays the same, but the references from the
+// off-heap WebView to the on-heap Page is handled by a Persistent<>, not a
+// RefPtr<>. Similarly, the mutual strong references between the on-heap
+// LocalFrame and the off-heap FrameView is through a RefPtr (from LocalFrame
+// to FrameView), and a Persistent refers to the LocalFrame in the other
+// direction.
 //
-// From the embedder's point of view, the use of Oilpan brings no changes. close()
-// must still be used to signal that the embedder is through with the WebFrame.
-// Calling it will bring about the release and finalization of the frame object,
-// and everything underneath.
+// From the embedder's point of view, the use of Oilpan brings no changes.
+// close() must still be used to signal that the embedder is through with the
+// WebFrame.  Calling it will bring about the release and finalization of the
+// frame object, and everything underneath.
 //
 // How frames are destroyed
 // ------------------------
@@ -74,13 +76,14 @@
 // in Frame::detachChildren for each subframe in a pre-order depth-first
 // traversal. Note that child node order may not match DOM node order!
 // detachChildren() (virtually) calls Frame::detach(), which again calls
-// FrameLoaderClient::detached(). This triggers WebFrame to clear its reference to
-// LocalFrame. FrameLoaderClient::detached() also notifies the embedder via WebFrameClient
-// that the frame is detached. Most embedders will invoke close() on the WebFrame
-// at this point, triggering its deletion unless something else is still retaining a reference.
+// FrameLoaderClient::detached(). This triggers WebFrame to clear its reference
+// to LocalFrame. FrameLoaderClient::detached() also notifies the embedder via
+// WebFrameClient that the frame is detached. Most embedders will invoke
+// close() on the WebFrame at this point, triggering its deletion unless
+// something else is still retaining a reference.
 //
-// The client is expected to be set whenever the WebLocalFrameImpl is attached to
-// the DOM.
+// The client is expected to be set whenever the WebLocalFrameImpl is attached
+// to the DOM.
 
 #include "web/WebLocalFrameImpl.h"
 
@@ -990,8 +993,8 @@ bool WebLocalFrameImpl::firstRectForCharacterRange(
   if (!editable)
     return false;
 
-  // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
-  // see http://crbug.com/590369 for more details.
+  // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  see http://crbug.com/590369 for more details.
   editable->document().updateStyleAndLayoutIgnorePendingStylesheets();
 
   const EphemeralRange range =
@@ -1079,8 +1082,8 @@ void WebLocalFrameImpl::requestTextChecking(const WebElement& webElement) {
   if (webElement.isNull())
     return;
 
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
-  // see http://crbug.com/590369 for more details.
+  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  see http://crbug.com/590369 for more details.
   frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
   DocumentLifecycle::DisallowTransitionScope disallowTransition(
@@ -1091,7 +1094,9 @@ void WebLocalFrameImpl::requestTextChecking(const WebElement& webElement) {
 }
 
 void WebLocalFrameImpl::replaceMisspelledRange(const WebString& text) {
-  // If this caret selection has two or more markers, this function replace the range covered by the first marker with the specified word as Microsoft Word does.
+  // If this caret selection has two or more markers, this function replace the
+  // range covered by the first marker with the specified word as Microsoft Word
+  // does.
   if (pluginContainerFromFrame(frame()))
     return;
   frame()->spellChecker().replaceMisspelledRange(text);
@@ -1144,8 +1149,8 @@ void WebLocalFrameImpl::selectWordAroundPosition(LocalFrame* frame,
                                                  VisiblePosition position) {
   TRACE_EVENT0("blink", "WebLocalFrameImpl::selectWordAroundPosition");
 
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
-  // see http://crbug.com/590369 for more details.
+  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  see http://crbug.com/590369 for more details.
   frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
   frame->selection().selectWordAroundPosition(position);
@@ -1157,8 +1162,8 @@ bool WebLocalFrameImpl::selectWordAroundCaret() {
   if (selection.isNone() || selection.isRange())
     return false;
 
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
-  // see http://crbug.com/590369 for more details.
+  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  see http://crbug.com/590369 for more details.
   frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
   return frame()->selection().selectWordAroundPosition(
@@ -1173,8 +1178,8 @@ void WebLocalFrameImpl::selectRange(const WebPoint& baseInViewport,
 void WebLocalFrameImpl::selectRange(const WebRange& webRange) {
   TRACE_EVENT0("blink", "WebLocalFrameImpl::selectRange");
 
-  // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
-  // see http://crbug.com/590369 for more details.
+  // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  see http://crbug.com/590369 for more details.
   frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
   DocumentLifecycle::DisallowTransitionScope disallowTransition(
@@ -1186,8 +1191,8 @@ void WebLocalFrameImpl::selectRange(const WebRange& webRange) {
 }
 
 WebString WebLocalFrameImpl::rangeAsText(const WebRange& webRange) {
-  // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
-  // see http://crbug.com/590369 for more details.
+  // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  see http://crbug.com/590369 for more details.
   frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
   DocumentLifecycle::DisallowTransitionScope disallowTransition(
@@ -1448,7 +1453,7 @@ WebString WebLocalFrameImpl::layerTreeAsText(bool showDebugInfo) const {
       showDebugInfo ? LayerTreeIncludesDebugInfo : LayerTreeNormal));
 }
 
-// WebLocalFrameImpl public ---------------------------------------------------------
+// WebLocalFrameImpl public --------------------------------------------------
 
 WebLocalFrame* WebLocalFrame::create(WebTreeScopeType scope,
                                      WebFrameClient* client,
@@ -1483,7 +1488,8 @@ WebLocalFrameImpl* WebLocalFrameImpl::createProvisional(
   // the main frame of the Page. However, this is a provisional frame, and may
   // disappear, so Page::m_mainFrame can't be updated just yet.
   FrameOwner* tempOwner = DummyFrameOwner::create();
-  // TODO(dcheng): This block is very similar to initializeCoreFrame. Try to reuse it here.
+  // TODO(dcheng): This block is very similar to initializeCoreFrame. Try to
+  // reuse it here.
   LocalFrame* frame = LocalFrame::create(
       webFrame->m_frameLoaderClientImpl.get(), oldFrame->host(), tempOwner,
       client ? client->interfaceProvider() : nullptr);
@@ -1606,8 +1612,8 @@ LocalFrame* WebLocalFrameImpl::createChildFrame(
   if (!webframeChild->parent())
     return nullptr;
 
-  // If we're moving in the back/forward list, we might want to replace the content
-  // of this child frame with whatever was there at that point.
+  // If we're moving in the back/forward list, we might want to replace the
+  // content of this child frame with whatever was there at that point.
   HistoryItem* childItem = nullptr;
   if (isBackForwardLoadType(frame()->loader().loadType()) &&
       !frame()->document()->loadEventFinished())
@@ -1713,7 +1719,8 @@ void WebLocalFrameImpl::setFindEndstateFocusAndSelection() {
     if (!selection.isNone())
       return;
 
-    // Need to clean out style and layout state before querying Element::isFocusable().
+    // Need to clean out style and layout state before querying
+    // Element::isFocusable().
     frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
     // Try to find the first focusable node up the chain, which will, for
@@ -1770,9 +1777,9 @@ void WebLocalFrameImpl::setFindEndstateFocusAndSelection() {
     // Finally clear the active match, for two reasons:
     // We just finished the find 'session' and we don't want future (potentially
     // unrelated) find 'sessions' operations to start at the same place.
-    // The WebLocalFrameImpl could get reused and the activeMatch could end up pointing
-    // to a document that is no longer valid. Keeping an invalid reference around
-    // is just asking for trouble.
+    // The WebLocalFrameImpl could get reused and the activeMatch could end up
+    // pointing to a document that is no longer valid. Keeping an invalid
+    // reference around is just asking for trouble.
     m_textFinder->resetActiveMatch();
   }
 }
@@ -1833,7 +1840,8 @@ void WebLocalFrameImpl::loadJavaScriptURL(const KURL& url) {
 
   Document* ownerDocument(frame()->document());
 
-  // Protect privileged pages against bookmarklets and other javascript manipulations.
+  // Protect privileged pages against bookmarklets and other javascript
+  // manipulations.
   if (SchemeRegistry::shouldTreatURLSchemeAsNotAllowingJavascriptURLs(
           frame()->document()->url().protocol()))
     return;
@@ -2130,8 +2138,8 @@ bool WebLocalFrameImpl::find(int identifier,
   // Unlikely, but just in case we try to find-in-page on a detached frame.
   DCHECK(frame()->host());
 
-  // Up-to-date, clean tree is required for finding text in page, since it relies
-  // on TextIterator to look over the text.
+  // Up-to-date, clean tree is required for finding text in page, since it
+  // relies on TextIterator to look over the text.
   frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
   return ensureTextFinder().find(identifier, searchText, options,

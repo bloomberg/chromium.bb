@@ -96,7 +96,8 @@ class WEB_EXPORT TextFinder final
 
   // Return the index in the find-in-page cache of the match closest to the
   // provided point in find-in-page coordinates, or -1 in case of error.
-  // The squared distance to the closest match is returned in the |distanceSquared| parameter.
+  // The squared distance to the closest match is returned in the
+  // |distanceSquared| parameter.
   int nearestFindMatch(const FloatPoint&, float* distanceSquared);
 
   // Returns whether this frame has the active match.
@@ -164,8 +165,8 @@ class WEB_EXPORT TextFinder final
   // propagating the invalidation to child frames.
   void updateFindMatchRects();
 
-  // Sets the markers within a range as active or inactive. Returns true if at least
-  // one such marker found.
+  // Sets the markers within a range as active or inactive. Returns true if at
+  // least one such marker found.
   bool setMarkerActive(Range*, bool active);
 
   // Removes all markers.
@@ -182,7 +183,8 @@ class WEB_EXPORT TextFinder final
   // as finished.
   void flushCurrentScopingEffort(int identifier);
 
-  // Finishes the current scoping effort and triggers any updates if appropriate.
+  // Finishes the current scoping effort and triggers any updates if
+  // appropriate.
   void finishCurrentScopingEffort(int identifier);
 
   // Queue up a deferred call to scopeStringMatches.
@@ -232,14 +234,16 @@ class WEB_EXPORT TextFinder final
 
   // Keeps track of how many matches this frame has found so far, so that we
   // don't lose count between scoping efforts, and is also used (in conjunction
-  // with m_lastSearchString) to figure out if we need to search the frame again.
+  // with m_lastSearchString) to figure out if we need to search the frame
+  // again.
   int m_lastMatchCount;
 
   // This variable keeps a cumulative total of matches found so far in this
   // frame, and is only incremented by calling IncreaseMatchCount.
   int m_totalMatchCount;
 
-  // Keeps track of whether the frame is currently scoping (being searched for matches).
+  // Keeps track of whether the frame is currently scoping (being searched for
+  // matches).
   bool m_frameScoping;
 
   // Identifier of the latest find-in-page request. Required to be stored in

@@ -16,9 +16,10 @@ class CompositorMutatorImpl;
 class CompositorWorkerGlobalScope;
 class WorkerGlobalScope;
 
-// Mediates between one CompositorWorkerGlobalScope and the associated CompositorMutatorImpl.
-// There is one CompositorProxyClientImpl per worker but there may be multiple for a given
-// mutator, e.g. if a single document creates multiple CompositorWorker objects.
+// Mediates between one CompositorWorkerGlobalScope and the associated
+// CompositorMutatorImpl.  There is one CompositorProxyClientImpl per worker
+// but there may be multiple for a given mutator, e.g. if a single document
+// creates multiple CompositorWorker objects.
 //
 // Should be accessed only on the compositor thread.
 class CompositorProxyClientImpl final
@@ -32,7 +33,8 @@ class CompositorProxyClientImpl final
   DECLARE_VIRTUAL_TRACE();
 
   // Runs the animation frame callback for the frame starting at the given time.
-  // Returns true if another animation frame was requested (i.e. should be reinvoked next frame).
+  // Returns true if another animation frame was requested (i.e. should be
+  // reinvoked next frame).
   bool mutate(double monotonicTimeNow, CompositorMutableStateProvider*);
 
   // CompositorProxyClient:

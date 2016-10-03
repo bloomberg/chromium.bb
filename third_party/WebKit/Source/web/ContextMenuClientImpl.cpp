@@ -86,8 +86,8 @@
 namespace blink {
 
 // Figure out the URL of a page or subframe. Returns |page_type| as the type,
-// which indicates page or subframe, or ContextNodeType::kNone if the URL could not
-// be determined for some reason.
+// which indicates page or subframe, or ContextNodeType::kNone if the URL could
+// not be determined for some reason.
 static WebURL urlFromFrame(LocalFrame* frame) {
   if (frame) {
     DocumentLoader* dl = frame->loader().documentLoader();
@@ -362,7 +362,8 @@ bool ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu,
     // Extract suggested filename for saving file.
     data.suggestedFilename = anchor->fastGetAttribute(HTMLNames::downloadAttr);
 
-    // If the anchor wants to suppress the referrer, update the referrerPolicy accordingly.
+    // If the anchor wants to suppress the referrer, update the referrerPolicy
+    // accordingly.
     if (anchor->hasRel(RelationNoReferrer))
       data.referrerPolicy = WebReferrerPolicyNever;
 

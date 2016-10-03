@@ -72,8 +72,8 @@ static void paintInternal(Page& page,
   {
     GraphicsContext& paintContext = pictureBuilder.context();
 
-    // FIXME: device scale factor settings are layering violations and should not
-    // be used within Blink paint code.
+    // FIXME: device scale factor settings are layering violations and should
+    // not be used within Blink paint code.
     float scaleFactor = page.deviceScaleFactor();
     paintContext.setDeviceScaleFactor(scaleFactor);
 
@@ -206,8 +206,9 @@ WebInputEventResult PageWidgetDelegate::handleInputEvent(
     case WebInputEvent::GesturePinchBegin:
     case WebInputEvent::GesturePinchEnd:
     case WebInputEvent::GesturePinchUpdate:
-      // Touchscreen pinch events are currently not handled in main thread. Once they are,
-      // these should be passed to |handleGestureEvent| similar to gesture scroll events.
+      // Touchscreen pinch events are currently not handled in main thread.
+      // Once they are, these should be passed to |handleGestureEvent| similar
+      // to gesture scroll events.
       return WebInputEventResult::NotHandled;
     default:
       return WebInputEventResult::NotHandled;

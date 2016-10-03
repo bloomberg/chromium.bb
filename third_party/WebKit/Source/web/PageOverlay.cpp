@@ -84,7 +84,8 @@ void PageOverlay::update() {
             m_viewImpl->mainFrameDevToolsAgentImpl())
       devTools->willAddPageOverlay(m_layer.get());
 
-    // This is required for contents of overlay to stay in sync with the page while scrolling.
+    // This is required for contents of overlay to stay in sync with the page
+    // while scrolling.
     WebLayer* platformLayer = m_layer->platformLayer();
     platformLayer->addMainThreadScrollingReasons(
         MainThreadScrollingReason::kPageOverlay);

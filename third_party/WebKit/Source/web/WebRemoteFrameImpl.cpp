@@ -358,12 +358,14 @@ WebLocalFrame* WebRemoteFrameImpl::createLocalChild(
   insertAfter(child, previousSibling);
   RemoteFrameOwner* owner = RemoteFrameOwner::create(
       static_cast<SandboxFlags>(sandboxFlags), frameOwnerProperties);
-  // FIXME: currently this calls LocalFrame::init() on the created LocalFrame, which may
-  // result in the browser observing two navigations to about:blank (one from the initial
-  // frame creation, and one from swapping it into the remote process). FrameLoader might
-  // need a special initialization function for this case to avoid that duplicate navigation.
+  // FIXME: currently this calls LocalFrame::init() on the created LocalFrame,
+  // which may result in the browser observing two navigations to about:blank
+  // (one from the initial frame creation, and one from swapping it into the
+  // remote process).  FrameLoader might need a special initialization function
+  // for this case to avoid that duplicate navigation.
   child->initializeCoreFrame(frame()->host(), owner, name, uniqueName);
-  // Partially related with the above FIXME--the init() call may trigger JS dispatch. However,
+  // Partially related with the above FIXME--the init() call may trigger JS
+  // dispatch. However,
   // if the parent is remote, it should never be detached synchronously...
   DCHECK(child->frame());
   return child;
@@ -408,8 +410,8 @@ void WebRemoteFrameImpl::setReplicatedOrigin(
   DCHECK(frame());
   frame()->securityContext()->setReplicatedOrigin(origin);
 
-  // If the origin of a remote frame changed, the accessibility object for the owner
-  // element now points to a different child.
+  // If the origin of a remote frame changed, the accessibility object for the
+  // owner element now points to a different child.
   //
   // TODO(dmazzoni, dcheng): there's probably a better way to solve this.
   // Run SitePerProcessAccessibilityBrowserTest.TwoCrossSiteNavigations to
@@ -458,7 +460,8 @@ void WebRemoteFrameImpl::setReplicatedInsecureRequestPolicy(
 void WebRemoteFrameImpl::setReplicatedPotentiallyTrustworthyUniqueOrigin(
     bool isUniqueOriginPotentiallyTrustworthy) const {
   DCHECK(frame());
-  // If |isUniqueOriginPotentiallyTrustworthy| is true, then the origin must be unique.
+  // If |isUniqueOriginPotentiallyTrustworthy| is true, then the origin must be
+  // unique.
   DCHECK(!isUniqueOriginPotentiallyTrustworthy ||
          frame()->securityContext()->getSecurityOrigin()->isUnique());
   frame()

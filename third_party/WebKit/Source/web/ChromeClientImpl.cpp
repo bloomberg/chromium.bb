@@ -318,7 +318,8 @@ void updatePolicyForEvent(const WebInputEvent* inputEvent,
       *policy != NavigationPolicyIgnore)
     return;
 
-  // User and app agree that we want a new window; let the app override the decorations.
+  // User and app agree that we want a new window; let the app override the
+  // decorations.
   if (userPolicy == NavigationPolicyNewWindow &&
       *policy == NavigationPolicyNewPopup)
     return;

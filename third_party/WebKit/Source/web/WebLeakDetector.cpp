@@ -98,7 +98,8 @@ void WebLeakDetectorImpl::prepareForLeakDetection(WebFrame* frame) {
     spellChecker.prepareForLeakDetection();
   }
 
-  // FIXME: HTML5 Notification should be closed because notification affects the result of number of DOM objects.
+  // FIXME: HTML5 Notification should be closed because notification affects the
+  // result of number of DOM objects.
 
   V8PerIsolateData::from(isolate)->clearScriptRegexpContext();
 }
@@ -119,8 +120,9 @@ void WebLeakDetectorImpl::collectGarbageAndReport() {
 
 void WebLeakDetectorImpl::delayedGCAndReport(TimerBase*) {
   // We do a second and third GC here to address flakiness
-  // The second GC is necessary as Resource GC may have postponed clean-up tasks to next event loop.
-  // The third GC is necessary for cleaning up Document after worker object died.
+  // The second GC is necessary as Resource GC may have postponed clean-up tasks
+  // to next event loop.  The third GC is necessary for cleaning up Document
+  // after worker object died.
 
   V8GCController::collectAllGarbageForTesting(
       V8PerIsolateData::mainThreadIsolate());
@@ -132,12 +134,14 @@ void WebLeakDetectorImpl::delayedGCAndReport(TimerBase*) {
     m_delayedGCAndReportTimer.startOneShot(0, BLINK_FROM_HERE);
   } else if (m_numberOfGCNeeded > -1 &&
              InProcessWorkerMessagingProxy::proxyCount()) {
-    // It is possible that all posted tasks for finalizing in-process proxy objects
-    // will not have run before the final round of GCs started. If so, do yet
-    // another pass, letting these tasks run and then afterwards perform a GC to tidy up.
+    // It is possible that all posted tasks for finalizing in-process proxy
+    // objects will not have run before the final round of GCs started. If so,
+    // do yet another pass, letting these tasks run and then afterwards perform
+    // a GC to tidy up.
     //
-    // TODO(sof): use proxyCount() to always decide if another GC needs to be scheduled.
-    // Some debug bots running browser unit tests disagree (crbug.com/616714)
+    // TODO(sof): use proxyCount() to always decide if another GC needs to be
+    // scheduled.  Some debug bots running browser unit tests disagree
+    // (crbug.com/616714)
     m_delayedGCAndReportTimer.startOneShot(0, BLINK_FROM_HERE);
   } else {
     m_delayedReportTimer.startOneShot(0, BLINK_FROM_HERE);

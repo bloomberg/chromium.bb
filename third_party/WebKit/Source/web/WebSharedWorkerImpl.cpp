@@ -127,14 +127,16 @@ void WebSharedWorkerImpl::initializeLoader() {
   // FIXME: http://crbug.com/363843. This needs to find a better way to
   // not create graphics layers.
   m_webView->settings()->setAcceleratedCompositingEnabled(false);
-  // FIXME: Settings information should be passed to the Worker process from Browser process when the worker
-  // is created (similar to RenderThread::OnCreateNewView).
+  // FIXME: Settings information should be passed to the Worker process from
+  // Browser process when the worker is created (similar to
+  // RenderThread::OnCreateNewView).
   m_mainFrame = toWebLocalFrameImpl(
       WebLocalFrame::create(WebTreeScopeType::Document, this));
   m_webView->setMainFrame(m_mainFrame.get());
   m_mainFrame->setDevToolsAgentClient(this);
 
-  // If we were asked to pause worker context on start and wait for debugger then it is the good time to do that.
+  // If we were asked to pause worker context on start and wait for debugger
+  // then it is the good time to do that.
   m_client->workerReadyForInspection();
   if (m_pauseWorkerContextOnStart) {
     m_isPausedOnStart = true;
@@ -276,7 +278,7 @@ void WebSharedWorkerImpl::didTerminateWorkerThreadOnMainThread() {
   delete this;
 }
 
-// WorkerLoaderProxyProvider -----------------------------------------------------------
+// WorkerLoaderProxyProvider -------------------------------------------------
 
 void WebSharedWorkerImpl::postTaskToLoader(
     const WebTraceLocation& location,
@@ -302,7 +304,8 @@ void WebSharedWorkerImpl::connect(WebMessagePortChannel* webChannel) {
 
 void WebSharedWorkerImpl::connectTask(WebMessagePortChannelUniquePtr channel,
                                       ExecutionContext* context) {
-  // Wrap the passed-in channel in a MessagePort, and send it off via a connect event.
+  // Wrap the passed-in channel in a MessagePort, and send it off via a connect
+  // event.
   MessagePort* port = MessagePort::create(*context);
   port->entangle(std::move(channel));
   WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
@@ -345,7 +348,8 @@ void WebSharedWorkerImpl::onScriptLoaderFinished() {
   }
 
   Document* document = m_mainFrame->frame()->document();
-  // FIXME: this document's origin is pristine and without any extra privileges. (crbug.com/254993)
+  // FIXME: this document's origin is pristine and without any extra privileges.
+  // (crbug.com/254993)
   SecurityOrigin* starterOrigin = document->getSecurityOrigin();
 
   WorkerClients* workerClients = WorkerClients::create();

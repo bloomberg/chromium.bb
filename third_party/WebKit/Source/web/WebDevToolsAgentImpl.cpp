@@ -98,8 +98,8 @@ namespace blink {
 namespace {
 
 bool isMainFrame(WebLocalFrameImpl* frame) {
-  // TODO(dgozman): sometimes view->mainFrameImpl() does return null, even though |frame| is meant to be main frame.
-  // See http://crbug.com/526162.
+  // TODO(dgozman): sometimes view->mainFrameImpl() does return null, even
+  // though |frame| is meant to be main frame.  See http://crbug.com/526162.
   return frame->viewImpl() && !frame->parent();
 }
 }
@@ -434,14 +434,15 @@ void WebDevToolsAgentImpl::initializeSession(int sessionId,
   m_networkAgent->setHostId(hostId);
 
   if (m_includeViewAgents) {
-    // TODO(dgozman): we should actually pass the view instead of frame, but during
-    // remote->local transition we cannot access mainFrameImpl() yet, so we have to store the
-    // frame which will become the main frame later.
+    // TODO(dgozman): we should actually pass the view instead of frame, but
+    // during remote->local transition we cannot access mainFrameImpl() yet, so
+    // we have to store the frame which will become the main frame later.
     m_session->append(
         InspectorRenderingAgent::create(m_webLocalFrameImpl, m_overlay.get()));
     m_session->append(
         InspectorEmulationAgent::create(m_webLocalFrameImpl, this));
-    // TODO(dgozman): migrate each of the following agents to frame once module is ready.
+    // TODO(dgozman): migrate each of the following agents to frame once module
+    // is ready.
     Page* page = m_webLocalFrameImpl->viewImpl()->page();
     m_session->append(InspectorDatabaseAgent::create(page));
     m_session->append(DeviceOrientationInspectorAgent::create(page));
@@ -688,7 +689,8 @@ void WebDevToolsAgentImpl::runDebuggerTask(
 
 void WebDevToolsAgent::interruptAndDispatch(int sessionId,
                                             MessageDescriptor* rawDescriptor) {
-  // rawDescriptor can't be a std::unique_ptr because interruptAndDispatch is a WebKit API function.
+  // rawDescriptor can't be a std::unique_ptr because interruptAndDispatch is a
+  // WebKit API function.
   MainThreadDebugger::interruptMainThreadAndRun(
       crossThreadBind(WebDevToolsAgentImpl::runDebuggerTask, sessionId,
                       passed(wrapUnique(rawDescriptor))));

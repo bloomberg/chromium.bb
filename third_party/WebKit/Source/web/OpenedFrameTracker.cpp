@@ -26,7 +26,8 @@ void OpenedFrameTracker::remove(WebFrame* frame) {
 }
 
 void OpenedFrameTracker::transferTo(WebFrame* opener) {
-  // Copy the set of opened frames, since changing the owner will mutate this set.
+  // Copy the set of opened frames, since changing the owner will mutate this
+  // set.
   HashSet<WebFrame*> frames(m_openedFrames);
   for (WebFrame* frame : frames)
     frame->setOpener(opener);

@@ -240,7 +240,8 @@ bool InspectorOverlay::handleInputEvent(const WebInputEvent& inputEvent) {
 
   if (WebInputEvent::isGestureEventType(inputEvent.type) &&
       inputEvent.type == WebInputEvent::GestureTap) {
-    // Only let GestureTab in (we only need it and we know PlatformGestureEventBuilder supports it).
+    // Only let GestureTab in (we only need it and we know
+    // PlatformGestureEventBuilder supports it).
     PlatformGestureEvent gestureEvent = PlatformGestureEventBuilder(
         m_webViewImpl->mainFrameImpl()->frameView(),
         static_cast<const WebGestureEvent&>(inputEvent));
@@ -252,7 +253,8 @@ bool InspectorOverlay::handleInputEvent(const WebInputEvent& inputEvent) {
   }
   if (WebInputEvent::isMouseEventType(inputEvent.type) &&
       inputEvent.type != WebInputEvent::MouseEnter) {
-    // PlatformMouseEventBuilder does not work with MouseEnter type, so we filter it out manually.
+    // PlatformMouseEventBuilder does not work with MouseEnter type, so we
+    // filter it out manually.
     PlatformMouseEvent mouseEvent = PlatformMouseEventBuilder(
         m_webViewImpl->mainFrameImpl()->frameView(),
         static_cast<const WebMouseEvent&>(inputEvent));
@@ -609,8 +611,8 @@ void InspectorOverlay::reset(const IntSize& viewportSize,
   resetData->setObject("viewportSize",
                        buildObjectForSize(viewportInScreen.size()));
 
-  // The zoom factor in the overlay frame already has been multiplied by the window to viewport scale
-  // (aka device scale factor), so cancel it.
+  // The zoom factor in the overlay frame already has been multiplied by the
+  // window to viewport scale (aka device scale factor), so cancel it.
   resetData->setDouble(
       "pageZoomFactor",
       m_webViewImpl->mainFrameImpl()->frame()->pageZoomFactor() /

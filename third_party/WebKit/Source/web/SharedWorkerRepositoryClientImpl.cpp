@@ -55,7 +55,8 @@
 
 namespace blink {
 
-// Callback class that keeps the SharedWorker and WebSharedWorker objects alive while connecting.
+// Callback class that keeps the SharedWorker and WebSharedWorker objects alive
+// while connecting.
 class SharedWorkerConnector
     : private WebSharedWorkerConnector::ConnectListener {
  public:
@@ -96,13 +97,15 @@ void SharedWorkerConnector::connect() {
 }
 
 void SharedWorkerConnector::connected() {
-  // Free ourselves (this releases the SharedWorker so it can be freed as well if unreferenced).
+  // Free ourselves (this releases the SharedWorker so it can be freed as well
+  // if unreferenced).
   delete this;
 }
 
 void SharedWorkerConnector::scriptLoadFailed() {
   m_worker->dispatchEvent(Event::createCancelable(EventTypeNames::error));
-  // Free ourselves (this releases the SharedWorker so it can be freed as well if unreferenced).
+  // Free ourselves (this releases the SharedWorker so it can be freed as well
+  // if unreferenced).
   delete this;
 }
 
@@ -120,7 +123,8 @@ void SharedWorkerRepositoryClientImpl::connect(
     ExceptionState& exceptionState) {
   DCHECK(m_client);
 
-  // No nested workers (for now) - connect() should only be called from document context.
+  // No nested workers (for now) - connect() should only be called from document
+  // context.
   DCHECK(worker->getExecutionContext()->isDocument());
   Document* document = toDocument(worker->getExecutionContext());
 
@@ -152,7 +156,8 @@ void SharedWorkerRepositoryClientImpl::connect(
           &creationError));
   if (creationError != WebWorkerCreationErrorNone) {
     if (creationError == WebWorkerCreationErrorURLMismatch) {
-      // Existing worker does not match this url, so return an error back to the caller.
+      // Existing worker does not match this url, so return an error back to the
+      // caller.
       exceptionState.throwDOMException(
           URLMismatchError, "The location of the SharedWorker named '" + name +
                                 "' does not exactly match the provided URL ('" +
@@ -171,8 +176,8 @@ void SharedWorkerRepositoryClientImpl::connect(
     }
   }
 
-  // The connector object manages its own lifecycle (and the lifecycles of the two worker objects).
-  // It will free itself once connecting is completed.
+  // The connector object manages its own lifecycle (and the lifecycles of the
+  // two worker objects).  It will free itself once connecting is completed.
   SharedWorkerConnector* connector = new SharedWorkerConnector(
       worker, url, name, std::move(port), std::move(webWorkerConnector));
   connector->connect();

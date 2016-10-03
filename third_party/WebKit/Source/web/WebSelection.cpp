@@ -35,7 +35,8 @@ static WebSelectionBound getWebSelectionBound(
   return result;
 }
 
-// SelectionType enums have the same values; enforced in AssertMatchingEnums.cpp.
+// SelectionType enums have the same values; enforced in
+// AssertMatchingEnums.cpp.
 WebSelection::WebSelection(const CompositedSelection& selection)
     : m_selectionType(static_cast<WebSelection::SelectionType>(selection.type)),
       m_start(getWebSelectionBound(selection, true)),

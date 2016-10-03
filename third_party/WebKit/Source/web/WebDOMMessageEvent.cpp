@@ -62,7 +62,8 @@ WebDOMMessageEvent::WebDOMMessageEvent(
   // is used to implement postMessage().
   if (!ports)
     ports = new MessagePortArray;
-  // TODO(esprehn): Chromium always passes empty string for lastEventId, is that right?
+  // TODO(esprehn): Chromium always passes empty string for lastEventId, is that
+  // right?
   unwrap<MessageEvent>()->initMessageEvent("message", false, false, messageData,
                                            origin, "" /*lastEventId*/, window,
                                            ports);

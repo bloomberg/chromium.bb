@@ -93,7 +93,8 @@ void initialize(Platform* platform) {
 void shutdown() {
   ThreadState::current()->cleanupMainThread();
 
-  // currentThread() is null if we are running on a thread without a message loop.
+  // currentThread() is null if we are running on a thread without a message
+  // loop.
   if (WebThread* currentThread = Platform::current()->currentThread()) {
     currentThread->removeTaskObserver(s_endOfTaskRunner);
     s_endOfTaskRunner = nullptr;

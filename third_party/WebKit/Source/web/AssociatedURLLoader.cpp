@@ -80,7 +80,8 @@ void HTTPRequestHeaderValidator::visitHeader(const WebString& name,
 
 }  // namespace
 
-// This class bridges the interface differences between WebCore and WebKit loader clients.
+// This class bridges the interface differences between WebCore and WebKit
+// loader clients.
 // It forwards its ThreadableLoaderClient notifications to a WebURLLoaderClient.
 class AssociatedURLLoader::ClientAdapter final
     : public DocumentThreadableLoaderClient {
@@ -112,11 +113,13 @@ class AssociatedURLLoader::ClientAdapter final
   // Sets an error to be reported back to the client, asychronously.
   void setDelayedError(const ResourceError&);
 
-  // Enables forwarding of error notifications to the WebURLLoaderClient. These must be
-  // deferred until after the call to AssociatedURLLoader::loadAsynchronously() completes.
+  // Enables forwarding of error notifications to the WebURLLoaderClient. These
+  // must be deferred until after the call to
+  // AssociatedURLLoader::loadAsynchronously() completes.
   void enableErrorNotifications();
 
-  // Stops loading and releases the DocumentThreadableLoader as early as possible.
+  // Stops loading and releases the DocumentThreadableLoader as early as
+  // possible.
   WebURLLoaderClient* releaseClient() {
     WebURLLoaderClient* client = m_client;
     m_client = nullptr;
@@ -279,8 +282,9 @@ void AssociatedURLLoader::ClientAdapter::didFailRedirectCheck() {
 
 void AssociatedURLLoader::ClientAdapter::enableErrorNotifications() {
   m_enableErrorNotifications = true;
-  // If an error has already been received, start a timer to report it to the client
-  // after AssociatedURLLoader::loadAsynchronously has returned to the caller.
+  // If an error has already been received, start a timer to report it to the
+  // client after AssociatedURLLoader::loadAsynchronously has returned to the
+  // caller.
   if (m_didFail)
     m_errorTimer.startOneShot(0, BLINK_FROM_HERE);
 }
@@ -393,9 +397,10 @@ void AssociatedURLLoader::loadAsynchronously(const WebURLRequest& request,
     const ResourceRequest& webcoreRequest = newRequest.toResourceRequest();
     if (webcoreRequest.requestContext() ==
         WebURLRequest::RequestContextUnspecified) {
-      // FIXME: We load URLs without setting a TargetType (and therefore a request context) in several
-      // places in content/ (P2PPortAllocatorSession::AllocateLegacyRelaySession, for example). Remove
-      // this once those places are patched up.
+      // FIXME: We load URLs without setting a TargetType (and therefore a
+      // request context) in several places in content/
+      // (P2PPortAllocatorSession::AllocateLegacyRelaySession, for example).
+      // Remove this once those places are patched up.
       newRequest.setRequestContext(WebURLRequest::RequestContextInternal);
     }
 

@@ -369,8 +369,8 @@ class WEB_EXPORT WebViewImpl final
   // Indicates two things:
   //   1) This view may have a new layout now.
   //   2) Calling updateAllLifecyclePhases() is a no-op.
-  // After calling WebWidget::updateAllLifecyclePhases(), expect to get this notification
-  // unless the view did not need a layout.
+  // After calling WebWidget::updateAllLifecyclePhases(), expect to get this
+  // notification unless the view did not need a layout.
   void layoutUpdated(WebLocalFrameImpl*);
 
   void didChangeContentsSize();

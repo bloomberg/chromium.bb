@@ -68,8 +68,8 @@ static NSAttributedString* attributedSubstringFromRange(
 
   unsigned position = 0;
 
-  // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
-  // see http://crbug.com/590369 for more details.
+  // TODO(dglazkov): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  see http://crbug.com/590369 for more details.
   range.startPosition()
       .document()
       ->updateStyleAndLayoutIgnorePendingStylesheets();
@@ -95,7 +95,8 @@ static NSAttributedString* attributedSubstringFromRange(
     // For now, just use the default font instead.
     // TODO(rsesek): Change the font activation flags to allow other processes
     // to use the font.
-    // TODO(shuchen): Support scaling the font as necessary according to CSS transforms.
+    // TODO(shuchen): Support scaling the font as necessary according to CSS
+    // transforms.
     if (!font ||
         floor(fontPlatformData.size()) !=
             floor([[font fontDescriptor] pointSize]))

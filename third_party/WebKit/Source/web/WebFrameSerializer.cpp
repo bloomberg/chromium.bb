@@ -96,9 +96,10 @@ MHTMLFrameSerializerDelegate::MHTMLFrameSerializerDelegate(
 
 bool MHTMLFrameSerializerDelegate::shouldIgnoreAttribute(
     const Attribute& attribute) {
-  // TODO(fgorski): Presence of srcset attribute causes MHTML to not display images, as only the value of src
-  // is pulled into the archive. Discarding srcset prevents the problem. Long term we should make sure to MHTML
-  // plays nicely with srcset.
+  // TODO(fgorski): Presence of srcset attribute causes MHTML to not display
+  // images, as only the value of src is pulled into the archive. Discarding
+  // srcset prevents the problem. Long term we should make sure to MHTML plays
+  // nicely with srcset.
   return attribute.localName() == HTMLNames::srcsetAttr;
 }
 

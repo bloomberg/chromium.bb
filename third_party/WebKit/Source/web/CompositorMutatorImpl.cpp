@@ -46,9 +46,10 @@ std::unique_ptr<CompositorMutatorClient> CompositorMutatorImpl::createClient() {
   } else {
     createCompositorMutatorClient(&mutatorClient, &doneEvent);
   }
-  // TODO(flackr): Instead of waiting for this event, we may be able to just set the
-  // mutator on the CompositorProxyClient directly from the compositor thread before
-  // it gets used there. We still need to make sure we only create one mutator though.
+  // TODO(flackr): Instead of waiting for this event, we may be able to just set
+  // the mutator on the CompositorProxyClient directly from the compositor
+  // thread before it gets used there. We still need to make sure we only
+  // create one mutator though.
   doneEvent.wait();
   return mutatorClient;
 }

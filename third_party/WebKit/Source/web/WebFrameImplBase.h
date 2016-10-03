@@ -37,7 +37,8 @@ class WEB_EXPORT WebFrameImplBase
                                    FrameOwner*,
                                    const AtomicString& name,
                                    const AtomicString& uniqueName) = 0;
-  // TODO(dcheng): Rename this to coreFrame()? This probably also shouldn't be const...
+  // TODO(dcheng): Rename this to coreFrame()? This probably also shouldn't be
+  // const...
   virtual Frame* frame() const = 0;
 
   DECLARE_VIRTUAL_TRACE();

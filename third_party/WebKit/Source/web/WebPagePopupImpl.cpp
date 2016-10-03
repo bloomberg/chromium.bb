@@ -115,7 +115,8 @@ class PagePopupChromeClient final : public EmptyChromeClient {
   }
 
   void scheduleAnimation(Widget*) override {
-    // Calling scheduleAnimation on m_webView so WebViewTestProxy will call beginFrame.
+    // Calling scheduleAnimation on m_webView so WebViewTestProxy will call
+    // beginFrame.
     if (LayoutTestSupport::isRunningLayoutTest())
       m_popup->m_webView->mainFrameImpl()->frameWidget()->scheduleAnimation();
 
@@ -237,7 +238,7 @@ bool PagePopupFeaturesClient::isEnabled(Document*,
   return defaultValue;
 }
 
-// WebPagePopupImpl ----------------------------------------------------------------
+// WebPagePopupImpl ----------------------------------------------------------
 
 WebPagePopupImpl::WebPagePopupImpl(WebWidgetClient* client)
     : m_widgetClient(client),

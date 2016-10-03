@@ -54,8 +54,8 @@ bool WebElement::isTextFormControlElement() const {
   return constUnwrap<Element>()->isTextFormControl();
 }
 
-// TODO(dglazkov): Remove. Consumers of this code should use Node:hasEditableStyle.
-// http://crbug.com/612560
+// TODO(dglazkov): Remove. Consumers of this code should use
+// Node:hasEditableStyle.  http://crbug.com/612560
 bool WebElement::isEditable() const {
   const Element* element = constUnwrap<Element>();
 

@@ -221,8 +221,9 @@ class WebFrameWidgetImpl final
 
   WebWidgetClient* m_client;
 
-  // WebFrameWidget is associated with a subtree of the frame tree, corresponding to a maximal
-  // connected tree of LocalFrames. This member points to the root of that subtree.
+  // WebFrameWidget is associated with a subtree of the frame tree,
+  // corresponding to a maximal connected tree of LocalFrames. This member
+  // points to the root of that subtree.
   Member<WebLocalFrameImpl> m_localRoot;
 
   WebSize m_size;

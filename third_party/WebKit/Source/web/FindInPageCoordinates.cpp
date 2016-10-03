@@ -50,7 +50,8 @@ static const LayoutBlock* enclosingScrollableAncestor(
     const LayoutObject* layoutObject) {
   DCHECK(!layoutObject->isLayoutView());
 
-  // Trace up the containingBlocks until we reach either the layoutObject view or a scrollable object.
+  // Trace up the containingBlocks until we reach either the layoutObject view
+  // or a scrollable object.
   const LayoutBlock* container = layoutObject->containingBlock();
   while (!container->hasOverflowClip() && !container->isLayoutView())
     container = container->containingBlock();
@@ -66,11 +67,13 @@ static FloatRect toNormalizedRect(const FloatRect& absoluteRect,
   if (!container)
     return FloatRect();
 
-  // We want to normalize by the max layout overflow size instead of only the visible bounding box.
-  // Quads and their enclosing bounding boxes need to be used in order to keep results transform-friendly.
+  // We want to normalize by the max layout overflow size instead of only the
+  // visible bounding box.  Quads and their enclosing bounding boxes need to be
+  // used in order to keep results transform-friendly.
   FloatPoint scrolledOrigin;
 
-  // For overflow:scroll we need to get where the actual origin is independently of the scroll.
+  // For overflow:scroll we need to get where the actual origin is independently
+  // of the scroll.
   if (container->hasOverflowClip())
     scrolledOrigin = -IntPoint(container->scrolledContentOffset());
 
@@ -84,12 +87,14 @@ static FloatRect toNormalizedRect(const FloatRect& absoluteRect,
     return FloatRect();
 
   // Make the coordinates relative to the container enclosing bounding box.
-  // Since we work with rects enclosing quad unions this is still transform-friendly.
+  // Since we work with rects enclosing quad unions this is still
+  // transform-friendly.
   FloatRect normalizedRect = absoluteRect;
   normalizedRect.moveBy(-containerRect.location());
 
-  // Fixed positions do not make sense in this coordinate system, but need to leave consistent tickmarks.
-  // So, use their position when the view is not scrolled, like an absolute position.
+  // Fixed positions do not make sense in this coordinate system, but need to
+  // leave consistent tickmarks.  So, use their position when the view is not
+  // scrolled, like an absolute position.
   if (layoutObject->style()->position() == FixedPosition &&
       container->isLayoutView())
     normalizedRect.moveBy(
@@ -112,7 +117,8 @@ FloatRect findInPageRectFromAbsoluteRect(const FloatRect& inputRect,
 
   // Go up across frames.
   for (const LayoutBox* layoutObject = baseContainer; layoutObject;) {
-    // Go up the layout tree until we reach the root of the current frame (the LayoutView).
+    // Go up the layout tree until we reach the root of the current frame (the
+    // LayoutView).
     while (!layoutObject->isLayoutView()) {
       const LayoutBlock* container = enclosingScrollableAncestor(layoutObject);
 

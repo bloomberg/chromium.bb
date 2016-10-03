@@ -74,7 +74,7 @@
 
 namespace blink {
 
-// WebFrameWidget ----------------------------------------------------------------
+// WebFrameWidget ------------------------------------------------------------
 
 WebFrameWidget* WebFrameWidget::create(WebWidgetClient* client,
                                        WebLocalFrame* localRoot) {
@@ -172,13 +172,14 @@ void WebFrameWidgetImpl::resize(const WebSize& newSize) {
 
   view->resize(m_size);
 
-  // FIXME: In WebViewImpl this layout was a precursor to setting the minimum scale limit.
-  // It is not clear if this is necessary for frame-level widget resize.
+  // FIXME: In WebViewImpl this layout was a precursor to setting the minimum
+  // scale limit.  It is not clear if this is necessary for frame-level widget
+  // resize.
   if (view->needsLayout())
     view->layout();
 
-  // FIXME: Investigate whether this is needed; comment from eseidel suggests that this function
-  // is flawed.
+  // FIXME: Investigate whether this is needed; comment from eseidel suggests
+  // that this function is flawed.
   sendResizeEventAndRepaint();
 }
 
@@ -319,7 +320,8 @@ WebInputEventResult WebFrameWidgetImpl::handleInputEvent(
   if (!page())
     return WebInputEventResult::NotHandled;
 
-  // Report the event to be NOT processed by WebKit, so that the browser can handle it appropriately.
+  // Report the event to be NOT processed by WebKit, so that the browser can
+  // handle it appropriately.
   if (m_ignoreInputEvents)
     return WebInputEventResult::NotHandled;
 
@@ -379,7 +381,8 @@ void WebFrameWidgetImpl::setCursorVisibilityState(bool isVisible) {
 }
 
 bool WebFrameWidgetImpl::hasTouchEventHandlersAt(const WebPoint& point) {
-  // FIXME: Implement this. Note that the point must be divided by pageScaleFactor.
+  // FIXME: Implement this. Note that the point must be divided by
+  // pageScaleFactor.
   return true;
 }
 
@@ -461,8 +464,9 @@ void WebFrameWidgetImpl::setFocus(bool enable) {
         if (autofillClient)
           autofillClient->setIgnoreTextChanges(true);
 
-        // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-        // needs to be audited.  See http://crbug.com/590369 for more details.
+        // TODO(xiaochengh): The use of
+        // updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
+        // See http://crbug.com/590369 for more details.
         focusedFrame->document()
             ->updateStyleAndLayoutIgnorePendingStylesheets();
 
@@ -620,8 +624,8 @@ WebTextInputInfo WebFrameWidgetImpl::textInputInfo() {
   if (!focused->editor().canEdit())
     return info;
 
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
-  // see http://crbug.com/590369 for more details.
+  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  see http://crbug.com/590369 for more details.
   focused->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
   DocumentLifecycle::DisallowTransitionScope disallowTransition(
@@ -669,8 +673,9 @@ WebTextInputType WebFrameWidgetImpl::textInputType() {
     return WebTextInputTypeNone;
   }
 
-  // It's important to preserve the equivalence of textInputInfo().type and textInputType(),
-  // so perform the same rootEditableElement() existence check here for consistency.
+  // It's important to preserve the equivalence of textInputInfo().type and
+  // textInputType(), so perform the same rootEditableElement() existence check
+  // here for consistency.
   if (!focusedFrame->selection().selection().rootEditableElement())
     return WebTextInputTypeNone;
 
@@ -766,7 +771,8 @@ bool WebFrameWidgetImpl::selectionBounds(WebRect& anchor,
         EphemeralRange(selectedRange.endPosition()));
   }
 
-  // FIXME: This doesn't apply page scale. This should probably be contents to viewport. crbug.com/459293.
+  // FIXME: This doesn't apply page scale. This should probably be contents to
+  // viewport. crbug.com/459293.
   IntRect scaledAnchor(localFrame->view()->contentsToRootFrame(anchor));
   IntRect scaledFocus(localFrame->view()->contentsToRootFrame(focus));
 
@@ -1080,8 +1086,8 @@ WebInputEventResult WebFrameWidgetImpl::handleKeyEvent(
   WebInputEventResult result = frame->eventHandler().keyEvent(event);
   if (result != WebInputEventResult::NotHandled) {
     if (WebInputEvent::RawKeyDown == event.type) {
-      // Suppress the next keypress event unless the focused node is a plugin node.
-      // (Flash needs these keypress events to handle non-US keyboards.)
+      // Suppress the next keypress event unless the focused node is a plugin
+      // node.  (Flash needs these keypress events to handle non-US keyboards.)
       Element* element = focusedElement();
       if (!element || !element->layoutObject() ||
           !element->layoutObject()->isEmbeddedObject())
@@ -1309,8 +1315,9 @@ void WebFrameWidgetImpl::initializeLayerTreeView() {
   if (m_layerTreeView)
     page()->layerTreeViewInitialized(*m_layerTreeView);
 
-  // FIXME: only unittests, click to play, Android priting, and printing (for headers and footers)
-  // make this assert necessary. We should make them not hit this code and then delete allowsBrokenNullLayerTreeView.
+  // FIXME: only unittests, click to play, Android priting, and printing (for
+  // headers and footers) make this assert necessary. We should make them not
+  // hit this code and then delete allowsBrokenNullLayerTreeView.
   DCHECK(m_layerTreeView || !m_client ||
          m_client->allowsBrokenNullLayerTreeView());
 }
