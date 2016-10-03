@@ -1069,6 +1069,13 @@ bool FocusController::advanceFocusInDocumentOrder(
   setFocusedFrame(newDocument.frame());
 
   if (caretBrowsing) {
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    // In the long term, we should change FrameSelection::setSelection to take a
+    // parameter that does not require clean layout, so that modifying selection
+    // no longer performs synchronous layout by itself.
+    newDocument.updateStyleAndLayoutIgnorePendingStylesheets();
+
     Position position = firstPositionInOrBeforeNode(element);
     VisibleSelection newSelection =
         createVisibleSelectionDeprecated(position, position);
