@@ -315,6 +315,12 @@ class PLATFORM_EXPORT GraphicsLayer : public WebLayerScrollClient,
   std::unique_ptr<JSONObject> layerTreeAsJSONInternal(
       LayerTreeFlags,
       RenderingContextMap&) const;
+  // Outputs the layer tree rooted at |this| as a JSON array, in paint order.
+  void layersAsJSONArray(LayerTreeFlags,
+                         RenderingContextMap&,
+                         JSONArray*) const;
+  std::unique_ptr<JSONObject> layerAsJSONInternal(LayerTreeFlags,
+                                                  RenderingContextMap&) const;
 
   sk_sp<SkPicture> capturePicture();
   void checkPaintUnderInvalidations(const SkPicture&);

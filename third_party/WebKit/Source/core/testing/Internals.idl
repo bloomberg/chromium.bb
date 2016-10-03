@@ -187,6 +187,8 @@
     const unsigned short LAYER_TREE_INCLUDES_ROOT_LAYER = 8;
     const unsigned short LAYER_TREE_INCLUDES_CLIP_AND_SCROLL_PARENTS = 16;
     const unsigned short LAYER_TREE_INCLUDES_COMPOSITING_REASONS = 32;
+    const unsigned short OUTPUT_CHILDREN_AS_LAYER_LIST = 64;
+
     [RaisesException] DOMString layerTreeAsText(Document document, optional unsigned short flags);
     [RaisesException] DOMString elementLayerTreeAsText(Element element, optional unsigned short flags);
 

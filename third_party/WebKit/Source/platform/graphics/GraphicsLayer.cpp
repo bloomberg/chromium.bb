@@ -601,10 +601,18 @@ static String pointerAsString(const void* ptr) {
 std::unique_ptr<JSONObject> GraphicsLayer::layerTreeAsJSON(
     LayerTreeFlags flags) const {
   RenderingContextMap renderingContextMap;
+  if (flags & OutputChildrenAsLayerList) {
+    std::unique_ptr<JSONObject> json = JSONObject::create();
+    std::unique_ptr<JSONArray> layersArray = JSONArray::create();
+    for (auto& child : m_children)
+      child->layersAsJSONArray(flags, renderingContextMap, layersArray.get());
+    json->setArray("layers", std::move(layersArray));
+    return json;
+  }
   return layerTreeAsJSONInternal(flags, renderingContextMap);
 }
 
-std::unique_ptr<JSONObject> GraphicsLayer::layerTreeAsJSONInternal(
+std::unique_ptr<JSONObject> GraphicsLayer::layerAsJSONInternal(
     LayerTreeFlags flags,
     RenderingContextMap& renderingContextMap) const {
   std::unique_ptr<JSONObject> json = JSONObject::create();
@@ -725,6 +733,14 @@ std::unique_ptr<JSONObject> GraphicsLayer::layerTreeAsJSONInternal(
     json->setArray("squashingDisallowedReasons",
                    std::move(squashingDisallowedReasonsJSON));
   }
+  return json;
+}
+
+std::unique_ptr<JSONObject> GraphicsLayer::layerTreeAsJSONInternal(
+    LayerTreeFlags flags,
+    RenderingContextMap& renderingContextMap) const {
+  std::unique_ptr<JSONObject> json =
+      layerAsJSONInternal(flags, renderingContextMap);
 
   if (m_children.size()) {
     std::unique_ptr<JSONArray> childrenJSON = JSONArray::create();
@@ -735,6 +751,17 @@ std::unique_ptr<JSONObject> GraphicsLayer::layerTreeAsJSONInternal(
   }
 
   return json;
+}
+
+void GraphicsLayer::layersAsJSONArray(LayerTreeFlags flags,
+                                      RenderingContextMap& renderingContextMap,
+                                      JSONArray* jsonArray) const {
+  jsonArray->pushObject(layerAsJSONInternal(flags, renderingContextMap));
+
+  if (m_children.size()) {
+    for (auto& child : m_children)
+      child->layersAsJSONArray(flags, renderingContextMap, jsonArray);
+  }
 }
 
 String GraphicsLayer::layerTreeAsText(LayerTreeFlags flags) const {
