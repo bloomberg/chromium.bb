@@ -48,6 +48,11 @@ class CC_EXPORT Viewport {
                         bool is_wheel_scroll,
                         bool affect_top_controls);
 
+  // Scrolls the viewport. Unlike the above method, scrolls the inner before
+  // the outer viewport. Doesn't affect top controls or return a result since
+  // callers don't need it.
+  void ScrollByInnerFirst(const gfx::Vector2dF& delta);
+
   // Scrolls the viewport, bubbling the delta between the inner and outer
   // viewport. Only animates either of the two viewports.
   gfx::Vector2dF ScrollAnimated(const gfx::Vector2dF& delta,
@@ -55,6 +60,11 @@ class CC_EXPORT Viewport {
 
   void PinchUpdate(float magnify_delta, const gfx::Point& anchor);
   void PinchEnd();
+
+  // Returns the "representative" viewport layer. That is, the one that's set
+  // as the currently scrolling layer when the viewport scrolls and the one used
+  // in the scrolling code to indicate scrolling should happen via this class.
+  LayerImpl* MainScrollLayer() const;
 
  private:
   explicit Viewport(LayerTreeHostImpl* host_impl);

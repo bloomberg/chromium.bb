@@ -1040,7 +1040,7 @@ void InputHandlerProxy::ExtendBoostedFlingTimeout(
 void InputHandlerProxy::Animate(base::TimeTicks time) {
   // If using synchronous animate, then only expect Animate attempts started by
   // the synchronous system. Don't let the InputHandler try to Animate also.
-  DCHECK(!input_handler_->IsCurrentlyScrollingInnerViewport() ||
+  DCHECK(!input_handler_->IsCurrentlyScrollingViewport() ||
          allow_root_animate_);
 
   if (scroll_elasticity_controller_)
@@ -1245,7 +1245,7 @@ void InputHandlerProxy::RequestAnimation() {
   // it to allow it to control when or if the root fling is animated. Non-root
   // flings always go through the normal InputHandler.
   if (synchronous_input_handler_ &&
-      input_handler_->IsCurrentlyScrollingInnerViewport())
+      input_handler_->IsCurrentlyScrollingViewport())
     synchronous_input_handler_->SetNeedsSynchronousAnimateInput();
   else
     input_handler_->SetNeedsAnimateInput();

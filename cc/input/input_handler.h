@@ -177,8 +177,8 @@ class CC_EXPORT InputHandler {
   // Request another callback to InputHandlerClient::Animate().
   virtual void SetNeedsAnimateInput() = 0;
 
-  // Returns true if there is an active scroll on the inner viewport layer.
-  virtual bool IsCurrentlyScrollingInnerViewport() const = 0;
+  // Returns true if there is an active scroll on the viewport.
+  virtual bool IsCurrentlyScrollingViewport() const = 0;
 
   // Whether the layer under |viewport_point| is the currently scrolling layer.
   virtual bool IsCurrentlyScrollingLayerAt(const gfx::Point& viewport_point,

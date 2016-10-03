@@ -190,7 +190,7 @@ class CC_EXPORT LayerTreeHostImpl
                                float page_scale,
                                base::TimeDelta duration);
   void SetNeedsAnimateInput() override;
-  bool IsCurrentlyScrollingInnerViewport() const override;
+  bool IsCurrentlyScrollingViewport() const override;
   bool IsCurrentlyScrollingLayerAt(
       const gfx::Point& viewport_point,
       InputHandler::ScrollInputType type) const override;
@@ -650,14 +650,7 @@ class CC_EXPORT LayerTreeHostImpl
   bool UpdateGpuRasterizationStatus();
   void UpdateTreeResourcesForGpuRasterizationIfNeeded();
 
-  Viewport* viewport() { return viewport_.get(); }
-
-  // Scroll by preferring to move the outer viewport first, only moving the
-  // inner if the outer is at its scroll extents.
-  void ScrollViewportBy(gfx::Vector2dF scroll_delta);
-  // Scroll by preferring to move the inner viewport first, only moving the
-  // outer if the inner is at its scroll extents.
-  void ScrollViewportInnerFirst(gfx::Vector2dF scroll_delta);
+  Viewport* viewport() const { return viewport_.get(); }
 
   InputHandler::ScrollStatus ScrollBeginImpl(
       ScrollState* scroll_state,

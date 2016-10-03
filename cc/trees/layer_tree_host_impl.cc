@@ -452,8 +452,8 @@ void LayerTreeHostImpl::AnimateInternal(bool active_tree) {
   if (input_handler_client_) {
     // This animates fling scrolls. But on Android WebView root flings are
     // controlled by the application, so the compositor does not animate them.
-    bool ignore_fling = settings_.ignore_root_layer_flings &&
-                        IsCurrentlyScrollingInnerViewport();
+    bool ignore_fling =
+        settings_.ignore_root_layer_flings && IsCurrentlyScrollingViewport();
     if (!ignore_fling) {
       // This does not set did_animate, because if the InputHandlerClient
       // changes anything it will be through the InputHandler interface which
@@ -542,16 +542,17 @@ void LayerTreeHostImpl::StartPageScaleAnimation(
 }
 
 void LayerTreeHostImpl::SetNeedsAnimateInput() {
-  DCHECK(!IsCurrentlyScrollingInnerViewport() ||
+  DCHECK(!IsCurrentlyScrollingViewport() ||
          !settings_.ignore_root_layer_flings);
   SetNeedsOneBeginImplFrame();
 }
 
-bool LayerTreeHostImpl::IsCurrentlyScrollingInnerViewport() const {
+bool LayerTreeHostImpl::IsCurrentlyScrollingViewport() const {
   LayerImpl* scrolling_layer = CurrentlyScrollingLayer();
   if (!scrolling_layer)
     return false;
-  return scrolling_layer == InnerViewportScrollLayer();
+  DCHECK(viewport());
+  return scrolling_layer == viewport()->MainScrollLayer();
 }
 
 bool LayerTreeHostImpl::IsCurrentlyScrollingLayerAt(
@@ -580,11 +581,9 @@ bool LayerTreeHostImpl::IsCurrentlyScrollingLayerAt(
     return true;
 
   // For active scrolling state treat the inner/outer viewports interchangeably.
-  if ((scrolling_layer_impl == InnerViewportScrollLayer() &&
-       test_layer_impl == OuterViewportScrollLayer()) ||
-      (scrolling_layer_impl == OuterViewportScrollLayer() &&
-       test_layer_impl == InnerViewportScrollLayer())) {
-    return true;
+  if (scrolling_layer_impl == InnerViewportScrollLayer() ||
+      scrolling_layer_impl == OuterViewportScrollLayer()) {
+    return test_layer_impl == viewport()->MainScrollLayer();
   }
 
   return false;
@@ -1929,7 +1928,7 @@ bool LayerTreeHostImpl::IsActivelyScrolling() const {
   // On Android WebView root flings are controlled by the application,
   // so the compositor does not animate them and can't tell if they
   // are actually animating. So assume there are none.
-  if (settings_.ignore_root_layer_flings && IsCurrentlyScrollingInnerViewport())
+  if (settings_.ignore_root_layer_flings && IsCurrentlyScrollingViewport())
     return false;
   return did_lock_scrolling_layer_;
 }
@@ -2551,15 +2550,14 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
     }
   }
 
-  // Falling back to the root scroll layer ensures generation of root overscroll
-  // notifications. The inner viewport layer represents the viewport during
-  // scrolling.
-  if (!potentially_scrolling_layer_impl)
-    potentially_scrolling_layer_impl = InnerViewportScrollLayer();
-
-  // The inner viewport layer represents the viewport.
-  if (potentially_scrolling_layer_impl == OuterViewportScrollLayer())
-    potentially_scrolling_layer_impl = InnerViewportScrollLayer();
+  // Falling back to the viewport layer ensures generation of root overscroll
+  // notifications. We use the viewport's main scroll layer to represent the
+  // viewport in scrolling code.
+  if (!potentially_scrolling_layer_impl ||
+      potentially_scrolling_layer_impl == OuterViewportScrollLayer() ||
+      potentially_scrolling_layer_impl == InnerViewportScrollLayer()) {
+    potentially_scrolling_layer_impl = viewport()->MainScrollLayer();
+  }
 
   if (potentially_scrolling_layer_impl) {
     // Ensure that final layer scrolls on impl thread (crbug.com/625100)
@@ -2636,7 +2634,8 @@ InputHandler::ScrollStatus LayerTreeHostImpl::RootScrollBegin(
 
   ClearCurrentlyScrollingLayer();
 
-  return ScrollBeginImpl(scroll_state, InnerViewportScrollLayer(), type);
+  DCHECK(viewport());
+  return ScrollBeginImpl(scroll_state, viewport()->MainScrollLayer(), type);
 }
 
 InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
@@ -2987,7 +2986,11 @@ void LayerTreeHostImpl::ApplyScroll(ScrollNode* scroll_node,
   // details.
   const float kEpsilon = 0.1f;
 
-  if (scroll_node->is_inner_viewport_scroll_layer) {
+  bool is_viewport_scroll_layer =
+      viewport()->MainScrollLayer() &&
+      scroll_node->owner_id == viewport()->MainScrollLayer()->id();
+
+  if (is_viewport_scroll_layer) {
     bool affect_top_controls = !wheel_scrolling_;
     Viewport::ScrollResult result = viewport()->ScrollBy(
         delta, viewport_point, scroll_state->is_direct_manipulation(),
@@ -3008,7 +3011,7 @@ void LayerTreeHostImpl::ApplyScroll(ScrollNode* scroll_node,
   bool scrolled = std::abs(applied_delta.x()) > kEpsilon;
   scrolled = scrolled || std::abs(applied_delta.y()) > kEpsilon;
 
-  if (scrolled && !scroll_node->is_inner_viewport_scroll_layer) {
+  if (scrolled && !is_viewport_scroll_layer) {
     // If the applied delta is within 45 degrees of the input
     // delta, bail out to make it easier to scroll just one layer
     // in one direction without affecting any of its parents.
@@ -3044,12 +3047,16 @@ void LayerTreeHostImpl::DistributeScrollDelta(ScrollState* scroll_state) {
     for (; scroll_tree.parent(scroll_node);
          scroll_node = scroll_tree.parent(scroll_node)) {
       if (scroll_node->is_outer_viewport_scroll_layer) {
+        // TODO(bokan): This should use Viewport::MainScrollLayer once that
+        // returns the outer viewport scroll layer.
         // Don't chain scrolls past the outer viewport scroll layer. Once we
-        // reach that, we should scroll the viewport, which is represented by
-        // the inner viewport scroll layer.
-        ScrollNode* inner_viewport_scroll_node =
-            scroll_tree.Node(InnerViewportScrollLayer()->scroll_tree_index());
-        current_scroll_chain.push_front(inner_viewport_scroll_node);
+        // reach that, we should scroll the viewport which is represented by the
+        // main viewport scroll layer.
+        DCHECK(viewport()->MainScrollLayer());
+        ScrollNode* viewport_scroll_node = scroll_tree.Node(
+            viewport()->MainScrollLayer()->scroll_tree_index());
+        DCHECK(viewport_scroll_node);
+        current_scroll_chain.push_front(viewport_scroll_node);
         break;
       }
 
@@ -3245,6 +3252,7 @@ void LayerTreeHostImpl::MouseMoveAt(const gfx::Point& viewport_point) {
   LayerImpl* scroll_layer_impl = FindScrollLayerForDeviceViewportPoint(
       device_viewport_point, InputHandler::TOUCHSCREEN, layer_impl,
       &scroll_on_main_thread, &main_thread_scrolling_reasons);
+  // Scrollbars for the viewport are registered with the outer viewport layer.
   if (scroll_layer_impl == InnerViewportScrollLayer())
     scroll_layer_impl = OuterViewportScrollLayer();
   if (scroll_on_main_thread || !scroll_layer_impl)
@@ -3293,8 +3301,7 @@ void LayerTreeHostImpl::PinchGestureBegin() {
   pinch_gesture_active_ = true;
   client_->RenewTreePriority();
   pinch_gesture_end_should_clear_scrolling_layer_ = !CurrentlyScrollingLayer();
-  active_tree_->SetCurrentlyScrollingLayer(
-      active_tree_->InnerViewportScrollLayer());
+  active_tree_->SetCurrentlyScrollingLayer(viewport()->MainScrollLayer());
   top_controls_manager_->PinchBegin();
 }
 
@@ -3372,27 +3379,6 @@ void LayerTreeHostImpl::SetFullViewportDamage() {
   SetViewportDamage(gfx::Rect(DrawViewportSize()));
 }
 
-void LayerTreeHostImpl::ScrollViewportInnerFirst(gfx::Vector2dF scroll_delta) {
-  DCHECK(InnerViewportScrollLayer());
-  LayerImpl* scroll_layer = InnerViewportScrollLayer();
-
-  gfx::Vector2dF unused_delta = scroll_layer->ScrollBy(scroll_delta);
-  if (!unused_delta.IsZero() && OuterViewportScrollLayer())
-    OuterViewportScrollLayer()->ScrollBy(unused_delta);
-}
-
-void LayerTreeHostImpl::ScrollViewportBy(gfx::Vector2dF scroll_delta) {
-  DCHECK(InnerViewportScrollLayer());
-  LayerImpl* scroll_layer = OuterViewportScrollLayer()
-                                ? OuterViewportScrollLayer()
-                                : InnerViewportScrollLayer();
-
-  gfx::Vector2dF unused_delta = scroll_layer->ScrollBy(scroll_delta);
-
-  if (!unused_delta.IsZero() && (scroll_layer == OuterViewportScrollLayer()))
-    InnerViewportScrollLayer()->ScrollBy(unused_delta);
-}
-
 bool LayerTreeHostImpl::AnimatePageScale(base::TimeTicks monotonic_time) {
   if (!page_scale_animation_)
     return false;
@@ -3407,7 +3393,8 @@ bool LayerTreeHostImpl::AnimatePageScale(base::TimeTicks monotonic_time) {
   gfx::ScrollOffset next_scroll = gfx::ScrollOffset(
       page_scale_animation_->ScrollOffsetAtTime(monotonic_time));
 
-  ScrollViewportInnerFirst(next_scroll.DeltaFrom(scroll_total));
+  DCHECK(viewport());
+  viewport()->ScrollByInnerFirst(next_scroll.DeltaFrom(scroll_total));
 
   if (page_scale_animation_->IsAnimationCompleteAtTime(monotonic_time)) {
     page_scale_animation_ = nullptr;
@@ -3435,8 +3422,8 @@ bool LayerTreeHostImpl::AnimateTopControls(base::TimeTicks time) {
   if (scroll.IsZero())
     return false;
 
-  ScrollViewportBy(gfx::ScaleVector2d(
-      scroll, 1.f / active_tree_->current_page_scale_factor()));
+  DCHECK(viewport());
+  viewport()->ScrollBy(scroll, gfx::Point(), false, false);
   client_->SetNeedsCommitOnImplThread();
   client_->RenewTreePriority();
   return true;
@@ -3520,6 +3507,8 @@ void LayerTreeHostImpl::UnregisterScrollbarAnimationController(
 ScrollbarAnimationController*
 LayerTreeHostImpl::ScrollbarAnimationControllerForId(
     int scroll_layer_id) const {
+  // The viewport layers have only one set of scrollbars and their controller
+  // is registered with the outer viewport.
   if (InnerViewportScrollLayer() && OuterViewportScrollLayer() &&
       scroll_layer_id == InnerViewportScrollLayer()->id())
     scroll_layer_id = OuterViewportScrollLayer()->id();

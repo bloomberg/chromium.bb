@@ -68,6 +68,14 @@ Viewport::ScrollResult Viewport::ScrollBy(const gfx::Vector2dF& delta,
   return result;
 }
 
+void Viewport::ScrollByInnerFirst(const gfx::Vector2dF& delta) {
+  LayerImpl* scroll_layer = InnerScrollLayer();
+
+  gfx::Vector2dF unused_delta = scroll_layer->ScrollBy(delta);
+  if (!unused_delta.IsZero() && OuterScrollLayer())
+    OuterScrollLayer()->ScrollBy(unused_delta);
+}
+
 bool Viewport::ShouldAnimateViewport(const gfx::Vector2dF& viewport_delta,
                                      const gfx::Vector2dF& pending_delta) {
   float max_dim_viewport_delta =
@@ -184,6 +192,10 @@ void Viewport::PinchUpdate(float magnify_delta, const gfx::Point& anchor) {
 void Viewport::PinchEnd() {
   pinch_anchor_adjustment_ = gfx::Vector2d();
   pinch_zoom_active_ = false;
+}
+
+LayerImpl* Viewport::MainScrollLayer() const {
+  return InnerScrollLayer();
 }
 
 gfx::Vector2dF Viewport::ScrollTopControls(const gfx::Vector2dF& delta) {
