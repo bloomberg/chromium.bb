@@ -327,10 +327,14 @@ HeapVector<Member<EventTarget>> Event::pathInternal(ScriptState* scriptState,
     NOTREACHED();
   }
 
-  // Returns [window] for events that are directly dispatched to the window object;
-  // e.g., window.load, pageshow, etc.
-  if (LocalDOMWindow* window = m_currentTarget->toLocalDOMWindow())
+  if (LocalDOMWindow* window = m_currentTarget->toLocalDOMWindow()) {
+    if (m_eventPath && !m_eventPath->isEmpty()) {
+      return m_eventPath->topNodeEventContext()
+          .treeScopeEventContext()
+          .ensureEventPath(*m_eventPath);
+    }
     return HeapVector<Member<EventTarget>>(1, window);
+  }
 
   return HeapVector<Member<EventTarget>>();
 }

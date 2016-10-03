@@ -11,6 +11,15 @@
 
 <script>
 test(() => {
+  window.addEventListener('my-event', (e) => {
+    assert_array_equals(e.composedPath(), [document.body, document.documentElement, document, window]);
+  });
+  document.body.dispatchEvent(new Event('my-event', { bubbles: true, composed: true }));
+}, 'event.composedPath() on window.');
+</script>
+
+<script>
+test(() => {
   let n = createTestTree(test1);
   let log = dispatchEventWithLog(n, n.target, new Event('my-event', { bubbles: true, composed: true }));
   let path = ['target', 'd1', 'test1'];

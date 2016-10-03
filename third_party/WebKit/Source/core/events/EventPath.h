@@ -73,6 +73,8 @@ class CORE_EXPORT EventPath final : public GarbageCollected<EventPath> {
   void adjustForRelatedTarget(Node&, EventTarget* relatedTarget);
   void adjustForTouchEvent(TouchEvent&);
 
+  NodeEventContext& topNodeEventContext();
+
   static EventTarget* eventTargetRespectingTargetRules(Node&);
 
   DECLARE_TRACE();
@@ -116,8 +118,6 @@ class CORE_EXPORT EventPath final : public GarbageCollected<EventPath> {
 #if DCHECK_IS_ON()
   static void checkReachability(TreeScope&, TouchList&);
 #endif
-
-  const NodeEventContext& topNodeEventContext();
 
   HeapVector<NodeEventContext> m_nodeEventContexts;
   Member<Node> m_node;

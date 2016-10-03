@@ -384,7 +384,7 @@ void EventPath::adjustTouchList(
   }
 }
 
-const NodeEventContext& EventPath::topNodeEventContext() {
+NodeEventContext& EventPath::topNodeEventContext() {
   DCHECK(!isEmpty());
   return last();
 }
