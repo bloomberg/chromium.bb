@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
 #include "services/ui/ws/default_access_policy.h"
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/display_manager.h"
@@ -1037,7 +1036,9 @@ void WindowTree::DestroyWindows() {
     if (transient_parent)
       transient_parent->RemoveTransientWindow(pair.second);
   }
-  base::STLDeleteValues(&created_window_map_copy);
+
+  for (auto& window_pair : created_window_map_copy)
+    delete window_pair.second;
 }
 
 bool WindowTree::CanEmbed(const ClientWindowId& window_id) const {
