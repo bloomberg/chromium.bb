@@ -842,53 +842,21 @@ class TestRetries(cros_test_lib.MockTempDirTestCase):
     _check_counters(3, 2)
 
 
-class TestTimedCommand(cros_test_lib.MockTestCase):
-  """Tests for TimedCommand()"""
+class TestTimedSection(cros_test_lib.TestCase):
+  """Tests for TimedSection context manager."""
 
-  # TODO: Would be nice to insert a hook into the logging system so we verify
-  # the message actually gets passed down.  The logging module swallows the
-  # exceptions it throws internally when not all args get converted.
-
-  def setUp(self):
-    self.cmd = mock.MagicMock(return_value=1234)
-    self.cmd.__name__ = 'name'
-
-  def testBasic(self):
+  def testTimerValues(self):
     """Make sure simple stuff works."""
-    cros_build_lib.TimedCommand(self.cmd)
-    self.cmd.assert_called_once_with()
+    with cros_build_lib.TimedSection() as timer:
+      # While running, we have access to the start time.
+      self.assertIsInstance(timer.start, datetime.datetime)
+      self.assertIsNone(timer.finish)
+      self.assertIsNone(timer.delta)
 
-  def testArgs(self):
-    """Verify passing of optional args to the destination function."""
-    cros_build_lib.TimedCommand(self.cmd, 'arg', 1, kw=True, alist=[])
-    self.cmd.assert_called_once_with('arg', 1, kw=True, alist=[])
-
-  def testReturn(self):
-    """Verify return values get passed back."""
-    ret = cros_build_lib.TimedCommand(self.cmd)
-    self.assertEqual(ret, 1234)
-
-  def testCallback(self):
-    """Verify log callback does the right thing."""
-    def cb(lvl, msg, ret, delta):
-      self.assertEqual(lvl, 10)
-      self.assertEqual(msg, 'msg!')
-      self.assertEqual(ret, 1234)
-      self.assertTrue(isinstance(delta, datetime.timedelta))
-    cros_build_lib.TimedCommand(self.cmd, timed_log_level=10,
-                                timed_log_msg='msg!', timed_log_callback=cb)
-
-  def testLog(self):
-    """Verify the logger module gets called."""
-    m = self.PatchObject(logging, 'log')
-    cros_build_lib.TimedCommand(self.cmd, timed_log_level=logging.WARNING,
-                                timed_log_msg='msg!')
-    self.assertEqual(m.call_count, 1)
-
-  def testLogStraight(self):
-    """Verify logging messages does the right thing."""
-    cros_build_lib.TimedCommand(self.cmd, timed_log_level=logging.WARNING,
-                                timed_log_msg='msg!')
+    # After finishing, all values should be set.
+    self.assertIsInstance(timer.start, datetime.datetime)
+    self.assertIsInstance(timer.finish, datetime.datetime)
+    self.assertIsInstance(timer.delta, datetime.timedelta)
 
 
 class TestListFiles(cros_test_lib.TempDirTestCase):

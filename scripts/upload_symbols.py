@@ -524,14 +524,13 @@ def PerformSymbolsFileUpload(symbols, upload_url, product_name='ChromeOS'):
       try:
         # This command retries the upload multiple times with growing delays. We
         # only consider the upload a failure if these retries fail.
-        cros_build_lib.TimedCommand(
-            retry_util.RetryException,
-            (urllib2.HTTPError, urllib2.URLError), MAX_RETRIES,
-            UploadSymbolFile,
-            upload_url, s, product_name,
-            sleep=INITIAL_RETRY_DELAY,
-            timed_log_msg=('upload of %10i bytes took %%(delta)s' %
-                           s.FileSize()))
+        with cros_build_lib.TimedSection() as timer:
+          retry_util.RetryException(
+              (urllib2.HTTPError, urllib2.URLError), MAX_RETRIES,
+              UploadSymbolFile,
+              upload_url, s, product_name,
+              sleep=INITIAL_RETRY_DELAY)
+        logging.info('upload of %10i bytes took %s', s.FileSize(), timer.delta)
         s.status = SymbolFile.UPLOADED
       except urllib2.HTTPError as e:
         logging.warning('could not upload: %s: HTTP %s: %s',

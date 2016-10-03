@@ -129,32 +129,33 @@ def RunTest(test, cmd, tmpfile, finished, total):
   """
   logging.info('Starting %s', test)
 
-  def _Finished(_log_level, _log_msg, result, delta):
-    with finished.get_lock():
-      finished.value += 1
-      if result.returncode:
-        func = logging.error
-        msg = 'Failed'
-      else:
-        func = logging.info
-        msg = 'Finished'
-      func('%s [%i/%i] %s (%s)', msg, finished.value, total, test, delta)
+  with cros_build_lib.TimedSection() as timer:
+    ret = cros_build_lib.RunCommand(
+        cmd, capture_output=True, error_code_ok=True,
+        combine_stdout_stderr=True, debug_level=logging.DEBUG,
+        int_timeout=SIGINT_TIMEOUT)
 
-      # Save the timing for this test run for future usage.
-      seconds = delta.total_seconds()
-      try:
-        cache = json.load(open(TIMING_CACHE_FILE))
-      except (IOError, ValueError):
-        cache = {}
-      if test in cache:
-        seconds = (cache[test] + seconds) / 2
-      cache[test] = seconds
-      json.dump(cache, open(TIMING_CACHE_FILE, 'w'))
+  with finished.get_lock():
+    finished.value += 1
+    if ret.returncode:
+      func = logging.error
+      msg = 'Failed'
+    else:
+      func = logging.info
+      msg = 'Finished'
+    func('%s [%i/%i] %s (%s)', msg, finished.value, total, test, timer.delta)
 
-  ret = cros_build_lib.TimedCommand(
-      cros_build_lib.RunCommand, cmd, capture_output=True, error_code_ok=True,
-      combine_stdout_stderr=True, debug_level=logging.DEBUG,
-      int_timeout=SIGINT_TIMEOUT, timed_log_callback=_Finished)
+    # Save the timing for this test run for future usage.
+    seconds = timer.delta.total_seconds()
+    try:
+      cache = json.load(open(TIMING_CACHE_FILE))
+    except (IOError, ValueError):
+      cache = {}
+    if test in cache:
+      seconds = (cache[test] + seconds) / 2
+    cache[test] = seconds
+    json.dump(cache, open(TIMING_CACHE_FILE, 'w'))
+
   if ret.returncode:
     tmpfile.write(ret.output)
     if not ret.output:
@@ -538,15 +539,14 @@ def main(argv):
     stack.Add(osutils.TempDir, prefix='chromite.run_tests.', set_global=True,
               sudo_rm=True)
 
-    def _Finished(_log_level, _log_msg, result, delta):
-      if result:
-        logging.info('All tests succeeded! (%s total)', delta)
+    with cros_build_lib.TimedSection() as timer:
+      result = RunTests(
+          tests, jobs=jobs, chroot_available=ChrootAvailable(),
+          network=opts.network, dryrun=opts.dryrun, failfast=opts.failfast)
 
-    ret = cros_build_lib.TimedCommand(
-        RunTests, tests, jobs=jobs, chroot_available=ChrootAvailable(),
-        network=opts.network, dryrun=opts.dryrun, failfast=opts.failfast,
-        timed_log_callback=_Finished)
-    if not ret:
+    if result:
+      logging.info('All tests succeeded! (%s total)', timer.delta)
+    else:
       return 1
 
   if not opts.network:
