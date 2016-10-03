@@ -93,20 +93,72 @@ PlayerUtils.registerEMEEventListeners = function(player) {
   this.registerDefaultEventListeners(player);
   player.video.receivedKeyMessage = false;
   Utils.timeLog('Setting video media keys: ' + player.testConfig.keySystem);
-  var config = {};
+
+  var config = {
+    audioCapabilities: [],
+    videoCapabilities: [],
+    persistentState: 'optional',
+    sessionTypes: ['temporary'],
+  };
+
+  // requestMediaKeySystemAccess() requires at least one of 'audioCapabilities'
+  // or 'videoCapabilities' to be specified. It also requires only codecs
+  // specific to the capability, so unlike MSE cannot have both audio and
+  // video codecs in the contentType.
+  if (player.testConfig.mediaType == 'video/webm; codecs="vp8"' ||
+      player.testConfig.mediaType == 'video/webm; codecs="vp9"' ||
+      player.testConfig.mediaType == 'video/mp4; codecs="avc1.4D000C"') {
+    // Video only.
+    config.videoCapabilities = [{contentType: player.testConfig.mediaType}];
+  } else if (
+      player.testConfig.mediaType == 'audio/webm; codecs="vorbis"' ||
+      player.testConfig.mediaType == 'audio/webm; codecs="opus"' ||
+      player.testConfig.mediaType == 'audio/mp4; codecs="mp4a.40.2"') {
+    // Audio only.
+    config.audioCapabilities = [{contentType: player.testConfig.mediaType}];
+  } else if (
+      player.testConfig.mediaType == 'video/webm; codecs="vorbis, vp8"') {
+    // Both audio and video codecs specified.
+    config.audioCapabilities = [{contentType: 'audio/webm; codecs="vorbis"'}];
+    config.videoCapabilities = [{contentType: 'video/webm; codecs="vp8"'}];
+  } else if (player.testConfig.mediaType == 'video/webm; codecs="opus, vp9"') {
+    // Both audio and video codecs specified.
+    config.audioCapabilities = [{contentType: 'audio/webm; codecs="opus"'}];
+    config.videoCapabilities = [{contentType: 'video/webm; codecs="vp9"'}];
+  } else {
+    // Some tests (e.g. mse_different_containers.html) specify audio and
+    // video codecs seperately.
+    if (player.testConfig.videoFormat == 'ENCRYPTED_MP4' ||
+        player.testConfig.videoFormat == 'CLEAR_MP4') {
+      config.videoCapabilities =
+          [{contentType: 'video/mp4; codecs="avc1.4D000C"'}];
+    } else if (
+        player.testConfig.videoFormat == 'ENCRYPTED_WEBM' ||
+        player.testConfig.videoFormat == 'CLEAR_WEBM') {
+      config.videoCapabilities = [{contentType: 'video/webm; codecs="vp8"'}];
+    }
+    if (player.testConfig.audioFormat == 'ENCRYPTED_MP4' ||
+        player.testConfig.audioFormat == 'CLEAR_MP4') {
+      config.audioCapabilities =
+          [{contentType: 'audio/mp4; codecs="mp4a.40.2"'}];
+    } else if (
+        player.testConfig.audioFormat == 'ENCRYPTED_WEBM' ||
+        player.testConfig.audioFormat == 'CLEAR_WEBM') {
+      config.audioCapabilities = [{contentType: 'audio/webm; codecs="vorbis"'}];
+    }
+  }
+
   // The File IO test requires persistent state support.
   if (player.testConfig.keySystem ==
       'org.chromium.externalclearkey.fileiotest') {
-    config = {persistentState: "required"};
+    config.persistentState = 'required';
+  } else if (player.testConfig.sessionToLoad) {
+    config.persistentState = 'required';
+    config.sessionTypes = ['temporary', 'persistent-license'];
   }
-  if (player.testConfig.sessionToLoad) {
-    config = {
-        persistentState: "required",
-        sessionTypes: ["temporary", "persistent-license"]
-    };
-  }
-  return navigator.requestMediaKeySystemAccess(
-      player.testConfig.keySystem, [config])
+
+  return navigator
+      .requestMediaKeySystemAccess(player.testConfig.keySystem, [config])
       .then(function(access) { return access.createMediaKeys(); })
       .then(function(mediaKeys) {
         return player.video.setMediaKeys(mediaKeys);

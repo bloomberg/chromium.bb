@@ -129,6 +129,12 @@ class MediaKeySystemAccessInitializer final : public EncryptedMediaRequest {
   // See http://crbug.com/605661.
   void checkEmptyCodecs(const WebMediaKeySystemConfiguration&);
 
+  // Log UseCounter if configuration does not have at least one of
+  // 'audioCapabilities' and 'videoCapabilities' non-empty.
+  // TODO(jrummell): Switch to deprecation message once we have data.
+  // See http://crbug.com/616233.
+  void checkCapabilitiesProvided(const WebMediaKeySystemConfiguration&);
+
   Member<ScriptPromiseResolver> m_resolver;
   const String m_keySystem;
   WebVector<WebMediaKeySystemConfiguration> m_supportedConfigurations;
@@ -144,30 +150,41 @@ MediaKeySystemAccessInitializer::MediaKeySystemAccessInitializer(
   for (size_t i = 0; i < supportedConfigurations.size(); ++i) {
     const MediaKeySystemConfiguration& config = supportedConfigurations[i];
     WebMediaKeySystemConfiguration webConfig;
-    if (config.hasInitDataTypes()) {
-      webConfig.hasInitDataTypes = true;
-      webConfig.initDataTypes = convertInitDataTypes(config.initDataTypes());
-    }
-    if (config.hasAudioCapabilities()) {
-      webConfig.hasAudioCapabilities = true;
-      webConfig.audioCapabilities =
-          convertCapabilities(config.audioCapabilities());
-    }
-    if (config.hasVideoCapabilities()) {
-      webConfig.hasVideoCapabilities = true;
-      webConfig.videoCapabilities =
-          convertCapabilities(config.videoCapabilities());
-    }
+
+    DCHECK(config.hasInitDataTypes());
+    webConfig.initDataTypes = convertInitDataTypes(config.initDataTypes());
+
+    DCHECK(config.hasAudioCapabilities());
+    webConfig.audioCapabilities =
+        convertCapabilities(config.audioCapabilities());
+
+    DCHECK(config.hasVideoCapabilities());
+    webConfig.videoCapabilities =
+        convertCapabilities(config.videoCapabilities());
+
+    checkCapabilitiesProvided(webConfig);
+
     DCHECK(config.hasDistinctiveIdentifier());
     webConfig.distinctiveIdentifier =
         convertMediaKeysRequirement(config.distinctiveIdentifier());
+
     DCHECK(config.hasPersistentState());
     webConfig.persistentState =
         convertMediaKeysRequirement(config.persistentState());
+
     if (config.hasSessionTypes()) {
-      webConfig.hasSessionTypes = true;
       webConfig.sessionTypes = convertSessionTypes(config.sessionTypes());
+    } else {
+      // From the spec (http://w3c.github.io/encrypted-media/#idl-def-mediakeysystemconfiguration):
+      // If this member is not present when the dictionary is passed to
+      // requestMediaKeySystemAccess(), the dictionary will be treated
+      // as if this member is set to [ "temporary" ].
+      WebVector<WebEncryptedMediaSessionType> sessionTypes(
+          static_cast<size_t>(1));
+      sessionTypes[0] = WebEncryptedMediaSessionType::Temporary;
+      webConfig.sessionTypes = sessionTypes;
     }
+
     // If |label| is not present, it will be a null string.
     webConfig.label = config.label();
     m_supportedConfigurations[i] = webConfig;
@@ -200,12 +217,8 @@ void MediaKeySystemAccessInitializer::checkVideoCapabilityRobustness() const {
   bool hasEmptyRobustness = false;
 
   for (const auto& config : m_supportedConfigurations) {
-    if (!config.hasVideoCapabilities)
-      continue;
-
-    hasVideoCapabilities = true;
-
     for (const auto& capability : config.videoCapabilities) {
+      hasVideoCapabilities = true;
       if (capability.robustness.isEmpty()) {
         hasEmptyRobustness = true;
         break;
@@ -243,7 +256,7 @@ void MediaKeySystemAccessInitializer::checkEmptyCodecs(
   // codecs. This avoids alerting on configurations that will continue
   // to succeed in the future once strict checking is enforced.
   bool areAllAudioCodecsEmpty = false;
-  if (config.hasAudioCapabilities && !config.audioCapabilities.isEmpty()) {
+  if (!config.audioCapabilities.isEmpty()) {
     areAllAudioCodecsEmpty =
         std::find_if(config.audioCapabilities.begin(),
                      config.audioCapabilities.end(),
@@ -251,7 +264,7 @@ void MediaKeySystemAccessInitializer::checkEmptyCodecs(
   }
 
   bool areAllVideoCodecsEmpty = false;
-  if (config.hasVideoCapabilities && !config.videoCapabilities.isEmpty()) {
+  if (!config.videoCapabilities.isEmpty()) {
     areAllVideoCodecsEmpty =
         std::find_if(config.videoCapabilities.begin(),
                      config.videoCapabilities.end(),
@@ -266,6 +279,22 @@ void MediaKeySystemAccessInitializer::checkEmptyCodecs(
     UseCounter::count(
         m_resolver->getExecutionContext(),
         UseCounter::EncryptedMediaAllSelectedContentTypesHaveCodecs);
+  }
+}
+
+void MediaKeySystemAccessInitializer::checkCapabilitiesProvided(
+    const WebMediaKeySystemConfiguration& config) {
+  bool atLeastOneAudioCapability = config.audioCapabilities.size() > 0;
+  bool atLeastOneVideoCapability = config.videoCapabilities.size() > 0;
+
+  if (atLeastOneAudioCapability || atLeastOneVideoCapability) {
+    UseCounter::count(m_resolver->getExecutionContext(),
+                      UseCounter::EncryptedMediaCapabilityProvided);
+  } else {
+    // TODO(jrummell): Switch to deprecation message once we understand
+    // current usage. http://crbug.com/616233.
+    UseCounter::count(m_resolver->getExecutionContext(),
+                      UseCounter::EncryptedMediaCapabilityNotProvided);
   }
 }
 
@@ -298,7 +327,10 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
                          "The supportedConfigurations parameter is empty."));
   }
 
-  // 3-4. 'May Document use powerful features?' check.
+  // Note: This method should only be exposed to secure contexts as indicated
+  // by the [SecureContext] IDL attribute. Since that will break some existing
+  // sites, we simply keep track of sites that aren't secure and output a
+  // deprecation message.
   ExecutionContext* executionContext = scriptState->getExecutionContext();
   String errorMessage;
   if (executionContext->isSecureContext(errorMessage)) {
@@ -310,10 +342,7 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
     // Reject promise with a new DOMException whose name is NotSupportedError.
   }
 
-  // 5. Let origin be the origin of document.
-  //    (Passed with the execution context in step 7.)
-
-  // 6. Let promise be a new promise.
+  // 3. Let document be the calling context's Document.
   Document* document = toDocument(executionContext);
   if (!document->page()) {
     return ScriptPromise::rejectWithDOMException(
@@ -323,12 +352,16 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
             "The context provided is not associated with a page."));
   }
 
+  // 4. Let origin be the origin of document.
+  //    (Passed with the execution context.)
+
+  // 5. Let promise be a new promise.
   MediaKeySystemAccessInitializer* initializer =
       new MediaKeySystemAccessInitializer(scriptState, keySystem,
                                           supportedConfigurations);
   ScriptPromise promise = initializer->promise();
 
-  // 7. Asynchronously determine support, and if allowed, create and
+  // 6. Asynchronously determine support, and if allowed, create and
   //    initialize the MediaKeySystemAccess object.
   MediaKeysController* controller = MediaKeysController::from(document->page());
   WebEncryptedMediaClient* mediaClient =
@@ -336,7 +369,7 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
   mediaClient->requestMediaKeySystemAccess(
       WebEncryptedMediaRequest(initializer));
 
-  // 8. Return promise.
+  // 7. Return promise.
   return promise;
 }
 

@@ -61,7 +61,7 @@ const char kWebMOpusAudioVP9Video[] = "video/webm; codecs=\"opus, vp9\"";
 const char kWebMVP9VideoOnly[] = "video/webm; codecs=\"vp9\"";
 #if defined(USE_PROPRIETARY_CODECS)
 const char kMP4AudioOnly[] = "audio/mp4; codecs=\"mp4a.40.2\"";
-const char kMP4VideoOnly[] = "video/mp4; codecs=\"avc1.4D4041\"";
+const char kMP4VideoOnly[] = "video/mp4; codecs=\"avc1.4D000C\"";
 #endif  // defined(USE_PROPRIETARY_CODECS)
 
 // Sessions to load.

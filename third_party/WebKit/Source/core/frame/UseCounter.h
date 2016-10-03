@@ -1335,6 +1335,8 @@ class CORE_EXPORT UseCounter {
     DocumentCreateTouchTargetWrongType = 1610,
     DocumentCreateTouchLessThanSevenArguments = 1611,
     DocumentCreateTouchMoreThanSevenArguments = 1612,
+    EncryptedMediaCapabilityProvided = 1613,
+    EncryptedMediaCapabilityNotProvided = 1614,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

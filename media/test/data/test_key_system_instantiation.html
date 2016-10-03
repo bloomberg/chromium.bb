@@ -33,15 +33,17 @@
       // lists, and then verifies the result. Sets page title when done.
       function requestMediaKeySystemAccessAndVerifyConfiguration(
           keySystem, initDataType, audioCodecList, videoCodecList) {
-        var configuration = {initDataTypes: [initDataType]};
+        var configuration = {
+            initDataTypes: [initDataType],
+            audioCapabilities: [],
+            videoCapabilities: []
+        };
         if (audioCodecList !== null) {
-          configuration.audioCapabilities = [];
           for (entry of audioCodecList) {
             configuration.audioCapabilities.push({contentType: entry});
           };
         }
         if (videoCodecList !== null) {
-          configuration.videoCapabilities = [];
           for (entry of videoCodecList) {
             configuration.videoCapabilities.push({contentType: entry});
           };
@@ -68,7 +70,7 @@
                   setResultInTitle(result);
                   return;
                 }
-              } else if (allowedConfig.audioCapabilities) {
+              } else if (allowedConfig.audioCapabilities.length > 0) {
                 setResultInTitle("audioCapabilities set when none expected");
                 return;
               }
@@ -77,7 +79,7 @@
                     verifyCapabilitiesAreEqual(allowedConfig.videoCapabilities,
                                             configuration.videoCapabilities));
                 return;
-              } else if (allowedConfig.videoCapabilities) {
+              } else if (allowedConfig.videoCapabilities.length > 0) {
                 setResultInTitle("videoCapabilities set when none expected");
                 return;
               }
