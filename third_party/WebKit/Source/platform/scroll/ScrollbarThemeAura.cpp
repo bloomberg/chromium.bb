@@ -141,7 +141,8 @@ ScrollbarTheme& ScrollbarTheme::nativeTheme() {
 
 int ScrollbarThemeAura::scrollbarThickness(ScrollbarControlSize controlSize) {
   // Horiz and Vert scrollbars are the same thickness.
-  // In unit tests we don't have the mock theme engine (because of layering violations), so we hard code the size (see bug 327470).
+  // In unit tests we don't have the mock theme engine (because of layering
+  // violations), so we hard code the size (see bug 327470).
   if (useMockTheme())
     return 15;
   IntSize scrollbarSize = Platform::current()->themeEngine()->getSize(
@@ -259,7 +260,8 @@ void ScrollbarThemeAura::paintTickmarks(GraphicsContext& context,
 void ScrollbarThemeAura::paintTrackBackground(GraphicsContext& context,
                                               const Scrollbar& scrollbar,
                                               const IntRect& rect) {
-  // Just assume a forward track part. We only paint the track as a single piece when there is no thumb.
+  // Just assume a forward track part. We only paint the track as a single piece
+  // when there is no thumb.
   if (!hasThumb(scrollbar) && !rect.isEmpty())
     paintTrackPiece(context, scrollbar, rect, ForwardTrackPart);
 }

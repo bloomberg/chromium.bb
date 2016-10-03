@@ -52,7 +52,8 @@ enum ScrollType {
   AnchoringScroll
 };
 
-// Convert logical scroll direction to physical. Physical scroll directions are unaffected.
+// Convert logical scroll direction to physical. Physical scroll directions are
+// unaffected.
 inline ScrollDirectionPhysical toPhysicalDirection(ScrollDirection direction,
                                                    bool isVertical,
                                                    bool isFlipped) {
@@ -184,8 +185,9 @@ enum ScrollBehavior {
   ScrollBehaviorSmooth,
 };
 
-// The result of an attempt to scroll. If didScroll is true, then unusedScrollDelta gives
-// the amount of the scroll delta that was not consumed by scrolling.
+// The result of an attempt to scroll. If didScroll is true, then
+// unusedScrollDelta gives the amount of the scroll delta that was not consumed
+// by scrolling.
 struct ScrollResult {
   STACK_ALLOCATED();
   explicit ScrollResult()

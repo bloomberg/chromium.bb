@@ -237,7 +237,8 @@ int ScrollbarTheme::thumbPosition(const ScrollbarThemeClient& scrollbar,
                                   float scrollPosition) {
   if (scrollbar.enabled()) {
     float size = scrollbar.totalSize() - scrollbar.visibleSize();
-    // Avoid doing a floating point divide by zero and return 1 when usedTotalSize == visibleSize.
+    // Avoid doing a floating point divide by zero and return 1 when
+    // usedTotalSize == visibleSize.
     if (!size)
       return 0;
     float pos = std::max(0.0f, scrollPosition) *
@@ -261,8 +262,8 @@ int ScrollbarTheme::thumbLength(const ScrollbarThemeClient& scrollbar) {
   int length = round(proportion * trackLen);
   length = std::max(length, minimumThumbLength(scrollbar));
   if (length > trackLen)
-    length =
-        0;  // Once the thumb is below the track length, it just goes away (to make more room for the track).
+    length = 0;  // Once the thumb is below the track length, it just goes away
+                 // (to make more room for the track).
   return length;
 }
 
@@ -310,8 +311,8 @@ void ScrollbarTheme::splitTrack(const ScrollbarThemeClient& scrollbar,
                                 IntRect& beforeThumbRect,
                                 IntRect& thumbRect,
                                 IntRect& afterThumbRect) {
-  // This function won't even get called unless we're big enough to have some combination of these three rects where at least
-  // one of them is non-empty.
+  // This function won't even get called unless we're big enough to have some
+  // combination of these three rects where at least one of them is non-empty.
   IntRect trackRect =
       constrainTrackRectToTrackPieces(scrollbar, unconstrainedTrackRect);
   int thumbPos = thumbPosition(scrollbar);

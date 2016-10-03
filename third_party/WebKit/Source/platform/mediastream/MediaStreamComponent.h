@@ -104,7 +104,8 @@ class PLATFORM_EXPORT MediaStreamComponent final
 
     ~AudioSourceProviderImpl() override {}
 
-    // Wraps the given blink::WebAudioSourceProvider to blink::AudioSourceProvider.
+    // Wraps the given blink::WebAudioSourceProvider to
+    // blink::AudioSourceProvider.
     void wrap(WebAudioSourceProvider*);
 
     // blink::AudioSourceProvider

@@ -217,9 +217,10 @@ void ScrollableArea::setScrollPositionSingleAxis(
   else
     newPosition = DoublePoint(scrollAnimator().currentPosition().x(), position);
 
-  // TODO(bokan): Note, this doesn't use the derived class versions since this method is currently used
-  // exclusively by code that adjusts the position by the scroll origin and the derived class versions
-  // differ on whether they take that into account or not.
+  // TODO(bokan): Note, this doesn't use the derived class versions since this
+  // method is currently used exclusively by code that adjusts the position by
+  // the scroll origin and the derived class versions differ on whether they
+  // take that into account or not.
   ScrollableArea::setScrollPosition(newPosition, scrollType, behavior);
 }
 
@@ -245,10 +246,11 @@ void ScrollableArea::userScrollHelper(const DoublePoint& position,
                  ? position.y()
                  : scrollAnimator().currentPosition().y();
 
-  // Smooth user scrolls (keyboard, wheel clicks) are handled via the userScroll method.
-  // TODO(bokan): The userScroll method should probably be modified to call this method
-  //              and ScrollAnimatorBase to have a simpler animateToOffset method like the
-  //              ProgrammaticScrollAnimator.
+  // Smooth user scrolls (keyboard, wheel clicks) are handled via the userScroll
+  // method.
+  // TODO(bokan): The userScroll method should probably be modified to call this
+  //              method and ScrollAnimatorBase to have a simpler
+  //              animateToOffset method like the ProgrammaticScrollAnimator.
   ASSERT(scrollBehavior == ScrollBehaviorInstant);
   scrollAnimator().scrollToOffsetWithoutAnimation(FloatPoint(x, y));
 }
@@ -257,7 +259,8 @@ LayoutRect ScrollableArea::scrollIntoView(const LayoutRect& rectInContent,
                                           const ScrollAlignment& alignX,
                                           const ScrollAlignment& alignY,
                                           ScrollType) {
-  // TODO(bokan): This should really be implemented here but ScrollAlignment is in Core which is a dependency violation.
+  // TODO(bokan): This should really be implemented here but ScrollAlignment is
+  // in Core which is a dependency violation.
   ASSERT_NOT_REACHED();
   return LayoutRect();
 }
@@ -360,7 +363,8 @@ void ScrollableArea::didAddScrollbar(Scrollbar& scrollbar,
   else
     scrollAnimator().didAddHorizontalScrollbar(scrollbar);
 
-  // <rdar://problem/9797253> AppKit resets the scrollbar's style when you attach a scrollbar
+  // <rdar://problem/9797253> AppKit resets the scrollbar's style when you
+  // attach a scrollbar
   setScrollbarOverlayStyle(getScrollbarOverlayStyle());
 }
 

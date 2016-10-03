@@ -30,7 +30,8 @@
 
 namespace blink {
 
-// Scrollbar theme used in image snapshots, to eliminate appearance differences between platforms.
+// Scrollbar theme used in image snapshots, to eliminate appearance differences
+// between platforms.
 class PLATFORM_EXPORT ScrollbarThemeMock : public ScrollbarTheme {
  public:
   int scrollbarThickness(ScrollbarControlSize = RegularScrollbar) override;

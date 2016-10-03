@@ -105,8 +105,9 @@ class PLATFORM_EXPORT MediaStreamDescriptor final
     m_extraData = std::move(extraData);
   }
 
-  // |m_extraData| may hold pointers to GC objects, and it may touch them in destruction.
-  // So this class is eagerly finalized to finalize |m_extraData| promptly.
+  // |m_extraData| may hold pointers to GC objects, and it may touch them in
+  // destruction.  So this class is eagerly finalized to finalize |m_extraData|
+  // promptly.
   EAGERLY_FINALIZE();
   DECLARE_TRACE();
 

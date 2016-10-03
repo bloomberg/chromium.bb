@@ -65,9 +65,10 @@ Scrollbar::Scrollbar(ScrollableArea* scrollableArea,
       m_thumbNeedsRepaint(true) {
   m_theme.registerScrollbar(*this);
 
-  // FIXME: This is ugly and would not be necessary if we fix cross-platform code to actually query for
-  // scrollbar thickness and use it when sizing scrollbars (rather than leaving one dimension of the scrollbar
-  // alone when sizing).
+  // FIXME: This is ugly and would not be necessary if we fix cross-platform
+  // code to actually query for scrollbar thickness and use it when sizing
+  // scrollbars (rather than leaving one dimension of the scrollbar alone when
+  // sizing).
   int thickness = m_theme.scrollbarThickness(controlSize);
   if (m_hostWindow)
     thickness = m_hostWindow->windowToViewportScalar(thickness);
@@ -302,7 +303,8 @@ void Scrollbar::setHoveredPart(ScrollbarPart part) {
 
   if (((m_hoveredPart == NoPart || part == NoPart) &&
        theme().invalidateOnMouseEnterExit())
-      // When there's a pressed part, we don't draw a hovered state, so there's no reason to invalidate.
+      // When there's a pressed part, we don't draw a hovered state, so there's
+      // no reason to invalidate.
       || m_pressedPart == NoPart)
     setNeedsPaintInvalidation(static_cast<ScrollbarPart>(m_hoveredPart | part));
 
@@ -311,7 +313,8 @@ void Scrollbar::setHoveredPart(ScrollbarPart part) {
 
 void Scrollbar::setPressedPart(ScrollbarPart part) {
   if (m_pressedPart != NoPart
-      // When we no longer have a pressed part, we can start drawing a hovered state on the hovered part.
+      // When we no longer have a pressed part, we can start drawing a hovered
+      // state on the hovered part.
       || m_hoveredPart != NoPart)
     setNeedsPaintInvalidation(
         static_cast<ScrollbarPart>(m_pressedPart | m_hoveredPart | part));
@@ -467,8 +470,9 @@ void Scrollbar::mouseUp(const PlatformMouseEvent& mouseEvent) {
   stopTimerIfNeeded();
 
   if (m_scrollableArea) {
-    // m_hoveredPart won't be updated until the next mouseMoved or mouseDown, so we have to hit test
-    // to really know if the mouse has exited the scrollbar on a mouseUp.
+    // m_hoveredPart won't be updated until the next mouseMoved or mouseDown, so
+    // we have to hit test to really know if the mouse has exited the scrollbar
+    // on a mouseUp.
     ScrollbarPart part = theme().hitTest(*this, mouseEvent.position());
     if (part == NoPart)
       m_scrollableArea->mouseExitedScrollbar(*this);
@@ -492,8 +496,9 @@ void Scrollbar::mouseDown(const PlatformMouseEvent& evt) {
     m_dragOrigin = m_currentPos;
     int thumbLen = theme().thumbLength(*this);
     int desiredPos = pressedPos;
-    // Set the pressed position to the middle of the thumb so that when we do the move, the delta
-    // will be from the current pixel position of the thumb to the new desired position for the thumb.
+    // Set the pressed position to the middle of the thumb so that when we do
+    // the move, the delta will be from the current pixel position of the thumb
+    // to the new desired position for the thumb.
     m_pressedPos = theme().trackPosition(*this) + theme().thumbPosition(*this) +
                    thumbLen / 2;
     moveThumb(desiredPos);

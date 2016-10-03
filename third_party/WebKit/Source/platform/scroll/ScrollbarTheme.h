@@ -104,7 +104,8 @@ class PLATFORM_EXPORT ScrollbarTheme {
   int thumbPosition(const ScrollbarThemeClient& scrollbar) {
     return thumbPosition(scrollbar, scrollbar.currentPos());
   }
-  // The position the thumb would have, relative to the track, at the specified scroll position.
+  // The position the thumb would have, relative to the track, at the specified
+  // scroll position.
   virtual int thumbPosition(const ScrollbarThemeClient&, float scrollPosition);
   // The length of the thumb along the axis of the scrollbar.
   virtual int thumbLength(const ScrollbarThemeClient&);

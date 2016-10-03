@@ -56,7 +56,8 @@ class PLATFORM_EXPORT Scrollbar : public Widget,
     return new Scrollbar(scrollableArea, orientation, size, hostWindow);
   }
 
-  // Theme object ownership remains with the caller and it must outlive the scrollbar.
+  // Theme object ownership remains with the caller and it must outlive the
+  // scrollbar.
   static Scrollbar* createForTesting(ScrollableArea* scrollableArea,
                                      ScrollbarOrientation orientation,
                                      ScrollbarControlSize size,
@@ -137,14 +138,16 @@ class PLATFORM_EXPORT Scrollbar : public Widget,
   // state for this scrollbar.
   bool gestureEvent(const PlatformGestureEvent&, bool* shouldUpdateCapture);
 
-  // These methods are used for platform scrollbars to give :hover feedback.  They will not get called
-  // when the mouse went down in a scrollbar, since it is assumed the scrollbar will start
+  // These methods are used for platform scrollbars to give :hover feedback.
+  // They will not get called when the mouse went down in a scrollbar, since it
+  // is assumed the scrollbar will start
   // grabbing all events in that case anyway.
   void mouseMoved(const PlatformMouseEvent&);
   void mouseEntered();
   void mouseExited();
 
-  // Used by some platform scrollbars to know when they've been released from capture.
+  // Used by some platform scrollbars to know when they've been released from
+  // capture.
   void mouseUp(const PlatformMouseEvent&);
   void mouseDown(const PlatformMouseEvent&);
 
@@ -195,7 +198,8 @@ class PLATFORM_EXPORT Scrollbar : public Widget,
   // part.
   void setNeedsPaintInvalidation(ScrollbarPart invalidParts);
 
-  // Promptly unregister from the theme manager + run finalizers of derived Scrollbars.
+  // Promptly unregister from the theme manager + run finalizers of derived
+  // Scrollbars.
   EAGERLY_FINALIZE();
   DECLARE_EAGER_FINALIZATION_OPERATOR_NEW();
   DECLARE_VIRTUAL_TRACE();

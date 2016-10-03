@@ -44,7 +44,8 @@
 #include "wtf/RetainPtr.h"
 #include "wtf/StdLibExtras.h"
 
-// FIXME: There are repainting problems due to Aqua scroll bar buttons' visual overflow.
+// FIXME: There are repainting problems due to Aqua scroll bar buttons' visual
+// overflow.
 
 using namespace blink;
 
@@ -122,7 +123,8 @@ static ScrollbarPainterMap& scrollbarPainterMap() {
 }
 
 static bool supportsExpandedScrollbars() {
-  // FIXME: This is temporary until all platforms that support ScrollbarPainter support this part of the API.
+  // FIXME: This is temporary until all platforms that support ScrollbarPainter
+  // support this part of the API.
   static bool globalSupportsExpandedScrollbars =
       [NSClassFromString(@"NSScrollerImp")
           instancesRespondToSelector:@selector(setExpanded:)];
@@ -246,7 +248,9 @@ int ScrollbarThemeMac::scrollbarPartToHIPressedState(ScrollbarPart part) {
     case BackButtonStartPart:
       return kThemeTopOutsideArrowPressed;
     case BackButtonEndPart:
-      return kThemeTopOutsideArrowPressed;  // This does not make much sense.  For some reason the outside constant is required.
+      // This does not make much sense.  For some reason the outside constant
+      // is required.
+      return kThemeTopOutsideArrowPressed;
     case ForwardButtonStartPart:
       return kThemeTopInsideArrowPressed;
     case ForwardButtonEndPart:
@@ -342,7 +346,8 @@ void ScrollbarThemeMac::paintThumb(GraphicsContext& context,
                                                   DisplayItem::kScrollbarThumb))
     return;
 
-  // Expand dirty rect to allow for scroll thumb anti-aliasing in minimum thumb size case.
+  // Expand dirty rect to allow for scroll thumb anti-aliasing in minimum thumb
+  // size case.
   IntRect dirtyRect = IntRect(rect);
   dirtyRect.inflate(1);
   DrawingRecorder recorder(context, scrollbar, DisplayItem::kScrollbarThumb,
@@ -365,8 +370,9 @@ void ScrollbarThemeMac::paintThumb(GraphicsContext& context,
   if (scrollbar.enabled())
     [scrollbarPainter drawKnob];
 
-  // If this state is not set, then moving the cursor over the scrollbar area will only cause the
-  // scrollbar to engorge when moved over the top of the scrollbar area.
+  // If this state is not set, then moving the cursor over the scrollbar area
+  // will only cause the scrollbar to engorge when moved over the top of the
+  // scrollbar area.
   [scrollbarPainter
       setBoundsSize:NSSizeFromCGSize(scrollbar.frameRect().size())];
   [scrollbarPainter setKnobAlpha:oldKnobAlpha];
