@@ -15,17 +15,16 @@
 
 namespace base {
 class StringValue;
-}  // namespace base
+}
 
 namespace sql {
 class Statement;
-}  // namespace sql
+}
 
 namespace syncer {
 namespace syncable {
-
-class Id;
 struct EntryKernel;
+class Id;
 
 std::ostream& operator<<(std::ostream& out, const Id& id);
 

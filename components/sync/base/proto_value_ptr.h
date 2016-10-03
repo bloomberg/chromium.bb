@@ -8,10 +8,10 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 
-namespace syncer {
+namespace syncer_v2 {
 struct EntityData;
 class ProcessorEntityTracker;
-}  // namespace syncer
+}  // namespace syncer_v2
 
 namespace syncer {
 
@@ -91,8 +91,8 @@ class ProtoValuePtr {
 
  private:
   friend struct syncable::EntryKernel;
-  friend struct EntityData;
-  friend class ProcessorEntityTracker;
+  friend struct syncer_v2::EntityData;
+  friend class syncer_v2::ProcessorEntityTracker;
   FRIEND_TEST_ALL_PREFIXES(ProtoValuePtrTest, ValueAssignment);
   FRIEND_TEST_ALL_PREFIXES(ProtoValuePtrTest, ValueSwap);
   FRIEND_TEST_ALL_PREFIXES(ProtoValuePtrTest, SharingTest);

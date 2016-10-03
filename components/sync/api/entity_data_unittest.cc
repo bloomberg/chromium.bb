@@ -8,7 +8,7 @@
 #include "components/sync/base/unique_position.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace syncer {
+namespace syncer_v2 {
 
 class EntityDataTest : public testing::Test {
  protected:
@@ -20,13 +20,13 @@ TEST_F(EntityDataTest, IsDeleted) {
   EntityData data;
   EXPECT_TRUE(data.is_deleted());
 
-  AddDefaultFieldValue(BOOKMARKS, &data.specifics);
+  syncer::AddDefaultFieldValue(syncer::BOOKMARKS, &data.specifics);
   EXPECT_FALSE(data.is_deleted());
 }
 
 TEST_F(EntityDataTest, Swap) {
   EntityData data;
-  AddDefaultFieldValue(BOOKMARKS, &data.specifics);
+  syncer::AddDefaultFieldValue(syncer::BOOKMARKS, &data.specifics);
   data.id = "id";
   data.client_tag_hash = "client_tag_hash";
   data.non_unique_name = "non_unique_name";
@@ -34,6 +34,7 @@ TEST_F(EntityDataTest, Swap) {
   data.modification_time = base::Time::FromTimeT(20);
   data.parent_id = "parent_id";
 
+  using syncer::UniquePosition;
   UniquePosition unique_position =
       UniquePosition::InitialPosition(UniquePosition::RandomSuffix());
 
@@ -61,4 +62,4 @@ TEST_F(EntityDataTest, Swap) {
   EXPECT_EQ(base::Time::FromTimeT(20), ptr->modification_time);
 }
 
-}  // namespace syncer
+}  // namespace syncer_v2

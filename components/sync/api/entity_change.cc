@@ -4,7 +4,7 @@
 
 #include "components/sync/api/entity_change.h"
 
-namespace syncer {
+namespace syncer_v2 {
 
 // static
 EntityChange EntityChange::CreateAdd(const std::string& storage_key,
@@ -32,4 +32,4 @@ EntityChange::EntityChange(const EntityChange& other) = default;
 
 EntityChange::~EntityChange() {}
 
-}  // namespace syncer
+}  // namespace syncer_v2

@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS_CLEAR_BROWSER_DATA_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_CLEAR_BROWSER_DATA_HANDLER_H_
 
-#include <memory>
-
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
@@ -20,7 +18,7 @@ namespace options {
 // Clear browser data handler page UI handler.
 class ClearBrowserDataHandler : public OptionsPageUIHandler,
                                 public BrowsingDataRemover::Observer,
-                                public syncer::SyncServiceObserver {
+                                public sync_driver::SyncServiceObserver {
  public:
   ClearBrowserDataHandler();
   ~ClearBrowserDataHandler() override;

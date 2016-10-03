@@ -267,7 +267,7 @@ void SyncFileSystemService::Shutdown() {
 
   remote_service_.reset();
 
-  syncer::SyncService* profile_sync_service =
+  sync_driver::SyncService* profile_sync_service =
       ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile_);
   if (profile_sync_service)
     profile_sync_service->RemoveObserver(this);
@@ -476,7 +476,7 @@ void SyncFileSystemService::Initialize(
   local_sync_runners_.push_back(local_syncer.release());
   remote_sync_runners_.push_back(remote_syncer.release());
 
-  syncer::SyncService* profile_sync_service =
+  sync_driver::SyncService* profile_sync_service =
       ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile_);
   if (profile_sync_service) {
     UpdateSyncEnabledStatus(profile_sync_service);
@@ -730,7 +730,7 @@ void SyncFileSystemService::OnExtensionLoaded(
 }
 
 void SyncFileSystemService::OnStateChanged() {
-  syncer::SyncService* profile_sync_service =
+  sync_driver::SyncService* profile_sync_service =
       ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile_);
   if (profile_sync_service)
     UpdateSyncEnabledStatus(profile_sync_service);
@@ -748,7 +748,7 @@ void SyncFileSystemService::OnFileStatusChanged(
 }
 
 void SyncFileSystemService::UpdateSyncEnabledStatus(
-    syncer::SyncService* profile_sync_service) {
+    sync_driver::SyncService* profile_sync_service) {
   if (!profile_sync_service->IsFirstSetupComplete())
     return;
   bool old_sync_enabled = sync_enabled_;

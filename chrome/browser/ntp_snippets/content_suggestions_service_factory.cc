@@ -83,7 +83,7 @@ using ntp_snippets::TabDelegateSyncAdapter;
 using suggestions::ImageDecoderImpl;
 using suggestions::SuggestionsService;
 using suggestions::SuggestionsServiceFactory;
-using syncer::SyncService;
+using sync_driver::SyncService;
 
 namespace {
 

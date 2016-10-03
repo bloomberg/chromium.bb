@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "components/metrics/metrics_provider.h"
 
-namespace syncer {
+namespace sync_driver {
 
 class DeviceInfoTracker;
 
@@ -27,7 +27,8 @@ class DeviceInfoTracker;
 // would be much trickier.
 class DeviceCountMetricsProvider : public metrics::MetricsProvider {
  public:
-  typedef base::Callback<void(std::vector<const DeviceInfoTracker*>* trackers)>
+  typedef base::Callback<void(
+      std::vector<const sync_driver::DeviceInfoTracker*>* trackers)>
       ProvideTrackersCallback;
 
   explicit DeviceCountMetricsProvider(
@@ -47,6 +48,6 @@ class DeviceCountMetricsProvider : public metrics::MetricsProvider {
   DISALLOW_COPY_AND_ASSIGN(DeviceCountMetricsProvider);
 };
 
-}  // namespace syncer
+}  // namespace sync_driver
 
 #endif  // COMPONENTS_SYNC_DEVICE_INFO_DEVICE_COUNT_METRICS_PROVIDER_H_

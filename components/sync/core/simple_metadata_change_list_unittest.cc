@@ -8,7 +8,7 @@
 #include "components/sync/api/mock_model_type_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace syncer {
+namespace syncer_v2 {
 namespace {
 
 using WriteBatch = ModelTypeStore::WriteBatch;
@@ -185,4 +185,4 @@ TEST_F(SimpleMetadataChangeListTest, TransferChangesDeletesClearedItems) {
 }
 
 }  // namespace
-}  // namespace syncer
+}  // namespace syncer_v2

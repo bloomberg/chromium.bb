@@ -70,7 +70,8 @@ void AddClientConfigParamsToMessage(ModelTypeSet enabled_types,
     int field_number = GetSpecificsFieldNumberFromModelType(it.Get());
     config_params->mutable_enabled_type_ids()->Add(field_number);
   }
-  config_params->set_tabs_datatype_enabled(enabled_types.Has(PROXY_TABS));
+  config_params->set_tabs_datatype_enabled(
+      enabled_types.Has(syncer::PROXY_TABS));
   config_params->set_cookie_jar_mismatch(cookie_jar_mismatch);
 }
 

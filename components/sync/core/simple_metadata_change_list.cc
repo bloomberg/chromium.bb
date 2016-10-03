@@ -4,7 +4,7 @@
 
 #include "components/sync/core/simple_metadata_change_list.h"
 
-namespace syncer {
+namespace syncer_v2 {
 
 SimpleMetadataChangeList::SimpleMetadataChangeList() {}
 
@@ -76,4 +76,4 @@ void SimpleMetadataChangeList::TransferChanges(
   }
 }
 
-}  // namespace syncer
+}  // namespace syncer_v2

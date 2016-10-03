@@ -7,12 +7,13 @@
 
 #include "base/strings/string16.h"
 
-namespace syncer {
+namespace sync_driver {
 class SyncService;
 }
 
 // Returns the id of a string which should be displayed as a description for the
 // password manager setting.
-int GetPasswordManagerSettingsStringId(const syncer::SyncService* sync_service);
+int GetPasswordManagerSettingsStringId(
+    const sync_driver::SyncService* sync_service);
 
 #endif  // CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_VIEW_UTILS_DESKTOP_H_

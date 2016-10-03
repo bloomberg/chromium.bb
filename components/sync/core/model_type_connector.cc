@@ -4,10 +4,10 @@
 
 #include "components/sync/core/model_type_connector.h"
 
-namespace syncer {
+namespace syncer_v2 {
 
 ModelTypeConnector::ModelTypeConnector() {}
 
 ModelTypeConnector::~ModelTypeConnector() {}
 
-}  // namespace syncer
+}  // namespace syncer_v2

@@ -6,7 +6,7 @@
 
 #include "components/sync/core/sync_manager.h"
 
-namespace syncer {
+namespace sync_driver {
 
 SyncSetupInProgressHandle::SyncSetupInProgressHandle(base::Closure on_destroy)
     : on_destroy_(on_destroy) {}
@@ -16,7 +16,7 @@ SyncSetupInProgressHandle::~SyncSetupInProgressHandle() {
 }
 
 SyncService::SyncTokenStatus::SyncTokenStatus()
-    : connection_status(CONNECTION_NOT_ATTEMPTED),
+    : connection_status(syncer::CONNECTION_NOT_ATTEMPTED),
       last_get_token_error(GoogleServiceAuthError::AuthErrorNone()) {}
 
-}  // namespace syncer
+}  // namespace sync_driver

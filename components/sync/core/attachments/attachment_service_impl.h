@@ -61,7 +61,7 @@ class AttachmentServiceImpl
   ~AttachmentServiceImpl() override;
 
   // Create an AttachmentServiceImpl suitable for use in tests.
-  static std::unique_ptr<AttachmentService> CreateForTest();
+  static std::unique_ptr<syncer::AttachmentService> CreateForTest();
 
   // AttachmentService implementation.
   void GetOrDownloadAttachments(const AttachmentIdList& attachment_ids,

@@ -122,14 +122,14 @@ class RecentTabsSubMenuModelTest
  public:
   RecentTabsSubMenuModelTest()
       : sync_service_(CreateProfileSyncServiceParamsForTest(&testing_profile_)),
-        local_device_(new syncer::LocalDeviceInfoProviderMock(
+        local_device_(new sync_driver::LocalDeviceInfoProviderMock(
             "RecentTabsSubMenuModelTest",
             "Test Machine",
             "Chromium 10k",
             "Chrome 10k",
             sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
             "device_id")) {
-    sync_prefs_.reset(new syncer::SyncPrefs(testing_profile_.GetPrefs()));
+    sync_prefs_.reset(new sync_driver::SyncPrefs(testing_profile_.GetPrefs()));
     manager_.reset(new sync_sessions::SessionsSyncManager(
         sync_service_.GetSyncClient()->GetSyncSessionsClient(),
         sync_prefs_.get(), local_device_.get(),
@@ -167,9 +167,9 @@ class RecentTabsSubMenuModelTest
  private:
   TestingProfile testing_profile_;
   browser_sync::ProfileSyncServiceMock sync_service_;
-  std::unique_ptr<syncer::SyncPrefs> sync_prefs_;
+  std::unique_ptr<sync_driver::SyncPrefs> sync_prefs_;
   std::unique_ptr<sync_sessions::SessionsSyncManager> manager_;
-  std::unique_ptr<syncer::LocalDeviceInfoProviderMock> local_device_;
+  std::unique_ptr<sync_driver::LocalDeviceInfoProviderMock> local_device_;
 };
 
 // Test disabled "Recently closed" header with no foreign tabs.

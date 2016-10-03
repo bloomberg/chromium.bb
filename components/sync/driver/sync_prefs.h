@@ -29,7 +29,7 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-namespace syncer {
+namespace sync_driver {
 
 class SyncPrefObserver {
  public:
@@ -97,15 +97,16 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // The returned set is guaranteed to be a subset of
   // |registered_types|.  Returns |registered_types| directly if
   // HasKeepEverythingSynced() is true.
-  ModelTypeSet GetPreferredDataTypes(ModelTypeSet registered_types) const;
+  syncer::ModelTypeSet GetPreferredDataTypes(
+      syncer::ModelTypeSet registered_types) const;
   // |preferred_types| should be a subset of |registered_types|.  All
   // types in |preferred_types| are marked preferred, and all types in
   // |registered_types| \ |preferred_types| are marked not preferred.
   // Changes are still made to the prefs even if
   // HasKeepEverythingSynced() is true, but won't be visible until
   // SetKeepEverythingSynced(false) is called.
-  void SetPreferredDataTypes(ModelTypeSet registered_types,
-                             ModelTypeSet preferred_types);
+  void SetPreferredDataTypes(syncer::ModelTypeSet registered_types,
+                             syncer::ModelTypeSet preferred_types);
 
   // This pref is set outside of sync.
   bool IsManaged() const;
@@ -124,7 +125,7 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   void SetSyncSessionsGUID(const std::string& guid);
 
   // Maps |data_type| to its corresponding preference name.
-  static const char* GetPrefNameForDataType(ModelType data_type);
+  static const char* GetPrefNameForDataType(syncer::ModelType data_type);
 
 #if defined(OS_CHROMEOS)
   // Use this spare bootstrap token only when setting up sync for the first
@@ -158,9 +159,9 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
 
   // Get/set for the last known sync invalidation versions.
   void GetInvalidationVersions(
-      std::map<ModelType, int64_t>* invalidation_versions) const;
+      std::map<syncer::ModelType, int64_t>* invalidation_versions) const;
   void UpdateInvalidationVersions(
-      const std::map<ModelType, int64_t>& invalidation_versions);
+      const std::map<syncer::ModelType, int64_t>& invalidation_versions);
 
   // Will return the contents of the LastRunVersion preference. This may be an
   // empty string if no version info was present, and is only valid at
@@ -177,8 +178,8 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // Get/set for saved Nigori state that needs to be passed to backend
   // initialization after transition.
   void SetSavedNigoriStateForPassphraseEncryptionTransition(
-      const SyncEncryptionHandler::NigoriState& nigori_state);
-  std::unique_ptr<SyncEncryptionHandler::NigoriState>
+      const syncer::SyncEncryptionHandler::NigoriState& nigori_state);
+  std::unique_ptr<syncer::SyncEncryptionHandler::NigoriState>
   GetSavedNigoriStateForPassphraseEncryptionTransition() const;
 
  private:
@@ -186,15 +187,15 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
 
   static void RegisterDataTypePreferredPref(
       user_prefs::PrefRegistrySyncable* prefs,
-      ModelType type,
+      syncer::ModelType type,
       bool is_preferred);
-  bool GetDataTypePreferred(ModelType type) const;
-  void SetDataTypePreferred(ModelType type, bool is_preferred);
+  bool GetDataTypePreferred(syncer::ModelType type) const;
+  void SetDataTypePreferred(syncer::ModelType type, bool is_preferred);
 
   // Returns a ModelTypeSet based on |types| expanded to include pref groups
   // (see |pref_groups_|), but as a subset of |registered_types|.
-  ModelTypeSet ResolvePrefGroups(ModelTypeSet registered_types,
-                                 ModelTypeSet types) const;
+  syncer::ModelTypeSet ResolvePrefGroups(syncer::ModelTypeSet registered_types,
+                                         syncer::ModelTypeSet types) const;
 
   void OnSyncManagedPrefChanged();
 
@@ -210,16 +211,16 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // Groups of prefs that always have the same value as a "master" pref.
   // For example, the APPS group has {APP_NOTIFICATIONS, APP_SETTINGS}
   // (as well as APPS, but that is implied), so
-  //   pref_groups_[APPS] =       { APP_NOTIFICATIONS,
-  //                                          APP_SETTINGS }
-  //   pref_groups_[EXTENSIONS] = { EXTENSION_SETTINGS }
+  //   pref_groups_[syncer::APPS] =       { syncer::APP_NOTIFICATIONS,
+  //                                          syncer::APP_SETTINGS }
+  //   pref_groups_[syncer::EXTENSIONS] = { syncer::EXTENSION_SETTINGS }
   // etc.
-  typedef std::map<ModelType, ModelTypeSet> PrefGroupsMap;
+  typedef std::map<syncer::ModelType, syncer::ModelTypeSet> PrefGroupsMap;
   PrefGroupsMap pref_groups_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncPrefs);
 };
 
-}  // namespace syncer
+}  // namespace sync_driver
 
 #endif  // COMPONENTS_SYNC_DRIVER_SYNC_PREFS_H_

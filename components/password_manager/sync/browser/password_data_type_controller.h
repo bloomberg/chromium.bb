@@ -15,20 +15,20 @@ namespace password_manager {
 class PasswordStore;
 }
 
-namespace syncer {
+namespace sync_driver {
 class SyncClient;
 }
 
 namespace browser_sync {
 
 // A class that manages the startup and shutdown of password sync.
-class PasswordDataTypeController : public syncer::NonUIDataTypeController,
-                                   public syncer::SyncServiceObserver {
+class PasswordDataTypeController : public sync_driver::NonUIDataTypeController,
+                                   public sync_driver::SyncServiceObserver {
  public:
   // |dump_stack| is called when an unrecoverable error occurs.
   PasswordDataTypeController(
       const base::Closure& dump_stack,
-      syncer::SyncClient* sync_client,
+      sync_driver::SyncClient* sync_client,
       const base::Closure& state_changed_callback,
       const scoped_refptr<password_manager::PasswordStore>& password_store);
   ~PasswordDataTypeController() override;
@@ -43,11 +43,11 @@ class PasswordDataTypeController : public syncer::NonUIDataTypeController,
   bool StartModels() override;
   void StopModels() override;
 
-  // syncer::SyncServiceObserver:
+  // sync_driver::SyncServiceObserver:
   void OnStateChanged() override;
 
  private:
-  syncer::SyncClient* const sync_client_;
+  sync_driver::SyncClient* const sync_client_;
   const base::Closure state_changed_callback_;
   scoped_refptr<password_manager::PasswordStore> password_store_;
 

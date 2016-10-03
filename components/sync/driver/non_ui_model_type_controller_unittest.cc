@@ -26,7 +26,7 @@
 #include "components/sync/engine/commit_queue.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace syncer {
+namespace sync_driver_v2 {
 
 namespace {
 
@@ -34,10 +34,10 @@ namespace {
 class TestNonUIModelTypeController : public NonUIModelTypeController {
  public:
   TestNonUIModelTypeController(
-      ModelType model_type,
+      syncer::ModelType model_type,
       const scoped_refptr<base::TaskRunner>& model_task_runner,
       const base::Closure& dump_stack,
-      SyncClient* sync_client)
+      sync_driver::SyncClient* sync_client)
       : NonUIModelTypeController(model_type, dump_stack, sync_client),
         model_task_runner_(model_task_runner) {}
   ~TestNonUIModelTypeController() override {}
@@ -53,12 +53,12 @@ class TestNonUIModelTypeController : public NonUIModelTypeController {
 };
 
 // A no-op instance of CommitQueue.
-class NullCommitQueue : public CommitQueue {
+class NullCommitQueue : public syncer_v2::CommitQueue {
  public:
   NullCommitQueue() {}
   ~NullCommitQueue() override {}
 
-  void EnqueueForCommit(const CommitRequestDataList& list) override {
+  void EnqueueForCommit(const syncer_v2::CommitRequestDataList& list) override {
     NOTREACHED() << "Not implemented.";
   }
 };
@@ -66,25 +66,27 @@ class NullCommitQueue : public CommitQueue {
 // A class that pretends to be the sync backend.
 class MockSyncBackend {
  public:
-  void Connect(ModelType type,
-               std::unique_ptr<ActivationContext> activation_context) {
+  void Connect(
+      syncer::ModelType type,
+      std::unique_ptr<syncer_v2::ActivationContext> activation_context) {
     enabled_types_.Put(type);
     activation_context->type_processor->ConnectSync(
         base::MakeUnique<NullCommitQueue>());
   }
 
-  void Disconnect(ModelType type) {
+  void Disconnect(syncer::ModelType type) {
     DCHECK(enabled_types_.Has(type));
     enabled_types_.Remove(type);
   }
 
  private:
-  ModelTypeSet enabled_types_;
+  syncer::ModelTypeSet enabled_types_;
 };
 
 // Fake implementation of BackendDataTypeConfigurer that pretends to be Sync
 // backend.
-class MockBackendDataTypeConfigurer : public BackendDataTypeConfigurer {
+class MockBackendDataTypeConfigurer
+    : public sync_driver::BackendDataTypeConfigurer {
  public:
   MockBackendDataTypeConfigurer(
       MockSyncBackend* backend,
@@ -92,28 +94,30 @@ class MockBackendDataTypeConfigurer : public BackendDataTypeConfigurer {
       : backend_(backend), sync_task_runner_(sync_task_runner) {}
   ~MockBackendDataTypeConfigurer() override {}
 
-  ModelTypeSet ConfigureDataTypes(
-      ConfigureReason reason,
+  syncer::ModelTypeSet ConfigureDataTypes(
+      syncer::ConfigureReason reason,
       const DataTypeConfigStateMap& config_state_map,
-      const base::Callback<void(ModelTypeSet, ModelTypeSet)>& ready_task,
+      const base::Callback<void(syncer::ModelTypeSet, syncer::ModelTypeSet)>&
+          ready_task,
       const base::Callback<void()>& retry_callback) override {
     NOTREACHED() << "Not implemented.";
-    return ModelTypeSet();
+    return syncer::ModelTypeSet();
   }
 
-  void ActivateDirectoryDataType(ModelType type,
-                                 ModelSafeGroup group,
-                                 ChangeProcessor* change_processor) override {
+  void ActivateDirectoryDataType(
+      syncer::ModelType type,
+      syncer::ModelSafeGroup group,
+      sync_driver::ChangeProcessor* change_processor) override {
     NOTREACHED() << "Not implemented.";
   }
 
-  void DeactivateDirectoryDataType(ModelType type) override {
+  void DeactivateDirectoryDataType(syncer::ModelType type) override {
     NOTREACHED() << "Not implemented.";
   }
 
-  void ActivateNonBlockingDataType(
-      ModelType type,
-      std::unique_ptr<ActivationContext> activation_context) override {
+  void ActivateNonBlockingDataType(syncer::ModelType type,
+                                   std::unique_ptr<syncer_v2::ActivationContext>
+                                       activation_context) override {
     // Post on Sync thread just like the real implementation does.
     sync_task_runner_->PostTask(
         FROM_HERE,
@@ -121,7 +125,7 @@ class MockBackendDataTypeConfigurer : public BackendDataTypeConfigurer {
                    base::Passed(std::move(activation_context))));
   }
 
-  void DeactivateNonBlockingDataType(ModelType type) override {
+  void DeactivateNonBlockingDataType(syncer::ModelType type) override {
     sync_task_runner_->PostTask(FROM_HERE,
                                 base::Bind(&MockSyncBackend::Disconnect,
                                            base::Unretained(backend_), type));
@@ -135,7 +139,7 @@ class MockBackendDataTypeConfigurer : public BackendDataTypeConfigurer {
 }  // namespace
 
 class NonUIModelTypeControllerTest : public testing::Test,
-                                     public FakeSyncClient {
+                                     public sync_driver::FakeSyncClient {
  public:
   NonUIModelTypeControllerTest()
       : auto_run_tasks_(true),
@@ -151,7 +155,7 @@ class NonUIModelTypeControllerTest : public testing::Test,
     model_thread_runner_ = model_thread_.task_runner();
     InitializeModelTypeService();
     controller_.reset(new TestNonUIModelTypeController(
-        DICTIONARY, model_thread_runner_, base::Closure(), this));
+        syncer::DICTIONARY, model_thread_runner_, base::Closure(), this));
   }
 
   void TearDown() override {
@@ -159,17 +163,17 @@ class NonUIModelTypeControllerTest : public testing::Test,
     RunQueuedUIThreadTasks();
   }
 
-  base::WeakPtr<ModelTypeService> GetModelTypeServiceForType(
-      ModelType type) override {
+  base::WeakPtr<syncer_v2::ModelTypeService> GetModelTypeServiceForType(
+      syncer::ModelType type) override {
     return service_->AsWeakPtr();
   }
 
  protected:
-  std::unique_ptr<ModelTypeChangeProcessor> CreateProcessor(
-      ModelType type,
-      ModelTypeService* service) {
-    std::unique_ptr<SharedModelTypeProcessor> processor =
-        base::MakeUnique<SharedModelTypeProcessor>(type, service);
+  std::unique_ptr<syncer_v2::ModelTypeChangeProcessor> CreateProcessor(
+      syncer::ModelType type,
+      syncer_v2::ModelTypeService* service) {
+    std::unique_ptr<syncer_v2::SharedModelTypeProcessor> processor =
+        base::MakeUnique<syncer_v2::SharedModelTypeProcessor>(type, service);
     type_processor_ = processor.get();
     return std::move(processor);
   }
@@ -177,7 +181,7 @@ class NonUIModelTypeControllerTest : public testing::Test,
   void InitializeModelTypeService() {
     if (!model_thread_runner_ ||
         model_thread_runner_->BelongsToCurrentThread()) {
-      service_.reset(new StubModelTypeService(
+      service_.reset(new syncer_v2::StubModelTypeService(
           base::Bind(&NonUIModelTypeControllerTest::CreateProcessor,
                      base::Unretained(this))));
     } else {
@@ -218,8 +222,8 @@ class NonUIModelTypeControllerTest : public testing::Test,
   void OnMetadataLoaded() {
     if (model_thread_runner_->BelongsToCurrentThread()) {
       if (!type_processor_->IsAllowingChanges()) {
-        type_processor_->OnMetadataLoaded(SyncError(),
-                                          base::MakeUnique<MetadataBatch>());
+        type_processor_->OnMetadataLoaded(
+            syncer::SyncError(), base::MakeUnique<syncer_v2::MetadataBatch>());
       }
     } else {
       model_thread_runner_->PostTask(
@@ -284,44 +288,46 @@ class NonUIModelTypeControllerTest : public testing::Test,
     auto_run_tasks_ = auto_run_tasks;
   }
 
-  void LoadModelsDone(ModelType type, const SyncError& error) {
+  void LoadModelsDone(syncer::ModelType type, const syncer::SyncError& error) {
     load_models_callback_called_ = true;
     load_models_error_ = error;
   }
 
-  void AssociationDone(DataTypeController::ConfigureResult result,
-                       const SyncMergeResult& local_merge_result,
-                       const SyncMergeResult& syncer_merge_result) {
-    EXPECT_EQ(DataTypeController::OK, result);
+  void AssociationDone(sync_driver::DataTypeController::ConfigureResult result,
+                       const syncer::SyncMergeResult& local_merge_result,
+                       const syncer::SyncMergeResult& syncer_merge_result) {
+    EXPECT_EQ(sync_driver::DataTypeController::OK, result);
     association_callback_called_ = true;
   }
 
-  SharedModelTypeProcessor* type_processor_;
+  syncer_v2::SharedModelTypeProcessor* type_processor_;
   std::unique_ptr<TestNonUIModelTypeController> controller_;
 
   bool auto_run_tasks_;
   bool load_models_callback_called_;
-  SyncError load_models_error_;
+  syncer::SyncError load_models_error_;
   bool association_callback_called_;
   base::MessageLoopForUI ui_loop_;
   base::Thread model_thread_;
   scoped_refptr<base::SingleThreadTaskRunner> model_thread_runner_;
   MockSyncBackend backend_;
   MockBackendDataTypeConfigurer configurer_;
-  std::unique_ptr<StubModelTypeService> service_;
+  std::unique_ptr<syncer_v2::StubModelTypeService> service_;
 };
 
 TEST_F(NonUIModelTypeControllerTest, InitialState) {
-  EXPECT_EQ(DICTIONARY, controller_->type());
-  EXPECT_EQ(DataTypeController::NOT_RUNNING, controller_->state());
+  EXPECT_EQ(syncer::DICTIONARY, controller_->type());
+  EXPECT_EQ(sync_driver::DataTypeController::NOT_RUNNING, controller_->state());
 }
 
 TEST_F(NonUIModelTypeControllerTest, LoadModelsOnBackendThread) {
   SetAutoRunTasks(false);
   LoadModels();
-  EXPECT_EQ(DataTypeController::MODEL_STARTING, controller_->state());
+  EXPECT_EQ(sync_driver::DataTypeController::MODEL_STARTING,
+            controller_->state());
   RunAllTasks();
-  EXPECT_EQ(DataTypeController::MODEL_LOADED, controller_->state());
+  EXPECT_EQ(sync_driver::DataTypeController::MODEL_LOADED,
+            controller_->state());
   EXPECT_TRUE(load_models_callback_called_);
   EXPECT_FALSE(load_models_error_.IsSet());
   ExpectProcessorConnected(false);
@@ -331,19 +337,21 @@ TEST_F(NonUIModelTypeControllerTest, LoadModelsTwice) {
   LoadModels();
   SetAutoRunTasks(false);
   LoadModels();
-  EXPECT_EQ(DataTypeController::MODEL_LOADED, controller_->state());
+  EXPECT_EQ(sync_driver::DataTypeController::MODEL_LOADED,
+            controller_->state());
   // The second LoadModels call should set the error.
   EXPECT_TRUE(load_models_error_.IsSet());
 }
 
 TEST_F(NonUIModelTypeControllerTest, ActivateDataTypeOnBackendThread) {
   LoadModels();
-  EXPECT_EQ(DataTypeController::MODEL_LOADED, controller_->state());
+  EXPECT_EQ(sync_driver::DataTypeController::MODEL_LOADED,
+            controller_->state());
   RegisterWithBackend();
   ExpectProcessorConnected(true);
 
   StartAssociating();
-  EXPECT_EQ(DataTypeController::RUNNING, controller_->state());
+  EXPECT_EQ(sync_driver::DataTypeController::RUNNING, controller_->state());
 }
 
 TEST_F(NonUIModelTypeControllerTest, Stop) {
@@ -354,7 +362,7 @@ TEST_F(NonUIModelTypeControllerTest, Stop) {
   StartAssociating();
 
   DeactivateDataTypeAndStop();
-  EXPECT_EQ(DataTypeController::NOT_RUNNING, controller_->state());
+  EXPECT_EQ(sync_driver::DataTypeController::NOT_RUNNING, controller_->state());
 }
 
-}  // namespace syncer
+}  // namespace sync_driver_v2

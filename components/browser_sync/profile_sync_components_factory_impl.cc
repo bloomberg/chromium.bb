@@ -52,14 +52,14 @@ using bookmarks::BookmarkModel;
 using sync_bookmarks::BookmarkChangeProcessor;
 using sync_bookmarks::BookmarkDataTypeController;
 using sync_bookmarks::BookmarkModelAssociator;
-using syncer::DataTypeController;
-using syncer::DataTypeManager;
-using syncer::DataTypeManagerImpl;
-using syncer::DataTypeManagerObserver;
-using syncer::DeviceInfoDataTypeController;
-using syncer::ProxyDataTypeController;
-using syncer::UIDataTypeController;
-using syncer::UIModelTypeController;
+using sync_driver::DataTypeController;
+using sync_driver::DataTypeManager;
+using sync_driver::DataTypeManagerImpl;
+using sync_driver::DataTypeManagerObserver;
+using sync_driver::DeviceInfoDataTypeController;
+using sync_driver::ProxyDataTypeController;
+using sync_driver::UIDataTypeController;
+using sync_driver_v2::UIModelTypeController;
 using sync_sessions::SessionDataTypeController;
 
 namespace browser_sync {
@@ -91,7 +91,7 @@ const base::Feature kSyncPreferencesFeature{"SyncPreferences",
 }  // namespace
 
 ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
-    syncer::SyncClient* sync_client,
+    sync_driver::SyncClient* sync_client,
     version_info::Channel channel,
     const std::string& version,
     bool is_tablet,
@@ -125,7 +125,7 @@ ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
 ProfileSyncComponentsFactoryImpl::~ProfileSyncComponentsFactoryImpl() {}
 
 void ProfileSyncComponentsFactoryImpl::RegisterDataTypes(
-    syncer::SyncService* sync_service,
+    sync_driver::SyncService* sync_service,
     const RegisterDataTypesMethod& register_platform_types_method) {
   syncer::ModelTypeSet disabled_types =
       GetDisabledTypesFromCommandLine(command_line_);
@@ -138,11 +138,11 @@ void ProfileSyncComponentsFactoryImpl::RegisterDataTypes(
 }
 
 void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
-    syncer::SyncService* sync_service,
+    sync_driver::SyncService* sync_service,
     syncer::ModelTypeSet disabled_types,
     syncer::ModelTypeSet enabled_types) {
   base::Closure error_callback =
-      base::Bind(&syncer::ChromeReportUnrecoverableError, channel_);
+      base::Bind(&ChromeReportUnrecoverableError, channel_);
 
   // TODO(stanisc): can DEVICE_INFO be one of disabled datatypes?
   if (base::FeatureList::IsEnabled(switches::kSyncUSSDeviceInfo)) {
@@ -287,27 +287,26 @@ DataTypeManager* ProfileSyncComponentsFactoryImpl::CreateDataTypeManager(
     const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
         debug_info_listener,
     const DataTypeController::TypeMap* controllers,
-    const syncer::DataTypeEncryptionHandler* encryption_handler,
-    syncer::SyncBackendHost* backend,
+    const sync_driver::DataTypeEncryptionHandler* encryption_handler,
+    SyncBackendHost* backend,
     DataTypeManagerObserver* observer) {
   return new DataTypeManagerImpl(debug_info_listener, controllers,
                                  encryption_handler, backend, observer);
 }
 
-syncer::SyncBackendHost*
-ProfileSyncComponentsFactoryImpl::CreateSyncBackendHost(
+SyncBackendHost* ProfileSyncComponentsFactoryImpl::CreateSyncBackendHost(
     const std::string& name,
     invalidation::InvalidationService* invalidator,
-    const base::WeakPtr<syncer::SyncPrefs>& sync_prefs,
+    const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
     const base::FilePath& sync_folder) {
-  return new syncer::SyncBackendHostImpl(name, sync_client_, ui_thread_,
-                                         invalidator, sync_prefs, sync_folder);
+  return new SyncBackendHostImpl(name, sync_client_, ui_thread_, invalidator,
+                                 sync_prefs, sync_folder);
 }
 
-std::unique_ptr<syncer::LocalDeviceInfoProvider>
+std::unique_ptr<sync_driver::LocalDeviceInfoProvider>
 ProfileSyncComponentsFactoryImpl::CreateLocalDeviceInfoProvider() {
-  return base::MakeUnique<syncer::LocalDeviceInfoProviderImpl>(
-      channel_, version_, is_tablet_);
+  return base::MakeUnique<LocalDeviceInfoProviderImpl>(channel_, version_,
+                                                       is_tablet_);
 }
 
 class TokenServiceProvider
@@ -395,9 +394,9 @@ ProfileSyncComponentsFactoryImpl::CreateAttachmentService(
   return attachment_service;
 }
 
-syncer::SyncApiComponentFactory::SyncComponents
+sync_driver::SyncApiComponentFactory::SyncComponents
 ProfileSyncComponentsFactoryImpl::CreateBookmarkSyncComponents(
-    syncer::SyncService* sync_service,
+    sync_driver::SyncService* sync_service,
     std::unique_ptr<syncer::DataTypeErrorHandler> error_handler) {
   BookmarkModel* bookmark_model =
       sync_service->GetSyncClient()->GetBookmarkModel();

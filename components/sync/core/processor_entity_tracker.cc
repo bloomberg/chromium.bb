@@ -10,7 +10,7 @@
 #include "components/sync/core/non_blocking_sync_common.h"
 #include "components/sync/syncable/syncable_util.h"
 
-namespace syncer {
+namespace syncer_v2 {
 
 namespace {
 
@@ -35,7 +35,7 @@ std::unique_ptr<ProcessorEntityTracker> ProcessorEntityTracker::CreateNew(
   metadata.set_sequence_number(0);
   metadata.set_acked_sequence_number(0);
   metadata.set_server_version(kUncommittedVersion);
-  metadata.set_creation_time(TimeToProtoTime(creation_time));
+  metadata.set_creation_time(syncer::TimeToProtoTime(creation_time));
 
   return std::unique_ptr<ProcessorEntityTracker>(
       new ProcessorEntityTracker(storage_key, &metadata));
@@ -130,7 +130,7 @@ void ProcessorEntityTracker::RecordAcceptedUpdate(
   RecordIgnoredUpdate(update);
   metadata_.set_is_deleted(update.entity->is_deleted());
   metadata_.set_modification_time(
-      TimeToProtoTime(update.entity->modification_time));
+      syncer::TimeToProtoTime(update.entity->modification_time));
   UpdateSpecificsHash(update.entity->specifics);
 }
 
@@ -154,18 +154,19 @@ void ProcessorEntityTracker::MakeLocalChange(std::unique_ptr<EntityData> data) {
 
   IncrementSequenceNumber();
   UpdateSpecificsHash(data->specifics);
-  metadata_.set_modification_time(TimeToProtoTime(data->modification_time));
+  metadata_.set_modification_time(
+      syncer::TimeToProtoTime(data->modification_time));
   metadata_.set_is_deleted(false);
 
   data->id = metadata_.server_id();
-  data->creation_time = ProtoTimeToTime(metadata_.creation_time());
+  data->creation_time = syncer::ProtoTimeToTime(metadata_.creation_time());
   commit_data_.reset();
   CacheCommitData(data.get());
 }
 
 void ProcessorEntityTracker::Delete() {
   IncrementSequenceNumber();
-  metadata_.set_modification_time(TimeToProtoTime(base::Time::Now()));
+  metadata_.set_modification_time(syncer::TimeToProtoTime(base::Time::Now()));
   metadata_.set_is_deleted(true);
   metadata_.clear_specifics_hash();
   // Clear any cached pending commit data.
@@ -184,8 +185,9 @@ void ProcessorEntityTracker::InitializeCommitRequestData(
     EntityData data;
     data.client_tag_hash = metadata_.client_tag_hash();
     data.id = metadata_.server_id();
-    data.creation_time = ProtoTimeToTime(metadata_.creation_time());
-    data.modification_time = ProtoTimeToTime(metadata_.modification_time());
+    data.creation_time = syncer::ProtoTimeToTime(metadata_.creation_time());
+    data.modification_time =
+        syncer::ProtoTimeToTime(metadata_.modification_time());
     request->entity = data.PassToPtr();
   }
 
@@ -247,4 +249,4 @@ void ProcessorEntityTracker::UpdateSpecificsHash(
   }
 }
 
-}  // namespace syncer
+}  // namespace syncer_v2

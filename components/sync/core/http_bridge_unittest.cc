@@ -465,13 +465,14 @@ TEST_F(MAYBE_SyncHttpBridgeTest, AbortAndReleaseBeforeFetchComplete) {
 void HttpBridgeRunOnSyncThread(
     net::URLRequestContextGetter* baseline_context_getter,
     CancelationSignal* factory_cancelation_signal,
-    HttpPostProviderFactory** bridge_factory_out,
-    HttpPostProviderInterface** bridge_out,
+    syncer::HttpPostProviderFactory** bridge_factory_out,
+    syncer::HttpPostProviderInterface** bridge_out,
     base::WaitableEvent* signal_when_created,
     base::WaitableEvent* wait_for_shutdown) {
-  std::unique_ptr<HttpBridgeFactory> bridge_factory(new HttpBridgeFactory(
-      baseline_context_getter, NetworkTimeUpdateCallback(),
-      factory_cancelation_signal));
+  std::unique_ptr<syncer::HttpBridgeFactory> bridge_factory(
+      new syncer::HttpBridgeFactory(baseline_context_getter,
+                                    NetworkTimeUpdateCallback(),
+                                    factory_cancelation_signal));
   bridge_factory->Init("test", BindToTrackerCallback());
   *bridge_factory_out = bridge_factory.get();
 
@@ -496,8 +497,8 @@ TEST_F(MAYBE_SyncHttpBridgeTest, RequestContextGetterReleaseOrder) {
   base::Thread sync_thread("SyncThread");
   sync_thread.Start();
 
-  HttpPostProviderFactory* factory = NULL;
-  HttpPostProviderInterface* bridge = NULL;
+  syncer::HttpPostProviderFactory* factory = NULL;
+  syncer::HttpPostProviderInterface* bridge = NULL;
 
   scoped_refptr<net::URLRequestContextGetter> baseline_context_getter(
       new net::TestURLRequestContextGetter(io_thread()->task_runner()));
@@ -562,7 +563,7 @@ TEST_F(MAYBE_SyncHttpBridgeTest, EarlyAbortFactory) {
 
   // UI Thread: Initialize the HttpBridgeFactory.  The next step would be to
   // post a task to SBH::Core to have it initialized.
-  std::unique_ptr<HttpBridgeFactory> factory(new HttpBridgeFactory(
+  std::unique_ptr<syncer::HttpBridgeFactory> factory(new HttpBridgeFactory(
       baseline_context_getter.get(), NetworkTimeUpdateCallback(),
       &release_request_context_signal));
 

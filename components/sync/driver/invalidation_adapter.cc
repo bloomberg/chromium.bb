@@ -4,9 +4,10 @@
 
 #include "components/sync/driver/invalidation_adapter.h"
 
-namespace syncer {
+namespace browser_sync {
 
-InvalidationAdapter::InvalidationAdapter(const Invalidation& invalidation)
+InvalidationAdapter::InvalidationAdapter(
+    const syncer::Invalidation& invalidation)
     : invalidation_(invalidation) {}
 
 InvalidationAdapter::~InvalidationAdapter() {}
@@ -31,4 +32,4 @@ void InvalidationAdapter::Drop() {
   invalidation_.Drop();
 }
 
-}  // namespace syncer
+}  // namespace browser_sync

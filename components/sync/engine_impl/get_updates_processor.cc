@@ -6,8 +6,6 @@
 
 #include <stddef.h>
 
-#include <utility>
-
 #include "base/trace_event/trace_event.h"
 #include "components/sync/engine/events/get_updates_response_event.h"
 #include "components/sync/engine_impl/cycle/status_controller.h"
@@ -19,13 +17,14 @@
 #include "components/sync/syncable/nigori_handler.h"
 #include "components/sync/syncable/syncable_read_transaction.h"
 
+typedef std::vector<const sync_pb::SyncEntity*> SyncEntityList;
+typedef std::map<syncer::ModelType, SyncEntityList> TypeSyncEntityMap;
+
 namespace syncer {
 
-namespace {
-
-typedef std::vector<const sync_pb::SyncEntity*> SyncEntityList;
-typedef std::map<ModelType, SyncEntityList> TypeSyncEntityMap;
 typedef std::map<ModelType, size_t> TypeToIndexMap;
+
+namespace {
 
 bool ShouldRequestEncryptionKey(SyncCycleContext* context) {
   syncable::Directory* dir = context->directory();
@@ -285,9 +284,9 @@ SyncerError GetUpdatesProcessor::ProcessResponse(
     return SERVER_RESPONSE_VALIDATION_FAILED;
   }
 
-  SyncerError result =
+  syncer::SyncerError result =
       ProcessGetUpdatesResponse(request_types, gu_response, status);
-  if (result != SYNCER_OK)
+  if (result != syncer::SYNCER_OK)
     return result;
 
   if (gu_response.changes_remaining() == 0) {
@@ -297,7 +296,7 @@ SyncerError GetUpdatesProcessor::ProcessResponse(
   }
 }
 
-SyncerError GetUpdatesProcessor::ProcessGetUpdatesResponse(
+syncer::SyncerError GetUpdatesProcessor::ProcessGetUpdatesResponse(
     ModelTypeSet gu_types,
     const sync_pb::GetUpdatesResponse& gu_response,
     StatusController* status_controller) {
@@ -310,7 +309,7 @@ SyncerError GetUpdatesProcessor::ProcessGetUpdatesResponse(
                                  &progress_index_by_type);
   if (gu_types.Size() != progress_index_by_type.size()) {
     NOTREACHED() << "Missing progress markers in GetUpdates response.";
-    return SERVER_RESPONSE_VALIDATION_FAILED;
+    return syncer::SERVER_RESPONSE_VALIDATION_FAILED;
   }
 
   TypeToIndexMap context_by_type;
@@ -335,11 +334,11 @@ SyncerError GetUpdatesProcessor::ProcessGetUpdatesResponse(
       context.CopyFrom(gu_response.context_mutations(context_iter->second));
 
     if (update_handler_iter != update_handler_map_->end()) {
-      SyncerError result =
+      syncer::SyncerError result =
           update_handler_iter->second->ProcessGetUpdatesResponse(
               gu_response.new_progress_marker(progress_marker_iter->second),
               context, updates_iter->second, status_controller);
-      if (result != SYNCER_OK)
+      if (result != syncer::SYNCER_OK)
         return result;
     } else {
       DLOG(WARNING) << "Ignoring received updates of a type we can't handle.  "
@@ -350,7 +349,7 @@ SyncerError GetUpdatesProcessor::ProcessGetUpdatesResponse(
   DCHECK(progress_marker_iter == progress_index_by_type.end() &&
          updates_iter == updates_by_type.end());
 
-  return SYNCER_OK;
+  return syncer::SYNCER_OK;
 }
 
 void GetUpdatesProcessor::ApplyUpdates(ModelTypeSet gu_types,

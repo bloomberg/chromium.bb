@@ -6,16 +6,16 @@
 
 #include "components/sync/core/activation_context.h"
 
-namespace syncer {
+namespace syncer_v2 {
 
 FakeModelTypeConnector::FakeModelTypeConnector() {}
 
 FakeModelTypeConnector::~FakeModelTypeConnector() {}
 
 void FakeModelTypeConnector::ConnectType(
-    ModelType type,
+    syncer::ModelType type,
     std::unique_ptr<ActivationContext> activation_context) {}
 
-void FakeModelTypeConnector::DisconnectType(ModelType type) {}
+void FakeModelTypeConnector::DisconnectType(syncer::ModelType type) {}
 
-}  // namespace syncer
+}  // namespace syncer_v2

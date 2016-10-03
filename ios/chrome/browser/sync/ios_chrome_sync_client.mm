@@ -150,7 +150,7 @@ void IOSChromeSyncClient::Initialize() {
 
   // Component factory may already be set in tests.
   if (!GetSyncApiComponentFactory()) {
-    const GURL sync_service_url = syncer::GetSyncServiceURL(
+    const GURL sync_service_url = GetSyncServiceURL(
         *base::CommandLine::ForCurrentProcess(), ::GetChannel());
     ProfileOAuth2TokenService* token_service =
         OAuth2TokenServiceFactory::GetForBrowserState(browser_state_);
@@ -170,7 +170,7 @@ void IOSChromeSyncClient::Initialize() {
   }
 }
 
-syncer::SyncService* IOSChromeSyncClient::GetSyncService() {
+sync_driver::SyncService* IOSChromeSyncClient::GetSyncService() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   return IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state_);
 }
@@ -209,10 +209,10 @@ base::Closure IOSChromeSyncClient::GetPasswordStateChangedCallback() {
       base::Unretained(browser_state_));
 }
 
-syncer::SyncApiComponentFactory::RegisterDataTypesMethod
+sync_driver::SyncApiComponentFactory::RegisterDataTypesMethod
 IOSChromeSyncClient::GetRegisterPlatformTypesCallback() {
   // The iOS port does not have any platform-specific datatypes.
-  return syncer::SyncApiComponentFactory::RegisterDataTypesMethod();
+  return sync_driver::SyncApiComponentFactory::RegisterDataTypesMethod();
 }
 
 BookmarkUndoService* IOSChromeSyncClient::GetBookmarkUndoServiceIfExists() {
@@ -327,7 +327,7 @@ IOSChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
   }
 }
 
-base::WeakPtr<syncer::ModelTypeService>
+base::WeakPtr<syncer_v2::ModelTypeService>
 IOSChromeSyncClient::GetModelTypeServiceForType(syncer::ModelType type) {
   switch (type) {
     case syncer::DEVICE_INFO:
@@ -337,7 +337,7 @@ IOSChromeSyncClient::GetModelTypeServiceForType(syncer::ModelType type) {
           ->AsWeakPtr();
     default:
       NOTREACHED();
-      return base::WeakPtr<syncer::ModelTypeService>();
+      return base::WeakPtr<syncer_v2::ModelTypeService>();
   }
 }
 
@@ -348,15 +348,15 @@ IOSChromeSyncClient::CreateModelWorkerForGroup(
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   switch (group) {
     case syncer::GROUP_DB:
-      return new syncer::BrowserThreadModelWorker(
+      return new browser_sync::BrowserThreadModelWorker(
           web::WebThread::GetTaskRunnerForThread(web::WebThread::DB),
           syncer::GROUP_DB, observer);
     case syncer::GROUP_FILE:
-      return new syncer::BrowserThreadModelWorker(
+      return new browser_sync::BrowserThreadModelWorker(
           web::WebThread::GetTaskRunnerForThread(web::WebThread::FILE),
           syncer::GROUP_FILE, observer);
     case syncer::GROUP_UI:
-      return new syncer::UIModelWorker(
+      return new browser_sync::UIModelWorker(
           web::WebThread::GetTaskRunnerForThread(web::WebThread::UI), observer);
     case syncer::GROUP_PASSIVE:
       return new syncer::PassiveModelWorker(observer);
@@ -378,19 +378,19 @@ IOSChromeSyncClient::CreateModelWorkerForGroup(
   }
 }
 
-syncer::SyncApiComponentFactory*
+sync_driver::SyncApiComponentFactory*
 IOSChromeSyncClient::GetSyncApiComponentFactory() {
   return component_factory_.get();
 }
 
 void IOSChromeSyncClient::SetSyncApiComponentFactoryForTesting(
-    std::unique_ptr<syncer::SyncApiComponentFactory> component_factory) {
+    std::unique_ptr<sync_driver::SyncApiComponentFactory> component_factory) {
   component_factory_ = std::move(component_factory);
 }
 
 // static
 void IOSChromeSyncClient::GetDeviceInfoTrackers(
-    std::vector<const syncer::DeviceInfoTracker*>* trackers) {
+    std::vector<const sync_driver::DeviceInfoTracker*>* trackers) {
   DCHECK(trackers);
   std::vector<ios::ChromeBrowserState*> browser_state_list =
       GetApplicationContext()
@@ -400,7 +400,7 @@ void IOSChromeSyncClient::GetDeviceInfoTrackers(
     browser_sync::ProfileSyncService* profile_sync_service =
         IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state);
     if (profile_sync_service != nullptr) {
-      const syncer::DeviceInfoTracker* tracker =
+      const sync_driver::DeviceInfoTracker* tracker =
           profile_sync_service->GetDeviceInfoTracker();
       if (tracker != nullptr) {
         trackers->push_back(tracker);

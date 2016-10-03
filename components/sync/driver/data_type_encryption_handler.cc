@@ -4,7 +4,7 @@
 
 #include "components/sync/driver/data_type_encryption_handler.h"
 
-namespace syncer {
+namespace sync_driver {
 
 DataTypeEncryptionHandler::DataTypeEncryptionHandler() {}
 DataTypeEncryptionHandler::~DataTypeEncryptionHandler() {}

@@ -4,10 +4,10 @@
 
 #include "components/sync/driver/sync_frontend.h"
 
-namespace syncer {
+namespace sync_driver {
 
 SyncFrontend::SyncFrontend() {}
 
 SyncFrontend::~SyncFrontend() {}
 
-}  // namespace syncer
+}  // namespace sync_driver

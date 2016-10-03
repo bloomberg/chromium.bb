@@ -36,9 +36,12 @@ class BookmarkNode;
 namespace syncer {
 class BaseNode;
 class BaseTransaction;
-class SyncClient;
-class WriteTransaction;
 struct UserShare;
+class WriteTransaction;
+}
+
+namespace sync_driver {
+class SyncClient;
 }
 
 namespace sync_bookmarks {
@@ -48,8 +51,8 @@ namespace sync_bookmarks {
 // * Methods to get a bookmark node for a given sync node and vice versa.
 // * Persisting model associations and loading them back.
 class BookmarkModelAssociator
-    : public syncer::PerDataTypeAssociatorInterface<bookmarks::BookmarkNode,
-                                                    int64_t> {
+    : public sync_driver::
+          PerDataTypeAssociatorInterface<bookmarks::BookmarkNode, int64_t> {
  public:
   static syncer::ModelType model_type() { return syncer::BOOKMARKS; }
   // |expect_mobile_bookmarks_folder| controls whether or not we
@@ -57,7 +60,7 @@ class BookmarkModelAssociator
   // Should be set to true only by mobile clients.
   BookmarkModelAssociator(
       bookmarks::BookmarkModel* bookmark_model,
-      syncer::SyncClient* sync_client,
+      sync_driver::SyncClient* sync_client,
       syncer::UserShare* user_share,
       std::unique_ptr<syncer::DataTypeErrorHandler> unrecoverable_error_handler,
       bool expect_mobile_bookmarks_folder);
@@ -290,7 +293,7 @@ class BookmarkModelAssociator
 
   base::ThreadChecker thread_checker_;
   bookmarks::BookmarkModel* bookmark_model_;
-  syncer::SyncClient* sync_client_;
+  sync_driver::SyncClient* sync_client_;
   syncer::UserShare* user_share_;
   std::unique_ptr<syncer::DataTypeErrorHandler> unrecoverable_error_handler_;
   const bool expect_mobile_bookmarks_folder_;

@@ -13,44 +13,45 @@ FakeSyncChangeProcessor::FakeSyncChangeProcessor() {}
 
 FakeSyncChangeProcessor::~FakeSyncChangeProcessor() {}
 
-SyncError FakeSyncChangeProcessor::ProcessSyncChanges(
+syncer::SyncError FakeSyncChangeProcessor::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
-    const SyncChangeList& change_list) {
+    const syncer::SyncChangeList& change_list) {
   changes_.insert(changes_.end(), change_list.begin(), change_list.end());
-  return SyncError();
+  return syncer::SyncError();
 }
 
-SyncDataList FakeSyncChangeProcessor::GetAllSyncData(ModelType type) const {
+syncer::SyncDataList FakeSyncChangeProcessor::GetAllSyncData(
+    syncer::ModelType type) const {
   return data_;
 }
 
-SyncError FakeSyncChangeProcessor::UpdateDataTypeContext(
+syncer::SyncError FakeSyncChangeProcessor::UpdateDataTypeContext(
     ModelType type,
     ContextRefreshStatus refresh_status,
     const std::string& context) {
   context_ = context;
-  return SyncError();
+  return syncer::SyncError();
 }
 
 void FakeSyncChangeProcessor::AddLocalChangeObserver(
-    LocalChangeObserver* observer) {}
+    syncer::LocalChangeObserver* observer) {}
 
 void FakeSyncChangeProcessor::RemoveLocalChangeObserver(
-    LocalChangeObserver* observer) {}
+    syncer::LocalChangeObserver* observer) {}
 
-const SyncChangeList& FakeSyncChangeProcessor::changes() const {
+const syncer::SyncChangeList& FakeSyncChangeProcessor::changes() const {
   return changes_;
 }
 
-SyncChangeList& FakeSyncChangeProcessor::changes() {
+syncer::SyncChangeList& FakeSyncChangeProcessor::changes() {
   return changes_;
 }
 
-const SyncDataList& FakeSyncChangeProcessor::data() const {
+const syncer::SyncDataList& FakeSyncChangeProcessor::data() const {
   return data_;
 }
 
-SyncDataList& FakeSyncChangeProcessor::data() {
+syncer::SyncDataList& FakeSyncChangeProcessor::data() {
   return data_;
 }
 

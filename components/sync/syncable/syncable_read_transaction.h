@@ -11,9 +11,7 @@
 #include "components/sync/syncable/syncable_base_transaction.h"
 
 namespace syncer {
-
 class ReadTransaction;
-
 namespace syncable {
 
 // Locks db in constructor, unlocks in destructor.

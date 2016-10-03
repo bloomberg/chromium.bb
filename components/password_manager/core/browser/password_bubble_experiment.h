@@ -8,7 +8,7 @@
 class PrefRegistrySimple;
 class PrefService;
 
-namespace syncer {
+namespace sync_driver {
 class SyncService;
 }
 
@@ -32,7 +32,7 @@ void RegisterPrefs(PrefRegistrySimple* registry);
 int GetSmartBubbleDismissalThreshold();
 
 // A Smart Lock user is a sync user without a custom passphrase.
-bool IsSmartLockUser(const syncer::SyncService* sync_service);
+bool IsSmartLockUser(const sync_driver::SyncService* sync_service);
 
 enum class SmartLockBranding { NONE, FULL, SAVE_PROMPT_ONLY };
 
@@ -43,20 +43,20 @@ enum class SmartLockBranding { NONE, FULL, SAVE_PROMPT_ONLY };
 // * returns SAVE_PROMPT_ONLY if it only should be referred to as Smart Lock in
 //   the save password bubble.
 SmartLockBranding GetSmartLockBrandingState(
-    const syncer::SyncService* sync_service);
+    const sync_driver::SyncService* sync_service);
 
 // Convenience function for checking whether the result of
 // GetSmartLockBrandingState is SmartLockBranding::FULL.
-bool IsSmartLockBrandingEnabled(const syncer::SyncService* sync_service);
+bool IsSmartLockBrandingEnabled(const sync_driver::SyncService* sync_service);
 
 // Convenience function for checking whether the result of
 // GetSmartLockBrandingState is not equal to SmartLockBranding::NONE.
 bool IsSmartLockBrandingSavePromptEnabled(
-    const syncer::SyncService* sync_service);
+    const sync_driver::SyncService* sync_service);
 
 // Returns true if save prompt should contain first run experience.
 bool ShouldShowSavePromptFirstRunExperience(
-    const syncer::SyncService* sync_service,
+    const sync_driver::SyncService* sync_service,
     PrefService* prefs);
 
 // Sets appropriate value to the preference which controls appearance of the
@@ -76,7 +76,7 @@ void TurnOffAutoSignin(PrefService* prefs);
 // Returns true if the Chrome Sign In promo should be shown.
 bool ShouldShowChromeSignInPasswordPromo(
     PrefService* prefs,
-    const syncer::SyncService* sync_service);
+    const sync_driver::SyncService* sync_service);
 
 }  // namespace password_bubble_experiment
 

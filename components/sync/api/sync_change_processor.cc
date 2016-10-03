@@ -10,12 +10,12 @@ SyncChangeProcessor::SyncChangeProcessor() {}
 
 SyncChangeProcessor::~SyncChangeProcessor() {}
 
-SyncError SyncChangeProcessor::UpdateDataTypeContext(
+syncer::SyncError SyncChangeProcessor::UpdateDataTypeContext(
     ModelType type,
-    SyncChangeProcessor::ContextRefreshStatus refresh_status,
+    syncer::SyncChangeProcessor::ContextRefreshStatus refresh_status,
     const std::string& context) {
   // Do nothing.
-  return SyncError();
+  return syncer::SyncError();
 }
 
 void SyncChangeProcessor::AddLocalChangeObserver(

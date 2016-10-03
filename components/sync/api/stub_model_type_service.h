@@ -10,7 +10,7 @@
 
 #include "components/sync/api/model_type_service.h"
 
-namespace syncer {
+namespace syncer_v2 {
 
 // A non-functional implementation of ModelTypeService for
 // testing purposes.
@@ -22,10 +22,10 @@ class StubModelTypeService : public ModelTypeService {
   ~StubModelTypeService() override;
 
   std::unique_ptr<MetadataChangeList> CreateMetadataChangeList() override;
-  SyncError MergeSyncData(
+  syncer::SyncError MergeSyncData(
       std::unique_ptr<MetadataChangeList> metadata_change_list,
       EntityDataMap entity_data_map) override;
-  SyncError ApplySyncChanges(
+  syncer::SyncError ApplySyncChanges(
       std::unique_ptr<MetadataChangeList> metadata_change_list,
       EntityChangeList entity_changes) override;
   void GetData(StorageKeyList storage_keys, DataCallback callback) override;
@@ -37,6 +37,6 @@ class StubModelTypeService : public ModelTypeService {
   bool HasChangeProcessor() const;
 };
 
-}  // namespace syncer
+}  // namespace syncer_v2
 
 #endif  // COMPONENTS_SYNC_API_STUB_MODEL_TYPE_SERVICE_H_

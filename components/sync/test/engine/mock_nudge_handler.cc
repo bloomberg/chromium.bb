@@ -11,15 +11,15 @@ MockNudgeHandler::MockNudgeHandler()
 
 MockNudgeHandler::~MockNudgeHandler() {}
 
-void MockNudgeHandler::NudgeForInitialDownload(ModelType type) {
+void MockNudgeHandler::NudgeForInitialDownload(syncer::ModelType type) {
   num_initial_nudges_++;
 }
 
-void MockNudgeHandler::NudgeForCommit(ModelType type) {
+void MockNudgeHandler::NudgeForCommit(syncer::ModelType type) {
   num_commit_nudges_++;
 }
 
-void MockNudgeHandler::NudgeForRefresh(ModelType type) {
+void MockNudgeHandler::NudgeForRefresh(syncer::ModelType type) {
   num_refresh_nudges_++;
 }
 

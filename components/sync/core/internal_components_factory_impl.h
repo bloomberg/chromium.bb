@@ -24,7 +24,7 @@ class InternalComponentsFactoryImpl : public InternalComponentsFactory {
   std::unique_ptr<SyncScheduler> BuildScheduler(
       const std::string& name,
       SyncCycleContext* context,
-      CancelationSignal* cancelation_signal) override;
+      syncer::CancelationSignal* cancelation_signal) override;
 
   std::unique_ptr<SyncCycleContext> BuildContext(
       ServerConnectionManager* connection_manager,

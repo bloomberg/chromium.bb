@@ -11,14 +11,14 @@
 #include "base/macros.h"
 #include "components/sync/driver/data_type_controller.h"
 
-namespace syncer {
+namespace sync_driver {
 
 // Implementation for proxy datatypes. These are datatype that have no
 // representation in sync, and therefore no change processor or syncable
 // service.
 class ProxyDataTypeController : public DataTypeController {
  public:
-  explicit ProxyDataTypeController(ModelType type);
+  explicit ProxyDataTypeController(syncer::ModelType type);
   ~ProxyDataTypeController() override;
 
   // DataTypeController interface.
@@ -34,7 +34,7 @@ class ProxyDataTypeController : public DataTypeController {
   void GetAllNodes(const AllNodesCallback& callback) override;
 
  protected:
-  std::unique_ptr<DataTypeErrorHandler> CreateErrorHandler() override;
+  std::unique_ptr<syncer::DataTypeErrorHandler> CreateErrorHandler() override;
 
  private:
   State state_;
@@ -42,6 +42,6 @@ class ProxyDataTypeController : public DataTypeController {
   DISALLOW_COPY_AND_ASSIGN(ProxyDataTypeController);
 };
 
-}  // namespace syncer
+}  // namespace sync_driver
 
 #endif  // COMPONENTS_SYNC_DRIVER_PROXY_DATA_TYPE_CONTROLLER_H__

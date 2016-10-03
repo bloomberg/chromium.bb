@@ -5,11 +5,8 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_PERSONAL_DATA_MANAGER_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_PERSONAL_DATA_MANAGER_H_
 
-#include <list>
 #include <memory>
 #include <set>
-#include <string>
-#include <unordered_set>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -34,6 +31,10 @@ class PrefService;
 class RemoveAutofillTester;
 class SigninManagerBase;
 
+namespace sync_driver {
+class SyncService;
+}
+
 namespace autofill {
 class AutofillInteractiveTest;
 class AutofillTest;
@@ -46,10 +47,6 @@ namespace autofill_helper {
 void SetProfiles(int, std::vector<autofill::AutofillProfile>*);
 void SetCreditCards(int, std::vector<autofill::CreditCard>*);
 }  // namespace autofill_helper
-
-namespace syncer {
-class SyncService;
-}  // namespace syncer
 
 namespace autofill {
 
@@ -79,7 +76,7 @@ class PersonalDataManager : public KeyedService,
 
   // Called once the sync service is known to be instantiated. Note that it may
   // not be started, but it's preferences can be queried.
-  void OnSyncServiceInitialized(syncer::SyncService* sync_service);
+  void OnSyncServiceInitialized(sync_driver::SyncService* sync_service);
 
   // WebDataServiceConsumer:
   void OnWebDataServiceRequestDone(WebDataServiceBase::Handle h,

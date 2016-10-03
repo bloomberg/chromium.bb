@@ -6,8 +6,6 @@
 #define ANDROID_WEBVIEW_NATIVE_AW_AUTOFILL_CLIENT_H_
 
 #include <jni.h>
-#include <memory>
-#include <string>
 #include <vector>
 
 #include "base/android/jni_weak_ref.h"
@@ -38,7 +36,7 @@ namespace gfx {
 class RectF;
 }
 
-namespace syncer {
+namespace sync_driver {
 class SyncService;
 }
 
@@ -66,7 +64,7 @@ class AwAutofillClient : public autofill::AutofillClient,
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   scoped_refptr<autofill::AutofillWebDataService> GetDatabase() override;
   PrefService* GetPrefs() override;
-  syncer::SyncService* GetSyncService() override;
+  sync_driver::SyncService* GetSyncService() override;
   IdentityProvider* GetIdentityProvider() override;
   rappor::RapporService* GetRapporService() override;
   void ShowAutofillSettings() override;
@@ -114,7 +112,7 @@ class AwAutofillClient : public autofill::AutofillClient,
                           jint position);
 
  private:
-  explicit AwAutofillClient(content::WebContents* web_contents);
+  AwAutofillClient(content::WebContents* web_contents);
   friend class content::WebContentsUserData<AwAutofillClient>;
 
   void ShowAutofillPopupImpl(

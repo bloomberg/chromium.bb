@@ -21,7 +21,9 @@
 #include "components/sync/driver/data_type_manager_observer.h"
 #include "components/sync/driver/data_type_status_table.h"
 
-namespace syncer {
+using syncer::ModelTypeSet;
+
+namespace sync_driver {
 
 namespace {
 
@@ -30,8 +32,8 @@ DataTypeStatusTable::TypeErrorMap GenerateCryptoErrorsForTypes(
   DataTypeStatusTable::TypeErrorMap crypto_errors;
   for (ModelTypeSet::Iterator iter = encrypted_types.First(); iter.Good();
        iter.Inc()) {
-    crypto_errors[iter.Get()] =
-        SyncError(FROM_HERE, SyncError::CRYPTO_ERROR, "", iter.Get());
+    crypto_errors[iter.Get()] = syncer::SyncError(
+        FROM_HERE, syncer::SyncError::CRYPTO_ERROR, "", iter.Get());
   }
   return crypto_errors;
 }
@@ -44,7 +46,8 @@ DataTypeManagerImpl::AssociationTypesInfo::AssociationTypesInfo(
 DataTypeManagerImpl::AssociationTypesInfo::~AssociationTypesInfo() {}
 
 DataTypeManagerImpl::DataTypeManagerImpl(
-    const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
+    const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
+        debug_info_listener,
     const DataTypeController::TypeMap* controllers,
     const DataTypeEncryptionHandler* encryption_handler,
     BackendDataTypeConfigurer* configurer,
@@ -53,7 +56,7 @@ DataTypeManagerImpl::DataTypeManagerImpl(
       controllers_(controllers),
       state_(DataTypeManager::STOPPED),
       needs_reconfigure_(false),
-      last_configure_reason_(CONFIGURE_REASON_UNKNOWN),
+      last_configure_reason_(syncer::CONFIGURE_REASON_UNKNOWN),
       debug_info_listener_(debug_info_listener),
       model_association_manager_(controllers, this),
       observer_(observer),
@@ -68,14 +71,14 @@ DataTypeManagerImpl::DataTypeManagerImpl(
 DataTypeManagerImpl::~DataTypeManagerImpl() {}
 
 void DataTypeManagerImpl::Configure(ModelTypeSet desired_types,
-                                    ConfigureReason reason) {
+                                    syncer::ConfigureReason reason) {
   // Once requested, we will remain in "catch up" mode until we notify the
   // caller (see NotifyDone). We do this to ensure that once started, subsequent
   // calls to Configure won't take us out of "catch up" mode.
-  if (reason == CONFIGURE_REASON_CATCH_UP)
+  if (reason == syncer::CONFIGURE_REASON_CATCH_UP)
     catch_up_in_progress_ = true;
 
-  desired_types.PutAll(CoreTypes());
+  desired_types.PutAll(syncer::CoreTypes());
 
   // Only allow control types and types that have controllers.
   ModelTypeSet filtered_desired_types;
@@ -83,16 +86,17 @@ void DataTypeManagerImpl::Configure(ModelTypeSet desired_types,
        type.Inc()) {
     DataTypeController::TypeMap::const_iterator iter =
         controllers_->find(type.Get());
-    if (IsControlType(type.Get()) || iter != controllers_->end()) {
+    if (syncer::IsControlType(type.Get()) || iter != controllers_->end()) {
       if (iter != controllers_->end()) {
         if (!iter->second->ReadyForStart() &&
             !data_type_status_table_.GetUnreadyErrorTypes().Has(type.Get())) {
           // Add the type to the unready types set to prevent purging it. It's
           // up to the datatype controller to, if necessary, explicitly
           // mark the type as broken to trigger a purge.
-          SyncError error(FROM_HERE, SyncError::UNREADY_ERROR,
-                          "Datatype not ready at config time.", type.Get());
-          std::map<ModelType, SyncError> errors;
+          syncer::SyncError error(FROM_HERE, syncer::SyncError::UNREADY_ERROR,
+                                  "Datatype not ready at config time.",
+                                  type.Get());
+          std::map<syncer::ModelType, syncer::SyncError> errors;
           errors[type.Get()] = error;
           data_type_status_table_.UpdateFailedDataTypes(errors);
         } else if (iter->second->ReadyForStart()) {
@@ -105,7 +109,7 @@ void DataTypeManagerImpl::Configure(ModelTypeSet desired_types,
   ConfigureImpl(filtered_desired_types, reason);
 }
 
-void DataTypeManagerImpl::ReenableType(ModelType type) {
+void DataTypeManagerImpl::ReenableType(syncer::ModelType type) {
   // TODO(zea): move the "should we reconfigure" logic into the datatype handler
   // itself.
   // Only reconfigure if the type actually had a data type or unready error.
@@ -118,9 +122,9 @@ void DataTypeManagerImpl::ReenableType(ModelType type) {
   if (!last_requested_types_.Has(type))
     return;
 
-  DVLOG(1) << "Reenabling " << ModelTypeToString(type);
+  DVLOG(1) << "Reenabling " << syncer::ModelTypeToString(type);
   needs_reconfigure_ = true;
-  last_configure_reason_ = CONFIGURE_REASON_PROGRAMMATIC;
+  last_configure_reason_ = syncer::CONFIGURE_REASON_PROGRAMMATIC;
   ProcessReconfigure();
 }
 
@@ -129,14 +133,14 @@ void DataTypeManagerImpl::ResetDataTypeErrors() {
 }
 
 void DataTypeManagerImpl::PurgeForMigration(ModelTypeSet undesired_types,
-                                            ConfigureReason reason) {
+                                            syncer::ConfigureReason reason) {
   ModelTypeSet remainder = Difference(last_requested_types_, undesired_types);
   ConfigureImpl(remainder, reason);
 }
 
 void DataTypeManagerImpl::ConfigureImpl(ModelTypeSet desired_types,
-                                        ConfigureReason reason) {
-  DCHECK_NE(reason, CONFIGURE_REASON_UNKNOWN);
+                                        syncer::ConfigureReason reason) {
+  DCHECK_NE(reason, syncer::CONFIGURE_REASON_UNKNOWN);
   DVLOG(1) << "Configuring for " << ModelTypeSetToString(desired_types)
            << " with reason " << reason;
   if (state_ == STOPPING) {
@@ -200,10 +204,11 @@ DataTypeManagerImpl::BuildDataTypeConfigStateMap(
   if (catch_up_in_progress_)
     clean_types.PutAll(enabled_types);
 
-  ModelTypeSet disabled_types =
-      Difference(Union(UserTypes(), ControlTypes()), enabled_types);
+  ModelTypeSet disabled_types = syncer::Difference(
+      syncer::Union(syncer::UserTypes(), syncer::ControlTypes()),
+      enabled_types);
   ModelTypeSet to_configure =
-      Intersection(enabled_types, types_being_configured);
+      syncer::Intersection(enabled_types, types_being_configured);
   DVLOG(1) << "Enabling: " << ModelTypeSetToString(enabled_types);
   DVLOG(1) << "Configuring: " << ModelTypeSetToString(to_configure);
   DVLOG(1) << "Disabling: " << ModelTypeSetToString(disabled_types);
@@ -229,19 +234,19 @@ DataTypeManagerImpl::BuildDataTypeConfigStateMap(
   return config_state_map;
 }
 
-void DataTypeManagerImpl::Restart(ConfigureReason reason) {
+void DataTypeManagerImpl::Restart(syncer::ConfigureReason reason) {
   DVLOG(1) << "Restarting...";
 
   // Only record the type histograms for user-triggered configurations or
   // restarts.
-  if (reason == CONFIGURE_REASON_RECONFIGURATION ||
-      reason == CONFIGURE_REASON_NEW_CLIENT ||
-      reason == CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE) {
+  if (reason == syncer::CONFIGURE_REASON_RECONFIGURATION ||
+      reason == syncer::CONFIGURE_REASON_NEW_CLIENT ||
+      reason == syncer::CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE) {
     for (ModelTypeSet::Iterator iter = last_requested_types_.First();
          iter.Good(); iter.Inc()) {
       UMA_HISTOGRAM_ENUMERATION("Sync.ConfigureDataTypes",
-                                ModelTypeToHistogramInt(iter.Get()),
-                                MODEL_TYPE_COUNT);
+                                syncer::ModelTypeToHistogramInt(iter.Get()),
+                                syncer::MODEL_TYPE_COUNT);
     }
   }
 
@@ -299,8 +304,8 @@ void DataTypeManagerImpl::OnAllDataTypesReadyForConfigure() {
 
 ModelTypeSet DataTypeManagerImpl::GetPriorityTypes() const {
   ModelTypeSet high_priority_types;
-  high_priority_types.PutAll(PriorityCoreTypes());
-  high_priority_types.PutAll(PriorityUserTypes());
+  high_priority_types.PutAll(syncer::PriorityCoreTypes());
+  high_priority_types.PutAll(syncer::PriorityUserTypes());
   return high_priority_types;
 }
 
@@ -309,7 +314,8 @@ TypeSetPriorityList DataTypeManagerImpl::PrioritizeTypes(
   ModelTypeSet high_priority_types = GetPriorityTypes();
   high_priority_types.RetainAll(types);
 
-  ModelTypeSet low_priority_types = Difference(types, high_priority_types);
+  ModelTypeSet low_priority_types =
+      syncer::Difference(types, high_priority_types);
 
   TypeSetPriorityList result;
   if (!high_priority_types.Empty())
@@ -377,8 +383,8 @@ void DataTypeManagerImpl::DownloadReady(
     DataTypeStatusTable::TypeErrorMap errors;
     for (ModelTypeSet::Iterator iter = failed_configuration_types.First();
          iter.Good(); iter.Inc()) {
-      SyncError error(FROM_HERE, SyncError::DATATYPE_ERROR,
-                      "Backend failed to download type.", iter.Get());
+      syncer::SyncError error(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
+                              "Backend failed to download type.", iter.Get());
       errors[iter.Get()] = error;
     }
     data_type_status_table_.UpdateFailedDataTypes(errors);
@@ -478,8 +484,9 @@ void DataTypeManagerImpl::StartNextAssociation(AssociationGroup group) {
   model_association_manager_.StartAssociationAsync(types_to_associate);
 }
 
-void DataTypeManagerImpl::OnSingleDataTypeWillStop(ModelType type,
-                                                   const SyncError& error) {
+void DataTypeManagerImpl::OnSingleDataTypeWillStop(
+    syncer::ModelType type,
+    const syncer::SyncError& error) {
   DataTypeController::TypeMap::const_iterator c_it = controllers_->find(type);
   DCHECK(c_it != controllers_->end());
   // Delegate deactivation to the controller.
@@ -492,9 +499,9 @@ void DataTypeManagerImpl::OnSingleDataTypeWillStop(ModelType type,
 
     // Unrecoverable errors will shut down the entire backend, so no need to
     // reconfigure.
-    if (error.error_type() != SyncError::UNRECOVERABLE_ERROR) {
+    if (error.error_type() != syncer::SyncError::UNRECOVERABLE_ERROR) {
       needs_reconfigure_ = true;
-      last_configure_reason_ = CONFIGURE_REASON_PROGRAMMATIC;
+      last_configure_reason_ = syncer::CONFIGURE_REASON_PROGRAMMATIC;
       // Do this asynchronously so the ModelAssociationManager has a chance to
       // finish stopping this type, otherwise DeactivateDataType() and Stop()
       // end up getting called twice on the controller.
@@ -506,8 +513,8 @@ void DataTypeManagerImpl::OnSingleDataTypeWillStop(ModelType type,
 }
 
 void DataTypeManagerImpl::OnSingleDataTypeAssociationDone(
-    ModelType type,
-    const DataTypeAssociationStats& association_stats) {
+    syncer::ModelType type,
+    const syncer::DataTypeAssociationStats& association_stats) {
   DCHECK(!association_types_queue_.empty());
   DataTypeController::TypeMap::const_iterator c_it = controllers_->find(type);
   DCHECK(c_it != controllers_->end());
@@ -520,7 +527,7 @@ void DataTypeManagerImpl::OnSingleDataTypeAssociationDone(
     return;
 
   AssociationTypesInfo& info = association_types_queue_.front();
-  configuration_stats_.push_back(DataTypeConfigurationStats());
+  configuration_stats_.push_back(syncer::DataTypeConfigurationStats());
   configuration_stats_.back().model_type = type;
   configuration_stats_.back().association_stats = association_stats;
   if (info.types.Has(type)) {
@@ -645,7 +652,8 @@ void DataTypeManagerImpl::NotifyDone(const ConfigureResult& raw_result) {
       if (debug_info_listener_.IsInitialized() &&
           !configuration_stats_.empty()) {
         debug_info_listener_.Call(
-            FROM_HERE, &DataTypeDebugInfoListener::OnDataTypeConfigureComplete,
+            FROM_HERE,
+            &syncer::DataTypeDebugInfoListener::OnDataTypeConfigureComplete,
             configuration_stats_);
       }
       configuration_stats_.clear();
@@ -677,8 +685,8 @@ void DataTypeManagerImpl::AddToConfigureTime() {
 }
 
 ModelTypeSet DataTypeManagerImpl::GetEnabledTypes() const {
-  return Difference(last_requested_types_,
-                    data_type_status_table_.GetFailedTypes());
+  return syncer::Difference(last_requested_types_,
+                            data_type_status_table_.GetFailedTypes());
 }
 
-}  // namespace syncer
+}  // namespace sync_driver

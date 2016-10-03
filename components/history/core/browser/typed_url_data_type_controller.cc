@@ -49,7 +49,7 @@ class RunTaskOnHistoryThread : public history::HistoryDBTask {
 
 TypedUrlDataTypeController::TypedUrlDataTypeController(
     const base::Closure& dump_stack,
-    syncer::SyncClient* sync_client,
+    sync_driver::SyncClient* sync_client,
     const char* history_disabled_pref_name)
     : NonUIDataTypeController(syncer::TYPED_URLS, dump_stack, sync_client),
       history_disabled_pref_name_(history_disabled_pref_name),

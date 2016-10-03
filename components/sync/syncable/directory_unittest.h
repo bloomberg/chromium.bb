@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include <memory>
 #include <string>
 
 #include "base/message_loop/message_loop.h"
@@ -23,6 +22,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
+
 namespace syncable {
 
 class BaseTransaction;
@@ -109,6 +109,7 @@ class SyncableDirectoryTest : public testing::Test {
 };
 
 }  // namespace syncable
+
 }  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_SYNCABLE_DIRECTORY_UNITTEST_H_

@@ -18,10 +18,10 @@
 
 using browser_sync::ChromeSyncClient;
 using browser_sync::ProfileSyncComponentsFactoryImpl;
-using syncer::ConflictResolution;
-using syncer::FakeModelTypeService;
-using syncer::ModelTypeService;
-using syncer::SharedModelTypeProcessor;
+using syncer_v2::ConflictResolution;
+using syncer_v2::FakeModelTypeService;
+using syncer_v2::ModelTypeService;
+using syncer_v2::SharedModelTypeProcessor;
 
 const char kKey1[] = "key1";
 const char kKey2[] = "key2";
@@ -59,8 +59,8 @@ class TestModelTypeService : public FakeModelTypeService {
             base::Bind(&SharedModelTypeProcessor::CreateAsChangeProcessor)) {}
 
   syncer::SyncError ApplySyncChanges(
-      std::unique_ptr<syncer::MetadataChangeList> metadata_changes,
-      syncer::EntityChangeList entity_changes) override {
+      std::unique_ptr<syncer_v2::MetadataChangeList> metadata_changes,
+      syncer_v2::EntityChangeList entity_changes) override {
     syncer::SyncError error = FakeModelTypeService::ApplySyncChanges(
         std::move(metadata_changes), entity_changes);
     NotifyObservers();
@@ -221,7 +221,7 @@ class TwoClientUssSyncTest : public SyncTest {
   }
 
  protected:
-  std::unique_ptr<syncer::SyncClient> CreateSyncClient(Profile* profile) {
+  std::unique_ptr<sync_driver::SyncClient> CreateSyncClient(Profile* profile) {
     if (!first_client_ignored_) {
       // The test infra creates a profile before the two made for sync tests.
       first_client_ignored_ = true;

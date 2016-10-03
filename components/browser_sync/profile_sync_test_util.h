@@ -91,9 +91,8 @@ class ProfileSyncServiceBundle {
 
     // The client will call this callback to produce the SyncService for the
     // current Profile.
-    void SetSyncServiceCallback(
-        const base::Callback<syncer::SyncService*(void)>&
-            get_sync_service_callback);
+    void SetSyncServiceCallback(const base::Callback<sync_driver::SyncService*(
+                                    void)>& get_sync_service_callback);
 
     void SetHistoryService(history::HistoryService* history_service);
 
@@ -103,7 +102,7 @@ class ProfileSyncServiceBundle {
 
     void set_activate_model_creation() { activate_model_creation_ = true; }
 
-    std::unique_ptr<syncer::FakeSyncClient> Build();
+    std::unique_ptr<sync_driver::FakeSyncClient> Build();
 
    private:
     // Associated bundle to source objects from.
@@ -113,7 +112,7 @@ class ProfileSyncServiceBundle {
     base::Callback<base::WeakPtr<syncer::SyncableService>(
         syncer::ModelType type)>
         get_syncable_service_callback_;
-    base::Callback<syncer::SyncService*(void)> get_sync_service_callback_;
+    base::Callback<sync_driver::SyncService*(void)> get_sync_service_callback_;
     history::HistoryService* history_service_ = nullptr;
     base::Callback<bookmarks::BookmarkModel*(void)>
         get_bookmark_model_callback_;
@@ -129,7 +128,7 @@ class ProfileSyncServiceBundle {
   // the bundle.
   ProfileSyncService::InitParams CreateBasicInitParams(
       ProfileSyncService::StartBehavior start_behavior,
-      std::unique_ptr<syncer::SyncClient> sync_client);
+      std::unique_ptr<sync_driver::SyncClient> sync_client);
 
   // Accessors
 
@@ -147,7 +146,7 @@ class ProfileSyncServiceBundle {
 
   AccountTrackerService* account_tracker() { return &account_tracker_; }
 
-  syncer::SyncApiComponentFactoryMock* component_factory() {
+  SyncApiComponentFactoryMock* component_factory() {
     return &component_factory_;
   }
 
@@ -174,7 +173,7 @@ class ProfileSyncServiceBundle {
   AccountTrackerService account_tracker_;
   FakeSigninManagerType signin_manager_;
   FakeProfileOAuth2TokenService auth_service_;
-  syncer::SyncApiComponentFactoryMock component_factory_;
+  SyncApiComponentFactoryMock component_factory_;
   sync_sessions::FakeSyncSessionsClient sync_sessions_client_;
   invalidation::FakeInvalidationService fake_invalidation_service_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_;

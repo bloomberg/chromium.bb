@@ -4,10 +4,10 @@
 
 #include "components/sync/driver/model_associator_mock.h"
 
-namespace syncer {
+namespace sync_driver {
 
 ModelAssociatorMock::ModelAssociatorMock() {}
 
 ModelAssociatorMock::~ModelAssociatorMock() {}
 
-}  // namespace syncer
+}  // namespace sync_driver

@@ -24,7 +24,7 @@ TestProfileSyncService::TestProfileSyncService(
 TestProfileSyncService::~TestProfileSyncService() {}
 
 void TestProfileSyncService::OnConfigureDone(
-    const syncer::DataTypeManager::ConfigureResult& result) {
+    const sync_driver::DataTypeManager::ConfigureResult& result) {
   ProfileSyncService::OnConfigureDone(result);
   base::MessageLoop::current()->QuitWhenIdle();
 }

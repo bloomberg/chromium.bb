@@ -6,7 +6,7 @@
 
 #include "components/sync/core/model_type_store_impl.h"
 
-namespace syncer {
+namespace syncer_v2 {
 
 // static
 void ModelTypeStore::CreateInMemoryStoreForTest(const InitCallback& callback) {
@@ -15,7 +15,7 @@ void ModelTypeStore::CreateInMemoryStoreForTest(const InitCallback& callback) {
 
 // static
 void ModelTypeStore::CreateStore(
-    const ModelType type,
+    const syncer::ModelType type,
     const std::string& path,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     const InitCallback& callback) {
@@ -28,4 +28,4 @@ ModelTypeStore::WriteBatch::WriteBatch() {}
 
 ModelTypeStore::WriteBatch::~WriteBatch() {}
 
-}  // namespace syncer
+}  // namespace syncer_v2

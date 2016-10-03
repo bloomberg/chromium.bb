@@ -9,7 +9,7 @@
 
 #include "build/build_config.h"
 
-namespace syncer {
+namespace sync_driver {
 
 namespace prefs {
 
@@ -83,6 +83,6 @@ extern const char kSyncNigoriStateForPassphraseTransition[];
 
 }  // namespace prefs
 
-}  // namespace syncer
+}  // namespace sync_driver
 
 #endif  // COMPONENTS_SYNC_DRIVER_PREF_NAMES_H_

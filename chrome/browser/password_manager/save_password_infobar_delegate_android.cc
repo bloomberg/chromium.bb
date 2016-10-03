@@ -28,7 +28,7 @@ void SavePasswordInfoBarDelegate::Create(
     std::unique_ptr<password_manager::PasswordFormManager> form_to_save) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  syncer::SyncService* sync_service =
+  sync_driver::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
   bool is_smartlock_branding_enabled =
       password_bubble_experiment::IsSmartLockBrandingSavePromptEnabled(

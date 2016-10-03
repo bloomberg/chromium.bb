@@ -4,10 +4,10 @@
 
 #include "components/sync/driver/frontend_data_type_controller_mock.h"
 
-namespace syncer {
+namespace browser_sync {
 
 FrontendDataTypeControllerMock::FrontendDataTypeControllerMock() {}
 
 FrontendDataTypeControllerMock::~FrontendDataTypeControllerMock() {}
 
-}  // namespace syncer
+}  // namespace browser_sync

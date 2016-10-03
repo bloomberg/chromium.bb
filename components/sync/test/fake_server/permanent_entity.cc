@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 
 using std::string;
+
 using syncer::ModelType;
 
 // The parent tag for children of the root entity. Entities with this parent are

@@ -126,7 +126,7 @@ void WriteTransaction::NotifyTransactionComplete(
 
 void WriteTransaction::UpdateTransactionVersion(
     const std::vector<int64_t>& entry_changed) {
-  ModelTypeSet type_seen;
+  syncer::ModelTypeSet type_seen;
   for (uint32_t i = 0; i < entry_changed.size(); ++i) {
     MutableEntry entry(this, GET_BY_HANDLE, entry_changed[i]);
     if (entry.good()) {

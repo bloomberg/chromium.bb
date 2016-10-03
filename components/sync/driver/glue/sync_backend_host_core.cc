@@ -53,28 +53,31 @@ void BindFetcherToDataTracker(net::URLFetcher* fetcher) {
 
 }  // namespace
 
-namespace syncer {
+namespace browser_sync {
 
 DoInitializeOptions::DoInitializeOptions(
     base::MessageLoop* sync_loop,
     SyncBackendRegistrar* registrar,
-    const std::vector<scoped_refptr<ModelSafeWorker>>& workers,
-    const scoped_refptr<ExtensionsActivity>& extensions_activity,
-    const WeakHandle<JsEventHandler>& event_handler,
+    const std::vector<scoped_refptr<syncer::ModelSafeWorker>>& workers,
+    const scoped_refptr<syncer::ExtensionsActivity>& extensions_activity,
+    const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
     const GURL& service_url,
     const std::string& sync_user_agent,
-    std::unique_ptr<HttpPostProviderFactory> http_bridge_factory,
-    const SyncCredentials& credentials,
+    std::unique_ptr<syncer::HttpPostProviderFactory> http_bridge_factory,
+    const syncer::SyncCredentials& credentials,
     const std::string& invalidator_client_id,
-    std::unique_ptr<SyncManagerFactory> sync_manager_factory,
+    std::unique_ptr<syncer::SyncManagerFactory> sync_manager_factory,
     bool delete_sync_data_folder,
     const std::string& restored_key_for_bootstrapping,
     const std::string& restored_keystore_key_for_bootstrapping,
-    std::unique_ptr<InternalComponentsFactory> internal_components_factory,
-    const WeakHandle<UnrecoverableErrorHandler>& unrecoverable_error_handler,
+    std::unique_ptr<syncer::InternalComponentsFactory>
+        internal_components_factory,
+    const syncer::WeakHandle<syncer::UnrecoverableErrorHandler>&
+        unrecoverable_error_handler,
     const base::Closure& report_unrecoverable_error_function,
-    std::unique_ptr<SyncEncryptionHandler::NigoriState> saved_nigori_state,
-    const std::map<ModelType, int64_t>& invalidation_versions)
+    std::unique_ptr<syncer::SyncEncryptionHandler::NigoriState>
+        saved_nigori_state,
+    const std::map<syncer::ModelType, int64_t>& invalidation_versions)
     : sync_loop(sync_loop),
       registrar(registrar),
       workers(workers),
@@ -127,7 +130,7 @@ SyncBackendHostCore::~SyncBackendHostCore() {
 }
 
 void SyncBackendHostCore::OnSyncCycleCompleted(
-    const SyncCycleSnapshot& snapshot) {
+    const syncer::SyncCycleSnapshot& snapshot) {
   if (!sync_loop_)
     return;
   DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
@@ -137,20 +140,21 @@ void SyncBackendHostCore::OnSyncCycleCompleted(
              snapshot);
 }
 
-void SyncBackendHostCore::DoRefreshTypes(ModelTypeSet types) {
+void SyncBackendHostCore::DoRefreshTypes(syncer::ModelTypeSet types) {
   DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
   sync_manager_->RefreshTypes(types);
 }
 
 void SyncBackendHostCore::OnInitializationComplete(
-    const WeakHandle<JsBackend>& js_backend,
-    const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
+    const syncer::WeakHandle<syncer::JsBackend>& js_backend,
+    const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
+        debug_info_listener,
     bool success,
-    const ModelTypeSet restored_types) {
+    const syncer::ModelTypeSet restored_types) {
   DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
 
   if (!success) {
-    DoDestroySyncManager(STOP_SYNC);
+    DoDestroySyncManager(syncer::STOP_SYNC);
     host_.Call(FROM_HERE,
                &SyncBackendHostImpl::HandleInitializationFailureOnFrontendLoop);
     return;
@@ -181,29 +185,31 @@ void SyncBackendHostCore::OnInitializationComplete(
   // all control types have already completed their initial sync.
   registrar_->SetInitialTypes(restored_types);
 
-  ConfigureReason reason = restored_types.Empty()
-                               ? CONFIGURE_REASON_NEW_CLIENT
-                               : CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE;
+  syncer::ConfigureReason reason =
+      restored_types.Empty() ? syncer::CONFIGURE_REASON_NEW_CLIENT
+                             : syncer::CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE;
 
-  ModelTypeSet new_control_types =
-      registrar_->ConfigureDataTypes(ControlTypes(), ModelTypeSet());
-  ModelSafeRoutingInfo routing_info;
+  syncer::ModelTypeSet new_control_types = registrar_->ConfigureDataTypes(
+      syncer::ControlTypes(), syncer::ModelTypeSet());
+  syncer::ModelSafeRoutingInfo routing_info;
   registrar_->GetModelSafeRoutingInfo(&routing_info);
-  SDVLOG(1) << "Control Types " << ModelTypeSetToString(new_control_types)
+  SDVLOG(1) << "Control Types "
+            << syncer::ModelTypeSetToString(new_control_types)
             << " added; calling ConfigureSyncer";
 
-  ModelTypeSet types_to_purge =
-      Difference(ModelTypeSet::All(), GetRoutingInfoTypes(routing_info));
+  syncer::ModelTypeSet types_to_purge = syncer::Difference(
+      syncer::ModelTypeSet::All(), GetRoutingInfoTypes(routing_info));
 
   sync_manager_->ConfigureSyncer(
-      reason, new_control_types, types_to_purge, ModelTypeSet(), ModelTypeSet(),
-      routing_info,
+      reason, new_control_types, types_to_purge, syncer::ModelTypeSet(),
+      syncer::ModelTypeSet(), routing_info,
       base::Bind(&SyncBackendHostCore::DoInitialProcessControlTypes,
                  weak_ptr_factory_.GetWeakPtr()),
       base::Closure());
 }
 
-void SyncBackendHostCore::OnConnectionStatusChange(ConnectionStatus status) {
+void SyncBackendHostCore::OnConnectionStatusChange(
+    syncer::ConnectionStatus status) {
   if (!sync_loop_)
     return;
   DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
@@ -213,7 +219,7 @@ void SyncBackendHostCore::OnConnectionStatusChange(ConnectionStatus status) {
 }
 
 void SyncBackendHostCore::OnPassphraseRequired(
-    PassphraseRequiredReason reason,
+    syncer::PassphraseRequiredReason reason,
     const sync_pb::EncryptedData& pending_keys) {
   if (!sync_loop_)
     return;
@@ -231,7 +237,7 @@ void SyncBackendHostCore::OnPassphraseAccepted() {
 
 void SyncBackendHostCore::OnBootstrapTokenUpdated(
     const std::string& bootstrap_token,
-    BootstrapTokenType type) {
+    syncer::BootstrapTokenType type) {
   if (!sync_loop_)
     return;
   DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
@@ -239,8 +245,9 @@ void SyncBackendHostCore::OnBootstrapTokenUpdated(
              bootstrap_token, type);
 }
 
-void SyncBackendHostCore::OnEncryptedTypesChanged(ModelTypeSet encrypted_types,
-                                                  bool encrypt_everything) {
+void SyncBackendHostCore::OnEncryptedTypesChanged(
+    syncer::ModelTypeSet encrypted_types,
+    bool encrypt_everything) {
   if (!sync_loop_)
     return;
   DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
@@ -258,11 +265,11 @@ void SyncBackendHostCore::OnEncryptionComplete() {
 }
 
 void SyncBackendHostCore::OnCryptographerStateChanged(
-    Cryptographer* cryptographer) {
+    syncer::Cryptographer* cryptographer) {
   // Do nothing.
 }
 
-void SyncBackendHostCore::OnPassphraseTypeChanged(PassphraseType type,
+void SyncBackendHostCore::OnPassphraseTypeChanged(syncer::PassphraseType type,
                                                   base::Time passphrase_time) {
   host_.Call(FROM_HERE,
              &SyncBackendHostImpl::HandlePassphraseTypeChangedOnFrontendLoop,
@@ -270,7 +277,7 @@ void SyncBackendHostCore::OnPassphraseTypeChanged(PassphraseType type,
 }
 
 void SyncBackendHostCore::OnLocalSetPassphraseEncryption(
-    const SyncEncryptionHandler::NigoriState& nigori_state) {
+    const syncer::SyncEncryptionHandler::NigoriState& nigori_state) {
   host_.Call(
       FROM_HERE,
       &SyncBackendHostImpl::HandleLocalSetPassphraseEncryptionOnFrontendLoop,
@@ -278,8 +285,8 @@ void SyncBackendHostCore::OnLocalSetPassphraseEncryption(
 }
 
 void SyncBackendHostCore::OnCommitCountersUpdated(
-    ModelType type,
-    const CommitCounters& counters) {
+    syncer::ModelType type,
+    const syncer::CommitCounters& counters) {
   host_.Call(
       FROM_HERE,
       &SyncBackendHostImpl::HandleDirectoryCommitCountersUpdatedOnFrontendLoop,
@@ -287,8 +294,8 @@ void SyncBackendHostCore::OnCommitCountersUpdated(
 }
 
 void SyncBackendHostCore::OnUpdateCountersUpdated(
-    ModelType type,
-    const UpdateCounters& counters) {
+    syncer::ModelType type,
+    const syncer::UpdateCounters& counters) {
   host_.Call(
       FROM_HERE,
       &SyncBackendHostImpl::HandleDirectoryUpdateCountersUpdatedOnFrontendLoop,
@@ -296,8 +303,8 @@ void SyncBackendHostCore::OnUpdateCountersUpdated(
 }
 
 void SyncBackendHostCore::OnStatusCountersUpdated(
-    ModelType type,
-    const StatusCounters& counters) {
+    syncer::ModelType type,
+    const syncer::StatusCounters& counters) {
   host_.Call(
       FROM_HERE,
       &SyncBackendHostImpl::HandleDirectoryStatusCountersUpdatedOnFrontendLoop,
@@ -305,7 +312,7 @@ void SyncBackendHostCore::OnStatusCountersUpdated(
 }
 
 void SyncBackendHostCore::OnActionableError(
-    const SyncProtocolError& sync_error) {
+    const syncer::SyncProtocolError& sync_error) {
   if (!sync_loop_)
     return;
   DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
@@ -314,52 +321,53 @@ void SyncBackendHostCore::OnActionableError(
              sync_error);
 }
 
-void SyncBackendHostCore::OnMigrationRequested(ModelTypeSet types) {
+void SyncBackendHostCore::OnMigrationRequested(syncer::ModelTypeSet types) {
   DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
   host_.Call(FROM_HERE,
              &SyncBackendHostImpl::HandleMigrationRequestedOnFrontendLoop,
              types);
 }
 
-void SyncBackendHostCore::OnProtocolEvent(const ProtocolEvent& event) {
+void SyncBackendHostCore::OnProtocolEvent(const syncer::ProtocolEvent& event) {
   if (forward_protocol_events_) {
-    std::unique_ptr<ProtocolEvent> event_clone(event.Clone());
+    std::unique_ptr<syncer::ProtocolEvent> event_clone(event.Clone());
     host_.Call(FROM_HERE,
                &SyncBackendHostImpl::HandleProtocolEventOnFrontendLoop,
                base::Passed(std::move(event_clone)));
   }
 }
 
-void SyncBackendHostCore::DoOnInvalidatorStateChange(InvalidatorState state) {
+void SyncBackendHostCore::DoOnInvalidatorStateChange(
+    syncer::InvalidatorState state) {
   DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
-  sync_manager_->SetInvalidatorEnabled(state == INVALIDATIONS_ENABLED);
+  sync_manager_->SetInvalidatorEnabled(state == syncer::INVALIDATIONS_ENABLED);
 }
 
 void SyncBackendHostCore::DoOnIncomingInvalidation(
-    const ObjectIdInvalidationMap& invalidation_map) {
+    const syncer::ObjectIdInvalidationMap& invalidation_map) {
   DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
 
-  ObjectIdSet ids = invalidation_map.GetObjectIds();
+  syncer::ObjectIdSet ids = invalidation_map.GetObjectIds();
   for (const invalidation::ObjectId& object_id : ids) {
-    ModelType type;
+    syncer::ModelType type;
     if (!NotificationTypeToRealModelType(object_id.name(), &type)) {
       DLOG(WARNING) << "Notification has invalid id: "
-                    << ObjectIdToString(object_id);
+                    << syncer::ObjectIdToString(object_id);
     } else {
-      SingleObjectInvalidationSet invalidation_set =
+      syncer::SingleObjectInvalidationSet invalidation_set =
           invalidation_map.ForObject(object_id);
-      for (Invalidation invalidation : invalidation_set) {
+      for (syncer::Invalidation invalidation : invalidation_set) {
         auto last_invalidation = last_invalidation_versions_.find(type);
         if (!invalidation.is_unknown_version() &&
             last_invalidation != last_invalidation_versions_.end() &&
             invalidation.version() <= last_invalidation->second) {
           DVLOG(1) << "Ignoring redundant invalidation for "
-                   << ModelTypeToString(type) << " with version "
+                   << syncer::ModelTypeToString(type) << " with version "
                    << invalidation.version() << ", last seen version was "
                    << last_invalidation->second;
           continue;
         }
-        std::unique_ptr<InvalidationInterface> inv_adapter(
+        std::unique_ptr<syncer::InvalidationInterface> inv_adapter(
             new InvalidationAdapter(invalidation));
         sync_manager_->OnIncomingInvalidation(type, std::move(inv_adapter));
         if (!invalidation.is_unknown_version())
@@ -405,7 +413,7 @@ void SyncBackendHostCore::DoInitialize(
   sync_manager_ = options->sync_manager_factory->CreateSyncManager(name_);
   sync_manager_->AddObserver(this);
 
-  SyncManager::InitArgs args;
+  syncer::SyncManager::InitArgs args;
   args.database_location = sync_data_folder_path_;
   args.event_handler = options->event_handler;
   args.service_url = options->service_url;
@@ -430,7 +438,7 @@ void SyncBackendHostCore::DoInitialize(
 }
 
 void SyncBackendHostCore::DoUpdateCredentials(
-    const SyncCredentials& credentials) {
+    const syncer::SyncCredentials& credentials) {
   DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
   // UpdateCredentials can be called during backend initialization, possibly
   // when backend initialization has failed but hasn't notified the UI thread
@@ -442,7 +450,7 @@ void SyncBackendHostCore::DoUpdateCredentials(
 }
 
 void SyncBackendHostCore::DoStartSyncing(
-    const ModelSafeRoutingInfo& routing_info,
+    const syncer::ModelSafeRoutingInfo& routing_info,
     base::Time last_poll_time) {
   DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
   sync_manager_->StartSyncingNormally(routing_info, last_poll_time);
@@ -475,7 +483,7 @@ void SyncBackendHostCore::DoInitialProcessControlTypes() {
     return;
   }
 
-  if (!sync_manager_->InitialSyncEndedTypes().HasAll(ControlTypes())) {
+  if (!sync_manager_->InitialSyncEndedTypes().HasAll(syncer::ControlTypes())) {
     LOG(ERROR) << "Failed to download control types";
     host_.Call(FROM_HERE,
                &SyncBackendHostImpl::HandleInitializationFailureOnFrontendLoop);
@@ -524,21 +532,21 @@ void SyncBackendHostCore::ShutdownOnUIThread() {
   release_request_context_signal_.Signal();
 }
 
-void SyncBackendHostCore::DoShutdown(ShutdownReason reason) {
+void SyncBackendHostCore::DoShutdown(syncer::ShutdownReason reason) {
   DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
 
   DoDestroySyncManager(reason);
 
   registrar_ = NULL;
 
-  if (reason == DISABLE_SYNC)
+  if (reason == syncer::DISABLE_SYNC)
     DeleteSyncDataFolder();
 
   host_.Reset();
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
-void SyncBackendHostCore::DoDestroySyncManager(ShutdownReason reason) {
+void SyncBackendHostCore::DoDestroySyncManager(syncer::ShutdownReason reason) {
   DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
   if (sync_manager_) {
     DisableDirectoryTypeDebugInfoForwarding();
@@ -550,10 +558,11 @@ void SyncBackendHostCore::DoDestroySyncManager(ShutdownReason reason) {
 }
 
 void SyncBackendHostCore::DoConfigureSyncer(
-    ConfigureReason reason,
+    syncer::ConfigureReason reason,
     const DoConfigureSyncerTypes& config_types,
-    const ModelSafeRoutingInfo routing_info,
-    const base::Callback<void(ModelTypeSet, ModelTypeSet)>& ready_task,
+    const syncer::ModelSafeRoutingInfo routing_info,
+    const base::Callback<void(syncer::ModelTypeSet, syncer::ModelTypeSet)>&
+        ready_task,
     const base::Closure& retry_callback) {
   DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
   DCHECK(!ready_task.is_null());
@@ -571,19 +580,20 @@ void SyncBackendHostCore::DoConfigureSyncer(
 }
 
 void SyncBackendHostCore::DoFinishConfigureDataTypes(
-    ModelTypeSet types_to_config,
-    const base::Callback<void(ModelTypeSet, ModelTypeSet)>& ready_task) {
+    syncer::ModelTypeSet types_to_config,
+    const base::Callback<void(syncer::ModelTypeSet, syncer::ModelTypeSet)>&
+        ready_task) {
   DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
 
   // Update the enabled types for the bridge and sync manager.
-  ModelSafeRoutingInfo routing_info;
+  syncer::ModelSafeRoutingInfo routing_info;
   registrar_->GetModelSafeRoutingInfo(&routing_info);
-  ModelTypeSet enabled_types = GetRoutingInfoTypes(routing_info);
-  enabled_types.RemoveAll(ProxyTypes());
+  syncer::ModelTypeSet enabled_types = GetRoutingInfoTypes(routing_info);
+  enabled_types.RemoveAll(syncer::ProxyTypes());
 
-  const ModelTypeSet failed_configuration_types =
+  const syncer::ModelTypeSet failed_configuration_types =
       Difference(types_to_config, sync_manager_->InitialSyncEndedTypes());
-  const ModelTypeSet succeeded_configuration_types =
+  const syncer::ModelTypeSet succeeded_configuration_types =
       Difference(types_to_config, failed_configuration_types);
   host_.Call(FROM_HERE,
              &SyncBackendHostImpl::FinishConfigureDataTypesOnFrontendLoop,
@@ -605,7 +615,7 @@ void SyncBackendHostCore::SendBufferedProtocolEventsAndEnableForwarding() {
   if (sync_manager_) {
     // Grab our own copy of the buffered events.
     // The buffer is not modified by this operation.
-    std::vector<std::unique_ptr<ProtocolEvent>> buffered_events =
+    std::vector<std::unique_ptr<syncer::ProtocolEvent>> buffered_events =
         sync_manager_->GetBufferedProtocolEvents();
 
     // Send them all over the fence to the host.
@@ -669,9 +679,9 @@ void SyncBackendHostCore::SaveChanges() {
 }
 
 void SyncBackendHostCore::DoClearServerData(
-    const SyncManager::ClearServerDataCallback& frontend_callback) {
+    const syncer::SyncManager::ClearServerDataCallback& frontend_callback) {
   DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
-  const SyncManager::ClearServerDataCallback callback =
+  const syncer::SyncManager::ClearServerDataCallback callback =
       base::Bind(&SyncBackendHostCore::ClearServerDataDone,
                  weak_ptr_factory_.GetWeakPtr(), frontend_callback);
   sync_manager_->ClearServerData(callback);
@@ -690,4 +700,4 @@ void SyncBackendHostCore::ClearServerDataDone(
              frontend_callback);
 }
 
-}  // namespace syncer
+}  // namespace browser_sync

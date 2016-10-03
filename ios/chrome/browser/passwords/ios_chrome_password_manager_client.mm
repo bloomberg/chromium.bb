@@ -27,7 +27,7 @@ using password_manager::PasswordSyncState;
 
 namespace {
 
-const syncer::SyncService* GetSyncService(
+const sync_driver::SyncService* GetSyncService(
     ios::ChromeBrowserState* browser_state) {
   return IOSChromeProfileSyncServiceFactory::GetForBrowserStateIfExists(
       browser_state);

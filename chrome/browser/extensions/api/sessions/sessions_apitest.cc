@@ -182,12 +182,12 @@ void ExtensionSessionsTest::SetUpOnMainThread() {
 
 std::unique_ptr<KeyedService> ExtensionSessionsTest::BuildProfileSyncService(
     content::BrowserContext* context) {
-  std::unique_ptr<syncer::SyncApiComponentFactoryMock> factory(
-      new syncer::SyncApiComponentFactoryMock());
+  std::unique_ptr<SyncApiComponentFactoryMock> factory(
+      new SyncApiComponentFactoryMock());
 
   factory->SetLocalDeviceInfoProvider(
-      std::unique_ptr<syncer::LocalDeviceInfoProvider>(
-          new syncer::LocalDeviceInfoProviderMock(
+      std::unique_ptr<sync_driver::LocalDeviceInfoProvider>(
+          new sync_driver::LocalDeviceInfoProviderMock(
               kSessionTags[0], "machine name", "Chromium 10k", "Chrome 10k",
               sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id")));
 

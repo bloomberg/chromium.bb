@@ -14,7 +14,7 @@
 #include "components/sync/device_info/device_info_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace syncer {
+namespace sync_driver {
 
 namespace {
 
@@ -101,4 +101,4 @@ TEST_F(DeviceCountMetricsProviderTest, VeryLarge) {
 
 }  // namespace
 
-}  // namespace syncer
+}  // namespace sync_driver

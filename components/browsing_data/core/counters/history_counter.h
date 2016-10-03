@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_BROWSING_DATA_CORE_COUNTERS_HISTORY_COUNTER_H_
 #define COMPONENTS_BROWSING_DATA_CORE_COUNTERS_HISTORY_COUNTER_H_
 
-#include <memory>
-
 #include "base/task/cancelable_task_tracker.h"
 #include "base/timer/timer.h"
 #include "components/browsing_data/core/counters/browsing_data_counter.h"
@@ -18,7 +16,7 @@
 namespace browsing_data {
 
 class HistoryCounter : public browsing_data::BrowsingDataCounter,
-                       public syncer::SyncServiceObserver {
+                       public sync_driver::SyncServiceObserver {
  public:
   typedef base::Callback<history::WebHistoryService*()>
       GetUpdatedWebHistoryServiceCallback;
@@ -38,7 +36,7 @@ class HistoryCounter : public browsing_data::BrowsingDataCounter,
 
   explicit HistoryCounter(history::HistoryService* history_service,
                           const GetUpdatedWebHistoryServiceCallback& callback,
-                          syncer::SyncService* sync_service);
+                          sync_driver::SyncService* sync_service);
   ~HistoryCounter() override;
 
   void OnInitialized() override;
@@ -64,7 +62,7 @@ class HistoryCounter : public browsing_data::BrowsingDataCounter,
 
   GetUpdatedWebHistoryServiceCallback web_history_service_callback_;
 
-  syncer::SyncService* sync_service_;
+  sync_driver::SyncService* sync_service_;
 
   bool has_synced_visits_;
 

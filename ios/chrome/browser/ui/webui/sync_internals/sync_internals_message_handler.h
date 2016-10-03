@@ -17,15 +17,15 @@
 #include "components/sync/js/js_event_handler.h"
 #include "ios/web/public/webui/web_ui_ios_message_handler.h"
 
-namespace syncer {
+namespace sync_driver {
 class SyncService;
-}  // namespace syncer
+}
 
 // The implementation for the chrome://sync-internals page.
 class SyncInternalsMessageHandler : public web::WebUIIOSMessageHandler,
                                     public syncer::JsEventHandler,
-                                    public syncer::SyncServiceObserver,
-                                    public syncer::ProtocolEventObserver,
+                                    public sync_driver::SyncServiceObserver,
+                                    public browser_sync::ProtocolEventObserver,
                                     public syncer::TypeDebugInfoObserver {
  public:
   SyncInternalsMessageHandler();
@@ -56,7 +56,7 @@ class SyncInternalsMessageHandler : public web::WebUIIOSMessageHandler,
   void OnReceivedAllNodes(int request_id,
                           std::unique_ptr<base::ListValue> nodes);
 
-  // syncer::SyncServiceObserver implementation.
+  // sync_driver::SyncServiceObserver implementation.
   void OnStateChanged() override;
 
   // ProtocolEventObserver implementation.
@@ -84,7 +84,7 @@ class SyncInternalsMessageHandler : public web::WebUIIOSMessageHandler,
   // onAboutInfoUpdated event.
   void SendAboutInfo();
 
-  syncer::SyncService* GetSyncService();
+  sync_driver::SyncService* GetSyncService();
 
   base::WeakPtr<syncer::JsController> js_controller_;
 

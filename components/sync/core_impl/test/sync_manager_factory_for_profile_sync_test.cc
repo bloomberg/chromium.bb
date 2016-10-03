@@ -14,10 +14,10 @@ SyncManagerFactoryForProfileSyncTest::SyncManagerFactoryForProfileSyncTest(
 
 SyncManagerFactoryForProfileSyncTest::~SyncManagerFactoryForProfileSyncTest() {}
 
-std::unique_ptr<SyncManager>
+std::unique_ptr<syncer::SyncManager>
 SyncManagerFactoryForProfileSyncTest::CreateSyncManager(
     const std::string& name) {
-  return std::unique_ptr<SyncManager>(
+  return std::unique_ptr<syncer::SyncManager>(
       new SyncManagerForProfileSyncTest(name, init_callback_));
 }
 

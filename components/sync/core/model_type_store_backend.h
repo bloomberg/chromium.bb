@@ -20,7 +20,7 @@ class Env;
 class WriteBatch;
 }  // namespace leveldb
 
-namespace syncer {
+namespace syncer_v2 {
 
 // ModelTypeStoreBackend handles operations with leveldb. It is oblivious of the
 // fact that it is called from separate thread (with the exception of ctor),
@@ -103,6 +103,6 @@ class ModelTypeStoreBackend
   DISALLOW_COPY_AND_ASSIGN(ModelTypeStoreBackend);
 };
 
-}  // namespace syncer
+}  // namespace syncer_v2
 
 #endif  // COMPONENTS_SYNC_CORE_MODEL_TYPE_STORE_BACKEND_H_

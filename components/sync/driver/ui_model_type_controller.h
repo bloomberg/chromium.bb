@@ -7,18 +7,20 @@
 
 #include "components/sync/driver/non_blocking_data_type_controller.h"
 
-namespace syncer {
-
+namespace sync_driver {
 class SyncClient;
+}
+
+namespace sync_driver_v2 {
 
 // Implementation for Unified Sync and Storage datatypes that reside on the UI
 // thread.
 class UIModelTypeController : public NonBlockingDataTypeController {
  public:
   // |dump_stack| is called when an unrecoverable error occurs.
-  UIModelTypeController(ModelType type,
+  UIModelTypeController(syncer::ModelType type,
                         const base::Closure& dump_stack,
-                        SyncClient* sync_client);
+                        sync_driver::SyncClient* sync_client);
   ~UIModelTypeController() override;
 
  private:
@@ -30,6 +32,6 @@ class UIModelTypeController : public NonBlockingDataTypeController {
   DISALLOW_COPY_AND_ASSIGN(UIModelTypeController);
 };
 
-}  // namespace syncer
+}  // namespace sync_driver_v2
 
 #endif  // COMPONENTS_SYNC_DRIVER_UI_MODEL_TYPE_CONTROLLER_H_

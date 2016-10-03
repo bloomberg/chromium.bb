@@ -16,7 +16,6 @@
 #include "components/sync/syncable/model_neutral_mutable_entry.h"
 
 namespace syncer {
-
 class WriteNode;
 
 namespace syncable {

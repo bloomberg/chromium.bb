@@ -14,21 +14,26 @@
 #include "components/sync/driver/data_type_controller.h"
 #include "components/sync/driver/sync_prefs.h"
 
-namespace syncer {
-
+namespace sync_driver {
 class SyncClient;
+}
+
+namespace syncer_v2 {
 struct ActivationContext;
+}
+
+namespace sync_driver_v2 {
 
 // Base class for DataType controllers for Unified Sync and Storage datatypes.
 // Derived types must implement the following methods:
 // - RunOnModelThread
 // - RunOnUIThread
-class NonBlockingDataTypeController : public DataTypeController {
+class NonBlockingDataTypeController : public sync_driver::DataTypeController {
  public:
   // |dump_stack| is called when an unrecoverable error occurs.
-  NonBlockingDataTypeController(ModelType type,
+  NonBlockingDataTypeController(syncer::ModelType type,
                                 const base::Closure& dump_stack,
-                                SyncClient* sync_client);
+                                sync_driver::SyncClient* sync_client);
   ~NonBlockingDataTypeController() override;
 
   // DataTypeController interface.
@@ -39,10 +44,13 @@ class NonBlockingDataTypeController : public DataTypeController {
   // Registers non-blocking data type with sync backend. In the process the
   // activation context is passed to ModelTypeRegistry, where ModelTypeWorker
   // gets created and connected with ModelTypeProcessor.
-  void RegisterWithBackend(BackendDataTypeConfigurer* configurer) override;
+  void RegisterWithBackend(
+      sync_driver::BackendDataTypeConfigurer* configurer) override;
   void StartAssociating(const StartCallback& start_callback) override;
-  void ActivateDataType(BackendDataTypeConfigurer* configurer) override;
-  void DeactivateDataType(BackendDataTypeConfigurer* configurer) override;
+  void ActivateDataType(
+      sync_driver::BackendDataTypeConfigurer* configurer) override;
+  void DeactivateDataType(
+      sync_driver::BackendDataTypeConfigurer* configurer) override;
   void Stop() override;
   std::string name() const override;
   State state() const override;
@@ -54,30 +62,30 @@ class NonBlockingDataTypeController : public DataTypeController {
   virtual bool RunOnModelThread(const tracked_objects::Location& from_here,
                                 const base::Closure& task) = 0;
 
-  std::unique_ptr<DataTypeErrorHandler> CreateErrorHandler() override;
+  std::unique_ptr<syncer::DataTypeErrorHandler> CreateErrorHandler() override;
 
  private:
   void RecordStartFailure(ConfigureResult result) const;
-  void ReportLoadModelError(const SyncError& error);
+  void ReportLoadModelError(const syncer::SyncError& error);
 
   // If the DataType controller is waiting for models to load, once the models
   // are loaded this function should be called to let the base class
   // implementation know that it is safe to continue with the activation.
   // The error indicates whether the loading completed successfully.
-  void LoadModelsDone(ConfigureResult result, const SyncError& error);
+  void LoadModelsDone(ConfigureResult result, const syncer::SyncError& error);
 
   // The function will do the real work when OnProcessorStarted got called. This
   // is called on the UI thread.
   void OnProcessorStarted(
-      SyncError error,
-      std::unique_ptr<ActivationContext> activation_context);
+      syncer::SyncError error,
+      std::unique_ptr<syncer_v2::ActivationContext> activation_context);
 
   // Sync client
-  SyncClient* const sync_client_;
+  sync_driver::SyncClient* const sync_client_;
 
   // Sync prefs. Used for determinig if DisableSync should be called during call
   // to Stop().
-  SyncPrefs sync_prefs_;
+  sync_driver::SyncPrefs sync_prefs_;
 
   // State of this datatype controller.
   State state_;
@@ -87,7 +95,7 @@ class NonBlockingDataTypeController : public DataTypeController {
 
   // Controller receives |activation_context_| from SharedModelTypeProcessor
   // callback and must temporarily own it until ActivateDataType is called.
-  std::unique_ptr<ActivationContext> activation_context_;
+  std::unique_ptr<syncer_v2::ActivationContext> activation_context_;
 
   // This is a hack to prevent reconfigurations from crashing, because USS
   // activation is not idempotent. RegisterWithBackend only needs to actually do
@@ -98,6 +106,6 @@ class NonBlockingDataTypeController : public DataTypeController {
   DISALLOW_COPY_AND_ASSIGN(NonBlockingDataTypeController);
 };
 
-}  // namespace syncer
+}  // namespace sync_driver_v2
 
 #endif  // COMPONENTS_SYNC_DRIVER_NON_BLOCKING_DATA_TYPE_CONTROLLER_H_

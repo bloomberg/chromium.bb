@@ -22,9 +22,22 @@
 
 using base::Time;
 using base::TimeDelta;
+using syncer::AttachmentIdList;
+using syncer::AttachmentServiceProxyForTest;
+using syncer::ModelType;
+using syncer::SyncChange;
+using syncer::SyncChangeList;
+using syncer::SyncChangeProcessor;
+using syncer::SyncChangeProcessorWrapperForTest;
+using syncer::SyncData;
+using syncer::SyncDataList;
+using syncer::SyncError;
+using syncer::SyncErrorFactory;
+using syncer::SyncErrorFactoryMock;
+using syncer::SyncMergeResult;
 using sync_pb::EntitySpecifics;
 
-namespace syncer {
+namespace sync_driver {
 
 namespace {
 
@@ -123,7 +136,7 @@ class DeviceInfoSyncServiceTest : public testing::Test,
     sync_pb::EntitySpecifics entity(
         CreateEntitySpecifics(client_id, client_name));
     entity.mutable_device_info()->set_last_updated_timestamp(
-        TimeToProtoTime(last_updated_timestamp));
+        syncer::TimeToProtoTime(last_updated_timestamp));
     return SyncData::CreateRemoteData(1, entity, Time(), AttachmentIdList(),
                                       AttachmentServiceProxyForTest::Create());
   }
@@ -146,13 +159,14 @@ class DeviceInfoSyncServiceTest : public testing::Test,
 
  protected:
   // Private method wrappers through friend class.
-  Time GetLastUpdateTime(const SyncData& data) {
+  Time GetLastUpdateTime(const syncer::SyncData& data) {
     return sync_service_->GetLastUpdateTime(data);
   }
   int CountActiveDevices(const Time now) {
     return sync_service_->CountActiveDevices(now);
   }
-  void StoreSyncData(const std::string& client_id, const SyncData& sync_data) {
+  void StoreSyncData(const std::string& client_id,
+                     const syncer::SyncData& sync_data) {
     sync_service_->StoreSyncData(client_id, sync_data);
   }
   bool IsPulseTimerRunning() { return sync_service_->pulse_timer_.IsRunning(); }
@@ -173,7 +187,7 @@ TEST_F(DeviceInfoSyncServiceTest, StartSyncEmptyInitialData) {
   EXPECT_FALSE(sync_service_->IsSyncing());
 
   SyncMergeResult merge_result = sync_service_->MergeDataAndStartSyncing(
-      DEVICE_INFO, SyncDataList(), PassProcessor(),
+      syncer::DEVICE_INFO, SyncDataList(), PassProcessor(),
       CreateAndPassSyncErrorFactory());
 
   EXPECT_TRUE(sync_service_->IsSyncing());
@@ -188,7 +202,7 @@ TEST_F(DeviceInfoSyncServiceTest, StartSyncEmptyInitialData) {
   EXPECT_EQ("guid_1", sync_processor_->cache_guid_at(0));
 
   // Should have one device info corresponding to local device info.
-  EXPECT_EQ(1U, sync_service_->GetAllSyncData(DEVICE_INFO).size());
+  EXPECT_EQ(1U, sync_service_->GetAllSyncData(syncer::DEVICE_INFO).size());
   EXPECT_EQ(1U, sync_service_->GetAllDeviceInfo().size());
   EXPECT_TRUE(sync_service_->GetDeviceInfo("guid_1"));
   EXPECT_FALSE(sync_service_->GetDeviceInfo("guid_0"));
@@ -196,12 +210,12 @@ TEST_F(DeviceInfoSyncServiceTest, StartSyncEmptyInitialData) {
 
 TEST_F(DeviceInfoSyncServiceTest, StopSyncing) {
   SyncMergeResult merge_result = sync_service_->MergeDataAndStartSyncing(
-      DEVICE_INFO, SyncDataList(), PassProcessor(),
+      syncer::DEVICE_INFO, SyncDataList(), PassProcessor(),
       CreateAndPassSyncErrorFactory());
   EXPECT_TRUE(sync_service_->IsSyncing());
   EXPECT_EQ(1, num_device_info_changed_callbacks_);
   EXPECT_TRUE(IsPulseTimerRunning());
-  sync_service_->StopSyncing(DEVICE_INFO);
+  sync_service_->StopSyncing(syncer::DEVICE_INFO);
   EXPECT_FALSE(sync_service_->IsSyncing());
   EXPECT_EQ(2, num_device_info_changed_callbacks_);
   EXPECT_FALSE(IsPulseTimerRunning());
@@ -213,7 +227,8 @@ TEST_F(DeviceInfoSyncServiceTest, StartSyncMatchingInitialData) {
   AddInitialData(&sync_data, "guid_1", "client_1");
 
   SyncMergeResult merge_result = sync_service_->MergeDataAndStartSyncing(
-      DEVICE_INFO, sync_data, PassProcessor(), CreateAndPassSyncErrorFactory());
+      syncer::DEVICE_INFO, sync_data, PassProcessor(),
+      CreateAndPassSyncErrorFactory());
   EXPECT_EQ(0, merge_result.num_items_added());
   EXPECT_EQ(0, merge_result.num_items_modified());
   EXPECT_EQ(0, merge_result.num_items_deleted());
@@ -223,7 +238,7 @@ TEST_F(DeviceInfoSyncServiceTest, StartSyncMatchingInitialData) {
   // No changes expected because the device info matches.
   EXPECT_EQ(0U, sync_processor_->change_list_size());
 
-  EXPECT_EQ(1U, sync_service_->GetAllSyncData(DEVICE_INFO).size());
+  EXPECT_EQ(1U, sync_service_->GetAllSyncData(syncer::DEVICE_INFO).size());
   EXPECT_EQ(1U, sync_service_->GetAllDeviceInfo().size());
   EXPECT_TRUE(sync_service_->GetDeviceInfo("guid_1"));
   EXPECT_FALSE(sync_service_->GetDeviceInfo("guid_0"));
@@ -238,7 +253,8 @@ TEST_F(DeviceInfoSyncServiceTest, StartSync) {
   AddInitialData(&sync_data, "guid_1", "baz");
 
   SyncMergeResult merge_result = sync_service_->MergeDataAndStartSyncing(
-      DEVICE_INFO, sync_data, PassProcessor(), CreateAndPassSyncErrorFactory());
+      syncer::DEVICE_INFO, sync_data, PassProcessor(),
+      CreateAndPassSyncErrorFactory());
 
   EXPECT_EQ(2, merge_result.num_items_added());
   EXPECT_EQ(1, merge_result.num_items_modified());
@@ -250,7 +266,7 @@ TEST_F(DeviceInfoSyncServiceTest, StartSync) {
   EXPECT_EQ(SyncChange::ACTION_UPDATE, sync_processor_->change_type_at(0));
   EXPECT_EQ("client_1", sync_processor_->client_name_at(0));
 
-  EXPECT_EQ(3U, sync_service_->GetAllSyncData(DEVICE_INFO).size());
+  EXPECT_EQ(3U, sync_service_->GetAllSyncData(syncer::DEVICE_INFO).size());
   EXPECT_EQ(3U, sync_service_->GetAllDeviceInfo().size());
   EXPECT_TRUE(sync_service_->GetDeviceInfo("guid_1"));
   EXPECT_TRUE(sync_service_->GetDeviceInfo("guid_2"));
@@ -265,7 +281,7 @@ TEST_F(DeviceInfoSyncServiceTest, ProcessAddChange) {
 
   // Start with an empty initial data.
   SyncMergeResult merge_result = sync_service_->MergeDataAndStartSyncing(
-      DEVICE_INFO, SyncDataList(), PassProcessor(),
+      syncer::DEVICE_INFO, SyncDataList(), PassProcessor(),
       CreateAndPassSyncErrorFactory());
   // There should be only one item corresponding to the local device
   EXPECT_EQ(1, merge_result.num_items_after_association());
@@ -294,7 +310,8 @@ TEST_F(DeviceInfoSyncServiceTest, ProcessMultipleChanges) {
   AddInitialData(&sync_data, "guid_3", "bar");
 
   SyncMergeResult merge_result = sync_service_->MergeDataAndStartSyncing(
-      DEVICE_INFO, sync_data, PassProcessor(), CreateAndPassSyncErrorFactory());
+      syncer::DEVICE_INFO, sync_data, PassProcessor(),
+      CreateAndPassSyncErrorFactory());
   EXPECT_EQ(3, merge_result.num_items_after_association());
   // reset callbacks counter
   num_device_info_changed_callbacks_ = 0;
@@ -325,7 +342,7 @@ TEST_F(DeviceInfoSyncServiceTest, ProcessMultipleChanges) {
 // Process update to the local device info and verify that it is ignored.
 TEST_F(DeviceInfoSyncServiceTest, ProcessUpdateChangeMatchingLocalDevice) {
   SyncMergeResult merge_result = sync_service_->MergeDataAndStartSyncing(
-      DEVICE_INFO, SyncDataList(), PassProcessor(),
+      syncer::DEVICE_INFO, SyncDataList(), PassProcessor(),
       CreateAndPassSyncErrorFactory());
   EXPECT_EQ(1, merge_result.num_items_after_association());
   // reset callbacks counter
@@ -350,7 +367,8 @@ TEST_F(DeviceInfoSyncServiceTest, ProcessDeleteChange) {
   AddInitialData(&sync_data, "guid_3", "bar");
 
   SyncMergeResult merge_result = sync_service_->MergeDataAndStartSyncing(
-      DEVICE_INFO, sync_data, PassProcessor(), CreateAndPassSyncErrorFactory());
+      syncer::DEVICE_INFO, sync_data, PassProcessor(),
+      CreateAndPassSyncErrorFactory());
   EXPECT_EQ(3, merge_result.num_items_after_association());
   // reset callbacks counter
   num_device_info_changed_callbacks_ = 0;
@@ -369,7 +387,7 @@ TEST_F(DeviceInfoSyncServiceTest, ProcessDeleteChange) {
 // Process sync change with unexpected action.
 TEST_F(DeviceInfoSyncServiceTest, ProcessInvalidChange) {
   SyncMergeResult merge_result = sync_service_->MergeDataAndStartSyncing(
-      DEVICE_INFO, SyncDataList(), PassProcessor(),
+      syncer::DEVICE_INFO, SyncDataList(), PassProcessor(),
       CreateAndPassSyncErrorFactory());
   EXPECT_EQ(1, merge_result.num_items_after_association());
   // reset callbacks counter
@@ -389,7 +407,7 @@ TEST_F(DeviceInfoSyncServiceTest, ProcessInvalidChange) {
 // Process sync change after unsubscribing from notifications.
 TEST_F(DeviceInfoSyncServiceTest, ProcessChangesAfterUnsubscribing) {
   SyncMergeResult merge_result = sync_service_->MergeDataAndStartSyncing(
-      DEVICE_INFO, SyncDataList(), PassProcessor(),
+      syncer::DEVICE_INFO, SyncDataList(), PassProcessor(),
       CreateAndPassSyncErrorFactory());
   EXPECT_EQ(1, merge_result.num_items_after_association());
   // reset callbacks counter
@@ -414,7 +432,8 @@ TEST_F(DeviceInfoSyncServiceTest, StartSyncMatchingButStale) {
   SyncDataList sync_data;
   sync_data.push_back(CreateRemoteData("guid_1", "foo_1", Time()));
   SyncMergeResult merge_result = sync_service_->MergeDataAndStartSyncing(
-      DEVICE_INFO, sync_data, PassProcessor(), CreateAndPassSyncErrorFactory());
+      syncer::DEVICE_INFO, sync_data, PassProcessor(),
+      CreateAndPassSyncErrorFactory());
 
   EXPECT_EQ(1U, sync_processor_->change_list_size());
   EXPECT_EQ(SyncChange::ACTION_UPDATE, sync_processor_->change_type_at(0));
@@ -431,7 +450,7 @@ TEST_F(DeviceInfoSyncServiceTest, GetLastUpdateTime) {
 
   EntitySpecifics entityB(CreateEntitySpecifics("b", "b"));
   entityB.mutable_device_info()->set_last_updated_timestamp(
-      TimeToProtoTime(time1));
+      syncer::TimeToProtoTime(time1));
   SyncData localB(SyncData::CreateLocalData("b", "b", entityB));
 
   SyncData remoteC(SyncData::CreateRemoteData(
@@ -440,7 +459,7 @@ TEST_F(DeviceInfoSyncServiceTest, GetLastUpdateTime) {
 
   EntitySpecifics entityD(CreateEntitySpecifics("d", "d"));
   entityD.mutable_device_info()->set_last_updated_timestamp(
-      TimeToProtoTime(time1));
+      syncer::TimeToProtoTime(time1));
   SyncData remoteD(
       SyncData::CreateRemoteData(1, entityD, time2, AttachmentIdList(),
                                  AttachmentServiceProxyForTest::Create()));
@@ -559,4 +578,4 @@ TEST_F(DeviceInfoSyncServiceTest, CountActiveDevicesLocalStale) {
 
 }  // namespace
 
-}  // namespace syncer
+}  // namespace sync_driver

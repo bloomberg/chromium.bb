@@ -17,16 +17,18 @@ class SyncChangeProcessorWrapperForTest : public SyncChangeProcessor {
   //
   // All method calls are forwarded to |wrapped|. Caller maintains ownership
   // of |wrapped| and is responsible for ensuring it outlives this object.
-  explicit SyncChangeProcessorWrapperForTest(SyncChangeProcessor* wrapped);
+  explicit SyncChangeProcessorWrapperForTest(
+      syncer::SyncChangeProcessor* wrapped);
   ~SyncChangeProcessorWrapperForTest() override;
 
   // SyncChangeProcessor implementation.
-  SyncError ProcessSyncChanges(const tracked_objects::Location& from_here,
-                               const SyncChangeList& change_list) override;
-  SyncDataList GetAllSyncData(ModelType type) const override;
+  syncer::SyncError ProcessSyncChanges(
+      const tracked_objects::Location& from_here,
+      const syncer::SyncChangeList& change_list) override;
+  syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
 
  private:
-  SyncChangeProcessor* const wrapped_;
+  syncer::SyncChangeProcessor* const wrapped_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncChangeProcessorWrapperForTest);
 };

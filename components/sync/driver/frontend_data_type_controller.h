@@ -15,38 +15,44 @@
 
 namespace base {
 class TimeDelta;
-}  // namespace base
+}
 
 namespace syncer {
+class SyncError;
+}
 
+namespace sync_driver {
 class AssociatorInterface;
 class ChangeProcessor;
 class SyncClient;
-class SyncError;
+}
+
+namespace browser_sync {
 
 // Implementation for datatypes that reside on the frontend thread
 // (UI thread). This is the same thread we perform initialization on, so we
 // don't have to worry about thread safety. The main start/stop funtionality is
 // implemented by default.
 // Derived classes must implement (at least):
-//    ModelType type() const
+//    syncer::ModelType type() const
 //    void CreateSyncComponents();
 // NOTE: This class is deprecated! New sync datatypes should be using the
-// SyncableService API and the UIDataTypeController instead.
+// syncer::SyncableService API and the UIDataTypeController instead.
 // TODO(zea): Delete this once all types are on the new API.
-class FrontendDataTypeController : public DirectoryDataTypeController {
+class FrontendDataTypeController
+    : public sync_driver::DirectoryDataTypeController {
  public:
   // |dump_stack| is called when an unrecoverable error occurs.
-  FrontendDataTypeController(ModelType type,
+  FrontendDataTypeController(syncer::ModelType type,
                              const base::Closure& dump_stack,
-                             SyncClient* sync_client);
+                             sync_driver::SyncClient* sync_client);
   ~FrontendDataTypeController() override;
 
   // DataTypeController interface.
   void LoadModels(const ModelLoadCallback& model_load_callback) override;
   void StartAssociating(const StartCallback& start_callback) override;
   void Stop() override;
-  ModelSafeGroup model_safe_group() const override;
+  syncer::ModelSafeGroup model_safe_group() const override;
   std::string name() const override;
   State state() const override;
 
@@ -73,25 +79,26 @@ class FrontendDataTypeController : public DirectoryDataTypeController {
 
   // Helper method for cleaning up state and running the start callback.
   virtual void StartDone(ConfigureResult start_result,
-                         const SyncMergeResult& local_merge_result,
-                         const SyncMergeResult& syncer_merge_result);
+                         const syncer::SyncMergeResult& local_merge_result,
+                         const syncer::SyncMergeResult& syncer_merge_result);
 
   // Record association time.
   virtual void RecordAssociationTime(base::TimeDelta time);
   // Record causes of start failure.
   virtual void RecordStartFailure(ConfigureResult result);
 
-  virtual AssociatorInterface* model_associator() const;
-  virtual void set_model_associator(AssociatorInterface* associator);
-  ChangeProcessor* GetChangeProcessor() const override;
-  virtual void set_change_processor(ChangeProcessor* processor);
+  virtual sync_driver::AssociatorInterface* model_associator() const;
+  virtual void set_model_associator(
+      sync_driver::AssociatorInterface* associator);
+  sync_driver::ChangeProcessor* GetChangeProcessor() const override;
+  virtual void set_change_processor(sync_driver::ChangeProcessor* processor);
 
   // If the DTC is waiting for models to load, once the models are
   // loaded the datatype service will call this function on DTC to let
   // us know that it is safe to start associating.
   void OnModelLoaded();
 
-  std::unique_ptr<DataTypeErrorHandler> CreateErrorHandler() override;
+  std::unique_ptr<syncer::DataTypeErrorHandler> CreateErrorHandler() override;
 
   State state_;
 
@@ -100,8 +107,8 @@ class FrontendDataTypeController : public DirectoryDataTypeController {
 
   // TODO(sync): transition all datatypes to SyncableService and deprecate
   // AssociatorInterface.
-  std::unique_ptr<AssociatorInterface> model_associator_;
-  std::unique_ptr<ChangeProcessor> change_processor_;
+  std::unique_ptr<sync_driver::AssociatorInterface> model_associator_;
+  std::unique_ptr<sync_driver::ChangeProcessor> change_processor_;
 
  private:
   // Build sync components and associate models.
@@ -114,11 +121,11 @@ class FrontendDataTypeController : public DirectoryDataTypeController {
   void CleanUp();
 
   // Handle an unrecoverable error.
-  void OnUnrecoverableError(const SyncError& error);
+  void OnUnrecoverableError(const syncer::SyncError& error);
 
   DISALLOW_COPY_AND_ASSIGN(FrontendDataTypeController);
 };
 
-}  // namespace syncer
+}  // namespace browser_sync
 
 #endif  // COMPONENTS_SYNC_DRIVER_FRONTEND_DATA_TYPE_CONTROLLER_H__

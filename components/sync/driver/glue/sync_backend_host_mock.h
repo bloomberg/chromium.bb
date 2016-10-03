@@ -12,7 +12,7 @@
 #include "components/sync/base/weak_handle.h"
 #include "components/sync/driver/glue/sync_backend_host.h"
 
-namespace syncer {
+namespace browser_sync {
 
 // A mock of the SyncBackendHost.
 //
@@ -26,25 +26,26 @@ class SyncBackendHostMock : public SyncBackendHost {
   ~SyncBackendHostMock() override;
 
   void Initialize(
-      SyncFrontend* frontend,
+      sync_driver::SyncFrontend* frontend,
       std::unique_ptr<base::Thread> sync_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& file_thread,
-      const WeakHandle<JsEventHandler>& event_handler,
+      const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
       const GURL& service_url,
       const std::string& sync_user_agent,
-      const SyncCredentials& credentials,
+      const syncer::SyncCredentials& credentials,
       bool delete_sync_data_folder,
-      std::unique_ptr<SyncManagerFactory> sync_manager_factory,
-      const WeakHandle<UnrecoverableErrorHandler>& unrecoverable_error_handler,
+      std::unique_ptr<syncer::SyncManagerFactory> sync_manager_factory,
+      const syncer::WeakHandle<syncer::UnrecoverableErrorHandler>&
+          unrecoverable_error_handler,
       const base::Closure& report_unrecoverable_error_function,
       const HttpPostProviderFactoryGetter& http_post_provider_factory_getter,
-      std::unique_ptr<SyncEncryptionHandler::NigoriState> saved_nigori_state)
-      override;
+      std::unique_ptr<syncer::SyncEncryptionHandler::NigoriState>
+          saved_nigori_state) override;
 
-  void TriggerRefresh(const ModelTypeSet& types) override;
+  void TriggerRefresh(const syncer::ModelTypeSet& types) override;
 
-  void UpdateCredentials(const SyncCredentials& credentials) override;
+  void UpdateCredentials(const syncer::SyncCredentials& credentials) override;
 
   void StartSyncingWithServer() override;
 
@@ -55,44 +56,50 @@ class SyncBackendHostMock : public SyncBackendHost {
 
   void StopSyncingForShutdown() override;
 
-  std::unique_ptr<base::Thread> Shutdown(ShutdownReason reason) override;
+  std::unique_ptr<base::Thread> Shutdown(
+      syncer::ShutdownReason reason) override;
 
   void UnregisterInvalidationIds() override;
 
-  ModelTypeSet ConfigureDataTypes(
-      ConfigureReason reason,
+  syncer::ModelTypeSet ConfigureDataTypes(
+      syncer::ConfigureReason reason,
       const DataTypeConfigStateMap& config_state_map,
-      const base::Callback<void(ModelTypeSet, ModelTypeSet)>& ready_task,
+      const base::Callback<void(syncer::ModelTypeSet, syncer::ModelTypeSet)>&
+          ready_task,
       const base::Callback<void()>& retry_callback) override;
 
   void EnableEncryptEverything() override;
 
-  void ActivateDirectoryDataType(ModelType type,
-                                 ModelSafeGroup group,
-                                 ChangeProcessor* change_processor) override;
-  void DeactivateDirectoryDataType(ModelType type) override;
+  void ActivateDirectoryDataType(
+      syncer::ModelType type,
+      syncer::ModelSafeGroup group,
+      sync_driver::ChangeProcessor* change_processor) override;
+  void DeactivateDirectoryDataType(syncer::ModelType type) override;
 
-  void ActivateNonBlockingDataType(ModelType type,
-                                   std::unique_ptr<ActivationContext>) override;
-  void DeactivateNonBlockingDataType(ModelType type) override;
+  void ActivateNonBlockingDataType(
+      syncer::ModelType type,
+      std::unique_ptr<syncer_v2::ActivationContext>) override;
+  void DeactivateNonBlockingDataType(syncer::ModelType type) override;
 
-  UserShare* GetUserShare() const override;
+  syncer::UserShare* GetUserShare() const override;
 
   Status GetDetailedStatus() override;
 
-  SyncCycleSnapshot GetLastCycleSnapshot() const override;
+  syncer::SyncCycleSnapshot GetLastCycleSnapshot() const override;
 
   bool HasUnsyncedItems() const override;
 
   bool IsNigoriEnabled() const override;
 
-  PassphraseType GetPassphraseType() const override;
+  syncer::PassphraseType GetPassphraseType() const override;
 
   base::Time GetExplicitPassphraseTime() const override;
 
-  bool IsCryptographerReady(const BaseTransaction* trans) const override;
+  bool IsCryptographerReady(
+      const syncer::BaseTransaction* trans) const override;
 
-  void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) const override;
+  void GetModelSafeRoutingInfo(
+      syncer::ModelSafeRoutingInfo* out) const override;
 
   void FlushDirectory() const override;
 
@@ -104,10 +111,10 @@ class SyncBackendHostMock : public SyncBackendHost {
 
   base::MessageLoop* GetSyncLoopForTesting() override;
 
-  void RefreshTypesForTest(ModelTypeSet types) override;
+  void RefreshTypesForTest(syncer::ModelTypeSet types) override;
 
   void ClearServerData(
-      const SyncManager::ClearServerDataCallback& callback) override;
+      const syncer::SyncManager::ClearServerDataCallback& callback) override;
 
   void OnCookieJarChanged(bool account_mismatch, bool empty_jar) override;
 
@@ -117,6 +124,6 @@ class SyncBackendHostMock : public SyncBackendHost {
   bool fail_initial_download_;
 };
 
-}  // namespace syncer
+}  // namespace browser_sync
 
 #endif  // COMPONENTS_SYNC_DRIVER_GLUE_SYNC_BACKEND_HOST_MOCK_H_

@@ -25,7 +25,7 @@
 #include "components/sync/protocol/data_type_state.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 
-namespace syncer {
+namespace syncer_v2 {
 struct ActivationContext;
 class CommitQueue;
 class ProcessorEntityTracker;
@@ -36,12 +36,12 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
                                  public ModelTypeChangeProcessor,
                                  base::NonThreadSafe {
  public:
-  SharedModelTypeProcessor(ModelType type, ModelTypeService* service);
+  SharedModelTypeProcessor(syncer::ModelType type, ModelTypeService* service);
   ~SharedModelTypeProcessor() override;
 
   // An easily bound function that constructs a SharedModelTypeProcessor.
   static std::unique_ptr<ModelTypeChangeProcessor> CreateAsChangeProcessor(
-      ModelType type,
+      syncer::ModelType type,
       ModelTypeService* service);
 
   // Whether the processor is allowing changes to its model type. If this is
@@ -57,7 +57,7 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
   // TODO(gangwu): GetAllNodes could be in a helper class.
   void GetAllNodes(
       const scoped_refptr<base::TaskRunner>& task_runner,
-      const base::Callback<void(const ModelType type,
+      const base::Callback<void(const syncer::ModelType type,
                                 std::unique_ptr<base::ListValue>)>& callback);
 
   // ModelTypeChangeProcessor implementation.
@@ -66,13 +66,15 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
            MetadataChangeList* metadata_change_list) override;
   void Delete(const std::string& storage_key,
               MetadataChangeList* metadata_change_list) override;
-  void OnMetadataLoaded(SyncError error,
+  void OnMetadataLoaded(syncer::SyncError error,
                         std::unique_ptr<MetadataBatch> batch) override;
-  void OnSyncStarting(std::unique_ptr<DataTypeErrorHandler> error_handler,
-                      const StartCallback& callback) override;
+  void OnSyncStarting(
+      std::unique_ptr<syncer::DataTypeErrorHandler> error_handler,
+      const StartCallback& callback) override;
   void DisableSync() override;
-  SyncError CreateAndUploadError(const tracked_objects::Location& location,
-                                 const std::string& message) override;
+  syncer::SyncError CreateAndUploadError(
+      const tracked_objects::Location& location,
+      const std::string& message) override;
 
   // ModelTypeProcessor implementation.
   void ConnectSync(std::unique_ptr<CommitQueue> worker) override;
@@ -112,11 +114,11 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
                                const UpdateResponseDataList& updates);
 
   // ModelTypeService::GetData() callback for initial pending commit data.
-  void OnInitialPendingDataLoaded(SyncError error,
+  void OnInitialPendingDataLoaded(syncer::SyncError error,
                                   std::unique_ptr<DataBatch> data_batch);
 
   // ModelTypeService::GetData() callback for re-encryption commit data.
-  void OnDataLoadedForReEncryption(SyncError error,
+  void OnDataLoadedForReEncryption(syncer::SyncError error,
                                    std::unique_ptr<DataBatch> data_batch);
 
   // Caches EntityData from the |data_batch| in the entity trackers.
@@ -154,12 +156,12 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
   // will merge real data |batch| with metadata, then pass to |callback|.
   void MergeDataWithMetadata(
       const scoped_refptr<base::TaskRunner>& task_runner,
-      const base::Callback<void(const ModelType,
+      const base::Callback<void(const syncer::ModelType,
                                 std::unique_ptr<base::ListValue>)>& callback,
-      SyncError error,
+      syncer::SyncError error,
       std::unique_ptr<DataBatch> batch);
 
-  const ModelType type_;
+  const syncer::ModelType type_;
   sync_pb::DataTypeState data_type_state_;
 
   // Stores the start callback in between OnSyncStarting() and ReadyToConnect().
@@ -167,7 +169,7 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
 
   // A cache for any error that may occur during startup and should be passed
   // into the |start_callback_|.
-  SyncError start_error_;
+  syncer::SyncError start_error_;
 
   // Indicates whether the metadata has finished loading.
   bool is_metadata_loaded_;
@@ -200,12 +202,12 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
 
   // The object used for informing sync of errors; will be non-null after
   // OnSyncStarting has been called. This pointer is not owned.
-  std::unique_ptr<DataTypeErrorHandler> error_handler_;
+  std::unique_ptr<syncer::DataTypeErrorHandler> error_handler_;
 
   // WeakPtrFactory for this processor which will be sent to sync thread.
   base::WeakPtrFactory<SharedModelTypeProcessor> weak_ptr_factory_;
 };
 
-}  // namespace syncer
+}  // namespace syncer_v2
 
 #endif  // COMPONENTS_SYNC_CORE_SHARED_MODEL_TYPE_PROCESSOR_H_

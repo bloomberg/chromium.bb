@@ -210,7 +210,7 @@ bool ChromeAutocompleteProviderClient::SearchSuggestEnabled() const {
 }
 
 bool ChromeAutocompleteProviderClient::TabSyncEnabledAndUnencrypted() const {
-  return syncer::IsTabSyncEnabledAndUnencrypted(
+  return sync_driver::IsTabSyncEnabledAndUnencrypted(
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_),
       profile_->GetPrefs());
 }

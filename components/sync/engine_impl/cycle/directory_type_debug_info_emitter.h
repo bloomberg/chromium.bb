@@ -42,7 +42,7 @@ class DirectoryTypeDebugInfoEmitter {
   // object.
   DirectoryTypeDebugInfoEmitter(
       syncable::Directory* directory,
-      ModelType type,
+      syncer::ModelType type,
       base::ObserverList<TypeDebugInfoObserver>* observers);
 
   // A simple constructor for tests.  Should not be used in real code.

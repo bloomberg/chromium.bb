@@ -9,6 +9,7 @@
 using std::string;
 
 namespace fake_server {
+
 namespace {
 
 // Returns true if and only if |client_entity| is a bookmark.

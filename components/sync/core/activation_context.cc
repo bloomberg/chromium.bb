@@ -4,10 +4,10 @@
 
 #include "components/sync/core/activation_context.h"
 
-namespace syncer {
+namespace syncer_v2 {
 
 ActivationContext::ActivationContext() {}
 
 ActivationContext::~ActivationContext() {}
 
-}  // namespace syncer
+}  // namespace syncer_v2

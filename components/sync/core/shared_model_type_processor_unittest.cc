@@ -32,7 +32,7 @@ using sync_pb::EntitySpecifics;
 using sync_pb::EntityMetadata;
 using sync_pb::DataTypeState;
 
-namespace syncer {
+namespace syncer_v2 {
 
 namespace {
 
@@ -54,8 +54,9 @@ const std::string kHash5(FakeModelTypeService::TagHashFromKey(kKey5));
 // worker/processor will not have been initialized and thus empty.
 const EntitySpecifics kEmptySpecifics;
 
-SyncError CreateSyncError(SyncError::ErrorType error_type) {
-  return SyncError(FROM_HERE, error_type, "TestError", PREFERENCES);
+syncer::SyncError CreateSyncError(syncer::SyncError::ErrorType error_type) {
+  return syncer::SyncError(FROM_HERE, error_type, "TestError",
+                           syncer::PREFERENCES);
 }
 
 }  // namespace
@@ -100,7 +101,8 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
   }
 
   void OnMetadataLoaded() {
-    type_processor()->OnMetadataLoaded(SyncError(), db_.CreateMetadataBatch());
+    type_processor()->OnMetadataLoaded(syncer::SyncError(),
+                                       db_.CreateMetadataBatch());
   }
 
   void OnPendingCommitDataLoaded() {
@@ -110,8 +112,8 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
   }
 
   void OnSyncStarting() {
-    std::unique_ptr<DataTypeErrorHandlerMock> error_handler =
-        base::MakeUnique<DataTypeErrorHandlerMock>();
+    std::unique_ptr<syncer::DataTypeErrorHandlerMock> error_handler =
+        base::MakeUnique<syncer::DataTypeErrorHandlerMock>();
     error_handler_ = error_handler.get();
     type_processor()->OnSyncStarting(
         std::move(error_handler),
@@ -176,8 +178,8 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
 
   // Sets the error type that OnReadyToConnect (our StartCallback) expects to
   // receive.
-  void ExpectStartError(SyncError::ErrorType error_type) {
-    DCHECK(expected_start_error_ == SyncError::UNSET);
+  void ExpectStartError(syncer::SyncError::ErrorType error_type) {
+    DCHECK(expected_start_error_ == syncer::SyncError::UNSET);
     expected_start_error_ = error_type;
   }
 
@@ -187,7 +189,7 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
     return static_cast<SharedModelTypeProcessor*>(change_processor());
   }
 
-  DataTypeErrorHandlerMock* error_handler() {
+  syncer::DataTypeErrorHandlerMock* error_handler() {
     DCHECK(error_handler_);
     return error_handler_;
   }
@@ -198,16 +200,16 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
   void CheckPostConditions() override {
     FakeModelTypeService::CheckPostConditions();
     DCHECK(data_callback_.is_null());
-    DCHECK_EQ(SyncError::UNSET, expected_start_error_);
+    DCHECK_EQ(syncer::SyncError::UNSET, expected_start_error_);
   }
 
-  void OnReadyToConnect(SyncError error,
+  void OnReadyToConnect(syncer::SyncError error,
                         std::unique_ptr<ActivationContext> context) {
-    if (expected_start_error_ != SyncError::UNSET) {
+    if (expected_start_error_ != syncer::SyncError::UNSET) {
       EXPECT_TRUE(error.IsSet());
       EXPECT_EQ(expected_start_error_, error.error_type());
       EXPECT_EQ(nullptr, context);
-      expected_start_error_ = SyncError::UNSET;
+      expected_start_error_ = syncer::SyncError::UNSET;
       return;
     }
 
@@ -223,14 +225,14 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
 
   // FakeModelTypeService overrides.
 
-  SyncError MergeSyncData(std::unique_ptr<MetadataChangeList> mcl,
-                          EntityDataMap entity_data_map) override {
+  syncer::SyncError MergeSyncData(std::unique_ptr<MetadataChangeList> mcl,
+                                  EntityDataMap entity_data_map) override {
     merge_call_count_++;
     return FakeModelTypeService::MergeSyncData(std::move(mcl), entity_data_map);
   }
 
   void CaptureDataCallback(DataCallback callback,
-                           SyncError error,
+                           syncer::SyncError error,
                            std::unique_ptr<DataBatch> data) {
     data_callback_ = base::Bind(callback, error, base::Passed(std::move(data)));
   }
@@ -252,10 +254,10 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
   base::Closure data_callback_;
 
   // The processor's error handler.
-  DataTypeErrorHandlerMock* error_handler_;
+  syncer::DataTypeErrorHandlerMock* error_handler_;
 
   // The error to expect in OnReadyToConnect().
-  SyncError::ErrorType expected_start_error_ = SyncError::UNSET;
+  syncer::SyncError::ErrorType expected_start_error_ = syncer::SyncError::UNSET;
 
   // The number of times MergeSyncData has been called.
   int merge_call_count_ = 0;
@@ -315,33 +317,33 @@ TEST_F(SharedModelTypeProcessorTest, InitialSyncError) {
   OnMetadataLoaded();
   OnSyncStarting();
 
-  SetServiceError(SyncError::DATATYPE_ERROR);
-  error_handler()->ExpectError(SyncError::DATATYPE_ERROR);
+  SetServiceError(syncer::SyncError::DATATYPE_ERROR);
+  error_handler()->ExpectError(syncer::SyncError::DATATYPE_ERROR);
   worker()->UpdateFromServer();
 }
 
 // Test that errors before it's called are passed to |start_callback| correctly.
 TEST_F(SharedModelTypeProcessorTest, StartErrors) {
   CreateChangeProcessor();
-  type_processor()->OnMetadataLoaded(CreateSyncError(SyncError::DATATYPE_ERROR),
-                                     nullptr);
-  ExpectStartError(SyncError::DATATYPE_ERROR);
+  type_processor()->OnMetadataLoaded(
+      CreateSyncError(syncer::SyncError::DATATYPE_ERROR), nullptr);
+  ExpectStartError(syncer::SyncError::DATATYPE_ERROR);
   OnSyncStarting();
 
   // Test OnSyncStarting happening first.
   ResetState();
   CreateChangeProcessor();
   OnSyncStarting();
-  ExpectStartError(SyncError::DATATYPE_ERROR);
-  type_processor()->OnMetadataLoaded(CreateSyncError(SyncError::DATATYPE_ERROR),
-                                     nullptr);
+  ExpectStartError(syncer::SyncError::DATATYPE_ERROR);
+  type_processor()->OnMetadataLoaded(
+      CreateSyncError(syncer::SyncError::DATATYPE_ERROR), nullptr);
 
   // Test an error loading pending data.
   ResetStateWriteItem(kKey1, kValue1);
-  SetServiceError(SyncError::DATATYPE_ERROR);
+  SetServiceError(syncer::SyncError::DATATYPE_ERROR);
   InitializeToMetadataLoaded();
   OnPendingCommitDataLoaded();
-  ExpectStartError(SyncError::DATATYPE_ERROR);
+  ExpectStartError(syncer::SyncError::DATATYPE_ERROR);
   OnSyncStarting();
 }
 
@@ -606,8 +608,8 @@ TEST_F(SharedModelTypeProcessorTest, LocalCreateItem) {
 TEST_F(SharedModelTypeProcessorTest, ErrorApplyingAck) {
   InitializeToReadyState();
   WriteItem(kKey1, kValue1);
-  SetServiceError(SyncError::DATATYPE_ERROR);
-  error_handler()->ExpectError(SyncError::DATATYPE_ERROR);
+  SetServiceError(syncer::SyncError::DATATYPE_ERROR);
+  error_handler()->ExpectError(syncer::SyncError::DATATYPE_ERROR);
   worker()->AckOnePendingCommit();
 }
 
@@ -771,8 +773,8 @@ TEST_F(SharedModelTypeProcessorTest, ServerCreateItem) {
 // propagated to the error handler.
 TEST_F(SharedModelTypeProcessorTest, ErrorApplyingUpdate) {
   InitializeToReadyState();
-  SetServiceError(SyncError::DATATYPE_ERROR);
-  error_handler()->ExpectError(SyncError::DATATYPE_ERROR);
+  SetServiceError(syncer::SyncError::DATATYPE_ERROR);
+  error_handler()->ExpectError(syncer::SyncError::DATATYPE_ERROR);
   worker()->UpdateFromServer(kHash1, GenerateSpecifics(kKey1, kValue1));
 }
 
@@ -1112,9 +1114,9 @@ TEST_F(SharedModelTypeProcessorTest, ReEncryptCommitsWithNewKey) {
 TEST_F(SharedModelTypeProcessorTest, ReEncryptErrorLoadingData) {
   InitializeToReadyState();
   WriteItemAndAck(kKey1, kValue1);
-  SetServiceError(SyncError::DATATYPE_ERROR);
+  SetServiceError(syncer::SyncError::DATATYPE_ERROR);
   worker()->UpdateWithEncryptionKey("k1");
-  error_handler()->ExpectError(SyncError::DATATYPE_ERROR);
+  error_handler()->ExpectError(syncer::SyncError::DATATYPE_ERROR);
   OnPendingCommitDataLoaded();
 }
 
@@ -1274,4 +1276,4 @@ TEST_F(SharedModelTypeProcessorTest, IgnoreRemoteEncryptionInterleaved) {
   worker()->ExpectNthPendingCommit(1, kHash1, specifics2);
 }
 
-}  // namespace syncer
+}  // namespace syncer_v2

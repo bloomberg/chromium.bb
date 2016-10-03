@@ -17,7 +17,7 @@ namespace base {
 class SequencedTaskRunner;
 }  // namespace base
 
-namespace syncer {
+namespace syncer_v2 {
 
 // ModelTypeStore is leveldb backed store for model type's data, metadata and
 // global metadata.
@@ -103,7 +103,7 @@ class ModelTypeStore {
   //
   // In test get task runner from MessageLoop::task_runner().
   static void CreateStore(
-      const ModelType type,
+      const syncer::ModelType type,
       const std::string& path,
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
       const InitCallback& callback);
@@ -156,6 +156,6 @@ class ModelTypeStore {
   // It will delete all metadata records and global metadata record.
 };
 
-}  // namespace syncer
+}  // namespace syncer_v2
 
 #endif  // COMPONENTS_SYNC_API_MODEL_TYPE_STORE_H_

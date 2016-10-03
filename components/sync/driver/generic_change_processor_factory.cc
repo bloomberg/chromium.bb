@@ -10,7 +10,7 @@
 #include "components/sync/api/syncable_service.h"
 #include "components/sync/driver/generic_change_processor.h"
 
-namespace syncer {
+namespace sync_driver {
 
 GenericChangeProcessorFactory::GenericChangeProcessorFactory() {}
 
@@ -18,11 +18,11 @@ GenericChangeProcessorFactory::~GenericChangeProcessorFactory() {}
 
 std::unique_ptr<GenericChangeProcessor>
 GenericChangeProcessorFactory::CreateGenericChangeProcessor(
-    ModelType type,
-    UserShare* user_share,
-    std::unique_ptr<DataTypeErrorHandler> error_handler,
-    const base::WeakPtr<SyncableService>& local_service,
-    const base::WeakPtr<SyncMergeResult>& merge_result,
+    syncer::ModelType type,
+    syncer::UserShare* user_share,
+    std::unique_ptr<syncer::DataTypeErrorHandler> error_handler,
+    const base::WeakPtr<syncer::SyncableService>& local_service,
+    const base::WeakPtr<syncer::SyncMergeResult>& merge_result,
     SyncClient* sync_client) {
   DCHECK(user_share);
   return base::MakeUnique<GenericChangeProcessor>(
@@ -30,4 +30,4 @@ GenericChangeProcessorFactory::CreateGenericChangeProcessor(
       sync_client, local_service->GetAttachmentStoreForSync());
 }
 
-}  // namespace syncer
+}  // namespace sync_driver

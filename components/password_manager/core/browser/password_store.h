@@ -21,8 +21,6 @@
 #include "components/password_manager/core/browser/password_store_sync.h"
 #include "components/sync/api/syncable_service.h"
 
-class PasswordStoreProxyMac;
-
 namespace autofill {
 struct PasswordForm;
 }
@@ -30,6 +28,8 @@ struct PasswordForm;
 namespace syncer {
 class SyncableService;
 }
+
+class PasswordStoreProxyMac;
 
 namespace password_manager {
 

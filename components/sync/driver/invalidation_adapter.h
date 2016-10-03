@@ -12,12 +12,12 @@
 #include "components/invalidation/public/invalidation.h"
 #include "components/sync/base/invalidation_interface.h"
 
-namespace syncer {
+namespace browser_sync {
 
-// Wraps a Invalidation in the InvalidationInterface.
-class InvalidationAdapter : public InvalidationInterface {
+// Wraps a syncer::Invalidation in the syncer::InvalidationInterface.
+class InvalidationAdapter : public syncer::InvalidationInterface {
  public:
-  explicit InvalidationAdapter(const Invalidation& invalidation);
+  explicit InvalidationAdapter(const syncer::Invalidation& invalidation);
   ~InvalidationAdapter() override;
 
   // Implementation of InvalidationInterface.
@@ -28,9 +28,9 @@ class InvalidationAdapter : public InvalidationInterface {
   void Drop() override;
 
  private:
-  Invalidation invalidation_;
+  syncer::Invalidation invalidation_;
 };
 
-}  // namespace syncer
+}  // namespace browser_sync
 
 #endif  // COMPONENTS_SYNC_DRIVER_INVALIDATION_ADAPTER_H_

@@ -20,7 +20,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace syncer {
+namespace sync_driver {
 
 namespace {
 
@@ -73,18 +73,19 @@ TEST_F(SyncPrefsTest, DefaultTypes) {
   sync_prefs.SetKeepEverythingSynced(false);
 
   // Only bookmarks and device info are enabled by default.
-  ModelTypeSet expected(BOOKMARKS, DEVICE_INFO);
-  ModelTypeSet preferred_types = sync_prefs.GetPreferredDataTypes(UserTypes());
+  syncer::ModelTypeSet expected(syncer::BOOKMARKS, syncer::DEVICE_INFO);
+  syncer::ModelTypeSet preferred_types =
+      sync_prefs.GetPreferredDataTypes(syncer::UserTypes());
   EXPECT_EQ(expected, preferred_types);
 
   // Simulate an upgrade to delete directives + proxy tabs support. None of the
   // new types or their pref group types should be registering, ensuring they
   // don't have pref values.
-  ModelTypeSet registered_types = UserTypes();
-  registered_types.Remove(PROXY_TABS);
-  registered_types.Remove(TYPED_URLS);
-  registered_types.Remove(SESSIONS);
-  registered_types.Remove(HISTORY_DELETE_DIRECTIVES);
+  syncer::ModelTypeSet registered_types = syncer::UserTypes();
+  registered_types.Remove(syncer::PROXY_TABS);
+  registered_types.Remove(syncer::TYPED_URLS);
+  registered_types.Remove(syncer::SESSIONS);
+  registered_types.Remove(syncer::HISTORY_DELETE_DIRECTIVES);
 
   // Enable all other types.
   sync_prefs.SetPreferredDataTypes(registered_types, registered_types);
@@ -94,18 +95,18 @@ TEST_F(SyncPrefsTest, DefaultTypes) {
 
   // Proxy tabs should not be enabled (since sessions wasn't), but history
   // delete directives should (since typed urls was).
-  preferred_types = sync_prefs.GetPreferredDataTypes(UserTypes());
-  EXPECT_FALSE(preferred_types.Has(PROXY_TABS));
-  EXPECT_TRUE(preferred_types.Has(HISTORY_DELETE_DIRECTIVES));
+  preferred_types = sync_prefs.GetPreferredDataTypes(syncer::UserTypes());
+  EXPECT_FALSE(preferred_types.Has(syncer::PROXY_TABS));
+  EXPECT_TRUE(preferred_types.Has(syncer::HISTORY_DELETE_DIRECTIVES));
 
   // Now manually enable sessions, which should result in proxy tabs also being
   // enabled. Also, manually disable typed urls, which should mean that history
   // delete directives are not enabled.
   pref_service_.SetBoolean(prefs::kSyncTypedUrls, false);
   pref_service_.SetBoolean(prefs::kSyncSessions, true);
-  preferred_types = sync_prefs.GetPreferredDataTypes(UserTypes());
-  EXPECT_TRUE(preferred_types.Has(PROXY_TABS));
-  EXPECT_FALSE(preferred_types.Has(HISTORY_DELETE_DIRECTIVES));
+  preferred_types = sync_prefs.GetPreferredDataTypes(syncer::UserTypes());
+  EXPECT_TRUE(preferred_types.Has(syncer::PROXY_TABS));
+  EXPECT_FALSE(preferred_types.Has(syncer::HISTORY_DELETE_DIRECTIVES));
 }
 
 TEST_F(SyncPrefsTest, PreferredTypesKeepEverythingSynced) {
@@ -113,12 +114,12 @@ TEST_F(SyncPrefsTest, PreferredTypesKeepEverythingSynced) {
 
   EXPECT_TRUE(sync_prefs.HasKeepEverythingSynced());
 
-  const ModelTypeSet user_types = UserTypes();
+  const syncer::ModelTypeSet user_types = syncer::UserTypes();
   EXPECT_EQ(user_types, sync_prefs.GetPreferredDataTypes(user_types));
-  const ModelTypeSet user_visible_types = UserSelectableTypes();
-  for (ModelTypeSet::Iterator it = user_visible_types.First(); it.Good();
-       it.Inc()) {
-    ModelTypeSet preferred_types;
+  const syncer::ModelTypeSet user_visible_types = syncer::UserSelectableTypes();
+  for (syncer::ModelTypeSet::Iterator it = user_visible_types.First();
+       it.Good(); it.Inc()) {
+    syncer::ModelTypeSet preferred_types;
     preferred_types.Put(it.Get());
     sync_prefs.SetPreferredDataTypes(user_types, preferred_types);
     EXPECT_EQ(user_types, sync_prefs.GetPreferredDataTypes(user_types));
@@ -130,48 +131,48 @@ TEST_F(SyncPrefsTest, PreferredTypesNotKeepEverythingSynced) {
 
   sync_prefs.SetKeepEverythingSynced(false);
 
-  const ModelTypeSet user_types = UserTypes();
+  const syncer::ModelTypeSet user_types = syncer::UserTypes();
   EXPECT_NE(user_types, sync_prefs.GetPreferredDataTypes(user_types));
-  const ModelTypeSet user_visible_types = UserSelectableTypes();
-  for (ModelTypeSet::Iterator it = user_visible_types.First(); it.Good();
-       it.Inc()) {
-    ModelTypeSet preferred_types;
+  const syncer::ModelTypeSet user_visible_types = syncer::UserSelectableTypes();
+  for (syncer::ModelTypeSet::Iterator it = user_visible_types.First();
+       it.Good(); it.Inc()) {
+    syncer::ModelTypeSet preferred_types;
     preferred_types.Put(it.Get());
-    ModelTypeSet expected_preferred_types(preferred_types);
-    if (it.Get() == AUTOFILL) {
-      expected_preferred_types.Put(AUTOFILL_PROFILE);
-      expected_preferred_types.Put(AUTOFILL_WALLET_DATA);
-      expected_preferred_types.Put(AUTOFILL_WALLET_METADATA);
+    syncer::ModelTypeSet expected_preferred_types(preferred_types);
+    if (it.Get() == syncer::AUTOFILL) {
+      expected_preferred_types.Put(syncer::AUTOFILL_PROFILE);
+      expected_preferred_types.Put(syncer::AUTOFILL_WALLET_DATA);
+      expected_preferred_types.Put(syncer::AUTOFILL_WALLET_METADATA);
     }
-    if (it.Get() == PREFERENCES) {
-      expected_preferred_types.Put(DICTIONARY);
-      expected_preferred_types.Put(PRIORITY_PREFERENCES);
-      expected_preferred_types.Put(SEARCH_ENGINES);
+    if (it.Get() == syncer::PREFERENCES) {
+      expected_preferred_types.Put(syncer::DICTIONARY);
+      expected_preferred_types.Put(syncer::PRIORITY_PREFERENCES);
+      expected_preferred_types.Put(syncer::SEARCH_ENGINES);
     }
-    if (it.Get() == APPS) {
-      expected_preferred_types.Put(APP_LIST);
-      expected_preferred_types.Put(APP_NOTIFICATIONS);
-      expected_preferred_types.Put(APP_SETTINGS);
-      expected_preferred_types.Put(ARC_PACKAGE);
-      expected_preferred_types.Put(READING_LIST);
+    if (it.Get() == syncer::APPS) {
+      expected_preferred_types.Put(syncer::APP_LIST);
+      expected_preferred_types.Put(syncer::APP_NOTIFICATIONS);
+      expected_preferred_types.Put(syncer::APP_SETTINGS);
+      expected_preferred_types.Put(syncer::ARC_PACKAGE);
+      expected_preferred_types.Put(syncer::READING_LIST);
     }
-    if (it.Get() == EXTENSIONS) {
-      expected_preferred_types.Put(EXTENSION_SETTINGS);
+    if (it.Get() == syncer::EXTENSIONS) {
+      expected_preferred_types.Put(syncer::EXTENSION_SETTINGS);
     }
-    if (it.Get() == TYPED_URLS) {
-      expected_preferred_types.Put(HISTORY_DELETE_DIRECTIVES);
-      expected_preferred_types.Put(SESSIONS);
-      expected_preferred_types.Put(FAVICON_IMAGES);
-      expected_preferred_types.Put(FAVICON_TRACKING);
+    if (it.Get() == syncer::TYPED_URLS) {
+      expected_preferred_types.Put(syncer::HISTORY_DELETE_DIRECTIVES);
+      expected_preferred_types.Put(syncer::SESSIONS);
+      expected_preferred_types.Put(syncer::FAVICON_IMAGES);
+      expected_preferred_types.Put(syncer::FAVICON_TRACKING);
     }
-    if (it.Get() == PROXY_TABS) {
-      expected_preferred_types.Put(SESSIONS);
-      expected_preferred_types.Put(FAVICON_IMAGES);
-      expected_preferred_types.Put(FAVICON_TRACKING);
+    if (it.Get() == syncer::PROXY_TABS) {
+      expected_preferred_types.Put(syncer::SESSIONS);
+      expected_preferred_types.Put(syncer::FAVICON_IMAGES);
+      expected_preferred_types.Put(syncer::FAVICON_TRACKING);
     }
 
     // Device info is always preferred.
-    expected_preferred_types.Put(DEVICE_INFO);
+    expected_preferred_types.Put(syncer::DEVICE_INFO);
 
     sync_prefs.SetPreferredDataTypes(user_types, preferred_types);
     EXPECT_EQ(expected_preferred_types,
@@ -229,24 +230,27 @@ TEST_F(SyncPrefsTest, ClearPreferences) {
 // Device info should always be enabled.
 TEST_F(SyncPrefsTest, DeviceInfo) {
   SyncPrefs sync_prefs(&pref_service_);
-  EXPECT_TRUE(sync_prefs.GetPreferredDataTypes(UserTypes()).Has(DEVICE_INFO));
+  EXPECT_TRUE(sync_prefs.GetPreferredDataTypes(syncer::UserTypes())
+                  .Has(syncer::DEVICE_INFO));
   sync_prefs.SetKeepEverythingSynced(true);
-  EXPECT_TRUE(sync_prefs.GetPreferredDataTypes(UserTypes()).Has(DEVICE_INFO));
+  EXPECT_TRUE(sync_prefs.GetPreferredDataTypes(syncer::UserTypes())
+                  .Has(syncer::DEVICE_INFO));
   sync_prefs.SetKeepEverythingSynced(false);
-  EXPECT_TRUE(sync_prefs.GetPreferredDataTypes(UserTypes()).Has(DEVICE_INFO));
+  EXPECT_TRUE(sync_prefs.GetPreferredDataTypes(syncer::UserTypes())
+                  .Has(syncer::DEVICE_INFO));
 }
 
 // Verify that invalidation versions are persisted and loaded correctly.
 TEST_F(SyncPrefsTest, InvalidationVersions) {
-  std::map<ModelType, int64_t> versions;
-  versions[BOOKMARKS] = 10;
-  versions[SESSIONS] = 20;
-  versions[PREFERENCES] = 30;
+  std::map<syncer::ModelType, int64_t> versions;
+  versions[syncer::BOOKMARKS] = 10;
+  versions[syncer::SESSIONS] = 20;
+  versions[syncer::PREFERENCES] = 30;
 
   SyncPrefs sync_prefs(&pref_service_);
   sync_prefs.UpdateInvalidationVersions(versions);
 
-  std::map<ModelType, int64_t> versions2;
+  std::map<syncer::ModelType, int64_t> versions2;
   sync_prefs.GetInvalidationVersions(&versions2);
 
   EXPECT_EQ(versions.size(), versions2.size());
@@ -257,4 +261,4 @@ TEST_F(SyncPrefsTest, InvalidationVersions) {
 
 }  // namespace
 
-}  // namespace syncer
+}  // namespace sync_driver

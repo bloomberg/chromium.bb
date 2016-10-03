@@ -139,7 +139,7 @@ void OneClickSigninSyncStarter::Initialize(Profile* profile, Browser* browser) {
 
   // Make sure the syncing is requested, otherwise the SigninManager
   // will not be able to complete successfully.
-  syncer::SyncPrefs sync_prefs(profile_->GetPrefs());
+  sync_driver::SyncPrefs sync_prefs(profile_->GetPrefs());
   sync_prefs.SetSyncRequested(true);
 }
 

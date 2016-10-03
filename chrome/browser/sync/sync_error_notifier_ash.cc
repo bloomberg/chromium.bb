@@ -96,9 +96,10 @@ void SyncNotificationDelegate::ShowSyncSetup() {
 
 } // namespace
 
-SyncErrorNotifier::SyncErrorNotifier(syncer::SyncErrorController* controller,
+SyncErrorNotifier::SyncErrorNotifier(SyncErrorController* controller,
                                      Profile* profile)
-    : error_controller_(controller), profile_(profile) {
+    : error_controller_(controller),
+      profile_(profile) {
   // Create a unique notification ID for this profile.
   notification_id_ =
       kProfileSyncNotificationId + profile_->GetProfileUserName();

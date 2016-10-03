@@ -146,7 +146,7 @@ void GetDeviceNameAndType(const browser_sync::ProfileSyncService* sync_service,
   DCHECK(sync_service->GetDeviceInfoTracker());
   DCHECK(sync_service->GetDeviceInfoTracker()->IsSyncing());
 
-  std::unique_ptr<syncer::DeviceInfo> device_info =
+  std::unique_ptr<sync_driver::DeviceInfo> device_info =
       sync_service->GetDeviceInfoTracker()->GetDeviceInfo(client_id);
   if (device_info.get()) {
     *name = device_info->client_name();

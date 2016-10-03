@@ -43,10 +43,10 @@ namespace sync_bookmarks {
 static const char kMobileBookmarksTag[] = "synced_bookmarks";
 
 BookmarkChangeProcessor::BookmarkChangeProcessor(
-    syncer::SyncClient* sync_client,
+    sync_driver::SyncClient* sync_client,
     BookmarkModelAssociator* model_associator,
     std::unique_ptr<syncer::DataTypeErrorHandler> err_handler)
-    : syncer::ChangeProcessor(std::move(err_handler)),
+    : sync_driver::ChangeProcessor(std::move(err_handler)),
       bookmark_model_(NULL),
       sync_client_(sync_client),
       model_associator_(model_associator) {
@@ -764,7 +764,7 @@ void BookmarkChangeProcessor::UpdateBookmarkWithSyncData(
     const syncer::BaseNode& sync_node,
     BookmarkModel* model,
     const BookmarkNode* node,
-    syncer::SyncClient* sync_client) {
+    sync_driver::SyncClient* sync_client) {
   DCHECK_EQ(sync_node.GetIsFolder(), node->is_folder());
   const sync_pb::BookmarkSpecifics& specifics =
       sync_node.GetBookmarkSpecifics();
@@ -800,7 +800,7 @@ const BookmarkNode* BookmarkChangeProcessor::CreateBookmarkNode(
     const syncer::BaseNode* sync_node,
     const BookmarkNode* parent,
     BookmarkModel* model,
-    syncer::SyncClient* sync_client,
+    sync_driver::SyncClient* sync_client,
     int index) {
   return CreateBookmarkNode(base::UTF8ToUTF16(sync_node->GetTitle()),
                             GURL(sync_node->GetBookmarkSpecifics().url()),
@@ -816,7 +816,7 @@ const BookmarkNode* BookmarkChangeProcessor::CreateBookmarkNode(
     const syncer::BaseNode* sync_node,
     const BookmarkNode* parent,
     BookmarkModel* model,
-    syncer::SyncClient* sync_client,
+    sync_driver::SyncClient* sync_client,
     int index) {
   DCHECK(parent);
 
@@ -847,7 +847,7 @@ bool BookmarkChangeProcessor::SetBookmarkFavicon(
     const syncer::BaseNode* sync_node,
     const BookmarkNode* bookmark_node,
     BookmarkModel* bookmark_model,
-    syncer::SyncClient* sync_client) {
+    sync_driver::SyncClient* sync_client) {
   const sync_pb::BookmarkSpecifics& specifics =
       sync_node->GetBookmarkSpecifics();
   const std::string& icon_bytes_str = specifics.favicon();
@@ -936,7 +936,7 @@ void BookmarkChangeProcessor::SetSyncNodeMetaInfo(
 // static
 void BookmarkChangeProcessor::ApplyBookmarkFavicon(
     const BookmarkNode* bookmark_node,
-    syncer::SyncClient* sync_client,
+    sync_driver::SyncClient* sync_client,
     const GURL& icon_url,
     const scoped_refptr<base::RefCountedMemory>& bitmap_data) {
   history::HistoryService* history = sync_client->GetHistoryService();

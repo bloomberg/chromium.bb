@@ -792,7 +792,7 @@ TEST_F(NudgeTrackerTest, NoTypesShorterThanDefault) {
   nudge_tracker_.SetDefaultNudgeDelay(base::TimeDelta::FromMilliseconds(500));
 
   std::map<ModelType, base::TimeDelta> delay_map;
-  ModelTypeSet protocol_types = ProtocolTypes();
+  ModelTypeSet protocol_types = syncer::ProtocolTypes();
   for (ModelTypeSet::Iterator iter = protocol_types.First(); iter.Good();
        iter.Inc()) {
     delay_map[iter.Get()] = base::TimeDelta();

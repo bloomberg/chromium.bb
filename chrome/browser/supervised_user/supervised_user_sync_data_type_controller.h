@@ -9,21 +9,21 @@
 #include "components/sync/driver/data_type_controller.h"
 #include "components/sync/driver/ui_data_type_controller.h"
 
-class Profile;
-
-namespace syncer {
+namespace sync_driver {
 class SyncClient;
 }
+
+class Profile;
 
 // A UIDataTypeController for supervised user sync datatypes, which enables or
 // disables these types based on the profile's IsSupervised state.
 class SupervisedUserSyncDataTypeController
-    : public syncer::UIDataTypeController {
+    : public sync_driver::UIDataTypeController {
  public:
   // |dump_stack| is called when an unrecoverable error occurs.
   SupervisedUserSyncDataTypeController(syncer::ModelType type,
                                        const base::Closure& dump_stack,
-                                       syncer::SyncClient* sync_client,
+                                       sync_driver::SyncClient* sync_client,
                                        Profile* profile);
   ~SupervisedUserSyncDataTypeController() override;
 

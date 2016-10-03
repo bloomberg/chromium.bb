@@ -12,7 +12,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/pref_names.h"
 
-namespace syncer {
+namespace sync_driver {
 
 SyncPrefObserver::~SyncPrefObserver() {}
 
@@ -46,23 +46,24 @@ void SyncPrefs::RegisterProfilePrefs(
   // ProfileSyncService::OnUserChoseDatatypes.
   registry->RegisterBooleanPref(prefs::kSyncKeepEverythingSynced, true);
 
-  ModelTypeSet user_types = UserTypes();
+  syncer::ModelTypeSet user_types = syncer::UserTypes();
 
   // Include proxy types as well, as they can be individually selected,
   // although they don't have sync representations.
-  user_types.PutAll(ProxyTypes());
+  user_types.PutAll(syncer::ProxyTypes());
 
   // Treat bookmarks and device info specially.
-  RegisterDataTypePreferredPref(registry, BOOKMARKS, true);
-  RegisterDataTypePreferredPref(registry, DEVICE_INFO, true);
-  user_types.Remove(BOOKMARKS);
-  user_types.Remove(DEVICE_INFO);
+  RegisterDataTypePreferredPref(registry, syncer::BOOKMARKS, true);
+  RegisterDataTypePreferredPref(registry, syncer::DEVICE_INFO, true);
+  user_types.Remove(syncer::BOOKMARKS);
+  user_types.Remove(syncer::DEVICE_INFO);
 
   // All types are set to off by default, which forces a configuration to
   // explicitly enable them. GetPreferredTypes() will ensure that any new
   // implicit types are enabled when their pref group is, or via
   // KeepEverythingSynced.
-  for (ModelTypeSet::Iterator it = user_types.First(); it.Good(); it.Inc()) {
+  for (syncer::ModelTypeSet::Iterator it = user_types.First(); it.Good();
+       it.Inc()) {
     RegisterDataTypePreferredPref(registry, it.Get(), false);
   }
 
@@ -184,16 +185,16 @@ void SyncPrefs::SetKeepEverythingSynced(bool keep_everything_synced) {
                             keep_everything_synced);
 }
 
-ModelTypeSet SyncPrefs::GetPreferredDataTypes(
-    ModelTypeSet registered_types) const {
+syncer::ModelTypeSet SyncPrefs::GetPreferredDataTypes(
+    syncer::ModelTypeSet registered_types) const {
   DCHECK(CalledOnValidThread());
 
   if (pref_service_->GetBoolean(prefs::kSyncKeepEverythingSynced)) {
     return registered_types;
   }
 
-  ModelTypeSet preferred_types;
-  for (ModelTypeSet::Iterator it = registered_types.First(); it.Good();
+  syncer::ModelTypeSet preferred_types;
+  for (syncer::ModelTypeSet::Iterator it = registered_types.First(); it.Good();
        it.Inc()) {
     if (GetDataTypePreferred(it.Get())) {
       preferred_types.Put(it.Get());
@@ -202,12 +203,13 @@ ModelTypeSet SyncPrefs::GetPreferredDataTypes(
   return ResolvePrefGroups(registered_types, preferred_types);
 }
 
-void SyncPrefs::SetPreferredDataTypes(ModelTypeSet registered_types,
-                                      ModelTypeSet preferred_types) {
+void SyncPrefs::SetPreferredDataTypes(syncer::ModelTypeSet registered_types,
+                                      syncer::ModelTypeSet preferred_types) {
   DCHECK(CalledOnValidThread());
   preferred_types = ResolvePrefGroups(registered_types, preferred_types);
   DCHECK(registered_types.HasAll(preferred_types));
-  for (ModelTypeSet::Iterator i = registered_types.First(); i.Good(); i.Inc()) {
+  for (syncer::ModelTypeSet::Iterator i = registered_types.First(); i.Good();
+       i.Inc()) {
     SetDataTypePreferred(i.Get(), preferred_types.Has(i.Get()));
   }
 }
@@ -248,77 +250,77 @@ void SyncPrefs::SetSyncSessionsGUID(const std::string& guid) {
 }
 
 // static
-const char* SyncPrefs::GetPrefNameForDataType(ModelType data_type) {
+const char* SyncPrefs::GetPrefNameForDataType(syncer::ModelType data_type) {
   switch (data_type) {
-    case BOOKMARKS:
+    case syncer::BOOKMARKS:
       return prefs::kSyncBookmarks;
-    case PASSWORDS:
+    case syncer::PASSWORDS:
       return prefs::kSyncPasswords;
-    case PREFERENCES:
+    case syncer::PREFERENCES:
       return prefs::kSyncPreferences;
-    case AUTOFILL:
+    case syncer::AUTOFILL:
       return prefs::kSyncAutofill;
-    case AUTOFILL_PROFILE:
+    case syncer::AUTOFILL_PROFILE:
       return prefs::kSyncAutofillProfile;
-    case AUTOFILL_WALLET_DATA:
+    case syncer::AUTOFILL_WALLET_DATA:
       return prefs::kSyncAutofillWallet;
-    case AUTOFILL_WALLET_METADATA:
+    case syncer::AUTOFILL_WALLET_METADATA:
       return prefs::kSyncAutofillWalletMetadata;
-    case THEMES:
+    case syncer::THEMES:
       return prefs::kSyncThemes;
-    case TYPED_URLS:
+    case syncer::TYPED_URLS:
       return prefs::kSyncTypedUrls;
-    case EXTENSION_SETTINGS:
+    case syncer::EXTENSION_SETTINGS:
       return prefs::kSyncExtensionSettings;
-    case EXTENSIONS:
+    case syncer::EXTENSIONS:
       return prefs::kSyncExtensions;
-    case APP_LIST:
+    case syncer::APP_LIST:
       return prefs::kSyncAppList;
-    case APP_SETTINGS:
+    case syncer::APP_SETTINGS:
       return prefs::kSyncAppSettings;
-    case APPS:
+    case syncer::APPS:
       return prefs::kSyncApps;
-    case SEARCH_ENGINES:
+    case syncer::SEARCH_ENGINES:
       return prefs::kSyncSearchEngines;
-    case SESSIONS:
+    case syncer::SESSIONS:
       return prefs::kSyncSessions;
-    case APP_NOTIFICATIONS:
+    case syncer::APP_NOTIFICATIONS:
       return prefs::kSyncAppNotifications;
-    case HISTORY_DELETE_DIRECTIVES:
+    case syncer::HISTORY_DELETE_DIRECTIVES:
       return prefs::kSyncHistoryDeleteDirectives;
-    case SYNCED_NOTIFICATIONS:
+    case syncer::SYNCED_NOTIFICATIONS:
       return prefs::kSyncSyncedNotifications;
-    case SYNCED_NOTIFICATION_APP_INFO:
+    case syncer::SYNCED_NOTIFICATION_APP_INFO:
       return prefs::kSyncSyncedNotificationAppInfo;
-    case DICTIONARY:
+    case syncer::DICTIONARY:
       return prefs::kSyncDictionary;
-    case FAVICON_IMAGES:
+    case syncer::FAVICON_IMAGES:
       return prefs::kSyncFaviconImages;
-    case FAVICON_TRACKING:
+    case syncer::FAVICON_TRACKING:
       return prefs::kSyncFaviconTracking;
-    case SUPERVISED_USER_SETTINGS:
+    case syncer::SUPERVISED_USER_SETTINGS:
       return prefs::kSyncSupervisedUserSettings;
-    case PROXY_TABS:
+    case syncer::PROXY_TABS:
       return prefs::kSyncTabs;
-    case PRIORITY_PREFERENCES:
+    case syncer::PRIORITY_PREFERENCES:
       return prefs::kSyncPriorityPreferences;
-    case SUPERVISED_USERS:
+    case syncer::SUPERVISED_USERS:
       return prefs::kSyncSupervisedUsers;
-    case ARTICLES:
+    case syncer::ARTICLES:
       return prefs::kSyncArticles;
-    case SUPERVISED_USER_SHARED_SETTINGS:
+    case syncer::SUPERVISED_USER_SHARED_SETTINGS:
       return prefs::kSyncSupervisedUserSharedSettings;
-    case SUPERVISED_USER_WHITELISTS:
+    case syncer::SUPERVISED_USER_WHITELISTS:
       return prefs::kSyncSupervisedUserWhitelists;
-    case DEVICE_INFO:
+    case syncer::DEVICE_INFO:
       return prefs::kSyncDeviceInfo;
-    case WIFI_CREDENTIALS:
+    case syncer::WIFI_CREDENTIALS:
       return prefs::kSyncWifiCredentials;
-    case ARC_PACKAGE:
+    case syncer::ARC_PACKAGE:
       return prefs::kSyncArcPackage;
-    case PRINTERS:
+    case syncer::PRINTERS:
       return prefs::kSyncPrinters;
-    case READING_LIST:
+    case syncer::READING_LIST:
       return prefs::kSyncReadingList;
     default:
       break;
@@ -351,30 +353,30 @@ void SyncPrefs::SetManagedForTest(bool is_managed) {
 }
 
 void SyncPrefs::RegisterPrefGroups() {
-  pref_groups_[APPS].Put(APP_NOTIFICATIONS);
-  pref_groups_[APPS].Put(APP_SETTINGS);
-  pref_groups_[APPS].Put(APP_LIST);
-  pref_groups_[APPS].Put(ARC_PACKAGE);
-  pref_groups_[APPS].Put(READING_LIST);
+  pref_groups_[syncer::APPS].Put(syncer::APP_NOTIFICATIONS);
+  pref_groups_[syncer::APPS].Put(syncer::APP_SETTINGS);
+  pref_groups_[syncer::APPS].Put(syncer::APP_LIST);
+  pref_groups_[syncer::APPS].Put(syncer::ARC_PACKAGE);
+  pref_groups_[syncer::APPS].Put(syncer::READING_LIST);
 
-  pref_groups_[AUTOFILL].Put(AUTOFILL_PROFILE);
-  pref_groups_[AUTOFILL].Put(AUTOFILL_WALLET_DATA);
-  pref_groups_[AUTOFILL].Put(AUTOFILL_WALLET_METADATA);
+  pref_groups_[syncer::AUTOFILL].Put(syncer::AUTOFILL_PROFILE);
+  pref_groups_[syncer::AUTOFILL].Put(syncer::AUTOFILL_WALLET_DATA);
+  pref_groups_[syncer::AUTOFILL].Put(syncer::AUTOFILL_WALLET_METADATA);
 
-  pref_groups_[EXTENSIONS].Put(EXTENSION_SETTINGS);
+  pref_groups_[syncer::EXTENSIONS].Put(syncer::EXTENSION_SETTINGS);
 
-  pref_groups_[PREFERENCES].Put(DICTIONARY);
-  pref_groups_[PREFERENCES].Put(PRIORITY_PREFERENCES);
-  pref_groups_[PREFERENCES].Put(SEARCH_ENGINES);
+  pref_groups_[syncer::PREFERENCES].Put(syncer::DICTIONARY);
+  pref_groups_[syncer::PREFERENCES].Put(syncer::PRIORITY_PREFERENCES);
+  pref_groups_[syncer::PREFERENCES].Put(syncer::SEARCH_ENGINES);
 
-  pref_groups_[TYPED_URLS].Put(HISTORY_DELETE_DIRECTIVES);
-  pref_groups_[TYPED_URLS].Put(SESSIONS);
-  pref_groups_[TYPED_URLS].Put(FAVICON_IMAGES);
-  pref_groups_[TYPED_URLS].Put(FAVICON_TRACKING);
+  pref_groups_[syncer::TYPED_URLS].Put(syncer::HISTORY_DELETE_DIRECTIVES);
+  pref_groups_[syncer::TYPED_URLS].Put(syncer::SESSIONS);
+  pref_groups_[syncer::TYPED_URLS].Put(syncer::FAVICON_IMAGES);
+  pref_groups_[syncer::TYPED_URLS].Put(syncer::FAVICON_TRACKING);
 
-  pref_groups_[PROXY_TABS].Put(SESSIONS);
-  pref_groups_[PROXY_TABS].Put(FAVICON_IMAGES);
-  pref_groups_[PROXY_TABS].Put(FAVICON_TRACKING);
+  pref_groups_[syncer::PROXY_TABS].Put(syncer::SESSIONS);
+  pref_groups_[syncer::PROXY_TABS].Put(syncer::FAVICON_IMAGES);
+  pref_groups_[syncer::PROXY_TABS].Put(syncer::FAVICON_TRACKING);
 
   // TODO(zea): put favicons in the bookmarks group as well once it handles
   // those favicons.
@@ -383,7 +385,7 @@ void SyncPrefs::RegisterPrefGroups() {
 // static
 void SyncPrefs::RegisterDataTypePreferredPref(
     user_prefs::PrefRegistrySyncable* registry,
-    ModelType type,
+    syncer::ModelType type,
     bool is_preferred) {
   const char* pref_name = GetPrefNameForDataType(type);
   if (!pref_name) {
@@ -393,7 +395,7 @@ void SyncPrefs::RegisterDataTypePreferredPref(
   registry->RegisterBooleanPref(pref_name, is_preferred);
 }
 
-bool SyncPrefs::GetDataTypePreferred(ModelType type) const {
+bool SyncPrefs::GetDataTypePreferred(syncer::ModelType type) const {
   DCHECK(CalledOnValidThread());
   const char* pref_name = GetPrefNameForDataType(type);
   if (!pref_name) {
@@ -405,18 +407,19 @@ bool SyncPrefs::GetDataTypePreferred(ModelType type) const {
   if (pref_name == prefs::kSyncDeviceInfo)
     return true;
 
-  if (type == PROXY_TABS &&
+  if (type == syncer::PROXY_TABS &&
       pref_service_->GetUserPrefValue(pref_name) == NULL &&
       pref_service_->IsUserModifiablePreference(pref_name)) {
     // If there is no tab sync preference yet (i.e. newly enabled type),
     // default to the session sync preference value.
-    pref_name = GetPrefNameForDataType(SESSIONS);
+    pref_name = GetPrefNameForDataType(syncer::SESSIONS);
   }
 
   return pref_service_->GetBoolean(pref_name);
 }
 
-void SyncPrefs::SetDataTypePreferred(ModelType type, bool is_preferred) {
+void SyncPrefs::SetDataTypePreferred(syncer::ModelType type,
+                                     bool is_preferred) {
   DCHECK(CalledOnValidThread());
   const char* pref_name = GetPrefNameForDataType(type);
   if (!pref_name) {
@@ -425,15 +428,16 @@ void SyncPrefs::SetDataTypePreferred(ModelType type, bool is_preferred) {
   }
 
   // Device info is always preferred.
-  if (type == DEVICE_INFO)
+  if (type == syncer::DEVICE_INFO)
     return;
 
   pref_service_->SetBoolean(pref_name, is_preferred);
 }
 
-ModelTypeSet SyncPrefs::ResolvePrefGroups(ModelTypeSet registered_types,
-                                          ModelTypeSet types) const {
-  ModelTypeSet types_with_groups = types;
+syncer::ModelTypeSet SyncPrefs::ResolvePrefGroups(
+    syncer::ModelTypeSet registered_types,
+    syncer::ModelTypeSet types) const {
+  syncer::ModelTypeSet types_with_groups = types;
   for (PrefGroupsMap::const_iterator i = pref_groups_.begin();
        i != pref_groups_.end(); ++i) {
     if (types.Has(i->first))
@@ -481,12 +485,12 @@ void SyncPrefs::SetCleanShutdown(bool value) {
 }
 
 void SyncPrefs::GetInvalidationVersions(
-    std::map<ModelType, int64_t>* invalidation_versions) const {
+    std::map<syncer::ModelType, int64_t>* invalidation_versions) const {
   const base::DictionaryValue* invalidation_dictionary =
       pref_service_->GetDictionary(prefs::kSyncInvalidationVersions);
-  ModelTypeSet protocol_types = ProtocolTypes();
+  syncer::ModelTypeSet protocol_types = syncer::ProtocolTypes();
   for (auto iter = protocol_types.First(); iter.Good(); iter.Inc()) {
-    std::string key = ModelTypeToString(iter.Get());
+    std::string key = syncer::ModelTypeToString(iter.Get());
     std::string version_str;
     if (!invalidation_dictionary->GetString(key, &version_str))
       continue;
@@ -498,13 +502,13 @@ void SyncPrefs::GetInvalidationVersions(
 }
 
 void SyncPrefs::UpdateInvalidationVersions(
-    const std::map<ModelType, int64_t>& invalidation_versions) {
+    const std::map<syncer::ModelType, int64_t>& invalidation_versions) {
   std::unique_ptr<base::DictionaryValue> invalidation_dictionary(
       new base::DictionaryValue());
   for (const auto& map_iter : invalidation_versions) {
     std::string version_str = base::Int64ToString(map_iter.second);
-    invalidation_dictionary->SetString(ModelTypeToString(map_iter.first),
-                                       version_str);
+    invalidation_dictionary->SetString(
+        syncer::ModelTypeToString(map_iter.first), version_str);
   }
   pref_service_->Set(prefs::kSyncInvalidationVersions,
                      *invalidation_dictionary);
@@ -529,7 +533,7 @@ bool SyncPrefs::GetPassphraseEncryptionTransitionInProgress() const {
 }
 
 void SyncPrefs::SetSavedNigoriStateForPassphraseEncryptionTransition(
-    const SyncEncryptionHandler::NigoriState& nigori_state) {
+    const syncer::SyncEncryptionHandler::NigoriState& nigori_state) {
   std::string encoded;
   base::Base64Encode(nigori_state.nigori_specifics.SerializeAsString(),
                      &encoded);
@@ -537,19 +541,19 @@ void SyncPrefs::SetSavedNigoriStateForPassphraseEncryptionTransition(
                            encoded);
 }
 
-std::unique_ptr<SyncEncryptionHandler::NigoriState>
+std::unique_ptr<syncer::SyncEncryptionHandler::NigoriState>
 SyncPrefs::GetSavedNigoriStateForPassphraseEncryptionTransition() const {
   const std::string encoded =
       pref_service_->GetString(prefs::kSyncNigoriStateForPassphraseTransition);
   std::string decoded;
   if (!base::Base64Decode(encoded, &decoded))
-    return std::unique_ptr<SyncEncryptionHandler::NigoriState>();
+    return std::unique_ptr<syncer::SyncEncryptionHandler::NigoriState>();
 
-  std::unique_ptr<SyncEncryptionHandler::NigoriState> result(
-      new SyncEncryptionHandler::NigoriState());
+  std::unique_ptr<syncer::SyncEncryptionHandler::NigoriState> result(
+      new syncer::SyncEncryptionHandler::NigoriState());
   if (!result->nigori_specifics.ParseFromString(decoded))
-    return std::unique_ptr<SyncEncryptionHandler::NigoriState>();
+    return std::unique_ptr<syncer::SyncEncryptionHandler::NigoriState>();
   return result;
 }
 
-}  // namespace syncer
+}  // namespace sync_driver

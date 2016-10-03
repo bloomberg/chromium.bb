@@ -4,9 +4,9 @@
 
 #include "components/sync/driver/sync_client.h"
 
-namespace syncer {
+namespace sync_driver {
 
 SyncClient::SyncClient() {}
 SyncClient::~SyncClient() {}
 
-}  // namespace syncer
+}  // namespace sync_driver

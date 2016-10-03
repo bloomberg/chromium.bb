@@ -33,9 +33,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using syncer::DataTypeManager;
-using syncer::DataTypeManagerMock;
-using syncer::SyncBackendHostMock;
+using sync_driver::DataTypeManager;
+using sync_driver::DataTypeManagerMock;
 using testing::_;
 using testing::AnyNumber;
 using testing::DoAll;
@@ -50,7 +49,7 @@ const char kGaiaId[] = "12345";
 const char kEmail[] = "test_user@gmail.com";
 const char kDummyPassword[] = "";
 
-class SyncServiceObserverMock : public syncer::SyncServiceObserver {
+class SyncServiceObserverMock : public sync_driver::SyncServiceObserver {
  public:
   SyncServiceObserverMock();
   virtual ~SyncServiceObserverMock();
@@ -71,7 +70,7 @@ ACTION_P(InvokeOnConfigureStart, sync_service) {
 ACTION_P3(InvokeOnConfigureDone, sync_service, error_callback, result) {
   DataTypeManager::ConfigureResult configure_result =
       static_cast<DataTypeManager::ConfigureResult>(result);
-  if (result.status == syncer::DataTypeManager::ABORTED)
+  if (result.status == sync_driver::DataTypeManager::ABORTED)
     error_callback.Run(&configure_result);
   sync_service->OnConfigureDone(configure_result);
 }
@@ -98,7 +97,8 @@ class ProfileSyncServiceStartupTest : public testing::Test {
 
     sync_service_.reset(new ProfileSyncService(std::move(init_params)));
     sync_service_->RegisterDataTypeController(
-        base::MakeUnique<syncer::FakeDataTypeController>(syncer::BOOKMARKS));
+        base::MakeUnique<sync_driver::FakeDataTypeController>(
+            syncer::BOOKMARKS));
     sync_service_->AddObserver(&observer_);
   }
 
@@ -108,7 +108,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
   }
 
   void SetError(DataTypeManager::ConfigureResult* result) {
-    syncer::DataTypeStatusTable::TypeErrorMap errors;
+    sync_driver::DataTypeStatusTable::TypeErrorMap errors;
     errors[syncer::BOOKMARKS] =
         syncer::SyncError(FROM_HERE, syncer::SyncError::UNRECOVERABLE_ERROR,
                           "Error", syncer::BOOKMARKS);
@@ -155,8 +155,8 @@ class ProfileSyncServiceStartupTest : public testing::Test {
   ProfileSyncServiceBundle profile_sync_service_bundle_;
   std::unique_ptr<ProfileSyncService> sync_service_;
   SyncServiceObserverMock observer_;
-  syncer::DataTypeStatusTable data_type_status_table_;
-  syncer::SyncApiComponentFactoryMock* component_factory_ = nullptr;
+  sync_driver::DataTypeStatusTable data_type_status_table_;
+  SyncApiComponentFactoryMock* component_factory_ = nullptr;
 };
 
 class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
@@ -171,7 +171,7 @@ class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
 
 TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   // We've never completed startup.
-  pref_service()->ClearPref(syncer::prefs::kSyncFirstSetupComplete);
+  pref_service()->ClearPref(sync_driver::prefs::kSyncFirstSetupComplete);
   CreateSyncService(ProfileSyncService::MANUAL_START);
   SetUpSyncBackendHost();
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
@@ -183,9 +183,10 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   sync_service_->Initialize();
 
   // Preferences should be back to defaults.
-  EXPECT_EQ(0, pref_service()->GetInt64(syncer::prefs::kSyncLastSyncedTime));
+  EXPECT_EQ(0,
+            pref_service()->GetInt64(sync_driver::prefs::kSyncLastSyncedTime));
   EXPECT_FALSE(
-      pref_service()->GetBoolean(syncer::prefs::kSyncFirstSetupComplete));
+      pref_service()->GetBoolean(sync_driver::prefs::kSyncFirstSetupComplete));
   Mock::VerifyAndClearExpectations(data_type_manager);
 
   // Then start things up.
@@ -212,7 +213,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
 // TODO(pavely): Reenable test once android is switched to oauth2.
 TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartNoCredentials) {
   // We've never completed startup.
-  pref_service()->ClearPref(syncer::prefs::kSyncFirstSetupComplete);
+  pref_service()->ClearPref(sync_driver::prefs::kSyncFirstSetupComplete);
   CreateSyncService(ProfileSyncService::MANUAL_START);
 
   // Should not actually start, rather just clean things up and wait
@@ -223,9 +224,10 @@ TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartNoCredentials) {
   sync_service_->Initialize();
 
   // Preferences should be back to defaults.
-  EXPECT_EQ(0, pref_service()->GetInt64(syncer::prefs::kSyncLastSyncedTime));
+  EXPECT_EQ(0,
+            pref_service()->GetInt64(sync_driver::prefs::kSyncLastSyncedTime));
   EXPECT_FALSE(
-      pref_service()->GetBoolean(syncer::prefs::kSyncFirstSetupComplete));
+      pref_service()->GetBoolean(sync_driver::prefs::kSyncFirstSetupComplete));
 
   // Then start things up.
   auto sync_blocker = sync_service_->GetSetupInProgressHandle();
@@ -282,7 +284,7 @@ TEST_F(ProfileSyncServiceStartupCrosTest, StartCrosNoCredentials) {
   EXPECT_CALL(*component_factory_, CreateDataTypeManager(_, _, _, _, _))
       .Times(0);
   EXPECT_CALL(*component_factory_, CreateSyncBackendHost(_, _, _, _)).Times(0);
-  pref_service()->ClearPref(syncer::prefs::kSyncFirstSetupComplete);
+  pref_service()->ClearPref(sync_driver::prefs::kSyncFirstSetupComplete);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 
   sync_service_->Initialize();
@@ -297,7 +299,7 @@ TEST_F(ProfileSyncServiceStartupCrosTest, StartCrosNoCredentials) {
 TEST_F(ProfileSyncServiceStartupCrosTest, StartFirstTime) {
   SetUpSyncBackendHost();
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
-  pref_service()->ClearPref(syncer::prefs::kSyncFirstSetupComplete);
+  pref_service()->ClearPref(sync_driver::prefs::kSyncFirstSetupComplete);
   EXPECT_CALL(*data_type_manager, Configure(_, _));
   EXPECT_CALL(*data_type_manager, state())
       .WillRepeatedly(Return(DataTypeManager::CONFIGURED));
@@ -334,12 +336,12 @@ TEST_F(ProfileSyncServiceStartupTest, StartNormal) {
 // therefore being left unset.
 TEST_F(ProfileSyncServiceStartupTest, StartRecoverDatatypePrefs) {
   // Clear the datatype preference fields (simulating bug 154940).
-  pref_service()->ClearPref(syncer::prefs::kSyncKeepEverythingSynced);
+  pref_service()->ClearPref(sync_driver::prefs::kSyncKeepEverythingSynced);
   syncer::ModelTypeSet user_types = syncer::UserTypes();
   for (syncer::ModelTypeSet::Iterator iter = user_types.First(); iter.Good();
        iter.Inc()) {
     pref_service()->ClearPref(
-        syncer::SyncPrefs::GetPrefNameForDataType(iter.Get()));
+        sync_driver::SyncPrefs::GetPrefNameForDataType(iter.Get()));
   }
 
   // Pre load the tokens
@@ -357,8 +359,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartRecoverDatatypePrefs) {
   IssueTestTokens(account_id);
   sync_service_->Initialize();
 
-  EXPECT_TRUE(
-      pref_service()->GetBoolean(syncer::prefs::kSyncKeepEverythingSynced));
+  EXPECT_TRUE(pref_service()->GetBoolean(
+      sync_driver::prefs::kSyncKeepEverythingSynced));
 }
 
 // Verify that the recovery of datatype preferences doesn't overwrite a valid
@@ -366,7 +368,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartRecoverDatatypePrefs) {
 TEST_F(ProfileSyncServiceStartupTest, StartDontRecoverDatatypePrefs) {
   // Explicitly set Keep Everything Synced to false and have only bookmarks
   // enabled.
-  pref_service()->SetBoolean(syncer::prefs::kSyncKeepEverythingSynced, false);
+  pref_service()->SetBoolean(sync_driver::prefs::kSyncKeepEverythingSynced,
+                             false);
 
   // Pre load the tokens
   CreateSyncService(ProfileSyncService::MANUAL_START);
@@ -382,8 +385,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartDontRecoverDatatypePrefs) {
   IssueTestTokens(account_id);
   sync_service_->Initialize();
 
-  EXPECT_FALSE(
-      pref_service()->GetBoolean(syncer::prefs::kSyncKeepEverythingSynced));
+  EXPECT_FALSE(pref_service()->GetBoolean(
+      sync_driver::prefs::kSyncKeepEverythingSynced));
 }
 
 TEST_F(ProfileSyncServiceStartupTest, ManagedStartup) {
@@ -392,7 +395,7 @@ TEST_F(ProfileSyncServiceStartupTest, ManagedStartup) {
   CreateSyncService(ProfileSyncService::MANUAL_START);
 
   // Disable sync through policy.
-  pref_service()->SetBoolean(syncer::prefs::kSyncManaged, true);
+  pref_service()->SetBoolean(sync_driver::prefs::kSyncManaged, true);
   EXPECT_CALL(*component_factory_, CreateDataTypeManager(_, _, _, _, _))
       .Times(0);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
@@ -420,7 +423,7 @@ TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
   EXPECT_CALL(*data_type_manager, state())
       .WillOnce(Return(DataTypeManager::CONFIGURED));
   EXPECT_CALL(*data_type_manager, Stop()).Times(1);
-  pref_service()->SetBoolean(syncer::prefs::kSyncManaged, true);
+  pref_service()->SetBoolean(sync_driver::prefs::kSyncManaged, true);
   EXPECT_FALSE(sync_service_->IsBackendInitialized());
   // Note that PSS no longer references |data_type_manager| after stopping.
 
@@ -430,7 +433,7 @@ TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
   Mock::VerifyAndClearExpectations(data_type_manager);
   EXPECT_CALL(*component_factory_, CreateDataTypeManager(_, _, _, _, _))
       .Times(0);
-  pref_service()->ClearPref(syncer::prefs::kSyncManaged);
+  pref_service()->ClearPref(sync_driver::prefs::kSyncManaged);
   EXPECT_FALSE(sync_service_->IsBackendInitialized());
   EXPECT_FALSE(sync_service_->IsSyncActive());
 }
@@ -466,7 +469,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartDownloadFailed) {
   SyncBackendHostMock* mock_sbh = SetUpSyncBackendHost();
   mock_sbh->set_fail_initial_download(true);
 
-  pref_service()->ClearPref(syncer::prefs::kSyncFirstSetupComplete);
+  pref_service()->ClearPref(sync_driver::prefs::kSyncFirstSetupComplete);
 
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
   sync_service_->Initialize();

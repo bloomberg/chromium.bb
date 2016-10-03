@@ -56,7 +56,7 @@ class AbstractProfileSyncServiceTest : public testing::Test {
   // |callback| down to SyncManagerForProfileSyncTest to be used by
   // NotifyInitializationSuccess. |sync_client| is passed to the service. The
   // created service is stored in |sync_service_|.
-  void CreateSyncService(std::unique_ptr<syncer::SyncClient> sync_client,
+  void CreateSyncService(std::unique_ptr<sync_driver::SyncClient> sync_client,
                          const base::Closure& initialization_success_callback);
 
   base::Thread* data_type_thread() { return &data_type_thread_; }
@@ -66,7 +66,7 @@ class AbstractProfileSyncServiceTest : public testing::Test {
   // Returns the callback for the FakeSyncClient builder. It is not possible to
   // just Bind() sync_service(), because of Callback not understanding the
   // inheritance of its template arguments.
-  base::Callback<syncer::SyncService*(void)> GetSyncServiceCallback();
+  base::Callback<sync_driver::SyncService*(void)> GetSyncServiceCallback();
 
   ProfileSyncServiceBundle* profile_sync_service_bundle() {
     return &profile_sync_service_bundle_;

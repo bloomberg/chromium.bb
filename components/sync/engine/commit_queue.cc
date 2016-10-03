@@ -4,10 +4,10 @@
 
 #include "components/sync/engine/commit_queue.h"
 
-namespace syncer {
+namespace syncer_v2 {
 
 CommitQueue::CommitQueue() {}
 
 CommitQueue::~CommitQueue() {}
 
-}  // namespace syncer
+}  // namespace syncer_v2

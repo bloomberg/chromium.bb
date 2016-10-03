@@ -454,7 +454,7 @@ IN_PROC_BROWSER_TEST_F(HistoryCounterTest, DISABLED_RestartOnSyncChange) {
   // active again.
 
   // Stopping the Sync service triggers a restart.
-  sync_service->RequestStop(syncer::SyncService::CLEAR_DATA);
+  sync_service->RequestStop(sync_driver::SyncService::CLEAR_DATA);
   WaitForCountingOrConfirmFinished();
 }
 

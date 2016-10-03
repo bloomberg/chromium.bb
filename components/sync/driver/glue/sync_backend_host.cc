@@ -4,10 +4,10 @@
 
 #include "components/sync/driver/glue/sync_backend_host.h"
 
-namespace syncer {
+namespace browser_sync {
 
 SyncBackendHost::SyncBackendHost() {}
 
 SyncBackendHost::~SyncBackendHost() {}
 
-}  // namespace syncer
+}  // namespace browser_sync

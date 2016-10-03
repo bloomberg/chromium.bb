@@ -15,7 +15,7 @@ using sync_pb::EntitySpecifics;
 using sync_pb::EntityMetadata;
 using sync_pb::DataTypeState;
 
-namespace syncer {
+namespace syncer_v2 {
 
 namespace {
 
@@ -42,8 +42,8 @@ std::string FakeModelTypeService::ClientTagFromKey(const std::string& key) {
 
 // static
 std::string FakeModelTypeService::TagHashFromKey(const std::string& key) {
-  return syncable::GenerateSyncableHash(
-      PREFERENCES, FakeModelTypeService::ClientTagFromKey(key));
+  return syncer::syncable::GenerateSyncableHash(
+      syncer::PREFERENCES, FakeModelTypeService::ClientTagFromKey(key));
 }
 
 // static
@@ -135,7 +135,7 @@ void FakeModelTypeService::Store::Reset() {
 
 FakeModelTypeService::FakeModelTypeService(
     const ChangeProcessorFactory& change_processor_factory)
-    : ModelTypeService(change_processor_factory, PREFERENCES) {}
+    : ModelTypeService(change_processor_factory, syncer::PREFERENCES) {}
 
 FakeModelTypeService::~FakeModelTypeService() {
   CheckPostConditions();
@@ -176,12 +176,12 @@ FakeModelTypeService::CreateMetadataChangeList() {
   return std::unique_ptr<MetadataChangeList>(new SimpleMetadataChangeList());
 }
 
-SyncError FakeModelTypeService::MergeSyncData(
+syncer::SyncError FakeModelTypeService::MergeSyncData(
     std::unique_ptr<MetadataChangeList> metadata_changes,
     EntityDataMap data_map) {
   if (service_error_.IsSet()) {
-    SyncError error = service_error_;
-    service_error_ = SyncError();
+    syncer::SyncError error = service_error_;
+    service_error_ = syncer::SyncError();
     return error;
   }
   // Commit any local entities that aren't being overwritten by the server.
@@ -196,15 +196,15 @@ SyncError FakeModelTypeService::MergeSyncData(
     db_.PutData(kv.first, kv.second.value());
   }
   ApplyMetadataChangeList(std::move(metadata_changes));
-  return SyncError();
+  return syncer::SyncError();
 }
 
-SyncError FakeModelTypeService::ApplySyncChanges(
+syncer::SyncError FakeModelTypeService::ApplySyncChanges(
     std::unique_ptr<MetadataChangeList> metadata_changes,
     EntityChangeList entity_changes) {
   if (service_error_.IsSet()) {
-    SyncError error = service_error_;
-    service_error_ = SyncError();
+    syncer::SyncError error = service_error_;
+    service_error_ = syncer::SyncError();
     return error;
   }
   for (const EntityChange& change : entity_changes) {
@@ -224,7 +224,7 @@ SyncError FakeModelTypeService::ApplySyncChanges(
     }
   }
   ApplyMetadataChangeList(std::move(metadata_changes));
-  return SyncError();
+  return syncer::SyncError();
 }
 
 void FakeModelTypeService::ApplyMetadataChangeList(
@@ -261,7 +261,7 @@ void FakeModelTypeService::ApplyMetadataChangeList(
 void FakeModelTypeService::GetData(StorageKeyList keys, DataCallback callback) {
   if (service_error_.IsSet()) {
     callback.Run(service_error_, nullptr);
-    service_error_ = SyncError();
+    service_error_ = syncer::SyncError();
     return;
   }
   std::unique_ptr<DataBatchImpl> batch(new DataBatchImpl());
@@ -269,20 +269,20 @@ void FakeModelTypeService::GetData(StorageKeyList keys, DataCallback callback) {
     DCHECK(db_.HasData(key)) << "No data for " << key;
     batch->Put(key, CopyEntityData(db_.GetData(key)));
   }
-  callback.Run(SyncError(), std::move(batch));
+  callback.Run(syncer::SyncError(), std::move(batch));
 }
 
 void FakeModelTypeService::GetAllData(DataCallback callback) {
   if (service_error_.IsSet()) {
     callback.Run(service_error_, nullptr);
-    service_error_ = SyncError();
+    service_error_ = syncer::SyncError();
     return;
   }
   std::unique_ptr<DataBatchImpl> batch(new DataBatchImpl());
   for (const auto& kv : db_.all_data()) {
     batch->Put(kv.first, CopyEntityData(*kv.second));
   }
-  callback.Run(SyncError(), std::move(batch));
+  callback.Run(syncer::SyncError(), std::move(batch));
 }
 
 std::string FakeModelTypeService::GetClientTag(const EntityData& entity_data) {
@@ -295,9 +295,11 @@ std::string FakeModelTypeService::GetStorageKey(const EntityData& entity_data) {
 
 void FakeModelTypeService::OnChangeProcessorSet() {}
 
-void FakeModelTypeService::SetServiceError(SyncError::ErrorType error_type) {
+void FakeModelTypeService::SetServiceError(
+    syncer::SyncError::ErrorType error_type) {
   DCHECK(!service_error_.IsSet());
-  service_error_ = SyncError(FROM_HERE, error_type, "TestError", PREFERENCES);
+  service_error_ = syncer::SyncError(FROM_HERE, error_type, "TestError",
+                                     syncer::PREFERENCES);
 }
 
 ConflictResolution FakeModelTypeService::ResolveConflict(
@@ -316,4 +318,4 @@ void FakeModelTypeService::CheckPostConditions() {
   DCHECK(!service_error_.IsSet());
 }
 
-}  // namespace syncer
+}  // namespace syncer_v2

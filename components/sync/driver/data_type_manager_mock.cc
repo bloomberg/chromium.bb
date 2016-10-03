@@ -5,10 +5,11 @@
 #include "base/location.h"
 #include "components/sync/driver/data_type_manager_mock.h"
 
-namespace syncer {
+namespace sync_driver {
 
-DataTypeManagerMock::DataTypeManagerMock() : result_(OK, ModelTypeSet()) {}
+DataTypeManagerMock::DataTypeManagerMock()
+    : result_(OK, syncer::ModelTypeSet()) {}
 
 DataTypeManagerMock::~DataTypeManagerMock() {}
 
-}  // namespace syncer
+}  // namespace sync_driver

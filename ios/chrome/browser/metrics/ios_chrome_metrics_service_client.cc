@@ -233,7 +233,7 @@ void IOSChromeMetricsServiceClient::Initialize() {
 
   metrics_service_->RegisterMetricsProvider(
       std::unique_ptr<metrics::MetricsProvider>(
-          new syncer::DeviceCountMetricsProvider(
+          new sync_driver::DeviceCountMetricsProvider(
               base::Bind(&IOSChromeSyncClient::GetDeviceInfoTrackers))));
 
   metrics_service_->RegisterMetricsProvider(

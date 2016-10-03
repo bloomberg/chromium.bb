@@ -19,7 +19,7 @@ namespace chromeos {
 // This class is responsible for detecting authentication problems reported
 // by sync service and
 class AuthSyncObserver : public KeyedService,
-                         public syncer::SyncServiceObserver {
+                         public sync_driver::SyncServiceObserver {
  public:
   explicit AuthSyncObserver(Profile* user_profile);
   ~AuthSyncObserver() override;
@@ -32,7 +32,7 @@ class AuthSyncObserver : public KeyedService,
   // KeyedService implementation.
   void Shutdown() override;
 
-  // syncer::SyncServiceObserver implementation.
+  // sync_driver::SyncServiceObserver implementation.
   void OnStateChanged() override;
 
   // Called on attempt to restore supervised user token.

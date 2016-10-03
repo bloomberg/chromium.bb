@@ -18,10 +18,12 @@ class KeyedFakeSyncService : public KeyedService {
  public:
   KeyedFakeSyncService() {}
 
-  syncer::FakeSyncService* fake_sync_service() { return &fake_sync_service_; }
+  sync_driver::FakeSyncService* fake_sync_service() {
+    return &fake_sync_service_;
+  }
 
  private:
-  syncer::FakeSyncService fake_sync_service_;
+  sync_driver::FakeSyncService fake_sync_service_;
 };
 
 }  // namespace
@@ -34,7 +36,7 @@ FakeSyncServiceFactory* FakeSyncServiceFactory::GetInstance() {
 }
 
 // static
-syncer::FakeSyncService* FakeSyncServiceFactory::GetForBrowserState(
+sync_driver::FakeSyncService* FakeSyncServiceFactory::GetForBrowserState(
     ios::ChromeBrowserState* browser_state) {
   return static_cast<KeyedFakeSyncService*>(
              FakeSyncServiceFactory::GetInstance()->GetServiceForBrowserState(
@@ -43,7 +45,8 @@ syncer::FakeSyncService* FakeSyncServiceFactory::GetForBrowserState(
 }
 
 // static
-syncer::FakeSyncService* FakeSyncServiceFactory::GetForBrowserStateIfExists(
+sync_driver::FakeSyncService*
+FakeSyncServiceFactory::GetForBrowserStateIfExists(
     ios::ChromeBrowserState* browser_state) {
   return static_cast<KeyedFakeSyncService*>(
              FakeSyncServiceFactory::GetInstance()->GetServiceForBrowserState(

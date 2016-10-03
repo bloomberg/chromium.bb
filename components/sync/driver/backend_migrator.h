@@ -15,9 +15,14 @@
 #include "components/sync/driver/data_type_manager.h"
 
 namespace syncer {
-
-class SyncService;
 struct UserShare;
+}  // namespace syncer
+
+namespace sync_driver {
+class SyncService;
+}
+
+namespace browser_sync {
 
 // Interface for anything that wants to know when the migrator's state
 // changes.
@@ -46,14 +51,14 @@ class BackendMigrator {
 
   // TODO(akalin): Remove the dependency on |user_share|.
   BackendMigrator(const std::string& name,
-                  UserShare* user_share,
-                  SyncService* service,
-                  DataTypeManager* manager,
+                  syncer::UserShare* user_share,
+                  sync_driver::SyncService* service,
+                  sync_driver::DataTypeManager* manager,
                   const base::Closure& migration_done_callback);
   virtual ~BackendMigrator();
 
   // Starts a sequence of events that will disable and reenable |types|.
-  void MigrateTypes(ModelTypeSet types);
+  void MigrateTypes(syncer::ModelTypeSet types);
 
   void AddMigrationObserver(MigrationObserver* observer);
   bool HasMigrationObserver(const MigrationObserver* observer) const;
@@ -63,10 +68,11 @@ class BackendMigrator {
 
   // Called from ProfileSyncService to notify us of configure done.
   // Note: We receive these notifications only when our state is not IDLE.
-  void OnConfigureDone(const DataTypeManager::ConfigureResult& result);
+  void OnConfigureDone(
+      const sync_driver::DataTypeManager::ConfigureResult& result);
 
   // Returns the types that are currently pending migration (if any).
-  ModelTypeSet GetPendingMigrationTypesForTest() const;
+  syncer::ModelTypeSet GetPendingMigrationTypesForTest() const;
 
  private:
   void ChangeState(State new_state);
@@ -81,18 +87,19 @@ class BackendMigrator {
   void RestartMigration();
 
   // Called by OnConfigureDone().
-  void OnConfigureDoneImpl(const DataTypeManager::ConfigureResult& result);
+  void OnConfigureDoneImpl(
+      const sync_driver::DataTypeManager::ConfigureResult& result);
 
   const std::string name_;
-  UserShare* user_share_;
-  SyncService* service_;
-  DataTypeManager* manager_;
+  syncer::UserShare* user_share_;
+  sync_driver::SyncService* service_;
+  sync_driver::DataTypeManager* manager_;
 
   State state_;
 
   base::ObserverList<MigrationObserver> migration_observers_;
 
-  ModelTypeSet to_migrate_;
+  syncer::ModelTypeSet to_migrate_;
 
   base::Closure migration_done_callback_;
 
@@ -101,6 +108,6 @@ class BackendMigrator {
   DISALLOW_COPY_AND_ASSIGN(BackendMigrator);
 };
 
-}  // namespace syncer
+}  // namespace browser_sync
 
 #endif  // COMPONENTS_SYNC_DRIVER_BACKEND_MIGRATOR_H_

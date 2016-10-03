@@ -16,21 +16,21 @@
 class Profile;
 
 // Shows sync-related errors as notifications in Ash.
-class SyncErrorNotifier : public syncer::SyncErrorController::Observer,
+class SyncErrorNotifier : public SyncErrorController::Observer,
                           public KeyedService {
  public:
-  SyncErrorNotifier(syncer::SyncErrorController* controller, Profile* profile);
+  SyncErrorNotifier(SyncErrorController* controller, Profile* profile);
   ~SyncErrorNotifier() override;
 
   // KeyedService:
   void Shutdown() override;
 
-  // syncer::SyncErrorController::Observer:
+  // SyncErrorController::Observer:
   void OnErrorChanged() override;
 
  private:
   // The error controller to query for error details.
-  syncer::SyncErrorController* error_controller_;
+  SyncErrorController* error_controller_;
 
   // The Profile this service belongs to.
   Profile* profile_;

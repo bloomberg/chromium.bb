@@ -14,7 +14,7 @@
 #include "components/sync/protocol/data_type_state.pb.h"
 #include "components/sync/protocol/entity_metadata.pb.h"
 
-namespace syncer {
+namespace syncer_v2 {
 
 // A MetadataChangeList implementation that is meant to be used in combination
 // with a ModelTypeStore. It accumulates changes in member fields, and then when
@@ -60,6 +60,6 @@ class SimpleMetadataChangeList : public MetadataChangeList {
   std::unique_ptr<DataTypeStateChange> state_change_;
 };
 
-}  // namespace syncer
+}  // namespace syncer_v2
 
 #endif  // COMPONENTS_SYNC_CORE_SIMPLE_METADATA_CHANGE_LIST_H_

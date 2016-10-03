@@ -25,29 +25,31 @@ namespace syncer {
 
 namespace {
 
-class CommitQueueProxy : public CommitQueue {
+class CommitQueueProxy : public syncer_v2::CommitQueue {
  public:
-  CommitQueueProxy(const base::WeakPtr<ModelTypeWorker>& worker,
+  CommitQueueProxy(const base::WeakPtr<syncer_v2::ModelTypeWorker>& worker,
                    const scoped_refptr<base::SequencedTaskRunner>& sync_thread);
   ~CommitQueueProxy() override;
 
-  void EnqueueForCommit(const CommitRequestDataList& list) override;
+  void EnqueueForCommit(const syncer_v2::CommitRequestDataList& list) override;
 
  private:
-  base::WeakPtr<ModelTypeWorker> worker_;
+  base::WeakPtr<syncer_v2::ModelTypeWorker> worker_;
   scoped_refptr<base::SequencedTaskRunner> sync_thread_;
 };
 
 CommitQueueProxy::CommitQueueProxy(
-    const base::WeakPtr<ModelTypeWorker>& worker,
+    const base::WeakPtr<syncer_v2::ModelTypeWorker>& worker,
     const scoped_refptr<base::SequencedTaskRunner>& sync_thread)
     : worker_(worker), sync_thread_(sync_thread) {}
 
 CommitQueueProxy::~CommitQueueProxy() {}
 
-void CommitQueueProxy::EnqueueForCommit(const CommitRequestDataList& list) {
+void CommitQueueProxy::EnqueueForCommit(
+    const syncer_v2::CommitRequestDataList& list) {
   sync_thread_->PostTask(
-      FROM_HERE, base::Bind(&ModelTypeWorker::EnqueueForCommit, worker_, list));
+      FROM_HERE,
+      base::Bind(&syncer_v2::ModelTypeWorker::EnqueueForCommit, worker_, list));
 }
 
 }  // namespace
@@ -138,23 +140,27 @@ void ModelTypeRegistry::SetEnabledDirectoryTypes(
 
 void ModelTypeRegistry::ConnectType(
     ModelType type,
-    std::unique_ptr<ActivationContext> activation_context) {
+    std::unique_ptr<syncer_v2::ActivationContext> activation_context) {
   DVLOG(1) << "Enabling an off-thread sync type: " << ModelTypeToString(type);
 
   // Initialize Worker -> Processor communication channel.
-  ModelTypeProcessor* type_processor = activation_context->type_processor.get();
+  syncer_v2::ModelTypeProcessor* type_processor =
+      activation_context->type_processor.get();
 
   std::unique_ptr<Cryptographer> cryptographer_copy;
   if (encrypted_types_.Has(type))
     cryptographer_copy.reset(new Cryptographer(*cryptographer_));
 
-  std::unique_ptr<ModelTypeWorker> worker(new ModelTypeWorker(
-      type, activation_context->data_type_state, std::move(cryptographer_copy),
-      nudge_handler_, std::move(activation_context->type_processor)));
+  std::unique_ptr<syncer_v2::ModelTypeWorker> worker(
+      new syncer_v2::ModelTypeWorker(
+          type, activation_context->data_type_state,
+          std::move(cryptographer_copy), nudge_handler_,
+          std::move(activation_context->type_processor)));
 
   // Initialize Processor -> Worker communication channel.
-  std::unique_ptr<CommitQueue> commit_queue_proxy(new CommitQueueProxy(
-      worker->AsWeakPtr(), scoped_refptr<base::SequencedTaskRunner>(
+  std::unique_ptr<syncer_v2::CommitQueue> commit_queue_proxy(
+      new CommitQueueProxy(worker->AsWeakPtr(),
+                           scoped_refptr<base::SequencedTaskRunner>(
                                base::ThreadTaskRunnerHandle::Get())));
 
   type_processor->ConnectSync(std::move(commit_queue_proxy));
@@ -184,7 +190,8 @@ void ModelTypeRegistry::DisconnectType(ModelType type) {
   DCHECK_EQ(1U, committers_erased);
 
   // Remove from the ScopedVector, deleting the worker in the process.
-  for (ScopedVector<ModelTypeWorker>::iterator it = model_type_workers_.begin();
+  for (ScopedVector<syncer_v2::ModelTypeWorker>::iterator it =
+           model_type_workers_.begin();
        it != model_type_workers_.end(); ++it) {
     if ((*it)->GetModelType() == type) {
       model_type_workers_.erase(it);
@@ -227,18 +234,18 @@ ModelTypeRegistry::directory_type_debug_info_emitter_map() {
 }
 
 void ModelTypeRegistry::RegisterDirectoryTypeDebugInfoObserver(
-    TypeDebugInfoObserver* observer) {
+    syncer::TypeDebugInfoObserver* observer) {
   if (!type_debug_info_observers_.HasObserver(observer))
     type_debug_info_observers_.AddObserver(observer);
 }
 
 void ModelTypeRegistry::UnregisterDirectoryTypeDebugInfoObserver(
-    TypeDebugInfoObserver* observer) {
+    syncer::TypeDebugInfoObserver* observer) {
   type_debug_info_observers_.RemoveObserver(observer);
 }
 
 bool ModelTypeRegistry::HasDirectoryTypeDebugInfoObserver(
-    const TypeDebugInfoObserver* observer) const {
+    const syncer::TypeDebugInfoObserver* observer) const {
   return type_debug_info_observers_.HasObserver(observer);
 }
 
@@ -252,7 +259,7 @@ void ModelTypeRegistry::RequestEmitDebugInfo() {
   }
 }
 
-base::WeakPtr<ModelTypeConnector> ModelTypeRegistry::AsWeakPtr() {
+base::WeakPtr<syncer_v2::ModelTypeConnector> ModelTypeRegistry::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
@@ -291,7 +298,8 @@ ModelTypeSet ModelTypeRegistry::GetEnabledDirectoryTypes() const {
 }
 
 void ModelTypeRegistry::OnEncryptionStateChanged() {
-  for (ScopedVector<ModelTypeWorker>::iterator it = model_type_workers_.begin();
+  for (ScopedVector<syncer_v2::ModelTypeWorker>::iterator it =
+           model_type_workers_.begin();
        it != model_type_workers_.end(); ++it) {
     if (encrypted_types_.Has((*it)->GetModelType())) {
       (*it)->UpdateCryptographer(
@@ -302,7 +310,7 @@ void ModelTypeRegistry::OnEncryptionStateChanged() {
 
 ModelTypeSet ModelTypeRegistry::GetEnabledNonBlockingTypes() const {
   ModelTypeSet enabled_non_blocking_types;
-  for (ScopedVector<ModelTypeWorker>::const_iterator it =
+  for (ScopedVector<syncer_v2::ModelTypeWorker>::const_iterator it =
            model_type_workers_.begin();
        it != model_type_workers_.end(); ++it) {
     enabled_non_blocking_types.Put((*it)->GetModelType());

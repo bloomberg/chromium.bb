@@ -33,10 +33,13 @@
 #include "components/sync_sessions/tab_node_pool.h"
 
 namespace syncer {
-class LocalDeviceInfoProvider;
 class SyncErrorFactory;
+}
+
+namespace sync_driver {
+class LocalDeviceInfoProvider;
 class SyncPrefs;
-}  // namespace syncer
+}
 
 namespace sync_pb {
 class SessionHeader;
@@ -62,8 +65,8 @@ class SessionsSyncManager : public syncer::SyncableService,
                             public LocalSessionEventHandler {
  public:
   SessionsSyncManager(SyncSessionsClient* sessions_client,
-                      syncer::SyncPrefs* sync_prefs,
-                      syncer::LocalDeviceInfoProvider* local_device,
+                      sync_driver::SyncPrefs* sync_prefs,
+                      sync_driver::LocalDeviceInfoProvider* local_device,
                       std::unique_ptr<LocalSessionEventRouter> router,
                       const base::Closure& sessions_updated_callback,
                       const base::Closure& datatype_refresh_callback);
@@ -341,13 +344,13 @@ class SessionsSyncManager : public syncer::SyncableService,
   // proves that we are still relevant.
   bool local_tab_pool_out_of_sync_;
 
-  syncer::SyncPrefs* sync_prefs_;
+  sync_driver::SyncPrefs* sync_prefs_;
 
   std::unique_ptr<syncer::SyncErrorFactory> error_handler_;
   std::unique_ptr<syncer::SyncChangeProcessor> sync_processor_;
 
   // Local device info provider, owned by ProfileSyncService.
-  const syncer::LocalDeviceInfoProvider* const local_device_;
+  const sync_driver::LocalDeviceInfoProvider* const local_device_;
 
   // Unique client tag.
   std::string current_machine_tag_;

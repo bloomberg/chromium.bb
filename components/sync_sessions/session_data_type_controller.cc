@@ -16,8 +16,8 @@ namespace sync_sessions {
 
 SessionDataTypeController::SessionDataTypeController(
     const base::Closure& dump_stack,
-    syncer::SyncClient* sync_client,
-    syncer::LocalDeviceInfoProvider* local_device,
+    sync_driver::SyncClient* sync_client,
+    sync_driver::LocalDeviceInfoProvider* local_device,
     const char* history_disabled_pref_name)
     : UIDataTypeController(syncer::SESSIONS, dump_stack, sync_client),
       sync_client_(sync_client),

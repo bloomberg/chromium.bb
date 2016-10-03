@@ -565,7 +565,7 @@ void ChromeMetricsServiceClient::Initialize() {
 
   metrics_service_->RegisterMetricsProvider(
       std::unique_ptr<metrics::MetricsProvider>(
-          new syncer::DeviceCountMetricsProvider(base::Bind(
+          new sync_driver::DeviceCountMetricsProvider(base::Bind(
               &browser_sync::ChromeSyncClient::GetDeviceInfoTrackers))));
 
   metrics_service_->RegisterMetricsProvider(

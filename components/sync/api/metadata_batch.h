@@ -11,7 +11,7 @@
 #include "components/sync/protocol/data_type_state.pb.h"
 #include "components/sync/protocol/entity_metadata.pb.h"
 
-namespace syncer {
+namespace syncer_v2 {
 
 // Map of storage keys to EntityMetadata proto.
 typedef std::map<std::string, sync_pb::EntityMetadata> EntityMetadataMap;
@@ -42,6 +42,6 @@ class MetadataBatch {
   sync_pb::DataTypeState state_;
 };
 
-}  // namespace syncer
+}  // namespace syncer_v2
 
 #endif  // COMPONENTS_SYNC_API_METADATA_BATCH_H_

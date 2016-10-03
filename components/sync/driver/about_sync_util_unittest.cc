@@ -15,24 +15,26 @@ using ::testing::NiceMock;
 using ::testing::Return;
 using ::testing::_;
 
-namespace syncer {
+namespace sync_driver {
 namespace sync_ui_util {
 namespace {
 
-class SyncServiceMock : public FakeSyncService {
+class SyncServiceMock : public sync_driver::FakeSyncService {
  public:
   bool IsFirstSetupComplete() const override { return true; }
 
   bool HasUnrecoverableError() const override { return true; }
 
-  bool QueryDetailedSyncStatus(SyncStatus* result) override { return false; }
+  bool QueryDetailedSyncStatus(syncer::SyncStatus* result) override {
+    return false;
+  }
 
   base::string16 GetLastSyncedTimeString() const override {
     return base::string16(base::ASCIIToUTF16("none"));
   }
 
-  SyncCycleSnapshot GetLastCycleSnapshot() const override {
-    return SyncCycleSnapshot();
+  syncer::SyncCycleSnapshot GetLastCycleSnapshot() const override {
+    return syncer::SyncCycleSnapshot();
   }
 };
 
@@ -47,4 +49,4 @@ TEST(SyncUIUtilTestAbout, ConstructAboutInformationWithUnrecoverableErrorTest) {
 
 }  // namespace
 }  // namespace sync_ui_util
-}  // namespace syncer
+}  // namespace sync_driver

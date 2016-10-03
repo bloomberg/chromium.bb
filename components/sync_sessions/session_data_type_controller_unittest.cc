@@ -23,7 +23,7 @@
 #include "components/sync_sessions/synced_window_delegates_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using syncer::LocalDeviceInfoProviderMock;
+using sync_driver::LocalDeviceInfoProviderMock;
 
 namespace sync_sessions {
 
@@ -95,10 +95,10 @@ class TestSyncSessionsClient : public FakeSyncSessionsClient {
 };
 
 class SessionDataTypeControllerTest : public testing::Test,
-                                      public syncer::FakeSyncClient {
+                                      public sync_driver::FakeSyncClient {
  public:
   SessionDataTypeControllerTest()
-      : syncer::FakeSyncClient(&profile_sync_factory_),
+      : sync_driver::FakeSyncClient(&profile_sync_factory_),
         load_finished_(false),
         last_type_(syncer::UNSPECIFIED) {}
   ~SessionDataTypeControllerTest() override {}
@@ -184,7 +184,7 @@ class SessionDataTypeControllerTest : public testing::Test,
   TestingPrefServiceSimple prefs_;
   std::unique_ptr<MockSyncedWindowDelegate> synced_window_delegate_;
   std::unique_ptr<MockSyncedWindowDelegatesGetter> synced_window_getter_;
-  syncer::SyncApiComponentFactoryMock profile_sync_factory_;
+  SyncApiComponentFactoryMock profile_sync_factory_;
   std::unique_ptr<TestSyncSessionsClient> sync_sessions_client_;
   std::unique_ptr<LocalDeviceInfoProviderMock> local_device_;
   std::unique_ptr<SessionDataTypeController> controller_;
@@ -196,7 +196,8 @@ class SessionDataTypeControllerTest : public testing::Test,
 
 TEST_F(SessionDataTypeControllerTest, StartModels) {
   Start();
-  EXPECT_EQ(syncer::DataTypeController::MODEL_LOADED, controller()->state());
+  EXPECT_EQ(sync_driver::DataTypeController::MODEL_LOADED,
+            controller()->state());
   EXPECT_TRUE(LoadResult());
 }
 
@@ -204,10 +205,12 @@ TEST_F(SessionDataTypeControllerTest, StartModelsDelayedByLocalDevice) {
   local_device()->SetInitialized(false);
   Start();
   EXPECT_FALSE(load_finished());
-  EXPECT_EQ(syncer::DataTypeController::MODEL_STARTING, controller()->state());
+  EXPECT_EQ(sync_driver::DataTypeController::MODEL_STARTING,
+            controller()->state());
 
   local_device()->SetInitialized(true);
-  EXPECT_EQ(syncer::DataTypeController::MODEL_LOADED, controller()->state());
+  EXPECT_EQ(sync_driver::DataTypeController::MODEL_LOADED,
+            controller()->state());
   EXPECT_TRUE(LoadResult());
 }
 
@@ -215,10 +218,12 @@ TEST_F(SessionDataTypeControllerTest, StartModelsDelayedByRestoreInProgress) {
   SetSessionRestoreInProgress(true);
   Start();
   EXPECT_FALSE(load_finished());
-  EXPECT_EQ(syncer::DataTypeController::MODEL_STARTING, controller()->state());
+  EXPECT_EQ(sync_driver::DataTypeController::MODEL_STARTING,
+            controller()->state());
 
   SetSessionRestoreInProgress(false);
-  EXPECT_EQ(syncer::DataTypeController::MODEL_LOADED, controller()->state());
+  EXPECT_EQ(sync_driver::DataTypeController::MODEL_LOADED,
+            controller()->state());
   EXPECT_TRUE(LoadResult());
 }
 
@@ -228,14 +233,17 @@ TEST_F(SessionDataTypeControllerTest,
   SetSessionRestoreInProgress(true);
   Start();
   EXPECT_FALSE(load_finished());
-  EXPECT_EQ(syncer::DataTypeController::MODEL_STARTING, controller()->state());
+  EXPECT_EQ(sync_driver::DataTypeController::MODEL_STARTING,
+            controller()->state());
 
   local_device()->SetInitialized(true);
   EXPECT_FALSE(load_finished());
-  EXPECT_EQ(syncer::DataTypeController::MODEL_STARTING, controller()->state());
+  EXPECT_EQ(sync_driver::DataTypeController::MODEL_STARTING,
+            controller()->state());
 
   SetSessionRestoreInProgress(false);
-  EXPECT_EQ(syncer::DataTypeController::MODEL_LOADED, controller()->state());
+  EXPECT_EQ(sync_driver::DataTypeController::MODEL_LOADED,
+            controller()->state());
   EXPECT_TRUE(LoadResult());
 }
 
@@ -245,14 +253,17 @@ TEST_F(SessionDataTypeControllerTest,
   SetSessionRestoreInProgress(true);
   Start();
   EXPECT_FALSE(load_finished());
-  EXPECT_EQ(syncer::DataTypeController::MODEL_STARTING, controller()->state());
+  EXPECT_EQ(sync_driver::DataTypeController::MODEL_STARTING,
+            controller()->state());
 
   SetSessionRestoreInProgress(false);
   EXPECT_FALSE(load_finished());
-  EXPECT_EQ(syncer::DataTypeController::MODEL_STARTING, controller()->state());
+  EXPECT_EQ(sync_driver::DataTypeController::MODEL_STARTING,
+            controller()->state());
 
   local_device()->SetInitialized(true);
-  EXPECT_EQ(syncer::DataTypeController::MODEL_LOADED, controller()->state());
+  EXPECT_EQ(sync_driver::DataTypeController::MODEL_LOADED,
+            controller()->state());
   EXPECT_TRUE(LoadResult());
 }
 

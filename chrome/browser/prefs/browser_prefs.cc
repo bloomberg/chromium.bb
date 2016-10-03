@@ -461,7 +461,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   // User prefs. Please keep this list alphabetized.
   autofill::AutofillManager::RegisterProfilePrefs(registry);
   BudgetManager::RegisterProfilePrefs(registry);
-  syncer::SyncPrefs::RegisterProfilePrefs(registry);
+  sync_driver::SyncPrefs::RegisterProfilePrefs(registry);
   ChromeContentBrowserClient::RegisterProfilePrefs(registry);
   ChromeVersionService::RegisterProfilePrefs(registry);
   chrome_browser_net::HttpServerPropertiesManagerFactory::RegisterProfilePrefs(

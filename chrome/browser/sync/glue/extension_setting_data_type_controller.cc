@@ -20,7 +20,7 @@ namespace browser_sync {
 ExtensionSettingDataTypeController::ExtensionSettingDataTypeController(
     syncer::ModelType type,
     const base::Closure& dump_stack,
-    syncer::SyncClient* sync_client,
+    sync_driver::SyncClient* sync_client,
     Profile* profile)
     : NonUIDataTypeController(type, dump_stack, sync_client),
       profile_(profile) {

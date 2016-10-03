@@ -23,11 +23,11 @@ namespace browser_sync {
 class ControlTask;
 
 // A class that manages the startup and shutdown of typed_url sync.
-class TypedUrlDataTypeController : public syncer::NonUIDataTypeController {
+class TypedUrlDataTypeController : public sync_driver::NonUIDataTypeController {
  public:
   // |dump_stack| is called when an unrecoverable error occurs.
   TypedUrlDataTypeController(const base::Closure& dump_stack,
-                             syncer::SyncClient* sync_client,
+                             sync_driver::SyncClient* sync_client,
                              const char* history_disabled_pref_name);
   ~TypedUrlDataTypeController() override;
 
@@ -52,7 +52,7 @@ class TypedUrlDataTypeController : public syncer::NonUIDataTypeController {
   // thread.
   base::CancelableTaskTracker task_tracker_;
 
-  syncer::SyncClient* const sync_client_;
+  sync_driver::SyncClient* const sync_client_;
 
   DISALLOW_COPY_AND_ASSIGN(TypedUrlDataTypeController);
 };

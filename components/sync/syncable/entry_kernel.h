@@ -9,7 +9,6 @@
 
 #include <algorithm>
 #include <map>
-#include <memory>
 #include <set>
 #include <string>
 
@@ -195,8 +194,9 @@ enum { BIT_TEMPS_COUNT = BIT_TEMPS_END - BIT_TEMPS_BEGIN };
 
 struct EntryKernel {
  private:
-  typedef ProtoValuePtr<sync_pb::EntitySpecifics> EntitySpecificsPtr;
-  typedef ProtoValuePtr<sync_pb::AttachmentMetadata> AttachmentMetadataPtr;
+  typedef syncer::ProtoValuePtr<sync_pb::EntitySpecifics> EntitySpecificsPtr;
+  typedef syncer::ProtoValuePtr<sync_pb::AttachmentMetadata>
+      AttachmentMetadataPtr;
 
   std::string string_fields[STRING_FIELDS_COUNT];
   EntitySpecificsPtr specifics_fields[PROTO_FIELDS_COUNT];

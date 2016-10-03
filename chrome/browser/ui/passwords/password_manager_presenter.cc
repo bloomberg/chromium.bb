@@ -219,7 +219,7 @@ void PasswordManagerPresenter::RequestShowPassword(size_t index) {
     return;
   }
 
-  syncer::SyncService* sync_service = nullptr;
+  sync_driver::SyncService* sync_service = nullptr;
   if (ProfileSyncServiceFactory::HasProfileSyncService(
           password_view_->GetProfile())) {
     sync_service =

@@ -17,17 +17,17 @@
 #include "content/public/browser/notification_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-class KeyedService;
-class Profile;
-class TestingProfile;
-
 namespace content {
 class BrowserContext;
 }
 
-namespace syncer {
+namespace sync_driver {
 class SyncClient;
 }
+
+class KeyedService;
+class Profile;
+class TestingProfile;
 
 ACTION_P(Notify, type) {
   content::NotificationService::current()->Notify(
@@ -46,7 +46,7 @@ browser_sync::ProfileSyncService::InitParams
 CreateProfileSyncServiceParamsForTest(Profile* profile);
 browser_sync::ProfileSyncService::InitParams
 CreateProfileSyncServiceParamsForTest(
-    std::unique_ptr<syncer::SyncClient> sync_client,
+    std::unique_ptr<sync_driver::SyncClient> sync_client,
     Profile* profile);
 
 // A utility used by sync tests to create a TestingProfile with a Google

@@ -18,9 +18,9 @@
 #include "extensions/browser/extension_prefs.h"
 
 using base::DictionaryValue;
-using syncer::DeviceInfo;
-using syncer::DeviceInfoTracker;
-using syncer::LocalDeviceInfoProvider;
+using sync_driver::DeviceInfo;
+using sync_driver::DeviceInfoTracker;
+using sync_driver::LocalDeviceInfoProvider;
 
 namespace extensions {
 

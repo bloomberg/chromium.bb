@@ -35,7 +35,7 @@ class URLRequestContextGetter;
 namespace browser_sync {
 
 class ProfileSyncComponentsFactoryImpl
-    : public syncer::SyncApiComponentFactory {
+    : public sync_driver::SyncApiComponentFactory {
  public:
   // Constructs a ProfileSyncComponentsFactoryImpl.
   //
@@ -46,7 +46,7 @@ class ProfileSyncComponentsFactoryImpl
   // |url_request_context_getter| must outlive the
   // ProfileSyncComponentsFactoryImpl.
   ProfileSyncComponentsFactoryImpl(
-      syncer::SyncClient* sync_client,
+      sync_driver::SyncClient* sync_client,
       version_info::Channel channel,
       const std::string& version,
       bool is_tablet,
@@ -63,21 +63,21 @@ class ProfileSyncComponentsFactoryImpl
 
   // SyncApiComponentFactory implementation:
   void RegisterDataTypes(
-      syncer::SyncService* sync_service,
+      sync_driver::SyncService* sync_service,
       const RegisterDataTypesMethod& register_platform_types_method) override;
-  syncer::DataTypeManager* CreateDataTypeManager(
+  sync_driver::DataTypeManager* CreateDataTypeManager(
       const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
           debug_info_listener,
-      const syncer::DataTypeController::TypeMap* controllers,
-      const syncer::DataTypeEncryptionHandler* encryption_handler,
-      syncer::SyncBackendHost* backend,
-      syncer::DataTypeManagerObserver* observer) override;
-  syncer::SyncBackendHost* CreateSyncBackendHost(
+      const sync_driver::DataTypeController::TypeMap* controllers,
+      const sync_driver::DataTypeEncryptionHandler* encryption_handler,
+      SyncBackendHost* backend,
+      sync_driver::DataTypeManagerObserver* observer) override;
+  SyncBackendHost* CreateSyncBackendHost(
       const std::string& name,
       invalidation::InvalidationService* invalidator,
-      const base::WeakPtr<syncer::SyncPrefs>& sync_prefs,
+      const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
       const base::FilePath& sync_folder) override;
-  std::unique_ptr<syncer::LocalDeviceInfoProvider>
+  std::unique_ptr<sync_driver::LocalDeviceInfoProvider>
   CreateLocalDeviceInfoProvider() override;
   std::unique_ptr<syncer::AttachmentService> CreateAttachmentService(
       std::unique_ptr<syncer::AttachmentStoreForSync> attachment_store,
@@ -85,8 +85,9 @@ class ProfileSyncComponentsFactoryImpl
       const std::string& store_birthday,
       syncer::ModelType model_type,
       syncer::AttachmentService::Delegate* delegate) override;
-  syncer::SyncApiComponentFactory::SyncComponents CreateBookmarkSyncComponents(
-      syncer::SyncService* sync_service,
+  sync_driver::SyncApiComponentFactory::SyncComponents
+  CreateBookmarkSyncComponents(
+      sync_driver::SyncService* sync_service,
       std::unique_ptr<syncer::DataTypeErrorHandler> error_handler) override;
 
   // Sets a bit that determines whether PREFERENCES should be registered with a
@@ -97,7 +98,7 @@ class ProfileSyncComponentsFactoryImpl
   // Register data types which are enabled on both desktop and mobile.
   // |disabled_types| and |enabled_types| correspond only to those types
   // being explicitly enabled/disabled by the command line.
-  void RegisterCommonDataTypes(syncer::SyncService* sync_service,
+  void RegisterCommonDataTypes(sync_driver::SyncService* sync_service,
                                syncer::ModelTypeSet disabled_types,
                                syncer::ModelTypeSet enabled_types);
 
@@ -106,7 +107,7 @@ class ProfileSyncComponentsFactoryImpl
                          const std::string& message);
 
   // Client/platform specific members.
-  syncer::SyncClient* const sync_client_;
+  sync_driver::SyncClient* const sync_client_;
   const version_info::Channel channel_;
   const std::string version_;
   const bool is_tablet_;

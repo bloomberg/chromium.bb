@@ -60,13 +60,14 @@ class DummyRouter : public sync_sessions::LocalSessionEventRouter {
 class AppMenuControllerTest : public CocoaProfileTest {
  public:
   AppMenuControllerTest()
-      : local_device_(new syncer::LocalDeviceInfoProviderMock(
+      : local_device_(new sync_driver::LocalDeviceInfoProviderMock(
             "AppMenuControllerTest",
             "Test Machine",
             "Chromium 10k",
             "Chrome 10k",
             sync_pb::SyncEnums_DeviceType_TYPE_LINUX,
-            "device_id")) {}
+            "device_id")) {
+  }
 
   void SetUp() override {
     CocoaProfileTest::SetUp();
@@ -75,7 +76,7 @@ class AppMenuControllerTest : public CocoaProfileTest {
     controller_.reset([[AppMenuController alloc] initWithBrowser:browser()]);
     fake_model_.reset(new MockAppMenuModel);
 
-    sync_prefs_.reset(new syncer::SyncPrefs(profile()->GetPrefs()));
+    sync_prefs_.reset(new sync_driver::SyncPrefs(profile()->GetPrefs()));
     manager_.reset(new sync_sessions::SessionsSyncManager(
         ProfileSyncServiceFactory::GetForProfile(profile())
             ->GetSyncClient()
@@ -116,9 +117,9 @@ class AppMenuControllerTest : public CocoaProfileTest {
   std::unique_ptr<MockAppMenuModel> fake_model_;
 
  private:
-  std::unique_ptr<syncer::SyncPrefs> sync_prefs_;
+  std::unique_ptr<sync_driver::SyncPrefs> sync_prefs_;
   std::unique_ptr<sync_sessions::SessionsSyncManager> manager_;
-  std::unique_ptr<syncer::LocalDeviceInfoProviderMock> local_device_;
+  std::unique_ptr<sync_driver::LocalDeviceInfoProviderMock> local_device_;
 };
 
 TEST_F(AppMenuControllerTest, Initialized) {

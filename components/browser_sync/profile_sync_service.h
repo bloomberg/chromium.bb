@@ -58,10 +58,21 @@
 class Profile;
 class ProfileOAuth2TokenService;
 class SigninManagerWrapper;
+class SyncErrorController;
+class SyncTypePreferenceProvider;
 
-namespace sync_pb {
-class EncryptedData;
-}  // namespace sync_pb
+namespace sync_driver {
+class DataTypeManager;
+class DeviceInfoSyncService;
+class DeviceInfoTracker;
+class LocalDeviceInfoProvider;
+class SyncApiComponentFactory;
+class SyncClient;
+}  // namespace sync_driver
+
+namespace sync_driver_v2 {
+class DeviceInfoService;
+}
 
 namespace sync_sessions {
 class FaviconCache;
@@ -70,18 +81,8 @@ class SessionsSyncManager;
 }  // namespace sync_sessions
 
 namespace syncer {
-class BackendMigrator;
 class BaseTransaction;
-class DataTypeManager;
-class DeviceInfoService;
-class DeviceInfoSyncService;
-class DeviceInfoTracker;
-class LocalDeviceInfoProvider;
 class NetworkResources;
-class SyncApiComponentFactory;
-class SyncClient;
-class SyncErrorController;
-class SyncTypePreferenceProvider;
 class TypeDebugInfoObserver;
 struct CommitCounters;
 struct StatusCounters;
@@ -90,7 +91,13 @@ struct UpdateCounters;
 struct UserShare;
 }  // namespace syncer
 
+namespace sync_pb {
+class EncryptedData;
+}  // namespace sync_pb
+
 namespace browser_sync {
+
+class BackendMigrator;
 
 // ProfileSyncService is the layer between browser subsystems like bookmarks,
 // and the sync backend.  Each subsystem is logically thought of as being
@@ -171,10 +178,10 @@ namespace browser_sync {
 //   Once first setup has completed and there are no outstanding
 //   setup-in-progress handles, CanConfigureDataTypes() will return true and
 //   datatype configuration can begin.
-class ProfileSyncService : public syncer::SyncService,
-                           public syncer::SyncFrontend,
-                           public syncer::SyncPrefObserver,
-                           public syncer::DataTypeManagerObserver,
+class ProfileSyncService : public sync_driver::SyncService,
+                           public sync_driver::SyncFrontend,
+                           public sync_driver::SyncPrefObserver,
+                           public sync_driver::DataTypeManagerObserver,
                            public syncer::UnrecoverableErrorHandler,
                            public KeyedService,
                            public OAuth2TokenService::Consumer,
@@ -182,7 +189,7 @@ class ProfileSyncService : public syncer::SyncService,
                            public SigninManagerBase::Observer,
                            public GaiaCookieManagerService::Observer {
  public:
-  typedef syncer::SyncBackendHost::Status Status;
+  typedef SyncBackendHost::Status Status;
   typedef base::Callback<bool(void)> PlatformSyncAllowedProvider;
 
   enum SyncEventCodes {
@@ -236,7 +243,7 @@ class ProfileSyncService : public syncer::SyncService,
     ~InitParams();
     InitParams(InitParams&& other);  // NOLINT
 
-    std::unique_ptr<syncer::SyncClient> sync_client;
+    std::unique_ptr<sync_driver::SyncClient> sync_client;
     std::unique_ptr<SigninManagerWrapper> signin_wrapper;
     ProfileOAuth2TokenService* oauth2_token_service = nullptr;
     GaiaCookieManagerService* gaia_cookie_manager_service = nullptr;
@@ -262,7 +269,7 @@ class ProfileSyncService : public syncer::SyncService,
   // immediately after an object of this class is constructed.
   void Initialize();
 
-  // syncer::SyncService implementation
+  // sync_driver::SyncService implementation
   bool IsFirstSetupComplete() const override;
   bool IsSyncAllowed() const override;
   bool IsSyncActive() const override;
@@ -272,14 +279,14 @@ class ProfileSyncService : public syncer::SyncService,
   void RequestStop(SyncStopDataFate data_fate) override;
   void RequestStart() override;
   syncer::ModelTypeSet GetActiveDataTypes() const override;
-  syncer::SyncClient* GetSyncClient() const override;
+  sync_driver::SyncClient* GetSyncClient() const override;
   syncer::ModelTypeSet GetPreferredDataTypes() const override;
   void OnUserChoseDatatypes(bool sync_everything,
                             syncer::ModelTypeSet chosen_types) override;
   void SetFirstSetupComplete() override;
   bool IsFirstSetupInProgress() const override;
-  std::unique_ptr<syncer::SyncSetupInProgressHandle> GetSetupInProgressHandle()
-      override;
+  std::unique_ptr<sync_driver::SyncSetupInProgressHandle>
+  GetSetupInProgressHandle() override;
   bool IsSetupInProgress() const override;
   bool ConfigurationDone() const override;
   const GoogleServiceAuthError& GetAuthError() const override;
@@ -298,12 +305,15 @@ class ProfileSyncService : public syncer::SyncService,
   bool IsCryptographerReady(
       const syncer::BaseTransaction* trans) const override;
   syncer::UserShare* GetUserShare() const override;
-  syncer::LocalDeviceInfoProvider* GetLocalDeviceInfoProvider() const override;
-  void AddObserver(syncer::SyncServiceObserver* observer) override;
-  void RemoveObserver(syncer::SyncServiceObserver* observer) override;
-  bool HasObserver(const syncer::SyncServiceObserver* observer) const override;
-  void RegisterDataTypeController(std::unique_ptr<syncer::DataTypeController>
-                                      data_type_controller) override;
+  sync_driver::LocalDeviceInfoProvider* GetLocalDeviceInfoProvider()
+      const override;
+  void AddObserver(sync_driver::SyncServiceObserver* observer) override;
+  void RemoveObserver(sync_driver::SyncServiceObserver* observer) override;
+  bool HasObserver(
+      const sync_driver::SyncServiceObserver* observer) const override;
+  void RegisterDataTypeController(
+      std::unique_ptr<sync_driver::DataTypeController> data_type_controller)
+      override;
   void ReenableDatatype(syncer::ModelType type) override;
   SyncTokenStatus GetSyncTokenStatus() const override;
   std::string QuerySyncStatusSummaryString() override;
@@ -315,10 +325,8 @@ class ProfileSyncService : public syncer::SyncService,
   const GURL& sync_service_url() const override;
   std::string unrecoverable_error_message() const override;
   tracked_objects::Location unrecoverable_error_location() const override;
-  void AddProtocolEventObserver(
-      syncer::ProtocolEventObserver* observer) override;
-  void RemoveProtocolEventObserver(
-      syncer::ProtocolEventObserver* observer) override;
+  void AddProtocolEventObserver(ProtocolEventObserver* observer) override;
+  void RemoveProtocolEventObserver(ProtocolEventObserver* observer) override;
   void AddTypeDebugInfoObserver(
       syncer::TypeDebugInfoObserver* observer) override;
   void RemoveTypeDebugInfoObserver(
@@ -328,14 +336,13 @@ class ProfileSyncService : public syncer::SyncService,
                        callback) override;
 
   // Add a sync type preference provider. Each provider may only be added once.
-  void AddPreferenceProvider(syncer::SyncTypePreferenceProvider* provider);
+  void AddPreferenceProvider(SyncTypePreferenceProvider* provider);
   // Remove a sync type preference provider. May only be called for providers
   // that have been added. Providers must not remove themselves while being
   // called back.
-  void RemovePreferenceProvider(syncer::SyncTypePreferenceProvider* provider);
+  void RemovePreferenceProvider(SyncTypePreferenceProvider* provider);
   // Check whether a given sync type preference provider has been added.
-  bool HasPreferenceProvider(
-      syncer::SyncTypePreferenceProvider* provider) const;
+  bool HasPreferenceProvider(SyncTypePreferenceProvider* provider) const;
 
   void RegisterAuthNotifications();
   void UnregisterAuthNotifications();
@@ -347,15 +354,15 @@ class ProfileSyncService : public syncer::SyncService,
   virtual syncer::SyncableService* GetDeviceInfoSyncableService();
 
   // Returns the ModelTypeService for syncer::DEVICE_INFO.
-  virtual syncer::ModelTypeService* GetDeviceInfoService();
+  virtual syncer_v2::ModelTypeService* GetDeviceInfoService();
 
   // Returns synced devices tracker.
-  virtual syncer::DeviceInfoTracker* GetDeviceInfoTracker() const;
+  virtual sync_driver::DeviceInfoTracker* GetDeviceInfoTracker() const;
 
   // Fills state_map with a map of current data types that are possible to
   // sync, as well as their states.
   void GetDataTypeControllerStates(
-      syncer::DataTypeController::StateMap* state_map) const;
+      sync_driver::DataTypeController::StateMap* state_map) const;
 
   // Called when asynchronous session restore has completed.
   void OnSessionRestoreComplete();
@@ -394,7 +401,7 @@ class ProfileSyncService : public syncer::SyncService,
 
   // DataTypeManagerObserver implementation.
   void OnConfigureDone(
-      const syncer::DataTypeManager::ConfigureResult& result) override;
+      const sync_driver::DataTypeManager::ConfigureResult& result) override;
   void OnConfigureStart() override;
 
   // DataTypeEncryptionHandler implementation.
@@ -470,7 +477,7 @@ class ProfileSyncService : public syncer::SyncService,
   bool HasUnsyncedItems() const;
 
   // Used by ProfileSyncServiceHarness.  May return NULL.
-  syncer::BackendMigrator* GetBackendMigratorForTest();
+  BackendMigrator* GetBackendMigratorForTest();
 
   // Used by tests to inspect interaction with OAuth2TokenService.
   bool IsRetryingAccessTokenFetchForTest() const;
@@ -522,14 +529,14 @@ class ProfileSyncService : public syncer::SyncService,
 
   SigninManagerBase* signin() const;
 
-  syncer::SyncErrorController* sync_error_controller() {
+  SyncErrorController* sync_error_controller() {
     return sync_error_controller_.get();
   }
 
   // TODO(sync): This is only used in tests.  Can we remove it?
-  const syncer::DataTypeStatusTable& data_type_status_table() const;
+  const sync_driver::DataTypeStatusTable& data_type_status_table() const;
 
-  syncer::DataTypeManager::ConfigureStatus configure_status() {
+  sync_driver::DataTypeManager::ConfigureStatus configure_status() {
     return configure_status_;
   }
 
@@ -621,7 +628,7 @@ class ProfileSyncService : public syncer::SyncService,
 
   // Our asynchronous backend to communicate with sync components living on
   // other threads.
-  std::unique_ptr<syncer::SyncBackendHost> backend_;
+  std::unique_ptr<SyncBackendHost> backend_;
 
   // Was the last SYNC_PASSPHRASE_REQUIRED notification sent because it
   // was required for encryption, decryption with a cached passphrase, or
@@ -795,11 +802,11 @@ class ProfileSyncService : public syncer::SyncService,
 
   // This profile's SyncClient, which abstracts away non-Sync dependencies and
   // the Sync API component factory.
-  std::unique_ptr<syncer::SyncClient> sync_client_;
+  std::unique_ptr<sync_driver::SyncClient> sync_client_;
 
   // The class that handles getting, setting, and persisting sync
   // preferences.
-  syncer::SyncPrefs sync_prefs_;
+  sync_driver::SyncPrefs sync_prefs_;
 
   // TODO(ncarter): Put this in a profile, once there is UI for it.
   // This specifies where to find the sync server.
@@ -840,7 +847,7 @@ class ProfileSyncService : public syncer::SyncService,
   int outstanding_setup_in_progress_handles_ = 0;
 
   // List of available data type controllers.
-  syncer::DataTypeController::TypeMap data_type_controllers_;
+  sync_driver::DataTypeController::TypeMap data_type_controllers_;
 
   // Whether the SyncBackendHost has been initialized.
   bool backend_initialized_;
@@ -864,13 +871,13 @@ class ProfileSyncService : public syncer::SyncService,
   tracked_objects::Location unrecoverable_error_location_;
 
   // Manages the start and stop of the data types.
-  std::unique_ptr<syncer::DataTypeManager> data_type_manager_;
+  std::unique_ptr<sync_driver::DataTypeManager> data_type_manager_;
 
-  base::ObserverList<syncer::SyncServiceObserver> observers_;
-  base::ObserverList<syncer::ProtocolEventObserver> protocol_event_observers_;
+  base::ObserverList<sync_driver::SyncServiceObserver> observers_;
+  base::ObserverList<ProtocolEventObserver> protocol_event_observers_;
   base::ObserverList<syncer::TypeDebugInfoObserver> type_debug_info_observers_;
 
-  std::set<syncer::SyncTypePreferenceProvider*> preference_providers_;
+  std::set<SyncTypePreferenceProvider*> preference_providers_;
 
   syncer::SyncJsController sync_js_controller_;
 
@@ -900,20 +907,20 @@ class ProfileSyncService : public syncer::SyncService,
   // if they e.g. don't remember their explicit passphrase.
   bool encryption_pending_;
 
-  std::unique_ptr<syncer::BackendMigrator> migrator_;
+  std::unique_ptr<BackendMigrator> migrator_;
 
   // This is the last |SyncProtocolError| we received from the server that had
   // an action set on it.
   syncer::SyncProtocolError last_actionable_error_;
 
   // Exposes sync errors to the UI.
-  std::unique_ptr<syncer::SyncErrorController> sync_error_controller_;
+  std::unique_ptr<SyncErrorController> sync_error_controller_;
 
   // Tracks the set of failed data types (those that encounter an error
   // or must delay loading for some reason).
-  syncer::DataTypeStatusTable data_type_status_table_;
+  sync_driver::DataTypeStatusTable data_type_status_table_;
 
-  syncer::DataTypeManager::ConfigureStatus configure_status_;
+  sync_driver::DataTypeManager::ConfigureStatus configure_status_;
 
   // The set of currently enabled sync experiments.
   syncer::Experiments current_experiments_;
@@ -957,22 +964,22 @@ class ProfileSyncService : public syncer::SyncService,
   // when the user signs out of the content area.
   GaiaCookieManagerService* const gaia_cookie_manager_service_;
 
-  std::unique_ptr<syncer::LocalDeviceInfoProvider> local_device_;
+  std::unique_ptr<sync_driver::LocalDeviceInfoProvider> local_device_;
 
   // Locally owned SyncableService and ModelTypeService implementations.
   std::unique_ptr<sync_sessions::SessionsSyncManager> sessions_sync_manager_;
-  std::unique_ptr<syncer::DeviceInfoSyncService> device_info_sync_service_;
-  std::unique_ptr<syncer::DeviceInfoService> device_info_service_;
+  std::unique_ptr<sync_driver::DeviceInfoSyncService> device_info_sync_service_;
+  std::unique_ptr<sync_driver_v2::DeviceInfoService> device_info_service_;
 
   std::unique_ptr<syncer::NetworkResources> network_resources_;
 
   StartBehavior start_behavior_;
-  std::unique_ptr<syncer::StartupController> startup_controller_;
+  std::unique_ptr<StartupController> startup_controller_;
 
   // The full path to the sync data directory.
   base::FilePath directory_path_;
 
-  std::unique_ptr<syncer::SyncStoppedReporter> sync_stopped_reporter_;
+  std::unique_ptr<SyncStoppedReporter> sync_stopped_reporter_;
 
   // Listens for the system being under memory pressure.
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;

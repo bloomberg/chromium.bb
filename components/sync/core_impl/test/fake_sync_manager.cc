@@ -199,9 +199,9 @@ UserShare* FakeSyncManager::GetUserShare() {
   return test_user_share_.user_share();
 }
 
-std::unique_ptr<ModelTypeConnector>
+std::unique_ptr<syncer_v2::ModelTypeConnector>
 FakeSyncManager::GetModelTypeConnectorProxy() {
-  return base::MakeUnique<FakeModelTypeConnector>();
+  return base::MakeUnique<syncer_v2::FakeModelTypeConnector>();
 }
 
 const std::string FakeSyncManager::cache_guid() {
@@ -231,20 +231,20 @@ void FakeSyncManager::RefreshTypes(ModelTypeSet types) {
 }
 
 void FakeSyncManager::RegisterDirectoryTypeDebugInfoObserver(
-    TypeDebugInfoObserver* observer) {}
+    syncer::TypeDebugInfoObserver* observer) {}
 
 void FakeSyncManager::UnregisterDirectoryTypeDebugInfoObserver(
-    TypeDebugInfoObserver* observer) {}
+    syncer::TypeDebugInfoObserver* observer) {}
 
 bool FakeSyncManager::HasDirectoryTypeDebugInfoObserver(
-    TypeDebugInfoObserver* observer) {
+    syncer::TypeDebugInfoObserver* observer) {
   return false;
 }
 
 void FakeSyncManager::RequestEmitDebugInfo() {}
 
 void FakeSyncManager::OnIncomingInvalidation(
-    ModelType type,
+    syncer::ModelType type,
     std::unique_ptr<InvalidationInterface> invalidation) {
   num_invalidations_received_++;
 }

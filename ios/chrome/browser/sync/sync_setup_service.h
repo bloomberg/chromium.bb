@@ -14,12 +14,12 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/syncer_error.h"
 
-class PrefService;
-
-namespace syncer {
+namespace sync_driver {
 class SyncService;
 class SyncSetupInProgressHandle;
-}  // namespace syncer
+}
+
+class PrefService;
 
 // Class that allows configuring sync. It handles enabling and disabling it, as
 // well as choosing datatypes. Most actions are delayed until a commit is done,
@@ -47,7 +47,7 @@ class SyncSetupService : public KeyedService {
     kNumberOfSyncableDatatypes
   } SyncableDatatype;
 
-  SyncSetupService(syncer::SyncService* sync_service, PrefService* prefs);
+  SyncSetupService(sync_driver::SyncService* sync_service, PrefService* prefs);
   ~SyncSetupService() override;
 
   // Returns the |syncer::ModelType| associated to the given
@@ -104,12 +104,12 @@ class SyncSetupService : public KeyedService {
   // currently selected datatypes.
   void SetSyncEnabledWithoutChangingDatatypes(bool sync_enabled);
 
-  syncer::SyncService* const sync_service_;
+  sync_driver::SyncService* const sync_service_;
   PrefService* const prefs_;
   syncer::ModelTypeSet user_selectable_types_;
 
   // Prevents Sync from running until configuration is complete.
-  std::unique_ptr<syncer::SyncSetupInProgressHandle> sync_blocker_;
+  std::unique_ptr<sync_driver::SyncSetupInProgressHandle> sync_blocker_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSetupService);
 };

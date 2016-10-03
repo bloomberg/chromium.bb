@@ -6,15 +6,15 @@
 
 #include <utility>
 
-namespace syncer {
+namespace sync_driver {
 
 ChangeProcessor::ChangeProcessor(
-    std::unique_ptr<DataTypeErrorHandler> error_handler)
+    std::unique_ptr<syncer::DataTypeErrorHandler> error_handler)
     : error_handler_(std::move(error_handler)), share_handle_(NULL) {}
 
 ChangeProcessor::~ChangeProcessor() {}
 
-void ChangeProcessor::Start(UserShare* share_handle) {
+void ChangeProcessor::Start(syncer::UserShare* share_handle) {
   DCHECK(!share_handle_);
   share_handle_ = share_handle;
   StartImpl();
@@ -23,12 +23,12 @@ void ChangeProcessor::Start(UserShare* share_handle) {
 // Not implemented by default.
 void ChangeProcessor::CommitChangesFromSyncModel() {}
 
-DataTypeErrorHandler* ChangeProcessor::error_handler() const {
+syncer::DataTypeErrorHandler* ChangeProcessor::error_handler() const {
   return error_handler_.get();
 }
 
-UserShare* ChangeProcessor::share_handle() const {
+syncer::UserShare* ChangeProcessor::share_handle() const {
   return share_handle_;
 }
 
-}  // namespace syncer
+}  // namespace sync_driver

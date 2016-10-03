@@ -464,7 +464,7 @@ AvatarSyncErrorType GetMessagesForAvatarSyncError(Profile* profile,
     }
 
     // Check for a sync passphrase error.
-    syncer::SyncErrorController* sync_error_controller =
+    SyncErrorController* sync_error_controller =
         service->sync_error_controller();
     if (sync_error_controller && sync_error_controller->HasError()) {
       *content_string_id = IDS_SYNC_ERROR_USER_MENU_PASSPHRASE_MESSAGE;

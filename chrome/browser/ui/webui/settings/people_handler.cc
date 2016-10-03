@@ -812,7 +812,7 @@ void PeopleHandler::PushSyncPrefs() {
     // the sync types behind a checkbox are force-enabled? crbug.com/403326
   }
   PrefService* pref_service = profile_->GetPrefs();
-  syncer::SyncPrefs sync_prefs(pref_service);
+  sync_driver::SyncPrefs sync_prefs(pref_service);
   args.SetBoolean("syncAllDataTypes", sync_prefs.HasKeepEverythingSynced());
   args.SetBoolean(
       "paymentsIntegrationEnabled",

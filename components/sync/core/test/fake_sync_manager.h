@@ -89,7 +89,7 @@ class FakeSyncManager : public SyncManager {
                        const base::Closure& ready_task,
                        const base::Closure& retry_task) override;
   void OnIncomingInvalidation(
-      ModelType type,
+      syncer::ModelType type,
       std::unique_ptr<InvalidationInterface> interface) override;
   void SetInvalidatorEnabled(bool invalidator_enabled) override;
   void AddObserver(Observer* observer) override;
@@ -98,7 +98,8 @@ class FakeSyncManager : public SyncManager {
   void SaveChanges() override;
   void ShutdownOnSyncThread(ShutdownReason reason) override;
   UserShare* GetUserShare() override;
-  std::unique_ptr<ModelTypeConnector> GetModelTypeConnectorProxy() override;
+  std::unique_ptr<syncer_v2::ModelTypeConnector> GetModelTypeConnectorProxy()
+      override;
   const std::string cache_guid() override;
   bool ReceivedExperiment(Experiments* experiments) override;
   bool HasUnsyncedItems() override;
@@ -107,11 +108,11 @@ class FakeSyncManager : public SyncManager {
       override;
   void RefreshTypes(ModelTypeSet types) override;
   void RegisterDirectoryTypeDebugInfoObserver(
-      TypeDebugInfoObserver* observer) override;
+      syncer::TypeDebugInfoObserver* observer) override;
   void UnregisterDirectoryTypeDebugInfoObserver(
-      TypeDebugInfoObserver* observer) override;
+      syncer::TypeDebugInfoObserver* observer) override;
   bool HasDirectoryTypeDebugInfoObserver(
-      TypeDebugInfoObserver* observer) override;
+      syncer::TypeDebugInfoObserver* observer) override;
   void RequestEmitDebugInfo() override;
   void ClearServerData(const ClearServerDataCallback& callback) override;
   void OnCookieJarChanged(bool account_mismatch, bool empty_jar) override;

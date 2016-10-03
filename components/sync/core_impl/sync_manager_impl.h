@@ -85,7 +85,7 @@ class SyncManagerImpl
                        const base::Closure& retry_task) override;
   void SetInvalidatorEnabled(bool invalidator_enabled) override;
   void OnIncomingInvalidation(
-      ModelType type,
+      syncer::ModelType type,
       std::unique_ptr<InvalidationInterface> invalidation) override;
   void AddObserver(SyncManager::Observer* observer) override;
   void RemoveObserver(SyncManager::Observer* observer) override;
@@ -93,7 +93,8 @@ class SyncManagerImpl
   void SaveChanges() override;
   void ShutdownOnSyncThread(ShutdownReason reason) override;
   UserShare* GetUserShare() override;
-  std::unique_ptr<ModelTypeConnector> GetModelTypeConnectorProxy() override;
+  std::unique_ptr<syncer_v2::ModelTypeConnector> GetModelTypeConnectorProxy()
+      override;
   const std::string cache_guid() override;
   bool ReceivedExperiment(Experiments* experiments) override;
   bool HasUnsyncedItems() override;
@@ -101,11 +102,11 @@ class SyncManagerImpl
   std::vector<std::unique_ptr<ProtocolEvent>> GetBufferedProtocolEvents()
       override;
   void RegisterDirectoryTypeDebugInfoObserver(
-      TypeDebugInfoObserver* observer) override;
+      syncer::TypeDebugInfoObserver* observer) override;
   void UnregisterDirectoryTypeDebugInfoObserver(
-      TypeDebugInfoObserver* observer) override;
+      syncer::TypeDebugInfoObserver* observer) override;
   bool HasDirectoryTypeDebugInfoObserver(
-      TypeDebugInfoObserver* observer) override;
+      syncer::TypeDebugInfoObserver* observer) override;
   void RequestEmitDebugInfo() override;
   void ClearServerData(const ClearServerDataCallback& callback) override;
   void OnCookieJarChanged(bool account_mismatch, bool empty_jar) override;
@@ -170,9 +171,9 @@ class SyncManagerImpl
       net::NetworkChangeNotifier::ConnectionType) override;
 
   // NudgeHandler implementation.
-  void NudgeForInitialDownload(ModelType type) override;
-  void NudgeForCommit(ModelType type) override;
-  void NudgeForRefresh(ModelType type) override;
+  void NudgeForInitialDownload(syncer::ModelType type) override;
+  void NudgeForCommit(syncer::ModelType type) override;
+  void NudgeForRefresh(syncer::ModelType type) override;
 
   const SyncScheduler* scheduler() const;
 

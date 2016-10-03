@@ -15,10 +15,18 @@
 #include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/protocol/sync.pb.h"
 
-namespace syncer {
+namespace sync_driver {
 
 using base::Time;
 using base::TimeDelta;
+using syncer::ModelType;
+using syncer::SyncChange;
+using syncer::SyncChangeList;
+using syncer::SyncChangeProcessor;
+using syncer::SyncData;
+using syncer::SyncDataList;
+using syncer::SyncErrorFactory;
+using syncer::SyncMergeResult;
 
 DeviceInfoSyncService::DeviceInfoSyncService(
     LocalDeviceInfoProvider* local_device_info_provider)
@@ -35,7 +43,7 @@ SyncMergeResult DeviceInfoSyncService::MergeDataAndStartSyncing(
     std::unique_ptr<SyncErrorFactory> error_handler) {
   DCHECK(sync_processor.get());
   DCHECK(error_handler.get());
-  DCHECK_EQ(type, DEVICE_INFO);
+  DCHECK_EQ(type, syncer::DEVICE_INFO);
 
   DCHECK(!IsSyncing());
 
@@ -60,7 +68,7 @@ SyncMergeResult DeviceInfoSyncService::MergeDataAndStartSyncing(
   // Iterate over all initial sync data and copy it to the cache.
   for (SyncDataList::const_iterator iter = initial_sync_data.begin();
        iter != initial_sync_data.end(); ++iter) {
-    DCHECK_EQ(DEVICE_INFO, iter->GetDataType());
+    DCHECK_EQ(syncer::DEVICE_INFO, iter->GetDataType());
 
     const std::string& id = iter->GetSpecifics().device_info().cache_guid();
 
@@ -91,7 +99,7 @@ SyncMergeResult DeviceInfoSyncService::MergeDataAndStartSyncing(
     StoreSyncData(id, *iter);
   }
 
-  SyncMergeResult result(type);
+  syncer::SyncMergeResult result(type);
 
   // If the SyncData for the local device is new or different then send it
   // immediately, otherwise wait until the pulse interval has elapsed from the
@@ -121,7 +129,7 @@ bool DeviceInfoSyncService::IsSyncing() const {
   return !all_data_.empty();
 }
 
-void DeviceInfoSyncService::StopSyncing(ModelType type) {
+void DeviceInfoSyncService::StopSyncing(syncer::ModelType type) {
   bool was_syncing = IsSyncing();
 
   pulse_timer_.Stop();
@@ -134,7 +142,8 @@ void DeviceInfoSyncService::StopSyncing(ModelType type) {
   }
 }
 
-SyncDataList DeviceInfoSyncService::GetAllSyncData(ModelType type) const {
+SyncDataList DeviceInfoSyncService::GetAllSyncData(
+    syncer::ModelType type) const {
   SyncDataList list;
 
   for (SyncDataMap::const_iterator iter = all_data_.begin();
@@ -145,10 +154,10 @@ SyncDataList DeviceInfoSyncService::GetAllSyncData(ModelType type) const {
   return list;
 }
 
-SyncError DeviceInfoSyncService::ProcessSyncChanges(
+syncer::SyncError DeviceInfoSyncService::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
     const SyncChangeList& change_list) {
-  SyncError error;
+  syncer::SyncError error;
 
   DCHECK(local_device_info_provider_->GetLocalDeviceInfo());
   const std::string& local_device_id =
@@ -160,7 +169,7 @@ SyncError DeviceInfoSyncService::ProcessSyncChanges(
   for (SyncChangeList::const_iterator iter = change_list.begin();
        iter != change_list.end(); ++iter) {
     const SyncData& sync_data = iter->sync_data();
-    DCHECK_EQ(DEVICE_INFO, sync_data.GetDataType());
+    DCHECK_EQ(syncer::DEVICE_INFO, sync_data.GetDataType());
 
     const std::string& client_id =
         sync_data.GetSpecifics().device_info().cache_guid();
@@ -170,15 +179,15 @@ SyncError DeviceInfoSyncService::ProcessSyncChanges(
       continue;
     }
 
-    if (iter->change_type() == SyncChange::ACTION_DELETE) {
+    if (iter->change_type() == syncer::SyncChange::ACTION_DELETE) {
       has_changes = true;
       DeleteSyncData(client_id);
-    } else if (iter->change_type() == SyncChange::ACTION_UPDATE ||
-               iter->change_type() == SyncChange::ACTION_ADD) {
+    } else if (iter->change_type() == syncer::SyncChange::ACTION_UPDATE ||
+               iter->change_type() == syncer::SyncChange::ACTION_ADD) {
       has_changes = true;
       StoreSyncData(client_id, sync_data);
     } else {
-      error.Reset(FROM_HERE, "Invalid action received.", DEVICE_INFO);
+      error.Reset(FROM_HERE, "Invalid action received.", syncer::DEVICE_INFO);
     }
   }
 
@@ -237,7 +246,7 @@ SyncData DeviceInfoSyncService::CreateLocalData(const DeviceInfo* info) {
   specifics.set_sync_user_agent(info->sync_user_agent());
   specifics.set_device_type(info->device_type());
   specifics.set_signin_scoped_device_id(info->signin_scoped_device_id());
-  specifics.set_last_updated_timestamp(TimeToProtoTime(Time::Now()));
+  specifics.set_last_updated_timestamp(syncer::TimeToProtoTime(Time::Now()));
 
   return CreateLocalData(entity);
 }
@@ -249,7 +258,8 @@ SyncData DeviceInfoSyncService::CreateLocalData(
                                    specifics.client_name(), entity);
 }
 
-DeviceInfo* DeviceInfoSyncService::CreateDeviceInfo(const SyncData& sync_data) {
+DeviceInfo* DeviceInfoSyncService::CreateDeviceInfo(
+    const syncer::SyncData& sync_data) {
   const sync_pb::DeviceInfoSpecifics& specifics =
       sync_data.GetSpecifics().device_info();
 
@@ -308,11 +318,11 @@ int DeviceInfoSyncService::CountActiveDevices(const Time now) const {
 // static
 Time DeviceInfoSyncService::GetLastUpdateTime(const SyncData& device_info) {
   if (device_info.GetSpecifics().device_info().has_last_updated_timestamp()) {
-    return ProtoTimeToTime(
+    return syncer::ProtoTimeToTime(
         device_info.GetSpecifics().device_info().last_updated_timestamp());
   } else if (!device_info.IsLocal()) {
     // If there is no |last_updated_timestamp| present, fallback to mod time.
-    return SyncDataRemote(device_info).GetModifiedTime();
+    return syncer::SyncDataRemote(device_info).GetModifiedTime();
   } else {
     // We shouldn't reach this point for remote data, so this means we're likely
     // looking at the local device info. Using a long ago time is perfect, since
@@ -321,4 +331,4 @@ Time DeviceInfoSyncService::GetLastUpdateTime(const SyncData& device_info) {
   }
 }
 
-}  // namespace syncer
+}  // namespace sync_driver

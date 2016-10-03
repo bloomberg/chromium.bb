@@ -30,7 +30,7 @@ PrefService* TestAutofillClient::GetPrefs() {
   return prefs_.get();
 }
 
-syncer::SyncService* TestAutofillClient::GetSyncService() {
+sync_driver::SyncService* TestAutofillClient::GetSyncService() {
   return nullptr;
 }
 

@@ -5,9 +5,7 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_SYNC_BROWSER_SYNC_CREDENTIALS_FILTER_H_
 #define COMPONENTS_PASSWORD_MANAGER_SYNC_BROWSER_SYNC_CREDENTIALS_FILTER_H_
 
-#include <memory>
 #include <string>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -22,7 +20,7 @@ namespace password_manager {
 // The sync- and GAIA- aware implementation of the filter.
 class SyncCredentialsFilter : public CredentialsFilter {
  public:
-  typedef base::Callback<const syncer::SyncService*(void)>
+  typedef base::Callback<const sync_driver::SyncService*(void)>
       SyncServiceFactoryFunction;
   typedef base::Callback<const SigninManagerBase*(void)>
       SigninManagerFactoryFunction;

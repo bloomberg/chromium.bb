@@ -17,37 +17,43 @@
 #include "components/sync/api/sync_merge_result.h"
 #include "components/sync/base/model_type.h"
 
-namespace syncer {
+using syncer::ModelTypeSet;
+
+namespace sync_driver {
 
 namespace {
 
-static const ModelType kStartOrder[] = {
-    NIGORI,       //  Listed for completeness.
-    DEVICE_INFO,  //  Listed for completeness.
-    EXPERIMENTS,  //  Listed for completeness.
-    PROXY_TABS,   //  Listed for completeness.
+static const syncer::ModelType kStartOrder[] = {
+    syncer::NIGORI,       //  Listed for completeness.
+    syncer::DEVICE_INFO,  //  Listed for completeness.
+    syncer::EXPERIMENTS,  //  Listed for completeness.
+    syncer::PROXY_TABS,   //  Listed for completeness.
 
     // Kick off the association of the non-UI types first so they can associate
     // in parallel with the UI types.
-    PASSWORDS, AUTOFILL, AUTOFILL_PROFILE, AUTOFILL_WALLET_DATA,
-    AUTOFILL_WALLET_METADATA, EXTENSION_SETTINGS, APP_SETTINGS, TYPED_URLS,
-    HISTORY_DELETE_DIRECTIVES, SYNCED_NOTIFICATIONS,
-    SYNCED_NOTIFICATION_APP_INFO,
+    syncer::PASSWORDS, syncer::AUTOFILL, syncer::AUTOFILL_PROFILE,
+    syncer::AUTOFILL_WALLET_DATA, syncer::AUTOFILL_WALLET_METADATA,
+    syncer::EXTENSION_SETTINGS, syncer::APP_SETTINGS, syncer::TYPED_URLS,
+    syncer::HISTORY_DELETE_DIRECTIVES, syncer::SYNCED_NOTIFICATIONS,
+    syncer::SYNCED_NOTIFICATION_APP_INFO,
 
     // UI thread data types.
-    BOOKMARKS,
-    SUPERVISED_USERS,  //  Syncing supervised users on initial login
-                       //  might block creating a new supervised user,
-                       //  so we want to do it early.
-    PREFERENCES, PRIORITY_PREFERENCES, EXTENSIONS, APPS, APP_LIST, ARC_PACKAGE,
-    READING_LIST, THEMES, SEARCH_ENGINES, SESSIONS, APP_NOTIFICATIONS,
-    DICTIONARY, FAVICON_IMAGES, FAVICON_TRACKING, PRINTERS,
-    SUPERVISED_USER_SETTINGS, SUPERVISED_USER_SHARED_SETTINGS,
-    SUPERVISED_USER_WHITELISTS, ARTICLES, WIFI_CREDENTIALS,
+    syncer::BOOKMARKS,
+    syncer::SUPERVISED_USERS,  //  Syncing supervised users on initial login
+                               //  might block creating a new supervised user,
+                               //  so we want to do it early.
+    syncer::PREFERENCES, syncer::PRIORITY_PREFERENCES, syncer::EXTENSIONS,
+    syncer::APPS, syncer::APP_LIST, syncer::ARC_PACKAGE, syncer::READING_LIST,
+    syncer::THEMES, syncer::SEARCH_ENGINES, syncer::SESSIONS,
+    syncer::APP_NOTIFICATIONS, syncer::DICTIONARY, syncer::FAVICON_IMAGES,
+    syncer::FAVICON_TRACKING, syncer::PRINTERS,
+    syncer::SUPERVISED_USER_SETTINGS, syncer::SUPERVISED_USER_SHARED_SETTINGS,
+    syncer::SUPERVISED_USER_WHITELISTS, syncer::ARTICLES,
+    syncer::WIFI_CREDENTIALS,
 };
 
 static_assert(arraysize(kStartOrder) ==
-                  MODEL_TYPE_COUNT - FIRST_REAL_MODEL_TYPE,
+                  syncer::MODEL_TYPE_COUNT - syncer::FIRST_REAL_MODEL_TYPE,
               "kStartOrder must have MODEL_TYPE_COUNT - "
               "FIRST_REAL_MODEL_TYPE elements");
 
@@ -56,13 +62,13 @@ static_assert(arraysize(kStartOrder) ==
 // unfinished types.
 const int64_t kAssociationTimeOutInSeconds = 600;
 
-DataTypeAssociationStats BuildAssociationStatsFromMergeResults(
-    const SyncMergeResult& local_merge_result,
-    const SyncMergeResult& syncer_merge_result,
+syncer::DataTypeAssociationStats BuildAssociationStatsFromMergeResults(
+    const syncer::SyncMergeResult& local_merge_result,
+    const syncer::SyncMergeResult& syncer_merge_result,
     const base::TimeDelta& association_wait_time,
     const base::TimeDelta& association_time) {
   DCHECK_EQ(local_merge_result.model_type(), syncer_merge_result.model_type());
-  DataTypeAssociationStats stats;
+  syncer::DataTypeAssociationStats stats;
   stats.had_error =
       local_merge_result.error().IsSet() || syncer_merge_result.error().IsSet();
   stats.num_local_items_before_association =
@@ -108,7 +114,7 @@ ModelAssociationManager::ModelAssociationManager(
 
 ModelAssociationManager::~ModelAssociationManager() {}
 
-void ModelAssociationManager::Initialize(ModelTypeSet desired_types) {
+void ModelAssociationManager::Initialize(syncer::ModelTypeSet desired_types) {
   // state_ can be INITIALIZED if types are reconfigured when
   // data is being downloaded, so StartAssociationAsync() is never called for
   // the first configuration.
@@ -116,13 +122,14 @@ void ModelAssociationManager::Initialize(ModelTypeSet desired_types) {
 
   // Only keep types that have controllers.
   desired_types_.Clear();
-  for (ModelTypeSet::Iterator it = desired_types.First(); it.Good(); it.Inc()) {
+  for (syncer::ModelTypeSet::Iterator it = desired_types.First(); it.Good();
+       it.Inc()) {
     if (controllers_->find(it.Get()) != controllers_->end())
       desired_types_.Put(it.Get());
   }
 
   DVLOG(1) << "ModelAssociationManager: Initializing for "
-           << ModelTypeSetToString(desired_types_);
+           << syncer::ModelTypeSetToString(desired_types_);
 
   state_ = INITIALIZED;
   notified_about_ready_for_configure_ = false;
@@ -131,7 +138,7 @@ void ModelAssociationManager::Initialize(ModelTypeSet desired_types) {
   LoadEnabledTypes();
 }
 
-void ModelAssociationManager::StopDatatype(const SyncError& error,
+void ModelAssociationManager::StopDatatype(const syncer::SyncError& error,
                                            DataTypeController* dtc) {
   loaded_types_.Remove(dtc->type());
   associated_types_.Remove(dtc->type());
@@ -152,7 +159,7 @@ void ModelAssociationManager::StopDisabledTypes() {
     if (dtc->state() != DataTypeController::NOT_RUNNING &&
         !desired_types_.Has(dtc->type())) {
       DVLOG(1) << "ModelAssociationManager: stop " << dtc->name();
-      StopDatatype(SyncError(), dtc);
+      StopDatatype(syncer::SyncError(), dtc);
     }
   }
 }
@@ -160,7 +167,7 @@ void ModelAssociationManager::StopDisabledTypes() {
 void ModelAssociationManager::LoadEnabledTypes() {
   // Load in kStartOrder.
   for (size_t i = 0; i < arraysize(kStartOrder); i++) {
-    ModelType type = kStartOrder[i];
+    syncer::ModelType type = kStartOrder[i];
     if (!desired_types_.Has(type))
       continue;
 
@@ -177,10 +184,10 @@ void ModelAssociationManager::LoadEnabledTypes() {
 }
 
 void ModelAssociationManager::StartAssociationAsync(
-    const ModelTypeSet& types_to_associate) {
+    const syncer::ModelTypeSet& types_to_associate) {
   DCHECK_EQ(INITIALIZED, state_);
   DVLOG(1) << "Starting association for "
-           << ModelTypeSetToString(types_to_associate);
+           << syncer::ModelTypeSetToString(types_to_associate);
   state_ = ASSOCIATING;
 
   association_start_time_ = base::TimeTicks::Now();
@@ -207,7 +214,7 @@ void ModelAssociationManager::StartAssociationAsync(
 
   // Start association of types that are loaded in specified order.
   for (size_t i = 0; i < arraysize(kStartOrder); i++) {
-    ModelType type = kStartOrder[i];
+    syncer::ModelType type = kStartOrder[i];
     if (!associating_types_.Has(type) || !loaded_types_.Has(type))
       continue;
 
@@ -234,7 +241,7 @@ void ModelAssociationManager::Stop() {
        it != controllers_->end(); ++it) {
     DataTypeController* dtc = (*it).second.get();
     if (dtc->state() != DataTypeController::NOT_RUNNING) {
-      StopDatatype(SyncError(), dtc);
+      StopDatatype(syncer::SyncError(), dtc);
       DVLOG(1) << "ModelAssociationManager: Stopped " << dtc->name();
     }
   }
@@ -255,17 +262,18 @@ void ModelAssociationManager::Stop() {
   }
 }
 
-void ModelAssociationManager::ModelLoadCallback(ModelType type,
-                                                const SyncError& error) {
+void ModelAssociationManager::ModelLoadCallback(
+    syncer::ModelType type,
+    const syncer::SyncError& error) {
   DVLOG(1) << "ModelAssociationManager: ModelLoadCallback for "
-           << ModelTypeToString(type);
+           << syncer::ModelTypeToString(type);
 
   if (error.IsSet()) {
-    SyncMergeResult local_merge_result(type);
+    syncer::SyncMergeResult local_merge_result(type);
     local_merge_result.set_error(error);
     TypeStartCallback(type, base::TimeTicks::Now(),
                       DataTypeController::ASSOCIATION_FAILED,
-                      local_merge_result, SyncMergeResult(type));
+                      local_merge_result, syncer::SyncMergeResult(type));
     return;
   }
 
@@ -294,11 +302,11 @@ void ModelAssociationManager::ModelLoadCallback(ModelType type,
 }
 
 void ModelAssociationManager::TypeStartCallback(
-    ModelType type,
+    syncer::ModelType type,
     base::TimeTicks type_start_time,
     DataTypeController::ConfigureResult start_result,
-    const SyncMergeResult& local_merge_result,
-    const SyncMergeResult& syncer_merge_result) {
+    const syncer::SyncMergeResult& local_merge_result,
+    const syncer::SyncMergeResult& syncer_merge_result) {
   if (desired_types_.Has(type) &&
       !DataTypeController::IsSuccessfulResult(start_result)) {
     DVLOG(1) << "ModelAssociationManager: Type encountered an error.";
@@ -335,13 +343,14 @@ void ModelAssociationManager::TypeStartCallback(
 
   // Track the merge results if we succeeded or an association failure
   // occurred.
-  if (ProtocolTypes().Has(type)) {
+  if (syncer::ProtocolTypes().Has(type)) {
     base::TimeDelta association_wait_time =
         std::max(base::TimeDelta(), type_start_time - association_start_time_);
     base::TimeDelta association_time = base::TimeTicks::Now() - type_start_time;
-    DataTypeAssociationStats stats = BuildAssociationStatsFromMergeResults(
-        local_merge_result, syncer_merge_result, association_wait_time,
-        association_time);
+    syncer::DataTypeAssociationStats stats =
+        BuildAssociationStatsFromMergeResults(
+            local_merge_result, syncer_merge_result, association_wait_time,
+            association_time);
     delegate_->OnSingleDataTypeAssociationDone(type, stats);
   }
 
@@ -361,7 +370,7 @@ void ModelAssociationManager::ModelAssociationDone(State new_state) {
   }
 
   DVLOG(1) << "Model association complete for "
-           << ModelTypeSetToString(requested_types_);
+           << syncer::ModelTypeSetToString(requested_types_);
 
   timer_.Stop();
 
@@ -374,10 +383,11 @@ void ModelAssociationManager::ModelAssociationDone(State new_state) {
         dtc->state() != DataTypeController::NOT_RUNNING) {
       UMA_HISTOGRAM_ENUMERATION("Sync.ConfigureFailed",
                                 ModelTypeToHistogramInt(dtc->type()),
-                                MODEL_TYPE_COUNT);
-      StopDatatype(SyncError(FROM_HERE, SyncError::DATATYPE_ERROR,
-                             "Association timed out.", dtc->type()),
-                   dtc);
+                                syncer::MODEL_TYPE_COUNT);
+      StopDatatype(
+          syncer::SyncError(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
+                            "Association timed out.", dtc->type()),
+          dtc);
     }
   }
 
@@ -400,7 +410,7 @@ void ModelAssociationManager::NotifyDelegateIfReadyForConfigure() {
   if (notified_about_ready_for_configure_)
     return;
   for (const auto& type_dtc_pair : *controllers_) {
-    ModelType type = type_dtc_pair.first;
+    syncer::ModelType type = type_dtc_pair.first;
     if (!desired_types_.Has(type))
       continue;
     DataTypeController* dtc = type_dtc_pair.second.get();
@@ -414,4 +424,4 @@ void ModelAssociationManager::NotifyDelegateIfReadyForConfigure() {
   delegate_->OnAllDataTypesReadyForConfigure();
 }
 
-}  // namespace syncer
+}  // namespace sync_driver

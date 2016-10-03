@@ -38,8 +38,6 @@
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace syncer {
-
 namespace {
 
 const char kAttachmentData[] = "some data";
@@ -56,9 +54,11 @@ const char kBase64URLSafeStoreBirthday[] =
     "Rv_d4HQ6SP2dBpM8YY6lcAlZmQVhRiFhGwPTAmDNQVX-JhXXDA";
 const char kSyncStoreBirthdayHeader[] = "X-Sync-Store-Birthday";
 const char kSyncDataTypeIdHeader[] = "X-Sync-Data-Type-Id";
-const ModelType kModelType = ModelType::ARTICLES;
+const syncer::ModelType kModelType = syncer::ModelType::ARTICLES;
 
 }  // namespace
+
+namespace syncer {
 
 using net::test_server::BasicHttpResponse;
 using net::test_server::HttpRequest;

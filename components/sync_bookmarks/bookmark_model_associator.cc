@@ -306,7 +306,7 @@ void BookmarkModelAssociator::Context::MarkForVersionUpdate(
 
 BookmarkModelAssociator::BookmarkModelAssociator(
     BookmarkModel* bookmark_model,
-    syncer::SyncClient* sync_client,
+    sync_driver::SyncClient* sync_client,
     syncer::UserShare* user_share,
     std::unique_ptr<syncer::DataTypeErrorHandler> unrecoverable_error_handler,
     bool expect_mobile_bookmarks_folder)

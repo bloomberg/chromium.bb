@@ -11,9 +11,10 @@
 #include "components/sync/device_info/device_info.h"
 #include "components/sync/device_info/local_device_info_provider.h"
 
-namespace syncer {
+namespace sync_driver {
 
-class LocalDeviceInfoProviderMock : public LocalDeviceInfoProvider {
+class LocalDeviceInfoProviderMock
+    : public sync_driver::LocalDeviceInfoProvider {
  public:
   // Creates uninitialized provider.
   LocalDeviceInfoProviderMock();
@@ -47,6 +48,6 @@ class LocalDeviceInfoProviderMock : public LocalDeviceInfoProvider {
   base::CallbackList<void(void)> callback_list_;
 };
 
-}  // namespace syncer
+}  // namespace sync_driver
 
 #endif  // COMPONENTS_SYNC_DEVICE_INFO_LOCAL_DEVICE_INFO_PROVIDER_MOCK_H_

@@ -6,7 +6,6 @@
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_CLIENT_H_
 
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -17,9 +16,7 @@
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
-class GURL;
 class IdentityProvider;
-class PrefService;
 
 namespace content {
 class RenderFrameHost;
@@ -34,9 +31,12 @@ namespace rappor {
 class RapporService;
 }
 
-namespace syncer {
+namespace sync_driver {
 class SyncService;
 }
+
+class GURL;
+class PrefService;
 
 namespace autofill {
 
@@ -100,7 +100,7 @@ class AutofillClient {
   virtual PrefService* GetPrefs() = 0;
 
   // Gets the sync service associated with the client.
-  virtual syncer::SyncService* GetSyncService() = 0;
+  virtual sync_driver::SyncService* GetSyncService() = 0;
 
   // Gets the IdentityProvider associated with the client (for OAuth2).
   virtual IdentityProvider* GetIdentityProvider() = 0;

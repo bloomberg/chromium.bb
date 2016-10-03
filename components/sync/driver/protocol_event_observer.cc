@@ -4,10 +4,10 @@
 
 #include "components/sync/driver/protocol_event_observer.h"
 
-namespace syncer {
+namespace browser_sync {
 
 ProtocolEventObserver::ProtocolEventObserver() {}
 
 ProtocolEventObserver::~ProtocolEventObserver() {}
 
-}  // namespace syncer
+}  // namespace browser_sync

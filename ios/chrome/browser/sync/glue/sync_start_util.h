@@ -17,7 +17,7 @@ namespace ios {
 namespace sync_start_util {
 
 // Creates a StartSyncFlare that a SyncableService can use to tell
-// syncer::SyncService it needs sync to start ASAP.  Typically this would
+// sync_driver::SyncService it needs sync to start ASAP.  Typically this would
 // be given to the SyncableService on construction.
 //
 // The flare built by this function is designed to be Run()able from any thread

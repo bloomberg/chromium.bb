@@ -57,7 +57,7 @@ PrefService* AutofillClientIOS::GetPrefs() {
 }
 
 // TODO(jdonnelly): Implement this when adding credit card upload.
-syncer::SyncService* AutofillClientIOS::GetSyncService() {
+sync_driver::SyncService* AutofillClientIOS::GetSyncService() {
   NOTIMPLEMENTED();
   return nullptr;
 }

@@ -24,17 +24,18 @@ void DataTypeErrorHandlerImpl::OnUnrecoverableError(const SyncError& error) {
     dump_stack_.Run();
   UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeRunFailures",
                             ModelTypeToHistogramInt(error.model_type()),
-                            MODEL_TYPE_COUNT);
+                            syncer::MODEL_TYPE_COUNT);
   ui_thread_->PostTask(error.location(), base::Bind(sync_callback_, error));
 }
 
-SyncError DataTypeErrorHandlerImpl::CreateAndUploadError(
+syncer::SyncError DataTypeErrorHandlerImpl::CreateAndUploadError(
     const tracked_objects::Location& location,
     const std::string& message,
-    ModelType type) {
+    syncer::ModelType type) {
   if (!dump_stack_.is_null())
     dump_stack_.Run();
-  return SyncError(location, SyncError::DATATYPE_ERROR, message, type);
+  return syncer::SyncError(location, syncer::SyncError::DATATYPE_ERROR, message,
+                           type);
 }
 
 std::unique_ptr<DataTypeErrorHandler> DataTypeErrorHandlerImpl::Copy() const {

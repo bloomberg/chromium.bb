@@ -5,9 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_SIGNED_IN_DEVICES_SIGNED_IN_DEVICES_MANAGER_H__
 #define CHROME_BROWSER_EXTENSIONS_API_SIGNED_IN_DEVICES_SIGNED_IN_DEVICES_MANAGER_H__
 
-#include <memory>
 #include <string>
-#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -40,7 +38,7 @@ struct EventListenerInfo;
 // public ids for devices(public ids for a device, is not the same for
 // all extensions).
 class SignedInDevicesChangeObserver
-    : public syncer::DeviceInfoTracker::Observer {
+    : public sync_driver::DeviceInfoTracker::Observer {
  public:
   SignedInDevicesChangeObserver(const std::string& extension_id,
                                 Profile* profile);

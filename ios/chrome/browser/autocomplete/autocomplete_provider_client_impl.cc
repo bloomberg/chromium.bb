@@ -138,7 +138,7 @@ bool AutocompleteProviderClientImpl::SearchSuggestEnabled() const {
 }
 
 bool AutocompleteProviderClientImpl::TabSyncEnabledAndUnencrypted() const {
-  return syncer::IsTabSyncEnabledAndUnencrypted(
+  return sync_driver::IsTabSyncEnabledAndUnencrypted(
       IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state_),
       browser_state_->GetPrefs());
 }

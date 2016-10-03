@@ -13,7 +13,7 @@ namespace browser_sync {
 ExtensionDataTypeController::ExtensionDataTypeController(
     syncer::ModelType type,
     const base::Closure& dump_stack,
-    syncer::SyncClient* sync_client,
+    sync_driver::SyncClient* sync_client,
     Profile* profile)
     : UIDataTypeController(type, dump_stack, sync_client), profile_(profile) {
   DCHECK(type == syncer::EXTENSIONS || type == syncer::APPS);

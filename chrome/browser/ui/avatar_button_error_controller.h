@@ -48,7 +48,7 @@ class AvatarButtonErrorController {
 
   // Observes sync errors and updates the error controller for the avatar
   // button accordingly.
-  class SyncErrorObserver : public syncer::SyncErrorController::Observer {
+  class SyncErrorObserver : public SyncErrorController::Observer {
    public:
     SyncErrorObserver(
         Profile* profile,
@@ -61,7 +61,7 @@ class AvatarButtonErrorController {
     bool HasSyncError();
 
    private:
-    syncer::SyncErrorController* GetSyncErrorControllerIfNeeded();
+    SyncErrorController* GetSyncErrorControllerIfNeeded();
 
     Profile* profile_;
     AvatarButtonErrorController* avatar_button_error_controller_;

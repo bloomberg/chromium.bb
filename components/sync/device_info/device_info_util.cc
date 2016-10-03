@@ -9,7 +9,7 @@
 #include "base/strings/string_util.h"
 #include "components/sync/protocol/sync.pb.h"
 
-namespace syncer {
+namespace sync_driver {
 
 using base::Time;
 using base::TimeDelta;
@@ -53,4 +53,4 @@ std::string DeviceInfoUtil::TagToCacheGuid(const std::string& tag) {
   return tag.substr(strlen(kClientTagPrefix));
 }
 
-}  // namespace syncer
+}  // namespace sync_driver

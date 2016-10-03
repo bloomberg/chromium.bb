@@ -21,19 +21,19 @@ namespace syncer {
 class AttachmentService;
 }  // namespace syncer
 
-namespace syncer {
+namespace sync_driver {
 
-SharedChangeProcessor::SharedChangeProcessor(ModelType type)
+SharedChangeProcessor::SharedChangeProcessor(syncer::ModelType type)
     : disconnected_(false),
       type_(type),
       frontend_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       generic_change_processor_(NULL) {
-  DCHECK_NE(type_, UNSPECIFIED);
+  DCHECK_NE(type_, syncer::UNSPECIFIED);
 }
 
 SharedChangeProcessor::~SharedChangeProcessor() {
   // We can either be deleted when the DTC is destroyed (on UI
-  // thread), or when the SyncableService stops syncing (datatype
+  // thread), or when the syncer::SyncableService stops syncing (datatype
   // thread).  |generic_change_processor_|, if non-NULL, must be
   // deleted on |backend_loop_|.
   if (backend_task_runner_.get()) {
@@ -54,15 +54,16 @@ SharedChangeProcessor::~SharedChangeProcessor() {
 void SharedChangeProcessor::StartAssociation(
     StartDoneCallback start_done,
     SyncClient* const sync_client,
-    UserShare* user_share,
-    std::unique_ptr<DataTypeErrorHandler> error_handler) {
+    syncer::UserShare* user_share,
+    std::unique_ptr<syncer::DataTypeErrorHandler> error_handler) {
   DCHECK(user_share);
-  SyncMergeResult local_merge_result(type_);
-  SyncMergeResult syncer_merge_result(type_);
-  base::WeakPtrFactory<SyncMergeResult> weak_ptr_factory(&syncer_merge_result);
+  syncer::SyncMergeResult local_merge_result(type_);
+  syncer::SyncMergeResult syncer_merge_result(type_);
+  base::WeakPtrFactory<syncer::SyncMergeResult> weak_ptr_factory(
+      &syncer_merge_result);
 
   // Connect |shared_change_processor| to the syncer and get the
-  // SyncableService associated with type_.
+  // syncer::SyncableService associated with type_.
   // Note that it's possible the shared_change_processor has already been
   // disconnected at this point, so all our accesses to the syncer from this
   // point on are through it.
@@ -71,8 +72,8 @@ void SharedChangeProcessor::StartAssociation(
       Connect(sync_client, &factory, user_share, std::move(error_handler),
               weak_ptr_factory.GetWeakPtr());
   if (!local_service_.get()) {
-    SyncError error(FROM_HERE, SyncError::DATATYPE_ERROR,
-                    "Failed to connect to syncer.", type_);
+    syncer::SyncError error(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
+                            "Failed to connect to syncer.", type_);
     local_merge_result.set_error(error);
     start_done.Run(DataTypeController::ASSOCIATION_FAILED, local_merge_result,
                    syncer_merge_result);
@@ -80,7 +81,8 @@ void SharedChangeProcessor::StartAssociation(
   }
 
   if (!CryptoReadyIfNecessary()) {
-    SyncError error(FROM_HERE, SyncError::CRYPTO_ERROR, "", type_);
+    syncer::SyncError error(FROM_HERE, syncer::SyncError::CRYPTO_ERROR, "",
+                            type_);
     local_merge_result.set_error(error);
     start_done.Run(DataTypeController::NEEDS_CRYPTO, local_merge_result,
                    syncer_merge_result);
@@ -89,8 +91,8 @@ void SharedChangeProcessor::StartAssociation(
 
   bool sync_has_nodes = false;
   if (!SyncModelHasUserCreatedNodes(&sync_has_nodes)) {
-    SyncError error(FROM_HERE, SyncError::UNRECOVERABLE_ERROR,
-                    "Failed to load sync nodes", type_);
+    syncer::SyncError error(FROM_HERE, syncer::SyncError::UNRECOVERABLE_ERROR,
+                            "Failed to load sync nodes", type_);
     local_merge_result.set_error(error);
     start_done.Run(DataTypeController::UNRECOVERABLE_ERROR, local_merge_result,
                    syncer_merge_result);
@@ -100,10 +102,11 @@ void SharedChangeProcessor::StartAssociation(
   // Scope for |initial_sync_data| which might be expensive, so we don't want
   // to keep it in memory longer than necessary.
   {
-    SyncDataList initial_sync_data;
+    syncer::SyncDataList initial_sync_data;
 
     base::TimeTicks start_time = base::TimeTicks::Now();
-    SyncError error = GetAllSyncDataReturnError(type_, &initial_sync_data);
+    syncer::SyncError error =
+        GetAllSyncDataReturnError(type_, &initial_sync_data);
     if (error.IsSet()) {
       local_merge_result.set_error(error);
       start_done.Run(DataTypeController::ASSOCIATION_FAILED, local_merge_result,
@@ -114,16 +117,17 @@ void SharedChangeProcessor::StartAssociation(
     std::string datatype_context;
     if (GetDataTypeContext(&datatype_context)) {
       local_service_->UpdateDataTypeContext(
-          type_, SyncChangeProcessor::NO_REFRESH, datatype_context);
+          type_, syncer::SyncChangeProcessor::NO_REFRESH, datatype_context);
     }
 
     syncer_merge_result.set_num_items_before_association(
         initial_sync_data.size());
     // Passes a reference to |shared_change_processor|.
     local_merge_result = local_service_->MergeDataAndStartSyncing(
-        type_, initial_sync_data, std::unique_ptr<SyncChangeProcessor>(
+        type_, initial_sync_data, std::unique_ptr<syncer::SyncChangeProcessor>(
                                       new SharedChangeProcessorRef(this)),
-        std::unique_ptr<SyncErrorFactory>(new SharedChangeProcessorRef(this)));
+        std::unique_ptr<syncer::SyncErrorFactory>(
+            new SharedChangeProcessorRef(this)));
     RecordAssociationTime(base::TimeTicks::Now() - start_time);
     if (local_merge_result.error().IsSet()) {
       start_done.Run(DataTypeController::ASSOCIATION_FAILED, local_merge_result,
@@ -139,25 +143,25 @@ void SharedChangeProcessor::StartAssociation(
                  local_merge_result, syncer_merge_result);
 }
 
-base::WeakPtr<SyncableService> SharedChangeProcessor::Connect(
+base::WeakPtr<syncer::SyncableService> SharedChangeProcessor::Connect(
     SyncClient* sync_client,
     GenericChangeProcessorFactory* processor_factory,
-    UserShare* user_share,
-    std::unique_ptr<DataTypeErrorHandler> error_handler,
-    const base::WeakPtr<SyncMergeResult>& merge_result) {
+    syncer::UserShare* user_share,
+    std::unique_ptr<syncer::DataTypeErrorHandler> error_handler,
+    const base::WeakPtr<syncer::SyncMergeResult>& merge_result) {
   DCHECK(sync_client);
   DCHECK(error_handler);
   backend_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   AutoLock lock(monitor_lock_);
   if (disconnected_)
-    return base::WeakPtr<SyncableService>();
+    return base::WeakPtr<syncer::SyncableService>();
   error_handler_ = std::move(error_handler);
-  base::WeakPtr<SyncableService> local_service =
+  base::WeakPtr<syncer::SyncableService> local_service =
       sync_client->GetSyncableServiceForType(type_);
   if (!local_service.get()) {
     LOG(WARNING) << "SyncableService destroyed before DTC was stopped.";
     disconnected_ = true;
-    return base::WeakPtr<SyncableService>();
+    return base::WeakPtr<syncer::SyncableService>();
   }
 
   generic_change_processor_ = processor_factory
@@ -166,7 +170,7 @@ base::WeakPtr<SyncableService> SharedChangeProcessor::Connect(
                                       local_service, merge_result, sync_client)
                                   .release();
   // If available, propagate attachment service to the syncable service.
-  std::unique_ptr<AttachmentService> attachment_service =
+  std::unique_ptr<syncer::AttachmentService> attachment_service =
       generic_change_processor_->GetAttachmentService();
   if (attachment_service) {
     local_service->SetAttachmentService(std::move(attachment_service));
@@ -199,53 +203,54 @@ int SharedChangeProcessor::GetSyncCount() {
   return generic_change_processor_->GetSyncCount();
 }
 
-SyncError SharedChangeProcessor::ProcessSyncChanges(
+syncer::SyncError SharedChangeProcessor::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
-    const SyncChangeList& list_of_changes) {
+    const syncer::SyncChangeList& list_of_changes) {
   DCHECK(backend_task_runner_.get());
   DCHECK(backend_task_runner_->BelongsToCurrentThread());
   AutoLock lock(monitor_lock_);
   if (disconnected_) {
     // The DTC that disconnects us must ensure it posts a StopSyncing task.
     // If we reach this, it means it just hasn't executed yet.
-    SyncError error(FROM_HERE, SyncError::DATATYPE_ERROR,
-                    "Change processor disconnected.", type_);
+    syncer::SyncError error(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
+                            "Change processor disconnected.", type_);
     return error;
   }
   return generic_change_processor_->ProcessSyncChanges(from_here,
                                                        list_of_changes);
 }
 
-SyncDataList SharedChangeProcessor::GetAllSyncData(ModelType type) const {
-  SyncDataList data;
+syncer::SyncDataList SharedChangeProcessor::GetAllSyncData(
+    syncer::ModelType type) const {
+  syncer::SyncDataList data;
   GetAllSyncDataReturnError(type, &data);  // Handles the disconnect case.
   return data;
 }
 
-SyncError SharedChangeProcessor::GetAllSyncDataReturnError(
-    ModelType type,
-    SyncDataList* data) const {
+syncer::SyncError SharedChangeProcessor::GetAllSyncDataReturnError(
+    syncer::ModelType type,
+    syncer::SyncDataList* data) const {
   DCHECK(backend_task_runner_.get());
   DCHECK(backend_task_runner_->BelongsToCurrentThread());
   AutoLock lock(monitor_lock_);
   if (disconnected_) {
-    SyncError error(FROM_HERE, SyncError::DATATYPE_ERROR,
-                    "Change processor disconnected.", type_);
+    syncer::SyncError error(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
+                            "Change processor disconnected.", type_);
     return error;
   }
   return generic_change_processor_->GetAllSyncDataReturnError(data);
 }
 
-SyncError SharedChangeProcessor::UpdateDataTypeContext(
-    ModelType type,
-    SyncChangeProcessor::ContextRefreshStatus refresh_status,
+syncer::SyncError SharedChangeProcessor::UpdateDataTypeContext(
+    syncer::ModelType type,
+    syncer::SyncChangeProcessor::ContextRefreshStatus refresh_status,
     const std::string& context) {
   DCHECK(backend_task_runner_.get());
   DCHECK(backend_task_runner_->BelongsToCurrentThread());
   AutoLock lock(monitor_lock_);
   if (disconnected_) {
-    SyncError error(FROM_HERE, SyncError::DATATYPE_ERROR,
-                    "Change processor disconnected.", type_);
+    syncer::SyncError error(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
+                            "Change processor disconnected.", type_);
     return error;
   }
   return generic_change_processor_->UpdateDataTypeContext(type, refresh_status,
@@ -253,7 +258,7 @@ SyncError SharedChangeProcessor::UpdateDataTypeContext(
 }
 
 void SharedChangeProcessor::AddLocalChangeObserver(
-    LocalChangeObserver* observer) {
+    syncer::LocalChangeObserver* observer) {
   DCHECK(backend_task_runner_.get());
   DCHECK(backend_task_runner_->BelongsToCurrentThread());
 
@@ -261,7 +266,7 @@ void SharedChangeProcessor::AddLocalChangeObserver(
 }
 
 void SharedChangeProcessor::RemoveLocalChangeObserver(
-    LocalChangeObserver* observer) {
+    syncer::LocalChangeObserver* observer) {
   DCHECK(backend_task_runner_.get());
   DCHECK(backend_task_runner_->BelongsToCurrentThread());
 
@@ -301,14 +306,15 @@ bool SharedChangeProcessor::GetDataTypeContext(std::string* context) const {
   return generic_change_processor_->GetDataTypeContext(context);
 }
 
-SyncError SharedChangeProcessor::CreateAndUploadError(
+syncer::SyncError SharedChangeProcessor::CreateAndUploadError(
     const tracked_objects::Location& location,
     const std::string& message) {
   AutoLock lock(monitor_lock_);
   if (!disconnected_) {
     return error_handler_->CreateAndUploadError(location, message, type_);
   } else {
-    return SyncError(location, SyncError::DATATYPE_ERROR, message, type_);
+    return syncer::SyncError(location, syncer::SyncError::DATATYPE_ERROR,
+                             message, type_);
   }
 }
 
@@ -325,4 +331,4 @@ void SharedChangeProcessor::StopLocalService() {
   local_service_.reset();
 }
 
-}  // namespace syncer
+}  // namespace sync_driver

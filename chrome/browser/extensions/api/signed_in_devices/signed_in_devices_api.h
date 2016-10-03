@@ -5,22 +5,21 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_SIGNED_IN_DEVICES_SIGNED_IN_DEVICES_API_H__
 #define CHROME_BROWSER_EXTENSIONS_API_SIGNED_IN_DEVICES_SIGNED_IN_DEVICES_API_H__
 
-#include <memory>
 #include <string>
 #include <vector>
 
 #include "chrome/browser/extensions/chrome_extension_function.h"
 
-class Profile;
+namespace sync_driver {
+class DeviceInfo;
+class DeviceInfoTracker;
+}  // namespace sync_driver
 
 namespace extensions {
 class ExtensionPrefs;
 }  // namespace extensions
 
-namespace syncer {
-class DeviceInfo;
-class DeviceInfoTracker;
-}  // namespace syncer
+class Profile;
 
 namespace extensions {
 
@@ -28,13 +27,13 @@ namespace extensions {
 // filled with the list of devices associated with the account signed into this
 // |profile|. This function needs the |extension_id| because the
 // public device ids are set per extension.
-std::vector<std::unique_ptr<syncer::DeviceInfo>> GetAllSignedInDevices(
+std::vector<std::unique_ptr<sync_driver::DeviceInfo>> GetAllSignedInDevices(
     const std::string& extension_id,
     Profile* profile);
 
-std::vector<std::unique_ptr<syncer::DeviceInfo>> GetAllSignedInDevices(
+std::vector<std::unique_ptr<sync_driver::DeviceInfo>> GetAllSignedInDevices(
     const std::string& extension_id,
-    syncer::DeviceInfoTracker* device_tracker,
+    sync_driver::DeviceInfoTracker* device_tracker,
     ExtensionPrefs* extension_prefs);
 
 class SignedInDevicesGetFunction : public ChromeSyncExtensionFunction {

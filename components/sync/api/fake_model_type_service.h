@@ -15,7 +15,7 @@
 #include "components/sync/protocol/data_type_state.pb.h"
 #include "components/sync/protocol/entity_metadata.pb.h"
 
-namespace syncer {
+namespace syncer_v2 {
 
 // A basic, functional implementation of ModelTypeService for testing purposes.
 // It uses the PREFERENCES type to provide a simple key/value interface, and
@@ -101,10 +101,10 @@ class FakeModelTypeService : public ModelTypeService {
 
   // ModelTypeService implementation
   std::unique_ptr<MetadataChangeList> CreateMetadataChangeList() override;
-  SyncError MergeSyncData(
+  syncer::SyncError MergeSyncData(
       std::unique_ptr<MetadataChangeList> metadata_change_list,
       EntityDataMap entity_data_map) override;
-  SyncError ApplySyncChanges(
+  syncer::SyncError ApplySyncChanges(
       std::unique_ptr<MetadataChangeList> metadata_change_list,
       EntityChangeList entity_changes) override;
   void GetData(StorageKeyList storage_keys, DataCallback callback) override;
@@ -121,7 +121,7 @@ class FakeModelTypeService : public ModelTypeService {
   void SetConflictResolution(ConflictResolution resolution);
 
   // Sets the error that the next fallible call to the service will generate.
-  void SetServiceError(SyncError::ErrorType error_type);
+  void SetServiceError(syncer::SyncError::ErrorType error_type);
 
   const Store& db() const { return db_; }
 
@@ -140,9 +140,9 @@ class FakeModelTypeService : public ModelTypeService {
   std::unique_ptr<ConflictResolution> conflict_resolution_;
 
   // The error to produce on the next service call.
-  SyncError service_error_;
+  syncer::SyncError service_error_;
 };
 
-}  // namespace syncer
+}  // namespace syncer_v2
 
 #endif  // COMPONENTS_SYNC_API_FAKE_MODEL_TYPE_SERVICE_H_

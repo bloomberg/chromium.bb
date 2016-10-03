@@ -13,18 +13,18 @@
 #include "components/ntp_snippets/sessions/foreign_sessions_suggestions_provider.h"
 #include "components/sync/driver/sync_service_observer.h"
 
-namespace syncer {
+namespace sync_driver {
 class SyncService;
-}  // namespace syncer
+}  // namespace sync_driver
 
 namespace ntp_snippets {
 
 // Adapter that sits on top of SyncService and OpenTabsUIDelegate and provides
 // simplified notifications and accessors for foreign tabs data.
-class TabDelegateSyncAdapter : public syncer::SyncServiceObserver,
+class TabDelegateSyncAdapter : public sync_driver::SyncServiceObserver,
                                public ForeignSessionsProvider {
  public:
-  explicit TabDelegateSyncAdapter(syncer::SyncService* sync_service);
+  explicit TabDelegateSyncAdapter(sync_driver::SyncService* sync_service);
   ~TabDelegateSyncAdapter() override;
 
   // ForeignSessionsProvider implementation.
@@ -35,14 +35,14 @@ class TabDelegateSyncAdapter : public syncer::SyncServiceObserver,
       const base::Closure& change_callback) override;
 
  private:
-  // syncer::SyncServiceObserver implementation.
+  // sync_driver::SyncServiceObserver implementation.
   void OnStateChanged() override;
   void OnSyncConfigurationCompleted() override;
   void OnForeignSessionUpdated() override;
 
   void InvokeCallback();
 
-  syncer::SyncService* sync_service_;
+  sync_driver::SyncService* sync_service_;
   base::Closure change_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TabDelegateSyncAdapter);

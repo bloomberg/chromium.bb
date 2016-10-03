@@ -8,11 +8,11 @@
 #include "base/values.h"
 #include "components/sync/api/sync_merge_result.h"
 
-namespace syncer {
+namespace sync_driver {
 
-ProxyDataTypeController::ProxyDataTypeController(ModelType type)
+ProxyDataTypeController::ProxyDataTypeController(syncer::ModelType type)
     : DataTypeController(type, base::Closure()), state_(NOT_RUNNING) {
-  DCHECK(ProxyTypes().Has(type));
+  DCHECK(syncer::ProxyTypes().Has(type));
 }
 
 ProxyDataTypeController::~ProxyDataTypeController() {}
@@ -25,7 +25,7 @@ void ProxyDataTypeController::LoadModels(
     const ModelLoadCallback& model_load_callback) {
   DCHECK(CalledOnValidThread());
   state_ = MODEL_LOADED;
-  model_load_callback.Run(type(), SyncError());
+  model_load_callback.Run(type(), syncer::SyncError());
 }
 
 void ProxyDataTypeController::RegisterWithBackend(
@@ -34,8 +34,8 @@ void ProxyDataTypeController::RegisterWithBackend(
 void ProxyDataTypeController::StartAssociating(
     const StartCallback& start_callback) {
   DCHECK(CalledOnValidThread());
-  SyncMergeResult local_merge_result(type());
-  SyncMergeResult syncer_merge_result(type());
+  syncer::SyncMergeResult local_merge_result(type());
+  syncer::SyncMergeResult syncer_merge_result(type());
   state_ = RUNNING;
   start_callback.Run(DataTypeController::OK, local_merge_result,
                      syncer_merge_result);
@@ -47,7 +47,7 @@ void ProxyDataTypeController::Stop() {
 
 std::string ProxyDataTypeController::name() const {
   // For logging only.
-  return ModelTypeToString(type());
+  return syncer::ModelTypeToString(type());
 }
 
 DataTypeController::State ProxyDataTypeController::state() const {
@@ -64,10 +64,10 @@ void ProxyDataTypeController::GetAllNodes(const AllNodesCallback& callback) {
   callback.Run(type(), base::MakeUnique<base::ListValue>());
 }
 
-std::unique_ptr<DataTypeErrorHandler>
+std::unique_ptr<syncer::DataTypeErrorHandler>
 ProxyDataTypeController::CreateErrorHandler() {
   NOTREACHED();
   return nullptr;
 }
 
-}  // namespace syncer
+}  // namespace sync_driver

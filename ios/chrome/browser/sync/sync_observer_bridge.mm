@@ -8,7 +8,7 @@
 #include "components/sync/driver/sync_service.h"
 
 SyncObserverBridge::SyncObserverBridge(id<SyncObserverModelBridge> delegate,
-                                       syncer::SyncService* sync_service)
+                                       sync_driver::SyncService* sync_service)
     : delegate_(delegate), scoped_observer_(this) {
   DCHECK(delegate);
   if (sync_service)

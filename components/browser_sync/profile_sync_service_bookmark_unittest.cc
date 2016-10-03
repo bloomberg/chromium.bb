@@ -266,7 +266,7 @@ class FakeServerChange {
   }
 
   // Pass the fake change list to |service|.
-  void ApplyPendingChanges(syncer::ChangeProcessor* processor) {
+  void ApplyPendingChanges(sync_driver::ChangeProcessor* processor) {
     processor->ApplyChangesFromSyncModel(
         trans_, 0, syncer::ImmutableChangeRecordList(&changes_));
   }
@@ -817,7 +817,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
   base::ScopedTempDir data_dir_;
   ProfileSyncServiceBundle profile_sync_service_bundle_;
 
-  std::unique_ptr<syncer::FakeSyncClient> sync_client_;
+  std::unique_ptr<sync_driver::FakeSyncClient> sync_client_;
   std::unique_ptr<BookmarkModel> model_;
   syncer::TestUserShare test_user_share_;
   std::unique_ptr<BookmarkChangeProcessor> change_processor_;

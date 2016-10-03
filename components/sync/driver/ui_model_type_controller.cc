@@ -9,9 +9,11 @@
 #include "components/sync/core/activation_context.h"
 #include "components/sync/driver/sync_client.h"
 
-namespace syncer {
+namespace sync_driver_v2 {
 
-UIModelTypeController::UIModelTypeController(ModelType type,
+using sync_driver::SyncClient;
+
+UIModelTypeController::UIModelTypeController(syncer::ModelType type,
                                              const base::Closure& dump_stack,
                                              SyncClient* sync_client)
     : NonBlockingDataTypeController(type, dump_stack, sync_client) {}
@@ -26,4 +28,4 @@ bool UIModelTypeController::RunOnModelThread(
   return true;
 }
 
-}  // namespace syncer
+}  // namespace sync_driver_v2

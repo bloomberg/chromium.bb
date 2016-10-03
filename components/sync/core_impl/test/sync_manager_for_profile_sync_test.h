@@ -15,7 +15,7 @@ namespace syncer {
 
 // This class is used to help implement the TestProfileSyncService.
 // Those tests try to test sync without instantiating a real backend.
-class SyncManagerForProfileSyncTest : public SyncManagerImpl {
+class SyncManagerForProfileSyncTest : public syncer::SyncManagerImpl {
  public:
   SyncManagerForProfileSyncTest(std::string name, base::Closure init_callback);
   ~SyncManagerForProfileSyncTest() override;

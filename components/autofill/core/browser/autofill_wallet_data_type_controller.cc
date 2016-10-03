@@ -20,7 +20,7 @@ AutofillWalletDataTypeController::AutofillWalletDataTypeController(
     syncer::ModelType type,
     const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
     const base::Closure& dump_stack,
-    syncer::SyncClient* sync_client,
+    sync_driver::SyncClient* sync_client,
     const scoped_refptr<autofill::AutofillWebDataService>& web_data_service)
     : NonUIDataTypeController(type, dump_stack, sync_client),
       db_thread_(db_thread),
@@ -80,7 +80,7 @@ void AutofillWalletDataTypeController::StopModels() {
   // and addresses copied from the server. This is different than other sync
   // cases since this type of data reflects what's on the server rather than
   // syncing local data between clients, so this extra step is required.
-  syncer::SyncService* service = sync_client_->GetSyncService();
+  sync_driver::SyncService* service = sync_client_->GetSyncService();
 
   // CanSyncStart indicates if sync is currently enabled at all. The preferred
   // data type indicates if wallet sync data/metadata is enabled, and
@@ -110,7 +110,7 @@ void AutofillWalletDataTypeController::OnUserPrefChanged() {
   if (currently_enabled_) {
     // The preference was just enabled. Trigger a reconfiguration. This will do
     // nothing if the type isn't preferred.
-    syncer::SyncService* sync_service = sync_client_->GetSyncService();
+    sync_driver::SyncService* sync_service = sync_client_->GetSyncService();
     sync_service->ReenableDatatype(type());
   } else {
     // Report the error (which will stop the datatype asynchronously).

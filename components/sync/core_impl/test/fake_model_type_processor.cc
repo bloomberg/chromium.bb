@@ -6,7 +6,7 @@
 
 #include "components/sync/engine/commit_queue.h"
 
-namespace syncer {
+namespace syncer_v2 {
 
 FakeModelTypeProcessor::FakeModelTypeProcessor() {}
 FakeModelTypeProcessor::~FakeModelTypeProcessor() {}
@@ -23,4 +23,4 @@ void FakeModelTypeProcessor::OnUpdateReceived(
     const sync_pb::DataTypeState& type_state,
     const UpdateResponseDataList& updates) {}
 
-}  // namespace syncer
+}  // namespace syncer_v2

@@ -111,7 +111,7 @@ void GetDeviceNameAndType(const browser_sync::ProfileSyncService* sync_service,
   DCHECK(sync_service->GetDeviceInfoTracker());
   DCHECK(sync_service->GetDeviceInfoTracker()->IsSyncing());
 
-  std::unique_ptr<syncer::DeviceInfo> device_info =
+  std::unique_ptr<sync_driver::DeviceInfo> device_info =
       sync_service->GetDeviceInfoTracker()->GetDeviceInfo(client_id);
   if (device_info.get()) {
     *name = device_info->client_name();
@@ -282,7 +282,7 @@ void BrowsingHistoryHandler::RegisterMessages() {
           original_browser_state, ServiceAccessType::EXPLICIT_ACCESS);
   scoped_refptr<history::TopSites> top_sites =
       ios::TopSitesFactory::GetForBrowserState(original_browser_state);
-  syncer::SyncService* sync_service =
+  sync_driver::SyncService* sync_service =
       IOSChromeProfileSyncServiceFactory::GetForBrowserState(
           original_browser_state);
   web::URLDataSourceIOS::Add(

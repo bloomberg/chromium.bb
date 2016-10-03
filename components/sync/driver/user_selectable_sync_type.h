@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_SYNC_DRIVER_USER_SELECTABLE_SYNC_TYPE_H_
 #define COMPONENTS_SYNC_DRIVER_USER_SELECTABLE_SYNC_TYPE_H_
 
-namespace syncer {
+namespace sync_driver {
 namespace user_selectable_type {
 
 // An enumeration of the sync datatypes that are explicitly exposed to the user
@@ -66,6 +66,6 @@ enum UserSelectableSyncType {
 };
 
 }  // namespace user_selectable_type
-}  // namespace syncer
+}  // namespace sync_driver
 
 #endif  // COMPONENTS_SYNC_DRIVER_USER_SELECTABLE_SYNC_TYPE_H_

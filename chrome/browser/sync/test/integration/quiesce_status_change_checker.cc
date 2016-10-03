@@ -68,7 +68,7 @@ bool ProgressMarkersMatch(const browser_sync::ProfileSyncService* service1,
 //
 // The long-term plan is to deprecate this hack by replacing all its usees with
 // more reliable status checkers.
-class ProgressMarkerWatcher : public syncer::SyncServiceObserver {
+class ProgressMarkerWatcher : public sync_driver::SyncServiceObserver {
  public:
   ProgressMarkerWatcher(browser_sync::ProfileSyncService* service,
                         QuiesceStatusChangeChecker* quiesce_checker);

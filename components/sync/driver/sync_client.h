@@ -39,14 +39,17 @@ namespace invalidation {
 class InvalidationService;
 }  // namespace invalidation
 
+namespace syncer {
+class SyncableService;
+}  // namespace syncer
+
 namespace sync_sessions {
 class SyncSessionsClient;
 }  // namespace sync_sessions
 
-namespace syncer {
+namespace sync_driver {
 
 class SyncService;
-class SyncableService;
 
 // Interface for clients of the Sync API to plumb through necessary dependent
 // components. This interface is purely for abstracting dependencies, and
@@ -75,7 +78,7 @@ class SyncClient {
 
   // Returns a callback that will register the types specific to the current
   // platform.
-  virtual SyncApiComponentFactory::RegisterDataTypesMethod
+  virtual sync_driver::SyncApiComponentFactory::RegisterDataTypesMethod
   GetRegisterPlatformTypesCallback() = 0;
 
   // Returns a callback that will be invoked when password sync state has
@@ -85,27 +88,27 @@ class SyncClient {
   virtual autofill::PersonalDataManager* GetPersonalDataManager() = 0;
   virtual BookmarkUndoService* GetBookmarkUndoServiceIfExists() = 0;
   virtual invalidation::InvalidationService* GetInvalidationService() = 0;
-  virtual scoped_refptr<ExtensionsActivity> GetExtensionsActivity() = 0;
+  virtual scoped_refptr<syncer::ExtensionsActivity> GetExtensionsActivity() = 0;
   virtual sync_sessions::SyncSessionsClient* GetSyncSessionsClient() = 0;
 
   // Returns a weak pointer to the syncable service specified by |type|.
   // Weak pointer may be unset if service is already destroyed.
   // Note: Should only be dereferenced from the model type thread.
-  virtual base::WeakPtr<SyncableService> GetSyncableServiceForType(
-      ModelType type) = 0;
+  virtual base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
+      syncer::ModelType type) = 0;
 
   // Returns a weak pointer to the ModelTypeService specified by |type|. Weak
   // pointer may be unset if service is already destroyed.
   // Note: Should only be dereferenced from the model type thread.
-  virtual base::WeakPtr<ModelTypeService> GetModelTypeServiceForType(
-      ModelType type) = 0;
+  virtual base::WeakPtr<syncer_v2::ModelTypeService> GetModelTypeServiceForType(
+      syncer::ModelType type) = 0;
 
   // Creates and returns a new ModelSafeWorker for the group, or null if one
   // cannot be created.
   // TODO(maxbogue): Move this inside SyncApiComponentFactory.
-  virtual scoped_refptr<ModelSafeWorker> CreateModelWorkerForGroup(
-      ModelSafeGroup group,
-      WorkerLoopDestructionObserver* observer) = 0;
+  virtual scoped_refptr<syncer::ModelSafeWorker> CreateModelWorkerForGroup(
+      syncer::ModelSafeGroup group,
+      syncer::WorkerLoopDestructionObserver* observer) = 0;
 
   // Returns the current SyncApiComponentFactory instance.
   virtual SyncApiComponentFactory* GetSyncApiComponentFactory() = 0;
@@ -114,6 +117,6 @@ class SyncClient {
   DISALLOW_COPY_AND_ASSIGN(SyncClient);
 };
 
-}  // namespace syncer
+}  // namespace sync_driver
 
 #endif  // COMPONENTS_SYNC_DRIVER_SYNC_CLIENT_H_

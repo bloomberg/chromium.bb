@@ -8,14 +8,14 @@
 #include "base/memory/ptr_util.h"
 #include "components/sync/api/fake_model_type_change_processor.h"
 
-namespace syncer {
+namespace syncer_v2 {
 
 StubModelTypeService::StubModelTypeService()
     : StubModelTypeService(base::Bind(&FakeModelTypeChangeProcessor::Create)) {}
 
 StubModelTypeService::StubModelTypeService(
     const ChangeProcessorFactory& change_processor_factory)
-    : ModelTypeService(change_processor_factory, PREFERENCES) {}
+    : ModelTypeService(change_processor_factory, syncer::PREFERENCES) {}
 
 StubModelTypeService::~StubModelTypeService() {}
 
@@ -24,16 +24,16 @@ StubModelTypeService::CreateMetadataChangeList() {
   return std::unique_ptr<MetadataChangeList>();
 }
 
-SyncError StubModelTypeService::MergeSyncData(
+syncer::SyncError StubModelTypeService::MergeSyncData(
     std::unique_ptr<MetadataChangeList> metadata_change_list,
     EntityDataMap entity_data_map) {
-  return SyncError();
+  return syncer::SyncError();
 }
 
-SyncError StubModelTypeService::ApplySyncChanges(
+syncer::SyncError StubModelTypeService::ApplySyncChanges(
     std::unique_ptr<MetadataChangeList> metadata_change_list,
     EntityChangeList entity_changes) {
-  return SyncError();
+  return syncer::SyncError();
 }
 
 void StubModelTypeService::GetData(StorageKeyList storage_keys,
@@ -55,4 +55,4 @@ bool StubModelTypeService::HasChangeProcessor() const {
   return change_processor() != nullptr;
 }
 
-}  // namespace syncer
+}  // namespace syncer_v2

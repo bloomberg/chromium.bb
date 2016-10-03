@@ -3249,14 +3249,14 @@ TEST_F(SearchProviderTest, CanSendURL) {
       &client_incognito));
 
   // Tab sync not enabled.
-  profile_.GetPrefs()->SetBoolean(syncer::prefs::kSyncKeepEverythingSynced,
+  profile_.GetPrefs()->SetBoolean(sync_driver::prefs::kSyncKeepEverythingSynced,
                                   false);
-  profile_.GetPrefs()->SetBoolean(syncer::prefs::kSyncTabs, false);
+  profile_.GetPrefs()->SetBoolean(sync_driver::prefs::kSyncTabs, false);
   EXPECT_FALSE(SearchProvider::CanSendURL(
       GURL("http://www.google.com/search"),
       GURL("https://www.google.com/complete/search"), &google_template_url,
       metrics::OmniboxEventProto::OTHER, SearchTermsData(), &client));
-  profile_.GetPrefs()->SetBoolean(syncer::prefs::kSyncTabs, true);
+  profile_.GetPrefs()->SetBoolean(sync_driver::prefs::kSyncTabs, true);
 
   // Tab sync is encrypted.
   browser_sync::ProfileSyncService* service =

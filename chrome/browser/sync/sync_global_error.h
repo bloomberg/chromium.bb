@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_SYNC_SYNC_GLOBAL_ERROR_H_
 #define CHROME_BROWSER_SYNC_SYNC_GLOBAL_ERROR_H_
 
-#include <vector>
-
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/global_error/global_error.h"
@@ -22,12 +20,12 @@ class ProfileSyncService;
 
 // Shows sync errors on the wrench menu using a bubble view and a menu item.
 class SyncGlobalError : public GlobalErrorWithStandardBubble,
-                        public syncer::SyncErrorController::Observer,
+                        public SyncErrorController::Observer,
                         public KeyedService {
  public:
   SyncGlobalError(GlobalErrorService* global_error_service,
                   LoginUIService* login_ui_service,
-                  syncer::SyncErrorController* error_controller,
+                  SyncErrorController* error_controller,
                   browser_sync::ProfileSyncService* profile_sync_service);
   ~SyncGlobalError() override;
 
@@ -48,7 +46,7 @@ class SyncGlobalError : public GlobalErrorWithStandardBubble,
   void BubbleViewAcceptButtonPressed(Browser* browser) override;
   void BubbleViewCancelButtonPressed(Browser* browser) override;
 
-  // syncer::SyncErrorController::Observer:
+  // SyncErrorController::Observer:
   void OnErrorChanged() override;
 
  private:
@@ -62,7 +60,7 @@ class SyncGlobalError : public GlobalErrorWithStandardBubble,
 
   // The error controller to query for error details. Owned by the
   // ProfileSyncService this SyncGlobalError depends on.
-  syncer::SyncErrorController* error_controller_;
+  SyncErrorController* error_controller_;
 
   const browser_sync::ProfileSyncService* sync_service_;
 

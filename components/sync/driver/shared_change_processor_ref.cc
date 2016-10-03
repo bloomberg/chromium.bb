@@ -4,7 +4,7 @@
 
 #include "components/sync/driver/shared_change_processor_ref.h"
 
-namespace syncer {
+namespace sync_driver {
 
 SharedChangeProcessorRef::SharedChangeProcessorRef(
     const scoped_refptr<SharedChangeProcessor>& change_processor)
@@ -14,38 +14,39 @@ SharedChangeProcessorRef::SharedChangeProcessorRef(
 
 SharedChangeProcessorRef::~SharedChangeProcessorRef() {}
 
-SyncError SharedChangeProcessorRef::ProcessSyncChanges(
+syncer::SyncError SharedChangeProcessorRef::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
-    const SyncChangeList& change_list) {
+    const syncer::SyncChangeList& change_list) {
   return change_processor_->ProcessSyncChanges(from_here, change_list);
 }
 
-SyncDataList SharedChangeProcessorRef::GetAllSyncData(ModelType type) const {
+syncer::SyncDataList SharedChangeProcessorRef::GetAllSyncData(
+    syncer::ModelType type) const {
   return change_processor_->GetAllSyncData(type);
 }
 
-SyncError SharedChangeProcessorRef::UpdateDataTypeContext(
-    ModelType type,
-    SyncChangeProcessor::ContextRefreshStatus refresh_status,
+syncer::SyncError SharedChangeProcessorRef::UpdateDataTypeContext(
+    syncer::ModelType type,
+    syncer::SyncChangeProcessor::ContextRefreshStatus refresh_status,
     const std::string& context) {
   return change_processor_->UpdateDataTypeContext(type, refresh_status,
                                                   context);
 }
 
 void SharedChangeProcessorRef::AddLocalChangeObserver(
-    LocalChangeObserver* observer) {
+    syncer::LocalChangeObserver* observer) {
   change_processor_->AddLocalChangeObserver(observer);
 }
 
 void SharedChangeProcessorRef::RemoveLocalChangeObserver(
-    LocalChangeObserver* observer) {
+    syncer::LocalChangeObserver* observer) {
   change_processor_->RemoveLocalChangeObserver(observer);
 }
 
-SyncError SharedChangeProcessorRef::CreateAndUploadError(
+syncer::SyncError SharedChangeProcessorRef::CreateAndUploadError(
     const tracked_objects::Location& from_here,
     const std::string& message) {
   return change_processor_->CreateAndUploadError(from_here, message);
 }
 
-}  // namespace syncer
+}  // namespace sync_driver

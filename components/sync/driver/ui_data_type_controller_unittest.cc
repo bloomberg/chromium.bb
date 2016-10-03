@@ -26,17 +26,17 @@ using testing::Invoke;
 using testing::InvokeWithoutArgs;
 using testing::Return;
 
-namespace syncer {
+namespace sync_driver {
 namespace {
 
 class UIDataTypeControllerFake : public UIDataTypeController {
  public:
-  UIDataTypeControllerFake(ModelType type,
+  UIDataTypeControllerFake(syncer::ModelType type,
                            const base::Closure& dump_stack,
                            SyncClient* sync_client)
       : UIDataTypeController(type, dump_stack, sync_client) {}
 
-  void OnUnrecoverableError(const SyncError& error) {
+  void OnUnrecoverableError(const syncer::SyncError& error) {
     CreateErrorHandler()->OnUnrecoverableError(error);
   }
 };
@@ -49,11 +49,11 @@ class SyncUIDataTypeControllerTest : public testing::Test,
                                      public FakeSyncClient {
  public:
   SyncUIDataTypeControllerTest()
-      : type_(PREFERENCES), change_processor_(NULL) {}
+      : type_(syncer::PREFERENCES), change_processor_(NULL) {}
 
   // FakeSyncClient overrides.
-  base::WeakPtr<SyncableService> GetSyncableServiceForType(
-      ModelType type) override {
+  base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
+      syncer::ModelType type) override {
     return syncable_service_.AsWeakPtr();
   }
 
@@ -92,11 +92,11 @@ class SyncUIDataTypeControllerTest : public testing::Test,
   void PumpLoop() { base::RunLoop().RunUntilIdle(); }
 
   base::MessageLoop message_loop_;
-  const ModelType type_;
+  const syncer::ModelType type_;
   StartCallbackMock start_callback_;
   ModelLoadCallbackMock model_load_callback_;
   FakeGenericChangeProcessor* change_processor_;
-  FakeSyncableService syncable_service_;
+  syncer::FakeSyncableService syncable_service_;
   std::unique_ptr<UIDataTypeControllerFake> preference_dtc_;
 };
 
@@ -163,8 +163,8 @@ TEST_F(SyncUIDataTypeControllerTest, StartStopFirstRun) {
 TEST_F(SyncUIDataTypeControllerTest, StartAssociationFailed) {
   EXPECT_CALL(start_callback_,
               Run(DataTypeController::ASSOCIATION_FAILED, _, _));
-  syncable_service_.set_merge_data_and_start_syncing_error(
-      SyncError(FROM_HERE, SyncError::DATATYPE_ERROR, "Error", type_));
+  syncable_service_.set_merge_data_and_start_syncing_error(syncer::SyncError(
+      FROM_HERE, syncer::SyncError::DATATYPE_ERROR, "Error", type_));
 
   EXPECT_EQ(DataTypeController::NOT_RUNNING, preference_dtc_->state());
   EXPECT_FALSE(syncable_service_.syncing());
@@ -204,10 +204,11 @@ TEST_F(SyncUIDataTypeControllerTest, OnSingleDatatypeUnrecoverableError) {
 
   testing::Mock::VerifyAndClearExpectations(&start_callback_);
   EXPECT_CALL(model_load_callback_, Run(_, _));
-  SyncError error(FROM_HERE, SyncError::DATATYPE_ERROR, "error", PREFERENCES);
+  syncer::SyncError error(FROM_HERE, syncer::SyncError::DATATYPE_ERROR, "error",
+                          syncer::PREFERENCES);
   preference_dtc_->OnUnrecoverableError(error);
   PumpLoop();
 }
 
 }  // namespace
-}  // namespace syncer
+}  // namespace sync_driver

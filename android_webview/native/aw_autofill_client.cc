@@ -71,7 +71,7 @@ PrefService* AwAutofillClient::GetPrefs() {
       AwContentBrowserClient::GetAwBrowserContext());
 }
 
-syncer::SyncService* AwAutofillClient::GetSyncService() {
+sync_driver::SyncService* AwAutofillClient::GetSyncService() {
   return nullptr;
 }
 
@@ -175,11 +175,14 @@ bool AwAutofillClient::IsAutocompleteEnabled() {
 
 void AwAutofillClient::PropagateAutofillPredictions(
     content::RenderFrameHost* rfh,
-    const std::vector<autofill::FormStructure*>& forms) {}
+    const std::vector<autofill::FormStructure*>& forms) {
+
+}
 
 void AwAutofillClient::DidFillOrPreviewField(
     const base::string16& autofilled_value,
-    const base::string16& profile_full_name) {}
+    const base::string16& profile_full_name) {
+}
 
 void AwAutofillClient::OnFirstUserGestureObserved() {
   NOTIMPLEMENTED();

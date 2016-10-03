@@ -122,7 +122,7 @@ void ChromeBrowserStateIOData::InitializeOnUIThread(
                                           pref_service);
     google_services_user_account_id_.MoveToThread(io_task_runner);
 
-    sync_disabled_.Init(syncer::prefs::kSyncManaged, pref_service);
+    sync_disabled_.Init(sync_driver::prefs::kSyncManaged, pref_service);
     sync_disabled_.MoveToThread(io_task_runner);
 
     signin_allowed_.Init(prefs::kSigninAllowed, pref_service);

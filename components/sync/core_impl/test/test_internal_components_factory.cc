@@ -25,7 +25,7 @@ TestInternalComponentsFactory::~TestInternalComponentsFactory() {}
 std::unique_ptr<SyncScheduler> TestInternalComponentsFactory::BuildScheduler(
     const std::string& name,
     SyncCycleContext* context,
-    CancelationSignal* cancelation_signal) {
+    syncer::CancelationSignal* cancelation_signal) {
   return std::unique_ptr<SyncScheduler>(new FakeSyncScheduler());
 }
 

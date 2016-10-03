@@ -21,11 +21,11 @@ namespace browser_sync {
 struct SyncedSession;
 }  // namespace browser_sync
 
-namespace syncer {
+namespace sync_driver {
 class SyncService;
-}  // namespace syncer
+}  // namespace sync_driver
 
-class ForeignSessionHelper : public syncer::SyncServiceObserver {
+class ForeignSessionHelper : public sync_driver::SyncServiceObserver {
  public:
   explicit ForeignSessionHelper(Profile* profile);
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
@@ -53,7 +53,7 @@ class ForeignSessionHelper : public syncer::SyncServiceObserver {
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& session_tag);
 
-  // syncer::SyncServiceObserver implementation
+  // sync_driver::SyncServiceObserver implementation
   void OnStateChanged() override {}
   void OnSyncConfigurationCompleted() override;
   void OnForeignSessionUpdated() override;
@@ -68,7 +68,7 @@ class ForeignSessionHelper : public syncer::SyncServiceObserver {
 
   Profile* profile_;  // weak
   base::android::ScopedJavaGlobalRef<jobject> callback_;
-  ScopedObserver<syncer::SyncService, syncer::SyncServiceObserver>
+  ScopedObserver<sync_driver::SyncService, sync_driver::SyncServiceObserver>
       scoped_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ForeignSessionHelper);

@@ -15,7 +15,7 @@
 #include "components/sync/core/data_type_association_stats.h"
 #include "components/sync/driver/data_type_manager.h"
 
-namespace syncer {
+namespace sync_driver {
 
 class DataTypeController;
 
@@ -40,14 +40,14 @@ class ModelAssociationManagerDelegate {
   // Called when model association (MergeDataAndStartSyncing) has completed
   // for |type|, regardless of success or failure.
   virtual void OnSingleDataTypeAssociationDone(
-      ModelType type,
-      const DataTypeAssociationStats& association_stats) = 0;
+      syncer::ModelType type,
+      const syncer::DataTypeAssociationStats& association_stats) = 0;
 
   // Called when the ModelAssociationManager has decided it must stop |type|,
   // likely because it is no longer a desired data type or sync is shutting
   // down.
-  virtual void OnSingleDataTypeWillStop(ModelType type,
-                                        const SyncError& error) = 0;
+  virtual void OnSingleDataTypeWillStop(syncer::ModelType type,
+                                        const syncer::SyncError& error) = 0;
 
   // Called when the ModelAssociationManager has tried to perform model
   // association for all desired types and has nothing left to do.
@@ -80,7 +80,7 @@ class ModelAssociationManager {
   // |OnModelAssociationDone| on the |ModelAssociationManagerDelegate|. After
   // this call, there should be several calls to StartAssociationAsync()
   // to associate subset of |desired_types|.
-  void Initialize(ModelTypeSet desired_types);
+  void Initialize(syncer::ModelTypeSet desired_types);
 
   // Can be called at any time. Synchronously stops all datatypes.
   void Stop();
@@ -88,7 +88,7 @@ class ModelAssociationManager {
   // Should only be called after Initialize to start the actual association.
   // |types_to_associate| should be subset of |desired_types| in Initialize().
   // When this is completed, |OnModelAssociationDone| will be invoked.
-  void StartAssociationAsync(const ModelTypeSet& types_to_associate);
+  void StartAssociationAsync(const syncer::ModelTypeSet& types_to_associate);
 
   // This is used for TESTING PURPOSE ONLY. The test case can inspect
   // and modify the timer.
@@ -111,15 +111,16 @@ class ModelAssociationManager {
 
   // Callback passed to each data type controller on starting association. This
   // callback will be invoked when the model association is done.
-  void TypeStartCallback(ModelType type,
+  void TypeStartCallback(syncer::ModelType type,
                          base::TimeTicks type_start_time,
                          DataTypeController::ConfigureResult start_result,
-                         const SyncMergeResult& local_merge_result,
-                         const SyncMergeResult& syncer_merge_result);
+                         const syncer::SyncMergeResult& local_merge_result,
+                         const syncer::SyncMergeResult& syncer_merge_result);
 
   // Callback that will be invoked when the models finish loading. This callback
   // will be passed to |LoadModels| function.
-  void ModelLoadCallback(ModelType type, const SyncError& error);
+  void ModelLoadCallback(syncer::ModelType type,
+                         const syncer::SyncError& error);
 
   // Called when all requested types are associated or association times out.
   // Will clean up any unfinished types, and update |state_| to be |new_state|
@@ -127,7 +128,7 @@ class ModelAssociationManager {
   void ModelAssociationDone(State new_state);
 
   // A helper to stop an individual datatype.
-  void StopDatatype(const SyncError& error, DataTypeController* dtc);
+  void StopDatatype(const syncer::SyncError& error, DataTypeController* dtc);
 
   // Calls delegate's OnAllDataTypesReadyForConfigure when all datatypes from
   // desired_types_ are ready for configure. Ensures that for every call to
@@ -139,21 +140,21 @@ class ModelAssociationManager {
   State state_;
 
   // Data types that are enabled.
-  ModelTypeSet desired_types_;
+  syncer::ModelTypeSet desired_types_;
 
   // Data types that are requested to associate.
-  ModelTypeSet requested_types_;
+  syncer::ModelTypeSet requested_types_;
 
   // Data types currently being associated, including types waiting for model
   // load.
-  ModelTypeSet associating_types_;
+  syncer::ModelTypeSet associating_types_;
 
   // Data types that are loaded, i.e. ready to associate.
-  ModelTypeSet loaded_types_;
+  syncer::ModelTypeSet loaded_types_;
 
   // Data types that are associated, i.e. no more action needed during
   // reconfiguration if not disabled.
-  ModelTypeSet associated_types_;
+  syncer::ModelTypeSet associated_types_;
 
   // Time when StartAssociationAsync() is called to associate for a set of data
   // types.
@@ -177,6 +178,6 @@ class ModelAssociationManager {
   DISALLOW_COPY_AND_ASSIGN(ModelAssociationManager);
 };
 
-}  // namespace syncer
+}  // namespace sync_driver
 
 #endif  // COMPONENTS_SYNC_DRIVER_MODEL_ASSOCIATION_MANAGER_H__

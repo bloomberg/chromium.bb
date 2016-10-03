@@ -12,7 +12,7 @@
 
 #include "components/sync/api/entity_data.h"
 
-namespace syncer {
+namespace syncer_v2 {
 
 typedef std::pair<std::string, std::unique_ptr<EntityData>> KeyAndData;
 
@@ -31,6 +31,6 @@ class DataBatch {
   virtual KeyAndData Next() = 0;
 };
 
-}  // namespace syncer
+}  // namespace syncer_v2
 
 #endif  // COMPONENTS_SYNC_API_DATA_BATCH_H_

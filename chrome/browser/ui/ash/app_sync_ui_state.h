@@ -31,7 +31,7 @@ class ExtensionRegistry;
 // normal user profile (i.e. it does not watch for guest profile or exsiting
 // user profile) and lasts for at the most 1 minute.
 class AppSyncUIState : public KeyedService,
-                       public syncer::SyncServiceObserver,
+                       public sync_driver::SyncServiceObserver,
                        public extensions::ExtensionRegistryObserver {
  public:
   enum Status {
@@ -70,7 +70,7 @@ class AppSyncUIState : public KeyedService,
   // Invoked when |max_syncing_status_timer_| fires.
   void OnMaxSyncingTimer();
 
-  // syncer::SyncServiceObserver overrides:
+  // sync_driver::SyncServiceObserver overrides:
   void OnStateChanged() override;
 
   // extensions::ExtensionRegistryObserver overrides:

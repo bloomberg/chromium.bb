@@ -16,6 +16,7 @@
 #include "components/sync/test/fake_server/bookmark_entity.h"
 
 using std::string;
+
 using syncer::syncable::GenerateSyncableBookmarkHash;
 
 // A version must be passed when creating a FakeServerEntity, but this value

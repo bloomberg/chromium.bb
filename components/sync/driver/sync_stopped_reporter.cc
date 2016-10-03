@@ -25,7 +25,7 @@ const int kRequestTimeoutSeconds = 10;
 
 }  // namespace
 
-namespace syncer {
+namespace browser_sync {
 
 SyncStoppedReporter::SyncStoppedReporter(
     const GURL& sync_service_url,
@@ -113,4 +113,4 @@ void SyncStoppedReporter::SetTimerTaskRunnerForTest(
   timer_.SetTaskRunner(task_runner);
 }
 
-}  // namespace syncer
+}  // namespace browser_sync

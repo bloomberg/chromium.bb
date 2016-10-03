@@ -10,7 +10,7 @@
 
 #include "components/sync/api/entity_data.h"
 
-namespace syncer {
+namespace syncer_v2 {
 
 class EntityChange {
  public:
@@ -41,6 +41,6 @@ class EntityChange {
 
 typedef std::vector<EntityChange> EntityChangeList;
 
-}  // namespace syncer
+}  // namespace syncer_v2
 
 #endif  // COMPONENTS_SYNC_API_ENTITY_CHANGE_H_

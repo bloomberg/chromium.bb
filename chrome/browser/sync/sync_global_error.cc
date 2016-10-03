@@ -21,7 +21,7 @@
 SyncGlobalError::SyncGlobalError(
     GlobalErrorService* global_error_service,
     LoginUIService* login_ui_service,
-    syncer::SyncErrorController* error_controller,
+    SyncErrorController* error_controller,
     browser_sync::ProfileSyncService* profile_sync_service)
     : global_error_service_(global_error_service),
       login_ui_service_(login_ui_service),

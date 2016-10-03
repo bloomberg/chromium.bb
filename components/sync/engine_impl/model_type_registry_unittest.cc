@@ -39,11 +39,11 @@ class ModelTypeRegistryTest : public ::testing::Test {
     return state;
   }
 
-  static std::unique_ptr<ActivationContext> MakeActivationContext(
+  static std::unique_ptr<syncer_v2::ActivationContext> MakeActivationContext(
       const sync_pb::DataTypeState& data_type_state,
-      std::unique_ptr<ModelTypeProcessor> type_processor) {
-    std::unique_ptr<ActivationContext> context =
-        base::WrapUnique(new ActivationContext);
+      std::unique_ptr<syncer_v2::ModelTypeProcessor> type_processor) {
+    std::unique_ptr<syncer_v2::ActivationContext> context =
+        base::WrapUnique(new syncer_v2::ActivationContext);
     context->data_type_state = data_type_state;
     context->type_processor = std::move(type_processor);
     return context;
@@ -182,19 +182,22 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypes) {
   EXPECT_TRUE(registry()->GetEnabledTypes().Empty());
 
   registry()->ConnectType(
-      THEMES,
-      MakeActivationContext(MakeInitialDataTypeState(THEMES),
-                            base::MakeUnique<FakeModelTypeProcessor>()));
-  EXPECT_EQ(ModelTypeSet(THEMES), registry()->GetEnabledTypes());
+      syncer::THEMES,
+      MakeActivationContext(
+          MakeInitialDataTypeState(THEMES),
+          base::MakeUnique<syncer_v2::FakeModelTypeProcessor>()));
+  EXPECT_EQ(ModelTypeSet(syncer::THEMES), registry()->GetEnabledTypes());
 
   registry()->ConnectType(
-      SESSIONS,
-      MakeActivationContext(MakeInitialDataTypeState(SESSIONS),
-                            base::MakeUnique<FakeModelTypeProcessor>()));
-  EXPECT_EQ(ModelTypeSet(THEMES, SESSIONS), registry()->GetEnabledTypes());
+      syncer::SESSIONS,
+      MakeActivationContext(
+          MakeInitialDataTypeState(SESSIONS),
+          base::MakeUnique<syncer_v2::FakeModelTypeProcessor>()));
+  EXPECT_EQ(ModelTypeSet(syncer::THEMES, syncer::SESSIONS),
+            registry()->GetEnabledTypes());
 
-  registry()->DisconnectType(THEMES);
-  EXPECT_EQ(ModelTypeSet(SESSIONS), registry()->GetEnabledTypes());
+  registry()->DisconnectType(syncer::THEMES);
+  EXPECT_EQ(ModelTypeSet(syncer::SESSIONS), registry()->GetEnabledTypes());
 
   // Allow ModelTypeRegistry destruction to delete the
   // Sessions' ModelTypeSyncWorker.
@@ -215,10 +218,11 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypesWithDirectoryTypes) {
 
   // Add the themes non-blocking type.
   registry()->ConnectType(
-      THEMES,
-      MakeActivationContext(MakeInitialDataTypeState(THEMES),
-                            base::MakeUnique<FakeModelTypeProcessor>()));
-  current_types.Put(THEMES);
+      syncer::THEMES,
+      MakeActivationContext(
+          MakeInitialDataTypeState(THEMES),
+          base::MakeUnique<syncer_v2::FakeModelTypeProcessor>()));
+  current_types.Put(syncer::THEMES);
   EXPECT_EQ(current_types, registry()->GetEnabledTypes());
 
   // Add some directory types.
@@ -228,15 +232,16 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypesWithDirectoryTypes) {
 
   // Add sessions non-blocking type.
   registry()->ConnectType(
-      SESSIONS,
-      MakeActivationContext(MakeInitialDataTypeState(SESSIONS),
-                            base::MakeUnique<FakeModelTypeProcessor>()));
-  current_types.Put(SESSIONS);
+      syncer::SESSIONS,
+      MakeActivationContext(
+          MakeInitialDataTypeState(SESSIONS),
+          base::MakeUnique<syncer_v2::FakeModelTypeProcessor>()));
+  current_types.Put(syncer::SESSIONS);
   EXPECT_EQ(current_types, registry()->GetEnabledTypes());
 
   // Remove themes non-blocking type.
-  registry()->DisconnectType(THEMES);
-  current_types.Remove(THEMES);
+  registry()->DisconnectType(syncer::THEMES);
+  current_types.Remove(syncer::THEMES);
   EXPECT_EQ(current_types, registry()->GetEnabledTypes());
 
   // Clear all directory types.
@@ -262,9 +267,10 @@ TEST_F(ModelTypeRegistryTest, GetInitialSyncEndedTypes) {
   sync_pb::DataTypeState data_type_state = MakeInitialDataTypeState(THEMES);
   data_type_state.set_initial_sync_done(true);
   registry()->ConnectType(
-      THEMES,
-      MakeActivationContext(data_type_state,
-                            base::WrapUnique(new FakeModelTypeProcessor())));
+      syncer::THEMES,
+      MakeActivationContext(
+          data_type_state,
+          base::WrapUnique(new syncer_v2::FakeModelTypeProcessor())));
 
   EXPECT_EQ(ModelTypeSet(AUTOFILL, THEMES),
             registry()->GetInitialSyncEndedTypes());

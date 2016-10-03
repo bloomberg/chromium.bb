@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_PEOPLE_HANDLER_H_
 
 #include <memory>
-#include <string>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -37,9 +36,9 @@ namespace signin_metrics {
 enum class AccessPoint;
 }  // namespace signin_metrics
 
-namespace syncer {
+namespace sync_driver {
 class SyncSetupInProgressHandle;
-}  // namespace syncer
+}  // namespace sync_driver
 
 namespace settings {
 
@@ -47,7 +46,7 @@ class PeopleHandler : public SettingsPageUIHandler,
                       public SigninManagerBase::Observer,
                       public SyncStartupTracker::Observer,
                       public LoginUIService::LoginUI,
-                      public syncer::SyncServiceObserver {
+                      public sync_driver::SyncServiceObserver {
  public:
   // TODO(tommycli): Remove these strings and instead use WebUIListener events.
   // These string constants are used from JavaScript (sync_browser_proxy.js).
@@ -119,7 +118,7 @@ class PeopleHandler : public SettingsPageUIHandler,
   void GoogleSignedOut(const std::string& account_id,
                        const std::string& username) override;
 
-  // syncer::SyncServiceObserver implementation.
+  // sync_driver::SyncServiceObserver implementation.
   void OnStateChanged() override;
 
   // Returns a newly created dictionary with a number of properties that
@@ -183,7 +182,7 @@ class PeopleHandler : public SettingsPageUIHandler,
   std::unique_ptr<SyncStartupTracker> sync_startup_tracker_;
 
   // Prevents Sync from running until configuration is complete.
-  std::unique_ptr<syncer::SyncSetupInProgressHandle> sync_blocker_;
+  std::unique_ptr<sync_driver::SyncSetupInProgressHandle> sync_blocker_;
 
   // Set to true whenever the sync configure UI is visible. This is used to tell
   // what stage of the setup wizard the user was in and to update the UMA

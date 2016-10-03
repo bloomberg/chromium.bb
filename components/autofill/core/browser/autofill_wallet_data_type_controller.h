@@ -17,7 +17,7 @@ namespace browser_sync {
 
 // Controls syncing of either AUTOFILL_WALLET or AUTOFILL_WALLET_METADATA.
 class AutofillWalletDataTypeController
-    : public syncer::NonUIDataTypeController {
+    : public sync_driver::NonUIDataTypeController {
  public:
   // |type| should be either AUTOFILL_WALLET or AUTOFILL_WALLET_METADATA.
   // |dump_stack| is called when an unrecoverable error occurs.
@@ -25,7 +25,7 @@ class AutofillWalletDataTypeController
       syncer::ModelType type,
       const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
       const base::Closure& dump_stack,
-      syncer::SyncClient* sync_client,
+      sync_driver::SyncClient* sync_client,
       const scoped_refptr<autofill::AutofillWebDataService>& web_data_service);
   ~AutofillWalletDataTypeController() override;
 
@@ -50,7 +50,7 @@ class AutofillWalletDataTypeController
   const scoped_refptr<base::SingleThreadTaskRunner> db_thread_;
 
   // A pointer to the sync client.
-  syncer::SyncClient* const sync_client_;
+  sync_driver::SyncClient* const sync_client_;
 
   // Whether the database loaded callback has been registered.
   bool callback_registered_;

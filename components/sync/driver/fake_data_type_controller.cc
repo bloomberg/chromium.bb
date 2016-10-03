@@ -12,7 +12,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace syncer {
+using syncer::ModelType;
+
+namespace sync_driver {
 
 FakeDataTypeController::FakeDataTypeController(ModelType type)
     : DirectoryDataTypeController(type, base::Closure(), nullptr),
@@ -73,23 +75,24 @@ void FakeDataTypeController::FinishStart(ConfigureResult result) {
   }
 
   // Set |state_| first below since the callback may call state().
-  SyncMergeResult local_merge_result(type());
-  SyncMergeResult syncer_merge_result(type());
+  syncer::SyncMergeResult local_merge_result(type());
+  syncer::SyncMergeResult syncer_merge_result(type());
   if (result <= OK_FIRST_RUN) {
     state_ = RUNNING;
   } else if (result == ASSOCIATION_FAILED) {
     state_ = DISABLED;
-    local_merge_result.set_error(SyncError(FROM_HERE, SyncError::DATATYPE_ERROR,
-                                           "Association failed", type()));
+    local_merge_result.set_error(
+        syncer::SyncError(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
+                          "Association failed", type()));
   } else if (result == UNRECOVERABLE_ERROR) {
     state_ = NOT_RUNNING;
-    local_merge_result.set_error(SyncError(FROM_HERE,
-                                           SyncError::UNRECOVERABLE_ERROR,
-                                           "Unrecoverable error", type()));
+    local_merge_result.set_error(
+        syncer::SyncError(FROM_HERE, syncer::SyncError::UNRECOVERABLE_ERROR,
+                          "Unrecoverable error", type()));
   } else if (result == NEEDS_CRYPTO) {
     state_ = NOT_RUNNING;
-    local_merge_result.set_error(
-        SyncError(FROM_HERE, SyncError::CRYPTO_ERROR, "Crypto error", type()));
+    local_merge_result.set_error(syncer::SyncError(
+        FROM_HERE, syncer::SyncError::CRYPTO_ERROR, "Crypto error", type()));
   } else {
     NOTREACHED();
   }
@@ -112,8 +115,8 @@ std::string FakeDataTypeController::name() const {
   return ModelTypeToString(type());
 }
 
-ModelSafeGroup FakeDataTypeController::model_safe_group() const {
-  return GROUP_PASSIVE;
+syncer::ModelSafeGroup FakeDataTypeController::model_safe_group() const {
+  return syncer::GROUP_PASSIVE;
 }
 
 ChangeProcessor* FakeDataTypeController::GetChangeProcessor() const {
@@ -132,7 +135,7 @@ void FakeDataTypeController::SetDelayModelLoad() {
   model_load_delayed_ = true;
 }
 
-void FakeDataTypeController::SetModelLoadError(SyncError error) {
+void FakeDataTypeController::SetModelLoadError(syncer::SyncError error) {
   load_error_ = error;
 }
 
@@ -152,12 +155,12 @@ void FakeDataTypeController::SetShouldLoadModelBeforeConfigure(bool value) {
   should_load_model_before_configure_ = value;
 }
 
-std::unique_ptr<DataTypeErrorHandler>
+std::unique_ptr<syncer::DataTypeErrorHandler>
 FakeDataTypeController::CreateErrorHandler() {
   DCHECK(CalledOnValidThread());
-  return base::MakeUnique<DataTypeErrorHandlerImpl>(
+  return base::MakeUnique<syncer::DataTypeErrorHandlerImpl>(
       base::ThreadTaskRunnerHandle::Get(), base::Closure(),
       base::Bind(model_load_callback_, type()));
 }
 
-}  // namespace syncer
+}  // namespace sync_driver

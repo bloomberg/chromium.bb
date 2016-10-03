@@ -9,7 +9,7 @@
 #include "base/single_thread_task_runner.h"
 #include "components/sync/core/activation_context.h"
 
-namespace syncer {
+namespace syncer_v2 {
 
 ModelTypeConnectorProxy::ModelTypeConnectorProxy(
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
@@ -19,7 +19,7 @@ ModelTypeConnectorProxy::ModelTypeConnectorProxy(
 ModelTypeConnectorProxy::~ModelTypeConnectorProxy() {}
 
 void ModelTypeConnectorProxy::ConnectType(
-    ModelType type,
+    syncer::ModelType type,
     std::unique_ptr<ActivationContext> activation_context) {
   task_runner_->PostTask(
       FROM_HERE,
@@ -27,10 +27,10 @@ void ModelTypeConnectorProxy::ConnectType(
                  base::Passed(&activation_context)));
 }
 
-void ModelTypeConnectorProxy::DisconnectType(ModelType type) {
+void ModelTypeConnectorProxy::DisconnectType(syncer::ModelType type) {
   task_runner_->PostTask(FROM_HERE,
                          base::Bind(&ModelTypeConnector::DisconnectType,
                                     model_type_connector_, type));
 }
 
-}  // namespace syncer
+}  // namespace syncer_v2

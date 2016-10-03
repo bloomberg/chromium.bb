@@ -190,9 +190,9 @@ class LoggingJsEventHandler
   }
 };
 
-class InvalidationAdapter : public InvalidationInterface {
+class InvalidationAdapter : public syncer::InvalidationInterface {
  public:
-  explicit InvalidationAdapter(const Invalidation& invalidation)
+  explicit InvalidationAdapter(const syncer::Invalidation& invalidation)
       : invalidation_(invalidation) {}
   ~InvalidationAdapter() override {}
 
@@ -211,7 +211,7 @@ class InvalidationAdapter : public InvalidationInterface {
   void Drop() override { invalidation_.Drop(); }
 
  private:
-  Invalidation invalidation_;
+  syncer::Invalidation invalidation_;
 };
 
 class InvalidatorShim : public InvalidationHandler {
@@ -225,20 +225,20 @@ class InvalidatorShim : public InvalidationHandler {
 
   void OnIncomingInvalidation(
       const ObjectIdInvalidationMap& invalidation_map) override {
-    ObjectIdSet ids = invalidation_map.GetObjectIds();
-    for (ObjectIdSet::const_iterator ids_it = ids.begin(); ids_it != ids.end();
-         ++ids_it) {
-      ModelType type;
+    syncer::ObjectIdSet ids = invalidation_map.GetObjectIds();
+    for (syncer::ObjectIdSet::const_iterator ids_it = ids.begin();
+         ids_it != ids.end(); ++ids_it) {
+      syncer::ModelType type;
       if (!NotificationTypeToRealModelType(ids_it->name(), &type)) {
         DLOG(WARNING) << "Notification has invalid id: "
-                      << ObjectIdToString(*ids_it);
+                      << syncer::ObjectIdToString(*ids_it);
       } else {
-        SingleObjectInvalidationSet invalidation_set =
+        syncer::SingleObjectInvalidationSet invalidation_set =
             invalidation_map.ForObject(*ids_it);
-        for (SingleObjectInvalidationSet::const_iterator inv_it =
+        for (syncer::SingleObjectInvalidationSet::const_iterator inv_it =
                  invalidation_set.begin();
              inv_it != invalidation_set.end(); ++inv_it) {
-          std::unique_ptr<InvalidationInterface> inv_adapter(
+          std::unique_ptr<syncer::InvalidationInterface> inv_adapter(
               new InvalidationAdapter(*inv_it));
           sync_manager_->OnIncomingInvalidation(type, std::move(inv_adapter));
         }
@@ -317,7 +317,7 @@ int SyncClientMain(int argc, char* argv[]) {
         "Usage: %s --%s=foo@bar.com --%s=token\n"
         "[--%s=host:port] [--%s] [--%s]\n"
         "Run chrome and set a breakpoint on\n"
-        "SyncManagerImpl::UpdateCredentials() "
+        "syncer::SyncManagerImpl::UpdateCredentials() "
         "after logging into\n"
         "sync to get the token to pass into this utility.\n",
         argv[0], kEmailSwitch, kTokenSwitch, kXmppHostPortSwitch,
@@ -334,8 +334,9 @@ int SyncClientMain(int argc, char* argv[]) {
       new MyTestURLRequestContextGetter(io_thread.task_runner());
   const notifier::NotifierOptions& notifier_options =
       ParseNotifierOptions(command_line, context_getter);
-  NetworkChannelCreator network_channel_creator =
-      NonBlockingInvalidator::MakePushClientChannelCreator(notifier_options);
+  syncer::NetworkChannelCreator network_channel_creator =
+      syncer::NonBlockingInvalidator::MakePushClientChannelCreator(
+          notifier_options);
   const char kClientInfo[] = "standalone_sync_client";
   std::string invalidator_id = base::RandBytesAsString(8);
   NullInvalidationStateTracker null_invalidation_state_tracker;

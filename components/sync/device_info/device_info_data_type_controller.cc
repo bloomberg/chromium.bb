@@ -6,13 +6,13 @@
 
 #include "base/callback.h"
 
-namespace syncer {
+namespace sync_driver {
 
 DeviceInfoDataTypeController::DeviceInfoDataTypeController(
     const base::Closure& dump_stack,
     SyncClient* sync_client,
     LocalDeviceInfoProvider* local_device_info_provider)
-    : UIDataTypeController(DEVICE_INFO, dump_stack, sync_client),
+    : UIDataTypeController(syncer::DEVICE_INFO, dump_stack, sync_client),
       local_device_info_provider_(local_device_info_provider) {}
 
 DeviceInfoDataTypeController::~DeviceInfoDataTypeController() {}
@@ -45,4 +45,4 @@ void DeviceInfoDataTypeController::OnLocalDeviceInfoLoaded() {
   OnModelLoaded();
 }
 
-}  // namespace syncer
+}  // namespace sync_driver

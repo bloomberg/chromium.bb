@@ -104,7 +104,7 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
   }
 
   void CreateRootForType(ModelType model_type) {
-    syncable::Directory* directory = user_share()->directory.get();
+    syncer::syncable::Directory* directory = user_share()->directory.get();
 
     std::string tag_name = ModelTypeToRootTag(model_type);
 
@@ -121,7 +121,7 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
     node.PutIsDel(false);
     node.PutId(ids_.MakeServer(tag_name));
     sync_pb::EntitySpecifics specifics;
-    AddDefaultFieldValue(model_type, &specifics);
+    syncer::AddDefaultFieldValue(model_type, &specifics);
     node.PutSpecifics(specifics);
   }
 

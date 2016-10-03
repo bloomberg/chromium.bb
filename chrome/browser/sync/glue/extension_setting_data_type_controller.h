@@ -17,20 +17,20 @@ namespace extensions {
 class StorageFrontend;
 }
 
-namespace syncer {
+namespace sync_driver {
 class SyncClient;
 }
 
 namespace browser_sync {
 
 class ExtensionSettingDataTypeController
-    : public syncer::NonUIDataTypeController {
+    : public sync_driver::NonUIDataTypeController {
  public:
   // |type| is either EXTENSION_SETTINGS or APP_SETTINGS.
   // |dump_stack| is called when an unrecoverable error occurs.
   ExtensionSettingDataTypeController(syncer::ModelType type,
                                      const base::Closure& dump_stack,
-                                     syncer::SyncClient* sync_client,
+                                     sync_driver::SyncClient* sync_client,
                                      Profile* profile);
   ~ExtensionSettingDataTypeController() override;
 

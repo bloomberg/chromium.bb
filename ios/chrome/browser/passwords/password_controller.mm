@@ -846,7 +846,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 
   bool isSmartLockBrandingEnabled = false;
   if (self.browserState) {
-    syncer::SyncService* sync_service =
+    sync_driver::SyncService* sync_service =
         IOSChromeProfileSyncServiceFactory::GetForBrowserState(
             self.browserState);
     isSmartLockBrandingEnabled =

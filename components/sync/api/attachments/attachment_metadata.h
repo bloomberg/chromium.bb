@@ -37,7 +37,7 @@ class AttachmentMetadata {
   size_t size_;
 };
 
-typedef std::vector<AttachmentMetadata> AttachmentMetadataList;
+typedef std::vector<syncer::AttachmentMetadata> AttachmentMetadataList;
 
 }  // namespace syncer
 

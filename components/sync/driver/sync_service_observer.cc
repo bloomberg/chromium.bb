@@ -4,10 +4,10 @@
 
 #include "components/sync/driver/sync_service_observer.h"
 
-namespace syncer {
+namespace sync_driver {
 
 void SyncServiceObserver::OnSyncCycleCompleted() {
   OnStateChanged();
 }
 
-}  // namespace syncer
+}  // namespace sync_driver

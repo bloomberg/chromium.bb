@@ -8,8 +8,6 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_SYNC_BROWSER_SYNC_USERNAME_TEST_BASE_H_
 #define COMPONENTS_PASSWORD_MANAGER_SYNC_BROWSER_SYNC_USERNAME_TEST_BASE_H_
 
-#include <string>
-
 #include "components/autofill/core/common/password_form.h"
 #include "components/pref_registry/testing_pref_service_syncable.h"
 #include "components/signin/core/browser/account_tracker_service.h"
@@ -38,17 +36,19 @@ class SyncUsernameTestBase : public testing::Test {
   // passwords.
   void SetSyncingPasswords(bool syncing_passwords);
 
-  const syncer::SyncService* sync_service() const { return &sync_service_; }
+  const sync_driver::SyncService* sync_service() const {
+    return &sync_service_;
+  }
 
   const SigninManagerBase* signin_manager() { return &signin_manager_; }
 
  private:
-  class LocalFakeSyncService : public syncer::FakeSyncService {
+  class LocalFakeSyncService : public sync_driver::FakeSyncService {
    public:
     LocalFakeSyncService();
     ~LocalFakeSyncService() override;
 
-    // syncer::SyncService:
+    // sync_driver::SyncService:
     syncer::ModelTypeSet GetPreferredDataTypes() const override;
 
     void set_syncing_passwords(bool syncing_passwords) {

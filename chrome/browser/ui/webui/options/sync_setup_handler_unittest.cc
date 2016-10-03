@@ -799,7 +799,7 @@ TEST_F(SyncSetupHandlerTest, ShowSetupManuallySyncAll) {
   EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
       .WillRepeatedly(Return(false));
   SetupInitializedProfileSyncService();
-  syncer::SyncPrefs sync_prefs(profile_->GetPrefs());
+  sync_driver::SyncPrefs sync_prefs(profile_->GetPrefs());
   sync_prefs.SetKeepEverythingSynced(false);
   SetDefaultExpectationsForConfigPage();
   // This should display the sync setup dialog (not login).
@@ -821,7 +821,7 @@ TEST_F(SyncSetupHandlerTest, ShowSetupSyncForAllTypesIndividually) {
     EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
         .WillRepeatedly(Return(false));
     SetupInitializedProfileSyncService();
-    syncer::SyncPrefs sync_prefs(profile_->GetPrefs());
+    sync_driver::SyncPrefs sync_prefs(profile_->GetPrefs());
     sync_prefs.SetKeepEverythingSynced(false);
     SetDefaultExpectationsForConfigPage();
     syncer::ModelTypeSet types;

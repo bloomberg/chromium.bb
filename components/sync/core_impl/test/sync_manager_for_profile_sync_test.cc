@@ -30,7 +30,7 @@ void SyncManagerForProfileSyncTest::NotifyInitializationSuccess() {
   for (ModelTypeSet::Iterator it = early_download_types.First(); it.Good();
        it.Inc()) {
     if (!directory->InitialSyncEndedForType(it.Get())) {
-      TestUserShare::CreateRoot(it.Get(), user_share);
+      syncer::TestUserShare::CreateRoot(it.Get(), user_share);
     }
   }
 

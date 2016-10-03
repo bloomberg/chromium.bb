@@ -12,7 +12,7 @@ class DataTypeState;
 class EntityMetadata;
 }  // namespace sync_pb
 
-namespace syncer {
+namespace syncer_v2 {
 
 // Interface used by the processor and service to communicate about metadata.
 // The purpose of the interface is to record changes to data type global and
@@ -45,6 +45,6 @@ class MetadataChangeList {
   virtual void ClearMetadata(const std::string& storage_key) = 0;
 };
 
-}  // namespace syncer
+}  // namespace syncer_v2
 
 #endif  // COMPONENTS_SYNC_API_METADATA_CHANGE_LIST_H_

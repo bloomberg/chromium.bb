@@ -30,7 +30,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace syncer {
+namespace sync_driver {
 
 namespace {
 
@@ -44,39 +44,40 @@ class TestSyncApiComponentFactory : public SyncApiComponentFactory {
 
   // SyncApiComponentFactory implementation.
   void RegisterDataTypes(
-      SyncService* sync_service,
+      sync_driver::SyncService* sync_service,
       const RegisterDataTypesMethod& register_platform_types_method) override {}
-  DataTypeManager* CreateDataTypeManager(
-      const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
-      const DataTypeController::TypeMap* controllers,
-      const DataTypeEncryptionHandler* encryption_handler,
-      SyncBackendHost* backend,
-      DataTypeManagerObserver* observer) override {
+  sync_driver::DataTypeManager* CreateDataTypeManager(
+      const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
+          debug_info_listener,
+      const sync_driver::DataTypeController::TypeMap* controllers,
+      const sync_driver::DataTypeEncryptionHandler* encryption_handler,
+      browser_sync::SyncBackendHost* backend,
+      sync_driver::DataTypeManagerObserver* observer) override {
     return nullptr;
   }
-  SyncBackendHost* CreateSyncBackendHost(
+  browser_sync::SyncBackendHost* CreateSyncBackendHost(
       const std::string& name,
       invalidation::InvalidationService* invalidator,
-      const base::WeakPtr<SyncPrefs>& sync_prefs,
+      const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
       const base::FilePath& sync_folder) override {
     return nullptr;
   }
-  std::unique_ptr<LocalDeviceInfoProvider> CreateLocalDeviceInfoProvider()
-      override {
+  std::unique_ptr<sync_driver::LocalDeviceInfoProvider>
+  CreateLocalDeviceInfoProvider() override {
     return nullptr;
   }
   SyncApiComponentFactory::SyncComponents CreateBookmarkSyncComponents(
-      SyncService* sync_service,
-      std::unique_ptr<DataTypeErrorHandler> error_handler) override {
+      sync_driver::SyncService* sync_service,
+      std::unique_ptr<syncer::DataTypeErrorHandler> error_handler) override {
     return SyncApiComponentFactory::SyncComponents(nullptr, nullptr);
   }
-  std::unique_ptr<AttachmentService> CreateAttachmentService(
-      std::unique_ptr<AttachmentStoreForSync> attachment_store,
-      const UserShare& user_share,
+  std::unique_ptr<syncer::AttachmentService> CreateAttachmentService(
+      std::unique_ptr<syncer::AttachmentStoreForSync> attachment_store,
+      const syncer::UserShare& user_share,
       const std::string& store_birthday,
-      ModelType model_type,
-      AttachmentService::Delegate* delegate) override {
-    return AttachmentServiceImpl::CreateForTest();
+      syncer::ModelType model_type,
+      syncer::AttachmentService::Delegate* delegate) override {
+    return syncer::AttachmentServiceImpl::CreateForTest();
   }
 };
 
@@ -94,15 +95,15 @@ class SyncSharedChangeProcessorTest : public testing::Test,
   }
 
   // FakeSyncClient override.
-  base::WeakPtr<SyncableService> GetSyncableServiceForType(
-      ModelType type) override {
+  base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
+      syncer::ModelType type) override {
     return db_syncable_service_->AsWeakPtr();
   }
 
  protected:
   void SetUp() override {
     test_user_share_.SetUp();
-    shared_change_processor_ = new SharedChangeProcessor(AUTOFILL);
+    shared_change_processor_ = new SharedChangeProcessor(syncer::AUTOFILL);
     ASSERT_TRUE(backend_thread_.Start());
     ASSERT_TRUE(backend_thread_.task_runner()->PostTask(
         FROM_HERE,
@@ -164,7 +165,7 @@ class SyncSharedChangeProcessorTest : public testing::Test,
   void SetUpDBSyncableService() {
     DCHECK(backend_thread_.task_runner()->BelongsToCurrentThread());
     DCHECK(!db_syncable_service_.get());
-    db_syncable_service_.reset(new FakeSyncableService());
+    db_syncable_service_.reset(new syncer::FakeSyncableService());
   }
 
   // Used by TearDown().
@@ -178,7 +179,7 @@ class SyncSharedChangeProcessorTest : public testing::Test,
     DCHECK(backend_thread_.task_runner()->BelongsToCurrentThread());
     DCHECK(db_syncable_service_.get());
     db_syncable_service_->set_attachment_store(
-        AttachmentStore::CreateInMemoryStore());
+        syncer::AttachmentStore::CreateInMemoryStore());
   }
 
   // Used by Connect().  The SharedChangeProcessor is passed in
@@ -189,8 +190,8 @@ class SyncSharedChangeProcessorTest : public testing::Test,
     DCHECK(backend_thread_.task_runner()->BelongsToCurrentThread());
     EXPECT_TRUE(shared_change_processor->Connect(
         this, &processor_factory_, test_user_share_.user_share(),
-        base::MakeUnique<DataTypeErrorHandlerMock>(),
-        base::WeakPtr<SyncMergeResult>()));
+        base::MakeUnique<syncer::DataTypeErrorHandlerMock>(),
+        base::WeakPtr<syncer::SyncMergeResult>()));
     did_connect_ = true;
   }
 
@@ -203,7 +204,7 @@ class SyncSharedChangeProcessorTest : public testing::Test,
 
   base::MessageLoop frontend_loop_;
   base::Thread backend_thread_;
-  TestUserShare test_user_share_;
+  syncer::TestUserShare test_user_share_;
   TestSyncApiComponentFactory factory_;
 
   scoped_refptr<SharedChangeProcessor> shared_change_processor_;
@@ -213,7 +214,7 @@ class SyncSharedChangeProcessorTest : public testing::Test,
   bool has_attachment_service_;
 
   // Used only on DB thread.
-  std::unique_ptr<FakeSyncableService> db_syncable_service_;
+  std::unique_ptr<syncer::FakeSyncableService> db_syncable_service_;
 };
 
 // Simply connect the shared change processor.  It should succeed, and
@@ -233,4 +234,4 @@ TEST_F(SyncSharedChangeProcessorTest, ConnectWithAttachmentStore) {
 
 }  // namespace
 
-}  // namespace syncer
+}  // namespace sync_driver

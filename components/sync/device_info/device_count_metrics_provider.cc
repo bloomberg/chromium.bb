@@ -9,7 +9,7 @@
 #include "base/metrics/sparse_histogram.h"
 #include "components/sync/device_info/device_info_tracker.h"
 
-namespace syncer {
+namespace sync_driver {
 
 DeviceCountMetricsProvider::DeviceCountMetricsProvider(
     const ProvideTrackersCallback& provide_trackers)
@@ -18,7 +18,7 @@ DeviceCountMetricsProvider::DeviceCountMetricsProvider(
 DeviceCountMetricsProvider::~DeviceCountMetricsProvider() {}
 
 int DeviceCountMetricsProvider::MaxActiveDeviceCount() const {
-  std::vector<const DeviceInfoTracker*> trackers;
+  std::vector<const sync_driver::DeviceInfoTracker*> trackers;
   provide_trackers_.Run(&trackers);
   int max = 0;
   for (auto* tracker : trackers) {
@@ -33,4 +33,4 @@ void DeviceCountMetricsProvider::ProvideGeneralMetrics(
                               std::min(MaxActiveDeviceCount(), 100));
 }
 
-}  // namespace syncer
+}  // namespace sync_driver

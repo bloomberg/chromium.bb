@@ -6,10 +6,8 @@
 
 #include <stdint.h>
 
-#include <memory>
 #include <set>
 #include <string>
-#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -115,7 +113,7 @@ TEST_F(GetUpdatesProcessorTest, BookmarkNudge) {
             gu_msg.caller_info().source());
   EXPECT_EQ(sync_pb::SyncEnums::GU_TRIGGER, gu_msg.get_updates_origin());
   for (int i = 0; i < gu_msg.from_progress_marker_size(); ++i) {
-    ModelType type = GetModelTypeFromSpecificsFieldNumber(
+    syncer::ModelType type = GetModelTypeFromSpecificsFieldNumber(
         gu_msg.from_progress_marker(i).data_type_id());
 
     const sync_pb::DataTypeProgressMarker& progress_marker =
@@ -163,7 +161,7 @@ TEST_F(GetUpdatesProcessorTest, NotifyMany) {
             gu_msg.caller_info().source());
   EXPECT_EQ(sync_pb::SyncEnums::GU_TRIGGER, gu_msg.get_updates_origin());
   for (int i = 0; i < gu_msg.from_progress_marker_size(); ++i) {
-    ModelType type = GetModelTypeFromSpecificsFieldNumber(
+    syncer::ModelType type = GetModelTypeFromSpecificsFieldNumber(
         gu_msg.from_progress_marker(i).data_type_id());
 
     const sync_pb::DataTypeProgressMarker& progress_marker =
@@ -203,7 +201,7 @@ TEST_F(GetUpdatesProcessorTest, InitialSyncRequest) {
             gu_msg.caller_info().source());
   EXPECT_EQ(sync_pb::SyncEnums::GU_TRIGGER, gu_msg.get_updates_origin());
   for (int i = 0; i < gu_msg.from_progress_marker_size(); ++i) {
-    ModelType type = GetModelTypeFromSpecificsFieldNumber(
+    syncer::ModelType type = GetModelTypeFromSpecificsFieldNumber(
         gu_msg.from_progress_marker(i).data_type_id());
 
     const sync_pb::DataTypeProgressMarker& progress_marker =
@@ -237,7 +235,7 @@ TEST_F(GetUpdatesProcessorTest, ConfigureTest) {
 
   ModelTypeSet progress_types;
   for (int i = 0; i < gu_msg.from_progress_marker_size(); ++i) {
-    ModelType type = GetModelTypeFromSpecificsFieldNumber(
+    syncer::ModelType type = GetModelTypeFromSpecificsFieldNumber(
         gu_msg.from_progress_marker(i).data_type_id());
     progress_types.Put(type);
   }
@@ -258,7 +256,7 @@ TEST_F(GetUpdatesProcessorTest, PollTest) {
 
   ModelTypeSet progress_types;
   for (int i = 0; i < gu_msg.from_progress_marker_size(); ++i) {
-    ModelType type = GetModelTypeFromSpecificsFieldNumber(
+    syncer::ModelType type = GetModelTypeFromSpecificsFieldNumber(
         gu_msg.from_progress_marker(i).data_type_id());
     progress_types.Put(type);
   }
@@ -289,7 +287,7 @@ TEST_F(GetUpdatesProcessorTest, RetryTest) {
 
   ModelTypeSet progress_types;
   for (int i = 0; i < gu_msg.from_progress_marker_size(); ++i) {
-    ModelType type = GetModelTypeFromSpecificsFieldNumber(
+    syncer::ModelType type = GetModelTypeFromSpecificsFieldNumber(
         gu_msg.from_progress_marker(i).data_type_id());
     progress_types.Put(type);
   }

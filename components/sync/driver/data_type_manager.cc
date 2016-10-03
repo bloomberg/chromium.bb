@@ -4,12 +4,13 @@
 
 #include "components/sync/driver/data_type_manager.h"
 
-namespace syncer {
+namespace sync_driver {
 
 DataTypeManager::ConfigureResult::ConfigureResult() : status(UNKNOWN) {}
 
-DataTypeManager::ConfigureResult::ConfigureResult(ConfigureStatus status,
-                                                  ModelTypeSet requested_types)
+DataTypeManager::ConfigureResult::ConfigureResult(
+    ConfigureStatus status,
+    syncer::ModelTypeSet requested_types)
     : status(status), requested_types(requested_types) {}
 
 DataTypeManager::ConfigureResult::ConfigureResult(
@@ -33,4 +34,4 @@ std::string DataTypeManager::ConfigureStatusToString(ConfigureStatus status) {
   return std::string();
 }
 
-}  // namespace syncer
+}  // namespace sync_driver

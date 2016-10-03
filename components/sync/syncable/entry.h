@@ -15,7 +15,6 @@
 #include "components/sync/syncable/entry_kernel.h"
 
 namespace syncer {
-
 class Cryptographer;
 class ReadNode;
 
@@ -271,7 +270,7 @@ class Entry {
   EntryKernel* kernel_;
 
  private:
-  friend class syncer::syncable::Directory;
+  friend class Directory;
   friend class syncer::ReadNode;
   friend std::ostream& operator<<(std::ostream& s, const Entry& e);
 

@@ -785,17 +785,17 @@ void SyncManagerImpl::RequestNudgeForDataTypes(
   scheduler_->ScheduleLocalNudge(types, nudge_location);
 }
 
-void SyncManagerImpl::NudgeForInitialDownload(ModelType type) {
+void SyncManagerImpl::NudgeForInitialDownload(syncer::ModelType type) {
   DCHECK(thread_checker_.CalledOnValidThread());
   scheduler_->ScheduleInitialSyncNudge(type);
 }
 
-void SyncManagerImpl::NudgeForCommit(ModelType type) {
+void SyncManagerImpl::NudgeForCommit(syncer::ModelType type) {
   DCHECK(thread_checker_.CalledOnValidThread());
   RequestNudgeForDataTypes(FROM_HERE, ModelTypeSet(type));
 }
 
-void SyncManagerImpl::NudgeForRefresh(ModelType type) {
+void SyncManagerImpl::NudgeForRefresh(syncer::ModelType type) {
   DCHECK(thread_checker_.CalledOnValidThread());
   RefreshTypes(ModelTypeSet(type));
 }
@@ -857,7 +857,7 @@ void SyncManagerImpl::SetInvalidatorEnabled(bool invalidator_enabled) {
 }
 
 void SyncManagerImpl::OnIncomingInvalidation(
-    ModelType type,
+    syncer::ModelType type,
     std::unique_ptr<InvalidationInterface> invalidation) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -888,10 +888,10 @@ UserShare* SyncManagerImpl::GetUserShare() {
   return &share_;
 }
 
-std::unique_ptr<ModelTypeConnector>
+std::unique_ptr<syncer_v2::ModelTypeConnector>
 SyncManagerImpl::GetModelTypeConnectorProxy() {
   DCHECK(initialized_);
-  return base::MakeUnique<ModelTypeConnectorProxy>(
+  return base::MakeUnique<syncer_v2::ModelTypeConnectorProxy>(
       base::ThreadTaskRunnerHandle::Get(), model_type_registry_->AsWeakPtr());
 }
 
@@ -910,8 +910,8 @@ bool SyncManagerImpl::ReceivedExperiment(Experiments* experiments) {
   bool found_experiment = false;
 
   ReadNode favicon_sync_node(&trans);
-  if (favicon_sync_node.InitByClientTagLookup(EXPERIMENTS, kFaviconSyncTag) ==
-      BaseNode::INIT_OK) {
+  if (favicon_sync_node.InitByClientTagLookup(
+          syncer::EXPERIMENTS, syncer::kFaviconSyncTag) == BaseNode::INIT_OK) {
     experiments->favicon_sync_limit =
         favicon_sync_node.GetExperimentsSpecifics()
             .favicon_sync()
@@ -921,7 +921,8 @@ bool SyncManagerImpl::ReceivedExperiment(Experiments* experiments) {
 
   ReadNode pre_commit_update_avoidance_node(&trans);
   if (pre_commit_update_avoidance_node.InitByClientTagLookup(
-          EXPERIMENTS, kPreCommitUpdateAvoidanceTag) == BaseNode::INIT_OK) {
+          syncer::EXPERIMENTS, syncer::kPreCommitUpdateAvoidanceTag) ==
+      BaseNode::INIT_OK) {
     cycle_context_->set_server_enabled_pre_commit_update_avoidance(
         pre_commit_update_avoidance_node.GetExperimentsSpecifics()
             .pre_commit_update_avoidance()
@@ -932,7 +933,8 @@ bool SyncManagerImpl::ReceivedExperiment(Experiments* experiments) {
 
   ReadNode gcm_invalidations_node(&trans);
   if (gcm_invalidations_node.InitByClientTagLookup(
-          EXPERIMENTS, kGCMInvalidationsTag) == BaseNode::INIT_OK) {
+          syncer::EXPERIMENTS, syncer::kGCMInvalidationsTag) ==
+      BaseNode::INIT_OK) {
     const sync_pb::GcmInvalidationsFlags& gcm_invalidations =
         gcm_invalidations_node.GetExperimentsSpecifics().gcm_invalidations();
     if (gcm_invalidations.has_enabled()) {
@@ -959,17 +961,17 @@ SyncManagerImpl::GetBufferedProtocolEvents() {
 }
 
 void SyncManagerImpl::RegisterDirectoryTypeDebugInfoObserver(
-    TypeDebugInfoObserver* observer) {
+    syncer::TypeDebugInfoObserver* observer) {
   model_type_registry_->RegisterDirectoryTypeDebugInfoObserver(observer);
 }
 
 void SyncManagerImpl::UnregisterDirectoryTypeDebugInfoObserver(
-    TypeDebugInfoObserver* observer) {
+    syncer::TypeDebugInfoObserver* observer) {
   model_type_registry_->UnregisterDirectoryTypeDebugInfoObserver(observer);
 }
 
 bool SyncManagerImpl::HasDirectoryTypeDebugInfoObserver(
-    TypeDebugInfoObserver* observer) {
+    syncer::TypeDebugInfoObserver* observer) {
   return model_type_registry_->HasDirectoryTypeDebugInfoObserver(observer);
 }
 

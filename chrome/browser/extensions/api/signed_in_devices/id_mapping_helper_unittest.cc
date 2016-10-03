@@ -14,7 +14,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using syncer::DeviceInfo;
+using sync_driver::DeviceInfo;
 
 namespace extensions {
 bool VerifyDictionary(

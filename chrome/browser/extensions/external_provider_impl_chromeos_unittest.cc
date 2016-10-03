@@ -167,7 +167,7 @@ TEST_F(ExternalProviderImplChromeOSTest, PolicyDisabled) {
   service_->CheckForExternalUpdates();
 
   // Sync is dsabled by policy.
-  profile_->GetPrefs()->SetBoolean(syncer::prefs::kSyncManaged, true);
+  profile_->GetPrefs()->SetBoolean(sync_driver::prefs::kSyncManaged, true);
 
   content::WindowedNotificationObserver(
       extensions::NOTIFICATION_CRX_INSTALLER_DONE,

@@ -10,7 +10,7 @@
 
 MigrationWatcher::MigrationWatcher(ProfileSyncServiceHarness* harness)
     : harness_(harness), migration_waiter_(NULL) {
-  syncer::BackendMigrator* migrator =
+  browser_sync::BackendMigrator* migrator =
       harness_->service()->GetBackendMigratorForTest();
   // PSS must have a migrator after sync is setup and initial data type
   // configuration is complete.
@@ -22,9 +22,9 @@ MigrationWatcher::~MigrationWatcher() {
 }
 
 bool MigrationWatcher::HasPendingBackendMigration() const {
-  syncer::BackendMigrator* migrator =
+  browser_sync::BackendMigrator* migrator =
       harness_->service()->GetBackendMigratorForTest();
-  return migrator && migrator->state() != syncer::BackendMigrator::IDLE;
+  return migrator && migrator->state() != browser_sync::BackendMigrator::IDLE;
 }
 
 syncer::ModelTypeSet MigrationWatcher::GetMigratedTypes() const {

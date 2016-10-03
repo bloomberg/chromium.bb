@@ -109,11 +109,11 @@ class TypeDebugInfoCache : public TypeDebugInfoObserver {
   StatusCounters GetLatestStatusCounters(ModelType type) const;
 
   // TypeDebugInfoObserver implementation.
-  void OnCommitCountersUpdated(ModelType type,
+  void OnCommitCountersUpdated(syncer::ModelType type,
                                const CommitCounters& counters) override;
-  void OnUpdateCountersUpdated(ModelType type,
+  void OnUpdateCountersUpdated(syncer::ModelType type,
                                const UpdateCounters& counters) override;
-  void OnStatusCountersUpdated(ModelType type,
+  void OnStatusCountersUpdated(syncer::ModelType type,
                                const StatusCounters& counters) override;
 
  private:
@@ -160,19 +160,19 @@ StatusCounters TypeDebugInfoCache::GetLatestStatusCounters(
 }
 
 void TypeDebugInfoCache::OnCommitCountersUpdated(
-    ModelType type,
+    syncer::ModelType type,
     const CommitCounters& counters) {
   commit_counters_map_[type] = counters;
 }
 
 void TypeDebugInfoCache::OnUpdateCountersUpdated(
-    ModelType type,
+    syncer::ModelType type,
     const UpdateCounters& counters) {
   update_counters_map_[type] = counters;
 }
 
 void TypeDebugInfoCache::OnStatusCountersUpdated(
-    ModelType type,
+    syncer::ModelType type,
     const StatusCounters& counters) {
   status_counters_map_[type] = counters;
 }

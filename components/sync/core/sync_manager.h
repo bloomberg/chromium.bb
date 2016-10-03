@@ -320,8 +320,8 @@ class SyncManager {
 
   // Inform the syncer that its cached information about a type is obsolete.
   virtual void OnIncomingInvalidation(
-      ModelType type,
-      std::unique_ptr<InvalidationInterface> invalidation) = 0;
+      syncer::ModelType type,
+      std::unique_ptr<syncer::InvalidationInterface> invalidation) = 0;
 
   // Adds a listener to be notified of sync events.
   // NOTE: It is OK (in fact, it's probably a good idea) to call this before
@@ -347,7 +347,8 @@ class SyncManager {
   virtual UserShare* GetUserShare() = 0;
 
   // Returns an instance of the main interface for non-blocking sync types.
-  virtual std::unique_ptr<ModelTypeConnector> GetModelTypeConnectorProxy() = 0;
+  virtual std::unique_ptr<syncer_v2::ModelTypeConnector>
+  GetModelTypeConnectorProxy() = 0;
 
   // Returns the cache_guid of the currently open database.
   // Requires that the SyncManager be initialized.
@@ -374,11 +375,11 @@ class SyncManager {
 
   // Functions to manage registrations of DebugInfoObservers.
   virtual void RegisterDirectoryTypeDebugInfoObserver(
-      TypeDebugInfoObserver* observer) = 0;
+      syncer::TypeDebugInfoObserver* observer) = 0;
   virtual void UnregisterDirectoryTypeDebugInfoObserver(
-      TypeDebugInfoObserver* observer) = 0;
+      syncer::TypeDebugInfoObserver* observer) = 0;
   virtual bool HasDirectoryTypeDebugInfoObserver(
-      TypeDebugInfoObserver* observer) = 0;
+      syncer::TypeDebugInfoObserver* observer) = 0;
 
   // Request that all current counter values be emitted as though they had just
   // been updated.  Useful for initializing new observers' state.

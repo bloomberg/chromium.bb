@@ -22,7 +22,13 @@
 #include "components/sync/engine_impl/worker_entity_tracker.h"
 #include "components/sync/syncable/syncable_util.h"
 
-namespace syncer {
+namespace syncer_v2 {
+
+using syncer::CommitContribution;
+using syncer::Cryptographer;
+using syncer::ModelType;
+using syncer::NudgeHandler;
+using syncer::SyncerError;
 
 ModelTypeWorker::ModelTypeWorker(
     ModelType type,
@@ -89,7 +95,7 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
     const sync_pb::DataTypeProgressMarker& progress_marker,
     const sync_pb::DataTypeContext& mutated_context,
     const SyncEntityList& applicable_updates,
-    StatusController* status) {
+    syncer::StatusController* status) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // TODO(rlarocque): Handle data type context conflicts.
@@ -113,8 +119,8 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
     EntityData data;
     data.id = update_entity->id_string();
     data.client_tag_hash = client_tag_hash;
-    data.creation_time = ProtoTimeToTime(update_entity->ctime());
-    data.modification_time = ProtoTimeToTime(update_entity->mtime());
+    data.creation_time = syncer::ProtoTimeToTime(update_entity->ctime());
+    data.modification_time = syncer::ProtoTimeToTime(update_entity->mtime());
     data.non_unique_name = update_entity->name();
 
     UpdateResponseData response_data;
@@ -152,10 +158,10 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
     }
   }
 
-  return SYNCER_OK;
+  return syncer::SYNCER_OK;
 }
 
-void ModelTypeWorker::ApplyUpdates(StatusController* status) {
+void ModelTypeWorker::ApplyUpdates(syncer::StatusController* status) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // This should only ever be called after one PassiveApplyUpdates.
   DCHECK(data_type_state_.initial_sync_done());
@@ -163,7 +169,7 @@ void ModelTypeWorker::ApplyUpdates(StatusController* status) {
   ApplyPendingUpdates();
 }
 
-void ModelTypeWorker::PassiveApplyUpdates(StatusController* status) {
+void ModelTypeWorker::PassiveApplyUpdates(syncer::StatusController* status) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // This should only be called at the end of the very first download cycle.
   DCHECK(!data_type_state_.initial_sync_done());
@@ -191,7 +197,7 @@ void ModelTypeWorker::EnqueueForCommit(const CommitRequestDataList& list) {
   for (const CommitRequestData& commit : list) {
     const EntityData& data = commit.entity.value();
     if (!data.is_deleted()) {
-      DCHECK_EQ(type_, GetModelTypeFromSpecifics(data.specifics));
+      DCHECK_EQ(type_, syncer::GetModelTypeFromSpecifics(data.specifics));
     }
     GetOrCreateEntityTracker(data)->RequestCommit(commit);
   }
@@ -412,4 +418,4 @@ WorkerEntityTracker* ModelTypeWorker::GetOrCreateEntityTracker(
   return entity ? entity : CreateEntityTracker(data);
 }
 
-}  // namespace syncer
+}  // namespace syncer_v2

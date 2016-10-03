@@ -42,10 +42,10 @@ const int32_t kCurrentSchemaVersion = 1;
 const base::FilePath::CharType kLeveldbDirectory[] =
     FILE_PATH_LITERAL("leveldb");
 
-// Converts AttachmentStore::Component values into
+// Converts syncer::AttachmentStore::Component values into
 // attachment_store_pb::RecordMetadata::Component.
 attachment_store_pb::RecordMetadata::Component ComponentToProto(
-    AttachmentStore::Component component) {
+    syncer::AttachmentStore::Component component) {
   switch (component) {
     case AttachmentStore::MODEL_TYPE:
       return attachment_store_pb::RecordMetadata::MODEL_TYPE;

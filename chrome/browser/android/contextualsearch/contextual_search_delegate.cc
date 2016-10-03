@@ -5,7 +5,6 @@
 #include "chrome/browser/android/contextualsearch/contextual_search_delegate.h"
 
 #include <algorithm>
-#include <utility>
 
 #include "base/base64.h"
 #include "base/command_line.h"
@@ -61,7 +60,7 @@ const int kSurroundingSizeForUI = 60;
 // The version of the Contextual Cards API that we want to invoke.
 const int kContextualCardsVersion = 1;
 
-}  // namespace
+} // namespace
 
 // URLFetcher ID, only used for tests: we only have one kind of fetcher.
 const int ContextualSearchDelegate::kContextualSearchURLFetcherID = 1;
@@ -410,7 +409,7 @@ bool ContextualSearchDelegate::CanSendPageURL(
   // History.
   browser_sync::ProfileSyncService* service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
-  syncer::SyncPrefs sync_prefs(profile->GetPrefs());
+  sync_driver::SyncPrefs sync_prefs(profile->GetPrefs());
   if (service == NULL || !service->CanSyncStart() ||
       !sync_prefs.GetPreferredDataTypes(syncer::UserTypes())
            .Has(syncer::PROXY_TABS) ||

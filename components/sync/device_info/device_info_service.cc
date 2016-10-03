@@ -20,10 +20,22 @@
 #include "components/sync/protocol/data_type_state.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 
-namespace syncer {
+namespace sync_driver_v2 {
 
 using base::Time;
 using base::TimeDelta;
+using syncer::SyncError;
+using syncer_v2::DataBatchImpl;
+using syncer_v2::EntityChange;
+using syncer_v2::EntityChangeList;
+using syncer_v2::EntityData;
+using syncer_v2::EntityDataMap;
+using syncer_v2::MetadataBatch;
+using syncer_v2::MetadataChangeList;
+using syncer_v2::ModelTypeStore;
+using syncer_v2::SimpleMetadataChangeList;
+using sync_driver::DeviceInfo;
+using sync_driver::DeviceInfoUtil;
 using sync_pb::DataTypeState;
 using sync_pb::DeviceInfoSpecifics;
 using sync_pb::EntitySpecifics;
@@ -34,10 +46,10 @@ using Result = ModelTypeStore::Result;
 using WriteBatch = ModelTypeStore::WriteBatch;
 
 DeviceInfoService::DeviceInfoService(
-    LocalDeviceInfoProvider* local_device_info_provider,
+    sync_driver::LocalDeviceInfoProvider* local_device_info_provider,
     const StoreFactoryFunction& callback,
     const ChangeProcessorFactory& change_processor_factory)
-    : ModelTypeService(change_processor_factory, DEVICE_INFO),
+    : ModelTypeService(change_processor_factory, syncer::DEVICE_INFO),
       local_device_info_provider_(local_device_info_provider) {
   DCHECK(local_device_info_provider);
 
@@ -96,7 +108,7 @@ SyncError DeviceInfoService::MergeSyncData(
         // This device is valid right now and this entry is about to be
         // committed, use this as an opportunity to refresh the timestamp.
         all_data_[local_guid]->set_last_updated_timestamp(
-            TimeToProtoTime(Time::Now()));
+            syncer::TimeToProtoTime(Time::Now()));
       }
     } else {
       // Remote data wins conflicts.
@@ -182,7 +194,8 @@ std::string DeviceInfoService::GetClientTag(const EntityData& entity_data) {
   return DeviceInfoUtil::SpecificsToTag(entity_data.specifics.device_info());
 }
 
-std::string DeviceInfoService::GetStorageKey(const EntityData& entity_data) {
+std::string DeviceInfoService::GetStorageKey(
+    const syncer_v2::EntityData& entity_data) {
   DCHECK(entity_data.specifics.has_device_info());
   return entity_data.specifics.device_info().cache_guid();
 }
@@ -460,7 +473,7 @@ void DeviceInfoService::SendLocalData() {
 
   std::unique_ptr<DeviceInfoSpecifics> specifics =
       CopyToSpecifics(*local_device_info_provider_->GetLocalDeviceInfo());
-  specifics->set_last_updated_timestamp(TimeToProtoTime(Time::Now()));
+  specifics->set_last_updated_timestamp(syncer::TimeToProtoTime(Time::Now()));
 
   std::unique_ptr<MetadataChangeList> metadata_change_list =
       CreateMetadataChangeList();
@@ -514,10 +527,10 @@ void DeviceInfoService::ReportStartupErrorToSync(const std::string& msg) {
 Time DeviceInfoService::GetLastUpdateTime(
     const DeviceInfoSpecifics& specifics) {
   if (specifics.has_last_updated_timestamp()) {
-    return ProtoTimeToTime(specifics.last_updated_timestamp());
+    return syncer::ProtoTimeToTime(specifics.last_updated_timestamp());
   } else {
     return Time();
   }
 }
 
-}  // namespace syncer
+}  // namespace sync_driver_v2

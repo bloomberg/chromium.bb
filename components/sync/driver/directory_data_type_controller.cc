@@ -9,10 +9,10 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/syncable/syncable_read_transaction.h"
 
-namespace syncer {
+namespace sync_driver {
 
 DirectoryDataTypeController::DirectoryDataTypeController(
-    ModelType type,
+    syncer::ModelType type,
     const base::Closure& dump_stack,
     SyncClient* sync_client)
     : DataTypeController(type, dump_stack), sync_client_(sync_client) {}
@@ -54,11 +54,11 @@ void DirectoryDataTypeController::DeactivateDataType(
 // static
 std::unique_ptr<base::ListValue>
 DirectoryDataTypeController::GetAllNodesForTypeFromDirectory(
-    ModelType type,
-    syncable::Directory* directory) {
+    syncer::ModelType type,
+    syncer::syncable::Directory* directory) {
   DCHECK(directory);
-  syncable::ReadTransaction trans(FROM_HERE, directory);
+  syncer::syncable::ReadTransaction trans(FROM_HERE, directory);
   return directory->GetNodeDetailsForType(&trans, type);
 }
 
-}  // namespace syncer
+}  // namespace sync_driver

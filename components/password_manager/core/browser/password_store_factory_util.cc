@@ -17,7 +17,8 @@ namespace password_manager {
 
 namespace {
 
-bool ShouldAffiliationBasedMatchingBeActive(syncer::SyncService* sync_service) {
+bool ShouldAffiliationBasedMatchingBeActive(
+    sync_driver::SyncService* sync_service) {
   return base::FeatureList::IsEnabled(features::kAffiliationBasedMatching) &&
          sync_service && sync_service->CanSyncStart() &&
          sync_service->IsSyncActive() &&
@@ -54,7 +55,7 @@ base::FilePath GetAffiliationDatabasePath(const base::FilePath& profile_path) {
 
 void ToggleAffiliationBasedMatchingBasedOnPasswordSyncedState(
     PasswordStore* password_store,
-    syncer::SyncService* sync_service,
+    sync_driver::SyncService* sync_service,
     net::URLRequestContextGetter* request_context_getter,
     const base::FilePath& profile_path,
     scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner) {

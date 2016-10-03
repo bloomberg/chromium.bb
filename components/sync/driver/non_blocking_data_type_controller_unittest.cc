@@ -22,21 +22,21 @@
 #include "components/sync/driver/sync_prefs.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace syncer {
+namespace sync_driver {
 class SyncClient;
-}  // namespace syncer
+}  // namespace sync_driver
 
-namespace syncer {
+namespace sync_driver_v2 {
 
 namespace {
 
-ModelType kTestModelType = AUTOFILL;
+syncer::ModelType kTestModelType = syncer::AUTOFILL;
 
 // Implementation of NonBlockingDataTypeController being tested.
 // It posts all tasks to current thread.
 class TestDataTypeController : public NonBlockingDataTypeController {
  public:
-  explicit TestDataTypeController(SyncClient* sync_client)
+  explicit TestDataTypeController(sync_driver::SyncClient* sync_client)
       : NonBlockingDataTypeController(kTestModelType,
                                       base::Closure(),
                                       sync_client) {}
@@ -51,7 +51,8 @@ class TestDataTypeController : public NonBlockingDataTypeController {
 };
 
 // Mock change processor to observe calls to DisableSync.
-class MockModelTypeChangeProcessor : public FakeModelTypeChangeProcessor {
+class MockModelTypeChangeProcessor
+    : public syncer_v2::FakeModelTypeChangeProcessor {
  public:
   explicit MockModelTypeChangeProcessor(int* disable_sync_call_count)
       : disable_sync_call_count_(disable_sync_call_count) {}
@@ -79,9 +80,9 @@ class NonBlockingDataTypeControllerTest : public testing::Test {
   void TearDown() override { PumpLoop(); }
 
  protected:
-  std::unique_ptr<ModelTypeChangeProcessor> CreateProcessor(
-      ModelType type,
-      ModelTypeService* service) {
+  std::unique_ptr<syncer_v2::ModelTypeChangeProcessor> CreateProcessor(
+      syncer::ModelType type,
+      syncer_v2::ModelTypeService* service) {
     auto processor = base::MakeUnique<MockModelTypeChangeProcessor>(
         &disable_sync_call_count_);
     processor_ = processor.get();
@@ -90,34 +91,37 @@ class NonBlockingDataTypeControllerTest : public testing::Test {
 
   // Gets controller from NOT_RUNNING to RUNNING state.
   void ActivateController() {
-    EXPECT_EQ(DataTypeController::NOT_RUNNING, controller_.state());
+    EXPECT_EQ(sync_driver::DataTypeController::NOT_RUNNING,
+              controller_.state());
     controller_.LoadModels(
         base::Bind(&NonBlockingDataTypeControllerTest::LoadModelsDone,
                    base::Unretained(this)));
 
-    EXPECT_EQ(DataTypeController::MODEL_STARTING, controller_.state());
+    EXPECT_EQ(sync_driver::DataTypeController::MODEL_STARTING,
+              controller_.state());
     PumpLoop();
-    EXPECT_EQ(DataTypeController::MODEL_LOADED, controller_.state());
+    EXPECT_EQ(sync_driver::DataTypeController::MODEL_LOADED,
+              controller_.state());
     controller_.StartAssociating(
         base::Bind(&NonBlockingDataTypeControllerTest::AssociationDone,
                    base::Unretained(this)));
-    EXPECT_EQ(DataTypeController::RUNNING, controller_.state());
+    EXPECT_EQ(sync_driver::DataTypeController::RUNNING, controller_.state());
   }
 
-  void LoadModelsDone(ModelType type, const SyncError& error) {}
+  void LoadModelsDone(syncer::ModelType type, const syncer::SyncError& error) {}
 
-  void AssociationDone(DataTypeController::ConfigureResult result,
-                       const SyncMergeResult& local_merge_result,
-                       const SyncMergeResult& syncer_merge_result) {}
+  void AssociationDone(sync_driver::DataTypeController::ConfigureResult result,
+                       const syncer::SyncMergeResult& local_merge_result,
+                       const syncer::SyncMergeResult& syncer_merge_result) {}
 
   void PumpLoop() { base::RunLoop().RunUntilIdle(); }
 
   int disable_sync_call_count_;
   base::MessageLoop message_loop_;
-  FakeSyncClient sync_client_;
-  SyncPrefs sync_prefs_;
+  sync_driver::FakeSyncClient sync_client_;
+  sync_driver::SyncPrefs sync_prefs_;
   MockModelTypeChangeProcessor* processor_;
-  StubModelTypeService model_type_service_;
+  syncer_v2::StubModelTypeService model_type_service_;
   TestDataTypeController controller_;
 };
 
@@ -132,7 +136,7 @@ TEST_F(NonBlockingDataTypeControllerTest, StopWhenDatatypeEnabled) {
 
   controller_.Stop();
   PumpLoop();
-  EXPECT_EQ(DataTypeController::NOT_RUNNING, controller_.state());
+  EXPECT_EQ(sync_driver::DataTypeController::NOT_RUNNING, controller_.state());
   // Ensure that DisableSync is not called and service still has valid change
   // processor.
   EXPECT_EQ(0, disable_sync_call_count_);
@@ -149,12 +153,12 @@ TEST_F(NonBlockingDataTypeControllerTest, StopWhenDatatypeDisabled) {
 
   // Disable datatype through preferences.
   sync_prefs_.SetKeepEverythingSynced(false);
-  sync_prefs_.SetPreferredDataTypes(ModelTypeSet(kTestModelType),
-                                    ModelTypeSet());
+  sync_prefs_.SetPreferredDataTypes(syncer::ModelTypeSet(kTestModelType),
+                                    syncer::ModelTypeSet());
 
   controller_.Stop();
   PumpLoop();
-  EXPECT_EQ(DataTypeController::NOT_RUNNING, controller_.state());
+  EXPECT_EQ(sync_driver::DataTypeController::NOT_RUNNING, controller_.state());
   // Ensure that DisableSync is called and change processor is reset.
   EXPECT_EQ(1, disable_sync_call_count_);
   EXPECT_FALSE(model_type_service_.HasChangeProcessor());
@@ -171,7 +175,7 @@ TEST_F(NonBlockingDataTypeControllerTest, StopWithInitialSyncPrefs) {
   sync_prefs_.ClearPreferences();
   controller_.Stop();
   PumpLoop();
-  EXPECT_EQ(DataTypeController::NOT_RUNNING, controller_.state());
+  EXPECT_EQ(sync_driver::DataTypeController::NOT_RUNNING, controller_.state());
   // Ensure that DisableSync is called and change processor is reset.
   EXPECT_EQ(1, disable_sync_call_count_);
   EXPECT_FALSE(model_type_service_.HasChangeProcessor());
@@ -183,17 +187,17 @@ TEST_F(NonBlockingDataTypeControllerTest, StopBeforeLoadModels) {
   // Enable datatype through preferences.
   sync_prefs_.SetFirstSetupComplete();
   sync_prefs_.SetKeepEverythingSynced(true);
-  EXPECT_EQ(DataTypeController::NOT_RUNNING, controller_.state());
+  EXPECT_EQ(sync_driver::DataTypeController::NOT_RUNNING, controller_.state());
 
   // Clearing preferences emulates signing out.
   sync_prefs_.ClearPreferences();
   controller_.Stop();
   PumpLoop();
-  EXPECT_EQ(DataTypeController::NOT_RUNNING, controller_.state());
+  EXPECT_EQ(sync_driver::DataTypeController::NOT_RUNNING, controller_.state());
   // Ensure that DisableSync is not called.
   EXPECT_EQ(0, disable_sync_call_count_);
 }
 
 }  // namespace
 
-}  // namespace syncer
+}  // namespace sync_driver_v2

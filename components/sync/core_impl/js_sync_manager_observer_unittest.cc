@@ -46,7 +46,7 @@ class JsSyncManagerObserverTest : public testing::Test {
 
 TEST_F(JsSyncManagerObserverTest, OnInitializationComplete) {
   base::DictionaryValue expected_details;
-  ModelTypeSet restored_types;
+  syncer::ModelTypeSet restored_types;
   restored_types.Put(BOOKMARKS);
   restored_types.Put(NIGORI);
   expected_details.Set("restoredTypes", ModelTypeSetToValue(restored_types));

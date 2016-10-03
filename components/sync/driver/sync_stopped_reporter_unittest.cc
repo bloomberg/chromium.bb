@@ -18,7 +18,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-namespace syncer {
+using browser_sync::SyncStoppedReporter;
 
 const char kTestURL[] = "http://chromium.org/test";
 const char kTestURLTrailingSlash[] = "http://chromium.org/test/";
@@ -202,5 +202,3 @@ TEST_F(SyncStoppedReporterTest, NoCallbackTimeout) {
   ASSERT_TRUE(task_runner->HasPendingTask());
   task_runner->RunPendingTasks();
 }
-
-}  // namespace syncer

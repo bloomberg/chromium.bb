@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_SYNC_TEST_INTEGRATION_PROFILE_SYNC_SERVICE_HARNESS_H_
 #define CHROME_BROWSER_SYNC_TEST_INTEGRATION_PROFILE_SYNC_SERVICE_HARNESS_H_
 
-#include <memory>
 #include <string>
 #include <vector>
 
@@ -20,9 +19,9 @@ namespace browser_sync {
 class ProfileSyncService;
 }  // namespace browser_sync
 
-namespace syncer {
+namespace sync_driver {
 class SyncSetupInProgressHandle;
-}  // namespace syncer
+}  // namespace sync_driver
 
 // An instance of this class is basically our notion of a "sync client" for
 // automation purposes. It harnesses the ProfileSyncService member of the
@@ -89,7 +88,7 @@ class ProfileSyncServiceHarness {
   bool AwaitBackendInitialization();
 
   // Blocks the caller until sync setup is complete. Returns true if and only
-  // if sync setup completed successfully. See syncer::SyncService's
+  // if sync setup completed successfully. See sync_driver::SyncService's
   // IsSyncActive() method for the definition of what successful means here.
   bool AwaitSyncSetupCompletion();
 
@@ -149,7 +148,7 @@ class ProfileSyncServiceHarness {
   browser_sync::ProfileSyncService* service_;
 
   // Prevents Sync from running until configuration is complete.
-  std::unique_ptr<syncer::SyncSetupInProgressHandle> sync_blocker_;
+  std::unique_ptr<sync_driver::SyncSetupInProgressHandle> sync_blocker_;
 
   // Credentials used for GAIA authentication.
   std::string username_;

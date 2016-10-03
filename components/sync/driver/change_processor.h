@@ -16,15 +16,19 @@
 #include "components/sync/core/user_share.h"
 
 namespace syncer {
+class UnrecoverableErrorHandler;
+}  // namespace syncer
+
+namespace sync_driver {
 
 class ModelAssociator;
-class UnrecoverableErrorHandler;
 
 // An interface used to apply changes from the sync model to the browser's
 // native model.  This does not currently distinguish between model data types.
 class ChangeProcessor {
  public:
-  explicit ChangeProcessor(std::unique_ptr<DataTypeErrorHandler> error_handler);
+  explicit ChangeProcessor(
+      std::unique_ptr<syncer::DataTypeErrorHandler> error_handler);
   virtual ~ChangeProcessor();
 
   // Call when the processor should accept changes from either provided model
@@ -32,14 +36,14 @@ class ChangeProcessor {
   // expected to be initialized and loaded.  You must have set a valid
   // ModelAssociator and UnrecoverableErrorHandler before using this method, and
   // the two models should be associated w.r.t the ModelAssociator provided.
-  void Start(UserShare* share_handle);
+  void Start(syncer::UserShare* share_handle);
 
   // Changes have been applied to the backend model and are ready to be
   // applied to the frontend model.
   virtual void ApplyChangesFromSyncModel(
-      const BaseTransaction* trans,
+      const syncer::BaseTransaction* trans,
       int64_t model_version,
-      const ImmutableChangeRecordList& changes) = 0;
+      const syncer::ImmutableChangeRecordList& changes) = 0;
 
   // The changes found in ApplyChangesFromSyncModel may be too slow to be
   // performed while holding a [Read/Write]Transaction lock or may interact
@@ -55,18 +59,18 @@ class ChangeProcessor {
   // implementation-specific work.
   virtual void StartImpl() = 0;
 
-  DataTypeErrorHandler* error_handler() const;
-  virtual UserShare* share_handle() const;
+  syncer::DataTypeErrorHandler* error_handler() const;
+  virtual syncer::UserShare* share_handle() const;
 
  private:
-  std::unique_ptr<DataTypeErrorHandler> error_handler_;
+  std::unique_ptr<syncer::DataTypeErrorHandler> error_handler_;
 
   // The sync model we are processing changes from.
-  UserShare* share_handle_;
+  syncer::UserShare* share_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(ChangeProcessor);
 };
 
-}  // namespace syncer
+}  // namespace sync_driver
 
 #endif  // COMPONENTS_SYNC_DRIVER_CHANGE_PROCESSOR_H_

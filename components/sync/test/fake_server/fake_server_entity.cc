@@ -20,6 +20,7 @@
 
 using std::string;
 using std::vector;
+
 using syncer::ModelType;
 
 // The separator used when formatting IDs.

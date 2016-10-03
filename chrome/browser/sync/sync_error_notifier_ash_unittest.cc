@@ -112,7 +112,7 @@ class SyncErrorNotifierTest : public AshTestBase  {
             profile_, BuildMockLoginUIService));
     login_ui_service->SetLoginUI(&login_ui_);
 
-    error_controller_.reset(new syncer::SyncErrorController(service_.get()));
+    error_controller_.reset(new SyncErrorController(service_.get()));
     error_notifier_.reset(new SyncErrorNotifier(error_controller_.get(),
                                                 profile_));
 
@@ -166,7 +166,7 @@ class SyncErrorNotifierTest : public AshTestBase  {
   std::unique_ptr<display::Screen> test_screen_;
 #endif
   std::unique_ptr<TestingProfileManager> profile_manager_;
-  std::unique_ptr<syncer::SyncErrorController> error_controller_;
+  std::unique_ptr<SyncErrorController> error_controller_;
   std::unique_ptr<SyncErrorNotifier> error_notifier_;
   std::unique_ptr<browser_sync::ProfileSyncServiceMock> service_;
   TestingProfile* profile_;
@@ -195,7 +195,7 @@ TEST_F(SyncErrorNotifierTest, MAYBE_PassphraseNotification) {
   ASSERT_FALSE(notification_ui_manager_->FindById(
       kNotificationId, NotificationUIManager::GetProfileID(profile_)));
 
-  syncer::SyncBackendHost::Status status;
+  browser_sync::SyncBackendHost::Status status;
   EXPECT_CALL(*service_, QueryDetailedSyncStatus(_))
               .WillRepeatedly(Return(false));
 

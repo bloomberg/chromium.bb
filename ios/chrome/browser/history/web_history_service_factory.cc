@@ -25,7 +25,7 @@ namespace {
 // Returns true if the user is signed-in and full history sync is enabled,
 // false otherwise.
 bool IsHistorySyncEnabled(ios::ChromeBrowserState* browser_state) {
-  syncer::SyncService* sync_service =
+  sync_driver::SyncService* sync_service =
       IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state);
   return sync_service && sync_service->IsSyncActive() &&
          sync_service->GetActiveDataTypes().Has(

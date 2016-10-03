@@ -9,9 +9,9 @@
 SupervisedUserSyncDataTypeController::SupervisedUserSyncDataTypeController(
     syncer::ModelType type,
     const base::Closure& dump_stack,
-    syncer::SyncClient* sync_client,
+    sync_driver::SyncClient* sync_client,
     Profile* profile)
-    : syncer::UIDataTypeController(type, dump_stack, sync_client),
+    : sync_driver::UIDataTypeController(type, dump_stack, sync_client),
       profile_(profile) {
   DCHECK(type == syncer::SUPERVISED_USERS ||
          type == syncer::SUPERVISED_USER_SETTINGS ||

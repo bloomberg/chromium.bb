@@ -7,21 +7,21 @@
 namespace syncer {
 
 SyncChangeProcessorWrapperForTest::SyncChangeProcessorWrapperForTest(
-    SyncChangeProcessor* wrapped)
+    syncer::SyncChangeProcessor* wrapped)
     : wrapped_(wrapped) {
   DCHECK(wrapped_);
 }
 
 SyncChangeProcessorWrapperForTest::~SyncChangeProcessorWrapperForTest() {}
 
-SyncError SyncChangeProcessorWrapperForTest::ProcessSyncChanges(
+syncer::SyncError SyncChangeProcessorWrapperForTest::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
-    const SyncChangeList& change_list) {
+    const syncer::SyncChangeList& change_list) {
   return wrapped_->ProcessSyncChanges(from_here, change_list);
 }
 
-SyncDataList SyncChangeProcessorWrapperForTest::GetAllSyncData(
-    ModelType type) const {
+syncer::SyncDataList SyncChangeProcessorWrapperForTest::GetAllSyncData(
+    syncer::ModelType type) const {
   return wrapped_->GetAllSyncData(type);
 }
 

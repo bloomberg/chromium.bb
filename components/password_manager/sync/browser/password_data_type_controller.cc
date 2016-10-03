@@ -14,7 +14,7 @@ namespace browser_sync {
 
 PasswordDataTypeController::PasswordDataTypeController(
     const base::Closure& dump_stack,
-    syncer::SyncClient* sync_client,
+    sync_driver::SyncClient* sync_client,
     const base::Closure& state_changed_callback,
     const scoped_refptr<password_manager::PasswordStore>& password_store)
     : NonUIDataTypeController(syncer::PASSWORDS, dump_stack, sync_client),
