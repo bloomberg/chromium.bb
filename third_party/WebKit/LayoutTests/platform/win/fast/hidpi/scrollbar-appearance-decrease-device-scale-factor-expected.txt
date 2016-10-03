@@ -1,0 +1,15 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x136
+  LayoutBlockFlow {HTML} at (0,0) size 800x136
+    LayoutBlockFlow {BODY} at (8,8) size 784x120
+layer at (8,8) size 200x120 clip at (8,8) size 185x105 scrollWidth 400 scrollHeight 290
+  LayoutBlockFlow {DIV} at (0,0) size 200x120
+    LayoutBlockFlow (anonymous) at (0,0) size 155x90
+      LayoutBR {BR} at (0,0) size 0x17
+      LayoutText {#text} at (0,18) size 151x71
+        text run at (0,18) width 106: "This should be a"
+        text run at (0,36) width 151: "scrollable text box with"
+        text run at (0,54) width 144: "horizontal and vertical"
+        text run at (0,72) width 40: "scroll."
+    LayoutBlockFlow {DIV} at (0,90) size 400x200

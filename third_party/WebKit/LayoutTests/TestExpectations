@@ -229,8 +229,6 @@ crbug.com/248938 [ Linux ] virtual/threaded/transitions/unprefixed-perspective-o
 crbug.com/248938 [ Linux ] virtual/threaded/transitions/transition-not-interpolable.html [ Pass Timeout ]
 crbug.com/248938 [ Mac ] virtual/threaded/transitions/interrupted-all-transition.html [ Pass Failure ]
 
-crbug.com/637264 fast/hidpi/scrollbar-appearance-increase-device-scale-factor.html [ NeedsRebaseline ]
-crbug.com/637264 fast/hidpi/scrollbar-appearance-decrease-device-scale-factor.html  [ NeedsRebaseline ]
 crbug.com/640256 [ Linux ] compositing/tiled-layers-hidpi.html [ NeedsRebaseline ]
 crbug.com/640256 [ Linux ] css3/filters/effect-reference-hidpi-hw.html [ NeedsRebaseline ]
 crbug.com/640256 [ Linux ] css3/filters/effect-reference-hidpi.html [ NeedsRebaseline ]
