@@ -156,9 +156,6 @@ crbug.com/520613 http/tests/cache/freshness-header.html [ Failure Pass ]
 crbug.com/520619 [ Android Mac Linux Win7 ] webexposed/global-interface-listing.html [ Pass Timeout ]
 crbug.com/520194 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-overridesexpires.html [ Failure Pass ]
 
-crbug.com/645938 fast/text/ellipsis-at-edge-of-ltr-text-in-rtl-flow.html [ NeedsRebaseline ]
-crbug.com/645938 fast/text/ellipsis-at-edge-of-rtl-text-in-ltr-flow.html [ NeedsRebaseline ]
-
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-basic.html [ Pass Failure ]
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas.html [ Pass Failure ]
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas-throw.html [ Pass Failure ]
