@@ -285,8 +285,6 @@ class WmWindowMus : public WmWindow, public ui::WindowObserver {
 
   std::unique_ptr<MusLayoutManagerAdapter> layout_manager_adapter_;
 
-  std::unique_ptr<gfx::Rect> restore_bounds_in_screen_;
-
   ui::WindowShowState restore_show_state_ = ui::SHOW_STATE_DEFAULT;
 
   bool snap_children_to_pixel_boundary_ = false;

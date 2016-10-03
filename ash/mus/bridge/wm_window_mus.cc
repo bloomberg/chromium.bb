@@ -620,15 +620,16 @@ gfx::Rect WmWindowMus::GetTargetBounds() {
 }
 
 void WmWindowMus::ClearRestoreBounds() {
-  restore_bounds_in_screen_.reset();
+  window_->ClearSharedProperty(
+      ui::mojom::WindowManager::kRestoreBounds_Property);
 }
 
 void WmWindowMus::SetRestoreBoundsInScreen(const gfx::Rect& bounds) {
-  restore_bounds_in_screen_.reset(new gfx::Rect(bounds));
+  SetRestoreBounds(window_, bounds);
 }
 
 gfx::Rect WmWindowMus::GetRestoreBoundsInScreen() const {
-  return *restore_bounds_in_screen_;
+  return GetRestoreBounds(window_);
 }
 
 bool WmWindowMus::Contains(const WmWindow* other) const {
@@ -678,7 +679,8 @@ void WmWindowMus::ReleaseCapture() {
 }
 
 bool WmWindowMus::HasRestoreBounds() const {
-  return restore_bounds_in_screen_.get() != nullptr;
+  return window_->HasSharedProperty(
+      ui::mojom::WindowManager::kRestoreBounds_Property);
 }
 
 bool WmWindowMus::CanMaximize() const {
