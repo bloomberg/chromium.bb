@@ -524,6 +524,27 @@
       'linux_optional_gpu_tests_rel': 'gpu_fyi_tests_release_trybot',
       'linux_site_isolation': 'release_trybot',
       'linux_upload_clang': 'release_bot',
+
+      # Trusty trybot
+      'cast_shell_linux_trusty': 'cast_release_trybot',
+      'linux_arm_trusty': 'release_trybot_arm',
+      'linux_chromium_asan_rel_ng_trusty': 'asan_lsan_release_trybot',
+      'linux_chromium_browser_side_navigation_rel_trusty': 'release_trybot',
+      'linux_chromium_chromeos_asan_rel_ng_trusty': 'asan_lsan_chromeos_release_trybot',
+      'linux_chromium_chromeos_compile_dbg_ng_trusty': 'chromeos_with_codecs_debug_trybot',
+      'linux_chromium_chromeos_compile_rel_ng_trusty': 'chromeos_with_codecs_release_trybot',
+      'linux_chromium_chromeos_dbg_ng_trusty': 'chromeos_with_codecs_debug_trybot',
+      'linux_chromium_chromeos_rel_ng_trusty': 'chromeos_with_codecs_release_trybot',
+      'linux_chromium_clobber_rel_ng_trusty': 'release_trybot',
+      'linux_chromium_compile_dbg_32_ng_trusty': 'debug_trybot_x86',
+      'linux_chromium_compile_dbg_ng_trusty': 'debug_trybot',
+      'linux_chromium_compile_rel_ng_trusty': 'release_trybot',
+      'linux_chromium_dbg_32_ng_trusty': 'debug_trybot_x86',
+      'linux_chromium_dbg_ng_trusty': 'debug_trybot',
+      'linux_chromium_rel_ng_trusty': 'gpu_tests_release_trybot',
+      'linux_chromium_tsan_rel_ng_trusty': 'tsan_disable_nacl_release_trybot',
+      'linux_optional_gpu_tests_rel_trusty': 'gpu_fyi_tests_release_trybot',
+      'linux_site_isolation_trusty': 'release_trybot',
     },
 
     'tryserver.chromium.mac': {
