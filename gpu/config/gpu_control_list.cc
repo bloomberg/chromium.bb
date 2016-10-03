@@ -1336,8 +1336,10 @@ bool GpuControlList::GpuControlListEntry::NeedsMoreInfo(
     return true;
   if (driver_version_info_.get() && gpu_info.driver_version.empty())
     return true;
-  if (!gl_version_string_info_.empty() && gpu_info.gl_version.empty())
+  if ((gl_version_info_.get() || !gl_version_string_info_.empty()) &&
+      gpu_info.gl_version.empty()) {
     return true;
+  }
   if (!gl_vendor_info_.empty() && gpu_info.gl_vendor.empty())
     return true;
   if (!gl_renderer_info_.empty() && gpu_info.gl_renderer.empty())

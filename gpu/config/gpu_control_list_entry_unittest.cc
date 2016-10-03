@@ -799,6 +799,44 @@ TEST_F(GpuControlListEntryTest, NeedsMoreInfoForExceptionsEntry) {
   EXPECT_FALSE(entry->NeedsMoreInfo(gpu_info, true));
 }
 
+TEST_F(GpuControlListEntryTest, NeedsMoreInfoForGlVersionEntry) {
+  const std::string json = LONG_STRING_CONST(
+      {
+        "id" : 1,
+        "gl_type": "gl",
+        "gl_version": {
+          "op": "<",
+          "value" : "3.5"
+        },
+        "features" : [
+          "test_feature_1"
+        ]
+      }
+  );
+  ScopedEntry entry(GetEntryFromString(json));
+  EXPECT_TRUE(entry.get() != NULL);
+
+  GPUInfo gpu_info;
+  EXPECT_TRUE(entry->NeedsMoreInfo(gpu_info, true));
+  EXPECT_TRUE(
+      entry->Contains(GpuControlList::kOsUnknown, std::string(), gpu_info));
+
+  gpu_info.gl_version = "3.1 Mesa 11.1.0";
+  EXPECT_FALSE(entry->NeedsMoreInfo(gpu_info, false));
+  EXPECT_TRUE(
+      entry->Contains(GpuControlList::kOsUnknown, std::string(), gpu_info));
+
+  gpu_info.gl_version = "4.1 Mesa 12.1.0";
+  EXPECT_FALSE(entry->NeedsMoreInfo(gpu_info, false));
+  EXPECT_FALSE(
+      entry->Contains(GpuControlList::kOsUnknown, std::string(), gpu_info));
+
+  gpu_info.gl_version = "OpenGL ES 2.0 Mesa 12.1.0";
+  EXPECT_FALSE(entry->NeedsMoreInfo(gpu_info, false));
+  EXPECT_FALSE(
+      entry->Contains(GpuControlList::kOsUnknown, std::string(), gpu_info));
+}
+
 TEST_F(GpuControlListEntryTest, FeatureTypeAllEntry) {
   const std::string json = LONG_STRING_CONST(
       {
