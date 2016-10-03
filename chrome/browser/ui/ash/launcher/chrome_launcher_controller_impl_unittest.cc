@@ -3883,6 +3883,7 @@ TEST_F(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {
   arc_test_.SetUp(profile());
   InitLauncherController();
   ChromeLauncherController::set_instance(launcher_controller_.get());
+  arc::ArcAuthService::SetShelfDelegateForTesting(launcher_controller_.get());
 
   ArcAppListPrefs* const prefs = arc_test_.arc_app_list_prefs();
   EnableArc(false);
