@@ -237,7 +237,8 @@ class AddToHomescreenDataFetcherTest : public ChromeRenderViewHostTestHarness {
 // Checks that AddToHomescreenDataFetcher::Observer::OnUserTitleAvailable() is
 // called when the web manifest fetch times out. The add-to-homescreen dialog
 // makes the dialog's text field editable once OnUserTitleAvailable() is called.
-TEST_F(AddToHomescreenDataFetcherTest, ManifestFetchTimesOutNoServiceWorker) {
+TEST_F(AddToHomescreenDataFetcherTest,
+    DISABLED_ManifestFetchTimesOutNoServiceWorker) {
   SetManifest(GURL(kDefaultManifestUrl), BuildDefaultManifest(), 10000);
 
   ObserverWaiter waiter;
@@ -277,7 +278,7 @@ class AddToHomescreenDataFetcherTestCommon
 
 // Checks that the AddToHomescreenDataFetcher::Observer callbacks are called
 // when a service worker is registered and the manifest fetch times out.
-TEST_P(AddToHomescreenDataFetcherTestCommon, ManifestFetchTimesOut) {
+TEST_P(AddToHomescreenDataFetcherTestCommon, DISABLED_ManifestFetchTimesOut) {
     RegisterServiceWorker(GURL(kDefaultStartUrl));
     SetManifest(GURL(kDefaultManifestUrl), BuildDefaultManifest(), 10000);
 
