@@ -22,9 +22,9 @@ struct WebPresentationError;
 template <typename T>
 class WebVector;
 
-// If session was created, callback's onSuccess() is invoked with the information about the
-// presentation session created by the embedder. Otherwise, onError() is invoked with the error code
-// and message.
+// If session was created, callback's onSuccess() is invoked with the
+// information about the presentation session created by the embedder.
+// Otherwise, onError() is invoked with the error code and message.
 using WebPresentationConnectionClientCallbacks =
     WebCallbacks<std::unique_ptr<WebPresentationConnectionClient>,
                  const WebPresentationError&>;
@@ -33,7 +33,8 @@ using WebPresentationConnectionClientCallbacks =
 using WebPresentationAvailabilityCallbacks =
     WebCallbacks<bool, const WebPresentationError&>;
 
-// The implementation the embedder has to provide for the Presentation API to work.
+// The implementation the embedder has to provide for the Presentation API to
+// work.
 class WebPresentationClient {
  public:
   virtual ~WebPresentationClient() {}
@@ -55,14 +56,14 @@ class WebPresentationClient {
                            const WebString& presentationId,
                            WebPresentationConnectionClientCallbacks*) = 0;
 
-  // Called when the frame requests to send String message to an existing session.
-
+  // Called when the frame requests to send String message to an existing
+  // session.
   virtual void sendString(const WebURL& presentationUrl,
                           const WebString& presentationId,
                           const WebString& message) = 0;
 
-  // Called when the frame requests to send ArrayBuffer/View data to an existing session.
-  // Embedder copies the |data| and the ownership is not transferred.
+  // Called when the frame requests to send ArrayBuffer/View data to an existing
+  // session.  Embedder copies the |data| and the ownership is not transferred.
   virtual void sendArrayBuffer(const WebURL& presentationUrl,
                                const WebString& presentationId,
                                const uint8_t* data,

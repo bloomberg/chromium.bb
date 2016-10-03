@@ -11,7 +11,8 @@ namespace blink {
 
 class WebPresentationConnectionClient;
 
-// The delegate Blink provides to WebPresentationReceiverClient in order to get updates.
+// The delegate Blink provides to WebPresentationReceiverClient in order to get
+// updates.
 class BLINK_PLATFORM_EXPORT WebPresentationReceiver {
  public:
   virtual ~WebPresentationReceiver() = default;

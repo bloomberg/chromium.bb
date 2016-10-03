@@ -9,7 +9,8 @@ namespace blink {
 
 enum class WebRemotePlaybackState;
 
-// The interface between the HTMLMediaElement and its HTMLMediaElementRemotePlayback supplement.
+// The interface between the HTMLMediaElement and its
+// HTMLMediaElementRemotePlayback supplement.
 class WebRemotePlaybackClient {
  public:
   virtual ~WebRemotePlaybackClient() = default;
