@@ -66,10 +66,6 @@ class RootWindowController {
 
   const display::Display& display() const { return display_; }
 
-  WorkspaceLayoutManager* workspace_layout_manager() {
-    return workspace_layout_manager_;
-  }
-
   WmShelfMus* wm_shelf() { return wm_shelf_.get(); }
 
  private:
@@ -91,8 +87,6 @@ class RootWindowController {
   std::unique_ptr<WmRootWindowControllerMus> wm_root_window_controller_;
   std::unique_ptr<WmShelfMus> wm_shelf_;
 
-  // Owned by the corresponding container.
-  WorkspaceLayoutManager* workspace_layout_manager_ = nullptr;
   std::map<ui::Window*, std::unique_ptr<LayoutManager>> layout_managers_;
 
   std::unique_ptr<DisconnectedAppHandler> disconnected_app_handler_;

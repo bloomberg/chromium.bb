@@ -431,6 +431,7 @@ void WmRootWindowController::CreateLayoutManagers() {
   root_->SetLayoutManager(base::WrapUnique(root_window_layout_manager_));
 
   WmWindow* default_container = GetContainer(kShellWindowId_DefaultContainer);
+  // Installs WorkspaceLayoutManager on |default_container|.
   workspace_controller_.reset(new WorkspaceController(default_container));
 
   WmWindow* modal_container = GetContainer(kShellWindowId_SystemModalContainer);

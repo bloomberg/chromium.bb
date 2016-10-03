@@ -128,6 +128,7 @@ void WorkspaceController::OnWindowDestroying(WmWindow* window) {
   viewport_ = nullptr;
   // Destroy |event_handler_| too as it depends upon |window|.
   event_handler_.reset();
+  layout_manager_ = nullptr;
 }
 
 }  // namespace ash

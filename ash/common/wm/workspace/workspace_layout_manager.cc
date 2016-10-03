@@ -60,7 +60,7 @@ WorkspaceLayoutManager::~WorkspaceLayoutManager() {
 
 void WorkspaceLayoutManager::SetMaximizeBackdropDelegate(
     std::unique_ptr<WorkspaceLayoutManagerBackdropDelegate> delegate) {
-  backdrop_delegate_.reset(delegate.release());
+  backdrop_delegate_ = std::move(delegate);
 }
 
 //////////////////////////////////////////////////////////////////////////////

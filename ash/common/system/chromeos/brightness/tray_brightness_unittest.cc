@@ -6,17 +6,17 @@
 
 #include <memory>
 
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_item.h"
+#include "ash/common/test/ash_test.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
-#include "ash/test/ash_test_base.h"
-#include "ash/test/status_area_widget_test_helper.h"
 #include "ui/views/view.h"
 
 namespace ash {
 
-class TrayBrightnessTest : public test::AshTestBase {
+class TrayBrightnessTest : public AshTest {
  public:
   TrayBrightnessTest() {}
   ~TrayBrightnessTest() override {}
@@ -24,14 +24,14 @@ class TrayBrightnessTest : public test::AshTestBase {
  protected:
   views::View* CreateDefaultView() {
     TrayBrightness tray(NULL);
-    return tray.CreateDefaultView(
-        StatusAreaWidgetTestHelper::GetUserLoginStatus());
+    // The login status doesn't matter here; supply any random value.
+    return tray.CreateDefaultView(LoginStatus::USER);
   }
 
   views::View* CreateDetailedView() {
     TrayBrightness tray(NULL);
-    return tray.CreateDetailedView(
-        StatusAreaWidgetTestHelper::GetUserLoginStatus());
+    // The login status doesn't matter here; supply any random value.
+    return tray.CreateDetailedView(LoginStatus::USER);
   }
 
  private:

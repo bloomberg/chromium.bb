@@ -293,4 +293,9 @@ source_set("unittests") {
   ]
 
   defines = [ "NOTIMPLEMENTED_POLICY=5" ]
+
+  if (is_chromeos) {
+    sources +=
+        [ "../common/system/chromeos/brightness/tray_brightness_unittest.cc" ]
+  }
 }

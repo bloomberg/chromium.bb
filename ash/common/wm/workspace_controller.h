@@ -23,6 +23,7 @@ class WorkspaceLayoutManagerBackdropDelegate;
 // various workspace pieces.
 class ASH_EXPORT WorkspaceController : public WmWindowObserver {
  public:
+  // Installs WorkspaceLayoutManager on |viewport|.
   explicit WorkspaceController(WmWindow* viewport);
   ~WorkspaceController() override;
 

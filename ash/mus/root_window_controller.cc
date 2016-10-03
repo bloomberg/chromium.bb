@@ -19,7 +19,6 @@
 #include "ash/common/wm/dock/docked_window_layout_manager.h"
 #include "ash/common/wm/panels/panel_layout_manager.h"
 #include "ash/common/wm/root_window_layout_manager.h"
-#include "ash/common/wm/workspace/workspace_layout_manager.h"
 #include "ash/mus/bridge/wm_root_window_controller_mus.h"
 #include "ash/mus/bridge/wm_shelf_mus.h"
 #include "ash/mus/bridge/wm_shell_mus.h"
@@ -189,14 +188,6 @@ void RootWindowController::CreateLayoutManagers() {
 
   // Creating the shelf also creates the status area and both layout managers.
   wm_shelf_.reset(new WmShelfMus(wm_root_window_controller_->GetWindow()));
-
-  WmWindowMus* default_container =
-      GetWindowByShellWindowId(kShellWindowId_DefaultContainer);
-  // WorkspaceLayoutManager is not a mash::wm::LayoutManager (it's a
-  // wm::LayoutManager), so it can't be in |layout_managers_|.
-  workspace_layout_manager_ = new WorkspaceLayoutManager(default_container);
-  default_container->SetLayoutManager(
-      base::WrapUnique(workspace_layout_manager_));
 }
 
 }  // namespace mus
