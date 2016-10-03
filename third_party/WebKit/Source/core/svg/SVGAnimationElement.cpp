@@ -573,7 +573,8 @@ void SVGAnimationElement::startedActiveInterval() {
 
   if (!isValid())
     return;
-
+  if (!targetElement())
+    return;
   if (!hasValidAttributeType())
     return;
 
@@ -649,7 +650,7 @@ void SVGAnimationElement::startedActiveInterval() {
 void SVGAnimationElement::updateAnimation(float percent,
                                           unsigned repeatCount,
                                           SVGSMILElement* resultElement) {
-  if (!m_animationValid)
+  if (!m_animationValid || !targetElement())
     return;
 
   float effectivePercent;

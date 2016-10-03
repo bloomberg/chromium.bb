@@ -51,11 +51,13 @@ bool SVGAnimateMotionElement::hasValidAttributeType() {
   if (!targetElement)
     return false;
 
-  // We don't have a special attribute name to verify the animation type. Check the element name instead.
+  // We don't have a special attribute name to verify the animation type. Check
+  // the element name instead.
   if (!targetElement->isSVGGraphicsElement())
     return false;
   // Spec: SVG 1.1 section 19.2.15
-  // FIXME: svgTag is missing. Needs to be checked, if transforming <svg> could cause problems.
+  // FIXME: svgTag is missing. Needs to be checked, if transforming <svg> could
+  // cause problems.
   return (
       isSVGGElement(*targetElement) || isSVGDefsElement(*targetElement) ||
       isSVGUseElement(*targetElement) || isSVGImageElement(*targetElement) ||
@@ -207,8 +209,7 @@ void SVGAnimateMotionElement::calculateAnimatedValue(float percentage,
                                                      unsigned repeatCount,
                                                      SVGSMILElement*) {
   SVGElement* targetElement = this->targetElement();
-  if (!targetElement)
-    return;
+  DCHECK(targetElement);
   AffineTransform* transform = targetElement->animateMotionTransform();
   if (!transform)
     return;
@@ -261,7 +262,8 @@ void SVGAnimateMotionElement::calculateAnimatedValue(float percentage,
 }
 
 void SVGAnimateMotionElement::applyResultsToTarget() {
-  // We accumulate to the target element transform list so there is not much to do here.
+  // We accumulate to the target element transform list so there is not much to
+  // do here.
   SVGElement* targetElement = this->targetElement();
   if (!targetElement)
     return;

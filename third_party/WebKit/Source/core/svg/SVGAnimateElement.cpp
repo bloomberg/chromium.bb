@@ -134,9 +134,9 @@ SVGPropertyBase* SVGAnimateElement::adjustForInheritance(
 void SVGAnimateElement::calculateAnimatedValue(float percentage,
                                                unsigned repeatCount,
                                                SVGSMILElement* resultElement) {
-  ASSERT(resultElement);
-  SVGElement* targetElement = this->targetElement();
-  if (!targetElement || !isSVGAnimateElement(*resultElement))
+  DCHECK(resultElement);
+  DCHECK(targetElement());
+  if (!isSVGAnimateElement(*resultElement))
     return;
 
   ASSERT(percentage >= 0 && percentage <= 1);
@@ -160,6 +160,7 @@ void SVGAnimateElement::calculateAnimatedValue(float percentage,
     percentage = percentage < 0.5 ? 0 : 1;
 
   // Target element might have changed.
+  SVGElement* targetElement = this->targetElement();
   m_animator.setContextElement(targetElement);
 
   // Values-animation accumulates using the last values entry corresponding to
@@ -191,10 +192,7 @@ bool SVGAnimateElement::calculateToAtEndOfDurationValue(
 
 bool SVGAnimateElement::calculateFromAndToValues(const String& fromString,
                                                  const String& toString) {
-  SVGElement* targetElement = this->targetElement();
-  if (!targetElement)
-    return false;
-
+  DCHECK(targetElement());
   m_fromProperty = m_animator.createPropertyForAnimation(fromString);
   m_fromPropertyValueType = propertyValueType(attributeName(), fromString);
   m_toProperty = m_animator.createPropertyForAnimation(toString);
@@ -204,9 +202,7 @@ bool SVGAnimateElement::calculateFromAndToValues(const String& fromString,
 
 bool SVGAnimateElement::calculateFromAndByValues(const String& fromString,
                                                  const String& byString) {
-  SVGElement* targetElement = this->targetElement();
-  if (!targetElement)
-    return false;
+  DCHECK(targetElement());
 
   if (getAnimationMode() == ByAnimation && !isAdditive())
     return false;
@@ -223,7 +219,7 @@ bool SVGAnimateElement::calculateFromAndByValues(const String& fromString,
   m_fromPropertyValueType = propertyValueType(attributeName(), fromString);
   m_toProperty = m_animator.createPropertyForAnimation(byString);
   m_toPropertyValueType = propertyValueType(attributeName(), byString);
-  m_toProperty->add(m_fromProperty, targetElement);
+  m_toProperty->add(m_fromProperty, targetElement());
   return true;
 }
 
@@ -359,15 +355,13 @@ bool SVGAnimateElement::isAdditive() {
 
 float SVGAnimateElement::calculateDistance(const String& fromString,
                                            const String& toString) {
+  DCHECK(targetElement());
   // FIXME: A return value of float is not enough to support paced animations on
   // lists.
-  SVGElement* targetElement = this->targetElement();
-  if (!targetElement)
-    return -1;
   SVGPropertyBase* fromValue =
       m_animator.createPropertyForAnimation(fromString);
   SVGPropertyBase* toValue = m_animator.createPropertyForAnimation(toString);
-  return fromValue->calculateDistance(toValue, targetElement);
+  return fromValue->calculateDistance(toValue, targetElement());
 }
 
 void SVGAnimateElement::setTargetElement(SVGElement* target) {
