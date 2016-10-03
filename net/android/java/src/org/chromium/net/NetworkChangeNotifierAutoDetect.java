@@ -562,6 +562,11 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
     // observers anyhow as the state hasn't changed. This is simply an optimization to avoid
     // useless work.
     private boolean mIgnoreNextBroadcast;
+    // mSignal is set to false when it's not worth calculating if signals to Observers should
+    // be sent out because this class is being constructed and the internal state has just
+    // been updated to the current device state, so no signals are necessary. This is simply an
+    // optimization to avoid useless work.
+    private boolean mShouldSignalObserver;
 
     /**
      * Observer interface by which observer is notified of network changes.
@@ -640,8 +645,10 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         mMaxBandwidthConnectionType = mConnectionType;
         mIntentFilter = new NetworkConnectivityIntentFilter();
         mIgnoreNextBroadcast = false;
+        mShouldSignalObserver = false;
         mRegistrationPolicy = policy;
         mRegistrationPolicy.init(this);
+        mShouldSignalObserver = true;
     }
 
     /**
@@ -680,11 +687,14 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
      * Registers a BroadcastReceiver in the given context.
      */
     public void register() {
+        ThreadUtils.assertOnUiThread();
         if (mRegistered) return;
 
-        final NetworkState networkState = getCurrentNetworkState();
-        connectionTypeChanged(networkState);
-        maxBandwidthChanged(networkState);
+        if (mShouldSignalObserver) {
+            final NetworkState networkState = getCurrentNetworkState();
+            connectionTypeChanged(networkState);
+            maxBandwidthChanged(networkState);
+        }
         // When registering for a sticky broadcast, like CONNECTIVITY_ACTION, if registerReceiver
         // returns non-null, it means the broadcast was previously issued and onReceive() will be
         // immediately called with this previous Intent. Since this initial callback doesn't
@@ -695,18 +705,21 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         if (mNetworkCallback != null) {
             mNetworkCallback.initializeVpnInPlace();
             mConnectivityManagerDelegate.registerNetworkCallback(mNetworkRequest, mNetworkCallback);
-            // registerNetworkCallback() will rematch the NetworkRequest
-            // against active networks, so a cached list of active networks
-            // will be repopulated immediatly after this. However we need to
-            // purge any cached networks as they may have been disconnected
-            // while mNetworkCallback was unregistered.
-            final Network[] networks = getAllNetworksFiltered(mConnectivityManagerDelegate, null);
-            // Convert Networks to NetIDs.
-            final long[] netIds = new long[networks.length];
-            for (int i = 0; i < networks.length; i++) {
-                netIds[i] = networkToNetId(networks[i]);
+            if (mShouldSignalObserver) {
+                // registerNetworkCallback() will rematch the NetworkRequest
+                // against active networks, so a cached list of active networks
+                // will be repopulated immediatly after this. However we need to
+                // purge any cached networks as they may have been disconnected
+                // while mNetworkCallback was unregistered.
+                final Network[] networks =
+                        getAllNetworksFiltered(mConnectivityManagerDelegate, null);
+                // Convert Networks to NetIDs.
+                final long[] netIds = new long[networks.length];
+                for (int i = 0; i < networks.length; i++) {
+                    netIds[i] = networkToNetId(networks[i]);
+                }
+                mObserver.purgeActiveNetworkList(netIds);
             }
-            mObserver.purgeActiveNetworkList(netIds);
         }
     }
 
