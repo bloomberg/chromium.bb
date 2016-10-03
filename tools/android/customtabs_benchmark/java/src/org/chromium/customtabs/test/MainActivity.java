@@ -65,6 +65,7 @@ public class MainActivity extends Activity {
         private long mIntentSentMs = 0;
         private long mPageLoadStartedMs = 0;
         private long mPageLoadFinishedMs = 0;
+        private long mFirstContentfulPaintMs = -1;
 
         public CustomCallback(boolean warmup, int prerenderMode, int delayToMayLaunchUrl,
                 int delayToLaunchUrl) {
@@ -90,13 +91,21 @@ public class MainActivity extends Activity {
                         String logLine = (mWarmup ? "1" : "0") + "," + mPrerenderMode
                                 + "," + mDelayToMayLaunchUrl + "," + mDelayToLaunchUrl + ","
                                 + mIntentSentMs + "," + mPageLoadStartedMs + ","
-                                + mPageLoadFinishedMs;
+                                + mPageLoadFinishedMs + "," + mFirstContentfulPaintMs;
                         Log.w(TAG, logLine);
                     }
                     break;
                 default:
                     break;
             }
+        }
+
+        @Override
+        public void extraCallback(String callbackName, Bundle args) {
+            assert "NavigationMetrics".equals(callbackName);
+            long value = args.getLong("firstContentfulPaint", -1);
+            // Can be reported several times, only record the first one.
+            if (mFirstContentfulPaintMs == -1) mFirstContentfulPaintMs = value;
         }
     }
 

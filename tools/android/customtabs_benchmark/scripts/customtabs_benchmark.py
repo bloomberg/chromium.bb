@@ -78,7 +78,8 @@ def RunOnce(device, url, warmup, prerender_mode, delay_to_may_launch_url,
   Returns:
     The output line (str), like this (one line only):
     <warmup>,<prerender_mode>,<delay_to_may_launch_url>,<delay_to_launch>,
-      <intent_sent_ms>,<page_load_started_ms>,<page_load_finished_ms>
+      <intent_sent_ms>,<page_load_started_ms>,<page_load_finished_ms>,
+      <first_contentful_paint>
     or None on error.
   """
   launch_intent = intent.Intent(
@@ -154,13 +155,15 @@ def ProcessOutput(filename):
                     dtype=[('warmup', bool), ('prerender_mode', np.int32),
                            ('delay_to_may_launch_url', np.int32),
                            ('delay_to_launch_url', np.int32),
-                           ('commit', np.int32), ('plt', np.int32)])
+                           ('commit', np.int32), ('plt', np.int32),
+                           ('first_contentful_paint', np.int32)])
   result['warmup'] = data[:, 0]
   result['prerender_mode'] = data[:, 1]
   result['delay_to_may_launch_url'] = data[:, 2]
   result['delay_to_launch_url'] = data[:, 3]
   result['commit'] = data[:, 5] - data[:, 4]
   result['plt'] = data[:, 6] - data[:, 4]
+  result['first_contentful_paint'] = data[7]
   return result
 
 
