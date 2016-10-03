@@ -174,10 +174,11 @@ VisibleSelection Editor::selectionForCommand(Event* event) {
   if (textFromControlOfTarget &&
       (selection.start().isNull() ||
        textFromControlOfTarget != textFormControlOfSelectionStart)) {
-    if (Range* range = textFromControlOfTarget->selection())
-      return createVisibleSelectionDeprecated(EphemeralRange(range),
-                                              TextAffinity::Downstream,
-                                              selection.isDirectional());
+    if (Range* range = textFromControlOfTarget->selection()) {
+      return createVisibleSelection(EphemeralRange(range),
+                                    TextAffinity::Downstream,
+                                    selection.isDirectional());
+    }
   }
   return selection;
 }
@@ -1193,7 +1194,7 @@ void Editor::transpose() {
   const EphemeralRange range = makeRange(previous, next);
   if (range.isNull())
     return;
-  VisibleSelection newSelection = createVisibleSelectionDeprecated(range);
+  VisibleSelection newSelection = createVisibleSelection(range);
 
   // Transpose the two characters.
   String text = plainText(range);
@@ -1326,7 +1327,7 @@ bool Editor::findString(const String& target, FindOptions options) {
     return false;
 
   frame().selection().setSelection(
-      createVisibleSelectionDeprecated(EphemeralRange(resultRange)));
+      createVisibleSelection(EphemeralRange(resultRange)));
   frame().selection().revealSelection();
   return true;
 }
