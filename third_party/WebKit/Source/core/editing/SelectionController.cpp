@@ -158,9 +158,8 @@ bool SelectionController::handleMousePressEventSingleClick(
 
   if (extendSelection && !newSelection.isNone()) {
     const VisibleSelectionInFlatTree selectionInUserSelectAll(
-        expandSelectionToRespectUserSelectAll(
-            innerNode,
-            createVisibleSelectionDeprecated(createVisiblePosition(pos))));
+        expandSelectionToRespectUserSelectAll(innerNode,
+                                              createVisibleSelection(pos)));
     if (selectionInUserSelectAll.isRange()) {
       if (selectionInUserSelectAll.start().compareTo(newSelection.start()) < 0)
         pos = selectionInUserSelectAll.start();
@@ -177,9 +176,9 @@ bool SelectionController::handleMousePressEventSingleClick(
         int distanceToStart = textDistance(start, pos);
         int distanceToEnd = textDistance(pos, end);
         if (distanceToStart <= distanceToEnd)
-          newSelection = createVisibleSelectionDeprecated(end, pos);
+          newSelection = createVisibleSelection(end, pos);
         else
-          newSelection = createVisibleSelectionDeprecated(start, pos);
+          newSelection = createVisibleSelection(start, pos);
       }
     } else {
       newSelection.setExtent(pos);
@@ -191,7 +190,7 @@ bool SelectionController::handleMousePressEventSingleClick(
     }
   } else if (m_selectionState != SelectionState::ExtendedSelection) {
     newSelection = expandSelectionToRespectUserSelectAll(
-        innerNode, createVisibleSelectionDeprecated(visiblePos));
+        innerNode, createVisibleSelection(visiblePos));
   }
 
   // Updating the selection is considered side-effect of the event and so it doesn't impact the handled state.
@@ -254,7 +253,7 @@ void SelectionController::updateSelectionForMouseDrag(
   if (m_selectionState != SelectionState::ExtendedSelection) {
     // Always extend selection here because it's caused by a mouse drag
     m_selectionState = SelectionState::ExtendedSelection;
-    newSelection = createVisibleSelectionDeprecated(targetPosition);
+    newSelection = createVisibleSelection(targetPosition);
   }
 
   if (RuntimeEnabledFeatures::userSelectAllEnabled()) {
@@ -371,7 +370,7 @@ void SelectionController::selectClosestWordFromHitTestResult(
   const VisiblePositionInFlatTree& pos =
       visiblePositionOfHitTestResult(adjustedHitTestResult);
   if (pos.isNotNull()) {
-    newSelection = createVisibleSelectionDeprecated(pos);
+    newSelection = createVisibleSelection(pos);
     newSelection.expandUsingGranularity(WordGranularity);
   }
 
@@ -424,7 +423,7 @@ void SelectionController::selectClosestMisspellingFromHitTestResult(
       Node* containerNode = markerPosition.computeContainerNode();
       const PositionInFlatTree start(containerNode, markers[0]->startOffset());
       const PositionInFlatTree end(containerNode, markers[0]->endOffset());
-      newSelection = createVisibleSelectionDeprecated(start, end);
+      newSelection = createVisibleSelection(start, end);
     }
   }
 
@@ -546,7 +545,7 @@ bool SelectionController::handleMousePressEventTripleClick(
   const VisiblePositionInFlatTree& pos =
       visiblePositionOfHitTestResult(event.hitTestResult());
   if (pos.isNotNull()) {
-    newSelection = createVisibleSelectionDeprecated(pos);
+    newSelection = createVisibleSelection(pos);
     newSelection.expandUsingGranularity(ParagraphGranularity);
   }
 
@@ -644,7 +643,7 @@ bool SelectionController::handleMouseReleaseEvent(
         (caretBrowsing || hasEditableStyle(*node))) {
       const VisiblePositionInFlatTree pos =
           visiblePositionOfHitTestResult(event.hitTestResult());
-      newSelection = createVisibleSelectionDeprecated(pos);
+      newSelection = createVisibleSelection(pos);
     }
 
     setSelectionIfNeeded(selection(), newSelection);
@@ -784,8 +783,7 @@ void SelectionController::passMousePressEventToSubframe(
 
   const VisiblePositionInFlatTree& visiblePos =
       visiblePositionOfHitTestResult(mev.hitTestResult());
-  VisibleSelectionInFlatTree newSelection =
-      createVisibleSelectionDeprecated(visiblePos);
+  VisibleSelectionInFlatTree newSelection = createVisibleSelection(visiblePos);
   selection().setSelection(newSelection);
 }
 
