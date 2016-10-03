@@ -66,6 +66,8 @@ GpuWatchdogThread::GpuWatchdogThread()
       host_tty_(-1),
 #endif
       weak_factory_(this) {
+  base::subtle::NoBarrier_Store(&awaiting_acknowledge_, false);
+
 #if defined(OS_WIN)
   // GetCurrentThread returns a pseudo-handle that cannot be used by one thread
   // to identify another. DuplicateHandle creates a "real" handle that can be
@@ -100,11 +102,12 @@ void GpuWatchdogThread::PostAcknowledge() {
 }
 
 void GpuWatchdogThread::CheckArmed() {
-  // Acknowledge the watchdog if it has armed itself. The watchdog will not
-  // change its armed state until it is acknowledged.
-  if (armed()) {
+  // If the watchdog is |awaiting_acknowledge_|, reset this variable to false
+  // and post an acknowledge task now. No barrier is needed as
+  // |awaiting_acknowledge_| is only ever read from this thread.
+  if (base::subtle::NoBarrier_CompareAndSwap(&awaiting_acknowledge_, true,
+                                             false))
     PostAcknowledge();
-  }
 }
 
 void GpuWatchdogThread::Init() {
@@ -209,10 +212,13 @@ void GpuWatchdogThread::OnCheck(bool after_suspend) {
   if (armed_ || suspended_)
     return;
 
-  // Must set armed before posting the task. This task might be the only task
-  // that will activate the TaskObserver on the watched thread and it must not
-  // miss the false -> true transition.
   armed_ = true;
+
+  // Must set |awaiting_acknowledge_| before posting the task.  This task might
+  // be the only task that will activate the TaskObserver on the watched thread
+  // and it must not miss the false -> true transition. No barrier is needed
+  // here, as the PostTask which follows contains a barrier.
+  base::subtle::NoBarrier_Store(&awaiting_acknowledge_, true);
 
 #if defined(OS_WIN)
   arm_cpu_time_ = GetWatchedThreadTime();

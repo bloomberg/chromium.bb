@@ -5,6 +5,7 @@
 #ifndef GPU_IPC_SERVICE_GPU_WATCHDOG_THREAD_H_
 #define GPU_IPC_SERVICE_GPU_WATCHDOG_THREAD_H_
 
+#include "base/atomicops.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -37,10 +38,7 @@ class GPU_EXPORT GpuWatchdogThread
  public:
   static scoped_refptr<GpuWatchdogThread> Create();
 
-  // Accessible on watched thread but only modified by watchdog thread.
-  bool armed() const { return armed_; }
   void PostAcknowledge();
-
   void CheckArmed();
 
   // Must be called after a PowerMonitor has been created. Can be called from
@@ -97,8 +95,13 @@ class GPU_EXPORT GpuWatchdogThread
 
   base::MessageLoop* watched_message_loop_;
   base::TimeDelta timeout_;
-  volatile bool armed_;
+  bool armed_;
   GpuWatchdogTaskObserver task_observer_;
+
+  // |awaiting_acknowledge_| is only ever read on the watched thread, but may
+  // be modified on either the watched or watchdog thread. Reads/writes should
+  // be careful to ensure that appropriate synchronization is used.
+  base::subtle::Atomic32 awaiting_acknowledge_;
 
   // True if the watchdog should wait for a certain amount of CPU to be used
   // before killing the process.
