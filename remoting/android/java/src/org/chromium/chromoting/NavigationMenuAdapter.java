@@ -15,7 +15,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import org.chromium.chromoting.help.CreditsActivity;
-import org.chromium.chromoting.help.FeedbackSender;
 import org.chromium.chromoting.help.HelpContext;
 import org.chromium.chromoting.help.HelpSingleton;
 
@@ -53,7 +52,7 @@ public class NavigationMenuAdapter extends ArrayAdapter<NavigationMenuAdapter.Na
                 new Runnable() {
                     @Override
                     public void run() {
-                        FeedbackSender.sendFeedback(activity);
+                        HelpSingleton.getInstance().launchFeedback(activity);
                     }
                 });
 

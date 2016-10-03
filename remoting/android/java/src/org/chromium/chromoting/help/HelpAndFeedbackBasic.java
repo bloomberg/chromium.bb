@@ -15,6 +15,11 @@ public class HelpAndFeedbackBasic implements HelpAndFeedback {
         HelpActivity.launch(activity, urlFromHelpContext(helpContext));
     }
 
+    @Override
+    public void launchFeedback(Activity activity) {
+        FeedbackSender.sendFeedback(activity);
+    }
+
     private static String urlFromHelpContext(HelpContext helpContext) {
         switch (helpContext) {
             case HOST_LIST:

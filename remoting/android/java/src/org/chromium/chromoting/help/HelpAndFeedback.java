@@ -18,4 +18,11 @@ public interface HelpAndFeedback {
      * @param helpContext String used by the implementation to show context-based help.
      */
     void launchHelp(Activity activity, HelpContext helpContext);
+
+    /**
+     * Launches a new activity for displaying the feedback screen. The implementation may grab
+     * a screenshot.
+     * @param activity Parent activity of the feedback screen.
+     */
+    void launchFeedback(Activity activity);
 }
