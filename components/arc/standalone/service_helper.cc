@@ -4,9 +4,9 @@
 
 #include "components/arc/standalone/service_helper.h"
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/posix/eintr_wrapper.h"
 
 namespace arc {
@@ -34,12 +34,9 @@ void ServiceHelper::Init(const base::Closure& closure) {
   read_fd_.reset(pipe_fd[0]);
   write_fd_.reset(pipe_fd[1]);
   CHECK(base::SetNonBlocking(write_fd_.get()));
-  CHECK(base::MessageLoopForIO::current()->WatchFileDescriptor(
-        read_fd_.get(),
-        true, /* persistent */
-        base::MessageLoopForIO::WATCH_READ,
-        &watcher_,
-        this));
+  watch_controller_ = base::FileDescriptorWatcher::WatchReadable(
+      read_fd_.get(), base::Bind(&ServiceHelper::OnFileCanReadWithoutBlocking,
+                                 base::Unretained(this)));
 
   struct sigaction action = {};
   CHECK_EQ(0, sigemptyset(&action.sa_mask));
@@ -57,17 +54,11 @@ void ServiceHelper::TerminationHandler(int /* signum */) {
   }
 }
 
-void ServiceHelper::OnFileCanReadWithoutBlocking(int fd) {
-  CHECK_EQ(read_fd_.get(), fd);
-
+void ServiceHelper::OnFileCanReadWithoutBlocking() {
   char c;
   // We don't really care about the return value, since it indicates closing.
   HANDLE_EINTR(read(read_fd_.get(), &c, 1));
   closure_.Run();
-}
-
-void ServiceHelper::OnFileCanWriteWithoutBlocking(int fd) {
-  NOTREACHED();
 }
 
 }  // namespace arc

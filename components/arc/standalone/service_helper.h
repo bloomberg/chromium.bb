@@ -7,25 +7,25 @@
 
 #include <signal.h>
 
+#include <memory>
+
+#include "base/files/file_descriptor_watcher_posix.h"
 #include "base/files/scoped_file.h"
-#include "base/message_loop/message_loop.h"
 
 namespace arc {
 
 // Helper class to set up service-like processes.
-class ServiceHelper : public base::MessageLoopForIO::Watcher {
+class ServiceHelper {
  public:
   ServiceHelper();
-  ~ServiceHelper() override;
+  ~ServiceHelper();
 
   // Must be called after message loop instantiation.
   void Init(const base::Closure& closure);
 
-  // MessageLoopForIO::Watcher
-  void OnFileCanReadWithoutBlocking(int fd) override;
-  void OnFileCanWriteWithoutBlocking(int fd) override;
-
  private:
+  void OnFileCanReadWithoutBlocking();
+
   static void TerminationHandler(int /* signum */);
 
   // Static variable to guarantee instantiated only once per process.
@@ -34,7 +34,7 @@ class ServiceHelper : public base::MessageLoopForIO::Watcher {
   base::Closure closure_;
   base::ScopedFD read_fd_;
   base::ScopedFD write_fd_;
-  base::MessageLoopForIO::FileDescriptorWatcher watcher_;
+  std::unique_ptr<base::FileDescriptorWatcher::Controller> watch_controller_;
   struct sigaction old_sigint_;
   struct sigaction old_sigterm_;
 

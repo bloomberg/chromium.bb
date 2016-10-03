@@ -10,7 +10,9 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/files/file_descriptor_watcher_posix.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -39,6 +41,10 @@ class ServiceHelperTest : public ::testing::Test {
     base_loop_.reset(new base::MessageLoopForIO());
     run_loop_.reset(new base::RunLoop());
 
+    // Required to watch a file descriptor from ServiceHelper.
+    file_descriptor_watcher_ =
+        base::MakeUnique<FileDescriptorWatcher>(base_loop_.get());
+
     // This cannot be put inside SetUp() because we need to run it after fork().
     helper_.reset(new ServiceHelper());
     helper_->Init(base::Bind(&ServiceHelperTest::Quit,
@@ -47,6 +53,7 @@ class ServiceHelperTest : public ::testing::Test {
 
  protected:
   std::unique_ptr<base::MessageLoopForIO> base_loop_;
+  std::unique_ptr<base::MessageLoopForIO> file_descriptor_watcher_;
   std::unique_ptr<base::RunLoop> run_loop_;
   std::unique_ptr<ServiceHelper> helper_;
 
