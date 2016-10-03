@@ -246,7 +246,7 @@ void NavigatorImpl::DidFailProvisionalLoadWithError(
   }
 
   // Discard the pending navigation entry if needed.
-  DiscardPendingEntryOnFailureIfNeeded(render_frame_host->navigation_handle());
+  DiscardPendingEntryIfNeeded(render_frame_host->navigation_handle());
 
   if (delegate_) {
     delegate_->DidFailProvisionalLoadWithError(
@@ -952,7 +952,7 @@ void NavigatorImpl::FailedNavigation(FrameTreeNode* frame_tree_node,
   NavigationRequest* navigation_request = frame_tree_node->navigation_request();
   DCHECK(navigation_request);
 
-  DiscardPendingEntryOnFailureIfNeeded(navigation_request->navigation_handle());
+  DiscardPendingEntryIfNeeded(navigation_request->navigation_handle());
 
   // If the request was canceled by the user do not show an error page.
   if (error_code == net::ERR_ABORTED) {
@@ -1008,6 +1008,46 @@ void NavigatorImpl::LogBeforeUnloadTime(
 NavigationHandleImpl* NavigatorImpl::GetNavigationHandleForFrameHost(
     RenderFrameHostImpl* render_frame_host) {
   return render_frame_host->navigation_handle();
+}
+
+void NavigatorImpl::DiscardPendingEntryIfNeeded(NavigationHandleImpl* handle) {
+  // Racy conditions can cause a fail message to arrive after its corresponding
+  // pending entry has been replaced by another navigation. If
+  // |DiscardPendingEntry| is called in this case, then the completely valid
+  // entry for the new navigation would be discarded. See crbug.com/513742. To
+  // catch this case, the current pending entry is compared against the current
+  // navigation handle's entry id, which should correspond to the failed load.
+  NavigationEntry* pending_entry = controller_->GetPendingEntry();
+  bool pending_matches_fail_msg =
+      handle && pending_entry &&
+      handle->pending_nav_entry_id() == pending_entry->GetUniqueID();
+  if (!pending_matches_fail_msg)
+    return;
+
+  // We usually clear the pending entry when it fails, so that an arbitrary URL
+  // isn't left visible above a committed page. This must be enforced when the
+  // pending entry isn't visible (e.g., renderer-initiated navigations) to
+  // prevent URL spoofs for in-page navigations that don't go through
+  // DidStartProvisionalLoadForFrame.
+  //
+  // However, we do preserve the pending entry in some cases, such as on the
+  // initial navigation of an unmodified blank tab. We also allow the delegate
+  // to say when it's safe to leave aborted URLs in the omnibox, to let the
+  // user edit the URL and try again. This may be useful in cases that the
+  // committed page cannot be attacker-controlled. In these cases, we still
+  // allow the view to clear the pending entry and typed URL if the user
+  // requests (e.g., hitting Escape with focus in the address bar).
+  //
+  // Note: don't touch the transient entry, since an interstitial may exist.
+  bool should_preserve_entry = controller_->IsUnmodifiedBlankTab() ||
+                               delegate_->ShouldPreserveAbortedURLs();
+  if (pending_entry != controller_->GetVisibleEntry() ||
+      !should_preserve_entry) {
+    controller_->DiscardPendingEntry(true);
+
+    // Also force the UI to refresh.
+    controller_->delegate()->NotifyNavigationStateChanged(INVALIDATE_TYPE_URL);
+  }
 }
 
 // PlzNavigate
@@ -1164,47 +1204,6 @@ void NavigatorImpl::DidStartMainFrameNavigation(
     controller_->SetPendingEntry(std::move(entry));
     if (delegate_)
       delegate_->NotifyChangedNavigationState(content::INVALIDATE_TYPE_URL);
-  }
-}
-
-void NavigatorImpl::DiscardPendingEntryOnFailureIfNeeded(
-    NavigationHandleImpl* handle) {
-  // Racy conditions can cause a fail message to arrive after its corresponding
-  // pending entry has been replaced by another navigation. If
-  // |DiscardPendingEntry| is called in this case, then the completely valid
-  // entry for the new navigation would be discarded. See crbug.com/513742. To
-  // catch this case, the current pending entry is compared against the current
-  // navigation handle's entry id, which should correspond to the failed load.
-  NavigationEntry* pending_entry = controller_->GetPendingEntry();
-  bool pending_matches_fail_msg =
-      handle && pending_entry &&
-      handle->pending_nav_entry_id() == pending_entry->GetUniqueID();
-  if (!pending_matches_fail_msg)
-    return;
-
-  // We usually clear the pending entry when it fails, so that an arbitrary URL
-  // isn't left visible above a committed page. This must be enforced when the
-  // pending entry isn't visible (e.g., renderer-initiated navigations) to
-  // prevent URL spoofs for in-page navigations that don't go through
-  // DidStartProvisionalLoadForFrame.
-  //
-  // However, we do preserve the pending entry in some cases, such as on the
-  // initial navigation of an unmodified blank tab. We also allow the delegate
-  // to say when it's safe to leave aborted URLs in the omnibox, to let the
-  // user edit the URL and try again. This may be useful in cases that the
-  // committed page cannot be attacker-controlled. In these cases, we still
-  // allow the view to clear the pending entry and typed URL if the user
-  // requests (e.g., hitting Escape with focus in the address bar).
-  //
-  // Note: don't touch the transient entry, since an interstitial may exist.
-  bool should_preserve_entry = controller_->IsUnmodifiedBlankTab() ||
-                               delegate_->ShouldPreserveAbortedURLs();
-  if (pending_entry != controller_->GetVisibleEntry() ||
-      !should_preserve_entry) {
-    controller_->DiscardPendingEntry(true);
-
-    // Also force the UI to refresh.
-    controller_->delegate()->NotifyNavigationStateChanged(INVALIDATE_TYPE_URL);
   }
 }
 

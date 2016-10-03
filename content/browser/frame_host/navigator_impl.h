@@ -97,6 +97,7 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
   void CancelNavigation(FrameTreeNode* frame_tree_node) override;
   NavigationHandleImpl* GetNavigationHandleForFrameHost(
       RenderFrameHostImpl* render_frame_host) override;
+  void DiscardPendingEntryIfNeeded(NavigationHandleImpl* handle) override;
 
  private:
   // Holds data used to track browser side navigation metrics.
@@ -144,10 +145,6 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
   void DidStartMainFrameNavigation(const GURL& url,
                                    SiteInstanceImpl* site_instance,
                                    NavigationHandleImpl* navigation_handle);
-
-  // Called when a navigation has failed to discard the pending entry in order
-  // to avoid url spoofs.
-  void DiscardPendingEntryOnFailureIfNeeded(NavigationHandleImpl* handle);
 
   // The NavigationController that will keep track of session history for all
   // RenderFrameHost objects using this NavigatorImpl.

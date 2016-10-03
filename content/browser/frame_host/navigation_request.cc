@@ -358,6 +358,8 @@ void NavigationRequest::OnResponseStarted(
   if (response->head.headers.get() &&
       (response->head.headers->response_code() == 204 ||
        response->head.headers->response_code() == 205)) {
+    frame_tree_node_->navigator()->DiscardPendingEntryIfNeeded(
+        navigation_handle_.get());
     frame_tree_node_->ResetNavigationRequest(false);
     return;
   }

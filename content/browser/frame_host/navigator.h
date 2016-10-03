@@ -188,6 +188,10 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   virtual NavigationHandleImpl* GetNavigationHandleForFrameHost(
       RenderFrameHostImpl* render_frame_host);
 
+  // Called when a navigation has failed or the response is 204/205 to discard
+  // the pending entry in order to avoid url spoofs.
+  virtual void DiscardPendingEntryIfNeeded(NavigationHandleImpl* handle) {}
+
  protected:
   friend class base::RefCounted<Navigator>;
   virtual ~Navigator() {}
