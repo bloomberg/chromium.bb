@@ -1324,6 +1324,7 @@ public class ImeTest extends ContentShellTestBase {
     @MediumTest
     @Feature({"TextInput"})
     @RetryOnFailure
+    @DisabledTest(message = "crbug.com/650691")
     public void testInputTextEvents_SetComposingText() throws Throwable {
         beginBatchEdit();
         setComposingText("a", 1);
