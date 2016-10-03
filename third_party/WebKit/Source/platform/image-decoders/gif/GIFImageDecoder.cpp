@@ -335,12 +335,12 @@ void GIFImageDecoder::decode(size_t index) {
       return;
     }
 
-    if (m_purgeAggressively)
-      clearCacheExceptFrame(*i);
-
     // We need more data to continue decoding.
     if (m_frameBufferCache[*i].getStatus() != ImageFrame::FrameComplete)
       break;
+
+    if (m_purgeAggressively)
+      clearCacheExceptFrame(*i);
   }
 
   // It is also a fatal error if all data is received and we have decoded all
