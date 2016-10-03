@@ -105,7 +105,8 @@ ServiceWorkerClients::ServiceWorkerClients() {}
 ScriptPromise ServiceWorkerClients::get(ScriptState* scriptState,
                                         const String& id) {
   ExecutionContext* executionContext = scriptState->getExecutionContext();
-  // TODO(jungkees): May be null due to worker termination: http://crbug.com/413518.
+  // TODO(jungkees): May be null due to worker termination:
+  // http://crbug.com/413518.
   if (!executionContext)
     return ScriptPromise();
 

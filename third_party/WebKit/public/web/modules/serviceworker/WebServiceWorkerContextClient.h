@@ -63,7 +63,8 @@ class WebServiceWorkerContextClient {
   // the |scope| attribute of the ServiceWorkerGlobalScope. Immutable per spec.
   virtual WebURL scope() const { return WebURL(); }
 
-  // ServiceWorker has prepared everything for script loading and is now ready for inspection.
+  // ServiceWorker has prepared everything for script loading and is now ready
+  // for inspection.
   virtual void workerReadyForInspection() {}
 
   // The worker script is successfully loaded and a new thread is about to

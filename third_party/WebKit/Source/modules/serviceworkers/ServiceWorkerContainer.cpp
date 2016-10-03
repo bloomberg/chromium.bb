@@ -228,7 +228,8 @@ void ServiceWorkerContainer::registerServiceWorkerImpl(
 
   RefPtr<SecurityOrigin> documentOrigin = executionContext->getSecurityOrigin();
   String errorMessage;
-  // Restrict to secure origins: https://w3c.github.io/webappsec/specs/powerfulfeatures/#settings-privileged
+  // Restrict to secure origins:
+  // https://w3c.github.io/webappsec/specs/powerfulfeatures/#settings-privileged
   if (!executionContext->isSecureContext(errorMessage)) {
     callbacks->onError(WebServiceWorkerError(
         WebServiceWorkerError::ErrorTypeSecurity, errorMessage));

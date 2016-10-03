@@ -56,8 +56,10 @@ class CORE_EXPORT InProcessWorkerBase : public AbstractWorker,
   explicit InProcessWorkerBase(ExecutionContext*);
   bool initialize(ExecutionContext*, const String&, ExceptionState&);
 
-  // Creates a proxy to allow communicating with the worker's global scope. InProcessWorkerBase does not take ownership of the
-  // created proxy. The proxy is expected to manage its own lifetime, and delete itself in response to terminateWorkerGlobalScope().
+  // Creates a proxy to allow communicating with the worker's global scope.
+  // InProcessWorkerBase does not take ownership of the created proxy. The proxy
+  // is expected to manage its own lifetime, and delete itself in response to
+  // terminateWorkerGlobalScope().
   virtual InProcessWorkerMessagingProxy* createInProcessWorkerMessagingProxy(
       ExecutionContext*) = 0;
 
@@ -69,8 +71,9 @@ class CORE_EXPORT InProcessWorkerBase : public AbstractWorker,
   RefPtr<WorkerScriptLoader> m_scriptLoader;
   Member<ContentSecurityPolicy> m_contentSecurityPolicy;
   String m_referrerPolicy;
-  InProcessWorkerMessagingProxy*
-      m_contextProxy;  // The proxy outlives the worker to perform thread shutdown.
+
+  // The proxy outlives the worker to perform thread shutdown.
+  InProcessWorkerMessagingProxy* m_contextProxy;
 };
 
 }  // namespace blink

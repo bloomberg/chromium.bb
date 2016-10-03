@@ -14,7 +14,8 @@ namespace blink {
 
 class Worklet;
 
-// Class that is responsible for processing {@code resource} that is associated with worklet's import promise.
+// Class that is responsible for processing {@code resource} that is associated
+// with worklet's import promise.
 class WorkletScriptLoader final
     : public GarbageCollectedFinalized<WorkletScriptLoader>,
       public ResourceOwner<ScriptResource, ScriptResourceClient> {
@@ -33,7 +34,8 @@ class WorkletScriptLoader final
 
   // Cancels loading of {@code m_resource}.
   //
-  // Typically it gets called when WorkletScriptLoader's host is about to be disposed off.
+  // Typically it gets called when WorkletScriptLoader's host is about to be
+  // disposed off.
   void cancel();
 
   DECLARE_TRACE();
@@ -41,7 +43,8 @@ class WorkletScriptLoader final
  private:
   // Default constructor.
   //
-  // @param resolver Promise resolver that is used to reject/resolve the promise on ScriptResourceClient::notifyFinished event.
+  // @param resolver Promise resolver that is used to reject/resolve the promise
+  // on ScriptResourceClient::notifyFinished event.
   // @param host Host that needs be notified when the resource is downloaded.
   // @param resource that needs to be downloaded.
   WorkletScriptLoader(ScriptPromiseResolver*, Worklet* host, ScriptResource*);

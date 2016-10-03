@@ -44,23 +44,25 @@ namespace blink {
 // workers. WorkerLoaderProxy provides 2-way communications to the Document
 // context and back to the worker.
 //
-// Note that in multi-process browsers, the Worker object context and the Document
-// context can be distinct.
+// Note that in multi-process browsers, the Worker object context and the
+// Document context can be distinct.
 
-// The abstract interface providing the methods for actually posting tasks; separated
-// from the thread-safe & ref-counted WorkerLoaderProxy object which keeps a protected
-// reference to the provider object. This to support non-overlapping lifetimes, the
-// provider may be destructed before all references to the WorkerLoaderProxy object
-// have been dropped.
+// The abstract interface providing the methods for actually posting tasks;
+// separated from the thread-safe & ref-counted WorkerLoaderProxy object which
+// keeps a protected reference to the provider object. This to support
+// non-overlapping lifetimes, the provider may be destructed before all
+// references to the WorkerLoaderProxy object have been dropped.
 //
 // A provider implementation must detach itself when finalizing by calling
-// WorkerLoaderProxy::detachProvider(). This stops the WorkerLoaderProxy from accessing
-// the now-dead object, but it will remain alive while ref-ptrs are still kept to it.
+// WorkerLoaderProxy::detachProvider(). This stops the WorkerLoaderProxy from
+// accessing the now-dead object, but it will remain alive while ref-ptrs are
+// still kept to it.
 class CORE_EXPORT WorkerLoaderProxyProvider {
  public:
   virtual ~WorkerLoaderProxyProvider() {}
 
-  // Posts a task to the thread which runs the loading code (normally, the main thread).
+  // Posts a task to the thread which runs the loading code (normally, the main
+  // thread).
   virtual void postTaskToLoader(const WebTraceLocation&,
                                 std::unique_ptr<ExecutionContextTask>) = 0;
 
@@ -85,9 +87,9 @@ class CORE_EXPORT WorkerLoaderProxy final
   void postTaskToWorkerGlobalScope(const WebTraceLocation&,
                                    std::unique_ptr<ExecutionContextTask>);
 
-  // Notification from the provider that it can no longer be
-  // accessed. An implementation of WorkerLoaderProxyProvider is
-  // required to call detachProvider() when finalizing.
+  // Notification from the provider that it can no longer be accessed. An
+  // implementation of WorkerLoaderProxyProvider is required to call
+  // detachProvider() when finalizing.
   void detachProvider(WorkerLoaderProxyProvider*);
 
  private:

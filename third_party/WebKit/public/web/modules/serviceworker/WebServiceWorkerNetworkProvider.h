@@ -36,9 +36,9 @@ namespace blink {
 class WebDataSource;
 class WebURLRequest;
 
-// This interface is implemented by the client and is only called on the main thread.
-// Used by ServiceWorker and SharedWorker. isControlledByServiceWorker() and
-// serviceWorkerID() are to be implemented only by SharedWorker's provider,
+// This interface is implemented by the client and is only called on the main
+// thread. Used by ServiceWorker and SharedWorker. isControlledByServiceWorker()
+// and serviceWorkerID() are to be implemented only by SharedWorker's provider,
 // as they are needed only for controllee workers.
 class WebServiceWorkerNetworkProvider {
  public:

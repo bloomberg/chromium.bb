@@ -31,7 +31,8 @@
 namespace blink {
 namespace {
 
-// A null InProcessWorkerObjectProxy, supplied when creating CompositorWorkerThreads.
+// A null InProcessWorkerObjectProxy, supplied when creating
+// CompositorWorkerThreads.
 class TestCompositorWorkerObjectProxy : public InProcessWorkerObjectProxy {
  public:
   static std::unique_ptr<TestCompositorWorkerObjectProxy> create(
@@ -163,7 +164,8 @@ TEST_F(CompositorWorkerThreadTest, Basic) {
   compositorWorker->terminateAndWait();
 }
 
-// Tests that the same WebThread is used for new workers if the WebThread is still alive.
+// Tests that the same WebThread is used for new workers if the WebThread is
+// still alive.
 TEST_F(CompositorWorkerThreadTest, CreateSecondAndTerminateFirst) {
   // Create the first worker and wait until it is initialized.
   std::unique_ptr<CompositorWorkerThread> firstWorker =
@@ -181,8 +183,8 @@ TEST_F(CompositorWorkerThreadTest, CreateSecondAndTerminateFirst) {
   firstWorker->terminate();
   firstWorker->waitForShutdownForTesting();
 
-  // Wait until the second worker is initialized. Verify that the second worker is using the same
-  // thread and Isolate as the first worker.
+  // Wait until the second worker is initialized. Verify that the second worker
+  // is using the same thread and Isolate as the first worker.
   WebThreadSupportingGC* secondThread =
       &secondWorker->workerBackingThread().backingThread();
   ASSERT_EQ(firstThread, secondThread);
@@ -197,7 +199,8 @@ TEST_F(CompositorWorkerThreadTest, CreateSecondAndTerminateFirst) {
   secondWorker->terminateAndWait();
 }
 
-// Tests that a new WebThread is created if all existing workers are terminated before a new worker is created.
+// Tests that a new WebThread is created if all existing workers are terminated
+// before a new worker is created.
 TEST_F(CompositorWorkerThreadTest, TerminateFirstAndCreateSecond) {
   // Create the first worker, wait until it is initialized, and terminate it.
   std::unique_ptr<CompositorWorkerThread> compositorWorker =
@@ -220,7 +223,8 @@ TEST_F(CompositorWorkerThreadTest, TerminateFirstAndCreateSecond) {
   compositorWorker->terminateAndWait();
 }
 
-// Tests that v8::Isolate and WebThread are correctly set-up if a worker is created while another is terminating.
+// Tests that v8::Isolate and WebThread are correctly set-up if a worker is
+// created while another is terminating.
 TEST_F(CompositorWorkerThreadTest, CreatingSecondDuringTerminationOfFirst) {
   std::unique_ptr<CompositorWorkerThread> firstWorker =
       createCompositorWorker();
@@ -242,7 +246,8 @@ TEST_F(CompositorWorkerThreadTest, CreatingSecondDuringTerminationOfFirst) {
   ASSERT_TRUE(secondIsolate);
   EXPECT_EQ(firstIsolate, secondIsolate);
 
-  // Verify that the isolate can run some scripts correctly in the second worker.
+  // Verify that the isolate can run some scripts correctly in the second
+  // worker.
   checkWorkerCanExecuteScript(secondWorker.get());
   secondWorker->terminateAndWait();
 }

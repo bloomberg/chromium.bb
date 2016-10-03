@@ -53,7 +53,8 @@ class WebServiceWorkerResponse;
 class WebURL;
 class WorkerClients;
 
-// See WebServiceWorkerContextClient for documentation for the methods in this class.
+// See WebServiceWorkerContextClient for documentation for the methods in this
+// class.
 class MODULES_EXPORT ServiceWorkerGlobalScopeClient
     : public Supplement<WorkerClients> {
   WTF_MAKE_NONCOPYABLE(ServiceWorkerGlobalScopeClient);

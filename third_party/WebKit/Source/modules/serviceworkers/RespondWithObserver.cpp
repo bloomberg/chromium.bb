@@ -25,7 +25,8 @@
 namespace blink {
 namespace {
 
-// Returns the error message to let the developer know about the reason of the unusual failures.
+// Returns the error message to let the developer know about the reason of the
+// unusual failures.
 const String getMessageForResponseError(WebServiceWorkerResponseError error,
                                         const KURL& requestURL) {
   String errorMessage = "The FetchEvent for \"" + requestURL.getString() +

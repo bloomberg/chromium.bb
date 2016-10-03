@@ -159,7 +159,8 @@ ServiceWorkerRegistration* ServiceWorkerGlobalScope::registration() {
 
 ScriptPromise ServiceWorkerGlobalScope::skipWaiting(ScriptState* scriptState) {
   ExecutionContext* executionContext = scriptState->getExecutionContext();
-  // FIXME: short-term fix, see details at: https://codereview.chromium.org/535193002/.
+  // FIXME: short-term fix, see details at:
+  // https://codereview.chromium.org/535193002/.
   if (!executionContext)
     return ScriptPromise();
 

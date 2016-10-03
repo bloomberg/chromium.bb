@@ -63,7 +63,8 @@ void WorkerInspectorProxy::workerThreadCreated(Document* document,
   m_document = document;
   m_url = url.getString();
   inspectorProxies().add(this);
-  // We expect everyone starting worker thread to synchronously ask for workerStartMode right before.
+  // We expect everyone starting worker thread to synchronously ask for
+  // workerStartMode right before.
   bool waitingForDebugger =
       InspectorInstrumentation::shouldWaitForDebuggerOnWorkerStart(document);
   InspectorInstrumentation::didStartWorker(document, this, waitingForDebugger);

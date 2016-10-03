@@ -69,7 +69,8 @@ SharedWorker* SharedWorker::create(ExecutionContext* context,
 
   worker->suspendIfNeeded();
 
-  // We don't currently support nested workers, so workers can only be created from documents.
+  // We don't currently support nested workers, so workers can only be created
+  // from documents.
   Document* document = toDocument(context);
   if (!document->getSecurityOrigin()->canAccessSharedWorkers()) {
     exceptionState.throwSecurityError(

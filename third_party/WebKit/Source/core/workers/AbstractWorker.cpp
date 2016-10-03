@@ -54,7 +54,9 @@ KURL AbstractWorker::resolveURL(const String& url,
     return KURL();
   }
 
-  // We can safely expose the URL in the following exceptions, as these checks happen synchronously before redirection. JavaScript receives no new information.
+  // We can safely expose the URL in the following exceptions, as these checks
+  // happen synchronously before redirection. JavaScript receives no new
+  // information.
   if (!getExecutionContext()->getSecurityOrigin()->canRequestNoSuborigin(
           scriptURL)) {
     exceptionState.throwSecurityError(

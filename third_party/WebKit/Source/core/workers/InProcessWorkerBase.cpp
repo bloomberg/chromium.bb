@@ -49,7 +49,8 @@ bool InProcessWorkerBase::initialize(ExecutionContext* context,
                                      ExceptionState& exceptionState) {
   suspendIfNeeded();
 
-  // TODO(mkwst): Revisit the context as https://drafts.css-houdini.org/worklets/ evolves.
+  // TODO(mkwst): Revisit the context as
+  // https://drafts.css-houdini.org/worklets/ evolves.
   KURL scriptURL =
       resolveURL(url, exceptionState, WebURLRequest::RequestContextScript);
   if (scriptURL.isEmpty())
@@ -77,7 +78,8 @@ void InProcessWorkerBase::stop() {
 }
 
 bool InProcessWorkerBase::hasPendingActivity() const {
-  // The worker context does not exist while loading, so we must ensure that the worker object is not collected, nor are its event listeners.
+  // The worker context does not exist while loading, so we must ensure that the
+  // worker object is not collected, nor are its event listeners.
   return (m_contextProxy && m_contextProxy->hasPendingActivity()) ||
          m_scriptLoader;
 }
