@@ -30,6 +30,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/StyleChangeReason.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/Event.h"
@@ -45,12 +46,6 @@
 #include "wtf/Vector.h"
 
 namespace blink {
-
-static SVGUseEventSender& svgUseLoadEventSender() {
-  DEFINE_STATIC_LOCAL(SVGUseEventSender, sharedLoadEventSender,
-                      (SVGUseEventSender::create(EventTypeNames::load)));
-  return sharedLoadEventSender;
-}
 
 inline SVGUseElement::SVGUseElement(Document& document)
     : SVGGraphicsElement(SVGNames::useTag, document),
@@ -689,8 +684,7 @@ FloatRect SVGUseElement::getBBox() {
   return bbox;
 }
 
-void SVGUseElement::dispatchPendingEvent(SVGUseEventSender* eventSender) {
-  ASSERT_UNUSED(eventSender, eventSender == &svgUseLoadEventSender());
+void SVGUseElement::dispatchPendingEvent() {
   ASSERT(isStructurallyExternal() && m_haveFiredLoadEvent);
   dispatchEvent(Event::create(EventTypeNames::load));
 }
@@ -710,7 +704,10 @@ void SVGUseElement::notifyFinished(Resource* resource) {
       return;
     ASSERT(!m_haveFiredLoadEvent);
     m_haveFiredLoadEvent = true;
-    svgUseLoadEventSender().dispatchEventSoon(this);
+    TaskRunnerHelper::get(TaskType::DOMManipulation, &document())
+        ->postTask(BLINK_FROM_HERE,
+                   WTF::bind(&SVGUseElement::dispatchPendingEvent,
+                             wrapPersistent(this)));
   }
 }
 

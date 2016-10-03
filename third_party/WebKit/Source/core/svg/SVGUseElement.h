@@ -21,7 +21,6 @@
 #ifndef SVGUseElement_h
 #define SVGUseElement_h
 
-#include "core/events/EventSender.h"
 #include "core/fetch/DocumentResource.h"
 #include "core/svg/SVGAnimatedLength.h"
 #include "core/svg/SVGGeometryElement.h"
@@ -30,8 +29,6 @@
 #include "platform/heap/Handle.h"
 
 namespace blink {
-
-using SVGUseEventSender = EventSender<SVGUseElement>;
 
 class SVGUseElement final : public SVGGraphicsElement,
                             public SVGURIReference,
@@ -57,7 +54,7 @@ class SVGUseElement final : public SVGGraphicsElement,
 
   void buildPendingResource() override;
 
-  void dispatchPendingEvent(SVGUseEventSender*);
+  void dispatchPendingEvent();
   void toClipPath(Path&) const;
 
   DECLARE_VIRTUAL_TRACE();
