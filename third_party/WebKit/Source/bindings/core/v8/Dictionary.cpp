@@ -25,20 +25,9 @@
 
 #include "bindings/core/v8/Dictionary.h"
 
-#include "bindings/core/v8/ArrayValue.h"
-#include "bindings/core/v8/ExceptionMessages.h"
-#include "bindings/core/v8/ScriptController.h"
-#include "bindings/core/v8/V8ArrayBufferView.h"
-#include "bindings/core/v8/V8Binding.h"
-#include "bindings/core/v8/V8BindingMacros.h"
-#include "bindings/core/v8/V8Element.h"
-#include "bindings/core/v8/V8EventTarget.h"
-#include "bindings/core/v8/V8MessagePort.h"
-#include "bindings/core/v8/V8TextTrack.h"
-#include "bindings/core/v8/V8VoidCallback.h"
-#include "bindings/core/v8/V8Window.h"
-#include "core/html/track/TrackBase.h"
-#include "wtf/MathExtras.h"
+#include "bindings/core/v8/V8ScriptRunner.h"
+#include "bindings/core/v8/V8StringResource.h"
+#include "core/dom/ExecutionContext.h"
 
 namespace blink {
 
