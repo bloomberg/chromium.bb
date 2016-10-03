@@ -130,6 +130,7 @@ import org.chromium.content_public.browser.ContentBitmapCallback;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.readback_types.ReadbackResponse;
+import org.chromium.policy.CombinedPolicyProvider;
 import org.chromium.policy.CombinedPolicyProvider.PolicyChangeListener;
 import org.chromium.printing.PrintManagerDelegateImpl;
 import org.chromium.printing.PrintingController;
@@ -262,8 +263,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         ApplicationInitialization.enableFullscreenFlags(
                 getResources(), this, getControlContainerHeightResource());
         getWindow().setBackgroundDrawable(getBackgroundDrawable());
-        mWindowAndroid = ((ChromeApplication) getApplicationContext())
-                .createActivityWindowAndroid(this);
+        mWindowAndroid = new ChromeWindow(this);
         mWindowAndroid.restoreInstanceState(getSavedInstanceState());
     }
 
@@ -305,7 +305,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         }
 
         // Make the activity listen to policy change events
-        getChromeApplication().addPolicyChangeListener(this);
+        CombinedPolicyProvider.get().addPolicyChangeListener(this);
 
         // Set up the animation placeholder to be the SurfaceView. This disables the
         // SurfaceView's 'hole' clipping during animations that are notified to the window.
@@ -885,7 +885,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             mWindowAndroid = null;
         }
 
-        getChromeApplication().removePolicyChangeListener(this);
+        CombinedPolicyProvider.get().removePolicyChangeListener(this);
 
         if (mTabContentManager != null) {
             mTabContentManager.destroy();

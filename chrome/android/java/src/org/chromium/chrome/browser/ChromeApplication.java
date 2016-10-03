@@ -7,7 +7,6 @@ package org.chromium.chrome.browser;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
@@ -48,12 +47,10 @@ import org.chromium.chrome.browser.physicalweb.PhysicalWebBleClient;
 import org.chromium.chrome.browser.physicalweb.PhysicalWebEnvironment;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.preferences.LocationSettings;
-import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.autofill.AutofillPreferences;
 import org.chromium.chrome.browser.preferences.password.SavePasswordsPreferences;
 import org.chromium.chrome.browser.preferences.privacy.ClearBrowsingDataPreferences;
-import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
 import org.chromium.chrome.browser.printing.PrintingControllerFactory;
 import org.chromium.chrome.browser.rlz.RevenueStats;
 import org.chromium.chrome.browser.services.AndroidEduOwnerCheckCallback;
@@ -71,9 +68,7 @@ import org.chromium.content.app.ContentApplication;
 import org.chromium.content.browser.ChildProcessCreationParams;
 import org.chromium.policy.AppRestrictionsProvider;
 import org.chromium.policy.CombinedPolicyProvider;
-import org.chromium.policy.CombinedPolicyProvider.PolicyChangeListener;
 import org.chromium.printing.PrintingController;
-import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.ResourceBundle;
 
 /**
@@ -161,20 +156,6 @@ public class ChromeApplication extends ContentApplication {
     protected void showPasswordSettings() {
         PreferencesLauncher.launchSettingsPage(this,
                 SavePasswordsPreferences.class.getName());
-    }
-
-    /**
-     * Opens the single origin settings page for the given URL.
-     *
-     * @param url The URL to show the single origin settings for. This is a complete url
-     *            including scheme, domain, port, path, etc.
-     */
-    protected void showSingleOriginSettings(String url) {
-        Bundle fragmentArgs = SingleWebsitePreferences.createFragmentArgsForSite(url);
-        Intent intent = PreferencesLauncher.createIntentForSettingsPage(
-                this, SingleWebsitePreferences.class.getName());
-        intent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, fragmentArgs);
-        startActivity(intent);
     }
 
     @Override
@@ -325,14 +306,6 @@ public class ChromeApplication extends ContentApplication {
     }
 
     /**
-     * @return A new ActivityWindowAndroid instance.
-     */
-    public ActivityWindowAndroid createActivityWindowAndroid(Activity activity) {
-        if (activity instanceof ChromeActivity) return new ChromeWindow((ChromeActivity) activity);
-        return new ActivityWindowAndroid(activity);
-    }
-
-    /**
      * @return An instance of {@link CustomTabsConnection}. Should not be called
      * outside of {@link CustomTabsConnection#getInstance()}.
      */
@@ -394,20 +367,6 @@ public class ChromeApplication extends ContentApplication {
      */
     public void registerPolicyProviders(CombinedPolicyProvider combinedProvider) {
         combinedProvider.registerProvider(new AppRestrictionsProvider(getApplicationContext()));
-    }
-
-    /**
-     * Add a listener to be notified upon policy changes.
-     */
-    public void addPolicyChangeListener(PolicyChangeListener listener) {
-        CombinedPolicyProvider.get().addPolicyChangeListener(listener);
-    }
-
-    /**
-     * Remove a listener to be notified upon policy changes.
-     */
-    public void removePolicyChangeListener(PolicyChangeListener listener) {
-        CombinedPolicyProvider.get().removePolicyChangeListener(listener);
     }
 
     /**
