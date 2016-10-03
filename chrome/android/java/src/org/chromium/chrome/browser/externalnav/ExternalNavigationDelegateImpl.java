@@ -560,8 +560,11 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public boolean maybeLaunchInstantApp(String url, String referrerUrl) {
-        return InstantAppsHandler.getInstance().handleNavigation(getAvailableContext(), url,
-                TextUtils.isEmpty(referrerUrl) ? null : Uri.parse(referrerUrl));
+    public boolean maybeLaunchInstantApp(Tab tab, String url, String referrerUrl) {
+        if (tab == null) return false;
+        return InstantAppsHandler.getInstance().handleNavigation(
+                getAvailableContext(), url,
+                TextUtils.isEmpty(referrerUrl) ? null : Uri.parse(referrerUrl),
+                tab.getWebContents());
     }
 }

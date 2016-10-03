@@ -657,7 +657,7 @@ TEST_F(AppBannerSettingsHelperTest, ShouldNotShowAfterShowing) {
 
   base::Time reference_time = GetReferenceTime();
   base::Time one_day_ago = reference_time - base::TimeDelta::FromDays(1);
-  base::Time three_weeks_ago = reference_time - base::TimeDelta::FromDays(21);
+  base::Time one_week_ago = reference_time - base::TimeDelta::FromDays(7);
   base::Time one_year_ago = reference_time - base::TimeDelta::FromDays(366);
 
   // By default the banner should not be shown.
@@ -687,7 +687,7 @@ TEST_F(AppBannerSettingsHelperTest, ShouldNotShowAfterShowing) {
   // Show the site more recently. Now it should not be shown.
   AppBannerSettingsHelper::RecordBannerEvent(
       web_contents(), url, kTestPackageName,
-      AppBannerSettingsHelper::APP_BANNER_EVENT_DID_SHOW, three_weeks_ago);
+      AppBannerSettingsHelper::APP_BANNER_EVENT_DID_SHOW, one_week_ago);
   EXPECT_EQ(PREVIOUSLY_IGNORED,
             AppBannerSettingsHelper::ShouldShowBanner(
                 web_contents(), url, kTestPackageName, reference_time));

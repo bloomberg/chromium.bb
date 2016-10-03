@@ -133,9 +133,10 @@ interface ExternalNavigationDelegate {
     /**
      * Check if the URL should be handled by an instant app, or kick off an async request for an
      * instant app banner.
+     * @param tab The current tab.
      * @param url The current URL.
      * @param referrerUrl The referrer URL.
      * @return Whether we launched an instant app.
      */
-    boolean maybeLaunchInstantApp(String url, String referrerUrl);
+    boolean maybeLaunchInstantApp(Tab tab, String url, String referrerUrl);
 }

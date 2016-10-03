@@ -350,7 +350,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
     @MediumTest
     @Feature({"AppBanners"})
     @RetryOnFailure
-    public void testBannerAppearsThenDoesNotAppearAgainForMonths() throws Exception {
+    public void testBannerAppearsThenDoesNotAppearAgainForWeeks() throws Exception {
         // Visit a site that requests a banner.
         new TabLoadObserver(getActivity().getActivityTab()).fullyLoadUrl(mNativeAppUrl);
         waitUntilAppDetailsRetrieved(1);
@@ -363,29 +363,29 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         waitUntilAppBannerInfoBarAppears(NATIVE_APP_TITLE);
 
         // Revisit the page to make the banner go away, but don't explicitly dismiss it.
-        // This hides the banner for a few months.
+        // This hides the banner for two weeks.
         new TabLoadObserver(getActivity().getActivityTab()).fullyLoadUrl(mNativeAppUrl);
         waitUntilAppDetailsRetrieved(3);
         waitUntilNoInfoBarsExist();
 
-        // Wait a month until revisiting the page.
-        AppBannerManager.setTimeDeltaForTesting(31);
+        // Wait a week until revisiting the page.
+        AppBannerManager.setTimeDeltaForTesting(7);
         new TabLoadObserver(getActivity().getActivityTab()).fullyLoadUrl(mNativeAppUrl);
         waitUntilAppDetailsRetrieved(4);
         waitUntilNoInfoBarsExist();
 
-        AppBannerManager.setTimeDeltaForTesting(32);
+        AppBannerManager.setTimeDeltaForTesting(8);
         new TabLoadObserver(getActivity().getActivityTab()).fullyLoadUrl(mNativeAppUrl);
         waitUntilAppDetailsRetrieved(5);
         waitUntilNoInfoBarsExist();
 
-        // Wait two months until revisiting the page, which should pop up the banner.
-        AppBannerManager.setTimeDeltaForTesting(61);
+        // Wait two weeks until revisiting the page, which should pop up the banner.
+        AppBannerManager.setTimeDeltaForTesting(14);
         new TabLoadObserver(getActivity().getActivityTab()).fullyLoadUrl(mNativeAppUrl);
         waitUntilAppDetailsRetrieved(6);
         waitUntilNoInfoBarsExist();
 
-        AppBannerManager.setTimeDeltaForTesting(62);
+        AppBannerManager.setTimeDeltaForTesting(15);
         new TabLoadObserver(getActivity().getActivityTab()).fullyLoadUrl(mNativeAppUrl);
         waitUntilAppDetailsRetrieved(7);
         waitUntilAppBannerInfoBarAppears(NATIVE_APP_TITLE);

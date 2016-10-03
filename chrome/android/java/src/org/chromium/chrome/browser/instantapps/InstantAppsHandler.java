@@ -10,13 +10,11 @@ import android.net.Uri;
 import android.os.StrictMode;
 import android.os.SystemClock;
 import android.provider.Browser;
-import android.text.TextUtils;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.FieldTrialList;
 import org.chromium.base.Log;
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
@@ -24,9 +22,8 @@ import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.metrics.LaunchMetrics.TimesHistogramSample;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.content_public.browser.WebContents;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /** A launcher for Instant Apps. */
@@ -36,14 +33,24 @@ public class InstantAppsHandler {
     private static final Object INSTANCE_LOCK = new Object();
     private static InstantAppsHandler sInstance;
 
-    private static final String DO_NOT_LAUNCH_EXTRA =
-            "com.google.android.gms.instantapps.DO_NOT_LAUNCH_INSTANT_APP";
-
     private static final String CUSTOM_APPS_INSTANT_APP_EXTRA =
             "android.support.customtabs.extra.EXTRA_ENABLE_INSTANT_APPS";
 
     private static final String INSTANT_APP_START_TIME_EXTRA =
             "org.chromium.chrome.INSTANT_APP_START_TIME";
+
+    // TODO(mariakhomenko): Depend directly on the constants once we roll to v8 libraries.
+    private static final String DO_NOT_LAUNCH_EXTRA =
+            "com.google.android.gms.instantapps.DO_NOT_LAUNCH_INSTANT_APP";
+
+    protected static final String IS_REFERRER_TRUSTED_EXTRA =
+            "com.google.android.gms.instantapps.IS_REFERRER_TRUSTED";
+
+    protected static final String IS_USER_CONFIRMED_LAUNCH_EXTRA =
+            "com.google.android.gms.instantapps.IS_USER_CONFIRMED_LAUNCH";
+
+    protected static final String TRUSTED_REFERRER_PKG_EXTRA =
+            "com.google.android.gms.instantapps.TRUSTED_REFERRER_PKG";
 
     /** Finch experiment name. */
     private static final String INSTANT_APPS_EXPERIMENT_NAME = "InstantApps";
@@ -65,9 +72,6 @@ public class InstantAppsHandler {
     /** A histogram to record how long the GMS Core API call took. */
     private static final TimesHistogramSample sInstantAppsApiCallTimes = new TimesHistogramSample(
             "Android.InstantApps.ApiCallDuration", TimeUnit.MILLISECONDS);
-
-    /** A set of hosts for which Instant Apps are launched by default without prompt. */
-    private Set<String> mOptInHosts = new HashSet<>();
 
     /** @return The singleton instance of {@link InstantAppsHandler}. */
     public static InstantAppsHandler getInstance() {
@@ -218,22 +222,21 @@ public class InstantAppsHandler {
      * App banner.
      * @return Whether an Instant App intent was started.
      */
-    public boolean handleNavigation(Context context, String url, Uri referrer) {
+    public boolean handleNavigation(Context context, String url, Uri referrer,
+            WebContents webContents) {
         if (!isEnabled(context)) return false;
 
-        String host = Uri.parse(url).getHost();
-        if (TextUtils.isEmpty(host)) return false;
-        if (mOptInHosts.contains(host)) {
-            RecordUserAction.record("Android.InstantApps.LaunchedByDefault");
+        if (InstantAppsSettings.isInstantAppDefault(webContents, url)) {
             return launchInstantAppForNavigation(context, url, referrer);
         }
-        return startCheckForInstantApps(context, url, referrer);
+        return startCheckForInstantApps(context, url, referrer, webContents);
     }
 
     /**
      * Checks if an Instant App banner should be shown for the page we are loading.
      */
-    protected boolean startCheckForInstantApps(final Context context, String url, Uri referrer) {
+    protected boolean startCheckForInstantApps(Context context, String url, Uri referrer,
+            WebContents webContents) {
         return false;
     }
 
@@ -266,11 +269,27 @@ public class InstantAppsHandler {
     }
 
     /**
-     * Records that a particular hostname should open the associated Instant App by default.
+     * Launches the Instant App from the infobar banner.
      */
-    public void recordDefaultOpen(String hostname) {
-        mOptInHosts.add(hostname);
-        // TODO(mariakhomenko): Implement persistence for optInHosts.
+    public void launchFromBanner(InstantAppsBannerData data) {
+        if (data.getIntent() == null) return;
+
+        Intent iaIntent = data.getIntent();
+        if (data.getReferrer() != null) {
+            iaIntent.putExtra(Intent.EXTRA_REFERRER, data.getReferrer());
+            iaIntent.putExtra(IS_REFERRER_TRUSTED_EXTRA, true);
+        }
+
+        Context appContext = ContextUtils.getApplicationContext();
+        iaIntent.putExtra(TRUSTED_REFERRER_PKG_EXTRA, appContext.getPackageName());
+        iaIntent.putExtra(IS_USER_CONFIRMED_LAUNCH_EXTRA, true);
+
+        try {
+            appContext.startActivity(iaIntent);
+            InstantAppsSettings.setInstantAppDefault(data.getWebContents(), data.getUrl());
+        } catch (Exception e) {
+            Log.e(TAG, "Could not launch instant app intent", e);
+        }
     }
 
     /**

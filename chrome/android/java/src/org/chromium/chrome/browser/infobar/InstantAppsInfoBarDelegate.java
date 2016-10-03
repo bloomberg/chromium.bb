@@ -4,13 +4,6 @@
 
 package org.chromium.chrome.browser.infobar;
 
-import android.content.ActivityNotFoundException;
-import android.content.Context;
-import android.content.Intent;
-import android.graphics.Bitmap;
-
-import org.chromium.base.ContextUtils;
-import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.instantapps.InstantAppsBannerData;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
@@ -24,10 +17,8 @@ public class InstantAppsInfoBarDelegate {
 
     private InstantAppsBannerData mData;
 
-    public static void launch(WebContents webContents, String url, String label, Bitmap icon,
-            Intent intent) {
-        InstantAppsBannerData appsBannerData = new InstantAppsBannerData(label, icon, url, intent);
-        nativeLaunch(webContents, appsBannerData);
+    public static void launch(InstantAppsBannerData data) {
+        nativeLaunch(data.getWebContents(), data, data.getUrl());
     }
 
     @CalledByNative
@@ -39,14 +30,9 @@ public class InstantAppsInfoBarDelegate {
 
     @CalledByNative
     private void openInstantApp(InstantAppsBannerData data) {
-        Context appContext = ContextUtils.getApplicationContext();
-        try {
-            appContext.startActivity(data.getIntent());
-        } catch (ActivityNotFoundException e) {
-            Log.e(TAG, "No activity found to launch intent " + data.getIntent(), e);
-        }
-        InstantAppsHandler.getInstance().recordDefaultOpen(data.getUrl());
+        InstantAppsHandler.getInstance().launchFromBanner(data);
     }
 
-    private static native void nativeLaunch(WebContents webContents, InstantAppsBannerData data);
+    private static native void nativeLaunch(WebContents webContents, InstantAppsBannerData data,
+            String url);
 }

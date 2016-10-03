@@ -397,7 +397,7 @@ public class ExternalNavigationHandler {
                 }
 
                 if (linkNotFromIntent && !params.isIncognito() && mDelegate.maybeLaunchInstantApp(
-                        params.getUrl(), params.getReferrerUrl())) {
+                        params.getTab(), params.getUrl(), params.getReferrerUrl())) {
                     return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
                 }
 

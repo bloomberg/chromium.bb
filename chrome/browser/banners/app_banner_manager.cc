@@ -431,6 +431,23 @@ bool AppBannerManager::CheckIfShouldShowBanner() {
   if (code == NO_ERROR_DETECTED)
     return true;
 
+  switch (code) {
+    case ALREADY_INSTALLED:
+      banners::TrackDisplayEvent(banners::DISPLAY_EVENT_INSTALLED_PREVIOUSLY);
+      break;
+    case PREVIOUSLY_BLOCKED:
+      banners::TrackDisplayEvent(banners::DISPLAY_EVENT_BLOCKED_PREVIOUSLY);
+      break;
+    case PREVIOUSLY_IGNORED:
+      banners::TrackDisplayEvent(banners::DISPLAY_EVENT_IGNORED_PREVIOUSLY);
+      break;
+    case INSUFFICIENT_ENGAGEMENT:
+      banners::TrackDisplayEvent(banners::DISPLAY_EVENT_NOT_VISITED_ENOUGH);
+      break;
+    default:
+      break;
+  }
+
   // If we are in debug mode, AppBannerSettingsHelper::ShouldShowBanner must
   // return NO_ERROR_DETECTED (bypass flag is set) or we must not have entered
   // this method.

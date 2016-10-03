@@ -40,6 +40,8 @@ class Profile;
 // what we count as a day matches what the user perceives to be days.
 class AppBannerSettingsHelper {
  public:
+  // TODO(mariakhomenko): Rename events to reflect that they are used in more
+  // contexts now.
   enum AppBannerEvent {
     APP_BANNER_EVENT_COULD_SHOW,
     APP_BANNER_EVENT_DID_SHOW,
@@ -52,6 +54,8 @@ class AppBannerSettingsHelper {
     WEB,
     NATIVE,
   };
+
+  static const char kInstantAppsKey[];
 
   // BannerEvents record the time that a site was accessed, along with an
   // engagement weight representing the importance of the access.

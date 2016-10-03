@@ -440,6 +440,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/init/ProcessInitializationHandler.java",
   "java/src/org/chromium/chrome/browser/instantapps/InstantAppsBannerData.java",
   "java/src/org/chromium/chrome/browser/instantapps/InstantAppsHandler.java",
+  "java/src/org/chromium/chrome/browser/instantapps/InstantAppsSettings.java",
   "java/src/org/chromium/chrome/browser/invalidation/ChromeBrowserSyncAdapter.java",
   "java/src/org/chromium/chrome/browser/invalidation/ChromeBrowserSyncAdapterService.java",
   "java/src/org/chromium/chrome/browser/invalidation/ChromeInvalidationClientService.java",

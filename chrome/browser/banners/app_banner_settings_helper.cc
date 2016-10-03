@@ -40,7 +40,7 @@ const size_t kMaxAppsPerSite = 3;
 const unsigned int kOldestCouldShowBannerEventInDays = 14;
 
 // Number of days that showing the banner will prevent it being seen again for.
-const unsigned int kMinimumDaysBetweenBannerShows = 60;
+const unsigned int kMinimumDaysBetweenBannerShows = 14;
 
 const unsigned int kNumberOfMinutesInADay = 1440;
 
@@ -198,6 +198,9 @@ void UpdateMinutesBetweenVisits() {
 }
 
 }  // namespace
+
+// Key to store instant apps events.
+const char AppBannerSettingsHelper::kInstantAppsKey[] = "instantapps";
 
 void AppBannerSettingsHelper::ClearHistoryForURLs(
     Profile* profile,
@@ -394,10 +397,8 @@ InstallableStatusCode AppBannerSettingsHelper::ShouldShowBanner(
   base::Time added_time =
       GetSingleBannerEvent(web_contents, origin_url, package_name_or_start_url,
                            APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN);
-  if (!added_time.is_null()) {
-    banners::TrackDisplayEvent(banners::DISPLAY_EVENT_INSTALLED_PREVIOUSLY);
+  if (!added_time.is_null())
     return ALREADY_INSTALLED;
-  }
 
   base::Time blocked_time =
       GetSingleBannerEvent(web_contents, origin_url, package_name_or_start_url,
@@ -407,7 +408,6 @@ InstallableStatusCode AppBannerSettingsHelper::ShouldShowBanner(
   // null events will always be greater than the limits.
   if (time - blocked_time <
       base::TimeDelta::FromDays(kMinimumBannerBlockedToBannerShown)) {
-    banners::TrackDisplayEvent(banners::DISPLAY_EVENT_BLOCKED_PREVIOUSLY);
     return PREVIOUSLY_BLOCKED;
   }
 
@@ -416,7 +416,6 @@ InstallableStatusCode AppBannerSettingsHelper::ShouldShowBanner(
                            APP_BANNER_EVENT_DID_SHOW);
   if (time - shown_time <
       base::TimeDelta::FromDays(kMinimumDaysBetweenBannerShows)) {
-    banners::TrackDisplayEvent(banners::DISPLAY_EVENT_IGNORED_PREVIOUSLY);
     return PREVIOUSLY_IGNORED;
   }
 
@@ -427,8 +426,11 @@ InstallableStatusCode AppBannerSettingsHelper::ShouldShowBanner(
   // TODO(dominickn): just return true here and remove all of the following code
   // in this method when app banners have fully migrated to using site
   // engagement as a trigger condition. See crbug.com/616322.
-  if (ShouldUseSiteEngagementScore())
+  // Do not do engagement checks for instant app banners.
+  if (ShouldUseSiteEngagementScore() ||
+      package_name_or_start_url == kInstantAppsKey) {
     return NO_ERROR_DETECTED;
+  }
 
   double total_engagement = 0;
   std::vector<BannerEvent> could_show_events = GetCouldShowBannerEvents(
@@ -437,10 +439,8 @@ InstallableStatusCode AppBannerSettingsHelper::ShouldShowBanner(
   for (const auto& event : could_show_events)
     total_engagement += event.engagement;
 
-  if (!HasSufficientEngagement(total_engagement)) {
-    banners::TrackDisplayEvent(banners::DISPLAY_EVENT_NOT_VISITED_ENOUGH);
+  if (!HasSufficientEngagement(total_engagement))
     return INSUFFICIENT_ENGAGEMENT;
-  }
 
   return NO_ERROR_DETECTED;
 }
@@ -565,8 +565,10 @@ bool AppBannerSettingsHelper::WasLaunchedRecently(Profile* profile,
       std::string event_key(
           kBannerEventKeys[APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN]);
       double internal_time;
-      if (!value->GetDouble(event_key, &internal_time))
+      if (it.key() == kInstantAppsKey ||
+          !value->GetDouble(event_key, &internal_time)) {
         continue;
+      }
 
       base::Time added_time = base::Time::FromInternalValue(internal_time);
 

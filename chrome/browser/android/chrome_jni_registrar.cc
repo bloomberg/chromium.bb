@@ -54,6 +54,7 @@
 #include "chrome/browser/android/foreign_session_helper.h"
 #include "chrome/browser/android/history_report/history_report_jni_bridge.h"
 #include "chrome/browser/android/instantapps/instant_apps_infobar_delegate.h"
+#include "chrome/browser/android/instantapps/instant_apps_settings.h"
 #include "chrome/browser/android/java_exception_reporter.h"
 #include "chrome/browser/android/large_icon_bridge.h"
 #include "chrome/browser/android/locale/special_locale_handler.h"
@@ -279,6 +280,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"HistoryReportJniBridge", history_report::RegisterHistoryReportJniBridge},
     {"InfoBarContainer", RegisterInfoBarContainer},
     {"InstantAppsInfobarDelegate", RegisterInstantAppsInfoBarDelegate},
+    {"InstantAppsSettings", RegisterInstantAppsSettings},
     {"InvalidationServiceFactory",
      invalidation::InvalidationServiceFactoryAndroid::Register},
     {"SimpleConfirmInfoBarBuilder", RegisterSimpleConfirmInfoBarBuilder},
