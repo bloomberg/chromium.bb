@@ -8,6 +8,7 @@
         "content::mojom::EmbeddedWorkerInstanceClient",
         "content::mojom::EmbeddedWorkerSetup",
         "content::mojom::FrameFactory",
+        "content::mojom::RenderWidgetWindowTreeClientFactory",
         "IPC::mojom::ChannelBootstrap",
         "mojom::ResourceUsageReporter",
         "visitedlink::mojom::VisitedLinkNotificationSink",
