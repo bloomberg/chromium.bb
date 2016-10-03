@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_app_menu_item.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_types.h"
+#include "chrome/browser/ui/ash/launcher/settings_window_observer.h"
 #include "extensions/common/constants.h"
 
 class AccountId;
@@ -248,6 +249,8 @@ class ChromeLauncherController {
 
  private:
   static ChromeLauncherController* instance_;
+
+  SettingsWindowObserver settings_window_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherController);
 };

@@ -4,11 +4,7 @@
 
 #include "chrome/browser/ui/ash/launcher/browser_status_monitor.h"
 
-#include "ash/aura/wm_window_aura.h"
 #include "ash/common/shelf/shelf_item_types.h"
-#include "ash/common/wm_window_property.h"
-#include "ash/common/wm_window_tracker.h"
-#include "ash/resources/grit/ash_resources.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "base/macros.h"
@@ -20,16 +16,12 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/settings_window_manager.h"
-#include "chrome/browser/ui/settings_window_manager_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
-#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/wm/public/activation_client.h"
 
 // This class monitors the WebContent of the all tab and notifies a navigation
@@ -82,47 +74,12 @@ class BrowserStatusMonitor::LocalWebContentsObserver
   DISALLOW_COPY_AND_ASSIGN(LocalWebContentsObserver);
 };
 
-// Observes any new settings windows and sets their shelf icon (since they
-// are excluded from BrowserShortcutLauncherItem).
-class BrowserStatusMonitor::SettingsWindowObserver
-    : public chrome::SettingsWindowManagerObserver,
-      public ash::WmWindowTracker {
- public:
-  SettingsWindowObserver() {}
-  ~SettingsWindowObserver() override {}
-
-  // SettingsWindowManagerObserver:
-  void OnNewSettingsWindow(Browser* settings_browser) override {
-    aura::Window* aura_window = settings_browser->window()->GetNativeWindow();
-    ash::WmWindow* window = ash::WmWindowAura::Get(aura_window);
-    window->SetTitle(l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE));
-    window->SetIntProperty(ash::WmWindowProperty::SHELF_ITEM_TYPE,
-                           ash::TYPE_DIALOG);
-    window->SetIntProperty(ash::WmWindowProperty::SHELF_ICON_RESOURCE_ID,
-                           IDR_ASH_SHELF_ICON_SETTINGS);
-    Add(window);
-  }
-
-  // ash::WmWindowTracker:
-  void OnWindowTitleChanged(ash::WmWindow* window) override {
-    // Name the window "Settings" instead of "Google Chrome - Settings".
-    if (window->GetTitle() != l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE))
-      window->SetTitle(l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE));
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SettingsWindowObserver);
-};
-
 BrowserStatusMonitor::BrowserStatusMonitor(
     ChromeLauncherController* launcher_controller)
     : launcher_controller_(launcher_controller),
-      settings_window_observer_(new SettingsWindowObserver),
       browser_tab_strip_tracker_(this, this, this) {
   DCHECK(launcher_controller_);
 
-  chrome::SettingsWindowManager::GetInstance()->AddObserver(
-      settings_window_observer_.get());
   ash::Shell::GetInstance()->activation_client()->AddObserver(this);
 
   browser_tab_strip_tracker_.Init(
@@ -131,9 +88,6 @@ BrowserStatusMonitor::BrowserStatusMonitor(
 
 BrowserStatusMonitor::~BrowserStatusMonitor() {
   ash::Shell::GetInstance()->activation_client()->RemoveObserver(this);
-  chrome::SettingsWindowManager::GetInstance()->RemoveObserver(
-      settings_window_observer_.get());
-
   browser_tab_strip_tracker_.StopObservingAndSendOnBrowserRemoved();
 }
 

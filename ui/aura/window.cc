@@ -192,6 +192,8 @@ void Window::SetName(const std::string& name) {
 }
 
 void Window::SetTitle(const base::string16& title) {
+  if (title == title_)
+    return;
   title_ = title;
   FOR_EACH_OBSERVER(WindowObserver,
                     observers_,

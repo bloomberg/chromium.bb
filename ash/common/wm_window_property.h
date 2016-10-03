@@ -8,6 +8,9 @@
 namespace ash {
 
 enum class WmWindowProperty {
+  // Not a valid property; used for property key translation purposes.
+  INVALID_PROPERTY,
+
   // Type bool.
   ALWAYS_ON_TOP,
 

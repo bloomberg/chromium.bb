@@ -98,7 +98,6 @@ class BrowserStatusMonitor : public aura::client::ActivationChangeObserver,
 
  private:
   class LocalWebContentsObserver;
-  class SettingsWindowObserver;
 
   // Create LocalWebContentsObserver for |contents|.
   void AddWebContentsObserver(content::WebContents* contents);
@@ -118,7 +117,6 @@ class BrowserStatusMonitor : public aura::client::ActivationChangeObserver,
   std::map<Browser*, std::string> browser_to_app_id_map_;
   std::map<content::WebContents*, std::unique_ptr<LocalWebContentsObserver>>
       webcontents_to_observer_map_;
-  std::unique_ptr<SettingsWindowObserver> settings_window_observer_;
 
   BrowserTabStripTracker browser_tab_strip_tracker_;
 

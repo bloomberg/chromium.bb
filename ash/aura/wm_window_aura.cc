@@ -49,12 +49,6 @@ DECLARE_WINDOW_PROPERTY_TYPE(ash::WmWindowAura*);
 
 namespace ash {
 
-DEFINE_WINDOW_PROPERTY_KEY(ShelfID, kShelfIDKey, kInvalidShelfID);
-DEFINE_WINDOW_PROPERTY_KEY(int, kShelfItemTypeKey, TYPE_UNDEFINED);
-DEFINE_WINDOW_PROPERTY_KEY(int,
-                           kShelfIconResourceIdKey,
-                           kInvalidImageResourceID);
-
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(WmWindowAura, kWmWindowKey, nullptr);
 
 static_assert(aura::Window::kInitialId == kShellWindowId_Invalid,
