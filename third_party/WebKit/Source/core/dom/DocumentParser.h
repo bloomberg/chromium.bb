@@ -58,7 +58,8 @@ class CORE_EXPORT DocumentParser
   virtual TextResourceDecoder* decoder();
   virtual void setHasAppendedData() {}
 
-  // FIXME: append() should be private, but DocumentLoader and DOMPatchSupport uses it for now.
+  // FIXME: append() should be private, but DocumentLoader and DOMPatchSupport
+  // uses it for now.
   virtual void append(const String&) = 0;
 
   virtual void finish() = 0;
@@ -74,8 +75,8 @@ class CORE_EXPORT DocumentParser
   bool isStopped() const { return m_state >= StoppedState; }
   bool isDetached() const { return m_state == DetachedState; }
 
-  // prepareToStop() is used when the EOF token is encountered and parsing is to be
-  // stopped normally.
+  // prepareToStop() is used when the EOF token is encountered and parsing is to
+  // be stopped normally.
   virtual void prepareToStopParsing();
 
   // stopParsing() is used when a load is canceled/stopped.

@@ -2,8 +2,10 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
- * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All
+ * rights reserved.
+ * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved.
+ * (http://www.torchmobile.com/)
  * Copyright (C) 2011 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
@@ -53,7 +55,8 @@ class LayoutTreeBuilder {
   LayoutObject* nextLayoutObject() const {
     DCHECK(m_layoutObjectParent);
 
-    // Avoid an O(N^2) walk over the children when reattaching all children of a node.
+    // Avoid an O(N^2) walk over the children when reattaching all children of a
+    // node.
     if (m_layoutObjectParent->node() &&
         m_layoutObjectParent->node()->needsAttach())
       return 0;

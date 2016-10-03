@@ -281,7 +281,8 @@ void ProcessingInstruction::removedFrom(ContainerNode* insertionPoint) {
   // No need to remove pending sheets.
   clearResource();
 
-  // If we're in document teardown, then we don't need to do any notification of our sheet's removal.
+  // If we're in document teardown, then we don't need to do any notification of
+  // our sheet's removal.
   if (document().isActive())
     document().styleEngine().setNeedsActiveStyleUpdate(removedSheet,
                                                        FullStyleUpdate);

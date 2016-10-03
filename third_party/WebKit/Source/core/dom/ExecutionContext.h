@@ -94,11 +94,11 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   virtual void disableEval(const String& errorMessage) = 0;
   virtual LocalDOMWindow* executingWindow() const { return 0; }
   virtual String userAgent() const = 0;
+  // Executes the task on context's thread asynchronously.
   virtual void postTask(
       const WebTraceLocation&,
       std::unique_ptr<ExecutionContextTask>,
-      const String& taskNameForInstrumentation =
-          emptyString()) = 0;  // Executes the task on context's thread asynchronously.
+      const String& taskNameForInstrumentation = emptyString()) = 0;
 
   // Gets the DOMTimerCoordinator which maintains the "active timer
   // list" of tasks created by setTimeout and setInterval. The
@@ -141,7 +141,8 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
     return m_activeDOMObjectsAreStopped;
   }
 
-  // Called after the construction of an ActiveDOMObject to synchronize suspend state.
+  // Called after the construction of an ActiveDOMObject to synchronize suspend
+  // state.
   void suspendActiveDOMObjectIfNeeded(ActiveDOMObject*);
 
   // Gets the next id in a circular sequence from 1 to 2^31-1.

@@ -28,24 +28,25 @@ namespace {
 // Saturate the length of a paragraph to save time.
 const int kTextContentLengthSaturation = 1000;
 
-// Filter out short P elements. The threshold is set to around 2 English sentences.
+// Filter out short P elements. The threshold is set to around 2 English
+// sentences.
 const unsigned kParagraphLengthThreshold = 140;
 
 // Saturate the scores to save time. The max is the score of 6 long paragraphs.
-const double kMozScoreSaturation =
-    175.954539583;  // 6 * sqrt(kTextContentLengthSaturation - kParagraphLengthThreshold)
-const double kMozScoreAllSqrtSaturation =
-    189.73665961;  // 6 * sqrt(kTextContentLengthSaturation);
+// 6 * sqrt(kTextContentLengthSaturation - kParagraphLengthThreshold)
+const double kMozScoreSaturation = 175.954539583;
+// 6 * sqrt(kTextContentLengthSaturation);
+const double kMozScoreAllSqrtSaturation = 189.73665961;
 const double kMozScoreAllLinearSaturation = 6 * kTextContentLengthSaturation;
 
 unsigned textContentLengthSaturated(const Element& root) {
   unsigned length = 0;
-  // This skips shadow DOM intentionally, to match the JavaScript implementation.
-  // We would like to use the same statistics extracted by the JavaScript implementation
-  // on iOS, and JavaScript cannot peek deeply into shadow DOM except on modern Chrome
-  // versions.
-  // Given shadow DOM rarely appears in <P> elements in long-form articles, the overall
-  // accuracy should not be largely affected.
+  // This skips shadow DOM intentionally, to match the JavaScript
+  // implementation.  We would like to use the same statistics extracted by the
+  // JavaScript implementation on iOS, and JavaScript cannot peek deeply into
+  // shadow DOM except on modern Chrome versions.
+  // Given shadow DOM rarely appears in <P> elements in long-form articles, the
+  // overall accuracy should not be largely affected.
   for (Node& node : NodeTraversal::inclusiveDescendantsOf(root)) {
     if (!node.isTextNode()) {
       continue;
@@ -208,7 +209,8 @@ WebDistillabilityFeatures DocumentStatisticsCollector::collectStatistics(
 
   double startTime = monotonicallyIncreasingTime();
 
-  // This should be cheap since collectStatistics is only called right after layout.
+  // This should be cheap since collectStatistics is only called right after
+  // layout.
   document.updateStyleAndLayoutTree();
 
   // Traverse the DOM tree and collect statistics.

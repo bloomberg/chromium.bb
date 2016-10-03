@@ -2,8 +2,10 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 Apple Inc. All rights reserved.
- * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013
+ * Apple Inc. All rights reserved.
+ * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved.
+ * (http://www.torchmobile.com/)
  * Copyright (C) 2014 Samsung Electronics. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
@@ -170,7 +172,8 @@ class Traversal {
       const Node&,
       const Node* stayWithin = 0);
 
-  // Utility function to traverse only the element and pseudo-element siblings of a node.
+  // Utility function to traverse only the element and pseudo-element siblings
+  // of a node.
   static ElementType* pseudoAwarePreviousSibling(const Node&);
 
   // Previous / Next sibling.
@@ -246,7 +249,8 @@ Traversal<ElementType>::startsAfter(const Node& start) {
   return startsAt(Traversal<ElementType>::next(start));
 };
 
-// Specialized for pure Element to exploit the fact that Elements parent is always either another Element or the root.
+// Specialized for pure Element to exploit the fact that Elements parent is
+// always either another Element or the root.
 template <>
 template <class NodeType>
 inline Element* Traversal<Element>::firstWithinTemplate(NodeType& current) {

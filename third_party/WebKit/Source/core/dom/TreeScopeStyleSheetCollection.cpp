@@ -3,8 +3,10 @@
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
  *           (C) 2006 Alexey Proskuryakov (ap@webkit.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012 Apple Inc. All rights reserved.
- * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012 Apple Inc. All
+ * rights reserved.
+ * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved.
+ * (http://www.torchmobile.com/)
  * Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies)
  * Copyright (C) 2013 Google Inc. All rights reserved.
  *
@@ -76,14 +78,16 @@ TreeScopeStyleSheetCollection::compareStyleSheets(
     addedSheets.append(newStylesheets[newIndex]->contents());
     ++newIndex;
   }
-  // If all new sheets were added at the end of the list we can just add them to existing StyleResolver.
-  // If there were insertions we need to re-add all the stylesheets so rules are ordered correctly.
+  // If all new sheets were added at the end of the list we can just add them to
+  // existing StyleResolver.  If there were insertions we need to re-add all the
+  // stylesheets so rules are ordered correctly.
   return hasInsertions ? Reset : Additive;
 }
 
 bool TreeScopeStyleSheetCollection::activeLoadingStyleSheetLoaded(
     const HeapVector<Member<CSSStyleSheet>>& newStyleSheets) {
-  // StyleSheets of <style> elements that @import stylesheets are active but loading. We need to trigger a full recalc when such loads are done.
+  // StyleSheets of <style> elements that @import stylesheets are active but
+  // loading. We need to trigger a full recalc when such loads are done.
   bool hasActiveLoadingStylesheet = false;
   unsigned newStylesheetCount = newStyleSheets.size();
   for (unsigned i = 0; i < newStylesheetCount; ++i) {
@@ -143,17 +147,18 @@ void TreeScopeStyleSheetCollection::analyzeStyleSheetChange(
     }
   }
 
-  // FIXME: If styleResolverUpdateType is Reconstruct, we should return early here since
-  // we need to recalc the whole document. It's wrong to use StyleSheetInvalidationAnalysis since
-  // it only looks at the addedSheets.
+  // FIXME: If styleResolverUpdateType is Reconstruct, we should return early
+  // here since we need to recalc the whole document. It's wrong to use
+  // StyleSheetInvalidationAnalysis since it only looks at the addedSheets.
 
-  // No point in doing the analysis work if we're just going to recalc the whole document anyways.
-  // This needs to be done after the compareStyleSheets calls above to ensure we don't throw away
-  // the StyleResolver if we don't need to.
+  // No point in doing the analysis work if we're just going to recalc the whole
+  // document anyways.  This needs to be done after the compareStyleSheets calls
+  // above to ensure we don't throw away the StyleResolver if we don't need to.
   if (document().hasPendingForcedStyleRecalc())
     return;
 
-  // If we are already parsing the body and so may have significant amount of elements, put some effort into trying to avoid style recalcs.
+  // If we are already parsing the body and so may have significant amount of
+  // elements, put some effort into trying to avoid style recalcs.
   if (!document().body() || document().hasNodesWithPlaceholderStyle())
     return;
   StyleSheetInvalidationAnalysis invalidationAnalysis(*m_treeScope,

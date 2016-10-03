@@ -48,7 +48,8 @@ void ElementVisibilityObserver::start() {
 void ElementVisibilityObserver::stop() {
   // TODO(zqzhang): IntersectionObserver does not work for RemoteFrame,
   // so |m_intersectionObserver| may be null at this point after start().
-  // Replace this early return with DCHECK when this has been fixed. See https://crbug.com/615156
+  // Replace this early return with DCHECK when this has been fixed. See
+  // https://crbug.com/615156
   if (!m_intersectionObserver)
     return;
 

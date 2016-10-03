@@ -73,16 +73,27 @@ TEST(CustomElementTest, TestIsValidNamePotentialCustomElementName) {
 TEST(CustomElementTest, TestIsValidNamePotentialCustomElementNameChar) {
   struct {
     UChar32 from, to;
-  } ranges[] =
-      {
-          {'-', '.'},  // "-" | "." need to merge to test -1/+1.
-          {'0', '9'},       {'_', '_'},       {'a', 'z'},
-          {0xB7, 0xB7},     {0xC0, 0xD6},     {0xD8, 0xF6},
-          {0xF8, 0x37D},  // [#xF8-#x2FF] | [#x300-#x37D] need to merge to test -1/+1.
-          {0x37F, 0x1FFF},  {0x200C, 0x200D}, {0x203F, 0x2040},
-          {0x2070, 0x218F}, {0x2C00, 0x2FEF}, {0x3001, 0xD7FF},
-          {0xF900, 0xFDCF}, {0xFDF0, 0xFFFD}, {0x10000, 0xEFFFF},
-      };
+  } ranges[] = {
+      // "-" | "." need to merge to test -1/+1.
+      {'-', '.'},
+      {'0', '9'},
+      {'_', '_'},
+      {'a', 'z'},
+      {0xB7, 0xB7},
+      {0xC0, 0xD6},
+      {0xD8, 0xF6},
+      // [#xF8-#x2FF] | [#x300-#x37D] need to merge to test -1/+1.
+      {0xF8, 0x37D},
+      {0x37F, 0x1FFF},
+      {0x200C, 0x200D},
+      {0x203F, 0x2040},
+      {0x2070, 0x218F},
+      {0x2C00, 0x2FEF},
+      {0x3001, 0xD7FF},
+      {0xF900, 0xFDCF},
+      {0xFDF0, 0xFFFD},
+      {0x10000, 0xEFFFF},
+  };
   for (auto range : ranges) {
     testIsPotentialCustomElementNameChar(range.from - 1, false);
     for (UChar32 c = range.from; c <= range.to; ++c)

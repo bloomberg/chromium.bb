@@ -3,7 +3,8 @@
  * (C) 2000 Gunnstein Lye (gunnstein@netcom.no)
  * (C) 2000 Frederik Holljen (frederik.holljen@hig.no)
  * (C) 2001 Peter Kelly (pmk@post.com)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All
+ * rights reserved.
  * Copyright (C) 2011 Motorola Mobility. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
@@ -75,8 +76,8 @@ inline Range::Range(Document& ownerDocument,
       m_end(m_ownerDocument) {
   m_ownerDocument->attachRange(this);
 
-  // Simply setting the containers and offsets directly would not do any of the checking
-  // that setStart and setEnd do, so we call those functions.
+  // Simply setting the containers and offsets directly would not do any of the
+  // checking that setStart and setEnd do, so we call those functions.
   setStart(startContainer, startOffset);
   setEnd(endContainer, endOffset);
 }
@@ -169,7 +170,8 @@ void Range::setStart(Node* refNode,
                      int offset,
                      ExceptionState& exceptionState) {
   if (!refNode) {
-    // FIXME: Generated bindings code never calls with null, and neither should other callers!
+    // FIXME: Generated bindings code never calls with null, and neither should
+    // other callers!
     exceptionState.throwTypeError("The node provided is null.");
     return;
   }
@@ -192,7 +194,8 @@ void Range::setStart(Node* refNode,
 
 void Range::setEnd(Node* refNode, int offset, ExceptionState& exceptionState) {
   if (!refNode) {
-    // FIXME: Generated bindings code never calls with null, and neither should other callers!
+    // FIXME: Generated bindings code never calls with null, and neither should
+    // other callers!
     exceptionState.throwTypeError("The node provided is null.");
     return;
   }
@@ -235,20 +238,21 @@ void Range::collapse(bool toStart) {
 bool Range::isNodeFullyContained(Node& node) const {
   ContainerNode* parentNode = node.parentNode();
   int nodeIndex = node.nodeIndex();
-  return isPointInRange(
-             parentNode, nodeIndex,
-             IGNORE_EXCEPTION)  // starts in the middle of this range, or on the boundary points.
-         &&
-         isPointInRange(
-             parentNode, nodeIndex + 1,
-             IGNORE_EXCEPTION);  // ends in the middle of this range, or on the boundary points.
+  return isPointInRange(parentNode, nodeIndex,
+                        IGNORE_EXCEPTION)  // starts in the middle of this
+                                           // range, or on the boundary points.
+         && isPointInRange(parentNode, nodeIndex + 1,
+                           IGNORE_EXCEPTION);  // ends in the middle of this
+                                               // range, or on the boundary
+                                               // points.
 }
 
 bool Range::isPointInRange(Node* refNode,
                            int offset,
                            ExceptionState& exceptionState) const {
   if (!refNode) {
-    // FIXME: Generated bindings code never calls with null, and neither should other callers!
+    // FIXME: Generated bindings code never calls with null, and neither should
+    // other callers!
     exceptionState.throwTypeError("The node provided is null.");
     return false;
   }
@@ -274,7 +278,8 @@ short Range::comparePoint(Node* refNode,
                           ExceptionState& exceptionState) const {
   // http://developer.mozilla.org/en/docs/DOM:range.comparePoint
   // This method returns -1, 0 or 1 depending on if the point described by the
-  // refNode node and an offset within the node is before, same as, or after the range respectively.
+  // refNode node and an offset within the node is before, same as, or after the
+  // range respectively.
 
   if (!refNode->inActiveDocument()) {
     exceptionState.throwDOMException(
@@ -404,7 +409,8 @@ static bool nodeValidForIntersects(Node* refNode,
                                    Document* expectedDocument,
                                    ExceptionState& exceptionState) {
   if (!refNode) {
-    // FIXME: Generated bindings code never calls with null, and neither should other callers!
+    // FIXME: Generated bindings code never calls with null, and neither should
+    // other callers!
     exceptionState.throwTypeError("The node provided is null.");
     return false;
   }
@@ -547,11 +553,13 @@ DocumentFragment* Range::processContents(ActionType action,
     return fragment;
   }
 
-  // Since mutation observers can modify the range during the process, the boundary points need to be saved.
+  // Since mutation observers can modify the range during the process, the
+  // boundary points need to be saved.
   RangeBoundaryPoint originalStart(m_start);
   RangeBoundaryPoint originalEnd(m_end);
 
-  // what is the highest node that partially selects the start / end of the range?
+  // what is the highest node that partially selects the start / end of the
+  // range?
   Node* partialStart =
       highestAncestorUnderCommonRoot(originalStart.container(), commonRoot);
   Node* partialEnd =
@@ -575,7 +583,8 @@ DocumentFragment* Range::processContents(ActionType action,
   // These are deleted, cloned, or extracted (i.e. both) depending on action.
 
   // Note that we are verifying that our common root hierarchy is still intact
-  // after any DOM mutation event, at various stages below. See webkit bug 60350.
+  // after any DOM mutation event, at various stages below. See webkit bug
+  // 60350.
 
   Node* leftContents = nullptr;
   if (originalStart.container() != commonRoot &&
@@ -609,7 +618,8 @@ DocumentFragment* Range::processContents(ActionType action,
   Node* processEnd = childOfCommonRootBeforeOffset(
       originalEnd.container(), originalEnd.offset(), commonRoot);
 
-  // Collapse the range, making sure that the result is not within a node that was partially selected.
+  // Collapse the range, making sure that the result is not within a node that
+  // was partially selected.
   if (action == EXTRACT_CONTENTS || action == DELETE_CONTENTS) {
     if (partialStart && commonRoot->contains(partialStart)) {
       // FIXME: We should not continue if we have an earlier error.
@@ -668,7 +678,8 @@ Node* Range::processContentsBetweenOffsets(ActionType action,
   DCHECK(container);
   DCHECK_LE(startOffset, endOffset);
 
-  // This switch statement must be consistent with that of Node::lengthOfContents.
+  // This switch statement must be consistent with that of
+  // Node::lengthOfContents.
   Node* result = nullptr;
   switch (container->getNodeType()) {
     case Node::kTextNode:
@@ -761,8 +772,8 @@ Node* Range::processAncestorsAndTheirSiblings(
                                             : container->previousSibling();
   for (const auto& ancestor : ancestors) {
     if (action == EXTRACT_CONTENTS || action == CLONE_CONTENTS) {
-      if (Node* clonedAncestor = ancestor->cloneNode(
-              false)) {  // Might have been removed already during mutation event.
+      // Might have been removed already during mutation event.
+      if (Node* clonedAncestor = ancestor->cloneNode(false)) {
         clonedAncestor->appendChild(clonedContainer, exceptionState);
         clonedContainer = clonedAncestor;
       }
@@ -785,8 +796,9 @@ Node* Range::processAncestorsAndTheirSiblings(
       Node* child = node.get();
       switch (action) {
         case DELETE_CONTENTS:
-          // Prior call of ancestor->removeChild() may cause a tree change due to DOMSubtreeModified event.
-          // Therefore, we need to make sure |ancestor| is still |child|'s parent.
+          // Prior call of ancestor->removeChild() may cause a tree change due
+          // to DOMSubtreeModified event.  Therefore, we need to make sure
+          // |ancestor| is still |child|'s parent.
           if (ancestor == child->parentNode())
             ancestor->removeChild(child, exceptionState);
           break;
@@ -830,15 +842,18 @@ DocumentFragment* Range::cloneContents(ExceptionState& exceptionState) {
 
 void Range::insertNode(Node* newNode, ExceptionState& exceptionState) {
   if (!newNode) {
-    // FIXME: Generated bindings code never calls with null, and neither should other callers!
+    // FIXME: Generated bindings code never calls with null, and neither should
+    // other callers!
     exceptionState.throwTypeError("The node provided is null.");
     return;
   }
 
-  // HierarchyRequestError: Raised if the container of the start of the Range is of a type that
-  // does not allow children of the type of newNode or if newNode is an ancestor of the container.
+  // HierarchyRequestError: Raised if the container of the start of the Range is
+  // of a type that does not allow children of the type of newNode or if newNode
+  // is an ancestor of the container.
 
-  // an extra one here - if a text node is going to split, it must have a parent to insert into
+  // an extra one here - if a text node is going to split, it must have a parent
+  // to insert into
   bool startIsText = m_start.container()->isTextNode();
   if (startIsText && !m_start.container()->parentNode()) {
     exceptionState.throwDOMException(HierarchyRequestError,
@@ -848,8 +863,8 @@ void Range::insertNode(Node* newNode, ExceptionState& exceptionState) {
     return;
   }
 
-  // In the case where the container is a text node, we check against the container's parent, because
-  // text nodes get split up upon insertion.
+  // In the case where the container is a text node, we check against the
+  // container's parent, because text nodes get split up upon insertion.
   Node* checkAgainst;
   if (startIsText)
     checkAgainst = m_start.container()->parentNode();
@@ -893,7 +908,8 @@ void Range::insertNode(Node* newNode, ExceptionState& exceptionState) {
     }
   }
 
-  // InvalidNodeTypeError: Raised if newNode is an Attr, Entity, Notation, ShadowRoot or Document node.
+  // InvalidNodeTypeError: Raised if newNode is an Attr, Entity, Notation,
+  // ShadowRoot or Document node.
   switch (newNodeType) {
     case Node::kAttributeNode:
     case Node::kDocumentNode:
@@ -946,8 +962,8 @@ void Range::insertNode(Node* newNode, ExceptionState& exceptionState) {
                           ? toDocumentFragment(newNode)->lastChild()
                           : newNode;
     if (lastChild && lastChild == m_start.childBefore()) {
-      // The insertion will do nothing, but we need to extend the range to include
-      // the inserted nodes.
+      // The insertion will do nothing, but we need to extend the range to
+      // include the inserted nodes.
       Node* firstChild = (newNodeType == Node::kDocumentFragmentNode)
                              ? toDocumentFragment(newNode)->firstChild()
                              : newNode;
@@ -963,8 +979,9 @@ void Range::insertNode(Node* newNode, ExceptionState& exceptionState) {
     if (exceptionState.hadException())
       return;
 
-    // Note that m_start.offset() may have changed as a result of container->insertBefore,
-    // when the node we are inserting comes before the range in the same container.
+    // Note that m_start.offset() may have changed as a result of
+    // container->insertBefore, when the node we are inserting comes before the
+    // range in the same container.
     if (collapsed && numNewChildren)
       m_end.set(m_start.container(), m_start.offset() + numNewChildren,
                 lastChild);
@@ -994,8 +1011,8 @@ String Range::toString() const {
 }
 
 String Range::text() const {
-  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.
-  // see http://crbug.com/590369 for more details.
+  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  see http://crbug.com/590369 for more details.
   ownerDocument().updateStyleAndLayoutIgnorePendingStylesheets();
 
   return plainText(EphemeralRange(this),
@@ -1005,7 +1022,8 @@ String Range::text() const {
 DocumentFragment* Range::createContextualFragment(
     const String& markup,
     ExceptionState& exceptionState) {
-  // Algorithm: http://domparsing.spec.whatwg.org/#extensions-to-the-range-interface
+  // Algorithm:
+  // http://domparsing.spec.whatwg.org/#extensions-to-the-range-interface
 
   Node* node = m_start.container();
 
@@ -1028,7 +1046,8 @@ DocumentFragment* Range::createContextualFragment(
       if (!element)
         element = SVGSVGElement::create(document);
     } else {
-      // Optimization over spec: try to reuse the existing <body> element, if it is available.
+      // Optimization over spec: try to reuse the existing <body> element, if it
+      // is available.
       element = document.body();
       if (!element)
         element = HTMLBodyElement::create(document);
@@ -1094,14 +1113,16 @@ Node* Range::checkNodeWOffset(Node* n,
 
 void Range::checkNodeBA(Node* n, ExceptionState& exceptionState) const {
   if (!n) {
-    // FIXME: Generated bindings code never calls with null, and neither should other callers!
+    // FIXME: Generated bindings code never calls with null, and neither should
+    // other callers!
     exceptionState.throwTypeError("The node provided is null.");
     return;
   }
 
   // InvalidNodeTypeError: Raised if the root container of refNode is not an
-  // Attr, Document, DocumentFragment or ShadowRoot node, or part of a SVG shadow DOM tree,
-  // or if refNode is a Document, DocumentFragment, ShadowRoot, Attr, Entity, or Notation node.
+  // Attr, Document, DocumentFragment or ShadowRoot node, or part of a SVG
+  // shadow DOM tree, or if refNode is a Document, DocumentFragment, ShadowRoot,
+  // Attr, Entity, or Notation node.
 
   if (!n->parentNode()) {
     exceptionState.throwDOMException(InvalidNodeTypeError,
@@ -1179,7 +1200,8 @@ void Range::setEndAfter(Node* refNode, ExceptionState& exceptionState) {
 
 void Range::selectNode(Node* refNode, ExceptionState& exceptionState) {
   if (!refNode) {
-    // FIXME: Generated bindings code never calls with null, and neither should other callers!
+    // FIXME: Generated bindings code never calls with null, and neither should
+    // other callers!
     exceptionState.throwTypeError("The node provided is null.");
     return;
   }
@@ -1216,12 +1238,14 @@ void Range::selectNode(Node* refNode, ExceptionState& exceptionState) {
 
 void Range::selectNodeContents(Node* refNode, ExceptionState& exceptionState) {
   if (!refNode) {
-    // FIXME: Generated bindings code never calls with null, and neither should other callers!
+    // FIXME: Generated bindings code never calls with null, and neither should
+    // other callers!
     exceptionState.throwTypeError("The node provided is null.");
     return;
   }
 
-  // InvalidNodeTypeError: Raised if refNode or an ancestor of refNode is an Entity, Notation
+  // InvalidNodeTypeError: Raised if refNode or an ancestor of refNode is an
+  // Entity, Notation
   // or DocumentType node.
   for (Node* n = refNode; n; n = n->parentNode()) {
     switch (n->getNodeType()) {
@@ -1281,7 +1305,8 @@ bool Range::selectNodeContents(Node* refNode, Position& start, Position& end) {
 
 void Range::surroundContents(Node* newParent, ExceptionState& exceptionState) {
   if (!newParent) {
-    // FIXME: Generated bindings code never calls with null, and neither should other callers!
+    // FIXME: Generated bindings code never calls with null, and neither should
+    // other callers!
     exceptionState.throwTypeError("The node provided is null.");
     return;
   }
@@ -1299,7 +1324,8 @@ void Range::surroundContents(Node* newParent, ExceptionState& exceptionState) {
     return;
   }
 
-  // InvalidNodeTypeError: Raised if node is an Attr, Entity, DocumentType, Notation,
+  // InvalidNodeTypeError: Raised if node is an Attr, Entity, DocumentType,
+  // Notation,
   // Document, or DocumentFragment node.
   switch (newParent->getNodeType()) {
     case Node::kAttributeNode:
@@ -1318,12 +1344,14 @@ void Range::surroundContents(Node* newParent, ExceptionState& exceptionState) {
       break;
   }
 
-  // Raise a HierarchyRequestError if m_start.container() doesn't accept children like newParent.
+  // Raise a HierarchyRequestError if m_start.container() doesn't accept
+  // children like newParent.
   Node* parentOfNewParent = m_start.container();
 
-  // If m_start.container() is a character data node, it will be split and it will be its parent that will
-  // need to accept newParent (or in the case of a comment, it logically "would" be inserted into the parent,
-  // although this will fail below for another reason).
+  // If m_start.container() is a character data node, it will be split and it
+  // will be its parent that will need to accept newParent (or in the case of a
+  // comment, it logically "would" be inserted into the parent, although this
+  // will fail below for another reason).
   if (parentOfNewParent->isCharacterDataNode())
     parentOfNewParent = parentOfNewParent->parentNode();
 
@@ -1351,8 +1379,8 @@ void Range::surroundContents(Node* newParent, ExceptionState& exceptionState) {
     return;
   }
 
-  // FIXME: Do we need a check if the node would end up with a child node of a type not
-  // allowed by the type of node?
+  // FIXME: Do we need a check if the node would end up with a child node of a
+  // type not allowed by the type of node?
 
   while (Node* n = newParent->firstChild()) {
     toContainerNode(newParent)->removeChild(n, exceptionState);

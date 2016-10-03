@@ -73,7 +73,8 @@ ElementData::ElementData(const ElementData& other, bool isUnique)
       m_animatedSVGAttributesAreDirty(other.m_animatedSVGAttributesAreDirty),
       m_classNames(other.m_classNames),
       m_idForStyleResolution(other.m_idForStyleResolution) {
-  // NOTE: The inline style is copied by the subclass copy constructor since we don't know what to do with it here.
+  // NOTE: The inline style is copied by the subclass copy constructor since we
+  // don't know what to do with it here.
 }
 
 void ElementData::finalizeGarbageCollectedObject() {
@@ -159,7 +160,8 @@ UniqueElementData::UniqueElementData(const UniqueElementData& other)
 
 UniqueElementData::UniqueElementData(const ShareableElementData& other)
     : ElementData(other, true) {
-  // An ShareableElementData should never have a mutable inline StylePropertySet attached.
+  // An ShareableElementData should never have a mutable inline StylePropertySet
+  // attached.
   DCHECK(!other.m_inlineStyle || !other.m_inlineStyle->isMutable());
   m_inlineStyle = other.m_inlineStyle;
 

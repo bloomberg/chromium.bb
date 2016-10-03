@@ -69,9 +69,9 @@ bool DOMStringList::contains(ExecutionContext* context,
       ASSERT_NOT_REACHED();
   }
 
-  // FIXME: Currently, all consumers of DOMStringList store fairly small lists and thus an O(n)
-  //        algorithm is OK.  But this may need to be optimized if larger amounts of data are
-  //        stored in m_strings.
+  // FIXME: Currently, all consumers of DOMStringList store fairly small lists
+  // and thus an O(n) algorithm is OK.  But this may need to be optimized if
+  // larger amounts of data are stored in m_strings.
   size_t count = m_strings.size();
   for (size_t i = 0; i < count; ++i) {
     if (m_strings[i] == string)

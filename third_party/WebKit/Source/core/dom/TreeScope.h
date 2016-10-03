@@ -46,9 +46,9 @@ class IdTargetObserverRegistry;
 class ScopedStyleResolver;
 class Node;
 
-// A class which inherits both Node and TreeScope must call clearRareData() in its destructor
-// so that the Node destructor no longer does problematic NodeList cache manipulation in
-// the destructor.
+// A class which inherits both Node and TreeScope must call clearRareData() in
+// its destructor so that the Node destructor no longer does problematic
+// NodeList cache manipulation in the destructor.
 class CORE_EXPORT TreeScope : public GarbageCollectedMixin {
  public:
   TreeScope* parentTreeScope() const { return m_parentTreeScope; }
@@ -58,9 +58,10 @@ class CORE_EXPORT TreeScope : public GarbageCollectedMixin {
       const TreeScope&) const;
 
   Element* adjustedFocusedElement() const;
-  // Finds a retargeted element to the given argument, when the retargetd element is in this
-  // TreeScope. Returns null otherwise.
-  // TODO(kochi): once this algorithm is named in the spec, rename the method name.
+  // Finds a retargeted element to the given argument, when the retargeted
+  // element is in this TreeScope. Returns null otherwise.
+  // TODO(kochi): once this algorithm is named in the spec, rename the method
+  // name.
   Element* adjustedElement(const Element&) const;
   Element* getElementById(const AtomicString&) const;
   const HeapVector<Member<Element>>& getAllElementsById(
@@ -91,10 +92,10 @@ class CORE_EXPORT TreeScope : public GarbageCollectedMixin {
   Element* retarget(const Element& target) const;
 
   // Find first anchor with the given name.
-  // First searches for an element with the given ID, but if that fails, then looks
-  // for an anchor with the given name. ID matching is always case sensitive, but
-  // Anchor name matching is case sensitive in strict mode and not case sensitive in
-  // quirks mode for historical compatibility reasons.
+  // First searches for an element with the given ID, but if that fails, then
+  // looks for an anchor with the given name. ID matching is always case
+  // sensitive, but Anchor name matching is case sensitive in strict mode and
+  // not case sensitive in quirks mode for historical compatibility reasons.
   Element* findAnchor(const String& name);
 
   // Used by the basic DOM mutation methods (e.g., appendChild()).

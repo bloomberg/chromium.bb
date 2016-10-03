@@ -118,7 +118,8 @@ class PresentationAttributeCacheCleaner {
 
 static bool attributeNameSort(const std::pair<StringImpl*, AtomicString>& p1,
                               const std::pair<StringImpl*, AtomicString>& p2) {
-  // Sort based on the attribute name pointers. It doesn't matter what the order is as long as it is always the same.
+  // Sort based on the attribute name pointers. It doesn't matter what the order
+  // is as long as it is always the same.
   return p1.first < p2.first;
 }
 
@@ -128,7 +129,8 @@ static void makePresentationAttributeCacheKey(
   // FIXME: Enable for SVG.
   if (!element.isHTMLElement())
     return;
-  // Interpretation of the size attributes on <input> depends on the type attribute.
+  // Interpretation of the size attributes on <input> depends on the type
+  // attribute.
   if (isHTMLInputElement(element))
     return;
   AttributeCollection attributes = element.attributesWithoutUpdate();
@@ -137,7 +139,8 @@ static void makePresentationAttributeCacheKey(
       continue;
     if (!attr.namespaceURI().isNull())
       return;
-    // FIXME: Background URL may depend on the base URL and can't be shared. Disallow caching.
+    // FIXME: Background URL may depend on the base URL and can't be shared.
+    // Disallow caching.
     if (attr.name() == backgroundAttr)
       return;
     result.attributesAndValues.append(

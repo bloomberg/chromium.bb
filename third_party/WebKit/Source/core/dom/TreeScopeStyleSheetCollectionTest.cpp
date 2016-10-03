@@ -119,8 +119,9 @@ TEST_F(TreeScopeStyleSheetCollectionTest, CompareStyleSheetsRemove) {
 
   added.append(sheet2->contents());
 
-  // This is really the same as Insert. TreeScopeStyleSheetCollection::compareStyleSheets
-  // will assert if you pass an array that is longer as the first parameter.
+  // This is really the same as Insert.
+  // TreeScopeStyleSheetCollection::compareStyleSheets will assert if you pass
+  // an array that is longer as the first parameter.
   compareStyleSheets(current, previous, added, Reconstruct);
 }
 
@@ -139,8 +140,9 @@ TEST_F(TreeScopeStyleSheetCollectionTest, CompareStyleSheetsInsertRemove) {
   current.append(sheet2);
   current.append(sheet3);
 
-  // TODO(rune@opera.com): This is clearly wrong. We add sheet3 and remove sheet1 and
-  // compareStyleSheets returns sheet2 and sheet3 as added (crbug/475858).
+  // TODO(rune@opera.com): This is clearly wrong. We add sheet3 and remove
+  // sheet1 and compareStyleSheets returns sheet2 and sheet3 as added
+  // (crbug/475858).
   added.append(sheet2->contents());
   added.append(sheet3->contents());
 

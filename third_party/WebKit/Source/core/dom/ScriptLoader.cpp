@@ -2,7 +2,8 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
- * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Apple Inc. All rights
+ * reserved.
  * Copyright (C) 2008 Nikolas Zimmermann <zimmermann@kde.org>
  *
  * This library is free software; you can redistribute it and/or
@@ -130,13 +131,16 @@ void ScriptLoader::detach() {
 
 // Helper function. Must take a lowercase language as input.
 static bool isLegacySupportedJavaScriptLanguage(const String& language) {
-  // Mozilla 1.8 accepts javascript1.0 - javascript1.7, but WinIE 7 accepts only javascript1.1 - javascript1.3.
+  // Mozilla 1.8 accepts javascript1.0 - javascript1.7, but WinIE 7 accepts only
+  // javascript1.1 - javascript1.3.
   // Mozilla 1.8 and WinIE 7 both accept javascript and livescript.
   // WinIE 7 accepts ecmascript and jscript, but Mozilla 1.8 doesn't.
   // Neither Mozilla 1.8 nor WinIE 7 accept leading or trailing whitespace.
-  // We want to accept all the values that either of these browsers accept, but not other values.
+  // We want to accept all the values that either of these browsers accept, but
+  // not other values.
 
-  // FIXME: This function is not HTML5 compliant. These belong in the MIME registry as "text/javascript<version>" entries.
+  // FIXME: This function is not HTML5 compliant. These belong in the MIME
+  // registry as "text/javascript<version>" entries.
   DCHECK_EQ(language, language.lower());
   return language == "javascript" || language == "javascript1.0" ||
          language == "javascript1.1" || language == "javascript1.2" ||
@@ -160,9 +164,13 @@ bool ScriptLoader::isValidScriptTypeAndLanguage(
     const String& type,
     const String& language,
     LegacyTypeSupport supportLegacyTypes) {
-  // FIXME: isLegacySupportedJavaScriptLanguage() is not valid HTML5. It is used here to maintain backwards compatibility with existing layout tests. The specific violations are:
-  // - Allowing type=javascript. type= should only support MIME types, such as text/javascript.
-  // - Allowing a different set of languages for language= and type=. language= supports Javascript 1.1 and 1.4-1.6, but type= does not.
+  // FIXME: isLegacySupportedJavaScriptLanguage() is not valid HTML5. It is used
+  // here to maintain backwards compatibility with existing layout tests. The
+  // specific violations are:
+  // - Allowing type=javascript. type= should only support MIME types, such as
+  //   text/javascript.
+  // - Allowing a different set of languages for language= and type=. language=
+  //   supports Javascript 1.1 and 1.4-1.6, but type= does not.
   if (type.isEmpty()) {
     String lowerLanguage = language.lower();
     return language.isEmpty()  // assume text/javascript.
@@ -208,7 +216,8 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition,
   if (wasParserInserted && !client->asyncAttributeValue())
     m_forceAsync = true;
 
-  // FIXME: HTML5 spec says we should check that all children are either comments or empty text nodes.
+  // FIXME: HTML5 spec says we should check that all children are either
+  // comments or empty text nodes.
   if (!client->hasSourceAttribute() && !m_element->hasChildren())
     return false;
 
@@ -225,7 +234,8 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition,
 
   m_alreadyStarted = true;
 
-  // FIXME: If script is parser inserted, verify it's still in the original document.
+  // FIXME: If script is parser inserted, verify it's still in the original
+  // document.
   Document& elementDocument = m_element->document();
   Document* contextDocument = elementDocument.contextDocument();
 
@@ -335,7 +345,8 @@ bool ScriptLoader::fetchScript(const String& sourceUrl,
                                           crossOrigin);
     request.setCharset(scriptCharset());
 
-    // Skip fetch-related CSP checks if dynamically injected script is whitelisted and this script is not parser-inserted.
+    // Skip fetch-related CSP checks if dynamically injected script is
+    // whitelisted and this script is not parser-inserted.
     bool scriptPassesCSPDynamic =
         (!isParserInserted() &&
          elementDocument->contentSecurityPolicy()->allowDynamic());
@@ -529,8 +540,8 @@ bool ScriptLoader::doExecuteScript(const ScriptSourceCode& sourceCode) {
   }
 
   const bool isImportedScript = contextDocument != elementDocument;
-  // http://www.whatwg.org/specs/web-apps/current-work/#execute-the-script-block step 2.3
-  // with additional support for HTML imports.
+  // http://www.whatwg.org/specs/web-apps/current-work/#execute-the-script-block
+  // step 2.3 with additional support for HTML imports.
   IgnoreDestructiveWriteCountIncrementer ignoreDestructiveWriteCountIncrementer(
       m_isExternalScript || isImportedScript ? contextDocument : 0);
 

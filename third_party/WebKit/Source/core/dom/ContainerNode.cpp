@@ -2,7 +2,8 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2013 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2013 Apple Inc. All rights
+ * reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -82,7 +83,8 @@ static inline void collectChildrenAndRemoveFromOldParent(
 
 void ContainerNode::parserTakeAllChildrenFrom(ContainerNode& oldParent) {
   while (Node* child = oldParent.firstChild()) {
-    // Explicitly remove since appending can fail, but this loop shouldn't be infinite.
+    // Explicitly remove since appending can fail, but this loop shouldn't be
+    // infinite.
     oldParent.parserRemoveChild(*child);
     parserAppendChild(child);
   }
@@ -135,7 +137,8 @@ bool ContainerNode::checkAcceptChild(const Node* newChild,
     return true;
   }
 
-  // This should never happen, but also protect release builds from tree corruption.
+  // This should never happen, but also protect release builds from tree
+  // corruption.
   DCHECK(!newChild->isPseudoElement());
   if (newChild->isPseudoElement()) {
     exceptionState.throwDOMException(
@@ -300,9 +303,9 @@ void ContainerNode::insertBeforeCommon(Node& nextChild, Node& newChild) {
   DCHECK(EventDispatchForbiddenScope::isEventDispatchForbidden());
 #endif
   DCHECK(ScriptForbiddenScope::isScriptForbidden());
-  DCHECK(
-      !newChild
-           .parentNode());  // Use insertBefore if you need to handle reparenting (and want DOM mutation events).
+  // Use insertBefore if you need to handle reparenting (and want DOM mutation
+  // events).
+  DCHECK(!newChild.parentNode());
   DCHECK(!newChild.nextSibling());
   DCHECK(!newChild.previousSibling());
   DCHECK(!newChild.isShadowRoot());
@@ -487,9 +490,9 @@ DEFINE_TRACE_WRAPPERS(ContainerNode) {
 Node* ContainerNode::removeChild(Node* oldChild,
                                  ExceptionState& exceptionState) {
   // NotFoundError: Raised if oldChild is not a child of this node.
-  // FIXME: We should never really get PseudoElements in here, but editing will sometimes
-  // attempt to remove them still. We should fix that and enable this ASSERT.
-  // DCHECK(!oldChild->isPseudoElement())
+  // FIXME: We should never really get PseudoElements in here, but editing will
+  // sometimes attempt to remove them still. We should fix that and enable this
+  // DCHECK.  DCHECK(!oldChild->isPseudoElement())
   if (!oldChild || oldChild->parentNode() != this ||
       oldChild->isPseudoElement()) {
     exceptionState.throwDOMException(
@@ -591,8 +594,8 @@ void ContainerNode::parserRemoveChild(Node& oldChild) {
                                              ChildrenChangeSourceParser));
 }
 
-// This differs from other remove functions because it forcibly removes all the children,
-// regardless of read-only status or event exceptions, e.g.
+// This differs from other remove functions because it forcibly removes all the
+// children, regardless of read-only status or event exceptions, e.g.
 void ContainerNode::removeChildren(SubtreeModificationAction action) {
   if (!m_firstChild)
     return;
@@ -602,8 +605,8 @@ void ContainerNode::removeChildren(SubtreeModificationAction action) {
   willRemoveChildren();
 
   {
-    // Removing focus can cause frames to load, either via events (focusout, blur)
-    // or widget updates (e.g., for <embed>).
+    // Removing focus can cause frames to load, either via events (focusout,
+    // blur) or widget updates (e.g., for <embed>).
     SubframeLoadingDisabler disabler(*this);
 
     // Exclude this node when looking for removed focusedElement since only
@@ -738,8 +741,8 @@ void ContainerNode::notifyNodeRemoved(Node& root) {
 
   for (Node& node : NodeTraversal::inclusiveDescendantsOf(root)) {
     // As an optimization we skip notifying Text nodes and other leaf nodes
-    // of removal when they're not in the Document tree and not in a shadow root since the virtual
-    // call to removedFrom is not needed.
+    // of removal when they're not in the Document tree and not in a shadow root
+    // since the virtual call to removedFrom is not needed.
     if (!node.isContainerNode() && !node.isInTreeScope())
       continue;
     node.removedFrom(this);
@@ -833,8 +836,10 @@ bool ContainerNode::getUpperLeftCorner(FloatPoint& point) const {
 
     if (p->node() && p->node() == this && o->isText() && !o->isBR() &&
         !toLayoutText(o)->hasTextBoxes()) {
-      // Do nothing - skip unrendered whitespace that is a child or next sibling of the anchor.
-      // FIXME: This fails to skip a whitespace sibling when there was also a whitespace child (because p has moved).
+      // Do nothing - skip unrendered whitespace that is a child or next sibling
+      // of the anchor.
+      // FIXME: This fails to skip a whitespace sibling when there was also a
+      // whitespace child (because p has moved).
     } else if ((o->isText() && !o->isBR()) || o->isAtomicInlineLevel()) {
       point = FloatPoint();
       if (o->isText()) {
@@ -853,8 +858,10 @@ bool ContainerNode::getUpperLeftCorner(FloatPoint& point) const {
     }
   }
 
-  // If the target doesn't have any children or siblings that could be used to calculate the scroll position, we must be
-  // at the end of the document. Scroll to the bottom. FIXME: who said anything about scrolling?
+  // If the target doesn't have any children or siblings that could be used to
+  // calculate the scroll position, we must be at the end of the
+  // document. Scroll to the bottom.
+  // FIXME: who said anything about scrolling?
   if (!o && document().view()) {
     point = FloatPoint(0, document().view()->contentsHeight());
     return true;
@@ -901,9 +908,10 @@ bool ContainerNode::getLowerRightCorner(FloatPoint& point) const {
     } else {
       LayoutObject* prev = nullptr;
       while (!prev) {
-        // Check if the current layoutObject has contiunation and move the location for
-        // finding the layoutObject to the end of continuations if there is the continuation.
-        // Skip to check the contiunation on contiunations section
+        // Check if the current layoutObject has contiunation and move the
+        // location for finding the layoutObject to the end of continuations if
+        // there is the continuation.  Skip to check the contiunation on
+        // contiunations section
         if (startContinuation == o) {
           startContinuation = nullptr;
         } else if (!startContinuation) {
@@ -970,11 +978,11 @@ LayoutRect ContainerNode::boundingBox() const {
   return enclosingLayoutRect(FloatRect(upperLeft, size));
 }
 
-// This is used by FrameSelection to denote when the active-state of the page has changed
-// independent of the focused element changing.
+// This is used by FrameSelection to denote when the active-state of the page
+// has changed independent of the focused element changing.
 void ContainerNode::focusStateChanged() {
-  // If we're just changing the window's active state and the focused node has no
-  // layoutObject we can just ignore the state change.
+  // If we're just changing the window's active state and the focused node has
+  // no layoutObject we can just ignore the state change.
   if (!layoutObject())
     return;
 
@@ -996,15 +1004,15 @@ void ContainerNode::focusStateChanged() {
 
 void ContainerNode::setFocus(bool received) {
   // Recurse up author shadow trees to mark shadow hosts if it matches :focus.
-  // TODO(kochi): Handle UA shadows which marks multiple nodes as focused such as
-  // <input type="date"> the same way as author shadow.
+  // TODO(kochi): Handle UA shadows which marks multiple nodes as focused such
+  // as <input type="date"> the same way as author shadow.
   if (ShadowRoot* root = containingShadowRoot()) {
     if (root->type() != ShadowRootType::UserAgent)
       ownerShadowHost()->setFocus(received);
   }
 
-  // If this is an author shadow host and indirectly focused (has focused element within
-  // its shadow root), update focus.
+  // If this is an author shadow host and indirectly focused (has focused
+  // element within its shadow root), update focus.
   if (isElementNode() && document().focusedElement() &&
       document().focusedElement() != this) {
     if (toElement(this)->authorShadowRoot())
@@ -1022,7 +1030,8 @@ void ContainerNode::setFocus(bool received) {
   if (layoutObject() || received)
     return;
 
-  // If :focus sets display: none, we lose focus but still need to recalc our style.
+  // If :focus sets display: none, we lose focus but still need to recalc our
+  // style.
   if (isElementNode() && toElement(this)->childrenOrSiblingsAffectedByFocus())
     toElement(this)->pseudoStateChanged(CSSSelector::PseudoFocus);
   else
@@ -1108,7 +1117,8 @@ void ContainerNode::setHovered(bool over) {
 
   Node::setHovered(over);
 
-  // If :hover sets display: none we lose our hover but still need to recalc our style.
+  // If :hover sets display: none we lose our hover but still need to recalc our
+  // style.
   if (!layoutObject()) {
     if (over)
       return;
@@ -1262,10 +1272,11 @@ void ContainerNode::recalcDescendantStyles(StyleRecalcChange change) {
   DCHECK(change >= UpdatePseudoElements || childNeedsStyleRecalc());
   DCHECK(!needsStyleRecalc());
 
-  // This loop is deliberately backwards because we use insertBefore in the layout tree, and want to avoid
-  // a potentially n^2 loop to find the insertion point while resolving style. Having us start from the last
-  // child and work our way back means in the common case, we'll find the insertion point in O(1) time.
-  // See crbug.com/288225
+  // This loop is deliberately backwards because we use insertBefore in the
+  // layout tree, and want to avoid a potentially n^2 loop to find the insertion
+  // point while resolving style.  Having us start from the last child and work
+  // our way back means in the common case, we'll find the insertion point in
+  // O(1) time.  See crbug.com/288225
   StyleResolver& styleResolver = document().ensureStyleResolver();
   Text* lastTextNode = nullptr;
   for (Node* child = lastChild(); child; child = child->previousSibling()) {
@@ -1360,7 +1371,8 @@ void ContainerNode::invalidateNodeListCachesInAncestors(
     }
   }
 
-  // Modifications to attributes that are not associated with an Element can't invalidate NodeList caches.
+  // Modifications to attributes that are not associated with an Element can't
+  // invalidate NodeList caches.
   if (attrName && !attributeOwnerElement)
     return;
 
@@ -1394,15 +1406,17 @@ TagCollection* ContainerNode::getElementsByTagNameNS(
       localName);
 }
 
-// Takes an AtomicString in argument because it is common for elements to share the same name attribute.
-// Therefore, the NameNodeList factory function expects an AtomicString type.
+// Takes an AtomicString in argument because it is common for elements to share
+// the same name attribute.  Therefore, the NameNodeList factory function
+// expects an AtomicString type.
 NameNodeList* ContainerNode::getElementsByName(
     const AtomicString& elementName) {
   return ensureCachedCollection<NameNodeList>(NameNodeListType, elementName);
 }
 
-// Takes an AtomicString in argument because it is common for elements to share the same set of class names.
-// Therefore, the ClassNodeList factory function expects an AtomicString type.
+// Takes an AtomicString in argument because it is common for elements to share
+// the same set of class names.  Therefore, the ClassNodeList factory function
+// expects an AtomicString type.
 ClassCollection* ContainerNode::getElementsByClassName(
     const AtomicString& classNames) {
   return ensureCachedCollection<ClassCollection>(ClassCollectionType,
@@ -1428,7 +1442,8 @@ Element* ContainerNode::getElementById(const AtomicString& id) const {
       return element;
   }
 
-  // Fall back to traversing our subtree. In case of duplicate ids, the first element found will be returned.
+  // Fall back to traversing our subtree. In case of duplicate ids, the first
+  // element found will be returned.
   for (Element& element : ElementTraversal::descendantsOf(*this)) {
     if (element.getIdAttribute() == id)
       return &element;

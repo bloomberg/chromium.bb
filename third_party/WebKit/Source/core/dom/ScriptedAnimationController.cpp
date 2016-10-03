@@ -10,16 +10,16 @@
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  *
- *  THIS SOFTWARE IS PROVIDED BY APPLE INC. AND ITS CONTRIBUTORS ``AS IS'' AND ANY
- *  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *  DISCLAIMED. IN NO EVENT SHALL APPLE INC. OR ITS CONTRIBUTORS BE LIABLE FOR ANY
- *  DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- *  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
- *  ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *  THIS SOFTWARE IS PROVIDED BY APPLE INC. AND ITS CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL APPLE INC. OR ITS CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
 
@@ -57,8 +57,9 @@ void ScriptedAnimationController::suspend() {
 }
 
 void ScriptedAnimationController::resume() {
-  // It would be nice to put an DCHECK(m_suspendCount > 0) here, but in WK1 resume() can be called
-  // even when suspend hasn't (if a tab was created in the background).
+  // It would be nice to put an DCHECK(m_suspendCount > 0) here, but in WK1
+  // resume() can be called even when suspend hasn't (if a tab was created in
+  // the background).
   if (m_suspendCount > 0)
     --m_suspendCount;
   scheduleAnimationIfNeeded();
@@ -101,9 +102,10 @@ void ScriptedAnimationController::dispatchEvents(
 
   for (size_t i = 0; i < events.size(); ++i) {
     EventTarget* eventTarget = events[i]->target();
-    // FIXME: we should figure out how to make dispatchEvent properly virtual to avoid
-    // special casting window.
-    // FIXME: We should not fire events for nodes that are no longer in the tree.
+    // FIXME: we should figure out how to make dispatchEvent properly virtual to
+    // avoid special casting window.
+    // FIXME: We should not fire events for nodes that are no longer in the
+    // tree.
     InspectorInstrumentation::AsyncTask asyncTask(
         eventTarget->getExecutionContext(), events[i]);
     if (LocalDOMWindow* window = eventTarget->toLocalDOMWindow())

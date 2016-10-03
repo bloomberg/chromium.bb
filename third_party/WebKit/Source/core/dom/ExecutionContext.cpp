@@ -99,7 +99,8 @@ void ExecutionContext::suspendScheduledTasks() {
 void ExecutionContext::resumeScheduledTasks() {
   resumeActiveDOMObjects();
   tasksWereResumed();
-  // We need finish stack unwiding before running next task because it can suspend this context.
+  // We need finish stack unwiding before running next task because it can
+  // suspend this context.
   if (m_isRunSuspendableTasksScheduled)
     return;
   m_isRunSuspendableTasksScheduled = true;
@@ -258,7 +259,8 @@ void ExecutionContext::parseAndSetReferrerPolicy(const String& policies,
 }
 
 void ExecutionContext::setReferrerPolicy(ReferrerPolicy referrerPolicy) {
-  // When a referrer policy has already been set, the latest value takes precedence.
+  // When a referrer policy has already been set, the latest value takes
+  // precedence.
   UseCounter::count(this, UseCounter::SetReferrerPolicy);
   if (m_referrerPolicy != ReferrerPolicyDefault)
     UseCounter::count(this, UseCounter::ResetReferrerPolicy);

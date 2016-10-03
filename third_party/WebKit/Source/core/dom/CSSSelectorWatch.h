@@ -82,8 +82,10 @@ class CORE_EXPORT CSSSelectorWatch final
 
   Timer<CSSSelectorWatch> m_callbackSelectorChangeTimer;
 
-  // When an element is reparented, the new location's style is evaluated after the expriation of the relayout timer.
-  // We don't want to send redundant callbacks to the embedder, so this counter lets us wait another time around the event loop.
+  // When an element is reparented, the new location's style is evaluated after
+  // the expriation of the relayout timer.  We don't want to send redundant
+  // callbacks to the embedder, so this counter lets us wait another time around
+  // the event loop.
   int m_timerExpirations;
 
   friend class CSSSelectorWatchTest;

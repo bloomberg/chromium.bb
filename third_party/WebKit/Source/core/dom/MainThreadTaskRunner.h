@@ -54,11 +54,11 @@ class CORE_EXPORT MainThreadTaskRunner final {
 
   DECLARE_TRACE();
 
-  void postTask(
-      const WebTraceLocation&,
-      std::unique_ptr<ExecutionContextTask>,
-      const String& taskNameForInstrumentation =
-          emptyString());  // Executes the task on context's thread asynchronously.
+  // Executes the task on context's thread asynchronously.
+  void postTask(const WebTraceLocation&,
+                std::unique_ptr<ExecutionContextTask>,
+                const String& taskNameForInstrumentation = emptyString());
+
   void postInspectorTask(const WebTraceLocation&,
                          std::unique_ptr<ExecutionContextTask>);
   void perform(std::unique_ptr<ExecutionContextTask>,

@@ -219,8 +219,9 @@ void MutationObserver::cancelInspectorAsyncTasks() {
 void MutationObserver::deliver() {
   DCHECK(!shouldBeSuspended());
 
-  // Calling clearTransientRegistrations() can modify m_registrations, so it's necessary
-  // to make a copy of the transient registrations before operating on them.
+  // Calling clearTransientRegistrations() can modify m_registrations, so it's
+  // necessary to make a copy of the transient registrations before operating on
+  // them.
   HeapVector<Member<MutationObserverRegistration>, 1> transientRegistrations;
   for (auto& registration : m_registrations) {
     if (registration->hasTransientRegistrations())

@@ -324,9 +324,9 @@ DOMSelection* TreeScope::getSelection() const {
   if (m_selection)
     return m_selection.get();
 
-  // FIXME: The correct selection in Shadow DOM requires that Position can have a ShadowRoot
-  // as a container.
-  // See https://bugs.webkit.org/show_bug.cgi?id=82697
+  // FIXME: The correct selection in Shadow DOM requires that Position can have
+  // a ShadowRoot as a container.  See
+  // https://bugs.webkit.org/show_bug.cgi?id=82697
   m_selection = DOMSelection::create(this);
   return m_selection.get();
 }
@@ -352,8 +352,9 @@ Element* TreeScope::findAnchor(const String& name) {
 }
 
 void TreeScope::adoptIfNeeded(Node& node) {
-  // Script is forbidden to protect against event handlers firing in the middle of rescoping
-  // in |didMoveToNewDocument| callbacks. See https://crbug.com/605766 and https://crbug.com/606651.
+  // Script is forbidden to protect against event handlers firing in the middle
+  // of rescoping in |didMoveToNewDocument| callbacks. See
+  // https://crbug.com/605766 and https://crbug.com/606651.
   ScriptForbiddenScope forbidScript;
   DCHECK(this);
   DCHECK(!node.isDocumentNode());
@@ -405,10 +406,11 @@ Element* TreeScope::adjustedElement(const Element& target) const {
   const Element* adjustedTarget = &target;
   for (const Element* ancestor = &target; ancestor;
        ancestor = ancestor->ownerShadowHost()) {
-    // This adjustment is done only for V1 shadows, and is skipped for V0 or UA shadows,
-    // because .pointerLockElement and .(webkit)fullscreenElement is not available for
-    // non-V1 shadow roots.
-    // TODO(kochi): Once V0 code is removed, use the same logic as .activeElement for V1.
+    // This adjustment is done only for V1 shadows, and is skipped for V0 or UA
+    // shadows, because .pointerLockElement and .(webkit)fullscreenElement is
+    // not available for non-V1 shadow roots.
+    // TODO(kochi): Once V0 code is removed, use the same logic as
+    // .activeElement for V1.
     if (ancestor->shadowRootIfV1())
       adjustedTarget = ancestor;
     if (this == ancestor->treeScope())
@@ -456,8 +458,8 @@ unsigned short TreeScope::comparePosition(const TreeScope& otherScope) const {
     }
   }
 
-  // There was no difference between the two parent chains, i.e., one was a subset of the other. The shorter
-  // chain is the ancestor.
+  // There was no difference between the two parent chains, i.e., one was a
+  // subset of the other. The shorter chain is the ancestor.
   return index1 < index2
              ? Node::kDocumentPositionFollowing |
                    Node::kDocumentPositionContainedBy
@@ -475,8 +477,9 @@ const TreeScope* TreeScope::commonAncestorTreeScope(
   for (const TreeScope* tree = &other; tree; tree = tree->parentTreeScope())
     otherChain.append(tree);
 
-  // Keep popping out the last elements of these chains until a mismatched pair is found. If |this| and |other|
-  // belong to different documents, null will be returned.
+  // Keep popping out the last elements of these chains until a mismatched pair
+  // is found. If |this| and |other| belong to different documents, null will be
+  // returned.
   const TreeScope* lastAncestor = nullptr;
   while (!thisChain.isEmpty() && !otherChain.isEmpty() &&
          thisChain.last() == otherChain.last()) {

@@ -42,10 +42,11 @@ class ScriptSourceCode;
 
 // A container for an external script which may be loaded and executed.
 //
-// TODO(kochi): The comment below is from pre-oilpan age and may not be correct now.
-// A RefPtr alone does not prevent the underlying Resource
-// from purging its data buffer. This class holds a dummy client open for its
-// lifetime in order to guarantee that the data buffer will not be purged.
+// TODO(kochi): The comment below is from pre-oilpan age and may not be correct
+// now.
+// A RefPtr alone does not prevent the underlying Resource from purging its data
+// buffer. This class holds a dummy client open for its lifetime in order to
+// guarantee that the data buffer will not be purged.
 class CORE_EXPORT PendingScript final
     : public GarbageCollectedFinalized<PendingScript>,
       public ResourceOwner<ScriptResource>,

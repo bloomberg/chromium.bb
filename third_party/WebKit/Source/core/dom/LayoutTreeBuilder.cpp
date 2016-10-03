@@ -2,8 +2,10 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
- * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All
+ * rights reserved.
+ * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved.
+ * (http://www.torchmobile.com/)
  * Copyright (C) 2011 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
@@ -71,9 +73,10 @@ LayoutObject* LayoutTreeBuilderForElement::nextLayoutObject() const {
 
 LayoutObject* LayoutTreeBuilderForElement::parentLayoutObject() const {
   if (m_layoutObjectParent) {
-    // FIXME: Guarding this by parentLayoutObject isn't quite right as the spec for
-    // top layer only talks about display: none ancestors so putting a <dialog> inside an
-    // <optgroup> seems like it should still work even though this check will prevent it.
+    // FIXME: Guarding this by parentLayoutObject isn't quite right as the spec
+    // for top layer only talks about display: none ancestors so putting a
+    // <dialog> inside an <optgroup> seems like it should still work even though
+    // this check will prevent it.
     if (m_node->isInTopLayer())
       return m_node->document().layoutView();
   }
@@ -88,7 +91,8 @@ bool LayoutTreeBuilderForElement::shouldCreateLayoutObject() const {
 
   // FIXME: Should the following be in SVGElement::layoutObjectIsNeeded()?
   if (m_node->isSVGElement()) {
-    // SVG elements only render when inside <svg>, or if the element is an <svg> itself.
+    // SVG elements only render when inside <svg>, or if the element is an <svg>
+    // itself.
     if (!isSVGSVGElement(*m_node) &&
         (!m_layoutObjectParent->node() ||
          !m_layoutObjectParent->node()->isSVGElement()))
@@ -127,8 +131,10 @@ void LayoutTreeBuilderForElement::createLayoutObject() {
     return;
   }
 
-  // Make sure the LayoutObject already knows it is going to be added to a LayoutFlowThread before we set the style
-  // for the first time. Otherwise code using inLayoutFlowThread() in the styleWillChange and styleDidChange will fail.
+  // Make sure the LayoutObject already knows it is going to be added to a
+  // LayoutFlowThread before we set the style for the first time. Otherwise code
+  // using inLayoutFlowThread() in the styleWillChange and styleDidChange will
+  // fail.
   newLayoutObject->setIsInsideFlowThread(
       parentLayoutObject->isInsideFlowThread());
 
@@ -144,7 +150,8 @@ void LayoutTreeBuilderForElement::createLayoutObject() {
       return;
   }
 
-  // Note: Adding newLayoutObject instead of layoutObject(). layoutObject() may be a child of newLayoutObject.
+  // Note: Adding newLayoutObject instead of layoutObject(). layoutObject() may
+  // be a child of newLayoutObject.
   parentLayoutObject->addChild(newLayoutObject, nextLayoutObject);
 }
 
@@ -159,8 +166,10 @@ void LayoutTreeBuilderForText::createLayoutObject() {
     return;
   }
 
-  // Make sure the LayoutObject already knows it is going to be added to a LayoutFlowThread before we set the style
-  // for the first time. Otherwise code using inLayoutFlowThread() in the styleWillChange and styleDidChange will fail.
+  // Make sure the LayoutObject already knows it is going to be added to a
+  // LayoutFlowThread before we set the style for the first time. Otherwise code
+  // using inLayoutFlowThread() in the styleWillChange and styleDidChange will
+  // fail.
   newLayoutObject->setIsInsideFlowThread(
       m_layoutObjectParent->isInsideFlowThread());
 

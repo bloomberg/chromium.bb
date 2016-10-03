@@ -3,8 +3,10 @@
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
  *           (C) 2006 Alexey Proskuryakov (ap@webkit.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012 Apple Inc. All rights reserved.
- * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012 Apple Inc. All
+ * rights reserved.
+ * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved.
+ * (http://www.torchmobile.com/)
  * Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies)
  * Copyright (C) 2013 Google Inc. All rights reserved.
  *
@@ -74,8 +76,9 @@ void ShadowTreeStyleSheetCollection::updateActiveStyleSheets(
 
   if (StyleResolver* styleResolver = engine.resolver()) {
     if (change.styleResolverUpdateType != Additive) {
-      // We should not destroy StyleResolver when we find any stylesheet update in a shadow tree.
-      // In this case, we will reset rulesets created from style elements in the shadow tree.
+      // We should not destroy StyleResolver when we find any stylesheet update
+      // in a shadow tree.  In this case, we will reset rulesets created from
+      // style elements in the shadow tree.
       styleResolver->resetAuthorStyle(treeScope());
       styleResolver->removePendingAuthorStyleSheets(m_activeAuthorStyleSheets);
       styleResolver->lazyAppendAuthorStyleSheets(

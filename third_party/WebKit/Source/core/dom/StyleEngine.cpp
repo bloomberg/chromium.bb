@@ -3,8 +3,10 @@
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
  *           (C) 2006 Alexey Proskuryakov (ap@webkit.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2011, 2012 Apple Inc. All rights reserved.
- * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2011, 2012 Apple Inc. All
+ * rights reserved.
+ * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved.
+ * (http://www.torchmobile.com/)
  * Copyright (C) 2008, 2009, 2011, 2012 Google Inc. All rights reserved.
  * Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies)
  * Copyright (C) Research In Motion Limited 2010-2011. All rights reserved.
@@ -82,8 +84,9 @@ inline Document* StyleEngine::master() {
   if (isMaster())
     return m_document;
   HTMLImportsController* import = document().importsController();
-  if (!import)  // Document::import() can return null while executing its destructor.
-    return 0;
+  // Document::import() can return null while executing its destructor.
+  if (!import)
+    return nullptr;
   return import->master();
 }
 
@@ -169,7 +172,8 @@ void StyleEngine::removePendingSheet(Node& styleSheetCandidateNode,
     m_pendingRenderBlockingStylesheets--;
   }
 
-  // Make sure we knew this sheet was pending, and that our count isn't out of sync.
+  // Make sure we knew this sheet was pending, and that our count isn't out of
+  // sync.
   DCHECK_GT(m_pendingScriptBlockingStylesheets, 0);
 
   m_pendingScriptBlockingStylesheets--;
@@ -640,7 +644,8 @@ void StyleEngine::classChangedForElement(const SpaceSplitString& oldClasses,
     return;
   }
 
-  // Class vectors tend to be very short. This is faster than using a hash table.
+  // Class vectors tend to be very short. This is faster than using a hash
+  // table.
   BitVector remainingClassBits;
   remainingClassBits.ensureSize(oldClasses.size());
 

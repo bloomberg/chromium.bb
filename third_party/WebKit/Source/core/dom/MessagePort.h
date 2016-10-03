@@ -48,7 +48,8 @@ class MessagePort;
 class ScriptState;
 class SerializedScriptValue;
 
-// Not to be confused with WebMessagePortChannelArray; this one uses Vector and std::unique_ptr instead of WebVector and raw pointers.
+// Not to be confused with WebMessagePortChannelArray; this one uses Vector and
+// std::unique_ptr instead of WebVector and raw pointers.
 typedef Vector<WebMessagePortChannelUniquePtr, 1> MessagePortChannelArray;
 
 class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
@@ -82,7 +83,8 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
       ExecutionContext*,
       const WebMessagePortChannelArray&);
 
-  // Returns nullptr if there is an exception, or if the passed-in array is nullptr/empty.
+  // Returns nullptr if there is an exception, or if the passed-in array is
+  // nullptr/empty.
   static std::unique_ptr<MessagePortChannelArray>
   disentanglePorts(ExecutionContext*, const MessagePortArray&, ExceptionState&);
 
@@ -113,10 +115,12 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
     return getAttributeEventListener(EventTypeNames::message);
   }
 
-  // A port starts out its life entangled, and remains entangled until it is closed or is cloned.
+  // A port starts out its life entangled, and remains entangled until it is
+  // closed or is cloned.
   bool isEntangled() const { return !m_closed && !isNeutered(); }
 
-  // A port gets neutered when it is transferred to a new owner via postMessage().
+  // A port gets neutered when it is transferred to a new owner via
+  // postMessage().
   bool isNeutered() const { return !m_entangledChannel; }
 
   // For testing only: allows inspection of the entangled channel.

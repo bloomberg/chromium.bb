@@ -172,8 +172,9 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
   std::pair<unsigned char, StringImpl*> namedNodeListKey(
       CollectionType type,
       const AtomicString& name) {
-    // Holding the raw StringImpl is safe because |name| is retained by the NodeList and the NodeList
-    // is reponsible for removing itself from the cache on deletion.
+    // Holding the raw StringImpl is safe because |name| is retained by the
+    // NodeList and the NodeList is reponsible for removing itself from the
+    // cache on deletion.
     return std::pair<unsigned char, StringImpl*>(type, name.impl());
   }
 

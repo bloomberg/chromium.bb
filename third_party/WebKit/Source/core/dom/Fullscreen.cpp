@@ -3,8 +3,10 @@
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
  *           (C) 2006 Alexey Proskuryakov (ap@webkit.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012 Apple Inc. All rights reserved.
- * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012 Apple Inc. All
+ * rights reserved.
+ * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved.
+ * (http://www.torchmobile.com/)
  * Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies)
  * Copyright (C) 2013 Google Inc. All rights reserved.
  *
@@ -98,15 +100,15 @@ bool allowedToRequestFullscreen(Document& document) {
 
 // https://fullscreen.spec.whatwg.org/#fullscreen-is-supported
 bool fullscreenIsSupported(const Document& document) {
-  // Fullscreen is supported if there is no previously-established user preference,
-  // security risk, or platform limitation.
+  // Fullscreen is supported if there is no previously-established user
+  // preference, security risk, or platform limitation.
   return !document.settings() || document.settings()->fullscreenSupported();
 }
 
 // https://fullscreen.spec.whatwg.org/#fullscreen-element-ready-check
 bool fullscreenElementReady(const Element& element) {
-  // A fullscreen element ready check for an element |element| returns true if all of the
-  // following are true, and false otherwise:
+  // A fullscreen element ready check for an element |element| returns true if
+  // all of the following are true, and false otherwise:
 
   // |element| is in a document.
   if (!element.isConnected())
@@ -117,22 +119,23 @@ bool fullscreenElementReady(const Element& element) {
   if (!allowedToUseFullscreen(element.document().frame()))
     return false;
 
-  // |element|'s node document's fullscreen element stack is either empty or its top element is an
-  // inclusive ancestor of |element|.
+  // |element|'s node document's fullscreen element stack is either empty or its
+  // top element is an inclusive ancestor of |element|.
   if (const Element* topElement =
           Fullscreen::fullscreenElementFrom(element.document())) {
     if (!topElement->contains(&element))
       return false;
   }
 
-  // |element| has no ancestor element whose local name is iframe and namespace is the HTML
-  // namespace.
+  // |element| has no ancestor element whose local name is iframe and namespace
+  // is the HTML namespace.
   if (Traversal<HTMLIFrameElement>::firstAncestor(element))
     return false;
 
-  // |element|'s node document's browsing context either has a browsing context container and the
-  // fullscreen element ready check returns true for |element|'s node document's browsing
-  // context's browsing context container, or it has no browsing context container.
+  // |element|'s node document's browsing context either has a browsing context
+  // container and the fullscreen element ready check returns true for
+  // |element|'s node document's browsing context's browsing context container,
+  // or it has no browsing context container.
   if (const Element* owner = element.document().localOwner()) {
     if (!fullscreenElementReady(*owner))
       return false;
@@ -261,14 +264,15 @@ void Fullscreen::requestFullscreen(Element& element,
   if (!document.isActive())
     return;
 
-  // If |element| is on top of |doc|'s fullscreen element stack, terminate these substeps.
+  // If |element| is on top of |doc|'s fullscreen element stack, terminate these
+  // substeps.
   if (&element == fullscreenElementFrom(document))
     return;
 
   do {
-    // 1. If any of the following conditions are true, terminate these steps and queue a task to fire
-    // an event named fullscreenerror with its bubbles attribute set to true on the context object's
-    // node document:
+    // 1. If any of the following conditions are true, terminate these steps and
+    // queue a task to fire an event named fullscreenerror with its bubbles
+    // attribute set to true on the context object's node document:
 
     // The fullscreen element ready check returns false.
     if (!fullscreenElementReady(element))
@@ -287,7 +291,8 @@ void Fullscreen::requestFullscreen(Element& element,
 
     // 2. Let doc be element's node document. (i.e. "this")
 
-    // 3. Let docs be all doc's ancestor browsing context's documents (if any) and doc.
+    // 3. Let docs be all doc's ancestor browsing context's documents (if any)
+    // and doc.
     //
     // For OOPIF scenarios, |docs| will only contain documents for local
     // ancestors, and remote ancestors will be processed in their
@@ -313,29 +318,30 @@ void Fullscreen::requestFullscreen(Element& element,
     do {
       ++following;
 
-      // 1. Let following document be the document after document in docs, or null if there is no
-      // such document.
+      // 1. Let following document be the document after document in docs, or
+      // null if there is no such document.
       Document* currentDoc = *current;
       Document* followingDoc = following != docs.end() ? *following : nullptr;
 
-      // 2. If following document is null, push context object on document's fullscreen element
-      // stack, and queue a task to fire an event named fullscreenchange with its bubbles attribute
-      // set to true on the document.
+      // 2. If following document is null, push context object on document's
+      // fullscreen element stack, and queue a task to fire an event named
+      // fullscreenchange with its bubbles attribute set to true on the
+      // document.
       if (!followingDoc) {
         from(*currentDoc).pushFullscreenElementStack(element, requestType);
         from(document).enqueueChangeEvent(*currentDoc, requestType);
         continue;
       }
 
-      // 3. Otherwise, if document's fullscreen element stack is either empty or its top element
-      // is not following document's browsing context container,
+      // 3. Otherwise, if document's fullscreen element stack is either empty or
+      // its top element is not following document's browsing context container,
       Element* topElement = fullscreenElementFrom(*currentDoc);
       HTMLFrameOwnerElement* followingOwner =
           findContainerForDescendant(*currentDoc, *followingDoc);
       if (!topElement || topElement != followingOwner) {
-        // ...push following document's browsing context container on document's fullscreen element
-        // stack, and queue a task to fire an event named fullscreenchange with its bubbles attribute
-        // set to true on document.
+        // ...push following document's browsing context container on document's
+        // fullscreen element stack, and queue a task to fire an event named
+        // fullscreenchange with its bubbles attribute set to true on document.
         from(*currentDoc)
             .pushFullscreenElementStack(*followingOwner, requestType);
         from(document).enqueueChangeEvent(*currentDoc, requestType);
@@ -351,7 +357,8 @@ void Fullscreen::requestFullscreen(Element& element,
     // 6. Optionally, perform some animation.
     document.frameHost()->chromeClient().enterFullscreenForElement(&element);
 
-    // 7. Optionally, display a message indicating how the user can exit displaying the context object fullscreen.
+    // 7. Optionally, display a message indicating how the user can exit
+    // displaying the context object fullscreen.
     return;
   } while (false);
 
@@ -376,7 +383,8 @@ void Fullscreen::fullyExitFullscreen(Document& document) {
   if (!fullscreenElementFrom(doc))
     return;
 
-  // 3. Remove elements from |doc|'s fullscreen element stack until only the top element is left.
+  // 3. Remove elements from |doc|'s fullscreen element stack until only the top
+  // element is left.
   size_t stackSize = from(doc).m_fullscreenElementStack.size();
   from(doc).m_fullscreenElementStack.remove(0, stackSize - 1);
   DCHECK_EQ(from(doc).m_fullscreenElementStack.size(), 1u);
@@ -397,9 +405,10 @@ void Fullscreen::exitFullscreen(Document& document) {
   if (!fullscreenElementFrom(document))
     return;
 
-  // 3. Let descendants be all the doc's descendant browsing context's documents with a non-empty fullscreen
-  // element stack (if any), ordered so that the child of the doc is last and the document furthest
-  // away from the doc is first.
+  // 3. Let descendants be all the doc's descendant browsing context's documents
+  // with a non-empty fullscreen element stack (if any), ordered so that the
+  // child of the doc is last and the document furthest away from the doc is
+  // first.
   HeapDeque<Member<Document>> descendants;
   for (Frame* descendant =
            document.frame() ? document.frame()->tree().traverseNext() : nullptr;
@@ -411,8 +420,9 @@ void Fullscreen::exitFullscreen(Document& document) {
       descendants.prepend(toLocalFrame(descendant)->document());
   }
 
-  // 4. For each descendant in descendants, empty descendant's fullscreen element stack, and queue a
-  // task to fire an event named fullscreenchange with its bubbles attribute set to true on descendant.
+  // 4. For each descendant in descendants, empty descendant's fullscreen
+  // element stack, and queue a task to fire an event named fullscreenchange
+  // with its bubbles attribute set to true on descendant.
   for (auto& descendant : descendants) {
     DCHECK(descendant);
     RequestType requestType =
@@ -430,18 +440,20 @@ void Fullscreen::exitFullscreen(Document& document) {
     // 1. Pop the top element of doc's fullscreen element stack.
     from(*currentDoc).popFullscreenElementStack();
 
-    //    If doc's fullscreen element stack is non-empty and the element now at the top is either
-    //    not in a document or its node document is not doc, repeat this substep.
+    //    If doc's fullscreen element stack is non-empty and the element now at
+    //    the top is either not in a document or its node document is not doc,
+    //    repeat this substep.
     newTop = fullscreenElementFrom(*currentDoc);
     if (newTop && (!newTop->isConnected() || newTop->document() != currentDoc))
       continue;
 
-    // 2. Queue a task to fire an event named fullscreenchange with its bubbles attribute set to true
-    // on doc.
+    // 2. Queue a task to fire an event named fullscreenchange with its bubbles
+    // attribute set to true on doc.
     from(document).enqueueChangeEvent(*currentDoc, requestType);
 
-    // 3. If doc's fullscreen element stack is empty and doc's browsing context has a browsing context
-    // container, set doc to that browsing context container's node document.
+    // 3. If doc's fullscreen element stack is empty and doc's browsing context
+    // has a browsing context container, set doc to that browsing context
+    // container's node document.
     //
     // OOPIF: If browsing context container's document is in another
     // process, keep moving up the ancestor chain and looking for a
@@ -473,8 +485,8 @@ void Fullscreen::exitFullscreen(Document& document) {
   if (!host)
     return;
 
-  // Only exit out of full screen window mode if there are no remaining elements in the
-  // full screen stack.
+  // Only exit out of full screen window mode if there are no remaining elements
+  // in the full screen stack.
   if (!newTop) {
     // FIXME: if the frame exiting fullscreen is not the frame that entered
     // fullscreen (but a parent frame for example),
@@ -512,10 +524,10 @@ void Fullscreen::didEnterFullscreenForElement(Element* element) {
 
   m_currentFullScreenElement = element;
 
-  // Create a placeholder block for a the full-screen element, to keep the page from reflowing
-  // when the element is removed from the normal flow. Only do this for a LayoutBox, as only
-  // a box will have a frameRect. The placeholder will be created in setFullScreenLayoutObject()
-  // during layout.
+  // Create a placeholder block for a the full-screen element, to keep the page
+  // from reflowing when the element is removed from the normal flow. Only do
+  // this for a LayoutBox, as only a box will have a frameRect. The placeholder
+  // will be created in setFullScreenLayoutObject() during layout.
   LayoutObject* layoutObject = m_currentFullScreenElement->layoutObject();
   bool shouldCreatePlaceholder = layoutObject && layoutObject->isBox();
   if (shouldCreatePlaceholder) {
@@ -586,9 +598,9 @@ void Fullscreen::didExitFullscreen() {
   if (document()->frame())
     document()->frame()->eventHandler().scheduleHoverStateUpdate();
 
-  // When fullyExitFullscreen is called, we call exitFullscreen on the topDocument(). That means
-  // that the events will be queued there. So if we have no events here, start the timer on the
-  // exiting document.
+  // When fullyExitFullscreen is called, we call exitFullscreen on the
+  // topDocument(). That means that the events will be queued there. So if we
+  // have no events here, start the timer on the exiting document.
   Document* exitingDocument = document();
   if (m_eventQueue.isEmpty())
     exitingDocument = &topmostLocalAncestor(*document());
@@ -640,7 +652,8 @@ void Fullscreen::enqueueChangeEvent(Document& document,
     event = createEvent(EventTypeNames::webkitfullscreenchange, *target);
   }
   m_eventQueue.append(event);
-  // NOTE: The timer is started in didEnterFullscreenForElement/didExitFullscreen.
+  // NOTE: The timer is started in
+  // didEnterFullscreenForElement/didExitFullscreen.
 }
 
 void Fullscreen::enqueueErrorEvent(Element& element, RequestType requestType) {
@@ -661,7 +674,8 @@ void Fullscreen::eventQueueTimerFired(TimerBase*) {
     Event* event = eventQueue.takeFirst();
     Node* target = event->target()->toNode();
 
-    // If the element was removed from our tree, also message the documentElement.
+    // If the element was removed from our tree, also message the
+    // documentElement.
     if (!target->isConnected() && document()->documentElement()) {
       DCHECK(isPrefixed(event->type()));
       eventQueue.append(
@@ -673,17 +687,18 @@ void Fullscreen::eventQueueTimerFired(TimerBase*) {
 }
 
 void Fullscreen::elementRemoved(Element& oldNode) {
-  // Whenever the removing steps run with an |oldNode| and |oldNode| is in its node document's
-  // fullscreen element stack, run these steps:
+  // Whenever the removing steps run with an |oldNode| and |oldNode| is in its
+  // node document's fullscreen element stack, run these steps:
 
-  // 1. If |oldNode| is at the top of its node document's fullscreen element stack, act as if the
-  //    exitFullscreen() method was invoked on that document.
+  // 1. If |oldNode| is at the top of its node document's fullscreen element
+  // stack, act as if the exitFullscreen() method was invoked on that document.
   if (fullscreenElement() == &oldNode) {
     exitFullscreen(oldNode.document());
     return;
   }
 
-  // 2. Otherwise, remove |oldNode| from its node document's fullscreen element stack.
+  // 2. Otherwise, remove |oldNode| from its node document's fullscreen element
+  // stack.
   for (size_t i = 0; i < m_fullscreenElementStack.size(); ++i) {
     if (m_fullscreenElementStack[i].first.get() == &oldNode) {
       m_fullscreenElementStack.remove(i);

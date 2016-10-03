@@ -37,8 +37,8 @@ class CORE_EXPORT ActiveDOMObject : public ContextLifecycleObserver {
  public:
   ActiveDOMObject(ExecutionContext*);
 
-  // suspendIfNeeded() should be called exactly once after object construction to synchronize
-  // the suspend state with that in ExecutionContext.
+  // suspendIfNeeded() should be called exactly once after object construction
+  // to synchronize the suspend state with that in ExecutionContext.
   void suspendIfNeeded();
 #if DCHECK_IS_ON()
   bool suspendIfNeededCalled() const { return m_suspendIfNeededCalled; }

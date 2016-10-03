@@ -3,8 +3,10 @@
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
  *           (C) 2006 Alexey Proskuryakov (ap@webkit.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012 Apple Inc. All rights reserved.
- * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012 Apple Inc. All
+ * rights reserved.
+ * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved.
+ * (http://www.torchmobile.com/)
  * Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies)
  * Copyright (C) 2011 Google Inc. All rights reserved.
  *
@@ -275,10 +277,10 @@ class CORE_EXPORT StyleEngine final
   Member<Document> m_document;
   bool m_isMaster;
 
-  // Track the number of currently loading top-level stylesheets needed for layout.
-  // Sheets loaded using the @import directive are not included in this count.
-  // We use this count of pending sheets to detect when we can begin attaching
-  // elements and when it is safe to execute scripts.
+  // Track the number of currently loading top-level stylesheets needed for
+  // layout.  Sheets loaded using the @import directive are not included in this
+  // count.  We use this count of pending sheets to detect when we can begin
+  // attaching elements and when it is safe to execute scripts.
   int m_pendingScriptBlockingStylesheets = 0;
   int m_pendingRenderBlockingStylesheets = 0;
 

@@ -68,7 +68,8 @@ bool SelectRuleFeatureSet::checkSelectorsForClassChange(
   if (!oldClasses.size())
     return checkSelectorsForClassChange(newClasses);
 
-  // Class vectors tend to be very short. This is faster than using a hash table.
+  // Class vectors tend to be very short. This is faster than using a hash
+  // table.
   BitVector remainingClassBits;
   remainingClassBits.ensureSize(oldClasses.size());
 

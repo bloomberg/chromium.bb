@@ -20,7 +20,8 @@ namespace blink {
 // Saturate the length of a paragraph to save time.
 const unsigned kTextContentLengthSaturation = 1000;
 
-// Filter out short P elements. The threshold is set to around 2 English sentences.
+// Filter out short P elements. The threshold is set to around 2 English
+// sentences.
 const unsigned kParagraphLengthThreshold = 140;
 
 class DocumentStatisticsCollectorTest : public ::testing::Test {
@@ -100,17 +101,26 @@ TEST_F(DocumentStatisticsCollectorTest, CountElements) {
 TEST_F(DocumentStatisticsCollectorTest, CountScore) {
   setHtmlInnerHTML(
       "<p class='menu' id='article'>1</p>"  // textContentLength = 1
-      "<ul><li><p>12</p></li></ul>"  // textContentLength = 2, skipped because under li
-      "<p class='menu'>123</p>"  // textContentLength = 3, skipped because unlikelyCandidates
+      "<ul><li><p>12</p></li></ul>"  // textContentLength = 2, skipped because
+                                     // under li
+      "<p class='menu'>123</p>"      // textContentLength = 3, skipped because
+                                     // unlikelyCandidates
       "<p>"
       "12345678901234567890123456789012345678901234567890"
       "12345678901234567890123456789012345678901234567890"
       "12345678901234567890123456789012345678901234"
       "</p>"                               // textContentLength = 144
-      "<p style='display:none'>12345</p>"  // textContentLength = 5, skipped because invisible
-      "<div style='display:none'><p>123456</p></div>"  // textContentLength = 6, skipped because invisible
-      "<div style='visibility:hidden'><p>1234567</p></div>"  // textContentLength = 7, skipped because invisible
-      "<p style='opacity:0'>12345678</p>"  // textContentLength = 8, skipped because invisible
+      "<p style='display:none'>12345</p>"  // textContentLength = 5, skipped
+                                           // because invisible
+      "<div style='display:none'><p>123456</p></div>"  // textContentLength = 6,
+                                                       // skipped because
+                                                       // invisible
+      "<div style='visibility:hidden'><p>1234567</p></div>"  // textContentLength
+                                                             // = 7, skipped
+                                                             // because
+                                                             // invisible
+      "<p style='opacity:0'>12345678</p>"  // textContentLength = 8, skipped
+                                           // because invisible
       "<p><a href='#'>1234 </a>6 <b> 9</b></p>"  // textContentLength = 9
       "<ul><li></li><p>123456789012</p></ul>"    // textContentLength = 12
       );

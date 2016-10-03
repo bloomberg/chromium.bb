@@ -3,8 +3,10 @@
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
  *           (C) 2006 Alexey Proskuryakov (ap@webkit.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012 Apple Inc. All rights reserved.
- * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012 Apple Inc. All
+ * rights reserved.
+ * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved.
+ * (http://www.torchmobile.com/)
  * Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies)
  * Copyright (C) 2011 Google Inc. All rights reserved.
  *
@@ -184,7 +186,8 @@ using ExceptionCode = int;
 enum StyleResolverUpdateMode {
   // Discards the StyleResolver and rebuilds it.
   FullStyleUpdate,
-  // Attempts to use StyleInvalidationAnalysis to avoid discarding the entire StyleResolver.
+  // Attempts to use StyleInvalidationAnalysis to avoid discarding the entire
+  // StyleResolver.
   AnalyzedStyleUpdate
 };
 
@@ -738,7 +741,8 @@ class CORE_EXPORT Document : public ContainerNode,
   void clearDOMWindow() { m_domWindow = nullptr; }
   LocalDOMWindow* domWindow() const { return m_domWindow; }
 
-  // Helper functions for forwarding LocalDOMWindow event related tasks to the LocalDOMWindow if it exists.
+  // Helper functions for forwarding LocalDOMWindow event related tasks to the
+  // LocalDOMWindow if it exists.
   void setWindowAttributeEventListener(const AtomicString& eventType,
                                        EventListener*);
   EventListener* getWindowAttributeEventListener(const AtomicString& eventType);
@@ -833,8 +837,8 @@ class CORE_EXPORT Document : public ContainerNode,
   const KURL firstPartyForCookies() const;
 
   // The following implements the rule from HTML 4 for what valid names are.
-  // To get this right for all the XML cases, we probably have to improve this or move it
-  // and make it sensitive to the type of document.
+  // To get this right for all the XML cases, we probably have to improve this
+  // or move it and make it sensitive to the type of document.
   static bool isValidName(const String&);
 
   // The following breaks a qualified name into a prefix and a local name.
@@ -849,11 +853,13 @@ class CORE_EXPORT Document : public ContainerNode,
   static bool hasValidNamespaceForElements(const QualifiedName&);
   static bool hasValidNamespaceForAttributes(const QualifiedName&);
 
-  // "body element" as defined by HTML5 (https://html.spec.whatwg.org/multipage/dom.html#the-body-element-2).
+  // "body element" as defined by HTML5
+  // (https://html.spec.whatwg.org/multipage/dom.html#the-body-element-2).
   // That is, the first body or frameset child of the document element.
   HTMLElement* body() const;
 
-  // "HTML body element" as defined by CSSOM View spec (http://dev.w3.org/csswg/cssom-view/#the-html-body-element).
+  // "HTML body element" as defined by CSSOM View spec
+  // (http://dev.w3.org/csswg/cssom-view/#the-html-body-element).
   // That is, the first body child of the document element.
   HTMLBodyElement* firstBodyElement() const;
 
@@ -862,10 +868,12 @@ class CORE_EXPORT Document : public ContainerNode,
 
   HTMLHeadElement* head() const;
 
-  // Decide which element is to define the viewport's overflow policy. If |rootStyle| is set, use
-  // that as the style for the root element, rather than obtaining it on our own. The reason for
-  // this is that style may not have been associated with the elements yet - in which case it may
-  // have been calculated on the fly (without associating it with the actual element) somewhere.
+  // Decide which element is to define the viewport's overflow policy. If
+  // |rootStyle| is set, use that as the style for the root element, rather than
+  // obtaining it on our own. The reason for this is that style may not have
+  // been associated with the elements yet - in which case it may have been
+  // calculated on the fly (without associating it with the actual element)
+  // somewhere.
   Element* viewportDefiningElement(
       const ComputedStyle* rootStyle = nullptr) const;
 
@@ -951,7 +959,8 @@ class CORE_EXPORT Document : public ContainerNode,
   bool isDNSPrefetchEnabled() const { return m_isDNSPrefetchEnabled; }
   void parseDNSPrefetchControlHeader(const String&);
 
-  // FIXME(crbug.com/305497): This should be removed once LocalDOMWindow is an ExecutionContext.
+  // FIXME(crbug.com/305497): This should be removed once LocalDOMWindow is an
+  // ExecutionContext.
   void postTask(const WebTraceLocation&,
                 std::unique_ptr<ExecutionContextTask>,
                 const String& taskNameForInstrumentation = emptyString())
@@ -1045,7 +1054,8 @@ class CORE_EXPORT Document : public ContainerNode,
   void enqueueResizeEvent();
   void enqueueScrollEventForNode(Node*);
   void enqueueAnimationFrameEvent(Event*);
-  // Only one event for a target/event type combination will be dispatched per frame.
+  // Only one event for a target/event type combination will be dispatched per
+  // frame.
   void enqueueUniqueAnimationFrameEvent(Event*);
   void enqueueMediaQueryChangeListeners(
       HeapVector<Member<MediaQueryListListener>>&);
@@ -1060,7 +1070,8 @@ class CORE_EXPORT Document : public ContainerNode,
   void exitPointerLock();
   Element* pointerLockElement() const;
 
-  // Used to allow element that loads data without going through a FrameLoader to delay the 'load' event.
+  // Used to allow element that loads data without going through a FrameLoader
+  // to delay the 'load' event.
   void incrementLoadEventDelayCount() { ++m_loadEventDelayCount; }
   void decrementLoadEventDelayCount();
   void checkLoadEventSoon();
@@ -1157,7 +1168,8 @@ class CORE_EXPORT Document : public ContainerNode,
   }
   HTMLDialogElement* activeModalDialog() const;
 
-  // A non-null m_templateDocumentHost implies that |this| was created by ensureTemplateDocument().
+  // A non-null m_templateDocumentHost implies that |this| was created by
+  // ensureTemplateDocument().
   bool isTemplateDocument() const { return !!m_templateDocumentHost; }
   Document& ensureTemplateDocument();
   Document* templateDocumentHost() { return m_templateDocumentHost; }
@@ -1339,10 +1351,11 @@ class CORE_EXPORT Document : public ContainerNode,
 
   ShadowCascadeOrder m_shadowCascadeOrder = ShadowCascadeNone;
 
-  const KURL& virtualURL() const
-      final;  // Same as url(), but needed for ExecutionContext to implement it without a performance loss for direct calls.
-  KURL virtualCompleteURL(const String&)
-      const final;  // Same as completeURL() for the same reason as above.
+  // Same as url(), but needed for ExecutionContext to implement it without a
+  // performance loss for direct calls.
+  const KURL& virtualURL() const final;
+  // Same as completeURL() for the same reason as above.
+  KURL virtualCompleteURL(const String&) const final;
 
   void updateTitle(const String&);
   void updateFocusAppearanceTimerFired(TimerBase*);
@@ -1385,8 +1398,8 @@ class CORE_EXPORT Document : public ContainerNode,
   bool m_evaluateMediaQueriesOnStyleRecalc;
 
   // If we do ignore the pending stylesheet count, then we need to add a boolean
-  // to track that this happened so that we can do a full repaint when the stylesheets
-  // do eventually load.
+  // to track that this happened so that we can do a full repaint when the
+  // stylesheets do eventually load.
   PendingSheetLayout m_pendingSheetLayout;
 
   Member<LocalFrame> m_frame;
@@ -1402,10 +1415,10 @@ class CORE_EXPORT Document : public ContainerNode,
   // Document URLs.
   KURL m_url;  // Document.URL: The URL from which this document was retrieved.
   KURL m_baseURL;  // Node.baseURI: The URL to use when resolving relative URLs.
-  KURL
-      m_baseURLOverride;  // An alternative base URL that takes precedence over m_baseURL (but not m_baseElementURL).
-  KURL m_baseElementURL;  // The URL set by the <base> element.
-  KURL m_cookieURL;       // The URL to use for cookie access.
+  KURL m_baseURLOverride;  // An alternative base URL that takes precedence over
+                           // m_baseURL (but not m_baseElementURL).
+  KURL m_baseElementURL;   // The URL set by the <base> element.
+  KURL m_cookieURL;        // The URL to use for cookie access.
   std::unique_ptr<OriginAccessEntry> m_accessEntryFromURL;
 
   AtomicString m_baseTarget;
@@ -1423,8 +1436,8 @@ class CORE_EXPORT Document : public ContainerNode,
   bool m_paginatedForScreen;
 
   CompatibilityMode m_compatibilityMode;
-  bool
-      m_compatibilityModeLocked;  // This is cheaper than making setCompatibilityMode virtual.
+  // This is cheaper than making setCompatibilityMode virtual.
+  bool m_compatibilityModeLocked;
 
   std::unique_ptr<CancellableTaskFactory>
       m_executeScriptsWaitingForResourcesTask;
@@ -1546,8 +1559,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   WeakMember<Document> m_contextDocument;
 
-  bool
-      m_hasFullscreenSupplement;  // For early return in Fullscreen::fromIfExists()
+  // For early return in Fullscreen::fromIfExists()
+  bool m_hasFullscreenSupplement;
 
   HeapVector<Member<Element>> m_topLayerElements;
 
@@ -1625,9 +1638,9 @@ extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;
 
 inline bool Document::shouldOverrideLegacyDescription(
     ViewportDescription::Type origin) const {
-  // The different (legacy) meta tags have different priorities based on the type
-  // regardless of which order they appear in the DOM. The priority is given by the
-  // ViewportDescription::Type enum.
+  // The different (legacy) meta tags have different priorities based on the
+  // type regardless of which order they appear in the DOM. The priority is
+  // given by the ViewportDescription::Type enum.
   return origin >= m_legacyViewportDescription.type;
 }
 
@@ -1650,10 +1663,12 @@ DEFINE_NODE_TYPE_CASTS(Document, isDocumentNode());
   DEFINE_TYPE_CASTS(thisType, Document, document, document->is##thisType(), \
                     document.is##thisType())
 
-// This is needed to avoid ambiguous overloads with the Node and TreeScope versions.
+// This is needed to avoid ambiguous overloads with the Node and TreeScope
+// versions.
 DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES(Document)
 
-// Put these methods here, because they require the Document definition, but we really want to inline them.
+// Put these methods here, because they require the Document definition, but we
+// really want to inline them.
 
 inline bool Node::isDocumentNode() const {
   return this == document();

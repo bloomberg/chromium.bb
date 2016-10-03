@@ -69,7 +69,8 @@ class CORE_EXPORT DocumentLifecycle {
     PaintInvalidationClean,
 
     // In InPrePaint step, any data needed by painting are prepared.
-    // When RuntimeEnabledFeatures::slimmingPaintV2Enabled, paint property trees are built.
+    // When RuntimeEnabledFeatures::slimmingPaintV2Enabled, paint property trees
+    // are built.
     // Otherwise these steps are not applicable.
     InPrePaint,
     PrePaintClean,
@@ -218,8 +219,8 @@ class CORE_EXPORT DocumentLifecycle {
 };
 
 inline bool DocumentLifecycle::stateAllowsTreeMutations() const {
-  // FIXME: We should not allow mutations in InPreLayout or AfterPerformLayout either,
-  // but we need to fix MediaList listeners and plugins first.
+  // FIXME: We should not allow mutations in InPreLayout or AfterPerformLayout
+  // either, but we need to fix MediaList listeners and plugins first.
   return m_state != InStyleRecalc && m_state != InPerformLayout &&
          m_state != InCompositingUpdate && m_state != InPrePaint &&
          m_state != InPaint;

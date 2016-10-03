@@ -4,7 +4,8 @@
  *           (C) 2001 Peter Kelly (pmk@post.com)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
  *           (C) 2007 David Smith (catfish.man@gmail.com)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012, 2013 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012, 2013 Apple Inc.
+ * All rights reserved.
  *           (C) 2007 Eric Seidel (eric@webkit.org)
  *
  * This library is free software; you can redistribute it and/or
@@ -229,8 +230,8 @@ short Element::tabIndex() const {
 }
 
 bool Element::layoutObjectIsFocusable() const {
-  // Elements in canvas fallback content are not rendered, but they are allowed to be
-  // focusable as long as their canvas is displayed and visible.
+  // Elements in canvas fallback content are not rendered, but they are allowed
+  // to be focusable as long as their canvas is displayed and visible.
   if (isInCanvasSubtree()) {
     const HTMLCanvasElement* canvas =
         Traversal<HTMLCanvasElement>::firstAncestorOrSelf(*this);
@@ -241,7 +242,8 @@ bool Element::layoutObjectIsFocusable() const {
   }
 
   // FIXME: Even if we are not visible, we might have a child that is visible.
-  // Hyatt wants to fix that some day with a "has visible content" flag or the like.
+  // Hyatt wants to fix that some day with a "has visible content" flag or the
+  // like.
   return layoutObject() &&
          layoutObject()->style()->visibility() == EVisibility::Visible;
 }
@@ -258,8 +260,8 @@ Element* Element::cloneElementWithChildren() {
 
 Element* Element::cloneElementWithoutChildren() {
   Element* clone = cloneElementWithoutAttributesAndChildren();
-  // This will catch HTML elements in the wrong namespace that are not correctly copied.
-  // This is a sanity check as HTML overloads some of the DOM methods.
+  // This will catch HTML elements in the wrong namespace that are not correctly
+  // copied.  This is a sanity check as HTML overloads some of the DOM methods.
   DCHECK_EQ(isHTMLElement(), clone->isHTMLElement());
 
   clone->cloneDataFromElement(*this);
@@ -383,8 +385,8 @@ inline void Element::synchronizeAttribute(const QualifiedName& name) const {
 }
 
 void Element::synchronizeAttribute(const AtomicString& localName) const {
-  // This version of synchronizeAttribute() is streamlined for the case where you don't have a full QualifiedName,
-  // e.g when called from DOM API.
+  // This version of synchronizeAttribute() is streamlined for the case where
+  // you don't have a full QualifiedName, e.g when called from DOM API.
   if (!elementData())
     return;
   if (elementData()->m_styleAttributeIsDirty &&
@@ -395,7 +397,8 @@ void Element::synchronizeAttribute(const AtomicString& localName) const {
     return;
   }
   if (elementData()->m_animatedSVGAttributesAreDirty) {
-    // We're not passing a namespace argument on purpose. SVGNames::*Attr are defined w/o namespaces as well.
+    // We're not passing a namespace argument on purpose. SVGNames::*Attr are
+    // defined w/o namespaces as well.
 
     // FIXME: this code is called regardless of whether name is an
     // animated SVG Attribute. It would seem we should only call this method
@@ -558,7 +561,8 @@ void Element::nativeApplyScroll(ScrollState& scrollState) {
   if (delta.isZero())
     return;
 
-  // TODO(esprehn): This should use updateStyleAndLayoutIgnorePendingStylesheetsForNode.
+  // TODO(esprehn): This should use
+  // updateStyleAndLayoutIgnorePendingStylesheetsForNode.
   document().updateStyleAndLayoutIgnorePendingStylesheets();
 
   LayoutBox* boxToScroll = nullptr;
@@ -700,8 +704,10 @@ int Element::clientTop() {
 }
 
 int Element::clientWidth() {
-  // When in strict mode, clientWidth for the document element should return the width of the containing frame.
-  // When in quirks mode, clientWidth for the body element should return the width of the containing frame.
+  // When in strict mode, clientWidth for the document element should return the
+  // width of the containing frame.
+  // When in quirks mode, clientWidth for the body element should return the
+  // width of the containing frame.
   bool inQuirksMode = document().inQuirksMode();
   if ((!inQuirksMode && document().documentElement() == this) ||
       (inQuirksMode && isHTMLElement() && document().body() == this)) {
@@ -733,8 +739,10 @@ int Element::clientWidth() {
 }
 
 int Element::clientHeight() {
-  // When in strict mode, clientHeight for the document element should return the height of the containing frame.
-  // When in quirks mode, clientHeight for the body element should return the height of the containing frame.
+  // When in strict mode, clientHeight for the document element should return
+  // the height of the containing frame.
+  // When in quirks mode, clientHeight for the body element should return the
+  // height of the containing frame.
   bool inQuirksMode = document().inQuirksMode();
 
   if ((!inQuirksMode && document().documentElement() == this) ||
@@ -1294,7 +1302,8 @@ void Element::attributeChanged(const QualifiedName& name,
 
   invalidateNodeListCachesInAncestors(&name, this);
 
-  // If there is currently no StyleResolver, we can't be sure that this attribute change won't affect style.
+  // If there is currently no StyleResolver, we can't be sure that this
+  // attribute change won't affect style.
   if (!document().styleResolver())
     setNeedsStyleRecalc(SubtreeStyleChange,
                         StyleChangeReasonForTracing::fromAttribute(name));
@@ -1477,7 +1486,8 @@ void Element::parserSetAttributes(const Vector<Attribute>& attributeVector) {
 
   parserDidSetAttributes();
 
-  // Use attributeVector instead of m_elementData because attributeChanged might modify m_elementData.
+  // Use attributeVector instead of m_elementData because attributeChanged might
+  // modify m_elementData.
   for (const auto& attribute : attributeVector)
     attributeChangedFromParserOrByCloning(attribute.name(), attribute.value(),
                                           ModifiedDirectly);
@@ -1701,17 +1711,20 @@ void Element::detachLayoutTree(const AttachContext& context) {
     ElementRareData* data = elementRareData();
     data->clearPseudoElements();
 
-    // attachLayoutTree() will clear the computed style for us when inside recalcStyle.
+    // attachLayoutTree() will clear the computed style for us when inside
+    // recalcStyle.
     if (!document().inStyleRecalc())
       data->clearComputedStyle();
 
     if (ElementAnimations* elementAnimations = data->elementAnimations()) {
       if (context.performingReattach) {
-        // FIXME: We call detach from within style recalc, so compositingState is not up to date.
+        // FIXME: We call detach from within style recalc, so compositingState
+        // is not up to date.
         // https://code.google.com/p/chromium/issues/detail?id=339847
         DisableCompositingQueryAsserts disabler;
 
-        // FIXME: restart compositor animations rather than pull back to the main thread
+        // FIXME: restart compositor animations rather than pull back to the
+        // main thread
         elementAnimations->restartAnimationOnCompositor();
       } else {
         elementAnimations->cssAnimations().cancel();
@@ -1790,8 +1803,9 @@ PassRefPtr<ComputedStyle> Element::styleForLayoutObject() {
 
   RefPtr<ComputedStyle> style;
 
-  // FIXME: Instead of clearing updates that may have been added from calls to styleForElement
-  // outside recalcStyle, we should just never set them if we're not inside recalcStyle.
+  // FIXME: Instead of clearing updates that may have been added from calls to
+  // styleForElement outside recalcStyle, we should just never set them if we're
+  // not inside recalcStyle.
   if (ElementAnimations* elementAnimations = this->elementAnimations())
     elementAnimations->cssAnimations().clearPendingUpdate();
 
@@ -1849,7 +1863,8 @@ void Element::recalcStyle(StyleRecalcChange change, Text* nextTextSibling) {
     clearNeedsStyleRecalc();
   }
 
-  // If we reattached we don't need to recalc the style of our descendants anymore.
+  // If we reattached we don't need to recalc the style of our descendants
+  // anymore.
   if ((change >= UpdatePseudoElements && change < Reattach) ||
       childNeedsStyleRecalc()) {
     SelectorFilterParentScope filterScope(*this);
@@ -1931,9 +1946,9 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change) {
   }
 
   if (localChange == Reattach) {
-    // TODO(nainar): Remove the style parameter being passed into buildLayoutTree().
-    // ComputedStyle will now be stored on Node and accessed in buildLayoutTree()
-    // using mutableComputedStyle().
+    // TODO(nainar): Remove the style parameter being passed into
+    // buildLayoutTree().  ComputedStyle will now be stored on Node and accessed
+    // in buildLayoutTree() using mutableComputedStyle().
     return buildLayoutTree(*newStyle);
   }
 
@@ -1948,8 +1963,9 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change) {
         svgFilterNeedsLayerUpdate()) {
       layoutObject->setStyle(newStyle.get());
     } else {
-      // Although no change occurred, we use the new style so that the cousin style sharing code won't get
-      // fooled into believing this style is the same.
+      // Although no change occurred, we use the new style so that the cousin
+      // style sharing code won't get fooled into believing this style is the
+      // same.
       // FIXME: We may be able to remove this hack, see discussion in
       // https://codereview.chromium.org/30453002/
       layoutObject->setStyleInternal(newStyle.get());
@@ -2323,8 +2339,9 @@ Attr* Element::setAttributeNode(Attr* attrNode,
   if (oldAttrNode == attrNode)
     return attrNode;  // This Attr is already attached to the element.
 
-  // InUseAttributeError: Raised if node is an Attr that is already an attribute of another Element object.
-  // The DOM user must explicitly clone Attr nodes to re-use them in other elements.
+  // InUseAttributeError: Raised if node is an Attr that is already an attribute
+  // of another Element object.  The DOM user must explicitly clone Attr nodes
+  // to re-use them in other elements.
   if (attrNode->ownerElement()) {
     exceptionState.throwDOMException(
         InUseAttributeError,
@@ -2613,15 +2630,17 @@ void Element::updateFocusAppearance(
     if (!frame)
       return;
 
-    // When focusing an editable element in an iframe, don't reset the selection if it already contains a selection.
+    // When focusing an editable element in an iframe, don't reset the selection
+    // if it already contains a selection.
     if (this == frame->selection().rootEditableElement())
       return;
 
     // FIXME: We should restore the previous selection if there is one.
     VisibleSelection newSelection = createVisibleSelectionDeprecated(
         firstPositionInOrBeforeNode(this), TextAffinity::Downstream);
-    // Passing DoNotSetFocus as this function is called after FocusController::setFocusedElement()
-    // and we don't want to change the focus to a new Element.
+    // Passing DoNotSetFocus as this function is called after
+    // FocusController::setFocusedElement() and we don't want to change the
+    // focus to a new Element.
     frame->selection().setSelection(newSelection,
                                     FrameSelection::CloseTyping |
                                         FrameSelection::ClearTypingStyle |
@@ -2650,7 +2669,8 @@ void Element::blur() {
 
 bool Element::supportsFocus() const {
   // FIXME: supportsFocus() can be called when layout is not up to date.
-  // Logic that deals with the layoutObject should be moved to layoutObjectIsFocusable().
+  // Logic that deals with the layoutObject should be moved to
+  // layoutObjectIsFocusable().
   // But supportsFocus must return true when the element is editable, or else
   // it won't be focusable. Furthermore, supportsFocus cannot just return true
   // always or else tabIndex() will change for all HTML elements.
@@ -2666,7 +2686,8 @@ bool Element::supportsSpatialNavigationFocus() const {
   // for the element to be focusable, introduced by spatial navigation feature,
   // i.e. checks if click or keyboard event handler is specified.
   // This is the way to make it possible to navigate to (focus) elements
-  // which web designer meant for being active (made them respond to click events).
+  // which web designer meant for being active (made them respond to click
+  // events).
   if (!isSpatialNavigationEnabled(document().frame()) ||
       spatialNavigationIgnoresEventHandlers(document().frame()))
     return false;
@@ -2960,7 +2981,8 @@ bool Element::hasProcessedPointerCapture(int pointerId) const {
 }
 
 String Element::innerText() {
-  // We need to update layout, since plainText uses line boxes in the layout tree.
+  // We need to update layout, since plainText uses line boxes in the layout
+  // tree.
   document().updateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
 
   if (!layoutObject())
@@ -3064,13 +3086,15 @@ const ComputedStyle* Element::ensureComputedStyle(
     return element->ensureComputedStyle();
 
   if (!inActiveDocument()) {
-    // FIXME: Try to do better than this. Ensure that styleForElement() works for elements that are not in the
-    // document tree and figure out when to destroy the computed style for such elements.
+    // FIXME: Try to do better than this. Ensure that styleForElement() works
+    // for elements that are not in the document tree and figure out when to
+    // destroy the computed style for such elements.
     return nullptr;
   }
 
-  // FIXME: Find and use the layoutObject from the pseudo element instead of the actual element so that the 'length'
-  // properties, which are only known by the layoutObject because it did the layout, will be correct and so that the
+  // FIXME: Find and use the layoutObject from the pseudo element instead of the
+  // actual element so that the 'length' properties, which are only known by the
+  // layoutObject because it did the layout, will be correct and so that the
   // values returned for the ":selection" pseudo-element will be correct.
   ComputedStyle* elementStyle = mutableComputedStyle();
   if (!elementStyle) {
@@ -3100,7 +3124,8 @@ const ComputedStyle* Element::ensureComputedStyle(
 AtomicString Element::computeInheritedLanguage() const {
   const Node* n = this;
   AtomicString value;
-  // The language property is inherited, so we iterate over the parents to find the first language.
+  // The language property is inherited, so we iterate over the parents to find
+  // the first language.
   do {
     if (n->isElementNode()) {
       if (const ElementData* elementData = toElement(n)->elementData()) {
@@ -3146,14 +3171,15 @@ void Element::updatePseudoElement(PseudoId pseudoId, StyleRecalcChange change) {
     if (element->needsStyleRecalc())
       layoutObject()->mutableStyle()->removeCachedPseudoStyle(pseudoId);
 
-    // PseudoElement styles hang off their parent element's style so if we needed
-    // a style recalc we should Force one on the pseudo.
-    // FIXME: We should figure out the right text sibling to pass.
+    // PseudoElement styles hang off their parent element's style so if we
+    // needed a style recalc we should Force one on the pseudo.  FIXME: We
+    // should figure out the right text sibling to pass.
     element->recalcStyle(change == UpdatePseudoElements ? Force : change);
 
-    // Wait until our parent is not displayed or pseudoElementLayoutObjectIsNeeded
-    // is false, otherwise we could continuously create and destroy PseudoElements
-    // when LayoutObject::isChildAllowed on our parent returns false for the
+    // Wait until our parent is not displayed or
+    // pseudoElementLayoutObjectIsNeeded is false, otherwise we could
+    // continuously create and destroy PseudoElements when
+    // LayoutObject::isChildAllowed on our parent returns false for the
     // PseudoElement's layoutObject for each style recalc.
     if (!layoutObject() ||
         !pseudoElementLayoutObjectIsNeeded(
@@ -3162,10 +3188,10 @@ void Element::updatePseudoElement(PseudoId pseudoId, StyleRecalcChange change) {
   } else if (pseudoId == PseudoIdFirstLetter && element &&
              change >= UpdatePseudoElements &&
              !FirstLetterPseudoElement::firstLetterTextLayoutObject(*element)) {
-    // This can happen if we change to a float, for example. We need to cleanup the
-    // first-letter pseudoElement and then fix the text of the original remaining
-    // text layoutObject.
-    // This can be seen in Test 7 of fast/css/first-letter-removed-added.html
+    // This can happen if we change to a float, for example. We need to cleanup
+    // the first-letter pseudoElement and then fix the text of the original
+    // remaining text layoutObject.  This can be seen in Test 7 of
+    // fast/css/first-letter-removed-added.html
     elementRareData()->setPseudoElement(pseudoId, nullptr);
   } else if (change >= UpdatePseudoElements) {
     createPseudoElementIfNeeded(pseudoId);
@@ -3198,7 +3224,8 @@ void Element::createPseudoElementIfNeeded(PseudoId pseudoId) {
   if (isPseudoElement())
     return;
 
-  // Document::ensureStyleResolver is not inlined and shows up on profiles, avoid it here.
+  // Document::ensureStyleResolver is not inlined and shows up on profiles,
+  // avoid it here.
   PseudoElement* element =
       document().styleEngine().ensureResolver().createPseudoElementIfNeeded(
           *this, pseudoId);
@@ -3257,8 +3284,8 @@ DOMStringMap& Element::dataset() {
 }
 
 KURL Element::hrefURL() const {
-  // FIXME: These all have href() or url(), but no common super class. Why doesn't
-  // <link> implement URLUtils?
+  // FIXME: These all have href() or url(), but no common super class. Why
+  // doesn't <link> implement URLUtils?
   if (isHTMLAnchorElement(*this) || isHTMLAreaElement(*this) ||
       isHTMLLinkElement(*this))
     return getURLAttribute(hrefAttr);
@@ -3359,8 +3386,9 @@ void Element::setIsInTopLayer(bool inTopLayer) {
     return;
   setElementFlag(IsInTopLayer, inTopLayer);
 
-  // We must ensure a reattach occurs so the layoutObject is inserted in the correct sibling order under LayoutView according to its
-  // top layer position, or in its usual place if not in the top layer.
+  // We must ensure a reattach occurs so the layoutObject is inserted in the
+  // correct sibling order under LayoutView according to its top layer position,
+  // or in its usual place if not in the top layer.
   lazyReattachIfAttached();
 }
 
@@ -3522,7 +3550,8 @@ static bool needsURLResolutionForInlineStyle(const Element& element,
   if (!style)
     return false;
   for (unsigned i = 0; i < style->propertyCount(); ++i) {
-    // FIXME: Should handle all URL-based properties: CSSImageSetValue, CSSCursorImageValue, etc.
+    // FIXME: Should handle all URL-based properties: CSSImageSetValue,
+    // CSSCursorImageValue, etc.
     if (style->propertyAt(i).value().isImageValue())
       return true;
   }
@@ -3533,7 +3562,8 @@ static void reResolveURLsInInlineStyle(const Document& document,
                                        MutableStylePropertySet& style) {
   for (unsigned i = 0; i < style.propertyCount(); ++i) {
     StylePropertySet::PropertyReference property = style.propertyAt(i);
-    // FIXME: Should handle all URL-based properties: CSSImageSetValue, CSSCursorImageValue, etc.
+    // FIXME: Should handle all URL-based properties: CSSImageSetValue,
+    // CSSCursorImageValue, etc.
     if (property.value().isImageValue())
       toCSSImageValue(property.value()).reResolveURL(document);
   }
@@ -3679,15 +3709,18 @@ void Element::cloneAttributesFromElement(const Element& other) {
   if (!oldName.isNull() || !newName.isNull())
     updateName(oldName, newName);
 
-  // Quirks mode makes class and id not case sensitive. We can't share the ElementData
-  // if the idForStyleResolution and the className need different casing.
+  // Quirks mode makes class and id not case sensitive. We can't share the
+  // ElementData if the idForStyleResolution and the className need different
+  // casing.
   bool ownerDocumentsHaveDifferentCaseSensitivity = false;
   if (other.hasClass() || other.hasID())
     ownerDocumentsHaveDifferentCaseSensitivity =
         other.document().inQuirksMode() != document().inQuirksMode();
 
-  // If 'other' has a mutable ElementData, convert it to an immutable one so we can share it between both elements.
-  // We can only do this if there are no presentation attributes and sharing the data won't result in different case sensitivity of class or id.
+  // If 'other' has a mutable ElementData, convert it to an immutable one so we
+  // can share it between both elements.
+  // We can only do this if there are no presentation attributes and sharing the
+  // data won't result in different case sensitivity of class or id.
   if (other.m_elementData->isUnique() &&
       !ownerDocumentsHaveDifferentCaseSensitivity &&
       !other.m_elementData->presentationAttributeStyle())
@@ -3769,12 +3802,13 @@ inline void Element::setInlineStyleFromString(
   DCHECK(isStyledElement());
   Member<StylePropertySet>& inlineStyle = elementData()->m_inlineStyle;
 
-  // Avoid redundant work if we're using shared attribute data with already parsed inline style.
+  // Avoid redundant work if we're using shared attribute data with already
+  // parsed inline style.
   if (inlineStyle && !elementData()->isUnique())
     return;
 
-  // We reconstruct the property set instead of mutating if there is no CSSOM wrapper.
-  // This makes wrapperless property sets immutable and so cacheable.
+  // We reconstruct the property set instead of mutating if there is no CSSOM
+  // wrapper.  This makes wrapperless property sets immutable and so cacheable.
   if (inlineStyle && !inlineStyle->isMutable())
     inlineStyle.clear();
 
@@ -3894,7 +3928,8 @@ void Element::removeAllInlineStyleProperties() {
 
 void Element::updatePresentationAttributeStyle() {
   synchronizeAllAttributes();
-  // ShareableElementData doesn't store presentation attribute style, so make sure we have a UniqueElementData.
+  // ShareableElementData doesn't store presentation attribute style, so make
+  // sure we have a UniqueElementData.
   UniqueElementData& elementData = ensureUniqueElementData();
   elementData.m_presentationAttributeStyleIsDirty = false;
   elementData.m_presentationAttributeStyle =

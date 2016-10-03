@@ -63,7 +63,8 @@ class IntersectionObserverCallbackImpl final
 void parseRootMargin(String rootMarginParameter,
                      Vector<Length>& rootMargin,
                      ExceptionState& exceptionState) {
-  // TODO(szager): Make sure this exact syntax and behavior is spec-ed somewhere.
+  // TODO(szager): Make sure this exact syntax and behavior is spec-ed
+  // somewhere.
 
   // The root margin argument accepts syntax similar to that for CSS margin:
   //
@@ -404,8 +405,8 @@ static LayoutUnit computeMargin(const Length& length,
 }
 
 void IntersectionObserver::applyRootMargin(LayoutRect& rect) const {
-  // TODO(szager): Make sure the spec is clear that left/right margins are resolved against
-  // width and not height.
+  // TODO(szager): Make sure the spec is clear that left/right margins are
+  // resolved against width and not height.
   LayoutUnit topMargin = computeMargin(m_topMargin, rect.height());
   LayoutUnit rightMargin = computeMargin(m_rightMargin, rect.width());
   LayoutUnit bottomMargin = computeMargin(m_bottomMargin, rect.height());

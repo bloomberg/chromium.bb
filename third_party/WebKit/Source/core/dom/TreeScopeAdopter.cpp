@@ -2,9 +2,11 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All
+ * rights reserved.
  * Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
- * Copyright (C) 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2009 Torch Mobile Inc. All rights reserved.
+ * (http://www.torchmobile.com/)
  * Copyright (C) 2011 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
@@ -37,10 +39,12 @@ namespace blink {
 void TreeScopeAdopter::moveTreeToNewScope(Node& root) const {
   DCHECK(needsScopeChange());
 
-  // If an element is moved from a document and then eventually back again the collection cache for
-  // that element may contain stale data as changes made to it will have updated the DOMTreeVersion
-  // of the document it was moved to. By increasing the DOMTreeVersion of the donating document here
-  // we ensure that the collection cache will be invalidated as needed when the element is moved back.
+  // If an element is moved from a document and then eventually back again the
+  // collection cache for that element may contain stale data as changes made to
+  // it will have updated the DOMTreeVersion of the document it was moved to. By
+  // increasing the DOMTreeVersion of the donating document here we ensure that
+  // the collection cache will be invalidated as needed when the element is
+  // moved back.
   Document& oldDocument = oldScope().document();
   Document& newDocument = newScope().document();
   bool willMoveToNewDocument = oldDocument != newDocument;

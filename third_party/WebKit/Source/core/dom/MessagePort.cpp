@@ -129,7 +129,9 @@ WebMessagePortChannelUniquePtr MessagePort::disentangle() {
 }
 
 // Invoked to notify us that there are messages available for this port.
-// This code may be called from another thread, and so should not call any non-threadsafe APIs (i.e. should not call into the entangled channel or access mutable variables).
+// This code may be called from another thread, and so should not call any
+// non-threadsafe APIs (i.e. should not call into the entangled channel or
+// access mutable variables).
 void MessagePort::messageAvailable() {
   DCHECK(getExecutionContext());
   getExecutionContext()->postTask(
@@ -197,19 +199,23 @@ bool MessagePort::tryGetMessage(
 }
 
 void MessagePort::dispatchMessages() {
-  // Because close() doesn't cancel any in flight calls to dispatchMessages() we need to check if the port is still open before dispatch.
+  // Because close() doesn't cancel any in flight calls to dispatchMessages() we
+  // need to check if the port is still open before dispatch.
   if (m_closed)
     return;
 
-  // Messages for contexts that are not fully active get dispatched too, but JSAbstractEventListener::handleEvent() doesn't call handlers for these.
-  // The HTML5 spec specifies that any messages sent to a document that is not fully active should be dropped, so this behavior is OK.
+  // Messages for contexts that are not fully active get dispatched too, but
+  // JSAbstractEventListener::handleEvent() doesn't call handlers for these.
+  // The HTML5 spec specifies that any messages sent to a document that is not
+  // fully active should be dropped, so this behavior is OK.
   if (!started())
     return;
 
   RefPtr<SerializedScriptValue> message;
   std::unique_ptr<MessagePortChannelArray> channels;
   while (tryGetMessage(message, channels)) {
-    // close() in Worker onmessage handler should prevent next message from dispatching.
+    // close() in Worker onmessage handler should prevent next message from
+    // dispatching.
     if (getExecutionContext()->isWorkerGlobalScope() &&
         toWorkerGlobalScope(getExecutionContext())->isClosing())
       return;
@@ -223,8 +229,11 @@ void MessagePort::dispatchMessages() {
 }
 
 bool MessagePort::hasPendingActivity() const {
-  // The spec says that entangled message ports should always be treated as if they have a strong reference.
-  // We'll also stipulate that the queue needs to be open (if the app drops its reference to the port before start()-ing it, then it's not really entangled as it's unreachable).
+  // The spec says that entangled message ports should always be treated as if
+  // they have a strong reference.
+  // We'll also stipulate that the queue needs to be open (if the app drops its
+  // reference to the port before start()-ing it, then it's not really entangled
+  // as it's unreachable).
   return m_started && isEntangled();
 }
 
@@ -237,7 +246,8 @@ std::unique_ptr<MessagePortChannelArray> MessagePort::disentanglePorts(
 
   HeapHashSet<Member<MessagePort>> visited;
 
-  // Walk the incoming array - if there are any duplicate ports, or null ports or cloned ports, throw an error (per section 8.3.3 of the HTML5 spec).
+  // Walk the incoming array - if there are any duplicate ports, or null ports
+  // or cloned ports, throw an error (per section 8.3.3 of the HTML5 spec).
   for (unsigned i = 0; i < ports.size(); ++i) {
     MessagePort* port = ports[i];
     if (!port || port->isNeutered() || visited.contains(port)) {

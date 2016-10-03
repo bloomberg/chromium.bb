@@ -454,8 +454,10 @@ TEST_F(FlatTreeTraversalTest, redistribution) {
   EXPECT_EQ(s21, FlatTreeTraversal::nextSibling(*m10));
   EXPECT_EQ(m10, FlatTreeTraversal::previousSibling(*s21));
 
-  // FlatTreeTraversal::traverseSiblings does not work for a node which is not in a document flat tree.
-  // e.g. The following test fails. The result of FlatTreeTraversal::previousSibling(*m11)) will be #m10, instead of nullptr.
+  // FlatTreeTraversal::traverseSiblings does not work for a node which is not
+  // in a document flat tree.
+  // e.g. The following test fails. The result of
+  // FlatTreeTraversal::previousSibling(*m11)) will be #m10, instead of nullptr.
   // Element* m11 = body->querySelector("#m11");
   // EXPECT_EQ(nullptr, FlatTreeTraversal::previousSibling(*m11));
 }

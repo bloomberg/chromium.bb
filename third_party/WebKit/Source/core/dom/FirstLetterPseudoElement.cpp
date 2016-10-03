@@ -2,7 +2,8 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2007 David Smith (catfish.man@gmail.com)
- * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc.
+ * All rights reserved.
  * Copyright (C) Research In Motion Limited 2010. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
@@ -39,9 +40,10 @@ namespace blink {
 using namespace WTF;
 using namespace Unicode;
 
-// CSS 2.1 http://www.w3.org/TR/CSS21/selector.html#first-letter
-// "Punctuation (i.e, characters defined in Unicode [UNICODE] in the "open" (Ps), "close" (Pe),
-// "initial" (Pi). "final" (Pf) and "other" (Po) punctuation classes), that precedes or follows the first letter should be included"
+// CSS 2.1 http://www.w3.org/TR/CSS21/selector.html#first-letter "Punctuation
+// (i.e, characters defined in Unicode [UNICODE] in the "open" (Ps), "close"
+// (Pe), "initial" (Pi). "final" (Pf) and "other" (Po) punctuation classes),
+// that precedes or follows the first letter should be included"
 static inline bool isPunctuationForFirstLetter(UChar c) {
   CharCategory charCategory = category(c);
   return charCategory == Punctuation_Open ||
@@ -69,7 +71,8 @@ unsigned FirstLetterPseudoElement::firstLetterLength(const String& text) {
   while (length < textLength && isPunctuationForFirstLetter(text[length]))
     length++;
 
-  // Bail if we didn't find a letter before the end of the text or before a space.
+  // Bail if we didn't find a letter before the end of the text or before a
+  // space.
   if (isSpaceForFirstLetter(text[length]) || length == textLength)
     return 0;
 
@@ -85,8 +88,8 @@ unsigned FirstLetterPseudoElement::firstLetterLength(const String& text) {
   return length;
 }
 
-// Once we see any of these layoutObjects we can stop looking for first-letter as
-// they signal the end of the first line of text.
+// Once we see any of these layoutObjects we can stop looking for first-letter
+// as they signal the end of the first line of text.
 static bool isInvalidFirstLetterLayoutObject(const LayoutObject* obj) {
   return (obj->isBR() || (obj->isText() && toLayoutText(obj)->isWordBreak()));
 }
@@ -112,9 +115,10 @@ LayoutObject* FirstLetterPseudoElement::firstLetterTextLayoutObject(
   LayoutObject* firstLetterTextLayoutObject =
       parentLayoutObject->slowFirstChild();
   while (firstLetterTextLayoutObject) {
-    // This can be called when the first letter layoutObject is already in the tree. We do not
-    // want to consider that layoutObject for our text layoutObject so we go to the sibling (which is
-    // the LayoutTextFragment for the remaining text).
+    // This can be called when the first letter layoutObject is already in the
+    // tree. We do not want to consider that layoutObject for our text
+    // layoutObject so we go to the sibling (which is the LayoutTextFragment for
+    // the remaining text).
     if (firstLetterTextLayoutObject->style() &&
         firstLetterTextLayoutObject->style()->styleType() ==
             PseudoIdFirstLetter) {
@@ -153,8 +157,9 @@ LayoutObject* FirstLetterPseudoElement::firstLetterTextLayoutObject(
                firstLetterTextLayoutObject->style()->hasPseudoStyle(
                    PseudoIdFirstLetter) &&
                canHaveGeneratedChildren(*firstLetterTextLayoutObject)) {
-      // There is a layoutObject further down the tree which has PseudoIdFirstLetter set. When that node
-      // is attached we will handle setting up the first letter then.
+      // There is a layoutObject further down the tree which has
+      // PseudoIdFirstLetter set. When that node is attached we will handle
+      // setting up the first letter then.
       return nullptr;
     } else {
       firstLetterTextLayoutObject =
@@ -163,7 +168,8 @@ LayoutObject* FirstLetterPseudoElement::firstLetterTextLayoutObject(
   }
 
   // No first letter text to display, we're done.
-  // FIXME: This black-list of disallowed LayoutText subclasses is fragile. crbug.com/422336.
+  // FIXME: This black-list of disallowed LayoutText subclasses is fragile.
+  // crbug.com/422336.
   // Should counter be on this list? What about LayoutTextFragment?
   if (!firstLetterTextLayoutObject || !firstLetterTextLayoutObject->isText() ||
       isInvalidFirstLetterLayoutObject(firstLetterTextLayoutObject))
@@ -269,9 +275,10 @@ void FirstLetterPseudoElement::attachFirstLetterTextLayoutObjects() {
   DCHECK(nextLayoutObject);
   DCHECK(nextLayoutObject->isText());
 
-  // The original string is going to be either a generated content string or a DOM node's
-  // string. We want the original string before it got transformed in case first-letter has
-  // no text-transform or a different text-transform applied to it.
+  // The original string is going to be either a generated content string or a
+  // DOM node's string. We want the original string before it got transformed in
+  // case first-letter has no text-transform or a different text-transform
+  // applied to it.
   String oldText = toLayoutText(nextLayoutObject)->isTextFragment()
                        ? toLayoutTextFragment(nextLayoutObject)->completeText()
                        : toLayoutText(nextLayoutObject)->originalText();
@@ -280,7 +287,8 @@ void FirstLetterPseudoElement::attachFirstLetterTextLayoutObjects() {
   ComputedStyle* pseudoStyle = styleForFirstLetter(nextLayoutObject->parent());
   layoutObject()->setStyle(pseudoStyle);
 
-  // FIXME: This would already have been calculated in firstLetterLayoutObject. Can we pass the length through?
+  // FIXME: This would already have been calculated in firstLetterLayoutObject.
+  // Can we pass the length through?
   unsigned length = FirstLetterPseudoElement::firstLetterLength(oldText);
 
   // Construct a text fragment for the text after the first letter.
@@ -315,8 +323,10 @@ void FirstLetterPseudoElement::didRecalcStyle(StyleRecalcChange) {
   if (!layoutObject())
     return;
 
-  // The layoutObjects inside pseudo elements are anonymous so they don't get notified of recalcStyle and must have
-  // the style propagated downward manually similar to LayoutObject::propagateStyleToAnonymousChildren.
+  // The layoutObjects inside pseudo elements are anonymous so they don't get
+  // notified of recalcStyle and must have
+  // the style propagated downward manually similar to
+  // LayoutObject::propagateStyleToAnonymousChildren.
   LayoutObject* layoutObject = this->layoutObject();
   for (LayoutObject* child = layoutObject->nextInPreOrder(layoutObject); child;
        child = child->nextInPreOrder(layoutObject)) {

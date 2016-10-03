@@ -40,7 +40,8 @@ MainThreadTaskRunner::MainThreadTaskRunner(ExecutionContext* context)
       m_pendingTasksTimer(this, &MainThreadTaskRunner::pendingTasksTimerFired),
       m_suspended(false),
       m_weakFactory(this)
-      // Bind a WeakPtr now to avoid data races creating a WeakPtr inside postTask.
+      // Bind a WeakPtr now to avoid data races creating a WeakPtr inside
+      // postTask.
       ,
       m_weakPtr(m_weakFactory.createWeakPtr()) {}
 

@@ -2,8 +2,10 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012 Apple Inc. All rights reserved.
- * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012 Apple Inc.
+ * All rights reserved.
+ * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved.
+ * (http://www.torchmobile.com/)
  * Copyright (C) 2014 Samsung Electronics. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
@@ -54,10 +56,11 @@ class NodeTraversal {
  public:
   using TraversalNodeType = Node;
 
-  // Does a pre-order traversal of the tree to find the next node after this one.
-  // This uses the same order that tags appear in the source file. If the stayWithin
-  // argument is non-null, the traversal will stop once the specified node is reached.
-  // This can be used to restrict traversal to a particular sub-tree.
+  // Does a pre-order traversal of the tree to find the next node after this
+  // one.  This uses the same order that tags appear in the source file. If the
+  // stayWithin argument is non-null, the traversal will stop once the specified
+  // node is reached.  This can be used to restrict traversal to a particular
+  // sub-tree.
   static Node* next(const Node& current) {
     return traverseNextTemplate(current);
   }
@@ -80,7 +83,8 @@ class NodeTraversal {
   static Node* lastWithin(const ContainerNode&);
   static Node& lastWithinOrSelf(Node&);
 
-  // Does a reverse pre-order traversal to find the node that comes before the current one in document order
+  // Does a reverse pre-order traversal to find the node that comes before the
+  // current one in document order
   static Node* previous(const Node&, const Node* stayWithin = 0);
 
   // Like previous, but skips children and starts with the next sibling.

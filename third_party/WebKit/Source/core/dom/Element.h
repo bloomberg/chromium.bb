@@ -141,7 +141,8 @@ class CORE_EXPORT Element : public ContainerNode {
   bool hasAttribute(const QualifiedName&) const;
   const AtomicString& getAttribute(const QualifiedName&) const;
 
-  // Passing nullAtom as the second parameter removes the attribute when calling either of these set methods.
+  // Passing nullAtom as the second parameter removes the attribute when calling
+  // either of these set methods.
   void setAttribute(const QualifiedName&, const AtomicString& value);
   void setSynchronizedLazyAttribute(const QualifiedName&,
                                     const AtomicString& value);
@@ -159,8 +160,8 @@ class CORE_EXPORT Element : public ContainerNode {
   void setFloatingPointAttribute(const QualifiedName& attributeName,
                                  double value);
 
-  // Call this to get the value of an attribute that is known not to be the style
-  // attribute or one of the SVG animatable attributes.
+  // Call this to get the value of an attribute that is known not to be the
+  // style attribute or one of the SVG animatable attributes.
   bool fastHasAttribute(const QualifiedName&) const;
   const AtomicString& fastGetAttribute(const QualifiedName&) const;
 #if DCHECK_IS_ON()
@@ -200,18 +201,19 @@ class CORE_EXPORT Element : public ContainerNode {
 
   bool shouldIgnoreAttributeCase() const;
 
-  // Call this to get the value of the id attribute for style resolution purposes.
-  // The value will already be lowercased if the document is in compatibility mode,
-  // so this function is not suitable for non-style uses.
+  // Call this to get the value of the id attribute for style resolution
+  // purposes.  The value will already be lowercased if the document is in
+  // compatibility mode, so this function is not suitable for non-style uses.
   const AtomicString& idForStyleResolution() const;
 
   // This getter takes care of synchronizing all attributes before returning the
-  // AttributeCollection. If the Element has no attributes, an empty AttributeCollection
-  // will be returned. This is not a trivial getter and its return value should be cached
-  // for performance.
+  // AttributeCollection. If the Element has no attributes, an empty
+  // AttributeCollection will be returned. This is not a trivial getter and its
+  // return value should be cached for performance.
   AttributeCollection attributes() const;
-  // This variant will not update the potentially invalid attributes. To be used when not interested
-  // in style attribute or one of the SVG animation attributes.
+  // This variant will not update the potentially invalid attributes. To be used
+  // when not interested in style attribute or one of the SVG animation
+  // attributes.
   AttributeCollection attributesWithoutUpdate() const;
 
   void scrollIntoView(bool alignToTop = true);
@@ -289,7 +291,8 @@ class CORE_EXPORT Element : public ContainerNode {
     return ContainerNode::hasTagName(tagName);
   }
 
-  // Should be called only by Document::createElementNS to fix up m_tagName immediately after construction.
+  // Should be called only by Document::createElementNS to fix up m_tagName
+  // immediately after construction.
   void setTagNameForCreateElementNS(const QualifiedName&);
 
   // A fast function for checking the local name against another atomic string.
@@ -371,7 +374,8 @@ class CORE_EXPORT Element : public ContainerNode {
   // Only called by the parser immediately after element construction.
   void parserSetAttributes(const Vector<Attribute>&);
 
-  // Remove attributes that might introduce scripting from the vector leaving the element unchanged.
+  // Remove attributes that might introduce scripting from the vector leaving
+  // the element unchanged.
   void stripScriptingAttributes(Vector<Attribute>&) const;
 
   bool sharesSameElementData(const Element& other) const {
@@ -381,7 +385,8 @@ class CORE_EXPORT Element : public ContainerNode {
   // Clones attributes only.
   void cloneAttributesFromElement(const Element&);
 
-  // Clones all attribute-derived data, including subclass specifics (through copyNonAttributeProperties.)
+  // Clones all attribute-derived data, including subclass specifics (through
+  // copyNonAttributeProperties.)
   void cloneDataFromElement(const Element&);
 
   bool hasEquivalentAttributes(const Element* other) const;
@@ -405,9 +410,10 @@ class CORE_EXPORT Element : public ContainerNode {
 
   ElementShadow* shadow() const;
   ElementShadow& ensureShadow();
-  // If type of ShadowRoot (either closed or open) is explicitly specified, creation of multiple
-  // shadow roots is prohibited in any combination and throws an exception. Multiple shadow roots
-  // are allowed only when createShadowRoot() is used without any parameters from JavaScript.
+  // If type of ShadowRoot (either closed or open) is explicitly specified,
+  // creation of multiple shadow roots is prohibited in any combination and
+  // throws an exception.  Multiple shadow roots are allowed only when
+  // createShadowRoot() is used without any parameters from JavaScript.
   ShadowRoot* createShadowRoot(const ScriptState*, ExceptionState&);
   ShadowRoot* attachShadow(const ScriptState*,
                            const ShadowRootInit&,
@@ -427,12 +433,14 @@ class CORE_EXPORT Element : public ContainerNode {
 
   bool isInDescendantTreeOf(const Element* shadowHost) const;
 
-  // Returns the Element’s ComputedStyle. If the ComputedStyle is not already stored on the Element,
-  // computes the ComputedStyle and stores it on the Element’s ElementRareData. Used for getComputedStyle
-  // when Element is display none.
+  // Returns the Element’s ComputedStyle. If the ComputedStyle is not already
+  // stored on the Element, computes the ComputedStyle and stores it on the
+  // Element’s ElementRareData.  Used for getComputedStyle when Element is
+  // display none.
   const ComputedStyle* ensureComputedStyle(PseudoId = PseudoIdNone);
 
-  // Methods for indicating the style is affected by dynamic updates (e.g., children changing, our position changing in our sibling list, etc.)
+  // Methods for indicating the style is affected by dynamic updates (e.g.,
+  // children changing, our position changing in our sibling list, etc.)
   bool styleAffectedByEmpty() const {
     return hasElementFlag(StyleAffectedByEmpty);
   }
@@ -493,8 +501,8 @@ class CORE_EXPORT Element : public ContainerNode {
 
   // Whether this element can receive focus at all. Most elements are not
   // focusable but some elements, such as form controls and links, are. Unlike
-  // layoutObjectIsFocusable(), this method may be called when layout is not up to
-  // date, so it must not use the layoutObject to determine focusability.
+  // layoutObjectIsFocusable(), this method may be called when layout is not up
+  // to date, so it must not use the layoutObject to determine focusability.
   virtual bool supportsFocus() const;
   // isFocusable(), isKeyboardFocusable(), and isMouseFocusable() check
   // whether the element can actually be focused. Callers should ensure
@@ -574,12 +582,12 @@ class CORE_EXPORT Element : public ContainerNode {
   virtual void didBecomeFullscreenElement() {}
   virtual void willStopBeingFullscreenElement() {}
 
-  // Called by the parser when this element's close tag is reached,
-  // signaling that all child tags have been parsed and added.
-  // This is needed for <applet> and <object> elements, which can't lay themselves out
-  // until they know all of their nested <param>s. [Radar 3603191, 4040848].
-  // Also used for script elements and some SVG elements for similar purposes,
-  // but making parsing a special case in this respect should be avoided if possible.
+  // Called by the parser when this element's close tag is reached, signaling
+  // that all child tags have been parsed and added.  This is needed for
+  // <applet> and <object> elements, which can't lay themselves out until they
+  // know all of their nested <param>s. [Radar 3603191, 4040848].  Also used for
+  // script elements and some SVG elements for similar purposes, but making
+  // parsing a special case in this respect should be avoided if possible.
   virtual void finishParsingChildren();
 
   void beginParsingChildren() { setIsFinishedParsingChildren(false); }
@@ -617,8 +625,9 @@ class CORE_EXPORT Element : public ContainerNode {
 
   bool canContainRangeEndPoint() const override { return true; }
 
-  // Used for disabled form elements; if true, prevents mouse events from being dispatched
-  // to event listeners, and prevents DOMActivate events from being sent at all.
+  // Used for disabled form elements; if true, prevents mouse events from being
+  // dispatched to event listeners, and prevents DOMActivate events from being
+  // sent at all.
   virtual bool isDisabledFormControl() const { return false; }
 
   bool hasPendingResources() const {
@@ -877,8 +886,8 @@ class CORE_EXPORT Element : public ContainerNode {
   inline void removeCallbackSelectors();
   inline void addCallbackSelectors();
 
-  // cloneNode is private so that non-virtual cloneElementWithChildren and cloneElementWithoutChildren
-  // are used instead.
+  // cloneNode is private so that non-virtual cloneElementWithChildren and
+  // cloneElementWithoutChildren are used instead.
   Node* cloneNode(bool deep) override;
   virtual Element* cloneElementWithoutAttributesAndChildren();
 
@@ -1123,8 +1132,9 @@ inline bool isAtShadowBoundary(const Element* element) {
   return parentNode && parentNode->isShadowRoot();
 }
 
-// These macros do the same as their NODE equivalents but additionally provide a template specialization
-// for isElementOfType<>() so that the Traversal<> API works for these Element types.
+// These macros do the same as their NODE equivalents but additionally provide a
+// template specialization for isElementOfType<>() so that the Traversal<> API
+// works for these Element types.
 #define DEFINE_ELEMENT_TYPE_CASTS(thisType, predicate)            \
   template <>                                                     \
   inline bool isElementOfType<const thisType>(const Node& node) { \

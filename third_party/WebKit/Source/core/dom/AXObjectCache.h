@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2003, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights
+ * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -108,9 +109,11 @@ class CORE_EXPORT AXObjectCache
 
   virtual const Element* rootAXEditableElement(const Node*) = 0;
 
-  // Called by a node when text or a text equivalent (e.g. alt) attribute is changed.
+  // Called by a node when text or a text equivalent (e.g. alt) attribute is
+  // changed.
   virtual void textChanged(LayoutObject*) = 0;
-  // Called when a node has just been attached, so we can make sure we have the right subclass of AXObject.
+  // Called when a node has just been attached, so we can make sure we have the
+  // right subclass of AXObject.
   virtual void updateCacheAfterNodeIsAttached(Node*) = 0;
 
   virtual void handleAttributeChanged(const QualifiedName& attrName,

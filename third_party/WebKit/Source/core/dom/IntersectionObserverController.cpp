@@ -30,9 +30,9 @@ void IntersectionObserverController::scheduleIntersectionObserverForDelivery(
     IntersectionObserver& observer) {
   m_pendingIntersectionObservers.add(&observer);
   if (!m_weakPtrFactory.hasWeakPtrs()) {
-    // TODO(ojan): These tasks decide whether to throttle a subframe, so they need to
-    // be unthrottled, but we should throttle all the other tasks (e.g. ones coming from
-    // the web page).
+    // TODO(ojan): These tasks decide whether to throttle a subframe, so they
+    // need to be unthrottled, but we should throttle all the other tasks
+    // (e.g. ones coming from the web page).
     TaskRunnerHelper::get(TaskType::Unthrottled, getExecutionContext())
         ->postTask(BLINK_FROM_HERE,
                    WTF::bind(&IntersectionObserverController::
@@ -42,8 +42,8 @@ void IntersectionObserverController::scheduleIntersectionObserverForDelivery(
 }
 
 void IntersectionObserverController::resume() {
-  // If the callback fired while DOM objects were suspended, notifications might be late, so deliver
-  // them right away (rather than waiting to fire again).
+  // If the callback fired while DOM objects were suspended, notifications might
+  // be late, so deliver them right away (rather than waiting to fire again).
   if (m_callbackFiredWhileSuspended) {
     m_callbackFiredWhileSuspended = false;
     deliverIntersectionObservations();

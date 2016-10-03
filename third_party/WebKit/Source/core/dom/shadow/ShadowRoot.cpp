@@ -152,8 +152,10 @@ Node::InsertionNotificationRequest ShadowRoot::insertedInto(
   if (!insertionPoint->isConnected() || !isOldest())
     return InsertionDone;
 
-  // FIXME: When parsing <video controls>, insertedInto() is called many times without invoking removedFrom.
-  // For now, we check m_registeredWithParentShadowroot. We would like to DCHECK(!m_registeredShadowRoot) here.
+  // FIXME: When parsing <video controls>, insertedInto() is called many times
+  // without invoking removedFrom.  For now, we check
+  // m_registeredWithParentShadowroot. We would like to
+  // DCHECK(!m_registeredShadowRoot) here.
   // https://bugs.webkit.org/show_bug.cig?id=101316
   if (m_registeredWithParentShadowRoot)
     return InsertionDone;

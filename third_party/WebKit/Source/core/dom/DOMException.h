@@ -55,11 +55,13 @@ class CORE_EXPORT DOMException final
   unsigned short code() const { return m_code; }
   String name() const { return m_name; }
 
-  // This is the message that's exposed to JavaScript: never return unsanitized data.
+  // This is the message that's exposed to JavaScript: never return unsanitized
+  // data.
   String message() const { return m_sanitizedMessage; }
   String toString() const;
 
-  // This is the message that's exposed to the console: if an unsanitized message is present, we prefer it.
+  // This is the message that's exposed to the console: if an unsanitized
+  // message is present, we prefer it.
   String messageForConsole() const {
     return !m_unsanitizedMessage.isEmpty() ? m_unsanitizedMessage
                                            : m_sanitizedMessage;

@@ -115,7 +115,8 @@ static HTMLSlotElement* finalDestinationSlotFor(const Node& node) {
 }
 
 // TODO(hayato): This may return a wrong result for a node which is not in a
-// document flat tree.  See FlatTreeTraversalTest's redistribution test for details.
+// document flat tree.  See FlatTreeTraversalTest's redistribution test for
+// details.
 Node* FlatTreeTraversal::traverseSiblings(const Node& node,
                                           TraversalDirection direction) {
   if (node.isChildOfV1ShadowHost())
@@ -176,7 +177,8 @@ Node* FlatTreeTraversal::traverseSiblingsForV0Distribution(
 ContainerNode* FlatTreeTraversal::traverseParent(
     const Node& node,
     ParentTraversalDetails* details) {
-  // TODO(hayato): Stop this hack for a pseudo element because a pseudo element is not a child of its parentOrShadowHostNode() in a flat tree.
+  // TODO(hayato): Stop this hack for a pseudo element because a pseudo element
+  // is not a child of its parentOrShadowHostNode() in a flat tree.
   if (node.isPseudoElement())
     return node.parentOrShadowHostNode();
 
@@ -209,7 +211,8 @@ ContainerNode* FlatTreeTraversal::traverseParentForV0(
     if (const InsertionPoint* insertionPoint = resolveReprojection(&node)) {
       if (details)
         details->didTraverseInsertionPoint(insertionPoint);
-      // The node is distributed. But the distribution was stopped at this insertion point.
+      // The node is distributed. But the distribution was stopped at this
+      // insertion point.
       if (shadowWhereNodeCanBeDistributedForV0(*insertionPoint))
         return nullptr;
       return traverseParent(*insertionPoint);

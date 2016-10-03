@@ -3,8 +3,10 @@
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
  *           (C) 2006 Alexey Proskuryakov (ap@webkit.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2011, 2012 Apple Inc. All rights reserved.
- * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2011, 2012 Apple Inc. All
+ * rights reserved.
+ * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved.
+ * (http://www.torchmobile.com/)
  * Copyright (C) 2008, 2009, 2011, 2012 Google Inc. All rights reserved.
  * Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies)
  * Copyright (C) Research In Motion Limited 2010-2011. All rights reserved.
@@ -266,25 +268,36 @@ using namespace HTMLNames;
 
 static const unsigned cMaxWriteRecursionDepth = 21;
 
-// This amount of time must have elapsed before we will even consider scheduling a layout without a delay.
-// FIXME: For faster machines this value can really be lowered to 200.  250 is adequate, but a little high
-// for dual G5s. :)
+// This amount of time must have elapsed before we will even consider scheduling
+// a layout without a delay.
+// FIXME: For faster machines this value can really be lowered to 200.  250 is
+// adequate, but a little high for dual G5s. :)
 static const int cLayoutScheduleThreshold = 250;
 
 // DOM Level 2 says (letters added):
 //
 // a) Name start characters must have one of the categories Ll, Lu, Lo, Lt, Nl.
-// b) Name characters other than Name-start characters must have one of the categories Mc, Me, Mn, Lm, or Nd.
-// c) Characters in the compatibility area (i.e. with character code greater than #xF900 and less than #xFFFE) are not allowed in XML names.
-// d) Characters which have a font or compatibility decomposition (i.e. those with a "compatibility formatting tag" in field 5 of the database -- marked by field 5 beginning with a "<") are not allowed.
-// e) The following characters are treated as name-start characters rather than name characters, because the property file classifies them as Alphabetic: [#x02BB-#x02C1], #x0559, #x06E5, #x06E6.
-// f) Characters #x20DD-#x20E0 are excluded (in accordance with Unicode, section 5.14).
-// g) Character #x00B7 is classified as an extender, because the property list so identifies it.
-// h) Character #x0387 is added as a name character, because #x00B7 is its canonical equivalent.
+// b) Name characters other than Name-start characters must have one of the
+//    categories Mc, Me, Mn, Lm, or Nd.
+// c) Characters in the compatibility area (i.e. with character code greater
+//    than #xF900 and less than #xFFFE) are not allowed in XML names.
+// d) Characters which have a font or compatibility decomposition (i.e. those
+//    with a "compatibility formatting tag" in field 5 of the database -- marked
+//    by field 5 beginning with a "<") are not allowed.
+// e) The following characters are treated as name-start characters rather than
+//    name characters, because the property file classifies them as Alphabetic:
+//    [#x02BB-#x02C1], #x0559, #x06E5, #x06E6.
+// f) Characters #x20DD-#x20E0 are excluded (in accordance with Unicode, section
+//    5.14).
+// g) Character #x00B7 is classified as an extender, because the property list
+//    so identifies it.
+// h) Character #x0387 is added as a name character, because #x00B7 is its
+//    canonical equivalent.
 // i) Characters ':' and '_' are allowed as name-start characters.
 // j) Characters '-' and '.' are allowed as name characters.
 //
-// It also contains complete tables. If we decide it's better, we could include those instead of the following code.
+// It also contains complete tables. If we decide it's better, we could include
+// those instead of the following code.
 
 static inline bool isValidNameStart(UChar32 c) {
   // rule (e) above
@@ -350,7 +363,8 @@ static bool shouldInheritSecurityOriginFromOwner(const KURL& url) {
   // http://www.whatwg.org/specs/web-apps/current-work/#origin-0
   //
   // If a Document has the address "about:blank"
-  //     The origin of the Document is the origin it was assigned when its browsing context was created.
+  //     The origin of the Document is the origin it was assigned when its
+  //     browsing context was created.
   //
   // Note: We generalize this to all "blank" URLs and invalid URLs because we
   // treat all of these URLs as about:blank.
@@ -384,11 +398,13 @@ static void runAutofocusTask(ExecutionContext* context) {
   }
 }
 
-// These are logged to UMA, so don't re-arrange them without creating a new histogram.
+// These are logged to UMA, so don't re-arrange them without creating a new
+// histogram.
 enum DocumentVisibilityForDeferredLoading {
   Created,
   WouldLoadBecauseVisible,
-  // TODO(dgrogan): Add WouldLoadBecauseTopOrLeft, WouldLoadBecauseDisplayNone, etc
+  // TODO(dgrogan): Add WouldLoadBecauseTopOrLeft, WouldLoadBecauseDisplayNone,
+  // etc
 
   DocumentVisibilityForDeferredLoadingEnd
 };
@@ -528,10 +544,10 @@ Document::Document(const DocumentInit& initializer,
   // m_fetcher.
   m_styleEngine = StyleEngine::create(*this);
 
-  // The parent's parser should be suspended together with all the other objects,
-  // else this new Document would have a new ExecutionContext which suspended state
-  // would not match the one from the parent, and could start loading resources
-  // ignoring the defersLoading flag.
+  // The parent's parser should be suspended together with all the other
+  // objects, else this new Document would have a new ExecutionContext which
+  // suspended state would not match the one from the parent, and could start
+  // loading resources ignoring the defersLoading flag.
   DCHECK(!parentDocument() ||
          !parentDocument()->activeDOMObjectsAreSuspended());
 
@@ -936,7 +952,8 @@ Node* Document::importNode(Node* importedNode,
     case kDocumentFragmentNode: {
       if (importedNode->isShadowRoot()) {
         // ShadowRoot nodes should not be explicitly importable.
-        // Either they are imported along with their host node, or created implicitly.
+        // Either they are imported along with their host node, or created
+        // implicitly.
         exceptionState.throwDOMException(
             NotSupportedError,
             "The node provided is a shadow root, which may not be imported.");
@@ -1014,18 +1031,18 @@ Node* Document::adoptNode(Node* source, ExceptionState& exceptionState) {
 bool Document::hasValidNamespaceForElements(const QualifiedName& qName) {
   // These checks are from DOM Core Level 2, createElementNS
   // http://www.w3.org/TR/DOM-Level-2-Core/core.html#ID-DocCrElNS
-  if (!qName.prefix().isEmpty() &&
-      qName.namespaceURI().isNull())  // createElementNS(null, "html:div")
+  // createElementNS(null, "html:div")
+  if (!qName.prefix().isEmpty() && qName.namespaceURI().isNull())
     return false;
+  // createElementNS("http://www.example.com", "xml:lang")
   if (qName.prefix() == xmlAtom &&
-      qName.namespaceURI() !=
-          XMLNames::
-              xmlNamespaceURI)  // createElementNS("http://www.example.com", "xml:lang")
+      qName.namespaceURI() != XMLNames::xmlNamespaceURI)
     return false;
 
   // Required by DOM Level 3 Core and unspecified by DOM Level 2 Core:
   // http://www.w3.org/TR/2004/REC-DOM-Level-3-Core-20040407/core.html#ID-DocCrElNS
-  // createElementNS("http://www.w3.org/2000/xmlns/", "foo:bar"), createElementNS(null, "xmlns:bar"), createElementNS(null, "xmlns")
+  // createElementNS("http://www.w3.org/2000/xmlns/", "foo:bar"),
+  // createElementNS(null, "xmlns:bar"), createElementNS(null, "xmlns")
   if (qName.prefix() == xmlnsAtom ||
       (qName.prefix().isEmpty() && qName.localName() == xmlnsAtom))
     return qName.namespaceURI() == XMLNSNames::xmlnsNamespaceURI;
@@ -1041,7 +1058,8 @@ Element* Document::createElement(const QualifiedName& qName,
                                  CreateElementFlags flags) {
   Element* e = nullptr;
 
-  // FIXME: Use registered namespaces and look up in a hash to find the right factory.
+  // FIXME: Use registered namespaces and look up in a hash to find the right
+  // factory.
   if (qName.namespaceURI() == xhtmlNamespaceURI)
     e = HTMLElementFactory::createHTMLElement(qName.localName(), *this, 0,
                                               flags);
@@ -1314,8 +1332,9 @@ void Document::setTitle(const String& title) {
 }
 
 void Document::setTitleElement(Element* titleElement) {
-  // If the root element is an svg element in the SVG namespace, then let value be the child text content
-  // of the first title element in the SVG namespace that is a child of the root element.
+  // If the root element is an svg element in the SVG namespace, then let value
+  // be the child text content of the first title element in the SVG namespace
+  // that is a child of the root element.
   if (isSVGSVGElement(documentElement())) {
     m_titleElement = Traversal<SVGTitleElement>::firstChild(*documentElement());
   } else {
@@ -1324,8 +1343,8 @@ void Document::setTitleElement(Element* titleElement) {
     else
       m_titleElement = titleElement;
 
-    // If the root element isn't an svg element in the SVG namespace and the title element is
-    // in the SVG namespace, it is ignored.
+    // If the root element isn't an svg element in the SVG namespace and the
+    // title element is in the SVG namespace, it is ignored.
     if (isSVGTitleElement(m_titleElement)) {
       m_titleElement = nullptr;
       return;
@@ -1505,7 +1524,8 @@ bool Document::needsFullLayoutTreeUpdate() const {
     return true;
   if (needsStyleInvalidation())
     return true;
-  // FIXME: The childNeedsDistributionRecalc bit means either self or children, we should fix that.
+  // FIXME: The childNeedsDistributionRecalc bit means either self or children,
+  // we should fix that.
   if (childNeedsDistributionRecalc())
     return true;
   if (DocumentAnimations::needsAnimationTimingUpdate(*this))
@@ -1518,7 +1538,8 @@ bool Document::shouldScheduleLayoutTreeUpdate() const {
     return false;
   if (inStyleRecalc())
     return false;
-  // InPreLayout will recalc style itself. There's no reason to schedule another recalc.
+  // InPreLayout will recalc style itself. There's no reason to schedule another
+  // recalc.
   if (m_lifecycle.state() == DocumentLifecycle::InPreLayout)
     return false;
   if (!shouldScheduleLayout())
@@ -1600,7 +1621,8 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change) {
 
   const ComputedStyle* backgroundStyle = documentElementStyle.get();
   // http://www.w3.org/TR/css3-background/#body-background
-  // <html> root element with no background steals background from its first <body> child.
+  // <html> root element with no background steals background from its first
+  // <body> child.
   // Also see LayoutBoxModelObject::backgroundStolenForBeingBody()
   if (isHTMLHtmlElement(documentElement()) && isHTMLBodyElement(body) &&
       !backgroundStyle->hasBackground())
@@ -1611,12 +1633,13 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change) {
   for (auto currentLayer = &backgroundLayers; currentLayer;
        currentLayer = currentLayer->next()) {
     // http://www.w3.org/TR/css3-background/#root-background
-    // The root element background always have painting area of the whole canvas.
+    // The root element background always have painting area of the whole
+    // canvas.
     currentLayer->setClip(BorderFillBox);
 
     // The root element doesn't scroll. It always propagates its layout overflow
-    // to the viewport. Positioning background against either box is equivalent to
-    // positioning against the scrolled box of the viewport.
+    // to the viewport. Positioning background against either box is equivalent
+    // to positioning against the scrolled box of the viewport.
     if (currentLayer->attachment() == ScrollBackgroundAttachment)
       currentLayer->setAttachment(LocalBackgroundAttachment);
   }
@@ -1630,21 +1653,23 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change) {
       DCHECK_EQ(element, documentElement());
       overflowStyle = documentElementStyle.get();
 
-      // The body element has its own scrolling box, independent from the viewport.
-      // This is a bit of a weird edge case in the CSS spec that we might want to try to
-      // eliminate some day (eg. for ScrollTopLeftInterop - see http://crbug.com/157855).
+      // The body element has its own scrolling box, independent from the
+      // viewport.  This is a bit of a weird edge case in the CSS spec that we
+      // might want to try to eliminate some day (eg. for ScrollTopLeftInterop -
+      // see http://crbug.com/157855).
       if (bodyStyle && !bodyStyle->isOverflowVisible())
         UseCounter::count(*this, UseCounter::BodyScrollsInAdditionToViewport);
     }
   }
 
-  // Resolved rem units are stored in the matched properties cache so we need to make sure to
-  // invalidate the cache if the documentElement needed to reattach or the font size changed
-  // and then trigger a full document recalc. We also need to clear it here since the
-  // call to styleForElement on the body above can cache bad values for rem units if the
-  // documentElement's style was dirty. We could keep track of which elements depend on
-  // rem units like we do for viewport styles, but we assume root font size changes are
-  // rare and just invalidate the cache for now.
+  // Resolved rem units are stored in the matched properties cache so we need to
+  // make sure to invalidate the cache if the documentElement needed to reattach
+  // or the font size changed and then trigger a full document recalc. We also
+  // need to clear it here since the call to styleForElement on the body above
+  // can cache bad values for rem units if the documentElement's style was
+  // dirty. We could keep track of which elements depend on rem units like we do
+  // for viewport styles, but we assume root font size changes are rare and just
+  // invalidate the cache for now.
   if (styleEngine().usesRemUnits() &&
       (documentElement()->needsAttach() ||
        !documentElement()->computedStyle() ||
@@ -1664,15 +1689,17 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change) {
     overflowAnchor = overflowStyle->overflowAnchor();
     overflowX = overflowStyle->overflowX();
     overflowY = overflowStyle->overflowY();
-    // Visible overflow on the viewport is meaningless, and the spec says to treat it as 'auto':
+    // Visible overflow on the viewport is meaningless, and the spec says to
+    // treat it as 'auto':
     if (overflowX == OverflowVisible)
       overflowX = OverflowAuto;
     if (overflowY == OverflowVisible)
       overflowY = OverflowAuto;
     if (overflowAnchor == AnchorVisible)
       overflowAnchor = AnchorAuto;
-    // Column-gap is (ab)used by the current paged overflow implementation (in lack of other
-    // ways to specify gaps between pages), so we have to propagate it too.
+    // Column-gap is (ab)used by the current paged overflow implementation (in
+    // lack of other ways to specify gaps between pages), so we have to
+    // propagate it too.
     columnGap = overflowStyle->columnGap();
   }
 
@@ -1753,9 +1780,10 @@ void Document::updateStyleAndLayoutTree() {
   DCHECK(isMainThread());
 
   ScriptForbiddenScope forbidScript;
-  // We should forbid script execution for plugins here because update while layout is changing,
-  // HTMLPlugin element can be reattached and plugin can be destroyed. Plugin can execute scripts
-  // on destroy. It produces crash without PluginScriptForbiddenScope: crbug.com/550427.
+  // We should forbid script execution for plugins here because update while
+  // layout is changing, HTMLPlugin element can be reattached and plugin can be
+  // destroyed. Plugin can execute scripts on destroy. It produces crash without
+  // PluginScriptForbiddenScope: crbug.com/550427.
   PluginScriptForbiddenScope pluginForbidScript;
 
   if (!view() || !isActive())
@@ -1766,9 +1794,10 @@ void Document::updateStyleAndLayoutTree() {
 
   if (!needsLayoutTreeUpdate()) {
     if (lifecycle().state() < DocumentLifecycle::StyleClean) {
-      // needsLayoutTreeUpdate may change to false without any actual layout tree update.
-      // For example, needsAnimationTimingUpdate may change to false when time elapses.
-      // Advance lifecycle to StyleClean because style is actually clean now.
+      // needsLayoutTreeUpdate may change to false without any actual layout
+      // tree update.  For example, needsAnimationTimingUpdate may change to
+      // false when time elapses.  Advance lifecycle to StyleClean because style
+      // is actually clean now.
       lifecycle().advanceTo(DocumentLifecycle::InStyleRecalc);
       lifecycle().advanceTo(DocumentLifecycle::StyleClean);
     }
@@ -1778,9 +1807,10 @@ void Document::updateStyleAndLayoutTree() {
   if (inStyleRecalc())
     return;
 
-  // Entering here from inside layout, paint etc. would be catastrophic since recalcStyle can
-  // tear down the layout tree or (unfortunately) run script. Kill the whole layoutObject if
-  // someone managed to get into here in states not allowing tree mutations.
+  // Entering here from inside layout, paint etc. would be catastrophic since
+  // recalcStyle can tear down the layout tree or (unfortunately) run
+  // script. Kill the whole layoutObject if someone managed to get into here in
+  // states not allowing tree mutations.
   RELEASE_ASSERT(lifecycle().stateAllowsTreeMutations());
 
   TRACE_EVENT_BEGIN1("blink,devtools.timeline", "UpdateLayoutTree", "beginData",
@@ -1798,19 +1828,23 @@ void Document::updateStyleAndLayoutTree() {
   updateStyleInvalidationIfNeeded();
 
   // FIXME: We should update style on our ancestor chain before proceeding
-  // however doing so currently causes several tests to crash, as LocalFrame::setDocument calls Document::attach
-  // before setting the LocalDOMWindow on the LocalFrame, or the SecurityOrigin on the document. The attach, in turn
-  // resolves style (here) and then when we resolve style on the parent chain, we may end up
-  // re-attaching our containing iframe, which when asked HTMLFrameElementBase::isURLAllowed
-  // hits a null-dereference due to security code always assuming the document has a SecurityOrigin.
+  // however doing so currently causes several tests to crash, as
+  // LocalFrame::setDocument calls Document::attach before setting the
+  // LocalDOMWindow on the LocalFrame, or the SecurityOrigin on the
+  // document. The attach, in turn resolves style (here) and then when we
+  // resolve style on the parent chain, we may end up re-attaching our
+  // containing iframe, which when asked HTMLFrameElementBase::isURLAllowed hits
+  // a null-dereference due to security code always assuming the document has a
+  // SecurityOrigin.
 
   updateStyle();
 
   notifyLayoutTreeOfSubtreeChanges();
 
-  // As a result of the style recalculation, the currently hovered element might have been
-  // detached (for example, by setting display:none in the :hover style), schedule another mouseMove event
-  // to check if any other elements ended up under the mouse pointer due to re-layout.
+  // As a result of the style recalculation, the currently hovered element might
+  // have been detached (for example, by setting display:none in the :hover
+  // style), schedule another mouseMove event to check if any other elements
+  // ended up under the mouse pointer due to re-layout.
   if (hoverNode() && !hoverNode()->layoutObject() && frame())
     frame()->eventHandler().dispatchFakeMouseMoveEventSoon();
 
@@ -1848,10 +1882,11 @@ void Document::updateStyle() {
 
   NthIndexCache nthIndexCache(*this);
 
-  // FIXME: Cannot access the ensureStyleResolver() before calling styleForDocument below because
-  // apparently the StyleResolver's constructor has side effects. We should fix it.
-  // See printing/setPrinting.html, printing/width-overflow.html though they only fail on
-  // mac when accessing the resolver by what appears to be a viewport size difference.
+  // FIXME: Cannot access the ensureStyleResolver() before calling
+  // styleForDocument below because apparently the StyleResolver's constructor
+  // has side effects. We should fix it.  See printing/setPrinting.html,
+  // printing/width-overflow.html though they only fail on mac when accessing
+  // the resolver by what appears to be a viewport size difference.
 
   if (change == Force) {
     m_hasNodesWithPlaceholderStyle = false;
@@ -2034,22 +2069,24 @@ void Document::updateStyleAndLayoutTreeIgnorePendingStylesheets() {
   StyleEngine::IgnoringPendingStylesheet ignoring(styleEngine());
 
   if (styleEngine().hasPendingScriptBlockingSheets()) {
-    // FIXME: We are willing to attempt to suppress painting with outdated style info only once.
-    // Our assumption is that it would be dangerous to try to stop it a second time, after page
-    // content has already been loaded and displayed with accurate style information. (Our
-    // suppression involves blanking the whole page at the moment. If it were more refined, we
-    // might be able to do something better.) It's worth noting though that this entire method
-    // is a hack, since what we really want to do is suspend JS instead of doing a layout with
-    // inaccurate information.
+    // FIXME: We are willing to attempt to suppress painting with outdated style
+    // info only once.  Our assumption is that it would be dangerous to try to
+    // stop it a second time, after page content has already been loaded and
+    // displayed with accurate style information. (Our suppression involves
+    // blanking the whole page at the moment. If it were more refined, we might
+    // be able to do something better.) It's worth noting though that this
+    // entire method is a hack, since what we really want to do is suspend JS
+    // instead of doing a layout with inaccurate information.
     HTMLElement* bodyElement = body();
     if (bodyElement && !bodyElement->layoutObject() &&
         m_pendingSheetLayout == NoLayoutWithPendingSheets) {
       m_pendingSheetLayout = DidLayoutWithPendingSheets;
       styleEngine().resolverChanged(FullStyleUpdate);
     } else if (m_hasNodesWithPlaceholderStyle) {
-      // If new nodes have been added or style recalc has been done with style sheets still
-      // pending, some nodes may not have had their real style calculated yet. Normally this
-      // gets cleaned when style sheets arrive but here we need up-to-date style immediately.
+      // If new nodes have been added or style recalc has been done with style
+      // sheets still pending, some nodes may not have had their real style
+      // calculated yet.  Normally this gets cleaned when style sheets arrive
+      // but here we need up-to-date style immediately.
       setNeedsStyleRecalc(SubtreeStyleChange,
                           StyleChangeReasonForTracing::create(
                               StyleChangeReason::CleanupPlaceholderStyles));
@@ -2120,7 +2157,8 @@ void Document::pageSizeAndMarginsInPixels(int pageIndex,
   }
   pageSize = DoubleSize(width, height);
 
-  // The percentage is calculated with respect to the width even for margin top and bottom.
+  // The percentage is calculated with respect to the width even for margin top
+  // and bottom.
   // http://www.w3.org/TR/CSS2/box.html#margin-properties
   marginTop = style->marginTop().isAuto()
                   ? marginTop
@@ -2213,7 +2251,8 @@ void Document::initialize() {
 
   ContainerNode::attachLayoutTree();
 
-  // The TextAutosizer can't update layout view info while the Document is detached, so update now in case anything changed.
+  // The TextAutosizer can't update layout view info while the Document is
+  // detached, so update now in case anything changed.
   if (TextAutosizer* autosizer = textAutosizer())
     autosizer->updatePageInfo();
 
@@ -2230,17 +2269,18 @@ void Document::shutdown() {
   if (!isActive())
     return;
 
-  // Frame navigation can cause a new Document to be attached. Don't allow that, since that will
-  // cause a situation where LocalFrame still has a Document attached after this finishes!
-  // Normally, it shouldn't actually be possible to trigger navigation here. However, plugins
-  // (see below) can cause lots of crazy things to happen, since plugin detach involves nested
-  // message loops.
+  // Frame navigation can cause a new Document to be attached. Don't allow that,
+  // since that will cause a situation where LocalFrame still has a Document
+  // attached after this finishes!  Normally, it shouldn't actually be possible
+  // to trigger navigation here.  However, plugins (see below) can cause lots of
+  // crazy things to happen, since plugin detach involves nested message loops.
   FrameNavigationDisabler navigationDisabler(*m_frame);
-  // Defer widget updates to avoid plugins trying to run script inside ScriptForbiddenScope,
-  // which will crash the renderer after https://crrev.com/200984
+  // Defer widget updates to avoid plugins trying to run script inside
+  // ScriptForbiddenScope, which will crash the renderer after
+  // https://crrev.com/200984
   HTMLFrameOwnerElement::UpdateSuspendScope suspendWidgetHierarchyUpdates;
-  // Don't allow script to run in the middle of detachLayoutTree() because a detaching Document is not in a
-  // consistent state.
+  // Don't allow script to run in the middle of detachLayoutTree() because a
+  // detaching Document is not in a consistent state.
   ScriptForbiddenScope forbidScript;
   view()->dispose();
   m_markers->prepareForDestruction();
@@ -2269,7 +2309,8 @@ void Document::shutdown() {
   if (svgExtensions())
     accessSVGExtensions().pauseAnimations();
 
-  // FIXME: This shouldn't be needed once LocalDOMWindow becomes ExecutionContext.
+  // FIXME: This shouldn't be needed once LocalDOMWindow becomes
+  // ExecutionContext.
   if (m_domWindow)
     m_domWindow->clearEventQueue();
 
@@ -2351,11 +2392,11 @@ void Document::shutdown() {
   // created by DOMImplementation::createDocument().
   ExecutionContext::notifyContextDestroyed();
 
-  // This is required, as our LocalFrame might delete itself as soon as it detaches
-  // us. However, this violates Node::detachLayoutTree() semantics, as it's never
-  // possible to re-attach. Eventually Document::detachLayoutTree() should be renamed,
-  // or this setting of the frame to 0 could be made explicit in each of the
-  // callers of Document::detachLayoutTree().
+  // This is required, as our LocalFrame might delete itself as soon as it
+  // detaches us. However, this violates Node::detachLayoutTree() semantics, as
+  // it's never possible to re-attach. Eventually Document::detachLayoutTree()
+  // should be renamed, or this setting of the frame to 0 could be made explicit
+  // in each of the callers of Document::detachLayoutTree().
   m_frame = nullptr;
 }
 
@@ -2401,9 +2442,10 @@ AXObjectCache* Document::axObjectCache() const {
     return 0;
 
   // The only document that actually has a AXObjectCache is the top-level
-  // document.  This is because we need to be able to get from any WebCoreAXObject
-  // to any other WebCoreAXObject on the same page.  Using a single cache allows
-  // lookups across nested webareas (i.e. multiple documents).
+  // document.  This is because we need to be able to get from any
+  // WebCoreAXObject to any other WebCoreAXObject on the same page.  Using a
+  // single cache allows lookups across nested webareas (i.e. multiple
+  // documents).
   Document& cacheOwner = this->axObjectCacheOwner();
 
   // If the document has already been detached, do not make a new axObjectCache.
@@ -2627,10 +2669,11 @@ HTMLHeadElement* Document::head() const {
 
 Element* Document::viewportDefiningElement(
     const ComputedStyle* rootStyle) const {
-  // If a BODY element sets non-visible overflow, it is to be propagated to the viewport, as long
-  // as the following conditions are all met:
+  // If a BODY element sets non-visible overflow, it is to be propagated to the
+  // viewport, as long as the following conditions are all met:
   // (1) The root element is HTML.
-  // (2) It is the primary BODY element (we only assert for this, expecting callers to behave).
+  // (2) It is the primary BODY element (we only assert for this, expecting
+  //     callers to behave).
   // (3) The root element has visible overflow.
   // Otherwise it's the root element's properties that are to be propagated.
   Element* rootElement = documentElement();
@@ -2686,7 +2729,8 @@ void Document::close() {
   if (!m_frame) {
     // Because we have no frame, we don't know if all loading has completed,
     // so we just call implicitClose() immediately. FIXME: This might fire
-    // the load event prematurely <http://bugs.webkit.org/show_bug.cgi?id=14568>.
+    // the load event prematurely
+    // <http://bugs.webkit.org/show_bug.cgi?id=14568>.
     implicitClose();
     return;
   }
@@ -2719,11 +2763,12 @@ void Document::implicitClose() {
     HTMLStyleElement::dispatchPendingLoadEvents();
   }
 
-  // JS running below could remove the frame or destroy the LayoutView so we call
-  // those two functions repeatedly and don't save them on the stack.
+  // JS running below could remove the frame or destroy the LayoutView so we
+  // call those two functions repeatedly and don't save them on the stack.
 
-  // To align the HTML load event and the SVGLoad event for the outermost <svg> element, fire it from
-  // here, instead of doing it from SVGElement::finishedParsingChildren.
+  // To align the HTML load event and the SVGLoad event for the outermost <svg>
+  // element, fire it from here, instead of doing it from
+  // SVGElement::finishedParsingChildren.
   if (svgExtensions())
     accessSVGExtensions().dispatchSVGLoadEventToOutermostSVGElements();
 
@@ -2746,14 +2791,16 @@ void Document::implicitClose() {
 
   if (frame()->navigationScheduler().locationChangePending() &&
       elapsedTime() < cLayoutScheduleThreshold) {
-    // Just bail out. Before or during the onload we were shifted to another page.
-    // The old i-Bench suite does this. When this happens don't bother painting or laying out.
+    // Just bail out. Before or during the onload we were shifted to another
+    // page.  The old i-Bench suite does this. When this happens don't bother
+    // painting or laying out.
     m_loadEventProgress = LoadEventCompleted;
     return;
   }
 
   // We used to force a synchronous display and flush here.  This really isn't
-  // necessary and can in fact be actively harmful if pages are loading at a rate of > 60fps
+  // necessary and can in fact be actively harmful if pages are loading at a
+  // rate of > 60fps
   // (if your platform is syncing flushes and limiting them to 60fps).
   if (!localOwner() || (localOwner()->layoutObject() &&
                         !localOwner()->layoutObject()->needsLayout())) {
@@ -2873,7 +2920,8 @@ void Document::dispatchUnloadEvents() {
   if (!m_frame)
     return;
 
-  // Don't remove event listeners from a transitional empty document (see https://bugs.webkit.org/show_bug.cgi?id=28716 for more information).
+  // Don't remove event listeners from a transitional empty document (see
+  // https://bugs.webkit.org/show_bug.cgi?id=28716 for more information).
   bool keepEventListeners =
       m_frame->loader().provisionalDocumentLoader() &&
       m_frame->shouldReuseDefaultView(
@@ -3069,9 +3117,11 @@ KURL Document::validBaseElementURL() const {
 
 void Document::updateBaseURL() {
   KURL oldBaseURL = m_baseURL;
-  // DOM 3 Core: When the Document supports the feature "HTML" [DOM Level 2 HTML], the base URI is computed using
-  // first the value of the href attribute of the HTML BASE element if any, and the value of the documentURI attribute
-  // from the Document interface otherwise (which we store, preparsed, in m_url).
+  // DOM 3 Core: When the Document supports the feature "HTML" [DOM Level 2
+  // HTML], the base URI is computed using first the value of the href attribute
+  // of the HTML BASE element if any, and the value of the documentURI attribute
+  // from the Document interface otherwise (which we store, preparsed, in
+  // m_url).
   if (!m_baseElementURL.isEmpty())
     m_baseURL = m_baseElementURL;
   else if (!m_baseURLOverride.isEmpty())
@@ -3092,7 +3142,8 @@ void Document::updateBaseURL() {
 
   if (!equalIgnoringFragmentIdentifier(oldBaseURL, m_baseURL)) {
     // Base URL change changes any relative visited links.
-    // FIXME: There are other URLs in the tree that would need to be re-evaluated on dynamic base URL change. Style should be invalidated too.
+    // FIXME: There are other URLs in the tree that would need to be
+    // re-evaluated on dynamic base URL change. Style should be invalidated too.
     for (HTMLAnchorElement& anchor :
          Traversal<HTMLAnchorElement>::startsAfter(*this))
       anchor.invalidateCachedVisitedLinkHash();
@@ -3105,7 +3156,8 @@ void Document::setBaseURLOverride(const KURL& url) {
 }
 
 void Document::processBaseElement() {
-  // Find the first href attribute in a base element and the first target attribute in a base element.
+  // Find the first href attribute in a base element and the first target
+  // attribute in a base element.
   const AtomicString* href = 0;
   const AtomicString* target = 0;
   for (HTMLBaseElement* base = Traversal<HTMLBaseElement>::firstWithin(*this);
@@ -3126,7 +3178,8 @@ void Document::processBaseElement() {
                         UseCounter::ContentSecurityPolicyWithBaseElement);
   }
 
-  // FIXME: Since this doesn't share code with completeURL it may not handle encodings correctly.
+  // FIXME: Since this doesn't share code with completeURL it may not handle
+  // encodings correctly.
   KURL baseElementURL;
   if (href) {
     String strippedHref = stripLeadingAndTrailingHTMLSpaces(*href);
@@ -3259,7 +3312,8 @@ void Document::setViewportDescription(
       return;
     m_viewportDescription = viewportDescription;
 
-    // The UA-defined min-width is considered specifically by Android WebView quirks mode.
+    // The UA-defined min-width is considered specifically by Android WebView
+    // quirks mode.
     if (!viewportDescription.isSpecifiedByAuthor())
       m_viewportDefaultMinWidth = viewportDescription.minWidth;
   }
@@ -3315,11 +3369,11 @@ MouseEventWithHitTestResults Document::prepareMouseEvent(
     const PlatformMouseEvent& event) {
   DCHECK(layoutViewItem().isNull() || layoutViewItem().isLayoutView());
 
-  // LayoutView::hitTest causes a layout, and we don't want to hit that until the first
-  // layout because until then, there is nothing shown on the screen - the user can't
-  // have intentionally clicked on something belonging to this page. Furthermore,
-  // mousemove events before the first layout should not lead to a premature layout()
-  // happening, which could show a flash of white.
+  // LayoutView::hitTest causes a layout, and we don't want to hit that until
+  // the first layout because until then, there is nothing shown on the screen -
+  // the user can't have intentionally clicked on something belonging to this
+  // page.  Furthermore, mousemove events before the first layout should not
+  // lead to a premature layout() happening, which could show a flash of white.
   // See also the similar code in EventHandler::hitTestResultAtPoint.
   if (layoutViewItem().isNull() || !view() || !view()->didFirstLayout())
     return MouseEventWithHitTestResults(event,
@@ -3583,8 +3637,8 @@ void Document::styleResolverMayHaveChanged() {
 
   if (didLayoutWithPendingStylesheets() &&
       !styleEngine().hasPendingScriptBlockingSheets()) {
-    // We need to manually repaint because we avoid doing all repaints in layout or style
-    // recalc while sheets are still loading to avoid FOUC.
+    // We need to manually repaint because we avoid doing all repaints in layout
+    // or style recalc while sheets are still loading to avoid FOUC.
     m_pendingSheetLayout = IgnoreLayoutWithPendingSheets;
 
     DCHECK(!layoutViewItem().isNull() || importsController());
@@ -3697,7 +3751,8 @@ bool Document::setFocusedElement(Element* prpNewFocusedElement,
   if (oldFocusedElement) {
     oldFocusedElement->setFocus(false);
 
-    // Dispatch the blur event and let the node do any other blur related activities (important for text fields)
+    // Dispatch the blur event and let the node do any other blur related
+    // activities (important for text fields)
     // If page lost focus, blur event will have already been dispatched
     if (page() && (page()->focusController().isFocused())) {
       oldFocusedElement->dispatchBlurEvent(newFocusedElement, params.type,
@@ -3709,15 +3764,17 @@ bool Document::setFocusedElement(Element* prpNewFocusedElement,
         newFocusedElement = nullptr;
       }
 
-      oldFocusedElement->dispatchFocusOutEvent(
-          EventTypeNames::focusout, newFocusedElement,
-          params
-              .sourceCapabilities);  // DOM level 3 name for the bubbling blur event.
-      // FIXME: We should remove firing DOMFocusOutEvent event when we are sure no content depends
-      // on it, probably when <rdar://problem/8503958> is resolved.
-      oldFocusedElement->dispatchFocusOutEvent(
-          EventTypeNames::DOMFocusOut, newFocusedElement,
-          params.sourceCapabilities);  // DOM level 2 name for compatibility.
+      // 'focusout' is a DOM level 3 name for the bubbling blur event.
+      oldFocusedElement->dispatchFocusOutEvent(EventTypeNames::focusout,
+                                               newFocusedElement,
+                                               params.sourceCapabilities);
+      // 'DOMFocusOut' is a DOM level 2 name for compatibility.
+      // FIXME: We should remove firing DOMFocusOutEvent event when we are sure
+      // no content depends on it, probably when <rdar://problem/8503958> is
+      // resolved.
+      oldFocusedElement->dispatchFocusOutEvent(EventTypeNames::DOMFocusOut,
+                                               newFocusedElement,
+                                               params.sourceCapabilities);
 
       if (m_focusedElement) {
         // handler shifted focus
@@ -3757,8 +3814,10 @@ bool Document::setFocusedElement(Element* prpNewFocusedElement,
     cancelFocusAppearanceUpdate();
     m_focusedElement->updateFocusAppearance(params.selectionBehavior);
 
-    // Dispatch the focus event and let the node do any other focus related activities (important for text fields)
-    // If page lost focus, event will be dispatched on page focus, don't duplicate
+    // Dispatch the focus event and let the node do any other focus related
+    // activities (important for text fields)
+    // If page lost focus, event will be dispatched on page focus, don't
+    // duplicate
     if (page() && (page()->focusController().isFocused())) {
       m_focusedElement->dispatchFocusEvent(oldFocusedElement, params.type,
                                            params.sourceCapabilities);
@@ -3768,9 +3827,10 @@ bool Document::setFocusedElement(Element* prpNewFocusedElement,
         focusChangeBlocked = true;
         goto SetFocusedElementDone;
       }
-      m_focusedElement->dispatchFocusInEvent(
-          EventTypeNames::focusin, oldFocusedElement, params.type,
-          params.sourceCapabilities);  // DOM level 3 bubbling focus event.
+      // DOM level 3 bubbling focus event.
+      m_focusedElement->dispatchFocusInEvent(EventTypeNames::focusin,
+                                             oldFocusedElement, params.type,
+                                             params.sourceCapabilities);
 
       if (m_focusedElement != newFocusedElement) {
         // handler shifted focus
@@ -3778,11 +3838,12 @@ bool Document::setFocusedElement(Element* prpNewFocusedElement,
         goto SetFocusedElementDone;
       }
 
-      // FIXME: We should remove firing DOMFocusInEvent event when we are sure no content depends
-      // on it, probably when <rdar://problem/8503958> is m.
-      m_focusedElement->dispatchFocusInEvent(
-          EventTypeNames::DOMFocusIn, oldFocusedElement, params.type,
-          params.sourceCapabilities);  // DOM level 2 for compatibility.
+      // For DOM level 2 compatibility.
+      // FIXME: We should remove firing DOMFocusInEvent event when we are sure
+      // no content depends on it, probably when <rdar://problem/8503958> is m.
+      m_focusedElement->dispatchFocusInEvent(EventTypeNames::DOMFocusIn,
+                                             oldFocusedElement, params.type,
+                                             params.sourceCapabilities);
 
       if (m_focusedElement != newFocusedElement) {
         // handler shifted focus
@@ -3814,7 +3875,8 @@ bool Document::setFocusedElement(Element* prpNewFocusedElement,
   }
 
   if (!focusChangeBlocked && m_focusedElement) {
-    // Create the AXObject cache in a focus change because Chromium relies on it.
+    // Create the AXObject cache in a focus change because Chromium relies on
+    // it.
     if (AXObjectCache* cache = axObjectCache())
       cache->handleFocusedUIElementChanged(oldFocusedElement,
                                            newFocusedElement);
@@ -3929,8 +3991,8 @@ void Document::attachNodeIterator(NodeIterator* ni) {
 }
 
 void Document::detachNodeIterator(NodeIterator* ni) {
-  // The node iterator can be detached without having been attached if its root node didn't have a document
-  // when the iterator was created, but has it now.
+  // The node iterator can be detached without having been attached if its root
+  // node didn't have a document when the iterator was created, but has it now.
   m_nodeIterators.remove(ni);
 }
 
@@ -4070,7 +4132,8 @@ void Document::enqueueUniqueAnimationFrameEvent(Event* event) {
 }
 
 void Document::enqueueScrollEventForNode(Node* target) {
-  // Per the W3C CSSOM View Module only scroll events fired at the document should bubble.
+  // Per the W3C CSSOM View Module only scroll events fired at the document
+  // should bubble.
   Event* scrollEvent = target->isDocumentNode()
                            ? Event::createBubble(EventTypeNames::scroll)
                            : Event::create(EventTypeNames::scroll);
@@ -4192,7 +4255,8 @@ void Document::addListenerTypeIfNeeded(const AtomicString& eventType) {
 HTMLFrameOwnerElement* Document::localOwner() const {
   if (!frame())
     return 0;
-  // FIXME: This probably breaks the attempts to layout after a load is finished in implicitClose(), and probably tons of other things...
+  // FIXME: This probably breaks the attempts to layout after a load is finished
+  // in implicitClose(), and probably tons of other things...
   return frame()->deprecatedLocalOwner();
 }
 
@@ -4365,8 +4429,8 @@ const KURL Document::firstPartyForCookies() const {
   if (!frame())
     return SecurityOrigin::urlWithUniqueSecurityOrigin();
 
-  // TODO(mkwst): This doesn't correctly handle sandboxed documents; we want to look at their URL,
-  // but we can't because we don't know what it is.
+  // TODO(mkwst): This doesn't correctly handle sandboxed documents; we want to
+  // look at their URL, but we can't because we don't know what it is.
   Frame* top = frame()->tree().top();
   KURL topDocumentURL =
       top->isLocalFrame()
@@ -4377,9 +4441,9 @@ const KURL Document::firstPartyForCookies() const {
           topDocumentURL.protocol()))
     return topDocumentURL;
 
-  // We're intentionally using the URL of each document rather than the document's SecurityOrigin.
-  // Sandboxing a document into a unique origin shouldn't effect first-/third-party status for
-  // cookies and site data.
+  // We're intentionally using the URL of each document rather than the
+  // document's SecurityOrigin.  Sandboxing a document into a unique origin
+  // shouldn't effect first-/third-party status for cookies and site data.
   const OriginAccessEntry& accessEntry =
       top->isLocalFrame()
           ? toLocalFrame(top)->document()->accessEntryFromURL()
@@ -4387,13 +4451,15 @@ const KURL Document::firstPartyForCookies() const {
                               OriginAccessEntry::AllowRegisterableDomains);
   const Frame* currentFrame = frame();
   while (currentFrame) {
-    // Skip over srcdoc documents, as they are always same-origin with their closest non-srcdoc parent.
+    // Skip over srcdoc documents, as they are always same-origin with their
+    // closest non-srcdoc parent.
     while (currentFrame->isLocalFrame() &&
            toLocalFrame(currentFrame)->document()->isSrcdocDocument())
       currentFrame = currentFrame->tree().parent();
     DCHECK(currentFrame);
 
-    // We use 'matchesDomain' here, as it turns out that some folks embed HTTPS login forms
+    // We use 'matchesDomain' here, as it turns out that some folks embed HTTPS
+    // login forms
     // into HTTP pages; we should allow this kind of upgrade.
     if (accessEntry.matchesDomain(
             *currentFrame->securityContext()->getSecurityOrigin()) ==
@@ -4588,12 +4654,12 @@ bool Document::parseQualifiedName(const AtomicString& qualifiedName,
 }
 
 void Document::setEncodingData(const DocumentEncodingData& newData) {
-  // It's possible for the encoding of the document to change while we're decoding
-  // data. That can only occur while we're processing the <head> portion of the
-  // document. There isn't much user-visible content in the <head>, but there is
-  // the <title> element. This function detects that situation and re-decodes the
-  // document's title so that the user doesn't see an incorrectly decoded title
-  // in the title bar.
+  // It's possible for the encoding of the document to change while we're
+  // decoding data. That can only occur while we're processing the <head>
+  // portion of the document. There isn't much user-visible content in the
+  // <head>, but there is the <title> element. This function detects that
+  // situation and re-decodes the document's title so that the user doesn't see
+  // an incorrectly decoded title in the title bar.
   if (m_titleElement && encoding() != newData.encoding() &&
       !ElementTraversal::firstWithin(*m_titleElement) &&
       encoding() == Latin1Encoding() &&
@@ -4608,7 +4674,8 @@ void Document::setEncodingData(const DocumentEncodingData& newData) {
   DCHECK(newData.encoding().isValid());
   m_encodingData = newData;
 
-  // FIXME: Should be removed as part of https://code.google.com/p/chromium/issues/detail?id=319643
+  // FIXME: Should be removed as part of
+  // https://code.google.com/p/chromium/issues/detail?id=319643
   bool shouldUseVisualOrdering = m_encodingData.encoding().usesVisualOrdering();
   if (shouldUseVisualOrdering != m_visuallyOrdered) {
     m_visuallyOrdered = shouldUseVisualOrdering;
@@ -4635,7 +4702,8 @@ KURL Document::completeURLWithOverride(const String& url,
   // See also [CSS]StyleSheet::completeURL(const String&)
   if (url.isNull())
     return KURL();
-  // This logic is deliberately spread over many statements in an attempt to track down http://crbug.com/312410.
+  // This logic is deliberately spread over many statements in an attempt to
+  // track down http://crbug.com/312410.
   const KURL& baseURL = baseURLForOverride(baseURLOverride);
   if (!encoding().isValid())
     return KURL(baseURL, url);
@@ -4643,7 +4711,8 @@ KURL Document::completeURLWithOverride(const String& url,
 }
 
 const KURL& Document::baseURLForOverride(const KURL& baseURLOverride) const {
-  // This logic is deliberately spread over many statements in an attempt to track down http://crbug.com/312410.
+  // This logic is deliberately spread over many statements in an attempt to
+  // track down http://crbug.com/312410.
   const KURL* baseURLFromParent = 0;
   bool shouldUseParentBaseURL = baseURLOverride.isEmpty();
   if (!shouldUseParentBaseURL) {
@@ -4869,8 +4938,8 @@ Document* Document::parentDocument() const {
 }
 
 Document& Document::topDocument() const {
-  // FIXME: Not clear what topDocument() should do in the OOPI case--should it return the topmost
-  // available Document, or something else?
+  // FIXME: Not clear what topDocument() should do in the OOPI case--should it
+  // return the topmost available Document, or something else?
   Document* doc = const_cast<Document*>(this);
   for (HTMLFrameOwnerElement* element = doc->localOwner(); element;
        element = doc->localOwner())
@@ -4984,8 +5053,8 @@ void Document::finishedParsing() {
   setParsingState(InDOMContentLoaded);
   DocumentParserTiming::from(*this).markParserStop();
 
-  // FIXME: DOMContentLoaded is dispatched synchronously, but this should be dispatched in a queued task,
-  // See https://crbug.com/425790
+  // FIXME: DOMContentLoaded is dispatched synchronously, but this should be
+  // dispatched in a queued task, see https://crbug.com/425790
   if (!m_documentTiming.domContentLoadedEventStart())
     m_documentTiming.markDomContentLoadedEventStart();
   dispatchEvent(Event::createBubble(EventTypeNames::DOMContentLoaded));
@@ -4994,24 +5063,27 @@ void Document::finishedParsing() {
   setParsingState(FinishedParsing);
 
   // Ensure Custom Element callbacks are drained before DOMContentLoaded.
-  // FIXME: Remove this ad-hoc checkpoint when DOMContentLoaded is dispatched in a
-  // queued task, which will do a checkpoint anyway. https://crbug.com/425790
+  // FIXME: Remove this ad-hoc checkpoint when DOMContentLoaded is dispatched in
+  // a queued task, which will do a checkpoint anyway. https://crbug.com/425790
   Microtask::performCheckpoint(V8PerIsolateData::mainThreadIsolate());
 
   if (LocalFrame* frame = this->frame()) {
-    // Don't update the layout tree if we haven't requested the main resource yet to avoid
-    // adding extra latency. Note that the first layout tree update can be expensive since it
-    // triggers the parsing of the default stylesheets which are compiled-in.
+    // Don't update the layout tree if we haven't requested the main resource
+    // yet to avoid adding extra latency. Note that the first layout tree update
+    // can be expensive since it triggers the parsing of the default stylesheets
+    // which are compiled-in.
     const bool mainResourceWasAlreadyRequested =
         frame->loader().stateMachine()->committedFirstRealDocumentLoad();
 
-    // FrameLoader::finishedParsing() might end up calling Document::implicitClose() if all
-    // resource loads are complete. HTMLObjectElements can start loading their resources from
-    // post attach callbacks triggered by recalcStyle().  This means if we parse out an <object>
-    // tag and then reach the end of the document without updating styles, we might not have yet
-    // started the resource load and might fire the window load event too early.  To avoid this
-    // we force the styles to be up to date before calling FrameLoader::finishedParsing().
-    // See https://bugs.webkit.org/show_bug.cgi?id=36864 starting around comment 35.
+    // FrameLoader::finishedParsing() might end up calling
+    // Document::implicitClose() if all resource loads are
+    // complete. HTMLObjectElements can start loading their resources from post
+    // attach callbacks triggered by recalcStyle().  This means if we parse out
+    // an <object> tag and then reach the end of the document without updating
+    // styles, we might not have yet started the resource load and might fire
+    // the window load event too early.  To avoid this we force the styles to be
+    // up to date before calling FrameLoader::finishedParsing().  See
+    // https://bugs.webkit.org/show_bug.cgi?id=36864 starting around comment 35.
     if (mainResourceWasAlreadyRequested)
       updateStyleAndLayoutTree();
 
@@ -5025,10 +5097,12 @@ void Document::finishedParsing() {
     InspectorInstrumentation::domContentLoadedEventFired(frame);
   }
 
-  // Schedule dropping of the ElementDataCache. We keep it alive for a while after parsing finishes
-  // so that dynamically inserted content can also benefit from sharing optimizations.
-  // Note that we don't refresh the timer on cache access since that could lead to huge caches being kept
-  // alive indefinitely by something innocuous like JS setting .innerHTML repeatedly on a timer.
+  // Schedule dropping of the ElementDataCache. We keep it alive for a while
+  // after parsing finishes so that dynamically inserted content can also
+  // benefit from sharing optimizations.  Note that we don't refresh the timer
+  // on cache access since that could lead to huge caches being kept alive
+  // indefinitely by something innocuous like JS setting .innerHTML repeatedly
+  // on a timer.
   m_elementDataCacheClearTimer.startOneShot(10, BLINK_FROM_HERE);
 
   // Parser should have picked up all preloads by now
@@ -5061,7 +5135,8 @@ Vector<IconURL> Document::iconURLs(int iconTypesMask) {
   IconURL firstTouchPrecomposedIcon;
   Vector<IconURL> secondaryIcons;
 
-  // Start from the last child node so that icons seen later take precedence as required by the spec.
+  // Start from the last child node so that icons seen later take precedence as
+  // required by the spec.
   for (HTMLLinkElement* linkElement =
            head() ? Traversal<HTMLLinkElement>::firstChild(*head()) : 0;
        linkElement;
@@ -5124,7 +5199,8 @@ HTMLLinkElement* Document::linkManifest() const {
   if (!head)
     return 0;
 
-  // The first link element with a manifest rel must be used. Others are ignored.
+  // The first link element with a manifest rel must be used. Others are
+  // ignored.
   for (HTMLLinkElement* linkElement =
            Traversal<HTMLLinkElement>::firstChild(*head);
        linkElement;
@@ -5214,10 +5290,11 @@ void Document::initSecurityContext(const DocumentInit& initializer) {
   }
 
   if (importsController()) {
-    // If this document is an HTML import, grab a reference to it's master document's Content
-    // Security Policy. We don't call 'initContentSecurityPolicy' in this case, as we can't
-    // rebind the master document's policy object: its ExecutionContext needs to remain tied
-    // to the master document.
+    // If this document is an HTML import, grab a reference to it's master
+    // document's Content Security Policy. We don't call
+    // 'initContentSecurityPolicy' in this case, as we can't rebind the master
+    // document's policy object: its ExecutionContext needs to remain tied to
+    // the master document.
     setContentSecurityPolicy(
         importsController()->master()->contentSecurityPolicy());
   } else {
@@ -5229,15 +5306,18 @@ void Document::initSecurityContext(const DocumentInit& initializer) {
 
   if (Settings* settings = initializer.settings()) {
     if (!settings->webSecurityEnabled()) {
-      // Web security is turned off. We should let this document access every other document. This is used primary by testing
-      // harnesses for web sites.
+      // Web security is turned off. We should let this document access every
+      // other document. This is used primary by testing harnesses for web
+      // sites.
       getSecurityOrigin()->grantUniversalAccess();
     } else if (getSecurityOrigin()->isLocal()) {
       if (settings->allowUniversalAccessFromFileURLs()) {
-        // Some clients want local URLs to have universal access, but that setting is dangerous for other clients.
+        // Some clients want local URLs to have universal access, but that
+        // setting is dangerous for other clients.
         getSecurityOrigin()->grantUniversalAccess();
       } else if (!settings->allowFileAccessFromFileURLs()) {
-        // Some clients do not want local URLs to have access to other local URLs.
+        // Some clients do not want local URLs to have access to other local
+        // URLs.
         getSecurityOrigin()->blockLocalAccessFromLocalOrigin();
       }
     }
@@ -5288,10 +5368,12 @@ bool Document::allowInlineEventHandler(Node* node,
           listener->code(), contextURL, contextLine))
     return false;
 
-  // HTML says that inline script needs browsing context to create its execution environment.
+  // HTML says that inline script needs browsing context to create its execution
+  // environment.
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/webappapis.html#event-handler-attributes
-  // Also, if the listening node came from other document, which happens on context-less event dispatching,
-  // we also need to ask the owner document of the node.
+  // Also, if the listening node came from other document, which happens on
+  // context-less event dispatching, we also need to ask the owner document of
+  // the node.
   LocalFrame* frame = executingFrame();
   if (!frame)
     return false;
@@ -5463,7 +5545,8 @@ void Document::addConsoleMessage(ConsoleMessage* consoleMessage) {
   m_frame->console().addMessage(consoleMessage);
 }
 
-// FIXME(crbug.com/305497): This should be removed after ExecutionContext-LocalDOMWindow migration.
+// FIXME(crbug.com/305497): This should be removed after
+// ExecutionContext-LocalDOMWindow migration.
 void Document::postTask(const WebTraceLocation& location,
                         std::unique_ptr<ExecutionContextTask> task,
                         const String& taskNameForInstrumentation) {
@@ -5601,7 +5684,8 @@ void Document::loadEventDelayTimerFired(TimerBase*) {
 }
 
 void Document::loadPluginsSoon() {
-  // FIXME: Remove this timer once we don't need to compute layout to load plugins.
+  // FIXME: Remove this timer once we don't need to compute layout to load
+  // plugins.
   if (!m_pluginLoadingTimer.isActive())
     m_pluginLoadingTimer.startOneShot(0, BLINK_FROM_HERE);
 }
@@ -5613,7 +5697,8 @@ void Document::pluginLoadingTimerFired(TimerBase*) {
 ScriptedAnimationController& Document::ensureScriptedAnimationController() {
   if (!m_scriptedAnimationController) {
     m_scriptedAnimationController = ScriptedAnimationController::create(this);
-    // We need to make sure that we don't start up the animation controller on a background tab, for example.
+    // We need to make sure that we don't start up the animation controller on a
+    // background tab, for example.
     if (!page())
       m_scriptedAnimationController->suspend();
   }
@@ -5665,7 +5750,8 @@ Touch* Document::createTouch(DOMWindow* window,
                              double radiusY,
                              float rotationAngle,
                              float force) const {
-  // Match behavior from when these types were integers, and avoid surprises from someone explicitly
+  // Match behavior from when these types were integers, and avoid surprises
+  // from someone explicitly
   // passing Infinity/NaN.
   if (!std::isfinite(pageX))
     pageX = 0;
@@ -5690,8 +5776,9 @@ Touch* Document::createTouch(DOMWindow* window,
 
   // FIXME: It's not clear from the documentation at
   // http://developer.apple.com/library/safari/#documentation/UserExperience/Reference/DocumentAdditionsReference/DocumentAdditions/DocumentAdditions.html
-  // when this method should throw and nor is it by inspection of iOS behavior. It would be nice to verify any cases where it throws under iOS
-  // and implement them here. See https://bugs.webkit.org/show_bug.cgi?id=47819
+  // when this method should throw and nor is it by inspection of iOS behavior.
+  // It would be nice to verify any cases where it throws under iOS and
+  // implement them here. See https://bugs.webkit.org/show_bug.cgi?id=47819
   LocalFrame* frame = window && window->isLocalDOMWindow()
                           ? blink::toLocalDOMWindow(window)->frame()
                           : this->frame();
@@ -5813,8 +5900,9 @@ void Document::updateHoverActiveState(const HitTestRequest& request,
   updateDistribution();
   Element* oldActiveElement = activeHoverElement();
   if (oldActiveElement && !request.active()) {
-    // The oldActiveElement layoutObject is null, dropped on :active by setting display: none,
-    // for instance. We still need to clear the ActiveChain as the mouse is released.
+    // The oldActiveElement layoutObject is null, dropped on :active by setting
+    // display: none, for instance. We still need to clear the ActiveChain as
+    // the mouse is released.
     for (Node* node = oldActiveElement; node;
          node = FlatTreeTraversal::parent(*node)) {
       DCHECK(!node->isTextNode());
@@ -5827,8 +5915,8 @@ void Document::updateHoverActiveState(const HitTestRequest& request,
     if (!oldActiveElement && newActiveElement &&
         !newActiveElement->isDisabledFormControl() && request.active() &&
         !request.touchMove()) {
-      // We are setting the :active chain and freezing it. If future moves happen, they
-      // will need to reference this chain.
+      // We are setting the :active chain and freezing it. If future moves
+      // happen, they will need to reference this chain.
       for (Node* node = newActiveElement; node;
            node = FlatTreeTraversal::parent(*node)) {
         DCHECK(!node->isTextNode());
@@ -5837,13 +5925,13 @@ void Document::updateHoverActiveState(const HitTestRequest& request,
       setActiveHoverElement(newActiveElement);
     }
   }
-  // If the mouse has just been pressed, set :active on the chain. Those (and only those)
-  // nodes should remain :active until the mouse is released.
+  // If the mouse has just been pressed, set :active on the chain. Those (and
+  // only those) nodes should remain :active until the mouse is released.
   bool allowActiveChanges = !oldActiveElement && activeHoverElement();
 
-  // If the mouse is down and if this is a mouse move event, we want to restrict changes in
-  // :hover/:active to only apply to elements that are in the :active chain that we froze
-  // at the time the mouse went down.
+  // If the mouse is down and if this is a mouse move event, we want to restrict
+  // changes in :hover/:active to only apply to elements that are in the :active
+  // chain that we froze at the time the mouse went down.
   bool mustBeInActiveChain = request.active() && request.move();
 
   Node* oldHoverNode = hoverNode();
@@ -5871,9 +5959,11 @@ void Document::updateHoverActiveState(const HitTestRequest& request,
   HeapVector<Member<Node>, 32> nodesToAddToChain;
 
   if (oldHoverObj != newHoverObj) {
-    // If the old hovered node is not nil but it's layoutObject is, it was probably detached as part of the :hover style
-    // (for instance by setting display:none in the :hover pseudo-class). In this case, the old hovered element (and its ancestors)
-    // must be updated, to ensure it's normal style is re-applied.
+    // If the old hovered node is not nil but it's layoutObject is, it was
+    // probably detached as part of the :hover style (for instance by setting
+    // display:none in the :hover pseudo-class). In this case, the old hovered
+    // element (and its ancestors) must be updated, to ensure it's normal style
+    // is re-applied.
     if (oldHoverNode && !oldHoverObj) {
       for (Node& node : NodeTraversal::inclusiveAncestorsOf(*oldHoverNode)) {
         if (!mustBeInActiveChain ||
@@ -5882,7 +5972,8 @@ void Document::updateHoverActiveState(const HitTestRequest& request,
       }
     }
 
-    // The old hover path only needs to be cleared up to (and not including) the common ancestor;
+    // The old hover path only needs to be cleared up to (and not including) the
+    // common ancestor;
     for (LayoutObject* curr = oldHoverObj; curr && curr != ancestor;
          curr = curr->hoverAncestor()) {
       if (curr->node() && !curr->isText() &&
@@ -5890,7 +5981,8 @@ void Document::updateHoverActiveState(const HitTestRequest& request,
         nodesToRemoveFromChain.append(curr->node());
     }
 
-    // TODO(mustaq): The two loops above may push a single node twice into nodesToRemoveFromChain. There must be a better way.
+    // TODO(mustaq): The two loops above may push a single node twice into
+    // nodesToRemoveFromChain. There must be a better way.
   }
 
   // Now set the hover state for our new object up to the root.
@@ -5908,7 +6000,8 @@ void Document::updateHoverActiveState(const HitTestRequest& request,
   bool sawCommonAncestor = false;
   size_t addCount = nodesToAddToChain.size();
   for (size_t i = 0; i < addCount; ++i) {
-    // Elements past the common ancestor do not change hover state, but might change active state.
+    // Elements past the common ancestor do not change hover state, but might
+    // change active state.
     if (ancestorNode && nodesToAddToChain[i] == ancestorNode)
       sawCommonAncestor = true;
     if (allowActiveChanges)
@@ -6069,7 +6162,8 @@ v8::Local<v8::Object> Document::wrap(v8::Isolate* isolate,
   const WrapperTypeInfo* wrapperType = wrapperTypeInfo();
 
   if (frame() && frame()->script().initializeMainWorld()) {
-    // initializeMainWorld may have created a wrapper for the object, retry from the start.
+    // initializeMainWorld may have created a wrapper for the object, retry from
+    // the start.
     v8::Local<v8::Object> wrapper = DOMDataStore::getWrapper(this, isolate);
     if (!wrapper.IsEmpty())
       return wrapper;

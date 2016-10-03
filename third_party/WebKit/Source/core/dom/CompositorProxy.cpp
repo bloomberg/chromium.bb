@@ -42,7 +42,8 @@ static bool isControlThread() {
 }
 
 static bool isCallingCompositorFrameCallback() {
-  // TODO(sad): Check that the requestCompositorFrame callbacks are currently being called.
+  // TODO(sad): Check that the requestCompositorFrame callbacks are currently
+  // being called.
   return true;
 }
 

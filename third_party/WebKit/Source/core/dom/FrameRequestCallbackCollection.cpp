@@ -64,8 +64,8 @@ void FrameRequestCallbackCollection::cancelCallback(CallbackId id) {
 void FrameRequestCallbackCollection::executeCallbacks(
     double highResNowMs,
     double highResNowMsLegacy) {
-  // First, generate a list of callbacks to consider.  Callbacks registered from this point
-  // on are considered only for the "next" frame, not this one.
+  // First, generate a list of callbacks to consider.  Callbacks registered from
+  // this point on are considered only for the "next" frame, not this one.
   DCHECK(m_callbacksToInvoke.isEmpty());
   m_callbacksToInvoke.swap(m_callbacks);
 

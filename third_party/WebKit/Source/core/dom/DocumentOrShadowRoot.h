@@ -48,9 +48,10 @@ class DocumentOrShadowRoot {
     const Element* target = document.pointerLockElement();
     if (!target)
       return nullptr;
-    // For Shadow DOM V0 compatibility: We allow returning an element in V0 shadow tree,
-    // even though it leaks the Shadow DOM.
-    // TODO(kochi): Once V0 code is removed, the following V0 check is unnecessary.
+    // For Shadow DOM V0 compatibility: We allow returning an element in V0
+    // shadow tree, even though it leaks the Shadow DOM.
+    // TODO(kochi): Once V0 code is removed, the following V0 check is
+    // unnecessary.
     if (target && target->isInV0ShadowTree()) {
       UseCounter::count(document,
                         UseCounter::DocumentPointerLockElementInV0Shadow);
@@ -60,8 +61,9 @@ class DocumentOrShadowRoot {
   }
 
   static Element* pointerLockElement(ShadowRoot& shadowRoot) {
-    // TODO(kochi): Once V0 code is removed, the following non-V1 check is unnecessary.
-    // After V0 code is removed, we can use the same logic for Document and ShadowRoot.
+    // TODO(kochi): Once V0 code is removed, the following non-V1 check is
+    // unnecessary.  After V0 code is removed, we can use the same logic for
+    // Document and ShadowRoot.
     if (!shadowRoot.isV1())
       return nullptr;
     UseCounter::count(shadowRoot.document(),

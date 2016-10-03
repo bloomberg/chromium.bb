@@ -37,8 +37,9 @@ struct QualifiedNameComponents {
   StringImpl* m_namespace;
 };
 
-// This struct is used to pass data between QualifiedName and the QNameTranslator.
-// For hashing and equality only the QualifiedNameComponents fields are used.
+// This struct is used to pass data between QualifiedName and the
+// QNameTranslator.  For hashing and equality only the QualifiedNameComponents
+// fields are used.
 struct QualifiedNameData {
   DISALLOW_NEW();
   QualifiedNameComponents m_components;
@@ -112,7 +113,8 @@ class CORE_EXPORT QualifiedName {
     return *this;
   }
 
-  // Hash table deleted values, which are only constructed and never copied or destroyed.
+  // Hash table deleted values, which are only constructed and never copied or
+  // destroyed.
   QualifiedName(WTF::HashTableDeletedValueType)
       : m_impl(WTF::HashTableDeletedValue) {}
   bool isHashTableDeletedValue() const {
@@ -160,14 +162,16 @@ class CORE_EXPORT QualifiedName {
 
   static const QualifiedName& null();
 
-  // The below methods are only for creating static global QNames that need no ref counting.
+  // The below methods are only for creating static global QNames that need no
+  // ref counting.
   static void createStatic(void* targetAddress, StringImpl* name);
   static void createStatic(void* targetAddress,
                            StringImpl* name,
                            const AtomicString& nameNamespace);
 
  private:
-  // This constructor is used only to create global/static QNames that don't require any ref counting.
+  // This constructor is used only to create global/static QNames that don't
+  // require any ref counting.
   QualifiedName(const AtomicString& prefix,
                 const AtomicString& localName,
                 const AtomicString& namespaceURI,

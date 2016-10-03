@@ -144,12 +144,12 @@ static bool isContainingBlockChainDescendant(LayoutObject* descendant,
 
 bool IntersectionObservation::computeGeometry(
     IntersectionGeometry& geometry) const {
-  // In the first few lines here, before initializeGeometry is called, "return true"
-  // effectively means "if the previous observed state was that root and target were
-  // intersecting, then generate a notification indicating that they are no longer
-  // intersecting."  This happens, for example, when root or target is removed from the
-  // DOM tree and not reinserted before the next frame is generated, or display:none
-  // is set on the root or target.
+  // In the first few lines here, before initializeGeometry is called, "return
+  // true" effectively means "if the previous observed state was that root and
+  // target were intersecting, then generate a notification indicating that they
+  // are no longer intersecting."  This happens, for example, when root or
+  // target is removed from the DOM tree and not reinserted before the next
+  // frame is generated, or display:none is set on the root or target.
   Element* targetElement = target();
   if (!targetElement)
     return false;
@@ -198,16 +198,18 @@ void IntersectionObservation::computeIntersectionObservations(
     return;
 
   // Some corner cases for threshold index:
-  //   - If target rect is zero area, because it has zero width and/or zero height,
+  //   - If target rect is zero area, because it has zero width and/or zero
+  //     height,
   //     only two states are recognized:
   //     - 0 means not intersecting.
   //     - 1 means intersecting.
   //     No other threshold crossings are possible.
   //   - Otherwise:
   //     - If root and target do not intersect, the threshold index is 0.
-  //     - If root and target intersect but the intersection has zero-area (i.e., they
-  //       have a coincident edge or corner), we consider the intersection to have
-  //       "crossed" a zero threshold, but not crossed any non-zero threshold.
+  //     - If root and target intersect but the intersection has zero-area
+  //       (i.e., they have a coincident edge or corner), we consider the
+  //       intersection to have "crossed" a zero threshold, but not crossed
+  //       any non-zero threshold.
   unsigned newThresholdIndex;
   float newVisibleRatio = 0;
   if (geometry.targetRect.isEmpty()) {

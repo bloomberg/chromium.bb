@@ -187,8 +187,8 @@ SpaceSplitString::Data::Data(const AtomicString& string) : m_keyString(string) {
 
 SpaceSplitString::Data::Data(const SpaceSplitString::Data& other)
     : RefCounted<Data>(), m_vector(other.m_vector) {
-  // Note that we don't copy m_keyString to indicate to the destructor that there's nothing
-  // to be removed from the sharedDataMap().
+  // Note that we don't copy m_keyString to indicate to the destructor that
+  // there's nothing to be removed from the sharedDataMap().
 }
 
 }  // namespace blink

@@ -60,8 +60,8 @@ void InsertionPoint::setDistributedNodes(DistributedNodes& distributedNodes) {
   for (; i < m_distributedNodes.size() && j < distributedNodes.size();
        ++i, ++j) {
     if (m_distributedNodes.size() < distributedNodes.size()) {
-      // If the new distribution is larger than the old one, reattach all nodes in
-      // the new distribution that were inserted.
+      // If the new distribution is larger than the old one, reattach all nodes
+      // in the new distribution that were inserted.
       for (; j < distributedNodes.size() &&
              m_distributedNodes.at(i) != distributedNodes.at(j);
            ++j)
@@ -69,8 +69,8 @@ void InsertionPoint::setDistributedNodes(DistributedNodes& distributedNodes) {
       if (j == distributedNodes.size())
         break;
     } else if (m_distributedNodes.size() > distributedNodes.size()) {
-      // If the old distribution is larger than the new one, reattach all nodes in
-      // the old distribution that were removed.
+      // If the old distribution is larger than the new one, reattach all nodes
+      // in the old distribution that were removed.
       for (; i < m_distributedNodes.size() &&
              m_distributedNodes.at(i) != distributedNodes.at(j);
            ++i)
@@ -84,7 +84,8 @@ void InsertionPoint::setDistributedNodes(DistributedNodes& distributedNodes) {
     }
   }
 
-  // If we hit the end of either list above we need to reattach all remaining nodes.
+  // If we hit the end of either list above we need to reattach all remaining
+  // nodes.
 
   for (; i < m_distributedNodes.size(); ++i)
     m_distributedNodes.at(i)->lazyReattachIfAttached();
@@ -100,10 +101,10 @@ void InsertionPoint::setDistributedNodes(DistributedNodes& distributedNodes) {
 }
 
 void InsertionPoint::attachLayoutTree(const AttachContext& context) {
-  // We need to attach the distribution here so that they're inserted in the right order
-  // otherwise the n^2 protection inside LayoutTreeBuilder will cause them to be
-  // inserted in the wrong place later. This also lets distributed nodes benefit from
-  // the n^2 protection.
+  // We need to attach the distribution here so that they're inserted in the
+  // right order otherwise the n^2 protection inside LayoutTreeBuilder will
+  // cause them to be inserted in the wrong place later. This also lets
+  // distributed nodes benefit from the n^2 protection.
   for (size_t i = 0; i < m_distributedNodes.size(); ++i) {
     if (m_distributedNodes.at(i)->needsAttach())
       m_distributedNodes.at(i)->attachLayoutTree(context);
@@ -154,7 +155,8 @@ bool InsertionPoint::isActive() const {
       shadowRoot->descendantShadowElementCount() <= 1)
     return true;
 
-  // Slow path only when there are more than one shadow elements in a shadow tree. That should be a rare case.
+  // Slow path only when there are more than one shadow elements in a shadow
+  // tree. That should be a rare case.
   const HeapVector<Member<InsertionPoint>>& insertionPoints =
       shadowRoot->descendantInsertionPoints();
   for (size_t i = 0; i < insertionPoints.size(); ++i) {
@@ -231,10 +233,12 @@ void InsertionPoint::removedFrom(ContainerNode* insertionPoint) {
       rootOwner->setNeedsDistributionRecalc();
   }
 
-  // host can be null when removedFrom() is called from ElementShadow destructor.
+  // host can be null when removedFrom() is called from ElementShadow
+  // destructor.
   ElementShadow* rootOwner = root ? root->owner() : 0;
 
-  // Since this insertion point is no longer visible from the shadow subtree, it need to clean itself up.
+  // Since this insertion point is no longer visible from the shadow subtree, it
+  // need to clean itself up.
   clearDistribution();
 
   if (m_registeredWithShadowRoot &&

@@ -148,8 +148,8 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   bool m_isExternalScript : 1;
   bool m_alreadyStarted : 1;
   bool m_haveFiredLoad : 1;
-  bool
-      m_willBeParserExecuted : 1;  // Same as "The parser will handle executing the script."
+  // Same as "The parser will handle executing the script."
+  bool m_willBeParserExecuted : 1;
   bool m_readyToBeParserExecuted : 1;
   bool m_willExecuteWhenDocumentFinishedParsing : 1;
   bool m_forceAsync : 1;

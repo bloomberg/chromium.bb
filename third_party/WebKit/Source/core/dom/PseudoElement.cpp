@@ -150,8 +150,9 @@ void PseudoElement::didRecalcStyle(StyleRecalcChange) {
   if (!layoutObject())
     return;
 
-  // The layoutObjects inside pseudo elements are anonymous so they don't get notified of recalcStyle and must have
-  // the style propagated downward manually similar to LayoutObject::propagateStyleToAnonymousChildren.
+  // The layoutObjects inside pseudo elements are anonymous so they don't get
+  // notified of recalcStyle and must have the style propagated downward
+  // manually similar to LayoutObject::propagateStyleToAnonymousChildren.
   LayoutObject* layoutObject = this->layoutObject();
   for (LayoutObject* child = layoutObject->nextInPreOrder(layoutObject); child;
        child = child->nextInPreOrder(layoutObject)) {

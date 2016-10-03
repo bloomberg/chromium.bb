@@ -3,8 +3,10 @@
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
  *           (C) 2006 Alexey Proskuryakov (ap@webkit.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012 Apple Inc. All rights reserved.
- * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012 Apple Inc. All
+ * rights reserved.
+ * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved.
+ * (http://www.torchmobile.com/)
  * Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies)
  * Copyright (C) 2013 Google Inc. All rights reserved.
  *
@@ -97,10 +99,12 @@ void DocumentStyleSheetCollection::updateActiveStyleSheets(
 
   if (change.styleResolverUpdateType == Reconstruct) {
     engine.clearMasterResolver();
-    // TODO(rune@opera.com): The following depends on whether StyleRuleFontFace was modified or not.
-    // We should only remove modified/removed @font-face rules, or @font-face rules from removed
-    // stylesheets. We currently avoid clearing the font cache when we have had an analyzed update
-    // and no @font-face rules were removed, in which case requiresFullStyleRecalc will be false.
+    // TODO(rune@opera.com): The following depends on whether StyleRuleFontFace
+    // was modified or not.  We should only remove modified/removed @font-face
+    // rules, or @font-face rules from removed stylesheets. We currently avoid
+    // clearing the font cache when we have had an analyzed update and no
+    // @font-face rules were removed, in which case requiresFullStyleRecalc will
+    // be false.
     if (change.requiresFullStyleRecalc)
       engine.clearFontCache();
   } else if (StyleResolver* styleResolver = engine.resolver()) {

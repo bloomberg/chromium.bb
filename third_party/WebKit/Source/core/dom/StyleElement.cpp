@@ -163,7 +163,8 @@ StyleElement::ProcessingResult StyleElement::createSheet(Element& element,
                             element.fastGetAttribute(HTMLNames::nonceAttr),
                             m_startPosition.m_line, text);
 
-  // Clearing the current sheet may remove the cache entry so create the new sheet first
+  // Clearing the current sheet may remove the cache entry so create the new
+  // sheet first
   CSSStyleSheet* newSheet = nullptr;
 
   // If type is empty or CSS, this is a CSS style sheet.

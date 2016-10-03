@@ -3,7 +3,8 @@
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
  * Copyright (C) 2004-2011, 2014 Apple Inc. All rights reserved.
- * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved.
+ * (http://www.torchmobile.com/)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -150,10 +151,11 @@ class CORE_EXPORT Node : public EventTarget {
     kDocumentFragmentNode = 11,
   };
 
-  // Entity, EntityReference, and Notation nodes are impossible to create in Blink.
-  // But for compatibility reasons we want these enum values exist in JS, and this enum makes the bindings
-  // generation not complain about kEntityReferenceNode being missing from the implementation
-  // while not requiring all switch(NodeType) blocks to include this deprecated constant.
+  // Entity, EntityReference, and Notation nodes are impossible to create in
+  // Blink.  But for compatibility reasons we want these enum values exist in
+  // JS, and this enum makes the bindings generation not complain about
+  // kEntityReferenceNode being missing from the implementation while not
+  // requiring all switch(NodeType) blocks to include this deprecated constant.
   enum DeprecatedNodeType {
     kEntityReferenceNode = 5,
     kEntityNode = 6,
@@ -208,7 +210,8 @@ class CORE_EXPORT Node : public EventTarget {
   Node* getRootNode(const GetRootNodeOptions&) const;
   Node& treeRoot() const;
   Node& shadowIncludingRoot() const;
-  // closed-shadow-hidden is defined at https://dom.spec.whatwg.org/#concept-closed-shadow-hidden
+  // closed-shadow-hidden is defined at
+  // https://dom.spec.whatwg.org/#concept-closed-shadow-hidden
   bool isClosedShadowHiddenFrom(const Node&) const;
 
   void prepend(const HeapVector<NodeOrString>&, ExceptionState&);
@@ -318,12 +321,14 @@ class CORE_EXPORT Node : public EventTarget {
     return getFlag(HasCustomStyleCallbacksFlag);
   }
 
-  // If this node is in a shadow tree, returns its shadow host. Otherwise, returns nullptr.
-  // TODO(kochi): crbug.com/507413 ownerShadowHost() can return nullptr even when it is in a
-  // shadow tree but its root is detached from its host. This can happen when handling
-  // queued events (e.g. during execCommand()).
+  // If this node is in a shadow tree, returns its shadow host. Otherwise,
+  // returns nullptr.
+  // TODO(kochi): crbug.com/507413 ownerShadowHost() can return nullptr even
+  // when it is in a shadow tree but its root is detached from its host. This
+  // can happen when handling queued events (e.g. during execCommand()).
   Element* ownerShadowHost() const;
-  // crbug.com/569532: containingShadowRoot() can return nullptr even if isInShadowTree() returns true.
+  // crbug.com/569532: containingShadowRoot() can return nullptr even if
+  // isInShadowTree() returns true.
   // This can happen when handling queued events (e.g. during execCommand())
   ShadowRoot* containingShadowRoot() const;
   ShadowRoot* youngestShadowRoot() const;
@@ -342,10 +347,12 @@ class CORE_EXPORT Node : public EventTarget {
   // Returns the parent node, but nullptr if the parent node is a ShadowRoot.
   ContainerNode* nonShadowBoundaryParentNode() const;
 
-  // Returns the enclosing event parent Element (or self) that, when clicked, would trigger a navigation.
+  // Returns the enclosing event parent Element (or self) that, when clicked,
+  // would trigger a navigation.
   Element* enclosingLinkEventParentOrSelf() const;
 
-  // These low-level calls give the caller responsibility for maintaining the integrity of the tree.
+  // These low-level calls give the caller responsibility for maintaining the
+  // integrity of the tree.
   void setPreviousSibling(Node* previous) { m_previous = previous; }
   void setNextSibling(Node* next) { m_next = next; }
 
@@ -371,7 +378,8 @@ class CORE_EXPORT Node : public EventTarget {
     setFlag(flag, IsUserActionElementFlag);
   }
 
-  // TODO(yosin): We should rename |active()| to |isActive()| as |UserActionElementSet|.
+  // TODO(yosin): We should rename |active()| to |isActive()| as
+  // |UserActionElementSet|.
   bool active() const {
     return isUserActionElement() && isUserActionElementActive();
   }
@@ -381,14 +389,16 @@ class CORE_EXPORT Node : public EventTarget {
   bool isDragged() const {
     return isUserActionElement() && isUserActionElementDragged();
   }
-  // TODO(yosin): We should rename |hovered()| to |isHovered()| as |UserActionElementSet|.
+  // TODO(yosin): We should rename |hovered()| to |isHovered()| as
+  // |UserActionElementSet|.
   bool hovered() const {
     return isUserActionElement() && isUserActionElementHovered();
   }
-  // Note: As a shadow host whose root with delegatesFocus=false may become focused state when
-  // an inner element gets focused, in that case more than one elements in a document can return
-  // true for |focused()|.  Use Element::isFocusedElementInDocument() or Document::focusedElement()
-  // to check which element is exactly focused.
+  // Note: As a shadow host whose root with delegatesFocus=false may become
+  // focused state when an inner element gets focused, in that case more than
+  // one elements in a document can return true for |focused()|.  Use
+  // Element::isFocusedElementInDocument() or Document::focusedElement() to
+  // check which element is exactly focused.
   bool focused() const {
     return isUserActionElement() && isUserActionElementFocused();
   }
@@ -501,11 +511,12 @@ class CORE_EXPORT Node : public EventTarget {
 
   unsigned nodeIndex() const;
 
-  // Returns the DOM ownerDocument attribute. This method never returns null, except in the case
-  // of a Document node.
+  // Returns the DOM ownerDocument attribute. This method never returns null,
+  // except in the case of a Document node.
   Document* ownerDocument() const;
 
-  // Returns the document associated with this node. A Document node returns itself.
+  // Returns the document associated with this node. A Document node returns
+  // itself.
   Document& document() const { return treeScope().document(); }
 
   TreeScope& treeScope() const {
@@ -549,8 +560,9 @@ class CORE_EXPORT Node : public EventTarget {
   Node* commonAncestor(const Node&,
                        ContainerNode* (*parent)(const Node&)) const;
 
-  // Number of DOM 16-bit units contained in node. Note that laid out text length can be different - e.g. because of
-  // css-transform:capitalize breaking up precomposed characters and ligatures.
+  // Number of DOM 16-bit units contained in node. Note that laid out text
+  // length can be different - e.g. because of css-transform:capitalize breaking
+  // up precomposed characters and ligatures.
   virtual int maxCharacterOffset() const;
 
   // Whether or not a selection can be started in this object
@@ -559,8 +571,10 @@ class CORE_EXPORT Node : public EventTarget {
   // -----------------------------------------------------------------------------
   // Integration with layout tree
 
-  // As layoutObject() includes a branch you should avoid calling it repeatedly in hot code paths.
-  // Note that if a Node has a layoutObject, it's parentNode is guaranteed to have one as well.
+  // As layoutObject() includes a branch you should avoid calling it repeatedly
+  // in hot code paths.
+  // Note that if a Node has a layoutObject, it's parentNode is guaranteed to
+  // have one as well.
   LayoutObject* layoutObject() const {
     return hasRareData() ? m_data.m_rareData->layoutObject()
                          : m_data.m_layoutObject;
@@ -585,22 +599,26 @@ class CORE_EXPORT Node : public EventTarget {
     AttachContext() {}
   };
 
-  // Attaches this node to the layout tree. This calculates the style to be applied to the node and creates an
-  // appropriate LayoutObject which will be inserted into the tree (except when the style has display: none). This
+  // Attaches this node to the layout tree. This calculates the style to be
+  // applied to the node and creates an appropriate LayoutObject which will be
+  // inserted into the tree (except when the style has display: none). This
   // makes the node visible in the FrameView.
   virtual void attachLayoutTree(const AttachContext& = AttachContext());
 
-  // Detaches the node from the layout tree, making it invisible in the rendered view. This method will remove
-  // the node's layout object from the layout tree and delete it.
+  // Detaches the node from the layout tree, making it invisible in the rendered
+  // view. This method will remove the node's layout object from the layout tree
+  // and delete it.
   virtual void detachLayoutTree(const AttachContext& = AttachContext());
 
   void reattachLayoutTree(const AttachContext& = AttachContext());
   void lazyReattachIfAttached();
 
-  // Returns true if recalcStyle should be called on the object, if there is such a method (on Document and Element).
+  // Returns true if recalcStyle should be called on the object, if there is
+  // such a method (on Document and Element).
   bool shouldCallRecalcStyle(StyleRecalcChange);
 
-  // Wrapper for nodes that don't have a layoutObject, but still cache the style (like HTMLOptionElement).
+  // Wrapper for nodes that don't have a layoutObject, but still cache the style
+  // (like HTMLOptionElement).
   ComputedStyle* mutableComputedStyle() const;
   const ComputedStyle* computedStyle() const;
   const ComputedStyle* parentComputedStyle() const;
@@ -613,20 +631,27 @@ class CORE_EXPORT Node : public EventTarget {
   }
 
   // -----------------------------------------------------------------------------
-  // Notification of document structure changes (see ContainerNode.h for more notification methods)
+  // Notification of document structure changes (see ContainerNode.h for more
+  // notification methods)
   //
-  // At first, WebKit notifies the node that it has been inserted into the document. This is called during document parsing, and also
-  // when a node is added through the DOM methods insertBefore(), appendChild() or replaceChild(). The call happens _after_ the node has been added to the tree.
-  // This is similar to the DOMNodeInsertedIntoDocument DOM event, but does not require the overhead of event
-  // dispatching.
+  // At first, Blinkt notifies the node that it has been inserted into the
+  // document. This is called during document parsing, and also when a node is
+  // added through the DOM methods insertBefore(), appendChild() or
+  // replaceChild(). The call happens _after_ the node has been added to the
+  // tree.  This is similar to the DOMNodeInsertedIntoDocument DOM event, but
+  // does not require the overhead of event dispatching.
   //
-  // WebKit notifies this callback regardless if the subtree of the node is a document tree or a floating subtree.
-  // Implementation can determine the type of subtree by seeing insertionPoint->isConnected().
-  // For a performance reason, notifications are delivered only to ContainerNode subclasses if the insertionPoint is out of document.
+  // Blink notifies this callback regardless if the subtree of the node is a
+  // document tree or a floating subtree.  Implementation can determine the type
+  // of subtree by seeing insertionPoint->isConnected().  For a performance
+  // reason, notifications are delivered only to ContainerNode subclasses if the
+  // insertionPoint is out of document.
   //
-  // There are another callback named didNotifySubtreeInsertionsToDocument(), which is called after all the descendant is notified,
-  // if this node was inserted into the document tree. Only a few subclasses actually need this. To utilize this, the node should
-  // return InsertionShouldCallDidNotifySubtreeInsertions from insertedInto().
+  // There are another callback named didNotifySubtreeInsertionsToDocument(),
+  // which is called after all the descendant is notified, if this node was
+  // inserted into the document tree. Only a few subclasses actually need
+  // this. To utilize this, the node should return
+  // InsertionShouldCallDidNotifySubtreeInsertions from insertedInto().
   //
   enum InsertionNotificationRequest {
     InsertionDone,
@@ -639,8 +664,9 @@ class CORE_EXPORT Node : public EventTarget {
 
   // Notifies the node that it is no longer part of the tree.
   //
-  // This is a dual of insertedInto(), and is similar to the DOMNodeRemovedFromDocument DOM event, but does not require the overhead of event
-  // dispatching, and is called _after_ the node is removed from the tree.
+  // This is a dual of insertedInto(), and is similar to the
+  // DOMNodeRemovedFromDocument DOM event, but does not require the overhead of
+  // event dispatching, and is called _after_ the node is removed from the tree.
   //
   virtual void removedFrom(ContainerNode* insertionPoint);
 
@@ -688,8 +714,9 @@ class CORE_EXPORT Node : public EventTarget {
   void removeAllEventListeners() override;
   void removeAllEventListenersRecursively();
 
-  // Handlers to do/undo actions on the target node before an event is dispatched to it and after the event
-  // has been dispatched.  The data pointer is handed back by the preDispatch and passed to postDispatch.
+  // Handlers to do/undo actions on the target node before an event is
+  // dispatched to it and after the event has been dispatched.  The data pointer
+  // is handed back by the preDispatch and passed to postDispatch.
   virtual EventDispatchHandlingState* preDispatchEventHandler(Event*) {
     return nullptr;
   }
@@ -873,8 +900,10 @@ class CORE_EXPORT Node : public EventTarget {
   void setTreeScope(TreeScope* scope) { m_treeScope = scope; }
 
   // isTreeScopeInitialized() can be false
-  // - in the destruction of Document or ShadowRoot where m_treeScope is set to null or
-  // - in the Node constructor called by these two classes where m_treeScope is set by TreeScope ctor.
+  // - in the destruction of Document or ShadowRoot where m_treeScope is set to
+  //   null or
+  // - in the Node constructor called by these two classes where m_treeScope is
+  //   set by TreeScope ctor.
   bool isTreeScopeInitialized() const { return m_treeScope; }
 
   void markAncestorsWithChildNeedsStyleRecalc();

@@ -121,9 +121,9 @@ class CORE_EXPORT Touch final : public GarbageCollectedFinalized<Touch>,
   float m_rotationAngle;
   float m_force;
   String m_region;
-  // FIXME(rbyers): Shouldn't we be able to migrate callers to relying on screenPos, pagePos
-  // or clientPos? absoluteLocation appears to be the same as pagePos but without browser
-  // scale applied.
+  // FIXME(rbyers): Shouldn't we be able to migrate callers to relying on
+  // screenPos, pagePos or clientPos? absoluteLocation appears to be the same as
+  // pagePos but without browser scale applied.
   LayoutPoint m_absoluteLocation;
 };
 

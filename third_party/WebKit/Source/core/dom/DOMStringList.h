@@ -36,8 +36,8 @@ namespace blink {
 
 class ExecutionContext;
 
-// FIXME: Some consumers of this class may benefit from lazily fetching items rather
-//        than creating the list statically as is currently the only option.
+// FIXME: Some consumers of this class may benefit from lazily fetching items
+// rather than creating the list statically as is currently the only option.
 class CORE_EXPORT DOMStringList final
     : public GarbageCollectedFinalized<DOMStringList>,
       public ScriptWrappable {

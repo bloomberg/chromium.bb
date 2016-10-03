@@ -67,7 +67,8 @@ NodeIterator::NodeIterator(Node* rootNode,
                            NodeFilter* filter)
     : NodeIteratorBase(rootNode, whatToShow, filter),
       m_referenceNode(root(), true) {
-  // If NodeIterator target is Attr node, don't subscribe for nodeWillBeRemoved, as it would never have child nodes.
+  // If NodeIterator target is Attr node, don't subscribe for nodeWillBeRemoved,
+  // as it would never have child nodes.
   if (!root()->isAttributeNode())
     root()->document().attachNodeIterator(this);
 }
@@ -133,8 +134,9 @@ void NodeIterator::updateForNodeRemoval(Node& removedNode,
                                         NodePointer& referenceNode) const {
   DCHECK_EQ(root()->document(), removedNode.document());
 
-  // Iterator is not affected if the removed node is the reference node and is the root.
-  // or if removed node is not the reference node, or the ancestor of the reference node.
+  // Iterator is not affected if the removed node is the reference node and is
+  // the root.  or if removed node is not the reference node, or the ancestor of
+  // the reference node.
   if (!removedNode.isDescendantOf(root()))
     return;
   bool willRemoveReferenceNode = removedNode == referenceNode.node.get();

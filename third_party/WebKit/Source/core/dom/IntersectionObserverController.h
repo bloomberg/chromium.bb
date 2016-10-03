@@ -43,7 +43,8 @@ class IntersectionObserverController
  private:
   // IntersectionObservers for which this is the tracking document.
   HeapHashSet<WeakMember<IntersectionObserver>> m_trackedIntersectionObservers;
-  // IntersectionObservers for which this is the execution context of the callback.
+  // IntersectionObservers for which this is the execution context of the
+  // callback.
   HeapHashSet<Member<IntersectionObserver>> m_pendingIntersectionObservers;
   WTF::WeakPtrFactory<IntersectionObserverController> m_weakPtrFactory;
 

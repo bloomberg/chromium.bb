@@ -149,8 +149,9 @@ AttributeCollectionGeneric<Container, ContainerMemberType>::findIndex(
   return kNotFound;
 }
 
-// We use a boolean parameter instead of calling shouldIgnoreAttributeCase so that the caller
-// can tune the behavior (hasAttribute is case sensitive whereas getAttribute is not).
+// We use a boolean parameter instead of calling shouldIgnoreAttributeCase so
+// that the caller can tune the behavior (hasAttribute is case sensitive whereas
+// getAttribute is not).
 template <typename Container, typename ContainerMemberType>
 inline size_t
 AttributeCollectionGeneric<Container, ContainerMemberType>::findIndex(
@@ -158,7 +159,8 @@ AttributeCollectionGeneric<Container, ContainerMemberType>::findIndex(
     bool shouldIgnoreCase) const {
   bool doSlowCheck = shouldIgnoreCase;
 
-  // Optimize for the case where the attribute exists and its name exactly matches.
+  // Optimize for the case where the attribute exists and its name exactly
+  // matches.
   iterator end = this->end();
   unsigned index = 0;
   for (iterator it = begin(); it != end; ++it, ++index) {
@@ -194,7 +196,8 @@ template <typename Container, typename ContainerMemberType>
 size_t AttributeCollectionGeneric<Container, ContainerMemberType>::findSlowCase(
     const AtomicString& name,
     bool shouldIgnoreAttributeCase) const {
-  // Continue to checking case-insensitively and/or full namespaced names if necessary:
+  // Continue to checking case-insensitively and/or full namespaced names if
+  // necessary:
   iterator end = this->end();
   unsigned index = 0;
   for (iterator it = begin(); it != end; ++it, ++index) {
@@ -204,9 +207,9 @@ size_t AttributeCollectionGeneric<Container, ContainerMemberType>::findSlowCase(
       if (shouldIgnoreAttributeCase && equalIgnoringCase(name, it->localName()))
         return index;
     } else {
-      // FIXME: Would be faster to do this comparison without calling toString, which
-      // generates a temporary string by concatenation. But this branch is only reached
-      // if the attribute name has a prefix, which is rare in HTML.
+      // FIXME: Would be faster to do this comparison without calling toString,
+      // which generates a temporary string by concatenation. But this branch is
+      // only reached if the attribute name has a prefix, which is rare in HTML.
       if (equalPossiblyIgnoringCase(name, it->name().toString(),
                                     shouldIgnoreAttributeCase))
         return index;

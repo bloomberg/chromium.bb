@@ -65,7 +65,8 @@ TEST_F(RangeTest, SplitTextNodeRangeWithinText) {
   EXPECT_EQ(oldText, range02->endContainer());
   EXPECT_EQ(2, range02->endOffset());
 
-  // Our implementation always moves the boundary point at the separation point to the end of the original text node.
+  // Our implementation always moves the boundary point at the separation point
+  // to the end of the original text node.
   EXPECT_TRUE(range22->boundaryPointsValid());
   EXPECT_EQ(oldText, range22->startContainer());
   EXPECT_EQ(2, range22->startOffset());

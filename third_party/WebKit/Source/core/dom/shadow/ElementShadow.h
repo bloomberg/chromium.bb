@@ -49,7 +49,8 @@ class CORE_EXPORT ElementShadow final
     return m_shadowRoot->host();
   }
 
-  // TODO(hayato): Remove youngestShadowRoot() and oldestShadowRoot() from ElementShadow
+  // TODO(hayato): Remove youngestShadowRoot() and oldestShadowRoot() from
+  // ElementShadow
   ShadowRoot& youngestShadowRoot() const;
   ShadowRoot& oldestShadowRoot() const {
     DCHECK(m_shadowRoot);

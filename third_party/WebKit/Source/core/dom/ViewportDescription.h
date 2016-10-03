@@ -4,7 +4,8 @@
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
  *           (C) 2006 Alexey Proskuryakov (ap@webkit.org)
  * Copyright (C) 2004, 2005, 2006, 2007, 2008 Apple Inc. All rights reserved.
- * Copyright (C) 2008 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2008 Torch Mobile Inc. All rights reserved.
+ * (http://www.torchmobile.com/)
  * Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies)
  * Copyright (C) 2012-2013 Intel Corporation. All rights reserved.
  *
@@ -124,8 +125,9 @@ struct CORE_EXPORT ViewportDescription {
   bool isSpecifiedByAuthor() const { return type != UserAgentStyleSheet; }
   bool matchesHeuristicsForGpuRasterization() const;
 
-  // Reports UMA stat on whether the page is considered mobile or desktop and what kind of
-  // mobile it is. Applies only to Android, must only be called once per page load.
+  // Reports UMA stat on whether the page is considered mobile or desktop and
+  // what kind of mobile it is. Applies only to Android, must only be called
+  // once per page load.
   void reportMobilePageStats(const LocalFrame*) const;
 
  private:

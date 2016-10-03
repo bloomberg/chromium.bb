@@ -144,7 +144,8 @@ void ScriptedIdleTaskController::callbackFired(
       // Queue for execution when we are resumed.
       m_pendingTimeouts.append(id);
     }
-    // Just drop callbacks called while suspended, these will be reposted on the idle task queue when we are resumed.
+    // Just drop callbacks called while suspended, these will be reposted on the
+    // idle task queue when we are resumed.
     return;
   }
 

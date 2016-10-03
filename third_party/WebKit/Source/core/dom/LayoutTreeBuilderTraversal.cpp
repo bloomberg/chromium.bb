@@ -57,7 +57,9 @@ inline static void assertPseudoElementParent(
 }
 
 ContainerNode* parent(const Node& node, ParentDetails* details) {
-  // TODO(hayato): Uncomment this once we can be sure LayoutTreeBuilderTraversal::parent() is used only for a node which is connected.
+  // TODO(hayato): Uncomment this once we can be sure
+  // LayoutTreeBuilderTraversal::parent() is used only for a node which is
+  // connected.
   // DCHECK(node.isConnected());
   if (node.isPseudoElement()) {
     assertPseudoElementParent(toPseudoElement(node));

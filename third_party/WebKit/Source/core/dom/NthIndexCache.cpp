@@ -222,11 +222,11 @@ unsigned NthIndexData::nthLastOfTypeIndex(Element& element) const {
 }
 
 NthIndexData::NthIndexData(ContainerNode& parent) {
-  // The frequency at which we cache the nth-index for a set of siblings.
-  // A spread value of 3 means every third Element will have its nth-index cached.
-  // Using a spread value > 1 is done to save memory. Looking up the nth-index will
-  // still be done in constant time in terms of sibling count, at most 'spread'
-  // elements will be traversed.
+  // The frequency at which we cache the nth-index for a set of siblings.  A
+  // spread value of 3 means every third Element will have its nth-index cached.
+  // Using a spread value > 1 is done to save memory. Looking up the nth-index
+  // will still be done in constant time in terms of sibling count, at most
+  // 'spread' elements will be traversed.
   const unsigned spread = 3;
   unsigned count = 0;
   for (Element* sibling = ElementTraversal::firstChild(parent); sibling;
@@ -239,11 +239,12 @@ NthIndexData::NthIndexData(ContainerNode& parent) {
 }
 
 NthIndexData::NthIndexData(ContainerNode& parent, const QualifiedName& type) {
-  // The frequency at which we cache the nth-index of type for a set of siblings.
-  // A spread value of 3 means every third Element of its type will have its nth-index cached.
-  // Using a spread value > 1 is done to save memory. Looking up the nth-index of its type will
-  // still be done in less time, as most number of elements traversed
-  // will be equal to find 'spread' elements in the sibling set.
+  // The frequency at which we cache the nth-index of type for a set of
+  // siblings.  A spread value of 3 means every third Element of its type will
+  // have its nth-index cached.  Using a spread value > 1 is done to save
+  // memory. Looking up the nth-index of its type will still be done in less
+  // time, as most number of elements traversed will be equal to find 'spread'
+  // elements in the sibling set.
   const unsigned spread = 3;
   unsigned count = 0;
   for (Element* sibling =

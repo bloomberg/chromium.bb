@@ -20,7 +20,8 @@ HTMLSlotElement* SlotScopedTraversal::findScopeOwnerSlot(
 
 Element* SlotScopedTraversal::nearestAncestorAssignedToSlot(
     const Element& current) {
-  // nearestAncestorAssignedToSlot returns an ancestor element of current which is directly assigned to a slot.
+  // nearestAncestorAssignedToSlot returns an ancestor element of current which
+  // is directly assigned to a slot.
   Element* element = const_cast<Element*>(&current);
   for (; element; element = element->parentElement()) {
     if (element->assignedSlot())
@@ -30,8 +31,10 @@ Element* SlotScopedTraversal::nearestAncestorAssignedToSlot(
 }
 
 Element* SlotScopedTraversal::next(const Element& current) {
-  // current.assignedSlot returns a slot only when current is assigned explicitly
-  // If current is assigned to a slot, return a descendant of current, which is in the assigned scope of the same slot as current.
+  // current.assignedSlot returns a slot only when current is assigned
+  // explicitly
+  // If current is assigned to a slot, return a descendant of current, which is
+  // in the assigned scope of the same slot as current.
   HTMLSlotElement* slot = current.assignedSlot();
   Element* nearestAncestorAssignedToSlot =
       SlotScopedTraversal::nearestAncestorAssignedToSlot(current);

@@ -45,9 +45,10 @@ class ScriptRunnerTest : public testing::Test {
         m_element(m_document->createElement("foo", ASSERT_NO_EXCEPTION)) {}
 
   void SetUp() override {
-    // We have to create ScriptRunner after initializing platform, because we need
-    // Platform::current()->currentThread()->scheduler()->loadingTaskRunner()
-    // to be initialized before creating ScriptRunner to save it in constructor.
+    // We have to create ScriptRunner after initializing platform, because we
+    // need Platform::current()->currentThread()->scheduler()->
+    // loadingTaskRunner() to be initialized before creating ScriptRunner to
+    // save it in constructor.
     m_scriptRunner = ScriptRunner::create(m_document.get());
   }
 
@@ -195,8 +196,8 @@ TEST_F(ScriptRunnerTest, QueueReentrantScript_Async) {
     m_order.append(3);
   }));
 
-  // Make sure that re-entrant calls to notifyScriptReady don't cause ScriptRunner::execute to do
-  // more work than expected.
+  // Make sure that re-entrant calls to notifyScriptReady don't cause
+  // ScriptRunner::execute to do more work than expected.
   m_platform.runSingleTask();
   EXPECT_THAT(m_order, ElementsAre(1));
 
@@ -241,8 +242,8 @@ TEST_F(ScriptRunnerTest, QueueReentrantScript_InOrder) {
     m_order.append(3);
   }));
 
-  // Make sure that re-entrant calls to queueScriptForExecution don't cause ScriptRunner::execute to do
-  // more work than expected.
+  // Make sure that re-entrant calls to queueScriptForExecution don't cause
+  // ScriptRunner::execute to do more work than expected.
   m_platform.runSingleTask();
   EXPECT_THAT(m_order, ElementsAre(1));
 
@@ -385,7 +386,8 @@ TEST_F(ScriptRunnerTest, LateNotifications) {
   m_scriptRunner->notifyScriptReady(scriptLoader1, ScriptRunner::InOrder);
   m_platform.runUntilIdle();
 
-  // At this moment all tasks can be already executed. Make sure that we do not crash here.
+  // At this moment all tasks can be already executed. Make sure that we do not
+  // crash here.
   m_scriptRunner->notifyScriptReady(scriptLoader2, ScriptRunner::InOrder);
   m_platform.runUntilIdle();
 
@@ -411,7 +413,8 @@ TEST_F(ScriptRunnerTest, TasksWithDeadScriptRunner) {
 
   ThreadState::current()->collectAllGarbage();
 
-  // m_scriptRunner is gone. We need to make sure that ScriptRunner::Task do not access dead object.
+  // m_scriptRunner is gone. We need to make sure that ScriptRunner::Task do not
+  // access dead object.
   EXPECT_CALL(*scriptLoader1, execute()).Times(0);
   EXPECT_CALL(*scriptLoader2, execute()).Times(0);
 

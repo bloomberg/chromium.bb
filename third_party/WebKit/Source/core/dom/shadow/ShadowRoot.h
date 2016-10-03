@@ -52,14 +52,17 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
   USING_GARBAGE_COLLECTED_MIXIN(ShadowRoot);
 
  public:
-  // FIXME: Current implementation does not work well if a shadow root is dynamically created.
-  // So multiple shadow subtrees in several elements are prohibited.
-  // See https://github.com/w3c/webcomponents/issues/102 and http://crbug.com/234020
+  // FIXME: Current implementation does not work well if a shadow root is
+  // dynamically created.  So multiple shadow subtrees in several elements are
+  // prohibited.
+  // See https://github.com/w3c/webcomponents/issues/102 and
+  // http://crbug.com/234020
   static ShadowRoot* create(Document& document, ShadowRootType type) {
     return new ShadowRoot(document, type);
   }
 
-  // Disambiguate between Node and TreeScope hierarchies; TreeScope's implementation is simpler.
+  // Disambiguate between Node and TreeScope hierarchies; TreeScope's
+  // implementation is simpler.
   using TreeScope::document;
   using TreeScope::getElementById;
 

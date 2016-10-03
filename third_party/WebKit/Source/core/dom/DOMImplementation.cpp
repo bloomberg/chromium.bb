@@ -4,7 +4,8 @@
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
  * Copyright (C) 2004, 2005, 2006, 2007, 2008 Apple Inc. All rights reserved.
  * Copyright (C) 2006 Samuel Weinig (sam@webkit.org)
- * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved.
+ * (http://www.torchmobile.com/)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -224,7 +225,8 @@ Document* DOMImplementation::createDocument(const String& type,
   if (inViewSourceMode)
     return HTMLViewSourceDocument::create(init, type);
 
-  // Plugins cannot take HTML and XHTML from us, and we don't even need to initialize the plugin database for those.
+  // Plugins cannot take HTML and XHTML from us, and we don't even need to
+  // initialize the plugin database for those.
   if (type == "text/html")
     return HTMLDocument::create(init);
   if (type == "application/xhtml+xml")
@@ -233,7 +235,8 @@ Document* DOMImplementation::createDocument(const String& type,
   PluginData* pluginData = nullptr;
   if (init.frame() && init.frame()->page() &&
       init.frame()->loader().allowPlugins(NotAboutToInstantiatePlugin)) {
-    // If the document is being created for the main frame, init.frame()->tree().top()->securityContext() returns nullptr.
+    // If the document is being created for the main frame,
+    // init.frame()->tree().top()->securityContext() returns nullptr.
     // For that reason, the origin must be retrieved directly from init.url().
     if (init.frame()->isMainFrame()) {
       RefPtr<SecurityOrigin> origin = SecurityOrigin::create(init.url());
@@ -253,13 +256,16 @@ Document* DOMImplementation::createDocument(const String& type,
   if (Image::supportsType(type) || type == "multipart/x-mixed-replace")
     return ImageDocument::create(init);
 
-  // Check to see if the type can be played by our media player, if so create a MediaDocument
+  // Check to see if the type can be played by our media player, if so create a
+  // MediaDocument
   if (HTMLMediaElement::supportsType(ContentType(type)))
     return MediaDocument::create(init);
 
-  // Everything else except text/plain can be overridden by plugins. In particular, Adobe SVG Viewer should be used for SVG, if installed.
-  // Disallowing plugins to use text/plain prevents plugins from hijacking a fundamental type that the browser is expected to handle,
-  // and also serves as an optimization to prevent loading the plugin database in the common case.
+  // Everything else except text/plain can be overridden by plugins. In
+  // particular, Adobe SVG Viewer should be used for SVG, if installed.
+  // Disallowing plugins to use text/plain prevents plugins from hijacking a
+  // fundamental type that the browser is expected to handle, and also serves as
+  // an optimization to prevent loading the plugin database in the common case.
   if (type != "text/plain" && pluginData && pluginData->supportsMimeType(type))
     return PluginDocument::create(init);
   if (isTextMIMEType(type))

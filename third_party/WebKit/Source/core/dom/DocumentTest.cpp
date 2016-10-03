@@ -69,8 +69,8 @@ void DocumentTest::setHtmlInnerHTML(const char* htmlContent) {
   document().view()->updateAllLifecyclePhases();
 }
 
-// This tests that we properly resize and re-layout pages for printing in the presence of
-// media queries effecting elements in a subtree layout boundary
+// This tests that we properly resize and re-layout pages for printing in the
+// presence of media queries effecting elements in a subtree layout boundary
 TEST_F(DocumentTest, PrintRelayout) {
   setHtmlInnerHTML(
       "<style>"
@@ -99,7 +99,8 @@ TEST_F(DocumentTest, PrintRelayout) {
   EXPECT_EQ(document().documentElement()->offsetWidth(), 800);
 }
 
-// This test checks that Documunt::linkManifest() returns a value conform to the specification.
+// This test checks that Documunt::linkManifest() returns a value conform to the
+// specification.
 TEST_F(DocumentTest, LinkManifest) {
   // Test the default result.
   EXPECT_EQ(0, document().linkManifest());
@@ -205,7 +206,8 @@ TEST_F(DocumentTest, referrerPolicyParsing) {
   for (auto test : tests) {
     document().setReferrerPolicy(ReferrerPolicyDefault);
     if (test.isLegacy) {
-      // Legacy keyword support must be explicitly enabled for the policy to parse successfully.
+      // Legacy keyword support must be explicitly enabled for the policy to
+      // parse successfully.
       document().parseAndSetReferrerPolicy(test.policy);
       EXPECT_EQ(ReferrerPolicyDefault, document().getReferrerPolicy());
       document().parseAndSetReferrerPolicy(test.policy, true);

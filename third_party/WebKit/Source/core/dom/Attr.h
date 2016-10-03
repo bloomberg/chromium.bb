@@ -3,7 +3,8 @@
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Peter Kelly (pmk@post.com)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
- * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights
+ * reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -80,8 +81,10 @@ class CORE_EXPORT Attr final : public Node {
 
   bool isAttributeNode() const override { return true; }
 
-  // Attr wraps either an element/name, or a name/value pair (when it's a standalone Node.)
-  // Note that m_name is always set, but m_element/m_standaloneValue may be null.
+  // Attr wraps either an element/name, or a name/value pair (when it's a
+  // standalone Node.)
+  // Note that m_name is always set, but m_element/m_standaloneValue may be
+  // null.
   Member<Element> m_element;
   QualifiedName m_name;
   // Holds the value if it is a standalone Node, or the local name of the

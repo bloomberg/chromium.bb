@@ -10,16 +10,16 @@
  *     notice, this list of conditions and the following disclaimer in the
  *     documentation and/or other materials provided with the distribution.
  *
- * THIS SOFTWARE IS PROVIDED BY APPLE INC. AND ITS CONTRIBUTORS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * THIS SOFTWARE IS PROVIDED BY APPLE INC. AND ITS CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL APPLE INC. OR ITS CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
- * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * DISCLAIMED. IN NO EVENT SHALL APPLE INC. OR ITS CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "core/dom/DOMTokenList.h"
@@ -109,8 +109,8 @@ void DOMTokenList::add(const AtomicString& token,
   add(tokens, exceptionState);
 }
 
-// Optimally, this should take a Vector<AtomicString> const ref in argument but the
-// bindings generator does not handle that.
+// Optimally, this should take a Vector<AtomicString> const ref in argument but
+// the bindings generator does not handle that.
 void DOMTokenList::add(const Vector<String>& tokens,
                        ExceptionState& exceptionState) {
   Vector<String> filteredTokens;
@@ -136,8 +136,8 @@ void DOMTokenList::remove(const AtomicString& token,
   remove(tokens, exceptionState);
 }
 
-// Optimally, this should take a Vector<AtomicString> const ref in argument but the
-// bindings generator does not handle that.
+// Optimally, this should take a Vector<AtomicString> const ref in argument but
+// the bindings generator does not handle that.
 void DOMTokenList::remove(const Vector<String>& tokens,
                           ExceptionState& exceptionState) {
   if (!validateTokens(tokens, exceptionState))
@@ -209,8 +209,8 @@ AtomicString DOMTokenList::addToken(const AtomicString& input,
   return addTokens(input, tokens);
 }
 
-// This returns an AtomicString because it is always passed as argument to setValue() and setValue()
-// takes an AtomicString in argument.
+// This returns an AtomicString because it is always passed as argument to
+// setValue() and setValue() takes an AtomicString in argument.
 AtomicString DOMTokenList::addTokens(const AtomicString& input,
                                      const Vector<String>& tokens) {
   bool needsSpace = false;
@@ -238,11 +238,12 @@ AtomicString DOMTokenList::removeToken(const AtomicString& input,
   return removeTokens(input, tokens);
 }
 
-// This returns an AtomicString because it is always passed as argument to setValue() and setValue()
-// takes an AtomicString in argument.
+// This returns an AtomicString because it is always passed as argument to
+// setValue() and setValue() takes an AtomicString in argument.
 AtomicString DOMTokenList::removeTokens(const AtomicString& input,
                                         const Vector<String>& tokens) {
-  // Algorithm defined at http://www.whatwg.org/specs/web-apps/current-work/multipage/common-microsyntaxes.html#remove-a-token-from-a-string
+  // Algorithm defined at
+  // http://www.whatwg.org/specs/web-apps/current-work/multipage/common-microsyntaxes.html#remove-a-token-from-a-string
   // New spec is at https://dom.spec.whatwg.org/#remove-a-token-from-a-string
 
   unsigned inputLength = input.length();

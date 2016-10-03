@@ -2,9 +2,11 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All
+ * rights reserved.
  * Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
- * Copyright (C) 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2009 Torch Mobile Inc. All rights reserved.
+ * (http://www.torchmobile.com/)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -540,7 +542,8 @@ void Node::normalize() {
   updateDistribution();
 
   // Go through the subtree beneath us, normalizing all nodes. This means that
-  // any two adjacent text nodes are merged and any empty text nodes are removed.
+  // any two adjacent text nodes are merged and any empty text nodes are
+  // removed.
 
   Node* node = this;
   while (Node* firstChild = node->firstChild())
@@ -867,7 +870,8 @@ void Node::reattachLayoutTree(const AttachContext& context) {
   AttachContext reattachContext(context);
   reattachContext.performingReattach = true;
 
-  // We only need to detach if the node has already been through attachLayoutTree().
+  // We only need to detach if the node has already been through
+  // attachLayoutTree().
   if (getStyleChangeType() < NeedsReattachStyleChange)
     detachLayoutTree(reattachContext);
   attachLayoutTree(reattachContext);
@@ -904,8 +908,9 @@ void Node::reattachWhitespaceSiblingsIfNeeded(Text* start) {
     if (sibling->isTextNode() && toText(sibling)->containsOnlyWhitespace()) {
       bool hadLayoutObject = !!sibling->layoutObject();
       toText(sibling)->reattachLayoutTreeIfNeeded();
-      // If sibling's layout object status didn't change we don't need to continue checking
-      // other siblings since their layout object status won't change either.
+      // If sibling's layout object status didn't change we don't need to
+      // continue checking other siblings since their layout object status won't
+      // change either.
       if (!!sibling->layoutObject() == hadLayoutObject)
         return;
     } else if (sibling->layoutObject()) {
@@ -927,8 +932,8 @@ int Node::maxCharacterOffset() const {
   return 0;
 }
 
-// FIXME: Shouldn't these functions be in the editing code?  Code that asks questions about HTML in the core DOM class
-// is obviously misplaced.
+// FIXME: Shouldn't these functions be in the editing code?  Code that asks
+// questions about HTML in the core DOM class is obviously misplaced.
 bool Node::canStartSelection() const {
   if (isDisabledFormControl(this))
     return false;
@@ -938,8 +943,9 @@ bool Node::canStartSelection() const {
 
   if (layoutObject()) {
     const ComputedStyle& style = layoutObject()->styleRef();
-    // We allow selections to begin within an element that has -webkit-user-select: none set,
-    // but if the element is draggable then dragging should take priority over selection.
+    // We allow selections to begin within an element that has
+    // -webkit-user-select: none set, but if the element is draggable then
+    // dragging should take priority over selection.
     if (style.userDrag() == DRAG_ELEMENT && style.userSelect() == SELECT_NONE)
       return false;
   }
@@ -947,14 +953,15 @@ bool Node::canStartSelection() const {
   return parent ? parent->canStartSelection() : true;
 }
 
-// StyledElements allow inline style (style="border: 1px"), presentational attributes (ex. color),
-// class names (ex. class="foo bar") and other non-basic styling features. They also control
-// if this element can participate in style sharing.
+// StyledElements allow inline style (style="border: 1px"), presentational
+// attributes (ex. color), class names (ex. class="foo bar") and other non-basic
+// styling features. They also control if this element can participate in style
+// sharing.
 //
-// FIXME: The only things that ever go through StyleResolver that aren't StyledElements are
-// PseudoElements and VTTElements. It's possible we can just eliminate all the checks
-// since those elements will never have class names, inline style, or other things that
-// this apparently guards against.
+// FIXME: The only things that ever go through StyleResolver that aren't
+// StyledElements are PseudoElements and VTTElements. It's possible we can just
+// eliminate all the checks since those elements will never have class names,
+// inline style, or other things that this apparently guards against.
 bool Node::isStyledElement() const {
   return isHTMLElement() || isSVGElement() ||
          (isElementNode() &&
@@ -1331,8 +1338,8 @@ unsigned short Node::compareDocumentPosition(
   const Node* start1 = attr1 ? attr1->ownerElement() : this;
   const Node* start2 = attr2 ? attr2->ownerElement() : otherNode;
 
-  // If either of start1 or start2 is null, then we are disconnected, since one of the nodes is
-  // an orphaned attribute node.
+  // If either of start1 or start2 is null, then we are disconnected, since one
+  // of the nodes is an orphaned attribute node.
   if (!start1 || !start2) {
     unsigned short direction = (this > otherNode) ? kDocumentPositionPreceding
                                                   : kDocumentPositionFollowing;
@@ -1348,15 +1355,19 @@ unsigned short Node::compareDocumentPosition(
     chain2.append(attr2);
 
   if (attr1 && attr2 && start1 == start2 && start1) {
-    // We are comparing two attributes on the same node. Crawl our attribute map and see which one we hit first.
+    // We are comparing two attributes on the same node. Crawl our attribute map
+    // and see which one we hit first.
     const Element* owner1 = attr1->ownerElement();
     AttributeCollection attributes = owner1->attributes();
     for (const Attribute& attr : attributes) {
-      // If neither of the two determining nodes is a child node and nodeType is the same for both determining nodes, then an
-      // implementation-dependent order between the determining nodes is returned. This order is stable as long as no nodes of
-      // the same nodeType are inserted into or removed from the direct container. This would be the case, for example,
-      // when comparing two attributes of the same element, and inserting or removing additional attributes might change
-      // the order between existing attributes.
+      // If neither of the two determining nodes is a child node and nodeType is
+      // the same for both determining nodes, then an implementation-dependent
+      // order between the determining nodes is returned. This order is stable
+      // as long as no nodes of the same nodeType are inserted into or removed
+      // from the direct container. This would be the case, for example, when
+      // comparing two attributes of the same element, and inserting or removing
+      // additional attributes might change the order between existing
+      // attributes.
       if (attr1->getQualifiedName() == attr.name())
         return kDocumentPositionImplementationSpecific |
                kDocumentPositionFollowing;
@@ -1369,9 +1380,10 @@ unsigned short Node::compareDocumentPosition(
     return kDocumentPositionDisconnected;
   }
 
-  // If one node is in the document and the other is not, we must be disconnected.
-  // If the nodes have different owning documents, they must be disconnected.  Note that we avoid
-  // comparing Attr nodes here, since they return false from isConnected() all the time (which seems like a bug).
+  // If one node is in the document and the other is not, we must be
+  // disconnected.  If the nodes have different owning documents, they must be
+  // disconnected.  Note that we avoid comparing Attr nodes here, since they
+  // return false from isConnected() all the time (which seems like a bug).
   if (start1->isConnected() != start2->isConnected() ||
       (treatment == TreatShadowTreesAsDisconnected &&
        start1->treeScope() != start2->treeScope())) {
@@ -1381,7 +1393,8 @@ unsigned short Node::compareDocumentPosition(
            kDocumentPositionImplementationSpecific | direction;
   }
 
-  // We need to find a common ancestor container, and then compare the indices of the two immediate children.
+  // We need to find a common ancestor container, and then compare the indices
+  // of the two immediate children.
   const Node* current;
   for (current = start1; current; current = current->parentOrShadowHostNode())
     chain1.append(current);
@@ -1437,7 +1450,8 @@ unsigned short Node::compareDocumentPosition(
       if (!child1->nextSibling())
         return kDocumentPositionPreceding | connection;
 
-      // Otherwise we need to see which node occurs first.  Crawl backwards from child2 looking for child1.
+      // Otherwise we need to see which node occurs first.  Crawl backwards from
+      // child2 looking for child1.
       for (const Node* child = child2->previousSibling(); child;
            child = child->previousSibling()) {
         if (child == child1)
@@ -1447,8 +1461,8 @@ unsigned short Node::compareDocumentPosition(
     }
   }
 
-  // There was no difference between the two parent chains, i.e., one was a subset of the other.  The shorter
-  // chain is the ancestor.
+  // There was no difference between the two parent chains, i.e., one was a
+  // subset of the other.  The shorter chain is the ancestor.
   return index1 < index2
              ? kDocumentPositionFollowing | kDocumentPositionContainedBy |
                    connection
@@ -1756,12 +1770,12 @@ void Node::showTreeForThisAcrossFrame() const {
 Element* Node::enclosingLinkEventParentOrSelf() const {
   const Node* result = nullptr;
   for (const Node* node = this; node; node = FlatTreeTraversal::parent(*node)) {
-    // For imagemaps, the enclosing link node is the associated area element not the image itself.
-    // So we don't let images be the enclosingLinkNode, even though isLink sometimes returns true
-    // for them.
+    // For imagemaps, the enclosing link node is the associated area element not
+    // the image itself.  So we don't let images be the enclosingLinkNode, even
+    // though isLink sometimes returns true for them.
     if (node->isLink() && !isHTMLImageElement(*node)) {
-      // Casting to Element is safe because only HTMLAnchorElement, HTMLImageElement and
-      // SVGAElement can return true for isLink().
+      // Casting to Element is safe because only HTMLAnchorElement,
+      // HTMLImageElement and SVGAElement can return true for isLink().
       result = node;
       break;
     }
@@ -1827,8 +1841,9 @@ void Node::removedEventListener(
     const AtomicString& eventType,
     const RegisteredEventListener& registeredListener) {
   EventTarget::removedEventListener(eventType, registeredListener);
-  // FIXME: Notify Document that the listener has vanished. We need to keep track of a number of
-  // listeners for each type, not just a bool - see https://bugs.webkit.org/show_bug.cgi?id=33861
+  // FIXME: Notify Document that the listener has vanished. We need to keep
+  // track of a number of listeners for each type, not just a bool - see
+  // https://bugs.webkit.org/show_bug.cgi?id=33861
   if (FrameHost* frameHost = document().frameHost())
     frameHost->eventHandlerRegistry().didRemoveEventHandler(
         *this, eventType, registeredListener.options());
@@ -1975,9 +1990,9 @@ void Node::unregisterMutationObserver(
   if (index == kNotFound)
     return;
 
-  // FIXME: Simplify the registration/transient registration logic to make this understandable by humans.
-  // The explicit dispose() is needed to have the registration
-  // object unregister itself promptly.
+  // FIXME: Simplify the registration/transient registration logic to make this
+  // understandable by humans.  The explicit dispose() is needed to have the
+  // registration object unregister itself promptly.
   registration->dispose();
   registry->remove(index);
 }
@@ -2327,26 +2342,31 @@ void Node::setV0CustomElementState(V0CustomElementState newState) {
 }
 
 void Node::checkSlotChange() {
-  // Common check logic is used in both cases, "after inserted" and "before removed".
+  // Common check logic is used in both cases, "after inserted" and "before
+  // removed".
   if (!isSlotable())
     return;
   if (ShadowRoot* root = v1ShadowRootOfParent()) {
     // Relevant DOM Standard:
     // https://dom.spec.whatwg.org/#concept-node-insert
-    // - 6.1.2: If parent is a shadow host and node is a slotable, then assign a slot for node.
+    // - 6.1.2: If parent is a shadow host and node is a slotable, then assign a
+    //   slot for node.
     // https://dom.spec.whatwg.org/#concept-node-remove
-    // - 10. If node is assigned, then run assign slotables for node’s assigned slot.
+    // - 10. If node is assigned, then run assign slotables for node’s assigned
+    //   slot.
 
-    // Although DOM Standard requires "assign a slot for node / run assign slotables" at this timing,
-    // we skip it as an optimization.
+    // Although DOM Standard requires "assign a slot for node / run assign
+    // slotables" at this timing, we skip it as an optimization.
     if (HTMLSlotElement* slot = root->ensureSlotAssignment().findSlot(*this))
       slot->enqueueSlotChangeEvent();
   } else {
     // Relevant DOM Standard:
     // https://dom.spec.whatwg.org/#concept-node-insert
-    // - 6.1.3: If parent is a slot whose assigned nodes is the empty list, then run signal a slot change for parent.
+    // - 6.1.3: If parent is a slot whose assigned nodes is the empty list, then
+    //   run signal a slot change for parent.
     // https://dom.spec.whatwg.org/#concept-node-remove
-    // - 11. If parent is a slot whose assigned nodes is the empty list, then run signal a slot change for parent.
+    // - 11. If parent is a slot whose assigned nodes is the empty list, then
+    //   run signal a slot change for parent.
     Element* parent = parentElement();
     if (parent && isHTMLSlotElement(parent)) {
       HTMLSlotElement& parentSlot = toHTMLSlotElement(*parent);
@@ -2381,7 +2401,8 @@ DEFINE_TRACE_WRAPPERS(Node) {
 }
 
 unsigned Node::lengthOfContents() const {
-  // This switch statement must be consistent with that of Range::processContentsBetweenOffsets.
+  // This switch statement must be consistent with that of
+  // Range::processContentsBetweenOffsets.
   switch (getNodeType()) {
     case Node::kTextNode:
     case Node::kCdataSectionNode:

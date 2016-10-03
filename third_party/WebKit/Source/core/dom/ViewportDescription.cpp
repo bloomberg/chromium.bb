@@ -3,8 +3,10 @@
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
  *           (C) 2006 Alexey Proskuryakov (ap@webkit.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2011 Apple Inc. All rights reserved.
- * Copyright (C) 2008 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2011 Apple Inc. All rights
+ * reserved.
+ * Copyright (C) 2008 Torch Mobile Inc. All rights reserved.
+ * (http://www.torchmobile.com/)
  * Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies)
  * Copyright (C) 2012-2013 Intel Corporation. All rights reserved.
  *
@@ -89,9 +91,9 @@ PageScaleConstraints ViewportDescription::resolve(
   Length copyMinWidth = minWidth;
   // In case the width (used for min- and max-width) is undefined.
   if (isLegacyViewportType() && maxWidth.isAuto()) {
-    // The width viewport META property is translated into 'width' descriptors, setting
-    // the 'min' value to 'extend-to-zoom' and the 'max' value to the intended length.
-    // In case the UA-defines a min-width, use that as length.
+    // The width viewport META property is translated into 'width' descriptors,
+    // setting the 'min' value to 'extend-to-zoom' and the 'max' value to the
+    // intended length.  In case the UA-defines a min-width, use that as length.
     if (zoom == ViewportDescription::ValueAuto) {
       copyMinWidth = Length(ExtendToZoom);
       copyMaxWidth = legacyFallbackWidth;
@@ -246,7 +248,8 @@ void ViewportDescription::reportMobilePageStats(
       !mainFrame->document())
     return;
 
-  // Avoid chrome:// pages like the new-tab page (on Android new tab is non-http).
+  // Avoid chrome:// pages like the new-tab page (on Android new tab is
+  // non-http).
   if (!mainFrame->document()->url().protocolIsInHTTPFamily())
     return;
 
@@ -264,8 +267,9 @@ void ViewportDescription::reportMobilePageStats(
       metaTagTypeHistogram.count(ConstantWidth);
 
       if (mainFrame->view()) {
-        // To get an idea of how "far" the viewport is from the device's ideal width, we
-        // report the zoom level that we'd need to be at for the entire page to be visible.
+        // To get an idea of how "far" the viewport is from the device's ideal
+        // width, we report the zoom level that we'd need to be at for the
+        // entire page to be visible.
         int viewportWidth = maxWidth.intValue();
         int windowWidth = mainFrame->host()->visualViewport().size().width();
         int overviewZoomPercent =

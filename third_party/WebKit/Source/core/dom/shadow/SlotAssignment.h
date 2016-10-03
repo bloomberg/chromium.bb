@@ -18,7 +18,8 @@ class HTMLSlotElement;
 class Node;
 class ShadowRoot;
 
-// TODO(hayato): Support SlotAssignment for non-shadow trees, e.g. a document tree.
+// TODO(hayato): Support SlotAssignment for non-shadow trees, e.g. a document
+// tree.
 class SlotAssignment final : public GarbageCollected<SlotAssignment> {
  public:
   static SlotAssignment* create(ShadowRoot& owner) {

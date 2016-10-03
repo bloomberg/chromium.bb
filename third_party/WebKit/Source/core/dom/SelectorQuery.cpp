@@ -253,19 +253,22 @@ inline bool ancestorHasClassName(ContainerNode& rootNode,
   return false;
 }
 
-// If returns true, traversalRoots has the elements that may match the selector query.
+// If returns true, traversalRoots has the elements that may match the selector
+// query.
 //
-// If returns false, traversalRoots has the rootNode parameter or descendants of rootNode representing
-// the subtree for which we can limit the querySelector traversal.
+// If returns false, traversalRoots has the rootNode parameter or descendants of
+// rootNode representing the subtree for which we can limit the querySelector
+// traversal.
 //
-// The travseralRoots may be empty, regardless of the returned bool value, if this method finds that the selectors won't
-// match any element.
+// The travseralRoots may be empty, regardless of the returned bool value, if
+// this method finds that the selectors won't match any element.
 template <typename SelectorQueryTrait>
 void SelectorDataList::findTraverseRootsAndExecute(
     ContainerNode& rootNode,
     typename SelectorQueryTrait::OutputType& output) const {
-  // We need to return the matches in document order. To use id lookup while there is possiblity of multiple matches
-  // we would need to sort the results. For now, just traverse the document in that case.
+  // We need to return the matches in document order. To use id lookup while
+  // there is possiblity of multiple matches we would need to sort the
+  // results. For now, just traverse the document in that case.
   DCHECK_EQ(m_selectors.size(), 1u);
 
   bool isRightmostSelector = true;
@@ -300,8 +303,8 @@ void SelectorDataList::findTraverseRootsAndExecute(
       return;
     }
 
-    // If we have both CSSSelector::Id and CSSSelector::Class at the same time, we should use Id
-    // to find traverse root.
+    // If we have both CSSSelector::Id and CSSSelector::Class at the same time,
+    // we should use Id to find traverse root.
     if (!SelectorQueryTrait::shouldOnlyMatchFirstElement && !startFromParent &&
         selector->match() == CSSSelector::Class) {
       if (isRightmostSelector) {
@@ -312,7 +315,8 @@ void SelectorDataList::findTraverseRootsAndExecute(
             output);
         return;
       }
-      // Since there exists some ancestor element which has the class name, we need to see all children of rootNode.
+      // Since there exists some ancestor element which has the class name, we
+      // need to see all children of rootNode.
       if (ancestorHasClassName(rootNode, selector->value())) {
         executeForTraverseRoot<SelectorQueryTrait>(*m_selectors[0], &rootNode,
                                                    DoesNotMatchTraverseRoots,
@@ -425,8 +429,9 @@ void SelectorDataList::executeSlow(
   }
 }
 
-// FIXME: Move the following helper functions, authorShadowRootOf, firstWithinTraversingShadowTree,
-// nextTraversingShadowTree to the best place, e.g. NodeTraversal.
+// FIXME: Move the following helper functions, authorShadowRootOf,
+// firstWithinTraversingShadowTree, nextTraversingShadowTree to the best place,
+// e.g. NodeTraversal.
 static ShadowRoot* authorShadowRootOf(const ContainerNode& node) {
   if (!node.isElementNode() || !isShadowHost(&node))
     return nullptr;
@@ -534,7 +539,8 @@ void SelectorDataList::execute(
   const CSSSelector& selector = *m_selectors[0];
   const CSSSelector& firstSelector = selector;
 
-  // Fast path for querySelector*('#id'), querySelector*('tag#id'), querySelector*('tag[id=example]').
+  // Fast path for querySelector*('#id'), querySelector*('tag#id'),
+  // querySelector*('tag[id=example]').
   if (const CSSSelector* idSelector = selectorForIdLookup(firstSelector)) {
     const AtomicString& idToMatch = idSelector->value();
     if (rootNode.treeScope().containsMultipleElementsWithId(idToMatch)) {

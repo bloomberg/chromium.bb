@@ -3,7 +3,8 @@
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Peter Kelly (pmk@post.com)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
- * Copyright (C) 2003, 2004, 2005, 2006, 2008, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2008, 2012 Apple Inc. All rights
+ * reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -41,8 +42,8 @@ class Attribute {
       : m_name(name), m_value(value) {}
 
   // NOTE: The references returned by these functions are only valid for as long
-  // as the Attribute stays in place. For example, calling a function that mutates
-  // an Element's internal attribute storage may invalidate them.
+  // as the Attribute stays in place. For example, calling a function that
+  // mutates an Element's internal attribute storage may invalidate them.
   const AtomicString& value() const { return m_value; }
   const AtomicString& prefix() const { return m_name.prefix(); }
   const AtomicString& localName() const { return m_name.localName(); }
@@ -61,8 +62,8 @@ class Attribute {
   void parserSetName(const QualifiedName& name) { m_name = name; }
 
 #if COMPILER(MSVC)
-  // NOTE: This constructor is not actually implemented, it's just defined so MSVC
-  // will let us use a zero-length array of Attributes.
+  // NOTE: This constructor is not actually implemented, it's just defined so
+  // MSVC will let us use a zero-length array of Attributes.
   Attribute();
 #endif
 

@@ -39,9 +39,9 @@
 namespace blink {
 
 // The accumulator map is used to make sure that there is only one mutation
-// accumulator for a given node even if there are multiple ChildListMutationScopes
-// on the stack. The map is always empty when there are no ChildListMutationScopes
-// on the stack.
+// accumulator for a given node even if there are multiple
+// ChildListMutationScopes on the stack. The map is always empty when there are
+// no ChildListMutationScopes on the stack.
 typedef HeapHashMap<Member<Node>, Member<ChildListMutationAccumulator>>
     AccumulatorMap;
 

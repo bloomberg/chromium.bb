@@ -41,12 +41,14 @@ namespace blink {
 
 class MutationObserverInterestGroup;
 
-// ChildListMutationAccumulator is not meant to be used directly; ChildListMutationScope is the public interface.
+// ChildListMutationAccumulator is not meant to be used directly;
+// ChildListMutationScope is the public interface.
 //
 // One ChildListMutationAccumulator for a given Node is shared between all the
-// active ChildListMutationScopes for that Node. Once the last ChildListMutationScope
-// is destructed the accumulator enqueues a mutation record for the recorded
-// mutations and the accumulator can be garbage collected.
+// active ChildListMutationScopes for that Node. Once the last
+// ChildListMutationScope is destructed the accumulator enqueues a mutation
+// record for the recorded mutations and the accumulator can be garbage
+// collected.
 class ChildListMutationAccumulator final
     : public GarbageCollected<ChildListMutationAccumulator> {
  public:

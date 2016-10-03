@@ -109,7 +109,8 @@ void MutationObserverRegistration::clearTransientRegistrations() {
 void MutationObserverRegistration::unregister() {
   DCHECK(m_registrationNode);
   m_registrationNode->unregisterMutationObserver(this);
-  // The above line will cause this object to be deleted, so don't do any more in this function.
+  // The above line will cause this object to be deleted, so don't do any more
+  // in this function.
 }
 
 bool MutationObserverRegistration::shouldReceiveMutationFrom(

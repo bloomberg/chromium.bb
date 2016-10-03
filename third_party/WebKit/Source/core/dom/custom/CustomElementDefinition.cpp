@@ -39,7 +39,8 @@ static String errorMessageForConstructorResult(Element* element,
                                                Document& document,
                                                const QualifiedName& tagName) {
   // https://dom.spec.whatwg.org/#concept-create-element
-  // 6.1.4. If result's attribute list is not empty, then throw a NotSupportedError.
+  // 6.1.4. If result's attribute list is not empty, then throw a
+  // NotSupportedError.
   if (element->hasAttributes())
     return "The result must not have attributes";
   // 6.1.5. If result has children, then throw a NotSupportedError.
@@ -48,13 +49,16 @@ static String errorMessageForConstructorResult(Element* element,
   // 6.1.6. If result's parent is not null, then throw a NotSupportedError.
   if (element->parentNode())
     return "The result must not have a parent";
-  // 6.1.7. If result's node document is not document, then throw a NotSupportedError.
+  // 6.1.7. If result's node document is not document, then throw a
+  // NotSupportedError.
   if (&element->document() != &document)
     return "The result must be in the same document";
-  // 6.1.8. If result's namespace is not the HTML namespace, then throw a NotSupportedError.
+  // 6.1.8. If result's namespace is not the HTML namespace, then throw a
+  // NotSupportedError.
   if (element->namespaceURI() != HTMLNames::xhtmlNamespaceURI)
     return "The result must have HTML namespace";
-  // 6.1.9. If result's local name is not equal to localName, then throw a NotSupportedError.
+  // 6.1.9. If result's local name is not equal to localName, then throw a
+  // NotSupportedError.
   if (element->localName() != tagName.localName())
     return "The result must have the same localName";
   return String();
@@ -66,7 +70,8 @@ void CustomElementDefinition::checkConstructorResult(
     const QualifiedName& tagName,
     ExceptionState& exceptionState) {
   // https://dom.spec.whatwg.org/#concept-create-element
-  // 6.1.3. If result does not implement the HTMLElement interface, throw a TypeError.
+  // 6.1.3. If result does not implement the HTMLElement interface, throw a
+  // TypeError.
   // See https://github.com/whatwg/html/issues/1402 for more clarifications.
   if (!element || !element->isHTMLElement()) {
     exceptionState.throwTypeError(
@@ -90,7 +95,8 @@ HTMLElement* CustomElementDefinition::createElementForConstructor(
       HTMLElement::create(QualifiedName(nullAtom, descriptor().localName(),
                                         HTMLNames::xhtmlNamespaceURI),
                           document);
-  // TODO(davaajav): write this as one call to setCustomElementState instead of two
+  // TODO(davaajav): write this as one call to setCustomElementState instead of
+  // two
   element->setCustomElementState(CustomElementState::Undefined);
   element->setCustomElementDefinition(this);
   return element;

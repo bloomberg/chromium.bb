@@ -3,8 +3,10 @@
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
  *           (C) 2006 Alexey Proskuryakov (ap@webkit.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012 Apple Inc. All rights reserved.
- * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012 Apple Inc. All
+ * rights reserved.
+ * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved.
+ * (http://www.torchmobile.com/)
  * Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies)
  * Copyright (C) 2013 Google Inc. All rights reserved.
  *
@@ -101,13 +103,14 @@ class CORE_EXPORT DocumentInit final {
   Member<V0CustomElementRegistrationContext> m_registrationContext;
   bool m_createNewRegistrationContext;
 
-  // In some rare cases, we'll re-use a LocalDOMWindow for a new Document. For example,
-  // when a script calls window.open("..."), the browser gives JavaScript a window
-  // synchronously but kicks off the load in the window asynchronously. Web sites
-  // expect that modifications that they make to the window object synchronously
-  // won't be blown away when the network load commits. To make that happen, we
-  // "securely transition" the existing LocalDOMWindow to the Document that results from
-  // the network load. See also SecurityContext::isSecureTransitionTo.
+  // In some rare cases, we'll re-use a LocalDOMWindow for a new Document. For
+  // example, when a script calls window.open("..."), the browser gives
+  // JavaScript a window synchronously but kicks off the load in the window
+  // asynchronously. Web sites expect that modifications that they make to the
+  // window object synchronously won't be blown away when the network load
+  // commits. To make that happen, we "securely transition" the existing
+  // LocalDOMWindow to the Document that results from the network load. See also
+  // SecurityContext::isSecureTransitionTo.
   // FIXME: This is for DocumentWriter creation, not for one of Document.
   bool m_shouldReuseDefaultView;
 };

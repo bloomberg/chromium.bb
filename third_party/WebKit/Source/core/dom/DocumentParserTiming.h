@@ -90,8 +90,8 @@ class DocumentParserTiming final
   }
 
   // Returns the sum of all script execution durations due to
-  // document.write reported via recordParseBlockedOnScriptExecutionDuration. Note
-  // that some uncommon cases are not currently covered by this method. See
+  // document.write reported via recordParseBlockedOnScriptExecutionDuration.
+  // Note that some uncommon cases are not currently covered by this method. See
   // crbug/600711 for details.
   double parserBlockedOnScriptExecutionFromDocumentWriteDuration() const {
     return m_parserBlockedOnScriptExecutionFromDocumentWriteDuration;

@@ -17,7 +17,8 @@ namespace blink {
 void SlotAssignment::slotAdded(HTMLSlotElement& slot) {
   // Relevant DOM Standard:
   // https://dom.spec.whatwg.org/#concept-node-insert
-  // 6.4:  Run assign slotables for a tree with node's tree and a set containing each inclusive descendant of node that is a slot.
+  // 6.4:  Run assign slotables for a tree with node's tree and a set containing
+  // each inclusive descendant of node that is a slot.
 
   ++m_slotCount;
   m_needsCollectSlots = true;
@@ -37,8 +38,8 @@ void SlotAssignment::slotAdded(HTMLSlotElement& slot) {
     oldActive.enqueueSlotChangeEvent();
   // TODO(hayato): We should not enqeueue a slotchange event for |oldActive|
   // if |oldActive| was inserted together with |slot|.
-  // This could happen if |oldActive| and |slot| are descendants of the inserted node, and
-  // |oldActive| is preceding |slot|.
+  // This could happen if |oldActive| and |slot| are descendants of the inserted
+  // node, and |oldActive| is preceding |slot|.
 }
 
 void SlotAssignment::slotRemoved(HTMLSlotElement& slot) {
@@ -55,7 +56,8 @@ void SlotAssignment::slotRemoved(HTMLSlotElement& slot) {
     if (newActive->findHostChildWithSameSlotName())
       newActive->enqueueSlotChangeEvent();
     // TODO(hayato): Prevent a false-positive slotchange.
-    // This could happen if more than one slots which have the same name are descendants of the removed node.
+    // This could happen if more than one slots which have the same name are
+    // descendants of the removed node.
   }
 }
 
@@ -73,7 +75,8 @@ bool SlotAssignment::findHostChildBySlotName(
 
 void SlotAssignment::slotRenamed(const AtomicString& oldSlotName,
                                  HTMLSlotElement& slot) {
-  // |slot| has already new name. Thus, we can not use slot.hasAssignedNodesSynchronously.
+  // |slot| has already new name. Thus, we can not use
+  // slot.hasAssignedNodesSynchronously.
   bool hasAssignedNodesBefore = (findSlotByName(oldSlotName) == &slot) &&
                                 findHostChildBySlotName(oldSlotName);
 
@@ -137,7 +140,8 @@ void SlotAssignment::resolveDistribution() {
   for (auto slot : slots)
     slot->resolveDistributedNodes();
 
-  // Update each slot's distribution in reverse tree order so that a child slot is visited before its parent slot.
+  // Update each slot's distribution in reverse tree order so that a child slot
+  // is visited before its parent slot.
   for (auto slot = slots.rbegin(); slot != slots.rend(); ++slot) {
     (*slot)->updateDistributedNodesWithFallback();
     (*slot)->lazyReattachDistributedNodesIfNeeded();

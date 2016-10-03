@@ -41,9 +41,10 @@ inline const ComputedStyle* Node::computedStyle() const {
 inline ComputedStyle* Node::mutableComputedStyle() const {
   if (LayoutObject* layoutObject = this->layoutObject())
     return layoutObject->mutableStyle();
-  // <option> and <optgroup> can be styled even if they don't get layout objects,
-  // so they store their style internally and return it through nonLayoutObjectComputedStyle().
-  // We check here explicitly to avoid the virtual call in the common case.
+  // <option> and <optgroup> can be styled even if they don't get layout
+  // objects, so they store their style internally and return it through
+  // nonLayoutObjectComputedStyle().  We check here explicitly to avoid the
+  // virtual call in the common case.
   if (isHTMLOptGroupElement(*this) || isHTMLOptionElement(this))
     return nonLayoutObjectComputedStyle();
   return 0;

@@ -13,7 +13,8 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301
+ * USA
  */
 
 #ifndef ExceptionCode_h
@@ -27,7 +28,8 @@ namespace blink {
 // an exception of any type can be expressed with a single integer.
 typedef int ExceptionCode;
 
-// This list must be in sync with the |domExceptions| in PrivateScriptRunner.js and |coreExceptions| in DOMExceptions.cpp.
+// This list must be in sync with the |domExceptions| in PrivateScriptRunner.js
+// and |coreExceptions| in DOMExceptions.cpp.
 // Some of these are considered historical since they have been
 // changed or removed from the specifications.
 enum {
@@ -38,7 +40,8 @@ enum {
   NoModificationAllowedError,
   NotFoundError,
   NotSupportedError,
-  InUseAttributeError,  // Historical. Only used in setAttributeNode etc which have been removed from the DOM specs.
+  InUseAttributeError,  // Historical. Only used in setAttributeNode etc which
+                        // have been removed from the DOM specs.
 
   // Introduced in DOM Level 2:
   InvalidStateError,
