@@ -142,17 +142,7 @@ bool IncognitoModePrefs::IntToAvailability(int in_value,
 // static
 IncognitoModePrefs::Availability IncognitoModePrefs::GetAvailability(
     const PrefService* pref_service) {
-  DCHECK(pref_service);
-  int pref_value = pref_service->GetInteger(prefs::kIncognitoModeAvailability);
-  Availability result = IncognitoModePrefs::ENABLED;
-  bool valid = IntToAvailability(pref_value, &result);
-  DCHECK(valid);
-  if (ArePlatformParentalControlsEnabled()) {
-    if (result == IncognitoModePrefs::FORCED)
-      LOG(ERROR) << "Ignoring FORCED incognito. Parental control logging on";
-    return IncognitoModePrefs::DISABLED;
-  }
-  return result;
+  return GetAvailabilityInternal(pref_service, CHECK_PARENTAL_CONTROLS);
 }
 
 // static
@@ -172,10 +162,17 @@ void IncognitoModePrefs::RegisterProfilePrefs(
 bool IncognitoModePrefs::ShouldLaunchIncognito(
     const base::CommandLine& command_line,
     const PrefService* prefs) {
-  Availability incognito_avail = GetAvailability(prefs);
-  return incognito_avail != IncognitoModePrefs::DISABLED &&
-         (command_line.HasSwitch(switches::kIncognito) ||
-          incognito_avail == IncognitoModePrefs::FORCED);
+  // Note: This code only checks parental controls if the user requested
+  // to launch in incognito mode or if it was forced via prefs. This way,
+  // the parental controls check (which can be quite slow) can be avoided
+  // most of the time.
+  const bool should_use_incognito =
+      command_line.HasSwitch(switches::kIncognito) ||
+      GetAvailabilityInternal(prefs, DONT_CHECK_PARENTAL_CONTROLS) ==
+          IncognitoModePrefs::FORCED;
+  return should_use_incognito &&
+         GetAvailabilityInternal(prefs, CHECK_PARENTAL_CONTROLS) !=
+             IncognitoModePrefs::DISABLED;
 }
 
 // static
@@ -220,3 +217,20 @@ bool IncognitoModePrefs::ArePlatformParentalControlsEnabled() {
 #endif
 }
 
+// static
+IncognitoModePrefs::Availability IncognitoModePrefs::GetAvailabilityInternal(
+    const PrefService* pref_service,
+    GetAvailabilityMode mode) {
+  DCHECK(pref_service);
+  int pref_value = pref_service->GetInteger(prefs::kIncognitoModeAvailability);
+  Availability result = IncognitoModePrefs::ENABLED;
+  bool valid = IntToAvailability(pref_value, &result);
+  DCHECK(valid);
+  if (result != IncognitoModePrefs::DISABLED &&
+      mode == CHECK_PARENTAL_CONTROLS && ArePlatformParentalControlsEnabled()) {
+    if (result == IncognitoModePrefs::FORCED)
+      LOG(ERROR) << "Ignoring FORCED incognito. Parental control logging on";
+    return IncognitoModePrefs::DISABLED;
+  }
+  return result;
+}
