@@ -82,8 +82,8 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   LayoutUnit staticInlinePositionForPositionedChild(const LayoutBox& child);
   LayoutUnit staticBlockPositionForPositionedChild(const LayoutBox& child);
 
-  // Returns true if the position changed. In that case, the child will have to be
-  // laid out again.
+  // Returns true if the position changed. In that case, the child will have to
+  // be laid out again.
   bool setStaticPositionForPositionedLayout(LayoutBox& child);
 
  protected:
@@ -115,7 +115,8 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   struct LineContext;
 
   typedef Vector<FlexItem> OrderedFlexItemList;
-  // Use an inline capacity of 8, since flexbox containers usually have less than 8 children.
+  // Use an inline capacity of 8, since flexbox containers usually have less
+  // than 8 children.
   typedef Vector<LayoutRect, 8> ChildFrameRects;
 
   bool hasOrthogonalFlow(const LayoutBox& child) const;
@@ -201,7 +202,8 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
       const LayoutBox& child,
       LayoutUnit childSize);
   FlexItem constructFlexItem(LayoutBox& child, ChildLayoutType);
-  // The hypothetical main size of an item is the flex base size clamped according to its min and max main size properties
+  // The hypothetical main size of an item is the flex base size clamped
+  // according to its min and max main size properties
   bool computeNextFlexLine(OrderedFlexItemList& orderedChildren,
                            LayoutUnit& sumFlexBaseSize,
                            double& totalFlexGrow,
@@ -257,12 +259,15 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
       LayoutBox* child,
       float previousMaxContentFlexFraction) const;
 
-  // This is used to cache the preferred size for orthogonal flow children so we don't have to relayout to get it
+  // This is used to cache the preferred size for orthogonal flow children so we
+  // don't have to relayout to get it
   HashMap<const LayoutObject*, LayoutUnit> m_intrinsicSizeAlongMainAxis;
 
-  // This set is used to keep track of which children we laid out in this current layout iteration.
-  // We need it because the ones in this set may need an additional layout pass for correct stretch alignment
-  // handling, as the first layout likely did not use the correct value for percentage sizing of children.
+  // This set is used to keep track of which children we laid out in this
+  // current layout iteration. We need it because the ones in this set may
+  // need an additional layout pass for correct stretch alignment handling, as
+  // the first layout likely did not use the correct value for percentage
+  // sizing of children.
   HashSet<const LayoutObject*> m_relaidOutChildren;
 
   mutable OrderIterator m_orderIterator;

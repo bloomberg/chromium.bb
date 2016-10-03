@@ -47,7 +47,8 @@ class FlexBoxIterator {
     else
       m_forward = m_box->style()->boxDirection() == BNORMAL;
     if (!m_forward) {
-      // No choice, since we're going backwards, we have to find out the highest ordinal up front.
+      // No choice, since we're going backwards, we have to find out the highest
+      // ordinal up front.
       LayoutBox* child = m_box->firstChildBox();
       while (child) {
         if (child->style()->boxOrdinalGroup() > m_largestOrdinal)
@@ -81,7 +82,8 @@ class FlexBoxIterator {
               m_ordinalValues.size() + 1)
             return nullptr;
 
-          // Only copy+sort the values once per layout even if the iterator is reset.
+          // Only copy+sort the values once per layout even if the iterator is
+          // reset.
           if (m_ordinalValues.size() != m_sortedOrdinalValues.size()) {
             copyToVector(m_ordinalValues, m_sortedOrdinalValues);
             std::sort(m_sortedOrdinalValues.begin(),
@@ -125,7 +127,8 @@ class FlexBoxIterator {
   int m_ordinalIteration;
 };
 
-// Helper methods for obtaining the last line, computing line counts and heights for line counts
+// Helper methods for obtaining the last line, computing line counts and heights
+// for line counts
 // (crawling into blocks).
 static bool shouldCheckLines(LayoutBlockFlow* blockFlow) {
   return !blockFlow->isFloatingOrOutOfFlowPositioned() &&
@@ -418,7 +421,8 @@ static void gatherFlexChildrenInfo(FlexBoxIterator& iterator,
     // Check to see if this child flexes.
     if (!childDoesNotAffectWidthOrFlexing(child) &&
         child->style()->boxFlex() > 0.0f) {
-      // We always have to lay out flexible objects again, since the flex distribution
+      // We always have to lay out flexible objects again, since the flex
+      // distribution
       // may have changed, and we need to reallocate space.
       child->clearOverrideSize();
       if (!relayoutChildren)
@@ -472,7 +476,8 @@ void LayoutDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren) {
         continue;
 
       SubtreeLayoutScope layoutScope(*child);
-      // TODO(jchaffraix): It seems incorrect to check isAtomicInlineLevel in this file.
+      // TODO(jchaffraix): It seems incorrect to check isAtomicInlineLevel in
+      // this file.
       // We probably want to check if the element is replaced.
       if (relayoutChildren || (child->isAtomicInlineLevel() &&
                                (child->style()->width().isPercentOrCalc() ||
@@ -552,10 +557,11 @@ void LayoutDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren) {
 
       SubtreeLayoutScope layoutScope(*child);
 
-      // We need to see if this child's height will change, since we make block elements fill
-      // the height of a containing box by default. We cannot actually *set* the new height
-      // here, though. Need to do that from within layout, or we won't be able to detect the
-      // change and duly notify any positioned descendants that are affected by it.
+      // We need to see if this child's height will change, since we make block
+      // elements fill the height of a containing box by default. We cannot
+      // actually *set* the new height here, though. Need to do that from
+      // within layout, or we won't be able to detect the change and duly
+      // notify any positioned descendants that are affected by it.
       LayoutUnit oldChildHeight = child->logicalHeight();
       LogicalExtentComputedValues computedValues;
       child->computeLogicalHeight(child->logicalHeight(), child->logicalTop(),
@@ -608,24 +614,29 @@ void LayoutDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren) {
     if (flexingChildren) {
       haveFlex = false;  // We're done.
     } else if (haveFlex) {
-      // We have some flexible objects.  See if we need to grow/shrink them at all.
+      // We have some flexible objects.  See if we need to grow/shrink them at
+      // all.
       if (!remainingSpace)
         break;
 
-      // Allocate the remaining space among the flexible objects.  If we are trying to
-      // grow, then we go from the lowest flex group to the highest flex group.  For shrinking,
-      // we go from the highest flex group to the lowest group.
+      // Allocate the remaining space among the flexible objects.  If we are
+      // trying to grow, then we go from the lowest flex group to the highest
+      // flex group.  For shrinking, we go from the highest flex group to the
+      // lowest group.
       bool expanding = remainingSpace > 0;
       unsigned start = expanding ? lowestFlexGroup : highestFlexGroup;
       unsigned end = expanding ? highestFlexGroup : lowestFlexGroup;
       for (unsigned i = start; i <= end && remainingSpace; i++) {
-        // Always start off by assuming the group can get all the remaining space.
+        // Always start off by assuming the group can get all the remaining
+        // space.
         LayoutUnit groupRemainingSpace = remainingSpace;
         do {
-          // Flexing consists of multiple passes, since we have to change ratios every time an object hits its max/min-width
-          // For a given pass, we always start off by computing the totalFlex of all objects that can grow/shrink at all, and
-          // computing the allowed growth before an object hits its min/max width (and thus
-          // forces a totalFlex recomputation).
+          // Flexing consists of multiple passes, since we have to change
+          // ratios every time an object hits its max/min-width For a given
+          // pass, we always start off by computing the totalFlex of all
+          // objects that can grow/shrink at all, and computing the allowed
+          // growth before an object hits its min/max width (and thus forces a
+          // totalFlex recomputation).
           LayoutUnit groupRemainingSpaceAtBeginning = groupRemainingSpace;
           float totalFlex = 0.0f;
           for (LayoutBox* child = iterator.first(); child;
@@ -651,7 +662,8 @@ void LayoutDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren) {
 
           // The flex groups may not have any flexible objects this time around.
           if (!spaceAvailableThisPass || totalFlex == 0.0f) {
-            // If we just couldn't grow/shrink any more, then it's time to transition to the next flex group.
+            // If we just couldn't grow/shrink any more, then it's time to
+            // transition to the next flex group.
             groupRemainingSpace = LayoutUnit();
             continue;
           }
@@ -682,7 +694,8 @@ void LayoutDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren) {
             }
           }
           if (groupRemainingSpace == groupRemainingSpaceAtBeginning) {
-            // This is not advancing, avoid getting stuck by distributing the remaining pixels.
+            // This is not advancing, avoid getting stuck by distributing the
+            // remaining pixels.
             LayoutUnit spaceAdd = LayoutUnit(groupRemainingSpace > 0 ? 1 : -1);
             for (LayoutBox* child = iterator.first();
                  child && groupRemainingSpace; child = iterator.next()) {
@@ -759,8 +772,9 @@ void LayoutDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren) {
     }
   }
 
-  // So that the computeLogicalHeight in layoutBlock() knows to relayout positioned objects because of
-  // a height change, we revert our height back to the intrinsic height before returning.
+  // So that the computeLogicalHeight in layoutBlock() knows to relayout
+  // positioned objects because of a height change, we revert our height back
+  // to the intrinsic height before returning.
   if (heightSpecified)
     setHeight(oldHeight);
 }
@@ -781,7 +795,8 @@ void LayoutDeprecatedFlexibleBox::layoutVerticalBox(bool relayoutChildren) {
   gatherFlexChildrenInfo(iterator, relayoutChildren, highestFlexGroup,
                          lowestFlexGroup, haveFlex);
 
-  // We confine the line clamp ugliness to vertical flexible boxes (thus keeping it out of
+  // We confine the line clamp ugliness to vertical flexible boxes (thus keeping
+  // it out of
   // mainstream block layout); this is not really part of the XUL box model.
   bool haveLineClamp = !style()->lineClamp().isNone();
   if (haveLineClamp)
@@ -880,12 +895,14 @@ void LayoutDeprecatedFlexibleBox::layoutVerticalBox(bool relayoutChildren) {
 
     setHeight(size().height() + toAdd);
 
-    // Negative margins can cause our height to shrink below our minimal height (border/padding).
-    // If this happens, ensure that the computed height is increased to the minimal height.
+    // Negative margins can cause our height to shrink below our minimal height
+    // (border/padding).  If this happens, ensure that the computed height is
+    // increased to the minimal height.
     if (size().height() < minHeight)
       setHeight(minHeight);
 
-    // Now we have to calc our height, so we know how much space we have remaining.
+    // Now we have to calc our height, so we know how much space we have
+    // remaining.
     oldHeight = size().height();
     updateLogicalHeight();
     if (oldHeight != size().height())
@@ -897,24 +914,29 @@ void LayoutDeprecatedFlexibleBox::layoutVerticalBox(bool relayoutChildren) {
     if (flexingChildren) {
       haveFlex = false;  // We're done.
     } else if (haveFlex) {
-      // We have some flexible objects.  See if we need to grow/shrink them at all.
+      // We have some flexible objects.  See if we need to grow/shrink them at
+      // all.
       if (!remainingSpace)
         break;
 
-      // Allocate the remaining space among the flexible objects.  If we are trying to
-      // grow, then we go from the lowest flex group to the highest flex group.  For shrinking,
-      // we go from the highest flex group to the lowest group.
+      // Allocate the remaining space among the flexible objects.  If we are
+      // trying to grow, then we go from the lowest flex group to the highest
+      // flex group.  For shrinking, we go from the highest flex group to the
+      // lowest group.
       bool expanding = remainingSpace > 0;
       unsigned start = expanding ? lowestFlexGroup : highestFlexGroup;
       unsigned end = expanding ? highestFlexGroup : lowestFlexGroup;
       for (unsigned i = start; i <= end && remainingSpace; i++) {
-        // Always start off by assuming the group can get all the remaining space.
+        // Always start off by assuming the group can get all the remaining
+        // space.
         LayoutUnit groupRemainingSpace = remainingSpace;
         do {
-          // Flexing consists of multiple passes, since we have to change ratios every time an object hits its max/min-width
-          // For a given pass, we always start off by computing the totalFlex of all objects that can grow/shrink at all, and
-          // computing the allowed growth before an object hits its min/max width (and thus
-          // forces a totalFlex recomputation).
+          // Flexing consists of multiple passes, since we have to change
+          // ratios every time an object hits its max/min-width For a given
+          // pass, we always start off by computing the totalFlex of all
+          // objects that can grow/shrink at all, and computing the allowed
+          // growth before an object hits its min/max width (and thus forces a
+          // totalFlex recomputation).
           LayoutUnit groupRemainingSpaceAtBeginning = groupRemainingSpace;
           float totalFlex = 0.0f;
           for (LayoutBox* child = iterator.first(); child;
@@ -941,7 +963,8 @@ void LayoutDeprecatedFlexibleBox::layoutVerticalBox(bool relayoutChildren) {
 
           // The flex groups may not have any flexible objects this time around.
           if (!spaceAvailableThisPass || totalFlex == 0.0f) {
-            // If we just couldn't grow/shrink any more, then it's time to transition to the next flex group.
+            // If we just couldn't grow/shrink any more, then it's time to
+            // transition to the next flex group.
             groupRemainingSpace = LayoutUnit();
             continue;
           }
@@ -969,7 +992,8 @@ void LayoutDeprecatedFlexibleBox::layoutVerticalBox(bool relayoutChildren) {
             }
           }
           if (groupRemainingSpace == groupRemainingSpaceAtBeginning) {
-            // This is not advancing, avoid getting stuck by distributing the remaining pixels.
+            // This is not advancing, avoid getting stuck by distributing the
+            // remaining pixels.
             LayoutUnit spaceAdd = LayoutUnit(groupRemainingSpace > 0 ? 1 : -1);
             for (LayoutBox* child = iterator.first();
                  child && groupRemainingSpace; child = iterator.next()) {
@@ -1042,8 +1066,9 @@ void LayoutDeprecatedFlexibleBox::layoutVerticalBox(bool relayoutChildren) {
     }
   }
 
-  // So that the computeLogicalHeight in layoutBlock() knows to relayout positioned objects because of
-  // a height change, we revert our height back to the intrinsic height before returning.
+  // So that the computeLogicalHeight in layoutBlock() knows to relayout
+  // positioned objects because of a height change, we revert our height back
+  // to the intrinsic height before returning.
   if (heightSpecified)
     setHeight(oldHeight);
 }
@@ -1076,7 +1101,8 @@ void LayoutDeprecatedFlexibleBox::applyLineClamp(FlexBoxIterator& iterator,
           std::max(maxLineCount, lineCount(toLayoutBlockFlow(child)));
   }
 
-  // Get the number of lines and then alter all block flow children with auto height to use the
+  // Get the number of lines and then alter all block flow children with auto
+  // height to use the
   // specified height. We always try to leave room for at least one line.
   LineClampValue lineClamp = style()->lineClamp();
   int numVisibleLines =
@@ -1131,7 +1157,8 @@ void LayoutDeprecatedFlexibleBox::applyLineClamp(FlexBoxIterator& iterator,
     LineLayoutBlockFlow destBlock = lastVisibleLine->block();
     LineLayoutBlockFlow srcBlock = lastLine->block();
 
-    // FIXME: Directions of src/destBlock could be different from our direction and from one another.
+    // FIXME: Directions of src/destBlock could be different from our direction
+    // and from one another.
     if (!srcBlock.style()->isLeftToRightDirection())
       continue;
 
@@ -1148,7 +1175,8 @@ void LayoutDeprecatedFlexibleBox::applyLineClamp(FlexBoxIterator& iterator,
       continue;
 
     // Let the truncation code kick in.
-    // FIXME: the text alignment should be recomputed after the width changes due to truncation.
+    // FIXME: the text alignment should be recomputed after the width changes
+    // due to truncation.
     LayoutUnit blockLeftEdge = destBlock.logicalLeftOffsetForLine(
         lastVisibleLine->y(), DoNotIndentText);
     lastVisibleLine->placeEllipsis(ellipsisStr, leftToRight, blockLeftEdge,
@@ -1180,7 +1208,8 @@ void LayoutDeprecatedFlexibleBox::clearLineClamp() {
 
 void LayoutDeprecatedFlexibleBox::placeChild(LayoutBox* child,
                                              const LayoutPoint& location) {
-  // FIXME Investigate if this can be removed based on other flags. crbug.com/370010
+  // FIXME Investigate if this can be removed based on other flags.
+  // crbug.com/370010
   child->setMayNeedPaintInvalidation();
 
   // Place the child.
