@@ -1457,8 +1457,8 @@ XVisualManager::XVisualManager()
       break;
     }
   }
-  DCHECK(transparent_visual_id_);
-  DCHECK(visuals_.find(transparent_visual_id_) != visuals_.end());
+  if (transparent_visual_id_)
+    DCHECK(visuals_.find(transparent_visual_id_) != visuals_.end());
 }
 
 XVisualManager::~XVisualManager() {}
@@ -1471,7 +1471,8 @@ void XVisualManager::ChooseVisualForWindow(bool want_argb_visual,
   bool use_argb = want_argb_visual && using_compositing_wm_ &&
                   (using_software_rendering_ || have_gpu_argb_visual_);
   XVisualData& visual_data =
-      *visuals_[use_argb ? transparent_visual_id_ : system_visual_id_];
+      *visuals_[use_argb && transparent_visual_id_ ? transparent_visual_id_
+                                                   : system_visual_id_];
   if (visual)
     *visual = visual_data.visual_info.visual;
   if (depth)
