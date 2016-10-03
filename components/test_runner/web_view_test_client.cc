@@ -109,6 +109,9 @@ void WebViewTestClient::showValidationMessage(
     blink::WebTextDirection main_message_hint,
     const blink::WebString& sub_message,
     blink::WebTextDirection sub_message_hint) {
+  if (test_runner_->is_web_platform_tests_mode())
+    return;
+
   base::string16 wrapped_main_text = main_message;
   base::string16 wrapped_sub_text = sub_message;
 
