@@ -429,6 +429,9 @@ Output.RULES = {
       speak: '$if($checked, $earcon(CHECK_ON), $earcon(CHECK_OFF)) ' +
              '$name $role $checked $description $state'
     },
+    client: {
+      speak: '$name'
+    },
     date: {
       enter: '$nameFromNode $role $description'
     },
