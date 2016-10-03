@@ -39,6 +39,7 @@
 #include "ui/events/devices/x11/device_list_cache_x11.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/null_event_targeter.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/geometry/insets.h"
@@ -206,7 +207,9 @@ DesktopWindowTreeHostX11::DesktopWindowTreeHostX11(
       has_pointer_(false),
       has_window_focus_(false),
       has_pointer_focus_(false),
-      close_widget_factory_(this) {}
+      modal_dialog_xid_(0),
+      close_widget_factory_(this),
+      weak_factory_(this) {}
 
 DesktopWindowTreeHostX11::~DesktopWindowTreeHostX11() {
   window()->ClearProperty(kHostForRootWindow);
@@ -1779,7 +1782,8 @@ void DesktopWindowTreeHostX11::DispatchTouchEvent(ui::TouchEvent* event) {
 }
 
 void DesktopWindowTreeHostX11::DispatchKeyEvent(ui::KeyEvent* event) {
-  GetInputMethod()->DispatchKeyEvent(event);
+  if (native_widget_delegate_->AsWidget()->IsActive())
+    GetInputMethod()->DispatchKeyEvent(event);
 }
 
 void DesktopWindowTreeHostX11::ConvertEventToDifferentHost(
@@ -2299,6 +2303,31 @@ gfx::Rect DesktopWindowTreeHostX11::ToPixelRect(
   gfx::RectF rect_in_pixels = gfx::RectF(rect_in_dip);
   GetRootTransform().TransformRect(&rect_in_pixels);
   return gfx::ToEnclosingRect(rect_in_pixels);
+}
+
+XID DesktopWindowTreeHostX11::GetModalDialog() {
+  return modal_dialog_xid_;
+}
+
+std::unique_ptr<base::Closure>
+    DesktopWindowTreeHostX11::DisableEventListening(XID dialog) {
+  DCHECK(dialog);
+  DCHECK(!modal_dialog_xid_);
+  modal_dialog_xid_ = dialog;
+  // ScopedWindowTargeter is used to temporarily replace the event-targeter
+  // with NullEventTargeter to make |dialog| modal.
+  targeter_for_modal_.reset(new aura::ScopedWindowTargeter(window(),
+      std::unique_ptr<ui::EventTargeter>(new ui::NullEventTargeter)));
+
+  return base::MakeUnique<base::Closure>(base::Bind(
+      &DesktopWindowTreeHostX11::EnableEventListening,
+      weak_factory_.GetWeakPtr()));
+}
+
+void DesktopWindowTreeHostX11::EnableEventListening() {
+  DCHECK(modal_dialog_xid_);
+  modal_dialog_xid_ = 0;
+  targeter_for_modal_.reset();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
