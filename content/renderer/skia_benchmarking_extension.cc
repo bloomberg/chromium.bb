@@ -187,7 +187,6 @@ void SkiaBenchmarking::Rasterize(gin::Arguments* args) {
   double scale = 1.0;
   gfx::Rect clip_rect(picture->layer_rect);
   int stop_index = -1;
-  bool overdraw = false;
 
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
   if (!args->PeekNext().IsEmpty()) {
@@ -202,7 +201,6 @@ void SkiaBenchmarking::Rasterize(gin::Arguments* args) {
     if (params_value.get() && params_value->GetAsDictionary(&params_dict)) {
       params_dict->GetDouble("scale", &scale);
       params_dict->GetInteger("stop", &stop_index);
-      params_dict->GetBoolean("overdraw", &overdraw);
 
       const base::Value* clip_value = NULL;
       if (params_dict->Get("clip", &clip_value))
@@ -225,9 +223,7 @@ void SkiaBenchmarking::Rasterize(gin::Arguments* args) {
   canvas.scale(scale, scale);
   canvas.translate(picture->layer_rect.x(), picture->layer_rect.y());
 
-  skia::BenchmarkingCanvas benchmarking_canvas(
-      &canvas,
-      overdraw ? skia::BenchmarkingCanvas::kOverdrawVisualization_Flag : 0);
+  skia::BenchmarkingCanvas benchmarking_canvas(&canvas);
   size_t playback_count =
       (stop_index < 0) ? std::numeric_limits<size_t>::max() : stop_index;
   PicturePlaybackController controller(benchmarking_canvas, playback_count);

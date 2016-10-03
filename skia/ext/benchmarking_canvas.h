@@ -10,18 +10,12 @@
 #include "base/values.h"
 #include "third_party/skia/include/utils/SkNWayCanvas.h"
 
-class SkXfermode;
-
 namespace skia {
 
 class SK_API BenchmarkingCanvas : public SkNWayCanvas {
 public:
-  BenchmarkingCanvas(SkCanvas* canvas, unsigned flags = 0);
+  BenchmarkingCanvas(SkCanvas* canvas);
   ~BenchmarkingCanvas() override;
-
-  enum Flags {
-      kOverdrawVisualization_Flag = 0x01,
-  };
 
   // Returns the number of draw commands executed on this canvas.
   size_t CommandCount() const;
@@ -83,8 +77,6 @@ private:
   class AutoOp;
 
   base::ListValue op_records_;
-  unsigned flags_;
-  sk_sp<SkXfermode> overdraw_xfermode_;
 };
 
 }
