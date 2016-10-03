@@ -999,6 +999,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
      */
     @Override
     public void onInstrumentDetailsReady(String methodName, String stringifiedDetails) {
+        if (mClient == null) return;
+
         PaymentResponse response = new PaymentResponse();
         response.methodName = methodName;
         response.stringifiedDetails = stringifiedDetails;
