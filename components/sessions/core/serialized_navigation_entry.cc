@@ -213,6 +213,7 @@ enum TypeMask {
 // search_terms_
 // http_status_code_
 // referrer_policy_
+// extended_info_map_
 
 void SerializedNavigationEntry::WriteToPickle(int max_size,
                                               base::Pickle* pickle) const {
@@ -257,6 +258,12 @@ void SerializedNavigationEntry::WriteToPickle(int max_size,
   pickle->WriteInt(http_status_code_);
 
   pickle->WriteInt(referrer_policy_);
+
+  pickle->WriteInt(extended_info_map_.size());
+  for (const auto entry : extended_info_map_) {
+    WriteStringToPickle(pickle, &bytes_written, max_size, entry.first);
+    WriteStringToPickle(pickle, &bytes_written, max_size, entry.second);
+  }
 }
 
 bool SerializedNavigationEntry::ReadFromPickle(base::PickleIterator* iterator) {
@@ -334,6 +341,17 @@ bool SerializedNavigationEntry::ReadFromPickle(base::PickleIterator* iterator) {
       encoded_page_state_ =
           SerializedNavigationDriver::Get()->StripReferrerFromPageState(
               encoded_page_state_);
+    }
+
+    int extended_info_map_size = 0;
+    if (iterator->ReadInt(&extended_info_map_size) &&
+        extended_info_map_size > 0) {
+      for (int i = 0; i < extended_info_map_size; ++i) {
+        std::string key;
+        std::string value;
+        if (iterator->ReadString(&key) && iterator->ReadString(&value))
+          extended_info_map_[key] = value;
+      }
     }
   }
 

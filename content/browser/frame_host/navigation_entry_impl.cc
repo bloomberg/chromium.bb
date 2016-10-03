@@ -562,6 +562,18 @@ bool NavigationEntryImpl::IsRestored() const {
   return restore_type_ != RestoreType::NONE;
 }
 
+std::string NavigationEntryImpl::GetExtraHeaders() const {
+  return extra_headers_;
+}
+
+void NavigationEntryImpl::AddExtraHeaders(
+    const std::string& more_extra_headers) {
+  DCHECK(!more_extra_headers.empty());
+  if (!extra_headers_.empty())
+    extra_headers_ += "\r\n";
+  extra_headers_ += more_extra_headers;
+}
+
 void NavigationEntryImpl::SetCanLoadLocalResources(bool allow) {
   can_load_local_resources_ = allow;
 }

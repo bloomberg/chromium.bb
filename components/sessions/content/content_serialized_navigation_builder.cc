@@ -4,7 +4,10 @@
 
 #include "components/sessions/content/content_serialized_navigation_builder.h"
 
+#include "base/logging.h"
 #include "components/sessions/content/content_record_password_state.h"
+#include "components/sessions/content/content_serialized_navigation_driver.h"
+#include "components/sessions/content/extended_info_handler.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/favicon_status.h"
@@ -42,6 +45,16 @@ ContentSerializedNavigationBuilder::FromNavigationEntry(
   navigation.redirect_chain_ = entry.GetRedirectChain();
   navigation.password_state_ = GetPasswordStateFromNavigation(entry);
 
+  for (const auto& handler_entry :
+       ContentSerializedNavigationDriver::GetInstance()
+           ->GetAllExtendedInfoHandlers()) {
+    ExtendedInfoHandler* handler = handler_entry.second.get();
+    DCHECK(handler);
+    std::string value = handler->GetExtendedInfo(entry);
+    if (!value.empty())
+      navigation.extended_info_map_[handler_entry.first] = value;
+  }
+
   return navigation;
 }
 
@@ -77,6 +90,20 @@ ContentSerializedNavigationBuilder::ToNavigationEntry(
   entry->SetExtraData(kSearchTermsKey, navigation->search_terms_);
   entry->SetHttpStatusCode(navigation->http_status_code_);
   entry->SetRedirectChain(navigation->redirect_chain_);
+
+  const ContentSerializedNavigationDriver::ExtendedInfoHandlerMap&
+      extended_info_handlers = ContentSerializedNavigationDriver::GetInstance()
+                                   ->GetAllExtendedInfoHandlers();
+  for (const auto& extended_info_entry : navigation->extended_info_map_) {
+    const std::string& key = extended_info_entry.first;
+    if (!extended_info_handlers.count(key))
+      continue;
+    ExtendedInfoHandler* extended_info_handler =
+        extended_info_handlers.at(key).get();
+    DCHECK(extended_info_handler);
+    extended_info_handler->RestoreExtendedInfo(extended_info_entry.second,
+                                               entry.get());
+  }
 
   // These fields should have default values.
   DCHECK_EQ(SerializedNavigationEntry::STATE_INVALID,

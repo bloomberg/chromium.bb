@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
@@ -123,6 +124,10 @@ class SESSIONS_EXPORT SerializedNavigationEntry {
   }
   const std::vector<GURL>& redirect_chain() const { return redirect_chain_; }
 
+  const std::map<std::string, std::string>& extended_info_map() const {
+    return extended_info_map_;
+  }
+
  private:
   friend class ContentSerializedNavigationBuilder;
   friend class ContentSerializedNavigationDriver;
@@ -156,6 +161,10 @@ class SESSIONS_EXPORT SerializedNavigationEntry {
   BlockedState blocked_state_;
   PasswordState password_state_;
   std::set<std::string> content_pack_categories_;
+
+  // Provides storage for arbitrary key/value pairs used by features. This
+  // data is not synced.
+  std::map<std::string, std::string> extended_info_map_;
 };
 
 }  // namespace sessions

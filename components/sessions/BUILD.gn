@@ -23,6 +23,7 @@ if (!is_ios) {
       "content/content_serialized_navigation_builder.h",
       "content/content_serialized_navigation_driver.cc",
       "content/content_serialized_navigation_driver.h",
+      "content/extended_info_handler.h",
     ]
 
     configs += [ ":implementation" ]

@@ -225,6 +225,12 @@ class NavigationEntry {
 
   // True if this entry is restored and hasn't been loaded.
   virtual bool IsRestored() const = 0;
+
+  // Returns the extra headers (separated by \r\n) to send during the request.
+  virtual std::string GetExtraHeaders() const = 0;
+
+  // Adds more extra headers (separated by \r\n) to send during the request.
+  virtual void AddExtraHeaders(const std::string& extra_headers) = 0;
 };
 
 }  // namespace content

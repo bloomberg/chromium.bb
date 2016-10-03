@@ -149,6 +149,8 @@ class CONTENT_EXPORT NavigationEntryImpl
   void SetRedirectChain(const std::vector<GURL>& redirects) override;
   const std::vector<GURL>& GetRedirectChain() const override;
   bool IsRestored() const override;
+  std::string GetExtraHeaders() const override;
+  void AddExtraHeaders(const std::string& extra_headers) override;
 
   // Creates a copy of this NavigationEntryImpl that can be modified
   // independently from the original.  Does not copy any value that would be
@@ -304,7 +306,7 @@ class CONTENT_EXPORT NavigationEntryImpl
     update_virtual_url_with_url_ = update;
   }
 
-  // Extra headers (separated by \n) to send during the request.
+  // Extra headers (separated by \r\n) to send during the request.
   void set_extra_headers(const std::string& extra_headers) {
     extra_headers_ = extra_headers;
   }

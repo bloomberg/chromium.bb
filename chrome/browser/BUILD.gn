@@ -3092,6 +3092,8 @@ split_static_library("browser") {
       "android/offline_pages/offline_page_bookmark_observer.h",
       "android/offline_pages/offline_page_bridge.cc",
       "android/offline_pages/offline_page_bridge.h",
+      "android/offline_pages/offline_page_info_handler.cc",
+      "android/offline_pages/offline_page_info_handler.h",
       "android/offline_pages/offline_page_mhtml_archiver.cc",
       "android/offline_pages/offline_page_mhtml_archiver.h",
       "android/offline_pages/offline_page_model_factory.cc",

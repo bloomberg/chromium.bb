@@ -132,6 +132,18 @@ TEST(SerializedNavigationEntryTest, Pickle) {
   EXPECT_EQ(test_data::kSearchTerms, new_navigation.search_terms());
   EXPECT_EQ(test_data::kHttpStatusCode, new_navigation.http_status_code());
 
+  ASSERT_EQ(2U, new_navigation.extended_info_map().size());
+  ASSERT_EQ(1U, new_navigation.extended_info_map().count(
+                    test_data::kExtendedInfoKey1));
+  EXPECT_EQ(
+      test_data::kExtendedInfoValue1,
+      new_navigation.extended_info_map().at(test_data::kExtendedInfoKey1));
+  ASSERT_EQ(1U, new_navigation.extended_info_map().count(
+                    test_data::kExtendedInfoKey2));
+  EXPECT_EQ(
+      test_data::kExtendedInfoValue2,
+      new_navigation.extended_info_map().at(test_data::kExtendedInfoKey2));
+
   // Fields that are not written to the pickle.
   EXPECT_EQ(0, new_navigation.unique_id());
   EXPECT_EQ(std::string(), new_navigation.encoded_page_state());

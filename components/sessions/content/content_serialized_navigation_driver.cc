@@ -148,4 +148,18 @@ std::string ContentSerializedNavigationDriver::StripReferrerFromPageState(
       .ToEncodedData();
 }
 
+void ContentSerializedNavigationDriver::RegisterExtendedInfoHandler(
+    const std::string& key,
+    std::unique_ptr<ExtendedInfoHandler> handler) {
+  DCHECK(!key.empty());
+  DCHECK(!extended_info_handler_map_.count(key));
+  DCHECK(handler.get());
+  extended_info_handler_map_[key] = std::move(handler);
+}
+
+const ContentSerializedNavigationDriver::ExtendedInfoHandlerMap&
+ContentSerializedNavigationDriver::GetAllExtendedInfoHandlers() const {
+  return extended_info_handler_map_;
+}
+
 }  // namespace sessions

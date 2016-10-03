@@ -41,6 +41,10 @@ const GURL kOtherURL = GURL("http://other.com");
 const int kPageID = 10;
 const SerializedNavigationEntry::PasswordState kPasswordState =
     SerializedNavigationEntry::HAS_PASSWORD_FIELD;
+const std::string kExtendedInfoKey1 = "key 1";
+const std::string kExtendedInfoKey2 = "key 2";
+const std::string kExtendedInfoValue1 = "value 1";
+const std::string kExtendedInfoValue2 = "value 2";
 
 }  // namespace test_data
 
@@ -97,6 +101,11 @@ SerializedNavigationEntryTestHelper::CreateNavigationForTest() {
   navigation.favicon_url_ = test_data::kFaviconURL;
   navigation.http_status_code_ = test_data::kHttpStatusCode;
   navigation.password_state_ = test_data::kPasswordState;
+
+  navigation.extended_info_map_[test_data::kExtendedInfoKey1] =
+      test_data::kExtendedInfoValue1;
+  navigation.extended_info_map_[test_data::kExtendedInfoKey2] =
+      test_data::kExtendedInfoValue2;
 
   navigation.redirect_chain_.push_back(test_data::kRedirectURL0);
   navigation.redirect_chain_.push_back(test_data::kRedirectURL1);
