@@ -30,6 +30,7 @@ namespace {
 const char kDefaultTestUrl[] = "https://google.com/";
 const char kDefaultTestUrlAnchor[] = "https://google.com/#samepage";
 const char kDefaultTestUrl2[] = "https://whatever.com/";
+const char kFilteredStartUrl[] = "https://whatever.com/ignore-on-start";
 const char kFilteredCommitUrl[] = "https://whatever.com/ignore-on-commit";
 
 // Simple PageLoadMetricsObserver that copies observed PageLoadTimings into the
@@ -43,10 +44,11 @@ class TestPageLoadMetricsObserver : public PageLoadMetricsObserver {
         complete_timings_(complete_timings),
         observed_committed_urls_(observed_committed_urls) {}
 
-  void OnStart(content::NavigationHandle* navigation_handle,
+  ObservePolicy OnStart(content::NavigationHandle* navigation_handle,
                const GURL& currently_committed_url,
                bool started_in_foreground) override {
     observed_committed_urls_->push_back(currently_committed_url);
+    return CONTINUE_OBSERVING;
   }
 
   void OnTimingUpdate(const PageLoadTiming& timing,
@@ -78,6 +80,14 @@ class FilteringPageLoadMetricsObserver : public PageLoadMetricsObserver {
   explicit FilteringPageLoadMetricsObserver(
       std::vector<GURL>* completed_filtered_urls)
       : completed_filtered_urls_(completed_filtered_urls) {}
+
+  ObservePolicy OnStart(content::NavigationHandle* handle,
+                        const GURL& currently_committed_url,
+                        bool started_in_foreground) override {
+    const bool should_ignore =
+        handle->GetURL().spec().find("ignore-on-start") != std::string::npos;
+    return should_ignore ? STOP_OBSERVING : CONTINUE_OBSERVING;
+  }
 
   ObservePolicy OnCommit(content::NavigationHandle* handle) override {
     const bool should_ignore =
@@ -569,6 +579,29 @@ TEST_F(MetricsWebContentsObserverTest, StopObservingOnCommit) {
   // kFilteredCommitUrl should stop observing in OnCommit, and thus should not
   // reach OnComplete().
   web_contents_tester->NavigateAndCommit(GURL(kFilteredCommitUrl));
+  ASSERT_EQ(std::vector<GURL>({GURL(kDefaultTestUrl)}),
+            completed_filtered_urls());
+
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
+  ASSERT_EQ(std::vector<GURL>({GURL(kDefaultTestUrl)}),
+            completed_filtered_urls());
+
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
+  ASSERT_EQ(std::vector<GURL>({GURL(kDefaultTestUrl), GURL(kDefaultTestUrl2)}),
+            completed_filtered_urls());
+}
+
+TEST_F(MetricsWebContentsObserverTest, StopObservingOnStart) {
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
+  ASSERT_TRUE(completed_filtered_urls().empty());
+
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
+  ASSERT_TRUE(completed_filtered_urls().empty());
+
+  // kFilteredCommitUrl should stop observing in OnStart, and thus should not
+  // reach OnComplete().
+  web_contents_tester->NavigateAndCommit(GURL(kFilteredStartUrl));
   ASSERT_EQ(std::vector<GURL>({GURL(kDefaultTestUrl)}),
             completed_filtered_urls());
 

@@ -44,6 +44,13 @@ FailedProvisionalLoadInfo::FailedProvisionalLoadInfo(base::TimeDelta interval,
 
 FailedProvisionalLoadInfo::~FailedProvisionalLoadInfo() {}
 
+PageLoadMetricsObserver::ObservePolicy PageLoadMetricsObserver::OnStart(
+    content::NavigationHandle* navigation_handle,
+    const GURL& currently_committed_url,
+    bool started_in_foreground) {
+  return CONTINUE_OBSERVING;
+}
+
 PageLoadMetricsObserver::ObservePolicy PageLoadMetricsObserver::OnCommit(
     content::NavigationHandle* navigation_handle) {
   return CONTINUE_OBSERVING;

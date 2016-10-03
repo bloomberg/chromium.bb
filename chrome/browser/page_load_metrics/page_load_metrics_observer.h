@@ -149,9 +149,9 @@ class PageLoadMetricsObserver {
   // committed page load at the time the navigation for navigation_handle was
   // initiated, or the empty URL if there was no committed page load at the time
   // the navigation was initiated.
-  virtual void OnStart(content::NavigationHandle* navigation_handle,
-                       const GURL& currently_committed_url,
-                       bool started_in_foreground) {}
+  virtual ObservePolicy OnStart(content::NavigationHandle* navigation_handle,
+                                const GURL& currently_committed_url,
+                                bool started_in_foreground);
 
   // OnRedirect is triggered when a page load redirects to another URL.
   // The navigation handle holds relevant data for the navigation, but will

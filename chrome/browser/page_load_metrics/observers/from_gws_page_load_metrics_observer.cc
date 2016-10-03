@@ -404,12 +404,14 @@ void FromGWSPageLoadMetricsLogger::SetProvisionalUrl(const GURL& url) {
 
 FromGWSPageLoadMetricsObserver::FromGWSPageLoadMetricsObserver() {}
 
-void FromGWSPageLoadMetricsObserver::OnStart(
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+FromGWSPageLoadMetricsObserver::OnStart(
     content::NavigationHandle* navigation_handle,
     const GURL& currently_committed_url,
     bool started_in_foreground) {
   logger_.SetPreviouslyCommittedUrl(currently_committed_url);
   logger_.SetProvisionalUrl(navigation_handle->GetURL());
+  return CONTINUE_OBSERVING;
 }
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy

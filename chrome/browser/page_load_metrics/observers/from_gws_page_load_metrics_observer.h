@@ -139,9 +139,9 @@ class FromGWSPageLoadMetricsObserver
   FromGWSPageLoadMetricsObserver();
 
   // page_load_metrics::PageLoadMetricsObserver implementation:
-  void OnStart(content::NavigationHandle* navigation_handle,
-               const GURL& currently_committed_url,
-               bool started_in_foreground) override;
+  ObservePolicy OnStart(content::NavigationHandle* navigation_handle,
+                         const GURL& currently_committed_url,
+                         bool started_in_foreground) override;
   ObservePolicy OnCommit(content::NavigationHandle* navigation_handle) override;
 
   void OnDomContentLoadedEventStart(

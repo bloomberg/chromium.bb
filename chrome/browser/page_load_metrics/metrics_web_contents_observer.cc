@@ -325,10 +325,8 @@ PageLoadTracker::PageLoadTracker(
   }
 
   embedder_interface_->RegisterObservers(this);
-  for (const auto& observer : observers_) {
-    observer->OnStart(navigation_handle, currently_committed_url,
-                      started_in_foreground_);
-  }
+  INVOKE_AND_PRUNE_OBSERVERS(observers_, OnStart, navigation_handle,
+                             currently_committed_url, started_in_foreground_);
 }
 
 PageLoadTracker::~PageLoadTracker() {

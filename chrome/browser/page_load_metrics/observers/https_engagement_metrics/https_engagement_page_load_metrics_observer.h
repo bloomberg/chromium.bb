@@ -27,9 +27,9 @@ class HttpsEngagementPageLoadMetricsObserver
       content::BrowserContext* context);
 
   // page_load_metrics::PageLoadMetricsObserver:
-  void OnStart(content::NavigationHandle* navigation_handle,
-               const GURL& currently_committed_url,
-               bool started_in_foreground) override;
+  ObservePolicy OnStart(content::NavigationHandle* navigation_handle,
+                        const GURL& currently_committed_url,
+                        bool started_in_foreground) override;
   void OnHidden() override;
   void OnShown() override;
   void OnComplete(

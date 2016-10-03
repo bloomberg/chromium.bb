@@ -20,12 +20,14 @@ HttpsEngagementPageLoadMetricsObserver::HttpsEngagementPageLoadMetricsObserver(
       HttpsEngagementServiceFactory::GetForBrowserContext(context);
 }
 
-void HttpsEngagementPageLoadMetricsObserver::OnStart(
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+HttpsEngagementPageLoadMetricsObserver::OnStart(
     content::NavigationHandle* navigation_handle,
     const GURL& currently_committed_url,
     bool started_in_foreground) {
   if (started_in_foreground)
     OnShown();
+  return CONTINUE_OBSERVING;
 }
 
 void HttpsEngagementPageLoadMetricsObserver::OnHidden() {
