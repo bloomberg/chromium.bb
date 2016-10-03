@@ -9,7 +9,7 @@
 
 #include "ash/common/login_status.h"
 #include "ash/shell.h"
-#include "base/stl_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/signin/core/account_id/account_id.h"
@@ -94,25 +94,25 @@ TestSessionStateDelegate::TestSessionStateDelegate()
       active_user_index_(0),
       user_manager_(new TestUserManager()),
       session_state_(SESSION_STATE_LOGIN_PRIMARY) {
-  user_list_.push_back(
-      new MockUserInfo("First@tray"));  // This is intended to be capitalized.
-  user_list_.push_back(
-      new MockUserInfo("Second@tray"));  // This is intended to be capitalized.
-  user_list_.push_back(new MockUserInfo("third@tray"));
-  user_list_.push_back(new MockUserInfo("someone@tray"));
+  // This is intended to be capitalized.
+  user_list_.push_back(base::MakeUnique<MockUserInfo>("First@tray"));
+  // This is intended to be capitalized.
+  user_list_.push_back(base::MakeUnique<MockUserInfo>("Second@tray"));
+  user_list_.push_back(base::MakeUnique<MockUserInfo>("third@tray"));
+  user_list_.push_back(base::MakeUnique<MockUserInfo>("someone@tray"));
 }
 
 TestSessionStateDelegate::~TestSessionStateDelegate() {
-  base::STLDeleteElements(&user_list_);
 }
 
 void TestSessionStateDelegate::AddUser(const AccountId& account_id) {
-  user_list_.push_back(new MockUserInfo(account_id.GetUserEmail()));
+  user_list_.push_back(
+      base::MakeUnique<MockUserInfo>(account_id.GetUserEmail()));
 }
 
 const user_manager::UserInfo* TestSessionStateDelegate::GetActiveUserInfo()
     const {
-  return user_list_[active_user_index_];
+  return user_list_[active_user_index_].get();
 }
 
 int TestSessionStateDelegate::GetMaximumNumberOfLoggedInUsers() const {
@@ -207,7 +207,7 @@ void TestSessionStateDelegate::SetUserImage(const gfx::ImageSkia& user_image) {
 const user_manager::UserInfo* TestSessionStateDelegate::GetUserInfo(
     UserIndex index) const {
   int max = static_cast<int>(user_list_.size());
-  return user_list_[index < max ? index : max - 1];
+  return user_list_[index < max ? index : max - 1].get();
 }
 
 bool TestSessionStateDelegate::ShouldShowAvatar(WmWindow* window) const {
@@ -224,8 +224,7 @@ void TestSessionStateDelegate::SwitchActiveUser(const AccountId& account_id) {
   EXPECT_EQ(account_id.GetUserEmail(),
             GetUserIdFromEmail(account_id.GetUserEmail()));
   active_user_index_ = 0;
-  for (std::vector<MockUserInfo*>::iterator iter = user_list_.begin();
-       iter != user_list_.end(); ++iter) {
+  for (auto iter = user_list_.begin(); iter != user_list_.end(); ++iter) {
     if ((*iter)->GetAccountId() == account_id) {
       active_user_index_ = iter - user_list_.begin();
       return;

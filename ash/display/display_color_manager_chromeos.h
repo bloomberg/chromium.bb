@@ -72,7 +72,7 @@ class ASH_EXPORT DisplayColorManager
   void LoadCalibrationForDisplay(const ui::DisplaySnapshot* display);
 
   ui::DisplayConfigurator* configurator_;
-  std::map<int64_t, ColorCalibrationData*> calibration_map_;
+  std::map<int64_t, std::unique_ptr<ColorCalibrationData>> calibration_map_;
   base::ThreadChecker thread_checker_;
   base::SequencedWorkerPool* blocking_pool_;
 

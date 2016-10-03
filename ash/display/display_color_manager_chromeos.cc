@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/quirks/quirks_manager.h"
@@ -158,7 +157,6 @@ DisplayColorManager::DisplayColorManager(
 
 DisplayColorManager::~DisplayColorManager() {
   configurator_->RemoveObserver(this);
-  base::STLDeleteValues(&calibration_map_);
 }
 
 void DisplayColorManager::OnDisplayModeChanged(
@@ -181,7 +179,7 @@ void DisplayColorManager::OnDisplayModeChanged(
 void DisplayColorManager::ApplyDisplayColorCalibration(int64_t display_id,
                                                        int64_t product_id) {
   if (calibration_map_.find(product_id) != calibration_map_.end()) {
-    ColorCalibrationData* data = calibration_map_[product_id];
+    ColorCalibrationData* data = calibration_map_[product_id].get();
     if (!configurator_->SetColorCorrection(display_id, data->degamma_lut,
                                            data->gamma_lut,
                                            data->correction_matrix))
@@ -244,8 +242,7 @@ void DisplayColorManager::UpdateCalibrationData(
     std::unique_ptr<ColorCalibrationData> data) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (data) {
-    // The map takes over ownership of the underlying memory.
-    calibration_map_[product_id] = data.release();
+    calibration_map_[product_id] = std::move(data);
     ApplyDisplayColorCalibration(display_id, product_id);
   }
 }

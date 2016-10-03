@@ -28,7 +28,6 @@
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -282,7 +281,8 @@ void WindowTreeHostManager::Shutdown() {
   }
   CHECK(primary_rwc);
 
-  base::STLDeleteElements(&to_delete);
+  for (auto rwc : to_delete)
+    delete rwc;
   delete primary_rwc;
 }
 

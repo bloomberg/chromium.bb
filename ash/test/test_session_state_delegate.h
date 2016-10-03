@@ -104,7 +104,7 @@ class TestSessionStateDelegate : public SessionStateDelegate {
   // The index for the activated user.
   int active_user_index_;
 
-  std::vector<MockUserInfo*> user_list_;
+  std::vector<std::unique_ptr<MockUserInfo>> user_list_;
 
   // The user manager to be used instead of the system instance.
   std::unique_ptr<TestUserManager> user_manager_;

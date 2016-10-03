@@ -126,7 +126,7 @@ class ASH_EXPORT ScreenshotController : public ui::EventHandler,
   aura::Window* selected_;
 
   // Layers to create the visual effect of region selection or selected window.
-  std::map<aura::Window*, ScreenshotLayer*> layers_;
+  std::map<aura::Window*, std::unique_ptr<ScreenshotLayer>> layers_;
 
   // The object to specify the crosshair cursor.
   std::unique_ptr<ScopedCursorSetter> cursor_setter_;
