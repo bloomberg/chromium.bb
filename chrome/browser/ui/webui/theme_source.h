@@ -32,7 +32,6 @@ class ThemeSource : public content::URLDataSource {
   std::string GetMimeType(const std::string& path) const override;
   base::MessageLoop* MessageLoopForRequestPath(
       const std::string& path) const override;
-  bool ShouldReplaceExistingSource() const override;
   bool ShouldServiceRequest(const net::URLRequest* request) const override;
 
  private:
@@ -48,11 +47,8 @@ class ThemeSource : public content::URLDataSource {
                       int resource_id,
                       float scale);
 
-  // The original profile (never an OTR profile).
+  // The profile this object was initialized with.
   Profile* profile_;
-
-  // We grab the CSS early so we don't have to go back to the UI thread later.
-  scoped_refptr<base::RefCountedMemory> css_bytes_;
 
   DISALLOW_COPY_AND_ASSIGN(ThemeSource);
 };

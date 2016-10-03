@@ -44,7 +44,7 @@ bool IsNewTabCssPath(const std::string& path) {
   return (path == kNewTabCSSPath) || (path == kIncognitoNewTabCSSPath);
 }
 
-void ProcessImageOnUIThread(const gfx::ImageSkia& image,
+void ProcessImageOnUiThread(const gfx::ImageSkia& image,
                             float scale,
                             scoped_refptr<base::RefCountedBytes> data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -53,13 +53,21 @@ void ProcessImageOnUIThread(const gfx::ImageSkia& image,
       rep.sk_bitmap(), false /* discard transparency */, &data->data());
 }
 
-void ProcessResourceOnUIThread(int resource_id,
+void ProcessResourceOnUiThread(int resource_id,
                                float scale,
                                scoped_refptr<base::RefCountedBytes> data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  ProcessImageOnUIThread(
+  ProcessImageOnUiThread(
       *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(resource_id),
       scale, data);
+}
+
+base::RefCountedMemory* GetNewTabCSSOnUiThread(Profile* profile) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  NTPResourceCache::WindowType type =
+      NTPResourceCache::GetWindowType(profile, nullptr);
+  return NTPResourceCacheFactory::GetForProfile(profile)->GetNewTabCSS(type);
 }
 
 }  // namespace
@@ -67,14 +75,7 @@ void ProcessResourceOnUIThread(int resource_id,
 ////////////////////////////////////////////////////////////////////////////////
 // ThemeSource, public:
 
-ThemeSource::ThemeSource(Profile* profile)
-    : profile_(profile->GetOriginalProfile()) {
-  // NB: it's important that this is |profile| and not |profile_|.
-  NTPResourceCache::WindowType win_type =
-      NTPResourceCache::GetWindowType(profile, nullptr);
-  css_bytes_ =
-      NTPResourceCacheFactory::GetForProfile(profile)->GetNewTabCSS(win_type);
-}
+ThemeSource::ThemeSource(Profile* profile) : profile_(profile) {}
 
 ThemeSource::~ThemeSource() {
 }
@@ -94,7 +95,10 @@ void ThemeSource::StartDataRequest(
 
   if (IsNewTabCssPath(parsed_path)) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    callback.Run(css_bytes_.get());
+    // NB: it's important that this is |profile_| and not |original_profile_|.
+    content::BrowserThread::PostTaskAndReplyWithResult(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(&GetNewTabCSSOnUiThread, profile_), callback);
     return;
   }
 
@@ -174,12 +178,6 @@ base::MessageLoop* ThemeSource::MessageLoopForRequestPath(
       content::URLDataSource::MessageLoopForRequestPath(path) : nullptr;
 }
 
-bool ThemeSource::ShouldReplaceExistingSource() const {
-  // We currently get the css_bytes_ in the ThemeSource constructor, so we need
-  // to recreate the source itself when a theme changes.
-  return true;
-}
-
 bool ThemeSource::ShouldServiceRequest(const net::URLRequest* request) const {
   return request->url().SchemeIs(chrome::kChromeSearchScheme) ?
       InstantIOContext::ShouldServiceRequest(request) :
@@ -197,8 +195,8 @@ void ThemeSource::SendThemeBitmap(
   if (BrowserThemePack::IsPersistentImageID(resource_id)) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     scoped_refptr<base::RefCountedMemory> image_data(
-        ThemeService::GetThemeProviderForProfile(profile_).GetRawData(
-            resource_id, scale_factor));
+        ThemeService::GetThemeProviderForProfile(profile_->GetOriginalProfile())
+            .GetRawData(resource_id, scale_factor));
     callback.Run(image_data.get());
   } else {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -214,9 +212,9 @@ void ThemeSource::SendThemeImage(
   scoped_refptr<base::RefCountedBytes> data(new base::RefCountedBytes());
   if (BrowserThemePack::IsPersistentImageID(resource_id)) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    const ui::ThemeProvider& tp =
-        ThemeService::GetThemeProviderForProfile(profile_);
-    ProcessImageOnUIThread(*tp.GetImageSkiaNamed(resource_id), scale, data);
+    const ui::ThemeProvider& tp = ThemeService::GetThemeProviderForProfile(
+        profile_->GetOriginalProfile());
+    ProcessImageOnUiThread(*tp.GetImageSkiaNamed(resource_id), scale, data);
     callback.Run(data.get());
   } else {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -224,7 +222,7 @@ void ThemeSource::SendThemeImage(
     // crbug.com/449277
     content::BrowserThread::PostTaskAndReply(
         content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&ProcessResourceOnUIThread, resource_id, scale, data),
+        base::Bind(&ProcessResourceOnUiThread, resource_id, scale, data),
         base::Bind(callback, data));
   }
 }

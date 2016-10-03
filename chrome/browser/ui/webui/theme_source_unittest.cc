@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/url_constants.h"
@@ -90,9 +91,11 @@ TEST_F(WebUISourcesTest, ThemeSourceCSS) {
   size_t empty_size = 0;
 
   StartDataRequest("css/new_tab_theme.css");
+  base::RunLoop().RunUntilIdle();
   EXPECT_NE(result_data_size_, empty_size);
 
   StartDataRequest("css/new_tab_theme.css?pie");
+  base::RunLoop().RunUntilIdle();
   EXPECT_NE(result_data_size_, empty_size);
 
 #if !DCHECK_IS_ON()
