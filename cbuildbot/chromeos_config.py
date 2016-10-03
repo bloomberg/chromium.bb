@@ -658,18 +658,7 @@ _base_layout_boards = _lakitu_boards
 _no_unittest_boards = frozenset((
 ))
 
-_cheets_vmtest_boards = frozenset([
-    'cyan',
-])
-
-_no_vmtest_boards = (_arm_boards | _brillo_boards |
-                     _cheets_x86_boards - _cheets_vmtest_boards)
-
-# List of boards that run VMTests but only the smoke tests, not the AU tests
-# until b/31341543 has been fixed.
-_smoke_only_vmtest_boards = frozenset([
-    'cyan',
-])
+_no_vmtest_boards = _arm_boards | _brillo_boards | _cheets_x86_boards
 
 # This is a list of configs that should be included on the main waterfall, but
 # aren't included by default (see IsDefaultMainWaterfall). This loosely
@@ -903,13 +892,6 @@ def CreateBuilderTemplates(site_config, hw_test_list, is_release_branch):
   site_config.AddTemplate(
       'no_vmtest_builder',
       vm_tests=[],
-      vm_tests_override=None,
-      run_gce_tests=False,
-  )
-
-  site_config.AddTemplate(
-      'smoke_only_vmtest_builder',
-      vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE)],
       vm_tests_override=None,
       run_gce_tests=False,
   )
@@ -1583,8 +1565,6 @@ def CreateBoardConfigs(site_config, ge_build_config):
       board_config.update(site_config.templates.no_unittest_builder)
     if board in _no_vmtest_boards:
       board_config.update(site_config.templates.no_vmtest_builder)
-    if board in _smoke_only_vmtest_boards:
-      board_config.update(site_config.templates.smoke_only_vmtest_builder)
 
     # Note: board_config configs should not specify a useflag list. Convert any
     # useflags that this board_config config has accrued (for instance,

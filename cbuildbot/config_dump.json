@@ -5733,9 +5733,7 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ]
+        "vm_tests": []
     },
     "cyan-chrome-pfq": {
         "_template": "chrome_pfq",
@@ -5748,9 +5746,7 @@
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 3,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": true,\n    \"suite\": \"arc-bvt-cq\",\n    \"suite_min_duts\": 3,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
         ],
         "manifest": "official.xml",
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ]
+        "vm_tests": []
     },
     "cyan-chromium-pfq": {
         "_template": "chromium_pfq",
@@ -5761,9 +5757,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ]
+        "vm_tests": []
     },
     "cyan-compile-only-pre-cq": {
         "_template": "compile_only_pre_cq",
@@ -5776,9 +5770,6 @@
         "overlays": "both",
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "cyan-depthcharge-firmware": {
@@ -5825,9 +5816,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ]
+        "vm_tests": []
     },
     "cyan-no-vmtest-pre-cq": {
         "_template": "no_vmtest_pre_cq",
@@ -5840,9 +5829,6 @@
         "overlays": "both",
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "cyan-paladin": {
@@ -5863,6 +5849,7 @@
         "useflags": [
             "chrome_internal"
         ],
+        "vm_tests": [],
         "vm_tests_override": null
     },
     "cyan-payloads": {
@@ -5882,7 +5869,8 @@
         "overlays": "both",
         "useflags": [
             "chrome_internal"
-        ]
+        ],
+        "vm_tests": []
     },
     "cyan-release": {
         "_template": "release",
@@ -5909,9 +5897,7 @@
                 ],
                 "grouped": true,
                 "name": "cyan-release-afdo-generate",
-                "vm_tests": [
-                    "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-                ],
+                "vm_tests": [],
                 "vm_tests_override": null
             },
             {
@@ -5921,15 +5907,11 @@
                 ],
                 "grouped": true,
                 "name": "cyan-release-afdo-use",
-                "vm_tests": [
-                    "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-                ],
+                "vm_tests": [],
                 "vm_tests_override": null
             }
         ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ],
+        "vm_tests": [],
         "vm_tests_override": null
     },
     "cyan-release-afdo-generate": {
@@ -5937,9 +5919,7 @@
         "boards": [
             "cyan"
         ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ],
+        "vm_tests": [],
         "vm_tests_override": null
     },
     "cyan-release-afdo-use": {
@@ -5947,9 +5927,7 @@
         "boards": [
             "cyan"
         ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ],
+        "vm_tests": [],
         "vm_tests_override": null
     },
     "cyan-tot-chrome-pfq-informational": {
@@ -5958,9 +5936,7 @@
             "cyan"
         ],
         "manifest": "official.xml",
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ]
+        "vm_tests": []
     },
     "cyan-tot-chrome-pfq-informational-gn": {
         "_template": "chrome_pfq_informational_gn",
@@ -5968,9 +5944,7 @@
             "cyan"
         ],
         "manifest": "official.xml",
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ]
+        "vm_tests": []
     },
     "cyan-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
@@ -5980,9 +5954,7 @@
         "useflags": [
             "-chrome_internal"
         ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ]
+        "vm_tests": []
     },
     "cyan-tot-chromium-pfq-informational-gn": {
         "_template": "chromium_pfq_informational_gn",
@@ -5993,9 +5965,7 @@
             "-chrome_internal",
             "gn"
         ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ]
+        "vm_tests": []
     },
     "cyan-unittest-stress": {
         "_template": "unittest_stress",
@@ -6008,9 +5978,6 @@
         "overlays": "both",
         "useflags": [
             "chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "daisy-chrome-perf": {
