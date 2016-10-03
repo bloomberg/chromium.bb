@@ -179,7 +179,7 @@ String HTMLSelectElement::defaultToolTip() const {
 void HTMLSelectElement::selectMultipleOptionsByPopup(
     const Vector<int>& listIndices) {
   DCHECK(usesMenuList());
-  DCHECK(!multiple());
+  DCHECK(multiple());
   for (size_t i = 0; i < listIndices.size(); ++i) {
     bool addSelectionIfNotFirst = i > 0;
     if (HTMLOptionElement* option = optionAtListIndex(listIndices[i]))
