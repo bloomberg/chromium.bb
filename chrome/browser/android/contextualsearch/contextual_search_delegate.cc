@@ -501,6 +501,19 @@ void ContextualSearchDelegate::DecodeSearchTermFromJsonResponse(
     // from the root.
     dict->GetString(kContextualSearchCaption, caption);
     dict->GetString(kContextualSearchThumbnail, thumbnail_url);
+    // For testing purposes check if there was a coca backend failure and
+    // flag that in the log.
+    // TODO(donnd): remove after full Coca integration.
+    bool contextual_cards_backend_responded = true;
+    dict->GetBoolean("coca_responded", &contextual_cards_backend_responded);
+    if (!contextual_cards_backend_responded) {
+      DVLOG(0) << "";
+      DVLOG(0) << "!!! CONTEXTUAL SEARCH WARNING !!!";
+      DVLOG(0)
+          << "The Contextual Cards backend did not respond to this "
+             "request!!! The backend server may not be configured or is down.";
+      DVLOG(0) << "";
+    }
   }
 }
 
