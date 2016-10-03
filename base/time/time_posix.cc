@@ -80,10 +80,19 @@ void SysTimeToTimeStruct(SysTime t, struct tm* timestruct, bool is_local) {
 #endif  // OS_ANDROID
 
 int64_t ConvertTimespecToMicros(const struct timespec& ts) {
-  base::CheckedNumeric<int64_t> result(ts.tv_sec);
-  result *= base::Time::kMicrosecondsPerSecond;
-  result += (ts.tv_nsec / base::Time::kNanosecondsPerMicrosecond);
-  return result.ValueOrDie();
+  // On 32-bit systems, the calculation cannot overflow int64_t.
+  // 2**32 * 1000000 + 2**64 / 1000 < 2**63
+  if (sizeof(ts.tv_sec) <= 4 && sizeof(ts.tv_nsec) <= 8) {
+    int64_t result = ts.tv_sec;
+    result *= base::Time::kMicrosecondsPerSecond;
+    result += (ts.tv_nsec / base::Time::kNanosecondsPerMicrosecond);
+    return result;
+  } else {
+    base::CheckedNumeric<int64_t> result(ts.tv_sec);
+    result *= base::Time::kMicrosecondsPerSecond;
+    result += (ts.tv_nsec / base::Time::kNanosecondsPerMicrosecond);
+    return result.ValueOrDie();
+  }
 }
 
 // Helper function to get results from clock_gettime() and convert to a
