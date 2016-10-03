@@ -184,7 +184,7 @@ class RemoveFlakesOMatic(object):
         the distinct results for each test. E.g.
 
         {
-            'WebKit Linux': {
+            'WebKit Linux Precise': {
                   'test1.html': ['PASS', 'IMAGE'],
                   'test2.html': ['PASS'],
             },

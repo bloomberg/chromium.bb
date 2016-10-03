@@ -39,7 +39,7 @@ BUILDERS = {
         "port_name": "win-win10",
         "specifiers": ['Win10', 'Release']
     },
-    "WebKit Linux": {  # FIXME: Rename this. http://crbug.com/613305.
+    "WebKit Linux Precise": {
         "port_name": "linux-precise",
         "specifiers": ['Precise', 'Release']
     },
@@ -47,7 +47,7 @@ BUILDERS = {
         "port_name": "linux-trusty",
         "specifiers": ['Trusty', 'Release']
     },
-    "WebKit Linux (dbg)": {
+    "WebKit Linux Precise (dbg)": {
         "port_name": "linux-precise",
         "specifiers": ['Precise', 'Debug']
     },
