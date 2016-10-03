@@ -20,8 +20,8 @@ import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.download.ui.BackendProvider;
@@ -84,8 +84,8 @@ public class DownloadUtils {
 
         // Figure out what tab was last being viewed by the user.
         if (activity == null) activity = ApplicationStatus.getLastTrackedFocusedActivity();
-        if (tab == null && activity instanceof ChromeActivity) {
-            tab = ((ChromeActivity) activity).getActivityTab();
+        if (tab == null && activity instanceof ChromeTabbedActivity) {
+            tab = ((ChromeTabbedActivity) activity).getActivityTab();
         }
 
         Context appContext = ContextUtils.getApplicationContext();
@@ -97,11 +97,16 @@ public class DownloadUtils {
                 TabDelegate delegate = new TabDelegate(false);
                 delegate.createNewTab(params, TabLaunchType.FROM_CHROME_UI, null);
             } else {
-                // Download Home shows up inside an existing tab.  Manually foreground Chrome.
+                // Download Home shows up inside an existing tab, but only if the last Activity was
+                // the ChromeTabbedActivity.
                 tab.loadUrl(params);
+
+                // Bring Chrome to the foreground, if possible.
                 Intent intent = Tab.createBringTabToFrontIntent(tab.getId());
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                IntentUtils.safeStartActivity(appContext, intent);
+                if (intent != null) {
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    IntentUtils.safeStartActivity(appContext, intent);
+                }
             }
         } else {
             // Download Home shows up as a new Activity on phones.

@@ -18,6 +18,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.Browser;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
@@ -3101,6 +3102,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      * @return Intent that tells Chrome to bring an Activity for a particular Tab back to the
      *         foreground, or null if this isn't possible.
      */
+    @Nullable
     public static Intent createBringTabToFrontIntent(int tabId) {
         // Iterate through all {@link CustomTab}s and check whether the given tabId belongs to a
         // {@link CustomTab}. If so, return null as the client app's task cannot be foregrounded.
