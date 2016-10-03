@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
+import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -57,6 +58,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
      */
     private final List<ItemGroup> mGroups = new ArrayList<>();
     private final AboveTheFoldItem mAboveTheFold = new AboveTheFoldItem();
+    private final SigninPromoItem mSigninPromo = new SigninPromoItem();
     private final Footer mFooter = new Footer();
     private final SpacingItem mBottomSpacer = new SpacingItem();
 
@@ -113,13 +115,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
             mRecyclerView.updateViewStateForDismiss(dX, viewHolder);
 
             // If there is another item that should be animated at the same time, do the same to it.
-            int swipePos = viewHolder.getAdapterPosition();
-            SuggestionsSection section = (SuggestionsSection) getGroup(swipePos);
-            int siblingPosDelta = section.getDismissSiblingPosDelta(getItems().get(swipePos));
-            if (siblingPosDelta == 0) return;
-
-            ViewHolder siblingViewHolder =
-                    mRecyclerView.findViewHolderForAdapterPosition(siblingPosDelta + swipePos);
+            ViewHolder siblingViewHolder = getDismissSibling(viewHolder);
             if (siblingViewHolder != null) {
                 mRecyclerView.updateViewStateForDismiss(dX, siblingViewHolder);
             }
@@ -137,13 +133,13 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
     public static NewTabPageAdapter create(
             NewTabPageManager manager, View aboveTheFoldView, UiConfig uiConfig) {
         NewTabPageAdapter adapter = new NewTabPageAdapter(manager, aboveTheFoldView, uiConfig);
-        adapter.initializeSections();
+        adapter.finishInitialization();
         return adapter;
     }
 
     /**
      * Constructor for {@link NewTabPageAdapter}. The object is not completely ready to be used
-     * until {@link #initializeSections()} is called. Usage reserved for testing, prefer calling
+     * until {@link #finishInitialization()} is called. Usage reserved for testing, prefer calling
      * {@link NewTabPageAdapter#create(NewTabPageManager, View, UiConfig)} in production code.
      */
     @VisibleForTesting
@@ -158,7 +154,29 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
      * a section has not been registered at this point will be ignored.
      */
     @VisibleForTesting
-    void initializeSections() {
+    void finishInitialization() {
+        mSigninPromo.setObserver(this);
+        resetSections();
+        mNewTabPageManager.getSuggestionsSource().setObserver(this);
+
+        mNewTabPageManager.registerSignInStateObserver(new SignInStateObserver() {
+            @Override
+            public void onSignedIn() {
+                mSigninPromo.hide();
+                resetSections();
+            }
+
+            @Override
+            public void onSignedOut() {
+                mSigninPromo.maybeShow();
+            }
+        });
+    }
+
+    /** Resets the sections, reloading the whole new tab page content. */
+    private void resetSections() {
+        mSections.clear();
+
         SuggestionsSource suggestionsSource = mNewTabPageManager.getSuggestionsSource();
 
         int[] categories = suggestionsSource.getCategories();
@@ -171,23 +189,35 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
                     || categoryStatus == CategoryStatus.CATEGORY_EXPLICITLY_DISABLED)
                 continue;
 
-            List<SnippetArticle> suggestions =
-                    suggestionsSource.getSuggestionsForCategory(category);
-            suggestionsPerCategory[i++] = suggestions.size();
-
-            // Create the new section.
-            SuggestionsCategoryInfo info = suggestionsSource.getCategoryInfo(category);
-            if (suggestions.isEmpty() && !info.showIfEmpty()) continue;
-            mSections.put(category, new SuggestionsSection(category, info, this));
-
-            // Add the new suggestions.
-            setSuggestions(category, suggestions, categoryStatus);
+            suggestionsPerCategory[i++] = resetSection(category, categoryStatus);
         }
 
         mNewTabPageManager.trackSnippetsPageImpression(categories, suggestionsPerCategory);
 
-        suggestionsSource.setObserver(this);
         updateGroups();
+    }
+
+    private int resetSection(@CategoryInt int category, @CategoryStatusEnum int categoryStatus) {
+        SuggestionsSource suggestionsSource = mNewTabPageManager.getSuggestionsSource();
+        List<SnippetArticle> suggestions = suggestionsSource.getSuggestionsForCategory(category);
+
+        // Create the new section.
+        SuggestionsCategoryInfo info = suggestionsSource.getCategoryInfo(category);
+        if (suggestions.isEmpty() && !info.showIfEmpty()) {
+            mSections.remove(category);
+            return 0;
+        }
+
+        SuggestionsSection section = mSections.get(category);
+        if (section == null) {
+            section = new SuggestionsSection(category, info, this);
+            mSections.put(category, section);
+        }
+
+        // Add the new suggestions.
+        setSuggestions(category, suggestions, categoryStatus);
+
+        return suggestions.size();
     }
 
     /** Returns callbacks to configure the interactions with the RecyclerView's items. */
@@ -234,15 +264,24 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         // If there is no section for this category there is nothing to do.
         if (!mSections.containsKey(category)) return;
 
-        // The section provider has gone away. Keep open UIs as they are.
-        if (status == CategoryStatus.NOT_PROVIDED) return;
+        switch (status) {
+            case CategoryStatus.NOT_PROVIDED:
+                // The section provider has gone away. Keep open UIs as they are.
+                return;
 
-        if (status == CategoryStatus.CATEGORY_EXPLICITLY_DISABLED
-                || status == CategoryStatus.LOADING_ERROR) {
-            // Need to remove the entire section from the UI immediately.
-            removeSection(mSections.get(category));
-        } else {
-            mSections.get(category).setStatus(status);
+            case CategoryStatus.CATEGORY_EXPLICITLY_DISABLED:
+            case CategoryStatus.LOADING_ERROR:
+                // Need to remove the entire section from the UI immediately.
+                removeSection(mSections.get(category));
+                return;
+
+            case CategoryStatus.SIGNED_OUT:
+                resetSection(category, status);
+                return;
+
+            default:
+                mSections.get(category).setStatus(status);
+                return;
         }
     }
 
@@ -279,7 +318,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         }
 
         if (viewType == NewTabPageItem.VIEW_TYPE_STATUS) {
-            return new StatusItem.ViewHolder(mRecyclerView, mUiConfig);
+            return new StatusCardViewHolder(mRecyclerView, mUiConfig);
         }
 
         if (viewType == NewTabPageItem.VIEW_TYPE_PROGRESS) {
@@ -288,6 +327,10 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
 
         if (viewType == NewTabPageItem.VIEW_TYPE_ACTION) {
             return new ActionItem.ViewHolder(mRecyclerView, mNewTabPageManager, mUiConfig);
+        }
+
+        if (viewType == NewTabPageItem.VIEW_TYPE_PROMO) {
+            return new SigninPromoItem.ViewHolder(mRecyclerView, mUiConfig);
         }
 
         if (viewType == NewTabPageItem.VIEW_TYPE_FOOTER) {
@@ -369,6 +412,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         mGroups.add(mAboveTheFold);
         // TODO(treib,bauerb): Preserve the order of categories we got from getCategories.
         mGroups.addAll(mSections.values());
+        mGroups.add(mSigninPromo);
         if (!mSections.isEmpty()) {
             mGroups.add(mFooter);
             mGroups.add(mBottomSpacer);
@@ -396,6 +440,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
 
     @Override
     public void notifyGroupChanged(ItemGroup group, int itemCountBefore, int itemCountAfter) {
+        if (mGroups.isEmpty()) return; // The sections have not been initialised yet.
         int startPos = getGroupPositionOffset(group);
 
         if (group instanceof SuggestionsSection) {
@@ -418,12 +463,14 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
 
     @Override
     public void notifyItemInserted(ItemGroup group, int itemPosition) {
+        if (mGroups.isEmpty()) return; // The sections have not been initialised yet.
         notifyItemInserted(getGroupPositionOffset(group) + itemPosition);
         notifyItemChanged(getItems().size() - 1); // Refresh the spacer too.
     }
 
     @Override
     public void notifyItemRemoved(ItemGroup group, int itemPosition) {
+        if (mGroups.isEmpty()) return; // The sections have not been initialised yet.
         notifyItemRemoved(getGroupPositionOffset(group) + itemPosition);
         notifyItemChanged(getItems().size() - 1); // Refresh the spacer too.
     }
@@ -442,17 +489,31 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         mRecyclerView = (NewTabPageRecyclerView) recyclerView;
     }
 
+    /**
+     * Dismisses the item at the provided adapter position. Can also cause the dismissal of other
+     * items or even entire sections.
+     */
     public void dismissItem(int position) {
-        NewTabPageItem item = getItems().get(position);
-        if (item instanceof SnippetArticle) {
-            dismissSuggestion(position);
-        } else {
-            // We assume that the item being dismissed is the status card (and/or the more button,
-            // when it's displayed with the status card). In that case we just dismiss the section
-            // and it will show up on new NTPs after the status has changed.
-            ItemGroup group = getGroup(position);
-            assert group instanceof SuggestionsSection;
-            dismissSection((SuggestionsSection) group);
+        int itemViewType = getItemViewType(position);
+
+        // TODO(dgn): Polymorphism is supposed to allow to avoid that kind of stuff.
+        switch (itemViewType) {
+            case NewTabPageItem.VIEW_TYPE_STATUS:
+            case NewTabPageItem.VIEW_TYPE_ACTION:
+                dismissSection((SuggestionsSection) getGroup(position));
+                return;
+
+            case NewTabPageItem.VIEW_TYPE_SNIPPET:
+                dismissSuggestion(position);
+                return;
+
+            case NewTabPageItem.VIEW_TYPE_PROMO:
+                dismissPromo();
+                return;
+
+            default:
+                Log.wtf(TAG, "Unsupported dismissal of item of type %d", itemViewType);
+                return;
         }
     }
 
@@ -489,6 +550,11 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         section.removeSuggestion(suggestion);
     }
 
+    private void dismissPromo() {
+        // TODO(dgn): accessibility announcement.
+        mSigninPromo.dismiss();
+    }
+
     /**
      * Returns an unmodifiable list containing all items in the adapter.
      */
@@ -498,6 +564,22 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
             items.addAll(group.getItems());
         }
         return Collections.unmodifiableList(items);
+    }
+
+    /**
+     * Returns another view holder that should be dismissed as the same time as the provided one.
+     */
+    private ViewHolder getDismissSibling(ViewHolder viewHolder) {
+        int swipePos = viewHolder.getAdapterPosition();
+        ItemGroup group = getGroup(swipePos);
+
+        if (!(group instanceof SuggestionsSection)) return null;
+
+        SuggestionsSection section = (SuggestionsSection) group;
+        int siblingPosDelta = section.getDismissSiblingPosDelta(getItems().get(swipePos));
+        if (siblingPosDelta == 0) return null;
+
+        return mRecyclerView.findViewHolderForAdapterPosition(siblingPosDelta + swipePos);
     }
 
     @VisibleForTesting

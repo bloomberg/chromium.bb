@@ -6,19 +6,11 @@ package org.chromium.chrome.browser.ntp.cards;
 
 import android.content.Context;
 import android.support.annotation.Nullable;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
-import android.widget.TextView;
 
 import org.chromium.base.Log;
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus.CategoryStatusEnum;
-import org.chromium.chrome.browser.signin.AccountSigninActivity;
-import org.chromium.chrome.browser.signin.SigninAccessPoint;
 
 /**
  * Card that is shown when the user needs to be made aware of some information about their
@@ -31,48 +23,6 @@ public abstract class StatusItem implements NewTabPageItem {
      * handler, etc.
      */
     public interface ActionDelegate { void onButtonTapped(); }
-
-    /**
-     * ViewHolder for an item of type {@link #VIEW_TYPE_STATUS}.
-     */
-    public static class ViewHolder extends CardViewHolder {
-        private final TextView mTitleView;
-        private final TextView mBodyView;
-        private final Button mActionView;
-
-        public ViewHolder(NewTabPageRecyclerView parent, UiConfig config) {
-            super(R.layout.new_tab_page_status_card, parent, config);
-            mTitleView = (TextView) itemView.findViewById(R.id.status_title);
-            mBodyView = (TextView) itemView.findViewById(R.id.status_body);
-            mActionView = (Button) itemView.findViewById(R.id.status_action_button);
-        }
-
-        public void onBindViewHolder(final StatusItem item) {
-            super.onBindViewHolder();
-
-            mTitleView.setText(item.mHeaderStringId);
-            mBodyView.setText(item.mDescriptionStringId);
-
-            if (item.hasAction()) {
-                mActionView.setText(item.mActionStringId);
-                mActionView.setOnClickListener(new OnClickListener() {
-
-                    @Override
-                    public void onClick(View v) {
-                        item.performAction(v.getContext());
-                    }
-                });
-                mActionView.setVisibility(View.VISIBLE);
-            } else {
-                mActionView.setVisibility(View.GONE);
-            }
-        }
-
-        @Override
-        public boolean isDismissable() {
-            return true;
-        }
-    }
 
     private static class NoBookmarks extends StatusItem {
         public NoBookmarks() {
@@ -108,22 +58,6 @@ public abstract class StatusItem implements NewTabPageItem {
         }
     }
 
-    private static class SignedOut extends StatusItem {
-        public SignedOut() {
-            super(R.string.snippets_disabled_generic_prompt,
-                    R.string.snippets_disabled_signed_out_instructions,
-                    R.string.sign_in_button);
-            RecordUserAction.record("Signin_Impression_FromNTPContentSuggestions");
-            Log.d(TAG, "Registering card for status: User Signed out");
-        }
-
-        @Override
-        protected void performAction(Context context) {
-            AccountSigninActivity.startIfAllowed(context,
-                    SigninAccessPoint.NTP_CONTENT_SUGGESTIONS);
-        }
-    }
-
     private static final String TAG = "NtpCards";
 
     private final int mHeaderStringId;
@@ -133,6 +67,8 @@ public abstract class StatusItem implements NewTabPageItem {
     public static StatusItem create(
             @CategoryStatusEnum int categoryStatus, @Nullable ActionDelegate actionDelegate) {
         switch (categoryStatus) {
+            case CategoryStatus.SIGNED_OUT:
+            // Fall through. Sign out is a transitive state that we just use to clear content.
             case CategoryStatus.AVAILABLE:
             case CategoryStatus.AVAILABLE_LOADING:
             case CategoryStatus.INITIALIZING:
@@ -140,9 +76,6 @@ public abstract class StatusItem implements NewTabPageItem {
                 // of recreating it. It would be more flexible in terms of adapting the content
                 // to different usages.
                 return actionDelegate == null ? new NoBookmarks() : new NoSnippets(actionDelegate);
-
-            case CategoryStatus.SIGNED_OUT:
-                return new SignedOut();
 
             case CategoryStatus.ALL_SUGGESTIONS_EXPLICITLY_DISABLED:
                 Log.wtf(TAG, "Attempted to create a status card while the feature should be off.");
@@ -174,7 +107,7 @@ public abstract class StatusItem implements NewTabPageItem {
         }
     }
 
-    private StatusItem(int headerStringId, int descriptionStringId, int actionStringId) {
+    protected StatusItem(int headerStringId, int descriptionStringId, int actionStringId) {
         mHeaderStringId = headerStringId;
         mDescriptionStringId = descriptionStringId;
         mActionStringId = actionStringId;
@@ -193,7 +126,19 @@ public abstract class StatusItem implements NewTabPageItem {
 
     @Override
     public void onBindViewHolder(NewTabPageViewHolder holder) {
-        assert holder instanceof ViewHolder;
-        ((ViewHolder) holder).onBindViewHolder(this);
+        assert holder instanceof StatusCardViewHolder;
+        ((StatusCardViewHolder) holder).onBindViewHolder(this);
+    }
+
+    public int getHeader() {
+        return mHeaderStringId;
+    }
+
+    public int getDescription() {
+        return mDescriptionStringId;
+    }
+
+    public int getActionLabel() {
+        return mActionStringId;
     }
 }

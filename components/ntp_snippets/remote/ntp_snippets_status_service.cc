@@ -65,13 +65,16 @@ void NTPSnippetsStatusService::Init(
   pref_change_registrar_.Init(pref_service_);
   pref_change_registrar_.Add(
       prefs::kEnableSnippets,
-      base::Bind(&NTPSnippetsStatusService::OnStateChanged,
+      base::Bind(&NTPSnippetsStatusService::OnSnippetsEnabledChanged,
                  base::Unretained(this)));
 }
 
-void NTPSnippetsStatusService::OnStateChanged() {
-  DisabledReason new_disabled_reason = GetDisabledReasonFromDeps();
+void NTPSnippetsStatusService::OnSnippetsEnabledChanged() {
+  OnStateChanged(GetDisabledReasonFromDeps());
+}
 
+void NTPSnippetsStatusService::OnStateChanged(
+    DisabledReason new_disabled_reason) {
   if (new_disabled_reason == disabled_reason_)
     return;
 
@@ -83,17 +86,20 @@ void NTPSnippetsStatusService::GoogleSigninSucceeded(
     const std::string& account_id,
     const std::string& username,
     const std::string& password) {
-  OnStateChanged();
+  // TODO(dgn): The snippets should be refetched: https://crbug.com/650666
+  OnStateChanged(GetDisabledReasonFromDeps());
 }
 
 void NTPSnippetsStatusService::GoogleSignedOut(const std::string& account_id,
                                                const std::string& username) {
   if (!require_signin_ && disabled_reason_ == DisabledReason::NONE) {
     // Temporary enter |SIGNED_OUT| state to clear all personalised suggestions.
-    disabled_reason_change_callback_.Run(DisabledReason::SIGNED_OUT);
-    disabled_reason_change_callback_.Run(disabled_reason_);
+    OnStateChanged(DisabledReason::SIGNED_OUT);
   }
-  OnStateChanged();
+
+  // Depending on |require_signin_|, will still report as SIGNED_OUT or switch
+  // back to |DisabledReason::NONE|
+  OnStateChanged(GetDisabledReasonFromDeps());
 }
 
 DisabledReason NTPSnippetsStatusService::GetDisabledReasonFromDeps() const {

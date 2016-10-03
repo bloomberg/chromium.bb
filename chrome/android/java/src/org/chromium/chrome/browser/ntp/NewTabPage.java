@@ -60,6 +60,8 @@ import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObse
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
+import org.chromium.chrome.browser.signin.SigninManager;
+import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.sync.SyncSessionsMetrics;
@@ -150,6 +152,9 @@ public class NewTabPage
 
     // Whether destroy() has been called.
     private boolean mIsDestroyed;
+
+    /** Used by {@link #mNewTabPageManager}. Observer tracked for de-registration purposes. */
+    private SignInStateObserver mSignInStateObserver;
 
     /**
      * Allows clients to listen for updates to the scroll changes of the search box on the
@@ -652,6 +657,14 @@ public class NewTabPage
         public SuggestionsSource getSuggestionsSource() {
             return mSnippetsBridge;
         }
+
+        @Override
+        public void registerSignInStateObserver(SignInStateObserver signInStateObserver) {
+            if (mIsDestroyed) return;
+            assert mSignInStateObserver == null;
+            mSignInStateObserver = signInStateObserver;
+            SigninManager.get(mActivity).addSignInStateObserver(mSignInStateObserver);
+        }
     };
 
     /**
@@ -949,6 +962,9 @@ public class NewTabPage
         }
         if (mMostVisitedItemRemovedController != null) {
             mTab.getSnackbarManager().dismissSnackbars(mMostVisitedItemRemovedController);
+        }
+        if (mSignInStateObserver != null) {
+            SigninManager.get(mActivity).removeSignInStateObserver(mSignInStateObserver);
         }
         TemplateUrlService.getInstance().removeObserver(this);
         mTab.removeObserver(mTabObserver);

@@ -182,4 +182,10 @@ public class SnippetArticle implements NewTabPageItem {
         int recordedScore = Math.min((int) Math.ceil(score), 100000);
         RecordHistogram.recordCustomCountHistogram(histogramName, recordedScore, 1, 100000, 50);
     }
+
+    @Override
+    public String toString() {
+        // For debugging purposes. Displays the first 42 characters of the title.
+        return String.format("{%s, %1.42s}", getClass().getSimpleName(), mTitle);
+    }
 }

@@ -17,6 +17,7 @@ import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.Promise;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -643,6 +644,11 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
 
     public static String extractDomainName(String email) {
         return nativeExtractDomainName(email);
+    }
+
+    @VisibleForTesting
+    public static void setInstanceForTesting(SigninManager signinManager) {
+        sSigninManager = signinManager;
     }
 
     // Native methods.

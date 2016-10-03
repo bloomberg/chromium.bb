@@ -5,7 +5,8 @@
 package org.chromium.chrome.browser.ntp.cards;
 
 import static org.chromium.base.test.util.Matchers.greaterThanOrEqualTo;
-import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.createDummySuggestions;
+import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils
+        .createDummySuggestions;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -14,9 +15,11 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import android.support.annotation.Nullable;
 import android.view.ContextMenu;
@@ -40,11 +43,16 @@ import org.chromium.chrome.browser.ntp.snippets.FakeSuggestionsSource;
 import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
+import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
+import org.chromium.chrome.browser.signin.SigninManager;
+import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import java.nio.channels.UnsupportedAddressTypeException;
@@ -60,13 +68,9 @@ import java.util.Set;
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class NewTabPageAdapterTest {
-    @Before
-    public void init() {
-        org.robolectric.shadows.ShadowLog.stream = System.out;
-    }
-
     private FakeSuggestionsSource mSource;
     private NewTabPageAdapter mAdapter;
+    private SigninManager mMockSigninManager;
 
     /**
      * Stores information about a section that should be present in the adapter.
@@ -209,6 +213,13 @@ public class NewTabPageAdapterTest {
 
     @Before
     public void setUp() {
+        // Initialise the sign in state. We will be signed in by default in the tests.
+        assertFalse(ChromePreferenceManager.getInstance(RuntimeEnvironment.application)
+                            .getNewTabPageSigninPromoDismissed());
+        mMockSigninManager = mock(SigninManager.class);
+        SigninManager.setInstanceForTesting(mMockSigninManager);
+        when(mMockSigninManager.isSignedInOnNative()).thenReturn(true);
+
         RecordHistogram.disableForTests();
         RecordUserAction.disableForTests();
 
@@ -218,6 +229,13 @@ public class NewTabPageAdapterTest {
                 new SuggestionsCategoryInfo("Articles for you",
                                            ContentSuggestionsCardLayout.FULL_CARD, false, true));
         mAdapter = NewTabPageAdapter.create(new MockNewTabPageManager(mSource), null, null);
+    }
+
+    @After
+    public void tearDown() {
+        SigninManager.setInstanceForTesting(null);
+        ChromePreferenceManager.getInstance(RuntimeEnvironment.application)
+                .setNewTabPageSigninPromoDismissed(false);
     }
 
     /**
@@ -634,6 +652,7 @@ public class NewTabPageAdapterTest {
     @Test
     @Feature({"Ntp"})
     public void testCategoryOrder() {
+        final int basicGroupCount = 4; // above-the-fold, sign in promo, footer, spacer.
         FakeSuggestionsSource suggestionsSource = new FakeSuggestionsSource();
         registerCategory(suggestionsSource, KnownCategories.ARTICLES, 0);
         registerCategory(suggestionsSource, KnownCategories.BOOKMARKS, 0);
@@ -644,7 +663,7 @@ public class NewTabPageAdapterTest {
                 NewTabPageAdapter.create(new MockNewTabPageManager(suggestionsSource), null, null);
         List<ItemGroup> groups = ntpAdapter.getGroups();
 
-        assertEquals(7, groups.size());
+        assertEquals(basicGroupCount + 4, groups.size());
         assertEquals(AboveTheFoldItem.class, groups.get(0).getClass());
         assertEquals(SuggestionsSection.class, groups.get(1).getClass());
         assertEquals(KnownCategories.ARTICLES, getCategory(groups.get(1)));
@@ -666,7 +685,7 @@ public class NewTabPageAdapterTest {
                 NewTabPageAdapter.create(new MockNewTabPageManager(suggestionsSource), null, null);
         groups = ntpAdapter.getGroups();
 
-        assertEquals(7, groups.size());
+        assertEquals(basicGroupCount + 4, groups.size());
         assertEquals(AboveTheFoldItem.class, groups.get(0).getClass());
         assertEquals(SuggestionsSection.class, groups.get(1).getClass());
         assertEquals(KnownCategories.ARTICLES, getCategory(groups.get(1)));
@@ -692,7 +711,7 @@ public class NewTabPageAdapterTest {
 
         groups = ntpAdapter.getGroups();
 
-        assertEquals(6, groups.size());
+        assertEquals(basicGroupCount + 3, groups.size());
         assertEquals(AboveTheFoldItem.class, groups.get(0).getClass());
         assertEquals(SuggestionsSection.class, groups.get(1).getClass());
         assertEquals(KnownCategories.ARTICLES, getCategory(groups.get(1)));
@@ -712,7 +731,7 @@ public class NewTabPageAdapterTest {
         registerCategory(suggestionsSource, KnownCategories.ARTICLES, 3);
         NewTabPageAdapter adapter = spy(
                 new NewTabPageAdapter(new MockNewTabPageManager(suggestionsSource), null, null));
-        adapter.initializeSections();
+        adapter.finishInitialization();
         doNothing().when(adapter).announceItemRemoved(anyString());
 
         // Adapter content:
@@ -763,9 +782,78 @@ public class NewTabPageAdapterTest {
         // 9   | Footer
         // 10  | Spacer
 
+        suggestionsSource.setSuggestionsForCategory(
+                KnownCategories.ARTICLES, createDummySuggestions(0));
         adapter.onCategoryStatusChanged(KnownCategories.ARTICLES, CategoryStatus.SIGNED_OUT);
         verify(adapter, times(2)).notifyItemRangeChanged(2, 2);
         verify(adapter).notifyItemRangeRemoved(4, newSuggestionCount - 2);
+    }
+
+    @Test
+    @Feature({"Ntp"})
+    public void testSigninPromo() {
+        when(mMockSigninManager.isSignedInOnNative()).thenReturn(false);
+        MockNewTabPageManager ntpManager = new MockNewTabPageManager(mSource);
+        NewTabPageAdapter adapter = NewTabPageAdapter.create(ntpManager, null, null);
+
+        assertEquals(5, adapter.getGroups().size());
+        ItemGroup signinPromoGroup = adapter.getGroup(4);
+
+        // Adapter content:
+        // Idx | Item
+        // ----|----------------
+        // 0   | Above-the-fold
+        // 1   | Header
+        // 2   | Status
+        // 3   | Progress Indicator
+        // 4   | Sign in promo
+        // 5   | Footer
+        // 6   | Spacer
+
+        assertEquals(1, signinPromoGroup.getItems().size());
+        assertEquals(NewTabPageItem.VIEW_TYPE_PROMO, signinPromoGroup.getItems().get(0).getType());
+
+        ntpManager.mSignInStateObserver.onSignedIn();
+        assertEquals(0, signinPromoGroup.getItems().size());
+
+        ntpManager.mSignInStateObserver.onSignedOut();
+        assertEquals(1, signinPromoGroup.getItems().size());
+    }
+
+    @Test
+    @Feature({"Ntp"})
+    public void testSigninPromoDismissal() {
+        when(mMockSigninManager.isSignedInOnNative()).thenReturn(false);
+        ChromePreferenceManager.getInstance(RuntimeEnvironment.application)
+                .setNewTabPageSigninPromoDismissed(false);
+        MockNewTabPageManager ntpManager = new MockNewTabPageManager(mSource);
+        NewTabPageAdapter adapter = NewTabPageAdapter.create(ntpManager, null, null);
+
+        assertEquals(5, adapter.getGroups().size());
+        ItemGroup signinPromoGroup = adapter.getGroup(4);
+
+        // Adapter content:
+        // Idx | Item
+        // ----|----------------
+        // 0   | Above-the-fold
+        // 1   | Header
+        // 2   | Status
+        // 3   | Progress Indicator
+        // 4   | Sign in promo
+        // 5   | Footer
+        // 6   | Spacer
+
+        assertEquals(NewTabPageItem.VIEW_TYPE_PROMO, signinPromoGroup.getItems().get(0).getType());
+
+        adapter.dismissItem(4);
+        assertTrue(signinPromoGroup.getItems().isEmpty());
+        assertTrue(ChromePreferenceManager.getInstance(RuntimeEnvironment.application)
+                           .getNewTabPageSigninPromoDismissed());
+
+        adapter = NewTabPageAdapter.create(ntpManager, null, null);
+        assertEquals(5, adapter.getGroups().size());
+        // The items below the signin promo move up, footer is now at the position of the promo.
+        assertEquals(NewTabPageItem.VIEW_TYPE_FOOTER, adapter.getItemViewType(4));
     }
 
     /** Registers the category with hasMoreButton=false and showIfEmpty=true*/
@@ -788,6 +876,7 @@ public class NewTabPageAdapterTest {
 
     private static class MockNewTabPageManager implements NewTabPageManager {
         SuggestionsSource mSuggestionsSource;
+        SignInStateObserver mSignInStateObserver;
 
         public MockNewTabPageManager(SuggestionsSource suggestionsSource) {
             mSuggestionsSource = suggestionsSource;
@@ -950,6 +1039,11 @@ public class NewTabPageAdapterTest {
 
         public void setSuggestionsSource(SuggestionsSource suggestionsSource) {
             mSuggestionsSource = suggestionsSource;
+        }
+
+        @Override
+        public void registerSignInStateObserver(SignInStateObserver signInStateObserver) {
+            mSignInStateObserver = signInStateObserver;
         }
     }
 }

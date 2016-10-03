@@ -56,6 +56,7 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
+import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
@@ -292,6 +293,12 @@ public class NewTabPageView extends FrameLayout
          * instead of keeping your own reference.
          */
         @Nullable SuggestionsSource getSuggestionsSource();
+
+        /**
+         * Registers a {@link SignInStateObserver}, will handle the de-registration when the New Tab
+         * Page goes away.
+         */
+        void registerSignInStateObserver(SignInStateObserver signInStateObserver);
     }
 
     /**

@@ -53,7 +53,9 @@ class NTPSnippetsStatusService : public SigninManagerBase::Observer {
                        const std::string& username) override;
 
   // Callback for the PrefChangeRegistrar.
-  void OnStateChanged();
+  void OnSnippetsEnabledChanged();
+
+  void OnStateChanged(DisabledReason new_disabled_reason);
 
   DisabledReason GetDisabledReasonFromDeps() const;
 

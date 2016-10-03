@@ -46,6 +46,8 @@ public class ChromePreferenceManager {
 
     private static final String CHROME_DEFAULT_BROWSER = "applink.chrome_default_browser";
 
+    private static final String NTP_SIGNIN_PROMO_DISMISSED = "ntp.signin_promo_dismissed";
+
     private static final String SUCCESS_UPLOAD_SUFFIX = "_crash_success_upload";
     private static final String FAILURE_UPLOAD_SUFFIX = "_crash_failure_upload";
 
@@ -369,6 +371,18 @@ public class ChromePreferenceManager {
     public void setCachedChromeDefaultBrowser(boolean isDefault) {
         SharedPreferences.Editor ed = mSharedPreferences.edit();
         ed.putBoolean(CHROME_DEFAULT_BROWSER, isDefault);
+        ed.apply();
+    }
+
+    /** Checks if the user dismissed the sign in promo from the new tab page. */
+    public boolean getNewTabPageSigninPromoDismissed() {
+        return mSharedPreferences.getBoolean(NTP_SIGNIN_PROMO_DISMISSED, false);
+    }
+
+    /** Set whether the user dismissed the sign in promo from the new tab page. */
+    public void setNewTabPageSigninPromoDismissed(boolean isPromoDismissed) {
+        SharedPreferences.Editor ed = mSharedPreferences.edit();
+        ed.putBoolean(NTP_SIGNIN_PROMO_DISMISSED, isPromoDismissed);
         ed.apply();
     }
 

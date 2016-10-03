@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.browser.ntp.cards.SuggestionsCategoryInfo;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
+import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.RenderUtils.ViewRenderer;
 
@@ -349,6 +350,9 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
         public SuggestionsSource getSuggestionsSource() {
             return mSnippetsSource;
         }
+
+        @Override
+        public void registerSignInStateObserver(SignInStateObserver signInStateObserver) {}
 
         @Override
         public void closeContextMenu() {

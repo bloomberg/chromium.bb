@@ -782,21 +782,11 @@ void NTPSnippetsService::NukeAllSnippets() {
     ClearCachedSuggestions(category);
     ClearDismissedSuggestionsForDebugging(category);
 
-    if (category == articles_category_) {
-      // Temporarily enter an "explicitly disabled" state, so that any open UIs
-      // will clear the suggestions too.
-      CategoryContent& content = categories_[category];
-      if (content.status != CategoryStatus::CATEGORY_EXPLICITLY_DISABLED) {
-        CategoryStatus old_category_status = content.status;
-        UpdateCategoryStatus(category,
-                             CategoryStatus::CATEGORY_EXPLICITLY_DISABLED);
-        UpdateCategoryStatus(category, old_category_status);
-      }
-    } else {
-      // Remove other categories entirely; they may or may not reappear.
-      UpdateCategoryStatus(category, CategoryStatus::NOT_PROVIDED);
+    UpdateCategoryStatus(category, CategoryStatus::NOT_PROVIDED);
+
+    // Remove the category entirely; it may or may not reappear.
+    if (category != articles_category_)
       categories_to_erase.push_back(category);
-    }
   }
 
   for (Category category : categories_to_erase) {

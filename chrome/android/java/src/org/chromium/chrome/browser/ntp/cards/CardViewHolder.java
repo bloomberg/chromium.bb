@@ -129,6 +129,9 @@ public class CardViewHolder extends NewTabPageViewHolder {
         // Reset the transparency and translation in case a dismissed card is being recycled.
         itemView.setAlpha(1f);
         itemView.setTranslationX(0f);
+
+        // Make sure we use the right background.
+        updateLayoutParams();
     }
 
     @Override
@@ -236,6 +239,7 @@ public class CardViewHolder extends NewTabPageViewHolder {
             case NewTabPageItem.VIEW_TYPE_SNIPPET:
             case NewTabPageItem.VIEW_TYPE_STATUS:
             case NewTabPageItem.VIEW_TYPE_ACTION:
+            case NewTabPageItem.VIEW_TYPE_PROMO:
                 return true;
             case NewTabPageItem.VIEW_TYPE_ABOVE_THE_FOLD:
             case NewTabPageItem.VIEW_TYPE_HEADER:
@@ -250,7 +254,7 @@ public class CardViewHolder extends NewTabPageViewHolder {
     }
 
     @DrawableRes
-    private static int selectBackground(boolean hasCardAbove, boolean hasCardBelow) {
+    protected int selectBackground(boolean hasCardAbove, boolean hasCardBelow) {
         if (hasCardAbove && hasCardBelow) return R.drawable.ntp_card_middle;
         if (!hasCardAbove && hasCardBelow) return R.drawable.ntp_card_top;
         if (hasCardAbove && !hasCardBelow) return R.drawable.ntp_card_bottom;
