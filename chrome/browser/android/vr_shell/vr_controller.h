@@ -30,7 +30,7 @@ class VrController {
 
   // Must be called when the GL renderer gets OnDrawFrame().
   void UpdateState();
-  VrGesture DetectGesture();
+  std::unique_ptr<VrGesture> DetectGesture();
 
   bool IsTouching();
 
@@ -76,7 +76,7 @@ class VrController {
     int64_t timestamp;
   };
 
-  void UpdateGestureFromTouchInfo();
+  void UpdateGestureFromTouchInfo(VrGesture* gesture);
 
   bool GetButtonLongPressFromButtonInfo();
 
@@ -84,26 +84,17 @@ class VrController {
   void HandleWaitingState();
 
   // Handle the detecting state.
-  void HandleDetectingState();
+  void HandleDetectingState(VrGesture* gesture);
 
   // Handle the scrolling state.
-  void HandleScrollingState();
-  void Update(const gvr_controller_state* controller_state);
-  void Update(bool touch_up,
-              bool touch_down,
-              bool is_touching,
-              const gvr::Vec2f position,
-              int64_t timestamp);
+  void HandleScrollingState(VrGesture* gesture);
+  void UpdateTouchInfo();
 
   // Returns true if the touch position is within the slop of the initial touch
   // point, false otherwise.
   bool InSlop(const gvr::Vec2f touch_position);
 
   void Reset();
-
-  size_t GetGestureListSize() { return gesture_list_.size(); }
-
-  const VrGesture* GetGesturePtr(const size_t index);
 
   // Update gesture parameters,
   void UpdateGesture(VrGesture* gesture);
@@ -124,7 +115,6 @@ class VrController {
   bool pinch_started_;
   bool zoom_in_progress_ = false;
 
-  std::vector<VrGesture> gesture_list_;
   std::unique_ptr<TouchInfo> touch_info_;
 
   // A pointer storing the touch point from previous frame.

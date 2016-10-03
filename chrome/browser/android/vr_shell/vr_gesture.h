@@ -12,13 +12,6 @@ using blink::WebInputEvent;
 
 namespace vr_shell {
 
-typedef enum {
-  GESTURE_DIRECTION_UP,
-  GESTURE_DIRECTION_DOWN,
-  GESTURE_DIRECTION_LEFT,
-  GESTURE_DIRECTION_RIGHT
-} gesture_direction;
-
 typedef struct {
   gvr_vec3f delta;
   int type;
@@ -43,43 +36,8 @@ typedef struct {
 } GestureButtonsChange;
 
 struct VrGesture {
-  VrGesture() : type(WebInputEvent::Undefined) {}
-  VrGesture(const GestureAngularMove&,
-            int64_t start,
-            int64_t end,
-            gvr::Quatf quat)
-      : start_time(start),
-        end_time(end),
-        type(WebInputEvent::MouseMove),
-        quat(quat) {}
-  VrGesture(const GestureScroll&,
-            int64_t start,
-            int64_t end,
-            float dx,
-            float dy,
-            WebInputEvent::Type state,
-            gvr::Quatf quat)
-      : start_time(start), end_time(end), type(state), quat(quat) {
-    details.scroll.delta.x = dx;
-    details.scroll.delta.y = dy;
-    details.scroll.stop_fling = 0;
-  }
-  VrGesture(const GestureButtonsChange&,
-            int64_t start,
-            int64_t end,
-            unsigned down,
-            unsigned up,
-            gvr::Quatf quat)
-      : start_time(start),
-        end_time(end),
-        type(WebInputEvent::GestureTap),
-        quat(quat) {
-    details.buttons.down = down;
-    details.buttons.up = up;
-    details.buttons.pos.x = 0;
-    details.buttons.pos.y = 0;
-  }
-
+  VrGesture() : start_time(0), end_time(0),
+      type(WebInputEvent::Undefined) {}
   int64_t start_time, end_time;
   enum WebInputEvent::Type type;
   union {
@@ -87,10 +45,8 @@ struct VrGesture {
     GestureButtonsChange buttons;
     GestureAngularMove move;
   } details;
-  gvr::Quatf quat;
   gvr::Vec2f velocity;
   gvr::Vec2f displacement;
-  gesture_direction direction;
 };
 
 }  // namespace vr_shell

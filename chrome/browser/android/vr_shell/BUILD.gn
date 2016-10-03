@@ -22,8 +22,6 @@ static_library("vr_shell") {
     "vr_compositor.h",
     "vr_controller.cc",
     "vr_controller.h",
-    "vr_controller_manager.cc",
-    "vr_controller_manager.h",
     "vr_gesture.h",
     "vr_gl_util.cc",
     "vr_gl_util.h",

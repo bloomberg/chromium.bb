@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_ANDROID_VR_SHELL_VR_INPUT_MANAGER_H_
 #define CHROME_BROWSER_ANDROID_VR_SHELL_VR_INPUT_MANAGER_H_
 
+#include "base/memory/ref_counted.h"
+#include "chrome/browser/android/vr_shell/vr_gesture.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -14,11 +16,12 @@ namespace vr_shell {
 
 class RenderFrameHost;
 
-class VrInputManager {
+class VrInputManager
+    : public base::RefCountedThreadSafe<VrInputManager>  {
  public:
   explicit VrInputManager(content::WebContents* web_contents);
 
-  ~VrInputManager();
+  void ProcessUpdatedGesture(VrGesture gesture);
 
   void SendScrollEvent(int64_t time_ms,
                        float x,
@@ -42,9 +45,14 @@ class VrInputManager {
   void PinchBy(int64_t time_ms, float x, float y, float delta);
   void SendPinchEvent(int64_t time_ms, float x, float y, float dz, int type);
 
+ protected:
+  friend class base::RefCountedThreadSafe<VrInputManager>;
+  virtual ~VrInputManager();
+
  private:
-  void SendGestureEvent(const blink::WebGestureEvent& event);
-  void SendMouseEvent(const blink::WebMouseEvent& event);
+  void SendGesture(VrGesture gesture);
+  void ForwardGestureEvent(const blink::WebGestureEvent& event);
+  void ForwardMouseEvent(const blink::WebMouseEvent& event);
   blink::WebGestureEvent MakeGestureEvent(blink::WebInputEvent::Type type,
                                           int64_t time_ms,
                                           float x,

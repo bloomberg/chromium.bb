@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/android/scoped_java_ref.h"
+#include "base/task_runner_util.h"
 #include "chrome/browser/android/vr_shell/vr_input_manager.h"
+#include "content/public/browser/browser_thread.h"
 
 using blink::WebGestureEvent;
 using blink::WebMouseEvent;
@@ -18,6 +20,35 @@ VrInputManager::VrInputManager(content::WebContents* web_contents)
 
 VrInputManager::~VrInputManager() {}
 
+void VrInputManager::ProcessUpdatedGesture(VrGesture gesture) {
+  if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(&VrInputManager::SendGesture, this, gesture));
+  } else {
+    SendGesture(gesture);
+  }
+}
+
+void VrInputManager::SendGesture(VrGesture gesture) {
+  int64_t event_time = gesture.start_time;
+  int64_t event_time_milliseconds = static_cast<int64_t>(event_time / 1000000);
+
+  if (gesture.type == WebInputEvent::GestureScrollBegin ||
+      gesture.type == WebInputEvent::GestureScrollUpdate ||
+      gesture.type == WebInputEvent::GestureScrollEnd) {
+    SendScrollEvent(event_time_milliseconds, 0.0f, 0.0f,
+                    gesture.details.scroll.delta.x,
+                    gesture.details.scroll.delta.y, gesture.type);
+  } else if (gesture.type == WebInputEvent::GestureTap) {
+    SendClickEvent(event_time_milliseconds, gesture.details.buttons.pos.x,
+                   gesture.details.buttons.pos.y);
+  } else if (gesture.type == WebInputEvent::MouseMove) {
+    SendMouseMoveEvent(event_time_milliseconds, gesture.details.move.delta.x,
+                       gesture.details.move.delta.y, gesture.details.move.type);
+  }
+}
+
 void VrInputManager::ScrollBegin(int64_t time_ms,
                                  float x,
                                  float y,
@@ -30,13 +61,13 @@ void VrInputManager::ScrollBegin(int64_t time_ms,
   event.data.scrollBegin.deltaYHint = hinty / dpi_scale_;
   event.data.scrollBegin.targetViewport = target_viewport;
 
-  SendGestureEvent(event);
+  ForwardGestureEvent(event);
 }
 
 void VrInputManager::ScrollEnd(int64_t time_ms) {
   WebGestureEvent event =
       MakeGestureEvent(WebInputEvent::GestureScrollEnd, time_ms, 0, 0);
-  SendGestureEvent(event);
+  ForwardGestureEvent(event);
 }
 
 void VrInputManager::ScrollBy(int64_t time_ms,
@@ -49,7 +80,7 @@ void VrInputManager::ScrollBy(int64_t time_ms,
   event.data.scrollUpdate.deltaX = -dx / dpi_scale_;
   event.data.scrollUpdate.deltaY = -dy / dpi_scale_;
 
-  SendGestureEvent(event);
+  ForwardGestureEvent(event);
 }
 
 void VrInputManager::SendScrollEvent(int64_t time_ms,
@@ -68,7 +99,7 @@ void VrInputManager::SendScrollEvent(int64_t time_ms,
       event_start.data.scrollBegin.deltaXHint = hintx / dpi_scale_;
       event_start.data.scrollBegin.deltaYHint = hinty / dpi_scale_;
       event_start.data.scrollBegin.targetViewport = target_viewport;
-      SendGestureEvent(event_start);
+      ForwardGestureEvent(event_start);
       break;
     }
     case WebInputEvent::GestureScrollUpdate: {
@@ -76,13 +107,13 @@ void VrInputManager::SendScrollEvent(int64_t time_ms,
           MakeGestureEvent(WebInputEvent::GestureScrollUpdate, time_ms, x, y);
       event.data.scrollUpdate.deltaX = -dx / dpi_scale_;
       event.data.scrollUpdate.deltaY = -dy / dpi_scale_;
-      SendGestureEvent(event);
+      ForwardGestureEvent(event);
       break;
     }
     case WebInputEvent::GestureScrollEnd: {
       WebGestureEvent event_end =
           MakeGestureEvent(WebInputEvent::GestureScrollEnd, time_ms, 0, 0);
-      SendGestureEvent(event_end);
+      ForwardGestureEvent(event_end);
       break;
     }
   }
@@ -111,31 +142,31 @@ void VrInputManager::SendMouseMoveEvent(int64_t time_ms,
   }
   result.button = WebMouseEvent::Button::NoButton;
 
-  SendMouseEvent(result);
+  ForwardMouseEvent(result);
 }
 
 void VrInputManager::SendClickEvent(int64_t time_ms, float x, float y) {
   WebGestureEvent tap_down_event =
       MakeGestureEvent(WebInputEvent::GestureTapDown, time_ms, x, y);
   tap_down_event.data.tap.tapCount = 1;
-  SendGestureEvent(tap_down_event);
+  ForwardGestureEvent(tap_down_event);
 
   WebGestureEvent tap_event =
       MakeGestureEvent(WebInputEvent::GestureTap, time_ms, x, y);
   tap_event.data.tap.tapCount = 1;
-  SendGestureEvent(tap_event);
+  ForwardGestureEvent(tap_event);
 }
 
 void VrInputManager::PinchBegin(int64_t time_ms, float x, float y) {
   WebGestureEvent event =
       MakeGestureEvent(WebInputEvent::GesturePinchBegin, time_ms, x, y);
-  SendGestureEvent(event);
+  ForwardGestureEvent(event);
 }
 
 void VrInputManager::PinchEnd(int64_t time_ms) {
   WebGestureEvent event =
       MakeGestureEvent(WebInputEvent::GesturePinchEnd, time_ms, 0, 0);
-  SendGestureEvent(event);
+  ForwardGestureEvent(event);
 }
 
 void VrInputManager::PinchBy(int64_t time_ms,
@@ -146,7 +177,7 @@ void VrInputManager::PinchBy(int64_t time_ms,
                                            time_ms, anchor_x, anchor_y);
   event.data.pinchUpdate.scale = delta;
 
-  SendGestureEvent(event);
+  ForwardGestureEvent(event);
 }
 
 void VrInputManager::SendPinchEvent(int64_t time_ms,
@@ -158,7 +189,7 @@ void VrInputManager::SendPinchEvent(int64_t time_ms,
     case WebInputEvent::GesturePinchBegin: {
       WebGestureEvent event_start =
           MakeGestureEvent(WebInputEvent::GesturePinchBegin, time_ms, x, y);
-      SendGestureEvent(event_start);
+      ForwardGestureEvent(event_start);
       break;
     }
     case WebInputEvent::GesturePinchUpdate: {
@@ -166,13 +197,13 @@ void VrInputManager::SendPinchEvent(int64_t time_ms,
           MakeGestureEvent(WebInputEvent::GesturePinchUpdate, time_ms, x, y);
       event.data.pinchUpdate.scale = dz;
 
-      SendGestureEvent(event);
+      ForwardGestureEvent(event);
       break;
     }
     case WebInputEvent::GesturePinchEnd: {
       WebGestureEvent event_end =
           MakeGestureEvent(WebInputEvent::GesturePinchEnd, time_ms, 0, 0);
-      SendGestureEvent(event_end);
+      ForwardGestureEvent(event_end);
       break;
     }
   }
@@ -193,14 +224,14 @@ WebGestureEvent VrInputManager::MakeGestureEvent(WebInputEvent::Type type,
   return result;
 }
 
-void VrInputManager::SendGestureEvent(const blink::WebGestureEvent& event) {
+void VrInputManager::ForwardGestureEvent(const blink::WebGestureEvent& event) {
   content::RenderWidgetHost* rwh =
       web_contents_->GetRenderWidgetHostView()->GetRenderWidgetHost();
   if (rwh)
     rwh->ForwardGestureEvent(event);
 }
 
-void VrInputManager::SendMouseEvent(const blink::WebMouseEvent& event) {
+void VrInputManager::ForwardMouseEvent(const blink::WebMouseEvent& event) {
   content::RenderWidgetHost* rwh =
       web_contents_->GetRenderWidgetHostView()->GetRenderWidgetHost();
   if (rwh)
