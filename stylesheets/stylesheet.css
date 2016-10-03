@@ -1,4 +1,4 @@
-/* http://meyerweb.com/eric/tools/css/reset/ 
+/* http://meyerweb.com/eric/tools/css/reset/
    v2.0 | 20110126
    License: none (public domain)
 */
@@ -11,8 +11,8 @@ b, u, i, center,
 dl, dt, dd, ol, ul, li,
 fieldset, form, label, legend,
 table, caption, tbody, tfoot, thead, tr, th, td,
-article, aside, canvas, details, embed, 
-figure, figcaption, footer, header, hgroup, 
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header, hgroup,
 menu, nav, output, ruby, section, summary,
 time, mark, audio, video {
 	margin: 0;
@@ -23,7 +23,7 @@ time, mark, audio, video {
 	vertical-align: baseline;
 }
 /* HTML5 display-role reset for older browsers */
-article, aside, details, figcaption, figure, 
+article, aside, details, figcaption, figure,
 footer, header, hgroup, menu, nav, section {
 	display: block;
 }
@@ -49,7 +49,7 @@ table {
 /* LAYOUT STYLES */
 body {
   font-size: 1em;
-  line-height: 1.5; 
+  line-height: 1.5;
   background: #e7e7e7 url(../images/body-bg.png) 0 0 repeat;
   font-family: 'Helvetica Neue', Helvetica, Arial, serif;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
@@ -104,7 +104,7 @@ header h2 {
 
 a.button {
   -moz-border-radius: 30px;
-  -webkit-border-radius: 30px;                     
+  -webkit-border-radius: 30px;
   border-radius: 30px;
   border-top: solid 1px #cbcbcb;
   border-left: solid 1px #b7b7b7;
@@ -118,7 +118,7 @@ a.button {
   display: block;
   float: left;
   width: 179px;
-  margin-right: 14px;  
+  margin-right: 14px;
   background: #fdfdfd; /* Old browsers */
   background: -moz-linear-gradient(top,  #fdfdfd 0%, #f2f2f2 100%); /* FF3.6+ */
   background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#fdfdfd), color-stop(100%,#f2f2f2)); /* Chrome,Safari4+ */
@@ -227,14 +227,14 @@ th {
 
 td {
   border: 1px solid #ebebeb;
-  text-align: center; 
+  text-align: center;
   font-weight: 300;
 }
 
 form {
   background: #f2f2f2;
   padding: 20px;
-  
+
 }
 
 
@@ -242,43 +242,43 @@ form {
 
 h1 {
   font-size: 32px;
-} 
+}
 
 h2 {
   font-size: 22px;
   font-weight: bold;
   color: #303030;
   margin-bottom: 8px;
-} 
+}
 
 h3 {
   color: #d5000d;
   font-size: 18px;
   font-weight: bold;
   margin-bottom: 8px;
-} 
- 
+}
+
 h4 {
   font-size: 16px;
   color: #303030;
   font-weight: bold;
-} 
+}
 
 h5 {
   font-size: 1em;
   color: #303030;
-} 
+}
 
 h6 {
   font-size: .8em;
   color: #303030;
-} 
+}
 
 p {
   font-weight: 300;
   margin-bottom: 20px;
 }
- 
+
 a {
   text-decoration: none;
 }
@@ -369,3 +369,106 @@ footer a:hover {
 
 /* Mobile Portrait Size to Mobile Landscape Size (devices and browsers) */
 @media only screen and (max-width: 479px) {}
+
+
+/* Style overrides for WebVR.info */
+
+html,
+body {
+  height: 100%;
+}
+
+body,
+hr,
+#container {
+  background: none;  /* Remove background-images */
+  text-shadow: none;
+}
+
+body {
+  background-color: #f1f1f1;
+  color: #333;
+}
+
+body,
+header h1 {
+  font-family: -apple-system, BlinkMacSystemFont,
+    Segoe UI, Roboto, Oxygen,
+    Ubuntu, Cantarell, Fira Sans,
+    Droid Sans, Helvetica Neue, sans-serif;
+}
+
+header {
+  text-align: center;
+}
+
+header h1,
+header h2 {
+  letter-spacing: 0;
+}
+
+header h1 {
+  background: #2ea;
+  box-shadow: 3px 3px 0 0 rgba(0,0,0,.15);
+  color: #fff;
+  display: inline-block;
+  font-size: 64px;
+  font-size: calc(32px + 1vh + 3vw);  /* Responsive font-size for mobile */
+  font-style: italic;
+  font-weight: 300;
+  margin-bottom: 15px;
+  max-width: 100%;
+  padding: 15px 30px;
+  transition: .5s width;
+}
+
+@media only screen and (max-width: 449px) {
+  header h1 {
+    display: block;
+  }
+}
+
+header h2 {
+  margin-bottom: 0;
+  font-size: 16px;
+}
+
+code,
+pre {
+  font-family: Consolas, Andale Mono, Monaco, Lucida Console, Liberation Mono,
+    DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace;
+}
+
+hr {
+  background-color: rgba(0,0,0,.15);
+  height: 1px;
+  padding-bottom: 2px;
+}
+
+.inner {
+  box-sizing: border-box;
+  min-width: 300px;
+  max-width: 740px;
+  padding: 30px;
+  width: 100%;
+}
+
+.browsers a:first-child {
+  font-weight: bold;
+}
+
+h3 {
+  border-bottom: 1px solid #ddd;
+  color: #111;
+  line-height: 1.4;
+  margin: 30px 0 15px;
+  padding-bottom: 6px;
+}
+
+h3:first-child {
+  margin-top: 24px;
+}
+
+p {
+  font-weight: normal;
+}
