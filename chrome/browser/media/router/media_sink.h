@@ -7,6 +7,12 @@
 
 #include <string>
 
+#include "third_party/icu/source/common/unicode/uversion.h"
+
+namespace U_ICU_NAMESPACE {
+class Collator;
+}  // namespace U_ICU_NAMESPACE
+
 namespace media_router {
 
 // Represents a sink to which media can be routed.
@@ -14,12 +20,15 @@ class MediaSink {
  public:
   using Id = std::string;
 
+  // IconTypes are listed in the order in which sinks should be sorted.
+  // The order must stay in sync with
+  // chrome/browser/resources/media_router/media_router_data.js.
   enum IconType {
     CAST,
-    CAST_AUDIO,
     CAST_AUDIO_GROUP,
-    GENERIC,
-    HANGOUT
+    CAST_AUDIO,
+    HANGOUT,
+    GENERIC
   };
 
   MediaSink(const MediaSink::Id& sink_id,
@@ -43,6 +52,11 @@ class MediaSink {
   IconType icon_type() const { return icon_type_; }
 
   bool Equals(const MediaSink& other) const;
+
+  // Compares |this| to |other| first by their icon types, then their names
+  // using |collator|, and finally their IDs.
+  bool CompareUsingCollator(const MediaSink& other,
+                            const icu::Collator* collator) const;
 
   // For storing in sets and in maps as keys.
   struct Compare {

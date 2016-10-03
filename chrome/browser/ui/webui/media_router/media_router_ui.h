@@ -161,6 +161,7 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest, SortedSinks);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest, SortSinksByIconType);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest,
                            UIMediaRoutesObserverFiltersNonDisplayRoutes);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest,

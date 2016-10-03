@@ -235,6 +235,41 @@ TEST_F(MediaRouterUITest, SortedSinks) {
   EXPECT_EQ(sink_id1, sorted_sinks[2].sink.id());
 }
 
+TEST_F(MediaRouterUITest, SortSinksByIconType) {
+  CreateMediaRouterUI(&profile_);
+  std::vector<MediaSinkWithCastModes> unsorted_sinks;
+
+  MediaSinkWithCastModes sink1(
+      MediaSink("id1", "sink", MediaSink::IconType::HANGOUT));
+  unsorted_sinks.push_back(sink1);
+  MediaSinkWithCastModes sink2(
+      MediaSink("id2", "B sink", MediaSink::IconType::CAST_AUDIO_GROUP));
+  unsorted_sinks.push_back(sink2);
+  MediaSinkWithCastModes sink3(
+      MediaSink("id3", "sink", MediaSink::IconType::GENERIC));
+  unsorted_sinks.push_back(sink3);
+  MediaSinkWithCastModes sink4(
+      MediaSink("id4", "A sink", MediaSink::IconType::CAST_AUDIO_GROUP));
+  unsorted_sinks.push_back(sink4);
+  MediaSinkWithCastModes sink5(
+      MediaSink("id5", "sink", MediaSink::IconType::CAST_AUDIO));
+  unsorted_sinks.push_back(sink5);
+  MediaSinkWithCastModes sink6(
+      MediaSink("id6", "sink", MediaSink::IconType::CAST));
+  unsorted_sinks.push_back(sink6);
+
+  // Sorted order is CAST, CAST_AUDIO_GROUP "A", CAST_AUDIO_GROUP "B",
+  // CAST_AUDIO, HANGOUT, GENERIC.
+  media_router_ui_->OnResultsUpdated(unsorted_sinks);
+  const auto& sorted_sinks = media_router_ui_->sinks_;
+  EXPECT_EQ(sink6.sink.id(), sorted_sinks[0].sink.id());
+  EXPECT_EQ(sink4.sink.id(), sorted_sinks[1].sink.id());
+  EXPECT_EQ(sink2.sink.id(), sorted_sinks[2].sink.id());
+  EXPECT_EQ(sink5.sink.id(), sorted_sinks[3].sink.id());
+  EXPECT_EQ(sink1.sink.id(), sorted_sinks[4].sink.id());
+  EXPECT_EQ(sink3.sink.id(), sorted_sinks[5].sink.id());
+}
+
 TEST_F(MediaRouterUITest, UIMediaRoutesObserverFiltersNonDisplayRoutes) {
   EXPECT_CALL(mock_router_, RegisterMediaRoutesObserver(_)).Times(1);
   MediaSource media_source("mediaSource");

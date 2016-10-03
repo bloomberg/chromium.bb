@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/guid.h"
-#include "base/i18n/string_compare.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -511,27 +510,11 @@ void MediaRouterUI::OnResultsUpdated(
   sinks_ = sinks;
 
   const icu::Collator* collator_ptr = collator_.get();
-  std::sort(
-      sinks_.begin(), sinks_.end(),
-      [collator_ptr](const MediaSinkWithCastModes& sink1,
-                     const MediaSinkWithCastModes& sink2) {
-        if (collator_ptr) {
-          base::string16 sink1_name = base::UTF8ToUTF16(sink1.sink.name());
-          base::string16 sink2_name = base::UTF8ToUTF16(sink2.sink.name());
-          UCollationResult result = base::i18n::CompareString16WithCollator(
-              *collator_ptr, sink1_name, sink2_name);
-          if (result != UCOL_EQUAL)
-            return result == UCOL_LESS;
-        } else {
-          // Fall back to simple string comparison if collator is not
-          // available.
-          int val = sink1.sink.name().compare(sink2.sink.name());
-          if (val)
-            return val < 0;
-        }
-
-        return sink1.sink.id() < sink2.sink.id();
-      });
+  std::sort(sinks_.begin(), sinks_.end(),
+            [collator_ptr](const MediaSinkWithCastModes& sink1,
+                           const MediaSinkWithCastModes& sink2) {
+              return sink1.sink.CompareUsingCollator(sink2.sink, collator_ptr);
+            });
 
   if (ui_initialized_) handler_->UpdateSinks(sinks_);
 }

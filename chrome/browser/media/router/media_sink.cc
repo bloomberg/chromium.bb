@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/i18n/string_compare.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media/router/media_sink.h"
+#include "third_party/icu/source/i18n/unicode/coll.h"
 
 namespace media_router {
 
@@ -18,6 +21,29 @@ MediaSink::~MediaSink() {
 
 bool MediaSink::Equals(const MediaSink& other) const {
   return sink_id_ == other.sink_id_;
+}
+
+bool MediaSink::CompareUsingCollator(const MediaSink& other,
+                                     const icu::Collator* collator) const {
+  if (icon_type_ != other.icon_type_)
+    return icon_type_ < other.icon_type_;
+
+  if (collator) {
+    base::string16 this_name = base::UTF8ToUTF16(name_);
+    base::string16 other_name = base::UTF8ToUTF16(other.name_);
+    UCollationResult result = base::i18n::CompareString16WithCollator(
+        *collator, this_name, other_name);
+    if (result != UCOL_EQUAL)
+      return result == UCOL_LESS;
+  } else {
+    // Fall back to simple string comparison if collator is not
+    // available.
+    int val = name_.compare(other.name_);
+    if (val)
+      return val < 0;
+  }
+
+  return sink_id_ < other.sink_id_;
 }
 
 }  // namespace media_router
