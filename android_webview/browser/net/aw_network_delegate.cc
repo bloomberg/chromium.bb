@@ -81,11 +81,12 @@ void AwNetworkDelegate::OnBeforeRedirect(net::URLRequest* request,
                                          const GURL& new_location) {
 }
 
-void AwNetworkDelegate::OnResponseStarted(net::URLRequest* request) {
-}
+void AwNetworkDelegate::OnResponseStarted(net::URLRequest* request,
+                                          int net_error) {}
 
-void AwNetworkDelegate::OnCompleted(net::URLRequest* request, bool started) {
-}
+void AwNetworkDelegate::OnCompleted(net::URLRequest* request,
+                                    bool started,
+                                    int net_error) {}
 
 void AwNetworkDelegate::OnURLRequestDestroyed(net::URLRequest* request) {
 }

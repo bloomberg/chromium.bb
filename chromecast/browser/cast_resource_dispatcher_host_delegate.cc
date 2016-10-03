@@ -15,18 +15,19 @@ namespace chromecast {
 namespace shell {
 
 void CastResourceDispatcherHostDelegate::RequestComplete(
-    net::URLRequest* url_request) {
-  if (url_request->status().status() == net::URLRequestStatus::FAILED) {
-    metrics::CastMetricsHelper* metrics_helper =
-        metrics::CastMetricsHelper::GetInstance();
-    metrics_helper->RecordApplicationEventWithValue(
-        "Cast.Platform.ResourceRequestError",
-        url_request->status().error());
-    LOG(ERROR) << "Failed to load resource " << url_request->url()
-               << "; status:" << url_request->status().status() << ", error:"
-               << net::ErrorToShortString(url_request->status().error());
-    CastBrowserProcess::GetInstance()->connectivity_checker()->Check();
-  }
+    net::URLRequest* url_request,
+    int net_error) {
+  if (net_error == net::OK || net_error == net::ERR_IO_PENDING ||
+      net_error == net::ERR_ABORTED)
+    return;
+
+  metrics::CastMetricsHelper* metrics_helper =
+      metrics::CastMetricsHelper::GetInstance();
+  metrics_helper->RecordApplicationEventWithValue(
+      "Cast.Platform.ResourceRequestError", url_request->status().error());
+  LOG(ERROR) << "Failed to load resource " << url_request->url()
+             << ", error:" << net::ErrorToShortString(net_error);
+  CastBrowserProcess::GetInstance()->connectivity_checker()->Check();
 }
 
 }  // namespace shell

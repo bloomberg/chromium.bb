@@ -52,7 +52,7 @@ class CONTENT_EXPORT CacheStorageBlobToDiskCache
       const EntryAndBoolCallback& callback);
 
   // net::URLRequest::Delegate overrides for reading blobs.
-  void OnResponseStarted(net::URLRequest* request) override;
+  void OnResponseStarted(net::URLRequest* request, int net_error) override;
   void OnReadCompleted(net::URLRequest* request, int bytes_read) override;
   void OnReceivedRedirect(net::URLRequest* request,
                           const net::RedirectInfo& redirect_info,

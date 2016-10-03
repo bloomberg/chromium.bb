@@ -104,9 +104,6 @@ UrlDownloader::~UrlDownloader() {
 void UrlDownloader::Start() {
   DCHECK(!request_->is_pending());
 
-  if (!request_->status().is_success())
-    return;
-
   request_->set_delegate(this);
   request_->Start();
 }
@@ -115,7 +112,6 @@ void UrlDownloader::OnReceivedRedirect(net::URLRequest* request,
                                        const net::RedirectInfo& redirect_info,
                                        bool* defer_redirect) {
   DVLOG(1) << "OnReceivedRedirect: " << request_->url().spec();
-
   // We are going to block redirects even if DownloadRequestCore allows it.  No
   // redirects are expected for download requests that are made without a
   // renderer, which are currently exclusively resumption requests. Since there
@@ -126,18 +122,20 @@ void UrlDownloader::OnReceivedRedirect(net::URLRequest* request,
   request_->CancelWithError(net::ERR_UNSAFE_REDIRECT);
 }
 
-void UrlDownloader::OnResponseStarted(net::URLRequest* request) {
+void UrlDownloader::OnResponseStarted(net::URLRequest* request, int net_error) {
+  DCHECK_NE(net::ERR_IO_PENDING, net_error);
+
   DVLOG(1) << "OnResponseStarted: " << request_->url().spec();
 
-  if (!request_->status().is_success()) {
-    ResponseCompleted();
+  if (net_error != net::OK) {
+    ResponseCompleted(net_error);
     return;
   }
 
   if (core_.OnResponseStarted(std::string()))
     StartReading(false);  // Read the first chunk.
   else
-    ResponseCompleted();
+    ResponseCompleted(net::OK);
 }
 
 void UrlDownloader::StartReading(bool is_continuation) {
@@ -149,20 +147,20 @@ void UrlDownloader::StartReading(bool is_continuation) {
   scoped_refptr<net::IOBuffer> buf;
   int buf_size;
   if (!core_.OnWillRead(&buf, &buf_size, -1)) {
-    request_->CancelWithError(net::ERR_ABORTED);
+    int result = request_->CancelWithError(net::ERR_ABORTED);
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&UrlDownloader::ResponseCompleted,
-                              weak_ptr_factory_.GetWeakPtr()));
+                              weak_ptr_factory_.GetWeakPtr(), result));
     return;
   }
 
   DCHECK(buf.get());
   DCHECK(buf_size > 0);
 
-  request_->Read(buf.get(), buf_size, &bytes_read);
+  bytes_read = request_->Read(buf.get(), buf_size);
 
   // If IO is pending, wait for the URLRequest to call OnReadCompleted.
-  if (request_->status().is_io_pending())
+  if (bytes_read == net::ERR_IO_PENDING)
     return;
 
   if (!is_continuation || bytes_read <= 0) {
@@ -181,14 +179,13 @@ void UrlDownloader::OnReadCompleted(net::URLRequest* request, int bytes_read) {
   DVLOG(1) << "OnReadCompleted: \"" << request_->url().spec() << "\""
            << " bytes_read = " << bytes_read;
 
-  // bytes_read == -1 always implies an error.
-  if (bytes_read == -1 || !request_->status().is_success()) {
-    ResponseCompleted();
+  // bytes_read can be an error.
+  if (bytes_read < 0) {
+    ResponseCompleted(bytes_read);
     return;
   }
 
   DCHECK(bytes_read >= 0);
-  DCHECK(request_->status().is_success());
 
   bool defer = false;
   if (!core_.OnReadCompleted(bytes_read, &defer)) {
@@ -198,22 +195,20 @@ void UrlDownloader::OnReadCompleted(net::URLRequest* request, int bytes_read) {
     return;
   }
 
-  if (!request_->status().is_success())
-    return;
-
   if (bytes_read > 0) {
     StartReading(true);  // Read the next chunk.
   } else {
     // URLRequest reported an EOF. Call ResponseCompleted.
     DCHECK_EQ(0, bytes_read);
-    ResponseCompleted();
+    ResponseCompleted(net::OK);
   }
 }
 
-void UrlDownloader::ResponseCompleted() {
+void UrlDownloader::ResponseCompleted(int net_error) {
+  DCHECK_NE(net::ERR_IO_PENDING, net_error);
   DVLOG(1) << "ResponseCompleted: " << request_->url().spec();
 
-  core_.OnResponseCompleted(request_->status());
+  core_.OnResponseCompleted(net::URLRequestStatus::FromError(net_error));
   Destroy();
 }
 
@@ -231,10 +226,7 @@ void UrlDownloader::OnStart(
 }
 
 void UrlDownloader::OnReadyToRead() {
-  if (request_->status().is_success())
     StartReading(false);  // Read the next chunk (OK to complete synchronously).
-  else
-    ResponseCompleted();
 }
 
 void UrlDownloader::PauseRequest() {

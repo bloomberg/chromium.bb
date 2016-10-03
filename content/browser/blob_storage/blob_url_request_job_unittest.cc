@@ -274,7 +274,7 @@ class BlobURLRequestJobTest : public testing::Test {
     base::RunLoop().Run();
 
     // Verify response.
-    EXPECT_TRUE(request_->status().is_success());
+    EXPECT_EQ(net::OK, url_request_delegate_.request_status());
     EXPECT_EQ(expected_status_code_,
               request_->response_headers()->response_code());
     EXPECT_EQ(expected_response_, url_request_delegate_.response_data());

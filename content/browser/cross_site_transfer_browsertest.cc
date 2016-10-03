@@ -100,6 +100,8 @@ class TrackingResourceDispatcherHostDelegate
       // If the request is deleted without being cancelled, its status will
       // indicate it succeeded, so have to check if the request is still pending
       // as well.
+      // TODO(maksims): Stop using request_->status() here, because it is
+      // going to be deprecated.
       tracker_->OnTrackedRequestDestroyed(
           !request_->is_pending() && request_->status().is_success());
     }

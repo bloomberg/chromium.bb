@@ -96,7 +96,7 @@ class ConnectivityCheckerImpl
   bool network_changed_pending_;
   // Timeout handler for connectivity checks.
   // Note: Cancelling this timeout can cause the destructor for this class to be
-  //       to be called.
+  // called.
   base::CancelableCallback<void()> timeout_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectivityCheckerImpl);

@@ -123,6 +123,9 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
                                    ResourceResponse* response);
 
   // Notification that a request has completed.
+  virtual void RequestComplete(net::URLRequest* url_request, int net_error);
+  // Deprecated.
+  // TODO(maksims): Remove this once all the callers are modified.
   virtual void RequestComplete(net::URLRequest* url_request);
 
   // Asks the embedder if Lo-Fi mode should be enabled for the given request. It

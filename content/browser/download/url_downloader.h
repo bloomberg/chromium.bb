@@ -44,11 +44,11 @@ class UrlDownloader : public net::URLRequest::Delegate,
   void OnReceivedRedirect(net::URLRequest* request,
                           const net::RedirectInfo& redirect_info,
                           bool* defer_redirect) override;
-  void OnResponseStarted(net::URLRequest* request) override;
+  void OnResponseStarted(net::URLRequest* request, int net_error) override;
   void OnReadCompleted(net::URLRequest* request, int bytes_read) override;
 
   void StartReading(bool is_continuation);
-  void ResponseCompleted();
+  void ResponseCompleted(int net_error);
 
   // DownloadRequestCore::Delegate
   void OnStart(

@@ -85,8 +85,12 @@ void ResourceDispatcherHostDelegate::OnRequestRedirected(
 }
 
 void ResourceDispatcherHostDelegate::RequestComplete(
-    net::URLRequest* url_request) {
-}
+    net::URLRequest* url_request,
+    int net_error) {}
+
+// Deprecated.
+void ResourceDispatcherHostDelegate::RequestComplete(
+    net::URLRequest* url_request) {}
 
 bool ResourceDispatcherHostDelegate::ShouldEnableLoFiMode(
     const net::URLRequest& url_request,

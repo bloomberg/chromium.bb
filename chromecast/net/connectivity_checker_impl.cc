@@ -183,7 +183,8 @@ void ConnectivityCheckerImpl::OnResponseStarted(net::URLRequest* request) {
           : net::HTTP_BAD_REQUEST;
 
   // Clears resources.
-  url_request_.reset(nullptr);  // URLRequest::Cancel() is called in destructor.
+  // URLRequest::Cancel() is called in destructor.
+  url_request_.reset(nullptr);
 
   if (http_response_code < 400) {
     VLOG(1) << "Connectivity check succeeded";

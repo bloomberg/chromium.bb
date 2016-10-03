@@ -27,6 +27,7 @@ class CancelAfterFirstReadURLRequestDelegate : public net::TestDelegate {
   ~CancelAfterFirstReadURLRequestDelegate() override {}
 
   void OnResponseStarted(net::URLRequest* request, int net_error) override {
+    DCHECK_NE(net::ERR_IO_PENDING, net_error);
     // net::TestDelegate will start the first read.
     TestDelegate::OnResponseStarted(request, net_error);
     request->Cancel();

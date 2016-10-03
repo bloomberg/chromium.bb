@@ -59,8 +59,11 @@ void CacheStorageBlobToDiskCache::StreamBlobToCache(
   blob_request_->Start();
 }
 
-void CacheStorageBlobToDiskCache::OnResponseStarted(net::URLRequest* request) {
-  if (!request->status().is_success()) {
+void CacheStorageBlobToDiskCache::OnResponseStarted(net::URLRequest* request,
+                                                    int net_error) {
+  DCHECK_NE(net::ERR_IO_PENDING, net_error);
+
+  if (net_error != net::OK) {
     RunCallbackAndRemoveObserver(false);
     return;
   }
@@ -70,9 +73,11 @@ void CacheStorageBlobToDiskCache::OnResponseStarted(net::URLRequest* request) {
 
 void CacheStorageBlobToDiskCache::OnReadCompleted(net::URLRequest* request,
                                                   int bytes_read) {
-  if (!request->status().is_success()) {
-    RunCallbackAndRemoveObserver(false);
-    return;
+  if (bytes_read < 0) {
+    if (bytes_read != net::ERR_IO_PENDING) {
+      RunCallbackAndRemoveObserver(false);
+      return;
+    }
   }
 
   if (bytes_read == 0) {
@@ -121,9 +126,8 @@ void CacheStorageBlobToDiskCache::OnContextShuttingDown() {
 }
 
 void CacheStorageBlobToDiskCache::ReadFromBlob() {
-  int bytes_read = 0;
-  bool done = blob_request_->Read(buffer_.get(), buffer_->size(), &bytes_read);
-  if (done)
+  int bytes_read = blob_request_->Read(buffer_.get(), buffer_->size());
+  if (bytes_read >= 0)
     OnReadCompleted(blob_request_.get(), bytes_read);
 }
 

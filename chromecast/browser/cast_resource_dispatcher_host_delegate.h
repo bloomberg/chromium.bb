@@ -17,7 +17,7 @@ class CastResourceDispatcherHostDelegate
   CastResourceDispatcherHostDelegate() {}
 
   // content::ResourceDispatcherHostDelegate implementation:
-  void RequestComplete(net::URLRequest* url_request) override;
+  void RequestComplete(net::URLRequest* url_request, int net_error) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CastResourceDispatcherHostDelegate);
