@@ -119,11 +119,6 @@ uint32_t ContextProviderCommandBuffer::GetCopyTextureInternalFormat() {
   return GL_RGB;
 }
 
-void ContextProviderCommandBuffer::FreeUnusedSharedMemory() {
-  if (bind_succeeded_)
-    gles2_impl_->FreeUnusedSharedMemory();
-}
-
 bool ContextProviderCommandBuffer::BindToCurrentThread() {
   // This is called on the thread the context will be used.
   DCHECK(context_thread_checker_.CalledOnValidThread());
