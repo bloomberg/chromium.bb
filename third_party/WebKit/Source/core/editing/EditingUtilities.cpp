@@ -1773,7 +1773,7 @@ VisibleSelection selectionForParagraphIteration(
   // (a table is itself a paragraph).
   if (Element* table = tableElementJustBefore(endOfSelection)) {
     if (startOfSelection.deepEquivalent().anchorNode()->isDescendantOf(table))
-      newSelection = createVisibleSelectionDeprecated(
+      newSelection = createVisibleSelection(
           startOfSelection,
           previousPositionOf(endOfSelection, CannotCrossEditingBoundary));
   }
@@ -1784,7 +1784,7 @@ VisibleSelection selectionForParagraphIteration(
   // containing the table itself.
   if (Element* table = tableElementJustAfter(startOfSelection)) {
     if (endOfSelection.deepEquivalent().anchorNode()->isDescendantOf(table))
-      newSelection = createVisibleSelectionDeprecated(
+      newSelection = createVisibleSelection(
           nextPositionOf(startOfSelection, CannotCrossEditingBoundary),
           endOfSelection);
   }
