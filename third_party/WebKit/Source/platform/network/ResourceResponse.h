@@ -105,7 +105,8 @@ class PLATFORM_EXPORT ResourceResponse final {
     // All strings are human-readable values.
     String protocol;
     String keyExchange;
-    // keyExchangeGroup is the empty string if not applicable for the connection's key exchange.
+    // keyExchangeGroup is the empty string if not applicable for the
+    // connection's key exchange.
     String keyExchangeGroup;
     String cipher;
     // mac is the empty string when the connection cipher suite does not
@@ -156,7 +157,9 @@ class PLATFORM_EXPORT ResourceResponse final {
   void setTextEncodingName(const AtomicString&);
 
   // FIXME: Should compute this on the fly.
-  // There should not be a setter exposed, as suggested file name is determined based on other headers in a manner that WebCore does not necessarily know about.
+  // There should not be a setter exposed, as suggested file name is determined
+  // based on other headers in a manner that WebCore does not necessarily know
+  // about.
   const String& suggestedFilename() const;
   void setSuggestedFilename(const String&);
 
@@ -176,7 +179,8 @@ class PLATFORM_EXPORT ResourceResponse final {
 
   bool isAttachment() const;
 
-  // FIXME: These are used by PluginStream on some platforms. Calculations may differ from just returning plain Last-Modified header.
+  // FIXME: These are used by PluginStream on some platforms. Calculations may
+  // differ from just returning plain Last-Modified header.
   // Leaving it for now but this should go away in favor of generic solution.
   void setLastModifiedDate(time_t);
   time_t lastModifiedDate() const;
@@ -407,10 +411,12 @@ class PLATFORM_EXPORT ResourceResponse final {
   // Was the resource fetched over SPDY.  See http://dev.chromium.org/spdy
   bool m_wasFetchedViaSPDY;
 
-  // Was the resource fetched over a channel which used TLS/Next-Protocol-Negotiation (also SPDY related).
+  // Was the resource fetched over a channel which used
+  // TLS/Next-Protocol-Negotiation (also SPDY related).
   bool m_wasNpnNegotiated;
 
-  // Was the resource fetched over a channel which specified "Alternate-Protocol"
+  // Was the resource fetched over a channel which specified
+  // "Alternate-Protocol"
   // (e.g.: Alternate-Protocol: 443:npn-spdy/1).
   bool m_wasAlternateProtocolAvailable;
 

@@ -284,7 +284,8 @@ const AtomicString& ResourceResponse::mimeType() const {
 void ResourceResponse::setMimeType(const AtomicString& mimeType) {
   m_isNull = false;
 
-  // FIXME: MIME type is determined by HTTP Content-Type header. We should update the header, so that it doesn't disagree with m_mimeType.
+  // FIXME: MIME type is determined by HTTP Content-Type header. We should
+  // update the header, so that it doesn't disagree with m_mimeType.
   m_mimeType = mimeType;
 }
 
@@ -296,7 +297,9 @@ void ResourceResponse::setExpectedContentLength(
     long long expectedContentLength) {
   m_isNull = false;
 
-  // FIXME: Content length is determined by HTTP Content-Length header. We should update the header, so that it doesn't disagree with m_expectedContentLength.
+  // FIXME: Content length is determined by HTTP Content-Length header. We
+  // should update the header, so that it doesn't disagree with
+  // m_expectedContentLength.
   m_expectedContentLength = expectedContentLength;
 }
 
@@ -307,7 +310,8 @@ const AtomicString& ResourceResponse::textEncodingName() const {
 void ResourceResponse::setTextEncodingName(const AtomicString& encodingName) {
   m_isNull = false;
 
-  // FIXME: Text encoding is determined by HTTP Content-Type header. We should update the header, so that it doesn't disagree with m_textEncodingName.
+  // FIXME: Text encoding is determined by HTTP Content-Type header. We should
+  // update the header, so that it doesn't disagree with m_textEncodingName.
   m_textEncodingName = encodingName;
 }
 
@@ -319,7 +323,8 @@ const String& ResourceResponse::suggestedFilename() const {
 void ResourceResponse::setSuggestedFilename(const String& suggestedName) {
   m_isNull = false;
 
-  // FIXME: Suggested file name is calculated based on other headers. There should not be a setter for it.
+  // FIXME: Suggested file name is calculated based on other headers. There
+  // should not be a setter for it.
   m_suggestedFilename = suggestedName;
 }
 

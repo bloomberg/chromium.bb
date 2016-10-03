@@ -62,7 +62,9 @@ enum XFrameOptionsDisposition {
   XFrameOptionsConflict
 };
 
-// Be sure to update the behavior of XSSAuditor::combineXSSProtectionHeaderAndCSP whenever you change this enum's content or ordering.
+// Be sure to update the behavior of
+// XSSAuditor::combineXSSProtectionHeaderAndCSP whenever you change this enum's
+// content or ordering.
 enum ReflectedXSSDisposition {
   ReflectedXSSUnset = 0,
   AllowReflectedXSS,

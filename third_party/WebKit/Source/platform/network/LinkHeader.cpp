@@ -10,7 +10,8 @@
 
 namespace blink {
 
-// Verify that the parameter is a link-extension which according to spec doesn't have to have a value.
+// Verify that the parameter is a link-extension which according to spec doesn't
+// have to have a value.
 static bool isExtensionParameter(LinkHeader::LinkParameterName name) {
   return name >= LinkHeader::LinkParameterUnknown;
 }

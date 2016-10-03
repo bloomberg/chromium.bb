@@ -108,7 +108,8 @@ TEST_F(EncodedFormDataTest, DeepCopy) {
 
     EXPECT_EQ(nullptr, copyElements[i].m_fileSystemURL.innerURL());
 
-    // m_optionalBlobDataHandle is not checked, because BlobDataHandle is ThreadSafeRefCounted.
+    // m_optionalBlobDataHandle is not checked, because BlobDataHandle is
+    // ThreadSafeRefCounted.
   }
 }
 

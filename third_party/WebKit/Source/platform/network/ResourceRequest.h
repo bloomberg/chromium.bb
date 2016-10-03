@@ -174,7 +174,8 @@ class PLATFORM_EXPORT ResourceRequest final {
     m_reportUploadProgress = reportUploadProgress;
   }
 
-  // Whether actual headers being sent/received should be collected and reported for the request.
+  // Whether actual headers being sent/received should be collected and reported
+  // for the request.
   bool reportRawHeaders() const { return m_reportRawHeaders; }
   void setReportRawHeaders(bool reportRawHeaders) {
     m_reportRawHeaders = reportRawHeaders;
@@ -309,8 +310,8 @@ class PLATFORM_EXPORT ResourceRequest final {
 
   KURL m_url;
   WebCachePolicy m_cachePolicy;
-  double
-      m_timeoutInterval;  // 0 is a magic value for platform default on platforms that have one.
+  double m_timeoutInterval;  // 0 is a magic value for platform default on
+                             // platforms that have one.
   KURL m_firstPartyForCookies;
   RefPtr<SecurityOrigin> m_requestorOrigin;
   AtomicString m_httpMethod;

@@ -61,8 +61,8 @@ class PLATFORM_EXPORT WebSocketHandshakeRequest final
     addAndMergeHeader(&m_headerFields, name, value);
   }
 
-  // Merges the existing value with |value| in |map| if |map| already has |name|.
-  // Associates |value| with |name| in |map| otherwise.
+  // Merges the existing value with |value| in |map| if |map| already has
+  // |name|.  Associates |value| with |name| in |map| otherwise.
   // This function builds data for inspector.
   static void addAndMergeHeader(HTTPHeaderMap* /* map */,
                                 const AtomicString& name,

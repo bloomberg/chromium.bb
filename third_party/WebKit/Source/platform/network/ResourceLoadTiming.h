@@ -81,11 +81,15 @@ class PLATFORM_EXPORT ResourceLoadTiming
  private:
   ResourceLoadTiming();
 
-  // We want to present a unified timeline to Javascript. Using walltime is problematic, because the clock may skew while resources
-  // load. To prevent that skew, we record a single reference walltime when root document navigation begins. All other times are
-  // recorded using monotonicallyIncreasingTime(). When a time needs to be presented to Javascript, we build a pseudo-walltime
-  // using the following equation (m_requestTime as example):
-  //   pseudo time = document wall reference + (m_requestTime - document monotonic reference).
+  // We want to present a unified timeline to Javascript. Using walltime is
+  // problematic, because the clock may skew while resources load. To prevent
+  // that skew, we record a single reference walltime when root document
+  // navigation begins. All other times are recorded using
+  // monotonicallyIncreasingTime(). When a time needs to be presented to
+  // Javascript, we build a pseudo-walltime using the following equation
+  // (m_requestTime as example):
+  //   pseudo time = document wall reference +
+  //                     (m_requestTime - document monotonic reference).
 
   // All monotonicallyIncreasingTime() in seconds
   double m_requestTime;

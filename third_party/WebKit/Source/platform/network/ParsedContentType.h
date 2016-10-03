@@ -53,7 +53,8 @@ class PLATFORM_EXPORT ParsedContentType final {
   String mimeType() const { return m_mimeType; }
   String charset() const;
 
-  // Note that in the case of multiple values for the same name, the last value is returned.
+  // Note that in the case of multiple values for the same name, the last value
+  // is returned.
   String parameterValueForName(const String&) const;
   size_t parameterCount() const;
 

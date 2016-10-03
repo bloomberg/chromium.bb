@@ -338,8 +338,9 @@ void ResourceRequest::setExternalRequestStateFromRequestorAddressSpace(
   static_assert(WebAddressSpacePrivate < WebAddressSpacePublic,
                 "Private is inside Public");
 
-  // TODO(mkwst): This only checks explicit IP addresses. We'll have to move all this up to //net and //content in
-  // order to have any real impact on gateway attacks. That turns out to be a TON of work. https://crbug.com/378566
+  // TODO(mkwst): This only checks explicit IP addresses. We'll have to move all
+  // this up to //net and //content in order to have any real impact on gateway
+  // attacks. That turns out to be a TON of work. https://crbug.com/378566
   if (!RuntimeEnabledFeatures::corsRFC1918Enabled()) {
     m_isExternalRequest = false;
     return;

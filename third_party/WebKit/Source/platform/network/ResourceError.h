@@ -34,8 +34,8 @@
 
 namespace blink {
 
-PLATFORM_EXPORT extern const char errorDomainBlinkInternal
-    [];  // Used for errors that won't be exposed to clients.
+// Used for errors that won't be exposed to clients.
+PLATFORM_EXPORT extern const char errorDomainBlinkInternal[];
 
 class PLATFORM_EXPORT ResourceError final {
   DISALLOW_NEW();
@@ -68,7 +68,8 @@ class PLATFORM_EXPORT ResourceError final {
         m_staleCopyInCache(false),
         m_wasIgnoredByHandler(false) {}
 
-  // Makes a deep copy. Useful for when you need to use a ResourceError on another thread.
+  // Makes a deep copy. Useful for when you need to use a ResourceError on
+  // another thread.
   ResourceError copy() const;
 
   bool isNull() const { return m_isNull; }

@@ -213,7 +213,8 @@ bool isValidHTTPFieldContentRFC7230(const String& value) {
 
   for (unsigned i = 0; i < value.length(); ++i) {
     UChar c = value[i];
-    // TODO(mkwst): Extract this character class to a central location, https://crbug.com/527324.
+    // TODO(mkwst): Extract this character class to a central location,
+    // https://crbug.com/527324.
     if (c == 0x7F || c > 0xFF || (c < 0x20 && c != '\t'))
       return false;
   }
@@ -320,8 +321,9 @@ bool parseHTTPRefresh(const String& refresh,
       }
 
       // https://bugs.webkit.org/show_bug.cgi?id=27868
-      // Sometimes there is no closing quote for the end of the URL even though there was an opening quote.
-      // If we looped over the entire alleged URL string back to the opening quote, just go ahead and use everything
+      // Sometimes there is no closing quote for the end of the URL even though
+      // there was an opening quote.  If we looped over the entire alleged URL
+      // string back to the opening quote, just go ahead and use everything
       // after the opening quote instead.
       if (urlEndPos == urlStartPos)
         urlEndPos = len;
@@ -358,11 +360,13 @@ AtomicString extractMIMETypeFromMediaType(const AtomicString& mediaType) {
   while (pos < length) {
     UChar c = mediaType[pos];
 
-    // While RFC 2616 does not allow it, other browsers allow multiple values in the HTTP media
-    // type header field, Content-Type. In such cases, the media type string passed here may contain
-    // the multiple values separated by commas. For now, this code ignores text after the first comma,
-    // which prevents it from simply failing to parse such types altogether. Later for better
-    // compatibility we could consider using the first or last valid MIME type instead.
+    // While RFC 2616 does not allow it, other browsers allow multiple values in
+    // the HTTP media type header field, Content-Type. In such cases, the media
+    // type string passed here may contain the multiple values separated by
+    // commas. For now, this code ignores text after the first comma, which
+    // prevents it from simply failing to parse such types altogether.  Later
+    // for better compatibility we could consider using the first or last valid
+    // MIME type instead.
     // See https://bugs.webkit.org/show_bug.cgi?id=25352 for more discussion.
     if (c == ',' || c == ';')
       break;
@@ -412,15 +416,16 @@ void findCharsetInMediaType(const String& mediaType,
     while (pos != length && mediaType[pos] <= ' ')
       ++pos;
 
-    if (mediaType[pos++] !=
-        '=')  // this "charset" substring wasn't a parameter name, but there may be others
+    if (mediaType[pos++] != '=')  // this "charset" substring wasn't a parameter
+                                  // name, but there may be others
       continue;
 
     while (pos != length && (mediaType[pos] <= ' ' || mediaType[pos] == '"' ||
                              mediaType[pos] == '\''))
       ++pos;
 
-    // we don't handle spaces within quoted parameter values, because charset names cannot have any
+    // we don't handle spaces within quoted parameter values, because charset
+    // names cannot have any
     unsigned endpos = pos;
     while (pos != length && mediaType[endpos] > ' ' &&
            mediaType[endpos] != '"' && mediaType[endpos] != '\'' &&
@@ -471,7 +476,8 @@ ReflectedXSSDisposition parseXSSProtectionHeader(const String& header,
   bool reportDirectiveSeen = false;
 
   while (1) {
-    // At end of previous directive: consume whitespace, semicolon, and whitespace.
+    // At end of previous directive: consume whitespace, semicolon, and
+    // whitespace.
     if (!skipWhiteSpace(header, pos))
       return result;
 
@@ -614,7 +620,8 @@ static void parseCacheHeader(const String& header,
     if (nextEqualSignPosition != kNotFound &&
         (nextEqualSignPosition < nextCommaPosition ||
          nextCommaPosition == kNotFound)) {
-      // Get directive name, parse right hand side of equal sign, then add to map
+      // Get directive name, parse right hand side of equal sign, then add to
+      // map
       String directive = trimToNextSeparator(
           safeHeader.substring(pos, nextEqualSignPosition - pos)
               .stripWhiteSpace());
@@ -705,8 +712,8 @@ CacheControlHeader parseCacheControlDirectives(
 
     size_t directivesSize = directives.size();
     for (size_t i = 0; i < directivesSize; ++i) {
-      // RFC2616 14.9.1: A no-cache directive with a value is only meaningful for proxy caches.
-      // It should be ignored by a browser level cache.
+      // RFC2616 14.9.1: A no-cache directive with a value is only meaningful
+      // for proxy caches.  It should be ignored by a browser level cache.
       if (equalIgnoringCase(directives[i].first, noCacheDirective) &&
           directives[i].second.isEmpty()) {
         cacheControlHeader.containsNoCache = true;
@@ -727,7 +734,8 @@ CacheControlHeader parseCacheControlDirectives(
       } else if (equalIgnoringCase(directives[i].first,
                                    staleWhileRevalidateDirective)) {
         if (!std::isnan(cacheControlHeader.staleWhileRevalidate)) {
-          // First stale-while-revalidate directive wins if there are multiple ones.
+          // First stale-while-revalidate directive wins if there are multiple
+          // ones.
           continue;
         }
         bool ok;

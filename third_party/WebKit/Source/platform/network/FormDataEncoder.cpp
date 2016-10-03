@@ -4,7 +4,8 @@
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
  * Copyright (C) 2004, 2005, 2006, 2007, 2008 Apple Inc. All rights reserved.
  *           (C) 2006 Alexey Proskuryakov (ap@nypop.com)
- * Copyright (C) 2008 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2008 Torch Mobile Inc. All rights reserved.
+ * (http://www.torchmobile.com/)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -52,8 +53,9 @@ static inline void appendPercentEncoded(Vector<char>& buffer, unsigned char c) {
 
 static void appendQuotedString(Vector<char>& buffer, const CString& string) {
   // Append a string as a quoted value, escaping quotes and line breaks.
-  // FIXME: Is it correct to use percent escaping here? Other browsers do not encode these characters yet,
-  // so we should test popular servers to find out if there is an encoding form they can handle.
+  // FIXME: Is it correct to use percent escaping here? Other browsers do not
+  // encode these characters yet, so we should test popular servers to find out
+  // if there is an encoding form they can handle.
   size_t length = string.length();
   for (size_t i = 0; i < length; ++i) {
     char c = string.data()[i];
@@ -139,8 +141,8 @@ void FormDataEncoder::beginMultiPartHeader(Vector<char>& buffer,
                                            const CString& name) {
   addBoundaryToMultiPartHeader(buffer, boundary);
 
-  // FIXME: This loses data irreversibly if the input name includes characters you can't encode
-  // in the website's character set.
+  // FIXME: This loses data irreversibly if the input name includes characters
+  // you can't encode in the website's character set.
   append(buffer, "Content-Disposition: form-data; name=\"");
   appendQuotedString(buffer, name);
   append(buffer, '"');
@@ -162,8 +164,8 @@ void FormDataEncoder::addFilenameToMultiPartHeader(
     Vector<char>& buffer,
     const WTF::TextEncoding& encoding,
     const String& filename) {
-  // FIXME: This loses data irreversibly if the filename includes characters you can't encode
-  // in the website's character set.
+  // FIXME: This loses data irreversibly if the filename includes characters you
+  // can't encode in the website's character set.
   append(buffer, "; filename=\"");
   appendQuotedString(
       buffer, encoding.encode(filename, WTF::QuestionMarksForUnencodables));
