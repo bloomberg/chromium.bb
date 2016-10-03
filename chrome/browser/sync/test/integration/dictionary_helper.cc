@@ -16,8 +16,6 @@
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/browser/sync/test/integration/dictionary_load_observer.h"
-#include "chrome/browser/sync/test/integration/multi_client_status_change_checker.h"
-#include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "content/public/test/test_utils.h"
@@ -99,80 +97,6 @@ bool DictionariesMatch() {
   return true;
 }
 
-namespace {
-
-// Helper class used in the implementation of AwaitDictionariesMatch.
-class DictionaryMatchStatusChecker : public MultiClientStatusChangeChecker {
- public:
-  DictionaryMatchStatusChecker();
-  ~DictionaryMatchStatusChecker() override;
-
-  bool IsExitConditionSatisfied() override;
-  std::string GetDebugMessage() const override;
-};
-
-DictionaryMatchStatusChecker::DictionaryMatchStatusChecker()
-    : MultiClientStatusChangeChecker(
-        sync_datatype_helper::test()->GetSyncServices()) {}
-
-DictionaryMatchStatusChecker::~DictionaryMatchStatusChecker() {}
-
-bool DictionaryMatchStatusChecker::IsExitConditionSatisfied() {
-  return DictionariesMatch();
-}
-
-std::string DictionaryMatchStatusChecker::GetDebugMessage() const {
-  return "Waiting for matching dictionaries";
-}
-
-// Helper class used in the implementation of AwaitNumDictionaryEntries.
-class NumDictionaryEntriesStatusChecker
-    : public SingleClientStatusChangeChecker {
- public:
-  NumDictionaryEntriesStatusChecker(int index, size_t num_words);
-  ~NumDictionaryEntriesStatusChecker() override;
-
-  bool IsExitConditionSatisfied() override;
-  std::string GetDebugMessage() const override;
-
- private:
-  int index_;
-  size_t num_words_;
-};
-
-NumDictionaryEntriesStatusChecker::NumDictionaryEntriesStatusChecker(
-    int index, size_t num_words)
-  : SingleClientStatusChangeChecker(
-      sync_datatype_helper::test()->GetSyncService(index)),
-  index_(index),
-  num_words_(num_words) {}
-
-NumDictionaryEntriesStatusChecker::~NumDictionaryEntriesStatusChecker() {}
-
-bool NumDictionaryEntriesStatusChecker::IsExitConditionSatisfied() {
-  return GetDictionarySize(index_) == num_words_;
-}
-
-std::string NumDictionaryEntriesStatusChecker::GetDebugMessage() const {
-  return base::StringPrintf(
-      "Waiting for client %d: %" PRIuS " / %" PRIuS " words downloaded",
-      index_, GetDictionarySize(index_), num_words_);
-}
-
-}  // namespace
-
-bool AwaitDictionariesMatch() {
-  DictionaryMatchStatusChecker checker;
-  checker.Wait();
-  return !checker.TimedOut();
-}
-
-bool AwaitNumDictionaryEntries(int index, size_t num_words) {
-  NumDictionaryEntriesStatusChecker checker(index, num_words);
-  checker.Wait();
-  return !checker.TimedOut();
-}
-
 bool DictionaryMatchesVerifier(int index) {
   const std::set<std::string>& expected = GetVerifierDictionary()->GetWords();
   const std::set<std::string>& actual = GetDictionary(index)->GetWords();
@@ -213,3 +137,32 @@ bool RemoveWord(int index, const std::string& word) {
 }
 
 }  // namespace dictionary_helper
+
+DictionaryMatchChecker::DictionaryMatchChecker()
+    : MultiClientStatusChangeChecker(
+          sync_datatype_helper::test()->GetSyncServices()) {}
+
+bool DictionaryMatchChecker::IsExitConditionSatisfied() {
+  return dictionary_helper::DictionariesMatch();
+}
+
+std::string DictionaryMatchChecker::GetDebugMessage() const {
+  return "Waiting for matching dictionaries";
+}
+
+NumDictionaryEntriesChecker::NumDictionaryEntriesChecker(int index,
+                                                         size_t num_words)
+    : SingleClientStatusChangeChecker(
+          sync_datatype_helper::test()->GetSyncService(index)),
+      index_(index),
+      num_words_(num_words) {}
+
+bool NumDictionaryEntriesChecker::IsExitConditionSatisfied() {
+  return dictionary_helper::GetDictionarySize(index_) == num_words_;
+}
+
+std::string NumDictionaryEntriesChecker::GetDebugMessage() const {
+  return base::StringPrintf(
+      "Waiting for client %d: %" PRIuS " / %" PRIuS " words downloaded", index_,
+      dictionary_helper::GetDictionarySize(index_), num_words_);
+}

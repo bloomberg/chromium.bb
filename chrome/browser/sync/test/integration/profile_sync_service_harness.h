@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SYNC_TEST_INTEGRATION_PROFILE_SYNC_SERVICE_HARNESS_H_
 #define CHROME_BROWSER_SYNC_TEST_INTEGRATION_PROFILE_SYNC_SERVICE_HARNESS_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -72,14 +73,14 @@ class ProfileSyncServiceHarness {
   // Note: Use this method when exactly one client makes local change(s),
   // and more than one client is waiting to receive those changes.
   bool AwaitGroupSyncCycleCompletion(
-      std::vector<ProfileSyncServiceHarness*>& partners);
+      const std::vector<ProfileSyncServiceHarness*>& partners);
 
   // Blocks the caller until every client in |clients| completes its ongoing
   // sync cycle and all the clients' progress markers match.  Note: Use this
   // method when more than one client makes local change(s), and more than one
   // client is waiting to receive those changes.
   static bool AwaitQuiescence(
-      std::vector<ProfileSyncServiceHarness*>& clients);
+      const std::vector<ProfileSyncServiceHarness*>& clients);
 
   // Blocks the caller until the sync backend is initialized or some end state
   // (e.g., auth error) is reached. Returns true if and only if the backend

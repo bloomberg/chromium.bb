@@ -8,9 +8,6 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/themes_helper.h"
 
-using themes_helper::AwaitThemeIsPendingInstall;
-using themes_helper::AwaitUsingSystemTheme;
-using themes_helper::AwaitUsingDefaultTheme;
 using themes_helper::GetCustomTheme;
 using themes_helper::GetThemeID;
 using themes_helper::UseCustomTheme;
@@ -47,7 +44,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest,
   // TODO(sync): Add functions to simulate when a pending extension
   // is installed as well as when a pending extension fails to
   // install.
-  ASSERT_TRUE(AwaitThemeIsPendingInstall(GetProfile(1), GetCustomTheme(0)));
+  ASSERT_TRUE(
+      ThemePendingInstallChecker(GetProfile(1), GetCustomTheme(0)).Wait());
 
   EXPECT_EQ(GetCustomTheme(0), GetThemeID(GetProfile(0)));
   EXPECT_FALSE(UsingCustomTheme(GetProfile(1)));
@@ -67,7 +65,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest,
   UseSystemTheme(GetProfile(0));
   ASSERT_TRUE(UsingSystemTheme(GetProfile(0)));
 
-  ASSERT_TRUE(AwaitUsingSystemTheme(GetProfile(1)));
+  ASSERT_TRUE(SystemThemeChecker(GetProfile(1)).Wait());
 
   EXPECT_TRUE(UsingSystemTheme(GetProfile(0)));
   EXPECT_TRUE(UsingSystemTheme(GetProfile(1)));
@@ -87,7 +85,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest,
   UseDefaultTheme(GetProfile(0));
   EXPECT_TRUE(UsingDefaultTheme(GetProfile(0)));
 
-  ASSERT_TRUE(AwaitUsingDefaultTheme(GetProfile(1)));
+  ASSERT_TRUE(DefaultThemeChecker(GetProfile(1)).Wait());
   EXPECT_TRUE(UsingDefaultTheme(GetProfile(0)));
   EXPECT_TRUE(UsingDefaultTheme(GetProfile(1)));
 }
@@ -101,22 +99,24 @@ IN_PROC_BROWSER_TEST_F(TwoClientThemesSyncTest, E2E_ENABLED(CycleOptions)) {
 
   UseCustomTheme(GetProfile(0), 0);
 
-  ASSERT_TRUE(AwaitThemeIsPendingInstall(GetProfile(1), GetCustomTheme(0)));
+  ASSERT_TRUE(
+      ThemePendingInstallChecker(GetProfile(1), GetCustomTheme(0)).Wait());
   EXPECT_EQ(GetCustomTheme(0), GetThemeID(GetProfile(0)));
 
   UseSystemTheme(GetProfile(0));
 
-  ASSERT_TRUE(AwaitUsingSystemTheme(GetProfile(1)));
+  ASSERT_TRUE(SystemThemeChecker(GetProfile(1)).Wait());
   EXPECT_TRUE(UsingSystemTheme(GetProfile(0)));
   EXPECT_TRUE(UsingSystemTheme(GetProfile(1)));
 
   UseDefaultTheme(GetProfile(0));
 
-  ASSERT_TRUE(AwaitUsingDefaultTheme(GetProfile(1)));
+  ASSERT_TRUE(DefaultThemeChecker(GetProfile(1)).Wait());
   EXPECT_TRUE(UsingDefaultTheme(GetProfile(0)));
   EXPECT_TRUE(UsingDefaultTheme(GetProfile(1)));
 
   UseCustomTheme(GetProfile(0), 1);
-  ASSERT_TRUE(AwaitThemeIsPendingInstall(GetProfile(1), GetCustomTheme(1)));
+  ASSERT_TRUE(
+      ThemePendingInstallChecker(GetProfile(1), GetCustomTheme(1)).Wait());
   EXPECT_EQ(GetCustomTheme(1), GetThemeID(GetProfile(0)));
 }

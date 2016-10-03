@@ -16,9 +16,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/sync/test/integration/multi_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
-#include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -195,30 +193,33 @@ bool AllProfilesContainSamePasswordForms() {
   return true;
 }
 
-namespace {
+int GetPasswordCount(int index) {
+  return GetLogins(GetPasswordStore(index)).size();
+}
 
-// Helper class used in the implementation of
-// AwaitAllProfilesContainSamePasswordForms.
-class SamePasswordFormsChecker : public MultiClientStatusChangeChecker {
- public:
-  SamePasswordFormsChecker();
-  ~SamePasswordFormsChecker() override;
+int GetVerifierPasswordCount() {
+  return GetLogins(GetVerifierPasswordStore()).size();
+}
 
-  bool IsExitConditionSatisfied() override;
-  std::string GetDebugMessage() const override;
+PasswordForm CreateTestPasswordForm(int index) {
+  PasswordForm form;
+  form.signon_realm = kFakeSignonRealm;
+  form.origin = GURL(base::StringPrintf(kIndexedFakeOrigin, index));
+  form.username_value =
+      base::ASCIIToUTF16(base::StringPrintf("username%d", index));
+  form.password_value =
+      base::ASCIIToUTF16(base::StringPrintf("password%d", index));
+  form.date_created = base::Time::Now();
+  return form;
+}
 
- private:
-  bool in_progress_;
-  bool needs_recheck_;
-};
+}  // namespace passwords_helper
 
 SamePasswordFormsChecker::SamePasswordFormsChecker()
     : MultiClientStatusChangeChecker(
         sync_datatype_helper::test()->GetSyncServices()),
       in_progress_(false),
       needs_recheck_(false) {}
-
-SamePasswordFormsChecker::~SamePasswordFormsChecker() {}
 
 // This method needs protection against re-entrancy.
 //
@@ -246,7 +247,7 @@ bool SamePasswordFormsChecker::IsExitConditionSatisfied() {
   in_progress_ = true;
   do {
     needs_recheck_ = false;
-    result = AllProfilesContainSamePasswordForms();
+    result = passwords_helper::AllProfilesContainSamePasswordForms();
   } while (needs_recheck_);
   in_progress_ = false;
   return result;
@@ -256,43 +257,12 @@ std::string SamePasswordFormsChecker::GetDebugMessage() const {
   return "Waiting for matching passwords";
 }
 
-}  //  namespace
-
-bool AwaitAllProfilesContainSamePasswordForms() {
-  SamePasswordFormsChecker checker;
-  checker.Wait();
-  return !checker.TimedOut();
-}
-
-namespace {
-
-// Helper class used in the implementation of
-// AwaitProfileContainSamePasswordFormsAsVerifier.
-class SamePasswordFormsAsVerifierChecker
-    : public SingleClientStatusChangeChecker {
- public:
-  explicit SamePasswordFormsAsVerifierChecker(int index);
-  ~SamePasswordFormsAsVerifierChecker() override;
-
-  bool IsExitConditionSatisfied() override;
-  std::string GetDebugMessage() const override;
-
- private:
-  int index_;
-
-  bool in_progress_;
-  bool needs_recheck_;
-};
-
 SamePasswordFormsAsVerifierChecker::SamePasswordFormsAsVerifierChecker(int i)
     : SingleClientStatusChangeChecker(
           sync_datatype_helper::test()->GetSyncService(i)),
       index_(i),
       in_progress_(false),
       needs_recheck_(false) {
-}
-
-SamePasswordFormsAsVerifierChecker::~SamePasswordFormsAsVerifierChecker() {
 }
 
 // This method uses the same re-entrancy prevention trick as
@@ -309,7 +279,8 @@ bool SamePasswordFormsAsVerifierChecker::IsExitConditionSatisfied() {
   in_progress_ = true;
   do {
     needs_recheck_ = false;
-    result = ProfileContainsSamePasswordFormsAsVerifier(index_);
+    result =
+        passwords_helper::ProfileContainsSamePasswordFormsAsVerifier(index_);
   } while (needs_recheck_);
   in_progress_ = false;
   return result;
@@ -318,33 +289,3 @@ bool SamePasswordFormsAsVerifierChecker::IsExitConditionSatisfied() {
 std::string SamePasswordFormsAsVerifierChecker::GetDebugMessage() const {
   return "Waiting for passwords to match verifier";
 }
-
-}  //  namespace
-
-bool AwaitProfileContainsSamePasswordFormsAsVerifier(int index) {
-  SamePasswordFormsAsVerifierChecker checker(index);
-  checker.Wait();
-  return !checker.TimedOut();
-}
-
-int GetPasswordCount(int index) {
-  return GetLogins(GetPasswordStore(index)).size();
-}
-
-int GetVerifierPasswordCount() {
-  return GetLogins(GetVerifierPasswordStore()).size();
-}
-
-PasswordForm CreateTestPasswordForm(int index) {
-  PasswordForm form;
-  form.signon_realm = kFakeSignonRealm;
-  form.origin = GURL(base::StringPrintf(kIndexedFakeOrigin, index));
-  form.username_value =
-      base::ASCIIToUTF16(base::StringPrintf("username%d", index));
-  form.password_value =
-      base::ASCIIToUTF16(base::StringPrintf("password%d", index));
-  form.date_created = base::Time::Now();
-  return form;
-}
-
-}  // namespace passwords_helper

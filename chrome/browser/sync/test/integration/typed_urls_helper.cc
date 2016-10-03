@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
@@ -13,7 +15,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/test/integration/multi_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/history/core/browser/history_backend.h"
@@ -162,15 +163,11 @@ void AddToHistory(history::HistoryService* service,
                   ui::PageTransition transition,
                   history::VisitSource source,
                   const base::Time& timestamp) {
-  service->AddPage(url,
-                   timestamp,
-                   NULL, // scope
-                   1234, // nav_entry_id
+  service->AddPage(url, timestamp,
+                   NULL,    // scope
+                   1234,    // nav_entry_id
                    GURL(),  // referrer
-                   history::RedirectList(),
-                   transition,
-                   source,
-                   false);
+                   history::RedirectList(), transition, source, false);
 }
 
 history::URLRows GetTypedUrlsFromHistoryService(
@@ -421,39 +418,16 @@ bool CheckAllProfilesHaveSameURLs() {
   return true;
 }
 
-namespace {
-
-// Helper class used in the implementation of
-// AwaitCheckAllProfilesHaveSameURLs.
-class ProfilesHaveSameURLsChecker : public MultiClientStatusChangeChecker {
- public:
-  ProfilesHaveSameURLsChecker();
-  ~ProfilesHaveSameURLsChecker() override;
-
-  bool IsExitConditionSatisfied() override;
-  std::string GetDebugMessage() const override;
-};
+}  // namespace typed_urls_helper
 
 ProfilesHaveSameURLsChecker::ProfilesHaveSameURLsChecker()
     : MultiClientStatusChangeChecker(
         sync_datatype_helper::test()->GetSyncServices()) {}
 
-ProfilesHaveSameURLsChecker::~ProfilesHaveSameURLsChecker() {}
-
 bool ProfilesHaveSameURLsChecker::IsExitConditionSatisfied() {
-  return CheckAllProfilesHaveSameURLs();
+  return typed_urls_helper::CheckAllProfilesHaveSameURLs();
 }
 
 std::string ProfilesHaveSameURLsChecker::GetDebugMessage() const {
   return "Waiting for matching typed urls profiles";
 }
-
-}  //  namespace
-
-bool AwaitCheckAllProfilesHaveSameURLs() {
-  ProfilesHaveSameURLsChecker checker;
-  checker.Wait();
-  return !checker.TimedOut();
-}
-
-}  // namespace typed_urls_helper

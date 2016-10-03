@@ -16,6 +16,8 @@ using bookmarks_helper::IndexedURL;
 using bookmarks_helper::IndexedURLTitle;
 using bookmarks_helper::Remove;
 using bookmarks_helper::SetURL;
+using sync_timing_helper::PrintResult;
+using sync_timing_helper::TimeMutualSyncCycle;
 
 static const int kNumBookmarks = 150;
 
@@ -90,20 +92,19 @@ IN_PROC_BROWSER_TEST_F(BookmarksSyncPerfTest, P0) {
 
   // TCM ID - 7556828.
   AddURLs(0, kNumBookmarks);
-  base::TimeDelta dt =
-      SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+  base::TimeDelta dt = TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(kNumBookmarks, GetURLCount(1));
-  SyncTimingHelper::PrintResult("bookmarks", "add_bookmarks", dt);
+  PrintResult("bookmarks", "add_bookmarks", dt);
 
   // TCM ID - 7564762.
   UpdateURLs(0);
-  dt = SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+  dt = TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(kNumBookmarks, GetURLCount(1));
-  SyncTimingHelper::PrintResult("bookmarks", "update_bookmarks", dt);
+  PrintResult("bookmarks", "update_bookmarks", dt);
 
   // TCM ID - 7566626.
   RemoveURLs(0);
-  dt = SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+  dt = TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(0, GetURLCount(1));
-  SyncTimingHelper::PrintResult("bookmarks", "delete_bookmarks", dt);
+  PrintResult("bookmarks", "delete_bookmarks", dt);
 }

@@ -91,21 +91,13 @@ class KeyChecker : public StatusChangeChecker,
                    public TestModelTypeService::Observer {
  public:
   KeyChecker(TestModelTypeService* service, const std::string& key)
-      : service_(service), key_(key) {}
+      : service_(service), key_(key) {
+    service_->AddObserver(this);
+  }
+
+  ~KeyChecker() override { service_->RemoveObserver(this); }
 
   void OnApplySyncChanges() override { CheckExitCondition(); }
-
-  bool Wait() {
-    if (IsExitConditionSatisfied()) {
-      DVLOG(1) << "Wait() -> Exit before waiting: " << GetDebugMessage();
-      return true;
-    }
-
-    service_->AddObserver(this);
-    StartBlockingWait();
-    service_->RemoveObserver(this);
-    return !TimedOut();
-  }
 
  protected:
   TestModelTypeService* const service_;
@@ -183,11 +175,6 @@ class PrefsNotRunningChecker : public SingleClientStatusChangeChecker {
  public:
   explicit PrefsNotRunningChecker(browser_sync::ProfileSyncService* service)
       : SingleClientStatusChangeChecker(service) {}
-
-  bool Wait() {
-    SingleClientStatusChangeChecker::Wait();
-    return !TimedOut();
-  }
 
   bool IsExitConditionSatisfied() override {
     return !service()->IsDataTypeControllerRunning(syncer::PREFERENCES);

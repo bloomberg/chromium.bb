@@ -15,7 +15,6 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 
 using password_manager_setting_migrater_helper::ExpectPrefValuesOnClient;
-using preferences_helper::AwaitBooleanPrefMatches;
 using preferences_helper::GetPrefs;
 using password_manager::prefs::kPasswordManagerSavingEnabled;
 using password_manager::prefs::kCredentialsEnableService;
@@ -38,13 +37,13 @@ class TwoClientsPasswordManagerSettingMigratorServiceSyncTest
   // Changes the |pref_name| preference value on the client with |index| and
   // checks that the value is the same on both clients after the change.
   void TestPrefChangeOnClient(int index, const char* pref_name) {
-    ASSERT_TRUE(AwaitBooleanPrefMatches(kPasswordManagerSavingEnabled));
-    ASSERT_TRUE(AwaitBooleanPrefMatches(kCredentialsEnableService));
+    ASSERT_TRUE(BooleanPrefMatchChecker(kPasswordManagerSavingEnabled).Wait());
+    ASSERT_TRUE(BooleanPrefMatchChecker(kCredentialsEnableService).Wait());
 
     preferences_helper::ChangeBooleanPref(index, pref_name);
     // Check that changed pref has the same value on both clients
-    ASSERT_TRUE(AwaitBooleanPrefMatches(kPasswordManagerSavingEnabled));
-    ASSERT_TRUE(AwaitBooleanPrefMatches(kCredentialsEnableService));
+    ASSERT_TRUE(BooleanPrefMatchChecker(kPasswordManagerSavingEnabled).Wait());
+    ASSERT_TRUE(BooleanPrefMatchChecker(kCredentialsEnableService).Wait());
   }
 
   void EnsureMigrationStartsForClient(int index) {
@@ -117,6 +116,6 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(SetupSync());
   EnsureMigrationStartsForClient(0);
   TestPrefChangeOnClient(1, kCredentialsEnableService);
-  ASSERT_TRUE(AwaitBooleanPrefMatches(kPasswordManagerSavingEnabled));
+  ASSERT_TRUE(BooleanPrefMatchChecker(kPasswordManagerSavingEnabled).Wait());
   ExpectValueOnBothClientsForBothPreference(false);
 }

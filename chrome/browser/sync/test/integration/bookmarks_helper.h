@@ -8,6 +8,9 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "chrome/browser/sync/test/integration/await_match_status_change_checker.h"
+#include "chrome/browser/sync/test/integration/multi_client_status_change_checker.h"
+#include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 class GURL;
@@ -157,24 +160,6 @@ bool ModelsMatch(int profile_a, int profile_b) WARN_UNUSED_RESULT;
 // match.
 bool AllModelsMatch() WARN_UNUSED_RESULT;
 
-// Check if the bookmarks models of all sync profiles match each other, using
-// AllModelsMatch. Returns true if bookmark models match and don't timeout
-// while checking.
-bool AwaitAllModelsMatch() WARN_UNUSED_RESULT;
-
-// Blocks the caller until the given |profile| contains |expected_count|
-// bookmarks with |title| or until waiting times out.
-bool AwaitCountBookmarksWithTitlesMatching(int profile,
-                                           const std::string& title,
-                                           int expected_count)
-    WARN_UNUSED_RESULT;
-
-// Blocks the caller until the given |profile| contains |expected_count|
-// bookmarks with |url| or until waiting times out.
-bool AwaitCountBookmarksWithUrlsMatching(int profile,
-                                         const GURL& url,
-                                         int expected_count) WARN_UNUSED_RESULT;
-
 // Checks if the bookmark model of profile |profile| contains any instances of
 // two bookmarks with the same URL under the same parent folder. Returns true
 // if even one instance is found.
@@ -231,5 +216,42 @@ std::string IndexedSubfolderName(int i);
 std::string IndexedSubsubfolderName(int i);
 
 }  // namespace bookmarks_helper
+
+// Checker used to block until bookmarks match on all clients.
+class BookmarksMatchChecker : public MultiClientStatusChangeChecker {
+ public:
+  BookmarksMatchChecker();
+
+  // StatusChangeChecker implementation.
+  bool IsExitConditionSatisfied() override;
+  std::string GetDebugMessage() const override;
+};
+
+// Checker used to block until the actual number of bookmarks with the given
+// title match the expected count.
+// TODO(pvalenzuela): Remove this class and instead use
+// AwaitMatchStatusChangeChecker.
+class BookmarksTitleChecker : public SingleClientStatusChangeChecker {
+ public:
+  BookmarksTitleChecker(int profile_index,
+                        const std::string& title,
+                        int expected_count);
+
+  // StatusChangeChecker implementation.
+  bool IsExitConditionSatisfied() override;
+  std::string GetDebugMessage() const override;
+
+ private:
+  const int profile_index_;
+  const std::string title_;
+  const int expected_count_;
+};
+
+// Checker used to block until the actual number of bookmarks with the given url
+// match the expected count.
+class BookmarksUrlChecker : public AwaitMatchStatusChangeChecker {
+ public:
+  BookmarksUrlChecker(int profile, const GURL& url, int expected_count);
+};
 
 #endif  // CHROME_BROWSER_SYNC_TEST_INTEGRATION_BOOKMARKS_HELPER_H_

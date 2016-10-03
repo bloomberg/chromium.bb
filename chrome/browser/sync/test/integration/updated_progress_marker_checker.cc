@@ -11,8 +11,6 @@ UpdatedProgressMarkerChecker::UpdatedProgressMarkerChecker(
     browser_sync::ProfileSyncService* service)
     : SingleClientStatusChangeChecker(service) {}
 
-UpdatedProgressMarkerChecker::~UpdatedProgressMarkerChecker() {}
-
 bool UpdatedProgressMarkerChecker::IsExitConditionSatisfied() {
   // Checks to see if our self-notify sync cycle has completed and
   // there's nothing to commit.

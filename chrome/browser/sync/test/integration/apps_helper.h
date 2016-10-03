@@ -5,11 +5,20 @@
 #ifndef CHROME_BROWSER_SYNC_TEST_INTEGRATION_APPS_HELPER_H_
 #define CHROME_BROWSER_SYNC_TEST_INTEGRATION_APPS_HELPER_H_
 
+#include <string>
+#include <vector>
+
 #include "base/compiler_specific.h"
+#include "chrome/browser/sync/test/integration/status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/sync/api/string_ordinal.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/extension_prefs_observer.h"
+#include "extensions/browser/extension_registry_observer.h"
 
 class Profile;
+class SyncedExtensionInstaller;
 
 namespace apps_helper {
 
@@ -90,12 +99,63 @@ void CopyNTPOrdinals(Profile* source, Profile* destination, int index);
 // Fix any NTP icon collisions that are currently in |profile|.
 void FixNTPOrdinalCollisions(Profile* profile);
 
-// Waits until all profiles have the same set of apps. In case verifier profile
-// is enabled, it waits until all profiles match the verifier.
-//
-// Returns false on time out.
-bool AwaitAllProfilesHaveSameApps();
-
 }  // namespace apps_helper
+
+// Checker to block for a set of profiles to have matching extensions lists. If
+// the verifier profile is enabled, it will be included in the set of profiles
+// to check against.
+class AppsMatchChecker : public StatusChangeChecker,
+                         public extensions::ExtensionRegistryObserver,
+                         public extensions::ExtensionPrefsObserver,
+                         public content::NotificationObserver {
+ public:
+  AppsMatchChecker();
+  ~AppsMatchChecker() override;
+
+  // StatusChangeChecker implementation.
+  std::string GetDebugMessage() const override;
+  bool IsExitConditionSatisfied() override;
+
+  // extensions::ExtensionRegistryObserver implementation.
+  void OnExtensionLoaded(content::BrowserContext* context,
+                         const extensions::Extension* extension) override;
+  void OnExtensionUnloaded(
+      content::BrowserContext* context,
+      const extensions::Extension* extenion,
+      extensions::UnloadedExtensionInfo::Reason reason) override;
+  void OnExtensionInstalled(content::BrowserContext* browser_context,
+                            const extensions::Extension* extension,
+                            bool is_update) override;
+  void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                              const extensions::Extension* extension,
+                              extensions::UninstallReason reason) override;
+
+  // extensions::ExtensionPrefsObserver implementation.
+  void OnExtensionDisableReasonsChanged(const std::string& extension_id,
+                                        int disabled_reasons) override;
+  void OnExtensionRegistered(const std::string& extension_id,
+                             const base::Time& install_time,
+                             bool is_enabled) override;
+  void OnExtensionPrefsLoaded(const std::string& extension_id,
+                              const extensions::ExtensionPrefs* prefs) override;
+  void OnExtensionPrefsDeleted(const std::string& extension_id) override;
+  void OnExtensionStateChanged(const std::string& extension_id,
+                               bool state) override;
+
+  // Implementation of content::NotificationObserver.
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
+
+ private:
+  std::vector<Profile*> profiles_;
+
+  content::NotificationRegistrar registrar_;
+
+  // This installs apps, too.
+  ScopedVector<SyncedExtensionInstaller> synced_extension_installers_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppsMatchChecker);
+};
 
 #endif  // CHROME_BROWSER_SYNC_TEST_INTEGRATION_APPS_HELPER_H_

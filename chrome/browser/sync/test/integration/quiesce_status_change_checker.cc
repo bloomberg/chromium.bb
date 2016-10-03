@@ -153,17 +153,6 @@ QuiesceStatusChangeChecker::QuiesceStatusChangeChecker(
 
 QuiesceStatusChangeChecker::~QuiesceStatusChangeChecker() {}
 
-void QuiesceStatusChangeChecker::Wait() {
-  DVLOG(1) << "Await: " << GetDebugMessage();
-
-  if (IsExitConditionSatisfied()) {
-    DVLOG(1) << "Await -> Exit before waiting: " << GetDebugMessage();
-    return;
-  }
-
-  StartBlockingWait();
-}
-
 bool QuiesceStatusChangeChecker::IsExitConditionSatisfied() {
   // Check that all progress markers are up to date.
   for (ScopedVector<ProgressMarkerWatcher>::const_iterator it =

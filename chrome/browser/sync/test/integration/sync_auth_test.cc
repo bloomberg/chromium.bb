@@ -10,8 +10,8 @@
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
-#include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -19,7 +19,6 @@
 #include "net/url_request/url_request_status.h"
 
 using bookmarks_helper::AddURL;
-using sync_integration_test_util::AwaitCommitActivityCompletion;
 
 const char kShortLivedOAuth2Token[] =
     "{"
@@ -51,15 +50,14 @@ const char kMalformedOAuth2Token[] = "{ \"foo\": ";
 class TestForAuthError : public SingleClientStatusChangeChecker {
  public:
   explicit TestForAuthError(browser_sync::ProfileSyncService* service);
-  ~TestForAuthError() override;
+
+  // StatusChangeChecker implementation.
   bool IsExitConditionSatisfied() override;
   std::string GetDebugMessage() const override;
 };
 
 TestForAuthError::TestForAuthError(browser_sync::ProfileSyncService* service)
     : SingleClientStatusChangeChecker(service) {}
-
-TestForAuthError::~TestForAuthError() {}
 
 bool TestForAuthError::IsExitConditionSatisfied() {
   return !service()->HasUnsyncedItems() ||
@@ -86,8 +84,7 @@ class SyncAuthTest : public SyncTest {
     EXPECT_TRUE(AddURL(0, title, url) != NULL);
 
     // Run until the bookmark is committed or an auth error is encountered.
-    TestForAuthError checker_(GetSyncService(0));
-    checker_.Wait();
+    TestForAuthError(GetSyncService(0)).Wait();
 
     GoogleServiceAuthError oauth_error =
         GetSyncService(0)->GetSyncTokenStatus().last_get_token_error;
@@ -296,7 +293,7 @@ IN_PROC_BROWSER_TEST_F(SyncAuthTest, TokenExpiry) {
                          net::URLRequestStatus::SUCCESS);
 
   // Verify that the next sync cycle is successful, and uses the new auth token.
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService(0)));
+  ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
   std::string new_token = GetSyncService(0)->GetAccessTokenForTest();
   ASSERT_NE(old_token, new_token);
 }

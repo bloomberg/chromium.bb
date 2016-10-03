@@ -15,7 +15,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/sync/test/integration/await_match_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
@@ -163,13 +162,6 @@ bool ServiceMatchesVerifier(int profile_index) {
   return true;
 }
 
-bool AwaitAllServicesMatch() {
-  AwaitMatchStatusChangeChecker checker(base::Bind(AllServicesMatch),
-                                        "All search engines match");
-  checker.Wait();
-  return !checker.TimedOut();
-}
-
 bool AllServicesMatch() {
   // Use 0 as the baseline.
   if (test()->use_verifier() && !ServiceMatchesVerifier(0)) {
@@ -286,3 +278,8 @@ bool HasSearchEngine(int profile_index, int seed) {
 }
 
 }  // namespace search_engines_helper
+
+SearchEnginesMatchChecker::SearchEnginesMatchChecker()
+    : AwaitMatchStatusChangeChecker(
+          base::Bind(search_engines_helper::AllServicesMatch),
+          "All search engines match") {}

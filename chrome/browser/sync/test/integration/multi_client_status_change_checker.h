@@ -5,9 +5,11 @@
 #ifndef CHROME_BROWSER_SYNC_TEST_INTEGRATION_MULTI_CLIENT_STATUS_CHANGE_CHECKER_H_
 #define CHROME_BROWSER_SYNC_TEST_INTEGRATION_MULTI_CLIENT_STATUS_CHANGE_CHECKER_H_
 
+#include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "chrome/browser/sync/test/integration/status_change_checker.h"
 #include "components/sync/driver/sync_service_observer.h"
@@ -29,9 +31,6 @@ class MultiClientStatusChangeChecker : public StatusChangeChecker,
   // Called when waiting times out.
   void OnTimeout();
 
-  // Blocks until the exit condition is satisfied or a timeout occurs.
-  void Wait();
-
   // sync_driver::SyncServiceObserver implementation.
   void OnStateChanged() override;
 
@@ -46,6 +45,9 @@ class MultiClientStatusChangeChecker : public StatusChangeChecker,
 
  private:
   std::vector<browser_sync::ProfileSyncService*> services_;
+  ScopedObserver<browser_sync::ProfileSyncService,
+                 MultiClientStatusChangeChecker>
+      scoped_observer_;
 };
 
 #endif  // CHROME_BROWSER_SYNC_TEST_INTEGRATION_MULTI_CLIENT_STATUS_CHANGE_CHECKER_H_

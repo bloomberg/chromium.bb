@@ -15,7 +15,6 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 
-using sessions_helper::AwaitCheckForeignSessionsAgainst;
 using sessions_helper::CheckInitialState;
 using sessions_helper::DeleteForeignSession;
 using sessions_helper::GetLocalWindows;
@@ -71,7 +70,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
   expected_windows[0] = std::move(client0_windows);
 
   // Check the foreign windows on client 1
-  ASSERT_TRUE(AwaitCheckForeignSessionsAgainst(1, expected_windows));
+  ASSERT_TRUE(ForeignSessionsMatchChecker(1, expected_windows).Wait());
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
@@ -91,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
   // Get foreign session data from all clients and check it against all
   // client_windows.
   for (int i = 0; i < num_clients(); ++i) {
-    ASSERT_TRUE(AwaitCheckForeignSessionsAgainst(i, client_windows));
+    ASSERT_TRUE(ForeignSessionsMatchChecker(i, client_windows).Wait());
   }
 }
 

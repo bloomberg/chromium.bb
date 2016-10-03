@@ -21,17 +21,25 @@ class ProfileSyncServiceHarness;
 // sense to call StartBlockingWait() more than once.
 class StatusChangeChecker {
  public:
-  explicit StatusChangeChecker();
+  StatusChangeChecker();
 
   // Returns a string representing this current StatusChangeChecker, and
   // possibly some small part of its state.  For example: "AwaitPassphraseError"
   // or "AwaitMigrationDone(BOOKMARKS)".
   virtual std::string GetDebugMessage() const = 0;
 
+  // Returns whether the state the checker is currently in is its desired
+  // configuration.
+  virtual bool IsExitConditionSatisfied() = 0;
+
+  // Block if IsExitConditionSatisfied() is currently false until TimedOut()
+  // becomes true. Checkers should call CheckExitCondition upon changes, which
+  // can cause Wait() to immediately return true if IsExitConditionSatisfied(),
+  // and continue to block if not. Returns false if and only if timeout occurs.
+  virtual bool Wait();
+
   // Returns true if the blocking wait was exited because of a timeout.
   bool TimedOut() const;
-
-  virtual bool IsExitConditionSatisfied() = 0;
 
  protected:
   virtual ~StatusChangeChecker();

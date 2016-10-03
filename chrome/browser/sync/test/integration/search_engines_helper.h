@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/strings/string16.h"
+#include "chrome/browser/sync/test/integration/await_match_status_change_checker.h"
 
 class Profile;
 class TemplateURL;
@@ -28,10 +29,6 @@ TemplateURLService* GetVerifierService();
 // Compared a single TemplateURLService for a given profile to the verifier.
 // Retrns true iff their user-visible fields match.
 bool ServiceMatchesVerifier(int profile_index);
-
-// Blocks until either AllServicesMatch returns true or a timeout occurs.
-// Returns true if AllServicesMatch succeeded, false if timeout.
-bool AwaitAllServicesMatch();
 
 // Returns true iff all TemplateURLServices match with the verifier.
 bool AllServicesMatch();
@@ -76,5 +73,11 @@ void ChangeDefaultSearchProvider(int profile_index, int seed);
 bool HasSearchEngine(int profile_index, int seed);
 
 }  // namespace search_engines_helper
+
+// Checker that blocks until all services have the same search engine data.
+class SearchEnginesMatchChecker : public AwaitMatchStatusChangeChecker {
+ public:
+  SearchEnginesMatchChecker();
+};
 
 #endif  // CHROME_BROWSER_SYNC_TEST_INTEGRATION_SEARCH_ENGINES_HELPER_H_

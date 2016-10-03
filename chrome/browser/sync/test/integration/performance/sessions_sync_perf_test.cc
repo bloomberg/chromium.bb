@@ -19,6 +19,8 @@ using sessions_helper::OpenMultipleTabs;
 using sessions_helper::SyncedSessionVector;
 using sessions_helper::SessionWindowMap;
 using sessions_helper::WaitForTabsToLoad;
+using sync_timing_helper::PrintResult;
+using sync_timing_helper::TimeMutualSyncCycle;
 
 static const int kNumTabs = 150;
 
@@ -114,22 +116,21 @@ IN_PROC_BROWSER_TEST_F(SessionsSyncPerfTest, DISABLED_P0) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   AddTabs(0, kNumTabs);
-  base::TimeDelta dt =
-      SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+  base::TimeDelta dt = TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(kNumTabs, GetTabCount(0));
   ASSERT_EQ(kNumTabs, GetTabCount(1));
-  SyncTimingHelper::PrintResult("tabs", "add_tabs", dt);
+  PrintResult("tabs", "add_tabs", dt);
 
   UpdateTabs(0);
-  dt = SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+  dt = TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(kNumTabs, GetTabCount(0));
   ASSERT_EQ(kNumTabs, GetTabCount(1));
-  SyncTimingHelper::PrintResult("tabs", "update_tabs", dt);
+  PrintResult("tabs", "update_tabs", dt);
 
   RemoveTabs(0);
-  dt = SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+  dt = TimeMutualSyncCycle(GetClient(0), GetClient(1));
   // New tab page remains open on profile 0 after closing all tabs.
   ASSERT_EQ(1, GetTabCount(0));
   ASSERT_EQ(0, GetTabCount(1));
-  SyncTimingHelper::PrintResult("tabs", "delete_tabs", dt);
+  PrintResult("tabs", "delete_tabs", dt);
 }

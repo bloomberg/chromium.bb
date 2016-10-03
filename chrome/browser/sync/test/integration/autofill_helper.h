@@ -12,7 +12,8 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
+#include "chrome/browser/sync/test/integration/multi_client_status_change_checker.h"
+#include "components/autofill/core/browser/personal_data_manager_observer.h"
 
 namespace autofill {
 class AutofillEntry;
@@ -59,9 +60,6 @@ std::set<autofill::AutofillEntry> GetAllKeys(int profile) WARN_UNUSED_RESULT;
 // |profile_a| and |profile_b|. Returns true if they match.
 bool KeysMatch(int profile_a, int profile_b) WARN_UNUSED_RESULT;
 
-// Allows syncers to run until KeysMatch() returns true.
-bool AwaitKeysMatch(int profile_a, int profile_b);
-
 // Replaces the Autofill profiles in sync profile |profile| with
 // |autofill_profiles|.
 void SetProfiles(int profile,
@@ -106,9 +104,6 @@ bool ProfilesMatch(int profile_a, int profile_b) WARN_UNUSED_RESULT;
 // they all match.
 bool AllProfilesMatch() WARN_UNUSED_RESULT;
 
-// Allows the syncers to run until ProfilesMatch() returns true.
-bool AwaitProfilesMatch(int profile_a, int profile_b);
-
 // Creates a test autofill profile based on the persona specified in |type|.
 autofill::AutofillProfile CreateAutofillProfile(ProfileType type);
 
@@ -116,5 +111,39 @@ autofill::AutofillProfile CreateAutofillProfile(ProfileType type);
 autofill::AutofillProfile CreateUniqueAutofillProfile();
 
 }  // namespace autofill_helper
+
+// Checker to block until autofill keys match on both profiles.
+class AutofillKeysChecker : public MultiClientStatusChangeChecker {
+ public:
+  AutofillKeysChecker(int profile_a, int profile_b);
+
+  // StatusChangeChecker implementation.
+  bool IsExitConditionSatisfied() override;
+  std::string GetDebugMessage() const override;
+
+ private:
+  const int profile_a_;
+  const int profile_b_;
+};
+
+// Checker to block until autofill profiles match on both profiles.
+class AutofillProfileChecker : public StatusChangeChecker,
+                               public autofill::PersonalDataManagerObserver {
+ public:
+  AutofillProfileChecker(int profile_a, int profile_b);
+  ~AutofillProfileChecker() override;
+
+  // StatusChangeChecker implementation.
+  bool Wait() override;
+  bool IsExitConditionSatisfied() override;
+  std::string GetDebugMessage() const override;
+
+  // autofill::PersonalDataManager implementation.
+  void OnPersonalDataChanged() override;
+
+ private:
+  const int profile_a_;
+  const int profile_b_;
+};
 
 #endif  // CHROME_BROWSER_SYNC_TEST_INTEGRATION_AUTOFILL_HELPER_H_

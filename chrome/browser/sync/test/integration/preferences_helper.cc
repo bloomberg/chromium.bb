@@ -4,9 +4,10 @@
 
 #include "chrome/browser/sync/test/integration/preferences_helper.h"
 
+#include <utility>
+
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/test/integration/multi_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
@@ -210,55 +211,21 @@ bool ListPrefMatches(const char* pref_name) {
   return true;
 }
 
-
-namespace {
-
-class PrefMatchChecker : public StatusChangeChecker {
- public:
-  explicit PrefMatchChecker(const char* path);
-  ~PrefMatchChecker() override;
-
-  // StatusChangeChecker implementation.
-  bool IsExitConditionSatisfied() override = 0;
-  std::string GetDebugMessage() const override;
-
-  // Wait for condition to become true.
-  void Wait();
-
- protected:
-  const char* GetPath() const;
-
- private:
-  void RegisterPrefListener(PrefService* pref_service);
-
-  ScopedVector<PrefChangeRegistrar> pref_change_registrars_;
-  const char* path_;
-};
+}  // namespace preferences_helper
 
 PrefMatchChecker::PrefMatchChecker(const char* path) : path_(path) {
+  if (test()->use_verifier()) {
+    RegisterPrefListener(preferences_helper::GetVerifierPrefs());
+  }
+  for (int i = 0; i < test()->num_clients(); ++i) {
+    RegisterPrefListener(preferences_helper::GetPrefs(i));
+  }
 }
 
-PrefMatchChecker::~PrefMatchChecker() {
-}
+PrefMatchChecker::~PrefMatchChecker() {}
 
 std::string PrefMatchChecker::GetDebugMessage() const {
   return base::StringPrintf("Waiting for pref '%s' to match", GetPath());
-}
-
-void PrefMatchChecker::Wait() {
-  if (test()->use_verifier()) {
-    RegisterPrefListener(GetVerifierPrefs());
-  }
-
-  for (int i = 0; i < test()->num_clients(); ++i) {
-    RegisterPrefListener(GetPrefs(i));
-  }
-
-  if (IsExitConditionSatisfied()) {
-    return;
-  }
-
-  StartBlockingWait();
 }
 
 const char* PrefMatchChecker::GetPath() const {
@@ -271,117 +238,33 @@ void PrefMatchChecker::RegisterPrefListener(PrefService* pref_service) {
   registrar->Add(path_,
                  base::Bind(&PrefMatchChecker::CheckExitCondition,
                             base::Unretained(this)));
-  pref_change_registrars_.push_back(registrar.release());
+  pref_change_registrars_.push_back(std::move(registrar));
 }
-
-// Helper class used in the implementation of AwaitListPrefMatches.
-class ListPrefMatchChecker : public PrefMatchChecker {
- public:
-  explicit ListPrefMatchChecker(const char* path);
-  ~ListPrefMatchChecker() override;
-
-  // Implementation of PrefMatchChecker.
-  bool IsExitConditionSatisfied() override;
-};
 
 ListPrefMatchChecker::ListPrefMatchChecker(const char* path)
-    : PrefMatchChecker(path) {
-}
-
-ListPrefMatchChecker::~ListPrefMatchChecker() {
-}
+    : PrefMatchChecker(path) {}
 
 bool ListPrefMatchChecker::IsExitConditionSatisfied() {
-  return ListPrefMatches(GetPath());
+  return preferences_helper::ListPrefMatches(GetPath());
 }
-
-// Helper class used in the implementation of AwaitBooleanPrefMatches.
-class BooleanPrefMatchChecker : public PrefMatchChecker {
- public:
-  explicit BooleanPrefMatchChecker(const char* path);
-  ~BooleanPrefMatchChecker() override;
-
-  // Implementation of PrefMatchChecker.
-  bool IsExitConditionSatisfied() override;
-};
 
 BooleanPrefMatchChecker::BooleanPrefMatchChecker(const char* path)
-    : PrefMatchChecker(path) {
-}
-
-BooleanPrefMatchChecker::~BooleanPrefMatchChecker() {
-}
+    : PrefMatchChecker(path) {}
 
 bool BooleanPrefMatchChecker::IsExitConditionSatisfied() {
-  return BooleanPrefMatches(GetPath());
+  return preferences_helper::BooleanPrefMatches(GetPath());
 }
-
-// Helper class used in the implementation of AwaitIntegerPrefMatches.
-class IntegerPrefMatchChecker : public PrefMatchChecker {
- public:
-  explicit IntegerPrefMatchChecker(const char* path);
-  ~IntegerPrefMatchChecker() override;
-
-  // Implementation of PrefMatchChecker.
-  bool IsExitConditionSatisfied() override;
-};
 
 IntegerPrefMatchChecker::IntegerPrefMatchChecker(const char* path)
-    : PrefMatchChecker(path) {
-}
-
-IntegerPrefMatchChecker::~IntegerPrefMatchChecker() {
-}
+    : PrefMatchChecker(path) {}
 
 bool IntegerPrefMatchChecker::IsExitConditionSatisfied() {
-  return IntegerPrefMatches(GetPath());
+  return preferences_helper::IntegerPrefMatches(GetPath());
 }
-
-// Helper class used in the implementation of AwaitStringPrefMatches.
-class StringPrefMatchChecker : public PrefMatchChecker {
- public:
-  explicit StringPrefMatchChecker(const char* path);
-  ~StringPrefMatchChecker() override;
-
-  // Implementation of PrefMatchChecker.
-  bool IsExitConditionSatisfied() override;
-};
 
 StringPrefMatchChecker::StringPrefMatchChecker(const char* path)
-    : PrefMatchChecker(path) {
-}
-
-StringPrefMatchChecker::~StringPrefMatchChecker() {
-}
+    : PrefMatchChecker(path) {}
 
 bool StringPrefMatchChecker::IsExitConditionSatisfied() {
-  return StringPrefMatches(GetPath());
+  return preferences_helper::StringPrefMatches(GetPath());
 }
-
-}  //  namespace
-
-bool AwaitListPrefMatches(const char* pref_name) {
-  ListPrefMatchChecker checker(pref_name);
-  checker.Wait();
-  return !checker.TimedOut();
-}
-
-bool AwaitBooleanPrefMatches(const char* pref_name) {
-  BooleanPrefMatchChecker checker(pref_name);
-  checker.Wait();
-  return !checker.TimedOut();
-}
-
-bool AwaitIntegerPrefMatches(const char* pref_name) {
-  IntegerPrefMatchChecker checker(pref_name);
-  checker.Wait();
-  return !checker.TimedOut();
-}
-
-bool AwaitStringPrefMatches(const char* pref_name) {
-  StringPrefMatchChecker checker(pref_name);
-  checker.Wait();
-  return !checker.TimedOut();
-}
-
-}  // namespace preferences_helper

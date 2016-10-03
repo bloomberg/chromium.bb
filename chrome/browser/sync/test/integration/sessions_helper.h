@@ -6,10 +6,13 @@
 #define CHROME_BROWSER_SYNC_TEST_INTEGRATION_SESSIONS_HELPER_H_
 
 #include <algorithm>
+#include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "chrome/browser/sync/test/integration/multi_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/sessions/core/session_types.h"
 #include "components/sync/syncable/nigori_util.h"
@@ -81,12 +84,6 @@ bool CheckForeignSessionsAgainst(
     int index,
     const std::vector<ScopedWindowMap>& windows);
 
-// Retrieves the foreign sessions for a particular profile and compares them
-// to the reference windows using CheckForeignSessionsAgains. Returns true if
-// they match and doesn't time out.
-bool AwaitCheckForeignSessionsAgainst(
-    int index, const std::vector<ScopedWindowMap>& windows);
-
 // Open a single tab and block until the session model associator is aware
 // of it. Returns true upon success, false otherwise.
 bool OpenTab(int index, const GURL& url);
@@ -114,5 +111,22 @@ bool GetLocalSession(int index, const sync_sessions::SyncedSession** session);
 void DeleteForeignSession(int index, std::string session_tag);
 
 }  // namespace sessions_helper
+
+// Checker to block until the foreign sessions for a particular profile matches
+// the reference windows.
+class ForeignSessionsMatchChecker : public MultiClientStatusChangeChecker {
+ public:
+  ForeignSessionsMatchChecker(
+      int index,
+      const std::vector<sessions_helper::ScopedWindowMap>& windows);
+
+  // StatusChangeChecker implementation.
+  bool IsExitConditionSatisfied() override;
+  std::string GetDebugMessage() const override;
+
+ private:
+  int index_;
+  const std::vector<sessions_helper::ScopedWindowMap>& windows_;
+};
 
 #endif  // CHROME_BROWSER_SYNC_TEST_INTEGRATION_SESSIONS_HELPER_H_

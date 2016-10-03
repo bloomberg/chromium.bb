@@ -40,7 +40,6 @@ using apps_helper::InstallPlatformApp;
 using apps_helper::SetAppLaunchOrdinalForApp;
 using apps_helper::SetPageOrdinalForApp;
 using apps_helper::UninstallApp;
-using apps_helper::AwaitAllProfilesHaveSameApps;
 
 namespace {
 
@@ -70,8 +69,7 @@ class TwoClientAppsSyncTest : public SyncTest {
 
 IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, E2E_ENABLED(StartWithNoApps)) {
   ASSERT_TRUE(SetupSync());
-
-  ASSERT_TRUE(AwaitAllProfilesHaveSameApps());
+  ASSERT_TRUE(AppsMatchChecker().Wait());
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, E2E_ENABLED(StartWithSameApps)) {
@@ -84,8 +82,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, E2E_ENABLED(StartWithSameApps)) {
   }
 
   ASSERT_TRUE(SetupSync());
-
-  ASSERT_TRUE(AwaitAllProfilesHaveSameApps());
+  ASSERT_TRUE(AppsMatchChecker().Wait());
 }
 
 // Install some apps on both clients, some on only one client, some on only the
@@ -117,9 +114,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, DISABLED_StartWithDifferentApps) {
   for (int j = 0; j < kNumPlatformApps; ++i, ++j) {
     InstallPlatformApp(GetProfile(1), i);
   }
-  ASSERT_TRUE(SetupSync());
 
-  ASSERT_TRUE(AwaitAllProfilesHaveSameApps());
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(AppsMatchChecker().Wait());
 }
 
 // Install some apps on both clients, then sync.  Then install some apps on only
@@ -149,29 +146,29 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest,
     InstallApp(GetProfile(1), i);
   }
 
-  ASSERT_TRUE(AwaitAllProfilesHaveSameApps());
+  ASSERT_TRUE(AppsMatchChecker().Wait());
 }
 
 // TCM ID - 3711279.
 IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, E2E_ENABLED(Add)) {
   ASSERT_TRUE(SetupSync());
-  ASSERT_TRUE(AwaitAllProfilesHaveSameApps());
+  ASSERT_TRUE(AppsMatchChecker().Wait());
 
   InstallApp(GetProfile(0), 0);
 
-  ASSERT_TRUE(AwaitAllProfilesHaveSameApps());
+  ASSERT_TRUE(AppsMatchChecker().Wait());
 }
 
 // TCM ID - 3706267.
 IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, E2E_ENABLED(Uninstall)) {
   ASSERT_TRUE(SetupSync());
-  ASSERT_TRUE(AwaitAllProfilesHaveSameApps());
+  ASSERT_TRUE(AppsMatchChecker().Wait());
 
   InstallApp(GetProfile(0), 0);
-  ASSERT_TRUE(AwaitAllProfilesHaveSameApps());
+  ASSERT_TRUE(AppsMatchChecker().Wait());
 
   UninstallApp(GetProfile(0), 0);
-  ASSERT_TRUE(AwaitAllProfilesHaveSameApps());
+  ASSERT_TRUE(AppsMatchChecker().Wait());
 }
 
 // Install an app on one client, then sync. Then uninstall the app on the first
@@ -181,25 +178,25 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, E2E_ENABLED(Uninstall)) {
 IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest,
                        E2E_ENABLED(UninstallThenInstall)) {
   ASSERT_TRUE(SetupSync());
-  ASSERT_TRUE(AwaitAllProfilesHaveSameApps());
+  ASSERT_TRUE(AppsMatchChecker().Wait());
 
   InstallApp(GetProfile(0), 0);
-  ASSERT_TRUE(AwaitAllProfilesHaveSameApps());
+  ASSERT_TRUE(AppsMatchChecker().Wait());
 
   UninstallApp(GetProfile(0), 0);
-  ASSERT_TRUE(AwaitAllProfilesHaveSameApps());
+  ASSERT_TRUE(AppsMatchChecker().Wait());
 
   InstallApp(GetProfile(0), 1);
-  ASSERT_TRUE(AwaitAllProfilesHaveSameApps());
+  ASSERT_TRUE(AppsMatchChecker().Wait());
 }
 
 // TCM ID - 3699295.
 IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, E2E_ENABLED(Merge)) {
   ASSERT_TRUE(SetupSync());
-  ASSERT_TRUE(AwaitAllProfilesHaveSameApps());
+  ASSERT_TRUE(AppsMatchChecker().Wait());
 
   InstallApp(GetProfile(0), 0);
-  ASSERT_TRUE(AwaitAllProfilesHaveSameApps());
+  ASSERT_TRUE(AppsMatchChecker().Wait());
 
   UninstallApp(GetProfile(0), 0);
 
@@ -209,39 +206,39 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, E2E_ENABLED(Merge)) {
   InstallApp(GetProfile(1), 2);
   InstallApp(GetProfile(1), 3);
 
-  ASSERT_TRUE(AwaitAllProfilesHaveSameApps());
+  ASSERT_TRUE(AppsMatchChecker().Wait());
 }
 
 // TCM ID - 7723126.
 IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest,
                        E2E_ENABLED(UpdateEnableDisableApp)) {
   ASSERT_TRUE(SetupSync());
-  ASSERT_TRUE(AwaitAllProfilesHaveSameApps());
+  ASSERT_TRUE(AppsMatchChecker().Wait());
 
   InstallApp(GetProfile(0), 0);
-  ASSERT_TRUE(AwaitAllProfilesHaveSameApps());
+  ASSERT_TRUE(AppsMatchChecker().Wait());
 
   DisableApp(GetProfile(0), 0);
-  ASSERT_TRUE(AwaitAllProfilesHaveSameApps());
+  ASSERT_TRUE(AppsMatchChecker().Wait());
 
   EnableApp(GetProfile(1), 0);
-  ASSERT_TRUE(AwaitAllProfilesHaveSameApps());
+  ASSERT_TRUE(AppsMatchChecker().Wait());
 }
 
 // TCM ID - 7706637.
 IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest,
                        E2E_ENABLED(UpdateIncognitoEnableDisable)) {
   ASSERT_TRUE(SetupSync());
-  ASSERT_TRUE(AwaitAllProfilesHaveSameApps());
+  ASSERT_TRUE(AppsMatchChecker().Wait());
 
   InstallApp(GetProfile(0), 0);
-  ASSERT_TRUE(AwaitAllProfilesHaveSameApps());
+  ASSERT_TRUE(AppsMatchChecker().Wait());
 
   IncognitoEnableApp(GetProfile(0), 0);
-  ASSERT_TRUE(AwaitAllProfilesHaveSameApps());
+  ASSERT_TRUE(AppsMatchChecker().Wait());
 
   IncognitoDisableApp(GetProfile(1), 0);
-  ASSERT_TRUE(AwaitAllProfilesHaveSameApps());
+  ASSERT_TRUE(AppsMatchChecker().Wait());
 }
 
 // Install the same app on both clients, then sync. Change the page ordinal on
@@ -249,16 +246,16 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest,
 // the app.
 IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, E2E_ENABLED(UpdatePageOrdinal)) {
   ASSERT_TRUE(SetupSync());
-  ASSERT_TRUE(AwaitAllProfilesHaveSameApps());
+  ASSERT_TRUE(AppsMatchChecker().Wait());
 
   syncer::StringOrdinal initial_page =
       syncer::StringOrdinal::CreateInitialOrdinal();
   InstallApp(GetProfile(0), 0);
-  ASSERT_TRUE(AwaitAllProfilesHaveSameApps());
+  ASSERT_TRUE(AppsMatchChecker().Wait());
 
   syncer::StringOrdinal second_page = initial_page.CreateAfter();
   SetPageOrdinalForApp(GetProfile(0), 0, second_page);
-  ASSERT_TRUE(AwaitAllProfilesHaveSameApps());
+  ASSERT_TRUE(AppsMatchChecker().Wait());
 }
 
 // Install the same app on both clients, then sync. Change the app launch
@@ -267,17 +264,17 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, E2E_ENABLED(UpdatePageOrdinal)) {
 IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest,
                        E2E_ENABLED(UpdateAppLaunchOrdinal)) {
   ASSERT_TRUE(SetupSync());
-  ASSERT_TRUE(AwaitAllProfilesHaveSameApps());
+  ASSERT_TRUE(AppsMatchChecker().Wait());
 
   InstallApp(GetProfile(0), 0);
-  ASSERT_TRUE(AwaitAllProfilesHaveSameApps());
+  ASSERT_TRUE(AppsMatchChecker().Wait());
 
   syncer::StringOrdinal initial_position =
       GetAppLaunchOrdinalForApp(GetProfile(0), 0);
 
   syncer::StringOrdinal second_position = initial_position.CreateAfter();
   SetAppLaunchOrdinalForApp(GetProfile(0), 0, second_position);
-  ASSERT_TRUE(AwaitAllProfilesHaveSameApps());
+  ASSERT_TRUE(AppsMatchChecker().Wait());
 }
 
 // Adjust the CWS location within a page on the first client and sync. Adjust
@@ -285,7 +282,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest,
 // page and app launch ordinal values for the CWS.
 IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, E2E_ENABLED(UpdateCWSOrdinals)) {
   ASSERT_TRUE(SetupSync());
-  ASSERT_TRUE(AwaitAllProfilesHaveSameApps());
+  ASSERT_TRUE(AppsMatchChecker().Wait());
 
   // Change the app launch ordinal.
   syncer::StringOrdinal cws_app_launch_ordinal =
@@ -296,7 +293,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, E2E_ENABLED(UpdateCWSOrdinals)) {
       ->app_sorting()
       ->SetAppLaunchOrdinal(extensions::kWebStoreAppId,
                             cws_app_launch_ordinal.CreateAfter());
-  ASSERT_TRUE(AwaitAllProfilesHaveSameApps());
+  ASSERT_TRUE(AppsMatchChecker().Wait());
 
   // Change the page ordinal.
   syncer::StringOrdinal cws_page_ordinal =
@@ -307,19 +304,19 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, E2E_ENABLED(UpdateCWSOrdinals)) {
       ->app_sorting()
       ->SetPageOrdinal(extensions::kWebStoreAppId,
                        cws_page_ordinal.CreateAfter());
-  ASSERT_TRUE(AwaitAllProfilesHaveSameApps());
+  ASSERT_TRUE(AppsMatchChecker().Wait());
 }
 
 // Adjust the launch type on the first client and sync. Both clients should
 // have the same launch type values for the CWS.
 IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, E2E_ENABLED(UpdateLaunchType)) {
   ASSERT_TRUE(SetupSync());
-  ASSERT_TRUE(AwaitAllProfilesHaveSameApps());
+  ASSERT_TRUE(AppsMatchChecker().Wait());
 
   // Change the launch type to window.
   extensions::SetLaunchType(GetProfile(1), extensions::kWebStoreAppId,
                             extensions::LAUNCH_TYPE_WINDOW);
-  ASSERT_TRUE(AwaitAllProfilesHaveSameApps());
+  ASSERT_TRUE(AppsMatchChecker().Wait());
   ASSERT_EQ(
       extensions::GetLaunchTypePrefValue(
           extensions::ExtensionPrefs::Get(GetProfile(0)),
@@ -329,7 +326,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, E2E_ENABLED(UpdateLaunchType)) {
   // Change the launch type to regular tab.
   extensions::SetLaunchType(GetProfile(1), extensions::kWebStoreAppId,
                             extensions::LAUNCH_TYPE_REGULAR);
-  ASSERT_TRUE(AwaitAllProfilesHaveSameApps());
+  ASSERT_TRUE(AppsMatchChecker().Wait());
 
   ASSERT_EQ(
       extensions::GetLaunchTypePrefValue(
@@ -344,7 +341,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, UnexpectedLaunchType) {
 
   extensions::SetLaunchType(GetProfile(1), extensions::kWebStoreAppId,
                             extensions::LAUNCH_TYPE_REGULAR);
-  ASSERT_TRUE(AwaitAllProfilesHaveSameApps());
+  ASSERT_TRUE(AppsMatchChecker().Wait());
 
   const extensions::Extension* extension =
       GetExtensionRegistry(GetProfile(1))->GetExtensionById(
@@ -375,7 +372,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, UnexpectedLaunchType) {
   extension_sync_service->ApplySyncData(invalid_launch_type_data);
 
   // The launch type should remain the same.
-  ASSERT_TRUE(AwaitAllProfilesHaveSameApps());
+  ASSERT_TRUE(AppsMatchChecker().Wait());
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, BookmarkApp) {

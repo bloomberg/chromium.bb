@@ -17,6 +17,8 @@ using passwords_helper::CreateTestPasswordForm;
 using passwords_helper::GetPasswordCount;
 using passwords_helper::GetPasswordStore;
 using passwords_helper::UpdateLogin;
+using sync_timing_helper::PrintResult;
+using sync_timing_helper::TimeUntilQuiescence;
 
 static const int kNumPasswords = 150;
 
@@ -83,19 +85,19 @@ IN_PROC_BROWSER_TEST_F(PasswordsSyncPerfTest, MAYBE_P0) {
 
   // TCM ID - 7367749.
   AddLogins(0, kNumPasswords);
-  base::TimeDelta dt = SyncTimingHelper::TimeUntilQuiescence(clients());
+  base::TimeDelta dt = TimeUntilQuiescence(clients());
   ASSERT_EQ(kNumPasswords, GetPasswordCount(1));
-  SyncTimingHelper::PrintResult("passwords", "add_passwords", dt);
+  PrintResult("passwords", "add_passwords", dt);
 
   // TCM ID - 7365093.
   UpdateLogins(0);
-  dt = SyncTimingHelper::TimeUntilQuiescence(clients());
+  dt = TimeUntilQuiescence(clients());
   ASSERT_EQ(kNumPasswords, GetPasswordCount(1));
-  SyncTimingHelper::PrintResult("passwords", "update_passwords", dt);
+  PrintResult("passwords", "update_passwords", dt);
 
   // TCM ID - 7557852
   RemoveLogins(0);
-  dt = SyncTimingHelper::TimeUntilQuiescence(clients());
+  dt = TimeUntilQuiescence(clients());
   ASSERT_EQ(0, GetPasswordCount(1));
-  SyncTimingHelper::PrintResult("passwords", "delete_passwords", dt);
+  PrintResult("passwords", "delete_passwords", dt);
 }

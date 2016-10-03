@@ -6,17 +6,14 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/test/integration/status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_extension_helper.h"
 #include "chrome/browser/sync/test/integration/sync_extension_installer.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/manifest.h"
 
 using sync_datatype_helper::test;
@@ -130,70 +127,29 @@ void InstallExtensionsPendingForSync(Profile* profile) {
   SyncExtensionHelper::GetInstance()->InstallExtensionsPendingForSync(profile);
 }
 
-namespace {
+}  // namespace extensions_helper
 
-// A helper class to implement waiting for a set of profiles to have matching
-// extensions lists. It waits for calls on both interfaces:
-// ExtensionRegistryObserver and NotificationObserver. Observing
-// NOTIFICATION_EXTENSION_UPDATING_STARTED notification is needed for tests
-// against local server because in such tests extensions are not installed and
-// ExtensionRegistryObserver methods are not called.
-class ExtensionsMatchChecker : public StatusChangeChecker,
-                               public extensions::ExtensionRegistryObserver,
-                               public content::NotificationObserver {
- public:
-  explicit ExtensionsMatchChecker(const std::vector<Profile*>& profiles);
-  ~ExtensionsMatchChecker() override;
-
-  // StatusChangeChecker implementation.
-  std::string GetDebugMessage() const override;
-  bool IsExitConditionSatisfied() override;
-
-  // extensions::ExtensionRegistryObserver implementation.
-  void OnExtensionLoaded(content::BrowserContext* context,
-                         const extensions::Extension* extension) override;
-  void OnExtensionUnloaded(
-      content::BrowserContext* context,
-      const extensions::Extension* extenion,
-      extensions::UnloadedExtensionInfo::Reason reason) override;
-  void OnExtensionInstalled(content::BrowserContext* browser_context,
-                            const extensions::Extension* extension,
-                            bool is_update) override;
-  void OnExtensionUninstalled(content::BrowserContext* browser_context,
-                              const extensions::Extension* extension,
-                              extensions::UninstallReason reason) override;
-
-  // content::NotificationObserver implementation.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
-  void Wait();
-
- private:
-  std::vector<Profile*> profiles_;
-  ScopedVector<SyncedExtensionInstaller> synced_extension_installers_;
-  content::NotificationRegistrar registrar_;
-  bool observing_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionsMatchChecker);
-};
-
-ExtensionsMatchChecker::ExtensionsMatchChecker(
-    const std::vector<Profile*>& profiles)
-    : profiles_(profiles), observing_(false) {
+ExtensionsMatchChecker::ExtensionsMatchChecker()
+    : profiles_(test()->GetAllProfiles()) {
   DCHECK_GE(profiles_.size(), 2U);
+  for (Profile* profile : profiles_) {
+    // Begin mocking the installation of synced extensions from the web store.
+    synced_extension_installers_.push_back(
+        base::MakeUnique<SyncedExtensionInstaller>(profile));
+
+    extensions::ExtensionRegistry* registry =
+        extensions::ExtensionRegistry::Get(profile);
+    registry->AddObserver(this);
+    registrar_.Add(this, extensions::NOTIFICATION_EXTENSION_UPDATING_STARTED,
+                   content::Source<Profile>(profile));
+  }
 }
 
 ExtensionsMatchChecker::~ExtensionsMatchChecker() {
-  if (observing_) {
-    for (std::vector<Profile*>::iterator it = profiles_.begin();
-         it != profiles_.end();
-         ++it) {
-      extensions::ExtensionRegistry* registry =
-          extensions::ExtensionRegistry::Get(*it);
-      registry->RemoveObserver(this);
-    }
+  for (Profile* profile : profiles_) {
+    extensions::ExtensionRegistry* registry =
+        extensions::ExtensionRegistry::Get(profile);
+    registry->RemoveObserver(this);
   }
 }
 
@@ -248,43 +204,3 @@ void ExtensionsMatchChecker::Observe(
   DCHECK_EQ(extensions::NOTIFICATION_EXTENSION_UPDATING_STARTED, type);
   CheckExitCondition();
 }
-
-void ExtensionsMatchChecker::Wait() {
-  for (std::vector<Profile*>::iterator it = profiles_.begin();
-       it != profiles_.end();
-       ++it) {
-    // Begin mocking the installation of synced extensions from the web store.
-    synced_extension_installers_.push_back(new SyncedExtensionInstaller(*it));
-
-    extensions::ExtensionRegistry* registry =
-        extensions::ExtensionRegistry::Get(*it);
-    registry->AddObserver(this);
-    registrar_.Add(this, extensions::NOTIFICATION_EXTENSION_UPDATING_STARTED,
-                   content::Source<Profile>(*it));
-  }
-
-  observing_ = true;
-
-  if (IsExitConditionSatisfied()) {
-    DVLOG(1) << "Extensions matched without waiting";
-    return;
-  }
-
-  DVLOG(1) << "Starting Wait: " << GetDebugMessage();
-  StartBlockingWait();
-}
-
-}  // namespace
-
-bool AwaitAllProfilesHaveSameExtensions() {
-  std::vector<Profile*> profiles;
-  for (int i = 0; i < test()->num_clients(); ++i) {
-    profiles.push_back(test()->GetProfile(i));
-  }
-
-  ExtensionsMatchChecker checker(profiles);
-  checker.Wait();
-  return !checker.TimedOut();
-}
-
-}  // namespace extensions_helper

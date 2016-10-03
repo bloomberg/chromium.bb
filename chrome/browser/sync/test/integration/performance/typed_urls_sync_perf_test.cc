@@ -13,7 +13,8 @@
 using typed_urls_helper::AddUrlToHistory;
 using typed_urls_helper::DeleteUrlsFromHistory;
 using typed_urls_helper::GetTypedUrlsFromClient;
-
+using sync_timing_helper::PrintResult;
+using sync_timing_helper::TimeMutualSyncCycle;
 // This number should be as far away from a multiple of
 // kDefaultMaxCommitBatchSize as possible, so that sync cycle counts
 // for batch operations stay the same even if some batches end up not
@@ -98,20 +99,19 @@ IN_PROC_BROWSER_TEST_F(TypedUrlsSyncPerfTest, P0) {
 
   // TCM ID - 7985716.
   AddURLs(0, kNumUrls);
-  base::TimeDelta dt =
-      SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+  base::TimeDelta dt = TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(kNumUrls, GetURLCount(1));
-  SyncTimingHelper::PrintResult("typed_urls", "add_typed_urls", dt);
+  PrintResult("typed_urls", "add_typed_urls", dt);
 
   // TCM ID - 7981755.
   UpdateURLs(0);
-  dt = SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+  dt = TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(kNumUrls, GetURLCount(1));
-  SyncTimingHelper::PrintResult("typed_urls", "update_typed_urls", dt);
+  PrintResult("typed_urls", "update_typed_urls", dt);
 
   // TCM ID - 7651271.
   RemoveURLs(0);
-  dt = SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+  dt = TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(0, GetURLCount(1));
-  SyncTimingHelper::PrintResult("typed_urls", "delete_typed_urls", dt);
+  PrintResult("typed_urls", "delete_typed_urls", dt);
 }

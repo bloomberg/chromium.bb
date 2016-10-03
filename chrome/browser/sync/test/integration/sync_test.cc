@@ -1013,9 +1013,7 @@ bool SyncTest::IsEncryptionComplete(int index) {
 
 bool SyncTest::AwaitEncryptionComplete(int index) {
   ProfileSyncService* service = GetClient(index)->service();
-  EncryptionChecker checker(service);
-  checker.Wait();
-  return !checker.TimedOut();
+  return EncryptionChecker(service).Wait();
 }
 
 bool SyncTest::AwaitQuiescence() {

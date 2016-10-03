@@ -19,6 +19,7 @@
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -35,7 +36,6 @@ using bookmarks_helper::AddFolder;
 using bookmarks_helper::AddURL;
 using bookmarks_helper::AllModelsMatch;
 using bookmarks_helper::AllModelsMatchVerifier;
-using bookmarks_helper::AwaitAllModelsMatch;
 using bookmarks_helper::CheckFaviconExpired;
 using bookmarks_helper::ContainsDuplicateBookmarks;
 using bookmarks_helper::CountAllBookmarks;
@@ -63,9 +63,6 @@ using bookmarks_helper::SetFavicon;
 using bookmarks_helper::SetTitle;
 using bookmarks_helper::SetURL;
 using bookmarks_helper::SortChildren;
-using sync_integration_test_util::AwaitCommitActivityCompletion;
-using sync_integration_test_util::AwaitPassphraseAccepted;
-using sync_integration_test_util::AwaitPassphraseRequired;
 
 namespace {
 
@@ -1719,7 +1716,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest, DisableSync) {
 
   ASSERT_TRUE(GetClient(1)->DisableSyncForAllDatatypes());
   ASSERT_TRUE(AddFolder(0, IndexedFolderName(0)) != NULL);
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService(0)));
+  ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
   ASSERT_FALSE(AllModelsMatch());
 
   ASSERT_TRUE(AddFolder(1, IndexedFolderName(1)) != NULL);
@@ -1766,7 +1763,7 @@ IN_PROC_BROWSER_TEST_F(LegacyTwoClientBookmarksSyncTest, MC_DeleteBookmark) {
   ASSERT_TRUE(AddURL(0, GetBookmarkBarNode(0), 0, "bar", bar_url) != NULL);
   ASSERT_TRUE(AddURL(0, GetOtherNode(0), 0, "other", other_url) != NULL);
 
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService(0)));
+  ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
 
   ASSERT_TRUE(HasNodeWithURL(0, bar_url));
   ASSERT_TRUE(HasNodeWithURL(0, other_url));
@@ -1774,7 +1771,7 @@ IN_PROC_BROWSER_TEST_F(LegacyTwoClientBookmarksSyncTest, MC_DeleteBookmark) {
   ASSERT_FALSE(HasNodeWithURL(1, other_url));
 
   Remove(0, GetBookmarkBarNode(0), 0);
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService(0)));
+  ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
 
   ASSERT_FALSE(HasNodeWithURL(0, bar_url));
   ASSERT_TRUE(HasNodeWithURL(0, other_url));
@@ -2004,7 +2001,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   // understand the bookmark updates.
   GetSyncService(0)->SetEncryptionPassphrase(
       kValidPassphrase, sync_driver::SyncService::EXPLICIT);
-  ASSERT_TRUE(AwaitPassphraseAccepted(GetSyncService(0)));
+  ASSERT_TRUE(PassphraseAcceptedChecker(GetSyncService(0)).Wait());
   ASSERT_TRUE(EnableEncryption(0));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
   ASSERT_TRUE(IsEncryptionComplete(0));
@@ -2018,9 +2015,9 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   EXPECT_FALSE(AllModelsMatch());
 
   // Set the passphrase. Everything should resolve.
-  ASSERT_TRUE(AwaitPassphraseRequired(GetSyncService(1)));
+  ASSERT_TRUE(PassphraseRequiredChecker(GetSyncService(1)).Wait());
   ASSERT_TRUE(GetSyncService(1)->SetDecryptionPassphrase(kValidPassphrase));
-  ASSERT_TRUE(AwaitPassphraseAccepted(GetSyncService(1)));
+  ASSERT_TRUE(PassphraseAcceptedChecker(GetSyncService(1)).Wait());
   ASSERT_TRUE(AwaitQuiescence());
   EXPECT_TRUE(AllModelsMatch());
   ASSERT_EQ(0, GetClient(1)->GetLastCycleSnapshot().num_encryption_conflicts());
@@ -2245,8 +2242,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
                        E2E_ONLY(OneClientAddsBookmark)) {
   ASSERT_TRUE(SetupSync()) <<  "SetupSync() failed.";
   // All profiles should sync same bookmarks.
-  ASSERT_TRUE(AwaitAllModelsMatch()) <<
-      "Initial bookmark models did not match for all profiles";
+  ASSERT_TRUE(BookmarksMatchChecker().Wait())
+      << "Initial bookmark models did not match for all profiles";
   // For clean profiles, the bookmarks count should be zero. We are not
   // enforcing this, we only check that the final count is equal to initial
   // count plus new bookmarks count.
@@ -2257,7 +2254,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
       AddURL(0, "Google URL 0", GURL("http://www.google.com/0")) != NULL);
 
   // Blocks and waits for bookmarks models in all profiles to match.
-  ASSERT_TRUE(AwaitAllModelsMatch());
+  ASSERT_TRUE(BookmarksMatchChecker().Wait());
   // Check that total number of bookmarks is as expected.
   for (int i = 0; i < num_clients(); ++i) {
     ASSERT_EQ(CountAllBookmarks(i), init_bookmarks_count + 1) <<
@@ -2270,7 +2267,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
                        OneClientAddsFolderAndBookmark) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   // All profiles should sync same bookmarks.
-  ASSERT_TRUE(AwaitAllModelsMatch())
+  ASSERT_TRUE(BookmarksMatchChecker().Wait())
       << "Initial bookmark models did not match for all profiles";
 
   // Add one new bookmark to the first profile.
@@ -2280,7 +2277,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
                      GURL("http://www.google.com/0")) != NULL);
 
   // Blocks and waits for bookmarks models in all profiles to match.
-  ASSERT_TRUE(AwaitAllModelsMatch());
+  ASSERT_TRUE(BookmarksMatchChecker().Wait());
   // Check that both profiles have the folder and the bookmark created above.
   for (int i = 0; i < num_clients(); ++i) {
     ASSERT_EQ(1, CountFoldersWithTitlesMatching(i, "Folder 0"))
@@ -2295,8 +2292,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
                        E2E_ONLY(TwoClientsAddBookmarks)) {
   ASSERT_TRUE(SetupSync()) <<  "SetupSync() failed.";
   // ALl profiles should sync same bookmarks.
-  ASSERT_TRUE(AwaitAllModelsMatch()) <<
-      "Initial bookmark models did not match for all profiles";
+  ASSERT_TRUE(BookmarksMatchChecker().Wait())
+      << "Initial bookmark models did not match for all profiles";
   // For clean profiles, the bookmarks count should be zero. We are not
   // enforcing this, we only check that the final count is equal to initial
   // count plus new bookmarks count.
@@ -2309,7 +2306,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   }
 
   // Blocks and waits for bookmarks models in all profiles to match.
-  ASSERT_TRUE(AwaitAllModelsMatch());
+  ASSERT_TRUE(BookmarksMatchChecker().Wait());
 
   // Check that total number of bookmarks is as expected.
   for (int i = 0; i < num_clients(); ++i) {
@@ -2323,7 +2320,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
 IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
                        E2E_ENABLED(AddBookmarkWhileDisabled)) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AwaitAllModelsMatch())
+  ASSERT_TRUE(BookmarksMatchChecker().Wait())
       << "Initial bookmark models did not match for all profiles";
   const int initial_count = CountAllBookmarks(0);
 
@@ -2332,7 +2329,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   const std::string url_title = "a happy little url";
   const GURL url("https://example.com");
   ASSERT_TRUE(AddURL(0, GetBookmarkBarNode(0), 0, url_title, url) != NULL);
-  ASSERT_TRUE(AwaitAllModelsMatch());
+  ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_EQ(initial_count + 1, CountAllBookmarks(0));
   ASSERT_EQ(initial_count + 1, CountAllBookmarks(1));
 
@@ -2344,7 +2341,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
   const GURL url_2("https://example.com/second");
   ASSERT_TRUE(AddURL(0, GetBookmarkBarNode(0), 0, url_title_2, url_2) != NULL);
   ASSERT_TRUE(GetClient(0)->EnableSyncForDatatype(syncer::BOOKMARKS));
-  ASSERT_TRUE(AwaitAllModelsMatch());
+  ASSERT_TRUE(BookmarksMatchChecker().Wait());
   ASSERT_EQ(initial_count + 2, CountAllBookmarks(0));
   ASSERT_EQ(initial_count + 2, CountAllBookmarks(1));
 }

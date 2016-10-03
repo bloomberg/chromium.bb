@@ -9,6 +9,9 @@
 
 #include <string>
 
+#include "chrome/browser/sync/test/integration/multi_client_status_change_checker.h"
+#include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
+
 namespace dictionary_helper {
 
 // Synchronously loads the dictionaries across all profiles. Also loads the
@@ -25,14 +28,6 @@ size_t GetVerifierDictionarySize();
 // Used to verify that dictionaries match across all profiles. Also checks
 // verifier if DisableVerifier() hasn't been called.
 bool DictionariesMatch();
-
-// Waits until dictionaries match across all platforms.  Returns false
-// if this operation times out.
-bool AwaitDictionariesMatch();
-
-// Waits until the profile at the given index contains exactly |num| dictionary
-// entries.  Returns false if this operation times out.
-bool AwaitNumDictionaryEntries(int index, size_t num_words);
 
 // Used to verify that the dictionary within a particular sync profile matches
 // the dictionary within the verifier sync profile.
@@ -54,5 +49,30 @@ bool AddWords(int index, int n, const std::string& prefix);
 bool RemoveWord(int index, const std::string& word);
 
 }  // namespace dictionary_helper
+
+// Checker to block until all services have matching dictionaries.
+class DictionaryMatchChecker : public MultiClientStatusChangeChecker {
+ public:
+  DictionaryMatchChecker();
+
+  // StatusChangeChecker implementation.
+  bool IsExitConditionSatisfied() override;
+  std::string GetDebugMessage() const override;
+};
+
+// Checker to block until the number of dictionary entries to equal to an
+// expected count.
+class NumDictionaryEntriesChecker : public SingleClientStatusChangeChecker {
+ public:
+  NumDictionaryEntriesChecker(int index, size_t num_words);
+
+  // StatusChangeChecker implementation.
+  bool IsExitConditionSatisfied() override;
+  std::string GetDebugMessage() const override;
+
+ private:
+  int index_;
+  size_t num_words_;
+};
 
 #endif  // CHROME_BROWSER_SYNC_TEST_INTEGRATION_DICTIONARY_HELPER_H_

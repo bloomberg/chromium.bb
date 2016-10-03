@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/sync/test/integration/fake_server_match_status_checker.h"
+
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 
@@ -11,18 +12,10 @@ namespace fake_server {
 FakeServerMatchStatusChecker::FakeServerMatchStatusChecker()
     : fake_server_(sync_datatype_helper::test()->GetFakeServer()) {
   DCHECK(fake_server_);
+  fake_server_->AddObserver(this);
 }
 
-void FakeServerMatchStatusChecker::Wait() {
-  DVLOG(1) << "Await: " << GetDebugMessage();
-
-  if (IsExitConditionSatisfied()) {
-    DVLOG(1) << "Await -> Exit before waiting: " << GetDebugMessage();
-    return;
-  }
-
-  fake_server_->AddObserver(this);
-  StartBlockingWait();
+FakeServerMatchStatusChecker::~FakeServerMatchStatusChecker() {
   fake_server_->RemoveObserver(this);
 }
 

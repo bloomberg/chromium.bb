@@ -9,18 +9,13 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/test/integration/status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_app_helper.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_extension_helper.h"
 #include "chrome/browser/sync/test/integration/sync_extension_installer.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_prefs_observer.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/manifest.h"
 
 using sync_datatype_helper::test;
@@ -149,84 +144,46 @@ void FixNTPOrdinalCollisions(Profile* profile) {
   SyncAppHelper::GetInstance()->FixNTPOrdinalCollisions(profile);
 }
 
-namespace {
+}  // namespace apps_helper
 
-// A helper class to implement waiting for a set of profiles to have matching
-// extensions lists.
-class AppsMatchChecker : public StatusChangeChecker,
-                         public extensions::ExtensionRegistryObserver,
-                         public extensions::ExtensionPrefsObserver,
-                         public content::NotificationObserver {
- public:
-  explicit AppsMatchChecker(const std::vector<Profile*>& profiles);
-  ~AppsMatchChecker() override;
-
-  // StatusChangeChecker implementation.
-  std::string GetDebugMessage() const override;
-  bool IsExitConditionSatisfied() override;
-
-  // extensions::ExtensionRegistryObserver implementation.
-  void OnExtensionLoaded(content::BrowserContext* context,
-                         const extensions::Extension* extension) override;
-  void OnExtensionUnloaded(
-      content::BrowserContext* context,
-      const extensions::Extension* extenion,
-      extensions::UnloadedExtensionInfo::Reason reason) override;
-  void OnExtensionInstalled(content::BrowserContext* browser_context,
-                            const extensions::Extension* extension,
-                            bool is_update) override;
-  void OnExtensionUninstalled(content::BrowserContext* browser_context,
-                              const extensions::Extension* extension,
-                              extensions::UninstallReason reason) override;
-
-  // extensions::ExtensionPrefsObserver implementation.
-  void OnExtensionDisableReasonsChanged(const std::string& extension_id,
-                                        int disabled_reasons) override;
-  void OnExtensionRegistered(const std::string& extension_id,
-                             const base::Time& install_time,
-                             bool is_enabled) override;
-  void OnExtensionPrefsLoaded(const std::string& extension_id,
-                              const extensions::ExtensionPrefs* prefs) override;
-  void OnExtensionPrefsDeleted(const std::string& extension_id) override;
-  void OnExtensionStateChanged(const std::string& extension_id,
-                               bool state) override;
-
-  // Implementation of content::NotificationObserver.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
-  void Wait();
-
- private:
-  std::vector<Profile*> profiles_;
-  bool observing_;
-
-  content::NotificationRegistrar registrar_;
-
-  // This installs apps, too.
-  ScopedVector<SyncedExtensionInstaller> synced_extension_installers_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppsMatchChecker);
-};
-
-AppsMatchChecker::AppsMatchChecker(const std::vector<Profile*>& profiles)
-    : profiles_(profiles), observing_(false) {
+AppsMatchChecker::AppsMatchChecker() : profiles_(test()->GetAllProfiles()) {
   DCHECK_GE(profiles_.size(), 2U);
+
+  for (Profile* profile : profiles_) {
+    // Begin mocking the installation of synced extensions from the web store.
+    synced_extension_installers_.push_back(
+        new SyncedExtensionInstaller(profile));
+
+    // Register as an observer of ExtensionsRegistry to receive notifications of
+    // big events, like installs and uninstalls.
+    extensions::ExtensionRegistry* registry =
+        extensions::ExtensionRegistry::Get(profile);
+    registry->AddObserver(this);
+
+    // Register for ExtensionPrefs events, too, so we can get notifications
+    // about
+    // smaller but still syncable events, like launch type changes.
+    extensions::ExtensionPrefs* prefs =
+        extensions::ExtensionPrefs::Get(profile);
+    prefs->AddObserver(this);
+  }
+
+  registrar_.Add(this, chrome::NOTIFICATION_APP_LAUNCHER_REORDERED,
+                 content::NotificationService::AllSources());
 }
 
 AppsMatchChecker::~AppsMatchChecker() {
-  if (observing_) {
-    for (std::vector<Profile*>::iterator it = profiles_.begin();
-         it != profiles_.end();
-         ++it) {
-      extensions::ExtensionRegistry* registry =
-          extensions::ExtensionRegistry::Get(*it);
-      registry->RemoveObserver(this);
-      extensions::ExtensionPrefs* prefs = extensions::ExtensionPrefs::Get(*it);
-      prefs->RemoveObserver(this);
-    }
+  for (Profile* profile : profiles_) {
+    extensions::ExtensionRegistry* registry =
+        extensions::ExtensionRegistry::Get(profile);
+    registry->RemoveObserver(this);
+    extensions::ExtensionPrefs* prefs =
+        extensions::ExtensionPrefs::Get(profile);
+    prefs->RemoveObserver(this);
   }
+
+  registrar_.Remove(this, chrome::NOTIFICATION_APP_LAUNCHER_REORDERED,
+                    content::NotificationService::AllSources());
 }
 
 std::string AppsMatchChecker::GetDebugMessage() const {
@@ -307,55 +264,3 @@ void AppsMatchChecker::Observe(int type,
   CheckExitCondition();
 }
 
-void AppsMatchChecker::Wait() {
-  for (std::vector<Profile*>::iterator it = profiles_.begin();
-       it != profiles_.end();
-       ++it) {
-    // Begin mocking the installation of synced extensions from the web store.
-    synced_extension_installers_.push_back(new SyncedExtensionInstaller(*it));
-
-    // Register as an observer of ExtensionsRegistry to receive notifications of
-    // big events, like installs and uninstalls.
-    extensions::ExtensionRegistry* registry =
-        extensions::ExtensionRegistry::Get(*it);
-    registry->AddObserver(this);
-
-    // Register for ExtensionPrefs events, too, so we can get notifications
-    // about
-    // smaller but still syncable events, like launch type changes.
-    extensions::ExtensionPrefs* prefs = extensions::ExtensionPrefs::Get(*it);
-    prefs->AddObserver(this);
-  }
-
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_APP_LAUNCHER_REORDERED,
-                 content::NotificationService::AllSources());
-
-  observing_ = true;
-
-  if (IsExitConditionSatisfied()) {
-    DVLOG(1) << "Apps matched without waiting";
-    return;
-  }
-
-  DVLOG(1) << "Starting Wait: " << GetDebugMessage();
-  StartBlockingWait();
-}
-
-}  // namespace
-
-bool AwaitAllProfilesHaveSameApps() {
-  std::vector<Profile*> profiles;
-  if (test()->use_verifier()) {
-    profiles.push_back(test()->verifier());
-  }
-  for (int i = 0; i < test()->num_clients(); ++i) {
-    profiles.push_back(test()->GetProfile(i));
-  }
-
-  AppsMatchChecker checker(profiles);
-  checker.Wait();
-  return !checker.TimedOut();
-}
-
-}  // namespace apps_helper

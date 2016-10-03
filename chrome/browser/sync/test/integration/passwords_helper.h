@@ -6,10 +6,13 @@
 #define CHROME_BROWSER_SYNC_TEST_INTEGRATION_PASSWORDS_HELPER_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/test/integration/multi_client_status_change_checker.h"
+#include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/browser_sync/profile_sync_service.h"
@@ -65,12 +68,6 @@ bool AllProfilesContainSamePasswordFormsAsVerifier();
 // Returns true iff all profiles contain the same password forms.
 bool AllProfilesContainSamePasswordForms();
 
-// Returns true if all profiles contain the same password forms and
-// it doesn't time out.
-bool AwaitAllProfilesContainSamePasswordForms();
-
-// Returns true if specified profile contains the same password forms as the
-// verifier and it doesn't time out.
 bool AwaitProfileContainsSamePasswordFormsAsVerifier(int index);
 
 // Returns the number of forms in the password store of the profile with index
@@ -85,5 +82,36 @@ int GetVerifierPasswordCount();
 autofill::PasswordForm CreateTestPasswordForm(int index);
 
 }  // namespace passwords_helper
+
+// Checker to block until all profiles contain the same password forms.
+class SamePasswordFormsChecker : public MultiClientStatusChangeChecker {
+ public:
+  SamePasswordFormsChecker();
+
+  // StatusChangeChecker implementation.
+  bool IsExitConditionSatisfied() override;
+  std::string GetDebugMessage() const override;
+
+ private:
+  bool in_progress_;
+  bool needs_recheck_;
+};
+
+// Checker to block until specified profile contains the same password forms as
+// the verifier.
+class SamePasswordFormsAsVerifierChecker
+    : public SingleClientStatusChangeChecker {
+ public:
+  explicit SamePasswordFormsAsVerifierChecker(int index);
+
+  // StatusChangeChecker implementation.
+  bool IsExitConditionSatisfied() override;
+  std::string GetDebugMessage() const override;
+
+ private:
+  int index_;
+  bool in_progress_;
+  bool needs_recheck_;
+};
 
 #endif  // CHROME_BROWSER_SYNC_TEST_INTEGRATION_PASSWORDS_HELPER_H_

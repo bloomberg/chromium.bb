@@ -228,32 +228,26 @@ bool ProfileSyncServiceHarness::AwaitMutualSyncCycleCompletion(
 }
 
 bool ProfileSyncServiceHarness::AwaitGroupSyncCycleCompletion(
-    std::vector<ProfileSyncServiceHarness*>& partners) {
+    const std::vector<ProfileSyncServiceHarness*>& partners) {
   return AwaitQuiescence(partners);
 }
 
 // static
 bool ProfileSyncServiceHarness::AwaitQuiescence(
-    std::vector<ProfileSyncServiceHarness*>& clients) {
+    const std::vector<ProfileSyncServiceHarness*>& clients) {
   std::vector<ProfileSyncService*> services;
   if (clients.empty()) {
     return true;
   }
 
-  for (std::vector<ProfileSyncServiceHarness*>::iterator it = clients.begin();
-       it != clients.end(); ++it) {
-    services.push_back((*it)->service());
+  for (const ProfileSyncServiceHarness* harness : clients) {
+    services.push_back(harness->service());
   }
-  QuiesceStatusChangeChecker checker(services);
-  checker.Wait();
-  return !checker.TimedOut();
+  return QuiesceStatusChangeChecker(services).Wait();
 }
 
 bool ProfileSyncServiceHarness::AwaitBackendInitialization() {
-  BackendInitializeChecker checker(service());
-  checker.Wait();
-
-  if (checker.TimedOut()) {
+  if (!BackendInitializeChecker(service()).Wait()) {
     LOG(ERROR) << "BackendInitializeChecker timed out.";
     return false;
   }
@@ -279,10 +273,7 @@ bool ProfileSyncServiceHarness::AwaitBackendInitialization() {
 }
 
 bool ProfileSyncServiceHarness::AwaitSyncSetupCompletion() {
-  SyncSetupChecker checker(service());
-  checker.Wait();
-
-  if (checker.TimedOut()) {
+  if (!SyncSetupChecker(service()).Wait()) {
     LOG(ERROR) << "SyncSetupChecker timed out.";
     return false;
   }

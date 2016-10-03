@@ -31,15 +31,6 @@ std::string MigrationWaiter::GetDebugMessage() const {
          ModelTypeSetToString(watcher_->GetMigratedTypes()) + ")";
 }
 
-void MigrationWaiter::Wait() {
-  if (IsExitConditionSatisfied()) {
-    DVLOG(1) << "Skipping wait: " << GetDebugMessage();
-    return;
-  }
-
-  StartBlockingWait();
-}
-
 void MigrationWaiter::OnMigrationStateChange() {
   CheckExitCondition();
 }

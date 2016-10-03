@@ -12,6 +12,9 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/spellcheck/common/spellcheck_common.h"
 
+using sync_timing_helper::PrintResult;
+using sync_timing_helper::TimeMutualSyncCycle;
+
 class DictionarySyncPerfTest : public SyncTest {
  public:
   DictionarySyncPerfTest() : SyncTest(TWO_CLIENT) {}
@@ -31,16 +34,16 @@ IN_PROC_BROWSER_TEST_F(DictionarySyncPerfTest, P0) {
     ASSERT_TRUE(dictionary_helper::AddWord(
         0, "foo" + base::Uint64ToString(i)));
   }
-  dt = SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+  dt = TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS,
             dictionary_helper::GetDictionarySize(1));
-  SyncTimingHelper::PrintResult("dictionary", "add_words", dt);
+  PrintResult("dictionary", "add_words", dt);
 
   for (size_t i = 0; i < spellcheck::MAX_SYNCABLE_DICTIONARY_WORDS; ++i) {
     ASSERT_TRUE(dictionary_helper::RemoveWord(
         0, "foo" + base::Uint64ToString(i)));
   }
-  dt = SyncTimingHelper::TimeMutualSyncCycle(GetClient(0), GetClient(1));
+  dt = TimeMutualSyncCycle(GetClient(0), GetClient(1));
   ASSERT_EQ(0UL, dictionary_helper::GetDictionarySize(1));
-  SyncTimingHelper::PrintResult("dictionary", "remove_words", dt);
+  PrintResult("dictionary", "remove_words", dt);
 }

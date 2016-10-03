@@ -29,10 +29,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/sync/test/integration/await_match_status_change_checker.h"
-#include "chrome/browser/sync/test/integration/multi_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
-#include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/common/chrome_paths.h"
@@ -75,8 +72,6 @@ class HistoryEmptyTask : public history::HistoryDBTask {
   void DoneRunOnMainThread() override {}
 
  private:
-  ~HistoryEmptyTask() override {}
-
   base::WaitableEvent* done_;
 };
 
@@ -219,9 +214,6 @@ struct FaviconData {
               const GURL& favicon_url)
       : image(favicon_image),
         icon_url(favicon_url) {
-  }
-
-  ~FaviconData() {
   }
 
   gfx::Image image;
@@ -787,115 +779,6 @@ bool AllModelsMatch() {
   return true;
 }
 
-namespace {
-
-// Helper class used in the implementation of AwaitAllModelsMatch.
-class AllModelsMatchChecker : public MultiClientStatusChangeChecker {
- public:
-  AllModelsMatchChecker();
-  ~AllModelsMatchChecker() override;
-
-  bool IsExitConditionSatisfied() override;
-  std::string GetDebugMessage() const override;
-};
-
-AllModelsMatchChecker::AllModelsMatchChecker()
-    : MultiClientStatusChangeChecker(
-        sync_datatype_helper::test()->GetSyncServices()) {}
-
-AllModelsMatchChecker::~AllModelsMatchChecker() {}
-
-bool AllModelsMatchChecker::IsExitConditionSatisfied() {
-  return AllModelsMatch();
-}
-
-std::string AllModelsMatchChecker::GetDebugMessage() const {
-  return "Waiting for matching models";
-}
-
-}  //  namespace
-
-bool AwaitAllModelsMatch() {
-  AllModelsMatchChecker checker;
-  checker.Wait();
-  return !checker.TimedOut();
-}
-
-namespace {
-
-// TODO(pvalenzuela): Remove this class and instead use
-// AwaitMatchStatusChangeChecker.
-class CountBookmarksWithTitlesMatchingChecker
-    : public SingleClientStatusChangeChecker {
- public:
-  CountBookmarksWithTitlesMatchingChecker(
-      browser_sync::ProfileSyncService* service,
-      int profile_index,
-      const std::string& title,
-      int expected_count)
-      : SingleClientStatusChangeChecker(service),
-        profile_index_(profile_index),
-        title_(title),
-        expected_count_(expected_count) {
-    DCHECK_GE(expected_count, 0) << "expected_count must be non-negative.";
-  }
-
-  bool IsExitConditionSatisfied() override {
-    int actual_count = CountBookmarksWithTitlesMatching(profile_index_, title_);
-    return expected_count_ == actual_count;
-  }
-
-  std::string GetDebugMessage() const override {
-    return "Waiting for bookmark count to match";
-  }
-
- private:
-  const int profile_index_;
-  const std::string title_;
-  const int expected_count_;
-};
-
-}  // namespace
-
-bool AwaitCountBookmarksWithTitlesMatching(int profile,
-                                           const std::string& title,
-                                           int expected_count) {
-  browser_sync::ProfileSyncService* service =
-      sync_datatype_helper::test()->GetSyncService(profile);
-  CountBookmarksWithTitlesMatchingChecker checker(service,
-                                                  profile,
-                                                  title,
-                                                  expected_count);
-  checker.Wait();
-  return !checker.TimedOut();
-}
-
-
-bool BookmarkCountsByUrlMatch(int profile,
-                              const GURL& url,
-                              int expected_count) {
-  int actual_count = CountBookmarksWithUrlsMatching(profile, url);
-  if (expected_count != actual_count) {
-    DVLOG(1) << base::StringPrintf("Expected %d URL(s), but there were %d.",
-                                   expected_count,
-                                   actual_count);
-    return false;
-  }
-  return true;
-}
-
-bool AwaitCountBookmarksWithUrlsMatching(int profile,
-                                         const GURL& url,
-                                         int expected_count) {
-  AwaitMatchStatusChangeChecker checker(base::Bind(BookmarkCountsByUrlMatch,
-                                                   profile,
-                                                   base::ConstRef(url),
-                                                   expected_count),
-                                        "Bookmark URL counts match.");
-  checker.Wait();
-  return !checker.TimedOut();
-}
-
 bool ContainsDuplicateBookmarks(int profile) {
   ui::TreeNodeIterator<const BookmarkNode> iterator(
       GetBookmarkModel(profile)->root_node());
@@ -1010,3 +893,62 @@ std::string IndexedSubsubfolderName(int i) {
 }
 
 }  // namespace bookmarks_helper
+
+BookmarksMatchChecker::BookmarksMatchChecker()
+    : MultiClientStatusChangeChecker(
+          sync_datatype_helper::test()->GetSyncServices()) {}
+
+bool BookmarksMatchChecker::IsExitConditionSatisfied() {
+  return bookmarks_helper::AllModelsMatch();
+}
+
+std::string BookmarksMatchChecker::GetDebugMessage() const {
+  return "Waiting for matching models";
+}
+
+BookmarksTitleChecker::BookmarksTitleChecker(int profile_index,
+                                             const std::string& title,
+                                             int expected_count)
+    : SingleClientStatusChangeChecker(
+          sync_datatype_helper::test()->GetSyncService(profile_index)),
+      profile_index_(profile_index),
+      title_(title),
+      expected_count_(expected_count) {
+  DCHECK_GE(expected_count, 0) << "expected_count must be non-negative.";
+}
+
+bool BookmarksTitleChecker::IsExitConditionSatisfied() {
+  int actual_count = bookmarks_helper::CountBookmarksWithTitlesMatching(
+      profile_index_, title_);
+  return expected_count_ == actual_count;
+}
+
+std::string BookmarksTitleChecker::GetDebugMessage() const {
+  return "Waiting for bookmark count to match";
+}
+
+namespace {
+
+bool BookmarkCountsByUrlMatch(int profile,
+                              const GURL& url,
+                              int expected_count) {
+  int actual_count =
+      bookmarks_helper::CountBookmarksWithUrlsMatching(profile, url);
+  if (expected_count != actual_count) {
+    DVLOG(1) << base::StringPrintf("Expected %d URL(s), but there were %d.",
+                                   expected_count, actual_count);
+    return false;
+  }
+  return true;
+}
+
+}  // namespace
+
+BookmarksUrlChecker::BookmarksUrlChecker(int profile,
+                                         const GURL& url,
+                                         int expected_count)
+    : AwaitMatchStatusChangeChecker(base::Bind(BookmarkCountsByUrlMatch,
+                                               profile,
+                                               base::ConstRef(url),
+                                               expected_count),
+                                    "Bookmark URL counts match.") {}

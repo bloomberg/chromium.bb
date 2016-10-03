@@ -4,11 +4,9 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/sync_arc_package_helper.h"
-#include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service.h"
-
-using sync_integration_test_util::AwaitCommitActivityCompletion;
 
 namespace arc {
 
@@ -68,7 +66,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientArcPackageSyncTest,
     sync_helper()->InstallPackageWithIndex(verifier(), i);
   }
 
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService(0)));
+  ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
   ASSERT_TRUE(AllProfilesHaveSameArcPackageDetails());
 }
 

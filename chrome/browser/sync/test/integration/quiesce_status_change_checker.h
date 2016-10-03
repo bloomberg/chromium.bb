@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SYNC_TEST_INTEGRATION_QUIESCE_STATUS_CHANGE_CHECKER_H_
 #define CHROME_BROWSER_SYNC_TEST_INTEGRATION_QUIESCE_STATUS_CHANGE_CHECKER_H_
 
+#include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -36,9 +37,6 @@ class QuiesceStatusChangeChecker : public StatusChangeChecker {
   explicit QuiesceStatusChangeChecker(
       std::vector<browser_sync::ProfileSyncService*> services);
   ~QuiesceStatusChangeChecker() override;
-
-  // Blocks until all clients have quiesced or we time out.
-  void Wait();
 
   // A callback function for some helper objects.
   void OnServiceStateChanged(browser_sync::ProfileSyncService* service);

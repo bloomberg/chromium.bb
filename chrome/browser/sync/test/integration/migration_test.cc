@@ -66,7 +66,6 @@ MigrationList MakeList(syncer::ModelType type1,
   return MakeList(MakeSet(type1), MakeSet(type2));
 }
 
-
 class MigrationTest : public SyncTest  {
  public:
   explicit MigrationTest(TestType test_type) : SyncTest(test_type) {}
@@ -160,9 +159,8 @@ class MigrationTest : public SyncTest  {
   // types.
   void AwaitMigration(syncer::ModelTypeSet migrate_types) {
     for (int i = 0; i < num_clients(); ++i) {
-      MigrationWaiter waiter(migrate_types, migration_watchers_[i]);
-      waiter.Wait();
-      ASSERT_FALSE(waiter.TimedOut());
+      ASSERT_TRUE(
+          MigrationWaiter(migrate_types, migration_watchers_[i]).Wait());
     }
   }
 

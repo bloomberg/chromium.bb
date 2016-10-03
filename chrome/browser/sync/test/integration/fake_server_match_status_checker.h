@@ -20,7 +20,9 @@ class FakeServerMatchStatusChecker : public StatusChangeChecker,
                                      public FakeServer::Observer {
  public:
   FakeServerMatchStatusChecker();
-  void Wait();
+  ~FakeServerMatchStatusChecker() override;
+
+  // FakeServer::Observer implementation.
   void OnCommit(const std::string& committer_id,
                 syncer::ModelTypeSet committed_model_types) override;
 

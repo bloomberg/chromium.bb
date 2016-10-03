@@ -36,7 +36,7 @@ class NonBlockingDataTypeController : public sync_driver::DataTypeController {
                                 sync_driver::SyncClient* sync_client);
   ~NonBlockingDataTypeController() override;
 
-  // DataTypeController interface.
+  // DataTypeController implementation.
   bool ShouldLoadModelBeforeConfigure() const override;
   void LoadModels(const ModelLoadCallback& model_load_callback) override;
   void GetAllNodes(const AllNodesCallback& callback) override;

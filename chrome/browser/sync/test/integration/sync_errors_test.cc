@@ -9,8 +9,8 @@
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
-#include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "chrome/common/pref_names.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/prefs/pref_member.h"
@@ -22,7 +22,6 @@ using bookmarks::BookmarkNode;
 using bookmarks_helper::AddFolder;
 using bookmarks_helper::SetTitle;
 using browser_sync::ProfileSyncService;
-using sync_integration_test_util::AwaitCommitActivityCompletion;
 
 namespace {
 
@@ -44,10 +43,10 @@ class SyncBackendStoppedChecker : public SingleClientStatusChangeChecker {
   explicit SyncBackendStoppedChecker(ProfileSyncService* service)
       : SingleClientStatusChangeChecker(service) {}
 
+  // StatusChangeChecker implementation.
   bool IsExitConditionSatisfied() override {
     return !service()->IsBackendInitialized();
   }
-
   std::string GetDebugMessage() const override { return "Sync stopped"; }
 };
 
@@ -57,33 +56,15 @@ class TypeDisabledChecker : public SingleClientStatusChangeChecker {
                                syncer::ModelType type)
       : SingleClientStatusChangeChecker(service), type_(type) {}
 
+  // StatusChangeChecker implementation.
   bool IsExitConditionSatisfied() override {
     return !service()->GetActiveDataTypes().Has(type_);
   }
-
   std::string GetDebugMessage() const override { return "Type disabled"; }
+
  private:
-   syncer::ModelType type_;
+  syncer::ModelType type_;
 };
-
-bool AwaitSyncDisabled(ProfileSyncService* service) {
-  SyncDisabledChecker checker(service);
-  checker.Wait();
-  return !checker.TimedOut();
-}
-
-bool AwaitSyncBackendStopped(ProfileSyncService* service) {
-  SyncBackendStoppedChecker checker(service);
-  checker.Wait();
-  return !checker.TimedOut();
-}
-
-bool AwaitTypeDisabled(ProfileSyncService* service,
-                       syncer::ModelType type) {
-  TypeDisabledChecker checker(service, type);
-  checker.Wait();
-  return !checker.TimedOut();
-}
 
 class SyncErrorTest : public SyncTest {
  public:
@@ -125,13 +106,13 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, BirthdayErrorTest) {
   // Add an item, wait for sync, and trigger a birthday error on the server.
   const BookmarkNode* node1 = AddFolder(0, 0, "title1");
   SetTitle(0, node1, "new_title1");
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService(0)));
+  ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
   GetFakeServer()->ClearServerData();
 
   // Now make one more change so we will do another sync.
   const BookmarkNode* node2 = AddFolder(0, 0, "title2");
   SetTitle(0, node2, "new_title2");
-  ASSERT_TRUE(AwaitSyncDisabled(GetSyncService(0)));
+  ASSERT_TRUE(SyncDisabledChecker(GetSyncService(0)).Wait());
 }
 
 IN_PROC_BROWSER_TEST_F(SyncErrorTest, ActionableErrorTest) {
@@ -139,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, ActionableErrorTest) {
 
   const BookmarkNode* node1 = AddFolder(0, 0, "title1");
   SetTitle(0, node1, "new_title1");
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService(0)));
+  ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
 
   std::string description = "Not My Fault";
   std::string url = "www.google.com";
@@ -154,9 +135,7 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, ActionableErrorTest) {
   SetTitle(0, node2, "new_title2");
 
   // Wait until an actionable error is encountered.
-  ActionableErrorChecker actionable_error_checker(GetSyncService(0));
-  actionable_error_checker.Wait();
-  ASSERT_FALSE(actionable_error_checker.TimedOut());
+  ASSERT_TRUE(ActionableErrorChecker(GetSyncService(0)).Wait());
 
   ProfileSyncService::Status status;
   GetSyncService(0)->QueryDetailedSyncStatus(&status);
@@ -199,7 +178,7 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, BirthdayErrorUsingActionableErrorTest) {
 
   const BookmarkNode* node1 = AddFolder(0, 0, "title1");
   SetTitle(0, node1, "new_title1");
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService(0)));
+  ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
 
   std::string description = "Not My Fault";
   std::string url = "www.google.com";
@@ -212,7 +191,7 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, BirthdayErrorUsingActionableErrorTest) {
   // Now make one more change so we will do another sync.
   const BookmarkNode* node2 = AddFolder(0, 0, "title2");
   SetTitle(0, node2, "new_title2");
-  ASSERT_TRUE(AwaitSyncDisabled(GetSyncService(0)));
+  ASSERT_TRUE(SyncDisabledChecker(GetSyncService(0)).Wait());
   ProfileSyncService::Status status;
   GetSyncService(0)->QueryDetailedSyncStatus(&status);
   ASSERT_EQ(status.sync_protocol_error.error_type, syncer::NOT_MY_BIRTHDAY);
@@ -228,7 +207,7 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, ClientDataObsoleteTest) {
 
   const BookmarkNode* node1 = AddFolder(0, 0, "title1");
   SetTitle(0, node1, "new_title1");
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService(0)));
+  ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
 
   std::string description = "Not My Fault";
   std::string url = "www.google.com";
@@ -245,7 +224,7 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, ClientDataObsoleteTest) {
   const BookmarkNode* node2 = AddFolder(0, 0, "title2");
   SetTitle(0, node2, "new_title2");
 
-  ASSERT_TRUE(AwaitSyncBackendStopped(GetSyncService(0)));
+  ASSERT_TRUE(SyncBackendStoppedChecker(GetSyncService(0)).Wait());
 
   // Make server return SUCCESS so that sync can initialize.
   EXPECT_TRUE(GetFakeServer()->TriggerError(sync_pb::SyncEnums::SUCCESS));
@@ -267,13 +246,14 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, DisableDatatypeWhileRunning) {
       prefs::kSavingBrowserHistoryDisabled, true);
 
   // Wait for reconfigurations.
-  ASSERT_TRUE(AwaitTypeDisabled(GetSyncService(0), syncer::TYPED_URLS));
-  ASSERT_TRUE(AwaitTypeDisabled(GetSyncService(0), syncer::SESSIONS));
+  ASSERT_TRUE(
+      TypeDisabledChecker(GetSyncService(0), syncer::TYPED_URLS).Wait());
+  ASSERT_TRUE(TypeDisabledChecker(GetSyncService(0), syncer::SESSIONS).Wait());
 
   const BookmarkNode* node1 = AddFolder(0, 0, "title1");
   SetTitle(0, node1, "new_title1");
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService(0)));
-  // TODO(lipalani)" Verify initial sync ended for typed url is false.
+  ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
+  // TODO(lipalani): Verify initial sync ended for typed url is false.
 }
 
 }  // namespace

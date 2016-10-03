@@ -8,8 +8,7 @@
 
 SingleClientStatusChangeChecker::SingleClientStatusChangeChecker(
     browser_sync::ProfileSyncService* service)
-    : MultiClientStatusChangeChecker(
-          std::vector<browser_sync::ProfileSyncService*>(1, service)) {}
+    : MultiClientStatusChangeChecker({service}) {}
 
 SingleClientStatusChangeChecker::~SingleClientStatusChangeChecker() {}
 

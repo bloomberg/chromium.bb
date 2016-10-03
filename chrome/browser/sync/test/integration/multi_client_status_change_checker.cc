@@ -10,29 +10,13 @@
 
 MultiClientStatusChangeChecker::MultiClientStatusChangeChecker(
     std::vector<browser_sync::ProfileSyncService*> services)
-    : services_(services) {}
+    : services_(services), scoped_observer_(this) {
+  for (browser_sync::ProfileSyncService* service : services) {
+    scoped_observer_.Add(service);
+  }
+}
 
 MultiClientStatusChangeChecker::~MultiClientStatusChangeChecker() {}
-
-void MultiClientStatusChangeChecker::Wait() {
-  DVLOG(1) << "Await: " << GetDebugMessage();
-
-  if (IsExitConditionSatisfied()) {
-    DVLOG(1) << "Await -> Exit before waiting: " << GetDebugMessage();
-    return;
-  }
-
-  ScopedObserver<browser_sync::ProfileSyncService,
-                 MultiClientStatusChangeChecker>
-      obs(this);
-  for (std::vector<browser_sync::ProfileSyncService*>::iterator it =
-           services_.begin();
-       it != services_.end(); ++it) {
-    obs.Add(*it);
-  }
-
-  StartBlockingWait();
-}
 
 void MultiClientStatusChangeChecker::OnStateChanged() {
   CheckExitCondition();

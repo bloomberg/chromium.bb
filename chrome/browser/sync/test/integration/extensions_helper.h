@@ -5,13 +5,20 @@
 #ifndef CHROME_BROWSER_SYNC_TEST_INTEGRATION_EXTENSIONS_HELPER_H_
 #define CHROME_BROWSER_SYNC_TEST_INTEGRATION_EXTENSIONS_HELPER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "chrome/browser/sync/test/integration/status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/extension_registry_observer.h"
+#include "extensions/common/extension.h"
 
 class Profile;
+class SyncedExtensionInstaller;
 
 namespace extensions_helper {
 
@@ -73,5 +80,50 @@ bool IsIncognitoEnabled(Profile* profile, int index);
 bool AwaitAllProfilesHaveSameExtensions();
 
 }  // namespace extensions_helper
+
+// A helper class to implement waiting for a set of profiles to have matching
+// extensions lists. It waits for calls on both interfaces:
+// ExtensionRegistryObserver and NotificationObserver. Observing
+// NOTIFICATION_EXTENSION_UPDATING_STARTED notification is needed for tests
+// against local server because in such tests extensions are not installed and
+// ExtensionRegistryObserver methods are not called.
+class ExtensionsMatchChecker : public StatusChangeChecker,
+                               public extensions::ExtensionRegistryObserver,
+                               public content::NotificationObserver {
+ public:
+  ExtensionsMatchChecker();
+  ~ExtensionsMatchChecker() override;
+
+  // StatusChangeChecker implementation.
+  std::string GetDebugMessage() const override;
+  bool IsExitConditionSatisfied() override;
+
+  // extensions::ExtensionRegistryObserver implementation.
+  void OnExtensionLoaded(content::BrowserContext* context,
+                         const extensions::Extension* extension) override;
+  void OnExtensionUnloaded(
+      content::BrowserContext* context,
+      const extensions::Extension* extenion,
+      extensions::UnloadedExtensionInfo::Reason reason) override;
+  void OnExtensionInstalled(content::BrowserContext* browser_context,
+                            const extensions::Extension* extension,
+                            bool is_update) override;
+  void OnExtensionUninstalled(content::BrowserContext* browser_context,
+                              const extensions::Extension* extension,
+                              extensions::UninstallReason reason) override;
+
+  // content::NotificationObserver implementation.
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
+
+ private:
+  std::vector<Profile*> profiles_;
+  std::vector<std::unique_ptr<SyncedExtensionInstaller>>
+      synced_extension_installers_;
+  content::NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExtensionsMatchChecker);
+};
 
 #endif  // CHROME_BROWSER_SYNC_TEST_INTEGRATION_EXTENSIONS_HELPER_H_

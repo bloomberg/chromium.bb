@@ -21,7 +21,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sessions/notification_service_sessions_router.h"
-#include "chrome/browser/sync/test/integration/multi_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/ui/singleton_tabs.h"
@@ -377,53 +376,27 @@ bool CheckForeignSessionsAgainst(
   return true;
 }
 
-namespace {
-
-// Helper class used in the implementation of AwaitCheckForeignSessionsAgainst.
-class CheckForeignSessionsChecker : public MultiClientStatusChangeChecker {
- public:
-  CheckForeignSessionsChecker(int index,
-                              const std::vector<ScopedWindowMap>& windows);
-  ~CheckForeignSessionsChecker() override;
-
-  bool IsExitConditionSatisfied() override;
-  std::string GetDebugMessage() const override;
-
- private:
-  int index_;
-  const std::vector<ScopedWindowMap>& windows_;
-};
-
-CheckForeignSessionsChecker::CheckForeignSessionsChecker(
-    int index, const std::vector<ScopedWindowMap>& windows)
-    : MultiClientStatusChangeChecker(
-        sync_datatype_helper::test()->GetSyncServices()),
-      index_(index),
-      windows_(windows) {}
-
-CheckForeignSessionsChecker::~CheckForeignSessionsChecker() {}
-
-bool CheckForeignSessionsChecker::IsExitConditionSatisfied() {
-  return CheckForeignSessionsAgainst(index_, windows_);
-}
-
-std::string CheckForeignSessionsChecker::GetDebugMessage() const {
-  return "Waiting for matching foreign sessions";
-}
-
-}  //  namespace
-
-bool AwaitCheckForeignSessionsAgainst(
-    int index, const std::vector<ScopedWindowMap>& windows) {
-  CheckForeignSessionsChecker checker(index, windows);
-  checker.Wait();
-  return !checker.TimedOut();
-}
-
 void DeleteForeignSession(int index, std::string session_tag) {
-  ProfileSyncServiceFactory::GetInstance()->GetForProfile(
-      test()->GetProfile(index))->
-          GetOpenTabsUIDelegate()->DeleteForeignSession(session_tag);
+  ProfileSyncServiceFactory::GetInstance()
+      ->GetForProfile(test()->GetProfile(index))
+      ->GetOpenTabsUIDelegate()
+      ->DeleteForeignSession(session_tag);
 }
 
 }  // namespace sessions_helper
+
+ForeignSessionsMatchChecker::ForeignSessionsMatchChecker(
+    int index,
+    const std::vector<sessions_helper::ScopedWindowMap>& windows)
+    : MultiClientStatusChangeChecker(
+          sync_datatype_helper::test()->GetSyncServices()),
+      index_(index),
+      windows_(windows) {}
+
+bool ForeignSessionsMatchChecker::IsExitConditionSatisfied() {
+  return sessions_helper::CheckForeignSessionsAgainst(index_, windows_);
+}
+
+std::string ForeignSessionsMatchChecker::GetDebugMessage() const {
+  return "Waiting for matching foreign sessions";
+}

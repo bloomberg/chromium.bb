@@ -5,8 +5,8 @@
 #include "base/macros.h"
 #include "chrome/browser/sync/test/integration/await_match_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/extensions_helper.h"
-#include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/test/fake_server/tombstone_entity.h"
 
@@ -15,7 +15,6 @@ using extensions_helper::DisableExtension;
 using extensions_helper::GetInstalledExtensions;
 using extensions_helper::InstallExtension;
 using extensions_helper::InstallExtensionForAllProfiles;
-using sync_integration_test_util::AwaitCommitActivityCompletion;
 
 class SingleClientExtensionsSyncTest : public SyncTest {
  public:
@@ -29,7 +28,6 @@ class SingleClientExtensionsSyncTest : public SyncTest {
 
 IN_PROC_BROWSER_TEST_F(SingleClientExtensionsSyncTest, StartWithNoExtensions) {
   ASSERT_TRUE(SetupSync());
-
   ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
 }
 
@@ -44,7 +42,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientExtensionsSyncTest,
   }
 
   ASSERT_TRUE(SetupSync());
-
   ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
 }
 
@@ -57,8 +54,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientExtensionsSyncTest, InstallSomeExtensions) {
     InstallExtension(verifier(), i);
   }
 
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService(0)));
-
+  ASSERT_TRUE(UpdatedProgressMarkerChecker(GetSyncService(0)).Wait());
   ASSERT_TRUE(AllProfilesHaveSameExtensionsAsVerifier());
 }
 
@@ -103,7 +99,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientExtensionsSyncTest, UninstallWinsConflicts) {
   AwaitMatchStatusChangeChecker checker(
       base::Bind(&ExtensionCountCheck, GetProfile(0), 0u),
       "Waiting for profile to have no extensions");
-  checker.Wait();
-  EXPECT_TRUE(!checker.TimedOut());
+  EXPECT_TRUE(checker.Wait());
   EXPECT_TRUE(GetInstalledExtensions(GetProfile(0)).empty());
 }

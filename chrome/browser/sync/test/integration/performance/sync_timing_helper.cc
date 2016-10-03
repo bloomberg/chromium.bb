@@ -7,43 +7,36 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
-#include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
+#include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using sync_integration_test_util::AwaitCommitActivityCompletion;
+namespace sync_timing_helper {
 
-SyncTimingHelper::SyncTimingHelper() {}
-
-SyncTimingHelper::~SyncTimingHelper() {}
-
-// static
-base::TimeDelta SyncTimingHelper::TimeSyncCycle(
-    ProfileSyncServiceHarness* client) {
+base::TimeDelta TimeSyncCycle(ProfileSyncServiceHarness* client) {
   base::Time start = base::Time::Now();
-  EXPECT_TRUE(AwaitCommitActivityCompletion(client->service()));
+  EXPECT_TRUE(UpdatedProgressMarkerChecker(client->service()).Wait());
   return base::Time::Now() - start;
 }
 
-// static
-base::TimeDelta SyncTimingHelper::TimeMutualSyncCycle(
-    ProfileSyncServiceHarness* client, ProfileSyncServiceHarness* partner) {
+base::TimeDelta TimeMutualSyncCycle(ProfileSyncServiceHarness* client,
+                                    ProfileSyncServiceHarness* partner) {
   base::Time start = base::Time::Now();
   EXPECT_TRUE(client->AwaitMutualSyncCycleCompletion(partner));
   return base::Time::Now() - start;
 }
 
-// static
-base::TimeDelta SyncTimingHelper::TimeUntilQuiescence(
-    std::vector<ProfileSyncServiceHarness*>& clients) {
+base::TimeDelta TimeUntilQuiescence(
+    const std::vector<ProfileSyncServiceHarness*>& clients) {
   base::Time start = base::Time::Now();
   EXPECT_TRUE(ProfileSyncServiceHarness::AwaitQuiescence(clients));
   return base::Time::Now() - start;
 }
 
-// static
-void SyncTimingHelper::PrintResult(const std::string& measurement,
-                                   const std::string& trace,
-                                   const base::TimeDelta& dt) {
+void PrintResult(const std::string& measurement,
+                 const std::string& trace,
+                 const base::TimeDelta& dt) {
   printf("*RESULT %s: %s= %s ms\n", measurement.c_str(), trace.c_str(),
          base::Int64ToString(dt.InMilliseconds()).c_str());
 }
+
+}  // namespace sync_timing_helper
