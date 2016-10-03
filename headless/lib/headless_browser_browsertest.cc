@@ -4,6 +4,8 @@
 
 #include <memory>
 
+#include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/test/browser_test.h"
@@ -591,6 +593,51 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, SetCookiesWithDevTools) {
   EXPECT_EQ(1u, sent_cookies.size());
   EXPECT_EQ("shape", sent_cookies[0].Name());
   EXPECT_EQ("oblong", sent_cookies[0].Value());
+}
+
+// TODO(skyostil): This test currently relies on being able to run a shell
+// script.
+#if defined(OS_POSIX)
+#define MAYBE_RendererCommandPrefixTest RendererCommandPrefixTest
+#else
+#define MAYBE_RendererCommandPrefixTest DISABLED_RendererCommandPrefixTest
+#endif  // defined(OS_POSIX)
+IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, MAYBE_RendererCommandPrefixTest) {
+  base::FilePath launcher_stamp;
+  base::CreateTemporaryFile(&launcher_stamp);
+
+  base::FilePath launcher_script;
+  FILE* launcher_file = base::CreateAndOpenTemporaryFile(&launcher_script);
+  fprintf(launcher_file, "#!/bin/sh\n");
+  fprintf(launcher_file, "echo $@ > %s\n", launcher_stamp.value().c_str());
+  fprintf(launcher_file, "exec $@\n");
+  fclose(launcher_file);
+  base::SetPosixFilePermissions(launcher_script,
+                                base::FILE_PERMISSION_READ_BY_USER |
+                                    base::FILE_PERMISSION_EXECUTE_BY_USER);
+
+  base::CommandLine::ForCurrentProcess()->AppendSwitch("--no-sandbox");
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      "--renderer-cmd-prefix", launcher_script.value());
+
+  EXPECT_TRUE(embedded_test_server()->Start());
+
+  HeadlessBrowserContext* browser_context =
+      browser()->CreateBrowserContextBuilder().Build();
+
+  HeadlessWebContents* web_contents =
+      browser_context->CreateWebContentsBuilder()
+          .SetInitialURL(embedded_test_server()->GetURL("/hello.html"))
+          .Build();
+  EXPECT_TRUE(WaitForLoad(web_contents));
+
+  // Make sure the launcher was invoked when starting the renderer.
+  std::string stamp;
+  EXPECT_TRUE(base::ReadFileToString(launcher_stamp, &stamp));
+  EXPECT_GE(stamp.find("--type=renderer"), 0u);
+
+  base::DeleteFile(launcher_script, false);
+  base::DeleteFile(launcher_stamp, false);
 }
 
 }  // namespace headless
