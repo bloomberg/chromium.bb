@@ -66,7 +66,11 @@ InkDropHighlight::InkDropHighlight(const gfx::Size& size,
   layer_->SetOpacity(visible_opacity_);
 }
 
-InkDropHighlight::~InkDropHighlight() {}
+InkDropHighlight::~InkDropHighlight() {
+  // Explicitly aborting all the animations ensures all callbacks are invoked
+  // while this instance still exists.
+  layer_->GetAnimator()->AbortAllAnimations();
+}
 
 bool InkDropHighlight::IsFadingInOrVisible() const {
   return last_animation_initiated_was_fade_in_;
