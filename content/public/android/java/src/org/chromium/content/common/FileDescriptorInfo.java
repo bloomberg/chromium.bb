@@ -4,6 +4,7 @@
 
 package org.chromium.content.common;
 
+import android.annotation.SuppressLint;
 import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
 import android.os.Parcelable;
@@ -17,6 +18,8 @@ import org.chromium.base.annotations.UsedByReflection;
  */
 @MainDex
 @UsedByReflection("child_process_launcher_android.cc")
+// TODO(crbug.com/635567): Fix this properly.
+@SuppressLint("ParcelClassLoader")
 public final class FileDescriptorInfo implements Parcelable {
     public final int mId;
     public final ParcelFileDescriptor mFd;

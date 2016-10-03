@@ -639,6 +639,7 @@ class SuggestionView extends ViewGroup {
             }
         };
 
+        // TODO(crbug.com/635567): Fix this properly.
         @SuppressLint("InlinedApi")
         SuggestionContentsContainer(Context context, Drawable backgroundDrawable) {
             super(context);
@@ -976,6 +977,8 @@ class SuggestionView extends ViewGroup {
             return drawableState;
         }
 
+        // TODO(crbug.com/635567): Fix this properly.
+        @SuppressLint("SwitchIntDef")
         private void setSuggestionIcon(@SuggestionIcon int type, boolean invalidateCurrentIcon) {
             if (mSuggestionIconType == type && !invalidateCurrentIcon) return;
             assert type != SUGGESTION_ICON_UNDEFINED;

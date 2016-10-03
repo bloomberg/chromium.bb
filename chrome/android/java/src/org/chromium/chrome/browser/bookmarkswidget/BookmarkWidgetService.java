@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.bookmarkswidget;
 
+import android.annotation.SuppressLint;
 import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
@@ -80,6 +81,8 @@ public class BookmarkWidgetService extends RemoteViewsService {
         return context.getPackageName() + ACTION_CHANGE_FOLDER_SUFFIX;
     }
 
+    // TODO(crbug.com/635567): Fix this properly.
+    @SuppressLint("DefaultLocale")
     static SharedPreferences getWidgetState(Context context, int widgetId) {
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         StrictMode.allowThreadDiskWrites();

@@ -4,6 +4,7 @@
 
 package org.chromium.base.library_loader;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.SystemClock;
@@ -259,6 +260,8 @@ public class LibraryLoader {
 
     // Invoke either Linker.loadLibrary(...) or System.loadLibrary(...), triggering
     // JNI_OnLoad in native code
+    // TODO(crbug.com/635567): Fix this properly.
+    @SuppressLint("DefaultLocale")
     private void loadAlreadyLocked(Context appContext) throws ProcessInitException {
         try {
             if (!mLoaded) {

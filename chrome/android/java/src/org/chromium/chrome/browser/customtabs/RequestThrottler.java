@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.customtabs;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -196,6 +197,8 @@ class RequestThrottler {
      *
      * @param context The application context.
      */
+    // TODO(crbug.com/635567): Fix this properly.
+    @SuppressLint("CommitPrefEdits")
     static void loadInBackground(final Context context) {
         new AsyncTask<Void, Void, Void>() {
             @Override

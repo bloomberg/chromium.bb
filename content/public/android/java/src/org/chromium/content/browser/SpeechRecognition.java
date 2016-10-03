@@ -4,6 +4,7 @@
 
 package org.chromium.content.browser;
 
+import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -173,6 +174,8 @@ public class SpeechRecognition {
      * query Android's package manager to find a suitable speech recognition provider that supports
      * continuous recognition.
      */
+    // TODO(crbug.com/635567): Fix this properly.
+    @SuppressLint("WrongConstant")
     public static boolean initialize(Context context) {
         if (!SpeechRecognizer.isRecognitionAvailable(context)) return false;
 

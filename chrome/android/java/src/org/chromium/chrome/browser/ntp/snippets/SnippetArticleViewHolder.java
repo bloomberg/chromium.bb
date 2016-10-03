@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.ntp.snippets;
 
+import android.annotation.SuppressLint;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -409,6 +410,8 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
                 });
     }
 
+    // TODO(crbug.com/635567): Fix this properly.
+    @SuppressLint("DefaultLocale")
     private void fetchFaviconFromService(final URI snippetUri) {
         // Show the default favicon immediately.
         setDefaultFaviconOnView();

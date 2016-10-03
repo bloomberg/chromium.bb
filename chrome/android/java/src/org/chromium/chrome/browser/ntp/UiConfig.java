@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.ntp;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.support.annotation.IntDef;
 import android.view.View;
@@ -103,6 +104,8 @@ public class UiConfig {
     }
 
     @DisplayStyle
+    // TODO(crbug.com/635567): Fix this properly.
+    @SuppressLint("DefaultLocale")
     private int computeDisplayStyleForCurrentConfig() {
         int widthDp = mContext.getResources().getConfiguration().screenWidthDp;
 

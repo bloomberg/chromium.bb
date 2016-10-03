@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.services.gcm;
 
 import android.accounts.Account;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -103,6 +104,8 @@ public class InvalidationGcmUpstreamSender extends GcmUpstreamSenderService {
     /*
      * Creates and returns a deep copy of the original Bundle.
      */
+    // TODO(crbug.com/635567): Fix this properly.
+    @SuppressLint("ParcelClassLoader")
     private Bundle createDeepCopy(Bundle original) {
         Parcel temp = Parcel.obtain();
         original.writeToParcel(temp, 0);

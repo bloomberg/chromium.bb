@@ -4,6 +4,7 @@
 
 package org.chromium.webapk.lib.client;
 
+import android.annotation.SuppressLint;
 import android.os.Build;
 import android.util.Log;
 
@@ -30,6 +31,8 @@ public class DexOptimizer {
      * @param dexFile Path to a dex file.
      * @return True if the dex file was successfully optimized.
      */
+    // TODO(crbug.com/635567): Fix this properly.
+    @SuppressLint("SetWorldReadable")
     public static boolean optimize(File dexFile) {
         if (!dexFile.exists()) {
             Log.e(TAG, "Dex file does not exist! " + dexFile.getAbsolutePath());

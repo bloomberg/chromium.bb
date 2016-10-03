@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.webapps;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 
@@ -32,6 +33,8 @@ public class WebApkVersionManager {
      * Tries to extract the WebAPK runtime dex from the Chrome APK if it has not tried already.
      * Should not be called on UI thread.
      */
+    // TODO(crbug.com/635567): Fix this properly.
+    @SuppressLint("SetWorldReadable")
     public static void updateWebApksIfNeeded() {
         assert !ThreadUtils.runningOnUiThread();
 

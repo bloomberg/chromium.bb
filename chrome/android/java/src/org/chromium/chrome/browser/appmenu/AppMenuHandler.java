@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.appmenu;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.res.TypedArray;
 import android.graphics.Point;
@@ -77,6 +78,8 @@ public class AppMenuHandler {
      * @return True, if the menu is shown, false, if menu is not shown, example reasons:
      *         the menu is not yet available to be shown, or the menu is already showing.
      */
+    // TODO(crbug.com/635567): Fix this properly.
+    @SuppressLint("ResourceType")
     public boolean showAppMenu(View anchorView, boolean startDragging) {
         if (!mDelegate.shouldShowAppMenu() || isAppMenuShowing()) return false;
         boolean isByPermanentButton = false;

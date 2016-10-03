@@ -4,6 +4,7 @@
 
 package org.chromium.ui.picker;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 
 import org.chromium.ui.R;
@@ -14,6 +15,11 @@ import java.util.Calendar;
 import java.util.Locale;
 import java.util.TimeZone;
 
+/**
+ * A month picker.
+ */
+// TODO(crbug.com/635567): Fix this properly.
+@SuppressLint("DefaultLocale")
 public class MonthPicker extends TwoFieldDatePicker {
     private static final int MONTHS_NUMBER = 12;
 

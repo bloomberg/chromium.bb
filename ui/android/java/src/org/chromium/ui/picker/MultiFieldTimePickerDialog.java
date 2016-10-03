@@ -4,6 +4,7 @@
 
 package org.chromium.ui.picker;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -25,6 +26,8 @@ import java.util.ArrayList;
  * The milli picker is not displayed if step >= SECOND_IN_MILLIS
  * The second picker is not displayed if step >= MINUTE_IN_MILLIS.
  */
+// TODO(crbug.com/635567): Fix these properly.
+@SuppressLint("DefaultLocale")
 public class MultiFieldTimePickerDialog
         extends AlertDialog implements OnClickListener {
 
@@ -38,6 +41,9 @@ public class MultiFieldTimePickerDialog
     private final int mBaseMilli;
     private final boolean mIs24hourFormat;
 
+    /**
+     * Adds an onTimeSet() method.
+     */
     public interface OnMultiFieldTimeSetListener {
         void onTimeSet(int hourOfDay, int minute, int second, int milli);
     }

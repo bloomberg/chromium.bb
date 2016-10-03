@@ -4,6 +4,7 @@
 
 package org.chromium.content.browser.webcontents;
 
+import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.os.Bundle;
@@ -59,6 +60,8 @@ import java.util.UUID;
      * A {@link android.os.Parcelable.Creator} instance that is used to build
      * {@link WebContentsImpl} objects from a {@link Parcel}.
      */
+    // TODO(crbug.com/635567): Fix this properly.
+    @SuppressLint("ParcelClassLoader")
     public static final Parcelable.Creator<WebContents> CREATOR =
             new Parcelable.Creator<WebContents>() {
                 @Override

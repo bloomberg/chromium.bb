@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.signin;
 
+import android.annotation.SuppressLint;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentManager;
@@ -132,6 +133,8 @@ public class ConfirmSyncDataStateMachine
      * entire flow is over, if it is answered positively one of the onConfirm functions is called
      * and this function is called again.
      */
+    // TODO(crbug.com/635567): Fix this properly.
+    @SuppressLint("SwitchIntDef")
     private void progress() {
         switch (mState) {
             case BEFORE_OLD_ACCOUNT_DIALOG:

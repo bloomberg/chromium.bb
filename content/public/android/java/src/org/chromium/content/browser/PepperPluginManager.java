@@ -4,6 +4,7 @@
 
 package org.chromium.content.browser;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
@@ -88,6 +89,8 @@ public class PepperPluginManager {
      * @param context Android context
      * @return        Description string for plugins
      */
+    // TODO(crbug.com/635567): Fix this properly.
+    @SuppressLint("WrongConstant")
     public static String getPlugins(final Context context) {
         StringBuilder ret = new StringBuilder();
         PackageManager pm = context.getPackageManager();

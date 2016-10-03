@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.media.router.cast;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
 
@@ -62,6 +63,8 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
         }
 
         @Override
+        // TODO(crbug.com/635567): Fix this properly.
+        @SuppressLint("DefaultLocale")
         public void onApplicationDisconnected(int errorCode) {
             if (errorCode != CastStatusCodes.SUCCESS) {
                 Log.e(TAG, String.format(
@@ -249,6 +252,8 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
         return Cast.CastApi.launchApplication(apiClient, appId, relaunchIfRunning);
     }
 
+    // TODO(crbug.com/635567): Fix this properly.
+    @SuppressLint("DefaultLocale")
     private void throwInvalidState() {
         throw new RuntimeException(String.format("Invalid state: %d", mState));
     }

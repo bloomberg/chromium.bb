@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.partnercustomizations;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -178,6 +179,8 @@ public class PartnerHomepageIntegrationTest extends BasePartnerBrowserCustomizat
                 startPreferences(HomepageEditor.class.getName());
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
+            // TODO(crbug.com/635567): Fix this properly.
+            @SuppressLint("SetTextI18n")
             public void run() {
                 ((EditText) editHomepagePreferenceActivity.findViewById(R.id.homepage_url_edit))
                         .setText("chrome.com");

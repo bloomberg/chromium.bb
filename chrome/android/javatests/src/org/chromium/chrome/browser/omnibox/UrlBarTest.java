@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.omnibox;
 
+import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -498,6 +499,8 @@ public class UrlBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         setAutocomplete(urlBar, "g", "oogle.com");
         AutocompleteState state = getAutocompleteState(urlBar, new Runnable() {
             @Override
+            // TODO(crbug.com/635567): Fix this properly.
+            @SuppressLint("SetTextI18n")
             public void run() {
                 urlBar.beginBatchEdit();
                 urlBar.setText("go");
@@ -513,6 +516,8 @@ public class UrlBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         setAutocomplete(urlBar, "g", "oogle.com");
         state = getAutocompleteState(urlBar, new Runnable() {
             @Override
+            // TODO(crbug.com/635567): Fix this properly.
+            @SuppressLint("SetTextI18n")
             public void run() {
                 urlBar.beginBatchEdit();
                 urlBar.setText("go");
@@ -526,6 +531,8 @@ public class UrlBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         setAutocomplete(urlBar, "g", "oogle.com");
         state = getAutocompleteState(urlBar, new Runnable() {
             @Override
+            // TODO(crbug.com/635567): Fix this properly.
+            @SuppressLint("SetTextI18n")
             public void run() {
                 urlBar.beginBatchEdit();
                 urlBar.setText("ga");
@@ -539,6 +546,8 @@ public class UrlBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         setAutocomplete(urlBar, "g", "oogle.com");
         state = getAutocompleteState(urlBar, new Runnable() {
             @Override
+            // TODO(crbug.com/635567): Fix this properly.
+            @SuppressLint("SetTextI18n")
             public void run() {
                 urlBar.beginBatchEdit();
                 urlBar.setText("googl");

@@ -4,6 +4,7 @@
 
 package org.chromium.content.browser.input;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -678,6 +679,8 @@ public class ThreadedInputConnection extends BaseInputConnection
     /**
      * @see InputConnection#closeConnection()
      */
+    // TODO(crbug.com/635567): Fix this properly.
+    @SuppressLint("MissingSuperCall")
     public void closeConnection() {
         if (DEBUG_LOGS) Log.w(TAG, "closeConnection");
         // TODO(changwan): Implement this. http://crbug.com/595525

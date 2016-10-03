@@ -206,6 +206,8 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     /**
      * Returns interval between consecutive animation frames.
      */
+    // TODO(crbug.com/635567): Fix this properly.
+    @SuppressLint("ParcelCreator")
     private static class SystemAnimationIntervalProvider implements AnimationIntervalProvider {
         @Override
         public long getLastAnimationFrameInterval() {
@@ -217,6 +219,8 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
      * {@ResultReceiver} passed in InputMethodManager#showSoftInput}. We need this to scroll to the
      * editable node at the right timing, which is after input method window shows up.
      */
+    // TODO(crbug.com/635567): Fix this properly.
+    @SuppressLint("ParcelCreator")
     private static class ShowKeyboardResultReceiver extends ResultReceiver {
 
         // Unfortunately, the memory life cycle of ResultReceiver object, once passed in

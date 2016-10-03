@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.externalauth;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
@@ -74,6 +75,8 @@ public class ExternalAuthUtils {
      * @param packageName The package name to inquire about.
      */
     @VisibleForTesting
+    // TODO(crbug.com/635567): Fix this properly.
+    @SuppressLint("WrongConstant")
     public boolean isSystemBuild(PackageManager pm, String packageName) {
         try {
             ApplicationInfo info = pm.getApplicationInfo(packageName, ApplicationInfo.FLAG_SYSTEM);

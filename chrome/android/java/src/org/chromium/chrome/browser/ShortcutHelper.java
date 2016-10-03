@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser;
 
+import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
@@ -336,6 +337,8 @@ public class ShortcutHelper {
      * @param context Context used to get the package manager.
      * @return if a shortcut can be added to the home screen under the current profile.
      */
+    // TODO(crbug.com/635567): Fix this properly.
+    @SuppressLint("WrongConstant")
     public static boolean isAddToHomeIntentSupported(Context context) {
         PackageManager pm = context.getPackageManager();
         Intent i = new Intent(INSTALL_SHORTCUT);

@@ -4,6 +4,7 @@
 
 package org.chromium.content.browser.webcontents;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcel;
@@ -88,6 +89,8 @@ public class WebContentsTest extends ContentShellTestBase {
      * @throws InterruptedException
      */
     @SmallTest
+    // TODO(crbug.com/635567): Fix this properly.
+    @SuppressLint("ParcelClassLoader")
     public void testWebContentsSerializeDeserializeInBundle() throws InterruptedException {
         launchContentShellWithUrl(TEST_URL_1);
         waitForActiveShellToBeDoneLoading();
@@ -127,6 +130,8 @@ public class WebContentsTest extends ContentShellTestBase {
      * @throws InterruptedException
      */
     @SmallTest
+    // TODO(crbug.com/635567): Fix this properly.
+    @SuppressLint("ParcelClassLoader")
     public void testWebContentsSerializeDeserializeInIntent() throws InterruptedException {
         launchContentShellWithUrl(TEST_URL_1);
         waitForActiveShellToBeDoneLoading();
