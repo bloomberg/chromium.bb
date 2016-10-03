@@ -169,8 +169,6 @@
 #include "content/public/common/service_names.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
-#include "device/bluetooth/adapter.h"
-#include "device/bluetooth/public/interfaces/adapter.mojom.h"
 #include "device/usb/public/interfaces/chooser_service.mojom.h"
 #include "device/usb/public/interfaces/device_manager.mojom.h"
 #include "gin/v8_initializer.h"
@@ -2964,9 +2962,6 @@ void ChromeContentBrowserClient::RegisterRenderFrameMojoInterfaces(
     registry->AddInterface(
         base::Bind(&CreateWebUsbChooserService, render_frame_host));
   }
-
-  registry->AddInterface<bluetooth::mojom::Adapter>(
-      base::Bind(&bluetooth::Adapter::Create));
 
   if (!render_frame_host->GetParent()) {
     // Register mojo CredentialManager interface only for main frame.
