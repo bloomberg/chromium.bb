@@ -9,9 +9,9 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/files/file_descriptor_watcher_posix.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_pump_libevent.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "device/core/device_core_export.h"
@@ -22,11 +22,9 @@ struct udev_device;
 namespace device {
 
 // This class listends for notifications from libudev about
-// connected/disconnected devices. This class is *NOT* thread-safe and
-// all methods must be accessed from the FILE thread.
+// connected/disconnected devices. This class is *NOT* thread-safe.
 class DEVICE_CORE_EXPORT DeviceMonitorLinux
-    : public base::MessageLoop::DestructionObserver,
-      public base::MessagePumpLibevent::Watcher {
+    : public base::MessageLoop::DestructionObserver {
  public:
   typedef base::Callback<void(udev_device* device)> EnumerateCallback;
 
@@ -51,19 +49,18 @@ class DEVICE_CORE_EXPORT DeviceMonitorLinux
   // Implements base::MessageLoop::DestructionObserver
   void WillDestroyCurrentMessageLoop() override;
 
-  // Implements base::MessagePumpLibevent::Watcher
-  void OnFileCanReadWithoutBlocking(int fd) override;
-  void OnFileCanWriteWithoutBlocking(int fd) override;
-
  private:
   friend std::default_delete<DeviceMonitorLinux>;
 
   ~DeviceMonitorLinux() override;
 
+  void OnMonitorCanReadWithoutBlocking();
+
   ScopedUdevPtr udev_;
   ScopedUdevMonitorPtr monitor_;
   int monitor_fd_;
-  base::MessagePumpLibevent::FileDescriptorWatcher monitor_watcher_;
+  std::unique_ptr<base::FileDescriptorWatcher::Controller>
+      monitor_watch_controller_;
 
   base::ObserverList<Observer, true> observers_;
 

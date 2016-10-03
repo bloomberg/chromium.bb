@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/threading/thread_restrictions.h"
@@ -52,11 +53,10 @@ DeviceMonitorLinux::DeviceMonitorLinux() : monitor_fd_(-1) {
     return;
   }
 
-  if (!base::MessageLoopForIO::current()->WatchFileDescriptor(
-          monitor_fd_, true /* persistent */,
-          base::MessageLoopForIO::WATCH_READ, &monitor_watcher_, this)) {
-    return;
-  }
+  monitor_watch_controller_ = base::FileDescriptorWatcher::WatchReadable(
+      monitor_fd_,
+      base::Bind(&DeviceMonitorLinux::OnMonitorCanReadWithoutBlocking,
+                 base::Unretained(this)));
 }
 
 // static
@@ -115,9 +115,14 @@ void DeviceMonitorLinux::WillDestroyCurrentMessageLoop() {
   g_device_monitor_linux_ptr.Get().reset(nullptr);
 }
 
-void DeviceMonitorLinux::OnFileCanReadWithoutBlocking(int fd) {
+DeviceMonitorLinux::~DeviceMonitorLinux() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(monitor_fd_, fd);
+  base::MessageLoop::current()->RemoveDestructionObserver(this);
+  close(monitor_fd_);
+}
+
+void DeviceMonitorLinux::OnMonitorCanReadWithoutBlocking() {
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   ScopedUdevDevicePtr device(udev_monitor_receive_device(monitor_.get()));
   if (!device)
@@ -128,15 +133,6 @@ void DeviceMonitorLinux::OnFileCanReadWithoutBlocking(int fd) {
     FOR_EACH_OBSERVER(Observer, observers_, OnDeviceAdded(device.get()));
   else if (action == kUdevActionRemove)
     FOR_EACH_OBSERVER(Observer, observers_, OnDeviceRemoved(device.get()));
-}
-
-void DeviceMonitorLinux::OnFileCanWriteWithoutBlocking(int fd) {}
-
-DeviceMonitorLinux::~DeviceMonitorLinux() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  base::MessageLoop::current()->RemoveDestructionObserver(this);
-  monitor_watcher_.StopWatchingFileDescriptor();
-  close(monitor_fd_);
 }
 
 }  // namespace device

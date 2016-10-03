@@ -6,7 +6,9 @@
 
 #include <vector>
 
+#include "base/files/file_descriptor_watcher_posix.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "device/hid/input_service_linux.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -14,7 +16,12 @@ namespace device {
 
 TEST(InputServiceLinux, Simple) {
   base::MessageLoopForIO message_loop;
+  base::FileDescriptorWatcher file_descriptor_watcher(&message_loop);
+
   InputServiceLinux* service = InputServiceLinux::GetInstance();
+
+  // Allow the FileDescriptorWatcher in DeviceMonitorLinux to start watching.
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(service);
   std::vector<InputServiceLinux::InputDeviceInfo> devices;
