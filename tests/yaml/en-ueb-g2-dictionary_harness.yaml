@@ -97560,7 +97560,7 @@ tests:
   - [where, ⠐⠱]
   - [where's, ⠐⠱⠄⠎]
   - [whereabouts, ⠐⠱⠁⠃⠎]
-  - [whereabouts's, ⠐⠱⠁⠃⠳⠞⠎⠄⠎, {xfail: true}]
+  - [whereabouts's, ⠐⠱⠁⠃⠳⠞⠎⠄⠎]
   - [whereas, ⠐⠱⠁⠎]
   - [whereat, ⠐⠱⠁⠞]
   - [whereby, ⠐⠱⠃⠽]

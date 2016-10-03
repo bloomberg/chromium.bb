@@ -1484,6 +1484,8 @@ contraction yr     your
 contraction yrf    yourself
 contraction yrvs   yourselves
 
+#   10.9.6
+#TODO
 
 #   Appendex 1
 
@@ -1492,9 +1494,6 @@ word almosts 1-123-134-135-34-234
 word hims 125-24-134-234
 
 nofor word alms 1-123-134-234
-
-word whereabouts's 5-156-1-12-234-3-234
-word whereabouts’s 5-156-1-12-234-3-234
 
 match %[_~^]%<* ['’]twould (s|['’]s)?%>*%[_~^] 3-2345-2456-145
 match %[_~^]%<* ['’]twould've (s|['’]s)?%>*%[_~^] 3-2345-2456-145-3-1236-15
@@ -3565,6 +3564,155 @@ nofor word wouldest's  2456-145-15-34-3-234
 nofor word wouldn't's  2456-145-1345-3-2345-3-234
 nofor word wouldn't've's  2456-145-1345-3-2345-3-1236-15-3-234
 nofor word wouldst's  2456-145-34-3-234
+
+contraction abface      aboutface
+contraction abturn      aboutturn
+contraction acly        accordingly
+contraction afbattle    afterbattle
+contraction afburn      afterburn
+contraction afclap      afterclap
+contraction afdamp      afterdamp
+contraction afdeck      afterdeck
+contraction afgame      aftergame
+contraction aflife      afterlife
+contraction aflives     afterlives
+contraction afntea      afternoontea
+contraction afpiece     afterpiece
+contraction afplay      afterplay
+contraction afsale      aftersale
+contraction aftax       aftertax
+contraction aftaxes     aftertaxes
+contraction aftea       aftertea
+contraction blfold      blindfold
+contraction blly        blindly
+contraction blman       blindman
+contraction blside      blindside
+contraction blworm      blindworm
+contraction bloodlr     bloodletter
+contraction boyfr       boyfriend
+contraction brld        brailled
+contraction brlr        brailler
+contraction brly        brailley
+contraction colorbl     colorblind
+contraction cda         coulda
+contraction dcvd        deceived
+contraction dcvr        deceiver
+contraction dcld        declared
+contraction dclr        declarer
+contraction defr        defriend
+contraction defr        defriend
+contraction feelgd      feelgood
+contraction frlies      friendlies
+contraction frly        friendly
+contraction gadab       gadabout
+contraction galfr       galfriend
+contraction girlfr      girlfriend
+contraction gdafn       goodafternoon
+contraction gdby        goodby
+contraction gdbye       goodbye
+contraction gdhumor     goodhumor
+contraction gdie        goodie
+contraction gdlook      goodlook
+contraction gdly        goodly
+contraction gdman       goodman
+contraction gdnature    goodnature
+contraction gdsize      goodsize
+contraction gdun        goodun
+contraction gdwife      goodwife
+contraction gdwill      goodwill
+contraction gdwives     goodwives
+contraction gdy         goody
+contraction grtaunt     greataunt
+contraction grtcircle   greatcircle
+contraction grtcoat     greatcoat
+contraction grtly       greatly
+contraction grtnephew   greatnephew
+contraction grtniece    greatniece
+contraction grtuncle    greatuncle
+contraction guyfr       guyfriend
+contraction hatelr      hateletter
+contraction hmbo        himbo
+contraction hmboes      himboes
+contraction illpd       illpaid
+contraction immly       immediately
+contraction knockab     knockabout
+contraction ladyfr      ladyfriend
+contraction layab       layabout
+contraction lrbodies    letterbodies
+contraction lrbody      letterbody
+contraction lrbomb      letterbomb
+contraction lrbox       letterbox
+contraction lrboxes     letterboxes
+contraction lrman       letterman
+contraction lrpress     letterpress
+contraction lrpresses   letterpresses
+contraction lrspace     letterspace
+contraction lrtext      lettertext
+contraction lld         littled
+contraction llneck      littleneck
+contraction llr         littler
+contraction lovelr      loveletter
+contraction manfr       manfriend
+contraction midafn      midafternoon
+contraction misbrl      misbraille
+contraction misbrld     misbrailled
+contraction missd       missaid
+contraction newslr      newsletter
+contraction poorlypd    poorlypaid
+contraction prcv        preceive
+contraction prcvr       preceiver
+contraction prcvg       preceiving
+contraction prepd       prepaid
+contraction purbl       purblind
+contraction purblly     purblindly
+contraction qkdraw      quickdraw
+contraction qkfire      quickfire
+contraction qkfreeze    quickfreeze
+contraction qkfroze     quickfroze
+contraction qkie        quickie
+contraction qklime      quicklime
+contraction qkly        quickly
+contraction qkset       quickset
+contraction qksnap      quicksnap
+contraction qky         quicky
+contraction rebrl       rebraille
+contraction rebrld      rebrailled
+contraction rebrlr      rebrailler
+contraction rcvd        received
+contraction rcvr        receiver
+contraction rjcd        rejoiced
+contraction rjcr        rejoicer
+contraction rjcgly      rejoicingly
+contraction relr        reletter
+contraction repd        repaid
+contraction runab       runabout
+contraction turnab      turnabout
+contraction unac        unaccording
+contraction unacly      unaccordingly
+contraction unblfold    unblindfold
+contraction unbrl       unbraille
+contraction unbrld      unbrailled
+contraction undcv       undeceive
+contraction undcvd      undeceived
+contraction undcvr      undeceiver
+contraction undcvg      undeceiving
+contraction undcl       undeclare
+contraction undcld      undeclared
+contraction unfr        unfriend
+contraction unfrly      unfriendly
+contraction unnec       unnecessary
+contraction unpd        unpaid
+contraction unqk        unquick
+contraction unrcvd      unreceived
+contraction unrjc       unrejoice
+contraction unrjcd      unrejoiced
+contraction unrjcr      unrejoicer
+contraction unrjcg      unrejoicing
+contraction unrjcgly    unrejoicingly
+contraction walkab      walkabout
+contraction wellpd      wellpaid
+contraction womanfr     womanfriend
+contraction wda         woulda
 
 #   Appendix 1.2
 
