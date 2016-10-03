@@ -95,8 +95,7 @@
 -WebViewTests/WebViewFocusTest.TouchFocusesEmbedder/0
 
 # Fail in Debug.
--BookmarkBubbleSignInDelegateTest.OnSignInLinkClicked
--BookmarkBubbleSignInDelegateTest.OnSignInLinkClickedReusesBlank
+-BookmarkBubbleSignInDelegateTest.*
 -GetAuthTokenFunctionTest.ComponentWithNormalClientId
 -GetAuthTokenFunctionTest.ComponentWithChromeClientId
 -PolicyTest.ExtensionInstallBlacklistSharedModules
