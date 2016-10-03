@@ -16,11 +16,13 @@ class WebScreenOrientationClient {
  public:
   virtual ~WebScreenOrientationClient() {}
 
-  // Request a screen orientation lock. The implementation will own the callback.
+  // Request a screen orientation lock. The implementation will own the
+  // callback.
   virtual void lockOrientation(WebScreenOrientationLockType,
                                WebLockOrientationCallback*) = 0;
 
-  // Unlock the screen orientation. No-op if the screen orientation was not locked.
+  // Unlock the screen orientation. No-op if the screen orientation was not
+  // locked.
   virtual void unlockOrientation() = 0;
 };
 
