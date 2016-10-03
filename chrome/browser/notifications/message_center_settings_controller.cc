@@ -40,12 +40,10 @@ namespace message_center {
 
 class ProfileNotifierGroup : public message_center::NotifierGroup {
  public:
-  ProfileNotifierGroup(const gfx::Image& icon,
-                       const base::string16& display_name,
+  ProfileNotifierGroup(const base::string16& display_name,
                        const base::string16& login_info,
                        const base::FilePath& profile_path);
-  ProfileNotifierGroup(const gfx::Image& icon,
-                       const base::string16& display_name,
+  ProfileNotifierGroup(const base::string16& display_name,
                        const base::string16& login_info,
                        Profile* profile);
   virtual ~ProfileNotifierGroup() {}
@@ -56,24 +54,20 @@ class ProfileNotifierGroup : public message_center::NotifierGroup {
   Profile* profile_;
 };
 
-ProfileNotifierGroup::ProfileNotifierGroup(const gfx::Image& icon,
-                                           const base::string16& display_name,
+ProfileNotifierGroup::ProfileNotifierGroup(const base::string16& display_name,
                                            const base::string16& login_info,
                                            const base::FilePath& profile_path)
-    : message_center::NotifierGroup(icon, display_name, login_info),
-      profile_(NULL) {
+    : message_center::NotifierGroup(display_name, login_info), profile_(NULL) {
   // Try to get the profile
   profile_ =
       g_browser_process->profile_manager()->GetProfileByPath(profile_path);
 }
 
-ProfileNotifierGroup::ProfileNotifierGroup(const gfx::Image& icon,
-                                           const base::string16& display_name,
+ProfileNotifierGroup::ProfileNotifierGroup(const base::string16& display_name,
                                            const base::string16& login_info,
                                            Profile* profile)
-    : message_center::NotifierGroup(icon, display_name, login_info),
-      profile_(profile) {
-}
+    : message_center::NotifierGroup(display_name, login_info),
+      profile_(profile) {}
 
 }  // namespace message_center
 
@@ -357,8 +351,7 @@ void MessageCenterSettingsController::CreateNotifierGroupForGuestLogin() {
 
   std::unique_ptr<message_center::ProfileNotifierGroup> group(
       new message_center::ProfileNotifierGroup(
-          gfx::Image(user->GetImage()), user->GetDisplayName(),
-          user->GetDisplayName(), profile));
+          user->GetDisplayName(), user->GetDisplayName(), profile));
 
   notifier_groups_.push_back(std::move(group));
   DispatchNotifierGroupChanged();
@@ -374,8 +367,7 @@ void MessageCenterSettingsController::RebuildNotifierGroups(bool notify) {
   for (auto* entry : entries) {
     std::unique_ptr<message_center::ProfileNotifierGroup> group(
         new message_center::ProfileNotifierGroup(
-            entry->GetAvatarIcon(), entry->GetName(), entry->GetUserName(),
-            entry->GetPath()));
+            entry->GetName(), entry->GetUserName(), entry->GetPath()));
     if (group->profile() == NULL)
       continue;
 

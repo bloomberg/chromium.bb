@@ -63,10 +63,9 @@ Notifier::Notifier(const NotifierId& notifier_id,
 Notifier::~Notifier() {
 }
 
-NotifierGroup::NotifierGroup(const gfx::Image& icon,
-                             const base::string16& name,
+NotifierGroup::NotifierGroup(const base::string16& name,
                              const base::string16& login_info)
-    : icon(icon), name(name), login_info(login_info) {}
+    : name(name), login_info(login_info) {}
 
 NotifierGroup::~NotifierGroup() {}
 

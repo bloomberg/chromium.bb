@@ -116,13 +116,8 @@ struct MESSAGE_CENTER_EXPORT Notifier {
 };
 
 struct MESSAGE_CENTER_EXPORT NotifierGroup {
-  NotifierGroup(const gfx::Image& icon,
-                const base::string16& name,
-                const base::string16& login_info);
+  NotifierGroup(const base::string16& name, const base::string16& login_info);
   ~NotifierGroup();
-
-  // Icon of a notifier group.
-  const gfx::Image icon;
 
   // Display name of a notifier group.
   const base::string16 name;
