@@ -6279,6 +6279,20 @@ All users must sign out to continue.
   <message name="IDS_ARC_OPT_IN_SCANNING_SETTING" desc="Message in the opt-in dialog for Android apps for the user to enable wifi and bluetooth scanning to improve location">
     Improve location accuracy by allowing apps and services to scan for Wi-Fi networks and Bluetooth devices.
   </message>
+  <message name="IDS_ARC_OPT_IN_LEARN_MORE_CLOSE" desc="Text for close button in learn more dialog">
+    Close
+  </message>
+  <message name="IDS_ARC_OPT_IN_LEARN_MORE_STATISTICS" desc="Message shown in pop up overlay dialog when user clicks learn more UMA">
+    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>This is general information about your device and how you use it, such as battery level, how often you use your apps, the quality and duration of your network connections (like Wi-Fi and Bluetooth), and crash reports when things aren’t working the way they should. It will be used to improve Google’s products and services for everyone. Some aggregated information will help partners, such as Android developers, make their apps and products better, too.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can turn this on or off a any time in the Android apps Settings. This doesn’t affect your device’s ability to send the information it needs to receive essential services such as system updates and security.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
+  </message>
+  <message name="IDS_ARC_OPT_IN_LEARN_MORE_BACKUP_AND_RESTORE" desc="Message shown in pop up overlay dialog when user clicks learn more backup and restore">
+    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>When you turn on automatic backup, device and app data is periodically saved to a private folder in Google Drive. App data can be any data that an app has saved (based on developer settings), including potentially sensitive data such as contacts, messages, and photos.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>Backup data will not count towards your Drive storage quota. Large files, or files developers have chosen to exclude from the service will not be backed up.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
+  </message>
+  <message name="IDS_ARC_OPT_IN_LEARN_MORE_LOCATION_SERVICES" desc="Message shown in pop up overlay dialog when user clicks learn more location services">
+    <ph name="BEGIN_PARAGRAPH">&lt;p&gt;</ph>Google’s location service uses sources like Wi-Fi to help estimate your device’s location faster and more accurately. When you turn on Google’s location services, your device enters a mode that uses Wi-Fi to provide location information. You can turn this off in location settings anytime.<ph name="END_PARAGRAPH">&lt;/p&gt;</ph>
+  </message>
   <message name="IDS_ARC_OPT_OUT_TAB_TITLE" desc="Tab title when viewing opt-out setting dialog for android apps.">
     Settings - Remove Android apps
   </message>

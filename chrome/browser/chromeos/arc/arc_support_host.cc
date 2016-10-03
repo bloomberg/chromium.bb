@@ -194,6 +194,18 @@ bool ArcSupportHost::Initialize() {
   loadtime_data->SetString(
       "controlledByPolicy",
       l10n_util::GetStringUTF16(IDS_OPTIONS_CONTROLLED_SETTING_POLICY));
+  loadtime_data->SetString(
+      "learnMoreStatistics",
+      l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_LEARN_MORE_STATISTICS));
+  loadtime_data->SetString(
+      "learnMoreBackupAndRestore",
+      l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_LEARN_MORE_BACKUP_AND_RESTORE));
+  loadtime_data->SetString(
+      "learnMoreLocationServices",
+      l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_LEARN_MORE_LOCATION_SERVICES));
+  loadtime_data->SetString(
+      "learnMoreClose",
+      l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_LEARN_MORE_CLOSE));
 
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   const std::string& country_code = base::CountryCodeForCurrentTimezone();

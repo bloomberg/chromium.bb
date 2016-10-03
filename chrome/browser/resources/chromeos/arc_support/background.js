@@ -95,13 +95,15 @@ function sendNativeMessage(code, opt_Props) {
  * @param {string} learnMoreLinkId Id inner link to 'learn more' element.
  * @param {string} indicatorId Id of indicator to create.
  * @param {string} text Inner text to set. Includes link declaration.
+ * @param {function} callback Callback to call on user action.
  */
-function createConsentOption(textId, learnMoreLinkId, indicatorId, text) {
+function createConsentOption(
+    textId, learnMoreLinkId, indicatorId, text, callback) {
   var doc = appWindow.contentWindow.document;
   var textElement = doc.getElementById(textId);
   textElement.innerHTML = text;
   var linkLearnMoreElement = doc.getElementById(learnMoreLinkId);
-  linkLearnMoreElement.addEventListener('click', onLearnMore);
+  linkLearnMoreElement.addEventListener('click', callback);
 
   // Create controlled by policy indicator.
   var policyIndicator = new appWindow.contentWindow.cr.ui.ControlledIndicator();
@@ -131,11 +133,13 @@ function initialize(data, deviceId) {
   createConsentOption('text-backup-restore',
                       'learn-more-link-backup-restore',
                       'policy-indicator-backup-restore',
-                      data.textBackupRestore);
+                      data.textBackupRestore,
+                      onLearnMoreBackupAndRestore);
   createConsentOption('text-location-service',
                       'learn-more-link-location-service',
                       'policy-indicator-location-service',
-                      data.textLocationService);
+                      data.textLocationService,
+                      onLearnMoreLocationServices);
 
   var scriptSetCountryCode = 'document.countryCode = \'' + countryCode + '\';';
   termsView.addContentScripts([
@@ -153,14 +157,30 @@ function initialize(data, deviceId) {
 }
 
 /**
- * Handles the event when the user clicks on a learn more link. Opens the
- * support page for the user.
- * @param {Event} event
+ * Handles the event when the user clicks on a learn more metrics link. Opens
+ * the pop up dialog with a help.
  */
-var onLearnMore = function(event) {
-  var url = 'https://support.google.com/chromebook?p=playapps';
-  chrome.browser.openTab({'url': url}, function() {});
-  event.preventDefault();
+var onLearnMoreMetrics = function() {
+  var loadTimeData = appWindow.contentWindow.loadTimeData;
+  showLearnModeOverlay(loadTimeData.getString('learnMoreStatistics'));
+};
+
+/**
+ * Handles the event when the user clicks on a learn more backup and restore
+ * link. Opens the pop up dialog with a help.
+ */
+var onLearnMoreBackupAndRestore = function() {
+  var loadTimeData = appWindow.contentWindow.loadTimeData;
+  showLearnModeOverlay(loadTimeData.getString('learnMoreBackupAndRestore'));
+};
+
+/**
+ * Handles the event when the user clicks on a learn more location services
+ * link. Opens the pop up dialog with a help.
+ */
+var onLearnMoreLocationServices = function() {
+  var loadTimeData = appWindow.contentWindow.loadTimeData;
+  showLearnModeOverlay(loadTimeData.getString('learnMoreLocationServices'));
 };
 
 /**
@@ -184,7 +204,7 @@ function setMetricsMode(text, canEnable, on) {
   doc.getElementById('text-metrics').innerHTML = text;
   doc.getElementById('settings-link').addEventListener('click', onSettings);
   doc.getElementById('learn-more-link-metrics').addEventListener('click',
-      onLearnMore);
+      onLearnMoreMetrics);
 
   // Applying metrics mode changes page layout, update terms height.
   updateTermsHeight();
@@ -308,6 +328,7 @@ function showPage(pageDivId) {
     return;
   }
 
+  hideLearnModeOverlay();
   var doc = appWindow.contentWindow.document;
   var pages = doc.getElementsByClassName('section');
   var sendFeedbackElement = doc.getElementById('button-send-feedback');
@@ -347,6 +368,27 @@ function setErrorMessage(error) {
   var doc = appWindow.contentWindow.document;
   var messageElement = doc.getElementById('error-message');
   messageElement.innerText = error;
+}
+
+/**
+ * Sets learn more content text and shows it as overlay dialog.
+ * @param {string} content HTML formatted text to show.
+ */
+function showLearnModeOverlay(content) {
+  var doc = appWindow.contentWindow.document;
+  var learnMoreContainer = doc.getElementById('learn-more-container');
+  var learnMoreContent = doc.getElementById('learn-more-content');
+  learnMoreContent.innerHTML = content;
+  learnMoreContainer.hidden = false;
+}
+
+/**
+ * Hides learn more overlay dialog.
+ */
+function hideLearnModeOverlay() {
+  var doc = appWindow.contentWindow.document;
+  var learnMoreContainer = doc.getElementById('learn-more-container');
+  learnMoreContainer.hidden = true;
 }
 
 /**
@@ -572,6 +614,13 @@ chrome.app.runtime.onLaunched.addListener(function() {
     doc.getElementById('button-retry').addEventListener('click', onRetry);
     doc.getElementById('button-send-feedback')
         .addEventListener('click', onSendFeedback);
+    doc.getElementById('learn-more-close').addEventListener('click',
+        hideLearnModeOverlay);
+
+    var overlay = doc.getElementById('learn-more-container');
+    appWindow.contentWindow.cr.ui.overlay.setupOverlay(overlay);
+    appWindow.contentWindow.cr.ui.overlay.globalInitialization();
+    overlay.addEventListener('cancelOverlay', hideLearnModeOverlay);
 
     connectPort();
   };

@@ -87,6 +87,13 @@ webview,
   width: 960px;
 }
 
+.page {
+  font-family: 'Roboto';
+  font-size: 13px;
+  text-align: left;
+  width: 480px;
+}
+
 .scrollable {
   flex: auto;
   margin: 0;
