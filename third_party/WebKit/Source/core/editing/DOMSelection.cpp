@@ -209,7 +209,15 @@ void DOMSelection::collapse(Node* node,
   Range::checkNodeWOffset(node, offset, exceptionState);
   if (exceptionState.hadException())
     return;
-  frame()->selection().setSelection(createVisibleSelectionDeprecated(
+
+  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  // In the long term, we should change FrameSelection::setSelection to take a
+  // parameter that does not require clean layout, so that modifying selection
+  // no longer performs synchronous layout by itself.
+  frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
+  frame()->selection().setSelection(createVisibleSelection(
       Position(node, offset), frame()->selection().isDirectional()));
 }
 
@@ -280,7 +288,15 @@ void DOMSelection::setBaseAndExtent(Node* baseNode,
   Position base = createPosition(baseNode, baseOffset);
   Position extent = createPosition(extentNode, extentOffset);
   const bool selectionHasDirection = true;
-  frame()->selection().setSelection(createVisibleSelectionDeprecated(
+
+  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  // In the long term, we should change FrameSelection::setSelection to take a
+  // parameter that does not require clean layout, so that modifying selection
+  // no longer performs synchronous layout by itself.
+  frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
+  frame()->selection().setSelection(createVisibleSelection(
       base, extent, SelDefaultAffinity, selectionHasDirection));
 }
 
@@ -361,7 +377,15 @@ void DOMSelection::extend(Node* node,
   const Position& base = frame()->selection().base();
   const Position& extent = createPosition(node, offset);
   const bool selectionHasDirection = true;
-  const VisibleSelection newSelection = createVisibleSelectionDeprecated(
+
+  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  // In the long term, we should change FrameSelection::setSelection to take a
+  // parameter that does not require clean layout, so that modifying selection
+  // no longer performs synchronous layout by itself.
+  frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
+  const VisibleSelection newSelection = createVisibleSelection(
       base, extent, TextAffinity::Downstream, selectionHasDirection);
   frame()->selection().setSelection(newSelection);
 }
