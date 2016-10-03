@@ -13,7 +13,8 @@
 namespace blink {
 
 struct WebPushSubscription {
-  // The |endpoint|, |p256dh| and |auth| must all be unique for each subscription.
+  // The |endpoint|, |p256dh| and |auth| must all be unique for each
+  // subscription.
   WebPushSubscription(const WebURL& endpoint,
                       bool userVisibleOnly,
                       const WebString& applicationServerKey,
