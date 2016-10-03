@@ -157,13 +157,14 @@ public class Preferences extends AppCompatActivity implements
 
         // Prevent the user from interacting with multiple instances of Preferences at the same time
         // (e.g. in multi-instance mode on a Samsung device), which would cause many fun bugs.
-        if (sResumedInstance != null && !mIsNewlyCreated) {
+        if (sResumedInstance != null && sResumedInstance != this && !mIsNewlyCreated) {
             // This activity was unpaused or recreated while another instance of Preferences was
             // already showing. The existing instance takes precedence.
             finish();
         } else {
             // This activity was newly created and takes precedence over sResumedInstance.
-            if (sResumedInstance != null) sResumedInstance.finish();
+            if (sResumedInstance != null && sResumedInstance != this) sResumedInstance.finish();
+
             sResumedInstance = this;
             mIsNewlyCreated = false;
         }
@@ -172,8 +173,13 @@ public class Preferences extends AppCompatActivity implements
     @Override
     protected void onPause() {
         super.onPause();
-        if (sResumedInstance == this) sResumedInstance = null;
         ChromeApplication.flushPersistentData();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (sResumedInstance == this) sResumedInstance = null;
     }
 
     /**
