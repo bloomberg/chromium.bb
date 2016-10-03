@@ -4,7 +4,7 @@
 
 #include "components/sync/device_info/local_device_info_provider_mock.h"
 
-namespace sync_driver {
+namespace syncer {
 
 LocalDeviceInfoProviderMock::LocalDeviceInfoProviderMock()
     : is_initialized_(false) {}
@@ -71,4 +71,4 @@ void LocalDeviceInfoProviderMock::SetInitialized(bool is_initialized) {
   }
 }
 
-}  // namespace sync_driver
+}  // namespace syncer

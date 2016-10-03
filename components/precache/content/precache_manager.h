@@ -41,7 +41,7 @@ namespace net {
 class HttpResponseInfo;
 }
 
-namespace sync_driver {
+namespace syncer {
 class SyncService;
 }
 
@@ -67,7 +67,7 @@ class PrecacheManager : public KeyedService,
   typedef base::Callback<void(bool)> PrecacheCompletionCallback;
 
   PrecacheManager(content::BrowserContext* browser_context,
-                  const sync_driver::SyncService* const sync_service,
+                  const syncer::SyncService* const sync_service,
                   const history::HistoryService* const history_service,
                   const base::FilePath& db_path,
                   std::unique_ptr<PrecacheDatabase> precache_database);
@@ -182,7 +182,7 @@ class PrecacheManager : public KeyedService,
 
   // The sync service corresponding to the browser context. Used to determine
   // whether precache can run. May be null.
-  const sync_driver::SyncService* const sync_service_;
+  const syncer::SyncService* const sync_service_;
 
   // The history service corresponding to the browser context. Used to determine
   // the list of top hosts. May be null.

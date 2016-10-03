@@ -20,7 +20,7 @@
 using base::Thread;
 using base::TimeDelta;
 
-namespace browser_sync {
+namespace syncer {
 
 namespace {
 
@@ -40,21 +40,21 @@ class SyncBrowserThreadModelWorkerTest : public testing::Test {
   // DoWork hasn't executed within action_timeout().
   void ScheduleWork() {
     // We wait until the callback is done. So it is safe to use unretained.
-    syncer::WorkCallback c = base::Bind(
-        &SyncBrowserThreadModelWorkerTest::DoWork, base::Unretained(this));
+    WorkCallback c = base::Bind(&SyncBrowserThreadModelWorkerTest::DoWork,
+                                base::Unretained(this));
     timer()->Start(FROM_HERE, TestTimeouts::action_timeout(), this,
                    &SyncBrowserThreadModelWorkerTest::Timeout);
     worker()->DoWorkAndWaitUntilDone(c);
   }
 
   // This is the work that will be scheduled to be done on the DB thread.
-  syncer::SyncerError DoWork() {
+  SyncerError DoWork() {
     EXPECT_TRUE(db_thread_.task_runner()->BelongsToCurrentThread());
     timer_.Stop();  // Stop the failure timer so the test succeeds.
     main_message_loop_.task_runner()->PostTask(
         FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
     did_do_work_ = true;
-    return syncer::SYNCER_OK;
+    return SYNCER_OK;
   }
 
   // This will be called by the OneShotTimer and make the test fail unless
@@ -68,8 +68,8 @@ class SyncBrowserThreadModelWorkerTest : public testing::Test {
  protected:
   void SetUp() override {
     db_thread_.Start();
-    worker_ = new BrowserThreadModelWorker(db_thread_.task_runner(),
-                                           syncer::GROUP_DB, NULL);
+    worker_ =
+        new BrowserThreadModelWorker(db_thread_.task_runner(), GROUP_DB, NULL);
   }
 
   virtual void Teardown() {
@@ -97,4 +97,4 @@ TEST_F(SyncBrowserThreadModelWorkerTest, DoesWorkOnDatabaseThread) {
 
 }  // namespace
 
-}  // namespace browser_sync
+}  // namespace syncer

@@ -17,12 +17,12 @@ namespace sync_sessions {
 // Overrides StartModels to avoid sync contention with sessions during
 // a session restore operation at startup and to wait for the local
 // device info to become available.
-class SessionDataTypeController : public sync_driver::UIDataTypeController {
+class SessionDataTypeController : public syncer::UIDataTypeController {
  public:
   // |dump_stack| is called when an unrecoverable error occurs.
   SessionDataTypeController(const base::Closure& dump_stack,
-                            sync_driver::SyncClient* sync_client,
-                            sync_driver::LocalDeviceInfoProvider* local_device,
+                            syncer::SyncClient* sync_client,
+                            syncer::LocalDeviceInfoProvider* local_device,
                             const char* history_disabled_pref_name);
   ~SessionDataTypeController() override;
 
@@ -40,11 +40,10 @@ class SessionDataTypeController : public sync_driver::UIDataTypeController {
   void OnLocalDeviceInfoInitialized();
   void OnSavingBrowserHistoryPrefChanged();
 
-  sync_driver::SyncClient* const sync_client_;
+  syncer::SyncClient* const sync_client_;
 
-  sync_driver::LocalDeviceInfoProvider* const local_device_;
-  std::unique_ptr<sync_driver::LocalDeviceInfoProvider::Subscription>
-      subscription_;
+  syncer::LocalDeviceInfoProvider* const local_device_;
+  std::unique_ptr<syncer::LocalDeviceInfoProvider::Subscription> subscription_;
 
   // Name of the pref that indicates whether saving history is disabled.
   const char* history_disabled_pref_name_;

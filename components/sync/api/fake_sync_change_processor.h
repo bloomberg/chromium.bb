@@ -21,37 +21,35 @@ class FakeSyncChangeProcessor : public SyncChangeProcessor {
   //
   // ProcessSyncChanges will accumulate changes in changes() until they are
   // cleared.
-  syncer::SyncError ProcessSyncChanges(
-      const tracked_objects::Location& from_here,
-      const syncer::SyncChangeList& change_list) override;
+  SyncError ProcessSyncChanges(const tracked_objects::Location& from_here,
+                               const SyncChangeList& change_list) override;
 
   // SyncChangeProcessor implementation.
   //
   // Returns data().
-  syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
+  SyncDataList GetAllSyncData(ModelType type) const override;
 
   // SyncChangeProcessor implementation.
   //
   // Updates context().
-  syncer::SyncError UpdateDataTypeContext(ModelType type,
-                                          ContextRefreshStatus refresh_status,
-                                          const std::string& context) override;
-  void AddLocalChangeObserver(syncer::LocalChangeObserver* observer) override;
-  void RemoveLocalChangeObserver(
-      syncer::LocalChangeObserver* observer) override;
+  SyncError UpdateDataTypeContext(ModelType type,
+                                  ContextRefreshStatus refresh_status,
+                                  const std::string& context) override;
+  void AddLocalChangeObserver(LocalChangeObserver* observer) override;
+  void RemoveLocalChangeObserver(LocalChangeObserver* observer) override;
 
-  virtual const syncer::SyncChangeList& changes() const;
-  virtual syncer::SyncChangeList& changes();
+  virtual const SyncChangeList& changes() const;
+  virtual SyncChangeList& changes();
 
-  virtual const syncer::SyncDataList& data() const;
-  virtual syncer::SyncDataList& data();
+  virtual const SyncDataList& data() const;
+  virtual SyncDataList& data();
 
   virtual const std::string& context() const;
   virtual std::string& context();
 
  private:
-  syncer::SyncChangeList changes_;
-  syncer::SyncDataList data_;
+  SyncChangeList changes_;
+  SyncDataList data_;
   std::string context_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSyncChangeProcessor);

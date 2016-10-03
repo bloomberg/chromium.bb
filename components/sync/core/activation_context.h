@@ -12,7 +12,7 @@
 #include "components/sync/core/non_blocking_sync_common.h"
 #include "components/sync/protocol/data_type_state.pb.h"
 
-namespace syncer_v2 {
+namespace syncer {
 
 // The state passed from ModelTypeProcessor to Sync thread during DataType
 // activation.
@@ -28,6 +28,6 @@ struct ActivationContext {
   std::unique_ptr<ModelTypeProcessor> type_processor;
 };
 
-}  // namespace syncer_v2
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_CORE_ACTIVATION_CONTEXT_H_

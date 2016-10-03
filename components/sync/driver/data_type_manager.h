@@ -15,7 +15,7 @@
 #include "components/sync/driver/data_type_controller.h"
 #include "components/sync/driver/data_type_status_table.h"
 
-namespace sync_driver {
+namespace syncer {
 
 // This interface is for managing the start up and shut down life cycle
 // of many different syncable data types.
@@ -43,13 +43,12 @@ class DataTypeManager {
   // Note: |errors| is only filled when status is not OK.
   struct ConfigureResult {
     ConfigureResult();
-    ConfigureResult(ConfigureStatus status,
-                    syncer::ModelTypeSet requested_types);
+    ConfigureResult(ConfigureStatus status, ModelTypeSet requested_types);
     ConfigureResult(const ConfigureResult& other);
     ~ConfigureResult();
 
     ConfigureStatus status;
-    syncer::ModelTypeSet requested_types;
+    ModelTypeSet requested_types;
     DataTypeStatusTable data_type_status_table;
   };
 
@@ -70,18 +69,18 @@ class DataTypeManager {
   // Note that you may call Configure() while configuration is in
   // progress.  Configuration will be complete only when the
   // desired_types supplied in the last call to Configure is achieved.
-  virtual void Configure(syncer::ModelTypeSet desired_types,
-                         syncer::ConfigureReason reason) = 0;
+  virtual void Configure(ModelTypeSet desired_types,
+                         ConfigureReason reason) = 0;
 
   // Resets the error state for |type| and triggers a reconfiguration if
   // necessary.
-  virtual void ReenableType(syncer::ModelType type) = 0;
+  virtual void ReenableType(ModelType type) = 0;
 
   // Resets all data type error state.
   virtual void ResetDataTypeErrors() = 0;
 
-  virtual void PurgeForMigration(syncer::ModelTypeSet undesired_types,
-                                 syncer::ConfigureReason reason) = 0;
+  virtual void PurgeForMigration(ModelTypeSet undesired_types,
+                                 ConfigureReason reason) = 0;
 
   // Synchronously stops all registered data types.  If called after
   // Configure() is called but before it finishes, it will abort the
@@ -93,6 +92,6 @@ class DataTypeManager {
   virtual State state() const = 0;
 };
 
-}  // namespace sync_driver
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DRIVER_DATA_TYPE_MANAGER_H__

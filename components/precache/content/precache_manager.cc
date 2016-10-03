@@ -48,7 +48,7 @@ size_t NumTopHosts() {
 
 PrecacheManager::PrecacheManager(
     content::BrowserContext* browser_context,
-    const sync_driver::SyncService* const sync_service,
+    const syncer::SyncService* const sync_service,
     const history::HistoryService* const history_service,
     const base::FilePath& db_path,
     std::unique_ptr<PrecacheDatabase> precache_database)

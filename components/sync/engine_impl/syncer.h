@@ -124,7 +124,7 @@ class Syncer {
   bool HandleCycleEnd(SyncCycle* cycle,
                       sync_pb::GetUpdatesCallerInfo::GetUpdatesSource source);
 
-  syncer::CancelationSignal* const cancelation_signal_;
+  CancelationSignal* const cancelation_signal_;
 
   // Whether the syncer is in the middle of a sync attempt.
   bool is_syncing_;

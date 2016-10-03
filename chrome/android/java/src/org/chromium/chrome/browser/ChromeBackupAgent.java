@@ -60,7 +60,7 @@ public class ChromeBackupAgent extends BackupAgent {
             PrivacyPreferencesManager.PREF_METRICS_REPORTING,
     };
 
-    // Sync preferences, all in C++ sync_driver::prefs namespace.
+    // Sync preferences, all in C++ syncer::prefs namespace.
     //
     // TODO(aberent): These should ideally use the constants that are used to access the preferences
     // elsewhere, but those are currently only exist in C++, so doing so would require some

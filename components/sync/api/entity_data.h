@@ -15,7 +15,7 @@
 #include "components/sync/base/proto_value_ptr.h"
 #include "components/sync/protocol/sync.pb.h"
 
-namespace syncer_v2 {
+namespace syncer {
 
 struct EntityData;
 
@@ -25,7 +25,7 @@ struct EntityDataTraits {
   static const EntityData& DefaultValue();
 };
 
-typedef syncer::ProtoValuePtr<EntityData, EntityDataTraits> EntityDataPtr;
+typedef ProtoValuePtr<EntityData, EntityDataTraits> EntityDataPtr;
 typedef std::vector<EntityDataPtr> EntityDataList;
 typedef std::map<std::string, EntityDataPtr> EntityDataMap;
 
@@ -86,6 +86,6 @@ struct EntityData {
   DISALLOW_COPY_AND_ASSIGN(EntityData);
 };
 
-}  // namespace syncer_v2
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_API_ENTITY_DATA_H_

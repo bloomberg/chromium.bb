@@ -14,28 +14,25 @@
 #include "components/sync/protocol/proto_value_conversions.h"
 #include "components/sync/protocol/sync.pb.h"
 
+namespace syncer {
 namespace {
 
-sync_pb::AttachmentIdProto IdToProto(
-    const syncer::AttachmentId& attachment_id) {
+sync_pb::AttachmentIdProto IdToProto(const AttachmentId& attachment_id) {
   return attachment_id.GetProto();
 }
 
-syncer::AttachmentId ProtoToId(const sync_pb::AttachmentIdProto& proto) {
-  return syncer::AttachmentId::CreateFromProto(proto);
+AttachmentId ProtoToId(const sync_pb::AttachmentIdProto& proto) {
+  return AttachmentId::CreateFromProto(proto);
 }
 
 // Return true iff |attachment_ids| contains duplicates.
-bool ContainsDuplicateAttachments(
-    const syncer::AttachmentIdList& attachment_ids) {
-  syncer::AttachmentIdSet id_set;
+bool ContainsDuplicateAttachments(const AttachmentIdList& attachment_ids) {
+  AttachmentIdSet id_set;
   id_set.insert(attachment_ids.begin(), attachment_ids.end());
   return id_set.size() != attachment_ids.size();
 }
 
 }  // namespace
-
-namespace syncer {
 
 void SyncData::ImmutableSyncEntityTraits::InitializeWrapper(Wrapper* wrapper) {
   *wrapper = new sync_pb::SyncEntity();
@@ -65,7 +62,7 @@ SyncData::SyncData() : id_(kInvalidId), is_valid_(false) {}
 SyncData::SyncData(int64_t id,
                    sync_pb::SyncEntity* entity,
                    const base::Time& remote_modification_time,
-                   const syncer::AttachmentServiceProxy& attachment_service)
+                   const AttachmentServiceProxy& attachment_service)
     : id_(id),
       remote_modification_time_(remote_modification_time),
       immutable_entity_(entity),
@@ -88,7 +85,7 @@ SyncData SyncData::CreateLocalDelete(const std::string& sync_tag,
 SyncData SyncData::CreateLocalData(const std::string& sync_tag,
                                    const std::string& non_unique_title,
                                    const sync_pb::EntitySpecifics& specifics) {
-  syncer::AttachmentIdList attachment_ids;
+  AttachmentIdList attachment_ids;
   return CreateLocalDataWithAttachments(sync_tag, non_unique_title, specifics,
                                         attachment_ids);
 }
@@ -218,7 +215,7 @@ const std::string& SyncDataRemote::GetClientTagHash() const {
   // the server so we wouldn't be able to set this value anyways. The only way
   // to recreate an un-hashed tag is for the service to do so with a specifics.
   // Should only be used by sessions, see crbug.com/604657.
-  DCHECK_EQ(syncer::SESSIONS, GetDataType());
+  DCHECK_EQ(SESSIONS, GetDataType());
   return immutable_entity_.Get().client_defined_unique_tag();
 }
 

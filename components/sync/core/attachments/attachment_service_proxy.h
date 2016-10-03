@@ -44,7 +44,7 @@ class AttachmentServiceProxy : public AttachmentService {
   // calls to this object become no-ops.
   AttachmentServiceProxy(
       const scoped_refptr<base::SequencedTaskRunner>& wrapped_task_runner,
-      const base::WeakPtr<syncer::AttachmentService>& wrapped);
+      const base::WeakPtr<AttachmentService>& wrapped);
 
   AttachmentServiceProxy(const AttachmentServiceProxy& other);
 
@@ -72,7 +72,7 @@ class AttachmentServiceProxy : public AttachmentService {
                public base::RefCountedThreadSafe<Core> {
    public:
     // Construct an AttachmentServiceProxyCore that forwards calls to |wrapped|.
-    explicit Core(const base::WeakPtr<syncer::AttachmentService>& wrapped);
+    explicit Core(const base::WeakPtr<AttachmentService>& wrapped);
 
     // AttachmentService implementation.
     void GetOrDownloadAttachments(

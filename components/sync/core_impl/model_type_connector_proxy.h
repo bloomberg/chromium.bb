@@ -12,7 +12,7 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/core/model_type_connector.h"
 
-namespace syncer_v2 {
+namespace syncer {
 
 // Proxies all ModelTypeConnector calls to another thread. Typically used by
 // the SyncBackend to call from the UI thread to the real ModelTypeConnector on
@@ -26,9 +26,9 @@ class ModelTypeConnectorProxy : public ModelTypeConnector {
 
   // ModelTypeConnector implementation
   void ConnectType(
-      syncer::ModelType type,
+      ModelType type,
       std::unique_ptr<ActivationContext> activation_context) override;
-  void DisconnectType(syncer::ModelType type) override;
+  void DisconnectType(ModelType type) override;
 
  private:
   // A SequencedTaskRunner representing the thread where the ModelTypeConnector
@@ -39,6 +39,6 @@ class ModelTypeConnectorProxy : public ModelTypeConnector {
   base::WeakPtr<ModelTypeConnector> model_type_connector_;
 };
 
-}  // namespace syncer_v2
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_CORE_IMPL_MODEL_TYPE_CONNECTOR_PROXY_H_

@@ -18,12 +18,10 @@
 #include "components/sync/base/unrecoverable_error_handler.h"
 
 namespace syncer {
+
+class BackendDataTypeConfigurer;
 class SyncError;
 class SyncMergeResult;
-}
-
-namespace sync_driver {
-class BackendDataTypeConfigurer;
 
 // DataTypeControllers are responsible for managing the state of a single data
 // type. They are not thread safe and should only be used on the UI thread.
@@ -62,21 +60,18 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
     MAX_CONFIGURE_RESULT
   };
 
-  typedef base::Callback<void(ConfigureResult,
-                              const syncer::SyncMergeResult&,
-                              const syncer::SyncMergeResult&)>
+  typedef base::Callback<
+      void(ConfigureResult, const SyncMergeResult&, const SyncMergeResult&)>
       StartCallback;
 
-  typedef base::Callback<void(syncer::ModelType, const syncer::SyncError&)>
-      ModelLoadCallback;
+  typedef base::Callback<void(ModelType, const SyncError&)> ModelLoadCallback;
 
-  typedef base::Callback<void(const syncer::ModelType,
+  typedef base::Callback<void(const ModelType,
                               std::unique_ptr<base::ListValue>)>
       AllNodesCallback;
 
-  typedef std::map<syncer::ModelType, std::unique_ptr<DataTypeController>>
-      TypeMap;
-  typedef std::map<syncer::ModelType, DataTypeController::State> StateMap;
+  typedef std::map<ModelType, std::unique_ptr<DataTypeController>> TypeMap;
+  typedef std::map<ModelType, DataTypeController::State> StateMap;
 
   // Returns true if the start result should trigger an unrecoverable error.
   // Public so unit tests can use this function as well.
@@ -137,7 +132,7 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
   virtual State state() const = 0;
 
   // Unique model type for this data type controller.
-  syncer::ModelType type() const { return type_; }
+  ModelType type() const { return type_; }
 
   // Whether the DataTypeController is ready to start. This is useful if the
   // datatype itself must make the decision about whether it should be enabled
@@ -152,11 +147,10 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
   virtual void GetAllNodes(const AllNodesCallback& callback) = 0;
 
  protected:
-  DataTypeController(syncer::ModelType type, const base::Closure& dump_stack);
+  DataTypeController(ModelType type, const base::Closure& dump_stack);
 
   // Create an error handler that reports back to this controller.
-  virtual std::unique_ptr<syncer::DataTypeErrorHandler>
-  CreateErrorHandler() = 0;
+  virtual std::unique_ptr<DataTypeErrorHandler> CreateErrorHandler() = 0;
 
   // Allows subclasses to DCHECK that they're on the correct thread.
   bool CalledOnValidThread() const;
@@ -166,12 +160,12 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
 
  private:
   // The type this object is responsible for controlling.
-  const syncer::ModelType type_;
+  const ModelType type_;
 
   // Used to check that functions are called on the correct thread.
   base::ThreadChecker thread_checker_;
 };
 
-}  // namespace sync_driver
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DRIVER_DATA_TYPE_CONTROLLER_H__

@@ -7,7 +7,7 @@
 #include "components/sync/core/activation_context.h"
 #include "components/sync/driver/sync_frontend.h"
 
-namespace browser_sync {
+namespace syncer {
 
 const char kTestCacheGuid[] = "test-guid";
 
@@ -15,32 +15,29 @@ SyncBackendHostMock::SyncBackendHostMock() : fail_initial_download_(false) {}
 SyncBackendHostMock::~SyncBackendHostMock() {}
 
 void SyncBackendHostMock::Initialize(
-    sync_driver::SyncFrontend* frontend,
+    SyncFrontend* frontend,
     std::unique_ptr<base::Thread> sync_thread,
     const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
     const scoped_refptr<base::SingleThreadTaskRunner>& file_thread,
-    const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
+    const WeakHandle<JsEventHandler>& event_handler,
     const GURL& service_url,
     const std::string& sync_user_agent,
-    const syncer::SyncCredentials& credentials,
+    const SyncCredentials& credentials,
     bool delete_sync_data_folder,
-    std::unique_ptr<syncer::SyncManagerFactory> sync_manager_factory,
-    const syncer::WeakHandle<syncer::UnrecoverableErrorHandler>&
-        unrecoverable_error_handler,
+    std::unique_ptr<SyncManagerFactory> sync_manager_factory,
+    const WeakHandle<UnrecoverableErrorHandler>& unrecoverable_error_handler,
     const base::Closure& report_unrecoverable_error_function,
     const HttpPostProviderFactoryGetter& http_post_provider_factory_getter,
-    std::unique_ptr<syncer::SyncEncryptionHandler::NigoriState>
-        saved_nigori_state) {
-  frontend->OnBackendInitialized(
-      syncer::WeakHandle<syncer::JsBackend>(),
-      syncer::WeakHandle<syncer::DataTypeDebugInfoListener>(), kTestCacheGuid,
-      !fail_initial_download_);
+    std::unique_ptr<SyncEncryptionHandler::NigoriState> saved_nigori_state) {
+  frontend->OnBackendInitialized(WeakHandle<JsBackend>(),
+                                 WeakHandle<DataTypeDebugInfoListener>(),
+                                 kTestCacheGuid, !fail_initial_download_);
 }
 
-void SyncBackendHostMock::TriggerRefresh(const syncer::ModelTypeSet& types) {}
+void SyncBackendHostMock::TriggerRefresh(const ModelTypeSet& types) {}
 
 void SyncBackendHostMock::UpdateCredentials(
-    const syncer::SyncCredentials& credentials) {}
+    const SyncCredentials& credentials) {}
 
 void SyncBackendHostMock::StartSyncingWithServer() {}
 
@@ -55,37 +52,35 @@ bool SyncBackendHostMock::SetDecryptionPassphrase(
 void SyncBackendHostMock::StopSyncingForShutdown() {}
 
 std::unique_ptr<base::Thread> SyncBackendHostMock::Shutdown(
-    syncer::ShutdownReason reason) {
+    ShutdownReason reason) {
   return std::unique_ptr<base::Thread>();
 }
 
 void SyncBackendHostMock::UnregisterInvalidationIds() {}
 
-syncer::ModelTypeSet SyncBackendHostMock::ConfigureDataTypes(
-    syncer::ConfigureReason reason,
+ModelTypeSet SyncBackendHostMock::ConfigureDataTypes(
+    ConfigureReason reason,
     const DataTypeConfigStateMap& config_state_map,
-    const base::Callback<void(syncer::ModelTypeSet, syncer::ModelTypeSet)>&
-        ready_task,
+    const base::Callback<void(ModelTypeSet, ModelTypeSet)>& ready_task,
     const base::Callback<void()>& retry_callback) {
-  return syncer::ModelTypeSet();
+  return ModelTypeSet();
 }
 
 void SyncBackendHostMock::EnableEncryptEverything() {}
 
 void SyncBackendHostMock::ActivateDirectoryDataType(
-    syncer::ModelType type,
-    syncer::ModelSafeGroup group,
-    sync_driver::ChangeProcessor* change_processor) {}
-void SyncBackendHostMock::DeactivateDirectoryDataType(syncer::ModelType type) {}
+    ModelType type,
+    ModelSafeGroup group,
+    ChangeProcessor* change_processor) {}
+void SyncBackendHostMock::DeactivateDirectoryDataType(ModelType type) {}
 
 void SyncBackendHostMock::ActivateNonBlockingDataType(
-    syncer::ModelType type,
-    std::unique_ptr<syncer_v2::ActivationContext> activation_context) {}
+    ModelType type,
+    std::unique_ptr<ActivationContext> activation_context) {}
 
-void SyncBackendHostMock::DeactivateNonBlockingDataType(
-    syncer::ModelType type) {}
+void SyncBackendHostMock::DeactivateNonBlockingDataType(ModelType type) {}
 
-syncer::UserShare* SyncBackendHostMock::GetUserShare() const {
+UserShare* SyncBackendHostMock::GetUserShare() const {
   return NULL;
 }
 
@@ -93,8 +88,8 @@ SyncBackendHost::Status SyncBackendHostMock::GetDetailedStatus() {
   return SyncBackendHost::Status();
 }
 
-syncer::SyncCycleSnapshot SyncBackendHostMock::GetLastCycleSnapshot() const {
-  return syncer::SyncCycleSnapshot();
+SyncCycleSnapshot SyncBackendHostMock::GetLastCycleSnapshot() const {
+  return SyncCycleSnapshot();
 }
 
 bool SyncBackendHostMock::HasUnsyncedItems() const {
@@ -105,8 +100,8 @@ bool SyncBackendHostMock::IsNigoriEnabled() const {
   return true;
 }
 
-syncer::PassphraseType SyncBackendHostMock::GetPassphraseType() const {
-  return syncer::PassphraseType::IMPLICIT_PASSPHRASE;
+PassphraseType SyncBackendHostMock::GetPassphraseType() const {
+  return PassphraseType::IMPLICIT_PASSPHRASE;
 }
 
 base::Time SyncBackendHostMock::GetExplicitPassphraseTime() const {
@@ -114,12 +109,12 @@ base::Time SyncBackendHostMock::GetExplicitPassphraseTime() const {
 }
 
 bool SyncBackendHostMock::IsCryptographerReady(
-    const syncer::BaseTransaction* trans) const {
+    const BaseTransaction* trans) const {
   return false;
 }
 
 void SyncBackendHostMock::GetModelSafeRoutingInfo(
-    syncer::ModelSafeRoutingInfo* out) const {}
+    ModelSafeRoutingInfo* out) const {}
 
 void SyncBackendHostMock::FlushDirectory() const {}
 
@@ -127,7 +122,7 @@ base::MessageLoop* SyncBackendHostMock::GetSyncLoopForTesting() {
   return NULL;
 }
 
-void SyncBackendHostMock::RefreshTypesForTest(syncer::ModelTypeSet types) {}
+void SyncBackendHostMock::RefreshTypesForTest(ModelTypeSet types) {}
 
 void SyncBackendHostMock::RequestBufferedProtocolEventsAndEnableForwarding() {}
 
@@ -142,11 +137,11 @@ void SyncBackendHostMock::set_fail_initial_download(bool should_fail) {
 }
 
 void SyncBackendHostMock::ClearServerData(
-    const syncer::SyncManager::ClearServerDataCallback& callback) {
+    const SyncManager::ClearServerDataCallback& callback) {
   callback.Run();
 }
 
 void SyncBackendHostMock::OnCookieJarChanged(bool account_mismatch,
                                              bool empty_jar) {}
 
-}  // namespace browser_sync
+}  // namespace syncer

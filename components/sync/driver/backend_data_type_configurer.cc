@@ -4,13 +4,13 @@
 
 #include "components/sync/driver/backend_data_type_configurer.h"
 
-namespace sync_driver {
+namespace syncer {
 
 // static
-syncer::ModelTypeSet BackendDataTypeConfigurer::GetDataTypesInState(
+ModelTypeSet BackendDataTypeConfigurer::GetDataTypesInState(
     DataTypeConfigState state,
     const DataTypeConfigStateMap& state_map) {
-  syncer::ModelTypeSet types;
+  ModelTypeSet types;
   for (DataTypeConfigStateMap::const_iterator type_it = state_map.begin();
        type_it != state_map.end(); ++type_it) {
     if (type_it->second == state)
@@ -22,11 +22,11 @@ syncer::ModelTypeSet BackendDataTypeConfigurer::GetDataTypesInState(
 // static
 void BackendDataTypeConfigurer::SetDataTypesState(
     DataTypeConfigState state,
-    syncer::ModelTypeSet types,
+    ModelTypeSet types,
     DataTypeConfigStateMap* state_map) {
-  for (syncer::ModelTypeSet::Iterator it = types.First(); it.Good(); it.Inc()) {
+  for (ModelTypeSet::Iterator it = types.First(); it.Good(); it.Inc()) {
     (*state_map)[it.Get()] = state;
   }
 }
 
-}  // namespace sync_driver
+}  // namespace syncer

@@ -127,17 +127,17 @@ class TestPrecacheCompletionCallback {
 
 class PrecacheManagerUnderTest : public PrecacheManager {
  public:
-  PrecacheManagerUnderTest(
-      content::BrowserContext* browser_context,
-      const sync_driver::SyncService* const sync_service,
-      const history::HistoryService* const history_service,
-      const base::FilePath& db_path,
-      std::unique_ptr<PrecacheDatabase> precache_database)
-      : PrecacheManager(
-          browser_context, sync_service, history_service,
-          db_path, std::move(precache_database)),
-        control_group_(false) {
-  }
+  PrecacheManagerUnderTest(content::BrowserContext* browser_context,
+                           const syncer::SyncService* const sync_service,
+                           const history::HistoryService* const history_service,
+                           const base::FilePath& db_path,
+                           std::unique_ptr<PrecacheDatabase> precache_database)
+      : PrecacheManager(browser_context,
+                        sync_service,
+                        history_service,
+                        db_path,
+                        std::move(precache_database)),
+        control_group_(false) {}
   bool IsInExperimentGroup() const override { return !control_group_; }
   bool IsInControlGroup() const override { return control_group_; }
   bool IsPrecachingAllowed() const override { return true; }

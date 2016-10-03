@@ -21,30 +21,22 @@
 
 class GoogleServiceAuthError;
 
-namespace browser_sync {
-class ProtocolEventObserver;
-}
-
-namespace syncer {
-
-class BaseTransaction;
-class JsController;
-class SyncCycleSnapshot;
-class TypeDebugInfoObserver;
-struct SyncStatus;
-struct UserShare;
-
-}  // namespace syncer
-
 namespace sync_sessions {
 class OpenTabsUIDelegate;
 }  // namespace sync_sessions
 
-namespace sync_driver {
+namespace syncer {
 
+class BaseTransaction;
 class DataTypeController;
+class JsController;
 class LocalDeviceInfoProvider;
+class ProtocolEventObserver;
 class SyncClient;
+class SyncCycleSnapshot;
+class TypeDebugInfoObserver;
+struct SyncStatus;
+struct UserShare;
 
 // UIs that need to prevent Sync startup should hold an instance of this class
 // until the user has finished modifying sync settings. This is not an inner
@@ -85,7 +77,7 @@ class SyncService : public DataTypeEncryptionHandler {
 
     // Sync server connection status reported by sync backend.
     base::Time connection_status_update_time;
-    syncer::ConnectionStatus connection_status;
+    ConnectionStatus connection_status;
 
     // Times when OAuth2 access token is requested and received.
     base::Time token_request_time;
@@ -118,14 +110,14 @@ class SyncService : public DataTypeEncryptionHandler {
 
   // Triggers a GetUpdates call for the specified |types|, pulling any new data
   // from the sync server.
-  virtual void TriggerRefresh(const syncer::ModelTypeSet& types) = 0;
+  virtual void TriggerRefresh(const ModelTypeSet& types) = 0;
 
   // Get the set of current active data types (those chosen or configured by
   // the user which have not also encountered a runtime error).
   // Note that if the Sync engine is in the middle of a configuration, this
   // will the the empty set. Once the configuration completes the set will
   // be updated.
-  virtual syncer::ModelTypeSet GetActiveDataTypes() const = 0;
+  virtual ModelTypeSet GetActiveDataTypes() const = 0;
 
   // Returns the SyncClient instance associated with this service.
   virtual SyncClient* GetSyncClient() const = 0;
@@ -146,7 +138,7 @@ class SyncService : public DataTypeEncryptionHandler {
   // ASAP, presumably because a local change event has occurred but we're
   // still in deferred start mode, meaning the SyncableService hasn't been
   // told to MergeDataAndStartSyncing yet.
-  virtual void OnDataTypeRequestsSyncStartup(syncer::ModelType type) = 0;
+  virtual void OnDataTypeRequestsSyncStartup(ModelType type) = 0;
 
   // Returns true if sync is allowed, requested, and the user is logged in.
   // (being logged in does not mean that tokens are available - tokens may
@@ -168,15 +160,15 @@ class SyncService : public DataTypeEncryptionHandler {
 
   // Returns the set of types which are preferred for enabling. This is a
   // superset of the active types (see GetActiveDataTypes()).
-  virtual syncer::ModelTypeSet GetPreferredDataTypes() const = 0;
+  virtual ModelTypeSet GetPreferredDataTypes() const = 0;
 
   // Called when a user chooses which data types to sync. |sync_everything|
   // represents whether they chose the "keep everything synced" option; if
   // true, |chosen_types| will be ignored and all data types will be synced.
   // |sync_everything| means "sync all current and future data types."
-  // |chosen_types| must be a subset of syncer::UserSelectableTypes().
+  // |chosen_types| must be a subset of UserSelectableTypes().
   virtual void OnUserChoseDatatypes(bool sync_everything,
-                                    syncer::ModelTypeSet chosen_types) = 0;
+                                    ModelTypeSet chosen_types) = 0;
 
   // Called whe Sync has been setup by the user and can be started.
   virtual void SetFirstSetupComplete() = 0;
@@ -254,14 +246,13 @@ class SyncService : public DataTypeEncryptionHandler {
   // Checks whether the Cryptographer is ready to encrypt and decrypt updates
   // for sensitive data types. Caller must be holding a
   // syncapi::BaseTransaction to ensure thread safety.
-  virtual bool IsCryptographerReady(
-      const syncer::BaseTransaction* trans) const = 0;
+  virtual bool IsCryptographerReady(const BaseTransaction* trans) const = 0;
 
   // TODO(akalin): This is called mostly by ModelAssociators and
   // tests.  Figure out how to pass the handle to the ModelAssociators
   // directly, figure out how to expose this to tests, and remove this
   // function.
-  virtual syncer::UserShare* GetUserShare() const = 0;
+  virtual UserShare* GetUserShare() const = 0;
 
   // Returns DeviceInfo provider for the local device.
   virtual LocalDeviceInfoProvider* GetLocalDeviceInfoProvider() const = 0;
@@ -276,7 +267,7 @@ class SyncService : public DataTypeEncryptionHandler {
   // Called to re-enable a type disabled by DisableDatatype(..). Note, this does
   // not change the preferred state of a datatype, and is not persisted across
   // restarts.
-  virtual void ReenableDatatype(syncer::ModelType type) = 0;
+  virtual void ReenableDatatype(ModelType type) = 0;
 
   // Return sync token status.
   virtual SyncTokenStatus GetSyncTokenStatus() const = 0;
@@ -287,7 +278,7 @@ class SyncService : public DataTypeEncryptionHandler {
   // Initializes a struct of status indicators with data from the backend.
   // Returns false if the backend was not available for querying; in that case
   // the struct will be filled with default data.
-  virtual bool QueryDetailedSyncStatus(syncer::SyncStatus* result) = 0;
+  virtual bool QueryDetailedSyncStatus(SyncStatus* result) = 0;
 
   // Returns a user-friendly string form of last synced time (in minutes).
   virtual base::string16 GetLastSyncedTimeString() const = 0;
@@ -295,7 +286,7 @@ class SyncService : public DataTypeEncryptionHandler {
   // Returns a human readable string describing backend initialization state.
   virtual std::string GetBackendInitializationStateString() const = 0;
 
-  virtual syncer::SyncCycleSnapshot GetLastCycleSnapshot() const = 0;
+  virtual SyncCycleSnapshot GetLastCycleSnapshot() const = 0;
 
   // Returns a ListValue indicating the status of all registered types.
   //
@@ -315,18 +306,14 @@ class SyncService : public DataTypeEncryptionHandler {
   virtual std::string unrecoverable_error_message() const = 0;
   virtual tracked_objects::Location unrecoverable_error_location() const = 0;
 
-  virtual void AddProtocolEventObserver(
-      browser_sync::ProtocolEventObserver* observer) = 0;
-  virtual void RemoveProtocolEventObserver(
-      browser_sync::ProtocolEventObserver* observer) = 0;
+  virtual void AddProtocolEventObserver(ProtocolEventObserver* observer) = 0;
+  virtual void RemoveProtocolEventObserver(ProtocolEventObserver* observer) = 0;
 
-  virtual void AddTypeDebugInfoObserver(
-      syncer::TypeDebugInfoObserver* observer) = 0;
-  virtual void RemoveTypeDebugInfoObserver(
-      syncer::TypeDebugInfoObserver* observer) = 0;
+  virtual void AddTypeDebugInfoObserver(TypeDebugInfoObserver* observer) = 0;
+  virtual void RemoveTypeDebugInfoObserver(TypeDebugInfoObserver* observer) = 0;
 
   // Returns a weak pointer to the service's JsController.
-  virtual base::WeakPtr<syncer::JsController> GetJsController() = 0;
+  virtual base::WeakPtr<JsController> GetJsController() = 0;
 
   // Asynchronously fetches base::Value representations of all sync nodes and
   // returns them to the specified callback on this thread.
@@ -345,6 +332,6 @@ class SyncService : public DataTypeEncryptionHandler {
   DISALLOW_COPY_AND_ASSIGN(SyncService);
 };
 
-}  // namespace sync_driver
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DRIVER_SYNC_SERVICE_H_

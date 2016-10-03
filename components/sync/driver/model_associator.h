@@ -12,11 +12,9 @@
 #include "components/sync/base/model_type.h"
 
 namespace syncer {
+
 class BaseNode;
 class SyncMergeResult;
-}
-
-namespace sync_driver {
 
 // This represents the fundamental operations used for model association that
 // are common to all ModelAssociators and do not depend on types of the models
@@ -30,12 +28,11 @@ class AssociatorInterface {
   // should be identical and corresponding. Returns true on
   // success. On failure of this step, we should abort the sync
   // operation and report an error to the user.
-  virtual syncer::SyncError AssociateModels(
-      syncer::SyncMergeResult* local_merge_result,
-      syncer::SyncMergeResult* syncer_merge_result) = 0;
+  virtual SyncError AssociateModels(SyncMergeResult* local_merge_result,
+                                    SyncMergeResult* syncer_merge_result) = 0;
 
   // Clears all the associations between the chrome and sync models.
-  virtual syncer::SyncError DisassociateModels() = 0;
+  virtual SyncError DisassociateModels() = 0;
 
   // The has_nodes out parameter is set to true if the sync model has
   // nodes other than the permanent tagged nodes.  The method may
@@ -69,7 +66,7 @@ class PerDataTypeAssociatorInterface : public AssociatorInterface {
  public:
   virtual ~PerDataTypeAssociatorInterface() {}
   // Returns sync id for the given chrome model id.
-  // Returns syncer::kInvalidId if the sync node is not found for the given
+  // Returns kInvalidId if the sync node is not found for the given
   // chrome id.
   virtual int64_t GetSyncIdFromChromeId(const IDType& id) = 0;
 
@@ -81,16 +78,15 @@ class PerDataTypeAssociatorInterface : public AssociatorInterface {
   // Returns false if no sync node was found for the given chrome node id or
   // if the initialization of sync node fails.
   virtual bool InitSyncNodeFromChromeId(const IDType& node_id,
-                                        syncer::BaseNode* sync_node) = 0;
+                                        BaseNode* sync_node) = 0;
 
   // Associates the given chrome node with the given sync node.
-  virtual void Associate(const Node* node,
-                         const syncer::BaseNode& sync_node) = 0;
+  virtual void Associate(const Node* node, const BaseNode& sync_node) = 0;
 
   // Remove the association that corresponds to the given sync id.
   virtual void Disassociate(int64_t sync_id) = 0;
 };
 
-}  // namespace sync_driver
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DRIVER_MODEL_ASSOCIATOR_H_

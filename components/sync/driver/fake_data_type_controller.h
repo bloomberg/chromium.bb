@@ -11,7 +11,7 @@
 #include "components/sync/driver/data_type_manager.h"
 #include "components/sync/driver/directory_data_type_controller.h"
 
-namespace sync_driver {
+namespace syncer {
 
 // Fake DataTypeController implementation that simulates the state
 // machine of a typical asynchronous data type.
@@ -24,7 +24,7 @@ namespace sync_driver {
 // functionality.)
 class FakeDataTypeController : public DirectoryDataTypeController {
  public:
-  explicit FakeDataTypeController(syncer::ModelType type);
+  explicit FakeDataTypeController(ModelType type);
   ~FakeDataTypeController() override;
 
   // DirectoryDataTypeController implementation.
@@ -34,17 +34,17 @@ class FakeDataTypeController : public DirectoryDataTypeController {
   void StartAssociating(const StartCallback& start_callback) override;
   void Stop() override;
   std::string name() const override;
-  syncer::ModelSafeGroup model_safe_group() const override;
+  ModelSafeGroup model_safe_group() const override;
   ChangeProcessor* GetChangeProcessor() const override;
   State state() const override;
   bool ReadyForStart() const override;
-  std::unique_ptr<syncer::DataTypeErrorHandler> CreateErrorHandler() override;
+  std::unique_ptr<DataTypeErrorHandler> CreateErrorHandler() override;
 
   void FinishStart(ConfigureResult result);
 
   void SetDelayModelLoad();
 
-  void SetModelLoadError(syncer::SyncError error);
+  void SetModelLoadError(SyncError error);
 
   void SimulateModelLoadFinishing();
 
@@ -61,12 +61,12 @@ class FakeDataTypeController : public DirectoryDataTypeController {
   bool model_load_delayed_;
   StartCallback last_start_callback_;
   ModelLoadCallback model_load_callback_;
-  syncer::SyncError load_error_;
+  SyncError load_error_;
   bool ready_for_start_;
   bool should_load_model_before_configure_;
   int register_with_backend_call_count_;
 };
 
-}  // namespace sync_driver
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DRIVER_FAKE_DATA_TYPE_CONTROLLER_H__

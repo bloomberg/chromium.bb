@@ -4,10 +4,10 @@
 
 #include "components/sync/api/model_type_change_processor.h"
 
-namespace syncer_v2 {
+namespace syncer {
 
 ModelTypeChangeProcessor::ModelTypeChangeProcessor() {}
 
 ModelTypeChangeProcessor::~ModelTypeChangeProcessor() {}
 
-}  // namespace syncer_v2
+}  // namespace syncer

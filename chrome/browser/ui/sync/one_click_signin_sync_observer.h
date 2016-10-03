@@ -20,7 +20,7 @@ class WebContents;
 }
 
 class OneClickSigninSyncObserver : public content::WebContentsObserver,
-                                   public sync_driver::SyncServiceObserver {
+                                   public syncer::SyncServiceObserver {
  public:
   // Waits for Sync to be initialized, then navigates the |web_contents| to the
   // |continue_url|.  Instances of this class delete themselves once the job is
@@ -36,7 +36,7 @@ class OneClickSigninSyncObserver : public content::WebContentsObserver,
   // content::WebContentsObserver:
   void WebContentsDestroyed() override;
 
-  // sync_driver::SyncServiceObserver:
+  // syncer::SyncServiceObserver:
   void OnStateChanged() override;
 
   // Loads the |continue_url_| in the |web_contents()|.

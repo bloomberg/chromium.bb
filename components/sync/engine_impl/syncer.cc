@@ -41,7 +41,7 @@ static const bool kCreateMobileBookmarksFolder = true;
 static const bool kCreateMobileBookmarksFolder = false;
 #endif
 
-Syncer::Syncer(syncer::CancelationSignal* cancelation_signal)
+Syncer::Syncer(CancelationSignal* cancelation_signal)
     : cancelation_signal_(cancelation_signal), is_syncing_(false) {}
 
 Syncer::~Syncer() {}

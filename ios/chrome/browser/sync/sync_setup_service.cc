@@ -27,7 +27,7 @@ syncer::ModelType kDataTypes[] = {
 };
 }  // namespace
 
-SyncSetupService::SyncSetupService(sync_driver::SyncService* sync_service,
+SyncSetupService::SyncSetupService(syncer::SyncService* sync_service,
                                    PrefService* prefs)
     : sync_service_(sync_service), prefs_(prefs) {
   DCHECK(sync_service_);
@@ -92,7 +92,7 @@ bool SyncSetupService::UserActionIsRequiredToHaveSyncWork() {
 }
 
 bool SyncSetupService::IsSyncingAllDataTypes() const {
-  sync_driver::SyncPrefs sync_prefs(prefs_);
+  syncer::SyncPrefs sync_prefs(prefs_);
   return sync_prefs.HasKeepEverythingSynced();
 }
 
@@ -195,6 +195,6 @@ void SyncSetupService::SetSyncEnabledWithoutChangingDatatypes(
   } else {
     UMA_HISTOGRAM_ENUMERATION("Sync.StopSource", syncer::CHROME_SYNC_SETTINGS,
                               syncer::STOP_SOURCE_LIMIT);
-    sync_service_->RequestStop(sync_driver::SyncService::KEEP_DATA);
+    sync_service_->RequestStop(syncer::SyncService::KEEP_DATA);
   }
 }

@@ -51,7 +51,7 @@ void IOSChromePasswordStoreFactory::OnPasswordsSyncedStatePotentiallyChanged(
     ios::ChromeBrowserState* browser_state) {
   scoped_refptr<password_manager::PasswordStore> password_store =
       GetForBrowserState(browser_state, ServiceAccessType::EXPLICIT_ACCESS);
-  sync_driver::SyncService* sync_service =
+  syncer::SyncService* sync_service =
       IOSChromeProfileSyncServiceFactory::GetForBrowserStateIfExists(
           browser_state);
   net::URLRequestContextGetter* request_context_getter =

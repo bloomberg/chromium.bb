@@ -9,7 +9,7 @@
 
 #include "components/sync/api/model_type_store.h"
 
-namespace syncer_v2 {
+namespace syncer {
 
 // Util class with several static methods to facilitate writing unit tests for
 // classes that use ModelTypeStore objects.
@@ -25,6 +25,6 @@ class ModelTypeStoreTestUtil {
                                   const ModelTypeStore::InitCallback& callback);
 };
 
-}  // namespace syncer_v2
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_CORE_TEST_MODEL_TYPE_STORE_TEST_UTIL_H_

@@ -82,7 +82,7 @@ class SyncGlobalErrorTest : public BrowserWithTestWindowTest {
 void VerifySyncGlobalErrorResult(browser_sync::ProfileSyncServiceMock* service,
                                  FakeLoginUIService* login_ui_service,
                                  Browser* browser,
-                                 SyncErrorController* error,
+                                 syncer::SyncErrorController* error,
                                  SyncGlobalError* global_error,
                                  GoogleServiceAuthError::State error_state,
                                  bool is_signed_in,
@@ -134,12 +134,12 @@ TEST_F(SyncGlobalErrorTest, PassphraseGlobalError) {
   FakeLoginUI login_ui;
   login_ui_service->SetLoginUI(&login_ui);
 
-  SyncErrorController error(&service);
+  syncer::SyncErrorController error(&service);
   SyncGlobalError global_error(
       GlobalErrorServiceFactory::GetForProfile(profile()), login_ui_service,
       &error, &service);
 
-  browser_sync::SyncBackendHost::Status status;
+  syncer::SyncBackendHost::Status status;
   EXPECT_CALL(service, QueryDetailedSyncStatus(_))
               .WillRepeatedly(Return(false));
 

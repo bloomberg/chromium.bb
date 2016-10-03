@@ -13,7 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 
-namespace syncer_v2 {
+namespace syncer {
 
 MockModelTypeStore::MockModelTypeStore() {}
 
@@ -161,4 +161,4 @@ void MockModelTypeStore::RegisterDeleteGlobalMetadataHandler(
   delete_global_metadata_handler_ = handler;
 }
 
-}  // namespace syncer_v2
+}  // namespace syncer

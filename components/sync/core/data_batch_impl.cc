@@ -4,7 +4,7 @@
 
 #include "components/sync/core/data_batch_impl.h"
 
-namespace syncer_v2 {
+namespace syncer {
 
 DataBatchImpl::DataBatchImpl() {}
 
@@ -24,4 +24,4 @@ KeyAndData DataBatchImpl::Next() {
   return std::move(key_data_pairs_[read_index_++]);
 }
 
-}  // namespace syncer_v2
+}  // namespace syncer

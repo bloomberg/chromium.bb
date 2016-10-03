@@ -11,12 +11,12 @@
 #include "components/sync/api/sync_error.h"
 #include "components/sync/base/model_type.h"
 
-namespace sync_driver {
+namespace syncer {
 
 // Class to keep track of data types that have encountered an error during sync.
 class DataTypeStatusTable {
  public:
-  typedef std::map<syncer::ModelType, syncer::SyncError> TypeErrorMap;
+  typedef std::map<ModelType, SyncError> TypeErrorMap;
 
   DataTypeStatusTable();
   DataTypeStatusTable(const DataTypeStatusTable& other);
@@ -35,42 +35,42 @@ class DataTypeStatusTable {
   void ResetCryptoErrors();
 
   // Resets those persistence errors that intersect with |purged_types|.
-  void ResetPersistenceErrorsFrom(syncer::ModelTypeSet purged_types);
+  void ResetPersistenceErrorsFrom(ModelTypeSet purged_types);
 
   // Removes |type| from the data_type_errors_ set. Returns true if the type
   // was removed from the error set, false if the type did not have a data type
   // error to begin with.
-  bool ResetDataTypeErrorFor(syncer::ModelType type);
+  bool ResetDataTypeErrorFor(ModelType type);
 
   // Removes |type| from the unread_errors_ set. Returns true if the type
   // was removed from the error set, false if the type did not have an unready
   // error to begin with.
-  bool ResetUnreadyErrorFor(syncer::ModelType type);
+  bool ResetUnreadyErrorFor(ModelType type);
 
   // Returns a list of all the errors this class has recorded.
   TypeErrorMap GetAllErrors() const;
 
   // Returns all types with failure errors. This includes, fatal, crypto, and
   // unready types.`
-  syncer::ModelTypeSet GetFailedTypes() const;
+  ModelTypeSet GetFailedTypes() const;
 
   // Returns the types that are failing due to unrecoverable or datatype errors.
-  syncer::ModelTypeSet GetFatalErrorTypes() const;
+  ModelTypeSet GetFatalErrorTypes() const;
 
   // Returns the types that are failing due to cryptographer errors.
-  syncer::ModelTypeSet GetCryptoErrorTypes() const;
+  ModelTypeSet GetCryptoErrorTypes() const;
 
   // Returns the types that are failing due to persistence errors.
-  syncer::ModelTypeSet GetPersistenceErrorTypes() const;
+  ModelTypeSet GetPersistenceErrorTypes() const;
 
   // Returns the types that cannot be configured due to not being ready.
-  syncer::ModelTypeSet GetUnreadyErrorTypes() const;
+  ModelTypeSet GetUnreadyErrorTypes() const;
 
   // Returns the types that triggered the unrecoverable error.
-  syncer::ModelTypeSet GetUnrecoverableErrorTypes() const;
+  ModelTypeSet GetUnrecoverableErrorTypes() const;
 
   // Returns the current unrecoverable error, if there is one.
-  syncer::SyncError GetUnrecoverableError() const;
+  SyncError GetUnrecoverableError() const;
 
  private:
   // The current unrecoverable errors. Only one unrecoverable error can be
@@ -94,6 +94,6 @@ class DataTypeStatusTable {
   TypeErrorMap unready_errors_;
 };
 
-}  // namespace sync_driver
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DRIVER_DATA_TYPE_STATUS_TABLE_H_

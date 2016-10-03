@@ -411,7 +411,7 @@ void SyncSchedulerImpl::ScheduleLocalRefreshRequest(
 }
 
 void SyncSchedulerImpl::ScheduleInvalidationNudge(
-    syncer::ModelType model_type,
+    ModelType model_type,
     std::unique_ptr<InvalidationInterface> invalidation,
     const tracked_objects::Location& nudge_location) {
   DCHECK(CalledOnValidThread());
@@ -424,7 +424,7 @@ void SyncSchedulerImpl::ScheduleInvalidationNudge(
   ScheduleNudgeImpl(nudge_delay, nudge_location);
 }
 
-void SyncSchedulerImpl::ScheduleInitialSyncNudge(syncer::ModelType model_type) {
+void SyncSchedulerImpl::ScheduleInitialSyncNudge(ModelType model_type) {
   DCHECK(CalledOnValidThread());
 
   SDVLOG(2) << "Scheduling non-blocking initial sync for "

@@ -23,7 +23,7 @@ namespace options {
 // Chrome personal stuff profiles manage overlay UI handler.
 class ManageProfileHandler : public OptionsPageUIHandler,
                              public ProfileAttributesStorage::Observer,
-                             public sync_driver::SyncServiceObserver {
+                             public syncer::SyncServiceObserver {
  public:
   ManageProfileHandler();
   ~ManageProfileHandler() override;
@@ -45,7 +45,7 @@ class ManageProfileHandler : public OptionsPageUIHandler,
                             const base::string16& old_profile_name) override;
   void OnProfileAvatarChanged(const base::FilePath& profile_path) override;
 
-  // sync_driver::SyncServiceObserver:
+  // syncer::SyncServiceObserver:
   void OnStateChanged() override;
 
  private:

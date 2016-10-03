@@ -17,7 +17,7 @@ namespace syncer {
 
 DirectoryTypeDebugInfoEmitter::DirectoryTypeDebugInfoEmitter(
     syncable::Directory* directory,
-    syncer::ModelType type,
+    ModelType type,
     base::ObserverList<TypeDebugInfoObserver>* observers)
     : directory_(directory),
       type_(type),

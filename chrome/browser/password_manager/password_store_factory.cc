@@ -91,7 +91,7 @@ void PasswordStoreFactory::OnPasswordsSyncedStatePotentiallyChanged(
       GetForProfile(profile, ServiceAccessType::EXPLICIT_ACCESS);
   if (!password_store)
     return;
-  sync_driver::SyncService* sync_service =
+  syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
   net::URLRequestContextGetter* request_context_getter =
       profile->GetRequestContext();

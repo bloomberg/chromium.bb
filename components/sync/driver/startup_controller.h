@@ -10,18 +10,16 @@
 #include "base/time/time.h"
 #include "components/sync/base/model_type.h"
 
-namespace sync_driver {
-class SyncPrefs;
-}
+namespace syncer {
 
-namespace browser_sync {
+class SyncPrefs;
 
 // This class is used by ProfileSyncService to manage all logic and state
 // pertaining to initialization of the SyncBackendHost (colloquially referred
 // to as "the backend").
 class StartupController {
  public:
-  StartupController(const sync_driver::SyncPrefs* sync_prefs,
+  StartupController(const SyncPrefs* sync_prefs,
                     base::Callback<bool()> can_start,
                     base::Closure start_backend);
   ~StartupController();
@@ -40,7 +38,7 @@ class StartupController {
   // still in deferred start mode, meaning the SyncableService hasn't been
   // told to MergeDataAndStartSyncing yet.
   // It is expected that |type| is a currently active datatype.
-  void OnDataTypeRequestsSyncStartup(syncer::ModelType type);
+  void OnDataTypeRequestsSyncStartup(ModelType type);
 
   // Prepares this object for a new attempt to start sync, forgetting
   // whether or not preconditions were previously met.
@@ -48,7 +46,7 @@ class StartupController {
   // touch values that are explicitly set and reset by higher layers to
   // tell this class whether a setup UI dialog is being shown to the user.
   // See setup_in_progress_.
-  void Reset(const syncer::ModelTypeSet registered_types);
+  void Reset(const ModelTypeSet registered_types);
 
   // Sets the setup in progress flag and tries to start sync if it's true.
   void SetSetupInProgress(bool setup_in_progress);
@@ -88,7 +86,7 @@ class StartupController {
   // due to explicit requests to do so via SetSetupInProgress.
   bool setup_in_progress_;
 
-  const sync_driver::SyncPrefs* sync_prefs_;
+  const SyncPrefs* sync_prefs_;
 
   // A function that can be invoked repeatedly to determine whether sync can be
   // started. |start_backend_| should not be invoked unless this returns true.
@@ -104,11 +102,11 @@ class StartupController {
   base::TimeDelta fallback_timeout_;
 
   // Used to compute preferred_types from SyncPrefs as-needed.
-  syncer::ModelTypeSet registered_types_;
+  ModelTypeSet registered_types_;
 
   base::WeakPtrFactory<StartupController> weak_factory_;
 };
 
-}  // namespace browser_sync
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DRIVER_STARTUP_CONTROLLER_H_

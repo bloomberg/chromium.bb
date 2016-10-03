@@ -17,18 +17,17 @@
 namespace sync_bookmarks {
 
 // A class that manages the startup and shutdown of bookmark sync.
-class BookmarkDataTypeController
-    : public browser_sync::FrontendDataTypeController,
-      public bookmarks::BaseBookmarkModelObserver,
-      public history::HistoryServiceObserver {
+class BookmarkDataTypeController : public syncer::FrontendDataTypeController,
+                                   public bookmarks::BaseBookmarkModelObserver,
+                                   public history::HistoryServiceObserver {
  public:
   // |dump_stack| is called when an unrecoverable error occurs.
   BookmarkDataTypeController(const base::Closure& dump_stack,
-                             sync_driver::SyncClient* sync_client);
+                             syncer::SyncClient* sync_client);
   ~BookmarkDataTypeController() override;
 
  private:
-  // browser_sync::FrontendDataTypeController:
+  // syncer::FrontendDataTypeController:
   bool StartModels() override;
   void CleanUpState() override;
   void CreateSyncComponents() override;

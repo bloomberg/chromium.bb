@@ -25,7 +25,6 @@
 
 using std::string;
 using std::vector;
-
 using syncer::GetModelType;
 using syncer::GetModelTypeFromSpecifics;
 using syncer::ModelType;

@@ -57,7 +57,7 @@ Commit* Commit::Init(ModelTypeSet requested_types,
 
   // Set extensions activity if bookmark commits are present.
   ExtensionsActivity::Records extensions_activity_buffer;
-  ContributionMap::const_iterator it = contributions.find(syncer::BOOKMARKS);
+  ContributionMap::const_iterator it = contributions.find(BOOKMARKS);
   if (it != contributions.end() && it->second->GetNumEntries() != 0) {
     commit_util::AddExtensionsActivityToMessage(
         extensions_activity, &extensions_activity_buffer, commit_message);

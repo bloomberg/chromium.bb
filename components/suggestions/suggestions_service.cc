@@ -65,7 +65,7 @@ enum SyncState {
   SYNC_OR_HISTORY_SYNC_DISABLED,
 };
 
-SyncState GetSyncState(sync_driver::SyncService* sync) {
+SyncState GetSyncState(syncer::SyncService* sync) {
   if (!sync || !sync->CanSyncStart())
     return SYNC_OR_HISTORY_SYNC_DISABLED;
   if (!sync->IsSyncActive() || !sync->ConfigurationDone())
@@ -196,7 +196,7 @@ class SuggestionsService::AccessTokenFetcher
 SuggestionsService::SuggestionsService(
     const SigninManagerBase* signin_manager,
     OAuth2TokenService* token_service,
-    sync_driver::SyncService* sync_service,
+    syncer::SyncService* sync_service,
     net::URLRequestContextGetter* url_request_context,
     std::unique_ptr<SuggestionsStore> suggestions_store,
     std::unique_ptr<ImageManager> thumbnail_manager,

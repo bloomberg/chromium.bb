@@ -20,14 +20,14 @@ namespace sync_util {
 // always possible to determine since this code can be called during sync setup
 // (http://crbug.com/393626).
 std::string GetSyncUsernameIfSyncingPasswords(
-    const sync_driver::SyncService* sync_service,
+    const syncer::SyncService* sync_service,
     const SigninManagerBase* signin_manager);
 
 // Returns true if |form| corresponds to the account specified by
 // GetSyncUsernameIfSyncingPasswords. Returns false if
 // GetSyncUsernameIfSyncingPasswords does not specify any account.
 bool IsSyncAccountCredential(const autofill::PasswordForm& form,
-                             const sync_driver::SyncService* sync_service,
+                             const syncer::SyncService* sync_service,
                              const SigninManagerBase* signin_manager);
 
 }  // namespace sync_util

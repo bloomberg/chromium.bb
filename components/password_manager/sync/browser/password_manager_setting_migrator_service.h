@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_SYNC_BROWSER_PASSWORD_MANAGER_SETTING_MIGRATOR_SERVICE_H_
 #define COMPONENTS_PASSWORD_MANAGER_SYNC_BROWSER_PASSWORD_MANAGER_SETTING_MIGRATOR_SERVICE_H_
 
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -13,7 +14,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/syncable_prefs/pref_service_syncable_observer.h"
 
-namespace sync_driver {
+namespace syncer {
 class SyncService;
 }
 
@@ -87,7 +88,7 @@ class PasswordManagerSettingMigratorService
   // PrefServiceSyncableObserver:
   void OnIsSyncingChanged() override;
 
-  void InitializeMigration(sync_driver::SyncService* sync_service);
+  void InitializeMigration(syncer::SyncService* sync_service);
 
   // Only use for testing.
   static void set_force_disabled_for_testing(bool force_disabled) {
@@ -147,7 +148,7 @@ class PasswordManagerSettingMigratorService
   bool initial_legacy_pref_value_;
 
   syncable_prefs::PrefServiceSyncable* prefs_;
-  sync_driver::SyncService* sync_service_;
+  syncer::SyncService* sync_service_;
 
   PrefChangeRegistrar pref_change_registrar_;
 

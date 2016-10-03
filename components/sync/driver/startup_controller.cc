@@ -15,7 +15,7 @@
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_prefs.h"
 
-namespace browser_sync {
+namespace syncer {
 
 namespace {
 
@@ -36,7 +36,7 @@ enum DeferredInitTrigger {
 
 }  // namespace
 
-StartupController::StartupController(const sync_driver::SyncPrefs* sync_prefs,
+StartupController::StartupController(const SyncPrefs* sync_prefs,
                                      base::Callback<bool()> can_start,
                                      base::Closure start_backend)
     : bypass_setup_complete_(false),
@@ -65,7 +65,7 @@ StartupController::StartupController(const sync_driver::SyncPrefs* sync_prefs,
 
 StartupController::~StartupController() {}
 
-void StartupController::Reset(const syncer::ModelTypeSet registered_types) {
+void StartupController::Reset(const ModelTypeSet registered_types) {
   received_start_request_ = false;
   bypass_setup_complete_ = false;
   start_up_time_ = base::Time();
@@ -90,8 +90,7 @@ bool StartupController::StartUp(StartUpDeferredOption deferred_option) {
   if (deferred_option == STARTUP_BACKEND_DEFERRED &&
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSyncDisableDeferredStartup) &&
-      sync_prefs_->GetPreferredDataTypes(registered_types_)
-          .Has(syncer::SESSIONS)) {
+      sync_prefs_->GetPreferredDataTypes(registered_types_).Has(SESSIONS)) {
     if (first_start) {
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
@@ -174,25 +173,23 @@ std::string StartupController::GetBackendInitializationStateString() const {
     return "Not started";
 }
 
-void StartupController::OnDataTypeRequestsSyncStartup(syncer::ModelType type) {
+void StartupController::OnDataTypeRequestsSyncStartup(ModelType type) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSyncDisableDeferredStartup)) {
     DVLOG(2) << "Ignoring data type request for sync startup: "
-             << syncer::ModelTypeToString(type);
+             << ModelTypeToString(type);
     return;
   }
 
   if (!start_backend_time_.is_null())
     return;
 
-  DVLOG(2) << "Data type requesting sync startup: "
-           << syncer::ModelTypeToString(type);
+  DVLOG(2) << "Data type requesting sync startup: " << ModelTypeToString(type);
   // Measure the time spent waiting for init and the type that triggered it.
   // We could measure the time spent deferred on a per-datatype basis, but
   // for now this is probably sufficient.
   UMA_HISTOGRAM_ENUMERATION("Sync.Startup.TypeTriggeringInit",
-                            ModelTypeToHistogramInt(type),
-                            syncer::MODEL_TYPE_COUNT);
+                            ModelTypeToHistogramInt(type), MODEL_TYPE_COUNT);
   if (!start_up_time_.is_null()) {
     RecordTimeDeferred();
     UMA_HISTOGRAM_ENUMERATION("Sync.Startup.DeferredInitTrigger",
@@ -202,4 +199,4 @@ void StartupController::OnDataTypeRequestsSyncStartup(syncer::ModelType type) {
   TryStart();
 }
 
-}  // namespace browser_sync
+}  // namespace syncer

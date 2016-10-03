@@ -23,7 +23,7 @@ namespace history {
 class TopSites;
 }
 
-namespace sync_driver {
+namespace syncer {
 class SyncService;
 }
 
@@ -70,7 +70,7 @@ class FaviconSource : public web::URLDataSourceIOS {
   // |favicon_service|, |top_sites| and |sync_service| can be null.
   FaviconSource(favicon::FaviconService* favicon_service,
                 const scoped_refptr<history::TopSites>& top_sites,
-                sync_driver::SyncService* sync_service);
+                syncer::SyncService* sync_service);
 
   ~FaviconSource() override;
 
@@ -122,7 +122,7 @@ class FaviconSource : public web::URLDataSourceIOS {
 
   favicon::FaviconService* favicon_service_;
   scoped_refptr<history::TopSites> top_sites_;
-  sync_driver::SyncService* sync_service_;
+  syncer::SyncService* sync_service_;
 
   base::CancelableTaskTracker cancelable_task_tracker_;
 

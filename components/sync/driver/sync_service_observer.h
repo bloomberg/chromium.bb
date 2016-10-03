@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_SYNC_DRIVER_SYNC_SERVICE_OBSERVER_H_
 #define COMPONENTS_SYNC_DRIVER_SYNC_SERVICE_OBSERVER_H_
 
-namespace sync_driver {
+namespace syncer {
 
 // Various UI components such as the New Tab page can be driven by observing
 // the SyncService through this interface.
@@ -37,6 +37,6 @@ class SyncServiceObserver {
   virtual ~SyncServiceObserver() {}
 };
 
-}  // namespace sync_driver
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DRIVER_SYNC_SERVICE_OBSERVER_H_

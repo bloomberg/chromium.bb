@@ -11,7 +11,8 @@
 #include "components/sync/engine/model_safe_worker.h"
 #include "components/sync/syncable/directory.h"
 
-namespace sync_driver {
+namespace syncer {
+
 class ChangeProcessor;
 
 // Base class for Directory based Data type controllers.
@@ -45,19 +46,19 @@ class DirectoryDataTypeController : public DataTypeController {
   // Returns a ListValue representing all nodes for a specified type by querying
   // the directory.
   static std::unique_ptr<base::ListValue> GetAllNodesForTypeFromDirectory(
-      syncer::ModelType type,
-      syncer::syncable::Directory* directory);
+      ModelType type,
+      syncable::Directory* directory);
 
  protected:
   // |dump_stack| is called when an unrecoverable error occurs.
-  DirectoryDataTypeController(syncer::ModelType type,
+  DirectoryDataTypeController(ModelType type,
                               const base::Closure& dump_stack,
                               SyncClient* sync_client);
 
   // The model safe group of this data type.  This should reflect the
   // thread that should be used to modify the data type's native
   // model.
-  virtual syncer::ModelSafeGroup model_safe_group() const = 0;
+  virtual ModelSafeGroup model_safe_group() const = 0;
 
   // Access to the ChangeProcessor for the type being controlled by |this|.
   // Returns NULL if the ChangeProcessor isn't created or connected.
@@ -66,6 +67,6 @@ class DirectoryDataTypeController : public DataTypeController {
   SyncClient* const sync_client_;
 };
 
-}  // namespace sync_driver
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DRIVER_DIRECTORY_DATA_TYPE_CONTROLLER_H__

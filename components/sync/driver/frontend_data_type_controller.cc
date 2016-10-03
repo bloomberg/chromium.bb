@@ -17,12 +17,12 @@
 #include "components/sync/driver/sync_client.h"
 #include "components/sync/driver/sync_service.h"
 
-namespace browser_sync {
+namespace syncer {
 
 FrontendDataTypeController::FrontendDataTypeController(
-    syncer::ModelType type,
+    ModelType type,
     const base::Closure& dump_stack,
-    sync_driver::SyncClient* sync_client)
+    SyncClient* sync_client)
     : DirectoryDataTypeController(type, dump_stack, sync_client),
       state_(NOT_RUNNING) {
   DCHECK(CalledOnValidThread());
@@ -35,9 +35,9 @@ void FrontendDataTypeController::LoadModels(
   model_load_callback_ = model_load_callback;
 
   if (state_ != NOT_RUNNING) {
-    model_load_callback.Run(
-        type(), syncer::SyncError(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
-                                  "Model already running", type()));
+    model_load_callback.Run(type(),
+                            SyncError(FROM_HERE, SyncError::DATATYPE_ERROR,
+                                      "Model already running", type()));
     return;
   }
 
@@ -58,7 +58,7 @@ void FrontendDataTypeController::OnModelLoaded() {
   DCHECK_EQ(state_, MODEL_STARTING);
 
   state_ = MODEL_LOADED;
-  model_load_callback_.Run(type(), syncer::SyncError());
+  model_load_callback_.Run(type(), SyncError());
 }
 
 void FrontendDataTypeController::StartAssociating(
@@ -96,7 +96,7 @@ void FrontendDataTypeController::Stop() {
   CleanUpState();
 
   if (model_associator()) {
-    syncer::SyncError error;  // Not used.
+    SyncError error;  // Not used.
     error = model_associator()->DisassociateModels();
   }
 
@@ -106,24 +106,21 @@ void FrontendDataTypeController::Stop() {
   state_ = NOT_RUNNING;
 }
 
-syncer::ModelSafeGroup FrontendDataTypeController::model_safe_group() const {
-  return syncer::GROUP_UI;
+ModelSafeGroup FrontendDataTypeController::model_safe_group() const {
+  return GROUP_UI;
 }
 
 std::string FrontendDataTypeController::name() const {
   // For logging only.
-  return syncer::ModelTypeToString(type());
+  return ModelTypeToString(type());
 }
 
-sync_driver::DataTypeController::State FrontendDataTypeController::state()
-    const {
+DataTypeController::State FrontendDataTypeController::state() const {
   return state_;
 }
 
 FrontendDataTypeController::FrontendDataTypeController()
-    : DirectoryDataTypeController(syncer::UNSPECIFIED,
-                                  base::Closure(),
-                                  nullptr),
+    : DirectoryDataTypeController(UNSPECIFIED, base::Closure(), nullptr),
       state_(NOT_RUNNING) {}
 
 FrontendDataTypeController::~FrontendDataTypeController() {}
@@ -144,8 +141,8 @@ void FrontendDataTypeController::Associate() {
     return;
   }
 
-  syncer::SyncMergeResult local_merge_result(type());
-  syncer::SyncMergeResult syncer_merge_result(type());
+  SyncMergeResult local_merge_result(type());
+  SyncMergeResult syncer_merge_result(type());
   CreateSyncComponents();
   if (!model_associator()->CryptoReadyIfNecessary()) {
     StartDone(NEEDS_CRYPTO, local_merge_result, syncer_merge_result);
@@ -154,8 +151,8 @@ void FrontendDataTypeController::Associate() {
 
   bool sync_has_nodes = false;
   if (!model_associator()->SyncModelHasUserCreatedNodes(&sync_has_nodes)) {
-    syncer::SyncError error(FROM_HERE, syncer::SyncError::UNRECOVERABLE_ERROR,
-                            "Failed to load sync nodes", type());
+    SyncError error(FROM_HERE, SyncError::UNRECOVERABLE_ERROR,
+                    "Failed to load sync nodes", type());
     local_merge_result.set_error(error);
     StartDone(UNRECOVERABLE_ERROR, local_merge_result, syncer_merge_result);
     return;
@@ -163,7 +160,7 @@ void FrontendDataTypeController::Associate() {
 
   // TODO(zea): Have AssociateModels fill the local and syncer merge results.
   base::TimeTicks start_time = base::TimeTicks::Now();
-  syncer::SyncError error;
+  SyncError error;
   error = model_associator()->AssociateModels(&local_merge_result,
                                               &syncer_merge_result);
   // TODO(lipalani): crbug.com/122690 - handle abort.
@@ -200,8 +197,8 @@ void FrontendDataTypeController::AbortModelLoad() {
 
 void FrontendDataTypeController::StartDone(
     ConfigureResult start_result,
-    const syncer::SyncMergeResult& local_merge_result,
-    const syncer::SyncMergeResult& syncer_merge_result) {
+    const SyncMergeResult& local_merge_result,
+    const SyncMergeResult& syncer_merge_result) {
   DCHECK(CalledOnValidThread());
   if (!IsSuccessfulResult(start_result)) {
     CleanUp();
@@ -216,16 +213,15 @@ void FrontendDataTypeController::StartDone(
   start_callback_.Run(start_result, local_merge_result, syncer_merge_result);
 }
 
-std::unique_ptr<syncer::DataTypeErrorHandler>
+std::unique_ptr<DataTypeErrorHandler>
 FrontendDataTypeController::CreateErrorHandler() {
-  return base::MakeUnique<syncer::DataTypeErrorHandlerImpl>(
+  return base::MakeUnique<DataTypeErrorHandlerImpl>(
       base::ThreadTaskRunnerHandle::Get(), dump_stack_,
       base::Bind(&FrontendDataTypeController::OnUnrecoverableError,
                  base::AsWeakPtr(this)));
 }
 
-void FrontendDataTypeController::OnUnrecoverableError(
-    const syncer::SyncError& error) {
+void FrontendDataTypeController::OnUnrecoverableError(const SyncError& error) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(type(), error.model_type());
   if (!model_load_callback_.is_null()) {
@@ -244,8 +240,7 @@ void FrontendDataTypeController::RecordAssociationTime(base::TimeDelta time) {
 void FrontendDataTypeController::RecordStartFailure(ConfigureResult result) {
   DCHECK(CalledOnValidThread());
   UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeStartFailures",
-                            ModelTypeToHistogramInt(type()),
-                            syncer::MODEL_TYPE_COUNT);
+                            ModelTypeToHistogramInt(type()), MODEL_TYPE_COUNT);
 #define PER_DATA_TYPE_MACRO(type_str)                                    \
   UMA_HISTOGRAM_ENUMERATION("Sync." type_str "ConfigureFailure", result, \
                             MAX_CONFIGURE_RESULT);
@@ -253,24 +248,22 @@ void FrontendDataTypeController::RecordStartFailure(ConfigureResult result) {
 #undef PER_DATA_TYPE_MACRO
 }
 
-sync_driver::AssociatorInterface* FrontendDataTypeController::model_associator()
-    const {
+AssociatorInterface* FrontendDataTypeController::model_associator() const {
   return model_associator_.get();
 }
 
 void FrontendDataTypeController::set_model_associator(
-    sync_driver::AssociatorInterface* model_associator) {
+    AssociatorInterface* model_associator) {
   model_associator_.reset(model_associator);
 }
 
-sync_driver::ChangeProcessor* FrontendDataTypeController::GetChangeProcessor()
-    const {
+ChangeProcessor* FrontendDataTypeController::GetChangeProcessor() const {
   return change_processor_.get();
 }
 
 void FrontendDataTypeController::set_change_processor(
-    sync_driver::ChangeProcessor* change_processor) {
+    ChangeProcessor* change_processor) {
   change_processor_.reset(change_processor);
 }
 
-}  // namespace browser_sync
+}  // namespace syncer

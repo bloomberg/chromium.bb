@@ -23,7 +23,7 @@
 using base::DictionaryValue;
 using base::ListValue;
 
-namespace sync_driver {
+namespace syncer {
 
 namespace sync_ui_util {
 
@@ -205,28 +205,27 @@ std::string GetTimeStr(base::Time time, const std::string& default_msg) {
   if (time.is_null())
     time_str = default_msg;
   else
-    time_str = syncer::GetTimeDebugString(time);
+    time_str = GetTimeDebugString(time);
   return time_str;
 }
 
-std::string GetConnectionStatus(
-    const sync_driver::SyncService::SyncTokenStatus& status) {
+std::string GetConnectionStatus(const SyncService::SyncTokenStatus& status) {
   std::string message;
   switch (status.connection_status) {
-    case syncer::CONNECTION_NOT_ATTEMPTED:
+    case CONNECTION_NOT_ATTEMPTED:
       base::StringAppendF(&message, "not attempted");
       break;
-    case syncer::CONNECTION_OK:
+    case CONNECTION_OK:
       base::StringAppendF(
           &message, "OK since %s",
           GetTimeStr(status.connection_status_update_time, "n/a").c_str());
       break;
-    case syncer::CONNECTION_AUTH_ERROR:
+    case CONNECTION_AUTH_ERROR:
       base::StringAppendF(
           &message, "auth error since %s",
           GetTimeStr(status.connection_status_update_time, "n/a").c_str());
       break;
-    case syncer::CONNECTION_SERVER_ERROR:
+    case CONNECTION_SERVER_ERROR:
       base::StringAppendF(
           &message, "server error since %s",
           GetTimeStr(status.connection_status_update_time, "n/a").c_str());
@@ -244,7 +243,7 @@ std::string GetConnectionStatus(
 // which are grouped into sections and populated with the help of the SyncStat
 // classes defined above.
 std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
-    sync_driver::SyncService* service,
+    SyncService* service,
     SigninManagerBase* signin,
     version_info::Channel channel) {
   std::unique_ptr<base::DictionaryValue> about_info(
@@ -358,10 +357,10 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
     return about_info;
   }
 
-  syncer::SyncStatus full_status;
+  SyncStatus full_status;
   bool is_status_valid = service->QueryDetailedSyncStatus(&full_status);
   bool sync_active = service->IsSyncActive();
-  const syncer::SyncCycleSnapshot& snapshot = service->GetLastCycleSnapshot();
+  const SyncCycleSnapshot& snapshot = service->GetLastCycleSnapshot();
 
   if (is_status_valid)
     summary_string.SetValue(service->QuerySyncStatusSummaryString());
@@ -375,7 +374,7 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   if (signin)
     username.SetValue(signin->GetAuthenticatedAccountInfo().email);
 
-  const sync_driver::SyncService::SyncTokenStatus& token_status =
+  const SyncService::SyncTokenStatus& token_status =
       service->GetSyncTokenStatus();
   server_connection.SetValue(GetConnectionStatus(token_status));
   request_token_time.SetValue(
@@ -425,7 +424,7 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
     if (snapshot.legacy_updates_source() !=
         sync_pb::GetUpdatesCallerInfo::UNKNOWN) {
       session_source.SetValue(
-          syncer::GetUpdatesSourceString(snapshot.legacy_updates_source()));
+          GetUpdatesSourceString(snapshot.legacy_updates_source()));
     }
     get_key_result.SetValue(GetSyncerErrorString(
         snapshot.model_neutral_state().last_get_key_result));
@@ -475,8 +474,8 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   // full_status.sync_protocol_error is exported directly from the
   // ProfileSyncService, even if the backend doesn't exist.
   const bool actionable_error_detected =
-      full_status.sync_protocol_error.error_type != syncer::UNKNOWN_ERROR &&
-      full_status.sync_protocol_error.error_type != syncer::SYNC_SUCCESS;
+      full_status.sync_protocol_error.error_type != UNKNOWN_ERROR &&
+      full_status.sync_protocol_error.error_type != SYNC_SUCCESS;
 
   about_info->SetBoolean("actionable_error_detected",
                          actionable_error_detected);
@@ -493,10 +492,10 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   StringSyncStat description(actionable_error, "Error Description");
 
   if (actionable_error_detected) {
-    error_type.SetValue(syncer::GetSyncErrorTypeString(
-        full_status.sync_protocol_error.error_type));
+    error_type.SetValue(
+        GetSyncErrorTypeString(full_status.sync_protocol_error.error_type));
     action.SetValue(
-        syncer::GetClientActionString(full_status.sync_protocol_error.action));
+        GetClientActionString(full_status.sync_protocol_error.action));
     url.SetValue(full_status.sync_protocol_error.url);
     description.SetValue(full_status.sync_protocol_error.error_description);
   }
@@ -522,4 +521,4 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
 
 }  // namespace sync_ui_util
 
-}  // namespace sync_driver
+}  // namespace syncer

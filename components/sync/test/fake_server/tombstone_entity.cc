@@ -5,7 +5,6 @@
 #include "components/sync/test/fake_server/tombstone_entity.h"
 
 using std::string;
-
 using syncer::ModelType;
 
 namespace fake_server {

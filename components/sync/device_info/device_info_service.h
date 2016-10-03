@@ -27,53 +27,48 @@ namespace syncer {
 class SyncError;
 }  // namespace syncer
 
-namespace syncer_v2 {
+namespace syncer {
 class ModelTypeChangeProcessor;
-}  // namespace syncer_v2
+}  // namespace syncer
 
 namespace sync_pb {
 class DeviceInfoSpecifics;
 }  // namespace sync_pb
 
-namespace sync_driver_v2 {
+namespace syncer {
 
 // USS service implementation for DEVICE_INFO model type. Handles storage of
 // device info and associated sync metadata, applying/merging foreign changes,
 // and allows public read access.
-class DeviceInfoService : public syncer_v2::ModelTypeService,
-                          public sync_driver::DeviceInfoTracker {
+class DeviceInfoService : public ModelTypeService, public DeviceInfoTracker {
  public:
-  typedef base::Callback<void(
-      const syncer_v2::ModelTypeStore::InitCallback& callback)>
+  typedef base::Callback<void(const ModelTypeStore::InitCallback& callback)>
       StoreFactoryFunction;
 
-  DeviceInfoService(
-      sync_driver::LocalDeviceInfoProvider* local_device_info_provider,
-      const StoreFactoryFunction& callback,
-      const ChangeProcessorFactory& change_processor_factory);
+  DeviceInfoService(LocalDeviceInfoProvider* local_device_info_provider,
+                    const StoreFactoryFunction& callback,
+                    const ChangeProcessorFactory& change_processor_factory);
   ~DeviceInfoService() override;
 
   // ModelTypeService implementation.
-  std::unique_ptr<syncer_v2::MetadataChangeList> CreateMetadataChangeList()
-      override;
-  syncer::SyncError MergeSyncData(
-      std::unique_ptr<syncer_v2::MetadataChangeList> metadata_change_list,
-      syncer_v2::EntityDataMap entity_data_map) override;
-  syncer::SyncError ApplySyncChanges(
-      std::unique_ptr<syncer_v2::MetadataChangeList> metadata_change_list,
-      syncer_v2::EntityChangeList entity_changes) override;
+  std::unique_ptr<MetadataChangeList> CreateMetadataChangeList() override;
+  SyncError MergeSyncData(
+      std::unique_ptr<MetadataChangeList> metadata_change_list,
+      EntityDataMap entity_data_map) override;
+  SyncError ApplySyncChanges(
+      std::unique_ptr<MetadataChangeList> metadata_change_list,
+      EntityChangeList entity_changes) override;
   void GetData(StorageKeyList storage_keys, DataCallback callback) override;
   void GetAllData(DataCallback callback) override;
-  std::string GetClientTag(const syncer_v2::EntityData& entity_data) override;
-  std::string GetStorageKey(const syncer_v2::EntityData& entity_data) override;
+  std::string GetClientTag(const EntityData& entity_data) override;
+  std::string GetStorageKey(const EntityData& entity_data) override;
   void OnChangeProcessorSet() override;
 
   // DeviceInfoTracker implementation.
   bool IsSyncing() const override;
-  std::unique_ptr<sync_driver::DeviceInfo> GetDeviceInfo(
+  std::unique_ptr<DeviceInfo> GetDeviceInfo(
       const std::string& client_id) const override;
-  std::vector<std::unique_ptr<sync_driver::DeviceInfo>> GetAllDeviceInfo()
-      const override;
+  std::vector<std::unique_ptr<DeviceInfo>> GetAllDeviceInfo() const override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
   int CountActiveDevices() const override;
@@ -86,22 +81,22 @@ class DeviceInfoService : public syncer_v2::ModelTypeService,
       std::map<std::string, std::unique_ptr<sync_pb::DeviceInfoSpecifics>>;
 
   static std::unique_ptr<sync_pb::DeviceInfoSpecifics> CopyToSpecifics(
-      const sync_driver::DeviceInfo& info);
+      const DeviceInfo& info);
 
   // Allocate new DeviceInfo from SyncData.
-  static std::unique_ptr<sync_driver::DeviceInfo> CopyToModel(
+  static std::unique_ptr<DeviceInfo> CopyToModel(
       const sync_pb::DeviceInfoSpecifics& specifics);
   // Conversion as we prepare to hand data to the processor.
-  static std::unique_ptr<syncer_v2::EntityData> CopyToEntityData(
+  static std::unique_ptr<EntityData> CopyToEntityData(
       const sync_pb::DeviceInfoSpecifics& specifics);
 
   // Store SyncData in the cache and durable storage.
   void StoreSpecifics(std::unique_ptr<sync_pb::DeviceInfoSpecifics> specifics,
-                      syncer_v2::ModelTypeStore::WriteBatch* batch);
+                      ModelTypeStore::WriteBatch* batch);
   // Delete SyncData from the cache and durable storage, returns true if there
   // was actually anything at the given tag.
   bool DeleteSpecifics(const std::string& tag,
-                       syncer_v2::ModelTypeStore::WriteBatch* batch);
+                       ModelTypeStore::WriteBatch* batch);
 
   // Notify all registered observers.
   void NotifyObservers();
@@ -110,16 +105,15 @@ class DeviceInfoService : public syncer_v2::ModelTypeService,
   void OnProviderInitialized();
 
   // Methods used as callbacks given to DataTypeStore.
-  void OnStoreCreated(syncer_v2::ModelTypeStore::Result result,
-                      std::unique_ptr<syncer_v2::ModelTypeStore> store);
-  void OnReadAllData(
-      syncer_v2::ModelTypeStore::Result result,
-      std::unique_ptr<syncer_v2::ModelTypeStore::RecordList> record_list);
+  void OnStoreCreated(ModelTypeStore::Result result,
+                      std::unique_ptr<ModelTypeStore> store);
+  void OnReadAllData(ModelTypeStore::Result result,
+                     std::unique_ptr<ModelTypeStore::RecordList> record_list);
   void OnReadAllMetadata(
-      syncer_v2::ModelTypeStore::Result result,
-      std::unique_ptr<syncer_v2::ModelTypeStore::RecordList> metadata_records,
+      ModelTypeStore::Result result,
+      std::unique_ptr<ModelTypeStore::RecordList> metadata_records,
       const std::string& global_metadata);
-  void OnCommit(syncer_v2::ModelTypeStore::Result result);
+  void OnCommit(ModelTypeStore::Result result);
 
   // Load metadata if the data is loaded and the provider is initialized.
   void LoadMetadataIfReady();
@@ -136,10 +130,9 @@ class DeviceInfoService : public syncer_v2::ModelTypeService,
 
   // Persists the changes in the given aggregators and notifies observers if
   // indicated to do as such.
-  void CommitAndNotify(
-      std::unique_ptr<syncer_v2::ModelTypeStore::WriteBatch> batch,
-      std::unique_ptr<syncer_v2::MetadataChangeList> metadata_change_list,
-      bool should_notify);
+  void CommitAndNotify(std::unique_ptr<ModelTypeStore::WriteBatch> batch,
+                       std::unique_ptr<MetadataChangeList> metadata_change_list,
+                       bool should_notify);
 
   // Counts the number of active devices relative to |now|. The activeness of a
   // device depends on the amount of time since it was updated, which means
@@ -156,7 +149,7 @@ class DeviceInfoService : public syncer_v2::ModelTypeService,
       const sync_pb::DeviceInfoSpecifics& specifics);
 
   // |local_device_info_provider_| isn't owned.
-  const sync_driver::LocalDeviceInfoProvider* const local_device_info_provider_;
+  const LocalDeviceInfoProvider* const local_device_info_provider_;
 
   ClientIdToSpecifics all_data_;
 
@@ -165,11 +158,10 @@ class DeviceInfoService : public syncer_v2::ModelTypeService,
 
   // Used to listen for provider initialization. If the provider is already
   // initialized during our constructor then the subscription is never used.
-  std::unique_ptr<sync_driver::LocalDeviceInfoProvider::Subscription>
-      subscription_;
+  std::unique_ptr<LocalDeviceInfoProvider::Subscription> subscription_;
 
   // In charge of actually persiting changes to disk, or loading previous data.
-  std::unique_ptr<syncer_v2::ModelTypeStore> store_;
+  std::unique_ptr<ModelTypeStore> store_;
 
   // If |local_device_info_provider_| has initialized.
   bool has_provider_initialized_ = false;
@@ -184,6 +176,6 @@ class DeviceInfoService : public syncer_v2::ModelTypeService,
   DISALLOW_COPY_AND_ASSIGN(DeviceInfoService);
 };
 
-}  // namespace sync_driver_v2
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DEVICE_INFO_DEVICE_INFO_SERVICE_H_

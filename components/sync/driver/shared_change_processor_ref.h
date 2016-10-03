@@ -13,34 +13,31 @@
 #include "components/sync/api/sync_error_factory.h"
 #include "components/sync/driver/shared_change_processor.h"
 
-namespace sync_driver {
+namespace syncer {
 
-// A syncer::SyncChangeProcessor stub for interacting with a refcounted
+// A SyncChangeProcessor stub for interacting with a refcounted
 // SharedChangeProcessor.
-class SharedChangeProcessorRef : public syncer::SyncChangeProcessor,
-                                 public syncer::SyncErrorFactory {
+class SharedChangeProcessorRef : public SyncChangeProcessor,
+                                 public SyncErrorFactory {
  public:
   SharedChangeProcessorRef(
       const scoped_refptr<SharedChangeProcessor>& change_processor);
   ~SharedChangeProcessorRef() override;
 
-  // syncer::SyncChangeProcessor implementation.
-  syncer::SyncError ProcessSyncChanges(
-      const tracked_objects::Location& from_here,
-      const syncer::SyncChangeList& change_list) override;
-  syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override;
-  syncer::SyncError UpdateDataTypeContext(
-      syncer::ModelType type,
-      syncer::SyncChangeProcessor::ContextRefreshStatus refresh_status,
+  // SyncChangeProcessor implementation.
+  SyncError ProcessSyncChanges(const tracked_objects::Location& from_here,
+                               const SyncChangeList& change_list) override;
+  SyncDataList GetAllSyncData(ModelType type) const override;
+  SyncError UpdateDataTypeContext(
+      ModelType type,
+      SyncChangeProcessor::ContextRefreshStatus refresh_status,
       const std::string& context) override;
-  void AddLocalChangeObserver(syncer::LocalChangeObserver* observer) override;
-  void RemoveLocalChangeObserver(
-      syncer::LocalChangeObserver* observer) override;
+  void AddLocalChangeObserver(LocalChangeObserver* observer) override;
+  void RemoveLocalChangeObserver(LocalChangeObserver* observer) override;
 
-  // syncer::SyncErrorFactory implementation.
-  syncer::SyncError CreateAndUploadError(
-      const tracked_objects::Location& from_here,
-      const std::string& message) override;
+  // SyncErrorFactory implementation.
+  SyncError CreateAndUploadError(const tracked_objects::Location& from_here,
+                                 const std::string& message) override;
 
   // Default copy and assign welcome (and safe due to refcounted-ness).
 
@@ -48,6 +45,6 @@ class SharedChangeProcessorRef : public syncer::SyncChangeProcessor,
   scoped_refptr<SharedChangeProcessor> change_processor_;
 };
 
-}  // namespace sync_driver
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DRIVER_SHARED_CHANGE_PROCESSOR_REF_H_

@@ -11,7 +11,7 @@
 
 namespace sync_pb {
 class SyncEntity;
-}
+}  // namespace sync_pb
 
 namespace syncer {
 

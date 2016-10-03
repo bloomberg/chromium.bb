@@ -37,7 +37,7 @@ const char kAccessToken[] = "access.token";
 const char kAttachmentServerUrl[] = "http://attachments.com/";
 const char kAttachmentContent[] = "attachment.content";
 const char kStoreBirthday[] = "z00000000-0000-007b-0000-0000000004d2";
-const syncer::ModelType kModelType = syncer::ModelType::ARTICLES;
+const ModelType kModelType = ModelType::ARTICLES;
 
 // MockOAuth2TokenService remembers last request for access token and verifies
 // that only one request is active at a time.

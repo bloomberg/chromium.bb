@@ -7,7 +7,7 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/rand_util.h"
 
-namespace browser_sync {
+namespace syncer {
 
 void ChromeReportUnrecoverableError(version_info::Channel channel) {
   // Only upload on canary/dev builds to avoid overwhelming crash server.
@@ -27,4 +27,4 @@ void ChromeReportUnrecoverableError(version_info::Channel channel) {
   base::debug::DumpWithoutCrashing();
 }
 
-}  // namespace browser_sync
+}  // namespace syncer

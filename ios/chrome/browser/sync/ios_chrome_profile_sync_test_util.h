@@ -13,7 +13,7 @@ namespace ios {
 class ChromeBrowserState;
 }
 
-namespace sync_driver {
+namespace syncer {
 class SyncClient;
 }
 
@@ -25,7 +25,7 @@ class BrowserState;
 // is null, a fresh one is created.
 browser_sync::ProfileSyncService::InitParams
 CreateProfileSyncServiceParamsForTest(
-    std::unique_ptr<sync_driver::SyncClient> sync_client,
+    std::unique_ptr<syncer::SyncClient> sync_client,
     ios::ChromeBrowserState* browser_state);
 
 // Helper routine to be used in conjunction with

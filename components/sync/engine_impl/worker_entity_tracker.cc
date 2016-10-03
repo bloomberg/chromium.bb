@@ -11,7 +11,7 @@
 #include "components/sync/base/time.h"
 #include "components/sync/syncable/syncable_util.h"
 
-namespace syncer_v2 {
+namespace syncer {
 
 WorkerEntityTracker::WorkerEntityTracker(const std::string& client_tag_hash)
     : client_tag_hash_(client_tag_hash) {
@@ -45,8 +45,8 @@ void WorkerEntityTracker::PopulateCommitProto(
 
   commit_entity->set_name(entity.non_unique_name);
   if (!entity.is_deleted()) {
-    commit_entity->set_ctime(syncer::TimeToProtoTime(entity.creation_time));
-    commit_entity->set_mtime(syncer::TimeToProtoTime(entity.modification_time));
+    commit_entity->set_ctime(TimeToProtoTime(entity.creation_time));
+    commit_entity->set_mtime(TimeToProtoTime(entity.modification_time));
     commit_entity->mutable_specifics()->CopyFrom(entity.specifics);
   }
 }
@@ -199,4 +199,4 @@ void WorkerEntityTracker::ClearPendingCommit() {
   pending_commit_specifics_hash_.clear();
 }
 
-}  // namespace syncer_v2
+}  // namespace syncer

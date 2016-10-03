@@ -13,7 +13,7 @@ namespace history {
 class WebHistoryService;
 }
 
-namespace sync_driver {
+namespace syncer {
 class SyncService;
 }
 
@@ -37,7 +37,7 @@ extern bool g_override_other_forms_of_browsing_history_query;
 // of other forms of browsing history stored in user's account. The response
 // is returned in a |callback|.
 void ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
-    const sync_driver::SyncService* sync_service,
+    const syncer::SyncService* sync_service,
     history::WebHistoryService* history_service,
     base::Callback<void(bool)> callback);
 
@@ -48,7 +48,7 @@ void ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
 // must be provided for successful communication with the Sync server, but
 // the result does not depend on it.
 void ShouldPopupDialogAboutOtherFormsOfBrowsingHistory(
-    const sync_driver::SyncService* sync_service,
+    const syncer::SyncService* sync_service,
     history::WebHistoryService* history_service,
     version_info::Channel channel,
     base::Callback<void(bool)> callback);

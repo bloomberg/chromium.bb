@@ -19,7 +19,7 @@
 #include "components/sync/api/sync_error.h"
 #include "components/sync/core/activation_context.h"
 
-namespace syncer_v2 {
+namespace syncer {
 
 class DataBatch;
 class MetadataChangeList;
@@ -29,16 +29,16 @@ class MetadataChangeList;
 // metadata for entities, as well as the model type state.
 class ModelTypeService : public base::SupportsWeakPtr<ModelTypeService> {
  public:
-  typedef base::Callback<void(syncer::SyncError, std::unique_ptr<DataBatch>)>
+  typedef base::Callback<void(SyncError, std::unique_ptr<DataBatch>)>
       DataCallback;
   typedef std::vector<std::string> StorageKeyList;
   typedef base::Callback<std::unique_ptr<ModelTypeChangeProcessor>(
-      syncer::ModelType type,
+      ModelType type,
       ModelTypeService* service)>
       ChangeProcessorFactory;
 
   ModelTypeService(const ChangeProcessorFactory& change_processor_factory,
-                   syncer::ModelType type);
+                   ModelType type);
 
   virtual ~ModelTypeService();
 
@@ -59,7 +59,7 @@ class ModelTypeService : public base::SupportsWeakPtr<ModelTypeService> {
   // combine all change atomically, should save the metadata after the data
   // changes, so that this merge will be re-driven by sync if is not completely
   // saved during the current run.
-  virtual syncer::SyncError MergeSyncData(
+  virtual SyncError MergeSyncData(
       std::unique_ptr<MetadataChangeList> metadata_change_list,
       EntityDataMap entity_data_map) = 0;
 
@@ -68,7 +68,7 @@ class ModelTypeService : public base::SupportsWeakPtr<ModelTypeService> {
   // |metadata_change_list| in case when some of the data changes are filtered
   // out, or even be empty in case when a commit confirmation is processed and
   // only the metadata needs to persisted.
-  virtual syncer::SyncError ApplySyncChanges(
+  virtual SyncError ApplySyncChanges(
       std::unique_ptr<MetadataChangeList> metadata_change_list,
       EntityChangeList entity_changes) = 0;
 
@@ -110,9 +110,8 @@ class ModelTypeService : public base::SupportsWeakPtr<ModelTypeService> {
   // Called by the DataTypeController to gather additional information needed
   // before the processor can be connected to a sync worker. Once the
   // metadata has been loaded, the info is collected and given to |callback|.
-  void OnSyncStarting(
-      std::unique_ptr<syncer::DataTypeErrorHandler> error_handler,
-      const ModelTypeChangeProcessor::StartCallback& callback);
+  void OnSyncStarting(std::unique_ptr<DataTypeErrorHandler> error_handler,
+                      const ModelTypeChangeProcessor::StartCallback& callback);
 
   // Indicates that we no longer want to do any sync-related things for this
   // data type. Severs all ties to the sync thread, deletes all local sync
@@ -132,9 +131,9 @@ class ModelTypeService : public base::SupportsWeakPtr<ModelTypeService> {
 
   ChangeProcessorFactory change_processor_factory_;
 
-  const syncer::ModelType type_;
+  const ModelType type_;
 };
 
-}  // namespace syncer_v2
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_API_MODEL_TYPE_SERVICE_H_

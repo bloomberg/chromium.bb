@@ -9,7 +9,7 @@
 #include "components/sync/syncable/syncable_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace syncer_v2 {
+namespace syncer {
 
 namespace {
 
@@ -241,4 +241,4 @@ void MockModelTypeWorker::SetServerVersion(const std::string& tag_hash,
   server_versions_[tag_hash] = version;
 }
 
-}  // namespace syncer_v2
+}  // namespace syncer

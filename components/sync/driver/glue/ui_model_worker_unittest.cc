@@ -19,8 +19,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using browser_sync::UIModelWorker;
-using syncer::SyncerError;
+namespace syncer {
+namespace {
 
 class UIModelWorkerVisitor {
  public:
@@ -28,11 +28,11 @@ class UIModelWorkerVisitor {
       : quit_loop_when_run_(quit_loop), was_run_(was_run) {}
   virtual ~UIModelWorkerVisitor() {}
 
-  virtual syncer::SyncerError DoWork() {
+  virtual SyncerError DoWork() {
     was_run_->Signal();
     if (quit_loop_when_run_)
       base::MessageLoop::current()->QuitWhenIdle();
-    return syncer::SYNCER_OK;
+    return SYNCER_OK;
   }
 
  private:
@@ -41,22 +41,22 @@ class UIModelWorkerVisitor {
   DISALLOW_COPY_AND_ASSIGN(UIModelWorkerVisitor);
 };
 
-// A faux-syncer that only interacts with its model safe worker.
-class Syncer {
+// A fake syncer that only interacts with its model safe worker.
+class FakeSyncer {
  public:
-  explicit Syncer(UIModelWorker* worker) : worker_(worker) {}
-  ~Syncer() {}
+  explicit FakeSyncer(UIModelWorker* worker) : worker_(worker) {}
+  ~FakeSyncer() {}
 
   void SyncShare(UIModelWorkerVisitor* visitor) {
     // We wait until the callback is executed. So it is safe to use Unretained.
-    syncer::WorkCallback c =
+    WorkCallback c =
         base::Bind(&UIModelWorkerVisitor::DoWork, base::Unretained(visitor));
     worker_->DoWorkAndWaitUntilDone(c);
   }
 
  private:
   scoped_refptr<UIModelWorker> worker_;
-  DISALLOW_COPY_AND_ASSIGN(Syncer);
+  DISALLOW_COPY_AND_ASSIGN(FakeSyncer);
 };
 
 class SyncUIModelWorkerTest : public testing::Test {
@@ -68,10 +68,10 @@ class SyncUIModelWorkerTest : public testing::Test {
   void SetUp() override {
     faux_syncer_thread_.Start();
     bmw_ = new UIModelWorker(base::ThreadTaskRunnerHandle::Get(), nullptr);
-    syncer_.reset(new Syncer(bmw_.get()));
+    syncer_.reset(new FakeSyncer(bmw_.get()));
   }
 
-  Syncer* syncer() { return syncer_.get(); }
+  FakeSyncer* syncer() { return syncer_.get(); }
   UIModelWorker* bmw() { return bmw_.get(); }
   base::Thread* core_thread() { return &faux_core_thread_; }
   base::Thread* syncer_thread() { return &faux_syncer_thread_; }
@@ -81,7 +81,7 @@ class SyncUIModelWorkerTest : public testing::Test {
   base::Thread faux_syncer_thread_;
   base::Thread faux_core_thread_;
   scoped_refptr<UIModelWorker> bmw_;
-  std::unique_ptr<Syncer> syncer_;
+  std::unique_ptr<FakeSyncer> syncer_;
 };
 
 TEST_F(SyncUIModelWorkerTest, ScheduledWorkRunsOnUILoop) {
@@ -93,10 +93,13 @@ TEST_F(SyncUIModelWorkerTest, ScheduledWorkRunsOnUILoop) {
 
   syncer_thread()->task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&Syncer::SyncShare, base::Unretained(syncer()), v.get()));
+      base::Bind(&FakeSyncer::SyncShare, base::Unretained(syncer()), v.get()));
 
   // We are on the UI thread, so run our loop to process the
   // (hopefully) scheduled task from a SyncShare invocation.
   base::RunLoop().Run();
   syncer_thread()->Stop();
 }
+
+}  // namespace
+}  // namespace syncer

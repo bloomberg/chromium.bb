@@ -65,7 +65,7 @@ struct ShouldShowSavePromptFirstRunExperienceTestcase {
   SavePromptFirstRunExperience first_run_experience;
 };
 
-class TestSyncService : public sync_driver::FakeSyncService {
+class TestSyncService : public syncer::FakeSyncService {
  public:
   // FakeSyncService overrides.
   bool IsSyncAllowed() const override { return is_sync_allowed_; }

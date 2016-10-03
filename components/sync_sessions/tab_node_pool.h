@@ -17,7 +17,7 @@
 
 namespace syncer {
 class SyncChangeProcessor;
-}
+}  // namespace syncer
 
 namespace sync_sessions {
 

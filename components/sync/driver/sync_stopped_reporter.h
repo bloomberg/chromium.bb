@@ -16,7 +16,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 
-namespace browser_sync {
+namespace syncer {
 
 // Manages informing the sync server that sync has been disabled.
 // An implementation of URLFetcherDelegate was needed in order to
@@ -75,6 +75,6 @@ class SyncStoppedReporter : public net::URLFetcherDelegate {
   DISALLOW_COPY_AND_ASSIGN(SyncStoppedReporter);
 };
 
-}  // namespace browser_sync
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DRIVER_SYNC_STOPPED_REPORTER_H_

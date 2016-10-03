@@ -75,8 +75,7 @@ class TestUserShare {
   syncable::TestTransactionObserver* transaction_observer();
 
   // A helper function to pretend to download this type's root node.
-  static bool CreateRoot(syncer::ModelType model_type,
-                         syncer::UserShare* service);
+  static bool CreateRoot(ModelType model_type, UserShare* service);
 
   size_t GetDeleteJournalSize() const;
 

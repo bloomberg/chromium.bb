@@ -35,7 +35,7 @@ void TestDirectorySetterUpper::SetUp() {
 }
 
 void TestDirectorySetterUpper::SetUpWith(
-    syncer::syncable::DirectoryBackingStore* directory_store) {
+    syncable::DirectoryBackingStore* directory_store) {
   CHECK(directory_store);
   test_transaction_observer_.reset(new syncable::TestTransactionObserver());
   WeakHandle<syncable::TransactionObserver> transaction_observer =

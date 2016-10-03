@@ -364,8 +364,8 @@ class WebDataServiceFake : public AutofillWebDataService {
 };
 
 ACTION_P(ReturnNewDataTypeManagerWithDebugListener, debug_listener) {
-  return new sync_driver::DataTypeManagerImpl(debug_listener, arg1, arg2, arg3,
-                                              arg4);
+  return new syncer::DataTypeManagerImpl(debug_listener, arg1, arg2, arg3,
+                                         arg4);
 }
 
 class MockPersonalDataManager : public PersonalDataManager {
@@ -603,7 +603,7 @@ class ProfileSyncServiceAutofillTest
     EXPECT_CALL(autofill_table_, UpdateAutofillEntries(Not(empty))).Times(0);
   }
 
-  std::unique_ptr<sync_driver::DataTypeController> CreateDataTypeController(
+  std::unique_ptr<syncer::DataTypeController> CreateDataTypeController(
       syncer::ModelType type) {
     DCHECK(type == AUTOFILL || type == AUTOFILL_PROFILE);
     if (type == AUTOFILL) {
@@ -653,8 +653,8 @@ class ProfileSyncServiceAutofillTest
   // |sync_client_owned_| keeps the created client until it is passed to the
   // created ProfileSyncService. |sync_client_| just keeps a weak reference to
   // the client the whole time.
-  std::unique_ptr<sync_driver::FakeSyncClient> sync_client_owned_;
-  sync_driver::FakeSyncClient* sync_client_;
+  std::unique_ptr<syncer::FakeSyncClient> sync_client_owned_;
+  syncer::FakeSyncClient* sync_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncServiceAutofillTest);
 };

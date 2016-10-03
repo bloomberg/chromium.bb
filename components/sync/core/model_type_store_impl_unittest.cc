@@ -12,7 +12,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace syncer_v2 {
+namespace syncer {
 
 class ModelTypeStoreImplTest : public testing::Test {
  public:
@@ -210,4 +210,4 @@ TEST_F(ModelTypeStoreImplTest, ReadMissingDataRecords) {
   ASSERT_THAT(*missing_id_list, testing::UnorderedElementsAre("id3"));
 }
 
-}  // namespace syncer_v2
+}  // namespace syncer

@@ -289,29 +289,29 @@ void SyncApiTest::CreateEntryWithAttachmentMetadata(
     const ModelType& model_type,
     const std::string& client_tag,
     const sync_pb::AttachmentMetadata& attachment_metadata) {
-  syncer::WriteTransaction trans(FROM_HERE, user_share());
-  syncer::ReadNode root_node(&trans);
+  WriteTransaction trans(FROM_HERE, user_share());
+  ReadNode root_node(&trans);
   root_node.InitByRootLookup();
-  syncer::WriteNode node(&trans);
+  WriteNode node(&trans);
   ASSERT_EQ(node.InitUniqueByCreation(model_type, root_node, client_tag),
-            syncer::WriteNode::INIT_SUCCESS);
+            WriteNode::INIT_SUCCESS);
   node.SetAttachmentMetadata(attachment_metadata);
 }
 
 BaseNode::InitByLookupResult SyncApiTest::LookupEntryByClientTag(
     const ModelType& model_type,
     const std::string& client_tag) {
-  syncer::ReadTransaction trans(FROM_HERE, user_share());
-  syncer::ReadNode node(&trans);
+  ReadTransaction trans(FROM_HERE, user_share());
+  ReadNode node(&trans);
   return node.InitByClientTagLookup(model_type, client_tag);
 }
 
 void SyncApiTest::ReplaceWithTombstone(const ModelType& model_type,
                                        const std::string& client_tag) {
-  syncer::WriteTransaction trans(FROM_HERE, user_share());
-  syncer::WriteNode node(&trans);
+  WriteTransaction trans(FROM_HERE, user_share());
+  WriteNode node(&trans);
   ASSERT_EQ(node.InitByClientTagLookup(model_type, client_tag),
-            syncer::WriteNode::INIT_OK);
+            WriteNode::INIT_OK);
   node.Tombstone();
 }
 
@@ -702,7 +702,7 @@ TEST_F(SyncApiTest, GetTotalNodeCountMultipleChildren) {
 TEST_F(SyncApiTest, AttachmentLinking) {
   // Add an entry with an attachment.
   std::string tag1("some tag");
-  syncer::AttachmentId attachment_id(syncer::AttachmentId::Create(0, 0));
+  AttachmentId attachment_id(AttachmentId::Create(0, 0));
   sync_pb::AttachmentMetadata attachment_metadata;
   sync_pb::AttachmentMetadataRecord* record = attachment_metadata.add_record();
   *record->mutable_id() = attachment_id.GetProto();
@@ -720,7 +720,7 @@ TEST_F(SyncApiTest, AttachmentLinking) {
   ASSERT_TRUE(dir()->IsAttachmentLinked(attachment_id.GetProto()));
 
   // Tombstone the first entry.
-  ReplaceWithTombstone(syncer::PREFERENCES, tag1);
+  ReplaceWithTombstone(PREFERENCES, tag1);
 
   // See that the attachment is still considered linked because the entry hasn't
   // been purged from the Directory.
@@ -729,7 +729,7 @@ TEST_F(SyncApiTest, AttachmentLinking) {
   // Save changes and see that the entry is truly gone.
   ASSERT_TRUE(dir()->SaveChanges());
   ASSERT_EQ(LookupEntryByClientTag(PREFERENCES, tag1),
-            syncer::WriteNode::INIT_FAILED_ENTRY_NOT_GOOD);
+            WriteNode::INIT_FAILED_ENTRY_NOT_GOOD);
 
   // However, the attachment is still linked.
   ASSERT_TRUE(dir()->IsAttachmentLinked(attachment_id.GetProto()));
@@ -739,10 +739,10 @@ TEST_F(SyncApiTest, AttachmentLinking) {
   ASSERT_TRUE(dir()->IsAttachmentLinked(attachment_id.GetProto()));
 
   // Tombstone the second entry, save changes, see that it's truly gone.
-  ReplaceWithTombstone(syncer::PREFERENCES, tag2);
+  ReplaceWithTombstone(PREFERENCES, tag2);
   ASSERT_TRUE(dir()->SaveChanges());
   ASSERT_EQ(LookupEntryByClientTag(PREFERENCES, tag2),
-            syncer::WriteNode::INIT_FAILED_ENTRY_NOT_GOOD);
+            WriteNode::INIT_FAILED_ENTRY_NOT_GOOD);
 
   // Finally, the attachment is no longer linked.
   ASSERT_FALSE(dir()->IsAttachmentLinked(attachment_id.GetProto()));
@@ -911,11 +911,11 @@ class SyncManagerObserverMock : public SyncManager::Observer {
                void(const WeakHandle<JsBackend>&,
                     const WeakHandle<DataTypeDebugInfoListener>&,
                     bool,
-                    syncer::ModelTypeSet));                         // NOLINT
+                    ModelTypeSet));                                 // NOLINT
   MOCK_METHOD1(OnConnectionStatusChange, void(ConnectionStatus));   // NOLINT
   MOCK_METHOD1(OnUpdatedToken, void(const std::string&));           // NOLINT
   MOCK_METHOD1(OnActionableError, void(const SyncProtocolError&));  // NOLINT
-  MOCK_METHOD1(OnMigrationRequested, void(syncer::ModelTypeSet));   // NOLINT
+  MOCK_METHOD1(OnMigrationRequested, void(ModelTypeSet));           // NOLINT
   MOCK_METHOD1(OnProtocolEvent, void(const ProtocolEvent&));        // NOLINT
 };
 

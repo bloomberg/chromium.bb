@@ -18,7 +18,7 @@
 #include "components/sync/protocol/proto_value_conversions.h"
 #include "components/sync/syncable/syncable_util.h"
 
-namespace syncer_v2 {
+namespace syncer {
 
 namespace {
 
@@ -77,7 +77,7 @@ void ModelTypeProcessorProxy::OnUpdateReceived(
 
 }  // namespace
 
-SharedModelTypeProcessor::SharedModelTypeProcessor(syncer::ModelType type,
+SharedModelTypeProcessor::SharedModelTypeProcessor(ModelType type,
                                                    ModelTypeService* service)
     : type_(type),
       is_metadata_loaded_(false),
@@ -92,14 +92,14 @@ SharedModelTypeProcessor::~SharedModelTypeProcessor() {}
 
 // static
 std::unique_ptr<ModelTypeChangeProcessor>
-SharedModelTypeProcessor::CreateAsChangeProcessor(syncer::ModelType type,
+SharedModelTypeProcessor::CreateAsChangeProcessor(ModelType type,
                                                   ModelTypeService* service) {
   return std::unique_ptr<ModelTypeChangeProcessor>(
       new SharedModelTypeProcessor(type, service));
 }
 
 void SharedModelTypeProcessor::OnSyncStarting(
-    std::unique_ptr<syncer::DataTypeErrorHandler> error_handler,
+    std::unique_ptr<DataTypeErrorHandler> error_handler,
     const StartCallback& start_callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(start_callback_.is_null());
@@ -113,7 +113,7 @@ void SharedModelTypeProcessor::OnSyncStarting(
 }
 
 void SharedModelTypeProcessor::OnMetadataLoaded(
-    syncer::SyncError error,
+    SyncError error,
     std::unique_ptr<MetadataBatch> batch) {
   DCHECK(CalledOnValidThread());
   DCHECK(entities_.empty());
@@ -194,7 +194,7 @@ bool SharedModelTypeProcessor::IsConnected() const {
 
 void SharedModelTypeProcessor::GetAllNodes(
     const scoped_refptr<base::TaskRunner>& task_runner,
-    const base::Callback<void(const syncer::ModelType,
+    const base::Callback<void(const ModelType,
                               std::unique_ptr<base::ListValue>)>& callback) {
   DCHECK(service_);
   service_->GetAllData(
@@ -214,14 +214,13 @@ void SharedModelTypeProcessor::DisableSync() {
   service_->ApplySyncChanges(std::move(change_list), EntityChangeList());
 }
 
-syncer::SyncError SharedModelTypeProcessor::CreateAndUploadError(
+SyncError SharedModelTypeProcessor::CreateAndUploadError(
     const tracked_objects::Location& location,
     const std::string& message) {
   if (error_handler_) {
     return error_handler_->CreateAndUploadError(location, message, type_);
   } else {
-    return syncer::SyncError(location, syncer::SyncError::DATATYPE_ERROR,
-                             message, type_);
+    return SyncError(location, SyncError::DATATYPE_ERROR, message, type_);
   }
 }
 
@@ -255,7 +254,7 @@ void SharedModelTypeProcessor::Put(const std::string& storage_key,
   DCHECK(data.get());
   DCHECK(!data->is_deleted());
   DCHECK(!data->non_unique_name.empty());
-  DCHECK_EQ(type_, syncer::GetModelTypeFromSpecifics(data->specifics));
+  DCHECK_EQ(type_, GetModelTypeFromSpecifics(data->specifics));
 
   if (!data_type_state_.initial_sync_done()) {
     // Ignore changes before the initial sync is done.
@@ -365,7 +364,7 @@ void SharedModelTypeProcessor::OnCommitCompleted(
     }
   }
 
-  syncer::SyncError error =
+  SyncError error =
       service_->ApplySyncChanges(std::move(change_list), EntityChangeList());
   if (error.IsSet()) {
     error_handler_->OnUnrecoverableError(error);
@@ -421,7 +420,7 @@ void SharedModelTypeProcessor::OnUpdateReceived(
   }
 
   // Inform the service of the new or updated data.
-  syncer::SyncError error =
+  SyncError error =
       service_->ApplySyncChanges(std::move(metadata_changes), entity_changes);
 
   if (error.IsSet()) {
@@ -614,7 +613,7 @@ void SharedModelTypeProcessor::OnInitialUpdateReceived(
   }
 
   // Let the service handle associating and merging the data.
-  syncer::SyncError error =
+  SyncError error =
       service_->MergeSyncData(std::move(metadata_changes), data_map);
 
   if (error.IsSet()) {
@@ -626,7 +625,7 @@ void SharedModelTypeProcessor::OnInitialUpdateReceived(
 }
 
 void SharedModelTypeProcessor::OnInitialPendingDataLoaded(
-    syncer::SyncError error,
+    SyncError error,
     std::unique_ptr<DataBatch> data_batch) {
   DCHECK(!is_initial_pending_data_loaded_);
 
@@ -641,7 +640,7 @@ void SharedModelTypeProcessor::OnInitialPendingDataLoaded(
 }
 
 void SharedModelTypeProcessor::OnDataLoadedForReEncryption(
-    syncer::SyncError error,
+    SyncError error,
     std::unique_ptr<DataBatch> data_batch) {
   DCHECK(is_initial_pending_data_loaded_);
 
@@ -667,7 +666,7 @@ void SharedModelTypeProcessor::ConsumeDataBatch(
 }
 
 std::string SharedModelTypeProcessor::GetHashForTag(const std::string& tag) {
-  return syncer::syncable::GenerateSyncableHash(type_, tag);
+  return syncable::GenerateSyncableHash(type_, tag);
 }
 
 std::string SharedModelTypeProcessor::GetClientTagHash(
@@ -717,9 +716,9 @@ ProcessorEntityTracker* SharedModelTypeProcessor::CreateEntity(
 
 void SharedModelTypeProcessor::MergeDataWithMetadata(
     const scoped_refptr<base::TaskRunner>& task_runner,
-    const base::Callback<void(const syncer::ModelType,
+    const base::Callback<void(const ModelType,
                               std::unique_ptr<base::ListValue>)>& callback,
-    syncer::SyncError error,
+    SyncError error,
     std::unique_ptr<DataBatch> batch) {
   std::unique_ptr<base::ListValue> all_nodes =
       base::MakeUnique<base::ListValue>();
@@ -732,7 +731,7 @@ void SharedModelTypeProcessor::MergeDataWithMetadata(
     ProcessorEntityTracker* entity = GetEntityForStorageKey(data.first);
     // Entity could be null if there are some unapplied changes.
     if (entity != nullptr) {
-      node->Set("metadata", syncer::EntityMetadataToValue(entity->metadata()));
+      node->Set("metadata", EntityMetadataToValue(entity->metadata()));
     }
     node->SetString("modelType", type_string);
     all_nodes->Append(std::move(node));
@@ -758,4 +757,4 @@ void SharedModelTypeProcessor::MergeDataWithMetadata(
                         base::Bind(callback, type_, base::Passed(&all_nodes)));
 }
 
-}  // namespace syncer_v2
+}  // namespace syncer

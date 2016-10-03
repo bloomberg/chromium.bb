@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_FOREIGN_SESSION_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_FOREIGN_SESSION_HANDLER_H_
 
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -21,7 +22,7 @@ struct SessionTab;
 struct SessionWindow;
 }
 
-namespace sync_driver {
+namespace syncer {
 class SyncService;
 }
 
@@ -32,7 +33,7 @@ class PrefRegistrySyncable;
 namespace browser_sync {
 
 class ForeignSessionHandler : public content::WebUIMessageHandler,
-                              public sync_driver::SyncServiceObserver {
+                              public syncer::SyncServiceObserver {
  public:
   // Invalid value, used to note that we don't have a tab or window number.
   static const int kInvalidId = -1;
@@ -60,7 +61,7 @@ class ForeignSessionHandler : public content::WebUIMessageHandler,
       content::WebUI* web_ui);
 
  private:
-  // sync_driver::SyncServiceObserver:
+  // syncer::SyncServiceObserver:
   void OnStateChanged() override {}
   void OnSyncConfigurationCompleted() override;
   void OnForeignSessionUpdated() override;
@@ -90,7 +91,7 @@ class ForeignSessionHandler : public content::WebUIMessageHandler,
   void HandleSetForeignSessionCollapsed(const base::ListValue* args);
 
   // ScopedObserver used to observe the ProfileSyncService.
-  ScopedObserver<sync_driver::SyncService, sync_driver::SyncServiceObserver>
+  ScopedObserver<syncer::SyncService, syncer::SyncServiceObserver>
       scoped_observer_;
 
   // The time at which this WebUI was created. Used to calculate how long

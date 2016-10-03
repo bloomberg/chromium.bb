@@ -18,7 +18,7 @@ namespace leveldb {
 class WriteBatch;
 }  // namespace leveldb
 
-namespace syncer_v2 {
+namespace syncer {
 
 class ModelTypeStoreBackend;
 
@@ -30,7 +30,7 @@ class ModelTypeStoreImpl : public ModelTypeStore, public base::NonThreadSafe {
   ~ModelTypeStoreImpl() override;
 
   static void CreateStore(
-      const syncer::ModelType type,
+      const ModelType type,
       const std::string& path,
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
       const InitCallback& callback);
@@ -65,15 +65,15 @@ class ModelTypeStoreImpl : public ModelTypeStore, public base::NonThreadSafe {
   };
 
   static void BackendInitDone(
-      const syncer::ModelType type,
+      const ModelType type,
       std::unique_ptr<Result> result,
       scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
       const InitCallback& callback,
       scoped_refptr<ModelTypeStoreBackend> backend);
 
   // Format prefix key for data/metadata records with |type|.
-  static std::string FormatDataPrefix(const syncer::ModelType type);
-  static std::string FormatMetaPrefix(const syncer::ModelType type);
+  static std::string FormatDataPrefix(const ModelType type);
+  static std::string FormatMetaPrefix(const ModelType type);
 
   static leveldb::WriteBatch* GetLeveldbWriteBatch(WriteBatch* write_batch);
 
@@ -82,7 +82,7 @@ class ModelTypeStoreImpl : public ModelTypeStore, public base::NonThreadSafe {
   std::string FormatMetadataKey(const std::string& id);
 
   ModelTypeStoreImpl(
-      const syncer::ModelType type,
+      const ModelType type,
       scoped_refptr<ModelTypeStoreBackend> backend,
       scoped_refptr<base::SequencedTaskRunner> backend_task_runner);
 
@@ -118,6 +118,6 @@ class ModelTypeStoreImpl : public ModelTypeStore, public base::NonThreadSafe {
   base::WeakPtrFactory<ModelTypeStoreImpl> weak_ptr_factory_;
 };
 
-}  // namespace syncer_v2
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_CORE_MODEL_TYPE_STORE_IMPL_H_

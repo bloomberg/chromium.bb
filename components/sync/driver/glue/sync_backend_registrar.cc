@@ -14,16 +14,11 @@
 #include "components/sync/driver/change_processor.h"
 #include "components/sync/driver/sync_client.h"
 
-using syncer::ModelSafeGroup;
-using syncer::ModelSafeRoutingInfo;
-using syncer::ModelType;
-using syncer::ModelTypeSet;
-
-namespace browser_sync {
+namespace syncer {
 
 SyncBackendRegistrar::SyncBackendRegistrar(
     const std::string& name,
-    sync_driver::SyncClient* sync_client,
+    SyncClient* sync_client,
     std::unique_ptr<base::Thread> sync_thread,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
     const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
@@ -44,12 +39,12 @@ SyncBackendRegistrar::SyncBackendRegistrar(
     CHECK(sync_thread_->StartWithOptions(options));
   }
 
-  MaybeAddWorker(syncer::GROUP_DB);
-  MaybeAddWorker(syncer::GROUP_FILE);
-  MaybeAddWorker(syncer::GROUP_UI);
-  MaybeAddWorker(syncer::GROUP_PASSIVE);
-  MaybeAddWorker(syncer::GROUP_HISTORY);
-  MaybeAddWorker(syncer::GROUP_PASSWORD);
+  MaybeAddWorker(GROUP_DB);
+  MaybeAddWorker(GROUP_FILE);
+  MaybeAddWorker(GROUP_UI);
+  MaybeAddWorker(GROUP_PASSIVE);
+  MaybeAddWorker(GROUP_HISTORY);
+  MaybeAddWorker(GROUP_PASSWORD);
 
   // Must have at least one worker for SyncBackendRegistrar to be destroyed
   // correctly, as it is destroyed after the last worker dies.
@@ -64,7 +59,7 @@ void SyncBackendRegistrar::RegisterNonBlockingType(ModelType type) {
   // are being registered in, so guard against SetInitialTypes(...) having been
   // already called by undoing everything to these types.
   if (routing_info_.find(type) != routing_info_.end() &&
-      routing_info_[type] != syncer::GROUP_NON_BLOCKING) {
+      routing_info_[type] != GROUP_NON_BLOCKING) {
     routing_info_.erase(type);
     last_configured_types_.Remove(type);
   }
@@ -86,24 +81,24 @@ void SyncBackendRegistrar::SetInitialTypes(ModelTypeSet initial_types) {
     // be registered as passive. The NonBlocking path will eventually take care
     // of adding to routing_info_ later on.
     if (!non_blocking_types_.Has(it.Get())) {
-      routing_info_[it.Get()] = syncer::GROUP_PASSIVE;
+      routing_info_[it.Get()] = GROUP_PASSIVE;
     }
   }
 
-  if (!workers_.count(syncer::GROUP_HISTORY)) {
-    LOG_IF(WARNING, initial_types.Has(syncer::TYPED_URLS))
+  if (!workers_.count(GROUP_HISTORY)) {
+    LOG_IF(WARNING, initial_types.Has(TYPED_URLS))
         << "History store disabled, cannot sync Omnibox History";
-    routing_info_.erase(syncer::TYPED_URLS);
+    routing_info_.erase(TYPED_URLS);
   }
 
-  if (!workers_.count(syncer::GROUP_PASSWORD)) {
-    LOG_IF(WARNING, initial_types.Has(syncer::PASSWORDS))
+  if (!workers_.count(GROUP_PASSWORD)) {
+    LOG_IF(WARNING, initial_types.Has(PASSWORDS))
         << "Password store not initialized, cannot sync passwords";
-    routing_info_.erase(syncer::PASSWORDS);
+    routing_info_.erase(PASSWORDS);
   }
 
   // Although this can re-set NonBlocking types, this should be idempotent.
-  last_configured_types_ = syncer::GetRoutingInfoTypes(routing_info_);
+  last_configured_types_ = GetRoutingInfoTypes(routing_info_);
 }
 
 void SyncBackendRegistrar::AddRestoredNonBlockingType(ModelType type) {
@@ -111,14 +106,14 @@ void SyncBackendRegistrar::AddRestoredNonBlockingType(ModelType type) {
   base::AutoLock lock(lock_);
   DCHECK(non_blocking_types_.Has(type));
   DCHECK(routing_info_.find(type) == routing_info_.end());
-  routing_info_[type] = syncer::GROUP_NON_BLOCKING;
+  routing_info_[type] = GROUP_NON_BLOCKING;
   last_configured_types_.Put(type);
 }
 
 bool SyncBackendRegistrar::IsNigoriEnabled() const {
   DCHECK(ui_thread_->BelongsToCurrentThread());
   base::AutoLock lock(lock_);
-  return routing_info_.find(syncer::NIGORI) != routing_info_.end();
+  return routing_info_.find(NIGORI) != routing_info_.end();
 }
 
 ModelTypeSet SyncBackendRegistrar::ConfigureDataTypes(
@@ -126,13 +121,13 @@ ModelTypeSet SyncBackendRegistrar::ConfigureDataTypes(
     ModelTypeSet types_to_remove) {
   DCHECK(Intersection(types_to_add, types_to_remove).Empty());
   ModelTypeSet filtered_types_to_add = types_to_add;
-  if (workers_.count(syncer::GROUP_HISTORY) == 0) {
+  if (workers_.count(GROUP_HISTORY) == 0) {
     LOG(WARNING) << "No history worker -- removing TYPED_URLS";
-    filtered_types_to_add.Remove(syncer::TYPED_URLS);
+    filtered_types_to_add.Remove(TYPED_URLS);
   }
-  if (workers_.count(syncer::GROUP_PASSWORD) == 0) {
+  if (workers_.count(GROUP_PASSWORD) == 0) {
     LOG(WARNING) << "No password worker -- removing PASSWORDS";
-    filtered_types_to_add.Remove(syncer::PASSWORDS);
+    filtered_types_to_add.Remove(PASSWORDS);
   }
 
   base::AutoLock lock(lock_);
@@ -158,7 +153,7 @@ ModelTypeSet SyncBackendRegistrar::ConfigureDataTypes(
            << ModelTypeSetToString(types_to_remove)
            << " to get new routing info "
            << ModelSafeRoutingInfoToString(routing_info_);
-  last_configured_types_ = syncer::GetRoutingInfoTypes(routing_info_);
+  last_configured_types_ = GetRoutingInfoTypes(routing_info_);
 
   return newly_added_types;
 }
@@ -176,18 +171,17 @@ void SyncBackendRegistrar::RequestWorkerStopOnUIThread() {
   }
 }
 
-void SyncBackendRegistrar::ActivateDataType(
-    ModelType type,
-    ModelSafeGroup group,
-    sync_driver::ChangeProcessor* change_processor,
-    syncer::UserShare* user_share) {
+void SyncBackendRegistrar::ActivateDataType(ModelType type,
+                                            ModelSafeGroup group,
+                                            ChangeProcessor* change_processor,
+                                            UserShare* user_share) {
   DVLOG(1) << "Activate: " << ModelTypeToString(type);
 
   base::AutoLock lock(lock_);
   // Ensure that the given data type is in the PASSIVE group.
   ModelSafeRoutingInfo::iterator i = routing_info_.find(type);
   DCHECK(i != routing_info_.end());
-  DCHECK_EQ(i->second, syncer::GROUP_PASSIVE);
+  DCHECK_EQ(i->second, GROUP_PASSIVE);
   routing_info_[type] = group;
 
   // Add the data type's change processor to the list of change
@@ -218,9 +212,9 @@ bool SyncBackendRegistrar::IsTypeActivatedForTest(ModelType type) const {
 void SyncBackendRegistrar::OnChangesApplied(
     ModelType model_type,
     int64_t model_version,
-    const syncer::BaseTransaction* trans,
-    const syncer::ImmutableChangeRecordList& changes) {
-  sync_driver::ChangeProcessor* processor = GetProcessor(model_type);
+    const BaseTransaction* trans,
+    const ImmutableChangeRecordList& changes) {
+  ChangeProcessor* processor = GetProcessor(model_type);
   if (!processor)
     return;
 
@@ -228,7 +222,7 @@ void SyncBackendRegistrar::OnChangesApplied(
 }
 
 void SyncBackendRegistrar::OnChangesComplete(ModelType model_type) {
-  sync_driver::ChangeProcessor* processor = GetProcessor(model_type);
+  ChangeProcessor* processor = GetProcessor(model_type);
   if (!processor)
     return;
 
@@ -239,7 +233,7 @@ void SyncBackendRegistrar::OnChangesComplete(ModelType model_type) {
 }
 
 void SyncBackendRegistrar::GetWorkers(
-    std::vector<scoped_refptr<syncer::ModelSafeWorker>>* out) {
+    std::vector<scoped_refptr<ModelSafeWorker>>* out) {
   base::AutoLock lock(lock_);
   out->clear();
   for (WorkerMap::const_iterator it = workers_.begin(); it != workers_.end();
@@ -254,23 +248,22 @@ void SyncBackendRegistrar::GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) {
   out->swap(copy);
 }
 
-sync_driver::ChangeProcessor* SyncBackendRegistrar::GetProcessor(
-    ModelType type) const {
+ChangeProcessor* SyncBackendRegistrar::GetProcessor(ModelType type) const {
   base::AutoLock lock(lock_);
-  sync_driver::ChangeProcessor* processor = GetProcessorUnsafe(type);
+  ChangeProcessor* processor = GetProcessorUnsafe(type);
   if (!processor)
     return NULL;
 
   // We can only check if |processor| exists, as otherwise the type is
-  // mapped to syncer::GROUP_PASSIVE.
+  // mapped to GROUP_PASSIVE.
   CHECK(IsCurrentThreadSafeForModel(type));
   return processor;
 }
 
-sync_driver::ChangeProcessor* SyncBackendRegistrar::GetProcessorUnsafe(
+ChangeProcessor* SyncBackendRegistrar::GetProcessorUnsafe(
     ModelType type) const {
   lock_.AssertAcquired();
-  std::map<ModelType, sync_driver::ChangeProcessor*>::const_iterator it =
+  std::map<ModelType, ChangeProcessor*>::const_iterator it =
       processors_.find(type);
 
   // Until model association happens for a datatype, it will not
@@ -295,21 +288,21 @@ bool SyncBackendRegistrar::IsCurrentThreadSafeForModel(
 bool SyncBackendRegistrar::IsOnThreadForGroup(ModelType type,
                                               ModelSafeGroup group) const {
   switch (group) {
-    case syncer::GROUP_PASSIVE:
+    case GROUP_PASSIVE:
       return IsControlType(type);
-    case syncer::GROUP_UI:
+    case GROUP_UI:
       return ui_thread_->BelongsToCurrentThread();
-    case syncer::GROUP_DB:
+    case GROUP_DB:
       return db_thread_->BelongsToCurrentThread();
-    case syncer::GROUP_FILE:
+    case GROUP_FILE:
       return file_thread_->BelongsToCurrentThread();
-    case syncer::GROUP_HISTORY:
+    case GROUP_HISTORY:
       // TODO(sync): How to check we're on the right thread?
-      return type == syncer::TYPED_URLS;
-    case syncer::GROUP_PASSWORD:
+      return type == TYPED_URLS;
+    case GROUP_PASSWORD:
       // TODO(sync): How to check we're on the right thread?
-      return type == syncer::PASSWORDS;
-    case syncer::GROUP_NON_BLOCKING:
+      return type == PASSWORDS;
+    case GROUP_NON_BLOCKING:
       // IsOnThreadForGroup shouldn't be called for non-blocking types.
       return false;
   }
@@ -326,7 +319,7 @@ void SyncBackendRegistrar::OnWorkerLoopDestroyed(ModelSafeGroup group) {
 }
 
 void SyncBackendRegistrar::MaybeAddWorker(ModelSafeGroup group) {
-  const scoped_refptr<syncer::ModelSafeWorker> worker =
+  const scoped_refptr<ModelSafeWorker> worker =
       sync_client_->CreateModelWorkerForGroup(group, this);
   if (worker) {
     DCHECK(workers_.find(group) == workers_.end());
@@ -383,8 +376,7 @@ base::Thread* SyncBackendRegistrar::sync_thread() {
 
 ModelSafeGroup SyncBackendRegistrar::GetInitialGroupForType(
     ModelType type) const {
-  return non_blocking_types_.Has(type) ? syncer::GROUP_NON_BLOCKING
-                                       : syncer::GROUP_PASSIVE;
+  return non_blocking_types_.Has(type) ? GROUP_NON_BLOCKING : GROUP_PASSIVE;
 }
 
-}  // namespace browser_sync
+}  // namespace syncer

@@ -10,7 +10,7 @@
 
 #include "components/sync/device_info/device_info.h"
 
-namespace sync_driver {
+namespace syncer {
 
 // Interface for tracking synced DeviceInfo.
 class DeviceInfoTracker {
@@ -40,6 +40,6 @@ class DeviceInfoTracker {
   virtual int CountActiveDevices() const = 0;
 };
 
-}  // namespace sync_driver
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DEVICE_INFO_DEVICE_INFO_TRACKER_H_

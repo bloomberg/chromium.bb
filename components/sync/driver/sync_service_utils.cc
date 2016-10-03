@@ -7,16 +7,15 @@
 #include "components/sync/driver/sync_prefs.h"
 #include "components/sync/driver/sync_service.h"
 
-namespace sync_driver {
+namespace syncer {
 
 bool IsTabSyncEnabledAndUnencrypted(SyncService* sync_service,
                                     PrefService* pref_service) {
   // Check field trials and settings allow sending the URL on suggest requests.
-  sync_driver::SyncPrefs sync_prefs(pref_service);
+  SyncPrefs sync_prefs(pref_service);
   return sync_service && sync_service->CanSyncStart() &&
-         sync_prefs.GetPreferredDataTypes(syncer::UserTypes())
-             .Has(syncer::PROXY_TABS) &&
-         !sync_service->GetEncryptedDataTypes().Has(syncer::SESSIONS);
+         sync_prefs.GetPreferredDataTypes(UserTypes()).Has(PROXY_TABS) &&
+         !sync_service->GetEncryptedDataTypes().Has(SESSIONS);
 }
 
-}  // namespace sync_driver
+}  // namespace syncer

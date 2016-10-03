@@ -20,7 +20,7 @@
 #include "ui/app_list/app_list_switches.h"
 
 using browser_sync::ProfileSyncService;
-using sync_driver::DataTypeController;
+using syncer::DataTypeController;
 
 class ProfileSyncServiceFactoryTest : public testing::Test {
  protected:

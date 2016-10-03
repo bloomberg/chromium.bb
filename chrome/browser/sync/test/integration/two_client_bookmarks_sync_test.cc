@@ -1999,8 +1999,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
 
   // Set a passphrase and enable encryption on Client 0. Client 1 will not
   // understand the bookmark updates.
-  GetSyncService(0)->SetEncryptionPassphrase(
-      kValidPassphrase, sync_driver::SyncService::EXPLICIT);
+  GetSyncService(0)->SetEncryptionPassphrase(kValidPassphrase,
+                                             syncer::SyncService::EXPLICIT);
   ASSERT_TRUE(PassphraseAcceptedChecker(GetSyncService(0)).Wait());
   ASSERT_TRUE(EnableEncryption(0));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));

@@ -125,7 +125,7 @@ PrefService* ChromeAutofillClient::GetPrefs() {
       ->GetPrefs();
 }
 
-sync_driver::SyncService* ChromeAutofillClient::GetSyncService() {
+syncer::SyncService* ChromeAutofillClient::GetSyncService() {
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   return ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);

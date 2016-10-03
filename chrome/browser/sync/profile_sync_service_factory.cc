@@ -91,8 +91,7 @@ ProfileSyncService* ProfileSyncServiceFactory::GetForProfile(
 }
 
 // static
-sync_driver::SyncService*
-ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(
+syncer::SyncService* ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(
     content::BrowserContext* context) {
   return GetForProfile(Profile::FromBrowserContext(context));
 }

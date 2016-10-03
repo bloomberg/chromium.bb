@@ -10,7 +10,7 @@
 #include "components/sync/driver/model_associator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace sync_driver {
+namespace syncer {
 
 ACTION_P(SetSyncError, type) {
   arg0->Reset(FROM_HERE, "test", type);
@@ -21,15 +21,13 @@ class ModelAssociatorMock : public AssociatorInterface {
   ModelAssociatorMock();
   virtual ~ModelAssociatorMock();
 
-  MOCK_METHOD2(AssociateModels,
-               syncer::SyncError(syncer::SyncMergeResult*,
-                                 syncer::SyncMergeResult*));
-  MOCK_METHOD0(DisassociateModels, syncer::SyncError());
+  MOCK_METHOD2(AssociateModels, SyncError(SyncMergeResult*, SyncMergeResult*));
+  MOCK_METHOD0(DisassociateModels, SyncError());
   MOCK_METHOD1(SyncModelHasUserCreatedNodes, bool(bool* has_nodes));
   MOCK_METHOD0(AbortAssociation, void());
   MOCK_METHOD0(CryptoReadyIfNecessary, bool());
 };
 
-}  // namespace sync_driver
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DRIVER_MODEL_ASSOCIATOR_MOCK_H__

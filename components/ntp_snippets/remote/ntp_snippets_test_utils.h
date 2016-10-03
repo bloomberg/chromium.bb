@@ -19,7 +19,7 @@ class TestSigninClient;
 namespace ntp_snippets {
 namespace test {
 
-class FakeSyncService : public sync_driver::FakeSyncService {
+class FakeSyncService : public syncer::FakeSyncService {
  public:
   FakeSyncService();
   ~FakeSyncService() override;

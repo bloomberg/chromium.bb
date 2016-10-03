@@ -14,7 +14,7 @@
 #include "components/sync/api/entity_data.h"
 #include "components/sync/protocol/entity_metadata.pb.h"
 
-namespace syncer_v2 {
+namespace syncer {
 struct CommitRequestData;
 struct CommitResponseData;
 struct UpdateResponseData;
@@ -148,6 +148,6 @@ class ProcessorEntityTracker {
   int64_t commit_requested_sequence_number_;
 };
 
-}  // namespace syncer_v2
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_CORE_PROCESSOR_ENTITY_TRACKER_H_

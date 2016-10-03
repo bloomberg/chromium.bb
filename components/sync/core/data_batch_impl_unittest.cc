@@ -7,7 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace syncer_v2 {
+namespace syncer {
 
 TEST(DataBatchImplTest, PutAndNextWithReuse) {
   EntityData* entity1 = new EntityData();
@@ -88,4 +88,4 @@ TEST(DataBatchImplTest, PutAndNextSharedKey) {
   EXPECT_EQ(entity2, pair2.second.get());
 }
 
-}  // namespace syncer_v2
+}  // namespace syncer

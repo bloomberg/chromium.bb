@@ -40,7 +40,7 @@ FaviconSource::IconRequest::~IconRequest() {}
 
 FaviconSource::FaviconSource(favicon::FaviconService* favicon_service,
                              const scoped_refptr<history::TopSites>& top_sites,
-                             sync_driver::SyncService* sync_service)
+                             syncer::SyncService* sync_service)
     : favicon_service_(favicon_service),
       top_sites_(top_sites),
       sync_service_(sync_service) {}

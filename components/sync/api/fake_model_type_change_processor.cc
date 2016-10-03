@@ -10,11 +10,11 @@
 #include "components/sync/api/model_type_service.h"
 #include "components/sync/api/sync_error.h"
 
-namespace syncer_v2 {
+namespace syncer {
 
 // static
 std::unique_ptr<ModelTypeChangeProcessor> FakeModelTypeChangeProcessor::Create(
-    syncer::ModelType type,
+    ModelType type,
     ModelTypeService* service) {
   return base::WrapUnique(new FakeModelTypeChangeProcessor());
 }
@@ -32,23 +32,23 @@ void FakeModelTypeChangeProcessor::Delete(
     MetadataChangeList* metadata_change_list) {}
 
 void FakeModelTypeChangeProcessor::OnMetadataLoaded(
-    syncer::SyncError error,
+    SyncError error,
     std::unique_ptr<MetadataBatch> batch) {}
 
 void FakeModelTypeChangeProcessor::OnSyncStarting(
-    std::unique_ptr<syncer::DataTypeErrorHandler> error_handler,
+    std::unique_ptr<DataTypeErrorHandler> error_handler,
     const StartCallback& callback) {
   if (!callback.is_null()) {
-    callback.Run(syncer::SyncError(), nullptr);
+    callback.Run(SyncError(), nullptr);
   }
 }
 
 void FakeModelTypeChangeProcessor::DisableSync() {}
 
-syncer::SyncError FakeModelTypeChangeProcessor::CreateAndUploadError(
+SyncError FakeModelTypeChangeProcessor::CreateAndUploadError(
     const tracked_objects::Location& location,
     const std::string& message) {
-  return syncer::SyncError();
+  return SyncError();
 }
 
-}  // namespace syncer_v2
+}  // namespace syncer

@@ -14,7 +14,7 @@ namespace base {
 class TaskRunner;
 }
 
-namespace sync_driver {
+namespace syncer {
 
 class DeviceInfo;
 
@@ -59,6 +59,6 @@ class LocalDeviceInfoProvider {
   virtual void Clear() = 0;
 };
 
-}  // namespace sync_driver
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DEVICE_INFO_LOCAL_DEVICE_INFO_PROVIDER_H_

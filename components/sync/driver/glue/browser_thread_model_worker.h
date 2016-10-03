@@ -14,45 +14,44 @@
 namespace base {
 class SingleThreadTaskRunner;
 class WaitableEvent;
-}
+}  // namespace base
 
-namespace browser_sync {
+namespace syncer {
 
-// A syncer::ModelSafeWorker for models that accept requests from the
+// A ModelSafeWorker for models that accept requests from the
 // syncapi that need to be fulfilled on a browser thread, for example
 // autofill on the DB thread.
 // TODO(sync): Try to generalize other ModelWorkers (e.g. history, etc).
-class BrowserThreadModelWorker : public syncer::ModelSafeWorker {
+class BrowserThreadModelWorker : public ModelSafeWorker {
  public:
   BrowserThreadModelWorker(
       const scoped_refptr<base::SingleThreadTaskRunner>& runner,
-      syncer::ModelSafeGroup group,
-      syncer::WorkerLoopDestructionObserver* observer);
+      ModelSafeGroup group,
+      WorkerLoopDestructionObserver* observer);
 
-  // syncer::ModelSafeWorker implementation. Called on the sync thread.
+  // ModelSafeWorker implementation. Called on the sync thread.
   void RegisterForLoopDestruction() override;
-  syncer::ModelSafeGroup GetModelSafeGroup() override;
+  ModelSafeGroup GetModelSafeGroup() override;
 
  protected:
   ~BrowserThreadModelWorker() override;
 
-  syncer::SyncerError DoWorkAndWaitUntilDoneImpl(
-      const syncer::WorkCallback& work) override;
+  SyncerError DoWorkAndWaitUntilDoneImpl(const WorkCallback& work) override;
 
   // Marked pure virtual so subclasses have to override, but there is
   // an implementation that subclasses should use.  This is so that
   // (subclass)::CallDoWorkAndSignalTask shows up in callstacks.
-  virtual void CallDoWorkAndSignalTask(const syncer::WorkCallback& work,
+  virtual void CallDoWorkAndSignalTask(const WorkCallback& work,
                                        base::WaitableEvent* done,
-                                       syncer::SyncerError* error);
+                                       SyncerError* error);
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> runner_;
-  syncer::ModelSafeGroup group_;
+  ModelSafeGroup group_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserThreadModelWorker);
 };
 
-}  // namespace browser_sync
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DRIVER_GLUE_BROWSER_THREAD_MODEL_WORKER_H_

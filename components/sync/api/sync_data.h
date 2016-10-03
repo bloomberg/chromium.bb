@@ -73,7 +73,7 @@ class SyncData {
       const sync_pb::EntitySpecifics& specifics,
       const base::Time& last_modified_time,
       const AttachmentIdList& attachment_ids,
-      const syncer::AttachmentServiceProxy& attachment_service,
+      const AttachmentServiceProxy& attachment_service,
       const std::string& client_tag_hash = std::string());
 
   // Whether this SyncData holds valid data. The only way to have a SyncData
@@ -145,7 +145,7 @@ class SyncData {
   SyncData(int64_t id,
            sync_pb::SyncEntity* entity,
            const base::Time& remote_modification_time,
-           const syncer::AttachmentServiceProxy& attachment_service);
+           const AttachmentServiceProxy& attachment_service);
 };
 
 // A SyncData going to the syncer.

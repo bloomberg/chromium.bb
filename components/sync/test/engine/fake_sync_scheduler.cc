@@ -23,7 +23,7 @@ void FakeSyncScheduler::ScheduleLocalRefreshRequest(
     const tracked_objects::Location& nudge_location) {}
 
 void FakeSyncScheduler::ScheduleInvalidationNudge(
-    syncer::ModelType type,
+    ModelType type,
     std::unique_ptr<InvalidationInterface> interface,
     const tracked_objects::Location& nudge_location) {}
 
@@ -36,8 +36,7 @@ void FakeSyncScheduler::ScheduleClearServerData(const ClearParams& params) {
   params.report_success_task.Run();
 }
 
-void FakeSyncScheduler::ScheduleInitialSyncNudge(syncer::ModelType model_type) {
-}
+void FakeSyncScheduler::ScheduleInitialSyncNudge(ModelType model_type) {}
 
 void FakeSyncScheduler::SetNotificationsEnabled(bool notifications_enabled) {}
 

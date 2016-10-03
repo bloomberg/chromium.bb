@@ -26,23 +26,17 @@
 #include "components/sync/test/engine/single_type_mock_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using syncer::Cryptographer;
-using syncer::CommitContribution;
-using syncer::KeyParams;
-using syncer::Nigori;
-using syncer::StatusController;
-
-namespace syncer_v2 {
+namespace syncer {
 
 namespace {
 
 // Special constant value taken from cryptographer.cc.
 const char kNigoriKeyName[] = "nigori-key";
 
-const syncer::ModelType kModelType = syncer::PREFERENCES;
+const ModelType kModelType = PREFERENCES;
 
 std::string GenerateTagHash(const std::string& tag) {
-  return syncer::syncable::GenerateSyncableHash(kModelType, tag);
+  return syncable::GenerateSyncableHash(kModelType, tag);
 }
 
 const char kTag1[] = "tag1";
@@ -433,11 +427,11 @@ class ModelTypeWorkerTest : public ::testing::Test {
 
   MockModelTypeProcessor* processor() { return mock_type_processor_; }
   ModelTypeWorker* worker() { return worker_.get(); }
-  syncer::SingleTypeMockServer* server() { return &mock_server_; }
+  SingleTypeMockServer* server() { return &mock_server_; }
 
  private:
   // An encryptor for our cryptographer.
-  syncer::FakeEncryptor fake_encryptor_;
+  FakeEncryptor fake_encryptor_;
 
   // The cryptographer itself. Null if we're not encrypting the type.
   std::unique_ptr<Cryptographer> cryptographer_;
@@ -460,11 +454,11 @@ class ModelTypeWorkerTest : public ::testing::Test {
   // A mock that emulates enough of the sync server that it can be used
   // a single UpdateHandler and CommitContributor pair. In this test
   // harness, the |worker_| is both of them.
-  syncer::SingleTypeMockServer mock_server_;
+  SingleTypeMockServer mock_server_;
 
   // A mock to track the number of times the CommitQueue requests to
   // sync.
-  syncer::MockNudgeHandler mock_nudge_handler_;
+  MockNudgeHandler mock_nudge_handler_;
 
   bool is_processor_disconnected_;
 };
@@ -557,7 +551,7 @@ TEST_F(ModelTypeWorkerTest, SimpleDelete) {
 
   // Deletions should contain enough specifics to identify the type.
   EXPECT_TRUE(entity.has_specifics());
-  EXPECT_EQ(kModelType, syncer::GetModelTypeFromSpecifics(entity.specifics()));
+  EXPECT_EQ(kModelType, GetModelTypeFromSpecifics(entity.specifics()));
 
   // Verify the commit response returned to the model thread.
   ASSERT_EQ(2U, processor()->GetNumCommitResponses());
@@ -1035,4 +1029,4 @@ TEST_F(ModelTypeWorkerTest, DisconnectProcessorFromSyncTest) {
   EXPECT_TRUE(IsProcessorDisconnected());
 }
 
-}  // namespace syncer_v2
+}  // namespace syncer

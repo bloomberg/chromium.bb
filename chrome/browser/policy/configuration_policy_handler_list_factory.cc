@@ -704,7 +704,7 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(base::MakeUnique<JavascriptPolicyHandler>());
   handlers->AddHandler(base::MakeUnique<NetworkPredictionPolicyHandler>());
   handlers->AddHandler(base::MakeUnique<RestoreOnStartupPolicyHandler>());
-  handlers->AddHandler(base::MakeUnique<sync_driver::SyncPolicyHandler>());
+  handlers->AddHandler(base::MakeUnique<syncer::SyncPolicyHandler>());
 
   handlers->AddHandler(base::MakeUnique<StringMappingListPolicyHandler>(
       key::kEnableDeprecatedWebPlatformFeatures,

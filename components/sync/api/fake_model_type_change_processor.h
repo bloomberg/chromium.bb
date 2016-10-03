@@ -12,7 +12,7 @@
 #include "components/sync/api/model_type_change_processor.h"
 #include "components/sync/base/model_type.h"
 
-namespace syncer_v2 {
+namespace syncer {
 
 class ModelTypeService;
 
@@ -20,7 +20,7 @@ class ModelTypeService;
 class FakeModelTypeChangeProcessor : public ModelTypeChangeProcessor {
  public:
   static std::unique_ptr<ModelTypeChangeProcessor> Create(
-      syncer::ModelType type,
+      ModelType type,
       ModelTypeService* service);
 
   FakeModelTypeChangeProcessor();
@@ -32,17 +32,15 @@ class FakeModelTypeChangeProcessor : public ModelTypeChangeProcessor {
            MetadataChangeList* metadata_change_list) override;
   void Delete(const std::string& client_tag,
               MetadataChangeList* metadata_change_list) override;
-  void OnMetadataLoaded(syncer::SyncError error,
+  void OnMetadataLoaded(SyncError error,
                         std::unique_ptr<MetadataBatch> batch) override;
-  void OnSyncStarting(
-      std::unique_ptr<syncer::DataTypeErrorHandler> error_handler,
-      const StartCallback& callback) override;
+  void OnSyncStarting(std::unique_ptr<DataTypeErrorHandler> error_handler,
+                      const StartCallback& callback) override;
   void DisableSync() override;
-  syncer::SyncError CreateAndUploadError(
-      const tracked_objects::Location& location,
-      const std::string& message) override;
+  SyncError CreateAndUploadError(const tracked_objects::Location& location,
+                                 const std::string& message) override;
 };
 
-}  // namespace syncer_v2
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_API_FAKE_MODEL_TYPE_CHANGE_PROCESSOR_H_

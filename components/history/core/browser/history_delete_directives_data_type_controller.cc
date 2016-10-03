@@ -10,12 +10,11 @@
 namespace browser_sync {
 
 HistoryDeleteDirectivesDataTypeController::
-    HistoryDeleteDirectivesDataTypeController(
-        const base::Closure& dump_stack,
-        sync_driver::SyncClient* sync_client)
-    : sync_driver::UIDataTypeController(syncer::HISTORY_DELETE_DIRECTIVES,
-                                        dump_stack,
-                                        sync_client),
+    HistoryDeleteDirectivesDataTypeController(const base::Closure& dump_stack,
+                                              syncer::SyncClient* sync_client)
+    : syncer::UIDataTypeController(syncer::HISTORY_DELETE_DIRECTIVES,
+                                   dump_stack,
+                                   sync_client),
       sync_client_(sync_client) {}
 
 HistoryDeleteDirectivesDataTypeController::

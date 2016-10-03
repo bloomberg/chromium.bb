@@ -11,7 +11,7 @@
 
 class PrefValueMap;
 
-namespace sync_driver {
+namespace syncer {
 
 class PolicyMap;
 
@@ -29,6 +29,6 @@ class SyncPolicyHandler : public policy::TypeCheckingPolicyHandler {
   DISALLOW_COPY_AND_ASSIGN(SyncPolicyHandler);
 };
 
-}  // namespace sync_driver
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DRIVER_SYNC_POLICY_HANDLER_H_

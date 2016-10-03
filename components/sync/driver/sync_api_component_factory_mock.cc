@@ -12,54 +12,55 @@
 #include "components/sync/driver/change_processor.h"
 #include "components/sync/driver/model_associator.h"
 
-using sync_driver::AssociatorInterface;
-using sync_driver::ChangeProcessor;
 using testing::_;
 using testing::InvokeWithoutArgs;
 using testing::Return;
 
+namespace syncer {
+
 SyncApiComponentFactoryMock::SyncApiComponentFactoryMock()
-    : local_device_(new sync_driver::LocalDeviceInfoProviderMock()) {}
+    : local_device_(new LocalDeviceInfoProviderMock()) {}
 
 SyncApiComponentFactoryMock::SyncApiComponentFactoryMock(
     AssociatorInterface* model_associator,
     ChangeProcessor* change_processor)
     : model_associator_(model_associator),
       change_processor_(change_processor),
-      local_device_(new sync_driver::LocalDeviceInfoProviderMock()) {
-}
+      local_device_(new LocalDeviceInfoProviderMock()) {}
 
 SyncApiComponentFactoryMock::~SyncApiComponentFactoryMock() {}
 
-std::unique_ptr<syncer::AttachmentService>
+std::unique_ptr<AttachmentService>
 SyncApiComponentFactoryMock::CreateAttachmentService(
-    std::unique_ptr<syncer::AttachmentStoreForSync> attachment_store,
-    const syncer::UserShare& user_share,
+    std::unique_ptr<AttachmentStoreForSync> attachment_store,
+    const UserShare& user_share,
     const std::string& store_birthday,
-    syncer::ModelType model_type,
-    syncer::AttachmentService::Delegate* delegate) {
-  return syncer::AttachmentServiceImpl::CreateForTest();
+    ModelType model_type,
+    AttachmentService::Delegate* delegate) {
+  return AttachmentServiceImpl::CreateForTest();
 }
 
-sync_driver::SyncApiComponentFactory::SyncComponents
+SyncApiComponentFactory::SyncComponents
 SyncApiComponentFactoryMock::CreateBookmarkSyncComponents(
-    sync_driver::SyncService* sync_service,
-    std::unique_ptr<syncer::DataTypeErrorHandler> error_handler) {
+    SyncService* sync_service,
+    std::unique_ptr<DataTypeErrorHandler> error_handler) {
   return MakeSyncComponents();
 }
 
-sync_driver::SyncApiComponentFactory::SyncComponents
+SyncApiComponentFactory::SyncComponents
 SyncApiComponentFactoryMock::MakeSyncComponents() {
-  return sync_driver::SyncApiComponentFactory::SyncComponents(
-      model_associator_.release(), change_processor_.release());
+  return SyncApiComponentFactory::SyncComponents(model_associator_.release(),
+                                                 change_processor_.release());
 }
 
-std::unique_ptr<sync_driver::LocalDeviceInfoProvider>
+std::unique_ptr<LocalDeviceInfoProvider>
 SyncApiComponentFactoryMock::CreateLocalDeviceInfoProvider() {
   return std::move(local_device_);
 }
 
 void SyncApiComponentFactoryMock::SetLocalDeviceInfoProvider(
-    std::unique_ptr<sync_driver::LocalDeviceInfoProvider> local_device) {
+    std::unique_ptr<LocalDeviceInfoProvider> local_device) {
   local_device_ = std::move(local_device);
 }
+
+}  // namespace syncer

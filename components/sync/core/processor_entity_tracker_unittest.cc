@@ -18,7 +18,7 @@
 #include "components/sync/syncable/syncable_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace syncer_v2 {
+namespace syncer {
 
 namespace {
 
@@ -135,8 +135,7 @@ TEST_F(ProcessorEntityTrackerTest, DefaultTracker) {
   EXPECT_EQ(0, entity->metadata().sequence_number());
   EXPECT_EQ(0, entity->metadata().acked_sequence_number());
   EXPECT_EQ(kUncommittedVersion, entity->metadata().server_version());
-  EXPECT_EQ(syncer::TimeToProtoTime(ctime_),
-            entity->metadata().creation_time());
+  EXPECT_EQ(TimeToProtoTime(ctime_), entity->metadata().creation_time());
   EXPECT_EQ(0, entity->metadata().modification_time());
   EXPECT_TRUE(entity->metadata().specifics_hash().empty());
   EXPECT_TRUE(entity->metadata().base_specifics_hash().empty());
@@ -191,10 +190,9 @@ TEST_F(ProcessorEntityTrackerTest, NewLocalItem) {
   EXPECT_EQ(kHash, data.client_tag_hash);
   EXPECT_EQ(kName, data.non_unique_name);
   EXPECT_EQ(kValue1, data.specifics.preference().value());
-  EXPECT_EQ(syncer::TimeToProtoTime(ctime_),
-            syncer::TimeToProtoTime(data.creation_time));
+  EXPECT_EQ(TimeToProtoTime(ctime_), TimeToProtoTime(data.creation_time));
   EXPECT_EQ(entity->metadata().modification_time(),
-            syncer::TimeToProtoTime(data.modification_time));
+            TimeToProtoTime(data.modification_time));
   EXPECT_FALSE(data.is_deleted());
   EXPECT_EQ(1, request.sequence_number);
   EXPECT_EQ(kUncommittedVersion, request.base_version);
@@ -235,8 +233,7 @@ TEST_F(ProcessorEntityTrackerTest, NewServerItem) {
   EXPECT_EQ(0, entity->metadata().sequence_number());
   EXPECT_EQ(0, entity->metadata().acked_sequence_number());
   EXPECT_EQ(10, entity->metadata().server_version());
-  EXPECT_EQ(syncer::TimeToProtoTime(mtime),
-            entity->metadata().modification_time());
+  EXPECT_EQ(TimeToProtoTime(mtime), entity->metadata().modification_time());
   EXPECT_FALSE(entity->metadata().specifics_hash().empty());
   EXPECT_TRUE(entity->metadata().base_specifics_hash().empty());
 
@@ -263,8 +260,7 @@ TEST_F(ProcessorEntityTrackerTest, NewServerTombstone) {
   EXPECT_EQ(0, entity->metadata().sequence_number());
   EXPECT_EQ(0, entity->metadata().acked_sequence_number());
   EXPECT_EQ(1, entity->metadata().server_version());
-  EXPECT_EQ(syncer::TimeToProtoTime(mtime),
-            entity->metadata().modification_time());
+  EXPECT_EQ(TimeToProtoTime(mtime), entity->metadata().modification_time());
   EXPECT_TRUE(entity->metadata().specifics_hash().empty());
   EXPECT_TRUE(entity->metadata().base_specifics_hash().empty());
 
@@ -290,8 +286,7 @@ TEST_F(ProcessorEntityTrackerTest, ServerTombstone) {
   EXPECT_EQ(0, entity->metadata().sequence_number());
   EXPECT_EQ(0, entity->metadata().acked_sequence_number());
   EXPECT_EQ(2, entity->metadata().server_version());
-  EXPECT_EQ(syncer::TimeToProtoTime(mtime),
-            entity->metadata().modification_time());
+  EXPECT_EQ(TimeToProtoTime(mtime), entity->metadata().modification_time());
   EXPECT_TRUE(entity->metadata().specifics_hash().empty());
   EXPECT_TRUE(entity->metadata().base_specifics_hash().empty());
 
@@ -394,10 +389,9 @@ TEST_F(ProcessorEntityTrackerTest, LocalDeletion) {
   EXPECT_EQ(kId, data.id);
   EXPECT_EQ(kHash, data.client_tag_hash);
   EXPECT_EQ("", data.non_unique_name);
-  EXPECT_EQ(syncer::TimeToProtoTime(ctime_),
-            syncer::TimeToProtoTime(data.creation_time));
+  EXPECT_EQ(TimeToProtoTime(ctime_), TimeToProtoTime(data.creation_time));
   EXPECT_EQ(entity->metadata().modification_time(),
-            syncer::TimeToProtoTime(data.modification_time));
+            TimeToProtoTime(data.modification_time));
   EXPECT_TRUE(data.is_deleted());
   EXPECT_EQ(1, request.sequence_number);
   EXPECT_EQ(1, request.base_version);
@@ -491,4 +485,4 @@ TEST_F(ProcessorEntityTrackerTest, LocalChangesInterleaved) {
   EXPECT_FALSE(entity->HasCommitData());
 }
 
-}  // namespace syncer_v2
+}  // namespace syncer

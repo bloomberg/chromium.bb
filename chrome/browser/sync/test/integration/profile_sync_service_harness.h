@@ -20,9 +20,9 @@ namespace browser_sync {
 class ProfileSyncService;
 }  // namespace browser_sync
 
-namespace sync_driver {
+namespace syncer {
 class SyncSetupInProgressHandle;
-}  // namespace sync_driver
+}  // namespace syncer
 
 // An instance of this class is basically our notion of a "sync client" for
 // automation purposes. It harnesses the ProfileSyncService member of the
@@ -89,7 +89,7 @@ class ProfileSyncServiceHarness {
   bool AwaitBackendInitialization();
 
   // Blocks the caller until sync setup is complete. Returns true if and only
-  // if sync setup completed successfully. See sync_driver::SyncService's
+  // if sync setup completed successfully. See syncer::SyncService's
   // IsSyncActive() method for the definition of what successful means here.
   bool AwaitSyncSetupCompletion();
 
@@ -149,7 +149,7 @@ class ProfileSyncServiceHarness {
   browser_sync::ProfileSyncService* service_;
 
   // Prevents Sync from running until configuration is complete.
-  std::unique_ptr<sync_driver::SyncSetupInProgressHandle> sync_blocker_;
+  std::unique_ptr<syncer::SyncSetupInProgressHandle> sync_blocker_;
 
   // Credentials used for GAIA authentication.
   std::string username_;

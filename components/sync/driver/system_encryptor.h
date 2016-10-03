@@ -10,10 +10,10 @@
 #include "base/compiler_specific.h"
 #include "components/sync/base/encryptor.h"
 
-namespace sync_driver {
+namespace syncer {
 
 // Encryptor that uses the Chrome password manager's encryptor.
-class SystemEncryptor : public syncer::Encryptor {
+class SystemEncryptor : public Encryptor {
  public:
   ~SystemEncryptor() override;
 
@@ -24,6 +24,6 @@ class SystemEncryptor : public syncer::Encryptor {
                      std::string* plaintext) override;
 };
 
-}  // namespace sync_driver
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DRIVER_SYSTEM_ENCRYPTOR_H_

@@ -27,27 +27,10 @@
 #include "components/sync/protocol/data_type_state.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace sync_driver_v2 {
+namespace syncer {
 
 using base::Time;
 using base::TimeDelta;
-using syncer::SyncError;
-using syncer_v2::DataBatch;
-using syncer_v2::EntityChange;
-using syncer_v2::EntityChangeList;
-using syncer_v2::EntityData;
-using syncer_v2::EntityDataMap;
-using syncer_v2::EntityDataPtr;
-using syncer_v2::MetadataBatch;
-using syncer_v2::MetadataChangeList;
-using syncer_v2::ModelTypeChangeProcessor;
-using syncer_v2::ModelTypeService;
-using syncer_v2::ModelTypeStore;
-using syncer_v2::ModelTypeStoreTestUtil;
-using syncer_v2::KeyAndData;
-using sync_driver::DeviceInfo;
-using sync_driver::DeviceInfoTracker;
-using sync_driver::LocalDeviceInfoProviderMock;
 using sync_pb::DataTypeState;
 using sync_pb::DeviceInfoSpecifics;
 using sync_pb::EntitySpecifics;
@@ -140,8 +123,7 @@ std::string PushBackEntityChangeAdd(const DeviceInfoSpecifics& specifics,
 // in members that can then be accessed. TODO(skym): If this ends up being
 // useful for other model type unittests it should be moved out to a shared
 // location.
-class RecordingModelTypeChangeProcessor
-    : public syncer_v2::FakeModelTypeChangeProcessor {
+class RecordingModelTypeChangeProcessor : public FakeModelTypeChangeProcessor {
  public:
   RecordingModelTypeChangeProcessor() {}
   ~RecordingModelTypeChangeProcessor() override {}
@@ -157,7 +139,7 @@ class RecordingModelTypeChangeProcessor
     delete_set_.insert(storage_key);
   }
 
-  void OnMetadataLoaded(syncer::SyncError error,
+  void OnMetadataLoaded(SyncError error,
                         std::unique_ptr<MetadataBatch> batch) override {
     std::swap(metadata_, batch);
   }
@@ -198,7 +180,7 @@ class DeviceInfoServiceTest : public testing::Test,
   void OnDeviceInfoChange() override { change_count_++; }
 
   std::unique_ptr<ModelTypeChangeProcessor> CreateModelTypeChangeProcessor(
-      syncer::ModelType type,
+      ModelType type,
       ModelTypeService* service) {
     processor_ = new RecordingModelTypeChangeProcessor();
     return base::WrapUnique(processor_);
@@ -218,8 +200,8 @@ class DeviceInfoServiceTest : public testing::Test,
   }
 
   void OnSyncStarting() {
-    service()->OnSyncStarting(
-        base::MakeUnique<syncer::DataTypeErrorHandlerMock>(), StartCallback());
+    service()->OnSyncStarting(base::MakeUnique<DataTypeErrorHandlerMock>(),
+                              StartCallback());
   }
 
   // Creates the service and runs any outstanding tasks. This will typically
@@ -606,12 +588,11 @@ TEST_F(DeviceInfoServiceTest, ApplySyncChangesWithLocalGuid) {
       service()->GetDeviceInfo(local_device()->GetLocalDeviceInfo()->guid()));
   EXPECT_EQ(1, change_count());
   // Ensure |last_updated| is about now, plus or minus a little bit.
-  Time last_updated(
-      syncer::ProtoTimeToTime(processor()
-                                  ->put_map()
-                                  .begin()
-                                  ->second->specifics.device_info()
-                                  .last_updated_timestamp()));
+  Time last_updated(ProtoTimeToTime(processor()
+                                        ->put_map()
+                                        .begin()
+                                        ->second->specifics.device_info()
+                                        .last_updated_timestamp()));
   EXPECT_LT(Time::Now() - TimeDelta::FromMinutes(1), last_updated);
   EXPECT_GT(Time::Now() + TimeDelta::FromMinutes(1), last_updated);
 
@@ -714,7 +695,7 @@ TEST_F(DeviceInfoServiceTest, MergeLocalGuid) {
   const DeviceInfo* local_device_info = local_device()->GetLocalDeviceInfo();
   std::unique_ptr<DeviceInfoSpecifics> specifics(
       CopyToSpecifics(*local_device_info));
-  specifics->set_last_updated_timestamp(syncer::TimeToProtoTime(Time::Now()));
+  specifics->set_last_updated_timestamp(TimeToProtoTime(Time::Now()));
   const std::string guid = local_device_info->guid();
 
   std::unique_ptr<WriteBatch> batch = store()->CreateWriteBatch();
@@ -741,7 +722,7 @@ TEST_F(DeviceInfoServiceTest, GetLastUpdateTime) {
 
   DeviceInfoSpecifics specifics1(GenerateTestSpecifics());
   DeviceInfoSpecifics specifics2(GenerateTestSpecifics());
-  specifics2.set_last_updated_timestamp(syncer::TimeToProtoTime(time1));
+  specifics2.set_last_updated_timestamp(TimeToProtoTime(time1));
 
   EXPECT_EQ(Time(), GetLastUpdateTime(specifics1));
   EXPECT_EQ(time1, GetLastUpdateTime(specifics2));
@@ -760,7 +741,7 @@ TEST_F(DeviceInfoServiceTest, CountActiveDevices) {
   EXPECT_EQ(0, service()->CountActiveDevices());
 
   change_list.clear();
-  specifics.set_last_updated_timestamp(syncer::TimeToProtoTime(Time::Now()));
+  specifics.set_last_updated_timestamp(TimeToProtoTime(Time::Now()));
   PushBackEntityChangeAdd(specifics, &change_list);
   service()->ApplySyncChanges(service()->CreateMetadataChangeList(),
                               change_list);
@@ -776,4 +757,4 @@ TEST_F(DeviceInfoServiceTest, CountActiveDevices) {
 
 }  // namespace
 
-}  // namespace sync_driver_v2
+}  // namespace syncer

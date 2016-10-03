@@ -92,7 +92,7 @@ bool OfferStoreUnmaskedCards() {
 }
 
 bool IsCreditCardUploadEnabled(const PrefService* pref_service,
-                               const sync_driver::SyncService* sync_service,
+                               const syncer::SyncService* sync_service,
                                const std::string& user_email) {
   // Query the field trial first to ensure UMA always reports the correct group.
   std::string group_name =

@@ -12,22 +12,22 @@
 #include "components/sync/driver/data_type_controller.h"
 #include "components/sync/driver/ui_data_type_controller.h"
 
-namespace sync_driver {
+class Profile;
+
+namespace syncer {
 class SyncClient;
 }
-
-class Profile;
 
 // A UIDataTypeController for arc package sync datatypes, which enables or
 // disables these types based on whether ArcAppInstance is ready.
 class ArcPackageSyncDataTypeController
-    : public sync_driver::UIDataTypeController,
+    : public syncer::UIDataTypeController,
       public arc::InstanceHolder<arc::mojom::AppInstance>::Observer {
  public:
   // |dump_stack| is called when an unrecoverable error occurs.
   ArcPackageSyncDataTypeController(syncer::ModelType type,
                                    const base::Closure& dump_stack,
-                                   sync_driver::SyncClient* sync_client,
+                                   syncer::SyncClient* sync_client,
                                    Profile* profile);
   ~ArcPackageSyncDataTypeController() override;
 
@@ -49,7 +49,7 @@ class ArcPackageSyncDataTypeController
 
   Profile* const profile_;
 
-  sync_driver::SyncClient* sync_client_;
+  syncer::SyncClient* sync_client_;
 
   PrefChangeRegistrar pref_registrar_;
 

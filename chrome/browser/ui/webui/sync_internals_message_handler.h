@@ -26,9 +26,9 @@ namespace browser_sync {
 class ProfileSyncService;
 }  // namespace browser_sync
 
-namespace sync_driver {
+namespace syncer {
 class SyncService;
-}  //  namespace sync_driver
+}  //  namespace syncer
 
 // Interface to abstract away the creation of the about-sync value dictionary.
 class AboutSyncDataExtractor {
@@ -36,7 +36,7 @@ class AboutSyncDataExtractor {
   // Given state about sync, extracts various interesting fields and populates
   // a tree of base::Value objects.
   virtual std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
-      sync_driver::SyncService* service,
+      syncer::SyncService* service,
       SigninManagerBase* signin) = 0;
   virtual ~AboutSyncDataExtractor() {}
 };
@@ -44,8 +44,8 @@ class AboutSyncDataExtractor {
 // The implementation for the chrome://sync-internals page.
 class SyncInternalsMessageHandler : public content::WebUIMessageHandler,
                                     public syncer::JsEventHandler,
-                                    public sync_driver::SyncServiceObserver,
-                                    public browser_sync::ProtocolEventObserver,
+                                    public syncer::SyncServiceObserver,
+                                    public syncer::ProtocolEventObserver,
                                     public syncer::TypeDebugInfoObserver {
  public:
   SyncInternalsMessageHandler();
@@ -76,7 +76,7 @@ class SyncInternalsMessageHandler : public content::WebUIMessageHandler,
   void OnReceivedAllNodes(int request_id,
                           std::unique_ptr<base::ListValue> nodes);
 
-  // sync_driver::SyncServiceObserver implementation.
+  // syncer::SyncServiceObserver implementation.
   void OnStateChanged() override;
 
   // ProtocolEventObserver implementation.

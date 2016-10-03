@@ -16,8 +16,10 @@ namespace sync_bookmarks {
 
 BookmarkDataTypeController::BookmarkDataTypeController(
     const base::Closure& dump_stack,
-    sync_driver::SyncClient* sync_client)
-    : FrontendDataTypeController(syncer::BOOKMARKS, dump_stack, sync_client),
+    syncer::SyncClient* sync_client)
+    : syncer::FrontendDataTypeController(syncer::BOOKMARKS,
+                                         dump_stack,
+                                         sync_client),
       history_service_observer_(this),
       bookmark_model_observer_(this) {}
 
@@ -44,7 +46,7 @@ void BookmarkDataTypeController::CleanUpState() {
 
 void BookmarkDataTypeController::CreateSyncComponents() {
   DCHECK(CalledOnValidThread());
-  sync_driver::SyncApiComponentFactory::SyncComponents sync_components =
+  syncer::SyncApiComponentFactory::SyncComponents sync_components =
       sync_client_->GetSyncApiComponentFactory()->CreateBookmarkSyncComponents(
           sync_client_->GetSyncService(), CreateErrorHandler());
   set_model_associator(sync_components.model_associator);

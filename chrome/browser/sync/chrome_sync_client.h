@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SYNC_CHROME_SYNC_CLIENT_H__
 #define CHROME_BROWSER_SYNC_CHROME_SYNC_CLIENT_H__
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -21,7 +22,7 @@ namespace password_manager {
 class PasswordStore;
 }
 
-namespace sync_driver {
+namespace syncer {
 class DeviceInfoTracker;
 class SyncApiComponentFactory;
 class SyncService;
@@ -29,20 +30,20 @@ class SyncService;
 
 namespace browser_sync {
 
-class ChromeSyncClient : public sync_driver::SyncClient {
+class ChromeSyncClient : public syncer::SyncClient {
  public:
   explicit ChromeSyncClient(Profile* profile);
   ~ChromeSyncClient() override;
 
   // SyncClient implementation.
   void Initialize() override;
-  sync_driver::SyncService* GetSyncService() override;
+  syncer::SyncService* GetSyncService() override;
   PrefService* GetPrefService() override;
   bookmarks::BookmarkModel* GetBookmarkModel() override;
   favicon::FaviconService* GetFaviconService() override;
   history::HistoryService* GetHistoryService() override;
   base::Closure GetPasswordStateChangedCallback() override;
-  sync_driver::SyncApiComponentFactory::RegisterDataTypesMethod
+  syncer::SyncApiComponentFactory::RegisterDataTypesMethod
   GetRegisterPlatformTypesCallback() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   invalidation::InvalidationService* GetInvalidationService() override;
@@ -51,42 +52,42 @@ class ChromeSyncClient : public sync_driver::SyncClient {
   sync_sessions::SyncSessionsClient* GetSyncSessionsClient() override;
   base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
       syncer::ModelType type) override;
-  base::WeakPtr<syncer_v2::ModelTypeService> GetModelTypeServiceForType(
+  base::WeakPtr<syncer::ModelTypeService> GetModelTypeServiceForType(
       syncer::ModelType type) override;
   scoped_refptr<syncer::ModelSafeWorker> CreateModelWorkerForGroup(
       syncer::ModelSafeGroup group,
       syncer::WorkerLoopDestructionObserver* observer) override;
-  sync_driver::SyncApiComponentFactory* GetSyncApiComponentFactory() override;
+  syncer::SyncApiComponentFactory* GetSyncApiComponentFactory() override;
 
   // Helpers for overriding getters in tests.
   void SetSyncApiComponentFactoryForTesting(
-      std::unique_ptr<sync_driver::SyncApiComponentFactory> component_factory);
+      std::unique_ptr<syncer::SyncApiComponentFactory> component_factory);
 
   // Iterates over all of the profiles that have been loaded so far, and
   // extracts their tracker if present. If some profiles don't have trackers, no
   // indication is given in the passed vector.
   static void GetDeviceInfoTrackers(
-      std::vector<const sync_driver::DeviceInfoTracker*>* trackers);
+      std::vector<const syncer::DeviceInfoTracker*>* trackers);
 
  private:
   // Register data types which are enabled on desktop platforms only.
   // |disabled_types| and |enabled_types| correspond only to those types
   // being explicitly disabled/enabled by the command line.
-  void RegisterDesktopDataTypes(sync_driver::SyncService* sync_service,
+  void RegisterDesktopDataTypes(syncer::SyncService* sync_service,
                                 syncer::ModelTypeSet disabled_types,
                                 syncer::ModelTypeSet enabled_types);
 
   // Register data types which are enabled on Android platforms only.
   // |disabled_types| and |enabled_types| correspond only to those types
   // being explicitly disabled/enabled by the command line.
-  void RegisterAndroidDataTypes(sync_driver::SyncService* sync_service,
+  void RegisterAndroidDataTypes(syncer::SyncService* sync_service,
                                 syncer::ModelTypeSet disabled_types,
                                 syncer::ModelTypeSet enabled_types);
 
   Profile* const profile_;
 
   // The sync api component factory in use by this client.
-  std::unique_ptr<sync_driver::SyncApiComponentFactory> component_factory_;
+  std::unique_ptr<syncer::SyncApiComponentFactory> component_factory_;
 
   // Members that must be fetched on the UI thread but accessed on their
   // respective backend threads.

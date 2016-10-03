@@ -6,6 +6,7 @@
 #define IOS_CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_CLIENT_IOS_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -28,7 +29,7 @@ namespace password_manager {
 class PasswordGenerationManager;
 }
 
-namespace sync_driver {
+namespace syncer {
 class SyncService;
 }
 
@@ -52,7 +53,7 @@ class AutofillClientIOS : public AutofillClient {
   // AutofillClient implementation.
   PersonalDataManager* GetPersonalDataManager() override;
   PrefService* GetPrefs() override;
-  sync_driver::SyncService* GetSyncService() override;
+  syncer::SyncService* GetSyncService() override;
   IdentityProvider* GetIdentityProvider() override;
   rappor::RapporService* GetRapporService() override;
   void ShowAutofillSettings() override;

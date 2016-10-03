@@ -50,8 +50,8 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_METHOD0(RequestStart, void());
   MOCK_METHOD1(RequestStop, void(ProfileSyncService::SyncStopDataFate));
 
-  MOCK_METHOD1(AddObserver, void(sync_driver::SyncServiceObserver*));
-  MOCK_METHOD1(RemoveObserver, void(sync_driver::SyncServiceObserver*));
+  MOCK_METHOD1(AddObserver, void(syncer::SyncServiceObserver*));
+  MOCK_METHOD1(RemoveObserver, void(syncer::SyncServiceObserver*));
   MOCK_METHOD0(GetJsController, base::WeakPtr<syncer::JsController>());
   MOCK_CONST_METHOD0(IsFirstSetupComplete, bool());
 
@@ -66,7 +66,8 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_CONST_METHOD0(GetRegisteredDataTypes, syncer::ModelTypeSet());
   MOCK_CONST_METHOD0(GetLastCycleSnapshot, syncer::SyncCycleSnapshot());
 
-  MOCK_METHOD1(QueryDetailedSyncStatus, bool(SyncBackendHost::Status* result));
+  MOCK_METHOD1(QueryDetailedSyncStatus,
+               bool(syncer::SyncBackendHost::Status* result));
   MOCK_CONST_METHOD0(GetAuthError, const GoogleServiceAuthError&());
   MOCK_CONST_METHOD0(IsFirstSetupInProgress, bool());
   MOCK_CONST_METHOD0(GetLastSyncedTimeString, base::string16());
@@ -80,7 +81,7 @@ class ProfileSyncServiceMock : public ProfileSyncService {
 
   // DataTypeManagerObserver mocks.
   MOCK_METHOD1(OnConfigureDone,
-               void(const sync_driver::DataTypeManager::ConfigureResult&));
+               void(const syncer::DataTypeManager::ConfigureResult&));
   MOCK_METHOD0(OnConfigureStart, void());
 
   MOCK_CONST_METHOD0(CanSyncStart, bool());

@@ -13,7 +13,7 @@ using base::Time;
 using base::TimeDelta;
 using sync_pb::DeviceInfoSpecifics;
 
-namespace sync_driver {
+namespace syncer {
 
 namespace {
 
@@ -110,4 +110,4 @@ TEST_F(DeviceInfoUtilTest, TagRoundTrip) {
                 DeviceInfoUtil::SpecificsToTag(specifics)));
 }
 
-}  // namespace sync_driver
+}  // namespace syncer

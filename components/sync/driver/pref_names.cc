@@ -4,7 +4,7 @@
 
 #include "components/sync/driver/pref_names.h"
 
-namespace sync_driver {
+namespace syncer {
 
 namespace prefs {
 
@@ -126,4 +126,4 @@ const char kSyncNigoriStateForPassphraseTransition[] =
 
 }  // namespace prefs
 
-}  // namespace sync_driver
+}  // namespace syncer

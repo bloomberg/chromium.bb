@@ -22,7 +22,7 @@ class ProfileSyncService;
 // observe many ProfileSyncServices.  This class is abstract.  Its descendants
 // are expected to provide additional functionality.
 class MultiClientStatusChangeChecker : public StatusChangeChecker,
-                                       public sync_driver::SyncServiceObserver {
+                                       public syncer::SyncServiceObserver {
  public:
   explicit MultiClientStatusChangeChecker(
       std::vector<browser_sync::ProfileSyncService*> services);
@@ -31,7 +31,7 @@ class MultiClientStatusChangeChecker : public StatusChangeChecker,
   // Called when waiting times out.
   void OnTimeout();
 
-  // sync_driver::SyncServiceObserver implementation.
+  // syncer::SyncServiceObserver implementation.
   void OnStateChanged() override;
 
   // StatusChangeChecker implementations and stubs.

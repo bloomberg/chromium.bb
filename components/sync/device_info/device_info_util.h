@@ -13,7 +13,7 @@ namespace sync_pb {
 class DeviceInfoSpecifics;
 }
 
-namespace sync_driver {
+namespace syncer {
 
 // This class contains constants and static helper functions that are shared
 // between DeviceInfoSyncService and DeviceInfoService.
@@ -53,6 +53,6 @@ class DeviceInfoUtil {
   static std::string TagToCacheGuid(const std::string& tag);
 };
 
-}  // namespace sync_driver
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DEVICE_INFO_DEVICE_INFO_UTIL_H_

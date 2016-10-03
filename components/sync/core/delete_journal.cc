@@ -16,21 +16,19 @@ namespace syncer {
 void DeleteJournal::GetBookmarkDeleteJournals(
     BaseTransaction* trans,
     BookmarkDeleteJournalList* delete_journal_list) {
-  syncer::syncable::EntryKernelSet deleted_entries;
+  syncable::EntryKernelSet deleted_entries;
   trans->GetDirectory()->delete_journal()->GetDeleteJournals(
       trans->GetWrappedTrans(), BOOKMARKS, &deleted_entries);
   std::set<int64_t> undecryptable_journal;
-  for (syncer::syncable::EntryKernelSet::const_iterator i =
-           deleted_entries.begin();
+  for (syncable::EntryKernelSet::const_iterator i = deleted_entries.begin();
        i != deleted_entries.end(); ++i) {
     delete_journal_list->push_back(BookmarkDeleteJournal());
-    delete_journal_list->back().id = (*i)->ref(syncer::syncable::META_HANDLE);
+    delete_journal_list->back().id = (*i)->ref(syncable::META_HANDLE);
     delete_journal_list->back().external_id =
-        (*i)->ref(syncer::syncable::LOCAL_EXTERNAL_ID);
-    delete_journal_list->back().is_folder = (*i)->ref(syncer::syncable::IS_DIR);
+        (*i)->ref(syncable::LOCAL_EXTERNAL_ID);
+    delete_journal_list->back().is_folder = (*i)->ref(syncable::IS_DIR);
 
-    const sync_pb::EntitySpecifics& specifics =
-        (*i)->ref(syncer::syncable::SPECIFICS);
+    const sync_pb::EntitySpecifics& specifics = (*i)->ref(syncable::SPECIFICS);
     if (!specifics.has_encrypted()) {
       delete_journal_list->back().specifics = specifics;
     } else {

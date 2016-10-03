@@ -10,7 +10,7 @@
 #include "components/sync/base/get_session_name.h"
 #include "components/sync/driver/sync_util.h"
 
-namespace browser_sync {
+namespace syncer {
 
 namespace {
 
@@ -46,8 +46,7 @@ LocalDeviceInfoProviderImpl::LocalDeviceInfoProviderImpl(
 
 LocalDeviceInfoProviderImpl::~LocalDeviceInfoProviderImpl() {}
 
-const sync_driver::DeviceInfo* LocalDeviceInfoProviderImpl::GetLocalDeviceInfo()
-    const {
+const DeviceInfo* LocalDeviceInfoProviderImpl::GetLocalDeviceInfo() const {
   DCHECK(CalledOnValidThread());
   return local_device_info_.get();
 }
@@ -62,7 +61,7 @@ std::string LocalDeviceInfoProviderImpl::GetLocalSyncCacheGUID() const {
   return cache_guid_;
 }
 
-std::unique_ptr<sync_driver::LocalDeviceInfoProvider::Subscription>
+std::unique_ptr<LocalDeviceInfoProvider::Subscription>
 LocalDeviceInfoProviderImpl::RegisterOnInitializedCallback(
     const base::Closure& callback) {
   DCHECK(CalledOnValidThread());
@@ -78,7 +77,7 @@ void LocalDeviceInfoProviderImpl::Initialize(
   DCHECK(!cache_guid.empty());
   cache_guid_ = cache_guid;
 
-  syncer::GetSessionName(
+  GetSessionName(
       blocking_task_runner,
       base::Bind(&LocalDeviceInfoProviderImpl::InitializeContinuation,
                  weak_factory_.GetWeakPtr(), cache_guid,
@@ -95,9 +94,9 @@ void LocalDeviceInfoProviderImpl::InitializeContinuation(
     return;
   }
 
-  local_device_info_.reset(new sync_driver::DeviceInfo(
-      guid, session_name, version_, GetSyncUserAgent(),
-      GetLocalDeviceType(is_tablet_), signin_scoped_device_id));
+  local_device_info_.reset(
+      new DeviceInfo(guid, session_name, version_, GetSyncUserAgent(),
+                     GetLocalDeviceType(is_tablet_), signin_scoped_device_id));
 
   // Notify observers.
   callback_list_.Notify();
@@ -109,4 +108,4 @@ void LocalDeviceInfoProviderImpl::Clear() {
   local_device_info_.reset();
 }
 
-}  // namespace browser_sync
+}  // namespace syncer

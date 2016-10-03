@@ -18,13 +18,13 @@ namespace browser_sync {
 
 // TODO(zea): Rename this and ExtensionSettingsDTC to ExtensionOrApp*, since
 // both actually handle the APP datatypes as well.
-class ExtensionDataTypeController : public sync_driver::UIDataTypeController {
+class ExtensionDataTypeController : public syncer::UIDataTypeController {
  public:
   // |dump_stack| is called when an unrecoverable error occurs.
   ExtensionDataTypeController(
       syncer::ModelType type,  // Either EXTENSIONS or APPS.
       const base::Closure& dump_stack,
-      sync_driver::SyncClient* sync_client,
+      syncer::SyncClient* sync_client,
       Profile* profile);
   ~ExtensionDataTypeController() override;
 

@@ -13,9 +13,10 @@
 
 namespace sync_pb {
 class EntitySpecifics;
-}
+}  // namespace sync_pb
 
 namespace syncer {
+
 class Cryptographer;
 
 namespace syncable {

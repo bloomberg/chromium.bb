@@ -16,7 +16,7 @@
 #include "components/sync/syncable/syncable_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace syncer_v2 {
+namespace syncer {
 
 // Some simple tests for the WorkerEntityTracker.
 //
@@ -31,9 +31,7 @@ class WorkerEntityTrackerTest : public ::testing::Test {
   WorkerEntityTrackerTest()
       : kServerId("ServerID"),
         kClientTag("some.sample.tag"),
-        kClientTagHash(
-            syncer::syncable::GenerateSyncableHash(syncer::PREFERENCES,
-                                                   kClientTag)),
+        kClientTagHash(syncable::GenerateSyncableHash(PREFERENCES, kClientTag)),
         kSpecificsHash("somehash"),
         kCtime(base::Time::UnixEpoch() + base::TimeDelta::FromDays(10)),
         kMtime(base::Time::UnixEpoch() + base::TimeDelta::FromDays(20)),
@@ -105,8 +103,8 @@ TEST_F(WorkerEntityTrackerTest, FromCommitRequest) {
   EXPECT_EQ("", pb_entity.id_string());
   EXPECT_EQ(kClientTagHash, pb_entity.client_defined_unique_tag());
   EXPECT_EQ(kBaseVersion, pb_entity.version());
-  EXPECT_EQ(kCtime, syncer::ProtoTimeToTime(pb_entity.ctime()));
-  EXPECT_EQ(kMtime, syncer::ProtoTimeToTime(pb_entity.mtime()));
+  EXPECT_EQ(kCtime, ProtoTimeToTime(pb_entity.ctime()));
+  EXPECT_EQ(kMtime, ProtoTimeToTime(pb_entity.mtime()));
   EXPECT_FALSE(pb_entity.deleted());
   EXPECT_EQ(specifics.preference().name(),
             pb_entity.specifics().preference().name());
@@ -186,4 +184,4 @@ TEST_F(WorkerEntityTrackerTest, QuickCommits) {
   EXPECT_EQ(kCommitResponseVersion, pb_entity.version());
 }
 
-}  // namespace syncer_v2
+}  // namespace syncer

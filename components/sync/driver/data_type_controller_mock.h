@@ -10,7 +10,7 @@
 #include "components/sync/driver/data_type_controller.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace sync_driver {
+namespace syncer {
 
 class StartCallbackMock {
  public:
@@ -19,8 +19,8 @@ class StartCallbackMock {
 
   MOCK_METHOD3(Run,
                void(DataTypeController::ConfigureResult result,
-                    const syncer::SyncMergeResult& local_merge_result,
-                    const syncer::SyncMergeResult& syncer_merge_result));
+                    const SyncMergeResult& local_merge_result,
+                    const SyncMergeResult& syncer_merge_result));
 };
 
 class ModelLoadCallbackMock {
@@ -28,9 +28,9 @@ class ModelLoadCallbackMock {
   ModelLoadCallbackMock();
   virtual ~ModelLoadCallbackMock();
 
-  MOCK_METHOD2(Run, void(syncer::ModelType, const syncer::SyncError&));
+  MOCK_METHOD2(Run, void(ModelType, const SyncError&));
 };
 
-}  // namespace sync_driver
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DRIVER_DATA_TYPE_CONTROLLER_MOCK_H__

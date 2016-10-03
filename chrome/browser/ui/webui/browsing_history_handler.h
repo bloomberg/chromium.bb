@@ -8,7 +8,9 @@
 #include <stdint.h>
 
 #include <memory>
+#include <set>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -41,15 +43,15 @@ class QueryResults;
 struct QueryOptions;
 }  // namespace history
 
-namespace sync_driver {
+namespace syncer {
 class SyncServiceObserver;
-}  // namespace sync_driver
+}  // namespace syncer
 
 // The handler for Javascript messages related to the "history" view.
 class BrowsingHistoryHandler : public content::WebUIMessageHandler,
                                public history::HistoryServiceObserver,
                                public history::WebHistoryServiceObserver,
-                               public sync_driver::SyncServiceObserver {
+                               public syncer::SyncServiceObserver {
  public:
   // Represents a history entry to be shown to the user, representing either
   // a local or remote visit. A single entry can represent multiple visits,
@@ -247,8 +249,7 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
       web_history_service_observer_;
 
   // ProfileSyncService observer listens to late initialization of history sync.
-  ScopedObserver<browser_sync::ProfileSyncService,
-                 sync_driver::SyncServiceObserver>
+  ScopedObserver<browser_sync::ProfileSyncService, syncer::SyncServiceObserver>
       sync_service_observer_;
 
   // Whether the last call to Web History returned synced results.

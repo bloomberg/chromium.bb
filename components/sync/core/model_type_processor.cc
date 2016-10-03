@@ -4,10 +4,10 @@
 
 #include "components/sync/core/model_type_processor.h"
 
-namespace syncer_v2 {
+namespace syncer {
 
 ModelTypeProcessor::ModelTypeProcessor() {}
 
 ModelTypeProcessor::~ModelTypeProcessor() {}
 
-}  // namespace syncer_v2
+}  // namespace syncer

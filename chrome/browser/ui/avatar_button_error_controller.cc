@@ -10,6 +10,8 @@
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/common/profile_management_switches.h"
 
+using syncer::SyncErrorController;
+
 AvatarButtonErrorController::AvatarButtonErrorController(
     AvatarButtonErrorControllerDelegate* delegate,
     Profile* profile)

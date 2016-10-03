@@ -5,36 +5,38 @@
 #ifndef CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_FACTORY_H_
 #define CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_FACTORY_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+
+class Profile;
 
 namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
-}
+}  // namespace base
 
 namespace browser_sync {
 class ProfileSyncService;
 }  // namespace browser_sync
 
-namespace sync_driver {
+namespace syncer {
 class SyncClient;
 class SyncService;
-}
-
-class Profile;
+}  // namespace syncer
 
 class ProfileSyncServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
-  typedef base::Callback<std::unique_ptr<sync_driver::SyncClient>(Profile*)>
+  typedef base::Callback<std::unique_ptr<syncer::SyncClient>(Profile*)>
       SyncClientFactory;
 
   static browser_sync::ProfileSyncService* GetForProfile(Profile* profile);
   static bool HasProfileSyncService(Profile* profile);
 
   // Convenience method that returns the ProfileSyncService as a
-  // sync_driver::SyncService.
-  static sync_driver::SyncService* GetSyncServiceForBrowserContext(
+  // syncer::SyncService.
+  static syncer::SyncService* GetSyncServiceForBrowserContext(
       content::BrowserContext* context);
 
   static ProfileSyncServiceFactory* GetInstance();

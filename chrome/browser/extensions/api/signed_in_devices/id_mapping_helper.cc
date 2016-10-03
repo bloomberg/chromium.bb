@@ -16,7 +16,7 @@
 
 using base::DictionaryValue;
 using base::Value;
-using sync_driver::DeviceInfo;
+using syncer::DeviceInfo;
 
 namespace extensions {
 

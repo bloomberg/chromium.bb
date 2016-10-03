@@ -30,11 +30,11 @@
 
 using bookmarks::BookmarkModel;
 using sync_bookmarks::BookmarkDataTypeController;
-using sync_driver::ChangeProcessorMock;
-using sync_driver::DataTypeController;
-using sync_driver::ModelAssociatorMock;
-using sync_driver::ModelLoadCallbackMock;
-using sync_driver::StartCallbackMock;
+using syncer::ChangeProcessorMock;
+using syncer::DataTypeController;
+using syncer::ModelAssociatorMock;
+using syncer::ModelLoadCallbackMock;
+using syncer::StartCallbackMock;
 using testing::_;
 using testing::DoAll;
 using testing::InvokeWithoutArgs;
@@ -54,7 +54,7 @@ class HistoryMock : public history::HistoryService {
 }  // namespace
 
 class SyncBookmarkDataTypeControllerTest : public testing::Test,
-                                           public sync_driver::FakeSyncClient {
+                                           public syncer::FakeSyncClient {
  public:
   SyncBookmarkDataTypeControllerTest() {}
 
@@ -63,10 +63,8 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test,
   history::HistoryService* GetHistoryService() override {
     return history_service_.get();
   }
-  sync_driver::SyncService* GetSyncService() override {
-    return &service_;
-  }
-  sync_driver::SyncApiComponentFactory* GetSyncApiComponentFactory() override {
+  syncer::SyncService* GetSyncService() override { return &service_; }
+  syncer::SyncApiComponentFactory* GetSyncApiComponentFactory() override {
     return profile_sync_factory_.get();
   }
 
@@ -74,9 +72,8 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test,
     model_associator_ = new ModelAssociatorMock();
     change_processor_ = new ChangeProcessorMock();
     history_service_.reset(new HistoryMock());
-    profile_sync_factory_.reset(
-        new SyncApiComponentFactoryMock(model_associator_,
-                                             change_processor_));
+    profile_sync_factory_.reset(new syncer::SyncApiComponentFactoryMock(
+        model_associator_, change_processor_));
     bookmark_dtc_.reset(
         new BookmarkDataTypeController(base::Bind(&base::DoNothing), this));
   }
@@ -134,11 +131,11 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test,
   }
 
   base::MessageLoop message_loop_;
-  std::unique_ptr<SyncApiComponentFactoryMock> profile_sync_factory_;
+  std::unique_ptr<syncer::SyncApiComponentFactoryMock> profile_sync_factory_;
   std::unique_ptr<BookmarkModel> bookmark_model_;
   std::unique_ptr<HistoryMock> history_service_;
   std::unique_ptr<BookmarkDataTypeController> bookmark_dtc_;
-  sync_driver::FakeSyncService service_;
+  syncer::FakeSyncService service_;
   ModelAssociatorMock* model_associator_;
   ChangeProcessorMock* change_processor_;
   StartCallbackMock start_callback_;

@@ -213,7 +213,7 @@ bool Profile::IsSyncAllowed() {
 
   // No ProfileSyncService created yet - we don't want to create one, so just
   // infer the accessible state by looking at prefs/command line flags.
-  sync_driver::SyncPrefs prefs(GetPrefs());
+  syncer::SyncPrefs prefs(GetPrefs());
   return browser_sync::ProfileSyncService::IsSyncAllowedByFlag() &&
          !prefs.IsManaged();
 }

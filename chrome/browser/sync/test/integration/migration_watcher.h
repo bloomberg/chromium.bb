@@ -13,7 +13,7 @@ class ProfileSyncServiceHarness;
 class MigrationWaiter;
 
 // Helper class to observe and record migration state.
-class MigrationWatcher : public browser_sync::MigrationObserver {
+class MigrationWatcher : public syncer::MigrationObserver {
  public:
   explicit MigrationWatcher(ProfileSyncServiceHarness* harness);
   ~MigrationWatcher() override;
@@ -24,7 +24,7 @@ class MigrationWatcher : public browser_sync::MigrationObserver {
   // Returns the set of types this class has observed being migrated.
   syncer::ModelTypeSet GetMigratedTypes() const;
 
-  // Implementation of browser_sync::MigrationObserver.
+  // Implementation of syncer::MigrationObserver.
   void OnMigrationStateChange() override;
 
   // Registers the |waiter| to receive callbacks on migration state change.

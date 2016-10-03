@@ -36,9 +36,9 @@ class PrefService;
 class SearchHostToURLsMap;
 class SearchTermsData;
 class TemplateURL;
-struct TemplateURLData;
 class TemplateURLServiceClient;
 class TemplateURLServiceObserver;
+struct TemplateURLData;
 
 namespace rappor {
 class RapporService;

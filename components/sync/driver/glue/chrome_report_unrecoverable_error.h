@@ -7,12 +7,12 @@
 
 #include "components/version_info/version_info.h"
 
-namespace browser_sync {
+namespace syncer {
 
 // Sends a minidump via breakpad for canary/dev channels at a hardcoded
 // sampling rate. Does nothing on beta/stable builds.
 void ChromeReportUnrecoverableError(version_info::Channel channel);
 
-}  // namespace browser_sync
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DRIVER_GLUE_CHROME_REPORT_UNRECOVERABLE_ERROR_H_

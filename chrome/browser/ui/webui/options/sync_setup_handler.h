@@ -30,9 +30,9 @@ namespace signin_metrics {
 enum class AccessPoint;
 }  // namespace signin_metrics
 
-namespace sync_driver {
+namespace syncer {
 class SyncSetupInProgressHandle;
-}  // namespace sync_driver
+}  // namespace syncer
 
 class SyncSetupHandler : public options::OptionsPageUIHandler,
                          public SyncStartupTracker::Observer,
@@ -163,7 +163,7 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   std::unique_ptr<SyncStartupTracker> sync_startup_tracker_;
 
   // Prevents Sync from running until configuration is complete.
-  std::unique_ptr<sync_driver::SyncSetupInProgressHandle> sync_blocker_;
+  std::unique_ptr<syncer::SyncSetupInProgressHandle> sync_blocker_;
 
   // Set to true whenever the sync configure UI is visible. This is used to tell
   // what stage of the setup wizard the user was in and to update the UMA

@@ -23,7 +23,7 @@ TEST_F(PasswordSyncUtilTest, GetSyncUsernameIfSyncingPasswords) {
     enum { SYNCING_PASSWORDS, NOT_SYNCING_PASSWORDS } password_sync;
     std::string fake_sync_username;
     std::string expected_result;
-    const sync_driver::SyncService* sync_service;
+    const syncer::SyncService* sync_service;
     const SigninManagerBase* signin_manager;
   } kTestCases[] = {
       {TestCase::NOT_SYNCING_PASSWORDS, "a@example.org", std::string(),

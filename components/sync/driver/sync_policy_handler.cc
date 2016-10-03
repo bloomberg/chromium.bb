@@ -10,7 +10,7 @@
 #include "components/prefs/pref_value_map.h"
 #include "components/sync/driver/pref_names.h"
 
-namespace sync_driver {
+namespace syncer {
 
 SyncPolicyHandler::SyncPolicyHandler()
     : policy::TypeCheckingPolicyHandler(policy::key::kSyncDisabled,
@@ -23,7 +23,7 @@ void SyncPolicyHandler::ApplyPolicySettings(const policy::PolicyMap& policies,
   const base::Value* value = policies.GetValue(policy_name());
   bool disable_sync;
   if (value && value->GetAsBoolean(&disable_sync) && disable_sync)
-    prefs->SetValue(sync_driver::prefs::kSyncManaged, value->CreateDeepCopy());
+    prefs->SetValue(prefs::kSyncManaged, value->CreateDeepCopy());
 }
 
-}  // namespace sync_driver
+}  // namespace syncer
