@@ -74,7 +74,8 @@ sortedOverlappingEdges(const FloatPolygon& polygon, float minY, float maxY) {
 #define SIZEOF_ARRAY(p) (sizeof(p) / sizeof(p[0]))
 
 /**
- * Checks a right triangle. This test covers all of the trivial FloatPolygon accessors.
+ * Checks a right triangle. This test covers all of the trivial FloatPolygon
+ * accessors.
  *
  *                        200,100
  *                          /|
@@ -257,7 +258,8 @@ TEST(FloatPolygonTest, emptyPolygons) {
 }
 
 /*
- * Test FloatPolygon::contains() with a trapezoid. The vertices are listed in counter-clockwise order.
+ * Test FloatPolygon::contains() with a trapezoid. The vertices are listed in
+ * counter-clockwise order.
  *
  *        150,100   250,100
  *          +----------+
@@ -284,8 +286,8 @@ TEST(FloatPolygonTest, trapezoid) {
 }
 
 /*
- * Test FloatPolygon::contains() with a non-convex rectilinear polygon. The polygon has the same shape
- * as the letter "H":
+ * Test FloatPolygon::contains() with a non-convex rectilinear polygon. The
+ * polygon has the same shape as the letter "H":
  *
  *    100,100  150,100   200,100   250,100
  *       +--------+        +--------+

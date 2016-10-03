@@ -218,7 +218,8 @@ bool FloatPolygon::contains(const FloatPoint& point) const {
 
 bool VertexPair::intersection(const VertexPair& other,
                               FloatPoint& point) const {
-  // See: http://paulbourke.net/geometry/pointlineplane/, "Intersection point of two lines in 2 dimensions"
+  // See: http://paulbourke.net/geometry/pointlineplane/,
+  // "Intersection point of two lines in 2 dimensions"
 
   const FloatSize& thisDelta = vertex2() - vertex1();
   const FloatSize& otherDelta = other.vertex2() - other.vertex1();
@@ -226,9 +227,10 @@ bool VertexPair::intersection(const VertexPair& other,
   if (!denominator)
     return false;
 
-  // The two line segments: "this" vertex1,vertex2 and "other" vertex1,vertex2, have been defined
-  // in parametric form. Each point on the line segment is: vertex1 + u * (vertex2 - vertex1),
-  // when 0 <= u <= 1. We're computing the values of u for each line at their intersection point.
+  // The two line segments: "this" vertex1,vertex2 and "other" vertex1,vertex2,
+  // have been defined in parametric form. Each point on the line segment is:
+  // vertex1 + u * (vertex2 - vertex1), when 0 <= u <= 1. We're computing the
+  // values of u for each line at their intersection point.
 
   const FloatSize& vertex1Delta = vertex1() - other.vertex1();
   float uThisLine = determinant(otherDelta, vertex1Delta) / denominator;

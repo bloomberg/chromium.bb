@@ -76,7 +76,8 @@ void TransformState::move(const LayoutSize& offset,
   } else {
     applyAccumulatedOffset();
     if (m_accumulatingTransform && m_accumulatedTransform) {
-      // If we're accumulating into an existing transform, apply the translation.
+      // If we're accumulating into an existing transform, apply the
+      // translation.
       translateTransform(offset);
     } else {
       // Just move the point and/or quad.
@@ -99,7 +100,8 @@ void TransformState::applyAccumulatedOffset() {
   }
 }
 
-// FIXME: We transform AffineTransform to TransformationMatrix. This is rather inefficient.
+// FIXME: We transform AffineTransform to TransformationMatrix. This is rather
+// inefficient.
 void TransformState::applyTransform(
     const AffineTransform& transformFromContainer,
     TransformAccumulation accumulate,
@@ -124,7 +126,8 @@ void TransformState::applyTransform(
 
   applyAccumulatedOffset();
 
-  // If we have an accumulated transform from last time, multiply in this transform
+  // If we have an accumulated transform from last time, multiply in this
+  // transform
   if (m_accumulatedTransform) {
     if (m_direction == ApplyTransformDirection)
       m_accumulatedTransform = TransformationMatrix::create(

@@ -133,12 +133,13 @@ static inline FloatPoint rightMostCornerToVector(const FloatRect& rect,
                                                  const FloatSize& vector) {
   // Return the corner of the rectangle that if it is to the left of the vector
   // would mean all of the rectangle is to the left of the vector.
-  // The vector here represents the side between two points in a clockwise convex polygon.
+  // The vector here represents the side between two points in a clockwise
+  // convex polygon.
   //
   //  Q  XXX
-  // QQQ XXX   If the lower left corner of X is left of the vector that goes from the top corner of Q to
-  //  QQQ      the right corner of Q, then all of X is left of the vector, and intersection impossible.
-  //   Q
+  // QQQ XXX   If the lower left corner of X is left of the vector that goes
+  //  QQQ      from the top corner of Q to the right corner of Q, then all of X
+  //   Q       is left of the vector, and intersection impossible.
   //
   FloatPoint point;
   if (vector.width() >= 0)
@@ -153,9 +154,9 @@ static inline FloatPoint rightMostCornerToVector(const FloatRect& rect,
 }
 
 bool FloatQuad::intersectsRect(const FloatRect& rect) const {
-  // For each side of the quad clockwise we check if the rectangle is to the left of it
-  // since only content on the right can onlap with the quad.
-  // This only works if the quad is convex.
+  // For each side of the quad clockwise we check if the rectangle is to the
+  // left of it since only content on the right can onlap with the quad.  This
+  // only works if the quad is convex.
   FloatSize v1, v2, v3, v4;
 
   // Ensure we use clockwise vectors.
@@ -187,8 +188,8 @@ bool FloatQuad::intersectsRect(const FloatRect& rect) const {
   if (determinant(v4, p - m_p4) < 0)
     return false;
 
-  // If not all of the rectangle is outside one of the quad's four sides, then that means at least
-  // a part of the rectangle is overlapping the quad.
+  // If not all of the rectangle is outside one of the quad's four sides, then
+  // that means at least a part of the rectangle is overlapping the quad.
   return true;
 }
 
@@ -233,8 +234,9 @@ bool FloatQuad::intersectsCircle(const FloatPoint& center, float radius) const {
 
 bool FloatQuad::intersectsEllipse(const FloatPoint& center,
                                   const FloatSize& radii) const {
-  // Transform the ellipse to an origin-centered circle whose radius is the product of major radius and minor radius.
-  // Here we apply the same transformation to the quad.
+  // Transform the ellipse to an origin-centered circle whose radius is the
+  // product of major radius and minor radius.  Here we apply the same
+  // transformation to the quad.
   FloatQuad transformedQuad(*this);
   transformedQuad.move(-center.x(), -center.y());
   transformedQuad.scale(radii.height(), radii.width());
@@ -245,7 +247,8 @@ bool FloatQuad::intersectsEllipse(const FloatPoint& center,
 }
 
 bool FloatQuad::isCounterclockwise() const {
-  // Return if the two first vectors are turning clockwise. If the quad is convex then all following vectors will turn the same way.
+  // Return if the two first vectors are turning clockwise. If the quad is
+  // convex then all following vectors will turn the same way.
   return determinant(m_p2 - m_p1, m_p3 - m_p2) < 0;
 }
 

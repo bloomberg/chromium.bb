@@ -159,8 +159,9 @@ class PLATFORM_EXPORT FloatRect {
   void uniteIfNonZero(const FloatRect&);
   void extend(const FloatPoint&);
 
-  // Note, this doesn't match what IntRect::contains(IntPoint&) does; the int version
-  // is really checking for containment of 1x1 rect, but that doesn't make sense with floats.
+  // Note, this doesn't match what IntRect::contains(IntPoint&) does; the int
+  // version is really checking for containment of 1x1 rect, but that doesn't
+  // make sense with floats.
   bool contains(float px, float py) const {
     return px >= x() && px <= maxX() && py >= y() && py <= maxY();
   }

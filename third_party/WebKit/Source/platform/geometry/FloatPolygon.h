@@ -86,8 +86,9 @@ class PLATFORM_EXPORT FloatPolygon {
   FloatRect m_boundingBox;
   bool m_empty;
   Vector<FloatPolygonEdge> m_edges;
-  EdgeIntervalTree
-      m_edgeTree;  // Each EdgeIntervalTree node stores minY, maxY, and a ("UserData") pointer to a FloatPolygonEdge.
+  EdgeIntervalTree m_edgeTree;  // Each EdgeIntervalTree node stores minY, maxY,
+                                // and a ("UserData") pointer to a
+                                // FloatPolygonEdge.
 };
 
 class PLATFORM_EXPORT VertexPair {
@@ -137,8 +138,9 @@ class PLATFORM_EXPORT FloatPolygonEdge final : public VertexPair {
   unsigned edgeIndex() const { return m_edgeIndex; }
 
  private:
-  // Edge vertex index1 is less than index2, except the last edge, where index2 is 0. When a polygon edge
-  // is defined by 3 or more colinear vertices, index2 can be the the index of the last colinear vertex.
+  // Edge vertex index1 is less than index2, except the last edge, where index2
+  // is 0. When a polygon edge is defined by 3 or more colinear vertices, index2
+  // can be the the index of the last colinear vertex.
   unsigned m_vertexIndex1;
   unsigned m_vertexIndex2;
   unsigned m_edgeIndex;

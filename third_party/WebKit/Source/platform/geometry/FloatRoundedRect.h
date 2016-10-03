@@ -76,7 +76,8 @@ class PLATFORM_EXPORT FloatRoundedRect {
     bool isZero() const;
 
     void scale(float factor);
-    // Multiply all radii by |factor| and floor the result to the nearest integer.
+    // Multiply all radii by |factor| and floor the result to the nearest
+    // integer.
     void scaleAndFloor(float factor);
 
     void expand(float topWidth,
@@ -126,9 +127,10 @@ class PLATFORM_EXPORT FloatRoundedRect {
   void inflateWithRadii(int size);
   void inflate(float size) { m_rect.inflate(size); }
 
-  // expandRadii() does not have any effect on corner radii which have zero width or height. This is because the process of expanding
-  // the radius of a corner is not allowed to make sharp corners non-sharp. This applies when "spreading" a shadow or
-  // a box shape.
+  // expandRadii() does not have any effect on corner radii which have zero
+  // width or height. This is because the process of expanding the radius of a
+  // corner is not allowed to make sharp corners non-sharp. This applies when
+  // "spreading" a shadow or a box shape.
   void expandRadii(float size) { m_radii.expand(size); }
   void shrinkRadii(float size) { m_radii.shrink(size); }
 
@@ -171,11 +173,13 @@ class PLATFORM_EXPORT FloatRoundedRect {
   void adjustRadii();
   bool isRenderable() const;
 
-  // Constrains the radii to be no more than the size of rect(); radii outside of this range are not
-  // defined.
-  // In addition, the radii of the corners are floored to the nearest integer.
-  // FIXME: the flooring should not be necessary. At the moment it causes background bleed in some cases.
-  // FIXME: this code is almost the same as adjustRadii()/isRenderable(). Get rid of one of them.
+  // Constrains the radii to be no more than the size of rect(); radii outside
+  // of this range are not defined.  In addition, the radii of the corners are
+  // floored to the nearest integer.
+  // FIXME: the flooring should not be necessary. At the moment it causes
+  // background bleed in some cases.
+  // FIXME: this code is almost the same as adjustRadii()/isRenderable(). Get
+  // rid of one of them.
   void constrainRadii();
 
   operator SkRRect() const;

@@ -84,11 +84,13 @@ class PLATFORM_EXPORT FloatQuad {
   // corresponding FloatRect can be retrieved with boundingBox().
   bool isRectilinear() const;
 
-  // Tests whether the given point is inside, or on an edge or corner of this quad.
+  // Tests whether the given point is inside, or on an edge or corner of this
+  // quad.
   bool containsPoint(const FloatPoint&) const;
 
-  // Tests whether the four corners of other are inside, or coincident with the sides of this quad.
-  // Note that this only works for convex quads, but that includes all quads that originate
+  // Tests whether the four corners of other are inside, or coincident with the
+  // sides of this quad.  Note that this only works for convex quads, but that
+  // includes all quads that originate
   // from transformed rects.
   bool containsQuad(const FloatQuad&) const;
 
@@ -102,7 +104,8 @@ class PLATFORM_EXPORT FloatQuad {
   bool intersectsEllipse(const FloatPoint& center,
                          const FloatSize& radii) const;
 
-  // The center of the quad. If the quad is the result of a affine-transformed rectangle this is the same as the original center transformed.
+  // The center of the quad. If the quad is the result of a affine-transformed
+  // rectangle this is the same as the original center transformed.
   FloatPoint center() const {
     return FloatPoint((m_p1.x() + m_p2.x() + m_p3.x() + m_p4.x()) / 4.0,
                       (m_p1.y() + m_p2.y() + m_p3.y() + m_p4.y()) / 4.0);

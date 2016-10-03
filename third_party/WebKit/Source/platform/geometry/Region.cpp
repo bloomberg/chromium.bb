@@ -131,7 +131,8 @@ bool Region::Shape::compareShapes(const Shape& aShape, const Shape& bShape) {
     Shape::SegmentIterator bSegment = bShape.segmentsBegin(bSpan);
     Shape::SegmentIterator bSegmentEnd = bShape.segmentsEnd(bSpan);
 
-    // Look for a non-overlapping part of the spans. If B had a segment in its previous span, then we already tested A against B within that span.
+    // Look for a non-overlapping part of the spans. If B had a segment in its
+    // previous span, then we already tested A against B within that span.
     bool aHasSegmentInSpan = aSegment != aSegmentEnd;
     bool bHasSegmentInSpan = bSegment != bSegmentEnd;
     if (aY < bY && !bHadSegmentInPreviousSpan && aHasSegmentInSpan &&
@@ -450,7 +451,8 @@ Region::Shape Region::Shape::shapeOperation(const Shape& shape1,
     segments.resize(0);
     ASSERT(segments.capacity());
 
-    // Now iterate over the segments in each span and construct a new vector of segments.
+    // Now iterate over the segments in each span and construct a new vector of
+    // segments.
     while (s1 != segments1End && s2 != segments2End) {
       int test = *s1 - *s2;
       int x;
@@ -592,7 +594,8 @@ void Region::unite(const Region& region) {
     m_bounds = region.m_bounds;
     return;
   }
-  // FIXME: We may want another way to construct a Region without doing this test when we expect it to be false.
+  // FIXME: We may want another way to construct a Region without doing this
+  // test when we expect it to be false.
   if (!isRect() && contains(region))
     return;
 

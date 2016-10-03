@@ -98,8 +98,8 @@ class PLATFORM_EXPORT LayoutRect {
 
   ALWAYS_INLINE bool isEmpty() const { return m_size.isEmpty(); }
 
-  // NOTE: The result is rounded to integer values, and thus may be not the exact
-  // center point.
+  // NOTE: The result is rounded to integer values, and thus may be not the
+  // exact center point.
   LayoutPoint center() const {
     return LayoutPoint(x() + width() / 2, y() + height() / 2);
   }
@@ -178,7 +178,8 @@ class PLATFORM_EXPORT LayoutRect {
   bool contains(const LayoutRect&) const;
 
   // This checks to see if the rect contains x,y in the traditional sense.
-  // Equivalent to checking if the rect contains a 1x1 rect below and to the right of (px,py).
+  // Equivalent to checking if the rect contains a 1x1 rect below and to the
+  // right of (px,py).
   bool contains(LayoutUnit px, LayoutUnit py) const {
     return px >= x() && px < maxX() && py >= y() && py < maxY();
   }
@@ -199,8 +200,9 @@ class PLATFORM_EXPORT LayoutRect {
   // the result for isEmpty() is not conclusive.
   bool inclusiveIntersect(const LayoutRect&);
 
-  // Besides non-empty rects, this method also unites empty rects (as points or line segments).
-  // For example, union of (100, 100, 0x0) and (200, 200, 50x0) is (100, 100, 150x100).
+  // Besides non-empty rects, this method also unites empty rects (as points or
+  // line segments).  For example, union of (100, 100, 0x0) and (200, 200, 50x0)
+  // is (100, 100, 150x100).
   void uniteEvenIfEmpty(const LayoutRect&);
 
   void inflateX(LayoutUnit dx) {
@@ -224,7 +226,8 @@ class PLATFORM_EXPORT LayoutRect {
   }
 
   static IntRect infiniteIntRect() {
-    // Due to saturated arithemetic this value is not the same as LayoutRect(IntRect(INT_MIN/2, INT_MIN/2, INT_MAX, INT_MAX)).
+    // Due to saturated arithemetic this value is not the same as
+    // LayoutRect(IntRect(INT_MIN/2, INT_MIN/2, INT_MAX, INT_MAX)).
     static IntRect infiniteIntRect(
         LayoutRect(LayoutUnit::nearlyMin() / 2, LayoutUnit::nearlyMin() / 2,
                    LayoutUnit::nearlyMax(), LayoutUnit::nearlyMax()));

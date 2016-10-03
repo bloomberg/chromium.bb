@@ -88,8 +88,8 @@ class PLATFORM_EXPORT IntRect {
 
   bool isEmpty() const { return m_size.isEmpty(); }
 
-  // NOTE: The result is rounded to integer values, and thus may be not the exact
-  // center point.
+  // NOTE: The result is rounded to integer values, and thus may be not the
+  // exact center point.
   IntPoint center() const {
     return IntPoint(x() + width() / 2, y() + height() / 2);
   }
@@ -147,7 +147,8 @@ class PLATFORM_EXPORT IntRect {
   bool contains(const IntRect&) const;
 
   // This checks to see if the rect contains x,y in the traditional sense.
-  // Equivalent to checking if the rect contains a 1x1 rect below and to the right of (px,py).
+  // Equivalent to checking if the rect contains a 1x1 rect below and to the
+  // right of (px,py).
   bool contains(int px, int py) const {
     return px >= x() && px < maxX() && py >= y() && py < maxY();
   }
@@ -159,8 +160,9 @@ class PLATFORM_EXPORT IntRect {
   void unite(const IntRect&);
   void uniteIfNonZero(const IntRect&);
 
-  // Besides non-empty rects, this method also unites empty rects (as points or line segments).
-  // For example, union of (100, 100, 0x0) and (200, 200, 50x0) is (100, 100, 150x100).
+  // Besides non-empty rects, this method also unites empty rects (as points or
+  // line segments).  For example, union of (100, 100, 0x0) and (200, 200, 50x0)
+  // is (100, 100, 150x100).
   void uniteEvenIfEmpty(const IntRect&);
 
   void inflateX(int dx) {

@@ -72,8 +72,8 @@ TEST(FloatRoundedRectTest, zeroRadii) {
   EXPECT_FALSE(r.xInterceptsAtY(1, minXIntercept, maxXIntercept));
   EXPECT_FALSE(r.xInterceptsAtY(7, minXIntercept, maxXIntercept));
 
-  // The FloatRoundedRect::expandRadii() function doesn't change radii FloatSizes that
-  // are <= zero. Same as RoundedRect::expandRadii().
+  // The FloatRoundedRect::expandRadii() function doesn't change radii
+  // FloatSizes that are <= zero. Same as RoundedRect::expandRadii().
   r.expandRadii(20);
   r.shrinkRadii(10);
   EXPECT_TRUE(r.getRadii().isZero());
@@ -112,8 +112,9 @@ TEST(FloatRoundedRectTest, circle) {
 }
 
 /*
- * FloatRoundedRect geometry for this test. Corner radii are in parens, x and y intercepts
- * for the elliptical corners are noted. The rectangle itself is at 0,0 with width and height 100.
+ * FloatRoundedRect geometry for this test. Corner radii are in parens, x and y
+ * intercepts for the elliptical corners are noted. The rectangle itself is at
+ * 0,0 with width and height 100.
  *
  *         (10, 15)  x=10      x=90 (10, 20)
  *                (--+---------+--)

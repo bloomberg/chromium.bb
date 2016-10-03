@@ -73,8 +73,8 @@ class PLATFORM_EXPORT FloatPoint3D {
     return m_x * a.x() + m_y * a.y() + m_z * a.z();
   }
 
-  // Compute the angle (in radians) between this and y.  If either vector is the zero vector,
-  // return an angle of 0.
+  // Compute the angle (in radians) between this and y.  If either vector is the
+  // zero vector, return an angle of 0.
   float angleBetween(const FloatPoint3D& y) const;
 
   // Sets this FloatPoint3D to the cross product of the passed two.

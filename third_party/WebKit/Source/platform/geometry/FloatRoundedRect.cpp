@@ -202,7 +202,8 @@ void FloatRoundedRect::inflateWithRadii(int size) {
   FloatRect old = m_rect;
 
   m_rect.inflate(size);
-  // Considering the inflation factor of shorter size to scale the radii seems appropriate here
+  // Considering the inflation factor of shorter size to scale the radii seems
+  // appropriate here
   float factor;
   if (m_rect.width() < m_rect.height())
     factor = old.width() ? (float)m_rect.width() / old.width() : int(0);
