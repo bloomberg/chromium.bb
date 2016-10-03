@@ -30,12 +30,13 @@ class PLATFORM_EXPORT CancellableTaskFactory {
   // CancellableTaskFactory, and one when that owning object isn't controlled
   // by Oilpan.
   //
-  // In the Oilpan case, as WTF::Closure objects are off-heap, we have to construct the
-  // closure in such a manner that it doesn't end up referring back to the owning heap
-  // object with a strong Persistent<> GC root reference. If we do, this will create
-  // a heap <-> off-heap cycle and leak, the owning object can never be GCed.
-  // Instead, the closure will keep an off-heap persistent reference of the weak
-  // variety, which will refer back to the owner heap object safely (but weakly.)
+  // In the Oilpan case, as WTF::Closure objects are off-heap, we have to
+  // construct the closure in such a manner that it doesn't end up referring
+  // back to the owning heap object with a strong Persistent<> GC root
+  // reference. If we do, this will create a heap <-> off-heap cycle and leak,
+  // the owning object can never be GCed. Instead, the closure will keep an
+  // off-heap persistent reference of the weak, which will refer back to the
+  // owner heap object safely (but weakly.)
   //
   template <typename T>
   static std::unique_ptr<CancellableTaskFactory> create(
@@ -66,8 +67,8 @@ class PLATFORM_EXPORT CancellableTaskFactory {
   WebTaskRunner::Task* cancelAndCreate();
 
  protected:
-  // Only intended used by unit tests wanting to stack allocate and/or pass in a closure value.
-  // Please use the create() factory method elsewhere.
+  // Only intended used by unit tests wanting to stack allocate and/or pass in a
+  // closure value. Please use the create() factory method elsewhere.
   explicit CancellableTaskFactory(std::unique_ptr<WTF::Closure> closure)
       : m_closure(std::move(closure)), m_weakPtrFactory(this) {}
 
