@@ -56,6 +56,13 @@ var UnitTest = {};
             console.log(text);
     }
 
+    function completeTestOnError(message, source, lineno, colno, error)
+    {
+        UnitTest.addResult("TEST ENDED IN ERROR: " + error.stack);
+        UnitTest.completeTest();
+    }
+    window.onerror = completeTestOnError;
+
     Runtime.startApplication("/inspector-unit/inspector-unit-test").then(runTest);
 
     function runTest()
@@ -84,11 +91,6 @@ var UnitTest = {};
         WebInspector.inspectorView.showInitialPanel();
         rootView.attachToDocument(document);
 
-        try {
-            test();
-        } catch (e) {
-            UnitTest.addResult("TEST ENDED IN ERROR: " + e.stack);
-            UnitTest.completeTest();
-        }
+        test();
     }
 })();
