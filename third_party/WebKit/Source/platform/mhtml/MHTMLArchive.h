@@ -49,7 +49,8 @@ class PLATFORM_EXPORT MHTMLArchive final
  public:
   static MHTMLArchive* create(const KURL&, PassRefPtr<const SharedBuffer>);
 
-  // Binary encoding results in smaller MHTML files but they might not work in other browsers.
+  // Binary encoding results in smaller MHTML files but they might not work in
+  // other browsers.
   enum EncodingPolicy { UseDefaultEncoding, UseBinaryEncoding };
 
   // Generates an MHTML header and appends it to |outputBuffer|.

@@ -42,7 +42,8 @@
 
 namespace blink {
 
-// This class is a limited MIME parser used to parse the MIME headers of MHTML files.
+// This class is a limited MIME parser used to parse the MIME headers of MHTML
+// files.
 class MIMEHeader : public GarbageCollectedFinalized<MIMEHeader> {
  public:
   static MIMEHeader* create() { return new MIMEHeader; }
@@ -240,7 +241,8 @@ bool MHTMLParser::parseArchiveWithHeader(
       return false;
     }
     if (resourceHeader->contentType() == "multipart/alternative") {
-      // Ignore IE nesting which makes little sense (IE seems to nest only some of the frames).
+      // Ignore IE nesting which makes little sense (IE seems to nest only some
+      // of the frames).
       if (!parseArchiveWithHeader(resourceHeader, resources)) {
         DVLOG(1) << "Failed to parse MHTML subframe.";
         return false;
@@ -313,10 +315,13 @@ ArchiveResource* MHTMLParser::parseNextPart(const MIMEHeader& mimeHeader,
         endOfPartReached = true;
         break;
       }
-      // Note that we use line.utf8() and not line.ascii() as ascii turns special characters (such as tab, line-feed...) into '?'.
+      // Note that we use line.utf8() and not line.ascii() as ascii turns
+      // special characters (such as tab, line-feed...) into '?'.
       content->append(line.utf8().data(), line.length());
       if (contentTransferEncoding == MIMEHeader::QuotedPrintable) {
-        // The line reader removes the \r\n, but we need them for the content in this case as the QuotedPrintable decoder expects CR-LF terminated lines.
+        // The line reader removes the \r\n, but we need them for the content in
+        // this case as the QuotedPrintable decoder expects CR-LF terminated
+        // lines.
         content->append("\r\n", 2u);
       }
     }
@@ -347,8 +352,9 @@ ArchiveResource* MHTMLParser::parseNextPart(const MIMEHeader& mimeHeader,
       return nullptr;
   }
   RefPtr<SharedBuffer> contentBuffer = SharedBuffer::adoptVector(data);
-  // FIXME: the URL in the MIME header could be relative, we should resolve it if it is.
-  // The specs mentions 5 ways to resolve a URL: http://tools.ietf.org/html/rfc2557#section-5
+  // FIXME: the URL in the MIME header could be relative, we should resolve it
+  // if it is.  The specs mentions 5 ways to resolve a URL:
+  // http://tools.ietf.org/html/rfc2557#section-5
   // IE and Firefox (UNMht) seem to generate only absolute URLs.
   KURL location = KURL(KURL(), mimeHeader.contentLocation());
   return ArchiveResource::create(contentBuffer, location,
@@ -361,7 +367,8 @@ ArchiveResource* MHTMLParser::parseNextPart(const MIMEHeader& mimeHeader,
 KURL MHTMLParser::convertContentIDToURI(const String& contentID) {
   // This function is based primarily on an example from rfc2557 in section
   // 9.5, but also based on more normative parts of specs like:
-  // - rfc2557 - MHTML - section 8.3 - "Use of the Content-ID header and CID URLs"
+  // - rfc2557 - MHTML - section 8.3 - "Use of the Content-ID header and CID
+  //                                    URLs"
   // - rfc1738 - URL - section 4 (reserved scheme names;  includes "cid")
   // - rfc2387 - multipart/related - section 3.4 - "Syntax" (cid := msg-id)
   // - rfc0822 - msg-id = "<" addr-spec ">"; addr-spec = local-part "@" domain

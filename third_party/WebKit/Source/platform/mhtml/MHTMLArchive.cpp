@@ -66,8 +66,9 @@ MHTMLArchive::MHTMLArchive() {}
 
 MHTMLArchive* MHTMLArchive::create(const KURL& url,
                                    PassRefPtr<const SharedBuffer> data) {
-  // MHTML pages can only be loaded from local URLs, http/https URLs, and content URLs(Android specific).
-  // The latter is now allowed due to full sandboxing enforcement on MHTML pages.
+  // MHTML pages can only be loaded from local URLs, http/https URLs, and
+  // content URLs(Android specific).  The latter is now allowed due to full
+  // sandboxing enforcement on MHTML pages.
   if (!canLoadArchive(url))
     return nullptr;
 
@@ -92,8 +93,9 @@ MHTMLArchive* MHTMLArchive::create(const KURL& url,
 }
 
 bool MHTMLArchive::canLoadArchive(const KURL& url) {
-  // MHTML pages can only be loaded from local URLs, http/https URLs, and content URLs(Android specific).
-  // The latter is now allowed due to full sandboxing enforcement on MHTML pages.
+  // MHTML pages can only be loaded from local URLs, http/https URLs, and
+  // content URLs(Android specific).  The latter is now allowed due to full
+  // sandboxing enforcement on MHTML pages.
   if (SchemeRegistry::shouldTreatURLSchemeAsLocal(url.protocol()))
     return true;
   if (url.protocolIsInHTTPFamily())
@@ -198,7 +200,8 @@ void MHTMLArchive::generateMHTMLPart(const String& boundary,
       position += length;
     }
   } else {
-    // FIXME: ideally we would encode the content as a stream without having to fetch it all.
+    // FIXME: ideally we would encode the content as a stream without having to
+    // fetch it all.
     const char* data = resource.data->data();
     size_t dataLength = resource.data->size();
     Vector<char> encodedData;
@@ -208,7 +211,8 @@ void MHTMLArchive::generateMHTMLPart(const String& boundary,
       outputBuffer.append("\r\n", 2u);
     } else {
       ASSERT(!strcmp(contentEncoding, base64));
-      // We are not specifying insertLFs = true below as it would cut the lines with LFs and MHTML requires CRLFs.
+      // We are not specifying insertLFs = true below as it would cut the lines
+      // with LFs and MHTML requires CRLFs.
       base64Encode(data, dataLength, encodedData);
       const size_t maximumLineLength = 76;
       size_t index = 0;
