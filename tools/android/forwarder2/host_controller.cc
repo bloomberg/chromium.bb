@@ -123,19 +123,21 @@ void HostController::ReadCommandOnInternalThread() {
             << host_port_;
   SendCommand(
       command::HOST_SERVER_SUCCESS, device_port_, adb_control_socket_.get());
-  StartForwarder(std::move(host_server_data_socket));
+  if (!StartForwarder(std::move(host_server_data_socket))) {
+    OnInternalThreadError();
+    return;
+  }
   ReadNextCommandSoon();
 }
 
-void HostController::StartForwarder(
+bool HostController::StartForwarder(
     std::unique_ptr<Socket> host_server_data_socket) {
   std::unique_ptr<Socket> adb_data_socket(new Socket());
   if (!adb_data_socket->ConnectTcp("", adb_port_)) {
     LOG(ERROR) << device_serial_
                << ": Could not connect AdbDataSocket on port: "
                << adb_port_;
-    OnInternalThreadError();
-    return;
+    return false;
   }
   // Open the Adb data connection, and send a command with the
   // |device_forward_port| as a way for the device to identify the connection.
@@ -148,11 +150,11 @@ void HostController::StartForwarder(
                        adb_control_socket_.get())) {
     LOG(ERROR) << device_serial_
                << ": Device could not handle the new Adb Data Connection.";
-    OnInternalThreadError();
-    return;
+    return false;
   }
   forwarders_manager_.CreateAndStartNewForwarder(
       std::move(host_server_data_socket), std::move(adb_data_socket));
+  return true;
 }
 
 void HostController::OnInternalThreadError() {

@@ -67,7 +67,7 @@ class HostController {
   void ReadNextCommandSoon();
   void ReadCommandOnInternalThread();
 
-  void StartForwarder(std::unique_ptr<Socket> host_server_data_socket);
+  bool StartForwarder(std::unique_ptr<Socket> host_server_data_socket);
 
   // Note that this gets also called when ~HostController() is invoked.
   void OnInternalThreadError();
