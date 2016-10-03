@@ -440,9 +440,6 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
       has_composition_text_(false),
       accept_return_character_(false),
       begin_frame_source_(nullptr),
-      needs_begin_frames_(false),
-      needs_flush_input_(false),
-      added_frame_observer_(false),
       synthetic_move_sent_(false),
       cursor_visibility_state_in_renderer_(UNKNOWN),
 #if defined(OS_WIN)
@@ -715,25 +712,10 @@ ui::TextInputClient* RenderWidgetHostViewAura::GetTextInputClient() {
 }
 
 void RenderWidgetHostViewAura::SetNeedsBeginFrames(bool needs_begin_frames) {
-  needs_begin_frames_ = needs_begin_frames;
-  UpdateNeedsBeginFramesInternal();
-}
-
-void RenderWidgetHostViewAura::OnSetNeedsFlushInput() {
-  needs_flush_input_ = true;
-  UpdateNeedsBeginFramesInternal();
-}
-
-void RenderWidgetHostViewAura::UpdateNeedsBeginFramesInternal() {
   if (!begin_frame_source_)
     return;
 
-  bool needs_frame = needs_begin_frames_ || needs_flush_input_;
-  if (needs_frame == added_frame_observer_)
-    return;
-
-  added_frame_observer_ = needs_frame;
-  if (needs_frame)
+  if (needs_begin_frames)
     begin_frame_source_->AddObserver(this);
   else
     begin_frame_source_->RemoveObserver(this);
@@ -741,9 +723,6 @@ void RenderWidgetHostViewAura::UpdateNeedsBeginFramesInternal() {
 
 void RenderWidgetHostViewAura::OnBeginFrame(
     const cc::BeginFrameArgs& args) {
-  needs_flush_input_ = false;
-  host_->FlushInput();
-  UpdateNeedsBeginFramesInternal();
   host_->Send(new ViewMsg_BeginFrame(host_->GetRoutingID(), args));
   last_begin_frame_args_ = args;
 }
@@ -2945,12 +2924,12 @@ void RenderWidgetHostViewAura::DelegatedFrameHostOnLostCompositorResources() {
 
 void RenderWidgetHostViewAura::SetBeginFrameSource(
     cc::BeginFrameSource* source) {
-  if (begin_frame_source_ && added_frame_observer_) {
+  bool needs_begin_frames = host_->needs_begin_frames();
+  if (begin_frame_source_ && needs_begin_frames)
     begin_frame_source_->RemoveObserver(this);
-    added_frame_observer_ = false;
-  }
   begin_frame_source_ = source;
-  UpdateNeedsBeginFramesInternal();
+  if (begin_frame_source_ && needs_begin_frames)
+    begin_frame_source_->AddObserver(this);
 }
 
 bool RenderWidgetHostViewAura::IsAutoResizeEnabled() const {

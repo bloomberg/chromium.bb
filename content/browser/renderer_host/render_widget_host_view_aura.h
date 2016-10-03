@@ -162,7 +162,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void EndFrameSubscription() override;
   bool HasAcceleratedSurface(const gfx::Size& desired_size) override;
   gfx::Rect GetBoundsInRootWindow() override;
-  void OnSetNeedsFlushInput() override;
   void WheelEventAck(const blink::WebMouseWheelEvent& event,
                      InputEventAckState ack_result) override;
   void GestureEventAck(const blink::WebGestureEvent& event,
@@ -533,9 +532,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Forwards a mouse event to this view's parent window delegate.
   void ForwardMouseEventToParent(ui::MouseEvent* event);
 
-  // Adds/Removes frame observer based on state.
-  void UpdateNeedsBeginFramesInternal();
-
   // Returns the RenderViewHostDelegateView instance for this view. Returns
   // NULL on failure.
   RenderViewHostDelegateView* GetRenderViewHostDelegateView();
@@ -596,15 +592,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // The begin frame source being observed.  Null if none.
   cc::BeginFrameSource* begin_frame_source_;
   cc::BeginFrameArgs last_begin_frame_args_;
-
-  // Whether a request for begin frames has been issued.
   bool needs_begin_frames_;
-
-  // Whether a request to flush input has been issued.
-  bool needs_flush_input_;
-
-  // Whether we have added ourselves as a frame observer or not.
-  bool added_frame_observer_;
 
   // Used to record the last position of the mouse.
   // While the mouse is locked, they store the last known position just as mouse
