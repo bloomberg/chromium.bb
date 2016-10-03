@@ -290,7 +290,7 @@ void CSSPreloaderResourceClient::scanCSS(
   // augmented to take care of this case without performing an additional
   // copy.
   double startTime = monotonicallyIncreasingTimeMS();
-  const String& chunk = resource->decodedText();
+  const String& chunk = resource->sheetText();
   if (chunk.isNull())
     return;
   CSSPreloadScanner cssPreloadScanner;

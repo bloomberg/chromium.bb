@@ -87,7 +87,8 @@ void CSSStyleSheetResource::didAddClient(ResourceClient* c) {
   // 'c' if it is an instance of HTMLLinkElement. see the comment of
   // HTMLLinkElement::setCSSStyleSheet.
   Resource::didAddClient(c);
-  if (m_didNotifyFirstData)
+
+  if (hasClient(c) && m_didNotifyFirstData)
     static_cast<StyleSheetResourceClient*>(c)->didAppendFirstData(this);
 
   // |c| might be removed in didAppendFirstData, so ensure it is still a client.
