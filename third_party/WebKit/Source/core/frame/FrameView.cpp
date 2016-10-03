@@ -3404,8 +3404,7 @@ void FrameView::addChild(Widget* child) {
 }
 
 void FrameView::setHasHorizontalScrollbar(bool hasBar) {
-  DCHECK(m_frame->settings());
-  if (m_frame->settings()->hideScrollbars())
+  if (m_frame->settings() && m_frame->settings()->hideScrollbars())
     hasBar = false;
 
   if (hasBar == !!m_horizontalScrollbar)
@@ -3431,8 +3430,7 @@ void FrameView::setHasHorizontalScrollbar(bool hasBar) {
 }
 
 void FrameView::setHasVerticalScrollbar(bool hasBar) {
-  DCHECK(m_frame->settings());
-  if (m_frame->settings()->hideScrollbars())
+  if (m_frame->settings() && m_frame->settings()->hideScrollbars())
     hasBar = false;
 
   if (hasBar == !!m_verticalScrollbar)
