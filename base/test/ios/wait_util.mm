@@ -26,7 +26,9 @@ TimeDelta TimeUntilCondition(ProceduralBlock action,
   if (timeout.is_zero())
     timeout = TestTimeouts::action_timeout();
   const TimeDelta spin_delay(TimeDelta::FromMilliseconds(10));
-  while (timer.Elapsed() < timeout && (!condition || !condition())) {
+  bool condition_evaluation_result = false;
+  while (timer.Elapsed() < timeout &&
+         (!condition || !(condition_evaluation_result = condition()))) {
     SpinRunLoopWithMaxDelay(spin_delay);
     if (run_message_loop)
       RunLoop().RunUntilIdle();
@@ -35,7 +37,7 @@ TimeDelta TimeUntilCondition(ProceduralBlock action,
   // If DCHECK is ever hit, check if |action| is doing something that is
   // taking an unreasonably long time, or if |condition| does not come
   // true quickly enough. Increase |timeout| only if necessary.
-  DCHECK(!condition || condition());
+  DCHECK(!condition || condition_evaluation_result);
   return elapsed;
 }
 
