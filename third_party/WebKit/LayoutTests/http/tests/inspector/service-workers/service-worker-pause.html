@@ -1,0 +1,33 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../debugger-test.js"></script>
+<script src="service-workers-test.js"></script>
+<script>
+
+function test()
+{
+    var scriptURL = "http://127.0.0.1:8000/inspector/service-workers/resources/service-worker-debugger.js";
+    var scope = "http://127.0.0.1:8000/inspector/service-workers/resources/scope-debugger/";
+
+    InspectorTest.startDebuggerTest(start);
+
+    function start()
+    {
+        InspectorTest.waitUntilPaused(onPaused);
+        InspectorTest.registerServiceWorker(scriptURL, scope);
+    }
+
+    function onPaused(frames, reason, breakpointIds, async)
+    {
+        InspectorTest.captureStackTrace(frames, async);
+        InspectorTest.completeDebuggerTest();
+    }
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that we can pause in service worker.</p>
+</body>
+</html>

@@ -620,7 +620,7 @@ crbug.com/253763 fast/text-autosizing/first-line-scale-factor.html [ Failure ]
 crbug.com/390377 [ Release ] fast/dom/private_script_unittest.html [ Skip ]
 
 crbug.com/613887 http/tests/preload/meta-viewport-link-headers.html [ Failure Pass ]
-crbug.com/564403 http/tests/inspector/service-workers/service-worker-manager.html [ Failure Pass Crash Timeout ]
+crbug.com/564403 [ Win Debug ] http/tests/inspector/service-workers/service-worker-manager.html [ Failure Pass Timeout ]
 
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas.html [ Skip ]
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
@@ -721,8 +721,7 @@ crbug.com/647470 [ Linux Debug ] virtual/threaded/fast/scroll-behavior/smooth-sc
 crbug.com/487880 virtual/threaded/fast/scroll-behavior/overflow-scroll-root-frame-animates.html [ Pass Timeout ]
 crbug.com/487880 virtual/threaded/fast/scroll-behavior/overflow-scroll-animates.html [ Pass Timeout ]
 crbug.com/552556 virtual/threaded/fast/scroll-behavior/smooth-scroll/mousewheel-scroll.html [ Pass Failure ]
-crbug.com/480769 http/tests/inspector/service-workers/service-workers-redundant.html [ Crash Pass Failure ]
-crbug.com/480769 http/tests/inspector/service-workers/service-worker-agents.html [ Crash Pass Timeout ]
+crbug.com/480769 http/tests/inspector/service-workers/service-workers-redundant.html [ Pass Failure ]
 
 crbug.com/569901 [ Debug ] http/tests/serviceworker/navigation-redirect.html [ Pass Failure ]
 
