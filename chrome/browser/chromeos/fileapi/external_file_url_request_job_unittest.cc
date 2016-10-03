@@ -108,8 +108,8 @@ class TestDelegate : public net::TestDelegate {
                           const net::RedirectInfo& redirect_info,
                           bool* defer_redirect) override {
     redirect_url_ = redirect_info.new_url;
-    net::TestDelegate::OnReceivedRedirect(
-        request, redirect_info, defer_redirect);
+    net::TestDelegate::OnReceivedRedirect(request, redirect_info,
+                                          defer_redirect);
   }
 
  private:
@@ -249,8 +249,7 @@ TEST_F(ExternalFileURLRequestJobTest, NonGetMethod) {
 
   base::RunLoop().Run();
 
-  EXPECT_EQ(net::URLRequestStatus::FAILED, request->status().status());
-  EXPECT_EQ(net::ERR_METHOD_NOT_SUPPORTED, request->status().error());
+  EXPECT_EQ(net::ERR_METHOD_NOT_SUPPORTED, test_delegate_->request_status());
 }
 
 TEST_F(ExternalFileURLRequestJobTest, RegularFile) {
@@ -266,7 +265,7 @@ TEST_F(ExternalFileURLRequestJobTest, RegularFile) {
 
     base::RunLoop().Run();
 
-    EXPECT_EQ(net::URLRequestStatus::SUCCESS, request->status().status());
+    EXPECT_EQ(net::OK, test_delegate_->request_status());
     // It looks weird, but the mime type for the "File 1.txt" is "audio/mpeg"
     // on the server.
     std::string mime_type;
@@ -292,7 +291,8 @@ TEST_F(ExternalFileURLRequestJobTest, RegularFile) {
 
     base::RunLoop().Run();
 
-    EXPECT_EQ(net::URLRequestStatus::SUCCESS, request->status().status());
+    EXPECT_EQ(net::OK, test_delegate_->request_status());
+
     std::string mime_type;
     request->GetMimeType(&mime_type);
     EXPECT_EQ("audio/mpeg", mime_type);
@@ -314,7 +314,6 @@ TEST_F(ExternalFileURLRequestJobTest, HostedDocument) {
 
   base::RunLoop().Run();
 
-  EXPECT_EQ(net::URLRequestStatus::SUCCESS, request->status().status());
   // Make sure that a hosted document triggers redirection.
   EXPECT_TRUE(request->is_redirecting());
   EXPECT_TRUE(test_delegate_->redirect_url().is_valid());
@@ -328,8 +327,7 @@ TEST_F(ExternalFileURLRequestJobTest, RootDirectory) {
 
   base::RunLoop().Run();
 
-  EXPECT_EQ(net::URLRequestStatus::FAILED, request->status().status());
-  EXPECT_EQ(net::ERR_FAILED, request->status().error());
+  EXPECT_EQ(net::ERR_FAILED, test_delegate_->request_status());
 }
 
 TEST_F(ExternalFileURLRequestJobTest, Directory) {
@@ -340,8 +338,7 @@ TEST_F(ExternalFileURLRequestJobTest, Directory) {
 
   base::RunLoop().Run();
 
-  EXPECT_EQ(net::URLRequestStatus::FAILED, request->status().status());
-  EXPECT_EQ(net::ERR_FAILED, request->status().error());
+  EXPECT_EQ(net::ERR_FAILED, test_delegate_->request_status());
 }
 
 TEST_F(ExternalFileURLRequestJobTest, NonExistingFile) {
@@ -352,8 +349,7 @@ TEST_F(ExternalFileURLRequestJobTest, NonExistingFile) {
 
   base::RunLoop().Run();
 
-  EXPECT_EQ(net::URLRequestStatus::FAILED, request->status().status());
-  EXPECT_EQ(net::ERR_FILE_NOT_FOUND, request->status().error());
+  EXPECT_EQ(net::ERR_FILE_NOT_FOUND, test_delegate_->request_status());
 }
 
 TEST_F(ExternalFileURLRequestJobTest, WrongFormat) {
@@ -363,8 +359,7 @@ TEST_F(ExternalFileURLRequestJobTest, WrongFormat) {
 
   base::RunLoop().Run();
 
-  EXPECT_EQ(net::URLRequestStatus::FAILED, request->status().status());
-  EXPECT_EQ(net::ERR_INVALID_URL, request->status().error());
+  EXPECT_EQ(net::ERR_INVALID_URL, test_delegate_->request_status());
 }
 
 TEST_F(ExternalFileURLRequestJobTest, Cancel) {
@@ -378,7 +373,7 @@ TEST_F(ExternalFileURLRequestJobTest, Cancel) {
 
   base::RunLoop().Run();
 
-  EXPECT_EQ(net::URLRequestStatus::CANCELED, request->status().status());
+  EXPECT_EQ(net::ERR_ABORTED, test_delegate_->request_status());
 }
 
 TEST_F(ExternalFileURLRequestJobTest, RangeHeader) {
@@ -395,7 +390,7 @@ TEST_F(ExternalFileURLRequestJobTest, RangeHeader) {
 
   base::RunLoop().Run();
 
-  EXPECT_EQ(net::URLRequestStatus::SUCCESS, request->status().status());
+  EXPECT_EQ(net::OK, test_delegate_->request_status());
 
   // Reading file must be done after |request| runs, otherwise
   // it'll create a local cache file, and we cannot test correctly.
@@ -417,8 +412,8 @@ TEST_F(ExternalFileURLRequestJobTest, WrongRangeHeader) {
 
   base::RunLoop().Run();
 
-  EXPECT_EQ(net::URLRequestStatus::FAILED, request->status().status());
-  EXPECT_EQ(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE, request->status().error());
+  EXPECT_EQ(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE,
+            test_delegate_->request_status());
 }
 
 }  // namespace chromeos

@@ -20,10 +20,11 @@ class MockURLRequestDelegate : public net::URLRequest::Delegate {
   MockURLRequestDelegate();
   ~MockURLRequestDelegate() override;
 
-  void OnResponseStarted(net::URLRequest* request) override;
+  void OnResponseStarted(net::URLRequest* request, int net_error) override;
   void OnReadCompleted(net::URLRequest* request, int bytes_read) override;
   const std::string& response_data() const { return response_data_; }
   const net::IOBufferWithSize* metadata() const { return metadata_.get(); }
+  int request_status() { return request_status_; }
 
  private:
   void ReadSome(net::URLRequest* request);
@@ -33,6 +34,8 @@ class MockURLRequestDelegate : public net::URLRequest::Delegate {
   scoped_refptr<net::IOBuffer> io_buffer_;
   std::string response_data_;
   scoped_refptr<net::IOBufferWithSize> metadata_;
+
+  int request_status_;
 };
 
 }  // namespace content

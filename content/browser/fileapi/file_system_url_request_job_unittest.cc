@@ -337,7 +337,7 @@ TEST_F(FileSystemURLRequestJobTest, FileTestMultipleRangesNotSupported) {
   TestRequestWithHeaders(CreateFileSystemURL("file1.dat"), &headers);
   EXPECT_TRUE(delegate_->request_failed());
   EXPECT_EQ(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE,
-            request_->status().error());
+            delegate_->request_status());
 }
 
 TEST_F(FileSystemURLRequestJobTest, RangeOutOfBounds) {
@@ -351,7 +351,7 @@ TEST_F(FileSystemURLRequestJobTest, RangeOutOfBounds) {
   ASSERT_FALSE(request_->is_pending());
   EXPECT_TRUE(delegate_->request_failed());
   EXPECT_EQ(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE,
-            request_->status().error());
+            delegate_->request_status());
 }
 
 TEST_F(FileSystemURLRequestJobTest, FileDirRedirect) {
@@ -359,7 +359,6 @@ TEST_F(FileSystemURLRequestJobTest, FileDirRedirect) {
   TestRequest(CreateFileSystemURL("dir"));
 
   EXPECT_EQ(1, delegate_->received_redirect_count());
-  EXPECT_TRUE(request_->status().is_success());
   EXPECT_FALSE(delegate_->request_failed());
 
   // We've deferred the redirect; now cancel the request to avoid following it.
@@ -371,21 +370,21 @@ TEST_F(FileSystemURLRequestJobTest, InvalidURL) {
   TestRequest(GURL("filesystem:/foo/bar/baz"));
   ASSERT_FALSE(request_->is_pending());
   EXPECT_TRUE(delegate_->request_failed());
-  EXPECT_EQ(net::ERR_INVALID_URL, request_->status().error());
+  EXPECT_EQ(net::ERR_INVALID_URL, delegate_->request_status());
 }
 
 TEST_F(FileSystemURLRequestJobTest, NoSuchRoot) {
   TestRequest(GURL("filesystem:http://remote/persistent/somefile"));
   ASSERT_FALSE(request_->is_pending());
   EXPECT_TRUE(delegate_->request_failed());
-  EXPECT_EQ(net::ERR_FILE_NOT_FOUND, request_->status().error());
+  EXPECT_EQ(net::ERR_FILE_NOT_FOUND, delegate_->request_status());
 }
 
 TEST_F(FileSystemURLRequestJobTest, NoSuchFile) {
   TestRequest(CreateFileSystemURL("somefile"));
   ASSERT_FALSE(request_->is_pending());
   EXPECT_TRUE(delegate_->request_failed());
-  EXPECT_EQ(net::ERR_FILE_NOT_FOUND, request_->status().error());
+  EXPECT_EQ(net::ERR_FILE_NOT_FOUND, delegate_->request_status());
 }
 
 TEST_F(FileSystemURLRequestJobTest, Cancel) {
@@ -429,7 +428,7 @@ TEST_F(FileSystemURLRequestJobTest, Incognito) {
                          file_system_context.get());
   ASSERT_FALSE(request_->is_pending());
   EXPECT_TRUE(delegate_->request_failed());
-  EXPECT_EQ(net::ERR_FILE_NOT_FOUND, request_->status().error());
+  EXPECT_EQ(net::ERR_FILE_NOT_FOUND, delegate_->request_status());
 
   // Make sure it returns success with regular (non-incognito) context.
   TestRequest(CreateFileSystemURL("file"));
@@ -462,7 +461,7 @@ TEST_F(FileSystemURLRequestJobTest, AutoMountInvalidRoot) {
 
   ASSERT_FALSE(request_->is_pending());
   EXPECT_TRUE(delegate_->request_failed());
-  EXPECT_EQ(net::ERR_FILE_NOT_FOUND, request_->status().error());
+  EXPECT_EQ(net::ERR_FILE_NOT_FOUND, delegate_->request_status());
 
   ASSERT_FALSE(
       storage::ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(
@@ -475,7 +474,7 @@ TEST_F(FileSystemURLRequestJobTest, AutoMountNoHandler) {
 
   ASSERT_FALSE(request_->is_pending());
   EXPECT_TRUE(delegate_->request_failed());
-  EXPECT_EQ(net::ERR_FILE_NOT_FOUND, request_->status().error());
+  EXPECT_EQ(net::ERR_FILE_NOT_FOUND, delegate_->request_status());
 
   ASSERT_FALSE(
       storage::ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(
