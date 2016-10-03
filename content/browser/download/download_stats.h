@@ -11,10 +11,12 @@
 #include <stdint.h>
 
 #include <string>
+#include <vector>
 
 #include "content/common/content_export.h"
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_interrupt_reasons.h"
+#include "url/gurl.h"
 
 namespace base {
 class FilePath;
@@ -248,6 +250,9 @@ enum OriginStateOnResumption {
 // enum.
 void RecordOriginStateOnResumption(bool is_partial,
                                    int state);
+
+void RecordDownloadConnectionSecurity(const GURL& download_url,
+                                      const std::vector<GURL>& url_chain);
 
 }  // namespace content
 

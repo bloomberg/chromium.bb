@@ -110,46 +110,6 @@ std::unique_ptr<UrlDownloader, BrowserThread::DeleteOnIOThread> BeginDownload(
           .release());
 }
 
-// Enumerate for histogramming purposes.
-// DO NOT CHANGE THE ORDERING OF THESE VALUES.
-enum DownloadConnectionSecurity {
-  DOWNLOAD_SECURE,  // Final download url and its redirects all use https
-  DOWNLOAD_TARGET_INSECURE,  // Final download url uses http, redirects are all
-                             // https
-  DOWNLOAD_REDIRECT_INSECURE,  // Final download url uses https, but at least
-                               // one redirect uses http
-  DOWNLOAD_REDIRECT_TARGET_INSECURE,  // Final download url uses http, and at
-                                      // least one redirect uses http
-  DOWNLOAD_NONE_HTTPX,  // Final download url uses scheme other than http/https
-  DOWNLOAD_CONNECTION_SECURITY_MAX
-};
-
-void RecordDownloadConnectionSecurity(const GURL& download_url,
-                                      const std::vector<GURL>& url_chain) {
-  DownloadConnectionSecurity state =
-      DownloadConnectionSecurity::DOWNLOAD_NONE_HTTPX;
-  if (download_url.SchemeIsHTTPOrHTTPS()) {
-    bool is_final_download_secure = download_url.SchemeIs(url::kHttpsScheme);
-    bool is_redirect_chain_secure = true;
-    if (url_chain.size()>std::size_t(1)) {
-      for (std::size_t i = std::size_t(0); i < url_chain.size() - 1; i++) {
-        if (!url_chain[i].SchemeIsCryptographic()) {
-          is_redirect_chain_secure = false;
-          break;
-        }
-      }
-    }
-    state = is_final_download_secure
-                ? is_redirect_chain_secure ? DOWNLOAD_SECURE
-                                           : DOWNLOAD_REDIRECT_INSECURE
-                : is_redirect_chain_secure ? DOWNLOAD_TARGET_INSECURE
-                                           : DOWNLOAD_REDIRECT_TARGET_INSECURE;
-  }
-
-  UMA_HISTOGRAM_ENUMERATION("Download.TargetConnectionSecurity", state,
-                            DOWNLOAD_CONNECTION_SECURITY_MAX);
-}
-
 class DownloadItemFactoryImpl : public DownloadItemFactory {
  public:
   DownloadItemFactoryImpl() {}
