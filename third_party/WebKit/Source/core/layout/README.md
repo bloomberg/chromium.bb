@@ -153,8 +153,8 @@ The final location of these within an 800x600 frame is as:
     container: (492, 8  300x200)
     relpos:    (662, 58 70x80)
 
-See the [diagram](https://docs.google.com/drawings/d/1k5lOzQxhfRQ1J4HknGByJPJfpDV4o_N_ZuVTvveiSaw/edit?usp=sharing)
-for full detail on dimensions of the involved elements.
+See the [diagram](resources/flipped-blocks-relpos.svg) for full detail on
+dimensions of the involved elements.
 
 Determining the paint invalidation rect for `relpos` via
 `mapToVisualRectInAncestorSpace()` involves walking up the layout tree from
