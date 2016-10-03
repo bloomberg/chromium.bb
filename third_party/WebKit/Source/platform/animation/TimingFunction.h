@@ -45,8 +45,8 @@ class PLATFORM_EXPORT TimingFunction : public RefCounted<TimingFunction> {
 
   virtual String toString() const = 0;
 
-  // Evaluates the timing function at the given fraction. The accuracy parameter provides a hint as to the required
-  // accuracy and is not guaranteed.
+  // Evaluates the timing function at the given fraction. The accuracy parameter
+  // provides a hint as to the required accuracy and is not guaranteed.
   virtual double evaluate(double fraction, double accuracy) const = 0;
 
   // This function returns the minimum and maximum values obtainable when

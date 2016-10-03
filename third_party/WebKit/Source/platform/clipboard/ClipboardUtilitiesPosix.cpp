@@ -30,14 +30,15 @@
 
 namespace blink {
 
-// On POSIX systems, the typical filename length limit is 255 character units. HFS+'s limit is
-// actually 255 Unicode characters using Apple's modification of Normzliation Form D, but the
-// differences aren't really worth dealing with here.
+// On POSIX systems, the typical filename length limit is 255 character units.
+// HFS+'s limit is actually 255 Unicode characters using Apple's modification of
+// Normzliation Form D, but the differences aren't really worth dealing with
+// here.
 static const unsigned maxFilenameLength = 255;
 
 static bool isInvalidFileCharacter(UChar c) {
-  // HFS+ disallows '/' and Linux systems also disallow null. For sanity's sake we'll also
-  // disallow control characters.
+  // HFS+ disallows '/' and Linux systems also disallow null. For sanity's sake
+  // we'll also disallow control characters.
   return c < ' ' || c == 0x7F || c == '/';
 }
 

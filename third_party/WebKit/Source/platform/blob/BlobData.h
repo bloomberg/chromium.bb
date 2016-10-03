@@ -163,7 +163,8 @@ class PLATFORM_EXPORT BlobData {
 
   void appendBytes(const void*, size_t length);
   void appendData(PassRefPtr<RawData>, long long offset, long long length);
-  // Do not use this version, please provide an offset and length (crbug.com/548512).
+  // Do not use this version, please provide an offset and length
+  // (crbug.com/548512).
   void appendFile(const String& path);
   void appendFile(const String& path,
                   long long offset,
@@ -179,7 +180,8 @@ class PLATFORM_EXPORT BlobData {
   void appendText(const String&, bool normalizeLineEndingsToNative);
 
   // The value of the size property for a Blob who has this data.
-  // BlobDataItem::toEndOfFile if the Blob has a file whose size was not yet determined.
+  // BlobDataItem::toEndOfFile if the Blob has a file whose size was not yet
+  // determined.
   long long length() const;
 
  private:

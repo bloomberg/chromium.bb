@@ -36,10 +36,11 @@ namespace blink {
 class WebGestureCurve;
 class WebGestureCurveTarget;
 
-// Implements a gesture animation (fling scroll, etc.) using a curve with a generic interface
-// to define the animation parameters as a function of time, and applies the animation
-// to a target, again via a generic interface. It is assumed that animate() is called
-// on a more-or-less regular basis by the owner.
+// Implements a gesture animation (fling scroll, etc.) using a curve with a
+// generic interface to define the animation parameters as a function of time,
+// and applies the animation to a target, again via a generic interface. It is
+// assumed that animate() is called on a more-or-less regular basis by the
+// owner.
 class PLATFORM_EXPORT WebActiveGestureAnimation {
   USING_FAST_MALLOC(WebActiveGestureAnimation);
   WTF_MAKE_NONCOPYABLE(WebActiveGestureAnimation);

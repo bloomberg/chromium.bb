@@ -79,7 +79,8 @@ WebImage WebImage::fromData(const WebData& data, const WebSize& desiredSize) {
 }
 
 WebVector<WebImage> WebImage::framesFromData(const WebData& data) {
-  // This is to protect from malicious images. It should be big enough that it's never hit in pracice.
+  // This is to protect from malicious images. It should be big enough that it's
+  // never hit in practice.
   const size_t maxFrameCount = 8;
 
   RefPtr<SharedBuffer> buffer = PassRefPtr<SharedBuffer>(data);

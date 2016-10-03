@@ -94,8 +94,9 @@ void WebFileSystemCallbacks::didReadMetadata(const WebFileInfo& webFileInfo) {
 void WebFileSystemCallbacks::didCreateSnapshotFile(
     const WebFileInfo& webFileInfo) {
   ASSERT(!m_private.isNull());
-  // It's important to create a BlobDataHandle that refers to the platform file path prior
-  // to return from this method so the underlying file will not be deleted.
+  // It's important to create a BlobDataHandle that refers to the platform file
+  // path prior to return from this method so the underlying file will not be
+  // deleted.
   std::unique_ptr<BlobData> blobData = BlobData::create();
   blobData->appendFile(webFileInfo.platformPath, 0, webFileInfo.length,
                        invalidFileTime());

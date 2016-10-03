@@ -89,7 +89,8 @@ static void addHeader(HTTPHeaderMap* map,
                       const WebString& name,
                       const WebString& value) {
   HTTPHeaderMap::AddResult result = map->add(name, value);
-  // It is important that values are separated by '\n', not comma, otherwise Set-Cookie header is not parseable.
+  // It is important that values are separated by '\n', not comma, otherwise
+  // Set-Cookie header is not parseable.
   if (!result.isNewEntry)
     result.storedValue->value =
         result.storedValue->value + "\n" + String(value);

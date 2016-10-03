@@ -77,7 +77,8 @@ inline FloatPoint blend(const FloatPoint& from,
                     blend(from.y(), to.y(), progress));
 }
 
-// Calculates the accuracy for evaluating a timing function for an animation with the specified duration.
+// Calculates the accuracy for evaluating a timing function for an animation
+// with the specified duration.
 inline double accuracyForDuration(double duration) {
   return std::max(1.0 / (200.0 * duration),
                   gfx::CubicBezier::GetDefaultEpsilon());

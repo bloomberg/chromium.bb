@@ -36,9 +36,9 @@ class PLATFORM_EXPORT CompositorAnimationPlayer : public cc::AnimationDelegate {
 
   cc::AnimationPlayer* ccAnimationPlayer() const;
 
-  // An animation delegate is notified when animations are started and
-  // stopped. The CompositorAnimationPlayer does not take ownership of the delegate, and it is
-  // the responsibility of the client to reset the layer's delegate before
+  // An animation delegate is notified when animations are started and stopped.
+  // The CompositorAnimationPlayer does not take ownership of the delegate, and
+  // it is the responsibility of the client to reset the layer's delegate before
   // deleting the delegate.
   void setAnimationDelegate(CompositorAnimationDelegate*);
 

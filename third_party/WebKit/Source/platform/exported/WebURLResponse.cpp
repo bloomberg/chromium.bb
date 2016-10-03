@@ -95,8 +95,8 @@ WebURLResponse::WebURLResponse(const WebURL& url) : WebURLResponse() {
 }
 
 WebURLResponse& WebURLResponse::operator=(const WebURLResponse& r) {
-  // Copying subclasses that have different m_resourceResponse ownership semantics
-  // via this operator is just not supported.
+  // Copying subclasses that have different m_resourceResponse ownership
+  // semantics via this operator is just not supported.
   DCHECK(m_ownedResourceResponse);
   DCHECK(m_resourceResponse);
   if (&r != this)

@@ -80,7 +80,8 @@ WebMixedContent::ContextType WebMixedContent::contextTypeFromRequestContext(
     case WebURLRequest::RequestContextXSLT:
       return ContextType::Blockable;
 
-    // FIXME: Contexts that we should block, but don't currently. https://crbug.com/388650
+    // FIXME: Contexts that we should block, but don't currently.
+    // https://crbug.com/388650
     case WebURLRequest::RequestContextDownload:
     case WebURLRequest::RequestContextPrefetch:
       return ContextType::ShouldBeBlockable;
