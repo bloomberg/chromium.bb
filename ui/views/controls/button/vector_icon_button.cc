@@ -4,7 +4,6 @@
 
 #include "ui/views/controls/button/vector_icon_button.h"
 
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -26,8 +25,7 @@ VectorIconButton::VectorIconButton(VectorIconButtonDelegate* delegate)
     : views::ImageButton(delegate),
       delegate_(delegate),
       id_(gfx::VectorIconId::VECTOR_ICON_NONE) {
-  if (ui::MaterialDesignController::IsModeMaterial())
-    SetInkDropMode(InkDropMode::ON);
+  SetInkDropMode(InkDropMode::ON);
   set_has_ink_drop_action_on_click(true);
   SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                     views::ImageButton::ALIGN_MIDDLE);

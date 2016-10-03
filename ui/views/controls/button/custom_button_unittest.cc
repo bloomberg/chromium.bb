@@ -9,7 +9,6 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/layout.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
@@ -380,10 +379,7 @@ TEST_F(CustomButtonTest, CaptureLossHidesInkDrop) {
   widget()->ReleaseCapture();
   SetDraggedView(nullptr);
   EXPECT_EQ(InkDropState::HIDDEN, ink_drop->GetTargetInkDropState());
-  EXPECT_EQ(ui::MaterialDesignController::IsModeMaterial()
-                ? Button::ButtonState::STATE_NORMAL
-                : Button::ButtonState::STATE_PRESSED,
-            button()->state());
+  EXPECT_EQ(Button::ButtonState::STATE_NORMAL, button()->state());
 }
 
 TEST_F(CustomButtonTest, HideInkDropWhenShowingContextMenu) {

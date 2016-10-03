@@ -38,8 +38,7 @@ class VectorIconGallery : public View,
         color_input_(new Textfield()),
         file_chooser_(new Textfield()),
         file_go_button_(
-            MdTextButton::CreateStandardButton(this,
-                                               base::ASCIIToUTF16("Render"))),
+            MdTextButton::Create(this, base::ASCIIToUTF16("Render"))),
         vector_id_(0),
         // 36dp is one of the natural sizes for MD icons, and corresponds
         // roughly to a 32dp usable area.

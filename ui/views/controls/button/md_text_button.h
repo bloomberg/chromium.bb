@@ -19,10 +19,6 @@ class MdFocusRing;
 // A button class that implements the Material Design text button spec.
 class VIEWS_EXPORT MdTextButton : public LabelButton {
  public:
-  // Creates a normal STYLE_BUTTON LabelButton in pre-MD, or an MdTextButton
-  // in MD mode.
-  static LabelButton* CreateStandardButton(ButtonListener* listener,
-                                           const base::string16& text);
   // As above, but only creates an MdTextButton if MD is enabled in the
   // secondary UI (as opposed to just "top chrome"/"primary" UI).
   static LabelButton* CreateSecondaryUiButton(ButtonListener* listener,

@@ -157,7 +157,6 @@ SubtleNotificationView::SubtleNotificationView(
   link_->SetFocusBehavior(FocusBehavior::NEVER);
   link_->set_listener(link_listener);
   link_->SetFontList(font_list);
-  link_->SetPressedColor(kForegroundColor);
   link_->SetEnabledColor(kForegroundColor);
   link_->SetBackgroundColor(kBackgroundColor);
   link_->SetVisible(false);

@@ -52,9 +52,8 @@ class VIEWS_EXPORT Link : public Label {
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
   void SetEnabledColor(SkColor color) override;
 
-  void SetPressedColor(SkColor color);
-  // TODO(estade): almost all the places that call this pass false. With MD,
-  // false is already the default so those callsites can be removed.
+  // TODO(estade): almost all the places that call this pass false. With
+  // Harmony, false is already the default so those callsites can be removed.
   void SetUnderline(bool underline);
 
   static const char kViewClassName[];

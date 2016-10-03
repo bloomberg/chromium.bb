@@ -9,7 +9,6 @@
 #include "base/strings/string_util.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
@@ -38,7 +37,7 @@ bool CanUseTranslucentTooltipWidget() {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   return false;
 #else
-  return ui::MaterialDesignController::IsModeMaterial();
+  return true;
 #endif
 }
 
@@ -55,8 +54,7 @@ views::Widget* CreateTooltipWidget(aura::Window* tooltip_window) {
   params.accept_events = false;
   if (CanUseTranslucentTooltipWidget())
     params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  if (ui::MaterialDesignController::IsModeMaterial())
-    params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
+  params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
   widget->Init(params);
   return widget;
 }
@@ -72,10 +70,9 @@ class TooltipAura::TooltipView : public views::View {
   TooltipView()
       : render_text_(gfx::RenderText::CreateInstance()),
         max_width_(0) {
-    const bool material = ui::MaterialDesignController::IsModeMaterial();
-    const int kHorizontalPadding = material ? 8 : 3;
-    const int kVerticalPaddingTop = material ? 4 : 2;
-    const int kVerticalPaddingBottom = material ? 5 : kVerticalPaddingTop;
+    const int kHorizontalPadding = 8;
+    const int kVerticalPaddingTop = 4;
+    const int kVerticalPaddingBottom = 5;
     SetBorder(Border::CreateEmptyBorder(kVerticalPaddingTop, kHorizontalPadding,
                                         kVerticalPaddingBottom,
                                         kHorizontalPadding));
@@ -125,7 +122,7 @@ class TooltipAura::TooltipView : public views::View {
   }
 
   void SetBackgroundColor(SkColor background_color) {
-    // Corner radius of tooltip background used with Material Design.
+    // Corner radius of tooltip background.
     const float kTooltipCornerRadius = 2.f;
     views::Background* background =
         CanUseTranslucentTooltipWidget()

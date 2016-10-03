@@ -88,13 +88,6 @@ class MdFocusRing : public View {
 }  // namespace internal
 
 // static
-LabelButton* MdTextButton::CreateStandardButton(ButtonListener* listener,
-                                                const base::string16& text) {
-  return CreateButton(listener, text,
-                      ui::MaterialDesignController::IsModeMaterial());
-}
-
-// static
 LabelButton* MdTextButton::CreateSecondaryUiButton(ButtonListener* listener,
                                                    const base::string16& text) {
   return CreateButton(listener, text,

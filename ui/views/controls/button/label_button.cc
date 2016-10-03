@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
@@ -388,10 +387,8 @@ void LabelButton::EnableCanvasFlippingForRTLUI(bool flip) {
 }
 
 std::unique_ptr<LabelButtonBorder> LabelButton::CreateDefaultBorder() const {
-  if (!ui::MaterialDesignController::IsModeMaterial() ||
-      style_ != Button::STYLE_TEXTBUTTON) {
+  if (style_ != Button::STYLE_TEXTBUTTON)
     return base::MakeUnique<LabelButtonAssetBorder>(style_);
-  }
   std::unique_ptr<LabelButtonBorder> border =
       base::MakeUnique<LabelButtonBorder>();
   border->set_insets(views::LabelButtonAssetBorder::GetDefaultInsetsForStyle(

@@ -30,9 +30,7 @@ Link::Link() : Link(base::string16()) {}
 Link::Link(const base::string16& title)
     : Label(title),
       requested_enabled_color_(gfx::kPlaceholderColor),
-      requested_enabled_color_set_(false),
-      requested_pressed_color_(gfx::kPlaceholderColor),
-      requested_pressed_color_set_(false) {
+      requested_enabled_color_set_(false) {
   Init();
 }
 
@@ -176,12 +174,6 @@ void Link::SetEnabledColor(SkColor color) {
   Label::SetEnabledColor(GetEnabledColor());
 }
 
-void Link::SetPressedColor(SkColor color) {
-  requested_pressed_color_set_ = true;
-  requested_pressed_color_ = color;
-  Label::SetEnabledColor(GetEnabledColor());
-}
-
 void Link::SetUnderline(bool underline) {
   if (underline_ == underline)
     return;
@@ -241,21 +233,16 @@ void Link::ConfigureFocus() {
 }
 
 SkColor Link::GetEnabledColor() {
-  // In material mode, there is no pressed effect, so always use the unpressed
-  // color.
-  if (!pressed_ || ui::MaterialDesignController::IsModeMaterial()) {
-    if (!requested_enabled_color_set_ && GetNativeTheme())
-      return GetNativeTheme()->GetSystemColor(
-          ui::NativeTheme::kColorId_LinkEnabled);
-
+  if (requested_enabled_color_set_)
     return requested_enabled_color_;
+
+  if (GetNativeTheme()) {
+    return GetNativeTheme()->GetSystemColor(
+        pressed_ ? ui::NativeTheme::kColorId_LinkPressed
+                 : ui::NativeTheme::kColorId_LinkEnabled);
   }
 
-  if (!requested_pressed_color_set_ && GetNativeTheme())
-    return GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_LinkPressed);
-
-  return requested_pressed_color_;
+  return gfx::kPlaceholderColor;
 }
 
 }  // namespace views
