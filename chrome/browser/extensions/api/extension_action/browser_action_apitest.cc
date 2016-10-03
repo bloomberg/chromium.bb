@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/extensions/extension_process_policy.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_context.h"
@@ -929,8 +930,32 @@ class NavigatingExtensionPopupBrowserTest : public BrowserActionApiTest {
 // Tests that an extension pop-up cannot be navigated to a web page.
 IN_PROC_BROWSER_TEST_F(NavigatingExtensionPopupBrowserTest, Webpage) {
   GURL web_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
+
+  // With and without --isolate-extension the GET request will be blocked in
+  // ExtensionViewHost::OpenURLFromTab (which silently drops navigations with
+  // CURRENT_TAB disposition).
   TestPopupNavigationViaGet(web_url, EXPECTING_NAVIGATION_FAILURE);
-  TestPopupNavigationViaPost(web_url, EXPECTING_NAVIGATION_FAILURE);
+
+  // POST requests don't go through ExtensionViewHost::OpenURLFromTab.
+  //
+  // Without --isolate-extensions, there is no process transfer to isolate
+  // extensions into separate processes and therefore
+  // 1) navigating a popup extension to a webpage will succeed (because
+  //    ExtensionViewHost::ShouldTransferNavigation won't get called when there
+  //    is no transfer),
+  // 2) the webpage will stay in the same renderer process.
+  // This behavior is okay without --isolate-extensions (where webpages and
+  // extensions can coexist in the same process in other scenarios) - therefore
+  // no test verification is needed in this case.
+  //
+  // With --isolate-extensions the navigation should be blocked by
+  // ExtensionViewHost::ShouldTransferNavigation.  Test verification is
+  // important in --isolate-extensions mode, because this mode is all about
+  // isolating extensions and webpages into separate processes and therefore we
+  // need to ensure the behavior described above doesn't occur (i.e. that
+  // instead the webpage navigation in an extension popup fails).
+  if (extensions::IsIsolateExtensionsEnabled())
+    TestPopupNavigationViaPost(web_url, EXPECTING_NAVIGATION_FAILURE);
 }
 
 // Tests that an extension pop-up can be navigated to another page
