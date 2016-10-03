@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All
+ * rights reserved.
  * Copyright (C) 2010 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
@@ -165,10 +166,11 @@ FileList* FileInputType::files() {
 }
 
 bool FileInputType::canSetValue(const String& value) {
-  // For security reasons, we don't allow setting the filename, but we do allow clearing it.
-  // The HTML5 spec (as of the 10/24/08 working draft) says that the value attribute isn't
-  // applicable to the file upload control at all, but for now we are keeping this behavior
-  // to avoid breaking existing websites that may be relying on this.
+  // For security reasons, we don't allow setting the filename, but we do allow
+  // clearing it.  The HTML5 spec (as of the 10/24/08 working draft) says that
+  // the value attribute isn't applicable to the file upload control at all, but
+  // for now we are keeping this behavior to avoid breaking existing websites
+  // that may be relying on this.
   return value.isEmpty();
 }
 
@@ -223,7 +225,8 @@ FileList* FileInputType::createFileList(
     if (rootPath[rootLength - 1] != '\\' && rootPath[rootLength - 1] != '/')
       rootLength += 1;
     for (size_t i = 0; i < size; ++i) {
-      // Normalize backslashes to slashes before exposing the relative path to script.
+      // Normalize backslashes to slashes before exposing the relative path to
+      // script.
       String relativePath =
           files[i].path.substring(rootLength).replace('\\', '/');
       fileList->append(

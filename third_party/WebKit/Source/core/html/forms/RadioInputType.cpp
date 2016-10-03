@@ -110,8 +110,8 @@ void RadioInputType::handleKeydownEvent(KeyboardEvent* event) {
                      ? (key == "ArrowDown" || key == "ArrowLeft")
                      : (key == "ArrowDown" || key == "ArrowRight");
 
-  // We can only stay within the form's children if the form hasn't been demoted to a leaf because
-  // of malformed HTML.
+  // We can only stay within the form's children if the form hasn't been demoted
+  // to a leaf because of malformed HTML.
   HTMLInputElement* inputElement = findNextFocusableRadioButtonInGroup(
       toHTMLInputElement(&element()), forward);
   if (!inputElement) {
@@ -140,7 +140,8 @@ void RadioInputType::handleKeyupEvent(KeyboardEvent* event) {
   if (key != " ")
     return;
   // If an unselected radio is tabbed into (because the entire group has nothing
-  // checked, or because of some explicit .focus() call), then allow space to check it.
+  // checked, or because of some explicit .focus() call), then allow space to
+  // check it.
   if (element().checked())
     return;
   dispatchSimulatedClickIfActive(event);
@@ -165,7 +166,8 @@ bool RadioInputType::isKeyboardFocusable() const {
       return false;
   }
 
-  // Allow keyboard focus if we're checked or if nothing in the group is checked.
+  // Allow keyboard focus if we're checked or if nothing in the group is
+  // checked.
   return element().checked() || !element().checkedRadioButtonForGroup();
 }
 
@@ -176,12 +178,14 @@ bool RadioInputType::shouldSendChangeEventAfterCheckedChanged() {
 }
 
 ClickHandlingState* RadioInputType::willDispatchClick() {
-  // An event handler can use preventDefault or "return false" to reverse the selection we do here.
-  // The ClickHandlingState object contains what we need to undo what we did here in didDispatchClick.
+  // An event handler can use preventDefault or "return false" to reverse the
+  // selection we do here.  The ClickHandlingState object contains what we need
+  // to undo what we did here in didDispatchClick.
 
-  // We want radio groups to end up in sane states, i.e., to have something checked.
-  // Therefore if nothing is currently selected, we won't allow the upcoming action to be "undone", since
-  // we want some object in the radio group to actually get selected.
+  // We want radio groups to end up in sane states, i.e., to have something
+  // checked.  Therefore if nothing is currently selected, we won't allow the
+  // upcoming action to be "undone", since we want some object in the radio
+  // group to actually get selected.
 
   ClickHandlingState* state = new ClickHandlingState;
 
@@ -196,7 +200,8 @@ void RadioInputType::didDispatchClick(Event* event,
                                       const ClickHandlingState& state) {
   if (event->defaultPrevented() || event->defaultHandled()) {
     // Restore the original selected radio button if possible.
-    // Make sure it is still a radio button and only do the restoration if it still belongs to our group.
+    // Make sure it is still a radio button and only do the restoration if it
+    // still belongs to our group.
     HTMLInputElement* checkedRadioButton = state.checkedRadioButton.get();
     if (!checkedRadioButton)
       element().setChecked(false);

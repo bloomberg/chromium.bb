@@ -159,8 +159,9 @@ void TextFieldInputType::setValue(const String& sanitizedValue,
 
   switch (eventBehavior) {
     case DispatchChangeEvent:
-      // If the user is still editing this field, dispatch an input event rather than a change event.
-      // The change event will be dispatched when editing finishes.
+      // If the user is still editing this field, dispatch an input event rather
+      // than a change event.  The change event will be dispatched when editing
+      // finishes.
       if (element().focused())
         element().dispatchFormControlInputEvent();
       else
@@ -433,7 +434,8 @@ void TextFieldInputType::handleBeforeTextInsertedEvent(
   unsigned appendableLength =
       maxLength > baseLength ? maxLength - baseLength : 0;
 
-  // Truncate the inserted text to avoid violating the maxLength and other constraints.
+  // Truncate the inserted text to avoid violating the maxLength and other
+  // constraints.
   String eventText = event->text();
   unsigned textLength = eventText.length();
   while (textLength > 0 && isASCIILineBreak(eventText[textLength - 1]))

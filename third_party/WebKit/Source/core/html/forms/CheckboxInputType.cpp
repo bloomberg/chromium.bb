@@ -63,8 +63,9 @@ void CheckboxInputType::handleKeyupEvent(KeyboardEvent* event) {
 }
 
 ClickHandlingState* CheckboxInputType::willDispatchClick() {
-  // An event handler can use preventDefault or "return false" to reverse the checking we do here.
-  // The ClickHandlingState object contains what we need to undo what we did here in didDispatchClick.
+  // An event handler can use preventDefault or "return false" to reverse the
+  // checking we do here.  The ClickHandlingState object contains what we need
+  // to undo what we did here in didDispatchClick.
 
   ClickHandlingState* state = new ClickHandlingState;
 

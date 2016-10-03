@@ -87,12 +87,14 @@ class CORE_EXPORT InputType : public GarbageCollectedFinalized<InputType> {
 
   // DOM property functions
 
-  virtual bool getTypeSpecificValue(
-      String&);  // Checked first, before internal storage or the value attribute.
-  virtual String fallbackValue()
-      const;  // Checked last, if both internal storage and value attribute are missing.
-  virtual String defaultValue()
-      const;  // Checked after even fallbackValue, only when the valueWithDefault function is called.
+  // Checked first, before internal storage or the value attribute.
+  virtual bool getTypeSpecificValue(String&);
+  // Checked last, if both internal storage and value attribute are missing.
+  virtual String fallbackValue() const;
+  // Checked after even fallbackValue, only when the valueWithDefault function
+  // is called.
+  virtual String defaultValue() const;
+
   virtual double valueAsDate() const;
   virtual void setValueAsDate(double, ExceptionState&) const;
   virtual double valueAsDouble() const;
@@ -169,7 +171,8 @@ class CORE_EXPORT InputType : public GarbageCollectedFinalized<InputType> {
   // Should return true if the given DragData has more than one dropped files.
   virtual bool receiveDroppedFiles(const DragData*);
   virtual String droppedFileSystemId();
-  // Should return true if the corresponding layoutObject for a type can display a suggested value.
+  // Should return true if the corresponding layoutObject for a type can display
+  // a suggested value.
   virtual bool canSetSuggestedValue();
   virtual bool shouldSendChangeEventAfterCheckedChanged();
   virtual bool canSetValue(const String&);
@@ -242,7 +245,8 @@ class CORE_EXPORT InputType : public GarbageCollectedFinalized<InputType> {
                            const String& value) const;
 
  private:
-  // Helper for stepUp()/stepDown(). Adds step value * count to the current value.
+  // Helper for stepUp()/stepDown(). Adds step value * count to the current
+  // value.
   void applyStep(const Decimal&,
                  int count,
                  AnyStepHandling,

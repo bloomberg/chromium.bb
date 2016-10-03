@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All
+ * rights reserved.
  * Copyright (C) 2010 Google Inc. All rights reserved.
  * Copyright (C) 2012 Samsung Electronics. All rights reserved.
  *
@@ -250,8 +251,8 @@ void ImageInputType::ensurePrimaryContent() {
 }
 
 void ImageInputType::reattachFallbackContent() {
-  // This can happen inside of attachLayoutTree() in the middle of a recalcStyle so we need to
-  // reattach synchronously here.
+  // This can happen inside of attachLayoutTree() in the middle of a recalcStyle
+  // so we need to reattach synchronously here.
   if (element().document().inStyleRecalc())
     element().reattachLayoutTree();
   else

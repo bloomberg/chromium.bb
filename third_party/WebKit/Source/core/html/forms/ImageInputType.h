@@ -73,8 +73,9 @@ class ImageInputType final : public BaseButtonInputType {
   void setUseFallbackContent();
   bool hasFallbackContent() const { return m_useFallbackContent; }
 
-  IntPoint
-      m_clickLocation;  // Valid only during HTMLFormElement::prepareForSubmission().
+  // Valid only during HTMLFormElement::prepareForSubmission().
+  IntPoint m_clickLocation;
+
   bool m_useFallbackContent;
 };
 

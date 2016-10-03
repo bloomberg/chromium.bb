@@ -2,7 +2,8 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All
+ * rights reserved.
  *           (C) 2006 Alexey Proskuryakov (ap@nypop.com)
  * Copyright (C) 2007 Samuel Weinig (sam@webkit.org)
  * Copyright (C) 2009, 2010, 2011, 2012 Google Inc. All rights reserved.
@@ -779,7 +780,8 @@ void InputType::stepUpFromLayoutObject(int n) {
   // The only difference from stepUp()/stepDown() is the extra treatment
   // of the current value before applying the step:
   //
-  // If the current value is not a number, including empty, the current value is assumed as 0.
+  // If the current value is not a number, including empty, the current value is
+  // assumed as 0.
   //   * If 0 is in-range, and matches to step value
   //     - The value should be the +step if n > 0
   //     - The value should be the -step if n < 0
@@ -793,8 +795,10 @@ void InputType::stepUpFromLayoutObject(int n) {
   //       e.g. <input type=number min=-100 step=3> -> 2
   //     - The value should be the smaler matched value nearest to 0 if n < 0
   //       e.g. <input type=number min=-100 step=3> -> -1
-  //   As for date/datetime-local/month/time/week types, the current value is assumed as "the current local date/time".
-  //   As for datetime type, the current value is assumed as "the current date/time in UTC".
+  //   As for date/datetime-local/month/time/week types, the current value is
+  //   assumed as "the current local date/time".
+  //   As for datetime type, the current value is assumed as "the current
+  //   date/time in UTC".
   // If the current value is smaller than the minimum value:
   //  - The value should be the minimum value if n > 0
   //  - Nothing should happen if n < 0
@@ -813,8 +817,10 @@ void InputType::stepUpFromLayoutObject(int n) {
 
   StepRange stepRange(createStepRange(AnyIsDefaultStep));
 
-  // FIXME: Not any changes after stepping, even if it is an invalid value, may be better.
-  // (e.g. Stepping-up for <input type="number" value="foo" step="any" /> => "foo")
+  // FIXME: Not any changes after stepping, even if it is an invalid value, may
+  // be better.
+  // (e.g. Stepping-up for <input type="number" value="foo" step="any" /> =>
+  // "foo")
   if (!stepRange.hasStep())
     return;
 

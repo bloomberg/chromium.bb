@@ -167,7 +167,8 @@ void RadioButtonGroup::remove(HTMLInputElement* button) {
     button->setNeedsValidityCheck();
   }
 
-  // Send notification to update AX attributes for AXObjects which radiobutton group has.
+  // Send notification to update AX attributes for AXObjects which radiobutton
+  // group has.
   if (!m_members.isEmpty()) {
     HTMLInputElement* input = m_members.begin()->key;
     if (AXObjectCache* cache = input->document().existingAXObjectCache())

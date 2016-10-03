@@ -61,14 +61,16 @@ const AtomicString& DateTimeLocalInputType::formControlType() const {
 }
 
 double DateTimeLocalInputType::valueAsDate() const {
-  // valueAsDate doesn't work for the datetime-local type according to the standard.
+  // valueAsDate doesn't work for the datetime-local type according to the
+  // standard.
   return DateComponents::invalidMilliseconds();
 }
 
 void DateTimeLocalInputType::setValueAsDate(
     double value,
     ExceptionState& exceptionState) const {
-  // valueAsDate doesn't work for the datetime-local type according to the standard.
+  // valueAsDate doesn't work for the datetime-local type according to the
+  // standard.
   InputType::setValueAsDate(value, exceptionState);
 }
 

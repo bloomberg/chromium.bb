@@ -92,7 +92,8 @@ class FormElementKey {
   StringImpl* name() const { return m_name; }
   StringImpl* type() const { return m_type; }
 
-  // Hash table deleted values, which are only constructed and never copied or destroyed.
+  // Hash table deleted values, which are only constructed and never copied or
+  // destroyed.
   FormElementKey(WTF::HashTableDeletedValueType)
       : m_name(hashTableDeletedValue()) {}
   bool isHashTableDeletedValue() const {
@@ -521,9 +522,10 @@ void FormController::willDeleteForm(HTMLFormElement* form) {
 
 void FormController::restoreControlStateFor(
     HTMLFormControlElementWithState& control) {
-  // We don't save state of a control with shouldSaveAndRestoreFormControlState()
-  // == false. But we need to skip restoring process too because a control in
-  // another form might have the same pair of name and type and saved its state.
+  // We don't save state of a control with
+  // shouldSaveAndRestoreFormControlState() == false. But we need to skip
+  // restoring process too because a control in another form might have the same
+  // pair of name and type and saved its state.
   if (!control.shouldSaveAndRestoreFormControlState())
     return;
   if (ownerFormForState(control))

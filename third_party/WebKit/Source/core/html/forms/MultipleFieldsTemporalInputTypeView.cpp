@@ -189,7 +189,8 @@ void MultipleFieldsTemporalInputTypeView::didFocusOnControl() {
 void MultipleFieldsTemporalInputTypeView::editControlValueChanged() {
   String oldValue = element().value();
   String newValue = m_inputType->sanitizeValue(dateTimeEditElement()->value());
-  // Even if oldValue is null and newValue is "", we should assume they are same.
+  // Even if oldValue is null and newValue is "", we should assume they are
+  // same.
   if ((oldValue.isEmpty() && newValue.isEmpty()) || oldValue == newValue) {
     element().setNeedsValidityCheck();
   } else {
@@ -350,8 +351,8 @@ void MultipleFieldsTemporalInputTypeView::createShadowSubtree() {
   DCHECK(element().shadow());
 
   // Element must not have a layoutObject here, because if it did
-  // DateTimeEditElement::customStyleForLayoutObject() is called in appendChild()
-  // before the field wrapper element is created.
+  // DateTimeEditElement::customStyleForLayoutObject() is called in
+  // appendChild() before the field wrapper element is created.
   // FIXME: This code should not depend on such craziness.
   DCHECK(!element().layoutObject());
 

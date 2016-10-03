@@ -67,7 +67,8 @@ StepRange::StepRange(const Decimal& stepBase,
 }
 
 Decimal StepRange::acceptableError() const {
-  // FIXME: We should use DBL_MANT_DIG instead of FLT_MANT_DIG regarding to HTML5 specification.
+  // FIXME: We should use DBL_MANT_DIG instead of FLT_MANT_DIG regarding to
+  // HTML5 specification.
   DEFINE_STATIC_LOCAL(const Decimal, twoPowerOfFloatMantissaBits,
                       (Decimal::Positive, 0, UINT64_C(1) << FLT_MANT_DIG));
   return m_stepDescription.stepValueShouldBe == StepValueShouldBeReal
@@ -127,7 +128,8 @@ Decimal StepRange::parseStep(AnyStepHandling anyStepHandling,
       step *= stepDescription.stepScaleFactor;
       break;
     case ParsedStepValueShouldBeInteger:
-      // For date, month, and week, the parsed value should be an integer for some types.
+      // For date, month, and week, the parsed value should be an integer for
+      // some types.
       step = std::max(step.round(), Decimal(1));
       step *= stepDescription.stepScaleFactor;
       break;

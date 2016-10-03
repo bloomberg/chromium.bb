@@ -77,8 +77,8 @@ class CORE_EXPORT FileInputType final : public InputType,
   FileList* files() override;
   void setFiles(FileList*) override;
   bool canSetValue(const String&) override;
-  bool getTypeSpecificValue(String&)
-      override;  // Checked first, before internal storage or the value attribute.
+  // Checked first, before internal storage or the value attribute.
+  bool getTypeSpecificValue(String&) override;
   void setValue(const String&,
                 bool valueChanged,
                 TextFieldEventBehavior) override;

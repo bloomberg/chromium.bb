@@ -69,7 +69,8 @@ void BaseCheckableInputType::handleKeydownEvent(KeyboardEvent* event) {
   if (key == " ") {
     element().setActive(true);
     // No setDefaultHandled(), because IE dispatches a keypress in this case
-    // and the caller will only dispatch a keypress if we don't call setDefaultHandled().
+    // and the caller will only dispatch a keypress if we don't call
+    // setDefaultHandled().
   }
 }
 

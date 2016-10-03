@@ -43,7 +43,8 @@ void KeyboardClickableInputTypeView::handleKeydownEvent(KeyboardEvent* event) {
   if (key == " ") {
     element().setActive(true);
     // No setDefaultHandled(), because IE dispatches a keypress in this case
-    // and the caller will only dispatch a keypress if we don't call setDefaultHandled().
+    // and the caller will only dispatch a keypress if we don't call
+    // setDefaultHandled().
   }
 }
 
@@ -68,7 +69,8 @@ void KeyboardClickableInputTypeView::handleKeyupEvent(KeyboardEvent* event) {
   dispatchSimulatedClickIfActive(event);
 }
 
-// FIXME: Could share this with BaseCheckableInputType and RangeInputType if we had a common base class.
+// FIXME: Could share this with BaseCheckableInputType and RangeInputType if we
+// had a common base class.
 void KeyboardClickableInputTypeView::accessKeyAction(bool sendMouseEvents) {
   InputTypeView::accessKeyAction(sendMouseEvents);
   element().dispatchSimulatedClick(
