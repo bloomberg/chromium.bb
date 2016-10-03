@@ -28,7 +28,6 @@
 #include "core/CoreExport.h"
 #include "core/svg/animation/SVGSMILElement.h"
 #include "ui/gfx/geometry/cubic_bezier.h"
-#include "wtf/Functional.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -44,10 +43,6 @@ enum AnimationMode {
   ValuesAnimation,
   PathAnimation  // Used by AnimateMotion.
 };
-
-// If we have 'inherit' as animation value, we need to grab the value
-// during the animation since the value can be animated itself.
-enum AnimatedPropertyValueType { RegularPropertyValue, InheritValue };
 
 enum CalcMode {
   CalcModeDiscrete,
@@ -92,26 +87,6 @@ class CORE_EXPORT SVGAnimationElement : public SVGSMILElement {
       SVGElement* targetElement,
       const QualifiedName& attributeName);
 
-  AnimatedPropertyValueType fromPropertyValueType() const {
-    return m_fromPropertyValueType;
-  }
-  AnimatedPropertyValueType toPropertyValueType() const {
-    return m_toPropertyValueType;
-  }
-
-  template <typename AnimatedType, typename ParseTypeFromStringType>
-  void adjustForInheritance(ParseTypeFromStringType parseTypeFromString,
-                            AnimatedPropertyValueType valueType,
-                            AnimatedType& animatedType,
-                            SVGElement* contextElement) {
-    if (valueType != InheritValue)
-      return;
-    // Replace 'inherit' by its computed property value.
-    String typeString;
-    adjustForInheritance(contextElement, attributeName(), typeString);
-    animatedType = parseTypeFromString(this, typeString);
-  }
-
   template <typename AnimatedType>
   void animateDiscreteType(float percentage,
                            const AnimatedType& fromType,
@@ -149,9 +124,6 @@ class CORE_EXPORT SVGAnimationElement : public SVGSMILElement {
  protected:
   SVGAnimationElement(const QualifiedName&, Document&);
 
-  void computeCSSPropertyValue(SVGElement*, CSSPropertyID, String& value);
-  void determinePropertyValueTypes(const String& from, const String& to);
-
   void parseAttribute(const QualifiedName&,
                       const AtomicString&,
                       const AtomicString&) override;
@@ -169,9 +141,6 @@ class CORE_EXPORT SVGAnimationElement : public SVGSMILElement {
   void updateAnimation(float percent,
                        unsigned repeat,
                        SVGSMILElement* resultElement) override;
-
-  AnimatedPropertyValueType m_fromPropertyValueType;
-  AnimatedPropertyValueType m_toPropertyValueType;
 
   void setTargetElement(SVGElement*) override;
   void setAttributeName(const QualifiedName&) override;
@@ -228,10 +197,6 @@ class CORE_EXPORT SVGAnimationElement : public SVGSMILElement {
   float calculatePercentForSpline(float percent, unsigned splineIndex) const;
   float calculatePercentForFromTo(float percent) const;
   unsigned calculateKeyTimesIndex(float percent) const;
-
-  void adjustForInheritance(SVGElement* targetElement,
-                            const QualifiedName& attributeName,
-                            String&);
 
   void setCalcMode(const AtomicString&);
 

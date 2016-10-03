@@ -32,6 +32,10 @@
 
 namespace blink {
 
+// If we have 'inherit' as animation value, we need to grab the value
+// during the animation since the value can be animated itself.
+enum AnimatedPropertyValueType { RegularPropertyValue, InheritValue };
+
 class CORE_EXPORT SVGAnimateElement : public SVGAnimationElement {
   DEFINE_WRAPPERTYPEINFO();
 
@@ -78,12 +82,18 @@ class CORE_EXPORT SVGAnimateElement : public SVGAnimationElement {
 
   bool hasValidAttributeType() override;
 
+  SVGPropertyBase* adjustForInheritance(SVGPropertyBase*,
+                                        AnimatedPropertyValueType) const;
+
   Member<SVGPropertyBase> m_fromProperty;
   Member<SVGPropertyBase> m_toProperty;
   Member<SVGPropertyBase> m_toAtEndOfDurationProperty;
   Member<SVGPropertyBase> m_animatedProperty;
 
   SVGAnimatedTypeAnimator m_animator;
+
+  AnimatedPropertyValueType m_fromPropertyValueType;
+  AnimatedPropertyValueType m_toPropertyValueType;
 };
 
 inline bool isSVGAnimateElement(const SVGElement& element) {

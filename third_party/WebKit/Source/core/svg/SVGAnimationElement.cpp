@@ -25,13 +25,9 @@
 #include "core/svg/SVGAnimationElement.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/CSSPropertyNames.h"
 #include "core/SVGNames.h"
-#include "core/css/CSSComputedStyleDeclaration.h"
-#include "core/css/parser/CSSParser.h"
 #include "core/frame/UseCounter.h"
 #include "core/svg/SVGAnimateElement.h"
-#include "core/svg/SVGElement.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "wtf/MathExtras.h"
 
@@ -40,8 +36,6 @@ namespace blink {
 SVGAnimationElement::SVGAnimationElement(const QualifiedName& tagName,
                                          Document& document)
     : SVGSMILElement(tagName, document),
-      m_fromPropertyValueType(RegularPropertyValue),
-      m_toPropertyValueType(RegularPropertyValue),
       m_animationValid(false),
       m_attributeType(AttributeTypeAuto),
       m_hasInvalidCSSAttributeType(false),
@@ -53,8 +47,9 @@ SVGAnimationElement::SVGAnimationElement(const QualifiedName& tagName,
 
 bool SVGAnimationElement::parseValues(const String& value,
                                       Vector<String>& result) {
-  // Per the SMIL specification, leading and trailing white space,
-  // and white space before and after semicolon separators, is allowed and will be ignored.
+  // Per the SMIL specification, leading and trailing white space, and white
+  // space before and after semicolon separators, is allowed and will be
+  // ignored.
   // http://www.w3.org/TR/SVG11/animate.html#ValuesAttribute
   result.clear();
   Vector<String> parseList;
@@ -179,8 +174,8 @@ void SVGAnimationElement::parseAttribute(const QualifiedName& name,
 
   if (name == SVGNames::keyPointsAttr) {
     if (isSVGAnimateMotionElement(*this)) {
-      // This is specified to be an animateMotion attribute only but it is simpler to put it here
-      // where the other timing calculatations are.
+      // This is specified to be an animateMotion attribute only but it is
+      // simpler to put it here where the other timing calculatations are.
       if (!parseKeyTimes(value, m_keyPoints, false))
         reportAttributeParsingError(SVGParseStatus::ParsingFailed, name, value);
     }
@@ -370,14 +365,16 @@ SVGAnimationElement::shouldApplyAnimation(SVGElement* targetElement,
       !targetElement->parentNode())
     return DontApplyAnimation;
 
-  // Always animate CSS properties, using the ApplyCSSAnimation code path, regardless of the attributeType value.
+  // Always animate CSS properties using the ApplyCSSAnimation code path,
+  // regardless of the attributeType value.
   if (isTargetAttributeCSSProperty(targetElement, attributeName)) {
     if (targetElement->isPresentationAttributeWithSVGDOM(attributeName))
       return ApplyXMLandCSSAnimation;
 
     return ApplyCSSAnimation;
   }
-  // If attributeType="CSS" and attributeName doesn't point to a CSS property, ignore the animation.
+  // If attributeType="CSS" and attributeName doesn't point to a CSS property,
+  // ignore the animation.
   if (getAttributeType() == AttributeTypeCSS)
     return DontApplyAnimation;
 
@@ -393,7 +390,8 @@ void SVGAnimationElement::calculateKeyTimesForCalcModePaced() {
   if (valuesCount == 1)
     return;
 
-  // FIXME, webkit.org/b/109010: m_keyTimes should not be modified in this function.
+  // FIXME, webkit.org/b/109010: m_keyTimes should not be modified in this
+  // function.
   m_keyTimes.clear();
 
   Vector<float> keyTimesForPaced;
@@ -611,7 +609,8 @@ void SVGAnimationElement::startedActiveInterval() {
   if (animationMode == FromToAnimation) {
     m_animationValid = calculateFromAndToValues(from, to);
   } else if (animationMode == ToAnimation) {
-    // For to-animations the from value is the current accumulated value from lower priority animations.
+    // For to-animations the from value is the current accumulated value from
+    // lower priority animations.
     // The value is not static and is determined during the animation.
     m_animationValid = calculateFromAndToValues(emptyString(), to);
   } else if (animationMode == FromByAnimation) {
@@ -679,60 +678,6 @@ void SVGAnimationElement::updateAnimation(float percent,
     effectivePercent = percent;
 
   calculateAnimatedValue(effectivePercent, repeatCount, resultElement);
-}
-
-void SVGAnimationElement::computeCSSPropertyValue(SVGElement* element,
-                                                  CSSPropertyID id,
-                                                  String& value) {
-  ASSERT(element);
-  // FIXME: StyleEngine doesn't support document without a frame.
-  // Refer to comment in Element::computedStyle.
-  ASSERT(element->inActiveDocument());
-
-  // Don't include any properties resulting from CSS Transitions/Animations or SMIL animations, as we want to retrieve the "base value".
-  element->setUseOverrideComputedStyle(true);
-  value = CSSComputedStyleDeclaration::create(element)->getPropertyValue(id);
-  element->setUseOverrideComputedStyle(false);
-}
-
-void SVGAnimationElement::adjustForInheritance(
-    SVGElement* targetElement,
-    const QualifiedName& attributeName,
-    String& value) {
-  // FIXME: At the moment the computed style gets returned as a String and needs to get parsed again.
-  // In the future we might want to work with the value type directly to avoid the String parsing.
-  ASSERT(targetElement);
-
-  Element* parent = targetElement->parentElement();
-  if (!parent || !parent->isSVGElement())
-    return;
-
-  SVGElement* svgParent = toSVGElement(parent);
-  computeCSSPropertyValue(svgParent, cssPropertyID(attributeName.localName()),
-                          value);
-}
-
-static bool inheritsFromProperty(SVGElement* targetElement,
-                                 const QualifiedName& attributeName,
-                                 const String& value) {
-  ASSERT(targetElement);
-  DEFINE_STATIC_LOCAL(const AtomicString, inherit, ("inherit"));
-
-  if (value.isEmpty() || value != inherit)
-    return false;
-  return SVGElement::isAnimatableCSSProperty(attributeName);
-}
-
-void SVGAnimationElement::determinePropertyValueTypes(const String& from,
-                                                      const String& to) {
-  SVGElement* targetElement = this->targetElement();
-  ASSERT(targetElement);
-
-  const QualifiedName& attributeName = this->attributeName();
-  if (inheritsFromProperty(targetElement, attributeName, from))
-    m_fromPropertyValueType = InheritValue;
-  if (inheritsFromProperty(targetElement, attributeName, to))
-    m_toPropertyValueType = InheritValue;
 }
 
 void SVGAnimationElement::setTargetElement(SVGElement* target) {
