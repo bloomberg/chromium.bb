@@ -21,7 +21,6 @@ template("remoting_android_client_java_tmpl") {
       "Desktop.java",
       "DesktopCanvas.java",
       "DesktopView.java",
-      "DesktopViewFactory.java",
       "DummyActivityLifecycleListener.java",
       "DummyClientExtension.java",
       "Event.java",
