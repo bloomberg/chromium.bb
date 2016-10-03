@@ -72,7 +72,8 @@ class PLATFORM_EXPORT PNGImageEncoder {
   STATIC_ONLY(PNGImageEncoder);
 
  public:
-  // Encode the input data with default compression quality. See also https://crbug.com/179289
+  // Encode the input data with default compression quality. See also
+  // https://crbug.com/179289
   static bool encode(const ImageDataBuffer&, Vector<unsigned char>* output);
 
   // Functions for progressive image encoding

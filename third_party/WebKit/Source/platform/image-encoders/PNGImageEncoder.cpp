@@ -60,20 +60,25 @@ std::unique_ptr<PNGImageEncoderState> PNGImageEncoderState::create(
   }
 
   // Optimize compression for speed.
-  // The parameters are the same as what libpng uses by default for RGB and RGBA images, except:
-  // The zlib compression level is set to 3 instead of 6, to avoid the lazy Ziv-Lempel match searching.
+  // The parameters are the same as what libpng uses by default for RGB and RGBA
+  // images, except:
+  // The zlib compression level is set to 3 instead of 6, to avoid the lazy
+  // Ziv-Lempel match searching.
   png_set_compression_level(png, 3);
 
-  // The zlib memory level is set to 8.  This actually matches the default, we are just future-proofing.
+  // The zlib memory level is set to 8.  This actually matches the default, we
+  // are just future-proofing.
   png_set_compression_mem_level(png, 8);
 
   // The zlib strategy is set to Z_FILTERED, which does not match the default.
   // Avoid the zlib strategies Z_HUFFMAN_ONLY or Z_RLE.
-  // Although they are the fastest for poorly-compressible images (e.g. photographs),
-  // they are very slow for highly-compressible images (e.g. text, drawings or business graphics)
+  // Although they are the fastest for poorly-compressible images (e.g.
+  // photographs), they are very slow for highly-compressible images (e.g. text,
+  // drawings or business graphics)
   png_set_compression_strategy(png, Z_FILTERED);
 
-  // The delta filter is PNG_FILTER_SUB instead of PNG_ALL_FILTERS, to reduce the filter computations.
+  // The delta filter is PNG_FILTER_SUB instead of PNG_ALL_FILTERS, to reduce
+  // the filter computations.
   png_set_filter(png, PNG_FILTER_TYPE_BASE, PNG_FILTER_SUB);
 
   png_set_write_fn(png, output, writeOutput, 0);
