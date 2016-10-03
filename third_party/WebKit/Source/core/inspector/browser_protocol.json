@@ -3274,7 +3274,7 @@
             {
                 "id": "TargetType",
                 "type": "string",
-                "enum": ["page", "frame", "worker", "service_worker"]
+                "enum": ["page", "iframe", "worker", "service_worker"]
             },
             {
                 "id": "TargetInfo",
@@ -3302,6 +3302,13 @@
                 "name": "setWaitForDebuggerOnStart",
                 "parameters": [
                     { "name": "value", "type": "boolean", "description": "Whether to pause new targets when attaching to them. Use <code>Runtime.runIfWaitingForDebugger</code> to run puased targets." }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "setAttachToFrames",
+                "parameters": [
+                    { "name": "value", "type": "boolean", "description": "Whether to attach to frames." }
                 ],
                 "handlers": ["browser"]
             },

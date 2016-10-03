@@ -88,6 +88,7 @@ ServiceWorkerDevToolsAgentHost::Map GetMatchingServiceWorkers(
 TargetHandler::TargetHandler()
     : enabled_(false),
       wait_for_debugger_on_start_(false),
+      attach_to_frames_(false),
       render_frame_host_(nullptr) {
 }
 
@@ -97,6 +98,7 @@ TargetHandler::~TargetHandler() {
 
 void TargetHandler::SetRenderFrameHost(RenderFrameHostImpl* render_frame_host) {
   render_frame_host_ = render_frame_host;
+  UpdateFrames();
 }
 
 void TargetHandler::SetClient(std::unique_ptr<Client> client) {
@@ -109,6 +111,34 @@ void TargetHandler::Detached() {
 
 void TargetHandler::UpdateServiceWorkers() {
   UpdateServiceWorkers(false);
+}
+
+void TargetHandler::UpdateFrames() {
+  if (!enabled_ || !attach_to_frames_)
+    return;
+
+  HostsMap new_hosts;
+  if (render_frame_host_) {
+    FrameTreeNode* root = render_frame_host_->frame_tree_node();
+    std::queue<FrameTreeNode*> queue;
+    queue.push(root);
+    while (!queue.empty()) {
+      FrameTreeNode* node = queue.front();
+      queue.pop();
+      bool cross_process = node->current_frame_host()->IsCrossProcessSubframe();
+      if (node != root && cross_process) {
+        scoped_refptr<DevToolsAgentHost> new_host =
+            DevToolsAgentHost::GetOrCreateFor(node->current_frame_host());
+        new_hosts[new_host->GetId()] = new_host;
+      } else {
+        for (size_t i = 0; i < node->child_count(); ++i)
+          queue.push(node->child_at(i));
+      }
+    }
+  }
+
+  // TODO(dgozman): support wait_for_debugger_on_start_.
+  ReattachTargetsOfType(new_hosts, DevToolsAgentHost::kTypeFrame, false);
 }
 
 void TargetHandler::UpdateServiceWorkers(bool waiting_for_debugger) {
@@ -126,18 +156,25 @@ void TargetHandler::UpdateServiceWorkers(bool waiting_for_debugger) {
     browser_context = render_frame_host_->GetProcess()->GetBrowserContext();
   }
 
-  std::map<std::string, scoped_refptr<DevToolsAgentHost>> old_hosts =
-      attached_hosts_;
-  ServiceWorkerDevToolsAgentHost::Map new_hosts =
-      GetMatchingServiceWorkers(browser_context, frame_urls_);
+  auto matching = GetMatchingServiceWorkers(browser_context, frame_urls_);
+  HostsMap new_hosts;
+  for (const auto& pair : matching)
+    new_hosts[pair.first] = pair.second;
+  ReattachTargetsOfType(
+      new_hosts, DevToolsAgentHost::kTypeServiceWorker, waiting_for_debugger);
+}
 
+void TargetHandler::ReattachTargetsOfType(
+    const HostsMap& new_hosts,
+    const std::string& type,
+    bool waiting_for_debugger) {
+  HostsMap old_hosts = attached_hosts_;
   for (const auto& pair : old_hosts) {
-    if (pair.second->GetType() == DevToolsAgentHost::kTypeServiceWorker &&
+    if (pair.second->GetType() == type &&
         new_hosts.find(pair.first) == new_hosts.end()) {
       DetachFromTargetInternal(pair.second.get());
     }
   }
-
   for (const auto& pair : new_hosts) {
     if (old_hosts.find(pair.first) == old_hosts.end())
       AttachToTargetInternal(pair.second.get(), waiting_for_debugger);
@@ -175,6 +212,7 @@ Response TargetHandler::Enable() {
   enabled_ = true;
   ServiceWorkerDevToolsManager::GetInstance()->AddObserver(this);
   UpdateServiceWorkers();
+  UpdateFrames();
   return Response::OK();
 }
 
@@ -192,6 +230,19 @@ Response TargetHandler::Disable() {
 
 Response TargetHandler::SetWaitForDebuggerOnStart(bool value) {
   wait_for_debugger_on_start_ = value;
+  return Response::OK();
+}
+
+Response TargetHandler::SetAttachToFrames(bool value) {
+  if (attach_to_frames_ == value)
+    return Response::OK();
+  attach_to_frames_ = value;
+  if (attach_to_frames_) {
+    UpdateFrames();
+  } else {
+    HostsMap empty;
+    ReattachTargetsOfType(empty, DevToolsAgentHost::kTypeFrame, false);
+  }
   return Response::OK();
 }
 

@@ -32,11 +32,13 @@ class TargetHandler : public DevToolsAgentHostClient,
   void Detached();
 
   void UpdateServiceWorkers();
+  void UpdateFrames();
 
   // Domain implementation.
   Response Enable();
   Response Disable();
   Response SetWaitForDebuggerOnStart(bool value);
+  Response SetAttachToFrames(bool value);
   Response SendMessageToTarget(const std::string& target_id,
                                const std::string& message);
   Response GetTargetInfo(const std::string& target_id,
@@ -44,7 +46,12 @@ class TargetHandler : public DevToolsAgentHostClient,
   Response ActivateTarget(const std::string& target_id);
 
  private:
+  using HostsMap = std::map<std::string, scoped_refptr<DevToolsAgentHost>>;
+
   void UpdateServiceWorkers(bool waiting_for_debugger);
+  void ReattachTargetsOfType(const HostsMap& new_hosts,
+                             const std::string& type,
+                             bool waiting_for_debugger);
   void AttachToTargetInternal(DevToolsAgentHost* host,
                               bool waiting_for_debugger);
   void DetachFromTargetInternal(DevToolsAgentHost* host);
@@ -65,8 +72,9 @@ class TargetHandler : public DevToolsAgentHostClient,
   std::unique_ptr<Client> client_;
   bool enabled_;
   bool wait_for_debugger_on_start_;
+  bool attach_to_frames_;
   RenderFrameHostImpl* render_frame_host_;
-  std::map<std::string, scoped_refptr<DevToolsAgentHost>> attached_hosts_;
+  HostsMap attached_hosts_;
   std::set<GURL> frame_urls_;
 
   DISALLOW_COPY_AND_ASSIGN(TargetHandler);

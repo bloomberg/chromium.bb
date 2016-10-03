@@ -662,6 +662,8 @@ void RenderFrameDevToolsAgentHost::AboutToNavigate(
 void RenderFrameDevToolsAgentHost::RenderFrameHostChanged(
     RenderFrameHost* old_host,
     RenderFrameHost* new_host) {
+  target_handler_->UpdateFrames();
+
   if (IsBrowserSideNavigationEnabled())
     return;
 
