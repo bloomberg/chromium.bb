@@ -50,7 +50,7 @@ namespace dom_distiller {
 
 const char* kExternalTestResourcesPath =
     "third_party/dom_distiller_js/dist/test/data";
-const char* kTestFilePath = "/war/test.html?console_log=0";
+const char* kTestFilePath = "/war/test.html?console_log=0&filter=*.*";
 const char* kRunJsTestsJs =
     "(function() {return org.chromium.distiller.JsTestEntry.run();})();";
 
@@ -162,6 +162,10 @@ IN_PROC_BROWSER_TEST_F(DomDistillerJsTest, RunJsTests) {
     std::string console_log;
     ASSERT_TRUE(dict->GetString("log", &console_log));
     VLOG(0) << "Console log:\n" << console_log;
+    VLOG(0) << "\n\n"
+        "More info at third_party/dom_distiller_js/README.chromium.\n"
+        "To disable tests, modify the filter parameter in |kTestFilePath|,\n"
+        "in gtest_filter syntax.\n\n";
   }
 }
 
