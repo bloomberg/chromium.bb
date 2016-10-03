@@ -1044,12 +1044,32 @@ void NativeWidgetMus::Hide() {
 
 void NativeWidgetMus::ShowMaximizedWithBounds(
     const gfx::Rect& restored_bounds) {
-  // NOTIMPLEMENTED();
+  if (!window_)
+    return;
+
+  window_->SetSharedProperty<gfx::Rect>(
+      ui::mojom::WindowManager::kRestoreBounds_Property, restored_bounds);
+  ShowWithWindowState(ui::SHOW_STATE_MAXIMIZED);
 }
 
 void NativeWidgetMus::ShowWithWindowState(ui::WindowShowState state) {
   if (!(window_ && window_tree_host_))
     return;
+
+  // Matches NativeWidgetAura.
+  switch (state) {
+    case ui::SHOW_STATE_MAXIMIZED:
+      SetShowState(ui::mojom::ShowState::MAXIMIZED);
+      break;
+    case ui::SHOW_STATE_FULLSCREEN:
+      SetShowState(ui::mojom::ShowState::FULLSCREEN);
+      break;
+    case ui::SHOW_STATE_DOCKED:
+      SetShowState(ui::mojom::ShowState::DOCKED);
+      break;
+    default:
+      break;
+  }
 
   // NOTE: |window_tree_host_| and |window_| visibility is updated in
   // OnMusWindowVisibilityChanged().
@@ -1059,6 +1079,10 @@ void NativeWidgetMus::ShowWithWindowState(ui::WindowShowState state) {
       Activate();
     GetWidget()->SetInitialFocus(state);
   }
+
+  // Matches NativeWidgetAura.
+  if (state == ui::SHOW_STATE_MINIMIZED)
+    Minimize();
 }
 
 bool NativeWidgetMus::IsVisible() const {
