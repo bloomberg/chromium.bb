@@ -20,6 +20,9 @@ BluetoothInternalsUI::BluetoothInternalsUI(content::WebUI* web_ui)
                                IDR_BLUETOOTH_INTERNALS_CSS);
   html_source->AddResourcePath("bluetooth_internals.js",
                                IDR_BLUETOOTH_INTERNALS_JS);
+  html_source->AddResourcePath(
+      "device/bluetooth/public/interfaces/adapter.mojom",
+      IDR_BLUETOOTH_MOJO_JS);
   html_source->SetDefaultResource(IDR_BLUETOOTH_INTERNALS_HTML);
 
   Profile* profile = Profile::FromWebUI(web_ui);
