@@ -155,8 +155,9 @@ class CORE_EXPORT ScriptWrappableVisitor : public WrapperVisitor,
   bool m_advancingTracing = false;
 
   /**
-     * Indicates whether an idle task for a lazy cleanup has already been scheduled.
-     * The flag is used to avoid scheduling multiple idle tasks for cleaning up.
+     * Indicates whether an idle task for a lazy cleanup has already been
+     * scheduled.  The flag is used to avoid scheduling multiple idle tasks for
+     * cleaning up.
      */
   bool m_idleCleanupTaskScheduled = false;
 
@@ -172,7 +173,8 @@ class CORE_EXPORT ScriptWrappableVisitor : public WrapperVisitor,
   void performCleanup();
 
   /**
-     * Schedule an idle task to perform a lazy (incremental) clean up of wrappers.
+     * Schedule an idle task to perform a lazy (incremental) clean up of
+     * wrappers.
      */
   void scheduleIdleLazyCleanup();
   void performLazyCleanup(double deadlineSeconds);
@@ -186,8 +188,8 @@ class CORE_EXPORT ScriptWrappableVisitor : public WrapperVisitor,
      */
   mutable WTF::Deque<WrapperMarkingData> m_markingDeque;
   /**
-     * Collection of objects we started tracing from. We assume it is safe to hold
-     * on to the raw pointers because:
+     * Collection of objects we started tracing from. We assume it is safe to
+     * hold on to the raw pointers because:
      *     * oilpan object cannot move
      *     * oilpan gc will call invalidateDeadObjectsInMarkingDeque to delete
      *       all obsolete objects

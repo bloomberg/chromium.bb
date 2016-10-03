@@ -81,9 +81,10 @@ inline void setObjectGroup(v8::Isolate* isolate,
       wrapper, v8::UniqueId(reinterpret_cast<intptr_t>(scriptWrappable)));
 }
 
-// This struct provides a way to store a bunch of information that is helpful when unwrapping
-// v8 objects. Each v8 bindings class has exactly one static WrapperTypeInfo member, so
-// comparing pointers is a safe way to determine if types match.
+// This struct provides a way to store a bunch of information that is helpful
+// when unwrapping v8 objects. Each v8 bindings class has exactly one static
+// WrapperTypeInfo member, so comparing pointers is a safe way to determine if
+// types match.
 struct WrapperTypeInfo {
   DISALLOW_NEW();
 

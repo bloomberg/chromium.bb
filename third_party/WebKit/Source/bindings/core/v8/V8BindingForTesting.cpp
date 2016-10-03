@@ -14,8 +14,8 @@ PassRefPtr<ScriptStateForTesting> ScriptStateForTesting::create(
     PassRefPtr<DOMWrapperWorld> world) {
   RefPtr<ScriptStateForTesting> scriptState =
       adoptRef(new ScriptStateForTesting(context, world));
-  // This ref() is for keeping this ScriptState alive as long as the v8::Context is alive.
-  // This is deref()ed in the weak callback of the v8::Context.
+  // This ref() is for keeping this ScriptState alive as long as the v8::Context
+  // is alive.  This is deref()ed in the weak callback of the v8::Context.
   scriptState->ref();
   return scriptState;
 }

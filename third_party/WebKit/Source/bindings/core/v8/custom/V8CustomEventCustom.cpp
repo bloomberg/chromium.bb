@@ -142,7 +142,8 @@ void V8CustomEvent::detailAttributeGetterCustom(
     }
   }
 
-  // |detail| should be null when it is an empty handle because its default value is null.
+  // |detail| should be null when it is an empty handle because its default
+  // value is null.
   if (detail.IsEmpty())
     detail = v8::Null(info.GetIsolate());
   privateDetail.set(scriptState->context(), info.Holder(), detail);

@@ -257,8 +257,8 @@ void ScriptController::registerExtensionIfNeeded(v8::Extension* extension) {
 }
 
 void ScriptController::clearWindowProxy() {
-  // V8 binding expects ScriptController::clearWindowProxy only be called
-  // when a frame is loading a new page. This creates a new context for the new page.
+  // V8 binding expects ScriptController::clearWindowProxy only be called when a
+  // frame is loading a new page. This creates a new context for the new page.
   m_windowProxyManager->clearForNavigation();
   MainThreadDebugger::instance()->didClearContextsForFrame(frame());
 }
@@ -269,7 +269,8 @@ void ScriptController::collectIsolatedContexts(
 }
 
 void ScriptController::updateDocument() {
-  // For an uninitialized main window windowProxy, do not incur the cost of context initialization.
+  // For an uninitialized main window windowProxy, do not incur the cost of
+  // context initialization.
   if (!m_windowProxyManager->mainWorldProxy()->isGlobalInitialized())
     return;
 
@@ -301,7 +302,8 @@ bool ScriptController::canExecuteScripts(
   if (frame()->document() && frame()->document()->isSandboxed(SandboxScripts)) {
     if (isInPrivateScriptIsolateWorld(isolate()))
       return true;
-    // FIXME: This message should be moved off the console once a solution to https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
+    // FIXME: This message should be moved off the console once a solution to
+    // https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
     if (reason == AboutToExecuteScript)
       frame()->document()->addConsoleMessage(ConsoleMessage::create(
           SecurityMessageSource, ErrorMessageLevel,

@@ -135,7 +135,8 @@ class MinorGCUnmodifiedWrapperVisitor : public v8::PersistentHandleVisitor {
       }
       // FIXME: Remove the special handling for SVG elements.
       // We currently can't collect SVG Elements from minor gc, as we have
-      // strong references from SVG property tear-offs keeping context SVG element alive.
+      // strong references from SVG property tear-offs keeping context SVG
+      // element alive.
       if (node->isSVGElement()) {
         v8::Persistent<v8::Object>::Cast(*value).MarkActive();
         return;
@@ -398,15 +399,18 @@ void V8GCController::gcEpilogue(v8::Isolate* isolate,
     // when expected.
     if (flags & v8::kGCCallbackFlagForced) {
       // This single GC is not enough for two reasons:
-      //   (1) The GC is not precise because the GC scans on-stack pointers conservatively.
-      //   (2) One GC is not enough to break a chain of persistent handles. It's possible that
-      //       some heap allocated objects own objects that contain persistent handles
-      //       pointing to other heap allocated objects. To break the chain, we need multiple GCs.
+      //   (1) The GC is not precise because the GC scans on-stack pointers
+      //       conservatively.
+      //   (2) One GC is not enough to break a chain of persistent handles. It's
+      //       possible that some heap allocated objects own objects that
+      //       contain persistent handles pointing to other heap allocated
+      //       objects. To break the chain, we need multiple GCs.
       //
-      // Regarding (1), we force a precise GC at the end of the current event loop. So if you want
-      // to collect all garbage, you need to wait until the next event loop.
-      // Regarding (2), it would be OK in practice to trigger only one GC per gcEpilogue, because
-      // GCController.collectAll() forces multiple V8's GC.
+      // Regarding (1), we force a precise GC at the end of the current event
+      // loop. So if you want to collect all garbage, you need to wait until the
+      // next event loop.  Regarding (2), it would be OK in practice to trigger
+      // only one GC per gcEpilogue, because GCController.collectAll() forces
+      // multiple V8's GC.
       currentThreadState->collectGarbage(BlinkGC::HeapPointersOnStack,
                                          BlinkGC::GCWithSweep,
                                          BlinkGC::ForcedGC);

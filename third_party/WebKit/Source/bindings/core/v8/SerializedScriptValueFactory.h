@@ -18,8 +18,8 @@ class CORE_EXPORT SerializedScriptValueFactory {
   USING_FAST_MALLOC(SerializedScriptValueFactory);
 
  public:
-  // SerializedScriptValueFactory::initialize() should be invoked when Blink is initialized,
-  // i.e. initialize() in WebKit.cpp.
+  // SerializedScriptValueFactory::initialize() should be invoked when Blink is
+  // initialized, i.e. initialize() in WebKit.cpp.
   static void initialize(SerializedScriptValueFactory* newFactory) {
     DCHECK(!m_instance);
     m_instance = newFactory;
@@ -46,7 +46,8 @@ class CORE_EXPORT SerializedScriptValueFactory {
                                            MessagePortArray*,
                                            const WebBlobInfoArray*);
 
-  // Following methods are expected to be called in SerializedScriptValueFactory{ForModules}.
+  // Following methods are expected to be called in
+  // SerializedScriptValueFactory{ForModules}.
   SerializedScriptValueFactory() {}
 
  private:

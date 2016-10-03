@@ -153,9 +153,11 @@ static void messageHandlerInMainThread(v8::Local<v8::Message> message,
   if (!messageForConsole.isEmpty())
     event->setUnsanitizedMessage("Uncaught " + messageForConsole);
 
-  // This method might be called while we're creating a new context. In this case, we
-  // avoid storing the exception object, as we can't create a wrapper during context creation.
-  // FIXME: Can we even get here during initialization now that we bail out when GetEntered returns an empty handle?
+  // This method might be called while we're creating a new context. In this
+  // case, we avoid storing the exception object, as we can't create a wrapper
+  // during context creation.
+  // FIXME: Can we even get here during initialization now that we bail out when
+  // GetEntered returns an empty handle?
   if (context->isDocument()) {
     LocalFrame* frame = toDocument(context)->frame();
     if (frame && frame->script().existingWindowProxy(scriptState->world())) {
@@ -165,12 +167,13 @@ static void messageHandlerInMainThread(v8::Local<v8::Message> message,
   }
 
   if (scriptState->world().isPrivateScriptIsolatedWorld()) {
-    // We allow a private script to dispatch error events even in a EventDispatchForbiddenScope scope.
-    // Without having this ability, it's hard to debug the private script because syntax errors
-    // in the private script are not reported to console (the private script just crashes silently).
-    // Allowing error events in private scripts is safe because error events don't propagate to
-    // other isolated worlds (which means that the error events won't fire any event listeners
-    // in user's scripts).
+    // We allow a private script to dispatch error events even in a
+    // EventDispatchForbiddenScope scope.  Without having this ability, it's
+    // hard to debug the private script because syntax errors in the private
+    // script are not reported to console (the private script just crashes
+    // silently).  Allowing error events in private scripts is safe because
+    // error events don't propagate to other isolated worlds (which means that
+    // the error events won't fire any event listeners in user's scripts).
     EventDispatchForbiddenScope::AllowUserAgentEvents allowUserAgentEvents;
     context->dispatchErrorEvent(event, accessControlStatus);
   } else {
@@ -209,7 +212,8 @@ static void promiseRejectHandler(v8::PromiseRejectMessage data,
 
   v8::Local<v8::Value> exception = data.GetValue();
   if (V8DOMWrapper::isWrapper(isolate, exception)) {
-    // Try to get the stack & location from a wrapped exception object (e.g. DOMException).
+    // Try to get the stack & location from a wrapped exception object (e.g.
+    // DOMException).
     ASSERT(exception->IsObject());
     auto privateError = V8PrivateProperty::getDOMExceptionError(isolate);
     v8::Local<v8::Value> error = privateError.getOrUndefined(
@@ -295,7 +299,8 @@ static void failedAccessCheckCallbackInMainThread(v8::Local<v8::Object> host,
     return;
   DOMWindow* targetWindow = target->domWindow();
 
-  // FIXME: We should modify V8 to pass in more contextual information (context, property, and object).
+  // FIXME: We should modify V8 to pass in more contextual information (context,
+  // property, and object).
   ExceptionState exceptionState(ExceptionState::UnknownContext, 0, 0,
                                 isolate->GetCurrentContext()->Global(),
                                 isolate);
@@ -336,8 +341,9 @@ static void initializeV8Common(v8::Isolate* isolate) {
 namespace {
 
 class ArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
-  // Allocate() methods return null to signal allocation failure to V8, which should respond by throwing
-  // a RangeError, per http://www.ecma-international.org/ecma-262/6.0/#sec-createbytedatablock.
+  // Allocate() methods return null to signal allocation failure to V8, which
+  // should respond by throwing a RangeError, per
+  // http://www.ecma-international.org/ecma-262/6.0/#sec-createbytedatablock.
   void* Allocate(size_t size) override {
     void* data;
     WTF::ArrayBufferContents::allocateMemoryOrNull(
@@ -437,7 +443,8 @@ void V8Initializer::shutdownMainThread() {
 
 static void reportFatalErrorInWorker(const char* location,
                                      const char* message) {
-  // FIXME: We temporarily deal with V8 internal error situations such as out-of-memory by crashing the worker.
+  // FIXME: We temporarily deal with V8 internal error situations such as
+  // out-of-memory by crashing the worker.
   CRASH();
 }
 
@@ -452,7 +459,8 @@ static void messageHandlerInWorker(v8::Local<v8::Message> message,
     return;
 
   // Exceptions that occur in error handler should be ignored since in that case
-  // WorkerGlobalScope::dispatchErrorEvent will send the exception to the worker object.
+  // WorkerGlobalScope::dispatchErrorEvent will send the exception to the worker
+  // object.
   if (perIsolateData->isReportingException())
     return;
 
@@ -482,9 +490,10 @@ static void messageHandlerInWorker(v8::Local<v8::Message> message,
 
 static const int kWorkerMaxStackSize = 500 * 1024;
 
-// This function uses a local stack variable to determine the isolate's stack limit. AddressSanitizer may
-// relocate that local variable to a fake stack, which may lead to problems during JavaScript execution.
-// Therefore we disable AddressSanitizer for V8Initializer::initializeWorker().
+// This function uses a local stack variable to determine the isolate's stack
+// limit. AddressSanitizer may relocate that local variable to a fake stack,
+// which may lead to problems during JavaScript execution.  Therefore we disable
+// AddressSanitizer for V8Initializer::initializeWorker().
 NO_SANITIZE_ADDRESS
 void V8Initializer::initializeWorker(v8::Isolate* isolate) {
   initializeV8Common(isolate);

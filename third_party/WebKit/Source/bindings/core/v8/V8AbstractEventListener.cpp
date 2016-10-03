@@ -120,7 +120,8 @@ void V8AbstractEventListener::invokeEventHandler(ScriptState* scriptState,
 
   v8::Local<v8::Value> returnValue;
   {
-    // Catch exceptions thrown in the event handler so they do not propagate to javascript code that caused the event to fire.
+    // Catch exceptions thrown in the event handler so they do not propagate to
+    // javascript code that caused the event to fire.
     v8::TryCatch tryCatch(isolate());
     tryCatch.SetVerbose(true);
 
@@ -130,7 +131,8 @@ void V8AbstractEventListener::invokeEventHandler(ScriptState* scriptState,
         V8HiddenValue::event(isolate()));
     tryCatch.Reset();
 
-    // Make the event available in the global object, so LocalDOMWindow can expose it.
+    // Make the event available in the global object, so LocalDOMWindow can
+    // expose it.
     V8HiddenValue::setHiddenValue(scriptState, scriptState->context()->Global(),
                                   V8HiddenValue::event(isolate()), jsEvent);
     tryCatch.Reset();
@@ -148,7 +150,8 @@ void V8AbstractEventListener::invokeEventHandler(ScriptState* scriptState,
     }
     tryCatch.Reset();
 
-    // Restore the old event. This must be done for all exit paths through this method.
+    // Restore the old event. This must be done for all exit paths through this
+    // method.
     if (savedEvent.IsEmpty())
       V8HiddenValue::setHiddenValue(
           scriptState, scriptState->context()->Global(),

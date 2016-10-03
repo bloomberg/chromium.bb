@@ -125,7 +125,8 @@ void V8Window::frameElementAttributeGetterCustom(
     return;
   }
 
-  // The wrapper for an <iframe> should get its prototype from the context of the frame it's in, rather than its own frame.
+  // The wrapper for an <iframe> should get its prototype from the context of
+  // the frame it's in, rather than its own frame.
   // So, use its containing document as the creation context when wrapping.
   v8::Local<v8::Value> creationContext =
       toV8(&impl->frameElement()->document(), info.Holder(), info.GetIsolate());
@@ -276,16 +277,18 @@ void V8Window::namedPropertyGetterCustom(
   if (!frame)
     return;
 
-  // Note that the spec doesn't allow any cross-origin named access to the window object. However,
-  // UAs have traditionally allowed named access to named child browsing contexts, even across
-  // origins. So first, search child frames for a frame with a matching name.
+  // Note that the spec doesn't allow any cross-origin named access to the
+  // window object. However, UAs have traditionally allowed named access to
+  // named child browsing contexts, even across origins. So first, search child
+  // frames for a frame with a matching name.
   Frame* child = frame->tree().scopedChild(name);
   if (child) {
     v8SetReturnValueFast(info, child->domWindow(), window);
     return;
   }
 
-  // If the frame is remote, the caller will never be able to access further named results.
+  // If the frame is remote, the caller will never be able to access further
+  // named results.
   if (!frame->isLocalFrame())
     return;
 
@@ -294,7 +297,8 @@ void V8Window::namedPropertyGetterCustom(
   if (!doc || !doc->isHTMLDocument())
     return;
 
-  // This is an AllCanRead interceptor.  Check that the caller has access to the named results.
+  // This is an AllCanRead interceptor.  Check that the caller has access to the
+  // named results.
   if (!BindingSecurity::shouldAllowAccessTo(
           currentDOMWindow(info.GetIsolate()), window,
           BindingSecurity::ErrorReportOption::DoNotReport))

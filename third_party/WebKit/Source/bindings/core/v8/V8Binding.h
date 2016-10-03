@@ -395,9 +395,10 @@ inline AtomicString toCoreAtomicString(v8::Local<v8::String> value) {
   return v8StringToWebCoreString<AtomicString>(value, Externalize);
 }
 
-// This method will return a null String if the v8::Value does not contain a v8::String.
-// It will not call ToString() on the v8::Value. If you want ToString() to be called,
-// please use the TONATIVE_FOR_V8STRINGRESOURCE_*() macros instead.
+// This method will return a null String if the v8::Value does not contain a
+// v8::String.  It will not call ToString() on the v8::Value. If you want
+// ToString() to be called, please use the TONATIVE_FOR_V8STRINGRESOURCE_*()
+// macros instead.
 inline String toCoreStringWithUndefinedOrNullCheck(v8::Local<v8::Value> value) {
   if (value.IsEmpty() || !value->IsString())
     return String();
@@ -541,7 +542,8 @@ inline uint32_t toUInt32(v8::Isolate* isolate,
   if (LIKELY(value->IsUint32()))
     return value.As<v8::Uint32>()->Value();
 
-  // Fast case. The value is a 32-bit signed integer with NormalConversion configuration.
+  // Fast case. The value is a 32-bit signed integer with NormalConversion
+  // configuration.
   if (LIKELY(value->IsInt32() && configuration == NormalConversion))
     return value.As<v8::Int32>()->Value();
 
@@ -559,7 +561,8 @@ inline int64_t toInt64(v8::Isolate* isolate,
                        v8::Local<v8::Value> value,
                        IntegerConversionConfiguration configuration,
                        ExceptionState& exceptionState) {
-  // Clamping not supported for int64_t/long long int. See Source/wtf/MathExtras.h.
+  // Clamping not supported for int64_t/long long int. See
+  // Source/wtf/MathExtras.h.
   ASSERT(configuration != Clamp);
 
   // Fast case. The value is a 32-bit integer.
@@ -624,7 +627,8 @@ CORE_EXPORT String toByteString(v8::Isolate*,
                                 v8::Local<v8::Value>,
                                 ExceptionState&);
 
-// Converts a value to a String, replacing unmatched UTF-16 surrogates with replacement characters.
+// Converts a value to a String, replacing unmatched UTF-16 surrogates with
+// replacement characters.
 CORE_EXPORT String toUSVString(v8::Isolate*,
                                v8::Local<v8::Value>,
                                ExceptionState&);
@@ -831,8 +835,9 @@ inline bool toV8Sequence(v8::Local<v8::Value> value,
                          uint32_t& length,
                          v8::Isolate* isolate,
                          ExceptionState& exceptionState) {
-  // Attempt converting to a sequence if the value is not already an array but is
-  // any kind of object except for a native Date object or a native RegExp object.
+  // Attempt converting to a sequence if the value is not already an array but
+  // is any kind of object except for a native Date object or a native RegExp
+  // object.
   ASSERT(!value->IsArray());
   // FIXME: Do we really need to special case Date and RegExp object?
   // https://www.w3.org/Bugs/Public/show_bug.cgi?id=22806
@@ -844,9 +849,10 @@ inline bool toV8Sequence(v8::Local<v8::Value> value,
   v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(value);
   v8::Local<v8::String> lengthSymbol = v8AtomicString(isolate, "length");
 
-  // FIXME: The specification states that the length property should be used as fallback, if value
-  // is not a platform object that supports indexed properties. If it supports indexed properties,
-  // length should actually be one greater than value's maximum indexed property index.
+  // FIXME: The specification states that the length property should be used as
+  // fallback, if value is not a platform object that supports indexed
+  // properties. If it supports indexed properties, length should actually be
+  // one greater than value's maximum indexed property index.
   v8::TryCatch block(isolate);
   v8::Local<v8::Value> lengthValue;
   if (!v8Call(object->Get(isolate->GetCurrentContext(), lengthSymbol),
@@ -972,14 +978,16 @@ CORE_EXPORT void registerToExecutionContextForModules(
 CORE_EXPORT ExecutionContext* currentExecutionContext(v8::Isolate*);
 CORE_EXPORT ExecutionContext* enteredExecutionContext(v8::Isolate*);
 
-// Returns a V8 context associated with a ExecutionContext and a DOMWrapperWorld.
-// This method returns an empty context if there is no frame or the frame is already detached.
+// Returns a V8 context associated with a ExecutionContext and a
+// DOMWrapperWorld.  This method returns an empty context if there is no frame
+// or the frame is already detached.
 CORE_EXPORT v8::Local<v8::Context> toV8Context(ExecutionContext*,
                                                DOMWrapperWorld&);
 // Returns a V8 context associated with a Frame and a DOMWrapperWorld.
 // This method returns an empty context if the frame is already detached.
 CORE_EXPORT v8::Local<v8::Context> toV8Context(Frame*, DOMWrapperWorld&);
-// Like toV8Context but also returns the context if the frame is already detached.
+// Like toV8Context but also returns the context if the frame is already
+// detached.
 CORE_EXPORT v8::Local<v8::Context> toV8ContextEvenIfDetached(Frame*,
                                                              DOMWrapperWorld&);
 
@@ -1096,7 +1104,8 @@ CORE_EXPORT bool isValidEnum(const Vector<String>& values,
                              const String& enumName,
                              ExceptionState&);
 
-// These methods store hidden values into an array that is stored in the internal field of a DOM wrapper.
+// These methods store hidden values into an array that is stored in the
+// internal field of a DOM wrapper.
 bool addHiddenValueToArray(v8::Isolate*,
                            v8::Local<v8::Object>,
                            v8::Local<v8::Value>,

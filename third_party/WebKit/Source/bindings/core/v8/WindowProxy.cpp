@@ -88,7 +88,8 @@ WindowProxy::WindowProxy(Frame* frame,
     : m_frame(frame), m_isolate(isolate), m_world(world) {}
 
 WindowProxy::~WindowProxy() {
-  // clearForClose() or clearForNavigation() must be invoked before destruction starts.
+  // clearForClose() or clearForNavigation() must be invoked before destruction
+  // starts.
   ASSERT(!isContextInitialized());
 }
 
@@ -104,7 +105,9 @@ void WindowProxy::disposeContext(GlobalDetachmentBehavior behavior) {
   v8::Local<v8::Context> context = m_scriptState->context();
   if (m_frame->isLocalFrame()) {
     LocalFrame* frame = toLocalFrame(m_frame);
-    // The embedder could run arbitrary code in response to the willReleaseScriptContext callback, so all disposing should happen after it returns.
+    // The embedder could run arbitrary code in response to the
+    // willReleaseScriptContext callback, so all disposing should happen after
+    // it returns.
     frame->loader().client()->willReleaseScriptContext(context,
                                                        m_world->worldId());
     MainThreadDebugger::instance()->contextWillBeDestroyed(m_scriptState.get());
@@ -151,7 +154,8 @@ v8::Local<v8::Object> WindowProxy::globalIfNotDetached() {
 v8::Local<v8::Object> WindowProxy::releaseGlobal() {
   ASSERT(!isContextInitialized());
   // If a ScriptState was created, the context was initialized at some point.
-  // Make sure the global object was detached from the proxy by calling clearForNavigation().
+  // Make sure the global object was detached from the proxy by calling
+  // clearForNavigation().
   if (m_scriptState)
     ASSERT(m_scriptState->isGlobalObjectDetached());
   v8::Local<v8::Object> global = m_global.newLocal(m_isolate);
@@ -276,7 +280,8 @@ bool WindowProxy::initialize() {
 }
 
 void WindowProxy::createContext() {
-  // FIXME: This should be a null check of m_frame->client(), but there are still some edge cases
+  // FIXME: This should be a null check of m_frame->client(), but there are
+  // still some edge cases
   // that this fails to catch during frame detach.
   if (m_frame->isLocalFrame() &&
       !toLocalFrame(m_frame)->loader().documentLoader())
@@ -413,7 +418,8 @@ void WindowProxy::updateDocumentProperty() {
   checkDocumentWrapper(m_document.newLocal(m_isolate), frame->document());
 
   ASSERT(documentWrapper->IsObject());
-  // TODO(jochen): Don't replace the accessor with a data value. We need a way to tell v8 that the accessor's return value won't change after this point.
+  // TODO(jochen): Don't replace the accessor with a data value. We need a way
+  // to tell v8 that the accessor's return value won't change after this point.
   if (!v8CallBoolean(context->Global()->ForceSet(
           context, v8AtomicString(m_isolate, "document"), documentWrapper,
           static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete))))

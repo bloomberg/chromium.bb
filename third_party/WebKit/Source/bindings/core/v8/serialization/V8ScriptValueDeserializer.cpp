@@ -212,14 +212,16 @@ RefPtr<BlobDataHandle> V8ScriptValueDeserializer::getOrCreateBlobDataHandle(
     const String& type,
     uint64_t size) {
   // The containing ssv may have a BDH for this uuid if this ssv is just being
-  // passed from main to worker thread (for example). We use those values when creating
-  // the new blob instead of cons'ing up a new BDH.
+  // passed from main to worker thread (for example). We use those values when
+  // creating the new blob instead of cons'ing up a new BDH.
   //
-  // FIXME: Maybe we should require that it work that way where the ssv must have a BDH for any
-  // blobs it comes across during deserialization. Would require callers to explicitly populate
-  // the collection of BDH's for blobs to work, which would encourage lifetimes to be considered
-  // when passing ssv's around cross process. At present, we get 'lucky' in some cases because
-  // the blob in the src process happens to still exist at the time the dest process is deserializing.
+  // FIXME: Maybe we should require that it work that way where the ssv must
+  // have a BDH for any blobs it comes across during deserialization. Would
+  // require callers to explicitly populate the collection of BDH's for blobs to
+  // work, which would encourage lifetimes to be considered when passing ssv's
+  // around cross process. At present, we get 'lucky' in some cases because the
+  // blob in the src process happens to still exist at the time the dest process
+  // is deserializing.
   // For example in sharedWorker.postMessage(...).
   BlobDataHandleMap& handles = m_serializedScriptValue->blobDataHandles();
   BlobDataHandleMap::const_iterator it = handles.find(uuid);

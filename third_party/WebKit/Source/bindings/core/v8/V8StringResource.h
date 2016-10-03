@@ -91,7 +91,8 @@ class WebCoreStringResourceBase {
   }
 
  protected:
-  // A shallow copy of the string. Keeps the string buffer alive until the V8 engine garbage collects it.
+  // A shallow copy of the string. Keeps the string buffer alive until the V8
+  // engine garbage collects it.
   String m_plainString;
   // If this string is atomic or has been made atomic earlier the
   // atomic string is held here. In the case where the string starts
@@ -204,7 +205,8 @@ class V8StringResource {
     // v8::Isolate::GetCurrent().
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::TryCatch block(isolate);
-    // Handle the case where an exception is thrown as part of invoking toString on the object.
+    // Handle the case where an exception is thrown as part of invoking toString
+    // on the object.
     if (!m_v8Object->ToString(isolate->GetCurrentContext())
              .ToLocal(&m_v8Object)) {
       exceptionState.rethrowV8Exception(block.Exception());

@@ -240,7 +240,8 @@ bool ScriptCustomElementDefinition::runConstructor(Element* element) {
   if (tryCatch.HasCaught())
     return false;
 
-  // To report InvalidStateError Exception, when the constructor returns some different object
+  // To report InvalidStateError Exception, when the constructor returns some
+  // different object
   if (result != element) {
     const String& message =
         "custom element constructors must call super() first and must "

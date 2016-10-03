@@ -51,7 +51,9 @@ bool V8HiddenValue::setHiddenValue(ScriptState* scriptState,
 bool V8HiddenValue::deleteHiddenValue(ScriptState* scriptState,
                                       v8::Local<v8::Object> object,
                                       v8::Local<v8::String> key) {
-  // Actually deleting the value would make force the object into dictionary mode which is unnecessarily slow. Instead, we replace the hidden value with "undefined".
+  // Actually deleting the value would make force the object into dictionary
+  // mode which is unnecessarily slow. Instead, we replace the hidden value with
+  // "undefined".
   return v8CallBoolean(object->SetPrivate(
       scriptState->context(), v8::Private::ForApi(scriptState->isolate(), key),
       v8::Undefined(scriptState->isolate())));

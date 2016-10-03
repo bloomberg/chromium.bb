@@ -208,10 +208,11 @@ class DOMDataStore {
     return m_wrapperMap->set(object, wrapperTypeInfo, wrapper);
   }
 
-  // We can use a wrapper stored in a ScriptWrappable when we're in the main world.
-  // This method does the fast check if we're in the main world. If this method returns true,
-  // it is guaranteed that we're in the main world. On the other hand, if this method returns
-  // false, nothing is guaranteed (we might be in the main world).
+  // We can use a wrapper stored in a ScriptWrappable when we're in the main
+  // world.  This method does the fast check if we're in the main world. If this
+  // method returns true, it is guaranteed that we're in the main world. On the
+  // other hand, if this method returns false, nothing is guaranteed (we might
+  // be in the main world).
   static bool canUseScriptWrappable(Node*) {
     // This helper function itself doesn't use the argument, but we have to
     // make sure that the argument is type of Node* because Node and its

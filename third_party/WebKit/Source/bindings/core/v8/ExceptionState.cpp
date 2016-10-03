@@ -39,7 +39,9 @@ namespace blink {
 
 void ExceptionState::throwDOMException(const ExceptionCode& ec,
                                        const String& message) {
-  // SecurityError is thrown via ::throwSecurityError, and _careful_ consideration must be given to the data exposed to JavaScript via the 'sanitizedMessage'.
+  // SecurityError is thrown via ::throwSecurityError, and _careful_
+  // consideration must be given to the data exposed to JavaScript via the
+  // 'sanitizedMessage'.
   DCHECK(ec != SecurityError);
 
   const String& processedMessage = addExceptionContext(message);

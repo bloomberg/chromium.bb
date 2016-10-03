@@ -41,8 +41,9 @@ namespace blink {
 class Event;
 class Node;
 
-// V8LazyEventListener is a wrapper for a JavaScript code string that is compiled and evaluated when an event is fired.
-// A V8LazyEventListener is either a HTML or SVG event handler.
+// V8LazyEventListener is a wrapper for a JavaScript code string that is
+// compiled and evaluated when an event is fired.  A V8LazyEventListener is
+// either a HTML or SVG event handler.
 class V8LazyEventListener final : public V8AbstractEventListener {
  public:
   static V8LazyEventListener* create(const AtomicString& functionName,

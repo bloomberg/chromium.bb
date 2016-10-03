@@ -145,8 +145,9 @@ StringType v8StringToWebCoreString(v8::Local<v8::String> v8String,
   return result;
 }
 
-// Explicitly instantiate the above template with the expected parameterizations,
-// to ensure the compiler generates the code; otherwise link errors can result in GCC 4.4.
+// Explicitly instantiate the above template with the expected
+// parameterizations, to ensure the compiler generates the code; otherwise link
+// errors can result in GCC 4.4.
 template String v8StringToWebCoreString<String>(v8::Local<v8::String>,
                                                 ExternalMode);
 template AtomicString v8StringToWebCoreString<AtomicString>(
@@ -155,11 +156,12 @@ template AtomicString v8StringToWebCoreString<AtomicString>(
 
 // Fast but non thread-safe version.
 String int32ToWebCoreStringFast(int value) {
-  // Caching of small strings below is not thread safe: newly constructed AtomicString
-  // are not safely published.
+  // Caching of small strings below is not thread safe: newly constructed
+  // AtomicString are not safely published.
   ASSERT(isMainThread());
 
-  // Most numbers used are <= 100. Even if they aren't used there's very little cost in using the space.
+  // Most numbers used are <= 100. Even if they aren't used there's very little
+  // cost in using the space.
   const int kLowNumbers = 100;
   DEFINE_STATIC_LOCAL(Vector<AtomicString>, lowNumbers, (kLowNumbers + 1));
   String webCoreString;
@@ -177,7 +179,8 @@ String int32ToWebCoreStringFast(int value) {
 }
 
 String int32ToWebCoreString(int value) {
-  // If we are on the main thread (this should always true for non-workers), call the faster one.
+  // If we are on the main thread (this should always true for non-workers),
+  // call the faster one.
   if (isMainThread())
     return int32ToWebCoreStringFast(value);
   return String::number(value);

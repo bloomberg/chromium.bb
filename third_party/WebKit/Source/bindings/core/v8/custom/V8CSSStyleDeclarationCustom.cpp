@@ -55,7 +55,8 @@ namespace blink {
 
 // Check for a CSS prefix.
 // Passed prefix is all lowercase.
-// First character of the prefix within the property name may be upper or lowercase.
+// First character of the prefix within the property name may be upper or
+// lowercase.
 // Other characters in the prefix within the property name must be lowercase.
 // The prefix within the property name must be followed by a capital letter.
 static bool hasCSSPropertyNamePrefix(const String& propertyName,
@@ -113,7 +114,8 @@ static CSSPropertyID parseCSSPropertyID(const String& propertyName) {
     }
   }
 
-  // Reject names containing both dashes and upper-case characters, such as "border-rightColor".
+  // Reject names containing both dashes and upper-case characters, such as
+  // "border-rightColor".
   if (hasSeenDash && hasSeenUpper)
     return CSSPropertyInvalid;
 

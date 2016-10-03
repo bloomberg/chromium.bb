@@ -50,8 +50,8 @@ namespace blink {
 //    CallbackPromiseAdapter<bool, void> is a subclass of
 //    WebCallbacks<bool, void>.
 //  - If a WebType is std::unique_ptr<T>, its corresponding type parameter on
-//    WebCallbacks is std::unique_ptr<T>, because WebCallbacks must be exposed to
-//    Chromium.
+//    WebCallbacks is std::unique_ptr<T>, because WebCallbacks must be exposed
+//    to Chromium.
 //
 // When onSuccess is called with a S::WebType value, the value is passed to
 // S::take and the resolver is resolved with its return value. Ditto for
@@ -81,7 +81,8 @@ namespace blink {
 //     }
 //     ...
 // };
-// std::unique_ptr<WebCallbacks<std::unique_ptr<WebMyClass>, const WebMyErrorClass&>>
+// std::unique_ptr<WebCallbacks<std::unique_ptr<WebMyClass>,
+//                 const WebMyErrorClass&>>
 //     callbacks = wrapUnique(new CallbackPromiseAdapter<MyClass, MyErrorClass>(
 //     resolver));
 // ...

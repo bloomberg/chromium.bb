@@ -107,8 +107,8 @@ v8::Local<v8::Function> V8PerContextData::constructorForTypeSlowCase(
   v8::Local<v8::Context> currentContext = context();
   v8::Context::Scope scope(currentContext);
   const DOMWrapperWorld& world = DOMWrapperWorld::world(currentContext);
-  // We shouldn't reach this point for the types that are implemented in v8 such as typed arrays and
-  // hence don't have domTemplateFunction.
+  // We shouldn't reach this point for the types that are implemented in v8 such
+  // as typed arrays and hence don't have domTemplateFunction.
   ASSERT(type->domTemplateFunction);
   v8::Local<v8::FunctionTemplate> interfaceTemplate =
       type->domTemplate(m_isolate, world);

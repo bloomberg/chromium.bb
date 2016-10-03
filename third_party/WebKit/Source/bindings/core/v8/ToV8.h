@@ -316,7 +316,8 @@ v8::Local<v8::Value> toV8(void* value,
                           v8::Local<v8::Object> creationContext,
                           v8::Isolate*) = delete;
 
-// Cannot define in ScriptValue because of the circular dependency between toV8 and ScriptValue
+// Cannot define in ScriptValue because of the circular dependency between toV8
+// and ScriptValue
 template <typename T>
 inline ScriptValue ScriptValue::from(ScriptState* scriptState, T&& value) {
   return ScriptValue(scriptState, toV8(std::forward<T>(value), scriptState));

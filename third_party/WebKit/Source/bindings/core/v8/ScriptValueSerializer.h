@@ -32,8 +32,9 @@ typedef Vector<WTF::ArrayBufferContents, 1> ArrayBufferContentsArray;
 typedef Vector<RefPtr<StaticBitmapImage>, 1> ImageBitmapContentsArray;
 
 // V8ObjectMap is a map from V8 objects to arbitrary values of type T.
-// V8 objects (or handles to V8 objects) cannot be used as keys in ordinary wtf::HashMaps;
-// this class should be used instead. GCObject must be a subtype of v8::Object.
+// V8 objects (or handles to V8 objects) cannot be used as keys in ordinary
+// wtf::HashMaps; this class should be used instead. GCObject must be a subtype
+// of v8::Object.
 // Suggested usage:
 //     V8ObjectMap<v8::Object, int> map;
 //     v8::Local<v8::Object> obj = ...;
@@ -61,16 +62,19 @@ class V8ObjectMap {
   }
 
  private:
-  // This implementation uses GetIdentityHash(), which sets a hidden property on the object containing
-  // a random integer (or returns the one that had been previously set). This ensures that the table
-  // never needs to be rebuilt across garbage collections at the expense of doing additional allocation
-  // and making more round trips into V8. Note that since GetIdentityHash() is defined only on
-  // v8::Objects, this V8ObjectMap cannot be used to map v8::Strings to T (because the public V8 API
-  // considers a v8::String to be a v8::Primitive).
+  // This implementation uses GetIdentityHash(), which sets a hidden property on
+  // the object containing a random integer (or returns the one that had been
+  // previously set). This ensures that the table never needs to be rebuilt
+  // across garbage collections at the expense of doing additional allocation
+  // and making more round trips into V8. Note that since GetIdentityHash() is
+  // defined only on v8::Objects, this V8ObjectMap cannot be used to map
+  // v8::Strings to T (because the public V8 API considers a v8::String to be a
+  // v8::Primitive).
 
-  // If V8 exposes a way to get at the address of the object held by a handle, then we can produce
-  // an alternate implementation that does not need to do any V8-side allocation; however, it will
-  // need to rehash after every garbage collection because a key object may have been moved.
+  // If V8 exposes a way to get at the address of the object held by a handle,
+  // then we can produce an alternate implementation that does not need to do
+  // any V8-side allocation; however, it will need to rehash after every garbage
+  // collection because a key object may have been moved.
   template <typename G>
   struct V8HandlePtrHash {
     STATIC_ONLY(V8HandlePtrHash);
@@ -95,8 +99,8 @@ class V8ObjectMap {
   HandleToT m_map;
 };
 
-// SerializedScriptValueWriter is responsible for serializing primitive types and storing
-// information used to reconstruct composite types.
+// SerializedScriptValueWriter is responsible for serializing primitive types
+// and storing information used to reconstruct composite types.
 class CORE_EXPORT SerializedScriptValueWriter {
   STACK_ALLOCATED();
   WTF_MAKE_NONCOPYABLE(SerializedScriptValueWriter);
@@ -377,8 +381,8 @@ class CORE_EXPORT ScriptValueSerializer {
 
   virtual StateBase* doSerializeObject(v8::Local<v8::Object>, StateBase* next);
 
-  // Marks object as having been visited by the serializer and assigns it a unique object reference ID.
-  // An object may only be greyed once.
+  // Marks object as having been visited by the serializer and assigns it a
+  // unique object reference ID.  An object may only be greyed once.
   void greyObject(const v8::Local<v8::Object>&);
 
   StateBase* handleError(Status errorStatus, const String& message, StateBase*);
@@ -481,8 +485,8 @@ class CORE_EXPORT ScriptValueSerializer {
 
 class ScriptValueDeserializer;
 
-// SerializedScriptValueReader is responsible for deserializing primitive types and
-// restoring information about saved objects of composite types.
+// SerializedScriptValueReader is responsible for deserializing primitive types
+// and restoring information about saved objects of composite types.
 class CORE_EXPORT SerializedScriptValueReader {
   STACK_ALLOCATED();
   WTF_MAKE_NONCOPYABLE(SerializedScriptValueReader);

@@ -94,7 +94,8 @@ v8::Local<v8::Value> V8EventListener::callListenerFunction(
   if (!frame)
     return v8::Local<v8::Value>();
 
-  // TODO(jochen): Consider moving this check into canExecuteScripts. http://crbug.com/608641
+  // TODO(jochen): Consider moving this check into canExecuteScripts.
+  // http://crbug.com/608641
   if (scriptState->world().isMainWorld() &&
       !frame->script().canExecuteScripts(AboutToExecuteScript))
     return v8::Local<v8::Value>();

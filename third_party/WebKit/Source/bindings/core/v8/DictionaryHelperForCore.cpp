@@ -229,8 +229,8 @@ bool DictionaryHelper::get(const Dictionary& dictionary,
   if (v8Value->IsObject()) {
     v8::Local<v8::Object> wrapper = v8::Local<v8::Object>::Cast(v8Value);
 
-    // FIXME: this will need to be changed so it can also return an AudioTrack or a VideoTrack once
-    // we add them.
+    // FIXME: this will need to be changed so it can also return an AudioTrack
+    // or a VideoTrack once we add them.
     v8::Local<v8::Object> track = V8TextTrack::findInstanceInPrototypeChain(
         wrapper, dictionary.isolate());
     if (!track.IsEmpty())

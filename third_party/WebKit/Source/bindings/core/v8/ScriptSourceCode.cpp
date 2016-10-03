@@ -63,13 +63,14 @@ String ScriptSourceCode::sourceMapUrl() const {
 }
 
 void ScriptSourceCode::treatNullSourceAsEmpty() {
-  // ScriptSourceCode allows for the representation of the null/not-there-really ScriptSourceCode value.
-  // Encoded by way of a m_source.isNull() being true, with the nullary constructor to be used to
-  // construct such a value.
+  // ScriptSourceCode allows for the representation of the null/not-there-really
+  // ScriptSourceCode value.  Encoded by way of a m_source.isNull() being true,
+  // with the nullary constructor to be used to construct such a value.
   //
-  // Should the other constructors be passed a null string, that is interpreted as representing
-  // the empty script. Consequently, we need to disambiguate between such null string occurrences.
-  // Do that by converting the latter case's null strings into empty ones.
+  // Should the other constructors be passed a null string, that is interpreted
+  // as representing the empty script. Consequently, we need to disambiguate
+  // between such null string occurrences.  Do that by converting the latter
+  // case's null strings into empty ones.
   if (m_source.isNull())
     m_source = "";
 }

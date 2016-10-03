@@ -98,9 +98,9 @@ class CORE_EXPORT ScriptController final
       const ScriptSourceCode&,
       AccessControlStatus = NotSharableCrossOrigin);
 
-  // Executes JavaScript in an isolated world. The script gets its own global scope,
-  // its own prototypes for intrinsic JavaScript objects (String, Array, and so-on),
-  // and its own wrappers for all DOM nodes and DOM constructors.
+  // Executes JavaScript in an isolated world. The script gets its own global
+  // scope, its own prototypes for intrinsic JavaScript objects (String, Array,
+  // and so-on), and its own wrappers for all DOM nodes and DOM constructors.
   //
   // If an isolated world with the specified ID already exists, it is reused.
   // Otherwise, a new world is created.

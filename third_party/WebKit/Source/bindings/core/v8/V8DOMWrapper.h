@@ -151,8 +151,8 @@ class V8WrapperInstantiationScope {
     v8::Local<v8::Context> contextForWrapper =
         creationContext->CreationContext();
 
-    // For performance, we enter the context only if the currently running context
-    // is different from the context that we are about to enter.
+    // For performance, we enter the context only if the currently running
+    // context is different from the context that we are about to enter.
     if (contextForWrapper == m_context)
       return;
     if (withSecurityCheck) {

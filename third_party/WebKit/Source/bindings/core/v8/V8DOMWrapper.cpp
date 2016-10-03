@@ -47,7 +47,8 @@ v8::Local<v8::Object> V8DOMWrapper::createWrapper(
     v8::Local<v8::Object> creationContext,
     const WrapperTypeInfo* type) {
   ASSERT(!type->equals(&V8Window::wrapperTypeInfo));
-  // According to https://html.spec.whatwg.org/multipage/browsers.html#security-location,
+  // According to
+  // https://html.spec.whatwg.org/multipage/browsers.html#security-location,
   // cross-origin script access to a few properties of Location is allowed.
   // Location already implements the necessary security checks.
   bool withSecurityCheck = !type->equals(&V8Location::wrapperTypeInfo);
@@ -114,7 +115,8 @@ void V8WrapperInstantiationScope::securityCheck(
     // Sandbox detached frames - they can't create cross origin objects.
     LocalDOMWindow* callingWindow = currentDOMWindow(isolate);
     DOMWindow* targetWindow = toDOMWindow(contextForWrapper);
-    // TODO(jochen): Currently, Location is the only object for which we can reach this code path. Should be generalized.
+    // TODO(jochen): Currently, Location is the only object for which we can
+    // reach this code path. Should be generalized.
     ExceptionState exceptionState(ExceptionState::ConstructionContext,
                                   "Location", contextForWrapper->Global(),
                                   isolate);
@@ -141,7 +143,8 @@ void V8WrapperInstantiationScope::securityCheck(
 
 void V8WrapperInstantiationScope::convertException() {
   v8::Isolate* isolate = m_context->GetIsolate();
-  // TODO(jochen): Currently, Location is the only object for which we can reach this code path. Should be generalized.
+  // TODO(jochen): Currently, Location is the only object for which we can reach
+  // this code path. Should be generalized.
   ExceptionState exceptionState(ExceptionState::ConstructionContext, "Location",
                                 isolate->GetCurrentContext()->Global(),
                                 isolate);

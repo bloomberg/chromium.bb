@@ -120,28 +120,32 @@ class CORE_EXPORT ScriptValue final {
 
   bool operator!=(const ScriptValue& value) const { return !operator==(value); }
 
-  // This creates a new local Handle; Don't use this in performance-sensitive places.
+  // This creates a new local Handle; Don't use this in performance-sensitive
+  // places.
   bool isFunction() const {
     ASSERT(!isEmpty());
     v8::Local<v8::Value> value = v8Value();
     return !value.IsEmpty() && value->IsFunction();
   }
 
-  // This creates a new local Handle; Don't use this in performance-sensitive places.
+  // This creates a new local Handle; Don't use this in performance-sensitive
+  // places.
   bool isNull() const {
     ASSERT(!isEmpty());
     v8::Local<v8::Value> value = v8Value();
     return !value.IsEmpty() && value->IsNull();
   }
 
-  // This creates a new local Handle; Don't use this in performance-sensitive places.
+  // This creates a new local Handle; Don't use this in performance-sensitive
+  // places.
   bool isUndefined() const {
     ASSERT(!isEmpty());
     v8::Local<v8::Value> value = v8Value();
     return !value.IsEmpty() && value->IsUndefined();
   }
 
-  // This creates a new local Handle; Don't use this in performance-sensitive places.
+  // This creates a new local Handle; Don't use this in performance-sensitive
+  // places.
   bool isObject() const {
     ASSERT(!isEmpty());
     v8::Local<v8::Value> value = v8Value();

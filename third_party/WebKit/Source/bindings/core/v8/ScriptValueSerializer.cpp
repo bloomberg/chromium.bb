@@ -76,13 +76,13 @@ bool shouldCheckForCycles(int depth) {
   return !(depth & (depth - 1));
 }
 
-// Returns true if the provided object is to be considered a 'host object', as used in the
-// HTML5 structured clone algorithm.
+// Returns true if the provided object is to be considered a 'host object', as
+// used in the HTML5 structured clone algorithm.
 bool isHostObject(v8::Local<v8::Object> object) {
-  // If the object has any internal fields, then we won't be able to serialize or deserialize
-  // them; conveniently, this is also a quick way to detect DOM wrapper objects, because
-  // the mechanism for these relies on data stored in these fields. We should
-  // catch external array data as a special case.
+  // If the object has any internal fields, then we won't be able to serialize
+  // or deserialize them; conveniently, this is also a quick way to detect DOM
+  // wrapper objects, because the mechanism for these relies on data stored in
+  // these fields. We should catch external array data as a special case.
   return object->InternalFieldCount();
 }
 
@@ -575,7 +575,8 @@ ScriptValueSerializer::AbstractObjectState::serializeProperties(
       continue;
     }
 
-    // |propertyName| is v8::String or v8::Uint32, so its serialization cannot be recursive.
+    // |propertyName| is v8::String or v8::Uint32, so its serialization cannot
+    // be recursive.
     serializer.doSerialize(propertyName, nullptr);
 
     v8::Local<v8::Value> value;
@@ -585,9 +586,9 @@ ScriptValueSerializer::AbstractObjectState::serializeProperties(
           "Failed to get a property while cloning an object.", this);
     ++m_index;
     ++m_numSerializedProperties;
-    // If we return early here, it's either because we have pushed a new state onto the
-    // serialization state stack or because we have encountered an error (and in both cases
-    // we are unwinding the native stack).
+    // If we return early here, it's either because we have pushed a new state
+    // onto the serialization state stack or because we have encountered an
+    // error (and in both cases we are unwinding the native stack).
     if (StateBase* newState = serializer.doSerialize(value, this))
       return newState;
   }
@@ -969,7 +970,8 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerializeObject(
     return writeCompositorProxy(object, next);
   }
 
-  // Since IsNativeError is expensive, this check should always be the last check.
+  // Since IsNativeError is expensive, this check should always be the last
+  // check.
   if (isHostObject(object) || object->IsCallable() || object->IsNativeError()) {
     return handleError(Status::DataCloneError, "An object could not be cloned.",
                        next);
@@ -1231,16 +1233,16 @@ ScriptValueSerializer::writeAndGreyArrayBufferView(v8::Local<v8::Object> object,
   if (stateOut)
     return stateOut;
   m_writer.writeArrayBufferView(*arrayBufferView);
-  // This should be safe: we serialize something that we know to be a wrapper (see
-  // the toV8 call above), so the call to doSerializeArrayBuffer should neither
-  // cause the system stack to overflow nor should it have potential to reach
-  // this ArrayBufferView again.
+  // This should be safe: we serialize something that we know to be a wrapper
+  // (see the toV8 call above), so the call to doSerializeArrayBuffer should
+  // neither cause the system stack to overflow nor should it have potential to
+  // reach this ArrayBufferView again.
   //
   // We do need to grey the underlying buffer before we grey its view, however;
   // ArrayBuffers may be shared, so they need to be given reference IDs, and an
   // ArrayBufferView cannot be constructed without a corresponding ArrayBuffer
-  // (or without an additional tag that would allow us to do two-stage construction
-  // like we do for Objects and Arrays).
+  // (or without an additional tag that would allow us to do two-stage
+  // construction like we do for Objects and Arrays).
   greyObject(object);
   return nullptr;
 }
@@ -1320,8 +1322,10 @@ ScriptValueSerializer::writeTransferredSharedArrayBuffer(
 bool ScriptValueSerializer::shouldSerializeDensely(uint32_t length,
                                                    uint32_t propertyCount) {
   // Let K be the cost of serializing all property values that are there
-  // Cost of serializing sparsely: 5*propertyCount + K (5 bytes per uint32_t key)
-  // Cost of serializing densely: K + 1*(length - propertyCount) (1 byte for all properties that are not there)
+  // Cost of serializing sparsely: 5*propertyCount + K (5 bytes per uint32_t
+  // key)
+  // Cost of serializing densely: K + 1*(length - propertyCount) (1 byte for all
+  // properties that are not there)
   // so densely is better than sparsly whenever 6*propertyCount > length
   return 6 * propertyCount >= length;
 }
@@ -1376,8 +1380,8 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::startObjectState(
   return push(new ObjectState(object, next));
 }
 
-// Marks object as having been visited by the serializer and assigns it a unique object reference ID.
-// An object may only be greyed once.
+// Marks object as having been visited by the serializer and assigns it a unique
+// object reference ID.  An object may only be greyed once.
 void ScriptValueSerializer::greyObject(const v8::Local<v8::Object>& object) {
   ASSERT(!m_objectPool.contains(object));
   uint32_t objectReference = m_nextObjectReference++;
@@ -1429,9 +1433,9 @@ bool SerializedScriptValueReader::readWithTag(
       uint32_t referenceTableSize;
       if (!doReadUint32(&referenceTableSize))
         return false;
-      // If this test fails, then the serializer and deserializer disagree about the assignment
-      // of object reference IDs. On the deserialization side, this means there are too many or too few
-      // calls to pushObjectReference.
+      // If this test fails, then the serializer and deserializer disagree about
+      // the assignment of object reference IDs. On the deserialization side,
+      // this means there are too many or too few calls to pushObjectReference.
       if (referenceTableSize != deserializer.objectReferenceCount())
         return false;
       return true;
@@ -2265,14 +2269,16 @@ SerializedScriptValueReader::getOrCreateBlobDataHandle(const String& uuid,
                                                        const String& type,
                                                        long long size) {
   // The containing ssv may have a BDH for this uuid if this ssv is just being
-  // passed from main to worker thread (for example). We use those values when creating
-  // the new blob instead of cons'ing up a new BDH.
+  // passed from main to worker thread (for example). We use those values when
+  // creating the new blob instead of cons'ing up a new BDH.
   //
-  // FIXME: Maybe we should require that it work that way where the ssv must have a BDH for any
-  // blobs it comes across during deserialization. Would require callers to explicitly populate
-  // the collection of BDH's for blobs to work, which would encourage lifetimes to be considered
-  // when passing ssv's around cross process. At present, we get 'lucky' in some cases because
-  // the blob in the src process happens to still exist at the time the dest process is deserializing.
+  // FIXME: Maybe we should require that it work that way where the ssv must
+  // have a BDH for any blobs it comes across during deserialization. Would
+  // require callers to explicitly populate the collection of BDH's for blobs to
+  // work, which would encourage lifetimes to be considered when passing ssv's
+  // around cross process. At present, we get 'lucky' in some cases because the
+  // blob in the src process happens to still exist at the time the dest process
+  // is deserializing.
   // For example in sharedWorker.postMessage(...).
   BlobDataHandleMap::const_iterator it = m_blobDataHandles.find(uuid);
   if (it != m_blobDataHandles.end()) {

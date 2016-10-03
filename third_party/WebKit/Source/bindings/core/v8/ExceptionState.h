@@ -65,7 +65,8 @@ class CORE_EXPORT ExceptionState {
     IndexedGetterContext,
     IndexedSetterContext,
     IndexedDeletionContext,
-    UnknownContext,  // FIXME: Remove this once we've flipped over to the new API.
+    UnknownContext,  // FIXME: Remove this once we've flipped over to the new
+                     // API.
   };
 
   ExceptionState(v8::Isolate* isolate,

@@ -44,7 +44,8 @@ enum ListenerLookupType {
   ListenerFindOrCreate,
 };
 
-// This is a container for V8EventListener objects that uses hidden properties of v8::Object to speed up lookups.
+// This is a container for V8EventListener objects that uses hidden properties
+// of v8::Object to speed up lookups.
 class V8EventListenerHelper {
   STATIC_ONLY(V8EventListenerHelper);
 

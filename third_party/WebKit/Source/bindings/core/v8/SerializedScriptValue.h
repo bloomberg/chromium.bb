@@ -64,7 +64,8 @@ class CORE_EXPORT SerializedScriptValue
   // Version 5: Added CryptoKeyTag for Key objects.
   // Version 6: Added indexed serialization for File, Blob, and FileList.
   // Version 7: Extended File serialization with user visibility.
-  // Version 8: File.lastModified in milliseconds (seconds-based in earlier versions.)
+  // Version 8: File.lastModified in milliseconds (seconds-based in earlier
+  //            versions.)
   // Version 9: Added Map and Set support.
   static const uint32_t wireFormatVersion = 9;
 
@@ -101,18 +102,21 @@ class CORE_EXPORT SerializedScriptValue
                                    MessagePortArray* = 0,
                                    const WebBlobInfoArray* = 0);
 
-  // Helper function which pulls the values out of a JS sequence and into a MessagePortArray.
-  // Also validates the elements per sections 4.1.13 and 4.1.15 of the WebIDL spec and section 8.3.3
-  // of the HTML5 spec and generates exceptions as appropriate.
-  // Returns true if the array was filled, or false if the passed value was not of an appropriate type.
+  // Helper function which pulls the values out of a JS sequence and into a
+  // MessagePortArray.  Also validates the elements per sections 4.1.13 and
+  // 4.1.15 of the WebIDL spec and section 8.3.3 of the HTML5 spec and generates
+  // exceptions as appropriate.
+  // Returns true if the array was filled, or false if the passed value was not
+  // of an appropriate type.
   static bool extractTransferables(v8::Isolate*,
                                    v8::Local<v8::Value>,
                                    int,
                                    Transferables&,
                                    ExceptionState&);
 
-  // Informs the V8 about external memory allocated and owned by this object. Large values should contribute
-  // to GC counters to eventually trigger a GC, otherwise flood of postMessage() can cause OOM.
+  // Informs the V8 about external memory allocated and owned by this object.
+  // Large values should contribute to GC counters to eventually trigger a GC,
+  // otherwise flood of postMessage() can cause OOM.
   // Ok to invoke multiple times (only adds memory once).
   // The memory registration is revoked automatically in destructor.
   void registerMemoryAllocatedWithCurrentScriptContext();

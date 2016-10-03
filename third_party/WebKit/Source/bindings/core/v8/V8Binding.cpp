@@ -552,16 +552,18 @@ String toByteString(v8::Isolate* isolate,
 
   String x = toCoreString(stringObject);
 
-  // 2. If the value of any element of x is greater than 255, then throw a TypeError.
+  // 2. If the value of any element of x is greater than 255, then throw a
+  //    TypeError.
   if (!x.containsOnlyLatin1()) {
     exceptionState.throwTypeError("Value is not a valid ByteString.");
     return String();
   }
 
-  // 3. Return an IDL ByteString value whose length is the length of x, and where the
-  // value of each element is the value of the corresponding element of x.
-  // Blink: A ByteString is simply a String with a range constrained per the above, so
-  // this is the identity operation.
+  // 3. Return an IDL ByteString value whose length is the length of x, and
+  //    where the value of each element is the value of the corresponding
+  //    element of x.
+  //    Blink: A ByteString is simply a String with a range constrained per the
+  //    above, so this is the identity operation.
   return x;
 }
 
@@ -646,12 +648,14 @@ static String replaceUnmatchedSurrogates(const String& string) {
           // 2. If 0xDC00 <= d <= 0xDFFF, then:
           // ..1. Let a be c & 0x3FF.
           // ..2. Let b be d & 0x3FF.
-          // ..3. Append to U the Unicode character with code point 2^16+2^10*a+b.
+          // ..3. Append to U the Unicode character with code point
+          //      2^16+2^10*a+b.
           u.append(U16_GET_SUPPLEMENTARY(c, d));
           // Blink: This is equivalent to u.append(c); u.append(d);
           ++i;
         } else {
-          // 3. Otherwise, d < 0xDC00 or d > 0xDFFF. Append to U a U+FFFD REPLACEMENT CHARACTER.
+          // 3. Otherwise, d < 0xDC00 or d > 0xDFFF. Append to U a U+FFFD
+          //    REPLACEMENT CHARACTER.
           u.append(replacementCharacter);
         }
       }
@@ -723,13 +727,13 @@ LocalDOMWindow* enteredDOMWindow(v8::Isolate* isolate) {
   LocalDOMWindow* window =
       toLocalDOMWindow(toDOMWindow(isolate->GetEnteredContext()));
   if (!window) {
-    // We don't always have an entered DOM window, for example during microtask callbacks from V8
-    // (where the entered context may be the DOM-in-JS context). In that case, we fall back
-    // to the current context.
+    // We don't always have an entered DOM window, for example during microtask
+    // callbacks from V8 (where the entered context may be the DOM-in-JS
+    // context). In that case, we fall back to the current context.
     //
-    // TODO(haraken): It's nasty to return a current window from enteredDOMWindow.
-    // All call sites should be updated so that it works even if it doesn't have
-    // an entered window.
+    // TODO(haraken): It's nasty to return a current window from
+    // enteredDOMWindow.  All call sites should be updated so that it works even
+    // if it doesn't have an entered window.
     window = currentDOMWindow(isolate);
     ASSERT(window);
   }
@@ -769,9 +773,9 @@ ExecutionContext* currentExecutionContext(v8::Isolate* isolate) {
 ExecutionContext* enteredExecutionContext(v8::Isolate* isolate) {
   ExecutionContext* context = toExecutionContext(isolate->GetEnteredContext());
   if (!context) {
-    // We don't always have an entered execution context, for example during microtask callbacks from V8
-    // (where the entered context may be the DOM-in-JS context). In that case, we fall back
-    // to the current context.
+    // We don't always have an entered execution context, for example during
+    // microtask callbacks from V8 (where the entered context may be the
+    // DOM-in-JS context). In that case, we fall back to the current context.
     context = currentExecutionContext(isolate);
     ASSERT(context);
   }

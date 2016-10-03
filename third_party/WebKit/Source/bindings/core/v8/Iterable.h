@@ -88,8 +88,8 @@ class Iterable {
    public:
     virtual ~IterationSource() {}
 
-    // If end of iteration has been reached or an exception thrown: return false.
-    // Otherwise: set |key| and |value| and return true.
+    // If end of iteration has been reached or an exception thrown: return
+    // false.  Otherwise: set |key| and |value| and return true.
     virtual bool next(ScriptState*, KeyType&, ValueType&, ExceptionState&) = 0;
 
     DEFINE_INLINE_VIRTUAL_TRACE() {}
@@ -164,7 +164,8 @@ class Iterable {
   };
 };
 
-// Utiltity mixin base-class for classes implementing IDL interfaces with "iterable<T>".
+// Utiltity mixin base-class for classes implementing IDL interfaces with
+// "iterable<T>".
 template <typename ValueType>
 class ValueIterable : public Iterable<unsigned, ValueType> {
  public:
@@ -179,7 +180,8 @@ class ValueIterable : public Iterable<unsigned, ValueType> {
 
     ~IterationSource() override {}
 
-    // If end of iteration has been reached or an exception thrown: return false.
+    // If end of iteration has been reached or an exception thrown: return
+    // false.
     // Otherwise: set |value| and return true.
     // Note: |this->m_index| is the index being accessed.
     virtual bool next(ScriptState*, ValueType&, ExceptionState&) = 0;
@@ -201,7 +203,8 @@ class ValueIterable : public Iterable<unsigned, ValueType> {
   };
 };
 
-// Utiltity mixin base-class for classes implementing IDL interfaces with "iterable<T1, T2>".
+// Utiltity mixin base-class for classes implementing IDL interfaces with
+// "iterable<T1, T2>".
 template <typename KeyType, typename ValueType>
 class PairIterable : public Iterable<KeyType, ValueType> {
  public:

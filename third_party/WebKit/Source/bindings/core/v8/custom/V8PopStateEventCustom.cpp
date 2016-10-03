@@ -39,7 +39,8 @@
 
 namespace blink {
 
-// Save the state value to a hidden attribute in the V8PopStateEvent, and return it, for convenience.
+// Save the state value to a hidden attribute in the V8PopStateEvent, and return
+// it, for convenience.
 static v8::Local<v8::Value> cacheState(ScriptState* scriptState,
                                        v8::Local<v8::Object> popStateEvent,
                                        v8::Local<v8::Value> state) {
@@ -76,11 +77,13 @@ void V8PopStateEvent::stateAttributeGetterCustom(
     return;
   }
 
-  // There's no cached value from a previous invocation, nor a state value was provided by the
-  // event, but there is a history object, so first we need to see if the state object has been
-  // deserialized through the history object already.
-  // The current history state object might've changed in the meantime, so we need to take care
-  // of using the correct one, and always share the same deserialization with history.state.
+  // There's no cached value from a previous invocation, nor a state value was
+  // provided by the event, but there is a history object, so first we need to
+  // see if the state object has been deserialized through the history object
+  // already.
+  // The current history state object might've changed in the meantime, so we
+  // need to take care of using the correct one, and always share the same
+  // deserialization with history.state.
 
   bool isSameState = history->isSameAsCurrentState(event->serializedState());
 

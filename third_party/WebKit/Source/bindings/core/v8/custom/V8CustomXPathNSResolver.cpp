@@ -86,7 +86,8 @@ AtomicString V8CustomXPathNSResolver::lookupNamespaceURI(const String& prefix) {
           : lookupNamespaceURIFunc;
 
   v8::Local<v8::Value> retval;
-  // Eat exceptions from namespace resolver and return an empty string. This will most likely cause NamespaceError.
+  // Eat exceptions from namespace resolver and return an empty string. This
+  // will most likely cause NamespaceError.
   if (!V8ScriptRunner::callFunction(
            function, toExecutionContext(m_scriptState->context()), m_resolver,
            argc, argv, isolate)

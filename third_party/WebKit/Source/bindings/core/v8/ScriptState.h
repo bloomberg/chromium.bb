@@ -32,7 +32,8 @@ class CORE_EXPORT ScriptState : public RefCounted<ScriptState> {
     STACK_ALLOCATED();
 
    public:
-    // You need to make sure that scriptState->context() is not empty before creating a Scope.
+    // You need to make sure that scriptState->context() is not empty before
+    // creating a Scope.
     explicit Scope(ScriptState* scriptState)
         : m_handleScope(scriptState->isolate()),
           m_context(scriptState->context()) {
@@ -134,13 +135,16 @@ class CORE_EXPORT ScriptState : public RefCounted<ScriptState> {
   // This persistent handle is weak.
   ScopedPersistent<v8::Context> m_context;
 
-  // This RefPtr doesn't cause a cycle because all persistent handles that DOMWrapperWorld holds are weak.
+  // This RefPtr doesn't cause a cycle because all persistent handles that
+  // DOMWrapperWorld holds are weak.
   RefPtr<DOMWrapperWorld> m_world;
 
   // This std::unique_ptr causes a cycle:
-  // V8PerContextData --(Persistent)--> v8::Context --(RefPtr)--> ScriptState --(std::unique_ptr)--> V8PerContextData
-  // So you must explicitly clear the std::unique_ptr by calling disposePerContextData()
-  // once you no longer need V8PerContextData. Otherwise, the v8::Context will leak.
+  // V8PerContextData --(Persistent)--> v8::Context --(RefPtr)--> ScriptState
+  //     --(std::unique_ptr)--> V8PerContextData
+  // So you must explicitly clear the std::unique_ptr by calling
+  // disposePerContextData() once you no longer need V8PerContextData.
+  // Otherwise, the v8::Context will leak.
   std::unique_ptr<V8PerContextData> m_perContextData;
 
 #if ENABLE(ASSERT)
@@ -148,8 +152,9 @@ class CORE_EXPORT ScriptState : public RefCounted<ScriptState> {
 #endif
 };
 
-// ScriptStateProtectingContext keeps the context associated with the ScriptState alive.
-// You need to call clear() once you no longer need the context. Otherwise, the context will leak.
+// ScriptStateProtectingContext keeps the context associated with the
+// ScriptState alive.  You need to call clear() once you no longer need the
+// context. Otherwise, the context will leak.
 class ScriptStateProtectingContext {
   WTF_MAKE_NONCOPYABLE(ScriptStateProtectingContext);
   USING_FAST_MALLOC(ScriptStateProtectingContext);

@@ -131,7 +131,8 @@ void ScheduledAction::execute(LocalFrame* frame) {
                                                 ScriptSourceCode(m_code));
   }
 
-  // The frame might be invalid at this point because JavaScript could have released it.
+  // The frame might be invalid at this point because JavaScript could have
+  // released it.
 }
 
 void ScheduledAction::execute(WorkerGlobalScope* worker) {

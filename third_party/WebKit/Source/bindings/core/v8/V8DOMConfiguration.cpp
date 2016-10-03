@@ -574,8 +574,9 @@ void V8DOMConfiguration::initializeDOMInterfaceTemplate(
   if (!parentInterfaceTemplate.IsEmpty()) {
     interfaceTemplate->Inherit(parentInterfaceTemplate);
     // Marks the prototype object as one of native-backed objects.
-    // This is needed since bug 110436 asks WebKit to tell native-initiated prototypes from pure-JS ones.
-    // This doesn't mark kinds "root" classes like Node, where setting this changes prototype chain structure.
+    // This is needed since bug 110436 asks WebKit to tell native-initiated
+    // prototypes from pure-JS ones.  This doesn't mark kinds "root" classes
+    // like Node, where setting this changes prototype chain structure.
     prototypeTemplate->SetInternalFieldCount(v8PrototypeInternalFieldcount);
   }
 }

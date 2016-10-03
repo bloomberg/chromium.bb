@@ -19,12 +19,14 @@ class TracedValue;
 
 class CORE_EXPORT SourceLocation {
  public:
-  // Zero lineNumber and columnNumber mean unknown. Captures current stack trace.
+  // Zero lineNumber and columnNumber mean unknown. Captures current stack
+  // trace.
   static std::unique_ptr<SourceLocation> capture(const String& url,
                                                  unsigned lineNumber,
                                                  unsigned columnNumber);
 
-  // Shortcut when location is unknown. Tries to capture call stack or parsing location if available.
+  // Shortcut when location is unknown. Tries to capture call stack or parsing
+  // location if available.
   static std::unique_ptr<SourceLocation> capture(ExecutionContext* = nullptr);
 
   static std::unique_ptr<SourceLocation> fromMessage(v8::Isolate*,

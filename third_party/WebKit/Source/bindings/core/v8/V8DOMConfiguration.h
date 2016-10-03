@@ -63,8 +63,9 @@ class CORE_EXPORT V8DOMConfiguration final {
     DoNotCheckHolder,
   };
 
-  // AttributeConfiguration translates into calls to SetNativeDataProperty() on either
-  // the instance or the prototype ObjectTemplate, based on |instanceOrPrototypeConfiguration|.
+  // AttributeConfiguration translates into calls to SetNativeDataProperty() on
+  // either the instance or the prototype ObjectTemplate, based on
+  // |instanceOrPrototypeConfiguration|.
   struct AttributeConfiguration {
     AttributeConfiguration& operator=(const AttributeConfiguration&) = delete;
     DISALLOW_NEW();
@@ -288,8 +289,8 @@ class CORE_EXPORT V8DOMConfiguration final {
       WrapperTypeInfo*,
       InstallTemplateFunction);
 
-  // Sets the class string of platform objects, interface prototype objects, etc.
-  // See also http://heycam.github.io/webidl/#dfn-class-string
+  // Sets the class string of platform objects, interface prototype objects,
+  // etc.  See also http://heycam.github.io/webidl/#dfn-class-string
   static void setClassString(v8::Isolate*,
                              v8::Local<v8::ObjectTemplate>,
                              const char* classString);

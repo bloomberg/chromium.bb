@@ -60,7 +60,8 @@ class ScriptWrappable;
 //
 // Usage 2) Slow path to create a global private symbol.
 //   const char symbolName[] = "Interface#PrivateKeyName";
-//   auto private = V8PrivateProperty::createSymbol(isolate, symbolName, sizeof symbolName);
+//   auto private = V8PrivateProperty::createSymbol(isolate, symbolName,
+//                                                  sizeof symbolName);
 //   ...
 class CORE_EXPORT V8PrivateProperty {
   USING_FAST_MALLOC(V8PrivateProperty);
