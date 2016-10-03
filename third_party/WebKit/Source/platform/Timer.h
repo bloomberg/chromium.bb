@@ -88,7 +88,7 @@ class PLATFORM_EXPORT TimerBase {
 
   virtual WebTaskRunner* timerTaskRunner() const;
 
-  NO_LAZY_SWEEP_SANITIZE_ADDRESS
+  NO_SANITIZE_ADDRESS
   virtual bool canFire() const { return true; }
 
   double timerMonotonicallyIncreasingTime() const;
@@ -141,7 +141,7 @@ class TaskRunnerTimer : public TimerBase {
  protected:
   void fired() override { (m_object->*m_function)(this); }
 
-  NO_LAZY_SWEEP_SANITIZE_ADDRESS
+  NO_SANITIZE_ADDRESS
   bool canFire() const override {
     // Oilpan: if a timer fires while Oilpan heaps are being lazily
     // swept, it is not safe to proceed if the object is about to
@@ -192,7 +192,7 @@ class UnthrottledThreadTimer : public TaskRunnerTimer<TimerFiredClass> {
                                          timerFiredFunction) {}
 };
 
-NO_LAZY_SWEEP_SANITIZE_ADDRESS
+NO_SANITIZE_ADDRESS
 inline bool TimerBase::isActive() const {
   ASSERT(m_thread == currentThread());
   return m_weakPtrFactory.hasWeakPtrs();

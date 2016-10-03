@@ -34,10 +34,8 @@
 // when Clang handles all the code without falling back to CL.
 #if defined(ADDRESS_SANITIZER) && (!OS(WIN) || COMPILER(CLANG))
 #define NO_SANITIZE_ADDRESS __attribute__((no_sanitize_address))
-#define NO_LAZY_SWEEP_SANITIZE_ADDRESS NO_SANITIZE_ADDRESS
 #else
 #define NO_SANITIZE_ADDRESS
-#define NO_LAZY_SWEEP_SANITIZE_ADDRESS
 #endif
 
 #if defined(MEMORY_SANITIZER) && (!OS(WIN) || COMPILER(CLANG))

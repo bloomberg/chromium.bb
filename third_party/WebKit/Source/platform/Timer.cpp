@@ -116,7 +116,7 @@ void TimerBase::setNextFireTime(double now, double delay) {
   }
 }
 
-NO_LAZY_SWEEP_SANITIZE_ADDRESS
+NO_SANITIZE_ADDRESS
 void TimerBase::runInternal() {
   if (!canFire())
     return;

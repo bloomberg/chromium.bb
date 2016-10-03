@@ -172,7 +172,7 @@ class PersistentBase {
   }
 
  private:
-  NO_LAZY_SWEEP_SANITIZE_ADDRESS
+  NO_SANITIZE_ADDRESS
   void assign(T* ptr) {
     if (crossThreadnessConfiguration == CrossThreadPersistentConfiguration)
       releaseStore(reinterpret_cast<void* volatile*>(&m_raw), ptr);
@@ -203,7 +203,7 @@ class PersistentBase {
     }
   }
 
-  NO_LAZY_SWEEP_SANITIZE_ADDRESS
+  NO_SANITIZE_ADDRESS
   void initialize() {
     ASSERT(!m_persistentNode);
     if (!m_raw || isHashTableDeletedValue())
@@ -589,7 +589,7 @@ class PersistentHeapCollectionBase : public Collection {
     collection->clear();
   }
 
-  NO_LAZY_SWEEP_SANITIZE_ADDRESS
+  NO_SANITIZE_ADDRESS
   void initialize() {
     // FIXME: Derive affinity based on the collection.
     ThreadState* state = ThreadState::current();

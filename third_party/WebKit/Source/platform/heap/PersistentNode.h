@@ -218,7 +218,7 @@ class CrossThreadPersistentRegion final {
 
   void prepareForThreadStateTermination(ThreadState*);
 
-  NO_LAZY_SWEEP_SANITIZE_ADDRESS
+  NO_SANITIZE_ADDRESS
   static bool shouldTracePersistentNode(Visitor*, PersistentNode*);
 
  private:

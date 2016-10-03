@@ -104,7 +104,7 @@ class ObjectAliveTrait<T, true> {
   STATIC_ONLY(ObjectAliveTrait);
 
  public:
-  NO_LAZY_SWEEP_SANITIZE_ADDRESS
+  NO_SANITIZE_ADDRESS
   static bool isHeapObjectAlive(T* object) {
     static_assert(sizeof(T), "T must be fully defined");
     return object->isHeapObjectAlive();
@@ -323,7 +323,7 @@ class PLATFORM_EXPORT ThreadHeap {
   // to be in; willObjectBeLazilySwept() has undefined behavior if passed
   // such a reference.
   template <typename T>
-  NO_LAZY_SWEEP_SANITIZE_ADDRESS static bool willObjectBeLazilySwept(
+  NO_SANITIZE_ADDRESS static bool willObjectBeLazilySwept(
       const T* objectPointer) {
     static_assert(IsGarbageCollectedType<T>::value,
                   "only objects deriving from GarbageCollected can be used.");

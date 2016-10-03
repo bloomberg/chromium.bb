@@ -66,7 +66,7 @@ class LinkedHashSetNodeBase {
  public:
   LinkedHashSetNodeBase() : m_prev(this), m_next(this) {}
 
-  NO_LAZY_SWEEP_SANITIZE_ADDRESS
+  NO_SANITIZE_ADDRESS
   void unlink() {
     if (!m_next)
       return;
