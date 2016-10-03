@@ -191,13 +191,14 @@ class PLATFORM_EXPORT GarbageCollectedMixin {
                                                                              \
  private:
 
-// An empty class with a constructor that's arranged invoked when all derived constructors
-// of a mixin instance have completed and it is safe to allow GCs again. See
-// AllocateObjectTrait<> comment for more.
+// An empty class with a constructor that's arranged invoked when all derived
+// constructors of a mixin instance have completed and it is safe to allow GCs
+// again. See AllocateObjectTrait<> comment for more.
 //
-// USING_GARBAGE_COLLECTED_MIXIN() declares a GarbageCollectedMixinConstructorMarker<> private
-// field. By following Blink convention of using the macro at the top of a class declaration,
-// its constructor will run first.
+// USING_GARBAGE_COLLECTED_MIXIN() declares a
+// GarbageCollectedMixinConstructorMarker<> private field. By following Blink
+// convention of using the macro at the top of a class declaration, its
+// constructor will run first.
 class GarbageCollectedMixinConstructorMarker {
  public:
   GarbageCollectedMixinConstructorMarker() {

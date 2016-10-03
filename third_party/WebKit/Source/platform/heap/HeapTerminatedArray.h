@@ -26,8 +26,8 @@ class HeapTerminatedArray : public TerminatedArray<T> {
   }
 
  private:
-  // Allocator describes how HeapTerminatedArrayBuilder should create new intances
-  // of HeapTerminatedArray and manage their lifetimes.
+  // Allocator describes how HeapTerminatedArrayBuilder should create new
+  // instances of HeapTerminatedArray and manage their lifetimes.
   struct Allocator final {
     STATIC_ONLY(Allocator);
     using PassPtr = HeapTerminatedArray*;

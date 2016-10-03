@@ -37,8 +37,8 @@ namespace blink {
 //     SelfKeepAlive m_keepAlive;
 //  };
 //
-// The responsibility to call clear() in a timely fashion resides with the implementation
-// of the object.
+// The responsibility to call clear() in a timely fashion resides with the
+// implementation of the object.
 //
 //
 template <typename Self>

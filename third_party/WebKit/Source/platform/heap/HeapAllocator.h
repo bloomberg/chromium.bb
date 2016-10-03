@@ -373,11 +373,10 @@ class HeapLinkedHashSet
                 "instead of HeapLinkedHashSet<>");
 };
 
-template <
-    typename ValueArg,
-    size_t inlineCapacity =
-        0,  // The inlineCapacity is just a dummy to match ListHashSet (off-heap).
-    typename HashArg = typename DefaultHash<ValueArg>::Hash>
+template <typename ValueArg,
+          size_t inlineCapacity = 0,  // The inlineCapacity is just a dummy to
+                                      // match ListHashSet (off-heap).
+          typename HashArg = typename DefaultHash<ValueArg>::Hash>
 class HeapListHashSet
     : public ListHashSet<ValueArg,
                          inlineCapacity,

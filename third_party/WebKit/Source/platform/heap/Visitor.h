@@ -53,10 +53,11 @@ class TraceEagerlyTrait;
 class ThreadState;
 class Visitor;
 
-// The TraceMethodDelegate is used to convert a trace method for type T to a TraceCallback.
-// This allows us to pass a type's trace method as a parameter to the PersistentNode
-// constructor. The PersistentNode constructor needs the specific trace method due an issue
-// with the Windows compiler which instantiates even unused variables. This causes problems
+// The TraceMethodDelegate is used to convert a trace method for type T to a
+// TraceCallback.  This allows us to pass a type's trace method as a parameter
+// to the PersistentNode constructor. The PersistentNode constructor needs the
+// specific trace method due an issue with the Windows compiler which
+// instantiates even unused variables. This causes problems
 // in header files where we have only forward declarations of classes.
 template <typename T, void (T::*method)(Visitor*)>
 struct TraceMethodDelegate {

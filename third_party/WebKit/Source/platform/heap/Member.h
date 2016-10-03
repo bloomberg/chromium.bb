@@ -252,10 +252,11 @@ class Member : public MemberBase<T, TracenessMemberConfiguration::Traced> {
 
 // WeakMember is similar to Member in that it is used to point to other oilpan
 // heap allocated objects.
-// However instead of creating a strong pointer to the object, the WeakMember creates
-// a weak pointer, which does not keep the pointee alive. Hence if all pointers to
-// to a heap allocated object are weak the object will be garbage collected. At the
-// time of GC the weak pointers will automatically be set to null.
+// However instead of creating a strong pointer to the object, the WeakMember
+// creates a weak pointer, which does not keep the pointee alive. Hence if all
+// pointers to to a heap allocated object are weak the object will be garbage
+// collected. At the time of GC the weak pointers will automatically be set to
+// null.
 template <typename T>
 class WeakMember : public MemberBase<T, TracenessMemberConfiguration::Traced> {
   typedef MemberBase<T, TracenessMemberConfiguration::Traced> Parent;

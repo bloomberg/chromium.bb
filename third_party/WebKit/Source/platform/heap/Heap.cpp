@@ -525,7 +525,14 @@ void ThreadHeap::reportMemoryUsageHistogram() {
 
 void ThreadHeap::reportMemoryUsageForTracing() {
 #if PRINT_HEAP_STATS
-// dataLogF("allocatedSpace=%ldMB, allocatedObjectSize=%ldMB, markedObjectSize=%ldMB, partitionAllocSize=%ldMB, wrapperCount=%ld, collectedWrapperCount=%ld\n", ThreadHeap::allocatedSpace() / 1024 / 1024, ThreadHeap::allocatedObjectSize() / 1024 / 1024, ThreadHeap::markedObjectSize() / 1024 / 1024, WTF::Partitions::totalSizeOfCommittedPages() / 1024 / 1024, ThreadHeap::wrapperCount(), ThreadHeap::collectedWrapperCount());
+// dataLogF("allocatedSpace=%ldMB, allocatedObjectSize=%ldMB, "
+//          "markedObjectSize=%ldMB, partitionAllocSize=%ldMB, "
+//          "wrapperCount=%ld, collectedWrapperCount=%ld\n",
+//          ThreadHeap::allocatedSpace() / 1024 / 1024,
+//          ThreadHeap::allocatedObjectSize() / 1024 / 1024,
+//          ThreadHeap::markedObjectSize() / 1024 / 1024,
+//          WTF::Partitions::totalSizeOfCommittedPages() / 1024 / 1024,
+//          ThreadHeap::wrapperCount(), ThreadHeap::collectedWrapperCount());
 #endif
 
   bool gcTracingEnabled;
@@ -535,7 +542,8 @@ void ThreadHeap::reportMemoryUsageForTracing() {
     return;
 
   ThreadHeap& heap = ThreadState::current()->heap();
-  // These values are divided by 1024 to avoid overflow in practical cases (TRACE_COUNTER values are 32-bit ints).
+  // These values are divided by 1024 to avoid overflow in practical cases
+  // (TRACE_COUNTER values are 32-bit ints).
   // They are capped to INT_MAX just in case.
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
                  "ThreadHeap::allocatedObjectSizeKB",

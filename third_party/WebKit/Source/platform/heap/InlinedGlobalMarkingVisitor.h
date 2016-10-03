@@ -23,7 +23,8 @@ class InlinedGlobalMarkingVisitor final
 
   // Hack to unify interface to visitor->trace().
   // Without this hack, we need to use visitor.trace() for
-  // trace(InlinedGlobalMarkingVisitor) and visitor->trace() for trace(Visitor*).
+  // trace(InlinedGlobalMarkingVisitor) and visitor->trace() for
+  // trace(Visitor*).
   InlinedGlobalMarkingVisitor* operator->() { return this; }
 
   using Impl::mark;

@@ -89,7 +89,8 @@ const uint8_t reuseAllowedZapValue = 0x2a;
 const uint8_t reuseForbiddenZapValue = 0x2c;
 
 // In non-production builds, memory is zapped when it's freed. The zapped
-// memory is zeroed out when the memory is reused in ThreadHeap::allocateObject().
+// memory is zeroed out when the memory is reused in
+// ThreadHeap::allocateObject().
 // In production builds, memory is not zapped (for performance). The memory
 // is just zeroed out when it is added to the free list.
 #if defined(MEMORY_SANITIZER)
@@ -139,7 +140,12 @@ class WebMemoryAllocatorDump;
 
 // HeapObjectHeader is 4 byte (32 bit) that has the following layout:
 //
-// | gcInfoIndex (14 bit) | DOM mark bit (1 bit) | size (14 bit) | dead bit (1 bit) | freed bit (1 bit) | mark bit (1 bit) |
+// | gcInfoIndex (14 bit) |
+// | DOM mark bit (1 bit) |
+// | size (14 bit)        |
+// | dead bit (1 bit)     |
+// | freed bit (1 bit)    |
+// | mark bit (1 bit)     |
 //
 // - For non-large objects, 14 bit is enough for |size| because the blink
 //   page size is 2^17 byte and each object is guaranteed to be aligned with
@@ -261,13 +267,15 @@ class PLATFORM_EXPORT HeapObjectHeader {
 // In 64 bit architectures, we intentionally add 4 byte padding immediately
 // after the HeapObjectHeader. This is because:
 //
-// | HeapObjectHeader (4 byte) | padding (4 byte) | object payload (8 * n byte) |
-// ^8 byte aligned                                ^8 byte aligned
+// | HeapObjectHeader (4 byte)   |  <- 8 byte aligned
+// | padding (4 byte)            |
+// | object payload (8 * n byte) |  <- 8 byte aligned
 //
 // is better than:
 //
-// | HeapObjectHeader (4 byte) | object payload (8 * n byte) | padding (4 byte) |
-// ^4 byte aligned             ^8 byte aligned               ^4 byte aligned
+// | HeapObjectHeader (4 byte)   |  <- 4 byte aligned
+// | object payload (8 * n byte) |  <- 8 byte aligned
+// | padding (4 byte)            |  <- 4 byte aligned
 //
 // since the former layout aligns both header and payload to 8 byte.
 #if USE_4BYTE_HEADER_PADDING
@@ -602,7 +610,8 @@ class HeapDoesNotContainCache {
 
  public:
   HeapDoesNotContainCache() : m_hasEntries(false) {
-    // Start by flushing the cache in a non-empty state to initialize all the cache entries.
+    // Start by flushing the cache in a non-empty state to initialize all the
+    // cache entries.
     for (int i = 0; i < numberOfEntries; ++i)
       m_entries[i] = nullptr;
   }

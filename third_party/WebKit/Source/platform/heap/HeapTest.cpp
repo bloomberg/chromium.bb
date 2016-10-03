@@ -138,13 +138,14 @@ struct PairWithWeakHandling : public StrongWeakPair {
   // Regular constructor.
   PairWithWeakHandling(IntWrapper* one, IntWrapper* two)
       : StrongWeakPair(one, two) {
-    ASSERT(
-        one);  // We use null first field to indicate empty slots in the hash table.
+    ASSERT(one);  // We use null first field to indicate empty slots in the hash
+                  // table.
   }
 
   // The HashTable (via the HashTrait) calls this constructor with a
   // placement new to mark slots in the hash table as being deleted. We will
-  // never call trace or the destructor on these slots. We mark ourselves deleted
+  // never call trace or the destructor on these slots. We mark ourselves
+  // deleted
   // with a pointer to -1 in the first field.
   PairWithWeakHandling(WTF::HashTableDeletedValueType)
       : StrongWeakPair(reinterpret_cast<IntWrapper*>(-1), nullptr) {}
@@ -166,8 +167,10 @@ struct PairWithWeakHandling : public StrongWeakPair {
     visitor->traceInCollection(second, strongify);
     if (!ThreadHeap::isHeapObjectAlive(second))
       return true;
-    // FIXME: traceInCollection is also called from WeakProcessing to check if the entry is dead.
-    // The below if avoids calling trace in that case by only calling trace when |first| is not yet marked.
+    // FIXME: traceInCollection is also called from WeakProcessing to check if
+    // the entry is dead.
+    // The below if avoids calling trace in that case by only calling trace when
+    // |first| is not yet marked.
     if (!ThreadHeap::isHeapObjectAlive(first))
       visitor->trace(first);
     return false;
@@ -586,7 +589,8 @@ class ThreadedHeapTester : public ThreadedTesterBase {
         // Taking snapshot shouldn't have any bad side effect.
         // TODO(haraken): This snapshot GC causes crashes, so disable
         // it at the moment. Fix the crash and enable it.
-        // ThreadHeap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::TakeSnapshot, BlinkGC::ForcedGC);
+        // ThreadHeap::collectGarbage(BlinkGC::NoHeapPointersOnStack,
+        //                            BlinkGC::TakeSnapshot, BlinkGC::ForcedGC);
         preciselyCollectGarbage();
         EXPECT_EQ(wrapper->value(), 0x0bbac0de);
         EXPECT_EQ((*globalPersistent)->value(), 0x0ed0cabb);
@@ -632,7 +636,8 @@ class ThreadedWeaknessTester : public ThreadedTesterBase {
         // Taking snapshot shouldn't have any bad side effect.
         // TODO(haraken): This snapshot GC causes crashes, so disable
         // it at the moment. Fix the crash and enable it.
-        // ThreadHeap::collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::TakeSnapshot, BlinkGC::ForcedGC);
+        // ThreadHeap::collectGarbage(BlinkGC::NoHeapPointersOnStack,
+        //                            BlinkGC::TakeSnapshot, BlinkGC::ForcedGC);
         preciselyCollectGarbage();
         EXPECT_TRUE(weakMap->isEmpty());
         EXPECT_TRUE(weakMap2.isEmpty());
@@ -1655,7 +1660,8 @@ TEST(HeapTest, BasicFunctionality) {
     if (testPagesAllocated)
       EXPECT_EQ(heap.heapStats().allocatedSpace(), 0ul);
 
-    // This allocates objects on the general heap which should add a page of memory.
+    // This allocates objects on the general heap which should add a page of
+    // memory.
     DynamicallySizedObject* alloc32 = DynamicallySizedObject::create(32);
     slack += 4;
     memset(alloc32, 40, 32);
@@ -3944,9 +3950,8 @@ TEST(HeapTest, CheckAndMarkPointer) {
   {
     TestGCScope scope(BlinkGC::HeapPointersOnStack);
     CountingVisitor visitor(ThreadState::current());
-    EXPECT_TRUE(
-        scope
-            .allThreadsParked());  // Fail the test if we could not park all threads.
+    EXPECT_TRUE(scope.allThreadsParked());  // Fail the test if we could not
+                                            // park all threads.
     heap.flushHeapDoesNotContainCache();
     for (size_t i = 0; i < objectAddresses.size(); i++) {
       EXPECT_TRUE(heap.checkAndMarkPointer(&visitor, objectAddresses[i]));
@@ -4891,17 +4896,14 @@ void setWithCustomWeaknessHandling() {
   preciselyCollectGarbage();
   EXPECT_EQ(0u, set1->size());
   set1->add(PairWithWeakHandling(IntWrapper::create(103), livingInt));
-  set1->add(PairWithWeakHandling(
-      livingInt,
-      IntWrapper::create(
-          103)));  // This one gets zapped at GC time because nothing holds the 103 alive.
+  // This one gets zapped at GC time because nothing holds the 103 alive.
+  set1->add(PairWithWeakHandling(livingInt, IntWrapper::create(103)));
   set1->add(PairWithWeakHandling(
       IntWrapper::create(103),
       IntWrapper::create(103)));  // This one gets zapped too.
   set1->add(PairWithWeakHandling(livingInt, livingInt));
-  set1->add(PairWithWeakHandling(
-      livingInt,
-      livingInt));  // This one is identical to the previous and doesn't add anything.
+  // This one is identical to the previous and doesn't add anything.
+  set1->add(PairWithWeakHandling(livingInt, livingInt));
   EXPECT_EQ(4u, set1->size());
   preciselyCollectGarbage();
   EXPECT_EQ(2u, set1->size());
@@ -4972,18 +4974,17 @@ TEST(HeapTest, MapWithCustomWeaknessHandling) {
 
   map1->add(PairWithWeakHandling(IntWrapper::create(103), livingInt),
             OffHeapInt::create(2000));
-  map1->add(
-      PairWithWeakHandling(livingInt, IntWrapper::create(103)),
-      OffHeapInt::create(
-          2001));  // This one gets zapped at GC time because nothing holds the 103 alive.
+  map1->add(PairWithWeakHandling(livingInt, IntWrapper::create(103)),
+            OffHeapInt::create(2001));  // This one gets zapped at GC time
+                                        // because nothing holds the 103 alive.
   map1->add(
       PairWithWeakHandling(IntWrapper::create(103), IntWrapper::create(103)),
       OffHeapInt::create(2002));  // This one gets zapped too.
   RefPtr<OffHeapInt> dupeInt(OffHeapInt::create(2003));
   map1->add(PairWithWeakHandling(livingInt, livingInt), dupeInt);
-  map1->add(
-      PairWithWeakHandling(livingInt, livingInt),
-      dupeInt);  // This one is identical to the previous and doesn't add anything.
+  map1->add(PairWithWeakHandling(livingInt, livingInt),
+            dupeInt);  // This one is identical to the previous and doesn't add
+                       // anything.
   dupeInt.clear();
 
   EXPECT_EQ(0, OffHeapInt::s_destructorCalls);
@@ -5055,23 +5056,17 @@ TEST(HeapTest, MapWithCustomWeaknessHandling2) {
 
   map1->add(OffHeapInt::create(2000),
             PairWithWeakHandling(IntWrapper::create(103), livingInt));
-  map1->add(
-      OffHeapInt::create(2001),
-      PairWithWeakHandling(
-          livingInt,
-          IntWrapper::create(
-              103)));  // This one gets zapped at GC time because nothing holds the 103 alive.
+  // This one gets zapped at GC time because nothing holds the 103 alive.
+  map1->add(OffHeapInt::create(2001),
+            PairWithWeakHandling(livingInt, IntWrapper::create(103)));
   map1->add(OffHeapInt::create(2002),
             PairWithWeakHandling(
                 IntWrapper::create(103),
                 IntWrapper::create(103)));  // This one gets zapped too.
   RefPtr<OffHeapInt> dupeInt(OffHeapInt::create(2003));
   map1->add(dupeInt, PairWithWeakHandling(livingInt, livingInt));
-  map1->add(
-      dupeInt,
-      PairWithWeakHandling(
-          livingInt,
-          livingInt));  // This one is identical to the previous and doesn't add anything.
+  // This one is identical to the previous and doesn't add anything.
+  map1->add(dupeInt, PairWithWeakHandling(livingInt, livingInt));
   dupeInt.clear();
 
   EXPECT_EQ(0, OffHeapInt::s_destructorCalls);
@@ -5556,8 +5551,8 @@ class DeadBitTester {
 
     // Wait with detach until the main thread says so. This is not strictly
     // necessary, but it means the worker thread will not do its thread local
-    // GCs just yet, making it easier to reason about that no new GC has occurred
-    // and the above sweep was the one finalizing the worker object.
+    // GCs just yet, making it easier to reason about that no new GC has
+    // occurred and the above sweep was the one finalizing the worker object.
     parkWorkerThread();
 
     ThreadState::detachCurrentThread();
@@ -6387,7 +6382,8 @@ class TestMixinAllocationB : public TestMixinAllocationA {
 
  public:
   TestMixinAllocationB()
-      : m_a(new TestMixinAllocationA())  // Construct object during a mixin construction.
+      : m_a(new TestMixinAllocationA())  // Construct object during a mixin
+                                         // construction.
   {
     // Completely wrong in general, but test only
     // runs this constructor while constructing another mixin.
@@ -6520,13 +6516,15 @@ void workerThreadMainForCrossThreadWeakPersistentTest(
 }  // anonymous namespace
 
 TEST(HeapTest, CrossThreadWeakPersistent) {
-  // Create an object in the worker thread, have a CrossThreadWeakPersistent pointing to it on the main thread,
-  // clear the reference in the worker thread, run a GC in the worker thread, and see if the
+  // Create an object in the worker thread, have a CrossThreadWeakPersistent
+  // pointing to it on the main thread, clear the reference in the worker
+  // thread, run a GC in the worker thread, and see if the
   // CrossThreadWeakPersistent is cleared.
 
   DestructorLockingObject::s_destructorCalls = 0;
 
-  // Step 1: Initiate a worker thread, and wait for |object| to get allocated on the worker thread.
+  // Step 1: Initiate a worker thread, and wait for |object| to get allocated on
+  // the worker thread.
   MutexLocker mainThreadMutexLocker(mainThreadMutex());
   std::unique_ptr<WebThread> workerThread =
       wrapUnique(Platform::current()->createThread("Test Worker Thread"));
@@ -6593,7 +6591,8 @@ TEST(HeapTest, TestPersistentHeapVectorWithUnusedSlots) {
 }
 
 TEST(HeapTest, TestStaticLocals) {
-  // Sanity check DEFINE_STATIC_LOCAL()s over heap allocated objects and collections.
+  // Sanity check DEFINE_STATIC_LOCAL()s over heap allocated objects and
+  // collections.
 
   DEFINE_STATIC_LOCAL(IntWrapper, intWrapper, (new IntWrapper(33)));
   DEFINE_STATIC_LOCAL(PersistentHeapVector<Member<IntWrapper>>,

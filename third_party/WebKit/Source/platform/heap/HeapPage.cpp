@@ -301,9 +301,10 @@ void BaseArena::sweepUnsweptPage() {
 }
 
 bool BaseArena::lazySweepWithDeadline(double deadlineSeconds) {
-  // It might be heavy to call Platform::current()->monotonicallyIncreasingTimeSeconds()
-  // per page (i.e., 128 KB sweep or one LargeObject sweep), so we check
-  // the deadline per 10 pages.
+  // It might be heavy to call
+  // Platform::current()->monotonicallyIncreasingTimeSeconds() per page (i.e.,
+  // 128 KB sweep or one LargeObject sweep), so we check the deadline per 10
+  // pages.
   static const int deadlineCheckInterval = 10;
 
   RELEASE_ASSERT(getThreadState()->isSweepingInProgress());
@@ -364,8 +365,8 @@ Address BaseArena::allocateLargeObject(size_t allocationSize,
 
 bool BaseArena::willObjectBeLazilySwept(BasePage* page,
                                         void* objectPointer) const {
-  // If not on the current page being (potentially) lazily swept, |objectPointer|
-  // is an unmarked, sweepable object.
+  // If not on the current page being (potentially) lazily swept,
+  // |objectPointer| is an unmarked, sweepable object.
   if (page != m_firstUnsweptPage)
     return true;
 
@@ -377,16 +378,17 @@ bool BaseArena::willObjectBeLazilySwept(BasePage* page,
     return true;
 
   // Rare special case: unmarked object is on the page being lazily swept,
-  // and a finalizer for an object on that page calls ThreadHeap::willObjectBeLazilySwept().
+  // and a finalizer for an object on that page calls
+  // ThreadHeap::willObjectBeLazilySwept().
   //
-  // Need to determine if |objectPointer| represents a live (unmarked) object or an
-  // unmarked object that will be lazily swept later. As lazy page sweeping
+  // Need to determine if |objectPointer| represents a live (unmarked) object or
+  // an unmarked object that will be lazily swept later. As lazy page sweeping
   // doesn't record a frontier pointer representing how far along it is, the
   // page is scanned from the start, skipping past freed & unmarked regions.
   //
-  // If no marked objects are encountered before |objectPointer|, we know
-  // that the finalizing object calling willObjectBeLazilySwept() comes later,
-  // and |objectPointer| has been deemed to be alive already (=> it won't be swept.)
+  // If no marked objects are encountered before |objectPointer|, we know that
+  // the finalizing object calling willObjectBeLazilySwept() comes later, and
+  // |objectPointer| has been deemed to be alive already (=> it won't be swept.)
   //
   // If a marked object is encountered before |objectPointer|, it will
   // not have been lazily swept past already. Hence it represents an unmarked,
@@ -735,7 +737,8 @@ void NormalPageArena::setRemainingAllocationSize(
 
   // Sync recorded allocated-object size:
   //  - if previous alloc checkpoint is larger, allocation size has increased.
-  //  - if smaller, a net reduction in size since last call to updateRemainingAllocationSize().
+  //  - if smaller, a net reduction in size since last call to
+  //  updateRemainingAllocationSize().
   if (m_lastRemainingAllocationSize > m_remainingAllocationSize)
     getThreadState()->increaseAllocatedObjectSize(
         m_lastRemainingAllocationSize - m_remainingAllocationSize);
@@ -1483,10 +1486,8 @@ void NormalPage::takeSnapshot(base::trace_event::MemoryAllocatorDump* pageDump,
 #if ENABLE(ASSERT)
 bool NormalPage::contains(Address addr) {
   Address blinkPageStart = roundToBlinkPageStart(getAddress());
-  ASSERT(
-      blinkPageStart ==
-      getAddress() -
-          blinkGuardPageSize);  // Page is at aligned address plus guard page size.
+  // Page is at aligned address plus guard page size.
+  ASSERT(blinkPageStart == getAddress() - blinkGuardPageSize);
   return blinkPageStart <= addr && addr < blinkPageStart + blinkPageSize;
 }
 #endif

@@ -539,8 +539,9 @@ class CrossThreadWeakPersistent
 
 template <typename Collection>
 class PersistentHeapCollectionBase : public Collection {
-  // We overload the various new and delete operators with using the WTF PartitionAllocator to ensure persistent
-  // heap collections are always allocated off-heap. This allows persistent collections to be used in
+  // We overload the various new and delete operators with using the WTF
+  // PartitionAllocator to ensure persistent heap collections are always
+  // allocated off-heap. This allows persistent collections to be used in
   // DEFINE_STATIC_LOCAL et. al.
   WTF_USE_ALLOCATOR(PersistentHeapCollectionBase, WTF::PartitionAllocator);
   IS_PERSISTENT_REFERENCE_TYPE();

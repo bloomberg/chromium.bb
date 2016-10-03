@@ -79,14 +79,15 @@ class Visitor;
 // Since a pre-finalizer adds pressure on GC performance, you should use it
 // only if necessary.
 //
-// A pre-finalizer is similar to the HeapHashMap<WeakMember<Foo>, std::unique_ptr<Disposer>>
-// idiom.  The difference between this and the idiom is that pre-finalizer
-// function is called whenever an object is destructed with this feature.  The
-// HeapHashMap<WeakMember<Foo>, std::unique_ptr<Disposer>> idiom requires an assumption
-// that the HeapHashMap outlives objects pointed by WeakMembers.
-// FIXME: Replace all of the HeapHashMap<WeakMember<Foo>, std::unique_ptr<Disposer>>
-// idiom usages with the pre-finalizer if the replacement won't cause
-// performance regressions.
+// A pre-finalizer is similar to the
+// HeapHashMap<WeakMember<Foo>, std::unique_ptr<Disposer>> idiom.  The
+// difference between this and the idiom is that pre-finalizer function is
+// called whenever an object is destructed with this feature.  The
+// HeapHashMap<WeakMember<Foo>, std::unique_ptr<Disposer>> idiom requires an
+// assumption that the HeapHashMap outlives objects pointed by WeakMembers.
+// FIXME: Replace all of the
+// HeapHashMap<WeakMember<Foo>, std::unique_ptr<Disposer>> idiom usages with the
+// pre-finalizer if the replacement won't cause performance regressions.
 //
 // Usage:
 //
@@ -318,15 +319,17 @@ class PLATFORM_EXPORT ThreadState {
   // there is a GC in progress.
   //
   // Each thread that has ThreadState attached must:
-  //   - periodically check if GC is requested from another thread by calling a safePoint() method;
-  //   - use SafePointScope around long running loops that have no safePoint() invocation inside,
-  //     such loops must not touch any heap object;
-  //   - register an BlinkGCInterruptor that can interrupt long running loops that have no calls to safePoint and
-  //     are not wrapped in a SafePointScope (e.g. BlinkGCInterruptor for JavaScript code)
+  //   - periodically check if GC is requested from another thread by calling a
+  //     safePoint() method;
+  //   - use SafePointScope around long running loops that have no safePoint()
+  //     invocation inside, such loops must not touch any heap object;
+  //   - register an BlinkGCInterruptor that can interrupt long running loops
+  //     that have no calls to safePoint and are not wrapped in a SafePointScope
+  //     (e.g. BlinkGCInterruptor for JavaScript code)
   //
 
-  // Check if GC is requested by another thread and pause this thread if this is the case.
-  // Can only be called when current thread is in a consistent state.
+  // Check if GC is requested by another thread and pause this thread if this is
+  // the case.  Can only be called when current thread is in a consistent state.
   void safePoint(BlinkGC::StackState);
 
   // Mark current thread as running inside safepoint.
@@ -458,8 +461,8 @@ class PLATFORM_EXPORT ThreadState {
     }
   }
 
-  // vectorBackingArena() returns an arena that the vector allocation should use.
-  // We have four vector arenas and want to choose the best arena here.
+  // vectorBackingArena() returns an arena that the vector allocation should
+  // use.  We have four vector arenas and want to choose the best arena here.
   //
   // The goal is to improve the succession rate where expand and
   // promptlyFree happen at an allocation point. This is a key for reusing
@@ -554,7 +557,8 @@ class PLATFORM_EXPORT ThreadState {
   }
 
   // shouldSchedule{Precise,Idle}GC and shouldForceConservativeGC
-  // implement the heuristics that are used to determine when to collect garbage.
+  // implement the heuristics that are used to determine when to collect
+  // garbage.
   // If shouldForceConservativeGC returns true, we force the garbage
   // collection immediately. Otherwise, if should*GC returns true, we
   // record that we should garbage collect the next time we return

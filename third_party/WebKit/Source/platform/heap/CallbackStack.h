@@ -14,10 +14,11 @@
 namespace blink {
 
 // The CallbackStack contains all the visitor callbacks used to trace and mark
-// objects. A specific CallbackStack instance contains at most bufferSize elements.
+// objects. A specific CallbackStack instance contains at most bufferSize
+// elements.
 // If more space is needed a new CallbackStack instance is created and chained
-// together with the former instance. I.e. a logical CallbackStack can be made of
-// multiple chained CallbackStack object instances.
+// together with the former instance. I.e. a logical CallbackStack can be made
+// of multiple chained CallbackStack object instances.
 class CallbackStack final {
   USING_FAST_MALLOC(CallbackStack);
 

@@ -247,7 +247,8 @@ class PLATFORM_EXPORT ThreadHeap {
     // always 'alive'.
     if (!object)
       return true;
-    // TODO(keishi): some tests create CrossThreadPersistent on non attached threads.
+    // TODO(keishi): some tests create CrossThreadPersistent on non attached
+    // threads.
     if (!ThreadState::current())
       return true;
     if (&ThreadState::current()->heap() !=

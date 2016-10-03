@@ -331,8 +331,8 @@ void ThreadState::runTerminationGC() {
   ASSERT(m_orderedPreFinalizers.isEmpty());
   RELEASE_ASSERT(gcState() == NoGCScheduled);
 
-  // Add pages to the orphaned page pool to ensure any global GCs from this point
-  // on will not trace objects on this thread's arenas.
+  // Add pages to the orphaned page pool to ensure any global GCs from this
+  // point on will not trace objects on this thread's arenas.
   cleanupPages();
 }
 
@@ -544,7 +544,9 @@ size_t ThreadState::estimatedLiveSize(size_t estimationBaseSize,
     return 0;
   }
 
-  // (estimated size) = (estimation base size) - (heap size at the last GC) / (# of persistent handles at the last GC) * (# of persistent handles collected since the last GC);
+  // (estimated size) = (estimation base size) - (heap size at the last GC) /
+  //   (# of persistent handles at the last GC) *
+  //     (# of persistent handles collected since the last GC);
   size_t sizeRetainedByCollectedPersistents = static_cast<size_t>(
       1.0 * sizeAtLastGC / m_heap->heapStats().wrapperCountAtLastGC() *
       m_heap->heapStats().collectedWrapperCount());
@@ -594,7 +596,8 @@ double ThreadState::partitionAllocGrowingRate() {
 bool ThreadState::judgeGCThreshold(size_t allocatedObjectSizeThreshold,
                                    size_t totalMemorySizeThreshold,
                                    double heapGrowingRateThreshold) {
-  // If the allocated object size or the total memory size is small, don't trigger a GC.
+  // If the allocated object size or the total memory size is small, don't
+  // trigger a GC.
   if (m_heap->heapStats().allocatedObjectSize() <
           allocatedObjectSizeThreshold ||
       totalMemorySize() < totalMemorySizeThreshold)
@@ -1325,12 +1328,12 @@ void ThreadState::safePoint(BlinkGC::StackState stackState) {
 }
 
 #ifdef ADDRESS_SANITIZER
-// When we are running under AddressSanitizer with detect_stack_use_after_return=1
-// then stack marker obtained from SafePointScope will point into a fake stack.
-// Detect this case by checking if it falls in between current stack frame
-// and stack start and use an arbitrary high enough value for it.
-// Don't adjust stack marker in any other case to match behavior of code running
-// without AddressSanitizer.
+// When we are running under AddressSanitizer with
+// detect_stack_use_after_return=1 then stack marker obtained from
+// SafePointScope will point into a fake stack.  Detect this case by checking if
+// it falls in between current stack frame and stack start and use an arbitrary
+// high enough value for it.  Don't adjust stack marker in any other case to
+// match behavior of code running without AddressSanitizer.
 NO_SANITIZE_ADDRESS static void* adjustScopeMarkerForAdressSanitizer(
     void* scopeMarker) {
   Address start = reinterpret_cast<Address>(StackFrameDepth::getStackStart());

@@ -18,8 +18,8 @@ namespace blink {
 
 static const char* s_avoidOptimization = nullptr;
 
-// NEVER_INLINE ensures that |dummy| array on configureLimit() is not optimized away,
-// and the stack frame base register is adjusted |kSafeStackFrameSize|.
+// NEVER_INLINE ensures that |dummy| array on configureLimit() is not optimized
+// away, and the stack frame base register is adjusted |kSafeStackFrameSize|.
 NEVER_INLINE static uintptr_t currentStackFrameBaseOnCallee(const char* dummy) {
   s_avoidOptimization = dummy;
   return StackFrameDepth::currentStackFrame();
@@ -52,7 +52,8 @@ void StackFrameDepth::enableStackLimit() {
   RELEASE_ASSERT(stackBase > reinterpret_cast<Address>(stackRoom));
   m_stackFrameLimit = reinterpret_cast<uintptr_t>(stackBase - stackRoom);
 
-  // If current stack use is already exceeding estimated limit, mark as disabled.
+  // If current stack use is already exceeding estimated limit, mark as
+  // disabled.
   if (!isSafeToRecurse())
     disableStackLimit();
 }
@@ -93,17 +94,21 @@ size_t StackFrameDepth::getUnderestimatedStackSize() {
 #endif
 
   // Return a 512k stack size, (conservatively) assuming the following:
-  //  - that size is much lower than the pthreads default (x86 pthreads has a 2M default.)
+  //  - that size is much lower than the pthreads default (x86 pthreads has a 2M
+  //    default.)
   //  - no one is running Blink with an RLIMIT_STACK override, let alone as
   //    low as 512k.
   //
   return 512 * 1024;
 #elif OS(MACOSX)
   // pthread_get_stacksize_np() returns too low a value for the main thread on
-  // OSX 10.9, http://mail.openjdk.java.net/pipermail/hotspot-dev/2013-October/011369.html
+  // OSX 10.9,
+  // http://mail.openjdk.java.net/pipermail/hotspot-dev/2013-October/011369.html
   //
-  // Multiple workarounds possible, adopt the one made by https://github.com/robovm/robovm/issues/274
-  // (cf. https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/Multithreading/CreatingThreads/CreatingThreads.html
+  // Multiple workarounds possible, adopt the one made by
+  // https://github.com/robovm/robovm/issues/274
+  // (cf.
+  // https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/Multithreading/CreatingThreads/CreatingThreads.html
   // on why hardcoding sizes is reasonable.)
   if (pthread_main_np()) {
 #if defined(IOS)
@@ -111,10 +116,12 @@ size_t StackFrameDepth::getUnderestimatedStackSize() {
     pthread_attr_init(&attr);
     size_t guardSize = 0;
     pthread_attr_getguardsize(&attr, &guardSize);
-    // Stack size for the main thread is 1MB on iOS including the guard page size.
+    // Stack size for the main thread is 1MB on iOS including the guard page
+    // size.
     return (1 * 1024 * 1024 - guardSize);
 #else
-    // Stack size for the main thread is 8MB on OSX excluding the guard page size.
+    // Stack size for the main thread is 8MB on OSX excluding the guard page
+    // size.
     return (8 * 1024 * 1024);
 #endif
   }

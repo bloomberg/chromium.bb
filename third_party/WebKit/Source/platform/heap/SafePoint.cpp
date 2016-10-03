@@ -50,9 +50,9 @@ bool SafePointBarrier::parkOthers() {
   while (acquireLoad(&m_unparkedThreadCount) > 0) {
     double expirationTime = currentTime() + lockingTimeout();
     if (!m_parked.timedWait(m_mutex, expirationTime)) {
-      // One of the other threads did not return to a safepoint within the maximum
-      // time we allow for threads to be parked. Abandon the GC and resume the
-      // currently parked threads.
+      // One of the other threads did not return to a safepoint within the
+      // maximum time we allow for threads to be parked. Abandon the GC and
+      // resume the currently parked threads.
       resumeOthers(true);
       return false;
     }

@@ -34,8 +34,8 @@ class SafePointScope final {
 };
 
 // The SafePointAwareMutexLocker is used to enter a safepoint while waiting for
-// a mutex lock. It also ensures that the lock is not held while waiting for a GC
-// to complete in the leaveSafePoint method, by releasing the lock if the
+// a mutex lock. It also ensures that the lock is not held while waiting for a
+// GC to complete in the leaveSafePoint method, by releasing the lock if the
 // leaveSafePoint method cannot complete without blocking, see
 // SafePointBarrier::checkAndPark.
 class SafePointAwareMutexLocker final {

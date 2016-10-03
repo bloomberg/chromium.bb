@@ -470,8 +470,8 @@ struct TraceInCollectionTrait<NoWeakHandlingInCollections,
                   "cleared as unused with memset.");
 
     // This trace method is instantiated for vectors where
-    // IsTraceableInCollectionTrait<Traits>::value is false, but the trace method
-    // should not be called. Thus we cannot static-assert
+    // IsTraceableInCollectionTrait<Traits>::value is false, but the trace
+    // method should not be called. Thus we cannot static-assert
     // IsTraceableInCollectionTrait<Traits>::value but should runtime-assert it.
     DCHECK(IsTraceableInCollectionTrait<Traits>::value);
 

@@ -135,21 +135,22 @@ bool CrossThreadPersistentRegion::shouldTracePersistentNode(
 
 void CrossThreadPersistentRegion::prepareForThreadStateTermination(
     ThreadState* threadState) {
-  // For heaps belonging to a thread that's detaching, any cross-thread persistents
-  // pointing into them needs to be disabled. Do that by clearing out the underlying
-  // heap reference.
+  // For heaps belonging to a thread that's detaching, any cross-thread
+  // persistents pointing into them needs to be disabled. Do that by clearing
+  // out the underlying heap reference.
   MutexLocker lock(m_mutex);
 
-  // TODO(sof): consider ways of reducing overhead. (e.g., tracking number of active
-  // CrossThreadPersistent<>s pointing into the heaps of each ThreadState and use that
-  // count to bail out early.)
+  // TODO(sof): consider ways of reducing overhead. (e.g., tracking number of
+  // active CrossThreadPersistent<>s pointing into the heaps of each ThreadState
+  // and use that count to bail out early.)
   PersistentNodeSlots* slots = m_persistentRegion->m_slots;
   while (slots) {
     for (int i = 0; i < PersistentNodeSlots::slotCount; ++i) {
       if (slots->m_slot[i].isUnused())
         continue;
 
-      // 'self' is in use, containing the cross-thread persistent wrapper object.
+      // 'self' is in use, containing the cross-thread persistent wrapper
+      // object.
       CrossThreadPersistent<DummyGCBase>* persistent =
           reinterpret_cast<CrossThreadPersistent<DummyGCBase>*>(
               slots->m_slot[i].self());
