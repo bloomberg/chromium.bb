@@ -9,10 +9,6 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-// Due to a header conflict between math.h and intrinsics includes with ceil()
-// in certain configurations under vs9 this include needs to precede
-// immintrin.h.
-
 #include <immintrin.h>
 
 #include "./aom_dsp_rtcd.h"
