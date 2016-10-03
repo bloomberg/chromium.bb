@@ -4,9 +4,6 @@
   "process-group": "browser",
   "display_name": "Media Service",
   "capabilities": {
-    "provided": {
-      "all_interfaces": [ "*" ]
-    },
     "required": {
       "*": { "classes": [ "app" ] }
     }

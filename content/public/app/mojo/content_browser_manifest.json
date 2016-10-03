@@ -33,8 +33,6 @@
     "required": {
       "*": { "classes": [ "app" ] },
 
-      // We allow the browser to connect to any interfaces exposed by its child
-      // processes in the "browser" class.
       "exe:content_gpu": { "classes": [ "browser" ] },
       "exe:content_plugin": { "classes": [ "browser" ] },
       "exe:content_renderer": { "classes": [ "browser" ] },
@@ -53,7 +51,7 @@
           "user_service::UserService"
         ]
       },
-      "mojo:media": { "classes": [ "all_interfaces" ] }
+      "mojo:media": { "interfaces": [ "media::mojom::MediaService" ] }
     }
   }
 }
