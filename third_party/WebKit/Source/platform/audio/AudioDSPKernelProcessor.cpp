@@ -33,7 +33,8 @@
 
 namespace blink {
 
-// setNumberOfChannels() may later be called if the object is not yet in an "initialized" state.
+// setNumberOfChannels() may later be called if the object is not yet in an
+// "initialized" state.
 AudioDSPKernelProcessor::AudioDSPKernelProcessor(float sampleRate,
                                                  unsigned numberOfChannels)
     : AudioProcessor(sampleRate, numberOfChannels), m_hasJustReset(true) {}
@@ -102,7 +103,8 @@ void AudioDSPKernelProcessor::reset() {
     return;
 
   // Forces snap to parameter values - first time.
-  // Any processing depending on this value must set it to false at the appropriate time.
+  // Any processing depending on this value must set it to false at the
+  // appropriate time.
   m_hasJustReset = true;
 
   MutexLocker locker(m_processLock);
@@ -126,8 +128,8 @@ double AudioDSPKernelProcessor::tailTime() const {
     // It is expected that all the kernels have the same tailTime.
     return !m_kernels.isEmpty() ? m_kernels.first()->tailTime() : 0;
   }
-  // Since we don't want to block the Audio Device thread, we return a large value
-  // instead of trying to acquire the lock.
+  // Since we don't want to block the Audio Device thread, we return a large
+  // value instead of trying to acquire the lock.
   return std::numeric_limits<double>::infinity();
 }
 
@@ -138,8 +140,8 @@ double AudioDSPKernelProcessor::latencyTime() const {
     // It is expected that all the kernels have the same latencyTime.
     return !m_kernels.isEmpty() ? m_kernels.first()->latencyTime() : 0;
   }
-  // Since we don't want to block the Audio Device thread, we return a large value
-  // instead of trying to acquire the lock.
+  // Since we don't want to block the Audio Device thread, we return a large
+  // value instead of trying to acquire the lock.
   return std::numeric_limits<double>::infinity();
 }
 

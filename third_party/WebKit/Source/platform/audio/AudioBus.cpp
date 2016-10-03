@@ -74,8 +74,8 @@ void AudioBus::setChannelMemory(unsigned channelIndex,
                                 size_t length) {
   if (channelIndex < m_channels.size()) {
     channel(channelIndex)->set(storage, length);
-    m_length =
-        length;  // FIXME: verify that this length matches all the other channel lengths
+    // FIXME: verify that this length matches all the other channel lengths
+    m_length = length;
   }
 }
 
@@ -495,8 +495,9 @@ void AudioBus::copyWithGainFrom(const AudioBus& sourceBus,
     destinations[i] = channel(i)->mutableData();
   }
 
-  // We don't want to suddenly change the gain from mixing one time slice to the next,
-  // so we "de-zipper" by slowly changing the gain each sample-frame until we've achieved the target gain.
+  // We don't want to suddenly change the gain from mixing one time slice to
+  // the next, so we "de-zipper" by slowly changing the gain each sample-frame
+  // until we've achieved the target gain.
 
   // Take master bus gain into account as well as the targetGain.
   float totalDesiredGain = static_cast<float>(m_busGain * targetGain);
@@ -514,8 +515,10 @@ void AudioBus::copyWithGainFrom(const AudioBus& sourceBus,
   const float epsilon = 0.001f;
   float gainDiff = fabs(totalDesiredGain - gain);
 
-  // Number of frames to de-zipper before we are close enough to the target gain.
-  // FIXME: framesToDezipper could be smaller when target gain is close enough within this process loop.
+  // Number of frames to de-zipper before we are close enough to the target
+  // gain.
+  // FIXME: framesToDezipper could be smaller when target gain is close enough
+  // within this process loop.
   unsigned framesToDezipper = (gainDiff < epsilon) ? 0 : framesToProcess;
 
   if (framesToDezipper) {
@@ -527,8 +530,9 @@ void AudioBus::copyWithGainFrom(const AudioBus& sourceBus,
     for (unsigned i = 0; i < framesToDezipper; ++i) {
       gain += (totalDesiredGain - gain) * DezipperRate;
 
-      // FIXME: If we are clever enough in calculating the framesToDezipper value, we can probably get
-      // rid of this DenormalDisabler::flushDenormalFloatToZero() call.
+      // FIXME: If we are clever enough in calculating the framesToDezipper
+      // value, we can probably get rid of this
+      // DenormalDisabler::flushDenormalFloatToZero() call.
       gain = DenormalDisabler::flushDenormalFloatToZero(gain);
       *gainValues++ = gain;
     }

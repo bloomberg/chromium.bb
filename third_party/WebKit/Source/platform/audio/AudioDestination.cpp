@@ -74,8 +74,9 @@ AudioDestination::AudioDestination(AudioIOCallback& callback,
   // Histogram for audioHardwareBufferSize
   DEFINE_STATIC_LOCAL(SparseHistogram, hardwareBufferSizeHistogram,
                       ("WebAudio.AudioDestination.HardwareBufferSize"));
-  // Histogram for the actual callback size used.  Typically, this is the same as
-  // audioHardwareBufferSize, but can be adjusted depending on some heuristics below.
+  // Histogram for the actual callback size used.  Typically, this is the same
+  // as audioHardwareBufferSize, but can be adjusted depending on some
+  // heuristics below.
   DEFINE_STATIC_LOCAL(SparseHistogram, callbackBufferSizeHistogram,
                       ("WebAudio.AudioDestination.CallbackBufferSize"));
 
@@ -85,14 +86,15 @@ AudioDestination::AudioDestination(AudioIOCallback& callback,
   m_callbackBufferSize = recommendedHardwareBufferSize;
 
 #if OS(ANDROID)
-  // The optimum low-latency hardware buffer size is usually too small on Android for WebAudio to
-  // render without glitching. So, if it is small, use a larger size. If it was already large, use
-  // the requested size.
+  // The optimum low-latency hardware buffer size is usually too small on
+  // Android for WebAudio to render without glitching. So, if it is small, use
+  // a larger size. If it was already large, use the requested size.
   //
-  // Since WebAudio renders in 128-frame blocks, the small buffer sizes (144 for a Galaxy Nexus),
-  // cause significant processing jitter. Sometimes multiple blocks will processed, but other
-  // times will not be since the FIFO can satisfy the request. By using a larger
-  // callbackBufferSize, we smooth out the jitter.
+  // Since WebAudio renders in 128-frame blocks, the small buffer sizes (144
+  // for a Galaxy Nexus), cause significant processing jitter. Sometimes
+  // multiple blocks will processed, but other times will not be since the FIFO
+  // can satisfy the request. By using a larger callbackBufferSize, we smooth
+  // out the jitter.
   const size_t kSmallBufferSize = 1024;
   const size_t kDefaultCallbackBufferSize = 2048;
 
@@ -125,8 +127,9 @@ AudioDestination::AudioDestination(AudioIOCallback& callback,
   // Input buffering.
   m_inputFifo = wrapUnique(new AudioFIFO(numberOfInputChannels, fifoSize));
 
-  // If the callback size does not match the render size, then we need to buffer some
-  // extra silence for the input. Otherwise, we can over-consume the input FIFO.
+  // If the callback size does not match the render size, then we need to
+  // buffer some extra silence for the input. Otherwise, we can over-consume
+  // the input FIFO.
   if (m_callbackBufferSize != renderBufferSize) {
     // FIXME: handle multi-channel input and don't hard-code to stereo.
     RefPtr<AudioBus> silence = AudioBus::create(2, renderBufferSize);

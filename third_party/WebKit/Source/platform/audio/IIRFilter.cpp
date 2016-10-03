@@ -9,8 +9,8 @@
 
 namespace blink {
 
-// The length of the memory buffers for the IIR filter.  This MUST be a power of two and must be
-// greater than the possible length of the filter coefficients.
+// The length of the memory buffers for the IIR filter.  This MUST be a power of
+// two and must be greater than the possible length of the filter coefficients.
 const int kBufferLength = 32;
 static_assert(kBufferLength >= IIRFilter::kMaxOrder + 1,
               "Internal IIR buffer length must be greater than maximum IIR "
@@ -34,7 +34,8 @@ void IIRFilter::reset() {
 static std::complex<double> evaluatePolynomial(const double* coef,
                                                std::complex<double> z,
                                                int order) {
-  // Use Horner's method to evaluate the polynomial P(z) = sum(coef[k]*z^k, k, 0, order);
+  // Use Horner's method to evaluate the polynomial P(z) = sum(coef[k]*z^k, k,
+  // 0, order);
   std::complex<double> result = 0;
 
   for (int k = order; k >= 0; --k)
@@ -50,19 +51,20 @@ void IIRFilter::process(const float* sourceP,
   //
   //   y[n] = sum(b[k] * x[n - k], k = 0, M) - sum(a[k] * y[n - k], k = 1, N)
   //
-  // where b[k] are the feedforward coefficients and a[k] are the feedback coefficients of the
-  // filter.
+  // where b[k] are the feedforward coefficients and a[k] are the feedback
+  // coefficients of the filter.
 
-  // This is a Direct Form I implementation of an IIR Filter.  Should we consider doing a
-  // different implementation such as Transposed Direct Form II?
+  // This is a Direct Form I implementation of an IIR Filter.  Should we
+  // consider doing a different implementation such as Transposed Direct Form
+  // II?
   const double* feedback = m_feedback->data();
   const double* feedforward = m_feedforward->data();
 
   ASSERT(feedback);
   ASSERT(feedforward);
 
-  // Sanity check to see if the feedback coefficients have been scaled appropriately. It must
-  // be EXACTLY 1!
+  // Sanity check to see if the feedback coefficients have been scaled
+  // appropriately. It must be EXACTLY 1!
   ASSERT(feedback[0] == 1);
 
   int feedbackLength = m_feedback->size();
@@ -73,8 +75,8 @@ void IIRFilter::process(const float* sourceP,
   double* yBuffer = m_yBuffer.data();
 
   for (size_t n = 0; n < framesToProcess; ++n) {
-    // To help minimize roundoff, we compute using double's, even though the filter coefficients
-    // only have single precision values.
+    // To help minimize roundoff, we compute using double's, even though the
+    // filter coefficients only have single precision values.
     double yn = feedforward[0] * sourceP[n];
 
     // Run both the feedforward and feedback terms together, when possible.
@@ -91,7 +93,8 @@ void IIRFilter::process(const float* sourceP,
     for (int k = minLength; k < feedbackLength; ++k)
       yn -= feedback[k] * yBuffer[(m_bufferIndex - k) & (kBufferLength - 1)];
 
-    // Save the current input and output values in the memory buffers for the next output.
+    // Save the current input and output values in the memory buffers for the
+    // next output.
     m_xBuffer[m_bufferIndex] = sourceP[n];
     m_yBuffer[m_bufferIndex] = yn;
 
@@ -105,17 +108,19 @@ void IIRFilter::getFrequencyResponse(int nFrequencies,
                                      const float* frequency,
                                      float* magResponse,
                                      float* phaseResponse) {
-  // Evaluate the z-transform of the filter at the given normalized frequencies from 0 to 1. (One
-  // corresponds to the Nyquist frequency.)
+  // Evaluate the z-transform of the filter at the given normalized frequencies
+  // from 0 to 1. (One corresponds to the Nyquist frequency.)
   //
   // The z-tranform of the filter is
   //
   // H(z) = sum(b[k]*z^(-k), k, 0, M) / sum(a[k]*z^(-k), k, 0, N);
   //
-  // The desired frequency response is H(exp(j*omega)), where omega is in [0, 1).
+  // The desired frequency response is H(exp(j*omega)), where omega is in [0,
+  // 1).
   //
-  // Let P(x) = sum(c[k]*x^k, k, 0, P) be a polynomial of order P.  Then each of the sums in H(z)
-  // is equivalent to evaluating a polynomial at the point 1/z.
+  // Let P(x) = sum(c[k]*x^k, k, 0, P) be a polynomial of order P.  Then each of
+  // the sums in H(z) is equivalent to evaluating a polynomial at the point
+  // 1/z.
 
   for (int k = 0; k < nFrequencies; ++k) {
     // zRecip = 1/z = exp(-j*frequency)

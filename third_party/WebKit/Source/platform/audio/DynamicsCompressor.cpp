@@ -91,8 +91,10 @@ float DynamicsCompressor::parameterValue(unsigned parameterID) {
 void DynamicsCompressor::process(const AudioBus* sourceBus,
                                  AudioBus* destinationBus,
                                  unsigned framesToProcess) {
-  // Though numberOfChannels is retrived from destinationBus, we still name it numberOfChannels instead of numberOfDestinationChannels.
-  // It's because we internally match sourceChannels's size to destinationBus by channel up/down mix. Thus we need numberOfChannels
+  // Though numberOfChannels is retrived from destinationBus, we still name it
+  // numberOfChannels instead of numberOfDestinationChannels.  It's because we
+  // internally match sourceChannels's size to destinationBus by channel
+  // up/down mix. Thus we need numberOfChannels
   // to do the loop work for both m_sourceChannels and m_destinationChannels.
 
   unsigned numberOfChannels = destinationBus->numberOfChannels();
@@ -112,7 +114,8 @@ void DynamicsCompressor::process(const AudioBus* sourceBus,
       if (numberOfSourceChannels > 1)
         m_sourceChannels[1] = sourceBus->channel(1)->data();
       else
-        // Simply duplicate mono channel input data to right channel for stereo processing.
+        // Simply duplicate mono channel input data to right channel for stereo
+        // processing.
         m_sourceChannels[1] = m_sourceChannels[0];
 
       break;
@@ -144,7 +147,8 @@ void DynamicsCompressor::process(const AudioBus* sourceBus,
   float releaseTime = parameterValue(ParamRelease);
   float preDelayTime = parameterValue(ParamPreDelay);
 
-  // This is effectively a master volume on the compressed signal (pre-blending).
+  // This is effectively a master volume on the compressed signal
+  // (pre-blending).
   float dbPostGain = parameterValue(ParamPostGain);
 
   // Linear blending value from dry to completely processed (0 -> 1)

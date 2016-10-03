@@ -57,7 +57,8 @@ std::unique_ptr<FFTFrame> FFTFrame::createInterpolatedFrame(
 
   newFrame->interpolateFrequencyComponents(frame1, frame2, x);
 
-  // In the time-domain, the 2nd half of the response must be zero, to avoid circular convolution aliasing...
+  // In the time-domain, the 2nd half of the response must be zero, to avoid
+  // circular convolution aliasing...
   int fftSize = newFrame->fftSize();
   AudioFloatArray buffer(fftSize);
   newFrame->doInverseFFT(buffer.data());
@@ -204,7 +205,8 @@ double FFTFrame::extractAverageGroupDelay() {
     weightSum += mag;
   }
 
-  // Note how we invert the phase delta wrt frequency since this is how group delay is defined
+  // Note how we invert the phase delta wrt frequency since this is how group
+  // delay is defined
   double ave = aveSum / weightSum;
   double aveSampleDelay = -ave / samplePhaseDelay;
 

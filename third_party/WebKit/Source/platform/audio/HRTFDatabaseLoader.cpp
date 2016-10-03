@@ -39,8 +39,8 @@ namespace blink {
 
 using LoaderMap = HashMap<double, HRTFDatabaseLoader*>;
 
-// getLoaderMap() returns the static hash map that contains the mapping between the
-// sample rate and the corresponding HRTF database.
+// getLoaderMap() returns the static hash map that contains the mapping between
+// the sample rate and the corresponding HRTF database.
 static LoaderMap& getLoaderMap() {
   DEFINE_STATIC_LOCAL(LoaderMap*, map, (new LoaderMap));
   return *map;

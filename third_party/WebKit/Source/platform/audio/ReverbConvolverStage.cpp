@@ -69,10 +69,12 @@ ReverbConvolverStage::ReverbConvolverStage(
   }
   m_temporaryBuffer.allocate(renderSliceSize);
 
-  // The convolution stage at offset stageOffset needs to have a corresponding delay to cancel out the offset.
+  // The convolution stage at offset stageOffset needs to have a corresponding
+  // delay to cancel out the offset.
   size_t totalDelay = stageOffset + reverbTotalLatency;
 
-  // But, the FFT convolution itself incurs fftSize / 2 latency, so subtract this out...
+  // But, the FFT convolution itself incurs fftSize / 2 latency, so subtract
+  // this out...
   size_t halfSize = fftSize / 2;
   if (!m_directMode) {
     ASSERT(totalDelay >= halfSize);
@@ -80,8 +82,10 @@ ReverbConvolverStage::ReverbConvolverStage(
       totalDelay -= halfSize;
   }
 
-  // We divide up the total delay, into pre and post delay sections so that we can schedule at exactly the moment when the FFT will happen.
-  // This is coordinated with the other stages, so they don't all do their FFTs at the same time...
+  // We divide up the total delay, into pre and post delay sections so that we
+  // can schedule at exactly the moment when the FFT will happen.  This is
+  // coordinated with the other stages, so they don't all do their FFTs at the
+  // same time...
   int maxPreDelayLength = std::min(halfSize, totalDelay);
   m_preDelayLength = totalDelay > 0 ? renderPhase % maxPreDelayLength : 0;
   if (m_preDelayLength > totalDelay)
@@ -119,7 +123,8 @@ void ReverbConvolverStage::process(const float* source,
   float* temporaryBuffer;
   bool isTemporaryBufferSafe = false;
   if (m_preDelayLength > 0) {
-    // Handles both the read case (call to process() ) and the write case (memcpy() )
+    // Handles both the read case (call to process() ) and the write case
+    // (memcpy() )
     bool isPreDelaySafe =
         m_preReadWriteIndex + framesToProcess <= m_preDelayBuffer.size();
     ASSERT(isPreDelaySafe);
@@ -145,8 +150,9 @@ void ReverbConvolverStage::process(const float* source,
     return;
 
   if (m_framesProcessed < m_preDelayLength) {
-    // For the first m_preDelayLength frames don't process the convolver, instead simply buffer in the pre-delay.
-    // But while buffering the pre-delay, we still need to update our index.
+    // For the first m_preDelayLength frames don't process the convolver,
+    // instead simply buffer in the pre-delay.  But while buffering the
+    // pre-delay, we still need to update our index.
     m_accumulationBuffer->updateReadIndex(&m_accumulationReadIndex,
                                           framesToProcess);
   } else {

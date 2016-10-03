@@ -39,21 +39,23 @@ class AudioFIFO {
   WTF_MAKE_NONCOPYABLE(AudioFIFO);
 
  public:
-  // Create a FIFO large enough to hold |fifoLength| frames of data of |numberOfChannels| channels.
+  // Create a FIFO large enough to hold |fifoLength| frames of data of
+  // |numberOfChannels| channels.
   AudioFIFO(unsigned numberOfChannels, size_t fifoLength);
 
   // Push the data from the bus into the FIFO.
   void push(const AudioBus*);
 
-  // Consume |framesToConsume| frames of data from the FIFO and put them in |destination|. The
-  // corresponding frames are removed from the FIFO.
+  // Consume |framesToConsume| frames of data from the FIFO and put them in
+  // |destination|. The corresponding frames are removed from the FIFO.
   void consume(AudioBus* destination, size_t framesToConsume);
 
   // Number of frames of data that are currently in the FIFO.
   size_t framesInFifo() const { return m_framesInFifo; }
 
  private:
-  // Update the FIFO index by the step, with appropriate wrapping around the endpoint.
+  // Update the FIFO index by the step, with appropriate wrapping around the
+  // endpoint.
   int updateIndex(int index, int step) { return (index + step) % m_fifoLength; }
 
   void findWrapLengths(size_t index,

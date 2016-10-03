@@ -36,7 +36,8 @@
 
 namespace blink {
 
-// AudioDSPKernel does the processing for one channel of an AudioDSPKernelProcessor.
+// AudioDSPKernel does the processing for one channel of an
+// AudioDSPKernelProcessor.
 
 class PLATFORM_EXPORT AudioDSPKernel {
   USING_FAST_MALLOC(AudioDSPKernel);
@@ -51,7 +52,8 @@ class PLATFORM_EXPORT AudioDSPKernel {
 
   virtual ~AudioDSPKernel();
 
-  // Subclasses must override process() to do the processing and reset() to reset DSP state.
+  // Subclasses must override process() to do the processing and reset() to
+  // reset DSP state.
   virtual void process(const float* source,
                        float* destination,
                        size_t framesToProcess) = 0;

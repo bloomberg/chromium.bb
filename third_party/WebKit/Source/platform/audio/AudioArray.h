@@ -51,11 +51,13 @@ class AudioArray {
 
   ~AudioArray() { WTF::Partitions::fastFree(m_allocation); }
 
-  // It's OK to call allocate() multiple times, but data will *not* be copied from an initial allocation
-  // if re-allocated. Allocations are zero-initialized.
+  // It's OK to call allocate() multiple times, but data will *not* be copied
+  // from an initial allocation if re-allocated. Allocations are
+  // zero-initialized.
   void allocate(size_t n) {
-    // Although n is a size_t, its true limit is max unsigned because we use unsigned in zeroRange()
-    // and copyToRange(). Also check for integer overflow.
+    // Although n is a size_t, its true limit is max unsigned because we use
+    // unsigned in zeroRange() and copyToRange(). Also check for integer
+    // overflow.
     RELEASE_ASSERT(n <= std::numeric_limits<unsigned>::max() / sizeof(T));
 
     unsigned initialSize = sizeof(T) * n;
@@ -93,8 +95,8 @@ class AudioArray {
         isAllocationGood = true;
         zero();
       } else {
-        extraAllocationBytes =
-            alignment;  // always allocate extra after the first alignment failure.
+        // always allocate extra after the first alignment failure.
+        extraAllocationBytes = alignment;
         WTF::Partitions::fastFree(allocation);
       }
     }

@@ -42,11 +42,13 @@ namespace blink {
 
 using namespace VectorMath;
 
-// Empirical gain calibration tested across many impulse responses to ensure perceived volume is same as dry (unprocessed) signal
+// Empirical gain calibration tested across many impulse responses to ensure
+// perceived volume is same as dry (unprocessed) signal
 const float GainCalibration = -58;
 const float GainCalibrationSampleRate = 44100;
 
-// A minimum power value to when normalizing a silent (or very quiet) impulse response
+// A minimum power value to when normalizing a silent (or very quiet) impulse
+// response
 const float MinPower = 0.000125f;
 
 static float calculateNormalizationScale(AudioBus* response) {
@@ -103,7 +105,8 @@ Reverb::Reverb(AudioBus* impulseResponse,
   initialize(impulseResponse, renderSliceSize, maxFFTSize, numberOfChannels,
              useBackgroundThreads);
 
-  // Undo scaling since this shouldn't be a destructive operation on impulseResponse.
+  // Undo scaling since this shouldn't be a destructive operation on
+  // impulseResponse.
   // FIXME: What about roundoff? Perhaps consider making a temporary scaled copy
   // instead of scaling and unscaling in place.
   if (normalize && scale)
@@ -117,7 +120,8 @@ void Reverb::initialize(AudioBus* impulseResponseBuffer,
                         bool useBackgroundThreads) {
   m_impulseResponseLength = impulseResponseBuffer->length();
 
-  // The reverb can handle a mono impulse response and still do stereo processing
+  // The reverb can handle a mono impulse response and still do stereo
+  // processing
   size_t numResponseChannels = impulseResponseBuffer->numberOfChannels();
   m_convolvers.reserveCapacity(numberOfChannels);
 
@@ -133,8 +137,9 @@ void Reverb::initialize(AudioBus* impulseResponseBuffer,
     convolverRenderPhase += renderSliceSize;
   }
 
-  // For "True" stereo processing we allocate a temporary buffer to avoid repeatedly allocating it in the process() method.
-  // It can be bad to allocate memory in a real-time thread.
+  // For "True" stereo processing we allocate a temporary buffer to avoid
+  // repeatedly allocating it in the process() method.  It can be bad to
+  // allocate memory in a real-time thread.
   if (numResponseChannels == 4)
     m_tempBuffer = AudioBus::create(2, MaxFrameSize);
 }
@@ -143,7 +148,8 @@ void Reverb::process(const AudioBus* sourceBus,
                      AudioBus* destinationBus,
                      size_t framesToProcess) {
   // Do a fairly comprehensive sanity check.
-  // If these conditions are satisfied, all of the source and destination pointers will be valid for the various matrixing cases.
+  // If these conditions are satisfied, all of the source and destination
+  // pointers will be valid for the various matrixing cases.
   bool isSafeToProcess = sourceBus && destinationBus &&
                          sourceBus->numberOfChannels() > 0 &&
                          destinationBus->numberOfChannels() > 0 &&
@@ -231,7 +237,8 @@ void Reverb::process(const AudioBus* sourceBus,
   } else if (numInputChannels == 1 && numReverbChannels == 4 &&
              numOutputChannels == 2) {
     // 1 -> 4 -> 2 (Processing mono with "True" stereo impulse response)
-    // This is an inefficient use of a four-channel impulse response, but we should handle the case.
+    // This is an inefficient use of a four-channel impulse response, but we
+    // should handle the case.
     AudioChannel* destinationChannelR = destinationBus->channel(1);
 
     AudioChannel* tempChannelL = m_tempBuffer->channel(0);

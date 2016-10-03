@@ -72,7 +72,8 @@ class PLATFORM_EXPORT DownSampler {
 
   AudioFloatArray m_tempBuffer;
 
-  // Used as delay-line (FIR filter history) for the input samples to account for the 0.5 term right in the middle of the kernel.
+  // Used as delay-line (FIR filter history) for the input samples to account
+  // for the 0.5 term right in the middle of the kernel.
   AudioFloatArray m_inputBuffer;
 };
 

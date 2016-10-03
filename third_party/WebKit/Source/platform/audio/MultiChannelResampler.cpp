@@ -34,8 +34,8 @@ namespace blink {
 
 namespace {
 
-// ChannelProvider provides a single channel of audio data (one channel at a time) for each channel
-// of data provided to us in a multi-channel provider.
+// ChannelProvider provides a single channel of audio data (one channel at a
+// time) for each channel of data provided to us in a multi-channel provider.
 
 class ChannelProvider final : public AudioSourceProvider {
  public:
@@ -46,16 +46,18 @@ class ChannelProvider final : public AudioSourceProvider {
         m_currentChannel(0),
         m_framesToProcess(0) {}
 
-  // provideInput() will be called once for each channel, starting with the first channel.
-  // Each time it's called, it will provide the next channel of data.
+  // provideInput() will be called once for each channel, starting with the
+  // first channel.  Each time it's called, it will provide the next channel of
+  // data.
   void provideInput(AudioBus* bus, size_t framesToProcess) override {
     bool isBusGood = bus && bus->numberOfChannels() == 1;
     ASSERT(isBusGood);
     if (!isBusGood)
       return;
 
-    // Get the data from the multi-channel provider when the first channel asks for it.
-    // For subsequent channels, we can just dish out the channel data from that (stored in m_multiChannelBus).
+    // Get the data from the multi-channel provider when the first channel asks
+    // for it.  For subsequent channels, we can just dish out the channel data
+    // from that (stored in m_multiChannelBus).
     if (!m_currentChannel) {
       m_framesToProcess = framesToProcess;
       m_multiChannelBus = AudioBus::create(m_numberOfChannels, framesToProcess);
@@ -63,7 +65,8 @@ class ChannelProvider final : public AudioSourceProvider {
                                            framesToProcess);
     }
 
-    // All channels must ask for the same amount. This should always be the case, but let's just make sure.
+    // All channels must ask for the same amount. This should always be the
+    // case, but let's just make sure.
     bool isGood =
         m_multiChannelBus.get() && framesToProcess == m_framesToProcess;
     ASSERT(isGood);
@@ -85,8 +88,8 @@ class ChannelProvider final : public AudioSourceProvider {
   RefPtr<AudioBus> m_multiChannelBus;
   unsigned m_numberOfChannels;
   unsigned m_currentChannel;
-  size_t
-      m_framesToProcess;  // Used to verify that all channels ask for the same amount.
+  // Used to verify that all channels ask for the same amount.
+  size_t m_framesToProcess;
 };
 
 }  // namespace
@@ -103,17 +106,20 @@ MultiChannelResampler::MultiChannelResampler(double scaleFactor,
 void MultiChannelResampler::process(AudioSourceProvider* provider,
                                     AudioBus* destination,
                                     size_t framesToProcess) {
-  // The provider can provide us with multi-channel audio data. But each of our single-channel resamplers (kernels)
-  // below requires a provider which provides a single unique channel of data.
-  // channelProvider wraps the original multi-channel provider and dishes out one channel at a time.
+  // The provider can provide us with multi-channel audio data. But each of our
+  // single-channel resamplers (kernels) below requires a provider which
+  // provides a single unique channel of data.  channelProvider wraps the
+  // original multi-channel provider and dishes out one channel at a time.
   ChannelProvider channelProvider(provider, m_numberOfChannels);
 
   for (unsigned channelIndex = 0; channelIndex < m_numberOfChannels;
        ++channelIndex) {
-    // Depending on the sample-rate scale factor, and the internal buffering used in a SincResampler
-    // kernel, this call to process() will only sometimes call provideInput() on the channelProvider.
-    // However, if it calls provideInput() for the first channel, then it will call it for the remaining
-    // channels, since they all buffer in the same way and are processing the same number of frames.
+    // Depending on the sample-rate scale factor, and the internal buffering
+    // used in a SincResampler kernel, this call to process() will only
+    // sometimes call provideInput() on the channelProvider.  However, if it
+    // calls provideInput() for the first channel, then it will call it for the
+    // remaining channels, since they all buffer in the same way and are
+    // processing the same number of frames.
     m_kernels[channelIndex]->process(
         &channelProvider, destination->channel(channelIndex)->mutableData(),
         framesToProcess);

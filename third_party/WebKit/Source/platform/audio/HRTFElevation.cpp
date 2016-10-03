@@ -50,15 +50,16 @@ const size_t TotalNumberOfResponses = 240;
 // Number of frames in an individual impulse response.
 const size_t ResponseFrameSize = 256;
 
-// Sample-rate of the spatialization impulse responses as stored in the resource file.
-// The impulse responses may be resampled to a different sample-rate (depending on the audio hardware) when they are loaded.
+// Sample-rate of the spatialization impulse responses as stored in the resource
+// file.  The impulse responses may be resampled to a different sample-rate
+// (depending on the audio hardware) when they are loaded.
 const float ResponseSampleRate = 44100;
 
 #if USE(CONCATENATED_IMPULSE_RESPONSES)
 
-// This table maps the index into the elevation table with the corresponding angle. See
-// https://bugs.webkit.org/show_bug.cgi?id=98294#c9 for the elevation angles and their order in the
-// concatenated response.
+// This table maps the index into the elevation table with the corresponding
+// angle. See https://bugs.webkit.org/show_bug.cgi?id=98294#c9 for the
+// elevation angles and their order in the concatenated response.
 const int ElevationIndexTableSize = 10;
 const int ElevationIndexTable[ElevationIndexTableSize] = {
     0, 15, 30, 45, 60, 75, 90, 315, 330, 345};
@@ -124,10 +125,12 @@ bool HRTFElevation::calculateKernelsForAzimuthElevation(
   if (!isElevationGood)
     return false;
 
-  // Construct the resource name from the subject name, azimuth, and elevation, for example:
+  // Construct the resource name from the subject name, azimuth, and elevation,
+  // for example:
   // "IRC_Composite_C_R0195_T015_P000"
-  // Note: the passed in subjectName is not a string passed in via JavaScript or the web.
-  // It's passed in as an internal ASCII identifier and is an implementation detail.
+  // Note: the passed in subjectName is not a string passed in via JavaScript or
+  // the web.  It's passed in as an internal ASCII identifier and is an
+  // implementation detail.
   int positiveElevation = elevation < 0 ? elevation + 360 : elevation;
 
 #if USE(CONCATENATED_IMPULSE_RESPONSES)
@@ -205,7 +208,8 @@ bool HRTFElevation::calculateKernelsForAzimuthElevation(
       impulseResponse->channelByType(AudioBus::ChannelRight);
 #endif
 
-  // Note that depending on the fftSize returned by the panner, we may be truncating the impulse response we just loaded in.
+  // Note that depending on the fftSize returned by the panner, we may be
+  // truncating the impulse response we just loaded in.
   const size_t fftSize = HRTFPanner::fftSizeForSampleRate(sampleRate);
   kernelL = HRTFKernel::create(leftEarImpulseResponse, fftSize, sampleRate);
   kernelR = HRTFKernel::create(rightEarImpulseResponse, fftSize, sampleRate);
@@ -213,7 +217,8 @@ bool HRTFElevation::calculateKernelsForAzimuthElevation(
   return true;
 }
 
-// The range of elevations for the IRCAM impulse responses varies depending on azimuth, but the minimum elevation appears to always be -45.
+// The range of elevations for the IRCAM impulse responses varies depending on
+// azimuth, but the minimum elevation appears to always be -45.
 //
 // Here's how it goes:
 static int maxElevations[] = {

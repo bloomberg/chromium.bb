@@ -10,16 +10,17 @@
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  *
- * THIS SOFTWARE IS PROVIDED BY APPLE INC. AND ITS CONTRIBUTORS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL APPLE INC. OR ITS CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
- * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY APPLE INC. AND ITS CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL APPLE INC. OR ITS CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+ * DAMAGE.
  */
 
 #ifndef HRTFPanner_h
@@ -62,8 +63,9 @@ class PLATFORM_EXPORT HRTFPanner final : public Panner {
   double latencyTime() const override;
 
  private:
-  // Given an azimuth angle in the range -180 -> +180, returns the corresponding azimuth index for the database,
-  // and azimuthBlend which is an interpolation value from 0 -> 1.
+  // Given an azimuth angle in the range -180 -> +180, returns the corresponding
+  // azimuth index for the database, and azimuthBlend which is an interpolation
+  // value from 0 -> 1.
   int calculateDesiredAzimuthIndexAndBlend(double azimuth,
                                            double& azimuthBlend);
 
@@ -71,17 +73,19 @@ class PLATFORM_EXPORT HRTFPanner final : public Panner {
 
   float m_sampleRate;
 
-  // We maintain two sets of convolvers for smooth cross-faded interpolations when
-  // then azimuth and elevation are dynamically changing.
-  // When the azimuth and elevation are not changing, we simply process with one of the two sets.
-  // Initially we use CrossfadeSelection1 corresponding to m_convolverL1 and m_convolverR1.
-  // Whenever the azimuth or elevation changes, a crossfade is initiated to transition
-  // to the new position. So if we're currently processing with CrossfadeSelection1, then
-  // we transition to CrossfadeSelection2 (and vice versa).
-  // If we're in the middle of a transition, then we wait until it is complete before
-  // initiating a new transition.
+  // We maintain two sets of convolvers for smooth cross-faded interpolations
+  // when then azimuth and elevation are dynamically changing.  When the
+  // azimuth and elevation are not changing, we simply process with one
+  // of the two sets.  Initially we use CrossfadeSelection1 corresponding to
+  // m_convolverL1 and m_convolverR1.  Whenever the azimuth or elevation
+  // changes, a crossfade is initiated to transition to the new position. So if
+  // we're currently processing with CrossfadeSelection1, then we transition to
+  // CrossfadeSelection2 (and vice versa).  If we're in the middle of a
+  // transition, then we wait until it is complete before initiating a new
+  // transition.
 
-  // Selects either the convolver set (m_convolverL1, m_convolverR1) or (m_convolverL2, m_convolverR2).
+  // Selects either the convolver set (m_convolverL1, m_convolverR1) or
+  // (m_convolverL2, m_convolverR2).
   enum CrossfadeSelection { CrossfadeSelection1, CrossfadeSelection2 };
 
   CrossfadeSelection m_crossfadeSelection;

@@ -48,7 +48,8 @@ void FFTConvolver::process(FFTFrame* fftKernel,
   size_t halfSize = fftSize() / 2;
 
   // framesToProcess must be an exact multiple of halfSize,
-  // or halfSize is a multiple of framesToProcess when halfSize > framesToProcess.
+  // or halfSize is a multiple of framesToProcess when halfSize >
+  // framesToProcess.
   bool isGood = !(halfSize % framesToProcess && framesToProcess % halfSize);
   ASSERT(isGood);
   if (!isGood)

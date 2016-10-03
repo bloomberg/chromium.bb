@@ -44,9 +44,11 @@ class PLATFORM_EXPORT FFTConvolver {
   // fftSize must be a power of two
   FFTConvolver(size_t fftSize);
 
-  // For now, with multiple calls to Process(), framesToProcess MUST add up EXACTLY to fftSize / 2
+  // For now, with multiple calls to Process(), framesToProcess MUST add up
+  // EXACTLY to fftSize / 2
   //
-  // FIXME: Later, we can do more sophisticated buffering to relax this requirement...
+  // FIXME: Later, we can do more sophisticated buffering to relax this
+  // requirement...
   //
   // The input to output latency is equal to fftSize / 2
   //
@@ -70,7 +72,8 @@ class PLATFORM_EXPORT FFTConvolver {
   // Stores output which we read a little at a time
   AudioFloatArray m_outputBuffer;
 
-  // Saves the 2nd half of the FFT buffer, so we can do an overlap-add with the 1st half of the next one
+  // Saves the 2nd half of the FFT buffer, so we can do an overlap-add with the
+  // 1st half of the next one
   AudioFloatArray m_lastOverlapBuffer;
 };
 

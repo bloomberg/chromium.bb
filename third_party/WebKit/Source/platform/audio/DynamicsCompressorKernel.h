@@ -110,7 +110,8 @@ class PLATFORM_EXPORT DynamicsCompressorKernel {
                                     float ratio);
 
   // Amount of input change in dB required for 1 dB of output change.
-  // This applies to the portion of the curve above m_kneeThresholdDb (see below).
+  // This applies to the portion of the curve above m_kneeThresholdDb (see
+  // below).
   float m_ratio;
   float m_slope;  // Inverse ratio.
 
@@ -118,10 +119,12 @@ class PLATFORM_EXPORT DynamicsCompressorKernel {
   float m_linearThreshold;
   float m_dbThreshold;
 
-  // m_dbKnee is the number of dB above the threshold before we enter the "ratio" portion of the curve.
+  // m_dbKnee is the number of dB above the threshold before we enter the
+  // "ratio" portion of the curve.
   // m_kneeThresholdDb = m_dbThreshold + m_dbKnee
-  // The portion between m_dbThreshold and m_kneeThresholdDb is the "soft knee" portion of the curve
-  // which transitions smoothly from the linear portion to the ratio portion.
+  // The portion between m_dbThreshold and m_kneeThresholdDb is the "soft knee"
+  // portion of the curve which transitions smoothly from the linear portion to
+  // the ratio portion.
   float m_dbKnee;
   float m_kneeThreshold;
   float m_kneeThresholdDb;

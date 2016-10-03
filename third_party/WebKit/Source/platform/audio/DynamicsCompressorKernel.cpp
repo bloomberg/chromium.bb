@@ -94,7 +94,8 @@ void DynamicsCompressorKernel::setPreDelayTime(float preDelayTime) {
 }
 
 // Exponential curve for the knee.
-// It is 1st derivative matched at m_linearThreshold and asymptotically approaches the value m_linearThreshold + 1 / k.
+// It is 1st derivative matched at m_linearThreshold and asymptotically
+// approaches the value m_linearThreshold + 1 / k.
 float DynamicsCompressorKernel::kneeCurve(float x, float k) {
   // Linear up to threshold.
   if (x < m_linearThreshold)
@@ -150,7 +151,8 @@ float DynamicsCompressorKernel::kAtSlope(float desiredSlope) {
   float k = 5;
 
   for (int i = 0; i < 15; ++i) {
-    // A high value for k will more quickly asymptotically approach a slope of 0.
+    // A high value for k will more quickly asymptotically approach a slope of
+    // 0.
     float slope = slopeAt(x, k);
 
     if (slope < desiredSlope) {
@@ -251,8 +253,9 @@ void DynamicsCompressorKernel::process(
   float y3 = releaseFrames * releaseZone3;
   float y4 = releaseFrames * releaseZone4;
 
-  // All of these coefficients were derived for 4th order polynomial curve fitting where the y values
-  // match the evenly spaced x values as follows: (y1 : x == 0, y2 : x == 1, y3 : x == 2, y4 : x == 3)
+  // All of these coefficients were derived for 4th order polynomial curve
+  // fitting where the y values match the evenly spaced x values as follows:
+  // (y1 : x == 0, y2 : x == 1, y3 : x == 2, y4 : x == 3)
   float a = 0.9999999999999998f * y1 + 1.8432219684323923e-16f * y2 -
             1.9373394351676423e-16f * y3 + 8.824516011816245e-18f * y4;
   float b = -1.5788320352845888f * y1 + 2.3305837032074286f * y2 -
@@ -267,7 +270,8 @@ void DynamicsCompressorKernel::process(
   // x ranges from 0 -> 3       0    1    2   3
   //                           -15  -10  -5   0db
 
-  // y calculates adaptive release frames depending on the amount of compression.
+  // y calculates adaptive release frames depending on the amount of
+  // compression.
 
   setPreDelayTime(preDelayTime);
 
@@ -296,13 +300,15 @@ void DynamicsCompressorKernel::process(
     // Deal with envelopes
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    // envelopeRate is the rate we slew from current compressor level to the desired level.
-    // The exact rate depends on if we're attacking or releasing and by how much.
+    // envelopeRate is the rate we slew from current compressor level to the
+    // desired level.  The exact rate depends on if we're attacking or
+    // releasing and by how much.
     float envelopeRate;
 
     bool isReleasing = scaledDesiredGain > m_compressorGain;
 
-    // compressionDiffDb is the difference between current compression level and the desired level.
+    // compressionDiffDb is the difference between current compression level and
+    // the desired level.
     float compressionDiffDb =
         linearToDecibels(m_compressorGain / scaledDesiredGain);
 
@@ -316,7 +322,8 @@ void DynamicsCompressorKernel::process(
       if (std::isinf(compressionDiffDb))
         compressionDiffDb = -1;
 
-      // Adaptive release - higher compression (lower compressionDiffDb)  releases faster.
+      // Adaptive release - higher compression (lower compressionDiffDb)
+      // releases faster.
 
       // Contain within range: -12 -> 0 then scale to go from 0 -> 3
       float x = compressionDiffDb;
@@ -324,7 +331,8 @@ void DynamicsCompressorKernel::process(
       x = 0.25f * (x + 12);
 
       // Compute adaptive release curve using 4th order polynomial.
-      // Normal values for the polynomial coefficients would create a monotonically increasing function.
+      // Normal values for the polynomial coefficients would create a
+      // monotonically increasing function.
       float x2 = x * x;
       float x3 = x2 * x;
       float x4 = x2 * x2;
@@ -369,7 +377,8 @@ void DynamicsCompressorKernel::process(
       while (loopFrames--) {
         float compressorInput = 0;
 
-        // Predelay signal, computing compression amount from un-delayed version.
+        // Predelay signal, computing compression amount from un-delayed
+        // version.
         for (unsigned i = 0; i < numberOfChannels; ++i) {
           float* delayBuffer = m_preDelayBuffers[i]->data();
           float undelayedSource = sourceChannels[i][frameIndex];
@@ -387,9 +396,10 @@ void DynamicsCompressorKernel::process(
         float absInput = scaledInput > 0 ? scaledInput : -scaledInput;
 
         // Put through shaping curve.
-        // This is linear up to the threshold, then enters a "knee" portion followed by the "ratio" portion.
-        // The transition from the threshold to the knee is smooth (1st derivative matched).
-        // The transition from the knee to the ratio portion is smooth (1st derivative matched).
+        // This is linear up to the threshold, then enters a "knee" portion
+        // followed by the "ratio" portion.  The transition from the threshold
+        // to the knee is smooth (1st derivative matched).  The transition from
+        // the knee to the ratio portion is smooth (1st derivative matched).
         float shapedInput = saturate(absInput, k);
 
         float attenuation = absInput <= 0.0001f ? 1 : shapedInput / absInput;
@@ -423,7 +433,8 @@ void DynamicsCompressorKernel::process(
           compressorGain = std::min(1.0f, compressorGain);
         }
 
-        // Warp pre-compression gain to smooth out sharp exponential transition points.
+        // Warp pre-compression gain to smooth out sharp exponential transition
+        // points.
         float postWarpCompressorGain = sinf(piOverTwoFloat * compressorGain);
 
         // Calculate total gain using master gain and effect blend.

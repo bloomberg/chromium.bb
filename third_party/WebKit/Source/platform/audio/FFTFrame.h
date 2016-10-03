@@ -46,17 +46,20 @@ struct RDFTContext;
 
 namespace blink {
 
-// Defines the interface for an "FFT frame", an object which is able to perform a forward
-// and reverse FFT, internally storing the resultant frequency-domain data.
+// Defines the interface for an "FFT frame", an object which is able to perform
+// a forward and reverse FFT, internally storing the resultant frequency-domain
+// data.
 
 class PLATFORM_EXPORT FFTFrame {
   USING_FAST_MALLOC(FFTFrame);
 
  public:
-  // The constructors, destructor, and methods up to the CROSS-PLATFORM section have platform-dependent implementations.
+  // The constructors, destructor, and methods up to the CROSS-PLATFORM section
+  // have platform-dependent implementations.
 
   FFTFrame(unsigned fftSize);
-  FFTFrame();  // creates a blank/empty frame for later use with createInterpolatedFrame()
+  // creates a blank/empty frame for later use with createInterpolatedFrame()
+  FFTFrame();
   FFTFrame(const FFTFrame& frame);
   ~FFTFrame();
 
@@ -79,12 +82,12 @@ class PLATFORM_EXPORT FFTFrame {
       const FFTFrame& frame1,
       const FFTFrame& frame2,
       double x);
-  void doPaddedFFT(const float* data,
-                   size_t dataSize);  // zero-padding with dataSize <= fftSize
+  // zero-padding with dataSize <= fftSize
+  void doPaddedFFT(const float* data, size_t dataSize);
   double extractAverageGroupDelay();
   void addConstantGroupDelay(double sampleFrameDelay);
-  void multiply(
-      const FFTFrame&);  // multiplies ourself with frame : effectively operator*=()
+  // multiplies ourself with frame : effectively operator*=()
+  void multiply(const FFTFrame&);
 
  private:
   void interpolateFrequencyComponents(const FFTFrame& frame1,

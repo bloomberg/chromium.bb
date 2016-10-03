@@ -137,7 +137,8 @@ void AudioFIFO::findWrapLengths(size_t index,
       part2Length = 0;
     }
   } else {
-    // Invalid values for index or size. Set the part lengths to zero so nothing is copied.
+    // Invalid values for index or size. Set the part lengths to zero so nothing
+    // is copied.
     part1Length = 0;
     part2Length = 0;
   }

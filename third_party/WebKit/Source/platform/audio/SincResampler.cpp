@@ -37,30 +37,32 @@
 
 // Input buffer layout, dividing the total buffer into regions (r0 - r5):
 //
-// |----------------|----------------------------------------------------------------|----------------|
+// |----------------|-----------------------------------------|----------------|
 //
-//                                              blockSize + kernelSize / 2
-//                   <-------------------------------------------------------------------------------->
-//                                                  r0
+//                                     blockSize + kernelSize / 2
+//                   <--------------------------------------------------------->
+//                                                r0
 //
-//   kernelSize / 2   kernelSize / 2                                 kernelSize / 2     kernelSize / 2
-// <---------------> <--------------->                              <---------------> <--------------->
-//         r1                r2                                             r3                r4
+//   kernelSize / 2   kernelSize / 2          kernelSize / 2     kernelSize / 2
+// <---------------> <--------------->       <---------------> <--------------->
+//         r1                r2                      r3               r4
 //
-//                                              blockSize
-//                                     <-------------------------------------------------------------->
-//                                                  r5
+//                                                     blockSize
+//                                    <---------------------------------------->
+//                                                         r5
 
 // The Algorithm:
 //
 // 1) Consume input frames into r0 (r1 is zero-initialized).
-// 2) Position kernel centered at start of r0 (r2) and generate output frames until kernel is centered at start of r4.
-//    or we've finished generating all the output frames.
+// 2) Position kernel centered at start of r0 (r2) and generate output frames
+//    until kernel is centered at start of r4, or we've finished generating
+//    all the output frames.
 // 3) Copy r3 to r1 and r4 to r2.
 // 4) Consume input frames into r5 (zero-pad if we run out of input).
 // 5) Goto (2) until all of input is consumed.
 //
-// note: we're glossing over how the sub-sample handling works with m_virtualSourceIndex, etc.
+// note: we're glossing over how the sub-sample handling works with
+// m_virtualSourceIndex, etc.
 
 namespace blink {
 
@@ -90,13 +92,16 @@ void SincResampler::initializeKernel() {
   double a1 = 0.5;
   double a2 = 0.5 * alpha;
 
-  // sincScaleFactor is basically the normalized cutoff frequency of the low-pass filter.
+  // sincScaleFactor is basically the normalized cutoff frequency of the
+  // low-pass filter.
   double sincScaleFactor = m_scaleFactor > 1.0 ? 1.0 / m_scaleFactor : 1.0;
 
-  // The sinc function is an idealized brick-wall filter, but since we're windowing it the
-  // transition from pass to stop does not happen right away. So we should adjust the
-  // lowpass filter cutoff slightly downward to avoid some aliasing at the very high-end.
-  // FIXME: this value is empirical and to be more exact should vary depending on m_kernelSize.
+  // The sinc function is an idealized brick-wall filter, but since we're
+  // windowing it the transition from pass to stop does not happen right away.
+  // So we should adjust the lowpass filter cutoff slightly downward to avoid
+  // some aliasing at the very high-end.
+  // FIXME: this value is empirical and to be more exact should vary depending
+  // on m_kernelSize.
   sincScaleFactor *= 0.9;
 
   int n = m_kernelSize;
@@ -230,7 +235,8 @@ void SincResampler::process(AudioSourceProvider* sourceProvider,
 
   while (numberOfDestinationFrames) {
     while (m_virtualSourceIndex < m_blockSize) {
-      // m_virtualSourceIndex lies in between two kernel offsets so figure out what they are.
+      // m_virtualSourceIndex lies in between two kernel offsets so figure out
+      // what they are.
       int sourceIndexI = static_cast<int>(m_virtualSourceIndex);
       double subsampleRemainder = m_virtualSourceIndex - sourceIndexI;
 
@@ -243,7 +249,8 @@ void SincResampler::process(AudioSourceProvider* sourceProvider,
       // Initialize input pointer based on quantized m_virtualSourceIndex.
       float* inputP = r1 + sourceIndexI;
 
-      // We'll compute "convolutions" for the two kernels which straddle m_virtualSourceIndex
+      // We'll compute "convolutions" for the two kernels which straddle
+      // m_virtualSourceIndex
       float sum1 = 0;
       float sum2 = 0;
 
@@ -264,7 +271,8 @@ void SincResampler::process(AudioSourceProvider* sourceProvider,
         float input;
 
 #if CPU(X86) || CPU(X86_64)
-        // If the sourceP address is not 16-byte aligned, the first several frames (at most three) should be processed seperately.
+        // If the sourceP address is not 16-byte aligned, the first several
+        // frames (at most three) should be processed seperately.
         while ((reinterpret_cast<uintptr_t>(inputP) & 0x0F) && n) {
           CONVOLVE_ONE_SAMPLE
           n--;
@@ -331,10 +339,12 @@ void SincResampler::process(AudioSourceProvider* sourceProvider,
           n--;
         }
 #else
-        // FIXME: add ARM NEON optimizations for the following. The scalar code-path can probably also be optimized better.
+        // FIXME: add ARM NEON optimizations for the following. The scalar
+        // code-path can probably also be optimized better.
 
         // Optimize size 32 and size 64 kernels by unrolling the while loop.
-        // A 20 - 30% speed improvement was measured in some cases by using this approach.
+        // A 20 - 30% speed improvement was measured in some cases by using this
+        // approach.
 
         if (n == 32) {
           CONVOLVE_ONE_SAMPLE      // 1

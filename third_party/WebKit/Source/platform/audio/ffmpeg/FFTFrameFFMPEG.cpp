@@ -43,7 +43,8 @@ extern "C" {
 namespace blink {
 
 #if ENABLE(ASSERT)
-// Max FFT size for FFMPEG.  WebAudio currently only uses FFTs up to size 15 (2^15 points).
+// Max FFT size for FFMPEG.  WebAudio currently only uses FFTs up to size 15
+// (2^15 points).
 const int kMaxFFTPow2Size = 16;
 #endif
 
@@ -112,8 +113,8 @@ void FFTFrame::doFFT(const float* data) {
   float* imag = m_imagData.data();
   for (int i = 0; i < len; ++i) {
     int baseComplexIndex = 2 * i;
-    // m_realData[0] is the DC component and m_imagData[0] is the nyquist component
-    // since the interleaved complex data is packed.
+    // m_realData[0] is the DC component and m_imagData[0] is the nyquist
+    // component since the interleaved complex data is packed.
     real[i] = p[baseComplexIndex];
     imag[i] = p[baseComplexIndex + 1];
   }
@@ -126,8 +127,9 @@ void FFTFrame::doInverseFFT(float* data) {
   // Compute inverse transform.
   av_rdft_calc(m_inverseContext, interleavedData);
 
-  // Scale so that a forward then inverse FFT yields exactly the original data. For some reason
-  // av_rdft_calc above returns values that are half of what I expect. Hence make the scale factor
+  // Scale so that a forward then inverse FFT yields exactly the original data.
+  // For some reason av_rdft_calc above returns values that are half of what I
+  // expect. Hence make the scale factor
   // twice as large to compensate for that.
   const float scale = 2.0 / m_FFTSize;
   VectorMath::vsmul(interleavedData, 1, &scale, data, 1, m_FFTSize);
@@ -149,9 +151,10 @@ float* FFTFrame::getUpToDateComplexData() {
 }
 
 RDFTContext* FFTFrame::contextForSize(unsigned fftSize, int trans) {
-  // FIXME: This is non-optimal. Ideally, we'd like to share the contexts for FFTFrames of the same size.
-  // But FFmpeg's RDFT uses a scratch buffer inside the context and so they are not thread-safe.
-  // We could improve this by sharing the FFTFrames on a per-thread basis.
+  // FIXME: This is non-optimal. Ideally, we'd like to share the contexts for
+  // FFTFrames of the same size.  But FFmpeg's RDFT uses a scratch buffer
+  // inside the context and so they are not thread-safe.  We could improve this
+  // by sharing the FFTFrames on a per-thread basis.
   ASSERT(fftSize);
   int pow2size = static_cast<int>(log2(fftSize));
   ASSERT(pow2size < kMaxFFTPow2Size);

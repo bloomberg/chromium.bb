@@ -44,12 +44,14 @@ class AudioDSPKernel;
 class AudioProcessor;
 
 // AudioDSPKernelProcessor processes one input -> one output (N channels each)
-// It uses one AudioDSPKernel object per channel to do the processing, thus there is no cross-channel processing.
-// Despite this limitation it turns out to be a very common and useful type of processor.
+// It uses one AudioDSPKernel object per channel to do the processing, thus
+// there is no cross-channel processing.  Despite this limitation it turns out
+// to be a very common and useful type of processor.
 
 class PLATFORM_EXPORT AudioDSPKernelProcessor : public AudioProcessor {
  public:
-  // numberOfChannels may be later changed if object is not yet in an "initialized" state
+  // numberOfChannels may be later changed if object is not yet in an
+  // "initialized" state
   AudioDSPKernelProcessor(float sampleRate, unsigned numberOfChannels);
 
   // Subclasses create the appropriate type of processing kernel here.

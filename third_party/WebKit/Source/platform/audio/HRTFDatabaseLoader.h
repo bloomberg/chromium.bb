@@ -40,12 +40,14 @@ namespace blink {
 
 class WaitableEvent;
 
-// HRTFDatabaseLoader will asynchronously load the default HRTFDatabase in a new thread.
+// HRTFDatabaseLoader will asynchronously load the default HRTFDatabase in a new
+// thread.
 class PLATFORM_EXPORT HRTFDatabaseLoader final
     : public RefCounted<HRTFDatabaseLoader> {
  public:
-  // Lazily creates a HRTFDatabaseLoader (if not already created) for the given sample-rate
-  // and starts loading asynchronously (when created the first time).
+  // Lazily creates a HRTFDatabaseLoader (if not already created) for the given
+  // sample-rate and starts loading asynchronously (when created the first
+  // time).
   // Returns the HRTFDatabaseLoader.
   // Must be called from the main thread.
   static PassRefPtr<HRTFDatabaseLoader> createAndLoadAsynchronouslyIfNecessary(
@@ -58,7 +60,8 @@ class PLATFORM_EXPORT HRTFDatabaseLoader final
   // must be called from the audio thread.
   bool isLoaded() { return database(); }
 
-  // waitForLoaderThreadCompletion() may be called more than once and is thread-safe.
+  // waitForLoaderThreadCompletion() may be called more than once and is
+  // thread-safe.
   void waitForLoaderThreadCompletion();
 
   // Returns the database or nullptr if the database doesn't yet exist.  Must
@@ -71,7 +74,8 @@ class PLATFORM_EXPORT HRTFDatabaseLoader final
   // Both constructor and destructor must be called from the main thread.
   explicit HRTFDatabaseLoader(float sampleRate);
 
-  // If it hasn't already been loaded, creates a new thread and initiates asynchronous loading of the default database.
+  // If it hasn't already been loaded, creates a new thread and initiates
+  // asynchronous loading of the default database.
   // This must be called from the main thread.
   void loadAsynchronously();
 
@@ -79,7 +83,8 @@ class PLATFORM_EXPORT HRTFDatabaseLoader final
   void loadTask();
   void cleanupTask(WaitableEvent*);
 
-  // Holding a m_lock is required when accessing m_hrtfDatabase since we access it from multiple threads.
+  // Holding a m_lock is required when accessing m_hrtfDatabase since we access
+  // it from multiple threads.
   Mutex m_lock;
   std::unique_ptr<HRTFDatabase> m_hrtfDatabase;
 

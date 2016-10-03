@@ -57,7 +57,8 @@ float* ReverbInputBuffer::directReadFrom(int* readIndex,
                        *readIndex + numberOfFrames <= bufferLength;
   ASSERT(isPointerGood);
   if (!isPointerGood) {
-    // Should never happen in practice but return pointer to start of buffer (avoid crash)
+    // Should never happen in practice but return pointer to start of buffer
+    // (avoid crash)
     if (readIndex)
       *readIndex = 0;
     return m_buffer.data();

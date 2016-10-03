@@ -87,8 +87,8 @@ class PLATFORM_EXPORT Biquad final {
                                  double a1,
                                  double a2);
 
-  // If true, the filter coefficients are (possibly) time-varying due to a timeline automation on
-  // at least one filter parameter.
+  // If true, the filter coefficients are (possibly) time-varying due to a
+  // timeline automation on at least one filter parameter.
   bool m_hasSampleAccurateValues;
 
   // Filter coefficients. The filter is defined as

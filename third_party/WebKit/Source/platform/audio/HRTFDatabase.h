@@ -48,9 +48,13 @@ class PLATFORM_EXPORT HRTFDatabase {
  public:
   static std::unique_ptr<HRTFDatabase> create(float sampleRate);
 
-  // getKernelsFromAzimuthElevation() returns a left and right ear kernel, and an interpolated left and right frame delay for the given azimuth and elevation.
+  // getKernelsFromAzimuthElevation() returns a left and right ear kernel, and
+  // an interpolated left and right frame delay for the given azimuth and
+  // elevation.
   // azimuthBlend must be in the range 0 -> 1.
-  // Valid values for azimuthIndex are 0 -> HRTFElevation::NumberOfTotalAzimuths - 1 (corresponding to angles of 0 -> 360).
+  // Valid values for azimuthIndex are
+  //     0 -> HRTFElevation::NumberOfTotalAzimuths - 1
+  //     (corresponding to angles of 0 -> 360).
   // Valid values for elevationAngle are MinElevation -> MaxElevation.
   void getKernelsFromAzimuthElevation(double azimuthBlend,
                                       unsigned azimuthIndex,
@@ -78,7 +82,8 @@ class PLATFORM_EXPORT HRTFDatabase {
   static const int MaxElevation;
   static const unsigned RawElevationAngleSpacing;
 
-  // Interpolates by this factor to get the total number of elevations from every elevation loaded from resource.
+  // Interpolates by this factor to get the total number of elevations from
+  // every elevation loaded from resource.
   static const unsigned InterpolationFactor;
 
   // Total number of elevations after interpolation.

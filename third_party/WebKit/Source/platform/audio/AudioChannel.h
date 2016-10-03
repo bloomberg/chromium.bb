@@ -37,14 +37,16 @@
 
 namespace blink {
 
-// An AudioChannel represents a buffer of non-interleaved floating-point audio samples.
+// An AudioChannel represents a buffer of non-interleaved floating-point audio
+// samples.
 // The PCM samples are normally assumed to be in a nominal range -1.0 -> +1.0
 class PLATFORM_EXPORT AudioChannel {
   USING_FAST_MALLOC(AudioChannel);
   WTF_MAKE_NONCOPYABLE(AudioChannel);
 
  public:
-  // Memory can be externally referenced, or can be internally allocated with an AudioFloatArray.
+  // Memory can be externally referenced, or can be internally allocated with an
+  // AudioFloatArray.
 
   // Reference an external buffer.
   AudioChannel(float* storage, size_t length)

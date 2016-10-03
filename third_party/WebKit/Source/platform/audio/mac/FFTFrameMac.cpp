@@ -90,8 +90,9 @@ FFTFrame::~FFTFrame() {}
 
 void FFTFrame::doFFT(const float* data) {
   AudioFloatArray scaledData(m_FFTSize);
-  // veclib fft returns a result that is twice as large as would be expected. Compensate for that
-  // by scaling the input by half so the FFT has the correct scaling.
+  // veclib fft returns a result that is twice as large as would be expected.
+  // Compensate for that by scaling the input by half so the FFT has the
+  // correct scaling.
   float scale = 0.5f;
   VectorMath::vsmul(data, 1, &scale, scaledData.data(), 1, m_FFTSize);
 

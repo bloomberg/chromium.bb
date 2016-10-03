@@ -98,7 +98,8 @@ void UpSampler::process(const float* sourceP,
   float* inputP = m_inputBuffer.data() + sourceFramesToProcess;
   memcpy(inputP, sourceP, sizeof(float) * sourceFramesToProcess);
 
-  // Copy even sample-frames 0,2,4,6... (delayed by the linear phase delay) directly into destP.
+  // Copy even sample-frames 0,2,4,6... (delayed by the linear phase delay)
+  // directly into destP.
   for (unsigned i = 0; i < sourceFramesToProcess; ++i)
     destP[i * 2] = *((inputP - halfSize) + i);
 
@@ -119,7 +120,8 @@ void UpSampler::reset() {
 }
 
 size_t UpSampler::latencyFrames() const {
-  // Divide by two since this is a linear phase kernel and the delay is at the center of the kernel.
+  // Divide by two since this is a linear phase kernel and the delay is at the
+  // center of the kernel.
   return m_kernel.size() / 2;
 }
 

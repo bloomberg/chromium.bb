@@ -56,9 +56,9 @@ void DownSampler::initializeKernel() {
   // Half-band filter.
   double sincScaleFactor = 0.5;
 
-  // Compute only the odd terms because the even ones are zero, except
-  // right in the middle at halfSize, which is 0.5 and we'll handle specially during processing
-  // after doing the main convolution using m_reducedKernel.
+  // Compute only the odd terms because the even ones are zero, except right in
+  // the middle at halfSize, which is 0.5 and we'll handle specially during
+  // processing after doing the main convolution using m_reducedKernel.
   for (int i = 1; i < n; i += 2) {
     // Compute the sinc() with offset.
     double s = sincScaleFactor * piDouble * (i - halfSize);
@@ -72,7 +72,8 @@ void DownSampler::initializeKernel() {
 
     // Window the sinc() function.
     // Then store only the odd terms in the kernel.
-    // In a sense, this is shifting forward in time by one sample-frame at the destination sample-rate.
+    // In a sense, this is shifting forward in time by one sample-frame at the
+    // destination sample-rate.
     m_reducedKernel[(i - 1) / 2] = sinc * window;
   }
 }
@@ -109,20 +110,22 @@ void DownSampler::process(const float* sourceP,
   float* inputP = m_inputBuffer.data() + sourceFramesToProcess;
   memcpy(inputP, sourceP, sizeof(float) * sourceFramesToProcess);
 
-  // Copy the odd sample-frames from sourceP, delayed by one sample-frame (destination sample-rate)
-  // to match shifting forward in time in m_reducedKernel.
+  // Copy the odd sample-frames from sourceP, delayed by one sample-frame
+  // (destination sample-rate) to match shifting forward in time in
+  // m_reducedKernel.
   float* oddSamplesP = m_tempBuffer.data();
   for (unsigned i = 0; i < destFramesToProcess; ++i)
     oddSamplesP[i] = *((inputP - 1) + i * 2);
 
   // Actually process oddSamplesP with m_reducedKernel for efficiency.
-  // The theoretical kernel is double this size with 0 values for even terms (except center).
+  // The theoretical kernel is double this size with 0 values for even terms
+  // (except center).
   m_convolver.process(&m_reducedKernel, oddSamplesP, destP,
                       destFramesToProcess);
 
   // Now, account for the 0.5 term right in the middle of the kernel.
-  // This amounts to a delay-line of length halfSize (at the source sample-rate),
-  // scaled by 0.5.
+  // This amounts to a delay-line of length halfSize (at the source
+  // sample-rate), scaled by 0.5.
 
   // Sum into the destination.
   for (unsigned i = 0; i < destFramesToProcess; ++i)
@@ -138,7 +141,8 @@ void DownSampler::reset() {
 }
 
 size_t DownSampler::latencyFrames() const {
-  // Divide by two since this is a linear phase kernel and the delay is at the center of the kernel.
+  // Divide by two since this is a linear phase kernel and the delay is at the
+  // center of the kernel.
   return m_reducedKernel.size() / 2;
 }
 

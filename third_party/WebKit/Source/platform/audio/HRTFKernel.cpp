@@ -36,10 +36,11 @@
 
 namespace blink {
 
-// Takes the input AudioChannel as an input impulse response and calculates the average group delay.
-// This represents the initial delay before the most energetic part of the impulse response.
-// The sample-frame delay is removed from the impulseP impulse response, and this value  is returned.
-// the length of the passed in AudioChannel must be a power of 2.
+// Takes the input AudioChannel as an input impulse response and calculates the
+// average group delay.  This represents the initial delay before the most
+// energetic part of the impulse response.  The sample-frame delay is removed
+// from the impulseP impulse response, and this value  is returned.  The length
+// of the passed in AudioChannel must be a power of 2.
 static float extractAverageGroupDelay(AudioChannel* channel,
                                       size_t analysisFFTSize) {
   ASSERT(channel);
@@ -74,11 +75,10 @@ HRTFKernel::HRTFKernel(AudioChannel* channel, size_t fftSize, float sampleRate)
   float* impulseResponse = channel->mutableData();
   size_t responseLength = channel->length();
 
-  // We need to truncate to fit into 1/2 the FFT size (with zero padding) in order to do proper convolution.
-  size_t truncatedResponseLength = std::min(
-      responseLength,
-      fftSize /
-          2);  // truncate if necessary to max impulse response length allowed by FFT
+  // We need to truncate to fit into 1/2 the FFT size (with zero padding) in
+  // order to do proper convolution.
+  // Truncate if necessary to max impulse response length allowed by FFT.
+  size_t truncatedResponseLength = std::min(responseLength, fftSize / 2);
 
   // Quick fade-out (apply window) at truncation point
   unsigned numberOfFadeOutFrames = static_cast<unsigned>(

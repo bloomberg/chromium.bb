@@ -10,16 +10,17 @@
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  *
- * THIS SOFTWARE IS PROVIDED BY APPLE INC. AND ITS CONTRIBUTORS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL APPLE INC. OR ITS CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
- * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY APPLE INC. AND ITS CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL APPLE INC. OR ITS CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+ * DAMAGE.
  */
 
 #include "platform/audio/AudioResampler.h"
@@ -77,7 +78,8 @@ void AudioResampler::process(AudioSourceProvider* provider,
 
   // Setup the source bus.
   for (unsigned i = 0; i < numberOfChannels; ++i) {
-    // Figure out how many frames we need to get from the provider, and a pointer to the buffer.
+    // Figure out how many frames we need to get from the provider, and a
+    // pointer to the buffer.
     size_t framesNeeded;
     float* fillPointer =
         m_kernels[i]->getSourcePointer(framesToProcess, &framesNeeded);
@@ -91,8 +93,10 @@ void AudioResampler::process(AudioSourceProvider* provider,
   // Ask the provider to supply the desired number of source frames.
   provider->provideInput(m_sourceBus.get(), m_sourceBus->length());
 
-  // Now that we have the source data, resample each channel into the destination bus.
-  // FIXME: optimize for the common stereo case where it's faster to process both left/right channels in the same inner loop.
+  // Now that we have the source data, resample each channel into the
+  // destination bus.
+  // FIXME: optimize for the common stereo case where it's faster to process
+  // both left/right channels in the same inner loop.
   for (unsigned i = 0; i < numberOfChannels; ++i) {
     float* destination = destinationBus->channel(i)->mutableData();
     m_kernels[i]->process(destination, framesToProcess);

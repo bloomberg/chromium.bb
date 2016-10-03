@@ -10,16 +10,17 @@
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  *
- * THIS SOFTWARE IS PROVIDED BY APPLE INC. AND ITS CONTRIBUTORS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL APPLE INC. OR ITS CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
- * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY APPLE INC. AND ITS CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL APPLE INC. OR ITS CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+ * DAMAGE.
  */
 
 #include "platform/audio/VectorMath.h"
@@ -49,8 +50,10 @@ namespace VectorMath {
 
 #if OS(MACOSX)
 // On the Mac we use the highly optimized versions in Accelerate.framework
-// In 32-bit mode (__ppc__ or __i386__) <Accelerate/Accelerate.h> includes <vecLib/vDSP_translate.h> which defines macros of the same name as
-// our namespaced function names, so we must handle this case differently. Other architectures (64bit, ARM, etc.) do not include this header file.
+// In 32-bit mode (__ppc__ or __i386__) <Accelerate/Accelerate.h> includes
+// <vecLib/vDSP_translate.h> which defines macros of the same name as
+// our namespaced function names, so we must handle this case differently. Other
+// architectures (64bit, ARM, etc.) do not include this header file.
 
 void vsmul(const float* sourceP,
            int sourceStride,
@@ -170,7 +173,8 @@ void vsma(const float* sourceP,
   if ((sourceStride == 1) && (destStride == 1)) {
     float k = *scale;
 
-    // If the sourceP address is not 16-byte aligned, the first several frames (at most three) should be processed separately.
+    // If the sourceP address is not 16-byte aligned, the first several frames
+    // (at most three) should be processed separately.
     while ((reinterpret_cast<uintptr_t>(sourceP) & 0x0F) && n) {
       *destP += k * *sourceP;
       sourceP++;
@@ -246,7 +250,8 @@ void vsmul(const float* sourceP,
   if ((sourceStride == 1) && (destStride == 1)) {
     float k = *scale;
 
-    // If the sourceP address is not 16-byte aligned, the first several frames (at most three) should be processed separately.
+    // If the sourceP address is not 16-byte aligned, the first several frames
+    // (at most three) should be processed separately.
     while ((reinterpret_cast<size_t>(sourceP) & 0x0F) && n) {
       *destP = k * *sourceP;
       sourceP++;
@@ -328,7 +333,8 @@ void vadd(const float* source1P,
 
 #if CPU(X86) || CPU(X86_64)
   if ((sourceStride1 == 1) && (sourceStride2 == 1) && (destStride == 1)) {
-    // If the sourceP address is not 16-byte aligned, the first several frames (at most three) should be processed separately.
+    // If the sourceP address is not 16-byte aligned, the first several frames
+    // (at most three) should be processed separately.
     while ((reinterpret_cast<size_t>(source1P) & 0x0F) && n) {
       *destP = *source1P + *source2P;
       source1P++;
@@ -448,7 +454,8 @@ void vmul(const float* source1P,
 
 #if CPU(X86) || CPU(X86_64)
   if ((sourceStride1 == 1) && (sourceStride2 == 1) && (destStride == 1)) {
-    // If the source1P address is not 16-byte aligned, the first several frames (at most three) should be processed separately.
+    // If the source1P address is not 16-byte aligned, the first several frames
+    // (at most three) should be processed separately.
     while ((reinterpret_cast<uintptr_t>(source1P) & 0x0F) && n) {
       *destP = *source1P * *source2P;
       source1P++;
@@ -526,8 +533,8 @@ void zvmul(const float* real1P,
            size_t framesToProcess) {
   unsigned i = 0;
 #if CPU(X86) || CPU(X86_64)
-  // Only use the SSE optimization in the very common case that all addresses are 16-byte aligned.
-  // Otherwise, fall through to the scalar code below.
+  // Only use the SSE optimization in the very common case that all addresses
+  // are 16-byte aligned.  Otherwise, fall through to the scalar code below.
   if (!(reinterpret_cast<uintptr_t>(real1P) & 0x0F) &&
       !(reinterpret_cast<uintptr_t>(imag1P) & 0x0F) &&
       !(reinterpret_cast<uintptr_t>(real2P) & 0x0F) &&
@@ -586,7 +593,8 @@ void vsvesq(const float* sourceP,
 
 #if CPU(X86) || CPU(X86_64)
   if (sourceStride == 1) {
-    // If the sourceP address is not 16-byte aligned, the first several frames (at most three) should be processed separately.
+    // If the sourceP address is not 16-byte aligned, the first several frames
+    // (at most three) should be processed separately.
     while ((reinterpret_cast<uintptr_t>(sourceP) & 0x0F) && n) {
       float sample = *sourceP;
       sum += sample * sample;
@@ -654,7 +662,8 @@ void vmaxmgv(const float* sourceP,
 
 #if CPU(X86) || CPU(X86_64)
   if (sourceStride == 1) {
-    // If the sourceP address is not 16-byte aligned, the first several frames (at most three) should be processed separately.
+    // If the sourceP address is not 16-byte aligned, the first several frames
+    // (at most three) should be processed separately.
     while ((reinterpret_cast<uintptr_t>(sourceP) & 0x0F) && n) {
       max = std::max(max, fabsf(*sourceP));
       sourceP++;
@@ -671,7 +680,8 @@ void vmaxmgv(const float* sourceP,
 
     while (sourceP < endP) {
       source = _mm_load_ps(sourceP);
-      // Calculate the absolute value by anding source with mask, the sign bit is set to 0.
+      // Calculate the absolute value by anding source with mask, the sign bit
+      // is set to 0.
       source = _mm_and_ps(source, mMask);
       mMax = _mm_max_ps(mMax, source);
       sourceP += 4;

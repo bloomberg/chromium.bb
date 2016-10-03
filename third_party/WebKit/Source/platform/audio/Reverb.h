@@ -39,7 +39,8 @@ namespace blink {
 
 class AudioBus;
 
-// Multi-channel convolution reverb with channel matrixing - one or more ReverbConvolver objects are used internally.
+// Multi-channel convolution reverb with channel matrixing - one or more
+// ReverbConvolver objects are used internally.
 
 class PLATFORM_EXPORT Reverb {
   USING_FAST_MALLOC(Reverb);
@@ -48,7 +49,8 @@ class PLATFORM_EXPORT Reverb {
  public:
   enum { MaxFrameSize = 256 };
 
-  // renderSliceSize is a rendering hint, so the FFTs can be optimized to not all occur at the same time (very bad when rendering on a real-time thread).
+  // renderSliceSize is a rendering hint, so the FFTs can be optimized to not
+  // all occur at the same time (very bad when rendering on a real-time thread).
   Reverb(AudioBus* impulseResponseBuffer,
          size_t renderSliceSize,
          size_t maxFFTSize,

@@ -41,10 +41,13 @@ namespace blink {
 class AudioChannel;
 
 // HRTF stands for Head-Related Transfer Function.
-// HRTFKernel is a frequency-domain representation of an impulse-response used as part of the spatialized panning system.
-// For a given azimuth / elevation angle there will be one HRTFKernel for the left ear transfer function, and one for the right ear.
-// The leading delay (average group delay) for each impulse response is extracted:
-//      m_fftFrame is the frequency-domain representation of the impulse response with the delay removed
+// HRTFKernel is a frequency-domain representation of an impulse-response used
+// as part of the spatialized panning system.  For a given azimuth / elevation
+// angle there will be one HRTFKernel for the left ear transfer function, and
+// one for the right ear.  The leading delay (average group delay) for each
+// impulse response is extracted:
+//      m_fftFrame is the frequency-domain representation of the impulse
+//      response with the delay removed
 //      m_frameDelay is the leading delay of the original impulse response.
 class PLATFORM_EXPORT HRTFKernel {
   USING_FAST_MALLOC(HRTFKernel);
@@ -66,7 +69,8 @@ class PLATFORM_EXPORT HRTFKernel {
         new HRTFKernel(std::move(fftFrame), frameDelay, sampleRate));
   }
 
-  // Given two HRTFKernels, and an interpolation factor x: 0 -> 1, returns an interpolated HRTFKernel.
+  // Given two HRTFKernels, and an interpolation factor x: 0 -> 1, returns an
+  // interpolated HRTFKernel.
   static std::unique_ptr<HRTFKernel>
   createInterpolatedKernel(HRTFKernel* kernel1, HRTFKernel* kernel2, float x);
 

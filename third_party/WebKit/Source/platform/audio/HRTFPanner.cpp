@@ -10,16 +10,17 @@
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  *
- * THIS SOFTWARE IS PROVIDED BY APPLE INC. AND ITS CONTRIBUTORS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL APPLE INC. OR ITS CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
- * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY APPLE INC. AND ITS CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL APPLE INC. OR ITS CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+ * DAMAGE.
  */
 
 #include "platform/audio/HRTFPanner.h"
@@ -31,7 +32,8 @@
 
 namespace blink {
 
-// The value of 2 milliseconds is larger than the largest delay which exists in any HRTFKernel from the default HRTFDatabase (0.0136 seconds).
+// The value of 2 milliseconds is larger than the largest delay which exists in
+// any HRTFKernel from the default HRTFDatabase (0.0136 seconds).
 // We ASSERT the delay values used in process() with this value.
 const double MaxDelayTimeSeconds = 0.002;
 
@@ -65,13 +67,14 @@ HRTFPanner::HRTFPanner(float sampleRate, HRTFDatabaseLoader* databaseLoader)
 HRTFPanner::~HRTFPanner() {}
 
 size_t HRTFPanner::fftSizeForSampleRate(float sampleRate) {
-  // The HRTF impulse responses (loaded as audio resources) are 512 sample-frames @44.1KHz.
-  // Currently, we truncate the impulse responses to half this size,
-  // but an FFT-size of twice impulse response size is needed (for convolution).
-  // So for sample rates around 44.1KHz an FFT size of 512 is good.
-  // For different sample rates, the truncated response is resampled.
-  // The resampled length is used to compute the FFT size by choosing a power of two that is
-  // greater than or equal the resampled length. This power of two is doubled to get the actual FFT size.
+  // The HRTF impulse responses (loaded as audio resources) are 512
+  // sample-frames @44.1KHz.  Currently, we truncate the impulse responses to
+  // half this size, but an FFT-size of twice impulse response size is needed
+  // (for convolution).  So for sample rates around 44.1KHz an FFT size of 512
+  // is good.  For different sample rates, the truncated response is resampled.
+  // The resampled length is used to compute the FFT size by choosing a power
+  // of two that is greater than or equal the resampled length. This power of
+  // two is doubled to get the actual FFT size.
 
   ASSERT(AudioUtilities::isValidAudioBufferSampleRate(sampleRate));
 
@@ -93,8 +96,8 @@ void HRTFPanner::reset() {
 
 int HRTFPanner::calculateDesiredAzimuthIndexAndBlend(double azimuth,
                                                      double& azimuthBlend) {
-  // Convert the azimuth angle from the range -180 -> +180 into the range 0 -> 360.
-  // The azimuth index may then be calculated from this positive value.
+  // Convert the azimuth angle from the range -180 -> +180 into the range 0 ->
+  // 360.  The azimuth index may then be calculated from this positive value.
   if (azimuth < 0)
     azimuth += 360.0;
 
@@ -107,8 +110,9 @@ int HRTFPanner::calculateDesiredAzimuthIndexAndBlend(double azimuth,
   azimuthBlend =
       desiredAzimuthIndexFloat - static_cast<double>(desiredAzimuthIndex);
 
-  // We don't immediately start using this azimuth index, but instead approach this index from the last index we rendered at.
-  // This minimizes the clicks and graininess for moving sources which occur otherwise.
+  // We don't immediately start using this azimuth index, but instead approach
+  // this index from the last index we rendered at.  This minimizes the clicks
+  // and graininess for moving sources which occur otherwise.
   desiredAzimuthIndex = clampTo(desiredAzimuthIndex, 0, numberOfAzimuths - 1);
   return desiredAzimuthIndex;
 }
@@ -140,7 +144,8 @@ void HRTFPanner::pan(double desiredAzimuth,
     return;
   }
 
-  // IRCAM HRTF azimuths values from the loaded database is reversed from the panner's notion of azimuth.
+  // IRCAM HRTF azimuths values from the loaded database is reversed from the
+  // panner's notion of azimuth.
   double azimuth = -desiredAzimuth;
 
   bool isAzimuthGood = azimuth >= -180.0 && azimuth <= 180.0;
@@ -151,7 +156,8 @@ void HRTFPanner::pan(double desiredAzimuth,
   }
 
   // Normally, we'll just be dealing with mono sources.
-  // If we have a stereo input, implement stereo panning with left source processed by left HRTF, and right source by right HRTF.
+  // If we have a stereo input, implement stereo panning with left source
+  // processed by left HRTF, and right source by right HRTF.
   const AudioChannel* inputChannelL =
       inputBus->channelByType(AudioBus::ChannelLeft);
   const AudioChannel* inputChannelR =
@@ -203,7 +209,8 @@ void HRTFPanner::pan(double desiredAzimuth,
     }
   }
 
-  // This algorithm currently requires that we process in power-of-two size chunks at least RenderingQuantum.
+  // This algorithm currently requires that we process in power-of-two size
+  // chunks at least RenderingQuantum.
   ASSERT(1UL << static_cast<int>(log2(framesToProcess)) == framesToProcess);
   ASSERT(framesToProcess >= RenderingQuantum);
 
@@ -260,7 +267,8 @@ void HRTFPanner::pan(double desiredAzimuth,
 
     bool needsCrossfading = m_crossfadeIncr;
 
-    // Have the convolvers render directly to the final destination if we're not cross-fading.
+    // Have the convolvers render directly to the final destination if we're not
+    // cross-fading.
     float* convolutionDestinationL1 =
         needsCrossfading ? m_tempL1.data() : segmentDestinationL;
     float* convolutionDestinationR1 =
@@ -271,7 +279,8 @@ void HRTFPanner::pan(double desiredAzimuth,
         needsCrossfading ? m_tempR2.data() : segmentDestinationR;
 
     // Now do the convolutions.
-    // Note that we avoid doing convolutions on both sets of convolvers if we're not currently cross-fading.
+    // Note that we avoid doing convolutions on both sets of convolvers if we're
+    // not currently cross-fading.
 
     if (m_crossfadeSelection == CrossfadeSelection1 || needsCrossfading) {
       m_convolverL1.process(kernelL1->fftFrame(), segmentDestinationL,
@@ -323,29 +332,31 @@ void HRTFPanner::panWithSampleAccurateValues(
     AudioBus* outputBus,
     size_t framesToProcess,
     AudioBus::ChannelInterpretation channelInterpretation) {
-  // Sample-accurate (a-rate) HRTF panner is not implemented, just k-rate.  Just grab the current
-  // azimuth/elevation and use that.
+  // Sample-accurate (a-rate) HRTF panner is not implemented, just k-rate.  Just
+  // grab the current azimuth/elevation and use that.
   //
-  // We are assuming that the inherent smoothing in the HRTF processing is good enough, and we
-  // don't want to increase the complexity of the HRTF panner by 15-20 times.  (We need to cmopute
-  // one output sample for each possibly different impulse response.  That N^2.  Previously, we
-  // used an FFT to do them all at once for a complexity of N/log2(N).  Hence, N/log2(N) times
+  // We are assuming that the inherent smoothing in the HRTF processing is good
+  // enough, and we don't want to increase the complexity of the HRTF panner by
+  // 15-20 times.  (We need to compute one output sample for each possibly
+  // different impulse response.  That N^2.  Previously, we used an FFT to do
+  // them all at once for a complexity of N/log2(N).  Hence, N/log2(N) times
   // more complex.)
   pan(desiredAzimuth[0], elevation[0], inputBus, outputBus, framesToProcess,
       channelInterpretation);
 }
 
 double HRTFPanner::tailTime() const {
-  // Because HRTFPanner is implemented with a DelayKernel and a FFTConvolver, the tailTime of the HRTFPanner
-  // is the sum of the tailTime of the DelayKernel and the tailTime of the FFTConvolver, which is MaxDelayTimeSeconds
-  // and fftSize() / 2, respectively.
+  // Because HRTFPanner is implemented with a DelayKernel and a FFTConvolver,
+  // the tailTime of the HRTFPanner is the sum of the tailTime of the
+  // DelayKernel and the tailTime of the FFTConvolver, which is
+  // MaxDelayTimeSeconds and fftSize() / 2, respectively.
   return MaxDelayTimeSeconds +
          (fftSize() / 2) / static_cast<double>(sampleRate());
 }
 
 double HRTFPanner::latencyTime() const {
-  // The latency of a FFTConvolver is also fftSize() / 2, and is in addition to its tailTime of the
-  // same value.
+  // The latency of a FFTConvolver is also fftSize() / 2, and is in addition to
+  // its tailTime of the same value.
   return (fftSize() / 2) / static_cast<double>(sampleRate());
 }
 

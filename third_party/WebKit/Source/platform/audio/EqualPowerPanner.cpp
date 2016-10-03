@@ -10,16 +10,17 @@
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  *
- * THIS SOFTWARE IS PROVIDED BY APPLE INC. AND ITS CONTRIBUTORS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL APPLE INC. OR ITS CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
- * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY APPLE INC. AND ITS CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL APPLE INC. OR ITS CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+ * DAMAGE.
  */
 
 #include "platform/audio/EqualPowerPanner.h"
@@ -81,16 +82,19 @@ void EqualPowerPanner::pan(double azimuth,
   double desiredGainR;
 
   if (numberOfInputChannels == 1) {  // For mono source case.
-    // Pan smoothly from left to right with azimuth going from -90 -> +90 degrees.
+    // Pan smoothly from left to right with azimuth going from -90 -> +90
+    // degrees.
     desiredPanPosition = (azimuth + 90) / 180;
   } else {               // For stereo source case.
     if (azimuth <= 0) {  // from -90 -> 0
       // sourceL -> destL and "equal-power pan" sourceR as in mono case
-      // by transforming the "azimuth" value from -90 -> 0 degrees into the range -90 -> +90.
+      // by transforming the "azimuth" value from -90 -> 0 degrees into the
+      // range -90 -> +90.
       desiredPanPosition = (azimuth + 90) / 90;
     } else {  // from 0 -> +90
       // sourceR -> destR and "equal-power pan" sourceL as in mono case
-      // by transforming the "azimuth" value from 0 -> +90 degrees into the range -90 -> +90.
+      // by transforming the "azimuth" value from 0 -> +90 degrees into the
+      // range -90 -> +90.
       desiredPanPosition = azimuth / 90;
     }
   }
@@ -145,16 +149,19 @@ void EqualPowerPanner::calculateDesiredGain(double& desiredGainL,
   double desiredPanPosition;
 
   if (numberOfInputChannels == 1) {  // For mono source case.
-    // Pan smoothly from left to right with azimuth going from -90 -> +90 degrees.
+    // Pan smoothly from left to right with azimuth going from -90 -> +90
+    // degrees.
     desiredPanPosition = (azimuth + 90) / 180;
   } else {               // For stereo source case.
     if (azimuth <= 0) {  // from -90 -> 0
       // sourceL -> destL and "equal-power pan" sourceR as in mono case
-      // by transforming the "azimuth" value from -90 -> 0 degrees into the range -90 -> +90.
+      // by transforming the "azimuth" value from -90 -> 0 degrees into the
+      // range -90 -> +90.
       desiredPanPosition = (azimuth + 90) / 90;
     } else {  // from 0 -> +90
       // sourceR -> destR and "equal-power pan" sourceL as in mono case
-      // by transforming the "azimuth" value from 0 -> +90 degrees into the range -90 -> +90.
+      // by transforming the "azimuth" value from 0 -> +90 degrees into the
+      // range -90 -> +90.
       desiredPanPosition = azimuth / 90;
     }
   }

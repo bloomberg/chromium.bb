@@ -40,10 +40,10 @@ namespace blink {
 
 class AudioBus;
 
-// DynamicsCompressor implements a flexible audio dynamics compression effect such as
-// is commonly used in musical production and game audio. It lowers the volume
-// of the loudest parts of the signal and raises the volume of the softest parts,
-// making the sound richer, fuller, and more controlled.
+// DynamicsCompressor implements a flexible audio dynamics compression effect
+// such as is commonly used in musical production and game audio. It lowers the
+// volume of the loudest parts of the signal and raises the volume of the
+// softest parts, making the sound richer, fuller, and more controlled.
 
 class PLATFORM_EXPORT DynamicsCompressor {
   USING_FAST_MALLOC(DynamicsCompressor);

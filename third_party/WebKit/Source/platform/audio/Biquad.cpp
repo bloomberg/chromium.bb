@@ -52,8 +52,8 @@ Biquad::Biquad() : m_hasSampleAccurateValues(false) {
   m_outputBuffer.allocate(kBufferSize + 2);
 #endif
 
-  // Allocate enough space for the a-rate filter coefficients to handle a rendering quantum of 128
-  // frames.
+  // Allocate enough space for the a-rate filter coefficients to handle a
+  // rendering quantum of 128 frames.
   m_b0.allocate(AudioUtilities::kRenderQuantumFrames);
   m_b1.allocate(AudioUtilities::kRenderQuantumFrames);
   m_b2.allocate(AudioUtilities::kRenderQuantumFrames);
@@ -109,14 +109,14 @@ void Biquad::process(const float* sourceP,
     m_y1 = DenormalDisabler::flushDenormalFloatToZero(y1);
     m_y2 = DenormalDisabler::flushDenormalFloatToZero(y2);
 
-    // There is an assumption here that once we have sample accurate values we can never go back
-    // to not having sample accurate values.  This is currently true in the way
-    // AudioParamTimline is implemented: once an event is inserted, sample accurate processing
-    // is always enabled.
+    // There is an assumption here that once we have sample accurate values we
+    // can never go back to not having sample accurate values.  This is
+    // currently true in the way AudioParamTimline is implemented: once an
+    // event is inserted, sample accurate processing is always enabled.
     //
-    // If so, then we never have to update the state variables for the MACOSX path.  The
-    // structure of the state variable in these cases aren't well documented so it's not clear
-    // how to update them anyway.
+    // If so, then we never have to update the state variables for the MACOSX
+    // path.  The structure of the state variable in these cases aren't well
+    // documented so it's not clear how to update them anyway.
   } else {
 #if OS(MACOSX)
     double* inputP = m_inputBuffer.data();
@@ -231,9 +231,10 @@ void Biquad::processSliceFast(double* sourceP,
   // Use double-precision for filter stability
   vDSP_deq22D(sourceP, 1, coefficientsP, destP, 1, framesToProcess);
 
-  // Save history.  Note that sourceP and destP reference m_inputBuffer and m_outputBuffer respectively.
-  // These buffers are allocated (in the constructor) with space for two extra samples so it's OK to access
-  // array values two beyond framesToProcess.
+  // Save history.  Note that sourceP and destP reference m_inputBuffer and
+  // m_outputBuffer respectively.  These buffers are allocated (in the
+  // constructor) with space for two extra samples so it's OK to access array
+  // values two beyond framesToProcess.
   sourceP[0] = sourceP[framesToProcess - 2 + 2];
   sourceP[1] = sourceP[framesToProcess - 1 + 2];
   destP[0] = destP[framesToProcess - 2 + 2];

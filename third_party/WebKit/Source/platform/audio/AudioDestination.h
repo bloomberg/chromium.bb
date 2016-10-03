@@ -63,7 +63,8 @@ class PLATFORM_EXPORT AudioDestination : public WebAudioDevice::RenderCallback,
   ~AudioDestination() override;
 
   // Pass in (numberOfInputChannels > 0) if live/local audio input is desired.
-  // Port-specific device identification information for live/local input streams can be passed in the inputDeviceId.
+  // Port-specific device identification information for live/local input
+  // streams can be passed in the inputDeviceId.
   static std::unique_ptr<AudioDestination> create(
       AudioIOCallback&,
       const String& inputDeviceId,
@@ -88,11 +89,11 @@ class PLATFORM_EXPORT AudioDestination : public WebAudioDevice::RenderCallback,
 
   static float hardwareSampleRate();
 
-  // maxChannelCount() returns the total number of output channels of the audio hardware.
-  // A value of 0 indicates that the number of channels cannot be configured and
-  // that only stereo (2-channel) destinations can be created.
-  // The numberOfOutputChannels parameter of AudioDestination::create() is allowed to
-  // be a value: 1 <= numberOfOutputChannels <= maxChannelCount(),
+  // maxChannelCount() returns the total number of output channels of the audio
+  // hardware.  A value of 0 indicates that the number of channels cannot be
+  // configured and that only stereo (2-channel) destinations can be created.
+  // The numberOfOutputChannels parameter of AudioDestination::create() is
+  // allowed to be a value: 1 <= numberOfOutputChannels <= maxChannelCount(),
   // or if maxChannelCount() equals 0, then numberOfOutputChannels must be 2.
   static unsigned long maxChannelCount();
 

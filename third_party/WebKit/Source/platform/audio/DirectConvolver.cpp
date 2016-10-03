@@ -84,8 +84,9 @@ void DirectConvolver::process(AudioFloatArray* convolutionKernel,
 #else
   size_t i = 0;
 #if CPU(X86) || CPU(X86_64)
-  // Convolution using SSE2. Currently only do this if both |kernelSize| and |framesToProcess|
-  // are multiples of 4. If not, use the straightforward loop below.
+  // Convolution using SSE2. Currently only do this if both |kernelSize| and
+  // |framesToProcess| are multiples of 4. If not, use the straightforward loop
+  // below.
 
   if ((kernelSize % 4 == 0) && (framesToProcess % 4 == 0)) {
     // AudioFloatArray's are always aligned on at least a 16-byte boundary.
@@ -105,7 +106,8 @@ void DirectConvolver::process(AudioFloatArray* convolutionKernel,
 
       convolutionSum = _mm_setzero_ps();
 
-      // |kernelSize| is a multiple of 4 so we can unroll the loop by 4, manually.
+      // |kernelSize| is a multiple of 4 so we can unroll the loop by 4,
+      // manually.
       for (size_t k = 0; k < kernelSize; k += 4) {
         size_t dataOffset = i + k;
 
@@ -123,7 +125,9 @@ void DirectConvolver::process(AudioFloatArray* convolutionKernel,
   } else {
 #endif
 
-// FIXME: The macro can be further optimized to avoid pipeline stalls. One possibility is to maintain 4 separate sums and change the macro to CONVOLVE_FOUR_SAMPLES.
+// FIXME: The macro can be further optimized to avoid pipeline stalls. One
+// possibility is to maintain 4 separate sums and change the macro to
+// CONVOLVE_FOUR_SAMPLES.
 #define CONVOLVE_ONE_SAMPLE            \
   do {                                 \
     sum += inputP[i - j] * kernelP[j]; \
