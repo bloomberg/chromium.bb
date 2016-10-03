@@ -400,6 +400,11 @@ SafeBrowsingPingManager* SafeBrowsingService::ping_manager() const {
   return ping_manager_.get();
 }
 
+const scoped_refptr<V4LocalDatabaseManager>&
+SafeBrowsingService::v4_local_database_manager() const {
+  return services_delegate_->v4_local_database_manager();
+}
+
 std::unique_ptr<TrackedPreferenceValidationDelegate>
 SafeBrowsingService::CreatePreferenceValidationDelegate(
     Profile* profile) const {

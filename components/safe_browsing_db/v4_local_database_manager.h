@@ -28,18 +28,10 @@ typedef unsigned ThreatSeverity;
 // SafeBrowsing service and interfaces with the protocol manager.
 class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
  public:
-  enum class ClientCallbackType {
-    // This represents the case when we're trying to determine if a URL is
-    // unsafe from the following perspectives: Malware, Phishing, UwS.
-    CHECK_BROWSE_URL = 0,
-
-    // This should always be the last value.
-    CHECK_MAX
-  };
-
-  // Construct V4LocalDatabaseManager.
-  // Must be initialized by calling StartOnIOThread() before using.
-  V4LocalDatabaseManager(const base::FilePath& base_path);
+  // Create and return an instance of V4LocalDatabaseManager, if Finch trial
+  // allows it; nullptr otherwise.
+  static scoped_refptr<V4LocalDatabaseManager> Create(
+      const base::FilePath& base_path);
 
   //
   // SafeBrowsingDatabaseManager implementation
@@ -74,6 +66,19 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   //
 
  protected:
+  // Construct V4LocalDatabaseManager.
+  // Must be initialized by calling StartOnIOThread() before using.
+  V4LocalDatabaseManager(const base::FilePath& base_path);
+
+  enum class ClientCallbackType {
+    // This represents the case when we're trying to determine if a URL is
+    // unsafe from the following perspectives: Malware, Phishing, UwS.
+    CHECK_BROWSE_URL = 0,
+
+    // This should always be the last value.
+    CHECK_MAX
+  };
+
   // The information we need to process a URL safety reputation request and
   // respond to the SafeBrowsing client that asked for it.
   // TODO(vakh): In its current form, it only includes information for

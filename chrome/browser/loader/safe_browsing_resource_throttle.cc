@@ -15,6 +15,8 @@
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "components/safe_browsing_db/util.h"
+#include "components/safe_browsing_db/v4_feature_list.h"
+#include "components/safe_browsing_db/v4_local_database_manager.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -96,7 +98,8 @@ SafeBrowsingResourceThrottle::SafeBrowsingResourceThrottle(
       resource_type_(resource_type),
       net_log_with_source_(
           net::NetLogWithSource::Make(request->net_log().net_log(),
-                                      NetLogSourceType::SAFE_BROWSING)) {}
+                                      NetLogSourceType::SAFE_BROWSING)),
+      v4_local_database_manager_(sb_service->v4_local_database_manager()) {}
 
 SafeBrowsingResourceThrottle::~SafeBrowsingResourceThrottle() {
   if (defer_state_ != DEFERRED_NONE) {
@@ -105,6 +108,10 @@ SafeBrowsingResourceThrottle::~SafeBrowsingResourceThrottle() {
 
   if (state_ == STATE_CHECKING_URL) {
     database_manager_->CancelCheck(this);
+    if (safe_browsing::V4FeatureList::IsParallelCheckEnabled()) {
+      v4_local_database_manager_->CancelCheck(this);
+    }
+
     EndNetLogEvent(NetLogEventType::SAFE_BROWSING_CHECKING_URL, "result",
                    "request_canceled");
   }
@@ -373,6 +380,11 @@ bool SafeBrowsingResourceThrottle::CheckUrl(const GURL& url) {
   UMA_HISTOGRAM_ENUMERATION("SB2.ResourceTypes2.Checked", resource_type_,
                             content::RESOURCE_TYPE_LAST_TYPE);
 
+  if (safe_browsing::V4FeatureList::IsParallelCheckEnabled() &&
+      v4_local_database_manager_->CanCheckResourceType(resource_type_)) {
+    v4_local_database_manager_->CheckBrowseUrl(url, this);
+  }
+
   if (succeeded_synchronously) {
     threat_type_ = safe_browsing::SB_THREAT_TYPE_SAFE;
     ui_manager_->LogPauseDelay(base::TimeDelta());  // No delay.
@@ -398,6 +410,9 @@ void SafeBrowsingResourceThrottle::OnCheckUrlTimeout() {
   CHECK_EQ(state_, STATE_CHECKING_URL);
 
   database_manager_->CancelCheck(this);
+  if (safe_browsing::V4FeatureList::IsParallelCheckEnabled()) {
+    v4_local_database_manager_->CancelCheck(this);
+  }
   OnCheckBrowseUrlResult(url_being_checked_, safe_browsing::SB_THREAT_TYPE_SAFE,
                          safe_browsing::ThreatMetadata());
 }

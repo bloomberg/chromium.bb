@@ -19,11 +19,16 @@
 #include "content/public/common/resource_type.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
+#include "url/gurl.h"
 
 class ResourceDispatcherHost;
 
 namespace net {
 class URLRequest;
+}
+
+namespace safe_browsing {
+class V4LocalDatabaseManager;
 }
 
 // SafeBrowsingResourceThrottle checks that URLs are "safe" before
@@ -178,6 +183,8 @@ class SafeBrowsingResourceThrottle
   const net::URLRequest* request_;
   const content::ResourceType resource_type_;
   net::NetLogWithSource net_log_with_source_;
+  scoped_refptr<safe_browsing::V4LocalDatabaseManager>
+      v4_local_database_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingResourceThrottle);
 };

@@ -12,6 +12,8 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted.h"
+#include "components/safe_browsing_db/v4_feature_list.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -63,6 +65,16 @@ V4LocalDatabaseManager::PendingCheck::PendingCheck(
 }
 
 V4LocalDatabaseManager::PendingCheck::~PendingCheck() {}
+
+// static
+scoped_refptr<V4LocalDatabaseManager> V4LocalDatabaseManager::Create(
+    const base::FilePath& base_path) {
+  if (!V4FeatureList::IsLocalDatabaseManagerEnabled()) {
+    return nullptr;
+  }
+
+  return make_scoped_refptr(new V4LocalDatabaseManager(base_path));
+}
 
 V4LocalDatabaseManager::V4LocalDatabaseManager(const base::FilePath& base_path)
     : base_path_(base_path), enabled_(false), list_infos_(GetListInfos()) {
