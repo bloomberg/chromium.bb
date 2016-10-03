@@ -172,8 +172,21 @@ class MajorGCWrapperVisitor : public v8::PersistentHandleVisitor {
     const WrapperTypeInfo* type = toWrapperTypeInfo(wrapper);
     if (type->isActiveScriptWrappable() &&
         toScriptWrappable(wrapper)->hasPendingActivity()) {
-      m_isolate->SetObjectGroupId(*value, liveRootId());
-      ++m_domObjectsWithPendingActivity;
+      // Enable hasPendingActivity only when the associated
+      // ExecutionContext is not yet detached. This is a work-around
+      // to avoid memory leaks caused by hasPendingActivity that keeps
+      // returning true forever. This will be okay in practice because
+      // the spec requires to stop almost all DOM activities when the
+      // associated browsing context is detached. However, the real
+      // problem is that some hasPendingActivity's are wrongly implemented
+      // and never return false.
+      // TODO(haraken): Implement correct lifetime using traceWrapper.
+      ExecutionContext* context =
+          toExecutionContext(wrapper->CreationContext());
+      if (context && !context->activeDOMObjectsAreStopped()) {
+        m_isolate->SetObjectGroupId(*value, liveRootId());
+        ++m_domObjectsWithPendingActivity;
+      }
     }
 
     if (classId == WrapperTypeInfo::NodeClassId) {
@@ -489,21 +502,14 @@ class PendingActivityVisitor : public v8::PersistentHandleVisitor {
     ASSERT(V8DOMWrapper::hasInternalFieldsSet(wrapper));
     // The ExecutionContext check is heavy, so it should be done at the last.
     if (toWrapperTypeInfo(wrapper)->isActiveScriptWrappable() &&
-        toScriptWrappable(wrapper)->hasPendingActivity()
-        // TODO(haraken): Currently we don't have a way to get a creation
-        // context from a wrapper. We should implement the way and enable
-        // the following condition.
-        //
-        // This condition affects only compositor workers, where one isolate
-        // is shared by multiple workers. If we don't have the condition,
-        // a worker object for a compositor worker doesn't get collected
-        // until all compositor workers in the same isolate lose pending
-        // activities. In other words, not having the condition delays
-        // destruction of a worker object of a compositor worker.
-        //
-        /* && toExecutionContext(wrapper->creationContext()) == m_executionContext */
-        )
-      m_pendingActivityFound = true;
+        toScriptWrappable(wrapper)->hasPendingActivity()) {
+      // See the comment in MajorGCWrapperVisitor::VisitPersistentHandle.
+      ExecutionContext* context =
+          toExecutionContext(wrapper->CreationContext());
+      if (context == m_executionContext && context &&
+          !context->activeDOMObjectsAreStopped())
+        m_pendingActivityFound = true;
+    }
   }
 
   bool pendingActivityFound() const { return m_pendingActivityFound; }
