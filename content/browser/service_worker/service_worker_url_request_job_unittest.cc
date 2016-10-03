@@ -885,6 +885,34 @@ TEST_F(ServiceWorkerURLRequestJobTest, FailFetchDispatch) {
   EXPECT_FALSE(info->service_worker_ready_time().is_null());
 }
 
+// TODO(horo): Remove this test when crbug.com/485900 is fixed.
+TEST_F(ServiceWorkerURLRequestJobTest, MainScriptHTTPResponseInfoNotSet) {
+  // Shouldn't crash if MainScriptHttpResponseInfo is not set.
+  SetUpWithHelper(new EmbeddedWorkerTestHelper(base::FilePath()), false);
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  request_ = url_request_context_.CreateRequest(
+      GURL("https://example.com/foo.html"), net::DEFAULT_PRIORITY,
+      &url_request_delegate_);
+  request_->set_method("GET");
+  request_->Start();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(request_->status().is_success());
+  EXPECT_EQ(200, request_->GetResponseCode());
+  EXPECT_EQ("", url_request_delegate_.response_data());
+
+  EXPECT_EQ(0, times_prepare_to_restart_invoked_);
+  ServiceWorkerResponseInfo* info =
+      ServiceWorkerResponseInfo::ForRequest(request_.get());
+  ASSERT_TRUE(info);
+  EXPECT_TRUE(info->was_fetched_via_service_worker());
+  EXPECT_FALSE(info->was_fallback_required());
+  EXPECT_EQ(GURL(), info->original_url_via_service_worker());
+  EXPECT_EQ(blink::WebServiceWorkerResponseTypeDefault,
+            info->response_type_via_service_worker());
+  EXPECT_FALSE(info->service_worker_start_time().is_null());
+  EXPECT_FALSE(info->service_worker_ready_time().is_null());
+}
+
 TEST_F(ServiceWorkerURLRequestJobTest, FailToActivate_MainResource) {
   RunFailToActivateTest(RESOURCE_TYPE_MAIN_FRAME);
 
