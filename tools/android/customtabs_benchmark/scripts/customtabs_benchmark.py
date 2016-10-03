@@ -6,6 +6,7 @@
 
 """Loops Custom Tabs tests and outputs the results into a CSV file."""
 
+import contextlib
 import logging
 import optparse
 import os
@@ -191,7 +192,36 @@ def _CreateOptionParser():
                     'stdout')
   parser.add_option('--once', help='Run only one iteration.',
                     action='store_true', default=False)
+
+  # WebPageReplay-related options.
+  group = optparse.OptionGroup(
+      parser, 'WebPageReplay options',
+      'Setting any of these enables WebPageReplay.')
+  group.add_option('--record', help='Record the WPR archive.',
+                    action='store_true', default=False)
+  group.add_option('--wpr_archive', help='WPR archive path.')
+  group.add_option('--wpr_log', help='WPR log path.')
+  group.add_option('--network_condition',
+                    help='Network condition for emulation.')
+  parser.add_option_group(group)
+
   return parser
+
+
+@contextlib.contextmanager
+def DummyWprHost():
+  """Dummy context used to run without WebPageReplay."""
+  yield device_setup.WprAttribute(chrome_args=[], chrome_env_override={})
+
+
+def SetupWpr(device, wpr_archive_path, record, network_condition_name,
+             out_log_path):
+  """Sets up the WebPageReplay server if needed."""
+  if wpr_archive_path or record or network_condition_name or out_log_path:
+    return device_setup.RemoteWprHost(device, wpr_archive_path, record,
+                                      network_condition_name, out_log_path)
+  # WebPageReplay disabled.
+  return DummyWprHost()
 
 
 def main():
@@ -210,11 +240,13 @@ def main():
       sys.exit(0)
     device = matching_devices[0]
 
-  with device_setup.FlagReplacer(
-      device, '/data/local/tmp/chrome-command-line',
-      _CHROME_ARGS + ['--prerender=' + options.prerender_mode]):
-      LoopOnDevice(device, options.url, options.warmup,
-                   options.prerender_mode,
+  with SetupWpr(device, options.wpr_archive, options.record,
+                options.network_condition, options.wpr_log) as wpr_attributes:
+    chrome_args = (_CHROME_ARGS + ['--prerender=' + options.prerender_mode] +
+                   wpr_attributes.chrome_args)
+    with device_setup.FlagReplacer(
+        device, '/data/local/tmp/chrome-command-line', chrome_args):
+      LoopOnDevice(device, options.url, options.warmup, options.prerender_mode,
                    options.delay_to_may_launch_url, options.delay_to_launch_url,
                    options.cold, options.output_file, options.once)
 
