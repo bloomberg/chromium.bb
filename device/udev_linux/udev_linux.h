@@ -5,8 +5,8 @@
 // UdevLinux listens for device change notifications from udev and runs
 // callbacks when notifications occur.
 //
-// UdevLinux must be created on a MessageLoop of TYPE_IO.
-// UdevLinux is not thread-safe.
+// UdevLinux must be created on a thread that has instantiated a
+// FileDescriptorWatcher. UdevLinux is not thread-safe.
 //
 // Example usage:
 //
@@ -36,12 +36,13 @@
 #ifndef DEVICE_UDEV_LINUX_UDEV_LINUX_H_
 #define DEVICE_UDEV_LINUX_UDEV_LINUX_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/files/file_descriptor_watcher_posix.h"
 #include "base/macros.h"
-#include "base/message_loop/message_pump_libevent.h"
 #include "device/udev_linux/scoped_udev.h"
 
 extern "C" {
@@ -52,7 +53,7 @@ struct udev_monitor;
 
 namespace device {
 
-class UdevLinux : public base::MessagePumpLibevent::Watcher {
+class UdevLinux {
  public:
   typedef base::Callback<void(udev_device*)> UdevNotificationCallback;
 
@@ -69,22 +70,22 @@ class UdevLinux : public base::MessagePumpLibevent::Watcher {
   // Calls |callback| upon device change events.
   UdevLinux(const std::vector<UdevMonitorFilter>& filters,
             const UdevNotificationCallback& callback);
-  ~UdevLinux() override;
+  ~UdevLinux();
 
   // Returns the udev handle to be passed into other udev_*() functions.
   udev* udev_handle();
 
  private:
-  // base::MessagePump:Libevent::Watcher implementation.
-  void OnFileCanReadWithoutBlocking(int fd) override;
-  void OnFileCanWriteWithoutBlocking(int fd) override;
+  // Called when |monitor_fd_| can be read without blocking.
+  void OnMonitorCanReadWithoutBlocking();
 
   // libudev-related items, the main context, and the monitoring context to be
   // notified about changes to device states.
   const ScopedUdevPtr udev_;
   const ScopedUdevMonitorPtr monitor_;
   int monitor_fd_;
-  base::MessagePumpLibevent::FileDescriptorWatcher monitor_watcher_;
+  std::unique_ptr<base::FileDescriptorWatcher::Controller>
+      monitor_watch_controller_;
   const UdevNotificationCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(UdevLinux);
