@@ -144,7 +144,6 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       defer_load_cb_(params.defer_load_cb()),
       buffered_(static_cast<size_t>(1)),
       media_task_runner_(params.media_task_runner()),
-      ignore_metadata_duration_change_(false),
       pending_seek_(false),
       seeking_(false),
       did_loading_progress_(false),
@@ -689,7 +688,7 @@ void WebMediaPlayerAndroid::OnMediaMetadataChanged(
 
   // Update duration, if necessary, prior to ready state updates that may
   // cause duration() query.
-  if (!ignore_metadata_duration_change_ && duration_ != duration) {
+  if (duration_ != duration) {
     duration_ = duration;
     if (is_local_resource_)
       buffered_[0].end = duration_.InSecondsF();
@@ -1229,16 +1228,6 @@ void WebMediaPlayerAndroid::UpdatePlayingState(bool is_playing) {
                           playback_completed_ || currentTime() >= duration());
     }
   }
-}
-
-void WebMediaPlayerAndroid::setContentDecryptionModule(
-    blink::WebContentDecryptionModule* cdm,
-    blink::WebContentDecryptionModuleResult result) {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-
-  result.completeWithError(
-      blink::WebContentDecryptionModuleExceptionInvalidStateError, 0,
-      "EME is not supported for this playback.");
 }
 
 void WebMediaPlayerAndroid::OnHidden() {

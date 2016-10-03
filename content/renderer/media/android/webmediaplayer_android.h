@@ -213,10 +213,6 @@ class WebMediaPlayerAndroid
   // However, the actual GlTexture is not released to keep the video screenshot.
   void SuspendAndReleaseResources() override;
 
-  void setContentDecryptionModule(
-      blink::WebContentDecryptionModule* cdm,
-      blink::WebContentDecryptionModuleResult result) override;
-
   // WebMediaPlayerDelegate::Observer implementation.
   void OnHidden() override;
   void OnShown() override;
@@ -321,11 +317,6 @@ class WebMediaPlayerAndroid
 
   // Media duration.
   base::TimeDelta duration_;
-
-  // Flag to remember if we have a trusted duration_ value provided by
-  // MediaSourceDelegate notifying OnDurationChanged(). In this case, ignore
-  // any subsequent duration value passed to OnMediaMetadataChange().
-  bool ignore_metadata_duration_change_;
 
   // Seek gets pending if another seek is in progress. Only last pending seek
   // will have effect.
