@@ -123,6 +123,10 @@ const char* SchedulerStateMachine::BeginMainFrameStateToString(
       return "BEGIN_MAIN_FRAME_STATE_STARTED";
     case BEGIN_MAIN_FRAME_STATE_READY_TO_COMMIT:
       return "BEGIN_MAIN_FRAME_STATE_READY_TO_COMMIT";
+    case BEGIN_MAIN_FRAME_STATE_WAITING_FOR_ACTIVATION:
+      return "BEGIN_MAIN_FRAME_STATE_WAITING_FOR_ACTIVATION";
+    case BEGIN_MAIN_FRAME_STATE_WAITING_FOR_DRAW:
+      return "BEGIN_MAIN_FRAME_STATE_WAITING_FOR_DRAW";
   }
   NOTREACHED();
   return "???";
@@ -363,17 +367,6 @@ bool SchedulerStateMachine::ShouldDraw() const {
   if (begin_impl_frame_state_ != BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE)
     return false;
 
-  // Wait for active tree to be rasterized before drawing in browser compositor.
-  if (wait_for_ready_to_draw_) {
-    DCHECK(settings_.commit_to_active_tree);
-    return false;
-  }
-
-  // Browser compositor commit steals any resources submitted in draw. Therefore
-  // drawing while a commit is pending is wasteful.
-  if (settings_.commit_to_active_tree && CommitPending())
-    return false;
-
   // Only handle forced redraws due to timeouts on the regular deadline.
   if (forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_DRAW)
     return true;
@@ -436,16 +429,6 @@ bool SchedulerStateMachine::ShouldSendBeginMainFrame() const {
   if (begin_main_frame_state_ != BEGIN_MAIN_FRAME_STATE_IDLE)
     return false;
 
-  // MFBA is disabled and we are waiting for previous activation.
-  if (!settings_.main_frame_before_activation_enabled && has_pending_tree_)
-    return false;
-
-  // We are waiting for previous frame to be drawn, swapped and acked.
-  if (settings_.commit_to_active_tree &&
-      (active_tree_needs_first_draw_ || SwapThrottled())) {
-    return false;
-  }
-
   // Don't send BeginMainFrame early if we are prioritizing the active tree
   // because of ImplLatencyTakesPriority.
   if (ImplLatencyTakesPriority() &&
@@ -501,12 +484,9 @@ bool SchedulerStateMachine::ShouldCommit() const {
     return false;
   }
 
-  // If we only have an active tree, it is incorrect to replace it before we've
-  // drawn it.
+  // If we only have an active tree, it is incorrect to replace it
+  // before we've drawn it.
   DCHECK(!settings_.commit_to_active_tree || !active_tree_needs_first_draw_);
-
-  // In browser compositor commit reclaims any resources submitted during draw.
-  DCHECK(!settings_.commit_to_active_tree || !SwapThrottled());
 
   return true;
 }
@@ -586,7 +566,12 @@ void SchedulerStateMachine::WillCommit(bool commit_has_no_updates) {
           commit_has_no_updates));
   commit_count_++;
   last_commit_had_no_updates_ = commit_has_no_updates;
-  begin_main_frame_state_ = BEGIN_MAIN_FRAME_STATE_IDLE;
+
+  if (commit_has_no_updates || settings_.main_frame_before_activation_enabled) {
+    begin_main_frame_state_ = BEGIN_MAIN_FRAME_STATE_IDLE;
+  } else {
+    begin_main_frame_state_ = BEGIN_MAIN_FRAME_STATE_WAITING_FOR_ACTIVATION;
+  }
 
   if (!commit_has_no_updates) {
     // Pending tree only exists if commit had updates.
@@ -612,6 +597,13 @@ void SchedulerStateMachine::WillCommit(bool commit_has_no_updates) {
 }
 
 void SchedulerStateMachine::WillActivate() {
+  if (begin_main_frame_state_ ==
+      BEGIN_MAIN_FRAME_STATE_WAITING_FOR_ACTIVATION) {
+    begin_main_frame_state_ = settings_.commit_to_active_tree
+                                  ? BEGIN_MAIN_FRAME_STATE_WAITING_FOR_DRAW
+                                  : BEGIN_MAIN_FRAME_STATE_IDLE;
+  }
+
   if (compositor_frame_sink_state_ ==
       COMPOSITOR_FRAME_SINK_WAITING_FOR_FIRST_ACTIVATION)
     compositor_frame_sink_state_ = COMPOSITOR_FRAME_SINK_ACTIVE;
@@ -644,6 +636,9 @@ void SchedulerStateMachine::WillDrawInternal() {
 
   if (forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_DRAW)
     forced_redraw_state_ = FORCED_REDRAW_STATE_IDLE;
+
+  if (begin_main_frame_state_ == BEGIN_MAIN_FRAME_STATE_WAITING_FOR_DRAW)
+    begin_main_frame_state_ = BEGIN_MAIN_FRAME_STATE_IDLE;
 }
 
 void SchedulerStateMachine::DidDrawInternal(DrawResult draw_result) {
@@ -876,12 +871,12 @@ SchedulerStateMachine::CurrentBeginImplFrameDeadlineMode() const {
   if (settings_.using_synchronous_renderer_compositor) {
     // No deadline for synchronous compositor.
     return BEGIN_IMPL_FRAME_DEADLINE_MODE_NONE;
-  } else if (wait_for_ready_to_draw_) {
-    // In browser compositor, wait for active tree to be rasterized.
-    DCHECK(settings_.commit_to_active_tree);
-    return BEGIN_IMPL_FRAME_DEADLINE_MODE_BLOCKED_ON_READY_TO_DRAW;
   } else if (ShouldTriggerBeginImplFrameDeadlineImmediately()) {
     return BEGIN_IMPL_FRAME_DEADLINE_MODE_IMMEDIATE;
+  } else if (wait_for_ready_to_draw_) {
+    // When we are waiting for ready to draw signal, we do not wait to post a
+    // deadline yet.
+    return BEGIN_IMPL_FRAME_DEADLINE_MODE_BLOCKED_ON_READY_TO_DRAW;
   } else if (needs_redraw_) {
     // We have an animation or fast input path on the impl thread that wants
     // to draw, so don't wait too long for a new active tree.
@@ -899,6 +894,11 @@ bool SchedulerStateMachine::ShouldTriggerBeginImplFrameDeadlineImmediately()
   if (PendingActivationsShouldBeForced() && !has_pending_tree_)
     return true;
 
+  // Do not trigger deadline immediately if we're waiting for READY_TO_DRAW
+  // unless it's one of the forced cases.
+  if (wait_for_ready_to_draw_)
+    return false;
+
   // SwapAck throttle the deadline since we wont draw and swap anyway.
   if (SwapThrottled())
     return false;
@@ -914,7 +914,8 @@ bool SchedulerStateMachine::ShouldTriggerBeginImplFrameDeadlineImmediately()
   // don't have a pending tree -- otherwise we should give it a chance to
   // activate.
   // TODO(skyostil): Revisit this when we have more accurate deadline estimates.
-  if (!CommitPending() && !has_pending_tree_)
+  if (begin_main_frame_state_ == BEGIN_MAIN_FRAME_STATE_IDLE &&
+      !has_pending_tree_)
     return true;
 
   // Prioritize impl-thread draws in ImplLatencyTakesPriority mode.
@@ -1031,8 +1032,9 @@ void SchedulerStateMachine::NotifyReadyToCommit() {
   DCHECK_EQ(begin_main_frame_state_, BEGIN_MAIN_FRAME_STATE_STARTED)
       << AsValue()->ToString();
   begin_main_frame_state_ = BEGIN_MAIN_FRAME_STATE_READY_TO_COMMIT;
-  // In commit_to_active_tree mode, commit should happen right after BeginFrame,
-  // meaning when this function is called, next action should be commit.
+  // In commit_to_active_tree mode, commit should happen right after
+  // BeginFrame, meaning when this function is called, next action should be
+  // commit.
   if (settings_.commit_to_active_tree)
     DCHECK(ShouldCommit());
 }
