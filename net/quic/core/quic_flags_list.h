@@ -146,3 +146,7 @@ QUIC_FLAG(bool, FLAGS_quic_largest_sent_retransmittable, true)
 
 // If true, close connection when sequencer buffer enter into unexpected state.
 QUIC_FLAG(bool, FLAGS_quic_stream_sequencer_buffer_debug, true)
+
+// If true, release QuicCryptoStream\'s read buffer when stream are less
+// frequently used.
+QUIC_FLAG(bool, FLAGS_quic_release_crypto_stream_buffer, false)

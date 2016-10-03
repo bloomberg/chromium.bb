@@ -35,6 +35,7 @@
 #include "net/quic/test_tools/quic_sent_packet_manager_peer.h"
 #include "net/quic/test_tools/quic_session_peer.h"
 #include "net/quic/test_tools/quic_spdy_session_peer.h"
+#include "net/quic/test_tools/quic_stream_sequencer_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/reliable_quic_stream_peer.h"
 #include "net/test/gtest_util.h"
@@ -658,6 +659,27 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
 INSTANTIATE_TEST_CASE_P(EndToEndTests,
                         EndToEndTest,
                         ::testing::ValuesIn(GetTestParams()));
+
+TEST_P(EndToEndTest, HandshakeSuccessful) {
+  ASSERT_TRUE(Initialize());
+  client_->client()->WaitForCryptoHandshakeConfirmed();
+  QuicCryptoStream* crypto_stream =
+      QuicSessionPeer::GetCryptoStream(client_->client()->session());
+  QuicStreamSequencer* sequencer =
+      ReliableQuicStreamPeer::sequencer(crypto_stream);
+  EXPECT_NE(FLAGS_quic_release_crypto_stream_buffer &&
+                FLAGS_quic_reduce_sequencer_buffer_memory_life_time,
+            QuicStreamSequencerPeer::IsUnderlyingBufferAllocated(sequencer));
+  server_thread_->Pause();
+  QuicDispatcher* dispatcher =
+      QuicServerPeer::GetDispatcher(server_thread_->server());
+  QuicSession* server_session = dispatcher->session_map().begin()->second;
+  crypto_stream = QuicSessionPeer::GetCryptoStream(server_session);
+  sequencer = ReliableQuicStreamPeer::sequencer(crypto_stream);
+  EXPECT_NE(FLAGS_quic_release_crypto_stream_buffer &&
+                FLAGS_quic_reduce_sequencer_buffer_memory_life_time,
+            QuicStreamSequencerPeer::IsUnderlyingBufferAllocated(sequencer));
+}
 
 TEST_P(EndToEndTest, SimpleRequestResponse) {
   ASSERT_TRUE(Initialize());
