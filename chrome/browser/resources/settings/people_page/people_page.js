@@ -347,7 +347,7 @@ Polymer({
     if (syncStatus.managed)
       return 'settings:sync-disabled';
 
-    return 'settings:done';
+    return 'settings:sync';
   },
 
   /**
