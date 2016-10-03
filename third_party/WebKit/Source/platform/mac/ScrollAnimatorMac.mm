@@ -45,7 +45,8 @@
 using namespace blink;
 
 static bool supportsUIStateTransitionProgress() {
-  // FIXME: This is temporary until all platforms that support ScrollbarPainter support this part of the API.
+  // FIXME: This is temporary until all platforms that support ScrollbarPainter
+  // support this part of the API.
   static bool globalSupportsUIStateTransitionProgress =
       [NSClassFromString(@"NSScrollerImp")
           instancesRespondToSelector:@selector(mouseEnteredScroller)];
@@ -221,11 +222,11 @@ static NSSize abs(NSSize size) {
   else
     scrollbar = _scrollableArea->verticalScrollbar();
 
-  // It is possible to have a null scrollbar here since it is possible for this delegate
-  // method to be called between the moment when a scrollbar has been set to 0 and the
-  // moment when its destructor has been called. We should probably de-couple some
-  // of the clean-up work in ScrollbarThemeMac::unregisterScrollbar() to avoid this
-  // issue.
+  // It is possible to have a null scrollbar here since it is possible for this
+  // delegate method to be called between the moment when a scrollbar has been
+  // set to 0 and the moment when its destructor has been called. We should
+  // probably de-couple some of the clean-up work in
+  // ScrollbarThemeMac::unregisterScrollbar() to avoid this issue.
   if (!scrollbar)
     return NSZeroPoint;
 
@@ -249,8 +250,9 @@ static NSSize abs(NSSize size) {
 - (void)scrollerImpPair:(id)scrollerImpPair
     updateScrollerStyleForNewRecommendedScrollerStyle:
         (NSScrollerStyle)newRecommendedScrollerStyle {
-  // Chrome has a single process mode which is used for testing on Mac. In that mode, WebKit runs on a thread in the
-  // browser process. This notification is called by the OS on the main thread in the browser process, and not on the
+  // Chrome has a single process mode which is used for testing on Mac. In that
+  // mode, WebKit runs on a thread in the browser process. This notification is
+  // called by the OS on the main thread in the browser process, and not on the
   // the WebKit thread. Better to not update the style than crash.
   // http://crbug.com/126514
   if (!isMainThread())
@@ -278,10 +280,10 @@ enum FeatureToAnimate {
 
 namespace blink {
 
-// This class is used to drive the animation timer for BlinkScrollbarPartAnimation
-// objects. This is used instead of NSAnimation because CoreAnimation
-// establishes connections to the WindowServer, which should not be done in a
-// sandboxed renderer process.
+// This class is used to drive the animation timer for
+// BlinkScrollbarPartAnimation objects. This is used instead of NSAnimation
+// because CoreAnimation establishes connections to the WindowServer, which
+// should not be done in a sandboxed renderer process.
 class BlinkScrollbarPartAnimationTimer {
  public:
   BlinkScrollbarPartAnimationTimer(BlinkScrollbarPartAnimation* animation,
@@ -496,8 +498,8 @@ class BlinkScrollbarPartAnimationTimer {
                        part:(blink::ScrollbarPart)part
              animateAlphaTo:(CGFloat)newAlpha
                    duration:(NSTimeInterval)duration {
-  // If the user has scrolled the page, then the scrollbars must be animated here.
-  // This overrides the early returns.
+  // If the user has scrolled the page, then the scrollbars must be animated
+  // here.  This overrides the early returns.
   bool mustAnimate = [self scrollAnimator].haveScrolledSincePageLoad();
 
   if ([self scrollAnimator].scrollbarPaintTimerIsActive() && !mustAnimate)
@@ -581,7 +583,8 @@ class BlinkScrollbarPartAnimationTimer {
 
   ScrollbarPainter scrollbarPainter = (ScrollbarPainter)scrollerImp;
 
-  // UIStateTransition always animates to 1. In case an animation is in progress this avoids a hard transition.
+  // UIStateTransition always animates to 1. In case an animation is in progress
+  // this avoids a hard transition.
   [scrollbarPainter
       setUiStateTransitionProgress:1 - [scrollerImp uiStateTransitionProgress]];
 
@@ -593,7 +596,8 @@ class BlinkScrollbarPartAnimationTimer {
                 animateTo:1.0
                  duration:duration]);
   else {
-    // If we don't need to initialize the animation, just reset the values in case they have changed.
+    // If we don't need to initialize the animation, just reset the values in
+    // case they have changed.
     [_uiStateTransitionAnimation.get()
         setStartValue:[scrollbarPainter uiStateTransitionProgress]];
     [_uiStateTransitionAnimation.get() setEndValue:1.0];
@@ -614,7 +618,8 @@ class BlinkScrollbarPartAnimationTimer {
 
   ScrollbarPainter scrollbarPainter = (ScrollbarPainter)scrollerImp;
 
-  // ExpansionTransition always animates to 1. In case an animation is in progress this avoids a hard transition.
+  // ExpansionTransition always animates to 1. In case an animation is in
+  // progress this avoids a hard transition.
   [scrollbarPainter
       setExpansionTransitionProgress:1 -
                                      [scrollerImp expansionTransitionProgress]];
@@ -627,7 +632,8 @@ class BlinkScrollbarPartAnimationTimer {
                 animateTo:1.0
                  duration:duration]);
   } else {
-    // If we don't need to initialize the animation, just reset the values in case they have changed.
+    // If we don't need to initialize the animation, just reset the values in
+    // case they have changed.
     [_expansionTransitionAnimation.get()
         setStartValue:[scrollbarPainter uiStateTransitionProgress]];
     [_expansionTransitionAnimation.get() setEndValue:1.0];
@@ -638,15 +644,17 @@ class BlinkScrollbarPartAnimationTimer {
 
 - (void)scrollerImp:(id)scrollerImp
     overlayScrollerStateChangedTo:(NSUInteger)newOverlayScrollerState {
-  // The names of these states are based on their observed behavior, and are not based on documentation.
+  // The names of these states are based on their observed behavior, and are not
+  // based on documentation.
   enum {
     NSScrollerStateInvisible = 0,
     NSScrollerStateKnob = 1,
     NSScrollerStateExpanded = 2
   };
-  // We do not receive notifications about the thumb un-expanding when the scrollbar fades away. Ensure
-  // that we re-paint the thumb the next time that we transition away from being invisible, so that
-  // the thumb doesn't stick in an expanded state.
+  // We do not receive notifications about the thumb un-expanding when the
+  // scrollbar fades away. Ensure that we re-paint the thumb the next time that
+  // we transition away from being invisible, so that the thumb doesn't stick
+  // in an expanded state.
   if (newOverlayScrollerState == NSScrollerStateExpanded) {
     _hasExpandedSinceInvisible = YES;
   } else if (newOverlayScrollerState != NSScrollerStateInvisible &&
@@ -751,8 +759,9 @@ ScrollResult ScrollAnimatorMac::userScroll(ScrollGranularity granularity,
   NSPoint newPoint = NSMakePoint(newPos.x(), newPos.y());
   [m_scrollAnimationHelper.get() scrollToPoint:newPoint];
 
-  // TODO(bokan): This has different semantics on ScrollResult than ScrollAnimator,
-  // which only returns unused delta if there's no animation and we don't start one.
+  // TODO(bokan): This has different semantics on ScrollResult than
+  // ScrollAnimator, which only returns unused delta if there's no animation
+  // and we don't start one.
   return ScrollResult(consumedDelta.width(), consumedDelta.height(),
                       delta.width() - consumedDelta.width(),
                       delta.height() - consumedDelta.height());
@@ -938,7 +947,8 @@ bool ScrollAnimatorMac::shouldScrollbarParticipateInHitTesting(
   if (ScrollbarThemeMac::recommendedScrollerStyle() != NSScrollerStyleOverlay)
     return true;
 
-  // Overlay scrollbars should participate in hit testing whenever they are at all visible.
+  // Overlay scrollbars should participate in hit testing whenever they are at
+  // all visible.
   ScrollbarPainter painter = scrollbarPainterForScrollbar(scrollbar);
   if (!painter)
     return false;
@@ -946,9 +956,10 @@ bool ScrollAnimatorMac::shouldScrollbarParticipateInHitTesting(
 }
 
 void ScrollAnimatorMac::notifyContentAreaScrolled(const FloatSize& delta) {
-  // This function is called when a page is going into the page cache, but the page
-  // isn't really scrolling in that case. We should only pass the message on to the
-  // ScrollbarPainterController when we're really scrolling on an active page.
+  // This function is called when a page is going into the page cache, but the
+  // page isn't really scrolling in that case. We should only pass the message
+  // on to the ScrollbarPainterController when we're really scrolling on an
+  // active page.
   if (getScrollableArea()->scrollbarsCanBeActive())
     sendContentAreaScrolledSoon(delta);
 }
@@ -970,8 +981,8 @@ void ScrollAnimatorMac::cancelAnimation() {
 }
 
 void ScrollAnimatorMac::handleWheelEventPhase(PlatformWheelEventPhase phase) {
-  // This may not have been set to true yet if the wheel event was handled by the ScrollingTree,
-  // So set it to true here.
+  // This may not have been set to true yet if the wheel event was handled by
+  // the ScrollingTree, so set it to true here.
   m_haveScrolledSincePageLoad = true;
 
   if (phase == PlatformWheelEventPhaseBegan)
@@ -1011,9 +1022,9 @@ void ScrollAnimatorMac::updateScrollerStyle() {
         setVerticalScrollerImp:newVerticalPainter];
     macTheme->setNewPainterForScrollbar(*verticalScrollbar, newVerticalPainter);
 
-    // The different scrollbar styles have different thicknesses, so we must re-set the
-    // frameRect to the new thickness, and the re-layout below will ensure the position
-    // and length are properly updated.
+    // The different scrollbar styles have different thicknesses, so we must
+    // re-set the frameRect to the new thickness, and the re-layout below will
+    // ensure the position and length are properly updated.
     int thickness =
         macTheme->scrollbarThickness(verticalScrollbar->controlSize());
     verticalScrollbar->setFrameRect(IntRect(0, 0, thickness, thickness));
@@ -1035,16 +1046,17 @@ void ScrollAnimatorMac::updateScrollerStyle() {
     macTheme->setNewPainterForScrollbar(*horizontalScrollbar,
                                         newHorizontalPainter);
 
-    // The different scrollbar styles have different thicknesses, so we must re-set the
-    // frameRect to the new thickness, and the re-layout below will ensure the position
-    // and length are properly updated.
+    // The different scrollbar styles have different thicknesses, so we must
+    // re-set the frameRect to the new thickness, and the re-layout below will
+    // ensure the position and length are properly updated.
     int thickness =
         macTheme->scrollbarThickness(horizontalScrollbar->controlSize());
     horizontalScrollbar->setFrameRect(IntRect(0, 0, thickness, thickness));
   }
 
-  // If m_needsScrollerStyleUpdate is true, then the page is restoring from the page cache, and
-  // a relayout will happen on its own. Otherwise, we must initiate a re-layout ourselves.
+  // If m_needsScrollerStyleUpdate is true, then the page is restoring from the
+  // page cache, and a relayout will happen on its own. Otherwise, we must
+  // initiate a re-layout ourselves.
   if (!m_needsScrollerStyleUpdate)
     getScrollableArea()->scrollbarStyleChanged();
 
@@ -1066,8 +1078,9 @@ void ScrollAnimatorMac::stopScrollbarPaintTimer() {
 }
 
 void ScrollAnimatorMac::initialScrollbarPaintTask() {
-  // To force the scrollbars to flash, we have to call hide first. Otherwise, the ScrollbarPainterController
-  // might think that the scrollbars are already showing and bail early.
+  // To force the scrollbars to flash, we have to call hide first. Otherwise,
+  // the ScrollbarPainterController might think that the scrollbars are already
+  // showing and bail early.
   [m_scrollbarPainterController.get() hideOverlayScrollers];
   [m_scrollbarPainterController.get() flashScrollers];
 }

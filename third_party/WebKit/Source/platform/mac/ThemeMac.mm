@@ -119,9 +119,9 @@ static void setControlSize(NSCell* cell,
                            float zoomFactor) {
   ControlSize size =
       ThemeMac::controlSizeFromPixelSize(sizes, minZoomedSize, zoomFactor);
-  if (size !=
-      [cell
-          controlSize])  // Only update if we have to, since AppKit does work even if the size is the same.
+  // Only update if we have to, since AppKit does work even if the size is the
+  // same.
+  if (size != [cell controlSize])
     [cell setControlSize:(NSControlSize)size];
 }
 
@@ -149,8 +149,8 @@ static void updateStates(NSCell* cell, ControlStates states) {
     [cell setState:indeterminate ? NSMixedState
                                  : (checked ? NSOnState : NSOffState)];
 
-  // Window inactive state does not need to be checked explicitly, since we paint parented to
-  // a view in a window whose key state can be detected.
+  // Window inactive state does not need to be checked explicitly, since we
+  // paint parented to a view in a window whose key state can be detected.
 }
 
 // Return a fake NSView whose sole purpose is to tell AppKit that it's flipped.
@@ -167,8 +167,9 @@ IntRect ThemeMac::inflateRect(const IntRect& zoomedRect,
                               const IntSize& zoomedSize,
                               const int* margins,
                               float zoomFactor) {
-  // Only do the inflation if the available width/height are too small.  Otherwise try to
-  // fit the glow/check space into the available box's width/height.
+  // Only do the inflation if the available width/height are too small.
+  // Otherwise try to fit the glow/check space into the available box's
+  // width/height.
   int widthDelta = zoomedRect.width() -
                    (zoomedSize.width() + margins[LeftMargin] * zoomFactor +
                     margins[RightMargin] * zoomFactor);
@@ -196,9 +197,10 @@ IntRect ThemeMac::inflateRectForAA(const IntRect& rect) {
 
 // static
 IntRect ThemeMac::inflateRectForFocusRing(const IntRect& rect) {
-  // Just put a margin of 16 units around the rect. The UI elements that use this don't appropriately
-  // scale their focus rings appropriately (e.g, paint pickers), or switch to non-native widgets when
-  // scaled (e.g, check boxes and radio buttons).
+  // Just put a margin of 16 units around the rect. The UI elements that use
+  // this don't appropriately scale their focus rings appropriately (e.g, paint
+  // pickers), or switch to non-native widgets when scaled (e.g, check boxes
+  // and radio buttons).
   const int margin = 16;
   IntRect result;
   result.setX(rect.x() - margin);
@@ -465,11 +467,12 @@ LengthBox ThemeMac::controlPadding(ControlPart part,
                                    float zoomFactor) const {
   switch (part) {
     case PushButtonPart: {
-      // Just use 8px.  AppKit wants to use 11px for mini buttons, but that padding is just too large
-      // for real-world Web sites (creating a huge necessary minimum width for buttons whose space is
-      // by definition constrained, since we select mini only for small cramped environments.
-      // This also guarantees the HTML <button> will match our rendering by default, since we're using a consistent
-      // padding.
+      // Just use 8px.  AppKit wants to use 11px for mini buttons, but that
+      // padding is just too large for real-world Web sites (creating a huge
+      // necessary minimum width for buttons whose space is by definition
+      // constrained, since we select mini only for small cramped environments.
+      // This also guarantees the HTML <button> will match our rendering by
+      // default, since we're using a consistent padding.
       const int padding = 8 * zoomFactor;
       return LengthBox(2, padding, 3, padding);
     }
@@ -486,8 +489,9 @@ void ThemeMac::addVisualOverflow(ControlPart part,
   BEGIN_BLOCK_OBJC_EXCEPTIONS
   switch (part) {
     case CheckboxPart: {
-      // We inflate the rect as needed to account for padding included in the cell to accommodate the checkbox
-      // shadow" and the check.  We don't consider this part of the bounds of the control in WebKit.
+      // We inflate the rect as needed to account for padding included in the
+      // cell to accommodate the checkbox shadow" and the check.  We don't
+      // consider this part of the bounds of the control in WebKit.
       NSCell* cell = checkbox(states, zoomedRect, zoomFactor);
       NSControlSize controlSize = [cell controlSize];
       IntSize zoomedSize = checkboxSizes()[controlSize];
@@ -498,8 +502,9 @@ void ThemeMac::addVisualOverflow(ControlPart part,
       break;
     }
     case RadioPart: {
-      // We inflate the rect as needed to account for padding included in the cell to accommodate the radio button
-      // shadow".  We don't consider this part of the bounds of the control in WebKit.
+      // We inflate the rect as needed to account for padding included in the
+      // cell to accommodate the radio button shadow".  We don't consider this
+      // part of the bounds of the control in WebKit.
       NSCell* cell = radio(states, zoomedRect, zoomFactor);
       NSControlSize controlSize = [cell controlSize];
       IntSize zoomedSize = radioSizes()[controlSize];
@@ -518,9 +523,9 @@ void ThemeMac::addVisualOverflow(ControlPart part,
       if ([cell bezelStyle] == NSRoundedBezelStyle) {
         IntSize zoomedSize = buttonSizes()[controlSize];
         zoomedSize.setHeight(zoomedSize.height() * zoomFactor);
-        zoomedSize.setWidth(
-            zoomedRect
-                .width());  // Buttons don't ever constrain width, so the zoomed width can just be honored.
+        // Buttons don't ever constrain width, so the zoomed width can just be
+        // honored.
+        zoomedSize.setWidth(zoomedRect.width());
         zoomedRect = inflateRect(zoomedRect, zoomedSize,
                                  buttonMargins(controlSize), zoomFactor);
       }

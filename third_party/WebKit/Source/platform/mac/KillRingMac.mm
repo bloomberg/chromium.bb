@@ -29,7 +29,8 @@ namespace blink {
 
 extern "C" {
 
-// Kill ring calls. Would be better to use NSKillRing.h, but that's not available as API or SPI.
+// Kill ring calls. Would be better to use NSKillRing.h, but that's not
+// available as API or SPI.
 
 void _NSInitializeKillRing();
 void _NSAppendToKillRing(NSString*);

@@ -74,7 +74,8 @@ class ThemeMac : public Theme {
                                              const int* margins,
                                              float zoomLevel = 1.0f);
 
-  // Inflate an IntRect to account for any bleeding that would happen due to anti-aliasing.
+  // Inflate an IntRect to account for any bleeding that would happen due to
+  // anti-aliasing.
   static PLATFORM_EXPORT IntRect inflateRectForAA(const IntRect&);
 
   // Inflate an IntRect to account for its focus ring.

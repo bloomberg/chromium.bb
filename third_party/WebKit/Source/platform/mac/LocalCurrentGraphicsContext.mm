@@ -52,9 +52,10 @@ LocalCurrentGraphicsContext::LocalCurrentGraphicsContext(
   m_savedCanvas = canvas;
   canvas->save();
 
-  // Constrain the maximum size of what we paint to something reasonable. This accordingly
-  // means we will not paint the entirety of truly huge native form elements, which is
-  // deemed an acceptable tradeoff for this simple approach to manage such an edge case.
+  // Constrain the maximum size of what we paint to something reasonable. This
+  // accordingly means we will not paint the entirety of truly huge native form
+  // elements, which is deemed an acceptable tradeoff for this simple approach
+  // to manage such an edge case.
   if (dirtyRect.width() > kMaxDirtyRectPixelSize ||
       dirtyRect.height() > kMaxDirtyRectPixelSize)
     canvas->clipRect(clampRect(kMaxDirtyRectPixelSize, dirtyRect),
