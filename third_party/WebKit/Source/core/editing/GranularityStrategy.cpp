@@ -71,8 +71,7 @@ VisibleSelection CharacterGranularityStrategy::updateExtent(
   if (selection.visibleBase().deepEquivalent() ==
       extentPosition.deepEquivalent())
     return selection;
-  return createVisibleSelectionDeprecated(selection.visibleBase(),
-                                          extentPosition);
+  return createVisibleSelection(selection.visibleBase(), extentPosition);
 }
 
 DirectionGranularityStrategy::DirectionGranularityStrategy()
@@ -147,9 +146,10 @@ VisibleSelection DirectionGranularityStrategy::updateExtent(
   // strategy if we detect that the text's baseline coordinate changed
   // without a line change.
   if (verticalChange &&
-      inSameLine(newOffsetExtentPosition, oldOffsetExtentPosition))
-    return createVisibleSelectionDeprecated(selection.visibleBase(),
-                                            newOffsetExtentPosition);
+      inSameLine(newOffsetExtentPosition, oldOffsetExtentPosition)) {
+    return createVisibleSelection(selection.visibleBase(),
+                                  newOffsetExtentPosition);
+  }
 
   int oldExtentBaseOrder = selection.isBaseFirst() ? 1 : -1;
 
