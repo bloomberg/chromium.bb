@@ -43,6 +43,12 @@ Polymer({
      * @private {!Array<string>}
      */
     yearList_: Array,
+
+    /** @private */
+    expirationYear_: String,
+
+    /** @private {string|undefined} */
+    expirationMonth_: String,
   },
 
   behaviors: [
@@ -77,10 +83,11 @@ Polymer({
     }
     this.yearList_ = yearList;
 
-    this.expirationYear = this.creditCard.expirationYear;
-    this.expirationMonth = this.creditCard.expirationMonth;
-
-    this.$.dialog.showModal();
+    this.async(function() {
+      this.expirationYear_ = selectedYear.toString();
+      this.expirationMonth_ = this.creditCard.expirationMonth;
+      this.$.dialog.showModal();
+    }.bind(this));
   },
 
   /** Closes the dialog. */
@@ -101,10 +108,20 @@ Polymer({
    * @private
    */
   onSaveButtonTap_: function() {
-    this.creditCard.expirationYear = this.expirationYear;
-    this.creditCard.expirationMonth = this.expirationMonth;
+    this.creditCard.expirationYear = this.expirationYear_;
+    this.creditCard.expirationMonth = this.expirationMonth_;
     this.fire('save-credit-card', this.creditCard);
     this.close();
+  },
+
+  /** @private */
+  onMonthChange_: function() {
+    this.expirationMonth_ = this.monthList_[this.$.month.selectedIndex];
+  },
+
+  /** @private */
+  onYearChange_: function() {
+    this.expirationYear_ = this.yearList_[this.$.year.selectedIndex];
   },
 });
 })();
