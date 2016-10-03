@@ -32,8 +32,10 @@ class DesktopSessionDurationTracker : public AudibleContentsTracker::Observer {
   // Called when user interaction with the browser is caught.
   void OnUserEvent();
 
-  // Called when visibility of the browser changes.
-  void OnVisibilityChanged(bool visible);
+  // Called when visibility of the browser changes. These events can be delayed
+  // due to timeout logic, the extent of which can be communicated via
+  // |time_ago|. This time is used to correct the session duration.
+  void OnVisibilityChanged(bool visible, base::TimeDelta time_ago);
 
   bool is_visible() const { return is_visible_; }
   bool in_session() const { return in_session_; }
@@ -63,7 +65,9 @@ class DesktopSessionDurationTracker : public AudibleContentsTracker::Observer {
   void StartSession();
 
   // Ends the session and saves session information into histograms.
-  void EndSession();
+  // |time_to_discount| contains the amount of time that should be removed from
+  // the apparent session length due to timeout logic.
+  void EndSession(base::TimeDelta time_to_discount);
 
   // Sets |inactivity_timeout_| based on variation params.
   void InitInactivityTimeout();

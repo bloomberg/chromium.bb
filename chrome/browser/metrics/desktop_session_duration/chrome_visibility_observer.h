@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_METRICS_DESKTOP_SESSION_DURATION_CHROME_VISIBILITY_OBSERVER_H_
 
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 
 namespace metrics {
@@ -18,7 +19,7 @@ class ChromeVisibilityObserver : public chrome::BrowserListObserver {
  protected:
   // Notifies |DesktopSessionDurationTracker| of visibility changes. Overridden
   // by tests.
-  virtual void SendVisibilityChangeEvent(bool active);
+  virtual void SendVisibilityChangeEvent(bool active, base::TimeDelta time_ago);
 
  private:
   // Cancels visibility change in case when the browser becomes visible after a

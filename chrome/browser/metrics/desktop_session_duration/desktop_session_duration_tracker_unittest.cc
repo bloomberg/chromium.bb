@@ -8,7 +8,14 @@
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/test_mock_time_task_runner.h"
+#include "base/threading/platform_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
+
+const base::TimeDelta kZeroTime = base::TimeDelta::FromSeconds(0);
+
+}  // namespace
 
 // Mock class for |DesktopSessionDurationTracker| for testing.
 class MockDesktopSessionDurationTracker
@@ -33,147 +40,169 @@ class MockDesktopSessionDurationTracker
   DISALLOW_COPY_AND_ASSIGN(MockDesktopSessionDurationTracker);
 };
 
-TEST(DesktopSessionDurationTrackerTest, TestVisibility) {
-  base::MessageLoop loop(base::MessageLoop::TYPE_DEFAULT);
-  base::HistogramTester histogram_tester;
+class DesktopSessionDurationTrackerTest : public testing::Test {
+ public:
+  DesktopSessionDurationTrackerTest()
+      : loop_(base::MessageLoop::TYPE_DEFAULT) {}
 
-  MockDesktopSessionDurationTracker instance;
+  void ExpectTotalDuration(base::TimeDelta duration) {
+    histogram_tester_.ExpectTotalCount("Session.TotalDuration", 1);
+    base::Bucket bucket =
+        histogram_tester_.GetAllSamples("Session.TotalDuration")[0];
+    int max_expected_value = duration.InMilliseconds();
+    EXPECT_LE(bucket.min, max_expected_value);
+  }
 
+  base::HistogramTester histogram_tester_;
+  MockDesktopSessionDurationTracker instance_;
+
+ private:
+  base::MessageLoop loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(DesktopSessionDurationTrackerTest);
+};
+
+TEST_F(DesktopSessionDurationTrackerTest, TestVisibility) {
   // The browser becomes visible but it shouldn't start the session.
-  instance.OnVisibilityChanged(true);
-  EXPECT_FALSE(instance.in_session());
-  EXPECT_TRUE(instance.is_visible());
-  EXPECT_FALSE(instance.is_audio_playing());
-  histogram_tester.ExpectTotalCount("Session.TotalDuration", 0);
+  instance_.OnVisibilityChanged(true, kZeroTime);
+  EXPECT_FALSE(instance_.in_session());
+  EXPECT_TRUE(instance_.is_visible());
+  EXPECT_FALSE(instance_.is_audio_playing());
+  histogram_tester_.ExpectTotalCount("Session.TotalDuration", 0);
 
-  instance.OnUserEvent();
-  EXPECT_TRUE(instance.in_session());
-  EXPECT_TRUE(instance.is_visible());
-  EXPECT_FALSE(instance.is_audio_playing());
-  histogram_tester.ExpectTotalCount("Session.TotalDuration", 0);
+  instance_.OnUserEvent();
+  EXPECT_TRUE(instance_.in_session());
+  EXPECT_TRUE(instance_.is_visible());
+  EXPECT_FALSE(instance_.is_audio_playing());
+  histogram_tester_.ExpectTotalCount("Session.TotalDuration", 0);
 
   // Even if there is a recent user event visibility change should end the
   // session.
-  instance.OnUserEvent();
-  instance.OnUserEvent();
-  instance.OnVisibilityChanged(false);
-  EXPECT_FALSE(instance.in_session());
-  EXPECT_FALSE(instance.is_visible());
-  EXPECT_FALSE(instance.is_audio_playing());
-  histogram_tester.ExpectTotalCount("Session.TotalDuration", 1);
+  instance_.OnUserEvent();
+  instance_.OnUserEvent();
+  instance_.OnVisibilityChanged(false, kZeroTime);
+  EXPECT_FALSE(instance_.in_session());
+  EXPECT_FALSE(instance_.is_visible());
+  EXPECT_FALSE(instance_.is_audio_playing());
+  histogram_tester_.ExpectTotalCount("Session.TotalDuration", 1);
 
   // For the second time only visibility change should start the session.
-  instance.OnVisibilityChanged(true);
-  EXPECT_TRUE(instance.in_session());
-  EXPECT_TRUE(instance.is_visible());
-  EXPECT_FALSE(instance.is_audio_playing());
-  histogram_tester.ExpectTotalCount("Session.TotalDuration", 1);
-  instance.OnVisibilityChanged(false);
-  EXPECT_FALSE(instance.in_session());
-  EXPECT_FALSE(instance.is_visible());
-  EXPECT_FALSE(instance.is_audio_playing());
-  histogram_tester.ExpectTotalCount("Session.TotalDuration", 2);
+  instance_.OnVisibilityChanged(true, kZeroTime);
+  EXPECT_TRUE(instance_.in_session());
+  EXPECT_TRUE(instance_.is_visible());
+  EXPECT_FALSE(instance_.is_audio_playing());
+  histogram_tester_.ExpectTotalCount("Session.TotalDuration", 1);
+  instance_.OnVisibilityChanged(false, kZeroTime);
+  EXPECT_FALSE(instance_.in_session());
+  EXPECT_FALSE(instance_.is_visible());
+  EXPECT_FALSE(instance_.is_audio_playing());
+  histogram_tester_.ExpectTotalCount("Session.TotalDuration", 2);
 }
 
-TEST(DesktopSessionDurationTrackerTest, TestUserEvent) {
-  base::MessageLoop loop(base::MessageLoop::TYPE_DEFAULT);
-  base::HistogramTester histogram_tester;
+TEST_F(DesktopSessionDurationTrackerTest, TestUserEvent) {
+  instance_.SetInactivityTimeoutForTesting(1);
 
-  MockDesktopSessionDurationTracker instance;
-  instance.SetInactivityTimeoutForTesting(1);
-
-  EXPECT_FALSE(instance.in_session());
-  EXPECT_FALSE(instance.is_visible());
-  EXPECT_FALSE(instance.is_audio_playing());
-  histogram_tester.ExpectTotalCount("Session.TotalDuration", 0);
+  EXPECT_FALSE(instance_.in_session());
+  EXPECT_FALSE(instance_.is_visible());
+  EXPECT_FALSE(instance_.is_audio_playing());
+  histogram_tester_.ExpectTotalCount("Session.TotalDuration", 0);
 
   // User event doesn't go through if nothing is visible.
-  instance.OnUserEvent();
-  EXPECT_FALSE(instance.in_session());
-  EXPECT_FALSE(instance.is_visible());
-  EXPECT_FALSE(instance.is_audio_playing());
-  histogram_tester.ExpectTotalCount("Session.TotalDuration", 0);
+  instance_.OnUserEvent();
+  EXPECT_FALSE(instance_.in_session());
+  EXPECT_FALSE(instance_.is_visible());
+  EXPECT_FALSE(instance_.is_audio_playing());
+  histogram_tester_.ExpectTotalCount("Session.TotalDuration", 0);
 
-  instance.OnVisibilityChanged(true);
-  instance.OnUserEvent();
-  EXPECT_TRUE(instance.in_session());
-  EXPECT_TRUE(instance.is_visible());
-  EXPECT_FALSE(instance.is_audio_playing());
-  histogram_tester.ExpectTotalCount("Session.TotalDuration", 0);
+  instance_.OnVisibilityChanged(true, kZeroTime);
+  instance_.OnUserEvent();
+  EXPECT_TRUE(instance_.in_session());
+  EXPECT_TRUE(instance_.is_visible());
+  EXPECT_FALSE(instance_.is_audio_playing());
+  histogram_tester_.ExpectTotalCount("Session.TotalDuration", 0);
 
   // Wait until the session expires.
-  while (!instance.is_timeout()) {
+  while (!instance_.is_timeout()) {
     base::RunLoop().RunUntilIdle();
   }
 
-  EXPECT_FALSE(instance.in_session());
-  EXPECT_TRUE(instance.is_visible());
-  EXPECT_FALSE(instance.is_audio_playing());
-  histogram_tester.ExpectTotalCount("Session.TotalDuration", 1);
+  EXPECT_FALSE(instance_.in_session());
+  EXPECT_TRUE(instance_.is_visible());
+  EXPECT_FALSE(instance_.is_audio_playing());
+  histogram_tester_.ExpectTotalCount("Session.TotalDuration", 1);
 }
 
-TEST(DesktopSessionDurationTrackerTest, TestAudioEvent) {
-  base::MessageLoop loop(base::MessageLoop::TYPE_DEFAULT);
-  base::HistogramTester histogram_tester;
+TEST_F(DesktopSessionDurationTrackerTest, TestAudioEvent) {
+  instance_.SetInactivityTimeoutForTesting(1);
 
-  MockDesktopSessionDurationTracker instance;
-  instance.SetInactivityTimeoutForTesting(1);
+  instance_.OnVisibilityChanged(true, kZeroTime);
+  instance_.OnAudioStart();
+  EXPECT_TRUE(instance_.in_session());
+  EXPECT_TRUE(instance_.is_visible());
+  EXPECT_TRUE(instance_.is_audio_playing());
+  histogram_tester_.ExpectTotalCount("Session.TotalDuration", 0);
 
-  instance.OnVisibilityChanged(true);
-  instance.OnAudioStart();
-  EXPECT_TRUE(instance.in_session());
-  EXPECT_TRUE(instance.is_visible());
-  EXPECT_TRUE(instance.is_audio_playing());
-  histogram_tester.ExpectTotalCount("Session.TotalDuration", 0);
+  instance_.OnVisibilityChanged(false, kZeroTime);
+  EXPECT_TRUE(instance_.in_session());
+  EXPECT_FALSE(instance_.is_visible());
+  EXPECT_TRUE(instance_.is_audio_playing());
+  histogram_tester_.ExpectTotalCount("Session.TotalDuration", 0);
 
-  instance.OnVisibilityChanged(false);
-  EXPECT_TRUE(instance.in_session());
-  EXPECT_FALSE(instance.is_visible());
-  EXPECT_TRUE(instance.is_audio_playing());
-  histogram_tester.ExpectTotalCount("Session.TotalDuration", 0);
-
-  instance.OnAudioEnd();
-  EXPECT_TRUE(instance.in_session());
-  EXPECT_FALSE(instance.is_visible());
-  EXPECT_FALSE(instance.is_audio_playing());
-  histogram_tester.ExpectTotalCount("Session.TotalDuration", 0);
+  instance_.OnAudioEnd();
+  EXPECT_TRUE(instance_.in_session());
+  EXPECT_FALSE(instance_.is_visible());
+  EXPECT_FALSE(instance_.is_audio_playing());
+  histogram_tester_.ExpectTotalCount("Session.TotalDuration", 0);
 
   // Wait until the session expires.
-  while (!instance.is_timeout()) {
+  while (!instance_.is_timeout()) {
     base::RunLoop().RunUntilIdle();
   }
 
-  EXPECT_FALSE(instance.in_session());
-  EXPECT_FALSE(instance.is_visible());
-  EXPECT_FALSE(instance.is_audio_playing());
-  histogram_tester.ExpectTotalCount("Session.TotalDuration", 1);
+  EXPECT_FALSE(instance_.in_session());
+  EXPECT_FALSE(instance_.is_visible());
+  EXPECT_FALSE(instance_.is_audio_playing());
+  histogram_tester_.ExpectTotalCount("Session.TotalDuration", 1);
 }
 
-TEST(DesktopSessionDurationTrackerTest, TestTimeoutDiscount) {
-  base::MessageLoop loop(base::MessageLoop::TYPE_DEFAULT);
-  base::HistogramTester histogram_tester;
-  MockDesktopSessionDurationTracker instance;
-
+TEST_F(DesktopSessionDurationTrackerTest, TestInputTimeoutDiscount) {
   int inactivity_interval_seconds = 2;
-  instance.SetInactivityTimeoutForTesting(inactivity_interval_seconds);
+  instance_.SetInactivityTimeoutForTesting(inactivity_interval_seconds);
 
-  instance.OnVisibilityChanged(true);
+  instance_.OnVisibilityChanged(true, kZeroTime);
   base::TimeTicks before_session_start = base::TimeTicks::Now();
-  instance.OnUserEvent();  // This should start the session
-  histogram_tester.ExpectTotalCount("Session.TotalDuration", 0);
+  instance_.OnUserEvent();  // This should start the session
+  histogram_tester_.ExpectTotalCount("Session.TotalDuration", 0);
 
   // Wait until the session expires.
-  while (!instance.is_timeout()) {
+  while (!instance_.is_timeout()) {
     base::RunLoop().RunUntilIdle();
   }
   base::TimeTicks after_session_end = base::TimeTicks::Now();
 
-  histogram_tester.ExpectTotalCount("Session.TotalDuration", 1);
-  base::Bucket bucket =
-      histogram_tester.GetAllSamples("Session.TotalDuration")[0];
-  int max_expected_value =
-      (after_session_end - before_session_start -
-       base::TimeDelta::FromSeconds(inactivity_interval_seconds))
-          .InMilliseconds();
-  EXPECT_LE(bucket.min, max_expected_value);
+  ExpectTotalDuration(
+      after_session_end - before_session_start -
+      base::TimeDelta::FromSeconds(inactivity_interval_seconds));
+}
+
+TEST_F(DesktopSessionDurationTrackerTest, TestVisibilityTimeoutDiscount) {
+  instance_.OnVisibilityChanged(true, kZeroTime);
+  base::TimeTicks before_session_start = base::TimeTicks::Now();
+  instance_.OnUserEvent();  // This should start the session
+  histogram_tester_.ExpectTotalCount("Session.TotalDuration", 0);
+
+  // Sleep a little while.
+  base::TimeDelta kDelay = base::TimeDelta::FromSeconds(2);
+  while (true) {
+    base::TimeDelta elapsed = base::TimeTicks::Now() - before_session_start;
+    if (elapsed >= kDelay)
+      break;
+    base::PlatformThread::Sleep(kDelay);
+  }
+
+  // End the session via visibility change.
+  instance_.OnVisibilityChanged(false, kDelay);
+  base::TimeTicks after_session_end = base::TimeTicks::Now();
+
+  ExpectTotalDuration(after_session_end - before_session_start - kDelay);
 }

@@ -15,6 +15,8 @@ namespace {
 
 DesktopSessionDurationTracker* g_instance = nullptr;
 
+const base::TimeDelta kZeroTime = base::TimeDelta::FromSeconds(0);
+
 }  // namespace
 
 // static
@@ -39,13 +41,17 @@ void DesktopSessionDurationTracker::StartTimer(base::TimeDelta duration) {
                           weak_factory_.GetWeakPtr()));
 }
 
-void DesktopSessionDurationTracker::OnVisibilityChanged(bool visible) {
+void DesktopSessionDurationTracker::OnVisibilityChanged(
+    bool visible,
+    base::TimeDelta time_ago) {
   is_visible_ = visible;
   if (is_visible_ && !is_first_session_) {
+    DCHECK(time_ago.is_zero());
     OnUserEvent();
   } else if (in_session_ && !is_audio_playing_) {
+    DCHECK(!visible);
     DVLOG(4) << "Ending session due to visibility change";
-    EndSession();
+    EndSession(time_ago);
   }
 }
 
@@ -77,7 +83,7 @@ void DesktopSessionDurationTracker::OnAudioEnd() {
   // last 5 minutes so the session can be terminated.
   if (!timer_.IsRunning()) {
     DVLOG(4) << "Ending session due to audio ending";
-    EndSession();
+    EndSession(kZeroTime);
   }
 }
 
@@ -102,7 +108,7 @@ void DesktopSessionDurationTracker::OnTimerFired() {
   // No user events happened in the last 5 min. Terminate the session now.
   if (!is_audio_playing_) {
     DVLOG(4) << "Ending session after delay";
-    EndSession();
+    EndSession(inactivity_timeout_);
   }
 }
 
@@ -113,14 +119,17 @@ void DesktopSessionDurationTracker::StartSession() {
   StartTimer(inactivity_timeout_);
 }
 
-void DesktopSessionDurationTracker::EndSession() {
+void DesktopSessionDurationTracker::EndSession(
+    base::TimeDelta time_to_discount) {
   in_session_ = false;
 
   base::TimeDelta delta = base::TimeTicks::Now() - session_start_;
 
-  // If timer is not running then session ended because of inactivity.
-  if (!timer_.IsRunning())
-    delta -= inactivity_timeout_;
+  // Trim any timeouts from the session length and lower bound to a session of
+  // length 0.
+  delta -= time_to_discount;
+  if (delta < kZeroTime)
+    delta = kZeroTime;
 
   DVLOG(4) << "Logging session length of " << delta.InSeconds() << " seconds.";
 

@@ -21,7 +21,10 @@ class MockChromeVisibilityObserver : public metrics::ChromeVisibilityObserver {
   bool is_active() const { return is_active_; }
 
  private:
-  void SendVisibilityChangeEvent(bool active) override { is_active_ = active; }
+  void SendVisibilityChangeEvent(bool active,
+                                 base::TimeDelta time_ago) override {
+    is_active_ = active;
+  }
 
   bool is_active_;
 
