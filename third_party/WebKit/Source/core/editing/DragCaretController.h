@@ -43,7 +43,7 @@ class DragCaretController final
   bool isContentRichlyEditable() const;
 
   bool hasCaret() const { return m_position.isNotNull(); }
-  const VisiblePosition& caretPosition() { return m_position; }
+  const PositionWithAffinity& caretPosition() { return m_position; }
   void setCaretPosition(const PositionWithAffinity&);
   void clear() { setCaretPosition(PositionWithAffinity()); }
 
@@ -54,7 +54,7 @@ class DragCaretController final
  private:
   DragCaretController();
 
-  VisiblePosition m_position;
+  PositionWithAffinity m_position;
   const Member<CaretBase> m_caretBase;
 };
 
