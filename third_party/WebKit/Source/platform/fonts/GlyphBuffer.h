@@ -52,8 +52,9 @@ class GlyphBuffer {
   }
 
   bool hasVerticalOffsets() const {
-    // We exclusively store either horizontal/x-only ofssets -- in which case m_offsets.size == size,
-    // or vertical/xy offsets -- in which case m_offsets.size == size * 2.
+    // We exclusively store either horizontal/x-only ofssets -- in which case
+    // m_offsets.size == size, or vertical/xy offsets -- in which case
+    // m_offsets.size == size * 2.
     return size() != m_offsets.size();
   }
 
@@ -62,9 +63,9 @@ class GlyphBuffer {
     return m_glyphs.data() + from;
   }
 
-  // Depending on the GlyphBuffer-wide positioning mode, this either points to an array of
-  // x-only offsets for horizontal positioning ([x1, x2, ... xn]), or interleaved x,y offsets
-  // for full positioning ([x1, y1, x2, y2, ... xn, yn]).
+  // Depending on the GlyphBuffer-wide positioning mode, this either points to
+  // an array of x-only offsets for horizontal positioning ([x1, x2, ... xn]),
+  // or interleaved x,y offsets for full positioning ([x1, y1, ... xn, yn]).
   const float* offsets(unsigned from) const {
     ASSERT(from < size());
     return m_offsets.data() + (hasVerticalOffsets() ? from * 2 : from);
@@ -123,14 +124,15 @@ class GlyphBuffer {
     // ^                   ^         ^
     // 0             afterOffset totalWidth
     //
-    // The input buffer is shaped using RTL advances, but since the right edge is unknown at
-    // that time, offsets are computed as if the advances were LTR. This method performs the
-    // required adjustments by reconstructing advances and positioning offsets in an RTL
-    // progression.
+    // The input buffer is shaped using RTL advances, but since the right edge
+    // is unknown at that time, offsets are computed as if the advances were
+    // LTR. This method performs the required adjustments by reconstructing
+    // advances and positioning offsets in an RTL progression.
 
-    // FIXME: we should get rid of this (idea: store negative offsets while shaping,
-    //        and adjust the initial advance accordingly -> should yield correctly positioned
-    //        RTL glyphs without any post-shape munging).
+    // FIXME: we should get rid of this (idea: store negative offsets while
+    //        shaping, and adjust the initial advance accordingly -> should
+    //        yield correctly positioned RTL glyphs without any post-shape
+    //        munging).
     ASSERT_WITH_SECURITY_IMPLICATION(!m_offsets.isEmpty());
     for (unsigned i = 0; i + 1 < m_offsets.size(); ++i)
       m_offsets[i] = totalWidth - m_offsets[i + 1];

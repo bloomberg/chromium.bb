@@ -140,15 +140,22 @@ TEST_F(SymbolsIteratorTest, EmojiZWSSequences) {
 }
 
 TEST_F(SymbolsIteratorTest, AllEmojiZWSSequences) {
+  // clang-format gets confused by Emojis, http://llvm.org/PR30530
+  // clang-format off
   CHECK_RUNS(
-      {{"💏👩‍❤️‍💋‍👨👨‍❤️‍💋‍👨👩‍❤️‍💋‍👩💑👩‍❤️‍👨👨‍❤️"
+      {{"💏👩‍❤️‍💋‍👨👨‍❤️‍💋‍👨👩‍❤️‍💋‍👩💑👩‍❤️‍👨👨‍❤"
+        "️"
         "‍👨👩‍❤️"
-        "‍👩👪👨‍👩‍👦👨‍👩‍👧👨‍👩‍👧‍👦👨‍👩‍👦‍👦👨‍👩‍👧‍👧👨‍👨‍"
-        "👦👨‍👨‍👧👨‍👨‍👧‍👦👨‍👨‍👦‍👦👨‍👨‍👧‍"
+        "‍👩👪👨‍👩‍👦👨‍👩‍👧👨‍👩‍👧‍👦👨‍👩‍👦‍👦👨‍👩‍👧‍👧👨‍👨"
+        "‍"
+        "👦👨‍👨‍👧👨‍👨‍👧‍👦👨‍👨‍👦‍👦👨‍👨‍👧"
+        "‍"
         "👧"
-        "👩‍👩‍👦👩‍👩‍👧👩‍👩‍👧‍👦👩‍👩‍👦‍👦👩‍👩‍👧‍👧👁‍"
+        "👩‍👩‍👦👩‍👩‍👧👩‍👩‍👧‍👦👩‍👩‍👦‍👦👩‍👩‍👧‍👧👁"
+        "‍"
         "🗨",
         FontFallbackPriority::EmojiEmoji}});
+  // clang-format on
 }
 
 TEST_F(SymbolsIteratorTest, ModifierPlusGender) {

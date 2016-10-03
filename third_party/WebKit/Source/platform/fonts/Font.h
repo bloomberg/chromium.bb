@@ -101,8 +101,9 @@ class PLATFORM_EXPORT Font {
                          float deviceScaleFactor,
                          const SkPaint&) const;
 
-  // Glyph bounds will be the minimum rect containing all glyph strokes, in coordinates using
-  // (<text run x position>, <baseline position>) as the origin.
+  // Glyph bounds will be the minimum rect containing all glyph strokes, in
+  // coordinates using (<text run x position>, <baseline position>) as the
+  // origin.
   float width(const TextRun&,
               HashSet<const SimpleFontData*>* fallbackFonts = nullptr,
               FloatRect* glyphBounds = nullptr) const;
@@ -222,7 +223,8 @@ class PLATFORM_EXPORT Font {
   mutable unsigned m_canShapeWordByWord : 1;
   mutable unsigned m_shapeWordByWordComputed : 1;
 
-  // For accessing buildGlyphBuffer and retrieving fonts used in rendering a node.
+  // For accessing buildGlyphBuffer and retrieving fonts used in rendering a
+  // node.
   friend class InspectorCSSAgent;
 };
 
@@ -250,8 +252,9 @@ inline float Font::tabWidth(const SimpleFontData& fontData,
     return getFontDescription().letterSpacing();
   float distanceToTabStop = baseTabWidth - fmodf(position, baseTabWidth);
 
-  // Let the minimum width be the half of the space width so that it's always recognizable.
-  // if the distance to the next tab stop is less than that, advance an additional tab stop.
+  // Let the minimum width be the half of the space width so that it's always
+  // recognizable.  if the distance to the next tab stop is less than that,
+  // advance an additional tab stop.
   if (distanceToTabStop < fontData.spaceWidth() / 2)
     distanceToTabStop += baseTabWidth;
 

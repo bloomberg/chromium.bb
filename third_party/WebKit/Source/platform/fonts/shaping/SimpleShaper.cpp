@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2003, 2006, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2006, 2008, 2009, 2010, 2011 Apple Inc. All rights
+ * reserved.
  * Copyright (C) 2008 Holger Hans Peter Freyther
  * Copyright (C) 2014 Google Inc. All rights reserved.
  *
@@ -88,7 +89,8 @@ float SimpleShaper::characterWidth(UChar32 character,
 
   float width = fontData->widthForGlyph(glyphData.glyph);
 
-  // SVG uses horizontalGlyphStretch(), when textLength is used to stretch/squeeze text.
+  // SVG uses horizontalGlyphStretch(), when textLength is used to
+  // stretch/squeeze text.
   if (UNLIKELY(m_textRun.horizontalGlyphStretch() != 1))
     width *= m_textRun.horizontalGlyphStretch();
 
@@ -106,7 +108,8 @@ float SimpleShaper::adjustSpacing(float width, const CharacterData& charData) {
   if (isExpansionOpportunity ||
       (m_textRun.getTextJustify() == TextJustifyAuto &&
        Character::isCJKIdeographOrSymbol(charData.character))) {
-    // Distribute the run's total expansion evenly over all expansion opportunities in the run.
+    // Distribute the run's total expansion evenly over all expansion
+    // opportunities in the run.
     if (m_expansion) {
       if (!isExpansionOpportunity && !m_isAfterExpansion) {
         // Take the expansion opportunity before this ideograph.
@@ -127,7 +130,8 @@ float SimpleShaper::adjustSpacing(float width, const CharacterData& charData) {
     }
 
     // Account for word spacing.
-    // We apply additional space between "words" by adding width to the space character.
+    // We apply additional space between "words" by adding width to the space
+    // character.
     if (isExpansionOpportunity &&
         (charData.character != tabulationCharacter || !m_textRun.allowTabs()) &&
         (charData.characterOffset ||
@@ -191,9 +195,9 @@ unsigned SimpleShaper::advanceInternal(TextIterator& textIterator,
       FloatRect glyphBounds =
           glyphData.fontData->boundsForGlyph(glyphData.glyph);
       // We are handling simple text run here, so Y-Offset will be zero.
-      // FIXME: Computing bounds relative to the initial advance seems odd. Are we adjusting
-      // these someplace else? If not, we'll end up with different bounds depending on how
-      // we segment our advance() calls.
+      // FIXME: Computing bounds relative to the initial advance seems odd. Are
+      // we adjusting these someplace else? If not, we'll end up with different
+      // bounds depending on how we segment our advance() calls.
       glyphBounds.move(m_runWidthSoFar - initialRunWidth, 0);
       m_glyphBoundingBox->unite(glyphBounds);
     }

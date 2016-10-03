@@ -91,8 +91,8 @@ class GlyphMetricsMap {
   static T unknownMetrics();
 
   bool m_filledPrimaryPage;
-  GlyphMetricsPage
-      m_primaryPage;  // We optimize for the page that contains glyph indices 0-255.
+  // We optimize for the page that contains glyph indices 0-255.
+  GlyphMetricsPage m_primaryPage;
   std::unique_ptr<HashMap<int, std::unique_ptr<GlyphMetricsPage>>> m_pages;
 };
 

@@ -54,7 +54,8 @@ GenericFontFamilySettings& GenericFontFamilySettings::operator=(
   return *this;
 }
 
-// Sets the entry in the font map for the given script. If family is the empty string, removes the entry instead.
+// Sets the entry in the font map for the given script. If family is the empty
+// string, removes the entry instead.
 void GenericFontFamilySettings::setGenericFontFamilyMap(
     ScriptFontFamilyMap& fontMap,
     const AtomicString& family,

@@ -51,7 +51,8 @@ void SkiaTextMetrics::getGlyphExtentsForHarfBuzz(hb_codepoint_t codepoint,
     skBounds.set(ir);
   }
 
-  // Invert y-axis because Skia is y-grows-down but we set up HarfBuzz to be y-grows-up.
+  // Invert y-axis because Skia is y-grows-down but we set up HarfBuzz to be
+  // y-grows-up.
   extents->x_bearing = SkiaScalarToHarfBuzzPosition(skBounds.fLeft);
   extents->y_bearing = SkiaScalarToHarfBuzzPosition(-skBounds.fTop);
   extents->width = SkiaScalarToHarfBuzzPosition(skBounds.width());

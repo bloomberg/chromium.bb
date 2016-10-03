@@ -100,30 +100,30 @@ class UnicodeRangeSet;
 // one for Latin U+00-U+FF and one unrestricted unicode-range.
 //
 // FontFallbackIterator provides the shaper with Heiti SC, then Tinos of the
-// restricted unicode-range, then the unrestricted full unicode-range Tinos, then
-// a system sans-serif.
+// restricted unicode-range, then the unrestricted full unicode-range Tinos,
+// then a system sans-serif.
 //
 // The initial segment 0-2 to the shaper, together with the segmentation
 // properties and the initial Heiti SC font. Characters 0-2 are shaped
-// successfully with Heiti SC. The next segment, 3-5 is passed to the shaper. The
-// shaper attempts to shape it with Heiti SC, which fails for the Combining
+// successfully with Heiti SC. The next segment, 3-5 is passed to the shaper.
+// The shaper attempts to shape it with Heiti SC, which fails for the Combining
 // Macron. So the shaping result for this segment would look similar to this.
 //
 // Glyphpos: 0 1 2 3
 // Cluster:  0 0 2 3
 // Glyph:    a x a A (where x is .notdef)
 //
-// Now in the extractShapeResults() step we notice that there is more work to do,
-// since Heiti SC does not have a glyph for the Combining Macron combined with an
-// a. So, this cluster together with a Todo item for switching to the next font
-// is put into HolesQueue.
+// Now in the extractShapeResults() step we notice that there is more work to
+// do, since Heiti SC does not have a glyph for the Combining Macron combined
+// with an a. So, this cluster together with a Todo item for switching to the
+// next font is put into HolesQueue.
 //
 // After shaping the initial segment, the remaining items in the HolesQueue are
 // processed, picking them from the head of the queue. So, first, the next font
-// is requested from the FontFallbackIterator. In this case, Tinos (for the range
-// U+00-U+FF) comes back. Shaping using this font, assuming it is subsetted,
-// fails again since there is no combining mark available. This triggers
-// requesting yet another font. This time, the Tinos font for the full
+// is requested from the FontFallbackIterator. In this case, Tinos (for the
+// range U+00-U+FF) comes back. Shaping using this font, assuming it is
+// subsetted, fails again since there is no combining mark available. This
+// triggers requesting yet another font. This time, the Tinos font for the full
 // range. With this, shaping succeeds with the following HarfBuzz result:
 //
 //  Glyphpos 0 1 2 3

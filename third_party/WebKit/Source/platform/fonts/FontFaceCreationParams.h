@@ -59,10 +59,10 @@ class FontFaceCreationParams {
         m_fontconfigInterfaceId(0),
         m_ttcIndex(0) {
 #if OS(WIN)
-    // Leading "@" in the font name enables Windows vertical flow flag for the font.
-    // Because we do vertical flow by ourselves, we don't want to use the Windows feature.
-    // IE disregards "@" regardless of the orientation, so we follow the behavior and
-    // normalize the family name.
+    // Leading "@" in the font name enables Windows vertical flow flag for the
+    // font.  Because we do vertical flow by ourselves, we don't want to use the
+    // Windows feature.  IE disregards "@" regardless of the orientation, so we
+    // follow the behavior and normalize the family name.
     m_family = (m_family.isEmpty() || m_family[0] != '@')
                    ? m_family
                    : AtomicString(m_family.impl()->substring(1));
@@ -98,10 +98,10 @@ class FontFaceCreationParams {
   unsigned hash() const {
     if (m_creationType == CreateFontByFciIdAndTtcIndex) {
       StringHasher hasher;
-      // Hashing the filename and ints in this way is sensitive to character encoding
-      // and endianness. However, since the hash is not transferred over a network
-      // or permanently stored and only used for the runtime of Chromium,
-      // this is not a concern.
+      // Hashing the filename and ints in this way is sensitive to character
+      // encoding and endianness. However, since the hash is not transferred
+      // over a network or permanently stored and only used for the runtime of
+      // Chromium, this is not a concern.
       hasher.addCharacters(reinterpret_cast<const LChar*>(m_filename.data()),
                            m_filename.length());
       hasher.addCharacters(reinterpret_cast<const LChar*>(&m_ttcIndex),

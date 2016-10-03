@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2003, 2006, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2006, 2008, 2009, 2010, 2011 Apple Inc. All rights
+ * reserved.
  * Copyright (C) 2008 Holger Hans Peter Freyther
  * Copyright (C) Research In Motion Limited 2011. All rights reserved.
  *

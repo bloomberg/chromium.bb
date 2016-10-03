@@ -98,7 +98,8 @@ size_t GlyphPageTreeNode::pageCount() const {
 }
 
 void GlyphPageTreeNode::pruneTreeCustomFontData(const FontData* fontData) {
-  // Enumerate all the roots and prune any tree that contains our custom font data.
+  // Enumerate all the roots and prune any tree that contains our custom font
+  // data.
   if (roots) {
     HashMap<int, GlyphPageTreeNode*>::iterator end = roots->end();
     for (HashMap<int, GlyphPageTreeNode*>::iterator it = roots->begin();
@@ -183,7 +184,8 @@ void GlyphPageTreeNode::initializePurePage(const FontData* fontData,
   unsigned bufferLength;
   unsigned i;
 
-  // Fill in a buffer with the entire "page" of characters that we want to look up glyphs for.
+  // Fill in a buffer with the entire "page" of characters that we want to look
+  // up glyphs for.
   if (start < 0x10000) {
     bufferLength = GlyphPage::size;
     for (i = 0; i < GlyphPage::size; i++)
@@ -248,8 +250,8 @@ void GlyphPageTreeNode::initializePurePage(const FontData* fontData,
   // Now that we have a buffer full of characters, we want to get back an array
   // of glyph indices.  This part involves calling into the platform-specific
   // routine of our glyph map for actually filling in the page with the glyphs.
-  // Success is not guaranteed. For example, Times fails to fill page 260, giving glyph data
-  // for only 128 out of 256 characters.
+  // Success is not guaranteed. For example, Times fails to fill page 260,
+  // giving glyph data for only 128 out of 256 characters.
   bool haveGlyphs;
   if (!fontData->isSegmented()) {
     m_page =
@@ -277,8 +279,9 @@ void GlyphPageTreeNode::initializePurePage(const FontData* fontData,
         if (ranges->size()) {
           range = ranges->rangeAt(i);
         }
-        // all this casting is to ensure all the parameters to min and max have the same type,
-        // to avoid ambiguous template parameter errors on Windows
+        // all this casting is to ensure all the parameters to min and max have
+        // the same type, to avoid ambiguous template parameter errors on
+        // Windows
         int from =
             max(0, static_cast<int>(range.from()) - static_cast<int>(start));
         int to = 1 + min(static_cast<int>(range.to()) - static_cast<int>(start),
@@ -413,7 +416,8 @@ void GlyphPageTreeNode::pruneCustomFontData(const FontData* fontData) {
     }
   }
 
-  // Check any branches that remain that still have custom fonts underneath them.
+  // Check any branches that remain that still have custom fonts underneath
+  // them.
   if (!m_customFontCount)
     return;
 

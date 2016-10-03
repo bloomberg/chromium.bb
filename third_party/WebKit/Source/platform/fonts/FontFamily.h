@@ -77,10 +77,10 @@ inline bool operator!=(const FontFamily& a, const FontFamily& b) {
 
 inline FontFamily::~FontFamily() {
   RefPtr<SharedFontFamily> reaper = m_next.release();
-  while (reaper && reaper->hasOneRef())
-    reaper =
-        reaper
-            ->releaseNext();  // implicitly protects reaper->next, then derefs reaper
+  while (reaper && reaper->hasOneRef()) {
+    // implicitly protects reaper->next, then derefs reaper
+    reaper = reaper->releaseNext();
+  }
 }
 
 inline const FontFamily* FontFamily::next() const {

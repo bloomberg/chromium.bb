@@ -128,7 +128,8 @@ void FontPlatformData::setupPaint(SkPaint* paint,
         shouldSmoothFonts = false;
         break;
       case AutoSmoothing:
-        // For the AutoSmooth case, don't do anything! Keep the default settings.
+        // For the AutoSmooth case, don't do anything! Keep the default
+        // settings.
         break;
     }
   }
@@ -149,9 +150,9 @@ void FontPlatformData::setupPaint(SkPaint* paint,
   paint->setLCDRenderText(shouldSmoothFonts);
   paint->setSubpixelText(true);
 
-  // When rendering using CoreGraphics, disable hinting when webkit-font-smoothing:antialiased or
-  // text-rendering:geometricPrecision is used.
-  // See crbug.com/152304
+  // When rendering using CoreGraphics, disable hinting when
+  // webkit-font-smoothing:antialiased or text-rendering:geometricPrecision is
+  // used.  See crbug.com/152304
   if (font &&
       (font->getFontDescription().fontSmoothing() == Antialiased ||
        font->getFontDescription().textRendering() == GeometricPrecision))
@@ -172,8 +173,8 @@ FontPlatformData::FontPlatformData(NSFont* nsFont,
   if (canLoadInProcess(nsFont)) {
     m_typeface.reset(SkCreateTypefaceFromCTFont(toCTFontRef(nsFont)));
   } else {
-    // In process loading fails for cases where third party font manager software
-    // registers fonts in non system locations such as /Library/Fonts
+    // In process loading fails for cases where third party font manager
+    // software registers fonts in non system locations such as /Library/Fonts
     // and ~/Library Fonts, see crbug.com/72727 or crbug.com/108645.
     m_typeface = loadFromBrowserProcess(nsFont, size);
   }

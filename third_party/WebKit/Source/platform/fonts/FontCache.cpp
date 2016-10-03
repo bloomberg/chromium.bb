@@ -111,8 +111,9 @@ FontPlatformData* FontCache::getFontPlatformData(
   unsigned roundedSize = size * FontCacheKey::precisionMultiplier();
   FontCacheKey key = fontDescription.cacheKey(creationParams);
 
-  // Remove the font size from the cache key, and handle the font size separately in the inner
-  // HashMap. So that different size of FontPlatformData can share underlying SkTypeface.
+  // Remove the font size from the cache key, and handle the font size
+  // separately in the inner HashMap. So that different size of FontPlatformData
+  // can share underlying SkTypeface.
   if (RuntimeEnabledFeatures::fontCacheScalingEnabled())
     key.clearFontSize();
 
@@ -120,14 +121,15 @@ FontPlatformData* FontCache::getFontPlatformData(
   bool foundResult;
 
   {
-    // addResult's scope must end before we recurse for alternate family names below,
-    // to avoid trigering its dtor hash-changed asserts.
+    // addResult's scope must end before we recurse for alternate family names
+    // below, to avoid trigering its dtor hash-changed asserts.
     SizedFontPlatformDataSet* sizedFonts =
         &gFontPlatformDataCache->add(key, SizedFontPlatformDataSet())
              .storedValue->value;
     bool wasEmpty = sizedFonts->isEmpty();
 
-    // Take a different size instance of the same font before adding an entry to |sizedFont|.
+    // Take a different size instance of the same font before adding an entry to
+    // |sizedFont|.
     FontPlatformData* anotherSize =
         wasEmpty ? nullptr : sizedFonts->begin()->value.get();
     auto addResult = sizedFonts->add(roundedSize, nullptr);
@@ -146,8 +148,9 @@ FontPlatformData* FontCache::getFontPlatformData(
 
   if (!foundResult && !checkingAlternateName &&
       creationParams.creationType() == CreateFontByFamily) {
-    // We were unable to find a font. We have a small set of fonts that we alias to other names,
-    // e.g., Arial/Helvetica, Courier/Courier New, etc. Try looking up the font under the aliased name.
+    // We were unable to find a font. We have a small set of fonts that we alias
+    // to other names, e.g., Arial/Helvetica, Courier/Courier New, etc. Try
+    // looking up the font under the aliased name.
     const AtomicString& alternateName =
         alternateFamilyName(creationParams.family());
     if (!alternateName.isEmpty()) {
@@ -210,7 +213,8 @@ FontVerticalDataCache& fontVerticalDataCacheInstance() {
 void FontCache::setFontManager(const sk_sp<SkFontMgr>& fontManager) {
   DCHECK(!s_staticFontManager);
   s_staticFontManager = fontManager.get();
-  // Explicitly AddRef since we're going to hold on to the object for the life of the program.
+  // Explicitly AddRef since we're going to hold on to the object for the life
+  // of the program.
   s_staticFontManager->ref();
 }
 
@@ -354,7 +358,8 @@ void FontCache::invalidateShapeCache() {
 }
 
 void FontCache::purge(PurgeSeverity PurgeSeverity) {
-  // We should never be forcing the purge while the FontCachePurgePreventer is in scope.
+  // We should never be forcing the purge while the FontCachePurgePreventer is
+  // in scope.
   ASSERT(!m_purgePreventCount || PurgeSeverity == PurgeIfNeeded);
   if (m_purgePreventCount)
     return;

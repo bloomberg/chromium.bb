@@ -70,8 +70,9 @@ namespace blink {
 // http://www.unicode.org/reports/tr51/proposed.html#Emoji_Script
 static const char* kAndroidColorEmojiLocale = "und-Zsye";
 
-// This function is called on android or when we are emulating android fonts on linux and the
-// embedder has overriden the default fontManager with WebFontRendering::setSkiaFontMgr.
+// This function is called on android or when we are emulating android fonts on
+// linux and the embedder has overriden the default fontManager with
+// WebFontRendering::setSkiaFontMgr.
 // static
 AtomicString FontCache::getFamilyNameForCharacter(
     SkFontMgr* fm,
@@ -140,7 +141,8 @@ PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(
   const FontPlatformData* fontPlatformData =
       getFontPlatformData(description, fallbackCreationParams);
 
-  // We should at least have Sans or Arial which is the last resort fallback of SkFontHost ports.
+  // We should at least have Sans or Arial which is the last resort fallback of
+  // SkFontHost ports.
   if (!fontPlatformData) {
     DEFINE_STATIC_LOCAL(const FontFaceCreationParams, sansCreationParams,
                         (AtomicString("Sans")));
@@ -209,8 +211,8 @@ sk_sp<SkTypeface> FontCache::createTypeface(
 #endif
 
   AtomicString family = creationParams.family();
-  // If we're creating a fallback font (e.g. "-webkit-monospace"), convert the name into
-  // the fallback name (like "monospace") that fontconfig understands.
+  // If we're creating a fallback font (e.g. "-webkit-monospace"), convert the
+  // name into the fallback name (like "monospace") that fontconfig understands.
   if (!family.length() || family.startsWith("-webkit-")) {
     name = getFallbackFontFamily(fontDescription).getString().utf8();
   } else {
@@ -228,10 +230,10 @@ sk_sp<SkTypeface> FontCache::createTypeface(
 #endif
 
 #if OS(LINUX) || OS(WIN)
-  // On linux if the fontManager has been overridden then we should be calling the embedder
-  // provided font Manager rather than calling SkTypeface::CreateFromName which may redirect the
-  // call to the default font Manager.
-  // On Windows the font manager is always present.
+  // On linux if the fontManager has been overridden then we should be calling
+  // the embedder provided font Manager rather than calling
+  // SkTypeface::CreateFromName which may redirect the call to the default font
+  // Manager.  On Windows the font manager is always present.
   if (m_fontManager)
     return sk_sp<SkTypeface>(m_fontManager->matchFamilyStyle(
         name.data(), fontDescription.skiaFontStyle()));

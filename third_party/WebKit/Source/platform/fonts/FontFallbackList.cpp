@@ -125,8 +125,9 @@ const SimpleFontData* FontFallbackList::determinePrimarySimpleFontData(
         fontData->fontDataForCharacter(spaceCharacter);
     ASSERT(fontDataForSpace);
 
-    // When a custom font is loading, we should use the correct fallback font to layout the text.
-    // Here skip the temporary font for the loading custom font which may not act as the correct fallback font.
+    // When a custom font is loading, we should use the correct fallback font to
+    // layout the text.  Here skip the temporary font for the loading custom
+    // font which may not act as the correct fallback font.
     if (!fontDataForSpace->isLoadingFallback())
       return fontDataForSpace;
 
@@ -228,8 +229,9 @@ const FontData* FontFallbackList::fontDataAt(
     return 0;
 
   // Ask the font cache for the font data.
-  // We are obtaining this font for the first time.  We keep track of the families we've looked at before
-  // in |m_familyIndex|, so that we never scan the same spot in the list twice.  getFontData will adjust our
+  // We are obtaining this font for the first time.  We keep track of the
+  // families we've looked at before in |m_familyIndex|, so that we never scan
+  // the same spot in the list twice.  getFontData will adjust our
   // |m_familyIndex| as it scans for the right font to make.
   ASSERT(FontCache::fontCache()->generation() == m_generation);
   RefPtr<FontData> result = getFontData(fontDescription, m_familyIndex);

@@ -72,7 +72,8 @@ class ShapeResultBuffer {
                                float offset,
                                Vector<CharacterRange>&);
 
-  // Empirically, cases where we get more than 50 ShapeResults are extremely rare.
+  // Empirically, cases where we get more than 50 ShapeResults are extremely
+  // rare.
   Vector<RefPtr<const ShapeResult>, 64> m_results;
   bool m_hasVerticalOffsets;
 };

@@ -109,8 +109,8 @@ bool SymbolsIterator::consume(unsigned* symbolsLimit,
         m_currentFontFallbackPriority = FontFallbackPriority::EmojiEmoji;
       }
 
-      // Upgrade text presentation emoji to emoji presentation when followed by ZWJ,
-      // Example U+1F441 U+200D U+1F5E8, eye + ZWJ + left speech bubble.
+      // Upgrade text presentation emoji to emoji presentation when followed by
+      // ZWJ, Example U+1F441 U+200D U+1F5E8, eye + ZWJ + left speech bubble.
       if ((m_nextChar == eyeCharacter ||
            m_nextChar == wavingWhiteFlagCharacter) &&
           peekChar == zeroWidthJoinerCharacter) {

@@ -99,11 +99,12 @@ bool Font::operator==(const Font& other) const {
 }
 
 void Font::update(FontSelector* fontSelector) const {
-  // FIXME: It is pretty crazy that we are willing to just poke into a RefPtr, but it ends up
-  // being reasonably safe (because inherited fonts in the render tree pick up the new
-  // style anyway. Other copies are transient, e.g., the state in the GraphicsContext, and
-  // won't stick around long enough to get you in trouble). Still, this is pretty disgusting,
-  // and could eventually be rectified by using RefPtrs for Fonts themselves.
+  // FIXME: It is pretty crazy that we are willing to just poke into a RefPtr,
+  // but it ends up being reasonably safe (because inherited fonts in the render
+  // tree pick up the new style anyway. Other copies are transient, e.g., the
+  // state in the GraphicsContext, and won't stick around long enough to get you
+  // in trouble). Still, this is pretty disgusting, and could eventually be
+  // rectified by using RefPtrs for Fonts themselves.
   if (!m_fontFallbackList)
     m_fontFallbackList = FontFallbackList::create();
   m_fontFallbackList->invalidate(fontSelector);
@@ -134,7 +135,8 @@ float Font::buildGlyphBuffer(const TextRunPaintInfo& runInfo,
   float width = shaper.runWidthSoFar();
 
   if (runInfo.run.rtl()) {
-    // Glyphs are shaped & stored in RTL advance order - reverse them for LTR drawing.
+    // Glyphs are shaped & stored in RTL advance order - reverse them for LTR
+    // drawing.
     shaper.advance(runInfo.run.length());
     glyphBuffer.reverseForSimpleRTL(width, shaper.runWidthSoFar());
   }
@@ -147,7 +149,8 @@ bool Font::drawText(SkCanvas* canvas,
                     const FloatPoint& point,
                     float deviceScaleFactor,
                     const SkPaint& paint) const {
-  // Don't draw anything while we are using custom fonts that are in the process of loading.
+  // Don't draw anything while we are using custom fonts that are in the process
+  // of loading.
   if (shouldSkipDrawing())
     return false;
 
@@ -172,9 +175,9 @@ bool Font::drawBidiText(SkCanvas* canvas,
                         CustomFontNotReadyAction customFontNotReadyAction,
                         float deviceScaleFactor,
                         const SkPaint& paint) const {
-  // Don't draw anything while we are using custom fonts that are in the process of loading,
-  // except if the 'force' argument is set to true (in which case it will use a fallback
-  // font).
+  // Don't draw anything while we are using custom fonts that are in the process
+  // of loading, except if the 'force' argument is set to true (in which case it
+  // will use a fallback font).
   if (shouldSkipDrawing() &&
       customFontNotReadyAction == DoNotPaintIfFontNotReady)
     return false;
@@ -296,7 +299,8 @@ class GlyphBufferBloberizer {
       const BlobRotation newRotation = computeBlobRotation(fontData);
       if (newRotation != m_rotation) {
         // We're switching to an orientation which requires a different rotation
-        //   => emit the pending blob (and start a new one with the new rotation).
+        //   => emit the pending blob (and start a new one with the new
+        //      rotation).
         m_rotation = newRotation;
         break;
       }
@@ -315,8 +319,8 @@ class GlyphBufferBloberizer {
 
  private:
   static BlobRotation computeBlobRotation(const SimpleFontData* font) {
-    // For vertical upright text we need to compensate the inherited 90deg CW rotation
-    // (using a 90deg CCW rotation).
+    // For vertical upright text we need to compensate the inherited 90deg CW
+    // rotation (using a 90deg CCW rotation).
     return (font->platformData().isVerticalAnyUpright() && font->verticalData())
                ? CCWRotation
                : NoRotation;
@@ -347,7 +351,8 @@ class GlyphBufferBloberizer {
           fontData->getFontMetrics().floatAscent() -
           fontData->getFontMetrics().floatAscent(IdeographicBaseline);
 
-      // TODO(fmalita): why don't we apply this adjustment when building the glyph buffer?
+      // TODO(fmalita): why don't we apply this adjustment when building the
+      // glyph buffer?
       for (unsigned i = 0; i < 2 * count; i += 2) {
         buffer.pos[i] = SkFloatToScalar(offsets[i] + verticalBaselineXOffset);
         buffer.pos[i + 1] = SkFloatToScalar(offsets[i + 1]);
@@ -477,7 +482,8 @@ CodePath Font::codePath(const TextRunPaintInfo& runInfo) const {
   if (run.is8Bit())
     return SimplePath;
 
-  // Start from 0 since drawing and highlighting also measure the characters before run->from.
+  // Start from 0 since drawing and highlighting also measure the characters
+  // before run->from.
   return Character::characterRangeCodePath(run.characters16(), run.length());
 }
 
@@ -522,11 +528,13 @@ static inline GlyphData glyphDataForNonCJKCharacterWithGlyphOrientation(
     GlyphPage* uprightPage = uprightNode->page();
     if (uprightPage) {
       GlyphData uprightData = uprightPage->glyphDataForCharacter(character);
-      // If the glyphs are the same, then we know we can just use the horizontal glyph rotated vertically to be upright.
+      // If the glyphs are the same, then we know we can just use the horizontal
+      // glyph rotated vertically to be upright.
       if (data.glyph == uprightData.glyph)
         return data;
-      // The glyphs are distinct, meaning that the font has a vertical-right glyph baked into it. We can't use that
-      // glyph, so we fall back to the upright data and use the horizontal glyph.
+      // The glyphs are distinct, meaning that the font has a vertical-right
+      // glyph baked into it. We can't use that glyph, so we fall back to the
+      // upright data and use the horizontal glyph.
       if (uprightData.fontData)
         return uprightData;
     }
@@ -540,11 +548,12 @@ static inline GlyphData glyphDataForNonCJKCharacterWithGlyphOrientation(
     if (verticalRightPage) {
       GlyphData verticalRightData =
           verticalRightPage->glyphDataForCharacter(character);
-      // If the glyphs are distinct, we will make the assumption that the font has a vertical-right glyph baked
-      // into it.
+      // If the glyphs are distinct, we will make the assumption that the font
+      // has a vertical-right glyph baked into it.
       if (data.glyph != verticalRightData.glyph)
         return data;
-      // The glyphs are identical, meaning that we should just use the horizontal glyph.
+      // The glyphs are identical, meaning that we should just use the
+      // horizontal glyph.
       if (verticalRightData.fontData)
         return verticalRightData;
     }
@@ -647,8 +656,9 @@ GlyphData Font::glyphDataForCharacter(UChar32& c,
               return data;
           }
 
-          // Do not attempt system fallback off the variantFontData. This is the very unlikely case that
-          // a font has the lowercase character but the small caps font does not have its uppercase version.
+          // Do not attempt system fallback off the variantFontData. This is the
+          // very unlikely case that a font has the lowercase character but the
+          // small caps font does not have its uppercase version.
           return variantFontData->missingGlyphData();
         }
 
@@ -716,7 +726,8 @@ GlyphData Font::glyphDataForCharacter(UChar32& c,
   }
 
   // Even system fallback can fail; use the missing glyph in that case.
-  // FIXME: It would be nicer to use the missing glyph from the last resort font instead.
+  // FIXME: It would be nicer to use the missing glyph from the last resort font
+  // instead.
   ASSERT(primaryFont());
   GlyphData data = primaryFont()->missingGlyphData();
   if (variant == NormalVariant) {
@@ -810,7 +821,8 @@ int Font::offsetForPositionForComplexText(const TextRun& run,
   return shaper.offsetForPosition(this, run, xFloat, includePartialGlyphs);
 }
 
-// Return the rectangle for selecting the given range of code-points in the TextRun.
+// Return the rectangle for selecting the given range of code-points in the
+// TextRun.
 FloatRect Font::selectionRectForComplexText(const TextRun& run,
                                             const FloatPoint& point,
                                             int height,

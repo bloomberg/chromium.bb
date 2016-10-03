@@ -151,7 +151,8 @@ class PLATFORM_EXPORT FontPlatformData {
   PassRefPtr<SharedBuffer> openTypeTable(SkFontTableTag) const;
 
 #if OS(LINUX) || OS(ANDROID)
-  // The returned styles are all actual styles without FontRenderStyle::NoPreference.
+  // The returned styles are all actual styles without
+  // FontRenderStyle::NoPreference.
   const FontRenderStyle& getFontRenderStyle() const { return m_style; }
 #endif
   void setupPaint(SkPaint*, float deviceScaleFactor = 1, const Font* = 0) const;

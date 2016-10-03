@@ -106,9 +106,10 @@ static int computePaintTextFlags(String fontFamilyName) {
     textFlags = SkPaint::kAntiAlias_Flag | lcdFlag;
   }
 
-  // Many web-fonts are so poorly hinted that they are terrible to read when drawn in BW.
-  // In these cases, we have decided to FORCE these fonts to be drawn with at least grayscale AA,
-  // even when the System (getSystemTextFlags) tells us to draw only in BW.
+  // Many web-fonts are so poorly hinted that they are terrible to read when
+  // drawn in BW.  In these cases, we have decided to FORCE these fonts to be
+  // drawn with at least grayscale AA, even when the System (getSystemTextFlags)
+  // tells us to draw only in BW.
   if (isWebFont(fontFamilyName))
     textFlags |= SkPaint::kAntiAlias_Flag;
 

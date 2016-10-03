@@ -83,10 +83,10 @@ struct FontRenderStyle {
   char useHinting;    // hint glyphs to the pixel grid
   char hintStyle;     // level of hinting, 0..3
   char useAntiAlias;  // antialias glyph shapes
-  char
-      useSubpixelRendering;  // use subpixel rendering (partially-filled pixels)
-  char
-      useSubpixelPositioning;  // use subpixel positioning (fractional X positions for glyphs)
+  // use subpixel rendering (partially-filled pixels)
+  char useSubpixelRendering;
+  // use subpixel positioning (fractional X positions for glyphs)
+  char useSubpixelPositioning;
 };
 
 }  // namespace blink

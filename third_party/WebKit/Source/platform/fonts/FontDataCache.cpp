@@ -63,9 +63,10 @@ PassRefPtr<SimpleFontData> FontDataCache::get(
   if (result == m_cache.end()) {
     std::pair<RefPtr<SimpleFontData>, unsigned> newValue(
         SimpleFontData::create(*platformData), shouldRetain == Retain ? 1 : 0);
-    // The new SimpleFontData takes a copy of the incoming FontPlatformData object. The incoming key may be
-    // temporary. So, for cache storage, take the address of the newly created FontPlatformData that is copied an
-    // owned by SimpleFontData.
+    // The new SimpleFontData takes a copy of the incoming FontPlatformData
+    // object. The incoming key may be temporary. So, for cache storage, take
+    // the address of the newly created FontPlatformData that is copied an owned
+    // by SimpleFontData.
     m_cache.set(&newValue.first->platformData(), newValue);
     if (shouldRetain == DoNotRetain)
       m_inactiveFontData.add(newValue.first);
@@ -80,8 +81,9 @@ PassRefPtr<SimpleFontData> FontDataCache::get(
   if (shouldRetain == Retain) {
     result.get()->value.second++;
   } else if (!result.get()->value.second) {
-    // If shouldRetain is DoNotRetain and count is 0, we want to remove the fontData from
-    // m_inactiveFontData (above) and re-add here to update LRU position.
+    // If shouldRetain is DoNotRetain and count is 0, we want to remove the
+    // fontData from m_inactiveFontData (above) and re-add here to update LRU
+    // position.
     m_inactiveFontData.add(result.get()->value.first);
   }
 
@@ -128,8 +130,9 @@ bool FontDataCache::purge(PurgeSeverity PurgeSeverity) {
 }
 
 bool FontDataCache::purgeLeastRecentlyUsed(int count) {
-  static bool
-      isPurging;  // Guard against reentry when e.g. a deleted FontData releases its small caps FontData.
+  // Guard against reentry when e.g. a deleted FontData releases its small caps
+  // FontData.
+  static bool isPurging;
   if (isPurging)
     return false;
 
@@ -141,7 +144,8 @@ bool FontDataCache::purgeLeastRecentlyUsed(int count) {
   for (int i = 0; i < count && it != end; ++it, ++i) {
     RefPtr<SimpleFontData>& fontData = *it.get();
     m_cache.remove(&(fontData->platformData()));
-    // We should not delete SimpleFontData here because deletion can modify m_inactiveFontData. See http://trac.webkit.org/changeset/44011
+    // We should not delete SimpleFontData here because deletion can modify
+    // m_inactiveFontData. See http://trac.webkit.org/changeset/44011
     fontDataToDelete.append(fontData);
   }
 

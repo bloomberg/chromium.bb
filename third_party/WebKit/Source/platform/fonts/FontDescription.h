@@ -2,7 +2,8 @@
  * Copyright (C) 2000 Lars Knoll (knoll@kde.org)
  *           (C) 2000 Antti Koivisto (koivisto@kde.org)
  *           (C) 2000 Dirk Mueller (mueller@kde.org)
- * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Apple Inc. All rights
+ * reserved.
  * Copyright (C) 2007 Nicholas Shanks <webkit@nickshanks.com>
  *
  * This library is free software; you can redistribute it and/or
@@ -186,7 +187,8 @@ class PLATFORM_EXPORT FontDescription {
     return static_cast<GenericFamilyType>(m_fields.m_genericFamily);
   }
 
-  // only use fixed default size when there is only one font family, and that family is "monospace"
+  // only use fixed default size when there is only one font family, and that
+  // family is "monospace"
   bool isMonospace() const {
     return genericFamily() == MonospaceFamily && !family().next() &&
            family().family() == FontFamilyNames::webkit_monospace;
@@ -322,8 +324,8 @@ class PLATFORM_EXPORT FontDescription {
   static TypesettingFeatures defaultTypesettingFeatures();
 
   unsigned styleHashWithoutFamilyList() const;
-  // TODO(drott): We should not expose internal structure here, but rather introduce
-  // a hash function here.
+  // TODO(drott): We should not expose internal structure here, but rather
+  // introduce a hash function here.
   unsigned bitmapFields() const { return m_fieldsAsUnsigned.parts[0]; }
   unsigned auxiliaryBitmapFields() const { return m_fieldsAsUnsigned.parts[1]; }
 
@@ -336,11 +338,11 @@ class PLATFORM_EXPORT FontDescription {
 
   void updateTypesettingFeatures();
 
-  float
-      m_specifiedSize;  // Specified CSS value. Independent of rendering issues such as integer
-                        // rounding, minimum font sizes, and zooming.
-  float
-      m_computedSize;  // Computed size adjusted for the minimum font size and the zoom factor.
+  // Specified CSS value. Independent of rendering issues such as integer
+  // rounding, minimum font sizes, and zooming.
+  float m_specifiedSize;
+  // Computed size adjusted for the minimum font size and the zoom factor.
+  float m_computedSize;
 
   // (Given aspect value / aspect value of a font family) * specifiedSize.
   // This value is adjusted for the minimum font size and the zoom factor
@@ -375,10 +377,12 @@ class PLATFORM_EXPORT FontDescription {
     unsigned m_historicalLigaturesState : 2;
     unsigned m_contextualLigaturesState : 2;
 
-    unsigned
-        m_keywordSize : 4;  // We cache whether or not a font is currently represented by a CSS keyword (e.g., medium).  If so,
-    // then we can accurately translate across different generic families to adjust for different preference settings
-    // (e.g., 13px monospace vs. 16px everything else).  Sizes are 1-8 (like the HTML size values for <font>).
+    // We cache whether or not a font is currently represented by a CSS keyword
+    // (e.g., medium).  If so, then we can accurately translate across different
+    // generic families to adjust for different preference settings (e.g., 13px
+    // monospace vs. 16px everything else).  Sizes are 1-8 (like the HTML size
+    // values for <font>).
+    unsigned m_keywordSize : 4;
 
     unsigned m_fontSmoothing : 2;  // FontSmoothingMode
     unsigned m_textRendering : 2;  // TextRenderingMode

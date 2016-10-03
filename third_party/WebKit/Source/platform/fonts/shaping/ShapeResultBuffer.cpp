@@ -124,11 +124,11 @@ float ShapeResultBuffer::fillGlyphBufferForTextEmphasisRun(
   TextDirection direction = textRun.direction();
 
   // A "cluster" in this context means a cluster as it is used by HarfBuzz:
-  // The minimal group of characters and corresponding glyphs, that cannot be broken
-  // down further from a text shaping point of view.
-  // A cluster can contain multiple glyphs and grapheme clusters, with mutually
-  // overlapping boundaries. Below we count grapheme clusters per HarfBuzz clusters,
-  // then linearly split the sum of corresponding glyph advances by the number of
+  // The minimal group of characters and corresponding glyphs, that cannot be
+  // broken down further from a text shaping point of view.  A cluster can
+  // contain multiple glyphs and grapheme clusters, with mutually overlapping
+  // boundaries. Below we count grapheme clusters per HarfBuzz clusters, then
+  // linearly split the sum of corresponding glyph advances by the number of
   // grapheme clusters in order to find positions for emphasis mark drawing.
   uint16_t clusterStart = static_cast<uint16_t>(
       direction == RTL ? run->m_startIndex + run->m_numCharacters + runOffset
@@ -178,7 +178,8 @@ float ShapeResultBuffer::fillGlyphBufferForTextEmphasisRun(
 
       float glyphAdvanceX = clusterAdvance / graphemesInCluster;
       for (unsigned j = 0; j < graphemesInCluster; ++j) {
-        // Do not put emphasis marks on space, separator, and control characters.
+        // Do not put emphasis marks on space, separator, and control
+        // characters.
         if (Character::canReceiveTextEmphasis(textRun[currentCharacterIndex]))
           addEmphasisMark(glyphBuffer, emphasisData, glyphCenter,
                           advanceSoFar + glyphAdvanceX / 2);

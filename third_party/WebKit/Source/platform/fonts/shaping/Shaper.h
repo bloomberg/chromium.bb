@@ -70,13 +70,13 @@ class PLATFORM_EXPORT Shaper {
 
   // TODO(kojii): These are no longer used in HarfBuzzShaper.
   float m_expansion;  // Pixels to be distributed over the line at word breaks.
-  float
-      m_expansionPerOpportunity;  // Pixels to be added to each expansion opportunity.
+  float m_expansionPerOpportunity;  // Pixels to be added to each expansion
+                                    // opportunity.
   bool m_isAfterExpansion;
 
  private:
-  // Emphasis substitution info. If specified, this will be used to replace all glyphs which
-  // can receive text emphasis with center-aligned emphasis glyphs.
+  // Emphasis substitution info. If specified, this will be used to replace all
+  // glyphs which can receive text emphasis with center-aligned emphasis glyphs.
   const GlyphData* m_emphasisSubstitutionData;
   FloatPoint m_emphasisGlyphCenter;
 };

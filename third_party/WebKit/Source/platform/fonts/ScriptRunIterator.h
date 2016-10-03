@@ -69,10 +69,10 @@ class PLATFORM_EXPORT ScriptRunIterator {
 };
 
 // ScriptData is a wrapper which returns a set of scripts for a particular
-// character retrieved from the character's primary script and script extensions,
-// as per ICU / Unicode data. ScriptData maintains a certain priority order of
-// the returned values, which are essential for mergeSets method to work
-// correctly.
+// character retrieved from the character's primary script and script
+// extensions, as per ICU / Unicode data. ScriptData maintains a certain
+// priority order of the returned values, which are essential for mergeSets
+// method to work correctly.
 class PLATFORM_EXPORT ScriptData {
   USING_FAST_MALLOC(ScriptData);
   WTF_MAKE_NONCOPYABLE(ScriptData);

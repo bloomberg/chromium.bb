@@ -380,11 +380,12 @@ PassRefPtr<ShapeResult> ShapeResult::createForTabulationCharacters(
     float positionOffset,
     unsigned count) {
   const SimpleFontData* fontData = font->primaryFont();
-  std::unique_ptr<ShapeResult::RunInfo> run = wrapUnique(new ShapeResult::RunInfo(
-      fontData,
-      // Tab characters are always LTR or RTL, not TTB, even when isVerticalAnyUpright().
-      textRun.rtl() ? HB_DIRECTION_RTL : HB_DIRECTION_LTR, HB_SCRIPT_COMMON, 0,
-      count, count));
+  // Tab characters are always LTR or RTL, not TTB, even when
+  // isVerticalAnyUpright().
+  std::unique_ptr<ShapeResult::RunInfo> run =
+      wrapUnique(new ShapeResult::RunInfo(
+          fontData, textRun.rtl() ? HB_DIRECTION_RTL : HB_DIRECTION_LTR,
+          HB_SCRIPT_COMMON, 0, count, count));
   float position = textRun.xPos() + positionOffset;
   float startPosition = position;
   for (unsigned i = 0; i < count; i++) {

@@ -1,5 +1,6 @@
 /*
- * Copyright (c) 2006, 2007, 2008, 2009, 2010, 2012 Google Inc. All rights reserved.
+ * Copyright (c) 2006, 2007, 2008, 2009, 2010, 2012 Google Inc. All rights
+ * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -519,8 +520,8 @@ const UChar* getFallbackFamily(UChar32 character,
       case 2:
         // Use a Traditional Chinese ExtB font if in Traditional Chinese locale.
         // Otherwise, use a Simplified Chinese ExtB font. Windows Japanese
-        // fonts do support a small subset of ExtB (that are included in JIS X 0213),
-        // but its coverage is rather sparse.
+        // fonts do support a small subset of ExtB (that are included in JIS X
+        // 0213), but its coverage is rather sparse.
         // Eventually, this should be controlled by lang/xml:lang.
         if (icu::Locale::getDefault() == icu::Locale::getTraditionalChinese())
           family = L"pmingliu-extb";

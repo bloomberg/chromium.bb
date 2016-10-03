@@ -106,9 +106,9 @@ void SimpleFontData::platformInit() {
   bool isVDMXValid = false;
 
 #if OS(LINUX) || OS(ANDROID)
-  // Manually digging up VDMX metrics is only applicable when bytecode hinting using FreeType.
-  // With DirectWrite or CoreText, no bytecode hinting is ever done.
-  // This code should be pushed into FreeType (hinted font metrics).
+  // Manually digging up VDMX metrics is only applicable when bytecode hinting
+  // using FreeType.  With DirectWrite or CoreText, no bytecode hinting is ever
+  // done.  This code should be pushed into FreeType (hinted font metrics).
   static const uint32_t vdmxTag = SkSetFourByteTag('V', 'D', 'M', 'X');
   int pixelSize = m_platformData.size() + 0.5;
   if (!m_paint.isAutohinted() &&
@@ -131,7 +131,8 @@ void SimpleFontData::platformInit() {
   float descent;
 
   // Beware those who step here: This code is designed to match Win32 font
-  // metrics *exactly* (except the adjustment of ascent/descent on Linux/Android).
+  // metrics *exactly* (except the adjustment of ascent/descent on
+  // Linux/Android).
   if (isVDMXValid) {
     ascent = vdmxAscent;
     descent = -vdmxDescent;
@@ -139,9 +140,10 @@ void SimpleFontData::platformInit() {
     ascent = SkScalarRoundToInt(-metrics.fAscent);
     descent = SkScalarRoundToInt(metrics.fDescent);
 #if OS(LINUX) || OS(ANDROID)
-    // When subpixel positioning is enabled, if the descent is rounded down, the descent part
-    // of the glyph may be truncated when displayed in a 'overflow: hidden' container.
-    // To avoid that, borrow 1 unit from the ascent when possible.
+    // When subpixel positioning is enabled, if the descent is rounded down, the
+    // descent part of the glyph may be truncated when displayed in a 'overflow:
+    // hidden' container.  To avoid that, borrow 1 unit from the ascent when
+    // possible.
     // FIXME: This can be removed if sub-pixel ascent/descent is supported.
     if (platformData().getFontRenderStyle().useSubpixelPositioning &&
         descent < SkScalarToFloat(metrics.fDescent) && ascent >= 1) {

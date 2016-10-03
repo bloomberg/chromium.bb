@@ -43,15 +43,16 @@ namespace blink {
 class FontData;
 class SimpleFontData;
 
-// The glyph page tree is a data structure that maps (FontData, glyph page number)
-// to a GlyphPage.  Level 0 (the "root") is special. There is one root
+// The glyph page tree is a data structure that maps (FontData, glyph page
+// number) to a GlyphPage.  Level 0 (the "root") is special. There is one root
 // GlyphPageTreeNode for each glyph page number.  The roots do not have a
 // GlyphPage associated with them, and their initializePage() function is never
 // called to fill the glyphs.
 //
 // Each root node maps a FontData pointer to another GlyphPageTreeNode at
-// level 1 (the "root child") that stores the actual glyphs for a specific font data.
-// These nodes will only have a GlyphPage if they have glyphs for that range.
+// level 1 (the "root child") that stores the actual glyphs for a specific font
+// data.  These nodes will only have a GlyphPage if they have glyphs for that
+// range.
 //
 // Levels greater than one correspond to subsequent levels of the fallback list
 // for that font. These levels override their parent's page of glyphs by
@@ -61,9 +62,9 @@ class SimpleFontData;
 // which is for tracking the glyph page for a system fallback font.
 // The glyph page is tracked separately from the regular pages and overrides
 // so that the glyph pages do not get polluted with these last-resort glyphs.
-// The system fallback page is not populated at construction like the other pages,
-// but on demand for each glyph, because the system may need to use different
-// fallback fonts for each. This lazy population is done by the Font.
+// The system fallback page is not populated at construction like the other
+// pages, but on demand for each glyph, because the system may need to use
+// different fallback fonts for each. This lazy population is done by the Font.
 
 class GlyphPageTreeNode;
 class SystemFallbackGlyphPageTreeNode;
@@ -81,7 +82,8 @@ class PLATFORM_EXPORT GlyphPageTreeNodeBase {
   // The system fallback font has special rules (see above).
   bool isSystemFallback() const { return m_isSystemFallback; }
 
-  // Returns a page of glyphs (or null if there are no glyphs in this page's character range).
+  // Returns a page of glyphs (or null if there are no glyphs in this page's
+  // character range).
   virtual GlyphPage* page(UScriptCode = USCRIPT_COMMON) = 0;
 
  protected:

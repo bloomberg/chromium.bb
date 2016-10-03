@@ -37,8 +37,8 @@
 namespace blink {
 
 // We currently do not support bitmap fonts on windows.
-// Instead of trying to construct a bitmap font and then going down the fallback path map
-// certain common bitmap fonts to their truetype equivalent up front.
+// Instead of trying to construct a bitmap font and then going down the fallback
+// path map certain common bitmap fonts to their truetype equivalent up front.
 inline const AtomicString& adjustFamilyNameToAvoidUnsupportedFonts(
     const AtomicString& familyName) {
 #if OS(WIN)

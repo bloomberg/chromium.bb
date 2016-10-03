@@ -58,8 +58,9 @@ int32_t FontCache::s_statusFontHeight = 0;
 namespace {
 
 int32_t ensureMinimumFontHeightIfNeeded(int32_t fontHeight) {
-  // Adjustment for codepage 936 to make the fonts more legible in Simplified Chinese.
-  // Please refer to LayoutThemeFontProviderWin.cpp for more information.
+  // Adjustment for codepage 936 to make the fonts more legible in Simplified
+  // Chinese.  Please refer to LayoutThemeFontProviderWin.cpp for more
+  // information.
   return (fontHeight < 12.0f) && (GetACP() == 936) ? 12.0f : fontHeight;
 }
 
@@ -161,7 +162,8 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(
   // Make sure that all of them are lowercased.
   const static wchar_t* const cjkFonts[] = {
       L"arial unicode ms", L"ms pgothic", L"simsun", L"gulim", L"pmingliu",
-      L"wenquanyi zen hei",  // Partial CJK Ext. A coverage but more widely known to Chinese users.
+      L"wenquanyi zen hei",  // Partial CJK Ext. A coverage but more widely
+                             // known to Chinese users.
       L"ar pl shanheisun uni", L"ar pl zenkai uni",
       L"han nom a",  // Complete CJK Ext. A coverage.
       L"code2000"    // Complete CJK Ext. A coverage.
@@ -239,9 +241,11 @@ static bool typefacesMatchesFamily(const SkTypeface* tf,
   }
   actualFamilies->unref();
 
-  // getFamilyName may return a name not returned by the createFamilyNameIterator.
+  // getFamilyName may return a name not returned by the
+  // createFamilyNameIterator.
   // Specifically in cases where Windows substitutes the font based on the
-  // HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontSubstitutes registry entries.
+  // HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontSubstitutes registry
+  // entries.
   if (!matchesRequestedFamily) {
     SkString familyName;
     tf->getFamilyName(&familyName);

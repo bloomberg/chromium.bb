@@ -51,7 +51,8 @@ CaseMappingHarfBuzzBufferFiller::CaseMappingHarfBuzzBufferFiller(
   }
 }
 
-// TODO(drott): crbug.com/623940 Fix lack of context sensitive case mapping here.
+// TODO(drott): crbug.com/623940 Fix lack of context sensitive case mapping
+// here.
 void CaseMappingHarfBuzzBufferFiller::fillSlowCase(CaseMapIntend caseMapIntend,
                                                    AtomicString locale,
                                                    const UChar* buffer,
@@ -77,7 +78,8 @@ void CaseMappingHarfBuzzBufferFiller::fillSlowCase(CaseMapIntend caseMapIntend,
       UChar32 codepoint = 0;
       U16_NEXT(caseMappedChar.characters16(), j, caseMappedChar.length(),
                codepoint);
-      // Add all characters of the case mapping result at the same cluster position.
+      // Add all characters of the case mapping result at the same cluster
+      // position.
       hb_buffer_add(m_harfBuzzBuffer, codepoint, charIndex);
     }
     charIndex = newCharIndex;

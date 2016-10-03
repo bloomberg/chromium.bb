@@ -449,10 +449,12 @@ TEST_F(CachingWordShaperTest, GlyphBoundsWithSpaces) {
   float periodsAndSpacesWidth = shaper.width(&font, periodsAndSpaces, nullptr,
                                              &periodsAndSpacesGlyphBounds);
 
-  // The total width of periods and spaces should be longer than the width of periods alone.
+  // The total width of periods and spaces should be longer than the width of
+  // periods alone.
   ASSERT_GT(periodsAndSpacesWidth, periodsWidth);
 
-  // The glyph bounds of periods and spaces should be longer than the glyph bounds of periods alone.
+  // The glyph bounds of periods and spaces should be longer than the glyph
+  // bounds of periods alone.
   ASSERT_GT(periodsAndSpacesGlyphBounds.width(), periodsGlyphBounds.width());
 }
 

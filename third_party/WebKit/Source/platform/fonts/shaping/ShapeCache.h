@@ -53,7 +53,8 @@ class ShapeCache {
   WTF_MAKE_NONCOPYABLE(ShapeCache);
 
  private:
-  // Used to optimize small strings as hash table keys. Avoids malloc'ing an out-of-line StringImpl.
+  // Used to optimize small strings as hash table keys. Avoids malloc'ing an
+  // out-of-line StringImpl.
   class SmallStringKey {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
@@ -124,8 +125,9 @@ class ShapeCache {
     static bool equal(const SmallStringKey& a, const SmallStringKey& b) {
       return a == b;
     }
-    static const bool safeToCompareToEmptyOrDeleted =
-        true;  // Empty and deleted values have lengths that are not equal to any valid length.
+    // Empty and deleted values have lengths that are not equal to any valid
+    // length.
+    static const bool safeToCompareToEmptyOrDeleted = true;
   };
 
   struct SmallStringKeyHashTraits : WTF::SimpleClassHashTraits<SmallStringKey> {

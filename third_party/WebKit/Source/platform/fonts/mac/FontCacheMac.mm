@@ -146,11 +146,11 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(
   if (!substituteFont)
     return nullptr;
 
-  // Use the family name from the AppKit-supplied substitute font, requesting the
-  // traits, weight, and size we want. One way this does better than the original
-  // AppKit request is that it takes synthetic bold and oblique into account.
-  // But it does create the possibility that we could end up with a font that
-  // doesn't actually cover the characters we need.
+  // Use the family name from the AppKit-supplied substitute font, requesting
+  // the traits, weight, and size we want. One way this does better than the
+  // original AppKit request is that it takes synthetic bold and oblique into
+  // account.  But it does create the possibility that we could end up with a
+  // font that doesn't actually cover the characters we need.
 
   NSFontManager* fontManager = [NSFontManager sharedFontManager];
 
@@ -198,7 +198,8 @@ PassRefPtr<SimpleFontData> FontCache::fallbackFontForCharacter(
   substituteFontTraits = [fontManager traitsOfFont:substituteFont];
   substituteFontWeight = [fontManager weightOfFont:substituteFont];
 
-  // TODO(eae): Remove once skia supports bold emoji. See https://bugs.chromium.org/p/skia/issues/detail?id=4904
+  // TODO(eae): Remove once skia supports bold emoji. See
+  // https://bugs.chromium.org/p/skia/issues/detail?id=4904
   // Bold emoji look the same as normal emoji, so syntheticBold isn't needed.
   bool syntheticBold =
       isAppKitFontWeightBold(weight) &&
@@ -219,17 +220,18 @@ PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(
     ShouldRetain shouldRetain) {
   DEFINE_STATIC_LOCAL(AtomicString, timesStr, ("Times"));
 
-  // FIXME: Would be even better to somehow get the user's default font here.  For now we'll pick
-  // the default that the user would get without changing any prefs.
+  // FIXME: Would be even better to somehow get the user's default font here.
+  // For now we'll pick the default that the user would get without changing
+  // any prefs.
   RefPtr<SimpleFontData> simpleFontData =
       getFontData(fontDescription, timesStr, false, shouldRetain);
   if (simpleFontData)
     return simpleFontData.release();
 
-  // The Times fallback will almost always work, but in the highly unusual case where
-  // the user doesn't have it, we fall back on Lucida Grande because that's
-  // guaranteed to be there, according to Nathan Taylor. This is good enough
-  // to avoid a crash at least.
+  // The Times fallback will almost always work, but in the highly unusual case
+  // where the user doesn't have it, we fall back on Lucida Grande because
+  // that's guaranteed to be there, according to Nathan Taylor. This is good
+  // enough to avoid a crash at least.
   DEFINE_STATIC_LOCAL(AtomicString, lucidaGrandeStr, ("Lucida Grande"));
   return getFontData(fontDescription, lucidaGrandeStr, false, shouldRetain);
 }
@@ -256,7 +258,8 @@ std::unique_ptr<FontPlatformData> FontCache::createFontPlatformData(
       useHinting() ? [nsFont screenFont] : [nsFont printerFont];
   NSInteger appKitWeight = toAppKitFontWeight(fontDescription.weight());
 
-  // TODO(eae): Remove once skia supports bold emoji. See https://bugs.chromium.org/p/skia/issues/detail?id=4904
+  // TODO(eae): Remove once skia supports bold emoji. See
+  // https://bugs.chromium.org/p/skia/issues/detail?id=4904
   // Bold emoji look the same as normal emoji, so syntheticBold isn't needed.
   bool syntheticBold = [platformFont.familyName isEqual:@"Apple Color Emoji"]
                            ? false
@@ -268,10 +271,10 @@ std::unique_ptr<FontPlatformData> FontCache::createFontPlatformData(
       ((traits & NSFontItalicTrait) && !(actualTraits & NSFontItalicTrait)) ||
       fontDescription.isSyntheticItalic();
 
-  // FontPlatformData::typeface() is null in the case of Chromium out-of-process font loading failing.
-  // Out-of-process loading occurs for registered fonts stored in non-system locations.
-  // When loading fails, we do not want to use the returned FontPlatformData since it will not have
-  // a valid SkTypeface.
+  // FontPlatformData::typeface() is null in the case of Chromium out-of-process
+  // font loading failing.  Out-of-process loading occurs for registered fonts
+  // stored in non-system locations.  When loading fails, we do not want to use
+  // the returned FontPlatformData since it will not have a valid SkTypeface.
   std::unique_ptr<FontPlatformData> platformData = wrapUnique(
       new FontPlatformData(platformFont, size, syntheticBold, syntheticItalic,
                            fontDescription.orientation()));

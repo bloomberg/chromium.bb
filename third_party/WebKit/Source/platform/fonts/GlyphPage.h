@@ -46,8 +46,8 @@ namespace blink {
 class SimpleFontData;
 class GlyphPageTreeNodeBase;
 
-// Holds the glyph index and the corresponding SimpleFontData information for a given
-// character.
+// Holds the glyph index and the corresponding SimpleFontData information for a
+// given character.
 struct GlyphData {
   DISALLOW_NEW();
   GlyphData(Glyph g = 0, const SimpleFontData* f = 0) : glyph(g), fontData(f) {}
@@ -147,7 +147,8 @@ class PLATFORM_EXPORT GlyphPage : public RefCounted<GlyphPage> {
     if (hasPerGlyphFontData()) {
       m_perGlyphFontData[index] = fontData;
     } else {
-      // A single-font GlyphPage already assigned m_fontDataForAllGlyphs in the constructor.
+      // A single-font GlyphPage already assigned m_fontDataForAllGlyphs in the
+      // constructor.
       ASSERT(!glyph || fontData == m_fontDataForAllGlyphs);
     }
   }
@@ -173,7 +174,8 @@ class PLATFORM_EXPORT GlyphPage : public RefCounted<GlyphPage> {
   }
 
   void removePerGlyphFontData(const SimpleFontData* fontData) {
-    // This method should only be called on the mixed page, which is never single-font.
+    // This method should only be called on the mixed page, which is never
+    // single-font.
     ASSERT(hasPerGlyphFontData());
     for (size_t i = 0; i < size; ++i) {
       if (m_perGlyphFontData[i] == fontData) {
@@ -216,7 +218,8 @@ class PLATFORM_EXPORT GlyphPage : public RefCounted<GlyphPage> {
   RefPtr<CustomDataPage> m_customFontToLoad;
   Glyph m_glyphs[size];
 
-  // NOTE: This array has (GlyphPage::size) elements if m_fontDataForAllGlyphs is null.
+  // NOTE: This array has (GlyphPage::size) elements if m_fontDataForAllGlyphs
+  // is null.
   const SimpleFontData* m_perGlyphFontData[0];
 };
 

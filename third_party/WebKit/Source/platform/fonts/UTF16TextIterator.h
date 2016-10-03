@@ -33,8 +33,10 @@ class PLATFORM_EXPORT UTF16TextIterator {
   WTF_MAKE_NONCOPYABLE(UTF16TextIterator);
 
  public:
-  // The passed in UChar pointer starts at 'offset'. The iterator operates on the range [offset, endOffset].
-  // 'length' denotes the maximum length of the UChar array, which might exceed 'endOffset'.
+  // The passed in UChar pointer starts at 'offset'. The iterator operates on
+  // the range [offset, endOffset].
+  // 'length' denotes the maximum length of the UChar array, which might exceed
+  // 'endOffset'.
   UTF16TextIterator(const UChar*, int length);
 
   // FIXME: The offset/endOffset fields are only used by the SimpleShaper,

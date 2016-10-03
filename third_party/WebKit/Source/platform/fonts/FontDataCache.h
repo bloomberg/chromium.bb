@@ -79,7 +79,8 @@ class FontDataCache {
   void release(const SimpleFontData*);
 
   // This is used by FontVerticalDataCache to mark all items with vertical data
-  // that are currently in cache as "in cache", which is later used to sweep the FontVerticalDataCache.
+  // that are currently in cache as "in cache", which is later used to sweep the
+  // FontVerticalDataCache.
   void markAllVerticalData();
 
   // Purges items in FontDataCache according to provided severity.

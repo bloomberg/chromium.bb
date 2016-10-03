@@ -207,9 +207,9 @@ void FontDescription::updateTypesettingFeatures() {
   }
 
   // As per CSS (http://dev.w3.org/csswg/css-text-3/#letter-spacing-property),
-  // When the effective letter-spacing between two characters is not zero (due to
-  // either justification or non-zero computed letter-spacing), user agents should
-  // not apply optional ligatures.
+  // When the effective letter-spacing between two characters is not zero (due
+  // to either justification or non-zero computed letter-spacing), user agents
+  // should not apply optional ligatures.
   if (m_letterSpacing == 0) {
     switch (commonLigaturesState()) {
       case FontDescription::DisabledLigaturesState:

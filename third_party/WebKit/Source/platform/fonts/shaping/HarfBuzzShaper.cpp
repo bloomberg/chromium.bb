@@ -601,7 +601,8 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult() {
   Vector<UChar32> fallbackCharsHint;
 
   // TODO: Check whether this treatAsZerowidthspace from the previous script
-  // segmentation plays a role here, does the new scriptRuniterator handle that correctly?
+  // segmentation plays a role here, does the new scriptRuniterator handle that
+  // correctly?
   while (runSegmenter.consume(&segmentRange)) {
     RefPtr<FontFallbackIterator> fallbackIterator =
         m_font->createFontFallbackIterator(segmentRange.fontFallbackPriority);
@@ -662,9 +663,10 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult() {
                     .get()
               : currentFontDataForRangeSet->fontData();
 
-      // Compatibility with SimpleFontData approach of keeping a flag for overriding drawing direction.
-      // TODO: crbug.com/506224 This should go away in favor of storing that information elsewhere, for example in
-      // ShapeResult.
+      // Compatibility with SimpleFontData approach of keeping a flag for
+      // overriding drawing direction.
+      // TODO: crbug.com/506224 This should go away in favor of storing that
+      // information elsewhere, for example in ShapeResult.
       const SimpleFontData* directionAndSmallCapsAdjustedFont =
           fontDataAdjustedForOrientation(
               smallcapsAdjustedFont, m_font->getFontDescription().orientation(),

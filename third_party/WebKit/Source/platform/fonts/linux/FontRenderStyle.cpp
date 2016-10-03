@@ -55,7 +55,8 @@ FontRenderStyle FontRenderStyle::querySystem(const CString& family,
 #if OS(ANDROID)
   style.setDefaults();
 #else
-  // If the font name is missing (i.e. probably a web font) or the sandbox is disabled, use the system defaults.
+  // If the font name is missing (i.e. probably a web font) or the sandbox is
+  // disabled, use the system defaults.
   if (!family.length() || !Platform::current()->sandboxSupport()) {
     style.setDefaults();
   } else {

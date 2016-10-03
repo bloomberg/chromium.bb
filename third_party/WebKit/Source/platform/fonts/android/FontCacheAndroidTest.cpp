@@ -35,7 +35,8 @@ TEST(FontCacheAndroid, genericFamilyNameForScript) {
   if (FontFamilyNames::webkit_standard.isEmpty())
     FontFamilyNames::init();
 
-  // For non-CJK, getGenericFamilyNameForScript should return the given familyName.
+  // For non-CJK, getGenericFamilyNameForScript should return the given
+  // familyName.
   EXPECT_EQ(FontFamilyNames::webkit_standard,
             FontCache::getGenericFamilyNameForScript(
                 FontFamilyNames::webkit_standard, english));
@@ -43,7 +44,8 @@ TEST(FontCacheAndroid, genericFamilyNameForScript) {
             FontCache::getGenericFamilyNameForScript(
                 FontFamilyNames::webkit_monospace, english));
 
-  // For CJK, getGenericFamilyNameForScript should return CJK fonts except monospace.
+  // For CJK, getGenericFamilyNameForScript should return CJK fonts except
+  // monospace.
   EXPECT_NE(FontFamilyNames::webkit_standard,
             FontCache::getGenericFamilyNameForScript(
                 FontFamilyNames::webkit_standard, chinese));

@@ -47,8 +47,9 @@ struct PLATFORM_EXPORT SimpleShaper : public Shaper {
                HashSet<const SimpleFontData*>* fallbackFonts = nullptr,
                FloatRect* = nullptr);
 
-  // TODO(sk.kumar): This function should be updated to take an unsigned value, and callers
-  // should be updated to not pass negative values. See: crbug.com/540047.
+  // TODO(sk.kumar): This function should be updated to take an unsigned value,
+  // and callers should be updated to not pass negative values.
+  // See: crbug.com/540047.
   unsigned advance(int to, GlyphBuffer* = 0);
   bool advanceOneCharacter(float& width);
 
