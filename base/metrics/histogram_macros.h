@@ -10,7 +10,13 @@
 #include "base/metrics/histogram_macros_local.h"
 #include "base/time/time.h"
 
+// Macros for efficient use of histograms.
+//
+// For best practices on deciding when to emit to a histogram and what form
+// the histogram should take, see tools/metrics/histograms/README.md
+//
 // TODO(nikunjb): Move sparse macros to this file.
+//
 // UMA_HISTOGRAM_SPARSE_SLOWLY is defined in sparse_histogram.h as it has
 // different #include dependencies.
 
