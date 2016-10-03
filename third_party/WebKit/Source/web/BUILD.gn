@@ -364,6 +364,7 @@ test("webkit_unit_tests") {
     "tests/WebInputEventConversionTest.cpp",
     "tests/WebMeaningfulLayoutsTest.cpp",
     "tests/WebPluginContainerTest.cpp",
+    "tests/WebRangeTest.cpp",
     "tests/WebScopedWindowFocusAllowedIndicatorTest.cpp",
     "tests/WebSearchableFormDataTest.cpp",
     "tests/WebSelectorTest.cpp",
