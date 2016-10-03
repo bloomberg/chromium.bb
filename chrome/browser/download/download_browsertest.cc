@@ -1179,7 +1179,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadMimeType) {
 #if defined(OS_WIN)
 // Download a file and confirm that the zone identifier (on windows)
 // is set to internet.
-IN_PROC_BROWSER_TEST_F(DownloadTest, CheckInternetZone) {
+IN_PROC_BROWSER_TEST_F(DownloadTest, CheckInternetZone_DependsOnLocalConfig) {
   GURL url(URLRequestMockHTTPJob::GetMockUrl(kDownloadTest1Path));
 
   // Download the file and wait.  We do not expect the Select File dialog.
@@ -1193,6 +1193,35 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CheckInternetZone) {
   if (base::VolumeSupportsADS(downloaded_file))
     EXPECT_TRUE(base::HasInternetZoneIdentifier(downloaded_file));
   CheckDownload(browser(), file, file);
+}
+
+// Downloading a file from the local host shouldn't cause the application of a
+// zone identifier.
+IN_PROC_BROWSER_TEST_F(DownloadTest, CheckLocalhostZone_DependsOnLocalConfig) {
+  embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Assumes that localhost maps to 127.0.0.1. Otherwise the test will fail
+  // since EmbeddedTestServer is listening on that address.
+  GURL url =
+      embedded_test_server()->GetURL("localhost", "/downloads/a_zip_file.zip");
+  DownloadAndWait(browser(), url);
+  base::FilePath file(FILE_PATH_LITERAL("a_zip_file.zip"));
+  base::FilePath downloaded_file(DestinationFile(browser(), file));
+  EXPECT_FALSE(base::HasInternetZoneIdentifier(downloaded_file));
+}
+
+// Same as the test above, but uses a file:// URL to a local file.
+IN_PROC_BROWSER_TEST_F(DownloadTest, CheckLocalFileZone_DependsOnLocalConfig) {
+  base::FilePath source_file = GetTestDataDirectory()
+                                   .AppendASCII("downloads")
+                                   .AppendASCII("a_zip_file.zip");
+
+  GURL url = net::FilePathToFileURL(source_file);
+  DownloadAndWait(browser(), url);
+  base::FilePath file(FILE_PATH_LITERAL("a_zip_file.zip"));
+  base::FilePath downloaded_file(DestinationFile(browser(), file));
+  EXPECT_FALSE(base::HasInternetZoneIdentifier(downloaded_file));
 }
 #endif
 

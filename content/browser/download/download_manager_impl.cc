@@ -418,6 +418,12 @@ void DownloadManagerImpl::OnFileExistenceChecked(uint32_t download_id,
   }
 }
 
+std::string DownloadManagerImpl::GetApplicationClientIdForFileScanning() const {
+  if (delegate_)
+    return delegate_->ApplicationClientIdForFileScanning();
+  return std::string();
+}
+
 BrowserContext* DownloadManagerImpl::GetBrowserContext() const {
   return browser_context_;
 }

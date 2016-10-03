@@ -189,6 +189,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   bool ShouldOpenDownload(DownloadItemImpl* item,
                           const ShouldOpenDownloadCallback& callback) override;
   void CheckForFileRemoval(DownloadItemImpl* download_item) override;
+  std::string GetApplicationClientIdForFileScanning() const override;
   void ResumeInterruptedDownload(
       std::unique_ptr<content::DownloadUrlParameters> params,
       uint32_t id) override;
