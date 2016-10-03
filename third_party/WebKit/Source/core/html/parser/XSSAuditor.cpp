@@ -50,7 +50,8 @@
 
 namespace {
 
-// SecurityOrigin::urlWithUniqueSecurityOrigin() can't be used cross-thread, or we'd use it instead.
+// SecurityOrigin::urlWithUniqueSecurityOrigin() can't be used cross-thread, or
+// we'd use it instead.
 const char kURLWithUniqueOrigin[] = "data:,";
 
 const char kSafeJavaScriptURL[] = "javascript:void(0)";
@@ -62,21 +63,27 @@ namespace blink {
 using namespace HTMLNames;
 
 static bool isNonCanonicalCharacter(UChar c) {
-  // We remove all non-ASCII characters, including non-printable ASCII characters.
+  // We remove all non-ASCII characters, including non-printable ASCII
+  // characters.
   //
-  // Note, we don't remove backslashes like PHP stripslashes(), which among other things converts "\\0" to the \0 character.
-  // Instead, we remove backslashes and zeros (since the string "\\0" =(remove backslashes)=> "0"). However, this has the
-  // adverse effect that we remove any legitimate zeros from a string.
+  // Note, we don't remove backslashes like PHP stripslashes(), which among
+  // other things converts "\\0" to the \0 character. Instead, we remove
+  // backslashes and zeros (since the string "\\0" =(remove backslashes)=> "0").
+  // However, this has the adverse effect that we remove any legitimate zeros
+  // from a string.
   //
-  // We also remove forward-slash, because it is common for some servers to collapse successive path components, eg,
-  // a//b becomes a/b.
+  // We also remove forward-slash, because it is common for some servers to
+  // collapse successive path components, eg, a//b becomes a/b.
   //
-  // We also remove the questionmark character, since some severs replace invalid high-bytes with a questionmark. We
-  // are already stripping the high-bytes so we also strip the questionmark to match.
+  // We also remove the questionmark character, since some severs replace
+  // invalid high-bytes with a questionmark. We are already stripping the
+  // high-bytes so we also strip the questionmark to match.
   //
-  // We also move the percent character, since some servers strip it when there's a malformed sequence.
+  // We also move the percent character, since some servers strip it when
+  // there's a malformed sequence.
   //
-  // For instance: new String("http://localhost:8000?x") => new String("http:localhost:8x").
+  // For instance: new String("http://localhost:8000?x") => new
+  // String("http:localhost:8x").
   return (c == '\\' || c == '0' || c == '\0' || c == '/' || c == '?' ||
           c == '%' || c >= 127);
 }
@@ -124,7 +131,8 @@ static bool startsOpeningScriptTagAt(const String& string, size_t start) {
                                 script);
 }
 
-// If other files need this, we should move this to core/html/parser/HTMLParserIdioms.h
+// If other files need this, we should move this to
+// core/html/parser/HTMLParserIdioms.h
 template <size_t inlineCapacity>
 bool threadSafeMatch(const Vector<UChar, inlineCapacity>& vector,
                      const QualifiedName& qname) {
@@ -138,7 +146,8 @@ static bool hasName(const HTMLToken& token, const QualifiedName& name) {
 static bool findAttributeWithName(const HTMLToken& token,
                                   const QualifiedName& name,
                                   size_t& indexOfMatchingAttribute) {
-  // Notice that we're careful not to ref the StringImpl here because we might be on a background thread.
+  // Notice that we're careful not to ref the StringImpl here because we might
+  // be on a background thread.
   const String& attrName = name.namespaceURI() == XLinkNames::xlinkNamespaceURI
                                ? "xlink:" + name.localName().getString()
                                : name.localName().getString();
@@ -167,7 +176,8 @@ static bool isDangerousHTTPEquiv(const String& value) {
 }
 
 static inline String decode16BitUnicodeEscapeSequences(const String& string) {
-  // Note, the encoding is ignored since each %u-escape sequence represents a UTF-16 code unit.
+  // Note, the encoding is ignored since each %u-escape sequence represents a
+  // UTF-16 code unit.
   return decodeEscapeSequences<Unicode16BitEscapeSequence>(string,
                                                            UTF8Encoding());
 }
@@ -175,8 +185,9 @@ static inline String decode16BitUnicodeEscapeSequences(const String& string) {
 static inline String decodeStandardURLEscapeSequences(
     const String& string,
     const WTF::TextEncoding& encoding) {
-  // We use decodeEscapeSequences() instead of decodeURLEscapeSequences() (declared in weborigin/KURL.h) to
-  // avoid platform-specific URL decoding differences (e.g. KURLGoogle).
+  // We use decodeEscapeSequences() instead of decodeURLEscapeSequences()
+  // (declared in weborigin/KURL.h) to avoid platform-specific URL decoding
+  // differences (e.g. KURLGoogle).
   return decodeEscapeSequences<URLEscapeSequence>(string, encoding);
 }
 
@@ -194,17 +205,21 @@ static String fullyDecodeString(const String& string,
 }
 
 static void truncateForSrcLikeAttribute(String& decodedSnippet) {
-  // In HTTP URLs, characters following the first ?, #, or third slash may come from
-  // the page itself and can be merely ignored by an attacker's server when a remote
-  // script or script-like resource is requested. In DATA URLS, the payload starts at
-  // the first comma, and the the first /*, //, or <!-- may introduce a comment. Also,
-  // DATA URLs may use the same string literal tricks as with script content itself.
-  // In either case, content following this may come from the page and may be ignored
-  // when the script is executed. Also, any of these characters may now be represented
-  // by the (enlarged) set of html5 entities.
-  // For simplicity, we don't differentiate based on URL scheme, and stop at the first
-  // & (since it might be part of an entity for any of the subsequent punctuation), the
-  // first # or ?, the third slash, or the first slash, <, ', or " once a comma is seen.
+  // In HTTP URLs, characters following the first ?, #, or third slash may come
+  // from the page itself and can be merely ignored by an attacker's server when
+  // a remote script or script-like resource is requested. In DATA URLS, the
+  // payload starts at the first comma, and the the first /*, //, or <!-- may
+  // introduce a comment.
+  //
+  // Also, DATA URLs may use the same string literal tricks as with script
+  // content itself. In either case, content following this may come from the
+  // page and may be ignored when the script is executed. Also, any of these
+  // characters may now be represented by the (enlarged) set of html5 entities.
+  //
+  // For simplicity, we don't differentiate based on URL scheme, and stop at the
+  // first & (since it might be part of an entity for any of the subsequent
+  // punctuation), the first # or ?, the third slash, or the first slash, <, ',
+  // or " once a comma is seen.
   int slashCount = 0;
   bool commaSeen = false;
   for (size_t currentLength = 0; currentLength < decodedSnippet.length();
@@ -229,6 +244,7 @@ static void truncateForScriptLikeAttribute(String& decodedSnippet) {
   // injected vector. Excluding the terminating character covers common cases
   // where the page immediately ends the attribute, but doesn't cover more
   // complex cases where there is other page data following the injection.
+  //
   // Generally, these won't parse as javascript, so the injected vector
   // typically excludes them from consideration via a single-line comment or
   // by enclosing them in a string literal terminated later by the page's own
@@ -236,11 +252,12 @@ static void truncateForScriptLikeAttribute(String& decodedSnippet) {
   // may also try to introduce these via entities. As a result, we'd like to
   // stop before the first "//", the first <!--, the first entity, or the first
   // quote not immediately following the first equals sign (taking whitespace
-  // into consideration). To keep things simpler, we don't try to distinguish
-  // between entity-introducing amperands vs. other uses, nor do we bother to
-  // check for a second slash for a comment, nor do we bother to check for
-  // !-- following a less-than sign. We stop instead on any ampersand
-  // slash, or less-than sign.
+  // into consideration).
+  //
+  // To keep things simpler, we don't try to distinguish between
+  // entity-introducing amperands vs. other uses, nor do we bother to check for
+  // a second slash for a comment, nor do we bother to check for !-- following a
+  // less-than sign. We stop instead on any ampersand slash, or less-than sign.
   size_t position = 0;
   if ((position = decodedSnippet.find("=")) != kNotFound &&
       (position = decodedSnippet.find(isNotHTMLSpace<UChar>, position + 1)) !=
@@ -326,7 +343,8 @@ void XSSAuditor::init(Document* document, XSSAuditorDelegate* auditorDelegate) {
   }
 
   if (m_documentURL.isEmpty()) {
-    // The URL can be empty when opening a new browser window or calling window.open("").
+    // The URL can be empty when opening a new browser window or calling
+    // window.open("").
     m_isEnabled = false;
     return;
   }
@@ -512,8 +530,8 @@ bool XSSAuditor::filterCharacterToken(const FilterTokenRequest& request) {
   }
   if (m_state == SuppressingAdjacentCharacterTokens) {
     request.token.eraseCharacters();
-    request.token.appendToCharacter(
-        ' ');  // Technically, character tokens can't be empty.
+    // Technically, character tokens can't be empty.
+    request.token.appendToCharacter(' ');
     return true;
   }
   return false;
@@ -662,7 +680,8 @@ bool XSSAuditor::eraseDangerousAttributesIfInjected(
     bool eraseAttribute = false;
     bool valueContainsJavaScriptURL = false;
     const HTMLToken::Attribute& attribute = request.token.attributes().at(i);
-    // FIXME: Don't create a new String for every attribute.value in the document.
+    // FIXME: Don't create a new String for every attribute.value in the
+    // document.
     if (isNameOfInlineEventHandler(attribute.nameAsVector())) {
       eraseAttribute = isContainedInRequest(
           canonicalize(snippetFromAttribute(request, attribute),
@@ -729,7 +748,8 @@ bool XSSAuditor::eraseAttributeIfInjected(const FilterTokenRequest& request,
 
 String XSSAuditor::canonicalizedSnippetForTagName(
     const FilterTokenRequest& request) {
-  // Grab a fixed number of characters equal to the length of the token's name plus one (to account for the "<").
+  // Grab a fixed number of characters equal to the length of the token's name
+  // plus one (to account for the "<").
   return canonicalize(request.sourceTracker.sourceForToken(request.token)
                           .substring(0, request.token.name().size() + 1),
                       NoTruncation);
@@ -762,8 +782,9 @@ String XSSAuditor::canonicalize(String snippet, TruncationKind treatment) {
 
   if (treatment != NoTruncation) {
     if (decodedSnippet.length() > kMaximumFragmentLengthTarget) {
-      // Let the page influence the stopping point to avoid disclosing leading fragments.
-      // Stop when we hit whitespace, since that is unlikely to be part a leading fragment.
+      // Let the page influence the stopping point to avoid disclosing leading
+      // fragments. Stop when we hit whitespace, since that is unlikely to be
+      // part a leading fragment.
       size_t position = kMaximumFragmentLengthTarget;
       while (position < decodedSnippet.length() &&
              !isHTMLSpace(decodedSnippet[position]))
@@ -793,14 +814,14 @@ String XSSAuditor::canonicalizedSnippetForJavaScript(
            isHTMLSpace<UChar>(string[startPosition]))
       startPosition++;
 
-    // Under SVG/XML rules, only HTML comment syntax matters and the parser returns
-    // these as a separate comment tokens. Having consumed whitespace, we need not look
-    // further for these.
+    // Under SVG/XML rules, only HTML comment syntax matters and the parser
+    // returns these as a separate comment tokens. Having consumed whitespace,
+    // we need not look further for these.
     if (request.shouldAllowCDATA)
       break;
 
-    // Under HTML rules, both the HTML and JS comment synatx matters, and the HTML
-    // comment ends at the end of the line, not with -->.
+    // Under HTML rules, both the HTML and JS comment synatx matters, and the
+    // HTML comment ends at the end of the line, not with -->.
     if (startsHTMLCommentAt(string, startPosition) ||
         startsSingleLineCommentAt(string, startPosition)) {
       while (startPosition < endPosition && !isJSNewline(string[startPosition]))
@@ -817,10 +838,12 @@ String XSSAuditor::canonicalizedSnippetForJavaScript(
 
   String result;
   while (startPosition < endPosition && !result.length()) {
-    // Stop at next comment (using the same rules as above for SVG/XML vs HTML), when we encounter a comma,
-    // when we encoutner a backtick, when we hit an opening <script> tag, or when we exceed the maximum length
-    // target. The comma rule covers a common parameter concatenation case performed by some web servers. The
-    // backtick rule covers the ECMA6 multi-line template string feature.
+    // Stop at next comment (using the same rules as above for SVG/XML vs HTML),
+    // when we encounter a comma, when we encoutner a backtick, when we hit an
+    // opening <script> tag, or when we exceed the maximum length target. The
+    // comma rule covers a common parameter concatenation case performed by some
+    // web servers. The backtick rule covers the ECMA6 multi-line template
+    // string feature.
     lastNonSpacePosition = kNotFound;
     for (foundPosition = startPosition; foundPosition < endPosition;
          foundPosition++) {
@@ -840,10 +863,11 @@ String XSSAuditor::canonicalizedSnippetForJavaScript(
         break;
       }
       if (foundPosition > startPosition + kMaximumFragmentLengthTarget) {
-        // After hitting the length target, we can only stop at a point where we know we are
-        // not in the middle of a %-escape sequence. For the sake of simplicity, approximate
-        // not stopping inside a (possibly multiply encoded) %-escape sequence by breaking on
-        // whitespace only. We should have enough text in these cases to avoid false positives.
+        // After hitting the length target, we can only stop at a point where we
+        // know we are not in the middle of a %-escape sequence. For the sake of
+        // simplicity, approximate not stopping inside a (possibly multiply
+        // encoded) %-escape sequence by breaking on whitespace only. We should
+        // have enough text in these cases to avoid false positives.
         if (isHTMLSpace<UChar>(string[foundPosition]))
           break;
       }

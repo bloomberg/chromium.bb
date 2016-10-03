@@ -60,9 +60,9 @@ struct HTMLConstructionSiteTask {
   }
 
   ContainerNode* oldParent() {
-    // It's sort of ugly, but we store the |oldParent| in the |child| field
-    // of the task so that we don't bloat the HTMLConstructionSiteTask
-    // object in the common case of the Insert operation.
+    // It's sort of ugly, but we store the |oldParent| in the |child| field of
+    // the task so that we don't bloat the HTMLConstructionSiteTask object in
+    // the common case of the Insert operation.
     return toContainerNode(child.get());
   }
 
@@ -80,8 +80,8 @@ WTF_ALLOW_MOVE_INIT_AND_COMPARE_WITH_MEM_FUNCTIONS(
 
 namespace blink {
 
-// Note: These are intentionally ordered so that when we concatonate
-// strings and whitespaces the resulting whitespace is ws = min(ws1, ws2).
+// Note: These are intentionally ordered so that when we concatonate strings and
+// whitespaces the resulting whitespace is ws = min(ws1, ws2).
 enum WhitespaceMode {
   WhitespaceUnknown,
   NotAllWhitespace,
@@ -122,7 +122,8 @@ class HTMLConstructionSite final {
   // NOTE: Possible reentrancy via JavaScript execution.
   void executeQueuedTasks();
 
-  // flushPendingText turns pending text into queued Text insertions, but does not execute them.
+  // flushPendingText turns pending text into queued Text insertions, but does
+  // not execute them.
   void flushPendingText(FlushMode);
 
   // Called before every token in HTMLTreeBuilder::processToken, thus inlined:
@@ -130,7 +131,8 @@ class HTMLConstructionSite final {
     if (!hasPendingTasks())
       return;
     flushPendingText(mode);
-    executeQueuedTasks();  // NOTE: Possible reentrancy via JavaScript execution.
+    // NOTE: Possible reentrancy via JavaScript execution.
+    executeQueuedTasks();
     ASSERT(mode == FlushIfAtTextLimit || !hasPendingTasks());
   }
 
@@ -164,9 +166,10 @@ class HTMLConstructionSite final {
                 HTMLElementStack::ElementRecord* child);
   void reparent(HTMLElementStack::ElementRecord* newParent,
                 HTMLStackItem* child);
-  // insertAlreadyParsedChild assumes that |child| has already been parsed (i.e., we're just
-  // moving it around in the tree rather than parsing it for the first time). That means
-  // this function doesn't call beginParsingChildren / finishParsingChildren.
+  // insertAlreadyParsedChild assumes that |child| has already been parsed
+  // (i.e., we're just moving it around in the tree rather than parsing it for
+  // the first time). That means this function doesn't call beginParsingChildren
+  // / finishParsingChildren.
   void insertAlreadyParsedChild(HTMLStackItem* newParent,
                                 HTMLElementStack::ElementRecord* child);
   void takeAllChildren(HTMLStackItem* newParent,
@@ -234,8 +237,8 @@ class HTMLConstructionSite final {
   };
 
  private:
-  // In the common case, this queue will have only one task because most
-  // tokens produce only one DOM mutation.
+  // In the common case, this queue will have only one task because most tokens
+  // produce only one DOM mutation.
   typedef HeapVector<HTMLConstructionSiteTask, 1> TaskQueue;
 
   void setCompatibilityMode(Document::CompatibilityMode);
@@ -309,7 +312,8 @@ class HTMLConstructionSite final {
     }
 
     bool isEmpty() {
-      // When the stringbuilder is empty, the parent and whitespace should also be "empty".
+      // When the stringbuilder is empty, the parent and whitespace should also
+      // be "empty".
       ASSERT(stringBuilder.isEmpty() == !parent);
       ASSERT(!stringBuilder.isEmpty() || !nextChild);
       ASSERT(!stringBuilder.isEmpty() || (whitespaceMode == WhitespaceUnknown));
@@ -340,4 +344,4 @@ class HTMLConstructionSite final {
 
 }  // namespace blink
 
-#endif
+#endif  // HTMLConstructionSite_h

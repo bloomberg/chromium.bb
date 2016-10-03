@@ -68,9 +68,10 @@ CORE_EXPORT bool consumeHTMLEntity(SegmentedString&,
                                    bool& notEnoughCharacters,
                                    UChar additionalAllowedCharacter = '\0');
 
-// Used by the XML parser.  Not suitable for use in HTML parsing.  Use consumeHTMLEntity instead.
+// Used by the XML parser.  Not suitable for use in HTML parsing.  Use
+// consumeHTMLEntity instead.
 size_t decodeNamedEntityToUCharArray(const char*, UChar result[4]);
 
 }  // namespace blink
 
-#endif
+#endif  // HTMLEntityParser_h

@@ -250,8 +250,8 @@ HTMLTreeBuilder::HTMLTreeBuilder(HTMLDocumentParser* parser,
 
   // Steps 4.2-4.6 of the HTML5 Fragment Case parsing algorithm:
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-end.html#fragment-case
-  // For efficiency, we skip step 4.2 ("Let root be a new html element with no attributes")
-  // and instead use the DocumentFragment as a root node.
+  // For efficiency, we skip step 4.2 ("Let root be a new html element with no
+  // attributes") and instead use the DocumentFragment as a root node.
   m_tree.openElements()->pushRootNode(HTMLStackItem::create(
       fragment, HTMLStackItem::ItemForDocumentFragmentNode));
 
@@ -286,9 +286,8 @@ DEFINE_TRACE(HTMLTreeBuilder) {
 
 void HTMLTreeBuilder::detach() {
 #if ENABLE(ASSERT)
-  // This call makes little sense in fragment mode, but for
-  // consistency DocumentParser expects detach() to always be called
-  // before it's destroyed.
+  // This call makes little sense in fragment mode, but for consistency
+  // DocumentParser expects detach() to always be called before it's destroyed.
   m_isAttached = false;
 #endif
   // HTMLConstructionSite might be on the callstack when detach() is called
@@ -340,8 +339,9 @@ void HTMLTreeBuilder::processToken(AtomicHTMLToken* token) {
     return;
   }
 
-  // Any non-character token needs to cause us to flush any pending text immediately.
-  // NOTE: flush() can cause any queued tasks to execute, possibly re-entering the parser.
+  // Any non-character token needs to cause us to flush any pending text
+  // immediately. NOTE: flush() can cause any queued tasks to execute, possibly
+  // re-entering the parser.
   m_tree.flush(FlushAlways);
   m_shouldSkipLeadingNewline = false;
 
@@ -385,7 +385,8 @@ void HTMLTreeBuilder::processDoctypeToken(AtomicHTMLToken* token) {
 
 void HTMLTreeBuilder::processFakeStartTag(const QualifiedName& tagName,
                                           const Vector<Attribute>& attributes) {
-  // FIXME: We'll need a fancier conversion than just "localName" for SVG/MathML tags.
+  // FIXME: We'll need a fancier conversion than just "localName" for SVG/MathML
+  // tags.
   AtomicHTMLToken fakeToken(HTMLToken::StartTag, tagName.localName(),
                             attributes);
   processStartTag(&fakeToken);
@@ -397,7 +398,8 @@ void HTMLTreeBuilder::processFakeEndTag(const AtomicString& tagName) {
 }
 
 void HTMLTreeBuilder::processFakeEndTag(const QualifiedName& tagName) {
-  // FIXME: We'll need a fancier conversion than just "localName" for SVG/MathML tags.
+  // FIXME: We'll need a fancier conversion than just "localName" for SVG/MathML
+  // tags.
   processFakeEndTag(tagName.localName());
 }
 
@@ -1107,8 +1109,8 @@ void HTMLTreeBuilder::processStartTag(AtomicHTMLToken* token) {
     case InTableBodyMode:
       ASSERT(getInsertionMode() == InTableBodyMode);
       if (token->name() == trTag) {
-        m_tree.openElements()
-            ->popUntilTableBodyScopeMarker();  // How is there ever anything to pop?
+        // How is there ever anything to pop?
+        m_tree.openElements()->popUntilTableBodyScopeMarker();
         m_tree.insertHTMLElement(token);
         setInsertionMode(InRowMode);
         return;
@@ -1374,8 +1376,8 @@ bool HTMLTreeBuilder::processBodyEndTagForInBody(AtomicHTMLToken* token) {
     parseError(token);
     return false;
   }
-  DVLOG(1)
-      << "Not implmeneted.";  // Emit a more specific parse error based on stack contents.
+  // Emit a more specific parse error based on stack contents.
+  DVLOG(1) << "Not implmeneted.";
   setInsertionMode(AfterBodyMode);
   return true;
 }
@@ -1425,8 +1427,8 @@ void HTMLTreeBuilder::callTheAdoptionAgency(AtomicHTMLToken* token) {
     if ((m_tree.openElements()->contains(formattingElement)) &&
         !m_tree.openElements()->inScope(formattingElement)) {
       parseError(token);
-      DVLOG(1)
-          << "Not implemented.";  // Check the stack of open elements for a more specific parse error.
+      // Check the stack of open elements for a more specific parse error.
+      DVLOG(1) << "Not implemented.";
       return;
     }
     // 4.b
@@ -1466,8 +1468,9 @@ void HTMLTreeBuilder::callTheAdoptionAgency(AtomicHTMLToken* token) {
       // 9.4
       node = nextNode;
       ASSERT(node);
-      nextNode =
-          node->next();  // Save node->next() for the next iteration in case node is deleted in 9.5.
+      // Save node->next() for the next iteration in case node is deleted in
+      // 9.5.
+      nextNode = node->next();
       // 9.5
       if (!m_tree.activeFormattingElements()->contains(node->element())) {
         m_tree.openElements()->remove(node->element());
@@ -1889,8 +1892,9 @@ void HTMLTreeBuilder::processEndTag(AtomicHTMLToken* token) {
     case InHeadMode:
       ASSERT(getInsertionMode() == InHeadMode);
       // FIXME: This case should be broken out into processEndTagForInHead,
-      // because other end tag cases now refer to it ("process the token for using the rules of the "in head" insertion mode").
-      // but because the logic falls through to AfterHeadMode, that gets a little messy.
+      // because other end tag cases now refer to it ("process the token for
+      // using the rules of the "in head" insertion mode"). but because the
+      // logic falls through to AfterHeadMode, that gets a little messy.
       if (token->name() == templateTag) {
         processTemplateEndTag(token);
         return;
@@ -2017,15 +2021,16 @@ void HTMLTreeBuilder::processEndTag(AtomicHTMLToken* token) {
     case TextMode:
       if (token->name() == scriptTag &&
           m_tree.currentStackItem()->hasTagName(scriptTag)) {
-        // Pause ourselves so that parsing stops until the script can be processed by the caller.
+        // Pause ourselves so that parsing stops until the script can be
+        // processed by the caller.
         if (scriptingContentIsAllowed(m_tree.getParserContentPolicy()))
           m_scriptToProcess = m_tree.currentElement();
         m_tree.openElements()->pop();
         setInsertionMode(m_originalInsertionMode);
 
         if (m_parser->tokenizer()) {
-          // We must set the tokenizer's state to
-          // DataState explicitly if the tokenizer didn't have a chance to.
+          // We must set the tokenizer's state to DataState explicitly if the
+          // tokenizer didn't have a chance to.
           m_parser->tokenizer()->setState(HTMLTokenizer::DataState);
         }
         return;
@@ -2378,8 +2383,8 @@ void HTMLTreeBuilder::processEndOfFile(AtomicHTMLToken* token) {
              getInsertionMode() == InCaptionMode ||
              getInsertionMode() == InRowMode ||
              getInsertionMode() == TemplateContentsMode);
-      DVLOG(1)
-          << "Not implemented.";  // Emit parse error based on what elements are still open.
+      // Emit parse error based on what elements are still open.
+      DVLOG(1) << "Not implemented.";
       if (!m_templateInsertionModes.isEmpty() &&
           processEndOfFileForInTemplateContents(token))
         return;
@@ -2431,9 +2436,10 @@ void HTMLTreeBuilder::processEndOfFile(AtomicHTMLToken* token) {
       return;
     case TextMode:
       parseError(token);
-      if (m_tree.currentStackItem()->hasTagName(scriptTag))
-        DVLOG(1)
-            << "Not implemented.";  // mark the script element as "already started".
+      if (m_tree.currentStackItem()->hasTagName(scriptTag)) {
+        // Mark the script element as "already started".
+        DVLOG(1) << "Not implemented.";
+      }
       m_tree.openElements()->pop();
       ASSERT(m_originalInsertionMode != TextMode);
       setInsertionMode(m_originalInsertionMode);
@@ -2507,7 +2513,8 @@ bool HTMLTreeBuilder::processStartTagForInHead(AtomicHTMLToken* token) {
       token->name() == bgsoundTag || token->name() == commandTag ||
       token->name() == linkTag || token->name() == metaTag) {
     m_tree.insertSelfClosingHTMLElementDestroyingToken(token);
-    // Note: The custom processing for the <meta> tag is done in HTMLMetaElement::process().
+    // Note: The custom processing for the <meta> tag is done in
+    // HTMLMetaElement::process().
     return true;
   }
   if (token->name() == titleTag) {
@@ -2677,7 +2684,8 @@ void HTMLTreeBuilder::processTokenInForeignContent(AtomicHTMLToken* token) {
         return;
       }
       if (!m_tree.currentStackItem()->isInHTMLNamespace()) {
-        // FIXME: This code just wants an Element* iterator, instead of an ElementRecord*
+        // FIXME: This code just wants an Element* iterator, instead of an
+        // ElementRecord*
         HTMLElementStack::ElementRecord* nodeRecord =
             m_tree.openElements()->topRecord();
         if (!nodeRecord->stackItem()->hasLocalName(token->name()))
@@ -2693,7 +2701,8 @@ void HTMLTreeBuilder::processTokenInForeignContent(AtomicHTMLToken* token) {
             break;
         }
       }
-      // Otherwise, process the token according to the rules given in the section corresponding to the current insertion mode in HTML content.
+      // Otherwise, process the token according to the rules given in the
+      // section corresponding to the current insertion mode in HTML content.
       processEndTag(token);
       break;
     }

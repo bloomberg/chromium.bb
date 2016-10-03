@@ -1,6 +1,7 @@
 /*
     Copyright (C) 1999 Lars Knoll (knoll@mpi-hd.mpg.de)
-    Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2012 Apple Inc. All rights reserved.
+    Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2012 Apple Inc. All
+    rights reserved.
     Copyright (C) 2005, 2006, 2007 Alexey Proskuryakov (ap@nypop.com)
 
     This library is free software; you can redistribute it and/or
@@ -85,9 +86,9 @@ static inline bool bytesEqual(const char* p,
          p[5] == b5 && p[6] == b6 && p[7] == b7 && p[8] == b8 && p[9] == b9;
 }
 
-// You might think we should put these find functions elsewhere, perhaps with the
-// similar functions that operate on UChar, but arguably only the decoder has
-// a reason to process strings of char rather than UChar.
+// You might think we should put these find functions elsewhere, perhaps with
+// the similar functions that operate on UChar, but arguably only the decoder
+// has a reason to process strings of char rather than UChar.
 
 static int find(const char* subject, size_t subjectLength, const char* target) {
   size_t targetLength = strlen(target);
@@ -129,8 +130,8 @@ TextResourceDecoder::ContentType TextResourceDecoder::determineContentType(
 const WTF::TextEncoding& TextResourceDecoder::defaultEncoding(
     ContentType contentType,
     const WTF::TextEncoding& specifiedDefaultEncoding) {
-  // Despite 8.5 "Text/xml with Omitted Charset" of RFC 3023, we assume UTF-8 instead of US-ASCII
-  // for text/xml. This matches Firefox.
+  // Despite 8.5 "Text/xml with Omitted Charset" of RFC 3023, we assume UTF-8
+  // instead of US-ASCII for text/xml. This matches Firefox.
   if (contentType == XMLContent)
     return UTF8Encoding();
   if (!specifiedDefaultEncoding.isValid())
@@ -161,12 +162,13 @@ TextResourceDecoder::~TextResourceDecoder() {}
 
 void TextResourceDecoder::setEncoding(const WTF::TextEncoding& encoding,
                                       EncodingSource source) {
-  // In case the encoding didn't exist, we keep the old one (helps some sites specifying invalid encodings).
+  // In case the encoding didn't exist, we keep the old one (helps some sites
+  // specifying invalid encodings).
   if (!encoding.isValid())
     return;
 
-  // When encoding comes from meta tag (i.e. it cannot be XML files sent via XHR),
-  // treat x-user-defined as windows-1252 (bug 18270)
+  // When encoding comes from meta tag (i.e. it cannot be XML files sent via
+  // XHR), treat x-user-defined as windows-1252 (bug 18270)
   if (source == EncodingFromMetaTag &&
       !strcasecmp(encoding.name(), "x-user-defined"))
     m_encoding = "windows-1252";
@@ -220,8 +222,8 @@ static int findXMLEncoding(const char* str, int len, int& encodingLength) {
 }
 
 size_t TextResourceDecoder::checkForBOM(const char* data, size_t len) {
-  // Check for UTF-16/32 or UTF-8 BOM mark at the beginning, which is a sure sign of a Unicode encoding.
-  // We let it override even a user-chosen encoding.
+  // Check for UTF-16/32 or UTF-8 BOM mark at the beginning, which is a sure
+  // sign of a Unicode encoding. We let it override even a user-chosen encoding.
   ASSERT(!m_checkedForBOM);
 
   size_t lengthOfBOM = 0;
@@ -337,20 +339,24 @@ bool TextResourceDecoder::checkForXMLCharset(const char* data,
   if (m_buffer.size() < minimumLengthOfXMLDeclaration)
     return false;
 
-  // Handle XML declaration, which can have encoding in it. This encoding is honored even for HTML documents.
-  // It is an error for an XML declaration not to be at the start of an XML document, and it is ignored in HTML documents in such case.
+  // Handle XML declaration, which can have encoding in it. This encoding is
+  // honored even for HTML documents. It is an error for an XML declaration not
+  // to be at the start of an XML document, and it is ignored in HTML documents
+  // in such case.
   if (bytesEqual(ptr, '<', '?', 'x', 'm', 'l')) {
     const char* xmlDeclarationEnd = ptr;
     while (xmlDeclarationEnd != pEnd && *xmlDeclarationEnd != '>')
       ++xmlDeclarationEnd;
     if (xmlDeclarationEnd == pEnd)
       return false;
-    // No need for +1, because we have an extra "?" to lose at the end of XML declaration.
+    // No need for +1, because we have an extra "?" to lose at the end of XML
+    // declaration.
     int len = 0;
     int pos = findXMLEncoding(ptr, xmlDeclarationEnd - ptr, len);
     if (pos != -1)
       setEncoding(findTextEncoding(ptr + pos, len), EncodingFromXMLHeader);
-    // continue looking for a charset - it may be specified in an HTTP-Equiv meta
+    // continue looking for a charset - it may be specified in an HTTP-Equiv
+    // meta
   } else if (bytesEqual(ptr, '<', 0, '?', 0, 'x', 0)) {
     setEncoding(UTF16LittleEndianEncoding(), AutoDetectedEncoding);
   } else if (bytesEqual(ptr, 0, '<', 0, '?', 0, 'x')) {
@@ -421,7 +427,8 @@ String TextResourceDecoder::decode(const char* data, size_t len) {
       return emptyString();
   }
 
-  // We check XML declaration in HTML content only if there is enough data available
+  // We check XML declaration in HTML content only if there is enough data
+  // available
   if (((m_contentType == HTMLContent && len >= minimumLengthOfXMLDeclaration) ||
        m_contentType == XMLContent) &&
       !m_checkedForXMLCharset) {

@@ -627,7 +627,8 @@ TEST_F(HTMLPreloadScannerTest, testReferrerPolicy) {
        "referrerpolicy='origin' src='bla.gif'/>",
        "bla.gif", "http://example.test/", Resource::Image, 0,
        ReferrerPolicyOrigin},
-      // The scanner's state is not reset between test cases, so all subsequent test cases have a document referrer policy of no-referrer.
+      // The scanner's state is not reset between test cases, so all subsequent
+      // test cases have a document referrer policy of no-referrer.
       {"http://example.test",
        "<img referrerpolicy='not-a-valid-policy' src='bla.gif'/>", "bla.gif",
        "http://example.test/", Resource::Image, 0, ReferrerPolicyNever},
@@ -667,8 +668,8 @@ TEST_F(HTMLPreloadScannerTest, testNonce) {
   }
 }
 
-// Tests that a document-level referrer policy (e.g. one set by HTTP
-// header) is applied for preload requests.
+// Tests that a document-level referrer policy (e.g. one set by HTTP header) is
+// applied for preload requests.
 TEST_F(HTMLPreloadScannerTest, testReferrerPolicyOnDocument) {
   runSetUp(ViewportEnabled, PreloadEnabled, ReferrerPolicyOrigin);
   ReferrerPolicyTestCase testCases[] = {
@@ -677,17 +678,15 @@ TEST_F(HTMLPreloadScannerTest, testReferrerPolicyOnDocument) {
       {"http://example.test", "<style>@import url('blah.css');</style>",
        "blah.css", "http://example.test/", Resource::CSSStyleSheet, 0,
        ReferrerPolicyOrigin},
-      // Tests that a meta-delivered referrer policy with an
-      // unrecognized policy value does not override the document's
-      // referrer policy.
+      // Tests that a meta-delivered referrer policy with an unrecognized policy
+      // value does not override the document's referrer policy.
       {"http://example.test",
        "<meta name='referrer' content='not-a-valid-policy'><img "
        "src='bla.gif'/>",
        "bla.gif", "http://example.test/", Resource::Image, 0,
        ReferrerPolicyOrigin},
-      // Tests that a meta-delivered referrer policy with a
-      // valid policy value does override the document's
-      // referrer policy.
+      // Tests that a meta-delivered referrer policy with a valid policy value
+      // does override the document's referrer policy.
       {"http://example.test",
        "<meta name='referrer' content='unsafe-url'><img src='bla.gif'/>",
        "bla.gif", "http://example.test/", Resource::Image, 0,

@@ -46,7 +46,8 @@ class HTMLResourcePreloaderTest : public testing::Test {
   HTMLResourcePreloaderTest() : m_dummyPageHolder(DummyPageHolder::create()) {}
 
   void test(PreconnectTestCase testCase) {
-    // TODO(yoav): Need a mock loader here to verify things are happenning beyond preconnect.
+    // TODO(yoav): Need a mock loader here to verify things are happenning
+    // beyond preconnect.
     PreloaderNetworkHintsMock networkHints;
     std::unique_ptr<PreloadRequest> preloadRequest = PreloadRequest::create(
         String(), TextPosition(), testCase.url,

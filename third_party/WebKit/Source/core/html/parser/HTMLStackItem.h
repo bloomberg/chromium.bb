@@ -100,7 +100,8 @@ class HTMLStackItem : public GarbageCollectedFinalized<HTMLStackItem> {
     // A DocumentFragment takes the place of the document element when parsing
     // fragments and should be considered in the HTML namespace.
     return namespaceURI() == HTMLNames::xhtmlNamespaceURI ||
-           isDocumentFragmentNode();  // FIXME: Does this also apply to ShadowRoot?
+           isDocumentFragmentNode();  // FIXME: Does this also apply to
+                                      // ShadowRoot?
   }
 
   bool isNumberedHeaderElement() const {

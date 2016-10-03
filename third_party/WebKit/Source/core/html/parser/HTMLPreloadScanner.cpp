@@ -185,10 +185,11 @@ class TokenPreloadScanner::StartTagScanner {
   void handlePictureSourceURL(PictureData& pictureData) {
     if (match(m_tagImpl, sourceTag) && m_matched &&
         pictureData.sourceURL.isEmpty()) {
-      // Must create an isolatedCopy() since the srcset attribute value will
-      // get sent back to the main thread between when we set this, and when we
-      // process the closing tag which would clear m_pictureData. Having any
-      // ref to a string we're going to send will fail isSafeToSendToAnotherThread().
+      // Must create an isolatedCopy() since the srcset attribute value will get
+      // sent back to the main thread between when we set this, and when we
+      // process the closing tag which would clear m_pictureData. Having any ref
+      // to a string we're going to send will fail
+      // isSafeToSendToAnotherThread().
       pictureData.sourceURL = m_srcsetImageCandidate.toString().isolatedCopy();
       pictureData.sourceSizeSet = m_sourceSizeSet;
       pictureData.sourceSize = m_sourceSize;
@@ -235,7 +236,8 @@ class TokenPreloadScanner::StartTagScanner {
     if (!resourceType(type))
       return nullptr;
 
-    // The element's 'referrerpolicy' attribute (if present) takes precedence over the document's referrer policy.
+    // The element's 'referrerpolicy' attribute (if present) takes precedence
+    // over the document's referrer policy.
     ReferrerPolicy referrerPolicy = (m_referrerPolicy != ReferrerPolicyDefault)
                                         ? m_referrerPolicy
                                         : documentReferrerPolicy;
@@ -248,8 +250,7 @@ class TokenPreloadScanner::StartTagScanner {
     request->setDefer(m_defer);
     request->setIntegrityMetadata(m_integrityMetadata);
 
-    // TODO(csharrison): Once this is deprecated, just abort the request
-    // here.
+    // TODO(csharrison): Once this is deprecated, just abort the request here.
     if (match(m_tagImpl, scriptTag) &&
         !ScriptLoader::isValidScriptTypeAndLanguage(
             m_typeAttributeValue, m_languageAttributeValue,
@@ -275,12 +276,10 @@ class TokenPreloadScanner::StartTagScanner {
       setDefer(FetchRequest::LazyLoad);
     // Note that only scripts need to have the integrity metadata set on
     // preloads. This is because script resources fetches, and only script
-    // resource fetches, need to re-request resources if a cached version
-    // has different metadata (including empty) from the metadata on the
-    // request. See the comment before the call to
-    // mustRefetchDueToIntegrityMismatch() in
-    // Source/core/fetch/ResourceFetcher.cpp for a more complete
-    // explanation.
+    // resource fetches, need to re-request resources if a cached version has
+    // different metadata (including empty) from the metadata on the request.
+    // See the comment before the call to mustRefetchDueToIntegrityMismatch() in
+    // Source/core/fetch/ResourceFetcher.cpp for a more complete explanation.
     else if (match(attributeName, integrityAttr))
       SubresourceIntegrity::parseIntegrityAttribute(attributeValue,
                                                     m_integrityMetadata);
@@ -434,7 +433,8 @@ class TokenPreloadScanner::StartTagScanner {
   }
 
   const String& charset() const {
-    // FIXME: Its not clear that this if is needed, the loader probably ignores charset for image requests anyway.
+    // FIXME: Its not clear that this if is needed, the loader probably ignores
+    // charset for image requests anyway.
     if (match(m_tagImpl, imgTag) || match(m_tagImpl, videoTag))
       return emptyString();
     return m_charset;
@@ -549,9 +549,8 @@ TokenPreloadScannerCheckpoint TokenPreloadScanner::createCheckpoint() {
 
 void TokenPreloadScanner::rewindTo(
     TokenPreloadScannerCheckpoint checkpointIndex) {
-  ASSERT(checkpointIndex <
-         m_checkpoints
-             .size());  // If this ASSERT fires, checkpointIndex is invalid.
+  // If this ASSERT fires, checkpointIndex is invalid.
+  ASSERT(checkpointIndex < m_checkpoints.size());
   const Checkpoint& checkpoint = m_checkpoints[checkpointIndex];
   m_predictedBaseElementURL = checkpoint.predictedBaseElementURL;
   m_inStyle = checkpoint.inStyle;
@@ -725,8 +724,8 @@ void TokenPreloadScanner::scanCommon(const Token& token,
         // Don't mark scripts for evaluation if the preloader rewound to a
         // previous checkpoint. This could cause re-evaluation of scripts if
         // care isn't given.
-        // TODO(csharrison): Revisit this if rewinds are low hanging fruit for the
-        // document.write evaluator.
+        // TODO(csharrison): Revisit this if rewinds are low hanging fruit for
+        // the document.write evaluator.
         *likelyDocumentWriteScript =
             shouldEvaluateForDocumentWrite(token.data());
       }
@@ -765,8 +764,8 @@ void TokenPreloadScanner::scanCommon(const Token& token,
         m_inStyle = true;
         return;
       }
-      // Don't early return, because the StartTagScanner needs to look at
-      // these too.
+      // Don't early return, because the StartTagScanner needs to look at these
+      // too.
       if (match(tagImpl, scriptTag)) {
         m_inScript = true;
       }
@@ -850,13 +849,14 @@ void HTMLPreloadScanner::appendToEnd(const SegmentedString& source) {
 void HTMLPreloadScanner::scanAndPreload(ResourcePreloader* preloader,
                                         const KURL& startingBaseElementURL,
                                         ViewportDescriptionWrapper* viewport) {
-  ASSERT(
-      isMainThread());  // HTMLTokenizer::updateStateFor only works on the main thread.
+  // HTMLTokenizer::updateStateFor only works on the main thread.
+  ASSERT(isMainThread());
 
   TRACE_EVENT1("blink", "HTMLPreloadScanner::scan", "source_length",
                m_source.length());
 
-  // When we start scanning, our best prediction of the baseElementURL is the real one!
+  // When we start scanning, our best prediction of the baseElementURL is the
+  // real one!
   if (!startingBaseElementURL.isEmpty())
     m_scanner.setPredictedBaseElementURL(startingBaseElementURL);
 
@@ -869,8 +869,8 @@ void HTMLPreloadScanner::scanAndPreload(ResourcePreloader* preloader,
     bool isCSPMetaTag = false;
     m_scanner.scan(m_token, m_source, requests, viewport, &isCSPMetaTag);
     m_token.clear();
-    // Don't preload anything if a CSP meta tag is found. We should never
-    // really find them here because the HTMLPreloadScanner is only used for
+    // Don't preload anything if a CSP meta tag is found. We should never really
+    // find them here because the HTMLPreloadScanner is only used for
     // dynamically added markup.
     if (isCSPMetaTag)
       return;

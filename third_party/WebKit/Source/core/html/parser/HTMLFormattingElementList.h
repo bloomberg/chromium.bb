@@ -45,8 +45,8 @@ class HTMLFormattingElementList {
   ~HTMLFormattingElementList();
 
   // Ideally Entry would be private, but HTMLTreeBuilder has to coordinate
-  // between the HTMLFormattingElementList and HTMLElementStack and needs
-  // access to Entry::isMarker() and Entry::replaceElement() to do so.
+  // between the HTMLFormattingElementList and HTMLElementStack and needs access
+  // to Entry::isMarker() and Entry::replaceElement() to do so.
   class Entry {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
@@ -61,8 +61,8 @@ class HTMLFormattingElementList {
 
     HTMLStackItem* stackItem() const { return m_item; }
     Element* element() const {
-      // The fact that !m_item == isMarker() is an implementation detail
-      // callers should check isMarker() before calling element().
+      // The fact that !m_item == isMarker() is an implementation detail callers
+      // should check isMarker() before calling element().
       ASSERT(m_item);
       return m_item->element();
     }
@@ -131,7 +131,8 @@ class HTMLFormattingElementList {
   Entry* first() { return &at(0); }
 
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/parsing.html#list-of-active-formatting-elements
-  // These functions enforce the "Noah's Ark" condition, which removes redundant mis-nested elements.
+  // These functions enforce the "Noah's Ark" condition, which removes redundant
+  // mis-nested elements.
   void tryToEnsureNoahsArkConditionQuickly(
       HTMLStackItem*,
       HeapVector<Member<HTMLStackItem>>& remainingCandiates);

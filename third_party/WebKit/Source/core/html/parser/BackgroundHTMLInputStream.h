@@ -85,7 +85,8 @@ class BackgroundHTMLInputStream {
   Vector<String> m_segments;
   Vector<Checkpoint> m_checkpoints;
 
-  // Note: These indicies may === vector.size(), in which case there are no valid checkpoints/segments at this time.
+  // Note: These indicies may === vector.size(), in which case there are no
+  // valid checkpoints/segments at this time.
   size_t m_firstValidCheckpointIndex;
   size_t m_firstValidSegmentIndex;
   size_t m_totalCheckpointTokenCount;
@@ -95,4 +96,4 @@ class BackgroundHTMLInputStream {
 
 }  // namespace blink
 
-#endif
+#endif  // BackgroundHTMLInputStream_h

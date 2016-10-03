@@ -57,7 +57,8 @@ void HTMLParserThread::setupHTMLParserThread() {
 void HTMLParserThread::shutdown() {
   ASSERT(isMainThread());
   ASSERT(s_sharedThread);
-  // currentThread will always be non-null in production, but can be null in Chromium unit tests.
+  // currentThread will always be non-null in production, but can be null in
+  // Chromium unit tests.
   if (Platform::current()->currentThread() && s_sharedThread->m_thread) {
     WaitableEvent waitableEvent;
     s_sharedThread->postTask(

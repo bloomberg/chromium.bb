@@ -42,23 +42,24 @@
 
 namespace blink {
 
-// On a network with high latency and high bandwidth, using a device
-// with a fast CPU, we could end up speculatively tokenizing
-// the whole document, well ahead of when the main-thread actually needs it.
-// This is a waste of memory (and potentially time if the speculation fails).
-// So we limit our outstanding tokens arbitrarily to 10,000.
-// Our maximal memory spent speculating will be approximately:
+// On a network with high latency and high bandwidth, using a device with a fast
+// CPU, we could end up speculatively tokenizing the whole document, well ahead
+// of when the main-thread actually needs it. This is a waste of memory (and
+// potentially time if the speculation fails). So we limit our outstanding
+// tokens arbitrarily to 10,000. Our maximal memory spent speculating will be
+// approximately:
 // (defaultOutstandingTokenLimit + defaultPendingTokenLimit) *
-//     sizeof(CompactToken)
-// We use a separate low and high water mark to avoid constantly topping
-// off the main thread's token buffer.
-// At time of writing, this is (10000 + 1000) * 28 bytes = ~308kb of memory.
-// These numbers have not been tuned.
+// sizeof(CompactToken)
+//
+// We use a separate low and high water mark to avoid
+// constantly topping off the main thread's token buffer. At time of writing,
+// this is (10000 + 1000) * 28 bytes = ~308kb of memory. These numbers have not
+// been tuned.
 static const size_t defaultOutstandingTokenLimit = 10000;
 
-// We limit our chucks to 1000 tokens, to make sure the main
-// thread is never waiting on the parser thread for tokens.
-// This was tuned in https://bugs.webkit.org/show_bug.cgi?id=110408.
+// We limit our chucks to 1000 tokens, to make sure the main thread is never
+// waiting on the parser thread for tokens. This was tuned in
+// https://bugs.webkit.org/show_bug.cgi?id=110408.
 static const size_t defaultPendingTokenLimit = 1000;
 
 using namespace HTMLNames;
@@ -195,8 +196,8 @@ void BackgroundHTMLParser::resumeFrom(std::unique_ptr<Checkpoint> checkpoint) {
 
 void BackgroundHTMLParser::startedChunkWithCheckpoint(
     HTMLInputCheckpoint inputCheckpoint) {
-  // Note, we should not have to worry about the index being invalid
-  // as messages from the main thread will be processed in FIFO order.
+  // Note, we should not have to worry about the index being invalid as messages
+  // from the main thread will be processed in FIFO order.
   m_input.invalidateCheckpointsBefore(inputCheckpoint);
   pumpTokenizer();
 }
@@ -211,9 +212,10 @@ void BackgroundHTMLParser::stop() {
 }
 
 void BackgroundHTMLParser::forcePlaintextForTextDocument() {
-  // This is only used by the TextDocumentParser (a subclass of HTMLDocumentParser)
-  // to force us into the PLAINTEXT state w/o using a <plaintext> tag.
-  // The TextDocumentParser uses a <pre> tag for historical/compatibility reasons.
+  // This is only used by the TextDocumentParser (a subclass of
+  // HTMLDocumentParser) to force us into the PLAINTEXT state w/o using a
+  // <plaintext> tag. The TextDocumentParser uses a <pre> tag for historical /
+  // compatibility reasons.
   m_tokenizer->setState(HTMLTokenizer::PLAINTEXTState);
 }
 
@@ -268,8 +270,9 @@ void BackgroundHTMLParser::pumpTokenizer() {
       simulatedToken =
           m_treeBuilderSimulator.simulate(token, m_tokenizer.get());
 
-      // Break chunks before a script tag is inserted and flag the chunk as starting a script
-      // so the main parser can decide if it should yield before processing the chunk.
+      // Break chunks before a script tag is inserted and flag the chunk as
+      // starting a script so the main parser can decide if it should yield
+      // before processing the chunk.
       if (simulatedToken == HTMLTreeBuilderSimulator::ScriptStart) {
         shouldNotifyMainThread |= queueChunkForMainThread();
         m_startingScript = true;
@@ -289,7 +292,8 @@ void BackgroundHTMLParser::pumpTokenizer() {
     if (simulatedToken == HTMLTreeBuilderSimulator::ScriptEnd ||
         m_pendingTokens->size() >= m_pendingTokenLimit) {
       shouldNotifyMainThread |= queueChunkForMainThread();
-      // If we're far ahead of the main thread, yield for a bit to avoid consuming too much memory.
+      // If we're far ahead of the main thread, yield for a bit to avoid
+      // consuming too much memory.
       if (m_input.totalCheckpointTokenCount() > m_outstandingTokenLimit)
         break;
     }
@@ -300,10 +304,10 @@ void BackgroundHTMLParser::pumpTokenizer() {
       shouldNotifyMainThread = false;
     }
   }
-  // Wait to notify the main thread about the chunks until we're at the
-  // limit. This lets the background parser generate lots of valuable
-  // preloads before anything expensive (extensions, scripts) take up time
-  // on the main thread. A busy main thread can cause preload delays.
+  // Wait to notify the main thread about the chunks until we're at the limit.
+  // This lets the background parser generate lots of valuable preloads before
+  // anything expensive (extensions, scripts) take up time on the main thread. A
+  // busy main thread can cause preload delays.
   if (shouldNotifyMainThread) {
     runOnMainThread(&HTMLDocumentParser::notifyPendingTokenizedChunks,
                     m_parser);

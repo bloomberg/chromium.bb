@@ -119,12 +119,16 @@ class HTMLElementStack {
 
   void popUntilPopped(Element*);
   void popUntilNumberedHeaderElementPopped();
-  void
-  popUntilTableScopeMarker();  // "clear the stack back to a table context" in the spec.
-  void
-  popUntilTableBodyScopeMarker();  // "clear the stack back to a table body context" in the spec.
-  void
-  popUntilTableRowScopeMarker();  // "clear the stack back to a table row context" in the spec.
+
+  // "clear the stack back to a table context" in the spec.
+  void popUntilTableScopeMarker();
+
+  // "clear the stack back to a table body context" in the spec.
+  void popUntilTableBodyScopeMarker();
+
+  // "clear the stack back to a table row context" in the spec.
+  void popUntilTableRowScopeMarker();
+
   void popUntilForeignContentScopeMarker();
   void popHTMLHeadElement();
   void popHTMLBodyElement();
@@ -178,9 +182,9 @@ class HTMLElementStack {
 
   // We remember the root node, <head> and <body> as they are pushed. Their
   // ElementRecords keep them alive. The root node is never popped.
-  // FIXME: We don't currently require type-specific information about
-  // these elements so we haven't yet bothered to plumb the types all the
-  // way down through createElement, etc.
+  // FIXME: We don't currently require type-specific information about these
+  // elements so we haven't yet bothered to plumb the types all the way down
+  // through createElement, etc.
   Member<ContainerNode> m_rootNode;
   Member<Element> m_headElement;
   Member<Element> m_bodyElement;

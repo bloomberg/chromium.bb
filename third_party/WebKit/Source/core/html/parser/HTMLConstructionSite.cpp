@@ -184,8 +184,8 @@ void HTMLConstructionSite::executeTask(HTMLConstructionSiteTask& task) {
 }
 
 // This is only needed for TextDocuments where we might have text nodes
-// approaching the default length limit (~64k) and we don't want to
-// break a text node in the middle of a combining character.
+// approaching the default length limit (~64k) and we don't want to break a text
+// node in the middle of a combining character.
 static unsigned findBreakIndexBetween(const StringBuilder& string,
                                       unsigned currentPosition,
                                       unsigned proposedBreakIndex) {
@@ -195,12 +195,14 @@ static unsigned findBreakIndexBetween(const StringBuilder& string,
   if (proposedBreakIndex == string.length())
     return proposedBreakIndex;
 
-  // Latin-1 does not have breakable boundaries. If we ever moved to a differnet 8-bit encoding this could be wrong.
+  // Latin-1 does not have breakable boundaries. If we ever moved to a different
+  // 8-bit encoding this could be wrong.
   if (string.is8Bit())
     return proposedBreakIndex;
 
   const UChar* breakSearchCharacters = string.characters16() + currentPosition;
-  // We need at least two characters look-ahead to account for UTF-16 surrogates, but can't search off the end of the buffer!
+  // We need at least two characters look-ahead to account for UTF-16
+  // surrogates, but can't search off the end of the buffer!
   unsigned breakSearchLength =
       std::min(proposedBreakIndex - currentPosition + 2,
                string.length() - currentPosition);
@@ -219,8 +221,8 @@ static unsigned findBreakIndexBetween(const StringBuilder& string,
 
 static String atomizeIfAllWhitespace(const String& string,
                                      WhitespaceMode whitespaceMode) {
-  // Strings composed entirely of whitespace are likely to be repeated.
-  // Turn them into AtomicString so we share a single string for each.
+  // Strings composed entirely of whitespace are likely to be repeated. Turn
+  // them into AtomicString so we share a single string for each.
   if (whitespaceMode == AllWhitespace ||
       (whitespaceMode == WhitespaceUnknown && isAllWhitespace(string)))
     return AtomicString(string).getString();
@@ -236,12 +238,14 @@ void HTMLConstructionSite::flushPendingText(FlushMode mode) {
     return;
 
   PendingText pendingText;
-  // Hold onto the current pending text on the stack so that queueTask doesn't recurse infinitely.
+  // Hold onto the current pending text on the stack so that queueTask doesn't
+  // recurse infinitely.
   m_pendingText.swap(pendingText);
   ASSERT(m_pendingText.isEmpty());
 
-  // Splitting text nodes into smaller chunks contradicts HTML5 spec, but is necessary
-  // for performance, see: https://bugs.webkit.org/show_bug.cgi?id=55898
+  // Splitting text nodes into smaller chunks contradicts HTML5 spec, but is
+  // necessary for performance, see:
+  // https://bugs.webkit.org/show_bug.cgi?id=55898
   unsigned lengthLimit = textLengthLimitForContainer(*pendingText.parent);
 
   unsigned currentPosition = 0;
@@ -294,7 +298,8 @@ void HTMLConstructionSite::attachLater(ContainerNode* parent,
     return;
   }
 
-  // Add as a sibling of the parent if we have reached the maximum depth allowed.
+  // Add as a sibling of the parent if we have reached the maximum depth
+  // allowed.
   if (m_openElements.stackDepth() > maximumHTMLParserDOMTreeDepth &&
       task.parent->parentNode())
     task.parent = task.parent->parentNode();
@@ -304,14 +309,14 @@ void HTMLConstructionSite::attachLater(ContainerNode* parent,
 }
 
 void HTMLConstructionSite::executeQueuedTasks() {
-  // This has no affect on pendingText, and we may have pendingText
-  // remaining after executing all other queued tasks.
+  // This has no affect on pendingText, and we may have pendingText remaining
+  // after executing all other queued tasks.
   const size_t size = m_taskQueue.size();
   if (!size)
     return;
 
-  // Copy the task queue into a local variable in case executeTask
-  // re-enters the parser.
+  // Copy the task queue into a local variable in case executeTask re-enters the
+  // parser.
   TaskQueue queue;
   queue.swap(m_taskQueue);
 
@@ -351,11 +356,11 @@ void HTMLConstructionSite::initFragmentParsing(DocumentFragment* fragment,
 }
 
 HTMLConstructionSite::~HTMLConstructionSite() {
-  // Depending on why we're being destroyed it might be OK
-  // to forget queued tasks, but currently we don't expect to.
+  // Depending on why we're being destroyed it might be OK to forget queued
+  // tasks, but currently we don't expect to.
   ASSERT(m_taskQueue.isEmpty());
-  // Currently we assume that text will never be the last token in the
-  // document and that we'll always queue some additional task to cause it to flush.
+  // Currently we assume that text will never be the last token in the document
+  // and that we'll always queue some additional task to cause it to flush.
   ASSERT(m_pendingText.isEmpty());
 }
 
@@ -371,9 +376,9 @@ DEFINE_TRACE(HTMLConstructionSite) {
 }
 
 void HTMLConstructionSite::detach() {
-  // FIXME: We'd like to ASSERT here that we're canceling and not just discarding
-  // text that really should have made it into the DOM earlier, but there
-  // doesn't seem to be a nice way to do that.
+  // FIXME: We'd like to ASSERT here that we're canceling and not just
+  // discarding text that really should have made it into the DOM earlier, but
+  // there doesn't seem to be a nice way to do that.
   m_pendingText.discard();
   m_document = nullptr;
   m_attachmentRoot = nullptr;
@@ -441,10 +446,12 @@ void HTMLConstructionSite::setCompatibilityModeFromDoctype(
     const String& publicId,
     const String& systemId) {
   // There are three possible compatibility modes:
-  // Quirks - quirks mode emulates WinIE and NS4. CSS parsing is also relaxed in this mode, e.g., unit types can
-  // be omitted from numbers.
-  // Limited Quirks - This mode is identical to no-quirks mode except for its treatment of line-height in the inline box model.
-  // No Quirks - no quirks apply. Web pages will obey the specifications to the letter.
+  // Quirks - quirks mode emulates WinIE and NS4. CSS parsing is also relaxed in
+  // this mode, e.g., unit types can be omitted from numbers.
+  // Limited Quirks - This mode is identical to no-quirks mode except for its
+  // treatment of line-height in the inline box model.
+  // No Quirks - no quirks apply. Web pages will obey the specifications to the
+  // letter.
 
   // Check for Quirks Mode.
   if (name != "html" ||
@@ -593,7 +600,8 @@ void HTMLConstructionSite::processEndOfFile() {
 }
 
 void HTMLConstructionSite::finishedParsing() {
-  // We shouldn't have any queued tasks but we might have pending text which we need to promote to tasks and execute.
+  // We shouldn't have any queued tasks but we might have pending text which we
+  // need to promote to tasks and execute.
   ASSERT(m_taskQueue.isEmpty());
   flush(FlushAlways);
   m_document->finishedParsing();
@@ -610,11 +618,13 @@ void HTMLConstructionSite::insertDoctype(AtomicHTMLToken* token) {
       DocumentType::create(m_document, token->name(), publicId, systemId);
   attachLater(m_attachmentRoot, doctype);
 
-  // DOCTYPE nodes are only processed when parsing fragments w/o contextElements, which
-  // never occurs.  However, if we ever chose to support such, this code is subtly wrong,
-  // because context-less fragments can determine their own quirks mode, and thus change
-  // parsing rules (like <p> inside <table>).  For now we ASSERT that we never hit this code
-  // in a fragment, as changing the owning document's compatibility mode would be wrong.
+  // DOCTYPE nodes are only processed when parsing fragments w/o
+  // contextElements, which never occurs.  However, if we ever chose to support
+  // such, this code is subtly wrong, because context-less fragments can
+  // determine their own quirks mode, and thus change parsing rules (like <p>
+  // inside <table>).  For now we ASSERT that we never hit this code in a
+  // fragment, as changing the owning document's compatibility mode would be
+  // wrong.
   ASSERT(!m_isParsingFragment);
   if (m_isParsingFragment)
     return;
@@ -701,19 +711,20 @@ void HTMLConstructionSite::insertFormattingElement(AtomicHTMLToken* token) {
 void HTMLConstructionSite::insertScriptElement(AtomicHTMLToken* token) {
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/scripting-1.html#already-started
   // http://html5.org/specs/dom-parsing.html#dom-range-createcontextualfragment
-  // For createContextualFragment, the specifications say to mark it parser-inserted and already-started and later unmark them.
-  // However, we short circuit that logic to avoid the subtree traversal to find script elements since scripts can never see
-  // those flags or effects thereof.
+  // For createContextualFragment, the specifications say to mark it
+  // parser-inserted and already-started and later unmark them. However, we
+  // short circuit that logic to avoid the subtree traversal to find script
+  // elements since scripts can never see those flags or effects thereof.
   const bool parserInserted =
       m_parserContentPolicy != AllowScriptingContentAndDoNotMarkAlreadyStarted;
   const bool alreadyStarted = m_isParsingFragment && parserInserted;
   // TODO(csharrison): This logic only works if the tokenizer/parser was not
   // blocked waiting for scripts when the element was inserted. This usually
-  // fails for instance, on second document.write if a script writes twice in
-  // a row. To fix this, the parser might have to keep track of raw string
+  // fails for instance, on second document.write if a script writes twice in a
+  // row. To fix this, the parser might have to keep track of raw string
   // position.
-  // TODO(csharrison): Refactor this so that the bools that are passed in are
-  // packed in a bitfield from an enum class.
+  // TODO(csharrison): Refactor this so that the bools that are passed
+  // in are packed in a bitfield from an enum class.
   const bool createdDuringDocumentWrite =
       ownerDocumentForCurrentNode().isInDocumentWrite();
   HTMLScriptElement* element =
@@ -729,8 +740,8 @@ void HTMLConstructionSite::insertForeignElement(
     AtomicHTMLToken* token,
     const AtomicString& namespaceURI) {
   ASSERT(token->type() == HTMLToken::StartTag);
-  DVLOG(1)
-      << "Not implemented.";  // parseError when xmlns or xmlns:xlink are wrong.
+  // parseError when xmlns or xmlns:xlink are wrong.
+  DVLOG(1) << "Not implemented.";
 
   Element* element = createElement(token, namespaceURI);
   if (scriptingContentIsAllowed(m_parserContentPolicy) ||
@@ -752,9 +763,11 @@ void HTMLConstructionSite::insertTextNode(const String& string,
   if (isHTMLTemplateElement(*dummyTask.parent))
     dummyTask.parent = toHTMLTemplateElement(dummyTask.parent.get())->content();
 
-  // Unclear when parent != case occurs. Somehow we insert text into two separate nodes while processing the same Token.
-  // The nextChild != dummy.nextChild case occurs whenever foster parenting happened and we hit a new text node "<table>a</table>b"
-  // In either case we have to flush the pending text into the task queue before making more.
+  // Unclear when parent != case occurs. Somehow we insert text into two
+  // separate nodes while processing the same Token. The nextChild !=
+  // dummy.nextChild case occurs whenever foster parenting happened and we hit a
+  // new text node "<table>a</table>b" In either case we have to flush the
+  // pending text into the task queue before making more.
   if (!m_pendingText.isEmpty() &&
       (m_pendingText.parent != dummyTask.parent ||
        m_pendingText.nextChild != dummyTask.nextChild))
@@ -849,15 +862,16 @@ CustomElementDefinition* HTMLConstructionSite::lookUpCustomElementDefinition(
 
 // "create an element for a token"
 // https://html.spec.whatwg.org/#create-an-element-for-the-token
-// TODO(dominicc): When form association is separate from creation,
-// unify this with foreign element creation. Add a namespace parameter
-// and check for HTML namespace to lookupCustomElementDefinition.
+// TODO(dominicc): When form association is separate from creation, unify this
+// with foreign element creation. Add a namespace parameter and check for HTML
+// namespace to lookupCustomElementDefinition.
 HTMLElement* HTMLConstructionSite::createHTMLElement(AtomicHTMLToken* token) {
   // "1. Let document be intended parent's node document."
   Document& document = ownerDocumentForCurrentNode();
 
-  // Only associate the element with the current form if we're creating the new element
-  // in a document with a browsing context (rather than in <template> contents).
+  // Only associate the element with the current form if we're creating the new
+  // element in a document with a browsing context (rather than in <template>
+  // contents).
   // TODO(dominicc): Change form to happen after element creation when
   // implementing customized built-in elements.
   HTMLFormElement* form = document.frame() ? m_form.get() : nullptr;
@@ -883,10 +897,9 @@ HTMLElement* HTMLConstructionSite::createHTMLElement(AtomicHTMLToken* token) {
     // "6.2 If the JavaScript execution context stack is empty,
     // then perform a microtask checkpoint."
 
-    // TODO(dominicc): This is the way the Blink HTML parser
-    // performs checkpoints, but note the spec is different--it
-    // talks about the JavaScript stack, not the script nesting
-    // level.
+    // TODO(dominicc): This is the way the Blink HTML parser performs
+    // checkpoints, but note the spec is different--it talks about the
+    // JavaScript stack, not the script nesting level.
     if (0u == m_reentryPermit->scriptNestingLevel())
       Microtask::performCheckpoint(V8PerIsolateData::mainThreadIsolate());
 
@@ -899,25 +912,23 @@ HTMLElement* HTMLConstructionSite::createHTMLElement(AtomicHTMLToken* token) {
                                HTMLNames::xhtmlNamespaceURI);
     element = definition->createElementSync(document, elementQName);
 
-    // "8. Append each attribute in the given token to element."
-    // We don't use setAttributes here because the custom element
-    // constructor may have manipulated attributes.
+    // "8. Append each attribute in the given token to element." We don't use
+    // setAttributes here because the custom element constructor may have
+    // manipulated attributes.
     for (const auto& attribute : token->attributes())
       element->setAttribute(attribute.name(), attribute.value());
 
-    // "9. If will execute script is true, then ..." etc. The
-    // CEReactionsScope and ThrowOnDynamicMarkupInsertionCountIncrementer
-    // destructors implement steps 9.1-3.
+    // "9. If will execute script is true, then ..." etc. The CEReactionsScope
+    // and ThrowOnDynamicMarkupInsertionCountIncrementer destructors implement
+    // steps 9.1-3.
   } else {
-    // FIXME: This can't use
-    // HTMLConstructionSite::createElement because we have to
-    // pass the current form element. We should rework form
-    // association to occur after construction to allow better
-    // code sharing here.
+    // FIXME: This can't use HTMLConstructionSite::createElement because we have
+    // to pass the current form element. We should rework form association to
+    // occur after construction to allow better code sharing here.
     element = HTMLElementFactory::createHTMLElement(
         token->name(), document, form, getCreateElementFlags());
-    // Definition for the created element does not exist here and
-    // it cannot be custom or failed.
+    // Definition for the created element does not exist here and it cannot be
+    // custom or failed.
     DCHECK_NE(element->getCustomElementState(), CustomElementState::Custom);
     DCHECK_NE(element->getCustomElementState(), CustomElementState::Failed);
 
@@ -925,8 +936,8 @@ HTMLElement* HTMLConstructionSite::createHTMLElement(AtomicHTMLToken* token) {
     setAttributes(element, token, m_parserContentPolicy);
   }
 
-  // TODO(dominicc): Implement steps 10-12 when customized built-in
-  // elements are implemented.
+  // TODO(dominicc): Implement steps 10-12 when customized built-in elements are
+  // implemented.
 
   return element;
 }
@@ -997,8 +1008,9 @@ bool HTMLConstructionSite::inQuirksMode() {
   return m_inQuirksMode;
 }
 
-// Adjusts |task| to match the "adjusted insertion location" determined by the foster parenting algorithm,
-// laid out as the substeps of step 2 of https://html.spec.whatwg.org/#appropriate-place-for-inserting-a-node
+// Adjusts |task| to match the "adjusted insertion location" determined by the
+// foster parenting algorithm, laid out as the substeps of step 2 of
+// https://html.spec.whatwg.org/#appropriate-place-for-inserting-a-node
 void HTMLConstructionSite::findFosterSite(HTMLConstructionSiteTask& task) {
   // 2.1
   HTMLElementStack::ElementRecord* lastTemplate =

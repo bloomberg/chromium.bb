@@ -39,16 +39,15 @@ namespace blink {
 //            L_ current insertion point
 //
 // The current segmented string is stored in InputStream.  Each of the
-// afterInsertionPoint buffers are stored in InsertionPointRecords on the
-// stack.
+// afterInsertionPoint buffers are stored in InsertionPointRecords on the stack.
 //
 // We remove characters from the "current" string in the InputStream.
-// document.write() will add characters at the current insertion point,
-// which appends them to the "current" string.
+// document.write() will add characters at the current insertion point, which
+// appends them to the "current" string.
 //
-// m_last is a pointer to the last of the afterInsertionPoint strings.
-// The network adds data at the end of the InputStream, which appends
-// them to the "last" string.
+// m_last is a pointer to the last of the afterInsertionPoint strings. The
+// network adds data at the end of the InputStream, which appends them to the
+// "last" string.
 class HTMLInputStream {
   DISALLOW_NEW();
   WTF_MAKE_NONCOPYABLE(HTMLInputStream);
@@ -80,9 +79,9 @@ class HTMLInputStream {
     next = m_first;
     m_first = SegmentedString();
     if (m_last == &m_first) {
-      // We used to only have one SegmentedString in the InputStream
-      // but now we have two.  That means m_first is no longer also
-      // the m_last string, |next| is now the last one.
+      // We used to only have one SegmentedString in the InputStream but now we
+      // have two.  That means m_first is no longer also the m_last string,
+      // |next| is now the last one.
       m_last = &next;
     }
   }
@@ -96,8 +95,8 @@ class HTMLInputStream {
       m_last = &m_first;
     }
     if (next.isClosed()) {
-      // We also need to merge the "closed" state from next to
-      // m_first.  Arguably, this work could be done in append().
+      // We also need to merge the "closed" state from next to m_first.
+      // Arguably, this work could be done in append().
       m_first.close();
     }
   }
@@ -117,17 +116,20 @@ class InsertionPointRecord {
     m_line = m_inputStream->current().currentLine();
     m_column = m_inputStream->current().currentColumn();
     m_inputStream->splitInto(m_next);
-    // We 'fork' current position and use it for the generated script part.
-    // This is a bit weird, because generated part does not have positions within an HTML document.
+    // We 'fork' current position and use it for the generated script part. This
+    // is a bit weird, because generated part does not have positions within an
+    // HTML document.
     m_inputStream->current().setCurrentPosition(m_line, m_column, 0);
   }
 
   ~InsertionPointRecord() {
-    // Some inserted text may have remained in input stream. E.g. if script has written "&amp" or "<table",
-    // it stays in buffer because it cannot be properly tokenized before we see next part.
+    // Some inserted text may have remained in input stream. E.g. if script has
+    // written "&amp" or "<table", it stays in buffer because it cannot be
+    // properly tokenized before we see next part.
     int unparsedRemainderLength = m_inputStream->current().length();
     m_inputStream->mergeFrom(m_next);
-    // We restore position for the character that goes right after unparsed remainder.
+    // We restore position for the character that goes right after unparsed
+    // remainder.
     m_inputStream->current().setCurrentPosition(m_line, m_column,
                                                 unparsedRemainderLength);
   }
@@ -141,4 +143,4 @@ class InsertionPointRecord {
 
 }  // namespace blink
 
-#endif
+#endif  // HTMLInputStream_h

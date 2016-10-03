@@ -113,14 +113,14 @@ inline bool HTMLParserScheduler::shouldYield(
   if (session.elapsedTime() > parserTimeLimit)
     return true;
 
-  // Yield if a lot of DOM work has been done in this session and a script tag is
-  // about to be parsed. This significantly improves render performance for documents
-  // that place their scripts at the bottom of the page. Yielding too often
-  // significantly slows down the parsing so a balance needs to be struck to
-  // only yield when enough changes have happened to make it worthwhile.
-  // Emperical testing shows that anything > ~40 and < ~200 gives all of the benefit
-  // without impacting parser performance, only adding a few yields per page but at
-  // just the right times.
+  // Yield if a lot of DOM work has been done in this session and a script tag
+  // is about to be parsed. This significantly improves render performance for
+  // documents that place their scripts at the bottom of the page. Yielding too
+  // often significantly slows down the parsing so a balance needs to be struck
+  // to only yield when enough changes have happened to make it worthwhile.
+  // Emperical testing shows that anything > ~40 and < ~200 gives all of the
+  // benefit without impacting parser performance, only adding a few yields per
+  // page but at just the right times.
   const size_t sufficientWork = 50;
   if (startingScript && session.processedElementTokens() > sufficientWork)
     return true;

@@ -208,14 +208,16 @@ void HTMLScriptRunner::executePendingScriptAndDispatchEvent(
   ScriptSourceCode sourceCode = pendingScript->getSource(
       documentURLForScriptExecution(m_document), errorOccurred);
 
-  // Stop watching loads before executeScript to prevent recursion if the script reloads itself.
+  // Stop watching loads before executeScript to prevent recursion if the script
+  // reloads itself.
   pendingScript->stopWatchingForLoad();
 
   if (!isExecutingScript()) {
     Microtask::performCheckpoint(V8PerIsolateData::mainThreadIsolate());
     if (pendingScriptType == ScriptStreamer::ParsingBlocking) {
       m_hasScriptsWaitingForResources = !m_document->isScriptExecutionReady();
-      // The parser cannot be unblocked as a microtask requested another resource
+      // The parser cannot be unblocked as a microtask requested another
+      // resource
       if (m_hasScriptsWaitingForResources)
         return;
     }
@@ -348,14 +350,18 @@ void HTMLScriptRunner::execute(Element* scriptElement,
   runScript(scriptElement, scriptStartPosition);
 
   if (hasParserBlockingScript()) {
-    if (isExecutingScript())
-      return;  // Unwind to the outermost HTMLScriptRunner::execute before continuing parsing.
+    if (isExecutingScript()) {
+      // Unwind to the outermost HTMLScriptRunner::execute before continuing
+      // parsing.
+      return;
+    }
 
     traceParserBlockingScript(m_parserBlockingScript.get(),
                               !m_document->isScriptExecutionReady());
     m_parserBlockingScript->markParserBlockingLoadStartTime();
 
-    // If preload scanner got created, it is missing the source after the current insertion point. Append it and scan.
+    // If preload scanner got created, it is missing the source after the
+    // current insertion point. Append it and scan.
     if (!hadPreloadScanner && m_host->hasPreloadScanner())
       m_host->appendCurrentInputStreamToPreloadScannerAndScan();
     executeParsingBlockingScripts();
@@ -420,9 +426,9 @@ void HTMLScriptRunner::requestParsingBlockingScript(Element* element) {
 
   ASSERT(m_parserBlockingScript->resource());
 
-  // We only care about a load callback if resource is not already
-  // in the cache. Callers will attempt to run the m_parserBlockingScript
-  // if possible before returning control to the parser.
+  // We only care about a load callback if resource is not already in the cache.
+  // Callers will attempt to run the m_parserBlockingScript if possible before
+  // returning control to the parser.
   if (!m_parserBlockingScript->isReady()) {
     if (m_document->frame()) {
       ScriptState* scriptState = ScriptState::forMainWorld(m_document->frame());

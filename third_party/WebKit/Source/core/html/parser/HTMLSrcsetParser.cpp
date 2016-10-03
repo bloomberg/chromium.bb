@@ -116,7 +116,8 @@ static void appendDescriptorAndReset(const CharType* attributeStart,
 template <typename CharType>
 static void appendCharacter(const CharType* descriptorStart,
                             const CharType* position) {
-  // Since we don't copy the tokens, this just set the point where the descriptor tokens start.
+  // Since we don't copy the tokens, this just set the point where the
+  // descriptor tokens start.
   if (!descriptorStart)
     descriptorStart = position;
 }
@@ -221,8 +222,8 @@ static bool parseDescriptors(const CharType* attribute,
       }
       result.setResourceWidth(resourceWidth);
     } else if (c == 'h') {
-      // This is here only for future compat purposes.
-      // The value of the 'h' descriptor is not used.
+      // This is here only for future compat purposes. The value of the 'h'
+      // descriptor is not used.
       if (result.hasDensity() || result.hasHeight()) {
         srcsetError(document,
                     "it has multiple 'h' descriptors or a mix of 'x' and 'h' "
@@ -284,15 +285,18 @@ static void parseImageCandidatesFromSrcsetAttribute(
   const CharType* attributeEnd = position + length;
 
   while (position < attributeEnd) {
-    // 4. Splitting loop: Collect a sequence of characters that are space characters or U+002C COMMA characters.
+    // 4. Splitting loop: Collect a sequence of characters that are space
+    // characters or U+002C COMMA characters.
     skipWhile<CharType, isHTMLSpaceOrComma<CharType>>(position, attributeEnd);
     if (position == attributeEnd) {
-      // Contrary to spec language - descriptor parsing happens on each candidate, so when we reach the attributeEnd, we can exit.
+      // Contrary to spec language - descriptor parsing happens on each
+      // candidate, so when we reach the attributeEnd, we can exit.
       break;
     }
     const CharType* imageURLStart = position;
 
-    // 6. Collect a sequence of characters that are not space characters, and let that be url.
+    // 6. Collect a sequence of characters that are not space characters, and
+    // let that be url.
     skipUntil<CharType, isHTMLSpace<CharType>>(position, attributeEnd);
     const CharType* imageURLEnd = position;
 
@@ -312,8 +316,9 @@ static void parseImageCandidatesFromSrcsetAttribute(
       Vector<DescriptorToken> descriptorTokens;
       tokenizeDescriptors(attributeStart, position, attributeEnd,
                           descriptorTokens);
-      // Contrary to spec language - descriptor parsing happens on each candidate.
-      // This is a black-box equivalent, to avoid storing descriptor lists for each candidate.
+      // Contrary to spec language - descriptor parsing happens on each
+      // candidate. This is a black-box equivalent, to avoid storing descriptor
+      // lists for each candidate.
       if (!parseDescriptors(attribute, descriptorTokens, result, document)) {
         if (document) {
           UseCounter::count(document, UseCounter::SrcsetDroppedCandidate);
@@ -432,7 +437,8 @@ static ImageCandidate pickBestImageCandidate(
                                                          winner, document);
 
   float winningDensity = deDupedImageCandidates[winner]->density();
-  // 16. If an entry b in candidates has the same associated ... pixel density as an earlier entry a in candidates,
+  // 16. If an entry b in candidates has the same associated ... pixel density
+  // as an earlier entry a in candidates,
   // then remove entry b
   while ((winner > 0) &&
          (deDupedImageCandidates[winner - 1]->density() == winningDensity))

@@ -10,16 +10,16 @@
  *     notice, this list of conditions and the following disclaimer in the
  *     documentation and/or other materials provided with the distribution.
  *
- * THIS SOFTWARE IS PROVIDED BY APPLE INC. AND ITS CONTRIBUTORS ``AS IS'' AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * THIS SOFTWARE IS PROVIDED BY APPLE INC. AND ITS CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL APPLE INC. OR ITS CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
- * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * DISCLAIMED. IN NO EVENT SHALL APPLE INC. OR ITS CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "core/html/parser/HTMLParserIdioms.h"
@@ -98,8 +98,9 @@ String serializeForNumberType(double number) {
 
 Decimal parseToDecimalForNumberType(const String& string,
                                     const Decimal& fallbackValue) {
-  // http://www.whatwg.org/specs/web-apps/current-work/#floating-point-numbers and parseToDoubleForNumberType
-  // String::toDouble() accepts leading + and whitespace characters, which are not valid here.
+  // http://www.whatwg.org/specs/web-apps/current-work/#floating-point-numbers
+  // and parseToDoubleForNumberType String::toDouble() accepts leading + and
+  // whitespace characters, which are not valid here.
   const UChar firstCharacter = string[0];
   if (firstCharacter != '-' && firstCharacter != '.' &&
       !isASCIIDigit(firstCharacter))
@@ -109,7 +110,8 @@ Decimal parseToDecimalForNumberType(const String& string,
   if (!value.isFinite())
     return fallbackValue;
 
-  // Numbers are considered finite IEEE 754 Double-precision floating point values.
+  // Numbers are considered finite IEEE 754 Double-precision floating point
+  // values.
   const Decimal doubleMax =
       Decimal::fromDouble(std::numeric_limits<double>::max());
   if (value < -doubleMax || value > doubleMax)
@@ -123,11 +125,13 @@ static double checkDoubleValue(double value, bool valid, double fallbackValue) {
   if (!valid)
     return fallbackValue;
 
-  // NaN and infinity are considered valid by String::toDouble, but not valid here.
+  // NaN and infinity are considered valid by String::toDouble, but not valid
+  // here.
   if (!std::isfinite(value))
     return fallbackValue;
 
-  // Numbers are considered finite IEEE 754 Double-precision floating point values.
+  // Numbers are considered finite IEEE 754 Double-precision floating point
+  // values.
   if (-std::numeric_limits<double>::max() > value ||
       value > std::numeric_limits<double>::max())
     return fallbackValue;
@@ -138,7 +142,8 @@ static double checkDoubleValue(double value, bool valid, double fallbackValue) {
 
 double parseToDoubleForNumberType(const String& string, double fallbackValue) {
   // http://www.whatwg.org/specs/web-apps/current-work/#floating-point-numbers
-  // String::toDouble() accepts leading + and whitespace characters, which are not valid here.
+  // String::toDouble() accepts leading + and whitespace characters, which are
+  // not valid here.
   UChar firstCharacter = string[0];
   if (firstCharacter != '-' && firstCharacter != '.' &&
       !isASCIIDigit(firstCharacter))
@@ -226,7 +231,8 @@ static bool parseHTMLNonNegativeIntegerInternal(const CharacterType* position,
   // However, in order to support integers >= 2^31, we fold [1] into this.
   // 'Step N' in the following comments refers to [1].
   //
-  // [1] https://html.spec.whatwg.org/multipage/infrastructure.html#rules-for-parsing-integers
+  // [1]
+  // https://html.spec.whatwg.org/multipage/infrastructure.html#rules-for-parsing-integers
 
   // Step 3: Let sign have the value "positive".
   int sign = 1;
@@ -458,10 +464,10 @@ inline StringImpl* findStringIfStatic(const CharType* characters,
   WTF::StaticStringsTable::const_iterator it = table.find(hash);
   if (it == table.end())
     return nullptr;
-  // It's possible to have hash collisions between arbitrary strings and
-  // known identifiers (e.g. "bvvfg" collides with "script").
-  // However ASSERTs in StringImpl::createStatic guard against there ever being collisions
-  // between static strings.
+  // It's possible to have hash collisions between arbitrary strings and known
+  // identifiers (e.g. "bvvfg" collides with "script"). However ASSERTs in
+  // StringImpl::createStatic guard against there ever being collisions between
+  // static strings.
   if (!equal(it->value, characters, length))
     return nullptr;
   return it->value;

@@ -51,8 +51,10 @@ class HTMLTreeBuilder final
   WTF_MAKE_NONCOPYABLE(HTMLTreeBuilder);
 
  public:
-  // HTMLTreeBuilder can be created for non-HTMLDocument (XHTMLDocument) from editing code.
-  // TODO(kouhei): Fix editing code to always invoke HTML parser on HTMLDocument.
+  // HTMLTreeBuilder can be created for non-HTMLDocument (XHTMLDocument) from
+  // editing code.
+  // TODO(kouhei): Fix editing code to always invoke HTML parser on
+  // HTMLDocument.
   static HTMLTreeBuilder* create(HTMLDocumentParser* parser,
                                  Document& document,
                                  ParserContentPolicy parserContentPolicy,
@@ -85,14 +87,15 @@ class HTMLTreeBuilder final
   void constructTree(AtomicHTMLToken*);
 
   bool hasParserBlockingScript() const { return !!m_scriptToProcess; }
-  // Must be called to take the parser-blocking script before calling the parser again.
+  // Must be called to take the parser-blocking script before calling the parser
+  // again.
   Element* takeScriptToProcess(TextPosition& scriptStartPosition);
 
   // Done, close any open tags, etc.
   void finished();
 
-  // Synchronously flush pending text and queued tasks, possibly creating more DOM nodes.
-  // Flushing pending text depends on |mode|.
+  // Synchronously flush pending text and queued tasks, possibly creating more
+  // DOM nodes. Flushing pending text depends on |mode|.
   void flush(FlushMode mode) { m_tree.flush(mode); }
 
   void setShouldSkipLeadingNewline(bool shouldSkip) {
@@ -261,14 +264,16 @@ class HTMLTreeBuilder final
 
   bool m_shouldSkipLeadingNewline;
 
-  // We access parser because HTML5 spec requires that we be able to change the state of the tokenizer
-  // from within parser actions. We also need it to track the current position.
+  // We access parser because HTML5 spec requires that we be able to change the
+  // state of the tokenizer from within parser actions. We also need it to track
+  // the current position.
   Member<HTMLDocumentParser> m_parser;
 
-  Member<Element>
-      m_scriptToProcess;  // <script> tag which needs processing before resuming the parser.
-  TextPosition
-      m_scriptToProcessStartPosition;  // Starting line number of the script tag needing processing.
+  // <script> tag which needs processing before resuming the parser.
+  Member<Element> m_scriptToProcess;
+
+  // Starting line number of the script tag needing processing.
+  TextPosition m_scriptToProcessStartPosition;
 
   HTMLParserOptions m_options;
 };

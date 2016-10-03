@@ -32,7 +32,8 @@
 namespace blink {
 
 // Biblically, Noah's Ark only had room for two of each animal, but in the
-// Book of Hixie (aka http://www.whatwg.org/specs/web-apps/current-work/multipage/parsing.html#list-of-active-formatting-elements),
+// Book of Hixie (aka
+// http://www.whatwg.org/specs/web-apps/current-work/multipage/parsing.html#list-of-active-formatting-elements),
 // Noah's Ark of Formatting Elements can fit three of each element.
 static const size_t kNoahsArkCapacity = 3;
 
@@ -122,8 +123,8 @@ void HTMLFormattingElementList::tryToEnsureNoahsArkConditionQuickly(
   if (m_entries.size() < kNoahsArkCapacity)
     return;
 
-  // Use a vector with inline capacity to avoid a malloc in the common case
-  // of a quickly ensuring the condition.
+  // Use a vector with inline capacity to avoid a malloc in the common case of a
+  // quickly ensuring the condition.
   HeapVector<Member<HTMLStackItem>, 10> candidates;
 
   size_t newItemAttributeCount = newItem->attributes().size();
@@ -145,8 +146,10 @@ void HTMLFormattingElementList::tryToEnsureNoahsArkConditionQuickly(
     candidates.append(candidate);
   }
 
+  // There's room for the new element in the ark. There's no need to copy out
+  // the remainingCandidates.
   if (candidates.size() < kNoahsArkCapacity)
-    return;  // There's room for the new element in the ark. There's no need to copy out the remainingCandidates.
+    return;
 
   remainingCandidates.appendVector(candidates);
 }
@@ -170,7 +173,8 @@ void HTMLFormattingElementList::ensureNoahsArkCondition(
     for (size_t j = 0; j < candidates.size(); ++j) {
       HTMLStackItem* candidate = candidates[j];
 
-      // These properties should already have been checked by tryToEnsureNoahsArkConditionQuickly.
+      // These properties should already have been checked by
+      // tryToEnsureNoahsArkConditionQuickly.
       ASSERT(newItem->attributes().size() == candidate->attributes().size());
       ASSERT(newItem->localName() == candidate->localName() &&
              newItem->namespaceURI() == candidate->namespaceURI());

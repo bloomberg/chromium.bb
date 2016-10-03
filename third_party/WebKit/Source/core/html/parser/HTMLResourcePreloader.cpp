@@ -77,8 +77,9 @@ void HTMLResourcePreloader::preload(
   if (!m_document->loader())
     return;
   FetchRequest request = preload->resourceRequest(m_document);
-  // TODO(dgozman): This check should go to HTMLPreloadScanner, but this requires
-  // making Document::completeURLWithOverride logic to be statically accessible.
+  // TODO(dgozman): This check should go to HTMLPreloadScanner, but this
+  // requires making Document::completeURLWithOverride logic to be statically
+  // accessible.
   if (request.url().protocolIsData())
     return;
   if (preload->resourceType() == Resource::Script ||

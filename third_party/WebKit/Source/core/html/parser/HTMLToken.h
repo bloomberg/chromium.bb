@@ -141,9 +141,9 @@ class HTMLToken {
 
   typedef Vector<Attribute, 10> AttributeList;
 
-  // By using an inline capacity of 256, we avoid spilling over into an malloced buffer
-  // approximately 99% of the time based on a non-scientific browse around a number of
-  // popular web sites on 23 May 2013.
+  // By using an inline capacity of 256, we avoid spilling over into an malloced
+  // buffer approximately 99% of the time based on a non-scientific browse
+  // around a number of popular web sites on 23 May 2013.
   typedef Vector<UChar, 256> DataVector;
 
   HTMLToken() { clear(); }
@@ -170,7 +170,8 @@ class HTMLToken {
     m_type = EndOfFile;
   }
 
-  /* Range and offset methods exposed for HTMLSourceTracker and HTMLViewSourceParser */
+  // Range and offset methods exposed for HTMLSourceTracker and
+  // HTMLViewSourceParser.
   int startIndex() const { return m_range.start; }
   int endIndex() const { return m_range.end; }
 

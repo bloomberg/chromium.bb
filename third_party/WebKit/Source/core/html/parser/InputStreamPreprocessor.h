@@ -101,10 +101,11 @@ class InputStreamPreprocessor {
       m_skipNextNewLine = true;
     } else {
       m_skipNextNewLine = false;
-      // FIXME: The spec indicates that the surrogate pair range as well as
-      // a number of specific character values are parse errors and should be replaced
-      // by the replacement character. We suspect this is a problem with the spec as doing
-      // that filtering breaks surrogate pair handling and causes us not to match Minefield.
+      // FIXME: The spec indicates that the surrogate pair range as well as a
+      // number of specific character values are parse errors and should be
+      // replaced by the replacement character. We suspect this is a problem
+      // with the spec as doing that filtering breaks surrogate pair handling
+      // and causes us not to match Minefield.
       if (m_nextInputCharacter == '\0' &&
           !shouldTreatNullAsEndOfFileMarker(source)) {
         if (m_tokenizer->shouldSkipNullCharacters()) {

@@ -18,7 +18,8 @@ TEST(HTMLEntityParserTest, ConsumeHTMLEntityIncomplete) {
   EXPECT_TRUE(notEnoughCharacters);
   EXPECT_FALSE(success);
 
-  // consumeHTMLEntity should recover the original SegmentedString state if failed.
+  // consumeHTMLEntity should recover the original SegmentedString state if
+  // failed.
   EXPECT_EQ(original, src.toString());
 }
 

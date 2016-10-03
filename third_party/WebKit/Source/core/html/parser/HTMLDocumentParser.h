@@ -123,9 +123,9 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
     bool startingScript;
     // Indices into |tokens|.
     Vector<int> likelyDocumentWriteScriptIndices;
-    // Index into |tokens| of the last <meta> csp tag in |tokens|. Preloads
-    // will be deferred until this token is parsed. Will be
-    // noPendingToken if there are no csp tokens.
+    // Index into |tokens| of the last <meta> csp tag in |tokens|. Preloads will
+    // be deferred until this token is parsed. Will be noPendingToken if there
+    // are no csp tokens.
     int pendingCSPMetaTokenIndex;
 
     static constexpr int noPendingToken = -1;
@@ -222,17 +222,17 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   void evaluateAndPreloadScriptForDocumentWrite(const String& source);
 
   // Temporary enum for the ParseHTMLOnMainThread experiment. This is used to
-  // annotate whether a given task should post a task or not on the main
-  // thread if the lookahead parser is living on the main thread.
+  // annotate whether a given task should post a task or not on the main thread
+  // if the lookahead parser is living on the main thread.
   enum LookaheadParserTaskSynchrony {
     Synchronous,
     Asynchronous,
   };
 
-  // Setting |synchronyPolicy| to Synchronous will just call the function
-  // with the given parameters. Note, this method is completely temporary
-  // as we need to maintain both threading implementations until the
-  // ParseHTMLOnMainThread experiment finishes.
+  // Setting |synchronyPolicy| to Synchronous will just call the function with
+  // the given parameters. Note, this method is completely temporary as we need
+  // to maintain both threading implementations until the ParseHTMLOnMainThread
+  // experiment finishes.
   template <typename FunctionType, typename... Ps>
   void postTaskToLookaheadParser(LookaheadParserTaskSynchrony synchronyPolicy,
                                  FunctionType,
@@ -257,8 +257,9 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   XSSAuditor m_xssAuditor;
   XSSAuditorDelegate m_xssAuditorDelegate;
 
-  // FIXME: m_lastChunkBeforeScript, m_tokenizer, m_token, and m_input should be combined into a single state object
-  // so they can be set and cleared together and passed between threads together.
+  // FIXME: m_lastChunkBeforeScript, m_tokenizer, m_token, and m_input should be
+  // combined into a single state object so they can be set and cleared together
+  // and passed between threads together.
   std::unique_ptr<TokenizedChunk> m_lastChunkBeforeScript;
   Deque<std::unique_ptr<TokenizedChunk>> m_speculations;
   WeakPtrFactory<HTMLDocumentParser> m_weakFactory;
@@ -272,10 +273,9 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   // If this is non-null, then there is a meta CSP token somewhere in the
   // speculation buffer. Preloads will be deferred until a token matching this
   // pointer is parsed and the CSP policy is applied. Note that this pointer
-  // tracks the *last* meta token in the speculation buffer, so it
-  // overestimates how long to defer preloads. This is for simplicity, as the
-  // alternative would require keeping track of token positions of preload
-  // requests.
+  // tracks the *last* meta token in the speculation buffer, so it overestimates
+  // how long to defer preloads. This is for simplicity, as the alternative
+  // would require keeping track of token positions of preload requests.
   CompactHTMLToken* m_pendingCSPMetaToken;
 
   bool m_shouldUseThreading;
@@ -290,4 +290,4 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
 
 }  // namespace blink
 
-#endif
+#endif  // HTMLDocumentParser_h

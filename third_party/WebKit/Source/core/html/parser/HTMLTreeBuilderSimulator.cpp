@@ -37,7 +37,8 @@ namespace blink {
 using namespace HTMLNames;
 
 static bool tokenExitsForeignContent(const CompactHTMLToken& token) {
-  // FIXME: This is copied from HTMLTreeBuilder::processTokenInForeignContent and changed to use threadSafeHTMLNamesMatch.
+  // FIXME: This is copied from HTMLTreeBuilder::processTokenInForeignContent
+  // and changed to use threadSafeHTMLNamesMatch.
   const String& tagName = token.data();
   return threadSafeMatch(tagName, bTag) || threadSafeMatch(tagName, bigTag) ||
          threadSafeMatch(tagName, blockquoteTag) ||
@@ -74,13 +75,15 @@ static bool tokenExitsForeignContent(const CompactHTMLToken& token) {
 }
 
 static bool tokenExitsSVG(const CompactHTMLToken& token) {
-  // FIXME: It's very fragile that we special case foreignObject here to be case-insensitive.
+  // FIXME: It's very fragile that we special case foreignObject here to be
+  // case-insensitive.
   return equalIgnoringCase(token.data(),
                            SVGNames::foreignObjectTag.localName());
 }
 
 static bool tokenExitsMath(const CompactHTMLToken& token) {
-  // FIXME: This is copied from HTMLElementStack::isMathMLTextIntegrationPoint and changed to use threadSafeMatch.
+  // FIXME: This is copied from HTMLElementStack::isMathMLTextIntegrationPoint
+  // and changed to use threadSafeMatch.
   const String& tagName = token.data();
   return threadSafeMatch(tagName, MathMLNames::miTag) ||
          threadSafeMatch(tagName, MathMLNames::moTag) ||
@@ -132,7 +135,8 @@ HTMLTreeBuilderSimulator::SimulatedToken HTMLTreeBuilderSimulator::simulate(
         (m_namespaceStack.last() == MathML && tokenExitsMath(token)))
       m_namespaceStack.append(HTML);
     if (!inForeignContent()) {
-      // FIXME: This is just a copy of Tokenizer::updateStateFor which uses threadSafeMatches.
+      // FIXME: This is just a copy of Tokenizer::updateStateFor which uses
+      // threadSafeMatches.
       if (threadSafeMatch(tagName, textareaTag) ||
           threadSafeMatch(tagName, titleTag)) {
         tokenizer->setState(HTMLTokenizer::RCDATAState);

@@ -66,7 +66,8 @@ String HTMLSourceTracker::sourceForToken(const HTMLToken& token) {
 
   size_t length;
   if (token.type() == HTMLToken::EndOfFile) {
-    // Consume the remainder of the input, omitting the null character we use to mark the end of the file.
+    // Consume the remainder of the input, omitting the null character we use to
+    // mark the end of the file.
     length = m_previousSource.length() + m_currentSource.length() - 1;
   } else {
     ASSERT(!token.startIndex());

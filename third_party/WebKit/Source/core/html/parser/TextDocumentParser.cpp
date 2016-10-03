@@ -47,17 +47,20 @@ void TextDocumentParser::appendBytes(const char* data, size_t length) {
 
 void TextDocumentParser::insertFakePreElement() {
   // In principle, we should create a specialized tree builder for
-  // TextDocuments, but instead we re-use the existing HTMLTreeBuilder.
-  // We create a fake token and give it to the tree builder rather than
-  // sending fake bytes through the front-end of the parser to avoid
-  // distrubing the line/column number calculations.
+  // TextDocuments, but instead we re-use the existing HTMLTreeBuilder. We
+  // create a fake token and give it to the tree builder rather than sending
+  // fake bytes through the front-end of the parser to avoid distrubing the
+  // line/column number calculations.
   Vector<Attribute> attributes;
   attributes.append(
       Attribute(styleAttr, "word-wrap: break-word; white-space: pre-wrap;"));
   AtomicHTMLToken fakePre(HTMLToken::StartTag, preTag.localName(), attributes);
   treeBuilder()->constructTree(&fakePre);
+
+  // The document could have been detached by an extension while the
+  // tree was being constructed.
   if (isStopped())
-    return;  // The document could have been detached by an extension while the tree was being constructed.
+    return;
 
   // Normally we would skip the first \n after a <pre> element, but we don't
   // want to skip the first \n for text documents!
