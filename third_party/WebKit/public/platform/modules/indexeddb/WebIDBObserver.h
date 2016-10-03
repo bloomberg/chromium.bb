@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This class makes the blink::IDBObserver visible to the content layer by holding a reference to it.
+// This class makes the blink::IDBObserver visible to the content layer by
+// holding a reference to it.
 
 #ifndef WebIDBObserver_h
 #define WebIDBObserver_h

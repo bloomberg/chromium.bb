@@ -39,7 +39,8 @@ class IDBKey;
 
 class WebIDBKey {
  public:
-  // Please use one of the factory methods. This is public only to allow WebVector.
+  // Please use one of the factory methods. This is public only to allow
+  // WebVector.
   WebIDBKey() {}
   ~WebIDBKey() { reset(); }
 

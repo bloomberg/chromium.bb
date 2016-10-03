@@ -10,8 +10,8 @@
 
 namespace blink {
 
-// Contains members corresponding to BluetoothRemoteGATTCharacteristic attributes as
-// specified in the IDL.
+// Contains members corresponding to BluetoothRemoteGATTCharacteristic
+// attributes as specified in the IDL.
 struct WebBluetoothRemoteGATTCharacteristicInit {
   WebBluetoothRemoteGATTCharacteristicInit(
       const WebString& serviceInstanceID,
