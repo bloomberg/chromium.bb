@@ -18,6 +18,15 @@
 
 namespace blink {
 
+void PaintController::setTracksRasterInvalidations(bool value) {
+  if (value) {
+    m_paintChunksRasterInvalidationTrackingMap =
+        wrapUnique(new RasterInvalidationTrackingMap<const PaintChunk>);
+  } else {
+    m_paintChunksRasterInvalidationTrackingMap = nullptr;
+  }
+}
+
 const PaintArtifact& PaintController::paintArtifact() const {
   DCHECK(m_newDisplayItemList.isEmpty());
   DCHECK(m_newPaintChunks.isInInitialState());
@@ -589,9 +598,9 @@ void PaintController::generateChunkRasterInvalidationRects(
   if (newChunk.beginIndex >= m_currentCachedSubsequenceBeginIndexInNewList)
     return;
 
+  static FloatRect infiniteFloatRect(LayoutRect::infiniteIntRect());
   if (!newChunk.id) {
-    newChunk.rasterInvalidationRects.append(
-        FloatRect(LayoutRect::infiniteIntRect()));
+    addRasterInvalidationInfo(nullptr, newChunk, infiniteFloatRect);
     return;
   }
 
@@ -632,8 +641,25 @@ void PaintController::generateChunkRasterInvalidationRects(
   }
 
   // We reach here because the chunk is new.
-  newChunk.rasterInvalidationRects.append(
-      FloatRect(LayoutRect::infiniteIntRect()));
+  addRasterInvalidationInfo(nullptr, newChunk, infiniteFloatRect);
+}
+
+void PaintController::addRasterInvalidationInfo(const DisplayItemClient* client,
+                                                PaintChunk& chunk,
+                                                const FloatRect& rect) {
+  chunk.rasterInvalidationRects.append(rect);
+  if (!m_paintChunksRasterInvalidationTrackingMap)
+    return;
+  RasterInvalidationInfo info;
+  info.rect = enclosingIntRect(rect);
+  info.client = client;
+  if (client) {
+    info.clientDebugName = client->debugName();
+    info.reason = client->getPaintInvalidationReason();
+  }
+  RasterInvalidationTracking& tracking =
+      m_paintChunksRasterInvalidationTrackingMap->add(&chunk);
+  tracking.trackedRasterInvalidations.append(info);
 }
 
 void PaintController::generateChunkRasterInvalidationRectsComparingOldChunk(
@@ -651,6 +677,7 @@ void PaintController::generateChunkRasterInvalidationRectsComparingOldChunk(
     const DisplayItem& oldItem =
         m_currentPaintArtifact.getDisplayItemList()[oldIndex];
     const DisplayItemClient* clientToInvalidate = nullptr;
+    bool isPotentiallyInvalidClient = false;
     if (!oldItem.hasValidClient()) {
       size_t movedToIndex = m_itemsMovedIntoNewList[oldIndex];
       if (m_newDisplayItemList[movedToIndex].drawsContent()) {
@@ -661,8 +688,9 @@ void PaintController::generateChunkRasterInvalidationRectsComparingOldChunk(
           // And invalidate in the new chunk into which the item was moved.
           PaintChunk& movedToChunk =
               m_newPaintChunks.findChunkByDisplayItemIndex(movedToIndex);
-          movedToChunk.rasterInvalidationRects.append(
-              clientToInvalidate->visualRect());
+          addRasterInvalidationInfo(
+              clientToInvalidate, movedToChunk,
+              FloatRect(clientToInvalidate->visualRect()));
         } else if (movedToIndex < highestMovedToIndex) {
           // The item has been moved behind other cached items, so need to invalidate the area
           // that is probably exposed by the item moved earlier.
@@ -672,12 +700,15 @@ void PaintController::generateChunkRasterInvalidationRectsComparingOldChunk(
         }
       }
     } else if (oldItem.drawsContent()) {
+      isPotentiallyInvalidClient = true;
       clientToInvalidate = &oldItem.client();
     }
     if (clientToInvalidate &&
         invalidatedClientsInOldChunk.add(clientToInvalidate).isNewEntry) {
-      newChunk.rasterInvalidationRects.append(
-          m_currentPaintArtifact.getDisplayItemList().visualRect(oldIndex));
+      addRasterInvalidationInfo(
+          isPotentiallyInvalidClient ? nullptr : clientToInvalidate, newChunk,
+          FloatRect(m_currentPaintArtifact.getDisplayItemList().visualRect(
+              oldIndex)));
     }
   }
 
@@ -686,8 +717,10 @@ void PaintController::generateChunkRasterInvalidationRectsComparingOldChunk(
        ++newIndex) {
     const DisplayItem& newItem = m_newDisplayItemList[newIndex];
     if (newItem.drawsContent() && !clientCacheIsValid(newItem.client()) &&
-        invalidatedClientsInNewChunk.add(&newItem.client()).isNewEntry)
-      newChunk.rasterInvalidationRects.append(newItem.client().visualRect());
+        invalidatedClientsInNewChunk.add(&newItem.client()).isNewEntry) {
+      addRasterInvalidationInfo(&newItem.client(), newChunk,
+                                FloatRect(newItem.client().visualRect()));
+    }
   }
 }
 

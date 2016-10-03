@@ -15,6 +15,7 @@
 #include "platform/graphics/paint/PaintArtifact.h"
 #include "platform/graphics/paint/PaintChunk.h"
 #include "platform/graphics/paint/PaintChunker.h"
+#include "platform/graphics/paint/RasterInvalidationTracking.h"
 #include "platform/graphics/paint/Transform3DDisplayItem.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "wtf/Alignment.h"
@@ -33,6 +34,8 @@ namespace blink {
 class GraphicsContext;
 
 static const size_t kInitialDisplayItemListCapacityBytes = 512;
+
+template class RasterInvalidationTrackingMap<const PaintChunk>;
 
 // Responsible for processing display items as they are produced, and producing
 // a final paint artifact when complete. This class includes logic for caching,
@@ -178,6 +181,12 @@ class PLATFORM_EXPORT PaintController {
   void assertDisplayItemClientsAreLive();
 #endif
 
+  void setTracksRasterInvalidations(bool value);
+  RasterInvalidationTrackingMap<const PaintChunk>*
+  paintChunksRasterInvalidationTrackingMap() {
+    return m_paintChunksRasterInvalidationTrackingMap.get();
+  }
+
  protected:
   PaintController()
       : m_newDisplayItemList(0),
@@ -196,6 +205,8 @@ class PLATFORM_EXPORT PaintController {
 #endif
   {
     resetCurrentListIndices();
+    setTracksRasterInvalidations(
+        RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled());
   }
 
  private:
@@ -244,6 +255,9 @@ class PLATFORM_EXPORT PaintController {
   void generateChunkRasterInvalidationRectsComparingOldChunk(
       PaintChunk& newChunk,
       const PaintChunk& oldChunk);
+  void addRasterInvalidationInfo(const DisplayItemClient*,
+                                 PaintChunk&,
+                                 const FloatRect&);
 
   // The following two methods are for checking under-invalidations
   // (when RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled).
@@ -333,6 +347,9 @@ class PLATFORM_EXPORT PaintController {
   // compositing folding.
   int m_skippedProbableUnderInvalidationCount;
   String m_underInvalidationMessagePrefix;
+
+  std::unique_ptr<RasterInvalidationTrackingMap<const PaintChunk>>
+      m_paintChunksRasterInvalidationTrackingMap;
 
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
   // A stack recording subsequence clients that are currently painting.

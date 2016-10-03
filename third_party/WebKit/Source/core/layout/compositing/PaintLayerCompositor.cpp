@@ -80,7 +80,7 @@ PaintLayerCompositor::PaintLayerCompositor(LayoutView& layoutView)
       m_compositing(false),
       m_rootShouldAlwaysCompositeDirty(true),
       m_needsUpdateFixedBackground(false),
-      m_isTrackingPaintInvalidations(
+      m_isTrackingRasterInvalidations(
           layoutView.frameView()->isTrackingPaintInvalidations()),
       m_inOverlayFullscreenVideo(false),
       m_needsUpdateDescendantDependentFlags(false),
@@ -969,42 +969,44 @@ GraphicsLayer* PaintLayerCompositor::fixedRootBackgroundLayer() const {
   return nullptr;
 }
 
-static void setTracksPaintInvalidationsRecursive(
+static void setTracksRasterInvalidationsRecursive(
     GraphicsLayer* graphicsLayer,
     bool tracksPaintInvalidations) {
   if (!graphicsLayer)
     return;
 
-  graphicsLayer->setTracksPaintInvalidations(tracksPaintInvalidations);
+  graphicsLayer->setTracksRasterInvalidations(tracksPaintInvalidations);
 
-  for (size_t i = 0; i < graphicsLayer->children().size(); ++i)
-    setTracksPaintInvalidationsRecursive(graphicsLayer->children()[i],
-                                         tracksPaintInvalidations);
+  for (size_t i = 0; i < graphicsLayer->children().size(); ++i) {
+    setTracksRasterInvalidationsRecursive(graphicsLayer->children()[i],
+                                          tracksPaintInvalidations);
+  }
 
   if (GraphicsLayer* maskLayer = graphicsLayer->maskLayer())
-    setTracksPaintInvalidationsRecursive(maskLayer, tracksPaintInvalidations);
+    setTracksRasterInvalidationsRecursive(maskLayer, tracksPaintInvalidations);
 
   if (GraphicsLayer* clippingMaskLayer =
-          graphicsLayer->contentsClippingMaskLayer())
-    setTracksPaintInvalidationsRecursive(clippingMaskLayer,
-                                         tracksPaintInvalidations);
+          graphicsLayer->contentsClippingMaskLayer()) {
+    setTracksRasterInvalidationsRecursive(clippingMaskLayer,
+                                          tracksPaintInvalidations);
+  }
 }
 
-void PaintLayerCompositor::setTracksPaintInvalidations(
-    bool tracksPaintInvalidations) {
+void PaintLayerCompositor::setTracksRasterInvalidations(
+    bool tracksRasterInvalidations) {
 #if ENABLE(ASSERT)
   FrameView* view = m_layoutView.frameView();
   ASSERT(lifecycle().state() == DocumentLifecycle::PaintClean ||
          (view && view->shouldThrottleRendering()));
 #endif
 
-  m_isTrackingPaintInvalidations = tracksPaintInvalidations;
+  m_isTrackingRasterInvalidations = tracksRasterInvalidations;
   if (GraphicsLayer* rootLayer = rootGraphicsLayer())
-    setTracksPaintInvalidationsRecursive(rootLayer, tracksPaintInvalidations);
+    setTracksRasterInvalidationsRecursive(rootLayer, tracksRasterInvalidations);
 }
 
-bool PaintLayerCompositor::isTrackingPaintInvalidations() const {
-  return m_isTrackingPaintInvalidations;
+bool PaintLayerCompositor::isTrackingRasterInvalidations() const {
+  return m_isTrackingRasterInvalidations;
 }
 
 bool PaintLayerCompositor::requiresHorizontalScrollbarLayer() const {

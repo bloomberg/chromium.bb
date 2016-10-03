@@ -2817,7 +2817,17 @@ void FrameView::pushPaintArtifactToCompositor() {
 
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.Compositing.UpdateTime");
 
-  m_paintArtifactCompositor->update(m_paintController->paintArtifact());
+  m_paintArtifactCompositor->update(
+      m_paintController->paintArtifact(),
+      m_paintController->paintChunksRasterInvalidationTrackingMap());
+}
+
+std::unique_ptr<JSONObject> FrameView::compositedLayersAsJSON(
+    LayerTreeFlags flags) {
+  return frame()
+      .localFrameRoot()
+      ->view()
+      ->m_paintArtifactCompositor->layersAsJSON(flags);
 }
 
 void FrameView::updateStyleAndLayoutIfNeededRecursive() {
@@ -3204,8 +3214,15 @@ void FrameView::setTracksPaintInvalidations(bool trackPaintInvalidations) {
       layoutView.frameView()->m_trackedObjectPaintInvalidations = wrapUnique(
           trackPaintInvalidations ? new Vector<ObjectPaintInvalidation>
                                   : nullptr);
-      layoutView.compositor()->setTracksPaintInvalidations(
-          trackPaintInvalidations);
+      if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+        m_paintController->setTracksRasterInvalidations(
+            trackPaintInvalidations);
+        m_paintArtifactCompositor->setTracksRasterInvalidations(
+            trackPaintInvalidations);
+      } else {
+        layoutView.compositor()->setTracksRasterInvalidations(
+            trackPaintInvalidations);
+      }
     }
   }
 

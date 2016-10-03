@@ -40,6 +40,7 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/Color.h"
+#include "platform/graphics/GraphicsLayerClient.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/scroll/Scrollbar.h"
 #include "public/platform/WebDisplayMode.h"
@@ -63,6 +64,7 @@ class Element;
 class FloatSize;
 class HTMLFrameOwnerElement;
 class JSONArray;
+class JSONObject;
 class LayoutViewItem;
 class LayoutPart;
 class LocalFrame;
@@ -718,6 +720,9 @@ class CORE_EXPORT FrameView final
 
   // For PaintInvalidator temporarily. TODO(wangxianzhu): Move into PaintInvalidator.
   void invalidatePaintIfNeeded(const PaintInvalidationState&);
+
+  // Only for SPv2.
+  std::unique_ptr<JSONObject> compositedLayersAsJSON(LayerTreeFlags);
 
  protected:
   // Scroll the content via the compositor.

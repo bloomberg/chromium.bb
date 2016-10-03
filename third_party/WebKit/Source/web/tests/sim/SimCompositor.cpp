@@ -20,10 +20,10 @@
 namespace blink {
 
 static void paintLayers(GraphicsLayer& layer, SimDisplayItemList& displayList) {
-  if (layer.drawsContent() && layer.hasTrackedPaintInvalidations()) {
+  if (layer.drawsContent() && layer.hasTrackedRasterInvalidations()) {
     ContentLayerDelegate* delegate = layer.contentLayerDelegateForTesting();
     delegate->paintContents(&displayList);
-    layer.resetTrackedPaintInvalidations();
+    layer.resetTrackedRasterInvalidations();
   }
 
   if (GraphicsLayer* maskLayer = layer.maskLayer())

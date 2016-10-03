@@ -81,7 +81,7 @@ class PLATFORM_EXPORT GraphicsLayerClient {
                              GraphicsLayerPaintingPhase,
                              const IntRect& interestRect) const = 0;
 
-  virtual bool isTrackingPaintInvalidations() const { return false; }
+  virtual bool isTrackingRasterInvalidations() const { return false; }
 
   virtual String debugName(const GraphicsLayer*) const = 0;
 

@@ -1,0 +1,29 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='target'",
+          "rect": [20, 20, 100, 100],
+          "reason": "bounds change"
+        },
+        {
+          "object": "",
+          "rect": [0, 0, 100, 100],
+          "reason": "full"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='target'",
+      "reason": "bounds change"
+    }
+  ]
+}
+

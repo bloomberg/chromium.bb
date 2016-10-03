@@ -85,7 +85,7 @@ TEST_F(ScrollableAreaTest, ScrollbarGraphicsLayerInvalidation) {
   MockScrollableArea* scrollableArea =
       MockScrollableArea::create(IntPoint(0, 100));
   FakeGraphicsLayerClient graphicsLayerClient;
-  graphicsLayerClient.setIsTrackingPaintInvalidations(true);
+  graphicsLayerClient.setIsTrackingRasterInvalidations(true);
   FakeGraphicsLayer graphicsLayer(&graphicsLayerClient);
   graphicsLayer.setDrawsContent(true);
   graphicsLayer.setSize(FloatSize(111, 222));
@@ -95,9 +95,9 @@ TEST_F(ScrollableAreaTest, ScrollbarGraphicsLayerInvalidation) {
 
   Scrollbar* scrollbar = Scrollbar::create(scrollableArea, HorizontalScrollbar,
                                            RegularScrollbar, nullptr);
-  graphicsLayer.resetTrackedPaintInvalidations();
+  graphicsLayer.resetTrackedRasterInvalidations();
   scrollbar->setNeedsPaintInvalidation(NoPart);
-  EXPECT_TRUE(graphicsLayer.hasTrackedPaintInvalidations());
+  EXPECT_TRUE(graphicsLayer.hasTrackedRasterInvalidations());
 
   // Forced GC in order to finalize objects depending on the mock object.
   ThreadState::current()->collectAllGarbage();
@@ -163,7 +163,7 @@ TEST_F(ScrollableAreaTest, InvalidatesCompositedScrollbarsIfPartsNeedRepaint) {
   // Composited scrollbars only need repainting when parts become invalid
   // (e.g. if the track changes appearance when the thumb reaches the end).
   FakeGraphicsLayerClient graphicsLayerClient;
-  graphicsLayerClient.setIsTrackingPaintInvalidations(true);
+  graphicsLayerClient.setIsTrackingRasterInvalidations(true);
   FakeGraphicsLayer layerForHorizontalScrollbar(&graphicsLayerClient);
   layerForHorizontalScrollbar.setDrawsContent(true);
   layerForHorizontalScrollbar.setSize(FloatSize(10, 10));
@@ -184,22 +184,22 @@ TEST_F(ScrollableAreaTest, InvalidatesCompositedScrollbarsIfPartsNeedRepaint) {
   EXPECT_CALL(theme, invalidateOnThumbPositionChange(_, _, _))
       .WillOnce(Return(BackButtonStartPart));
   scrollableArea->setScrollPosition(DoublePoint(50, 0), ProgrammaticScroll);
-  EXPECT_TRUE(layerForHorizontalScrollbar.hasTrackedPaintInvalidations());
-  EXPECT_FALSE(layerForVerticalScrollbar.hasTrackedPaintInvalidations());
+  EXPECT_TRUE(layerForHorizontalScrollbar.hasTrackedRasterInvalidations());
+  EXPECT_FALSE(layerForVerticalScrollbar.hasTrackedRasterInvalidations());
   EXPECT_TRUE(horizontalScrollbar->trackNeedsRepaint());
   EXPECT_FALSE(horizontalScrollbar->thumbNeedsRepaint());
-  layerForHorizontalScrollbar.resetTrackedPaintInvalidations();
+  layerForHorizontalScrollbar.resetTrackedRasterInvalidations();
   horizontalScrollbar->clearTrackNeedsRepaint();
 
   // Next, we'll scroll vertically, but invalidate the thumb.
   EXPECT_CALL(theme, invalidateOnThumbPositionChange(_, _, _))
       .WillOnce(Return(ThumbPart));
   scrollableArea->setScrollPosition(DoublePoint(50, 50), ProgrammaticScroll);
-  EXPECT_FALSE(layerForHorizontalScrollbar.hasTrackedPaintInvalidations());
-  EXPECT_TRUE(layerForVerticalScrollbar.hasTrackedPaintInvalidations());
+  EXPECT_FALSE(layerForHorizontalScrollbar.hasTrackedRasterInvalidations());
+  EXPECT_TRUE(layerForVerticalScrollbar.hasTrackedRasterInvalidations());
   EXPECT_FALSE(verticalScrollbar->trackNeedsRepaint());
   EXPECT_TRUE(verticalScrollbar->thumbNeedsRepaint());
-  layerForVerticalScrollbar.resetTrackedPaintInvalidations();
+  layerForVerticalScrollbar.resetTrackedRasterInvalidations();
   verticalScrollbar->clearThumbNeedsRepaint();
 
   // Next we'll scroll in both, but the thumb position moving requires no
@@ -210,8 +210,8 @@ TEST_F(ScrollableAreaTest, InvalidatesCompositedScrollbarsIfPartsNeedRepaint) {
       .Times(2)
       .WillRepeatedly(Return(NoPart));
   scrollableArea->setScrollPosition(DoublePoint(70, 70), ProgrammaticScroll);
-  EXPECT_TRUE(layerForHorizontalScrollbar.hasTrackedPaintInvalidations());
-  EXPECT_TRUE(layerForVerticalScrollbar.hasTrackedPaintInvalidations());
+  EXPECT_TRUE(layerForHorizontalScrollbar.hasTrackedRasterInvalidations());
+  EXPECT_TRUE(layerForVerticalScrollbar.hasTrackedRasterInvalidations());
   EXPECT_FALSE(horizontalScrollbar->trackNeedsRepaint());
   EXPECT_FALSE(horizontalScrollbar->thumbNeedsRepaint());
   EXPECT_FALSE(verticalScrollbar->trackNeedsRepaint());

@@ -418,7 +418,7 @@ void LinkHighlightImpl::updateGeometry() {
       m_contentLayer->layer()->invalidate();
 
       if (m_currentGraphicsLayer)
-        m_currentGraphicsLayer->trackPaintInvalidation(
+        m_currentGraphicsLayer->trackRasterInvalidation(
             LinkHighlightDisplayItemClientForTracking(),
             enclosingIntRect(
                 FloatRect(layer()->position().x, layer()->position().y,

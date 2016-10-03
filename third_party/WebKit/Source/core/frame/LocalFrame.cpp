@@ -803,22 +803,26 @@ String LocalFrame::layerTreeAsText(unsigned flags) const {
   if (contentLayoutItem().isNull())
     return String();
 
-  std::unique_ptr<JSONObject> layerTree =
-      contentLayoutItem().compositor()->layerTreeAsJSON(
-          static_cast<LayerTreeFlags>(flags));
+  std::unique_ptr<JSONObject> layers;
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    layers = view()->compositedLayersAsJSON(static_cast<LayerTreeFlags>(flags));
+  } else {
+    layers = contentLayoutItem().compositor()->layerTreeAsJSON(
+        static_cast<LayerTreeFlags>(flags));
+  }
 
   if (flags & LayerTreeIncludesPaintInvalidations) {
     std::unique_ptr<JSONArray> objectPaintInvalidations =
         m_view->trackedObjectPaintInvalidationsAsJSON();
     if (objectPaintInvalidations && objectPaintInvalidations->size()) {
-      if (!layerTree)
-        layerTree = JSONObject::create();
-      layerTree->setArray("objectPaintInvalidations",
-                          std::move(objectPaintInvalidations));
+      if (!layers)
+        layers = JSONObject::create();
+      layers->setArray("objectPaintInvalidations",
+                       std::move(objectPaintInvalidations));
     }
   }
 
-  return layerTree ? layerTree->toPrettyJSONString() : String();
+  return layers ? layers->toPrettyJSONString() : String();
 }
 
 bool LocalFrame::shouldThrottleRendering() const {

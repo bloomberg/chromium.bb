@@ -203,7 +203,7 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
                      GraphicsLayerPaintingPhase,
                      const IntRect& interestRect) const override;
 
-  bool isTrackingPaintInvalidations() const override;
+  bool isTrackingRasterInvalidations() const override;
 
 #if ENABLE(ASSERT)
   void verifyNotPainting() override;

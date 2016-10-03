@@ -42,6 +42,7 @@
 #include "platform/graphics/LinkHighlight.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/PaintController.h"
+#include "platform/graphics/paint/RasterInvalidationTracking.h"
 #include "platform/json/JSONValues.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/text/TextStream.h"
@@ -70,36 +71,11 @@
 
 namespace blink {
 
-struct PaintInvalidationInfo {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-  // This is for comparison only. Don't dereference because the client may have died.
-  const DisplayItemClient* client;
-  String clientDebugName;
-  IntRect rect;
-  PaintInvalidationReason reason;
-};
-
-struct UnderPaintInvalidation {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-  int x;
-  int y;
-  SkColor oldPixel;
-  SkColor newPixel;
-};
-
-struct PaintInvalidationTracking {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-  Vector<PaintInvalidationInfo> trackedPaintInvalidations;
-  sk_sp<SkPicture> lastPaintedPicture;
-  IntRect lastInterestRect;
-  Region paintInvalidationRegionSinceLastPaint;
-  Vector<UnderPaintInvalidation> underPaintInvalidations;
-};
-
-typedef HashMap<const GraphicsLayer*, PaintInvalidationTracking>
-    PaintInvalidationTrackingMap;
-static PaintInvalidationTrackingMap& paintInvalidationTrackingMap() {
-  DEFINE_STATIC_LOCAL(PaintInvalidationTrackingMap, map, ());
+template class RasterInvalidationTrackingMap<const GraphicsLayer>;
+static RasterInvalidationTrackingMap<const GraphicsLayer>&
+rasterInvalidationTrackingMap() {
+  DEFINE_STATIC_LOCAL(RasterInvalidationTrackingMap<const GraphicsLayer>, map,
+                      ());
   return map;
 }
 
@@ -123,8 +99,8 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
       m_hasScrollParent(false),
       m_hasClipParent(false),
       m_painted(false),
-      m_isTrackingPaintInvalidations(client &&
-                                     client->isTrackingPaintInvalidations()),
+      m_isTrackingRasterInvalidations(client &&
+                                      client->isTrackingRasterInvalidations()),
       m_paintingPhase(GraphicsLayerPaintAllWithOverflowClip),
       m_parent(0),
       m_maskLayer(0),
@@ -160,7 +136,7 @@ GraphicsLayer::~GraphicsLayer() {
   removeAllChildren();
   removeFromParent();
 
-  paintInvalidationTrackingMap().remove(this);
+  rasterInvalidationTrackingMap().remove(this);
   ASSERT(!m_parent);
 }
 
@@ -304,13 +280,11 @@ void GraphicsLayer::paint(const IntRect* interestRect,
     if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled()) {
       sk_sp<SkPicture> newPicture = capturePicture();
       checkPaintUnderInvalidations(*newPicture);
-      PaintInvalidationTracking& tracking =
-          paintInvalidationTrackingMap()
-              .add(this, PaintInvalidationTracking())
-              .storedValue->value;
+      RasterInvalidationTracking& tracking =
+          rasterInvalidationTrackingMap().add(this);
       tracking.lastPaintedPicture = std::move(newPicture);
       tracking.lastInterestRect = m_previousInterestRect;
-      tracking.paintInvalidationRegionSinceLastPaint = Region();
+      tracking.rasterInvalidationRegionSinceLastPaint = Region();
     }
   }
 }
@@ -508,73 +482,56 @@ WebLayer* GraphicsLayer::contentsLayerIfRegistered() {
   return m_contentsLayer;
 }
 
-void GraphicsLayer::setTracksPaintInvalidations(bool tracksPaintInvalidations) {
-  resetTrackedPaintInvalidations();
-  m_isTrackingPaintInvalidations = tracksPaintInvalidations;
+void GraphicsLayer::setTracksRasterInvalidations(
+    bool tracksRasterInvalidations) {
+  resetTrackedRasterInvalidations();
+  m_isTrackingRasterInvalidations = tracksRasterInvalidations;
 }
 
-void GraphicsLayer::resetTrackedPaintInvalidations() {
-  auto it = paintInvalidationTrackingMap().find(this);
-  if (it == paintInvalidationTrackingMap().end())
+void GraphicsLayer::resetTrackedRasterInvalidations() {
+  RasterInvalidationTracking* tracking =
+      rasterInvalidationTrackingMap().find(this);
+  if (!tracking)
     return;
 
   if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled())
-    it->value.trackedPaintInvalidations.clear();
+    tracking->trackedRasterInvalidations.clear();
   else
-    paintInvalidationTrackingMap().remove(it);
+    rasterInvalidationTrackingMap().remove(this);
 }
 
-bool GraphicsLayer::hasTrackedPaintInvalidations() const {
-  PaintInvalidationTrackingMap::iterator it =
-      paintInvalidationTrackingMap().find(this);
-  if (it != paintInvalidationTrackingMap().end())
-    return !it->value.trackedPaintInvalidations.isEmpty();
+bool GraphicsLayer::hasTrackedRasterInvalidations() const {
+  RasterInvalidationTracking* tracking =
+      rasterInvalidationTrackingMap().find(this);
+  if (tracking)
+    return !tracking->trackedRasterInvalidations.isEmpty();
   return false;
 }
 
-void GraphicsLayer::trackPaintInvalidation(const DisplayItemClient& client,
-                                           const IntRect& rect,
-                                           PaintInvalidationReason reason) {
-  if (!isTrackingOrCheckingPaintInvalidations() || rect.isEmpty())
+void GraphicsLayer::trackRasterInvalidation(const DisplayItemClient& client,
+                                            const IntRect& rect,
+                                            PaintInvalidationReason reason) {
+  if (!isTrackingOrCheckingRasterInvalidations() || rect.isEmpty())
     return;
 
-  PaintInvalidationTracking& tracking =
-      paintInvalidationTrackingMap()
-          .add(this, PaintInvalidationTracking())
-          .storedValue->value;
+  RasterInvalidationTracking& tracking =
+      rasterInvalidationTrackingMap().add(this);
 
-  if (m_isTrackingPaintInvalidations) {
-    PaintInvalidationInfo info = {&client, client.debugName(), rect, reason};
-    tracking.trackedPaintInvalidations.append(info);
+  if (m_isTrackingRasterInvalidations) {
+    RasterInvalidationInfo info;
+    info.client = &client;
+    info.clientDebugName = client.debugName();
+    info.rect = rect;
+    info.reason = reason;
+    tracking.trackedRasterInvalidations.append(info);
   }
 
   if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled()) {
     // TODO(crbug.com/496260): Some antialiasing effects overflows the paint invalidation rect.
     IntRect r = rect;
     r.inflate(1);
-    tracking.paintInvalidationRegionSinceLastPaint.unite(r);
+    tracking.rasterInvalidationRegionSinceLastPaint.unite(r);
   }
-}
-
-static bool comparePaintInvalidationInfo(const PaintInvalidationInfo& a,
-                                         const PaintInvalidationInfo& b) {
-  // Sort by rect first, bigger rects before smaller ones.
-  if (a.rect.width() != b.rect.width())
-    return a.rect.width() > b.rect.width();
-  if (a.rect.height() != b.rect.height())
-    return a.rect.height() > b.rect.height();
-  if (a.rect.x() != b.rect.x())
-    return a.rect.x() > b.rect.x();
-  if (a.rect.y() != b.rect.y())
-    return a.rect.y() > b.rect.y();
-
-  // Then compare clientDebugName, in alphabetic order.
-  int nameCompareResult =
-      codePointCompare(a.clientDebugName, b.clientDebugName);
-  if (nameCompareResult != 0)
-    return nameCompareResult < 0;
-
-  return a.reason < b.reason;
 }
 
 template <typename T>
@@ -590,16 +547,6 @@ static std::unique_ptr<JSONArray> sizeAsJSONArray(const T& size) {
   std::unique_ptr<JSONArray> array = JSONArray::create();
   array->pushDouble(size.width());
   array->pushDouble(size.height());
-  return array;
-}
-
-template <typename T>
-static std::unique_ptr<JSONArray> rectAsJSONArray(const T& rect) {
-  std::unique_ptr<JSONArray> array = JSONArray::create();
-  array->pushDouble(rect.x());
-  array->pushDouble(rect.y());
-  array->pushDouble(rect.width());
-  array->pushDouble(rect.height());
   return array;
 }
 
@@ -726,51 +673,8 @@ std::unique_ptr<JSONObject> GraphicsLayer::layerTreeAsJSONInternal(
   if (!m_transform.isIdentity())
     json->setArray("transform", transformAsJSONArray(m_transform));
 
-  PaintInvalidationTrackingMap::iterator it =
-      paintInvalidationTrackingMap().find(this);
-  if (it != paintInvalidationTrackingMap().end()) {
-    if (flags & LayerTreeIncludesPaintInvalidations) {
-      Vector<PaintInvalidationInfo>& infos =
-          it->value.trackedPaintInvalidations;
-      if (!infos.isEmpty()) {
-        std::sort(infos.begin(), infos.end(), &comparePaintInvalidationInfo);
-        std::unique_ptr<JSONArray> paintInvalidationsJSON = JSONArray::create();
-        for (auto& info : infos) {
-          std::unique_ptr<JSONObject> infoJSON = JSONObject::create();
-          infoJSON->setString("object", info.clientDebugName);
-          if (!info.rect.isEmpty())
-            infoJSON->setArray("rect", rectAsJSONArray(info.rect));
-          infoJSON->setString("reason",
-                              paintInvalidationReasonToString(info.reason));
-          paintInvalidationsJSON->pushObject(std::move(infoJSON));
-        }
-        json->setArray("paintInvalidations", std::move(paintInvalidationsJSON));
-      }
-
-      Vector<UnderPaintInvalidation>& underPaintInvalidations =
-          it->value.underPaintInvalidations;
-      if (!underPaintInvalidations.isEmpty()) {
-        std::unique_ptr<JSONArray> underPaintInvalidationsJSON =
-            JSONArray::create();
-        for (auto& underPaintInvalidation : underPaintInvalidations) {
-          std::unique_ptr<JSONObject> underPaintInvalidationJSON =
-              JSONObject::create();
-          underPaintInvalidationJSON->setDouble("x", underPaintInvalidation.x);
-          underPaintInvalidationJSON->setDouble("y", underPaintInvalidation.y);
-          underPaintInvalidationJSON->setString(
-              "oldPixel",
-              Color(underPaintInvalidation.oldPixel).nameForLayoutTreeAsText());
-          underPaintInvalidationJSON->setString(
-              "newPixel",
-              Color(underPaintInvalidation.newPixel).nameForLayoutTreeAsText());
-          underPaintInvalidationsJSON->pushObject(
-              std::move(underPaintInvalidationJSON));
-        }
-        json->setArray("underPaintInvalidations",
-                       std::move(underPaintInvalidationsJSON));
-      }
-    }
-  }
+  if (flags & LayerTreeIncludesPaintInvalidations)
+    rasterInvalidationTrackingMap().asJSON(this, json.get());
 
   if ((flags & LayerTreeIncludesPaintingPhases) && m_paintingPhase) {
     std::unique_ptr<JSONArray> paintingPhasesJSON = JSONArray::create();
@@ -1044,7 +948,7 @@ void GraphicsLayer::setIsRootForIsolatedGroup(bool isolated) {
 void GraphicsLayer::setContentsNeedsDisplay() {
   if (WebLayer* contentsLayer = contentsLayerIfRegistered()) {
     contentsLayer->invalidate();
-    trackPaintInvalidation(*this, m_contentsRect, PaintInvalidationFull);
+    trackRasterInvalidation(*this, m_contentsRect, PaintInvalidationFull);
   }
 }
 
@@ -1058,8 +962,8 @@ void GraphicsLayer::setNeedsDisplay() {
     m_linkHighlights[i]->invalidate();
   getPaintController().invalidateAll();
 
-  trackPaintInvalidation(*this, IntRect(IntPoint(), expandedIntSize(m_size)),
-                         PaintInvalidationFull);
+  trackRasterInvalidation(*this, IntRect(IntPoint(), expandedIntSize(m_size)),
+                          PaintInvalidationFull);
 }
 
 void GraphicsLayer::setNeedsDisplayInRect(
@@ -1075,7 +979,7 @@ void GraphicsLayer::setNeedsDisplayInRect(
   for (size_t i = 0; i < m_linkHighlights.size(); ++i)
     m_linkHighlights[i]->invalidate();
 
-  trackPaintInvalidation(client, rect, invalidationReason);
+  trackRasterInvalidation(client, rect, invalidationReason);
 }
 
 void GraphicsLayer::setContentsRect(const IntRect& rect) {
@@ -1250,14 +1154,15 @@ void GraphicsLayer::checkPaintUnderInvalidations(const SkPicture& newPicture) {
   if (!drawsContent())
     return;
 
-  auto it = paintInvalidationTrackingMap().find(this);
-  if (it == paintInvalidationTrackingMap().end())
-    return;
-  PaintInvalidationTracking& tracking = it->value;
-  if (!tracking.lastPaintedPicture)
+  RasterInvalidationTracking* tracking =
+      rasterInvalidationTrackingMap().find(this);
+  if (!tracking)
     return;
 
-  IntRect rect = intersection(tracking.lastInterestRect, interestRect());
+  if (!tracking->lastPaintedPicture)
+    return;
+
+  IntRect rect = intersection(tracking->lastInterestRect, interestRect());
   if (rect.isEmpty())
     return;
 
@@ -1268,7 +1173,7 @@ void GraphicsLayer::checkPaintUnderInvalidations(const SkPicture& newPicture) {
     SkCanvas canvas(oldBitmap);
     canvas.clear(SK_ColorTRANSPARENT);
     canvas.translate(-rect.x(), -rect.y());
-    canvas.drawPicture(tracking.lastPaintedPicture.get());
+    canvas.drawPicture(tracking->lastPaintedPicture.get());
   }
 
   SkBitmap newBitmap;
@@ -1292,12 +1197,12 @@ void GraphicsLayer::checkPaintUnderInvalidations(const SkPicture& newPicture) {
       SkColor oldPixel = oldBitmap.getColor(bitmapX, bitmapY);
       SkColor newPixel = newBitmap.getColor(bitmapX, bitmapY);
       if (pixelsDiffer(oldPixel, newPixel) &&
-          !tracking.paintInvalidationRegionSinceLastPaint.contains(
+          !tracking->rasterInvalidationRegionSinceLastPaint.contains(
               IntPoint(layerX, layerY))) {
         if (mismatchingPixels < maxMismatchesToReport) {
           UnderPaintInvalidation underPaintInvalidation = {layerX, layerY,
                                                            oldPixel, newPixel};
-          tracking.underPaintInvalidations.append(underPaintInvalidation);
+          tracking->underPaintInvalidations.append(underPaintInvalidation);
           LOG(ERROR) << debugName()
                      << " Uninvalidated old/new pixels mismatch at " << layerX
                      << "," << layerY << " old:" << std::hex << oldPixel

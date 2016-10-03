@@ -2965,9 +2965,9 @@ bool CompositedLayerMapping::isScrollableAreaLayer(
          graphicsLayer == layerForScrollCorner();
 }
 
-bool CompositedLayerMapping::isTrackingPaintInvalidations() const {
+bool CompositedLayerMapping::isTrackingRasterInvalidations() const {
   GraphicsLayerClient* client = compositor();
-  return client ? client->isTrackingPaintInvalidations() : false;
+  return client ? client->isTrackingRasterInvalidations() : false;
 }
 
 #if ENABLE(ASSERT)

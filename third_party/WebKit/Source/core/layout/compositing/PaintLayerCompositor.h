@@ -170,7 +170,7 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
     return m_layerForScrollCorner.get();
   }
 
-  void setTracksPaintInvalidations(bool);
+  void setTracksRasterInvalidations(bool);
 
   String debugName(const GraphicsLayer*) const override;
   DocumentLifecycle& lifecycle() const;
@@ -213,7 +213,7 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
                      GraphicsLayerPaintingPhase,
                      const IntRect& interestRect) const override;
 
-  bool isTrackingPaintInvalidations() const override;
+  bool isTrackingRasterInvalidations() const override;
 
   void updateWithoutAcceleratedCompositing(CompositingUpdateType);
   void updateIfNeeded();
@@ -264,7 +264,7 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
   // m_compositingDirty.
   bool m_rootShouldAlwaysCompositeDirty;
   bool m_needsUpdateFixedBackground;
-  bool m_isTrackingPaintInvalidations;  // Used for testing.
+  bool m_isTrackingRasterInvalidations;  // Used for testing.
   bool m_inOverlayFullscreenVideo;
   bool m_needsUpdateDescendantDependentFlags;
 

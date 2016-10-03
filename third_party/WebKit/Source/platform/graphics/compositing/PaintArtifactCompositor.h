@@ -7,6 +7,9 @@
 
 #include "base/memory/ref_counted.h"
 #include "platform/PlatformExport.h"
+#include "platform/RuntimeEnabledFeatures.h"
+#include "platform/graphics/GraphicsLayerClient.h"
+#include "platform/graphics/paint/PaintController.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/Vector.h"
@@ -23,6 +26,9 @@ class Vector2dF;
 
 namespace blink {
 
+class DisplayItemClient;
+class IntRect;
+class JSONObject;
 class PaintArtifact;
 class WebLayer;
 struct PaintChunk;
@@ -45,7 +51,9 @@ class PLATFORM_EXPORT PaintArtifactCompositor {
   }
 
   // Updates the layer tree to match the provided paint artifact.
-  void update(const PaintArtifact&);
+  void update(
+      const PaintArtifact&,
+      RasterInvalidationTrackingMap<const PaintChunk>* paintChunkInvalidations);
 
   // The root layer of the tree managed by this object.
   cc::Layer* rootLayer() const { return m_rootLayer.get(); }
@@ -66,6 +74,12 @@ class PLATFORM_EXPORT PaintArtifactCompositor {
     return m_extraDataForTesting.get();
   }
 
+  void setTracksRasterInvalidations(bool);
+  void resetTrackedRasterInvalidations();
+  bool hasTrackedRasterInvalidations() const;
+
+  std::unique_ptr<JSONObject> layersAsJSON(LayerTreeFlags) const;
+
  private:
   PaintArtifactCompositor();
 
@@ -80,12 +94,14 @@ class PLATFORM_EXPORT PaintArtifactCompositor {
       const PaintArtifact&,
       const PaintChunk&,
       gfx::Vector2dF& layerOffset,
-      Vector<std::unique_ptr<ContentLayerClientImpl>>& newContentLayerClients);
+      Vector<std::unique_ptr<ContentLayerClientImpl>>& newContentLayerClients,
+      RasterInvalidationTracking*);
 
   // Finds a client among the current vector of clients that matches the paint chunk's id,
   // or otherwise allocates a new one.
   std::unique_ptr<ContentLayerClientImpl> clientForPaintChunk(
-      const PaintChunk&);
+      const PaintChunk&,
+      const PaintArtifact&);
 
   scoped_refptr<cc::Layer> m_rootLayer;
   std::unique_ptr<WebLayer> m_webLayer;
@@ -94,6 +110,8 @@ class PLATFORM_EXPORT PaintArtifactCompositor {
   bool m_extraDataForTestingEnabled = false;
   std::unique_ptr<ExtraDataForTesting> m_extraDataForTesting;
   friend class StubChromeClientForSPv2;
+
+  bool m_isTrackingRasterInvalidations;
 };
 
 }  // namespace blink

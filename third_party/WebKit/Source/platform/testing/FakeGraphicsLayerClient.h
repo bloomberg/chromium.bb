@@ -18,8 +18,8 @@ class FakeGraphicsLayerClient : public GraphicsLayerClient {
     return IntRect();
   }
   String debugName(const GraphicsLayer*) const override { return String(); }
-  bool isTrackingPaintInvalidations() const override {
-    return m_isTrackingPaintInvalidations;
+  bool isTrackingRasterInvalidations() const override {
+    return m_isTrackingRasterInvalidations;
   }
   bool needsRepaint(const GraphicsLayer&) const override { return true; }
   void paintContents(const GraphicsLayer*,
@@ -27,12 +27,12 @@ class FakeGraphicsLayerClient : public GraphicsLayerClient {
                      GraphicsLayerPaintingPhase,
                      const IntRect&) const override {}
 
-  void setIsTrackingPaintInvalidations(bool isTrackingPaintInvalidations) {
-    m_isTrackingPaintInvalidations = isTrackingPaintInvalidations;
+  void setIsTrackingRasterInvalidations(bool isTrackingRasterInvalidations) {
+    m_isTrackingRasterInvalidations = isTrackingRasterInvalidations;
   }
 
  private:
-  bool m_isTrackingPaintInvalidations = false;
+  bool m_isTrackingRasterInvalidations = false;
 };
 
 }  // namespace blink

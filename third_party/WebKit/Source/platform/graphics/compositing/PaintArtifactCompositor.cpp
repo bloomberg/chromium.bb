@@ -24,6 +24,7 @@
 #include "platform/graphics/paint/ForeignLayerDisplayItem.h"
 #include "platform/graphics/paint/GeometryPropertyTreeState.h"
 #include "platform/graphics/paint/PaintArtifact.h"
+#include "platform/graphics/paint/RasterInvalidationTracking.h"
 #include "platform/graphics/paint/ScrollPaintPropertyNode.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
 #include "public/platform/Platform.h"
@@ -46,14 +47,31 @@
 
 namespace blink {
 
+template class RasterInvalidationTrackingMap<const cc::Layer>;
+static RasterInvalidationTrackingMap<const cc::Layer>&
+ccLayersRasterInvalidationTrackingMap() {
+  DEFINE_STATIC_LOCAL(RasterInvalidationTrackingMap<const cc::Layer>, map, ());
+  return map;
+}
+
+template <typename T>
+static std::unique_ptr<JSONArray> sizeAsJSONArray(const T& size) {
+  std::unique_ptr<JSONArray> array = JSONArray::create();
+  array->pushDouble(size.width());
+  array->pushDouble(size.height());
+  return array;
+}
+
 class PaintArtifactCompositor::ContentLayerClientImpl
     : public cc::ContentLayerClient {
   WTF_MAKE_NONCOPYABLE(ContentLayerClientImpl);
   USING_FAST_MALLOC(ContentLayerClientImpl);
 
  public:
-  ContentLayerClientImpl(Optional<DisplayItem::Id> paintChunkId)
-      : m_id(paintChunkId), m_ccPictureLayer(cc::PictureLayer::Create(this)) {}
+  ContentLayerClientImpl(DisplayItem::Id paintChunkId)
+      : m_id(paintChunkId),
+        m_debugName(paintChunkId.client.debugName()),
+        m_ccPictureLayer(cc::PictureLayer::Create(this)) {}
 
   void SetDisplayList(scoped_refptr<cc::DisplayItemList> ccDisplayItemList) {
     m_ccDisplayItemList = std::move(ccDisplayItemList);
@@ -72,14 +90,70 @@ class PaintArtifactCompositor::ContentLayerClientImpl
     return 0;
   }
 
+  void resetTrackedRasterInvalidations() {
+    RasterInvalidationTracking* tracking =
+        ccLayersRasterInvalidationTrackingMap().find(m_ccPictureLayer.get());
+    if (!tracking)
+      return;
+
+    if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled())
+      tracking->trackedRasterInvalidations.clear();
+    else
+      ccLayersRasterInvalidationTrackingMap().remove(m_ccPictureLayer.get());
+  }
+
+  bool hasTrackedRasterInvalidations() const {
+    RasterInvalidationTracking* tracking =
+        ccLayersRasterInvalidationTrackingMap().find(m_ccPictureLayer.get());
+    if (tracking)
+      return !tracking->trackedRasterInvalidations.isEmpty();
+    return false;
+  }
+
+  void setNeedsDisplayRect(const gfx::Rect& rect,
+                           RasterInvalidationInfo* rasterInvalidationInfo) {
+    m_ccPictureLayer->SetNeedsDisplayRect(rect);
+
+    if (!rasterInvalidationInfo || rect.IsEmpty())
+      return;
+
+    RasterInvalidationTracking& tracking =
+        ccLayersRasterInvalidationTrackingMap().add(m_ccPictureLayer.get());
+
+    tracking.trackedRasterInvalidations.append(*rasterInvalidationInfo);
+
+    if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled()) {
+      // TODO(crbug.com/496260): Some antialiasing effects overflows the paint invalidation rect.
+      IntRect r = rasterInvalidationInfo->rect;
+      r.inflate(1);
+      tracking.rasterInvalidationRegionSinceLastPaint.unite(r);
+    }
+  }
+
+  std::unique_ptr<JSONObject> layerAsJSON() {
+    std::unique_ptr<JSONObject> json = JSONObject::create();
+    json->setString("name", m_debugName);
+    IntSize bounds(m_ccPictureLayer->bounds().width(),
+                   m_ccPictureLayer->bounds().height());
+    if (!bounds.isEmpty())
+      json->setArray("bounds", sizeAsJSONArray(bounds));
+    json->setBoolean("contentsOpaque", m_ccPictureLayer->contents_opaque());
+    json->setBoolean("drawsContent", m_ccPictureLayer->DrawsContent());
+
+    ccLayersRasterInvalidationTrackingMap().asJSON(m_ccPictureLayer.get(),
+                                                   json.get());
+    return json;
+  }
+
   scoped_refptr<cc::PictureLayer> ccPictureLayer() { return m_ccPictureLayer; }
 
   bool matches(const PaintChunk& paintChunk) {
-    return m_id && paintChunk.id && *m_id == *paintChunk.id;
+    return paintChunk.id && m_id == *paintChunk.id;
   }
 
  private:
-  Optional<PaintChunk::Id> m_id;
+  PaintChunk::Id m_id;
+  String m_debugName;
   scoped_refptr<cc::PictureLayer> m_ccPictureLayer;
   scoped_refptr<cc::DisplayItemList> m_ccDisplayItemList;
   gfx::Rect m_paintableRegion;
@@ -92,9 +166,40 @@ PaintArtifactCompositor::PaintArtifactCompositor() {
   m_webLayer = wrapUnique(
       Platform::current()->compositorSupport()->createLayerFromCCLayer(
           m_rootLayer.get()));
+  m_isTrackingRasterInvalidations = false;
 }
 
 PaintArtifactCompositor::~PaintArtifactCompositor() {}
+
+void PaintArtifactCompositor::setTracksRasterInvalidations(
+    bool tracksPaintInvalidations) {
+  resetTrackedRasterInvalidations();
+  m_isTrackingRasterInvalidations = tracksPaintInvalidations;
+}
+
+void PaintArtifactCompositor::resetTrackedRasterInvalidations() {
+  for (auto& client : m_contentLayerClients)
+    client->resetTrackedRasterInvalidations();
+}
+
+bool PaintArtifactCompositor::hasTrackedRasterInvalidations() const {
+  for (auto& client : m_contentLayerClients) {
+    if (client->hasTrackedRasterInvalidations())
+      return true;
+  }
+  return false;
+}
+
+std::unique_ptr<JSONObject> PaintArtifactCompositor::layersAsJSON(
+    LayerTreeFlags flags) const {
+  std::unique_ptr<JSONArray> layersJSON = JSONArray::create();
+  for (const auto& client : m_contentLayerClients) {
+    layersJSON->pushObject(client->layerAsJSON());
+  }
+  std::unique_ptr<JSONObject> json = JSONObject::create();
+  json->setArray("layers", std::move(layersJSON));
+  return json;
+}
 
 namespace {
 
@@ -213,21 +318,28 @@ void setMinimalPropertyTrees(cc::PropertyTrees* propertyTrees, int ownerId) {
 }  // namespace
 
 std::unique_ptr<PaintArtifactCompositor::ContentLayerClientImpl>
-PaintArtifactCompositor::clientForPaintChunk(const PaintChunk& paintChunk) {
+PaintArtifactCompositor::clientForPaintChunk(
+    const PaintChunk& paintChunk,
+    const PaintArtifact& paintArtifact) {
   // TODO(chrishtr): for now, just using a linear walk. In the future we can optimize this by using the same techniques used in
   // PaintController for display lists.
   for (auto& client : m_contentLayerClients) {
     if (client && client->matches(paintChunk))
       return std::move(client);
   }
-  return wrapUnique(new ContentLayerClientImpl(paintChunk.id));
+
+  return wrapUnique(new ContentLayerClientImpl(
+      paintChunk.id
+          ? *paintChunk.id
+          : paintArtifact.getDisplayItemList()[paintChunk.beginIndex].getId()));
 }
 
 scoped_refptr<cc::Layer> PaintArtifactCompositor::layerForPaintChunk(
     const PaintArtifact& paintArtifact,
     const PaintChunk& paintChunk,
     gfx::Vector2dF& layerOffset,
-    Vector<std::unique_ptr<ContentLayerClientImpl>>& newContentLayerClients) {
+    Vector<std::unique_ptr<ContentLayerClientImpl>>& newContentLayerClients,
+    RasterInvalidationTracking* tracking) {
   DCHECK(paintChunk.size());
 
   // If the paint chunk is a foreign layer, just return that layer.
@@ -237,7 +349,7 @@ scoped_refptr<cc::Layer> PaintArtifactCompositor::layerForPaintChunk(
 
   // The common case: create or reuse a PictureLayer for painted content.
   std::unique_ptr<ContentLayerClientImpl> contentLayerClient =
-      clientForPaintChunk(paintChunk);
+      clientForPaintChunk(paintChunk, paintArtifact);
 
   gfx::Rect combinedBounds = enclosingIntRect(paintChunk.bounds);
   scoped_refptr<cc::DisplayItemList> displayList =
@@ -252,13 +364,19 @@ scoped_refptr<cc::Layer> PaintArtifactCompositor::layerForPaintChunk(
   ccPictureLayer->SetIsDrawable(true);
   if (paintChunk.knownToBeOpaque)
     ccPictureLayer->SetContentsOpaque(true);
-  for (auto& invalidation : paintChunk.rasterInvalidationRects) {
-    IntRect rect(enclosingIntRect(invalidation));
+  DCHECK(!tracking ||
+         tracking->trackedRasterInvalidations.size() ==
+             paintChunk.rasterInvalidationRects.size());
+  for (unsigned index = 0; index < paintChunk.rasterInvalidationRects.size();
+       ++index) {
+    IntRect rect(enclosingIntRect(paintChunk.rasterInvalidationRects[index]));
     gfx::Rect ccInvalidationRect(rect.x(), rect.y(), std::max(0, rect.width()),
                                  std::max(0, rect.height()));
-    // Raster paintChunk.rasterInvalidationRects is in the space of the containing transform node, so need to subtract off the layer offset.
     ccInvalidationRect.Offset(-combinedBounds.OffsetFromOrigin());
-    ccPictureLayer->SetNeedsDisplayRect(ccInvalidationRect);
+    // Raster paintChunk.rasterInvalidationRects is in the space of the containing transform node, so need to subtract off the layer offset.
+    contentLayerClient->setNeedsDisplayRect(
+        ccInvalidationRect,
+        tracking ? &tracking->trackedRasterInvalidations[index] : nullptr);
   }
 
   newContentLayerClients.append(std::move(contentLayerClient));
@@ -568,7 +686,9 @@ void PropertyTreeManager::buildEffectNodesRecursively(
 
 }  // namespace
 
-void PaintArtifactCompositor::update(const PaintArtifact& paintArtifact) {
+void PaintArtifactCompositor::update(
+    const PaintArtifact& paintArtifact,
+    RasterInvalidationTrackingMap<const PaintChunk>* rasterChunkInvalidations) {
   DCHECK(m_rootLayer);
 
   cc::LayerTree* layerTree = m_rootLayer->GetLayerTree();
@@ -599,7 +719,9 @@ void PaintArtifactCompositor::update(const PaintArtifact& paintArtifact) {
   for (const PaintChunk& paintChunk : paintArtifact.paintChunks()) {
     gfx::Vector2dF layerOffset;
     scoped_refptr<cc::Layer> layer = layerForPaintChunk(
-        paintArtifact, paintChunk, layerOffset, newContentLayerClients);
+        paintArtifact, paintChunk, layerOffset, newContentLayerClients,
+        rasterChunkInvalidations ? rasterChunkInvalidations->find(&paintChunk)
+                                 : nullptr);
 
     int transformId = propertyTreeManager.compositorIdForTransformNode(
         paintChunk.properties.transform.get());

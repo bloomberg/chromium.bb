@@ -35,6 +35,9 @@ crbug.com/569901 crbug.com/24182 [ Debug ] jquery/manipulation.html [ Timeout Pa
 crbug.com/537409 virtual/spv2/ [ Skip ]
 crbug.com/563667 virtual/spv2/fast/block/basic/001.html [ Pass ]
 crbug.com/580355 virtual/spv2/fast/block/basic/018.html [ Pass ]
+# Begin whitlelisted paint invalidation tests
+crbug.com/647831 virtual/spv2/paint/invalidation/margin.html [ Pass ]
+# End whitlelisted paint invalidation tests
 crbug.com/596780 virtual/spv2/compositing/framesets/composited-frame-alignment.html [ Pass ]
 crbug.com/596780 virtual/spv2/compositing/geometry/outline-change.html [ Pass ]
 crbug.com/600618 virtual/spv2/svg/custom/object-current-scale.html [ Pass ]
