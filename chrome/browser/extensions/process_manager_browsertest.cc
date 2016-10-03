@@ -19,6 +19,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -673,6 +674,48 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
 
   content::RenderFrameHost* main_frame = tab->GetMainFrame();
   content::RenderFrameHost* extension_frame = ChildFrameAt(main_frame, 0);
+
+  // Validate that permissions have been granted for the extension scheme
+  // to the process of the extension iframe.
+  content::ChildProcessSecurityPolicy* policy =
+      content::ChildProcessSecurityPolicy::GetInstance();
+  EXPECT_TRUE(policy->CanRequestURL(
+      extension_frame->GetProcess()->GetID(),
+      GURL("blob:chrome-extension://some-extension-id/some-guid")));
+  EXPECT_TRUE(policy->CanRequestURL(
+      main_frame->GetProcess()->GetID(),
+      GURL("blob:chrome-extension://some-extension-id/some-guid")));
+  EXPECT_TRUE(policy->CanRequestURL(
+      extension_frame->GetProcess()->GetID(),
+      GURL("filesystem:chrome-extension://some-extension-id/some-path")));
+  EXPECT_TRUE(policy->CanRequestURL(
+      main_frame->GetProcess()->GetID(),
+      GURL("filesystem:chrome-extension://some-extension-id/some-path")));
+  EXPECT_TRUE(policy->CanRequestURL(
+      extension_frame->GetProcess()->GetID(),
+      GURL("chrome-extension://some-extension-id/resource.html")));
+  EXPECT_TRUE(policy->CanRequestURL(
+      main_frame->GetProcess()->GetID(),
+      GURL("chrome-extension://some-extension-id/resource.html")));
+
+  EXPECT_TRUE(policy->CanCommitURL(
+      extension_frame->GetProcess()->GetID(),
+      GURL("blob:chrome-extension://some-extension-id/some-guid")));
+  EXPECT_FALSE(policy->CanCommitURL(
+      main_frame->GetProcess()->GetID(),
+      GURL("blob:chrome-extension://some-extension-id/some-guid")));
+  EXPECT_TRUE(policy->CanCommitURL(
+      extension_frame->GetProcess()->GetID(),
+      GURL("chrome-extension://some-extension-id/resource.html")));
+  EXPECT_FALSE(policy->CanCommitURL(
+      main_frame->GetProcess()->GetID(),
+      GURL("chrome-extension://some-extension-id/resource.html")));
+  EXPECT_TRUE(policy->CanCommitURL(
+      extension_frame->GetProcess()->GetID(),
+      GURL("filesystem:chrome-extension://some-extension-id/some-path")));
+  EXPECT_FALSE(policy->CanCommitURL(
+      main_frame->GetProcess()->GetID(),
+      GURL("filesystem:chrome-extension://some-extension-id/some-path")));
 
   // Open a new about:blank popup from main frame.  This should stay in the web
   // process.

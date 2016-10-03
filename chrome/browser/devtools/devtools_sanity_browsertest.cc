@@ -965,6 +965,78 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest, DevToolsExtensionWithHttpIframe) {
   }
 }
 
+// Some web features, when used from an extension, are subject to browser-side
+// security policy enforcement. Make sure they work properly from inside a
+// devtools extension.
+IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
+                       DevToolsExtensionSecurityPolicyGrants) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  std::unique_ptr<extensions::TestExtensionDir> dir(
+      new extensions::TestExtensionDir());
+
+  extensions::DictionaryBuilder manifest;
+  dir->WriteManifest(extensions::DictionaryBuilder()
+                         .Set("name", "Devtools Panel")
+                         .Set("version", "1")
+                         .Set("manifest_version", 2)
+                         .Set("devtools_page", "devtools.html")
+                         .ToJSON());
+
+  dir->WriteFile(
+      FILE_PATH_LITERAL("devtools.html"),
+      "<html><head><script src='devtools.js'></script></head></html>");
+
+  dir->WriteFile(
+      FILE_PATH_LITERAL("devtools.js"),
+      "chrome.devtools.panels.create('the_panel_name',\n"
+      "    null,\n"
+      "    'panel.html',\n"
+      "    function(panel) {\n"
+      "      chrome.devtools.inspectedWindow.eval('console.log(\"PASS\")');\n"
+      "    }\n"
+      ");\n");
+
+  dir->WriteFile(FILE_PATH_LITERAL("panel.html"),
+                 "<html><body>A panel."
+                 "<script src='blob_xhr.js'></script>"
+                 "</body></html>");
+  // Creating blobs from chrome-extension:// origins is only permitted if the
+  // process has been granted permission to commit 'chrome-extension' schemes.
+  dir->WriteFile(
+      FILE_PATH_LITERAL("blob_xhr.js"),
+      "var blob_url = URL.createObjectURL(new Blob(['blob contents']));\n"
+      "var xhr = new XMLHttpRequest();\n"
+      "xhr.open('GET', blob_url, true);\n"
+      "xhr.onload = function (e) {\n"
+      "    domAutomationController.setAutomationId(0);\n"
+      "    domAutomationController.send(xhr.response);\n"
+      "};\n"
+      "xhr.send(null);\n");
+  // Install the extension.
+  const Extension* extension = LoadExtensionFromPath(dir->UnpackedPath());
+  ASSERT_TRUE(extension);
+
+  // Open a devtools window.
+  OpenDevToolsWindow(kDebuggerTestPage, false);
+
+  // Wait for the panel extension to finish loading -- it'll output 'PASS'
+  // when it's installed. waitForTestResultsInConsole waits until that 'PASS'.
+  RunTestFunction(window_, "waitForTestResultsInConsole");
+
+  // Now that we know the panel is loaded, switch to it. We'll wait until we
+  // see a 'DONE' message sent from popup_iframe.html, indicating that it
+  // loaded successfully.
+  content::DOMMessageQueue message_queue;
+  SwitchToExtensionPanel(window_, extension, "the_panel_name");
+  std::string message;
+  while (true) {
+    ASSERT_TRUE(message_queue.WaitForMessage(&message));
+    if (message == "\"blob contents\"")
+      break;
+  }
+}
+
 // Disabled on Windows due to flakiness. http://crbug.com/183649
 #if defined(OS_WIN)
 #define MAYBE_TestDevToolsExtensionMessaging DISABLED_TestDevToolsExtensionMessaging

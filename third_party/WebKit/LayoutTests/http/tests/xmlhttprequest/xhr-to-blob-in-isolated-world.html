@@ -8,9 +8,9 @@ if (!window.testRunner) {
     testRunner.dumpAsText();
     // Can't use chrome-extension:// since it's an unknown scheme and
     // will fail validation in content/ land; so pretend that
-    // gopher://adblskgasgf is a chrome extension origin.
-    testRunner.setIsolatedWorldSecurityOrigin(1, "gopher://adblskgasgf");
-    testRunner.evaluateScriptInIsolatedWorld(1, "var xhr = new XMLHttpRequest(); xhr.open('GET', 'blob:gopher://adblskgasgf/456789', false); xhr.send();");
+    // https://cloud-cuckoo-land.google:2112 is a chrome extension origin.
+    testRunner.setIsolatedWorldSecurityOrigin(1, "https://cloud-cuckoo-land.google:2112");
+    testRunner.evaluateScriptInIsolatedWorld(1, "var xhr = new XMLHttpRequest(); xhr.open('GET', 'blob:https://cloud-cuckoo-land.google:2112/456789', false); xhr.send();");
 }
 </script>
 </body>
