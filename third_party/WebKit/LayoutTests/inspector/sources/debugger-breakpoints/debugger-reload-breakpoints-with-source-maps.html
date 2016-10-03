@@ -41,16 +41,18 @@ var test = function()
 
         function waitForBreakpoints()
         {
-            var breakpointAddCounter = 4; // Before source map loaded and after.
+            var expectedBreakpointLocations = [[14, 0], [16, 4]];
             var jsBreakpoints = self.runtime.sharedInstance(WebInspector.JavaScriptBreakpointsSidebarPane);
-            jsBreakpoints.didReceiveBreakpointLineForTest = function(uiSourceCode)
+            jsBreakpoints.didReceiveBreakpointLineForTest = function(uiSourceCode, line, column)
             {
                 if (WebInspector.CompilerScriptMapping.StubProjectID === uiSourceCode.project().id())
                     return;
                 if (!uiSourceCode.url().endsWith("source1.js"))
                     return;
-                --breakpointAddCounter;
-                if (breakpointAddCounter)
+
+                expectedBreakpointLocations =
+                    expectedBreakpointLocations.filter((location) => (location[0] != line && location[1] != column));
+                if (expectedBreakpointLocations.length)
                     return;
                 breakpointSourcesReceived = true;
                 maybeCompleteTest();
