@@ -512,6 +512,8 @@ message ClientIncidentReport {
         WEAK_LEGACY_OBSOLETE = 2;
         CHANGED = 3;
         UNTRUSTED_UNKNOWN_VALUE = 4;
+        BYPASS_CLEARED = 5;
+        BYPASS_CHANGED = 6;
       }
 
       optional string path = 1;
