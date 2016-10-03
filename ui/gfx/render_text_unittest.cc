@@ -423,10 +423,6 @@ class RenderTextHarfBuzzTest : public RenderTextTest {
     return GetRenderTextHarfBuzz()->ShapeRunWithFont(text, font, params, run);
   }
 
-  base::i18n::BreakIterator* GetGraphemeIterator() {
-    return GetRenderTextHarfBuzz()->GetGraphemeIterator();
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderTextHarfBuzzTest);
 };
@@ -3218,10 +3214,9 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_SubglyphGraphemeCases) {
     ASSERT_EQ(1U, run_list->size());
     internal::TextRunHarfBuzz* run = run_list->runs()[0];
 
-    base::i18n::BreakIterator* iter = GetGraphemeIterator();
-    auto first_grapheme_bounds = run->GetGraphemeBounds(iter, 0);
-    EXPECT_EQ(first_grapheme_bounds, run->GetGraphemeBounds(iter, 1));
-    auto second_grapheme_bounds = run->GetGraphemeBounds(iter, 2);
+    auto first_grapheme_bounds = run->GetGraphemeBounds(render_text, 0);
+    EXPECT_EQ(first_grapheme_bounds, run->GetGraphemeBounds(render_text, 1));
+    auto second_grapheme_bounds = run->GetGraphemeBounds(render_text, 2);
     EXPECT_EQ(first_grapheme_bounds.end(), second_grapheme_bounds.start());
   }
 }
@@ -3262,10 +3257,8 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_SubglyphGraphemePartition) {
   run.positions.reset(new SkPoint[4]);
   run.width = 20;
 
-  const base::string16 kString = ASCIIToUTF16("abcd");
-  std::unique_ptr<base::i18n::BreakIterator> iter(new base::i18n::BreakIterator(
-      kString, base::i18n::BreakIterator::BREAK_CHARACTER));
-  ASSERT_TRUE(iter->Init());
+  RenderTextHarfBuzz* render_text = GetRenderTextHarfBuzz();
+  render_text->SetText(ASCIIToUTF16("abcd"));
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
     std::copy(cases[i].glyph_to_char, cases[i].glyph_to_char + 2,
@@ -3277,7 +3270,7 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_SubglyphGraphemePartition) {
     for (size_t j = 0; j < 4; ++j) {
       SCOPED_TRACE(base::StringPrintf("Case %" PRIuS ", char %" PRIuS, i, j));
       EXPECT_EQ(cases[i].bounds[j],
-                run.GetGraphemeBounds(iter.get(), j).Round());
+                run.GetGraphemeBounds(render_text, j).Round());
     }
   }
 }
@@ -3406,15 +3399,13 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_NonExistentFont) {
 // Ensure an empty run returns sane values to queries.
 TEST_P(RenderTextHarfBuzzTest, HarfBuzz_EmptyRun) {
   internal::TextRunHarfBuzz run((Font()));
-  const base::string16 kString = ASCIIToUTF16("abcdefgh");
-  std::unique_ptr<base::i18n::BreakIterator> iter(new base::i18n::BreakIterator(
-      kString, base::i18n::BreakIterator::BREAK_CHARACTER));
-  ASSERT_TRUE(iter->Init());
+  RenderTextHarfBuzz* render_text = GetRenderTextHarfBuzz();
+  render_text->SetText(ASCIIToUTF16("abcdefgh"));
 
   run.range = Range(3, 8);
   run.glyph_count = 0;
   EXPECT_EQ(Range(0, 0), run.CharRangeToGlyphRange(Range(4, 5)));
-  EXPECT_EQ(Range(0, 0), run.GetGraphemeBounds(iter.get(), 4).Round());
+  EXPECT_EQ(Range(0, 0), run.GetGraphemeBounds(render_text, 4).Round());
   Range chars;
   Range glyphs;
   run.GetClusterAt(4, &chars, &glyphs);

@@ -645,9 +645,8 @@ void TextRunHarfBuzz::GetClusterAt(size_t pos,
                    false, chars, glyphs);
 }
 
-RangeF TextRunHarfBuzz::GetGraphemeBounds(
-    base::i18n::BreakIterator* grapheme_iterator,
-    size_t text_index) {
+RangeF TextRunHarfBuzz::GetGraphemeBounds(RenderTextHarfBuzz* render_text,
+                                          size_t text_index) {
   DCHECK_LT(text_index, range.end());
   if (glyph_count == 0)
     return RangeF(preceding_run_widths, preceding_run_widths + width);
@@ -663,9 +662,13 @@ RangeF TextRunHarfBuzz::GetGraphemeBounds(
   // of glyphs that should be drawn together. A cluster can contain multiple
   // graphemes. In order to place the cursor at a grapheme boundary inside the
   // cluster, we simply divide the cluster width by the number of graphemes.
-  if (chars.length() > 1 && grapheme_iterator) {
+  // Note: The first call to GetGraphemeIterator() can be expensive, so avoid
+  // doing it unless it's actually needed (when length > 1).
+  if (chars.length() > 1 && render_text->GetGraphemeIterator()) {
     int before = 0;
     int total = 0;
+    base::i18n::BreakIterator* grapheme_iterator =
+        render_text->GetGraphemeIterator();
     for (size_t i = chars.start(); i < chars.end(); ++i) {
       if (grapheme_iterator->IsGraphemeBoundary(i)) {
         if (i < text_index)
@@ -869,8 +872,7 @@ Range RenderTextHarfBuzz::GetGlyphBounds(size_t index) {
     return Range(GetStringSize().width());
   const size_t layout_index = TextIndexToDisplayIndex(index);
   internal::TextRunHarfBuzz* run = run_list->runs()[run_index];
-  RangeF bounds =
-      run->GetGraphemeBounds(GetGraphemeIterator(), layout_index);
+  RangeF bounds = run->GetGraphemeBounds(this, layout_index);
   // If cursor is enabled, extend the last glyph up to the rightmost cursor
   // position since clients expect them to be contiguous.
   if (cursor_enabled() && run_index == run_list->size() - 1 &&
@@ -878,6 +880,17 @@ Range RenderTextHarfBuzz::GetGlyphBounds(size_t index) {
     bounds.set_end(std::ceil(bounds.end()));
   return run->is_rtl ? RangeF(bounds.end(), bounds.start()).Round()
                      : bounds.Round();
+}
+
+base::i18n::BreakIterator* RenderTextHarfBuzz::GetGraphemeIterator() {
+  if (update_grapheme_iterator_) {
+    update_grapheme_iterator_ = false;
+    grapheme_iterator_.reset(new base::i18n::BreakIterator(
+        GetDisplayText(), base::i18n::BreakIterator::BREAK_CHARACTER));
+    if (!grapheme_iterator_->Init())
+      grapheme_iterator_.reset();
+  }
+  return grapheme_iterator_.get();
 }
 
 int RenderTextHarfBuzz::GetDisplayTextBaseline() {
@@ -1019,11 +1032,11 @@ std::vector<Rect> RenderTextHarfBuzz::GetSubstringBounds(const Range& range) {
     const size_t left_index =
         run->is_rtl ? intersection.end() - 1 : intersection.start();
     const Range leftmost_character_x =
-        run->GetGraphemeBounds(GetGraphemeIterator(), left_index).Round();
+        run->GetGraphemeBounds(this, left_index).Round();
     const size_t right_index =
         run->is_rtl ? intersection.start() : intersection.end() - 1;
     const Range rightmost_character_x =
-        run->GetGraphemeBounds(GetGraphemeIterator(), right_index).Round();
+        run->GetGraphemeBounds(this, right_index).Round();
     Range range_x(leftmost_character_x.start(), rightmost_character_x.end());
     DCHECK(!range_x.is_reversed());
     if (range_x.is_empty())
@@ -1566,18 +1579,6 @@ void RenderTextHarfBuzz::EnsureLayoutRunList() {
     update_display_text_ = false;
     update_display_run_list_ = text_elided();
   }
-}
-
-base::i18n::BreakIterator* RenderTextHarfBuzz::GetGraphemeIterator() {
-  if (update_grapheme_iterator_) {
-    update_grapheme_iterator_ = false;
-    grapheme_iterator_.reset(new base::i18n::BreakIterator(
-        GetDisplayText(),
-        base::i18n::BreakIterator::BREAK_CHARACTER));
-    if (!grapheme_iterator_->Init())
-      grapheme_iterator_.reset();
-  }
-  return grapheme_iterator_.get();
 }
 
 internal::TextRunList* RenderTextHarfBuzz::GetRunList() {

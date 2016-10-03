@@ -27,6 +27,7 @@ namespace gfx {
 
 class Range;
 class RangeF;
+class RenderTextHarfBuzz;
 
 namespace internal {
 
@@ -52,8 +53,7 @@ struct GFX_EXPORT TextRunHarfBuzz {
   void GetClusterAt(size_t pos, Range* chars, Range* glyphs) const;
 
   // Returns the grapheme bounds at |text_index|. Handles multi-grapheme glyphs.
-  RangeF GetGraphemeBounds(base::i18n::BreakIterator* grapheme_iterator,
-                           size_t text_index);
+  RangeF GetGraphemeBounds(RenderTextHarfBuzz* render_text, size_t text_index);
 
   // Returns whether the given shaped run contains any missing glyphs.
   bool HasMissingGlyphs() const;
@@ -157,6 +157,9 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   std::vector<FontSpan> GetFontSpansForTesting() override;
   Range GetGlyphBounds(size_t index) override;
 
+  // ICU grapheme iterator for the layout text. Can be null in case of an error.
+  base::i18n::BreakIterator* GetGraphemeIterator();
+
  protected:
   // RenderText:
   int GetDisplayTextBaseline() override;
@@ -231,9 +234,6 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
 
   // Makes sure that text runs for layout text are shaped.
   void EnsureLayoutRunList();
-
-  // ICU grapheme iterator for the layout text. Can be NULL in case of an error.
-  base::i18n::BreakIterator* GetGraphemeIterator();
 
   // Returns the current run list, |display_run_list_| if the text is
   // elided, or |layout_run_list_| otherwise.
