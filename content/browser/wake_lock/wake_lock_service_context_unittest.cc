@@ -6,38 +6,38 @@
 
 #include <memory>
 
+#include "base/message_loop/message_loop.h"
 #include "base/process/kill.h"
-#include "content/browser/web_contents/web_contents_impl.h"
-#include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/test/test_renderer_host.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
 
-class RenderFrameHost;
+class WakeLockServiceContextTest : public testing::Test {
+ public:
+  WakeLockServiceContextTest()
+      : wake_lock_service_context_(
+            base::ThreadTaskRunnerHandle::Get(),
+            base::Bind(&WakeLockServiceContextTest::GetNativeView,
+                       base::Unretained(this))) {}
 
-class WakeLockServiceContextTest : public RenderViewHostTestHarness {
  protected:
-  void RequestWakeLock(RenderFrameHost* rfh) {
-    GetWakeLockServiceContext()->RequestWakeLock(rfh->GetProcess()->GetID(),
-                                                 rfh->GetRoutingID());
-  }
+  void RequestWakeLock() { GetWakeLockServiceContext()->RequestWakeLock(); }
 
-  void CancelWakeLock(RenderFrameHost* rfh) {
-    GetWakeLockServiceContext()->CancelWakeLock(rfh->GetProcess()->GetID(),
-                                                rfh->GetRoutingID());
-  }
+  void CancelWakeLock() { GetWakeLockServiceContext()->CancelWakeLock(); }
 
   WakeLockServiceContext* GetWakeLockServiceContext() {
-    WebContentsImpl* web_contents_impl =
-        static_cast<WebContentsImpl*>(web_contents());
-    return web_contents_impl->GetWakeLockServiceContext();
+    return &wake_lock_service_context_;
   }
 
   bool HasWakeLock() {
     return GetWakeLockServiceContext()->HasWakeLockForTests();
   }
+
+ private:
+  gfx::NativeView GetNativeView() { return nullptr; }
+
+  base::MessageLoop message_loop_;
+  WakeLockServiceContext wake_lock_service_context_;
 };
 
 TEST_F(WakeLockServiceContextTest, NoLockInitially) {
@@ -46,51 +46,17 @@ TEST_F(WakeLockServiceContextTest, NoLockInitially) {
 
 TEST_F(WakeLockServiceContextTest, LockUnlock) {
   ASSERT_TRUE(GetWakeLockServiceContext());
-  ASSERT_TRUE(web_contents());
-  ASSERT_TRUE(main_rfh());
 
-  // Request wake lock for main frame.
-  RequestWakeLock(main_rfh());
+  // Request wake lock.
+  RequestWakeLock();
 
   // Should set the blocker.
   EXPECT_TRUE(HasWakeLock());
 
-  // Remove wake lock request for main frame.
-  CancelWakeLock(main_rfh());
+  // Remove wake lock request.
+  CancelWakeLock();
 
   // Should remove the blocker.
-  EXPECT_FALSE(HasWakeLock());
-}
-
-TEST_F(WakeLockServiceContextTest, RenderFrameDeleted) {
-  ASSERT_TRUE(GetWakeLockServiceContext());
-  ASSERT_TRUE(web_contents());
-  ASSERT_TRUE(main_rfh());
-
-  // Request wake lock for main frame.
-  RequestWakeLock(main_rfh());
-
-  // Should set the blocker.
-  EXPECT_TRUE(HasWakeLock());
-
-  // Simulate render frame deletion.
-  GetWakeLockServiceContext()->RenderFrameDeleted(main_rfh());
-
-  // Should remove the blocker.
-  EXPECT_FALSE(HasWakeLock());
-}
-
-TEST_F(WakeLockServiceContextTest, NoLockForBogusFrameId) {
-  ASSERT_TRUE(GetWakeLockServiceContext());
-  ASSERT_TRUE(web_contents());
-
-  // Request wake lock for non-existent render frame id.
-  int non_existent_render_frame_id =
-      main_rfh()->GetProcess()->GetNextRoutingID();
-  GetWakeLockServiceContext()->RequestWakeLock(
-      main_rfh()->GetProcess()->GetID(), non_existent_render_frame_id);
-
-  // Should not set the blocker.
   EXPECT_FALSE(HasWakeLock());
 }
 

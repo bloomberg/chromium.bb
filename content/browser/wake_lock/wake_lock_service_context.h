@@ -9,16 +9,15 @@
 #include <set>
 #include <utility>
 
+#include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequenced_task_runner.h"
 #include "content/browser/wake_lock/wake_lock_service_impl.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-
-#if defined(OS_ANDROID)
-#include "ui/android/view_android.h"
-#endif  // OS_ANDROID
+#include "ui/gfx/native_widget_types.h"
 
 namespace device {
 class PowerSaveBlocker;
@@ -26,30 +25,22 @@ class PowerSaveBlocker;
 
 namespace content {
 
-class RenderFrameHost;
-class WebContents;
-
-class CONTENT_EXPORT WakeLockServiceContext : public WebContentsObserver {
+class CONTENT_EXPORT WakeLockServiceContext {
  public:
-  explicit WakeLockServiceContext(WebContents* web_contents);
-  ~WakeLockServiceContext() override;
+  WakeLockServiceContext(
+      scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
+      base::Callback<gfx::NativeView()> native_view_getter);
+  ~WakeLockServiceContext();
 
   // Creates a WakeLockServiceImpl that is strongly bound to |request|.
   void CreateService(
-      int render_process_id,
-      int render_frame_id,
       mojo::InterfaceRequest<blink::mojom::WakeLockService> request);
 
-  // WebContentsObserver implementation.
-  void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
+  // Requests wake lock.
+  void RequestWakeLock();
 
-  // Requests wake lock for RenderFrame identified by |render_process_id| and
-  // |render_frame_id|.
-  void RequestWakeLock(int render_process_id, int render_frame_id);
-
-  // Cancels wake lock request for RenderFrame identified by
-  // |render_process_id| and |render_frame_id|.
-  void CancelWakeLock(int render_process_id, int render_frame_id);
+  // Cancels pending wake lock request.
+  void CancelWakeLock();
 
   // Used by tests.
   bool HasWakeLockForTests() const;
@@ -59,12 +50,14 @@ class CONTENT_EXPORT WakeLockServiceContext : public WebContentsObserver {
   void RemoveWakeLock();
   void UpdateWakeLock();
 
-  // Set of (render_process_id, render_frame_id) pairs identifying all
-  // RenderFrames requesting wake lock.
-  std::set<std::pair<int, int>> frames_requesting_lock_;
+  scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
+
+  int num_lock_requests_;
 
   // The actual power save blocker for screen.
   std::unique_ptr<device::PowerSaveBlocker> wake_lock_;
+  base::Callback<gfx::NativeView()> native_view_getter_;
 
   base::WeakPtrFactory<WakeLockServiceContext> weak_factory_;
 

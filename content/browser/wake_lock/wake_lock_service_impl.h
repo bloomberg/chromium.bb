@@ -16,9 +16,7 @@ class WakeLockServiceContext;
 
 class WakeLockServiceImpl : public blink::mojom::WakeLockService {
  public:
-  WakeLockServiceImpl(base::WeakPtr<WakeLockServiceContext> context,
-                      int render_process_id,
-                      int render_frame_id);
+  explicit WakeLockServiceImpl(base::WeakPtr<WakeLockServiceContext> context);
   ~WakeLockServiceImpl() override;
 
   // WakeLockSevice implementation.
@@ -27,8 +25,7 @@ class WakeLockServiceImpl : public blink::mojom::WakeLockService {
 
  private:
   base::WeakPtr<WakeLockServiceContext> context_;
-  const int render_process_id_;
-  const int render_frame_id_;
+  bool wake_lock_request_outstanding_;
 
   DISALLOW_COPY_AND_ASSIGN(WakeLockServiceImpl);
 };

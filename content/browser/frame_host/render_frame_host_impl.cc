@@ -2133,8 +2133,7 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
     // factory callback.
     GetInterfaceRegistry()->AddInterface<blink::mojom::WakeLockService>(
         base::Bind(&WakeLockServiceContext::CreateService,
-                   base::Unretained(wake_lock_service_context),
-                   GetProcess()->GetID(), GetRoutingID()));
+                   base::Unretained(wake_lock_service_context)));
   }
 
   if (!permission_service_context_)

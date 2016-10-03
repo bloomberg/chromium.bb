@@ -7,53 +7,40 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
-#include "content/public/browser/web_contents.h"
 #include "device/power_save_blocker/power_save_blocker.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace content {
 
-WakeLockServiceContext::WakeLockServiceContext(WebContents* web_contents)
-    : WebContentsObserver(web_contents), weak_factory_(this) {}
+WakeLockServiceContext::WakeLockServiceContext(
+    scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
+    base::Callback<gfx::NativeView()> native_view_getter)
+    : main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      file_task_runner_(file_task_runner),
+      num_lock_requests_(0),
+      native_view_getter_(native_view_getter),
+      weak_factory_(this) {}
 
 WakeLockServiceContext::~WakeLockServiceContext() {}
 
 void WakeLockServiceContext::CreateService(
-    int render_process_id,
-    int render_frame_id,
     mojo::InterfaceRequest<blink::mojom::WakeLockService> request) {
   mojo::MakeStrongBinding(
-      base::MakeUnique<WakeLockServiceImpl>(weak_factory_.GetWeakPtr(),
-                                            render_process_id, render_frame_id),
+      base::MakeUnique<WakeLockServiceImpl>(weak_factory_.GetWeakPtr()),
       std::move(request));
 }
 
-void WakeLockServiceContext::RenderFrameDeleted(
-    RenderFrameHost* render_frame_host) {
-  CancelWakeLock(render_frame_host->GetProcess()->GetID(),
-                 render_frame_host->GetRoutingID());
-}
-
-void WakeLockServiceContext::RequestWakeLock(int render_process_id,
-                                             int render_frame_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!RenderFrameHost::FromID(render_process_id, render_frame_id))
-    return;
-
-  frames_requesting_lock_.insert(
-      std::pair<int, int>(render_process_id, render_frame_id));
+void WakeLockServiceContext::RequestWakeLock() {
+  DCHECK(main_task_runner_->RunsTasksOnCurrentThread());
+  num_lock_requests_++;
   UpdateWakeLock();
 }
 
-void WakeLockServiceContext::CancelWakeLock(int render_process_id,
-                                            int render_frame_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  frames_requesting_lock_.erase(
-      std::pair<int, int>(render_process_id, render_frame_id));
+void WakeLockServiceContext::CancelWakeLock() {
+  DCHECK(main_task_runner_->RunsTasksOnCurrentThread());
+  num_lock_requests_--;
   UpdateWakeLock();
 }
 
@@ -66,15 +53,12 @@ void WakeLockServiceContext::CreateWakeLock() {
   wake_lock_.reset(new device::PowerSaveBlocker(
       device::PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
       device::PowerSaveBlocker::kReasonOther, "Wake Lock API",
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE)));
+      main_task_runner_, file_task_runner_));
 
 #if defined(OS_ANDROID)
-  // On Android, additionaly associate the blocker with this WebContents.
-  DCHECK(web_contents());
-
-  if (web_contents()->GetNativeView()) {
-    wake_lock_.get()->InitDisplaySleepBlocker(web_contents()->GetNativeView());
+  gfx::NativeView native_view = native_view_getter_.Run();
+  if (native_view) {
+    wake_lock_.get()->InitDisplaySleepBlocker(native_view);
   }
 #endif
 }
@@ -85,7 +69,8 @@ void WakeLockServiceContext::RemoveWakeLock() {
 }
 
 void WakeLockServiceContext::UpdateWakeLock() {
-  if (!frames_requesting_lock_.empty()) {
+  DCHECK(num_lock_requests_ >= 0);
+  if (num_lock_requests_) {
     if (!wake_lock_)
       CreateWakeLock();
   } else {

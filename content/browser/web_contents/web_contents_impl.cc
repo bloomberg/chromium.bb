@@ -463,7 +463,9 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
   pepper_playback_observer_.reset(new PepperPlaybackObserver(this));
 #endif
   loader_io_thread_notifier_.reset(new LoaderIOThreadNotifier(this));
-  wake_lock_service_context_.reset(new WakeLockServiceContext(this));
+  wake_lock_service_context_.reset(new WakeLockServiceContext(
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE),
+      base::Bind(&WebContentsImpl::GetNativeView, base::Unretained(this))));
 }
 
 WebContentsImpl::~WebContentsImpl() {

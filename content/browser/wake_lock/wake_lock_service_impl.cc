@@ -11,23 +11,27 @@
 namespace content {
 
 WakeLockServiceImpl::WakeLockServiceImpl(
-    base::WeakPtr<WakeLockServiceContext> context,
-    int render_process_id,
-    int render_frame_id)
-    : context_(context),
-      render_process_id_(render_process_id),
-      render_frame_id_(render_frame_id) {}
+    base::WeakPtr<WakeLockServiceContext> context)
+    : context_(context), wake_lock_request_outstanding_(false) {}
 
-WakeLockServiceImpl::~WakeLockServiceImpl() {}
+WakeLockServiceImpl::~WakeLockServiceImpl() {
+  CancelWakeLock();
+}
 
 void WakeLockServiceImpl::RequestWakeLock() {
-  if (context_)
-    context_->RequestWakeLock(render_process_id_, render_frame_id_);
+  if (!context_ || wake_lock_request_outstanding_)
+    return;
+
+  wake_lock_request_outstanding_ = true;
+  context_->RequestWakeLock();
 }
 
 void WakeLockServiceImpl::CancelWakeLock() {
-  if (context_)
-    context_->CancelWakeLock(render_process_id_, render_frame_id_);
+  if (!context_ || !wake_lock_request_outstanding_)
+    return;
+
+  wake_lock_request_outstanding_ = false;
+  context_->CancelWakeLock();
 }
 
 }  // namespace content
