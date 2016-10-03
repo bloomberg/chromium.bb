@@ -239,8 +239,12 @@ void DownloadController::OnDownloadStarted(
   // Register for updates to the DownloadItem.
   download_item->AddObserver(this);
 
-  ChromeDownloadDelegate::FromWebContents(web_contents)->OnDownloadStarted(
-      download_item->GetTargetFilePath().BaseName().value());
+  ChromeDownloadDelegate* delegate =
+      ChromeDownloadDelegate::FromWebContents(web_contents);
+  if (delegate) {
+    delegate->OnDownloadStarted(
+        download_item->GetTargetFilePath().BaseName().value());
+  }
 }
 
 void DownloadController::OnDownloadUpdated(DownloadItem* item) {
