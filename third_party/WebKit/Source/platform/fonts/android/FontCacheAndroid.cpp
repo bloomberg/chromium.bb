@@ -65,12 +65,19 @@ AtomicString FontCache::getGenericFamilyNameForScript(
   if (familyName == FontFamilyNames::webkit_monospace)
     return familyName;
 
+  // The CJK hack below should be removed, at latest when we have
+  // serif and sans-serif versions of CJK fonts. Until then, limit it
+  // to only when the content locale is available. crbug.com/652146
+  const LayoutLocale* contentLocale = fontDescription.locale();
+  if (!contentLocale)
+    return familyName;
+
   // This is a hack to use the preferred font for CJK scripts.
   // TODO(kojii): This logic disregards either generic family name
   // or locale. We need an API that honors both to find appropriate
   // fonts. crbug.com/642340
   UChar32 examplerChar;
-  switch (fontDescription.script()) {
+  switch (contentLocale->script()) {
     case USCRIPT_SIMPLIFIED_HAN:
     case USCRIPT_TRADITIONAL_HAN:
     case USCRIPT_KATAKANA_OR_HIRAGANA:
