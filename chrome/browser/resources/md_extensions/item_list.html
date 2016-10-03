@@ -8,6 +8,20 @@
 
 <dom-module id="extensions-item-list">
   <template>
+    <style>
+      :host {
+        @apply(--layout-vertical);
+      }
+
+      iron-list {
+        @apply(--layout-flex);
+        margin-top: 18px;
+      }
+
+      .wrapper {
+        padding: 6px;
+      }
+    </style>
     <iron-list id="list" items="[[computeShownItems_(items.*, filter)]]"
         as="item" grid>
       <template>
@@ -19,6 +33,5 @@
       </template>
     </iron-list>
   </template>
-  <link rel="import" type="css" href="chrome://extensions/item_list.css">
   <script src="chrome://extensions/item_list.js"></script>
 </dom-module>

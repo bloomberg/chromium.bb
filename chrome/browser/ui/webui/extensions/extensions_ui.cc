@@ -225,14 +225,11 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
                           IDR_MD_EXTENSIONS_KEYBOARD_SHORTCUTS_HTML);
   source->AddResourcePath("keyboard_shortcuts.js",
                           IDR_MD_EXTENSIONS_KEYBOARD_SHORTCUTS_JS);
-  source->AddResourcePath("manager.css", IDR_MD_EXTENSIONS_MANAGER_CSS);
   source->AddResourcePath("manager.html", IDR_MD_EXTENSIONS_MANAGER_HTML);
   source->AddResourcePath("manager.js", IDR_MD_EXTENSIONS_MANAGER_JS);
   source->AddResourcePath("icons.html", IDR_MD_EXTENSIONS_ICONS_HTML);
-  source->AddResourcePath("item.css", IDR_MD_EXTENSIONS_ITEM_CSS);
   source->AddResourcePath("item.html", IDR_MD_EXTENSIONS_ITEM_HTML);
   source->AddResourcePath("item.js", IDR_MD_EXTENSIONS_ITEM_JS);
-  source->AddResourcePath("item_list.css", IDR_MD_EXTENSIONS_ITEM_LIST_CSS);
   source->AddResourcePath("item_list.html", IDR_MD_EXTENSIONS_ITEM_LIST_HTML);
   source->AddResourcePath("item_list.js", IDR_MD_EXTENSIONS_ITEM_LIST_JS);
   source->AddResourcePath("item_source.html",
@@ -254,7 +251,6 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
   source->AddResourcePath("shortcut_util.html",
                           IDR_EXTENSIONS_SHORTCUT_UTIL_HTML);
   source->AddResourcePath("shortcut_util.js", IDR_EXTENSIONS_SHORTCUT_UTIL_JS);
-  source->AddResourcePath("sidebar.css", IDR_MD_EXTENSIONS_SIDEBAR_CSS);
   source->AddResourcePath("sidebar.html", IDR_MD_EXTENSIONS_SIDEBAR_HTML);
   source->AddResourcePath("sidebar.js", IDR_MD_EXTENSIONS_SIDEBAR_JS);
   source->AddResourcePath("strings.html", IDR_MD_EXTENSIONS_STRINGS_HTML);

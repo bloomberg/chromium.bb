@@ -9,6 +9,62 @@
 
 <dom-module id="extensions-sidebar">
   <template>
+    <style>
+      :host {
+        margin-top: 30px;
+        white-space: nowrap;
+      }
+
+      #section-menu,
+      .section-item {
+        -webkit-margin-start: 20px;
+      }
+
+      #section-menu {
+        --paper-menu-background-color: transparent;
+        --paper-menu-selected-item: {
+          background-color: transparent;
+          color: rgb(66, 133, 244);
+          font-weight: normal;
+        }
+
+        padding: 0;
+      }
+
+      #more-extensions {
+        display: flex;
+        text-decoration: none;
+      }
+
+      paper-item {
+        color: #5A5A5A;
+        cursor: pointer;
+        font-size: 88%;
+        padding: 0;
+      }
+
+      .section-menu-item iron-icon,
+      .section-item iron-icon {
+        -webkit-margin-end: 15px;
+      }
+
+      #developer-mode-checkbox {
+        --paper-checkbox-checked-color: rgb(66, 133, 244);
+        --primary-text-color: #5A5A5A;
+      }
+
+      #developer-mode {
+        display: flex;
+      }
+
+      #developer-mode span {
+        flex-grow: 1;
+      }
+
+      #devtools-controls {
+        border-top: 1px solid grey;
+      }
+    </style>
     <paper-menu id="section-menu" selected="0">
       <paper-item class="section-menu-item" id="sections-extensions"
           on-tap="onExtensionsTap_">
@@ -56,6 +112,5 @@
       </template>
     </div>
   </template>
-  <link rel="import" type="css" href="chrome://extensions/sidebar.css">
   <script src="chrome://extensions/sidebar.js"></script>
 </dom-module>
