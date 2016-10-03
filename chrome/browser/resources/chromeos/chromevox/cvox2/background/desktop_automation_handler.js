@@ -331,10 +331,11 @@ DesktopAutomationHandler.prototype = {
         ChromeVoxState.instance.mode === ChromeVoxMode.CLASSIC)
       return;
 
+    var topRoot = AutomationUtil.getTopLevelRoot(evt.target);
     if (!evt.target.state.focused ||
-        (evt.target.root.role != RoleType.desktop &&
-            evt.target.root.parent &&
-            !evt.target.root.parent.state.focused))
+        (topRoot &&
+            topRoot.parent &&
+            !topRoot.parent.state.focused))
       return;
 
     if (!ChromeVoxState.instance.currentRange) {
