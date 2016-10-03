@@ -224,7 +224,8 @@ VisibleSelection createVisibleSelection(const Position& base,
                                         bool isDirectional) {
   DCHECK(!needsLayoutTreeUpdate(base));
   DCHECK(!needsLayoutTreeUpdate(extent));
-  DCHECK(base.isNotNull() || extent.isNull());
+  // TODO(xiaochengh): We should check |base.isNotNull() || extent.isNull()|
+  // after all call sites have ensured that.
   return VisibleSelection::create(base, extent, affinity, isDirectional);
 }
 
@@ -247,7 +248,8 @@ VisibleSelection createVisibleSelection(const VisiblePosition& base,
                                         bool isDirectional) {
   DCHECK(base.isValid());
   DCHECK(extent.isValid());
-  DCHECK(base.isNotNull() || extent.isNull());
+  // TODO(xiaochengh): We should check |base.isNotNull() || extent.isNull()|
+  // after all call sites have ensured that.
   return VisibleSelection::create(base.deepEquivalent(),
                                   extent.deepEquivalent(), base.affinity(),
                                   isDirectional);
@@ -276,7 +278,8 @@ VisibleSelectionInFlatTree createVisibleSelection(
     bool isDirectional) {
   DCHECK(!needsLayoutTreeUpdate(base));
   DCHECK(!needsLayoutTreeUpdate(extent));
-  DCHECK(base.isNotNull() || extent.isNull());
+  // TODO(xiaochengh): We should check |base.isNotNull() || extent.isNull()|
+  // after all call sites have ensured that.
   return VisibleSelectionInFlatTree::create(base, extent, affinity,
                                             isDirectional);
 }
@@ -304,7 +307,8 @@ VisibleSelectionInFlatTree createVisibleSelection(
     bool isDirectional) {
   DCHECK(base.isValid());
   DCHECK(extent.isValid());
-  DCHECK(base.isNotNull() || extent.isNull());
+  // TODO(xiaochengh): We should check |base.isNotNull() || extent.isNull()|
+  // after all call sites have ensured that.
   return VisibleSelectionInFlatTree::create(base.deepEquivalent(),
                                             extent.deepEquivalent(),
                                             base.affinity(), isDirectional);
