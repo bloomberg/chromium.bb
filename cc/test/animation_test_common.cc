@@ -172,8 +172,6 @@ bool FakeTransformTransition::AnimatedBoundsForBox(const gfx::BoxF& box,
   return false;
 }
 
-bool FakeTransformTransition::AffectsScale() const { return false; }
-
 bool FakeTransformTransition::IsTranslation() const { return true; }
 
 bool FakeTransformTransition::PreservesAxisAlignment() const {

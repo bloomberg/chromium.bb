@@ -64,11 +64,6 @@ bool TransformAnimationCurveAdapter::AnimatedBoundsForBox(
   return false;
 }
 
-bool TransformAnimationCurveAdapter::AffectsScale() const {
-  return !initial_value_.IsIdentityOrTranslation() ||
-         !target_value_.IsIdentityOrTranslation();
-}
-
 bool TransformAnimationCurveAdapter::IsTranslation() const {
   return initial_value_.IsIdentityOrTranslation() &&
          target_value_.IsIdentityOrTranslation();
@@ -137,11 +132,6 @@ bool InverseTransformCurveAdapter::AnimatedBoundsForBox(
   // computing bounds for TransformOperationMatrix, use that to compute
   // the bounds we need here.
   return false;
-}
-
-bool InverseTransformCurveAdapter::AffectsScale() const {
-  return !initial_value_.IsIdentityOrTranslation() ||
-         base_curve_.AffectsScale();
 }
 
 bool InverseTransformCurveAdapter::IsTranslation() const {

@@ -84,17 +84,6 @@ bool TransformOperations::BlendedBoundsForBox(const gfx::BoxF& box,
   return true;
 }
 
-bool TransformOperations::AffectsScale() const {
-  for (size_t i = 0; i < operations_.size(); ++i) {
-    if (operations_[i].type == TransformOperation::TRANSFORM_OPERATION_SCALE)
-      return true;
-    if (operations_[i].type == TransformOperation::TRANSFORM_OPERATION_MATRIX &&
-        !operations_[i].matrix.IsIdentityOrTranslation())
-      return true;
-  }
-  return false;
-}
-
 bool TransformOperations::PreservesAxisAlignment() const {
   for (size_t i = 0; i < operations_.size(); ++i) {
     switch (operations_[i].type) {

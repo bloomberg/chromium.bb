@@ -217,7 +217,6 @@ class CC_EXPORT KeyframedTransformAnimationCurve
   gfx::Transform GetValue(base::TimeDelta t) const override;
   bool AnimatedBoundsForBox(const gfx::BoxF& box,
                             gfx::BoxF* bounds) const override;
-  bool AffectsScale() const override;
   bool PreservesAxisAlignment() const override;
   bool IsTranslation() const override;
   bool AnimationStartScale(bool forward_direction,

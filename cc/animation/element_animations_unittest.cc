@@ -2219,63 +2219,6 @@ TEST_F(ElementAnimationsTest, FinishedAndAbortedEventsForGroup) {
   EXPECT_EQ(TargetProperty::OPACITY, events->events_[1].target_property);
 }
 
-TEST_F(ElementAnimationsTest, HasAnimationThatAffectsScale) {
-  CreateTestLayer(true, false);
-  AttachTimelinePlayerLayer();
-  CreateImplTimelineAndPlayer();
-
-  scoped_refptr<ElementAnimations> animations_impl = element_animations_impl();
-
-  EXPECT_FALSE(animations_impl->HasAnimationThatAffectsScale());
-
-  animations_impl->AddAnimation(CreateAnimation(
-      std::unique_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 0.f, 1.f)),
-      1, TargetProperty::OPACITY));
-
-  // Opacity animations don't affect scale.
-  EXPECT_FALSE(animations_impl->HasAnimationThatAffectsScale());
-
-  std::unique_ptr<KeyframedTransformAnimationCurve> curve1(
-      KeyframedTransformAnimationCurve::Create());
-
-  TransformOperations operations1;
-  curve1->AddKeyframe(
-      TransformKeyframe::Create(base::TimeDelta(), operations1, nullptr));
-  operations1.AppendTranslate(10.0, 15.0, 0.0);
-  curve1->AddKeyframe(TransformKeyframe::Create(
-      base::TimeDelta::FromSecondsD(1.0), operations1, nullptr));
-
-  std::unique_ptr<Animation> animation(
-      Animation::Create(std::move(curve1), 2, 2, TargetProperty::TRANSFORM));
-  animations_impl->AddAnimation(std::move(animation));
-
-  // Translations don't affect scale.
-  EXPECT_FALSE(animations_impl->HasAnimationThatAffectsScale());
-
-  std::unique_ptr<KeyframedTransformAnimationCurve> curve2(
-      KeyframedTransformAnimationCurve::Create());
-
-  TransformOperations operations2;
-  curve2->AddKeyframe(
-      TransformKeyframe::Create(base::TimeDelta(), operations2, nullptr));
-  operations2.AppendScale(2.0, 3.0, 4.0);
-  curve2->AddKeyframe(TransformKeyframe::Create(
-      base::TimeDelta::FromSecondsD(1.0), operations2, nullptr));
-
-  animation =
-      Animation::Create(std::move(curve2), 3, 3, TargetProperty::TRANSFORM);
-  animations_impl->AddAnimation(std::move(animation));
-
-  EXPECT_TRUE(animations_impl->HasAnimationThatAffectsScale());
-
-  animations_impl->GetAnimationById(3)->SetRunState(Animation::FINISHED,
-                                                    TicksFromSecondsF(0.0));
-
-  // Only unfinished animations should be considered by
-  // HasAnimationThatAffectsScale.
-  EXPECT_FALSE(animations_impl->HasAnimationThatAffectsScale());
-}
-
 TEST_F(ElementAnimationsTest, HasOnlyTranslationTransforms) {
   CreateTestLayer(true, false);
   AttachTimelinePlayerLayer();

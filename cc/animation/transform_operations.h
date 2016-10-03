@@ -59,9 +59,6 @@ class CC_EXPORT TransformOperations {
                            SkMScalar max_progress,
                            gfx::BoxF* bounds) const;
 
-  // Returns true if these operations affect scale.
-  bool AffectsScale() const;
-
   // Returns true if these operations are only translations.
   bool IsTranslation() const;
 

@@ -77,9 +77,6 @@ class CC_EXPORT TransformAnimationCurve : public AnimationCurve {
   virtual bool AnimatedBoundsForBox(const gfx::BoxF& box,
                                     gfx::BoxF* bounds) const = 0;
 
-  // Returns true if this animation affects scale.
-  virtual bool AffectsScale() const = 0;
-
   // Returns true if this animation is a translation.
   virtual bool IsTranslation() const = 0;
 

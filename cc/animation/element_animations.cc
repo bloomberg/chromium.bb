@@ -384,16 +384,6 @@ bool ElementAnimations::TransformAnimationBoundsForBox(
   return true;
 }
 
-bool ElementAnimations::HasAnimationThatAffectsScale() const {
-  ElementAnimations::PlayersList::Iterator it(players_list_.get());
-  AnimationPlayer* player;
-  while ((player = it.GetNext()) != nullptr) {
-    if (player->HasAnimationThatAffectsScale())
-      return true;
-  }
-  return false;
-}
-
 bool ElementAnimations::HasOnlyTranslationTransforms(
     ElementListType list_type) const {
   ElementAnimations::PlayersList::Iterator it(players_list_.get());

@@ -119,7 +119,6 @@ class CC_EXPORT AnimationPlayer : public base::RefCounted<AnimationPlayer> {
 
   bool TransformAnimationBoundsForBox(const gfx::BoxF& box,
                                       gfx::BoxF* bounds) const;
-  bool HasAnimationThatAffectsScale() const;
   bool HasOnlyTranslationTransforms(ElementListType list_type) const;
   bool AnimationsPreserveAxisAlignment() const;
 

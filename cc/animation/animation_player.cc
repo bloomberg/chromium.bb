@@ -823,21 +823,6 @@ bool AnimationPlayer::TransformAnimationBoundsForBox(const gfx::BoxF& box,
   return true;
 }
 
-bool AnimationPlayer::HasAnimationThatAffectsScale() const {
-  for (size_t i = 0; i < animations_.size(); ++i) {
-    if (animations_[i]->is_finished() ||
-        animations_[i]->target_property() != TargetProperty::TRANSFORM)
-      continue;
-
-    const TransformAnimationCurve* transform_animation_curve =
-        animations_[i]->curve()->ToTransformAnimationCurve();
-    if (transform_animation_curve->AffectsScale())
-      return true;
-  }
-
-  return false;
-}
-
 bool AnimationPlayer::HasOnlyTranslationTransforms(
     ElementListType list_type) const {
   for (size_t i = 0; i < animations_.size(); ++i) {

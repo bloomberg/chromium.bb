@@ -1333,65 +1333,6 @@ TEST(TransformOperationTest, BlendedBoundsForSequence) {
             bounds.ToString());
 }
 
-TEST(TransformOperationTest, AffectsScaleWithSingleOperation) {
-  TransformOperations empty_operations;
-  EXPECT_FALSE(empty_operations.AffectsScale());
-
-  TransformOperations identity;
-  identity.AppendIdentity();
-  EXPECT_FALSE(identity.AffectsScale());
-
-  TransformOperations translate;
-  translate.AppendTranslate(1.f, 2.f, 3.f);
-  EXPECT_FALSE(translate.AffectsScale());
-
-  TransformOperations rotate;
-  rotate.AppendRotate(1.f, 2.f, 3.f, 4.f);
-  EXPECT_FALSE(rotate.AffectsScale());
-
-  TransformOperations scale;
-  scale.AppendScale(1.f, 2.f, 3.f);
-  EXPECT_TRUE(scale.AffectsScale());
-
-  TransformOperations skew;
-  skew.AppendSkew(1.f, 2.f);
-  EXPECT_FALSE(skew.AffectsScale());
-
-  TransformOperations perspective;
-  perspective.AppendPerspective(1.f);
-  EXPECT_FALSE(perspective.AffectsScale());
-
-  TransformOperations identity_matrix;
-  identity_matrix.AppendMatrix(gfx::Transform());
-  EXPECT_FALSE(identity_matrix.AffectsScale());
-
-  TransformOperations translation_matrix;
-  gfx::Transform translation_transform;
-  translation_transform.Translate3d(1.f, 2.f, 3.f);
-  translation_matrix.AppendMatrix(translation_transform);
-  EXPECT_FALSE(translation_matrix.AffectsScale());
-
-  TransformOperations scaling_matrix;
-  gfx::Transform scaling_transform;
-  scaling_transform.Scale(2.f, 2.f);
-  scaling_matrix.AppendMatrix(scaling_transform);
-  EXPECT_TRUE(scaling_matrix.AffectsScale());
-}
-
-TEST(TransformOperationTest, AffectsScaleWithMultipleOperations) {
-  TransformOperations operations1;
-  operations1.AppendSkew(1.f, 2.f);
-  operations1.AppendTranslate(1.f, 2.f, 3.f);
-  operations1.AppendIdentity();
-  EXPECT_FALSE(operations1.AffectsScale());
-
-  TransformOperations operations2;
-  operations2.AppendPerspective(2.f);
-  operations2.AppendScale(1.f, 2.f, 3.f);
-  operations2.AppendTranslate(3.f, 2.f, 1.f);
-  EXPECT_TRUE(operations2.AffectsScale());
-}
-
 TEST(TransformOperationTest, IsTranslationWithSingleOperation) {
   TransformOperations empty_operations;
   EXPECT_TRUE(empty_operations.IsTranslation());
