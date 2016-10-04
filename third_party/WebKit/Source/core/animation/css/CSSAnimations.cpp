@@ -756,16 +756,8 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate& update,
                         : nullptr;
   const CSSTransitionData* transitionData = style.transitions();
 
-#if DCHECK_IS_ON()
-  // In debug builds we verify that it would have been safe to avoid populating
-  // and testing listedProperties if the style recalc is due to animation.
-  const bool animationStyleRecalc = false;
-#else
-  // In release builds we avoid the cost of checking for new and interrupted
-  // transitions if the style recalc is due to animation.
   const bool animationStyleRecalc =
       elementAnimations && elementAnimations->isAnimationStyleChange();
-#endif
 
   std::bitset<numCSSProperties> listedProperties;
   bool anyTransitionHadTransitionAll = false;
@@ -825,11 +817,6 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate& update,
       CSSPropertyID id = entry.key;
       if (!anyTransitionHadTransitionAll && !animationStyleRecalc &&
           !listedProperties.test(id - firstCSSProperty)) {
-        // TODO(crbug.com/365507): Figure out why this fails on Chrome OS login
-        // page.
-        // DCHECK(animation.playStateInternal() == Animation::Finished ||
-        //       !(elementAnimations &&
-        //         elementAnimations->isAnimationStyleChange()));
         update.cancelTransition(id);
       } else if (entry.value.animation->finishedInternal()) {
         update.finishTransition(id);
