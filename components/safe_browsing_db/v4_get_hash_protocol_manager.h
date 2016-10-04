@@ -165,9 +165,9 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate,
                                  full_hash_to_matching_hash_prefixes,
                              FullHashCallback callback);
 
-  // Retrieve the full hash and API metadata for a URL, and invoke the callback
-  // argument when the results are retrieved. The callback may be invoked
-  // synchronously.
+  // Retrieve the full hash and API metadata for the origin of |url|, and invoke
+  // the callback argument when the results are retrieved. The callback may be
+  // invoked synchronously.
   // GetFullHashesWithApis is a special case of GetFullHashes. It is here
   // primarily for legacy reasons: so that DatabaseManager, which speaks PVer3,
   // and V4LocalDatabaseManager, which speaks PVer4, can both use this class to

@@ -708,7 +708,7 @@ TEST_F(V4GetHashProtocolManagerTest, TestGetFullHashesWithApisMergesMetadata) {
 
   // The following two random looking strings value are two of the full hashes
   // produced by UrlToFullHashes in v4_protocol_manager_util.h for the URL:
-  // "https://www.example.com/more"
+  // "https://www.example.com"
   std::vector<ResponseInfo> infos;
   FullHash full_hash;
   base::Base64Decode("1ZzJ0/7NjPkg6t0DAS8L5Jf7jA48Pn7opQcP4UXYeXc=",
@@ -717,7 +717,7 @@ TEST_F(V4GetHashProtocolManagerTest, TestGetFullHashesWithApisMergesMetadata) {
   info.key_values.emplace_back("permission", "NOTIFICATIONS");
   infos.push_back(info);
 
-  base::Base64Decode("4rPDSdcei1BiCOPnj9kgsy2O6Ua6X3iFBakqphB3ZfA=",
+  base::Base64Decode("c9mG4AkGXxgsELy2pF2z1u2pSY-JMGVK8mU_ipOM2AE=",
                      &full_hash);
   info = ResponseInfo(full_hash, GetChromeUrlApiId());
   info.key_values.emplace_back("permission", "AUDIO_CAPTURE");
