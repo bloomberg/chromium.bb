@@ -36,6 +36,7 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.CallbackHelper;
+import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.HistoryUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_public.browser.WebContents;
@@ -2096,9 +2097,12 @@ public class AwSettingsTest extends AwTestBase {
             // to know whether Url is accessed.
             final String audioUrl = webServer.setResponse(httpPath, "1", null);
 
-            String pageHtml = "<html><body><audio controls src='" + audioUrl + "' "
+            String pageHtml = "<html><body><audio id=\"audio\" controls src='" + audioUrl + "' "
                     + "oncanplay=\"AudioEvent.onCanPlay();\" "
-                    + "onerror=\"AudioEvent.onError();\" /> </body></html>";
+                    + "onerror=\"AudioEvent.onError();\"></audio>"
+                    + "<button id=\"play\""
+                    + "onclick=\"document.getElementById('audio').play();\"></button>"
+                    + "</body></html>";
             // Actual test. Blocking should trigger onerror handler.
             awSettings.setBlockNetworkLoads(true);
             runTestOnUiThread(new Runnable() {
@@ -2110,6 +2114,7 @@ public class AwSettingsTest extends AwTestBase {
             int count = callback.getCallCount();
             loadDataSync(awContents, contentClient.getOnPageFinishedHelper(), pageHtml,
                     "text/html", false);
+            DOMUtils.clickNode(this, testContainer.getContentViewCore(), "play");
             callback.waitForCallback(count, 1);
             assertEquals(0, webServer.getRequestCount(httpPath));
 
