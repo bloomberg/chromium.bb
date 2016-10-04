@@ -12856,6 +12856,7 @@ void GLES2DecoderImpl::DoCompressedTexSubImage3D(
 
 error::Error GLES2DecoderImpl::HandleTexImage2D(uint32_t immediate_data_size,
                                                 const volatile void* cmd_data) {
+  const char* func_name = "glTexImage2D";
   const volatile gles2::cmds::TexImage2D& c =
       *static_cast<const volatile gles2::cmds::TexImage2D*>(cmd_data);
   TRACE_EVENT2("gpu", "GLES2DecoderImpl::HandleTexImage2D",
@@ -12874,14 +12875,20 @@ error::Error GLES2DecoderImpl::HandleTexImage2D(uint32_t immediate_data_size,
   uint32_t pixels_shm_offset = static_cast<uint32_t>(c.pixels_shm_offset);
 
   if (width < 0 || height < 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexImage2D", "dimensions < 0");
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, func_name, "dimensions < 0");
     return error::kNoError;
   }
 
   PixelStoreParams params;
-  if (state_.bound_pixel_unpack_buffer.get()) {
+  Buffer* buffer = state_.bound_pixel_unpack_buffer.get();
+  if (buffer) {
     if (pixels_shm_id)
       return error::kInvalidArguments;
+    if (buffer->GetMappedRange()) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
+          "pixel unpack buffer should not be mapped to client memory");
+      return error::kNoError;
+    }
     params = state_.GetUnpackParams(ContextState::k2D);
   } else {
     if (!pixels_shm_id && pixels_shm_offset)
@@ -12921,9 +12928,7 @@ error::Error GLES2DecoderImpl::HandleTexImage2D(uint32_t immediate_data_size,
   // For testing only. Allows us to stress the ability to respond to OOM errors.
   if (workarounds().simulate_out_of_memory_on_large_textures &&
       (width * height >= 4096 * 4096)) {
-    LOCAL_SET_GL_ERROR(
-        GL_OUT_OF_MEMORY,
-        "glTexImage2D", "synthetic out of memory");
+    LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, func_name, "synthetic out of memory");
     return error::kNoError;
   }
 
@@ -12932,7 +12937,7 @@ error::Error GLES2DecoderImpl::HandleTexImage2D(uint32_t immediate_data_size,
     pixels, pixels_size, padding,
     TextureManager::DoTexImageArguments::kTexImage2D };
   texture_manager()->ValidateAndDoTexImage(
-      &texture_state_, &state_, &framebuffer_state_, "glTexImage2D", args);
+      &texture_state_, &state_, &framebuffer_state_, func_name, args);
 
   // This may be a slow command.  Exit command processing to allow for
   // context preemption and GPU watchdog checks.
@@ -12945,6 +12950,7 @@ error::Error GLES2DecoderImpl::HandleTexImage3D(uint32_t immediate_data_size,
   if (!unsafe_es3_apis_enabled())
     return error::kUnknownCommand;
 
+  const char* func_name = "glTexImage3D";
   const volatile gles2::cmds::TexImage3D& c =
       *static_cast<const volatile gles2::cmds::TexImage3D*>(cmd_data);
   TRACE_EVENT2("gpu", "GLES2DecoderImpl::HandleTexImage3D",
@@ -12964,14 +12970,20 @@ error::Error GLES2DecoderImpl::HandleTexImage3D(uint32_t immediate_data_size,
   uint32_t pixels_shm_offset = static_cast<uint32_t>(c.pixels_shm_offset);
 
   if (width < 0 || height < 0 || depth < 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexImage3D", "dimensions < 0");
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, func_name, "dimensions < 0");
     return error::kNoError;
   }
 
   PixelStoreParams params;
-  if (state_.bound_pixel_unpack_buffer.get()) {
+  Buffer* buffer = state_.bound_pixel_unpack_buffer.get();
+  if (buffer) {
     if (pixels_shm_id)
       return error::kInvalidArguments;
+    if (buffer->GetMappedRange()) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
+          "pixel unpack buffer should not be mapped to client memory");
+      return error::kNoError;
+    }
     params = state_.GetUnpackParams(ContextState::k3D);
   } else {
     if (!pixels_shm_id && pixels_shm_offset)
@@ -13011,9 +13023,7 @@ error::Error GLES2DecoderImpl::HandleTexImage3D(uint32_t immediate_data_size,
   // For testing only. Allows us to stress the ability to respond to OOM errors.
   if (workarounds().simulate_out_of_memory_on_large_textures &&
       (width * height * depth >= 4096 * 4096)) {
-    LOCAL_SET_GL_ERROR(
-        GL_OUT_OF_MEMORY,
-        "glTexImage3D", "synthetic out of memory");
+    LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, func_name, "synthetic out of memory");
     return error::kNoError;
   }
 
@@ -13022,7 +13032,7 @@ error::Error GLES2DecoderImpl::HandleTexImage3D(uint32_t immediate_data_size,
     pixels, pixels_size, padding,
     TextureManager::DoTexImageArguments::kTexImage3D };
   texture_manager()->ValidateAndDoTexImage(
-      &texture_state_, &state_, &framebuffer_state_, "glTexImage3D", args);
+      &texture_state_, &state_, &framebuffer_state_, func_name, args);
 
   // This may be a slow command.  Exit command processing to allow for
   // context preemption and GPU watchdog checks.
@@ -13625,8 +13635,8 @@ void GLES2DecoderImpl::DoCopyTexSubImage3D(
 }
 
 error::Error GLES2DecoderImpl::HandleTexSubImage2D(
-    uint32_t immediate_data_size,
-    const volatile void* cmd_data) {
+    uint32_t immediate_data_size, const volatile void* cmd_data) {
+  const char* func_name = "glTexSubImage2D";
   const volatile gles2::cmds::TexSubImage2D& c =
       *static_cast<const volatile gles2::cmds::TexSubImage2D*>(cmd_data);
   TRACE_EVENT2("gpu", "GLES2DecoderImpl::HandleTexSubImage2D",
@@ -13647,14 +13657,20 @@ error::Error GLES2DecoderImpl::HandleTexSubImage2D(
   uint32_t pixels_shm_offset = static_cast<uint32_t>(c.pixels_shm_offset);
 
   if (width < 0 || height < 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexSubImage2D", "dimensions < 0");
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, func_name, "dimensions < 0");
     return error::kNoError;
   }
 
   PixelStoreParams params;
-  if (state_.bound_pixel_unpack_buffer.get()) {
+  Buffer* buffer = state_.bound_pixel_unpack_buffer.get();
+  if (buffer) {
     if (pixels_shm_id)
       return error::kInvalidArguments;
+    if (buffer->GetMappedRange()) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
+          "pixel unpack buffer should not be mapped to client memory");
+      return error::kNoError;
+    }
     params = state_.GetUnpackParams(ContextState::k2D);
   } else {
     // When reading from client buffer, the command buffer client side took
@@ -13695,7 +13711,7 @@ error::Error GLES2DecoderImpl::HandleTexSubImage2D(
       TextureManager::DoTexSubImageArguments::kTexSubImage2D};
   texture_manager()->ValidateAndDoTexSubImage(this, &texture_state_, &state_,
                                               &framebuffer_state_,
-                                              "glTexSubImage2D", args);
+                                              func_name, args);
 
   // This may be a slow command.  Exit command processing to allow for
   // context preemption and GPU watchdog checks.
@@ -13709,6 +13725,7 @@ error::Error GLES2DecoderImpl::HandleTexSubImage3D(
   if (!unsafe_es3_apis_enabled())
     return error::kUnknownCommand;
 
+  const char* func_name = "glTexSubImage3D";
   const volatile gles2::cmds::TexSubImage3D& c =
       *static_cast<const volatile gles2::cmds::TexSubImage3D*>(cmd_data);
   TRACE_EVENT2("gpu", "GLES2DecoderImpl::HandleTexSubImage3D",
@@ -13731,14 +13748,20 @@ error::Error GLES2DecoderImpl::HandleTexSubImage3D(
   uint32_t pixels_shm_offset = static_cast<uint32_t>(c.pixels_shm_offset);
 
   if (width < 0 || height < 0 || depth < 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexSubImage3D", "dimensions < 0");
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, func_name, "dimensions < 0");
     return error::kNoError;
   }
 
   PixelStoreParams params;
-  if (state_.bound_pixel_unpack_buffer.get()) {
+  Buffer* buffer = state_.bound_pixel_unpack_buffer.get();
+  if (buffer) {
     if (pixels_shm_id)
       return error::kInvalidArguments;
+    if (buffer->GetMappedRange()) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
+          "pixel unpack buffer should not be mapped to client memory");
+      return error::kNoError;
+    }
     params = state_.GetUnpackParams(ContextState::k3D);
   } else {
     // When reading from client buffer, the command buffer client side took
@@ -13779,7 +13802,7 @@ error::Error GLES2DecoderImpl::HandleTexSubImage3D(
       TextureManager::DoTexSubImageArguments::kTexSubImage3D};
   texture_manager()->ValidateAndDoTexSubImage(this, &texture_state_, &state_,
                                               &framebuffer_state_,
-                                              "glTexSubImage3D", args);
+                                              func_name, args);
 
   // This may be a slow command.  Exit command processing to allow for
   // context preemption and GPU watchdog checks.
@@ -16787,6 +16810,8 @@ error::Error GLES2DecoderImpl::HandleMapBufferRange(
   if (!unsafe_es3_apis_enabled()) {
     return error::kUnknownCommand;
   }
+
+  const char* func_name = "glMapBufferRange";
   const volatile gles2::cmds::MapBufferRange& c =
       *static_cast<const volatile gles2::cmds::MapBufferRange*>(cmd_data);
   GLenum target = static_cast<GLenum>(c.target);
@@ -16794,6 +16819,7 @@ error::Error GLES2DecoderImpl::HandleMapBufferRange(
   GLintptr offset = static_cast<GLintptr>(c.offset);
   GLsizeiptr size = static_cast<GLsizeiptr>(c.size);
   uint32_t data_shm_id = static_cast<uint32_t>(c.data_shm_id);
+  uint32_t data_shm_offset = static_cast<uint32_t>(c.data_shm_offset);
 
   typedef cmds::MapBufferRange::Result Result;
   Result* result = GetSharedMemoryAs<Result*>(
@@ -16806,13 +16832,13 @@ error::Error GLES2DecoderImpl::HandleMapBufferRange(
     return error::kInvalidArguments;
   }
   int8_t* mem =
-      GetSharedMemoryAs<int8_t*>(data_shm_id, c.data_shm_offset, size);
+      GetSharedMemoryAs<int8_t*>(data_shm_id, data_shm_offset, size);
   if (!mem) {
     return error::kOutOfBounds;
   }
 
   if (!validators_->buffer_target.IsValid(target)) {
-    LOCAL_SET_GL_ERROR_INVALID_ENUM("glMapBufferRange", target, "target");
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(func_name, target, "target");
     return error::kNoError;
   }
 
@@ -16827,8 +16853,8 @@ error::Error GLES2DecoderImpl::HandleMapBufferRange(
   // undefined behaviors.
   mask = GL_MAP_READ_BIT | GL_MAP_UNSYNCHRONIZED_BIT;
   if ((access & mask) == mask) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "MapBufferRange",
-                       "incompatible access bits");
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_OPERATION, func_name, "incompatible access bits");
     return error::kNoError;
   }
   access = (access & ~GL_MAP_UNSYNCHRONIZED_BIT);
@@ -16838,13 +16864,16 @@ error::Error GLES2DecoderImpl::HandleMapBufferRange(
   }
   Buffer* buffer = buffer_manager()->GetBufferInfoForTarget(&state_, target);
   if (!buffer) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "MapBufferRange",
-                       "no buffer bound to target");
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_OPERATION, func_name, "no buffer bound to target");
     return error::kNoError;
   }
+  if (buffer->GetMappedRange()) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_OPERATION, func_name, "buffer is already mapped");
+  }
   if (!buffer->CheckRange(offset, size)) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "MapBufferRange",
-                       "invalid range");
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, func_name, "invalid range");
     return error::kNoError;
   }
   void* ptr = glMapBufferRange(target, offset, size, access);
@@ -16852,7 +16881,8 @@ error::Error GLES2DecoderImpl::HandleMapBufferRange(
     return error::kNoError;
   }
   buffer->SetMappedRange(offset, size, access, ptr,
-                         GetSharedMemoryBuffer(data_shm_id));
+                         GetSharedMemoryBuffer(data_shm_id),
+                         static_cast<unsigned int>(data_shm_offset));
   if ((access & GL_MAP_INVALIDATE_RANGE_BIT) == 0) {
     memcpy(mem, ptr, size);
   }
@@ -16898,6 +16928,11 @@ error::Error GLES2DecoderImpl::HandleUnmapBuffer(
     }
     DCHECK(mapped_range->pointer);
     memcpy(mapped_range->pointer, mem, mapped_range->size);
+    if (buffer->shadowed()) {
+      bool success = buffer->SetRange(
+          mapped_range->offset, mapped_range->size, mem);
+      DCHECK(success);
+    }
   }
   buffer->RemoveMappedRange();
   GLboolean rt = glUnmapBuffer(target);

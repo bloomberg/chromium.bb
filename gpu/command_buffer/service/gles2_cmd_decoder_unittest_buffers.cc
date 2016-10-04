@@ -129,9 +129,10 @@ TEST_P(GLES2DecoderTest, MapBufferRangeUnmapBufferReadSucceeds) {
 }
 
 TEST_P(GLES2DecoderTest, MapBufferRangeUnmapBufferWriteSucceeds) {
-  const GLenum kTarget = GL_ARRAY_BUFFER;
+  const GLenum kTarget = GL_ELEMENT_ARRAY_BUFFER;
   const GLintptr kOffset = 10;
   const GLsizeiptr kSize = 64;
+  const GLsizeiptr kTotalSize = kOffset + kSize;
   const GLbitfield kAccess = GL_MAP_WRITE_BIT;
   const GLbitfield kMappedAccess = GL_MAP_WRITE_BIT | GL_MAP_READ_BIT;
 
@@ -141,22 +142,35 @@ TEST_P(GLES2DecoderTest, MapBufferRangeUnmapBufferWriteSucceeds) {
   // uint32_t is Result for both MapBufferRange and UnmapBuffer commands.
   uint32_t data_shm_offset = kSharedMemoryOffset + sizeof(uint32_t);
 
-  DoBindBuffer(kTarget, client_buffer_id_, kServiceBufferId);
-  DoBufferData(kTarget, kSize + kOffset);
+  typedef MapBufferRange::Result Result;
+  Result* result = GetSharedMemoryAs<Result*>();
+  int8_t* client_data = GetSharedMemoryAs<int8_t*>() + sizeof(uint32_t);
 
-  std::vector<int8_t> data(kSize);
-  for (GLsizeiptr ii = 0; ii < kSize; ++ii) {
-    data[ii] = static_cast<int8_t>(ii % 255);
+  DoBindBuffer(kTarget, client_buffer_id_, kServiceBufferId);
+  Buffer* buffer = GetBuffer(client_buffer_id_);
+  EXPECT_TRUE(buffer != nullptr);
+  DoBufferData(kTarget, kTotalSize);
+  std::vector<int8_t> gpu_data(kTotalSize);
+  for (GLsizeiptr ii = 0; ii < kTotalSize; ++ii) {
+    gpu_data[ii] = static_cast<int8_t>(ii % 128);
+  }
+  DoBufferSubData(kTarget, 0, kTotalSize, &gpu_data[0]);
+
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_TRUE(buffer->shadowed());
+  const int8_t* shadow_data = reinterpret_cast<const int8_t*>(
+      buffer->GetRange(0, kTotalSize));
+  EXPECT_TRUE(shadow_data);
+  // Verify the shadow data is initialized.
+  for (GLsizeiptr ii = 0; ii < kTotalSize; ++ii) {
+    EXPECT_EQ(static_cast<int8_t>(ii % 128), shadow_data[ii]);
   }
 
   {  // MapBufferRange succeeds
     EXPECT_CALL(*gl_,
                 MapBufferRange(kTarget, kOffset, kSize, kMappedAccess))
-        .WillOnce(Return(&data[0]))
+        .WillOnce(Return(&gpu_data[kOffset]))
         .RetiresOnSaturation();
-
-    typedef MapBufferRange::Result Result;
-    Result* result = GetSharedMemoryAs<Result*>();
 
     MapBufferRange cmd;
     cmd.Init(kTarget, kOffset, kSize, kAccess, data_shm_id, data_shm_offset,
@@ -168,12 +182,16 @@ TEST_P(GLES2DecoderTest, MapBufferRangeUnmapBufferWriteSucceeds) {
     decoder_->set_unsafe_es3_apis_enabled(true);
     *result = 0;
     EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-    int8_t* mem = reinterpret_cast<int8_t*>(&result[1]);
-    EXPECT_EQ(0, memcmp(&data[0], mem, kSize));
     EXPECT_EQ(1u, *result);
+    // Verify the buffer range from GPU is copied to client mem.
+    EXPECT_EQ(0, memcmp(&gpu_data[kOffset], client_data, kSize));
   }
 
-  { // UnmapBuffer succeeds
+  // Update the client mem.
+  const int8_t kValue0 = 21;
+  memset(client_data, kValue0, kSize);
+
+  {  // UnmapBuffer succeeds
     EXPECT_CALL(*gl_, UnmapBuffer(kTarget))
         .WillOnce(Return(GL_TRUE))
         .RetiresOnSaturation();
@@ -184,6 +202,17 @@ TEST_P(GLES2DecoderTest, MapBufferRangeUnmapBufferWriteSucceeds) {
     EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
     decoder_->set_unsafe_es3_apis_enabled(true);
     EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+
+    // Verify the GPU mem and shadow data are both updated
+    for (GLsizeiptr ii = 0; ii < kTotalSize; ++ii) {
+      if (ii < kOffset) {
+        EXPECT_EQ(static_cast<int8_t>(ii % 128), gpu_data[ii]);
+        EXPECT_EQ(static_cast<int8_t>(ii % 128), shadow_data[ii]);
+      } else {
+        EXPECT_EQ(kValue0, gpu_data[ii]);
+        EXPECT_EQ(kValue0, shadow_data[ii]);
+      }
+    }
   }
 
   EXPECT_EQ(GL_NO_ERROR, GetGLError());

@@ -106,12 +106,13 @@ void BufferManager::StopTracking(Buffer* buffer) {
 
 Buffer::MappedRange::MappedRange(
     GLintptr offset, GLsizeiptr size, GLenum access, void* pointer,
-    scoped_refptr<gpu::Buffer> shm)
+    scoped_refptr<gpu::Buffer> shm, unsigned int shm_offset)
     : offset(offset),
       size(size),
       access(access),
       pointer(pointer),
-      shm(shm) {
+      shm(shm),
+      shm_offset(shm_offset) {
   DCHECK(pointer);
   DCHECK(shm.get() && GetShmPointer());
 }
@@ -121,8 +122,7 @@ Buffer::MappedRange::~MappedRange() {
 
 void* Buffer::MappedRange::GetShmPointer() const {
   DCHECK(shm.get());
-  return shm->GetDataAddress(static_cast<unsigned int>(offset),
-                             static_cast<unsigned int>(size));
+  return shm->GetDataAddress(shm_offset, static_cast<unsigned int>(size));
 }
 
 Buffer::Buffer(BufferManager* manager, GLuint service_id)
@@ -569,11 +569,11 @@ void BufferManager::DoCopyBufferSubData(
     GLsizeiptr size) {
   DCHECK(readbuffer);
   DCHECK(writebuffer);
-  const bool use_shadow = UseShadowBuffer(writetarget, writebuffer->usage());
-  if (use_shadow) {
+  if (writebuffer->shadowed()) {
     const void* data = readbuffer->GetRange(readoffset, size);
     DCHECK(data);
-    writebuffer->SetRange(writeoffset, size, data);
+    bool success = writebuffer->SetRange(writeoffset, size, data);
+    DCHECK(success);
   }
 
   glCopyBufferSubData(readtarget, writetarget, readoffset, writeoffset, size);

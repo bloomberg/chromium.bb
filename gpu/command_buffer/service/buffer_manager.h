@@ -38,10 +38,11 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
     GLsizeiptr size;
     GLenum access;
     void* pointer;  // Pointer returned by driver.
-    scoped_refptr<gpu::Buffer> shm;  // Client side mem.
+    scoped_refptr<gpu::Buffer> shm;  // Client side mem buffer.
+    unsigned int shm_offset;  // Client side mem buffer offset.
 
-    MappedRange(GLintptr offset, GLsizeiptr size, GLenum access,
-                void* pointer, scoped_refptr<gpu::Buffer> shm);
+    MappedRange(GLintptr offset, GLsizeiptr size, GLenum access, void* pointer,
+                scoped_refptr<gpu::Buffer> shm, unsigned int shm_offset);
     ~MappedRange();
     void* GetShmPointer() const;
   };
@@ -60,6 +61,10 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
     return usage_;
   }
 
+  bool shadowed() const {
+    return !shadow_.empty();
+  }
+
   // Gets the maximum value in the buffer for the given range interpreted as
   // the given type. Returns false if offset and count are out of range.
   // offset is in bytes.
@@ -72,6 +77,10 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
 
   // Check if an offset, size range is valid for the current buffer.
   bool CheckRange(GLintptr offset, GLsizeiptr size) const;
+
+  // Sets a range of this buffer's shadowed data. Returns false if offset/size
+  // is out of range.
+  bool SetRange(GLintptr offset, GLsizeiptr size, const GLvoid * data);
 
   bool IsDeleted() const {
     return deleted_;
@@ -86,8 +95,10 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
   }
 
   void SetMappedRange(GLintptr offset, GLsizeiptr size, GLenum access,
-                      void* pointer, scoped_refptr<gpu::Buffer> shm) {
-    mapped_range_.reset(new MappedRange(offset, size, access, pointer, shm));
+                      void* pointer, scoped_refptr<gpu::Buffer> shm,
+                      unsigned int shm_offset) {
+    mapped_range_.reset(
+        new MappedRange(offset, size, access, pointer, shm, shm_offset));
   }
 
   void RemoveMappedRange() {
@@ -148,8 +159,6 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
     initial_target_ = target;
   }
 
-  bool shadowed() const { return !shadow_.empty(); }
-
   void MarkAsDeleted() {
     deleted_ = true;
   }
@@ -168,11 +177,6 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
                GLenum usage,
                bool use_shadow,
                bool is_client_side_array);
-
-  // Sets a range of data for this buffer. Returns false if the offset or size
-  // is out of range.
-  bool SetRange(
-    GLintptr offset, GLsizeiptr size, const GLvoid * data);
 
   // Clears any cache of index ranges.
   void ClearCache();
