@@ -1,0 +1,56 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/debugger-test.js"></script>
+<script>
+
+var test = function()
+{
+    const scriptSource = "239\n//# sourceURL=test.js";
+    const changedScriptSource = "42\n//# sourceURL=test.js";
+
+    InspectorTest.startDebuggerTest(step1);
+
+    function step1()
+    {
+        InspectorTest.waitForScriptSource("test.js", step2);
+        InspectorTest.evaluateInPage(scriptSource);
+    }
+
+    function step2(uiSourceCode)
+    {
+        InspectorTest.addSnifferPromise(WebInspector.ResourceScriptFile.prototype, "_mappingCheckedForTest").then(() => step3(uiSourceCode));
+        InspectorTest.showScriptSource("test.js");
+    }
+
+    function step3(uiSourceCode)
+    {
+        var mainTarget = WebInspector.targetManager.mainTarget();
+        var scriptFile = WebInspector.debuggerWorkspaceBinding.scriptFile(uiSourceCode, mainTarget);
+        if (!scriptFile) {
+            InspectorTest.addResult("[FAIL]: no script file for test.js");
+            InspectorTest.completeDebuggerTest();
+            return;
+        }
+        if (scriptFile.hasDivergedFromVM() || scriptFile.isDivergingFromVM()) {
+            InspectorTest.addResult("[FAIL]: script file is diverged from VM");
+            InspectorTest.completeDebuggerTest();
+            return;
+        }
+
+        InspectorTest.addSnifferPromise(WebInspector.JavaScriptSourceFrame.prototype, "_didDivergeFromVM").then(dumpDivergeFromVM);
+        InspectorTest.addSnifferPromise(WebInspector.ResourceScriptFile.prototype, "_mappingCheckedForTest").then(() => InspectorTest.completeDebuggerTest());
+        InspectorTest.evaluateInPage(changedScriptSource);
+    }
+
+    function dumpDivergeFromVM()
+    {
+        InspectorTest.addResult("[FAIL]: script file was diverged from VM");
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Checks that script evaluated twice with different source and the same sourceURL won't be diverged from VM.</p>
+</body>
+</html>
