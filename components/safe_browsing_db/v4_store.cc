@@ -16,12 +16,108 @@
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
 
+using base::TimeTicks;
+
 namespace safe_browsing {
 
 namespace {
+
 const uint32_t kFileMagic = 0x600D71FE;
 
 const uint32_t kFileVersion = 9;
+
+std::string GetUmaSuffixForStore(const base::FilePath& file_path) {
+  return base::StringPrintf(
+      ".%" PRIsFP, file_path.BaseName().RemoveExtension().value().c_str());
+}
+
+void RecordTimeWithAndWithoutStore(const std::string& metric,
+                                   base::TimeDelta time,
+                                   const base::FilePath& file_path) {
+  std::string suffix = GetUmaSuffixForStore(file_path);
+
+  // The histograms below are a modified expansion of the
+  // UMA_HISTOGRAM_LONG_TIMES macro adapted to allow for a dynamically suffixed
+  // histogram name.
+  // Note: The factory creates and owns the histogram.
+  const int kBucketCount = 100;
+  base::HistogramBase* histogram = base::Histogram::FactoryTimeGet(
+      metric, base::TimeDelta::FromMilliseconds(1),
+      base::TimeDelta::FromMinutes(1), kBucketCount,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  if (histogram) {
+    histogram->AddTime(time);
+  }
+
+  base::HistogramBase* histogram_suffix = base::Histogram::FactoryTimeGet(
+      metric + suffix, base::TimeDelta::FromMilliseconds(1),
+      base::TimeDelta::FromMinutes(1), kBucketCount,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  if (histogram_suffix) {
+    histogram_suffix->AddTime(time);
+  }
+}
+
+void RecordAddUnlumpedHashesTime(base::TimeDelta time) {
+  UMA_HISTOGRAM_LONG_TIMES("SafeBrowsing.V4AddUnlumpedHashesTime", time);
+}
+
+void RecordApplyUpdateResult(ApplyUpdateResult result) {
+  UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.V4ApplyUpdateResult", result,
+                            APPLY_UPDATE_RESULT_MAX);
+}
+
+void RecordApplyUpdateResultWhenReadingFromDisk(ApplyUpdateResult result) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "SafeBrowsing.V4ApplyUpdateResultWhenReadingFromDisk", result,
+      APPLY_UPDATE_RESULT_MAX);
+}
+
+void RecordDecodeAdditionsResult(V4DecodeResult result) {
+  UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.V4DecodeAdditionsResult", result,
+                            DECODE_RESULT_MAX);
+}
+
+void RecordDecodeAdditionsTime(base::TimeDelta time,
+                               const base::FilePath& file_path) {
+  RecordTimeWithAndWithoutStore("SafeBrowsing.V4DecodeAdditionsTime", time,
+                                file_path);
+}
+
+void RecordDecodeRemovalsResult(V4DecodeResult result) {
+  UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.V4DecodeRemovalsResult", result,
+                            DECODE_RESULT_MAX);
+}
+
+void RecordDecodeRemovalsTime(base::TimeDelta time,
+                              const base::FilePath& file_path) {
+  RecordTimeWithAndWithoutStore("SafeBrowsing.V4DecodeRemovalsTime", time,
+                                file_path);
+}
+
+void RecordMergeUpdateTime(base::TimeDelta time,
+                           const base::FilePath& file_path) {
+  RecordTimeWithAndWithoutStore("SafeBrowsing.V4MergeUpdateTime", time,
+                                file_path);
+}
+
+void RecordProcessFullUpdateTime(base::TimeDelta time,
+                                 const base::FilePath& file_path) {
+  RecordTimeWithAndWithoutStore("SafeBrowsing.V4ProcessFullUpdateTime", time,
+                                file_path);
+}
+
+void RecordProcessPartialUpdateTime(base::TimeDelta time,
+                                    const base::FilePath& file_path) {
+  RecordTimeWithAndWithoutStore("SafeBrowsing.V4ProcessPartialUpdateTime", time,
+                                file_path);
+}
+
+void RecordReadFromDiskTime(base::TimeDelta time,
+                            const base::FilePath& file_path) {
+  RecordTimeWithAndWithoutStore("SafeBrowsing.V4ReadFromDiskTime", time,
+                                file_path);
+}
 
 void RecordStoreReadResult(StoreReadResult result) {
   UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.V4StoreReadResult", result,
@@ -31,29 +127,6 @@ void RecordStoreReadResult(StoreReadResult result) {
 void RecordStoreWriteResult(StoreWriteResult result) {
   UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.V4StoreWriteResult", result,
                             STORE_WRITE_RESULT_MAX);
-}
-
-void RecordApplyUpdateResult(ApplyUpdateResult result) {
-  UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.V4ApplyUpdateResult", result,
-                            APPLY_UPDATE_RESULT_MAX);
-}
-
-void RecordDecodeAdditionsResult(V4DecodeResult result) {
-  UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.V4DecodeAdditionsResult", result,
-                            DECODE_RESULT_MAX);
-}
-
-void RecordDecodeRemovalsResult(V4DecodeResult result) {
-  UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.V4DecodeRemovalsResult", result,
-                            DECODE_RESULT_MAX);
-}
-
-// TODO(vakh): Collect and record the metrics for time taken to process updates.
-
-void RecordApplyUpdateResultWhenReadingFromDisk(ApplyUpdateResult result) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "SafeBrowsing.V4ApplyUpdateResultWhenReadingFromDisk", result,
-      APPLY_UPDATE_RESULT_MAX);
 }
 
 // Returns the name of the temporary file used to buffer data for
@@ -115,8 +188,10 @@ ApplyUpdateResult V4Store::ProcessPartialUpdateAndWriteToDisk(
   DCHECK(response->has_response_type());
   DCHECK_EQ(ListUpdateResponse::PARTIAL_UPDATE, response->response_type());
 
+  TimeTicks before = TimeTicks::Now();
   ApplyUpdateResult result = ProcessUpdate(hash_prefix_map_old, response);
   if (result == APPLY_UPDATE_SUCCESS) {
+    RecordProcessPartialUpdateTime(TimeTicks::Now() - before, store_path_);
     // TODO(vakh): Create a ListUpdateResponse containing RICE encoded
     // hash prefixes and response_type as FULL_UPDATE, and write that to disk.
   }
@@ -125,9 +200,11 @@ ApplyUpdateResult V4Store::ProcessPartialUpdateAndWriteToDisk(
 
 ApplyUpdateResult V4Store::ProcessFullUpdateAndWriteToDisk(
     std::unique_ptr<ListUpdateResponse> response) {
+  TimeTicks before = TimeTicks::Now();
   ApplyUpdateResult result = ProcessFullUpdate(response);
   if (result == APPLY_UPDATE_SUCCESS) {
     RecordStoreWriteResult(WriteToDisk(std::move(response)));
+    RecordProcessFullUpdateTime(TimeTicks::Now() - before, store_path_);
   }
   return result;
 }
@@ -160,16 +237,18 @@ ApplyUpdateResult V4Store::ProcessUpdate(
       DCHECK(removal.has_rice_indices());
 
       const RiceDeltaEncoding& rice_indices = removal.rice_indices();
+      TimeTicks before = TimeTicks::Now();
       V4DecodeResult decode_result = V4RiceDecoder::DecodeIntegers(
           rice_indices.first_value(), rice_indices.rice_parameter(),
           rice_indices.num_entries(), rice_indices.encoded_data(),
           &rice_removals);
+
       RecordDecodeRemovalsResult(decode_result);
       if (decode_result != DECODE_SUCCESS) {
         return RICE_DECODING_FAILURE;
-      } else {
-        raw_removals = &rice_removals;
       }
+      RecordDecodeRemovalsTime(TimeTicks::Now() - before, store_path_);
+      raw_removals = &rice_removals;
     } else {
       NOTREACHED() << "Unexpected compression_type type: " << compression_type;
       return UNEXPECTED_COMPRESSION_TYPE_REMOVALS_FAILURE;
@@ -188,11 +267,13 @@ ApplyUpdateResult V4Store::ProcessUpdate(
     expected_checksum = response->checksum().sha256();
   }
 
+  TimeTicks before = TimeTicks::Now();
   apply_update_result = MergeUpdate(hash_prefix_map_old, hash_prefix_map,
                                     raw_removals, expected_checksum);
   if (apply_update_result != APPLY_UPDATE_SUCCESS) {
     return apply_update_result;
   }
+  RecordMergeUpdateTime(TimeTicks::Now() - before, store_path_);
 
   state_ = response->new_client_state();
   return APPLY_UPDATE_SUCCESS;
@@ -250,6 +331,7 @@ ApplyUpdateResult V4Store::UpdateHashPrefixMapFromAdditions(
 
       const RiceDeltaEncoding& rice_hashes = addition.rice_hashes();
       std::vector<uint32_t> raw_hashes;
+      TimeTicks before = TimeTicks::Now();
       V4DecodeResult decode_result = V4RiceDecoder::DecodePrefixes(
           rice_hashes.first_value(), rice_hashes.rice_parameter(),
           rice_hashes.num_entries(), rice_hashes.encoded_data(), &raw_hashes);
@@ -257,6 +339,7 @@ ApplyUpdateResult V4Store::UpdateHashPrefixMapFromAdditions(
       if (decode_result != DECODE_SUCCESS) {
         return RICE_DECODING_FAILURE;
       } else {
+        RecordDecodeAdditionsTime(TimeTicks::Now() - before, store_path_);
         char* raw_hashes_start = reinterpret_cast<char*>(raw_hashes.data());
         size_t raw_hashes_size = sizeof(uint32_t) * raw_hashes.size();
 
@@ -307,9 +390,11 @@ ApplyUpdateResult V4Store::AddUnlumpedHashes(PrefixSize prefix_size,
     return ADDITIONS_SIZE_UNEXPECTED_FAILURE;
   }
 
+  TimeTicks before = TimeTicks::Now();
   // TODO(vakh): Figure out a way to avoid the following copy operation.
   (*additions_map)[prefix_size] =
       std::string(raw_hashes_begin, raw_hashes_begin + raw_hashes_length);
+  RecordAddUnlumpedHashesTime(TimeTicks::Now() - before);
   return APPLY_UPDATE_SUCCESS;
 }
 
@@ -487,6 +572,7 @@ ApplyUpdateResult V4Store::MergeUpdate(const HashPrefixMap& old_prefixes_map,
 StoreReadResult V4Store::ReadFromDisk() {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
+  TimeTicks before = TimeTicks::Now();
   std::string contents;
   bool read_success = base::ReadFileToString(store_path_, &contents);
   if (!read_success) {
@@ -524,6 +610,7 @@ StoreReadResult V4Store::ReadFromDisk() {
     hash_prefix_map_.clear();
     return HASH_PREFIX_MAP_GENERATION_FAILURE;
   }
+  RecordReadFromDiskTime(TimeTicks::Now() - before, store_path_);
 
   return READ_SUCCESS;
 }

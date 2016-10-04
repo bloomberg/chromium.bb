@@ -290,12 +290,6 @@ class V4Store {
   static void ReserveSpaceInPrefixMap(const HashPrefixMap& other_prefixes_map,
                                       HashPrefixMap* prefix_map_to_update);
 
-  // Updates the |additions_map| with the additions received in the partial
-  // update from the server.
-  static ApplyUpdateResult UpdateHashPrefixMapFromAdditions(
-      const ::google::protobuf::RepeatedPtrField<ThreatEntrySet>& additions,
-      HashPrefixMap* additions_map);
-
   // Merges the prefix map from the old store (|old_hash_prefix_map|) and the
   // update (additions_map) to populate the prefix map for the current store.
   // The indices in the |raw_removals| list, which may be NULL, are not merged.
@@ -340,6 +334,12 @@ class V4Store {
   // Reads the state of the store from the file on disk and returns the reason
   // for the failure or reports success.
   StoreReadResult ReadFromDisk();
+
+  // Updates the |additions_map| with the additions received in the partial
+  // update from the server.
+  ApplyUpdateResult UpdateHashPrefixMapFromAdditions(
+      const ::google::protobuf::RepeatedPtrField<ThreatEntrySet>& additions,
+      HashPrefixMap* additions_map);
 
   // Writes the FULL_UPDATE |response| to disk as a V4StoreFileFormat proto.
   StoreWriteResult WriteToDisk(
