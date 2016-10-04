@@ -120,6 +120,15 @@ remoting.ChromotingEvent = function(type) {
     * @type {remoting.ChromotingEvent.FeatureTracker}
     */
   this.feature_tracker;
+  /** @type {remoting.ChromotingEvent.ScreenResolution} */
+  this.host_all_screens_size;
+  /** @type {remoting.ChromotingEvent.ScreenResolution} */
+  this.client_video_size;
+  /** @type {remoting.ChromotingEvent.ScreenResolution} */
+  this.client_window_size;
+  /** @type {boolean} */
+  this.client_fullscreen;
+
   this.init_();
 };
 
@@ -230,6 +239,24 @@ remoting.ChromotingEvent.FeatureTracker = function() {
   this.fullscreen_esc_count = 0;
 };
 
+/**
+ * Client or host screen resolution.
+ *
+ * @param {number} width
+ * @param {number} height
+ * @param {number} dpi
+ * @struct
+ * @constructor
+ */
+  remoting.ChromotingEvent.ScreenResolution = function(width, height, dpi) {
+  /** @type {number} */
+  this.width = width;
+  /** @type {number} */
+  this.height = height;
+  /** @type {number} */
+  this.dpi = dpi;
+};
+
 })();
 
 /**
@@ -245,7 +272,8 @@ remoting.ChromotingEvent.Type = {
   RESTART: 7,
   HOST_STATUS: 8,
   SIGNAL_STRATEGY_PROGRESS: 9,
-  FEATURE_TRACKING: 10
+  FEATURE_TRACKING: 10,
+  SCREEN_RESOLUTIONS: 11,
 };
 
 /** @enum {number} */

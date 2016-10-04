@@ -15,11 +15,12 @@ var remoting = remoting || {};
 /**
  * @param {HTMLElement} container
  * @param {remoting.ConnectionInfo} connectionInfo
+ * @param {remoting.SessionLogger} logger
  * @constructor
  * @extends {base.EventSourceImpl}
  * @implements {base.Disposable}
  */
-remoting.DesktopConnectedView = function(container, connectionInfo) {
+remoting.DesktopConnectedView = function(container, connectionInfo, logger) {
 
   /** @private {HTMLElement} */
   this.container_ = container;
@@ -32,6 +33,9 @@ remoting.DesktopConnectedView = function(container, connectionInfo) {
 
   /** @private */
   this.host_ = connectionInfo.host();
+
+  /** @private */
+  this.logger_ = logger;
 
   /** @private {remoting.DesktopViewport} */
   this.viewport_ = null;
@@ -179,7 +183,8 @@ remoting.DesktopConnectedView.prototype.initUI_ = function() {
   this.viewport_ = new remoting.DesktopViewport(
       scrollerElement || document.body,
       this.plugin_.hostDesktop(),
-      this.host_.options);
+      this.host_.options,
+      this.logger_);
 
   if (remoting.windowFrame) {
     remoting.windowFrame.setDesktopConnectedView(this);
@@ -300,8 +305,10 @@ remoting.DesktopConnectedView.prototype.setRemapKeys = function(remappings) {
  *
  * @param {HTMLElement} container
  * @param {remoting.ConnectionInfo} connectionInfo
+ * @param {remoting.SessionLogger} logger
  * @return  {remoting.DesktopConnectedView}
  */
-remoting.DesktopConnectedView.create = function(container, connectionInfo) {
-  return new remoting.DesktopConnectedView(container, connectionInfo);
+remoting.DesktopConnectedView.create = function(container, connectionInfo,
+                                                logger) {
+  return new remoting.DesktopConnectedView(container, connectionInfo, logger);
 };

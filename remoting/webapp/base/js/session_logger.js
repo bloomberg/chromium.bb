@@ -263,6 +263,24 @@ remoting.SessionLogger.prototype.logStatistics = function(stats) {
 };
 
 /**
+ * Logs host and client dimensions.
+ *
+ * @param {{width: number, height: number}} hostSize
+ * @param {{width: number, height: number}} clientPluginSize
+ * @param {{width: number, height: number}} clientWindowSize
+ * @param {boolean} clientFullscreen
+ */
+remoting.SessionLogger.prototype.logScreenResolutions =
+    function(hostSize, hostDpi, clientPluginSize, clientWindowSize, clientDpi,
+             clientFullscreen) {
+  this.maybeExpireSessionId_();
+  var entry = this.makeScreenResolutions_(hostSize, hostDpi, clientPluginSize,
+                                          clientWindowSize, clientDpi,
+                                          clientFullscreen);
+  this.log_(entry);
+};
+
+/**
  * @param {remoting.ChromotingEvent.SessionState} state
  * @param {remoting.Error=} opt_error
  * @return {remoting.ChromotingEvent}
@@ -285,6 +303,30 @@ remoting.SessionLogger.prototype.makeSessionStateChange_ =
 
   entry.session_state = state;
 
+  this.fillEvent_(entry);
+  return entry;
+};
+
+/**
+ * @param {{width: number, height: number}} hostSize
+ * @param {{width: number, height: number}} clientPluginSize
+ * @param {{width: number, height: number}} clientWindowSize
+ * @param {boolean} clientFullscreen
+ * @return {remoting.ChromotingEvent}
+ * @private
+ */
+remoting.SessionLogger.prototype.makeScreenResolutions_ =
+    function(hostSize, hostDpi, clientPluginSize, clientWindowSize, clientDpi,
+             clientFullscreen) {
+  var entry = new remoting.ChromotingEvent(
+      remoting.ChromotingEvent.Type.SCREEN_RESOLUTIONS);
+  entry.client_video_size = new remoting.ChromotingEvent.ScreenResolution(
+      clientPluginSize.width, clientPluginSize.height, clientDpi);
+  entry.client_window_size = new remoting.ChromotingEvent.ScreenResolution(
+      clientWindowSize.width, clientWindowSize.height, clientDpi);
+  entry.host_all_screens_size = new remoting.ChromotingEvent.ScreenResolution(
+      hostSize.width, hostSize.height, hostDpi);
+  entry.client_fullscreen = clientFullscreen;
   this.fillEvent_(entry);
   return entry;
 };

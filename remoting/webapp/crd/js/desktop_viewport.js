@@ -22,11 +22,13 @@ var remoting = remoting || {};
  *   are showing scrollbars on.
  * @param {remoting.HostDesktop} hostDesktop
  * @param {remoting.HostOptions} hostOptions
+ * @param {!remoting.SessionLogger} logger
  *
  * @constructor
  * @implements {base.Disposable}
  */
-remoting.DesktopViewport = function(rootElement, hostDesktop, hostOptions) {
+  remoting.DesktopViewport = function(rootElement, hostDesktop, hostOptions,
+                                      logger) {
   /** @private */
   this.rootElement_ = rootElement;
   /** @private */
@@ -49,6 +51,10 @@ remoting.DesktopViewport = function(rootElement, hostDesktop, hostOptions) {
   this.pluginWidthForBumpScrollTesting_ = 0;
   /** @private {number} */
   this.pluginHeightForBumpScrollTesting_ = 0;
+  /** @private {!remoting.SessionLogger} */
+  this.logger_ = logger;
+  /** @private {number?} */
+  this.loggingTimer_ = null;
 
   this.eventHooks_ = new base.Disposables(
       new base.EventHook(
@@ -331,10 +337,17 @@ remoting.DesktopViewport.prototype.updateDimensions_ = function() {
                       height: dimensions.height };
   var desktopDpi = { x: dimensions.xDpi,
                      y: dimensions.yDpi };
+  var clientSize = this.getClientArea();
   var newSize = remoting.Viewport.choosePluginSize(
-      this.getClientArea(), window.devicePixelRatio,
+      clientSize, window.devicePixelRatio,
       desktopSize, desktopDpi, this.hostOptions_.getDesktopScale(),
       remoting.fullscreen.isActive(), this.hostOptions_.getShrinkToFit());
+
+  // Log the host and client dimensions. Since we don't support differing x- and
+  // y-DPIs, arbitrarily pick one for the host DPI.
+  this.logDimensions_(desktopSize, desktopDpi.x, newSize, clientSize,
+                      window.devicePixelRatio * 96,
+                      remoting.fullscreen.isActive());
 
   // Resize the plugin if necessary.
   console.log('plugin dimensions:' + newSize.width + 'x' + newSize.height);
@@ -364,6 +377,33 @@ remoting.DesktopViewport.prototype.setDesktopScale = function(desktopScale) {
 
   // Save the new desktop scale setting.
   this.hostOptions_.save();
+};
+
+/**
+ * Log the specified client and host sizes after a short delay. Since the host
+ * size may change in response to a change in the client size, the delay allows
+ * time for the desktop size change notification to arrive from the host, and
+ * avoids logging the intermediate state.
+ *
+ * @param {{width: number, height: number}} hostSize
+ * @param {{width: number, height: number}} clientPluginSize
+ * @param {{width: number, height: number}} clientWindowSize
+ * @param {boolean} clientFullscreen
+ */
+remoting.DesktopViewport.prototype.logDimensions_ =
+    function(hostSize, hostDpi, clientPluginSize, clientWindowSize, clientDpi,
+             isFullscreen) {
+  if (this.loggingTimer_ !== null) {
+    window.clearTimeout(this.loggingTimer_);
+  }
+  var kLoggingRateLimitMs = 2000;
+  this.loggingTimer_ = window.setTimeout(
+      () => {
+        this.logger_.logScreenResolutions(hostSize, hostDpi, clientPluginSize,
+                                          clientWindowSize, clientDpi,
+                                          isFullscreen);
+      },
+      kLoggingRateLimitMs);
 };
 
 }());
