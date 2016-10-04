@@ -53,6 +53,7 @@ class CONTENT_EXPORT FrameNavigationEntry
                    scoped_refptr<SiteInstanceImpl> source_site_instance,
                    const GURL& url,
                    const Referrer& referrer,
+                   const std::vector<GURL>& redirect_chain,
                    const PageState& page_state,
                    const std::string& method,
                    int64_t post_id);
@@ -110,6 +111,13 @@ class CONTENT_EXPORT FrameNavigationEntry
   void set_referrer(const Referrer& referrer) { referrer_ = referrer; }
   const Referrer& referrer() const { return referrer_; }
 
+  // The redirect chain traversed during this frame navigation, from the initial
+  // redirecting URL to the final non-redirecting current URL.
+  void set_redirect_chain(const std::vector<GURL>& redirect_chain) {
+    redirect_chain_ = redirect_chain;
+  }
+  const std::vector<GURL>& redirect_chain() const { return redirect_chain_; }
+
   void SetPageState(const PageState& page_state);
   const PageState& page_state() const { return page_state_; }
 
@@ -145,6 +153,11 @@ class CONTENT_EXPORT FrameNavigationEntry
   scoped_refptr<SiteInstanceImpl> source_site_instance_;
   GURL url_;
   Referrer referrer_;
+  // This is used when transferring a pending entry from one process to another.
+  // We also send the main frame's redirect chain through session sync for
+  // offline analysis.
+  // It is preserved after commit but should not be persisted.
+  std::vector<GURL> redirect_chain_;
   // TODO(creis): Change this to FrameState.
   PageState page_state_;
   std::string method_;

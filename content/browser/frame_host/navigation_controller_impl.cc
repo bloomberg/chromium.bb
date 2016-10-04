@@ -727,7 +727,8 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
         entry->AddOrUpdateFrameEntry(
             node, -1, -1, nullptr,
             static_cast<SiteInstanceImpl*>(params.source_site_instance.get()),
-            params.url, params.referrer, PageState(), "GET", -1);
+            params.url, params.referrer, params.redirect_chain, PageState(),
+            "GET", -1);
       }
     }
   }
@@ -739,12 +740,11 @@ void NavigationControllerImpl::LoadURLWithParams(const LoadURLParams& params) {
         params.is_renderer_initiated, params.extra_headers, browser_context_));
     entry->set_source_site_instance(
         static_cast<SiteInstanceImpl*>(params.source_site_instance.get()));
+    entry->SetRedirectChain(params.redirect_chain);
   }
 
   // Set the FTN ID (only used in non-site-per-process, for tests).
   entry->set_frame_tree_node_id(frame_tree_node_id);
-  if (params.redirect_chain.size() > 0)
-    entry->SetRedirectChain(params.redirect_chain);
   // Don't allow an entry replacement if there is no entry to replace.
   // http://crbug.com/457149
   if (params.should_replace_current_entry && entries_.size() > 0)
@@ -908,15 +908,17 @@ bool NavigationControllerImpl::RendererDidNavigate(
   FrameNavigationEntry* frame_entry =
       active_entry->GetFrameEntry(rfh->frame_tree_node());
   if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
-    // Update the frame-specific PageState.
+    // Update the frame-specific PageState and RedirectChain
     // We may not find a frame_entry in some cases; ignore the PageState if so.
     // TODO(creis): Remove the "if" once https://crbug.com/522193 is fixed.
-    if (frame_entry)
+    if (frame_entry) {
       frame_entry->SetPageState(params.page_state);
+      frame_entry->set_redirect_chain(params.redirects);
+    }
   } else {
     active_entry->SetPageState(params.page_state);
+    active_entry->SetRedirectChain(params.redirects);
   }
-  active_entry->SetRedirectChain(params.redirects);
 
   // Use histogram to track memory impact of redirect chain because it's now
   // not cleared for committed entries.
@@ -1248,8 +1250,8 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
   entry->AddOrUpdateFrameEntry(
       rfh->frame_tree_node(), params.item_sequence_number,
       params.document_sequence_number, rfh->GetSiteInstance(), nullptr,
-      params.url, params.referrer, params.page_state, params.method,
-      params.post_id);
+      params.url, params.referrer, params.redirects, params.page_state,
+      params.method, params.post_id);
 
   // The redirected to page should not inherit the favicon from the previous
   // page.
@@ -1306,8 +1308,8 @@ void NavigationControllerImpl::RendererDidNavigateToSamePage(
   existing_entry->AddOrUpdateFrameEntry(
       rfh->frame_tree_node(), params.item_sequence_number,
       params.document_sequence_number, rfh->GetSiteInstance(), nullptr,
-      params.url, params.referrer, params.page_state, params.method,
-      params.post_id);
+      params.url, params.referrer, params.redirects, params.page_state,
+      params.method, params.post_id);
 
   DiscardNonCommittedEntries();
 }
@@ -1405,8 +1407,8 @@ bool NavigationControllerImpl::RendererDidNavigateAutoSubframe(
     last_committed->AddOrUpdateFrameEntry(
         rfh->frame_tree_node(), params.item_sequence_number,
         params.document_sequence_number, rfh->GetSiteInstance(), nullptr,
-        params.url, params.referrer, params.page_state, params.method,
-        params.post_id);
+        params.url, params.referrer, params.redirects, params.page_state,
+        params.method, params.post_id);
   }
 
   return send_commit_notification;

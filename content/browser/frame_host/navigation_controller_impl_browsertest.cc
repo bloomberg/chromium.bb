@@ -4196,6 +4196,107 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(dsn_3, dsn_4);
 }
 
+// Verifies that the FrameNavigationEntry's redirect chain is created for the
+// main frame.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       FrameNavigationEntry_MainFrameRedirectChain) {
+  const NavigationControllerImpl& controller =
+      static_cast<const NavigationControllerImpl&>(
+          shell()->web_contents()->GetController());
+
+  // Navigate the main frame to a redirecting URL (server-side)
+  GURL final_url(embedded_test_server()->GetURL("/simple_page.html"));
+  GURL redirecting_url(
+      embedded_test_server()->GetURL("/server-redirect?/simple_page.html"));
+  NavigateToURLBlockUntilNavigationsComplete(shell(), redirecting_url, 1);
+  EXPECT_TRUE(IsLastCommittedEntryOfPageType(shell()->web_contents(),
+                                             PAGE_TYPE_NORMAL));
+  EXPECT_TRUE(shell()->web_contents()->GetLastCommittedURL() == final_url);
+
+  // Check last committed NavigationEntry's redirects.
+  EXPECT_EQ(1, controller.GetEntryCount());
+  content::NavigationEntry* entry = controller.GetLastCommittedEntry();
+  EXPECT_EQ(entry->GetRedirectChain().size(), 2u);
+  EXPECT_EQ(entry->GetRedirectChain()[0], redirecting_url);
+  EXPECT_EQ(entry->GetRedirectChain()[1], final_url);
+}
+
+// Verifies that FrameNavigationEntry's redirect chain is created and stored on
+// the right subframe (AUTO_SUBFRAME navigation).
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       FrameNavigationEntry_AutoSubFrameRedirectChain) {
+  const NavigationControllerImpl& controller =
+      static_cast<const NavigationControllerImpl&>(
+          shell()->web_contents()->GetController());
+
+  GURL main_url(embedded_test_server()->GetURL(
+      "/navigation_controller/page_with_iframe_redirect.html"));
+  GURL iframe_redirect_url(
+      embedded_test_server()->GetURL("/server-redirect?/simple_page.html"));
+  GURL iframe_final_url(embedded_test_server()->GetURL("/simple_page.html"));
+
+  // Navigate to a page with an redirecting iframe.
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Check that the main frame redirect chain contains only one url.
+  EXPECT_EQ(1, controller.GetEntryCount());
+  NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
+  EXPECT_EQ(entry->GetRedirectChain().size(), 1u);
+  EXPECT_EQ(entry->GetRedirectChain()[0], main_url);
+
+  // Verify subframe entries if they're enabled (e.g. in --site-per-process).
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
+    // Check that the FrameNavigationEntry's redirect chain contains 2 urls.
+    ASSERT_EQ(1U, entry->root_node()->children.size());
+    FrameNavigationEntry* frame_entry =
+        entry->root_node()->children[0]->frame_entry.get();
+    EXPECT_EQ(frame_entry->redirect_chain().size(), 2u);
+    EXPECT_EQ(frame_entry->redirect_chain()[0], iframe_redirect_url);
+    EXPECT_EQ(frame_entry->redirect_chain()[1], iframe_final_url);
+  }
+}
+
+// Verifies that FrameNavigationEntry's redirect chain is created and stored on
+// the right subframe (NEW_SUBFRAME navigation).
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       FrameNavigationEntry_NewSubFrameRedirectChain) {
+  const NavigationControllerImpl& controller =
+      static_cast<const NavigationControllerImpl&>(
+          shell()->web_contents()->GetController());
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  // 1. Navigate to a page with an iframe.
+  GURL main_url(embedded_test_server()->GetURL(
+      "/navigation_controller/page_with_data_iframe.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  EXPECT_EQ(1, controller.GetEntryCount());
+
+  // 2. Navigate in the subframe with a redirection.
+  GURL frame_final_url(embedded_test_server()->GetURL("/simple_page.html"));
+  GURL frame_redirect_url(
+      embedded_test_server()->GetURL("/server-redirect?/simple_page.html"));
+  NavigateFrameToURL(root->child_at(0), frame_redirect_url);
+
+  // Check that the main frame redirect chain contains only the main_url.
+  EXPECT_EQ(2, controller.GetEntryCount());
+  NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
+  EXPECT_EQ(entry->GetRedirectChain().size(), 1u);
+  EXPECT_EQ(entry->GetRedirectChain()[0], main_url);
+
+  // Verify subframe entries if they're enabled (e.g. in --site-per-process).
+  if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
+    // Check that the FrameNavigationEntry's redirect chain contains 2 urls.
+    ASSERT_EQ(1U, entry->root_node()->children.size());
+    FrameNavigationEntry* frame_entry =
+        entry->root_node()->children[0]->frame_entry.get();
+    EXPECT_EQ(frame_entry->redirect_chain().size(), 2u);
+    EXPECT_EQ(frame_entry->redirect_chain()[0], frame_redirect_url);
+    EXPECT_EQ(frame_entry->redirect_chain()[1], frame_final_url);
+  }
+}
+
 // Support a set of tests that isolate only a subset of sites with
 // out-of-process iframes (OOPIFs).
 class NavigationControllerOopifBrowserTest

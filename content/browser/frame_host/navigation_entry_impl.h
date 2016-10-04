@@ -226,6 +226,7 @@ class CONTENT_EXPORT NavigationEntryImpl
       scoped_refptr<SiteInstanceImpl> source_site_instance,
       const GURL& url,
       const Referrer& referrer,
+      const std::vector<GURL>& redirect_chain,
       const PageState& page_state,
       const std::string& method,
       int64_t post_id);
@@ -503,11 +504,6 @@ class CONTENT_EXPORT NavigationEntryImpl
   // browser will replace the current navigation entry (which is the page
   // doing the redirect).
   bool should_replace_entry_;
-
-  // This is used when transferring a pending entry from one process to another.
-  // We also send this data through session sync for offline analysis.
-  // It is preserved after commit but should not be persisted.
-  std::vector<GURL> redirect_chain_;
 
   // This is set to true when this entry's navigation should clear the session
   // history both on the renderer and browser side. The browser side history

@@ -43,7 +43,8 @@ FrameNavigationEntry* FrameNavigationEntry::Clone() const {
   // Omit any fields cleared at commit time.
   copy->UpdateEntry(frame_unique_name_, item_sequence_number_,
                     document_sequence_number_, site_instance_.get(), nullptr,
-                    url_, referrer_, page_state_, method_, post_id_);
+                    url_, referrer_, redirect_chain_, page_state_, method_,
+                    post_id_);
   return copy;
 }
 
@@ -55,6 +56,7 @@ void FrameNavigationEntry::UpdateEntry(
     scoped_refptr<SiteInstanceImpl> source_site_instance,
     const GURL& url,
     const Referrer& referrer,
+    const std::vector<GURL>& redirect_chain,
     const PageState& page_state,
     const std::string& method,
     int64_t post_id) {
@@ -63,6 +65,7 @@ void FrameNavigationEntry::UpdateEntry(
   document_sequence_number_ = document_sequence_number;
   site_instance_ = site_instance;
   source_site_instance_ = std::move(source_site_instance);
+  redirect_chain_ = redirect_chain;
   url_ = url;
   referrer_ = referrer;
   page_state_ = page_state;

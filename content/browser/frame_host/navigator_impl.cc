@@ -821,8 +821,9 @@ void NavigatorImpl::RequestTransferURL(
     }
     entry->AddOrUpdateFrameEntry(
         node, -1, -1, nullptr,
-        static_cast<SiteInstanceImpl*>(source_site_instance), dest_url,
-        referrer_to_use, PageState(), method, -1);
+        static_cast<SiteInstanceImpl*>(source_site_instance),
+        dest_url, referrer_to_use, redirect_chain, PageState(), method,
+        -1);
   } else {
     // Main frame case.
     entry = NavigationEntryImpl::FromNavigationEntry(
@@ -831,9 +832,9 @@ void NavigatorImpl::RequestTransferURL(
             std::string(), controller_->GetBrowserContext()));
     entry->root_node()->frame_entry->set_source_site_instance(
         static_cast<SiteInstanceImpl*>(source_site_instance));
+    entry->SetRedirectChain(redirect_chain);
   }
 
-  entry->SetRedirectChain(redirect_chain);
   // Don't allow an entry replacement if there is no entry to replace.
   // http://crbug.com/457149
   if (should_replace_current_entry && controller_->GetEntryCount() > 0)

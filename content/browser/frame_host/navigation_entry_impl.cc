@@ -551,11 +551,11 @@ int NavigationEntryImpl::GetHttpStatusCode() const {
 
 void NavigationEntryImpl::SetRedirectChain(
     const std::vector<GURL>& redirect_chain) {
-  redirect_chain_ = redirect_chain;
+  root_node()->frame_entry->set_redirect_chain(redirect_chain);
 }
 
 const std::vector<GURL>& NavigationEntryImpl::GetRedirectChain() const {
-  return redirect_chain_;
+  return root_node()->frame_entry->redirect_chain();
 }
 
 bool NavigationEntryImpl::IsRestored() const {
@@ -647,7 +647,6 @@ std::unique_ptr<NavigationEntryImpl> NavigationEntryImpl::CloneAndReplace(
   copy->cached_display_title_ = cached_display_title_;
   // ResetForCommit: transferred_global_request_id_
   // ResetForCommit: should_replace_entry_
-  copy->redirect_chain_ = redirect_chain_;
   // ResetForCommit: should_clear_history_list_
   // ResetForCommit: frame_tree_node_id_
   // ResetForCommit: intent_received_timestamp_
@@ -714,7 +713,7 @@ RequestNavigationParams NavigationEntryImpl::ConstructRequestNavigationParams(
   // completed navigation (whose previous redirects don't apply).
   std::vector<GURL> redirects;
   if (ui::PageTransitionIsNewNavigation(GetTransitionType())) {
-    redirects = GetRedirectChain();
+    redirects = frame_entry.redirect_chain();
   }
 
   int pending_offset_to_send = pending_history_list_offset;
@@ -790,6 +789,7 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
     scoped_refptr<SiteInstanceImpl> source_site_instance,
     const GURL& url,
     const Referrer& referrer,
+    const std::vector<GURL>& redirect_chain,
     const PageState& page_state,
     const std::string& method,
     int64_t post_id) {
@@ -813,8 +813,8 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
     root_node()->frame_entry->UpdateEntry(
         frame_tree_node->unique_name(), item_sequence_number,
         document_sequence_number, site_instance,
-        std::move(source_site_instance), url, referrer, page_state, method,
-        post_id);
+        std::move(source_site_instance), url, referrer, redirect_chain,
+        page_state, method, post_id);
     return;
   }
 
@@ -839,10 +839,10 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
         child->children.clear();
 
       // Update the existing FrameNavigationEntry (e.g., for replaceState).
-      child->frame_entry->UpdateEntry(unique_name, item_sequence_number,
-                                      document_sequence_number, site_instance,
-                                      std::move(source_site_instance), url,
-                                      referrer, page_state, method, post_id);
+      child->frame_entry->UpdateEntry(
+          unique_name, item_sequence_number, document_sequence_number,
+          site_instance, std::move(source_site_instance), url, referrer,
+          redirect_chain, page_state, method, post_id);
       return;
     }
   }
@@ -855,6 +855,7 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
       site_instance, std::move(source_site_instance), url, referrer, method,
       post_id);
   frame_entry->SetPageState(page_state);
+  frame_entry->set_redirect_chain(redirect_chain);
   parent_node->children.push_back(
       new NavigationEntryImpl::TreeNode(parent_node, frame_entry));
 }
