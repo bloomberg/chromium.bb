@@ -5,7 +5,7 @@ layer at (0,0) size 2400x408
     LayoutBlockFlow {BODY} at (24,24) size 2352x360
 layer at (24,24) size 600x360 clip at (24,24) size 555x315 scrollWidth 1200 scrollHeight 820
   LayoutBlockFlow {DIV} at (0,0) size 600x360
-    LayoutBlockFlow (anonymous) at (0,0) size 585x220
+    LayoutBlockFlow (anonymous) at (0,0) size 555x220
       LayoutBR {BR} at (0,1) size 0x53
       LayoutText {#text} at (0,56) size 542x163
         text run at (0,56) width 515: "This should be a scrollable"
