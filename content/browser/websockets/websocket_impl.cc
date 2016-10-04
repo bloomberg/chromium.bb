@@ -24,6 +24,7 @@
 #include "content/browser/ssl/ssl_manager.h"
 #include "content/public/browser/storage_partition.h"
 #include "ipc/ipc_message.h"
+#include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
@@ -93,7 +94,8 @@ class WebSocketImpl::WebSocketEventHandler final
                                     const std::string& extensions) override;
   ChannelState OnDataFrame(bool fin,
                            WebSocketMessageType type,
-                           const std::vector<char>& data) override;
+                           scoped_refptr<net::IOBuffer> buffer,
+                           size_t buffer_size) override;
   ChannelState OnClosingHandshake() override;
   ChannelState OnFlowControl(int64_t quota) override;
   ChannelState OnDropChannel(bool was_clean,
@@ -167,15 +169,19 @@ ChannelState WebSocketImpl::WebSocketEventHandler::OnAddChannelResponse(
 ChannelState WebSocketImpl::WebSocketEventHandler::OnDataFrame(
     bool fin,
     net::WebSocketFrameHeader::OpCode type,
-    const std::vector<char>& data) {
+    scoped_refptr<net::IOBuffer> buffer,
+    size_t buffer_size) {
   DVLOG(3) << "WebSocketEventHandler::OnDataFrame @"
            << reinterpret_cast<void*>(this)
            << " fin=" << fin
-           << " type=" << type << " data is " << data.size() << " bytes";
+           << " type=" << type << " data is " << buffer_size << " bytes";
 
   // TODO(darin): Avoid this copy.
-  std::vector<uint8_t> data_to_pass(data.size());
-  std::copy(data.begin(), data.end(), data_to_pass.begin());
+  std::vector<uint8_t> data_to_pass(buffer_size);
+  if (buffer_size > 0) {
+    std::copy(buffer->data(), buffer->data() + buffer_size,
+              data_to_pass.begin());
+  }
 
   impl_->client_->OnDataFrame(fin, OpCodeToMessageType(type), data_to_pass);
 
@@ -435,10 +441,11 @@ void WebSocketImpl::SendFrame(bool fin,
   }
 
   // TODO(darin): Avoid this copy.
-  std::vector<char> data_to_pass(data.size());
-  std::copy(data.begin(), data.end(), data_to_pass.begin());
+  scoped_refptr<net::IOBuffer> data_to_pass(new net::IOBuffer(data.size()));
+  std::copy(data.begin(), data.end(), data_to_pass->data());
 
-  channel_->SendFrame(fin, MessageTypeToOpCode(type), data_to_pass);
+  channel_->SendFrame(fin, MessageTypeToOpCode(type), std::move(data_to_pass),
+                      data.size());
 }
 
 void WebSocketImpl::SendFlowControl(int64_t quota) {
