@@ -14,6 +14,7 @@ import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -31,7 +32,6 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
 import org.chromium.chromoting.accountswitcher.AccountSwitcher;
 import org.chromium.chromoting.accountswitcher.AccountSwitcherFactory;
@@ -201,7 +201,7 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, toolbar,
                 R.string.open_navigation_drawer, R.string.close_navigation_drawer);
-        mDrawerLayout.setDrawerListener(mDrawerToggle);
+        mDrawerLayout.addDrawerListener(mDrawerToggle);
 
         // Disable the hamburger icon animation. This is more complex than it ought to be.
         // The animation can be customized by tweaking some style parameters - see
@@ -232,7 +232,7 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
 
         // Set the three-line icon instead of the default which is a tinted arrow icon.
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        Drawable menuIcon = ApiCompatibilityUtils.getDrawable(getResources(), R.drawable.ic_menu);
+        Drawable menuIcon = ContextCompat.getDrawable(this, R.drawable.ic_menu);
         DrawableCompat.setTint(menuIcon.mutate(),
                 ChromotingUtil.getColorAttribute(this, R.attr.colorControlNormal));
         getSupportActionBar().setHomeAsUpIndicator(menuIcon);

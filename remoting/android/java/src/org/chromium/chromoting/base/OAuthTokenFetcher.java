@@ -4,6 +4,7 @@
 
 package org.chromium.chromoting.base;
 
+import android.accounts.Account;
 import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
@@ -100,10 +101,8 @@ public class OAuthTokenFetcher {
                         GoogleAuthUtil.clearToken(mContext, expiredToken);
                     }
 
-                    // This method is deprecated but its replacement is not yet available.
-                    // TODO(lambroslambrou): Fix this by replacing |mAccountName| with an instance
-                    // of android.accounts.Account.
-                    String token = GoogleAuthUtil.getToken(mContext, mAccountName, mTokenScope);
+                    Account account = new Account(mAccountName, GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE);
+                    String token = GoogleAuthUtil.getToken(mContext, account, mTokenScope);
                     handleTokenReceived(token);
                 } catch (IOException ioException) {
                     handleError(Error.NETWORK);
