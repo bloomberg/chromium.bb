@@ -35,8 +35,7 @@ class TextCodecUTF16 final : public TextCodec {
   static void registerEncodingNames(EncodingNameRegistrar);
   static void registerCodecs(TextCodecRegistrar);
 
-  TextCodecUTF16(bool littleEndian)
-      : m_littleEndian(littleEndian), m_haveBufferedByte(false) {}
+  TextCodecUTF16(bool littleEndian) : m_littleEndian(littleEndian) {}
 
   String decode(const char*,
                 size_t length,
@@ -48,8 +47,10 @@ class TextCodecUTF16 final : public TextCodec {
 
  private:
   bool m_littleEndian;
-  bool m_haveBufferedByte;
-  unsigned char m_bufferedByte;
+  bool m_haveLeadByte = false;
+  unsigned char m_leadByte;
+  bool m_haveLeadSurrogate = false;
+  UChar m_leadSurrogate;
 };
 
 }  // namespace WTF

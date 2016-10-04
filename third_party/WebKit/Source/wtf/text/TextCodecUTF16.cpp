@@ -76,59 +76,74 @@ String TextCodecUTF16::decode(const char* bytes,
   const bool reallyFlush = flush != DoNotFlush && flush != FetchEOF;
 
   if (!length) {
-    if (!reallyFlush || !m_haveBufferedByte)
-      return String();
-    sawError = true;
-    return String(&replacementCharacter, 1);
+    if (reallyFlush && (m_haveLeadByte || m_haveLeadSurrogate)) {
+      m_haveLeadByte = m_haveLeadSurrogate = false;
+      sawError = true;
+      return String(&replacementCharacter, 1);
+    }
+    return String();
   }
-
-  // FIXME: This should generate an error if there is an unpaired surrogate.
 
   const unsigned char* p = reinterpret_cast<const unsigned char*>(bytes);
-  size_t numBytes = length + m_haveBufferedByte;
-  size_t numCharsIn = numBytes / 2;
-  size_t numCharsOut =
-      ((numBytes & 1) && reallyFlush) ? numCharsIn + 1 : numCharsIn;
+  const size_t numBytes = length + m_haveLeadByte;
+  const bool willHaveExtraByte = numBytes & 1;
+  const size_t numCharsIn = numBytes / 2;
+  const size_t maxCharsOut = numCharsIn + (m_haveLeadSurrogate ? 1 : 0) +
+                             (reallyFlush && willHaveExtraByte ? 1 : 0);
 
-  StringBuffer<UChar> buffer(numCharsOut);
+  StringBuffer<UChar> buffer(maxCharsOut);
   UChar* q = buffer.characters();
 
-  if (m_haveBufferedByte) {
+  for (size_t i = 0; i < numCharsIn; ++i) {
     UChar c;
-    if (m_littleEndian)
-      c = m_bufferedByte | (p[0] << 8);
-    else
-      c = (m_bufferedByte << 8) | p[0];
-    *q++ = c;
-    m_haveBufferedByte = false;
-    p += 1;
-    numCharsIn -= 1;
-  }
-
-  if (m_littleEndian) {
-    for (size_t i = 0; i < numCharsIn; ++i) {
-      UChar c = p[0] | (p[1] << 8);
-      p += 2;
-      *q++ = c;
-    }
-  } else {
-    for (size_t i = 0; i < numCharsIn; ++i) {
-      UChar c = (p[0] << 8) | p[1];
-      p += 2;
-      *q++ = c;
-    }
-  }
-
-  if (numBytes & 1) {
-    ASSERT(!m_haveBufferedByte);
-
-    if (reallyFlush) {
-      sawError = true;
-      *q++ = replacementCharacter;
+    if (m_haveLeadByte) {
+      c = m_littleEndian ? (m_leadByte | (p[0] << 8))
+                         : ((m_leadByte << 8) | p[0]);
+      m_haveLeadByte = false;
+      ++p;
     } else {
-      m_haveBufferedByte = true;
-      m_bufferedByte = p[0];
+      c = m_littleEndian ? (p[0] | (p[1] << 8)) : ((p[0] << 8) | p[1]);
+      p += 2;
     }
+
+    // TODO(jsbell): If necessary for performance, m_haveLeadByte handling
+    // can be pulled out and this loop split into distinct cases for
+    // big/little endian. The logic from here to the end of the loop is
+    // constant with respect to m_haveLeadByte and m_littleEndian.
+
+    if (m_haveLeadSurrogate && U_IS_TRAIL(c)) {
+      *q++ = m_leadSurrogate;
+      m_haveLeadSurrogate = false;
+      *q++ = c;
+    } else {
+      if (m_haveLeadSurrogate) {
+        m_haveLeadSurrogate = false;
+        sawError = true;
+        *q++ = replacementCharacter;
+      }
+
+      if (U_IS_LEAD(c)) {
+        m_haveLeadSurrogate = true;
+        m_leadSurrogate = c;
+      } else if (U_IS_TRAIL(c)) {
+        sawError = true;
+        *q++ = replacementCharacter;
+      } else {
+        *q++ = c;
+      }
+    }
+  }
+
+  DCHECK(!m_haveLeadByte);
+  if (willHaveExtraByte) {
+    m_haveLeadByte = true;
+    m_leadByte = p[0];
+  }
+
+  if (reallyFlush && (m_haveLeadByte || m_haveLeadSurrogate)) {
+    m_haveLeadByte = m_haveLeadSurrogate = false;
+    sawError = true;
+    *q++ = replacementCharacter;
   }
 
   buffer.shrink(q - buffer.characters());
