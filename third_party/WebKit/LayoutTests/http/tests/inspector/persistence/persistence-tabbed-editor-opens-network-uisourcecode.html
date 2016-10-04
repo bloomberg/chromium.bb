@@ -19,18 +19,19 @@ function test()
     function onBindingCreated(binding)
     {
         InspectorTest.addResult("Binding created: " + binding);
+        dumpEditorTabs("Opened tabs before opening any UISourceCodes:");
         InspectorTest.addResult("request open uiSourceCode: " + binding.fileSystem.url());
         WebInspector.panels.sources.showUISourceCode(binding.fileSystem, 0, 0);
-        dumpEditorTabs();
+        dumpEditorTabs("Opened tabs after opening UISourceCode:");
         InspectorTest.completeTest();
     }
 
-    function dumpEditorTabs()
+    function dumpEditorTabs(title)
     {
         var editorContainer = WebInspector.panels.sources._sourcesView._editorContainer;
         var openedUISourceCodes = editorContainer._tabIds.keysArray();
         openedUISourceCodes.sort((a, b) => a.url().compareTo(b.url()));
-        InspectorTest.addResult("Opened tabs: ");
+        InspectorTest.addResult(title);
         for (code of openedUISourceCodes)
             InspectorTest.addResult("    " + code.url());
     }
