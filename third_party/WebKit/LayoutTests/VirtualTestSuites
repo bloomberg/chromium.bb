@@ -298,5 +298,10 @@
     "prefix": "mojo-service-worker",
     "base": "http/tests/serviceworker",
     "args": ["--mojo-service-worker"]
+  },
+  {
+    "prefix": "layout_ng",
+    "base": "fast/block/basic",
+    "args": ["--enable-blink-features=LayoutNG"]
   }
 ]

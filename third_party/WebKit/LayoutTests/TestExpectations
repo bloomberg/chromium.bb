@@ -108,6 +108,44 @@ crbug.com/630695 fast/borders/border-radius-with-box-shadow.html [ NeedsManualRe
 
 crbug.com/639147 svg/wicd/test-rightsizing-b.xhtml [ Failure Pass ]
 
+# ====== LayoutNG-only failures from here ======
+# LayoutNG - is a new layout system for Blink.
+
+crbug.com/635619 virtual/layout_ng/fast/block/basic/001.html [ Failure ]
+crbug.com/635619 virtual/layout_ng/fast/block/basic/002.html [ Failure ]
+crbug.com/635619 virtual/layout_ng/fast/block/basic/003.html [ Failure ]
+crbug.com/635619 virtual/layout_ng/fast/block/basic/011.html [ Failure ]
+crbug.com/635619 virtual/layout_ng/fast/block/basic/012.html [ Failure ]
+crbug.com/635619 virtual/layout_ng/fast/block/basic/013.html [ Failure ]
+crbug.com/635619 virtual/layout_ng/fast/block/basic/014.html [ Failure ]
+crbug.com/635619 virtual/layout_ng/fast/block/basic/016.html [ Failure ]
+crbug.com/635619 virtual/layout_ng/fast/block/basic/018.html [ Failure ]
+crbug.com/635619 virtual/layout_ng/fast/block/basic/020.html [ Failure ]
+crbug.com/635619 virtual/layout_ng/fast/block/basic/adding-near-anonymous-block.html [ Failure ]
+crbug.com/635619 virtual/layout_ng/fast/block/basic/fieldset-stretch-to-legend.html [ Failure ]
+crbug.com/635619 virtual/layout_ng/fast/block/basic/min-pref-width-nowrap-floats.html [ Failure ]
+crbug.com/635619 virtual/layout_ng/fast/block/basic/minheight.html [ Failure ]
+crbug.com/635619 virtual/layout_ng/fast/block/basic/percent-height-inside-anonymous-block.html [ Failure ]
+crbug.com/635619 virtual/layout_ng/fast/block/basic/quirk-height.html [ Failure ]
+crbug.com/635619 virtual/layout_ng/fast/block/basic/quirk-percent-height-grandchild.html [ Failure ]
+crbug.com/635619 virtual/layout_ng/fast/block/basic/quirk-percent-height-table-cell.html [ Failure ]
+crbug.com/635619 virtual/layout_ng/fast/block/basic/text-indent-rtl.html [ Failure ]
+crbug.com/635619 virtual/layout_ng/fast/block/basic/truncation-rtl.html [ Failure ]
+crbug.com/635619 virtual/layout_ng/fast/block/basic/white-space-pre-wraps.html [ Failure ]
+# TODO(glebl) Update TestExpecations deleting the lines below once http://crrev.com/2389823003 is submitted
+crbug.com/635619 virtual/layout_ng/fast/block/basic/004.html [ Failure ]
+crbug.com/635619 virtual/layout_ng/fast/block/basic/005.html [ Failure ]
+crbug.com/635619 virtual/layout_ng/fast/block/basic/006.html [ Failure ]
+crbug.com/635619 virtual/layout_ng/fast/block/basic/007.html [ Failure ]
+crbug.com/635619 virtual/layout_ng/fast/block/basic/008.html [ Failure ]
+crbug.com/635619 virtual/layout_ng/fast/block/basic/009.html [ Failure ]
+crbug.com/635619 virtual/layout_ng/fast/block/basic/010.html [ Failure ]
+crbug.com/635619 virtual/layout_ng/fast/block/basic/015.html [ Failure ]
+crbug.com/635619 virtual/layout_ng/fast/block/basic/019.html [ Failure ]
+crbug.com/635619 virtual/layout_ng/fast/block/basic/021.html [ Failure ]
+
+# ====== LayoutNG-only failures until here ======
+
 # ====== Paint team owned tests to here ======
 
 # Run these tests with under virtual/scalefactor... only.
