@@ -202,8 +202,10 @@ class MajorGCWrapperVisitor : public v8::PersistentHandleVisitor {
       if (m_constructRetainedObjectInfos)
         m_groupsWhichNeedRetainerInfo.append(root);
     } else if (classId == WrapperTypeInfo::ObjectClassId) {
-      type->visitDOMWrapper(m_isolate, toScriptWrappable(wrapper),
-                            v8::Persistent<v8::Object>::Cast(*value));
+      if (!RuntimeEnabledFeatures::traceWrappablesEnabled()) {
+        type->visitDOMWrapper(m_isolate, toScriptWrappable(wrapper),
+                              v8::Persistent<v8::Object>::Cast(*value));
+      }
     } else {
       NOTREACHED();
     }
@@ -277,8 +279,8 @@ void objectGroupingForMajorGC(v8::Isolate* isolate,
 
 void gcPrologueForMajorGC(v8::Isolate* isolate,
                           bool constructRetainedObjectInfos) {
-  // TODO(hlopko): Collect retained object infos for heap profiler
-  if (!RuntimeEnabledFeatures::traceWrappablesEnabled()) {
+  if (!RuntimeEnabledFeatures::traceWrappablesEnabled() ||
+      constructRetainedObjectInfos) {
     objectGroupingForMajorGC(isolate, constructRetainedObjectInfos);
   }
 }
