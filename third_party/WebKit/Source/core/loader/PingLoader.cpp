@@ -417,8 +417,8 @@ bool sendPingCommon(LocalFrame* frame,
 
   // The loader keeps itself alive until it receives a response and disposes
   // itself.
-  PingLoaderImpl* loader = new PingLoaderImpl(frame, request, initiator,
-                                              AllowStoredCredentials, true);
+  PingLoaderImpl* loader =
+      new PingLoaderImpl(frame, request, initiator, credentialsAllowed, true);
   DCHECK(loader);
 
   return true;

@@ -4,19 +4,29 @@ header("Content-Security-Policy: img-src 'none'; report-uri http://localhost:808
 <!DOCTYPE html>
 <html>
 <head>
-    <script src="resources/report-test.js"></script>
+  <script src="resources/report-test.js"></script>
 </head>
 <body>
 <script>
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", "http://localhost:8080/cookies/resources/setCookies.cgi", false);
-    xhr.setRequestHeader("SET-COOKIE", "cspViolationReportCookie=crossOrigin;path=/");
-    xhr.send(null);
+if (window.testRunner) {
+  testRunner.dumpAsText();
+  testRunner.waitUntilDone();
+  testRunner.setBlockThirdPartyCookies(false);
+}
+
+fetch(
+    "http://localhost:8080/security/resources/set-cookie.php?name=cspViolationReportCookie&value=crossOrigin",
+    {mode: 'no-cors', credentials: 'include'})
+  .then(() => {
+    // This image will generate a CSP violation report.
+    const img = new Image();
+
+    img.onerror = () => {
+      window.location = "/security/contentSecurityPolicy/resources/echo-report.php?test=report-cross-origin-no-cookies.php";
+    };
+    img.src = "/security/resources/abe.png";
+    document.body.appendChild(img);
+  });
 </script>
-
-<!-- This image will generate a CSP violation report. -->
-<img src="/security/resources/abe.png">
-
-<script src='resources/go-to-echo-report.js'></script>
 </body>
 </html>

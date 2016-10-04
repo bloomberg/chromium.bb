@@ -1,5 +1,4 @@
-CONSOLE WARNING: line 9: Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check https://xhr.spec.whatwg.org/.
-CONSOLE ERROR: line 17: Refused to load the image 'http://127.0.0.1:8000/security/resources/abe.png' because it violates the following Content Security Policy directive: "img-src 'none'".
+CONSOLE ERROR: Refused to load the image 'http://127.0.0.1:8000/security/resources/abe.png' because it violates the following Content Security Policy directive: "img-src 'none'".
 
 PingLoader dispatched to 'http://localhost:8080/security/contentSecurityPolicy/resources/save-report.php?test=report-cross-origin-no-cookies.php'.
 CSP report received:
@@ -7,4 +6,4 @@ CONTENT_TYPE: application/csp-report
 HTTP_REFERER: http://127.0.0.1:8000/security/contentSecurityPolicy/report-cross-origin-no-cookies.php
 REQUEST_METHOD: POST
 === POST DATA ===
-{"csp-report":{"document-uri":"http://127.0.0.1:8000/security/contentSecurityPolicy/report-cross-origin-no-cookies.php","referrer":"","violated-directive":"img-src 'none'","effective-directive":"img-src","original-policy":"img-src 'none'; report-uri http://localhost:8080/security/contentSecurityPolicy/resources/save-report.php?test=report-cross-origin-no-cookies.php","blocked-uri":"http://127.0.0.1:8000/security/resources/abe.png","line-number":17,"source-file":"http://127.0.0.1:8000/security/contentSecurityPolicy/report-cross-origin-no-cookies.php","status-code":200}}
+{"csp-report":{"document-uri":"http://127.0.0.1:8000/security/contentSecurityPolicy/report-cross-origin-no-cookies.php","referrer":"","violated-directive":"img-src 'none'","effective-directive":"img-src","original-policy":"img-src 'none'; report-uri http://localhost:8080/security/contentSecurityPolicy/resources/save-report.php?test=report-cross-origin-no-cookies.php","blocked-uri":"http://127.0.0.1:8000/security/resources/abe.png","status-code":200}}
