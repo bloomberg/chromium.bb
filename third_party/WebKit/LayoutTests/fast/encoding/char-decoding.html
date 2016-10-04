@@ -1,12 +1,9 @@
-<html>
-<head>
-<script src="../../resources/js-test.js"></script>
+<!DOCTYPE html>
+<title>Character Decoding</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <script src="resources/char-decoding-utils.js"></script>
-</head>
-<body>
 <script>
-
-description("This tests decoding characters in various character sets.");
 
 testDecode('UTF-8', '%E2%88%9A', 'U+221A');
 
@@ -154,5 +151,3 @@ testDecode('unicodeFFFE', '%D8%69%DE%D6', 'U+D869/U+DED6');
 });
 
 </script>
-</body>
-</html>

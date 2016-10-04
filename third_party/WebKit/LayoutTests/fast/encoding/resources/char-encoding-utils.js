@@ -1,67 +1,44 @@
-function encode(charset, unicode)
-{
-    // Returns a value already encoded, since we can't do it synchronously.
-    return results[charset][unicode];
-}
+let uniqueId = 0;
+function encodeText(charsetName, unicode) {
+  return new Promise((resolve, reject) => {
+    const frame_id = `subframe${++uniqueId}`;
 
-function testsDone()
-{
-    var form = document.getElementById('form');
-    var subframe = document.getElementById('subframe');
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    // |iframe.name| must be assigned before adding frame to the body or
+    // |form.target| will not find it.
+    iframe.name = frame_id;
+    document.body.appendChild(iframe);
 
-    form.parentNode.removeChild(form);
-    subframe.parentNode.removeChild(subframe);
+    const form = document.body.appendChild(document.createElement('form'));
+    form.style.display = 'none';
+    form.method = 'GET';
+    form.action = 'resources/dummy.html';
+    form.acceptCharset = charsetName;
+    form.target = frame_id;
 
-    description("This tests encoding characters in various character sets.");
+    const input = form.appendChild(document.createElement('input'));
+    input.type = 'text';
+    input.name = 'text';
+    input.value = String.fromCharCode(unicode.replace('U+', '0x'));
 
-    for (i = 0; i < charsets.length; ++i) {
-        shouldBe("encode('" + charsets[i] + "', '" + unicodes[i] + "')", "'" + expectedResults[i] + "'");
-    }
+    iframe.onload = () => {
+      const url = iframe.contentWindow.location.href;
+      const result = url.substr(url.indexOf('=') + 1);
 
-    if (window.testRunner)
-        testRunner.notifyDone();
-}
+      iframe.remove();
+      form.remove();
 
-function processResult(result)
-{
-    var charsetResults = results[charsets[i]];
-    if (!charsetResults) {
-        charsetResults = new Object;
-        results[charsets[i]] = charsetResults;
-    }
-    charsetResults[unicodes[i]] = result; 
-}
-
-function subframeLoaded()
-{
-    var URL = "" + document.getElementById('subframe').contentWindow.location;
-    processResult(URL.substr(URL.indexOf('=') + 1));
-    ++i;
-    runTest();
-}
-
-function runTest()
-{    
-    if (i >= charsets.length) {
-        testsDone();
-        return;
-    }
-
-    var form = document.getElementById('form');
-    var text = document.getElementById('text');
-    var subframe = document.getElementById('subframe');
-
-    form.acceptCharset = charsets[i];
-    form.action = "resources/dummy.html";
-    subframe.onload = subframeLoaded;
-    text.value = String.fromCharCode(unicodes[i].replace('U+', '0x'));
-    
+      resolve(result);
+    };
     form.submit();
+  });
 }
 
-function testEncode(charsetName, unicode, characterSequence)
-{
-    charsets.push(charsetName);
-    unicodes.push(unicode);
-    expectedResults.push(characterSequence);
+function testEncode(charsetName, unicode, characterSequence) {
+  promise_test(t => {
+    return encodeText(charsetName, unicode).then(result => {
+      assert_equals(result, characterSequence);
+    });
+  }, `Encode ${charsetName}: ${unicode} -> ${characterSequence}`);
 }

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<script src="../../resources/js-test.js"></script>
+<title>Character Decoding - Invalid Trail Bytes</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <script src="resources/char-decoding-utils.js"></script>
 <script>
-
-description("Test encoding behavior for sequences with invalid trail bytes");
 
 // UTF-8 codec emits replacement characters
 testDecode('UTF-8', '%C3%22', 'U+FFFD/U+0022');

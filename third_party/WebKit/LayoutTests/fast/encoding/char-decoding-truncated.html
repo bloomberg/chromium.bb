@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<script src="../../resources/js-test.js"></script>
+<title>Character Decoding - Truncated Sequences</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <script src="resources/char-decoding-utils.js"></script>
 <script>
-
-description("Test encoding behavior for truncated sequences");
 
 // UTF-8 codec emits replacement characters
 testDecode('utf-8', '%E2%88%9A', 'U+221A');
