@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <body><span>click me</span></body>
 <script>
+if ('internals' in window)
+  window.internals.settings.setMediaPlaybackRequiresUserGesture(true);
+
 function synthesizeClick(callback) {
   document.onclick = callback;
   window.parent.postMessage({ msg: 'clickme' }, '*');

@@ -5,9 +5,6 @@
 <body></body>
 <script>
 async_test(t => {
-  if ('internals' in window)
-    window.internals.settings.setMediaPlaybackRequiresUserGesture(true);
-
   window.addEventListener('message', e => {
     switch (e.data.msg) {
       case 'clickme':
