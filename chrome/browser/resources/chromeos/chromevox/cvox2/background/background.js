@@ -114,6 +114,15 @@ Background = function() {
                 'Search+Shift' : 'Search';
       }.bind(this)
     });
+
+    Object.defineProperty(cvox.ChromeVox, 'typingEcho', {
+      get: function() {
+        return parseInt(localStorage['typingEcho'], 10);
+      }.bind(this),
+      set: function(v) {
+        localStorage['typingEcho'] = v;
+      }.bind(this)
+    });
   }
 
   Object.defineProperty(cvox.ChromeVox, 'isActive', {
