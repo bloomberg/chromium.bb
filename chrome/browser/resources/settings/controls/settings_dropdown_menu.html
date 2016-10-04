@@ -1,32 +1,28 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu-light.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-listbox/paper-listbox.html">
 <link rel="import" href="/controls/pref_control_behavior.html">
 <link rel="import" href="/i18n_setup.html">
+<link rel="import" href="/md_select_css.html">
 <link rel="import" href="/prefs/pref_util.html">
 <link rel="import" href="/settings_shared_css.html">
 
 <dom-module id="settings-dropdown-menu">
   <template>
-    <style include="settings-shared"></style>
-    <paper-dropdown-menu-light id="dropdownMenu" label="[[menuLabel_]]"
-        on-iron-select="onSelect_" no-label-float vertical-align="auto"
-        disabled="[[shouldDisableMenu_(disabled, menuOptions.*)]]">
-      <paper-listbox class="dropdown-content" selected="{{selected_}}"
-          attr-for-selected="data-value">
-        <template is="dom-repeat" items="[[menuOptions]]" initial-count="5">
-          <button class="dropdown-item" role="option"
-              data-value$="[[item.value]]">
+    <style include="settings-shared md-select"></style>
+    <div class="select-wrapper">
+      <select id="dropdownMenu" on-change="onChange_" value="[[selected_]]"
+          disabled="[[shouldDisableMenu_(disabled, menuOptions)]]">
+        <template is="dom-repeat" items="[[menuOptions]]">
+          <option value="[[item.value]]" data-value$="[[item.value]]">
             [[item.name]]
-          </button>
+          </option>
         </template>
-        <button class="dropdown-item" role="option"
-            data-value$="[[notFoundValue_]]"
+        <option value="[[notFoundValue_]]"
             hidden$="[[!isSelectedNotFound_(selected_)]]">
           $i18n{custom}
-        </button>
-      </paper-listbox>
-    </paper-dropdown-menu-light>
+        </option>
+      </select>
+      <span class="select-underline"></span>
+    </div>
   </template>
   <script src="settings_dropdown_menu.js"></script>
 </dom-module>

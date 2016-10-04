@@ -10,16 +10,25 @@ cr.define('settings_dropdown_menu', function() {
       var dropdown;
 
       /**
-       * The IronSelectable (paper-listbox) used internally by the dropdown
-       * menu.
-       * @type {Polymer.IronSelectableBehavior}
+       * The <select> used internally by the dropdown menu.
+       * @type {HTMLSelectElement}
        */
-      var selectable;
+      var selectElement;
+
+      function waitUntilDropdownUpdated() {
+        return new Promise(function(resolve) { dropdown.async(resolve); });
+      }
+
+      function simulateChangeEvent(value) {
+        selectElement.value = value;
+        selectElement.dispatchEvent(new CustomEvent('change'));
+        return waitUntilDropdownUpdated();
+      }
 
       setup(function() {
         PolymerTest.clearBody();
         dropdown = document.createElement('settings-dropdown-menu');
-        selectable = dropdown.$$('paper-listbox');
+        selectElement = dropdown.$$('select');
         document.body.appendChild(dropdown);
       });
 
@@ -34,19 +43,23 @@ cr.define('settings_dropdown_menu', function() {
                                 {value: 300, name: 'Option 300'},
                                 {value: 400, name: 'Option 400'}];
 
-        // IronSelectable uses a DOM observer, which uses a debouncer.
-        Polymer.dom.flush();
+        return waitUntilDropdownUpdated().then(function() {
+          // Initially selected item.
+          assertEquals(
+              'Option 100',
+              selectElement.selectedOptions[0].textContent.trim());
 
-        // Initially selected item.
-        assertEquals('Option 100', selectable.selectedItem.textContent.trim());
+          // Selecting an item updates the pref.
+          return simulateChangeEvent('200');
+        }).then(function() {
+          assertEquals(200, dropdown.pref.value);
 
-        // Selecting an item updates the pref.
-        selectable.selected = '200';
-        assertEquals(200, dropdown.pref.value);
-
-        // Updating the pref selects an item.
-        dropdown.set('pref.value', 400);
-        assertEquals('400', selectable.selected);
+          // Updating the pref selects an item.
+          dropdown.set('pref.value', 400);
+          return waitUntilDropdownUpdated();
+        }).then(function() {
+          assertEquals('400', selectElement.value);
+        });
       });
 
       test('with string options', function testStringOptions() {
@@ -60,18 +73,23 @@ cr.define('settings_dropdown_menu', function() {
              {value: 'b', name: 'BBB'},
              {value: 'c', name: 'CCC'},
              {value: 'd', name: 'DDD'}];
-        Polymer.dom.flush();
 
-        // Initially selected item.
-        assertEquals('CCC', selectable.selectedItem.textContent.trim());
+        return waitUntilDropdownUpdated().then(function() {
+          // Initially selected item.
+          assertEquals(
+              'CCC', selectElement.selectedOptions[0].textContent.trim());
 
-        // Selecting an item updates the pref.
-        selectable.selected = 'a';
-        assertEquals('a', dropdown.pref.value);
+          // Selecting an item updates the pref.
+          return simulateChangeEvent('a');
+        }).then(function() {
+          assertEquals('a', dropdown.pref.value);
 
-        // Updating the pref selects an item.
-        dropdown.set('pref.value', 'b');
-        assertEquals('b', selectable.selected);
+          // Updating the pref selects an item.
+          dropdown.set('pref.value', 'b');
+          return waitUntilDropdownUpdated();
+        }).then(function() {
+          assertEquals('b', selectElement.value);
+        });
       });
 
       test('with custom value', function testCustomValue() {
@@ -85,39 +103,44 @@ cr.define('settings_dropdown_menu', function() {
              {value: 'b', name: 'BBB'},
              {value: 'c', name: 'CCC'},
              {value: 'd', name: 'DDD'}];
-        Polymer.dom.flush();
 
-        // "Custom" initially selected.
-        assertEquals(dropdown.notFoundValue_, selectable.selected);
-        // Pref should not have changed.
-        assertEquals('f', dropdown.pref.value);
+        return waitUntilDropdownUpdated().then(function() {
+          // "Custom" initially selected.
+          assertEquals(dropdown.notFoundValue_, selectElement.value);
+          // Pref should not have changed.
+          assertEquals('f', dropdown.pref.value);
+        });
       });
 
-      test('delay setting options', function testDelayedOptions(done) {
+      function waitForTimeout(timeMs) {
+        return new Promise(function(resolve) { setTimeout(resolve, timeMs); });
+      }
+
+      test('delay setting options', function testDelayedOptions() {
         dropdown.pref = {
           key: 'test.number2',
           type: chrome.settingsPrivate.PrefType.NUMBER,
           value: 200,
         };
 
-        setTimeout(function() {
-          assertEquals(
-              loadTimeData.getValue('loading'), dropdown.$.dropdownMenu.label);
+        console.log('running test');
+        return waitForTimeout(100).then(function() {
+          return waitUntilDropdownUpdated();
+        }).then(function() {
           assertTrue(dropdown.$.dropdownMenu.disabled);
-          assertEquals(undefined, selectable.selected);
+          assertEquals('SETTINGS_DROPDOWN_NOT_FOUND_ITEM', selectElement.value);
 
           dropdown.menuOptions = [{value: 100, name: 'Option 100'},
                                   {value: 200, name: 'Option 200'},
                                   {value: 300, name: 'Option 300'},
                                   {value: 400, name: 'Option 400'}];
-          Polymer.dom.flush();
-
+          return waitUntilDropdownUpdated();
+        }).then(function() {
           // Dropdown menu enables itself and selects the new menu option
           // correpsonding to the pref value.
           assertFalse(dropdown.$.dropdownMenu.disabled);
-          assertEquals('200', selectable.selected);
-          done();
-        }, 100);
+          assertEquals('200', selectElement.value);
+        });
       });
     });
   }

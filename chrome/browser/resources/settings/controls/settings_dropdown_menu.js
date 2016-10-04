@@ -30,16 +30,13 @@ Polymer({
   is: 'settings-dropdown-menu',
 
   properties: {
-    /** A text label for the drop-down menu. */
-    label: String,
-
     /**
      * List of options for the drop-down menu.
-     * @type {!DropdownMenuOptionList}
+     * @type {?DropdownMenuOptionList}
      */
     menuOptions: {
       type: Array,
-      value: function() { return []; },
+      value: null,
     },
 
     /** Whether the dropdown menu should be disabled. */
@@ -47,15 +44,6 @@ Polymer({
       type: Boolean,
       reflectToAttribute: true,
       value: false,
-    },
-
-    /**
-     * Either loading text or the label for the drop-down menu.
-     * @private
-     */
-    menuLabel_: {
-      type: String,
-      value: function() { return loadTimeData.getString('loading'); },
     },
 
     /**
@@ -79,40 +67,21 @@ Polymer({
   ],
 
   observers: [
-    'checkSetup_(menuOptions)',
-    'updateSelected_(pref.value)',
+    'updateSelected_(menuOptions, pref.value)',
   ],
-
-  ready: function() {
-    this.checkSetup_(this.menuOptions);
-  },
-
-  /**
-   * Check to see if we have all the pieces needed to enable the control.
-   * @param {DropdownMenuOptionList} menuOptions
-   * @private
-   */
-  checkSetup_: function(menuOptions) {
-    if (!this.menuOptions.length)
-      return;
-
-    // Do not set |menuLabel_| to a falsy value: http://goo.gl/OnKYko
-    // (paper-dropdown-menu#181).
-    this.menuLabel_ = this.label || ' ';
-    this.updateSelected_();
-  },
 
   /**
    * Pass the selection change to the pref value.
    * @private
    */
-  onSelect_: function() {
-    if (!this.pref || this.selected_ == undefined ||
-        this.selected_ == this.notFoundValue_) {
+  onChange_: function() {
+    this.selected_ = this.$.dropdownMenu.value;
+
+    if (this.selected_ == this.notFoundValue_)
       return;
-    }
+
     var prefValue = Settings.PrefUtil.stringToPrefValue(
-        this.selected_, this.pref);
+        this.selected_, assert(this.pref));
     if (prefValue !== undefined)
       this.set('pref.value', prefValue);
   },
@@ -122,16 +91,21 @@ Polymer({
    * @private
    */
   updateSelected_: function() {
-    if (!this.pref || !this.menuOptions.length)
+    if (this.menuOptions === null || !this.menuOptions.length)
       return;
+
     var prefValue = this.pref.value;
     var option = this.menuOptions.find(function(menuItem) {
       return menuItem.value == prefValue;
     });
-    if (option == undefined)
-      this.selected_ = this.notFoundValue_;
-    else
-      this.selected_ = Settings.PrefUtil.prefToString(this.pref);
+
+    // Need to wait for the dom-repeat to render, before assigning a value to
+    // |selected_|, otherwise select#value is not populated correctly.
+    this.async(function() {
+      this.selected_ = option == undefined ?
+          this.notFoundValue_ :
+          Settings.PrefUtil.prefToString(assert(this.pref));
+    }.bind(this));
   },
 
   /**
@@ -148,6 +122,7 @@ Polymer({
    * @private
    */
   shouldDisableMenu_: function() {
-    return this.disabled || !this.menuOptions.length;
+    return this.disabled || this.menuOptions === null ||
+        this.menuOptions.length == 0;
   },
 });
