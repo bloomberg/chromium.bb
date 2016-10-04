@@ -17,6 +17,7 @@ function sendMessageToEmbedder(message) {
 }
 
 window.addEventListener('message', function(e) {
+  URL.createObjectURL(new Blob([]));
   embedder = e.source;
   var data = JSON.parse(e.data);
   if (data[0] == 'connect') {
