@@ -1059,7 +1059,7 @@ void PasswordAutofillAgent::DidFinishLoad() {
   SendPasswordForms(true);
 }
 
-void PasswordAutofillAgent::FrameWillClose() {
+void PasswordAutofillAgent::WillCommitProvisionalLoad() {
   FrameClosing();
 }
 

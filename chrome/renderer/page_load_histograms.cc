@@ -37,7 +37,7 @@
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPerformance.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "url/gurl.h"
@@ -48,7 +48,7 @@
 #endif
 
 using blink::WebDataSource;
-using blink::WebFrame;
+using blink::WebLocalFrame;
 using blink::WebPerformance;
 using blink::WebString;
 using base::Time;
@@ -133,7 +133,7 @@ URLPattern::SchemeMasks GetSupportedSchemeType(const GURL& url) {
 
 // Helper function to check for string in 'via' header. Returns true if
 // |via_value| is one of the values listed in the Via header.
-bool ViaHeaderContains(WebFrame* frame, const std::string& via_value) {
+bool ViaHeaderContains(WebLocalFrame* frame, const std::string& via_value) {
   const char kViaHeaderName[] = "Via";
   std::vector<std::string> values;
   // Multiple via headers have already been coalesced and hence each value
@@ -528,23 +528,18 @@ void DumpDeprecatedHistograms(const WebPerformance& performance,
 
 }  // namespace
 
-PageLoadHistograms::PageLoadHistograms(content::RenderView* render_view)
-    : content::RenderViewObserver(render_view) {
-}
+PageLoadHistograms::PageLoadHistograms(content::RenderFrame* render_frame)
+    : content::RenderFrameObserver(render_frame), helper_(this) {}
 
 PageLoadHistograms::~PageLoadHistograms() {
 }
 
-void PageLoadHistograms::Dump(WebFrame* frame) {
+void PageLoadHistograms::Dump() {
+  WebLocalFrame* frame = render_frame()->GetWebFrame();
+
   // We only dump histograms for main frames.
   // In the future, it may be interesting to tag subframes and dump them too.
-  if (!frame || frame->parent())
-    return;
-
-  // If the main frame lives in a different process, don't do anything.
-  // Histogram data will be recorded by the real main frame.
-  if (frame->isWebRemoteFrame())
-    return;
+  DCHECK(frame && !frame->parent());
 
   // Only dump for supported schemes.
   URLPattern::SchemeMasks scheme_type =
@@ -597,15 +592,8 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
   }
 }
 
-void PageLoadHistograms::FrameWillClose(WebFrame* frame) {
-  Dump(frame);
-}
-
-void PageLoadHistograms::ClosePage() {
-  // TODO(davemoore) This code should be removed once willClose() gets
-  // called when a page is destroyed. page_load_histograms_.Dump() is safe
-  // to call multiple times for the same frame, but it will simplify things.
-  Dump(render_view()->GetWebView()->mainFrame());
+void PageLoadHistograms::WillCommitProvisionalLoad() {
+  Dump();
 }
 
 void PageLoadHistograms::LogPageLoadTime(const DocumentState* document_state,
@@ -627,4 +615,16 @@ void PageLoadHistograms::LogPageLoadTime(const DocumentState* document_state,
 
 void PageLoadHistograms::OnDestruct() {
   delete this;
+}
+
+PageLoadHistograms::Helper::Helper(PageLoadHistograms* histograms)
+    : RenderViewObserver(histograms->render_frame()->GetRenderView()),
+      histograms_(histograms) {
+}
+
+void PageLoadHistograms::Helper::ClosePage() {
+  histograms_->Dump();
+}
+
+void PageLoadHistograms::Helper::OnDestruct() {
 }

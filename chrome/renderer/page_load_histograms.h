@@ -9,6 +9,7 @@
 #define CHROME_RENDERER_PAGE_LOAD_HISTOGRAMS_H_
 
 #include "base/macros.h"
+#include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_view_observer.h"
 
 namespace blink {
@@ -19,18 +20,17 @@ namespace content {
 class DocumentState;
 }
 
-class PageLoadHistograms : public content::RenderViewObserver {
+class PageLoadHistograms : public content::RenderFrameObserver {
  public:
-  explicit PageLoadHistograms(content::RenderView* render_view);
+  explicit PageLoadHistograms(content::RenderFrame* render_frame);
   ~PageLoadHistograms() override;
 
  private:
-  // RenderViewObserver implementation.
-  void FrameWillClose(blink::WebFrame* frame) override;
-  void ClosePage() override;
+  // RenderFrameObserver implementation.
+  void WillCommitProvisionalLoad() override;
   void OnDestruct() override;
 
-  // Dump all page load histograms appropriate for the given frame.
+  // Dump all page load histograms appropriate for the associated frame.
   //
   // This method will only dump once-per-instance, so it is safe to call
   // multiple times.
@@ -49,10 +49,30 @@ class PageLoadHistograms : public content::RenderViewObserver {
   // redirect had been done (the user never requested the page)
   // Also, it's possible to load a page without ever laying it out
   // so first_paint and first_paint_after_load can be 0.
-  void Dump(blink::WebFrame* frame);
+  void Dump();
 
   void LogPageLoadTime(const content::DocumentState* load_times,
                        const blink::WebDataSource* ds) const;
+
+  // PageLoadHistograms needs the ClosePage() notification, but it's problematic
+  // to inherit from both RVO and RFO. Embed the RVO in a small helper class
+  // instead.
+  class Helper : public content::RenderViewObserver {
+   public:
+    explicit Helper(PageLoadHistograms* histograms);
+
+    // RenderViewObserver implementation.
+    void ClosePage() override;
+    void OnDestruct() override;
+
+   private:
+    // The Helper is owned by PageLoadHistograms.
+    PageLoadHistograms* const histograms_;
+
+    DISALLOW_COPY_AND_ASSIGN(Helper);
+  };
+
+  Helper helper_;
 
   DISALLOW_COPY_AND_ASSIGN(PageLoadHistograms);
 };

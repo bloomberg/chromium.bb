@@ -54,7 +54,6 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Listener,
   virtual void FrameCreated(blink::WebLocalFrame* parent,
                             blink::WebFrame* frame) {}
   virtual void FrameDetached(blink::WebFrame* frame) {}
-  virtual void FrameWillClose(blink::WebFrame* frame) {}
   virtual void PrintPage(blink::WebLocalFrame* frame, bool user_initiated) {}
   virtual void FocusedNodeChanged(const blink::WebNode& node) {}
   virtual void DraggableRegionsChanged(blink::WebFrame* frame) {}

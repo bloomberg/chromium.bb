@@ -474,6 +474,9 @@ void ChromeContentRendererClient::RenderFrameCreated(
     // Only attach MainRenderFrameObserver to the main frame, since
     // we only want to log page load metrics for the main frame.
     new page_load_metrics::MetricsRenderFrameObserver(render_frame);
+    // Similarly, PageLoadHistograms are currently only collected for the main
+    // frame.
+    new PageLoadHistograms(render_frame);
   } else {
     // Avoid any race conditions from having the browser tell subframes that
     // they're prerendering.
@@ -516,7 +519,6 @@ void ChromeContentRendererClient::RenderViewCreated(
 #if defined(ENABLE_EXTENSIONS)
   ChromeExtensionsRendererClient::GetInstance()->RenderViewCreated(render_view);
 #endif
-  new PageLoadHistograms(render_view);
 #if defined(ENABLE_PRINTING)
   new printing::PrintWebViewHelper(
       render_view, std::unique_ptr<printing::PrintWebViewHelper::Delegate>(

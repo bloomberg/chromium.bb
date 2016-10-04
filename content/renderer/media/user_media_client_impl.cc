@@ -187,7 +187,7 @@ UserMediaClientImpl::~UserMediaClientImpl() {
   // Force-close all outstanding user media requests and local sources here,
   // before the outstanding WeakPtrs are invalidated, to ensure a clean
   // shutdown.
-  FrameWillClose();
+  WillCommitProvisionalLoad();
 }
 
 void UserMediaClientImpl::requestUserMedia(
@@ -1028,7 +1028,7 @@ void UserMediaClientImpl::CancelAndDeleteMediaDevicesRequest(
   NOTREACHED();
 }
 
-void UserMediaClientImpl::FrameWillClose() {
+void UserMediaClientImpl::WillCommitProvisionalLoad() {
   // Cancel all outstanding UserMediaRequests.
   DeleteAllUserMediaRequests();
 

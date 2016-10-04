@@ -87,7 +87,7 @@ class CONTENT_EXPORT UserMediaClientImpl
   void OnDevicesChanged() override;
 
   // RenderFrameObserver override
-  void FrameWillClose() override;
+  void WillCommitProvisionalLoad() override;
 
  protected:
   // Called when |source| has been stopped from JavaScript.

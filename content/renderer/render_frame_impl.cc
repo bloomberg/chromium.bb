@@ -2937,10 +2937,8 @@ void RenderFrameImpl::frameFocused() {
 void RenderFrameImpl::willCommitProvisionalLoad(blink::WebLocalFrame* frame) {
   DCHECK_EQ(frame_, frame);
 
-  // TODO(dcheng): Rename observer to FrameWillCommitProvisionalLoad.
-  FOR_EACH_OBSERVER(RenderFrameObserver, observers_, FrameWillClose());
-  FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers(),
-                    FrameWillClose(frame));
+  FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
+                    WillCommitProvisionalLoad());
 }
 
 void RenderFrameImpl::didChangeName(const blink::WebString& name,
