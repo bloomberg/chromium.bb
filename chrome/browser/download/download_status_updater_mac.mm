@@ -242,10 +242,6 @@ void DownloadStatusUpdater::UpdateAppIconDownloadProgress(
     }
 
     // Notify the Finder.
-    NSString* parent_path = [download_path stringByDeletingLastPathComponent];
-    FNNotifyByPath(
-        reinterpret_cast<const UInt8*>([parent_path fileSystemRepresentation]),
-        kFNDirectoryModifiedMessage,
-        kNilOptions);
+    [[NSWorkspace sharedWorkspace] noteFileSystemChanged:download_path];
   }
 }
