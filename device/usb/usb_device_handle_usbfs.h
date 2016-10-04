@@ -27,8 +27,8 @@ namespace device {
 class UsbDeviceHandleUsbfs : public UsbDeviceHandle {
  public:
   // Constructs a new device handle from an existing |device| and open file
-  // descriptor to that device. |blocking_task_runner| must have a
-  // MessageLoopForIO.
+  // descriptor to that device. |blocking_task_runner| must run tasks on a
+  // thread that supports FileDescriptorWatcher.
   UsbDeviceHandleUsbfs(
       scoped_refptr<UsbDevice> device,
       base::ScopedFD fd,

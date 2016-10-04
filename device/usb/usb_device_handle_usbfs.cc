@@ -17,9 +17,9 @@
 
 #include "base/bind.h"
 #include "base/cancelable_callback.h"
+#include "base/files/file_descriptor_watcher_posix.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_pump_libevent.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_restrictions.h"
@@ -135,8 +135,7 @@ UsbTransferStatus ConvertTransferResult(int rc) {
 }  // namespace
 
 class UsbDeviceHandleUsbfs::FileThreadHelper
-    : public base::MessagePumpLibevent::Watcher,
-      public base::MessageLoop::DestructionObserver {
+    : public base::MessageLoop::DestructionObserver {
  public:
   FileThreadHelper(int fd,
                    scoped_refptr<UsbDeviceHandleUsbfs> device_handle,
@@ -145,18 +144,17 @@ class UsbDeviceHandleUsbfs::FileThreadHelper
 
   static void Start(std::unique_ptr<FileThreadHelper> self);
 
-  // base::MessagePumpLibevent::Watcher overrides.
-  void OnFileCanReadWithoutBlocking(int fd) override;
-  void OnFileCanWriteWithoutBlocking(int fd) override;
-
   // base::MessageLoop::DestructionObserver overrides.
   void WillDestroyCurrentMessageLoop() override;
 
  private:
+  // Called when |fd_| is writable without blocking.
+  void OnFileCanWriteWithoutBlocking();
+
   int fd_;
   scoped_refptr<UsbDeviceHandleUsbfs> device_handle_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  base::MessagePumpLibevent::FileDescriptorWatcher file_watcher_;
+  std::unique_ptr<base::FileDescriptorWatcher::Controller> watch_controller_;
   base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(FileThreadHelper);
@@ -181,25 +179,21 @@ void UsbDeviceHandleUsbfs::FileThreadHelper::Start(
 
   // Linux indicates that URBs are available to reap by marking the file
   // descriptor writable.
-  if (!base::MessageLoopForIO::current()->WatchFileDescriptor(
-          self->fd_, true, base::MessageLoopForIO::WATCH_WRITE,
-          &self->file_watcher_, self.get())) {
-    USB_LOG(ERROR) << "Failed to start watching device file descriptor.";
-  }
+  self->watch_controller_ = base::FileDescriptorWatcher::WatchWritable(
+      self->fd_, base::Bind(&FileThreadHelper::OnFileCanWriteWithoutBlocking,
+                            base::Unretained(self.get())));
 
   // |self| is now owned by the current message loop.
   base::MessageLoop::current()->AddDestructionObserver(self.release());
 }
 
-void UsbDeviceHandleUsbfs::FileThreadHelper::OnFileCanReadWithoutBlocking(
-    int fd) {
-  NOTREACHED();  // Only listening for writability.
+void UsbDeviceHandleUsbfs::FileThreadHelper::WillDestroyCurrentMessageLoop() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  delete this;
 }
 
-void UsbDeviceHandleUsbfs::FileThreadHelper::OnFileCanWriteWithoutBlocking(
-    int fd) {
+void UsbDeviceHandleUsbfs::FileThreadHelper::OnFileCanWriteWithoutBlocking() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(fd_, fd);
 
   const size_t MAX_URBS_PER_EVENT = 10;
   std::vector<usbdevfs_urb*> urbs;
@@ -214,7 +208,7 @@ void UsbDeviceHandleUsbfs::FileThreadHelper::OnFileCanWriteWithoutBlocking(
       if (errno == ENODEV) {
         // Device has disconnected. Stop watching the file descriptor to avoid
         // looping until |device_handle_| is closed.
-        file_watcher_.StopWatchingFileDescriptor();
+        watch_controller_.reset();
         break;
       }
     } else {
@@ -225,11 +219,6 @@ void UsbDeviceHandleUsbfs::FileThreadHelper::OnFileCanWriteWithoutBlocking(
   task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&UsbDeviceHandleUsbfs::ReapedUrbs, device_handle_, urbs));
-}
-
-void UsbDeviceHandleUsbfs::FileThreadHelper::WillDestroyCurrentMessageLoop() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  delete this;
 }
 
 struct UsbDeviceHandleUsbfs::Transfer {
