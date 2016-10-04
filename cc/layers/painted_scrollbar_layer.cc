@@ -133,7 +133,7 @@ gfx::Rect PaintedScrollbarLayer::ScrollbarLayerRectToContentRect(
     const gfx::Rect& layer_rect) const {
   // Don't intersect with the bounds as in LayerRectToContentRect() because
   // layer_rect here might be in coordinates of the containing layer.
-  gfx::Rect expanded_rect = gfx::ScaleToEnclosingRect(
+  gfx::Rect expanded_rect = gfx::ScaleToEnclosingRectSafe(
       layer_rect, internal_contents_scale_, internal_contents_scale_);
   // We should never return a rect bigger than the content bounds.
   gfx::Size clamped_size = expanded_rect.size();

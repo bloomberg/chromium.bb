@@ -683,9 +683,12 @@ TEST(RectTest, ScaleToEnclosingRect) {
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
-    Rect result = ScaleToEnclosingRect(tests[i].input_rect,
-                                       tests[i].input_scale);
+    Rect result =
+        ScaleToEnclosingRect(tests[i].input_rect, tests[i].input_scale);
     EXPECT_EQ(tests[i].expected_rect, result);
+    Rect result_safe =
+        ScaleToEnclosingRectSafe(tests[i].input_rect, tests[i].input_scale);
+    EXPECT_EQ(tests[i].expected_rect, result_safe);
   }
 }
 
@@ -981,6 +984,46 @@ TEST(RectTest, IntegerOverflow) {
   operator_overflow += Vector2d(large_number, large_number);
   EXPECT_EQ(large_offset, operator_overflow.origin());
   EXPECT_EQ(expected_size, operator_overflow.size());
+}
+
+TEST(RectTest, ScaleToEnclosingRectSafe) {
+  const int max_int = std::numeric_limits<int>::max();
+  const int min_int = std::numeric_limits<int>::min();
+
+  Rect xy_underflow(-100000, -123456, 10, 20);
+  EXPECT_EQ(ScaleToEnclosingRectSafe(xy_underflow, 100000, 100000),
+            Rect(min_int, min_int, 1000000, 2000000));
+
+  // A location overflow means that width/right and bottom/top also
+  // overflow so need to be clamped.
+  Rect xy_overflow(100000, 123456, 10, 20);
+  EXPECT_EQ(ScaleToEnclosingRectSafe(xy_overflow, 100000, 100000),
+            Rect(max_int, max_int, 0, 0));
+
+  // In practice all rects are clamped to 0 width / 0 height so
+  // negative sizes don't matter, but try this for the sake of testing.
+  Rect size_underflow(-1, -2, 100000, 100000);
+  EXPECT_EQ(ScaleToEnclosingRectSafe(size_underflow, -100000, -100000),
+            Rect(100000, 200000, 0, 0));
+
+  Rect size_overflow(-1, -2, 123456, 234567);
+  EXPECT_EQ(ScaleToEnclosingRectSafe(size_overflow, 100000, 100000),
+            Rect(-100000, -200000, max_int, max_int));
+  // Verify width/right gets clamped properly too if x/y positive.
+  Rect size_overflow2(1, 2, 123456, 234567);
+  EXPECT_EQ(ScaleToEnclosingRectSafe(size_overflow2, 100000, 100000),
+            Rect(100000, 200000, max_int - 100000, max_int - 200000));
+
+  Rect max_rect(max_int, max_int, max_int, max_int);
+  EXPECT_EQ(ScaleToEnclosingRectSafe(max_rect, max_int, max_int),
+            Rect(max_int, max_int, 0, 0));
+
+  Rect min_rect(min_int, min_int, max_int, max_int);
+  // Min rect can't be scaled up any further in any dimension.
+  EXPECT_EQ(ScaleToEnclosingRectSafe(min_rect, 2, 3.5), min_rect);
+  EXPECT_EQ(ScaleToEnclosingRectSafe(min_rect, max_int, max_int), min_rect);
+  // Min rect scaled by min is an empty rect at (max, max)
+  EXPECT_EQ(ScaleToEnclosingRectSafe(min_rect, min_int, min_int), max_rect);
 }
 
 }  // namespace gfx

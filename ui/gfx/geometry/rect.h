@@ -254,6 +254,9 @@ GFX_EXPORT Rect SubtractRects(const Rect& a, const Rect& b);
 // contained within the rect, because they will appear on one of these edges.
 GFX_EXPORT Rect BoundingRect(const Point& p1, const Point& p2);
 
+// Scales the rect and returns the enclosing rect.  Use this only the inputs are
+// known to not overflow.  Use ScaleToEnclosingRectSafe if the inputs are
+// unknown and need to use saturated math.
 inline Rect ScaleToEnclosingRect(const Rect& rect,
                                  float x_scale,
                                  float y_scale) {
@@ -282,6 +285,24 @@ inline Rect ScaleToEnclosingRect(const Rect& rect,
 
 inline Rect ScaleToEnclosingRect(const Rect& rect, float scale) {
   return ScaleToEnclosingRect(rect, scale, scale);
+}
+
+// ScaleToEnclosingRect but clamping instead of asserting if the resulting rect
+// would overflow.
+inline Rect ScaleToEnclosingRectSafe(const Rect& rect,
+                                     float x_scale,
+                                     float y_scale) {
+  if (x_scale == 1.f && y_scale == 1.f)
+    return rect;
+  int x = base::saturated_cast<int>(std::floor(rect.x() * x_scale));
+  int y = base::saturated_cast<int>(std::floor(rect.y() * y_scale));
+  int w = base::saturated_cast<int>(std::ceil(rect.width() * x_scale));
+  int h = base::saturated_cast<int>(std::ceil(rect.height() * y_scale));
+  return Rect(x, y, w, h);
+}
+
+inline Rect ScaleToEnclosingRectSafe(const Rect& rect, float scale) {
+  return ScaleToEnclosingRectSafe(rect, scale, scale);
 }
 
 inline Rect ScaleToEnclosedRect(const Rect& rect,
