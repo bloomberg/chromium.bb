@@ -48,6 +48,7 @@ public class DownloadNotificationService extends Service {
     static final String EXTRA_DOWNLOAD_NOTIFICATION_ID = "DownloadNotificationId";
     static final String EXTRA_DOWNLOAD_GUID = "DownloadGuid";
     static final String EXTRA_DOWNLOAD_FILE_NAME = "DownloadFileName";
+    static final String EXTRA_DOWNLOAD_FILE_PATH = "DownloadFilePath";
     static final String EXTRA_NOTIFICATION_DISMISSED = "NotificationDismissed";
     static final String EXTRA_DOWNLOAD_IS_OFF_THE_RECORD = "DownloadIsOffTheRecord";
     static final String EXTRA_DOWNLOAD_IS_OFFLINE_PAGE = "DownloadIsOfflinePage";
@@ -326,13 +327,15 @@ public class DownloadNotificationService extends Service {
     /**
      * Add a download successful notification.
      * @param downloadGuid GUID of the download.
-     * @param fileName GUID of the download.
+     * @param filePath Full path to the download.
+     * @param fileName Filename of the download.
      * @param systemDownloadId Download ID assigned by system DownloadManager.
      * @return ID of the successful download notification. Used for removing the notification when
      *         user click on the snackbar.
      */
     public int notifyDownloadSuccessful(
-            String downloadGuid, String fileName, long systemDownloadId, boolean isOfflinePage) {
+            String downloadGuid, String filePath, String fileName, long systemDownloadId,
+            boolean isOfflinePage) {
         int notificationId = getNotificationId(downloadGuid);
         NotificationCompat.Builder builder = buildNotification(
                 R.drawable.offline_pin, fileName,
@@ -347,6 +350,7 @@ public class DownloadNotificationService extends Service {
             intent = new Intent(DownloadManager.ACTION_NOTIFICATION_CLICKED);
             long[] idArray = {systemDownloadId};
             intent.putExtra(DownloadManager.EXTRA_NOTIFICATION_CLICK_DOWNLOAD_IDS, idArray);
+            intent.putExtra(EXTRA_DOWNLOAD_FILE_PATH, filePath);
         }
         intent.setComponent(component);
         builder.setContentIntent(PendingIntent.getBroadcast(

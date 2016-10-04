@@ -5,12 +5,19 @@
 package org.chromium.chrome.browser.download;
 
 import android.app.Activity;
+import android.app.PendingIntent;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.StrictMode;
+import android.provider.Browser;
 import android.support.annotation.Nullable;
+import android.support.customtabs.CustomTabsIntent;
 import android.text.TextUtils;
 
 import org.chromium.base.ApplicationStatus;
@@ -24,11 +31,12 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.customtabs.CustomTabActivity;
+import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.download.ui.BackendProvider;
 import org.chromium.chrome.browser.download.ui.BackendProvider.DownloadDelegate;
 import org.chromium.chrome.browser.download.ui.DownloadFilter;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper;
-import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper.DownloadItemWrapper;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
@@ -38,6 +46,7 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.widget.Toast;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -209,17 +218,17 @@ public class DownloadUtils {
 
     /**
      * Creates an Intent to open the file in another app by firing an Intent to Android.
-     * @param item Item to open.
-     * @return     Intent that can be used to start an Activity for the DownloadItem.
+     * @param fileUri  Uri pointing to the file.
+     * @param mimeType MIME type for the file.
+     * @return Intent that can be used to start an Activity for the file.
      */
-    public static Intent createViewIntentForDownloadItem(DownloadItemWrapper item) {
-        String mimeType = Intent.normalizeMimeType(item.getMimeType());
-        Uri fileUri = Uri.fromFile(item.getFile());
+    public static Intent createViewIntentForDownloadItem(Uri fileUri, String mimeType) {
         Intent fileIntent = new Intent(Intent.ACTION_VIEW);
-        if (TextUtils.isEmpty(mimeType)) {
+        String normalizedMimeType = Intent.normalizeMimeType(mimeType);
+        if (TextUtils.isEmpty(normalizedMimeType)) {
             fileIntent.setData(fileUri);
         } else {
-            fileIntent.setDataAndType(fileUri, mimeType);
+            fileIntent.setDataAndType(fileUri, normalizedMimeType);
         }
         fileIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         fileIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -254,7 +263,7 @@ public class DownloadUtils {
                 }
                 offlinePagesString.append(wrappedItem.getUrl());
             } else {
-                itemUris.add(getUriForItem(wrappedItem));
+                itemUris.add(getUriForItem(wrappedItem.getFile()));
             }
 
             if (selectedItemsFilterType != wrappedItem.getFilterType()) {
@@ -306,7 +315,8 @@ public class DownloadUtils {
         }
 
         if (itemUris.size() == 1 && offlinePagesString.length() == 0) {
-            shareIntent.putExtra(Intent.EXTRA_STREAM, getUriForItem(items.get(0)));
+            // Sharing a DownloadItem.
+            shareIntent.putExtra(Intent.EXTRA_STREAM, getUriForItem(items.get(0).getFile()));
         } else {
             shareIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, itemUris);
         }
@@ -324,7 +334,74 @@ public class DownloadUtils {
         return shareIntent;
     }
 
-    private static Uri getUriForItem(DownloadHistoryItemWrapper itemWrapper) {
+    private static Intent createShareIntent(Uri fileUri, String mimeType) {
+        if (TextUtils.isEmpty(mimeType)) mimeType = DEFAULT_MIME_TYPE;
+
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        intent.putExtra(Intent.EXTRA_STREAM, fileUri);
+        intent.setType(mimeType);
+        return intent;
+    }
+
+    /**
+     * Creates an Intent that allows viewing the given file in an internal media viewer.
+     * @param fileUri  URI pointing at the file, ideally in file:// form.
+     * @param shareUri URI pointing at the file, ideally in content:// form.
+     * @param mimeType MIME type of the file.
+     * @return Intent that can be fired to open the file.
+     */
+    public static Intent getMediaViewerIntentForDownloadItem(
+            Uri fileUri, Uri shareUri, String mimeType) {
+        Context context = ContextUtils.getApplicationContext();
+        Intent viewIntent = createViewIntentForDownloadItem(fileUri, mimeType);
+
+        Bitmap closeIcon = BitmapFactory.decodeResource(
+                context.getResources(), R.drawable.ic_arrow_back_white_24dp);
+        Bitmap shareIcon = BitmapFactory.decodeResource(
+                context.getResources(), R.drawable.ic_share_white_24dp);
+
+        CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
+        builder.setToolbarColor(Color.BLACK);
+        builder.setCloseButtonIcon(closeIcon);
+        builder.setShowTitle(true);
+
+        // Create a PendingIntent that can be used to view the file externally.
+        // TODO(dfalcantara): Check if this is problematic in multi-window mode, where two
+        //                    different viewers could be visible at the same time.
+        Intent chooserIntent = Intent.createChooser(viewIntent, null);
+        chooserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        String openWithStr = context.getString(R.string.download_manager_open_with);
+        PendingIntent pendingViewIntent = PendingIntent.getActivity(
+                context, 0, chooserIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+        builder.addMenuItem(openWithStr, pendingViewIntent);
+
+        // Create a PendingIntent that shares the file with external apps.
+        PendingIntent pendingShareIntent = PendingIntent.getActivity(
+                context, 0, createShareIntent(shareUri, mimeType), 0);
+        builder.setActionButton(
+                shareIcon, context.getString(R.string.share), pendingShareIntent, true);
+
+        // Build up the Intent further.
+        Intent intent = builder.build().intent;
+        intent.setPackage(context.getPackageName());
+        intent.setData(fileUri);
+        intent.putExtra(CustomTabIntentDataProvider.EXTRA_IS_MEDIA_VIEWER, true);
+        intent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
+        IntentHandler.addTrustedIntentExtras(intent, context);
+
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.setClass(context, CustomTabActivity.class);
+        return intent;
+    }
+
+    /**
+     * Returns a URI that points at the file.
+     * @param file File to get a URI for.
+     * @return URI that points at that file, either as a content:// URI or a file:// URI.
+     */
+    public static Uri getUriForItem(File file) {
         Uri uri = null;
 
         // #getContentUriFromFile causes a disk read when it calls into FileProvider#getUriForFile.
@@ -334,16 +411,15 @@ public class DownloadUtils {
         // know/preload which URIs we need until the user presses share.
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         try {
-            // Try to obtain a content:// URI, which is preferred to a file:/// URI so that
+            // Try to obtain a content:// URI, which is preferred to a file:// URI so that
             // receiving apps don't attempt to determine the file's mime type (which often fails).
-            uri = ContentUriUtils.getContentUriFromFile(ContextUtils.getApplicationContext(),
-                    itemWrapper.getFile());
+            uri = ContentUriUtils.getContentUriFromFile(ContextUtils.getApplicationContext(), file);
         } catch (IllegalArgumentException e) {
             Log.e(TAG, "Could not create content uri: " + e);
         }
         StrictMode.setThreadPolicy(oldPolicy);
 
-        if (uri == null) uri = Uri.fromFile(itemWrapper.getFile());
+        if (uri == null) uri = Uri.fromFile(file);
 
         return uri;
     }
@@ -354,5 +430,29 @@ public class DownloadUtils {
 
         RecordHistogram.recordLinearCountHistogram("Android.DownloadManager.Share.Count",
                 count, 1, 20, 20);
+    }
+
+    /**
+     * Fires an Intent to open a downloaded item.
+     * @param context Context to use.
+     * @param intent  Intent that can be fired.
+     * @return Whether an Activity was successfully started for the Intent.
+     */
+    static boolean fireOpenIntentForDownload(Context context, Intent intent) {
+        try {
+            if (TextUtils.equals(intent.getPackage(), context.getPackageName())) {
+                IntentHandler.startActivityForTrustedIntent(intent, context);
+            } else {
+                context.startActivity(intent);
+            }
+            return true;
+        } catch (ActivityNotFoundException ex) {
+            Log.d(TAG, "Activity not found for " + intent.getType() + " over "
+                    + intent.getData().getScheme(), ex);
+        } catch (SecurityException ex) {
+            Log.d(TAG, "cannot open intent: " + intent, ex);
+        }
+
+        return false;
     }
 }

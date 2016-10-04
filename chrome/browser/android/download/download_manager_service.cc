@@ -441,3 +441,12 @@ content::DownloadManager* DownloadManagerService::GetDownloadManager(
 
   return manager;
 }
+
+// static
+jboolean IsSupportedMimeType(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& jmime_type) {
+  std::string mime_type = ConvertJavaStringToUTF8(env, jmime_type);
+  return mime_util::IsSupportedMimeType(mime_type);
+}

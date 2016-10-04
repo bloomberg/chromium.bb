@@ -10,6 +10,8 @@ import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.UrlConstants;
 
+import java.util.Locale;
+
 /**
  * A class holding constants and convenience methods about filters and their corresponding
  * resources.
@@ -25,6 +27,11 @@ public class DownloadFilter {
     static final int FILTER_DOCUMENT = 5;
     static final int FILTER_OTHER = 6;
     public static final int FILTER_BOUNDARY = 7;
+
+    private static final String MIMETYPE_VIDEO = "video";
+    private static final String MIMETYPE_AUDIO = "audio";
+    private static final String MIMETYPE_IMAGE = "image";
+    private static final String MIMETYPE_DOCUMENT = "text";
 
     /**
      * Icons and labels for each filter in the menu.
@@ -90,5 +97,25 @@ public class DownloadFilter {
             }
         }
         return result;
+    }
+
+    /** Identifies the type of file represented by the given MIME type string. */
+    public static int fromMimeType(String mimeType) {
+        if (TextUtils.isEmpty(mimeType)) return DownloadFilter.FILTER_OTHER;
+
+        String[] pieces = mimeType.toLowerCase(Locale.getDefault()).split("/");
+        if (pieces.length != 2) return DownloadFilter.FILTER_OTHER;
+
+        if (MIMETYPE_VIDEO.equals(pieces[0])) {
+            return DownloadFilter.FILTER_VIDEO;
+        } else if (MIMETYPE_AUDIO.equals(pieces[0])) {
+            return DownloadFilter.FILTER_AUDIO;
+        } else if (MIMETYPE_IMAGE.equals(pieces[0])) {
+            return DownloadFilter.FILTER_IMAGE;
+        } else if (MIMETYPE_DOCUMENT.equals(pieces[0])) {
+            return DownloadFilter.FILTER_DOCUMENT;
+        } else {
+            return DownloadFilter.FILTER_OTHER;
+        }
     }
 }

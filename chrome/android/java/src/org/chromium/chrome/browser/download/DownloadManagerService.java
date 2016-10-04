@@ -17,6 +17,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.LongSparseArray;
 import android.util.Pair;
@@ -624,7 +625,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
                     download.getDownloadInfo(), download.getSystemDownloadId());
             return;
         }
-        openDownloadedContent(download.getSystemDownloadId());
+        openDownloadedContent(download.getDownloadInfo(), download.getSystemDownloadId());
     }
 
     /**
@@ -945,51 +946,31 @@ public class DownloadManagerService extends BroadcastReceiver implements
     }
 
     /**
-     * Launch the best activity for the given intent. If a default activity is provided,
-     * choose the default one. Otherwise, return the Intent picker if there are more than one
-     * capable activities. If the intent is pdf type, return the platform pdf viewer if
-     * it is available so user don't need to choose it from Intent picker.
-     *
-     * @param context Context of the app.
-     * @param intent Intent to open.
-     * @param allowSelfOpen Whether chrome itself is allowed to open the intent.
-     * @return true if an Intent is launched, or false otherwise.
-     */
-    public static boolean openIntent(Context context, Intent intent, boolean allowSelfOpen) {
-        boolean activityResolved = ExternalNavigationDelegateImpl.resolveIntent(
-                context, intent, allowSelfOpen);
-        if (activityResolved) {
-            try {
-                context.startActivity(intent);
-                return true;
-            } catch (ActivityNotFoundException ex) {
-                Log.d(TAG, "activity not found for " + intent.getType()
-                        + " over " + intent.getData().getScheme(), ex);
-            } catch (SecurityException ex) {
-                Log.d(TAG, "cannot open intent: " + intent, ex);
-            }
-        }
-        return false;
-    }
-
-    /**
      * Return the intent to launch for a given download item.
      *
-     * @param context Context of the app.
+     * @param context    Context of the app.
+     * @param filePath   Path to the file.
      * @param downloadId ID of the download item in DownloadManager.
      * @return the intent to launch for the given download item.
      */
-    private static Intent getLaunchIntentFromDownloadId(Context context, long downloadId) {
+    static Intent getLaunchIntentFromDownloadId(
+            Context context, @Nullable String filePath, long downloadId) {
         assert !ThreadUtils.runningOnUiThread();
         DownloadManager manager =
                 (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
-        Uri uri = manager.getUriForDownloadedFile(downloadId);
-        if (uri == null) return null;
-        Intent launchIntent = new Intent(Intent.ACTION_VIEW);
-        launchIntent.setDataAndType(uri, manager.getMimeTypeForDownloadedFile(downloadId));
-        launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                | Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        return launchIntent;
+        Uri contentUri = manager.getUriForDownloadedFile(downloadId);
+        if (contentUri == null) return null;
+
+        String mimeType = manager.getMimeTypeForDownloadedFile(downloadId);
+        if (isSupportedMimeType(mimeType)) {
+            // Redirect the user to an internal media viewer.  The file path is necessary to show
+            // the real file path to the user instead of a content:// download ID.
+            Uri fileUri = contentUri;
+            if (filePath != null) fileUri = Uri.fromFile(new File(filePath));
+            return DownloadUtils.getMediaViewerIntentForDownloadItem(fileUri, contentUri, mimeType);
+        }
+
+        return DownloadUtils.createViewIntentForDownloadItem(contentUri, mimeType);
     }
 
     /**
@@ -1001,7 +982,9 @@ public class DownloadManagerService extends BroadcastReceiver implements
      */
     static boolean canResolveDownloadItem(Context context, DownloadItem download) {
         assert !ThreadUtils.runningOnUiThread();
-        Intent intent = getLaunchIntentFromDownloadId(context, download.getSystemDownloadId());
+        Intent intent = getLaunchIntentFromDownloadId(
+                context, download.getDownloadInfo().getFilePath(),
+                download.getSystemDownloadId());
         return (intent == null) ? false : ExternalNavigationDelegateImpl.resolveIntent(
                 context, intent, true);
     }
@@ -1010,19 +993,24 @@ public class DownloadManagerService extends BroadcastReceiver implements
      * Launch the intent for a given download item.
      * TODO(qinmin): Move this to DownloadManagerDelegate.
      *
-     * @param downloadId ID of the download item in DownloadManager.
+     * @param downloadInfo Info about the downloaded item.
+     * @param downloadId   ID of the download item in DownloadManager.
      */
-    protected void openDownloadedContent(final long downloadId) {
+    protected void openDownloadedContent(final DownloadInfo downloadInfo, final long downloadId) {
         new AsyncTask<Void, Void, Intent>() {
             @Override
             public Intent doInBackground(Void... params) {
-                return getLaunchIntentFromDownloadId(mContext, downloadId);
+                return getLaunchIntentFromDownloadId(
+                        mContext, downloadInfo.getFilePath(), downloadId);
             }
 
             @Override
             protected void onPostExecute(Intent intent) {
-                if (intent != null) {
-                    openIntent(mContext, intent, true);
+                if (intent == null) return;
+
+                Context context = ContextUtils.getApplicationContext();
+                if (ExternalNavigationDelegateImpl.resolveIntent(context, intent, true)) {
+                    DownloadUtils.fireOpenIntentForDownload(context, intent);
                 }
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
@@ -1167,6 +1155,15 @@ public class DownloadManagerService extends BroadcastReceiver implements
     public boolean isDownloadOpenableInBrowser(String downloadGuid, boolean isOffTheRecord) {
         return nativeIsDownloadOpenableInBrowser(
                 getNativeDownloadManagerService(), downloadGuid, isOffTheRecord);
+    }
+
+    /**
+     * Checks whether a file with the given MIME type can be opened by the browser.
+     * @param mimeType MIME type of the file.
+     * @return Whether the file would be openable by the browser.
+     */
+    public static boolean isSupportedMimeType(String mimeType) {
+        return nativeIsSupportedMimeType(mimeType);
     }
 
     /**
@@ -1644,6 +1641,8 @@ public class DownloadManagerService extends BroadcastReceiver implements
         downloadItem.setHasBeenExternallyRemoved(hasBeenExternallyRemoved);
         return downloadItem;
     }
+
+    private static native boolean nativeIsSupportedMimeType(String mimeType);
 
     private native long nativeInit();
     private native void nativeResumeDownload(

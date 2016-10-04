@@ -280,7 +280,7 @@ public class SystemDownloadNotifier implements DownloadNotifier {
                         break;
                     case DOWNLOAD_NOTIFICATION_TYPE_SUCCESS:
                         final int notificationId = mBoundService.notifyDownloadSuccessful(
-                                info.getDownloadGuid(), info.getFileName(),
+                                info.getDownloadGuid(), info.getFilePath(), info.getFileName(),
                                 notificationInfo.systemDownloadId, info.isOfflinePage());
                         onSuccessNotificationShown(notificationInfo, notificationId);
                         stopServiceIfNeeded();

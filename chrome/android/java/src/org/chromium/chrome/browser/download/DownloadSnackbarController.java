@@ -39,9 +39,8 @@ public class DownloadSnackbarController implements SnackbarManager.SnackbarContr
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public void onAction(Object actionData) {
-        if (actionData == null) {
+        if (!(actionData instanceof ActionDataInfo)) {
             DownloadManagerService.openDownloadsPage(mContext);
             return;
         }
@@ -51,7 +50,7 @@ public class DownloadSnackbarController implements SnackbarManager.SnackbarContr
             return;
         }
         DownloadManagerService manager = DownloadManagerService.getDownloadManagerService(mContext);
-        manager.openDownloadedContent(download.systemDownloadId);
+        manager.openDownloadedContent(download.downloadInfo, download.systemDownloadId);
         if (download.notificationId != INVALID_NOTIFICATION_ID) {
             NotificationManager notificationManager =
                     (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);

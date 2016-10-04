@@ -5,12 +5,13 @@
 package org.chromium.chrome.browser.download;
 
 import android.app.DownloadManager;
-import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+
+import org.chromium.chrome.browser.util.IntentUtils;
 
 /**
  * This {@link BroadcastReceiver} handles clicks to download notifications and their action buttons.
@@ -58,12 +59,11 @@ public class DownloadBroadcastReceiver extends BroadcastReceiver {
             // Open the downloads page
             DownloadManagerService.openDownloadsPage(context);
         } else {
-            Intent launchIntent = new Intent(Intent.ACTION_VIEW);
-            launchIntent.setDataAndType(uri, manager.getMimeTypeForDownloadedFile(id));
-            launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            try {
-                context.startActivity(launchIntent);
-            } catch (ActivityNotFoundException e) {
+            String downloadFilename = IntentUtils.safeGetStringExtra(
+                    intent, DownloadNotificationService.EXTRA_DOWNLOAD_FILE_PATH);
+            Intent launchIntent = DownloadManagerService.getLaunchIntentFromDownloadId(
+                    context, downloadFilename, id);
+            if (!DownloadUtils.fireOpenIntentForDownload(context, launchIntent)) {
                 DownloadManagerService.openDownloadsPage(context);
             }
         }
