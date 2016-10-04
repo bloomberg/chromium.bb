@@ -11,12 +11,16 @@
 
 #include "base/files/file.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/messaging/native_process_launcher.h"
 #include "extensions/browser/api/messaging/native_message_host.h"
 #include "ui/gfx/native_widget_types.h"
+
+#if defined(OS_POSIX)
+#include "base/files/file_descriptor_watcher_posix.h"
+#endif
 
 namespace net {
 
@@ -35,11 +39,7 @@ namespace extensions {
 // This class must only be created, called, and deleted on the IO thread.
 // Public methods typically accept callbacks which will be invoked on the UI
 // thread.
-class NativeMessageProcessHost :
-#if defined(OS_POSIX)
-    public base::MessageLoopForIO::Watcher,
-#endif  // !defined(OS_POSIX)
-    public NativeMessageHost {
+class NativeMessageProcessHost : public NativeMessageHost {
  public:
   ~NativeMessageProcessHost() override;
 
@@ -53,12 +53,6 @@ class NativeMessageProcessHost :
   void OnMessage(const std::string& message) override;
   void Start(Client* client) override;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner() const override;
-
-#if defined(OS_POSIX)
-  // MessageLoopForIO::Watcher interface
-  void OnFileCanReadWithoutBlocking(int fd) override;
-  void OnFileCanWriteWithoutBlocking(int fd) override;
-#endif  // !defined(OS_POSIX)
 
   // Try and read a single message from |read_file_|. This should only be called
   // in unittests when you know there is data in the file.
@@ -117,7 +111,7 @@ class NativeMessageProcessHost :
 
 #if defined(OS_POSIX)
   base::PlatformFile read_file_;
-  base::MessageLoopForIO::FileDescriptorWatcher read_watcher_;
+  std::unique_ptr<base::FileDescriptorWatcher::Controller> read_controller_;
 #endif  // !defined(OS_POSIX)
 
   // Write stream.

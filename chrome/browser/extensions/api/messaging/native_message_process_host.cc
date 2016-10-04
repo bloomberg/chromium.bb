@@ -199,17 +199,6 @@ NativeMessageProcessHost::task_runner() const {
   return task_runner_;
 }
 
-#if defined(OS_POSIX)
-void NativeMessageProcessHost::OnFileCanReadWithoutBlocking(int fd) {
-  DCHECK_EQ(fd, read_file_);
-  DoRead();
-}
-
-void NativeMessageProcessHost::OnFileCanWriteWithoutBlocking(int fd) {
-  NOTREACHED();
-}
-#endif  // !defined(OS_POSIX)
-
 void NativeMessageProcessHost::ReadNowForTesting() {
   DoRead();
 }
@@ -225,9 +214,9 @@ void NativeMessageProcessHost::WaitRead() {
   // would always be consuming one thread in the thread pool. On Windows
   // FileStream uses overlapped IO, so that optimization isn't necessary there.
 #if defined(OS_POSIX)
-  base::MessageLoopForIO::current()->WatchFileDescriptor(
-    read_file_, false /* persistent */,
-    base::MessageLoopForIO::WATCH_READ, &read_watcher_, this);
+  read_controller_ = base::FileDescriptorWatcher::WatchReadable(
+      read_file_,
+      base::Bind(&NativeMessageProcessHost::DoRead, base::Unretained(this)));
 #else  // defined(OS_POSIX)
   DoRead();
 #endif  // defined(!OS_POSIX)
@@ -235,6 +224,10 @@ void NativeMessageProcessHost::WaitRead() {
 
 void NativeMessageProcessHost::DoRead() {
   DCHECK(task_runner_->BelongsToCurrentThread());
+
+#if defined(OS_POSIX)
+  read_controller_.reset();
+#endif
 
   while (!closed_ && !read_pending_) {
     read_buffer_ = new net::IOBuffer(kReadBufferSize);

@@ -35,6 +35,10 @@
 #include "extensions/common/features/feature_channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_POSIX)
+#include "base/files/file_descriptor_watcher_posix.h"
+#endif
+
 #if defined(OS_WIN)
 #include <windows.h>
 #include "base/win/scoped_handle.h"
@@ -102,6 +106,9 @@ class NativeMessagingTest : public ::testing::Test,
   NativeMessagingTest()
       : current_channel_(version_info::Channel::DEV),
         thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+#if defined(OS_POSIX)
+        file_descriptor_watcher_(base::MessageLoopForIO::current()),
+#endif
         channel_closed_(false) {}
 
   void SetUp() override { ASSERT_TRUE(temp_dir_.CreateUniqueTempDir()); }
@@ -164,6 +171,11 @@ class NativeMessagingTest : public ::testing::Test,
   std::unique_ptr<NativeMessageHost> native_message_host_;
   std::unique_ptr<base::RunLoop> run_loop_;
   content::TestBrowserThreadBundle thread_bundle_;
+#if defined(OS_POSIX)
+  // Required to watch a file descriptor from NativeMessageProcessHost.
+  base::FileDescriptorWatcher file_descriptor_watcher_;
+#endif
+
   std::string last_message_;
   std::unique_ptr<base::DictionaryValue> last_message_parsed_;
   bool channel_closed_;
