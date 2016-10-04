@@ -159,11 +159,18 @@ void AwMainDelegate::PreSandboxStartup() {
         global_descriptors->GetRegion(kAndroidWebViewLocalePakDescriptor);
     ResourceBundle::InitSharedInstanceWithPakFileRegion(base::File(pak_fd),
                                                         pak_region);
-    pak_fd = global_descriptors->Get(kAndroidWebViewMainPakDescriptor);
-    pak_region =
-        global_descriptors->GetRegion(kAndroidWebViewMainPakDescriptor);
-    ResourceBundle::GetSharedInstance().AddDataPackFromFileRegion(
-        base::File(pak_fd), pak_region, ui::SCALE_FACTOR_NONE);
+
+    std::pair<int, ui::ScaleFactor> extra_paks[] = {
+        {kAndroidWebViewMainPakDescriptor, ui::SCALE_FACTOR_NONE},
+        {kAndroidWebView100PercentPakDescriptor, ui::SCALE_FACTOR_100P}};
+
+    for (const auto& pak_info : extra_paks) {
+      pak_fd = global_descriptors->Get(pak_info.first);
+      pak_region = global_descriptors->GetRegion(pak_info.first);
+      ResourceBundle::GetSharedInstance().AddDataPackFromFileRegion(
+          base::File(pak_fd), pak_region, pak_info.second);
+    }
+
     crash_signal_fd =
         global_descriptors->Get(kAndroidWebViewCrashSignalDescriptor);
   }

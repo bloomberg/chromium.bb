@@ -484,6 +484,10 @@ void AwContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
       &(*regions)[kAndroidWebViewMainPakDescriptor]);
   mappings->Share(kAndroidWebViewMainPakDescriptor, fd);
 
+  fd = ui::GetCommonResourcesPackFd(
+      &(*regions)[kAndroidWebView100PercentPakDescriptor]);
+  mappings->Share(kAndroidWebView100PercentPakDescriptor, fd);
+
   fd = ui::GetLocalePackFd(&(*regions)[kAndroidWebViewLocalePakDescriptor]);
   mappings->Share(kAndroidWebViewLocalePakDescriptor, fd);
 
