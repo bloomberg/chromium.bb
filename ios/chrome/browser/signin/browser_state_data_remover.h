@@ -20,6 +20,12 @@ class BrowserStateDataRemover {
   explicit BrowserStateDataRemover(ios::ChromeBrowserState* browser_state);
   ~BrowserStateDataRemover();
 
+  // Removes all bookmarks, clears all browsing data, last signed-in username
+  // and then runs |completion|. The user must be signed out when this method
+  // is called.
+  static void ClearData(ios::ChromeBrowserState* browser_state,
+                        ProceduralBlock completion);
+
   // If set then the last username will be removed from the browser state prefs
   // after the data has been wiped.
   void SetForgetLastUsername();
