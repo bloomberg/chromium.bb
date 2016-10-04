@@ -1194,5 +1194,3 @@ crbug.com/646323 [ Mac ] editing/selection/modify_move/move_backward_line_import
 crbug.com/646323 [ Win Linux ] editing/selection/modify_move/move_backward_line_import_crash.html [ Crash ]
 
 crbug.com/645640 inspector/extensions/extensions-eval.html [ NeedsManualRebaseline ]
-
-crbug.com/650655 virtual/enable_wasm/http/tests/wasm/wasm_serialization_tests.html [ NeedsManualRebaseline ]
