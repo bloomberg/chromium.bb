@@ -670,11 +670,13 @@ mojom("new_wrapper_types_mojo_bindings") {
     "platform/modules/permissions/permission.mojom",
     "platform/modules/permissions/permission_status.mojom",
     "platform/modules/presentation/presentation.mojom",
+    "platform/modules/shapedetection/shapedetection.mojom",
     "platform/modules/websockets/websocket.mojom",
     "platform/referrer.mojom",
     "web/window_features.mojom",
   ]
   public_deps = [
+    "//ui/gfx/geometry/mojo",
     "//url/mojo:url_mojom_gurl",
     "//url/mojo:url_mojom_origin",
   ]

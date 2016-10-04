@@ -3,22 +3,6 @@
 <script src=../../resources/testharnessreport.js></script>
 <script>
 
-// This test verifies that DetectedObject can not be created
-test(function() {
-  assert_throws(new TypeError(),
-                function() {
-                  var detectedObject = new DetectedObject();
-                });
-}, 'DetectedObject should not be instantiable.');
-
-// This test verifies that Detector can not be created
-test(function() {
-  assert_throws(new TypeError(),
-                function() {
-                  var detector = new Detector();
-                });
-}, 'Detector should not be instantiable.');
-
 // This test verifies that DetectedFace can be created
 test(function() {
   var detectedFace = new DetectedFace();

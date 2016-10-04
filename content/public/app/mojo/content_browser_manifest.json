@@ -18,6 +18,7 @@
         "blink::mojom::OffscreenCanvasCompositorFrameSinkProvider",
         "blink::mojom::OffscreenCanvasSurface",
         "blink::mojom::PermissionService",
+        "blink::mojom::ShapeDetection",
         "blink::mojom::WebSocket",
         "content::mojom::MemoryCoordinatorHandle",
         "content::mojom::StoragePartitionService",

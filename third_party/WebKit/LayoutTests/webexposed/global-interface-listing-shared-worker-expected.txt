@@ -129,14 +129,6 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method setUint16
 [Worker]     method setUint32
 [Worker]     method setUint8
-[Worker] interface DetectedObject
-[Worker]     attribute @@toStringTag
-[Worker]     getter boundingBox
-[Worker]     method constructor
-[Worker] interface Detector
-[Worker]     attribute @@toStringTag
-[Worker]     method constructor
-[Worker]     method detect
 [Worker] interface Event
 [Worker]     attribute @@toStringTag
 [Worker]     attribute AT_TARGET

@@ -7,15 +7,22 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/ModulesExport.h"
-#include "modules/shapedetection/DetectedObject.h"
 
 namespace blink {
 
-class MODULES_EXPORT DetectedFace final : public DetectedObject {
+class DOMRect;
+
+class MODULES_EXPORT DetectedFace final : public GarbageCollected<DetectedFace>,
+                                          public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
   static DetectedFace* create();
+  DOMRect* boundingBox() const;
+  DECLARE_TRACE();
+
+ private:
+  Member<DOMRect> m_boundingBox;
 };
 
 }  // namespace blink

@@ -4,10 +4,20 @@
 
 #include "modules/shapedetection/DetectedFace.h"
 
+#include "core/dom/DOMRect.h"
+
 namespace blink {
 
 DetectedFace* DetectedFace::create() {
   return new DetectedFace();
+}
+
+DOMRect* DetectedFace::boundingBox() const {
+  return m_boundingBox.get();
+}
+
+DEFINE_TRACE(DetectedFace) {
+  visitor->trace(m_boundingBox);
 }
 
 }  // namespace blink

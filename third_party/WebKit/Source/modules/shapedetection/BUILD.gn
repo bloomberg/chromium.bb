@@ -8,8 +8,6 @@ blink_modules_sources("shapedetection") {
   sources = [
     "DetectedFace.cpp",
     "DetectedFace.h",
-    "DetectedObject.h",
-    "Detector.h",
     "FaceDetector.cpp",
     "FaceDetector.h",
   ]
