@@ -97,7 +97,7 @@ HTMLTableColElement::additionalPresentationAttributeStyle() {
 }
 
 void HTMLTableColElement::setSpan(unsigned n) {
-  setUnsignedIntegralAttribute(spanAttr, n);
+  setUnsignedIntegralAttribute(spanAttr, n ? n : 1);
 }
 
 const AtomicString& HTMLTableColElement::width() const {

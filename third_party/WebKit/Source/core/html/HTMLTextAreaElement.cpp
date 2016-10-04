@@ -626,11 +626,11 @@ void HTMLTextAreaElement::accessKeyAction(bool) {
 }
 
 void HTMLTextAreaElement::setCols(unsigned cols) {
-  setUnsignedIntegralAttribute(colsAttr, cols);
+  setUnsignedIntegralAttribute(colsAttr, cols ? cols : defaultCols);
 }
 
 void HTMLTextAreaElement::setRows(unsigned rows) {
-  setUnsignedIntegralAttribute(rowsAttr, rows);
+  setUnsignedIntegralAttribute(rowsAttr, rows ? rows : defaultRows);
 }
 
 bool HTMLTextAreaElement::matchesReadOnlyPseudoClass() const {
