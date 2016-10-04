@@ -239,6 +239,7 @@ class RemoteTryJob(object):
             'builder_name': self._GetBuilder(bot),
             'properties': self._GetProperties(bot),
         }),
+        'tags':['build_type:%s' % constants.TRYJOB_TYPE]
     })
     content = buildbucket_lib.PutBuildBucket(
         body, http, testjob, dryrun)
