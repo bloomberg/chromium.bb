@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/pickle.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
@@ -161,7 +162,7 @@ bool FileSystemUsageCache::Delete(const base::FilePath& usage_file_path) {
 void FileSystemUsageCache::CloseCacheFiles() {
   TRACE_EVENT0("FileSystem", "UsageCache::CloseCacheFiles");
   DCHECK(CalledOnValidThread());
-  base::STLDeleteValues(&cache_files_);
+  cache_files_.clear();
   timer_.reset();
 }
 
@@ -228,24 +229,22 @@ base::File* FileSystemUsageCache::GetFile(const base::FilePath& file_path) {
     CloseCacheFiles();
   ScheduleCloseTimer();
 
-  base::File* new_file = NULL;
-  std::pair<CacheFiles::iterator, bool> inserted =
-      cache_files_.insert(std::make_pair(file_path, new_file));
-  if (!inserted.second)
-    return inserted.first->second;
+  auto& entry = cache_files_[file_path];
+  if (entry)
+    return entry.get();
 
-  new_file = new base::File(file_path,
-                            base::File::FLAG_OPEN_ALWAYS |
-                            base::File::FLAG_READ |
-                            base::File::FLAG_WRITE);
-  if (!new_file->IsValid()) {
-    cache_files_.erase(inserted.first);
-    delete new_file;
-    return NULL;
+  // Because there are no null entries in cache_files_, the [] inserted a blank
+  // pointer, so let's populate the cache.
+  entry = base::MakeUnique<base::File>(file_path, base::File::FLAG_OPEN_ALWAYS |
+                                                      base::File::FLAG_READ |
+                                                      base::File::FLAG_WRITE);
+
+  if (!entry->IsValid()) {
+    cache_files_.erase(file_path);
+    return nullptr;
   }
 
-  inserted.first->second = new_file;
-  return new_file;
+  return entry.get();
 }
 
 bool FileSystemUsageCache::ReadBytes(const base::FilePath& file_path,

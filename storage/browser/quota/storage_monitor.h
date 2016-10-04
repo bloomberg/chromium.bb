@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -140,10 +141,9 @@ class STORAGE_EXPORT StorageTypeObservers {
   void NotifyUsageChange(const StorageObserver::Filter& filter, int64_t delta);
 
  private:
-  typedef std::map<std::string, HostStorageObservers*> HostObserversMap;
-
   QuotaManager* quota_manager_;
-  HostObserversMap host_observers_map_;
+  std::map<std::string, std::unique_ptr<HostStorageObservers>>
+      host_observers_map_;
 
   DISALLOW_COPY_AND_ASSIGN(StorageTypeObservers);
 };
@@ -170,10 +170,9 @@ class STORAGE_EXPORT StorageMonitor {
   void NotifyUsageChange(const StorageObserver::Filter& filter, int64_t delta);
 
  private:
-  typedef std::map<StorageType, StorageTypeObservers*> StorageTypeObserversMap;
-
   QuotaManager* quota_manager_;
-  StorageTypeObserversMap storage_type_observers_map_;
+  std::map<StorageType, std::unique_ptr<StorageTypeObservers>>
+      storage_type_observers_map_;
 
   DISALLOW_COPY_AND_ASSIGN(StorageMonitor);
 };

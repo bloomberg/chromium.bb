@@ -15,7 +15,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "net/base/io_buffer.h"
@@ -76,7 +75,6 @@ BlobReader::BlobReader(
 }
 
 BlobReader::~BlobReader() {
-  base::STLDeleteValues(&index_to_reader_);
 }
 
 BlobReader::Status BlobReader::CalculateSize(
@@ -620,13 +618,13 @@ FileStreamReader* BlobReader::GetOrCreateFileReaderAtIndex(size_t index) {
   auto it = index_to_reader_.find(index);
   if (it != index_to_reader_.end()) {
     DCHECK(it->second);
-    return it->second;
+    return it->second.get();
   }
   std::unique_ptr<FileStreamReader> reader = CreateFileStreamReader(item, 0);
   FileStreamReader* ret_value = reader.get();
   if (!ret_value)
     return nullptr;
-  index_to_reader_[index] = reader.release();
+  index_to_reader_[index] = std::move(reader);
   return ret_value;
 }
 
@@ -662,19 +660,10 @@ std::unique_ptr<FileStreamReader> BlobReader::CreateFileStreamReader(
 void BlobReader::SetFileReaderAtIndex(
     size_t index,
     std::unique_ptr<FileStreamReader> reader) {
-  auto found = index_to_reader_.find(current_item_index_);
-  if (found != index_to_reader_.end()) {
-    if (found->second) {
-      delete found->second;
-    }
-    if (!reader.get()) {
-      index_to_reader_.erase(found);
-      return;
-    }
-    found->second = reader.release();
-  } else if (reader.get()) {
-    index_to_reader_[current_item_index_] = reader.release();
-  }
+  if (reader)
+    index_to_reader_[index] = std::move(reader);
+  else
+    index_to_reader_.erase(index);
 }
 
 }  // namespace storage

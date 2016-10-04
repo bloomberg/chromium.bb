@@ -63,8 +63,6 @@ class STORAGE_EXPORT FileSystemUsageCache {
   static const int kUsageFileHeaderSize;
 
  private:
-  typedef std::map<base::FilePath, base::File*> CacheFiles;
-
   // Read the size, validity and the "dirty" entry described in the .usage file.
   // Returns less than zero if no .usage file is available.
   bool Read(const base::FilePath& usage_file_path,
@@ -93,7 +91,7 @@ class STORAGE_EXPORT FileSystemUsageCache {
   bool CalledOnValidThread();
 
   std::unique_ptr<TimedTaskHelper> timer_;
-  CacheFiles cache_files_;
+  std::map<base::FilePath, std::unique_ptr<base::File>> cache_files_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
