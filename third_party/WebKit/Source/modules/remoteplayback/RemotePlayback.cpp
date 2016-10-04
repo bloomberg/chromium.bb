@@ -89,8 +89,13 @@ ScriptPromise RemotePlayback::prompt(ScriptState* scriptState) {
     return promise;
   }
 
-  // TODO(avayvod): should we have a separate flag to disable the user gesture
-  // requirement (for tests) or reuse the one for the PresentationRequest::start()?
+  if (m_promptPromiseResolver) {
+    resolver->reject(DOMException::create(
+        OperationError,
+        "A prompt is already being shown for this media element."));
+    return promise;
+  }
+
   if (!UserGestureIndicator::utilizeUserGesture()) {
     resolver->reject(DOMException::create(
         InvalidAccessError, "RemotePlayback::prompt() requires user gesture."));
@@ -98,7 +103,7 @@ ScriptPromise RemotePlayback::prompt(ScriptState* scriptState) {
   }
 
   if (m_state == WebRemotePlaybackState::Disconnected) {
-    m_promptPromiseResolvers.append(resolver);
+    m_promptPromiseResolver = resolver;
     m_mediaElement->requestRemotePlayback();
   } else {
     m_mediaElement->requestRemotePlaybackControl();
@@ -118,7 +123,7 @@ String RemotePlayback::state() const {
 
 bool RemotePlayback::hasPendingActivity() const {
   return hasEventListeners() || !m_availabilityObjects.isEmpty() ||
-         !m_promptPromiseResolvers.isEmpty();
+         m_promptPromiseResolver;
 }
 
 void RemotePlayback::stateChanged(WebRemotePlaybackState state) {
@@ -127,15 +132,14 @@ void RemotePlayback::stateChanged(WebRemotePlaybackState state) {
   // before checking if anything changed.
   // TODO(avayvod): cleanup this logic when we implementing the "connecting"
   // state.
-  if (state != WebRemotePlaybackState::Disconnected) {
-    for (auto& resolver : m_promptPromiseResolvers)
-      resolver->resolve();
-  } else {
-    for (auto& resolver : m_promptPromiseResolvers)
-      resolver->reject(DOMException::create(
+  if (m_promptPromiseResolver) {
+    if (state != WebRemotePlaybackState::Disconnected)
+      m_promptPromiseResolver->resolve();
+    else
+      m_promptPromiseResolver->reject(DOMException::create(
           AbortError, "Failed to connect to the remote device."));
+    m_promptPromiseResolver = nullptr;
   }
-  m_promptPromiseResolvers.clear();
 
   if (m_state == state)
     return;
@@ -154,14 +158,16 @@ void RemotePlayback::availabilityChanged(bool available) {
 }
 
 void RemotePlayback::promptCancelled() {
-  for (auto& resolver : m_promptPromiseResolvers)
-    resolver->resolve();
-  m_promptPromiseResolvers.clear();
+  if (!m_promptPromiseResolver)
+    return;
+
+  m_promptPromiseResolver->resolve();
+  m_promptPromiseResolver = nullptr;
 }
 
 DEFINE_TRACE(RemotePlayback) {
   visitor->trace(m_availabilityObjects);
-  visitor->trace(m_promptPromiseResolvers);
+  visitor->trace(m_promptPromiseResolver);
   visitor->trace(m_mediaElement);
   EventTargetWithInlineData::trace(visitor);
 }

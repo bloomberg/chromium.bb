@@ -2194,13 +2194,13 @@ void HTMLMediaElement::pauseInternal() {
 }
 
 void HTMLMediaElement::requestRemotePlayback() {
-  DCHECK(m_remoteRoutesAvailable);
-  webMediaPlayer()->requestRemotePlayback();
+  if (webMediaPlayer())
+    webMediaPlayer()->requestRemotePlayback();
 }
 
 void HTMLMediaElement::requestRemotePlaybackControl() {
-  DCHECK(m_remoteRoutesAvailable);
-  webMediaPlayer()->requestRemotePlaybackControl();
+  if (webMediaPlayer())
+    webMediaPlayer()->requestRemotePlaybackControl();
 }
 
 void HTMLMediaElement::closeMediaSource() {

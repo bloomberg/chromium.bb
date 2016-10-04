@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Test that calling prompt() before the promise returned by the previous call is resolved throws an exception</title>
+        <script src="../../resources/testharness.js"></script>
+        <script src="../../resources/testharnessreport.js"></script>
+        <script src="../media-file.js"></script>
+    </head>
+    <body>
+        <button id="button">Click me</button>
+        <script>
+            function clickOnElem(e) {
+                eventSender.mouseMoveTo(
+                    e.offsetLeft + e.offsetWidth / 2,
+                    e.offsetTop + e.offsetHeight / 2);
+                eventSender.mouseDown();
+                eventSender.mouseUp();
+            }
+
+            async_test(function(test)
+            {
+                var v = document.createElement('video');
+                v.src = findMediaFile('video', 'content/test');
+                document.body.appendChild(v);
+
+                var btn = document.getElementById('button');
+                btn.onclick = function() {
+                    v.remote.prompt();
+
+                    btn.onclick = function() {
+                        v.remote.prompt().then(
+                            test.unreached_func(),
+                            test.step_func_done(function(e) {
+                                assert_equals(e.name, 'OperationError');
+                                assert_equals(e.message, 'A prompt is already being shown for this media element.');
+                            }));
+                        btn.onclick = null;
+                    };
+                    clickOnElem(btn);
+                }
+
+                clickOnElem(btn);
+            }, 'Test that calling prompt() before the promise returned by the previous call is resolved throws an exception.');
+        </script>
+    </body>
+</html>

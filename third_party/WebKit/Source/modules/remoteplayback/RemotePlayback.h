@@ -59,7 +59,7 @@ class RemotePlayback final : public EventTargetWithInlineData,
   bool m_availability;
   HeapVector<Member<RemotePlaybackAvailability>> m_availabilityObjects;
   Member<HTMLMediaElement> m_mediaElement;
-  HeapVector<Member<ScriptPromiseResolver>> m_promptPromiseResolvers;
+  Member<ScriptPromiseResolver> m_promptPromiseResolver;
 };
 
 }  // namespace blink
