@@ -94,6 +94,9 @@ component("net") {
 
 source_set("helium") {
   sources = [
+    "helium/helium_errors.h",
+    "helium/helium_result.cc",
+    "helium/helium_result.h",
     "helium/vector_clock.cc",
     "helium/vector_clock.h",
   ]
@@ -110,7 +113,7 @@ source_set("helium") {
 
 source_set("net_export") {
   sources = [
-      "blimp_net_export.h",
+    "blimp_net_export.h",
   ]
 }
 
@@ -159,6 +162,7 @@ source_set("unit_tests") {
     "delta_encoding_unittest.cc",
     "engine_authentication_handler_unittest.cc",
     "engine_connection_manager_unittest.cc",
+    "helium/helium_result_unittest.cc",
     "helium/vector_clock_unittest.cc",
     "input_message_unittest.cc",
     "ssl_client_transport_unittest.cc",
