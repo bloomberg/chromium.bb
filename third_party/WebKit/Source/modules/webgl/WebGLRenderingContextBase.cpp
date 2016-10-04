@@ -649,8 +649,9 @@ WebGLRenderingContextBase::createWebGraphicsContext3DProvider(
   }
   Settings* settings = frame->settings();
 
-  // The FrameLoaderClient might block creation of a new WebGL context despite the page settings; in
-  // particular, if WebGL contexts were lost one or more times via the GL_ARB_robustness extension.
+  // The FrameLoaderClient might block creation of a new WebGL context despite
+  // the page settings; in particular, if WebGL contexts were lost one or more
+  // times via the GL_ARB_robustness extension.
   if (!frame->loader().client()->allowWebGL(settings &&
                                             settings->webGLEnabled())) {
     canvas->dispatchEvent(WebGLContextEvent::create(
@@ -700,7 +701,8 @@ void WebGLRenderingContextBase::commit(ExceptionState& exceptionState) {
   }
   if (!drawingBuffer())
     return;
-  // TODO(crbug.com/646864): Make commit() work correctly with { preserveDrawingBuffer : true }.
+  // TODO(crbug.com/646864): Make commit() work correctly with
+  // { preserveDrawingBuffer : true }.
   getOffscreenCanvas()->getOrCreateFrameDispatcher()->dispatchFrame(
       std::move(drawingBuffer()->transferToStaticBitmapImage()));
 }
@@ -722,8 +724,9 @@ PassRefPtr<Image> WebGLRenderingContextBase::getImage(
   std::unique_ptr<ImageBuffer> buffer = ImageBuffer::create(std::move(surface));
   if (!buffer->copyRenderingResultsFromDrawingBuffer(drawingBuffer(),
                                                      BackBuffer)) {
-    // copyRenderingResultsFromDrawingBuffer is expected to always succeed because we've
-    // explicitly created an Accelerated surface and have already validated it.
+    // copyRenderingResultsFromDrawingBuffer is expected to always succeed
+    // because we've explicitly created an Accelerated surface and have already
+    // validated it.
     NOTREACHED();
     return nullptr;
   }
@@ -1154,7 +1157,8 @@ void WebGLRenderingContextBase::initializeNewContext() {
   if (isWebGL2OrHigher())
     contextGL()->Enable(GL_PRIMITIVE_RESTART_FIXED_INDEX);
 
-  // This ensures that the context has a valid "lastFlushID" and won't be mistakenly identified as the "least recently used" context.
+  // This ensures that the context has a valid "lastFlushID" and won't be
+  // mistakenly identified as the "least recently used" context.
   contextGL()->Flush();
 
   for (int i = 0; i < WebGLExtensionNameCount; ++i)
@@ -1210,7 +1214,8 @@ void WebGLRenderingContextBase::removeAllCompressedTextureFormats() {
   m_compressedTextureFormats.clear();
 }
 
-// Helper function for V8 bindings to identify what version of WebGL a CanvasRenderingContext supports.
+// Helper function for V8 bindings to identify what version of WebGL a
+// CanvasRenderingContext supports.
 unsigned WebGLRenderingContextBase::getWebGLVersion(
     const CanvasRenderingContext* context) {
   if (!context->is3d())
@@ -1220,7 +1225,8 @@ unsigned WebGLRenderingContextBase::getWebGLVersion(
 
 WebGLRenderingContextBase::~WebGLRenderingContextBase() {
   // Remove all references to WebGLObjects so if they are the last reference
-  // they will be freed before the last context is removed from the context group.
+  // they will be freed before the last context is removed from the context
+  // group.
   m_boundArrayBuffer = nullptr;
   m_defaultVertexArrayObject = nullptr;
   m_boundVertexArrayObject = nullptr;
@@ -1229,8 +1235,9 @@ WebGLRenderingContextBase::~WebGLRenderingContextBase() {
   m_renderbufferBinding = nullptr;
 
   // WebGLTexture shared objects will be detached and deleted
-  // m_contextGroup->removeContext(this), which will bring about deleteTexture() calls.
-  // We null these out to avoid accessing those members in deleteTexture().
+  // m_contextGroup->removeContext(this), which will bring about deleteTexture()
+  // calls.  We null these out to avoid accessing those members in
+  // deleteTexture().
   for (size_t i = 0; i < m_textureUnits.size(); ++i) {
     m_textureUnits[i].m_texture2DBinding = nullptr;
     m_textureUnits[i].m_textureCubeMapBinding = nullptr;
@@ -1327,7 +1334,8 @@ WebGLRenderingContextBase::clearIfComposited(GLbitfield mask) {
     return Skipped;
   }
 
-  // Determine if it's possible to combine the clear the user asked for and this clear.
+  // Determine if it's possible to combine the clear the user asked for and this
+  // clear.
   bool combinedClear = mask && !m_scissorEnabled;
 
   contextGL()->Disable(GL_SCISSOR_TEST);
@@ -1425,9 +1433,10 @@ bool WebGLRenderingContextBase::paintRenderingResultsToCanvas(
   drawingBuffer()->commit();
   if (!canvas()->buffer()->copyRenderingResultsFromDrawingBuffer(
           drawingBuffer(), sourceBuffer)) {
-    // Currently, copyRenderingResultsFromDrawingBuffer is expected to always succeed because cases
-    // where canvas()-buffer() is not accelerated are handle before reaching this point.
-    // If that assumption ever stops holding true, we may need to implement a fallback right here.
+    // Currently, copyRenderingResultsFromDrawingBuffer is expected to always
+    // succeed because cases where canvas()-buffer() is not accelerated are
+    // handle before reaching this point.  If that assumption ever stops holding
+    // true, we may need to implement a fallback right here.
     ASSERT_NOT_REACHED();
     return false;
   }
@@ -1466,29 +1475,31 @@ void WebGLRenderingContextBase::reshape(int width, int height) {
     contextGL()->BindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
   }
 
-  // This is an approximation because at WebGLRenderingContextBase level we don't
-  // know if the underlying FBO uses textures or renderbuffers.
+  // This is an approximation because at WebGLRenderingContextBase level we
+  // don't know if the underlying FBO uses textures or renderbuffers.
   GLint maxSize = std::min(m_maxTextureSize, m_maxRenderbufferSize);
   GLint maxWidth = std::min(maxSize, m_maxViewportDims[0]);
   GLint maxHeight = std::min(maxSize, m_maxViewportDims[1]);
   width = clamp(width, 1, maxWidth);
   height = clamp(height, 1, maxHeight);
 
-  // Limit drawing buffer area to 4k*4k to avoid memory exhaustion. Width or height may be larger than
-  // 4k as long as it's within the max viewport dimensions and total area remains within the limit.
+  // Limit drawing buffer area to 4k*4k to avoid memory exhaustion. Width or
+  // height may be larger than 4k as long as it's within the max viewport
+  // dimensions and total area remains within the limit.
   // For example: 5120x2880 should be fine.
   const int maxArea = 4096 * 4096;
   int currentArea = width * height;
   if (currentArea > maxArea) {
-    // If we've exceeded the area limit scale the buffer down, preserving ascpect ratio, until it fits.
+    // If we've exceeded the area limit scale the buffer down, preserving
+    // ascpect ratio, until it fits.
     float scaleFactor =
         sqrtf(static_cast<float>(maxArea) / static_cast<float>(currentArea));
     width = std::max(1, static_cast<int>(width * scaleFactor));
     height = std::max(1, static_cast<int>(height * scaleFactor));
   }
 
-  // We don't have to mark the canvas as dirty, since the newly created image buffer will also start off
-  // clear (and this matches what reshape will do).
+  // We don't have to mark the canvas as dirty, since the newly created image
+  // buffer will also start off clear (and this matches what reshape will do).
   drawingBuffer()->reset(IntSize(width, height));
   restoreStateAfterClear();
 
@@ -1701,7 +1712,8 @@ void WebGLRenderingContextBase::bindTexture(GLenum target,
     m_onePlusMaxNonDefaultTextureUnit =
         max(m_activeTextureUnit + 1, m_onePlusMaxNonDefaultTextureUnit);
   } else {
-    // If the disabled index is the current maximum, trace backwards to find the new max enabled texture index
+    // If the disabled index is the current maximum, trace backwards to find the
+    // new max enabled texture index
     if (m_onePlusMaxNonDefaultTextureUnit == m_activeTextureUnit + 1) {
       findNewMaxNonDefaultTextureUnit();
     }
@@ -1912,12 +1924,13 @@ void WebGLRenderingContextBase::clear(GLbitfield mask) {
                                                  m_drawingBuffer.get());
 
   if (clearIfComposited(mask) != CombinedClear) {
-    // If clearing the default back buffer's depth buffer, also clear the stencil buffer, if one
-    // was allocated implicitly. This avoids performance problems on some GPUs.
+    // If clearing the default back buffer's depth buffer, also clear the
+    // stencil buffer, if one was allocated implicitly. This avoids performance
+    // problems on some GPUs.
     if (!m_framebufferBinding && drawingBuffer()->hasImplicitStencilBuffer() &&
         (mask & GL_DEPTH_BUFFER_BIT)) {
-      // It shouldn't matter what value it's cleared to, since in other queries in the API, we
-      // claim that the stencil buffer doesn't exist.
+      // It shouldn't matter what value it's cleared to, since in other queries
+      // in the API, we claim that the stencil buffer doesn't exist.
       mask |= GL_STENCIL_BUFFER_BIT;
     }
     contextGL()->Clear(mask);
@@ -2262,7 +2275,8 @@ void WebGLRenderingContextBase::deleteTexture(WebGLTexture* texture) {
     getFramebufferBinding(GL_READ_FRAMEBUFFER)
         ->removeAttachmentFromBoundFramebuffer(GL_READ_FRAMEBUFFER, texture);
 
-  // If the deleted was bound to the the current maximum index, trace backwards to find the new max texture index
+  // If the deleted was bound to the the current maximum index, trace backwards
+  // to find the new max texture index.
   if (m_onePlusMaxNonDefaultTextureUnit ==
       static_cast<unsigned long>(maxBoundTextureIndex + 1)) {
     findNewMaxNonDefaultTextureUnit();
@@ -2516,8 +2530,9 @@ void WebGLRenderingContextBase::framebufferRenderbuffer(
   }
   GLuint bufferObject = objectOrZero(buffer);
   if (isWebGL2OrHigher() && attachment == GL_DEPTH_STENCIL_ATTACHMENT) {
-    // On ES3, DEPTH_STENCIL_ATTACHMENT is like an alias for DEPTH_ATTACHMENT + STENCIL_ATTACHMENT.
-    // We divide it here so in WebGLFramebuffer, we don't have to handle DEPTH_STENCIL_ATTACHMENT in WebGL 2.
+    // On ES3, DEPTH_STENCIL_ATTACHMENT is like an alias for DEPTH_ATTACHMENT +
+    // STENCIL_ATTACHMENT.  We divide it here so in WebGLFramebuffer, we don't
+    // have to handle DEPTH_STENCIL_ATTACHMENT in WebGL 2.
     contextGL()->FramebufferRenderbuffer(target, GL_DEPTH_ATTACHMENT,
                                          renderbuffertarget, bufferObject);
     contextGL()->FramebufferRenderbuffer(target, GL_STENCIL_ATTACHMENT,
@@ -2560,8 +2575,9 @@ void WebGLRenderingContextBase::framebufferTexture2D(GLenum target,
   }
   GLuint textureObject = objectOrZero(texture);
   if (isWebGL2OrHigher() && attachment == GL_DEPTH_STENCIL_ATTACHMENT) {
-    // On ES3, DEPTH_STENCIL_ATTACHMENT is like an alias for DEPTH_ATTACHMENT + STENCIL_ATTACHMENT.
-    // We divide it here so in WebGLFramebuffer, we don't have to handle DEPTH_STENCIL_ATTACHMENT in WebGL 2.
+    // On ES3, DEPTH_STENCIL_ATTACHMENT is like an alias for DEPTH_ATTACHMENT +
+    // STENCIL_ATTACHMENT.  We divide it here so in WebGLFramebuffer, we don't
+    // have to handle DEPTH_STENCIL_ATTACHMENT in WebGL 2.
     contextGL()->FramebufferTexture2D(target, GL_DEPTH_ATTACHMENT, textarget,
                                       textureObject, level);
     contextGL()->FramebufferTexture2D(target, GL_STENCIL_ATTACHMENT, textarget,
@@ -2729,8 +2745,8 @@ void WebGLRenderingContextBase::getContextAttributes(
   if (isContextLost())
     return;
   result.set(toWebGLContextAttributes(creationAttributes()));
-  // Some requested attributes may not be honored, so we need to query the underlying
-  // context/drawing buffer and adjust accordingly.
+  // Some requested attributes may not be honored, so we need to query the
+  // underlying context/drawing buffer and adjust accordingly.
   if (creationAttributes().depth() && !drawingBuffer()->hasDepthBuffer())
     result.get().setDepth(false);
   if (creationAttributes().stencil() && !drawingBuffer()->hasStencilBuffer())
@@ -3426,7 +3442,8 @@ ScriptValue WebGLRenderingContextBase::getUniform(
     return ScriptValue::createNull(scriptState);
   }
 
-  // FIXME: make this more efficient using WebGLUniformLocation and caching types in it
+  // FIXME: make this more efficient using WebGLUniformLocation and caching
+  // types in it.
   GLint activeUniforms = 0;
   contextGL()->GetProgramiv(programId, GL_ACTIVE_UNIFORMS, &activeUniforms);
   for (GLint i = 0; i < activeUniforms; i++) {
@@ -3445,7 +3462,8 @@ ScriptValue WebGLRenderingContextBase::getUniform(
     // Strip "[0]" from the name if it's an array.
     if (size > 1 && name.endsWith("[0]"))
       name = name.left(name.length() - 3);
-    // If it's an array, we need to iterate through each element, appending "[index]" to the name.
+    // If it's an array, we need to iterate through each element, appending
+    // "[index]" to the name.
     for (GLint index = 0; index < size; ++index) {
       nameBuilder.clear();
       nameBuilder.append(name);
@@ -3458,7 +3476,8 @@ ScriptValue WebGLRenderingContextBase::getUniform(
       GLint loc = contextGL()->GetUniformLocation(
           objectOrZero(program), nameBuilder.toString().utf8().data());
       if (loc == location) {
-        // Found it. Use the type in the ActiveInfo to determine the return type.
+        // Found it. Use the type in the ActiveInfo to determine the return
+        // type.
         GLenum baseType;
         unsigned length;
         switch (type) {
@@ -3628,7 +3647,8 @@ ScriptValue WebGLRenderingContextBase::getUniform(
       }
     }
   }
-  // If we get here, something went wrong in our unfortunately complex logic above
+  // If we get here, something went wrong in our unfortunately complex logic
+  // above
   synthesizeGLError(GL_INVALID_VALUE, "getUniform", "unknown error");
   return ScriptValue::createNull(scriptState);
 }
@@ -4084,8 +4104,8 @@ void WebGLRenderingContextBase::renderbufferStorageImpl(
     GLsizei width,
     GLsizei height,
     const char* functionName) {
-  ASSERT(
-      !samples);  // |samples| > 0 is only valid in WebGL2's renderbufferStorageMultisample().
+  ASSERT(!samples);             // |samples| > 0 is only valid in WebGL2's
+                                // renderbufferStorageMultisample().
   ASSERT(!isWebGL2OrHigher());  // Make sure this is overridden in WebGL 2.
   switch (internalformat) {
     case GL_DEPTH_COMPONENT16:
@@ -4164,8 +4184,8 @@ void WebGLRenderingContextBase::shaderSource(WebGLShader* shader,
   if (isContextLost() || !validateWebGLObject("shaderSource", shader))
     return;
   String stringWithoutComments = StripComments(string).result();
-  // TODO(danakj): Make validateShaderSource reject characters > 255 (or utf16 Strings)
-  // so we don't need to use StringUTF8Adaptor.
+  // TODO(danakj): Make validateShaderSource reject characters > 255 (or utf16
+  // Strings) so we don't need to use StringUTF8Adaptor.
   if (!validateShaderSource(stringWithoutComments))
     return;
   shader->setSource(string);
@@ -4270,7 +4290,8 @@ void WebGLRenderingContextBase::stencilOpSeparate(GLenum face,
 GLenum WebGLRenderingContextBase::convertTexInternalFormat(
     GLenum internalformat,
     GLenum type) {
-  // Convert to sized internal formats that are renderable with GL_CHROMIUM_color_buffer_float_rgb(a).
+  // Convert to sized internal formats that are renderable with
+  // GL_CHROMIUM_color_buffer_float_rgb(a).
   if (type == GL_FLOAT && internalformat == GL_RGBA &&
       extensionsUtil()->isExtensionEnabled(
           "GL_CHROMIUM_color_buffer_float_rgba"))
@@ -4291,7 +4312,8 @@ void WebGLRenderingContextBase::texImage2DBase(GLenum target,
                                                GLenum format,
                                                GLenum type,
                                                const void* pixels) {
-  // All calling functions check isContextLost, so a duplicate check is not needed here.
+  // All calling functions check isContextLost, so a duplicate check is not
+  // needed here.
   contextGL()->TexImage2D(target, level,
                           convertTexInternalFormat(internalformat, type), width,
                           height, border, format, type, pixels);
@@ -4312,7 +4334,8 @@ void WebGLRenderingContextBase::texImageImpl(
     bool flipY,
     bool premultiplyAlpha) {
   const char* funcName = getTexImageFunctionName(functionID);
-  // All calling functions check isContextLost, so a duplicate check is not needed here.
+  // All calling functions check isContextLost, so a duplicate check is not
+  // needed here.
   if (type == GL_UNSIGNED_INT_10F_11F_11F_REV) {
     // The UNSIGNED_INT_10F_11F_11F_REV type pack/unpack isn't implemented.
     type = GL_FLOAT;
@@ -4397,7 +4420,8 @@ bool WebGLRenderingContextBase::validateTexFunc(
     if (!validateSize(functionName, xoffset, yoffset, zoffset))
       return false;
   } else {
-    // For SourceArrayBufferView, function validateTexFuncData() would handle whether to validate the SettableTexFormat
+    // For SourceArrayBufferView, function validateTexFuncData() would handle
+    // whether to validate the SettableTexFormat
     // by checking if the ArrayBufferView is null or not.
     if (sourceType != SourceArrayBufferView) {
       if (!validateSettableTexFormat(functionName, format))
@@ -4426,8 +4450,8 @@ bool WebGLRenderingContextBase::validateValueFitNonNegInt32(
   return true;
 }
 
-// TODO(fmalita): figure why WebGLImageConversion::ImageExtractor can't handle SVG-backed images,
-// and get rid of this intermediate step.
+// TODO(fmalita): figure why WebGLImageConversion::ImageExtractor can't handle
+// SVG-backed images, and get rid of this intermediate step.
 PassRefPtr<Image> WebGLRenderingContextBase::drawImageIntoBuffer(
     PassRefPtr<Image> passImage,
     int width,
@@ -4614,7 +4638,8 @@ void WebGLRenderingContextBase::texImageHelperImageData(
   Vector<uint8_t> data;
   bool needConversion = true;
   // The data from ImageData is always of format RGBA8.
-  // No conversion is needed if destination format is RGBA and type is USIGNED_BYTE and no Flip or Premultiply operation is required.
+  // No conversion is needed if destination format is RGBA and type is
+  // USIGNED_BYTE and no Flip or Premultiply operation is required.
   if (!m_unpackFlipY && !m_unpackPremultiplyAlpha && format == GL_RGBA &&
       type == GL_UNSIGNED_BYTE) {
     needConversion = false;
@@ -4722,7 +4747,8 @@ bool WebGLRenderingContextBase::canUseTexImageByGPU(
       (isFloatType(type) || isIntegerFormat(internalformat) ||
        isSRGBFormat(internalformat)))
     return false;
-  // TODO(crbug.com/622958): Implement GPU-to-GPU path for WebGL 2 and more internal formats.
+  // TODO(crbug.com/622958): Implement GPU-to-GPU path for WebGL 2 and more
+  // internal formats.
   if (functionID == TexSubImage2D &&
       (isWebGL2OrHigher() || extensionEnabled(OESTextureFloatName) ||
        extensionEnabled(OESTextureHalfFloatName) ||
@@ -4783,7 +4809,8 @@ void WebGLRenderingContextBase::texImageByGPU(TexImageByGPUType functionType,
         target, internalformat, type, level);
   }
 
-  // if direct copy is not possible, create a temporary texture and then copy from canvas to temporary texture to target texture.
+  // if direct copy is not possible, create a temporary texture and then copy
+  // from canvas to temporary texture to target texture.
   if (!possibleDirectCopy) {
     targetLevel = 0;
     targetInternalformat = GL_RGBA;
@@ -4864,8 +4891,10 @@ void WebGLRenderingContextBase::texImageHelperHTMLCanvasElement(
                        1, 0, format, type, xoffset, yoffset, zoffset))
     return;
   if (functionID == TexImage2D || functionID == TexSubImage2D) {
-    // texImageByGPU relies on copyTextureCHROMIUM which doesn't support float/integer/sRGB internal format.
-    // TODO(crbug.com/622958): relax the constrains if copyTextureCHROMIUM is upgraded to handle more formats.
+    // texImageByGPU relies on copyTextureCHROMIUM which doesn't support
+    // float/integer/sRGB internal format.
+    // TODO(crbug.com/622958): relax the constrains if copyTextureCHROMIUM is
+    // upgraded to handle more formats.
     if (!canvas->renderingContext() ||
         !canvas->renderingContext()->isAccelerated() ||
         !canUseTexImageByGPU(functionID, internalformat, type)) {
@@ -4955,8 +4984,9 @@ void WebGLRenderingContextBase::texImageHelperHTMLVideoElement(
     return;
 
   if (functionID == TexImage2D) {
-    // Go through the fast path doing a GPU-GPU textures copy without a readback to system memory if possible.
-    // Otherwise, it will fall back to the normal SW path.
+    // Go through the fast path doing a GPU-GPU textures copy without a readback
+    // to system memory if possible.  Otherwise, it will fall back to the normal
+    // SW path.
     if (GL_TEXTURE_2D == target) {
       if (Extensions3DUtil::canUseCopyTextureCHROMIUM(target, internalformat,
                                                       type, level) &&
@@ -4966,7 +4996,8 @@ void WebGLRenderingContextBase::texImageHelperHTMLVideoElement(
         return;
       }
 
-      // Try using an accelerated image buffer, this allows YUV conversion to be done on the GPU.
+      // Try using an accelerated image buffer, this allows YUV conversion to be
+      // done on the GPU.
       std::unique_ptr<ImageBufferSurface> surface =
           wrapUnique(new AcceleratedImageBufferSurface(
               IntSize(video->videoWidth(), video->videoHeight())));
@@ -4974,15 +5005,18 @@ void WebGLRenderingContextBase::texImageHelperHTMLVideoElement(
         std::unique_ptr<ImageBuffer> imageBuffer(
             ImageBuffer::create(std::move(surface)));
         if (imageBuffer) {
-          // The video element paints an RGBA frame into our surface here. By using an AcceleratedImageBufferSurface,
-          // we enable the WebMediaPlayer implementation to do any necessary color space conversion on the GPU (though it
+          // The video element paints an RGBA frame into our surface here. By
+          // using an AcceleratedImageBufferSurface, we enable the
+          // WebMediaPlayer implementation to do any necessary color space
+          // conversion on the GPU (though it
           // may still do a CPU conversion and upload the results).
           video->paintCurrentFrame(
               imageBuffer->canvas(),
               IntRect(0, 0, video->videoWidth(), video->videoHeight()),
               nullptr);
 
-          // This is a straight GPU-GPU copy, any necessary color space conversion was handled in the paintCurrentFrameInContext() call.
+          // This is a straight GPU-GPU copy, any necessary color space
+          // conversion was handled in the paintCurrentFrameInContext() call.
           if (imageBuffer->copyToPlatformTexture(
                   contextGL(), texture->object(), internalformat, type, level,
                   m_unpackPremultiplyAlpha, m_unpackFlipY)) {
@@ -5072,8 +5106,9 @@ void WebGLRenderingContextBase::texImageHelperImageBitmap(
   SkPixmap pixmap;
   uint8_t* pixelDataPtr = nullptr;
   RefPtr<Uint8Array> pixelData;
-  // In the case where an ImageBitmap is not texture backed, peekPixels() always succeed.
-  // However, when it is texture backed and !canUseTexImageByGPU, we do a GPU read back.
+  // In the case where an ImageBitmap is not texture backed, peekPixels() always
+  // succeed.  However, when it is texture backed and !canUseTexImageByGPU, we
+  // do a GPU read back.
   bool peekSucceed = skImage->peekPixels(&pixmap);
   if (peekSucceed) {
     pixelDataPtr = static_cast<uint8_t*>(pixmap.writable_addr());
@@ -5095,7 +5130,8 @@ void WebGLRenderingContextBase::texImageHelperImageBitmap(
       // The UNSIGNED_INT_10F_11F_11F_REV type pack/unpack isn't implemented.
       type = GL_FLOAT;
     }
-    // In the case of ImageBitmap, we do not need to apply flipY or premultiplyAlpha.
+    // In the case of ImageBitmap, we do not need to apply flipY or
+    // premultiplyAlpha.
     bool isPixelDataBGRA =
         pixmap.colorType() == SkColorType::kBGRA_8888_SkColorType;
     if ((isPixelDataBGRA &&
@@ -5857,7 +5893,8 @@ void WebGLRenderingContextBase::viewport(GLint x,
   contextGL()->Viewport(x, y, width, height);
 }
 
-// Added to provide a unified interface with CanvasRenderingContext2D. Prefer calling forceLostContext instead.
+// Added to provide a unified interface with CanvasRenderingContext2D. Prefer
+// calling forceLostContext instead.
 void WebGLRenderingContextBase::loseContext(LostContextMode mode) {
   forceLostContext(mode, Manual);
 }
@@ -5884,7 +5921,8 @@ void WebGLRenderingContextBase::loseContextImpl(
   ASSERT(m_contextLostMode != NotLostContext);
   m_autoRecoveryMethod = autoRecoveryMethod;
 
-  // Make absolutely sure we do not refer to an already-deleted texture or framebuffer.
+  // Make absolutely sure we do not refer to an already-deleted texture or
+  // framebuffer.
   drawingBuffer()->setTexture2DBinding(0);
   drawingBuffer()->setFramebufferBinding(GL_FRAMEBUFFER, 0);
   drawingBuffer()->setRenderbufferBinding(0);
@@ -5955,7 +5993,8 @@ Extensions3DUtil* WebGLRenderingContextBase::extensionsUtil() {
   if (!m_extensionsUtil) {
     gpu::gles2::GLES2Interface* gl = contextGL();
     m_extensionsUtil = Extensions3DUtil::create(gl);
-    // The only reason the ExtensionsUtil should be invalid is if the gl context is lost.
+    // The only reason the ExtensionsUtil should be invalid is if the gl context
+    // is lost.
     ASSERT(m_extensionsUtil->isValid() ||
            gl->GetGraphicsResetStatusKHR() != GL_NO_ERROR);
   }
@@ -6485,7 +6524,8 @@ bool WebGLRenderingContextBase::validateTexFuncDimensions(
         return false;
       }
       // No need to check height here. For texImage width == height.
-      // For texSubImage that will be checked when checking yoffset + height is in range.
+      // For texSubImage that will be checked when checking yoffset + height is
+      // in range.
       if (width > (m_maxCubeMapTextureSize >> level)) {
         synthesizeGLError(GL_INVALID_VALUE, functionName,
                           "width or height out of range for cube map");
@@ -6576,7 +6616,8 @@ bool WebGLRenderingContextBase::validateTexFuncData(
     DOMArrayBufferView* pixels,
     NullDisposition disposition,
     GLuint srcOffset) {
-  // All calling functions check isContextLost, so a duplicate check is not needed here.
+  // All calling functions check isContextLost, so a duplicate check is not
+  // needed here.
   if (!pixels) {
     DCHECK_NE(disposition, NullNotReachable);
     if (disposition == NullAllowed)
@@ -6650,8 +6691,8 @@ bool WebGLRenderingContextBase::validateTexFuncData(
       break;
     case GL_HALF_FLOAT:
     case GL_HALF_FLOAT_OES:  // OES_texture_half_float
-      // As per the specification, ArrayBufferView should be null or a Uint16Array when
-      // OES_texture_half_float is enabled.
+      // As per the specification, ArrayBufferView should be null or a
+      // Uint16Array when OES_texture_half_float is enabled.
       if (pixels->type() != DOMArrayBufferView::TypeUint16) {
         synthesizeGLError(GL_INVALID_OPERATION, functionName,
                           "type HALF_FLOAT_OES but ArrayBufferView is not NULL "
@@ -7114,7 +7155,9 @@ void WebGLRenderingContextBase::maybeRestoreContext(TimerBase*) {
                                             settings->webGLEnabled()))
     return;
 
-  // If the context was lost due to RealLostContext, we need to destroy the old DrawingBuffer before creating new DrawingBuffer to ensure resource budget enough.
+  // If the context was lost due to RealLostContext, we need to destroy the old
+  // DrawingBuffer before creating new DrawingBuffer to ensure resource budget
+  // enough.
   if (drawingBuffer()) {
     m_drawingBuffer->beginDestruction();
     m_drawingBuffer.clear();
@@ -7129,17 +7172,20 @@ void WebGLRenderingContextBase::maybeRestoreContext(TimerBase*) {
   RefPtr<DrawingBuffer> buffer;
   if (contextProvider && contextProvider->bindToCurrentThread()) {
     // Construct a new drawing buffer with the new GL context.
-    // TODO(xidachen): make sure that the second parameter is correct for OffscreenCanvas.
+    // TODO(xidachen): make sure that the second parameter is correct for
+    // OffscreenCanvas.
     buffer = createDrawingBuffer(std::move(contextProvider),
                                  DrawingBuffer::AllowChromiumImage);
-    // If DrawingBuffer::create() fails to allocate a fbo, |drawingBuffer| is set to null.
+    // If DrawingBuffer::create() fails to allocate a fbo, |drawingBuffer| is
+    // set to null.
   }
   if (!buffer) {
     if (m_contextLostMode == RealLostContext) {
       m_restoreTimer.startOneShot(secondsBetweenRestoreAttempts,
                                   BLINK_FROM_HERE);
     } else {
-      // This likely shouldn't happen but is the best way to report it to the WebGL app.
+      // This likely shouldn't happen but is the best way to report it to the
+      // WebGL app.
       synthesizeGLError(GL_INVALID_OPERATION, "", "error restoring context");
     }
     return;
@@ -7351,7 +7397,8 @@ void WebGLRenderingContextBase::restoreCurrentTexture2D() {
 }
 
 void WebGLRenderingContextBase::findNewMaxNonDefaultTextureUnit() {
-  // Trace backwards from the current max to find the new max non-default texture unit
+  // Trace backwards from the current max to find the new max non-default
+  // texture unit
   int startIndex = m_onePlusMaxNonDefaultTextureUnit - 1;
   for (int i = startIndex; i >= 0; --i) {
     if (m_textureUnits[i].m_texture2DBinding ||

@@ -74,8 +74,8 @@ void WebGLContextGroup::detachAndRemoveAllObjects() {
 void WebGLContextGroup::loseContextGroup(
     WebGLRenderingContextBase::LostContextMode mode,
     WebGLRenderingContextBase::AutoRecoveryMethod autoRecoveryMethod) {
-  // Detach must happen before loseContextImpl, which destroys the GraphicsContext3D
-  // and prevents groupObjects from being properly deleted.
+  // Detach must happen before loseContextImpl, which destroys the
+  // GraphicsContext3D and prevents groupObjects from being properly deleted.
   detachAndRemoveAllObjects();
 
   for (WebGLRenderingContextBase* const context : m_contexts)

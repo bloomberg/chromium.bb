@@ -684,10 +684,10 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext {
   LostContextMode m_contextLostMode;
   AutoRecoveryMethod m_autoRecoveryMethod;
   // Dispatches a context lost event once it is determined that one is needed.
-  // This is used for synthetic, WEBGL_lose_context and real context losses. For real ones, it's
-  // likely that there's no JavaScript on the stack, but that might be dependent
-  // on how exactly the platform discovers that the context was lost. For better
-  // portability we always defer the dispatch of the event.
+  // This is used for synthetic, WEBGL_lose_context and real context losses. For
+  // real ones, it's likely that there's no JavaScript on the stack, but that
+  // might be dependent on how exactly the platform discovers that the context
+  // was lost. For better portability we always defer the dispatch of the event.
   Timer<WebGLRenderingContextBase> m_dispatchContextLostEventTimer;
   bool m_restoreAllowed;
   Timer<WebGLRenderingContextBase> m_restoreTimer;
@@ -695,7 +695,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext {
   bool m_markedCanvasDirty;
   HeapHashSet<WeakMember<WebGLContextObject>> m_contextObjects;
 
-  // List of bound VBO's. Used to maintain info about sizes for ARRAY_BUFFER and stored values for ELEMENT_ARRAY_BUFFER
+  // List of bound VBO's. Used to maintain info about sizes for ARRAY_BUFFER and
+  // stored values for ELEMENT_ARRAY_BUFFER
   Member<WebGLBuffer> m_boundArrayBuffer;
 
   Member<WebGLVertexArrayObjectBase> m_defaultVertexArrayObject;
@@ -769,7 +770,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext {
   bool m_stencilEnabled;
   GLuint m_stencilMask, m_stencilMaskBack;
   GLint m_stencilFuncRef,
-      m_stencilFuncRefBack;  // Note that these are the user specified values, not the internal clamped value.
+      m_stencilFuncRefBack;  // Note that these are the user specified values,
+                             // not the internal clamped value.
   GLuint m_stencilFuncMask, m_stencilFuncMaskBack;
 
   bool m_isDepthStencilSupported;
@@ -883,9 +885,11 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext {
     return m_extensionEnabled[name];
   }
 
-  // ScopedDrawingBufferBinder is used for ReadPixels/CopyTexImage2D/CopySubImage2D to read from
-  // a multisampled DrawingBuffer. In this situation, we need to blit to a single sampled buffer
-  // for reading, during which the bindings could be changed and need to be recovered.
+  // ScopedDrawingBufferBinder is used for
+  // ReadPixels/CopyTexImage2D/CopySubImage2D to read from a multisampled
+  // DrawingBuffer. In this situation, we need to blit to a single sampled
+  // buffer for reading, during which the bindings could be changed and need to
+  // be recovered.
   class ScopedDrawingBufferBinder {
     STACK_ALLOCATED();
 
@@ -942,8 +946,9 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext {
   ScriptValue getWebGLIntArrayParameter(ScriptState*, GLenum);
 
   // Clear the backbuffer if it was composited since the last operation.
-  // clearMask is set to the bitfield of any clear that would happen anyway at this time
-  // and the function returns |CombinedClear| if that clear is now unnecessary.
+  // clearMask is set to the bitfield of any clear that would happen anyway at
+  // this time and the function returns |CombinedClear| if that clear is now
+  // unnecessary.
   enum HowToClear {
     // Skip clearing the backbuffer.
     Skipped,
@@ -1002,8 +1007,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext {
                     bool flipY,
                     bool premultiplyAlpha);
 
-  // Copy from the source directly to the texture via the gpu, without a read-back to system memory.
-  // Souce could be canvas or imageBitmap.
+  // Copy from the source directly to the texture via the gpu, without a
+  // read-back to system memory.  Souce could be canvas or imageBitmap.
   void texImageByGPU(TexImageByGPUType,
                      WebGLTexture*,
                      GLenum target,
@@ -1028,29 +1033,33 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext {
   bool isTexInternalFormatColorBufferCombinationValid(GLenum texInternalFormat,
                                                       GLenum colorBufferFormat);
 
-  // Helper function to verify limits on the length of uniform and attribute locations.
+  // Helper function to verify limits on the length of uniform and attribute
+  // locations.
   virtual unsigned getMaxWebGLLocationLength() const { return 256; }
   bool validateLocationLength(const char* functionName, const String&);
 
   // Helper function to check if size is non-negative.
-  // Generate GL error and return false for negative inputs; otherwise, return true.
+  // Generate GL error and return false for negative inputs; otherwise, return
+  // true.
   bool validateSize(const char* functionName, GLint x, GLint y, GLint z = 0);
 
   // Helper function to check if all characters in the string belong to the
   // ASCII subset as defined in GLSL ES 1.0 spec section 3.1.
   bool validateString(const char* functionName, const String&);
 
-  // Helper function to check if all characters in the shader source belong to the ASCII
-  // subset as defined in GLSL ES 1.0 spec section 3.1 Character Set for WebGL 1.0 and
-  // in GLSL ES 3.00 spec section 3.1 Character Set for WebGL 2.0.
+  // Helper function to check if all characters in the shader source belong to
+  // the ASCII subset as defined in GLSL ES 1.0 spec section 3.1 Character Set
+  // for WebGL 1.0 and in GLSL ES 3.00 spec section 3.1 Character Set for WebGL
+  // 2.0.
   bool validateShaderSource(const String&);
 
-  // Helper function to check texture binding target and texture bound to the target.
-  // Generate GL errors and return 0 if target is invalid or texture bound is
-  // null.  Otherwise, return the texture bound to the target.
+  // Helper function to check texture binding target and texture bound to the
+  // target.  Generate GL errors and return 0 if target is invalid or texture
+  // bound is null.  Otherwise, return the texture bound to the target.
   WebGLTexture* validateTextureBinding(const char* functionName, GLenum target);
 
-  // Wrapper function for validateTexture2D(3D)Binding, used in texImageHelper functions.
+  // Wrapper function for validateTexture2D(3D)Binding, used in texImageHelper
+  // functions.
   virtual WebGLTexture* validateTexImageBinding(const char*,
                                                 TexImageFunctionID,
                                                 GLenum);
@@ -1063,16 +1072,18 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext {
 
   void addExtensionSupportedFormatsTypes();
 
-  // Helper function to check input internalformat/format/type for functions Tex{Sub}Image taking TexImageSource source data.
-  // Generates GL error and returns false if parameters are invalid.
+  // Helper function to check input internalformat/format/type for functions
+  // Tex{Sub}Image taking TexImageSource source data.  Generates GL error and
+  // returns false if parameters are invalid.
   bool validateTexImageSourceFormatAndType(const char* functionName,
                                            TexImageFunctionType,
                                            GLenum internalformat,
                                            GLenum format,
                                            GLenum type);
 
-  // Helper function to check input internalformat/format/type for functions Tex{Sub}Image.
-  // Generates GL error and returns false if parameters are invalid.
+  // Helper function to check input internalformat/format/type for functions
+  // Tex{Sub}Image.  Generates GL error and returns false if parameters are
+  // invalid.
   bool validateTexFuncFormatAndType(const char* functionName,
                                     TexImageFunctionType,
                                     GLenum internalformat,
@@ -1086,15 +1097,18 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext {
   bool validateReadBufferAndGetInfo(const char* functionName,
                                     WebGLFramebuffer*& readFramebufferBinding);
 
-  // Helper function to check format/type and ArrayBuffer view type for readPixels.
+  // Helper function to check format/type and ArrayBuffer view type for
+  // readPixels.
   // Generates INVALID_ENUM and returns false if parameters are invalid.
-  // Generates INVALID_OPERATION if ArrayBuffer view type is incompatible with type.
+  // Generates INVALID_OPERATION if ArrayBuffer view type is incompatible with
+  // type.
   virtual bool validateReadPixelsFormatAndType(GLenum format,
                                                GLenum type,
                                                DOMArrayBufferView*);
 
-  // Helper function to check parameters of readPixels. Returns true if all parameters
-  // are valid. Otherwise, generates appropriate error and returns false.
+  // Helper function to check parameters of readPixels. Returns true if all
+  // parameters are valid. Otherwise, generates appropriate error and returns
+  // false.
   bool validateReadPixelsFuncParameters(GLsizei width,
                                         GLsizei height,
                                         GLenum format,
@@ -1110,8 +1124,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext {
                             GLenum target,
                             GLint level);
 
-  // Helper function to check if a 64-bit value is non-negative and can fit into a 32-bit integer.
-  // Generates GL error and returns false if not.
+  // Helper function to check if a 64-bit value is non-negative and can fit into
+  // a 32-bit integer.  Generates GL error and returns false if not.
   bool validateValueFitNonNegInt32(const char* functionName,
                                    const char* paramName,
                                    long long value);
@@ -1126,8 +1140,9 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext {
     SourceUnpackBuffer,
   };
 
-  // Helper function for tex{Sub}Image{2|3}D to check if the input format/type/level/target/width/height/depth/border/xoffset/yoffset/zoffset are valid.
-  // Otherwise, it would return quickly without doing other work.
+  // Helper function for tex{Sub}Image{2|3}D to check if the input
+  // format/type/level/target/width/height/depth/border/xoffset/yoffset/zoffset
+  // are valid.  Otherwise, it would return quickly without doing other work.
   bool validateTexFunc(const char* functionName,
                        TexImageFunctionType,
                        TexFuncValidationSourceType,
@@ -1144,8 +1159,9 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext {
                        GLint yoffset,
                        GLint zoffset);
 
-  // Helper function to check input width and height for functions {copy, compressed}Tex{Sub}Image.
-  // Generates GL error and returns false if width or height is invalid.
+  // Helper function to check input width and height for functions {copy,
+  // compressed}Tex{Sub}Image.  Generates GL error and returns false if width or
+  // height is invalid.
   bool validateTexFuncDimensions(const char* functionName,
                                  TexImageFunctionType,
                                  GLenum target,
@@ -1154,8 +1170,9 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext {
                                  GLsizei height,
                                  GLsizei depth);
 
-  // Helper function to check input parameters for functions {copy}Tex{Sub}Image.
-  // Generates GL error and returns false if parameters are invalid.
+  // Helper function to check input parameters for functions
+  // {copy}Tex{Sub}Image.  Generates GL error and returns false if parameters
+  // are invalid.
   bool validateTexFuncParameters(const char* functionName,
                                  TexImageFunctionType,
                                  TexFuncValidationSourceType,
@@ -1198,7 +1215,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext {
   // Helper function for validating compressed texture formats.
   bool validateCompressedTexFormat(const char* functionName, GLenum format);
 
-  // Helper function to validate if front/back stencilMask and stencilFunc settings are the same.
+  // Helper function to validate if front/back stencilMask and stencilFunc
+  // settings are the same.
   bool validateStencilSettings(const char* functionName);
 
   // Helper function to validate stencil or depth func.
@@ -1218,7 +1236,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext {
   // used only to warn about use of obsolete functions.
   void printWarningToConsole(const String&);
 
-  // Helper function to validate the target for checkFramebufferStatus and validateFramebufferFuncParameters.
+  // Helper function to validate the target for checkFramebufferStatus and
+  // validateFramebufferFuncParameters.
   virtual bool validateFramebufferTarget(GLenum target);
 
   // Get the framebuffer bound to given target
@@ -1284,7 +1303,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext {
                                            requiredMinSize);
   }
 
-  // Helper function to validate the target for bufferData and getBufferParameter.
+  // Helper function to validate the target for bufferData and
+  // getBufferParameter.
   virtual bool validateBufferTarget(const char* functionName, GLenum target);
 
   // Helper function to validate the target for bufferData.
@@ -1300,22 +1320,26 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext {
 
   virtual void removeBoundBuffer(WebGLBuffer*);
 
-  // Helper function for tex{Sub}Image2D to make sure image is ready and wouldn't taint Origin.
+  // Helper function for tex{Sub}Image2D to make sure image is ready and
+  // wouldn't taint Origin.
   bool validateHTMLImageElement(const char* functionName,
                                 HTMLImageElement*,
                                 ExceptionState&);
 
-  // Helper function for tex{Sub}Image2D to make sure canvas is ready and wouldn't taint Origin.
+  // Helper function for tex{Sub}Image2D to make sure canvas is ready and
+  // wouldn't taint Origin.
   bool validateHTMLCanvasElement(const char* functionName,
                                  HTMLCanvasElement*,
                                  ExceptionState&);
 
-  // Helper function for tex{Sub}Image2D to make sure video is ready wouldn't taint Origin.
+  // Helper function for tex{Sub}Image2D to make sure video is ready wouldn't
+  // taint Origin.
   bool validateHTMLVideoElement(const char* functionName,
                                 HTMLVideoElement*,
                                 ExceptionState&);
 
-  // Helper function for tex{Sub}Image2D to make sure imagebitmap is ready and wouldn't taint Origin.
+  // Helper function for tex{Sub}Image2D to make sure imagebitmap is ready and
+  // wouldn't taint Origin.
   bool validateImageBitmap(const char* functionName,
                            ImageBitmap*,
                            ExceptionState&);
@@ -1375,8 +1399,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext {
   // Clamp the width and height to GL_MAX_VIEWPORT_DIMS.
   IntSize clampedCanvasSize() const;
 
-  // First time called, if EXT_draw_buffers is supported, query the value; otherwise return 0.
-  // Later, return the cached value.
+  // First time called, if EXT_draw_buffers is supported, query the value;
+  // otherwise return 0.  Later, return the cached value.
   GLint maxDrawBuffers();
   GLint maxColorAttachments();
 
@@ -1404,8 +1428,9 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext {
   static void removeFromEvictedList(WebGLRenderingContextBase*);
   static void willDestroyContext(WebGLRenderingContextBase*);
   static void forciblyLoseOldestContext(const String& reason);
-  // Return the least recently used context's position in the active context vector.
-  // If the vector is empty, return the maximum allowed active context number.
+  // Return the least recently used context's position in the active context
+  // vector.  If the vector is empty, return the maximum allowed active context
+  // number.
   static WebGLRenderingContextBase* oldestContext();
   static WebGLRenderingContextBase* oldestEvictedContext();
 

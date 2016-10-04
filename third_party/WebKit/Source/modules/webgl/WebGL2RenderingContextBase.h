@@ -30,8 +30,9 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
   /* Buffer objects */
   void bufferData(GLenum, DOMArrayBufferView*, GLenum, GLuint, GLuint);
   void bufferSubData(GLenum, GLintptr, DOMArrayBufferView*, GLuint, GLuint);
-  // Have to re-declare/re-define the following buffer{Sub}Data functions from base class.
-  // This is because the above buffer{Sub}Data() hides the name from base class.
+  // Have to re-declare/re-define the following buffer{Sub}Data functions from
+  // base class.  This is because the above buffer{Sub}Data() hides the name
+  // from base class.
   void bufferData(GLenum target, long long size, GLenum usage);
   void bufferData(GLenum target, DOMArrayBuffer* data, GLenum usage);
   void bufferData(GLenum target, DOMArrayBufferView* data, GLenum usage);
@@ -212,8 +213,9 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                      DOMArrayBufferView*,
                      GLuint);
 
-  // Have to re-declare/re-define the following tex{Sub}Image2D functions from base class.
-  // This is because the above tex{Sub}Image2D() hides the name from base class.
+  // Have to re-declare/re-define the following tex{Sub}Image2D functions from
+  // base class.  This is because the above tex{Sub}Image2D() hides the name
+  // from base class.
   void texImage2D(GLenum, GLint, GLint, GLenum, GLenum, ImageData*);
   void texImage2D(GLenum,
                   GLint,
@@ -725,8 +727,9 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
       std::unique_ptr<WebGraphicsContext3DProvider>,
       const CanvasContextCreationAttributes& requestedAttributes);
 
-  // Helper function to validate target and the attachment combination for getFramebufferAttachmentParameters.
-  // Generate GL error and return false if parameters are illegal.
+  // Helper function to validate target and the attachment combination for
+  // getFramebufferAttachmentParameters.  Generate GL error and return false if
+  // parameters are illegal.
   bool validateGetFramebufferAttachmentParameterFunc(const char* functionName,
                                                      GLenum target,
                                                      GLenum attachment);

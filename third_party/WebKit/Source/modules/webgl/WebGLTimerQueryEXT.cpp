@@ -56,7 +56,9 @@ void WebGLTimerQueryEXT::updateCachedResult(gpu::gles2::GLES2Interface* gl) {
   if (!hasTarget())
     return;
 
-  // If this is a timestamp query, set the result to 0 and make it available as we don't support timestamps in WebGL due to very poor driver support for them
+  // If this is a timestamp query, set the result to 0 and make it available as
+  // we don't support timestamps in WebGL due to very poor driver support for
+  // them.
   if (m_target == GL_TIMESTAMP_EXT) {
     m_queryResult = 0;
     m_queryResultAvailable = true;

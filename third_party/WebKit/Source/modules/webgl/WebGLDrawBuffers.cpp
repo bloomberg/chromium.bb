@@ -74,7 +74,8 @@ void WebGLDrawBuffers::drawBuffersWEBGL(const Vector<GLenum>& buffers) {
                                           "drawBuffersWEBGL", "BACK or NONE");
       return;
     }
-    // Because the backbuffer is simulated on all current WebKit ports, we need to change BACK to COLOR_ATTACHMENT0.
+    // Because the backbuffer is simulated on all current WebKit ports, we need
+    // to change BACK to COLOR_ATTACHMENT0.
     GLenum value = (bufs[0] == GL_BACK) ? GL_COLOR_ATTACHMENT0 : GL_NONE;
     scoped.context()->contextGL()->DrawBuffersEXT(1, &value);
     scoped.context()->setBackDrawBuffer(bufs[0]);
@@ -168,8 +169,8 @@ bool WebGLDrawBuffers::satisfiesWebGLRequirements(
                                GL_TEXTURE_2D, 0, 0);
     }
     if (supportsDepthStencil) {
-      // For ES 2.0 contexts DEPTH_STENCIL is not available natively, so we emulate it
-      // at the command buffer level for WebGL contexts.
+      // For ES 2.0 contexts DEPTH_STENCIL is not available natively, so we
+      // emulate it at the command buffer level for WebGL contexts.
       gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
                                GL_TEXTURE_2D, depthStencil, 0);
       if (gl->CheckFramebufferStatus(GL_FRAMEBUFFER) !=

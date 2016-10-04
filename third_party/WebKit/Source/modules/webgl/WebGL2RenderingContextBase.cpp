@@ -473,8 +473,9 @@ void WebGL2RenderingContextBase::framebufferTextureLayer(GLenum target,
                                          objectOrZero(texture), level, layer);
   }
   if (attachment == GL_DEPTH_STENCIL_ATTACHMENT) {
-    // On ES3, DEPTH_STENCIL_ATTACHMENT is like an alias for DEPTH_ATTACHMENT + STENCIL_ATTACHMENT.
-    // We divide it here so in WebGLFramebuffer, we don't have to handle DEPTH_STENCIL_ATTACHMENT in WebGL 2.
+    // On ES3, DEPTH_STENCIL_ATTACHMENT is like an alias for DEPTH_ATTACHMENT +
+    // STENCIL_ATTACHMENT.  We divide it here so in WebGLFramebuffer, we don't
+    // have to handle DEPTH_STENCIL_ATTACHMENT in WebGL 2.
     framebufferBinding->setAttachmentForBoundFramebuffer(
         target, GL_DEPTH_ATTACHMENT, textarget, texture, level, layer);
     framebufferBinding->setAttachmentForBoundFramebuffer(
@@ -505,7 +506,8 @@ ScriptValue WebGL2RenderingContextBase::getInternalformatParameter(
     // though GL_RGB and GL_RGBA are color-renderable.
     case GL_RGB:
     case GL_RGBA:
-    // Multisampling is not supported for signed and unsigned integer internal formats.
+    // Multisampling is not supported for signed and unsigned integer internal
+    // formats.
     case GL_R8UI:
     case GL_R8I:
     case GL_R16UI:
@@ -597,8 +599,8 @@ bool WebGL2RenderingContextBase::checkAndTranslateAttachments(
   WebGLFramebuffer* framebufferBinding = getFramebufferBinding(target);
   ASSERT(framebufferBinding || drawingBuffer());
   if (!framebufferBinding) {
-    // For the default framebuffer
-    // Translate GL_COLOR/GL_DEPTH/GL_STENCIL, because the default framebuffer of WebGL is not fb 0, it is an internal fbo
+    // For the default framebuffer, translate GL_COLOR/GL_DEPTH/GL_STENCIL.
+    // The default framebuffer of WebGL is not fb 0, it is an internal fbo.
     for (size_t i = 0; i < attachments.size(); ++i) {
       switch (attachments[i]) {
         case GL_COLOR:
@@ -806,8 +808,9 @@ void WebGL2RenderingContextBase::readPixels(GLint x,
   }
 
   long long size = buffer->getSize() - offset;
-  // If size is negative, or size is not large enough to store pixels, those cases
-  // are handled by validateReadPixelsFuncParameters to generate INVALID_OPERATION.
+  // If size is negative, or size is not large enough to store pixels, those
+  // cases are handled by validateReadPixelsFuncParameters to generate
+  // INVALID_OPERATION.
   if (!validateReadPixelsFuncParameters(width, height, format, type, nullptr,
                                         size))
     return;
@@ -2354,7 +2357,8 @@ void WebGL2RenderingContextBase::drawBuffers(const Vector<GLenum>& buffers) {
       synthesizeGLError(GL_INVALID_OPERATION, "drawBuffers", "BACK or NONE");
       return;
     }
-    // Because the backbuffer is simulated on all current WebKit ports, we need to change BACK to COLOR_ATTACHMENT0.
+    // Because the backbuffer is simulated on all current WebKit ports, we need
+    // to change BACK to COLOR_ATTACHMENT0.
     GLenum value = (bufs[0] == GL_BACK) ? GL_COLOR_ATTACHMENT0 : GL_NONE;
     contextGL()->DrawBuffersEXT(1, &value);
     setBackDrawBuffer(bufs[0]);
@@ -4135,7 +4139,8 @@ ScriptValue WebGL2RenderingContextBase::getFramebufferAttachmentParameter(
 
   // Default framebuffer (an internal fbo)
   if (!framebufferBinding) {
-    // We can use creationAttributes() because in WebGL 2, they are required to be honored.
+    // We can use creationAttributes() because in WebGL 2, they are required to
+    // be honored.
     bool hasDepth = creationAttributes().depth();
     bool hasStencil = creationAttributes().stencil();
     bool hasAlpha = creationAttributes().alpha();

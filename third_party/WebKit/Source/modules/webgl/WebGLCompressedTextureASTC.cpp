@@ -62,7 +62,8 @@ bool WebGLCompressedTextureASTC::supported(WebGLRenderingContextBase* context) {
 }
 
 const char* WebGLCompressedTextureASTC::extensionName() {
-  // TODO(cyzero.kim): implement extension for GL_KHR_texture_compression_astc_hdr.
+  // TODO(cyzero.kim): implement extension for
+  // GL_KHR_texture_compression_astc_hdr.
   return "WEBGL_compressed_texture_astc";
 }
 

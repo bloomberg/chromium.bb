@@ -82,12 +82,14 @@ class WebGLFramebuffer final : public WebGLContextObject {
                                         WebGLRenderbuffer*);
   // If an object is attached to the currently bound framebuffer, remove it.
   void removeAttachmentFromBoundFramebuffer(GLenum target, WebGLSharedObject*);
-  // If a given attachment point for the currently bound framebuffer is not null, remove the attached object.
+  // If a given attachment point for the currently bound framebuffer is not
+  // null, remove the attached object.
   void removeAttachmentFromBoundFramebuffer(GLenum target, GLenum attachment);
   WebGLSharedObject* getAttachmentObject(GLenum) const;
 
   // WebGL 1 specific:
-  //   1) can't allow depth_stencil for depth/stencil attachments, and vice versa.
+  //   1) can't allow depth_stencil for depth/stencil attachments, and vice
+  //      versa.
   //   2) no conflicting DEPTH/STENCIL/DEPTH_STENCIL attachments.
   GLenum checkDepthStencilStatus(const char** reason) const;
 
@@ -126,7 +128,8 @@ class WebGLFramebuffer final : public WebGLContextObject {
   // attach 'attachment' at 'attachmentPoint'.
   void attach(GLenum target, GLenum attachment, GLenum attachmentPoint);
 
-  // Check if a new drawBuffers call should be issued. This is called when we add or remove an attachment.
+  // Check if a new drawBuffers call should be issued. This is called when we
+  // add or remove an attachment.
   void drawBuffersIfNecessary(bool force);
 
   GLuint m_object;

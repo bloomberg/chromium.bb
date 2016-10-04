@@ -143,7 +143,8 @@ void EXTDisjointTimerQuery::queryCounterEXT(WebGLTimerQueryEXT* query,
     return;
   }
 
-  // Timestamps are disabled in WebGL due to lack of driver support on multiple platforms, so we don't actually perform a GL call
+  // Timestamps are disabled in WebGL due to lack of driver support on multiple
+  // platforms, so we don't actually perform a GL call.
   query->setTarget(target);
   query->resetCachedResult();
 }
