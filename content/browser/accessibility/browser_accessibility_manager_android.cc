@@ -206,9 +206,6 @@ void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(
   if (obj.is_null())
     return;
 
-  BrowserAccessibilityAndroid* android_node =
-      static_cast<BrowserAccessibilityAndroid*>(node);
-
   if (event_type == ui::AX_EVENT_HIDE)
     return;
 
@@ -225,6 +222,16 @@ void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(
     return;
   }
 
+  // Sometimes we get events on nodes in our internal accessibility tree
+  // that aren't exposed on Android. Walk up the ancestors and update |node|
+  // to point to the highest ancestor that's a leaf node.
+  BrowserAccessibility* parent = node->GetParent();
+  while (parent) {
+    if (parent->PlatformIsLeaf())
+      node = parent;
+    parent = parent->GetParent();
+  }
+
   // Always send AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED to notify
   // the Android system that the accessibility hierarchy rooted at this
   // node has changed.
@@ -237,6 +244,8 @@ void BrowserAccessibilityManagerAndroid::NotifyAccessibilityEvent(
     return;
   }
 
+  BrowserAccessibilityAndroid* android_node =
+      static_cast<BrowserAccessibilityAndroid*>(node);
   switch (event_type) {
     case ui::AX_EVENT_LOAD_COMPLETE:
       Java_BrowserAccessibilityManager_handlePageLoaded(
