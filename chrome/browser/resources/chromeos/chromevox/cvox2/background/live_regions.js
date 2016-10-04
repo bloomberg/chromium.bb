@@ -12,6 +12,7 @@ goog.require('ChromeVoxState');
 
 goog.scope(function() {
 var AutomationNode = chrome.automation.AutomationNode;
+var RoleType = chrome.automation.RoleType;
 var TreeChange = chrome.automation.TreeChange;
 
 /**
@@ -87,8 +88,11 @@ LiveRegions.prototype = {
     if (!currentRange)
       return;
 
+    var webView = AutomationUtil.getTopLevelRoot(node);
+    webView = webView ? webView.parent : null;
     if (!LiveRegions.announceLiveRegionsFromBackgroundTabs_ &&
-        !AutomationUtil.isInSameWebpage(node, currentRange.start.node)) {
+        currentRange.start.node.role != RoleType.desktop &&
+        (!webView || !webView.state.focused)) {
       return;
     }
 
@@ -140,11 +144,17 @@ LiveRegions.prototype = {
     if (!output.hasSpeech)
       return;
 
+    // Queue live regions coming from background tabs.
+    var webView = AutomationUtil.getTopLevelRoot(node);
+    webView = webView ? webView.parent : null;
+    var forceQueueForBackgroundedLiveRegion =
+        !webView || !webView.state.focused;
+
     // Enqueue live region updates that were received at approximately
     // the same time, otherwise flush previous live region updates.
     var queueTime = LiveRegions.LIVE_REGION_QUEUE_TIME_MS;
     var delta = currentTime - this.lastLiveRegionTime_;
-    if (delta > queueTime)
+    if (delta > queueTime && !forceQueueForBackgroundedLiveRegion)
       output.withQueueMode(cvox.QueueMode.CATEGORY_FLUSH);
     else
       output.withQueueMode(cvox.QueueMode.QUEUE);
