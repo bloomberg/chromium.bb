@@ -10,6 +10,7 @@
 
 function test()
 {
+    Runtime.experiments.enableForTest("persistence2");
     var sourcesNavigator = new WebInspector.SourcesNavigatorView();
     sourcesNavigator.show(WebInspector.inspectorView.element);
     var fs = new InspectorTest.TestFileSystem("file:///var/www");
