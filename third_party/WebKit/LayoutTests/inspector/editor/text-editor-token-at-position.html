@@ -35,10 +35,13 @@ function test()
         function testHighlightedText(next)
         {
             var textEditor = InspectorTest.createTestEditor();
-            textEditor.setMimeType("text/javascript");
-            textEditor.setText(text.join("\n"));
-            testTokenAtPosition(textEditor);
-            next();
+            textEditor.setMimeType("text/javascript").then(step1);
+            function step1()
+            {
+                textEditor.setText(text.join("\n"));
+                testTokenAtPosition(textEditor);
+                next();
+            }
         },
     ]);
 }

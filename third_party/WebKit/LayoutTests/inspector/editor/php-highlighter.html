@@ -7,8 +7,7 @@ function test()
 {
     var mimeType = "text/x-php";
     var textEditor = InspectorTest.createTestEditor();
-    InspectorTest.addSniffer(textEditor, "_mimeTypeModesLoadedForTest", onModesLoaded);
-    textEditor.setMimeType(mimeType);
+    textEditor.setMimeType(mimeType).then(onModesLoaded);
 
     function onModesLoaded()
     {
