@@ -10,6 +10,10 @@
 #import "ios/web/web_state/js/page_script_util.h"
 #import "ios/web/web_state/ui/crw_wk_script_message_router.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 // Escapes characters and encloses given string in quotes for use in JavaScript.
@@ -62,7 +66,6 @@ NSString* const kSuccessHandlerName = @"POSTSuccessHandler";
 
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [super dealloc];
 }
 
 - (NSString*)requestScript {
@@ -82,12 +85,13 @@ NSString* const kSuccessHandlerName = @"POSTSuccessHandler";
   DCHECK(completionHandler);
 
   // Install error handling and success routers.
+  __weak CRWWKScriptMessageRouter* weakRouter = messageRouter;
   [messageRouter setScriptMessageHandler:^(WKScriptMessage* message) {
     // Cleaning up script handlers.
-    [messageRouter removeScriptMessageHandlerForName:kErrorHandlerName
-                                             webView:webView];
-    [messageRouter removeScriptMessageHandlerForName:kSuccessHandlerName
-                                             webView:webView];
+    [weakRouter removeScriptMessageHandlerForName:kErrorHandlerName
+                                          webView:webView];
+    [weakRouter removeScriptMessageHandlerForName:kSuccessHandlerName
+                                          webView:webView];
     completionHandler(nil);
   }
                                     name:kSuccessHandlerName
@@ -98,10 +102,10 @@ NSString* const kSuccessHandlerName = @"POSTSuccessHandler";
     NSError* error = [NSError errorWithDomain:NSURLErrorDomain
                                          code:statusCode.integerValue
                                      userInfo:nil];
-    [messageRouter removeScriptMessageHandlerForName:kErrorHandlerName
-                                             webView:webView];
-    [messageRouter removeScriptMessageHandlerForName:kSuccessHandlerName
-                                             webView:webView];
+    [weakRouter removeScriptMessageHandlerForName:kErrorHandlerName
+                                          webView:webView];
+    [weakRouter removeScriptMessageHandlerForName:kSuccessHandlerName
+                                          webView:webView];
     completionHandler(error);
   }
                                     name:kErrorHandlerName
@@ -146,8 +150,8 @@ NSString* const kSuccessHandlerName = @"POSTSuccessHandler";
       // This string is properly escaped by NSJSONSerialization. It needs to
       // have no quotes since JavaScripts takes this parameter as an
       // Object<string, string>.
-      return [[[NSString alloc] initWithData:headerData
-                                    encoding:NSUTF8StringEncoding] autorelease];
+      return [[NSString alloc] initWithData:headerData
+                                   encoding:NSUTF8StringEncoding];
     }
   }
   return @"{}";

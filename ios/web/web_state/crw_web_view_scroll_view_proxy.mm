@@ -4,14 +4,19 @@
 
 #import "ios/web/public/web_state/crw_web_view_scroll_view_proxy.h"
 
+#import <objc/runtime.h>
+
 #include "base/auto_reset.h"
 #import "base/ios/crb_protocol_observers.h"
-#import "base/ios/weak_nsobject.h"
 #include "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsobject.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface CRWWebViewScrollViewProxy () {
-  base::WeakNSObject<UIScrollView> _scrollView;
+  __weak UIScrollView* _scrollView;
   base::scoped_nsobject<id> _observers;
   // When |_ignoreScroll| is set to YES, do not pass on -scrollViewDidScroll
   // calls to observers.  This is used by -setContentInsetFast, which needs to
@@ -36,15 +41,13 @@
   self = [super init];
   if (self) {
     Protocol* protocol = @protocol(CRWWebViewScrollViewProxyObserver);
-    _observers.reset(
-        [[CRBProtocolObservers observersWithProtocol:protocol] retain]);
+    _observers.reset([CRBProtocolObservers observersWithProtocol:protocol]);
   }
   return self;
 }
 
 - (void)dealloc {
   [self stopObservingScrollView:_scrollView];
-  [super dealloc];
 }
 
 - (void)addGestureRecognizer:(UIGestureRecognizer*)gestureRecognizer {
@@ -71,7 +74,7 @@
   DCHECK(!scrollView.delegate);
   scrollView.delegate = self;
   [self startObservingScrollView:scrollView];
-  _scrollView.reset(scrollView);
+  _scrollView = scrollView;
   [_observers webViewScrollViewProxyDidSetScrollView:self];
 }
 
@@ -141,9 +144,8 @@
   // position, we can ignore these calls.
   base::AutoReset<BOOL> autoReset(&_ignoreScroll, YES);
   CGPoint contentOffset = [_scrollView contentOffset];
-  _scrollView.get().contentOffset =
-      CGPointMake(contentOffset.x, contentOffset.y + 1);
-  _scrollView.get().contentOffset = contentOffset;
+  _scrollView.contentOffset = CGPointMake(contentOffset.x, contentOffset.y + 1);
+  _scrollView.contentOffset = contentOffset;
 }
 
 - (void)setContentInset:(UIEdgeInsets)contentInset {
@@ -264,7 +266,7 @@
                       ofObject:(id)object
                         change:(NSDictionary*)change
                        context:(void*)context {
-  DCHECK_EQ(object, _scrollView.get());
+  DCHECK_EQ(object, _scrollView);
   if ([keyPath isEqualToString:@"contentSize"])
     [_observers webViewScrollViewDidResetContentSize:self];
 }

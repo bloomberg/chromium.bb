@@ -31,9 +31,10 @@
 @property(nonatomic, readonly) CGRect frame;
 @property(nonatomic, getter=isScrollEnabled) BOOL scrollEnabled;
 @property(nonatomic, assign) BOOL bounces;
-@property(nonatomic, readonly) UIPanGestureRecognizer* panGestureRecognizer;
+@property(weak, nonatomic, readonly)
+    UIPanGestureRecognizer* panGestureRecognizer;
 // Returns the scrollview's gesture recognizers.
-@property(nonatomic, readonly) NSArray* gestureRecognizers;
+@property(weak, nonatomic, readonly) NSArray* gestureRecognizers;
 
 // Calls UIScrollView's implementation of setContentInset: directly. This
 // bypasses a very slow update path in UIWebView.

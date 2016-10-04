@@ -13,12 +13,16 @@
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/web_state/js/page_script_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @implementation CRWJSInjectionManager {
   // JS to inject into the page. This may be nil if it has been purged due to
   // low memory.
   base::scoped_nsobject<NSString> _injectObject;
   // An object the can receive JavaScript injection.
-  CRWJSInjectionReceiver* _receiver;  // Weak.
+  __weak CRWJSInjectionReceiver* _receiver;
 }
 
 - (id)initWithReceiver:(CRWJSInjectionReceiver*)receiver {
@@ -38,7 +42,6 @@
 
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [super dealloc];
 }
 
 - (BOOL)hasBeenInjected {

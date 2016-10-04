@@ -12,6 +12,10 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 // "type" value for a DictionaryValue representation of PasswordCredential.
