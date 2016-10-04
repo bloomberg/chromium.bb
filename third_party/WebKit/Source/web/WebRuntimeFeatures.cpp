@@ -104,6 +104,10 @@ void WebRuntimeFeatures::enableDisplayList2dCanvas(bool enable) {
   RuntimeEnabledFeatures::setDisplayList2dCanvasEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableGpuCompositing(bool enable) {
+  RuntimeEnabledFeatures::setGpuCompositingEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableCanvas2dDynamicRenderingModeSwitching(
     bool enable) {
   RuntimeEnabledFeatures::setEnableCanvas2dDynamicRenderingModeSwitchingEnabled(
