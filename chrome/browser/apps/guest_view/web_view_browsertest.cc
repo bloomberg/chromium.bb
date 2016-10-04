@@ -3239,6 +3239,12 @@ IN_PROC_BROWSER_TEST_P(WebViewTest,
              "web_view/shim", NEEDS_TEST_SERVER);
 }
 
+// Tests that the embedder can create a blob URL and navigate a WebView to it.
+// See https://crbug.com/652077.
+IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestBlobURL) {
+  TestHelper("testBlobURL", "web_view/shim", NEEDS_TEST_SERVER);
+}
+
 // Tests that a WebView accessible resource can actually be loaded from a
 // webpage in a WebView.
 IN_PROC_BROWSER_TEST_P(WebViewTest, LoadWebviewAccessibleResource) {

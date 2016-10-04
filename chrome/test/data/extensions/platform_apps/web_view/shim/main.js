@@ -2959,6 +2959,28 @@ function testMailtoLink() {
   document.body.appendChild(webview);
 }
 
+// This test verifies that an embedder can navigate a WebView to a blob URL it
+// creates.
+function testBlobURL() {
+  var webview = new WebView();
+  var blob = new Blob(['<html><body>Blob content</body></html>'],
+                      {type: 'text/html'});
+  var blobURL = URL.createObjectURL(blob);
+  webview.src = blobURL;
+
+  webview.onloadabort = function() {
+    // The blob: URL load should not trigger a loadabort.
+    window.console.log('Blob URL load was aborted.');
+    embedder.test.fail();
+  };
+  webview.onloadstop = function() {
+    embedder.test.assertTrue(webview.src == blobURL);
+    embedder.test.succeed();
+  };
+
+  document.body.appendChild(webview);
+}
+
 // This test navigates an unattached guest to 'about:blank', then it makes a
 // renderer/ navigation to a URL that results in a server side redirect. In the
 // end we verify that the redirected URL loads in the guest properly.
@@ -3115,7 +3137,8 @@ embedder.test.testList = {
   'testPDFInWebview': testPDFInWebview,
   'testMailtoLink': testMailtoLink,
   'testRendererNavigationRedirectWhileUnattached':
-       testRendererNavigationRedirectWhileUnattached
+       testRendererNavigationRedirectWhileUnattached,
+  'testBlobURL': testBlobURL
 };
 
 onload = function() {
