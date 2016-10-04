@@ -211,6 +211,8 @@ component("base") {
     "android/record_user_action.h",
     "android/scoped_java_ref.cc",
     "android/scoped_java_ref.h",
+    "android/statistics_recorder_android.cc",
+    "android/statistics_recorder_android.h",
     "android/sys_utils.cc",
     "android/sys_utils.h",
     "android/trace_event_binding.cc",
@@ -2238,6 +2240,7 @@ if (is_android) {
       "android/java/src/org/chromium/base/library_loader/LibraryLoader.java",
       "android/java/src/org/chromium/base/metrics/RecordHistogram.java",
       "android/java/src/org/chromium/base/metrics/RecordUserAction.java",
+      "android/java/src/org/chromium/base/metrics/StatisticsRecorderAndroid.java",
     ]
 
     public_deps = [
@@ -2327,6 +2330,7 @@ if (is_android) {
       "android/java/src/org/chromium/base/library_loader/ProcessInitException.java",
       "android/java/src/org/chromium/base/metrics/RecordHistogram.java",
       "android/java/src/org/chromium/base/metrics/RecordUserAction.java",
+      "android/java/src/org/chromium/base/metrics/StatisticsRecorderAndroid.java",
       "android/java/src/org/chromium/base/multidex/ChromiumMultiDexInstaller.java",
     ]
 

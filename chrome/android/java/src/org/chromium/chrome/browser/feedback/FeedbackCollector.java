@@ -12,6 +12,7 @@ import android.text.TextUtils;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.StatisticsRecorderAndroid;
 import org.chromium.blimp_public.BlimpClientContext;
 import org.chromium.chrome.browser.blimp.BlimpClientContextFactory;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
@@ -72,6 +73,11 @@ public class FeedbackCollector
     private Bitmap mScreenshot;
 
     /**
+     * All the registered histograms as JSON text.
+     */
+    private String mHistograms;
+
+    /**
      * A flag indicating whether gathering connection data has finished.
      */
     private boolean mConnectivityTaskFinished;
@@ -128,6 +134,9 @@ public class FeedbackCollector
         postTimeoutTask();
         mConnectivityTask = ConnectivityTask.create(mProfile, CONNECTIVITY_CHECK_TIMEOUT_MS, this);
         ScreenshotTask.create(activity, this);
+        if (!mProfile.isOffTheRecord()) {
+            mHistograms = StatisticsRecorderAndroid.toJson();
+        }
     }
 
     /**
@@ -230,6 +239,13 @@ public class FeedbackCollector
     public Bitmap getScreenshot() {
         ThreadUtils.assertOnUiThread();
         return mScreenshot;
+    }
+
+    /**
+     * @return All the registered histograms as JSON text.
+     */
+    public String getHistograms() {
+        return mHistograms;
     }
 
     /**
