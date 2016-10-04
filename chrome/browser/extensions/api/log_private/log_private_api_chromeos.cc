@@ -14,6 +14,7 @@
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -537,13 +538,13 @@ void LogPrivateDumpLogsFunction::OnStoreLogsCompleted(
           log_path,
           false);
 
-  base::DictionaryValue* entry = new base::DictionaryValue();
+  auto entry = base::MakeUnique<base::DictionaryValue>();
   entry->SetString("fileSystemId", file_entry.filesystem_id);
   entry->SetString("baseName", file_entry.registered_name);
   entry->SetString("id", file_entry.id);
   entry->SetBoolean("isDirectory", false);
   base::ListValue* entry_list = new base::ListValue();
-  entry_list->Append(entry);
+  entry_list->Append(std::move(entry));
   response->Set("entries", entry_list);
   response->SetBoolean("multiple", false);
   SetResult(std::move(response));

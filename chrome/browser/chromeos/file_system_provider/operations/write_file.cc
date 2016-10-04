@@ -54,7 +54,7 @@ bool WriteFile::Execute(int request_id) {
       base::BinaryValue::CreateWithCopiedBuffer(buffer_->data(), length_));
 
   std::unique_ptr<base::ListValue> event_args(new base::ListValue);
-  event_args->Append(options_as_value.release());
+  event_args->Append(std::move(options_as_value));
 
   return SendEvent(
       request_id,

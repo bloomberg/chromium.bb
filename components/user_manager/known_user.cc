@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/values.h"
@@ -137,7 +138,7 @@ void UpdatePrefs(const AccountId& account_id,
   std::unique_ptr<base::DictionaryValue> new_value(new base::DictionaryValue());
   new_value->MergeDictionary(&values);
   UpdateIdentity(account_id, *new_value);
-  update->Append(new_value.release());
+  update->Append(std::move(new_value));
 }
 
 bool GetStringPref(const AccountId& account_id,

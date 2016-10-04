@@ -69,10 +69,10 @@ void NotifyProcessOutput(content::BrowserContext* browser_context,
   }
 
   std::unique_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(new base::FundamentalValue(tab_id));
-  args->Append(new base::FundamentalValue(terminal_id));
-  args->Append(new base::StringValue(output_type));
-  args->Append(new base::StringValue(output));
+  args->AppendInteger(tab_id);
+  args->AppendInteger(terminal_id);
+  args->AppendString(output_type);
+  args->AppendString(output);
 
   extensions::EventRouter* event_router =
       extensions::EventRouter::Get(browser_context);

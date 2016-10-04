@@ -713,8 +713,7 @@ void ChromeUserManagerImpl::RetrieveTrustedDevicePolicies() {
         changed = true;
       } else {
         if ((*it)->GetType() != user_manager::USER_TYPE_PUBLIC_ACCOUNT)
-          prefs_users_update->Append(
-              new base::StringValue(account_id.GetUserEmail()));
+          prefs_users_update->AppendString(account_id.GetUserEmail());
         ++it;
       }
     }

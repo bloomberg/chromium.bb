@@ -6,12 +6,16 @@
 
 #include <stddef.h>
 
+#include <memory>
+#include <utility>
+
 #include "ash/common/new_window_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_switches.h"
@@ -140,11 +144,10 @@ void KeyboardHandler::GetLocalizedValues(
       const input_method::ModifierKey value =
           kModifierKeysSelectItems[j].value;
       const int message_id = kModifierKeysSelectItems[j].message_id;
-      base::ListValue* option = new base::ListValue();
-      option->Append(new base::FundamentalValue(value));
-      option->Append(new base::StringValue(l10n_util::GetStringUTF16(
-          message_id)));
-      list_value->Append(option);
+      auto option = base::MakeUnique<base::ListValue>();
+      option->AppendInteger(value);
+      option->AppendString(l10n_util::GetStringUTF16(message_id));
+      list_value->Append(std::move(option));
     }
     localized_strings->Set(kDataValuesNames[i], list_value);
   }

@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
@@ -363,14 +364,14 @@ AutotestPrivateGetVisibleNotificationsFunction::Run() {
 #if defined(OS_CHROMEOS)
   for (auto* notification :
        message_center::MessageCenter::Get()->GetVisibleNotifications()) {
-    base::DictionaryValue* result(new base::DictionaryValue);
+    auto result = base::MakeUnique<base::DictionaryValue>();
     result->SetString("id", notification->id());
     result->SetString("type", ConvertToString(notification->type()));
     result->SetString("title", notification->title());
     result->SetString("message", notification->message());
     result->SetInteger("priority", notification->priority());
     result->SetInteger("progress", notification->progress());
-    values->Append(result);
+    values->Append(std::move(result));
   }
 
 #endif

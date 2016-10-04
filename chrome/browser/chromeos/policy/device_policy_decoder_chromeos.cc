@@ -161,7 +161,7 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
     const em::UserWhitelistProto& container(policy.user_whitelist());
     std::unique_ptr<base::ListValue> whitelist(new base::ListValue);
     for (const auto& entry : container.user_whitelist())
-      whitelist->Append(new base::StringValue(entry));
+      whitelist->AppendString(entry);
     policies->Set(key::kDeviceUserWhitelist, POLICY_LEVEL_MANDATORY,
                   POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
                   std::move(whitelist), nullptr);
@@ -302,7 +302,7 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
         policy.login_video_capture_allowed_urls());
     std::unique_ptr<base::ListValue> urls(new base::ListValue());
     for (const auto& entry : container.urls()) {
-      urls->Append(new base::StringValue(entry));
+      urls->AppendString(entry);
     }
     policies->Set(key::kLoginVideoCaptureAllowedUrls, POLICY_LEVEL_MANDATORY,
                   POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD, std::move(urls),
@@ -313,7 +313,7 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
     const em::LoginAppsProto& login_apps_proto(policy.login_apps());
     std::unique_ptr<base::ListValue> login_apps(new base::ListValue);
     for (const auto& login_app : login_apps_proto.login_apps())
-      login_apps->Append(new base::StringValue(login_app));
+      login_apps->AppendString(login_app);
     policies->Set(key::kLoginApps, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
                   POLICY_SOURCE_CLOUD, std::move(login_apps), nullptr);
   }

@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -170,7 +171,7 @@ void EasyUnlockKeyManager::DeviceDataListToRemoteDeviceList(
         new base::DictionaryValue);
     DeviceDataToRemoteDeviceDictionary(account_id, data_list[i],
                                        device_dict.get());
-    device_list->Append(device_dict.release());
+    device_list->Append(std::move(device_dict));
   }
 }
 

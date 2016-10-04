@@ -787,7 +787,7 @@ TEST_F(NetworkStateHandlerTest, IPConfigChanged) {
   base::DictionaryValue ip_config_properties;
   ip_config_test->AddIPConfig(kIPConfigPath, ip_config_properties);
   base::ListValue device_ip_configs;
-  device_ip_configs.Append(new base::StringValue(kIPConfigPath));
+  device_ip_configs.AppendString(kIPConfigPath);
   device_test_->SetDeviceProperty(
       kShillManagerClientStubWifiDevice, shill::kIPConfigsProperty,
       device_ip_configs);

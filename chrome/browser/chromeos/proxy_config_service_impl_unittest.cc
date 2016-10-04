@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <utility>
 #include <vector>
 
 #include "base/format_macros.h"
@@ -513,7 +514,7 @@ TEST_F(ProxyConfigServiceImplTest, SharedEthernetAndUserPolicy) {
       chromeos::onc::ReadDictionaryFromJson(kEthernetPolicy));
 
   std::unique_ptr<base::ListValue> network_configs(new base::ListValue);
-  network_configs->Append(ethernet_policy.release());
+  network_configs->Append(std::move(ethernet_policy));
 
   profile_prefs_.SetUserPref(prefs::kUseSharedProxies,
                              new base::FundamentalValue(false));

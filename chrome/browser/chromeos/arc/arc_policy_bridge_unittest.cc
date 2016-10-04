@@ -233,8 +233,8 @@ TEST_F(ArcPolicyBridgeTest, ExternalStorageDisabledTest) {
 
 TEST_F(ArcPolicyBridgeTest, URLBlacklistTest) {
   base::ListValue blacklist;
-  blacklist.Append(new base::StringValue("www.blacklist1.com"));
-  blacklist.Append(new base::StringValue("www.blacklist2.com"));
+  blacklist.AppendString("www.blacklist1.com");
+  blacklist.AppendString("www.blacklist2.com");
   policy_map().Set(policy::key::kURLBlacklist, policy::POLICY_LEVEL_MANDATORY,
                    policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
                    blacklist.CreateDeepCopy(), nullptr);
@@ -248,8 +248,8 @@ TEST_F(ArcPolicyBridgeTest, URLBlacklistTest) {
 
 TEST_F(ArcPolicyBridgeTest, URLWhitelistTest) {
   base::ListValue whitelist;
-  whitelist.Append(new base::StringValue("www.whitelist1.com"));
-  whitelist.Append(new base::StringValue("www.whitelist2.com"));
+  whitelist.AppendString("www.whitelist1.com");
+  whitelist.AppendString("www.whitelist2.com");
   policy_map().Set(policy::key::kURLWhitelist, policy::POLICY_LEVEL_MANDATORY,
                    policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
                    whitelist.CreateDeepCopy(), nullptr);

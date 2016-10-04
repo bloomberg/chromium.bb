@@ -4,8 +4,11 @@
 
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/dbus/fake_gsm_sms_client.h"
@@ -103,12 +106,12 @@ void FakeGsmSMSClient::PushTestMessageDelayed() {
 bool FakeGsmSMSClient::PushTestMessage() {
   if (test_index_ >= static_cast<int>(test_messages_.size()))
     return false;
-  base::DictionaryValue* message = new base::DictionaryValue;
+  auto message = base::MakeUnique<base::DictionaryValue>();
   message->SetString("number", "000-000-0000");
   message->SetString("text", test_messages_[test_index_]);
   message->SetInteger("index", test_index_);
   int msg_index = message_list_.GetSize();
-  message_list_.Append(message);
+  message_list_.Append(std::move(message));
   if (!handler_.is_null())
     handler_.Run(msg_index, true);
   ++test_index_;

@@ -4,6 +4,8 @@
 
 #include "ash/common/system/chromeos/network/tray_sms.h"
 
+#include <utility>
+
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/metrics/user_metrics_action.h"
 #include "ash/common/system/tray/fixed_sized_scroll_view.h"
@@ -16,6 +18,7 @@
 #include "ash/common/system/tray/tray_notification_view.h"
 #include "ash/common/wm_shell.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/network/network_event_log.h"
@@ -368,10 +371,10 @@ void TraySms::MessageReceived(const base::DictionaryValue& message) {
       "Received SMS from: " + message_number + " with text: " + message_text,
       "");
 
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  auto dict = base::MakeUnique<base::DictionaryValue>();
   dict->SetString(kSmsNumberKey, message_number);
   dict->SetString(kSmsTextKey, message_text);
-  messages_.Append(dict);
+  messages_.Append(std::move(dict));
   Update(true);
 }
 

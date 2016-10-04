@@ -37,7 +37,7 @@ bool OwnerFlagsStorage::SetFlags(const std::set<std::string>& flags) {
   for (base::CommandLine::StringVector::const_iterator it =
            switches.begin() + 1;
        it != switches.end(); ++it) {
-    experiments_list.Append(new base::StringValue(*it));
+    experiments_list.AppendString(*it);
   }
   owner_settings_service_->Set(kStartUpFlags, experiments_list);
 

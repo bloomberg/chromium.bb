@@ -10,6 +10,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -258,7 +259,7 @@ void KioskAppsHandler::SendKioskAppSettings() {
 
     std::unique_ptr<base::DictionaryValue> app_info(new base::DictionaryValue);
     PopulateAppDict(app_data, app_info.get());
-    apps_list->Append(app_info.release());
+    apps_list->Append(std::move(app_info));
   }
   settings.SetWithoutPathExpansion("apps", apps_list.release());
 

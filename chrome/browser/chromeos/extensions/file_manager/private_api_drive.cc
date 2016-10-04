@@ -763,12 +763,12 @@ void FileManagerPrivateSearchDriveFunction::OnEntryDefinitionList(
   for (EntryDefinitionList::const_iterator it = entry_definition_list->begin();
        it != entry_definition_list->end();
        ++it) {
-    base::DictionaryValue* entry = new base::DictionaryValue();
+    auto entry = base::MakeUnique<base::DictionaryValue>();
     entry->SetString("fileSystemName", it->file_system_name);
     entry->SetString("fileSystemRoot", it->file_system_root_url);
     entry->SetString("fileFullPath", "/" + it->full_path.AsUTF8Unsafe());
     entry->SetBoolean("fileIsDirectory", it->is_directory);
-    entries->Append(entry);
+    entries->Append(std::move(entry));
   }
 
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
@@ -863,7 +863,7 @@ void FileManagerPrivateSearchDriveMetadataFunction::OnEntryDefinitionList(
   // file_manager_private_custom_bindings.js for how this is magically
   // converted to a FileEntry.
   for (size_t i = 0; i < entry_definition_list->size(); ++i) {
-    base::DictionaryValue* result_dict = new base::DictionaryValue();
+    auto result_dict = base::MakeUnique<base::DictionaryValue>();
 
     // FileEntry fields.
     base::DictionaryValue* entry = new base::DictionaryValue();
@@ -881,7 +881,7 @@ void FileManagerPrivateSearchDriveMetadataFunction::OnEntryDefinitionList(
     result_dict->SetString(
         "highlightedBaseName",
         search_result_info_list->at(i).highlighted_base_name);
-    results_list->Append(result_dict);
+    results_list->Append(std::move(result_dict));
   }
 
   SetResult(std::move(results_list));

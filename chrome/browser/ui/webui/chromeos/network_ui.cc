@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/chromeos/network_ui.h"
 
 #include <string>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -118,7 +119,7 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
     SetDeviceProperties(dictionary_copy.get());
 
     base::ListValue return_arg_list;
-    return_arg_list.Append(dictionary_copy.release());
+    return_arg_list.Append(std::move(dictionary_copy));
     web_ui()->CallJavascriptFunctionUnsafe("NetworkUI.getShillPropertiesResult",
                                            return_arg_list);
   }
@@ -132,7 +133,7 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
     std::unique_ptr<base::DictionaryValue> dictionary;
     dictionary->SetStringWithoutPathExpansion(shill::kGuidProperty, guid);
     dictionary->SetStringWithoutPathExpansion("ShillError", error_name);
-    return_arg_list.Append(dictionary.release());
+    return_arg_list.Append(std::move(dictionary));
     web_ui()->CallJavascriptFunctionUnsafe("NetworkUI.getShillPropertiesResult",
                                            return_arg_list);
   }

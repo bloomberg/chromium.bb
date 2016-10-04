@@ -306,8 +306,8 @@ TEST_F(EasyUnlockPrivateApiTest, CreateSecureMessage_EmptyOptions) {
   std::unique_ptr<base::ListValue> args(new base::ListValue);
   args->Append(StringToBinaryValue("PAYLOAD"));
   args->Append(StringToBinaryValue("KEY"));
-  base::DictionaryValue* options = new base::DictionaryValue();
-  args->Append(options);
+  auto options = base::MakeUnique<base::DictionaryValue>();
+  args->Append(std::move(options));
 
   ASSERT_TRUE(extension_function_test_utils::RunFunction(
       function.get(), std::move(args), browser(),
@@ -413,8 +413,8 @@ TEST_F(EasyUnlockPrivateApiTest, UnwrapSecureMessage_EmptyOptions) {
   std::unique_ptr<base::ListValue> args(new base::ListValue);
   args->Append(StringToBinaryValue("MESSAGE"));
   args->Append(StringToBinaryValue("KEY"));
-  base::DictionaryValue* options = new base::DictionaryValue();
-  args->Append(options);
+  auto options = base::MakeUnique<base::DictionaryValue>();
+  args->Append(std::move(options));
 
   ASSERT_TRUE(extension_function_test_utils::RunFunction(
       function.get(), std::move(args), browser(),

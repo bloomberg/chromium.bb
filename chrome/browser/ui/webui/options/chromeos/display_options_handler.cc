@@ -7,7 +7,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <string>
+#include <utility>
 
 #include "ash/common/strings/grit/ash_strings.h"
 #include "ash/display/display_configuration_controller.h"
@@ -19,6 +21,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -323,7 +326,7 @@ void DisplayOptionsHandler::SendAllDisplayInfo() {
   for (const display::Display& display : displays) {
     const display::ManagedDisplayInfo& display_info =
         display_manager->GetDisplayInfo(display.id());
-    base::DictionaryValue* js_display = new base::DictionaryValue();
+    auto js_display = base::MakeUnique<base::DictionaryValue>();
     js_display->SetString("id", base::Int64ToString(display.id()));
     js_display->SetString("name",
                           display_manager->GetDisplayNameForId(display.id()));
@@ -348,10 +351,10 @@ void DisplayOptionsHandler::SendAllDisplayInfo() {
       const base::string16 profile_name = GetColorProfileName(color_profile);
       if (profile_name.empty())
         continue;
-      base::DictionaryValue* color_profile_dict = new base::DictionaryValue();
+      auto color_profile_dict = base::MakeUnique<base::DictionaryValue>();
       color_profile_dict->SetInteger("profileId", color_profile);
       color_profile_dict->SetString("name", profile_name);
-      available_color_profiles->Append(color_profile_dict);
+      available_color_profiles->Append(std::move(color_profile_dict));
     }
     js_display->Set("availableColorProfiles", available_color_profiles);
 
@@ -367,7 +370,7 @@ void DisplayOptionsHandler::SendAllDisplayInfo() {
       }
     }
 
-    js_displays->Append(js_display);
+    js_displays->Append(std::move(js_display));
   }
 
   web_ui()->CallJavascriptFunctionUnsafe(

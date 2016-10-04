@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <string>
+#include <utility>
 
 #include "base/message_loop/message_loop.h"
 #include "base/values.h"
@@ -70,7 +71,7 @@ class ExistingUserControllerAutoLoginTest : public ::testing::Test {
         kAccountsPrefDeviceLocalAccountsKeyType,
         policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION);
     base::ListValue accounts;
-    accounts.Append(account.release());
+    accounts.Append(std::move(account));
     CrosSettings::Get()->Set(kAccountsPrefDeviceLocalAccounts, accounts);
 
     // Prevent settings changes from auto-starting the timer.

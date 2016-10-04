@@ -358,7 +358,7 @@ bool GetProxyPrefValue(const UIProxyConfigService& config_service,
     base::ListValue* list =  new base::ListValue();
     net::ProxyBypassRules::RuleList bypass_rules = config.bypass_rules.rules();
     for (size_t x = 0; x < bypass_rules.size(); x++)
-      list->Append(new base::StringValue(bypass_rules[x]->ToString()));
+      list->AppendString(bypass_rules[x]->ToString());
     data = list;
   } else {
     *out_value = NULL;

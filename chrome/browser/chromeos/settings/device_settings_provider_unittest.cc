@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/settings/device_settings_provider.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -404,7 +405,7 @@ TEST_F(DeviceSettingsProviderTest, LegacyDeviceLocalAccounts) {
                         policy::PolicyBuilder::kFakeUsername);
   entry_dict->SetInteger(kAccountsPrefDeviceLocalAccountsKeyType,
                          policy::DeviceLocalAccount::TYPE_PUBLIC_SESSION);
-  expected_accounts.Append(entry_dict.release());
+  expected_accounts.Append(std::move(entry_dict));
   const base::Value* actual_accounts =
       provider_->Get(kAccountsPrefDeviceLocalAccounts);
   EXPECT_TRUE(base::Value::Equals(&expected_accounts, actual_accounts));

@@ -412,7 +412,7 @@ class EPKChallengeUserKeyTest : public EPKChallengeKeyTestBase {
   std::unique_ptr<base::ListValue> CreateArgsInternal(bool register_key) {
     std::unique_ptr<base::ListValue> args(new base::ListValue);
     args->Append(base::BinaryValue::CreateWithCopiedBuffer("challenge", 9));
-    args->Append(new base::FundamentalValue(register_key));
+    args->AppendBoolean(register_key);
     return args;
   }
 

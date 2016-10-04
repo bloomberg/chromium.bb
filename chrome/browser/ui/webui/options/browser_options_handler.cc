@@ -640,13 +640,13 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   option_full->AppendInteger(ash::MAGNIFIER_FULL);
   option_full->AppendString(l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SCREEN_MAGNIFIER_FULL));
-  magnifier_list->Append(option_full.release());
+  magnifier_list->Append(std::move(option_full));
 
   std::unique_ptr<base::ListValue> option_partial(new base::ListValue);
   option_partial->AppendInteger(ash::MAGNIFIER_PARTIAL);
-  option_partial->Append(new base::StringValue(l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SCREEN_MAGNIFIER_PARTIAL)));
-  magnifier_list->Append(option_partial.release());
+  option_partial->AppendString(l10n_util::GetStringUTF16(
+      IDS_OPTIONS_SETTINGS_ACCESSIBILITY_SCREEN_MAGNIFIER_PARTIAL));
+  magnifier_list->Append(std::move(option_partial));
 
   values->Set("magnifierList", magnifier_list.release());
 #endif

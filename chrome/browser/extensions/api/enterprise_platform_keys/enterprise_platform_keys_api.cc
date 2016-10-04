@@ -124,7 +124,7 @@ void EnterprisePlatformKeysGetCertificatesFunction::OnGotCertificates(
   }
 
   std::unique_ptr<base::ListValue> results(new base::ListValue());
-  results->Append(client_certs.release());
+  results->Append(std::move(client_certs));
   Respond(ArgumentList(std::move(results)));
 }
 

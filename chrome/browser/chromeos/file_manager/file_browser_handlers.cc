@@ -387,7 +387,7 @@ void FileBrowserHandlerExecutor::SetupPermissionsAndDispatchEvent(
       file_definition_list.get(), extension_.get(), handler_pid);
 
   std::unique_ptr<base::ListValue> event_args(new base::ListValue());
-  event_args->Append(new base::StringValue(action_id_));
+  event_args->AppendString(action_id_);
   base::DictionaryValue* details = new base::DictionaryValue();
   event_args->Append(details);
   // Get file definitions. These will be replaced with Entry instances by

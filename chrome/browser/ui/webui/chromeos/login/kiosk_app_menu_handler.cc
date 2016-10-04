@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
@@ -117,7 +119,7 @@ void KioskAppMenuHandler::SendKioskApps() {
     }
     app_info->SetString("iconUrl", icon_url);
 
-    apps_list.Append(app_info.release());
+    apps_list.Append(std::move(app_info));
   }
 
   web_ui()->CallJavascriptFunctionUnsafe(

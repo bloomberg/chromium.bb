@@ -2,11 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chromeos/dbus/shill_manager_client.h"
+
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chromeos/dbus/shill_client_unittest_base.h"
-#include "chromeos/dbus/shill_manager_client.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
 #include "dbus/values_util.h"
@@ -161,11 +166,11 @@ TEST_F(ShillManagerClientTest, GetNetworksForGeolocation) {
   // Create the expected value.
   base::DictionaryValue type_dict_value;
   base::ListValue* type_entry_value = new base::ListValue;
-  base::DictionaryValue* property_dict_value = new base::DictionaryValue;
+  auto property_dict_value = base::MakeUnique<base::DictionaryValue>();
   property_dict_value->SetWithoutPathExpansion(
       shill::kGeoMacAddressProperty,
       new base::StringValue("01:23:45:67:89:AB"));
-  type_entry_value->Append(property_dict_value);
+  type_entry_value->Append(std::move(property_dict_value));
   type_dict_value.SetWithoutPathExpansion("wifi", type_entry_value);
 
   // Set expectations.

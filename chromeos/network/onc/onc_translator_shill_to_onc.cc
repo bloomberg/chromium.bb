@@ -694,7 +694,7 @@ void ShillToONCTranslator::TranslateAndAddListOfObjects(
     // If the nested object couldn't be parsed, simply omit it.
     if (nested_object->empty())
       continue;
-    result->Append(nested_object.release());
+    result->Append(std::move(nested_object));
   }
   // If there are no entries in the list, there is no need to expose this field.
   if (result->empty())

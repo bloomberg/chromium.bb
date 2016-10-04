@@ -6,8 +6,12 @@
 
 #include <stdint.h>
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -312,11 +316,11 @@ TEST_F(GsmSMSClientTest, List) {
   response_ = response.get();
   // Create expected result.
   base::ListValue expected_result;
-  base::DictionaryValue* sms = new base::DictionaryValue;
+  auto sms = base::MakeUnique<base::DictionaryValue>();
   sms->SetWithoutPathExpansion(kNumberKey,
                                new base::StringValue(kExampleNumber));
   sms->SetWithoutPathExpansion(kTextKey, new base::StringValue(kExampleText));
-  expected_result.Append(sms);
+  expected_result.Append(std::move(sms));
   expected_result_ = &expected_result;
   // Call List.
   client_->List(kServiceName, dbus::ObjectPath(kObjectPath),

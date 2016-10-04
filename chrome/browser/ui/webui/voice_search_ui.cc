@@ -82,7 +82,7 @@ void AddPair16(base::ListValue* list,
   std::unique_ptr<base::DictionaryValue> results(new base::DictionaryValue());
   results->SetString("key", key);
   results->SetString("value", value);
-  list->Append(results.release());
+  list->Append(std::move(results));
 }
 
 void AddPair(base::ListValue* list,

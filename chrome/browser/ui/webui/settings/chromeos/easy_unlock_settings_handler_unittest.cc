@@ -198,7 +198,7 @@ TEST_F(EasyUnlockSettingsHandlerTest, EnabledStatus) {
 
   // Test the JS -> C++ -> JS callback path.
   base::ListValue list_args;
-  list_args.Append(new base::StringValue("test-callback-id"));
+  list_args.AppendString("test-callback-id");
   handler->HandleGetEnabledStatus(&list_args);
 
   EXPECT_EQ(1U, web_ui()->call_data().size());
@@ -230,12 +230,12 @@ TEST_F(EasyUnlockSettingsHandlerTest, TurnOffFlowStatus) {
 
   // Send an initial status query to turn on service observer.
   base::ListValue list_args1;
-  list_args1.Append(new base::StringValue("test-callback-id-1"));
+  list_args1.AppendString("test-callback-id-1");
   handler->HandleGetEnabledStatus(&list_args1);
   EXPECT_EQ(1U, web_ui()->call_data().size());
 
   base::ListValue list_args2;
-  list_args2.Append(new base::StringValue("test-callback-id-2"));
+  list_args2.AppendString("test-callback-id-2");
   handler->HandleGetTurnOffFlowStatus(&list_args2);
   VerifyTurnOffFlowStatusWebUIResponse(2U, "test-callback-id-2", "idle");
 
@@ -243,7 +243,7 @@ TEST_F(EasyUnlockSettingsHandlerTest, TurnOffFlowStatus) {
   VerifyTurnOffFlowStatusWebUIListenerCallback(3U, "pending");
 
   base::ListValue list_args3;
-  list_args3.Append(new base::StringValue("test-callback-id-3"));
+  list_args3.AppendString("test-callback-id-3");
   handler->HandleGetTurnOffFlowStatus(&list_args3);
   VerifyTurnOffFlowStatusWebUIResponse(4U, "test-callback-id-3", "pending");
 
@@ -254,7 +254,7 @@ TEST_F(EasyUnlockSettingsHandlerTest, TurnOffFlowStatus) {
   VerifyTurnOffFlowStatusWebUIListenerCallback(6U, "server-error");
 
   base::ListValue list_args4;
-  list_args4.Append(new base::StringValue("test-callback-id-4"));
+  list_args4.AppendString("test-callback-id-4");
   handler->HandleGetTurnOffFlowStatus(&list_args4);
   VerifyTurnOffFlowStatusWebUIResponse(7U, "test-callback-id-4",
                                        "server-error");

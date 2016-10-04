@@ -5,6 +5,8 @@
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
@@ -160,14 +162,14 @@ class ImeObserverChromeOS : public ui::ImeObserver {
       return;
 
     // Note: this is a private API event.
-    base::ListValue* bounds_list = new base::ListValue();
+    auto bounds_list = base::MakeUnique<base::ListValue>();
     for (size_t i = 0; i < bounds.size(); ++i) {
-      base::DictionaryValue* bounds_value = new base::DictionaryValue();
+      auto bounds_value = base::MakeUnique<base::DictionaryValue>();
       bounds_value->SetInteger("x", bounds[i].x());
       bounds_value->SetInteger("y", bounds[i].y());
       bounds_value->SetInteger("w", bounds[i].width());
       bounds_value->SetInteger("h", bounds[i].height());
-      bounds_list->Append(bounds_value);
+      bounds_list->Append(std::move(bounds_value));
     }
 
     if (bounds_list->GetSize() <= 0)
@@ -179,7 +181,7 @@ class ImeObserverChromeOS : public ui::ImeObserver {
     base::Value* first_value = NULL;
     if (bounds_list->Get(0, &first_value))
       args->Append(first_value->DeepCopy());
-    args->Append(bounds_list);
+    args->Append(std::move(bounds_list));
 
     DispatchEventToExtension(
         extensions::events::INPUT_METHOD_PRIVATE_ON_COMPOSITION_BOUNDS_CHANGED,

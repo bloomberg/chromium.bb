@@ -172,7 +172,7 @@ void DecodeLoginPolicies(
       whitelist_proto.user_whitelist();
   for (RepeatedPtrField<std::string>::const_iterator it = whitelist.begin();
        it != whitelist.end(); ++it) {
-    list->Append(new base::StringValue(*it));
+    list->AppendString(*it);
   }
   new_values_cache->SetValue(kAccountsPrefUsers, std::move(list));
 
@@ -242,7 +242,7 @@ void DecodeLoginPolicies(
     const RepeatedPtrField<std::string>& flags = flags_proto.flags();
     for (RepeatedPtrField<std::string>::const_iterator it = flags.begin();
          it != flags.end(); ++it) {
-      list->Append(new base::StringValue(*it));
+      list->AppendString(*it);
     }
     new_values_cache->SetValue(kStartUpFlags, std::move(list));
   }
@@ -281,7 +281,7 @@ void DecodeLoginPolicies(
         login_video_capture_allowed_urls_proto =
             policy.login_video_capture_allowed_urls();
     for (const auto& value : login_video_capture_allowed_urls_proto.urls()) {
-      list->Append(new base::StringValue(value));
+      list->AppendString(value);
     }
     new_values_cache->SetValue(kLoginVideoCaptureAllowedUrls, std::move(list));
   }
@@ -290,7 +290,7 @@ void DecodeLoginPolicies(
     std::unique_ptr<base::ListValue> login_apps(new base::ListValue);
     const em::LoginAppsProto& login_apps_proto(policy.login_apps());
     for (const auto& login_app : login_apps_proto.login_apps())
-      login_apps->Append(new base::StringValue(login_app));
+      login_apps->AppendString(login_app);
     new_values_cache->SetValue(kLoginApps, std::move(login_apps));
   }
 }
@@ -321,7 +321,7 @@ void DecodeAutoUpdatePolicies(
     std::unique_ptr<base::ListValue> list(new base::ListValue());
     for (RepeatedField<int>::const_iterator i(allowed_connection_types.begin());
          i != allowed_connection_types.end(); ++i) {
-      list->Append(new base::FundamentalValue(*i));
+      list->AppendInteger(*i);
     }
     new_values_cache->SetValue(kAllowedConnectionTypesForUpdate,
                                std::move(list));

@@ -250,8 +250,8 @@ void WallpaperSetWallpaperFunction::ThumbnailGenerated(
     std::unique_ptr<base::ListValue> event_args(new base::ListValue());
     event_args->Append(original_result->DeepCopy());
     event_args->Append(thumbnail_result->DeepCopy());
-    event_args->Append(new base::StringValue(
-        extensions::api::wallpaper::ToString(params_->details.layout)));
+    event_args->AppendString(
+        extensions::api::wallpaper::ToString(params_->details.layout));
     // Setting wallpaper from right click menu in 'Files' app is a feature that
     // was implemented in crbug.com/578935. Since 'Files' app is a built-in v1
     // app in ChromeOS, we should treat it slightly differently with other third
@@ -259,10 +259,10 @@ void WallpaperSetWallpaperFunction::ThumbnailGenerated(
     // and it should not appear in the wallpaper grid in the Wallpaper Picker.
     // But we should not display the 'wallpaper-set-by-mesage' since it might
     // introduce confusion as shown in crbug.com/599407.
-    event_args->Append(new base::StringValue(
+    event_args->AppendString(
         (extension()->id() == file_manager::kFileManagerAppId)
             ? std::string()
-            : extension()->name()));
+            : extension()->name());
     std::unique_ptr<extensions::Event> event(new extensions::Event(
         extensions::events::WALLPAPER_PRIVATE_ON_WALLPAPER_CHANGED_BY_3RD_PARTY,
         extensions::api::wallpaper_private::OnWallpaperChangedBy3rdParty::

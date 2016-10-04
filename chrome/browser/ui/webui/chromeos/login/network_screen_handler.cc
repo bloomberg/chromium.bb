@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -285,7 +287,7 @@ base::ListValue* NetworkScreenHandler::GetTimezoneList() {
     timezone_option->SetString("value", timezone_id);
     timezone_option->SetString("title", timezone_name);
     timezone_option->SetBoolean("selected", timezone_id == current_timezone_id);
-    timezone_list->Append(timezone_option.release());
+    timezone_list->Append(std::move(timezone_option));
   }
 
   return timezone_list.release();

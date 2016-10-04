@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/options/chromeos/power_handler.h"
 
+#include <utility>
+
 #include "ash/resources/grit/ash_resources.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -158,7 +160,7 @@ void PowerHandler::UpdatePowerSources() {
     dict->SetInteger("type", source.type);
     dict->SetString("description",
                     l10n_util::GetStringUTF16(source.description_id));
-    sources_list.Append(dict.release());
+    sources_list.Append(std::move(dict));
   }
 
   web_ui()->CallJavascriptFunctionUnsafe(

@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <set>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -121,7 +122,7 @@ void SetDeviceLocalAccounts(chromeos::OwnerSettingsServiceChromeOS* service,
             it->kiosk_app_update_url);
       }
     }
-    list.Append(entry.release());
+    list.Append(std::move(entry));
   }
 
   service->Set(chromeos::kAccountsPrefDeviceLocalAccounts, list);

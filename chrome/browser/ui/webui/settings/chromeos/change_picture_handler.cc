@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/change_picture_handler.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -141,7 +143,7 @@ void ChangePictureHandler::SendDefaultImages() {
                               default_user_image::kDefaultImageWebsiteIDs[i]));
     image_data->SetString("title",
                           default_user_image::GetDefaultImageDescription(i));
-    image_urls.Append(image_data.release());
+    image_urls.Append(std::move(image_data));
   }
   CallJavascriptFunction("cr.webUIListenerCallback",
                          base::StringValue("default-images-changed"),

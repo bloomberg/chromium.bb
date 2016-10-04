@@ -4,6 +4,8 @@
 
 #include "chromeos/network/onc/onc_mapper.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
@@ -123,7 +125,7 @@ std::unique_ptr<base::ListValue> Mapper::MapArray(
                             *entry,
                             nested_error);
     if (result_entry.get() != NULL)
-      result_array->Append(result_entry.release());
+      result_array->Append(std::move(result_entry));
     else
       DCHECK(*nested_error);
     ++original_index;

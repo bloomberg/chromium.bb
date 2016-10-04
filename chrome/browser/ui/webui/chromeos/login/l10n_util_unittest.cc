@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/at_exit.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -137,13 +139,13 @@ TEST_F(L10nUtilTest, FindMostRelevantLocale) {
   base::ListValue available_locales;
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   dict->SetString("value", "de");
-  available_locales.Append(dict.release());
+  available_locales.Append(std::move(dict));
   dict.reset(new base::DictionaryValue);
   dict->SetString("value", "fr");
-  available_locales.Append(dict.release());
+  available_locales.Append(std::move(dict));
   dict.reset(new base::DictionaryValue);
   dict->SetString("value", "en-GB");
-  available_locales.Append(dict.release());
+  available_locales.Append(std::move(dict));
 
   std::vector<std::string> most_relevant_language_codes;
   EXPECT_EQ("en-US", FindMostRelevantLocale(most_relevant_language_codes,

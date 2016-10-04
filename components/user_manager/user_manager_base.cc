@@ -966,7 +966,7 @@ User* UserManagerBase::RemoveRegularOrSupervisedUserFromList(
     } else {
       if ((*it)->HasGaiaAccount() || (*it)->IsSupervised()) {
         const std::string user_email = (*it)->email();
-        prefs_users_update->Append(new base::StringValue(user_email));
+        prefs_users_update->AppendString(user_email);
       }
       ++it;
     }

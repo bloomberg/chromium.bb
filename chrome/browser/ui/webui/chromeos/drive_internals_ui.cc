@@ -7,11 +7,15 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
@@ -200,10 +204,10 @@ std::string SeverityToString(logging::LogSeverity severity) {
 void AppendKeyValue(base::ListValue* list,
                     const std::string& key,
                     const std::string& value) {
-  base::DictionaryValue* dict = new base::DictionaryValue;
+  auto dict = base::MakeUnique<base::DictionaryValue>();
   dict->SetString("key", key);
   dict->SetString("value", value);
-  list->Append(dict);
+  list->Append(std::move(dict));
 }
 
 // Class to handle messages from chrome://drive-internals.
@@ -352,13 +356,13 @@ void DriveInternalsWebUIHandler::OnGetAppList(
   base::ListValue* items = new base::ListValue();
   for (size_t i = 0; i < parsed_app_list->items().size(); ++i) {
     const google_apis::AppResource* app = parsed_app_list->items()[i];
-    base::DictionaryValue* app_data = new base::DictionaryValue();
+    auto app_data = base::MakeUnique<base::DictionaryValue>();
     app_data->SetString("name", app->name());
     app_data->SetString("application_id", app->application_id());
     app_data->SetString("object_type", app->object_type());
     app_data->SetBoolean("supports_create", app->supports_create());
 
-    items->Append(app_data);
+    items->Append(std::move(app_data));
   }
   app_list.Set("items", items);
 
@@ -646,14 +650,14 @@ void DriveInternalsWebUIHandler::UpdateInFlightOperationsSection(
   for (size_t i = 0; i < info_list.size(); ++i) {
     const drive::JobInfo& info = info_list[i];
 
-    base::DictionaryValue* dict = new base::DictionaryValue;
+    auto dict = base::MakeUnique<base::DictionaryValue>();
     dict->SetInteger("id", info.job_id);
     dict->SetString("type", drive::JobTypeToString(info.job_type));
     dict->SetString("file_path", info.file_path.AsUTF8Unsafe());
     dict->SetString("state", drive::JobStateToString(info.state));
     dict->SetDouble("progress_current", info.num_completed_bytes);
     dict->SetDouble("progress_total", info.num_total_bytes);
-    in_flight_operations.Append(dict);
+    in_flight_operations.Append(std::move(dict));
   }
   web_ui()->CallJavascriptFunctionUnsafe("updateInFlightOperations",
                                          in_flight_operations);
@@ -750,12 +754,12 @@ void DriveInternalsWebUIHandler::UpdateEventLogSection() {
 
     std::string severity = SeverityToString(log[i].severity);
 
-    base::DictionaryValue* dict = new base::DictionaryValue;
+    auto dict = base::MakeUnique<base::DictionaryValue>();
     dict->SetString("key",
         google_apis::util::FormatTimeAsStringLocaltime(log[i].when));
     dict->SetString("value", "[" + severity + "] " + log[i].what);
     dict->SetString("class", "log-" + severity);
-    list.Append(dict);
+    list.Append(std::move(dict));
     last_sent_event_id_ = log[i].id;
   }
   if (!list.empty())

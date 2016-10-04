@@ -98,7 +98,7 @@ class TestDelegate : public NetworkingPrivateDelegate {
       network->SetString(::onc::network_config::kType,
                          ::onc::network_config::kEthernet);
       network->SetString(::onc::network_config::kGUID, kGuid);
-      result->Append(network.release());
+      result->Append(std::move(network));
       success_callback.Run(std::move(result));
     }
   }

@@ -6,10 +6,13 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
+#include <utility>
 
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -152,11 +155,11 @@ std::unique_ptr<base::ListValue> GetTimezoneList() {
   for (std::vector<icu::TimeZone*>::const_iterator iter = timezones.begin();
        iter != timezones.end(); ++iter) {
     const icu::TimeZone* timezone = *iter;
-    base::ListValue* option = new base::ListValue();
-    option->Append(new base::StringValue(
-        chromeos::system::TimezoneSettings::GetTimezoneID(*timezone)));
-    option->Append(new base::StringValue(GetTimezoneName(*timezone)));
-    timezoneList->Append(option);
+    auto option = base::MakeUnique<base::ListValue>();
+    option->AppendString(
+        chromeos::system::TimezoneSettings::GetTimezoneID(*timezone));
+    option->AppendString(GetTimezoneName(*timezone));
+    timezoneList->Append(std::move(option));
   }
   return timezoneList;
 }

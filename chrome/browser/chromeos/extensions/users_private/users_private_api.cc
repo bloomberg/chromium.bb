@@ -103,7 +103,7 @@ UsersPrivateGetWhitelistedUsersFunction::Run() {
         user_manager->GetUserDisplayEmail(AccountId::FromUserEmail(user.email));
     user.is_owner = chromeos::ProfileHelper::IsOwnerProfile(profile) &&
                     user.email == profile->GetProfileUserName();
-    user_list->Append(user.ToValue().release());
+    user_list->Append(user.ToValue());
   }
 
   return RespondNow(OneArgument(std::move(user_list)));

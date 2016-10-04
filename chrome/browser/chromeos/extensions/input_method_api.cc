@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/extensions/input_method_api.h"
 
 #include <stddef.h>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -142,11 +143,11 @@ InputMethodPrivateGetInputMethodsFunction::Run() {
   for (size_t i = 0; i < input_methods->size(); ++i) {
     const chromeos::input_method::InputMethodDescriptor& input_method =
         (*input_methods)[i];
-    base::DictionaryValue* val = new base::DictionaryValue();
+    auto val = base::MakeUnique<base::DictionaryValue>();
     val->SetString("id", input_method.id());
     val->SetString("name", util->GetInputMethodLongName(input_method));
     val->SetString("indicator", util->GetInputMethodShortName(input_method));
-    output->Append(val);
+    output->Append(std::move(val));
   }
   return RespondNow(OneArgument(std::move(output)));
 #endif

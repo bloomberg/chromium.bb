@@ -318,9 +318,9 @@ TEST(PinnedLauncherAppsPolicyHandler, PrefTranslation) {
   EXPECT_TRUE(base::Value::Equals(&expected_pinned_apps, value));
 
   base::StringValue entry1("abcdefghijklmnopabcdefghijklmnop");
-  base::DictionaryValue* entry1_dict = new base::DictionaryValue();
+  auto entry1_dict = base::MakeUnique<base::DictionaryValue>();
   entry1_dict->Set(ash::launcher::kPinnedAppsPrefAppIDPath, entry1.DeepCopy());
-  expected_pinned_apps.Append(entry1_dict);
+  expected_pinned_apps.Append(std::move(entry1_dict));
   list.Append(entry1.DeepCopy());
   policy_map.Set(key::kPinnedLauncherApps, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, list.CreateDeepCopy(),

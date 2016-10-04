@@ -6,8 +6,12 @@
 
 #include <stddef.h>
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -145,7 +149,7 @@ base::ListValue* CrosLanguageOptionsHandler::GetInputMethodList() {
     const std::string display_name =
         manager->GetInputMethodUtil()->GetInputMethodDisplayNameFromId(
             descriptor.id());
-    base::DictionaryValue* dictionary = new base::DictionaryValue();
+    auto dictionary = base::MakeUnique<base::DictionaryValue>();
     dictionary->SetString("id", descriptor.id());
     dictionary->SetString("displayName", display_name);
 
@@ -157,7 +161,7 @@ base::ListValue* CrosLanguageOptionsHandler::GetInputMethodList() {
     }
     dictionary->Set("languageCodeSet", languages);
 
-    input_method_list->Append(dictionary);
+    input_method_list->Append(std::move(dictionary));
   }
 
   return input_method_list;
@@ -182,7 +186,7 @@ base::ListValue*
     for (size_t i = 0; i < descriptor.language_codes().size(); ++i)
       language_codes->SetBoolean(descriptor.language_codes().at(i), true);
     dictionary->Set("languageCodeSet", language_codes.release());
-    ime_ids_list->Append(dictionary.release());
+    ime_ids_list->Append(std::move(dictionary));
   }
   return ime_ids_list.release();
 }

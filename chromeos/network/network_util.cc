@@ -7,6 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
@@ -204,7 +206,7 @@ std::unique_ptr<base::ListValue> TranslateNetworkListToONC(
   for (const NetworkState* state : network_states) {
     std::unique_ptr<base::DictionaryValue> onc_dictionary =
         TranslateNetworkStateToONC(state);
-    network_properties_list->Append(onc_dictionary.release());
+    network_properties_list->Append(std::move(onc_dictionary));
   }
   return network_properties_list;
 }

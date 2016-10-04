@@ -295,7 +295,7 @@ KeyPermissions::PermissionsForExtension::KeyEntriesToState() {
       new_entry->SetBooleanWithoutPathExpansion(kStateStoreSignUnlimited,
                                                 entry.sign_unlimited);
     }
-    new_state->Append(new_entry.release());
+    new_state->Append(std::move(new_entry));
   }
   return std::move(new_state);
 }

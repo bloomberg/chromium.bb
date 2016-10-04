@@ -95,7 +95,7 @@ class AshKeyboardControllerObserver
     new_bounds->SetInteger("top", bounds.y());
     new_bounds->SetInteger("width", bounds.width());
     new_bounds->SetInteger("height", bounds.height());
-    event_args->Append(new_bounds.release());
+    event_args->Append(std::move(new_bounds));
 
     std::unique_ptr<extensions::Event> event(new extensions::Event(
         extensions::events::VIRTUAL_KEYBOARD_PRIVATE_ON_BOUNDS_CHANGED,
@@ -233,7 +233,7 @@ void ChromeKeyboardUI::SetUpdateInputType(ui::TextInputType type) {
   input_context->SetString("type",
                            virtual_keyboard_private::ToString(
                                TextInputTypeToGeneratedInputTypeEnum(type)));
-  event_args->Append(input_context.release());
+  event_args->Append(std::move(input_context));
 
   std::unique_ptr<extensions::Event> event(new extensions::Event(
       extensions::events::VIRTUAL_KEYBOARD_PRIVATE_ON_TEXT_INPUT_BOX_FOCUSED,

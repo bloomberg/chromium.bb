@@ -65,7 +65,7 @@ TEST_F(ShillProfileClientTest, PropertyChanged) {
 
   // Set expectations.
   base::ListValue value;
-  value.Append(new base::StringValue(kExampleEntryPath));
+  value.AppendString(kExampleEntryPath);
   MockPropertyChangeObserver observer;
   EXPECT_CALL(observer,
               OnPropertyChanged(
@@ -107,7 +107,7 @@ TEST_F(ShillProfileClientTest, GetProperties) {
 
   // Create the expected value.
   base::ListValue* entries = new base::ListValue;
-  entries->Append(new base::StringValue(kExampleEntryPath));
+  entries->AppendString(kExampleEntryPath);
   base::DictionaryValue value;
   value.SetWithoutPathExpansion(shill::kEntriesProperty, entries);
   // Set expectations.

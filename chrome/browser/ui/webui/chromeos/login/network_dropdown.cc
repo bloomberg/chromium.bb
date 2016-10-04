@@ -4,9 +4,12 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/network_dropdown.h"
 
+#include <memory>
 #include <string>
+#include <utility>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -87,7 +90,7 @@ base::ListValue* NetworkMenuWebUI::ConvertMenuModel(ui::MenuModel* model) {
       id = -2;
     else
       id = model->GetCommandIdAt(i);
-    base::DictionaryValue* item = new base::DictionaryValue();
+    auto item = base::MakeUnique<base::DictionaryValue>();
     item->SetInteger("id", id);
     base::string16 label = model->GetLabelAt(i);
     base::ReplaceSubstringsAfterOffset(&label, 0, base::ASCIIToUTF16("&&"),
@@ -108,7 +111,7 @@ base::ListValue* NetworkMenuWebUI::ConvertMenuModel(ui::MenuModel* model) {
     }
     if (type == ui::MenuModel::TYPE_SUBMENU)
       item->Set("sub", ConvertMenuModel(model->GetSubmenuModelAt(i)));
-    list->Append(item);
+    list->Append(std::move(item));
   }
   return list;
 }

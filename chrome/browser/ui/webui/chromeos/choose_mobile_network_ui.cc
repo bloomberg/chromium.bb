@@ -6,14 +6,17 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <set>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
@@ -189,7 +192,7 @@ void ChooseMobileNetworkHandler::DeviceListChanged() {
     // Register API doesn't allow technology to be specified so just show unique
     // network in UI.
     if (network_ids.insert(it->network_id).second) {
-      base::DictionaryValue* network = new base::DictionaryValue();
+      auto network = base::MakeUnique<base::DictionaryValue>();
       network->SetString(kNetworkIdProperty, it->network_id);
       if (!it->long_name.empty())
         network->SetString(kOperatorNameProperty, it->long_name);
@@ -199,7 +202,7 @@ void ChooseMobileNetworkHandler::DeviceListChanged() {
         network->SetString(kOperatorNameProperty, it->network_id);
       network->SetString(kStatusProperty, it->status);
       network->SetString(kTechnologyProperty, it->technology);
-      networks_list_.Append(network);
+      networks_list_.Append(std::move(network));
     }
   }
   if (is_page_ready_) {
