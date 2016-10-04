@@ -5,6 +5,7 @@
 package org.chromium.content.browser.input;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -49,27 +50,36 @@ public class SelectPopupAdapter extends ArrayAdapter<SelectPopupItem> {
     public View getView(int position, View convertView, ViewGroup parent) {
         if (position < 0 || position >= getCount()) return null;
 
-        // Always pass in null so that we will get a new CheckedTextView. Otherwise, an item
-        // which was previously used as an <optgroup> element (i.e. has no check), could get
-        // used as an <option> element, which needs a checkbox/radio, but it would not have
-        // one.
-        convertView = super.getView(position, null, parent);
+        convertView = super.getView(position, convertView, parent);
         ((TextView) convertView).setText(mItems.get(position).getLabel());
 
-        if (mItems.get(position).getType() != PopupItemType.ENABLED) {
+        // Currently select_dialog_(single|multi)choice uses CheckedTextViews.
+        // If that changes, the class cast will no longer be valid.
+        // The WebView build cannot rely on this being the case, so
+        // we must check.
+        if (convertView instanceof CheckedTextView) {
+            // <optgroup> elements do not have check marks. If an item previously used as an
+            // <optgroup> gets reused for a non-<optgroup> element, we need to get the check mark
+            // back. Inflating a new View from XML can be slow, for both the inflation part and GC
+            // afterwards. Even creating a new Drawable can be tricky, considering getting the
+            // check/radio type and theme right.
+            // Saving the previously removed Drawables and reuse them when needed is faster,
+            // and the memory implication should be fine.
+            CheckedTextView view = (CheckedTextView) convertView;
             if (mItems.get(position).getType() == PopupItemType.GROUP) {
-                // Currently select_dialog_multichoice uses CheckedTextViews.
-                // If that changes, the class cast will no longer be valid.
-                // The WebView build cannot rely on this being the case, so
-                // we must check.
-                if (convertView instanceof CheckedTextView) {
-                    ((CheckedTextView) convertView).setCheckMarkDrawable(null);
+                if (view.getCheckMarkDrawable() != null) {
+                    view.setTag(view.getCheckMarkDrawable());
+                    view.setCheckMarkDrawable(null);
                 }
             } else {
-                // Draw the disabled element in a disabled state.
-                convertView.setEnabled(false);
+                if (view.getCheckMarkDrawable() == null) {
+                    view.setCheckMarkDrawable((Drawable) view.getTag());
+                }
             }
         }
+        // Draw the disabled element in a disabled state.
+        convertView.setEnabled(mItems.get(position).getType() != PopupItemType.DISABLED);
+
         return convertView;
     }
 
