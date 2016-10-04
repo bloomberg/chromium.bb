@@ -80,6 +80,17 @@ class CORE_EXPORT SVGAnimateElement : public SVGAnimationElement {
  private:
   void resetAnimatedPropertyType();
 
+  enum ShouldApplyAnimationType {
+    DontApplyAnimation,
+    ApplyCSSAnimation,
+    ApplyXMLAnimation,
+    ApplyXMLandCSSAnimation
+  };
+
+  ShouldApplyAnimationType shouldApplyAnimation(
+      SVGElement* targetElement,
+      const QualifiedName& attributeName);
+
   bool hasValidAttributeType() override;
 
   SVGPropertyBase* adjustForInheritance(SVGPropertyBase*,

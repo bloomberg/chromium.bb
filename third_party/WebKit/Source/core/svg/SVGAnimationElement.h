@@ -76,17 +76,6 @@ class CORE_EXPORT SVGAnimationElement : public SVGSMILElement {
   AnimationMode getAnimationMode() const { return m_animationMode; }
   CalcMode getCalcMode() const { return m_calcMode; }
 
-  enum ShouldApplyAnimationType {
-    DontApplyAnimation,
-    ApplyCSSAnimation,
-    ApplyXMLAnimation,
-    ApplyXMLandCSSAnimation
-  };
-
-  ShouldApplyAnimationType shouldApplyAnimation(
-      SVGElement* targetElement,
-      const QualifiedName& attributeName);
-
   template <typename AnimatedType>
   void animateDiscreteType(float percentage,
                            const AnimatedType& fromType,

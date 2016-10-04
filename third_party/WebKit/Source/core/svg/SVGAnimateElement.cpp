@@ -112,6 +112,30 @@ bool SVGAnimateElement::hasValidAttributeType() {
          !hasInvalidCSSAttributeType();
 }
 
+SVGAnimateElement::ShouldApplyAnimationType
+SVGAnimateElement::shouldApplyAnimation(SVGElement* targetElement,
+                                        const QualifiedName& attributeName) {
+  if (!hasValidAttributeType() || attributeName == anyQName() ||
+      !targetElement || !targetElement->inActiveDocument() ||
+      !targetElement->parentNode())
+    return DontApplyAnimation;
+
+  // Always animate CSS properties using the ApplyCSSAnimation code path,
+  // regardless of the attributeType value.
+  if (isTargetAttributeCSSProperty(targetElement, attributeName)) {
+    if (targetElement->isPresentationAttributeWithSVGDOM(attributeName))
+      return ApplyXMLandCSSAnimation;
+
+    return ApplyCSSAnimation;
+  }
+  // If attributeType="CSS" and attributeName doesn't point to a CSS property,
+  // ignore the animation.
+  if (getAttributeType() == AttributeTypeCSS)
+    return DontApplyAnimation;
+
+  return ApplyXMLAnimation;
+}
+
 SVGPropertyBase* SVGAnimateElement::adjustForInheritance(
     SVGPropertyBase* propertyValue,
     AnimatedPropertyValueType valueType) const {
