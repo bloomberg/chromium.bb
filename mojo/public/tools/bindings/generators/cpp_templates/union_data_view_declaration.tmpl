@@ -31,7 +31,7 @@ class {{union.name}}DataView {
       {{kind|cpp_data_view_type}}* output);
 
   template <typename UserType>
-  bool Read{{name|under_to_camel}}(UserType* output) {
+  WARN_UNUSED_RESULT bool Read{{name|under_to_camel}}(UserType* output) {
     DCHECK(is_{{name}}());
     return mojo::internal::Deserialize<{{kind|unmapped_type_for_serializer}}>(
         data_->data.f_{{name}}.Get(), output, context_);
@@ -39,7 +39,7 @@ class {{union.name}}DataView {
 
 {%-   elif kind|is_enum_kind %}
   template <typename UserType>
-  bool Read{{name|under_to_camel}}(UserType* output) const {
+  WARN_UNUSED_RESULT bool Read{{name|under_to_camel}}(UserType* output) const {
     DCHECK(is_{{name}}());
     return mojo::internal::Deserialize<{{kind|unmapped_type_for_serializer}}>(
         data_->data.f_{{name}}, output);

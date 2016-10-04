@@ -34,6 +34,8 @@ namespace mojo {
 std::vector<uint8_t>
 StructTraits<arc::mojom::BluetoothUUIDDataView, device::BluetoothUUID>::uuid(
     const device::BluetoothUUID& input) {
+  // TODO(dcheng): Figure out what to do here, this is called twice on
+  // serialization. Building a vector is a little inefficient.
   std::string uuid_str = StripNonHex(input.canonical_value());
 
   std::vector<uint8_t> address_bytes;
@@ -47,7 +49,8 @@ bool StructTraits<arc::mojom::BluetoothUUIDDataView,
     arc::mojom::BluetoothUUIDDataView data,
     device::BluetoothUUID* output) {
   std::vector<uint8_t> address_bytes;
-  data.ReadUuid(&address_bytes);
+  if (!data.ReadUuid(&address_bytes))
+    return false;
 
   if (address_bytes.size() != kUUIDSize)
     return false;

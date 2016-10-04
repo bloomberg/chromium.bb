@@ -21,12 +21,12 @@ class {{struct.name}}DataView {
       {{kind|cpp_data_view_type}}* output);
 
   template <typename UserType>
-  bool Read{{name|under_to_camel}}(UserType* output) {
+  WARN_UNUSED_RESULT bool Read{{name|under_to_camel}}(UserType* output) {
 {%-     if pf.min_version != 0 %}
-    auto pointer = data_->header_.version >= {{pf.min_version}}
-                   ? &data_->{{name}} : nullptr;
+    auto* pointer = data_->header_.version >= {{pf.min_version}}
+                    ? &data_->{{name}} : nullptr;
 {%-     else %}
-    auto pointer = &data_->{{name}};
+    auto* pointer = &data_->{{name}};
 {%-     endif %}
     return mojo::internal::Deserialize<{{kind|unmapped_type_for_serializer}}>(
         pointer, output, context_);
@@ -37,12 +37,12 @@ class {{struct.name}}DataView {
       {{kind|cpp_data_view_type}}* output);
 
   template <typename UserType>
-  bool Read{{name|under_to_camel}}(UserType* output) {
+  WARN_UNUSED_RESULT bool Read{{name|under_to_camel}}(UserType* output) {
 {%-     if pf.min_version != 0 %}
-    auto pointer = data_->header_.version >= {{pf.min_version}}
-                   ? data_->{{name}}.Get() : nullptr;
+    auto* pointer = data_->header_.version >= {{pf.min_version}}
+                    ? data_->{{name}}.Get() : nullptr;
 {%-     else %}
-    auto pointer = data_->{{name}}.Get();
+    auto* pointer = data_->{{name}}.Get();
 {%-     endif %}
     return mojo::internal::Deserialize<{{kind|unmapped_type_for_serializer}}>(
         pointer, output, context_);
@@ -50,7 +50,7 @@ class {{struct.name}}DataView {
 
 {%-   elif kind|is_enum_kind %}
   template <typename UserType>
-  bool Read{{name|under_to_camel}}(UserType* output) const {
+  WARN_UNUSED_RESULT bool Read{{name|under_to_camel}}(UserType* output) const {
 {%-     if pf.min_version != 0 %}
     auto data_value = data_->header_.version >= {{pf.min_version}}
                       ? data_->{{name}} : 0;
