@@ -8,7 +8,7 @@ option optimize_for = LITE_RUNTIME;
 
 package metrics;
 
-// Next tag: 7
+// Next tag: 10
 message MemoryLeakReportProto {
   // The call stack at which the leak was found. This is a list of offsets
   // within the program binary. The first entry is the deepest level of the call
@@ -102,4 +102,39 @@ message MemoryLeakReportProto {
   // allocation. The oldest record is at the beginning. The most recent record,
   // taken at the time the report was generated, is at the end.
   repeated AllocationBreakdown alloc_breakdown_history = 4;
+
+  // The following two fields describe the last increasing trend in the number
+  // of allocations from the size and call stack that generated this
+  // leak report.
+  //
+  // |num_rising_intervals| equals timeslot_now - timeslot_drop,
+  // where timeslot_drop is the timeslot number of the last frame that saw
+  // a drop in the number of allocations (or 0 if there were no drops).
+  // If it is < 32, it will be visible in the allocation history graph.
+  // If it is >= 32, it will not be seen in the graph.
+  // E.g. for history [3,2,4,4,7] |num_rising_intervals| equals 3.
+  optional uint32 num_rising_intervals = 7;
+
+  // Indicates the magnitude of the current uptrend in allocations.
+  // E.g. for history [3,2,4,4,7] |num_allocs_increase| equals 5.
+  optional uint32 num_allocs_increase = 8;
+
+  //////////////////////////////////////////////////////////////////////////////
+
+  // Contains additional data about the memory usage from the OS.
+  // There is no need to store the total system memory as it is
+  // available under SystemProfileProto::Hardware::system_ram_mb.
+  //
+  // Next tag: 3
+  message MemoryUsageInfo {
+    // How much available physical memory the system has.
+    optional uint64 available_ram_mb = 1;
+
+    // Total private working set memory across all Chrome processes.
+    optional uint64 chrome_ram_usage_mb = 2;
+  }
+
+  // Information about the memory usage from the OS collected right after
+  // the leak report was created in the leak detector.
+  optional MemoryUsageInfo memory_usage_info = 9;
 }
