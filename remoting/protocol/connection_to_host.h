@@ -9,7 +9,12 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "remoting/protocol/errors.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}  // namespace base
 
 namespace remoting {
 namespace protocol {
@@ -71,8 +76,13 @@ class ConnectionToHost {
   virtual void set_client_stub(ClientStub* client_stub) = 0;
   virtual void set_clipboard_stub(ClipboardStub* clipboard_stub) = 0;
   virtual void set_video_renderer(VideoRenderer* video_renderer) = 0;
-  // If no audio stub is specified then audio will not be requested.
-  virtual void set_audio_stub(AudioStub* audio_stub) = 0;
+
+  // Initializes audio stream. Must be called before Connect().
+  // |audio_decode_task_runner| will be used for audio decoding. |audio_stub|
+  // will be called on the main thread.
+  virtual void InitializeAudio(
+      scoped_refptr<base::SingleThreadTaskRunner> audio_decode_task_runner,
+      base::WeakPtr<AudioStub> audio_stub) = 0;
 
   // Initiates a connection using |session|. |event_callback| will be notified
   // of changes in the state of the connection and must outlive the

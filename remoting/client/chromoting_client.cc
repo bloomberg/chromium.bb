@@ -9,8 +9,6 @@
 #include "base/memory/ptr_util.h"
 #include "remoting/base/capabilities.h"
 #include "remoting/base/constants.h"
-#include "remoting/client/audio_consumer.h"
-#include "remoting/client/audio_decode_scheduler.h"
 #include "remoting/client/client_context.h"
 #include "remoting/client/client_user_interface.h"
 #include "remoting/protocol/authenticator.h"
@@ -28,17 +26,16 @@
 
 namespace remoting {
 
-ChromotingClient::ChromotingClient(ClientContext* client_context,
-                                   ClientUserInterface* user_interface,
-                                   protocol::VideoRenderer* video_renderer,
-                                   base::WeakPtr<AudioConsumer> audio_consumer)
+ChromotingClient::ChromotingClient(
+    ClientContext* client_context,
+    ClientUserInterface* user_interface,
+    protocol::VideoRenderer* video_renderer,
+    base::WeakPtr<protocol::AudioStub> audio_consumer)
     : user_interface_(user_interface), video_renderer_(video_renderer) {
   DCHECK(client_context->main_task_runner()->BelongsToCurrentThread());
-  if (audio_consumer) {
-    audio_decode_scheduler_.reset(new AudioDecodeScheduler(
-        client_context->main_task_runner(),
-        client_context->audio_decode_task_runner(), audio_consumer));
-  }
+
+  audio_decode_task_runner_ = client_context->audio_decode_task_runner();
+  audio_consumer_ = audio_consumer;
 }
 
 ChromotingClient::~ChromotingClient() {
@@ -70,7 +67,7 @@ void ChromotingClient::Start(
 
   if (!protocol_config_)
     protocol_config_ = protocol::CandidateSessionConfig::CreateDefault();
-  if (!audio_decode_scheduler_)
+  if (!audio_consumer_)
     protocol_config_->DisableAudioChannel();
 
   if (!connection_) {
@@ -89,7 +86,8 @@ void ChromotingClient::Start(
   connection_->set_client_stub(this);
   connection_->set_clipboard_stub(this);
   connection_->set_video_renderer(video_renderer_);
-  connection_->set_audio_stub(audio_decode_scheduler_.get());
+
+  connection_->InitializeAudio(audio_decode_task_runner_, audio_consumer_);
 
   session_manager_.reset(new protocol::JingleSessionManager(signal_strategy));
   session_manager_->set_protocol_config(std::move(protocol_config_));
@@ -199,9 +197,7 @@ void ChromotingClient::OnConnectionState(
   DCHECK(thread_checker_.CalledOnValidThread());
   VLOG(1) << "ChromotingClient::OnConnectionState(" << state << ")";
 
-  if (state == protocol::ConnectionToHost::AUTHENTICATED) {
-    OnAuthenticated();
-  } else if (state == protocol::ConnectionToHost::CONNECTED) {
+  if (state == protocol::ConnectionToHost::CONNECTED) {
     OnChannelsConnected();
   }
   user_interface_->OnConnectionState(state, error);
@@ -251,14 +247,6 @@ void ChromotingClient::StartConnection() {
                          NormalizeJid(signal_strategy_->GetLocalJid()),
                          host_jid_, client_auth_config_)),
       transport_context_, this);
-}
-
-void ChromotingClient::OnAuthenticated() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  // Initialize the decoder.
-  if (connection_->config().is_audio_enabled())
-    audio_decode_scheduler_->Initialize(connection_->config());
 }
 
 void ChromotingClient::OnChannelsConnected() {

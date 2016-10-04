@@ -37,7 +37,9 @@ class WebrtcConnectionToHost : public ConnectionToHost,
   void set_client_stub(ClientStub* client_stub) override;
   void set_clipboard_stub(ClipboardStub* clipboard_stub) override;
   void set_video_renderer(VideoRenderer* video_renderer) override;
-  void set_audio_stub(AudioStub* audio_stub) override;
+  void InitializeAudio(
+      scoped_refptr<base::SingleThreadTaskRunner> audio_decode_task_runner,
+      base::WeakPtr<AudioStub> audio_stub) override;
   void Connect(std::unique_ptr<Session> session,
                scoped_refptr<TransportContext> transport_context,
                HostEventCallback* event_callback) override;

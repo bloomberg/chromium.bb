@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "remoting/base/constants.h"
+#include "remoting/protocol/audio_decode_scheduler.h"
 #include "remoting/protocol/audio_reader.h"
 #include "remoting/protocol/audio_stub.h"
 #include "remoting/protocol/auth_util.h"
@@ -79,8 +80,11 @@ void IceConnectionToHost::set_video_renderer(VideoRenderer* video_renderer) {
   video_renderer_ = video_renderer;
 }
 
-void IceConnectionToHost::set_audio_stub(AudioStub* audio_stub) {
-  audio_stub_ = audio_stub;
+void IceConnectionToHost::InitializeAudio(
+    scoped_refptr<base::SingleThreadTaskRunner> audio_decode_task_runner,
+    base::WeakPtr<AudioStub> audio_stub) {
+  audio_decode_scheduler_.reset(
+      new AudioDecodeScheduler(audio_decode_task_runner, audio_stub));
 }
 
 void IceConnectionToHost::OnSessionStateChange(Session::State state) {
@@ -124,8 +128,9 @@ void IceConnectionToHost::OnSessionStateChange(Session::State state) {
 
       // Configure audio pipeline if necessary.
       if (session_->config().is_audio_enabled()) {
-        audio_reader_.reset(new AudioReader(audio_stub_));
+        audio_reader_.reset(new AudioReader(audio_decode_scheduler_.get()));
         audio_reader_->Init(transport_->GetMultiplexedChannelFactory(), this);
+        audio_decode_scheduler_->Initialize(session_->config());
       }
       break;
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/client/audio_decode_scheduler.h"
+#include "remoting/protocol/audio_decode_scheduler.h"
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
@@ -10,19 +10,41 @@
 #include "base/threading/thread.h"
 #include "remoting/base/auto_thread.h"
 #include "remoting/base/auto_thread_task_runner.h"
-#include "remoting/client/fake_audio_consumer.h"
 #include "remoting/proto/audio.pb.h"
 #include "remoting/protocol/session_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace remoting {
+namespace protocol {
 
 namespace {
 
 const int kAudioSampleBytes = 4;
 const uint8_t kDummyAudioData = 0x8B;
 
-}  // namespace
+class FakeAudioConsumer : public AudioStub {
+ public:
+  FakeAudioConsumer(): weak_factory_(this) {}
+  ~FakeAudioConsumer() override {}
 
-namespace remoting {
+  base::WeakPtr<FakeAudioConsumer> GetWeakPtr(){
+    return weak_factory_.GetWeakPtr();
+  }
+
+  // AudioStub implementation.
+  void ProcessAudioPacket(std::unique_ptr<AudioPacket> packet,
+                          const base::Closure& done) override {
+    if (!done.is_null())
+      done.Run();
+  }
+
+ private:
+  base::WeakPtrFactory<FakeAudioConsumer> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeAudioConsumer);
+};
+
+}  // namespace
 
 class AudioDecodeSchedulerTest : public ::testing::Test {
  public:
@@ -36,14 +58,14 @@ class AudioDecodeSchedulerTest : public ::testing::Test {
   base::RunLoop run_loop_;
   scoped_refptr<AutoThreadTaskRunner> audio_decode_task_runner_;
   scoped_refptr<AutoThreadTaskRunner> main_task_runner_;
-  std::unique_ptr<protocol::SessionConfig> session_config_;
+  std::unique_ptr<SessionConfig> session_config_;
 };
 
 void AudioDecodeSchedulerTest::SetUp() {
   main_task_runner_ = new AutoThreadTaskRunner(message_loop_.task_runner(),
                                                run_loop_.QuitClosure());
   audio_decode_task_runner_ = AutoThread::Create("decode", main_task_runner_);
-  session_config_ = protocol::SessionConfig::ForTestWithAudio();
+  session_config_ = SessionConfig::ForTestWithAudio();
 }
 
 void AudioDecodeSchedulerTest::TearDown() {
@@ -87,7 +109,7 @@ std::unique_ptr<AudioPacket> CreatePacket48000Hz_(int samples) {
 TEST_F(AudioDecodeSchedulerTest, Shutdown) {
   std::unique_ptr<FakeAudioConsumer> audio_consumer(new FakeAudioConsumer());
   std::unique_ptr<AudioDecodeScheduler> audio_scheduler(
-      new AudioDecodeScheduler(main_task_runner_, audio_decode_task_runner_,
+      new AudioDecodeScheduler(audio_decode_task_runner_,
                                audio_consumer->GetWeakPtr()));
 
   audio_scheduler->Initialize(*session_config_);
@@ -101,4 +123,5 @@ TEST_F(AudioDecodeSchedulerTest, Shutdown) {
   // a count of the calls to AddAudioPacket.
 }
 
+}  // namespace protocol
 }  // namespace remoting

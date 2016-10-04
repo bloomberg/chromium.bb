@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -117,28 +118,28 @@ std::unique_ptr<AudioPacket> CreatePacket48000Hz(int samples) {
 TEST_F(AudioPlayerTest, Init) {
   ASSERT_EQ(0, GetNumQueuedPackets());
 
-  audio_->AddAudioPacket(CreatePacket44100Hz(10));
+  audio_->ProcessAudioPacket(CreatePacket44100Hz(10), base::Closure());
   ASSERT_EQ(1, GetNumQueuedPackets());
 }
 
 TEST_F(AudioPlayerTest, MultipleSamples) {
-  audio_->AddAudioPacket(CreatePacket44100Hz(10));
+  audio_->ProcessAudioPacket(CreatePacket44100Hz(10), base::Closure());
   ASSERT_EQ(10, GetNumQueuedSamples());
   ASSERT_EQ(1, GetNumQueuedPackets());
 
-  audio_->AddAudioPacket(CreatePacket44100Hz(20));
+  audio_->ProcessAudioPacket(CreatePacket44100Hz(20), base::Closure());
   ASSERT_EQ(30, GetNumQueuedSamples());
   ASSERT_EQ(2, GetNumQueuedPackets());
 }
 
 TEST_F(AudioPlayerTest, ChangeSampleRate) {
-  audio_->AddAudioPacket(CreatePacket44100Hz(10));
+  audio_->ProcessAudioPacket(CreatePacket44100Hz(10), base::Closure());
   ASSERT_EQ(10, GetNumQueuedSamples());
   ASSERT_EQ(1, GetNumQueuedPackets());
 
   // New packet with different sampling rate causes previous samples to
   // be removed.
-  audio_->AddAudioPacket(CreatePacket48000Hz(20));
+  audio_->ProcessAudioPacket(CreatePacket48000Hz(20), base::Closure());
   ASSERT_EQ(20, GetNumQueuedSamples());
   ASSERT_EQ(1, GetNumQueuedPackets());
 }
@@ -146,7 +147,7 @@ TEST_F(AudioPlayerTest, ChangeSampleRate) {
 TEST_F(AudioPlayerTest, ExceedLatency) {
   // Push about 4 seconds worth of samples.
   for (int i = 0; i < 100; ++i) {
-    audio_->AddAudioPacket(CreatePacket48000Hz(2000));
+    audio_->ProcessAudioPacket(CreatePacket48000Hz(2000), base::Closure());
   }
 
   // Verify that we don't have more than 0.5s.
@@ -162,7 +163,8 @@ TEST_F(AudioPlayerTest, ConsumePartialPacket) {
   // Process 100 samples.
   int packet1_samples = 100;
   total_samples += packet1_samples;
-  audio_->AddAudioPacket(CreatePacket44100Hz(packet1_samples));
+  audio_->ProcessAudioPacket(CreatePacket44100Hz(packet1_samples),
+                             base::Closure());
   ASSERT_EQ(total_samples, GetNumQueuedSamples());
   ASSERT_EQ(1, GetNumQueuedPackets());
   ASSERT_EQ(bytes_consumed, GetBytesConsumed());
@@ -190,13 +192,15 @@ TEST_F(AudioPlayerTest, ConsumeAcrossPackets) {
   // Packet 1.
   int packet1_samples = 20;
   total_samples += packet1_samples;
-  audio_->AddAudioPacket(CreatePacket44100Hz(packet1_samples));
+  audio_->ProcessAudioPacket(CreatePacket44100Hz(packet1_samples),
+                             base::Closure());
   ASSERT_EQ(total_samples, GetNumQueuedSamples());
 
   // Packet 2.
   int packet2_samples = 70;
   total_samples += packet2_samples;
-  audio_->AddAudioPacket(CreatePacket44100Hz(packet2_samples));
+  audio_->ProcessAudioPacket(CreatePacket44100Hz(packet2_samples),
+                             base::Closure());
   ASSERT_EQ(total_samples, GetNumQueuedSamples());
   ASSERT_EQ(bytes_consumed, GetBytesConsumed());
 
@@ -233,14 +237,16 @@ TEST_F(AudioPlayerTest, ConsumeEntirePacket) {
   // Packet 1.
   int packet1_samples = 50;
   total_samples += packet1_samples;
-  audio_->AddAudioPacket(CreatePacket44100Hz(packet1_samples));
+  audio_->ProcessAudioPacket(CreatePacket44100Hz(packet1_samples),
+                             base::Closure());
   ASSERT_EQ(total_samples, GetNumQueuedSamples());
   ASSERT_EQ(bytes_consumed, GetBytesConsumed());
 
   // Packet 2.
   int packet2_samples = 30;
   total_samples += packet2_samples;
-  audio_->AddAudioPacket(CreatePacket44100Hz(packet2_samples));
+  audio_->ProcessAudioPacket(CreatePacket44100Hz(packet2_samples),
+                             base::Closure());
   ASSERT_EQ(total_samples, GetNumQueuedSamples());
   ASSERT_EQ(bytes_consumed, GetBytesConsumed());
 
@@ -299,7 +305,8 @@ TEST_F(AudioPlayerTest, NotEnoughDataToConsume) {
   // Packet 1.
   int packet1_samples = 10;
   total_samples += packet1_samples;
-  audio_->AddAudioPacket(CreatePacket44100Hz(packet1_samples));
+  audio_->ProcessAudioPacket(CreatePacket44100Hz(packet1_samples),
+                             base::Closure());
   ASSERT_EQ(total_samples, GetNumQueuedSamples());
   ASSERT_EQ(bytes_consumed, GetBytesConsumed());
 

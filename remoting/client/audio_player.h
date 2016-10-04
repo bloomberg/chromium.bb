@@ -13,12 +13,12 @@
 
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
-#include "remoting/client/audio_consumer.h"
 #include "remoting/proto/audio.pb.h"
+#include "remoting/protocol/audio_stub.h"
 
 namespace remoting {
 
-class AudioPlayer : public AudioConsumer {
+class AudioPlayer : public protocol::AudioStub {
  public:
   // The number of channels in the audio stream (only supporting stereo audio
   // for now).
@@ -27,8 +27,9 @@ class AudioPlayer : public AudioConsumer {
 
   ~AudioPlayer() override;
 
-  // AudioConsumer implementation.
-  void AddAudioPacket(std::unique_ptr<AudioPacket> packet) override;
+  // protocol::AudioStub implementation.
+  void ProcessAudioPacket(std::unique_ptr<AudioPacket> packet,
+                          const base::Closure& done) override;
 
  protected:
   AudioPlayer();

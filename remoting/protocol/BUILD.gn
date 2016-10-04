@@ -6,6 +6,8 @@ import("//build/config/features.gni")
 
 static_library("protocol") {
   sources = [
+    "audio_decode_scheduler.cc",
+    "audio_decode_scheduler.h",
     "audio_pump.cc",
     "audio_pump.h",
     "audio_reader.cc",
@@ -273,6 +275,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "audio_decode_scheduler_unittest.cc",
     "audio_pump_unittest.cc",
     "authenticator_test_base.cc",
     "authenticator_test_base.h",

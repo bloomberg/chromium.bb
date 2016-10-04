@@ -72,7 +72,9 @@ void WebrtcConnectionToHost::set_video_renderer(VideoRenderer* video_renderer) {
   video_renderer_ = video_renderer;
 }
 
-void WebrtcConnectionToHost::set_audio_stub(AudioStub* audio_stub) {
+void WebrtcConnectionToHost::InitializeAudio(
+    scoped_refptr<base::SingleThreadTaskRunner> audio_decode_task_runner,
+    base::WeakPtr<AudioStub> audio_stub) {
   NOTIMPLEMENTED();
 }
 

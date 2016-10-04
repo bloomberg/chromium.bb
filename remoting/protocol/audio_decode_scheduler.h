@@ -1,15 +1,16 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_CLIENT_AUDIO_DECODE_SCHEDULER_H_
-#define REMOTING_CLIENT_AUDIO_DECODE_SCHEDULER_H_
+#ifndef REMOTING_PROTOCOL_AUDIO_DECODE_SCHEDULER_H_
+#define REMOTING_PROTOCOL_AUDIO_DECODE_SCHEDULER_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "remoting/protocol/audio_stub.h"
 
 namespace base {
@@ -18,20 +19,19 @@ class SingleThreadTaskRunner;
 
 namespace remoting {
 
-namespace protocol {
-class SessionConfig;
-}  // namespace protocol
-
-class AudioConsumer;
 class AudioDecoder;
 class AudioPacket;
 
-class AudioDecodeScheduler : public protocol::AudioStub {
+namespace protocol {
+
+class SessionConfig;
+class AudioStub;
+
+class AudioDecodeScheduler : public AudioStub {
  public:
   AudioDecodeScheduler(
-      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> audio_decode_task_runner,
-      base::WeakPtr<AudioConsumer> audio_consumer);
+      base::WeakPtr<AudioStub> audio_consumer);
   ~AudioDecodeScheduler() override;
 
   // Initializes decoder with the information from the protocol config.
@@ -42,13 +42,23 @@ class AudioDecodeScheduler : public protocol::AudioStub {
                           const base::Closure& done) override;
 
  private:
-  class Core;
+  void ProcessDecodedPacket(const base::Closure& done,
+                            std::unique_ptr<AudioPacket> packet);
 
-  scoped_refptr<Core> core_;
+  scoped_refptr<base::SingleThreadTaskRunner> audio_decode_task_runner_;
+  base::WeakPtr<AudioStub> audio_consumer_;
+
+  // Decoder used on the audio thread.
+  std::unique_ptr<AudioDecoder> decoder_;
+
+  base::ThreadChecker thread_checker_;
+
+  base::WeakPtrFactory<AudioDecodeScheduler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioDecodeScheduler);
 };
 
+}  // namespace protocol
 }  // namespace remoting
 
-#endif  // REMOTING_CLIENT_AUDIO_DECODE_SCHEDULER_H_
+#endif  // REMOTING_PROTOCOL_AUDIO_DECODE_SCHEDULER_H_
