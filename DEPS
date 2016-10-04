@@ -930,6 +930,7 @@ hooks = [
                '--output-dir=src/third_party/syzygy/binaries',
                '--revision=ba2ce2c31c16fe53b337121ec480fc5d4dfb4eec',
                '--overwrite',
+               '--copy-dia-binaries',
     ],
   },
   # TODO(pmonette): Move include files out of binaries folder.
