@@ -80,7 +80,6 @@
 <translation id="1871208020102129563">ప్రాక్సీ స్థిరమైన ప్రాక్సీ సర్వర్‌లను ఉపయోగించడానికి సెట్ చేయబడింది, .pac స్క్రిప్ట్ URLను కాదు.</translation>
 <translation id="1883255238294161206">జాబితాను కుదించు</translation>
 <translation id="1898423065542865115">ఫిల్టరింగ్</translation>
-<translation id="1911837502049945214"><ph name="HOST_NAME" /> మీ లాగిన్ ప్రమాణపత్రాన్ని ఆమోదించలేదు లేదా మీ లాగిన్ ప్రమాణపత్రం గడువు ముగిసి ఉండవచ్చు.</translation>
 <translation id="194030505837763158"><ph name="LINK" />కి వెళ్లండి</translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" /> బుక్‌మార్క్‌లు</translation>
 <translation id="1973335181906896915">శ్రేణిగా రూపొందించడంలో లోపం</translation>
@@ -176,7 +175,6 @@
 <translation id="2837049386027881519">కనెక్షన్‌ను TLS లేదా SSL ప్రోటోకాల్ యొక్క పాత సంస్కరణను ఉపయోగించి మళ్లీ ప్రయత్నించండి. సర్వర్ చాలా పాత సాఫ్ట్‌వేర్‌ను ఉపయోగిస్తోందని మరియు ఇతర భద్రతా సమస్యలు ఉండవచ్చని సాధారణంగా దీని అర్థం.</translation>
 <translation id="284702764277384724"><ph name="HOST_NAME" />లో సర్వర్ ప్రమాణపత్రం నకిలీదిగా కనిపిస్తోంది.</translation>
 <translation id="2889159643044928134">మళ్లీ లోడ్ చేయవద్దు</translation>
-<translation id="2896499918916051536">ఈ ప్లగిన్‌కు మద్దతు లేదు.</translation>
 <translation id="2900469785430194048">Google Chrome ఈ వెబ్‌పేజీని ప్రదర్శించడానికి ప్రయత్నిస్తున్నప్పుడు మెమరీ అయిపోయింది.</translation>
 <translation id="2909946352844186028">నెట్‌వర్క్ మార్పు గుర్తించబడింది.</translation>
 <translation id="2922350208395188000">సర్వర్ యొక్క ప్రమాణపత్రం తనిఖీ చెయ్యబడదు.</translation>
@@ -220,6 +218,7 @@
 <translation id="3286538390144397061">ఇప్పుడు పునఃప్రారంభించండి</translation>
 <translation id="3305707030755673451"><ph name="TIME" />న మీ సమకాలీకరణ రహస్య పదబంధంతో మీ డేటా గుప్తీకరించబడింది. సమకాలీకరణను ప్రారంభించడానికి దీన్ని నమోదు చేయండి.</translation>
 <translation id="333371639341676808">అదనపు డైలాగ్‌లను సృష్టించకుండా ఈ పేజీని అడ్డుకో</translation>
+<translation id="3338095232262050444">సురక్షితం</translation>
 <translation id="3340978935015468852">సెట్టింగ్‌లు</translation>
 <translation id="3345135638360864351">ఈ సైట్‌ని ప్రాప్యత చేయడానికి మీరు చేసిన అభ్యర్థన <ph name="NAME" />కి పంపబడలేదు. దయచేసి మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="3355823806454867987">ప్రాక్సీ సెట్టింగ్‌లను మార్చు...</translation>
@@ -322,6 +321,7 @@
 <translation id="4304224509867189079">లాగిన్</translation>
 <translation id="432290197980158659">సర్వర్ అంతర్నిర్మిత అంచనాలకు సరిపోలని ప్రమాణపత్రాన్ని అందించింది. మిమ్మల్ని సంరక్షించే దిశగా నిర్ధిష్ట, ఉన్నత స్థాయి భద్రతా వెబ్‌సైట్‌ల కోసం ఈ అంచనాలు చేర్చబడ్డాయి. <ph name="BEGIN_LEARN_MORE_LINK" />మరింత తెలుసుకోండి<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4325863107915753736">కథనాన్ని కనుగొనడం విఫలమైంది</translation>
+<translation id="4331708818696583467">సురక్షితం కాదు</translation>
 <translation id="4372948949327679948">ఆశిస్తున్న <ph name="VALUE_TYPE" /> విలువ.</translation>
 <translation id="4381091992796011497">యూజర్ పేరు:</translation>
 <translation id="4394049700291259645">ఆపివెయ్యి</translation>
@@ -341,6 +341,7 @@
 <translation id="4589078953350245614">మీరు <ph name="DOMAIN" />కి కనెక్ట్ కావడానికి ప్రయత్నించారు, కానీ సర్వర్ ఒక చెల్లుబాటు కాని ప్రమాణపత్రాన్ని అందించింది. <ph name="BEGIN_LEARN_MORE_LINK" />మరింత తెలుసుకోండి<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4592951414987517459"><ph name="DOMAIN" />కి గల మీ కనెక్షన్ ఆధునిక సైఫర్ సూట్ ఉపయోగించి గుప్తీకరించబడింది.</translation>
 <translation id="4594403342090139922">&amp;తొలగించడాన్ని రద్దు చేయి</translation>
+<translation id="4627442949885028695">మరో పరికరం నుండి కొనసాగించండి</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">మీరు పొడిగింపు పేజీని వీక్షిస్తున్నారు.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -383,7 +384,6 @@
 <translation id="5089810972385038852">రాష్ట్రం</translation>
 <translation id="5095208057601539847">ప్రావిన్స్</translation>
 <translation id="5115563688576182185">(64-బిట్)</translation>
-<translation id="5122371513570456792">'<ph name="SEARCH_STRING" />' కోసం <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> కనుగొనబడ్డాయి.</translation>
 <translation id="5141240743006678641">మీ Google ఆధారాలతో సమకాలీకరించబడిన పాస్‌వర్డ్‌లను గుప్తీకరించండి</translation>
 <translation id="5145883236150621069">విధాన ప్రతిస్పందనలో లోపం కోడ్ ఉంది</translation>
 <translation id="5171045022955879922">URLను శోధించండి లేదా టైప్ చేయండి</translation>
@@ -425,7 +425,6 @@
 <translation id="5622887735448669177">మీరు ఈ సైట్‌ నుండి నిష్క్రమించాలనుకుంటున్నారా?</translation>
 <translation id="5629630648637658800">విధాన సెట్టింగ్‌లను లోడ్ చేయడంలో విఫలమైంది</translation>
 <translation id="5631439013527180824">చెల్లని పరికర నిర్వహణ టోకెన్</translation>
-<translation id="5650551054760837876">శోధన ఫలితాలు ఏవీ దొరకలేదు.</translation>
 <translation id="5677928146339483299">బ్లాక్ చెయ్యబడింది</translation>
 <translation id="5710435578057952990">ఈ వెబ్‍‌సైట్ యొక్క గుర్తింపు నిర్థారించబడలేదు.</translation>
 <translation id="5720705177508910913">ప్రస్తుత వినియోగదారు</translation>
@@ -624,7 +623,6 @@
 <translation id="7995512525968007366">పేర్కొనబడలేదు</translation>
 <translation id="8012647001091218357">మేము ప్రస్తుతం మీ తల్లిదండ్రులను సంప్రదించలేకపోయాము. దయచేసి మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="8034522405403831421">ఈ పేజీ <ph name="SOURCE_LANGUAGE" />లో ఉంది. దీన్ని <ph name="TARGET_LANGUAGE" />లోకి అనువదించాలా?</translation>
-<translation id="8034955203865359138">చరిత్ర నమోదులు కనుగొనబడలేదు.</translation>
 <translation id="8088680233425245692">కథనాన్ని వీక్షించడంలో విఫలమైంది.</translation>
 <translation id="8089520772729574115">1 MB కంటే తక్కువ</translation>
 <translation id="8091372947890762290">సక్రియం సర్వర్‌లో పెండింగ్‌లో ఉంది</translation>
@@ -657,6 +655,7 @@
 <translation id="8433057134996913067">దీని వలన మీరు చాలా వెబ్‌సైట్‌ల నుండి సైన్ అవుట్ చేయబడతారు.</translation>
 <translation id="8437238597147034694">&amp;తరలించడాన్ని రద్దు చేయి</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 క్రెడిట్ కార్డ్}other{# క్రెడిట్ కార్డ్‌లు}}</translation>
+<translation id="8483780878231876732">మీ Google ఖాతా నుండి కార్డ్‌లను ఉపయోగించేందుకు, Chromeకి సైన్ ఇన్ చేయండి</translation>
 <translation id="8488350697529856933">వీటికి వర్తిస్తుంది</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ప్రతిస్పందించడానికి చాలా ఎక్కువ సమయం పట్టింది.</translation>
 <translation id="852346902619691059">ఈ సర్వర్ ఇది ఒక <ph name="DOMAIN" /> అని నిరూపించలేకపోయింది; దీని భద్రతా ప్రమాణపత్రాన్ని మీ పరికరం ఆపరేటింగ్ సిస్టమ్ విశ్వసించలేదు. తప్పుగా కాన్ఫిగర్ చేయడం వలన లేదా దాడిచేసే వ్యక్తి మీ కనెక్షన్‌కి అంతరాయం కలిగించడం వలన ఇలా జరిగి ఉండవచ్చు. <ph name="BEGIN_LEARN_MORE_LINK" />మరింత తెలుసుకోండి<ph name="END_LEARN_MORE_LINK" />.</translation>
@@ -676,7 +675,6 @@
 <translation id="8730621377337864115">పూర్తయింది</translation>
 <translation id="8738058698779197622">సురక్షిత కనెక్షన్‌ను ఏర్పాటు చేయడానికి, మీ గడియారాన్ని సరైన సమయానికి సెట్ చేయాలి. ఎందుకంటే వెబ్‌సైట్‌లు వాటిని గుర్తించడానికి ఉపయోగించే ప్రమాణపత్రాలు నిర్దిష్ట కాలవ్యవధుల్లో మాత్రమే చెల్లుబాటు అవుతాయి. మీ పరికరం యొక్క గడియారం సమయం తప్పుగా ఉన్నందున, Chromium ఈ ప్రమాణపత్రాలను ధృవీకరించడానికి వీలుపడలేదు.</translation>
 <translation id="8740359287975076522"><ph name="HOST_NAME" /> &lt;abbr id="dnsDefinition"&gt;DNS చిరునామా&lt;/abbr&gt; కనుగొనబడలేదు. సమస్యను నిర్ధారిస్తోంది.</translation>
-<translation id="8741995161408053644">మీ Google ఖాతా <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />లో ఇతర బ్రౌజింగ్ చరిత్ర రూపాలను కలిగి ఉండవచ్చు.</translation>
 <translation id="8790007591277257123">&amp;తొలగించడాన్ని పునరావృతం చేయి</translation>
 <translation id="8798099450830957504">డిఫాల్ట్</translation>
 <translation id="8804164990146287819">గోప్యతా విధానం</translation>

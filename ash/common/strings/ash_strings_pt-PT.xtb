@@ -109,6 +109,7 @@ Prima Pesquisar ou Shift para cancelar.</translation>
 <translation id="3891340733213178823">Prima Ctrl+Shift+Q duas vezes para terminar sessão.</translation>
 <translation id="3892641579809465218">Ecrã interno</translation>
 <translation id="3893630138897523026">ChromeVox (respostas faladas)</translation>
+<translation id="3899995891769452915">Entrada de texto por voz</translation>
 <translation id="3963445509666917109">Altifalante (interno)</translation>
 <translation id="3967919079500697218">A capacidade de criar capturas de ecrã foi desativada pelo seu administrador.</translation>
 <translation id="397105322502079400">A calcular...</translation>
@@ -181,6 +182,7 @@ Prima Shift + Alt para mudar.</translation>
 <translation id="6459472438155181876">A prolongar ecrã para <ph name="DISPLAY_NAME" /></translation>
 <translation id="6490471652906364588">Dispositivo USB-C (porta direita)</translation>
 <translation id="6501401484702599040">A transmitir o ecrã para <ph name="RECEIVER_NAME" /></translation>
+<translation id="6521655319214113338">Entrada de escrita manual</translation>
 <translation id="6537270692134705506">Capturar ecrã</translation>
 <translation id="6550675742724504774">Opções</translation>
 <translation id="6585808820553845416">A sessão termina em <ph name="SESSION_TIME_REMAINING" />.</translation>
@@ -212,6 +214,7 @@ Prima Alt + Pesquisar ou Shift para cancelar.</translation>
 <translation id="743058460480092004">A câmara e o microfone estão a ser utilizados.</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> não suporta <ph name="SPECIFIED_RESOLUTION" />. A resolução foi alterada para <ph name="FALLBACK_RESOLUTION" /></translation>
+<translation id="7562368315689366235">Paleta de emoji</translation>
 <translation id="7573962313813535744">Modo ancorado</translation>
 <translation id="7580671184200851182">Reproduzir o mesmo áudio em todas as colunas (áudio mono)</translation>
 <translation id="7581273696622423628">Participar no inquérito</translation>

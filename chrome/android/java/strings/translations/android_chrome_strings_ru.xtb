@@ -34,6 +34,7 @@
 <translation id="1376578503827013741">Подсчет…</translation>
 <translation id="138361230106469022">Здравствуйте, <ph name="FULL_NAME" />!</translation>
 <translation id="1383876407941801731">Поиск</translation>
+<translation id="1384959399684842514">Скачивание приостановлено</translation>
 <translation id="1389974829397082527">Закладок пока нет</translation>
 <translation id="1404122904123200417">Встроено в <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">Запрет отслеживания</translation>
@@ -238,6 +239,7 @@
 <translation id="380076759404194828">{NUM_SELECTED,plural, =1{Выбран 1 объект}one{Выбран # объект}few{Выбрано # объекта}many{Выбрано # объектов}other{Выбрано # объекта}}</translation>
 <translation id="3810838688059735925">Видео</translation>
 <translation id="3810973564298564668">Настроить</translation>
+<translation id="3819178904835489326">Удаленные скачивания: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
 <translation id="3822502789641063741">Удалить данные сайтов?</translation>
 <translation id="3828029223314399057">Искать в закладках</translation>
 <translation id="3894427358181296146">Добавление папки</translation>
@@ -277,6 +279,7 @@
 <translation id="4271185234001491831">Никогда не переводить <ph name="LANGUAGE" /></translation>
 <translation id="4275663329226226506">Камера и микрофон </translation>
 <translation id="4278390842282768270">Разрешены</translation>
+<translation id="4300272766492248925">Открыть приложение</translation>
 <translation id="4307992518367153382">Основные</translation>
 <translation id="4351244548802238354">Закрыть</translation>
 <translation id="4376501731284077108">Не контролируется</translation>
@@ -323,6 +326,7 @@
 <translation id="4923459931733593730">Платеж</translation>
 <translation id="4941291666397027948">Звездочкой (*) отмечены поля, обязательные для заполнения</translation>
 <translation id="4943872375798546930">Нет результатов</translation>
+<translation id="4958708863221495346">Сайту <ph name="URL_OF_THE_CURRENT_TAB" /> предоставлен доступ к вашему экрану</translation>
 <translation id="4961700429721424617">Вы выходите из аккаунта, которым управляет администратор домена <ph name="MANAGED_DOMAIN" />. Обратите внимание, что данные Chrome будут удалены с устройства, но сохранятся в аккаунте Google.</translation>
 <translation id="497421865427891073">Вперед</translation>
 <translation id="4988526792673242964">Страницы</translation>
@@ -364,7 +368,6 @@
 <translation id="5345040418939504969">Закладка "<ph name="BOOKMARK_TITLE" />" удалена</translation>
 <translation id="5345083863238459644">На этом устройстве также <ph name="BEGIN_LINK" />открыт<ph name="END_LINK" /> доступ к местоположению.</translation>
 <translation id="5372829067651257087">URL скопирован.</translation>
-<translation id="5380554235172449987">Не отправлять</translation>
 <translation id="5400569084694353794">Работая с приложением, вы принимаете <ph name="BEGIN_LINK1" />Условия использования<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Примечание о конфиденциальности<ph name="END_LINK2" /> Chrome.</translation>
 <translation id="5414836363063783498">Проверка…</translation>
 <translation id="5423934151118863508">Здесь появятся страницы, которые вы чаще всего просматриваете.</translation>
@@ -374,7 +377,6 @@
 <translation id="5456381639095306749">Скачать страницу</translation>
 <translation id="5487521232677179737">Удалить данные</translation>
 <translation id="5487729733663684359">Невозможно обновить Chrome в текущей версии Android.</translation>
-<translation id="5511351932351731210">Отправлять всегда</translation>
 <translation id="5512137114520586844">Этим аккаунтом управляет <ph name="PARENT_NAME" />.</translation>
 <translation id="5527082711130173040">Чтобы выполнить поиск устройств, браузеру Chrome нужен доступ к геоданным. <ph name="BEGIN_LINK2" />Включите доступ<ph name="END_LINK2" /> и <ph name="BEGIN_LINK1" />обновите разрешения<ph name="END_LINK1" />.</translation>
 <translation id="5530766185686772672">Закрыть вкладки инкогнито</translation>
@@ -495,7 +497,6 @@
 <translation id="6831043979455480757">Перевести</translation>
 <translation id="6846298663435243399">Загрузка…</translation>
 <translation id="6850830437481525139">Закрыто вкладок: <ph name="TAB_COUNT" /></translation>
-<translation id="6857778194843072568">Только через Wi-Fi</translation>
 <translation id="6864459304226931083">Скачать изображение</translation>
 <translation id="6865313869410766144">Данные для автозаполнения</translation>
 <translation id="6868088497967843822">Войдите в аккаунт, чтобы синхронизировать закладки, историю, пароли и другие настройки на всех устройствах.</translation>
@@ -515,6 +516,7 @@
 <translation id="7026897394897382018">Экономить трафик</translation>
 <translation id="7029809446516969842">Пароли</translation>
 <translation id="7031882061095297553">Выберите аккаунт</translation>
+<translation id="7040138676081995583">Открыть с помощью…</translation>
 <translation id="7053983685419859001">Блокировать</translation>
 <translation id="7057058088140140610">Банковские карты и адреса с помощью Google Payments</translation>
 <translation id="7062545763355031412">Принять и переключиться</translation>
@@ -591,9 +593,11 @@
 <translation id="7998918019931843664">Восстановить закрытую вкладку</translation>
 <translation id="7999064672810608036">Вы уверены, что хотите удалить все данные этого веб-сайта, включая файлы cookie, и сбросить заданные разрешения?</translation>
 <translation id="8007176423574883786">Отключено для этого устройства</translation>
+<translation id="802154636333426148">Ошибка скачивания</translation>
 <translation id="8026334261755873520">Очистить историю</translation>
 <translation id="8035133914807600019">Создать папку…</translation>
 <translation id="8037750541064988519">Осталось <ph name="DAYS" /> дн.</translation>
+<translation id="8051695050440594747">Доступно <ph name="MEGABYTES" /> МБ</translation>
 <translation id="8063895661287329888">Не удалось добавить закладку.</translation>
 <translation id="8068648041423924542">Невозможно выбрать сертификат.</translation>
 <translation id="8069239273282989646">После сжатия</translation>
@@ -675,7 +679,6 @@
 <translation id="8986494364107987395">Автоматически отправлять в Google статистику использования и отчеты о сбоях</translation>
 <translation id="8998729206196772491">Вы входите в аккаунт, которым управляет администратор домена <ph name="MANAGED_DOMAIN" />. Он может контролировать ваши данные Chrome, которые теперь будут связаны с управляемым аккаунтом. При выходе из системы все данные Chrome, хранящиеся на этом устройстве, будут удалены, но останутся в вашем аккаунте Google.</translation>
 <translation id="9019902583201351841">Управляется вашими родителями</translation>
-<translation id="9020607083536754075">Закрыть текущую вкладку и вернуться к приложению</translation>
 <translation id="9038649477754266430">Использовать подсказки для ускорения загрузки страниц</translation>
 <translation id="9050666287014529139">Кодовая фраза</translation>
 <translation id="9060538597317784206">Перейти к приложению "<ph name="APP_NAME" />" в Play Маркете. Рейтинг: <ph name="APP_RATING" />.</translation>

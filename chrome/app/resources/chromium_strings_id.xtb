@@ -13,6 +13,7 @@
 <translation id="1414495520565016063">Anda sudah masuk ke Chromium!</translation>
 <translation id="1444754455097148408">Lisensi sumber terbuka Chromium</translation>
 <translation id="1480489203462860648">Cobalah, ini sudah dipasang</translation>
+<translation id="1502360822835740515">Jadikan Chromium sebagai browser default</translation>
 <translation id="151962892725702025">Chromium OS tidak dapat menyinkronkan data Anda karena Sinkronisasi tidak tersedia untuk domain Anda.</translation>
 <translation id="1559451348202814456">Chromium mungkin tidak akan berfungsi dengan semestinya karena sudah tidak didukung di Mac OS X 10.6, 10.7, atau 10.8.</translation>
 <translation id="1644918877723739397">Chromium akan menyimpan ini di <ph name="SAVED_PASSWORD_LINK" /> Anda dan mengingatnya saat Anda membutuhkannya lagi.</translation>
@@ -93,10 +94,12 @@
 <translation id="378917192836375108">Chromium memungkinkan Anda mengeklik nomor telepon pada web dan menghubunginya melalui Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3849925841547750267">Sayangnya, setelan Mozilla Firefox Anda tidak tersedia sewaktu browser berjalan. Untuk mengimpor setelan ke Chromium, simpan pekerjaan dan tutup semua jendela Firefox. Kemudian klik Lanjutkan.</translation>
+<translation id="3852700440713538496">Beri pin Chromium di bilah tugas</translation>
 <translation id="3883381313049582448">Gunakan sandi yang dibuat oleh Chromium</translation>
 <translation id="3889543394854987837">Klik nama Anda untuk membuka Chromium dan mulai menjelajah.</translation>
 <translation id="390894725198123737">Di Mac, sandi disimpan pada Keychain Anda dan diakses atau disinkronkan oleh pengguna Chromium lain yang membagikan akun OS X ini.</translation>
 <translation id="4050175100176540509">Peningkatan keamanan dan fitur baru yang penting tersedia di versi terbaru.</translation>
+<translation id="407254336480250557">Pilih <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="4077262827416206768">Tutup semua jendela Chromium dan luncurkan ulang Chromium agar perubahan ini diterapkan.</translation>
 <translation id="4182290826692170034">Chromium adalah browser default Anda. Hore!</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Peringatan:<ph name="END_BOLD" /> Chromium tidak dapat mencegah ekstensi merekam riwayat penjelajahan Anda. Untuk menonaktifkan ekstensi ini dalam mode penyamaran, jangan pilih opsi ini.</translation>
@@ -118,6 +121,7 @@
 <translation id="4621240073146040695">Hampir selesai diperbarui! Luncurkan ulang Chromium untuk menyelesaikan pembaruan.</translation>
 <translation id="4677944499843243528">Profil tersebut mungkin digunakan pada proses Chromium lainnya (<ph name="PROCESS_ID" />) pada komputer lain (<ph name="HOST_NAME" />). Chromium telah mengunci profil tersebut agar tidak rusak. Jika yakin tidak ada proses lain yang menggunakan profil tersebut, Anda dapat membuka profil dan meluncurkan Chromium kembali.</translation>
 <translation id="469338717132742108">Dapatkan bantuan Chromium OS</translation>
+<translation id="4714956846925717402">Buka Chromium lebih cepat</translation>
 <translation id="4743926867934016338">Terima &amp; Telusuri</translation>
 <translation id="4888717733111232871">Inbound rule untuk Chromium guna mengizinkan lalu lintas mDNS.</translation>
 <translation id="4943838377383847465">Chromium berjalan di mode latar belakang.</translation>

@@ -13,6 +13,7 @@
 <translation id="1414495520565016063">Olete Chromiumi sisse logitud.</translation>
 <translation id="1444754455097148408">Chromiumi avatud lähtekoodi litsentsid</translation>
 <translation id="1480489203462860648">Proovige järele, see on juba installitud</translation>
+<translation id="1502360822835740515">Chromiumi vaikebrauseriks määramine</translation>
 <translation id="151962892725702025">Chromium OS ei saanud teie andmeid sünkroonida, sest teie domeenil pole sünkroonimine saadaval.</translation>
 <translation id="1559451348202814456">Chromium ei pruugi õigesti töötada, kuna seda ei toetata enam operatsioonisüsteemides Mac OS X 10.6, 10.7 ega 10.8.</translation>
 <translation id="1644918877723739397">Chromium salvestab selle asukohta <ph name="SAVED_PASSWORD_LINK" /> ja peab seda meeles, kui seda järgmine kord vajate.</translation>
@@ -93,10 +94,12 @@
 <translation id="378917192836375108">Chromium võimaldab teil veebis telefoninumbril klõpsata ja sellele Skype'i kaudu helistada!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
 <translation id="3849925841547750267">Kahjuks ei ole Mozilla Firefoxi seaded saadaval, kui brauser töötab. Seadete Chromiumi importimiseks salvestage töö ja sulgege kõik Firefoxi aknad. Seejärel klõpsake käsul Jätka.</translation>
+<translation id="3852700440713538496">Chromiumi kinnitamine tegumiribale</translation>
 <translation id="3883381313049582448">Kasuta Chromiumi loodud parooli</translation>
 <translation id="3889543394854987837">Chromiumi avamiseks ja sirvimise alustamiseks klõpsake oma nimel.</translation>
 <translation id="390894725198123737">Macis võidakse paroolid salvestada rakendusse Keychain ja teised Chromiumi kasutajad, kes kasutavad sama OS X-i kontot, saavad neid paroole kasutada ning sünkroonida.</translation>
 <translation id="4050175100176540509">Uusimas versioonis on saadaval olulised turvatäiendused ja uued funktsioonid.</translation>
+<translation id="407254336480250557">Valige <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="4077262827416206768">Muudatuse rakendamiseks sulgege kõik Chromiumi aknad ja taaskäivitage Chromium.</translation>
 <translation id="4182290826692170034">Chromium on teie vaikebrauser. Jee!</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Hoiatus:<ph name="END_BOLD" /> Chromium ei saa takistada rakendusi teie sirvimisajalugu talletamast. Kui soovite laienduse inkognitorežiimis keelata, siis tühistage see valik.</translation>
@@ -118,6 +121,7 @@
 <translation id="4621240073146040695">Rakendus on peaaegu ajakohane! Värskenduse lõpuleviimiseks taaskäivitage Chromium.</translation>
 <translation id="4677944499843243528">Näib, et profiili kasutab Chromiumi muu protsess (<ph name="PROCESS_ID" />) mingis muus arvutis (<ph name="HOST_NAME" />). Chromium on profiili lukustanud, et seda ei saaks rikkuda. Kui olete kindel, et ükski muu protsess seda profiili ei kasuta, saate profiili avada ja Chromiumi taaskäivitada.</translation>
 <translation id="469338717132742108">Chromium OS-i puhul abi hankimine</translation>
+<translation id="4714956846925717402">Chromiumi kiirem avamine</translation>
 <translation id="4743926867934016338">Nõustun, otsi</translation>
 <translation id="4888717733111232871">Sissetuleku reegel Chromiumile mDNS-liikluse lubamiseks.</translation>
 <translation id="4943838377383847465">Chromium on taustarežiimis.</translation>

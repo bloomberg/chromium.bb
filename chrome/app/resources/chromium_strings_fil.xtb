@@ -15,6 +15,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="1414495520565016063">Naka-sign in ka sa Chromium!</translation>
 <translation id="1444754455097148408">Mga lisensya ng open source ng Chromium</translation>
 <translation id="1480489203462860648">Subukan mo ito, naka-install na ito</translation>
+<translation id="1502360822835740515">Gawing default mong browser ang Chromium</translation>
 <translation id="151962892725702025">Hindi ma-sync ng Chromium OS ang iyong data dahil hindi available ang Pag-sync para sa iyong domain.</translation>
 <translation id="1559451348202814456">Maaaring hindi gumana nang maayos ang Chromium dahil hindi na ito sinusuportahan sa Mac OS X 10.6, 10.7 o 10.8.</translation>
 <translation id="1644918877723739397">Iiimbak ito ng Chromium gamit ang <ph name="SAVED_PASSWORD_LINK" /> at tatandaan ito sa susunod na pagkakataong kailanganin mo ito.</translation>
@@ -95,10 +96,12 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="378917192836375108">Pinapayagan ka ng Google Chrome na mag-click sa isang numero ng telepono sa web at tawagan ito gamit ang Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3849925841547750267">Sa kasamaang palad, hindi available ang mga setting ng iyong Mozilla Firefox habang tumatakbo ang browser na iyon. Upang i-import sa Chromium ang mga setting na iyon, i-save ang iyong gawa at isara ang lahat ng window sa Firefox. Pagkatapos, i-click ang Magpatuloy.</translation>
+<translation id="3852700440713538496">I-pin ang Chromium sa iyong taskbar</translation>
 <translation id="3883381313049582448">Gumamit ng password na binuo ng Chromium</translation>
 <translation id="3889543394854987837">I-click ang iyong pangalan upang buksan ang Chromium at simulan ang pagba-browse.</translation>
 <translation id="390894725198123737">Sa Mac, maaaring ma-save ang mga password sa iyong Keychain at ma-access o ma-sync ng ibang mga user ng Chromium na nagbabahagi ng OS X account na ito.</translation>
 <translation id="4050175100176540509">May available na mahahalagang pagpapahusay sa seguridad at mga bagong feature sa pinakabagong bersyon.</translation>
+<translation id="407254336480250557">Piliin ang <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="4077262827416206768">Pakisara ang lahat ng window sa Chromium at muling ilunsad ang Chromium upang magkabisa ang pagbabagong ito.</translation>
 <translation id="4182290826692170034">Chromium ang iyong default na browser. Yay!</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Babala:<ph name="END_BOLD" /> Hindi mapipigilan ng Google Chrome ang pagtatala ng mga extension ng iyong kasaysayan sa pagba-browse. Upang huwag paganahin ang extension na ito sa mode na incognito, alisin ang pagkakapili sa opsyong ito.</translation>
@@ -120,6 +123,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="4621240073146040695">Halos napapanahon na! Muling ilunsad ang Chromium upang tapusin ang pag-a-update.</translation>
 <translation id="4677944499843243528">Mukhang ginagamit ang profile ng iba pang proseso ng Chromium (<ph name="PROCESS_ID" />) sa iba pang computer (<ph name="HOST_NAME" />).  Ni-lock ng Chromium ang profile upang hindi ito ma-corrupt.  Kung nakakatiyak ka na walang ibang mga proseso ang gumagamit sa profile na ito, maaari mong i-unlock ang profile at ilunsad muli ang Chromium.</translation>
 <translation id="469338717132742108">Humingi ng tulong sa Chromium OS</translation>
+<translation id="4714956846925717402">Pumunta sa Chromium nang mas mabilis</translation>
 <translation id="4743926867934016338">Tanggapin at Maghanap</translation>
 <translation id="4888717733111232871">Inbound na panuntunan para sa Chromium upang payagan ang trapiko ng mDNS.</translation>
 <translation id="4943838377383847465">Nasa background mode ang Chromium.</translation>

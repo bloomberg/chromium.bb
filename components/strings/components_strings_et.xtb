@@ -80,7 +80,6 @@
 <translation id="1871208020102129563">Puhverserver on seatud kasutama fikseeritud puhverservereid, mitte pac-skripti URL-i.</translation>
 <translation id="1883255238294161206">Ahenda loend</translation>
 <translation id="1898423065542865115">Filtreerimine</translation>
-<translation id="1911837502049945214">Host <ph name="HOST_NAME" /> ei aktsepteerinud teie sisselogimise sertifikaati või see võib olla aegunud.</translation>
 <translation id="194030505837763158">Avage <ph name="LINK" /></translation>
 <translation id="1962204205936693436">Domeeni <ph name="DOMAIN" /> järjehoidjad</translation>
 <translation id="1973335181906896915">Viga jadaks teisendamisel</translation>
@@ -176,7 +175,6 @@
 <translation id="2837049386027881519">Ühenduse loomist tuli korrata TLS- või SSL-protokolli vanema versiooniga. See tähendab tavaliselt seda, et serveri tarkvara on väga vana ja sellel võib olla muid turvaprobleeme.</translation>
 <translation id="284702764277384724">Hosti <ph name="HOST_NAME" /> serveri sertifikaat näib olevat võltsing.</translation>
 <translation id="2889159643044928134">Ära laadi uuesti</translation>
-<translation id="2896499918916051536">Seda pistikprogrammi ei toetata.</translation>
 <translation id="2900469785430194048">Google Chrome'il pole selle veebilehe kuvamiseks piisavalt mälu.</translation>
 <translation id="2909946352844186028">Tuvastati võrgumuudatus.</translation>
 <translation id="2922350208395188000">Serveri sertifikaati ei saa kontrollida.</translation>
@@ -220,6 +218,7 @@
 <translation id="3286538390144397061">Taaskäivitada kohe</translation>
 <translation id="3305707030755673451">Teie andmed krüpteeriti <ph name="TIME" /> teie sünkroonimisparooliga. Sisestage see sünkroonimise alustamiseks.</translation>
 <translation id="333371639341676808">Keela sellel leheküljel lisadialoogide loomine.</translation>
+<translation id="3338095232262050444">Turvaline</translation>
 <translation id="3340978935015468852">seaded</translation>
 <translation id="3345135638360864351">Saidi külastamise taotlust ei õnnestunud saata kontaktile <ph name="NAME" />. Proovige uuesti.</translation>
 <translation id="3355823806454867987">Muuda puhverserveri seadeid ...</translation>
@@ -322,6 +321,7 @@
 <translation id="4304224509867189079">Logi sisse</translation>
 <translation id="432290197980158659">Server esitas sertifikaadi, mis ei kattu sisseehitatud ootustega. Ootusi rakendatakse teatud väga turvaliste veebisaitide puhul teie kaitsmiseks. <ph name="BEGIN_LEARN_MORE_LINK" />Vaadake lisateavet<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4325863107915753736">Artiklit ei leitud</translation>
+<translation id="4331708818696583467">Pole turvaline</translation>
 <translation id="4372948949327679948">Oodatud väärtus: <ph name="VALUE_TYPE" />.</translation>
 <translation id="4381091992796011497">Kasutajanimi:</translation>
 <translation id="4394049700291259645">Keela</translation>
@@ -341,6 +341,7 @@
 <translation id="4589078953350245614">Püüdsite jõuda domeenile <ph name="DOMAIN" />, ent server esitas kehtetu sertifikaadi. <ph name="BEGIN_LEARN_MORE_LINK" />Vaadake lisateavet<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4592951414987517459">Teie ühendus domeeniga <ph name="DOMAIN" /> on krüpteeritud tänapäevase šifreerimiskomplektiga.</translation>
 <translation id="4594403342090139922">&amp;Võta kustutamine tagasi</translation>
+<translation id="4627442949885028695">Jätkake sealt, kus muus seadmes pooleli jäite</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">Vaatate laienduste lehte.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -383,7 +384,6 @@
 <translation id="5089810972385038852">Osariik</translation>
 <translation id="5095208057601539847">Provints</translation>
 <translation id="5115563688576182185">(64-bitine)</translation>
-<translation id="5122371513570456792">Otsingule „<ph name="SEARCH_STRING" />” saadi tulemuseks <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" />.</translation>
 <translation id="5141240743006678641">Krüpteerige sünkroonitud paroolid oma Google'i mandaadiga</translation>
 <translation id="5145883236150621069">Reegli vastuses sisaldus veakood</translation>
 <translation id="5171045022955879922">Otsige või sisestage URL</translation>
@@ -425,7 +425,6 @@
 <translation id="5622887735448669177">Kas soovite sellelt saidilt lahkuda?</translation>
 <translation id="5629630648637658800">Reegli seadete laadimine ebaõnnestus</translation>
 <translation id="5631439013527180824">Seadme halduse luba on kehtetu</translation>
-<translation id="5650551054760837876">Otsingutulemusi ei leitud.</translation>
 <translation id="5677928146339483299">Blokeeritud</translation>
 <translation id="5710435578057952990">Selle veebisaidi identiteeti pole kinnitanud.</translation>
 <translation id="5720705177508910913">Praegune kasutaja</translation>
@@ -624,7 +623,6 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="7995512525968007366">Ei ole määratud</translation>
 <translation id="8012647001091218357">Teie vanematega ei õnnestunud praegu ühendust võtta. Proovige hiljem uuesti.</translation>
 <translation id="8034522405403831421">Leht on <ph name="SOURCE_LANGUAGE" /> keeles. Kas tõlkida <ph name="TARGET_LANGUAGE" /> keelde?</translation>
-<translation id="8034955203865359138">Ajaloo sisestusi ei leitud.</translation>
 <translation id="8088680233425245692">Artikli kuvamine ebaõnnestus.</translation>
 <translation id="8089520772729574115">vähem kui 1 MB</translation>
 <translation id="8091372947890762290">Aktiveerimine on serveris ootel</translation>
@@ -657,6 +655,7 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="8433057134996913067">See logib teid välja enamikult veebisaitidelt.</translation>
 <translation id="8437238597147034694">&amp;Võta teisaldamine tagasi</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 krediitkaart}other{# krediitkaarti}}</translation>
+<translation id="8483780878231876732">Google'i konto kaartide kasutamiseks logige sisse Chrome'i</translation>
 <translation id="8488350697529856933">Kehtib:</translation>
 <translation id="8498891568109133222">Hostil <ph name="HOST_NAME" /> kulus vastamiseks liiga kaua aega.</translation>
 <translation id="852346902619691059">Server ei suutnud tõestada, et tegemist on domeeniga <ph name="DOMAIN" />. Teie seadme operatsioonisüsteem ei usalda selle turvasertifikaati. Selle põhjuseks võib olla vale seadistus või teie ühendust segav ründaja. <ph name="BEGIN_LEARN_MORE_LINK" />Vaadake lisateavet<ph name="END_LEARN_MORE_LINK" />.</translation>
@@ -676,7 +675,6 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="8730621377337864115">Valmis</translation>
 <translation id="8738058698779197622">Turvalise ühenduse loomiseks peab kell olema õigesti seadistatud. See on nii, kuna sertifikaadid, mida veebisaidid kasutavad enda tuvastamiseks, kehtivad ainult teatud perioodi jooksul. Kuna teie seadme kell on vale, ei saa Chromium neid sertifikaate kinnitada.</translation>
 <translation id="8740359287975076522">Hosti <ph name="HOST_NAME" /> &lt;abbr id="dnsDefinition"&gt;DNS-aadressi&lt;/abbr&gt; ei leitud. Probleemi diagnoositakse.</translation>
-<translation id="8741995161408053644">Aadressil <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> võib teie Google'i kontol olla muus vormis sirvimisajalugu.</translation>
 <translation id="8790007591277257123">&amp;Kustuta uuesti</translation>
 <translation id="8798099450830957504">Vaikimisi</translation>
 <translation id="8804164990146287819">Privaatsuseeskirjad</translation>

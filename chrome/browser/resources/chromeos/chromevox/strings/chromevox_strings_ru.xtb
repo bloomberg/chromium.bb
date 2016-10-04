@@ -692,7 +692,6 @@
 <translation id="794091007957014205">{COUNT,plural, =1{коммерческое "эт"}one{# коммерческое "эт"}few{# коммерческих "эт"}many{# коммерческих "эт"}other{# at signs}}</translation>
 <translation id="7965147473449754028">меню закрыто</translation>
 <translation id="7974390230414479278">Элемент меню</translation>
-<translation id="8002119852008410879">{COUNT,plural, =1{восклицательный знак}one{# восклицательный знак}few{# восклицательных знака}many{# восклицательных знаков}other{# exclamation points}}</translation>
 <translation id="8007540374018858731">h3</translation>
 <translation id="8009786657110126785">{COUNT,plural, =1{кавычка}one{# кавычка}few{# кавычки}many{# кавычек}other{# quotes}}</translation>
 <translation id="8033827949643255796">Выделено.</translation>

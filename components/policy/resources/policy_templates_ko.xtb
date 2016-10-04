@@ -802,7 +802,7 @@
 <translation id="3322771899429619102">키 생성 사용이 허용되는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다. URL 패턴이 'KeygenBlockedForUrls'에 있는 경우 이 예외를 무시합니다.
 
           이 정책을 설정하지 않은 경우 'DefaultKeygenSetting' 정책이 설정되어 있으면 해당 정책의 글로벌 기본값이, 그렇지 않으면 사용자 개인 설정의 글로벌 기본값이 모든 사이트에서 사용됩니다.</translation>
-<translation id="3322902067538988734">이 정책이 true로 설정되어 있으며 사용자가 브라우저를 사용하기 전에 자신의 프로필을 사용해 <ph name="PRODUCT_NAME" />에 로그인해야 합니다. BrowserGuestModeEnabled의 기본값은 false로 설정됩니다.
+<translation id="3322902067538988734">이 정책이 true로 설정되어 있으면 사용자가 브라우저를 사용하기 전에 자신의 프로필을 사용해 <ph name="PRODUCT_NAME" />에 로그인해야 합니다. BrowserGuestModeEnabled의 기본값은 false로 설정됩니다.
 
       이 정책이 false로 설정되거나 설정되어 있지 않은 경우 사용자는 <ph name="PRODUCT_NAME" />에 로그인하지 않고도 브라우저를 사용할 수 있습니다.</translation>
 <translation id="3381968327636295719">호스트 브라우저를 기본으로 사용</translation>

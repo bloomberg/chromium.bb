@@ -108,6 +108,7 @@ Tekan Shift + Alt untuk menukar.</translation>
 <translation id="3891340733213178823">Tekan Ctrl+Shift+Q dua kali untuk keluar.</translation>
 <translation id="3892641579809465218">Paparan Dalaman</translation>
 <translation id="3893630138897523026">ChromeVox (maklum balas dituturkan)</translation>
+<translation id="3899995891769452915">Input suara</translation>
 <translation id="3963445509666917109">Pembesar Suara (Dalaman)</translation>
 <translation id="3967919079500697218">Keupayaan untuk mengambil tangkapan skrin telah dilumpuhkan oleh pentadbir anda.</translation>
 <translation id="397105322502079400">Mengira...</translation>
@@ -180,6 +181,7 @@ Tekan Shift + Alt untuk menukar.</translation>
 <translation id="6459472438155181876">Melanjutkan skrin ke <ph name="DISPLAY_NAME" /></translation>
 <translation id="6490471652906364588">Peranti USB-C (port kanan)</translation>
 <translation id="6501401484702599040">Menghantar skrin ke <ph name="RECEIVER_NAME" /></translation>
+<translation id="6521655319214113338">Input tulisan tangan</translation>
 <translation id="6537270692134705506">Tangkap skrin</translation>
 <translation id="6550675742724504774">Pilihan</translation>
 <translation id="6585808820553845416">Sesi berakhir dalam <ph name="SESSION_TIME_REMAINING" />.</translation>
@@ -211,6 +213,7 @@ Tekan Alt+Search atau Shift untuk membatalkan.</translation>
 <translation id="743058460480092004">Kamera dan mikrofon sedang digunakan.</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> tidak menyokong <ph name="SPECIFIED_RESOLUTION" />. Resolusi telah ditukar kepada <ph name="FALLBACK_RESOLUTION" /></translation>
+<translation id="7562368315689366235">Palet emoji</translation>
 <translation id="7573962313813535744">Mod dok</translation>
 <translation id="7580671184200851182">Mainkan audio yang sama melalui semua pembesar suara (audio mono)</translation>
 <translation id="7581273696622423628">Sertai tinjauan</translation>

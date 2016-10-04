@@ -109,6 +109,7 @@ Premi il tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="3891340733213178823">Premi due volte Ctrl+Maiusc+Q per uscire.</translation>
 <translation id="3892641579809465218">Display interno</translation>
 <translation id="3893630138897523026">ChromeVox (lettura vocale)</translation>
+<translation id="3899995891769452915">Input vocale</translation>
 <translation id="3963445509666917109">Altoparlante (interno)</translation>
 <translation id="3967919079500697218">La possibilità di effettuare screenshot è stata disabilitata dal tuo amministratore.</translation>
 <translation id="397105322502079400">Calcolo in corso...</translation>
@@ -181,6 +182,7 @@ Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="6459472438155181876">Estensione dello schermo su <ph name="DISPLAY_NAME" /></translation>
 <translation id="6490471652906364588">Dispositivo USB-C (porta a destra)</translation>
 <translation id="6501401484702599040">Trasmissione dello schermo a <ph name="RECEIVER_NAME" /> in corso</translation>
+<translation id="6521655319214113338">Scrittura a mano libera</translation>
 <translation id="6537270692134705506">Acquisisci schermata</translation>
 <translation id="6550675742724504774">Opzioni</translation>
 <translation id="6585808820553845416">La sessione terminerà tra <ph name="SESSION_TIME_REMAINING" />.</translation>
@@ -212,6 +214,7 @@ Premi Alt+tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="743058460480092004">Videocamera e microfono sono in uso.</translation>
 <translation id="7510334386202674593">CTRL+MAIUSC+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> non supporta <ph name="SPECIFIED_RESOLUTION" />. La risoluzione è stata modificata in <ph name="FALLBACK_RESOLUTION" /></translation>
+<translation id="7562368315689366235">Riquadro di emoji</translation>
 <translation id="7573962313813535744">Modalità dock</translation>
 <translation id="7580671184200851182">Riproduci lo stesso audio su tutti gli altoparlanti (audio mono)</translation>
 <translation id="7581273696622423628">Vai al sondaggio</translation>

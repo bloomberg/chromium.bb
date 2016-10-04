@@ -13,6 +13,7 @@
 <translation id="1414495520565016063">Anda log masuk ke Chromium!</translation>
 <translation id="1444754455097148408">Lesen sumber terbuka Chromium</translation>
 <translation id="1480489203462860648">Cubalah, ia sudah dipasang</translation>
+<translation id="1502360822835740515">Jadikan Chromium penyemak imbas lalai anda</translation>
 <translation id="151962892725702025">OS Chromium tidak dapat menyegerakkan data anda kerana Segerak tidak tersedia untuk domain anda.</translation>
 <translation id="1559451348202814456">Chromium mungkin tidak akan berfungsi dengan betul kerana tidak lagi disokong pada Mac OS X 10.6, 10.7 atau 10.8.</translation>
 <translation id="1644918877723739397">Chromium akan menyimpan ini dalam <ph name="SAVED_PASSWORD_LINK" /> anda dan mengingatinya apabila anda memerlukannya nanti.</translation>
@@ -93,10 +94,12 @@
 <translation id="378917192836375108">Chromium membolehkan anda mengklik nombor telefon pada web dan menghubunginya dengan Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3849925841547750267">Malangnya, tetapan Mozilla Firefox anda tidak tersedia semasa penyemak imbas tersebut dijalankan. Untuk mengimport tetapan tersebut ke Chromium, simpan kerja anda dan tutup semua tetingkap Firefox. Kemudian klik Teruskan.</translation>
+<translation id="3852700440713538496">Sematkan Chromium pada bar tugas anda</translation>
 <translation id="3883381313049582448">Gunakan kata laluan yang dijana oleh Chromium</translation>
 <translation id="3889543394854987837">Klik nama anda untuk membuka Chromium dan mula menyemak imbas.</translation>
 <translation id="390894725198123737">Pada Mac, kata laluan boleh disimpan pada Keychain anda dan boleh diakses atau disegerakkan oleh pengguna Chromium lain yang berkongsi akaun OS X ini.</translation>
 <translation id="4050175100176540509">Peningkatan keselamatan penting dan ciri baharu tersedia dalam versi terkini.</translation>
+<translation id="407254336480250557">Pilih <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="4077262827416206768">Sila tutup semua tetingkap Chromium dan lancarkan semula Chromium agar perubahan ini boleh dilaksanakan.</translation>
 <translation id="4182290826692170034">Chromium ialah penyemak imbas lalai anda. Yei!</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Amaran:<ph name="END_BOLD" /> Chromium tidak dapat menghalang sambungan daripada merakamkan sejarah penyemakan imbas anda. Untuk melumpuhkan sambungan ini dalam mod inkognito, nyahpilih pilihan ini.</translation>
@@ -118,6 +121,7 @@
 <translation id="4621240073146040695">Hampir terkini! Lancarkan semula Chromium untuk menyelesaikan kemas kini.</translation>
 <translation id="4677944499843243528">Nampaknya profil digunakan oleh proses Chromium lain (<ph name="PROCESS_ID" />) pada komputer lain (<ph name="HOST_NAME" />). Chromium telah mengunci profil supaya profil tidak rosak. Jika anda pasti tiada proses lain yang menggunakan profil ini, anda boleh membuka profil dan melancarkan semula Chromium.</translation>
 <translation id="469338717132742108">Dapatkan bantuan berkenaan Chromium OS</translation>
+<translation id="4714956846925717402">Akses Chromium dengan lebih cepat</translation>
 <translation id="4743926867934016338">Terima &amp; Cari</translation>
 <translation id="4888717733111232871">Peraturan masuk bagi Chromium untuk membolehkan trafik mDNS.</translation>
 <translation id="4943838377383847465">Chromium dalam mod latar belakang.</translation>

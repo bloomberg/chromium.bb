@@ -28,6 +28,7 @@
 <translation id="1653828314016431939">OK - Riavvia ora</translation>
 <translation id="1682634494516646069">Google Chrome non è in grado di leggere e scrivere nella directory dei dati: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome è un browser web che apre pagine e applicazioni web con grande velocità. È veloce, stabile e facile da utilizzare. Esplora il Web in modo più sicuro grazie alla protezione contro malware e phishing incorporata in Google Chrome.</translation>
+<translation id="1718131156967340976">Seleziona <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
 <translation id="174539241580958092">Impossibile sincronizzare i dati in Google Chrome a causa di un errore durante l'accesso.</translation>
 <translation id="1759301979429102118">I dati dei tuoi contatti possono consentirti di compilare più rapidamente i moduli in Chrome.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -104,6 +105,7 @@ Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EM
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome ha verificato che <ph name="ISSUER" /> ha rilasciato il certificato del sito web. Il server ha fornito le informazioni relative a Certificate Transparency, ma non è stato riconosciuto nessun log di Certificate Transparency.</translation>
 <translation id="3889417619312448367">Disinstalla Google Chrome</translation>
+<translation id="4028693306634653894">Apri Chrome più velocemente</translation>
 <translation id="4042449298237264661">Questo computer non riceverà più gli aggiornamenti di Google Chrome perché Windows XP e Windows Vista non sono più supportati.</translation>
 <translation id="4050175100176540509">Nell'ultima versione sono stati apportati miglioramenti rilevanti in materia di sicurezza e sono state aggiunte nuove funzioni.</translation>
 <translation id="4053720452172726777">Personalizza e controlla Google Chrome</translation>
@@ -238,6 +240,7 @@ Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EM
 <translation id="7788788617745289808">Chrome deve avere accesso alla fotocamera per condividerla con questo sito.</translation>
 <translation id="7808348361785373670">Rimuovi da Chrome...</translation>
 <translation id="7825851276765848807">Installazione non riuscita a causa di un errore non specificato. Scarica nuovamente Google Chrome.</translation>
+<translation id="7888186132678118370">Aggiungi Chrome alla barra delle applicazioni</translation>
 <translation id="7890208801193284374">Se condividi un computer, i tuoi amici e la tua famiglia possono navigare separatamente e configurare Chrome in base alle proprie esigenze.</translation>
 <translation id="7908168227788431038">Aggiornamento quasi completato. Riavvia Google Chrome per terminare l'aggiornamento.</translation>
 <translation id="795025003224538582">Non riavviare</translation>
@@ -279,4 +282,5 @@ Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EM
 <translation id="9102715433345326100">Il file è dannoso ed è stato bloccato da Chrome.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Avviso.<ph name="END_BOLD" /> Google Chrome non è in grado di impedire alle estensioni di registrare la tua cronologia di navigazione. Per disattivare questa estensione in modalità di navigazione in incognito, deseleziona questa opzione.</translation>
 <translation id="911206726377975832">Eliminare anche i tuoi dati di navigazione?</translation>
+<translation id="924447568950697217">Imposta Chrome come browser predefinito</translation>
 </translationbundle>

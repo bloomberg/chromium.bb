@@ -65,7 +65,6 @@
 <translation id="2359808026110333948">继续</translation>
 <translation id="2366718077645204424">无法连接到主机，这可能是由您所使用网络的配置导致的。</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />上次在线时间：<ph name="RELATIVE_TIMESTAMP" />。</translation>
-<translation id="2498359688066513246">帮助和反馈</translation>
 <translation id="2499160551253595098">允许我们收集使用情况统计信息和崩溃报告，以帮助改进 Chrome 远程桌面。</translation>
 <translation id="2512228156274966424">注意：为确保所有键盘快捷键都能正常使用，请将 Chrome 远程桌面配置为“在窗口中打开”。</translation>
 <translation id="2540992418118313681">您要与其他用户共享此计算机的查看和控制权限吗？</translation>
@@ -264,6 +263,7 @@
 <translation id="7948001860594368197">屏幕选项</translation>
 <translation id="7970576581263377361">身份验证失败。请重新登录 Chromium。</translation>
 <translation id="7981525049612125370">远程会话已过期。</translation>
+<translation id="8041089156583427627">发送反馈</translation>
 <translation id="8041721485428375115">下载 Chrome 远程桌面主机安装程序，即表示您同意遵守 Google <ph name="LINK_BEGIN" />服务条款<ph name="LINK_END" />。</translation>
 <translation id="8073845705237259513">要使用Chrome远程桌面，您需要先为自己的设备添加一个Google帐户。</translation>
 <translation id="80739703311984697">远程主机要求您对第三方网站进行身份验证。要继续操作，您必须向 Chrome 远程桌面授予访问以下地址的额外权限：</translation>

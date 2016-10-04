@@ -692,7 +692,6 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="794091007957014205">{COUNT,plural, =1{アットマーク}other{# 個のアットマーク}}</translation>
 <translation id="7965147473449754028">メニューを閉じました</translation>
 <translation id="7974390230414479278">メニュー項目</translation>
-<translation id="8002119852008410879">{COUNT,plural, =1{感嘆符}other{# 個の感嘆符}}</translation>
 <translation id="8007540374018858731">見出し 3</translation>
 <translation id="8009786657110126785">{COUNT,plural, =1{引用符}other{# 個の引用符}}</translation>
 <translation id="8033827949643255796">選択しました</translation>

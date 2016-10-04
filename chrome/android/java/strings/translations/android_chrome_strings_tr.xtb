@@ -34,6 +34,7 @@ Fiziksel Web'i kullanabilmeniz için Bluetooth ve Konum özelliklerinin açık o
 <translation id="1376578503827013741">Hesaplanıyor…</translation>
 <translation id="138361230106469022">Merhaba <ph name="FULL_NAME" />,</translation>
 <translation id="1383876407941801731">Ara</translation>
+<translation id="1384959399684842514">İndirme işlemi duraklatıldı</translation>
 <translation id="1389974829397082527">Burada yer işareti yok</translation>
 <translation id="1404122904123200417"><ph name="WEBSITE_URL" /> sitesinde yerleşik</translation>
 <translation id="1406000523432664303">“Do Not Track”</translation>
@@ -238,6 +239,7 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="380076759404194828">{NUM_SELECTED,plural, =1{1 öğe seçildi}other{# öğe seçildi}}</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Yönet</translation>
+<translation id="3819178904835489326">İndirilen <ph name="NUMBER_OF_DOWNLOADS" /> dosya silindi</translation>
 <translation id="3822502789641063741">Site depo. silinsin mi?</translation>
 <translation id="3828029223314399057">Yer işaretlerinde ara</translation>
 <translation id="3894427358181296146">Klasör ekleyin</translation>
@@ -277,6 +279,7 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4271185234001491831"><ph name="LANGUAGE" /> dilini asla çevirme</translation>
 <translation id="4275663329226226506">Medya</translation>
 <translation id="4278390842282768270">İzin verildi</translation>
+<translation id="4300272766492248925">Uygulamayı aç</translation>
 <translation id="4307992518367153382">Temel Bilgiler</translation>
 <translation id="4351244548802238354">İletişim kutusunu kapat</translation>
 <translation id="4376501731284077108">Denetimsiz</translation>
@@ -323,6 +326,7 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="4923459931733593730">Ödeme</translation>
 <translation id="4941291666397027948">* zorunlu alanı belirtir</translation>
 <translation id="4943872375798546930">Sonuç yok</translation>
+<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> ekranınızı paylaşıyor</translation>
 <translation id="4961700429721424617"><ph name="MANAGED_DOMAIN" /> tarafından yönetilen bir hesabın oturumunu kapatıyorsunuz. Bu işlemle Chrome verileriniz bu cihazdan silinir, ancak Google Hesabınızda kalmaya devam eder.</translation>
 <translation id="497421865427891073">İlerle</translation>
 <translation id="4988526792673242964">Sayfalar</translation>
@@ -364,7 +368,6 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> silindi</translation>
 <translation id="5345083863238459644">Konum erişimi de <ph name="BEGIN_LINK" />bu cihaz için kapatıldı<ph name="END_LINK" />.</translation>
 <translation id="5372829067651257087">URL kopyalandı.</translation>
-<translation id="5380554235172449987">Hiçbir zaman gönderme</translation>
 <translation id="5400569084694353794">Bu uygulamayı kullanarak <ph name="BEGIN_LINK1" />Chrome'un Gizlilik Şartları<ph name="END_LINK1" />'nı ve <ph name="BEGIN_LINK2" />Gizlilik Uyarısı<ph name="END_LINK2" />'nı kabul etmiş olursunuz.</translation>
 <translation id="5414836363063783498">Doğrulanıyor…</translation>
 <translation id="5423934151118863508">En çok ziyaret ettiğiniz sayfalar burada görünecektir</translation>
@@ -374,7 +377,6 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="5456381639095306749">Sayfayı indir</translation>
 <translation id="5487521232677179737">Verileri temizle</translation>
 <translation id="5487729733663684359">Chrome güncellemeleri Android'in bu sürümü için artık desteklenmiyor.</translation>
-<translation id="5511351932351731210">Her zaman gönder</translation>
 <translation id="5512137114520586844">Bu hesap <ph name="PARENT_NAME" /> tarafından yönetiliyor.</translation>
 <translation id="5527082711130173040">Chrome'un cihazları taraması için konum bilgilerine erişmesi gerekiyor. <ph name="BEGIN_LINK1" />İzinleri güncelleyin<ph name="END_LINK1" />. Ayrıca, konum bilgilerine erişim <ph name="BEGIN_LINK2" />bu cihaz için kapalı<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Gizli sekmeleri kapat</translation>
@@ -495,7 +497,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="6831043979455480757">Çevir</translation>
 <translation id="6846298663435243399">Yükleniyor…</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> sekme kapatıldı</translation>
-<translation id="6857778194843072568">Yalnızca kablosuz ağda gönder</translation>
 <translation id="6864459304226931083">Resmi indir</translation>
 <translation id="6865313869410766144">Form otomatik doldurma verileri</translation>
 <translation id="6868088497967843822">Yer işaretlerinize, geçmişinize ve diğer ayarlarınıza tüm cihazlarınızdan erişmek için oturum açın.</translation>
@@ -515,6 +516,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="7026897394897382018">Veri Tasarrufu'nu etkinleştir</translation>
 <translation id="7029809446516969842">Şifreler</translation>
 <translation id="7031882061095297553">Şununla senkronize et</translation>
+<translation id="7040138676081995583">Birlikte aç...</translation>
 <translation id="7053983685419859001">Engelle</translation>
 <translation id="7057058088140140610">Google Payments'ı kullanan kredi kartları ve adresler</translation>
 <translation id="7062545763355031412">Kabul et ve hesabı değiştir</translation>
@@ -591,9 +593,11 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="7998918019931843664">Kapatılan sekmeyi yeniden aç</translation>
 <translation id="7999064672810608036">Bu web sitesine ilişkin çerezler dahil tüm yerel verileri temizlemek ve bu sitenin tüm izinlerini sıfırlamak istediğinizden emin misiniz?</translation>
 <translation id="8007176423574883786">Bu cihaz için kapatıldı</translation>
+<translation id="802154636333426148">İndirilemedi</translation>
 <translation id="8026334261755873520">Tarama verilerini temizle</translation>
 <translation id="8035133914807600019">Yeni klasör…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> gün kaldı</translation>
+<translation id="8051695050440594747"><ph name="MEGABYTES" /> MB kullanılabilir</translation>
 <translation id="8063895661287329888">Yer işareti eklenemedi.</translation>
 <translation id="8068648041423924542">Sertifika seçilemiyor.</translation>
 <translation id="8069239273282989646">Sıkıştırmadan sonra</translation>
@@ -675,7 +679,6 @@ Yeni lisansları edinmek için İnternet'e bağlanın ve indirdiğiniz içeriği
 <translation id="8986494364107987395">Kullanım istatistiklerini ve çökme raporlarını otomatik olarak Google'a gönder</translation>
 <translation id="8998729206196772491"><ph name="MANAGED_DOMAIN" /> tarafından yönetilen bir hesapla oturum açıyorsunuz ve yöneticiye tüm Chrome verileriniz üzerinde denetim olanağı veriyorsunuz. Verileriniz kalıcı olarak bu hesaba bağlanacaktır. Chrome'da oturumu kapattığınızda verileriniz bu cihazdan silinir, ancak Google Hesabınızda kalmaya devam eder.</translation>
 <translation id="9019902583201351841">Ebeveynleriniz tarafından yönetiliyor</translation>
-<translation id="9020607083536754075">Geçerli sekmeyi kapat ve önceki uygulamaya geri dön</translation>
 <translation id="9038649477754266430">Sayfaları daha hızlı yüklemek için bir tahmin hizmeti kullan</translation>
 <translation id="9050666287014529139">Parola</translation>
 <translation id="9060538597317784206"><ph name="APP_NAME" /> uygulamasını Play Store'da görüntüle. Derecelendirme: <ph name="APP_RATING" />.</translation>

@@ -34,6 +34,7 @@
 <translation id="1376578503827013741">計算中...</translation>
 <translation id="138361230106469022">こんにちは、<ph name="FULL_NAME" /> さん</translation>
 <translation id="1383876407941801731">検索</translation>
+<translation id="1384959399684842514">ダウンロードを一時停止しました</translation>
 <translation id="1389974829397082527">ブックマークはありません</translation>
 <translation id="1404122904123200417">埋め込み先: <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">「トラッキング拒否」</translation>
@@ -238,6 +239,7 @@
 <translation id="380076759404194828">{NUM_SELECTED,plural, =1{1 件のアイテムが選択されました}other{# 件のアイテムが選択されました}}</translation>
 <translation id="3810838688059735925">動画</translation>
 <translation id="3810973564298564668">管理</translation>
+<translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> 件のダウンロードを削除しました</translation>
 <translation id="3822502789641063741">サイトのストレージを消去しますか？</translation>
 <translation id="3828029223314399057">ブックマークを検索</translation>
 <translation id="3894427358181296146">フォルダの追加</translation>
@@ -277,6 +279,7 @@
 <translation id="4271185234001491831"><ph name="LANGUAGE" />を翻訳しない</translation>
 <translation id="4275663329226226506">メディア</translation>
 <translation id="4278390842282768270">許可</translation>
+<translation id="4300272766492248925">アプリを開く</translation>
 <translation id="4307992518367153382">基本設定</translation>
 <translation id="4351244548802238354">ダイアログを閉じる</translation>
 <translation id="4376501731284077108">管理対象外</translation>
@@ -323,6 +326,7 @@
 <translation id="4923459931733593730">お支払い</translation>
 <translation id="4941291666397027948">* は必須項目です</translation>
 <translation id="4943872375798546930">結果はありません</translation>
+<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> が画面を共有しています</translation>
 <translation id="4961700429721424617"><ph name="MANAGED_DOMAIN" /> で管理されているアカウントからログアウトしようとしています。この操作を行うと、Chrome データはこの端末から削除されますが、Google アカウントには残ります。</translation>
 <translation id="497421865427891073">次に進む</translation>
 <translation id="4988526792673242964">ページ</translation>
@@ -364,7 +368,6 @@
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> を削除しました</translation>
 <translation id="5345083863238459644">現在地情報へのアクセスは<ph name="BEGIN_LINK" />この端末でもオフになっています<ph name="END_LINK" />。</translation>
 <translation id="5372829067651257087">URL をコピーしました。</translation>
-<translation id="5380554235172449987">送信しない</translation>
 <translation id="5400569084694353794">このアプリケーションを使用すると、Chrome の<ph name="BEGIN_LINK1" />利用規約<ph name="END_LINK1" />と<ph name="BEGIN_LINK2" />プライバシーに関するお知らせ<ph name="END_LINK2" />に同意したことになります。</translation>
 <translation id="5414836363063783498">確認しています…</translation>
 <translation id="5423934151118863508">最もアクセスの多かったページがここに表示されます</translation>
@@ -374,7 +377,6 @@
 <translation id="5456381639095306749">ページをダウンロード</translation>
 <translation id="5487521232677179737">データを消去</translation>
 <translation id="5487729733663684359">このバージョンの Android では Chrome の更新はサポートされなくなりました。</translation>
-<translation id="5511351932351731210">常に送信</translation>
 <translation id="5512137114520586844">このアカウントは <ph name="PARENT_NAME" /> によって管理されています。</translation>
 <translation id="5527082711130173040">Chrome ではデバイスをスキャンするために現在地情報にアクセスする必要があります。<ph name="BEGIN_LINK1" />権限を更新<ph name="END_LINK1" />してください。また、現在地情報へのアクセスが<ph name="BEGIN_LINK2" />この端末でオフになっています<ph name="END_LINK2" />。</translation>
 <translation id="5530766185686772672">シークレットタブを閉じる</translation>
@@ -495,7 +497,6 @@
 <translation id="6831043979455480757">翻訳</translation>
 <translation id="6846298663435243399">読み込み中...</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> 個のタブを閉じました</translation>
-<translation id="6857778194843072568">Wi-Fi のみで送信</translation>
 <translation id="6864459304226931083">画像をダウンロード</translation>
 <translation id="6865313869410766144">自動入力フォームのデータ</translation>
 <translation id="6868088497967843822">ログインすると、お使いのどのデバイスでも同じブックマーク、履歴、パスワード、その他の設定を利用できるようになります。</translation>
@@ -515,6 +516,7 @@
 <translation id="7026897394897382018">データセーバーを有効にする</translation>
 <translation id="7029809446516969842">パスワード</translation>
 <translation id="7031882061095297553">同期先</translation>
+<translation id="7040138676081995583">アプリケーションで開く...</translation>
 <translation id="7053983685419859001">ブロック</translation>
 <translation id="7057058088140140610">Google ペイメントのクレジット カードと住所</translation>
 <translation id="7062545763355031412">同意してアカウントを切り替える</translation>
@@ -591,9 +593,11 @@
 <translation id="7998918019931843664">閉じたタブを開く</translation>
 <translation id="7999064672810608036">すべてのローカルデータ（Cookie を含む）を消去して、このウェブサイトに指定したすべての許可をリセットしてもよろしいですか？</translation>
 <translation id="8007176423574883786">このデバイスに対して無効</translation>
+<translation id="802154636333426148">ダウンロード エラー</translation>
 <translation id="8026334261755873520">閲覧履歴データを消去する</translation>
 <translation id="8035133914807600019">新しいフォルダ...</translation>
 <translation id="8037750541064988519">残り <ph name="DAYS" /> 日</translation>
+<translation id="8051695050440594747"><ph name="MEGABYTES" /> MB 利用可</translation>
 <translation id="8063895661287329888">ブックマークを追加できませんでした。</translation>
 <translation id="8068648041423924542">証明書を選択できません</translation>
 <translation id="8069239273282989646">圧縮後</translation>
@@ -675,7 +679,6 @@
 <translation id="8986494364107987395">使用統計データと障害レポートを Google に自動送信する</translation>
 <translation id="8998729206196772491"><ph name="MANAGED_DOMAIN" /> で管理されているアカウントでログインして、Chrome データの管理を管理者に委ねようとしています。この操作を行うと、データはこのアカウントに恒久的に関連付けられます。Chrome からログアウトすると、データはこの端末から削除されますが、Google アカウントには残ります。</translation>
 <translation id="9019902583201351841">保護者により管理されています</translation>
-<translation id="9020607083536754075">現在のタブを閉じて前のアプリに戻る</translation>
 <translation id="9038649477754266430">予測サービスを使用してページをより迅速に読み込む</translation>
 <translation id="9050666287014529139">パスフレーズ</translation>
 <translation id="9060538597317784206">Play ストアで <ph name="APP_NAME" /> アプリを表示。レーティング: <ph name="APP_RATING" /></translation>

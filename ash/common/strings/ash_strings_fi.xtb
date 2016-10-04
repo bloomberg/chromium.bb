@@ -108,6 +108,7 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="3891340733213178823">Kirjaudu ulos painamalla Ctrl+Shift+Q kahdesti.</translation>
 <translation id="3892641579809465218">Sisäinen näyttö</translation>
 <translation id="3893630138897523026">ChromeVox (äänipalaute)</translation>
+<translation id="3899995891769452915">Äänisyöte</translation>
 <translation id="3963445509666917109">Kaiutin (sisäinen)</translation>
 <translation id="3967919079500697218">Järjestelmänvalvoja on poistanut käytöstä mahdollisuuden ottaa kuvakaappauksia.</translation>
 <translation id="397105322502079400">Lasketaan...</translation>
@@ -180,6 +181,7 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="6459472438155181876">Ruutua laajennetaan: <ph name="DISPLAY_NAME" /></translation>
 <translation id="6490471652906364588">C-tyypin USB-laite (oikean sivun portti)</translation>
 <translation id="6501401484702599040">Näkymä peilataan kohteeseen <ph name="RECEIVER_NAME" />.</translation>
+<translation id="6521655319214113338">Käsinkirjoitus</translation>
 <translation id="6537270692134705506">Tallenna kuvakaappaus koko näkymästä</translation>
 <translation id="6550675742724504774">Asetukset</translation>
 <translation id="6585808820553845416">Istunnon loppumiseen on <ph name="SESSION_TIME_REMAINING" />.</translation>
@@ -209,6 +211,7 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="743058460480092004">Kamera ja mikrofoni ovat käytössä.</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> ei tue resoluutiota <ph name="SPECIFIED_RESOLUTION" />. Resoluutioksi valittiin <ph name="FALLBACK_RESOLUTION" />.</translation>
+<translation id="7562368315689366235">Emojipaletti</translation>
 <translation id="7573962313813535744">Telakoitu tila</translation>
 <translation id="7580671184200851182">Toista äänet samanlaisina kaikista kaiuttimista (monotoisto)</translation>
 <translation id="7581273696622423628">Vastaa kyselyyn</translation>

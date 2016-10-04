@@ -13,6 +13,7 @@
 <translation id="1414495520565016063">Ви ввійшли в Chromium.</translation>
 <translation id="1444754455097148408">Ліцензії Chromium із відкритим кодом</translation>
 <translation id="1480489203462860648">Уже встановлено. Спробуйте</translation>
+<translation id="1502360822835740515">Як зробити Chromium веб-переглядачем за умовчанням</translation>
 <translation id="151962892725702025">ОС Chromium не вдалося синхронізувати ваші дані, оскільки синхронізація для вашого домену недоступна.</translation>
 <translation id="1559451348202814456">Chromium може працювати неналежним чином, оскільки Mac OS X версій 10.6, 10.7 і 10.8 більше не підтримується.</translation>
 <translation id="1644918877723739397">Chromium додасть його в <ph name="SAVED_PASSWORD_LINK" /> і запам’ятає для наступного разу.</translation>
@@ -93,10 +94,12 @@
 <translation id="378917192836375108">Chromium дозволяє натиснути номер телефону в Інтернеті та зателефонувати за ним через Skype.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
 <translation id="3849925841547750267">На жаль, ваші налаштування Mozilla Firefox недоступні, коли цей веб-переглядач працює. Щоб імпортувати ці налаштування в Chromium, збережіть свою роботу і закрийте всі вікна Firefox. Потім натисніть "Продовжити".</translation>
+<translation id="3852700440713538496">Як закріпити значок Chromium на панелі завдань</translation>
 <translation id="3883381313049582448">Використовувати пароль, згенерований Chromium</translation>
 <translation id="3889543394854987837">Натисніть своє ім’я, щоб відкрити Chromium і розпочати перегляд сайтів.</translation>
 <translation id="390894725198123737">В ОС Mac паролі можуть зберігатися в системі Keychain, де їх можуть застосовувати чи синхронізувати інші користувачі Chromium, які спільно користуються цим обліковим записом ОС X.</translation>
 <translation id="4050175100176540509">В останній версії покращено безпеку та додано нові функції.</translation>
+<translation id="407254336480250557">Виберіть <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="4077262827416206768">Щоб зміна почала діяти, закрийте всі вікна Chromium і перезапустіть його.</translation>
 <translation id="4182290826692170034">Chromium установлено веб-переглядачем за умовчанням.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Застереження:<ph name="END_BOLD" /> Chromium не може заборонити розширенням реєструвати вашу історію веб-перегляду. Щоб вимкнути це розширення в режимі анонімного перегляду, зніміть прапорець поруч із цим параметром.</translation>
@@ -118,6 +121,7 @@
 <translation id="4621240073146040695">Майже оновлено. Перезапустіть Chromium, щоб завершити оновлення.</translation>
 <translation id="4677944499843243528">Схоже, профіль використовується іншим процесом Chromium (<ph name="PROCESS_ID" />) на іншому комп’ютері (<ph name="HOST_NAME" />). Chromium заблокував профіль, щоб запобігти його спотворенню. Якщо ви впевнені, що жоден інший процес не використовує цей профіль, розблокуйте профіль і перезапустіть Chromium.</translation>
 <translation id="469338717132742108">Отримати довідку щодо ОС Chromium</translation>
+<translation id="4714956846925717402">Відкривайте Chromium швидше</translation>
 <translation id="4743926867934016338">Прийняти й шукати</translation>
 <translation id="4888717733111232871">Вхідне правило для Chromium дозволяє трафік mDNS.</translation>
 <translation id="4943838377383847465">Chromium у фоновому режимі.</translation>

@@ -80,7 +80,6 @@
 <translation id="1871208020102129563">Выбрано использование фиксированных прокси-серверов, а не URL PAC-скрипта.</translation>
 <translation id="1883255238294161206">Свернуть список</translation>
 <translation id="1898423065542865115">Фильтры</translation>
-<translation id="1911837502049945214">Ваш сертификат отклонен сайтом <ph name="HOST_NAME" /> или просрочен.</translation>
 <translation id="194030505837763158">Перейдите по ссылке: <ph name="LINK" /></translation>
 <translation id="1962204205936693436">Закладки <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Не удалось выполнить сериализацию</translation>
@@ -176,7 +175,6 @@
 <translation id="2837049386027881519">Пришлось повторно установить подключение с использованием более старой версии протокола TLS или SSL. Обычно это значит, что на сервере установлено очень старое программное обеспечение, которое может быть ненадежным.</translation>
 <translation id="284702764277384724">Возможно, сертификат сервера <ph name="HOST_NAME" /> фальсифицирован.</translation>
 <translation id="2889159643044928134">Не обновлять</translation>
-<translation id="2896499918916051536">Плагин не поддерживается.</translation>
 <translation id="2900469785430194048">Chrome не хватает памяти для показа этой страницы.</translation>
 <translation id="2909946352844186028">Похоже, вы подключились к другой сети.</translation>
 <translation id="2922350208395188000">Не удается проверить сертификат сервера.</translation>
@@ -219,6 +217,7 @@
 <translation id="3286538390144397061">Перезапустить сейчас</translation>
 <translation id="3305707030755673451">Данные были зашифрованы с помощью кодовой фразы <ph name="TIME" />. Введите ее, чтобы начать синхронизацию.</translation>
 <translation id="333371639341676808">Предотвратить создание дополнительных диалоговых окон на этой странице.</translation>
+<translation id="3338095232262050444">Надежный</translation>
 <translation id="3340978935015468852">настройках</translation>
 <translation id="3345135638360864351">Не удалось отправить пользователю <ph name="NAME" /> запрос на доступ к этому сайту. Повторите попытку.</translation>
 <translation id="3355823806454867987">Изменить настройки прокси-сервера...</translation>
@@ -321,6 +320,7 @@
 <translation id="4304224509867189079">Вход</translation>
 <translation id="432290197980158659">Сервер предоставил сертификат, который не соответствует требованиям браузера. Эти требования выдвигаются для того, чтобы обезопасить вас от использования ненадежных сайтов. <ph name="BEGIN_LEARN_MORE_LINK" />Подробнее…<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="4325863107915753736">Не удалось найти статью</translation>
+<translation id="4331708818696583467">Ненадежный</translation>
 <translation id="4372948949327679948">Ожидаемое значение: <ph name="VALUE_TYPE" />.</translation>
 <translation id="4381091992796011497">Имя пользователя:</translation>
 <translation id="4394049700291259645">Отключить</translation>
@@ -340,6 +340,7 @@
 <translation id="4589078953350245614">Вы пытаетесь обратиться серверу в домене <ph name="DOMAIN" />, но он предоставил недействительный сертификат. <ph name="BEGIN_LEARN_MORE_LINK" />Подробнее…<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="4592951414987517459">Соединение с <ph name="DOMAIN" /> зашифровано с помощью современных наборов шифров.</translation>
 <translation id="4594403342090139922">&amp;Отменить удаление</translation>
+<translation id="4627442949885028695">Продолжить на другом устройстве</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">Вы просматриваете страницу расширения</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -382,7 +383,6 @@
 <translation id="5089810972385038852">Штат</translation>
 <translation id="5095208057601539847">Провинция</translation>
 <translation id="5115563688576182185">(64 бит)</translation>
-<translation id="5122371513570456792"><ph name="SEARCH_RESULTS" /> по запросу "<ph name="SEARCH_STRING" />" (<ph name="NUMBER_OF_RESULTS" />).</translation>
 <translation id="5141240743006678641">Шифровать синхронизированные пароли с помощью учетных данных Google</translation>
 <translation id="5145883236150621069">При проверке политики возвращен код ошибки</translation>
 <translation id="5171045022955879922">Введите запрос или URL</translation>
@@ -424,7 +424,6 @@
 <translation id="5622887735448669177">Покинуть эту страницу?</translation>
 <translation id="5629630648637658800">Не удалось применить настройки политики</translation>
 <translation id="5631439013527180824">Токен устройства недействителен</translation>
-<translation id="5650551054760837876">Ничего не найдено.</translation>
 <translation id="5677928146339483299">Заблокировано</translation>
 <translation id="5710435578057952990">Идентификационные данные этого сайта не проверены.</translation>
 <translation id="5720705177508910913">Текущий пользователь</translation>
@@ -623,7 +622,6 @@
 <translation id="7995512525968007366">Не указано</translation>
 <translation id="8012647001091218357">Не удалось связаться с вашими родителями. Повторите попытку.</translation>
 <translation id="8034522405403831421">Язык этой страницы: <ph name="SOURCE_LANGUAGE" />. Перевести ее на <ph name="TARGET_LANGUAGE" />?</translation>
-<translation id="8034955203865359138">Элементы истории не найдены.</translation>
 <translation id="8088680233425245692">Не удалось показать статью</translation>
 <translation id="8089520772729574115">менее 1 МБ</translation>
 <translation id="8091372947890762290">Активация управления устройствами не завершена</translation>
@@ -656,6 +654,7 @@
 <translation id="8433057134996913067">На большинстве сайтов будет выполнен выход из аккаунта.</translation>
 <translation id="8437238597147034694">&amp;Отменить перемещение</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 банковская карта}one{# банковская карта}few{# банковские карты}many{# банковских карт}other{# банковской карты}}</translation>
+<translation id="8483780878231876732">Чтобы использовать карты, привязанные к аккаунту Google Account, войдите в Chrome</translation>
 <translation id="8488350697529856933">Объект применения</translation>
 <translation id="8498891568109133222">Превышено время ожидания ответа от сайта <ph name="HOST_NAME" />.</translation>
 <translation id="852346902619691059">Сервер не может подтвердить связь с доменом <ph name="DOMAIN" />. Его сертификат безопасности не принимается операционной системой вашего устройства. Возможно, проблема связана с настройками сервера или действиями злоумышленников, которые пытаются перехватить соединение. <ph name="BEGIN_LEARN_MORE_LINK" />Подробнее…<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -675,7 +674,6 @@
 <translation id="8730621377337864115">Готово</translation>
 <translation id="8738058698779197622">Для создания безопасного подключения необходимо, чтобы показания системных часов были верны. Причина в том, что сертификаты для идентификации сайтов имеют ограниченный срок действия. Если часы на устройстве неточны, Chromium не может проверить актуальность этих сертификатов.</translation>
 <translation id="8740359287975076522">Не удается найти &lt;abbr id="dnsDefinition"&gt;DNS-адрес&lt;/abbr&gt; сайта <ph name="HOST_NAME" />. Выполняется диагностика.</translation>
-<translation id="8741995161408053644">История просмотра также может храниться в вашем аккаунте Google: <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;Повторить удаление</translation>
 <translation id="8798099450830957504">По умолчанию</translation>
 <translation id="8804164990146287819">Политика конфиденциальности</translation>

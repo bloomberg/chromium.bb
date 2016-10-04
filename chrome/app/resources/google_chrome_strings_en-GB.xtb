@@ -32,6 +32,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome is a web browser that runs web pages and applications with lightning speed. It's fast, stable and easy to use. Browse the web more safely with malware and phishing protection built into Google Chrome.</translation>
+<translation id="1718131156967340976">Select <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
 <translation id="174539241580958092">Google Chrome could not sync your data due to an error signing in.</translation>
 <translation id="1759301979429102118">Details from your contacts can help you fill out forms more quickly in Chrome.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -107,6 +108,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome verified that <ph name="ISSUER" /> issued this website's certificate. The server supplied Certificate Transparency information, but Chrome did not recognise any of the Certificate Transparency logs.</translation>
 <translation id="3889417619312448367">Uninstall Google Chrome</translation>
+<translation id="4028693306634653894">Get to Chrome faster</translation>
 <translation id="4042449298237264661">This computer will no longer receive Google Chrome updates because Windows XP and Windows Vista are no longer supported.</translation>
 <translation id="4050175100176540509">Important security improvements and new features are available in the latest version.</translation>
 <translation id="4053720452172726777">Customise and control Google Chrome</translation>
@@ -245,6 +247,7 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="7788788617745289808">Chrome needs camera access to share it with this site.</translation>
 <translation id="7808348361785373670">Remove from Chrome...</translation>
 <translation id="7825851276765848807">Installation failed due to unspecified error. Please download Google Chrome again.</translation>
+<translation id="7888186132678118370">Pin Chrome to your taskbar</translation>
 <translation id="7890208801193284374">If you share a computer, friends and family can browse separately and set up Chrome just the way they want.</translation>
 <translation id="7908168227788431038">Nearly up to date! Relaunch Google Chrome to finish updating.</translation>
 <translation id="795025003224538582">Don't restart</translation>
@@ -286,4 +289,5 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="9102715433345326100">This file is malicious and Chrome has blocked it.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Warning:<ph name="END_BOLD" /> Google Chrome cannot prevent extensions from recording your browsing history. To disable this extension in incognito mode, unselect this option.</translation>
 <translation id="911206726377975832">Also delete your browsing data?</translation>
+<translation id="924447568950697217">Make Chrome your default browser</translation>
 </translationbundle>

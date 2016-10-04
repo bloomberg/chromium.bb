@@ -13,6 +13,7 @@
 <translation id="1414495520565016063">Olet kirjautunut Chromiumiin!</translation>
 <translation id="1444754455097148408">Chromiumin avoimen lähdekoodin lisenssit</translation>
 <translation id="1480489203462860648">Kokeile, selain on jo asennettu</translation>
+<translation id="1502360822835740515">Chromiumin asettaminen oletusselaimeksi</translation>
 <translation id="151962892725702025">Chromium-käyttöjärjestelmä ei voi synkronoida tietoja, koska synkronointi ei ole käytettävissä verkkotunnuksessasi.</translation>
 <translation id="1559451348202814456">Chromium ei välttämättä toimi oikein, koska se ei enää tue Mac OS X -versioita 10.6, 10.7 tai 10.8.</translation>
 <translation id="1644918877723739397">Chromium tallentaa salasanan <ph name="SAVED_PASSWORD_LINK" /> -ominaisuudella ja muistaa sen, kun tarvitset sitä seuraavan kerran.</translation>
@@ -93,10 +94,12 @@
 <translation id="378917192836375108">Chromiumin avulla voit soittaa Skypellä puhelinnumeroon klikkaamalla sitä verkossa!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3849925841547750267">Mozilla Firefoxin asetukset eivät ole käytettävissä selaimen ollessa käynnissä. Jos haluat tuoda ne Chromiumiin, tallenna työsi ja sulje Firefoxin kaikki ikkunat. Valitse sitten Jatka.</translation>
+<translation id="3852700440713538496">Chromiumin kiinnittäminen tehtäväpalkkiin</translation>
 <translation id="3883381313049582448">Käytä Chromiumin luomaa salasanaa</translation>
 <translation id="3889543394854987837">Avaa Chromium klikkaamalla nimeäsi ja aloita selaaminen.</translation>
 <translation id="390894725198123737">Macilla salasanat voidaan tallentaa Avainnippuusi, ja muut Chromium-käyttäjät, jotka jakavat saman OS X -käyttöjärjestelmän tilin, voivat käyttää tai synkronoida niitä.</translation>
 <translation id="4050175100176540509">Uusimmassa versiossa on käytettävissä tärkeitä turvallisuusparannuksia ja uusia ominaisuuksia.</translation>
+<translation id="407254336480250557">Valitse <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" />.</translation>
 <translation id="4077262827416206768">Sulje kaikki Chromium-ikkunat ja käynnistä Chromium uudelleen, niin muutos tulee voimaan.</translation>
 <translation id="4182290826692170034">Hurraa! Chromium on nyt oletusselaimesi.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Varoitus:<ph name="END_BOLD" /> Chromium ei voi estää laajennuksia tallentamasta selaushistoriaasi. Poista tämä valinta, jos haluat poistaa tämän laajennuksen käytöstä incognito-tilassa.</translation>
@@ -118,6 +121,7 @@
 <translation id="4621240073146040695">Melkein valmista. Viimeistele päivitys käynnistämällä Chromium uudelleen.</translation>
 <translation id="4677944499843243528">Profiili näyttäisi olevan toisen Chromium-prosessin (<ph name="PROCESS_ID" />) käytössä toisella tietokoneella (<ph name="HOST_NAME" />). Chromium on lukinnut profiilin, jotta se ei vioitu. Jos olet varma, että mikään toinen prosessi ei käytä tätä profiilia, voit poistaa profiilin lukituksen ja käynnistää Chromiumin uudelleen.</translation>
 <translation id="469338717132742108">Ohjeita Chromium-käyttöjärjestelmän käyttöön</translation>
+<translation id="4714956846925717402">Avaa Chromium nopeammin</translation>
 <translation id="4743926867934016338">Hyväksy ja hae</translation>
 <translation id="4888717733111232871">Chromiumin saapuvien yhteyksien sääntö, joka sallii mDNS-liikenteen.</translation>
 <translation id="4943838377383847465">Chromium on käynnissä taustalla</translation>

@@ -80,7 +80,6 @@
 <translation id="1871208020102129563">‏تنظیم پروکسی به گونه‌ای است که از سرورهای ثابت پروکسی استفاده کند و از آدرس اسکریپت pac. استفاده نکند.</translation>
 <translation id="1883255238294161206">کوچک کردن فهرست</translation>
 <translation id="1898423065542865115">فیلتر کردن</translation>
-<translation id="1911837502049945214"><ph name="HOST_NAME" /> گواهی ثبت ورود شما را نپذیرفت، یا ممکن است گواهی ثبت ورود شما منقضی شده باشد.</translation>
 <translation id="194030505837763158">رفتن به <ph name="LINK" /></translation>
 <translation id="1962204205936693436">نشانک‌های <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">خطای ترتیب</translation>
@@ -176,7 +175,6 @@
 <translation id="2837049386027881519">‏با استفاده از نسخه قدیمی پروتکل TLS یا SSL باید دوباره سعی کنید اتصال را برقرار کنید. یعنی سرور از نرم‌افزار خیلی قدیمی استفاده می‌کند و ممکن است مسائل امنیتی دیگری داشته باشد.</translation>
 <translation id="284702764277384724">به نظر می‌رسد که گواهی سرور در <ph name="HOST_NAME" /> جعلی باشد.</translation>
 <translation id="2889159643044928134">تازه‌سازی نشود</translation>
-<translation id="2896499918916051536">این افزایه پشتیبانی نمی‌شود.</translation>
 <translation id="2900469785430194048">‏Google Chrome هنگام تلاش برای نمایش این صفحه با کمبود حافظه روبرو شد.</translation>
 <translation id="2909946352844186028">تغییر شبکه تشخیص داده شد.</translation>
 <translation id="2922350208395188000">گواهی سرور بررسی نمی‌شود.</translation>
@@ -220,6 +218,7 @@
 <translation id="3286538390144397061">راه‌اندازی مجدد اکنون</translation>
 <translation id="3305707030755673451">داده‌های شما در تاریخ <ph name="TIME" /> با عبارت عبور همگام‌سازی‌تان رمزگذاری شد. برای شروع همگام‌سازی آن را وارد کنید.</translation>
 <translation id="333371639341676808">از ایجاد کادرهای گفتگوی دیگر توسط این صفحه جلوگیری شود.</translation>
+<translation id="3338095232262050444">ایمن</translation>
 <translation id="3340978935015468852">تنظیمات</translation>
 <translation id="3345135638360864351">درخواست شما برای دسترسی به این سایت به <ph name="NAME" /> ارسال نشد. لطفاً دوباره امتحان کنید.</translation>
 <translation id="3355823806454867987">تغییر تنظیمات پروکسی...</translation>
@@ -322,6 +321,7 @@
 <translation id="4304224509867189079">ورود به سیستم</translation>
 <translation id="432290197980158659">سرور گواهینامه‌ای ارائه کرد که با انتظارات داخلی مطابقت ندارد. این انتظارات برای بعضی از وب‌سایت‌های با امنیت بالا و با هدف محافظت از شما درنظر گرفته شده‌اند. <ph name="BEGIN_LEARN_MORE_LINK" />بیشتر بدانید<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4325863107915753736">مقاله یافت نشد.</translation>
+<translation id="4331708818696583467">امن نیست</translation>
 <translation id="4372948949327679948">مقدار مورد انتظار <ph name="VALUE_TYPE" />.</translation>
 <translation id="4381091992796011497">نام کاربری:</translation>
 <translation id="4394049700291259645">غیر فعال کردن</translation>
@@ -341,6 +341,7 @@
 <translation id="4589078953350245614">سعی داشتید به <ph name="DOMAIN" /> دسترسی داشته باشید، اما سرور گواهینامه نامعتبری ارائه کرد. <ph name="BEGIN_LEARN_MORE_LINK" />بیشتر بدانید<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4592951414987517459">اتصال شما به <ph name="DOMAIN" /> با استفاده از یک مجموعه رمز مدرن، رمزگذاری شده است.</translation>
 <translation id="4594403342090139922">&amp;واگرد حذف</translation>
+<translation id="4627442949885028695">ادامه از دستگاه دیگری</translation>
 <translation id="4668929960204016307">،</translation>
 <translation id="4670097147947922288">درحال مشاهده یک صفحه افزونه هستید.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -383,7 +384,6 @@
 <translation id="5089810972385038852">ایالت</translation>
 <translation id="5095208057601539847">استان</translation>
 <translation id="5115563688576182185">(۶۴ بیت)</translation>
-<translation id="5122371513570456792"><ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> برای «<ph name="SEARCH_STRING" />» پیدا شد.</translation>
 <translation id="5141240743006678641">‏رمزگذاری گذرواژه‌های همگام‌سازی شده با اطلاعات کاربری Google شما</translation>
 <translation id="5145883236150621069">کد خطا در پاسخ خط‌مشی موجود است</translation>
 <translation id="5171045022955879922">‏جستجو یا تایپ URL</translation>
@@ -425,7 +425,6 @@
 <translation id="5622887735448669177">می‌خواهید از این سایت خارج شوید؟</translation>
 <translation id="5629630648637658800">تنظیمات خط‌مشی بارگیری نشد</translation>
 <translation id="5631439013527180824">نشانه مدیریت دستگاه نامعتبر است</translation>
-<translation id="5650551054760837876">هیچ نتیجه‌ای برای جستجو یافت نشد.</translation>
 <translation id="5677928146339483299">مسدود است</translation>
 <translation id="5710435578057952990">هویت این وب سایت تأیید نشده است.</translation>
 <translation id="5720705177508910913">کاربر کنونی</translation>
@@ -489,7 +488,7 @@
 <translation id="6458467102616083041">نادیده گرفته شد زیرا جستجوی پیش‌فرض توسط قانون غیرفعال شده است.</translation>
 <translation id="6462969404041126431">این سرور نتوانست ثابت کند <ph name="DOMAIN" /> است؛ شاید گواهینامه امنیتی آن باطل شده باشد. ممکن است پیکربندی اشتباهی علت آن باشد یا مهاجمی اتصالتان را قطع کرده باشد. <ph name="BEGIN_LEARN_MORE_LINK" />بیشتر بدانید<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="647261751007945333">خط‌‌مشی‌های دستگاه</translation>
-<translation id="6489534406876378309">شروع آپلود کردن خرابی‌ها</translation>
+<translation id="6489534406876378309">شروع بارگذاری کردن خرابی‌ها</translation>
 <translation id="6529602333819889595">&amp;انجام مجدد حذف</translation>
 <translation id="6534179046333460208">پیشنهادهای «وب فیزیکی»</translation>
 <translation id="6550675742724504774">گزینه‌ها</translation>
@@ -572,7 +571,7 @@
 <translation id="7481312909269577407">ارسال کردن</translation>
 <translation id="7485870689360869515">هیچ داده‌ای یافت نشد.</translation>
 <translation id="7508255263130623398">شناسه دستگاه خط‌مشی برگردانده‌شده خالی است یا با شناسه کنونی دستگاه مطابقت ندارد</translation>
-<translation id="7514365320538308">دانلود</translation>
+<translation id="7514365320538308">بارگیری</translation>
 <translation id="7518003948725431193">صفحه وبی با این آدرس وب یافت نشد: <ph name="URL" /></translation>
 <translation id="7537536606612762813">اجباری</translation>
 <translation id="7542995811387359312">تکمیل خودکار کارت اعتباری غیر فعال است زیرا این فرم از یک اتصال امن استفاده نمی‌کند.</translation>
@@ -624,7 +623,6 @@
 <translation id="7995512525968007366">تعیین نشده</translation>
 <translation id="8012647001091218357">در حال حاضر نمی‌توانیم با والدینتان ارتباط برقرار کنیم. لطفاً دوباره امتحان کنید.</translation>
 <translation id="8034522405403831421">این صفحه به زبان <ph name="SOURCE_LANGUAGE" /> است. مایلید آن را به <ph name="TARGET_LANGUAGE" /> ترجمه کنید؟</translation>
-<translation id="8034955203865359138">ورودی سابقه یافت نشد.</translation>
 <translation id="8088680233425245692">مشاهده مقاله ناموفق بود.</translation>
 <translation id="8089520772729574115">کمتر از ۱ مگابایت</translation>
 <translation id="8091372947890762290">فعال‌سازی در سرور در حالت تعلیق است</translation>
@@ -657,6 +655,7 @@
 <translation id="8433057134996913067">با این کار از سیستم بیشتر وب‌سایت‌ها خارج می‌شوید.</translation>
 <translation id="8437238597147034694">&amp;واگرد انتقال</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{۱ کارت اعتباری}one{# کارت اعتباری}other{# کارت اعتباری}}</translation>
+<translation id="8483780878231876732">‏برای استفاده از کارت‌ها از حساب Google خود، به سیستم Chrome وارد شوید</translation>
 <translation id="8488350697529856933">اعمال برای</translation>
 <translation id="8498891568109133222">پاسخ <ph name="HOST_NAME" /> بیش از حد طول کشیده است.</translation>
 <translation id="852346902619691059">این سرور نتوانست ثابت کند <ph name="DOMAIN" /> است؛ گواهینامه امنیتی آن مورداعتماد سیستم‌عامل دستگاه شما نیست. ممکن است پیکربندی اشتباهی علت آن باشد یا مهاجمی اتصالتان را قطع کرده باشد. <ph name="BEGIN_LEARN_MORE_LINK" />بیشتر بدانید<ph name="END_LEARN_MORE_LINK" />.</translation>
@@ -676,7 +675,6 @@
 <translation id="8730621377337864115">تمام</translation>
 <translation id="8738058698779197622">‏به منظور برقراری یک اتصال امن، لازم است که ساعت شما به درستی تنظیم شود. زیرا گواهینامه‌هایی که وب‌سایت‌ها برای شناسایی خودشان استفاده می‌کنند تنها برای دوره‌های زمانی خاصی معتبر هستند. از آنجایی که ساعت دستگاه نادرست است، Chromium نمی‌تواند این گواهینامه‌ها را تأیید کند.</translation>
 <translation id="8740359287975076522">‏<ph name="HOST_NAME" />’s &lt;abbr id="dnsDefinition"&gt;آدرس DNS&lt;/abbr&gt; پیدا نشد. درحال بررسی برای تشخیص مشکل.</translation>
-<translation id="8741995161408053644">‏ممکن است حساب Google شما اشکال سابقه مرور دیگری در <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> داشته باشد.</translation>
 <translation id="8790007591277257123">&amp;انجام مجدد حذف</translation>
 <translation id="8798099450830957504">پیش‌فرض</translation>
 <translation id="8804164990146287819">خط‌مشی رازداری</translation>

@@ -109,6 +109,7 @@
 <translation id="3891340733213178823">로그아웃하려면 Ctrl+Shift+Q를 두 번 누릅니다.</translation>
 <translation id="3892641579809465218">내부 디스플레이</translation>
 <translation id="3893630138897523026">ChromeVox(음성 피드백)</translation>
+<translation id="3899995891769452915">음성 입력</translation>
 <translation id="3963445509666917109">스피커(내부)</translation>
 <translation id="3967919079500697218">관리자가 스크린샷 캡쳐 기능을 사용 중지했습니다.</translation>
 <translation id="397105322502079400">계산 중...</translation>
@@ -181,6 +182,7 @@
 <translation id="6459472438155181876">화면을 <ph name="DISPLAY_NAME" />(으)로 확장</translation>
 <translation id="6490471652906364588">USB-C 기기(오른쪽 포트)</translation>
 <translation id="6501401484702599040"><ph name="RECEIVER_NAME" />(으)로 화면 전송 중</translation>
+<translation id="6521655319214113338">필기 입력</translation>
 <translation id="6537270692134705506">화면 캡처</translation>
 <translation id="6550675742724504774">옵션</translation>
 <translation id="6585808820553845416">세션이 <ph name="SESSION_TIME_REMAINING" /> 후에 종료됩니다.</translation>
@@ -212,6 +214,7 @@
 <translation id="743058460480092004">카메라와 마이크가 사용 중입니다.</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" />에서 <ph name="SPECIFIED_RESOLUTION" />을(를) 지원하지 않습니다. 해상도가 <ph name="FALLBACK_RESOLUTION" />(으)로 변경되었습니다.</translation>
+<translation id="7562368315689366235">그림 이모티콘 팔레트</translation>
 <translation id="7573962313813535744">고정 모드</translation>
 <translation id="7580671184200851182">모든 스피커에서 동일한 오디오 실행(모노 오디오)</translation>
 <translation id="7581273696622423628">설문조사 참여</translation>

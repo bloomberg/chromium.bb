@@ -109,6 +109,7 @@ Apăsați Căutare sau Shift pentru a anula.</translation>
 <translation id="3891340733213178823">Apăsați de două ori Ctrl+Shift+Q pentru a vă deconecta.</translation>
 <translation id="3892641579809465218">Afișaj intern</translation>
 <translation id="3893630138897523026">ChromeVox (feedback rostit)</translation>
+<translation id="3899995891769452915">Intrare vocală</translation>
 <translation id="3963445509666917109">Difuzor (intern)</translation>
 <translation id="3967919079500697218">Capacitatea de a crea capturi de ecran a fost dezactivată de administrator.</translation>
 <translation id="397105322502079400">Se calculează...</translation>
@@ -181,6 +182,7 @@ Apăsați Căutare sau Shift pentru a anula.</translation>
 <translation id="6459472438155181876">Se extinde ecranul pe <ph name="DISPLAY_NAME" /></translation>
 <translation id="6490471652906364588">Dispozitiv USB-C (portul din dreapta)</translation>
 <translation id="6501401484702599040">Se proiectează ecranul pe <ph name="RECEIVER_NAME" /></translation>
+<translation id="6521655319214113338">Introducerea textului prin scrierea de mână</translation>
 <translation id="6537270692134705506">Capturează ecranul</translation>
 <translation id="6550675742724504774">Opțiuni</translation>
 <translation id="6585808820553845416">Sesiunea se încheie peste <ph name="SESSION_TIME_REMAINING" />.</translation>
@@ -212,6 +214,7 @@ Apăsați Alt+Căutare sau Shift pentru a anula.</translation>
 <translation id="743058460480092004">Camera foto și microfonul sunt în uz.</translation>
 <translation id="7510334386202674593">Ctrl + Shift + L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> nu acceptă <ph name="SPECIFIED_RESOLUTION" />. Rezoluția a fost modificată la <ph name="FALLBACK_RESOLUTION" /></translation>
+<translation id="7562368315689366235">Paletă cu emoji-uri</translation>
 <translation id="7573962313813535744">Modul andocat</translation>
 <translation id="7580671184200851182">Redă același conținut audio în toate difuzoarele (audio mono)</translation>
 <translation id="7581273696622423628">Participă la sondaj</translation>

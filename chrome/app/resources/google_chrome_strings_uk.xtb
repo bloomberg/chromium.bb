@@ -28,6 +28,7 @@
 <translation id="1653828314016431939">OK – перезапустити зараз</translation>
 <translation id="1682634494516646069">Google Chrome не може читати та записувати у свій каталог даних: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome – це веб-переглядач, який запускає веб-сторінки та програми з блискавичною швидкістю. Він швидкий, надійний і зручний у користуванні. Вбудований у Google Chrome захист від шкідливих програм і фішингу гарантує ще більшу безпеку під час перегляду веб-сторінок.</translation>
+<translation id="1718131156967340976">Виберіть <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
 <translation id="174539241580958092">Google Chrome не вдалося синхронізувати ваші дані через помилку входу.</translation>
 <translation id="1759301979429102118">Дані ваших контактів допоможуть швидше заповнювати форми в Chrome.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -103,6 +104,7 @@
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome підтвердив, що компанія <ph name="ISSUER" /> видала сертифікат цього веб-сайту. Сервер надав інформацію про прозорість сертифіката, але Chromium не вдалося розпізнати журнали прозорості сертифіката.</translation>
 <translation id="3889417619312448367">Видалити Google Chrome</translation>
+<translation id="4028693306634653894">Відкривайте Chrome швидше</translation>
 <translation id="4042449298237264661">На цей комп’ютер не надходитимуть оновлення Google Chrome, оскільки Windows XP та Windows Vista більше не підтримуються.</translation>
 <translation id="4050175100176540509">В останній версії покращено безпеку та додано нові функції.</translation>
 <translation id="4053720452172726777">Налаштування та керування Google Chrome</translation>
@@ -237,6 +239,7 @@
 <translation id="7788788617745289808">Chrome потрібен доступ до камери, щоб дозволити цьому сайту використовувати її.</translation>
 <translation id="7808348361785373670">Видалити з Chrome…</translation>
 <translation id="7825851276765848807">Програму не вдалося встановити через невизначену помилку. Завантажте Google Chrome ще раз.</translation>
+<translation id="7888186132678118370">Як закріпити значок Chrome на панелі завдань</translation>
 <translation id="7890208801193284374">Якщо вашим комп’ютером користуєтесь не лише ви, а й ваші друзі чи сім’я, вони можуть налаштувати Chrome на свій смак.</translation>
 <translation id="7908168227788431038">Майже оновлено. Перезапустіть Google Chrome, щоб завершити оновлення.</translation>
 <translation id="795025003224538582">Не перезапускати</translation>
@@ -278,4 +281,5 @@
 <translation id="9102715433345326100">Цей файл шкідливий, тому Chrome заблокував його.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Застереження:<ph name="END_BOLD" /> Google Chrome не може заборонити розширенням реєструвати вашу історію веб-перегляду. Щоб вимкнути це розширення в режимі анонімного перегляду, зніміть прапорець поруч із цим параметром.</translation>
 <translation id="911206726377975832">Також видалити дані веб-перегляду?</translation>
+<translation id="924447568950697217">Як зробити Chrome веб-переглядачем за умовчанням</translation>
 </translationbundle>

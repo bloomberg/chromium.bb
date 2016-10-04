@@ -44,7 +44,7 @@
 <translation id="7217838517480956708">سرپرست این دستگاه نصب <ph name="EXTENSION_NAME" /> را لازم کرده است. آن را نمی‌توان تغییر داد یا حذف کرد.</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (شناسه فایل افزودنی "<ph name="EXTENSION_ID" />") توسط سرپرست مسدود شده است.</translation>
 <translation id="7972881773422714442">گزینه‌ها: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
-<translation id="8047248493720652249">این برنامه افزودنی نتوانست نام‌گذاری دانلود «<ph name="ATTEMPTED_FILENAME" />» را انجام دهد زیرا یک برنامه افزودنی دیگر (<ph name="EXTENSION_NAME" />) نام فایل دیگری «<ph name="ACTUAL_FILENAME" />» را تعیین کرد.</translation>
+<translation id="8047248493720652249">این برنامه افزودنی نتوانست نام‌گذاری بارگیری «<ph name="ATTEMPTED_FILENAME" />» را انجام دهد زیرا یک برنامه افزودنی دیگر (<ph name="EXTENSION_NAME" />) نام فایل دیگری «<ph name="ACTUAL_FILENAME" />» را تعیین کرد.</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> از <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">این فایل افزودنی نتوانست مدارک صلاحیت درخواست شبکه را ارائه دهد چون فایل افزودنی دیگری (<ph name="EXTENSION_NAME" />) مدارک صلاحیت دیگری را ارائه کرده است.</translation>
 <translation id="8602184400052594090">فایل اظهارنامه وجود ندارد یا قابل خواندن نیست.</translation>

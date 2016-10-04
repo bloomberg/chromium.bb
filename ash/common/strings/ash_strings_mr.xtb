@@ -109,6 +109,7 @@
 <translation id="3891340733213178823">साइन आउट करण्यासाठी Ctrl+Shift+Q दोनदा दाबा.</translation>
 <translation id="3892641579809465218">अंतर्गत डिस्प्ले</translation>
 <translation id="3893630138897523026">ChromeVox (बोललेला अभिप्राय)</translation>
+<translation id="3899995891769452915">व्हॉइस इनपुट</translation>
 <translation id="3963445509666917109">स्पीकर (अंतर्गत)</translation>
 <translation id="3967919079500697218">स्क्रीनशॉट घेण्याची क्षमता आपल्या प्रशासकाद्वारे अक्षम केली गेली आहे.</translation>
 <translation id="397105322502079400">गणना करत आहे...</translation>
@@ -181,6 +182,7 @@
 <translation id="6459472438155181876"><ph name="DISPLAY_NAME" /> मध्ये स्क्रीन विस्तृत करत आहे</translation>
 <translation id="6490471652906364588">USB-C डिव्‍हाइस (उजवे पोर्ट)</translation>
 <translation id="6501401484702599040"><ph name="RECEIVER_NAME" /> वर स्क्रीन कास्ट करीत आहे</translation>
+<translation id="6521655319214113338">हस्तलेखन इनपुट</translation>
 <translation id="6537270692134705506">स्क्रीन कॅप्चर करा</translation>
 <translation id="6550675742724504774">पर्याय</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" /> मध्ये सत्र समाप्त होते.</translation>
@@ -211,6 +213,7 @@
 <translation id="743058460480092004">कॅमेरा आणि मायक्रोफोन वापरात आहेत.</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" /> ला समर्थन देत नाही. रिजोल्यूशन <ph name="FALLBACK_RESOLUTION" /> मध्ये बदलले</translation>
+<translation id="7562368315689366235">इमोजी पॅलेट</translation>
 <translation id="7573962313813535744">डॉक केलेला मोड</translation>
 <translation id="7580671184200851182">सर्व स्पीकर मधून समान ऑडिओ प्ले करा (मोनो ऑडिओ)</translation>
 <translation id="7581273696622423628">सर्वेक्षण घ्या</translation>

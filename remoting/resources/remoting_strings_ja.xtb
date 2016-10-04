@@ -65,7 +65,6 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="2359808026110333948">続行</translation>
 <translation id="2366718077645204424">ホストにアクセスできません。お使いのネットワークの設定が原因であることが考えられます。</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />最終オンライン: <ph name="RELATIVE_TIMESTAMP" />。</translation>
-<translation id="2498359688066513246">ヘルプとフィードバック</translation>
 <translation id="2499160551253595098">Chrome リモート デスクトップの改善のため、使用統計情報とクラッシュ レポートの収集に協力する</translation>
 <translation id="2512228156274966424">注: すべてのキーボード ショートカットを使用できるようにするには、Chrome リモート デスクトップを [ウィンドウとして開く] に設定してください。</translation>
 <translation id="2540992418118313681">このパソコンの閲覧と制御の権限を別のユーザーと共有しますか？</translation>
@@ -264,6 +263,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="7948001860594368197">画面のオプション</translation>
 <translation id="7970576581263377361">認証できませんでした。Chromium にもう一度ログインしてください。</translation>
 <translation id="7981525049612125370">リモート セッションが時間切れとなりました。</translation>
+<translation id="8041089156583427627">フィードバックを送信</translation>
 <translation id="8041721485428375115">Chrome リモート デスクトップ ホスト インストーラをダウンロードすると、Google の<ph name="LINK_BEGIN" />利用規約<ph name="LINK_END" />に同意したことになります。</translation>
 <translation id="8073845705237259513">Chrome リモート デスクトップを使用するには、お使いのデバイスに Google アカウントを追加する必要があります。</translation>
 <translation id="80739703311984697">リモート ホストで、サードパーティ ウェブサイトへの認証が求められています。続行するには、次のアドレスにアクセスできるように Chromoting に追加の権限を与える必要があります:</translation>

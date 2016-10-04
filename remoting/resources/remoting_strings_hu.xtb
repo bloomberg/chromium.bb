@@ -65,7 +65,6 @@ Adatvédelmi információkért tekintse meg a Google adatvédelmi irányelveit (
 <translation id="2359808026110333948">Folytatás</translation>
 <translation id="2366718077645204424">A gazdagép nem érhető el. Ez valószínűleg az Ön által használt hálózat konfigurációja miatt van.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Legutóbb észlelve az interneten: <ph name="RELATIVE_TIMESTAMP" />.</translation>
-<translation id="2498359688066513246">Súgó és visszajelzés</translation>
 <translation id="2499160551253595098">Segítsen fejleszteni a Chrome távoliasztal-szolgáltatást azáltal, hogy rendelkezésünkre bocsátja a használati statisztikákat és hibajelentéseket.</translation>
 <translation id="2512228156274966424">MEGJEGYZÉS: ha biztosítani akarja valamennyi billentyűkód elérhetőségét, konfigurálja a Chrome távoliasztal-szolgáltatást a „Megnyitás ablakban” lehetőséggel.</translation>
 <translation id="2540992418118313681">Meg szeretné osztani a számítógép megtekintését és vezérlését egy másik felhasználóval?</translation>
@@ -264,6 +263,7 @@ gazdagép</translation>
 <translation id="7948001860594368197">Képernyő-beállítások</translation>
 <translation id="7970576581263377361">A hitelesítés nem sikerült. Kérjük, jelentkezzen be újra a Chromiumba.</translation>
 <translation id="7981525049612125370">A távoli munkamenet lejárt.</translation>
+<translation id="8041089156583427627">Visszajelzés küldése</translation>
 <translation id="8041721485428375115">A Chrome távoliasztal-szolgáltatási gazdagép-telepítő letöltésével elfogadja a Google <ph name="LINK_BEGIN" />Általános Szerződési Feltételeit<ph name="LINK_END" />.</translation>
 <translation id="8073845705237259513">A Chrome távoliasztal-szolgáltatás használatához adjon hozzá eszközéhez egy Google-fiókot.</translation>
 <translation id="80739703311984697">A távoli gazdagép hitelesítést kér egy harmadik féltől származó webhelyhez. A folytatáshoz további engedélyeket kell adnia a Chromoting szolgáltatásnak a cím eléréséhez:</translation>

@@ -34,6 +34,7 @@
 <translation id="1376578503827013741">Обчислення…</translation>
 <translation id="138361230106469022">Вітаємо, <ph name="FULL_NAME" />!</translation>
 <translation id="1383876407941801731">Пошук</translation>
+<translation id="1384959399684842514">Завантаження призупинено</translation>
 <translation id="1389974829397082527">Немає закладок</translation>
 <translation id="1404122904123200417">Вбудовано на сайті <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">"Не відстежувати"</translation>
@@ -238,6 +239,7 @@
 <translation id="380076759404194828">{NUM_SELECTED,plural, =1{Вибрано 1 елемент}one{Вибрано # елемент}few{Вибрано # елементи}many{Вибрано # елементів}other{Вибрано # елемента}}</translation>
 <translation id="3810838688059735925">Відео</translation>
 <translation id="3810973564298564668">Змінити</translation>
+<translation id="3819178904835489326">Видалено завантажених файлів: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
 <translation id="3822502789641063741">Видалити дані сайтів?</translation>
 <translation id="3828029223314399057">Пошук закладок</translation>
 <translation id="3894427358181296146">Додати папку</translation>
@@ -277,6 +279,7 @@
 <translation id="4271185234001491831">Ніколи не перекладати з такої мови: <ph name="LANGUAGE" /></translation>
 <translation id="4275663329226226506">Медіа-дані</translation>
 <translation id="4278390842282768270">Дозволено</translation>
+<translation id="4300272766492248925">Відкрити додаток</translation>
 <translation id="4307992518367153382">Основні</translation>
 <translation id="4351244548802238354">Закрити діалогове вікно</translation>
 <translation id="4376501731284077108">Без контролю</translation>
@@ -323,6 +326,7 @@
 <translation id="4923459931733593730">Оплата</translation>
 <translation id="4941291666397027948">* позначає обов’язкове поле</translation>
 <translation id="4943872375798546930">Не знайдено жодного результату</translation>
+<translation id="4958708863221495346">Сторінка <ph name="URL_OF_THE_CURRENT_TAB" /> показує ваш екран</translation>
 <translation id="4961700429721424617">Ви виходите з облікового запису, зареєстрованого в домені <ph name="MANAGED_DOMAIN" />. Дані Chrome буде видалено з цього пристрою, але вони залишаться у вашому обліковому записі Google.</translation>
 <translation id="497421865427891073">Перейти вперед</translation>
 <translation id="4988526792673242964">Сторінки</translation>
@@ -364,7 +368,6 @@
 <translation id="5345040418939504969">Закладку "<ph name="BOOKMARK_TITLE" />" видалено</translation>
 <translation id="5345083863238459644">Доступ до геоданих також <ph name="BEGIN_LINK" />вимкнено на цьому пристрої<ph name="END_LINK" />.</translation>
 <translation id="5372829067651257087">URL-адресу скопійовано.</translation>
-<translation id="5380554235172449987">Ніколи не надсилати</translation>
 <translation id="5400569084694353794">Користуючись цим додатком, ви приймаєте <ph name="BEGIN_LINK1" />Умови використання<ph name="END_LINK1" /> та <ph name="BEGIN_LINK2" />Примітку про конфіденційність<ph name="END_LINK2" /> Chrome.</translation>
 <translation id="5414836363063783498">Підтвердження…</translation>
 <translation id="5423934151118863508">Тут відображатимуться найчастіше відвідувані сторінки</translation>
@@ -374,7 +377,6 @@
 <translation id="5456381639095306749">Завантажити сторінку</translation>
 <translation id="5487521232677179737">Видалити дані</translation>
 <translation id="5487729733663684359">Chrome більше не оновлюється в цій версії Android.</translation>
-<translation id="5511351932351731210">Завжди надсилати</translation>
 <translation id="5512137114520586844">Цим обліковим записом керує <ph name="PARENT_NAME" />.</translation>
 <translation id="5527082711130173040">Щоб шукати пристрої, Chrome потрібен доступ до геоданих. <ph name="BEGIN_LINK1" />Оновити дозволи<ph name="END_LINK1" />. Доступ до геоданих також <ph name="BEGIN_LINK2" />вимкнено на цьому пристрої<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Закрити анонімні вкладки</translation>
@@ -495,7 +497,6 @@
 <translation id="6831043979455480757">Перекласти</translation>
 <translation id="6846298663435243399">Завантаження…</translation>
 <translation id="6850830437481525139">Закрито вкладок: <ph name="TAB_COUNT" /></translation>
-<translation id="6857778194843072568">Надсилати лише через Wi-Fi</translation>
 <translation id="6864459304226931083">Завантажити зображення</translation>
 <translation id="6865313869410766144">Дані автозаповнення форм</translation>
 <translation id="6868088497967843822">Увійдіть в обліковий запис, щоб мати доступ до своїх закладок, історії, паролів та інших налаштувань на всіх своїх пристроях</translation>
@@ -515,6 +516,7 @@
 <translation id="7026897394897382018">Увімкнути Заощадження трафіку</translation>
 <translation id="7029809446516969842">Паролі</translation>
 <translation id="7031882061095297553">Синхронізувати</translation>
+<translation id="7040138676081995583">Відкрити за допомогою...</translation>
 <translation id="7053983685419859001">Блокувати</translation>
 <translation id="7057058088140140610">Кредитні картки й адреси, додані в Google Payments</translation>
 <translation id="7062545763355031412">Прийняти та перейти в інший обліковий запис</translation>
@@ -591,9 +593,11 @@
 <translation id="7998918019931843664">Знову відкрити закриту вкладку</translation>
 <translation id="7999064672810608036">Видалити всі локальні дані, зокрема файли cookie, і скинути всі дозволи для цього веб-сайту?</translation>
 <translation id="8007176423574883786">Вимкнено для цього пристрою</translation>
+<translation id="802154636333426148">Не вдалося завантажити</translation>
 <translation id="8026334261755873520">Очистити дані веб-перегляду</translation>
 <translation id="8035133914807600019">Нова папка…</translation>
 <translation id="8037750541064988519">Залишилося <ph name="DAYS" /> дн.</translation>
+<translation id="8051695050440594747"><ph name="MEGABYTES" /> Мб доступно</translation>
 <translation id="8063895661287329888">Не вдалося додати закладку.</translation>
 <translation id="8068648041423924542">Не вдалося вибрати сертифікат.</translation>
 <translation id="8069239273282989646">Після стиснення</translation>
@@ -675,7 +679,6 @@
 <translation id="8986494364107987395">Автоматично надсилати статистику використання та звіти про аварійне завершення роботи в Google</translation>
 <translation id="8998729206196772491">Ви входите в обліковий запис, зареєстрований у домені <ph name="MANAGED_DOMAIN" />, і надаєте його адміністратору доступ до своїх даних Chrome. Ваші дані буде назавжди зв’язано з цим обліковим записом. Якщо ви вийдете з облікового запису в Chrome, дані буде видалено з цього пристрою, але вони залишаться у вашому обліковому записі Google.</translation>
 <translation id="9019902583201351841">Керується батьками</translation>
-<translation id="9020607083536754075">Закрити поточну вкладку й повернутися в попередній додаток</translation>
 <translation id="9038649477754266430">Користуйтеся службою передбачення, щоб сторінки завантажувалися швидше</translation>
 <translation id="9050666287014529139">Парольна фраза</translation>
 <translation id="9060538597317784206">Перегляньте додаток <ph name="APP_NAME" /> у магазині Google Play. Оцінка: <ph name="APP_RATING" />.</translation>

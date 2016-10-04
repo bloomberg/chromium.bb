@@ -65,7 +65,6 @@ Para obtener información sobre la privacidad, consulta la Política de Privacid
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="2366718077645204424">No se puede establecer conexión con el host. Es probable que el error se deba a la configuración de la red que se está utilizando.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> Visto por última vez online <ph name="RELATIVE_TIMESTAMP" />.</translation>
-<translation id="2498359688066513246">Ayuda y sugerencias</translation>
 <translation id="2499160551253595098">Ayúdanos a mejorar la aplicación Escritorio Remoto de Chrome autorizando la recopilación de estadísticas de uso e informes sobre fallos.</translation>
 <translation id="2512228156274966424">NOTA: Para asegurarte de que estén disponibles todas las combinaciones de teclas, puedes configurar la aplicación Escritorio Remoto de Chrome para que se abra como una ventana.</translation>
 <translation id="2540992418118313681">¿Quieres compartir este ordenador para que otro usuario pueda acceder a él y controlarlo?</translation>
@@ -264,6 +263,7 @@ remoto de Chrome</translation>
 <translation id="7948001860594368197">Opciones de pantalla</translation>
 <translation id="7970576581263377361">Error de autenticación. Vuelve a iniciar sesión en Chromium.</translation>
 <translation id="7981525049612125370">La sesión remota ha caducado.</translation>
+<translation id="8041089156583427627">Enviar</translation>
 <translation id="8041721485428375115">Al descargar el programa de instalación del host de Escritorio Remoto de Chrome, aceptas las <ph name="LINK_BEGIN" />Condiciones de Servicio<ph name="LINK_END" /> de Google.</translation>
 <translation id="8073845705237259513">Para utilizar la aplicación Escritorio Remoto de Chrome, debes añadir una cuenta de Google al dispositivo.</translation>
 <translation id="80739703311984697">El host remoto requiere tu autenticación en un sitio web de terceros. Para continuar, debes conceder a Chromoting permisos adicionales para acceder a la siguiente dirección:</translation>

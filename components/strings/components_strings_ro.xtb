@@ -80,7 +80,6 @@
 <translation id="1871208020102129563">Configurația proxy este setată să utilizeze servere proxy fixe, și nu o adresă URL pentru scripturi .pac.</translation>
 <translation id="1883255238294161206">Restrângeți lista</translation>
 <translation id="1898423065542865115">Filtrarea</translation>
-<translation id="1911837502049945214"><ph name="HOST_NAME" /> nu a acceptat certificatul de conectare sau certificatul de conectare a expirat.</translation>
 <translation id="194030505837763158">Accesați <ph name="LINK" /></translation>
 <translation id="1962204205936693436">Marcaje <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Eroare de serializare</translation>
@@ -176,7 +175,6 @@
 <translation id="2837049386027881519">A fost necesar să se încerce din nou realizarea conexiunii, utilizând o versiune mai veche a protocolului TSL sau SSL. În mod obișnuit, acest lucru înseamnă că serverul utilizează un software foarte vechi și că poate avea și alte probleme de securitate.</translation>
 <translation id="284702764277384724">Se pare că certificatul de server pentru <ph name="HOST_NAME" /> este un fals.</translation>
 <translation id="2889159643044928134">Nu reîncărca</translation>
-<translation id="2896499918916051536">Acest plugin nu este acceptat.</translation>
 <translation id="2900469785430194048">Google Chrome nu a avut suficientă memorie la afișarea paginii web.</translation>
 <translation id="2909946352844186028">A fost detectată o schimbare a rețelei.</translation>
 <translation id="2922350208395188000">Certificatul serverului nu poate fi verificat.</translation>
@@ -220,6 +218,7 @@
 <translation id="3286538390144397061">Repornește acum</translation>
 <translation id="3305707030755673451">Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TIME" />. Introdu-o pentru a începe sincronizarea.</translation>
 <translation id="333371639341676808">Împiedică această pagină să creeze alte casete de dialog.</translation>
+<translation id="3338095232262050444">Securizat</translation>
 <translation id="3340978935015468852">setări</translation>
 <translation id="3345135638360864351">Solicitarea de a accesa acest site nu a putut fi trimisă la <ph name="NAME" />. Încearcă din nou.</translation>
 <translation id="3355823806454867987">Modifica setările proxy...</translation>
@@ -322,6 +321,7 @@
 <translation id="4304224509867189079">Conectează-te</translation>
 <translation id="432290197980158659">Serverul a prezentat un certificat care nu se potrivește cu așteptările încorporate. Aceste așteptări sunt incluse pentru anumite site-uri, cu un grad sporit de securitate, pentru a te proteja. <ph name="BEGIN_LEARN_MORE_LINK" />Află mai multe<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4325863107915753736">Articolul nu a fost găsit</translation>
+<translation id="4331708818696583467">Nesecurizat</translation>
 <translation id="4372948949327679948">Se aștepta valoarea <ph name="VALUE_TYPE" />.</translation>
 <translation id="4381091992796011497">Nume de utilizator:</translation>
 <translation id="4394049700291259645">Dezactivează</translation>
@@ -341,6 +341,7 @@
 <translation id="4589078953350245614">Ai încercat să accesezi <ph name="DOMAIN" />, dar serverul a prezentat un certificat nevalid. <ph name="BEGIN_LEARN_MORE_LINK" />Află mai multe<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4592951414987517459">Conexiunea la <ph name="DOMAIN" /> este criptată folosind o suită de codificare modernă.</translation>
 <translation id="4594403342090139922">&amp;Anulați ștergerea</translation>
+<translation id="4627442949885028695">Continuă de pe un alt dispozitiv</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">Se afișează pagina extensiei.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -383,7 +384,6 @@
 <translation id="5089810972385038852">Stat</translation>
 <translation id="5095208057601539847">Provincie</translation>
 <translation id="5115563688576182185">(64 de biți)</translation>
-<translation id="5122371513570456792">S-au găsit <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> pentru „<ph name="SEARCH_STRING" />”.</translation>
 <translation id="5141240743006678641">Criptează parolele sincronizate cu datele de conectare Google</translation>
 <translation id="5145883236150621069">Răspunsul pentru politică include un cod de eroare</translation>
 <translation id="5171045022955879922">Căutați sau introduceți adresa URL</translation>
@@ -425,7 +425,6 @@
 <translation id="5622887735448669177">Dorești să părăsești acest site?</translation>
 <translation id="5629630648637658800">Setările pentru politică nu au putut fi încărcate</translation>
 <translation id="5631439013527180824">Indicativ nevalid pentru gestionarea gadgetului</translation>
-<translation id="5650551054760837876">Nu au fost găsite rezultate de căutare.</translation>
 <translation id="5677928146339483299">Blocat</translation>
 <translation id="5710435578057952990">Identitatea acestui site nu a fost confirmată.</translation>
 <translation id="5720705177508910913">Utilizator curent</translation>
@@ -624,7 +623,6 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="7995512525968007366">Nespecificată</translation>
 <translation id="8012647001091218357">Momentan, nu ți-am putut contacta părinții. Încearcă din nou.</translation>
 <translation id="8034522405403831421">Această pagină este în <ph name="SOURCE_LANGUAGE" />. Doriți traducere în <ph name="TARGET_LANGUAGE" />?</translation>
-<translation id="8034955203865359138">Nu au fost găsite intrări în istoric.</translation>
 <translation id="8088680233425245692">Articolul nu a fost vizualizat.</translation>
 <translation id="8089520772729574115">mai puțin de 1 MB</translation>
 <translation id="8091372947890762290">Se așteaptă activarea pe server</translation>
@@ -657,6 +655,7 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="8433057134996913067">Astfel, te vei deconecta de pe majoritatea site-urilor.</translation>
 <translation id="8437238597147034694">&amp;Anulați mutarea</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 card de credit}few{# carduri de credit}other{# de carduri de credit}}</translation>
+<translation id="8483780878231876732">Pentru a folosi cardurile din Contul Google, conectează-te la Chrome</translation>
 <translation id="8488350697529856933">Se aplică pentru</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> a răspuns prea târziu.</translation>
 <translation id="852346902619691059">Acest server nu a putut dovedi că este <ph name="DOMAIN" />. Sistemul de operare al dispozitivului nu consideră că certificatul său de securitate este de încredere. Cauza poate fi o eroare de configurare sau interceptarea conexiunii de către un atacator. <ph name="BEGIN_LEARN_MORE_LINK" />Află mai multe<ph name="END_LEARN_MORE_LINK" />.</translation>
@@ -676,7 +675,6 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="8730621377337864115">Terminat</translation>
 <translation id="8738058698779197622">Pentru a stabili o conexiune securizată, ceasul trebuie să fie setat corect. Aceasta deoarece certificatele pe care site-urile le folosesc pentru a se identifica sunt valabile numai pentru anumite intervale de timp. Din moment ce ora de pe dispozitiv este incorectă, Chromium nu poate verifica aceste certificate.</translation>
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;Adresa DNS&lt;/abbr&gt; pentru <ph name="HOST_NAME" /> nu a putut fi găsită. Se diagnostichează problema.</translation>
-<translation id="8741995161408053644">Contul Google poate să ofere alte forme ale istoricului de navigare la <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;Repetați ștergerea</translation>
 <translation id="8798099450830957504">Prestabilit</translation>
 <translation id="8804164990146287819">Politica de confidențialitate</translation>

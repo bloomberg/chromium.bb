@@ -15,6 +15,7 @@
 <translation id="1414495520565016063">તમે Chromium માં સાઇન ઇન કર્યું છે!</translation>
 <translation id="1444754455097148408">Chromium ખુલ્લા સ્ત્રોત લાઇસેંસેસ</translation>
 <translation id="1480489203462860648">તેને અજમાવી જુઓ, તે પહેલેથી જ ઇન્સ્ટોલ કરેલ છે</translation>
+<translation id="1502360822835740515">Chromium ને તમારું ડિફૉલ્ટ બ્રાઉઝર બનાવો</translation>
 <translation id="151962892725702025">Chromium OS તમારા ડેટાને સમન્વયિત કરી શક્યું નથી કારણ કે તમારા ડોમેન માટે સમન્વયન ઉપલબ્ધ નથી.</translation>
 <translation id="1559451348202814456">Chromium યોગ્ય રીતે કાર્ય ન કરે તેવું બની શકે કારણકે તે હવેથી Mac OS X 10.6, 10.7 અથવા 10.8 પર સમર્થિત નથી.</translation>
 <translation id="1644918877723739397">Chromium આને તમારા <ph name="SAVED_PASSWORD_LINK" /> માં સાચવશે અને આગલી વખતે તમને તેની જરૂર પડે ત્યારે યાદ રાખશે.</translation>
@@ -96,10 +97,12 @@
 <translation id="378917192836375108">Chromium થી તમે વેબ પર એક ફોન નંબર પર ક્લિક કરી શકો છો અને તેને Skype થી કૉલ કરી શકો છો!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3849925841547750267">દુર્ભાગ્યપણે, તમારી Mozilla Firefox સેટિંગ્સ ઉપલબ્ધ નથી જ્યારે કે બ્રાઉઝર ચાલી રહ્યું છે. તે સેટિંગ્સને Chromium પર આયાત કરવા માટે, તમારું કાર્ય સાચવો અને બધી Firefox વિંડોને બંધ કરો. પછી ચાલુ રાખો ક્લિક કરો.</translation>
+<translation id="3852700440713538496">તમારા ટાસ્કબારમાં Chromium ને પિન કરો</translation>
 <translation id="3883381313049582448">Chromium દ્વારા બનાવેલ પાસવર્ડનો ઉપયોગ કરો</translation>
 <translation id="3889543394854987837">Chromium ને ખોલવા માટે તમારા નામને ક્લિક કરો અને બ્રાઉઝ કરવાનું પ્રારંભ કરો.</translation>
 <translation id="390894725198123737">Mac પર, પાસવર્ડ્સ તમારા કીચેન પર સાચવી શકાય છે અને આ OS X એકાઉન્ટ શેર કરતાં અન્ય Chromium વપરાશકર્તાઓ દ્વારા ઍક્સેસ અથવા સમન્વયિત કરી શકાય છે.</translation>
 <translation id="4050175100176540509">નવીનતમ સંસ્કરણમાં મહત્વપૂર્ણ સુરક્ષા સુધારણાઓ અને નવી સુવિધાઓ ઉપલબ્ધ છે.</translation>
+<translation id="407254336480250557"><ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /> પસંદ કરો</translation>
 <translation id="4077262827416206768">કૃપા કરીને બધી Chromium વિંડોઝને બંધ કરો અને આ ફેરફારને પ્રભાવમાં લાવવા માટે Chromium ને ફરી શરૂ કરો.</translation>
 <translation id="4182290826692170034">Chromium તમારું ડિફૉલ્ટ બ્રાઉઝર છે. વાહ!</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />ચેતવણી:<ph name="END_BOLD" /> Chromium એક્સ્ટેંશનને તમારો બ્રાઉઝિંગ ઇતિહાસ રેકોર્ડ કરવાથી રોકી શકતું નથી. છૂપા મોડમાં આ એક્સ્ટેંશનને અક્ષમ કરવા માટે, આ વિકલ્પને પસંદ ન કરો.</translation>
@@ -121,6 +124,7 @@
 <translation id="4621240073146040695">અપ ટૂ ડેટ થવામાં છે! અપડેટ સમાપ્ત કરવા માટે Chromium ને ફરીથી લોંચ કરો.</translation>
 <translation id="4677944499843243528">બીજા કમ્પ્યુટર (<ph name="HOST_NAME" />) પર પ્રોફાઇલ બીજી Chromium પ્રક્રિયા (<ph name="PROCESS_ID" />) દ્વારા ઉપયોગમાં હોય એવું લાગે છે. Chromium એ પ્રોફાઇલને લૉક કરી છે જેથી તે દૂષિત ન થઈ જાય. જો તમને ખાતરી છે કે કોઈ અન્ય પ્રક્રિયાઓ આ પ્રોફાઇલનો ઉપયોગ કરી રહી નથી, તો તમે પ્રોફાઇલને અનલૉક કરી અને Chromium ને ફરીથી લોંચ કરી શકો છો.</translation>
 <translation id="469338717132742108">Chromium OS સાથે સહાય મેળવો</translation>
+<translation id="4714956846925717402">Chromium પર વધુ ઝડપથી જાઓ</translation>
 <translation id="4743926867934016338">સ્વીકારો અને શોધો</translation>
 <translation id="4888717733111232871">mDNS ટ્રાફિકને મંજૂરી આપવા Chromium માટે ઇનબાઉન્ડ નિયમ.</translation>
 <translation id="4943838377383847465">Chromium પૃષ્ઠભૂમિ મોડમાં છે.</translation>

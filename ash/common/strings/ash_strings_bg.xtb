@@ -109,6 +109,7 @@
 <translation id="3891340733213178823">Натиснете два пъти „Ctrl+Shift+Q“ за изход.</translation>
 <translation id="3892641579809465218">Показване на вътрешна информация</translation>
 <translation id="3893630138897523026">ChromeVox (обратна връзка с говор)</translation>
+<translation id="3899995891769452915">Гласово въвеждане</translation>
 <translation id="3963445509666917109">Високоговорител (вътрешен)</translation>
 <translation id="3967919079500697218">Възможността за правене на екранни снимки е деактивирана от администратора ви.</translation>
 <translation id="397105322502079400">Изчислява се...</translation>
@@ -181,6 +182,7 @@
 <translation id="6459472438155181876">Екранът се разширява на „<ph name="DISPLAY_NAME" />“</translation>
 <translation id="6490471652906364588">USB-C устройство (десният порт)</translation>
 <translation id="6501401484702599040">Екранът се предава към „<ph name="RECEIVER_NAME" />“</translation>
+<translation id="6521655319214113338">Ръкописно въвеждане</translation>
 <translation id="6537270692134705506">Заснемане на екрана</translation>
 <translation id="6550675742724504774">Опции</translation>
 <translation id="6585808820553845416">Сесията приключва след <ph name="SESSION_TIME_REMAINING" />.</translation>
@@ -212,6 +214,7 @@
 <translation id="743058460480092004">Камерата и микрофонът се използват.</translation>
 <translation id="7510334386202674593">Ctrl + Shift + L</translation>
 <translation id="7561014039265304140">„<ph name="DISPLAY_NAME" />“ не поддържа разделителна способност от <ph name="SPECIFIED_RESOLUTION" />. Тя бе променена на <ph name="FALLBACK_RESOLUTION" /></translation>
+<translation id="7562368315689366235">Панел с емотикони</translation>
 <translation id="7573962313813535744">Режим с докинг станция</translation>
 <translation id="7580671184200851182">Възпроизвеждане на един и същ звук през всички високоговорители (моно)</translation>
 <translation id="7581273696622423628">Участие в анкетата</translation>

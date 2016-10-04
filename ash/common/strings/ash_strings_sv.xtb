@@ -108,6 +108,7 @@
 <translation id="3891340733213178823">Tryck på Ctrl+Skift+Q två gånger om du vill logga ut.</translation>
 <translation id="3892641579809465218">Intern bildskärm</translation>
 <translation id="3893630138897523026">ChromeVox (talad feedback)</translation>
+<translation id="3899995891769452915">Röstinmatning</translation>
 <translation id="3963445509666917109">Högtalare (inbyggd)</translation>
 <translation id="3967919079500697218">Möjligheten att ta skärmdumpar har inaktiverats av administratören.</translation>
 <translation id="397105322502079400">Beräknar ...</translation>
@@ -180,6 +181,7 @@
 <translation id="6459472438155181876">Utökar skärmen till <ph name="DISPLAY_NAME" /></translation>
 <translation id="6490471652906364588">USB-C-enhet (höger port)</translation>
 <translation id="6501401484702599040">Skärmen castas till <ph name="RECEIVER_NAME" /></translation>
+<translation id="6521655319214113338">Inmatning för handskrift</translation>
 <translation id="6537270692134705506">Ta en bild av skärmen</translation>
 <translation id="6550675742724504774">Alternativ</translation>
 <translation id="6585808820553845416">Sessionen upphör om <ph name="SESSION_TIME_REMAINING" />.</translation>
@@ -210,6 +212,7 @@ Inaktivera funktionen genom att trycka på Ctrl+Alt+Z.</translation>
 <translation id="743058460480092004">Kameran och mikrofonen används.</translation>
 <translation id="7510334386202674593">Ctrl+Skift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> har inte stöd för <ph name="SPECIFIED_RESOLUTION" />. Upplösningen ändrades till <ph name="FALLBACK_RESOLUTION" /></translation>
+<translation id="7562368315689366235">Emoji-palett</translation>
 <translation id="7573962313813535744">Dockat läge</translation>
 <translation id="7580671184200851182">Spela samma ljud i alla högtalare (monoljud)</translation>
 <translation id="7581273696622423628">Svara på enkäten</translation>

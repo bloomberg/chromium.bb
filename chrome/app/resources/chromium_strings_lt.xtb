@@ -15,6 +15,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="1414495520565016063">Esate prisijungę prie „Chromium“.</translation>
 <translation id="1444754455097148408">„Chromium“ atvirojo šaltinio licencijos</translation>
 <translation id="1480489203462860648">Išbandykite, jau įdiegta</translation>
+<translation id="1502360822835740515">Nustatymas „Chromium“ numatytąja naršykle</translation>
 <translation id="151962892725702025">„Chromium“ OS negali sinchronizuoti duomenų, nes jūsų domene sinchronizavimas nepasiekiamas.</translation>
 <translation id="1559451348202814456">„Chromium“ gali tinkamai neveikti, nes ji nebepalaikoma naudojant 10.6, 10.7 ar 10.8 versijos „Mac OS X“.</translation>
 <translation id="1644918877723739397">„Chromium“ jį išsaugos naudodama <ph name="SAVED_PASSWORD_LINK" /> ir prisimins, kai jo prireiks kitą kartą.</translation>
@@ -95,10 +96,12 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="378917192836375108">Naudodami „Chromium“ galite spustelėti telefono numerį žiniatinklyje ir skambinti juo naudodami „Skype“!</translation>
 <translation id="3848258323044014972">„<ph name="PAGE_TITLE" />“ – „Chromium“</translation>
 <translation id="3849925841547750267">Apgailestaujame, bet „Mozilla Firefox“ nustatymai nepasiekiami, kol paleista ši naršyklė. Jei norite importuoti šiuos nustatymus į „Chromium“, išsaugokite darbą ir uždarykite visus „Firefox“ langus. Tada spustelėkite „Tęsti“.</translation>
+<translation id="3852700440713538496">„Chromium“ prisegimas prie užduočių juostos</translation>
 <translation id="3883381313049582448">Naudokite „Chromium“ sugeneruotą slaptažodį</translation>
 <translation id="3889543394854987837">Spustelėkite savo vardą, kad atidarytumėte „Chromium“ ir pradėtumėte naršyti.</translation>
 <translation id="390894725198123737">„Mac“ kompiuteriuose slaptažodžiai gali būti išsaugoti naudojant „Keychain“, o juos gali pasiekti arba sinchronizuoti kiti „Chromium“ naudotojai, bendrai naudojantys šią „OS X“ paskyrą.</translation>
 <translation id="4050175100176540509">Naujausios versijos programoje įdiegti svarbūs saugos patobulinimai ir pasiekiamos naujos funkcijos.</translation>
+<translation id="407254336480250557">Pasirinkite <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="4077262827416206768">Uždarykite visus „Chromium“ langus ir iš naujo paleiskite „Chromium“, kad šis pakeitimas pradėtų galioti.</translation>
 <translation id="4182290826692170034">„Chromium“ yra numatytoji naršyklė. Puiku!</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Įspėjimas:<ph name="END_BOLD" /> Chromium“ negali neleisti plėtiniams įrašyti jūsų naršymo istorijos. Jei norite neleisti šio plėtinio inkognito režimu, panaikinkite šios parinkties pasirinkimą.</translation>
@@ -120,6 +123,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="4621240073146040695">Beveik atnaujinta! Paleiskite „Chromium“ iš naujo, kad būtų užbaigtas naujinimas.</translation>
 <translation id="4677944499843243528">Atrodo, kad profilį naudoja kitas „Chromium“ procesas (<ph name="PROCESS_ID" />) kitame kompiuteryje (<ph name="HOST_NAME" />). „Chromium“ užrakino profilį, kad jis nebūtų sugadintas. Jei esate tikri, kad jokie kiti procesai nenaudoja šio profilio, galite atrakinti profilį ir iš naujo paleisti „Chromium“.</translation>
 <translation id="469338717132742108">Gaukite pagalbos dėl „Chromium“ OS</translation>
+<translation id="4714956846925717402">Greičiau pasiekite „Chromium“</translation>
 <translation id="4743926867934016338">Sutikti ir ieškoti</translation>
 <translation id="4888717733111232871">„Chromium“ skirta taisyklė, pagal kurią leidžiamas mDNS srautas.</translation>
 <translation id="4943838377383847465">„Chromium“ veikia fono režimu.</translation>

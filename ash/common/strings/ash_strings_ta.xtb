@@ -109,6 +109,7 @@
 <translation id="3891340733213178823">வெளியேற Ctrl+Shift+Q ஐ இருமுறை அழுத்தவும்.</translation>
 <translation id="3892641579809465218">இணையக் காட்சி</translation>
 <translation id="3893630138897523026">ChromeVox (பேச்சுவடிவ கருத்து)</translation>
+<translation id="3899995891769452915">குரல் உள்ளீடு</translation>
 <translation id="3963445509666917109">ஸ்பீக்கர் (உட்புறம்)</translation>
 <translation id="3967919079500697218">ஸ்கிரீன் ஷாட்டுகள் எடுக்கும் திறனை உங்கள் நிர்வாகி முடக்கியுள்ளார்.</translation>
 <translation id="397105322502079400">கணக்கிடுகிறது...</translation>
@@ -181,6 +182,7 @@
 <translation id="6459472438155181876"><ph name="DISPLAY_NAME" /> க்கு திரை விரிவாக்கப்படுகிறது</translation>
 <translation id="6490471652906364588">USB-C சாதனம் (வலது போர்ட்)</translation>
 <translation id="6501401484702599040"><ph name="RECEIVER_NAME" />க்குத் திரையை அனுப்புகிறது</translation>
+<translation id="6521655319214113338">கையெழுத்து உள்ளீடு</translation>
 <translation id="6537270692134705506">திரையைப் படமெடு</translation>
 <translation id="6550675742724504774">விருப்பத்தேர்வுகள்</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" /> இல் அமர்வு முடிந்துவிடும்.</translation>
@@ -212,6 +214,7 @@
 <translation id="743058460480092004">கேமராவும் மைக்ரோஃபோனும் பயன்பாட்டில் உள்ளன.</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="SPECIFIED_RESOLUTION" /> ஐ <ph name="DISPLAY_NAME" /> ஆதரிக்கவில்லை. <ph name="FALLBACK_RESOLUTION" /> க்குத் தெளிவு மாற்றப்பட்டது</translation>
+<translation id="7562368315689366235">ஈமொஜி தட்டு</translation>
 <translation id="7573962313813535744">டாக் செய்யப்பட்ட பயன்முறை</translation>
 <translation id="7580671184200851182">எல்லா ஸ்பீக்கர்களிலும் ஒரே ஆடியோவை இயக்கு (மோனோ ஆடியோ)</translation>
 <translation id="7581273696622423628">கருத்துக்கணிப்பைத் தொடங்கு</translation>

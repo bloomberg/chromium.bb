@@ -107,6 +107,7 @@
 <translation id="3891340733213178823">Odhlaste se dvojitým stisknutím kombinace kláves Ctrl+Shift+Q.</translation>
 <translation id="3892641579809465218">Interní displej</translation>
 <translation id="3893630138897523026">ChromeVox (hlasová odezva)</translation>
+<translation id="3899995891769452915">Hlasový vstup</translation>
 <translation id="3963445509666917109">Reproduktor (interní)</translation>
 <translation id="3967919079500697218">Možnost pořizovat snímky obrazovky byla zakázána správcem.</translation>
 <translation id="397105322502079400">Probíhá výpočet…</translation>
@@ -178,6 +179,7 @@
 <translation id="6459472438155181876">Rozšíření obrazovky na displej <ph name="DISPLAY_NAME" /></translation>
 <translation id="6490471652906364588">Zařízení USB Type-C (pravý port)</translation>
 <translation id="6501401484702599040">Odesílání obrazovky do zařízení <ph name="RECEIVER_NAME" /></translation>
+<translation id="6521655319214113338">Zadávání psaním rukou</translation>
 <translation id="6537270692134705506">Pořídit snímek obrazovky</translation>
 <translation id="6550675742724504774">Možnosti</translation>
 <translation id="6585808820553845416">Relace skončí za <ph name="SESSION_TIME_REMAINING" />.</translation>
@@ -209,6 +211,7 @@ Vypnete jej stisknutím kombinace kláves Alt + Vyhledávání nebo Shift.</tran
 <translation id="743058460480092004">Kamera a mikrofon jsou používány.</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> rozlišení <ph name="SPECIFIED_RESOLUTION" /> nepodporuje. Rozlišení bylo změněno zpět na <ph name="FALLBACK_RESOLUTION" />.</translation>
+<translation id="7562368315689366235">Paleta emodži</translation>
 <translation id="7573962313813535744">Ukotvený režim</translation>
 <translation id="7580671184200851182">Přehrávat ve všech reproduktorech stejný zvuk (mono)</translation>
 <translation id="7581273696622423628">Zúčastnit se průzkumu</translation>

@@ -14,6 +14,7 @@
 <translation id="1414495520565016063">आपण Chromium मध्ये साइन इन केले आहे!</translation>
 <translation id="1444754455097148408">Chromium खुला स्त्रोत परवाने</translation>
 <translation id="1480489203462860648">हे वापरून पहा, हे आधीपासून स्थापित आहे</translation>
+<translation id="1502360822835740515">Chromium ला डीफॉल्‍ट ब्राउझर बनवा</translation>
 <translation id="151962892725702025">आपल्या डोमेनसाठी संकालन उपलब्ध नसल्यामुळे Chromium OS आपला डेटा संकालित करू शकले नाही.</translation>
 <translation id="1559451348202814456">Chromium यापुढे Mac OS X 10.6, 10.7 किंवा 10.8 वर समर्थित नसल्याने कदाचित ते योग्यरित्या कार्य करू शकत नाही.</translation>
 <translation id="1644918877723739397">Chromium हे आपल्या <ph name="SAVED_PASSWORD_LINK" /> मध्ये संचयित करेल आणि पुढच्या वेळी आपल्याला याची गरज असेल तेव्हा ते लक्षात ठेवेल.</translation>
@@ -94,10 +95,12 @@
 <translation id="378917192836375108">Chromium आपल्याला वेबवरील फोन नंबर क्लिक करू देते आणि Skype सह त्याला कॉल करते!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3849925841547750267">दुर्दैवाने, तो ब्राउझर चालू असताना आपली Mozilla Firefox सेटिंग्ज उपलब्ध नाहीत. Chromium मध्‍ये ती सेटिंग्‍ज आयात करताना, आपले कार्य जतन करा आणि सर्व Firefox विंडो बंद करा. नंतर सुरू ठेवा क्‍लिक करा.</translation>
+<translation id="3852700440713538496">Chromium ला आपल्या टास्कबारवर पिन करा</translation>
 <translation id="3883381313049582448">Chromium द्वारे व्युत्पन्न केलेला संकेतशब्द वापरा</translation>
 <translation id="3889543394854987837">Chromium उघडण्यासाठी आपले नाव क्लिक करा आणि ब्राउझिंग प्रारंभ करा.</translation>
 <translation id="390894725198123737">Mac वर, संकेतशब्द हे आपल्या किचेनमध्ये जतन केले जातात आणि हे OS X खाते सामायिक करून इतर Chromium वापरकर्त्यांकडून त्यामध्‍ये प्रवेश केला जाऊ शकतो किंवा संकालित केले जाऊ शकतात.</translation>
 <translation id="4050175100176540509">नवीनतम आवृत्तीमध्‍ये महत्त्वाच्या सुरक्षितता सुधारणा आणि नवीन वैशिष्ट्ये उपलब्‍ध आहेत.</translation>
+<translation id="407254336480250557"><ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /> निवडा</translation>
 <translation id="4077262827416206768">कृपया हा बदल प्रभावी होण्‍यासाठी सर्व Chromium विंडो बंद करा आणि Chromium पुन्‍हा लाँच करा.</translation>
 <translation id="4182290826692170034">Chromium आपला डीफॉल्ट ब्राउझर आहे. हुर्रे!</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />चेतावणी:<ph name="END_BOLD" /> आपला ब्राउझिंग इतिहास रेकॉर्ड करण्यापासून विस्तारांना Chromium प्रतिबंधित करू शकत नाही. गुप्त विंडोमध्ये हा विस्तार अक्षम करण्यासाठी, या पर्यायाची निवड रद्द करा.</translation>
@@ -119,6 +122,7 @@
 <translation id="4621240073146040695">अद्ययावत करणे जवळजवळ पूर्ण झाले! अद्यतनित करणे समाप्त करण्यासाठी Chromium रीलाँच करा.</translation>
 <translation id="4677944499843243528">प्रोफाईल दुसर्‍या संगणकावरील (<ph name="HOST_NAME" />) दुसर्‍या Chromium प्रक्रियेद्वारे (<ph name="PROCESS_ID" />) वापरले जात असल्याचे दिसते. Chromium ने प्रोफाईल लॉक केले आहे जेणेकरून ते दूषित होत नाही. कोणतीही अन्य प्रक्रिया हे प्रोफाईल वापरत नसल्याची आपल्याला खात्री असल्यास, आपण प्रोफाईल अनलॉक करू शकता आणि Chromium रीलाँच करू शकता.</translation>
 <translation id="469338717132742108">Chromium OS सह मदत मिळवा</translation>
+<translation id="4714956846925717402">Chromium वर अधिक जलद या</translation>
 <translation id="4743926867934016338">स्‍वीकार करा आणि शोधा</translation>
 <translation id="4888717733111232871">mDNS रहदारीस अनुमती देण्यासाठी Chromium साठी अंतर्गामी नियम.</translation>
 <translation id="4943838377383847465">Chromium पार्श्वभूमी मोड मध्ये आहे.</translation>

@@ -109,6 +109,7 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="3891340733213178823">প্রস্থান করুন করার জন্য দুবার Ctrl+Shift+Q টিপুন৷</translation>
 <translation id="3892641579809465218">অভ্যন্তরীণ প্রদর্শন</translation>
 <translation id="3893630138897523026">ChromeVox (কথ্য প্রতিক্রিয়া)</translation>
+<translation id="3899995891769452915">ভয়েস ইনপুট</translation>
 <translation id="3963445509666917109">স্পিকার (অভ্যন্তরীণ)</translation>
 <translation id="3967919079500697218">স্ক্রীনশট নেওয়ার ক্ষমতা আপনার প্রশাসক দ্বারা অক্ষম করা হয়েছে৷</translation>
 <translation id="397105322502079400">গণনা করা হচ্ছে...</translation>
@@ -181,6 +182,7 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="6459472438155181876">স্ক্রীন <ph name="DISPLAY_NAME" /> তে প্রসারিত হচ্ছে</translation>
 <translation id="6490471652906364588">USB-C ডিভাইস (ডান পোর্ট)</translation>
 <translation id="6501401484702599040"><ph name="RECEIVER_NAME" /> এ স্ক্রীন কাস্ট করা হচ্ছে</translation>
+<translation id="6521655319214113338">হাতে লেখা ইনপুট</translation>
 <translation id="6537270692134705506">স্ক্রীন ক্যাপচার করুন</translation>
 <translation id="6550675742724504774">বিকল্পসমূহ</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" /> এর মধ্যে সেশন শেষ হয়ে যাবে৷</translation>
@@ -211,6 +213,7 @@ Alt+Search অথবা বাতিল করতে Shift টিপুন৷</t
 <translation id="743058460480092004">ক্যামেরা এবং মাইক্রোফোন ব্যবহার করা হচ্ছে।</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" />, <ph name="SPECIFIED_RESOLUTION" /> সমর্থন করে না৷ রেজোলিউশন <ph name="FALLBACK_RESOLUTION" /> এ পরিবর্তিত হয়েছে</translation>
+<translation id="7562368315689366235">ইমোজি প্যালেট</translation>
 <translation id="7573962313813535744">ডকযুক্ত মোড</translation>
 <translation id="7580671184200851182">সব স্পিকারে একই অডিও বাজান (মনো অডিও)</translation>
 <translation id="7581273696622423628">সমীক্ষায় যোগ দিন</translation>

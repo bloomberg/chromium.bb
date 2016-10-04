@@ -13,6 +13,7 @@
 <translation id="1414495520565016063">คุณลงชื่อเข้าใช้ Chromium แล้ว!</translation>
 <translation id="1444754455097148408">ใบอนุญาตโอเพนซอร์สของ Chromium</translation>
 <translation id="1480489203462860648">ลองใช้ ติดตั้งไว้แล้ว</translation>
+<translation id="1502360822835740515">กำหนดให้ Chromium เป็นเบราว์เซอร์เริ่มต้น</translation>
 <translation id="151962892725702025">Chromium OS ไม่สามารถซิงค์ข้อมูลของคุณเนื่องจากการซิงค์ไม่พร้อมให้บริการสำหรับโดเมนของคุณ</translation>
 <translation id="1559451348202814456">Chromium อาจทำงานไม่ถูกต้องเพราะไม่รองรับ Mac OS X 10.6, 10.7 หรือ 10.8 อีกต่อไป</translation>
 <translation id="1644918877723739397">Chromium จะเก็บข้อมูลนี้ไว้ใน <ph name="SAVED_PASSWORD_LINK" /> และจดจำไว้สำหรับครั้งถัดไปที่คุณต้องการใช้</translation>
@@ -93,10 +94,12 @@
 <translation id="378917192836375108">Chromium ช่วยให้คุณสามารถคลิกหมายเลขโทรศัพท์บนเว็บและโทรออกด้วย Skype ได้!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3849925841547750267">ขออภัย ไม่สามารถใช้การตั้งค่า Mozilla Firefox ของคุณขณะที่เบราว์เซอร์กำลังทำงานอยู่ หากต้องการนำเข้าการตั้งค่าเหล่านี้เข้าใน Chromium ให้บันทึกงานของคุณและปิดหน้าต่าง Firefox ทั้งหมด แล้วคลิก "ดำเนินการต่อ"</translation>
+<translation id="3852700440713538496">ตรึง Chromium กับแถบงาน</translation>
 <translation id="3883381313049582448">ใช้รหัสผ่านที่ Chromium สร้างขึ้น</translation>
 <translation id="3889543394854987837">คลิกชื่อของคุณเพื่อเปิด Chromium และเริ่มท่องเว็บ</translation>
 <translation id="390894725198123737">สำหรับ Mac ระบบจะบันทึกรหัสผ่านไว้ใน Keychain และผู้ใช้ Chromium คนอื่นๆ ที่แชร์บัญชี OS X นี้อาจสามารถเข้าถึงหรือซิงค์รหัสผ่านนี้ได้</translation>
 <translation id="4050175100176540509">การปรับปรุงด้านความปลอดภัยที่สำคัญและคุณลักษณะใหม่ๆ พร้อมให้บริการในเวอร์ชันล่าสุด</translation>
+<translation id="407254336480250557">เลือก <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="4077262827416206768">โปรดปิดหน้าต่าง Chromium ทั้งหมดและเปิด Chromium อีกครั้งเพื่อให้การเปลี่ยนแปลงนี้มีผล</translation>
 <translation id="4182290826692170034">Chromium เป็นเบราว์เซอร์เริ่มต้นของคุณ ไชโย!</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />คำเตือน:<ph name="END_BOLD" /> Chromium ไม่สามารถป้องกันส่วนขยายจาการบันทึกประวัติการเรียกดูได้ หากคุณต้องการปิดใช้งานส่วนขยายนี้ในโหมดไม่ระบุตัวตน ให้ยกเลิกการเลือกตัวเลือกนี้</translation>
@@ -118,6 +121,7 @@
 <translation id="4621240073146040695">การอัปเดตใกล้จะเสร็จเรียบร้อยแล้ว เปิด Chromium อีกครั้งเพื่อให้การอัปเดตเสร็จสิ้น</translation>
 <translation id="4677944499843243528">ดูเหมือนว่าโปรไฟล์กำลังถูกใช้งานโดยกระบวนการอื่นของ Chromium (<ph name="PROCESS_ID" />) บนคอมพิวเตอร์อีกเครื่อง (<ph name="HOST_NAME" />) Chromium ล็อกโปรไฟล์ไว้เพื่อไม่ให้โปรไฟล์เกิดความเสียหาย หากคุณมั่นใจว่าไม่มีกระบวนการอื่นใดกำลังใช้โปรไฟล์นี้อยู่ คุณสามารถปลดล็อกโปรไฟล์และเปิด Chromium ใหม่</translation>
 <translation id="469338717132742108">รับความช่วยเหลือเกี่ยวกับ Chromium OS</translation>
+<translation id="4714956846925717402">ใช้ Chromium ได้เร็วขึ้น</translation>
 <translation id="4743926867934016338">ยอมรับและค้นหา</translation>
 <translation id="4888717733111232871">กฎขาเข้าสำหรับ Chromium เพื่ออนุญาตการเข้าชมแบบ mDNS</translation>
 <translation id="4943838377383847465">Chromium กำลังอยู่ในโหมดทำงานในพื้นหลัง</translation>

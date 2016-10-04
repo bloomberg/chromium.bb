@@ -34,6 +34,7 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="1376578503827013741">Beräknar …</translation>
 <translation id="138361230106469022">Hej <ph name="FULL_NAME" />!</translation>
 <translation id="1383876407941801731">Sök</translation>
+<translation id="1384959399684842514">Nedladdningen har pausats</translation>
 <translation id="1389974829397082527">Det finns inga bokmärken i den här mappen</translation>
 <translation id="1404122904123200417">Inbäddad i <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">Do Not Track</translation>
@@ -238,6 +239,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="380076759404194828">{NUM_SELECTED,plural, =1{1 objekt har valts}other{# objekt har valts}}</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Hantera</translation>
+<translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> nedladdningar har raderats</translation>
 <translation id="3822502789641063741">Rensa webbplatslagring?</translation>
 <translation id="3828029223314399057">Sök efter bokmärken</translation>
 <translation id="3894427358181296146">Lägg till mapp</translation>
@@ -277,6 +279,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4271185234001491831">Översätt aldrig från <ph name="LANGUAGE" /></translation>
 <translation id="4275663329226226506">Media</translation>
 <translation id="4278390842282768270">Tillåtet</translation>
+<translation id="4300272766492248925">Öppna appen</translation>
 <translation id="4307992518367153382">Grunderna</translation>
 <translation id="4351244548802238354">Stäng dialogrutan</translation>
 <translation id="4376501731284077108">Inte styrda</translation>
@@ -323,6 +326,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4923459931733593730">Betalning</translation>
 <translation id="4941291666397027948">* anger att fältet är obligatoriskt</translation>
 <translation id="4943872375798546930">Inga resultat</translation>
+<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> delar skärmen</translation>
 <translation id="4961700429721424617">Du håller på att logga ut från ett konto som hanteras av <ph name="MANAGED_DOMAIN" />. Åtgärden raderar din data i Chrome från den här enheten, men den finns kvar i Google-kontot.</translation>
 <translation id="497421865427891073">Fortsätt</translation>
 <translation id="4988526792673242964">Sidor</translation>
@@ -364,7 +368,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> raderades</translation>
 <translation id="5345083863238459644">Platsåtkomst har också <ph name="BEGIN_LINK" />inaktiverats för enheten<ph name="END_LINK" />.</translation>
 <translation id="5372829067651257087">Webbadress kopierad.</translation>
-<translation id="5380554235172449987">Skicka aldrig</translation>
 <translation id="5400569084694353794">Genom att använda det här programmet godkänner du Chromes <ph name="BEGIN_LINK1" />användarvillkor<ph name="END_LINK1" /> och <ph name="BEGIN_LINK2" />sekretessmeddelande<ph name="END_LINK2" />.</translation>
 <translation id="5414836363063783498">Verifierar ...</translation>
 <translation id="5423934151118863508">Dina mest besökta sidor visas här</translation>
@@ -374,7 +377,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="5456381639095306749">Ladda ned sida</translation>
 <translation id="5487521232677179737">Rensa data</translation>
 <translation id="5487729733663684359">Uppdateringar av Chrome stöds inte längre för den här versionen av Android.</translation>
-<translation id="5511351932351731210">Skicka alltid</translation>
 <translation id="5512137114520586844">Det här kontot hanteras av <ph name="PARENT_NAME" />.</translation>
 <translation id="5527082711130173040">Chrome behöver tillgång till platsinformation för att kunna söka efter enheter. <ph name="BEGIN_LINK1" />Uppdatera behörigheter<ph name="END_LINK1" />. Platsåtkomst är dessutom <ph name="BEGIN_LINK2" />inaktiverat för enheten<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Stäng inkognitoflikar</translation>
@@ -495,7 +497,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6831043979455480757">Översätt</translation>
 <translation id="6846298663435243399">Läser in…</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> flikar har stängts</translation>
-<translation id="6857778194843072568">Skicka endast via Wi-Fi</translation>
 <translation id="6864459304226931083">Ladda ned bild</translation>
 <translation id="6865313869410766144">Formuläruppgifter för Autofyll</translation>
 <translation id="6868088497967843822">Logga in om du vill att bokmärken, historik, lösenord och andra inställningar ska vara tillgängliga på alla dina enheter.</translation>
@@ -515,6 +516,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7026897394897382018">Aktivera Databesparing</translation>
 <translation id="7029809446516969842">Lösenord</translation>
 <translation id="7031882061095297553">Synkronisera med</translation>
+<translation id="7040138676081995583">Öppna med ...</translation>
 <translation id="7053983685419859001">Blockera</translation>
 <translation id="7057058088140140610">Kreditkort och adresser som används med Google Payments</translation>
 <translation id="7062545763355031412">Godkänn och byt konto</translation>
@@ -591,9 +593,11 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="7998918019931843664">Öppna en stängd flik på nytt</translation>
 <translation id="7999064672810608036">Vill du ta bort all lokal data för webbplatsen, inklusive cookies, och återställa alla behörigheter för den?</translation>
 <translation id="8007176423574883786">Inaktiverad för den här enheten</translation>
+<translation id="802154636333426148">Nedladdningen misslyckades</translation>
 <translation id="8026334261755873520">Rensa webbinformation</translation>
 <translation id="8035133914807600019">Ny mapp …</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> dagar kvar</translation>
+<translation id="8051695050440594747"><ph name="MEGABYTES" /> MB tillgängliga</translation>
 <translation id="8063895661287329888">Det gick inte att lägga till bokmärket.</translation>
 <translation id="8068648041423924542">Det går inte att välja certifikat.</translation>
 <translation id="8069239273282989646">Efter komprimering</translation>
@@ -675,7 +679,6 @@ Du hämtar nya licenser genom att ansluta till internet och spela upp det nedlad
 <translation id="8986494364107987395">Skicka användningsstatistik och kraschrapporter till Google automatiskt</translation>
 <translation id="8998729206196772491">Du håller på att logga in med ett konto som hanteras av <ph name="MANAGED_DOMAIN" />, vilket ger administratören kontroll över data i Chrome. Din data kopplas permanent till det här kontot. Om du loggar ut från Chrome raderas all din data från enheten, men den lagras fortfarande i Google-kontot.</translation>
 <translation id="9019902583201351841">Hanteras av dina föräldrar</translation>
-<translation id="9020607083536754075">Stäng nuvarande flik och återvänd till föregående app</translation>
 <translation id="9038649477754266430">Använd en förslagstjänst om du vill läsa in sidor snabbare</translation>
 <translation id="9050666287014529139">Lösenfras</translation>
 <translation id="9060538597317784206">Visa appen <ph name="APP_NAME" /> i Play Butik. Betyg: <ph name="APP_RATING" />.</translation>

@@ -109,6 +109,7 @@
 <translation id="3891340733213178823">ログアウトするには、Ctrl+Shift+Q を 2 回押します。</translation>
 <translation id="3892641579809465218">内蔵ディスプレイ</translation>
 <translation id="3893630138897523026">ChromeVox（音声フィードバック）</translation>
+<translation id="3899995891769452915">音声入力</translation>
 <translation id="3963445509666917109">スピーカー（内蔵）</translation>
 <translation id="3967919079500697218">スクリーンショットを撮る機能は、管理者によって無効にされています。</translation>
 <translation id="397105322502079400">計算しています...</translation>
@@ -181,6 +182,7 @@
 <translation id="6459472438155181876"><ph name="DISPLAY_NAME" /> へ画面を拡張しています</translation>
 <translation id="6490471652906364588">USB-C デバイス（右側面のポート）</translation>
 <translation id="6501401484702599040">画面を <ph name="RECEIVER_NAME" /> にキャスト中</translation>
+<translation id="6521655319214113338">手書き入力</translation>
 <translation id="6537270692134705506">画面をキャプチャ</translation>
 <translation id="6550675742724504774">オプション</translation>
 <translation id="6585808820553845416">セッション終了まであと <ph name="SESSION_TIME_REMAINING" />です。</translation>
@@ -212,6 +214,7 @@ Alt+ 検索/Shift キーを押すと解除されます。</translation>
 <translation id="743058460480092004">カメラとマイクが使用中です。</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> は <ph name="SPECIFIED_RESOLUTION" /> に対応していません。解像度は <ph name="FALLBACK_RESOLUTION" /> に変更されました</translation>
+<translation id="7562368315689366235">絵文字パレット</translation>
 <translation id="7573962313813535744">ドッキング モード</translation>
 <translation id="7580671184200851182">すべてのスピーカーで同じオーディオを再生（モノラル オーディオ）</translation>
 <translation id="7581273696622423628">アンケートに答える</translation>

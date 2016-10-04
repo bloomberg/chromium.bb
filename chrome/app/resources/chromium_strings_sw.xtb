@@ -15,6 +15,7 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="1414495520565016063">Umeingia kwenye Chromium!</translation>
 <translation id="1444754455097148408">Leseni za programu huria kwenye Chromium</translation>
 <translation id="1480489203462860648">Ijaribu, tayari imesakinishwa</translation>
+<translation id="1502360822835740515">Fanya Chromium iwe kivinjari chako chaguo-msingi</translation>
 <translation id="151962892725702025">Mfumo wa Uendeshaji wa Chromium haukuweza kusawazisha data yako kwa sababu Usawazishaji haupatikani kwa kikoa chako.</translation>
 <translation id="1559451348202814456">Huenda Chromium isifanye kazi vizuri kwa sababu haitumiki tena kwenye Mac OS X 10.6, 10.7, au 10.8.</translation>
 <translation id="1644918877723739397">Chromium itahifadhi nenosiri hili katika <ph name="SAVED_PASSWORD_LINK" /> na kulikumbuka wakati ujao utakapolihitaji.</translation>
@@ -95,10 +96,12 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="378917192836375108">Chromium hukuruhusu kubofya nambari ya simu kwenye wavuti na kuipiga kwa Skype.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3849925841547750267">Cha kusikitisha, mipangilio yako ya Mozilla Firefox haipatikani kivinjari hicho kinapoendesha. Ili kuleta mipangilio hiyo kwenye Chromium, hifadhi kazi yako na ufunge madirisha yote ya Firefox. Kisha bofya Endelea.</translation>
+<translation id="3852700440713538496">Bandika Chromium kwenye upau-kazi wako</translation>
 <translation id="3883381313049582448">Tumia nenosiri lililozalishwa na Chromium</translation>
 <translation id="3889543394854987837">Bofya jina lako ili ufungue Chromium na uanze kuvinjari.</translation>
 <translation id="390894725198123737">Kwenye Mac, manenosiri yanaweza kuhifadhiwa kwenye Msururu wako wa kitufe na yanaweza kufikiwa au kusawazishwa na watumiaji wengine wa Chromium wanaoshiriki akaunti hii ya OS X.</translation>
 <translation id="4050175100176540509">Maboresho muhimu ya usalama na vipengele vipya vinapatikana katika toleo jipya.</translation>
+<translation id="407254336480250557">Chagua <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="4077262827416206768">Tafadhali funga madirisha yote ya Chromium na uizindue upya Chromium ili mabadiliko haya yaanze kufanya kazi.</translation>
 <translation id="4182290826692170034">Chromium ndiyo kivinjari chako chaguo-msingi. Hongera!</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Ilani:<ph name="END_BOLD" /> Chromium haiwezi kuzuia viendelezi kurekodi historia yako ya kuvinjari. Ili kuzima kiendelezi hiki katika hali fiche, ondoa tiki kwenye chaguo hili.</translation>
@@ -120,6 +123,7 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="4621240073146040695">Inakaribia kukamilisha kusasishwa! Anzisha Chromium upya ili ukamilishe kusasisha.</translation>
 <translation id="4677944499843243528">Wasifu unaonekana kuwa unatumika na mchakato mwingine wa Chromium (<ph name="PROCESS_ID" />) kwenye kompyuta nyingine (<ph name="HOST_NAME" />). Chromium imefunga wasifu huu ili usifisidiwe. Kama una uhakika hakuna michakato mingine inatumia wasifu huu, unaweza kufungua wasifu na uzindue tena Chromium.</translation>
 <translation id="469338717132742108">Pata usaidizi wa kutumia mfumo wa uendeshaji wa Chromium</translation>
+<translation id="4714956846925717402">Fika kwenye Chromium haraka</translation>
 <translation id="4743926867934016338">Kubali na Utafute</translation>
 <translation id="4888717733111232871">Sheria ya ndani ya Chromium ili kuruhusu trafiki ya mDNS.</translation>
 <translation id="4943838377383847465">Chromium iko katika hali ya chini chini.</translation>

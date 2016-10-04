@@ -28,6 +28,7 @@
 <translation id="1653828314016431939">ОК, перезапустить сейчас</translation>
 <translation id="1682634494516646069">Браузеру Google Chrome не может выполнять операции чтения и записи в каталоге данных <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome – это быстрый и удобный браузер для работы с веб-страницами и приложениями. Он надежен и прост в использовании. Вы можете просматривать страницы в Интернете, положившись на систему защиту от вредоносного ПО и фишинга, которая уже встроена в Google Chrome.</translation>
+<translation id="1718131156967340976">Выберите <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
 <translation id="174539241580958092">Google Chrome не удалось синхронизировать данные из-за ошибки входа в аккаунт.</translation>
 <translation id="1759301979429102118">Данные из вашего списка контактов будут отображаться в подсказках, и вы сможете быстрее заполнять формы в Chrome.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -103,6 +104,7 @@
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Данные Chrome подтверждают, что издатель сертификата сайта – <ph name="ISSUER" />. Сервер предоставил временные метки сертификата, однако распознать их журналы не удалось.</translation>
 <translation id="3889417619312448367">Удалить Google Chrome</translation>
+<translation id="4028693306634653894">Сделайте свой Chrome ещё быстрее</translation>
 <translation id="4042449298237264661">Google Chrome больше не будет обновляться на этом компьютере, так как поддержка Windows XP и Windows Vista прекращена.</translation>
 <translation id="4050175100176540509">В последней версии улучшена защита и добавлены новые функции.</translation>
 <translation id="4053720452172726777">Настройка и управление Google Chrome</translation>
@@ -237,6 +239,7 @@
 <translation id="7788788617745289808">Предоставьте браузеру Chrome доступ к камере, чтобы пользоваться ею на этом сайте.</translation>
 <translation id="7808348361785373670">Удалить из Chrome</translation>
 <translation id="7825851276765848807">Не удалось выполнить установку из-за неизвестной ошибки. Скачайте Google Chrome ещё раз.</translation>
+<translation id="7888186132678118370">Как добавить Chrome на панель задач</translation>
 <translation id="7890208801193284374">Если, кроме вас, компьютером пользуется кто-то ещё, например родные или друзья, они тоже смогут настроить Chrome на свой вкус.</translation>
 <translation id="7908168227788431038">Чтобы завершить обновление, перезапустите Google Chrome.</translation>
 <translation id="795025003224538582">Не перезапускать</translation>
@@ -278,4 +281,5 @@
 <translation id="9102715433345326100">Chrome заблокировал этот файл как вредоносный.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Внимание!<ph name="END_BOLD" /> Google Chrome не может запретить расширениям записывать историю браузера. Чтобы отключить это расширение в режиме инкогнито, снимите этот флажок.</translation>
 <translation id="911206726377975832">Также удалить данные о работе в браузере?</translation>
+<translation id="924447568950697217">Как назначить Chrome браузером по умолчанию</translation>
 </translationbundle>

@@ -34,6 +34,7 @@
 <translation id="1376578503827013741">計算中…</translation>
 <translation id="138361230106469022"><ph name="FULL_NAME" />，您好：</translation>
 <translation id="1383876407941801731">搜尋</translation>
+<translation id="1384959399684842514">已暫停下載</translation>
 <translation id="1389974829397082527">這裡沒有任何書籤</translation>
 <translation id="1404122904123200417">內嵌位置：<ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">「不追蹤」</translation>
@@ -238,6 +239,7 @@
 <translation id="380076759404194828">{NUM_SELECTED,plural, =1{已選取 1 個項目}other{已選取 # 個項目}}</translation>
 <translation id="3810838688059735925">影片</translation>
 <translation id="3810973564298564668">管理</translation>
+<translation id="3819178904835489326">已刪除 <ph name="NUMBER_OF_DOWNLOADS" /> 個下載項目</translation>
 <translation id="3822502789641063741">要清除網站儲存的資料嗎？</translation>
 <translation id="3828029223314399057">搜尋書籤</translation>
 <translation id="3894427358181296146">新增資料夾</translation>
@@ -277,6 +279,7 @@
 <translation id="4271185234001491831">一律不翻譯<ph name="LANGUAGE" /></translation>
 <translation id="4275663329226226506">媒體</translation>
 <translation id="4278390842282768270">允許</translation>
+<translation id="4300272766492248925">開啟應用程式</translation>
 <translation id="4307992518367153382">基本選項</translation>
 <translation id="4351244548802238354">關閉對話方塊</translation>
 <translation id="4376501731284077108">不受控制</translation>
@@ -323,6 +326,7 @@
 <translation id="4923459931733593730">付款</translation>
 <translation id="4941291666397027948">* 代表必填欄位</translation>
 <translation id="4943872375798546930">沒有結果</translation>
+<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> 正在共用您的畫面。</translation>
 <translation id="4961700429721424617">您即將登出由 <ph name="MANAGED_DOMAIN" /> 所管理的帳戶。系統會將您的 Chrome 資料從這個裝置上刪除，但繼續保留在您的 Google 帳戶中。</translation>
 <translation id="497421865427891073">往前</translation>
 <translation id="4988526792673242964">頁數</translation>
@@ -364,7 +368,6 @@
 <translation id="5345040418939504969">已刪除的「<ph name="BOOKMARK_TITLE" />」</translation>
 <translation id="5345083863238459644">這個裝置的<ph name="BEGIN_LINK" />位置資訊存取功能已一併關閉<ph name="END_LINK" />。</translation>
 <translation id="5372829067651257087">已複製網址。</translation>
-<translation id="5380554235172449987">一律不傳送</translation>
 <translation id="5400569084694353794">使用這個應用程式即表示您同意接受 Chrome 的《<ph name="BEGIN_LINK1" />服務條款<ph name="END_LINK1" />》和《<ph name="BEGIN_LINK2" />隱私權聲明<ph name="END_LINK2" />》。</translation>
 <translation id="5414836363063783498">驗證中…</translation>
 <translation id="5423934151118863508">這裡會顯示您最常造訪的網頁</translation>
@@ -374,7 +377,6 @@
 <translation id="5456381639095306749">下載網頁</translation>
 <translation id="5487521232677179737">清除資料</translation>
 <translation id="5487729733663684359">這個 Android 版本已停止支援 Chrome 更新。</translation>
-<translation id="5511351932351731210">一律傳送</translation>
 <translation id="5512137114520586844">這個帳戶受 <ph name="PARENT_NAME" /> 管理。</translation>
 <translation id="5527082711130173040">Chrome 需要位置資訊存取權才能掃描裝置。<ph name="BEGIN_LINK1" />更新權限<ph name="END_LINK1" />。此外，<ph name="BEGIN_LINK2" />這個裝置的位置資訊存取權已關閉<ph name="END_LINK2" />。</translation>
 <translation id="5530766185686772672">關閉無痕式分頁</translation>
@@ -495,7 +497,6 @@
 <translation id="6831043979455480757">翻譯</translation>
 <translation id="6846298663435243399">載入中…</translation>
 <translation id="6850830437481525139">關閉了 <ph name="TAB_COUNT" /> 個分頁</translation>
-<translation id="6857778194843072568">僅於使用 Wi-Fi 連線時傳送</translation>
 <translation id="6864459304226931083">下載圖片</translation>
 <translation id="6865313869410766144">自動填入表單資料</translation>
 <translation id="6868088497967843822">登入後，即可從任何裝置取得自己的書籤、歷史紀錄、密碼和其他設定</translation>
@@ -515,6 +516,7 @@
 <translation id="7026897394897382018">啟用 Data Saver</translation>
 <translation id="7029809446516969842">密碼</translation>
 <translation id="7031882061095297553">同步處理</translation>
+<translation id="7040138676081995583">選擇開啟工具...</translation>
 <translation id="7053983685419859001">封鎖</translation>
 <translation id="7057058088140140610">使用 Google Payments 儲存的信用卡和地址資訊。</translation>
 <translation id="7062545763355031412">接受並切換帳戶</translation>
@@ -591,9 +593,11 @@
 <translation id="7998918019931843664">重新開啟先前關閉的分頁</translation>
 <translation id="7999064672810608036">您確定要刪除這個網站儲存的所有本機資料 (包括 Cookie 在內)，並重設這個網站的所有權限嗎？</translation>
 <translation id="8007176423574883786">已在這個裝置上關閉</translation>
+<translation id="802154636333426148">下載失敗</translation>
 <translation id="8026334261755873520">清除瀏覽資料</translation>
 <translation id="8035133914807600019">新資料夾…</translation>
 <translation id="8037750541064988519">還剩 <ph name="DAYS" /> 天</translation>
+<translation id="8051695050440594747"><ph name="MEGABYTES" /> MB 可用空間</translation>
 <translation id="8063895661287329888">無法加入書籤。</translation>
 <translation id="8068648041423924542">無法選取憑證。</translation>
 <translation id="8069239273282989646">壓縮後大小</translation>
@@ -675,7 +679,6 @@
 <translation id="8986494364107987395">自動傳送使用統計資料及當機報告給 Google</translation>
 <translation id="8998729206196772491">您即將使用由 <ph name="MANAGED_DOMAIN" /> 所管理的帳戶登入，並授權該網域的管理員控管您的 Chrome 資料。您的資料會與這個帳戶建立永久連結。登出 Chrome 後，系統會將您的資料從這個裝置上刪除，但繼續保留在您的 Google 帳戶中。</translation>
 <translation id="9019902583201351841">您的家長已停用這項功能</translation>
-<translation id="9020607083536754075">關閉目前的分頁並返回上一個應用程式</translation>
 <translation id="9038649477754266430">使用預測查詢字串服務，讓系統更快載入網頁</translation>
 <translation id="9050666287014529139">通關密語</translation>
 <translation id="9060538597317784206">前往 Play 商店查看「<ph name="APP_NAME" />」應用程式。評分：<ph name="APP_RATING" />。</translation>

@@ -34,6 +34,7 @@
 <translation id="1376578503827013741">በማስላት ላይ…</translation>
 <translation id="138361230106469022">ሰላም፣ <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">ፍለጋ </translation>
+<translation id="1384959399684842514">የሚወርደው ላፍታ ቆሟል</translation>
 <translation id="1389974829397082527">እዚህ ምንም ዕልባቶች የሉም</translation>
 <translation id="1404122904123200417">በ<ph name="WEBSITE_URL" /> ውስጥ ተካትቷል</translation>
 <translation id="1406000523432664303">«አትከታተል»</translation>
@@ -238,6 +239,7 @@
 <translation id="380076759404194828">{NUM_SELECTED,plural, =1{1 ንጥል ተመርጧል}one{# ንጥሎች ተመርጠዋል}other{# ንጥሎች ተመርጠዋል}}</translation>
 <translation id="3810838688059735925">ቪዲዮ</translation>
 <translation id="3810973564298564668">አቀናብር</translation>
+<translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> የሚወርዱ ተሰርዘዋል</translation>
 <translation id="3822502789641063741">የጣቢያ ማከማቻ ይጽዳ?</translation>
 <translation id="3828029223314399057">ዕልባቶች ፈልግ</translation>
 <translation id="3894427358181296146">አቃፊ ያክሉ</translation>
@@ -277,6 +279,7 @@
 <translation id="4271185234001491831"><ph name="LANGUAGE" />ን በጭራሽ አትተርጉም</translation>
 <translation id="4275663329226226506">ማህደረ መረጃ</translation>
 <translation id="4278390842282768270">ተፈቅዷል</translation>
+<translation id="4300272766492248925">መተግበሪያ ክፈት</translation>
 <translation id="4307992518367153382">መሠረታዊ</translation>
 <translation id="4351244548802238354">መገናኛ ዝጋ</translation>
 <translation id="4376501731284077108">ቁጥጥር ያልተደረገበት</translation>
@@ -323,6 +326,7 @@
 <translation id="4923459931733593730">ክፍያ</translation>
 <translation id="4941291666397027948">* የሚያስፈልግ መስክ መሆኑን ያመለክታል</translation>
 <translation id="4943872375798546930">ውጤቶች የሉም</translation>
+<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> ማያ ገጽዎን እያጋራ ነው</translation>
 <translation id="4961700429721424617">በ<ph name="MANAGED_DOMAIN" /> ከሚተዳደር መለያ ዘግተው እየወጡ ነው። ይሄ የChrome ውሂብዎን ከዚህ መሣሪያ ይሰርዘዋል፣ ነገር ግን ውሂብዎ አሁንም በእርስዎ የGoogle መለያ ውስጥ እንዳለ ይቀራል።</translation>
 <translation id="497421865427891073">ወደ ፊት ሂድ</translation>
 <translation id="4988526792673242964">ገፆች</translation>
@@ -364,7 +368,6 @@
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> ተሰርዟል</translation>
 <translation id="5345083863238459644">የአካባቢ መዳረሻ እንዲሁም <ph name="BEGIN_LINK" />ለዚህ መሣሪያ ጠፍቷል<ph name="END_LINK" />።</translation>
 <translation id="5372829067651257087">ዩአርኤል ተቀድቷል።</translation>
-<translation id="5380554235172449987">በጭራሽ አትላክ</translation>
 <translation id="5400569084694353794">ይህን መተግበሪያ በመጠቀምዎ በChrome <ph name="BEGIN_LINK1" />አገልግሎት ውል<ph name="END_LINK1" /> እና <ph name="BEGIN_LINK2" />የግላዊነት ማስታወቂያ<ph name="END_LINK2" /> ተስማምተዋል።</translation>
 <translation id="5414836363063783498">በማረጋገጥ ላይ…</translation>
 <translation id="5423934151118863508">በጣም በብዛት የተጎበኙ ገጾችዎ እዚህ ይመጣሉ</translation>
@@ -374,7 +377,6 @@
 <translation id="5456381639095306749">ገጽ አውርድ</translation>
 <translation id="5487521232677179737">ውሂብን አጽዳ</translation>
 <translation id="5487729733663684359">የChrome ዝማኔዎች ከአሁን በኋላ ለዚህ የAndroid ዝማኔዎች አይደገፉም።</translation>
-<translation id="5511351932351731210">ሁልጊዜ ላክ</translation>
 <translation id="5512137114520586844">ይህ መለያ የሚቀናበረው በ<ph name="PARENT_NAME" /> ነው።</translation>
 <translation id="5527082711130173040">Chrome መሣሪያዎችን መቃኘት እንዲችል የአካባቢ መዳረሻ ያስፈልገዋል። <ph name="BEGIN_LINK1" />ፈቃዶችን ያዘምኑ<ph name="END_LINK1" />። የአካባቢ መዳረሻ እንዲሁም <ph name="BEGIN_LINK2" />ለዚህ መዳረሻ ጠፍቷል<ph name="END_LINK2" />።</translation>
 <translation id="5530766185686772672">ማንነት የማያሳውቁ ትሮችን ዝጋ</translation>
@@ -495,7 +497,6 @@
 <translation id="6831043979455480757">መተርጎም</translation>
 <translation id="6846298663435243399">በመጫን ላይ…</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> ትሮች ተዘግተዋል</translation>
-<translation id="6857778194843072568">በWi-Fi ላይ ሲሆን ብቻ ላክ</translation>
 <translation id="6864459304226931083">ምስል አውርድ</translation>
 <translation id="6865313869410766144">የራስ-ሙላ ቅጽ ውሂብ</translation>
 <translation id="6868088497967843822">የእርስዎን ዕልባቶች፣ ታሪክ፣ የይለፍ ቃላት እና ሌሎች ቅንብሮች በሁሉም መሣሪያዎችዎ ላይ ለማግኘት ወደ መለያ ይግቡ</translation>
@@ -515,6 +516,7 @@
 <translation id="7026897394897382018">ውሂብ ቆጣቢን አንቃ</translation>
 <translation id="7029809446516969842">የይለፍ ቃላት</translation>
 <translation id="7031882061095297553">አሥምር ወደ</translation>
+<translation id="7040138676081995583">ይክፈቱ በ...</translation>
 <translation id="7053983685419859001">አግድ</translation>
 <translation id="7057058088140140610">የGoogle Paymentsን የሚጠቀሙ ክሬዲት ካርዶች እና አድራሻዎች።</translation>
 <translation id="7062545763355031412">ይቀበሉ እና መለያዎችን ይቀይሩ</translation>
@@ -591,9 +593,11 @@
 <translation id="7998918019931843664">የተዘጋውን ትር ዳግም ይክፈቱ</translation>
 <translation id="7999064672810608036">እርግጠኛ ነዎት ለዚህ ጣቢያ ኩኪዎችንም ጨምሮ ሁሉንም አካባቢያዊ ውሂብ ማጽዳት እና ሁሉም ፍቃዶችን ዳግም ማስጀመር ይፈልጋሉ?</translation>
 <translation id="8007176423574883786">ለዚህ መሣሪያ ጠፍቷል</translation>
+<translation id="802154636333426148">ማውረድ አልተሳካም</translation>
 <translation id="8026334261755873520">የአሰሳ ውሂብ አጽዳ</translation>
 <translation id="8035133914807600019">አዲስ አቃፊ…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> ቀኖች ይቀራሉ</translation>
+<translation id="8051695050440594747"><ph name="MEGABYTES" /> ሜባ አለ</translation>
 <translation id="8063895661287329888">ዕልባት ማከል አልተሳካም።</translation>
 <translation id="8068648041423924542">የዕውቅና ማረጋገጫን መምረጥ አልተቻለም።</translation>
 <translation id="8069239273282989646">ከእመቃ በኋላ</translation>
@@ -675,7 +679,6 @@
 <translation id="8986494364107987395">የአጠቃቀም ስታስቲክስ እና የብልሽት ሪፖርቶች በራስ ሰር ወደ Google ይላኩ።</translation>
 <translation id="8998729206196772491">በ<ph name="MANAGED_DOMAIN" /> ወደሚተዳደር መለያ እየገቡና ሙሉውን የChrome ውሂብዎ ቁጥጥር ለአስተዳዳሪው እየሰጡ ነው። የእርስዎ ውሂብ እስከመጨረሻው ከዚህ መለያ ጋር ይተሳሰራል። ከChrome ዘግቶ መውጣት ውሂብዎን ከዚህ መሣሪያ ይሰርዘዋል፣ ነገር ግን በእርስዎ የGoogle መለያ ላይ እንደተከማቸ ይቆያል።</translation>
 <translation id="9019902583201351841">በእርስዎ ወላጆች የሚቀናበር</translation>
-<translation id="9020607083536754075">የአሁኑን ትር ይዝጉና ወደ ቀዳሚው መተግበሪያ ይመለሱ</translation>
 <translation id="9038649477754266430">ገጾችን ይበልጥ በፍጥነት ለመጫን የግመታ አገልግሎትን ይጠቀሙ</translation>
 <translation id="9050666287014529139">የይለፍ ሐረግ</translation>
 <translation id="9060538597317784206">መተግበሪያ <ph name="APP_NAME" />ን በPlay Store ላይ አሳይ።  ደረጃ አሰጣጥ፦ <ph name="APP_RATING" />።</translation>

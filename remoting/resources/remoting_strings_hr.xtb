@@ -65,7 +65,6 @@ Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http:
 <translation id="2359808026110333948">Nastavi</translation>
 <translation id="2366718077645204424">Nije moguće pristupiti hostu. To je vjerojatno zbog konfiguracije mreže koju upotrebljavate.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Posljednji put viđen online <ph name="RELATIVE_TIMESTAMP" />.</translation>
-<translation id="2498359688066513246">Pomoć i povratne informacije</translation>
 <translation id="2499160551253595098">Pomognite nam poboljšati Udaljenu radnu površinu Chrome, dopustite nam prikupljanje statistike upotrebe i izvješća o padu programa.</translation>
 <translation id="2512228156274966424">NAPOMENA: kako biste osigurali dostupnost svih tipkovničkih prečaca, možete konfigurirati udaljenu radnu površinu Chrome da se otvara kao prozor.</translation>
 <translation id="2540992418118313681">Želite li dijeliti ovo računalo tako da ga neki drugi korisnik može vidjeti i upravljati njime?</translation>
@@ -264,6 +263,7 @@ površine Chrome</translation>
 <translation id="7948001860594368197">Opcije zaslona</translation>
 <translation id="7970576581263377361">Autentifikacija nije uspjela. Prijavite se ponovo na Chromium.</translation>
 <translation id="7981525049612125370">Daljinska je sesija istekla.</translation>
+<translation id="8041089156583427627">Slanje povratnih informacija</translation>
 <translation id="8041721485428375115">Preuzimanjem programa za instalaciju hosta Udaljene radne površine Chrome prihvaćate Googleove <ph name="LINK_BEGIN" />Uvjete pružanja usluge<ph name="LINK_END" />.</translation>
 <translation id="8073845705237259513">Da biste upotrebljavali Udaljenu radnu površinu Chrome, uređaju morate dodati Google račun.</translation>
 <translation id="80739703311984697">Udaljeni host zahtijeva autentifikaciju web-lokacije treće strane. Da biste nastavili, morate dati Chromotingu dodatne dozvole za pristup ovoj adresi:</translation>

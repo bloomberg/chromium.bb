@@ -32,6 +32,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome es un navegador web que ejecuta aplicaciones y páginas web a gran velocidad. Es rápido, estable y fácil de utilizar. Navega por la Web de forma más segura gracias a la protección integrada contra suplantación de identidad y software malicioso.</translation>
+<translation id="1718131156967340976">Selecciona <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /> <ph name="SMALL_PRODUCT_LOGO" /></translation>
 <translation id="174539241580958092">Google Chrome no ha podido sincronizar los datos debido a un error de inicio de sesión.</translation>
 <translation id="1759301979429102118">Los detalles de tus contactos pueden ayudar a completar los formularios de forma más rápida en Chrome.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -107,6 +108,7 @@ Consulta tu correo electrónico (<ph name="ACCOUNT_EMAIL" />) para obtener más 
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome ha verificado que <ph name="ISSUER" />emitió el certificado de este sitio web. El servidor ha proporcionado información de Transparencia de certificados, pero Chrome no ha reconocido ninguno de los registros de estos datos.</translation>
 <translation id="3889417619312448367">Desinstalar Google Chrome</translation>
+<translation id="4028693306634653894">Accede a Chrome más rápido</translation>
 <translation id="4042449298237264661">Este ordenador dejará de recibir actualizaciones de Google Chrome porque ya no es compatible con Windows XP y Windows Vista.</translation>
 <translation id="4050175100176540509">En la última versión puedes encontrar mejoras de seguridad importantes y nuevas funciones.</translation>
 <translation id="4053720452172726777">Personaliza y controla Google Chrome</translation>
@@ -245,6 +247,7 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="7788788617745289808">Chrome necesita acceder a la cámara para compartirla con este sitio web.</translation>
 <translation id="7808348361785373670">Desinstalar de Chrome...</translation>
 <translation id="7825851276765848807">La instalación no se ha podido realizar a causa de un error no especificado. Vuelve a descargar Google Chrome.</translation>
+<translation id="7888186132678118370">Ancla Chrome a la barra de tareas</translation>
 <translation id="7890208801193284374">Si compartes un ordenador, tus amigos y familiares pueden navegar de forma independiente y configurar Chrome a su gusto.</translation>
 <translation id="7908168227788431038">Google Chrome casi ha terminado de actualizarse. Reinícialo para completar la actualización.</translation>
 <translation id="795025003224538582">No reiniciar</translation>
@@ -286,4 +289,5 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="9102715433345326100">Este archivo es malicioso y Chrome lo ha bloqueado.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Advertencia:<ph name="END_BOLD" /> Google Chrome no puede evitar que las extensiones registren el historial de búsqueda. Para inhabilitar la ejecución de la extensión en modo incógnito, desactiva la casilla correspondiente a esta opción.</translation>
 <translation id="911206726377975832">¿Quieres borrar también los datos de navegación?</translation>
+<translation id="924447568950697217">Establece Chrome como navegador predeterminado</translation>
 </translationbundle>

@@ -15,6 +15,7 @@
 <translation id="1414495520565016063">Chromium에 로그인했습니다.</translation>
 <translation id="1444754455097148408">Chromium 오픈소스 라이선스</translation>
 <translation id="1480489203462860648">사용해 보세요. 이미 설치되었습니다.</translation>
+<translation id="1502360822835740515">Chromium을 기본 브라우저로 사용</translation>
 <translation id="151962892725702025">내 도메인에서 동기화를 사용할 수 없으므로 Chromium OS에서 데이터를 동기화하지 못했습니다.</translation>
 <translation id="1559451348202814456">더 이상 Mac OS X 10.6, 10.7, 10.8에서 Chromium을 지원하지 않으므로 Chromium이 올바르게 작동하지 않을 수 있습니다.</translation>
 <translation id="1644918877723739397">Chromium은 <ph name="SAVED_PASSWORD_LINK" />에 비밀번호를 저장한 후 다음에 필요할 때 제공합니다.</translation>
@@ -95,10 +96,12 @@
 <translation id="378917192836375108">Chromium을 사용하면 웹에서 전화번호를 클릭하여 Skype로 통화할 수 있습니다.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3849925841547750267">Mozilla Firefox 브라우저가 실행 중일 때는 설정 기능을 사용할 수 없습니다. 이 설정을 Chromium으로 가져오려면 현재 작업을 저장하고 Firefox 창을 모두 닫습니다. 그런 다음 '계속'을 클릭합니다.</translation>
+<translation id="3852700440713538496">Chromium을 작업 표시줄에 고정</translation>
 <translation id="3883381313049582448">Chromium에서 생성한 비밀번호 사용</translation>
 <translation id="3889543394854987837">Chromium을 열고 탐색을 시작하려면 내 이름을 클릭하세요.</translation>
 <translation id="390894725198123737">Mac에서는 비밀번호가 키체인에 저장되어 이 OS X 계정을 공유하는 다른 Chromium 사용자가 액세스하거나 동기화할 수 있습니다.</translation>
 <translation id="4050175100176540509">최신 버전에는 중요한 보안 개선사항 및 새로운 기능이 포함되어 있습니다.</translation>
+<translation id="407254336480250557"><ph name="SMALL_PRODUCT_LOGO" /><ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /> 선택</translation>
 <translation id="4077262827416206768">모든 Chromium 창을 닫은 뒤 다시 Chromium을 실행하면 변경 사항이 반영됩니다.</translation>
 <translation id="4182290826692170034">Chromium이 기본 브라우저입니다.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />경고:<ph name="END_BOLD" /> Chromium은 확장 프로그램이 인터넷 사용기록을 저장하지 못하도록 할 수 없습니다. 시크릿 모드에서 이 확장 프로그램을 사용 중지하려면 옵션을 선택 취소하세요.</translation>
@@ -120,6 +123,7 @@
 <translation id="4621240073146040695">업데이트가 거의 완료되었습니다. 업데이트를 완료하려면 Chromium을 다시 시작하세요.</translation>
 <translation id="4677944499843243528">다른 컴퓨터(<ph name="HOST_NAME" />)의 다른 Chromium 프로세스(<ph name="PROCESS_ID" />)에서 프로필을 사용 중인 것 같습니다. 프로필이 손상되지 않도록 Chromium에서 잠금 설정했습니다. 다른 프로세스에서 프로필을 사용 중이지 않은 것이 확실한 경우 프로필을 잠금 해제하고 Chromium을 다시 시작하세요.</translation>
 <translation id="469338717132742108">Chromium OS 도움말 보기</translation>
+<translation id="4714956846925717402">Chromium을 더 빠르게 사용해 보세요.</translation>
 <translation id="4743926867934016338">동의 및 검색</translation>
 <translation id="4888717733111232871">Chromium이 mDNS 트래픽을 허용하는 인바운드 규칙입니다.</translation>
 <translation id="4943838377383847465">Chromium이 백그라운드 모드로 실행 중입니다.</translation>

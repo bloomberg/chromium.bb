@@ -34,6 +34,7 @@ A Fizikai web használatához be kell kapcsolnia a Bluetooth funkciót és a hel
 <translation id="1376578503827013741">Számítás…</translation>
 <translation id="138361230106469022">Üdv, <ph name="FULL_NAME" />!</translation>
 <translation id="1383876407941801731">Keresés</translation>
+<translation id="1384959399684842514">A letöltés szünetel</translation>
 <translation id="1389974829397082527">Itt nincsenek könyvjelzők</translation>
 <translation id="1404122904123200417">Beágyazva itt: <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">„Nincs nyomon követés”</translation>
@@ -238,6 +239,7 @@ A keresési kifejezés módosításához hosszú nyomva tartással hajthat végr
 <translation id="380076759404194828">{NUM_SELECTED,plural, =1{1 elem kijelölve}other{# elem kijelölve}}</translation>
 <translation id="3810838688059735925">Videó</translation>
 <translation id="3810973564298564668">Szerkesztés</translation>
+<translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> letöltés törölve</translation>
 <translation id="3822502789641063741">Törli a webhely tárhelyét?</translation>
 <translation id="3828029223314399057">Könyvjelzők keresése</translation>
 <translation id="3894427358181296146">Mappa hozzáadása</translation>
@@ -277,6 +279,7 @@ A keresési kifejezés módosításához hosszú nyomva tartással hajthat végr
 <translation id="4271185234001491831">Soha ne fordítsa le a(z) <ph name="LANGUAGE" /> nyelvű szöveget</translation>
 <translation id="4275663329226226506">Média</translation>
 <translation id="4278390842282768270">Engedélyezve</translation>
+<translation id="4300272766492248925">Alkalmazás megnyitása</translation>
 <translation id="4307992518367153382">Alapok</translation>
 <translation id="4351244548802238354">Párbeszédablak bezárása</translation>
 <translation id="4376501731284077108">Nem kezelt</translation>
@@ -323,6 +326,7 @@ A keresési kifejezés módosításához hosszú nyomva tartással hajthat végr
 <translation id="4923459931733593730">Fizetés</translation>
 <translation id="4941291666397027948">* kötelező mezőt jelöl</translation>
 <translation id="4943872375798546930">Nincs találat</translation>
+<translation id="4958708863221495346">A(z) <ph name="URL_OF_THE_CURRENT_TAB" /> webhely megosztja az Ön képernyőjét</translation>
 <translation id="4961700429721424617">Kijelentkezik egy <ph name="MANAGED_DOMAIN" /> által felügyelt fiókból. Ezzel törli az eszközön található Chrome-adatokat, amelyek azonban Google-fiókjában megmaradnak.</translation>
 <translation id="497421865427891073">Előrelépés</translation>
 <translation id="4988526792673242964">Oldal</translation>
@@ -364,7 +368,6 @@ A keresési kifejezés módosításához hosszú nyomva tartással hajthat végr
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> törölve</translation>
 <translation id="5345083863238459644">A helyadatokhoz való hozzáférés is <ph name="BEGIN_LINK" />ki van kapcsolva ezen az eszközön<ph name="END_LINK" />.</translation>
 <translation id="5372829067651257087">URL kimásolva.</translation>
-<translation id="5380554235172449987">Soha ne küldjön</translation>
 <translation id="5400569084694353794">Az alkalmazás használatával Ön elfogadja a Chrome <ph name="BEGIN_LINK1" />Általános Szerződési Feltételeit<ph name="END_LINK1" /> és az <ph name="BEGIN_LINK2" />Adatvédelmi közleményt<ph name="END_LINK2" />.</translation>
 <translation id="5414836363063783498">Ellenőrzés...</translation>
 <translation id="5423934151118863508">A leggyakrabban látogatott oldalak fognak itt megjelenni</translation>
@@ -374,7 +377,6 @@ A keresési kifejezés módosításához hosszú nyomva tartással hajthat végr
 <translation id="5456381639095306749">Oldal letöltése</translation>
 <translation id="5487521232677179737">Adatok törlése</translation>
 <translation id="5487729733663684359">Az Android e verziója többé nem támogatja a Chrome-frissítéseket.</translation>
-<translation id="5511351932351731210">Mindig küldjön</translation>
 <translation id="5512137114520586844">A fiók kezelője: <ph name="PARENT_NAME" />.</translation>
 <translation id="5527082711130173040">A Chrome-nak hozzá kell férnie a tartózkodási helyhez, hogy eszközöket kereshessen. <ph name="BEGIN_LINK1" />Frissítse az engedélyeket<ph name="END_LINK1" />. A helyadatokhoz való hozzáférés is <ph name="BEGIN_LINK2" />ki van kapcsolva ezen az eszközön<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Inkognitólapok bezárása</translation>
@@ -495,7 +497,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="6831043979455480757">Fordítás</translation>
 <translation id="6846298663435243399">Betöltés…</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> lap bezárva</translation>
-<translation id="6857778194843072568">Csak Wi-Fi-hálózaton keresztül küldjön</translation>
 <translation id="6864459304226931083">Kép letöltése</translation>
 <translation id="6865313869410766144">Automatikus kitöltési űrlapadatok</translation>
 <translation id="6868088497967843822">Jelentkezzen be, hogy könyvjelzőit, előzményeit, jelszavait és más beállításait az összes eszközén elérje.</translation>
@@ -515,6 +516,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="7026897394897382018">Adatforgalom-csökkentő bekapcsolása</translation>
 <translation id="7029809446516969842">Jelszavak</translation>
 <translation id="7031882061095297553">Szinkronizálás a következőknél</translation>
+<translation id="7040138676081995583">Megnyitás ezzel:...</translation>
 <translation id="7053983685419859001">Letiltás</translation>
 <translation id="7057058088140140610">Google Payments szolgáltatást használó hitelkártyák és címek</translation>
 <translation id="7062545763355031412">Elfogadás és fiókváltás</translation>
@@ -591,9 +593,11 @@ Előfordulhat, hogy Google-fiókjában (a <ph name="BEGIN_LINK" />history.google
 <translation id="7998918019931843664">Bezárt lap megnyitása</translation>
 <translation id="7999064672810608036">Biztosan törli a webhellyel kapcsolatos összes helyi adatot (a cookie-kkal együtt), és visszaállítja az összes engedélyt?</translation>
 <translation id="8007176423574883786">Kikapcsolva ezen az eszközön</translation>
+<translation id="802154636333426148">Nem sikerült a letöltés</translation>
 <translation id="8026334261755873520">Böngészési adatok törlése</translation>
 <translation id="8035133914807600019">Új mappa…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> nap van hátra</translation>
+<translation id="8051695050440594747"><ph name="MEGABYTES" /> MB áll rendelkezésre</translation>
 <translation id="8063895661287329888">A könyvjelző hozzáadása sikertelen volt.</translation>
 <translation id="8068648041423924542">A tanúsítvány kiválasztása nem sikerült.</translation>
 <translation id="8069239273282989646">Tömörítés után</translation>
@@ -675,7 +679,6 @@ Az új engedélyek beszerzéséhez kapcsolódjon az internethez, és játssza le
 <translation id="8986494364107987395">Használati statisztikák és hibajelentések automatikus küldése a Google-nak</translation>
 <translation id="8998729206196772491">Egy <ph name="MANAGED_DOMAIN" /> által felügyelt fiókkal jelentkezik be, és engedélyezi az adminisztrátor számára a Chrome-adatok kezelését. Adatai állandó jelleggel ehhez a fiókhoz lesznek társítva. A Chrome-ból való kijelentkezéssel törli adatait erről az eszközről, de Google-fiókjában továbbra is megmaradnak.</translation>
 <translation id="9019902583201351841">Szülők által kezelt</translation>
-<translation id="9020607083536754075">Az aktuális lap bezárása, és visszatérés az előző alkalmazáshoz</translation>
 <translation id="9038649477754266430">A várható kifejezés szolgáltatás használata az oldalak gyorsabb betöltése érdekében</translation>
 <translation id="9050666287014529139">Összetett jelszó</translation>
 <translation id="9060538597317784206">A(z) <ph name="APP_NAME" /> alkalmazás megtekintése a Play Áruházban. Értékelés: <ph name="APP_RATING" />.</translation>

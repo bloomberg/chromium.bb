@@ -80,7 +80,6 @@
 <translation id="1871208020102129563">Proxy je nastaveno na používání pevně daných serverů proxy, nikoliv adresy URL skriptu PAC.</translation>
 <translation id="1883255238294161206">Sbalit seznam</translation>
 <translation id="1898423065542865115">Filtrování</translation>
-<translation id="1911837502049945214">Web <ph name="HOST_NAME" /> nepřijal přihlašovací certifikát. Je možné, že platnost certifikátu vypršela.</translation>
 <translation id="194030505837763158">Přejít na odkaz <ph name="LINK" /></translation>
 <translation id="1962204205936693436">Záložky domény <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Chyba serializace</translation>
@@ -176,7 +175,6 @@
 <translation id="2837049386027881519">Pokus o připojení musel proběhnout znovu pomocí starší verze protokolu TLS nebo SSL. Obvykle to znamená, že server používá zastaralý software a může mít další problémy se zabezpečením.</translation>
 <translation id="284702764277384724">Zdá se, že certifikát serveru webu <ph name="HOST_NAME" /> je podvrh.</translation>
 <translation id="2889159643044928134">Nenačítat znovu</translation>
-<translation id="2896499918916051536">Tento plugin není podporován.</translation>
 <translation id="2900469785430194048">Prohlížeč Google Chrome k zobrazení této webové stránky neměl dostatek paměti.</translation>
 <translation id="2909946352844186028">Byla zjištěna změna sítě.</translation>
 <translation id="2922350208395188000">Certifikát serveru nelze zkontrolovat.</translation>
@@ -217,6 +215,7 @@
 <translation id="3286538390144397061">Restartovat</translation>
 <translation id="3305707030755673451">Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro synchronizaci. Chcete-li zahájit synchronizaci, zadejte ji.</translation>
 <translation id="333371639341676808">Bránit této stránce ve vytváření dalších dialogových oken.</translation>
+<translation id="3338095232262050444">Zabezpečeno</translation>
 <translation id="3340978935015468852">nastavení</translation>
 <translation id="3345135638360864351">Odeslání žádosti o přístup k tomuto webu uživateli <ph name="NAME" /> se nezdařilo. Zkuste to prosím znovu.</translation>
 <translation id="3355823806454867987">Změna nastavení proxy...</translation>
@@ -318,6 +317,7 @@
 <translation id="4304224509867189079">Přihlásit se</translation>
 <translation id="432290197980158659">Server se prokázal certifikátem, který neodpovídá integrovaným očekáváním. Tato očekávaní jsou zahrnuta u určitých webových stránek s vysokou úrovní zabezpečení kvůli vaší ochraně. <ph name="BEGIN_LEARN_MORE_LINK" />Další informace<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="4325863107915753736">Článek nebyl nalezen</translation>
+<translation id="4331708818696583467">Nezabezpečeno</translation>
 <translation id="4372948949327679948">Očekávána hodnota <ph name="VALUE_TYPE" />.</translation>
 <translation id="4381091992796011497">Jméno uživatele:</translation>
 <translation id="4394049700291259645">Deaktivovat</translation>
@@ -337,6 +337,7 @@
 <translation id="4589078953350245614">Pokusili jste se přejít do domény <ph name="DOMAIN" />, ale server předložil neplatný certifikát. <ph name="BEGIN_LEARN_MORE_LINK" />Další informace<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="4592951414987517459">Vaše připojení k doméně <ph name="DOMAIN" /> je šifrováno za použití moderní šifrovací sady.</translation>
 <translation id="4594403342090139922">&amp;Vrátit smazání zpět</translation>
+<translation id="4627442949885028695">Pokračovat z jiného zařízení</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">Prohlížíte si stránku rozšíření.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -379,7 +380,6 @@
 <translation id="5089810972385038852">Stát/kraj</translation>
 <translation id="5095208057601539847">Provincie</translation>
 <translation id="5115563688576182185">(64bitový)</translation>
-<translation id="5122371513570456792">Nalezené <ph name="NUMBER_OF_RESULTS" /> pro dotaz „<ph name="SEARCH_STRING" />“: <ph name="SEARCH_RESULTS" /></translation>
 <translation id="5141240743006678641">Šifrovat synchronizovaná hesla pomocí hesla k účtu Google</translation>
 <translation id="5145883236150621069">Odpověď zásady obsahuje kód chyby</translation>
 <translation id="5171045022955879922">Vyhledávejte či zadejte URL</translation>
@@ -421,7 +421,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="5622887735448669177">Chcete tento web opustit?</translation>
 <translation id="5629630648637658800">Načítání nastavení zásady se nezdařilo</translation>
 <translation id="5631439013527180824">Neplatný token správy zařízení</translation>
-<translation id="5650551054760837876">Nebyly nalezeny žádné výsledky vyhledávání.</translation>
 <translation id="5677928146339483299">Zablokováno</translation>
 <translation id="5710435578057952990">Identita těchto webových stránek nebyla ověřena.</translation>
 <translation id="5720705177508910913">Aktuální uživatel</translation>
@@ -619,7 +618,6 @@ Pssst! Příště by se vám mohl hodit anonymní režim (<ph name="SHORTCUT_KEY
 <translation id="7995512525968007366">Není zadáno</translation>
 <translation id="8012647001091218357">V tuto chvíli se nám s vašimi rodiči nepodařilo spojit. Zkuste to prosím znovu.</translation>
 <translation id="8034522405403831421">Stránka je v jazyce <ph name="SOURCE_LANGUAGE" />. Chcete ji přeložit do jazyka <ph name="TARGET_LANGUAGE" />?</translation>
-<translation id="8034955203865359138">Nebyly nalezeny žádné historické záznamy.</translation>
 <translation id="8088680233425245692">Zobrazení článku se nezdařilo.</translation>
 <translation id="8089520772729574115">méně než 1 MB</translation>
 <translation id="8091372947890762290">Čeká se na aktivaci na serveru</translation>
@@ -652,6 +650,7 @@ Pssst! Příště by se vám mohl hodit anonymní režim (<ph name="SHORTCUT_KEY
 <translation id="8433057134996913067">Budete odhlášeni z většiny webů.</translation>
 <translation id="8437238597147034694">&amp;Vrátit přesunutí zpět</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 platební karta}few{# platební karty}many{# platební karty}other{# platebních karet}}</translation>
+<translation id="8483780878231876732">Chcete-li používat karty z účtu Google, přihlaste se do Chromu.</translation>
 <translation id="8488350697529856933">Platí pro</translation>
 <translation id="8498891568109133222">Odpověď webu <ph name="HOST_NAME" /> trvala příliš dlouho.</translation>
 <translation id="852346902619691059">Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Operační systém vašeho zařízení jeho bezpečnostnímu certifikátu nedůvěřuje. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník. <ph name="BEGIN_LEARN_MORE_LINK" />Další informace<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -671,7 +670,6 @@ Pssst! Příště by se vám mohl hodit anonymní režim (<ph name="SHORTCUT_KEY
 <translation id="8730621377337864115">Hotovo</translation>
 <translation id="8738058698779197622">Aby bylo možné navázat zabezpečené spojení, hodiny musejí být nastaveny správně. Důvodem je, že certifikáty, pomocí kterých se weby identifikují, platí pouze pro pevně daná období. Jelikož hodiny v zařízení nejsou nastaveny správně, prohlížeč Chromium tyto certifikáty nemůže ověřit.</translation>
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;Adresu DNS&lt;/abbr&gt; webu <ph name="HOST_NAME" /> nelze najít. Diagnostikování problému…</translation>
-<translation id="8741995161408053644">Na stránce <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> mohou být k dispozici další formy historie prohlížení zaznamenané ve vašem účtu Google.</translation>
 <translation id="8790007591277257123">&amp;Opakovat smazání</translation>
 <translation id="8798099450830957504">Výchozí</translation>
 <translation id="8804164990146287819">Zásady ochrany soukromí</translation>

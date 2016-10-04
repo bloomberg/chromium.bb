@@ -142,6 +142,7 @@
 <translation id="1187550858834764592">hyvin lyhyt (800 ms)</translation>
 <translation id="1187722533808055681">Käyttämätön-tilasta palautumiset</translation>
 <translation id="1188807932851744811">Lokia ei ole lähetetty.</translation>
+<translation id="1189039156354786998">Videotoisto on estetty</translation>
 <translation id="1189418886587279221">Laitteen käyttöä voi helpottaa esteettömyysominaisuuksien avulla.</translation>
 <translation id="1190144681599273207">Mobiiliyhteyden kautta noudettavan tiedoston koko on noin <ph name="FILE_SIZE" />.</translation>
 <translation id="11901918071949011">{NUM_FILES,plural, =1{Käyttää tietokoneellasi olevaa tiedostoa.}other{Käyttää # tietokoneellasi olevaa tiedostoa.}}</translation>
@@ -183,6 +184,7 @@
 <translation id="1234808891666923653">Service Workers</translation>
 <translation id="1235458158152011030">Tunnetut verkot</translation>
 <translation id="123578888592755962">Levy on täynnä</translation>
+<translation id="1235836476629682923">Muokkaa HTTP-sivujen käsittelyä käyttöliittymässä</translation>
 <translation id="1240892293903523606">DOM-tarkastaja</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> haluaa nollata asetuksesi.</translation>
 <translation id="1243314992276662751">Lähetä</translation>
@@ -513,6 +515,7 @@
     <ph name="BEGIN_BOLD" />hallinnoida<ph name="END_BOLD" /> muita asetuksia.</translation>
 <translation id="1648797160541174252">Verkon <ph name="NETWORK_NAME" /> välityspalvelin</translation>
 <translation id="164969095109328410">Chrome-laite</translation>
+<translation id="1650371550981945235">Näytä syöttöasetukset</translation>
 <translation id="1650709179466243265">Lisää www. ja .com ja avaa osoite</translation>
 <translation id="1652965563555864525">&amp;Äänetön</translation>
 <translation id="1653526288038954982">{NUM_PRINTER,plural, =1{Lisää tulostin Google Cloud Printiin, jotta voit tulostaa mistä tahansa.}other{Lisää # tulostinta Google Cloud Printiin, jotta voit tulostaa mistä tahansa.}}</translation>
@@ -535,6 +538,7 @@
 <translation id="1679068421605151609">Kehittäjän työkalut</translation>
 <translation id="1681120471812444678">Lisää tulostimia…</translation>
 <translation id="1682548588986054654">Uusi incognito-ikkuna</translation>
+<translation id="1682889864035450286">Verkkoselain</translation>
 <translation id="168328519870909584">Sivustolle <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> hyökännyt taho voi yrittää asentaa laitteellesi vaarallisia ohjelmia, jotka varastavat tai poistavat tietojasi, kuten kuviasi, salasanojasi, viestejäsi ja luottokorttiesi tietoja.</translation>
 <translation id="1685944703056982650">Hiiren osoittimen poikkeukset</translation>
 <translation id="1691063574428301566">Tietokoneesi käynnistetään uudelleen, kun päivitys on valmis.</translation>
@@ -719,7 +723,6 @@
 <translation id="1965624977906726414">Ei erityiskäyttöoikeuksia.</translation>
 <translation id="1971177026734674543">erittäin lyhyt (600 ms)</translation>
 <translation id="197288927597451399">Säilytä</translation>
-<translation id="1973491249112991739">Laajennuksen <ph name="PLUGIN_NAME" /> lataus epäonnistui.</translation>
 <translation id="1974043046396539880">CRL:n jakelupisteet</translation>
 <translation id="1974060860693918893">Lisäasetukset</translation>
 <translation id="1974371662733320303">Käytettävä muistin hylkäämisstragia</translation>
@@ -739,7 +742,6 @@
 <translation id="1986281090560408715">Ottaa käyttöön ruudun oikeassa yläkulmassa näytettävän tietoikkunan, joka näyttää tietoja kosketuspisteistä.</translation>
 <translation id="1987139229093034863">Vaihda käyttäjää.</translation>
 <translation id="1989112275319619282">Selaa</translation>
-<translation id="1991402313603869273"><ph name="PLUGIN_NAME" /> on estetty.</translation>
 <translation id="1992397118740194946">Ei asetettu</translation>
 <translation id="1994173015038366702">Sivuston URL-osoite</translation>
 <translation id="1997616988432401742">Omat varmenteet</translation>
@@ -830,6 +832,7 @@
 <translation id="2134986351331412790">Tässä sivustossa ei voi käyttää tämäntyyppisiä kortteja.</translation>
 <translation id="2135787500304447609">&amp;Jatka</translation>
 <translation id="2136953289241069843">Translitterointi (namaste → नमस्कार)</translation>
+<translation id="2137068468602026500">Klikkaa Verkkoselain-kohdassa <ph name="BEGIN_BOLD" />Microsoft Edge<ph name="END_BOLD" />.</translation>
 <translation id="2137808486242513288">Lisää käyttäjä</translation>
 <translation id="214169863967063661">Avaa ulkoasuasetukset</translation>
 <translation id="2142328300403846845">Avaa linkki käyttäjänä</translation>
@@ -1044,7 +1047,6 @@ Luotuasi uuden valvotun käyttäjän voit hallinnoida käyttäjän asetuksia mil
 <translation id="2395616325548404795">Yrityshallinta on otettu käyttöön laitteessa <ph name="DEVICE_TYPE" />, mutta laitetunnuksen ja sijaintitietojen lähettäminen epäonnistui. Lisää nämä laitetta koskevat tiedot hallintakonsolista manuaalisesti.</translation>
 <translation id="2398076520462956013">Android-puhelimen sivun lataamisen etenemispalkin valmistuessa</translation>
 <translation id="2399147786307302860">Synkronoinnin lisäasetukset...</translation>
-<translation id="2401053206567162910">Tätä sovellusta ei tällä hetkellä tueta tällä laitteella, mutta Chrome-tontut tekevät kovasti töitä ja pyrkivät tuomaan sen käyttöön pian.</translation>
 <translation id="2403091441537561402">Yhdyskäytävä:</translation>
 <translation id="240770291734945588"><ph name="SPACE_AVAILABLE" /> käytettävissä</translation>
 <translation id="2408146564337689562">Kokeelliset Web Platform -ominaisuudet</translation>
@@ -1055,6 +1057,7 @@ Luotuasi uuden valvotun käyttäjän voit hallinnoida käyttäjän asetuksia mil
 <translation id="2413749388954403953">Muokata kirjanmerkkien käyttöliittymää</translation>
 <translation id="2415098038728534445">Estä (laajennuksen määrittämä)</translation>
 <translation id="2415294094132942411">Lisää työpöydälle…</translation>
+<translation id="2419157108030225711"><ph name="SITE_NAME" /> on estänyt striimauksen Cast-laitteeseen. Päivitä sivu ja yritä uudelleen.</translation>
 <translation id="2421956571193030337">Käytä ominaisuutta vain luotetuille tileille.</translation>
 <translation id="2422426094670600218">&lt;nimetön&gt;</translation>
 <translation id="2423578206845792524">T&amp;allenna kuva nimellä...</translation>
@@ -1088,6 +1091,7 @@ Tämän sivuston ei pitäisi olla estetty.</translation>
 <translation id="2457246892030921239"><ph name="APP_NAME" /> pyytää lupaa kopioida tiedostoja tallennusvälineeltä <ph name="VOLUME_NAME" />.</translation>
 <translation id="2460160116472764928">Googlen selaussuoja <ph name="BEGIN_LINK" />havaitsi äskettäin haittaohjelman<ph name="END_LINK" /> sivustolla <ph name="SITE" />. Myös tavallisesti turvalliset verkkosivustot voivat joskus saada haittaohjelmatartunnan. <ph name="BEGIN_LEARN_MORE_LINK" />Lisätietoja<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2462724976360937186">Varmenteen myöntäjän avaimen tunnus</translation>
+<translation id="2462752602710430187">Lisättiin <ph name="PRINTER_NAME" /></translation>
 <translation id="2464089476039395325">HTTP-välityspalvelin</translation>
 <translation id="2469890184320718637">Teksti piirretään merkityillä etäisyysfunktioilla (signed distance field) bittikartan alfamaskin sijaan.</translation>
 <translation id="2470332835941011566">Sallitaanko kohteen <ph name="URL" /> tunnistaa sinut suojausavaimesi perusteella?</translation>
@@ -1104,6 +1108,7 @@ Tämän sivuston ei pitäisi olla estetty.</translation>
 <translation id="2482081114970574549">Käyttää iframe-pohjaista kirjautumista WebView-kirjautumisen sijaan.</translation>
 <translation id="2482878487686419369">Ilmoitukset</translation>
 <translation id="2485056306054380289">Palvelimen CA-varmenne:</translation>
+<translation id="248751374240333069">Merkitse HTTP aina aktiivisesti vaaralliseksi</translation>
 <translation id="2489316678672211764">Laajennus (<ph name="PLUGIN_NAME" />) ei vastaa.</translation>
 <translation id="2489428929217601177">eilinen</translation>
 <translation id="2489435327075806094">Osoittimen nopeus:</translation>
@@ -1191,6 +1196,7 @@ Tämän sivuston ei pitäisi olla estetty.</translation>
 <translation id="2587922270115112871">Valvotun käyttäjän luominen ei luo Google-tiliä, ja heidän asetuksensa ja
     tietonsa eivät seuraa heitä muihin laitteisiin Chromen synkronoinnin jälkeen.
     Valvotun käyttäjän voi luoda vain tälle laitteelle.</translation>
+<translation id="258932246702879617">Valitse <ph name="BEGIN_BOLD" />Kiinnitä tehtäväpalkkiin<ph name="END_BOLD" />.</translation>
 <translation id="25912682830130293">Näytä ilmoitettavat asetukset</translation>
 <translation id="2594049137847833442">Tärkeiden sivustojen asetukset selaustietojen tyhjennysikkunassa</translation>
 <translation id="2594056015203442344">Kun tämä on käytössä, välilehtirivin äänen tilaosoittimet toimivat myös välilehden äänten mykistyspainikkeina. Tämä myös lisää komentoja välilehden kontekstivalikkoon, jotta voit mykistää nopeasti useita valittuja välilehtiä.</translation>
@@ -1265,6 +1271,7 @@ Tämän sivuston ei pitäisi olla estetty.</translation>
 <translation id="2686444421126615064">Näytä tili</translation>
 <translation id="2686759344028411998">Ei ladattuja moduuleita.</translation>
 <translation id="2688196195245426394">Virhe rekisteröitäessä laitetta palvelimelle: <ph name="CLIENT_ERROR" />.</translation>
+<translation id="2690024944919328218">Näytä kieliasetukset</translation>
 <translation id="2691385045260836588">Malli</translation>
 <translation id="2694026874607847549">yksi eväste</translation>
 <translation id="2695749433451188613">Internet-tulostusprotokolla (HTTPS)</translation>
@@ -1418,6 +1425,7 @@ Tämän sivuston ei pitäisi olla estetty.</translation>
 <translation id="2861301611394761800">Järjestelmän päivitys valmis. Käynnistä järjestelmä uudelleen.</translation>
 <translation id="2861941300086904918">Asiakkaan tietosuojahallinnoija</translation>
 <translation id="2862043554446264826">Tee vianetsintä kaikkeen paitsi secure shelliin ja PNaCl-kääntäjään.</translation>
+<translation id="2863360020633542314">Flash-poikkeukset</translation>
 <translation id="2867768963760577682">Avaa kiinnitetyllä välilehdellä</translation>
 <translation id="2868746137289129307">Tämä laajennus on vanhentunut ja poistettu käytöstä yrityksen käytännön mukaisesti. Se voidaan ottaa käyttöön uudelleen automaattisesti, kun uusi versio on saatavilla.</translation>
 <translation id="2869742291459757746">Antaa käyttäjän pyytää Chromea luomaan salasanat selaimen havaitessa tilinluomissivuja.</translation>
@@ -1492,6 +1500,7 @@ Tämän sivuston ei pitäisi olla estetty.</translation>
 <translation id="295947108480905647"><ph name="CHROME_EXTENSION_NAME" /> haluaa muodostaa yhteyden seuraaviin kohteisiin:</translation>
 <translation id="2959614062380389916">Järjestelmänvalvojan estämä</translation>
 <translation id="2960393411257968125">Kuinka salasanan hallinta käsittelee synkronointitunnusten automaattista täyttöä.</translation>
+<translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (voimassaoloaikaa pidennetty)</translation>
 <translation id="29611076221683977">Sivustoon <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> hyökännyt taho voi yrittää asentaa Maciisi vaarallisia ohjelmia, jotka varastavat tai poistavat tietojasi, kuten kuviasi, salasanojasi, viestejäsi ja luottokorttiesi tietoja.</translation>
 <translation id="2961695502793809356">Siirry eteenpäin klikkaamalla, tarkastele historiaa pitämällä alhaalla</translation>
 <translation id="296216853343927883">Google-brändi kontekstivalikossa</translation>
@@ -1668,6 +1677,7 @@ Nämä tiedot ja tarkemmat ohjeet ovat sähköpostissasi (<ph name="ACCOUNT_EMAI
 <translation id="3177048931975664371">Piilota salasana klikkaamalla</translation>
 <translation id="3177909033752230686">Sivun kieli:</translation>
 <translation id="3180365125572747493">Anna salasana salataksesi tämän varmennetiedoston.</translation>
+<translation id="3182749001423093222">Oikeinkirjoituksen tarkistus</translation>
 <translation id="3183139917765991655">Profiilien tuoja</translation>
 <translation id="3184560914950696195">Kohteeseen $1 ei voi tallentaa. Muokatut kuvat tallennetaan Lataukset-kansioon.</translation>
 <translation id="3187212781151025377">Näppäimistö: heprea</translation>
@@ -1697,7 +1707,6 @@ Nämä tiedot ja tarkemmat ohjeet ovat sähköpostissasi (<ph name="ACCOUNT_EMAI
 <translation id="3220586366024592812"><ph name="CLOUD_PRINT_NAME" />-yhteysohjelman prosessi keskeytyi. Käynnistetäänkö uudelleen?</translation>
 <translation id="3221634914176615296">Tutustu laitteen sisältöön Tiedostot-sovelluksen kautta.</translation>
 <translation id="3222066309010235055">Esihahmonna: <ph name="PRERENDER_CONTENTS_NAME" /></translation>
-<translation id="3223445644493024689">Toista <ph name="PLUGIN_NAME" /> painamalla control ja klikkaamalla.</translation>
 <translation id="3224239078034945833">Kanada, monikielinen</translation>
 <translation id="3225084153129302039">Violetti oletusavatar</translation>
 <translation id="3225319735946384299">Koodin allekirjoitus</translation>
@@ -1830,6 +1839,7 @@ verkkotunnuksesta <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3385131213214862288">Poista seuraavat tiedot kohteesta</translation>
 <translation id="338583716107319301">Erotin</translation>
 <translation id="3386219708421216619">Kirjanmerkki lisättiin</translation>
+<translation id="3389312115541230716">Klikkaa tehtäväpalkissa olevaa <ph name="SMALL_PRODUCT_LOGO" />-kuvaketta hiiren kakkospainikkeella.</translation>
 <translation id="3391392691301057522">Vanha PIN-koodi</translation>
 <translation id="3391716558283801616">Välilehti 7</translation>
 <translation id="3394150261239285340"><ph name="HOST" /> haluaa käyttää kameraa ja mikrofonia.</translation>
@@ -1860,6 +1870,7 @@ verkkotunnuksesta <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="343467364461911375">Jotkin sisältöpalvelut käyttävät konetunnisteita käyttäjien tunnistamiseen ja suojatun sisällön käyttöoikeuden myöntämiseen.</translation>
 <translation id="3435738964857648380">Turvallisuus</translation>
 <translation id="3435896845095436175">Ota käyttöön</translation>
+<translation id="3436038974659740746">Muokkaa tarkistuksen sanaluetteloa</translation>
 <translation id="3438633801274389918">Ninja</translation>
 <translation id="3439153939049640737">Anna sivuston <ph name="HOST" /> aina käyttää mikrofoniasi</translation>
 <translation id="3439282137581679399">Ottaa käyttöön Käyttöoikeuksien mustan listan, jolloin mustalle listalle merkityt sivustot eivät voi käyttää käyttöoikeuksia Selaussuojaa käyttävien selaimissa.</translation>
@@ -1895,7 +1906,6 @@ verkkotunnuksesta <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3470502288861289375">Kopioidaan…</translation>
 <translation id="3473479545200714844">Ruudun suurentaminen</translation>
 <translation id="3475447146579922140">Google-laskentataulukko</translation>
-<translation id="347719495489420368">Toista <ph name="PLUGIN_NAME" /> klikkaamalla hiiren kakkospainikkeella.</translation>
 <translation id="347785443197175480">Anna sivuston <ph name="HOST" /> käyttää edelleen kameraasi ja mikrofoniasi</translation>
 <translation id="3478315065074101056">XPS mahdollistaa lisätoimintoja tavallisilla tulostimilla, jotka on yhdistetty Cloud Printiin Chromen avulla.Tulostimet täytyy yhdistää palveluun uudelleen tämän asetuksen muuttamisen jälkeen.</translation>
 <translation id="3478594442609524589">lyhyt (1 000 ms)</translation>
@@ -2123,7 +2133,6 @@ verkkotunnuksesta <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3758201569871381925">Varmista, että Hotrod-laitteesi on päällä ja yhdistetty televisioon.</translation>
 <translation id="375841316537350618">Ladataan välityspalvelinohjelmaa…</translation>
 <translation id="3759371141211657149">Hallinnoi käsittelypalveluasetuksia...</translation>
-<translation id="3759553810934020361">Bluetooth on poistettu käytöstä.</translation>
 <translation id="3759933321830434300">Estä joitain verkkosivujen osia</translation>
 <translation id="3760460896538743390">Tarkista &amp;taustasivu</translation>
 <translation id="37613671848467444">Avaa incognito-ikkunassa</translation>
@@ -2224,6 +2233,7 @@ verkkotunnuksesta <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="388485010393668001">Täydennys saatavilla: <ph name="COMPLETION_TEXT" /></translation>
 <translation id="3887557525921873910">Tämän käytännön kanssa käytetään merkintää enable-navigation-tracing.
         Valitse tallennettuja jäljitystietoja parhaiten kuvaava tunniste. Se määrittää jäljitystietojen lähetyskohteen. Jos et ole varma, valitse Muu. Jos tämä valinta jätetään tyhjäksi, jäljitystietoja ei lähetetä.</translation>
+<translation id="3890527239261066592">Merkitse HTTP aina neutraaliksi</translation>
 <translation id="3892414795099177503">Lisää OpenVPN tai L2TP…</translation>
 <translation id="3893536212201235195">Lukea ja muokata esteettömyysasetuksiasi</translation>
 <translation id="3893630138897523026">ChromeVox (äänipalaute)</translation>
@@ -2285,7 +2295,6 @@ verkkotunnuksesta <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3966388904776714213">Äänisoitin</translation>
 <translation id="3967841595862839006">Kielen ja näppäimistön valinta</translation>
 <translation id="3967885517199024316">Kirjaudu sisään käyttääksesi kirjanmerkkejä, historiaa ja asetuksiasi kaikilla laitteillasi.</translation>
-<translation id="3968098439516354663">Tämän sisällön näyttämiseen tarvitaan <ph name="PLUGIN_NAME" />.</translation>
 <translation id="3968261067169026421">Verkon määritys epäonnistui</translation>
 <translation id="397105322502079400">Lasketaan...</translation>
 <translation id="3972425373133383637">Pysy yhteydessä sinulle tärkeisiin asioihin kaikilla laitteilla.</translation>
@@ -2386,7 +2395,6 @@ verkkotunnuksesta <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="4112917766894695549">Järjestelmänvalvojasi on ottanut nämä asetukset käyttöön.</translation>
 <translation id="4114360727879906392">Edellinen ikkuna</translation>
 <translation id="4114470632216071239">Lukitse SIM-kortti (vaadi PIN-koodi mobiilitiedonsiirtoon)</translation>
-<translation id="4114955900795884390">Et ole asentanut tämän sisällön näyttämiseen sopivaa laajennusta.</translation>
 <translation id="4116663294526079822">Salli aina tässä sivustossa</translation>
 <translation id="411666854932687641">Yksityinen muisti</translation>
 <translation id="4118990158415604803">Järjestelmänvalvoja on estänyt yhteyden muodostamisen muihin verkkoihin.</translation>
@@ -2509,6 +2517,7 @@ Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translatio
 <translation id="4297391862525234515">Hyllyjen pienennys klikkaamalla</translation>
 <translation id="42981349822642051">Laajenna</translation>
 <translation id="4298972503445160211">Näppäimistö: tanska</translation>
+<translation id="4299239397488798030">Käyttöliittymän asettelu selaimen yläosassa</translation>
 <translation id="4299729908419173967">brasilianportugali</translation>
 <translation id="4299922786708454523">Alustava Service Workers ‑julkaisu</translation>
 <translation id="430714521864499800">Ottaa käyttöön ”Cache-Control: stale-while-revalidate” -komennon kokeellisen käytön. Tämä sallii palvelinten määrittää jotkin resurssit uudelleenvahvistettaviksi taustalla, mikä vähentää viivettä.</translation>
@@ -2593,6 +2602,7 @@ Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translatio
 <translation id="4439318412377770121">Haluatko rekisteröidä laitteen <ph name="DEVICE_NAME" /> Google Cloud -laitteisiin?</translation>
 <translation id="4441124369922430666">Haluatko käynnistää tämän sovelluksen automaattisesti koneen käynnistyessä?</translation>
 <translation id="444134486829715816">Laajenna...</translation>
+<translation id="4441548209689510310">Näytä oikeinkirjoituksen tarkistusasetukset</translation>
 <translation id="444267095790823769">Suojatun sisällön poikkeukset</translation>
 <translation id="4443083508196995809">Salli Lue myöhemmin ‑vaihtoehdon näkyminen valikossa, jolloin käyttäjä voi tallentaa sillä välilehden taustalle Chromessa.</translation>
 <translation id="4443536555189480885">O&amp;hje</translation>
@@ -2613,6 +2623,7 @@ Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translatio
 <translation id="4467100756425880649">Chrome Web Store Gallery</translation>
 <translation id="4470564870223067757">Hangul 2-set</translation>
 <translation id="4474155171896946103">Lisää kaikki välilehdet kirjanmerkkeihin...</translation>
+<translation id="4475552974751346499">Haku latauksista</translation>
 <translation id="4476590490540813026">Urheilija</translation>
 <translation id="4477219268485577442">bulgaria, foneettinen</translation>
 <translation id="4478664379124702289">Tallenna lin&amp;kki nimellä...</translation>
@@ -2711,7 +2722,6 @@ Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translatio
 <translation id="462965295757338707">Tuo puhelimesi lähemmäs laitetta <ph name="DEVICE_TYPE" />, jotta voit kirjoittaa.</translation>
 <translation id="4630590996962964935">Virheellinen merkki: $1</translation>
 <translation id="4631110328717267096">Järjestelmäpäivitys epäonnistui.</translation>
-<translation id="4631502262378200687">Virhe (<ph name="ERROR" />) ladattaessa laajennusta.</translation>
 <translation id="4631887759990505102">Esittäjä</translation>
 <translation id="4632483769545853758">Poista välilehden mykistys</translation>
 <translation id="4634771451598206121">Kirjaudu uudelleen sisään...</translation>
@@ -2738,6 +2748,7 @@ Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translatio
 <translation id="4667176955651319626">Estä kolmannen osapuolen evästeet ja sivustotiedot</translation>
 <translation id="4668954208278016290">Virhe purettaessa näköistiedostoa tietokoneelle.</translation>
 <translation id="4669109953235344059">YRITÄ UUDELLEEN</translation>
+<translation id="4672073213100265975">Käytössä: 3G</translation>
 <translation id="4672657274720418656">Koontisivu</translation>
 <translation id="4673442866648850031">Avaa näyttökynätyökalut, kun näyttökynä otetaan esille</translation>
 <translation id="4677772697204437347">GPU-muisti</translation>
@@ -2804,10 +2815,10 @@ Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translatio
 <translation id="4761104368405085019">Käyttää mikrofonia</translation>
 <translation id="4762718786438001384">Laitteen levytila kriittisellä tasolla</translation>
 <translation id="4763830802490665879">Useiden sivustojen evästeet tyhjennetään poistuttaessa.</translation>
-<translation id="4764029864566166446">Päivitä laajennus…</translation>
 <translation id="4764865176798926079">Pääkehyksen domContentLoaded-tapahtuma, kaikkien resurssien lataaminen aloitettu ennen domContentLoaded-tapahtumaa (iframeja ei huomioida).</translation>
 <translation id="4768332406694066911">Sinulla on varmenteita seuraavilta sinut tunnistavilta organisaatioilta</translation>
 <translation id="4768698601728450387">Rajaa kuva</translation>
+<translation id="477023401984175916">Näytä käytettävissä olevat verkkoyhteydet</translation>
 <translation id="4773696473262035477">Voit käyttää sitä ja muita <ph name="SAVED_PASSWORDS_LINK" /> millä tahansa selaimella.</translation>
 <translation id="4776917500594043016">Osoitteen <ph name="USER_EMAIL_ADDRESS" /> salasana</translation>
 <translation id="4779083564647765204">Lähennä</translation>
@@ -2913,6 +2924,7 @@ Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translatio
 <translation id="488785315393301722">Näytä tiedot</translation>
 <translation id="4888510611625056742">Välilehti 2</translation>
 <translation id="4890284164788142455">thai</translation>
+<translation id="4890773143211625964">Näytä tulostimen lisäasetukset</translation>
 <translation id="4893336867552636863">Tämä poistaa pysyvästi selaustietosi tältä laitteelta.</translation>
 <translation id="4899376560703610051"><ph name="DEVICE_TYPE" /> on lukittu manuaalisesti. Voit avata lukituksen antamalla salasanasi.</translation>
 <translation id="4899816749097347786">Anna verkkosivujen käyttää kokeellista WebAssemblya.</translation>
@@ -3104,7 +3116,6 @@ Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translatio
 <translation id="5159383109919732130"><ph name="BEGIN_BOLD" />Älä irrota laitettasi vielä!<ph name="END_BOLD" />
        <ph name="LINE_BREAKS" />
        Jos irrotat laitteen sen ollessa käytössä, voit menettää tietoja. Odota, kunnes toiminto on suoritettu, ja poista laite sitten käytöstä Tiedostot-sovelluksen kautta.</translation>
-<translation id="5159488553889181171">Laajennuksen <ph name="PLUGIN_NAME" /> lataus peruutettiin.</translation>
 <translation id="5160857336552977725">Kirjaudu sisään <ph name="DEVICE_TYPE" />-laitteeseesi.</translation>
 <translation id="5163869187418756376">Jakaminen epäonnistui. Tarkista internetyhteytesi ja yritä myöhemmin uudelleen.</translation>
 <translation id="516592729076796170">US, Dvorak ohjelmoijille</translation>
@@ -3184,6 +3195,7 @@ Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translatio
         Vaikka laitteellesi sattuisi jotain, tiedostosi ovat turvassa Google Drivessa.<ph name="MARKUP_6" />
         <ph name="MARKUP_7" />Jaa, luo ja muokkaa<ph name="MARKUP_8" />
         tiedostoja yhdessä muiden käyttäjien kanssa.<ph name="MARKUP_9" /></translation>
+<translation id="5264183975266026244">Ota käyttöön tavallinen tai kosketusasettelu (aiemmin hybridiasettelu).</translation>
 <translation id="5264252276333215551">Yhdistä internetiin, jos haluat käynnistää sovelluksesi kioskitilassa.</translation>
 <translation id="5265562206369321422">Offline-tilassa yli viikon</translation>
 <translation id="5266113311903163739">Varmenteen myöntäjän tuontivirhe</translation>
@@ -3209,6 +3221,7 @@ Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translatio
 <translation id="529175790091471945">Alusta tämä laite</translation>
 <translation id="5292890015345653304">Aseta SD-kortti tai USB-muistitikku</translation>
 <translation id="5294529402252479912">Päivitä Adobe Reader nyt</translation>
+<translation id="5297526204711817721">Yhteytesi tähän sivustoon ei ole yksityinen. Voit poistua virtuaalitilasta milloin tahansa ottamalla headsetin pois ja valitsemalla Takaisin.</translation>
 <translation id="5298219193514155779">Teeman loi</translation>
 <translation id="5298363578196989456">Laajennusta <ph name="IMPORT_NAME" /> ei voi tuoda, koska se ei ole jaettu moduuli.</translation>
 <translation id="5299109548848736476">Do Not Track</translation>
@@ -3222,6 +3235,7 @@ Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translatio
 <translation id="5306802244647481941">Tiedostot-sovelluksen pikanäkymä</translation>
 <translation id="5308380583665731573">Muodosta yhteys</translation>
 <translation id="5311260548612583999">Yksityinen avaintiedosto (valinnainen):</translation>
+<translation id="5314487751552222713">Tunnista ja suorita tärkeä Flash-sisältö (suositus)</translation>
 <translation id="5315873049536339193">Identiteetti</translation>
 <translation id="5316588172263354223">Puhehaun käynnistys milloin tahansa</translation>
 <translation id="5316716239522500219">Peilaa näytöt</translation>
@@ -3332,6 +3346,7 @@ Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translatio
 <translation id="5439568486246921931">Tämä toimenpide poistaa pysyvästi tämän käyttäjän ladatut tiedostot, offline-tiedostot ja selaustiedot. Toimenpidettä ei voi kumota.</translation>
 <translation id="544083962418256601">Luo pikakuvakkeita...</translation>
 <translation id="5441100684135434593">Langallinen verkko</translation>
+<translation id="5446983216438178612">Näytä organisaation varmenteet</translation>
 <translation id="5448293924669608770">Hups, jokin meni vikaan kirjautumisessa</translation>
 <translation id="5449551289610225147">Virheellinen salasana</translation>
 <translation id="5449588825071916739">Lisää kaikki välilehdet kirjanmerkkeihin</translation>
@@ -3354,7 +3369,6 @@ Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translatio
 <translation id="5469954281417596308">Kirjanmerkkien hallinta</translation>
 <translation id="5473279832922912143">Salli V8:n käyttää kokeellista Ignition-tulkkia JavaScriptin suorittamiseen.</translation>
 <translation id="5473333559083690127">Anna uusi PIN-koodi uudelleen</translation>
-<translation id="5474139872592516422">Kun laajennuksen <ph name="PLUGIN_NAME" /> päivitys on valmis, aktivoi se päivittämällä sivu.</translation>
 <translation id="5480254151128201294">Laitteen omistaja lukitsi laitteen.</translation>
 <translation id="5481941284378890518">Lisää lähellä olevia tulostimia</translation>
 <translation id="5483785310822538350">Peruuta tiedoston ja laitteen käyttöoikeudet</translation>
@@ -3443,6 +3457,7 @@ Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translatio
 <translation id="5583640892426849032">Askelpalautin</translation>
 <translation id="5584537427775243893">Tuodaan</translation>
 <translation id="5585118885427931890">Kirjanmerkkikansion luominen epäonnistui.</translation>
+<translation id="558563010977877295">Avaa tietty sivu tai sivujoukko</translation>
 <translation id="5585912436068747822">Alustaminen epäonnistui</translation>
 <translation id="5587341999787829537">Älä anna iframen siirtää ylimmän tason selauskontekstia, ellei iframe kuulu samaan sivustoon kuin konteksti tai toteuta käyttäjän komentoa.</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
@@ -3483,7 +3498,6 @@ Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translatio
 <translation id="5646558797914161501">Liikemies</translation>
 <translation id="5649053991847567735">Automaattiset lataukset</translation>
 <translation id="5649768706273821470">Kuuntele</translation>
-<translation id="5650551054760837876">Hakutuloksia ei löytynyt.</translation>
 <translation id="5653140146600257126">Hakemisto, jonka nimi on "$1", on jo olemassa. Valitse toinen nimi.</translation>
 <translation id="5657667036353380798">Ulkoinen laajennus vaatii Chrome-version <ph name="MINIMUM_CHROME_VERSION" /> tai uudemman.</translation>
 <translation id="5659593005791499971">Sähköposti</translation>
@@ -3531,6 +3545,7 @@ Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translatio
 <translation id="572392919096807438">Muista päätökseni</translation>
 <translation id="5725124651280963564">Kirjaudu sisään laitteeseen <ph name="TOKEN_NAME" /> ja luo avain isännälle <ph name="HOST_NAME" />.</translation>
 <translation id="5725199926572598591">DirectWrite</translation>
+<translation id="5725207627835428716">Näytä yksityiskohtaiset tiedot, kun HTTP-sivulla havaitaan salasana‑ tai luottokorttikenttä</translation>
 <translation id="572525680133754531">Hahmontaa reunan yhdistettyjen hahmonnustasojen ympärille. Tämä helpottaa vianetsintää ja yhdistettyjen tasojen tarkastelua.</translation>
 <translation id="5726521882516480114">Ottaa grafiikkasuorittimen käyttöön 2D Canvas -piirtämisessä ohjelmistopohjaisen piirtämisen sijaan.</translation>
 <translation id="5727728807527375859">Laajennukset, sovellukset ja teemat saattavat vahingoittaa tietokonettasi. Haluatko varmasti jatkaa?</translation>
@@ -3662,6 +3677,7 @@ Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translatio
 <translation id="5877064549588274448">Kanava vaihdettiin. Ota muutokset käyttöön käynnistämällä laite uudelleen.</translation>
 <translation id="5880247576487732437">Tunnus paikalla</translation>
 <translation id="588258955323874662">Koko ruutu</translation>
+<translation id="5882919346125742463">Tunnetut verkot</translation>
 <translation id="5884474295213649357">Tämä välilehti on yhdistetty USB-laitteeseen.</translation>
 <translation id="5885324376209859881">Media-asetusten hallinta…</translation>
 <translation id="5889282057229379085">Keskitason varmenteiden myöntäjien enimmäismäärä: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -3981,6 +3997,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6347003977836730270">Käyttäjälle tarjotaan uuden Kääntäjä-kuplan käyttökokemusta käännöspalkin sijaan.</translation>
 <translation id="6348657800373377022">Yhdistelmäruutu</translation>
 <translation id="6349839454356033837">Androidin mediatoisto ei toimi oikein.</translation>
+<translation id="6351063337294363751">Voit tyhjentää selaustiedot tämän valikon kautta.</translation>
 <translation id="6353618411602605519">Näppäimistö: kroatia</translation>
 <translation id="6356558429970749205">Salli luottokorttien OCR-skannaaminen käyttöliittymästä verkkomaksujen sovellusliittymää varten.</translation>
 <translation id="6356936121715252359">Adobe Flash Playerin tallennusasetukset...</translation>
@@ -4166,6 +4183,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6585283250473596934">Aloitetaan julkinen istunto.</translation>
 <translation id="6586451623538375658">Vaihda hiiren ykköspainiketta</translation>
 <translation id="6588399906604251380">Ota oikoluku käyttöön</translation>
+<translation id="6589411753837135276">Pyydä lupaa, kun sivustot yrittävät suorittaa Flashia (suositus)</translation>
 <translation id="6589706261477377614">Lisää näppäimistön kirkkautta</translation>
 <translation id="6592267180249644460">WebRTC-loki kaapattiin <ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6593868448848741421">paras</translation>
@@ -4323,6 +4341,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6829250331733125857">Lue ohjeita laitteen <ph name="DEVICE_TYPE" /> käyttöön.</translation>
 <translation id="6829270497922309893">Ilmoittaudu organisaatioosi</translation>
 <translation id="6830590476636787791">Animoidut siirtymät alkuesittelyssä</translation>
+<translation id="6830728435402077660">Ei turvallinen</translation>
 <translation id="6831043979455480757">Käännä</translation>
 <translation id="6832874810062085277">kysy</translation>
 <translation id="6833901631330113163">eteläeurooppalainen</translation>
@@ -4349,6 +4368,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6862635236584086457">Kaikki tähän kansioon tallennetut tiedostot varmuuskopioidaan verkkoon automaattisesti</translation>
 <translation id="6865313869410766144">Automaattisesti täydennetyt lomaketiedot</translation>
 <translation id="6867678160199975333">Vaihda profiiliin <ph name="NEW_PROFILE_NAME" /></translation>
+<translation id="6868924482674768124">Mojo-käyttöliittymäpalvelu (mus)</translation>
 <translation id="6869402422344886127">Valittu valintaruutu</translation>
 <translation id="6870130893560916279">Näppäimistö: ukraina</translation>
 <translation id="6871644448911473373">OCSP-vastaus: <ph name="LOCATION" /></translation>
@@ -4369,12 +4389,12 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6898699227549475383">Organisaatio (O)</translation>
 <translation id="6900284862687837908">Taustasovellus: <ph name="BACKGROUND_APP_URL" /></translation>
 <translation id="6904344821472985372">Peruuta pääsy tiedostoon</translation>
+<translation id="6904713658985136356"><ph name="HOST" /> haluaa jakaa laitteesi näytön.</translation>
 <translation id="6906268095242253962">Jatka muodostamalla internetyhteys.</translation>
 <translation id="6909461304779452601">Sovelluksia, laajennuksia ja käyttäjien komentosarjoja ei voida lisätä tästä verkkosivustosta.</translation>
 <translation id="6910211073230771657">Poistettu</translation>
 <translation id="691024665142758461">ladata useita tiedostoja</translation>
 <translation id="6911468394164995108">Liity muuhun verkkoon...</translation>
-<translation id="6914291514448387591"><ph name="PLUGIN_NAME" /> tarvitsee suoritusluvan.</translation>
 <translation id="6915804003454593391">Käyttäjä:</translation>
 <translation id="6916590542764765824">Hallinnoi laajennuksia</translation>
 <translation id="6918340160281024199">Yhdysvallat, Workman</translation>
@@ -4390,6 +4410,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6939777852457331078">Näppäimistö: Yhdysvallat, Workman</translation>
 <translation id="6941427089482296743">Poista kaikki näytetyt</translation>
 <translation id="6941937518557314510">Kirjaudu sisään laitteeseen <ph name="TOKEN_NAME" /> ja todenna <ph name="HOST_NAME" /> varmenteellasi.</translation>
+<translation id="6945190755118630152">Pakota käyttöliittymä käyttämään aina vasemmalta oikealle- tai oikealta vasemmalle ‑tilaa, jolloin käyttöliittymän kielen oletussuunta ohitetaan.</translation>
 <translation id="6945221475159498467">Valitse</translation>
 <translation id="6948736568813450284">Kehittäjät: käyttäkää Google Payments -sovellusliittymän kutsuissa hiekkalaatikkopalvelua.</translation>
 <translation id="6949306908218145636">Aseta avoimet sivut kirjanmerkeiksi…</translation>
@@ -4461,6 +4482,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7017480957358237747">sallia tai estää tietyt verkkosivustot,</translation>
 <translation id="7017587484910029005">Kirjoita alla olevassa kuvassa näkyvät merkit.</translation>
 <translation id="7018275672629230621">Lukea ja muokata selaushistoriaasi</translation>
+<translation id="7018568016607642429">Suoratoistovirhe</translation>
 <translation id="7019805045859631636">Nopea</translation>
 <translation id="7022562585984256452">Etusivusi on asetettu.</translation>
 <translation id="702373420751953740">PRL-versio:</translation>
@@ -4658,7 +4680,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="730515362922783851">Vaihtaa tietoja minkä tahansa paikallisverkossa tai internetissä olevan laitteen kanssa.</translation>
 <translation id="7309257895202129721">Näytä &amp;painikkeet</translation>
 <translation id="7311079019872751559">Ei hiekkalaatikossa toimivan laajennuksen käyttö</translation>
-<translation id="7312441861087971374"><ph name="PLUGIN_NAME" /> on vanhentunut.</translation>
 <translation id="7314244761674113881">SOCKS-isäntä</translation>
 <translation id="7314278895724341067">Ota käyttöön NTP-offline-sivut</translation>
 <translation id="7317938878466090505"><ph name="PROFILE_NAME" /> (nykyinen)</translation>
@@ -4798,6 +4819,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7490813197707563893">MAC-osoite</translation>
 <translation id="7491962110804786152">sarkain</translation>
 <translation id="7493386493263658176"><ph name="EXTENSION_NAME" /> voi kerätä kaiken kirjoittamasi tekstin, myös henkilökohtaiset tiedot, kuten salasanat ja luottokorttien numerot. Haluatko käyttää tätä laajennusta?</translation>
+<translation id="7494065396242762445">Avaa Windows-asetukset</translation>
 <translation id="7494694779888133066"><ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="7495424355577885780">Jos tämä asetus on käytössä, Material Designin palautekäyttöliittymä käynnistetään käyttäjän tehdessä ilmoitusta ongelmasta.</translation>
 <translation id="7495778526395737099">Unohtuiko vanha salasana?</translation>
@@ -4828,10 +4850,10 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7530016656428373557">Purkautumisnopeus watteina</translation>
 <translation id="7532099961752278950">Asetuksen tehnyt sovellus:</translation>
 <translation id="7536709149194614609">Käynnistä laite uudelleen ja yritä sitten uudestaan.</translation>
+<translation id="7537601449003285327">Kiinnitä tehtäväpalkkiin</translation>
 <translation id="7540972813190816353">Virhe tarkistettaessa päivityksiä: <ph name="ERROR" /></translation>
 <translation id="7541121857749629630">Kuvapoikkeukset</translation>
 <translation id="7543104066686362383">Ota virheenkorjausominaisuudet käyttöön tällä <ph name="IDS_SHORT_PRODUCT_NAME" />-laitteella..</translation>
-<translation id="7543393759143837504">Jos et löydä etsimääsi, siirry <ph name="BEGIN_LINK_CHROMIUM" />Google Chromen ohjeeseen<ph name="END_LINK_CHROMIUM" />.</translation>
 <translation id="7544853251252956727">Satunnaistoisto</translation>
 <translation id="7545288882499673859">Muistin hylkäämisstrategia edistyneeseen paineenhallintaan</translation>
 <translation id="7545415673537747415">Voit hallita haun, mainosten ja muiden Google-palveluiden muokkaamista selaushistoriasi perusteella <ph name="BEGIN_LINK" />Google-toimintojen hallinnassa<ph name="END_LINK" />.</translation>
@@ -5031,6 +5053,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7828106701649804503">Määritä ruudun oletusleveys.</translation>
 <translation id="782886543891417279">Käyttämäsi Wi-Fi (<ph name="WIFI_NAME" />) saattaa edellyttää kirjautumista.</translation>
 <translation id="7831368056091621108">niin voit käyttää tätä laajennusta, historiaasi sekä Chromen muita asetuksia kaikilla laitteillasi.</translation>
+<translation id="7831493768366098287">Google Print</translation>
 <translation id="7831754656372780761"><ph name="TAB_TITLE" /> <ph name="EMOJI_MUTING" /></translation>
 <translation id="7839051173341654115">Tarkastele/varmuuskopioi mediaa</translation>
 <translation id="7839192898639727867">Varmenteen kohteen avaimen tunnus</translation>
@@ -5096,7 +5119,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7908378463497120834">Ainakaan yhtä ulkoisen tallennustilan osioista ei voitu ottaa käyttöön.</translation>
 <translation id="7909969815743704077">Ladattiin incognito-tilassa</translation>
 <translation id="7910768399700579500">&amp;Uusi kansio</translation>
-<translation id="7912145082919339430">Kun laajennuksen <ph name="PLUGIN_NAME" /> asennus on valmis, aktivoi se päivittämällä sivu.</translation>
 <translation id="7915471803647590281">Kerro meille tapahtumista ennen kun lähetät palautteen.</translation>
 <translation id="7915679104416252393">Ota käyttöön välilehden vaihtaja asiakirjatilassa.</translation>
 <translation id="7915857946435842056">Ota käyttöön IME:n syöttönäkymien kokeelliset ominaisuudet.</translation>
@@ -5122,7 +5144,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7957054228628133943">Hallinnoi ponnahdusikkunoiden estoa...</translation>
 <translation id="7957615753207896812">Avaa näppäimistön laiteasetukset</translation>
 <translation id="7959074893852789871">Tiedostossa oli useita varmenteita, joista kaikkia ei tuotu:</translation>
-<translation id="7959874006162866942">Haluatko varmasti asentaa laajennuksen <ph name="PLUGIN_NAME" />? Asenna vain laajennuksia, joihin luotat.</translation>
 <translation id="7961015016161918242">Ei koskaan</translation>
 <translation id="7964089325405904043">Salasanojen tuominen ja vieminen</translation>
 <translation id="7965010376480416255">Jaettu muisti</translation>
@@ -5137,6 +5158,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7974067550340408553">Haluan puhelimeeni ilmoituksen aina Smart Lockin avatessa <ph name="DEVICE_TYPE" />-laitteen lukituksen.</translation>
 <translation id="7974566588408714340">Yritä uudelleen laajennuksella <ph name="EXTENSIONNAME" /></translation>
 <translation id="7974936243149753750">Yliskannaus</translation>
+<translation id="797610151583999923">Ota käyttöön mus, mash jne.</translation>
 <translation id="7977551819349545646">Päivitetään Chromeboxia…</translation>
 <translation id="7978412674231730200">Yksityinen avain</translation>
 <translation id="7979036127916589816">Synkronointivirhe</translation>
@@ -5149,6 +5171,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7986075254672229615">Ottaa käyttöön kirjautumistunnuksien hallinta -sovellusliittymän kokeellisen version. Älä ota tätä ominaisuutta käyttöön, ellet tiedä, mitä olet tekemässä.</translation>
 <translation id="7986295104073916105">Lukea ja muokata tallennettuja salasana-asetuksia</translation>
 <translation id="7987485481246785146">Soranîn arabiaan perustuva näppäimistö</translation>
+<translation id="7988355189918024273">Ota käyttöön esteettömyystoimintoja</translation>
 <translation id="7988930390477596403">Se otetaan käyttöön avatessasi laitteen <ph name="DEVICE_TYPE" /> lukituksen seuraavan kerran. Jos Smart Lock on käytössä, puhelimesi avaa tämän laitteen lukituksen ilman salasanaa. Smart Lock edellyttää Bluetooth-yhteyttä, joten Bluetooth otetaan käyttöön.</translation>
 <translation id="7994370417837006925">Kirjautuminen useaan tiliin</translation>
 <translation id="799547531016638432">Poista pikakuvake</translation>
@@ -5258,6 +5281,7 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8137331602592933310"><ph name="FILENAME" /> on jaettu sinulle. Et voi poistaa sitä, koska et ole tiedoston omistaja.</translation>
 <translation id="8137559199583651773">Hallinnoi laajennuksia</translation>
 <translation id="8138082791834443598">Valinnainen – anna uudet tai päivitä aiemmat tiedot, jotta laiteyhteyden voi muodostaa.</translation>
+<translation id="8138880386467279117">Kosketus</translation>
 <translation id="8140778357236808512">Tuo olemassa oleva valvottu käyttäjä</translation>
 <translation id="8141520032636997963">Avaa Adobe Readerissa</translation>
 <translation id="8141725884565838206">Hallinnoi salasanoja</translation>
@@ -5272,6 +5296,7 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8148913456785123871">Näytä Google Now -kortit käynnistysohjelmassa.</translation>
 <translation id="8151185429379586178">Kehittäjän työkalut</translation>
 <translation id="8151638057146502721">Määritä:</translation>
+<translation id="8151639108075998630">Ota vierailijaselaus käyttöön</translation>
 <translation id="8152091997436726702">Tulostimen rekisteröinti aikakatkaistiin. Jotta voit rekisteröidä tulostimen, sinun on vahvistettava tulostimen rekisteröinti.</translation>
 <translation id="8153607920959057464">Tätä tiedostoa ei voi näyttää.</translation>
 <translation id="8154790740888707867">Ei tiedostoa</translation>
@@ -5395,6 +5420,7 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8310125599132488187">Origin Trials -ominaisuus</translation>
 <translation id="8312871300878166382">Liitä kansioon</translation>
 <translation id="8314013494437618358">Monisäikeinen koostaminen</translation>
+<translation id="8317671367883557781">Lisää verkkoyhteys</translation>
 <translation id="8319414634934645341">Laajennettu avaimen käyttö</translation>
 <translation id="83197448776930011">Jos tarjolla on useampia verkkoja, ensisijaisiin verkkoihin muodostetaan yhteys ennen muita tunnettuja verkkoja.</translation>
 <translation id="8320459152843401447">Koko näyttösi</translation>
@@ -5418,6 +5444,7 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8352772353338965963">Lisää tili useaan tiliin kirjautumiseen. Kaikkia tilejä, joihin on kirjauduttu sisään, voi käyttää ilman salasanaa. Käytä siis ominaisuutta vain luotetuilla tileillä.</translation>
 <translation id="8353683614194668312">Se voi:</translation>
 <translation id="8354560714384889844">Toolkit-Views-sovelluksen tietoikkuna</translation>
+<translation id="8356197132883132838"><ph name="TITLE" /> – <ph name="COUNT" /></translation>
 <translation id="8356258244599961364">Tällä kielellä ei ole syöttötapoja</translation>
 <translation id="8357224663288891423">Pikanäppäimet laajennuksille ja sovelluksille</translation>
 <translation id="8357698472719914638">AINA</translation>
@@ -5479,6 +5506,7 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="843760761634048214">Tallenna luottokortti.</translation>
 <translation id="8438601631816548197">Tietoja puhehausta</translation>
 <translation id="8439506636278576865">Tarjoudu kääntämään sivuja tälle kielelle</translation>
+<translation id="8441209996841212096">Suoratoistetaan videota…</translation>
 <translation id="8442065444327205563">Asiakirja on valmis tarkast.</translation>
 <translation id="8442145116400417142">Sisältöä estetty</translation>
 <translation id="8443621894987748190">Valitse kuva tiliäsi varten</translation>
@@ -5705,7 +5733,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8737685506611670901">Avata <ph name="PROTOCOL" />-linkit palvelun <ph name="REPLACED_HANDLER_TITLE" /> sijaan.</translation>
 <translation id="8737709691285775803">Shill</translation>
 <translation id="8741881454555234096">Tarkentaa kosketuseleen sijaintia ja kompensoi kosketuksen epätarkkuutta hiireen verrattuna.</translation>
-<translation id="8741995161408053644">Google-tililläsi voi olla muita selaushistoriatietoja osoitteessa <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="874420130893181774">Perinteinen pinyin-syöttötapa</translation>
 <translation id="8744525654891896746">Valitse avatar tälle valvotulle käyttäjälle</translation>
 <translation id="8749863574775030885">Käyttää tuntemattoman myyjän USB-laitteita.</translation>
@@ -5814,6 +5841,7 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8892992092192084762">Teema <ph name="THEME_NAME" /> asennettu.</translation>
 <translation id="8893928184421379330">Laitetta <ph name="DEVICE_LABEL" /> ei tunnistettu.</translation>
 <translation id="8895908457475309889">Tietosi poistetaan, kun kirjaudut ulos.</translation>
+<translation id="8896506051167030873">Näytä verkkoyhteyksien lisäasetukset</translation>
 <translation id="88986195241502842">Sivu alas</translation>
 <translation id="8898786835233784856">Valitse seuraava välilehti</translation>
 <translation id="8898840733695078011">Signaalin vahvuus</translation>
@@ -5851,7 +5879,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8941882480823041320">Edellinen sana</translation>
 <translation id="8942416694471994740">Järjestelmänvalvojasi hallinnoi mikrofonin käyttöoikeutta.</translation>
 <translation id="894360074127026135">Netscape International Step-Up</translation>
-<translation id="8944216241803440671">Ota <ph name="PLUGIN_NAME" /> uudelleen käyttöön sivulla <ph name="CHROME_PLUGINS_LINK" />.</translation>
 <translation id="8944779739948852228">Tulostin havaittiin</translation>
 <translation id="8944964446326379280"><ph name="APP_NAME" /> jakaa ikkunan välilehdelle <ph name="TAB_NAME" />.</translation>
 <translation id="8946284507644756416"><ph name="DEVICE_TYPE" /> on mahdollista avata Android-puhelimellasi.</translation>
@@ -6087,6 +6114,7 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="96421021576709873">Wi-Fi-verkko</translation>
 <translation id="965490406356730238">Ota käyttöön laitekiihdytetty mjpeg-tiedoston purkaminen kuvakaapatuille kehyksille aina kun mahdollista.</translation>
 <translation id="968174221497644223">Sovellusvälimuisti</translation>
+<translation id="969095201190245362">Näytä käytettävissä olevat Bluetooth-laitteet</translation>
 <translation id="970047733946999531">{NUM_TABS,plural, =1{1 välilehti}other{# välilehteä}}</translation>
 <translation id="970794034573172516">Ota käyttöön puhe- ja äänitoiminta</translation>
 <translation id="971058943242239041">Mahdollistaa window-controls-HTML-elementtien käytön pakettisovelluksissa.</translation>

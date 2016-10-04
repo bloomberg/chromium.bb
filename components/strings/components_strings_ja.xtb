@@ -80,7 +80,6 @@
 <translation id="1871208020102129563">プロキシは .pac スクリプト URL ではなく固定プロキシ サーバーを使用するように設定されています。</translation>
 <translation id="1883255238294161206">リストを折りたたむ</translation>
 <translation id="1898423065542865115">フィルタ</translation>
-<translation id="1911837502049945214"><ph name="HOST_NAME" /> でログイン証明書が承認されなかった、またはログイン証明書の有効期限が切れている可能性があります。</translation>
 <translation id="194030505837763158"><ph name="LINK" /> に移動します</translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" /> のブックマーク</translation>
 <translation id="1973335181906896915">シリアル化エラーです</translation>
@@ -176,7 +175,6 @@
 <translation id="2837049386027881519">旧バージョンの TLS または SSL プロトコルで接続を再試行する必要がありました。これは通常、サーバーのソフトウェアが非常に古く、他のセキュリティ問題が発生している可能性があるということです。</translation>
 <translation id="284702764277384724"><ph name="HOST_NAME" /> のサーバー証明書は偽造されたもののようです。</translation>
 <translation id="2889159643044928134">再読み込みを中止</translation>
-<translation id="2896499918916051536">このプラグインはサポートされていません。</translation>
 <translation id="2900469785430194048">このウェブページを表示しようとしましたが、Google Chrome のメモリが不足しています。</translation>
 <translation id="2909946352844186028">ネットワークの変更が検出されました。</translation>
 <translation id="2922350208395188000">サーバーの証明書を確認できません。</translation>
@@ -220,6 +218,7 @@
 <translation id="3286538390144397061">今すぐ再起動</translation>
 <translation id="3305707030755673451">データは <ph name="TIME" /> に同期パスフレーズで暗号化されました。同期を開始するには、同期パスフレーズを入力してください。</translation>
 <translation id="333371639341676808">このページでこれ以上ダイアログボックスを生成しない</translation>
+<translation id="3338095232262050444">この通信は保護されています</translation>
 <translation id="3340978935015468852">設定</translation>
 <translation id="3345135638360864351">このサイトにアクセスするためのリクエストを <ph name="NAME" /> に送信できませんでした。もう一度お試しください。</translation>
 <translation id="3355823806454867987">プロキシ設定の変更...</translation>
@@ -322,6 +321,7 @@
 <translation id="4304224509867189079">ログイン</translation>
 <translation id="432290197980158659">サーバーの提示した証明書が、組み込まれている想定の証明書と一致しません。これらの想定の証明書は、ユーザー保護のため、特定の安全性の高いウェブサイトについて用意されています。<ph name="BEGIN_LEARN_MORE_LINK" />詳細<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="4325863107915753736">記事が見つかりませんでした</translation>
+<translation id="4331708818696583467">この通信は保護されていません</translation>
 <translation id="4372948949327679948"><ph name="VALUE_TYPE" /> 値が想定されます。</translation>
 <translation id="4381091992796011497">ユーザー名:</translation>
 <translation id="4394049700291259645">無効にする</translation>
@@ -341,6 +341,7 @@
 <translation id="4589078953350245614"><ph name="DOMAIN" /> にアクセスしようとしましたが、サーバーから無効な証明書が提示されました。<ph name="BEGIN_LEARN_MORE_LINK" />詳細<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="4592951414987517459"><ph name="DOMAIN" /> への接続は新しい暗号スイートにより暗号化されています。</translation>
 <translation id="4594403342090139922">削除の取り消し（&amp;U）</translation>
+<translation id="4627442949885028695">他の端末で開いたタブ</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">拡張機能のページを表示しています。</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -383,7 +384,6 @@
 <translation id="5089810972385038852">都道府県 / 州</translation>
 <translation id="5095208057601539847">地方</translation>
 <translation id="5115563688576182185">（64 ビット）</translation>
-<translation id="5122371513570456792">「<ph name="SEARCH_STRING" />」に対し <ph name="NUMBER_OF_RESULTS" /> 件の<ph name="SEARCH_RESULTS" />が見つかりました。</translation>
 <translation id="5141240743006678641">Google の認証情報で同期パスワードを暗号化する</translation>
 <translation id="5145883236150621069">ポリシー応答内にエラー コードがあります</translation>
 <translation id="5171045022955879922">検索または URL を入力</translation>
@@ -425,7 +425,6 @@
 <translation id="5622887735448669177">このサイトを離れてもよろしいですか？</translation>
 <translation id="5629630648637658800">ポリシー設定を読み込めませんでした</translation>
 <translation id="5631439013527180824">無効なデバイス管理トークンです</translation>
-<translation id="5650551054760837876">一致する情報はありません。</translation>
 <translation id="5677928146339483299">ブロック</translation>
 <translation id="5710435578057952990">このウェブサイトの ID は確認されていません。</translation>
 <translation id="5720705177508910913">現在のユーザー</translation>
@@ -624,7 +623,6 @@
 <translation id="7995512525968007366">指定なし</translation>
 <translation id="8012647001091218357">現在、保護者にたずねることができません。もう一度お試しください。</translation>
 <translation id="8034522405403831421">このページの言語は<ph name="SOURCE_LANGUAGE" />です。<ph name="TARGET_LANGUAGE" />に翻訳しますか？</translation>
-<translation id="8034955203865359138">履歴エントリが見つかりません。</translation>
 <translation id="8088680233425245692">記事を表示できませんでした。</translation>
 <translation id="8089520772729574115">1 MB 未満</translation>
 <translation id="8091372947890762290">サーバーで有効化が保留になっています</translation>
@@ -657,6 +655,7 @@
 <translation id="8433057134996913067">ほとんどのウェブサイトからログアウトします。</translation>
 <translation id="8437238597147034694">移動の取り消し（&amp;U）</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 件のクレジット カード}other{# 件のクレジット カード}}</translation>
+<translation id="8483780878231876732">Google アカウントに保存したカードを使用するには Chrome にログインしてください</translation>
 <translation id="8488350697529856933">適用先</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> からの応答時間が長すぎます。</translation>
 <translation id="852346902619691059">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は、ご使用のデバイスのオペレーティング システムによって信頼されているものではありません。原因として、設定が不適切であるか、悪意のあるユーザーが接続を妨害していることが考えられます。<ph name="BEGIN_LEARN_MORE_LINK" />詳細<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -676,7 +675,6 @@
 <translation id="8730621377337864115">完了</translation>
 <translation id="8738058698779197622">安全な接続を確立するには時計が正しく設定されている必要があります。この理由は、本物のウェブサイトであることを示すためにウェブサイトで使用される証明書には、有効期間（発効日時と失効日時）が設定されているためです。デバイスの時計が正しくないため、Chromium ではこれらの証明書を確認できません。</translation>
 <translation id="8740359287975076522"><ph name="HOST_NAME" /> の &lt;abbr id="dnsDefinition"&gt;DNS アドレス&lt;/abbr&gt;が見つかりませんでした。問題を診断しています。</translation>
-<translation id="8741995161408053644">Google アカウントでの他の形式の閲覧履歴が <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> に残ることがあります。</translation>
 <translation id="8790007591277257123">削除のやり直し（&amp;R）</translation>
 <translation id="8798099450830957504">既定</translation>
 <translation id="8804164990146287819">プライバシー ポリシー</translation>

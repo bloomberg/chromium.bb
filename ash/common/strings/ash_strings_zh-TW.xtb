@@ -109,6 +109,7 @@
 <translation id="3891340733213178823">按兩下 Ctrl+Shift+Q 鍵即可登出。</translation>
 <translation id="3892641579809465218">内建顯示器</translation>
 <translation id="3893630138897523026">ChromeVox (互動朗讀)</translation>
+<translation id="3899995891769452915">語音輸入</translation>
 <translation id="3963445509666917109">喇叭 (內部)</translation>
 <translation id="3967919079500697218">您的管理員已停用拍攝螢幕擷取畫面功能。</translation>
 <translation id="397105322502079400">計算中…</translation>
@@ -181,6 +182,7 @@
 <translation id="6459472438155181876">正在擴充 <ph name="DISPLAY_NAME" /> 畫面</translation>
 <translation id="6490471652906364588">USB-C 裝置 (右側連接埠)</translation>
 <translation id="6501401484702599040">正在將畫面投放到「<ph name="RECEIVER_NAME" />」</translation>
+<translation id="6521655319214113338">手寫輸入</translation>
 <translation id="6537270692134705506">擷取整個畫面</translation>
 <translation id="6550675742724504774">選項</translation>
 <translation id="6585808820553845416">這個工作階段將在 <ph name="SESSION_TIME_REMAINING" />後結束。</translation>
@@ -212,6 +214,7 @@
 <translation id="743058460480092004">攝影機和麥克風正在使用中。</translation>
 <translation id="7510334386202674593">Ctrl + Shift + L 鍵</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> 不支援 <ph name="SPECIFIED_RESOLUTION" />，解析度已變更為 <ph name="FALLBACK_RESOLUTION" /></translation>
+<translation id="7562368315689366235">表情符號面板</translation>
 <translation id="7573962313813535744">停駐模式</translation>
 <translation id="7580671184200851182">透過所有喇叭播放相同的音效 (單聲道音訊)</translation>
 <translation id="7581273696622423628">填寫問卷</translation>

@@ -799,7 +799,7 @@
 <translation id="3322771899429619102">Hiermee kun je een lijst met URL-patronen instellen waarmee sites worden gespecificeerd die sleutels mogen genereren. Als een URL-patroon in 'KeygenBlockedForUrls' staat, worden deze uitzonderingen daardoor overschreven.
 
           Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites op basis van het beleid 'DefaultKeygenSetting' (als dit is ingesteld), of anders op basis van de persoonlijke configuratie van de gebruiker.</translation>
-<translation id="3322902067538988734">Als dit beleid is ingesteld op 'true', moet de gebruiker bij <ph name="PRODUCT_NAME" /> inloggen met zijn profiel voordat hij de browser gebruikt. De standaardwaarde van BrowserGuestModeEnabled wordt ingesteld op 'false'.
+<translation id="3322902067538988734">Als dit beleid is ingesteld op 'true' (waar), moet de gebruiker bij <ph name="PRODUCT_NAME" /> inloggen met zijn profiel voordat hij de browser gebruikt. De standaardwaarde van BrowserGuestModeEnabled wordt ingesteld op 'false' (onwaar).
 
       Als dit beleid is ingesteld op 'false' of niet is geconfigureerd, kan de gebruiker de browser gebruiken zonder in te loggen bij <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3381968327636295719"> gebruiken</translation>

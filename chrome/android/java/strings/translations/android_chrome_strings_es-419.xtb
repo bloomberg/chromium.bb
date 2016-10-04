@@ -34,6 +34,7 @@ Debes activar Bluetooth y la Ubicación para poder utilizar la Web física.</tra
 <translation id="1376578503827013741">Calculando…</translation>
 <translation id="138361230106469022">Hola, <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Buscar</translation>
+<translation id="1384959399684842514">Descarga detenida</translation>
 <translation id="1389974829397082527">Aquí no hay marcadores</translation>
 <translation id="1404122904123200417">Incorporado en <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">"No realizar seguimiento"</translation>
@@ -238,6 +239,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="380076759404194828">{NUM_SELECTED,plural, =1{Se seleccionó 1 elemento}other{Se seleccionaron # elementos}}</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Administrar</translation>
+<translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> descargas borradas</translation>
 <translation id="3822502789641063741">¿Borrar el almacenamiento de sitios?</translation>
 <translation id="3828029223314399057">Buscar marcadores</translation>
 <translation id="3894427358181296146">Agregar carpeta</translation>
@@ -277,6 +279,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4271185234001491831">Nunca traducir <ph name="LANGUAGE" /></translation>
 <translation id="4275663329226226506">Multimedia</translation>
 <translation id="4278390842282768270">Permitido</translation>
+<translation id="4300272766492248925">Abrir app</translation>
 <translation id="4307992518367153382">Básicas</translation>
 <translation id="4351244548802238354">Cerrar cuadro de diálogo</translation>
 <translation id="4376501731284077108">Sin controlar</translation>
@@ -323,6 +326,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4923459931733593730">Pago</translation>
 <translation id="4941291666397027948">* indica que es un campo obligatorio</translation>
 <translation id="4943872375798546930">Sin resultados</translation>
+<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> está compartiendo tu pantalla</translation>
 <translation id="4961700429721424617">Estás saliendo de una cuenta administrada por <ph name="MANAGED_DOMAIN" />. Esta acción borrará tus datos de Chrome en este dispositivo, pero permanecerán en tu cuenta de Google.</translation>
 <translation id="497421865427891073">Avanzar</translation>
 <translation id="4988526792673242964">Páginas</translation>
@@ -364,7 +368,6 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> borrado</translation>
 <translation id="5345083863238459644">El acceso a la ubicación también se <ph name="BEGIN_LINK" />desactivó para este dispositivo<ph name="END_LINK" />.</translation>
 <translation id="5372829067651257087">Se copió la URL.</translation>
-<translation id="5380554235172449987">No enviar nunca</translation>
 <translation id="5400569084694353794">Al utilizar esta aplicación, aceptas las <ph name="BEGIN_LINK1" />Condiciones del servicio<ph name="END_LINK1" /> y el <ph name="BEGIN_LINK2" />Aviso de privacidad<ph name="END_LINK2" /> de Chrome.</translation>
 <translation id="5414836363063783498">Verificando…</translation>
 <translation id="5423934151118863508">Aquí aparecerán las páginas que visites con más frecuencia</translation>
@@ -374,7 +377,6 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="5456381639095306749">Descargar página</translation>
 <translation id="5487521232677179737">Borrar datos</translation>
 <translation id="5487729733663684359">Las actualizaciones de Chrome ya no son compatibles con esta versión de Android.</translation>
-<translation id="5511351932351731210">Enviar siempre</translation>
 <translation id="5512137114520586844"><ph name="PARENT_NAME" /> administra esta cuenta.</translation>
 <translation id="5527082711130173040">Chrome debe acceder a la ubicación para buscar dispositivos. <ph name="BEGIN_LINK1" />Actualiza los permisos<ph name="END_LINK1" />. El acceso a la ubicación también está <ph name="BEGIN_LINK2" />desactivado en este dispositivo<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Cerrar pest. de incógnito</translation>
@@ -495,7 +497,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6831043979455480757">Traducir</translation>
 <translation id="6846298663435243399">Cargando…</translation>
 <translation id="6850830437481525139">Pestañas cerradas: <ph name="TAB_COUNT" /></translation>
-<translation id="6857778194843072568">Enviar solo con Wi-Fi</translation>
 <translation id="6864459304226931083">Descargar imagen</translation>
 <translation id="6865313869410766144">Datos del formulario de autocompletar</translation>
 <translation id="6868088497967843822">Accede a tu cuenta para ver los marcadores, el historial, las contraseñas y otras opciones de configuración en todos los dispositivos.</translation>
@@ -515,6 +516,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7026897394897382018">Habilitar la opción Reducir datos</translation>
 <translation id="7029809446516969842">Contraseñas</translation>
 <translation id="7031882061095297553">Sincronizar con</translation>
+<translation id="7040138676081995583">Abrir con...</translation>
 <translation id="7053983685419859001">Bloquear</translation>
 <translation id="7057058088140140610">Tarjetas de crédito y direcciones que utilizan Google Payments</translation>
 <translation id="7062545763355031412">Aceptar y cambiar de cuenta</translation>
@@ -591,9 +593,11 @@ Es posible que tu cuenta de Google tenga otros formularios del historial de nave
 <translation id="7998918019931843664">Volver a abrir la pestaña cerrada</translation>
 <translation id="7999064672810608036">¿Quieres eliminar todos los datos locales de este sitio web, incluidas las cookies, y restablecer todos los permisos?</translation>
 <translation id="8007176423574883786">Desactivado para este dispositivo</translation>
+<translation id="802154636333426148">Error en la descarga</translation>
 <translation id="8026334261755873520">Eliminar datos de navegación</translation>
 <translation id="8035133914807600019">Nueva carpeta…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> días restantes</translation>
+<translation id="8051695050440594747"><ph name="MEGABYTES" /> MB disponibles</translation>
 <translation id="8063895661287329888">Se produjo un error al agregar el marcador.</translation>
 <translation id="8068648041423924542">No es posible seleccionar un certificado</translation>
 <translation id="8069239273282989646">Poscompresión</translation>
@@ -675,7 +679,6 @@ Conéctate a Internet y reproduce el contenido descargado para obtener licencias
 <translation id="8986494364107987395">Enviar automáticamente estadísticas de uso e informes sobre fallos a Google</translation>
 <translation id="8998729206196772491">Estás accediendo con una cuenta administrada por <ph name="MANAGED_DOMAIN" /> y dándole permiso a su administrador para que controle tus datos de Chrome. Tus datos se vincularán de forma permanente a esta cuenta. Si sales de Chrome, tus datos se borrarán en este dispositivo, pero quedarán guardados en tu cuenta de Google.</translation>
 <translation id="9019902583201351841">Administrado por tus padres</translation>
-<translation id="9020607083536754075">Cerrar la pestaña actual y volver a la app anterior</translation>
 <translation id="9038649477754266430">Utilizar un servicio de predicción para cargar las páginas más rápido</translation>
 <translation id="9050666287014529139">Frase de contraseña</translation>
 <translation id="9060538597317784206">Ver aplicación <ph name="APP_NAME" /> en Play Store (calificación: <ph name="APP_RATING" />)</translation>

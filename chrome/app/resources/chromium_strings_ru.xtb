@@ -13,6 +13,7 @@
 <translation id="1414495520565016063">Добро пожаловать в Chromium!</translation>
 <translation id="1444754455097148408">Лицензии Chromium на ПО с открытым исходным кодом</translation>
 <translation id="1480489203462860648">Запустить Chrome (уже установлен)</translation>
+<translation id="1502360822835740515">Как сделать Chromium браузером по умолчанию</translation>
 <translation id="151962892725702025">Не удалось синхронизировать данные, поскольку сервис Sync недоступен в вашем домене.</translation>
 <translation id="1559451348202814456">В работе Chromium могут возникать сбои, так как браузер больше не поддерживает Mac OS X 10.6, 10.7 и 10.8.</translation>
 <translation id="1644918877723739397">Chromium добавит его к другим сохраненным паролям (<ph name="SAVED_PASSWORD_LINK" />) и запомнит для следующих визитов.</translation>
@@ -91,10 +92,12 @@
 <translation id="378917192836375108">В Chromium вы можете нажать на любой номер телефона и позвонить на него через Skype.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
 <translation id="3849925841547750267">К сожалению, настройки браузера Mozilla Firefox недоступны, пока этот браузер работает. Чтобы импортировать настройки Firefox в Chromium, закройте все окна браузера Firefox. Затем нажмите "Продолжить".</translation>
+<translation id="3852700440713538496">Как прикрепить Chromium на панель задач</translation>
 <translation id="3883381313049582448">Использовать пароль, сгенерированный Chromium</translation>
 <translation id="3889543394854987837">Нажмите на свое имя, чтобы войти в Chromium.</translation>
 <translation id="390894725198123737">Если пароли на Mac сохраняются с помощью функции "Связка ключей", их могут просматривать и синхронизировать все пользователи Chromium, у которых есть доступ к этому аккаунту OS X.</translation>
 <translation id="4050175100176540509">В последней версии улучшена защита и добавлены новые функции.</translation>
+<translation id="407254336480250557">Выберите <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="4077262827416206768">Закройте все окна Chromium и перезапустите программу, чтобы изменения вступили в силу.</translation>
 <translation id="4182290826692170034">Chromium стал браузером по умолчанию. Ура!</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Внимание!<ph name="END_BOLD" /> Chromium не может запретить расширениям записывать историю браузера. Чтобы отключить это расширение в режиме инкогнито, снимите этот флажок.</translation>
@@ -116,6 +119,7 @@
 <translation id="4621240073146040695">Чтобы завершить обновление, перезапустите Chromium.</translation>
 <translation id="4677944499843243528">Скорее всего, профиль используется другим процессом Chromium (<ph name="PROCESS_ID" />) на другом компьютере (<ph name="HOST_NAME" />). Во избежание сбоев профиль был заблокирован. Если вы уверены, что профиль не используется другими процессами, разблокируйте его и перезапустите Chromium.</translation>
 <translation id="469338717132742108">Справка Chromium OS</translation>
+<translation id="4714956846925717402">Сделайте Chromium ещё быстрее</translation>
 <translation id="4743926867934016338">Принимаю</translation>
 <translation id="4888717733111232871">Разрешить в Chromium передачу входящего трафика по протоколу mDNS</translation>
 <translation id="4943838377383847465">Chromium работает в фоновом режиме</translation>

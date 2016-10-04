@@ -108,6 +108,7 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="3891340733213178823">Pressione Ctrl+Shift+Q duas vezes para sair.</translation>
 <translation id="3892641579809465218">Display interno</translation>
 <translation id="3893630138897523026">ChromeVox (feedback falado)</translation>
+<translation id="3899995891769452915">Entrada de texto por voz</translation>
 <translation id="3963445509666917109">Alto-falante (interno)</translation>
 <translation id="3967919079500697218">A capacidade de fazer capturas de tela foi desativada pelo seu administrador.</translation>
 <translation id="397105322502079400">Calculando...</translation>
@@ -180,6 +181,7 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="6459472438155181876">Estendendo tela para <ph name="DISPLAY_NAME" /></translation>
 <translation id="6490471652906364588">Dispositivo USB-C (porta da direita)</translation>
 <translation id="6501401484702599040">Transmitindo tela para <ph name="RECEIVER_NAME" /></translation>
+<translation id="6521655319214113338">Entrada de texto manuscrito</translation>
 <translation id="6537270692134705506">Capturar tela</translation>
 <translation id="6550675742724504774">Opções</translation>
 <translation id="6585808820553845416">A sessão termina em <ph name="SESSION_TIME_REMAINING" />.</translation>
@@ -211,6 +213,7 @@ Pressione Ctrl+Alt+Z para desativar.</translation>
 <translation id="743058460480092004">A câmera e o microfone estão em uso.</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> não suporta <ph name="SPECIFIED_RESOLUTION" />. A resolução foi alterada para <ph name="FALLBACK_RESOLUTION" /></translation>
+<translation id="7562368315689366235">Paleta de emoticons</translation>
 <translation id="7573962313813535744">Modo ancorado</translation>
 <translation id="7580671184200851182">Reproduzir o mesmo áudio pelos alto-falantes (áudio mono)</translation>
 <translation id="7581273696622423628">Responder à pesquisa</translation>

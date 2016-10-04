@@ -109,6 +109,7 @@ Lai atceltu tā funkcionalitāti, nospiediet Meklēt vai Shift.</translation>
 <translation id="3891340733213178823">Lai izrakstītos, divas reizes nospiediet taustiņu kombināciju Ctrl+Shift+Q.</translation>
 <translation id="3892641579809465218">Iekšējais displejs</translation>
 <translation id="3893630138897523026">ChromeVox (balss komentāri)</translation>
+<translation id="3899995891769452915">Balss ievade</translation>
 <translation id="3963445509666917109">Skaļrunis (iekšējais)</translation>
 <translation id="3967919079500697218">Jūsu administrators ir atspējojis ekrānuzņēmumu veidošanu.</translation>
 <translation id="397105322502079400">Aprēķina...</translation>
@@ -181,6 +182,7 @@ Lai to pārslēgtu, nospiediet taustiņu kombināciju Shift+Alt.</translation>
 <translation id="6459472438155181876">Paplašina ekrānu uz: <ph name="DISPLAY_NAME" /></translation>
 <translation id="6490471652906364588">USB-C ierīce (pieslēgvieta pa labi)</translation>
 <translation id="6501401484702599040">Notiek ekrāna apraide šādā vietā: <ph name="RECEIVER_NAME" /></translation>
+<translation id="6521655319214113338">Rokraksta ievade</translation>
 <translation id="6537270692134705506">Uzņemt ekrāna attēlu</translation>
 <translation id="6550675742724504774">Opcijas</translation>
 <translation id="6585808820553845416">Atlikušais laiks līdz šīs sesijas beigām: <ph name="SESSION_TIME_REMAINING" />.</translation>
@@ -212,6 +214,7 @@ Lai atceltu tā funkcionalitāti, nospiediet Alt+Meklēt vai Shift.</translation
 <translation id="743058460480092004">Kamera un mikrofons tiek lietoti.</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> neatbalsta šādu izšķirtspēju: <ph name="SPECIFIED_RESOLUTION" />. Izšķirtspēja tika mainīta uz <ph name="FALLBACK_RESOLUTION" />.</translation>
+<translation id="7562368315689366235">Emocijzīmju palete</translation>
 <translation id="7573962313813535744">Dokošanas režīms</translation>
 <translation id="7580671184200851182">Atskaņot to pašu audio saturu visos skaļruņos (mono audio)</translation>
 <translation id="7581273696622423628">Piedalīties aptaujā</translation>

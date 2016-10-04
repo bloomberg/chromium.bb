@@ -65,7 +65,6 @@ Untuk mendapatkan maklumat tentang privasi, sila lihat Dasar Privasi Google (htt
 <translation id="2359808026110333948">Teruskan</translation>
 <translation id="2366718077645204424">Tidak dapat mencapai hos. Hal ini mungkin disebabkan oleh konfigurasi rangkaian yang anda gunakan.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Terakhir dilihat dalam talian <ph name="RELATIVE_TIMESTAMP" />.</translation>
-<translation id="2498359688066513246">Bantuan &amp; maklum balas</translation>
 <translation id="2499160551253595098">Bantu kami mempertingkatkan Desktop Jauh Chrome dengan membenarkan kami mengumpulkan perangkaan penggunaan dan laporan keranapan.</translation>
 <translation id="2512228156274966424">PERHATIAN: Untuk memastikan semua pintasan papan kekunci tersedia, anda boleh mengkonfigurasi Desktop Jauh Chrome kepada ‘Buka sebagai tetingkap’.</translation>
 <translation id="2540992418118313681">Adakah anda ingin berkongsi komputer ini untuk dilihat dan dikawal oleh pengguna lain?</translation>
@@ -264,6 +263,7 @@ Jauh Chrome</translation>
 <translation id="7948001860594368197">Pilihan skrin</translation>
 <translation id="7970576581263377361">Pengesahan gagal. Sila log masuk ke Chromium sekali lagi.</translation>
 <translation id="7981525049612125370">Sesi jauh telah tamat tempoh.</translation>
+<translation id="8041089156583427627">Hantar Maklum Balas</translation>
 <translation id="8041721485428375115">Apabila memuat turun Pemasang Hos Desktop Jauh Chrome, anda bersetuju menerima <ph name="LINK_BEGIN" />Syarat Perkhidmatan<ph name="LINK_END" /> Google.</translation>
 <translation id="8073845705237259513">Untuk menggunakan Desktop Jauh Chrome, anda perlu menambahkan Akaun Google kepada peranti anda.</translation>
 <translation id="80739703311984697">Hos jauh memerlukan anda membuat pengesahan pada tapak web pihak ketiga. Untuk meneruskan, anda hendaklah memberikan Chromoting kebenaran tambahan untuk mengakses alamat ini:</translation>

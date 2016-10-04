@@ -13,6 +13,7 @@
 <translation id="1414495520565016063">Du er logget på Chromium.</translation>
 <translation id="1444754455097148408">Åpen kildekode-lisenser for Chromium</translation>
 <translation id="1480489203462860648">Prøv det – det er allerede installert</translation>
+<translation id="1502360822835740515">Gjør Chromium til standard nettleser</translation>
 <translation id="151962892725702025">Chromium OS kunne ikke synkronisere dataene dine fordi synkronisering ikke er tilgjengelig for domenet ditt.</translation>
 <translation id="1559451348202814456">Chromium fungerer kanskje ikke riktig fordi den ikke lenger støttes på Mac OS X 10.6, 10.7 eller 10.8.</translation>
 <translation id="1644918877723739397">Chromium lagrer dette i <ph name="SAVED_PASSWORD_LINK" /> og husker det neste gang du trenger det.</translation>
@@ -93,10 +94,12 @@
 <translation id="378917192836375108">Med Chromium kan du klikke på et telefonnummer på nettet og ringe til det med Skype.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
 <translation id="3849925841547750267">Mozilla Firefox-innstillingene dine er dessverre ikke tilgjengelige når den nettleseren brukes. Hvis du vil installere de innstillingene til Chromium, må du lagre arbeidet ditt og lukke alle Firefox-vinduer. Klikk deretter på Fortsett.</translation>
+<translation id="3852700440713538496">Fest Chromium til oppgavelinjen</translation>
 <translation id="3883381313049582448">Bruk passordet som genereres av Chromium</translation>
 <translation id="3889543394854987837">Klikk på navnet ditt for å åpne Chromium og starte surfingen.</translation>
 <translation id="390894725198123737">På Mac kan det hende at passord blir lagret i nøkkelringen. Andre Chromium-brukere som deler denne OS X-kontoen, har i så fall adgang til og kan synkronisere med disse passordene.</translation>
 <translation id="4050175100176540509">Viktige sikkerhetsforbedringer og nye funksjoner er tilgjengelige i den nyeste versjonen.</translation>
+<translation id="407254336480250557">Velg <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="4077262827416206768">Lukk alle Chromium-vinduer og start Chromium på nytt for at denne endringen skal tre i kraft.</translation>
 <translation id="4182290826692170034">Chromuim er standard nettleser. Hurra!</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Advarsel:<ph name="END_BOLD" /> Chromium kan ikke forhindre utvidelser fra å registrere nettleserloggen din. Du kan deaktivere denne utvidelsen i inkognitomodus ved å oppheve merkingen av dette alternativet.</translation>
@@ -118,13 +121,14 @@
 <translation id="4621240073146040695">Nå er oppdateringen snart ferdig! Start Chromium på nytt for å fullføre oppdateringen.</translation>
 <translation id="4677944499843243528">Profilen ser ut til å være i bruk av en annen Chromium-prosess (<ph name="PROCESS_ID" />) på en annen datamaskin (<ph name="HOST_NAME" />). Chromium har låst profilen slik at den ikke blir infisert. Hvis du er sikker på at ingen andre prosesser bruker profilen, kan du låse opp profilen og starte Chromium på nytt.</translation>
 <translation id="469338717132742108">Få hjelp med Chromium OS</translation>
+<translation id="4714956846925717402">Kom deg raskere til Chromium</translation>
 <translation id="4743926867934016338">Godta og søk</translation>
 <translation id="4888717733111232871">Regel om innkommende trafikk for Chromium for å tillate mDNS-trafikk.</translation>
 <translation id="4943838377383847465">Chromium er i bakgrunnsmodus.</translation>
 <translation id="4987820182225656817">Gjester kan bruke Chromium uten å etterlate seg spor.</translation>
 <translation id="4994636714258228724">Legg til deg selv i Chromium</translation>
 <translation id="5032989939245619637">Lagre detaljer i Chromium</translation>
-<translation id="5045248521775609809">Ta med Chromium overalt</translation>
+<translation id="5045248521775609809">Bruk Chromium overalt</translation>
 <translation id="5113946445248196174">Chromium kan ikke fastslå eller angi standardnettleseren.</translation>
 <translation id="5116586539350239523">Chromium lagrer personopplysningene dine sikkert, slik at du slipper å skrive dem inn på nytt.</translation>
 <translation id="5231355151045086930">Vil du logge av Chromium?</translation>

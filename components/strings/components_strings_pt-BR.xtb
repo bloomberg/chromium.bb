@@ -80,7 +80,6 @@
 <translation id="1871208020102129563">O proxy foi configurado para utilizar servidores de proxy fixo e não um URL de script .pac.</translation>
 <translation id="1883255238294161206">Recolher lista</translation>
 <translation id="1898423065542865115">Filtragem</translation>
-<translation id="1911837502049945214">O cetificado de login não foi aceito por <ph name="HOST_NAME" /> ou talvez tenha expirado.</translation>
 <translation id="194030505837763158">Ir para <ph name="LINK" /></translation>
 <translation id="1962204205936693436">Favoritos de <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Erro de serialização</translation>
@@ -176,7 +175,6 @@
 <translation id="2837049386027881519">Foi necessário fazer uma nova tentativa de conexão usando uma versão mais antiga do protocolo TLS ou SSL. Isso normalmente significa que o servidor está usando software muito antigo e pode apresentar outros problemas de segurança.</translation>
 <translation id="284702764277384724">O certificado do servidor em <ph name="HOST_NAME" /> parece ser falsificado.</translation>
 <translation id="2889159643044928134">Não atualizar</translation>
-<translation id="2896499918916051536">Este plug-in não é compatível.</translation>
 <translation id="2900469785430194048">O Google Chrome ficou sem memória ao tentar exibir essa página da Web.</translation>
 <translation id="2909946352844186028">Foi detectada uma alteração na rede.</translation>
 <translation id="2922350208395188000">O certificado do servidor não pode ser verificado.</translation>
@@ -220,6 +218,7 @@
 <translation id="3286538390144397061">Reiniciar agora</translation>
 <translation id="3305707030755673451">Seus dados foram criptografados com sua senha longa de sincronização no dia <ph name="TIME" />. Informe-a para começar a sincronização.</translation>
 <translation id="333371639341676808">Impedir que esta página crie caixas de diálogo adicionais.</translation>
+<translation id="3338095232262050444">Seguro</translation>
 <translation id="3340978935015468852">configurações</translation>
 <translation id="3345135638360864351">Não foi possível enviar sua solicitação a <ph name="NAME" /> para acessar este site. Tente novamente.</translation>
 <translation id="3355823806454867987">Alterar configurações de proxy...</translation>
@@ -322,6 +321,7 @@
 <translation id="4304224509867189079">Fazer login</translation>
 <translation id="432290197980158659">O servidor apresentou um certificado que não corresponde às expectativas incorporadas. Essas expectativas são incluídas para determinados websites de alta segurança para proteger você. <ph name="BEGIN_LEARN_MORE_LINK" />Saiba mais<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4325863107915753736">Falha ao encontrar artigo</translation>
+<translation id="4331708818696583467">Não seguro</translation>
 <translation id="4372948949327679948">Valor <ph name="VALUE_TYPE" /> esperado.</translation>
 <translation id="4381091992796011497">Nome de usuário:</translation>
 <translation id="4394049700291259645">Desativar</translation>
@@ -341,6 +341,7 @@
 <translation id="4589078953350245614">Você tentou acessar <ph name="DOMAIN" />, mas o servidor apresentou um certificado inválido. <ph name="BEGIN_LEARN_MORE_LINK" />Saiba mais<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4592951414987517459">Sua conexão com <ph name="DOMAIN" /> foi criptografada usando um pacote de criptografia moderno.</translation>
 <translation id="4594403342090139922">&amp;Desfazer exclusão</translation>
+<translation id="4627442949885028695">Continuar de outro dispositivo</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">Você está vendo uma página de extensões.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -383,7 +384,6 @@
 <translation id="5089810972385038852">Estado</translation>
 <translation id="5095208057601539847">Província</translation>
 <translation id="5115563688576182185">64 bits</translation>
-<translation id="5122371513570456792">Localizados <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> para '<ph name="SEARCH_STRING" />'.</translation>
 <translation id="5141240743006678641">Criptografar senhas sincronizadas com suas credenciais do Google</translation>
 <translation id="5145883236150621069">Código de erro presente na resposta da política</translation>
 <translation id="5171045022955879922">Pesquisar ou digitar URL</translation>
@@ -425,7 +425,6 @@
 <translation id="5622887735448669177">Deseja sair deste site?</translation>
 <translation id="5629630648637658800">Falha ao carregar as configurações da política</translation>
 <translation id="5631439013527180824">Token de gerenciamento de dispositivo inválido</translation>
-<translation id="5650551054760837876">Nenhum resultado de pesquisa encontrado.</translation>
 <translation id="5677928146339483299">Bloqueados</translation>
 <translation id="5710435578057952990">A identidade deste site não foi confirmada.</translation>
 <translation id="5720705177508910913">Usuário atual</translation>
@@ -624,7 +623,6 @@ Dica: o modo de navegação anônimo <ph name="SHORTCUT_KEY" /> pode ser útil d
 <translation id="7995512525968007366">Não especificado</translation>
 <translation id="8012647001091218357">Não foi possível contatar seus pais. Tente novamente.</translation>
 <translation id="8034522405403831421">Esta página está escrita em <ph name="SOURCE_LANGUAGE" />. Traduzi-la para <ph name="TARGET_LANGUAGE" />?</translation>
-<translation id="8034955203865359138">Nenhum entrada de histórico encontrada.</translation>
 <translation id="8088680233425245692">Falha ao exibir artigo.</translation>
 <translation id="8089520772729574115">menos de 1 MB</translation>
 <translation id="8091372947890762290">A ativação está pendente no servidor</translation>
@@ -657,6 +655,7 @@ Dica: o modo de navegação anônimo <ph name="SHORTCUT_KEY" /> pode ser útil d
 <translation id="8433057134996913067">Essa opção desconecta você da maioria dos websites.</translation>
 <translation id="8437238597147034694">&amp;Desfazer mover</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 cartão de crédito}one{# cartão de crédito}other{# cartões de crédito}}</translation>
+<translation id="8483780878231876732">Para usar os cards da sua Conta do Google, faça login no Google Chrome</translation>
 <translation id="8488350697529856933">Aplicável a</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> demorou muito para responder.</translation>
 <translation id="852346902619691059">Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O certificado de segurança dele não é confiável para o sistema operacional do seu dispositivo. Isso pode ser causado por uma configuração incorreta ou por um invasor que interceptou sua conexão. <ph name="BEGIN_LEARN_MORE_LINK" />Saiba mais<ph name="END_LEARN_MORE_LINK" />.</translation>
@@ -676,7 +675,6 @@ Dica: o modo de navegação anônimo <ph name="SHORTCUT_KEY" /> pode ser útil d
 <translation id="8730621377337864115">Concluído</translation>
 <translation id="8738058698779197622">Para estabelecer uma conexão segura, o relógio precisa ser ajustado corretamente. Isso ocorre porque os certificados que os websites usam para se identificar são válidos apenas por períodos específicos. Como o relógio do seu dispositivo está incorreto, o Chromium não pode verificar esses certificados.</translation>
 <translation id="8740359287975076522">Não foi possível encontrar o &lt;abbr id="dnsDefinition"&gt;endereço DNS&lt;/abbr&gt; de <ph name="HOST_NAME" />. Diagnosticando o problema.</translation>
-<translation id="8741995161408053644">Sua Conta do Google pode ter outras formas de histórico de navegação em <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;Refazer excluir</translation>
 <translation id="8798099450830957504">Padrão</translation>
 <translation id="8804164990146287819">Política de Privacidade</translation>

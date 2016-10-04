@@ -109,6 +109,7 @@ Jei norite atšaukti, paspauskite paieškos arba antrojo lygio klavišą.</trans
 <translation id="3891340733213178823">Jei norite atsijungti, du kartus paspauskite „Ctrl“ + „Shift“ + Q.</translation>
 <translation id="3892641579809465218">Vidinė pateiktis</translation>
 <translation id="3893630138897523026">„ChromeVox“ (ekrano skaitymas balsu)</translation>
+<translation id="3899995891769452915">Įvestis balsu</translation>
 <translation id="3963445509666917109">Garsiakalbis (vidinis)</translation>
 <translation id="3967919079500697218">Jūsų administratorius išjungė ekrano kopijų kūrimo funkciją.</translation>
 <translation id="397105322502079400">Skaičiuojama...</translation>
@@ -181,6 +182,7 @@ Jei norite atšaukti, paspauskite paieškos arba antrojo lygio klavišą.</trans
 <translation id="6459472438155181876">Ekranas išplečiamas į <ph name="DISPLAY_NAME" /></translation>
 <translation id="6490471652906364588">USB-C įrenginys (prievadas dešinėje)</translation>
 <translation id="6501401484702599040">Perduodamas ekranas į „<ph name="RECEIVER_NAME" />“</translation>
+<translation id="6521655319214113338">Įvestis ranka</translation>
 <translation id="6537270692134705506">Užfiksuoti ekrano vaizdą</translation>
 <translation id="6550675742724504774">Parinktys</translation>
 <translation id="6585808820553845416">Sesija baigsis po <ph name="SESSION_TIME_REMAINING" />.</translation>
@@ -212,6 +214,7 @@ Jei norite atšaukti, paspauskite „Alt“ + paieškos klavišas arba „Alt“
 <translation id="743058460480092004">Kamera ir mikrofonas naudojami.</translation>
 <translation id="7510334386202674593">„Ctrl“ + „Shift“ + L</translation>
 <translation id="7561014039265304140">„<ph name="DISPLAY_NAME" />“ nepalaiko <ph name="SPECIFIED_RESOLUTION" />. Skyra pakeista į <ph name="FALLBACK_RESOLUTION" /></translation>
+<translation id="7562368315689366235">Jaustukų paletė</translation>
 <translation id="7573962313813535744">Doko režimas</translation>
 <translation id="7580671184200851182">Paleisti tą patį garso įrašą visuose garsiakalbiuose (monofoninio garso įrašas)</translation>
 <translation id="7581273696622423628">Dalyvauti apklausoje</translation>

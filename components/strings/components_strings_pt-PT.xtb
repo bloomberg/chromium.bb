@@ -80,7 +80,6 @@
 <translation id="1871208020102129563">O proxy está definido para utilizar servidores proxy fixos e não um URL de script .pac.</translation>
 <translation id="1883255238294161206">Fechar lista</translation>
 <translation id="1898423065542865115">Filtragem</translation>
-<translation id="1911837502049945214"><ph name="HOST_NAME" /> não aceitou o certificado de início de sessão ou o certificado de início de sessão pode ter expirado.</translation>
 <translation id="194030505837763158">Aceder a <ph name="LINK" /></translation>
 <translation id="1962204205936693436">Marcadores de <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Erro de serialização</translation>
@@ -176,7 +175,6 @@
 <translation id="2837049386027881519">A ligação tinha de ser repetida utilizando uma versão mais antiga do protocolo TLS ou SSL. Isso normalmente significa que o servidor está a utilizar um software muito antigo e pode ter outros problemas de segurança.</translation>
 <translation id="284702764277384724">O certificado do servidor de <ph name="HOST_NAME" /> parece ser uma falsificação.</translation>
 <translation id="2889159643044928134">Não atualizar</translation>
-<translation id="2896499918916051536">Este plug-in não é compatível.</translation>
 <translation id="2900469785430194048">O Google Chrome ficou sem memória ao tentar apresentar esta página Web.</translation>
 <translation id="2909946352844186028">Foi detetada uma alteração de rede.</translation>
 <translation id="2922350208395188000">Não é possível verificar o certificado do servidor.</translation>
@@ -220,6 +218,7 @@
 <translation id="3286538390144397061">Reiniciar agora</translation>
 <translation id="3305707030755673451">Os dados foram encriptados com a sua frase de acesso de sincronização em <ph name="TIME" />. Introduza-a para iniciar a sincronização.</translation>
 <translation id="333371639341676808">Evitar que esta página crie caixas de diálogo adicionais.</translation>
+<translation id="3338095232262050444">Seguro</translation>
 <translation id="3340978935015468852">definições</translation>
 <translation id="3345135638360864351">Não é possível enviar o seu pedido de acesso a este site a <ph name="NAME" />. Tente novamente.</translation>
 <translation id="3355823806454867987">Alterar definições de proxy...</translation>
@@ -322,6 +321,7 @@
 <translation id="4304224509867189079">Iniciar sessão</translation>
 <translation id="432290197980158659">O servidor apresentou um certificado que não corresponde às expetativas existentes. Estas expetativas estão incluídas em determinados Websites de alta segurança para o proteger. <ph name="BEGIN_LEARN_MORE_LINK" />Saiba mais<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4325863107915753736">Falha ao encontrar o artigo</translation>
+<translation id="4331708818696583467">Inseguro</translation>
 <translation id="4372948949327679948">Valor <ph name="VALUE_TYPE" /> esperado.</translation>
 <translation id="4381091992796011497">Nome do utilizador:</translation>
 <translation id="4394049700291259645">Desactivar</translation>
@@ -341,6 +341,7 @@
 <translation id="4589078953350245614">Tentou aceder a <ph name="DOMAIN" />, mas o servidor apresentou um certificado inválido. <ph name="BEGIN_LEARN_MORE_LINK" />Saiba mais<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4592951414987517459">A sua ligação a <ph name="DOMAIN" /> está encriptada através de um conjunto de cifras moderno.</translation>
 <translation id="4594403342090139922">&amp;Anular eliminação</translation>
+<translation id="4627442949885028695">Continuar a partir de outro dispositivo</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">Está a ver a página de uma extensão.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -383,7 +384,6 @@
 <translation id="5089810972385038852">Estado</translation>
 <translation id="5095208057601539847">Província</translation>
 <translation id="5115563688576182185">(64 bits)</translation>
-<translation id="5122371513570456792">Encontrados <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> para "<ph name="SEARCH_STRING" />".</translation>
 <translation id="5141240743006678641">Encriptar palavras-passe sincronizadas com as credenciais Google</translation>
 <translation id="5145883236150621069">Código de erro presente na resposta da política</translation>
 <translation id="5171045022955879922">Pesquisar ou escrever URL</translation>
@@ -425,7 +425,6 @@
 <translation id="5622887735448669177">Pretende sair deste site?</translation>
 <translation id="5629630648637658800">Falha ao carregar as definições da política</translation>
 <translation id="5631439013527180824">Token de gestão do dispositivo inválido</translation>
-<translation id="5650551054760837876">Nenhum resultado de pesquisa encontrado.</translation>
 <translation id="5677928146339483299">Bloqueado</translation>
 <translation id="5710435578057952990">A identidade deste Web site não foi verificada.</translation>
 <translation id="5720705177508910913">Utilizador atual</translation>
@@ -624,7 +623,6 @@ O modo de navegação anónima <ph name="SHORTCUT_KEY" /> pode ser útil da pró
 <translation id="7995512525968007366">Não especificado</translation>
 <translation id="8012647001091218357">Não conseguimos falar com os seus pais de momento. Tente novamente.</translation>
 <translation id="8034522405403831421">Esta página está em <ph name="SOURCE_LANGUAGE" />. Pretende traduzi-la para <ph name="TARGET_LANGUAGE" />?</translation>
-<translation id="8034955203865359138">Não foram encontradas entradas no histórico.</translation>
 <translation id="8088680233425245692">Falha ao ver o artigo.</translation>
 <translation id="8089520772729574115">menos de 1 MB</translation>
 <translation id="8091372947890762290">Ativação pendente no servidor</translation>
@@ -657,6 +655,7 @@ O modo de navegação anónima <ph name="SHORTCUT_KEY" /> pode ser útil da pró
 <translation id="8433057134996913067">Esta opção termina a sessão na maioria dos Websites.</translation>
 <translation id="8437238597147034694">&amp;Anular movimentação</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 cartão de crédito}other{# cartões de crédito}}</translation>
+<translation id="8483780878231876732">Para utilizar cartões da sua Conta Google, inicie sessão no Chrome.</translation>
 <translation id="8488350697529856933">Aplica-se a</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> demorou demasiado tempo a responder.</translation>
 <translation id="852346902619691059">Este servidor não conseguiu provar que é <ph name="DOMAIN" />; o sistema operativo do seu dispositivo não confia no respetivo certificado de segurança. Isto pode ser o resultado de uma configuração incorreta ou de um utilizador mal-intencionado que intercetou a sua ligação. <ph name="BEGIN_LEARN_MORE_LINK" />Saiba mais<ph name="END_LEARN_MORE_LINK" />.</translation>
@@ -676,7 +675,6 @@ O modo de navegação anónima <ph name="SHORTCUT_KEY" /> pode ser útil da pró
 <translation id="8730621377337864115">Concluído</translation>
 <translation id="8738058698779197622">Para estabelecer uma ligação segura, o relógio tem de ser definido corretamente. Isto deve-se ao facto de os certificados que os Websites utilizam para se identificarem serem apenas válidos para períodos de tempo específicos. Uma vez que o relógio do seu dispositivo está incorreto, o Chromium não consegue validar estes certificados.</translation>
 <translation id="8740359287975076522">Não foi possível encontrar o &lt;abbr id="dnsDefinition"&gt;endereço DNS&lt;/abbr&gt; de <ph name="HOST_NAME" />. Estamos a diagnosticar o problema.</translation>
-<translation id="8741995161408053644">A sua Conta Google pode ter outras formas do histórico de navegação em <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;Refazer eliminação</translation>
 <translation id="8798099450830957504">Predefinição</translation>
 <translation id="8804164990146287819">Política de Privacidade</translation>

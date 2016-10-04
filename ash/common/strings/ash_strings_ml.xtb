@@ -109,6 +109,7 @@
 <translation id="3891340733213178823">സൈൻ ഔട്ട് ചെയ്യുന്നതിന് രണ്ടു‌തവണ Ctrl+Shift+Q അമർത്തുക.</translation>
 <translation id="3892641579809465218">ആന്തരിക പ്രദർശനം</translation>
 <translation id="3893630138897523026">ChromeVox (സ്‌പോക്കൺ ഫീഡ്‌ബാക്ക്)</translation>
+<translation id="3899995891769452915">വോയ്‌സ് ഇൻപുട്ട്</translation>
 <translation id="3963445509666917109">സ്‌പീക്കർ (ആന്തരികം)</translation>
 <translation id="3967919079500697218">സ്ക്രീൻഷോട്ടുകൾ എടുക്കാനുള്ള കഴിവ് നിങ്ങളുടെ അഡ്‌മിനിസ്ട്രേറ്റർ പ്രവർത്തനരഹിതമാക്കി.</translation>
 <translation id="397105322502079400">കണക്കാക്കുന്നു...</translation>
@@ -180,6 +181,7 @@
 <translation id="6459472438155181876">സ്‌ക്രീൻ <ph name="DISPLAY_NAME" /> എന്നതിലേക്ക് വികസിപ്പിക്കുന്നു</translation>
 <translation id="6490471652906364588">USB-C ഉപകരണം (വലത് പോർട്ട്)</translation>
 <translation id="6501401484702599040"><ph name="RECEIVER_NAME" /> എന്നതിലേക്ക് സ്‌ക്രീൻ കാസ്‌റ്റുചെയ്യുന്നു</translation>
+<translation id="6521655319214113338">കൈയ്യക്ഷര ഇൻപുട്ട്</translation>
 <translation id="6537270692134705506">സ്‌ക്രീൻ ക്യാപ്‌ചർ ചെയ്യുക</translation>
 <translation id="6550675742724504774">ഓപ്ഷനുകൾ</translation>
 <translation id="6585808820553845416"><ph name="SESSION_TIME_REMAINING" />-നുള്ളിൽ സെഷൻ അവസാനിക്കുന്നു.</translation>
@@ -210,6 +212,7 @@
 <translation id="743058460480092004">ക്യാമറയും മൈക്രോഫോണും ഉപയോഗത്തിലാണ്.</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" />, <ph name="SPECIFIED_RESOLUTION" /> എന്നതിനെ പിന്തുണയ്‌ക്കുന്നില്ല. റസലൂഷൻ <ph name="FALLBACK_RESOLUTION" /> എന്നതിലേക്ക് മാറ്റി.</translation>
+<translation id="7562368315689366235">ഇമോജി പാലറ്റ്</translation>
 <translation id="7573962313813535744">ഡോക്കുചെയ്‌ത മോഡ്</translation>
 <translation id="7580671184200851182">എല്ലാ സ്‌പീക്കറുകളിലൂടെയും സമാനമായ ഓഡിയോ പ്ലേ ചെയ്യുക (മോണോ ഓഡിയോ)</translation>
 <translation id="7581273696622423628">സർവേയിൽ പങ്കെടുക്കുക</translation>

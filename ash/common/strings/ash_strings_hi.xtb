@@ -109,6 +109,7 @@
 <translation id="3891340733213178823">प्रस्थान करने के लिए दो बार Ctrl+Shift+Q दबाएं.</translation>
 <translation id="3892641579809465218">आंतरिक डिस्प्ले</translation>
 <translation id="3893630138897523026">ChromeVox (बोला गया फ़ीडबैक)</translation>
+<translation id="3899995891769452915">ध्‍वनि इनपुट</translation>
 <translation id="3963445509666917109">स्पीकर (आंतरिक)</translation>
 <translation id="3967919079500697218">स्क्रीनशॉट लेने की क्षमता को आपके व्यवस्थापक द्वारा अक्षम कर दिया गया है.</translation>
 <translation id="397105322502079400">गणना की जा रही है...</translation>
@@ -181,6 +182,7 @@
 <translation id="6459472438155181876"><ph name="DISPLAY_NAME" /> पर स्क्रीन विस्तृत कर रहा है</translation>
 <translation id="6490471652906364588">USB-C डिवाइस (दायां पोर्ट)</translation>
 <translation id="6501401484702599040">स्‍क्रीन को <ph name="RECEIVER_NAME" /> पर कास्‍ट किया जा रहा है</translation>
+<translation id="6521655319214113338">हस्तलेखन इनपुट</translation>
 <translation id="6537270692134705506">स्क्रीन कैप्चर करें</translation>
 <translation id="6550675742724504774">विकल्प</translation>
 <translation id="6585808820553845416">सत्र <ph name="SESSION_TIME_REMAINING" /> में समाप्त होने वाला है.</translation>
@@ -211,6 +213,7 @@
 <translation id="743058460480092004">कैमरे और माइक्रोफ़ोन का उपयोग हो रहा है.</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" /> का समर्थन नहीं करता. रिज़ॉल्यूशन को <ph name="FALLBACK_RESOLUTION" /> में बदल दिया गया था</translation>
+<translation id="7562368315689366235">इमोजी पैलेट</translation>
 <translation id="7573962313813535744">डॉक मोड</translation>
 <translation id="7580671184200851182">सभी स्पीकर से समान ऑडियो चलाएं (मोनो ऑडियो)</translation>
 <translation id="7581273696622423628">सर्वेक्षण में भाग लें</translation>

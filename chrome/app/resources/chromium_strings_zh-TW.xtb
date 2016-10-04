@@ -13,6 +13,7 @@
 <translation id="1414495520565016063">您已登入 Chromium！</translation>
 <translation id="1444754455097148408">Chromium 開放原始碼授權</translation>
 <translation id="1480489203462860648">安裝完畢，馬上試試吧！</translation>
+<translation id="1502360822835740515">將 Chromium 設為預設瀏覽器</translation>
 <translation id="151962892725702025">您的網域無法使用「同步功能」，因此 Chromium 作業系統無法同步處理您的資料。</translation>
 <translation id="1559451348202814456">Chromium 已不適用於 Mac OS X 10.6、10.7 或 10.8，因此可能無法正常運作。</translation>
 <translation id="1644918877723739397">Chromium 會將此密碼儲存在您的「<ph name="SAVED_PASSWORD_LINK" />」中，讓您在下次需要使用時套用。</translation>
@@ -93,10 +94,12 @@
 <translation id="378917192836375108">透過 Chromium，您只要按一下網路上的電話號碼，即可用 Skype 打電話！</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3849925841547750267">抱歉，我們無法在 Mozilla Firefox 執行時取得瀏覽器設定。如要將這些設定匯入 Chromium，請儲存您的工作並關閉所有 Firefox 視窗，然後按一下 [繼續]。</translation>
+<translation id="3852700440713538496">將 Chromium 固定至工具列</translation>
 <translation id="3883381313049582448">使用 Chromium 產生的密碼</translation>
 <translation id="3889543394854987837">按一下您的名稱即可開啟 Chromium 並開始瀏覽。</translation>
 <translation id="390894725198123737">在 Mac 上，密碼會儲存在您的 Keychain 中，因此其他共用這個 OS X 帳戶的 Chromium 使用者都能存取或同步處理這些密碼。</translation>
 <translation id="4050175100176540509">最新版本包含重要的安全性改善與新功能。</translation>
+<translation id="407254336480250557">選取 [<ph name="SMALL_PRODUCT_LOGO" /> Chromium]<ph name="BEGIN_BOLD" /><ph name="END_BOLD" /></translation>
 <translation id="4077262827416206768">請關閉所有 Chromium 視窗，並且重新啟用 Chromium，這項變更即會生效。</translation>
 <translation id="4182290826692170034">太好了！Chromium 現已成為您的預設瀏覽器。</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />警告：<ph name="END_BOLD" />Chromium 無法阻止擴充功能記錄您的瀏覽活動，如要在無痕模式中停用這個擴充功能，請取消選取這個選項。 </translation>
@@ -118,6 +121,7 @@
 <translation id="4621240073146040695">即將更新為最新版本！重新啟動 Chromium 即可完成更新程序。</translation>
 <translation id="4677944499843243528">另一台電腦 (<ph name="HOST_NAME" />) 的 Chromium 處理程序 (<ph name="PROCESS_ID" />) 正在使用這個設定檔。Chromium 已鎖定此設定檔，確保其不致受損。如果您確定其他處理程序目前未使用此設定檔，請予以解除鎖定，然後重新啟動 Chromium。</translation>
 <translation id="469338717132742108">前往 Chromium 作業系統說明頁面</translation>
+<translation id="4714956846925717402">更快存取 Chromium</translation>
 <translation id="4743926867934016338">接受並搜尋</translation>
 <translation id="4888717733111232871">允許 mDNS 流量的 Chromium 輸入規則。</translation>
 <translation id="4943838377383847465">Chromium 正在背景模式中執行。</translation>

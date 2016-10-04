@@ -15,6 +15,7 @@
 <translation id="1107591249535594099">Bei Aktivierung speichert Chrome eine Kopie Ihrer Karte auf diesem Gerät, damit Formulare schneller ausgefüllt werden können.</translation>
 <translation id="1111153019813902504">Vor Kurzem gespeicherte Lesezeichen</translation>
 <translation id="1113869188872983271">&amp;Neu anordnen rückgängig machen</translation>
+<translation id="1126551341858583091">Die Größe auf dem lokalen Speicher ist <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Richtlinien-Cache einwandfrei</translation>
 <translation id="113188000913989374">Unter <ph name="SITE" /> wird Folgendes angezeigt:</translation>
 <translation id="1132774398110320017">AutoFill-Einstellungen für Chrome...</translation>
@@ -79,7 +80,6 @@
 <translation id="1871208020102129563">Der Proxy ist zur Verwendung von festen Proxyservern konfiguriert, nicht zur Verwendung einer PAC-Skript-URL.</translation>
 <translation id="1883255238294161206">Liste ausblenden</translation>
 <translation id="1898423065542865115">Filtern</translation>
-<translation id="1911837502049945214"><ph name="HOST_NAME" /> hat Ihr Anmeldezertifikat nicht akzeptiert oder Ihr Anmeldezertifikat ist möglicherweise abgelaufen.</translation>
 <translation id="194030505837763158">Besuchen Sie die Seite <ph name="LINK" />.</translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" />-Lesezeichen</translation>
 <translation id="1973335181906896915">Fehler bei der Serialisierung</translation>
@@ -175,7 +175,6 @@
 <translation id="2837049386027881519">Das Herstellen der Verbindung musste mit einer älteren Version des TLS- oder SSL-Protokolls wiederholt werden. Normalerweise bedeutet dies, dass der Server sehr alte Software verwendet und möglicherweise andere Sicherheitsprobleme bestehen.</translation>
 <translation id="284702764277384724">Das Serverzertifikat bei <ph name="HOST_NAME" /> ist anscheinend eine Fälschung.</translation>
 <translation id="2889159643044928134">Nicht neu laden</translation>
-<translation id="2896499918916051536">Dieses Plug-in wird nicht unterstützt.</translation>
 <translation id="2900469785430194048">Beim Versuch, diese Webseite aufzurufen, hat Google Chrome das Arbeitsspeicherlimit erreicht.</translation>
 <translation id="2909946352844186028">Eine Netzwerkänderung ist aufgetreten.</translation>
 <translation id="2922350208395188000">Das Serverzertifikat kann nicht überprüft werden.</translation>
@@ -219,6 +218,7 @@
 <translation id="3286538390144397061">Jetzt neu starten</translation>
 <translation id="3305707030755673451">Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase verschlüsselt. Geben Sie diese ein, um die Synchronisierung zu starten.</translation>
 <translation id="333371639341676808">Diese Seite am Erstellen zusätzlicher Dialoge hindern</translation>
+<translation id="3338095232262050444">Sicher</translation>
 <translation id="3340978935015468852">Einstellungen</translation>
 <translation id="3345135638360864351">Ihre Zugriffsanfrage für diese Website konnte nicht an <ph name="NAME" /> gesendet werden. Bitte versuchen Sie es erneut.</translation>
 <translation id="3355823806454867987">Proxy-Einstellungen ändern...</translation>
@@ -289,6 +289,7 @@
 <translation id="3963721102035795474">Lesemodus</translation>
 <translation id="397105322502079400">Wird berechnet...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> ist gesperrt</translation>
+<translation id="40103911065039147">{URL_count,plural, =1{1 Webseite in der Nähe}other{# Webseiten in der Nähe}}</translation>
 <translation id="4021036232240155012">DNS ist der Netzwerkdienst, der den Namen einer Website in die entsprechende Internetadresse umwandelt.</translation>
 <translation id="4030383055268325496">&amp;Hinzufügen rückgängig machen</translation>
 <translation id="404928562651467259">Warnung</translation>
@@ -319,6 +320,7 @@
 <translation id="4304224509867189079">Anmelden</translation>
 <translation id="432290197980158659">Der Server hat ein Zertifikat übermittelt, das nicht mit den integrierten Erwartungen übereinstimmt. Diese Erwartungen sind zu Ihrem Schutz in bestimmten Websites mit hohen Sicherheitsstandards enthalten. <ph name="BEGIN_LEARN_MORE_LINK" />Weitere Informationen<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="4325863107915753736">Der Artikel wurde nicht gefunden.</translation>
+<translation id="4331708818696583467">Nicht sicher</translation>
 <translation id="4372948949327679948">Erwarteter <ph name="VALUE_TYPE" />-Wert</translation>
 <translation id="4381091992796011497">Nutzername:</translation>
 <translation id="4394049700291259645">Deaktivieren</translation>
@@ -338,6 +340,7 @@
 <translation id="4589078953350245614">Sie haben versucht, auf <ph name="DOMAIN" /> zuzugreifen, der Server hat sich jedoch mit einem ungültigen Zertifikat ausgewiesen. <ph name="BEGIN_LEARN_MORE_LINK" />Weitere Informationen<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="4592951414987517459">Ihre Verbindung zu <ph name="DOMAIN" /> ist mit einer modernen Codier-Suite verschlüsselt.</translation>
 <translation id="4594403342090139922">&amp;Löschen rückgängig machen</translation>
+<translation id="4627442949885028695">Auf einem anderen Gerät fortsetzen</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">Sie sehen sich eine Erweiterungsseite an.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -358,6 +361,7 @@
 <translation id="4880827082731008257">Im Verlauf suchen</translation>
 <translation id="4884656795097055129">Weitere Artikel werden zu gegebener Zeit erscheinen.</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
+<translation id="4914479371620770914">{URL_count,plural, =1{und 1 weitere Webseite}other{und # weitere Webseiten}}</translation>
 <translation id="4923417429809017348">Diese Seite wurde von einer unbekannten Sprache in <ph name="LANGUAGE_LANGUAGE" /> übersetzt.</translation>
 <translation id="4926049483395192435">Angabe erforderlich</translation>
 <translation id="4930497775425430760">Diese Nachricht wird dir angezeigt, weil dein Elternteil neue Websites zuerst genehmigen muss, bevor du sie öffnen kannst.</translation>
@@ -379,7 +383,6 @@
 <translation id="5089810972385038852">Bundesstaat/-land</translation>
 <translation id="5095208057601539847">Provinz</translation>
 <translation id="5115563688576182185">(64-Bit)</translation>
-<translation id="5122371513570456792"><ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> für "<ph name="SEARCH_STRING" />" gefunden</translation>
 <translation id="5141240743006678641">Synchronisierte Passwörter mit Ihren Google-Anmeldeinformationen verschlüsseln</translation>
 <translation id="5145883236150621069">Fehlercode in der Richtlinienantwort</translation>
 <translation id="5171045022955879922">Suchen oder URL eingeben</translation>
@@ -421,7 +424,6 @@
 <translation id="5622887735448669177">Möchten Sie diese Website verlassen?</translation>
 <translation id="5629630648637658800">Fehler beim Laden der Richtlinieneinstellungen</translation>
 <translation id="5631439013527180824">Ungültiges Management-Token für das Gerät</translation>
-<translation id="5650551054760837876">Keine Suchergebnisse gefunden.</translation>
 <translation id="5677928146339483299">Blockiert</translation>
 <translation id="5710435578057952990">Die Identität dieser Website wurde nicht verifiziert.</translation>
 <translation id="5720705177508910913">Aktueller Nutzer</translation>
@@ -487,6 +489,7 @@
 <translation id="647261751007945333">Geräterichtlinien</translation>
 <translation id="6489534406876378309">Hochladen von Abstürzen starten</translation>
 <translation id="6529602333819889595">&amp;Löschen wiederholen</translation>
+<translation id="6534179046333460208">Physical Web-Vorschläge</translation>
 <translation id="6550675742724504774">Optionen</translation>
 <translation id="6593753688552673085">weniger als <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Verschlüsselungsoptionen</translation>
@@ -619,7 +622,6 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="7995512525968007366">Nicht angegeben</translation>
 <translation id="8012647001091218357">Wir können deine Eltern momentan nicht erreichen. Bitte versuche es später erneut.</translation>
 <translation id="8034522405403831421">Diese Seite ist auf <ph name="SOURCE_LANGUAGE" />. In folgende Sprache übersetzen: <ph name="TARGET_LANGUAGE" />?</translation>
-<translation id="8034955203865359138">Keine Verlaufseinträge gefunden</translation>
 <translation id="8088680233425245692">Der Artikel kann nicht angezeigt werden.</translation>
 <translation id="8089520772729574115">weniger als 1 MB</translation>
 <translation id="8091372947890762290">Aktivierung auf dem Server steht noch aus.</translation>
@@ -645,12 +647,14 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="8349305172487531364">Lesezeichenleiste</translation>
 <translation id="8363502534493474904">Flugmodus ausschalten</translation>
 <translation id="8364627913115013041">Nicht eingerichtet</translation>
+<translation id="8380941800586852976">Schädlich</translation>
 <translation id="8412145213513410671">Abstürze (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Sie müssen zweimal dieselbe Passphrase eingeben.</translation>
 <translation id="8428213095426709021">Einstellungen</translation>
 <translation id="8433057134996913067">Dadurch werden Sie von den meisten Websites abgemeldet.</translation>
 <translation id="8437238597147034694">&amp;Verschieben rückgängig machen</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 Kreditkarte}other{# Kreditkarten}}</translation>
+<translation id="8483780878231876732">Melden Sie sich in Chrome an, um in Ihrem Google-Konto gespeicherte Kreditkarten zu verwenden</translation>
 <translation id="8488350697529856933">Gilt für</translation>
 <translation id="8498891568109133222">Die Antwort von <ph name="HOST_NAME" /> hat zu lange gedauert.</translation>
 <translation id="852346902619691059">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wird vom Betriebssystem Ihres Geräts nicht als vertrauenswürdig eingestuft. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt. <ph name="BEGIN_LEARN_MORE_LINK" />Weitere Informationen<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -670,7 +674,6 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="8730621377337864115">Fertig</translation>
 <translation id="8738058698779197622">Zum Aufbau einer sicheren Verbindung muss die Uhrzeit richtig eingestellt sein. Der Grund hierfür ist, dass Websites sich mithilfe von Zertifikaten identifizieren, die nur für einen bestimmten Zeitraum gelten. Da die Uhrzeit Ihres Geräts falsch ist, kann Chromium diese Zertifikate nicht bestätigen.</translation>
 <translation id="8740359287975076522">Die &lt;abbr id="dnsDefinition"&gt;DNS-Adresse&lt;/abbr&gt; von <ph name="HOST_NAME" /> wurde nicht gefunden. Eine Problemdiagnose wird durchgeführt.</translation>
-<translation id="8741995161408053644">Möglicherweise sind in Ihrem Google-Konto noch andere Formen des Browserverlaufs unter <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> vorhanden.</translation>
 <translation id="8790007591277257123">&amp;Löschen wiederholen</translation>
 <translation id="8798099450830957504">Standardeinstellung</translation>
 <translation id="8804164990146287819">Datenschutzerklärung</translation>

@@ -13,6 +13,7 @@
 <translation id="1414495520565016063">Hai eseguito l'accesso a Chromium.</translation>
 <translation id="1444754455097148408">Licenze open source di Chromium</translation>
 <translation id="1480489203462860648">Provalo, è già installato</translation>
+<translation id="1502360822835740515">Imposta Chromium come browser predefinito</translation>
 <translation id="151962892725702025">Impossibile sincronizzare i dati in Chromium OS perché la sincronizzazione non è disponibile per il tuo dominio.</translation>
 <translation id="1559451348202814456">Chromium potrebbe non funzionare correttamente perché non è più supportato su Mac OS X 10.6, 10.7 o 10.8.</translation>
 <translation id="1644918877723739397">Chromium memorizzerà questa password nelle tue <ph name="SAVED_PASSWORD_LINK" /> e la ricorderà la prossima volta che ti servirà.</translation>
@@ -93,10 +94,12 @@
 <translation id="378917192836375108">Chromium ti consente di fare clic su un numero di telefono sul Web e di chiamarlo con Skype.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3849925841547750267">Purtroppo le impostazioni di Mozilla Firefox non sono disponibili mentre il browser è in esecuzione. Per importare tali impostazioni in Chromium, salva il lavoro e chiudi tutte le finestre di Firefox. Dopodiché fai clic su Continua.</translation>
+<translation id="3852700440713538496">Aggiungi Chromium alla barra delle applicazioni</translation>
 <translation id="3883381313049582448">Utilizza la password generata da Chromium</translation>
 <translation id="3889543394854987837">Fai clic sul tuo nome per aprire Chromium e iniziare a navigare.</translation>
 <translation id="390894725198123737">Su Mac, le password possono essere salvate in Accesso Portachiavi e sono accessibili o sincronizzate da parte di altri utenti Chromium che utilizzano lo stesso account OS X.</translation>
 <translation id="4050175100176540509">Nell'ultima versione sono stati apportati miglioramenti rilevanti in materia di sicurezza e sono state aggiunte nuove funzioni.</translation>
+<translation id="407254336480250557">Seleziona <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="4077262827416206768">Chiudi tutte le finestre di Chromium e riavvia Chromium per applicare la modifica.</translation>
 <translation id="4182290826692170034">Chromium è il tuo browser predefinito.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Avviso.<ph name="END_BOLD" /> Chromium non è in grado di impedire alle estensioni di registrare la tua cronologia di navigazione. Per disattivare questa estensione in modalità di navigazione in incognito, deseleziona questa opzione.</translation>
@@ -118,6 +121,7 @@
 <translation id="4621240073146040695">Aggiornamento quasi completato. Riavvia Chromium per terminare l'aggiornamento.</translation>
 <translation id="4677944499843243528">Sembra che il profilo sia in uso in un altro processo Chromium (<ph name="PROCESS_ID" />) su un altro computer (<ph name="HOST_NAME" />). Chromium ha bloccato il profilo affinché non venga danneggiato. Se sei sicuro che nessun altro processo stia utilizzando questo profilo, puoi sbloccare il profilo e riavviare Chromium.</translation>
 <translation id="469338717132742108">Ricevi assistenza per Chromium OS</translation>
+<translation id="4714956846925717402">Apri Chromium più velocemente</translation>
 <translation id="4743926867934016338">Accetta e cerca</translation>
 <translation id="4888717733111232871">Regola inbound per consentire il traffico mDNS in Chromium.</translation>
 <translation id="4943838377383847465">Chromium è in modalità background.</translation>

@@ -109,6 +109,7 @@ Pulsa Mayús o la tecla de búsqueda para cancelar la operación.</translation>
 <translation id="3891340733213178823">Pulsa Ctrl+Mayús+Q dos veces para cerrar sesión.</translation>
 <translation id="3892641579809465218">Pantalla interna</translation>
 <translation id="3893630138897523026">ChromeVox (mensajes de voz)</translation>
+<translation id="3899995891769452915">Entrada de voz</translation>
 <translation id="3963445509666917109">Altavoz (interno)</translation>
 <translation id="3967919079500697218">Tu administrador ha inhabilitado la función para realizar capturas de pantalla.</translation>
 <translation id="397105322502079400">Calculando...</translation>
@@ -181,6 +182,7 @@ Para cambiarlo, pulsa Mayús + Alt.</translation>
 <translation id="6459472438155181876">Ampliando pantalla para <ph name="DISPLAY_NAME" /></translation>
 <translation id="6490471652906364588">Dispositivo USB-C (puerto derecho)</translation>
 <translation id="6501401484702599040">Enviando la pantalla a <ph name="RECEIVER_NAME" /></translation>
+<translation id="6521655319214113338">Escritura a mano</translation>
 <translation id="6537270692134705506">Capturar pantalla</translation>
 <translation id="6550675742724504774">Configuración</translation>
 <translation id="6585808820553845416">La sesión finalizará dentro de <ph name="SESSION_TIME_REMAINING" />.</translation>
@@ -212,6 +214,7 @@ Pulsa Alt y la tecla de búsqueda o Mayús para cancelar la operación.</transla
 <translation id="743058460480092004">La cámara y el micrófono se están utilizando.</translation>
 <translation id="7510334386202674593">Ctrl+Mayús+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> no admite una resolución de <ph name="SPECIFIED_RESOLUTION" />. Se ha cambiado la resolución a <ph name="FALLBACK_RESOLUTION" /></translation>
+<translation id="7562368315689366235">Paleta de emojis</translation>
 <translation id="7573962313813535744">Modo acoplado</translation>
 <translation id="7580671184200851182">Reproducir el mismo audio en todos los altavoces (audio mono)</translation>
 <translation id="7581273696622423628">Responder encuesta</translation>

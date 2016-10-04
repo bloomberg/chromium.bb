@@ -65,7 +65,6 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="2359808026110333948">Weiter</translation>
 <translation id="2366718077645204424">Die Verbindung zum Host kann nicht hergestellt werden. Das von Ihnen verwendete Netzwerk ist möglicherweise nicht korrekt konfiguriert.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> Zuletzt online: <ph name="RELATIVE_TIMESTAMP" />.</translation>
-<translation id="2498359688066513246">Hilfe und Feedback</translation>
 <translation id="2499160551253595098">Helfen Sie uns bei der Verbesserung von Chrome Remote Desktop, indem Sie zulassen, dass wir Nutzungsstatistiken und Absturzberichte erfassen.</translation>
 <translation id="2512228156274966424">HINWEIS: Sie können in Chrome Remote Desktop die Option zum Öffnen als Fenster einstellen, damit alle Tastenkombinationen verfügbar sind.</translation>
 <translation id="2540992418118313681">Möchten Sie diesen Computer für einen anderen Nutzer zur Ansicht und Steuerung freigeben?</translation>
@@ -264,6 +263,7 @@ Desktop Host</translation>
 <translation id="7948001860594368197">Optionen</translation>
 <translation id="7970576581263377361">Fehler bei der Authentifizierung. Melden Sie sich erneut in Chromium an.</translation>
 <translation id="7981525049612125370">Die Remote-Sitzung ist abgelaufen.</translation>
+<translation id="8041089156583427627">Feedback geben</translation>
 <translation id="8041721485428375115">Indem Sie das Chrome Remote Desktop Host-Installationsprogramm herunterladen, erklären Sie sich mit den <ph name="LINK_BEGIN" />Nutzungsbedingungen von Google<ph name="LINK_END" /> einverstanden.</translation>
 <translation id="8073845705237259513">Wenn Sie Chrome Remote Desktop verwenden möchten, fügen Sie ein Google-Konto zu Ihrem Gerät hinzu.</translation>
 <translation id="80739703311984697">Der Remote-Host verlangt, dass Sie sich über eine Drittanbieter-Website authentifizieren. Um fortfahren zu können, geben Sie Chromoting zusätzliche Berechtigungen für den Zugriff auf die folgende Adresse:</translation>
@@ -287,6 +287,7 @@ Desktop Host</translation>
 <translation id="8548209692293300397">Sie haben sich zuvor als <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) angemeldet. Damit Sie auf Ihre Computer in diesem Konto zugreifen können, <ph name="LINK_BEGIN" />melden Sie sich mit diesem Konto in Google Chrome an<ph name="LINK_END" /> und installieren Sie Chrome Remote Desktop erneut.</translation>
 <translation id="8642984861538780905">Ausreichend</translation>
 <translation id="8712909229180978490">Meine online gespeicherten Dateien werden nicht im Google Drive angezeigt.</translation>
+<translation id="8743328882720071828">Möchten Sie zulassen, dass <ph name="CLIENT_USERNAME" /> auf Ihren Computer zugreifen und diesen steuern kann?</translation>
 <translation id="8759753423332885148">Weitere Informationen</translation>
 <translation id="8791202241915690908">Chromoting Host-Installationsprogramm herunterladen</translation>
 <translation id="894763922177556086">Gut</translation>

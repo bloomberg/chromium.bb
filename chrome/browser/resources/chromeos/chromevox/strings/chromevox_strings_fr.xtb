@@ -692,7 +692,6 @@ Pour ouvrir le menu du navigateur Chrome, appuyez sur Alt+F.</translation>
 <translation id="794091007957014205">{COUNT,plural, =1{arobase}one{# arobase}other{# arobases}}</translation>
 <translation id="7965147473449754028">menu fermé</translation>
 <translation id="7974390230414479278">Élément de menu</translation>
-<translation id="8002119852008410879">{COUNT,plural, =1{point d'exclamation}one{# point d'exclamation}other{# points d'exclamation}}</translation>
 <translation id="8007540374018858731">h3</translation>
 <translation id="8009786657110126785">{COUNT,plural, =1{guillemet}one{# guillemet}other{# guillemets}}</translation>
 <translation id="8033827949643255796">sélectionné</translation>

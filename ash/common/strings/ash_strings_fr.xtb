@@ -109,6 +109,7 @@ Appuyez sur Search ou Maj pour le désactiver.</translation>
 <translation id="3891340733213178823">Appuyez deux fois sur Ctrl + Maj + Q pour vous déconnecter.</translation>
 <translation id="3892641579809465218">Affichage interne</translation>
 <translation id="3893630138897523026">ChromeVox (commentaires audio)</translation>
+<translation id="3899995891769452915">Saisie vocale</translation>
 <translation id="3963445509666917109">Haut-parleur (interne)</translation>
 <translation id="3967919079500697218">Votre administrateur a désactivé la fonctionnalité de capture d'écran.</translation>
 <translation id="397105322502079400">Calcul en cours…</translation>
@@ -181,6 +182,7 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="6459472438155181876">Extension de l'écran pour <ph name="DISPLAY_NAME" /></translation>
 <translation id="6490471652906364588">Appareil USB de type C (port situé sur la droite de l'appareil)</translation>
 <translation id="6501401484702599040">Diffusion de l'écran sur "<ph name="RECEIVER_NAME" />"</translation>
+<translation id="6521655319214113338">Écriture manuscrite</translation>
 <translation id="6537270692134705506">Capturer l'écran</translation>
 <translation id="6550675742724504774">Options</translation>
 <translation id="6585808820553845416">Fin de la session dans <ph name="SESSION_TIME_REMAINING" /></translation>
@@ -212,6 +214,7 @@ Appuyez sur Alt + Recherche ou Maj pour le désactiver.</translation>
 <translation id="743058460480092004">La caméra et le micro sont en cours d'utilisation.</translation>
 <translation id="7510334386202674593">Ctrl+Maj+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> n'est pas compatible avec <ph name="SPECIFIED_RESOLUTION" />. La résolution a été modifiée pour utiliser <ph name="FALLBACK_RESOLUTION" />.</translation>
+<translation id="7562368315689366235">Palette d'emoji</translation>
 <translation id="7573962313813535744">Mode Dock</translation>
 <translation id="7580671184200851182">Lire le même contenu audio sur toutes les enceintes (son mono)</translation>
 <translation id="7581273696622423628">Participer à l'enquête</translation>

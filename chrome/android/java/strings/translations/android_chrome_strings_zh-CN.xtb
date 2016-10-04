@@ -34,6 +34,7 @@
 <translation id="1376578503827013741">正在计算…</translation>
 <translation id="138361230106469022"><ph name="FULL_NAME" />，您好！</translation>
 <translation id="1383876407941801731">搜索</translation>
+<translation id="1384959399684842514">已暂停下载</translation>
 <translation id="1389974829397082527">该文件夹中没有书签</translation>
 <translation id="1404122904123200417">嵌入位置：<ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">“不跟踪”</translation>
@@ -238,6 +239,7 @@
 <translation id="380076759404194828">{NUM_SELECTED,plural, =1{已选择 1 项内容}other{已选择 # 项内容}}</translation>
 <translation id="3810838688059735925">视频</translation>
 <translation id="3810973564298564668">管理</translation>
+<translation id="3819178904835489326">已删除 <ph name="NUMBER_OF_DOWNLOADS" /> 项下载内容</translation>
 <translation id="3822502789641063741">要清除网站存储数据吗？</translation>
 <translation id="3828029223314399057">搜索书签</translation>
 <translation id="3894427358181296146">添加文件夹</translation>
@@ -277,6 +279,7 @@
 <translation id="4271185234001491831">一律不翻译<ph name="LANGUAGE" /></translation>
 <translation id="4275663329226226506">媒体</translation>
 <translation id="4278390842282768270">允许的 Cookie</translation>
+<translation id="4300272766492248925">打开应用</translation>
 <translation id="4307992518367153382">基本设置</translation>
 <translation id="4351244548802238354">关闭对话框</translation>
 <translation id="4376501731284077108">不限</translation>
@@ -323,6 +326,7 @@
 <translation id="4923459931733593730">付款</translation>
 <translation id="4941291666397027948">*表示必填字段</translation>
 <translation id="4943872375798546930">找不到结果</translation>
+<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> 正在共享您的屏幕</translation>
 <translation id="4961700429721424617">您正要退出由 <ph name="MANAGED_DOMAIN" /> 管理的帐户。退出后，您的 Chrome 数据将从这台设备上删除，但仍会保留在您的 Google 帐户中。</translation>
 <translation id="497421865427891073">前进</translation>
 <translation id="4988526792673242964">页码</translation>
@@ -364,7 +368,6 @@
 <translation id="5345040418939504969">已删除“<ph name="BOOKMARK_TITLE" />”</translation>
 <translation id="5345083863238459644"><ph name="BEGIN_LINK" />此设备的位置信息使用权也已被停用<ph name="END_LINK" />。</translation>
 <translation id="5372829067651257087">已复制网址。</translation>
-<translation id="5380554235172449987">一律不发送</translation>
 <translation id="5400569084694353794">使用此应用即表示您同意遵守 Chrome 的<ph name="BEGIN_LINK1" />服务条款<ph name="END_LINK1" />和<ph name="BEGIN_LINK2" />隐私权声明<ph name="END_LINK2" />。</translation>
 <translation id="5414836363063783498">正在验证…</translation>
 <translation id="5423934151118863508">您最常访问的网页将列在此处</translation>
@@ -374,7 +377,6 @@
 <translation id="5456381639095306749">下载网页</translation>
 <translation id="5487521232677179737">清除数据</translation>
 <translation id="5487729733663684359">该版本的 Android 不再支持 Chrome 更新。</translation>
-<translation id="5511351932351731210">一律发送</translation>
 <translation id="5512137114520586844">该帐户由 <ph name="PARENT_NAME" /> 管理。</translation>
 <translation id="5527082711130173040">Chrome 需要拥有位置信息使用权才能扫描设备。请<ph name="BEGIN_LINK1" />更新权限<ph name="END_LINK1" />。<ph name="BEGIN_LINK2" />此设备的位置信息使用权也已被停用<ph name="END_LINK2" />。</translation>
 <translation id="5530766185686772672">关闭隐身标签页</translation>
@@ -495,7 +497,6 @@
 <translation id="6831043979455480757">翻译</translation>
 <translation id="6846298663435243399">正在加载...</translation>
 <translation id="6850830437481525139">已关闭 <ph name="TAB_COUNT" /> 个标签页</translation>
-<translation id="6857778194843072568">仅在使用 WLAN 网络时发送</translation>
 <translation id="6864459304226931083">下载图片</translation>
 <translation id="6865313869410766144">自动填充表单数据</translation>
 <translation id="6868088497967843822">登录后可获取您所有设备上保存的书签、历史记录、密码和其他设置</translation>
@@ -515,6 +516,7 @@
 <translation id="7026897394897382018">启用流量节省程序</translation>
 <translation id="7029809446516969842">密码</translation>
 <translation id="7031882061095297553">同步到</translation>
+<translation id="7040138676081995583">打开方式...</translation>
 <translation id="7053983685419859001">禁止</translation>
 <translation id="7057058088140140610">使用 Google Payments 存储的信用卡和地址信息</translation>
 <translation id="7062545763355031412">接受并切换帐户</translation>
@@ -591,9 +593,11 @@
 <translation id="7998918019931843664">重新打开关闭的标签页</translation>
 <translation id="7999064672810608036">确定要清除该网站的所有本地数据（包括 Cookie）并重置该网站的所有权限吗？</translation>
 <translation id="8007176423574883786">已对此设备停用</translation>
+<translation id="802154636333426148">下载失败</translation>
 <translation id="8026334261755873520">清除浏览数据</translation>
 <translation id="8035133914807600019">新建文件夹…</translation>
 <translation id="8037750541064988519">还剩 <ph name="DAYS" /> 天</translation>
+<translation id="8051695050440594747"><ph name="MEGABYTES" /> MB 可用</translation>
 <translation id="8063895661287329888">无法添加书签。</translation>
 <translation id="8068648041423924542">无法选择证书。</translation>
 <translation id="8069239273282989646">压缩后</translation>
@@ -675,7 +679,6 @@
 <translation id="8986494364107987395">将使用情况统计信息和崩溃报告自动发送给 Google</translation>
 <translation id="8998729206196772491">您正要登录由 <ph name="MANAGED_DOMAIN" /> 管理的帐户，并要授权其管理员控制您的 Chrome 数据。您的数据将与此帐户永久关联。退出 Chrome 后，您的数据将从这台设备上删除，但仍会保留在您的 Google 帐户中。</translation>
 <translation id="9019902583201351841">由您父母管理</translation>
-<translation id="9020607083536754075">关闭当前的标签页，并返回到之前的应用</translation>
 <translation id="9038649477754266430">使用联想查询服务更快速地加载网页</translation>
 <translation id="9050666287014529139">密码</translation>
 <translation id="9060538597317784206">在 Play 商店中查看“<ph name="APP_NAME" />”应用。评分：<ph name="APP_RATING" />。</translation>

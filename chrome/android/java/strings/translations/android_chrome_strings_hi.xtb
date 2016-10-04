@@ -34,6 +34,7 @@
 <translation id="1376578503827013741">गणना की जा रही है…</translation>
 <translation id="138361230106469022">नमस्‍ते, <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">खोज</translation>
+<translation id="1384959399684842514">डाउनलोड रोका गया</translation>
 <translation id="1389974829397082527">यहां कोई बुकमार्क नहीं है</translation>
 <translation id="1404122904123200417"><ph name="WEBSITE_URL" /> में एम्बेड किया गया है</translation>
 <translation id="1406000523432664303">“नज़र न रखें”</translation>
@@ -238,6 +239,7 @@
 <translation id="380076759404194828">{NUM_SELECTED,plural, =1{1 आइटम चयनित}one{# आइटम चयनित}other{# आइटम चयनित}}</translation>
 <translation id="3810838688059735925">वीडियो</translation>
 <translation id="3810973564298564668">प्रबंधित करें</translation>
+<translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> डाउनलोड हटाए गए</translation>
 <translation id="3822502789641063741">साइट मेमोरी साफ़ करें?</translation>
 <translation id="3828029223314399057">बुकमार्क खोजें</translation>
 <translation id="3894427358181296146">फ़ोल्डर जोड़ें</translation>
@@ -277,6 +279,7 @@
 <translation id="4271185234001491831">कभी भी <ph name="LANGUAGE" /> का अनुवाद न करें</translation>
 <translation id="4275663329226226506">मीडिया</translation>
 <translation id="4278390842282768270">अनुमति है</translation>
+<translation id="4300272766492248925">ऐप्लिकेशन खोलें</translation>
 <translation id="4307992518367153382">आधारभूत बातें</translation>
 <translation id="4351244548802238354">संवाद बंद करें</translation>
 <translation id="4376501731284077108">अनियंत्रित</translation>
@@ -323,6 +326,7 @@
 <translation id="4923459931733593730">भुगतान</translation>
 <translation id="4941291666397027948">* आवश्‍यक फ़ील्‍ड इंगित करता है</translation>
 <translation id="4943872375798546930">कोई परिणाम नहीं</translation>
+<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> आपकी स्क्रीन साझा कर रहा है</translation>
 <translation id="4961700429721424617">आप <ph name="MANAGED_DOMAIN" /> द्वारा प्रबंधित खाते से प्रस्थान कर रहे हैं. इससे आपका Chrome डेटा इस डिवाइस से हट जाएगा, लेकिन आपका डेटा आपके Google खाते में बना रहेगा.</translation>
 <translation id="497421865427891073">आगे जाएं</translation>
 <translation id="4988526792673242964">पृष्ठ</translation>
@@ -364,7 +368,6 @@
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> हटाया गया</translation>
 <translation id="5345083863238459644">स्थान ऐक्सेस को भी <ph name="BEGIN_LINK" />इस डिवाइस के लिए बंद कर दिया गया है<ph name="END_LINK" />.</translation>
 <translation id="5372829067651257087">URL की कॉपी की गई.</translation>
-<translation id="5380554235172449987">कभी ना भेजें</translation>
 <translation id="5400569084694353794">इस ऐप्‍लिकेशन का उपयाेग करके, आप Chrome की <ph name="BEGIN_LINK1" />सेवा की शर्तों<ph name="END_LINK1" /> और <ph name="BEGIN_LINK2" />निजता नोटिस<ph name="END_LINK2" /> से सहमत होते हैं.</translation>
 <translation id="5414836363063783498">सत्यापन हो रहा है...</translation>
 <translation id="5423934151118863508">आपके द्वारा सबसे अधिक देखे गए पृष्ठ यहां दिखाई देंगे</translation>
@@ -374,7 +377,6 @@
 <translation id="5456381639095306749">पृष्ठ डाउनलोड करें</translation>
 <translation id="5487521232677179737">डेटा साफ़ करें</translation>
 <translation id="5487729733663684359">Chrome अपडेट अब Android के इस वर्शन के लिए समर्थित नहीं हैं.</translation>
-<translation id="5511351932351731210">हमेशा भेजें</translation>
 <translation id="5512137114520586844">यह खाता <ph name="PARENT_NAME" /> द्वारा प्रबंधित है.</translation>
 <translation id="5527082711130173040">डिवाइस स्कैन करने के लिए Chrome को स्थान एक्सेस की आवश्यकता होती है. <ph name="BEGIN_LINK1" />अनुमतियां अपडेट करें<ph name="END_LINK1" />. स्थान एक्सेस <ph name="BEGIN_LINK2" />इस डिवाइस के लिए भी बंद<ph name="END_LINK2" /> है.</translation>
 <translation id="5530766185686772672">गुप्त टैब बंद करें</translation>
@@ -495,7 +497,6 @@
 <translation id="6831043979455480757">अनुवाद करें</translation>
 <translation id="6846298663435243399">लोड हो रहा है...</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> टैब बंद किए गए</translation>
-<translation id="6857778194843072568">केवल वाई-फ़ाई पर भेजें</translation>
 <translation id="6864459304226931083">चित्र डाउनलोड करें</translation>
 <translation id="6865313869410766144">ऑटोमैटिक भरने वाला फ़ॉर्म डेटा</translation>
 <translation id="6868088497967843822">अपने सभी डिवाइस पर अपने बुकमार्क, इतिहास, पासवर्ड और अन्‍य सेटिंग प्राप्त करने के लिए प्रवेश करें</translation>
@@ -515,6 +516,7 @@
 <translation id="7026897394897382018">डेटा बचाने का साधन सक्षम करें</translation>
 <translation id="7029809446516969842">पासवर्ड</translation>
 <translation id="7031882061095297553">इसमें समन्वयित करें</translation>
+<translation id="7040138676081995583">इसके साथ खोलें...</translation>
 <translation id="7053983685419859001">अवरोधित करें</translation>
 <translation id="7057058088140140610">Google पेमेंट्स का उपयोग करने वाले क्रेडिट कार्ड और पते</translation>
 <translation id="7062545763355031412">स्वीकार करें और खातों को बदलें</translation>
@@ -591,9 +593,11 @@
 <translation id="7998918019931843664">बंद टैब फिर से खोलें</translation>
 <translation id="7999064672810608036">क्‍या आप वाकई कुकी सहित इस वेबसाइट का सभी स्‍थानीय डेटा साफ़ करना और इसकी सभी अनुमतियों को रीसेट करना चाहते हैं?</translation>
 <translation id="8007176423574883786">इस डिवाइस के लिए बंद कर दिया गया है</translation>
+<translation id="802154636333426148">डाउनलोड विफल रहा</translation>
 <translation id="8026334261755873520">ब्राउज़िंग डेटा साफ़ करें</translation>
 <translation id="8035133914807600019">नया फ़ोल्‍डर…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" /> दिन शेष</translation>
+<translation id="8051695050440594747"><ph name="MEGABYTES" /> MB उपलब्ध</translation>
 <translation id="8063895661287329888">बुकमार्क जोड़ने में विफल रहा.</translation>
 <translation id="8068648041423924542">प्रमाणपत्र चुनने में असमर्थ.</translation>
 <translation id="8069239273282989646">संपीड़न के बाद</translation>
@@ -675,7 +679,6 @@
 <translation id="8986494364107987395">उपयोग संबंधी आंकड़े और क्रैश रिपोर्ट अपने आप Google को भेजने की अनुमति दें</translation>
 <translation id="8998729206196772491">आप <ph name="MANAGED_DOMAIN" /> द्वारा प्रबंधित खाते में प्रवेश कर रहे हैं और उसके व्यवस्थापक को आपके Chrome डेटा पर नियंत्रण दे रहे हैं. आपका डेटा स्थायी रूप से इस खाते से संबद्ध हो जाएगा. Chrome से प्रस्थान करने से आपका डेटा इस डिवाइस से हट जाएगा, लेकिन वह आपके Google खाते में संग्रहीत रहेगा.</translation>
 <translation id="9019902583201351841">आपके अभिभावकों द्वारा प्रबंधित</translation>
-<translation id="9020607083536754075">वर्तमान टैब बंद करें और पिछले ऐप पर वापस लौटें</translation>
 <translation id="9038649477754266430">अधिक तेज़ी से पृष्ठ लोड करने के लिए किसी पूर्वानुमान सेवा का उपयोग करें</translation>
 <translation id="9050666287014529139">पासफ़्रेज़</translation>
 <translation id="9060538597317784206"><ph name="APP_NAME" /> को Play स्‍टोर पर देखें.  रेटिंग: <ph name="APP_RATING" />.</translation>

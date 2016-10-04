@@ -28,6 +28,7 @@
 <translation id="1653828314016431939">D'acord, reinicia ara</translation>
 <translation id="1682634494516646069">Google Chrome no pot llegir ni escriure en el directori de dades: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome és un navegador web que executa pàgines web i aplicacions a gran velocitat. És ràpid, estable i fàcil d'utilitzar. Navegueu d'una manera més segura pel web amb la protecció contra programari maliciós i llocs de pesca integrada a Google Chrome.</translation>
+<translation id="1718131156967340976">Selecciona <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
 <translation id="174539241580958092">Google Chrome no ha pogut sincronitzar les dades a causa d'un error en iniciar la sessió.</translation>
 <translation id="1759301979429102118">Disposar de detalls dels vostres contactes us pot ajudar a emplenar formularis amb més rapidesa a Chrome.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -103,6 +104,7 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome ha verificat que <ph name="ISSUER" /> ha emès el certificat d'aquest lloc web. El servidor ha proporcionat informació sobre Transparència de certificats, però Chrome no n'ha reconegut cap registre.</translation>
 <translation id="3889417619312448367">Desinstal·la Google Chrome</translation>
+<translation id="4028693306634653894">Accedeix a Chrome més de pressa</translation>
 <translation id="4042449298237264661">Aquest ordinador ja no rebrà més actualitzacions de Google Chrome perquè Windows XP i Windows Vista ja no són compatibles.</translation>
 <translation id="4050175100176540509">La versió més recent incorpora millores de seguretat i funcions noves importants.</translation>
 <translation id="4053720452172726777">Personalitza i controla Google Chrome</translation>
@@ -237,6 +239,7 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="7788788617745289808">Chrome necessita accés a la càmera per compartir-la amb aquest lloc web.</translation>
 <translation id="7808348361785373670">Suprimeix de Chrome...</translation>
 <translation id="7825851276765848807">La instal·lació ha fallat a causa d'un error no especificat. Torneu a baixar Google Chrome.</translation>
+<translation id="7888186132678118370">Fixa Chrome a la barra de tasques</translation>
 <translation id="7890208801193284374">Si compartiu un ordinador, els amics i els familiars poden navegar de manera independent i configurar Chrome com vulguin.</translation>
 <translation id="7908168227788431038">Gairebé heu acabat. Reinicieu Google Chrome per completar l'actualització.</translation>
 <translation id="795025003224538582">No reiniciïs</translation>
@@ -278,4 +281,5 @@ Per obtenir més instruccions, consulteu el correu electrònic a <ph name="ACCOU
 <translation id="9102715433345326100">Aquest fitxer és maliciós i Chrome l'ha bloquejat.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Advertiment:<ph name="END_BOLD" /> Google Chrome no pot evitar que les extensions registrin l'historial de navegació. Per desactivar l'extensió en mode d'incògnit, anul·leu la selecció de l'opció corresponent.</translation>
 <translation id="911206726377975832">També voleu suprimir les dades de navegació?</translation>
+<translation id="924447568950697217">Estableix Chrome com a navegador predeterminat</translation>
 </translationbundle>

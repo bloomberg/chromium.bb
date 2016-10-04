@@ -13,6 +13,7 @@
 <translation id="1414495520565016063">Esat pierakstījies operētājsistēmā Chromium!</translation>
 <translation id="1444754455097148408">Chromium atklātā pirmkoda licences</translation>
 <translation id="1480489203462860648">Izmēģināt, tas jau ir instalēts</translation>
+<translation id="1502360822835740515">Iestatiet Chromium par noklusējuma pārlūku</translation>
 <translation id="151962892725702025">Chromium OS nevarēja sinhronizēt jūsu datus, jo jūsu domēnā nav pieejama sinhronizācija.</translation>
 <translation id="1559451348202814456">Iespējams, Chromium nedarbosies pareizi, jo tas vairs netiek atbalstīts operētājsistēmās Mac OS X 10.6, 10.7 un 10.8.</translation>
 <translation id="1644918877723739397">Chromium saglabās šo paroli jūsu sarakstā “<ph name="SAVED_PASSWORD_LINK" />” un atcerēsies to nākamajā reizē, kad jums tā būs nepieciešama.</translation>
@@ -93,10 +94,12 @@
 <translation id="378917192836375108">Chromium ļauj jums noklikšķināt uz tālruņa numura un zvanīt uz to pakalpojumā Skype!</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> — Chromium</translation>
 <translation id="3849925841547750267">Diemžēl jūsu Mozilla Firefox iestatījumi nav pieejami pārlūka darbības laikā. Lai šos iestatījumus importētu uz pārlūku Chromium, saglabājiet savu darbu un aizveriet visus Firefox logus. Pēc tam noklikšķiniet uz Turpināt.</translation>
+<translation id="3852700440713538496">Piespraudiet pārlūku Chromium uzdevumjoslai</translation>
 <translation id="3883381313049582448">Izmantot Chromium ģenerētu paroli</translation>
 <translation id="3889543394854987837">Noklikšķiniet uz sava vārda, lai atvērtu Chromium un sāktu pārlūkošanu.</translation>
 <translation id="390894725198123737">Operētājsistēmā Mac paroles var tikt saglabātas sistēmā Keychain, un citi Chromium lietotāji, kuri koplieto šo OS X kontu, var piekļūt tām un sinhronizēt tās.</translation>
 <translation id="4050175100176540509">Jaunākajā versijā ir pieejami svarīgi drošības uzlabojumi un jaunas funkcijas.</translation>
+<translation id="407254336480250557">Atlasiet <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="4077262827416206768">Aizveriet visus Chromium logus un atkārtoti palaidiet Chromium, lai šīs izmaiņas stātos spēkā.</translation>
 <translation id="4182290826692170034">Chromium ir jūsu noklusējuma pārlūks.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Brīdinājums!<ph name="END_BOLD" /> Chromium nevar novērst to, ka paplašinājumi ieraksta jūsu pārlūkošanas vēsturi. Lai atspējotu šo paplašinājumu inkognito režīmā, noņemiet atzīmi šai opcijai.</translation>
@@ -118,6 +121,7 @@
 <translation id="4621240073146040695">Atjaunināšana ir gandrīz pabeigta. Lai pabeigtu atjaunināšanu, atkārtoti palaidiet pārlūku Chromium.</translation>
 <translation id="4677944499843243528">Šķiet, ka profils tiek izmantots citā Chromium procesā (<ph name="PROCESS_ID" />) citā datorā (<ph name="HOST_NAME" />). Lai profils netiktu bojāts, pārlūkā Chromium tas ir bloķēts. Ja esat pārliecināts, ka šis profils netiek izmantots citos procesos, varat to atbloķēt un restartēt pārlūku Chromium.</translation>
 <translation id="469338717132742108">Saņemt palīdzību par Chromium OS</translation>
+<translation id="4714956846925717402">Ātrāka piekļuve pārlūkam Chromium</translation>
 <translation id="4743926867934016338">Pieņemt un meklēt</translation>
 <translation id="4888717733111232871">Ienākošo savienojumu kārtula pārlūkam Chromium, lai atļautu mDNS datplūsmu.</translation>
 <translation id="4943838377383847465">Chromium darbojas fona režīmā.</translation>

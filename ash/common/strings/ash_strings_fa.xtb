@@ -108,6 +108,7 @@
 <translation id="3891340733213178823">‏برای خروج از سیستم Ctrl+Shift+Q را دو بار فشار دهید.</translation>
 <translation id="3892641579809465218">صفحه نمایش داخلی</translation>
 <translation id="3893630138897523026">‏ChromeVox (بازخورد گفتاری)</translation>
+<translation id="3899995891769452915">ورودی گفتاری</translation>
 <translation id="3963445509666917109">بلندگو (داخلی)</translation>
 <translation id="3967919079500697218">سرپرست شما قابلیت عکس گرفتن از صفحه‌نمایش را غیرفعال کرده است.</translation>
 <translation id="397105322502079400">در حال محاسبه…</translation>
@@ -179,6 +180,7 @@
 <translation id="6459472438155181876">گسترش صفحه به <ph name="DISPLAY_NAME" /></translation>
 <translation id="6490471652906364588">‏دستگاه USB-C (درگاه سمت راست)</translation>
 <translation id="6501401484702599040">ارسال محتوای صفحه به <ph name="RECEIVER_NAME" /></translation>
+<translation id="6521655319214113338">ورودی دست‌نویس</translation>
 <translation id="6537270692134705506">ضبط کردن صفحه‌نمایش</translation>
 <translation id="6550675742724504774">گزینه‌ها</translation>
 <translation id="6585808820553845416">جلسه در <ph name="SESSION_TIME_REMAINING" /> به پایان می‌رسد.</translation>
@@ -210,6 +212,7 @@ Alt+جستجو یا Shift را برای لغو فشار دهید.</translation>
 <translation id="743058460480092004">دوربین و میکروفن در حال استفاده هستند.</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" />،‏ <ph name="SPECIFIED_RESOLUTION" /> را پشتیبانی نمی‌کند. وضوح به <ph name="FALLBACK_RESOLUTION" /> تغییر کرد</translation>
+<translation id="7562368315689366235">پالت صورتک</translation>
 <translation id="7573962313813535744">حالت اتصال به پایه</translation>
 <translation id="7580671184200851182">یک صدا را از طریق همه بلندگوها پخش کنید (تک صوتی)</translation>
 <translation id="7581273696622423628">در نظرسنجی شرکت کنید</translation>

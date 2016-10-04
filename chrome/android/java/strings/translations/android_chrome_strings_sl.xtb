@@ -34,6 +34,7 @@
 <translation id="1376578503827013741">Računanje …</translation>
 <translation id="138361230106469022">Pozdravljeni, <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Išči</translation>
+<translation id="1384959399684842514">Prenos je zaustavljen</translation>
 <translation id="1389974829397082527">Tu ni nobenega zaznamka</translation>
 <translation id="1404122904123200417">Vdelano v URL <ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">»Ne sledi«</translation>
@@ -238,6 +239,7 @@ Fizični splet lahko nadzirate v Chromovih nastavitvah.
 <translation id="380076759404194828">{NUM_SELECTED,plural, =1{Izbran je 1 element}one{Izbran je # element}two{Izbrana sta # elementa}few{Izbrani so # elementi}other{Izbranih je # elementov}}</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3810973564298564668">Upravljanje</translation>
+<translation id="3819178904835489326">Št. izbrisanih prenosov: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
 <translation id="3822502789641063741">Izbris pod. spl. mesta?</translation>
 <translation id="3828029223314399057">Išči po zaznamkih</translation>
 <translation id="3894427358181296146">Dodajanje mape</translation>
@@ -277,6 +279,7 @@ Fizični splet lahko nadzirate v Chromovih nastavitvah.
 <translation id="4271185234001491831">Nikoli ne prevedi iz jezika <ph name="LANGUAGE" /></translation>
 <translation id="4275663329226226506">Predstavnosti</translation>
 <translation id="4278390842282768270">Dovoljeno</translation>
+<translation id="4300272766492248925">Odpri aplikacijo</translation>
 <translation id="4307992518367153382">Osnove</translation>
 <translation id="4351244548802238354">Zapri pogovorno okno</translation>
 <translation id="4376501731284077108">Nenadzorovano</translation>
@@ -323,6 +326,7 @@ Fizični splet lahko nadzirate v Chromovih nastavitvah.
 <translation id="4923459931733593730">Plačilo</translation>
 <translation id="4941291666397027948">* označuje obvezno polje</translation>
 <translation id="4943872375798546930">Ni rezultatov</translation>
+<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> dostopa do vašega zaslona</translation>
 <translation id="4961700429721424617">Odjavili se boste iz računa, ki ga upravlja <ph name="MANAGED_DOMAIN" />. S tem boste iz te naprave izbrisali podatke v Chromu, vendar bodo vaši podatki še vedno na voljo v Google Računu.</translation>
 <translation id="497421865427891073">Pojdi naprej</translation>
 <translation id="4988526792673242964">Strani</translation>
@@ -364,7 +368,6 @@ Fizični splet lahko nadzirate v Chromovih nastavitvah.
 <translation id="5345040418939504969">Izbrisano: <ph name="BOOKMARK_TITLE" /></translation>
 <translation id="5345083863238459644">Dostop do lokacije je prav tako <ph name="BEGIN_LINK" />izklopljen za to napravo<ph name="END_LINK" />.</translation>
 <translation id="5372829067651257087">URL je kopiran.</translation>
-<translation id="5380554235172449987">Nikoli ne pošlji</translation>
 <translation id="5400569084694353794">Če uporabljate to aplikacijo, se strinjate s <ph name="BEGIN_LINK1" />pogoji storitve<ph name="END_LINK1" /> in <ph name="BEGIN_LINK2" />pravilnikom o zasebnosti<ph name="END_LINK2" /> za Chrome.</translation>
 <translation id="5414836363063783498">Preverjanje …</translation>
 <translation id="5423934151118863508">Tu bodo prikazane strani, ki jih obiskujete najpogosteje</translation>
@@ -374,7 +377,6 @@ Fizični splet lahko nadzirate v Chromovih nastavitvah.
 <translation id="5456381639095306749">Prenos strani</translation>
 <translation id="5487521232677179737">Izbriši podatke</translation>
 <translation id="5487729733663684359">Posodobitve za Chrome v tej različici Androida niso več podprte.</translation>
-<translation id="5511351932351731210">Vedno pošlji</translation>
 <translation id="5512137114520586844">Ta račun upravlja <ph name="PARENT_NAME" />.</translation>
 <translation id="5527082711130173040">Chrome za iskanje naprav potrebuje dostop do lokacije. <ph name="BEGIN_LINK1" />Posodobite dovoljenja<ph name="END_LINK1" />. Dostop do lokacije je prav tako <ph name="BEGIN_LINK2" />izklopljen za to napravo<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">Zapri zavih. brez bel. zgo.</translation>
@@ -495,7 +497,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="6831043979455480757">Prevedi</translation>
 <translation id="6846298663435243399">Nalaganje ...</translation>
 <translation id="6850830437481525139">Zaprtih je bilo toliko zavihkov: <ph name="TAB_COUNT" /></translation>
-<translation id="6857778194843072568">Pošlji samo v omrežju Wi-Fi</translation>
 <translation id="6864459304226931083">Prenos slike</translation>
 <translation id="6865313869410766144">Podatki za samodejno izpolnjevanje obrazcev</translation>
 <translation id="6868088497967843822">Prijavite se, da boste lahko dostopali do zaznamkov, zgodovine, gesel in drugih nastavitev v vseh napravah.</translation>
@@ -515,6 +516,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="7026897394897382018">Omogoči varčevanje s podatki</translation>
 <translation id="7029809446516969842">Gesla</translation>
 <translation id="7031882061095297553">Sinhroniziranje z</translation>
+<translation id="7040138676081995583">Odpri z aplikacijo ...</translation>
 <translation id="7053983685419859001">Blokiraj</translation>
 <translation id="7057058088140140610">Kreditne kartice in naslovi s storitvijo Google Payments</translation>
 <translation id="7062545763355031412">Sprejmi in preklopi račun</translation>
@@ -591,9 +593,11 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="7998918019931843664">Vnovično odpiranje zaprtega zavihka</translation>
 <translation id="7999064672810608036">Ali želite res izbrisati vse lokalne podatke, vključno s piškotki, in ponastaviti vsa dovoljenja za to spletno mesto?</translation>
 <translation id="8007176423574883786">Izklopljeno za to napravo</translation>
+<translation id="802154636333426148">Prenos ni uspel</translation>
 <translation id="8026334261755873520">Izbriši podatke brskanja</translation>
 <translation id="8035133914807600019">Nova mapa …</translation>
 <translation id="8037750541064988519">Še <ph name="DAYS" /> dni</translation>
+<translation id="8051695050440594747"><ph name="MEGABYTES" /> MB na voljo</translation>
 <translation id="8063895661287329888">Zaznamka ni bilo mogoče dodati.</translation>
 <translation id="8068648041423924542">Izbira potrdila ni mogoča</translation>
 <translation id="8069239273282989646">Po stiskanju</translation>
@@ -675,7 +679,6 @@ Nove licence dobite tako, da se povežete v internet in predvajate preneseno vse
 <translation id="8986494364107987395">Samodejno pošlji statistiko uporabe in poročila o zrušitvi Googlu</translation>
 <translation id="8998729206196772491">Prijavljate se z računom, ki ga upravlja <ph name="MANAGED_DOMAIN" />, in nadzor nad podatki v Chromu predajate skrbniku. Vaši podatki bodo trajno povezani s tem računom. Če se odjavite iz Chroma, boste izbrisali podatke iz te naprave, vendar bodo še naprej shranjeni v Google Računu.</translation>
 <translation id="9019902583201351841">Upravljajo starši</translation>
-<translation id="9020607083536754075">Zapri trenutni zavihek in nazaj na prejšnjo aplikacijo</translation>
 <translation id="9038649477754266430">Uporaba storitve predvidevanja za hitrejše nalaganje strani</translation>
 <translation id="9050666287014529139">Geslo</translation>
 <translation id="9060538597317784206">Ogled aplikacije <ph name="APP_NAME" /> v Trgovini Play. Ocena: <ph name="APP_RATING" />.</translation>

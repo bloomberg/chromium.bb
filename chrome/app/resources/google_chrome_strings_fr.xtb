@@ -31,6 +31,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome est un navigateur Web qui exécute des applications et des pages Web en un temps record. Il est rapide, stable et simple à utiliser. Naviguez sur Internet en toute sécurité grâce à la protection intégrée de Google Chrome contre le phishing et les logiciels malveillants.</translation>
+<translation id="1718131156967340976">Sélectionnez <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /> <ph name="SMALL_PRODUCT_LOGO" />.</translation>
 <translation id="174539241580958092">Impossible de synchroniser vos données dans Google Chrome, car une erreur s'est produite lors de la connexion.</translation>
 <translation id="1759301979429102118">Les coordonnées de vos contacts peuvent vous aider à remplir les formulaires plus rapidement dans Chrome.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -106,6 +107,7 @@ Pour obtenir plus d'informations, veuillez consulter votre compte de messagerie 
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Il a été confirmé dans Chrome que le certificat de ce site a bien été fourni par <ph name="ISSUER" />. Des informations relatives à la transparence du certificat ont été fournies via le serveur, mais aucun des journaux relatifs à la transparence du certificat n'a été reconnu dans Chrome.</translation>
 <translation id="3889417619312448367">Désinstaller Google Chrome</translation>
+<translation id="4028693306634653894">Accédez à Chrome plus rapidement</translation>
 <translation id="4042449298237264661">Cet ordinateur ne recevra plus les mises à jour de Google Chrome, car la compatibilité n'est plus assurée sur Windows XP et Windows Vista.</translation>
 <translation id="4050175100176540509">La dernière version propose d'importantes améliorations de la sécurité ainsi que de nouvelles fonctionnalités.</translation>
 <translation id="4053720452172726777">Personnaliser et contrôler Google Chrome</translation>
@@ -245,6 +247,7 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="7788788617745289808">Chrome doit disposer de l'accès à la caméra pour la partager avec ce site.</translation>
 <translation id="7808348361785373670">Supprimer de Chrome</translation>
 <translation id="7825851276765848807">Échec de l'installation en raison d'erreurs non spécifiées. Veuillez télécharger Google Chrome à nouveau.</translation>
+<translation id="7888186132678118370">Épingler Chrome à votre barre des tâches</translation>
 <translation id="7890208801193284374">Si vous partagez un ordinateur avec vos proches, ceux-ci peuvent configurer Chrome comme bon leur semble et naviguer sur le Web à leur manière.</translation>
 <translation id="7908168227788431038">Mise à jour presque terminée. Relancez Google Chrome pour la finaliser.</translation>
 <translation id="795025003224538582">Ne pas redémarrer</translation>
@@ -286,4 +289,5 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="9102715433345326100">Ce fichier est malveillant. Il a donc été bloqué dans Chrome.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Avertissement<ph name="END_BOLD" /> : Google Chrome ne peut pas empêcher les extensions d'enregistrer votre historique de navigation. Pour désactiver cette extension en mode navigation privée, désélectionnez-la.</translation>
 <translation id="911206726377975832">Supprimer également vos données de navigation ?</translation>
+<translation id="924447568950697217">Définir Chrome comme navigateur par défaut</translation>
 </translationbundle>

@@ -110,6 +110,7 @@ Trykk på Søk eller Shift for å avbryte.</translation>
 <translation id="3891340733213178823">Trykk på Control+Shift+Q to ganger for å logge av.</translation>
 <translation id="3892641579809465218">Innebygd skjerm</translation>
 <translation id="3893630138897523026">ChromeVox (muntlig tilbakemelding)</translation>
+<translation id="3899995891769452915">Taleinndata</translation>
 <translation id="3963445509666917109">Mikrofon (intern)</translation>
 <translation id="3967919079500697218">Muligheten til å ta skjermdumper er deaktivert av administratoren.</translation>
 <translation id="397105322502079400">Beregner …</translation>
@@ -182,6 +183,7 @@ Trykk på Shift + Alt for å bytte.</translation>
 <translation id="6459472438155181876">Utvider skjermen til <ph name="DISPLAY_NAME" /></translation>
 <translation id="6490471652906364588">USB-C-enhet (porten på høyre side)</translation>
 <translation id="6501401484702599040">Caster skjermen til <ph name="RECEIVER_NAME" /></translation>
+<translation id="6521655319214113338">Håndskrift-inndata</translation>
 <translation id="6537270692134705506">Ta skjermdump av skjermen</translation>
 <translation id="6550675742724504774">Alternativer</translation>
 <translation id="6585808820553845416">Økten slutter om <ph name="SESSION_TIME_REMAINING" />.</translation>
@@ -212,6 +214,7 @@ Trykk på Alt + Søk eller Shift for å avbryte.</translation>
 <translation id="743058460480092004">Kameraet og mikrofonen er i bruk.</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> støtter ikke <ph name="SPECIFIED_RESOLUTION" />. Oppløsningen ble endret til <ph name="FALLBACK_RESOLUTION" /></translation>
+<translation id="7562368315689366235">Emoji-palett</translation>
 <translation id="7573962313813535744">Dokket modus</translation>
 <translation id="7580671184200851182">Spill den samme lyden på alle høyttalere (monolyd)</translation>
 <translation id="7581273696622423628">Besvar undersøkelsen</translation>

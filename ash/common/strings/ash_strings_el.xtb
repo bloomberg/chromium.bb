@@ -109,6 +109,7 @@
 <translation id="3891340733213178823">Πατήστε Ctrl + Shift + Q δύο φορές για να αποσυνδεθείτε.</translation>
 <translation id="3892641579809465218">Εσωτερική οθόνη</translation>
 <translation id="3893630138897523026">ChromeVox (προφορικά σχόλια)</translation>
+<translation id="3899995891769452915">Φωνητική είσοδος</translation>
 <translation id="3963445509666917109">Ηχείο (Εσωτερικό)</translation>
 <translation id="3967919079500697218">Η δυνατότητα λήψης στιγμιότυπων οθόνης έχει απενεργοποιηθεί από το διαχειριστή σας.</translation>
 <translation id="397105322502079400">Υπολογισμός…</translation>
@@ -181,6 +182,7 @@
 <translation id="6459472438155181876">Επέκταση οθόνης σε <ph name="DISPLAY_NAME" /></translation>
 <translation id="6490471652906364588">Συσκευή USB-C (δεξιά θύρα)</translation>
 <translation id="6501401484702599040">Μετάδοση οθόνης σε <ph name="RECEIVER_NAME" /></translation>
+<translation id="6521655319214113338">Είσοδος με γραφή</translation>
 <translation id="6537270692134705506">Λήψη στιγμιότυπου οθόνης</translation>
 <translation id="6550675742724504774">Επιλογές</translation>
 <translation id="6585808820553845416">Η περίοδος σύνδεσης λήγει σε <ph name="SESSION_TIME_REMAINING" />.</translation>
@@ -212,6 +214,7 @@
 <translation id="743058460480092004">Η κάμερα και το μικρόφωνο χρησιμοποιούνται.</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140">Το <ph name="DISPLAY_NAME" /> δεν υποστηρίζει το <ph name="SPECIFIED_RESOLUTION" />. Η ανάλυση άλλαξε σε <ph name="FALLBACK_RESOLUTION" /></translation>
+<translation id="7562368315689366235">Παλέτα Emoji</translation>
 <translation id="7573962313813535744">Λειτουργία βάσης σύνδεσης</translation>
 <translation id="7580671184200851182">Αναπαραγωγή του ίδιου ήχου μέσω όλων των ηχείων (μονοφωνικός ήχος)</translation>
 <translation id="7581273696622423628">Συμμετοχή σε έρευνα</translation>

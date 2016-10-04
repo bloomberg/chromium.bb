@@ -34,6 +34,7 @@
 <translation id="1376578503827013741">계산 중...</translation>
 <translation id="138361230106469022"><ph name="FULL_NAME" />님, 안녕하세요.</translation>
 <translation id="1383876407941801731">검색</translation>
+<translation id="1384959399684842514">다운로드 일시중지됨</translation>
 <translation id="1389974829397082527">이 폴더에는 북마크가 없습니다.</translation>
 <translation id="1404122904123200417"><ph name="WEBSITE_URL" />에 포함됨</translation>
 <translation id="1406000523432664303">'추적 안함'</translation>
@@ -238,6 +239,7 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="380076759404194828">{NUM_SELECTED,plural, =1{1개 항목이 선택되었습니다.}other{#개 항목이 선택되었습니다.}}</translation>
 <translation id="3810838688059735925">동영상</translation>
 <translation id="3810973564298564668">관리</translation>
+<translation id="3819178904835489326">다운로드 <ph name="NUMBER_OF_DOWNLOADS" />개 삭제됨</translation>
 <translation id="3822502789641063741">사이트 저장공간을 삭제하시겠습니까?</translation>
 <translation id="3828029223314399057">북마크 검색</translation>
 <translation id="3894427358181296146">폴더 추가</translation>
@@ -277,6 +279,7 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="4271185234001491831"><ph name="LANGUAGE" /> 번역 안함</translation>
 <translation id="4275663329226226506">미디어</translation>
 <translation id="4278390842282768270">허용됨</translation>
+<translation id="4300272766492248925">앱 열기</translation>
 <translation id="4307992518367153382">기본설정</translation>
 <translation id="4351244548802238354">대화상자 닫기</translation>
 <translation id="4376501731284077108">제어되지 않음</translation>
@@ -323,6 +326,7 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="4923459931733593730">결제</translation>
 <translation id="4941291666397027948">* 필수 입력란</translation>
 <translation id="4943872375798546930">검색결과가 없습니다.</translation>
+<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" />에서 내 화면을 공유하는 중입니다.</translation>
 <translation id="4961700429721424617"><ph name="MANAGED_DOMAIN" />에서 관리하는 계정에서 로그아웃합니다. 이렇게 하면 내 Chrome 데이터가 이 기기에서 삭제되지만 Google 계정에는 그대로 유지됩니다.</translation>
 <translation id="497421865427891073">앞으로 이동</translation>
 <translation id="4988526792673242964">페이지</translation>
@@ -364,7 +368,6 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> 삭제됨</translation>
 <translation id="5345083863238459644">위치 정보 액세스 또한 <ph name="BEGIN_LINK" />이 기기에서 사용 중지되었습니다<ph name="END_LINK" />.</translation>
 <translation id="5372829067651257087">URL이 복사되었습니다.</translation>
-<translation id="5380554235172449987">보내지 않기</translation>
 <translation id="5400569084694353794">이 애플리케이션을 사용하면 Chrome의 <ph name="BEGIN_LINK1" />서비스 약관<ph name="END_LINK1" />과 <ph name="BEGIN_LINK2" />개인정보 보호정책<ph name="END_LINK2" />에 동의하게 됩니다.</translation>
 <translation id="5414836363063783498">확인 중...</translation>
 <translation id="5423934151118863508">자주 방문한 페이지가 여기에 표시됩니다.</translation>
@@ -374,7 +377,6 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="5456381639095306749">다운로드 페이지</translation>
 <translation id="5487521232677179737">데이터 삭제</translation>
 <translation id="5487729733663684359">Chrome 업데이트는 더 이상 이 버전의 Android에서 지원되지 않습니다.</translation>
-<translation id="5511351932351731210">항상 보내기</translation>
 <translation id="5512137114520586844"><ph name="PARENT_NAME" />님이 관리하는 계정입니다.</translation>
 <translation id="5527082711130173040">기기를 스캔하려면 Chrome에서 위치 정보에 액세스해야 합니다. <ph name="BEGIN_LINK1" />권한을 업데이트<ph name="END_LINK1" />하세요. 또한 <ph name="BEGIN_LINK2" />이 기기에서도 위치 정보 액세스 권한이 사용 중지<ph name="END_LINK2" />되어 있습니다.</translation>
 <translation id="5530766185686772672">시크릿 탭 닫기</translation>
@@ -495,7 +497,6 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="6831043979455480757">번역</translation>
 <translation id="6846298663435243399">로드 중...</translation>
 <translation id="6850830437481525139">탭 <ph name="TAB_COUNT" />개를 닫았습니다.</translation>
-<translation id="6857778194843072568">Wi-Fi 연결 시에만 보내기</translation>
 <translation id="6864459304226931083">이미지 다운로드</translation>
 <translation id="6865313869410766144">양식 데이터 자동완성</translation>
 <translation id="6868088497967843822">로그인하면 모든 기기에서 북마크, 방문 기록, 비밀번호, 기타 설정을 사용할 수 있습니다.</translation>
@@ -515,6 +516,7 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="7026897394897382018">데이터 절약 모드 사용</translation>
 <translation id="7029809446516969842">비밀번호</translation>
 <translation id="7031882061095297553">동기화 가능 계정</translation>
+<translation id="7040138676081995583">연결 프로그램...</translation>
 <translation id="7053983685419859001">차단</translation>
 <translation id="7057058088140140610">Google Payments를 사용하는 신용카드 및 주소</translation>
 <translation id="7062545763355031412">동의 및 계정 전환</translation>
@@ -591,9 +593,11 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="7998918019931843664">닫은 탭 다시 열기</translation>
 <translation id="7999064672810608036">쿠키를 포함하여 이 웹사이트의 데이터를 모두 삭제하고 모든 권한을 재설정하시겠습니까?</translation>
 <translation id="8007176423574883786">기기에 대해 사용 중지됨</translation>
+<translation id="802154636333426148">다운로드 실패</translation>
 <translation id="8026334261755873520">인터넷 사용 기록 삭제</translation>
 <translation id="8035133914807600019">새 폴더…</translation>
 <translation id="8037750541064988519"><ph name="DAYS" />일 남음</translation>
+<translation id="8051695050440594747"><ph name="MEGABYTES" />MB 사용 가능</translation>
 <translation id="8063895661287329888">북마크를 추가하지 못했습니다.</translation>
 <translation id="8068648041423924542">인증서를 선택할 수 없습니다.</translation>
 <translation id="8069239273282989646">압축 후</translation>
@@ -675,7 +679,6 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="8986494364107987395">사용 통계 및 비정상 종료 보고서를 Google에 자동으로 보내기</translation>
 <translation id="8998729206196772491"><ph name="MANAGED_DOMAIN" />에서 관리하는 계정으로 로그인합니다. 계정 관리자가 내 Chrome 데이터를 관리하게 되며 데이터는 이 계정에 영구적으로 연결됩니다. Chrome에서 로그아웃하면 데이터가 이 기기에서 삭제되지만 Google 계정에는 그대로 유지됩니다.</translation>
 <translation id="9019902583201351841">부모님이 관리합니다.</translation>
-<translation id="9020607083536754075">현재 탭을 닫고 이전 앱으로 돌아가기</translation>
 <translation id="9038649477754266430">빠른 페이지 로드를 위해 예상 검색어 서비스 사용</translation>
 <translation id="9050666287014529139">암호</translation>
 <translation id="9060538597317784206">Play 스토어에서 <ph name="APP_NAME" /> 앱을 봅니다.  등급은 <ph name="APP_RATING" />입니다.</translation>

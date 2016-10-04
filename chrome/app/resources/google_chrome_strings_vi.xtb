@@ -30,6 +30,7 @@
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome là một trình duyệt web chạy các trang web và ứng dụng với tốc độ cực nhanh. Trình duyệt này nhanh, ổn định và dễ sử dụng. Duyệt web an toàn hơn với tính năng ngăn chặn phần mềm độc hại và lừa đảo được tích hợp trong Google Chrome.</translation>
+<translation id="1718131156967340976">Chọn <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
 <translation id="174539241580958092">Google Chrome không thể đồng bộ hóa dữ liệu của bạn do lỗi khi đăng nhập.</translation>
 <translation id="1759301979429102118">Chi tiết từ danh bạ của bạn có thể giúp bạn điền vào biểu mẫu trong Chrome nhanh hơn.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -105,6 +106,7 @@ Vui lòng xem email của bạn tại <ph name="ACCOUNT_EMAIL" /> để biết t
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome đã xác minh rằng <ph name="ISSUER" /> cấp chứng chỉ của trang web này. Máy chủ cung cấp thông tin về Tính minh mạch của chứng chỉ nhưng Chrome không nhận ra bất kỳ nhật ký nào về Tính minh bạch của chứng chỉ.</translation>
 <translation id="3889417619312448367">Gỡ cài đặt Google Chrome</translation>
+<translation id="4028693306634653894">Truy cập Chrome nhanh hơn</translation>
 <translation id="4042449298237264661">Máy tính này sẽ không nhận được bản cập nhật Google Chrome nữa do Windows XP và Windows Vista không còn được hỗ trợ.</translation>
 <translation id="4050175100176540509">Cải thiện bảo mật quan trọng và tính năng mới có trong phiên bản mới nhất.</translation>
 <translation id="4053720452172726777">Tùy chỉnh và điều khiển Google Chrome</translation>
@@ -242,6 +244,7 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="7788788617745289808">Chrome cần quyền truy cập máy ảnh để chia sẻ máy ảnh với trang web này.</translation>
 <translation id="7808348361785373670">Xóa khỏi Chrome...</translation>
 <translation id="7825851276765848807">Không thể cài đặt do lỗi không xác định. Hãy tải xuống lại Google Chrome.</translation>
+<translation id="7888186132678118370">Ghim Chrome vào thanh tác vụ của bạn</translation>
 <translation id="7890208801193284374">Nếu bạn chia sẻ máy tính, bạn bè và gia đình có thể duyệt web một cách riêng biệt và thiết lập Chrome theo ý của họ.</translation>
 <translation id="7908168227788431038">Gần được cập nhật! Hãy khởi chạy lại Google Chrome để hoàn tất cập nhật.</translation>
 <translation id="795025003224538582">Không khởi động lại</translation>
@@ -283,4 +286,5 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="9102715433345326100">Đây là tệp độc hại và Chrome đã chặn tệp này.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Cảnh báo:<ph name="END_BOLD" /> Google Chrome không thể ngăn các tiện ích ghi lại lịch sử duyệt web của bạn. Để tắt tiện ích này trong chế độ ẩn danh, hãy bỏ chọn tùy chọn này.</translation>
 <translation id="911206726377975832">Bạn cũng muốn xóa dữ liệu duyệt web của mình?</translation>
+<translation id="924447568950697217">Đặt Chrome làm trình duyệt mặc định của bạn</translation>
 </translationbundle>

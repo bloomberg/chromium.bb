@@ -28,6 +28,7 @@
 <translation id="1653828314016431939">సరే - ఇప్పుడు పునః ప్రారంభించు</translation>
 <translation id="1682634494516646069">Google Chrome దీని డేటా డైరెక్టరీని చదవలేదు మరియు దీనిలో వ్రాయలేదు: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome అనేది మెరుపు వేగంతో వెబ్‌పేజీలను మరియు అనువర్తనాలను అమలు చేసే వెబ్ బ్రౌజర్. ఇది వేగమైనది, సామర్థ్యం కలది మరియు ఉపయోగించడానికి సులభమైంది. Google Chromeలో నిర్మితమైన మాల్వేర్ మరియు ఫిషింగ్ భద్రతతో మరింత సురక్షితంగా వెబ్‌ను బ్రౌజ్ చేయండి.</translation>
+<translation id="1718131156967340976"><ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" />ని ఎంచుకోండి</translation>
 <translation id="174539241580958092">సైన్ ఇన్ చేయడంలో లోపం సంభవించినందున Google Chrome మీ డేటాను సమకాలీకరించలేకపోయింది.</translation>
 <translation id="1759301979429102118">Chromeలో ఫారమ్‌లను మరింత శీఘ్రంగా పూరించడానికి మీ పరిచయాల్లోని వివరాలు మీకు సహాయపడవచ్చు.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -103,6 +104,7 @@
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">Chrome ఈ వెబ్‌సైట్ ప్రమాణపత్రాన్ని <ph name="ISSUER" /> జారీ చేసినట్లు ధృవీకరించింది. సర్వర్ ప్రమాణపత్ర పారదర్శకత సమాచారాన్ని అందించింది, కానీ Chrome ప్రమాణపత్ర పారదర్శకత లాగ్‌ల్లో ఏదీ గుర్తించలేదు.</translation>
 <translation id="3889417619312448367">Google Chromeను అన్ఇన్స్టాల్ చెయ్యి</translation>
+<translation id="4028693306634653894">Chromeకి వేగవంతంగా వెళ్లండి</translation>
 <translation id="4042449298237264661">Windows XP మరియు Windows Vistaకు ఇప్పుడు మద్దతు లేనందున ఈ కంప్యూటర్ ఇకపై Google Chrome నవీకరణలను స్వీకరించదు.</translation>
 <translation id="4050175100176540509">ముఖ్యమైన భద్రతా మెరుగుదలలు మరియు కొత్త లక్షణాలు తాజా సంస్కరణలో అందుబాటులో ఉన్నాయి.</translation>
 <translation id="4053720452172726777">Google Chromeను అనుకూలీకరించండి మరియు నియంత్రించండి</translation>
@@ -237,6 +239,7 @@
 <translation id="7788788617745289808">ఈ సైట్‌కు కెమెరా సామర్థ్యం భాగస్వామ్యం చేయడానికి Chromeకి కెమెరా ప్రాప్యత అనుమతించడం అవసరం.</translation>
 <translation id="7808348361785373670">Chrome నుండి తీసివేయి...</translation>
 <translation id="7825851276765848807">పేర్కొనలేని లోపం కారణంగా వ్యవస్థాపన విఫలమైంది. దయచేసి Google Chromeని మళ్ళీ డౌన్‌లోడ్ చెయ్యండి.</translation>
+<translation id="7888186132678118370">Chromeని మీ విధి పట్టీకి పిన్ చేయండి</translation>
 <translation id="7890208801193284374">మీరు కంప్యూటర్‌ను భాగస్వామ్యం చేస్తే, స్నేహితులు మరియు కుటుంబ సభ్యులు విడివిడిగా బ్రౌజ్ చేయవచ్చు మరియు Chromeను వారికి నచ్చిన రీతిలో సెటప్ చేసుకోవచ్చు.</translation>
 <translation id="7908168227788431038">దాదాపుగా నవీకృతంగా ఉంది! నవీకరణను పూర్తి చేయడానికి Google Chromeని పునఃప్రారంభించండి.</translation>
 <translation id="795025003224538582">పునః ప్రారంభించవద్దు</translation>
@@ -278,4 +281,5 @@
 <translation id="9102715433345326100">ఈ ఫైల్ హానికరమైనది మరియు Chrome దీన్ని బ్లాక్ చేసింది.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />హెచ్చరిక:<ph name="END_BOLD" /> Google Chrome మీ బ్రౌజింగ్ చరిత్రను రికార్డ్ చేయకుండా పొడిగింపుని నిరోధించలేదు. ఈ పొడిగింపుని అజ్ఞాత మోడ్‌లో ఆపివేయడానికి, ఈ ఎంపికను రద్దు చేయండి.</translation>
 <translation id="911206726377975832">మీ బ్రౌజింగ్ డేటాని కూడా తొలగించాలా?</translation>
+<translation id="924447568950697217">Chromeని మీ డిఫాల్ట్ బ్రౌజర్‌గా చేయండి</translation>
 </translationbundle>

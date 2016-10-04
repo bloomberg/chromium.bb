@@ -28,6 +28,7 @@
 <translation id="1653828314016431939">אישור - הפעל מחדש כעת</translation>
 <translation id="1682634494516646069">‏Google Chrome אינו יכול לקרוא ולכתוב בספריית הנתונים שלו: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">‏Google Chrome הוא דפדפן אינטרנט המפעיל דפי אינטרנט ואפליקציות במהירות הבזק. זהו דפדפן מהיר, יציב וקל לשימוש. תוכל לגלוש באינטרנט בצורה בטוחה יותר הודות להגנה מפני תוכנות זדוניות ודיוג, המובנית ב-Google Chrome.</translation>
+<translation id="1718131156967340976">‏בחר ב-<ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Google Chrome<ph name="END_BOLD" /></translation>
 <translation id="174539241580958092">‏Google Chrome לא הצליח לסנכרן את הנתונים שלך בשל שגיאת כניסה.</translation>
 <translation id="1759301979429102118">‏פרטים מאנשי הקשר שלך יכולים לעזור לך למלא טפסים במהירות רבה יותר ב-Chrome.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -103,6 +104,7 @@
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3881912906674381083">‏Chrome אימת שהגורם שהנפיק את אישור האתר הזה הוא <ph name="ISSUER" />. השרת סיפק פרטים על שקיפות האישור, אבל Chrome לא זיהה אף אחד מהיומנים של שקיפות האישור.</translation>
 <translation id="3889417619312448367">‏הסר את Google Chrome</translation>
+<translation id="4028693306634653894">‏רוצה להגיע ל-Chrome מהר יותר?</translation>
 <translation id="4042449298237264661">‏מחשב זה כבר לא יקבל עדכונים ל-Google Chrome, מאחר שכבר אין תמיכה במערכות Windows XP ו-Windows Vista.</translation>
 <translation id="4050175100176540509">הגרסה החדשה כוללת שיפורי בטיחות חשובים ותכונות חדשות.</translation>
 <translation id="4053720452172726777">‏הגדרת Google Chrome בהתאם לרצונך</translation>
@@ -237,6 +239,7 @@
 <translation id="7788788617745289808">‏Chrome זקוק לגישה למצלמה כדי לשתף אותה עם האתר הזה.</translation>
 <translation id="7808348361785373670">‏הסר מ-Chrome...</translation>
 <translation id="7825851276765848807">‏ההתקנה נכשלה בשל שגיאה לא מזוהה. הורד שוב את Google Chrome.</translation>
+<translation id="7888186132678118370">‏הצמד את Chrome לשורת המשימות</translation>
 <translation id="7890208801193284374">‏אם אתה משתף מחשב, חברים ובני משפחה יכולים לגלוש בנפרד ולהגדיר את Chrome בדיוק כפי שהם רוצים.</translation>
 <translation id="7908168227788431038">‏העדכון כמעט הושלם! הפעל מחדש את Google Chrome כדי לסיים את העדכון.</translation>
 <translation id="795025003224538582">אל תבצע הפעלה מחדש</translation>
@@ -278,4 +281,5 @@
 <translation id="9102715433345326100">‏הקובץ הזה זדוני, ו-Chrome חסם אותו</translation>
 <translation id="9107728822479888688">‏<ph name="BEGIN_BOLD" />אזהרה:<ph name="END_BOLD" /> ‏‏Google Chrome‏ אינו יכול למנוע מתוספים לתעד את היסטוריית הגלישה שלך. כדי להשבית תוסף זה במצב גלישה פרטית, בטל אפשרות זו.</translation>
 <translation id="911206726377975832">למחוק גם את נתוני הגלישה שלך?</translation>
+<translation id="924447568950697217">‏הגדר את Chrome בתור דפדפן ברירת המחדל</translation>
 </translationbundle>

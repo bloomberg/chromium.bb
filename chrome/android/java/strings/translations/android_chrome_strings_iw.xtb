@@ -34,6 +34,7 @@
 <translation id="1376578503827013741">מחשב...</translation>
 <translation id="138361230106469022">שלום <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">חפש</translation>
+<translation id="1384959399684842514">ההורדה הושהתה</translation>
 <translation id="1389974829397082527">אין כאן סימניות</translation>
 <translation id="1404122904123200417">מוטבע ב-<ph name="WEBSITE_URL" /></translation>
 <translation id="1406000523432664303">'ללא מעקב'</translation>
@@ -238,6 +239,7 @@
 <translation id="380076759404194828">{NUM_SELECTED,plural, =1{נבחר פריט אחד}two{נבחרו # פריטים}many{נבחרו # פריטים}other{נבחרו # פריטים}}</translation>
 <translation id="3810838688059735925">וידאו</translation>
 <translation id="3810973564298564668">נהל</translation>
+<translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> הורדות נמחקו</translation>
 <translation id="3822502789641063741">למחוק נתוני אתר מהאחסון?</translation>
 <translation id="3828029223314399057">חפש סימניות</translation>
 <translation id="3894427358181296146">הוספת תיקייה</translation>
@@ -277,6 +279,7 @@
 <translation id="4271185234001491831">אל תתרגם <ph name="LANGUAGE" /> אף פעם</translation>
 <translation id="4275663329226226506">מדיה</translation>
 <translation id="4278390842282768270">מותר</translation>
+<translation id="4300272766492248925">פתח את האפליקציה</translation>
 <translation id="4307992518367153382">היסודות</translation>
 <translation id="4351244548802238354">סגור את תיבת הדו-שיח</translation>
 <translation id="4376501731284077108">לא מבוקר</translation>
@@ -323,6 +326,7 @@
 <translation id="4923459931733593730">תשלום</translation>
 <translation id="4941291666397027948">* מציין שדה חובה</translation>
 <translation id="4943872375798546930">אין תוצאות</translation>
+<translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> משתף את המסך שלך</translation>
 <translation id="4961700429721424617">‏אתה יוצא מחשבון המנוהל על-ידי <ph name="MANAGED_DOMAIN" />. פעולה זו תמחק את הנתונים שלך ב-Chrome מהמכשיר הזה, אבל הם יישארו בחשבון Google שלך.</translation>
 <translation id="497421865427891073">המשך קדימה</translation>
 <translation id="4988526792673242964">דפים</translation>
@@ -364,7 +368,6 @@
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> נמחק</translation>
 <translation id="5345083863238459644">הגישה למיקום <ph name="BEGIN_LINK" />כבויה גם בשביל המכשיר הזה<ph name="END_LINK" />.</translation>
 <translation id="5372829067651257087">כתובת האתר הועתקה.</translation>
-<translation id="5380554235172449987">לעולם אל תשלח</translation>
 <translation id="5400569084694353794">‏בעצם השימוש באפליקציה זו, אתה מסכים ל<ph name="BEGIN_LINK1" />תנאים ולהגבלות<ph name="END_LINK1" /> ול<ph name="BEGIN_LINK2" />הודעת הפרטיות<ph name="END_LINK2" /> של Chrome.</translation>
 <translation id="5414836363063783498">מאמת…</translation>
 <translation id="5423934151118863508">הדפים שבהם אתה מבקר בתדירות הגבוהה ביותר יופיעו כאן</translation>
@@ -374,7 +377,6 @@
 <translation id="5456381639095306749">הורד דף זה</translation>
 <translation id="5487521232677179737">נקה נתונים</translation>
 <translation id="5487729733663684359">‏עדכוני Chrome אינם נתמכים עוד בגרסה הזו של Android.</translation>
-<translation id="5511351932351731210">שלח תמיד</translation>
 <translation id="5512137114520586844">החשבון הזה מנוהל על ידי <ph name="PARENT_NAME" />.</translation>
 <translation id="5527082711130173040">‏כדי לבצע סריקה לאיתור מכשירים, Chrome זקוק לגישה לנתוני מיקום. <ph name="BEGIN_LINK1" />עדכן את ההרשאות<ph name="END_LINK1" />. כמו כן, הגישה למיקום <ph name="BEGIN_LINK2" />כבויה במכשיר הזה<ph name="END_LINK2" />.</translation>
 <translation id="5530766185686772672">סגור כרטיסיות גלישה בסתר</translation>
@@ -495,7 +497,6 @@
 <translation id="6831043979455480757">תרגם</translation>
 <translation id="6846298663435243399">טוען…</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> כרטיסיות נסגרו</translation>
-<translation id="6857778194843072568">‏שלח ב-Wi-Fi בלבד</translation>
 <translation id="6864459304226931083">הורד תמונה</translation>
 <translation id="6865313869410766144">נתוני טפסים למילוי אוטומטי</translation>
 <translation id="6868088497967843822">היכנס כדי לקבל גישה אל הסימניות, ההיסטוריה, הסיסמאות והגדרות נוספות בכל המכשירים שברשותך</translation>
@@ -515,6 +516,7 @@
 <translation id="7026897394897382018">הפעל את חוסך הנתונים</translation>
 <translation id="7029809446516969842">סיסמאות</translation>
 <translation id="7031882061095297553">סינכרון עם</translation>
+<translation id="7040138676081995583">פתח באמצעות...</translation>
 <translation id="7053983685419859001">חסום</translation>
 <translation id="7057058088140140610">‏שימוש בכרטיסי אשראי ובכתובות באמצעות Google Payments</translation>
 <translation id="7062545763355031412">קבל והחלף חשבונות</translation>
@@ -591,9 +593,11 @@
 <translation id="7998918019931843664">פתח מחדש כרטיסייה שנסגרה</translation>
 <translation id="7999064672810608036">‏האם אתה בטוח שברצונך לנקות את כל הנתונים המקומיים, כולל קובצי Cookie, ולאפס את כל ההרשאות של האתר הזה?</translation>
 <translation id="8007176423574883786">כבוי בשביל המכשיר הזה</translation>
+<translation id="802154636333426148">ההורדה נכשלה</translation>
 <translation id="8026334261755873520">נקה נתוני גלישה</translation>
 <translation id="8035133914807600019">תיקייה חדשה…</translation>
 <translation id="8037750541064988519">נותרו <ph name="DAYS" /> ימים</translation>
+<translation id="8051695050440594747">‏‎<ph name="MEGABYTES" /> MB זמינים</translation>
 <translation id="8063895661287329888">הוספת הסימנייה נכשלה.</translation>
 <translation id="8068648041423924542">אין אפשרות לבחור אישור.</translation>
 <translation id="8069239273282989646">לאחר דחיסה</translation>
@@ -673,7 +677,6 @@
 <translation id="8986494364107987395">‏שלח ל-Google דוחות קריסה וסטטיסטיקת שימוש באופן אוטומטי</translation>
 <translation id="8998729206196772491">‏אתה נכנס עם חשבון המנוהל על-ידי <ph name="MANAGED_DOMAIN" /> ומעניק למנהל שלו שליטה על הנתונים שלך ב-Chrome. הנתונים שלך ישויכו לצמיתות אל החשבון הזה. יציאה מ-Chrome תמחק את הנתונים שלך מהמכשיר הזה, אבל הם יישארו בחשבון Google.</translation>
 <translation id="9019902583201351841">מנוהל על-ידי ההורים שלך</translation>
-<translation id="9020607083536754075">סגור את הכרטיסייה הנוכחית וחזור לאפליקציה הקודמת</translation>
 <translation id="9038649477754266430">השתמש בשירות חיזוי כדי לטעון דפים מהר יותר</translation>
 <translation id="9050666287014529139">משפט-סיסמה</translation>
 <translation id="9060538597317784206">‏הצג את האפליקציה <ph name="APP_NAME" /> בחנות Play. דירוג: <ph name="APP_RATING" />.</translation>

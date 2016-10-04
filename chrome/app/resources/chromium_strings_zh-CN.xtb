@@ -13,6 +13,7 @@
 <translation id="1414495520565016063">您已登录 Chromium！</translation>
 <translation id="1444754455097148408">Chromium开放源代码许可</translation>
 <translation id="1480489203462860648">它已经安装完毕了，试试看吧。</translation>
+<translation id="1502360822835740515">将 Chromium 设置为您的默认浏览器</translation>
 <translation id="151962892725702025">由于您的网域停用了同步功能，Chromium操作系统无法同步您的数据。</translation>
 <translation id="1559451348202814456">Chromium 可能无法正常运行，因为它不再支持 Mac OS X 10.6、10.7 或 10.8。</translation>
 <translation id="1644918877723739397">Chromium 会将此密码存储在您的<ph name="SAVED_PASSWORD_LINK" />中，并会在您下次需要时自动填充此密码。</translation>
@@ -93,10 +94,12 @@
 <translation id="378917192836375108">您可以在 Chromium 中点击网上的电话号码，然后通过 Skype 拨打！</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="3849925841547750267">抱歉，无法在 Mozilla Firefox 浏览器运行时获取其设置。要将其设置导入 Chromium，请保存您手头的工作并关闭所有 Firefox 窗口，然后点击“继续”。</translation>
+<translation id="3852700440713538496">将 Chromium 固定到任务栏</translation>
 <translation id="3883381313049582448">使用由Chromium生成的密码</translation>
 <translation id="3889543394854987837">点击您的姓名即可打开Chromium并开始浏览。</translation>
 <translation id="390894725198123737">在 Mac 上，密码可能会保存到您的钥匙串 (Keychain) 中，这将导致共用此 OS X 帐户的其他 Chromium 用户都能够访问或同步处理这些密码。</translation>
 <translation id="4050175100176540509">最新版本不仅在安全性方面做出了重要改进，还提供了多项新功能。</translation>
+<translation id="407254336480250557">选择 <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="4077262827416206768">请关闭所有 Chromium 窗口，然后重新启动 Chromium，以便让此更改生效。</translation>
 <translation id="4182290826692170034">太棒了！Chromium 已设为您的默认浏览器。</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />警告<ph name="END_BOLD" />：Chromium 无法阻止扩展程序记录您的浏览记录。要在隐身模式下停用此扩展程序，请取消选中此选项。</translation>
@@ -118,6 +121,7 @@
 <translation id="4621240073146040695">即将更新到最新版本！重新启动 Chromium 即可完成更新。</translation>
 <translation id="4677944499843243528">其他计算机 (<ph name="HOST_NAME" />) 的另一个 Chromium 进程 (<ph name="PROCESS_ID" />) 好像正在使用此个人资料。Chromium 已锁定此个人资料以防止其受损。如果您确定其他进程目前未使用此个人资料，请为其解锁并重新启动 Chromium。</translation>
 <translation id="469338717132742108">获取有关 Chromium 操作系统的帮助</translation>
+<translation id="4714956846925717402">更快地访问 Chromium</translation>
 <translation id="4743926867934016338">接受并搜索</translation>
 <translation id="4888717733111232871">Chromium的入站规则，允许mDNS流量。</translation>
 <translation id="4943838377383847465">Chromium处于后台运行模式。</translation>

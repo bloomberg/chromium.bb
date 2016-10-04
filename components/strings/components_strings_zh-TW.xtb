@@ -80,7 +80,6 @@
 <translation id="1871208020102129563">Proxy 設定為使用固定的 Proxy 伺服器，而非 .pac 指令碼網址。</translation>
 <translation id="1883255238294161206">收合清單</translation>
 <translation id="1898423065542865115">篩選</translation>
-<translation id="1911837502049945214"><ph name="HOST_NAME" /> 不接受您的登入憑證，或是您的登入憑證可能已過期。</translation>
 <translation id="194030505837763158">前往 <ph name="LINK" /></translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" /> 書籤</translation>
 <translation id="1973335181906896915">序列化錯誤</translation>
@@ -176,7 +175,6 @@
 <translation id="2837049386027881519">必須使用較舊版的 TLS 或 SSL 通訊協定重試連線。這通常表示伺服器所使用的軟體非常老舊，而且可能產生其他安全問題。</translation>
 <translation id="284702764277384724"><ph name="HOST_NAME" /> 疑似使用偽造的伺服器憑證。</translation>
 <translation id="2889159643044928134">不要重新載入</translation>
-<translation id="2896499918916051536">系統不支援這個外掛程式。</translation>
 <translation id="2900469785430194048">Google Chrome 嘗試顯示這個網頁時用盡了記憶體。</translation>
 <translation id="2909946352844186028">系統偵測到網路變更。</translation>
 <translation id="2922350208395188000">無法檢查伺服器憑證。</translation>
@@ -220,6 +218,7 @@
 <translation id="3286538390144397061">立即重新啟動</translation>
 <translation id="3305707030755673451">您已在 <ph name="TIME" />使用同步通關密語對資料進行加密，請輸入通關密語開始進行同步。</translation>
 <translation id="333371639341676808">防止此網頁產生其他對話方塊。</translation>
+<translation id="3338095232262050444">安全</translation>
 <translation id="3340978935015468852">設定</translation>
 <translation id="3345135638360864351">無法將您的網站存取要求傳送給<ph name="NAME" />，請再試一次。</translation>
 <translation id="3355823806454867987">變更 Proxy 設定...</translation>
@@ -322,6 +321,7 @@
 <translation id="4304224509867189079">登入</translation>
 <translation id="432290197980158659">這個伺服器的憑證不符合內建的預期條件。我們針對特定的高安全性網站內建了這些預期條件，以確保你的資料安全無虞。<ph name="BEGIN_LEARN_MORE_LINK" />瞭解詳情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="4325863107915753736">找不到文章</translation>
+<translation id="4331708818696583467">不安全</translation>
 <translation id="4372948949327679948">預期的「<ph name="VALUE_TYPE" />」值。</translation>
 <translation id="4381091992796011497">使用者名稱：</translation>
 <translation id="4394049700291259645">停用</translation>
@@ -341,6 +341,7 @@
 <translation id="4589078953350245614">你嘗試連上 <ph name="DOMAIN" />，但伺服器提供的憑證無效。<ph name="BEGIN_LEARN_MORE_LINK" />瞭解詳情<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="4592951414987517459">您的 <ph name="DOMAIN" /> 連線使用新型加密套件進行加密。</translation>
 <translation id="4594403342090139922">復原刪除(&amp;U)</translation>
+<translation id="4627442949885028695">透過其他裝置繼續瀏覽</translation>
 <translation id="4668929960204016307">，</translation>
 <translation id="4670097147947922288">您正在瀏覽擴充功能頁面。</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -383,7 +384,6 @@
 <translation id="5089810972385038852">州</translation>
 <translation id="5095208057601539847">省</translation>
 <translation id="5115563688576182185">(64 位元)</translation>
-<translation id="5122371513570456792">找到 <ph name="NUMBER_OF_RESULTS" /> 個與「<ph name="SEARCH_STRING" />」相符的<ph name="SEARCH_RESULTS" />。</translation>
 <translation id="5141240743006678641">使用您的 Google 憑證對已同步處理的密碼進行加密</translation>
 <translation id="5145883236150621069">政策回應中存在錯誤代碼</translation>
 <translation id="5171045022955879922">搜尋或輸入網址</translation>
@@ -425,7 +425,6 @@
 <translation id="5622887735448669177">您要離開這個網站嗎？</translation>
 <translation id="5629630648637658800">無法載入政策設定</translation>
 <translation id="5631439013527180824">裝置管理符記無效</translation>
-<translation id="5650551054760837876">找不到搜尋結果。</translation>
 <translation id="5677928146339483299">已封鎖</translation>
 <translation id="5710435578057952990">此網頁的身分未經驗證。</translation>
 <translation id="5720705177508910913">目前使用者</translation>
@@ -624,7 +623,6 @@
 <translation id="7995512525968007366">未指定</translation>
 <translation id="8012647001091218357">我們暫時無法與您的家長聯絡，請再試一次。</translation>
 <translation id="8034522405403831421">這是<ph name="SOURCE_LANGUAGE" />網頁，需要翻譯成<ph name="TARGET_LANGUAGE" />嗎？</translation>
-<translation id="8034955203865359138">找不到任何紀錄項目。</translation>
 <translation id="8088680233425245692">無法查看文章。</translation>
 <translation id="8089520772729574115">不到 1 MB</translation>
 <translation id="8091372947890762290">尚未在伺服器上啟動</translation>
@@ -657,6 +655,7 @@
 <translation id="8433057134996913067">您會因此登出大多數網站。</translation>
 <translation id="8437238597147034694">復原移動(&amp;U)</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 張信用卡}other{# 張信用卡}}</translation>
+<translation id="8483780878231876732">如要使用您的 Google 帳戶中的信用卡，請登入 Chrome</translation>
 <translation id="8488350697529856933">適用對象</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> 的回應時間過長。</translation>
 <translation id="852346902619691059">這個伺服器無法證明所在網域是 <ph name="DOMAIN" />；裝置的作業系統不信任伺服器的安全性憑證。這可能是因為設定錯誤，或是有攻擊者攔截你的連線。<ph name="BEGIN_LEARN_MORE_LINK" />瞭解詳情<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -676,7 +675,6 @@
 <translation id="8730621377337864115">完成</translation>
 <translation id="8738058698779197622">您必須正確設定時鐘，才能建立安全連線。這是因為網站驗證身分時所使用的憑證僅於特定一段時間內有效。由於您裝置的時鐘不正確，因此 Chromium 無法驗證這些憑證。</translation>
 <translation id="8740359287975076522">找不到 <ph name="HOST_NAME" /> 的 &lt;abbr id="dnsDefinition"&gt;DNS 位址&lt;/abbr&gt;，正在診斷問題。</translation>
-<translation id="8741995161408053644">您仍可前往 <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> 存取 Google 帳戶中保存的各種瀏覽紀錄。</translation>
 <translation id="8790007591277257123">重做刪除(&amp;R)</translation>
 <translation id="8798099450830957504">預設</translation>
 <translation id="8804164990146287819">隱私權政策</translation>

@@ -65,7 +65,6 @@
 <translation id="2359808026110333948">繼續</translation>
 <translation id="2366718077645204424">無法連線到主機，原因可能與您使用的網路設定有關。</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />上次上線時間：<ph name="RELATIVE_TIMESTAMP" />。</translation>
-<translation id="2498359688066513246">說明與意見回饋</translation>
 <translation id="2499160551253595098">允許我們收集使用統計資料和當機報告，協助我們改善 Chrome 遠端桌面。</translation>
 <translation id="2512228156274966424">注意：如要確保所有鍵盤快捷鍵都能正常使用，請將 Chrome 遠端桌面設定為 [在視窗中開啟]。</translation>
 <translation id="2540992418118313681">您要與其他使用者分享這台電腦的瀏覽及控制權限嗎？</translation>
@@ -264,6 +263,7 @@
 <translation id="7948001860594368197">螢幕選項</translation>
 <translation id="7970576581263377361">驗證失敗，請重新登入 Chromium。</translation>
 <translation id="7981525049612125370">遠端工作階段已逾時。</translation>
+<translation id="8041089156583427627">提供意見</translation>
 <translation id="8041721485428375115">下載 Chrome 遠端桌面主機安裝程式即表示您同意 Google 的《<ph name="LINK_BEGIN" />服務條款<ph name="LINK_END" />》。</translation>
 <translation id="8073845705237259513">您必須在裝置上新增 Google 帳戶，才能使用 Chrome 遠端桌面。</translation>
 <translation id="80739703311984697">遠端主機要求您向第三方網站進行驗證。如要繼續，您必須授予額外權限，讓 Chromoting 能夠存取這個位址：</translation>

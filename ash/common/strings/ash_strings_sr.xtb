@@ -109,6 +109,7 @@
 <translation id="3891340733213178823">Двапут притисните Ctrl+Shift+Q да бисте се одјавили.</translation>
 <translation id="3892641579809465218">Интерни екран</translation>
 <translation id="3893630138897523026">ChromeVox (говорне повратне информације)</translation>
+<translation id="3899995891769452915">Гласовни унос</translation>
 <translation id="3963445509666917109">Звучник (интерни)</translation>
 <translation id="3967919079500697218">Администратор је онемогућио опцију прављења снимака екрана.</translation>
 <translation id="397105322502079400">Израчунавање...</translation>
@@ -181,6 +182,7 @@
 <translation id="6459472438155181876">Проширивање екрана у <ph name="DISPLAY_NAME" /></translation>
 <translation id="6490471652906364588">Уређај са USB прикључком типа C (десни порт)</translation>
 <translation id="6501401484702599040">Екран се пребацује на <ph name="RECEIVER_NAME" /></translation>
+<translation id="6521655319214113338">Унос рукописа</translation>
 <translation id="6537270692134705506">Сними екран</translation>
 <translation id="6550675742724504774">Опције</translation>
 <translation id="6585808820553845416">Сесија се завршава за <ph name="SESSION_TIME_REMAINING" />.</translation>
@@ -211,6 +213,7 @@
 <translation id="743058460480092004">Камера и микрофон се користе.</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> не подржава <ph name="SPECIFIED_RESOLUTION" />. Резолуција је промењена на <ph name="FALLBACK_RESOLUTION" /></translation>
+<translation id="7562368315689366235">Палета емоџија</translation>
 <translation id="7573962313813535744">Режим са базном станицом</translation>
 <translation id="7580671184200851182">Пуштај исти звук на свим звучницима (моно звук)</translation>
 <translation id="7581273696622423628">Прикажи анкету</translation>

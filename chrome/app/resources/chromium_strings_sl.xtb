@@ -15,6 +15,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="1414495520565016063">Prijavljeni ste v Chromium.</translation>
 <translation id="1444754455097148408">Odprtokodne licence za Chromium</translation>
 <translation id="1480489203462860648">Preskusite ga, je že nameščen.</translation>
+<translation id="1502360822835740515">Nastavitev Chromiuma kot privzetega brskalnika</translation>
 <translation id="151962892725702025">Chromium OS ni mogel sinhronizirati podatkov, ker sinhronizacija ni na voljo za vašo domeno.</translation>
 <translation id="1559451348202814456">Chromium morda ne bo deloval pravilno, ker ni več podprt v različicah sistema Mac OS X 10.6, 10.7 ali 10.8.</translation>
 <translation id="1644918877723739397">Chromium bo shranil to tukaj: <ph name="SAVED_PASSWORD_LINK" /> in priklical, ko to naslednjič potrebujete.</translation>
@@ -95,10 +96,12 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="378917192836375108">Chromium omogoča, da v spletu kliknete telefonsko številko in jo pokličete prek Skypa.</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
 <translation id="3849925841547750267">Žal nastavitve brskalnika Mozilla Firefox niso na voljo, medtem ko ga uporabljate. Če želite te nastavitve uvoziti v Chromium, shranite delo in zaprite vsa okna Firefoxa. Nato kliknite »Naprej«.</translation>
+<translation id="3852700440713538496">Pripenjanje Chromiuma v opravilno vrstico</translation>
 <translation id="3883381313049582448">Uporabite geslo, ki ga ustvari Chromium</translation>
 <translation id="3889543394854987837">Kliknite ime, da odprete Chromium in začnete brskati.</translation>
 <translation id="390894725198123737">V računalnikih Mac so gesla morda shranjena v orodju Keychain, pri čemer lahko do njih dostopajo ali jih sinhronizirajo drugi uporabniki Chromiuma, s katerimi si delite ta račun v sistemu OS X.</translation>
 <translation id="4050175100176540509">V najnovejši različici so na voljo pomembne varnostne izboljšave in nove funkcije.</translation>
+<translation id="407254336480250557">Izberite <ph name="SMALL_PRODUCT_LOGO" /> <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /></translation>
 <translation id="4077262827416206768">Zaprite vsa okna Chromiuma in ga zaženite znova, da bo ta sprememba začela veljati.</translation>
 <translation id="4182290826692170034">Chromium je privzeti brskalnik. Hura!</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Opozorilo:<ph name="END_BOLD" /> Chromium razširitvam ne more preprečiti beleženja zgodovine brskanja. Če želite onemogočiti to razširitev v načinu brez beleženja zgodovine, počistite to možnost.</translation>
@@ -120,6 +123,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="4621240073146040695">Samo še malo. Znova zaženite Chromium, da dokončate posodobitev.</translation>
 <translation id="4677944499843243528">Videti je, da profil uporablja drug Chromiumov proces (<ph name="PROCESS_ID" />) v drugem računalniku (<ph name="HOST_NAME" />). Chromium je zaklenil profil, da se ne poškoduje. Če ste prepričani, da tega profila ne uporabljajo nobeni drugi procesi, ga lahko odklenete in znova zaženete Chromium.</translation>
 <translation id="469338717132742108">Pomoč za OS Chromium</translation>
+<translation id="4714956846925717402">Hitrejši dostop do Chromiuma</translation>
 <translation id="4743926867934016338">Sprejem in iskanje</translation>
 <translation id="4888717733111232871">Pravilo za dohodni promet za Chromium, ki omogoča promet mDNS.</translation>
 <translation id="4943838377383847465">Chromium se izvaja v ozadju.</translation>

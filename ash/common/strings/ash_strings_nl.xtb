@@ -109,6 +109,7 @@ Druk op Zoeken of Shift om te annuleren.</translation>
 <translation id="3891340733213178823">Druk twee keer op Ctrl+Shift+Q om uit te loggen.</translation>
 <translation id="3892641579809465218">Interne display</translation>
 <translation id="3893630138897523026">ChromeVox (gesproken feedback)</translation>
+<translation id="3899995891769452915">Spraakinvoer</translation>
 <translation id="3963445509666917109">Luidspreker (intern)</translation>
 <translation id="3967919079500697218">Je beheerder heeft de mogelijkheid uitgeschakeld om screenshots te maken.</translation>
 <translation id="397105322502079400">Berekenen...</translation>
@@ -181,6 +182,7 @@ Druk op Shift + Alt om te schakelen.</translation>
 <translation id="6459472438155181876">Scherm uitbreiden naar <ph name="DISPLAY_NAME" /></translation>
 <translation id="6490471652906364588">USB-C-apparaat (poort aan rechterkant)</translation>
 <translation id="6501401484702599040">Scherm casten naar <ph name="RECEIVER_NAME" /></translation>
+<translation id="6521655319214113338">Handschriftinvoer</translation>
 <translation id="6537270692134705506">Screenshot maken</translation>
 <translation id="6550675742724504774">Opties</translation>
 <translation id="6585808820553845416">Sessie loopt af over <ph name="SESSION_TIME_REMAINING" />.</translation>
@@ -212,6 +214,7 @@ Druk op Alt+Zoeken of Shift om te annuleren.</translation>
 <translation id="743058460480092004">Camera en microfoon zijn in gebruik.</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> ondersteunt <ph name="SPECIFIED_RESOLUTION" /> niet. De resolutie is gewijzigd in <ph name="FALLBACK_RESOLUTION" /></translation>
+<translation id="7562368315689366235">Emoji-palet</translation>
 <translation id="7573962313813535744">Gedockte modus</translation>
 <translation id="7580671184200851182">Dezelfde audio afspelen via alle speakers (mono-audio)</translation>
 <translation id="7581273696622423628">Enquête invullen</translation>

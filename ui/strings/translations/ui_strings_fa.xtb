@@ -4,7 +4,7 @@
 <translation id="111910763555783249">تنظیمات اعلان</translation>
 <translation id="1127811143501539442">{DAYS,plural, =1{۱ روز قبل}one{# روز قبل}other{# روز قبل}}</translation>
 <translation id="1190609913194133056">مرکز اعلان</translation>
-<translation id="1243314992276662751">آپلود</translation>
+<translation id="1243314992276662751">بارگذاری</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1398853756734560583">بزرگ کردن</translation>
 <translation id="1413622004203049571">غیرفعال کردن اعلان‌ها از <ph name="NOTIFIER_NAME" /></translation>
@@ -38,7 +38,7 @@
 <translation id="3234408098842461169">پیکان پایین</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{۱ روز}one{# روز}other{# روز}}</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{۱ روز باقی مانده است}one{# روز باقی مانده است}other{# روز باقی مانده است}}</translation>
-<translation id="364720409959344976">انتخاب پوشه برای آپلود</translation>
+<translation id="364720409959344976">انتخاب پوشه برای بارگذاری</translation>
 <translation id="3660179305079774227">پیکان بالا</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> گیگابایت/ثانیه</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> گیگابایت</translation>

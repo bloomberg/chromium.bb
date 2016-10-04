@@ -80,7 +80,6 @@
 <translation id="1871208020102129563">Proxy je nastavljen na uporabo stalnih strežnikov proxy, ne na URL skripta .pac.</translation>
 <translation id="1883255238294161206">Strni seznam</translation>
 <translation id="1898423065542865115">Filtriranje</translation>
-<translation id="1911837502049945214">Spletno mesto <ph name="HOST_NAME" /> ni sprejelo potrdila za prijavo ali pa je to poteklo.</translation>
 <translation id="194030505837763158">Pojdite na <ph name="LINK" /></translation>
 <translation id="1962204205936693436">Zaznamki domene <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Napaka pri serializaciji</translation>
@@ -176,7 +175,6 @@
 <translation id="2837049386027881519">Potrebna je bila vnovična povezava s starejšo različico protokola TLS ali SSL. To navadno pomeni, da strežnik uporablja zastarelo programsko opremo ali ima druge varnostne težave.</translation>
 <translation id="284702764277384724">Videti je, da je potrdilo strežnika na <ph name="HOST_NAME" /> ponarejeno.</translation>
 <translation id="2889159643044928134">Ne naloži znova</translation>
-<translation id="2896499918916051536">Ta vtičnik ni podprt.</translation>
 <translation id="2900469785430194048">Google Chromu je med poskusom prikazovanja te spletne strani zmanjkalo pomnilnika.</translation>
 <translation id="2909946352844186028">Zaznana je bila sprememba omrežja.</translation>
 <translation id="2922350208395188000">Potrdila strežnika ni mogoče preveriti.</translation>
@@ -220,6 +218,7 @@
 <translation id="3286538390144397061">Znova zaženi</translation>
 <translation id="3305707030755673451">Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />. Vnesite ga, če želite začeti sinhronizacijo.</translation>
 <translation id="333371639341676808">Tej strani preprečite, da bi ustvarila dodatna pogovorna okna.</translation>
+<translation id="3338095232262050444">Varno</translation>
 <translation id="3340978935015468852">nastavitve</translation>
 <translation id="3345135638360864351">Zahteve za dostop do tega spletnega mesta ni bilo mogoče poslati osebi <ph name="NAME" />. Poskusite znova.</translation>
 <translation id="3355823806454867987">Spremeni nastavitve proxyja ...</translation>
@@ -322,6 +321,7 @@
 <translation id="4304224509867189079">Prijava</translation>
 <translation id="432290197980158659">Strežnik je poslal potrdilo, ki se ne ujema z vgrajenimi pričakovanji. Ta pričakovanja so zaradi vaše varnosti vključena za nekatera strogo zavarovana spletna mesta. <ph name="BEGIN_LEARN_MORE_LINK" />Več o tem<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4325863107915753736">Članka ni bilo mogoče najti</translation>
+<translation id="4331708818696583467">Ni varno</translation>
 <translation id="4372948949327679948">Pričakovana vrednost je vrste <ph name="VALUE_TYPE" />.</translation>
 <translation id="4381091992796011497">Uporabniško ime:</translation>
 <translation id="4394049700291259645">Onemogoči</translation>
@@ -341,6 +341,7 @@
 <translation id="4589078953350245614">Poskusili ste dostopati do domene <ph name="DOMAIN" />, vendar je strežnik posredoval neveljavno potrdilo. <ph name="BEGIN_LEARN_MORE_LINK" />Več o tem<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4592951414987517459">Povezava z domeno <ph name="DOMAIN" /> je šifrirana s sodobno šifrirno zbirko.</translation>
 <translation id="4594403342090139922">&amp;Razveljavi izbris</translation>
+<translation id="4627442949885028695">Nadaljevanje iz druge naprave</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4670097147947922288">Ogledujete si stran z razširitvami.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
@@ -383,7 +384,6 @@
 <translation id="5089810972385038852">Zvezna država</translation>
 <translation id="5095208057601539847">Provinca</translation>
 <translation id="5115563688576182185">(64-bitno)</translation>
-<translation id="5122371513570456792">Za »<ph name="SEARCH_STRING" />« je bilo najdenih toliko <ph name="SEARCH_RESULTS" />: <ph name="NUMBER_OF_RESULTS" />.</translation>
 <translation id="5141240743006678641">Šifrirajte sinhronizirana gesla s poverilnicami za Google</translation>
 <translation id="5145883236150621069">Koda napake v odzivu pravilnika</translation>
 <translation id="5171045022955879922">Poiščite ali vnesite URL</translation>
@@ -425,7 +425,6 @@
 <translation id="5622887735448669177">Ali želite zapustiti to spletno mesto?</translation>
 <translation id="5629630648637658800">Nastavitev pravilnika ni bilo mogoče naložiti</translation>
 <translation id="5631439013527180824">Neveljaven žeton za upravljanje naprave</translation>
-<translation id="5650551054760837876">Najden ni bil noben rezultat iskanja.</translation>
 <translation id="5677928146339483299">Blokirano</translation>
 <translation id="5710435578057952990">Identiteta tega spletnega mesta ni bila potrjena.</translation>
 <translation id="5720705177508910913">Trenutni uporabnik</translation>
@@ -624,7 +623,6 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY" /> za n
 <translation id="7995512525968007366">Ni navedeno</translation>
 <translation id="8012647001091218357">Trenutno ni mogoče vzpostaviti stika s starši. Poskusi znova pozneje.</translation>
 <translation id="8034522405403831421">Ta stran je v jeziku <ph name="SOURCE_LANGUAGE" />. Jo želite prevesti v jezik <ph name="TARGET_LANGUAGE" />?</translation>
-<translation id="8034955203865359138">Ni vnosov v zgodovino.</translation>
 <translation id="8088680233425245692">Članka si ni bilo mogoče ogledati.</translation>
 <translation id="8089520772729574115">manj kot 1 MB</translation>
 <translation id="8091372947890762290">Čakanje na aktivacijo v strežniku</translation>
@@ -657,6 +655,7 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY" /> za n
 <translation id="8433057134996913067">S tem boste odjavljeni z večine spletnih mest.</translation>
 <translation id="8437238597147034694">&amp;Razveljavi premik</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 kreditna kartica}one{# kreditna kartica}two{# kreditni kartici}few{# kreditne kartice}other{# kreditnih kartic}}</translation>
+<translation id="8483780878231876732">Če želite uporabljati kartice iz Google Računa, se prijavite v Chrome</translation>
 <translation id="8488350697529856933">Velja za</translation>
 <translation id="8498891568109133222">Spletno mesto <ph name="HOST_NAME" /> se ni odzvalo v ustreznem času.</translation>
 <translation id="852346902619691059">Temu strežniku ni uspelo dokazati, da je domena <ph name="DOMAIN" />; operacijski sistem vaše naprave ne zaupa njegovemu varnostnemu potrdilu. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave. <ph name="BEGIN_LEARN_MORE_LINK" />Več o tem<ph name="END_LEARN_MORE_LINK" />.</translation>
@@ -676,7 +675,6 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY" /> za n
 <translation id="8730621377337864115">Končano</translation>
 <translation id="8738058698779197622">Če želite vzpostaviti varno povezavo, mora biti ura pravilno nastavljena. Potrdila, ki jih uporabljajo spletna mesta za prepoznavanje, namreč veljajo samo določen čas. Ker je ura sistema nepravilna, Chromium teh potrdil ne more preveriti.</translation>
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;Naslova DNS&lt;/abbr&gt; spletnega mesta <ph name="HOST_NAME" /> ni bilo mogoče najti. Poteka diagnosticiranje težave.</translation>
-<translation id="8741995161408053644">V Google Računu so morda druge vrste zgodovine brskanja na <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;Uveljavi izbris</translation>
 <translation id="8798099450830957504">Privzeto</translation>
 <translation id="8804164990146287819">Pravilnik o zasebnosti</translation>

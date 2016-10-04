@@ -65,7 +65,6 @@ Para mais informações acerca da privacidade, consulte a Política de Privacida
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="2366718077645204424">Não é possível contactar o anfitrião. Provavelmente, isso deve-se à configuração da rede que está a utilizar.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Última atividade online <ph name="RELATIVE_TIMESTAMP" />.</translation>
-<translation id="2498359688066513246">Ajuda e comentários</translation>
 <translation id="2499160551253595098">Ajude-nos a melhorar o Ambiente de Trabalho Remoto do Chrome, permitindo-nos recolher estatísticas de utilização e relatórios de falhas.</translation>
 <translation id="2512228156274966424">NOTA: Para garantir que todos os atalhos de teclado estão disponíveis, pode configurar o Ambiente de Trabalho Remoto do Chrome para "Abrir como janela".</translation>
 <translation id="2540992418118313681">Pretende partilhar este computador e permitir que outro utilizador o veja e controle?</translation>
@@ -264,6 +263,7 @@ Remoto do Chrome</translation>
 <translation id="7948001860594368197">Opções de ecrã</translation>
 <translation id="7970576581263377361">Falha na autenticação. Inicie sessão novamente no Chromium.</translation>
 <translation id="7981525049612125370">A sessão remota expirou.</translation>
+<translation id="8041089156583427627">Enviar comentários</translation>
 <translation id="8041721485428375115">Ao transferir o instalador do anfitrião do Ambiente de Trabalho Remoto do Chrome, aceita os <ph name="LINK_BEGIN" />Termos de Utilização<ph name="LINK_END" /> do Google.</translation>
 <translation id="8073845705237259513">Para utilizar o Ambiente de Trabalho Remoto do Chrome, tem de adicionar uma Conta Google ao seu dispositivo.</translation>
 <translation id="80739703311984697">O anfitrião remoto requer que efetue a autenticação num Website de terceiros. Para continuar, necessita de conceder permissões adicionais ao Chromoting para aceder a este endereço:</translation>
