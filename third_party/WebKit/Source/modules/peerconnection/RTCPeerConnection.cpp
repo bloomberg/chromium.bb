@@ -378,8 +378,10 @@ RTCOfferOptionsPlatform* parseOfferOptions(const Dictionary& options) {
   Vector<String> propertyNames;
   options.getPropertyNames(propertyNames);
 
-  // Treat |options| as MediaConstraints if it is empty or has "optional" or "mandatory" properties for compatibility.
-  // TODO(jiayl): remove constraints when RTCOfferOptions reaches Stable and client code is ready.
+  // Treat |options| as MediaConstraints if it is empty or has "optional" or
+  // "mandatory" properties for compatibility.
+  // TODO(jiayl): remove constraints when RTCOfferOptions reaches Stable and
+  // client code is ready.
   if (propertyNames.isEmpty() || propertyNames.contains("optional") ||
       propertyNames.contains("mandatory"))
     return 0;
@@ -407,7 +409,8 @@ RTCOfferOptionsPlatform* parseOfferOptions(const Dictionary& options) {
   return rtcOfferOptions;
 }
 
-// Helper class for |RTCPeerConnection::getStats(ScriptState*, MediaStreamTrack*)|
+// Helper class for
+// |RTCPeerConnection::getStats(ScriptState*, MediaStreamTrack*)|
 class WebRTCStatsReportCallbackResolver : public WebRTCStatsReportCallback {
  public:
   // Takes ownership of |resolver|.
@@ -459,7 +462,8 @@ RTCPeerConnection* RTCPeerConnection::create(ExecutionContext* context,
     UseCounter::count(context,
                       UseCounter::RTCPeerConnectionConstructorCompliant);
 
-  // Record the RtcpMuxPolicy for histogram "WebRTC.PeerConnection.SelectedRtcpMuxPolicy".
+  // Record the RtcpMuxPolicy for histogram
+  // "WebRTC.PeerConnection.SelectedRtcpMuxPolicy".
   RtcpMuxPolicy selectedRtcpMuxPolicy = RtcpMuxPolicyDefault;
   RTCConfiguration* configuration = parseConfiguration(
       rtcConfiguration, exceptionState, &selectedRtcpMuxPolicy);
@@ -517,7 +521,8 @@ RTCPeerConnection::RTCPeerConnection(ExecutionContext* context,
   ThreadState::current()->registerPreFinalizer(this);
   Document* document = toDocument(getExecutionContext());
 
-  // If we fail, set |m_closed| and |m_stopped| to true, to avoid hitting the assert in the destructor.
+  // If we fail, set |m_closed| and |m_stopped| to true, to avoid hitting the
+  // assert in the destructor.
 
   if (!document->frame()) {
     m_closed = true;
@@ -555,7 +560,8 @@ RTCPeerConnection::RTCPeerConnection(ExecutionContext* context,
 
 RTCPeerConnection::~RTCPeerConnection() {
   // This checks that close() or stop() is called before the destructor.
-  // We are assuming that a wrapper is always created when RTCPeerConnection is created.
+  // We are assuming that a wrapper is always created when RTCPeerConnection is
+  // created.
   DCHECK(m_closed || m_stopped);
 }
 
@@ -617,8 +623,9 @@ ScriptPromise RTCPeerConnection::createOffer(
     MediaErrorState mediaErrorState;
     WebMediaConstraints constraints =
         MediaConstraintsImpl::create(context, rtcOfferOptions, mediaErrorState);
-    // Report constraints parsing errors via the callback, but ignore unknown/unsupported constraints as they
-    // would be silently discarded by WebIDL.
+    // Report constraints parsing errors via the callback, but ignore
+    // unknown/unsupported constraints as they would be silently discarded by
+    // WebIDL.
     if (mediaErrorState.canGenerateException()) {
       String errorMsg = mediaErrorState.getErrorMessage();
       asyncCallErrorCallback(errorCallback,
@@ -677,8 +684,9 @@ ScriptPromise RTCPeerConnection::createAnswer(
   MediaErrorState mediaErrorState;
   WebMediaConstraints constraints =
       MediaConstraintsImpl::create(context, mediaConstraints, mediaErrorState);
-  // Report constraints parsing errors via the callback, but ignore unknown/unsupported constraints as they
-  // would be silently discarded by WebIDL.
+  // Report constraints parsing errors via the callback, but ignore
+  // unknown/unsupported constraints as they would be silently discarded by
+  // WebIDL.
   if (mediaErrorState.canGenerateException()) {
     String errorMsg = mediaErrorState.getErrorMessage();
     asyncCallErrorCallback(errorCallback,
@@ -845,20 +853,22 @@ ScriptPromise RTCPeerConnection::generateCertificate(
     ScriptState* scriptState,
     const AlgorithmIdentifier& keygenAlgorithm,
     ExceptionState& exceptionState) {
-  // Normalize |keygenAlgorithm| with WebCrypto, making sure it is a recognized AlgorithmIdentifier.
+  // Normalize |keygenAlgorithm| with WebCrypto, making sure it is a recognized
+  // AlgorithmIdentifier.
   WebCryptoAlgorithm cryptoAlgorithm;
   AlgorithmError error;
   if (!normalizeAlgorithm(keygenAlgorithm, WebCryptoOperationGenerateKey,
                           cryptoAlgorithm, &error)) {
-    // Reject generateCertificate with the same error as was produced by WebCrypto.
-    // |result| is garbage collected, no need to delete.
+    // Reject generateCertificate with the same error as was produced by
+    // WebCrypto. |result| is garbage collected, no need to delete.
     CryptoResultImpl* result = CryptoResultImpl::create(scriptState);
     ScriptPromise promise = result->promise();
     result->completeWithError(error.errorType, error.errorDetails);
     return promise;
   }
 
-  // Check if |keygenAlgorithm| contains the optional DOMTimeStamp |expires| attribute.
+  // Check if |keygenAlgorithm| contains the optional DOMTimeStamp |expires|
+  // attribute.
   Nullable<DOMTimeStamp> expires;
   if (keygenAlgorithm.isDictionary()) {
     Dictionary keygenAlgorithmDict = keygenAlgorithm.getAsDictionary();
@@ -877,7 +887,8 @@ ScriptPromise RTCPeerConnection::generateCertificate(
     }
   }
 
-  // Convert from WebCrypto representation to recognized WebRTCKeyParams. WebRTC supports a small subset of what are valid AlgorithmIdentifiers.
+  // Convert from WebCrypto representation to recognized WebRTCKeyParams. WebRTC
+  // supports a small subset of what are valid AlgorithmIdentifiers.
   const char* unsupportedParamsString =
       "The 1st argument provided is an AlgorithmIdentifier with a supported "
       "algorithm name, but the parameters are not supported.";
@@ -886,7 +897,8 @@ ScriptPromise RTCPeerConnection::generateCertificate(
     case WebCryptoAlgorithmIdRsaSsaPkcs1v1_5:
       // name: "RSASSA-PKCS1-v1_5"
       unsigned publicExponent;
-      // "publicExponent" must fit in an unsigned int. The only recognized "hash" is "SHA-256".
+      // "publicExponent" must fit in an unsigned int. The only recognized
+      // "hash" is "SHA-256".
       if (cryptoAlgorithm.rsaHashedKeyGenParams()
               ->convertPublicExponentToUnsigned(publicExponent) &&
           cryptoAlgorithm.rsaHashedKeyGenParams()->hash().id() ==
@@ -926,7 +938,8 @@ ScriptPromise RTCPeerConnection::generateCertificate(
   std::unique_ptr<WebRTCCertificateGenerator> certificateGenerator =
       wrapUnique(Platform::current()->createRTCCertificateGenerator());
 
-  // |keyParams| was successfully constructed, but does the certificate generator support these parameters?
+  // |keyParams| was successfully constructed, but does the certificate
+  // generator support these parameters?
   if (!certificateGenerator->isSupportedKeyParams(keyParams.get())) {
     return ScriptPromise::rejectWithDOMException(
         scriptState,
@@ -939,8 +952,9 @@ ScriptPromise RTCPeerConnection::generateCertificate(
   std::unique_ptr<WebRTCCertificateObserver> certificateObserver(
       WebRTCCertificateObserver::create(resolver));
 
-  // Generate certificate. The |certificateObserver| will resolve the promise asynchronously upon completion.
-  // The observer will manage its own destruction as well as the resolver's destruction.
+  // Generate certificate. The |certificateObserver| will resolve the promise
+  // asynchronously upon completion. The observer will manage its own
+  // destruction as well as the resolver's destruction.
   if (expires.isNull()) {
     certificateGenerator->generateCertificate(keyParams.get(),
                                               std::move(certificateObserver));

@@ -41,7 +41,8 @@ void RTCVoidRequestPromiseImpl::requestSucceeded() {
 
 void RTCVoidRequestPromiseImpl::requestFailed(const String& error) {
   if (m_requester && m_requester->shouldFireDefaultCallbacks()) {
-    // TODO(guidou): The error code should come from the content layer. See crbug.com/589455
+    // TODO(guidou): The error code should come from the content layer. See
+    // crbug.com/589455
     m_resolver->reject(DOMException::create(OperationError, error));
   } else {
     // This is needed to have the resolver release its internal resources

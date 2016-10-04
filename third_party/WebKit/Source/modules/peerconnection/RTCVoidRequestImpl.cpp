@@ -76,7 +76,8 @@ void RTCVoidRequestImpl::requestFailed(const String& error) {
   bool shouldFireCallback =
       m_requester && m_requester->shouldFireDefaultCallbacks();
   if (shouldFireCallback && m_errorCallback.get()) {
-    // TODO(guidou): The error code should come from the content layer. See crbug.com/589455
+    // TODO(guidou): The error code should come from the content layer. See
+    // crbug.com/589455
     m_errorCallback->handleEvent(DOMException::create(OperationError, error));
   }
 

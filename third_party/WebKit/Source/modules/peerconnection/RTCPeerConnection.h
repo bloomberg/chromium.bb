@@ -230,7 +230,8 @@ class RTCPeerConnection final : public EventTargetWithInlineData,
   // Returns true if the state was changed.
   bool setIceConnectionState(
       WebRTCPeerConnectionHandlerClient::ICEConnectionState);
-  // Changes the state asynchronously and fires an event immediately after changing the state.
+  // Changes the state asynchronously and fires an event immediately after
+  // changing the state.
   void changeIceConnectionState(
       WebRTCPeerConnectionHandlerClient::ICEConnectionState);
 
