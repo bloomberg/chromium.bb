@@ -55,7 +55,7 @@ bool AcceleratorControllerDelegateMus::HandlesAction(AcceleratorAction action) {
       display::mojom::DisplayControllerPtr display_controller;
       connector_->ConnectToInterface("mojo:ui", &display_controller);
       display_controller->ToggleVirtualDisplay();
-      break;
+      return true;
     }
     case DEV_TOGGLE_UNIFIED_DESKTOP:
     case DISABLE_GPU_WATCHDOG:

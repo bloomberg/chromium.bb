@@ -39,7 +39,6 @@
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/cpp/window_property.h"
 #include "services/ui/public/cpp/window_tree_client.h"
-#include "services/ui/public/cpp/window_tree_host_factory.h"
 #include "ui/display/display_list.h"
 #include "ui/display/screen_base.h"
 

@@ -28,7 +28,6 @@
 #include "services/ui/public/cpp/window_property.h"
 #include "services/ui/public/cpp/window_tree_client.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
-#include "services/ui/public/interfaces/window_tree_host.mojom.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
