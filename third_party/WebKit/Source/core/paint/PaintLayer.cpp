@@ -393,8 +393,8 @@ void PaintLayer::updateTransformationMatrix() {
     ASSERT(box);
     transform->makeIdentity();
     box->style()->applyTransform(
-        *transform, LayoutSize(box->pixelSnappedSize()),
-        ComputedStyle::IncludeTransformOrigin, ComputedStyle::IncludeMotionPath,
+        *transform, box->size(), ComputedStyle::IncludeTransformOrigin,
+        ComputedStyle::IncludeMotionPath,
         ComputedStyle::IncludeIndependentTransformProperties);
     makeMatrixRenderable(*transform, compositor()->hasAcceleratedCompositing());
   }

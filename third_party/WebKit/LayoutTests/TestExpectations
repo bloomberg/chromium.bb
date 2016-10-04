@@ -358,6 +358,12 @@ crbug.com/325673 imported/wpt/custom-elements/v0/concepts/custom-elements-type-n
 
 crbug.com/542660 fast/css/absolute-inline-alignment-2.html [ Failure ]
 
+crbug.com/627588 compositing/gestures/gesture-tapHighlight-pixel-rotated-link.html [ NeedsRebaseline ]
+crbug.com/627588 paint/invalidation/invalidation-with-scale-transform.html [ NeedsRebaseline ]
+crbug.com/627588 fast/backgrounds/background-with-sub-pixel-offset-positioning.html [ NeedsRebaseline ]
+crbug.com/627588 compositing/geometry/fixed-position-transform-composited-page-scale.html [ NeedsRebaseline ]
+crbug.com/627588 fast/transforms/transform-on-inline.html [ NeedsRebaseline ]
+
 # Ref tests that needs investigation.
 crbug.com/404597 [ Mac ] fast/css3-text/css3-text-justify/text-justify-crash.html [ Failure ]
 crbug.com/404597 fast/forms/long-text-in-input.html [ Failure ]
