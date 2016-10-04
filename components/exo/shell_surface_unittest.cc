@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/aura/wm_window_aura.h"
+#include "ash/common/accessibility_delegate.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_event.h"
@@ -20,9 +21,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_targeter.h"
 #include "ui/base/hit_test.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/shadow.h"
 #include "ui/wm/core/shadow_controller.h"
@@ -610,8 +613,8 @@ TEST_F(ShellSurfaceTest, ShadowStartMaximized) {
 
   EXPECT_FALSE(wm::ShadowController::GetShadowForWindow(window));
   // Underlay should be created even without shadow.
-  ASSERT_TRUE(shell_surface->shadow_underlay_for_test());
-  EXPECT_TRUE(shell_surface->shadow_underlay_for_test()->IsVisible());
+  ASSERT_TRUE(shell_surface->shadow_underlay());
+  EXPECT_TRUE(shell_surface->shadow_underlay()->IsVisible());
 
   // Restore the window and make sure the shadow is created, visible and
   // has the latest bounds.
@@ -671,7 +674,7 @@ TEST_F(ShellSurfaceTest, ImmersiveFullscreenBackground) {
   gfx::Rect shadow_bounds(10, 10, 100, 100);
   shell_surface->SetRectangularShadow(shadow_bounds);
   surface->Commit();
-  ASSERT_EQ(shadow_bounds, shell_surface->shadow_underlay_for_test()->bounds());
+  ASSERT_EQ(shadow_bounds, shell_surface->shadow_underlay()->bounds());
 
   ash::wm::WMEvent event(ash::wm::WM_EVENT_TOGGLE_FULLSCREEN);
   ash::WmWindow* window =
@@ -681,16 +684,90 @@ TEST_F(ShellSurfaceTest, ImmersiveFullscreenBackground) {
   window->GetWindowState()->OnWMEvent(&event);
 
   EXPECT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().bounds(),
-            shell_surface->shadow_underlay_for_test()->bounds());
-  EXPECT_TRUE(shell_surface->shadow_underlay_for_test()->IsVisible());
-  EXPECT_EQ(1.f, shell_surface->shadow_underlay_for_test()->layer()->opacity());
+            shell_surface->shadow_underlay()->bounds());
+  EXPECT_TRUE(shell_surface->shadow_underlay()->IsVisible());
+  EXPECT_EQ(1.f, shell_surface->shadow_underlay()->layer()->opacity());
   EXPECT_NE(shell_surface->GetWidget()->GetWindowBoundsInScreen(),
-            shell_surface->shadow_underlay_for_test()->bounds());
+            shell_surface->shadow_underlay()->bounds());
 
   // Leave fullscreen mode. Shadow underlay is restored.
   window->GetWindowState()->OnWMEvent(&event);
-  EXPECT_TRUE(shell_surface->shadow_underlay_for_test()->IsVisible());
-  EXPECT_EQ(shadow_bounds, shell_surface->shadow_underlay_for_test()->bounds());
+  EXPECT_TRUE(shell_surface->shadow_underlay()->IsVisible());
+  EXPECT_EQ(shadow_bounds, shell_surface->shadow_underlay()->bounds());
+}
+
+TEST_F(ShellSurfaceTest, SpokenFeedbackFullscreenBackground) {
+  gfx::Size buffer_size(256, 256);
+  Buffer buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  Surface surface;
+  ShellSurface shell_surface(&surface, nullptr, gfx::Rect(640, 480), true,
+                             ash::kShellWindowId_DefaultContainer);
+
+  surface.Attach(&buffer);
+
+  gfx::Rect shadow_bounds(10, 10, 100, 100);
+  shell_surface.SetRectangularShadow(shadow_bounds);
+  surface.Commit();
+  ASSERT_EQ(shadow_bounds, shell_surface.shadow_underlay()->bounds());
+
+  aura::Window* shell_window = shell_surface.GetWidget()->GetNativeWindow();
+  aura::WindowTargeter* targeter = static_cast<aura::WindowTargeter*>(
+      static_cast<ui::EventTarget*>(shell_window)->GetEventTargeter());
+
+  gfx::Point pt(300, 300);
+  ui::MouseEvent ev_out(ui::ET_MOUSE_PRESSED, pt, pt, ui::EventTimeForNow(),
+                        ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+  gfx::Point pt2(250, 250);
+  ui::MouseEvent ev_in(ui::ET_MOUSE_PRESSED, pt2, pt2, ui::EventTimeForNow(),
+                       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+
+  EXPECT_FALSE(targeter->SubtreeShouldBeExploredForEvent(shell_window, ev_out));
+
+  // Enable spoken feedback.
+  ash::WmShell::Get()->accessibility_delegate()->ToggleSpokenFeedback(
+      ash::A11Y_NOTIFICATION_NONE);
+  shell_surface.OnAccessibilityModeChanged(ash::A11Y_NOTIFICATION_NONE);
+
+  EXPECT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().bounds(),
+            shell_surface.shadow_underlay()->bounds());
+  EXPECT_TRUE(shell_surface.shadow_underlay()->IsVisible());
+  EXPECT_NE(shell_surface.GetWidget()->GetWindowBoundsInScreen(),
+            shell_surface.shadow_underlay()->bounds());
+
+  // Test event capture
+  EXPECT_TRUE(targeter->SubtreeShouldBeExploredForEvent(shell_window, ev_out));
+  EXPECT_EQ(shell_surface.shadow_underlay(),
+            static_cast<ui::EventTargeter*>(targeter)->FindTargetForEvent(
+                shell_window, &ev_out));
+  EXPECT_NE(shell_surface.shadow_underlay(),
+            static_cast<ui::EventTargeter*>(targeter)->FindTargetForEvent(
+                shell_window, &ev_in));
+
+  // Create a new surface
+  Buffer buffer2(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  Surface surface2;
+  ShellSurface shell_surface2(&surface2, nullptr, gfx::Rect(640, 480), true,
+                              ash::kShellWindowId_DefaultContainer);
+  surface2.Attach(&buffer2);
+  shell_surface2.SetRectangularShadow(shadow_bounds);
+  surface2.Commit();
+
+  // spoken-feedback was already on, so underlay should fill screen
+  EXPECT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().bounds(),
+            shell_surface2.shadow_underlay()->bounds());
+
+  // De-activated shell-surface should NOT have fullscreen underlay
+  EXPECT_EQ(shadow_bounds, shell_surface.shadow_underlay()->bounds());
+
+  // Disable spoken feedback. Shadow underlay is restored.
+  ash::WmShell::Get()->accessibility_delegate()->ToggleSpokenFeedback(
+      ash::A11Y_NOTIFICATION_NONE);
+  shell_surface.OnAccessibilityModeChanged(ash::A11Y_NOTIFICATION_NONE);
+  shell_surface2.OnAccessibilityModeChanged(ash::A11Y_NOTIFICATION_NONE);
+
+  EXPECT_TRUE(shell_surface.shadow_underlay()->IsVisible());
+  EXPECT_EQ(shadow_bounds, shell_surface.shadow_underlay()->bounds());
+  EXPECT_EQ(shadow_bounds, shell_surface2.shadow_underlay()->bounds());
 }
 
 }  // namespace

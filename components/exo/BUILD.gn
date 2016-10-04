@@ -63,6 +63,10 @@ source_set("exo") {
     "//ui/views/mus",
     "//ui/wm:wm",
   ]
+
+  if (is_chromeos) {
+    deps += [ "//chromeos" ]
+  }
 }
 
 source_set("test_support") {
