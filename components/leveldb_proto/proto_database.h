@@ -27,6 +27,9 @@ class ProtoDatabase {
   using UpdateCallback = base::Callback<void(bool success)>;
   using LoadCallback =
       base::Callback<void(bool success, std::unique_ptr<std::vector<T>>)>;
+  using LoadKeysCallback =
+      base::Callback<void(bool success,
+                          std::unique_ptr<std::vector<std::string>>)>;
   using GetCallback = base::Callback<void(bool success, std::unique_ptr<T>)>;
   using DestroyCallback = base::Callback<void(bool success)>;
 
@@ -52,6 +55,10 @@ class ProtoDatabase {
   // Asynchronously loads all entries from the database and invokes |callback|
   // when complete.
   virtual void LoadEntries(const LoadCallback& callback) = 0;
+
+  // Asynchronously loads all keys from the database and invokes |callback| with
+  // those keys when complete.
+  virtual void LoadKeys(const LoadKeysCallback& callback) = 0;
 
   // Asynchronously loads a single entry, identified by |key|, from the database
   // and invokes |callback| when complete. If no entry with |key| is found,

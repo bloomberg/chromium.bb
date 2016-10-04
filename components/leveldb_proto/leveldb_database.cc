@@ -138,6 +138,21 @@ bool LevelDB::Load(std::vector<std::string>* entries) {
   return true;
 }
 
+bool LevelDB::LoadKeys(std::vector<std::string>* keys) {
+  DFAKE_SCOPED_LOCK(thread_checker_);
+  if (!db_)
+    return false;
+
+  leveldb::ReadOptions options;
+  options.fill_cache = false;
+  std::unique_ptr<leveldb::Iterator> db_iterator(db_->NewIterator(options));
+  for (db_iterator->SeekToFirst(); db_iterator->Valid(); db_iterator->Next()) {
+    leveldb::Slice key_slice = db_iterator->key();
+    keys->push_back(std::string(key_slice.data(), key_slice.size()));
+  }
+  return true;
+}
+
 bool LevelDB::Get(const std::string& key, bool* found, std::string* entry) {
   DFAKE_SCOPED_LOCK(thread_checker_);
   if (!db_)

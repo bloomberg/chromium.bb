@@ -29,6 +29,7 @@ using base::MessageLoop;
 using base::ScopedTempDir;
 using testing::Invoke;
 using testing::Return;
+using testing::UnorderedElementsAre;
 using testing::_;
 
 namespace leveldb_proto {
@@ -246,6 +247,56 @@ TEST_F(ProtoDatabaseImplTest, TestDBGetSuccess) {
                                 base::Unretained(&caller)));
 
   base::RunLoop().RunUntilIdle();
+}
+
+TEST(ProtoDatabaseImplLevelDBTest, TestDBSaveAndLoadKeys) {
+  base::MessageLoop main_loop;
+
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::Thread db_thread("dbthread");
+  ASSERT_TRUE(db_thread.Start());
+  std::unique_ptr<ProtoDatabaseImpl<TestProto>> db(
+      new ProtoDatabaseImpl<TestProto>(db_thread.task_runner()));
+
+  auto expect_init_success =
+      base::Bind([](bool success) { EXPECT_TRUE(success); });
+  db->Init(kTestLevelDBClientName, temp_dir.GetPath(), expect_init_success);
+
+  base::RunLoop run_update_entries;
+  auto expect_update_success = base::Bind(
+      [](base::Closure signal, bool success) {
+        EXPECT_TRUE(success);
+        signal.Run();
+      },
+      run_update_entries.QuitClosure());
+  TestProto test_proto;
+  test_proto.set_data("some data");
+  ProtoDatabase<TestProto>::KeyEntryVector data_set(
+          {{"0", test_proto}, {"1", test_proto}, {"2", test_proto}});
+  db->UpdateEntries(
+      base::MakeUnique<ProtoDatabase<TestProto>::KeyEntryVector>(data_set),
+      base::MakeUnique<std::vector<std::string>>(), expect_update_success);
+  run_update_entries.Run();
+
+  base::RunLoop run_load_keys;
+  auto verify_loaded_keys = base::Bind(
+      [](base::Closure signal, bool success,
+         std::unique_ptr<std::vector<std::string>> keys) {
+        EXPECT_TRUE(success);
+        EXPECT_THAT(*keys, UnorderedElementsAre("0", "1", "2"));
+        signal.Run();
+      },
+      run_load_keys.QuitClosure());
+  db->LoadKeys(verify_loaded_keys);
+  run_load_keys.Run();
+
+  // Shutdown database.
+  db.reset();
+  base::RunLoop run_destruction;
+  db_thread.task_runner()->PostTaskAndReply(
+      FROM_HERE, base::Bind(base::DoNothing), run_destruction.QuitClosure());
+  run_destruction.Run();
 }
 
 TEST_F(ProtoDatabaseImplTest, TestDBGetNotFound) {

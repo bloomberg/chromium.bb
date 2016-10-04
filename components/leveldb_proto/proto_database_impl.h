@@ -53,6 +53,8 @@ class ProtoDatabaseImpl : public ProtoDatabase<T> {
       const typename ProtoDatabase<T>::UpdateCallback& callback) override;
   void LoadEntries(
       const typename ProtoDatabase<T>::LoadCallback& callback) override;
+  void LoadKeys(
+      const typename ProtoDatabase<T>::LoadKeysCallback& callback) override;
   void GetEntry(
       const std::string& key,
       const typename ProtoDatabase<T>::GetCallback& callback) override;
@@ -94,9 +96,17 @@ void RunUpdateCallback(
 
 template <typename T>
 void RunLoadCallback(const typename ProtoDatabase<T>::LoadCallback& callback,
-                     const bool* success,
+                     bool* success,
                      std::unique_ptr<std::vector<T>> entries) {
   callback.Run(*success, std::move(entries));
+}
+
+template <typename T>
+void RunLoadKeysCallback(
+    const typename ProtoDatabase<T>::LoadKeysCallback& callback,
+    std::unique_ptr<bool> success,
+    std::unique_ptr<std::vector<std::string>> keys) {
+  callback.Run(*success, std::move(keys));
 }
 
 template <typename T>
@@ -169,6 +179,15 @@ void LoadEntriesFromTaskRunner(LevelDB* database,
 
     entries->push_back(entry);
   }
+}
+
+void LoadKeysFromTaskRunner(LevelDB* database,
+                            std::vector<std::string>* keys,
+                            bool* success) {
+  DCHECK(success);
+  DCHECK(keys);
+  keys->clear();
+  *success = database->LoadKeys(keys);
 }
 
 template <typename T>
@@ -283,6 +302,21 @@ void ProtoDatabaseImpl<T>::LoadEntries(
                             base::Unretained(db_.get()), entries_ptr, success),
       base::Bind(RunLoadCallback<T>, callback, base::Owned(success),
                  base::Passed(&entries)));
+}
+
+template <typename T>
+void ProtoDatabaseImpl<T>::LoadKeys(
+    const typename ProtoDatabase<T>::LoadKeysCallback& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  auto success = base::MakeUnique<bool>(false);
+  auto keys = base::MakeUnique<std::vector<std::string>>();
+  auto load_task =
+      base::Bind(LoadKeysFromTaskRunner, base::Unretained(db_.get()),
+                 keys.get(), success.get());
+  task_runner_->PostTaskAndReply(
+      FROM_HERE, load_task,
+      base::Bind(RunLoadKeysCallback<T>, callback, base::Passed(&success),
+                 base::Passed(&keys)));
 }
 
 template <typename T>
