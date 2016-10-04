@@ -79,11 +79,11 @@ var INNER_HEIGHT = 688;
 
 /**
  * Sends a native message to ArcSupportHost.
- * @param {string} code The action code in message.
- * @param {Object=} opt_Props Extra properties for the message.
+ * @param {string} event The event type in message.
+ * @param {Object=} opt_props Extra properties for the message.
  */
-function sendNativeMessage(code, opt_Props) {
-  var message = Object.assign({'action': code}, opt_Props);
+function sendNativeMessage(event, opt_props) {
+  var message = Object.assign({'event': event}, opt_props);
   port.postMessage(message);
 }
 
@@ -511,7 +511,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
         if (results && results.length == 1 && typeof results[0] == 'string' &&
             results[0].substring(0, authCodePrefix.length) == authCodePrefix) {
           var authCode = results[0].substring(authCodePrefix.length);
-          sendNativeMessage('setAuthCode', {code: authCode});
+          sendNativeMessage('onAuthSucceeded', {code: authCode});
         } else {
           setErrorMessage(appWindow.contentWindow.loadTimeData.getString(
               'authorizationFailed'));
@@ -572,23 +572,13 @@ chrome.app.runtime.onLaunched.addListener(function() {
       termsAccepted = true;
 
       var enableMetrics = doc.getElementById('enable-metrics');
-      if (!enableMetrics.hidden) {
-        sendNativeMessage('enableMetrics', {
-          'enabled': enableMetrics.checked
-        });
-      }
-
       var enableBackupRestore = doc.getElementById('enable-backup-restore');
-      sendNativeMessage('setBackupRestore', {
-        'enabled': enableBackupRestore.checked
-      });
-
       var enableLocationService = doc.getElementById('enable-location-service');
-      sendNativeMessage('setLocationService', {
-        'enabled': enableLocationService.checked
+      sendNativeMessage('onAgreed', {
+        isMetricsEnabled: !enableMetrics.hidden && enableMetrics.checked,
+        isBackupRestoreEnabled: enableBackupRestore.checked,
+        isLocationServiceEnabled: enableLocationService.checked
       });
-
-      sendNativeMessage('startLso');
     };
 
     var onCancel = function() {
@@ -599,14 +589,16 @@ chrome.app.runtime.onLaunched.addListener(function() {
 
     var onRetry = function() {
       if (termsAccepted) {
-        sendNativeMessage('startLso');
+        // Reuse the onAgree() in case that the user has already accepted
+        // the ToS.
+        onAgree();
       } else {
         loadInitialTerms();
       }
     };
 
     var onSendFeedback = function() {
-      sendNativeMessage('sendFeedback');
+      sendNativeMessage('onSendFeedbackClicked');
     };
 
     doc.getElementById('button-agree').addEventListener('click', onAgree);

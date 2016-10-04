@@ -29,34 +29,52 @@
 #include "ui/display/screen.h"
 
 namespace {
-const char kAction[] = "action";
-const char kArcManaged[] = "arcManaged";
-const char kCanEnable[] = "canEnable";
-const char kCode[] = "code";
-const char kData[] = "data";
-const char kDeviceId[] = "deviceId";
-const char kEnabled[] = "enabled";
-const char kManaged[] = "managed";
-const char kOn[] = "on";
-const char kPage[] = "page";
-const char kStatus[] = "status";
-const char kText[] = "text";
-const char kActionInitialize[] = "initialize";
-const char kActionSetMetricsMode[] = "setMetricsMode";
-const char kActionBackupAndRestoreMode[] = "setBackupAndRestoreMode";
-const char kActionLocationServiceMode[] = "setLocationServiceMode";
-const char kActionSetWindowBounds[] = "setWindowBounds";
-const char kActionStartLso[] = "startLso";
-const char kActionSetAuthCode[] = "setAuthCode";
-const char kActionEnableMetrics[] = "enableMetrics";
-const char kActionSendFeedback[] = "sendFeedback";
-const char kActionSetBackupRestore[] = "setBackupRestore";
-const char kActionSetLocationService[] = "setLocationService";
-const char kActionCloseWindow[] = "closeWindow";
-const char kActionShowPage[] = "showPage";
+constexpr char kAction[] = "action";
+constexpr char kArcManaged[] = "arcManaged";
+constexpr char kCanEnable[] = "canEnable";
+constexpr char kData[] = "data";
+constexpr char kDeviceId[] = "deviceId";
+constexpr char kEnabled[] = "enabled";
+constexpr char kManaged[] = "managed";
+constexpr char kOn[] = "on";
+constexpr char kPage[] = "page";
+constexpr char kStatus[] = "status";
+constexpr char kText[] = "text";
+constexpr char kActionInitialize[] = "initialize";
+constexpr char kActionSetMetricsMode[] = "setMetricsMode";
+constexpr char kActionBackupAndRestoreMode[] = "setBackupAndRestoreMode";
+constexpr char kActionLocationServiceMode[] = "setLocationServiceMode";
+constexpr char kActionSetWindowBounds[] = "setWindowBounds";
+constexpr char kActionCloseWindow[] = "closeWindow";
+constexpr char kActionShowPage[] = "showPage";
 
-// Fired when the extension window is closed.
-const char kActionOnWindowClosed[] = "onWindowClosed";
+// The JSON data sent from the extension should have at least "event" field.
+// Each event data is defined below.
+// The key of the event type.
+constexpr char kEvent[] = "event";
+
+// "onWindowClosed" is fired when the extension window is closed.
+// No data will be provided.
+constexpr char kEventOnWindowClosed[] = "onWindowClosed";
+
+// "onAuthSucceeded" is fired when successfully done to LSO authorization in
+// extension.
+// The auth token is passed via "code" field.
+constexpr char kEventOnAuthSuccedded[] = "onAuthSucceeded";
+constexpr char kCode[] = "code";
+
+// "onAgree" is fired when a user clicks "Agree" button.
+// The message should have the following three fields:
+// - isMetricsEnabled
+// - isBackupRestoreEnabled
+// - isLocationServiceEnabled
+constexpr char kEventOnAgreed[] = "onAgreed";
+constexpr char kIsMetricsEnabled[] = "isMetricsEnabled";
+constexpr char kIsBackupRestoreEnabled[] = "isBackupRestoreEnabled";
+constexpr char kIsLocationServiceEnabled[] = "isLocationServiceEnabled";
+
+// "onSendFeedbackClicked" is fired when a user clicks "Send Feedback" button.
+constexpr char kEventOnSendFeedbackClicked[] = "onSendFeedbackClicked";
 
 }  // namespace
 
@@ -347,60 +365,55 @@ void ArcSupportHost::EnableLocationService(bool is_enabled) {
   pref_service->SetBoolean(prefs::kArcLocationServiceEnabled, is_enabled);
 }
 
-void ArcSupportHost::OnMessage(const std::string& request_string) {
-  std::unique_ptr<base::Value> request_value =
-      base::JSONReader::Read(request_string);
-  base::DictionaryValue* request;
-  if (!request_value || !request_value->GetAsDictionary(&request)) {
+void ArcSupportHost::OnMessage(const std::string& message_string) {
+  std::unique_ptr<base::Value> message_value =
+      base::JSONReader::Read(message_string);
+  base::DictionaryValue* message;
+  if (!message_value || !message_value->GetAsDictionary(&message)) {
     NOTREACHED();
     return;
   }
 
-  std::string action;
-  if (!request->GetString(kAction, &action)) {
+  std::string event;
+  if (!message->GetString(kEvent, &event)) {
     NOTREACHED();
     return;
   }
 
+  // TODO(hidehiko): Replace by Observer.
   arc::ArcAuthService* arc_auth_service = arc::ArcAuthService::Get();
   DCHECK(arc_auth_service);
 
-  if (action == kActionStartLso) {
-    arc_auth_service->StartLso();
-  } else if (action == kActionSetAuthCode) {
-    std::string code;
-    if (!request->GetString(kCode, &code)) {
-      NOTREACHED();
-      return;
-    }
-    arc_auth_service->SetAuthCodeAndStartArc(code);
-  } else if (action == kActionOnWindowClosed) {
+  if (event == kEventOnWindowClosed) {
     if (!close_requested_)
       arc_auth_service->CancelAuthCode();
-  } else if (action == kActionEnableMetrics) {
-    bool is_enabled;
-    if (!request->GetBoolean(kEnabled, &is_enabled)) {
+  } else if (event == kEventOnAuthSuccedded) {
+    std::string code;
+    if (message->GetString(kCode, &code)) {
+      arc_auth_service->SetAuthCodeAndStartArc(code);
+    } else {
       NOTREACHED();
-      return;
     }
-    EnableMetrics(is_enabled);
-  } else if (action == kActionSendFeedback) {
+  } else if (event == kEventOnAgreed) {
+    bool is_metrics_enabled;
+    bool is_backup_restore_enabled;
+    bool is_location_service_enabled;
+    if (message->GetBoolean(kIsMetricsEnabled, &is_metrics_enabled) &&
+        message->GetBoolean(kIsBackupRestoreEnabled,
+                            &is_backup_restore_enabled) &&
+        message->GetBoolean(kIsLocationServiceEnabled,
+                            &is_location_service_enabled)) {
+      EnableMetrics(is_metrics_enabled);
+      EnableBackupRestore(is_backup_restore_enabled);
+      EnableLocationService(is_location_service_enabled);
+      arc_auth_service->StartLso();
+    } else {
+      NOTREACHED();
+    }
+  } else if (event == kEventOnSendFeedbackClicked) {
     chrome::OpenFeedbackDialog(nullptr);
-  } else if (action == kActionSetBackupRestore) {
-    bool is_enabled;
-    if (!request->GetBoolean(kEnabled, &is_enabled)) {
-      NOTREACHED();
-      return;
-    }
-    EnableBackupRestore(is_enabled);
-  } else if (action == kActionSetLocationService) {
-    bool is_enabled;
-    if (!request->GetBoolean(kEnabled, &is_enabled)) {
-      NOTREACHED();
-      return;
-    }
-    EnableLocationService(is_enabled);
   } else {
+    LOG(ERROR) << "Unknown message: " << message_string;
     NOTREACHED();
   }
 }
