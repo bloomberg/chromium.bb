@@ -4470,9 +4470,6 @@ interface PerformanceEntry
     getter startTime
     method constructor
     method toJSON
-interface PerformanceLongTaskTiming : PerformanceEntry
-    attribute @@toStringTag
-    method constructor
 interface PerformanceMark : PerformanceEntry
     attribute @@toStringTag
     method constructor

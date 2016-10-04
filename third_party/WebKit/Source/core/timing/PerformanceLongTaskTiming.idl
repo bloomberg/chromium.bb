@@ -4,6 +4,6 @@
 
 // https://github.com/spanicker/longtasks
 [
-    RuntimeEnabled=LongTaskObserver  // Experimental flag
+    OriginTrialEnabled=LongTaskObserver,
 ] interface PerformanceLongTaskTiming : PerformanceEntry {
 };

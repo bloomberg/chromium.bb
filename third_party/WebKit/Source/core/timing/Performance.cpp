@@ -36,6 +36,7 @@
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorWebPerfAgent.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/origin_trials/OriginTrials.h"
 #include "core/timing/PerformanceTiming.h"
 
 namespace blink {
@@ -86,6 +87,9 @@ PerformanceTiming* Performance::timing() const {
 
 void Performance::updateLongTaskInstrumentation() {
   if (hasObserverFor(PerformanceEntry::LongTask) && !m_longTaskInspectorAgent) {
+    if (!frame() || !frame()->document() ||
+        !OriginTrials::longTaskObserverEnabled(frame()->document()))
+      return;
     m_longTaskInspectorAgent = new InspectorWebPerfAgent(frame());
     m_longTaskInspectorAgent->enable();
   } else if (!hasObserverFor(PerformanceEntry::LongTask) &&
