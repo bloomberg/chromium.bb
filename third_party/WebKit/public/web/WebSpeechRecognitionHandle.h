@@ -53,8 +53,8 @@ class WebSpeechRecognitionHandle {
   BLINK_EXPORT void reset();
   BLINK_EXPORT void assign(const WebSpeechRecognitionHandle&);
 
-  // Comparison functions are provided so that WebSpeechRecognitionHandle objects
-  // can be stored in a hash map.
+  // Comparison functions are provided so that WebSpeechRecognitionHandle
+  // objects can be stored in a hash map.
   BLINK_EXPORT bool equals(const WebSpeechRecognitionHandle&) const;
   BLINK_EXPORT bool lessThan(const WebSpeechRecognitionHandle&) const;
 

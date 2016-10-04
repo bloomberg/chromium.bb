@@ -52,7 +52,8 @@ class WebContentSettingsClient {
     return enabledPerSettings;
   }
 
-  // Controls whether scripts loaded from the given URL are allowed to execute for this frame.
+  // Controls whether scripts loaded from the given URL are allowed to execute
+  // for this frame.
   virtual bool allowScriptFromSource(bool enabledPerSettings,
                                      const WebURL& scriptURL) {
     return enabledPerSettings;
@@ -82,7 +83,8 @@ class WebContentSettingsClient {
   }
 
   // Controls whether HTML5 Web Storage is allowed for this frame.
-  // If local is true, then this is for local storage, otherwise it's for session storage.
+  // If local is true, then this is for local storage, otherwise it's for
+  // session storage.
   virtual bool allowStorage(bool local) { return true; }
 
   // Controls whether access to read the clipboard is allowed for this frame.
@@ -97,8 +99,9 @@ class WebContentSettingsClient {
   virtual bool allowWebComponents(bool defaultValue) { return defaultValue; }
 
   // Controls whether to enable MutationEvents for this frame.
-  // The common use case of this method is actually to selectively disable MutationEvents,
-  // but it's been named for consistency with the rest of the interface.
+  // The common use case of this method is actually to selectively disable
+  // MutationEvents, but it's been named for consistency with the rest of the
+  // interface.
   virtual bool allowMutationEvents(bool defaultValue) { return defaultValue; }
 
   // Controls whether autoplay is allowed for this frame.
@@ -107,10 +110,12 @@ class WebContentSettingsClient {
   // Reports that passive mixed content was found at the provided URL.
   virtual void passiveInsecureContentFound(const WebURL&) {}
 
-  // Notifies the client that the frame would have instantiated a plugin if plugins were enabled.
+  // Notifies the client that the frame would have instantiated a plugin if
+  // plugins were enabled.
   virtual void didNotAllowPlugins() {}
 
-  // Notifies the client that the frame would have executed script if script were enabled.
+  // Notifies the client that the frame would have executed script if script
+  // were enabled.
   virtual void didNotAllowScript() {}
 
   // Notifies the client that the frame instantiated a keygen element.

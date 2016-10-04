@@ -37,9 +37,9 @@ class WebNode;
 class WebURL;
 struct WebPoint;
 
-// Properties of a hit test result, i.e. properties of the nodes at a given point
-// (the hit point) on the page. Both urls may be populated at the same time, for
-// example in the instance of an <img> inside an <a>.
+// Properties of a hit test result, i.e. properties of the nodes at a given
+// point (the hit point) on the page. Both urls may be populated at the same
+// time, for example in the instance of an <img> inside an <a>.
 class WebHitTestResult {
  public:
   WebHitTestResult() {}

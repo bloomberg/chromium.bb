@@ -52,9 +52,9 @@ class WebFrameWidget : public WebWidget {
                                              WebLocalFrame* mainFrame);
 
   // Sets the visibility of the WebFrameWidget.
-  // We still track page-level visibility, but additionally we need to notify a WebFrameWidget
-  // when its owning RenderWidget receives a Show or Hide directive, so that it knows whether
-  // it needs to draw or not.
+  // We still track page-level visibility, but additionally we need to notify a
+  // WebFrameWidget when its owning RenderWidget receives a Show or Hide
+  // directive, so that it knows whether it needs to draw or not.
   virtual void setVisibilityState(WebPageVisibilityState visibilityState) {}
 
   // Makes the WebFrameWidget transparent.  This is useful if you want to have

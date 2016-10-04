@@ -105,9 +105,9 @@ class WebWidget {
   // object alive until it is called.
   virtual void layoutAndPaintAsync(WebLayoutAndPaintAsyncCallback*) {}
 
-  // The caller is responsible for keeping the WebCompositeAndReadbackAsyncCallback
-  // object alive until it is called. This should only be called when
-  // isAcceleratedCompositingActive() is true.
+  // The caller is responsible for keeping the
+  // WebCompositeAndReadbackAsyncCallback object alive until it is called. This
+  // should only be called when isAcceleratedCompositingActive() is true.
   virtual void compositeAndReadbackAsync(
       WebCompositeAndReadbackAsyncCallback*) {}
 
@@ -191,8 +191,8 @@ class WebWidget {
     return false;
   }
 
-  // Returns the text direction at the start and end bounds of the current selection.
-  // If the selection range is empty, it returns false.
+  // Returns the text direction at the start and end bounds of the current
+  // selection.  If the selection range is empty, it returns false.
   virtual bool selectionTextDirection(WebTextDirection& start,
                                       WebTextDirection& end) const {
     return false;
@@ -221,8 +221,8 @@ class WebWidget {
   // Returns true if the WebWidget created is of type WebPagePopup.
   virtual bool isPagePopup() const { return false; }
 
-  // The WebLayerTreeView initialized on this WebWidgetClient will be going away and
-  // is no longer safe to access.
+  // The WebLayerTreeView initialized on this WebWidgetClient will be going away
+  // and is no longer safe to access.
   virtual void willCloseLayerTreeView() {}
 
   // Calling WebWidgetClient::requestPointerLock() will result in one
@@ -264,7 +264,8 @@ class WebWidget {
     return false;
   }
 
-  // Applies the range on the focused frame so that the text will later be replaced.
+  // Applies the range on the focused frame so that the text will later be
+  // replaced.
   virtual void applyReplacementRange(const WebRange&) {}
 
  protected:

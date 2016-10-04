@@ -42,11 +42,12 @@ class WebUserGestureIndicator {
   // Returns true if a user gesture is currently being processed.
   BLINK_EXPORT static bool isProcessingUserGesture();
 
-  // Returns true if a consumable gesture exists and has been successfully consumed.
+  // Returns true if a consumable gesture exists and has been successfully
+  // consumed.
   BLINK_EXPORT static bool consumeUserGesture();
 
-  // Returns true if a user gesture was processed on the current page since the time
-  // the page was loaded.
+  // Returns true if a user gesture was processed on the current page since the
+  // time the page was loaded.
   BLINK_EXPORT static bool processedUserGestureSinceLoad();
 
   // Returns a token for the currently active user gesture. It can be used to

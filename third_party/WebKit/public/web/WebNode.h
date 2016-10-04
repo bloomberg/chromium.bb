@@ -46,9 +46,10 @@ class WebElementCollection;
 class WebPluginContainer;
 
 // Provides access to some properties of a DOM node.
-// Note that the class design requires that neither this class nor any of its subclasses have any virtual
-// methods (other than the destructor), so that it is possible to safely static_cast an instance of one
-// class to the appropriate subclass based on the actual type of the wrapped blink::Node. For the same
+// Note that the class design requires that neither this class nor any of its
+// subclasses have any virtual methods (other than the destructor), so that it
+// is possible to safely static_cast an instance of one class to the appropriate
+// subclass based on the actual type of the wrapped blink::Node. For the same
 // reason, subclasses must not add any additional data members.
 class WebNode {
  public:

@@ -44,7 +44,8 @@ class WebURL;
 
 class WebSharedWorkerRepositoryClient {
  public:
-  // Unique identifier for the parent document of a worker (unique within a given process).
+  // Unique identifier for the parent document of a worker (unique within a
+  // given process).
   typedef unsigned long long DocumentID;
 
   // Creates a new shared worker connector. This may return null.
@@ -60,7 +61,8 @@ class WebSharedWorkerRepositoryClient {
     return 0;
   }
 
-  // Invoked when a document has been detached. DocumentID can be re-used after documentDetached() is invoked.
+  // Invoked when a document has been detached. DocumentID can be re-used after
+  // documentDetached() is invoked.
   virtual void documentDetached(DocumentID) {}
 };
 

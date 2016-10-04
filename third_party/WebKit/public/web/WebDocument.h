@@ -89,7 +89,8 @@ class WebDocument : public WebNode {
   // The url of the OpenSearch Desription Document (if any).
   BLINK_EXPORT WebURL openSearchDescriptionURL() const;
 
-  // Returns the frame the document belongs to or 0 if the document is frameless.
+  // Returns the frame the document belongs to or 0 if the document is
+  // frameless.
   BLINK_EXPORT WebLocalFrame* frame() const;
   BLINK_EXPORT bool isHTMLDocument() const;
   BLINK_EXPORT bool isXHTMLDocument() const;

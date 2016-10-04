@@ -151,7 +151,8 @@ class WebLocalFrame : public WebFrame {
 
   // Printing ------------------------------------------------------------
 
-  // Returns true on success and sets the out parameter to the print preset options for the document.
+  // Returns true on success and sets the out parameter to the print preset
+  // options for the document.
   virtual bool getPrintPresetOptionsForPlugin(const WebNode&,
                                               WebPrintPresetOptions*) = 0;
 
@@ -319,7 +320,8 @@ class WebLocalFrame : public WebFrame {
 
   // Iframe sandbox ---------------------------------------------------------
 
-  // Returns the effective sandbox flags which are inherited from their parent frame.
+  // Returns the effective sandbox flags which are inherited from their parent
+  // frame.
   virtual WebSandboxFlags effectiveSandboxFlags() const = 0;
 
   // Set sandbox flags that will always be forced on this frame.  This is

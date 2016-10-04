@@ -42,8 +42,9 @@ struct WebDeviceEmulationParams;
 
 class WebDevToolsAgentClient {
  public:
-  // Sends response message over the protocol, update agent state on the browser side for
-  // potential re-attach. |callId| for notifications is 0, |state| for notifications is empty.
+  // Sends response message over the protocol, update agent state on the browser
+  // side for potential re-attach. |callId| for notifications is 0, |state| for
+  // notifications is empty.
   virtual void sendProtocolMessage(int sessionId,
                                    int callId,
                                    const WebString& response,
@@ -55,7 +56,8 @@ class WebDevToolsAgentClient {
   // Returns unique identifier of the entity within process.
   virtual int debuggerId() { return -1; }
 
-  // Resume the inspected renderer that is waiting for DevTools front-end to initialize its state.
+  // Resume the inspected renderer that is waiting for DevTools front-end to
+  // initialize its state.
   virtual void resumeStartup() {}
 
   class WebKitClientMessageLoop {

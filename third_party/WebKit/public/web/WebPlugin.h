@@ -79,8 +79,9 @@ class WebPlugin {
   //      and the container have both been marked for deletion.
   virtual bool initialize(WebPluginContainer*) = 0;
 
-  // Plugins must arrange for themselves to be deleted sometime during or after this
-  // method is called. This method is only called by the owning WebPluginContainer.
+  // Plugins must arrange for themselves to be deleted sometime during or after
+  // this method is called. This method is only called by the owning
+  // WebPluginContainer.
   // The exception is if the plugin has been detached by a WebPluginContainer,
   // i.e. been replaced by another plugin. Then it must be destroyed separately.
   // Once this method has been called, container() must return nullptr.
@@ -143,7 +144,8 @@ class WebPlugin {
   // Returns true if the printed content should not be scaled to
   // the printer's printable area.
   virtual bool isPrintScalingDisabled() { return false; }
-  // Returns true on success and sets the out parameter to the print preset options for the document.
+  // Returns true on success and sets the out parameter to the print preset
+  // options for the document.
   virtual bool getPrintPresetOptionsFromDocument(WebPrintPresetOptions*) {
     return false;
   }
@@ -200,10 +202,12 @@ class WebPlugin {
   }
 
   // Find interface.
-  // Start a new search.  The plugin should search for a little bit at a time so that it
-  // doesn't block the thread in case of a large document.  The results, along with the
-  // find's identifier, should be sent asynchronously to WebFrameClient's reportFindInPage* methods.
-  // Returns true if the search started, or false if the plugin doesn't support search.
+  // Start a new search.  The plugin should search for a little bit at a time so
+  // that it doesn't block the thread in case of a large document.  The results,
+  // along with the find's identifier, should be sent asynchronously to
+  // WebFrameClient's reportFindInPage* methods.
+  // Returns true if the search started, or false if the plugin doesn't support
+  // search.
   virtual bool startFind(const WebString& searchText,
                          bool caseSensitive,
                          int identifier) {

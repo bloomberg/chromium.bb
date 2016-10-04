@@ -305,8 +305,8 @@ class BLINK_EXPORT WebFrameClient {
     return info.defaultPolicy;
   }
 
-  // During a history navigation, we may choose to load new subframes from history as well.
-  // This returns such a history item if appropriate.
+  // During a history navigation, we may choose to load new subframes from
+  // history as well.  This returns such a history item if appropriate.
   virtual WebHistoryItem historyItemForNewChildFrame() {
     return WebHistoryItem();
   }
@@ -727,8 +727,9 @@ class BLINK_EXPORT WebFrameClient {
 
   // Audio Output Devices API --------------------------------------------
 
-  // Checks that the given audio sink exists and is authorized. The result is provided via the callbacks.
-  // This method takes ownership of the callbacks pointer.
+  // Checks that the given audio sink exists and is authorized. The result is
+  // provided via the callbacks.  This method takes ownership of the callbacks
+  // pointer.
   virtual void checkIfAudioSinkExistsAndIsAuthorized(
       const WebString& sinkId,
       const WebSecurityOrigin&,

@@ -63,7 +63,8 @@ class WebRemoteFrame : public WebFrame {
   // Resets replicated CSP headers to an empty set.
   virtual void resetReplicatedContentSecurityPolicy() const = 0;
 
-  // Set frame enforcement of insecure request policy replicated from another process.
+  // Set frame enforcement of insecure request policy replicated from another
+  // process.
   virtual void setReplicatedInsecureRequestPolicy(
       WebInsecureRequestPolicy) const = 0;
 

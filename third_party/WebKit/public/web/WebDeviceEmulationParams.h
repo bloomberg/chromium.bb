@@ -33,7 +33,8 @@ struct WebDeviceEmulationParams {
   // Emulated view size. Empty size means no override.
   WebSize viewSize;
 
-  // Whether emulated view should be scaled down if necessary to fit into available space.
+  // Whether emulated view should be scaled down if necessary to fit into
+  // available space.
   bool fitToView;
 
   // Offset of emulated view inside available space, not in fit to view mode.

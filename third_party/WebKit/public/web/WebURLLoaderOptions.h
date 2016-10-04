@@ -49,12 +49,13 @@ struct WebURLLoaderOptions {
         preflightPolicy(ConsiderPreflight),
         crossOriginRequestPolicy(CrossOriginRequestPolicyDeny) {}
 
-  bool
-      untrustedHTTP;  // Whether to validate the method and headers as if this was an XMLHttpRequest.
-  bool
-      allowCredentials;  // Whether to send HTTP credentials and cookies with the request.
-  bool
-      exposeAllResponseHeaders;  // If policy is to use access control, whether to expose non-whitelisted response headers to the client.
+  bool untrustedHTTP;  // Whether to validate the method and headers as if this
+                       // was an XMLHttpRequest.
+  bool allowCredentials;  // Whether to send HTTP credentials and cookies with
+                          // the request.
+  bool exposeAllResponseHeaders;  // If policy is to use access control, whether
+                                  // to expose non-whitelisted response headers
+                                  // to the client.
   PreflightPolicy preflightPolicy;
   CrossOriginRequestPolicy crossOriginRequestPolicy;
 };

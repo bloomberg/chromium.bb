@@ -338,7 +338,8 @@ class WebFrame {
   // Do not use these APIs any more, but use loadRequest() instead.
   virtual void reload(WebFrameLoadType = WebFrameLoadType::Reload) = 0;
 
-  // This is used for situations where we want to reload a different URL because of a redirect.
+  // This is used for situations where we want to reload a different URL because
+  // of a redirect.
   virtual void reloadWithOverrideURL(
       const WebURL& overrideUrl,
       WebFrameLoadType = WebFrameLoadType::Reload) = 0;
@@ -389,15 +390,17 @@ class WebFrame {
   // Returns the number of registered unload listeners.
   virtual unsigned unloadListenerCount() const = 0;
 
-  // Will return true if between didStartLoading and didStopLoading notifications.
+  // Will return true if between didStartLoading and didStopLoading
+  // notifications.
   virtual bool isLoading() const;
 
   // Printing ------------------------------------------------------------
 
   // Reformats the WebFrame for printing. WebPrintParams specifies the printable
   // content size, paper size, printable area size, printer DPI and print
-  // scaling option. If constrainToNode node is specified, then only the given node
-  // is printed (for now only plugins are supported), instead of the entire frame.
+  // scaling option. If constrainToNode node is specified, then only the given
+  // node is printed (for now only plugins are supported), instead of the entire
+  // frame.
   // Returns the number of pages that can be printed at the given
   // page size.
   virtual int printBegin(const WebPrintParams&,
@@ -441,7 +444,8 @@ class WebFrame {
   virtual WebRect selectionBoundsRect() const = 0;
 
   // Only for testing purpose:
-  // Returns true if selection.anchorNode has a marker on range from |from| with |length|.
+  // Returns true if selection.anchorNode has a marker on range from |from| with
+  // |length|.
   virtual bool selectionStartHasSpellingMarkerFor(int from,
                                                   int length) const = 0;
 

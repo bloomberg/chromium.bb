@@ -34,9 +34,15 @@
 namespace blink {
 
 enum WebPrintScalingOption {
-  WebPrintScalingOptionNone,                // Prints the upper left of a page without scaling. Crop the page contents that don't fit on the paper.
-  WebPrintScalingOptionFitToPrintableArea,  // Reduces or enlarges each page to fit the printable area of the selected printer paper size.
-  WebPrintScalingOptionSourceSize,          // Print output page size is same as the actual source page size. Do not scale/center/fit to printable area.
+  WebPrintScalingOptionNone,  // Prints the upper left of a page without
+                              // scaling. Crop the page contents that don't fit
+                              // on the paper.
+  WebPrintScalingOptionFitToPrintableArea,  // Reduces or enlarges each page to
+                                            // fit the printable area of the
+                                            // selected printer paper size.
+  WebPrintScalingOptionSourceSize,  // Print output page size is same as the
+                                    // actual source page size. Do not
+                                    // scale/center/fit to printable area.
   WebPrintScalingOptionLast = WebPrintScalingOptionSourceSize
 };
 

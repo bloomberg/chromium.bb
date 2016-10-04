@@ -79,7 +79,8 @@ class WebPluginContainer {
   virtual void invalidateRect(const WebRect&) = 0;
   virtual void scrollRect(const WebRect&) = 0;
 
-  // Schedules an animation of the WebView that contains the plugin, as well as the plugin.
+  // Schedules an animation of the WebView that contains the plugin, as well as
+  // the plugin.
   virtual void scheduleAnimation() = 0;
 
   // Causes the container to report its current geometry via

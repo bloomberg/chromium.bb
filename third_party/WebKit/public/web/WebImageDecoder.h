@@ -65,7 +65,8 @@ class WebImageDecoder : public WebNonCopyable {
   // Returns the size of the image.
   BLINK_EXPORT WebSize size() const;
 
-  // Gives frame count for the image. For multiple frames, decoder scans the image data for the count.
+  // Gives frame count for the image. For multiple frames, decoder scans the
+  // image data for the count.
   BLINK_EXPORT size_t frameCount() const;
 
   // Returns if the frame at given index is completely decoded.

@@ -49,8 +49,9 @@ struct WebFindOptions {
   // Whether this operation should look for matches only at the start of words.
   bool wordStart;
 
-  // When combined with wordStart, accepts a match in the middle of a word if the match begins with
-  // an uppercase letter followed by a lowercase or non-letter. Accepts several other intra-word matches.
+  // When combined with wordStart, accepts a match in the middle of a word if
+  // the match begins with an uppercase letter followed by a lowercase or
+  // non-letter. Accepts several other intra-word matches.
   bool medialCapitalAsWordStart;
 
   // Force a re-search of the frame: typically used when forcing a re-search

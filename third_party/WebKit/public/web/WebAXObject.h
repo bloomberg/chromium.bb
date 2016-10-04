@@ -96,8 +96,9 @@ class WebAXObject {
 
   BLINK_EXPORT int axID() const;
 
-  // Get a new AXID that's not used by any accessibility node in this process, for when the
-  // client needs to insert additional nodes into the accessibility tree.
+  // Get a new AXID that's not used by any accessibility node in this process,
+  // for when the client needs to insert additional nodes into the accessibility
+  // tree.
   BLINK_EXPORT int generateAXID() const;
 
   // Update layout on the underlying tree, and return true if this object is
@@ -171,23 +172,24 @@ class WebAXObject {
   BLINK_EXPORT WebAXTextStyle textStyle() const;
   BLINK_EXPORT WebURL url() const;
 
-  // Retrieves the accessible name of the object, an enum indicating where the name
-  // was derived from, and a list of related objects that were used to derive the name, if any.
+  // Retrieves the accessible name of the object, an enum indicating where the
+  // name was derived from, and a list of related objects that were used to
+  // derive the name, if any.
   BLINK_EXPORT WebString name(WebAXNameFrom&,
                               WebVector<WebAXObject>& nameObjects) const;
   // Simplified version of |name| when nameFrom and nameObjects aren't needed.
   BLINK_EXPORT WebString name() const;
   // Takes the result of nameFrom from calling |name|, above, and retrieves the
-  // accessible description of the object, which is secondary to |name|, an enum indicating
-  // where the description was derived from, and a list of objects that were used to
-  // derive the description, if any.
+  // accessible description of the object, which is secondary to |name|, an enum
+  // indicating where the description was derived from, and a list of objects
+  // that were used to derive the description, if any.
   BLINK_EXPORT WebString
   description(WebAXNameFrom,
               WebAXDescriptionFrom&,
               WebVector<WebAXObject>& descriptionObjects) const;
-  // Takes the result of nameFrom and descriptionFrom from calling |name| and |description|,
-  // above, and retrieves the placeholder of the object, if present and if it wasn't already
-  // exposed by one of the two functions above.
+  // Takes the result of nameFrom and descriptionFrom from calling |name| and
+  // |description|, above, and retrieves the placeholder of the object, if
+  // present and if it wasn't already exposed by one of the two functions above.
   BLINK_EXPORT WebString placeholder(WebAXNameFrom, WebAXDescriptionFrom) const;
 
   // The following selection functions get or set the global document
@@ -314,18 +316,21 @@ class WebAXObject {
   // optionally a transformation matrix that needs to be applied too.
   // To compute the absolute bounding box of an element, start with its
   // boundsInContainer and apply the transform. Then as long as its container is
-  // not null, walk up to its container and offset by the container's offset from
-  // origin, the container's scroll position if any, and apply the container's transform.
-  // Do this until you reach the root of the tree.
+  // not null, walk up to its container and offset by the container's offset
+  // from origin, the container's scroll position if any, and apply the
+  // container's transform.  Do this until you reach the root of the tree.
   BLINK_EXPORT void getRelativeBounds(WebAXObject& offsetContainer,
                                       WebFloatRect& boundsInContainer,
                                       SkMatrix44& containerTransform) const;
 
-  // Make this object visible by scrolling as many nested scrollable views as needed.
+  // Make this object visible by scrolling as many nested scrollable views as
+  // needed.
   BLINK_EXPORT void scrollToMakeVisible() const;
-  // Same, but if the whole object can't be made visible, try for this subrect, in local coordinates.
+  // Same, but if the whole object can't be made visible, try for this subrect,
+  // in local coordinates.
   BLINK_EXPORT void scrollToMakeVisibleWithSubFocus(const WebRect&) const;
-  // Scroll this object to a given point in global coordinates of the top-level window.
+  // Scroll this object to a given point in global coordinates of the top-level
+  // window.
   BLINK_EXPORT void scrollToGlobalPoint(const WebPoint&) const;
 
 #if BLINK_IMPLEMENTATION

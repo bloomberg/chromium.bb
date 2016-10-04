@@ -58,8 +58,8 @@ class WebSecurityPolicy {
   // hyperlinks to URLs with the scheme.
   BLINK_EXPORT static void registerURLSchemeAsDisplayIsolated(const WebString&);
 
-  // Registers a URL scheme to generate mixed content warnings when resources whose
-  // schemes are not registered as "secure" are embedded.
+  // Registers a URL scheme to generate mixed content warnings when resources
+  // whose schemes are not registered as "secure" are embedded.
   BLINK_EXPORT static void registerURLSchemeAsRestrictingMixedContent(
       const WebString&);
 
@@ -82,16 +82,20 @@ class WebSecurityPolicy {
   BLINK_EXPORT static void registerURLSchemeAsSupportingFetchAPI(
       const WebString&);
 
-  // Registers a URL scheme whose resources can be loaded regardless of a page's Content Security Policy.
+  // Registers a URL scheme whose resources can be loaded regardless of a page's
+  // Content Security Policy.
   BLINK_EXPORT static void registerURLSchemeAsBypassingContentSecurityPolicy(
       const WebString&);
 
-  // Registers a URL scheme which will always be considered the first-party when loaded in a top-level context.
+  // Registers a URL scheme which will always be considered the first-party when
+  // loaded in a top-level context.
   BLINK_EXPORT static void registerURLSchemeAsFirstPartyWhenTopLevel(
       const WebString&);
 
-  // Registers a URL scheme for which some kinds of resources bypass Content Security Policy.
-  // This enum should be kept in sync with Source/platform/weborigin/SchemeRegistry.h.
+  // Registers a URL scheme for which some kinds of resources bypass Content
+  // Security Policy.
+  // This enum should be kept in sync with
+  // Source/platform/weborigin/SchemeRegistry.h.
   // Enforced in AssertMatchingEnums.cpp.
   enum PolicyAreas : uint32_t {
     PolicyAreaNone = 0,

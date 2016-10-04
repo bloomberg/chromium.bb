@@ -41,9 +41,10 @@ namespace blink {
 
 class WebString;
 
-// WebSettings is owned by the WebView and allows code to modify the settings for
-// the WebView's page without any knowledge of WebCore itself.  For the most part,
-// these functions have a 1:1 mapping with the methods in WebCore/page/Settings.h.
+// WebSettings is owned by the WebView and allows code to modify the settings
+// for the WebView's page without any knowledge of WebCore itself.  For the most
+// part, these functions have a 1:1 mapping with the methods in
+// WebCore/page/Settings.h.
 class WebSettings {
  public:
   enum ImageAnimationPolicy {
@@ -96,14 +97,16 @@ class WebSettings {
   enum class TextTrackKindUserPreference {
     // Display only tracks marked as default
     Default,
-    // If available, display captions track in preferred language, else display subtitles.
+    // If available, display captions track in preferred language, else display
+    // subtitles.
     Captions,
-    // If available, display subtitles track in preferred language, else display captions.
+    // If available, display subtitles track in preferred language, else display
+    // captions.
     Subtitles
   };
 
-  // Defines the default for 'passive' field used in the AddEventListenerOptions interface
-  // when javascript calls addEventListener.
+  // Defines the default for 'passive' field used in the AddEventListenerOptions
+  // interface when javascript calls addEventListener.
   enum class PassiveEventListenerDefault {
     False,        // Default of false.
     True,         // Default of true.

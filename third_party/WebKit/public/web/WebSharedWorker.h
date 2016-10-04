@@ -59,7 +59,8 @@ class WebSharedWorker {
   // Sends a connect event to the SharedWorker context.
   virtual void connect(WebMessagePortChannel*) = 0;
 
-  // Invoked to shutdown the worker when there are no more associated documents. This eventually deletes this instance.
+  // Invoked to shutdown the worker when there are no more associated documents.
+  // This eventually deletes this instance.
   virtual void terminateWorkerContext() = 0;
 
   virtual void pauseWorkerContextOnStart() = 0;

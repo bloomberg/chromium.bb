@@ -290,13 +290,15 @@ class WebView : protected WebWidget {
   // by the page or by the overrides below if they are set.
   virtual void setDefaultPageScaleLimits(float minScale, float maxScale) = 0;
 
-  // Sets the initial page scale to the given factor. This scale setting overrides
+  // Sets the initial page scale to the given factor. This scale setting
+  // overrides
   // page scale set in the page's viewport meta tag.
   virtual void setInitialPageScaleOverride(float) = 0;
 
-  // Sets the maximum page scale considered to be legible. Automatic zooms (e.g, double-tap
-  // or find in page) will have the page scale limited to this value times the font scale
-  // factor. Manual pinch zoom will not be affected by this limit.
+  // Sets the maximum page scale considered to be legible. Automatic zooms (e.g,
+  // double-tap or find in page) will have the page scale limited to this value
+  // times the font scale factor. Manual pinch zoom will not be affected by this
+  // limit.
   virtual void setMaximumLegibleScale(float) = 0;
 
   // Reset any saved values for the scroll and scale state.
@@ -307,21 +309,23 @@ class WebView : protected WebWidget {
   // pages even if the web page tries to block scaling.
   virtual void setIgnoreViewportTagScaleLimits(bool) = 0;
 
-  // Returns the "preferred" contents size, defined as the preferred minimum width of the main document's contents
-  // and the minimum height required to display the main document without scrollbars.
-  // The returned size has the page zoom factor applied.
+  // Returns the "preferred" contents size, defined as the preferred minimum
+  // width of the main document's contents and the minimum height required to
+  // display the main document without scrollbars.  The returned size has the
+  // page zoom factor applied.
   virtual WebSize contentsPreferredMinimumSize() = 0;
 
   // Sets the display mode of the web app.
   virtual void setDisplayMode(WebDisplayMode) = 0;
 
   // Sets the ratio as computed by computePageScaleConstraints.
-  // TODO(oshima): Remove this once the device scale factor implementation is fully
-  // migrated to use zooming mechanism.
+  // TODO(oshima): Remove this once the device scale factor implementation is
+  // fully migrated to use zooming mechanism.
   virtual void setDeviceScaleFactor(float) = 0;
 
   // Sets the additional zoom factor used for device scale factor. This is used
-  // to scale the content by the device scale factor, without affecting zoom level.
+  // to scale the content by the device scale factor, without affecting zoom
+  // level.
   virtual void setZoomFactorForDeviceScaleFactor(float) = 0;
 
   // Set and reset the device color profile.
@@ -346,7 +350,8 @@ class WebView : protected WebWidget {
 
   // Media ---------------------------------------------------------------
 
-  // Performs the specified media player action on the node at the given location.
+  // Performs the specified media player action on the node at the given
+  // location.
   virtual void performMediaPlayerAction(const WebMediaPlayerAction&,
                                         const WebPoint& location) = 0;
 
@@ -466,8 +471,9 @@ class WebView : protected WebWidget {
   BLINK_EXPORT static void willEnterModalLoop();
   BLINK_EXPORT static void didExitModalLoop();
 
-  // Called to inform the WebView that a wheel fling animation was started externally (for instance
-  // by the compositor) but must be completed by the WebView.
+  // Called to inform the WebView that a wheel fling animation was started
+  // externally (for instance by the compositor) but must be completed by the
+  // WebView.
   virtual void transferActiveWheelFlingAnimation(
       const WebActiveWheelFlingParameters&) = 0;
 

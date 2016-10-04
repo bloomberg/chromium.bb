@@ -39,7 +39,8 @@
 namespace blink {
 
 struct WebFileChooserParams {
-  // If |multiSelect| is true, the dialog allows the user to select multiple files.
+  // If |multiSelect| is true, the dialog allows the user to select multiple
+  // files.
   bool multiSelect;
   // If |directory| is true, the dialog allows the user to select a directory.
   bool directory;

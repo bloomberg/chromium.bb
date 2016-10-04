@@ -45,8 +45,12 @@ enum WebSelectorType {
   // SelectorTypeSimple,
 };
 
-// Returns the value that would be returned from CSSStyleRule.selectorText in the CSSOM for a rule with this selector (which can be a list), if the selector is valid and each component in the list has the type specified in |restriction|.
-// Returns "" for an invalid selector or a selector that doesn't match the restrictions.
+// Returns the value that would be returned from CSSStyleRule.selectorText in
+// the CSSOM for a rule with this selector (which can be a list), if the
+// selector is valid and each component in the list has the type specified in
+// |restriction|.
+// Returns "" for an invalid selector or a selector that doesn't match the
+// restrictions.
 // The canonical form is not guaranteed to stay the same over time.
 BLINK_EXPORT WebString
 canonicalizeSelector(WebString selector,

@@ -176,8 +176,8 @@ class WebViewClient : protected WebWidgetClient {
   virtual void focusNext() {}
   virtual void focusPrevious() {}
 
-  // Called when a new node gets focused. |fromNode| is the previously focused node, |toNode|
-  // is the newly focused node. Either can be null.
+  // Called when a new node gets focused. |fromNode| is the previously focused
+  // node, |toNode| is the newly focused node. Either can be null.
   virtual void focusedNodeChanged(const WebNode& fromNode,
                                   const WebNode& toNode) {}
 
@@ -188,7 +188,8 @@ class WebViewClient : protected WebWidgetClient {
   // unless the view did not need a layout.
   virtual void didUpdateLayout() {}
 
-  // Return true to swallow the input event if the embedder will start a disambiguation popup
+  // Return true to swallow the input event if the embedder will start a
+  // disambiguation popup
   virtual bool didTapMultipleTargets(const WebSize& visualViewportOffset,
                                      const WebRect& touchRect,
                                      const WebVector<WebRect>& targetRects) {
@@ -261,7 +262,8 @@ class WebViewClient : protected WebWidgetClient {
   // to the element from the main frame.
   virtual void scheduleContentIntent(const WebURL&, bool isMainFrame) {}
 
-  // Cancels any previously scheduled content intents that have not yet launched.
+  // Cancels any previously scheduled content intents that have not yet
+  // launched.
   virtual void cancelScheduledContentIntents() {}
 
   // Draggable regions ----------------------------------------------------
