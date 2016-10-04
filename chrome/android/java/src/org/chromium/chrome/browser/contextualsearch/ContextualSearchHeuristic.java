@@ -40,7 +40,7 @@ abstract class ContextualSearchHeuristic {
      *         suppression.
      */
     protected boolean shouldAggregateLogForTapSuppression() {
-        return true;
+        return false;
     }
 
     /**
@@ -48,5 +48,7 @@ abstract class ContextualSearchHeuristic {
      *         suppression, if it were enabled through VariationsAssociatedData. If the feature is
      *         enabled through VariationsAssociatedData then this method should return false.
      */
-    protected abstract boolean isConditionSatisfiedForAggregateLogging();
+    protected boolean isConditionSatisfiedForAggregateLogging() {
+        return false;
+    }
 }

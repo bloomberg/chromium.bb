@@ -46,10 +46,6 @@ public class NearTopTapSuppression extends ContextualSearchHeuristic {
         }
     }
 
-    @Override
-    protected boolean isConditionSatisfiedForAggregateLogging() {
-        // TODO(twellington): Define a default value to use when determining if the condition is
-        // satisfied for logging.
-        return false;
-    }
+    // TODO(twellington): Define a default value to use when determining if the condition is
+    // satisfied for logging.
 }

@@ -67,6 +67,11 @@ public class RecentScrollTapSuppression extends ContextualSearchHeuristic {
     }
 
     @Override
+    protected boolean shouldAggregateLogForTapSuppression() {
+        return true;
+    }
+
+    @Override
     protected boolean isConditionSatisfiedForAggregateLogging() {
         return !mIsEnabled && mIsConditionSatisfied;
     }

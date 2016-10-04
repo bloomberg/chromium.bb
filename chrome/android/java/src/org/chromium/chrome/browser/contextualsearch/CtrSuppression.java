@@ -59,11 +59,6 @@ public class CtrSuppression extends ContextualSearchHeuristic {
     }
 
     @Override
-    protected boolean isConditionSatisfiedForAggregateLogging() {
-        return false;
-    }
-
-    @Override
     protected void logConditionState() {
         // Since the CTR for previous time periods never changes, we only need to write to the UMA
         // log when we may have moved to a new week, or we have new persistent data.

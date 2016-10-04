@@ -225,6 +225,7 @@ public class ContextualSearchPanelMetrics {
             mWasContextualCardsDataShown = false;
             mWasSelectionAllCaps = false;
             mDidSelectionStartWithCapital = false;
+            mWasAnyHeuristicSatisfiedOnPanelShow = false;
             mPanelTriggerTimeNs = 0;
         }
     }
