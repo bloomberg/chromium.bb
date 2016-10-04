@@ -79,10 +79,12 @@ class SQLiteDatabase {
 
   void setBusyTimeout(int ms);
 
-  // Sets the maximum size in bytes
-  // Depending on per-database attributes, the size will only be settable in units that are the page size of the database, which is established at creation
-  // These chunks will never be anything other than 512, 1024, 2048, 4096, 8192, 16384, or 32768 bytes in size.
-  // setMaximumSize() will round the size down to the next smallest chunk if the passed size doesn't align.
+  // Sets the maximum size in bytes.
+  // Depending on per-database attributes, the size will only be settable in
+  // units that are the page size of the database, which is established at
+  // creation.  These chunks will never be anything other than 512, 1024, 2048,
+  // 4096, 8192, 16384, or 32768 bytes in size.  setMaximumSize() will round the
+  // size down to the next smallest chunk if the passed size doesn't align.
   void setMaximumSize(int64_t);
 
   // Gets the number of unused bytes in the database file.
@@ -108,8 +110,8 @@ class SQLiteDatabase {
   //        requires SQLite to store additional information about each page in
   //        the database file.
   // INCREMENTAL - SQLite stores extra information for each page in the database
-  //               file, but removes the empty pages only when PRAGMA INCREMANTAL_VACUUM
-  //               is called.
+  //               file, but removes the empty pages only when PRAGMA
+  //               INCREMANTAL_VACUUM is called.
   enum AutoVacuumPragma {
     AutoVacuumNone = 0,
     AutoVacuumFull = 1,

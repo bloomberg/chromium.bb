@@ -78,8 +78,8 @@ void SQLTransactionClient::didCommitWriteTransaction(Database* database) {
 }
 
 bool SQLTransactionClient::didExceedQuota(Database* database) {
-  // Chromium does not allow users to manually change the quota for an origin (for now, at least).
-  // Don't do anything.
+  // Chromium does not allow users to manually change the quota for an origin
+  // (for now, at least).  Don't do anything.
   ASSERT(
       database->getDatabaseContext()->getExecutionContext()->isContextThread());
   return false;

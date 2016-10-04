@@ -66,7 +66,8 @@ void DatabaseClient::didOpenDatabase(blink::Database* database,
 }
 
 void DatabaseClient::setInspectorAgent(InspectorDatabaseAgent* agent) {
-  // TODO(dgozman): we should not set agent twice, but it's happening in OOPIF case.
+  // TODO(dgozman): we should not set agent twice, but it's happening in OOPIF
+  // case.
   m_inspectorAgent = agent;
 }
 

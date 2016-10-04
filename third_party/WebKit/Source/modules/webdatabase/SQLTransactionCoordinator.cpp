@@ -119,7 +119,8 @@ void SQLTransactionCoordinator::shutdown() {
   // while we're shutting down.
   m_isShuttingDown = true;
 
-  // Notify all transactions in progress that the database thread is shutting down
+  // Notify all transactions in progress that the database thread is shutting
+  // down.
   for (CoordinationInfoHeapMap::iterator coordinationInfoIterator =
            m_coordinationInfoMap.begin();
        coordinationInfoIterator != m_coordinationInfoMap.end();

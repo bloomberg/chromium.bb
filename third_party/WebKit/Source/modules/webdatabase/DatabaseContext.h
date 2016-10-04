@@ -71,8 +71,8 @@ class DatabaseContext final : public GarbageCollectedFinalized<DatabaseContext>,
   explicit DatabaseContext(ExecutionContext*);
 
   Member<DatabaseThread> m_databaseThread;
-  bool
-      m_hasOpenDatabases;  // This never changes back to false, even after the database thread is closed.
+  bool m_hasOpenDatabases;  // This never changes back to false, even after the
+                            // database thread is closed.
   bool m_hasRequestedTermination;
 };
 

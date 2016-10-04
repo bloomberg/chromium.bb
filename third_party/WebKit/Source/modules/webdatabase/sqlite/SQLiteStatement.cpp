@@ -34,8 +34,8 @@
 #include "wtf/text/CString.h"
 #include <memory>
 
-// SQLite 3.6.16 makes sqlite3_prepare_v2 automatically retry preparing the statement
-// once if the database scheme has changed. We rely on this behavior.
+// SQLite 3.6.16 makes sqlite3_prepare_v2 automatically retry preparing the
+// statement once if the database scheme has changed. We rely on this behavior.
 #if SQLITE_VERSION_NUMBER < 3006016
 #error SQLite version 3.6.16 or newer is required
 #endif
@@ -110,8 +110,8 @@ int SQLiteStatement::prepare() {
 
     SQL_DVLOG(1) << "SQL - prepare - " << query.data();
 
-    // Pass the length of the string including the null character to sqlite3_prepare_v2;
-    // this lets SQLite avoid an extra string copy.
+    // Pass the length of the string including the null character to
+    // sqlite3_prepare_v2; this lets SQLite avoid an extra string copy.
     size_t lengthIncludingNullCharacter = query.length() + 1;
 
     error = sqlite3_prepare_v2(m_database.sqlite3Handle(), query.data(),
@@ -135,7 +135,7 @@ int SQLiteStatement::prepare() {
 
 int SQLiteStatement::step() {
   SafePointScope scope(BlinkGC::HeapPointersOnStack);
-  //ASSERT(m_isPrepared);
+  // ASSERT(m_isPrepared);
 
   if (!m_statement)
     return SQLITE_OK;
@@ -258,10 +258,12 @@ SQLValue SQLiteStatement::getColumnValue(int col) {
   // "(mostly) ignored"
   sqlite3_value* value = sqlite3_column_value(m_statement, col);
   switch (sqlite3_value_type(value)) {
-    case SQLITE_INTEGER:  // SQLValue and JS don't represent integers, so use FLOAT -case
+    case SQLITE_INTEGER:  // SQLValue and JS don't represent integers, so use
+                          // FLOAT -case
     case SQLITE_FLOAT:
       return SQLValue(sqlite3_value_double(value));
-    case SQLITE_BLOB:  // SQLValue and JS don't represent blobs, so use TEXT -case
+    case SQLITE_BLOB:  // SQLValue and JS don't represent blobs, so use TEXT
+                       // -case
     case SQLITE_TEXT: {
       const UChar* string =
           reinterpret_cast<const UChar*>(sqlite3_value_text16(value));

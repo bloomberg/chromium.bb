@@ -234,7 +234,8 @@ void DatabaseTracker::closeOneDatabaseImmediately(const String& originString,
       return;
   }
 
-  // And we have to call closeImmediately() without our collection lock being held.
+  // And we have to call closeImmediately() without our collection lock being
+  // held.
   database->closeImmediately();
 }
 

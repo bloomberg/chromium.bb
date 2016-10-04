@@ -100,10 +100,12 @@ void DatabaseThread::cleanupDatabaseThread() {
   // Clean up the list of all pending transactions on this database thread
   m_transactionCoordinator->shutdown();
 
-  // Close the databases that we ran transactions on. This ensures that if any transactions are still open, they are rolled back and we don't leave the database in an
-  // inconsistent or locked state.
+  // Close the databases that we ran transactions on. This ensures that if any
+  // transactions are still open, they are rolled back and we don't leave the
+  // database in an inconsistent or locked state.
   if (m_openDatabaseSet.size() > 0) {
-    // As the call to close will modify the original set, we must take a copy to iterate over.
+    // As the call to close will modify the original set, we must take a copy to
+    // iterate over.
     HashSet<CrossThreadPersistent<Database>> openSetCopy;
     openSetCopy.swap(m_openDatabaseSet);
     HashSet<CrossThreadPersistent<Database>>::iterator end = openSetCopy.end();

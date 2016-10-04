@@ -156,14 +156,16 @@ SQLTransactionState SQLTransaction::deliverTransactionCallback() {
   InspectorInstrumentation::AsyncTask asyncTask(
       m_database->getExecutionContext(), this);
 
-  // Spec 4.3.2 4: Invoke the transaction callback with the new SQLTransaction object
+  // Spec 4.3.2 4: Invoke the transaction callback with the new SQLTransaction
+  // object.
   if (SQLTransactionCallback* callback = m_callback.release()) {
     m_executeSqlAllowed = true;
     shouldDeliverErrorCallback = !callback->handleEvent(this);
     m_executeSqlAllowed = false;
   }
 
-  // Spec 4.3.2 5: If the transaction callback was null or raised an exception, jump to the error callback
+  // Spec 4.3.2 5: If the transaction callback was null or raised an exception,
+  // jump to the error callback.
   SQLTransactionState nextState = SQLTransactionState::RunStatements;
   if (shouldDeliverErrorCallback) {
     m_database->reportStartTransactionResult(5, SQLError::kUnknownErr, 0);
@@ -207,8 +209,9 @@ SQLTransactionState SQLTransaction::deliverTransactionErrorCallback() {
 
 SQLTransactionState SQLTransaction::deliverStatementCallback() {
   DCHECK(isMainThread());
-  // Spec 4.3.2.6.6 and 4.3.2.6.3: If the statement callback went wrong, jump to the transaction error callback
-  // Otherwise, continue to loop through the statement queue
+  // Spec 4.3.2.6.6 and 4.3.2.6.3: If the statement callback went wrong, jump to
+  // the transaction error callback.  Otherwise, continue to loop through the
+  // statement queue.
   m_executeSqlAllowed = true;
 
   SQLStatement* currentStatement = m_backend->currentStatement();
@@ -253,8 +256,8 @@ SQLTransactionState SQLTransaction::deliverSuccessCallback() {
 
   clearCallbacks();
 
-  // Schedule a "post-success callback" step to return control to the database thread in case there
-  // are further transactions queued up for this Database
+  // Schedule a "post-success callback" step to return control to the database
+  // thread in case there are further transactions queued up for this Database.
   return SQLTransactionState::CleanupAndTerminate;
 }
 

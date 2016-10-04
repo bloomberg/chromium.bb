@@ -50,8 +50,8 @@ namespace blink {
 //
 // At Birth:
 // ========
-// We create a DatabaseContext only when there is a need i.e. the script tries to
-// open a Database via DatabaseManager::openDatabase().
+// We create a DatabaseContext only when there is a need i.e. the script tries
+// to open a Database via DatabaseManager::openDatabase().
 //
 // The DatabaseContext constructor will register itself to DatabaseManager. This
 // lets DatabaseContext keep itself alive until it is unregisterd in
@@ -67,21 +67,24 @@ namespace blink {
 // ===========
 // During shutdown, the DatabaseContext needs to:
 // 1. "outlive" the ExecutionContext.
-//    - This is needed because the DatabaseContext needs to remove itself from the
+//    - This is needed because the DatabaseContext needs to remove itself from
+//    the
 //      ExecutionContext's ActiveDOMObject list and ContextLifecycleObserver
-//      list. This removal needs to be executed on the script's thread. Hence, we
+//      list. This removal needs to be executed on the script's thread. Hence,
+//      we
 //      rely on the ExecutionContext's shutdown process to call
 //      stop() and contextDestroyed() to give us a chance to clean these up from
 //      the script thread.
 //
 // 2. "outlive" the Databases.
-//    - This is because they may make use of the DatabaseContext to execute a close
-//      task and shutdown in an orderly manner. When the Databases are destructed,
-//      they will release the DatabaseContext reference from the DatabaseThread.
+//    - This is because they may make use of the DatabaseContext to execute a
+//      close task and shutdown in an orderly manner. When the Databases are
+//      destructed, they will release the DatabaseContext reference from the
+//      DatabaseThread.
 //
 // During shutdown, the ExecutionContext is shutting down on the script thread
-// while the Databases are shutting down on the DatabaseThread. Hence, there can be
-// a race condition as to whether the ExecutionContext or the Databases
+// while the Databases are shutting down on the DatabaseThread. Hence, there can
+// be a race condition as to whether the ExecutionContext or the Databases
 // destruct first.
 //
 // The Members in the Databases and DatabaseManager will ensure that the
@@ -149,8 +152,9 @@ DatabaseThread* DatabaseContext::databaseThread() {
     // after we've requested termination.
     ASSERT(!m_hasRequestedTermination);
 
-    // Create the database thread on first request - but not if at least one database was already opened,
-    // because in that case we already had a database thread and terminated it and should not create another.
+    // Create the database thread on first request - but not if at least one
+    // database was already opened, because in that case we already had a
+    // database thread and terminated it and should not create another.
     m_databaseThread = DatabaseThread::create();
     m_databaseThread->start();
   }

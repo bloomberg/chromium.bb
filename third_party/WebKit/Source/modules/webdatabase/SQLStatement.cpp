@@ -90,8 +90,8 @@ bool SQLStatement::performCallback(SQLTransaction* transaction) {
   InspectorInstrumentation::AsyncTask asyncTask(
       transaction->database()->getExecutionContext(), this);
 
-  // Call the appropriate statement callback and track if it resulted in an error,
-  // because then we need to jump to the transaction error callback.
+  // Call the appropriate statement callback and track if it resulted in an
+  // error, because then we need to jump to the transaction error callback.
   if (error) {
     if (errorCallback)
       callbackError =

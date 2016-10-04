@@ -345,11 +345,14 @@ int DatabaseAuthorizer::denyBasedOnTableName(const String& tableName) const {
   if (!m_securityEnabled)
     return SQLAuthAllow;
 
-  // Sadly, normal creates and drops end up affecting sqlite_master in an authorizer callback, so
-  // it will be tough to enforce all of the following policies
-  //if (equalIgnoringCase(tableName, "sqlite_master") || equalIgnoringCase(tableName, "sqlite_temp_master") ||
-  //    equalIgnoringCase(tableName, "sqlite_sequence") || equalIgnoringCase(tableName, Database::databaseInfoTableName()))
-  //        return SQLAuthDeny;
+  // Sadly, normal creates and drops end up affecting sqlite_master in an
+  // authorizer callback, so it will be tough to enforce all of the following
+  // policies:
+  // if (equalIgnoringCase(tableName, "sqlite_master") ||
+  //     equalIgnoringCase(tableName, "sqlite_temp_master") ||
+  //     equalIgnoringCase(tableName, "sqlite_sequence") ||
+  //     equalIgnoringCase(tableName, Database::databaseInfoTableName()))
+  //   return SQLAuthDeny;
 
   if (equalIgnoringCase(tableName, m_databaseInfoTableName))
     return SQLAuthDeny;

@@ -77,9 +77,9 @@ class DatabaseThread : public GarbageCollectedFinalized<DatabaseThread> {
 
   std::unique_ptr<WebThreadSupportingGC> m_thread;
 
-  // This set keeps track of the open databases that have been used on this thread.
-  // This must be updated in the database thread though it is constructed and
-  // destructed in the context thread.
+  // This set keeps track of the open databases that have been used on this
+  // thread.  This must be updated in the database thread though it is
+  // constructed and destructed in the context thread.
   HashSet<CrossThreadPersistent<Database>> m_openDatabaseSet;
 
   std::unique_ptr<SQLTransactionClient> m_transactionClient;

@@ -89,8 +89,8 @@ bool SQLiteDatabase::open(const String& filename) {
   if (!SQLiteStatement(*this, "PRAGMA temp_store = MEMORY;").executeCommand())
     DLOG(ERROR) << "SQLite database could not set temp_store to memory";
 
-  // Foreign keys are not supported by WebDatabase.  Make sure foreign key support is consistent
-  // if SQLite has SQLITE_DEFAULT_FOREIGN_KEYS.
+  // Foreign keys are not supported by WebDatabase.  Make sure foreign key
+  // support is consistent if SQLite has SQLITE_DEFAULT_FOREIGN_KEYS.
   if (!SQLiteStatement(*this, "PRAGMA foreign_keys = OFF;").executeCommand())
     DLOG(ERROR) << "SQLite database could not turn off foreign_keys";
 
@@ -99,7 +99,8 @@ bool SQLiteDatabase::open(const String& filename) {
 
 void SQLiteDatabase::close() {
   if (m_db) {
-    // FIXME: This is being called on the main thread during JS GC. <rdar://problem/5739818>
+    // FIXME: This is being called on the main thread during JS GC.
+    // <rdar://problem/5739818>
     // ASSERT(currentThread() == m_openingThread);
     sqlite3* db = m_db;
     {
@@ -137,8 +138,8 @@ void SQLiteDatabase::setMaximumSize(int64_t size) {
 }
 
 int SQLiteDatabase::pageSize() {
-  // Since the page size of a database is locked in at creation and therefore cannot be dynamic,
-  // we can cache the value for future use
+  // Since the page size of a database is locked in at creation and therefore
+  // cannot be dynamic, we can cache the value for future use.
   if (m_pageSize == -1) {
     MutexLocker locker(m_authorizerLock);
     enableAuthorizer(false);
@@ -366,12 +367,13 @@ bool SQLiteDatabase::turnOnIncrementalAutoVacuum() {
   // Finalize statement to not block potential VACUUM.
   statement.finalize();
 
-  // Check if we got an error while trying to get the value of the auto_vacuum flag.
-  // If we got a SQLITE_BUSY error, then there's probably another transaction in
-  // progress on this database. In this case, keep the current value of the
-  // auto_vacuum flag and try to set it to INCREMENTAL the next time we open this
-  // database. If the error is not SQLITE_BUSY, then we probably ran into a more
-  // serious problem and should return false (to log an error message).
+  // Check if we got an error while trying to get the value of the auto_vacuum
+  // flag.  If we got a SQLITE_BUSY error, then there's probably another
+  // transaction in progress on this database. In this case, keep the current
+  // value of the auto_vacuum flag and try to set it to INCREMENTAL the next
+  // time we open this database. If the error is not SQLITE_BUSY, then we
+  // probably ran into a more serious problem and should return false (to log an
+  // error message).
   if (error != SQLITE_ROW)
     return false;
 

@@ -178,7 +178,8 @@ int chromiumOpenInternal(sqlite3_vfs* vfs,
 
   fcntl(fd, F_SETFD, fcntl(fd, F_GETFD) | FD_CLOEXEC);
 
-  // The mask 0x00007F00 gives us the 7 bits that determine the type of the file SQLite is trying to open.
+  // The mask 0x00007F00 gives us the 7 bits that determine the type of the file
+  // SQLite is trying to open.
   int fileType = desiredFlags & 0x00007F00;
   int noLock = (fileType != SQLITE_OPEN_MAIN_DB);
   sqlite3_vfs* wrappedVfs = static_cast<sqlite3_vfs*>(vfs->pAppData);
@@ -197,16 +198,17 @@ int chromiumOpen(sqlite3_vfs* vfs,
   if (!wrappedFile)
     return SQLITE_NOMEM;
 
-  // Make a local copy of the file name.  SQLite's os_unix.c appears to be written to allow caching the pointer passed
-  // in to this function, but that seems brittle.
+  // Make a local copy of the file name.  SQLite's os_unix.c appears to be
+  // written to allow caching the pointer passed in to this function, but that
+  // seems brittle.
   char* wrappedFileName = sqlite3_mprintf("%s", fileName);
   if (!wrappedFileName) {
     sqlite3_free(wrappedFile);
     return SQLITE_NOMEM;
   }
 
-  // SQLite's unixOpen() makes assumptions about the structure of |fileName|.  Our local copy may not answer those
-  // assumptions correctly.
+  // SQLite's unixOpen() makes assumptions about the structure of |fileName|.
+  // Our local copy may not answer those assumptions correctly.
   int rc =
       chromiumOpenInternal(vfs, fileName, wrappedFile, desiredFlags, usedFlags);
   if (rc != SQLITE_OK) {
@@ -325,7 +327,8 @@ int chromiumCurrentTime(sqlite3_vfs* vfs, double* prNow) {
 }
 
 int chromiumGetLastError(sqlite3_vfs* vfs, int e, char* s) {
-  // xGetLastError() has never been used by SQLite.  The implementation in os_win.c indicates this is a reasonable implementation.
+  // xGetLastError() has never been used by SQLite.  The implementation in
+  // os_win.c indicates this is a reasonable implementation.
   *s = '\0';
   return 0;
 }

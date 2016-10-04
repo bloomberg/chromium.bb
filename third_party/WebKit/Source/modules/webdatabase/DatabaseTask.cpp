@@ -52,7 +52,8 @@ DatabaseTask::~DatabaseTask() {
 }
 
 void DatabaseTask::run() {
-// Database tasks are meant to be used only once, so make sure this one hasn't been performed before.
+// Database tasks are meant to be used only once, so make sure this one hasn't
+// been performed before.
 #if DCHECK_IS_ON()
   ASSERT(!m_complete);
 #endif
@@ -81,7 +82,8 @@ void DatabaseTask::run() {
 }
 
 // *** DatabaseOpenTask ***
-// Opens the database file and verifies the version matches the expected version.
+// Opens the database file and verifies the version matches the expected
+// version.
 
 Database::DatabaseOpenTask::DatabaseOpenTask(Database* database,
                                              bool setVersionInNewDatabase,
@@ -94,8 +96,8 @@ Database::DatabaseOpenTask::DatabaseOpenTask(Database* database,
       m_error(error),
       m_errorMessage(errorMessage),
       m_success(success) {
-  DCHECK(
-      completeEvent);  // A task with output parameters is supposed to be synchronous.
+  DCHECK(completeEvent);  // A task with output parameters is supposed to be
+                          // synchronous.
 }
 
 void Database::DatabaseOpenTask::doPerformTask() {
@@ -168,8 +170,8 @@ Database::DatabaseTableNamesTask::DatabaseTableNamesTask(
     WaitableEvent* completeEvent,
     Vector<String>& names)
     : DatabaseTask(database, completeEvent), m_tableNames(names) {
-  DCHECK(
-      completeEvent);  // A task with output parameters is supposed to be synchronous.
+  DCHECK(completeEvent);  // A task with output parameters is supposed to be
+                          // synchronous.
 }
 
 void Database::DatabaseTableNamesTask::doPerformTask() {
