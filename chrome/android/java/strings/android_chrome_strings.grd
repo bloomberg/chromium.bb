@@ -1051,7 +1051,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Sync your bookmarks
       </message>
       <message name="IDS_BOOKMARK_SIGN_IN_PROMO_DESCRIPTION" desc="Description for bookmark UI sign-in promotion.">
-        To get your bookmarks your other devices, sign in to Chrome.
+        To get your bookmarks on all your devices, sign in to Chrome.
       </message>
       <message name="IDS_RECENT_TABS_SIGN_IN_PROMO_DESCRIPTION" desc="Description for recent tabs UI sign-in promotion.">
         To get your tabs from your other devices, sign in to Chrome.
