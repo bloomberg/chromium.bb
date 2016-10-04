@@ -429,6 +429,10 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
                 mBackendProvider.getSelectionDelegate().getSelectedItems();
         final List<DownloadHistoryItemWrapper> itemsToDelete = getItemsForDeletion();
 
+        mBackendProvider.getSelectionDelegate().clearSelection();
+
+        if (itemsToDelete.isEmpty()) return;
+
         mHistoryAdapter.removeItemsFromAdapter(itemsToDelete);
 
         dismissUndoDeletionSnackbars();
@@ -445,8 +449,6 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
         snackbar.setTemplateText(mActivity.getString(snackbarTemplateId));
 
         ((SnackbarManageable) mActivity).getSnackbarManager().showSnackbar(snackbar);
-
-        mBackendProvider.getSelectionDelegate().clearSelection();
     }
 
     private List<DownloadHistoryItemWrapper> getItemsForDeletion() {
@@ -457,7 +459,11 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
 
         for (DownloadHistoryItemWrapper item : selectedItems) {
             if (!filePathsToRemove.contains(item.getFilePath())) {
-                itemsToRemove.addAll(mHistoryAdapter.getItemsForFilePath(item.getFilePath()));
+                List<DownloadHistoryItemWrapper> itemsForFilePath =
+                        mHistoryAdapter.getItemsForFilePath(item.getFilePath());
+                if (itemsForFilePath != null) {
+                    itemsToRemove.addAll(itemsForFilePath);
+                }
                 filePathsToRemove.add(item.getFilePath());
             }
         }
