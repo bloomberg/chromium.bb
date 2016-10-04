@@ -9,6 +9,7 @@
 #include "build/build_config.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
+#include "content/common/renderer.mojom.h"
 #include "content/common/view_messages.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/test/frame_load_waiter.h"
@@ -46,7 +47,7 @@ class RenderFrameImplTest : public RenderViewTest {
     RenderViewTest::SetUp();
     EXPECT_TRUE(GetMainRenderFrame()->is_main_frame_);
 
-    FrameMsg_NewFrame_WidgetParams widget_params;
+    mojom::CreateFrameWidgetParams widget_params;
     widget_params.routing_id = kSubframeWidgetRouteId;
     widget_params.hidden = false;
 

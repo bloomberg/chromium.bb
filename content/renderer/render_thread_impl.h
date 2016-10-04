@@ -50,7 +50,6 @@
 
 class GrContext;
 class SkBitmap;
-struct FrameMsg_NewFrame_Params;
 struct ViewMsg_UpdateScrollbarTheme_Params;
 struct WorkerProcessMsg_CreateWorker_Params;
 
@@ -502,12 +501,6 @@ class CONTENT_EXPORT RenderThreadImpl
   void InitializeWebKit(
       scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue);
 
-  void OnCreateNewFrame(FrameMsg_NewFrame_Params params);
-  void OnCreateNewFrameProxy(int routing_id,
-                             int render_view_routing_id,
-                             int opener_routing_id,
-                             int parent_routing_id,
-                             const FrameReplicationState& replicated_state);
   void OnTransferBitmap(const SkBitmap& bitmap, int resource_id);
 #if defined(ENABLE_PLUGINS)
   void OnPurgePluginListCache(bool reload_pages);
@@ -519,6 +512,12 @@ class CONTENT_EXPORT RenderThreadImpl
 
   // mojom::Renderer:
   void CreateView(mojom::CreateViewParamsPtr params) override;
+  void CreateFrame(mojom::CreateFrameParamsPtr params) override;
+  void CreateFrameProxy(int32_t routing_id,
+                        int32_t render_view_routing_id,
+                        int32_t opener_routing_id,
+                        int32_t parent_routing_id,
+                        const FrameReplicationState& replicated_state) override;
 
   // device::mojom::TimeZoneClient:
   void OnTimeZoneChange(const std::string& zoneId) override;

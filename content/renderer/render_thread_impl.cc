@@ -1735,8 +1735,6 @@ bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderThreadImpl, msg)
-    IPC_MESSAGE_HANDLER(FrameMsg_NewFrame, OnCreateNewFrame)
-    IPC_MESSAGE_HANDLER(FrameMsg_NewFrameProxy, OnCreateNewFrameProxy)
     // TODO(port): removed from render_messages_internal.h;
     // is there a new non-windows message I should add here?
     IPC_MESSAGE_HANDLER(ViewMsg_NetworkConnectionChanged,
@@ -1776,53 +1774,6 @@ void RenderThreadImpl::OnProcessPurgeAndSuspend() {
   // TODO(hajimehoshi): Implement purging e.g. cache (crbug/607077)
   is_renderer_suspended_ = true;
   renderer_scheduler_->SuspendRenderer();
-}
-
-void RenderThreadImpl::OnCreateNewFrame(FrameMsg_NewFrame_Params params) {
-  // Debug cases of https://crbug.com/626802.
-  base::debug::SetCrashKeyValue("newframe_routing_id",
-                                base::IntToString(params.routing_id));
-  base::debug::SetCrashKeyValue("newframe_proxy_id",
-                                base::IntToString(params.proxy_routing_id));
-  base::debug::SetCrashKeyValue("newframe_opener_id",
-                                base::IntToString(params.opener_routing_id));
-  base::debug::SetCrashKeyValue("newframe_parent_id",
-                                base::IntToString(params.parent_routing_id));
-  base::debug::SetCrashKeyValue("newframe_widget_id",
-                                base::IntToString(
-                                    params.widget_params.routing_id));
-  base::debug::SetCrashKeyValue("newframe_widget_hidden",
-                                params.widget_params.hidden ? "yes" : "no");
-  base::debug::SetCrashKeyValue("newframe_replicated_origin",
-                                params.replication_state.origin.Serialize());
-  base::debug::SetCrashKeyValue("newframe_oopifs_possible",
-      SiteIsolationPolicy::AreCrossProcessFramesPossible() ? "yes" : "no");
-  CompositorDependencies* compositor_deps = this;
-  RenderFrameImpl::CreateFrame(
-      params.routing_id, params.proxy_routing_id, params.opener_routing_id,
-      params.parent_routing_id, params.previous_sibling_routing_id,
-      params.replication_state, compositor_deps, params.widget_params,
-      params.frame_owner_properties);
-}
-
-void RenderThreadImpl::OnCreateNewFrameProxy(
-    int routing_id,
-    int render_view_routing_id,
-    int opener_routing_id,
-    int parent_routing_id,
-    const FrameReplicationState& replicated_state) {
-  // Debug cases of https://crbug.com/575245.
-  base::debug::SetCrashKeyValue("newproxy_proxy_id",
-                                base::IntToString(routing_id));
-  base::debug::SetCrashKeyValue("newproxy_view_id",
-                                base::IntToString(render_view_routing_id));
-  base::debug::SetCrashKeyValue("newproxy_opener_id",
-                                base::IntToString(opener_routing_id));
-  base::debug::SetCrashKeyValue("newproxy_parent_id",
-                                base::IntToString(parent_routing_id));
-  RenderFrameProxy::CreateFrameProxy(routing_id, render_view_routing_id,
-                                     opener_routing_id, parent_routing_id,
-                                     replicated_state);
 }
 
 scoped_refptr<gpu::GpuChannelHost> RenderThreadImpl::EstablishGpuChannelSync() {
@@ -2077,6 +2028,53 @@ void RenderThreadImpl::CreateView(mojom::CreateViewParamsPtr params) {
   CompositorDependencies* compositor_deps = this;
   // When bringing in render_view, also bring in webkit's glue and jsbindings.
   RenderViewImpl::Create(compositor_deps, *params, false);
+}
+
+void RenderThreadImpl::CreateFrame(mojom::CreateFrameParamsPtr params) {
+  // Debug cases of https://crbug.com/626802.
+  base::debug::SetCrashKeyValue("newframe_routing_id",
+                                base::IntToString(params->routing_id));
+  base::debug::SetCrashKeyValue("newframe_proxy_id",
+                                base::IntToString(params->proxy_routing_id));
+  base::debug::SetCrashKeyValue("newframe_opener_id",
+                                base::IntToString(params->opener_routing_id));
+  base::debug::SetCrashKeyValue("newframe_parent_id",
+                                base::IntToString(params->parent_routing_id));
+  base::debug::SetCrashKeyValue("newframe_widget_id",
+                                base::IntToString(
+                                    params->widget_params->routing_id));
+  base::debug::SetCrashKeyValue("newframe_widget_hidden",
+                                params->widget_params->hidden ? "yes" : "no");
+  base::debug::SetCrashKeyValue("newframe_replicated_origin",
+                                params->replication_state.origin.Serialize());
+  base::debug::SetCrashKeyValue("newframe_oopifs_possible",
+      SiteIsolationPolicy::AreCrossProcessFramesPossible() ? "yes" : "no");
+  CompositorDependencies* compositor_deps = this;
+  RenderFrameImpl::CreateFrame(
+      params->routing_id, params->proxy_routing_id, params->opener_routing_id,
+      params->parent_routing_id, params->previous_sibling_routing_id,
+      params->replication_state, compositor_deps, *params->widget_params,
+      params->frame_owner_properties);
+}
+
+void RenderThreadImpl::CreateFrameProxy(
+    int32_t routing_id,
+    int32_t render_view_routing_id,
+    int32_t opener_routing_id,
+    int32_t parent_routing_id,
+    const FrameReplicationState& replicated_state) {
+  // Debug cases of https://crbug.com/575245.
+  base::debug::SetCrashKeyValue("newproxy_proxy_id",
+                                base::IntToString(routing_id));
+  base::debug::SetCrashKeyValue("newproxy_view_id",
+                                base::IntToString(render_view_routing_id));
+  base::debug::SetCrashKeyValue("newproxy_opener_id",
+                                base::IntToString(opener_routing_id));
+  base::debug::SetCrashKeyValue("newproxy_parent_id",
+                                base::IntToString(parent_routing_id));
+  RenderFrameProxy::CreateFrameProxy(routing_id, render_view_routing_id,
+                                     opener_routing_id, parent_routing_id,
+                                     replicated_state);
 }
 
 void RenderThreadImpl::OnTimeZoneChange(const std::string& zone_id) {

@@ -4,6 +4,7 @@
 
 mojom = "//content/common/native_types.mojom"
 public_headers = [
+  "//content/common/frame_owner_properties.h",
   "//content/common/frame_replication_state.h",
   "//content/common/resize_params.h",
   "//content/public/common/renderer_preferences.h",
@@ -33,6 +34,7 @@ public_deps = [
   "//url/ipc:url_ipc",
 ]
 type_mappings = [
+  "content.mojom.FrameOwnerProperties=content::FrameOwnerProperties",
   "content.mojom.FrameReplicationState=content::FrameReplicationState",
   "content.mojom.RendererPreferences=content::RendererPreferences",
   "content.mojom.ResizeParams=content::ResizeParams",

@@ -520,7 +520,8 @@ void NavigatorImpl::DidNavigate(
   // message, which is sent inside DidNavigateFrame().  SwapOut needs the
   // origin because it creates a RenderFrameProxy that needs this to initialize
   // its security context. This origin will also be sent to RenderFrameProxies
-  // created via mojom::Renderer::CreateView and FrameMsg_NewFrameProxy.
+  // created via mojom::Renderer::CreateView and
+  // mojom::Renderer::CreateFrameProxy.
   render_frame_host->frame_tree_node()->SetCurrentOrigin(
       params.origin, params.has_potentially_trustworthy_unique_origin);
 

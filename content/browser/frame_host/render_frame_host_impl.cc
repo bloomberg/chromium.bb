@@ -60,6 +60,7 @@
 #include "content/common/input_messages.h"
 #include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/navigation_params.h"
+#include "content/common/renderer.mojom.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/public/browser/ax_event_notification_details.h"
@@ -849,13 +850,13 @@ bool RenderFrameHostImpl::CreateRenderFrame(int proxy_routing_id,
 
   DCHECK(GetProcess()->HasConnection());
 
-  FrameMsg_NewFrame_Params params;
-  params.routing_id = routing_id_;
-  params.proxy_routing_id = proxy_routing_id;
-  params.opener_routing_id = opener_routing_id;
-  params.parent_routing_id = parent_routing_id;
-  params.previous_sibling_routing_id = previous_sibling_routing_id;
-  params.replication_state = frame_tree_node()->current_replication_state();
+  mojom::CreateFrameParamsPtr params = mojom::CreateFrameParams::New();
+  params->routing_id = routing_id_;
+  params->proxy_routing_id = proxy_routing_id;
+  params->opener_routing_id = opener_routing_id;
+  params->parent_routing_id = parent_routing_id;
+  params->previous_sibling_routing_id = previous_sibling_routing_id;
+  params->replication_state = frame_tree_node()->current_replication_state();
 
   // Normally, the replication state contains effective sandbox flags,
   // excluding flags that were updated but have not taken effect.  However, a
@@ -863,23 +864,25 @@ bool RenderFrameHostImpl::CreateRenderFrame(int proxy_routing_id,
   // created as part of the navigation that will commit these flags. (I.e., the
   // RenderFrame needs to know the flags to use when initializing the new
   // document once it commits).
-  params.replication_state.sandbox_flags =
+  params->replication_state.sandbox_flags =
       frame_tree_node()->pending_sandbox_flags();
 
-  params.frame_owner_properties =
+  params->frame_owner_properties =
       FrameOwnerProperties(frame_tree_node()->frame_owner_properties());
 
+  params->widget_params = mojom::CreateFrameWidgetParams::New();
   if (render_widget_host_) {
-    params.widget_params.routing_id = render_widget_host_->GetRoutingID();
-    params.widget_params.hidden = render_widget_host_->is_hidden();
+    params->widget_params->routing_id = render_widget_host_->GetRoutingID();
+    params->widget_params->hidden = render_widget_host_->is_hidden();
   } else {
     // MSG_ROUTING_NONE will prevent a new RenderWidget from being created in
     // the renderer process.
-    params.widget_params.routing_id = MSG_ROUTING_NONE;
-    params.widget_params.hidden = true;
+    params->widget_params->routing_id = MSG_ROUTING_NONE;
+    params->widget_params->hidden = true;
   }
 
-  Send(new FrameMsg_NewFrame(params));
+  RenderProcessHostImpl::GetRendererInterface(GetProcess())->CreateFrame(
+      std::move(params));
 
   // The RenderWidgetHost takes ownership of its view. It is tied to the
   // lifetime of the current RenderProcessHost for this RenderFrameHost.
@@ -895,7 +898,7 @@ bool RenderFrameHostImpl::CreateRenderFrame(int proxy_routing_id,
   if (proxy_routing_id != MSG_ROUTING_NONE) {
     RenderFrameProxyHost* proxy = RenderFrameProxyHost::FromID(
         GetProcess()->GetID(), proxy_routing_id);
-    // We have also created a RenderFrameProxy in FrameMsg_NewFrame above, so
+    // We have also created a RenderFrameProxy in CreateFrame above, so
     // remember that.
     proxy->set_render_frame_proxy_created(true);
   }

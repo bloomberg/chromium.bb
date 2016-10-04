@@ -26,6 +26,7 @@
 #include "content/common/associated_interface_registry_impl.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_message_enums.h"
+#include "content/common/renderer.mojom.h"
 #include "content/public/common/console_message_level.h"
 #include "content/public/common/javascript_message_type.h"
 #include "content/public/common/referrer.h"
@@ -72,7 +73,6 @@
 #endif
 
 class TransportDIB;
-struct FrameMsg_NewFrame_WidgetParams;
 struct FrameMsg_PostMessage_Params;
 struct FrameMsg_SerializeAsMHTML_Params;
 struct FrameMsg_TextTrackSettings_Params;
@@ -167,6 +167,10 @@ struct ScreenInfo;
 struct StartNavigationParams;
 struct StreamOverrideParameters;
 
+namespace {
+class CreateFrameWidgetParams;
+}
+
 class CONTENT_EXPORT RenderFrameImpl
     : public RenderFrame,
       NON_EXPORTED_BASE(mojom::Frame),
@@ -202,7 +206,7 @@ class CONTENT_EXPORT RenderFrameImpl
                           int previous_sibling_routing_id,
                           const FrameReplicationState& replicated_state,
                           CompositorDependencies* compositor_deps,
-                          const FrameMsg_NewFrame_WidgetParams& params,
+                          const mojom::CreateFrameWidgetParams& params,
                           const FrameOwnerProperties& frame_owner_properties);
 
   // Returns the RenderFrameImpl for the given routing ID.

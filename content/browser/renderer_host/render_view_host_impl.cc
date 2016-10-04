@@ -377,9 +377,8 @@ bool RenderViewHostImpl::CreateRenderView(
   GetWidget()->GetResizeParams(&params->initial_size);
   GetWidget()->SetInitialRenderSizeParams(params->initial_size);
 
-  RenderProcessHostImpl* process =
-      static_cast<RenderProcessHostImpl*>(GetProcess());
-  process->GetRendererInterface()->CreateView(std::move(params));
+  RenderProcessHostImpl::GetRendererInterface(GetProcess())->CreateView(
+      std::move(params));
 
   // If the RWHV has not yet been set, the surface ID namespace will get
   // passed down by the call to SetView().

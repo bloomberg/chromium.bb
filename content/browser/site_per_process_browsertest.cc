@@ -38,6 +38,7 @@
 #include "content/common/frame_messages.h"
 #include "content/common/input/synthetic_tap_gesture_params.h"
 #include "content/common/input_messages.h"
+#include "content/common/renderer.mojom.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/notification_observer.h"
@@ -53,6 +54,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/test_frame_navigation_observer.h"
+#include "ipc/ipc.mojom.h"
 #include "ipc/ipc_security_test_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -3163,8 +3165,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OriginReplication) {
   // Check that c.com frame's location.ancestorOrigins contains the correct
   // origin for its two ancestors. The topmost parent origin should be
   // replicated as part of mojom::Renderer::CreateView, and the middle frame
-  // (b.com's) origin should be replicated as part of FrameMsg_NewFrameProxy
-  // sent for b.com's frame in c.com's process.
+  // (b.com's) origin should be replicated as part of
+  // mojom::Renderer::CreateFrameProxy sent for b.com's frame in c.com's
+  // process.
   EXPECT_TRUE(ExecuteScriptAndExtractInt(
       middle_child,
       "window.domAutomationController.send(location.ancestorOrigins.length);",
@@ -4632,8 +4635,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigateSubframeWithOpener) {
 // Check that if a subframe has an opener, that opener is preserved when a new
 // RenderFrameProxy is created for that subframe in another renderer process.
 // Similar to NavigateSubframeWithOpener, but this test verifies the subframe
-// opener plumbing for FrameMsg_NewFrameProxy, whereas
-// NavigateSubframeWithOpener targets FrameMsg_NewFrame.
+// opener plumbing for mojom::Renderer::CreateFrameProxy(), whereas
+// NavigateSubframeWithOpener targets mojom::Renderer::CreateFrame().
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                        NewRenderFrameProxyPreservesOpener) {
   GURL main_url(
@@ -6072,9 +6075,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Send the message to create a proxy for B's new child frame in A.  This
   // used to crash, as parent_routing_id refers to a proxy that doesn't exist
   // anymore.
-  process_a->Send(new FrameMsg_NewFrameProxy(
+  RenderProcessHostImpl::GetRendererInterface(process_a)->CreateFrameProxy(
       new_routing_id, view_routing_id, MSG_ROUTING_NONE, parent_routing_id,
-      FrameReplicationState()));
+      FrameReplicationState());
 
   // Ensure the subframe is detached in the browser process.
   observer.Wait();
@@ -6136,19 +6139,20 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   NavigateFrameToURL(node,
                      embedded_test_server()->GetURL("c.com", "/title2.html"));
   {
-    FrameMsg_NewFrame_Params params;
-    params.routing_id = frame_routing_id;
-    params.proxy_routing_id = proxy_routing_id;
-    params.opener_routing_id = MSG_ROUTING_NONE;
-    params.parent_routing_id =
+    mojom::CreateFrameParamsPtr params = mojom::CreateFrameParams::New();
+    params->routing_id = frame_routing_id;
+    params->proxy_routing_id = proxy_routing_id;
+    params->opener_routing_id = IPC::mojom::kRoutingIdNone;
+    params->parent_routing_id =
         shell()->web_contents()->GetMainFrame()->GetRoutingID();
-    params.previous_sibling_routing_id = MSG_ROUTING_NONE;
-    params.widget_params.routing_id = MSG_ROUTING_NONE;
-    params.widget_params.hidden = true;
-    params.replication_state.name = "name";
-    params.replication_state.unique_name = "name";
-
-    process->Send(new FrameMsg_NewFrame(params));
+    params->previous_sibling_routing_id = IPC::mojom::kRoutingIdNone;
+    params->widget_params = mojom::CreateFrameWidgetParams::New();
+    params->widget_params->routing_id = IPC::mojom::kRoutingIdNone;
+    params->widget_params->hidden = true;
+    params->replication_state.name = "name";
+    params->replication_state.unique_name = "name";
+    RenderProcessHostImpl::GetRendererInterface(process)->CreateFrame(
+        std::move(params));
   }
 
   // The test must wait for the process to exit, but if there is no leak, the
@@ -6202,18 +6206,19 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ParentDetachRemoteChild) {
   EXPECT_EQ(1U, contents->GetFrameTree()->root()->child_count());
 
   {
-    FrameMsg_NewFrame_Params params;
-    params.routing_id = frame_routing_id;
-    params.proxy_routing_id = MSG_ROUTING_NONE;
-    params.opener_routing_id = MSG_ROUTING_NONE;
-    params.parent_routing_id = parent_routing_id;
-    params.previous_sibling_routing_id = MSG_ROUTING_NONE;
-    params.widget_params.routing_id = widget_routing_id;
-    params.widget_params.hidden = true;
-    params.replication_state.name = "name";
-    params.replication_state.unique_name = "name";
-
-    process->Send(new FrameMsg_NewFrame(params));
+    mojom::CreateFrameParamsPtr params = mojom::CreateFrameParams::New();
+    params->routing_id = frame_routing_id;
+    params->proxy_routing_id = IPC::mojom::kRoutingIdNone;
+    params->opener_routing_id = IPC::mojom::kRoutingIdNone;
+    params->parent_routing_id = parent_routing_id;
+    params->previous_sibling_routing_id = IPC::mojom::kRoutingIdNone;
+    params->widget_params = mojom::CreateFrameWidgetParams::New();
+    params->widget_params->routing_id = widget_routing_id;
+    params->widget_params->hidden = true;
+    params->replication_state.name = "name";
+    params->replication_state.unique_name = "name";
+    RenderProcessHostImpl::GetRendererInterface(process)->CreateFrame(
+        std::move(params));
   }
 
   // The test must wait for the process to exit, but if there is no leak, the

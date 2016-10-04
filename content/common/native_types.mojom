@@ -9,6 +9,9 @@ module content.mojom;
 // proper mojom definitions.
 
 [Native]
+struct FrameOwnerProperties;
+
+[Native]
 struct FrameReplicationState;
 
 [Native]
