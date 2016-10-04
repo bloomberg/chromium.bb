@@ -706,9 +706,11 @@ bool SelectionController::handleGestureLongPress(
     return false;
 
   Node* innerNode = hitTestResult.innerNode();
+  if (!innerNode)
+    return false;
   innerNode->document().updateStyleAndLayoutTree();
-  bool innerNodeIsSelectable = innerNode && (hasEditableStyle(*innerNode) ||
-                                             innerNode->canStartSelection());
+  bool innerNodeIsSelectable =
+      hasEditableStyle(*innerNode) || innerNode->canStartSelection();
   if (!innerNodeIsSelectable)
     return false;
 
