@@ -66,6 +66,52 @@ test(function() {
         testRunner.execCommand('redo');
     }, 'Testing redo');
 }, 'Testing beforeinput in removed iframe');
+
+async_test(function(t) {
+    assert_not_equals(window.eventSender, undefined, 'This test requires eventSender.');
+    assert_not_equals(window.testRunner, undefined, 'This test requires testRunner.');
+
+    function simulateDragDrop(dragElement, dropElement) {
+        eventSender.mouseMoveTo(dragElement.offsetLeft + dragElement.offsetWidth / 2,
+                                dragElement.offsetTop + dragElement.offsetHeight / 2);
+        eventSender.mouseDown();
+        eventSender.leapForward(100);
+        eventSender.mouseMoveTo(dropElement.offsetLeft + dropElement.offsetWidth / 2,
+                                dropElement.offsetTop + dropElement.offsetHeight / 2);
+        eventSender.mouseUp();
+    }
+
+    function testDragDropCrash(inputTypeToCrash, comments, next) {
+        const iframe = document.createElement('iframe');
+        iframe.src = '../resources/beforeinput-remove-iframe-crash-iframe.html';
+        iframe.onload = t.step_func(() => {
+            var didFireInputTypeToCrash = false;
+            const childDocument = iframe.contentDocument;
+            const editable1 = childDocument.getElementById('editable1');
+            const editable2 = childDocument.getElementById('editable2');
+            childDocument.addEventListener('beforeinput', event => {
+                if (event.inputType == inputTypeToCrash) {
+                    didFireInputTypeToCrash = true;
+                    if (iframe.parentNode)
+                        iframe.remove();
+                }
+            });
+
+            simulateDragDrop(editable1, editable2);
+
+            if (iframe.parentNode)
+                iframe.remove();
+            assert_true(didFireInputTypeToCrash, comments);
+            next();
+        });
+        document.body.appendChild(iframe);
+    }
+
+    // Test Drag&Drop.
+    t.step(() => testDragDropCrash('deleteByDrag', 'Testing deleteByDrag',
+        () => testDragDropCrash('insertFromDrop', 'Testing insertFromDrop',
+        () => t.done())));
+}, 'Testing beforeinput for Drag&Drop in removed iframe');
 </script>
 </body>
 </html>

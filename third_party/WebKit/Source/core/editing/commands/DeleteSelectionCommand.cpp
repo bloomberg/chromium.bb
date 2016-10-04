@@ -33,6 +33,7 @@
 #include "core/editing/EditingBoundary.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
+#include "core/editing/RelocatablePosition.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLBRElement.h"
@@ -62,12 +63,14 @@ static bool isTableRowEmpty(Node* row) {
   return true;
 }
 
-DeleteSelectionCommand::DeleteSelectionCommand(Document& document,
-                                               bool smartDelete,
-                                               bool mergeBlocksAfterDelete,
-                                               bool expandForSpecialElements,
-                                               bool sanitizeMarkup,
-                                               InputEvent::InputType inputType)
+DeleteSelectionCommand::DeleteSelectionCommand(
+    Document& document,
+    bool smartDelete,
+    bool mergeBlocksAfterDelete,
+    bool expandForSpecialElements,
+    bool sanitizeMarkup,
+    InputEvent::InputType inputType,
+    const Position& referenceMovePosition)
     : CompositeEditCommand(document),
       m_hasSelectionToDelete(false),
       m_smartDelete(smartDelete),
@@ -78,6 +81,7 @@ DeleteSelectionCommand::DeleteSelectionCommand(Document& document,
       m_startsAtEmptyLine(false),
       m_sanitizeMarkup(sanitizeMarkup),
       m_inputType(inputType),
+      m_referenceMovePosition(referenceMovePosition),
       m_startBlock(nullptr),
       m_endBlock(nullptr),
       m_typingStyle(nullptr),
@@ -948,6 +952,7 @@ void DeleteSelectionCommand::clearTransientState() {
   m_endingPosition = Position();
   m_leadingWhitespace = Position();
   m_trailingWhitespace = Position();
+  m_referenceMovePosition = Position();
 }
 
 // This method removes div elements with no attributes that have only one child or no children at all.
@@ -979,6 +984,8 @@ void DeleteSelectionCommand::doApply(EditingState* editingState) {
   if (!m_selectionToDelete.isNonOrphanedRange() ||
       !m_selectionToDelete.isContentEditable())
     return;
+
+  RelocatablePosition relocatableReferencePosition(m_referenceMovePosition);
 
   // save this to later make the selection with
   TextAffinity affinity = m_selectionToDelete.affinity();
@@ -1086,6 +1093,27 @@ void DeleteSelectionCommand::doApply(EditingState* editingState) {
 
   setEndingSelection(createVisibleSelectionDeprecated(
       m_endingPosition, affinity, endingSelection().isDirectional()));
+
+  if (relocatableReferencePosition.position().isNull()) {
+    clearTransientState();
+    return;
+  }
+
+  // This deletion command is part of a move operation, we need to cleanup after deletion.
+  m_referenceMovePosition = relocatableReferencePosition.position();
+  // If the node for the destination has been removed as a result of the deletion,
+  // set the destination to the ending point after the deletion.
+  // Fixes: <rdar://problem/3910425> REGRESSION (Mail): Crash in ReplaceSelectionCommand;
+  //        selection is empty, leading to null deref
+  if (!m_referenceMovePosition.isConnected())
+    m_referenceMovePosition = endingSelection().start();
+
+  // Move selection shouldn't left empty <li> block.
+  cleanupAfterDeletion(
+      editingState, createVisiblePositionDeprecated(m_referenceMovePosition));
+  if (editingState->isAborted())
+    return;
+
   clearTransientState();
 }
 
@@ -1112,6 +1140,7 @@ DEFINE_TRACE(DeleteSelectionCommand) {
   visitor->trace(m_endingPosition);
   visitor->trace(m_leadingWhitespace);
   visitor->trace(m_trailingWhitespace);
+  visitor->trace(m_referenceMovePosition);
   visitor->trace(m_startBlock);
   visitor->trace(m_endBlock);
   visitor->trace(m_typingStyle);

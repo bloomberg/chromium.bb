@@ -98,7 +98,7 @@ void MoveSelectionCommand::doApply(EditingState* editingState) {
 }
 
 InputEvent::InputType MoveSelectionCommand::inputType() const {
-  return InputEvent::InputType::Drag;
+  return InputEvent::InputType::None;
 }
 
 DEFINE_TRACE(MoveSelectionCommand) {

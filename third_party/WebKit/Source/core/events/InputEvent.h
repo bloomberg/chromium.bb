@@ -32,6 +32,7 @@ class InputEvent final : public UIEvent {
     InsertUnorderedList,
     InsertHorizontalRule,
     InsertFromPaste,
+    InsertFromDrop,
     // Deletion.
     DeleteComposedCharacterForward,
     DeleteComposedCharacterBackward,
@@ -42,6 +43,7 @@ class InputEvent final : public UIEvent {
     DeleteContentBackward,
     DeleteContentForward,
     DeleteByCut,
+    DeleteByDrag,
     // Command.
     Undo,
     Redo,
@@ -60,8 +62,6 @@ class InputEvent final : public UIEvent {
     Outdent,
     RemoveFormat,
     // Not on spec.
-    // TODO(chongz): Drag is not on SPEC but it's not decided how we should handle it.
-    Drag,
     JustifyFull,
     SetColor,
     SetBackgroundColor,

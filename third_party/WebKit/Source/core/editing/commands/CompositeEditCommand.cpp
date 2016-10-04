@@ -150,6 +150,10 @@ void EditCommandComposition::append(SimpleEditCommand* command) {
   m_commands.append(command);
 }
 
+void EditCommandComposition::append(EditCommandComposition* composition) {
+  m_commands.appendVector(composition->m_commands);
+}
+
 void EditCommandComposition::setStartingSelection(
     const VisibleSelection& selection) {
   m_startingSelection = selection;
@@ -180,12 +184,14 @@ CompositeEditCommand::~CompositeEditCommand() {
 }
 
 bool CompositeEditCommand::apply() {
+  DCHECK(!isCommandGroupWrapper());
   if (!endingSelection().isContentRichlyEditable()) {
     switch (inputType()) {
       case InputEvent::InputType::InsertText:
       case InputEvent::InputType::InsertLineBreak:
       case InputEvent::InputType::InsertParagraph:
       case InputEvent::InputType::InsertFromPaste:
+      case InputEvent::InputType::InsertFromDrop:
       case InputEvent::InputType::DeleteComposedCharacterForward:
       case InputEvent::InputType::DeleteComposedCharacterBackward:
       case InputEvent::InputType::DeleteWordBackward:
@@ -195,7 +201,7 @@ bool CompositeEditCommand::apply() {
       case InputEvent::InputType::DeleteContentBackward:
       case InputEvent::InputType::DeleteContentForward:
       case InputEvent::InputType::DeleteByCut:
-      case InputEvent::InputType::Drag:
+      case InputEvent::InputType::DeleteByDrag:
       case InputEvent::InputType::SetWritingDirection:
       case InputEvent::InputType::None:
         break;
@@ -245,6 +251,14 @@ bool CompositeEditCommand::isTypingCommand() const {
   return false;
 }
 
+bool CompositeEditCommand::isCommandGroupWrapper() const {
+  return false;
+}
+
+bool CompositeEditCommand::isDragAndDropCommand() const {
+  return false;
+}
+
 bool CompositeEditCommand::isReplaceSelectionCommand() const {
   return false;
 }
@@ -281,6 +295,13 @@ void CompositeEditCommand::applyCommandToComposite(
   command->doApply(editingState);
   if (!editingState->isAborted())
     m_commands.append(command);
+}
+
+void CompositeEditCommand::appendCommandToComposite(
+    CompositeEditCommand* command) {
+  ensureComposition()->append(command->ensureComposition());
+  command->setParent(this);
+  m_commands.append(command);
 }
 
 void CompositeEditCommand::applyStyle(const EditingStyle* style,

@@ -9,9 +9,9 @@ PASS successfullyParsed is true
 TEST COMPLETE
 focus src
 drop dst
+input src
+change src
 blur src
 focus dst
-input src
 input dst
-change src
 

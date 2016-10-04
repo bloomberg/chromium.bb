@@ -41,10 +41,11 @@ class DeleteSelectionCommand final : public CompositeEditCommand {
       bool mergeBlocksAfterDelete = true,
       bool expandForSpecialElements = false,
       bool sanitizeMarkup = true,
-      InputEvent::InputType inputType = InputEvent::InputType::None) {
+      InputEvent::InputType inputType = InputEvent::InputType::None,
+      const Position& referenceMovePosition = Position()) {
     return new DeleteSelectionCommand(
         document, smartDelete, mergeBlocksAfterDelete, expandForSpecialElements,
-        sanitizeMarkup, inputType);
+        sanitizeMarkup, inputType, referenceMovePosition);
   }
   static DeleteSelectionCommand* create(
       const VisibleSelection& selection,
@@ -66,7 +67,8 @@ class DeleteSelectionCommand final : public CompositeEditCommand {
                          bool mergeBlocksAfterDelete,
                          bool expandForSpecialElements,
                          bool santizeMarkup,
-                         InputEvent::InputType);
+                         InputEvent::InputType,
+                         const Position& referenceMovePosition);
   DeleteSelectionCommand(const VisibleSelection&,
                          bool smartDelete,
                          bool mergeBlocksAfterDelete,
@@ -118,6 +120,7 @@ class DeleteSelectionCommand final : public CompositeEditCommand {
   Position m_endingPosition;
   Position m_leadingWhitespace;
   Position m_trailingWhitespace;
+  Position m_referenceMovePosition;
   Member<Node> m_startBlock;
   Member<Node> m_endBlock;
   Member<EditingStyle> m_typingStyle;

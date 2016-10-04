@@ -81,6 +81,7 @@
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutImage.h"
 #include "core/loader/EmptyClients.h"
+#include "core/page/DragData.h"
 #include "core/page/EditorClient.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
@@ -328,7 +329,7 @@ bool Editor::deleteWithDirection(DeleteDirection direction,
       if (killRing)
         addToKillRing(selectedRange());
       deleteSelectionWithSmartDelete(
-          canSmartCopyOrDelete(),
+          canSmartCopyOrDelete() ? DeleteMode::Smart : DeleteMode::Simple,
           deletionInputTypeFromTextGranularity(direction, granularity));
       // Implicitly calls revealSelectionAfterEditingOperation().
     }
@@ -364,8 +365,10 @@ bool Editor::deleteWithDirection(DeleteDirection direction,
   return true;
 }
 
-void Editor::deleteSelectionWithSmartDelete(bool smartDelete,
-                                            InputEvent::InputType inputType) {
+void Editor::deleteSelectionWithSmartDelete(
+    DeleteMode deleteMode,
+    InputEvent::InputType inputType,
+    const Position& referenceMovePosition) {
   if (frame().selection().isNone())
     return;
 
@@ -374,8 +377,9 @@ void Editor::deleteSelectionWithSmartDelete(bool smartDelete,
   const bool kSanitizeMarkup = true;
   DCHECK(frame().document());
   DeleteSelectionCommand::create(
-      *frame().document(), smartDelete, kMergeBlocksAfterDelete,
-      kExpandForSpecialElements, kSanitizeMarkup, inputType)
+      *frame().document(), deleteMode == DeleteMode::Smart,
+      kMergeBlocksAfterDelete, kExpandForSpecialElements, kSanitizeMarkup,
+      inputType, referenceMovePosition)
       ->apply();
 }
 
@@ -579,27 +583,73 @@ void Editor::replaceSelectionWithText(const String& text,
 
 // TODO(xiaochengh): Merge it with |replaceSelectionWithFragment()|.
 void Editor::replaceSelectionAfterDragging(DocumentFragment* fragment,
-                                           bool smartReplace,
-                                           bool plainText) {
+                                           InsertMode insertMode,
+                                           DragSourceType dragSourceType) {
   ReplaceSelectionCommand::CommandOptions options =
       ReplaceSelectionCommand::SelectReplacement |
       ReplaceSelectionCommand::PreventNesting;
-  if (smartReplace)
+  if (insertMode == InsertMode::Smart)
     options |= ReplaceSelectionCommand::SmartReplace;
-  if (plainText)
+  if (dragSourceType == DragSourceType::PlainTextSource)
     options |= ReplaceSelectionCommand::MatchStyle;
   DCHECK(frame().document());
   ReplaceSelectionCommand::create(*frame().document(), fragment, options,
-                                  InputEvent::InputType::Drag)
+                                  InputEvent::InputType::InsertFromDrop)
       ->apply();
 }
 
-void Editor::moveSelectionAfterDragging(DocumentFragment* fragment,
-                                        const Position& pos,
-                                        bool smartInsert,
-                                        bool smartDelete) {
-  MoveSelectionCommand::create(fragment, pos, smartInsert, smartDelete)
-      ->apply();
+bool Editor::deleteSelectionAfterDraggingWithEvents(
+    Element* dragSource,
+    DeleteMode deleteMode,
+    const Position& referenceMovePosition) {
+  if (!dragSource || !dragSource->isConnected())
+    return true;
+
+  // Dispatch 'beforeinput'.
+  const bool shouldDelete = dispatchBeforeInputEditorCommand(
+                                dragSource, InputEvent::InputType::DeleteByDrag,
+                                nullptr) == DispatchEventResult::NotCanceled;
+
+  // 'beforeinput' event handler may destroy frame, return false to cancel remaining actions;
+  if (m_frame->document()->frame() != m_frame)
+    return false;
+
+  if (shouldDelete && dragSource->isConnected()) {
+    deleteSelectionWithSmartDelete(
+        deleteMode, InputEvent::InputType::DeleteByDrag, referenceMovePosition);
+  }
+
+  return true;
+}
+
+bool Editor::replaceSelectionAfterDraggingWithEvents(
+    Element* dropTarget,
+    DragData* dragData,
+    DocumentFragment* fragment,
+    Range* dropCaretRange,
+    InsertMode insertMode,
+    DragSourceType dragSourceType) {
+  if (!dropTarget || !dropTarget->isConnected())
+    return true;
+
+  // Dispatch 'beforeinput'.
+  DataTransfer* dataTransfer =
+      DataTransfer::create(DataTransfer::DragAndDrop, DataTransferReadable,
+                           dragData->platformData());
+  dataTransfer->setSourceOperation(dragData->draggingSourceOperationMask());
+  const bool shouldInsert =
+      dispatchBeforeInputDataTransfer(
+          dropTarget, InputEvent::InputType::InsertFromDrop, dataTransfer,
+          nullptr) == DispatchEventResult::NotCanceled;
+
+  // 'beforeinput' event handler may destroy frame, return false to cancel remaining actions;
+  if (m_frame->document()->frame() != m_frame)
+    return false;
+
+  if (shouldInsert && dropTarget->isConnected())
+    replaceSelectionAfterDragging(fragment, insertMode, dragSourceType);
+
+  return true;
 }
 
 EphemeralRange Editor::selectedRange() {
@@ -638,6 +688,11 @@ void Editor::respondToChangedContents(const VisibleSelection& endingSelection) {
 void Editor::removeFormattingAndStyle() {
   DCHECK(frame().document());
   RemoveFormatCommand::create(*frame().document())->apply();
+}
+
+void Editor::registerCommandGroup(CompositeEditCommand* commandGroupWrapper) {
+  DCHECK(commandGroupWrapper->isCommandGroupWrapper());
+  m_lastEditCommand = commandGroupWrapper;
 }
 
 void Editor::clearLastEditCommand() {
@@ -740,6 +795,7 @@ static void dispatchEditableContentChangedEvents(Element* startRoot,
 }
 
 void Editor::appliedEditing(CompositeEditCommand* cmd) {
+  DCHECK(!cmd->isCommandGroupWrapper());
   EventQueueScope scope;
   frame().document()->updateStyleAndLayout();
 
@@ -767,6 +823,13 @@ void Editor::appliedEditing(CompositeEditCommand* cmd) {
   // Command will be equal to last edit command only in the case of typing
   if (m_lastEditCommand.get() == cmd) {
     DCHECK(cmd->isTypingCommand());
+  } else if (m_lastEditCommand && m_lastEditCommand->isDragAndDropCommand() &&
+             (cmd->inputType() == InputEvent::InputType::DeleteByDrag ||
+              cmd->inputType() == InputEvent::InputType::InsertFromDrop)) {
+    // Only register undo entry when combined with other commands.
+    if (!m_lastEditCommand->composition())
+      m_undoStack->registerUndoStep(m_lastEditCommand->ensureComposition());
+    m_lastEditCommand->appendCommandToComposite(cmd);
   } else {
     // Only register a new undo command if the command passed in is
     // different from the last command
@@ -961,8 +1024,9 @@ void Editor::cut(EditorCommandSource source) {
       if (m_frame->document()->frame() != m_frame)
         return;
     }
-    deleteSelectionWithSmartDelete(canSmartCopyOrDelete(),
-                                   InputEvent::InputType::DeleteByCut);
+    deleteSelectionWithSmartDelete(
+        canSmartCopyOrDelete() ? DeleteMode::Smart : DeleteMode::Simple,
+        InputEvent::InputType::DeleteByCut);
   }
 }
 
@@ -1037,8 +1101,9 @@ void Editor::performDelete() {
   addToKillRing(selectedRange());
   // TODO(chongz): |Editor::performDelete()| has no direction.
   // https://github.com/w3c/editing/issues/130
-  deleteSelectionWithSmartDelete(canSmartCopyOrDelete(),
-                                 InputEvent::InputType::DeleteContentBackward);
+  deleteSelectionWithSmartDelete(
+      canSmartCopyOrDelete() ? DeleteMode::Smart : DeleteMode::Simple,
+      InputEvent::InputType::DeleteContentBackward);
 
   // clear the "start new kill ring sequence" setting, because it was set to true
   // when the selection was updated by deleting the range

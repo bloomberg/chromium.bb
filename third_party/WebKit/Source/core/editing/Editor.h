@@ -44,6 +44,7 @@
 namespace blink {
 
 class CompositeEditCommand;
+class DragData;
 class DummyPageHolder;
 class EditCommandComposition;
 class EditorClient;
@@ -58,6 +59,9 @@ class TextEvent;
 class UndoStack;
 
 enum class DeleteDirection;
+enum class DeleteMode { Simple, Smart };
+enum class InsertMode { Simple, Smart };
+enum class DragSourceType { HTMLSource, PlainTextSource };
 
 enum EditorCommandSource { CommandFromMenuOrKeyBinding, CommandFromDOM };
 enum EditorParagraphSeparator {
@@ -110,13 +114,17 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
 
   void removeFormattingAndStyle();
 
+  void registerCommandGroup(CompositeEditCommand* commandGroupWrapper);
   void clearLastEditCommand();
 
   bool deleteWithDirection(DeleteDirection,
                            TextGranularity,
                            bool killRing,
                            bool isTypingAction);
-  void deleteSelectionWithSmartDelete(bool smartDelete, InputEvent::InputType);
+  void deleteSelectionWithSmartDelete(
+      DeleteMode,
+      InputEvent::InputType,
+      const Position& referenceMovePosition = Position());
 
   void applyStyle(StylePropertySet*, InputEvent::InputType);
   void applyParagraphStyle(StylePropertySet*, InputEvent::InputType);
@@ -218,6 +226,7 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
   void pasteAsPlainText(const String&, bool smartReplace);
 
   Element* findEventTargetFrom(const VisibleSelection&) const;
+  Element* findEventTargetFromSelection() const;
 
   bool findString(const String&, FindOptions);
 
@@ -253,12 +262,20 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
 
   // TODO(xiaochengh): Replace |bool| parameters by |enum|.
   void replaceSelectionAfterDragging(DocumentFragment*,
-                                     bool smartReplace,
-                                     bool plainText);
-  void moveSelectionAfterDragging(DocumentFragment*,
-                                  const Position&,
-                                  bool smartInsert,
-                                  bool smartDelete);
+                                     InsertMode,
+                                     DragSourceType);
+
+  // Return false if frame was destroyed by event handler, should stop executing remaining actions.
+  bool deleteSelectionAfterDraggingWithEvents(
+      Element* dragSource,
+      DeleteMode,
+      const Position& referenceMovePosition);
+  bool replaceSelectionAfterDraggingWithEvents(Element* dropTarget,
+                                               DragData*,
+                                               DocumentFragment*,
+                                               Range* dropCaretRange,
+                                               InsertMode,
+                                               DragSourceType);
 
   EditorParagraphSeparator defaultParagraphSeparator() const {
     return m_defaultParagraphSeparator;
@@ -326,8 +343,6 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
   void changeSelectionAfterCommand(const VisibleSelection& newSelection,
                                    FrameSelection::SetSelectionOptions);
   void notifyComponentsOnChangedSelection();
-
-  Element* findEventTargetFromSelection() const;
 
   SpellChecker& spellChecker() const;
 

@@ -54,6 +54,7 @@ class EditCommandComposition final : public UndoStep {
   void reapply() override;
   InputEvent::InputType inputType() const override;
   void append(SimpleEditCommand*);
+  void append(EditCommandComposition*);
 
   const VisibleSelection& startingSelection() const {
     return m_startingSelection;
@@ -99,9 +100,13 @@ class CORE_EXPORT CompositeEditCommand : public EditCommand {
   }
   EditCommandComposition* composition() { return m_composition.get(); }
   EditCommandComposition* ensureComposition();
+  // Append composition from an already applied command.
+  void appendCommandToComposite(CompositeEditCommand*);
 
   virtual bool isReplaceSelectionCommand() const;
   virtual bool isTypingCommand() const;
+  virtual bool isCommandGroupWrapper() const;
+  virtual bool isDragAndDropCommand() const;
   virtual bool preservesTypingStyle() const;
   virtual void setShouldRetainAutocorrectionIndicator(bool);
   virtual bool shouldStopCaretBlinking() const { return false; }
