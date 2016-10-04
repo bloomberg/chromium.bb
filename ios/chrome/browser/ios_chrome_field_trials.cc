@@ -6,8 +6,7 @@
 
 #include "base/metrics/field_trial.h"
 
-void SetupFieldTrials(const base::CommandLine& command_line,
-                      const base::Time& install_time) {
+void SetupIOSFieldTrials() {
   // Activate the iOS tab eviction dynamic field trials.
   base::FieldTrialList::FindValue("TabEviction");
 }

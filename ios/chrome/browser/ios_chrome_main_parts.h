@@ -36,10 +36,12 @@ class IOSChromeMainParts : public web::WebMainParts {
   void PostMainMessageLoopRun() override;
   void PostDestroyThreads() override;
 
-  // Constructs metrics service and does related initialization, including
-  // creation of field trials. Call only after labs have been converted to
-  // switches.
-  void SetUpMetricsAndFieldTrials();
+  // Sets up the field trials and related initialization. Call only after
+  // about:flags have been converted to switches.
+  void SetupFieldTrials();
+
+  // Constructs the metrics service and initializes metrics recording.
+  void SetupMetrics();
 
   // Starts recording of metrics. This can only be called after we have a file
   // thread.
