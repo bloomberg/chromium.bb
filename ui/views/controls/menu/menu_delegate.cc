@@ -23,8 +23,7 @@ const gfx::FontList* MenuDelegate::GetLabelFontList(int id) const {
   return NULL;
 }
 
-bool MenuDelegate::GetShouldUseDisabledEmphasizedForegroundColor(
-    int command_id) const {
+bool MenuDelegate::GetShouldUseNormalForegroundColor(int command_id) const {
   return false;
 }
 

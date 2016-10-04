@@ -98,7 +98,7 @@ bool ToolbarActionView::IsTriggerableEvent(const ui::Event& event) {
 SkColor ToolbarActionView::GetInkDropBaseColor() const {
   if (delegate_->ShownInsideMenu()) {
     return GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_HoverMenuItemBackgroundColor);
+        ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor);
   }
 
   return GetThemeProvider()->GetColor(

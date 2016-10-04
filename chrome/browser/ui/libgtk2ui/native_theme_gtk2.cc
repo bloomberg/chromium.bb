@@ -261,12 +261,9 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
 #endif
 
     case kColorId_EnabledMenuItemForegroundColor:
-    case kColorId_DisabledEmphasizedMenuItemForegroundColor:
       return GetTextColor(GetMenuItem(), NORMAL);
     case kColorId_DisabledMenuItemForegroundColor:
       return GetTextColor(GetMenuItem(), INSENSITIVE);
-    case kColorId_HoverMenuItemBackgroundColor:
-      return GetBGColor(GetMenuItem(), PRELIGHT);
     case kColorId_FocusedMenuButtonBorderColor:
       return GetBGColor(GetEntry(), NORMAL);
     case kColorId_HoverMenuButtonBorderColor:
@@ -284,8 +281,6 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
       return GetTextColor(GetEntry(), NORMAL);
     case kColorId_LabelDisabledColor:
       return GetTextColor(GetLabel(), INSENSITIVE);
-    case kColorId_LabelBackgroundColor:
-      return GetBGColor(GetWindow(), NORMAL);
 
     // Link
     case kColorId_LinkDisabled:
@@ -302,8 +297,6 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
       return SK_ColorRED;
 
     // Button
-    case kColorId_ButtonBackgroundColor:
-      return GetBGColor(GetButton(), NORMAL);
     case kColorId_ButtonEnabledColor:
       return GetTextColor(GetButton(), NORMAL);
     case kColorId_BlueButtonEnabledColor:
@@ -312,19 +305,14 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
       return GetTextColor(GetButton(), INSENSITIVE);
     case kColorId_BlueButtonDisabledColor:
       return GetTextColor(GetBlueButton(), INSENSITIVE);
-    case kColorId_ButtonHighlightColor:
-      return GetBaseColor(GetButton(), SELECTED);
     case kColorId_ButtonHoverColor:
       return GetTextColor(GetButton(), PRELIGHT);
     case kColorId_BlueButtonHoverColor:
       return GetTextColor(GetBlueButton(), PRELIGHT);
-    case kColorId_ButtonHoverBackgroundColor:
-      return GetBGColor(GetButton(), PRELIGHT);
     case kColorId_BlueButtonPressedColor:
       return GetTextColor(GetBlueButton(), ACTIVE);
     case kColorId_BlueButtonShadowColor:
       return SK_ColorTRANSPARENT;
-      // return GetTextColor(GetButton(), NORMAL);
     case kColorId_ProminentButtonColor:
       return GetSystemColor(kColorId_LinkEnabled);
     case kColorId_TextOnProminentButtonColor:

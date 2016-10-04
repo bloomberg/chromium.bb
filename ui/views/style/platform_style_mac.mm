@@ -80,10 +80,8 @@ SkColor PlatformStyle::TextColorForButton(
 void PlatformStyle::ApplyLabelButtonTextStyle(
     views::Label* label,
     ButtonColorByState* color_by_state) {
-  const ui::NativeTheme* theme = label->GetNativeTheme();
   ButtonColorByState& colors = *color_by_state;
-  colors[Button::STATE_PRESSED] =
-      theme->GetSystemColor(ui::NativeTheme::kColorId_ButtonHighlightColor);
+  colors[Button::STATE_PRESSED] = SK_ColorWHITE;
 }
 
 // static

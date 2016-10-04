@@ -90,10 +90,6 @@ void PlatformStyle::ApplyLabelButtonTextStyle(
   colors[Button::STATE_HOVERED] = kStyleButtonTextColor;
   colors[Button::STATE_PRESSED] = kStyleButtonTextColor;
 
-  const ui::NativeTheme* theme = label->GetNativeTheme();
-  label->SetBackgroundColor(
-      theme->GetSystemColor(ui::NativeTheme::kColorId_ButtonBackgroundColor));
-  label->SetAutoColorReadabilityEnabled(false);
   label->SetShadows(gfx::ShadowValues(
       1, gfx::ShadowValue(gfx::Vector2d(0, 1), 0, kStyleButtonShadowColor)));
 }

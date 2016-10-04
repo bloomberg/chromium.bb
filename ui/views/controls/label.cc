@@ -596,8 +596,8 @@ void Label::UpdateColorsFromTheme(const ui::NativeTheme* theme) {
         ui::NativeTheme::kColorId_LabelDisabledColor);
   }
   if (!background_color_set_) {
-    background_color_ = theme->GetSystemColor(
-        ui::NativeTheme::kColorId_LabelBackgroundColor);
+    background_color_ =
+        theme->GetSystemColor(ui::NativeTheme::kColorId_DialogBackground);
   }
   RecalculateColors();
 }

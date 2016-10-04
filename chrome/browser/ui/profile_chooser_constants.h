@@ -5,7 +5,11 @@
 #ifndef CHROME_BROWSER_UI_PROFILE_CHOOSER_CONSTANTS_H_
 #define CHROME_BROWSER_UI_PROFILE_CHOOSER_CONSTANTS_H_
 
+#include "third_party/skia/include/core/SkColor.h"
+
 namespace profiles {
+
+static const SkColor kHoverColor = SkColorSetRGB(0xEA, 0xEA, 0xEA);
 
 // Different views that can be displayed in the profile chooser bubble.
 enum BubbleViewMode {

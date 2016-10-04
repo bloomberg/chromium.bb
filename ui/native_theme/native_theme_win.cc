@@ -505,8 +505,6 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
   const SkColor kFocusedBorderColor = SkColorSetRGB(0x4d, 0x90, 0xfe);
   const SkColor kUnfocusedBorderColor = SkColorSetRGB(0xd9, 0xd9, 0xd9);
   // Button:
-  const SkColor kButtonBackgroundColor = SkColorSetRGB(0xde, 0xde, 0xde);
-  const SkColor kButtonHighlightColor = SkColorSetARGB(200, 255, 255, 255);
   const SkColor kButtonHoverColor = SkColorSetRGB(6, 45, 117);
   const SkColor kProminentButtonColorInvert = gfx::kGoogleBlue300;
   // MenuItem:
@@ -541,12 +539,8 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
       return kUnfocusedBorderColor;
 
     // Button
-    case kColorId_ButtonBackgroundColor:
-      return kButtonBackgroundColor;
     case kColorId_ButtonEnabledColor:
       return system_colors_[COLOR_BTNTEXT];
-    case kColorId_ButtonHighlightColor:
-      return kButtonHighlightColor;
     case kColorId_ButtonHoverColor:
       return kButtonHoverColor;
 
@@ -555,8 +549,6 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
       return system_colors_[COLOR_BTNTEXT];
     case kColorId_LabelDisabledColor:
       return system_colors_[COLOR_GRAYTEXT];
-    case kColorId_LabelBackgroundColor:
-      return system_colors_[COLOR_WINDOW];
 
     // Textfield
     case kColorId_TextfieldDefaultColor:

@@ -73,9 +73,9 @@ class VIEWS_EXPORT MenuDelegate {
   // The font for the menu item label.
   virtual const gfx::FontList* GetLabelFontList(int id) const;
 
-  // Whether this item should be displayed with a bolder color when disabled.
-  virtual bool GetShouldUseDisabledEmphasizedForegroundColor(
-      int command_id) const;
+  // Whether this item should be displayed with the normal text color, even if
+  // it's disabled.
+  virtual bool GetShouldUseNormalForegroundColor(int command_id) const;
 
   // Override the text color of a given menu item dependent on the
   // |command_id| and its |is_hovered| state. Returns true if it chooses to

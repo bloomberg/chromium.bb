@@ -783,12 +783,11 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
         ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor:
         ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor;
   } else {
-    bool emphasized = delegate &&
-                      delegate->GetShouldUseDisabledEmphasizedForegroundColor(
-                          GetCommand());
-    color_id = emphasized ?
-        ui::NativeTheme::kColorId_DisabledEmphasizedMenuItemForegroundColor :
-        ui::NativeTheme::kColorId_DisabledMenuItemForegroundColor;
+    bool emphasized =
+        delegate && delegate->GetShouldUseNormalForegroundColor(GetCommand());
+    color_id = emphasized
+                   ? ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor
+                   : ui::NativeTheme::kColorId_DisabledMenuItemForegroundColor;
   }
   SkColor fg_color = native_theme->GetSystemColor(color_id);
   SkColor override_foreground_color;

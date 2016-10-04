@@ -194,14 +194,12 @@ class InMenuButtonBackground : public views::Background {
                                  views::Button::ButtonState state) {
     const ui::NativeTheme* theme = view->GetNativeTheme();
     switch (state) {
-      case views::Button::STATE_HOVERED:
-        // Hovered should be handled in DrawBackground.
-        NOTREACHED();
-        return theme->GetSystemColor(
-            ui::NativeTheme::kColorId_HoverMenuItemBackgroundColor);
       case views::Button::STATE_PRESSED:
         return theme->GetSystemColor(
             ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor);
+      case views::Button::STATE_HOVERED:
+        // Hovered should be handled in DrawBackground.
+        NOTREACHED();
       default:
         return theme->GetSystemColor(
             ui::NativeTheme::kColorId_MenuBackgroundColor);
@@ -731,12 +729,6 @@ class AppMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
     return model_->GetLabelFontListAt(index);
   }
 
-  bool GetShouldUseDisabledEmphasizedForegroundColor(int index) const {
-    // The items for which we get a font list, should be shown in the bolded
-    // color.
-    return GetLabelFontListAt(index) ? true : false;
-  }
-
   // ui::MenuModelDelegate implementation:
 
   void OnIconChanged(int index) override {
@@ -862,14 +854,8 @@ const gfx::FontList* AppMenu::GetLabelFontList(int command_id) const {
   return NULL;
 }
 
-bool AppMenu::GetShouldUseDisabledEmphasizedForegroundColor(
-    int command_id) const {
-  if (IsRecentTabsCommand(command_id)) {
-    return recent_tabs_menu_model_delegate_->
-        GetShouldUseDisabledEmphasizedForegroundColor(
-            ModelIndexFromCommandId(command_id));
-  }
-  return false;
+bool AppMenu::GetShouldUseNormalForegroundColor(int command_id) const {
+  return IsRecentTabsCommand(command_id);
 }
 
 base::string16 AppMenu::GetTooltipText(int command_id,

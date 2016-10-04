@@ -81,20 +81,21 @@ class LabelButtonTest : public test::WidgetTest {
     // Establish the expected text colors for testing changes due to state.
     themed_normal_text_color_ = button_->GetNativeTheme()->GetSystemColor(
         ui::NativeTheme::kColorId_LabelEnabledColor);
+
+    // For styled buttons only, platforms other than Desktop Linux either ignore
+    // NativeTheme and use a hardcoded black or (on Mac) have a NativeTheme that
+    // reliably returns black.
+    styled_normal_text_color_ = SK_ColorBLACK;
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
     // The Linux theme provides a non-black highlight text color, but it's not
     // used for styled buttons.
     styled_highlight_text_color_ = styled_normal_text_color_ =
         button_->GetNativeTheme()->GetSystemColor(
             ui::NativeTheme::kColorId_ButtonEnabledColor);
+#elif defined(OS_MACOSX)
+    styled_highlight_text_color_ = SK_ColorWHITE;
 #else
-    styled_highlight_text_color_ = button_->GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_ButtonHighlightColor);
-
-    // For styled buttons only, platforms other than Desktop Linux either ignore
-    // NativeTheme and use a hardcoded black or (on Mac) have a NativeTheme that
-    // reliably returns black.
-    styled_normal_text_color_ = SK_ColorBLACK;
+    styled_highlight_text_color_ = styled_normal_text_color_;
 #endif
   }
 

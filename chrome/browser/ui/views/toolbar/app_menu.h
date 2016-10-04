@@ -67,8 +67,7 @@ class AppMenu : public views::MenuDelegate,
 
   // MenuDelegate overrides:
   const gfx::FontList* GetLabelFontList(int command_id) const override;
-  bool GetShouldUseDisabledEmphasizedForegroundColor(
-      int command_id) const override;
+  bool GetShouldUseNormalForegroundColor(int command_id) const override;
   base::string16 GetTooltipText(int command_id,
                                 const gfx::Point& p) const override;
   bool IsTriggerableEvent(views::MenuItemView* menu,

@@ -813,7 +813,7 @@ void Gtk2UI::LoadGtkValues() {
   NativeThemeGtk2* theme = NativeThemeGtk2::instance();
 
   SkColor toolbar_color =
-      theme->GetSystemColor(ui::NativeTheme::kColorId_LabelBackgroundColor);
+      theme->GetSystemColor(ui::NativeTheme::kColorId_DialogBackground);
   SkColor label_color =
       theme->GetSystemColor(ui::NativeTheme::kColorId_LabelEnabledColor);
 
@@ -1033,14 +1033,12 @@ void Gtk2UI::GetNormalButtonTintHSL(color_utils::HSL* tint) const {
   NativeThemeGtk2* theme = NativeThemeGtk2::instance();
 
   SkColor accent_color =
-      theme->GetSystemColor(
-          ui::NativeTheme::kColorId_ButtonHighlightColor);
+      theme->GetSystemColor(ui::NativeTheme::kColorId_ProminentButtonColor);
   SkColor text_color =
       theme->GetSystemColor(
           ui::NativeTheme::kColorId_LabelEnabledColor);
   SkColor base_color =
-      theme->GetSystemColor(
-          ui::NativeTheme::kColorId_LabelBackgroundColor);
+      theme->GetSystemColor(ui::NativeTheme::kColorId_DialogBackground);
 
   PickButtonTintFromColors(accent_color, text_color, base_color, tint);
 }
@@ -1049,8 +1047,7 @@ void Gtk2UI::GetNormalEntryForegroundHSL(color_utils::HSL* tint) const {
   NativeThemeGtk2* theme = NativeThemeGtk2::instance();
 
   SkColor accent_color =
-      theme->GetSystemColor(
-          ui::NativeTheme::kColorId_ButtonHighlightColor);
+      theme->GetSystemColor(ui::NativeTheme::kColorId_ProminentButtonColor);
   SkColor text_color =
       theme->GetSystemColor(
           ui::NativeTheme::kColorId_TextfieldDefaultColor);

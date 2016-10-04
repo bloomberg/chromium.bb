@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/profile_chooser_constants.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/user_manager.h"
 #include "chrome/browser/ui/views/profiles/signin_view_controller_delegate_views.h"
@@ -220,8 +221,7 @@ class BackgroundColorHoverButton : public views::LabelButton {
   void OnPaint(gfx::Canvas* canvas) override {
     if ((state() == STATE_PRESSED) ||
         (state() == STATE_HOVERED)) {
-      canvas->DrawColor(GetNativeTheme()->GetSystemColor(
-          ui::NativeTheme::kColorId_ButtonHoverBackgroundColor));
+      canvas->DrawColor(profiles::kHoverColor);
     }
     LabelButton::OnPaint(canvas);
   }

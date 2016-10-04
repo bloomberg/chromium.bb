@@ -253,12 +253,9 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kColorId_FocusedBorderColor,
     kColorId_UnfocusedBorderColor,
     // Button
-    kColorId_ButtonBackgroundColor,
     kColorId_ButtonEnabledColor,
     kColorId_ButtonDisabledColor,
-    kColorId_ButtonHighlightColor,
     kColorId_ButtonHoverColor,
-    kColorId_ButtonHoverBackgroundColor,
     kColorId_ButtonPressedShade,
     kColorId_BlueButtonEnabledColor,
     kColorId_BlueButtonDisabledColor,
@@ -270,10 +267,8 @@ class NATIVE_THEME_EXPORT NativeTheme {
     // MenuItem
     kColorId_EnabledMenuItemForegroundColor,
     kColorId_DisabledMenuItemForegroundColor,
-    kColorId_DisabledEmphasizedMenuItemForegroundColor,
     kColorId_SelectedMenuItemForegroundColor,
     kColorId_FocusedMenuItemBackgroundColor,
-    kColorId_HoverMenuItemBackgroundColor,
     kColorId_MenuSeparatorColor,
     kColorId_MenuBackgroundColor,
     kColorId_MenuBorderColor,
@@ -284,7 +279,6 @@ class NATIVE_THEME_EXPORT NativeTheme {
     // Label
     kColorId_LabelEnabledColor,
     kColorId_LabelDisabledColor,
-    kColorId_LabelBackgroundColor,
     // Link
     kColorId_LinkDisabled,
     kColorId_LinkEnabled,

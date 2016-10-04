@@ -132,12 +132,10 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
     case kColorId_EnabledMenuItemForegroundColor:
       return NSSystemColorToSkColor([NSColor controlTextColor]);
     case kColorId_DisabledMenuItemForegroundColor:
-    case kColorId_DisabledEmphasizedMenuItemForegroundColor:
       return NSSystemColorToSkColor([NSColor disabledControlTextColor]);
     case kColorId_SelectedMenuItemForegroundColor:
       return NSSystemColorToSkColor([NSColor selectedMenuItemTextColor]);
     case kColorId_FocusedMenuItemBackgroundColor:
-    case kColorId_HoverMenuItemBackgroundColor:
       return NSSystemColorToSkColor([NSColor selectedMenuItemColor]);
     case kColorId_MenuBackgroundColor:
       return kMenuPopupBackgroundColor;
@@ -183,10 +181,7 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
       return NSSystemColorToSkColor([NSColor controlColor]);
 
     // Buttons and labels.
-    case kColorId_ButtonBackgroundColor:
-    case kColorId_ButtonHoverBackgroundColor:
     case kColorId_HoverMenuButtonBorderColor:
-    case kColorId_LabelBackgroundColor:
       return NSSystemColorToSkColor([NSColor controlBackgroundColor]);
     case kColorId_ButtonEnabledColor:
     case kColorId_EnabledMenuButtonBorderColor:
@@ -196,11 +191,6 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
     case kColorId_ButtonDisabledColor:
     case kColorId_LabelDisabledColor:
       return NSSystemColorToSkColor([NSColor disabledControlTextColor]);
-    case kColorId_ButtonHighlightColor:
-      // Although the NSColor documentation names "selectedControlTextColor" as
-      // the color for a "text in a .. control being clicked or dragged", it
-      // remains black, and text on Yosemite-style pressed buttons is white.
-      return SK_ColorWHITE;
     case kColorId_ButtonHoverColor:
       return NSSystemColorToSkColor([NSColor selectedControlTextColor]);
 
@@ -284,7 +274,7 @@ void NativeThemeMac::PaintMenuItemBackground(
       // pick colors. The System color "selectedMenuItemColor" is actually still
       // blue for Graphite. And while "keyboardFocusIndicatorColor" does change,
       // and is a good shade of gray, it's not blue enough for the Blue theme.
-      paint.setColor(GetSystemColor(kColorId_HoverMenuItemBackgroundColor));
+      paint.setColor(GetSystemColor(kColorId_FocusedMenuItemBackgroundColor));
       canvas->drawRect(gfx::RectToSkRect(rect), paint);
       break;
     default:

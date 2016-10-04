@@ -45,6 +45,7 @@
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/browser/ui/cocoa/profiles/signin_view_controller_delegate_mac.h"
 #import "chrome/browser/ui/cocoa/profiles/user_manager_mac.h"
+#include "chrome/browser/ui/profile_chooser_constants.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/user_manager.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
@@ -848,11 +849,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     backgroundColor:(NSColor*)backgroundColor {
   if ((self = [super initWithFrame:frameRect])) {
     backgroundColor_.reset([backgroundColor retain]);
-    // Use a color from Aura, since this button is not trying to look like a
-    // native control.
-    SkColor hoverColor = ui::GetAuraColor(
-        ui::NativeTheme::kColorId_ButtonHoverBackgroundColor, nullptr);
-    hoverColor_.reset([skia::SkColorToSRGBNSColor(hoverColor) retain]);
+    hoverColor_.reset([skia::SkColorToSRGBNSColor(profiles::kHoverColor)
+                          retain]);
 
     [self setBordered:NO];
     [self setFont:[NSFont labelFontOfSize:kTextFontSize]];
