@@ -94,11 +94,6 @@ class TestBluetoothAdapter : public BluetoothAdapter {
       const CreateServiceCallback& callback,
       const CreateServiceErrorCallback& error_callback) override {}
 
-  void RegisterAudioSink(
-      const BluetoothAudioSink::Options& options,
-      const AcquiredCallback& callback,
-      const BluetoothAudioSink::ErrorCallback& error_callback) override {}
-
   void RegisterAdvertisement(
       std::unique_ptr<BluetoothAdvertisement::Data> advertisement_data,
       const CreateAdvertisementCallback& callback,

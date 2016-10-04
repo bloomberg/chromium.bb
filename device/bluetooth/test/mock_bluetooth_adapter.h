@@ -12,7 +12,6 @@
 #include "base/memory/scoped_vector.h"
 #include "build/build_config.h"
 #include "device/bluetooth/bluetooth_adapter.h"
-#include "device/bluetooth/bluetooth_audio_sink.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "device/bluetooth/test/mock_bluetooth_device.h"
@@ -94,10 +93,6 @@ class MockBluetoothAdapter : public BluetoothAdapter {
                     const ServiceOptions& options,
                     const CreateServiceCallback& callback,
                     const CreateServiceErrorCallback& error_callback));
-  MOCK_METHOD3(RegisterAudioSink,
-               void(const BluetoothAudioSink::Options& options,
-                    const AcquiredCallback& callback,
-                    const BluetoothAudioSink::ErrorCallback& error_callback));
   MOCK_CONST_METHOD1(GetGattService,
                      BluetoothLocalGattService*(const std::string& identifier));
 

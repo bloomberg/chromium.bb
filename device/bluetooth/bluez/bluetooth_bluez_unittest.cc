@@ -34,7 +34,6 @@
 
 using device::BluetoothAdapter;
 using device::BluetoothAdapterFactory;
-using device::BluetoothAudioSink;
 using device::BluetoothDevice;
 using device::BluetoothDiscoveryFilter;
 using device::BluetoothDiscoverySession;
@@ -249,11 +248,6 @@ class BluetoothBlueZTest : public testing::Test {
     QuitMessageLoop();
   }
 
-  void AudioSinkAcquiredCallback(scoped_refptr<BluetoothAudioSink>) {
-    ++callback_count_;
-    QuitMessageLoop();
-  }
-
   void ProfileRegisteredCallback(BluetoothAdapterProfileBlueZ* profile) {
     adapter_profile_ = profile;
     ++callback_count_;
@@ -290,11 +284,6 @@ class BluetoothBlueZTest : public testing::Test {
   void ConnectErrorCallback(BluetoothDevice::ConnectErrorCode error) {
     ++error_callback_count_;
     last_connect_error_ = error;
-  }
-
-  void AudioSinkErrorCallback(BluetoothAudioSink::ErrorCode) {
-    ++error_callback_count_;
-    QuitMessageLoop();
   }
 
   void ErrorCompletionCallback(const std::string& error_message) {
@@ -4261,16 +4250,6 @@ TEST_F(BluetoothBlueZTest, Shutdown) {
   // CreateRfcommService will DCHECK after Shutdown().
   // CreateL2capService will DCHECK after Shutdown().
 
-  BluetoothAudioSink::Options audio_sink_options;
-  adapter_->RegisterAudioSink(
-      audio_sink_options,
-      base::Bind(&BluetoothBlueZTest::AudioSinkAcquiredCallback,
-                 base::Unretained(this)),
-      base::Bind(&BluetoothBlueZTest::AudioSinkErrorCallback,
-                 base::Unretained(this)));
-  EXPECT_EQ(0, callback_count_);
-  EXPECT_EQ(1, error_callback_count_--) << "RegisterAudioSink error";
-
   BluetoothAdapterBlueZ* adapter_bluez =
       static_cast<BluetoothAdapterBlueZ*>(adapter_.get());
   EXPECT_EQ(nullptr, adapter_bluez->GetDeviceWithPath(dbus::ObjectPath("")));
@@ -4326,15 +4305,6 @@ TEST_F(BluetoothBlueZTest, Shutdown) {
   adapter_bluez->OnRegisterAgentError("", "");
   adapter_bluez->OnRequestDefaultAgent();
   adapter_bluez->OnRequestDefaultAgentError("", "");
-
-  adapter_bluez->OnRegisterAudioSink(
-      base::Bind(&BluetoothBlueZTest::AudioSinkAcquiredCallback,
-                 base::Unretained(this)),
-      base::Bind(&BluetoothBlueZTest::AudioSinkErrorCallback,
-                 base::Unretained(this)),
-      scoped_refptr<device::BluetoothAudioSink>());
-  EXPECT_EQ(0, callback_count_);
-  EXPECT_EQ(1, error_callback_count_--) << "RegisterAudioSink error";
 
   // GetPairing will DCHECK after Shutdown().
   // SetAdapter will DCHECK after Shutdown().

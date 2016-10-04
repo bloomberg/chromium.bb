@@ -29,7 +29,6 @@
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "device/bluetooth/bluez/bluetooth_adapter_profile_bluez.h"
 #include "device/bluetooth/bluez/bluetooth_advertisement_bluez.h"
-#include "device/bluetooth/bluez/bluetooth_audio_sink_bluez.h"
 #include "device/bluetooth/bluez/bluetooth_device_bluez.h"
 #include "device/bluetooth/bluez/bluetooth_gatt_service_bluez.h"
 #include "device/bluetooth/bluez/bluetooth_local_gatt_characteristic_bluez.h"
@@ -52,7 +51,6 @@
 #endif
 
 using device::BluetoothAdapter;
-using device::BluetoothAudioSink;
 using device::BluetoothDevice;
 using device::BluetoothDiscoveryFilter;
 using device::BluetoothSocket;
@@ -440,24 +438,6 @@ void BluetoothAdapterBlueZ::CreateL2capService(
                                                   socket_thread_);
   socket->Listen(this, BluetoothSocketBlueZ::kL2cap, uuid, options,
                  base::Bind(callback, socket), error_callback);
-}
-
-void BluetoothAdapterBlueZ::RegisterAudioSink(
-    const BluetoothAudioSink::Options& options,
-    const device::BluetoothAdapter::AcquiredCallback& callback,
-    const BluetoothAudioSink::ErrorCallback& error_callback) {
-  VLOG(1) << "Registering audio sink";
-  if (!this->IsPresent()) {
-    error_callback.Run(BluetoothAudioSink::ERROR_INVALID_ADAPTER);
-    return;
-  }
-  scoped_refptr<BluetoothAudioSinkBlueZ> audio_sink(
-      new BluetoothAudioSinkBlueZ(this));
-  audio_sink->Register(options,
-                       base::Bind(&BluetoothAdapterBlueZ::OnRegisterAudioSink,
-                                  weak_ptr_factory_.GetWeakPtr(), callback,
-                                  error_callback, audio_sink),
-                       error_callback);
 }
 
 void BluetoothAdapterBlueZ::RegisterAdvertisement(
@@ -852,19 +832,6 @@ void BluetoothAdapterBlueZ::OnRequestDefaultAgentError(
     const std::string& error_message) {
   LOG(WARNING) << ": Failed to make pairing agent default: " << error_name
                << ": " << error_message;
-}
-
-void BluetoothAdapterBlueZ::OnRegisterAudioSink(
-    const device::BluetoothAdapter::AcquiredCallback& callback,
-    const device::BluetoothAudioSink::ErrorCallback& error_callback,
-    scoped_refptr<BluetoothAudioSink> audio_sink) {
-  if (!IsPresent()) {
-    VLOG(1) << "Failed to register audio sink, adapter not present";
-    error_callback.Run(BluetoothAudioSink::ERROR_INVALID_ADAPTER);
-    return;
-  }
-  DCHECK(audio_sink.get());
-  callback.Run(audio_sink);
 }
 
 void BluetoothAdapterBlueZ::CreateServiceRecord(

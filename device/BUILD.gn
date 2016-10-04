@@ -182,7 +182,6 @@ test("device_unittests") {
     sources += [
       "bluetooth/bluez/bluetooth_adapter_profile_bluez_unittest.cc",
       "bluetooth/bluez/bluetooth_advertisement_bluez_unittest.cc",
-      "bluetooth/bluez/bluetooth_audio_sink_bluez_unittest.cc",
       "bluetooth/bluez/bluetooth_bluez_unittest.cc",
       "bluetooth/bluez/bluetooth_gatt_bluez_unittest.cc",
       "bluetooth/bluez/bluetooth_service_attribute_value_bluez_unittest.cc",

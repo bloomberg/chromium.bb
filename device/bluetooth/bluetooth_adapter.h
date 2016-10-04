@@ -21,7 +21,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
-#include "device/bluetooth/bluetooth_audio_sink.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_export.h"
 
@@ -241,8 +240,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
       base::Callback<void(scoped_refptr<BluetoothSocket>)>;
   using CreateServiceErrorCallback =
       base::Callback<void(const std::string& message)>;
-  using AcquiredCallback =
-      base::Callback<void(scoped_refptr<BluetoothAudioSink>)>;
   using CreateAdvertisementCallback =
       base::Callback<void(scoped_refptr<BluetoothAdvertisement>)>;
   using AdvertisementErrorCallback =
@@ -421,16 +418,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
       const ServiceOptions& options,
       const CreateServiceCallback& callback,
       const CreateServiceErrorCallback& error_callback) = 0;
-
-  // Creates and registers a BluetoothAudioSink with |options|. If the fields in
-  // |options| are not specified, the default values will be used. |callback|
-  // will be called on success with a BluetoothAudioSink which is to be owned by
-  // the caller of this method. |error_callback| will be called on failure with
-  // a message indicating the cause.
-  virtual void RegisterAudioSink(
-      const BluetoothAudioSink::Options& options,
-      const AcquiredCallback& callback,
-      const BluetoothAudioSink::ErrorCallback& error_callback) = 0;
 
   // Creates and registers an advertisement for broadcast over the LE channel.
   // The created advertisement will be returned via the success callback. An

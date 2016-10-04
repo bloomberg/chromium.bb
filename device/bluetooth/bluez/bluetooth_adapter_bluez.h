@@ -19,7 +19,6 @@
 #include "base/memory/weak_ptr.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_adapter.h"
-#include "device/bluetooth/bluetooth_audio_sink.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "device/bluetooth/bluetooth_export.h"
@@ -116,10 +115,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
       const ServiceOptions& options,
       const CreateServiceCallback& callback,
       const CreateServiceErrorCallback& error_callback) override;
-  void RegisterAudioSink(
-      const device::BluetoothAudioSink::Options& options,
-      const device::BluetoothAdapter::AcquiredCallback& callback,
-      const device::BluetoothAudioSink::ErrorCallback& error_callback) override;
 
   void RegisterAdvertisement(
       std::unique_ptr<device::BluetoothAdvertisement::Data> advertisement_data,
@@ -296,13 +291,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
   void OnRequestDefaultAgent();
   void OnRequestDefaultAgentError(const std::string& error_name,
                                   const std::string& error_message);
-
-  // Called by BluetoothAudioSinkBlueZ on completion of registering an audio
-  // sink.
-  void OnRegisterAudioSink(
-      const device::BluetoothAdapter::AcquiredCallback& callback,
-      const device::BluetoothAudioSink::ErrorCallback& error_callback,
-      scoped_refptr<device::BluetoothAudioSink> audio_sink);
 
   // Internal method to obtain a BluetoothPairingBlueZ object for the device
   // with path |object_path|. Returns the existing pairing object if the device
