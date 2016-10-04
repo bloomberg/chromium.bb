@@ -28,6 +28,10 @@
         background-image: url(images/open_in_new.svg);
       }
 
+      :host-context([dir=rtl]) paper-icon-button[icon='settings:arrow-back'] {
+        transform: scaleX(-1);  /* Flip on the X axis (aka mirror). */
+      }
+
       /* Use <h2> as the "sub-header" mentioned in the UX design docs. */
       h2 {
         align-items: center;
