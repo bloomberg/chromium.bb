@@ -11,14 +11,67 @@
 #include "core/dom/StyleEngine.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLVideoElement.h"
+#include "core/loader/EmptyClients.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/heap/Handle.h"
+#include "platform/testing/UnitTestHelpers.h"
+#include "public/platform/WebMediaPlayer.h"
+#include "public/platform/WebSize.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <memory>
 
 namespace blink {
 
 namespace {
+
+class MockVideoWebMediaPlayer : public WebMediaPlayer {
+ public:
+  void load(LoadType, const WebMediaPlayerSource&, CORSMode) override{};
+  void play() override{};
+  void pause() override{};
+  bool supportsSave() const override { return false; };
+  void seek(double seconds) override{};
+  void setRate(double) override{};
+  void setVolume(double) override{};
+  WebTimeRanges buffered() const override { return WebTimeRanges(); };
+  WebTimeRanges seekable() const override { return WebTimeRanges(); };
+  void setSinkId(const WebString& sinkId,
+                 const WebSecurityOrigin&,
+                 WebSetSinkIdCallbacks*) override{};
+  bool hasVideo() const override { return true; };
+  bool hasAudio() const override { return false; };
+  WebSize naturalSize() const override { return WebSize(0, 0); };
+  bool paused() const override { return false; };
+  bool seeking() const override { return false; };
+  double duration() const override { return 0.0; };
+  double currentTime() const override { return 0.0; };
+  NetworkState getNetworkState() const override { return NetworkStateEmpty; };
+  ReadyState getReadyState() const override { return ReadyStateHaveNothing; };
+  WebString getErrorMessage() override { return WebString(); };
+  bool didLoadingProgress() override { return false; };
+  bool hasSingleSecurityOrigin() const override { return true; };
+  bool didPassCORSAccessCheck() const override { return true; };
+  double mediaTimeForTimeValue(double timeValue) const override {
+    return timeValue;
+  };
+  unsigned decodedFrameCount() const override { return 0; };
+  unsigned droppedFrameCount() const override { return 0; };
+  size_t audioDecodedByteCount() const override { return 0; };
+  size_t videoDecodedByteCount() const override { return 0; };
+  void paint(WebCanvas*, const WebRect&, SkPaint&) override{};
+};
+
+class StubFrameLoaderClient : public EmptyFrameLoaderClient {
+ public:
+  static StubFrameLoaderClient* create() { return new StubFrameLoaderClient; }
+
+  std::unique_ptr<WebMediaPlayer> createWebMediaPlayer(
+      HTMLMediaElement&,
+      const WebMediaPlayerSource&,
+      WebMediaPlayerClient*) override {
+    return wrapUnique(new MockVideoWebMediaPlayer);
+  }
+};
 
 Element* getElementByShadowPseudoId(Node& rootNode,
                                     const char* shadowPseudoId) {
@@ -39,8 +92,9 @@ bool isElementVisible(Element& element) {
     return false;
 
   if (inlineStyle->hasProperty(CSSPropertyOpacity) &&
-      inlineStyle->getPropertyValue(CSSPropertyOpacity).toDouble() == 0.0)
+      inlineStyle->getPropertyValue(CSSPropertyOpacity).toDouble() == 0.0) {
     return false;
+  }
 
   if (inlineStyle->getPropertyValue(CSSPropertyVisibility) == "hidden")
     return false;
@@ -53,10 +107,11 @@ bool isElementVisible(Element& element) {
 
 }  // namespace
 
-class MediaControlsTest : public testing::Test {
+class MediaControlsTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
-    m_pageHolder = DummyPageHolder::create(IntSize(800, 600));
+    m_pageHolder = DummyPageHolder::create(IntSize(800, 600), nullptr,
+                                           StubFrameLoaderClient::create());
     Document& document = this->document();
 
     document.write("<video>");
@@ -76,6 +131,10 @@ class MediaControlsTest : public testing::Test {
     // Force a relayout, so that the controls know the width.  Otherwise,
     // they don't know if, for example, the cast button will fit.
     m_mediaControls->mediaElement().clientWidth();
+  }
+
+  void simulateHideMediaControlsTimerFired() {
+    m_mediaControls->hideMediaControlsTimerFired(nullptr);
   }
 
   MediaControls& mediaControls() { return *m_mediaControls; }
@@ -197,6 +256,28 @@ TEST_F(MediaControlsTest, CastOverlayDisableRemotePlaybackAttr) {
       HTMLNames::disableremoteplaybackAttr, false);
   mediaControls().reset();
   ASSERT_TRUE(isElementVisible(*castOverlayButton));
+}
+
+TEST_F(MediaControlsTest, KeepControlsVisibleIfOverflowListVisible) {
+  Element* overflowList = getElementByShadowPseudoId(
+      mediaControls(), "-internal-media-controls-overflow-menu-list");
+  ASSERT_NE(nullptr, overflowList);
+
+  Element* panel = getElementByShadowPseudoId(mediaControls(),
+                                              "-webkit-media-controls-panel");
+  ASSERT_NE(nullptr, panel);
+
+  mediaControls().mediaElement().setSrc("http://example.com");
+  mediaControls().mediaElement().play();
+  testing::runPendingTasks();
+
+  mediaControls().show();
+  mediaControls().toggleOverflowMenu();
+  EXPECT_TRUE(isElementVisible(*overflowList));
+
+  simulateHideMediaControlsTimerFired();
+  EXPECT_TRUE(isElementVisible(*overflowList));
+  EXPECT_TRUE(isElementVisible(*panel));
 }
 
 }  // namespace blink

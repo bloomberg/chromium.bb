@@ -395,8 +395,8 @@ bool MediaControls::shouldHideMediaControls(unsigned behaviorFlags) const {
   if (!ignoreFocus &&
       (mediaElement().focused() || contains(document().focusedElement())))
     return false;
-  // Don't hide the media controls when the text track list is showing.
-  if (m_textTrackList->isWanted())
+  // Don't hide the media controls when a panel is showing.
+  if (m_textTrackList->isWanted() || m_overflowList->isWanted())
     return false;
   return true;
 }

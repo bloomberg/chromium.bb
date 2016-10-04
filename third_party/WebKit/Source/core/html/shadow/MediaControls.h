@@ -94,6 +94,8 @@ class CORE_EXPORT MediaControls final : public HTMLDivElement {
   DECLARE_VIRTUAL_TRACE();
 
  private:
+  friend class MediaControlsTest;
+
   void invalidate(Element*);
 
   class BatchedControlUpdate;
