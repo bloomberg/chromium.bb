@@ -16,57 +16,196 @@
 #include "remoting/client/dual_buffer_frame_consumer.h"
 #include "remoting/client/jni/chromoting_jni_runtime.h"
 #include "remoting/client/jni/egl_thread_context.h"
-#include "remoting/client/queued_task_poster.h"
 #include "remoting/client/software_video_renderer.h"
 #include "remoting/protocol/frame_consumer.h"
 
 namespace remoting {
 
-JniGlDisplayHandler::JniGlDisplayHandler(ChromotingJniRuntime* runtime)
-    : runtime_(runtime), weak_factory_(this) {
+// The core that lives on the display thread.
+class JniGlDisplayHandler::Core : public protocol::CursorShapeStub,
+                                  public GlRendererDelegate {
+ public:
+  Core(ChromotingJniRuntime* runtime, base::WeakPtr<JniGlDisplayHandler> shell);
+  ~Core() override;
+
+  // GlRendererDelegate interface.
+  bool CanRenderFrame() override;
+  void OnFrameRendered() override;
+  void OnSizeChanged(int width, int height) override;
+
+  // CursorShapeStub interface.
+  void SetCursorShape(const protocol::CursorShapeInfo& cursor_shape) override;
+
+  // Returns the frame consumer for updating desktop frame. Can be called on any
+  // thread but no more than once.
+  std::unique_ptr<protocol::FrameConsumer> GrabFrameConsumer();
+
+  void SurfaceCreated(base::android::ScopedJavaGlobalRef<jobject> surface);
+  void SurfaceChanged(int width, int height);
+  void SurfaceDestroyed();
+
+  void SetTransformation(const std::array<float, 9>& matrix);
+  void MoveCursor(float x, float y);
+  void SetCursorVisibility(bool visible);
+  void StartInputFeedback(float x, float y, float diameter);
+
+  base::WeakPtr<Core> GetWeakPtr();
+
+ private:
+  ChromotingJniRuntime* runtime_;
+  base::WeakPtr<JniGlDisplayHandler> shell_;
+
+  // Will be std::move'd when GrabFrameConsumer() is called.
+  std::unique_ptr<DualBufferFrameConsumer> owned_frame_consumer_;
+
+  base::WeakPtr<DualBufferFrameConsumer> frame_consumer_;
+
+  ANativeWindow* window_ = nullptr;
+  std::unique_ptr<EglThreadContext> egl_context_;
+  GlRenderer renderer_;
+
+  // Used on display thread.
+  base::WeakPtr<Core> weak_ptr_;
+  base::WeakPtrFactory<Core> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(Core);
+};
+
+JniGlDisplayHandler::Core::Core(ChromotingJniRuntime* runtime,
+                                base::WeakPtr<JniGlDisplayHandler> shell)
+    : runtime_(runtime), shell_(shell), weak_factory_(this) {
   weak_ptr_ = weak_factory_.GetWeakPtr();
-  java_display_.Reset(Java_GlDisplay_createJavaDisplayObject(
-      base::android::AttachCurrentThread(), reinterpret_cast<intptr_t>(this)));
   renderer_.SetDelegate(weak_ptr_);
-  ui_task_poster_.reset(new QueuedTaskPoster(runtime->display_task_runner()));
+  owned_frame_consumer_.reset(new DualBufferFrameConsumer(
+          base::Bind(&GlRenderer::OnFrameReceived, renderer_.GetWeakPtr()),
+          runtime_->display_task_runner(),
+          protocol::FrameConsumer::PixelFormat::FORMAT_RGBA));
+  frame_consumer_ = owned_frame_consumer_->GetWeakPtr();
+}
+
+JniGlDisplayHandler::Core::~Core() {}
+
+bool JniGlDisplayHandler::Core::CanRenderFrame() {
+  DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
+  return egl_context_ && egl_context_->IsWindowBound();
+}
+
+void JniGlDisplayHandler::Core::OnFrameRendered() {
+  DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
+  egl_context_->SwapBuffers();
+  runtime_->ui_task_runner()->PostTask(
+      FROM_HERE, base::Bind(&JniGlDisplayHandler::OnRenderDone, shell_));
+}
+
+void JniGlDisplayHandler::Core::OnSizeChanged(int width, int height) {
+  DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
+  runtime_->ui_task_runner()->PostTask(
+      FROM_HERE, base::Bind(&JniGlDisplayHandler::OnCanvasSizeChanged, shell_,
+                            width, height));
+}
+
+void JniGlDisplayHandler::Core::SetCursorShape(
+    const protocol::CursorShapeInfo& cursor_shape) {
+  DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
+  renderer_.OnCursorShapeChanged(cursor_shape);
+}
+
+std::unique_ptr<protocol::FrameConsumer>
+JniGlDisplayHandler::Core::GrabFrameConsumer() {
+  DCHECK(owned_frame_consumer_) << "The frame consumer is already grabbed.";
+  return std::move(owned_frame_consumer_);
+}
+
+void JniGlDisplayHandler::Core::SurfaceCreated(
+    base::android::ScopedJavaGlobalRef<jobject> surface) {
+  DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
+  DCHECK(!egl_context_);
+  DCHECK(!window_);
+  renderer_.RequestCanvasSize();
+  window_ = ANativeWindow_fromSurface(base::android::AttachCurrentThread(),
+                                      surface.obj());
+  egl_context_.reset(new EglThreadContext());
+  egl_context_->BindToWindow(window_);
+  renderer_.OnSurfaceCreated(static_cast<int>(egl_context_->client_version()));
+  runtime_->network_task_runner()->PostTask(
+      FROM_HERE, base::Bind(&DualBufferFrameConsumer::RequestFullDesktopFrame,
+                            frame_consumer_));
+}
+
+void JniGlDisplayHandler::Core::SurfaceChanged(int width, int height) {
+  DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
+  renderer_.OnSurfaceChanged(width, height);
+}
+
+void JniGlDisplayHandler::Core::SurfaceDestroyed() {
+  DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
+  DCHECK(egl_context_);
+  DCHECK(window_);
+  renderer_.OnSurfaceDestroyed();
+  egl_context_.reset();
+  ANativeWindow_release(window_);
+  window_ = nullptr;
+}
+
+void JniGlDisplayHandler::Core::SetTransformation(
+    const std::array<float, 9>& matrix) {
+  DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
+  renderer_.OnPixelTransformationChanged(matrix);
+}
+
+void JniGlDisplayHandler::Core::MoveCursor(float x, float y) {
+  DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
+  renderer_.OnCursorMoved(x, y);
+}
+
+void JniGlDisplayHandler::Core::SetCursorVisibility(bool visible) {
+  DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
+  renderer_.OnCursorVisibilityChanged(visible);
+}
+
+void JniGlDisplayHandler::Core::StartInputFeedback(float x,
+                                                   float y,
+                                                   float diameter) {
+  DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
+  renderer_.OnCursorInputFeedback(x, y, diameter);
+}
+
+base::WeakPtr<JniGlDisplayHandler::Core>
+JniGlDisplayHandler::Core::GetWeakPtr() {
+  return weak_ptr_;
+}
+
+// Shell implementations.
+
+JniGlDisplayHandler::JniGlDisplayHandler(
+    ChromotingJniRuntime* runtime,
+    const base::android::JavaRef<jobject>& java_client)
+    : runtime_(runtime),
+      ui_task_poster_(runtime->display_task_runner()),
+      weak_factory_(this) {
+  core_.reset(new Core(runtime_, weak_factory_.GetWeakPtr()));
+  JNIEnv* env = base::android::AttachCurrentThread();
+  java_display_.Reset(Java_GlDisplay_createJavaDisplayObject(
+      env, reinterpret_cast<intptr_t>(this)));
+  Java_GlDisplay_initializeClient(env, java_display_, java_client);
 }
 
 JniGlDisplayHandler::~JniGlDisplayHandler() {
-  DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
-  DCHECK(!ui_task_poster_) << "Invalidate() must be called on the UI thread "
-                              "before deleting this object.";
-}
-
-void JniGlDisplayHandler::Initialize(
-    const base::android::JavaRef<jobject>& java_client) {
-  Java_GlDisplay_initializeClient(base::android::AttachCurrentThread(),
-                                  java_display_, java_client);
-}
-
-void JniGlDisplayHandler::Invalidate() {
   DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
   Java_GlDisplay_invalidate(base::android::AttachCurrentThread(),
                             java_display_);
-  ui_task_poster_.reset();
+  runtime_->display_task_runner()->DeleteSoon(FROM_HERE, core_.release());
 }
 
 std::unique_ptr<protocol::CursorShapeStub>
 JniGlDisplayHandler::CreateCursorShapeStub() {
   return base::MakeUnique<CursorShapeStubProxy>(
-      weak_ptr_, runtime_->display_task_runner());
+      core_->GetWeakPtr(), runtime_->display_task_runner());
 }
 
 std::unique_ptr<protocol::VideoRenderer>
 JniGlDisplayHandler::CreateVideoRenderer() {
-  DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
-  DCHECK(!frame_consumer_);
-  std::unique_ptr<DualBufferFrameConsumer> consumer =
-      base::MakeUnique<DualBufferFrameConsumer>(
-          base::Bind(&GlRenderer::OnFrameReceived, renderer_.GetWeakPtr()),
-          runtime_->display_task_runner(),
-          protocol::FrameConsumer::PixelFormat::FORMAT_RGBA);
-  frame_consumer_ = consumer->GetWeakPtr();
-  return base::MakeUnique<SoftwareVideoRenderer>(std::move(consumer));
+  return base::MakeUnique<SoftwareVideoRenderer>(core_->GrabFrameConsumer());
 }
 
 // static
@@ -81,7 +220,7 @@ void JniGlDisplayHandler::OnSurfaceCreated(
   DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
   runtime_->display_task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&JniGlDisplayHandler::SurfaceCreatedOnDisplayThread, weak_ptr_,
+      base::Bind(&Core::SurfaceCreated, core_->GetWeakPtr(),
                  base::android::ScopedJavaGlobalRef<jobject>(env, surface)));
 }
 
@@ -92,8 +231,8 @@ void JniGlDisplayHandler::OnSurfaceChanged(
     int height) {
   DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
   runtime_->display_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&GlRenderer::OnSurfaceChanged,
-                            renderer_.GetWeakPtr(), width, height));
+      FROM_HERE,
+      base::Bind(&Core::SurfaceChanged, core_->GetWeakPtr(), width, height));
 }
 
 void JniGlDisplayHandler::OnSurfaceDestroyed(
@@ -101,9 +240,7 @@ void JniGlDisplayHandler::OnSurfaceDestroyed(
     const base::android::JavaParamRef<jobject>& caller) {
   DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
   runtime_->display_task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&JniGlDisplayHandler::SurfaceDestroyedOnDisplayThread,
-                 weak_ptr_));
+      FROM_HERE, base::Bind(&Core::SurfaceDestroyed, core_->GetWeakPtr()));
 }
 
 void JniGlDisplayHandler::OnPixelTransformationChanged(
@@ -114,9 +251,8 @@ void JniGlDisplayHandler::OnPixelTransformationChanged(
   DCHECK(env->GetArrayLength(jmatrix.obj()) == 9);
   std::array<float, 9> matrix;
   env->GetFloatArrayRegion(jmatrix.obj(), 0, 9, matrix.data());
-  PostSequentialTaskOnDisplayThread(
-      base::Bind(&GlRenderer::OnPixelTransformationChanged,
-                 renderer_.GetWeakPtr(), matrix));
+  ui_task_poster_.AddTask(
+      base::Bind(&Core::SetTransformation, core_->GetWeakPtr(), matrix));
 }
 
 void JniGlDisplayHandler::OnCursorPixelPositionChanged(
@@ -125,8 +261,8 @@ void JniGlDisplayHandler::OnCursorPixelPositionChanged(
     float x,
     float y) {
   DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
-  PostSequentialTaskOnDisplayThread(
-      base::Bind(&GlRenderer::OnCursorMoved, renderer_.GetWeakPtr(), x, y));
+  ui_task_poster_.AddTask(
+      base::Bind(&Core::MoveCursor, core_->GetWeakPtr(), x, y));
 }
 
 void JniGlDisplayHandler::OnCursorVisibilityChanged(
@@ -134,8 +270,8 @@ void JniGlDisplayHandler::OnCursorVisibilityChanged(
     const base::android::JavaParamRef<jobject>& caller,
     bool visible) {
   DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
-  PostSequentialTaskOnDisplayThread(base::Bind(
-      &GlRenderer::OnCursorVisibilityChanged, renderer_.GetWeakPtr(), visible));
+  ui_task_poster_.AddTask(
+      base::Bind(&Core::SetCursorVisibility, core_->GetWeakPtr(), visible));
 }
 
 void JniGlDisplayHandler::OnCursorInputFeedback(
@@ -145,80 +281,20 @@ void JniGlDisplayHandler::OnCursorInputFeedback(
     float y,
     float diameter) {
   DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
-  PostSequentialTaskOnDisplayThread(
-      base::Bind(&GlRenderer::OnCursorInputFeedback, renderer_.GetWeakPtr(), x,
-                 y, diameter));
+  ui_task_poster_.AddTask(base::Bind(&Core::StartInputFeedback,
+                                     core_->GetWeakPtr(), x, y, diameter));
 }
 
-void JniGlDisplayHandler::PostSequentialTaskOnDisplayThread(
-    const base::Closure& task) {
-  if (!ui_task_poster_) {
-    return;
-  }
-  ui_task_poster_->AddTask(task);
-}
-
-bool JniGlDisplayHandler::CanRenderFrame() {
-  DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
-  return egl_context_ && egl_context_->IsWindowBound();
-}
-
-void JniGlDisplayHandler::OnFrameRendered() {
-  DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
-  egl_context_->SwapBuffers();
-  runtime_->ui_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&JniGlDisplayHandler::NotifyRenderDoneOnUiThread,
-                            java_display_));
-}
-
-void JniGlDisplayHandler::OnSizeChanged(int width, int height) {
-  DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
-  runtime_->ui_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&JniGlDisplayHandler::ChangeCanvasSizeOnUiThread,
-                            java_display_, width, height));
-}
-
-void JniGlDisplayHandler::SetCursorShape(
-    const protocol::CursorShapeInfo& cursor_shape) {
-  DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
-  renderer_.OnCursorShapeChanged(cursor_shape);
-}
-
-// static
-void JniGlDisplayHandler::NotifyRenderDoneOnUiThread(
-    base::android::ScopedJavaGlobalRef<jobject> java_display) {
+void JniGlDisplayHandler::OnRenderDone() {
+  DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
   Java_GlDisplay_canvasRendered(base::android::AttachCurrentThread(),
-                                java_display);
+                                java_display_);
 }
 
-void JniGlDisplayHandler::SurfaceCreatedOnDisplayThread(
-    base::android::ScopedJavaGlobalRef<jobject> surface) {
-  DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
-  renderer_.RequestCanvasSize();
-  ANativeWindow* window = ANativeWindow_fromSurface(
-      base::android::AttachCurrentThread(), surface.obj());
-  egl_context_.reset(new EglThreadContext());
-  egl_context_->BindToWindow(window);
-  ANativeWindow_release(window);
-  renderer_.OnSurfaceCreated(static_cast<int>(egl_context_->client_version()));
-  runtime_->network_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&DualBufferFrameConsumer::RequestFullDesktopFrame,
-                            frame_consumer_));
-}
-
-void JniGlDisplayHandler::SurfaceDestroyedOnDisplayThread() {
-  DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
-  renderer_.OnSurfaceDestroyed();
-  egl_context_.reset();
-}
-
-// static
-void JniGlDisplayHandler::ChangeCanvasSizeOnUiThread(
-    base::android::ScopedJavaGlobalRef<jobject> java_display,
-    int width,
-    int height) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_GlDisplay_changeCanvasSize(env, java_display, width, height);
+void JniGlDisplayHandler::OnCanvasSizeChanged(int width, int height) {
+  DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
+  Java_GlDisplay_changeCanvasSize(base::android::AttachCurrentThread(),
+                                  java_display_, width, height);
 }
 
 }  // namespace remoting

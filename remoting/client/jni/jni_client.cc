@@ -48,8 +48,10 @@ void JniClient::ConnectToHost(const std::string& username,
                               const std::string& capabilities,
                               const std::string& flags) {
   DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
+  DCHECK(!display_handler_);
   DCHECK(!session_);
   DCHECK(!secret_fetcher_);
+  display_handler_.reset(new JniGlDisplayHandler(runtime_, java_client_));
   secret_fetcher_.reset(new JniPairingSecretFetcher(runtime_, GetWeakPtr(),
                                                     host_id));
   session_.reset(new ChromotingJniInstance(
@@ -72,11 +74,7 @@ void JniClient::DisconnectFromHost() {
     runtime_->network_task_runner()->DeleteSoon(FROM_HERE,
                                                 secret_fetcher_.release());
   }
-  if (display_handler_) {
-    display_handler_->Invalidate();
-    runtime_->display_task_runner()->DeleteSoon(FROM_HERE,
-                                                display_handler_.release());
-  }
+  display_handler_.reset();
 }
 
 void JniClient::OnConnectionState(protocol::ConnectionToHost::State state,
@@ -161,8 +159,6 @@ void JniClient::Connect(
     const base::android::JavaParamRef<jstring>& pairSecret,
     const base::android::JavaParamRef<jstring>& capabilities,
     const base::android::JavaParamRef<jstring>& flags) {
-  display_handler_.reset(new JniGlDisplayHandler(runtime_));
-  display_handler_->Initialize(java_client_);
   ConnectToHost(ConvertJavaStringToUTF8(env, username),
                 ConvertJavaStringToUTF8(env, authToken),
                 ConvertJavaStringToUTF8(env, hostJid),
