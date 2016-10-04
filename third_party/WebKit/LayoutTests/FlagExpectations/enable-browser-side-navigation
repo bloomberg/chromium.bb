@@ -42,12 +42,6 @@
   http/tests/inspector/resource-parameters.html [ Failure ]
   inspector-protocol/page/frameAttachedDetached.html [ Failure ]
   inspector-protocol/page/frameStartedLoading.html [ Failure ]
-  inspector/tracing/timeline-js/timeline-script-tag-1.html [ Failure Timeout Crash ]
-  inspector/tracing/timeline-misc/timeline-auto-record.html [ Failure Crash ]
-  inspector/tracing/timeline-misc/timeline-load-event.html [ Failure Crash ]
-  virtual/threaded/inspector/tracing/timeline-js/timeline-script-tag-1.html [ Failure Timeout Crash ]
-  virtual/threaded/inspector/tracing/timeline-misc/timeline-auto-record.html [ Failure Crash ]
-  virtual/threaded/inspector/tracing/timeline-misc/timeline-load-event.html [ Failure Crash ]
 
 # https://crbug.com/641912: PlzNavigate: Resource Timing API support
   http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_redirects.html [ Failure ]

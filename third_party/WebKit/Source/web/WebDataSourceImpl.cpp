@@ -75,10 +75,14 @@ void WebDataSourceImpl::updateNavigation(
     double redirectEndTime,
     double fetchStartTime,
     const WebVector<WebURL>& redirectChain) {
-  for (size_t i = 0; i + 1 < redirectChain.size(); ++i)
-    didRedirect(redirectChain[i], redirectChain[i + 1]);
-  timing().setRedirectStart(redirectStartTime);
-  timing().setRedirectEnd(redirectEndTime);
+  // Updates the redirection timing if there is at least one redirection
+  // (between two URLs).
+  if (redirectChain.size() >= 2) {
+    for (size_t i = 0; i + 1 < redirectChain.size(); ++i)
+      didRedirect(redirectChain[i], redirectChain[i + 1]);
+    timing().setRedirectStart(redirectStartTime);
+    timing().setRedirectEnd(redirectEndTime);
+  }
   timing().setFetchStart(fetchStartTime);
 }
 

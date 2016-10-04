@@ -46,8 +46,6 @@
 -TabManagerTest.TabManagerBasics
 -TemplateURLScraperTest.ScrapeWithOnSubmit
 -ThreatDOMDetailsTest.Everything
--TracingBrowserTest.TestBackgroundMemoryInfra
--TracingBrowserTest.TestMemoryInfra
 -WebBluetoothTest.WebBluetoothAfterCrash
 -WebNavigationApiTest.Crash
 -WebNavigationApiTest.CrossProcess
