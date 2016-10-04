@@ -25,10 +25,9 @@ class WebViewTestProxyBase;
 // WebFrameTestClient or to the product code (i.e. to RenderFrameImpl).
 class WebFrameTestClient : public blink::WebFrameClient {
  public:
-  // Caller has to ensure that all arguments (|test_runner|, |delegate| and so
-  // forth) live longer than |this|.
-  WebFrameTestClient(TestRunner* test_runner,
-                     WebTestDelegate* delegate,
+  // Caller has to ensure that all arguments (|delegate|,
+  // |web_view_test_proxy_base_| and so forth) live longer than |this|.
+  WebFrameTestClient(WebTestDelegate* delegate,
                      WebViewTestProxyBase* web_view_test_proxy_base,
                      WebFrameTestProxyBase* web_frame_test_proxy_base);
 
@@ -108,8 +107,9 @@ class WebFrameTestClient : public blink::WebFrameClient {
   blink::WebEffectiveConnectionType getEffectiveConnectionType() override;
 
  private:
+  TestRunner* test_runner();
+
   // Borrowed pointers to other parts of Layout Tests state.
-  TestRunner* test_runner_;
   WebTestDelegate* delegate_;
   WebViewTestProxyBase* web_view_test_proxy_base_;
   WebFrameTestProxyBase* web_frame_test_proxy_base_;

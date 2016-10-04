@@ -25,10 +25,8 @@ class WebViewTestProxyBase;
 // WebViewTestClient or to the product code (i.e. to RenderViewImpl).
 class WebViewTestClient : public blink::WebViewClient {
  public:
-  // Caller has to ensure that all arguments (i.e. |test_runner| and |delegate|)
-  // live longer than |this|.
-  WebViewTestClient(TestRunner* test_runner,
-                    WebViewTestProxyBase* web_view_test_proxy_base);
+  // Caller has to ensure |web_view_test_proxy_base| lives longer than |this|.
+  WebViewTestClient(WebViewTestProxyBase* web_view_test_proxy_base);
 
   virtual ~WebViewTestClient();
 
@@ -58,9 +56,9 @@ class WebViewTestClient : public blink::WebViewClient {
 
  private:
   WebTestDelegate* delegate();
+  TestRunner* test_runner();
 
-  // Borrowed pointers to other parts of Layout Tests state.
-  TestRunner* test_runner_;
+  // Borrowed pointer to WebViewTestProxyBase.
   WebViewTestProxyBase* web_view_test_proxy_base_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewTestClient);
