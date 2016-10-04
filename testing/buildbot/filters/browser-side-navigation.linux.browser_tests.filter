@@ -19,7 +19,10 @@
 -ExtensionBindingsApiTest.ModuleSystem
 -ExtensionBrowserTest.WindowOpenExtension
 -ExtensionResourceRequestPolicyTest.Iframe
--ExtensionWebRequestApiTest*
+-ExtensionWebRequestApiTest.WebRequestComplex
+-ExtensionWebRequestApiTest.WebRequestDeclarative2
+-ExtensionWebRequestApiTest.WebRequestUnloadImmediately
+-ExtensionWebRequestApiTest.WebRequestWithWithheldPermissions
 -ExternallyConnectableMessagingTest.FromPopup
 -FindInPageControllerTest.SearchWithinSpecialURL
 -IsolatedAppTest.CookieIsolation
