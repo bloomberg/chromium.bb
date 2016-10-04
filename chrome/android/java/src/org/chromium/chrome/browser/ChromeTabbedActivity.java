@@ -435,6 +435,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         mTabModelSelectorImpl.saveState();
         StartupMetrics.getInstance().recordHistogram(true);
         mActivityStopMetrics.onStopWithNative(this);
+
+        mLocaleManager.stopObservingPhoneChanges();
     }
 
     @Override
@@ -448,6 +450,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         super.onStartWithNative();
         // If we don't have a current tab, show the overview mode.
         if (getActivityTab() == null) mLayoutManager.showOverview(false);
+
+        mLocaleManager.startObservingPhoneChanges();
 
         resetSavedInstanceState();
     }

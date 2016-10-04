@@ -17,11 +17,22 @@ import org.chromium.chrome.browser.ChromeFeatureList;
  */
 public class LocaleManager {
     public static final String PREF_PROMO_SHOWN = "LocaleManager_PREF_PROMO_SHOWN";
+    public static final String PREF_WAS_IN_SPECIAL_LOCALE = "LocaleManager_WAS_IN_SPECIAL_LOCALE";
     public static final String SPECIAL_LOCALE_ID = "US";
 
     private static LocaleManager sInstance;
 
     private SpecialLocaleHandler mLocaleHandler;
+
+    /**
+     * Starts listening to state changes of the phone.
+     */
+    public void startObservingPhoneChanges() {}
+
+    /**
+     * Stops listening to state changes of the phone.
+     */
+    public void stopObservingPhoneChanges() {}
 
     /**
      * @return An instance of the {@link LocaleManager}. This should only be called on UI thread.
@@ -49,7 +60,10 @@ public class LocaleManager {
             return false;
         }
         boolean inSpecialLocale = ChromeFeatureList.isEnabled("SpecialLocale");
-        return isReallyInSpecialLocale(inSpecialLocale);
+        inSpecialLocale = isReallyInSpecialLocale(inSpecialLocale);
+        ContextUtils.getAppSharedPreferences().edit()
+                .putBoolean(PREF_WAS_IN_SPECIAL_LOCALE, inSpecialLocale).apply();
+        return inSpecialLocale;
     }
 
     /**
@@ -63,7 +77,6 @@ public class LocaleManager {
      * Adds local search engines for special locale.
      */
     public void addSpecialSearchEngines() {
-        // TODO(ianwen): Let this method be called in ChromeActivity#finishNativeInitialization().
         if (!isSpecialLocaleEnabled()) return;
         getSpecialLocaleHandler().loadTemplateUrls();
     }
@@ -82,7 +95,6 @@ public class LocaleManager {
      * Removes local search engines for special locale.
      */
     public void removeSpecialSearchEngines() {
-        // TODO(ianwen): Let this method be called when device configuration changes.
         if (isSpecialLocaleEnabled()) return;
         getSpecialLocaleHandler().removeTemplateUrls();
     }
