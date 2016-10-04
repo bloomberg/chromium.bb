@@ -20,6 +20,8 @@
 #include "cc/output/renderer_settings.h"
 #include "cc/output/software_output_device.h"
 #include "cc/output/texture_mailbox_deleter.h"
+#include "cc/quads/render_pass.h"
+#include "cc/quads/surface_draw_quad.h"
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_id_allocator.h"
@@ -86,7 +88,7 @@ class SynchronousCompositorFrameSink::SoftwareOutputSurface
                float scale_factor,
                const gfx::ColorSpace& color_space,
                bool has_alpha) override {
-    // Intentional no-op. Surface size controlled by embedder.
+    surface_size_ = size;
   }
   uint32_t GetFramebufferCopyTextureFormat() override { return 0; }
   cc::OverlayCandidateValidator* GetOverlayCandidateValidator() const override {
@@ -97,10 +99,6 @@ class SynchronousCompositorFrameSink::SoftwareOutputSurface
   bool SurfaceIsSuspendForRecycle() const override { return false; }
   bool HasExternalStencilTest() const override { return false; }
   void ApplyExternalStencil() override {}
-
-  void SetSurfaceSize(const gfx::Size surface_size) {
-    surface_size_ = surface_size;
-  }
 };
 
 SynchronousCompositorFrameSink::SynchronousCompositorFrameSink(
@@ -173,10 +171,9 @@ bool SynchronousCompositorFrameSink::BindToClient(
 
   cc::RendererSettings software_renderer_settings;
 
-  std::unique_ptr<SoftwareOutputSurface> compositor_frame_sink(
-      new SoftwareOutputSurface(
-          base::MakeUnique<SoftwareDevice>(&current_sw_canvas_)));
-  software_compositor_frame_sink_ = compositor_frame_sink.get();
+  auto output_surface = base::MakeUnique<SoftwareOutputSurface>(
+      base::MakeUnique<SoftwareDevice>(&current_sw_canvas_));
+  software_output_surface_ = output_surface.get();
 
   // The shared_bitmap_manager and gpu_memory_buffer_manager here are null as
   // this Display is only used for resourcesless software draws, where no
@@ -185,7 +182,7 @@ bool SynchronousCompositorFrameSink::BindToClient(
   display_.reset(new cc::Display(
       nullptr /* shared_bitmap_manager */,
       nullptr /* gpu_memory_buffer_manager */, software_renderer_settings,
-      nullptr /* begin_frame_source */, std::move(compositor_frame_sink),
+      nullptr /* begin_frame_source */, std::move(output_surface),
       nullptr /* scheduler */, nullptr /* texture_mailbox_deleter */));
   display_->Initialize(&display_client_, surface_manager_.get(), kFrameSinkId);
   display_->SetVisible(true);
@@ -200,11 +197,13 @@ void SynchronousCompositorFrameSink::DetachFromClient() {
   if (registered_)
     registry_->UnregisterCompositorFrameSink(routing_id_, this);
   client_->SetTreeActivationCallback(base::Closure());
-  if (!delegated_surface_id_.is_null())
-    surface_factory_->Destroy(delegated_surface_id_);
+  if (!root_surface_id_.is_null()) {
+    surface_factory_->Destroy(root_surface_id_);
+    surface_factory_->Destroy(child_surface_id_);
+  }
   surface_manager_->UnregisterSurfaceFactoryClient(kFrameSinkId);
   surface_manager_->InvalidateFrameSinkId(kFrameSinkId);
-  software_compositor_frame_sink_ = nullptr;
+  software_output_surface_ = nullptr;
   display_ = nullptr;
   surface_factory_ = nullptr;
   surface_id_allocator_ = nullptr;
@@ -234,20 +233,68 @@ void SynchronousCompositorFrameSink::SwapBuffers(cc::CompositorFrame frame) {
     // the |frame| for the software path below.
     swap_frame.metadata = frame.metadata.Clone();
 
-    if (delegated_surface_id_.is_null()) {
-      delegated_surface_id_ = surface_id_allocator_->GenerateId();
-      surface_factory_->Create(delegated_surface_id_);
+    if (root_surface_id_.is_null()) {
+      root_surface_id_ = surface_id_allocator_->GenerateId();
+      surface_factory_->Create(root_surface_id_);
+      child_surface_id_ = surface_id_allocator_->GenerateId();
+      surface_factory_->Create(child_surface_id_);
     }
 
-    display_->SetSurfaceId(delegated_surface_id_,
+    display_->SetSurfaceId(root_surface_id_,
                            frame.metadata.device_scale_factor);
 
-    gfx::Size frame_size =
-        frame.delegated_frame_data->render_pass_list.back()->output_rect.size();
-    display_->Resize(frame_size);
+    // The layer compositor should be giving a frame that covers the
+    // |sw_viewport_for_current_draw_| but at 0,0.
+    gfx::Size child_size = sw_viewport_for_current_draw_.size();
+    DCHECK(gfx::Rect(child_size) ==
+           frame.delegated_frame_data->render_pass_list.back()->output_rect);
 
-    surface_factory_->SubmitCompositorFrame(
-        delegated_surface_id_, std::move(frame), base::Bind(&NoOpDrawCallback));
+    // Make a size that covers from 0,0 and includes the area coming from the
+    // layer compositor.
+    gfx::Size display_size(sw_viewport_for_current_draw_.right(),
+                           sw_viewport_for_current_draw_.bottom());
+    display_->Resize(display_size);
+
+    // The offset for the child frame relative to the origin of the canvas being
+    // drawn into.
+    gfx::Transform child_transform;
+    child_transform.Translate(
+        gfx::Vector2dF(sw_viewport_for_current_draw_.OffsetFromOrigin()));
+
+    // Make a root frame that embeds the frame coming from the layer compositor
+    // and positions it based on the provided viewport.
+    // TODO(danakj): We could apply the transform here instead of passing it to
+    // the CompositorFrameSink client too? (We'd have to do the same for
+    // hardware frames in SurfacesInstance?)
+    cc::CompositorFrame embed_frame;
+    embed_frame.delegated_frame_data =
+        base::MakeUnique<cc::DelegatedFrameData>();
+    embed_frame.delegated_frame_data->render_pass_list.push_back(
+        cc::RenderPass::Create());
+
+    // The embedding RenderPass covers the entire Display's area.
+    const auto& embed_render_pass =
+        embed_frame.delegated_frame_data->render_pass_list.back();
+    embed_render_pass->SetAll(cc::RenderPassId(1, 1), gfx::Rect(display_size),
+                              gfx::Rect(display_size), gfx::Transform(), false);
+
+    // The RenderPass has a single SurfaceDrawQuad (and SharedQuadState for it).
+    auto* shared_quad_state =
+        embed_render_pass->CreateAndAppendSharedQuadState();
+    auto* surface_quad =
+        embed_render_pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
+    shared_quad_state->SetAll(
+        child_transform, child_size, gfx::Rect(child_size),
+        gfx::Rect() /* clip_rect */, false /* is_clipped */, 1.f /* opacity */,
+        SkXfermode::kSrcOver_Mode, 0 /* sorting_context_id */);
+    surface_quad->SetNew(shared_quad_state, gfx::Rect(child_size),
+                         gfx::Rect(child_size), child_surface_id_);
+
+    surface_factory_->SubmitCompositorFrame(child_surface_id_, std::move(frame),
+                                            base::Bind(&NoOpDrawCallback));
+    surface_factory_->SubmitCompositorFrame(root_surface_id_,
+                                            std::move(embed_frame),
+                                            base::Bind(&NoOpDrawCallback));
     display_->DrawAndSwap();
   } else {
     // For hardware draws we send the whole frame to the client so it can draw
@@ -322,20 +369,26 @@ void SynchronousCompositorFrameSink::DemandDrawSw(SkCanvas* canvas) {
   gfx::Transform transform(gfx::Transform::kSkipInitialization);
   transform.matrix() = canvas->getTotalMatrix();  // Converts 3x3 matrix to 4x4.
 
+  // We will resize the Display to ensure it covers the entire |viewport|, so
+  // save it for later.
+  sw_viewport_for_current_draw_ = viewport;
+
   base::AutoReset<bool> set_in_software_draw(&in_software_draw_, true);
-  display_->SetExternalViewport(viewport);
-  display_->SetExternalClip(viewport);
-  software_compositor_frame_sink_->SetSurfaceSize(
-      gfx::SkISizeToSize(canvas->getBaseLayerSize()));
   InvokeComposite(transform, viewport);
 }
 
 void SynchronousCompositorFrameSink::InvokeComposite(
     const gfx::Transform& transform,
     const gfx::Rect& viewport) {
+  did_swap_ = false;
+  // Adjust transform so that the layer compositor draws the |viewport| rect
+  // at its origin. The offset of the |viewport| we pass to the layer compositor
+  // is ignored for drawing, so its okay to not match the transform.
+  // TODO(danakj): Why do we pass a viewport origin and then not really use it
+  // (only for comparing to the viewport passed in
+  // SetExternalTilePriorityConstraints), surely this could be more clear?
   gfx::Transform adjusted_transform = transform;
   adjusted_transform.matrix().postTranslate(-viewport.x(), -viewport.y(), 0);
-  did_swap_ = false;
   client_->OnDraw(adjusted_transform, viewport, in_software_draw_);
 
   if (did_swap_) {

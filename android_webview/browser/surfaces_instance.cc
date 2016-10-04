@@ -142,7 +142,6 @@ void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
                                           cc::SurfaceFactory::DrawCallback());
 
   display_->Resize(viewport);
-  display_->SetExternalClip(clip);
   display_->DrawAndSwap();
 }
 

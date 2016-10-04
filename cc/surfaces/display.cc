@@ -146,14 +146,6 @@ void Display::SetColorSpace(const gfx::ColorSpace& color_space) {
   device_color_space_ = color_space;
 }
 
-void Display::SetExternalClip(const gfx::Rect& clip) {
-  external_clip_ = clip;
-}
-
-void Display::SetExternalViewport(const gfx::Rect& viewport) {
-  external_viewport_ = viewport;
-}
-
 void Display::SetOutputIsSecure(bool secure) {
   if (secure == output_is_secure_)
     return;
@@ -297,11 +289,8 @@ bool Display::DrawAndSwap() {
   client_->DisplayWillDrawAndSwap(should_draw, frame_data->render_pass_list);
 
   if (should_draw) {
-    gfx::Rect device_viewport_rect = external_viewport_.IsEmpty()
-                                         ? gfx::Rect(current_surface_size_)
-                                         : external_viewport_;
-    gfx::Rect device_clip_rect =
-        external_clip_.IsEmpty() ? device_viewport_rect : external_clip_;
+    gfx::Rect device_viewport_rect(current_surface_size_);
+    gfx::Rect device_clip_rect(current_surface_size_);
 
     bool disable_image_filtering =
         frame.metadata.is_resourceless_software_draw_with_scroll_or_animation;

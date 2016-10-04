@@ -148,15 +148,18 @@ class SynchronousCompositorFrameSink
   // is owned/destroyed on the compositor thread.
   std::unique_ptr<cc::SurfaceManager> surface_manager_;
   std::unique_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
-  cc::SurfaceId delegated_surface_id_;
+  cc::SurfaceId root_surface_id_;
+  cc::SurfaceId child_surface_id_;
   // Uses surface_manager_.
   std::unique_ptr<cc::SurfaceFactory> surface_factory_;
   StubDisplayClient display_client_;
   // Uses surface_manager_.
   std::unique_ptr<cc::Display> display_;
   // Owned by |display_|.
-  SoftwareOutputSurface* software_compositor_frame_sink_ = nullptr;
+  SoftwareOutputSurface* software_output_surface_ = nullptr;
   std::unique_ptr<cc::BeginFrameSource> begin_frame_source_;
+
+  gfx::Rect sw_viewport_for_current_draw_;
 
   base::ThreadChecker thread_checker_;
 

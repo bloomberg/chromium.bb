@@ -75,8 +75,6 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
   void SetVisible(bool visible);
   void Resize(const gfx::Size& new_size);
   void SetColorSpace(const gfx::ColorSpace& color_space);
-  void SetExternalClip(const gfx::Rect& clip);
-  void SetExternalViewport(const gfx::Rect& viewport);
   void SetOutputIsSecure(bool secure);
 
   const SurfaceId& CurrentSurfaceId();
@@ -126,8 +124,6 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
   gfx::ColorSpace device_color_space_;
   bool visible_ = false;
   bool swapped_since_resize_ = false;
-  gfx::Rect external_clip_;
-  gfx::Rect external_viewport_;
   bool output_is_secure_ = false;
 
   // The begin_frame_source_ is often known by the output_surface_ and
