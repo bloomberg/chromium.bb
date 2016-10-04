@@ -80,7 +80,8 @@ public class BookmarkItemRow extends BookmarkRow implements LargeIconCallback {
     // LargeIconCallback implementation.
 
     @Override
-    public void onLargeIconAvailable(Bitmap icon, int fallbackColor) {
+    public void onLargeIconAvailable(
+            Bitmap icon, int fallbackColor, boolean isFallbackColorDefault) {
         if (icon == null) {
             mIconGenerator.setBackgroundColor(fallbackColor);
             icon = mIconGenerator.generateIconForUrl(mUrl);

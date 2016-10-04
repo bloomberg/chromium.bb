@@ -240,7 +240,8 @@ public class BookmarkWidgetService extends RemoteViewsService {
             mRemainingTaskCount++;
             LargeIconCallback callback = new LargeIconCallback() {
                 @Override
-                public void onLargeIconAvailable(Bitmap icon, int fallbackColor) {
+                public void onLargeIconAvailable(
+                        Bitmap icon, int fallbackColor, boolean isFallbackColorDefault) {
                     if (icon == null) {
                         mIconGenerator.setBackgroundColor(fallbackColor);
                         icon = mIconGenerator.generateIconForUrl(bookmark.url);

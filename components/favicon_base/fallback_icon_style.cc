@@ -34,19 +34,20 @@ const double kDefaultRoundness = 0;  // Square. Round corners are applied
 
 FallbackIconStyle::FallbackIconStyle()
     : background_color(kDefaultBackgroundColor),
+      is_default_background_color(true),
       text_color(kDefaultTextColorLight),
       font_size_ratio(kDefaultFontSizeRatio),
-      roundness(kDefaultRoundness) {
-}
+      roundness(kDefaultRoundness) {}
 
 FallbackIconStyle::~FallbackIconStyle() {
 }
 
 bool FallbackIconStyle::operator==(const FallbackIconStyle& other) const {
   return background_color == other.background_color &&
-      text_color == other.text_color &&
-      font_size_ratio == other.font_size_ratio &&
-      roundness == other.roundness;
+         is_default_background_color == other.is_default_background_color &&
+         text_color == other.text_color &&
+         font_size_ratio == other.font_size_ratio &&
+         roundness == other.roundness;
 }
 
 void MatchFallbackIconTextColorAgainstBackgroundColor(
@@ -80,6 +81,7 @@ void SetDominantColorAsBackground(
   color_hsl.l = std::min(color_hsl.l, kMaxBackgroundColorLightness);
   style->background_color =
       color_utils::HSLToSkColor(color_hsl, SK_AlphaOPAQUE);
+  style->is_default_background_color = false;
 }
 
 }  // namespace favicon_base

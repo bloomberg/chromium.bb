@@ -213,6 +213,7 @@ TEST_F(LargeIconServiceTest, FallbackSinceIconTooSmall) {
   mock_favicon_service_->InjectResult(CreateTestBitmap(16, 16, kTestColor));
   expected_fallback_icon_style_.reset(new favicon_base::FallbackIconStyle);
   expected_fallback_icon_style_->background_color = kTestColor;
+  expected_fallback_icon_style_->is_default_background_color = false;
   large_icon_service_->GetLargeIconOrFallbackStyle(
       GURL(kDummyUrl),
       24,
@@ -227,6 +228,7 @@ TEST_F(LargeIconServiceTest, FallbackSinceIconNotSquare) {
   mock_favicon_service_->InjectResult(CreateTestBitmap(24, 32, kTestColor));
   expected_fallback_icon_style_.reset(new favicon_base::FallbackIconStyle);
   expected_fallback_icon_style_->background_color = kTestColor;
+  expected_fallback_icon_style_->is_default_background_color = false;
   large_icon_service_->GetLargeIconOrFallbackStyle(
       GURL(kDummyUrl),
       24,
@@ -271,6 +273,7 @@ TEST_F(LargeIconServiceTest, FallbackSinceTooPicky) {
   mock_favicon_service_->InjectResult(CreateTestBitmap(24, 24, kTestColor));
   expected_fallback_icon_style_.reset(new favicon_base::FallbackIconStyle);
   expected_fallback_icon_style_->background_color = kTestColor;
+  expected_fallback_icon_style_->is_default_background_color = false;
   large_icon_service_->GetLargeIconOrFallbackStyle(
       GURL(kDummyUrl),
       32,

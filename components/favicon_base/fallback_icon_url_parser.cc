@@ -85,8 +85,13 @@ bool ParsedFallbackIconPath::ParseSpecs(
   if (*size <= 0)
     return false;
 
-  if (!tokens[1].empty() && !ParseColor(tokens[1], &style->background_color))
-    return false;
+  *style = favicon_base::FallbackIconStyle();
+
+  if (!tokens[1].empty()) {
+    style->is_default_background_color = false;
+    if (!ParseColor(tokens[1], &style->background_color))
+      return false;
+  }
 
   if (tokens[2].empty())
     favicon_base::MatchFallbackIconTextColorAgainstBackgroundColor(style);

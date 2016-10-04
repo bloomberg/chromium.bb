@@ -21,6 +21,7 @@ struct FallbackIconStyle {
 
   // Icon background fill color.
   SkColor background_color;
+  bool is_default_background_color;
 
   // Icon text color.
   SkColor text_color;

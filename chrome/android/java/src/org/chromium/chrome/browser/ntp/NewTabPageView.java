@@ -37,6 +37,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
@@ -1072,7 +1073,6 @@ public class NewTabPageView extends FrameLayout
 
         private static final int ICON_CORNER_RADIUS_DP = 4;
         private static final int ICON_TEXT_SIZE_DP = 20;
-        private static final int ICON_BACKGROUND_COLOR = 0xff787878;
         private static final int ICON_MIN_SIZE_PX = 48;
 
         private int mMinIconSize;
@@ -1086,9 +1086,10 @@ public class NewTabPageView extends FrameLayout
             mMinIconSize = Math.min(mDesiredIconSize, ICON_MIN_SIZE_PX);
             int desiredIconSizeDp = Math.round(
                     mDesiredIconSize / res.getDisplayMetrics().density);
-            mIconGenerator = new RoundedIconGenerator(
-                    context, desiredIconSizeDp, desiredIconSizeDp, ICON_CORNER_RADIUS_DP,
-                    ICON_BACKGROUND_COLOR, ICON_TEXT_SIZE_DP);
+            int iconColor = ApiCompatibilityUtils.getColor(
+                    getResources(), R.color.default_favicon_background_color);
+            mIconGenerator = new RoundedIconGenerator(context, desiredIconSizeDp, desiredIconSizeDp,
+                    ICON_CORNER_RADIUS_DP, iconColor, ICON_TEXT_SIZE_DP);
         }
 
         public int getNumberOfTiles(boolean searchProviderHasLogo) {
@@ -1119,13 +1120,14 @@ public class NewTabPageView extends FrameLayout
             }
 
             @Override
-            public void onLargeIconAvailable(Bitmap icon, int fallbackColor) {
+            public void onLargeIconAvailable(
+                    Bitmap icon, int fallbackColor, boolean isFallbackColorDefault) {
                 if (icon == null) {
                     mIconGenerator.setBackgroundColor(fallbackColor);
                     icon = mIconGenerator.generateIconForUrl(mItem.getUrl());
                     mItemView.setIcon(new BitmapDrawable(getResources(), icon));
-                    mItem.setTileType(fallbackColor == ICON_BACKGROUND_COLOR
-                            ? MostVisitedTileType.ICON_DEFAULT : MostVisitedTileType.ICON_COLOR);
+                    mItem.setTileType(isFallbackColorDefault ? MostVisitedTileType.ICON_DEFAULT
+                                                             : MostVisitedTileType.ICON_COLOR);
                 } else {
                     RoundedBitmapDrawable roundedIcon = RoundedBitmapDrawableFactory.create(
                             getResources(), icon);
@@ -1167,7 +1169,7 @@ public class NewTabPageView extends FrameLayout
                 Log.d(TAG, "Image decoding failed: %s", item.getWhitelistIconPath());
                 return false;
             }
-            iconCallback.onLargeIconAvailable(bitmap, Color.BLACK);
+            iconCallback.onLargeIconAvailable(bitmap, Color.BLACK, false);
             return true;
         }
 
