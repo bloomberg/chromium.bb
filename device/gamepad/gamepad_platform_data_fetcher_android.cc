@@ -117,6 +117,7 @@ static void SetGamepadData(JNIEnv* env,
     pad.mapping[mapping_to_copy] = 0;
   }
 
+  pad.connected = true;
   pad.timestamp = timestamp;
 
   std::vector<float> axes;
