@@ -26,28 +26,26 @@
         <div class="settings-box first two-line" id="wallpaperButton"
             on-tap="openWallpaperManager_" actionable
             hidden="[[!pageVisibility.setWallpaper]]">
-          <iron-icon icon="settings:wallpaper"></iron-icon>
-          <div class="middle">
+          <div class="start">
             <div>$i18n{setWallpaper}</div>
             <div class="secondary">$i18n{openWallpaperApp}</div>
           </div>
           <button class="icon-external" is="paper-icon-button-light"></button>
         </div>
         <div class="settings-box two-line"
-            hidden="[[!pageVisibility.setTheme]]"
-            on-tap="openThemesGallery_" actionable>
+            hidden="[[!pageVisibility.setTheme]]" actionable>
 </if>
 <if expr="not chromeos">
         <div class="settings-box two-line first"
-            hidden="[[!pageVisibility.setTheme]]"
-            on-tap="openThemesGallery_" actionable>
+            hidden="[[!pageVisibility.setTheme]]" actionable>
 </if>
-          <iron-icon icon="settings:palette"></iron-icon>
-          <div class="middle">
-            <div>$i18n{theme}</div>
-            <div class="secondary">[[themeSublabel_]]</div>
+          <div class="start two-line" on-tap="openThemesGallery_">
+            <div class="flex">
+              <div>$i18n{theme}</div>
+              <div class="secondary">[[themeSublabel_]]</div>
+            </div>
+            <button class="icon-external" is="paper-icon-button-light"></button>
           </div>
-          <button class="icon-external" is="paper-icon-button-light"></button>
           <template is="dom-if" if="[[allowResetTheme_]]">
             <div class="secondary-action">
               <paper-button id="resetTheme" on-tap="resetTheme_"
