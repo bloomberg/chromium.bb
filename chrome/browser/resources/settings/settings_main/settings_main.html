@@ -63,7 +63,7 @@
     </div>
     <template is="dom-if" if="[[showBasicPage_(
         showPages_.basic, inSearchMode_, hasExpandedSection_)]]">
-      <settings-basic-page route="BASIC" prefs="{{prefs}}"
+      <settings-basic-page prefs="{{prefs}}"
           page-visibility="[[pageVisibility]]"
           on-subpage-expand="onSubpageExpand_"
           on-freeze-scroll="onFreezeScroll_">
@@ -84,7 +84,7 @@
       </template>
       <template is="dom-if" if="[[showAdvancedPage_(
           showPages_.advanced, inSearchMode_, hasExpandedSection_)]]">
-        <settings-advanced-page route="ADVANCED" prefs="{{prefs}}"
+        <settings-advanced-page prefs="{{prefs}}"
             page-visibility="[[pageVisibility]]"
             on-subpage-expand="onSubpageExpand_"
             on-freeze-scroll="onFreezeScroll_">
@@ -92,7 +92,7 @@
       </template>
     </template>
     <template is="dom-if" if="[[showPages_.about]]">
-      <settings-about-page route="ABOUT"></settings-about-page>
+      <settings-about-page></settings-about-page>
     </template>
     <div id="overscroll" style="padding-bottom: [[overscroll_]]px"></div>
   </template>

@@ -181,6 +181,7 @@ cr.define('settings_about_page', function() {
         lifetimeBrowserProxy.reset();
         PolymerTest.clearBody();
         page = document.createElement('settings-about-page');
+        settings.navigateTo(settings.Route.ABOUT);
         document.body.appendChild(page);
         return aboutBrowserProxy.whenCalled('refreshUpdateStatus');
       }

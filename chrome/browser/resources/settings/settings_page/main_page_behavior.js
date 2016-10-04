@@ -3,39 +3,12 @@
 // found in the LICENSE file.
 
 /**
- * Calls |readyTest| repeatedly until it returns true, then calls
- * |readyCallback|.
- * @param {function():boolean} readyTest
- * @param {!Function} readyCallback
- */
-function doWhenReady(readyTest, readyCallback) {
-  if (readyTest()) {
-    readyCallback();
-    return;
-  }
-
-  // TODO(michaelpg): Remove this hack.
-  // See also: https://github.com/Polymer/polymer/issues/3629
-  var intervalId = setInterval(function() {
-    if (readyTest()) {
-      clearInterval(intervalId);
-      readyCallback();
-    }
-  }, 10);
-}
-
-/**
  * Responds to route changes by expanding, collapsing, or scrolling to sections
  * on the page. Expanded sections take up the full height of the container. At
  * most one section should be expanded at any given time.
  * @polymerBehavior MainPageBehavior
  */
 var MainPageBehaviorImpl = {
-  properties: {
-    // Name of the root route corresponding to this page.
-    route: String,
-  },
-
   /** @type {?HTMLElement} The scrolling container. */
   scroller: null,
 
@@ -52,17 +25,13 @@ var MainPageBehaviorImpl = {
    * @param {settings.Route} oldRoute
    */
   currentRouteChanged: function(newRoute, oldRoute) {
-    // Allow the page to load before expanding the section. TODO(michaelpg):
-    // Time this better when refactoring settings-animated-pages.
-    if (!oldRoute && newRoute.isSubpage()) {
+    // If this is the first route, or the page was hidden, allow the page to
+    // render before expanding the section.
+    if (!oldRoute && newRoute.contains(settings.getCurrentRoute()) ||
+        this.scrollHeight == 0) {
       setTimeout(this.tryTransitionToSection_.bind(this));
     } else {
-      doWhenReady(
-        function() {
-          return this.scrollHeight > 0 ||
-              !settings.Route[this.route].contains(settings.getCurrentRoute());
-        }.bind(this),
-        this.tryTransitionToSection_.bind(this));
+      this.tryTransitionToSection_();
     }
   },
 
