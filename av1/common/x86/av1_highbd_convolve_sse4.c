@@ -32,11 +32,6 @@ static INLINE HbdSubpelFilterCoeffs av1_hbd_get_subpel_filter_ver_signal_dir(
     return &sub_pel_filters_10sharp_highbd_ver_signal_dir[index][0];
   }
 #endif
-#if USE_TEMPORALFILTER_12TAP && HAVE_SSE4_1
-  if (p.filter_ptr == (const int16_t *)sub_pel_filters_temporalfilter_12) {
-    return &sub_pel_filters_temporalfilter_12_highbd_ver_signal_dir[index][0];
-  }
-#endif
   (void)p;
   (void)index;
   return NULL;

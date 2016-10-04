@@ -30,11 +30,6 @@ av1_get_subpel_filter_signal_dir(const InterpFilterParams p, int index) {
     return &sub_pel_filters_10sharp_signal_dir[index][0];
   }
 #endif
-#if USE_TEMPORALFILTER_12TAP
-  if (p.filter_ptr == (const int16_t *)sub_pel_filters_temporalfilter_12) {
-    return &sub_pel_filters_temporalfilter_12_signal_dir[index][0];
-  }
-#endif
   (void)p;
   (void)index;
   return NULL;
@@ -48,11 +43,6 @@ av1_get_subpel_filter_ver_signal_dir(const InterpFilterParams p, int index) {
   }
   if (p.interp_filter == MULTITAP_SHARP) {
     return &sub_pel_filters_10sharp_ver_signal_dir[index][0];
-  }
-#endif
-#if USE_TEMPORALFILTER_12TAP
-  if (p.filter_ptr == (const int16_t *)sub_pel_filters_temporalfilter_12) {
-    return &sub_pel_filters_temporalfilter_12_ver_signal_dir[index][0];
   }
 #endif
   (void)p;
