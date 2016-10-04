@@ -86,7 +86,7 @@ TEST_F(WaylandPointerTest, Motion) {
 
   ASSERT_TRUE(event);
   ASSERT_TRUE(event->IsMouseEvent());
-  auto mouse_event = static_cast<MouseEvent*>(event.get());
+  auto mouse_event = event->AsMouseEvent();
   EXPECT_EQ(ET_MOUSE_MOVED, mouse_event->type());
   EXPECT_EQ(0, mouse_event->button_flags());
   EXPECT_EQ(0, mouse_event->changed_button_flags());
@@ -112,7 +112,7 @@ TEST_F(WaylandPointerTest, MotionDragged) {
 
   ASSERT_TRUE(event);
   ASSERT_TRUE(event->IsMouseEvent());
-  auto mouse_event = static_cast<MouseEvent*>(event.get());
+  auto mouse_event = event->AsMouseEvent();
   EXPECT_EQ(ET_MOUSE_DRAGGED, mouse_event->type());
   EXPECT_EQ(EF_MIDDLE_MOUSE_BUTTON, mouse_event->button_flags());
   EXPECT_EQ(0, mouse_event->changed_button_flags());
@@ -137,7 +137,7 @@ TEST_F(WaylandPointerTest, ButtonPress) {
 
   ASSERT_TRUE(event);
   ASSERT_TRUE(event->IsMouseEvent());
-  auto mouse_event = static_cast<MouseEvent*>(event.get());
+  auto mouse_event = event->AsMouseEvent();
   EXPECT_EQ(ET_MOUSE_PRESSED, mouse_event->type());
   EXPECT_EQ(EF_LEFT_MOUSE_BUTTON | EF_RIGHT_MOUSE_BUTTON,
             mouse_event->button_flags());
@@ -165,7 +165,7 @@ TEST_F(WaylandPointerTest, ButtonRelease) {
 
   ASSERT_TRUE(event);
   ASSERT_TRUE(event->IsMouseEvent());
-  auto mouse_event = static_cast<MouseEvent*>(event.get());
+  auto mouse_event = event->AsMouseEvent();
   EXPECT_EQ(ET_MOUSE_RELEASED, mouse_event->type());
   EXPECT_EQ(EF_LEFT_MOUSE_BUTTON | EF_BACK_MOUSE_BUTTON,
             mouse_event->button_flags());
@@ -192,7 +192,7 @@ TEST_F(WaylandPointerTest, AxisVertical) {
 
   ASSERT_TRUE(event);
   ASSERT_TRUE(event->IsMouseWheelEvent());
-  auto mouse_wheel_event = static_cast<MouseWheelEvent*>(event.get());
+  auto mouse_wheel_event = event->AsMouseWheelEvent();
   EXPECT_EQ(gfx::Vector2d(0, -2 * MouseWheelEvent::kWheelDelta),
             mouse_wheel_event->offset());
   EXPECT_EQ(EF_RIGHT_MOUSE_BUTTON, mouse_wheel_event->button_flags());
@@ -220,7 +220,7 @@ TEST_F(WaylandPointerTest, AxisHorizontal) {
 
   ASSERT_TRUE(event);
   ASSERT_TRUE(event->IsMouseWheelEvent());
-  auto mouse_wheel_event = static_cast<MouseWheelEvent*>(event.get());
+  auto mouse_wheel_event = event->AsMouseWheelEvent();
   EXPECT_EQ(gfx::Vector2d(MouseWheelEvent::kWheelDelta, 0),
             mouse_wheel_event->offset());
   EXPECT_EQ(EF_LEFT_MOUSE_BUTTON, mouse_wheel_event->button_flags());

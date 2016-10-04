@@ -21,20 +21,18 @@ EventHandler::~EventHandler() {
 }
 
 void EventHandler::OnEvent(Event* event) {
-  // TODO(tdanderson): Encapsulate static_casts in ui::Event for all
-  //                   event types.
   if (event->IsKeyEvent())
-    OnKeyEvent(static_cast<KeyEvent*>(event));
+    OnKeyEvent(event->AsKeyEvent());
   else if (event->IsMouseEvent())
-    OnMouseEvent(static_cast<MouseEvent*>(event));
+    OnMouseEvent(event->AsMouseEvent());
   else if (event->IsScrollEvent())
-    OnScrollEvent(static_cast<ScrollEvent*>(event));
+    OnScrollEvent(event->AsScrollEvent());
   else if (event->IsTouchEvent())
-    OnTouchEvent(static_cast<TouchEvent*>(event));
+    OnTouchEvent(event->AsTouchEvent());
   else if (event->IsGestureEvent())
     OnGestureEvent(event->AsGestureEvent());
-  else if (event->type() == ET_CANCEL_MODE)
-    OnCancelMode(static_cast<CancelModeEvent*>(event));
+  else if (event->IsCancelModeEvent())
+    OnCancelMode(event->AsCancelModeEvent());
 }
 
 void EventHandler::OnKeyEvent(KeyEvent* event) {

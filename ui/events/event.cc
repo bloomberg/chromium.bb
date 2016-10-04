@@ -288,6 +288,16 @@ bool Event::IsTouchPointerEvent() const {
              EventPointerType::POINTER_TYPE_TOUCH;
 }
 
+CancelModeEvent* Event::AsCancelModeEvent() {
+  CHECK(IsCancelModeEvent());
+  return static_cast<CancelModeEvent*>(this);
+}
+
+const CancelModeEvent* Event::AsCancelModeEvent() const {
+  CHECK(IsCancelModeEvent());
+  return static_cast<const CancelModeEvent*>(this);
+}
+
 GestureEvent* Event::AsGestureEvent() {
   CHECK(IsGestureEvent());
   return static_cast<GestureEvent*>(this);

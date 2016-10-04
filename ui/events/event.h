@@ -30,6 +30,7 @@ class Transform;
 }
 
 namespace ui {
+class CancelModeEvent;
 class EventTarget;
 class KeyEvent;
 class LocatedEvent;
@@ -106,6 +107,10 @@ class EVENTS_EXPORT Event {
   bool IsCommandDown() const { return (flags_ & EF_COMMAND_DOWN) != 0; }
   bool IsAltGrDown() const { return (flags_ & EF_ALTGR_DOWN) != 0; }
   bool IsCapsLockOn() const { return (flags_ & EF_CAPS_LOCK_ON) != 0; }
+
+  bool IsCancelModeEvent() const {
+    return type_ == ET_CANCEL_MODE;
+  }
 
   bool IsKeyEvent() const {
     return type_ == ET_KEY_PRESSED || type_ == ET_KEY_RELEASED;
@@ -219,6 +224,12 @@ class EVENTS_EXPORT Event {
     return IsMouseEvent() || IsScrollEvent() || IsTouchEvent() ||
            IsGestureEvent() || IsPointerEvent();
   }
+
+  // Convenience methods to cast |this| to a CancelModeEvent.
+  // IsCancelModeEvent() must be true as a precondition to calling these
+  // methods.
+  CancelModeEvent* AsCancelModeEvent();
+  const CancelModeEvent* AsCancelModeEvent() const;
 
   // Convenience methods to cast |this| to a GestureEvent. IsGestureEvent()
   // must be true as a precondition to calling these methods.

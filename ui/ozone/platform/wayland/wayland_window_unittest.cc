@@ -94,7 +94,7 @@ TEST_F(WaylandWindowTest, DispatchEvent) {
   window.DispatchEvent(&test_mouse_event);
   ASSERT_TRUE(event);
   ASSERT_TRUE(event->IsMouseEvent());
-  auto mouse_event = static_cast<MouseEvent*>(event.get());
+  auto mouse_event = event->AsMouseEvent();
   EXPECT_EQ(mouse_event->location_f(), test_mouse_event.location_f());
   EXPECT_EQ(mouse_event->root_location_f(), test_mouse_event.root_location_f());
   EXPECT_EQ(mouse_event->time_stamp(), test_mouse_event.time_stamp());

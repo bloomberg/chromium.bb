@@ -32,9 +32,9 @@ class EventObserver {
   void OnEvent(Event* event) {
     if (event->IsMouseEvent()) {
       if (event->type() == ET_MOUSEWHEEL) {
-        OnMouseWheelEvent(static_cast<MouseWheelEvent*>(event));
+        OnMouseWheelEvent(event->AsMouseWheelEvent());
       } else {
-        OnMouseEvent(static_cast<MouseEvent*>(event));
+        OnMouseEvent(event->AsMouseEvent());
       }
     }
   }

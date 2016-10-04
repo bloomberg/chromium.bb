@@ -160,7 +160,7 @@ bool DrmWindowHost::CanDispatchEvent(const PlatformEvent& ne) {
                              snapshot->current_mode()->size());
     return display_bounds == bounds_;
   } else if (event->IsLocatedEvent()) {
-    LocatedEvent* located_event = static_cast<LocatedEvent*>(event);
+    LocatedEvent* located_event = event->AsLocatedEvent();
     return bounds_.Contains(located_event->location());
   }
 
@@ -174,7 +174,7 @@ uint32_t DrmWindowHost::DispatchEvent(const PlatformEvent& native_event) {
   Event* event = static_cast<Event*>(native_event);
   if (event->IsLocatedEvent()) {
     // Make the event location relative to this window's origin.
-    LocatedEvent* located_event = static_cast<LocatedEvent*>(event);
+    LocatedEvent* located_event = event->AsLocatedEvent();
     gfx::PointF location = located_event->location_f();
     location -= gfx::Vector2dF(bounds_.OffsetFromOrigin());
     located_event->set_location_f(location);
