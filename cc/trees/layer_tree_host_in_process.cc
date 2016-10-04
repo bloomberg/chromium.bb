@@ -991,7 +991,10 @@ void LayerTreeHostInProcess::ToProtobufForCommit(
   // Serialize the LayerTree before serializing the properties. During layer
   // property serialization, we clear the list |layer_that_should_properties_|
   // from the LayerTree.
-  layer_tree_->ToProtobuf(proto->mutable_layer_tree());
+  // The serialization code here need to serialize the complete state, including
+  // the result of the main frame update.
+  const bool inputs_only = false;
+  layer_tree_->ToProtobuf(proto->mutable_layer_tree(), inputs_only);
 
   LayerProtoConverter::SerializeLayerProperties(this,
                                                 proto->mutable_layer_updates());

@@ -15,32 +15,43 @@ import "vector2df.proto";
 option optimize_for = LITE_RUNTIME;
 
 message LayerTree {
-  repeated int32 layers_that_should_push_properties = 1;
-  optional bool in_paint_layer_contents = 2;
+  // LayerTree::Inputs ----------------------------------------
+  optional LayerNode root_layer = 27;
   optional int32 overscroll_elasticity_layer_id = 3;
   optional int32 page_scale_layer_id = 4;
   optional int32 inner_viewport_scroll_layer_id = 5;
   optional int32 outer_viewport_scroll_layer_id = 6;
-  optional bool needs_full_tree_sync = 7;
-  optional bool needs_meta_info_recomputation = 8;
-  optional int32 hud_layer_id = 9;
-  optional bool top_controls_shrink_blink_size = 10;
-  optional float top_controls_height = 11;
-  optional float top_controls_shown_ratio = 12;
+
+  // Top Controls ignored. They are not supported.
+
   optional float device_scale_factor = 13;
   optional float painted_device_scale_factor = 14;
   optional float page_scale_factor = 15;
   optional float min_page_scale_factor = 16;
   optional float max_page_scale_factor = 17;
-  optional Size device_viewport_size = 18;
+
+  // TODO(khushalsagar): gfx::ColorSpace?
+
   optional uint32 background_color = 21; /* SkColor */
   optional bool has_transparent_background = 22;
+
+  optional LayerSelection selection = 29;
+  optional Size device_viewport_size = 18;
+
+  // TODO(khushalsagar): Do we actually care about these?
   optional bool have_scroll_event_handlers = 23;
   optional uint32 touch_start_or_move_event_listener_properties = 24;
   optional uint32 wheel_event_listener_properties = 25;
   optional uint32 touch_end_or_cancel_event_listener_properties = 26;
-  optional LayerNode root_layer = 27;
-  optional LayerSelection selection = 29;
+
+  // ------------------------------------------------------------
+
+  // TODO(khushalsagar): Remove these when crbug.com/648442
+  repeated int32 layers_that_should_push_properties = 1;
+  optional bool in_paint_layer_contents = 2;
+  optional bool needs_full_tree_sync = 7;
+  optional bool needs_meta_info_recomputation = 8;
+  optional int32 hud_layer_id = 9;
   optional PropertyTrees property_trees = 30;
   optional Vector2dF elastic_overscroll = 31;
 }

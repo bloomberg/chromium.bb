@@ -11,6 +11,8 @@
 #include "cc/blimp/remote_compositor_bridge.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame_sink.h"
+#include "cc/proto/compositor_message.pb.h"
+#include "cc/proto/layer_tree_host.pb.h"
 #include "cc/trees/layer_tree.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_common.h"
@@ -354,8 +356,10 @@ void LayerTreeHostRemote::BeginMainFrame() {
     // TODO(khushalsagar): Investigate the data impact from updating all the
     // layers. See crbug.com/650885.
     LayerTreeHostCommon::CallFunctionForEveryLayer(
-        layer_tree_.get(),
-        [&layer_list](Layer* layer) { layer_list.push_back(layer); });
+        layer_tree_.get(), [&layer_list](Layer* layer) {
+          layer->SavePaintProperties();
+          layer_list.push_back(layer);
+        });
 
     bool content_is_suitable_for_gpu = false;
     bool layers_updated =
@@ -380,10 +384,13 @@ void LayerTreeHostRemote::BeginMainFrame() {
     return;
   }
 
-  // TODO(khushalsagar): Serialize current state/reset dirty state tracking and
-  // return the result to the bridge instead.
   std::unique_ptr<CompositorProtoState> compositor_state =
       base::MakeUnique<CompositorProtoState>();
+  compositor_state->swap_promises = swap_promise_manager_.TakeSwapPromises();
+  compositor_state->compositor_message =
+      base::MakeUnique<proto::CompositorMessage>();
+  SerializeCurrentState(
+      compositor_state->compositor_message->mutable_layer_tree_host());
   remote_compositor_bridge_->ProcessCompositorStateUpdate(
       std::move(compositor_state));
 
@@ -415,6 +422,24 @@ void LayerTreeHostRemote::MainFrameComplete() {
 void LayerTreeHostRemote::DispatchDrawAndSwapCallbacks() {
   client_->DidCommitAndDrawFrame();
   client_->DidCompleteSwapBuffers();
+}
+
+void LayerTreeHostRemote::SerializeCurrentState(
+    proto::LayerTreeHost* layer_tree_host_proto) {
+  // We need to serialize only the inputs received from the embedder.
+  const bool inputs_only = true;
+
+  // Serialize the LayerTree.
+  layer_tree_->ToProtobuf(layer_tree_host_proto->mutable_layer_tree(),
+                          inputs_only);
+
+  // Serialize the dirty layers.
+  for (auto* layer : layer_tree_->LayersThatShouldPushProperties())
+    layer->ToLayerPropertiesProto(
+        layer_tree_host_proto->mutable_layer_updates(), inputs_only);
+  layer_tree_->LayersThatShouldPushProperties().clear();
+
+  // TODO(khushalsagar): Deal with picture caching.
 }
 
 }  // namespace cc

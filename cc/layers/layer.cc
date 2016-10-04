@@ -43,9 +43,8 @@ namespace cc {
 
 base::StaticAtomicSequenceNumber g_next_layer_id;
 
-Layer::Inputs::Inputs()
-    :  // Layer IDs start from 1.
-      layer_id(g_next_layer_id.GetNext() + 1),
+Layer::Inputs::Inputs(int layer_id)
+    : layer_id(layer_id),
       masks_to_bounds(false),
       mask_layer(nullptr),
       opacity(1.f),
@@ -78,10 +77,15 @@ scoped_refptr<Layer> Layer::Create() {
 }
 
 Layer::Layer()
+    // Layer IDs start from 1.
+    : Layer(g_next_layer_id.GetNext() + 1) {}
+
+Layer::Layer(int layer_id)
     : ignore_set_needs_commit_(false),
       parent_(nullptr),
       layer_tree_host_(nullptr),
       layer_tree_(nullptr),
+      inputs_(layer_id),
       num_descendants_that_draw_content_(0),
       transform_tree_index_(TransformTree::kInvalidNodeId),
       effect_tree_index_(EffectTree::kInvalidNodeId),
@@ -1295,11 +1299,12 @@ void Layer::FromLayerNodeProto(const proto::LayerNode& proto,
   }
 }
 
-void Layer::ToLayerPropertiesProto(proto::LayerUpdate* layer_update) {
+void Layer::ToLayerPropertiesProto(proto::LayerUpdate* layer_update,
+                                   bool inputs_only) {
   // Always set properties metadata for serialized layers.
   proto::LayerProperties* proto = layer_update->add_layers();
   proto->set_id(inputs_.layer_id);
-  LayerSpecificPropertiesToProto(proto);
+  LayerSpecificPropertiesToProto(proto, inputs_only);
 }
 
 void Layer::FromLayerPropertiesProto(const proto::LayerProperties& proto) {
@@ -1308,28 +1313,80 @@ void Layer::FromLayerPropertiesProto(const proto::LayerProperties& proto) {
   FromLayerSpecificPropertiesProto(proto);
 }
 
-void Layer::LayerSpecificPropertiesToProto(proto::LayerProperties* proto) {
+void Layer::LayerSpecificPropertiesToProto(proto::LayerProperties* proto,
+                                           bool inputs_only) {
   proto::BaseLayerProperties* base = proto->mutable_base();
+
+  // Layer::Inputs Serialization ---------------------------------
+  RectToProto(inputs_.update_rect, base->mutable_update_rect());
+  inputs_.update_rect = gfx::Rect();
 
   bool use_paint_properties = layer_tree_host_ &&
                               paint_properties_.source_frame_number ==
                                   layer_tree_host_->SourceFrameNumber();
-
-  Point3FToProto(inputs_.transform_origin, base->mutable_transform_origin());
-  base->set_background_color(inputs_.background_color);
-  base->set_safe_opaque_background_color(safe_opaque_background_color_);
   SizeToProto(use_paint_properties ? paint_properties_.bounds : inputs_.bounds,
               base->mutable_bounds());
 
-  // TODO(nyquist): Figure out what to do with debug info. See crbug.com/570372.
+  base->set_masks_to_bounds(inputs_.masks_to_bounds);
+  base->set_opacity(inputs_.opacity);
+  base->set_blend_mode(SkXfermodeModeToProto(inputs_.blend_mode));
+  base->set_is_root_for_isolated_group(inputs_.is_root_for_isolated_group);
+  base->set_contents_opaque(inputs_.contents_opaque);
+  PointFToProto(inputs_.position, base->mutable_position());
+  TransformToProto(inputs_.transform, base->mutable_transform());
+  Point3FToProto(inputs_.transform_origin, base->mutable_transform_origin());
+  base->set_is_drawable(inputs_.is_drawable);
+  base->set_double_sided(inputs_.double_sided);
+  base->set_should_flatten_transform(inputs_.should_flatten_transform);
+  base->set_sorting_context_id(inputs_.sorting_context_id);
+  base->set_use_parent_backface_visibility(
+      inputs_.use_parent_backface_visibility);
+  base->set_background_color(inputs_.background_color);
+  ScrollOffsetToProto(inputs_.scroll_offset, base->mutable_scroll_offset());
+  base->set_scroll_clip_layer_id(inputs_.scroll_clip_layer_id);
+  base->set_user_scrollable_horizontal(inputs_.user_scrollable_horizontal);
+  base->set_user_scrollable_vertical(inputs_.user_scrollable_vertical);
+  base->set_main_thread_scrolling_reasons(
+      inputs_.main_thread_scrolling_reasons);
+  RegionToProto(inputs_.non_fast_scrollable_region,
+                base->mutable_non_fast_scrollable_region());
+  RegionToProto(inputs_.touch_event_handler_region,
+                base->mutable_touch_event_handler_region());
+  base->set_is_container_for_fixed_position_layers(
+      inputs_.is_container_for_fixed_position_layers);
+  inputs_.position_constraint.ToProtobuf(base->mutable_position_constraint());
+  inputs_.sticky_position_constraint.ToProtobuf(
+      base->mutable_sticky_position_constraint());
 
+  int scroll_parent_id =
+      inputs_.scroll_parent ? inputs_.scroll_parent->id() : INVALID_ID;
+  base->set_scroll_parent_id(scroll_parent_id);
+
+  int clip_parent_id =
+      inputs_.clip_parent ? inputs_.clip_parent->id() : INVALID_ID;
+  base->set_clip_parent_id(clip_parent_id);
+
+  base->set_has_will_change_transform_hint(
+      inputs_.has_will_change_transform_hint);
+  base->set_hide_layer_and_subtree(inputs_.hide_layer_and_subtree);
+
+  // TODO(nyquist): Add support for serializing FilterOperations for
+  // |filters_| and |background_filters_|. See crbug.com/541321.
+
+  if (inputs_only)
+    return;
+  // -----------------------------------------------------------
+
+  // TODO(khushalsagar): Stop serializing the data below when crbug.com/648442.
+
+  base->set_safe_opaque_background_color(safe_opaque_background_color_);
+  // TODO(nyquist): Figure out what to do with debug info. See crbug.com/570372.
   base->set_transform_free_index(transform_tree_index_);
   base->set_effect_tree_index(effect_tree_index_);
   base->set_clip_tree_index(clip_tree_index_);
   base->set_scroll_tree_index(scroll_tree_index_);
   Vector2dFToProto(offset_to_transform_parent_,
                    base->mutable_offset_to_transform_parent());
-  base->set_double_sided(inputs_.double_sided);
   base->set_draws_content(draws_content_);
   base->set_may_contain_video(may_contain_video_);
   base->set_hide_layer_and_subtree(inputs_.hide_layer_and_subtree);
@@ -1357,49 +1414,22 @@ void Layer::LayerSpecificPropertiesToProto(proto::LayerProperties* proto) {
   base->set_should_flatten_transform_from_property_tree(
       should_flatten_transform_from_property_tree_);
   base->set_draw_blend_mode(SkXfermodeModeToProto(draw_blend_mode_));
-  base->set_use_parent_backface_visibility(
-      inputs_.use_parent_backface_visibility);
-  TransformToProto(inputs_.transform, base->mutable_transform());
-  base->set_sorting_context_id(inputs_.sorting_context_id);
   base->set_num_descendants_that_draw_content(
       num_descendants_that_draw_content_);
-
-  base->set_scroll_clip_layer_id(inputs_.scroll_clip_layer_id);
-  base->set_user_scrollable_horizontal(inputs_.user_scrollable_horizontal);
-  base->set_user_scrollable_vertical(inputs_.user_scrollable_vertical);
-
-  int scroll_parent_id =
-      inputs_.scroll_parent ? inputs_.scroll_parent->id() : INVALID_ID;
-  base->set_scroll_parent_id(scroll_parent_id);
-
   if (scroll_children_) {
     for (auto* child : *scroll_children_)
       base->add_scroll_children_ids(child->id());
   }
-
-  int clip_parent_id =
-      inputs_.clip_parent ? inputs_.clip_parent->id() : INVALID_ID;
-  base->set_clip_parent_id(clip_parent_id);
-
   if (clip_children_) {
     for (auto* child : *clip_children_)
       base->add_clip_children_ids(child->id());
   }
 
-  ScrollOffsetToProto(inputs_.scroll_offset, base->mutable_scroll_offset());
-
   // TODO(nyquist): Figure out what to do with CopyRequests.
   // See crbug.com/570374.
 
-  RectToProto(inputs_.update_rect, base->mutable_update_rect());
-
   // TODO(nyquist): Figure out what to do with ElementAnimations.
   // See crbug.com/570376.
-
-  inputs_.update_rect = gfx::Rect();
-
-  base->set_has_will_change_transform_hint(
-      inputs_.has_will_change_transform_hint);
 }
 
 void Layer::FromLayerSpecificPropertiesProto(

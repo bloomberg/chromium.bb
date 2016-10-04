@@ -428,18 +428,15 @@ void LayerTree::PushPropertiesTo(LayerTreeImpl* tree_impl) {
   tree_impl->set_has_ever_been_drawn(false);
 }
 
-void LayerTree::ToProtobuf(proto::LayerTree* proto) {
-  LayerProtoConverter::SerializeLayerHierarchy(inputs_.root_layer,
-                                               proto->mutable_root_layer());
+void LayerTree::ToProtobuf(proto::LayerTree* proto, bool inputs_only) {
+  TRACE_EVENT0("cc.remote", "LayerProtoConverter::SerializeLayerHierarchy");
 
-  for (auto* layer : layers_that_should_push_properties_) {
-    proto->add_layers_that_should_push_properties(layer->id());
-  }
-  proto->set_in_paint_layer_contents(in_paint_layer_contents());
+  // LayerTree::Inputs Serialization -----------------------------------------
 
-  proto->set_needs_full_tree_sync(needs_full_tree_sync_);
-  proto->set_needs_meta_info_recomputation(needs_meta_info_recomputation_);
-  proto->set_hud_layer_id(hud_layer_ ? hud_layer_->id() : Layer::INVALID_ID);
+  // TODO(khushalsagar): Why walk the tree twice? Why not serialize properties
+  // for dirty layers as you serialize the hierarchy?
+  if (inputs_.root_layer)
+    inputs_.root_layer->ToLayerNodeProto(proto->mutable_root_layer());
 
   // Viewport layers.
   proto->set_overscroll_elasticity_layer_id(
@@ -458,12 +455,9 @@ void LayerTree::ToProtobuf(proto::LayerTree* proto) {
           ? inputs_.outer_viewport_scroll_layer->id()
           : Layer::INVALID_ID);
 
-  SizeToProto(inputs_.device_viewport_size,
-              proto->mutable_device_viewport_size());
-  proto->set_top_controls_shrink_blink_size(
-      inputs_.top_controls_shrink_blink_size);
-  proto->set_top_controls_height(inputs_.top_controls_height);
-  proto->set_top_controls_shown_ratio(inputs_.top_controls_shown_ratio);
+  // Top Controls ignored. They are not supported.
+  DCHECK(!inputs_.top_controls_shrink_blink_size);
+
   proto->set_device_scale_factor(inputs_.device_scale_factor);
   proto->set_painted_device_scale_factor(inputs_.painted_device_scale_factor);
   proto->set_page_scale_factor(inputs_.page_scale_factor);
@@ -472,6 +466,11 @@ void LayerTree::ToProtobuf(proto::LayerTree* proto) {
 
   proto->set_background_color(inputs_.background_color);
   proto->set_has_transparent_background(inputs_.has_transparent_background);
+
+  LayerSelectionToProtobuf(inputs_.selection, proto->mutable_selection());
+  SizeToProto(inputs_.device_viewport_size,
+              proto->mutable_device_viewport_size());
+
   proto->set_have_scroll_event_handlers(inputs_.have_scroll_event_handlers);
   proto->set_wheel_event_listener_properties(static_cast<uint32_t>(
       event_listener_properties(EventListenerClass::kMouseWheel)));
@@ -482,16 +481,29 @@ void LayerTree::ToProtobuf(proto::LayerTree* proto) {
       static_cast<uint32_t>(
           event_listener_properties(EventListenerClass::kTouchEndOrCancel)));
 
-  LayerSelectionToProtobuf(inputs_.selection, proto->mutable_selection());
+  if (inputs_only)
+    return;
+  // ----------------------------------------------------------------------
+
+  for (auto* layer : layers_that_should_push_properties_) {
+    proto->add_layers_that_should_push_properties(layer->id());
+  }
+  proto->set_in_paint_layer_contents(in_paint_layer_contents());
+
+  proto->set_needs_full_tree_sync(needs_full_tree_sync_);
+  proto->set_needs_meta_info_recomputation(needs_meta_info_recomputation_);
+  proto->set_hud_layer_id(hud_layer_ ? hud_layer_->id() : Layer::INVALID_ID);
+
   property_trees_.ToProtobuf(proto->mutable_property_trees());
   Vector2dFToProto(elastic_overscroll_, proto->mutable_elastic_overscroll());
 }
 
 void LayerTree::FromProtobuf(const proto::LayerTree& proto) {
   // Layer hierarchy.
-  scoped_refptr<Layer> new_root_layer =
-      LayerProtoConverter::DeserializeLayerHierarchy(
-          inputs_.root_layer, proto.root_layer(), layer_tree_host_);
+  scoped_refptr<Layer> new_root_layer;
+  if (proto.has_root_layer())
+    new_root_layer = LayerProtoConverter::DeserializeLayerHierarchy(
+        inputs_.root_layer, proto.root_layer(), layer_tree_host_);
   if (inputs_.root_layer != new_root_layer) {
     inputs_.root_layer = new_root_layer;
   }
@@ -517,10 +529,6 @@ void LayerTree::FromProtobuf(const proto::LayerTree& proto) {
                         proto.outer_viewport_scroll_layer_id(), this);
 
   inputs_.device_viewport_size = ProtoToSize(proto.device_viewport_size());
-  inputs_.top_controls_shrink_blink_size =
-      proto.top_controls_shrink_blink_size();
-  inputs_.top_controls_height = proto.top_controls_height();
-  inputs_.top_controls_shown_ratio = proto.top_controls_shown_ratio();
   inputs_.device_scale_factor = proto.device_scale_factor();
   inputs_.painted_device_scale_factor = proto.painted_device_scale_factor();
   inputs_.page_scale_factor = proto.page_scale_factor();

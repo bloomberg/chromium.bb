@@ -379,7 +379,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // a LayerImpl, it pushes the properties to proto::LayerProperties. It is
   // called only on layers that have changed properties. The properties
   // themselves are pushed to proto::LayerProperties.
-  void ToLayerPropertiesProto(proto::LayerUpdate* layer_update);
+  void ToLayerPropertiesProto(proto::LayerUpdate* layer_update,
+                              bool inputs_only);
 
   // Read all property values from the given LayerProperties object and update
   // the current layer. The values for |needs_push_properties_| and
@@ -493,6 +494,10 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   virtual ~Layer();
   Layer();
 
+  // Tests in remote mode need to explicitly set the layer id so it matches the
+  // layer id for the corresponding Layer on the engine.
+  explicit Layer(int layer_id);
+
   LayerTreeHost* layer_tree_host() { return layer_tree_host_; }
   const LayerTreeHost* layer_tree_host() const { return layer_tree_host_; }
 
@@ -532,7 +537,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // into proto::LayerProperties. This method is not marked as const
   // as some implementations need reset member fields, similarly to
   // PushPropertiesTo().
-  virtual void LayerSpecificPropertiesToProto(proto::LayerProperties* proto);
+  virtual void LayerSpecificPropertiesToProto(proto::LayerProperties* proto,
+                                              bool inputs_only);
 
   // Deserialize all the necessary properties from proto::LayerProperties into
   // this Layer.
@@ -597,7 +603,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // internally in cc. Update this for the SPv2 path where blink generates
   // PropertyTrees.
   struct Inputs {
-    Inputs();
+    explicit Inputs(int layer_id);
     ~Inputs();
 
     int layer_id;

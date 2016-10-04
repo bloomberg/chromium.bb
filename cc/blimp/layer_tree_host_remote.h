@@ -20,6 +20,10 @@ class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace cc {
+namespace proto {
+class LayerTreeHost;
+}  // namespace proto
+
 class AnimationHost;
 class RemoteCompositorBridge;
 class LayerTreeHostClient;
@@ -104,6 +108,7 @@ class CC_EXPORT LayerTreeHostRemote : public LayerTreeHost,
   void ScheduleMainFrameIfNecessary();
   void MainFrameComplete();
   void DispatchDrawAndSwapCallbacks();
+  void SerializeCurrentState(proto::LayerTreeHost* layer_tree_host_proto);
 
   const int id_;
   int source_frame_number_ = 0;

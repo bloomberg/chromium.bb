@@ -183,7 +183,7 @@ class CC_EXPORT LayerTree : public MutatorHostClient {
 
   void PushPropertiesTo(LayerTreeImpl* tree_impl);
 
-  void ToProtobuf(proto::LayerTree* proto);
+  void ToProtobuf(proto::LayerTree* proto, bool inputs_only);
   void FromProtobuf(const proto::LayerTree& proto);
 
   AnimationHost* animation_host() const { return animation_host_.get(); }

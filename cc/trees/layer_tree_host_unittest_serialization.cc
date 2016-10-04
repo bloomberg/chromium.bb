@@ -123,12 +123,6 @@ class LayerTreeHostSerializationTest : public testing::Test {
               layer_tree_dst->inputs_.root_layer->double_sided());
     EXPECT_EQ(layer_tree_src->inputs_.device_viewport_size,
               layer_tree_dst->inputs_.device_viewport_size);
-    EXPECT_EQ(layer_tree_src->inputs_.top_controls_shrink_blink_size,
-              layer_tree_dst->inputs_.top_controls_shrink_blink_size);
-    EXPECT_EQ(layer_tree_src->inputs_.top_controls_height,
-              layer_tree_dst->inputs_.top_controls_height);
-    EXPECT_EQ(layer_tree_src->inputs_.top_controls_shown_ratio,
-              layer_tree_dst->inputs_.top_controls_shown_ratio);
     EXPECT_EQ(layer_tree_src->inputs_.device_scale_factor,
               layer_tree_dst->inputs_.device_scale_factor);
     EXPECT_EQ(layer_tree_src->inputs_.painted_device_scale_factor,
@@ -233,12 +227,6 @@ class LayerTreeHostSerializationTest : public testing::Test {
     root_layer_src->SetDoubleSided(!root_layer_src->double_sided());
 
     layer_tree_src->inputs_.device_viewport_size = gfx::Size(3, 14);
-    layer_tree_src->inputs_.top_controls_shrink_blink_size =
-        !layer_tree_src->inputs_.top_controls_shrink_blink_size;
-    layer_tree_src->inputs_.top_controls_height =
-        layer_tree_src->inputs_.top_controls_height * 3 + 1;
-    layer_tree_src->inputs_.top_controls_shown_ratio =
-        layer_tree_src->inputs_.top_controls_shown_ratio * 3 + 1;
     layer_tree_src->inputs_.device_scale_factor =
         layer_tree_src->inputs_.device_scale_factor * 3 + 1;
     layer_tree_src->inputs_.painted_device_scale_factor =

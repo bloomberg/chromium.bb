@@ -119,8 +119,9 @@ void SolidColorScrollbarLayer::SetTypeForProtoSerialization(
 }
 
 void SolidColorScrollbarLayer::LayerSpecificPropertiesToProto(
-    proto::LayerProperties* proto) {
-  Layer::LayerSpecificPropertiesToProto(proto);
+    proto::LayerProperties* proto,
+    bool inputs_only) {
+  Layer::LayerSpecificPropertiesToProto(proto, inputs_only);
 
   proto::SolidColorScrollbarLayerProperties* scrollbar =
       proto->mutable_solid_scrollbar();

@@ -70,7 +70,7 @@ class TestSerializationPictureLayer : public PictureLayer {
       LayerTreeHostInProcess* host) {
     std::vector<uint32_t> engine_picture_ids = GetPictureIds();
     proto::LayerProperties proto;
-    LayerSpecificPropertiesToProto(&proto);
+    LayerSpecificPropertiesToProto(&proto, false);
 
     FakeEnginePictureCache* engine_picture_cache =
         static_cast<FakeEnginePictureCache*>(host->engine_picture_cache());

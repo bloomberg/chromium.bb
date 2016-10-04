@@ -50,7 +50,8 @@ class CC_EXPORT SolidColorScrollbarLayer : public ScrollbarLayerInterface,
 
   // Layer overrides for proto conversions.
   void SetTypeForProtoSerialization(proto::LayerNode* proto) const override;
-  void LayerSpecificPropertiesToProto(proto::LayerProperties* proto) override;
+  void LayerSpecificPropertiesToProto(proto::LayerProperties* proto,
+                                      bool inputs_only) override;
   void FromLayerSpecificPropertiesProto(
       const proto::LayerProperties& proto) override;
 

@@ -117,7 +117,7 @@ class LayerSerializationTest : public testing::Test {
     // LayerUpdate. There are no descendants, so the serialization
     // of |src| is the only entry.
     proto::LayerUpdate layer_update;
-    src->ToLayerPropertiesProto(&layer_update);
+    src->ToLayerPropertiesProto(&layer_update, false);
     ASSERT_EQ(1, layer_update.layers_size());
     proto::LayerProperties props = layer_update.layers(0);
 
@@ -361,7 +361,8 @@ class LayerSerializationTest : public testing::Test {
   void VerifySolidColorScrollbarLayerAfterSerializationAndDeserialization(
       scoped_refptr<SolidColorScrollbarLayer> source_scrollbar) {
     proto::LayerProperties serialized_scrollbar;
-    source_scrollbar->LayerSpecificPropertiesToProto(&serialized_scrollbar);
+    source_scrollbar->LayerSpecificPropertiesToProto(&serialized_scrollbar,
+                                                     false);
 
     scoped_refptr<SolidColorScrollbarLayer> deserialized_scrollbar =
         SolidColorScrollbarLayer::Create(ScrollbarOrientation::HORIZONTAL, -1,

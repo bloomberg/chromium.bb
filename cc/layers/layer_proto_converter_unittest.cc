@@ -316,7 +316,7 @@ TEST_F(LayerProtoConverterTest, PictureLayerTypeSerialization) {
       PictureLayer::Create(EmptyContentLayerClient::GetInstance());
 
   proto::LayerNode layer_hierarchy;
-  LayerProtoConverter::SerializeLayerHierarchy(layer.get(), &layer_hierarchy);
+  layer->ToLayerNodeProto(&layer_hierarchy);
   EXPECT_EQ(proto::LayerNode::PICTURE_LAYER, layer_hierarchy.type());
 }
 
@@ -351,7 +351,7 @@ TEST_F(LayerProtoConverterTest, HudLayerTypeSerialization) {
   scoped_refptr<HeadsUpDisplayLayer> layer = HeadsUpDisplayLayer::Create();
 
   proto::LayerNode layer_hierarchy;
-  LayerProtoConverter::SerializeLayerHierarchy(layer.get(), &layer_hierarchy);
+  layer->ToLayerNodeProto(&layer_hierarchy);
   EXPECT_EQ(proto::LayerNode::HEADS_UP_DISPLAY_LAYER, layer_hierarchy.type());
 }
 

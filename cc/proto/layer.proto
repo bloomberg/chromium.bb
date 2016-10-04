@@ -6,6 +6,7 @@ syntax = "proto2";
 
 import "display_item.proto";
 import "layer_position_constraint.proto";
+import "layer_sticky_position_constraint.proto";
 import "point3f.proto";
 import "pointf.proto";
 import "recording_source.proto";
@@ -67,63 +68,78 @@ message LayerProperties {
   optional SolidColorScrollbarLayerProperties solid_scrollbar = 7;
 }
 
-// NEXT ID: 56
+// NEXT ID: 59
 message BaseLayerProperties {
-  optional Point3F transform_origin = 1;
-  optional uint32 background_color = 2;
-  optional uint32 safe_opaque_background_color = 53;
+  // The following fields mirror the data stored in Layer::Inputs ----------
+  optional Rect update_rect = 46;
   optional Size bounds = 3;
+  optional bool masks_to_bounds = 14;
+  optional float opacity = 22;
+  optional SkXfermode.Mode blend_mode = 23;
+  optional bool is_root_for_isolated_group = 24;
+  optional bool contents_opaque = 21;
+  optional PointF position = 25;
+  optional Transform transform = 33;
+  optional Point3F transform_origin = 1;
+  optional bool is_drawable = 56;
+  optional bool double_sided = 8;
+  optional bool should_flatten_transform = 28;
+  optional int32 sorting_context_id = 35;
+  optional bool use_parent_backface_visibility = 32;
+  optional uint32 background_color = 2;
+  // TODO(nyquist): Add support for FilterOperation. See crbug.com/541321.
+  // repeated FilterOperation filters = 12;
+  // repeated FilterOperation background_filters = 13;
+  // optional PointF filters_origin = 57
+  optional ScrollOffset scroll_offset = 44;
+  optional int32 scroll_clip_layer_id = 37;
+  optional bool user_scrollable_horizontal = 38;
+  optional bool user_scrollable_vertical = 39;
+  optional uint32 main_thread_scrolling_reasons = 15;
+
+  optional Region non_fast_scrollable_region = 18;
+  // TODO(khushalsagar): Do we actually need these? Touch events are never sent
+  // back to the engine.
+  optional Region touch_event_handler_region = 19;
+
+  optional bool is_container_for_fixed_position_layers = 26;
+  optional LayerPositionConstraint position_constraint = 27;
+  optional LayerStickyPositionConstraint sticky_position_constraint = 58;
+
+  // ElementId and mutable properties ignored because these are used by
+  // animations of Compositor-worker.
+
+  optional int32 scroll_parent_id = 40;
+  optional int32 clip_parent_id = 42;
+  optional bool has_will_change_transform_hint = 48;
+  optional bool hide_layer_and_subtree = 10;
+
+  // TODO(nyquist): Add support for FilterOperation. See crbug.com/541321.
+  // repeated FilterOperation filters = 12;
+  // repeated FilterOperation background_filters = 13;
+
+  // -----------------------------------------------------------------------
+
+  // TODO(khushalsagar): Remove these when crbug.com/648442
+  optional uint32 safe_opaque_background_color = 53;
   optional int64 transform_free_index = 4;
   optional int64 effect_tree_index = 5;
   optional int64 clip_tree_index = 6;
   optional int64 scroll_tree_index = 50;
   optional Vector2dF offset_to_transform_parent = 7;
-  optional bool double_sided = 8;
   optional bool draws_content = 9;
   optional bool may_contain_video = 55;
-  optional bool hide_layer_and_subtree = 10;
   optional bool subtree_property_changed = 47;
-  // TODO(nyquist): Add support for FilterOperation. See crbug.com/541321.
-  // repeated FilterOperation filters = 12;
-  // repeated FilterOperation background_filters = 13;
-  optional bool masks_to_bounds = 14;
-  optional uint32 main_thread_scrolling_reasons = 15;
   optional bool have_scroll_event_handlers = 17;
-  optional Region non_fast_scrollable_region = 18;
-  optional Region touch_event_handler_region = 19;
-  optional bool contents_opaque = 21;
-  optional float opacity = 22;
-  optional SkXfermode.Mode blend_mode = 23;
-  optional bool is_root_for_isolated_group = 24;
-  optional PointF position = 25;
-  optional bool is_container_for_fixed_position_layers = 26;
-  optional LayerPositionConstraint position_constraint = 27;
-  optional bool should_flatten_transform = 28;
   optional bool should_flatten_transform_from_property_tree = 29;
   optional int32 num_layer_or_descendants_with_copy_request = 30;
   optional SkXfermode.Mode draw_blend_mode = 31;
-  optional bool use_parent_backface_visibility = 32;
   optional bool use_local_transform_for_backface_visibility = 51;
   optional bool should_check_backface_visibility = 52;
-  optional Transform transform = 33;
   optional bool transform_is_invertible = 34;
-  optional int32 sorting_context_id = 35;
   optional int32 num_descendants_that_draw_content = 36;
-  optional bool has_will_change_transform_hint = 48;
-
-  optional int32 scroll_clip_layer_id = 37;
-  optional bool user_scrollable_horizontal = 38;
-  optional bool user_scrollable_vertical = 39;
-
-  optional int32 scroll_parent_id = 40;
   repeated int32 scroll_children_ids = 41;
-
-  optional int32 clip_parent_id = 42;
   repeated int32 clip_children_ids = 43;
-
-  optional ScrollOffset scroll_offset = 44;
-
-  optional Rect update_rect = 46;
 
   // TODO(nyquist): Figure out what to do with LayerAnimationController.
   // optional LayerAnimationController layer_animation_controller = ???;

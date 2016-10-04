@@ -21,11 +21,6 @@ class LayerUpdate;
 // A class to faciliate (de)serialization of a Layer tree to protocol buffers.
 class CC_EXPORT LayerProtoConverter {
  public:
-  // Starting at |root_layer|, serializes the layer hierarchy into the
-  // proto::LayerNode.
-  static void SerializeLayerHierarchy(const scoped_refptr<Layer> root_layer,
-                                      proto::LayerNode* root_node);
-
   // Recursively iterate over the given LayerNode proto and read the structure
   // into a local Layer structure, re-using existing Layers. returns the new
   // root Layer after updating the hierarchy (may be the same as

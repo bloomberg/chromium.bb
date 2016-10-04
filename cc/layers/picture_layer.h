@@ -72,7 +72,8 @@ class CC_EXPORT PictureLayer : public Layer {
 
   bool HasDrawableContent() const override;
   void SetTypeForProtoSerialization(proto::LayerNode* proto) const override;
-  void LayerSpecificPropertiesToProto(proto::LayerProperties* proto) override;
+  void LayerSpecificPropertiesToProto(proto::LayerProperties* proto,
+                                      bool inputs_only) override;
   void FromLayerSpecificPropertiesProto(
       const proto::LayerProperties& proto) override;
 

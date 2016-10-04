@@ -5,6 +5,7 @@
 #include "cc/blimp/compositor_proto_state.h"
 
 #include "cc/output/swap_promise.h"
+#include "cc/proto/compositor_message.pb.h"
 
 namespace cc {
 
