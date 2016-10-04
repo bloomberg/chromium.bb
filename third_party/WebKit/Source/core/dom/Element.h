@@ -815,7 +815,7 @@ class CORE_EXPORT Element : public ContainerNode {
 
   StyleRecalcChange recalcOwnStyle(StyleRecalcChange);
   // TODO(nainar): Make this const ComputedStyle&.
-  StyleRecalcChange buildLayoutTree(ComputedStyle&);
+  StyleRecalcChange rebuildLayoutTree(ComputedStyle&);
 
   inline void checkForEmptyStyleChange();
 
