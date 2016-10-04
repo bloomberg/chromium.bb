@@ -20,7 +20,6 @@
 #include "third_party/webrtc/p2p/base/p2pconstants.h"
 #include "third_party/webrtc/p2p/base/p2ptransportchannel.h"
 #include "third_party/webrtc/p2p/base/port.h"
-#include "third_party/webrtc/p2p/client/httpportallocator.h"
 
 namespace remoting {
 namespace protocol {
