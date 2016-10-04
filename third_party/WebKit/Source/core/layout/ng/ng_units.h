@@ -139,10 +139,14 @@ struct CORE_EXPORT NGMarginStrut {
   LayoutUnit negative_margin_block_start;
   LayoutUnit negative_margin_block_end;
 
+  LayoutUnit BlockEndSum() const;
+
   void AppendMarginBlockStart(const LayoutUnit& value);
   void AppendMarginBlockEnd(const LayoutUnit& value);
   void SetMarginBlockStart(const LayoutUnit& value);
   void SetMarginBlockEnd(const LayoutUnit& value);
+
+  bool IsEmpty() const;
 
   String ToString() const;
 

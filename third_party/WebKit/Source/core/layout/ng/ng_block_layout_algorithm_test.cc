@@ -134,6 +134,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, LayoutBlockChildrenWithWritingMode) {
 // </div>
 //
 // Expected:
+// - Empty margin strut of the fragment that establishes new formatting context
 // - Margins are collapsed resulting a single margin 20px = max(20px, 10px)
 // - The top offset of DIV2 == 20px
 TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase1) {
@@ -160,7 +161,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase1) {
   space->SetIsNewFormattingContext(true);
   NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, div1);
 
-  EXPECT_EQ(NGMarginStrut({LayoutUnit(kDiv1MarginTop)}), frag->MarginStrut());
+  EXPECT_TRUE(frag->MarginStrut().IsEmpty());
   ASSERT_EQ(frag->Children().size(), 1UL);
   const NGPhysicalFragmentBase* div2_fragment = frag->Children()[0];
   EXPECT_EQ(NGMarginStrut({LayoutUnit(kDiv2MarginTop)}),

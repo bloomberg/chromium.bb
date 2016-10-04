@@ -81,16 +81,16 @@ bool NGBlockLayoutAlgorithm::Layout(const NGConstraintSpace* constraint_space,
             constraint_space_for_children_->WritingMode(),
             constraint_space_for_children_->Direction());
 
-        LayoutUnit margin_block_start =
+        const NGBoxStrut margins =
             CollapseMargins(*constraint_space, child_margins, *fragment);
 
         // TODO(layout-ng): Support auto margins
-        builder_->AddChild(fragment,
-                           NGLogicalOffset(border_and_padding_.inline_start +
-                                               child_margins.inline_start,
-                                           content_size_ + margin_block_start));
+        builder_->AddChild(
+            fragment, NGLogicalOffset(border_and_padding_.inline_start +
+                                          child_margins.inline_start,
+                                      content_size_ + margins.block_start));
 
-        content_size_ += fragment->BlockSize() + margin_block_start;
+        content_size_ += fragment->BlockSize() + margins.BlockSum();
         max_inline_size_ =
             std::max(max_inline_size_, fragment->InlineSize() +
                                            child_margins.InlineSum() +
@@ -104,6 +104,7 @@ bool NGBlockLayoutAlgorithm::Layout(const NGConstraintSpace* constraint_space,
     }
     case kStateFinalize: {
       content_size_ += border_and_padding_.block_end;
+
       // Recompute the block-axis size now that we know our content size.
       LayoutUnit block_size = computeBlockSizeForFragment(
           *constraint_space, *style_, content_size_);
@@ -121,17 +122,16 @@ bool NGBlockLayoutAlgorithm::Layout(const NGConstraintSpace* constraint_space,
   return true;
 }
 
-LayoutUnit NGBlockLayoutAlgorithm::CollapseMargins(
+NGBoxStrut NGBlockLayoutAlgorithm::CollapseMargins(
     const NGConstraintSpace& space,
     const NGBoxStrut& margins,
     const NGFragment& fragment) {
-  // Zero-height boxes are ignored and do not participate in margin collapsing.
-  bool is_zero_height_box = !fragment.BlockSize() && margins.IsEmpty();
-  if (is_zero_height_box)
-    return LayoutUnit();
-
-  // Create the current child's margin strut from its children's margin strut.
-  NGMarginStrut curr_margin_strut = fragment.MarginStrut();
+  bool is_zero_height_box = !fragment.BlockSize() && margins.IsEmpty() &&
+                            fragment.MarginStrut().IsEmpty();
+  // Create the current child's margin strut from its children's margin strut or
+  // use margin strut from the the last non-empty child.
+  NGMarginStrut curr_margin_strut =
+      is_zero_height_box ? prev_child_margin_strut_ : fragment.MarginStrut();
 
   // Calculate borders and padding for the current child.
   NGBoxStrut border_and_padding =
@@ -157,13 +157,28 @@ LayoutUnit NGBlockLayoutAlgorithm::CollapseMargins(
     curr_margin_strut.SetMarginBlockEnd(margins.block_end);
   }
 
-  // Compute the margin block start for
-  // 1) adjoining blocks
-  // 2) 1st block in the newly established formatting context.
-  LayoutUnit margin_block_start;
-  if (is_fragment_margin_strut_block_start_updated_ ||
-      space.IsNewFormattingContext()) {
-    margin_block_start = ComputeCollapsedMarginBlockStart(
+  NGBoxStrut result_margins;
+  // Margins of the newly established formatting context do not participate
+  // in Collapsing Margins:
+  // - Compute margins block start for adjoining blocks *including* 1st block.
+  // - Compute margins block end for the last block.
+  // - Do not set the computed margins to the parent fragment.
+  if (space.IsNewFormattingContext()) {
+    result_margins.block_start = ComputeCollapsedMarginBlockStart(
+        prev_child_margin_strut_, curr_margin_strut);
+    bool is_last_child = !current_child_->NextSibling();
+    if (is_last_child)
+      result_margins.block_end = curr_margin_strut.BlockEndSum();
+    return result_margins;
+  }
+
+  // Zero-height boxes are ignored and do not participate in margin collapsing.
+  if (is_zero_height_box)
+    return result_margins;
+
+  // Compute the margin block start for adjoining blocks *excluding* 1st block
+  if (is_fragment_margin_strut_block_start_updated_) {
+    result_margins.block_start = ComputeCollapsedMarginBlockStart(
         prev_child_margin_strut_, curr_margin_strut);
   }
 
@@ -171,7 +186,7 @@ LayoutUnit NGBlockLayoutAlgorithm::CollapseMargins(
   UpdateMarginStrut(curr_margin_strut);
 
   prev_child_margin_strut_ = curr_margin_strut;
-  return margin_block_start;
+  return result_margins;
 }
 
 void NGBlockLayoutAlgorithm::UpdateMarginStrut(const NGMarginStrut& from) {

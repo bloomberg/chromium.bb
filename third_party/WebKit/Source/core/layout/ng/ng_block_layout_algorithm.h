@@ -53,8 +53,8 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   // @param space Constraint space for the block.
   // @param child_margins Margins information for the current child.
   // @param fragment Current child's fragment.
-  // @return Margin block start based on collapsed margins result.
-  LayoutUnit CollapseMargins(const NGConstraintSpace& space,
+  // @return NGBoxStrut with margins block start/end.
+  NGBoxStrut CollapseMargins(const NGConstraintSpace& space,
                              const NGBoxStrut& child_margins,
                              const NGFragment& fragment);
 

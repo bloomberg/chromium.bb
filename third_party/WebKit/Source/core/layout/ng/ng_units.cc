@@ -71,6 +71,10 @@ bool NGBoxStrut::operator==(const NGBoxStrut& other) const {
          std::tie(inline_start, inline_end, block_start, block_end);
 }
 
+LayoutUnit NGMarginStrut::BlockEndSum() const {
+  return margin_block_end + negative_margin_block_end;
+}
+
 void NGMarginStrut::AppendMarginBlockStart(const LayoutUnit& value) {
   if (value < 0) {
     negative_margin_block_start =
@@ -110,6 +114,10 @@ String NGMarginStrut::ToString() const {
                         margin_block_start.toInt(), margin_block_end.toInt(),
                         negative_margin_block_start.toInt(),
                         negative_margin_block_end.toInt());
+}
+
+bool NGMarginStrut::IsEmpty() const {
+  return *this == NGMarginStrut();
 }
 
 bool NGMarginStrut::operator==(const NGMarginStrut& other) const {
