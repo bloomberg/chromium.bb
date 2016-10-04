@@ -103,6 +103,7 @@ Polymer({
   overscrollChanged_: function() {
     if (!this.overscroll_ && this.boundScroll_) {
       this.offsetParent.removeEventListener('scroll', this.boundScroll_);
+      window.removeEventListener('resize', this.boundScroll_);
       this.boundScroll_ = null;
     } else if (this.overscroll_ && !this.boundScroll_) {
       this.boundScroll_ = function() {
@@ -110,6 +111,7 @@ Polymer({
           this.setOverscroll_(0);
       }.bind(this);
       this.offsetParent.addEventListener('scroll', this.boundScroll_);
+      window.addEventListener('resize', this.boundScroll_);
     }
   },
 
