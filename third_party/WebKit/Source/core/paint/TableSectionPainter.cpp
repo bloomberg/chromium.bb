@@ -56,8 +56,7 @@ void TableSectionPainter::paintRepeatingHeaderGroup(
   // The header may have a pagination strut before it so we need to account for that when establishing its position.
   LayoutUnit headerGroupOffset = table->pageLogicalOffset();
   if (LayoutTableRow* row = m_layoutTableSection.firstRow())
-    headerGroupOffset += m_layoutTableSection.paginationStrutForRow(
-        row, table->pageLogicalOffset());
+    headerGroupOffset += row->paginationStrut();
   LayoutUnit offsetToNextPage =
       pageHeight - intMod(headerGroupOffset, pageHeight);
   paginationOffset.move(0, offsetToNextPage.toInt());

@@ -619,8 +619,7 @@ void LayoutTable::layout() {
         // Don't include any strut in the header group - we only want the height from its content.
         offsetForTableHeaders += section->logicalHeight();
         if (LayoutTableRow* row = section->firstRow())
-          offsetForTableHeaders -=
-              section->paginationStrutForRow(row, section->logicalTop());
+          offsetForTableHeaders -= row->paginationStrut();
         state.setHeightOffsetForTableHeaders(offsetForTableHeaders);
       }
     }
