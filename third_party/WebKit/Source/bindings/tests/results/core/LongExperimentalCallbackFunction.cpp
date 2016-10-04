@@ -6,7 +6,7 @@
 
 // clang-format off
 
-#include "V8VoidCallbackFunctionModules.h"
+#include "LongExperimentalCallbackFunction.h"
 
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ToV8.h"
@@ -16,18 +16,18 @@
 
 namespace blink {
 
-V8VoidCallbackFunctionModules::V8VoidCallbackFunctionModules(v8::Isolate* isolate, v8::Local<v8::Function> callback)
+LongExperimentalCallbackFunction::LongExperimentalCallbackFunction(v8::Isolate* isolate, v8::Local<v8::Function> callback)
     : m_callback(isolate, callback)
 {
     DCHECK(!m_callback.isEmpty());
     m_callback.setPhantom();
 }
 
-DEFINE_TRACE(V8VoidCallbackFunctionModules)
+DEFINE_TRACE(LongExperimentalCallbackFunction)
 {
 }
 
-bool V8VoidCallbackFunctionModules::call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, ExceptionState& exceptionState)
+bool LongExperimentalCallbackFunction::call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, ExceptionState& exceptionState, int num1, int num2, int& returnValue)
 {
     if (!scriptState->contextIsValid())
         return false;
@@ -42,16 +42,23 @@ bool V8VoidCallbackFunctionModules::call(ScriptState* scriptState, ScriptWrappab
 
     ScriptState::Scope scope(scriptState);
 
+    v8::Local<v8::Value> num1Argument = v8::Integer::New(scriptState->isolate(), num1);
+    v8::Local<v8::Value> num2Argument = v8::Integer::New(scriptState->isolate(), num2);
+
     v8::Local<v8::Value> thisValue = toV8(scriptWrappable, scriptState->context()->Global(), scriptState->isolate());
 
-    v8::Local<v8::Value> *argv = nullptr;
+    v8::Local<v8::Value> argv[] = { num1Argument, num2Argument };
 
     v8::Local<v8::Value> v8ReturnValue;
     v8::TryCatch exceptionCatcher(scriptState->isolate());
     exceptionCatcher.SetVerbose(true);
 
-    if (V8ScriptRunner::callFunction(m_callback.newLocal(scriptState->isolate()), scriptState->getExecutionContext(), thisValue, 0, argv, scriptState->isolate()).ToLocal(&v8ReturnValue))
+    if (V8ScriptRunner::callFunction(m_callback.newLocal(scriptState->isolate()), scriptState->getExecutionContext(), thisValue, 2, argv, scriptState->isolate()).ToLocal(&v8ReturnValue))
     {
+        int cppValue = toInt32(scriptState->isolate(), v8ReturnValue, NormalConversion, exceptionState);
+        if (exceptionState.hadException())
+            return false;
+        returnValue = cppValue;
         return true;
     }
     return false;

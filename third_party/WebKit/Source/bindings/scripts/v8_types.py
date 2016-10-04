@@ -213,7 +213,7 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_rvalue_
                                   for member in idl_type.member_types)
         return 'const %s&' % idl_type_name if used_as_rvalue_type else idl_type_name
     if idl_type.is_experimental_callback_function:
-        return 'V8' + base_idl_type + '*'
+        return base_idl_type + '*'
     if base_idl_type == 'void':
         return base_idl_type
     # Default, assume native type is a pointer with same type name as idl type
@@ -386,7 +386,7 @@ def includes_for_type(idl_type, extended_attributes=None):
         base_idl_type = idl_type.constructor_type_name
     if idl_type.is_experimental_callback_function:
         component = IdlType.experimental_callback_functions[base_idl_type]['component_dir']
-        return set(['bindings/%s/v8/V8%s.h' % (component, base_idl_type)])
+        return set(['bindings/%s/v8/%s.h' % (component, base_idl_type)])
     if base_idl_type not in component_dir:
         return set()
     return set(['bindings/%s/v8/V8%s.h' % (component_dir[base_idl_type],
@@ -581,7 +581,7 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name
         cpp_expression_format = 'V8{idl_type}::toImpl({isolate}, {v8_value}, {variable_name}, exceptionState)'
     elif idl_type.is_experimental_callback_function:
         cpp_expression_format = (
-            'V8{idl_type}::create({isolate}, v8::Local<v8::Function>::Cast({v8_value}))')
+            '{idl_type}::create({isolate}, v8::Local<v8::Function>::Cast({v8_value}))')
     else:
         cpp_expression_format = (
             'V8{idl_type}::toImplWithTypeCheck({isolate}, {v8_value})')

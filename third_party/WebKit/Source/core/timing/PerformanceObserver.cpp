@@ -5,7 +5,7 @@
 #include "core/timing/PerformanceObserver.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/V8PerformanceObserverCallback.h"
+#include "bindings/core/v8/PerformanceObserverCallback.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/timing/PerformanceBase.h"
 #include "core/timing/PerformanceEntry.h"
@@ -19,15 +19,14 @@ namespace blink {
 PerformanceObserver* PerformanceObserver::create(
     ScriptState* scriptState,
     PerformanceBase* performance,
-    V8PerformanceObserverCallback* callback) {
+    PerformanceObserverCallback* callback) {
   ASSERT(isMainThread());
   return new PerformanceObserver(scriptState, performance, callback);
 }
 
-PerformanceObserver::PerformanceObserver(
-    ScriptState* scriptState,
-    PerformanceBase* performance,
-    V8PerformanceObserverCallback* callback)
+PerformanceObserver::PerformanceObserver(ScriptState* scriptState,
+                                         PerformanceBase* performance,
+                                         PerformanceObserverCallback* callback)
     : m_scriptState(scriptState),
       m_callback(callback),
       m_performance(performance),

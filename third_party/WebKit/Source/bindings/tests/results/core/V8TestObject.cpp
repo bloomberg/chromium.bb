@@ -14,6 +14,7 @@
 #include "bindings/core/v8/DoubleOrString.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/GeneratedCodeHelper.h"
+#include "bindings/core/v8/LongExperimentalCallbackFunction.h"
 #include "bindings/core/v8/PrivateScriptRunner.h"
 #include "bindings/core/v8/ScriptCallStack.h"
 #include "bindings/core/v8/ScriptPromise.h"
@@ -46,7 +47,6 @@
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8Int32Array.h"
 #include "bindings/core/v8/V8Iterator.h"
-#include "bindings/core/v8/V8LongExperimentalCallbackFunction.h"
 #include "bindings/core/v8/V8MessagePort.h"
 #include "bindings/core/v8/V8Node.h"
 #include "bindings/core/v8/V8NodeFilter.h"
@@ -61,9 +61,9 @@
 #include "bindings/core/v8/V8TestNode.h"
 #include "bindings/core/v8/V8TestObject.h"
 #include "bindings/core/v8/V8Uint8Array.h"
-#include "bindings/core/v8/V8VoidExperimentalCallbackFunction.h"
 #include "bindings/core/v8/V8Window.h"
 #include "bindings/core/v8/V8XPathNSResolver.h"
+#include "bindings/core/v8/VoidExperimentalCallbackFunction.h"
 #include "core/HTMLNames.h"
 #include "core/dom/ClassCollection.h"
 #include "core/dom/Document.h"
@@ -6882,13 +6882,13 @@ static void voidMethodVoidExperimentalCallbackFunctionArgMethod(const v8::Functi
         return;
     }
 
-    V8VoidExperimentalCallbackFunction* voidExperimentalCallbackFunctionArg;
+    VoidExperimentalCallbackFunction* voidExperimentalCallbackFunctionArg;
     if (!info[0]->IsFunction()) {
         V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodVoidExperimentalCallbackFunctionArg", "TestObject", "The callback provided as parameter 1 is not a function."));
 
         return;
     }
-    voidExperimentalCallbackFunctionArg = V8VoidExperimentalCallbackFunction::create(info.GetIsolate(), v8::Local<v8::Function>::Cast(info[0]));
+    voidExperimentalCallbackFunctionArg = VoidExperimentalCallbackFunction::create(info.GetIsolate(), v8::Local<v8::Function>::Cast(info[0]));
 
     impl->voidMethodVoidExperimentalCallbackFunctionArg(voidExperimentalCallbackFunctionArg);
 }
@@ -6907,13 +6907,13 @@ static void voidMethodLongExperimentalCallbackFunctionArgMethod(const v8::Functi
         return;
     }
 
-    V8LongExperimentalCallbackFunction* longExperimentalCallbackFunctionArg;
+    LongExperimentalCallbackFunction* longExperimentalCallbackFunctionArg;
     if (!info[0]->IsFunction()) {
         V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodLongExperimentalCallbackFunctionArg", "TestObject", "The callback provided as parameter 1 is not a function."));
 
         return;
     }
-    longExperimentalCallbackFunctionArg = V8LongExperimentalCallbackFunction::create(info.GetIsolate(), v8::Local<v8::Function>::Cast(info[0]));
+    longExperimentalCallbackFunctionArg = LongExperimentalCallbackFunction::create(info.GetIsolate(), v8::Local<v8::Function>::Cast(info[0]));
 
     impl->voidMethodLongExperimentalCallbackFunctionArg(longExperimentalCallbackFunctionArg);
 }

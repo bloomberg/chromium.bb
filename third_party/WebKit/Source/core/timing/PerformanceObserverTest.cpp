@@ -4,8 +4,8 @@
 
 #include "core/timing/PerformanceObserver.h"
 
+#include "bindings/core/v8/PerformanceObserverCallback.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
-#include "bindings/core/v8/V8PerformanceObserverCallback.h"
 #include "core/timing/Performance.h"
 #include "core/timing/PerformanceBase.h"
 #include "core/timing/PerformanceMark.h"
@@ -29,7 +29,7 @@ class PerformanceObserverTest : public ::testing::Test {
         v8::Function::New(scriptState->context(), nullptr).ToLocalChecked();
     m_base = new MockPerformanceBase();
     m_cb =
-        V8PerformanceObserverCallback::create(scriptState->isolate(), callback);
+        PerformanceObserverCallback::create(scriptState->isolate(), callback);
     m_observer = PerformanceObserver::create(scriptState, m_base, m_cb);
   }
 
@@ -40,7 +40,7 @@ class PerformanceObserverTest : public ::testing::Test {
   void deliver() { m_observer->deliver(); }
 
   Persistent<MockPerformanceBase> m_base;
-  Persistent<V8PerformanceObserverCallback> m_cb;
+  Persistent<PerformanceObserverCallback> m_cb;
   Persistent<PerformanceObserver> m_observer;
 };
 

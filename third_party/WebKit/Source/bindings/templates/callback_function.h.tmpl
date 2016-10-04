@@ -2,8 +2,8 @@
 
 {% include 'copyright_block.txt' %}
 
-#ifndef {{v8_class}}_h
-#define {{v8_class}}_h
+#ifndef {{cpp_class}}_h
+#define {{cpp_class}}_h
 
 {% for filename in header_includes %}
 #include "{{filename}}"
@@ -16,15 +16,15 @@ class ScriptState;
 class {{forward_declaration}};
 {% endfor %}
 
-class {{exported}}{{v8_class}} final : public GarbageCollectedFinalized<{{v8_class}}> {
+class {{exported}}{{cpp_class}} final : public GarbageCollectedFinalized<{{cpp_class}}> {
 
 public:
-    static {{v8_class}}* create(v8::Isolate* isolate, v8::Local<v8::Function> callback)
+    static {{cpp_class}}* create(v8::Isolate* isolate, v8::Local<v8::Function> callback)
     {
-        return new {{v8_class}}(isolate, callback);
+        return new {{cpp_class}}(isolate, callback);
     }
 
-    ~{{v8_class}}() = default;
+    ~{{cpp_class}}() = default;
 
     DECLARE_TRACE();
 
@@ -42,12 +42,12 @@ public:
     }
 
 private:
-    {{v8_class}}(v8::Isolate* isolate, v8::Local<v8::Function>);
+    {{cpp_class}}(v8::Isolate* isolate, v8::Local<v8::Function>);
     ScopedPersistent<v8::Function> m_callback;
 };
 
 } // namespace blink
 
-#endif // {{v8_class}}_h
+#endif // {{cpp_class}}_h
 
 {% endfilter %}{# format_blink_cpp_source_code #}

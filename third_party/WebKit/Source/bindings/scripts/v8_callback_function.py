@@ -42,7 +42,6 @@ def callback_function_context(callback_function):
         'forward_declarations': sorted(forward_declarations),
         'header_includes': sorted(CALLBACK_FUNCTION_H_INCLUDES),
         'idl_type': idl_type_str,
-        'v8_class': v8_utilities.v8_class_name(callback_function),
     }
 
     if idl_type_str != 'void':

@@ -356,8 +356,8 @@ class CodeGeneratorCallbackFunction(CodeGeneratorBase):
         template_context['code_generator'] = MODULE_PYNAME
         header_text = header_template.render(template_context)
         cpp_text = cpp_template.render(template_context)
-        header_path = posixpath.join(self.output_dir, 'V8%s.h' % callback_function.name)
-        cpp_path = posixpath.join(self.output_dir, 'V8%s.cpp' % callback_function.name)
+        header_path = posixpath.join(self.output_dir, '%s.h' % callback_function.name)
+        cpp_path = posixpath.join(self.output_dir, '%s.cpp' % callback_function.name)
         return (
             (header_path, header_text),
             (cpp_path, cpp_text),

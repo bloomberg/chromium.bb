@@ -15,11 +15,11 @@
 #include "bindings/core/v8/V8Iterator.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "bindings/core/v8/V8TestInterfaceEmpty.h"
-#include "bindings/core/v8/V8VoidExperimentalCallbackFunction.h"
+#include "bindings/core/v8/VoidExperimentalCallbackFunction.h"
 #include "bindings/modules/v8/BooleanOrString.h"
 #include "bindings/modules/v8/DoubleOrString.h"
 #include "bindings/modules/v8/V8TestInterface5.h"
-#include "bindings/modules/v8/V8VoidCallbackFunctionModules.h"
+#include "bindings/modules/v8/VoidCallbackFunctionModules.h"
 #include "core/dom/Document.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/GetPtr.h"
@@ -619,13 +619,13 @@ static void voidMethodVoidExperimentalCallbackFunctionMethod(const v8::FunctionC
         return;
     }
 
-    V8VoidExperimentalCallbackFunction* arg;
+    VoidExperimentalCallbackFunction* arg;
     if (!info[0]->IsFunction()) {
         V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodVoidExperimentalCallbackFunction", "TestInterface5", "The callback provided as parameter 1 is not a function."));
 
         return;
     }
-    arg = V8VoidExperimentalCallbackFunction::create(info.GetIsolate(), v8::Local<v8::Function>::Cast(info[0]));
+    arg = VoidExperimentalCallbackFunction::create(info.GetIsolate(), v8::Local<v8::Function>::Cast(info[0]));
 
     impl->voidMethodVoidExperimentalCallbackFunction(arg);
 }
@@ -644,13 +644,13 @@ static void voidMethodVoidCallbackFunctionModulesArgMethod(const v8::FunctionCal
         return;
     }
 
-    V8VoidCallbackFunctionModules* arg;
+    VoidCallbackFunctionModules* arg;
     if (!info[0]->IsFunction()) {
         V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodVoidCallbackFunctionModulesArg", "TestInterface5", "The callback provided as parameter 1 is not a function."));
 
         return;
     }
-    arg = V8VoidCallbackFunctionModules::create(info.GetIsolate(), v8::Local<v8::Function>::Cast(info[0]));
+    arg = VoidCallbackFunctionModules::create(info.GetIsolate(), v8::Local<v8::Function>::Cast(info[0]));
 
     impl->voidMethodVoidCallbackFunctionModulesArg(arg);
 }

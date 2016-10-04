@@ -6,12 +6,12 @@
 
 // clang-format off
 
-#ifndef V8VoidExperimentalCallbackFunction_h
-#define V8VoidExperimentalCallbackFunction_h
+#ifndef VoidCallbackFunctionModules_h
+#define VoidCallbackFunctionModules_h
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScopedPersistent.h"
-#include "core/CoreExport.h"
+#include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 
@@ -19,14 +19,14 @@ namespace blink {
 
 class ScriptState;
 
-class CORE_EXPORT V8VoidExperimentalCallbackFunction final : public GarbageCollectedFinalized<V8VoidExperimentalCallbackFunction> {
+class MODULES_EXPORT VoidCallbackFunctionModules final : public GarbageCollectedFinalized<VoidCallbackFunctionModules> {
 public:
-    static V8VoidExperimentalCallbackFunction* create(v8::Isolate* isolate, v8::Local<v8::Function> callback)
+    static VoidCallbackFunctionModules* create(v8::Isolate* isolate, v8::Local<v8::Function> callback)
     {
-        return new V8VoidExperimentalCallbackFunction(isolate, callback);
+        return new VoidCallbackFunctionModules(isolate, callback);
     }
 
-    ~V8VoidExperimentalCallbackFunction() = default;
+    ~VoidCallbackFunctionModules() = default;
 
     DECLARE_TRACE();
 
@@ -44,10 +44,10 @@ public:
     }
 
 private:
-    V8VoidExperimentalCallbackFunction(v8::Isolate* isolate, v8::Local<v8::Function>);
+    VoidCallbackFunctionModules(v8::Isolate* isolate, v8::Local<v8::Function>);
     ScopedPersistent<v8::Function> m_callback;
 };
 
 } // namespace blink
 
-#endif // V8VoidExperimentalCallbackFunction_h
+#endif // VoidCallbackFunctionModules_h

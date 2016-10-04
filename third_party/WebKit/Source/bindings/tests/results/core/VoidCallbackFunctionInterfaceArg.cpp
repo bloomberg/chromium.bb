@@ -6,7 +6,7 @@
 
 // clang-format off
 
-#include "V8VoidCallbackFunctionInterfaceArg.h"
+#include "VoidCallbackFunctionInterfaceArg.h"
 
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ToV8.h"
@@ -17,18 +17,18 @@
 
 namespace blink {
 
-V8VoidCallbackFunctionInterfaceArg::V8VoidCallbackFunctionInterfaceArg(v8::Isolate* isolate, v8::Local<v8::Function> callback)
+VoidCallbackFunctionInterfaceArg::VoidCallbackFunctionInterfaceArg(v8::Isolate* isolate, v8::Local<v8::Function> callback)
     : m_callback(isolate, callback)
 {
     DCHECK(!m_callback.isEmpty());
     m_callback.setPhantom();
 }
 
-DEFINE_TRACE(V8VoidCallbackFunctionInterfaceArg)
+DEFINE_TRACE(VoidCallbackFunctionInterfaceArg)
 {
 }
 
-bool V8VoidCallbackFunctionInterfaceArg::call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, ExceptionState& exceptionState, HTMLDivElement* divElement)
+bool VoidCallbackFunctionInterfaceArg::call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, ExceptionState& exceptionState, HTMLDivElement* divElement)
 {
     if (!scriptState->contextIsValid())
         return false;

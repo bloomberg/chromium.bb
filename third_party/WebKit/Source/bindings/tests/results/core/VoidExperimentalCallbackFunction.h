@@ -6,8 +6,8 @@
 
 // clang-format off
 
-#ifndef V8VoidCallbackFunctionInterfaceArg_h
-#define V8VoidCallbackFunctionInterfaceArg_h
+#ifndef VoidExperimentalCallbackFunction_h
+#define VoidExperimentalCallbackFunction_h
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScopedPersistent.h"
@@ -18,20 +18,19 @@
 namespace blink {
 
 class ScriptState;
-class HTMLDivElement;
 
-class CORE_EXPORT V8VoidCallbackFunctionInterfaceArg final : public GarbageCollectedFinalized<V8VoidCallbackFunctionInterfaceArg> {
+class CORE_EXPORT VoidExperimentalCallbackFunction final : public GarbageCollectedFinalized<VoidExperimentalCallbackFunction> {
 public:
-    static V8VoidCallbackFunctionInterfaceArg* create(v8::Isolate* isolate, v8::Local<v8::Function> callback)
+    static VoidExperimentalCallbackFunction* create(v8::Isolate* isolate, v8::Local<v8::Function> callback)
     {
-        return new V8VoidCallbackFunctionInterfaceArg(isolate, callback);
+        return new VoidExperimentalCallbackFunction(isolate, callback);
     }
 
-    ~V8VoidCallbackFunctionInterfaceArg() = default;
+    ~VoidExperimentalCallbackFunction() = default;
 
     DECLARE_TRACE();
 
-    bool call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, ExceptionState& exceptionState, HTMLDivElement* divElement);
+    bool call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, ExceptionState& exceptionState);
 
     v8::Local<v8::Function> v8Value(v8::Isolate* isolate)
     {
@@ -45,10 +44,10 @@ public:
     }
 
 private:
-    V8VoidCallbackFunctionInterfaceArg(v8::Isolate* isolate, v8::Local<v8::Function>);
+    VoidExperimentalCallbackFunction(v8::Isolate* isolate, v8::Local<v8::Function>);
     ScopedPersistent<v8::Function> m_callback;
 };
 
 } // namespace blink
 
-#endif // V8VoidCallbackFunctionInterfaceArg_h
+#endif // VoidExperimentalCallbackFunction_h

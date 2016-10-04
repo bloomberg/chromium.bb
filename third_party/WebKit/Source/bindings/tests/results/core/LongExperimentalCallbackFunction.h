@@ -6,8 +6,8 @@
 
 // clang-format off
 
-#ifndef V8StringSequenceCallbackFunctionLongSequenceArg_h
-#define V8StringSequenceCallbackFunctionLongSequenceArg_h
+#ifndef LongExperimentalCallbackFunction_h
+#define LongExperimentalCallbackFunction_h
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScopedPersistent.h"
@@ -19,18 +19,18 @@ namespace blink {
 
 class ScriptState;
 
-class CORE_EXPORT V8StringSequenceCallbackFunctionLongSequenceArg final : public GarbageCollectedFinalized<V8StringSequenceCallbackFunctionLongSequenceArg> {
+class CORE_EXPORT LongExperimentalCallbackFunction final : public GarbageCollectedFinalized<LongExperimentalCallbackFunction> {
 public:
-    static V8StringSequenceCallbackFunctionLongSequenceArg* create(v8::Isolate* isolate, v8::Local<v8::Function> callback)
+    static LongExperimentalCallbackFunction* create(v8::Isolate* isolate, v8::Local<v8::Function> callback)
     {
-        return new V8StringSequenceCallbackFunctionLongSequenceArg(isolate, callback);
+        return new LongExperimentalCallbackFunction(isolate, callback);
     }
 
-    ~V8StringSequenceCallbackFunctionLongSequenceArg() = default;
+    ~LongExperimentalCallbackFunction() = default;
 
     DECLARE_TRACE();
 
-    bool call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, ExceptionState& exceptionState, const Vector<int>& arg, Vector<String>& returnValue);
+    bool call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, ExceptionState& exceptionState, int num1, int num2, int& returnValue);
 
     v8::Local<v8::Function> v8Value(v8::Isolate* isolate)
     {
@@ -44,10 +44,10 @@ public:
     }
 
 private:
-    V8StringSequenceCallbackFunctionLongSequenceArg(v8::Isolate* isolate, v8::Local<v8::Function>);
+    LongExperimentalCallbackFunction(v8::Isolate* isolate, v8::Local<v8::Function>);
     ScopedPersistent<v8::Function> m_callback;
 };
 
 } // namespace blink
 
-#endif // V8StringSequenceCallbackFunctionLongSequenceArg_h
+#endif // LongExperimentalCallbackFunction_h

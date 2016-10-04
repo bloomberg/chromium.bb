@@ -6,7 +6,7 @@
 
 // clang-format off
 
-#include "V8VoidExperimentalCallbackFunction.h"
+#include "StringSequenceCallbackFunctionLongSequenceArg.h"
 
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ToV8.h"
@@ -16,18 +16,18 @@
 
 namespace blink {
 
-V8VoidExperimentalCallbackFunction::V8VoidExperimentalCallbackFunction(v8::Isolate* isolate, v8::Local<v8::Function> callback)
+StringSequenceCallbackFunctionLongSequenceArg::StringSequenceCallbackFunctionLongSequenceArg(v8::Isolate* isolate, v8::Local<v8::Function> callback)
     : m_callback(isolate, callback)
 {
     DCHECK(!m_callback.isEmpty());
     m_callback.setPhantom();
 }
 
-DEFINE_TRACE(V8VoidExperimentalCallbackFunction)
+DEFINE_TRACE(StringSequenceCallbackFunctionLongSequenceArg)
 {
 }
 
-bool V8VoidExperimentalCallbackFunction::call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, ExceptionState& exceptionState)
+bool StringSequenceCallbackFunctionLongSequenceArg::call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, ExceptionState& exceptionState, const Vector<int>& arg, Vector<String>& returnValue)
 {
     if (!scriptState->contextIsValid())
         return false;
@@ -42,16 +42,22 @@ bool V8VoidExperimentalCallbackFunction::call(ScriptState* scriptState, ScriptWr
 
     ScriptState::Scope scope(scriptState);
 
+    v8::Local<v8::Value> argArgument = toV8(arg, scriptState->context()->Global(), scriptState->isolate());
+
     v8::Local<v8::Value> thisValue = toV8(scriptWrappable, scriptState->context()->Global(), scriptState->isolate());
 
-    v8::Local<v8::Value> *argv = nullptr;
+    v8::Local<v8::Value> argv[] = { argArgument };
 
     v8::Local<v8::Value> v8ReturnValue;
     v8::TryCatch exceptionCatcher(scriptState->isolate());
     exceptionCatcher.SetVerbose(true);
 
-    if (V8ScriptRunner::callFunction(m_callback.newLocal(scriptState->isolate()), scriptState->getExecutionContext(), thisValue, 0, argv, scriptState->isolate()).ToLocal(&v8ReturnValue))
+    if (V8ScriptRunner::callFunction(m_callback.newLocal(scriptState->isolate()), scriptState->getExecutionContext(), thisValue, 1, argv, scriptState->isolate()).ToLocal(&v8ReturnValue))
     {
+        Vector<String> cppValue = toImplArray<Vector<String>>(v8ReturnValue, 0, scriptState->isolate(), exceptionState);
+        if (exceptionState.hadException())
+            return false;
+        returnValue = cppValue;
         return true;
     }
     return false;

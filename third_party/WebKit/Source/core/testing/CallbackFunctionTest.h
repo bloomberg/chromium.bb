@@ -15,10 +15,10 @@ namespace blink {
 class ExceptionState;
 class HTMLDivElement;
 class ScriptState;
-class V8TestCallback;
-class V8TestInterfaceCallback;
-class V8TestReceiverObjectCallback;
-class V8TestSequenceCallback;
+class TestCallback;
+class TestInterfaceCallback;
+class TestReceiverObjectCallback;
+class TestSequenceCallback;
 
 class CallbackFunctionTest final
     : public GarbageCollected<CallbackFunctionTest>,
@@ -31,19 +31,19 @@ class CallbackFunctionTest final
   static CallbackFunctionTest* create() { return new CallbackFunctionTest(); }
 
   String testCallback(ScriptState*,
-                      V8TestCallback*,
+                      TestCallback*,
                       const String&,
                       const String&,
                       ExceptionState&);
   void testInterfaceCallback(ScriptState*,
-                             V8TestInterfaceCallback*,
+                             TestInterfaceCallback*,
                              HTMLDivElement*,
                              ExceptionState&);
   void testReceiverObjectCallback(ScriptState*,
-                                  V8TestReceiverObjectCallback*,
+                                  TestReceiverObjectCallback*,
                                   ExceptionState&);
   Vector<String> testSequenceCallback(ScriptState*,
-                                      V8TestSequenceCallback*,
+                                      TestSequenceCallback*,
                                       const Vector<int>& numbers,
                                       ExceptionState&);
 };

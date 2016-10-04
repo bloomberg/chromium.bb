@@ -6,31 +6,32 @@
 
 // clang-format off
 
-#ifndef V8VoidCallbackFunctionModules_h
-#define V8VoidCallbackFunctionModules_h
+#ifndef VoidCallbackFunctionInterfaceArg_h
+#define VoidCallbackFunctionInterfaceArg_h
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScopedPersistent.h"
-#include "modules/ModulesExport.h"
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
 class ScriptState;
+class HTMLDivElement;
 
-class MODULES_EXPORT V8VoidCallbackFunctionModules final : public GarbageCollectedFinalized<V8VoidCallbackFunctionModules> {
+class CORE_EXPORT VoidCallbackFunctionInterfaceArg final : public GarbageCollectedFinalized<VoidCallbackFunctionInterfaceArg> {
 public:
-    static V8VoidCallbackFunctionModules* create(v8::Isolate* isolate, v8::Local<v8::Function> callback)
+    static VoidCallbackFunctionInterfaceArg* create(v8::Isolate* isolate, v8::Local<v8::Function> callback)
     {
-        return new V8VoidCallbackFunctionModules(isolate, callback);
+        return new VoidCallbackFunctionInterfaceArg(isolate, callback);
     }
 
-    ~V8VoidCallbackFunctionModules() = default;
+    ~VoidCallbackFunctionInterfaceArg() = default;
 
     DECLARE_TRACE();
 
-    bool call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, ExceptionState& exceptionState);
+    bool call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, ExceptionState& exceptionState, HTMLDivElement* divElement);
 
     v8::Local<v8::Function> v8Value(v8::Isolate* isolate)
     {
@@ -44,10 +45,10 @@ public:
     }
 
 private:
-    V8VoidCallbackFunctionModules(v8::Isolate* isolate, v8::Local<v8::Function>);
+    VoidCallbackFunctionInterfaceArg(v8::Isolate* isolate, v8::Local<v8::Function>);
     ScopedPersistent<v8::Function> m_callback;
 };
 
 } // namespace blink
 
-#endif // V8VoidCallbackFunctionModules_h
+#endif // VoidCallbackFunctionInterfaceArg_h

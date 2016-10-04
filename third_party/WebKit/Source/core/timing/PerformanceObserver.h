@@ -16,9 +16,9 @@ namespace blink {
 class ExceptionState;
 class PerformanceBase;
 class PerformanceObserver;
+class PerformanceObserverCallback;
 class PerformanceObserverInit;
 class ScriptState;
-class V8PerformanceObserverCallback;
 
 using PerformanceEntryVector = HeapVector<Member<PerformanceEntry>>;
 
@@ -32,7 +32,7 @@ class CORE_EXPORT PerformanceObserver final
  public:
   static PerformanceObserver* create(ScriptState*,
                                      PerformanceBase*,
-                                     V8PerformanceObserverCallback*);
+                                     PerformanceObserverCallback*);
   static void resumeSuspendedObservers();
 
   void observe(const PerformanceObserverInit&, ExceptionState&);
@@ -45,12 +45,12 @@ class CORE_EXPORT PerformanceObserver final
  private:
   PerformanceObserver(ScriptState*,
                       PerformanceBase*,
-                      V8PerformanceObserverCallback*);
+                      PerformanceObserverCallback*);
   void deliver();
   bool shouldBeSuspended() const;
 
   RefPtr<ScriptState> m_scriptState;
-  Member<V8PerformanceObserverCallback> m_callback;
+  Member<PerformanceObserverCallback> m_callback;
   WeakMember<PerformanceBase> m_performance;
   PerformanceEntryVector m_performanceEntries;
   PerformanceEntryTypeMask m_filterOptions;

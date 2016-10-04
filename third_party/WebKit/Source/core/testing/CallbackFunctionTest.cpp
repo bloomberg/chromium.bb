@@ -5,11 +5,11 @@
 #include "core/testing/CallbackFunctionTest.h"
 
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/TestCallback.h"
+#include "bindings/core/v8/TestInterfaceCallback.h"
+#include "bindings/core/v8/TestReceiverObjectCallback.h"
+#include "bindings/core/v8/TestSequenceCallback.h"
 #include "bindings/core/v8/V8Binding.h"
-#include "bindings/core/v8/V8TestCallback.h"
-#include "bindings/core/v8/V8TestInterfaceCallback.h"
-#include "bindings/core/v8/V8TestReceiverObjectCallback.h"
-#include "bindings/core/v8/V8TestSequenceCallback.h"
 #include "core/html/HTMLDivElement.h"
 
 namespace blink {
@@ -17,7 +17,7 @@ namespace blink {
 DEFINE_TRACE(CallbackFunctionTest) {}
 
 String CallbackFunctionTest::testCallback(ScriptState* scriptState,
-                                          V8TestCallback* callback,
+                                          TestCallback* callback,
                                           const String& message1,
                                           const String& message2,
                                           ExceptionState& exceptionState) {
@@ -33,7 +33,7 @@ String CallbackFunctionTest::testCallback(ScriptState* scriptState,
 
 void CallbackFunctionTest::testInterfaceCallback(
     ScriptState* scriptState,
-    V8TestInterfaceCallback* callback,
+    TestInterfaceCallback* callback,
     HTMLDivElement* divElement,
     ExceptionState& exceptionState) {
   ScriptWrappable* scriptWrappable;
@@ -45,7 +45,7 @@ void CallbackFunctionTest::testInterfaceCallback(
 
 void CallbackFunctionTest::testReceiverObjectCallback(
     ScriptState* scriptState,
-    V8TestReceiverObjectCallback* callback,
+    TestReceiverObjectCallback* callback,
     ExceptionState& exceptionState) {
   callback->call(scriptState, this, exceptionState);
   return;
@@ -53,7 +53,7 @@ void CallbackFunctionTest::testReceiverObjectCallback(
 
 Vector<String> CallbackFunctionTest::testSequenceCallback(
     ScriptState* scriptState,
-    V8TestSequenceCallback* callback,
+    TestSequenceCallback* callback,
     const Vector<int>& numbers,
     ExceptionState& exceptionState) {
   Vector<String> returnValue;
