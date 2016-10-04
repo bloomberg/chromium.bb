@@ -19,6 +19,16 @@
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "content/public/browser/navigation_handle.h"
 
+void FirstWebContentsProfiler::WebContentsStarted(
+    content::WebContents* web_contents) {
+  static bool first_web_contents_profiled = false;
+  if (first_web_contents_profiled)
+    return;
+
+  first_web_contents_profiled = true;
+  new FirstWebContentsProfiler(web_contents);
+}
+
 FirstWebContentsProfiler::FirstWebContentsProfiler(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),

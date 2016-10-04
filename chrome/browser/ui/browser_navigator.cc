@@ -377,11 +377,7 @@ content::WebContents* CreateTargetContents(const chrome::NavigateParams& params,
 #endif
 
 #if !defined(OS_ANDROID)
-  static bool first_web_contents_profiled = false;
-  if (!first_web_contents_profiled) {
-    first_web_contents_profiled = true;
-    new FirstWebContentsProfiler(target_contents);
-  }
+  FirstWebContentsProfiler::WebContentsStarted(target_contents);
 #endif  // !defined(OS_ANDROID)
   return target_contents;
 }

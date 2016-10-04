@@ -20,7 +20,10 @@ class WebContents;
 // class.
 class FirstWebContentsProfiler : public content::WebContentsObserver {
  public:
-  explicit FirstWebContentsProfiler(content::WebContents* web_contents);
+  // Creates a profiler for the active web contents. If there are multiple
+  // browsers, the first one is chosen. The resulting FirstWebContentsProfiler
+  // owns itself.
+  static void WebContentsStarted(content::WebContents* web_contents);
 
  private:
   // Reasons for which profiling is deemed complete. Logged in UMA (do not re-
@@ -40,7 +43,7 @@ class FirstWebContentsProfiler : public content::WebContentsObserver {
     ABANDON_NAVIGATION_ERROR = 5,
     ENUM_MAX
   };
-
+  explicit FirstWebContentsProfiler(content::WebContents* web_contents);
   ~FirstWebContentsProfiler() override = default;
 
   // content::WebContentsObserver:
