@@ -1159,7 +1159,8 @@ void ComputedStyle::updateIsStackingContext(bool isDocumentElement,
   if (isDocumentElement || isInTopLayer || styleType() == PseudoIdBackdrop ||
       hasOpacity() || hasTransformRelatedProperty() || hasMask() ||
       clipPath() || boxReflect() || hasFilterInducingProperty() ||
-      hasBlendMode() || hasIsolation() || hasViewportConstrainedPosition() ||
+      hasBackdropFilter() || hasBlendMode() || hasIsolation() ||
+      hasViewportConstrainedPosition() ||
       hasPropertyThatCreatesStackingContext(willChangeProperties()) ||
       containsPaint()) {
     setIsStackingContext(true);
