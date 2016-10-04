@@ -136,7 +136,7 @@ const base::Feature kMediaFoundationH264Encoding{
 #if defined(ENABLE_PLUGINS)
 // Let flash join and be controlled by media session, only valid when
 // |kEnableDefaultMediaSession| is on.
-const base::Feature kFlashJoinsMediaSession{"flash-join-media-session",
+const base::Feature kFlashJoinsMediaSession{"FlashJoinsMediaSession",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(ENABLE_PLUGINS)
 
