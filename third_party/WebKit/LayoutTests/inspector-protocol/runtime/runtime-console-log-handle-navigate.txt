@@ -1,0 +1,4 @@
+CONSOLE MESSAGE: line 13: 
+CONSOLE MESSAGE: line 20: undefined
+CONSOLE MESSAGE: line 27: 42
+
