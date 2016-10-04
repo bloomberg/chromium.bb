@@ -538,7 +538,7 @@ void ElementAnimations::NotifyClientAnimationChanged(
     ElementListType list_type,
     bool notify_elements_about_potential_animation,
     bool notify_elements_about_running_animation) {
-  struct PropertyAnimationState* animation_state = nullptr;
+  PropertyAnimationState* animation_state = nullptr;
   switch (property) {
     case TargetProperty::OPACITY:
       animation_state = &opacity_animation_state_;
@@ -585,7 +585,7 @@ void ElementAnimations::NotifyClientAnimationChanged(
 
 void ElementAnimations::UpdateClientAnimationStateInternal(
     TargetProperty::Type property) {
-  struct PropertyAnimationState* animation_state = nullptr;
+  PropertyAnimationState* animation_state = nullptr;
   switch (property) {
     case TargetProperty::OPACITY:
       animation_state = &opacity_animation_state_;
@@ -600,68 +600,34 @@ void ElementAnimations::UpdateClientAnimationStateInternal(
       NOTREACHED();
       break;
   }
-  bool was_currently_running_animation_for_active_elements =
-      animation_state->currently_running_for_active_elements;
-  bool was_currently_running_animation_for_pending_elements =
-      animation_state->currently_running_for_pending_elements;
-  bool was_potentially_animating_for_active_elements =
-      animation_state->potentially_animating_for_active_elements;
-  bool was_potentially_animating_for_pending_elements =
-      animation_state->potentially_animating_for_pending_elements;
 
+  PropertyAnimationState previous_state = *animation_state;
   animation_state->Clear();
-  DCHECK(was_potentially_animating_for_active_elements ||
-         !was_currently_running_animation_for_active_elements);
-  DCHECK(was_potentially_animating_for_pending_elements ||
-         !was_currently_running_animation_for_pending_elements);
+  DCHECK(previous_state.IsValid());
 
   ElementAnimations::PlayersList::Iterator it(players_list_.get());
   AnimationPlayer* player;
   while ((player = it.GetNext()) != nullptr) {
-    for (const auto& animation : player->animations()) {
-      if (!animation->is_finished() &&
-          animation->target_property() == property) {
-        animation_state->potentially_animating_for_active_elements |=
-            animation->affects_active_elements();
-        animation_state->potentially_animating_for_pending_elements |=
-            animation->affects_pending_elements();
-        animation_state->currently_running_for_active_elements |=
-            animation->affects_active_elements() &&
-            animation->InEffect(last_tick_time_);
-        animation_state->currently_running_for_pending_elements |=
-            animation->affects_pending_elements() &&
-            animation->InEffect(last_tick_time_);
-      }
-    }
+    PropertyAnimationState player_state;
+    player->GetPropertyAnimationStateFor(property, &player_state);
+    *animation_state |= player_state;
   }
 
-  bool potentially_animating_changed_for_active_elements =
-      was_potentially_animating_for_active_elements !=
-      animation_state->potentially_animating_for_active_elements;
-  bool potentially_animating_changed_for_pending_elements =
-      was_potentially_animating_for_pending_elements !=
-      animation_state->potentially_animating_for_pending_elements;
-  bool currently_running_animation_changed_for_active_elements =
-      was_currently_running_animation_for_active_elements !=
-      animation_state->currently_running_for_active_elements;
-  bool currently_running_animation_changed_for_pending_elements =
-      was_currently_running_animation_for_pending_elements !=
-      animation_state->currently_running_for_pending_elements;
-  if (!potentially_animating_changed_for_active_elements &&
-      !potentially_animating_changed_for_pending_elements &&
-      !currently_running_animation_changed_for_active_elements &&
-      !currently_running_animation_changed_for_pending_elements)
+  if (*animation_state == previous_state)
     return;
+
+  PropertyAnimationState diff_state = previous_state ^ *animation_state;
+
   if (has_element_in_active_list())
     NotifyClientAnimationChanged(
         property, ElementListType::ACTIVE,
-        potentially_animating_changed_for_active_elements,
-        currently_running_animation_changed_for_active_elements);
+        diff_state.potentially_animating_for_active_elements,
+        diff_state.currently_running_for_active_elements);
   if (has_element_in_pending_list())
     NotifyClientAnimationChanged(
         property, ElementListType::PENDING,
-        potentially_animating_changed_for_pending_elements,
-        currently_running_animation_changed_for_pending_elements);
+        diff_state.potentially_animating_for_pending_elements,
+        diff_state.currently_running_for_pending_elements);
 }
 
 bool ElementAnimations::HasActiveAnimation() const {

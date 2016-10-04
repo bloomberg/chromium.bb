@@ -23,6 +23,7 @@ class AnimationDelegate;
 class AnimationEvents;
 class AnimationHost;
 class AnimationTimeline;
+struct PropertyAnimationState;
 
 // An AnimationPlayer owns all animations to be run on particular CC Layer.
 // Multiple AnimationPlayers can be attached to one layer. In this case,
@@ -94,9 +95,6 @@ class CC_EXPORT AnimationPlayer : public base::RefCounted<AnimationPlayer> {
 
   bool HasNonDeletedAnimation() const;
 
-  using Animations = std::vector<std::unique_ptr<Animation>>;
-  const Animations& animations() const { return animations_; }
-
   bool needs_to_start_animations() const { return needs_to_start_animations_; }
 
   void StartAnimations(base::TimeTicks monotonic_time);
@@ -153,6 +151,9 @@ class CC_EXPORT AnimationPlayer : public base::RefCounted<AnimationPlayer> {
   // Returns the active animation for the given unique animation id.
   Animation* GetAnimationById(int animation_id) const;
 
+  void GetPropertyAnimationStateFor(TargetProperty::Type property,
+                                    PropertyAnimationState* state) const;
+
  private:
   friend class base::RefCounted<AnimationPlayer>;
 
@@ -182,6 +183,7 @@ class CC_EXPORT AnimationPlayer : public base::RefCounted<AnimationPlayer> {
       AnimationPlayer* animation_player_impl) const;
   void PushPropertiesToImplThread(AnimationPlayer* animation_player_impl);
 
+  using Animations = std::vector<std::unique_ptr<Animation>>;
   Animations animations_;
 
   AnimationHost* animation_host_;

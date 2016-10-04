@@ -28,6 +28,8 @@ component("cc") {
     "animation/element_id.h",
     "animation/keyframed_animation_curve.cc",
     "animation/keyframed_animation_curve.h",
+    "animation/property_animation_state.cc",
+    "animation/property_animation_state.h",
     "animation/scroll_offset_animation_curve.cc",
     "animation/scroll_offset_animation_curve.h",
     "animation/scroll_offset_animations.cc",

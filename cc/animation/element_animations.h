@@ -15,6 +15,7 @@
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_curve.h"
 #include "cc/animation/animation_events.h"
+#include "cc/animation/property_animation_state.h"
 #include "cc/animation/target_property.h"
 #include "cc/base/cc_export.h"
 #include "ui/gfx/geometry/scroll_offset.h"
@@ -246,22 +247,9 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
 
   bool needs_push_properties_;
 
-  struct PropertyAnimationState {
-    bool currently_running_for_active_elements = false;
-    bool currently_running_for_pending_elements = false;
-    bool potentially_animating_for_active_elements = false;
-    bool potentially_animating_for_pending_elements = false;
-    void Clear() {
-      currently_running_for_active_elements = false;
-      currently_running_for_pending_elements = false;
-      potentially_animating_for_active_elements = false;
-      potentially_animating_for_pending_elements = false;
-    }
-  };
-
-  struct PropertyAnimationState filter_animation_state_;
-  struct PropertyAnimationState opacity_animation_state_;
-  struct PropertyAnimationState transform_animation_state_;
+  PropertyAnimationState filter_animation_state_;
+  PropertyAnimationState opacity_animation_state_;
+  PropertyAnimationState transform_animation_state_;
 
   bool needs_update_impl_client_state_transform_ : 1;
   bool needs_update_impl_client_state_opacity_ : 1;

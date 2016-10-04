@@ -9,6 +9,7 @@
 #include "cc/animation/animation_delegate.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_timeline.h"
+#include "cc/animation/property_animation_state.h"
 #include "cc/animation/scroll_offset_animation_curve.h"
 
 namespace cc {
@@ -993,6 +994,26 @@ Animation* AnimationPlayer::GetAnimationById(int animation_id) const {
     if (animations_[i]->id() == animation_id)
       return animations_[i].get();
   return nullptr;
+}
+
+void AnimationPlayer::GetPropertyAnimationStateFor(
+    TargetProperty::Type property,
+    PropertyAnimationState* state) const {
+  state->Clear();
+  for (const auto& animation : animations_) {
+    if (!animation->is_finished() && animation->target_property() == property) {
+      state->potentially_animating_for_active_elements |=
+          animation->affects_active_elements();
+      state->potentially_animating_for_pending_elements |=
+          animation->affects_pending_elements();
+      state->currently_running_for_active_elements |=
+          animation->affects_active_elements() &&
+          animation->InEffect(last_tick_time_);
+      state->currently_running_for_pending_elements |=
+          animation->affects_pending_elements() &&
+          animation->InEffect(last_tick_time_);
+    }
+  }
 }
 
 void AnimationPlayer::MarkAbortedAnimationsForDeletion(
