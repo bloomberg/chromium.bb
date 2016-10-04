@@ -59,15 +59,18 @@
       '_scrollTargetChanged(scrollTarget, isAttached)'
     ],
 
+    /**
+     * True if the event listener should be installed.
+     */
+    _shouldHaveListener: true,
+
     _scrollTargetChanged: function(scrollTarget, isAttached) {
       var eventTarget;
 
       if (this._oldScrollTarget) {
-        eventTarget = this._oldScrollTarget === this._doc ? window : this._oldScrollTarget;
-        eventTarget.removeEventListener('scroll', this._boundScrollHandler);
+        this._toggleScrollListener(false, this._oldScrollTarget);
         this._oldScrollTarget = null;
       }
-
       if (!isAttached) {
         return;
       }
@@ -83,11 +86,10 @@
 
       } else if (this._isValidScrollTarget()) {
 
-        eventTarget = scrollTarget === this._doc ? window : scrollTarget;
         this._boundScrollHandler = this._boundScrollHandler || this._scrollHandler.bind(this);
         this._oldScrollTarget = scrollTarget;
+        this._toggleScrollListener(this._shouldHaveListener, scrollTarget);
 
-        eventTarget.addEventListener('scroll', this._boundScrollHandler);
       }
     },
 
@@ -214,5 +216,29 @@
      */
     _isValidScrollTarget: function() {
       return this.scrollTarget instanceof HTMLElement;
+    },
+
+    _toggleScrollListener: function(yes, scrollTarget) {
+      if (!this._boundScrollHandler) {
+        return;
+      }
+      var eventTarget = scrollTarget === this._doc ? window : scrollTarget;
+
+      if (yes) {
+        eventTarget.addEventListener('scroll', this._boundScrollHandler);
+      } else {
+        eventTarget.removeEventListener('scroll', this._boundScrollHandler);
+      }
+    },
+
+    /**
+     * Enables or disables the scroll event listener.
+     *
+     * @param {boolean} yes True to add the event, False to remove it.
+     */
+    toggleScrollListener: function(yes) {
+      this._shouldHaveListener = yes;
+      this._toggleScrollListener(yes, this.scrollTarget);
     }
+
   };

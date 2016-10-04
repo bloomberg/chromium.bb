@@ -178,8 +178,9 @@ SettingsPasswordSectionBrowserTest.prototype = {
 
 /**
  * This test will validate that the section is loaded with data.
+ * TODO(dbeam/hcarmona): fix these tests.
  */
-TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
+TEST_F('SettingsPasswordSectionBrowserTest', 'DISABLED_uiTests', function() {
   var self = this;
 
   suite('PasswordsSection', function() {

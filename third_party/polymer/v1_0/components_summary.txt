@@ -4,12 +4,6 @@ Tree: v0.9.2
 Revision: e4453ca78c83677938041885023d79ce92d03a3a
 Tree link: https://github.com/PolymerElements/app-layout/tree/v0.9.2
 
-Name: app-route
-Repository: git://github.com/PolymerElements/app-route.git
-Tree: v0.9.2
-Revision: c97dd0f01593b4cfd9ef7bba7dfe004f8b42c1c0
-Tree link: https://github.com/PolymerElements/app-route/tree/v0.9.2
-
 Name: font-roboto
 Repository: git://github.com/PolymerElements/font-roboto.git
 Tree: v1.0.1
@@ -108,9 +102,9 @@ Tree link: https://github.com/PolymerElements/iron-input/tree/1.0.10
 
 Name: iron-list
 Repository: git://github.com/PolymerElements/iron-list.git
-Tree: v1.3.9
-Revision: 0c89f3c9f9e5f25618f730d81f397c93080029a6
-Tree link: https://github.com/PolymerElements/iron-list/tree/v1.3.9
+Tree: v1.3.10
+Revision: c23eb1542d20b29832a1fa425fd847b20b73f825
+Tree link: https://github.com/PolymerElements/iron-list/tree/v1.3.10
 
 Name: iron-location
 Repository: git://github.com/PolymerElements/iron-location.git
@@ -162,9 +156,9 @@ Tree link: https://github.com/PolymerElements/iron-resizable-behavior/tree/v1.0.
 
 Name: iron-scroll-target-behavior
 Repository: git://github.com/PolymerElements/iron-scroll-target-behavior.git
-Tree: v1.0.8
-Revision: 4c66bc9869b6475dc1d8b59419a0148bf46d9493
-Tree link: https://github.com/PolymerElements/iron-scroll-target-behavior/tree/v1.0.8
+Tree: v1.1.0
+Revision: eb6a4c81b13d2437360a2d56d99f99d63277ce5d
+Tree link: https://github.com/PolymerElements/iron-scroll-target-behavior/tree/v1.1.0
 
 Name: iron-scroll-threshold
 Repository: git://github.com/PolymerElements/iron-scroll-threshold.git
@@ -312,9 +306,9 @@ Tree link: https://github.com/PolymerElements/paper-radio-group/tree/v1.2.0
 
 Name: paper-ripple
 Repository: git://github.com/PolymerElements/paper-ripple.git
-Tree: 1.0.9
-Revision: 49cffa0778b45ba041879eaf29b11be21da424a4
-Tree link: https://github.com/PolymerElements/paper-ripple/tree/1.0.9
+Tree: v1.0.9
+Revision: 2ec18bb9e80320bf20619e1359791fb632e9c768
+Tree link: https://github.com/PolymerElements/paper-ripple/tree/v1.0.9
 
 Name: paper-slider
 Repository: git://github.com/PolymerElements/paper-slider.git
