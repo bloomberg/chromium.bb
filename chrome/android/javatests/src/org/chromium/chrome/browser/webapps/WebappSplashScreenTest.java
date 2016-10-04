@@ -28,31 +28,11 @@ import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.metrics.WebappUma;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabTestUtils;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
 
 /**
  * Tests for splash screens.
  */
 public class WebappSplashScreenTest extends WebappActivityTestBase {
-
-    private boolean mCallbackCalled;
-
-    private class CallbackCriteria extends Criteria {
-        public CallbackCriteria() {
-            mCallbackCalled = false;
-        }
-
-        @Override
-        public boolean isSatisfied() {
-            if (mCallbackCalled) {
-                mCallbackCalled = false;
-                return true;
-            }
-            return false;
-        }
-    }
-
     private int getHistogramTotalCountFor(String histogram, int buckets) {
         int count = 0;
 
@@ -255,18 +235,9 @@ public class WebappSplashScreenTest extends WebappActivityTestBase {
         Context context = getInstrumentation().getTargetContext();
         int thresholdSize = context.getResources().getDimensionPixelSize(
                 R.dimen.webapp_splash_image_size_threshold);
-        int size = thresholdSize + 1;
-        final Bitmap splashBitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
-
-        WebappRegistry.getInstance().register(
-                WEBAPP_ID, new WebappRegistry.FetchWebappDataStorageCallback() {
-                    @Override
-                    public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
-                        mCallbackCalled = true;
-                        storage.updateSplashScreenImage(splashBitmap);
-                    }
-                });
-        CriteriaHelper.pollUiThread(new CallbackCriteria());
+        int bitmapSize = thresholdSize + 1;
+        Bitmap splashBitmap = Bitmap.createBitmap(bitmapSize, bitmapSize, Bitmap.Config.ARGB_8888);
+        WebappDataStorage.open(WEBAPP_ID).updateSplashScreenImage(splashBitmap);
 
         startWebappActivity(createIntent());
         ViewGroup splashScreen = waitUntilSplashScreenAppears();
@@ -274,8 +245,8 @@ public class WebappSplashScreenTest extends WebappActivityTestBase {
 
         ImageView splashImage =
                 (ImageView) splashScreen.findViewById(R.id.webapp_splash_screen_icon);
-        assertEquals(size, splashImage.getMeasuredWidth());
-        assertEquals(size, splashImage.getMeasuredHeight());
+        assertEquals(bitmapSize, splashImage.getMeasuredWidth());
+        assertEquals(bitmapSize, splashImage.getMeasuredHeight());
 
         TextView splashText = (TextView) splashScreen.findViewById(R.id.webapp_splash_screen_name);
         int[] rules = ((RelativeLayout.LayoutParams) splashText.getLayoutParams()).getRules();
@@ -291,19 +262,10 @@ public class WebappSplashScreenTest extends WebappActivityTestBase {
         Context context = getInstrumentation().getTargetContext();
         int thresholdSize = context.getResources().getDimensionPixelSize(
                 R.dimen.webapp_splash_image_size_threshold);
-        int size = context.getResources().getDimensionPixelSize(
+        int bitmapSize = context.getResources().getDimensionPixelSize(
                 R.dimen.webapp_splash_image_size_minimum);
-        final Bitmap splashBitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
-
-        WebappRegistry.getInstance().register(
-                WEBAPP_ID, new WebappRegistry.FetchWebappDataStorageCallback() {
-                    @Override
-                    public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
-                        mCallbackCalled = true;
-                        storage.updateSplashScreenImage(splashBitmap);
-                    }
-                });
-        CriteriaHelper.pollUiThread(new CallbackCriteria());
+        Bitmap splashBitmap = Bitmap.createBitmap(bitmapSize, bitmapSize, Bitmap.Config.ARGB_8888);
+        WebappDataStorage.open(WEBAPP_ID).updateSplashScreenImage(splashBitmap);
 
         startWebappActivity(createIntent());
         ViewGroup splashScreen = waitUntilSplashScreenAppears();
@@ -327,19 +289,10 @@ public class WebappSplashScreenTest extends WebappActivityTestBase {
     public void testSplashScreenWithoutImageAppears() throws Exception {
         // Register an image that's too small for the splash screen.
         Context context = getInstrumentation().getTargetContext();
-        int size = context.getResources().getDimensionPixelSize(
+        int bitmapSize = context.getResources().getDimensionPixelSize(
                 R.dimen.webapp_splash_image_size_minimum) - 1;
-        final Bitmap splashBitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
-
-        WebappRegistry.getInstance().register(
-                WEBAPP_ID, new WebappRegistry.FetchWebappDataStorageCallback() {
-                    @Override
-                    public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
-                        mCallbackCalled = true;
-                        storage.updateSplashScreenImage(splashBitmap);
-                    }
-                });
-        CriteriaHelper.pollUiThread(new CallbackCriteria());
+        Bitmap splashBitmap = Bitmap.createBitmap(bitmapSize, bitmapSize, Bitmap.Config.ARGB_8888);
+        WebappDataStorage.open(WEBAPP_ID).updateSplashScreenImage(splashBitmap);
 
         Intent intent = createIntent();
         intent.putExtra(ShortcutHelper.EXTRA_IS_ICON_GENERATED, true);

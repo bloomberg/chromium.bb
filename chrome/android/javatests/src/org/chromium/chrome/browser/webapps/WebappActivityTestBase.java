@@ -95,8 +95,7 @@ public abstract class WebappActivityTestBase extends ChromeActivityTestCaseBase<
         // Register the webapp so when the data storage is opened, the test doesn't crash. There is
         // no race condition with the retrieval as AsyncTasks are run sequentially on the background
         // thread.
-        WebappRegistry.refreshSharedPrefsForTesting();
-        WebappRegistry.getInstance().register(
+        WebappRegistry.registerWebapp(
                 WEBAPP_ID, new WebappRegistry.FetchWebappDataStorageCallback() {
                     @Override
                     public void onWebappDataStorageRetrieved(WebappDataStorage storage) {

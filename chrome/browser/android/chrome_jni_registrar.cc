@@ -103,6 +103,7 @@
 #include "chrome/browser/android/webapk/webapk_installer.h"
 #include "chrome/browser/android/webapk/webapk_update_manager.h"
 #include "chrome/browser/android/webapps/add_to_homescreen_manager.h"
+#include "chrome/browser/android/webapps/webapp_registry.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory_android.h"
 #include "chrome/browser/dom_distiller/tab_utils_android.h"
@@ -381,6 +382,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"WarmupManager", RegisterWarmupManager},
     {"WebApkInstaller", WebApkInstaller::Register},
     {"WebApkUpdateManager", WebApkUpdateManager::Register},
+    {"WebappRegistry", WebappRegistry::RegisterWebappRegistry},
     {"WebContentsFactory", RegisterWebContentsFactory},
     {"WebsitePreferenceBridge", RegisterWebsitePreferenceBridge},
     {"WebsiteSettingsPopupAndroid",
