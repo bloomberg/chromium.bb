@@ -132,4 +132,22 @@ bool PhotoCapabilities::getRedEyeReduction() const {
                                                    object_);
 }
 
+int PhotoCapabilities::getMinColorTemperature() const {
+  DCHECK(!object_.is_null());
+  return Java_PhotoCapabilities_getMinColorTemperature(AttachCurrentThread(),
+                                                       object_);
+}
+
+int PhotoCapabilities::getMaxColorTemperature() const {
+  DCHECK(!object_.is_null());
+  return Java_PhotoCapabilities_getMaxColorTemperature(AttachCurrentThread(),
+                                                       object_);
+}
+
+int PhotoCapabilities::getCurrentColorTemperature() const {
+  DCHECK(!object_.is_null());
+  return Java_PhotoCapabilities_getCurrentColorTemperature(
+      AttachCurrentThread(), object_);
+}
+
 }  // namespace media

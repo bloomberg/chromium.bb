@@ -68,12 +68,14 @@ public abstract class VideoCapture {
     * @param hasRedEyeReduction Indicates if |redEyeReduction| is set.
     * @param redEyeReduction Value of red eye reduction for the auto flash setting.
     * @param fillLightMode Flash/Torch setting, following AndroidFillLightMode enum.
+    * @param colorTemperature White Balance reference temperature, valid if whiteBalanceMode is
+    * manual, and its value is larger than 0.
     */
     @CalledByNative
     public abstract void setPhotoOptions(int zoom, int focusMode, int exposureMode, int width,
             int height, float[] pointsOfInterest2D, boolean hasExposureCompensation,
             int exposureCompensation, int whiteBalanceMode, int iso, boolean hasRedEyeReduction,
-            boolean redEyeReduction, int fillLightMode);
+            boolean redEyeReduction, int fillLightMode, int colorTemperature);
 
     @CalledByNative
     public abstract boolean takePhoto(final long callbackId);

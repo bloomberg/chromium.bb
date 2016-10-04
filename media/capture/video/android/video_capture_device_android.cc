@@ -535,7 +535,11 @@ void VideoCaptureDeviceAndroid::DoGetPhotoCapabilities(
   photo_capabilities->fill_light_mode =
       ToMojomFillLightMode(caps.getFillLightMode());
   photo_capabilities->red_eye_reduction = caps.getRedEyeReduction();
-
+  photo_capabilities->color_temperature = mojom::Range::New();
+  photo_capabilities->color_temperature->current =
+      caps.getCurrentColorTemperature();
+  photo_capabilities->color_temperature->max = caps.getMaxColorTemperature();
+  photo_capabilities->color_temperature->min = caps.getMinColorTemperature();
   callback.Run(std::move(photo_capabilities));
 }
 
@@ -595,7 +599,8 @@ void VideoCaptureDeviceAndroid::DoSetPhotoOptions(
       settings->has_exposure_compensation, exposure_compensation,
       static_cast<int>(white_balance_mode), iso,
       settings->has_red_eye_reduction, settings->red_eye_reduction,
-      static_cast<int>(fill_light_mode));
+      static_cast<int>(fill_light_mode),
+      settings->has_color_temperature ? settings->color_temperature : 0);
 
   callback.Run(true);
 }

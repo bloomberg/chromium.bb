@@ -24,6 +24,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Range;
 import android.util.Size;
+import android.util.SparseIntArray;
 import android.view.Surface;
 
 import org.chromium.base.Log;
@@ -112,7 +113,6 @@ public class VideoCaptureCamera2 extends VideoCapture {
     private class CrImageReaderListener implements ImageReader.OnImageAvailableListener {
         @Override
         public void onImageAvailable(ImageReader reader) {
-            Log.d(TAG, "CrImageReaderListener.onImageAvailable");
             try (Image image = reader.acquireLatestImage()) {
                 if (image == null) return;
 
@@ -200,7 +200,6 @@ public class VideoCaptureCamera2 extends VideoCapture {
 
         @Override
         public void onImageAvailable(ImageReader reader) {
-            Log.d(TAG, "CrPhotoReaderListener.onImageAvailable");
             try (Image image = reader.acquireLatestImage()) {
                 if (image == null) {
                     throw new IllegalStateException();
@@ -237,6 +236,21 @@ public class VideoCaptureCamera2 extends VideoCapture {
     private static final double kNanoSecondsToFps = 1.0E-9;
     private static final String TAG = "VideoCapture";
 
+    // Map of the equivalent color temperature in Kelvin for the White Balance setting. The
+    // values are a mixture of educated guesses and data from Android's Camera2 API. The
+    // temperatures must be ordered increasingly.
+    private static final SparseIntArray COLOR_TEMPERATURES_MAP;
+    static {
+        COLOR_TEMPERATURES_MAP = new SparseIntArray();
+        COLOR_TEMPERATURES_MAP.append(2850, CameraMetadata.CONTROL_AWB_MODE_INCANDESCENT);
+        COLOR_TEMPERATURES_MAP.append(2940, CameraMetadata.CONTROL_AWB_MODE_WARM_FLUORESCENT);
+        COLOR_TEMPERATURES_MAP.append(3000, CameraMetadata.CONTROL_AWB_MODE_TWILIGHT);
+        COLOR_TEMPERATURES_MAP.append(4230, CameraMetadata.CONTROL_AWB_MODE_FLUORESCENT);
+        COLOR_TEMPERATURES_MAP.append(6000, CameraMetadata.CONTROL_AWB_MODE_CLOUDY_DAYLIGHT);
+        COLOR_TEMPERATURES_MAP.append(6504, CameraMetadata.CONTROL_AWB_MODE_DAYLIGHT);
+        COLOR_TEMPERATURES_MAP.append(7000, CameraMetadata.CONTROL_AWB_MODE_SHADE);
+    };
+
     private static enum CameraState { OPENING, CONFIGURING, STARTED, STOPPED }
 
     private final Object mCameraStateLock = new Object();
@@ -256,6 +270,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
     private MeteringRectangle mAreaOfInterest;
     private int mExposureCompensation = 0;
     private int mWhiteBalanceMode = AndroidMeteringMode.CONTINUOUS;
+    private int mColorTemperature = -1;
     private int mIso = 0;
     private boolean mRedEyeReduction = false;
     private int mFillLightMode = AndroidFillLightMode.OFF;
@@ -399,6 +414,12 @@ public class VideoCaptureCamera2 extends VideoCapture {
                     CaptureRequest.CONTROL_AWB_MODE, CameraMetadata.CONTROL_AWB_MODE_OFF);
         } else if (mWhiteBalanceMode == AndroidMeteringMode.FIXED) {
             requestBuilder.set(CaptureRequest.CONTROL_AWB_LOCK, true);
+            if (mColorTemperature > 0) {
+                final int colorSetting = getClosestWhiteBalance(mColorTemperature);
+                if (colorSetting != -1) {
+                    requestBuilder.set(CaptureRequest.CONTROL_AWB_MODE, colorSetting);
+                }
+            }
         }
 
         if (mAreaOfInterest != null) {
@@ -442,6 +463,19 @@ public class VideoCaptureCamera2 extends VideoCapture {
             return null;
         }
         return closestSize;
+    }
+
+    private int getClosestWhiteBalance(int colorTemperature) {
+        int minDiff = Integer.MAX_VALUE;
+        int matchedTemperature = -1;
+
+        for (int i = 0; i < COLOR_TEMPERATURES_MAP.size(); ++i) {
+            final int diff = Math.abs(colorTemperature - COLOR_TEMPERATURES_MAP.keyAt(i));
+            if (diff >= minDiff) continue;
+            minDiff = diff;
+            matchedTemperature = COLOR_TEMPERATURES_MAP.valueAt(i);
+        }
+        return matchedTemperature;
     }
 
     static boolean isLegacyDevice(Context appContext, int id) {
@@ -733,6 +767,13 @@ public class VideoCaptureCamera2 extends VideoCapture {
         } else {
             builder.setWhiteBalanceMode(AndroidMeteringMode.FIXED);
         }
+        builder.setMinColorTemperature(COLOR_TEMPERATURES_MAP.keyAt(0));
+        builder.setMaxColorTemperature(
+                COLOR_TEMPERATURES_MAP.keyAt(COLOR_TEMPERATURES_MAP.size() - 1));
+        final int index = COLOR_TEMPERATURES_MAP.indexOfValue(whiteBalanceMode);
+        if (index >= 0) {
+            builder.setCurrentColorTemperature(COLOR_TEMPERATURES_MAP.keyAt(index));
+        }
 
         if (!cameraCharacteristics.get(CameraCharacteristics.FLASH_INFO_AVAILABLE)) {
             builder.setFillLightMode(AndroidFillLightMode.NONE);
@@ -772,7 +813,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
     public void setPhotoOptions(int zoom, int focusMode, int exposureMode, int width, int height,
             float[] pointsOfInterest2D, boolean hasExposureCompensation, int exposureCompensation,
             int whiteBalanceMode, int iso, boolean hasRedEyeReduction, boolean redEyeReduction,
-            int fillLightMode) {
+            int fillLightMode, int colorTemperature) {
         final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(mContext, mId);
         final Rect canvas =
                 cameraCharacteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
@@ -790,6 +831,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
 
         if (focusMode != AndroidMeteringMode.NOT_SET) mFocusMode = focusMode;
         if (exposureMode != AndroidMeteringMode.NOT_SET) mExposureMode = exposureMode;
+        if (whiteBalanceMode != AndroidMeteringMode.NOT_SET) mWhiteBalanceMode = whiteBalanceMode;
 
         if (width > 0) mPhotoWidth = width;
         if (height > 0) mPhotoHeight = height;
@@ -805,7 +847,8 @@ public class VideoCaptureCamera2 extends VideoCapture {
         // Update |mAreaOfInterest| if the camera supports and there are |pointsOfInterest2D|.
         final boolean pointsOfInterestSupported =
                 cameraCharacteristics.get(CameraCharacteristics.CONTROL_MAX_REGIONS_AF) > 0
-                || cameraCharacteristics.get(CameraCharacteristics.CONTROL_MAX_REGIONS_AE) > 0;
+                || cameraCharacteristics.get(CameraCharacteristics.CONTROL_MAX_REGIONS_AE) > 0
+                || cameraCharacteristics.get(CameraCharacteristics.CONTROL_MAX_REGIONS_AWB) > 0;
         if (pointsOfInterestSupported && pointsOfInterest2D.length > 0) {
             assert pointsOfInterest2D.length == 1 : "Only 1 point of interest supported";
             assert pointsOfInterest2D[0] <= 1.0 && pointsOfInterest2D[0] >= 0.0;
@@ -835,10 +878,10 @@ public class VideoCaptureCamera2 extends VideoCapture {
                     / cameraCharacteristics.get(CameraCharacteristics.CONTROL_AE_COMPENSATION_STEP)
                               .floatValue());
         }
-        if (whiteBalanceMode != AndroidMeteringMode.NOT_SET) mWhiteBalanceMode = whiteBalanceMode;
         if (iso > 0) mIso = iso;
-
-        if (hasRedEyeReduction) mRedEyeReduction = redEyeReduction;
+        if (mWhiteBalanceMode == AndroidMeteringMode.FIXED && colorTemperature > 0) {
+            mColorTemperature = colorTemperature;
+        }
         if (fillLightMode != AndroidFillLightMode.NOT_SET) mFillLightMode = fillLightMode;
 
         final Handler mainHandler = new Handler(mContext.getMainLooper());

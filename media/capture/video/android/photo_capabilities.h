@@ -62,6 +62,9 @@ class PhotoCapabilities {
   AndroidMeteringMode getWhiteBalanceMode() const;
   AndroidFillLightMode getFillLightMode() const;
   bool getRedEyeReduction() const;
+  int getMinColorTemperature() const;
+  int getMaxColorTemperature() const;
+  int getCurrentColorTemperature() const;
 
  private:
   const base::android::ScopedJavaLocalRef<jobject> object_;

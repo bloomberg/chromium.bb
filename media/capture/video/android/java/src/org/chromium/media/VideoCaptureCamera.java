@@ -10,6 +10,7 @@ import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES20;
 import android.os.Build;
+import android.util.SparseArray;
 
 import org.chromium.base.Log;
 import org.chromium.base.annotations.JNINamespace;
@@ -32,6 +33,27 @@ public abstract class VideoCaptureCamera
         extends VideoCapture implements android.hardware.Camera.PreviewCallback {
     private static final String TAG = "VideoCapture";
     protected static final int GL_TEXTURE_EXTERNAL_OES = 0x8D65;
+
+    // Map of the equivalent color temperature in Kelvin for the White Balance setting. The
+    // values are a mixture of educated guesses and data from Android's Camera2 API. The
+    // temperatures must be ordered increasingly.
+    private static final SparseArray<String> COLOR_TEMPERATURES_MAP;
+    static {
+        COLOR_TEMPERATURES_MAP = new SparseArray<String>();
+        COLOR_TEMPERATURES_MAP.append(
+                2850, android.hardware.Camera.Parameters.WHITE_BALANCE_INCANDESCENT);
+        COLOR_TEMPERATURES_MAP.append(
+                2940, android.hardware.Camera.Parameters.WHITE_BALANCE_WARM_FLUORESCENT);
+        COLOR_TEMPERATURES_MAP.append(
+                3000, android.hardware.Camera.Parameters.WHITE_BALANCE_TWILIGHT);
+        COLOR_TEMPERATURES_MAP.append(
+                4230, android.hardware.Camera.Parameters.WHITE_BALANCE_FLUORESCENT);
+        COLOR_TEMPERATURES_MAP.append(
+                6000, android.hardware.Camera.Parameters.WHITE_BALANCE_CLOUDY_DAYLIGHT);
+        COLOR_TEMPERATURES_MAP.append(
+                6504, android.hardware.Camera.Parameters.WHITE_BALANCE_DAYLIGHT);
+        COLOR_TEMPERATURES_MAP.append(7000, android.hardware.Camera.Parameters.WHITE_BALANCE_SHADE);
+    };
 
     private final Object mPhotoTakenCallbackLock = new Object();
 
@@ -73,6 +95,19 @@ public abstract class VideoCaptureCamera
             return null;
         }
         return parameters;
+    }
+
+    private String getClosestWhiteBalance(int colorTemperature) {
+        int minDiff = Integer.MAX_VALUE;
+        String matchedTemperature = null;
+
+        for (int i = 0; i < COLOR_TEMPERATURES_MAP.size(); ++i) {
+            final int diff = Math.abs(colorTemperature - COLOR_TEMPERATURES_MAP.keyAt(i));
+            if (diff >= minDiff) continue;
+            minDiff = diff;
+            matchedTemperature = COLOR_TEMPERATURES_MAP.valueAt(i);
+        }
+        return matchedTemperature;
     }
 
     private class CrErrorCallback implements android.hardware.Camera.ErrorCallback {
@@ -383,7 +418,15 @@ public abstract class VideoCaptureCamera
                     ? AndroidMeteringMode.CONTINUOUS
                     : AndroidMeteringMode.FIXED;
         }
-        builder.setWhiteBalanceMode(jniExposureMode);
+        builder.setWhiteBalanceMode(jniWhiteBalanceMode);
+
+        builder.setMinColorTemperature(COLOR_TEMPERATURES_MAP.keyAt(0));
+        builder.setMaxColorTemperature(
+                COLOR_TEMPERATURES_MAP.keyAt(COLOR_TEMPERATURES_MAP.size() - 1));
+        if (jniWhiteBalanceMode == AndroidMeteringMode.FIXED) {
+            final int index = COLOR_TEMPERATURES_MAP.indexOfValue(parameters.getWhiteBalance());
+            if (index >= 0) builder.setCurrentColorTemperature(COLOR_TEMPERATURES_MAP.keyAt(index));
+        }
 
         if (parameters.getSupportedFlashModes() == null) {
             builder.setFillLightMode(AndroidFillLightMode.NONE);
@@ -417,7 +460,7 @@ public abstract class VideoCaptureCamera
     public void setPhotoOptions(int zoom, int focusMode, int exposureMode, int width, int height,
             float[] pointsOfInterest2D, boolean hasExposureCompensation, int exposureCompensation,
             int whiteBalanceMode, int iso, boolean hasRedEyeReduction, boolean redEyeReduction,
-            int fillLightMode) {
+            int fillLightMode, int colorTemperature) {
         android.hardware.Camera.Parameters parameters = getCameraParameters(mCamera);
 
         if (parameters.isZoomSupported() && zoom > 0) {
@@ -505,6 +548,10 @@ public abstract class VideoCaptureCamera
         } else if (whiteBalanceMode == AndroidMeteringMode.FIXED
                 && parameters.isAutoWhiteBalanceLockSupported()) {
             parameters.setAutoWhiteBalanceLock(true);
+            if (colorTemperature > 0) {
+                final String closestSetting = getClosestWhiteBalance(colorTemperature);
+                if (closestSetting != null) parameters.setWhiteBalance(closestSetting);
+            }
         }
 
         // NONE is only used for getting capabilities, to signify "no flash unit". Ignore it.

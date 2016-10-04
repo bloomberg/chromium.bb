@@ -32,13 +32,17 @@ class PhotoCapabilities {
     public final int whiteBalanceMode;
     public final int fillLightMode;
     public final boolean redEyeReduction;
+    public final int maxColorTemperature;
+    public final int minColorTemperature;
+    public final int currentColorTemperature;
 
     PhotoCapabilities(int maxIso, int minIso, int currentIso, int maxHeight, int minHeight,
             int currentHeight, int maxWidth, int minWidth, int currentWidth, int maxZoom,
             int minZoom, int currentZoom, int focusMode, int exposureMode,
             int maxExposureCompensation, int minExposureCompensation,
             int currentExposureCompensation, int whiteBalanceMode, int fillLightMode,
-            boolean redEyeReduction) {
+            boolean redEyeReduction, int maxColorTemperature, int minColorTemperature,
+            int currentColorTemperature) {
         this.maxIso = maxIso;
         this.minIso = minIso;
         this.currentIso = currentIso;
@@ -59,6 +63,9 @@ class PhotoCapabilities {
         this.whiteBalanceMode = whiteBalanceMode;
         this.fillLightMode = fillLightMode;
         this.redEyeReduction = redEyeReduction;
+        this.maxColorTemperature = maxColorTemperature;
+        this.minColorTemperature = minColorTemperature;
+        this.currentColorTemperature = currentColorTemperature;
     }
 
     @CalledByNative
@@ -161,6 +168,21 @@ class PhotoCapabilities {
         return redEyeReduction;
     }
 
+    @CalledByNative
+    public int getMinColorTemperature() {
+        return minColorTemperature;
+    }
+
+    @CalledByNative
+    public int getMaxColorTemperature() {
+        return maxColorTemperature;
+    }
+
+    @CalledByNative
+    public int getCurrentColorTemperature() {
+        return currentColorTemperature;
+    }
+
     public static class Builder {
         public int maxIso;
         public int minIso;
@@ -182,6 +204,9 @@ class PhotoCapabilities {
         public int whiteBalanceMode;
         public int fillLightMode;
         public boolean redEyeReduction;
+        public int maxColorTemperature;
+        public int minColorTemperature;
+        public int currentColorTemperature;
 
         public Builder() {}
 
@@ -285,11 +310,27 @@ class PhotoCapabilities {
             return this;
         }
 
+        public Builder setMaxColorTemperature(int maxColorTemperature) {
+            this.maxColorTemperature = maxColorTemperature;
+            return this;
+        }
+
+        public Builder setMinColorTemperature(int minColorTemperature) {
+            this.minColorTemperature = minColorTemperature;
+            return this;
+        }
+
+        public Builder setCurrentColorTemperature(int currentColorTemperature) {
+            this.currentColorTemperature = currentColorTemperature;
+            return this;
+        }
+
         public PhotoCapabilities build() {
             return new PhotoCapabilities(maxIso, minIso, currentIso, maxHeight, minHeight,
                     currentHeight, maxWidth, minWidth, currentWidth, maxZoom, minZoom, currentZoom,
                     focusMode, exposureMode, maxExposureCompensation, minExposureCompensation,
-                    currentExposureCompensation, whiteBalanceMode, fillLightMode, redEyeReduction);
+                    currentExposureCompensation, whiteBalanceMode, fillLightMode, redEyeReduction,
+                    maxColorTemperature, minColorTemperature, currentColorTemperature);
         }
     }
 }
