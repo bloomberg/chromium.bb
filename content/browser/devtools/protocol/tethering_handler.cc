@@ -41,8 +41,10 @@ class SocketPump {
   std::string Init(const CreateServerSocketCallback& socket_callback) {
     std::string channel_name;
     server_socket_ = socket_callback.Run(&channel_name);
-    if (!server_socket_.get() || channel_name.empty())
+    if (!server_socket_.get() || channel_name.empty()) {
       SelfDestruct();
+      return std::string();
+    }
 
     int result = server_socket_->Accept(
         &accepted_socket_,
