@@ -5,13 +5,13 @@
 #include "chrome/browser/plugins/flash_permission_context.h"
 
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/plugins/plugin_utils.h"
 #include "chrome/browser/plugins/plugins_field_trial.h"
-#include "chrome/browser/ui/website_settings/website_settings_infobar_delegate.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/web_contents.h"
 
 FlashPermissionContext::FlashPermissionContext(Profile* profile)
     : PermissionContextBase(profile,
@@ -38,14 +38,12 @@ void FlashPermissionContext::UpdateTabContext(const PermissionRequestID& id,
                                               bool allowed) {
   if (!allowed)
     return;
+  // Automatically refresh the page.
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(
           content::RenderFrameHost::FromID(id.render_process_id(),
                                            id.render_frame_id()));
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents);
-  if (infobar_service)
-    WebsiteSettingsInfoBarDelegate::Create(infobar_service);
+  web_contents->GetController().Reload(true /* check_for_repost */);
 }
 
 bool FlashPermissionContext::IsRestrictedToSecureOrigins() const {
