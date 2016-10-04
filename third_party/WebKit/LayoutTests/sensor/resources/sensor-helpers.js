@@ -194,7 +194,8 @@ function sensor_mocks(mojo) {
       // Returns initialized Sensor proxy to the client.
       getSensor(type, stub) {
         if (this.get_sensor_should_fail_) {
-          return getSensorResponse(null, null);
+          return getSensorResponse(null,
+              connection.bindProxy(null, sensor.SensorClient));
         }
 
         let offset =

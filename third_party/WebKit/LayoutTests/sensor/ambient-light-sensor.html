@@ -23,6 +23,19 @@ test(() => assert_throws(
     'Test that negative frequency causes exception from constructor.');
 
 sensor_test(sensor => {
+  sensor.mockSensorProvider.setGetSensorShouldFail(true);
+  let ambientLightSensor = new AmbientLightSensor();
+  ambientLightSensor.start();
+  return new Promise((resolve, reject) => {
+    ambientLightSensor.onstatechange = event => {
+      if(ambientLightSensor.state == 'errored') {
+        resolve();
+      }
+    };
+  });
+}, 'Test that sensor state changes to "errored" when sensor is not supported.');
+
+sensor_test(sensor => {
   let ambientLightSensor = new AmbientLightSensor({frequency: 560});
   ambientLightSensor.start();
 

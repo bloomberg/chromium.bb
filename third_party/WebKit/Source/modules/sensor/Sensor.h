@@ -102,6 +102,9 @@ class Sensor : public EventTargetWithInlineData,
 
   void updatePollingStatus();
 
+  void notifySensorReadingChanged();
+  void notifyStateChanged();
+
  private:
   Member<SensorReading> m_sensorReading;
   SensorOptions m_sensorOptions;

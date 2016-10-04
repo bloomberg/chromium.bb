@@ -6,6 +6,7 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/ExecutionContextTask.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "device/generic_sensor/public/interfaces/sensor.mojom-blink.h"
 #include "modules/sensor/SensorErrorEvent.h"
@@ -268,9 +269,13 @@ void Sensor::pollForData() {
   m_sensorProxy->updateInternalReading();
 
   DCHECK(m_sensorReading);
-  if (m_sensorReading->isReadingUpdated(m_storedData))
-    dispatchEvent(
-        SensorReadingEvent::create(EventTypeNames::change, m_sensorReading));
+  if (getExecutionContext() &&
+      m_sensorReading->isReadingUpdated(m_storedData)) {
+    getExecutionContext()->postTask(
+        BLINK_FROM_HERE,
+        createSameThreadTask(&Sensor::notifySensorReadingChanged,
+                             wrapWeakPersistent(this)));
+  }
 
   m_storedData = m_sensorProxy->reading();
 }
@@ -279,7 +284,12 @@ void Sensor::updateState(Sensor::SensorState newState) {
   if (newState == m_state)
     return;
   m_state = newState;
-  dispatchEvent(Event::create(EventTypeNames::statechange));
+  if (getExecutionContext()) {
+    getExecutionContext()->postTask(
+        BLINK_FROM_HERE, createSameThreadTask(&Sensor::notifyStateChanged,
+                                              wrapWeakPersistent(this)));
+  }
+
   updatePollingStatus();
 }
 
@@ -298,6 +308,15 @@ void Sensor::updatePollingStatus() {
   } else {
     m_polling->startPolling();
   }
+}
+
+void Sensor::notifySensorReadingChanged() {
+  dispatchEvent(
+      SensorReadingEvent::create(EventTypeNames::change, m_sensorReading));
+}
+
+void Sensor::notifyStateChanged() {
+  dispatchEvent(Event::create(EventTypeNames::statechange));
 }
 
 }  // namespace blink
