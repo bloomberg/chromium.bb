@@ -1000,6 +1000,44 @@ TEST_F(CanvasRenderingContext2DTest, GetImageDataDisablesAcceleration) {
       savedFixedRenderingMode);
 }
 
+TEST_F(CanvasRenderingContext2DTest,
+       PreferNoAccelerationHintDisablesAcceleration) {
+  bool savedFixedRenderingMode =
+      RuntimeEnabledFeatures::canvas2dFixedRenderingModeEnabled();
+  RuntimeEnabledFeatures::setCanvas2dFixedRenderingModeEnabled(false);
+
+  createContext(NonOpaque);
+  FakeGLES2Interface gl;
+  std::unique_ptr<FakeWebGraphicsContext3DProvider> contextProvider(
+      new FakeWebGraphicsContext3DProvider(&gl));
+  IntSize size(300, 300);
+  RefPtr<Canvas2DLayerBridge> bridge =
+      makeBridge(std::move(contextProvider), size,
+                 Canvas2DLayerBridge::EnableAcceleration);
+  std::unique_ptr<Canvas2DImageBufferSurface> surface(
+      new Canvas2DImageBufferSurface(bridge, size));
+  canvasElement().createImageBufferUsingSurfaceForTesting(std::move(surface));
+
+  EXPECT_TRUE(canvasElement().buffer()->isAccelerated());
+  SourceImageStatus status = InvalidSourceImageStatus;
+  canvasElement().getSourceImageForCanvas(
+      &status, PreferNoAcceleration, SnapshotReasonUnitTests, FloatSize(size));
+  EXPECT_EQ(NormalSourceImageStatus, status);
+  if (ExpensiveCanvasHeuristicParameters::DisableAccelerationToAvoidReadbacks) {
+    EXPECT_FALSE(canvasElement().buffer()->isAccelerated());
+    EXPECT_EQ(0u, getGlobalAcceleratedImageBufferCount());
+    EXPECT_EQ(0, getGlobalGPUMemoryUsage());
+  } else {
+    EXPECT_TRUE(canvasElement().buffer()->isAccelerated());
+    EXPECT_EQ(1u, getGlobalAcceleratedImageBufferCount());
+    EXPECT_EQ(720000, getGlobalGPUMemoryUsage());
+  }
+
+  // Restore global state to prevent side-effects on other tests
+  RuntimeEnabledFeatures::setCanvas2dFixedRenderingModeEnabled(
+      savedFixedRenderingMode);
+}
+
 TEST_F(CanvasRenderingContext2DTest, TextureUploadHeuristics) {
   bool savedFixedRenderingMode =
       RuntimeEnabledFeatures::canvas2dFixedRenderingModeEnabled();

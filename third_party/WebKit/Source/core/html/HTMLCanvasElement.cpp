@@ -1290,6 +1290,12 @@ PassRefPtr<Image> HTMLCanvasElement::getSourceImageForCanvas(
                   ? buffer()->newSkImageSnapshot(hint, reason)
                   : createTransparentImage(size())->imageForCurrentFrame();
   } else {
+    if (ExpensiveCanvasHeuristicParameters::
+            DisableAccelerationToAvoidReadbacks &&
+        !RuntimeEnabledFeatures::canvas2dFixedRenderingModeEnabled() &&
+        hint == PreferNoAcceleration && m_context->isAccelerated() &&
+        hasImageBuffer())
+      buffer()->disableAcceleration();
     RefPtr<blink::Image> image = renderingContext()->getImage(hint, reason);
     skImage = image ? image->imageForCurrentFrame()
                     : createTransparentImage(size())->imageForCurrentFrame();
