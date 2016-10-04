@@ -6,7 +6,6 @@ package org.chromium.blimp;
 
 import android.os.Handler;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ResourceExtractor;
 import org.chromium.base.ThreadUtils;
@@ -81,7 +80,7 @@ public final class BlimpLibraryLoader {
         if (sLoadAttempted) return;
         sLoadAttempted = true;
 
-        ResourceExtractor extractor = ResourceExtractor.get(ContextUtils.getApplicationContext());
+        ResourceExtractor extractor = ResourceExtractor.get();
         extractor.startExtractingResources();
         LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
 

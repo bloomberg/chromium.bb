@@ -17,13 +17,11 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CommandLineInitUtil;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.ResourceExtractor;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.banners.AppDetailsDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.datausage.ExternalDataUseObserver;
@@ -69,7 +67,6 @@ import org.chromium.content.browser.ChildProcessCreationParams;
 import org.chromium.policy.AppRestrictionsProvider;
 import org.chromium.policy.CombinedPolicyProvider;
 import org.chromium.printing.PrintingController;
-import org.chromium.ui.base.ResourceBundle;
 
 /**
  * Basic application functionality that should be shared among all browser applications that use
@@ -156,14 +153,6 @@ public class ChromeApplication extends ContentApplication {
     protected void showPasswordSettings() {
         PreferencesLauncher.launchSettingsPage(this,
                 SavePasswordsPreferences.class.getName());
-    }
-
-    @Override
-    protected void initializeLibraryDependencies() {
-        // The ResourceExtractor is only needed by the browser process, but this will have no
-        // impact on the renderer process construction.
-        ResourceBundle.initializeLocalePaks(this, R.array.locale_paks);
-        ResourceExtractor.setResourcesToExtract(ResourceBundle.getActiveLocaleResources());
     }
 
     @Override
