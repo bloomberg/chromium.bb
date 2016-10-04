@@ -4521,9 +4521,13 @@
     },
     "caroline-release": {
         "_template": "release",
+        "active_waterfall": "chromeos",
         "boards": [
             "caroline"
-        ]
+        ],
+        "buildslave_type": "gce_beefy",
+        "chrome_sdk_build_chrome": false,
+        "vm_tests": []
     },
     "caroline-release-afdo": {
         "_template": "release_afdo_generate",
