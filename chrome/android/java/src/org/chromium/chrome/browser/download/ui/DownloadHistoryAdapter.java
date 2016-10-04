@@ -70,6 +70,10 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
     private OfflinePageDownloadBridge.Observer mOfflinePageObserver;
     private int mFilter = DownloadFilter.FILTER_ALL;
 
+    private boolean mAllDownloadItemsRetrieved;
+    private boolean mAllOffTheRecordDownloadItemsRetrieved;
+    private boolean mAllOfflinePagesRetrieved;
+
     DownloadHistoryAdapter(boolean showOffTheRecord, ComponentName parentComponent) {
         mShowOffTheRecord = showOffTheRecord;
         mParentComponent = parentComponent;
@@ -96,6 +100,16 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
     /** Called when the user's download history has been gathered. */
     public void onAllDownloadsRetrieved(List<DownloadItem> result, boolean isOffTheRecord) {
         if (isOffTheRecord && !mShowOffTheRecord) return;
+
+        if ((!isOffTheRecord && mAllDownloadItemsRetrieved)
+                || (isOffTheRecord && mAllOffTheRecordDownloadItemsRetrieved)) {
+            return;
+        }
+        if (!isOffTheRecord) {
+            mAllDownloadItemsRetrieved = true;
+        } else {
+            mAllOffTheRecordDownloadItemsRetrieved = true;
+        }
 
         mLoadingDelegate.updateLoadingState(
                 isOffTheRecord ? LoadingStateDelegate.OFF_THE_RECORD_HISTORY_LOADED
@@ -128,6 +142,9 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
 
     /** Called when the user's offline page history has been gathered. */
     private void onAllOfflinePagesRetrieved(List<OfflinePageDownloadItem> result) {
+        if (mAllOfflinePagesRetrieved) return;
+        mAllOfflinePagesRetrieved = true;
+
         mLoadingDelegate.updateLoadingState(LoadingStateDelegate.OFFLINE_PAGE_LOADED);
         mOfflinePageItems.clear();
         for (OfflinePageDownloadItem item : result) {
