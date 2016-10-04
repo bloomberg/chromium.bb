@@ -90,6 +90,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/chromeos_switches.h"
+#include "components/arc/arc_features.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"
 #endif  // OS_CHROMEOS
 
@@ -2106,6 +2107,12 @@ const FeatureEntry kFeatureEntries[] = {
     {"material-security-verbose", IDS_FLAGS_MATERIAL_SECURITY_VERBOSE_NAME,
      IDS_FLAGS_MATERIAL_SECURITY_VERBOSE_DESCRIPTION, kOsDesktop,
      MULTI_VALUE_TYPE(kSecurityVerboseChoices)},
+#if defined(OS_CHROMEOS)
+    {"arc-boot-completed-broadcast",
+     IDS_FLAGS_ARC_BOOT_COMPLETED,
+     IDS_FLAGS_ARC_BOOT_COMPLETED_DESCRIPTION, kOsCrOS,
+     FEATURE_VALUE_TYPE(arc::kBootCompletedBroadcastFeature)},
+#endif
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

@@ -13,6 +13,8 @@ static_library("arc") {
     "arc_bridge_host_impl.h",
     "arc_bridge_service_impl.cc",
     "arc_bridge_service_impl.h",
+    "arc_features.cc",
+    "arc_features.h",
     "arc_service_manager.cc",
     "arc_service_manager.h",
     "audio/arc_audio_bridge.cc",

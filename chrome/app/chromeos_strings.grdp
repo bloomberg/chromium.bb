@@ -6342,6 +6342,12 @@ All users must sign out to continue.
   <message name="IDS_ARC_CRITICALLY_LOW_DISK_NOTIFICATION_MESSAGE" desc="Notification text warning users that they are critically low on disk space and Android apps can not be launched.">
     Free up disk space to launch Android apps.
   </message>
+  <message name="IDS_FLAGS_ARC_BOOT_COMPLETED" desc="Name of the flag for blocking the ACTION_BOOT_COMPLETED broadcast for third-party apps on ARC.">
+    Load Android apps automatically
+  </message>
+  <message name="IDS_FLAGS_ARC_BOOT_COMPLETED_DESCRIPTION" desc="Description for the flag for blocking ACTION_BOOT_COMPLETED broadcast for third-party apps.">
+    Allow Android apps to start automatically after signing in.
+  </message>
   <message name="IDS_FLAGS_ENABLE_IME_MENU_NAME" desc="Name of the about: flag for enabling opt-in IME menu.">
     Enable opt-in IME menu
     </message>

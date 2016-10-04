@@ -309,12 +309,14 @@ class SessionManagerClientImpl : public SessionManagerClient {
   }
 
   void StartArcInstance(const cryptohome::Identification& cryptohome_id,
+                        bool disable_boot_completed_broadcast,
                         const ArcCallback& callback) override {
     dbus::MethodCall method_call(
         login_manager::kSessionManagerInterface,
         login_manager::kSessionManagerStartArcInstance);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(cryptohome_id.id());
+    writer.AppendBool(disable_boot_completed_broadcast);
     session_manager_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(&SessionManagerClientImpl::OnArcMethod,
@@ -895,6 +897,7 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
   }
 
   void StartArcInstance(const cryptohome::Identification& cryptohome_id,
+                        bool disable_boot_completed_broadcast,
                         const ArcCallback& callback) override {
     callback.Run(false);
   }

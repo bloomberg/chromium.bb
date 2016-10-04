@@ -64,8 +64,10 @@ class MockSessionManagerClient : public SessionManagerClient {
                     const std::vector<std::string>&));
   MOCK_METHOD1(GetServerBackedStateKeys, void(const StateKeysCallback&));
   MOCK_METHOD1(CheckArcAvailability, void(const ArcCallback&));
-  MOCK_METHOD2(StartArcInstance,
-               void(const cryptohome::Identification&, const ArcCallback&));
+  MOCK_METHOD3(StartArcInstance,
+               void(const cryptohome::Identification&,
+                    bool,
+                    const ArcCallback&));
   MOCK_METHOD1(StopArcInstance, void(const ArcCallback&));
   MOCK_METHOD1(PrioritizeArcInstance, void(const ArcCallback&));
   MOCK_METHOD0(EmitArcBooted, void(void));

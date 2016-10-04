@@ -229,10 +229,13 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   virtual void CheckArcAvailability(const ArcCallback& callback) = 0;
 
   // Asynchronously starts the ARC instance for the user whose cryptohome is
-  // located by |cryptohome_id|.  Upon completion, invokes |callback| with
-  // the result; true on success, false on failure (either session manager
-  // failed to start an instance or session manager can not be reached).
+  // located by |cryptohome_id|.  Flag |disable_boot_completed_broadcast|
+  // blocks Android ACTION_BOOT_COMPLETED broadcast for 3rd party applications.
+  // Upon completion, invokes |callback| with the result; true on success, false
+  // on failure (either session manager failed to start an instance or session
+  // manager can not be reached).
   virtual void StartArcInstance(const cryptohome::Identification& cryptohome_id,
+                                bool disable_boot_completed_broadcast,
                                 const ArcCallback& callback) = 0;
 
   // Asynchronously stops the ARC instance.  Upon completion, invokes

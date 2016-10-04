@@ -26,6 +26,7 @@
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "components/arc/arc_features.h"
 #include "components/user_manager/user_manager.h"
 #include "ipc/unix_domain_socket_util.h"
 #include "mojo/edk/embedder/embedder.h"
@@ -382,10 +383,14 @@ void ArcBridgeBootstrapImpl::OnSocketCreated(base::ScopedFD socket_fd) {
   const cryptohome::Identification cryptohome_id(
       user_manager->GetPrimaryUser()->GetAccountId());
 
+  bool disable_boot_completed_broadcast =
+      !base::FeatureList::IsEnabled(arc::kBootCompletedBroadcastFeature);
+
   chromeos::SessionManagerClient* session_manager_client =
       chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
   session_manager_client->StartArcInstance(
       cryptohome_id,
+      disable_boot_completed_broadcast,
       base::Bind(&ArcBridgeBootstrapImpl::OnInstanceStarted,
                  weak_factory_.GetWeakPtr(), base::Passed(&socket_fd)));
 }
