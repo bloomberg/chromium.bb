@@ -4,6 +4,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/shadow.html">
 <link rel="import" href="/people_page/manage_profile_browser_proxy.html">
+<link rel="import" href="/route.html">
 <link rel="import" href="/settings_shared_css.html">
 
 <dom-module id="settings-manage-profile">
@@ -14,7 +15,7 @@
       }
     </style>
     <div class="settings-box first">
-      <paper-input id="name" value="{{profileName}}" pattern=".*\S.*"
+      <paper-input id="name" value="[[profileName]]" pattern=".*\S.*"
           auto-validate required on-change="onProfileNameChanged_"
           disabled="[[isProfileNameDisabled_(syncStatus)]]">
       </paper-input>

@@ -10,7 +10,7 @@
 Polymer({
   is: 'settings-manage-profile',
 
-  behaviors: [WebUIListenerBehavior],
+  behaviors: [WebUIListenerBehavior, settings.RouteObserverBehavior],
 
   properties: {
     /**
@@ -57,6 +57,12 @@ Polymer({
 
     this.addWebUIListener('available-icons-changed', setIcons);
     this.browserProxy_.getAvailableIcons().then(setIcons);
+  },
+
+  /** @protected */
+  currentRouteChanged: function() {
+    if (settings.getCurrentRoute() == settings.Route.MANAGE_PROFILE)
+      this.$.name.value = this.profileName;
   },
 
   /**

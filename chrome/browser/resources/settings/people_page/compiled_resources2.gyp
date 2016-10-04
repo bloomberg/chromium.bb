@@ -52,6 +52,7 @@
     {
       'target_name': 'manage_profile',
       'dependencies': [
+        '../compiled_resources2.gyp:route',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:web_ui_listener_behavior',
         'manage_profile_browser_proxy',
