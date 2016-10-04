@@ -66,6 +66,12 @@ initWithChooserDialogCocoa:(ChooserDialogCocoa*)chooserDialogCocoa
   [connectButton_ setEnabled:[tableView_ numberOfSelectedRows] > 0];
 }
 
+// Selection changes (while the mouse button is still down).
+- (void)tableViewSelectionIsChanging:(NSNotification*)aNotification {
+  [chooserContentView_ updateContentRowColor];
+  [connectButton_ setEnabled:[tableView_ numberOfSelectedRows] > 0];
+}
+
 - (void)onConnect:(id)sender {
   [chooserContentView_ accept];
   chooserDialogCocoa_->Dismissed();

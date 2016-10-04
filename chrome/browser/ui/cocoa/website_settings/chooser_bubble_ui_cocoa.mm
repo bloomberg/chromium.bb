@@ -213,6 +213,12 @@ std::unique_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
   [connectButton_ setEnabled:[tableView_ numberOfSelectedRows] > 0];
 }
 
+// Selection changes (while the mouse button is still down).
+- (void)tableViewSelectionIsChanging:(NSNotification*)aNotification {
+  [chooserContentView_ updateContentRowColor];
+  [connectButton_ setEnabled:[tableView_ numberOfSelectedRows] > 0];
+}
+
 - (void)updateAnchorPosition {
   [self setParentWindow:[self getExpectedParentWindow]];
   [self setAnchorPoint:[self getExpectedAnchorPoint]];
