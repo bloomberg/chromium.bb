@@ -1069,12 +1069,8 @@ class Port(object):
     def setup_environ_for_server(self):
         # We intentionally copy only a subset of the environment when
         # launching subprocesses to ensure consistent test results.
-        clean_env = {
-            'LOCAL_RESOURCE_ROOT': self.layout_tests_dir(),  # FIXME: Is this used?
-        }
+        clean_env = {}
         variables_to_copy = [
-            'WEBKIT_TESTFONTS',  # FIXME: Is this still used?
-            'WEBKITOUTPUTDIR',   # FIXME: Is this still used?
             'CHROME_DEVEL_SANDBOX',
             'CHROME_IPC_LOGGING',
             'ASAN_OPTIONS',
