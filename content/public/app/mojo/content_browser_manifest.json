@@ -12,6 +12,7 @@
         "blink::mojom::BackgroundSyncService",
         "blink::mojom::BroadcastChannelProvider",
         "blink::mojom::BudgetService",
+        "blink::mojom::Hyphenation",
         "blink::mojom::MimeRegistry",
         "blink::mojom::NotificationService",
         "blink::mojom::OffscreenCanvasCompositorFrameSinkProvider",
