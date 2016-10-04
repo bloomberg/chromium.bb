@@ -58,7 +58,6 @@
 #include "modules/bluetooth/BluetoothSupplement.h"
 #include "modules/installedapp/InstalledAppController.h"
 #include "modules/mediastream/UserMediaController.h"
-#include "modules/permissions/PermissionController.h"
 #include "modules/presentation/PresentationController.h"
 #include "modules/push_messaging/PushController.h"
 #include "modules/screen_orientation/ScreenOrientationController.h"
