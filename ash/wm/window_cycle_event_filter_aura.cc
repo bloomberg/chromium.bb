@@ -45,6 +45,8 @@ void WindowCycleEventFilterAura::OnKeyEvent(ui::KeyEvent* event) {
               event->IsShiftDown() ? WindowCycleController::BACKWARD
                                    : WindowCycleController::FORWARD));
     }
+  } else if (event->key_code() == ui::VKEY_ESCAPE) {
+    WmShell::Get()->window_cycle_controller()->StopCycling();
   }
 }
 
