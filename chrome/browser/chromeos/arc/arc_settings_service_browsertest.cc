@@ -348,4 +348,16 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, DefaultNetworkDisconnectedTest) {
             1);
 }
 
+IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, NoNetworkConnectedTest) {
+  // Disconnect all networks.
+  fake_intent_helper_instance_->clear_broadcasts();
+  DisconnectNetworkService(kDefaultServicePath);
+  DisconnectNetworkService(kWifiServicePath);
+  RunUntilIdle();
+
+  EXPECT_EQ(
+      CountProxyBroadcasts(fake_intent_helper_instance_->broadcasts(), nullptr),
+      0);
+}
+
 }  // namespace arc

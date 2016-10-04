@@ -476,9 +476,9 @@ void ArcSettingsServiceImpl::DefaultNetworkChanged(
   // kProxy pref and ONC policy have more priority than the default network
   // update.
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  if (!chromeos::onc::HasPolicyForNetwork(
-          profile->GetPrefs(), g_browser_process->local_state(), *network) &&
-      !IsPrefProxyConfigApplied()) {
+  if (network && !IsPrefProxyConfigApplied() &&
+      !chromeos::onc::HasPolicyForNetwork(
+          profile->GetPrefs(), g_browser_process->local_state(), *network)) {
     SyncProxySettings();
   }
 }
