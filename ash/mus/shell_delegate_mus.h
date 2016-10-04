@@ -22,6 +22,8 @@ class ShellDelegateMus : public ShellDelegate {
   explicit ShellDelegateMus(shell::Connector* connector);
   ~ShellDelegateMus() override;
 
+  // ShellDelegate:
+  ::shell::Connector* GetShellConnector() const override;
   bool IsFirstRunAfterBoot() const override;
   bool IsIncognitoAllowed() const override;
   bool IsMultiProfilesEnabled() const override;

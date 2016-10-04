@@ -144,17 +144,11 @@ class ASH_EXPORT SystemTrayDelegate {
   // Fills |info| structure (which must not be null) with current update info.
   virtual void GetSystemUpdateInfo(UpdateInfo* info) const;
 
-  // Returns the desired hour clock type.
-  virtual base::HourClockType GetHourClockType() const;
-
   // Shows settings.
   virtual void ShowSettings();
 
   // Returns true if settings menu item should appear.
   virtual bool ShouldShowSettings();
-
-  // Shows the settings related to date, timezone etc.
-  virtual void ShowDateSettings();
 
   // Shows the dialog to set system time, date, and timezone.
   virtual void ShowSetTimeDialog();

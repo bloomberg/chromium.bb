@@ -185,7 +185,6 @@ void OnAcceptMultiprofilesIntro(bool no_show_again) {
 
 SystemTrayDelegateChromeOS::SystemTrayDelegateChromeOS()
     : user_profile_(NULL),
-      clock_type_(base::GetHourClockType()),
       search_key_mapped_to_(input_method::kSearchKey),
       screen_locked_(false),
       have_session_start_time_(false),
@@ -235,10 +234,6 @@ void SystemTrayDelegateChromeOS::Initialize() {
   input_method::InputMethodManager::Get()->AddObserver(this);
   input_method::InputMethodManager::Get()->AddImeMenuObserver(this);
   ui::ime::InputMethodMenuManager::GetInstance()->AddObserver(this);
-
-  g_browser_process->platform_part()->GetSystemClock()->AddObserver(this);
-
-  OnSystemClockChanged(g_browser_process->platform_part()->GetSystemClock());
 
   device::BluetoothAdapterFactory::GetAdapter(
       base::Bind(&SystemTrayDelegateChromeOS::InitializeOnAdapterReady,
@@ -293,7 +288,6 @@ SystemTrayDelegateChromeOS::~SystemTrayDelegateChromeOS() {
   // Unregister a11y status subscription.
   accessibility_subscription_.reset();
 
-  g_browser_process->platform_part()->GetSystemClock()->RemoveObserver(this);
   DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(this);
   input_method::InputMethodManager::Get()->RemoveObserver(this);
   ui::ime::InputMethodMenuManager::GetInstance()->RemoveObserver(this);
@@ -403,10 +397,6 @@ void SystemTrayDelegateChromeOS::GetSystemUpdateInfo(
   GetUpdateInfo(UpgradeDetector::GetInstance(), info);
 }
 
-base::HourClockType SystemTrayDelegateChromeOS::GetHourClockType() const {
-  return clock_type_;
-}
-
 void SystemTrayDelegateChromeOS::ShowSettings() {
   SystemTrayCommon::ShowSettings();
 }
@@ -415,10 +405,6 @@ bool SystemTrayDelegateChromeOS::ShouldShowSettings() {
   ash::WmShell* wm_shell = ash::WmShell::Get();
   return ChromeUserManager::Get()->GetCurrentUserFlow()->ShouldShowSettings() &&
          !wm_shell->GetSessionStateDelegate()->IsInSecondaryLoginScreen();
-}
-
-void SystemTrayDelegateChromeOS::ShowDateSettings() {
-  SystemTrayCommon::ShowDateSettings();
 }
 
 void SystemTrayDelegateChromeOS::ShowSetTimeDialog() {
@@ -912,19 +898,6 @@ bool SystemTrayDelegateChromeOS::UnsetProfile(Profile* profile) {
   user_pref_registrar_.reset();
   user_profile_ = NULL;
   return true;
-}
-
-bool SystemTrayDelegateChromeOS::GetShouldUse24HourClockForTesting() const {
-  return g_browser_process->platform_part()
-      ->GetSystemClock()
-      ->ShouldUse24HourClock();
-}
-
-void SystemTrayDelegateChromeOS::OnSystemClockChanged(
-    system::SystemClock* system_clock) {
-  const bool use_24_hour_clock = system_clock->ShouldUse24HourClock();
-  clock_type_ = use_24_hour_clock ? base::k24HourClock : base::k12HourClock;
-  GetSystemTrayNotifier()->NotifyDateFormatChanged();
 }
 
 void SystemTrayDelegateChromeOS::UpdateShowLogoutButtonInTray() {

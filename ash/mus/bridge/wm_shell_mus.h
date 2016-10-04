@@ -62,6 +62,7 @@ class WmShellMus : public WmShell, public ui::WindowTreeClientObserver {
   }
 
   // WmShell:
+  bool IsRunningInMash() const override;
   WmWindow* NewWindow(ui::wm::WindowType window_type,
                       ui::LayerType layer_type) override;
   WmWindow* GetFocusedWindow() override;

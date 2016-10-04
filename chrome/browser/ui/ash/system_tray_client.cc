@@ -9,6 +9,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/system/system_clock.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/system_tray_common.h"
 #include "content/public/common/mojo_shell_connection.h"
 #include "services/shell/public/cpp/connector.h"
@@ -44,9 +45,14 @@ void SystemTrayClient::ConnectToSystemTray() {
   if (system_tray_.is_bound())
     return;
 
-  content::MojoShellConnection::GetForProcess()
-      ->GetConnector()
-      ->ConnectToInterface("mojo:ash", &system_tray_);
+  shell::Connector* connector =
+      content::MojoShellConnection::GetForProcess()->GetConnector();
+  // Under mash the SystemTray interface is in the ash process. In classic ash
+  // we provide it to ourself.
+  if (chrome::IsRunningInMash())
+    connector->ConnectToInterface("mojo:ash", &system_tray_);
+  else
+    connector->ConnectToInterface("exe:content_browser", &system_tray_);
 
   // Tolerate ash crashing and coming back up.
   system_tray_.set_connection_error_handler(base::Bind(

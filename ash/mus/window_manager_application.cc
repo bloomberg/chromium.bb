@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/common/material_design/material_design_controller.h"
+#include "ash/common/mojo_interface_factory.h"
 #include "ash/common/wm_shell.h"
 #include "ash/mus/accelerators/accelerator_registrar_impl.h"
 #include "ash/mus/native_widget_factory_mus.h"
@@ -30,7 +31,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/common/system/chromeos/power/power_status.h"
-#include "ash/mus/system_tray_delegate_mus.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_handler.h"
@@ -156,8 +156,11 @@ void WindowManagerApplication::OnStart(const shell::Identity& identity) {
 
 bool WindowManagerApplication::OnConnect(const shell::Identity& remote_identity,
                                          shell::InterfaceRegistry* registry) {
+  // Register services used in both classic ash and mash.
+  mojo_interface_factory::RegisterInterfaces(
+      registry, base::ThreadTaskRunnerHandle::Get());
+
   registry->AddInterface<mojom::ShelfController>(this);
-  registry->AddInterface<mojom::SystemTray>(this);
   registry->AddInterface<mojom::WallpaperController>(this);
   registry->AddInterface<ui::mojom::AcceleratorRegistrar>(this);
   if (remote_identity.name() == "mojo:mash_session") {
@@ -174,17 +177,6 @@ void WindowManagerApplication::Create(const shell::Identity& remote_identity,
       static_cast<ShelfDelegateMus*>(WmShell::Get()->shelf_delegate());
   DCHECK(shelf_controller);
   shelf_controller_bindings_.AddBinding(shelf_controller, std::move(request));
-}
-
-void WindowManagerApplication::Create(const shell::Identity& remote_identity,
-                                      mojom::SystemTrayRequest request) {
-#if defined(OS_CHROMEOS)
-  // Chrome-with-ash only runs on Chrome OS, so don't provide the SystemTray
-  // interface on other platforms.
-  mojom::SystemTray* system_tray = SystemTrayDelegateMus::Get();
-  DCHECK(system_tray);
-  system_tray_bindings_.AddBinding(system_tray, std::move(request));
-#endif
 }
 
 void WindowManagerApplication::Create(

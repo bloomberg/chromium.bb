@@ -77,17 +77,11 @@ void SystemTrayDelegate::GetSystemUpdateInfo(UpdateInfo* info) const {
   info->factory_reset_required = false;
 }
 
-base::HourClockType SystemTrayDelegate::GetHourClockType() const {
-  return base::k24HourClock;
-}
-
 void SystemTrayDelegate::ShowSettings() {}
 
 bool SystemTrayDelegate::ShouldShowSettings() {
   return false;
 }
-
-void SystemTrayDelegate::ShowDateSettings() {}
 
 void SystemTrayDelegate::ShowSetTimeDialog() {}
 

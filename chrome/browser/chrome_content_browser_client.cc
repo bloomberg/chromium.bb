@@ -3018,10 +3018,8 @@ void ChromeContentBrowserClient::RegisterInProcessMojoApplications(
   apps->insert(std::make_pair("mojo:media", app_info));
 #endif
 #if defined(OS_CHROMEOS)
-  if (chrome::IsRunningInMash()) {
-    content::MojoShellConnection::GetForProcess()->AddConnectionFilter(
-        base::MakeUnique<chromeos::ChromeInterfaceFactory>());
-  }
+  content::MojoShellConnection::GetForProcess()->AddConnectionFilter(
+      base::MakeUnique<chromeos::ChromeInterfaceFactory>());
 #endif  // OS_CHROMEOS
 }
 

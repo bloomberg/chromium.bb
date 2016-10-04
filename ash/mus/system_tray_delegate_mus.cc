@@ -5,19 +5,10 @@
 #include "ash/mus/system_tray_delegate_mus.h"
 
 #include "ash/common/system/networking_config_delegate.h"
-#include "ash/common/system/tray/system_tray_notifier.h"
-#include "ash/common/wm_shell.h"
 #include "ash/mus/vpn_delegate_mus.h"
-#include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "base/i18n/time_formatting.h"
-#include "base/logging.h"
-#include "services/shell/public/cpp/connector.h"
 
 namespace ash {
 namespace {
-
-SystemTrayDelegateMus* g_instance = nullptr;
 
 // TODO(mash): Provide a real implementation, perhaps by folding its behavior
 // into an ash-side network information cache. http://crbug.com/651157
@@ -38,111 +29,11 @@ class StubNetworkingConfigDelegate : public NetworkingConfigDelegate {
 
 }  // namespace
 
-SystemTrayDelegateMus::SystemTrayDelegateMus(shell::Connector* connector)
-    : connector_(connector),
-      hour_clock_type_(base::GetHourClockType()),
-      networking_config_delegate_(new StubNetworkingConfigDelegate),
-      vpn_delegate_(new VPNDelegateMus) {
-  // Don't make an initial connection to exe:chrome. Do it on demand.
-  DCHECK(!g_instance);
-  g_instance = this;
-}
+SystemTrayDelegateMus::SystemTrayDelegateMus()
+    : networking_config_delegate_(new StubNetworkingConfigDelegate),
+      vpn_delegate_(new VPNDelegateMus) {}
 
 SystemTrayDelegateMus::~SystemTrayDelegateMus() {
-  DCHECK_EQ(this, g_instance);
-  g_instance = nullptr;
-}
-
-// static
-SystemTrayDelegateMus* SystemTrayDelegateMus::Get() {
-  return g_instance;
-}
-
-mojom::SystemTrayClient* SystemTrayDelegateMus::ConnectToSystemTrayClient() {
-  if (!system_tray_client_.is_bound()) {
-    // Connect (or reconnect) to the interface.
-    connector_->ConnectToInterface("exe:chrome", &system_tray_client_);
-
-    // Tolerate chrome crashing and coming back up.
-    system_tray_client_.set_connection_error_handler(
-        base::Bind(&SystemTrayDelegateMus::OnClientConnectionError,
-                   base::Unretained(this)));
-  }
-  return system_tray_client_.get();
-}
-
-void SystemTrayDelegateMus::OnClientConnectionError() {
-  system_tray_client_.reset();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// SystemTrayDelegate:
-
-base::HourClockType SystemTrayDelegateMus::GetHourClockType() const {
-  return hour_clock_type_;
-}
-
-void SystemTrayDelegateMus::ShowSettings() {
-  ConnectToSystemTrayClient()->ShowSettings();
-}
-
-void SystemTrayDelegateMus::ShowDateSettings() {
-  ConnectToSystemTrayClient()->ShowDateSettings();
-}
-
-void SystemTrayDelegateMus::ShowNetworkSettingsForGuid(
-    const std::string& guid) {
-  // http://crbug.com/647412
-  NOTIMPLEMENTED();
-}
-
-void SystemTrayDelegateMus::ShowDisplaySettings() {
-  ConnectToSystemTrayClient()->ShowDisplaySettings();
-}
-
-void SystemTrayDelegateMus::ShowPowerSettings() {
-  ConnectToSystemTrayClient()->ShowPowerSettings();
-}
-
-void SystemTrayDelegateMus::ShowChromeSlow() {
-  ConnectToSystemTrayClient()->ShowChromeSlow();
-}
-
-void SystemTrayDelegateMus::ShowIMESettings() {
-  ConnectToSystemTrayClient()->ShowIMESettings();
-}
-
-void SystemTrayDelegateMus::ShowHelp() {
-  ConnectToSystemTrayClient()->ShowHelp();
-}
-
-void SystemTrayDelegateMus::ShowAccessibilityHelp() {
-  ConnectToSystemTrayClient()->ShowAccessibilityHelp();
-}
-
-void SystemTrayDelegateMus::ShowAccessibilitySettings() {
-  ConnectToSystemTrayClient()->ShowAccessibilitySettings();
-}
-
-void SystemTrayDelegateMus::ShowPaletteHelp() {
-  ConnectToSystemTrayClient()->ShowPaletteHelp();
-}
-
-void SystemTrayDelegateMus::ShowPaletteSettings() {
-  ConnectToSystemTrayClient()->ShowPaletteSettings();
-}
-
-void SystemTrayDelegateMus::ShowPublicAccountInfo() {
-  ConnectToSystemTrayClient()->ShowPublicAccountInfo();
-}
-
-void SystemTrayDelegateMus::ShowEnterpriseInfo() {
-  // http://crbug.com/647412
-  NOTIMPLEMENTED();
-}
-
-void SystemTrayDelegateMus::ShowProxySettings() {
-  ConnectToSystemTrayClient()->ShowProxySettings();
 }
 
 NetworkingConfigDelegate* SystemTrayDelegateMus::GetNetworkingConfigDelegate()
@@ -152,14 +43,6 @@ NetworkingConfigDelegate* SystemTrayDelegateMus::GetNetworkingConfigDelegate()
 
 VPNDelegate* SystemTrayDelegateMus::GetVPNDelegate() const {
   return vpn_delegate_.get();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// mojom::SystemTray:
-
-void SystemTrayDelegateMus::SetUse24HourClock(bool use_24_hour) {
-  hour_clock_type_ = use_24_hour ? base::k24HourClock : base::k12HourClock;
-  WmShell::Get()->system_tray_notifier()->NotifyDateFormatChanged();
 }
 
 }  // namespace ash

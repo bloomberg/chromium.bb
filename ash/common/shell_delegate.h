@@ -31,6 +31,10 @@ namespace ui {
 class MenuModel;
 }
 
+namespace shell {
+class Connector;
+}
+
 namespace views {
 class Widget;
 }
@@ -56,6 +60,9 @@ class ASH_EXPORT ShellDelegate {
  public:
   // The Shell owns the delegate.
   virtual ~ShellDelegate() {}
+
+  // Returns the connector for the mojo service manager. Returns null in tests.
+  virtual ::shell::Connector* GetShellConnector() const = 0;
 
   // Returns true if this is the first time that the shell has been run after
   // the system has booted.  false is returned after the shell has been

@@ -23,6 +23,7 @@
 #include "ash/common/system/brightness_control_delegate.h"
 #include "ash/common/system/keyboard_brightness_control_delegate.h"
 #include "ash/common/system/toast/toast_manager.h"
+#include "ash/common/system/tray/system_tray_controller.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/wallpaper/wallpaper_controller.h"
@@ -204,6 +205,8 @@ WmShell::WmShell(std::unique_ptr<ShellDelegate> shell_delegate)
       focus_cycler_(new FocusCycler),
       immersive_context_(base::MakeUnique<ImmersiveContextAsh>()),
       shelf_model_(new ShelfModel),  // Must create before ShelfDelegate.
+      system_tray_controller_(
+          new SystemTrayController(delegate_->GetShellConnector())),
       system_tray_notifier_(new SystemTrayNotifier),
       wallpaper_delegate_(delegate_->CreateWallpaperDelegate()),
       window_cycle_controller_(new WindowCycleController),

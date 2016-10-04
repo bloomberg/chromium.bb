@@ -11,6 +11,7 @@
 
 // System tray code shared between classic ash SystemTrayDelegateChromeos and
 // mustash SystemTrayClient.
+// TODO(jamescook): Move all implementations into SystemTrayClient.
 class SystemTrayCommon {
  public:
   static const char kDisplaySettingsSubPageName[];

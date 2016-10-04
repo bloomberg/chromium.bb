@@ -12,6 +12,10 @@
       ],
       "gpu": [
         "metrics::mojom::CallStackProfileCollector"
+      ],
+      "ash": [
+        "ash::mojom::SystemTray",
+        "ash::mojom::SystemTrayClient"
       ]
     }
   }

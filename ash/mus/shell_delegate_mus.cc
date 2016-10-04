@@ -115,6 +115,10 @@ ShellDelegateMus::ShellDelegateMus(shell::Connector* connector)
 
 ShellDelegateMus::~ShellDelegateMus() {}
 
+::shell::Connector* ShellDelegateMus::GetShellConnector() const {
+  return connector_;
+}
+
 bool ShellDelegateMus::IsFirstRunAfterBoot() const {
   NOTIMPLEMENTED();
   return false;
@@ -176,7 +180,7 @@ ShelfDelegate* ShellDelegateMus::CreateShelfDelegate(ShelfModel* model) {
 
 SystemTrayDelegate* ShellDelegateMus::CreateSystemTrayDelegate() {
 #if defined(OS_CHROMEOS)
-  return new SystemTrayDelegateMus(connector_);
+  return new SystemTrayDelegateMus();
 #else
   // Windows and Linux do not support the services required for most system tray
   // items. Use the same stub delegate as ash_shell_with_content.

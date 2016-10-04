@@ -203,6 +203,10 @@ WmRootWindowControllerMus* WmShellMus::GetRootWindowControllerWithDisplayId(
   return nullptr;
 }
 
+bool WmShellMus::IsRunningInMash() const {
+  return true;
+}
+
 WmWindow* WmShellMus::NewWindow(ui::wm::WindowType window_type,
                                 ui::LayerType layer_type) {
   WmWindowMus* window = WmWindowMus::Get(window_tree_client()->NewWindow());

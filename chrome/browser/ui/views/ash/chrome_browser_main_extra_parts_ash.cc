@@ -39,22 +39,19 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   if (chrome::IsRunningInMash()) {
     immersive_context_ = base::MakeUnique<ImmersiveContextMus>();
     immersive_handler_factory_ = base::MakeUnique<ImmersiveHandlerFactoryMus>();
-#if defined(OS_CHROMEOS)
-    // Must be available at login screen, so initialize before profile.
-    system_tray_client_ = base::MakeUnique<SystemTrayClient>();
-#endif
   }
 
 #if defined(OS_CHROMEOS)
+  // Must be available at login screen, so initialize before profile.
+  system_tray_client_ = base::MakeUnique<SystemTrayClient>();
+
   // For OS_CHROMEOS, virtual keyboard needs to be initialized before profile
   // initialized. Otherwise, virtual keyboard extension will not load at login
   // screen.
   keyboard::InitializeKeyboard();
-#endif
 
-#if defined(OS_CHROMEOS)
   ui::SelectFileDialog::SetFactory(new SelectFileDialogExtensionFactory);
-#endif
+#endif  // defined(OS_CHROMEOS)
 }
 
 void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {

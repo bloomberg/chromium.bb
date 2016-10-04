@@ -196,6 +196,10 @@ ShellDelegateImpl::ShellDelegateImpl()
 
 ShellDelegateImpl::~ShellDelegateImpl() {}
 
+::shell::Connector* ShellDelegateImpl::GetShellConnector() const {
+  return nullptr;
+}
+
 bool ShellDelegateImpl::IsFirstRunAfterBoot() const {
   return false;
 }

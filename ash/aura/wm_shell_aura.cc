@@ -77,6 +77,10 @@ void WmShellAura::Shutdown() {
   WmShell::Shutdown();
 }
 
+bool WmShellAura::IsRunningInMash() const {
+  return false;
+}
+
 WmWindow* WmShellAura::NewWindow(ui::wm::WindowType window_type,
                                  ui::LayerType layer_type) {
   aura::Window* aura_window = new aura::Window(nullptr);

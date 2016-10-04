@@ -112,6 +112,10 @@ TestShellDelegate::TestShellDelegate()
 
 TestShellDelegate::~TestShellDelegate() {}
 
+::shell::Connector* TestShellDelegate::GetShellConnector() const {
+  return nullptr;
+}
+
 bool TestShellDelegate::IsFirstRunAfterBoot() const {
   return false;
 }

@@ -91,6 +91,8 @@ class SystemTrayDelegateChromeOSTest : public LoginManagerTest {
         user_manager::UserManager::Get()->FindUser(account_id);
     Profile* profile = ProfileHelper::Get()->GetProfileByUser(user);
     profile->GetPrefs()->SetBoolean(prefs::kUse24HourClock, use_24_hour_clock);
+    // Allow clock setting to be sent to ash over mojo.
+    content::RunAllPendingInMessageLoop();
   }
 
   const AccountId account_id1_;
@@ -114,13 +116,17 @@ IN_PROC_BROWSER_TEST_F(SystemTrayDelegateChromeOSTest,
   SetupUserProfile(account_id1_, true /* Use_24_hour_clock. */);
   CreateDefaultView();
   EXPECT_EQ(base::k24HourClock, GetHourType());
+
   UserAddingScreen::Get()->Start();
   content::RunAllPendingInMessageLoop();
   AddUser(account_id2_.GetUserEmail());
   SetupUserProfile(account_id2_, false /* Use_24_hour_clock. */);
   CreateDefaultView();
   EXPECT_EQ(base::k12HourClock, GetHourType());
+
   user_manager::UserManager::Get()->SwitchActiveUser(account_id1_);
+  // Allow clock setting to be sent to ash over mojo.
+  content::RunAllPendingInMessageLoop();
   CreateDefaultView();
   EXPECT_EQ(base::k24HourClock, GetHourType());
 }

@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/common/mojo_interface_factory.h"
 #include "ash/public/interfaces/wallpaper.mojom.h"
 #include "base/lazy_instance.h"
 #include "base/memory/weak_ptr.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/app_list/app_list_presenter_service.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/chrome_wallpaper_manager.h"
 #include "chrome/browser/ui/ash/keyboard_ui_service.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
@@ -169,6 +171,13 @@ bool ChromeInterfaceFactory::OnConnect(const shell::Identity& remote_identity,
       registry, main_thread_task_runner_);
   FactoryImpl::AddFactory<app_list::mojom::AppListPresenter>(
       registry, main_thread_task_runner_);
+
+  // In classic ash, the browser process provides ash services to itself.
+  if (!chrome::IsRunningInMash()) {
+    ash::mojo_interface_factory::RegisterInterfaces(registry,
+                                                    main_thread_task_runner_);
+  }
+
   return true;
 }
 

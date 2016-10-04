@@ -16,6 +16,13 @@
          "interfaces": [ "ash::autoclick::mojom::AutoclickController" ]
       }
     },
-    "provided": { "mash:launchable": [ "mash::mojom::Launchable" ] }
+    "provided": {
+      "mash:launchable": [
+        "mash::mojom::Launchable"
+      ],
+      "ash": [
+        "ash::mojom::SystemTrayClient"
+      ]
+    }
   }
 }

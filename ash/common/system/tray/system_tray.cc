@@ -13,6 +13,7 @@
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/cast/tray_cast.h"
 #include "ash/common/system/date/tray_date.h"
+#include "ash/common/system/tray/system_tray_controller.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_item.h"
 #include "ash/common/system/tray/tray_bubble_wrapper.h"
@@ -667,7 +668,7 @@ void SystemTray::UpdateWebNotifications() {
 base::string16 SystemTray::GetAccessibleTimeString(
     const base::Time& now) const {
   base::HourClockType hour_type =
-      WmShell::Get()->system_tray_delegate()->GetHourClockType();
+      WmShell::Get()->system_tray_controller()->hour_clock_type();
   return base::TimeFormatTimeOfDayWithHourClockType(now, hour_type,
                                                     base::kKeepAmPm);
 }

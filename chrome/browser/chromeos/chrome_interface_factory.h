@@ -12,7 +12,8 @@
 
 namespace chromeos {
 
-// InterfaceFactory for creating all services provided by chrome.
+// InterfaceFactory for creating all services provided by chrome. Lives on the
+// IO thread.
 class ChromeInterfaceFactory : public content::ConnectionFilter {
  public:
   ChromeInterfaceFactory();

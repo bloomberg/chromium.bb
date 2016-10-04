@@ -34,6 +34,10 @@ class Insets;
 class Point;
 }
 
+namespace shell {
+class Connector;
+}
+
 namespace views {
 class PointerWatcher;
 enum class PointerWatcherEventTypes;
@@ -62,6 +66,7 @@ class ShelfWindowWatcher;
 class ShellDelegate;
 class ShellObserver;
 class SystemTrayDelegate;
+class SystemTrayController;
 class SystemTrayNotifier;
 class ToastManager;
 class WallpaperController;
@@ -144,6 +149,10 @@ class ASH_EXPORT WmShell {
 
   ShelfModel* shelf_model() { return shelf_model_.get(); }
 
+  SystemTrayController* system_tray_controller() {
+    return system_tray_controller_.get();
+  }
+
   SystemTrayNotifier* system_tray_notifier() {
     return system_tray_notifier_.get();
   }
@@ -167,6 +176,9 @@ class ASH_EXPORT WmShell {
   WindowSelectorController* window_selector_controller() {
     return window_selector_controller_.get();
   }
+
+  // Returns true when ash is running in its own mojo application/service.
+  virtual bool IsRunningInMash() const = 0;
 
   virtual WmWindow* NewWindow(ui::wm::WindowType window_type,
                               ui::LayerType layer_type) = 0;
@@ -453,6 +465,7 @@ class ASH_EXPORT WmShell {
   std::unique_ptr<ShelfDelegate> shelf_delegate_;
   std::unique_ptr<ShelfModel> shelf_model_;
   std::unique_ptr<ShelfWindowWatcher> shelf_window_watcher_;
+  std::unique_ptr<SystemTrayController> system_tray_controller_;
   std::unique_ptr<SystemTrayNotifier> system_tray_notifier_;
   std::unique_ptr<SystemTrayDelegate> system_tray_delegate_;
   std::unique_ptr<ToastManager> toast_manager_;

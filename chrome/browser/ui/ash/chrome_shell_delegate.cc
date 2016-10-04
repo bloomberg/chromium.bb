@@ -73,6 +73,7 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/common/mojo_shell_connection.h"
 #include "ui/app_list/presenter/app_list_presenter.h"
 #include "ui/aura/window.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
@@ -322,6 +323,10 @@ ChromeShellDelegate::ChromeShellDelegate()
 }
 
 ChromeShellDelegate::~ChromeShellDelegate() {
+}
+
+shell::Connector* ChromeShellDelegate::GetShellConnector() const {
+  return content::MojoShellConnection::GetForProcess()->GetConnector();
 }
 
 bool ChromeShellDelegate::IsFirstRunAfterBoot() const {

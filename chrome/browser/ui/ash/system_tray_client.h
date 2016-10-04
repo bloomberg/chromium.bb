@@ -12,6 +12,7 @@
 
 // Handles method calls delegated back to chrome from ash. Also notifies ash of
 // relevant state changes in chrome.
+// TODO: Consider renaming this to SystemTrayClientChromeOS.
 class SystemTrayClient : public ash::mojom::SystemTrayClient,
                          public chromeos::system::SystemClockObserver {
  public:

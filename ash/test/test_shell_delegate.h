@@ -35,6 +35,7 @@ class TestShellDelegate : public ShellDelegate {
   }
 
   // Overridden from ShellDelegate:
+  ::shell::Connector* GetShellConnector() const override;
   bool IsFirstRunAfterBoot() const override;
   bool IsIncognitoAllowed() const override;
   bool IsMultiProfilesEnabled() const override;
