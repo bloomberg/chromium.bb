@@ -527,3 +527,6 @@ fe45a535ea84cba23a9b1355d36525db0d408280
 3b2d0607127d98646c789531defd953801fd3ddb
 # Reflow comments in modules/peerconnection
 52a0d0922dcdbab46f18c241fff034ac8d139d60
+# Reflow comments in core/html/canvas, core/offscreencanvas, modules/canvas,
+# modules/canvas2d, modules/offscreencanvas2d
+5d6fc8b5a83846ca93f906584e0350855b194bdb
