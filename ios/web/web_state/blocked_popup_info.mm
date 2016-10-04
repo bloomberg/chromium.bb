@@ -4,6 +4,10 @@
 
 #include "ios/web/web_state/blocked_popup_info.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace web {
 
 BlockedPopupInfo::BlockedPopupInfo(const GURL& url,

@@ -17,6 +17,10 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 using net::URLFetcher;
 using net::URLFetcherDelegate;
 using net::URLRequestContextGetter;
@@ -124,7 +128,6 @@ class PassKitFetcherDelegate : public URLFetcherDelegate {
 - (void)dealloc {
   [[CRWNetworkActivityIndicatorManager sharedInstance]
       clearNetworkTasksForGroup:[self networkActivityKey]];
-  [super dealloc];
 }
 
 - (BOOL)isMIMETypePassKitType:(NSString*)MIMEType {
