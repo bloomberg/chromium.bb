@@ -6,7 +6,6 @@
 
 #include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/wm_shell.h"
-#include "ash/metrics/task_switch_metrics_recorder.h"
 #include "ash/shell.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
@@ -107,14 +106,6 @@ void AppListControllerDelegateAsh::ActivateApp(
     const extensions::Extension* extension,
     AppListSource source,
     int event_flags) {
-  // TODO(mfomitchev): Figure this out for Mustash - crbug.com/616581
-  if (ash::Shell::HasInstance()) {
-    ash::Shell::GetInstance()
-        ->metrics()
-        ->task_switch_metrics_recorder()
-        .OnTaskSwitch(ash::TaskSwitchSource::APP_LIST);
-  }
-
   // Platform apps treat activations as a launch. The app can decide whether to
   // show a new window or focus an existing window as it sees fit.
   if (extension->is_platform_app()) {

@@ -1342,8 +1342,6 @@ split_static_library("ui") {
       "ash/launcher/settings_window_observer.h",
       "ash/media_delegate_chromeos.cc",
       "ash/media_delegate_chromeos.h",
-      "ash/metrics/chrome_user_metrics_recorder.cc",
-      "ash/metrics/chrome_user_metrics_recorder.h",
       "ash/multi_user/multi_user_context_menu.h",
       "ash/multi_user/multi_user_context_menu_chromeos.cc",
       "ash/multi_user/multi_user_notification_blocker_chromeos.cc",

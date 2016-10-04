@@ -392,14 +392,10 @@ void ChromeShellDelegate::PreInit() {
   // in Shell::Init.
   display_configuration_observer_.reset(
       new chromeos::DisplayConfigurationObserver());
-
-  chrome_user_metrics_recorder_.reset(new ChromeUserMetricsRecorder);
 }
 
 void ChromeShellDelegate::PreShutdown() {
   display_configuration_observer_.reset();
-
-  chrome_user_metrics_recorder_.reset();
 }
 
 void ChromeShellDelegate::Exit() {

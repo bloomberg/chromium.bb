@@ -11,7 +11,6 @@
 #include "ash/common/shell_delegate.h"
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "chrome/browser/ui/ash/metrics/chrome_user_metrics_recorder.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -73,9 +72,6 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   content::NotificationRegistrar registrar_;
 
   ChromeLauncherControllerImpl* shelf_delegate_;
-
-  // Proxies events from chrome/browser to ash::UserMetricsRecorder.
-  std::unique_ptr<ChromeUserMetricsRecorder> chrome_user_metrics_recorder_;
 
   std::unique_ptr<chromeos::DisplayConfigurationObserver>
       display_configuration_observer_;

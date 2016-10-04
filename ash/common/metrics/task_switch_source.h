@@ -13,8 +13,6 @@ enum class TaskSwitchSource {
   // Task switches caused by any two sources in this enum. NOTE: This value
   // should NOT be used outside of TaskSwitchMetricsRecorder.
   ANY,
-  // Task switches from selecting items in the app list.
-  APP_LIST,
   // Task switches caused by the user activating a task window by clicking or
   // tapping on it.
   DESKTOP,
@@ -23,8 +21,6 @@ enum class TaskSwitchSource {
   OVERVIEW_MODE,
   // All task switches caused by shelf buttons, not including sub-menus.
   SHELF,
-  // All task switches caused by the tab strip.
-  TAB_STRIP,
   // Task switches caused by the WindowCycleController (ie Alt+Tab).
   WINDOW_CYCLE_CONTROLLER
 };
