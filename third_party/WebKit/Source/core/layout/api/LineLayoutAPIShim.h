@@ -11,7 +11,8 @@ namespace blink {
 
 class LayoutObject;
 
-// TODO(pilgrim): Remove this kludge once clients have a real API and no longer need access to the underlying LayoutObject.
+// TODO(pilgrim): Remove this kludge once clients have a real API and no longer
+// need access to the underlying LayoutObject.
 class LineLayoutAPIShim {
  public:
   static LayoutObject* layoutObjectFrom(LineLayoutItem item) {

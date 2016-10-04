@@ -71,7 +71,8 @@ class SVGInlineTextMetricsIterator {
     if (m_characterOffset == startCharacterOffset)
       return;
 
-    // TODO(fs): We could walk backwards through the metrics list in these cases.
+    // TODO(fs): We could walk backwards through the metrics list in these
+    // cases.
     if (m_characterOffset > startCharacterOffset)
       reset(textLineLayout);
 

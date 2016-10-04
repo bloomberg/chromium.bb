@@ -76,8 +76,8 @@ class LineLayoutItem {
   LineLayoutBox containingBlock() const;
 
   // Implemented in LineLayoutBoxModel.h
-  // Intentionally returns a LineLayoutBoxModel to avoid exposing LayoutBoxModelObject
-  // to the line layout code.
+  // Intentionally returns a LineLayoutBoxModel to avoid exposing
+  // LayoutBoxModelObject to the line layout code.
   LineLayoutBoxModel enclosingBoxModelObject() const;
 
   LineLayoutItem container() const {
