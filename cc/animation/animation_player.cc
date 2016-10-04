@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "cc/animation/animation_delegate.h"
+#include "cc/animation/animation_events.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_timeline.h"
 #include "cc/animation/property_animation_state.h"

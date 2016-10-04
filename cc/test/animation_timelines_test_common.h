@@ -242,9 +242,6 @@ class AnimationTimelinesTest : public testing::Test {
   void CreateTestMainLayer();
   void CreateTestImplLayer(ElementListType element_list_type);
 
-  scoped_refptr<ElementAnimations> element_animations() const;
-  scoped_refptr<ElementAnimations> element_animations_impl() const;
-
   void ReleaseRefPtrs();
 
   void AnimateLayersTransferEvents(base::TimeTicks time,
@@ -273,9 +270,11 @@ class AnimationTimelinesTest : public testing::Test {
 
   scoped_refptr<AnimationTimeline> timeline_;
   scoped_refptr<AnimationPlayer> player_;
+  scoped_refptr<ElementAnimations> element_animations_;
 
   scoped_refptr<AnimationTimeline> timeline_impl_;
   scoped_refptr<AnimationPlayer> player_impl_;
+  scoped_refptr<ElementAnimations> element_animations_impl_;
 };
 
 }  // namespace cc

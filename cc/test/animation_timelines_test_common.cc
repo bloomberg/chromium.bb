@@ -395,6 +395,8 @@ void AnimationTimelinesTest::AttachTimelinePlayerLayer() {
   host_->AddAnimationTimeline(timeline_);
   timeline_->AttachPlayer(player_);
   player_->AttachElement(element_id_);
+
+  element_animations_ = player_->element_animations();
 }
 
 void AnimationTimelinesTest::CreateImplTimelineAndPlayer() {
@@ -402,25 +404,13 @@ void AnimationTimelinesTest::CreateImplTimelineAndPlayer() {
   GetImplTimelineAndPlayerByID();
 }
 
-scoped_refptr<ElementAnimations> AnimationTimelinesTest::element_animations()
-    const {
-  DCHECK(player_);
-  DCHECK(player_->element_animations());
-  return player_->element_animations();
-}
-
-scoped_refptr<ElementAnimations>
-AnimationTimelinesTest::element_animations_impl() const {
-  DCHECK(player_impl_);
-  DCHECK(player_impl_->element_animations());
-  return player_impl_->element_animations();
-}
-
 void AnimationTimelinesTest::GetImplTimelineAndPlayerByID() {
   timeline_impl_ = host_impl_->GetTimelineById(timeline_id_);
   EXPECT_TRUE(timeline_impl_);
   player_impl_ = timeline_impl_->GetPlayerById(player_id_);
   EXPECT_TRUE(player_impl_);
+
+  element_animations_impl_ = player_impl_->element_animations();
 }
 
 void AnimationTimelinesTest::ReleaseRefPtrs() {

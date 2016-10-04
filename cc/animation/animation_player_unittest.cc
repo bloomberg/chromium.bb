@@ -295,8 +295,8 @@ TEST_F(AnimationPlayerTest, AddRemoveAnimationToNonAttachedPlayer) {
 
   const int filter_id =
       AddAnimatedFilterToPlayer(player_.get(), duration, 0.1f, 0.9f);
-  const int opacity_id = AddOpacityTransitionToPlayer(
-      player_.get(), duration, start_opacity, end_opacity, false);
+  AddOpacityTransitionToPlayer(player_.get(), duration, start_opacity,
+                               end_opacity, false);
 
   EXPECT_FALSE(player_->needs_push_properties());
 
@@ -311,10 +311,10 @@ TEST_F(AnimationPlayerTest, AddRemoveAnimationToNonAttachedPlayer) {
   player_->AttachElement(element_id_);
 
   EXPECT_TRUE(player_->element_animations());
-  EXPECT_FALSE(player_->element_animations()
-                   ->GetAnimationById(filter_id));
-  EXPECT_TRUE(player_->element_animations()
-                  ->GetAnimationById(opacity_id));
+  EXPECT_FALSE(player_->element_animations()->HasAnyAnimationTargetingProperty(
+      TargetProperty::FILTER));
+  EXPECT_TRUE(player_->element_animations()->HasAnyAnimationTargetingProperty(
+      TargetProperty::OPACITY));
   EXPECT_TRUE(player_->needs_push_properties());
 
   host_->PushPropertiesTo(host_impl_);

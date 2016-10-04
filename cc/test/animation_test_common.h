@@ -15,7 +15,6 @@
 
 namespace cc {
 class AnimationPlayer;
-class ElementAnimations;
 class LayerImpl;
 class Layer;
 }
@@ -78,26 +77,10 @@ class FakeFloatTransition : public FloatAnimationCurve {
   float to_;
 };
 
-int AddScrollOffsetAnimationToElementAnimations(ElementAnimations* target,
-                                                gfx::ScrollOffset initial_value,
-                                                gfx::ScrollOffset target_value,
-                                                bool impl_only);
-
-int AddOpacityTransitionToElementAnimations(ElementAnimations* target,
-                                            double duration,
-                                            float start_opacity,
-                                            float end_opacity,
-                                            bool use_timing_function);
-
-int AddAnimatedTransformToElementAnimations(ElementAnimations* target,
-                                            double duration,
-                                            int delta_x,
-                                            int delta_y);
-
-int AddAnimatedFilterToElementAnimations(ElementAnimations* target,
-                                         double duration,
-                                         float start_brightness,
-                                         float end_brightness);
+int AddScrollOffsetAnimationToPlayer(AnimationPlayer* player,
+                                     gfx::ScrollOffset initial_value,
+                                     gfx::ScrollOffset target_value,
+                                     bool impl_only);
 
 int AddAnimatedTransformToPlayer(AnimationPlayer* player,
                                  double duration,
@@ -120,11 +103,11 @@ int AddAnimatedFilterToPlayer(AnimationPlayer* player,
                               float start_brightness,
                               float end_brightness);
 
-int AddOpacityStepsToElementAnimations(ElementAnimations* target,
-                                       double duration,
-                                       float start_opacity,
-                                       float end_opacity,
-                                       int num_steps);
+int AddOpacityStepsToPlayer(AnimationPlayer* player,
+                            double duration,
+                            float start_opacity,
+                            float end_opacity,
+                            int num_steps);
 
 void AddAnimationToElementWithPlayer(ElementId element_id,
                                      scoped_refptr<AnimationTimeline> timeline,
@@ -172,11 +155,6 @@ int AddOpacityTransitionToElementWithPlayer(
     float start_opacity,
     float end_opacity,
     bool use_timing_function);
-
-void AbortAnimationsOnElementWithPlayer(
-    ElementId element_id,
-    scoped_refptr<AnimationTimeline> timeline,
-    TargetProperty::Type target_property);
 
 }  // namespace cc
 

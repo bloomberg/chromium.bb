@@ -19,9 +19,9 @@
 namespace cc {
 
 class AnimationDelegate;
-class AnimationEvents;
 class AnimationHost;
 class AnimationTimeline;
+struct AnimationEvent;
 struct PropertyAnimationState;
 
 // An AnimationPlayer owns all animations to be run on particular CC Layer.

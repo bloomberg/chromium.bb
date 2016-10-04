@@ -427,7 +427,7 @@ bool AnimationHost::HasAnyAnimationTargetingProperty(
   if (!element_animations)
     return false;
 
-  return !!element_animations->GetAnimation(property);
+  return element_animations->HasAnyAnimationTargetingProperty(property);
 }
 
 bool AnimationHost::HasFilterAnimationThatInflatesBounds(

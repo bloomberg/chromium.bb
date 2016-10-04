@@ -12,9 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "cc/animation/animation.h"
-#include "cc/animation/animation_curve.h"
-#include "cc/animation/animation_events.h"
+#include "cc/animation/element_id.h"
 #include "cc/animation/property_animation_state.h"
 #include "cc/animation/target_property.h"
 #include "cc/base/cc_export.h"
@@ -32,9 +30,8 @@ class AnimationEvents;
 class AnimationHost;
 class AnimationPlayer;
 class FilterOperations;
-class KeyframeValueList;
 enum class ElementListType;
-enum class AnimationChangeType;
+struct AnimationEvent;
 
 // An ElementAnimations owns a list of all AnimationPlayers, attached to
 // the element.
@@ -71,13 +68,6 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
   void PushPropertiesTo(
       scoped_refptr<ElementAnimations> element_animations_impl);
 
-  void AddAnimation(std::unique_ptr<Animation> animation);
-  void PauseAnimation(int animation_id, base::TimeDelta time_offset);
-  void RemoveAnimation(int animation_id);
-  void AbortAnimation(int animation_id);
-  void AbortAnimations(TargetProperty::Type target_property,
-                       bool needs_completion = false);
-
   void Animate(base::TimeTicks monotonic_time);
 
   void UpdateState(bool start_ready_animations, AnimationEvents* events);
@@ -87,19 +77,14 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
   // are deleted.
   void ActivateAnimations();
 
-  // Returns the active animation animating the given property that is either
-  // running, or is next to run, if such an animation exists.
-  Animation* GetAnimation(TargetProperty::Type target_property) const;
-
-  // Returns the active animation for the given unique animation id.
-  Animation* GetAnimationById(int animation_id) const;
-
   // Returns true if there are any animations that have neither finished nor
   // aborted.
   bool HasActiveAnimation() const;
 
   // Returns true if there are any animations at all to process.
   bool HasAnyAnimation() const;
+
+  bool HasAnyAnimationTargetingProperty(TargetProperty::Type property) const;
 
   // Returns true if there is an animation that is either currently animating
   // the given property or scheduled to animate this property in the future, and
@@ -172,9 +157,6 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
     return scroll_offset_animation_was_interrupted_;
   }
   void SetScrollOffsetAnimationWasInterrupted();
-
-  // TODO(loyso): Erase it, use AnimationPlayer's one.
-  bool needs_to_start_animations_for_testing() const;
 
   void SetNeedsPushProperties();
   bool needs_push_properties() const { return needs_push_properties_; }

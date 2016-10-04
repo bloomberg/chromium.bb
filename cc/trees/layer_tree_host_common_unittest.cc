@@ -7537,8 +7537,8 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   EXPECT_EQ(0.f, GetStartingAnimationScale(child_raw));
   EXPECT_EQ(0.f, GetStartingAnimationScale(grand_child_raw));
 
-  AbortAnimationsOnElementWithPlayer(child_raw->element_id(), timeline,
-                                     TargetProperty::TRANSFORM);
+  child_player->AbortAnimations(TargetProperty::TRANSFORM, false);
+
   gfx::Transform scale_matrix;
   scale_matrix.Scale(1.f, 2.f);
   grand_parent_raw->test_properties()->transform = scale_matrix;
@@ -8892,10 +8892,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayerImpl) {
   scoped_refptr<AnimationPlayer> player(AnimationPlayer::Create(1));
   host_impl.active_tree()->animation_host()->RegisterPlayerForElement(
       root_ptr->element_id(), player.get());
-  host_impl.active_tree()
-      ->animation_host()
-      ->GetElementAnimationsForElementId(root_ptr->element_id())
-      ->AddAnimation(std::move(transform_animation));
+  player->AddAnimation(std::move(transform_animation));
   grandchild_ptr->set_visible_layer_rect(gfx::Rect());
   child_ptr->SetScrollClipLayer(root_ptr->id());
   root_ptr->test_properties()->transform = singular;
@@ -8943,11 +8940,7 @@ TEST_F(LayerTreeHostCommonTest, LayerSkippingInSubtreeOfSingularTransform) {
   scoped_refptr<AnimationPlayer> player(AnimationPlayer::Create(1));
   host_impl()->active_tree()->animation_host()->RegisterPlayerForElement(
       grand_child->element_id(), player.get());
-  host_impl()
-      ->active_tree()
-      ->animation_host()
-      ->GetElementAnimationsForElementId(grand_child->element_id())
-      ->AddAnimation(std::move(transform_animation));
+  player->AddAnimation(std::move(transform_animation));
 
   ExecuteCalculateDrawProperties(root);
   EXPECT_EQ(gfx::Rect(0, 0), grand_child->visible_layer_rect());
@@ -9009,10 +9002,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingPendingLayerImpl) {
   scoped_refptr<AnimationPlayer> player(AnimationPlayer::Create(1));
   host_impl.active_tree()->animation_host()->RegisterPlayerForElement(
       root_ptr->element_id(), player.get());
-  host_impl.active_tree()
-      ->animation_host()
-      ->GetElementAnimationsForElementId(root_ptr->element_id())
-      ->AddAnimation(std::move(animation));
+  player->AddAnimation(std::move(animation));
   root_ptr->test_properties()->opacity = 0.f;
   grandchild_ptr->set_visible_layer_rect(gfx::Rect());
   root_ptr->layer_tree_impl()->property_trees()->needs_rebuild = true;

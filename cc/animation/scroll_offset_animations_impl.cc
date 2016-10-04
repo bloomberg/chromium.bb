@@ -70,9 +70,8 @@ bool ScrollOffsetAnimationsImpl::ScrollAnimationUpdateTarget(
 
   DCHECK_EQ(element_id, scroll_offset_animation_player_->element_id());
 
-  Animation* animation =
-      scroll_offset_animation_player_->element_animations()->GetAnimation(
-          TargetProperty::SCROLL_OFFSET);
+  Animation* animation = scroll_offset_animation_player_->GetAnimation(
+      TargetProperty::SCROLL_OFFSET);
   if (!animation) {
     scroll_offset_animation_player_->DetachElement();
     return false;
@@ -115,9 +114,8 @@ void ScrollOffsetAnimationsImpl::ScrollAnimationApplyAdjustment(
   if (!scroll_offset_animation_player_->element_animations())
     return;
 
-  Animation* animation =
-      scroll_offset_animation_player_->element_animations()->GetAnimation(
-          TargetProperty::SCROLL_OFFSET);
+  Animation* animation = scroll_offset_animation_player_->GetAnimation(
+      TargetProperty::SCROLL_OFFSET);
   if (!animation)
     return;
 

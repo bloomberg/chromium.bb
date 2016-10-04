@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "cc/animation/animation_delegate.h"
+#include "cc/animation/animation_events.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_player.h"
 #include "cc/animation/keyframed_animation_curve.h"
@@ -156,18 +157,6 @@ void ElementAnimations::PushPropertiesTo(
 
   element_animations_impl->UpdateActivation(ActivationType::NORMAL);
   UpdateActivation(ActivationType::NORMAL);
-}
-
-void ElementAnimations::AddAnimation(std::unique_ptr<Animation> animation) {
-  // TODO(loyso): Erase this. Rewrite element_animations_unittest to use
-  // AnimationPlayer::AddAnimation.
-
-  // Add animation to the first player.
-  DCHECK(players_list_->might_have_observers());
-  ElementAnimations::PlayersList::Iterator it(players_list_.get());
-  AnimationPlayer* player = it.GetNext();
-  DCHECK(player);
-  player->AddAnimation(std::move(animation));
 }
 
 void ElementAnimations::Animate(base::TimeTicks monotonic_time) {
@@ -554,6 +543,17 @@ bool ElementAnimations::HasAnyAnimation() const {
   return false;
 }
 
+bool ElementAnimations::HasAnyAnimationTargetingProperty(
+    TargetProperty::Type property) const {
+  ElementAnimations::PlayersList::Iterator it(players_list_.get());
+  AnimationPlayer* player;
+  while ((player = it.GetNext()) != nullptr) {
+    if (player->GetAnimation(property))
+      return true;
+  }
+  return false;
+}
+
 bool ElementAnimations::IsPotentiallyAnimatingProperty(
     TargetProperty::Type target_property,
     ElementListType list_type) const {
@@ -582,68 +582,6 @@ bool ElementAnimations::IsCurrentlyAnimatingProperty(
 
 void ElementAnimations::SetScrollOffsetAnimationWasInterrupted() {
   scroll_offset_animation_was_interrupted_ = true;
-}
-
-bool ElementAnimations::needs_to_start_animations_for_testing() const {
-  ElementAnimations::PlayersList::Iterator it(players_list_.get());
-  AnimationPlayer* player;
-  while ((player = it.GetNext()) != nullptr) {
-    if (player->needs_to_start_animations())
-      return true;
-  }
-
-  return false;
-}
-
-void ElementAnimations::PauseAnimation(int animation_id,
-                                       base::TimeDelta time_offset) {
-  ElementAnimations::PlayersList::Iterator it(players_list_.get());
-  AnimationPlayer* player;
-  while ((player = it.GetNext()) != nullptr)
-    player->PauseAnimation(animation_id, time_offset.InSecondsF());
-}
-
-void ElementAnimations::RemoveAnimation(int animation_id) {
-  ElementAnimations::PlayersList::Iterator it(players_list_.get());
-  AnimationPlayer* player;
-  while ((player = it.GetNext()) != nullptr)
-    player->RemoveAnimation(animation_id);
-}
-
-void ElementAnimations::AbortAnimation(int animation_id) {
-  ElementAnimations::PlayersList::Iterator it(players_list_.get());
-  AnimationPlayer* player;
-  while ((player = it.GetNext()) != nullptr)
-    player->AbortAnimation(animation_id);
-}
-
-void ElementAnimations::AbortAnimations(TargetProperty::Type target_property,
-                                        bool needs_completion) {
-  ElementAnimations::PlayersList::Iterator it(players_list_.get());
-  AnimationPlayer* player;
-  while ((player = it.GetNext()) != nullptr)
-    player->AbortAnimations(target_property, needs_completion);
-}
-
-Animation* ElementAnimations::GetAnimation(
-    TargetProperty::Type target_property) const {
-  ElementAnimations::PlayersList::Iterator it(players_list_.get());
-  AnimationPlayer* player;
-  while ((player = it.GetNext()) != nullptr) {
-    if (Animation* animation = player->GetAnimation(target_property))
-      return animation;
-  }
-  return nullptr;
-}
-
-Animation* ElementAnimations::GetAnimationById(int animation_id) const {
-  ElementAnimations::PlayersList::Iterator it(players_list_.get());
-  AnimationPlayer* player;
-  while ((player = it.GetNext()) != nullptr) {
-    if (Animation* animation = player->GetAnimationById(animation_id))
-      return animation;
-  }
-  return nullptr;
 }
 
 void ElementAnimations::OnFilterAnimated(ElementListType list_type,

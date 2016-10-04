@@ -21,8 +21,6 @@ class FilterOperations;
 
 enum class ElementListType { ACTIVE, PENDING };
 
-enum class AnimationChangeType { POTENTIAL, RUNNING, BOTH };
-
 class MutatorHostClient {
  public:
   virtual bool IsElementInList(ElementId element_id,
