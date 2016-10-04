@@ -361,15 +361,15 @@ class CONTENT_EXPORT ServiceWorkerStorage
       const ServiceWorkerDatabase::RegistrationData& data,
       const ResourceList& resources,
       ServiceWorkerDatabase::Status status);
-  void DidGetRegistrations(const GetRegistrationsCallback& callback,
-                           RegistrationList* registration_data_list,
-                           std::vector<ResourceList>* resources_list,
-                           const GURL& origin_filter,
-                           ServiceWorkerDatabase::Status status);
-  void DidGetRegistrationsInfos(const GetRegistrationsInfosCallback& callback,
-                                RegistrationList* registration_data_list,
-                                const GURL& origin_filter,
-                                ServiceWorkerDatabase::Status status);
+  void DidGetRegistrationsForOrigin(const GetRegistrationsCallback& callback,
+                                    RegistrationList* registration_data_list,
+                                    std::vector<ResourceList>* resources_list,
+                                    const GURL& origin_filter,
+                                    ServiceWorkerDatabase::Status status);
+  void DidGetAllRegistrationsInfos(
+      const GetRegistrationsInfosCallback& callback,
+      RegistrationList* registration_data_list,
+      ServiceWorkerDatabase::Status status);
   void DidStoreRegistration(
       const StatusCallback& callback,
       const ServiceWorkerDatabase::RegistrationData& new_version,

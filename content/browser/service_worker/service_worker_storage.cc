@@ -351,7 +351,7 @@ void ServiceWorkerStorage::GetRegistrationsForOrigin(
       base::Bind(&ServiceWorkerDatabase::GetRegistrationsForOrigin,
                  base::Unretained(database_.get()), origin, registrations,
                  resource_lists),
-      base::Bind(&ServiceWorkerStorage::DidGetRegistrations,
+      base::Bind(&ServiceWorkerStorage::DidGetRegistrationsForOrigin,
                  weak_factory_.GetWeakPtr(), callback,
                  base::Owned(registrations), base::Owned(resource_lists),
                  origin));
@@ -376,9 +376,9 @@ void ServiceWorkerStorage::GetAllRegistrationsInfos(
       database_task_manager_->GetTaskRunner(), FROM_HERE,
       base::Bind(&ServiceWorkerDatabase::GetAllRegistrations,
                  base::Unretained(database_.get()), registrations),
-      base::Bind(&ServiceWorkerStorage::DidGetRegistrationsInfos,
+      base::Bind(&ServiceWorkerStorage::DidGetAllRegistrationsInfos,
                  weak_factory_.GetWeakPtr(), callback,
-                 base::Owned(registrations), GURL()));
+                 base::Owned(registrations)));
 }
 
 void ServiceWorkerStorage::StoreRegistration(
@@ -980,7 +980,7 @@ void ServiceWorkerStorage::ReturnFoundRegistration(
   CompleteFindNow(std::move(registration), SERVICE_WORKER_OK, callback);
 }
 
-void ServiceWorkerStorage::DidGetRegistrations(
+void ServiceWorkerStorage::DidGetRegistrationsForOrigin(
     const GetRegistrationsCallback& callback,
     RegistrationList* registration_data_list,
     std::vector<ResourceList>* resources_list,
@@ -988,6 +988,7 @@ void ServiceWorkerStorage::DidGetRegistrations(
     ServiceWorkerDatabase::Status status) {
   DCHECK(registration_data_list);
   DCHECK(resources_list);
+  DCHECK(origin_filter.is_valid());
 
   if (status != ServiceWorkerDatabase::STATUS_OK &&
       status != ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND) {
@@ -1009,20 +1010,18 @@ void ServiceWorkerStorage::DidGetRegistrations(
 
   // Add unstored registrations that are being installed.
   for (const auto& registration : installing_registrations_) {
-    if ((!origin_filter.is_valid() ||
-         registration.second->pattern().GetOrigin() == origin_filter) &&
-        registration_ids.insert(registration.first).second) {
+    if (registration.second->pattern().GetOrigin() != origin_filter)
+      continue;
+    if (registration_ids.insert(registration.first).second)
       registrations.push_back(registration.second);
-    }
   }
 
   callback.Run(SERVICE_WORKER_OK, std::move(registrations));
 }
 
-void ServiceWorkerStorage::DidGetRegistrationsInfos(
+void ServiceWorkerStorage::DidGetAllRegistrationsInfos(
     const GetRegistrationsInfosCallback& callback,
     RegistrationList* registration_data_list,
-    const GURL& origin_filter,
     ServiceWorkerDatabase::Status status) {
   DCHECK(registration_data_list);
   if (status != ServiceWorkerDatabase::STATUS_OK &&
@@ -1087,11 +1086,8 @@ void ServiceWorkerStorage::DidGetRegistrationsInfos(
 
   // Add unstored registrations that are being installed.
   for (const auto& registration : installing_registrations_) {
-    if ((!origin_filter.is_valid() ||
-         registration.second->pattern().GetOrigin() == origin_filter) &&
-        pushed_registrations.insert(registration.first).second) {
+    if (pushed_registrations.insert(registration.first).second)
       infos.push_back(registration.second->GetInfo());
-    }
   }
 
   callback.Run(SERVICE_WORKER_OK, infos);
