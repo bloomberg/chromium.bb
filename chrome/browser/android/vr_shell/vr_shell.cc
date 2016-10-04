@@ -657,9 +657,12 @@ void VrShell::OnResume(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   controller_->OnResume();
 }
 
-base::WeakPtr<VrShell> VrShell::GetWeakPtr() {
-  // TODO: Ensure that only ui webcontents can request this weak ptr.
-  if (g_instance != nullptr)
+base::WeakPtr<VrShell> VrShell::GetWeakPtr(
+    const content::WebContents* web_contents) {
+  // Ensure that the WebContents requesting the VrShell instance is the one
+  // we created.
+  if (g_instance != nullptr &&
+      g_instance->ui_cvc_->GetWebContents() == web_contents)
     return g_instance->weak_ptr_factory_.GetWeakPtr();
   return base::WeakPtr<VrShell>(nullptr);
 }

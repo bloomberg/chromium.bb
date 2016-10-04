@@ -18,7 +18,7 @@ VrShellUIMessageHandler::VrShellUIMessageHandler() {}
 VrShellUIMessageHandler::~VrShellUIMessageHandler() {}
 
 void VrShellUIMessageHandler::RegisterMessages() {
-  vr_shell_ = vr_shell::VrShell::GetWeakPtr();
+  vr_shell_ = vr_shell::VrShell::GetWeakPtr(web_ui()->GetWebContents());
 
   web_ui()->RegisterMessageCallback(
       "domLoaded", base::Bind(&VrShellUIMessageHandler::HandleDomLoaded,

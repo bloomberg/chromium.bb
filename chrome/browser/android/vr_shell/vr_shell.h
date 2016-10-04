@@ -21,6 +21,7 @@
 
 namespace content {
 class ContentViewCore;
+class WebContents;
 }
 
 namespace ui {
@@ -66,7 +67,8 @@ class VrShell : public device::GvrDelegate {
                     bool enabled);
 
   // html/js UI hooks.
-  static base::WeakPtr<VrShell> GetWeakPtr();
+  static base::WeakPtr<VrShell> GetWeakPtr(
+      const content::WebContents* web_contents);
   UiScene* GetScene();
   void OnDomContentsLoaded();
   void SetUiTextureSize(int width, int height);
