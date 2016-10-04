@@ -154,38 +154,47 @@ void DumpAccessibilityEventsTest::RunEventTest(
 
 // TODO(dmazzoni): port these tests to run on all platforms.
 // TODO(crbug.com/617146): All tests flaky on Windows 8.
-#if /*defined(OS_WIN) ||*/ defined(OS_MACOSX)
+#if defined(OS_WIN) || defined(OS_MACOSX)
+
+// This is tasteless, but then so's the snippet it's replacing.
+#if defined(OS_WIN)
+#define DISABLED_ON_WIN(name) DISABLED_ ## name
+#else
+#define DISABLED_ON_WIN(name) name
+#endif
+
+#if defined(OS_WIN) || defined(OS_MACOSX)
+#define DISABLED_ON_WIN_AND_MAC(name) DISABLED_ ## name
+#else
+#define DISABLED_ON_WIN_AND_MAC(name) name
+#endif
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
                        AccessibilityEventsAriaComboBoxCollapse) {
   RunEventTest(FILE_PATH_LITERAL("aria-combo-box-collapse.html"));
 }
 
+// https://crbug.com/652706
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
-                       AccessibilityEventsAriaComboBoxExpand) {
+    DISABLED_ON_WIN(AccessibilityEventsAriaComboBoxExpand)) {
   RunEventTest(FILE_PATH_LITERAL("aria-combo-box-expand.html"));
 }
 
-#if defined(OS_MACOSX)
-// crbug.com/615411
-#define MAYBE_AccessibilityEventsAriaComboBoxFocus \
-    DISABLED_AccessibilityEventsAriaComboBoxFocus
-#else
-#define MAYBE_AccessibilityEventsAriaComboBoxFocus \
-    AccessibilityEventsAriaComboBoxFocus
-#endif
+// Mac: https://crbug.com/615411, Win: https://crbug.com/652706
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
-                       MAYBE_AccessibilityEventsAriaComboBoxFocus) {
+    DISABLED_ON_WIN_AND_MAC(AccessibilityEventsAriaComboBoxFocus)) {
   RunEventTest(FILE_PATH_LITERAL("aria-combo-box-focus.html"));
 }
 
+// https://crbug.com/652706
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
-                       AccessibilityEventsAriaComboBoxNext) {
+    DISABLED_ON_WIN(AccessibilityEventsAriaComboBoxNext)) {
   RunEventTest(FILE_PATH_LITERAL("aria-combo-box-next.html"));
 }
 
+// https://crbug.com/652706
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
-                       AccessibilityEventsAddAlert) {
+    DISABLED_ON_WIN(AccessibilityEventsAddAlert)) {
   RunEventTest(FILE_PATH_LITERAL("add-alert.html"));
 }
 
@@ -269,16 +278,9 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("menulist-collapse.html"));
 }
 
-#if defined(OS_MACOSX)
-// crbug.com/615411
-#define MAYBE_AccessibilityEventsMenuListExpand \
-    DISABLED_AccessibilityEventsMenuListExpand
-#else
-#define MAYBE_AccessibilityEventsMenuListExpand \
-    AccessibilityEventsMenuListExpand
-#endif
+// Mac: https://crbug.com/615411, Win: https://crbug.com/652706
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
-                       MAYBE_AccessibilityEventsMenuListExpand) {
+    DISABLED_ON_WIN_AND_MAC(AccessibilityEventsMenuListExpand)) {
   RunEventTest(FILE_PATH_LITERAL("menulist-expand.html"));
 }
 
@@ -287,15 +289,9 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("menulist-focus.html"));
 }
 
-#if defined(OS_MACOSX)
-// crbug.com/615411
-#define MAYBE_AccessibilityEventsMenuListNext \
-    DISABLED_AccessibilityEventsMenuListNext
-#else
-#define MAYBE_AccessibilityEventsMenuListNext AccessibilityEventsMenuListNext
-#endif
+// Mac: https://crbug.com/615411, Win: https://crbug.com/652706
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
-                       MAYBE_AccessibilityEventsMenuListNext) {
+    DISABLED_ON_WIN_AND_MAC(AccessibilityEventsMenuListNext)) {
   RunEventTest(FILE_PATH_LITERAL("menulist-next.html"));
 }
 
@@ -336,6 +332,6 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("text-changed.html"));
 }
 
-#endif  // defined(OS_WIN)
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
 }  // namespace content
