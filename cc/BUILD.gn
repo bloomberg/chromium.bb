@@ -583,6 +583,7 @@ component("cc") {
     "//gpu",
     "//gpu/command_buffer/client:gles2_interface",
     "//media",
+    "//third_party/libyuv",
     "//ui/events:events_base",
     "//ui/gfx",
     "//ui/gfx/geometry",

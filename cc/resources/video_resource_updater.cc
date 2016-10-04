@@ -22,6 +22,7 @@
 #include "media/renderers/skcanvas_video_renderer.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
+#include "third_party/libyuv/include/libyuv.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
@@ -298,19 +299,13 @@ void VideoResourceUpdater::MakeHalfFloats(const uint16_t* src,
                                           int bits_per_channel,
                                           size_t num,
                                           uint16_t* dst) {
-  // TODO(hubbe): Make AVX and neon versions of this code.
-
-  // This magic constant is 2^-112. Multiplying by this
-  // is the same as subtracting 112 from the exponent, which
-  // is the difference in exponent bias between 32-bit and
-  // 16-bit floats. Once we've done this subtraction, we can
-  // simply extract the low bits of the exponent and the high
-  // bits of the mantissa from our float and we're done.
-  float mult = 1.9259299444e-34f / ((1 << bits_per_channel) - 1);
-  for (size_t i = 0; i < num; i++) {
-    float value = src[i] * mult;
-    dst[i] = (*(uint32_t*)&value) >> 13;
-  }
+  // Source and dest stride can be zero since we're only copying
+  // one row at a time.
+  int stride = 0;
+  // Maximum value used in |src|.
+  int max_value = (1 << bits_per_channel) - 1;
+  int rows = 1;
+  libyuv::HalfFloatPlane(src, stride, dst, stride, 1.0f / max_value, num, rows);
 }
 
 VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
@@ -495,6 +490,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
               resource_provider_->YuvResourceFormat(bits_per_channel));
 
     if (!plane_resource.Matches(video_frame->unique_id(), i)) {
+      // TODO(hubbe): Move all conversion (and upload?) code to media/.
       // We need to transfer data from |video_frame| to the plane resource.
       // TODO(reveman): Can use GpuMemoryBuffers here to improve performance.
 
