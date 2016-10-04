@@ -102,7 +102,7 @@ crbug.com/636271 [ Win ] paint/invalidation/resize-iframe-text.html [ Pass Failu
 crbug.com/638293 [ Linux ] virtual/gpu-rasterization/fast/images/color-profile-reflection.html [ Failure ]
 
 # https://chromium.googlesource.com/skia.git/+/a3b45d4f7db953472df4f11ab1595964b65175f9
-crbug.com/630695 fast/borders/border-radius-with-box-shadow.html [ NeedsManualRebaseline ]
+crbug.com/630695 fast/borders/border-radius-with-box-shadow.html [ NeedsRebaseline ]
 
 crbug.com/639147 svg/wicd/test-rightsizing-b.xhtml [ Failure Pass ]
 
