@@ -388,14 +388,13 @@ void PaintPropertyTreeBuilder::updateLocalBorderBoxContext(
   if (!object.isBox() && !object.hasLayer())
     return;
 
-  std::unique_ptr<ObjectPaintProperties::LocalBorderBoxProperties>
+  std::unique_ptr<ObjectPaintProperties::PropertyTreeStateWithOffset>
       borderBoxContext =
-          wrapUnique(new ObjectPaintProperties::LocalBorderBoxProperties);
-  borderBoxContext->paintOffset = context.current.paintOffset;
-  borderBoxContext->geometryPropertyTreeState = GeometryPropertyTreeState(
-      context.current.transform, context.current.clip, context.currentEffect);
-  borderBoxContext->scroll = context.current.scroll;
-
+          wrapUnique(new ObjectPaintProperties::PropertyTreeStateWithOffset(
+              context.current.paintOffset,
+              PropertyTreeState(context.current.transform, context.current.clip,
+                                context.currentEffect,
+                                context.current.scroll)));
   object.getMutableForPainting()
       .ensureObjectPaintProperties()
       .setLocalBorderBoxProperties(std::move(borderBoxContext));

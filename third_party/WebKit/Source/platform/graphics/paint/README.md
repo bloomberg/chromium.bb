@@ -263,12 +263,12 @@ root layer to the overall layer hierarchy to be displayed to the user.
 
 The [`GeometryMapper`](GeometryMapper.h) is responsible for efficiently computing
 visual and transformed rects of display items in the coordinate space of ancestor
-[`GeometryPropertyTreeState`](GeometryPropertyTreeState.h)s.
+[`PropertyTreeState`](PropertyTreeState.h)s.
 
-The transformed rect of a display item in an ancestor `GeometryPropertyTreeState`
-is that rect, multiplied by the transforms between the display item's
-`GeometryPropertyTreeState` and the ancestors, then flattened into 2D.
+The transformed rect of a display item in an ancestor `PropertyTreeState` is
+that rect, multiplied by the transforms between the display item's
+`PropertyTreeState` and the ancestors, then flattened into 2D.
 
-The visual rect of a display item in an ancestor `GeometryPropertyTreeState` is
-the intersection of all of the intermediate clips (transformed in to the
-ancestor state), with the display item's transformed rect.
+The visual rect of a display item in an ancestor `PropertyTreeState` is the
+intersection of all of the intermediate clips (transformed in to the ancestor
+state), with the display item's transformed rect.

@@ -29,6 +29,7 @@ struct PaintChunkProperties {
 
   PaintChunkProperties() : backfaceHidden(false) {}
 
+  // TODO(pdr): Refactor these to use PropertyTreeState.
   RefPtr<const TransformPaintPropertyNode> transform;
   RefPtr<const ClipPaintPropertyNode> clip;
   RefPtr<const EffectPaintPropertyNode> effect;

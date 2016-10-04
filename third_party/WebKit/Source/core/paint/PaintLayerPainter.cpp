@@ -420,11 +420,10 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(
       auto& localBorderBoxProperties =
           *objectPaintProperties->localBorderBoxProperties();
       properties.transform =
-          localBorderBoxProperties.geometryPropertyTreeState.transform;
-      properties.scroll = localBorderBoxProperties.scroll;
-      properties.clip = localBorderBoxProperties.geometryPropertyTreeState.clip;
-      properties.effect =
-          localBorderBoxProperties.geometryPropertyTreeState.effect;
+          localBorderBoxProperties.propertyTreeState.transform();
+      properties.scroll = localBorderBoxProperties.propertyTreeState.scroll();
+      properties.clip = localBorderBoxProperties.propertyTreeState.clip();
+      properties.effect = localBorderBoxProperties.propertyTreeState.effect();
       properties.backfaceHidden =
           m_paintLayer.layoutObject()->hasHiddenBackface();
       scopedPaintChunkProperties.emplace(context.getPaintController(),

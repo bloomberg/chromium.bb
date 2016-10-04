@@ -6,26 +6,28 @@
 
 namespace blink {
 
-void ObjectPaintProperties::getContentsPropertyTreeState(
-    GeometryPropertyTreeState& state,
-    LayoutPoint& paintOffsetFromState) const {
-  state = localBorderBoxProperties()->geometryPropertyTreeState;
+ObjectPaintProperties::PropertyTreeStateWithOffset
+ObjectPaintProperties::contentsProperties() const {
+  ObjectPaintProperties::PropertyTreeStateWithOffset propertiesWithOffset =
+      *localBorderBoxProperties();
   if (svgLocalToBorderBoxTransform()) {
-    state.transform = svgLocalToBorderBoxTransform();
-    // No paint offset from the state because svgLocalToBorderTransform
-    // embeds the paint offset in it.
-    paintOffsetFromState = LayoutPoint();
-  } else {
-    if (scrollTranslation())
-      state.transform = scrollTranslation();
-    paintOffsetFromState = localBorderBoxProperties()->paintOffset;
+    propertiesWithOffset.propertyTreeState.setTransform(
+        svgLocalToBorderBoxTransform());
+    // There's no paint offset for the contents because svgLocalToBorderBoxTransform bakes in
+    // the paint offset.
+    propertiesWithOffset.paintOffset = LayoutPoint();
+  } else if (scrollTranslation()) {
+    propertiesWithOffset.propertyTreeState.setTransform(scrollTranslation());
   }
 
   if (overflowClip())
-    state.clip = overflowClip();
+    propertiesWithOffset.propertyTreeState.setClip(overflowClip());
   else if (cssClip())
-    state.clip = cssClip();
+    propertiesWithOffset.propertyTreeState.setClip(cssClip());
+
   // TODO(chrishtr): cssClipFixedPosition needs to be handled somehow.
+
+  return propertiesWithOffset;
 }
 
 }  // namespace blink

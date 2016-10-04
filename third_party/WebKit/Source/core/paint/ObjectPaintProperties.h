@@ -9,8 +9,8 @@
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/paint/ClipPaintPropertyNode.h"
 #include "platform/graphics/paint/EffectPaintPropertyNode.h"
-#include "platform/graphics/paint/GeometryPropertyTreeState.h"
 #include "platform/graphics/paint/PaintChunkProperties.h"
+#include "platform/graphics/paint/PropertyTreeState.h"
 #include "platform/graphics/paint/ScrollPaintPropertyNode.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
 #include "wtf/PassRefPtr.h"
@@ -20,59 +20,16 @@
 
 namespace blink {
 
-// A complete set of paint properties including those that are inherited from other objects.
-// RefPtrs are used to guard against use-after-free bugs and DCHECKs ensure PropertyTreeState never
-// retains the last reference to a property tree node.
-class PropertyTreeState {
- public:
-  PropertyTreeState(const TransformPaintPropertyNode* transform,
-                    const ClipPaintPropertyNode* clip,
-                    const EffectPaintPropertyNode* effect,
-                    const ScrollPaintPropertyNode* scroll)
-      : m_transform(transform),
-        m_clip(clip),
-        m_effect(effect),
-        m_scroll(scroll) {
-    DCHECK(!m_transform->hasOneRef() && !m_clip->hasOneRef() &&
-           !m_effect->hasOneRef() && !m_scroll->hasOneRef());
-  }
-
-  const TransformPaintPropertyNode* transform() const {
-    DCHECK(!m_transform->hasOneRef());
-    return m_transform.get();
-  }
-  const ClipPaintPropertyNode* clip() const {
-    DCHECK(!m_clip->hasOneRef());
-    return m_clip.get();
-  }
-  const EffectPaintPropertyNode* effect() const {
-    DCHECK(!m_effect->hasOneRef());
-    return m_effect.get();
-  }
-  const ScrollPaintPropertyNode* scroll() const {
-    DCHECK(!m_scroll->hasOneRef());
-    return m_scroll.get();
-  }
-
- private:
-  RefPtr<const TransformPaintPropertyNode> m_transform;
-  RefPtr<const ClipPaintPropertyNode> m_clip;
-  RefPtr<const EffectPaintPropertyNode> m_effect;
-  RefPtr<const ScrollPaintPropertyNode> m_scroll;
-};
-
 // This class stores property tree related information associated with a LayoutObject.
 // Currently there are two groups of information:
 // 1. The set of property nodes created locally by this LayoutObject.
-// 2. [Optional] A suite of property nodes (PaintChunkProperties) and paint offset
-//    that can be used to paint the border box of this LayoutObject.
+// 2. The set of property nodes (inherited, or created locally) and paint offset that can be used
+//    to paint the border box of this LayoutObject (see: localBorderBoxProperties).
 class CORE_EXPORT ObjectPaintProperties {
   WTF_MAKE_NONCOPYABLE(ObjectPaintProperties);
   USING_FAST_MALLOC(ObjectPaintProperties);
 
  public:
-  struct LocalBorderBoxProperties;
-
   static std::unique_ptr<ObjectPaintProperties> create() {
     return wrapUnique(new ObjectPaintProperties());
   }
@@ -81,7 +38,7 @@ class CORE_EXPORT ObjectPaintProperties {
   // [ paintOffsetTranslation ]           Normally paint offset is accumulated without creating a node
   // |                                    until we see, for example, transform or position:fixed.
   // +---[ transform ]                    The space created by CSS transform.
-  //     |                                This is the local border box space, see: LocalBorderBoxProperties below.
+  //     |                                This is the local border box space, see: localBorderBoxProperties below.
   //     +---[ perspective ]              The space created by CSS perspective.
   //     |   +---[ svgLocalToBorderBoxTransform ] Additional transform for children of the outermost root SVG.
   //     |              OR                (SVG does not support scrolling.)
@@ -133,29 +90,37 @@ class CORE_EXPORT ObjectPaintProperties {
     return m_overflowClip.get();
   }
 
-  // This is a complete set of property nodes that should be used as a starting point to paint
-  // this layout object. It is needed becauase some property inherits from the containing block,
-  // not painting parent, thus can't be derived in O(1) during paint walk.
-  // Note: If this layout object has transform or stacking-context effects, those are already
-  // baked into in the context here. However for properties that affects only children,
-  // for example, perspective and overflow clip, those should be applied by the painter
-  // at the right painting step.
-  // TODO(pdr): Refactor this to use PropertyTreeState.
-  struct LocalBorderBoxProperties {
+  // The complete set of property tree nodes (inherited, or created locally) and paint offset that
+  // can be used to paint. |paintOffset| is relative to the propertyTreeState's transform space.
+  // See: localBorderBoxProperties and contentsProperties.
+  struct PropertyTreeStateWithOffset {
+    PropertyTreeStateWithOffset(LayoutPoint offset, PropertyTreeState treeState)
+        : paintOffset(offset), propertyTreeState(treeState) {}
     LayoutPoint paintOffset;
-    GeometryPropertyTreeState geometryPropertyTreeState;
-    const ScrollPaintPropertyNode* scroll;
+    PropertyTreeState propertyTreeState;
   };
-  const LocalBorderBoxProperties* localBorderBoxProperties() const {
+
+  // This is a complete set of property nodes and paint offset that should be used as a starting
+  // point to paint this layout object. This is cached because some properties inherit from the
+  // containing block chain instead of the painting parent and cannot be derived in O(1) during
+  // the paint walk.
+  // For example, <div style='opacity: 0.3; position: relative; margin: 11px;'/> would have a
+  // paint offset of (11px, 11px) and propertyTreeState.effect() would be an effect node with
+  // opacity of 0.3 which was created by the div itself. Note that propertyTreeState.transform()
+  // would not be null but would instead point to the transform space setup by div's ancestors.
+  const PropertyTreeStateWithOffset* localBorderBoxProperties() const {
     return m_localBorderBoxProperties.get();
   }
-  // ContentsPropertyTreeState is the GeometryPropertyTreeState that is the same as in
-  // localBorderBoxProperties, except that it is inside any clips and scrolls caused by this
-  // object. This GeometryPropertyTreeState is suitable as the destination for paint invalidation.
-  // |paintOffsetFromState| is the offset from the GeometryPropertyTreeState to this object's
-  // contents space.
-  void getContentsPropertyTreeState(GeometryPropertyTreeState&,
-                                    LayoutPoint& paintOffsetFromState) const;
+  void setLocalBorderBoxProperties(
+      std::unique_ptr<PropertyTreeStateWithOffset> properties) {
+    m_localBorderBoxProperties = std::move(properties);
+  }
+
+  // This is the complete set of property nodes and paint offset that can be used to paint the
+  // contents of this object. It is similar to localBorderBoxProperties but includes properties
+  // (e.g., overflow clip, scroll translation) that apply to contents. This is suitable for paint
+  // invalidation.
+  ObjectPaintProperties::PropertyTreeStateWithOffset contentsProperties() const;
 
   void clearPaintOffsetTranslation() { m_paintOffsetTranslation = nullptr; }
   void clearTransform() { m_transform = nullptr; }
@@ -236,11 +201,6 @@ class CORE_EXPORT ObjectPaintProperties {
     return createOrUpdateProperty(m_overflowClip, std::forward<Args>(args)...);
   }
 
-  void setLocalBorderBoxProperties(
-      std::unique_ptr<LocalBorderBoxProperties> properties) {
-    m_localBorderBoxProperties = std::move(properties);
-  }
-
  private:
   ObjectPaintProperties() {}
 
@@ -268,7 +228,7 @@ class CORE_EXPORT ObjectPaintProperties {
   RefPtr<TransformPaintPropertyNode> m_scrollbarPaintOffset;
   RefPtr<ScrollPaintPropertyNode> m_scroll;
 
-  std::unique_ptr<LocalBorderBoxProperties> m_localBorderBoxProperties;
+  std::unique_ptr<PropertyTreeStateWithOffset> m_localBorderBoxProperties;
 };
 
 }  // namespace blink

@@ -83,24 +83,24 @@ static LayoutRect mapLocalRectToPaintInvalidationBacking(
   } else {
     rect.moveBy(FloatPoint(context.treeBuilderContext.current.paintOffset));
 
-    GeometryPropertyTreeState currentTreeState(
+    PropertyTreeState currentTreeState(
         context.treeBuilderContext.current.transform,
         context.treeBuilderContext.current.clip,
-        context.treeBuilderContext.currentEffect);
-    GeometryPropertyTreeState containerTreeState;
+        context.treeBuilderContext.currentEffect,
+        context.treeBuilderContext.current.scroll);
     const ObjectPaintProperties* containerPaintProperties =
         context.paintInvalidationContainer->objectPaintProperties();
-    LayoutPoint paintOffsetFromContainerTreeState;
-    containerPaintProperties->getContentsPropertyTreeState(
-        containerTreeState, paintOffsetFromContainerTreeState);
+    auto containerContentsProperties =
+        containerPaintProperties->contentsProperties();
 
     bool success = false;
     result = LayoutRect(geometryMapper.mapToVisualRectInDestinationSpace(
-        rect, currentTreeState, containerTreeState, success));
+        rect, currentTreeState, containerContentsProperties.propertyTreeState,
+        success));
     DCHECK(success);
 
-    // Convert the result from containerTreeState space to the container's contents space.
-    result.moveBy(-paintOffsetFromContainerTreeState);
+    // Convert the result to the container's contents space.
+    result.moveBy(-containerContentsProperties.paintOffset);
   }
 
   if (context.paintInvalidationContainer->layer()->groupedMapping())
@@ -144,26 +144,26 @@ LayoutPoint PaintInvalidator::computeLocationFromPaintInvalidationBacking(
   if (object != context.paintInvalidationContainer) {
     point.moveBy(FloatPoint(context.treeBuilderContext.current.paintOffset));
 
-    GeometryPropertyTreeState currentTreeState(
+    PropertyTreeState currentTreeState(
         context.treeBuilderContext.current.transform,
         context.treeBuilderContext.current.clip,
-        context.treeBuilderContext.currentEffect);
-    GeometryPropertyTreeState containerTreeState;
-    LayoutPoint paintOffsetFromContainerTreeState;
-    context.paintInvalidationContainer->objectPaintProperties()
-        ->getContentsPropertyTreeState(containerTreeState,
-                                       paintOffsetFromContainerTreeState);
+        context.treeBuilderContext.currentEffect,
+        context.treeBuilderContext.current.scroll);
+    const ObjectPaintProperties* containerPaintProperties =
+        context.paintInvalidationContainer->objectPaintProperties();
+    auto containerContentsProperties =
+        containerPaintProperties->contentsProperties();
 
     bool success = false;
     point = m_geometryMapper
-                .mapRectToDestinationSpace(FloatRect(point, FloatSize()),
-                                           currentTreeState, containerTreeState,
-                                           success)
+                .mapRectToDestinationSpace(
+                    FloatRect(point, FloatSize()), currentTreeState,
+                    containerContentsProperties.propertyTreeState, success)
                 .location();
     DCHECK(success);
 
-    // Convert the result from containerTreeState space to the container's contents space.
-    point.moveBy(-paintOffsetFromContainerTreeState);
+    // Convert the result to the container's contents space.
+    point.moveBy(-containerContentsProperties.paintOffset);
   }
 
   if (context.paintInvalidationContainer->layer()->groupedMapping())

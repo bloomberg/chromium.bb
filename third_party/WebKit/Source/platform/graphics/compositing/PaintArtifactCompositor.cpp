@@ -22,7 +22,6 @@
 #include "platform/graphics/paint/DisplayItem.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "platform/graphics/paint/ForeignLayerDisplayItem.h"
-#include "platform/graphics/paint/GeometryPropertyTreeState.h"
 #include "platform/graphics/paint/PaintArtifact.h"
 #include "platform/graphics/paint/RasterInvalidationTracking.h"
 #include "platform/graphics/paint/ScrollPaintPropertyNode.h"
