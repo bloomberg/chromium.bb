@@ -164,7 +164,8 @@ HostDiscardableSharedMemoryManager::MemorySegment::~MemorySegment() {
 }
 
 HostDiscardableSharedMemoryManager::HostDiscardableSharedMemoryManager()
-    : memory_limit_(GetDefaultMemoryLimit()),
+    : default_memory_limit_(GetDefaultMemoryLimit()),
+      memory_limit_(default_memory_limit_),
       bytes_allocated_(0),
       memory_pressure_listener_(new base::MemoryPressureListener(
           base::Bind(&HostDiscardableSharedMemoryManager::OnMemoryPressure,
@@ -352,7 +353,7 @@ void HostDiscardableSharedMemoryManager::OnMemoryStateChange(
     base::MemoryState state) {
   switch (state) {
     case base::MemoryState::NORMAL:
-      SetMemoryLimit(GetDefaultMemoryLimit());
+      SetMemoryLimit(default_memory_limit_);
       break;
     case base::MemoryState::THROTTLED:
       SetMemoryLimit(0);

@@ -136,6 +136,7 @@ class CONTENT_EXPORT HostDiscardableSharedMemoryManager
   // a heap. The LRU memory segment always first.
   typedef std::vector<scoped_refptr<MemorySegment>> MemorySegmentVector;
   MemorySegmentVector segments_;
+  size_t default_memory_limit_;
   size_t memory_limit_;
   size_t bytes_allocated_;
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
