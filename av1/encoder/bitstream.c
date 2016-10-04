@@ -1812,11 +1812,13 @@ static size_t encode_tiles(AV1_COMP *cpi, uint8_t *data_ptr,
   for (tile_row = 0; tile_row < tile_rows; tile_row++) {
     for (tile_col = 0; tile_col < tile_cols; tile_col++) {
       const int tile_idx = tile_row * tile_cols + tile_col;
-      const int is_last_tile = tile_idx == tile_rows * tile_cols - 1;
       unsigned int tile_size;
       TOKENEXTRA *tok = cpi->tile_tok[tile_row][tile_col];
-
-#if CONFIG_TILE_GROUPS
+#if !CONFIG_TILE_GROUPS
+      const int is_last_tile = tile_idx == tile_rows * tile_cols - 1;
+#else
+      // All tiles in a tile group have a length
+      const int is_last_tile = 0;
       if (tile_count >= tg_size) {
         // Copy uncompressed header
         memcpy(data_ptr + total_size, data_ptr,
