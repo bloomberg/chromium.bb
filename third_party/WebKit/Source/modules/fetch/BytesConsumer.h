@@ -155,6 +155,12 @@ class MODULES_EXPORT BytesConsumer
                   BytesConsumer** dest1,
                   BytesConsumer** dest2);
 
+  // Returns a BytesConsumer whose state is Closed.
+  static BytesConsumer* createClosed();
+
+  // Returns a BytesConsumer whose state is Errored.
+  static BytesConsumer* createErrored(const Error&);
+
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
  protected:

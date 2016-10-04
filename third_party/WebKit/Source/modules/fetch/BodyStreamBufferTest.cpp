@@ -5,10 +5,10 @@
 #include "modules/fetch/BodyStreamBuffer.h"
 
 #include "bindings/core/v8/V8BindingForTesting.h"
+#include "core/dom/Document.h"
 #include "core/html/FormData.h"
 #include "modules/fetch/BlobBytesConsumer.h"
 #include "modules/fetch/BytesConsumerTestUtil.h"
-#include "modules/fetch/DataConsumerHandleTestUtil.h"
 #include "modules/fetch/FormDataBytesConsumer.h"
 #include "platform/blob/BlobData.h"
 #include "platform/blob/BlobURL.h"
@@ -29,8 +29,8 @@ using ::testing::Return;
 using ::testing::_;
 using ::testing::SaveArg;
 using Checkpoint = ::testing::StrictMock<::testing::MockFunction<void(int)>>;
-using Command = DataConsumerHandleTestUtil::Command;
-using ReplayingHandle = DataConsumerHandleTestUtil::ReplayingHandle;
+using Command = BytesConsumerTestUtil::Command;
+using ReplayingBytesConsumer = BytesConsumerTestUtil::ReplayingBytesConsumer;
 using MockFetchDataLoaderClient =
     BytesConsumerTestUtil::MockFetchDataLoaderClient;
 
@@ -82,17 +82,11 @@ TEST_F(BodyStreamBufferTest, Tee) {
   EXPECT_CALL(checkpoint, Call(3));
   EXPECT_CALL(checkpoint, Call(4));
 
-  std::unique_ptr<DataConsumerHandleTestUtil::ReplayingHandle> handle =
-      DataConsumerHandleTestUtil::ReplayingHandle::create();
-  handle->add(DataConsumerHandleTestUtil::Command(
-      DataConsumerHandleTestUtil::Command::Data, "hello, "));
-  handle->add(DataConsumerHandleTestUtil::Command(
-      DataConsumerHandleTestUtil::Command::Data, "world"));
-  handle->add(DataConsumerHandleTestUtil::Command(
-      DataConsumerHandleTestUtil::Command::Done));
-  BodyStreamBuffer* buffer = new BodyStreamBuffer(
-      scope.getScriptState(),
-      createFetchDataConsumerHandleFromWebHandle(std::move(handle)));
+  ReplayingBytesConsumer* src = new ReplayingBytesConsumer(&scope.document());
+  src->add(Command(Command::Data, "hello, "));
+  src->add(Command(Command::Data, "world"));
+  src->add(Command(Command::Done));
+  BodyStreamBuffer* buffer = new BodyStreamBuffer(scope.getScriptState(), src);
 
   BodyStreamBuffer* new1;
   BodyStreamBuffer* new2;
@@ -144,9 +138,8 @@ TEST_F(BodyStreamBufferTest, TeeFromHandleMadeFromStream) {
 
   EXPECT_TRUE(buffer->isStreamLocked());
   // Note that this behavior is slightly different from for the behavior of
-  // a BodyStreamBuffer made from a FetchDataConsumerHandle. See the above
-  // test. In this test, the stream will get disturbed when the microtask
-  // is performed.
+  // a BodyStreamBuffer made from a BytesConsumer. See the above test. In this
+  // test, the stream will get disturbed when the microtask is performed.
   // TODO(yhirano): A uniformed behavior is preferred.
   EXPECT_FALSE(buffer->isStreamDisturbed());
   EXPECT_FALSE(buffer->hasPendingActivity());
@@ -193,12 +186,9 @@ TEST_F(BodyStreamBufferTest, DrainAsBlobDataHandle) {
 
 TEST_F(BodyStreamBufferTest, DrainAsBlobDataHandleReturnsNull) {
   V8TestingScope scope;
-  // This handle is not drainable.
-  std::unique_ptr<FetchDataConsumerHandle> handle =
-      createFetchDataConsumerHandleFromWebHandle(
-          createWaitingDataConsumerHandle());
-  BodyStreamBuffer* buffer =
-      new BodyStreamBuffer(scope.getScriptState(), std::move(handle));
+  // This BytesConsumer is not drainable.
+  BytesConsumer* src = new ReplayingBytesConsumer(&scope.document());
+  BodyStreamBuffer* buffer = new BodyStreamBuffer(scope.getScriptState(), src);
 
   EXPECT_FALSE(buffer->isStreamLocked());
   EXPECT_FALSE(buffer->isStreamDisturbed());
@@ -259,12 +249,9 @@ TEST_F(BodyStreamBufferTest, DrainAsFormData) {
 
 TEST_F(BodyStreamBufferTest, DrainAsFormDataReturnsNull) {
   V8TestingScope scope;
-  // This handle is not drainable.
-  std::unique_ptr<FetchDataConsumerHandle> handle =
-      createFetchDataConsumerHandleFromWebHandle(
-          createWaitingDataConsumerHandle());
-  BodyStreamBuffer* buffer =
-      new BodyStreamBuffer(scope.getScriptState(), std::move(handle));
+  // This BytesConsumer is not drainable.
+  BytesConsumer* src = new ReplayingBytesConsumer(&scope.document());
+  BodyStreamBuffer* buffer = new BodyStreamBuffer(scope.getScriptState(), src);
 
   EXPECT_FALSE(buffer->isStreamLocked());
   EXPECT_FALSE(buffer->isStreamDisturbed());
@@ -310,13 +297,11 @@ TEST_F(BodyStreamBufferTest, LoadBodyStreamBufferAsArrayBuffer) {
       .WillOnce(SaveArg<0>(&arrayBuffer));
   EXPECT_CALL(checkpoint, Call(2));
 
-  std::unique_ptr<ReplayingHandle> handle = ReplayingHandle::create();
-  handle->add(Command(Command::Wait));
-  handle->add(Command(Command::Data, "hello"));
-  handle->add(Command(Command::Done));
-  BodyStreamBuffer* buffer = new BodyStreamBuffer(
-      scope.getScriptState(),
-      createFetchDataConsumerHandleFromWebHandle(std::move(handle)));
+  ReplayingBytesConsumer* src = new ReplayingBytesConsumer(&scope.document());
+  src->add(Command(Command::Wait));
+  src->add(Command(Command::Data, "hello"));
+  src->add(Command(Command::Done));
+  BodyStreamBuffer* buffer = new BodyStreamBuffer(scope.getScriptState(), src);
   buffer->startLoading(FetchDataLoader::createLoaderAsArrayBuffer(), client);
 
   EXPECT_TRUE(buffer->isStreamLocked());
@@ -347,13 +332,11 @@ TEST_F(BodyStreamBufferTest, LoadBodyStreamBufferAsBlob) {
       .WillOnce(SaveArg<0>(&blobDataHandle));
   EXPECT_CALL(checkpoint, Call(2));
 
-  std::unique_ptr<ReplayingHandle> handle = ReplayingHandle::create();
-  handle->add(Command(Command::Wait));
-  handle->add(Command(Command::Data, "hello"));
-  handle->add(Command(Command::Done));
-  BodyStreamBuffer* buffer = new BodyStreamBuffer(
-      scope.getScriptState(),
-      createFetchDataConsumerHandleFromWebHandle(std::move(handle)));
+  ReplayingBytesConsumer* src = new ReplayingBytesConsumer(&scope.document());
+  src->add(Command(Command::Wait));
+  src->add(Command(Command::Data, "hello"));
+  src->add(Command(Command::Done));
+  BodyStreamBuffer* buffer = new BodyStreamBuffer(scope.getScriptState(), src);
   buffer->startLoading(FetchDataLoader::createLoaderAsBlobHandle("text/plain"),
                        client);
 
@@ -381,13 +364,11 @@ TEST_F(BodyStreamBufferTest, LoadBodyStreamBufferAsString) {
   EXPECT_CALL(*client, didFetchDataLoadedString(String("hello")));
   EXPECT_CALL(checkpoint, Call(2));
 
-  std::unique_ptr<ReplayingHandle> handle = ReplayingHandle::create();
-  handle->add(Command(Command::Wait));
-  handle->add(Command(Command::Data, "hello"));
-  handle->add(Command(Command::Done));
-  BodyStreamBuffer* buffer = new BodyStreamBuffer(
-      scope.getScriptState(),
-      createFetchDataConsumerHandleFromWebHandle(std::move(handle)));
+  ReplayingBytesConsumer* src = new ReplayingBytesConsumer(&scope.document());
+  src->add(Command(Command::Wait));
+  src->add(Command(Command::Data, "hello"));
+  src->add(Command(Command::Done));
+  BodyStreamBuffer* buffer = new BodyStreamBuffer(scope.getScriptState(), src);
   buffer->startLoading(FetchDataLoader::createLoaderAsString(), client);
 
   EXPECT_TRUE(buffer->isStreamLocked());
@@ -414,11 +395,8 @@ TEST_F(BodyStreamBufferTest, LoadClosedHandle) {
   EXPECT_CALL(checkpoint, Call(2));
 
   BodyStreamBuffer* buffer = new BodyStreamBuffer(
-      scope.getScriptState(), createFetchDataConsumerHandleFromWebHandle(
-                                  createDoneDataConsumerHandle()));
+      scope.getScriptState(), BytesConsumer::createClosed());
 
-  EXPECT_TRUE(buffer->isStreamReadable());
-  testing::runPendingTasks();
   EXPECT_TRUE(buffer->isStreamClosed());
 
   EXPECT_FALSE(buffer->isStreamLocked());
@@ -445,11 +423,9 @@ TEST_F(BodyStreamBufferTest, LoadErroredHandle) {
   EXPECT_CALL(checkpoint, Call(2));
 
   BodyStreamBuffer* buffer = new BodyStreamBuffer(
-      scope.getScriptState(), createFetchDataConsumerHandleFromWebHandle(
-                                  createUnexpectedErrorDataConsumerHandle()));
+      scope.getScriptState(),
+      BytesConsumer::createErrored(BytesConsumer::Error()));
 
-  EXPECT_TRUE(buffer->isStreamReadable());
-  testing::runPendingTasks();
   EXPECT_TRUE(buffer->isStreamErrored());
 
   EXPECT_FALSE(buffer->isStreamLocked());
@@ -475,13 +451,12 @@ TEST_F(BodyStreamBufferTest, LoaderShouldBeKeptAliveByBodyStreamBuffer) {
   EXPECT_CALL(*client, didFetchDataLoadedString(String("hello")));
   EXPECT_CALL(checkpoint, Call(2));
 
-  std::unique_ptr<ReplayingHandle> handle = ReplayingHandle::create();
-  handle->add(Command(Command::Wait));
-  handle->add(Command(Command::Data, "hello"));
-  handle->add(Command(Command::Done));
-  Persistent<BodyStreamBuffer> buffer = new BodyStreamBuffer(
-      scope.getScriptState(),
-      createFetchDataConsumerHandleFromWebHandle(std::move(handle)));
+  ReplayingBytesConsumer* src = new ReplayingBytesConsumer(&scope.document());
+  src->add(Command(Command::Wait));
+  src->add(Command(Command::Data, "hello"));
+  src->add(Command(Command::Done));
+  Persistent<BodyStreamBuffer> buffer =
+      new BodyStreamBuffer(scope.getScriptState(), src);
   buffer->startLoading(FetchDataLoader::createLoaderAsString(), client);
 
   ThreadState::current()->collectAllGarbage();
@@ -492,7 +467,7 @@ TEST_F(BodyStreamBufferTest, LoaderShouldBeKeptAliveByBodyStreamBuffer) {
 
 TEST_F(BodyStreamBufferTest, SourceShouldBeCanceledWhenCanceled) {
   V8TestingScope scope;
-  BytesConsumerTestUtil::ReplayingBytesConsumer* consumer =
+  ReplayingBytesConsumer* consumer =
       new BytesConsumerTestUtil::ReplayingBytesConsumer(
           scope.getExecutionContext());
 

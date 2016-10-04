@@ -28,10 +28,6 @@ class MODULES_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
   USING_GARBAGE_COLLECTED_MIXIN(BodyStreamBuffer);
 
  public:
-  // |handle| cannot be null and cannot be locked.
-  // This function must be called with entering an appropriate V8 context.
-  BodyStreamBuffer(ScriptState*,
-                   std::unique_ptr<FetchDataConsumerHandle> /* handle */);
   // |consumer| must not have a client.
   // This function must be called with entering an appropriate V8 context.
   BodyStreamBuffer(ScriptState*, BytesConsumer* /* consumer */);

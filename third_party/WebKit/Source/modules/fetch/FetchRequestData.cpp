@@ -11,6 +11,7 @@
 #include "modules/credentialmanager/PasswordCredential.h"
 #include "modules/fetch/BlobBytesConsumer.h"
 #include "modules/fetch/BodyStreamBuffer.h"
+#include "modules/fetch/BytesConsumer.h"
 #include "modules/fetch/DataConsumerHandleUtil.h"
 #include "modules/fetch/FetchHeaderList.h"
 #include "platform/HTTPNames.h"
@@ -84,9 +85,7 @@ FetchRequestData* FetchRequestData::pass(ScriptState* scriptState) {
   FetchRequestData* request = FetchRequestData::cloneExceptBody();
   if (m_buffer) {
     request->m_buffer = m_buffer;
-    m_buffer = new BodyStreamBuffer(scriptState,
-                                    createFetchDataConsumerHandleFromWebHandle(
-                                        createDoneDataConsumerHandle()));
+    m_buffer = new BodyStreamBuffer(scriptState, BytesConsumer::createClosed());
     m_buffer->closeAndLockAndDisturb();
   }
   return request;

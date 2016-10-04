@@ -12,8 +12,6 @@
 #include "core/streams/ReadableStreamController.h"
 #include "core/streams/ReadableStreamOperations.h"
 #include "modules/fetch/Body.h"
-#include "modules/fetch/BytesConsumerForDataConsumerHandle.h"
-#include "modules/fetch/DataConsumerHandleUtil.h"
 #include "modules/fetch/ReadableStreamBytesConsumer.h"
 #include "platform/blob/BlobData.h"
 #include "platform/network/EncodedFormData.h"
@@ -76,14 +74,6 @@ class BodyStreamBuffer::LoaderClient final
   Member<FetchDataLoader::Client> m_client;
 };
 
-BodyStreamBuffer::BodyStreamBuffer(
-    ScriptState* scriptState,
-    std::unique_ptr<FetchDataConsumerHandle> handle)
-    : BodyStreamBuffer(scriptState,
-                       new BytesConsumerForDataConsumerHandle(
-                           scriptState->getExecutionContext(),
-                           std::move(handle))) {}
-
 BodyStreamBuffer::BodyStreamBuffer(ScriptState* scriptState,
                                    BytesConsumer* consumer)
     : UnderlyingSourceBase(scriptState),
@@ -104,6 +94,7 @@ BodyStreamBuffer::BodyStreamBuffer(ScriptState* scriptState,
       V8HiddenValue::internalBodyStream(scriptState->isolate()),
       readableStream.v8Value());
   m_consumer->setClient(this);
+  onStateChange();
 }
 
 BodyStreamBuffer::BodyStreamBuffer(ScriptState* scriptState, ScriptValue stream)
@@ -384,16 +375,10 @@ BytesConsumer* BodyStreamBuffer::releaseHandle() {
   if (isClosed) {
     // Note that the stream cannot be "draining", because it doesn't have
     // the internal buffer.
-    return new BytesConsumerForDataConsumerHandle(
-        m_scriptState->getExecutionContext(),
-        createFetchDataConsumerHandleFromWebHandle(
-            createDoneDataConsumerHandle()));
+    return BytesConsumer::createClosed();
   }
   if (isErrored)
-    return new BytesConsumerForDataConsumerHandle(
-        m_scriptState->getExecutionContext(),
-        createFetchDataConsumerHandleFromWebHandle(
-            createUnexpectedErrorDataConsumerHandle()));
+    return BytesConsumer::createErrored(BytesConsumer::Error("error"));
 
   DCHECK(consumer);
   consumer->clearClient();

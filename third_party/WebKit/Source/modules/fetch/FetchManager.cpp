@@ -233,10 +233,8 @@ class FetchManager::Loader final
           return;
         }
       }
-      m_updater->update(new BytesConsumerForDataConsumerHandle(
-          m_response->getExecutionContext(),
-          createFetchDataConsumerHandleFromWebHandle(
-              createUnexpectedErrorDataConsumerHandle())));
+      m_updater->update(
+          BytesConsumer::createErrored(BytesConsumer::Error(errorMessage)));
       m_loader->performNetworkError(errorMessage);
     }
 
@@ -419,7 +417,9 @@ void FetchManager::Loader::didReceiveResponse(
   if (m_request->integrity().isEmpty()) {
     responseData = FetchResponseData::createWithBuffer(new BodyStreamBuffer(
         scriptState,
-        createFetchDataConsumerHandleFromWebHandle(std::move(handle))));
+        new BytesConsumerForDataConsumerHandle(
+            scriptState->getExecutionContext(),
+            createFetchDataConsumerHandleFromWebHandle(std::move(handle)))));
   } else {
     sriConsumer = new SRIBytesConsumer();
     responseData = FetchResponseData::createWithBuffer(

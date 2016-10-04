@@ -298,6 +298,54 @@ class Tee final : public GarbageCollectedFinalized<Tee>,
   Member<Destination> m_destination2;
 };
 
+class ErroredBytesConsumer final : public BytesConsumer {
+ public:
+  explicit ErroredBytesConsumer(const Error& error) : m_error(error) {}
+
+  Result beginRead(const char** buffer, size_t* available) override {
+    *buffer = nullptr;
+    *available = 0;
+    return Result::Error;
+  }
+  Result endRead(size_t readSize) override {
+    NOTREACHED();
+    return Result::Error;
+  }
+  void setClient(BytesConsumer::Client*) override {}
+  void clearClient() override {}
+
+  void cancel() override {}
+  PublicState getPublicState() const override { return PublicState::Errored; }
+  Error getError() const override { return m_error; }
+  String debugName() const override { return "ErroredBytesConsumer"; }
+
+ private:
+  const Error m_error;
+};
+
+class ClosedBytesConsumer final : public BytesConsumer {
+ public:
+  Result beginRead(const char** buffer, size_t* available) override {
+    *buffer = nullptr;
+    *available = 0;
+    return Result::Done;
+  }
+  Result endRead(size_t readSize) override {
+    NOTREACHED();
+    return Result::Error;
+  }
+  void setClient(BytesConsumer::Client*) override {}
+  void clearClient() override {}
+
+  void cancel() override {}
+  PublicState getPublicState() const override { return PublicState::Closed; }
+  Error getError() const override {
+    NOTREACHED();
+    return Error();
+  }
+  String debugName() const override { return "ClosedBytesConsumer"; }
+};
+
 }  // namespace
 
 void BytesConsumer::tee(ExecutionContext* executionContext,
@@ -317,6 +365,14 @@ void BytesConsumer::tee(ExecutionContext* executionContext,
   Tee* tee = new Tee(executionContext, src);
   *dest1 = tee->destination1();
   *dest2 = tee->destination2();
+}
+
+BytesConsumer* BytesConsumer::createErrored(const BytesConsumer::Error& error) {
+  return new ErroredBytesConsumer(error);
+}
+
+BytesConsumer* BytesConsumer::createClosed() {
+  return new ClosedBytesConsumer();
 }
 
 }  // namespace blink

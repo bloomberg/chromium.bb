@@ -408,6 +408,29 @@ TEST_F(BytesConsumerTeeTest,
   EXPECT_EQ(BytesConsumer::PublicState::Closed, dest1->getPublicState());
 }
 
+TEST(BytesConusmerTest, ClosedBytesConsumer) {
+  BytesConsumer* consumer = BytesConsumer::createClosed();
+
+  const char* buffer = nullptr;
+  size_t available = 0;
+  EXPECT_EQ(Result::Done, consumer->beginRead(&buffer, &available));
+  EXPECT_EQ(BytesConsumer::PublicState::Closed, consumer->getPublicState());
+}
+
+TEST(BytesConusmerTest, ErroredBytesConsumer) {
+  BytesConsumer::Error error("hello");
+  BytesConsumer* consumer = BytesConsumer::createErrored(error);
+
+  const char* buffer = nullptr;
+  size_t available = 0;
+  EXPECT_EQ(Result::Error, consumer->beginRead(&buffer, &available));
+  EXPECT_EQ(BytesConsumer::PublicState::Errored, consumer->getPublicState());
+  EXPECT_EQ(error.message(), consumer->getError().message());
+
+  consumer->cancel();
+  EXPECT_EQ(BytesConsumer::PublicState::Errored, consumer->getPublicState());
+}
+
 }  // namespace
 
 }  // namespace blink

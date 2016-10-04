@@ -407,9 +407,8 @@ Request* Request::createRequestWithRequestOrString(
   // non-null, run these substeps:"
   if (inputRequest && inputRequest->bodyBuffer()) {
     // "Let |dummyStream| be an empty ReadableStream object."
-    auto dummyStream = new BodyStreamBuffer(
-        scriptState, createFetchDataConsumerHandleFromWebHandle(
-                         createDoneDataConsumerHandle()));
+    auto dummyStream =
+        new BodyStreamBuffer(scriptState, BytesConsumer::createClosed());
     // "Set |input|'s request's body to a new body whose stream is
     // |dummyStream|."
     inputRequest->m_request->setBuffer(dummyStream);

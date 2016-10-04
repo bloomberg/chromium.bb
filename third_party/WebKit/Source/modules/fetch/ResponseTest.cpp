@@ -11,6 +11,7 @@
 #include "core/frame/Frame.h"
 #include "core/testing/DummyPageHolder.h"
 #include "modules/fetch/BodyStreamBuffer.h"
+#include "modules/fetch/BytesConsumer.h"
 #include "modules/fetch/BytesConsumerTestUtil.h"
 #include "modules/fetch/DataConsumerHandleTestUtil.h"
 #include "modules/fetch/DataConsumerHandleUtil.h"
@@ -208,14 +209,14 @@ void checkResponseStream(ScriptState* scriptState,
 }
 
 BodyStreamBuffer* createHelloWorldBuffer(ScriptState* scriptState) {
-  using Command = DataConsumerHandleTestUtil::Command;
-  std::unique_ptr<DataConsumerHandleTestUtil::ReplayingHandle> src(
-      DataConsumerHandleTestUtil::ReplayingHandle::create());
+  using Command = BytesConsumerTestUtil::Command;
+  BytesConsumerTestUtil::ReplayingBytesConsumer* src =
+      new BytesConsumerTestUtil::ReplayingBytesConsumer(
+          scriptState->getExecutionContext());
   src->add(Command(Command::Data, "Hello, "));
   src->add(Command(Command::Data, "world"));
   src->add(Command(Command::Done));
-  return new BodyStreamBuffer(
-      scriptState, createFetchDataConsumerHandleFromWebHandle(std::move(src)));
+  return new BodyStreamBuffer(scriptState, src);
 }
 
 TEST(ServiceWorkerResponseTest, BodyStreamBufferCloneDefault) {
@@ -272,8 +273,8 @@ TEST(ServiceWorkerResponseTest, BodyStreamBufferCloneOpaque) {
 TEST(ServiceWorkerResponseTest, BodyStreamBufferCloneError) {
   V8TestingScope scope;
   BodyStreamBuffer* buffer = new BodyStreamBuffer(
-      scope.getScriptState(), createFetchDataConsumerHandleFromWebHandle(
-                                  createUnexpectedErrorDataConsumerHandle()));
+      scope.getScriptState(),
+      BytesConsumer::createErrored(BytesConsumer::Error()));
   FetchResponseData* fetchResponseData =
       FetchResponseData::createWithBuffer(buffer);
   fetchResponseData->setURL(KURL(ParsedURLString, "http://www.response.com"));
