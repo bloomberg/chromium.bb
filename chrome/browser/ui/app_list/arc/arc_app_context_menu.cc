@@ -24,6 +24,15 @@ ArcAppContextMenu::~ArcAppContextMenu() {
 }
 
 void ArcAppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
+  const ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile());
+  DCHECK(arc_prefs);
+  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+      arc_prefs->GetApp(app_id());
+  if (!app_info) {
+    LOG(ERROR) << "App " << app_id() << " is not available.";
+    return;
+  }
+
   if (!controller()->IsAppOpen(app_id())) {
     menu_model->AddItemWithStringId(LAUNCH_NEW,
                                     IDS_APP_CONTEXT_MENU_ACTIVATE_ARC);
@@ -31,19 +40,36 @@ void ArcAppContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
   }
   // Create default items.
   app_list::AppContextMenu::BuildMenu(menu_model);
-  if (CanBeUninstalled()) {
-    menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
-    const ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile());
-    DCHECK(arc_prefs);
-    if (arc_prefs->IsShortcut(app_id())) {
-      menu_model->AddItemWithStringId(UNINSTALL, IDS_APP_LIST_REMOVE_SHORTCUT);
-    } else {
-      menu_model->AddItemWithStringId(UNINSTALL, IDS_APP_LIST_UNINSTALL_ITEM);
-    }
-  }
+
+  menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
+  if (arc_prefs->IsShortcut(app_id()))
+    menu_model->AddItemWithStringId(UNINSTALL, IDS_APP_LIST_REMOVE_SHORTCUT);
+  else if (!app_info->sticky)
+    menu_model->AddItemWithStringId(UNINSTALL, IDS_APP_LIST_UNINSTALL_ITEM);
+
   // App Info item.
   menu_model->AddItemWithStringId(SHOW_APP_INFO,
                                   IDS_APP_CONTEXT_MENU_SHOW_INFO);
+}
+
+bool ArcAppContextMenu::IsCommandIdEnabled(int command_id) const {
+  const ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile());
+  DCHECK(arc_prefs);
+  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+      arc_prefs->GetApp(app_id());
+
+  switch (command_id) {
+    case UNINSTALL:
+      return app_info &&
+          !app_info->sticky &&
+          (app_info->ready || app_info->shortcut);
+    case SHOW_APP_INFO:
+      return app_info && app_info->ready;
+    default:
+      return app_list::AppContextMenu::IsCommandIdEnabled(command_id);
+  }
+
+  return false;
 }
 
 void ArcAppContextMenu::ExecuteCommand(int command_id, int event_flags) {
@@ -95,12 +121,4 @@ void ArcAppContextMenu::ShowPackageInfo() {
   }
   if (arc::ShowPackageInfo(app_info->package_name))
     controller()->DismissView();
-}
-
-bool ArcAppContextMenu::CanBeUninstalled() const {
-  const ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile());
-  DCHECK(arc_prefs);
-  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
-      arc_prefs->GetApp(app_id());
-  return app_info && app_info->ready && !app_info->sticky;
 }

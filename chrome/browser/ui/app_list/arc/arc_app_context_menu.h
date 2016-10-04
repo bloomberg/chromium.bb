@@ -30,14 +30,12 @@ class ArcAppContextMenu : public app_list::AppContextMenu {
 
   // ui::SimpleMenuModel::Delegate overrides:
   void ExecuteCommand(int command_id, int event_flags) override;
+  bool IsCommandIdEnabled(int command_id) const override;
 
  private:
   void IsAppOpen();
   void UninstallPackage();
   void ShowPackageInfo();
-
-  bool CanBeUninstalled() const;
-  bool IsShortcut() const;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppContextMenu);
 };
