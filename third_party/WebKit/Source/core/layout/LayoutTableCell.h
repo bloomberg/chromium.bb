@@ -288,6 +288,9 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
 
   void adjustChildDebugRect(LayoutRect&) const override;
 
+  // A table cell's location is relative to its containing section.
+  LayoutBox* locationContainer() const override { return section(); }
+
  protected:
   void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
   void computePreferredLogicalWidths() override;

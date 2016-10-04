@@ -2283,11 +2283,10 @@ bool LayoutBox::mapToVisualRectInAncestorSpace(
   LayoutObject* container =
       this->container(ancestor, &ancestorSkipped, &filterSkipped);
   LayoutBox* tableRowContainer = nullptr;
-  // Skip table row because cells and rows are in the same coordinate space
-  // (see below, however for more comments about when |ancestor| is the table row).
-  // The second and third conditionals below are to skip cases where content has display: table-row or display: table-cell but is not
-  // parented like a cell/row combo.
-  if (container->isTableRow() && isTableCell() && parentBox() == container) {
+  // Skip table row because cells and rows are in the same coordinate space (see
+  // below, however for more comments about when |ancestor| is the table row).
+  if (isTableCell()) {
+    DCHECK(container->isTableRow() && parentBox() == container);
     if (container != ancestor)
       container = container->parent();
     else
@@ -5048,11 +5047,24 @@ LayoutPoint LayoutBox::flipForWritingModeForChild(
                      point.y());
 }
 
+LayoutBox* LayoutBox::locationContainer() const {
+  // Normally the box's location is relative to its containing box.
+  LayoutObject* container = this->container();
+  while (container && !container->isBox())
+    container = container->container();
+  return toLayoutBox(container);
+}
+
 LayoutPoint LayoutBox::topLeftLocation(
     const LayoutBox* flippedBlocksContainer) const {
-  const LayoutBox* containerBox =
-      flippedBlocksContainer ? flippedBlocksContainer : containingBlock();
-  if (!containerBox || containerBox == this)
+  const LayoutBox* containerBox;
+  if (flippedBlocksContainer) {
+    DCHECK(flippedBlocksContainer == locationContainer());
+    containerBox = flippedBlocksContainer;
+  } else {
+    containerBox = locationContainer();
+  }
+  if (!containerBox)
     return location();
   return containerBox->flipForWritingModeForChild(this, location());
 }

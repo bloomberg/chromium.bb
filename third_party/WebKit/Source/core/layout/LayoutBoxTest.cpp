@@ -100,4 +100,89 @@ TEST_F(LayoutBoxTest, BackgroundRect) {
             layoutBox->backgroundRect(BackgroundClipRect));
 }
 
+TEST_F(LayoutBoxTest, LocationContainer) {
+  setBodyInnerHTML(
+      "<div id='div'>"
+      "  <b>Inline content<img id='img'></b>"
+      "</div>"
+      "<table id='table'>"
+      "  <tbody id='tbody'>"
+      "    <tr id='row'>"
+      "      <td id='cell' style='width: 100px; height: 80px'></td>"
+      "    </tr>"
+      "  </tbody>"
+      "</table>");
+
+  const LayoutBox* body = document().body()->layoutBox();
+  const LayoutBox* div = toLayoutBox(getLayoutObjectByElementId("div"));
+  const LayoutBox* img = toLayoutBox(getLayoutObjectByElementId("img"));
+  const LayoutBox* table = toLayoutBox(getLayoutObjectByElementId("table"));
+  const LayoutBox* tbody = toLayoutBox(getLayoutObjectByElementId("tbody"));
+  const LayoutBox* row = toLayoutBox(getLayoutObjectByElementId("row"));
+  const LayoutBox* cell = toLayoutBox(getLayoutObjectByElementId("cell"));
+
+  EXPECT_EQ(body, div->locationContainer());
+  EXPECT_EQ(div, img->locationContainer());
+  EXPECT_EQ(body, table->locationContainer());
+  EXPECT_EQ(table, tbody->locationContainer());
+  EXPECT_EQ(tbody, row->locationContainer());
+  EXPECT_EQ(tbody, cell->locationContainer());
+}
+
+TEST_F(LayoutBoxTest, TopLeftLocationFlipped) {
+  setBodyInnerHTML(
+      "<div style='width: 600px; height: 200px; writing-mode: vertical-rl'>"
+      "  <div id='box1' style='width: 100px'></div>"
+      "  <div id='box2' style='width: 200px'></div>"
+      "</div>");
+
+  const LayoutBox* box1 = toLayoutBox(getLayoutObjectByElementId("box1"));
+  EXPECT_EQ(LayoutPoint(0, 0), box1->location());
+  EXPECT_EQ(LayoutPoint(500, 0), box1->topLeftLocation());
+
+  const LayoutBox* box2 = toLayoutBox(getLayoutObjectByElementId("box2"));
+  EXPECT_EQ(LayoutPoint(100, 0), box2->location());
+  EXPECT_EQ(LayoutPoint(300, 0), box2->topLeftLocation());
+}
+
+TEST_F(LayoutBoxTest, TableRowCellTopLeftLocationFlipped) {
+  setBodyInnerHTML(
+      "<div style='writing-mode: vertical-rl'>"
+      "  <table style='border-spacing: 0'>"
+      "    <thead><tr><td style='width: 50px'></td></tr></thead>"
+      "    <tbody>"
+      "      <tr id='row1'>"
+      "        <td id='cell1' style='width: 100px; height: 80px'></td>"
+      "      </tr>"
+      "      <tr id='row2'>"
+      "        <td id='cell2' style='width: 300px; height: 80px'></td>"
+      "      </tr>"
+      "    </tbody>"
+      "  </table>"
+      "</div>");
+
+  // location and topLeftLocation of a table row or a table cell should be
+  // relative to the containing section.
+
+  const LayoutBox* row1 = toLayoutBox(getLayoutObjectByElementId("row1"));
+  EXPECT_EQ(LayoutPoint(0, 0), row1->location());
+  EXPECT_EQ(LayoutPoint(300, 0), row1->topLeftLocation());
+
+  const LayoutBox* cell1 = toLayoutBox(getLayoutObjectByElementId("cell1"));
+  EXPECT_EQ(LayoutPoint(0, 0), cell1->location());
+  EXPECT_EQ(LayoutPoint(300, 0), cell1->topLeftLocation());
+
+  const LayoutBox* row2 = toLayoutBox(getLayoutObjectByElementId("row2"));
+  // TODO(crbug.com/652496): LayoutTableRow's location is in logical coordinates
+  // of the containing section, and topLeftLocation() is incorrect.
+  // This should be (100, 0).
+  EXPECT_EQ(LayoutPoint(0, 100), row2->location());
+  // This should be (0, 0).
+  EXPECT_EQ(LayoutPoint(100, 100), row2->topLeftLocation());
+
+  const LayoutBox* cell2 = toLayoutBox(getLayoutObjectByElementId("cell2"));
+  EXPECT_EQ(LayoutPoint(100, 0), cell2->location());
+  EXPECT_EQ(LayoutPoint(0, 0), cell2->topLeftLocation());
+}
+
 }  // namespace blink
