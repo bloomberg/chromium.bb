@@ -423,9 +423,8 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
                         "'Performance.onresourcetimingbufferfull'");
 
     case UseCounter::MediaStreamTrackGetSources:
-      return "MediaStreamTrack.getSources is deprecated. See "
-             "https://www.chromestatus.com/feature/4765305641369600 for more "
-             "details.";
+      return willBeRemoved("MediaStreamTrack.getSources", M56,
+                           "4765305641369600");
 
     case UseCounter::WebAnimationHyphenatedProperty:
       return "Hyphenated property names in Web Animations keyframes are "

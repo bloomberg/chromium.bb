@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 1: MediaStreamTrack.getSources is deprecated. See https://www.chromestatus.com/feature/4765305641369600 for more details.
+CONSOLE WARNING: line 1: MediaStreamTrack.getSources is deprecated and will be removed in M56, around January 2017. See https://www.chromestatus.com/features/4765305641369600 for more details.
 Tests MediaStreamTrack::getSources.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
