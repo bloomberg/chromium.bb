@@ -165,6 +165,3 @@
   http/tests/serviceworker/appcache-ordering-main.html [ Failure ]
   http/tests/serviceworker/chromium/register-link-header.html [ Timeout Failure ]
   http/tests/serviceworker/chromium/sandboxed-iframe-navigator-serviceworker.html [ Failure ]
-  http/tests/serviceworker/fetch-request-fallback.html [ Failure ]
-  http/tests/serviceworker/navigation-redirect.html [ Failure ]
-  http/tests/serviceworker/request-end-to-end.html [ Failure ]
