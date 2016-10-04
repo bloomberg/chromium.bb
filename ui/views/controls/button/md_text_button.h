@@ -12,10 +12,6 @@
 
 namespace views {
 
-namespace internal {
-class MdFocusRing;
-}  // namespace internal
-
 // A button class that implements the Material Design text button spec.
 class VIEWS_EXPORT MdTextButton : public LabelButton {
  public:
@@ -33,7 +29,6 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
   void set_bg_color_override(SkColor color) { bg_color_override_ = color; }
 
   // LabelButton:
-  void Layout() override;
   void OnFocus() override;
   void OnBlur() override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
@@ -58,11 +53,6 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
 
   void UpdatePadding();
   void UpdateColors();
-
-  // The MD-style focus ring. This is not done via a FocusPainter
-  // because it needs to paint to a layer so it can extend beyond the bounds of
-  // |this|.
-  internal::MdFocusRing* focus_ring_;
 
   // True if this button uses prominent styling (blue fill, etc.).
   bool is_prominent_;

@@ -33,6 +33,7 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/focusable_border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_runner.h"
@@ -990,6 +991,8 @@ void Textfield::OnFocus() {
     StartBlinkingCursor();
   View::OnFocus();
   SchedulePaint();
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
+    FocusRing::Install(this);
 }
 
 void Textfield::OnBlur() {
@@ -1007,6 +1010,8 @@ void Textfield::OnBlur() {
 
   // Border typically draws focus indicator.
   SchedulePaint();
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
+    FocusRing::Uninstall(this);
 }
 
 gfx::Point Textfield::GetKeyboardContextMenuLocation() {

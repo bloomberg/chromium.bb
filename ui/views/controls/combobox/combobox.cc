@@ -34,6 +34,7 @@
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/focusable_border.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
@@ -392,7 +393,7 @@ class Combobox::ComboboxMenuModel : public ui::MenuModel,
 Combobox::Combobox(ui::ComboboxModel* model, Style style)
     : model_(model),
       style_(style),
-      listener_(NULL),
+      listener_(nullptr),
       selected_index_(style == STYLE_ACTION ? 0 : model_->GetDefaultIndex()),
       invalid_(false),
       menu_model_(new ComboboxMenuModel(this, model)),
@@ -715,6 +716,8 @@ void Combobox::OnFocus() {
   View::OnFocus();
   // Border renders differently when focused.
   SchedulePaint();
+  if (UseMd())
+    FocusRing::Install(this);
 }
 
 void Combobox::OnBlur() {
@@ -725,6 +728,8 @@ void Combobox::OnBlur() {
     selector_->OnViewBlur();
   // Border renders differently when focused.
   SchedulePaint();
+  if (UseMd())
+    FocusRing::Uninstall(this);
 }
 
 void Combobox::GetAccessibleState(ui::AXViewState* state) {

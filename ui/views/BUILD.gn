@@ -116,6 +116,8 @@ component("views") {
     "controls/combobox/combobox.cc",
     "controls/combobox/combobox.h",
     "controls/combobox/combobox_listener.h",
+    "controls/focus_ring.cc",
+    "controls/focus_ring.h",
     "controls/focusable_border.cc",
     "controls/focusable_border.h",
     "controls/focusable_rounded_border_mac.cc",

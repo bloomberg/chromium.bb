@@ -43,6 +43,10 @@ void FocusableBorder::UseDefaultColor() {
 }
 
 void FocusableBorder::Paint(const View& view, gfx::Canvas* canvas) {
+  // In harmony, the focus indicator is a FocusRing.
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial() && view.HasFocus())
+    return;
+
   SkPaint paint;
   paint.setStyle(SkPaint::kStroke_Style);
   paint.setColor(GetCurrentColor(view));
