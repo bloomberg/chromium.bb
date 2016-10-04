@@ -49,17 +49,20 @@ class AudioNodeOutput final {
                                                  unsigned numberOfChannels);
   void dispose();
 
-  // Causes our AudioNode to process if it hasn't already for this render quantum.
-  // It returns the bus containing the processed audio for this output, returning inPlaceBus if in-place processing was possible.
-  // Called from context's audio thread.
+  // Causes our AudioNode to process if it hasn't already for this render
+  // quantum.  It returns the bus containing the processed audio for this
+  // output, returning inPlaceBus if in-place processing was possible.  Called
+  // from context's audio thread.
   AudioBus* pull(AudioBus* inPlaceBus, size_t framesToProcess);
 
-  // bus() will contain the rendered audio after pull() is called for each rendering time quantum.
+  // bus() will contain the rendered audio after pull() is called for each
+  // rendering time quantum.
   // Called from context's audio thread.
   AudioBus* bus() const;
 
-  // renderingFanOutCount() is the number of AudioNodeInputs that we're connected to during rendering.
-  // Unlike fanOutCount() it will not change during the course of a render quantum.
+  // renderingFanOutCount() is the number of AudioNodeInputs that we're
+  // connected to during rendering.  Unlike fanOutCount() it will not change
+  // during the course of a render quantum.
   unsigned renderingFanOutCount() const;
 
   // Must be called with the context's graph lock.
@@ -79,13 +82,15 @@ class AudioNodeOutput final {
   bool isConnectedToInput(AudioNodeInput&);
   bool isConnectedToAudioParam(AudioParamHandler&);
 
-  // Disable/Enable happens when there are still JavaScript references to a node, but it has otherwise "finished" its work.
-  // For example, when a note has finished playing.  It is kept around, because it may be played again at a later time.
-  // They must be called with the context's graph lock.
+  // Disable/Enable happens when there are still JavaScript references to a
+  // node, but it has otherwise "finished" its work.  For example, when a note
+  // has finished playing.  It is kept around, because it may be played again at
+  // a later time.  They must be called with the context's graph lock.
   void disable();
   void enable();
 
-  // updateRenderingState() is called in the audio thread at the start or end of the render quantum to handle any recent changes to the graph state.
+  // updateRenderingState() is called in the audio thread at the start or end of
+  // the render quantum to handle any recent changes to the graph state.
   // It must be called with the context's graph lock.
   void updateRenderingState();
 
@@ -112,12 +117,14 @@ class AudioNodeOutput final {
   void removeParam(AudioParamHandler&);
 
   // fanOutCount() is the number of AudioNodeInputs that we're connected to.
-  // This method should not be called in audio thread rendering code, instead renderingFanOutCount() should be used.
+  // This method should not be called in audio thread rendering code, instead
+  // renderingFanOutCount() should be used.
   // It must be called with the context's graph lock.
   unsigned fanOutCount();
 
-  // Similar to fanOutCount(), paramFanOutCount() is the number of AudioParams that we're connected to.
-  // This method should not be called in audio thread rendering code, instead renderingParamFanOutCount() should be used.
+  // Similar to fanOutCount(), paramFanOutCount() is the number of AudioParams
+  // that we're connected to.  This method should not be called in audio thread
+  // rendering code, instead renderingParamFanOutCount() should be used.
   // It must be called with the context's graph lock.
   unsigned paramFanOutCount();
 
@@ -125,27 +132,33 @@ class AudioNodeOutput final {
   void disconnectAllInputs();
   void disconnectAllParams();
 
-  // updateInternalBus() updates m_internalBus appropriately for the number of channels.
-  // It is called in the constructor or in the audio thread with the context's graph lock.
+  // updateInternalBus() updates m_internalBus appropriately for the number of
+  // channels.  It is called in the constructor or in the audio thread with the
+  // context's graph lock.
   void updateInternalBus();
 
-  // Announce to any nodes we're connected to that we changed our channel count for its input.
+  // Announce to any nodes we're connected to that we changed our channel count
+  // for its input.
   // It must be called in the audio thread with the context's graph lock.
   void propagateChannelCount();
 
-  // updateNumberOfChannels() is called in the audio thread at the start or end of the render quantum to pick up channel changes.
+  // updateNumberOfChannels() is called in the audio thread at the start or end
+  // of the render quantum to pick up channel changes.
   // It must be called with the context's graph lock.
   void updateNumberOfChannels();
 
   // m_numberOfChannels will only be changed in the audio thread.
-  // The main thread sets m_desiredNumberOfChannels which will later get picked up in the audio thread in updateNumberOfChannels().
+  // The main thread sets m_desiredNumberOfChannels which will later get picked
+  // up in the audio thread in updateNumberOfChannels().
   unsigned m_numberOfChannels;
   unsigned m_desiredNumberOfChannels;
 
-  // m_internalBus and m_inPlaceBus must only be changed in the audio thread with the context's graph lock (or constructor).
+  // m_internalBus and m_inPlaceBus must only be changed in the audio thread
+  // with the context's graph lock (or constructor).
   RefPtr<AudioBus> m_internalBus;
   RefPtr<AudioBus> m_inPlaceBus;
-  // If m_isInPlace is true, use m_inPlaceBus as the valid AudioBus; If false, use the default m_internalBus.
+  // If m_isInPlace is true, use m_inPlaceBus as the valid AudioBus; If false,
+  // use the default m_internalBus.
   bool m_isInPlace;
 
   // This HashSet holds connection references. We must call
@@ -157,8 +170,9 @@ class AudioNodeOutput final {
 
   bool m_didCallDispose;
 
-  // For the purposes of rendering, keeps track of the number of inputs and AudioParams we're connected to.
-  // These value should only be changed at the very start or end of the rendering quantum.
+  // For the purposes of rendering, keeps track of the number of inputs and
+  // AudioParams we're connected to.  These value should only be changed at the
+  // very start or end of the rendering quantum.
   unsigned m_renderingFanOutCount;
   unsigned m_renderingParamFanOutCount;
 

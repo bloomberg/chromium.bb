@@ -40,7 +40,8 @@ const double RealtimeAnalyser::DefaultMinDecibels = -100;
 const double RealtimeAnalyser::DefaultMaxDecibels = -30;
 
 const unsigned RealtimeAnalyser::DefaultFFTSize = 2048;
-// All FFT implementations are expected to handle power-of-two sizes MinFFTSize <= size <= MaxFFTSize.
+// All FFT implementations are expected to handle power-of-two sizes
+// MinFFTSize <= size <= MaxFFTSize.
 const unsigned RealtimeAnalyser::MinFFTSize = 32;
 const unsigned RealtimeAnalyser::MaxFFTSize = 32768;
 const unsigned RealtimeAnalyser::InputBufferSize =
@@ -71,7 +72,8 @@ bool RealtimeAnalyser::setFftSize(size_t size) {
 
   if (m_fftSize != size) {
     m_analysisFrame = wrapUnique(new FFTFrame(size));
-    // m_magnitudeBuffer has size = fftSize / 2 because it contains floats reduced from complex values in m_analysisFrame.
+    // m_magnitudeBuffer has size = fftSize / 2 because it contains floats
+    // reduced from complex values in m_analysisFrame.
     m_magnitudeBuffer.allocate(size / 2);
     m_fftSize = size;
   }
@@ -97,8 +99,8 @@ void RealtimeAnalyser::writeInput(AudioBus* bus, size_t framesToProcess) {
   // Perform real-time analysis
   float* dest = m_inputBuffer.data() + m_writeIndex;
 
-  // Clear the bus and downmix the input according to the down mixing rules.  Then save the result
-  // in the m_inputBuffer at the appropriate place.
+  // Clear the bus and downmix the input according to the down mixing rules.
+  // Then save the result in the m_inputBuffer at the appropriate place.
   m_downMixBus->zero();
   m_downMixBus->sumFrom(*bus);
   memcpy(dest, m_downMixBus->channel(0)->data(),
@@ -133,14 +135,16 @@ void applyWindow(float* p, size_t n) {
 void RealtimeAnalyser::doFFTAnalysis() {
   DCHECK(isMainThread());
 
-  // Unroll the input buffer into a temporary buffer, where we'll apply an analysis window followed by an FFT.
+  // Unroll the input buffer into a temporary buffer, where we'll apply an
+  // analysis window followed by an FFT.
   size_t fftSize = this->fftSize();
 
   AudioFloatArray temporaryBuffer(fftSize);
   float* inputBuffer = m_inputBuffer.data();
   float* tempP = temporaryBuffer.data();
 
-  // Take the previous fftSize values from the input buffer and copy into the temporary buffer.
+  // Take the previous fftSize values from the input buffer and copy into the
+  // temporary buffer.
   unsigned writeIndex = m_writeIndex;
   if (writeIndex < fftSize) {
     memcpy(tempP, inputBuffer + writeIndex - fftSize + InputBufferSize,
@@ -163,15 +167,18 @@ void RealtimeAnalyser::doFFTAnalysis() {
   // Blow away the packed nyquist component.
   imagP[0] = 0;
 
-  // Normalize so than an input sine wave at 0dBfs registers as 0dBfs (undo FFT scaling factor).
+  // Normalize so than an input sine wave at 0dBfs registers as 0dBfs (undo FFT
+  // scaling factor).
   const double magnitudeScale = 1.0 / fftSize;
 
-  // A value of 0 does no averaging with the previous result.  Larger values produce slower, but smoother changes.
+  // A value of 0 does no averaging with the previous result.  Larger values
+  // produce slower, but smoother changes.
   double k = m_smoothingTimeConstant;
   k = std::max(0.0, k);
   k = std::min(1.0, k);
 
-  // Convert the analysis data from complex to magnitude and average with the previous result.
+  // Convert the analysis data from complex to magnitude and average with the
+  // previous result.
   float* destination = magnitudeBuffer().data();
   size_t n = magnitudeBuffer().size();
   for (size_t i = 0; i < n; ++i) {
@@ -231,7 +238,8 @@ void RealtimeAnalyser::convertToByteData(DOMUint8Array* destinationArray) {
       float linearValue = source[i];
       double dbMag = AudioUtilities::linearToDecibels(linearValue);
 
-      // The range m_minDecibels to m_maxDecibels will be scaled to byte values from 0 to UCHAR_MAX.
+      // The range m_minDecibels to m_maxDecibels will be scaled to byte values
+      // from 0 to UCHAR_MAX.
       double scaledValue = UCHAR_MAX * (dbMag - minDecibels) * rangeScaleFactor;
 
       // Clip to valid range.
@@ -251,8 +259,9 @@ void RealtimeAnalyser::getByteFrequencyData(DOMUint8Array* destinationArray,
   DCHECK(destinationArray);
 
   if (currentTime <= m_lastAnalysisTime) {
-    // FIXME: Is it worth caching the data so we don't have to do the conversion every time?
-    // Perhaps not, since we expect many calls in the same rendering quantum.
+    // FIXME: Is it worth caching the data so we don't have to do the conversion
+    // every time?  Perhaps not, since we expect many calls in the same
+    // rendering quantum.
     convertToByteData(destinationArray);
     return;
   }

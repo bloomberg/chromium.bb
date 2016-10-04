@@ -128,18 +128,19 @@ void PannerHandler::process(size_t framesToProcess) {
     }
 
     if (hasSampleAccurateValues() || listener()->hasSampleAccurateValues()) {
-      // It's tempting to skip sample-accurate processing if isAzimuthElevationDirty() and
-      // isDistanceConeGain() both return false.  But in general we can't because something
-      // may scheduled to start in the middle of the rendering quantum.  On the other hand,
-      // the audible effect may be small enough that we can afford to do this optimization.
+      // It's tempting to skip sample-accurate processing if
+      // isAzimuthElevationDirty() and isDistanceConeGain() both return false.
+      // But in general we can't because something may scheduled to start in the
+      // middle of the rendering quantum.  On the other hand, the audible effect
+      // may be small enough that we can afford to do this optimization.
       processSampleAccurateValues(destination, source, framesToProcess);
     } else {
       // Apply the panning effect.
       double azimuth;
       double elevation;
 
-      // Update dirty state in case something has moved; this can happen if the AudioParam for
-      // the position or orientation component is set directly.
+      // Update dirty state in case something has moved; this can happen if the
+      // AudioParam for the position or orientation component is set directly.
       updateDirtyState();
 
       azimuthElevation(&azimuth, &elevation);
@@ -156,8 +157,8 @@ void PannerHandler::process(size_t framesToProcess) {
       destination->copyWithGainFrom(*destination, &m_lastGain, totalGain);
     }
   } else {
-    // Too bad - The tryLock() failed.
-    // We must be in the middle of changing the properties of the panner or the listener.
+    // Too bad - The tryLock() failed.  We must be in the middle of changing the
+    // properties of the panner or the listener.
     destination->zero();
   }
 }
@@ -167,8 +168,8 @@ void PannerHandler::processSampleAccurateValues(AudioBus* destination,
                                                 size_t framesToProcess) {
   RELEASE_ASSERT(framesToProcess <= ProcessingSizeInFrames);
 
-  // Get the sample accurate values from all of the AudioParams, including the values from the
-  // AudioListener.
+  // Get the sample accurate values from all of the AudioParams, including the
+  // values from the AudioListener.
   float pannerX[ProcessingSizeInFrames];
   float pannerY[ProcessingSizeInFrames];
   float pannerZ[ProcessingSizeInFrames];
@@ -235,8 +236,8 @@ void PannerHandler::initialize() {
                             listener()->hrtfDatabaseLoader());
   listener()->addPanner(*this);
 
-  // Set the cached values to the current values to start things off.  The panner is already
-  // marked as dirty, so this won't matter.
+  // Set the cached values to the current values to start things off.  The
+  // panner is already marked as dirty, so this won't matter.
   m_lastPosition = position();
   m_lastOrientation = orientation();
 
@@ -570,7 +571,8 @@ void PannerHandler::setChannelCountMode(const String& mode,
   } else if (mode == "explicit") {
     m_newChannelCountMode = Explicit;
   } else if (mode == "max") {
-    // This is not supported for a PannerNode, which can only handle 1 or 2 channels.
+    // This is not supported for a PannerNode, which can only handle 1 or 2
+    // channels.
     exceptionState.throwDOMException(NotSupportedError,
                                      "Panner: 'max' is not allowed");
     m_newChannelCountMode = oldMode;

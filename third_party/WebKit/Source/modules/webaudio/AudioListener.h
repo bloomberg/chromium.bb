@@ -40,7 +40,8 @@ namespace blink {
 class HRTFDatabaseLoader;
 class PannerHandler;
 
-// AudioListener maintains the state of the listener in the audio scene as defined in the OpenAL specification.
+// AudioListener maintains the state of the listener in the audio scene as
+// defined in the OpenAL specification.
 
 class AudioListener : public GarbageCollectedFinalized<AudioListener>,
                       public ScriptWrappable {
@@ -70,8 +71,8 @@ class AudioListener : public GarbageCollectedFinalized<AudioListener>,
   // True if any of AudioParams have automations.
   bool hasSampleAccurateValues() const;
 
-  // Update the internal state of the listener, including updating the dirty state of all
-  // PannerNodes if necessary.
+  // Update the internal state of the listener, including updating the dirty
+  // state of all PannerNodes if necessary.
   void updateState();
 
   bool isListenerDirty() const { return m_isListenerDirty; }

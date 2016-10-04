@@ -63,8 +63,8 @@ AudioListener::AudioListener(BaseAudioContext& context)
       m_upXValues(AudioUtilities::kRenderQuantumFrames),
       m_upYValues(AudioUtilities::kRenderQuantumFrames),
       m_upZValues(AudioUtilities::kRenderQuantumFrames) {
-  // Initialize the cached values with the current values.  Thus, we don't need to notify any
-  // panners because we haved moved.
+  // Initialize the cached values with the current values.  Thus, we don't need
+  // to notify any panners because we haved moved.
   m_lastPosition = position();
   m_lastForward = orientation();
   m_lastUp = upVector();

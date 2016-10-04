@@ -158,8 +158,8 @@ String AudioHandler::nodeTypeName() const {
 }
 
 void AudioHandler::setNodeType(NodeType type) {
-  // Don't allow the node type to be changed to a different node type, after it's already been
-  // set!  And the new type can't be unknown or end!
+  // Don't allow the node type to be changed to a different node type, after
+  // it's already been set.  And the new type can't be unknown or end.
   DCHECK_EQ(m_nodeType, NodeTypeUnknown);
   DCHECK_NE(type, NodeTypeUnknown);
   DCHECK_NE(type, NodeTypeEnd);
@@ -310,13 +310,15 @@ void AudioHandler::processIfNecessary(size_t framesToProcess) {
     return;
 
   // Ensure that we only process once per rendering quantum.
-  // This handles the "fanout" problem where an output is connected to multiple inputs.
-  // The first time we're called during this time slice we process, but after that we don't want to re-process,
-  // instead our output(s) will already have the results cached in their bus;
+  // This handles the "fanout" problem where an output is connected to multiple
+  // inputs.  The first time we're called during this time slice we process, but
+  // after that we don't want to re-process, instead our output(s) will already
+  // have the results cached in their bus;
   double currentTime = context()->currentTime();
   if (m_lastProcessingTime != currentTime) {
-    m_lastProcessingTime =
-        currentTime;  // important to first update this time because of feedback loops in the rendering graph
+    // important to first update this time because of feedback loops in the
+    // rendering graph.
+    m_lastProcessingTime = currentTime;
 
     pullInputs(framesToProcess);
 
@@ -329,9 +331,10 @@ void AudioHandler::processIfNecessary(size_t framesToProcess) {
     if (silentInputs && propagatesSilence()) {
       silenceOutputs();
     } else {
-      // Unsilence the outputs first because the processing of the node may cause the outputs
-      // to go silent and we want to propagate that hint to the downstream nodes!  (For
-      // example, a Gain node with a gain of 0 will want to silence its output.)
+      // Unsilence the outputs first because the processing of the node may
+      // cause the outputs to go silent and we want to propagate that hint to
+      // the downstream nodes.  (For example, a Gain node with a gain of 0 will
+      // want to silence its output.)
       unsilenceOutputs();
       process(framesToProcess);
     }
@@ -400,23 +403,28 @@ void AudioHandler::enableOutputsIfNecessary() {
 }
 
 void AudioHandler::disableOutputsIfNecessary() {
-  // Disable outputs if appropriate. We do this if the number of connections is 0 or 1. The case
-  // of 0 is from deref() where there are no connections left. The case of 1 is from
-  // AudioNodeInput::disable() where we want to disable outputs when there's only one connection
-  // left because we're ready to go away, but can't quite yet.
+  // Disable outputs if appropriate. We do this if the number of connections is
+  // 0 or 1. The case of 0 is from deref() where there are no connections left.
+  // The case of 1 is from AudioNodeInput::disable() where we want to disable
+  // outputs when there's only one connection left because we're ready to go
+  // away, but can't quite yet.
   if (m_connectionRefCount <= 1 && !m_isDisabled) {
-    // Still may have JavaScript references, but no more "active" connection references, so put all of our outputs in a "dormant" disabled state.
-    // Garbage collection may take a very long time after this time, so the "dormant" disabled nodes should not bog down the rendering...
+    // Still may have JavaScript references, but no more "active" connection
+    // references, so put all of our outputs in a "dormant" disabled state.
+    // Garbage collection may take a very long time after this time, so the
+    // "dormant" disabled nodes should not bog down the rendering...
 
-    // As far as JavaScript is concerned, our outputs must still appear to be connected.
-    // But internally our outputs should be disabled from the inputs they're connected to.
-    // disable() can recursively deref connections (and call disable()) down a whole chain of connected nodes.
+    // As far as JavaScript is concerned, our outputs must still appear to be
+    // connected.  But internally our outputs should be disabled from the inputs
+    // they're connected to.  disable() can recursively deref connections (and
+    // call disable()) down a whole chain of connected nodes.
 
-    // TODO(rtoy,hongchan): we need special cases the convolver, delay, biquad, and IIR since
-    // they have a significant tail-time and shouldn't be disconnected simply because they no
-    // longer have any input connections. This needs to be handled more generally where
-    // AudioNodes have a tailTime attribute. Then the AudioNode only needs to remain "active"
-    // for tailTime seconds after there are no longer any active connections.
+    // TODO(rtoy,hongchan): we need special cases the convolver, delay, biquad,
+    // and IIR since they have a significant tail-time and shouldn't be
+    // disconnected simply because they no longer have any input connections.
+    // This needs to be handled more generally where AudioNodes have a tailTime
+    // attribute. Then the AudioNode only needs to remain "active" for tailTime
+    // seconds after there are no longer any active connections.
     if (getNodeType() != NodeTypeConvolver && getNodeType() != NodeTypeDelay &&
         getNodeType() != NodeTypeBiquadFilter &&
         getNodeType() != NodeTypeIIRFilter) {
@@ -508,9 +516,10 @@ void AudioHandler::updateChannelInterpretation() {
 }
 
 unsigned AudioHandler::numberOfOutputChannels() const {
-  // This should only be called for ScriptProcessorNodes which are the only nodes where you can
-  // have an output with 0 channels.  All other nodes have have at least one output channel, so
-  // there's no reason other nodes should ever call this function.
+  // This should only be called for ScriptProcessorNodes which are the only
+  // nodes where you can have an output with 0 channels.  All other nodes have
+  // have at least one output channel, so there's no reason other nodes should
+  // ever call this function.
   DCHECK(0) << "numberOfOutputChannels() not valid for node type "
             << getNodeType();
   return 1;
@@ -615,8 +624,9 @@ AudioNode* AudioNode::connect(AudioNode* destination,
     return nullptr;
   }
 
-  // ScriptProcessorNodes with 0 output channels can't be connected to any destination.  If there
-  // are no output channels, what would the destination receive?  Just disallow this.
+  // ScriptProcessorNodes with 0 output channels can't be connected to any
+  // destination.  If there are no output channels, what would the destination
+  // receive?  Just disallow this.
   if (handler().getNodeType() == AudioHandler::NodeTypeJavaScript &&
       handler().numberOfOutputChannels() == 0) {
     exceptionState.throwDOMException(InvalidAccessError,

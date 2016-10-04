@@ -40,7 +40,8 @@ class BiquadFilterNode final : public AudioNode {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  // These must be defined as in the .idl file and must match those in the BiquadProcessor class.
+  // These must be defined as in the .idl file and must match those in the
+  // BiquadProcessor class.
   enum {
     LOWPASS = 0,
     HIGHPASS = 1,

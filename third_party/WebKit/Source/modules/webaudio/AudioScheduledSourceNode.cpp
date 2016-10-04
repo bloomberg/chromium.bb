@@ -72,7 +72,8 @@ void AudioScheduledSourceHandler::updateSchedulingInfo(
       m_endTime == UnknownTime ? 0 : AudioUtilities::timeToSampleFrame(
                                          m_endTime, sampleRate);
 
-  // If we know the end time and it's already passed, then don't bother doing any more rendering this cycle.
+  // If we know the end time and it's already passed, then don't bother doing
+  // any more rendering this cycle.
   if (m_endTime != UnknownTime && endFrame <= quantumStartFrame)
     finish();
 
@@ -88,7 +89,8 @@ void AudioScheduledSourceHandler::updateSchedulingInfo(
 
   // Check if it's time to start playing.
   if (state == SCHEDULED_STATE) {
-    // Increment the active source count only if we're transitioning from SCHEDULED_STATE to PLAYING_STATE.
+    // Increment the active source count only if we're transitioning from
+    // SCHEDULED_STATE to PLAYING_STATE.
     setPlaybackState(PLAYING_STATE);
   }
 
@@ -105,7 +107,8 @@ void AudioScheduledSourceHandler::updateSchedulingInfo(
   }
 
   // Handle silence before we start playing.
-  // Zero any initial frames representing silence leading up to a rendering start time in the middle of the quantum.
+  // Zero any initial frames representing silence leading up to a rendering
+  // start time in the middle of the quantum.
   if (quantumFrameOffset) {
     for (unsigned i = 0; i < outputBus->numberOfChannels(); ++i)
       memset(outputBus->channel(i)->mutableData(), 0,
@@ -113,8 +116,8 @@ void AudioScheduledSourceHandler::updateSchedulingInfo(
   }
 
   // Handle silence after we're done playing.
-  // If the end time is somewhere in the middle of this time quantum, then zero out the
-  // frames from the end time to the very end of the quantum.
+  // If the end time is somewhere in the middle of this time quantum, then zero
+  // out the frames from the end time to the very end of the quantum.
   if (m_endTime != UnknownTime && endFrame >= quantumStartFrame &&
       endFrame < quantumEndFrame) {
     size_t zeroStartFrame = endFrame - quantumStartFrame;
@@ -162,13 +165,13 @@ void AudioScheduledSourceHandler::start(double when,
     return;
   }
 
-  // The node is started. Add a reference to keep us alive so that audio will eventually get
-  // played even if Javascript should drop all references to this node. The reference will get
-  // dropped when the source has finished playing.
+  // The node is started. Add a reference to keep us alive so that audio will
+  // eventually get played even if Javascript should drop all references to this
+  // node. The reference will get dropped when the source has finished playing.
   context()->notifySourceNodeStartedProcessing(node());
 
-  // This synchronizes with process(). updateSchedulingInfo will read some of the variables being
-  // set here.
+  // This synchronizes with process(). updateSchedulingInfo will read some of
+  // the variables being set here.
   MutexLocker processLocker(m_processLock);
 
   // If |when| < currentTime, the source must start now according to the spec.
@@ -198,9 +201,9 @@ void AudioScheduledSourceHandler::stop(double when,
   // This synchronizes with process()
   MutexLocker processLocker(m_processLock);
 
-  // stop() can be called more than once, with the last call to stop taking effect, unless the
-  // source has already stopped due to earlier calls to stop. No exceptions are thrown in any
-  // case.
+  // stop() can be called more than once, with the last call to stop taking
+  // effect, unless the source has already stopped due to earlier calls to stop.
+  // No exceptions are thrown in any case.
   when = std::max(0.0, when);
   m_endTime = when;
 }

@@ -96,9 +96,9 @@ void WaveShaperDSPKernel::processCurve(const float* source,
   for (unsigned i = 0; i < framesToProcess; ++i) {
     const float input = source[i];
 
-    // Calculate a virtual index based on input -1 -> +1 with -1 being curve[0], +1 being
-    // curve[curveLength - 1], and 0 being at the center of the curve data. Then linearly
-    // interpolate between the two points in the curve.
+    // Calculate a virtual index based on input -1 -> +1 with -1 being curve[0],
+    // +1 being curve[curveLength - 1], and 0 being at the center of the curve
+    // data. Then linearly interpolate between the two points in the curve.
     double virtualIndex = 0.5 * (input + 1) * (curveLength - 1);
     double output;
 
@@ -109,8 +109,9 @@ void WaveShaperDSPKernel::processCurve(const float* source,
       // input >= 1, so use last curve value
       output = curveData[curveLength - 1];
     } else {
-      // The general case where -1 <= input < 1, where 0 <= virtualIndex < curveLength - 1,
-      // so interpolate between the nearest samples on the curve.
+      // The general case where -1 <= input < 1, where 0 <= virtualIndex <
+      // curveLength - 1, so interpolate between the nearest samples on the
+      // curve.
       unsigned index1 = static_cast<unsigned>(virtualIndex);
       unsigned index2 = index1 + 1;
       double interpolationFactor = virtualIndex - index1;

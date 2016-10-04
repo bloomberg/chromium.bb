@@ -43,9 +43,10 @@ namespace blink {
 
 class AudioNodeOutput;
 
-// Each AudioParam gets an identifier here.  This is mostly for instrospection if warnings or
-// other messages need to be printed. It's useful to know what the AudioParam represents.  The
-// name should include the node type and the name of the AudioParam.
+// Each AudioParam gets an identifier here.  This is mostly for instrospection
+// if warnings or other messages need to be printed. It's useful to know what
+// the AudioParam represents.  The name should include the node type and the
+// name of the AudioParam.
 enum AudioParamType {
   ParamTypeAudioBufferSourcePlaybackRate,
   ParamTypeAudioBufferSourceDetune,
@@ -121,7 +122,8 @@ class AudioParamHandler final : public ThreadSafeRefCounted<AudioParamHandler>,
   float value();
   void setValue(float);
 
-  // Final value for k-rate parameters, otherwise use calculateSampleAccurateValues() for a-rate.
+  // Final value for k-rate parameters, otherwise use
+  // calculateSampleAccurateValues() for a-rate.
   // Must be called in the audio thread.
   float finalValue();
 
@@ -131,8 +133,9 @@ class AudioParamHandler final : public ThreadSafeRefCounted<AudioParamHandler>,
 
   // Value smoothing:
 
-  // When a new value is set with setValue(), in our internal use of the parameter we don't immediately jump to it.
-  // Instead we smoothly approach this value to avoid glitching.
+  // When a new value is set with setValue(), in our internal use of the
+  // parameter we don't immediately jump to it.  Instead we smoothly approach
+  // this value to avoid glitching.
   float smoothedValue();
 
   // Smoothly exponentially approaches to (de-zippers) the desired value.
@@ -145,7 +148,8 @@ class AudioParamHandler final : public ThreadSafeRefCounted<AudioParamHandler>,
     return m_timeline.hasValues() || numberOfRenderingConnections();
   }
 
-  // Calculates numberOfValues parameter values starting at the context's current time.
+  // Calculates numberOfValues parameter values starting at the context's
+  // current time.
   // Must be called in the context's render thread.
   void calculateSampleAccurateValues(float* values, unsigned numberOfValues);
 
@@ -167,7 +171,8 @@ class AudioParamHandler final : public ThreadSafeRefCounted<AudioParamHandler>,
 
   void warnIfOutsideRange(float value, float minValue, float maxValue);
 
-  // sampleAccurate corresponds to a-rate (audio rate) vs. k-rate in the Web Audio specification.
+  // sampleAccurate corresponds to a-rate (audio rate) vs. k-rate in the Web
+  // Audio specification.
   void calculateFinalValues(float* values,
                             unsigned numberOfValues,
                             bool sampleAccurate);
@@ -175,8 +180,9 @@ class AudioParamHandler final : public ThreadSafeRefCounted<AudioParamHandler>,
 
   int computeQHistogramValue(float) const;
 
-  // The type of AudioParam, indicating what this AudioParam represents and what node it belongs
-  // to.  Mostly for informational purposes and doesn't affect implementation.
+  // The type of AudioParam, indicating what this AudioParam represents and what
+  // node it belongs to.  Mostly for informational purposes and doesn't affect
+  // implementation.
   AudioParamType m_paramType;
 
   // Intrinsic value
@@ -191,7 +197,8 @@ class AudioParamHandler final : public ThreadSafeRefCounted<AudioParamHandler>,
 
   AudioParamTimeline m_timeline;
 
-  // The destination node used to get necessary information like the smaple rate and context time.
+  // The destination node used to get necessary information like the smaple rate
+  // and context time.
   RefPtr<AudioDestinationHandler> m_destinationHandler;
 };
 

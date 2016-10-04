@@ -151,7 +151,8 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* scriptState,
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
 
-  // If the VRDisplay does not advertise the ability to present reject the request.
+  // If the VRDisplay does not advertise the ability to present reject the
+  // request.
   if (!m_capabilities->canPresent()) {
     DOMException* exception =
         DOMException::create(InvalidStateError, "VRDisplay cannot present.");

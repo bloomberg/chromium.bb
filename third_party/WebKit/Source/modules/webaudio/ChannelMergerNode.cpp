@@ -81,7 +81,8 @@ void ChannelMergerHandler::process(size_t framesToProcess) {
       // the first channel will be taken for the undefined input channel
       // layout.
       //
-      // See: http://webaudio.github.io/web-audio-api/#channel-up-mixing-and-down-mixing
+      // See:
+      // http://webaudio.github.io/web-audio-api/#channel-up-mixing-and-down-mixing
       AudioChannel* inputChannel = input.bus()->channel(0);
       outputChannel->copyFrom(inputChannel);
 

@@ -25,8 +25,8 @@ IIRProcessor::IIRProcessor(float sampleRate,
   m_feedforward.copyToRange(feedforwardCoef.data(), 0, feedforwardLength);
   m_feedback.copyToRange(feedbackCoef.data(), 0, feedbackLength);
 
-  // Need to scale the feedback and feedforward coefficients appropriately. (It's up to the caller
-  // to ensure feedbackCoef[0] is not 0!)
+  // Need to scale the feedback and feedforward coefficients appropriately.
+  // (It's up to the caller to ensure feedbackCoef[0] is not 0.)
   DCHECK_NE(feedbackCoef[0], 0);
 
   if (feedbackCoef[0] != 1) {
@@ -38,7 +38,8 @@ IIRProcessor::IIRProcessor(float sampleRate,
     //
     //   y(n) + a[1]/a[0]*y(n-1) + ... = b[0]/a[0]*x(n) + b[1]/a[0]*x(n-1) + ...
     //
-    // Thus, the feedback and feedforward coefficients need to be scaled by 1/a[0].
+    // Thus, the feedback and feedforward coefficients need to be scaled by
+    // 1/a[0].
     float scale = feedbackCoef[0];
     for (unsigned k = 1; k < feedbackLength; ++k)
       m_feedback[k] /= scale;
@@ -70,8 +71,8 @@ void IIRProcessor::process(const AudioBus* source,
     return;
   }
 
-  // For each channel of our input, process using the corresponding IIRDSPKernel into the output
-  // channel.
+  // For each channel of our input, process using the corresponding IIRDSPKernel
+  // into the output channel.
   for (unsigned i = 0; i < m_kernels.size(); ++i)
     m_kernels[i]->process(source->channel(i)->data(),
                           destination->channel(i)->mutableData(),

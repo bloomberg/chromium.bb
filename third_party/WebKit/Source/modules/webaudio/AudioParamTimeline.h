@@ -73,12 +73,13 @@ class AudioParamTimeline {
                             float minValue,
                             float maxValue);
 
-  // Given the time range in frames, calculates parameter values into the values buffer and
-  // returns the last parameter value calculated for "values" or the defaultValue if none were
-  // calculated.  controlRate is the rate (number per second) at which parameter values will be
-  // calculated.  It should equal sampleRate for sample-accurate parameter changes, and otherwise
-  // will usually match the render quantum size such that the parameter value changes once per
-  // render quantum.
+  // Given the time range in frames, calculates parameter values into the values
+  // buffer and returns the last parameter value calculated for "values" or the
+  // defaultValue if none were calculated.  controlRate is the rate (number per
+  // second) at which parameter values will be calculated.  It should equal
+  // sampleRate for sample-accurate parameter changes, and otherwise will
+  // usually match the render quantum size such that the parameter value changes
+  // once per render quantum.
   float valuesForFrameRange(size_t startFrame,
                             size_t endFrame,
                             float defaultValue,
@@ -150,8 +151,8 @@ class AudioParamTimeline {
     // Only used for SetValueCurve events.
     double m_duration;
     Vector<float> m_curve;
-    // Initial value and time to use for linear and exponential ramps that don't have a
-    // preceding event.
+    // Initial value and time to use for linear and exponential ramps that don't
+    // have a preceding event.
     float m_initialValue;
     double m_callTime;
   };

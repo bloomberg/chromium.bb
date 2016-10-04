@@ -137,7 +137,8 @@ BaseAudioContext::BaseAudioContext(Document* document,
 
 BaseAudioContext::~BaseAudioContext() {
   deferredTaskHandler().contextWillBeDestroyed();
-  // AudioNodes keep a reference to their context, so there should be no way to be in the destructor if there are still AudioNodes around.
+  // AudioNodes keep a reference to their context, so there should be no way to
+  // be in the destructor if there are still AudioNodes around.
   DCHECK(!isDestinationInitialized());
   DCHECK(!m_activeSourceNodes.size());
   DCHECK(!m_finishedSourceHandlers.size());
@@ -153,8 +154,8 @@ void BaseAudioContext::initialize() {
 
   if (m_destinationNode) {
     m_destinationNode->handler().initialize();
-    // The AudioParams in the listener need access to the destination node, so only create the
-    // listener if the destination node exists.
+    // The AudioParams in the listener need access to the destination node, so
+    // only create the listener if the destination node exists.
     m_listener = AudioListener::create(*this);
   }
 }
@@ -200,8 +201,8 @@ bool BaseAudioContext::hasPendingActivity() const {
 }
 
 AudioDestinationNode* BaseAudioContext::destination() const {
-  // Cannot be called from the audio thread because this method touches objects managed by Oilpan,
-  // and the audio thread is not managed by Oilpan.
+  // Cannot be called from the audio thread because this method touches objects
+  // managed by Oilpan, and the audio thread is not managed by Oilpan.
   DCHECK(!isAudioThread());
   return m_destinationNode;
 }
@@ -216,8 +217,8 @@ AudioBuffer* BaseAudioContext::createBuffer(unsigned numberOfChannels,
                                             size_t numberOfFrames,
                                             float sampleRate,
                                             ExceptionState& exceptionState) {
-  // It's ok to call createBuffer, even if the context is closed because the AudioBuffer doesn't
-  // really "belong" to any particular context.
+  // It's ok to call createBuffer, even if the context is closed because the
+  // AudioBuffer doesn't really "belong" to any particular context.
 
   AudioBuffer* buffer = AudioBuffer::create(numberOfChannels, numberOfFrames,
                                             sampleRate, exceptionState);
@@ -320,8 +321,8 @@ AudioBufferSourceNode* BaseAudioContext::createBufferSource(
   AudioBufferSourceNode* node =
       AudioBufferSourceNode::create(*this, exceptionState);
 
-  // Do not add a reference to this source node now. The reference will be added when start() is
-  // called.
+  // Do not add a reference to this source node now. The reference will be added
+  // when start() is called.
 
   return node;
 }
@@ -553,7 +554,8 @@ PeriodicWave* BaseAudioContext::periodicWave(int type) {
 }
 
 String BaseAudioContext::state() const {
-  // These strings had better match the strings for AudioContextState in AudioContext.idl.
+  // These strings had better match the strings for AudioContextState in
+  // AudioContext.idl.
   switch (m_contextState) {
     case Suspended:
       return "suspended";
@@ -569,8 +571,8 @@ String BaseAudioContext::state() const {
 void BaseAudioContext::setContextState(AudioContextState newState) {
   DCHECK(isMainThread());
 
-  // Validate the transitions.  The valid transitions are Suspended->Running, Running->Suspended,
-  // and anything->Closed.
+  // Validate the transitions.  The valid transitions are Suspended->Running,
+  // Running->Suspended, and anything->Closed.
   switch (newState) {
     case Suspended:
       DCHECK_EQ(m_contextState, Running);
@@ -685,14 +687,16 @@ void BaseAudioContext::handleStoppableSourceNodes() {
 void BaseAudioContext::handlePreRenderTasks() {
   DCHECK(isAudioThread());
 
-  // At the beginning of every render quantum, try to update the internal rendering graph state (from main thread changes).
-  // It's OK if the tryLock() fails, we'll just take slightly longer to pick up the changes.
+  // At the beginning of every render quantum, try to update the internal
+  // rendering graph state (from main thread changes).  It's OK if the tryLock()
+  // fails, we'll just take slightly longer to pick up the changes.
   if (tryLock()) {
     deferredTaskHandler().handleDeferredTasks();
 
     resolvePromisesForResume();
 
-    // Check to see if source nodes can be stopped because the end time has passed.
+    // Check to see if source nodes can be stopped because the end time has
+    // passed.
     handleStoppableSourceNodes();
 
     // Update the dirty state of the listener.
@@ -705,9 +709,11 @@ void BaseAudioContext::handlePreRenderTasks() {
 void BaseAudioContext::handlePostRenderTasks() {
   DCHECK(isAudioThread());
 
-  // Must use a tryLock() here too.  Don't worry, the lock will very rarely be contended and this method is called frequently.
-  // The worst that can happen is that there will be some nodes which will take slightly longer than usual to be deleted or removed
-  // from the render graph (in which case they'll render silence).
+  // Must use a tryLock() here too.  Don't worry, the lock will very rarely be
+  // contended and this method is called frequently.  The worst that can happen
+  // is that there will be some nodes which will take slightly longer than usual
+  // to be deleted or removed from the render graph (in which case they'll
+  // render silence).
   if (tryLock()) {
     // Take care of AudioNode tasks where the tryLock() failed previously.
     deferredTaskHandler().breakConnections();
@@ -740,13 +746,14 @@ void BaseAudioContext::resolvePromisesForResumeOnMainThread() {
 }
 
 void BaseAudioContext::resolvePromisesForResume() {
-  // This runs inside the BaseAudioContext's lock when handling pre-render tasks.
+  // This runs inside the BaseAudioContext's lock when handling pre-render
+  // tasks.
   DCHECK(isAudioThread());
   ASSERT(isGraphOwner());
 
-  // Resolve any pending promises created by resume(). Only do this if we haven't already started
-  // resolving these promises. This gets called very often and it takes some time to resolve the
-  // promises in the main thread.
+  // Resolve any pending promises created by resume(). Only do this if we
+  // haven't already started resolving these promises. This gets called very
+  // often and it takes some time to resolve the promises in the main thread.
   if (!m_isResolvingResumePromises && m_resumeResolvers.size() > 0) {
     m_isResolvingResumePromises = true;
     Platform::current()->mainThread()->getWebTaskRunner()->postTask(
@@ -787,7 +794,8 @@ bool BaseAudioContext::isAllowedToStart() const {
 void BaseAudioContext::rejectPendingResolvers() {
   DCHECK(isMainThread());
 
-  // Audio context is closing down so reject any resume promises that are still pending.
+  // Audio context is closing down so reject any resume promises that are still
+  // pending.
 
   for (auto& resolver : m_resumeResolvers) {
     resolver->reject(

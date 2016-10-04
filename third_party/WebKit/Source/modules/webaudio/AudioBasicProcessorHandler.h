@@ -53,7 +53,8 @@ class MODULES_EXPORT AudioBasicProcessorHandler : public AudioHandler {
   void initialize() final;
   void uninitialize() final;
 
-  // Called in the main thread when the number of channels for the input may have changed.
+  // Called in the main thread when the number of channels for the input may
+  // have changed.
   void checkNumberOfChannelsForInput(AudioNodeInput*) final;
 
   // Returns the number of channels for both the input and the output.

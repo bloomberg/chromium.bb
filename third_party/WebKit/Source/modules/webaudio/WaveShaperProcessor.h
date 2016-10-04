@@ -36,7 +36,8 @@
 
 namespace blink {
 
-// WaveShaperProcessor is an AudioDSPKernelProcessor which uses WaveShaperDSPKernel objects to implement non-linear distortion effects.
+// WaveShaperProcessor is an AudioDSPKernelProcessor which uses
+// WaveShaperDSPKernel objects to implement non-linear distortion effects.
 
 class WaveShaperProcessor final : public AudioDSPKernelProcessor {
  public:

@@ -48,8 +48,8 @@ void AudioDestinationHandler::render(AudioBus* sourceBus,
                                      AudioBus* destinationBus,
                                      size_t numberOfFrames) {
   // We don't want denormals slowing down any of the audio processing
-  // since they can very seriously hurt performance.
-  // This will take care of all AudioNodes because they all process within this scope.
+  // since they can very seriously hurt performance.  This will take care of all
+  // AudioNodes because they all process within this scope.
   DenormalDisabler denormalDisabler;
 
   // Need to check if the context actually alive. Otherwise the subsequent
@@ -72,7 +72,8 @@ void AudioDestinationHandler::render(AudioBus* sourceBus,
     return;
   }
 
-  // Let the context take care of any business at the start of each render quantum.
+  // Let the context take care of any business at the start of each render
+  // quantum.
   context()->handlePreRenderTasks();
 
   // Prepare the local audio input provider for this render quantum.
@@ -84,8 +85,8 @@ void AudioDestinationHandler::render(AudioBus* sourceBus,
     destinationBus->zero();
     return;
   }
-  // This will cause the node(s) connected to us to process, which in turn will pull on their input(s),
-  // all the way backwards through the rendering graph.
+  // This will cause the node(s) connected to us to process, which in turn will
+  // pull on their input(s), all the way backwards through the rendering graph.
   AudioBus* renderedBus = input(0).pull(destinationBus, numberOfFrames);
 
   if (!renderedBus) {
@@ -95,10 +96,12 @@ void AudioDestinationHandler::render(AudioBus* sourceBus,
     destinationBus->copyFrom(*renderedBus);
   }
 
-  // Process nodes which need a little extra help because they are not connected to anything, but still need to process.
+  // Process nodes which need a little extra help because they are not connected
+  // to anything, but still need to process.
   context()->deferredTaskHandler().processAutomaticPullNodes(numberOfFrames);
 
-  // Let the context take care of any business at the end of each render quantum.
+  // Let the context take care of any business at the end of each render
+  // quantum.
   context()->handlePostRenderTasks();
 
   // Advance current sample-frame.

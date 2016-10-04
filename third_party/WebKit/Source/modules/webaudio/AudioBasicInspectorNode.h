@@ -33,9 +33,12 @@ namespace blink {
 class BaseAudioContext;
 class ExceptionState;
 
-// AudioBasicInspectorNode is an AudioNode with one input and one output where the output might not necessarily connect to another node's input.
-// If the output is not connected to any other node, then the AudioBasicInspectorNode's processIfNecessary() function will be called automatically by
-// BaseAudioContext before the end of each render quantum so that it can inspect the audio stream.
+// AudioBasicInspectorNode is an AudioNode with one input and one output where
+// the output might not necessarily connect to another node's input.
+// If the output is not connected to any other node, then the
+// AudioBasicInspectorNode's processIfNecessary() function will be called
+// automatically by BaseAudioContext before the end of each render quantum so
+// that it can inspect the audio stream.
 class AudioBasicInspectorHandler : public AudioHandler {
  public:
   AudioBasicInspectorHandler(NodeType,
@@ -50,8 +53,9 @@ class AudioBasicInspectorHandler : public AudioHandler {
   void updatePullStatus();
 
  private:
-  bool
-      m_needAutomaticPull;  // When setting to true, AudioBasicInspectorHandler will be pulled automaticlly by BaseAudioContext before the end of each render quantum.
+  // When setting to true, AudioBasicInspectorHandler will be pulled
+  // automaticlly by BaseAudioContext before the end of each render quantum.
+  bool m_needAutomaticPull;
 };
 
 class AudioBasicInspectorNode : public AudioNode {

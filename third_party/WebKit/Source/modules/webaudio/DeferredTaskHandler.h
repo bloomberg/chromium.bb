@@ -47,10 +47,11 @@ class AudioSummingJunction;
 
 // DeferredTaskHandler manages the major part of pre- and post- rendering tasks,
 // and provides a lock mechanism against the audio rendering graph. A
-// DeferredTaskHandler object is created when an BaseAudioContext object is created.
+// DeferredTaskHandler object is created when an BaseAudioContext object is
+// created.
 //
-// DeferredTaskHandler outlives the BaseAudioContext only if all of the following
-// conditions match:
+// DeferredTaskHandler outlives the BaseAudioContext only if all of the
+// following conditions match:
 // - An audio rendering thread is running,
 // - It is requested to stop,
 // - The audio rendering thread calls requestToDeleteHandlersOnMainThread(),
@@ -66,8 +67,8 @@ class MODULES_EXPORT DeferredTaskHandler final
   void handleDeferredTasks();
   void contextWillBeDestroyed();
 
-  // BaseAudioContext can pull node(s) at the end of each render quantum even when
-  // they are not connected to any downstream nodes.  These two methods are
+  // BaseAudioContext can pull node(s) at the end of each render quantum even
+  // when they are not connected to any downstream nodes.  These two methods are
   // called by the nodes who want to add/remove themselves into/from the
   // automatic pull lists.
   void addAutomaticPullNode(AudioHandler*);
@@ -88,7 +89,8 @@ class MODULES_EXPORT DeferredTaskHandler final
 
   // Only accessed when the graph lock is held.
   void markSummingJunctionDirty(AudioSummingJunction*);
-  // Only accessed when the graph lock is held. Must be called on the main thread.
+  // Only accessed when the graph lock is held. Must be called on the main
+  // thread.
   void removeMarkedSummingJunction(AudioSummingJunction*);
 
   void markAudioNodeOutputDirty(AudioNodeOutput*);
@@ -177,7 +179,8 @@ class MODULES_EXPORT DeferredTaskHandler final
   // very start or end of the rendering quantum.
   HashSet<AudioHandler*> m_automaticPullNodes;
   Vector<AudioHandler*> m_renderingAutomaticPullNodes;
-  // m_automaticPullNodesNeedUpdating keeps track if m_automaticPullNodes is modified.
+  // m_automaticPullNodesNeedUpdating keeps track if m_automaticPullNodes is
+  // modified.
   bool m_automaticPullNodesNeedUpdating;
 
   // Collection of nodes where the channel count mode has changed. We want the

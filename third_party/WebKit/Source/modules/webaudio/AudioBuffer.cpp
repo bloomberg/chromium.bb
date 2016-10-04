@@ -177,8 +177,8 @@ AudioBuffer::AudioBuffer(unsigned numberOfChannels,
 
   for (unsigned i = 0; i < numberOfChannels; ++i) {
     DOMFloat32Array* channelDataArray = createFloat32ArrayOrNull(m_length);
-    // If the channel data array could not be created, just return. The caller will need to
-    // check that the desired number of channels were created.
+    // If the channel data array could not be created, just return. The caller
+    // will need to check that the desired number of channels were created.
     if (!channelDataArray)
       return;
 
@@ -194,8 +194,8 @@ AudioBuffer::AudioBuffer(AudioBus* bus)
   m_channels.reserveCapacity(numberOfChannels);
   for (unsigned i = 0; i < numberOfChannels; ++i) {
     DOMFloat32Array* channelDataArray = createFloat32ArrayOrNull(m_length);
-    // If the channel data array could not be created, just return. The caller will need to
-    // check that the desired number of channels were created.
+    // If the channel data array could not be created, just return. The caller
+    // will need to check that the desired number of channels were created.
     if (!channelDataArray)
       return;
 

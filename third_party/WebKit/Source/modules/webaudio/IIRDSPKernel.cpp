@@ -40,12 +40,13 @@ void IIRDSPKernel::getFrequencyResponse(int nFrequencies,
 }
 
 double IIRDSPKernel::tailTime() const {
-  // TODO(rtoy): This is true mathematically (infinite impulse response), but perhaps it should be
-  // limited to a smaller value, possibly based on the actual filter coefficients.  To do that, we
-  // would probably need to find the pole, r, with largest magnitude and select some threshold,
-  // eps, such that |r|^n < eps for all n >= N.  N is then the tailTime for the filter.  If the
-  // the magnitude of r is greater than or equal to 1, the infinity is the right answer. (There is
-  // no constraint on the IIR filter that it be stable.)
+  // TODO(rtoy): This is true mathematically (infinite impulse response), but
+  // perhaps it should be limited to a smaller value, possibly based on the
+  // actual filter coefficients.  To do that, we would probably need to find the
+  // pole, r, with largest magnitude and select some threshold, eps, such that
+  // |r|^n < eps for all n >= N.  N is then the tailTime for the filter.  If the
+  // the magnitude of r is greater than or equal to 1, the infinity is the right
+  // answer. (There is no constraint on the IIR filter that it be stable.)
   return std::numeric_limits<double>::infinity();
 }
 

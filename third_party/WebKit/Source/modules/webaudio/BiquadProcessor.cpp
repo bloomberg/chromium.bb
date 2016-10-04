@@ -55,9 +55,11 @@ std::unique_ptr<AudioDSPKernel> BiquadProcessor::createKernel() {
 }
 
 void BiquadProcessor::checkForDirtyCoefficients() {
-  // Deal with smoothing / de-zippering. Start out assuming filter parameters are not changing.
+  // Deal with smoothing / de-zippering. Start out assuming filter parameters
+  // are not changing.
 
-  // The BiquadDSPKernel objects rely on this value to see if they need to re-compute their internal filter coefficients.
+  // The BiquadDSPKernel objects rely on this value to see if they need to
+  // re-compute their internal filter coefficients.
   m_filterCoefficientsDirty = false;
   m_hasSampleAccurateValues = false;
 
@@ -69,7 +71,8 @@ void BiquadProcessor::checkForDirtyCoefficients() {
     m_hasSampleAccurateValues = true;
   } else {
     if (m_hasJustReset) {
-      // Snap to exact values first time after reset, then smooth for subsequent changes.
+      // Snap to exact values first time after reset, then smooth for subsequent
+      // changes.
       m_parameter1->resetSmoothedValue();
       m_parameter2->resetSmoothedValue();
       m_parameter3->resetSmoothedValue();
@@ -77,7 +80,8 @@ void BiquadProcessor::checkForDirtyCoefficients() {
       m_filterCoefficientsDirty = true;
       m_hasJustReset = false;
     } else {
-      // Smooth all of the filter parameters. If they haven't yet converged to their target value then mark coefficients as dirty.
+      // Smooth all of the filter parameters. If they haven't yet converged to
+      // their target value then mark coefficients as dirty.
       bool isStable1 = m_parameter1->smooth();
       bool isStable2 = m_parameter2->smooth();
       bool isStable3 = m_parameter3->smooth();
@@ -106,7 +110,8 @@ void BiquadProcessor::process(const AudioBus* source,
 
   checkForDirtyCoefficients();
 
-  // For each channel of our input, process using the corresponding BiquadDSPKernel into the output channel.
+  // For each channel of our input, process using the corresponding
+  // BiquadDSPKernel into the output channel.
   for (unsigned i = 0; i < m_kernels.size(); ++i)
     m_kernels[i]->process(source->channel(i)->data(),
                           destination->channel(i)->mutableData(),

@@ -106,9 +106,9 @@ unsigned long DefaultAudioDestinationHandler::maxChannelCount() const {
 void DefaultAudioDestinationHandler::setChannelCount(
     unsigned long channelCount,
     ExceptionState& exceptionState) {
-  // The channelCount for the input to this node controls the actual number of channels we
-  // send to the audio hardware. It can only be set depending on the maximum number of
-  // channels supported by the hardware.
+  // The channelCount for the input to this node controls the actual number of
+  // channels we send to the audio hardware. It can only be set depending on the
+  // maximum number of channels supported by the hardware.
 
   DCHECK(isMainThread());
 

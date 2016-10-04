@@ -65,7 +65,8 @@ class MODULES_EXPORT ConvolverHandler final : public AudioHandler {
   // ConvolverNode.
   Persistent<AudioBuffer> m_buffer;
 
-  // This synchronizes dynamic changes to the convolution impulse response with process().
+  // This synchronizes dynamic changes to the convolution impulse response with
+  // process().
   mutable Mutex m_processLock;
 
   // Normalize the impulse response or not. Must default to true.

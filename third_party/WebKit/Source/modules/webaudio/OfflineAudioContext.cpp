@@ -177,7 +177,8 @@ ScriptPromise OfflineAudioContext::startOfflineRendering(
                              "OfflineAudioContext in a stopped state."));
   }
 
-  // If the context is not in the suspended state (i.e. running), reject the promise.
+  // If the context is not in the suspended state (i.e. running), reject the
+  // promise.
   if (contextState() != AudioContextState::Suspended) {
     return ScriptPromise::rejectWithDOMException(
         scriptState,
@@ -397,8 +398,8 @@ void OfflineAudioContext::resolveSuspendOnMainThread(size_t frame) {
   // Wait until the suspend map is available for the removal.
   AutoLocker locker(this);
 
-  // If the context is going away, m_scheduledSuspends could have had all its entries removed.
-  // Check for that here.
+  // If the context is going away, m_scheduledSuspends could have had all its
+  // entries removed.  Check for that here.
   if (m_scheduledSuspends.size()) {
     // |frame| must exist in the map.
     DCHECK(m_scheduledSuspends.contains(frame));
@@ -416,7 +417,8 @@ void OfflineAudioContext::rejectPendingResolvers() {
   // Wait until the suspend map is available for removal.
   AutoLocker locker(this);
 
-  // Offline context is going away so reject any promises that are still pending.
+  // Offline context is going away so reject any promises that are still
+  // pending.
 
   for (auto& pendingSuspendResolver : m_scheduledSuspends) {
     pendingSuspendResolver.value->reject(

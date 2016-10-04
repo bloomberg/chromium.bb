@@ -36,8 +36,9 @@ namespace blink {
 class BaseAudioContext;
 class GainOptions;
 
-// GainNode is an AudioNode with one input and one output which applies a gain (volume) change to the audio signal.
-// De-zippering (smoothing) is applied when the gain value is changed dynamically.
+// GainNode is an AudioNode with one input and one output which applies a gain
+// (volume) change to the audio signal.  De-zippering (smoothing) is applied
+// when the gain value is changed dynamically.
 
 class GainHandler final : public AudioHandler {
  public:
@@ -48,7 +49,8 @@ class GainHandler final : public AudioHandler {
   // AudioHandler
   void process(size_t framesToProcess) override;
 
-  // Called in the main thread when the number of channels for the input may have changed.
+  // Called in the main thread when the number of channels for the input may
+  // have changed.
   void checkNumberOfChannelsForInput(AudioNodeInput*) override;
 
  private:

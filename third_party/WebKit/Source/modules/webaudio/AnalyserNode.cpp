@@ -60,8 +60,10 @@ void AnalyserHandler::process(size_t framesToProcess) {
   // Give the analyser the audio which is passing through this AudioNode.
   m_analyser.writeInput(inputBus, framesToProcess);
 
-  // For in-place processing, our override of pullInputs() will just pass the audio data through unchanged if the channel count matches from input to output
-  // (resulting in inputBus == outputBus). Otherwise, do an up-mix to stereo.
+  // For in-place processing, our override of pullInputs() will just pass the
+  // audio data through unchanged if the channel count matches from input to
+  // output (resulting in inputBus == outputBus). Otherwise, do an up-mix to
+  // stereo.
   if (inputBus != outputBus)
     outputBus->copyFrom(*inputBus);
 }

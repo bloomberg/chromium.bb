@@ -94,13 +94,15 @@ void WaveShaperProcessor::process(const AudioBus* source,
   // The audio thread can't block on this lock, so we call tryLock() instead.
   MutexTryLocker tryLocker(m_processLock);
   if (tryLocker.locked()) {
-    // For each channel of our input, process using the corresponding WaveShaperDSPKernel into the output channel.
+    // For each channel of our input, process using the corresponding
+    // WaveShaperDSPKernel into the output channel.
     for (unsigned i = 0; i < m_kernels.size(); ++i)
       m_kernels[i]->process(source->channel(i)->data(),
                             destination->channel(i)->mutableData(),
                             framesToProcess);
   } else {
-    // Too bad - the tryLock() failed. We must be in the middle of a setCurve() call.
+    // Too bad - the tryLock() failed. We must be in the middle of a setCurve()
+    // call.
     destination->zero();
   }
 }

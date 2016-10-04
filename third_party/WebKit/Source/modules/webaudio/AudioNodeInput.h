@@ -37,9 +37,11 @@ namespace blink {
 
 class AudioNodeOutput;
 
-// An AudioNodeInput represents an input to an AudioNode and can be connected from one or more AudioNodeOutputs.
-// In the case of multiple connections, the input will act as a unity-gain summing junction, mixing all the outputs.
-// The number of channels of the input's bus is the maximum of the number of channels of all its connections.
+// An AudioNodeInput represents an input to an AudioNode and can be connected
+// from one or more AudioNodeOutputs.  In the case of multiple connections, the
+// input will act as a unity-gain summing junction, mixing all the outputs.  The
+// number of channels of the input's bus is the maximum of the number of
+// channels of all its connections.
 
 class AudioNodeInput final : public AudioSummingJunction {
   USING_FAST_MALLOC(AudioNodeInput);
@@ -57,28 +59,33 @@ class AudioNodeInput final : public AudioSummingJunction {
   void connect(AudioNodeOutput&);
   void disconnect(AudioNodeOutput&);
 
-  // disable() will take the output out of the active connections list and set aside in a disabled list.
+  // disable() will take the output out of the active connections list and set
+  // aside in a disabled list.
   // enable() will put the output back into the active connections list.
   // Must be called with the context's graph lock.
   void enable(AudioNodeOutput&);
   void disable(AudioNodeOutput&);
 
   // pull() processes all of the AudioNodes connected to us.
-  // In the case of multiple connections it sums the result into an internal summing bus.
-  // In the single connection case, it allows in-place processing where possible using inPlaceBus.
-  // It returns the bus which it rendered into, returning inPlaceBus if in-place processing was performed.
+  // In the case of multiple connections it sums the result into an internal
+  // summing bus.  In the single connection case, it allows in-place processing
+  // where possible using inPlaceBus.  It returns the bus which it rendered
+  // into, returning inPlaceBus if in-place processing was performed.
   // Called from context's audio thread.
   AudioBus* pull(AudioBus* inPlaceBus, size_t framesToProcess);
 
-  // bus() contains the rendered audio after pull() has been called for each time quantum.
+  // bus() contains the rendered audio after pull() has been called for each
+  // time quantum.
   // Called from context's audio thread.
   AudioBus* bus();
 
-  // updateInternalBus() updates m_internalSummingBus appropriately for the number of channels.
-  // This must be called when we own the context's graph lock in the audio thread at the very start or end of the render quantum.
+  // updateInternalBus() updates m_internalSummingBus appropriately for the
+  // number of channels.  This must be called when we own the context's graph
+  // lock in the audio thread at the very start or end of the render quantum.
   void updateInternalBus();
 
-  // The number of channels of the connection with the largest number of channels.
+  // The number of channels of the connection with the largest number of
+  // channels.
   unsigned numberOfChannels() const;
 
  private:

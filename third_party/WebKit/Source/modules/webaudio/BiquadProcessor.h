@@ -36,7 +36,8 @@
 
 namespace blink {
 
-// BiquadProcessor is an AudioDSPKernelProcessor which uses Biquad objects to implement several common filters.
+// BiquadProcessor is an AudioDSPKernelProcessor which uses Biquad objects to
+// implement several common filters.
 
 class BiquadProcessor final : public AudioDSPKernelProcessor {
  public:

@@ -126,8 +126,8 @@ bool OscillatorHandler::setType(unsigned type) {
       break;
     case CUSTOM:
     default:
-      // Return false for invalid types, including CUSTOM since setPeriodicWave() method must be
-      // called explicitly.
+      // Return false for invalid types, including CUSTOM since
+      // setPeriodicWave() method must be called explicitly.
       ASSERT_NOT_REACHED();
       return false;
   }
@@ -166,7 +166,8 @@ bool OscillatorHandler::calculateSampleAccuratePhaseIncrements(
     m_frequency->calculateSampleAccurateValues(phaseIncrements,
                                                framesToProcess);
   } else {
-    // Handle ordinary parameter smoothing/de-zippering if there are no scheduled changes.
+    // Handle ordinary parameter smoothing/de-zippering if there are no
+    // scheduled changes.
     m_frequency->smooth();
     float frequency = m_frequency->smoothedValue();
     finalScale *= frequency;
@@ -193,7 +194,8 @@ bool OscillatorHandler::calculateSampleAccuratePhaseIncrements(
            framesToProcess);
     }
   } else {
-    // Handle ordinary parameter smoothing/de-zippering if there are no scheduled changes.
+    // Handle ordinary parameter smoothing/de-zippering if there are no
+    // scheduled changes.
     m_detune->smooth();
     float detune = m_detune->smoothedValue();
     float detuneScale = powf(2, detune / 1200);
@@ -223,7 +225,8 @@ void OscillatorHandler::process(size_t framesToProcess) {
   // The audio thread can't block on this lock, so we call tryLock() instead.
   MutexTryLocker tryLocker(m_processLock);
   if (!tryLocker.locked()) {
-    // Too bad - the tryLock() failed. We must be in the middle of changing wave-tables.
+    // Too bad - the tryLock() failed. We must be in the middle of changing
+    // wave-tables.
     outputBus->zero();
     return;
   }
@@ -318,7 +321,8 @@ void OscillatorHandler::process(size_t framesToProcess) {
 
     *destP++ = sample;
 
-    // Increment virtual read index and wrap virtualReadIndex into the range 0 -> periodicWaveSize.
+    // Increment virtual read index and wrap virtualReadIndex into the range
+    // 0 -> periodicWaveSize.
     virtualReadIndex += incr;
     virtualReadIndex -=
         floor(virtualReadIndex * invPeriodicWaveSize) * periodicWaveSize;

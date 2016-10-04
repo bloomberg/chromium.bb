@@ -127,12 +127,14 @@ unsigned AudioNodeInput::numberOfChannels() const {
   if (mode == AudioHandler::Explicit)
     return handler().channelCount();
 
-  // Find the number of channels of the connection with the largest number of channels.
+  // Find the number of channels of the connection with the largest number of
+  // channels.
   unsigned maxChannels = 1;  // one channel is the minimum allowed
 
   for (AudioNodeOutput* output : m_outputs) {
-    // Use output()->numberOfChannels() instead of output->bus()->numberOfChannels(),
-    // because the calling of AudioNodeOutput::bus() is not safe here.
+    // Use output()->numberOfChannels() instead of
+    // output->bus()->numberOfChannels(), because the calling of
+    // AudioNodeOutput::bus() is not safe here.
     maxChannels = std::max(maxChannels, output->numberOfChannels());
   }
 
@@ -165,8 +167,10 @@ void AudioNodeInput::sumAllConnections(AudioBus* summingBus,
                                        size_t framesToProcess) {
   DCHECK(deferredTaskHandler().isAudioThread());
 
-  // We shouldn't be calling this method if there's only one connection, since it's less efficient.
-  //    DCHECK(numberOfRenderingConnections() > 1 || handler().internalChannelCountMode() != AudioHandler::Max);
+  // We shouldn't be calling this method if there's only one connection, since
+  // it's less efficient.
+  //    DCHECK(numberOfRenderingConnections() > 1 ||
+  //        handler().internalChannelCountMode() != AudioHandler::Max);
 
   DCHECK(summingBus);
   if (!summingBus)
@@ -204,7 +208,8 @@ AudioBus* AudioNodeInput::pull(AudioBus* inPlaceBus, size_t framesToProcess) {
 
   if (!numberOfRenderingConnections()) {
     // At least, generate silence if we're not connected to anything.
-    // FIXME: if we wanted to get fancy, we could propagate a 'silent hint' here to optimize the downstream graph processing.
+    // FIXME: if we wanted to get fancy, we could propagate a 'silent hint' here
+    // to optimize the downstream graph processing.
     internalSummingBus->zero();
     return internalSummingBus;
   }

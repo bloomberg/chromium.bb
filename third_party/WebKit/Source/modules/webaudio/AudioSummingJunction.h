@@ -36,7 +36,8 @@ namespace blink {
 class AudioNodeOutput;
 class DeferredTaskHandler;
 
-// An AudioSummingJunction represents a point where zero, one, or more AudioNodeOutputs connect.
+// An AudioSummingJunction represents a point where zero, one, or more
+// AudioNodeOutputs connect.
 
 class AudioSummingJunction {
  public:
@@ -50,8 +51,9 @@ class AudioSummingJunction {
   // This must be called whenever we modify m_outputs.
   void changedOutputs();
 
-  // This copies m_outputs to m_renderingOutputs. Please see comments for these lists below.
-  // This must be called when we own the context's graph lock in the audio thread at the very start or end of the render quantum.
+  // This copies m_outputs to m_renderingOutputs. Please see comments for these
+  // lists below.  This must be called when we own the context's graph lock in
+  // the audio thread at the very start or end of the render quantum.
   void updateRenderingState();
 
   // Rendering code accesses its version of the current connections here.

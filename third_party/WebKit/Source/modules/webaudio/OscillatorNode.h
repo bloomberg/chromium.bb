@@ -86,8 +86,9 @@ class OscillatorHandler final : public AudioScheduledSourceHandler {
 
   bool m_firstRender;
 
-  // m_virtualReadIndex is a sample-frame index into our buffer representing the current playback position.
-  // Since it's floating-point, it has sub-sample accuracy.
+  // m_virtualReadIndex is a sample-frame index into our buffer representing the
+  // current playback position.  Since it's floating-point, it has sub-sample
+  // accuracy.
   double m_virtualReadIndex;
 
   // Stores sample-accurate values calculated according to frequency and detune.

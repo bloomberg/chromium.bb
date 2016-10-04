@@ -37,7 +37,8 @@ namespace blink {
 
 class WaveShaperProcessor;
 
-// WaveShaperDSPKernel is an AudioDSPKernel and is responsible for non-linear distortion on one channel.
+// WaveShaperDSPKernel is an AudioDSPKernel and is responsible for non-linear
+// distortion on one channel.
 
 class WaveShaperDSPKernel final : public AudioDSPKernel {
  public:
@@ -51,7 +52,8 @@ class WaveShaperDSPKernel final : public AudioDSPKernel {
   double tailTime() const override { return 0; }
   double latencyTime() const override;
 
-  // Oversampling requires more resources, so let's only allocate them if needed.
+  // Oversampling requires more resources, so let's only allocate them if
+  // needed.
   void lazyInitializeOversampling();
 
  protected:

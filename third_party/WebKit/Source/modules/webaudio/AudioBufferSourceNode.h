@@ -41,8 +41,10 @@ namespace blink {
 class AudioBufferSourceOptions;
 class BaseAudioContext;
 
-// AudioBufferSourceNode is an AudioNode representing an audio source from an in-memory audio asset represented by an AudioBuffer.
-// It generally will be used for short sounds which require a high degree of scheduling flexibility (can playback in rhythmically perfect ways).
+// AudioBufferSourceNode is an AudioNode representing an audio source from an
+// in-memory audio asset represented by an AudioBuffer.  It generally will be
+// used for short sounds which require a high degree of scheduling flexibility
+// (can playback in rhythmically perfect ways).
 
 class AudioBufferSourceHandler final : public AudioScheduledSourceHandler {
  public:
@@ -56,12 +58,14 @@ class AudioBufferSourceHandler final : public AudioScheduledSourceHandler {
   // AudioHandler
   void process(size_t framesToProcess) override;
 
-  // setBuffer() is called on the main thread. This is the buffer we use for playback.
+  // setBuffer() is called on the main thread. This is the buffer we use for
+  // playback.
   void setBuffer(AudioBuffer*, ExceptionState&);
   AudioBuffer* buffer() { return m_buffer.get(); }
 
-  // numberOfChannels() returns the number of output channels.  This value equals the number of channels from the buffer.
-  // If a new buffer is set with a different number of channels, then this value will dynamically change.
+  // numberOfChannels() returns the number of output channels.  This value
+  // equals the number of channels from the buffer.  If a new buffer is set with
+  // a different number of channels, then this value will dynamically change.
   unsigned numberOfChannels();
 
   // Play-state
@@ -72,9 +76,10 @@ class AudioBufferSourceHandler final : public AudioScheduledSourceHandler {
              double grainDuration,
              ExceptionState&);
 
-  // Note: the attribute was originally exposed as .looping, but to be more consistent in naming with <audio>
-  // and with how it's described in the specification, the proper attribute name is .loop
-  // The old attribute is kept for backwards compatibility.
+  // Note: the attribute was originally exposed as |.looping|, but to be more
+  // consistent in naming with <audio> and with how it's described in the
+  // specification, the proper attribute name is |.loop|. The old attribute is
+  // kept for backwards compatibility.
   bool loop() const { return m_isLooping; }
   void setLoop(bool looping) {
     m_isLooping = looping;
@@ -128,8 +133,10 @@ class AudioBufferSourceHandler final : public AudioScheduledSourceHandler {
   RefPtr<AudioParamHandler> m_playbackRate;
   RefPtr<AudioParamHandler> m_detune;
 
-  // If m_isLooping is false, then this node will be done playing and become inactive after it reaches the end of the sample data in the buffer.
-  // If true, it will wrap around to the start of the buffer each time it reaches the end.
+  // If m_isLooping is false, then this node will be done playing and become
+  // inactive after it reaches the end of the sample data in the buffer.  If
+  // true, it will wrap around to the start of the buffer each time it reaches
+  // the end.
   bool m_isLooping;
 
   // True if the source .loop attribute was ever set.
@@ -138,8 +145,9 @@ class AudioBufferSourceHandler final : public AudioScheduledSourceHandler {
   double m_loopStart;
   double m_loopEnd;
 
-  // m_virtualReadIndex is a sample-frame index into our buffer representing the current playback position.
-  // Since it's floating-point, it has sub-sample accuracy.
+  // m_virtualReadIndex is a sample-frame index into our buffer representing the
+  // current playback position.  Since it's floating-point, it has sub-sample
+  // accuracy.
   double m_virtualReadIndex;
 
   // Granular playback

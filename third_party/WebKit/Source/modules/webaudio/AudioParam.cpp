@@ -49,7 +49,8 @@ AudioParamHandler::AudioParamHandler(BaseAudioContext& context,
       m_defaultValue(defaultValue),
       m_minValue(minValue),
       m_maxValue(maxValue) {
-  // The destination MUST exist because we need the destination handler for the AudioParam.
+  // The destination MUST exist because we need the destination handler for the
+  // AudioParam.
   RELEASE_ASSERT(context.destination());
 
   m_destinationHandler = &context.destination()->audioDestinationHandler();
@@ -65,8 +66,8 @@ void AudioParamHandler::setParamType(AudioParamType paramType) {
 }
 
 String AudioParamHandler::getParamName() const {
-  // The returned string should be the name of the node and the name of the AudioParam for
-  // that node.
+  // The returned string should be the name of the node and the name of the
+  // AudioParam for that node.
   switch (m_paramType) {
     case ParamTypeAudioBufferSourcePlaybackRate:
       return "AudioBufferSource.playbackRate";
@@ -77,8 +78,8 @@ String AudioParamHandler::getParamName() const {
     case ParamTypeBiquadFilterQ:
     case ParamTypeBiquadFilterQLowpass:
     case ParamTypeBiquadFilterQHighpass:
-      // We don't really need separate names for the Q parameter for lowpass and highpass filters.
-      // The difference is only for the histograms.
+      // We don't really need separate names for the Q parameter for lowpass and
+      // highpass filters.  The difference is only for the histograms.
       return "BiquadFilter.Q";
     case ParamTypeBiquadFilterGain:
       return "BiquadFilter.gain";
@@ -171,8 +172,8 @@ float AudioParamHandler::smoothedValue() {
 }
 
 bool AudioParamHandler::smooth() {
-  // If values have been explicitly scheduled on the timeline, then use the exact value.
-  // Smoothing effectively is performed by the timeline.
+  // If values have been explicitly scheduled on the timeline, then use the
+  // exact value.  Smoothing effectively is performed by the timeline.
   bool useTimelineValue = false;
   float value =
       m_timeline.valueForContextTime(destinationHandler(), intrinsicValue(),
@@ -229,7 +230,8 @@ void AudioParamHandler::calculateFinalValues(float* values,
   if (!isGood)
     return;
 
-  // The calculated result will be the "intrinsic" value summed with all audio-rate connections.
+  // The calculated result will be the "intrinsic" value summed with all
+  // audio-rate connections.
 
   if (sampleAccurate) {
     // Calculate sample-accurate (a-rate) intrinsic values.
@@ -248,8 +250,9 @@ void AudioParamHandler::calculateFinalValues(float* values,
     setIntrinsicValue(value);
   }
 
-  // Now sum all of the audio-rate connections together (unity-gain summing junction).
-  // Note that connections would normally be mono, but we mix down to mono if necessary.
+  // Now sum all of the audio-rate connections together (unity-gain summing
+  // junction).  Note that connections would normally be mono, but we mix down
+  // to mono if necessary.
   RefPtr<AudioBus> summingBus = AudioBus::create(1, numberOfValues, false);
   summingBus->setChannelMemory(0, values, numberOfValues);
 
@@ -303,9 +306,9 @@ void AudioParamHandler::disconnect(AudioNodeOutput& output) {
 }
 
 int AudioParamHandler::computeQHistogramValue(float newValue) const {
-  // For the Q value, assume a useful range is [0, 25] and that 0.25 dB resolution is good enough.
-  // Then, we can map the floating point Q value (in dB) to an integer just by multipling by 4 and
-  // rounding.
+  // For the Q value, assume a useful range is [0, 25] and that 0.25 dB
+  // resolution is good enough.  Then, we can map the floating point Q value (in
+  // dB) to an integer just by multipling by 4 and rounding.
   newValue = clampTo(newValue, 0.0, 25.0);
   return static_cast<int>(4 * newValue + 0.5);
 }
@@ -349,8 +352,9 @@ AudioParam::AudioParam(BaseAudioContext& context,
 AudioParam* AudioParam::create(BaseAudioContext& context,
                                AudioParamType paramType,
                                double defaultValue) {
-  // Default nominal range is most negative float to most positive.  This basically means any
-  // value is valid, except that floating-point infinities are excluded.
+  // Default nominal range is most negative float to most positive.  This
+  // basically means any value is valid, except that floating-point infinities
+  // are excluded.
   float limit = std::numeric_limits<float>::max();
   return new AudioParam(context, paramType, defaultValue, -limit, limit);
 }
@@ -422,8 +426,9 @@ AudioParam* AudioParam::linearRampToValueAtTime(
       value, time, handler().intrinsicValue(), context()->currentTime(),
       exceptionState);
 
-  // This is probably the best we can do for the histogram.  We don't want to run the automation
-  // to get all the values and use them to update the histogram.
+  // This is probably the best we can do for the histogram.  We don't want to
+  // run the automation to get all the values and use them to update the
+  // histogram.
   handler().updateHistograms(value);
 
   return this;
@@ -438,8 +443,9 @@ AudioParam* AudioParam::exponentialRampToValueAtTime(
       value, time, handler().intrinsicValue(), context()->currentTime(),
       exceptionState);
 
-  // This is probably the best we can do for the histogram.  We don't want to run the automation
-  // to get all the values and use them to update the histogram.
+  // This is probably the best we can do for the histogram.  We don't want to
+  // run the automation to get all the values and use them to update the
+  // histogram.
   handler().updateHistograms(value);
 
   return this;
@@ -453,8 +459,8 @@ AudioParam* AudioParam::setTargetAtTime(float target,
   handler().timeline().setTargetAtTime(target, time, timeConstant,
                                        exceptionState);
 
-  // Don't update the histogram here.  It's not clear in normal usage if the parameter value will
-  // actually reach |target|.
+  // Don't update the histogram here.  It's not clear in normal usage if the
+  // parameter value will actually reach |target|.
   return this;
 }
 
@@ -495,9 +501,10 @@ AudioParam* AudioParam::setValueCurveAtTime(DOMFloat32Array* curve,
   handler().timeline().setValueCurveAtTime(curve, time, duration,
                                            exceptionState);
 
-  // We could update the histogram with every value in the curve, due to interpolation, we'll
-  // probably be missing many values.  So we don't update the histogram.  setValueCurveAtTime is
-  // probably a fairly rare method anyway.
+  // We could update the histogram with every value in the curve, due to
+  // interpolation, we'll probably be missing many values.  So we don't update
+  // the histogram.  setValueCurveAtTime is probably a fairly rare method
+  // anyway.
   return this;
 }
 

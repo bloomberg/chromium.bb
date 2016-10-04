@@ -40,7 +40,8 @@ ChannelSplitterHandler::ChannelSplitterHandler(AudioNode& node,
     : AudioHandler(NodeTypeChannelSplitter, node, sampleRate) {
   addInput();
 
-  // Create a fixed number of outputs (able to handle the maximum number of channels fed to an input).
+  // Create a fixed number of outputs (able to handle the maximum number of
+  // channels fed to an input).
   for (unsigned i = 0; i < numberOfOutputs; ++i)
     addOutput(1);
 
@@ -68,7 +69,8 @@ void ChannelSplitterHandler::process(size_t framesToProcess) {
 
     if (i < numberOfSourceChannels) {
       // Split the channel out if it exists in the source.
-      // It would be nice to avoid the copy and simply pass along pointers, but this becomes extremely difficult with fanout and fanin.
+      // It would be nice to avoid the copy and simply pass along pointers, but
+      // this becomes extremely difficult with fanout and fanin.
       destination->channel(0)->copyFrom(source->channel(i));
     } else if (output(i).renderingFanOutCount() > 0) {
       // Only bother zeroing out the destination if it's connected to anything

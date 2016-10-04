@@ -175,8 +175,8 @@ void OfflineAudioDestinationHandler::doOfflineRendering() {
   m_shouldSuspend = false;
 
   // If there is more to process and there is no suspension at the moment,
-  // do continue to render quanta. Then calling OfflineAudioContext.resume() will pick up
-  // the render loop again from where it was suspended.
+  // do continue to render quanta. Then calling OfflineAudioContext.resume()
+  // will pick up the render loop again from where it was suspended.
   while (m_framesToProcess > 0 && !m_shouldSuspend) {
     // Suspend the rendering and update m_shouldSuspend if a scheduled
     // suspend found at the current sample frame. Otherwise render one
@@ -253,7 +253,8 @@ bool OfflineAudioDestinationHandler::renderIfNotSuspended(
     size_t numberOfFrames) {
   // We don't want denormals slowing down any of the audio processing
   // since they can very seriously hurt performance.
-  // This will take care of all AudioNodes because they all process within this scope.
+  // This will take care of all AudioNodes because they all process within this
+  // scope.
   DenormalDisabler denormalDisabler;
 
   // Need to check if the context actually alive. Otherwise the subsequent
@@ -293,8 +294,8 @@ bool OfflineAudioDestinationHandler::renderIfNotSuspended(
     destinationBus->zero();
     return false;
   }
-  // This will cause the node(s) connected to us to process, which in turn will pull on their input(s),
-  // all the way backwards through the rendering graph.
+  // This will cause the node(s) connected to us to process, which in turn will
+  // pull on their input(s), all the way backwards through the rendering graph.
   AudioBus* renderedBus = input(0).pull(destinationBus, numberOfFrames);
 
   if (!renderedBus) {
@@ -304,10 +305,12 @@ bool OfflineAudioDestinationHandler::renderIfNotSuspended(
     destinationBus->copyFrom(*renderedBus);
   }
 
-  // Process nodes which need a little extra help because they are not connected to anything, but still need to process.
+  // Process nodes which need a little extra help because they are not connected
+  // to anything, but still need to process.
   context()->deferredTaskHandler().processAutomaticPullNodes(numberOfFrames);
 
-  // Let the context take care of any business at the end of each render quantum.
+  // Let the context take care of any business at the end of each render
+  // quantum.
   context()->handlePostOfflineRenderTasks();
 
   // Advance current sample-frame.

@@ -37,8 +37,9 @@ GainHandler::GainHandler(AudioNode& node,
     : AudioHandler(NodeTypeGain, node, sampleRate),
       m_lastGain(1.0),
       m_gain(gain),
-      m_sampleAccurateGainValues(
-          ProcessingSizeInFrames)  // FIXME: can probably share temp buffer in context
+      m_sampleAccurateGainValues(ProcessingSizeInFrames)  // FIXME: can probably
+                                                          // share temp buffer
+                                                          // in context
 {
   addInput();
   addOutput(1);
@@ -53,9 +54,9 @@ PassRefPtr<GainHandler> GainHandler::create(AudioNode& node,
 }
 
 void GainHandler::process(size_t framesToProcess) {
-  // FIXME: for some cases there is a nice optimization to avoid processing here, and let the gain change
-  // happen in the summing junction input of the AudioNode we're connected to.
-  // Then we can avoid all of the following:
+  // FIXME: for some cases there is a nice optimization to avoid processing
+  // here, and let the gain change happen in the summing junction input of the
+  // AudioNode we're connected to.  Then we can avoid all of the following:
 
   AudioBus* outputBus = output(0).bus();
   DCHECK(outputBus);
@@ -66,7 +67,8 @@ void GainHandler::process(size_t framesToProcess) {
     AudioBus* inputBus = input(0).bus();
 
     if (m_gain->hasSampleAccurateValues()) {
-      // Apply sample-accurate gain scaling for precise envelopes, grain windows, etc.
+      // Apply sample-accurate gain scaling for precise envelopes, grain
+      // windows, etc.
       DCHECK_LE(framesToProcess, m_sampleAccurateGainValues.size());
       if (framesToProcess <= m_sampleAccurateGainValues.size()) {
         float* gainValues = m_sampleAccurateGainValues.data();
@@ -82,8 +84,8 @@ void GainHandler::process(size_t framesToProcess) {
     } else {
       // Apply the gain with de-zippering into the output bus.
       if (!m_lastGain && m_lastGain == m_gain->value()) {
-        // If the gain is 0 (and we've converged on dezippering), just zero the bus and set
-        // the silence hint.
+        // If the gain is 0 (and we've converged on dezippering), just zero the
+        // bus and set the silence hint.
         outputBus->zero();
       } else {
         outputBus->copyWithGainFrom(*inputBus, &m_lastGain, m_gain->value());
@@ -92,11 +94,13 @@ void GainHandler::process(size_t framesToProcess) {
   }
 }
 
-// FIXME: this can go away when we do mixing with gain directly in summing junction of AudioNodeInput
+// FIXME: this can go away when we do mixing with gain directly in summing
+// junction of AudioNodeInput
 //
 // As soon as we know the channel count of our input, we can lazily initialize.
-// Sometimes this may be called more than once with different channel counts, in which case we must safely
-// uninitialize and then re-initialize with the new channel count.
+// Sometimes this may be called more than once with different channel counts, in
+// which case we must safely uninitialize and then re-initialize with the new
+// channel count.
 void GainHandler::checkNumberOfChannelsForInput(AudioNodeInput* input) {
   DCHECK(context()->isAudioThread());
   ASSERT(context()->isGraphOwner());
@@ -114,7 +118,8 @@ void GainHandler::checkNumberOfChannelsForInput(AudioNodeInput* input) {
   }
 
   if (!isInitialized()) {
-    // This will propagate the channel count to any nodes connected further downstream in the graph.
+    // This will propagate the channel count to any nodes connected further
+    // downstream in the graph.
     output(0).setNumberOfChannels(numberOfChannels);
     initialize();
   }

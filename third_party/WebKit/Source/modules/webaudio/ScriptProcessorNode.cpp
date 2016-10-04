@@ -52,7 +52,8 @@ ScriptProcessorHandler::ScriptProcessorHandler(AudioNode& node,
       m_internalInputBus(AudioBus::create(numberOfInputChannels,
                                           ProcessingSizeInFrames,
                                           false)) {
-  // Regardless of the allowed buffer sizes, we still need to process at the granularity of the AudioNode.
+  // Regardless of the allowed buffer sizes, we still need to process at the
+  // granularity of the AudioNode.
   if (m_bufferSize < ProcessingSizeInFrames)
     m_bufferSize = ProcessingSizeInFrames;
 
@@ -89,7 +90,8 @@ void ScriptProcessorHandler::initialize() {
   float sampleRate = context()->sampleRate();
 
   // Create double buffers on both the input and output sides.
-  // These AudioBuffers will be directly accessed in the main thread by JavaScript.
+  // These AudioBuffers will be directly accessed in the main thread by
+  // JavaScript.
   for (unsigned i = 0; i < 2; ++i) {
     AudioBuffer* inputBuffer =
         m_numberOfInputChannels ? AudioBuffer::create(m_numberOfInputChannels,
@@ -109,16 +111,19 @@ void ScriptProcessorHandler::initialize() {
 
 void ScriptProcessorHandler::process(size_t framesToProcess) {
   // Discussion about inputs and outputs:
-  // As in other AudioNodes, ScriptProcessorNode uses an AudioBus for its input and output (see inputBus and outputBus below).
-  // Additionally, there is a double-buffering for input and output which is exposed directly to JavaScript (see inputBuffer and outputBuffer below).
-  // This node is the producer for inputBuffer and the consumer for outputBuffer.
-  // The JavaScript code is the consumer of inputBuffer and the producer for outputBuffer.
+  // As in other AudioNodes, ScriptProcessorNode uses an AudioBus for its input
+  // and output (see inputBus and outputBus below).  Additionally, there is a
+  // double-buffering for input and output which is exposed directly to
+  // JavaScript (see inputBuffer and outputBuffer below).  This node is the
+  // producer for inputBuffer and the consumer for outputBuffer.  The JavaScript
+  // code is the consumer of inputBuffer and the producer for outputBuffer.
 
   // Get input and output busses.
   AudioBus* inputBus = input(0).bus();
   AudioBus* outputBus = output(0).bus();
 
-  // Get input and output buffers. We double-buffer both the input and output sides.
+  // Get input and output buffers. We double-buffer both the input and output
+  // sides.
   unsigned doubleBufferIndex = this->doubleBufferIndex();
   bool isDoubleBufferIndexGood = doubleBufferIndex < 2 &&
                                  doubleBufferIndex < m_inputBuffers.size() &&
@@ -145,7 +150,8 @@ void ScriptProcessorHandler::process(size_t framesToProcess) {
   if (!buffersAreGood)
     return;
 
-  // We assume that bufferSize() is evenly divisible by framesToProcess - should always be true, but we should still check.
+  // We assume that bufferSize() is evenly divisible by framesToProcess - should
+  // always be true, but we should still check.
   bool isFramesToProcessGood = framesToProcess &&
                                bufferSize() >= framesToProcess &&
                                !(bufferSize() % framesToProcess);
@@ -179,16 +185,19 @@ void ScriptProcessorHandler::process(size_t framesToProcess) {
   m_bufferReadWriteIndex =
       (m_bufferReadWriteIndex + framesToProcess) % bufferSize();
 
-  // m_bufferReadWriteIndex will wrap back around to 0 when the current input and output buffers are full.
+  // m_bufferReadWriteIndex will wrap back around to 0 when the current input
+  // and output buffers are full.
   // When this happens, fire an event and swap buffers.
   if (!m_bufferReadWriteIndex) {
-    // Avoid building up requests on the main thread to fire process events when they're not being handled.
-    // This could be a problem if the main thread is very busy doing other things and is being held up handling previous requests.
-    // The audio thread can't block on this lock, so we call tryLock() instead.
+    // Avoid building up requests on the main thread to fire process events when
+    // they're not being handled.  This could be a problem if the main thread is
+    // very busy doing other things and is being held up handling previous
+    // requests.  The audio thread can't block on this lock, so we call
+    // tryLock() instead.
     MutexTryLocker tryLocker(m_processEventLock);
     if (!tryLocker.locked()) {
-      // We're late in handling the previous request. The main thread must be very busy.
-      // The best we can do is clear out the buffer ourself here.
+      // We're late in handling the previous request. The main thread must be
+      // very busy.  The best we can do is clear out the buffer ourself here.
       outputBuffer->zero();
     } else if (context()->getExecutionContext()) {
       // With the realtime context, execute the script code asynchronously
@@ -242,8 +251,10 @@ void ScriptProcessorHandler::fireProcessEvent(unsigned doubleBufferIndex) {
     // This synchronizes with process().
     MutexLocker processLocker(m_processEventLock);
 
-    // Calculate a playbackTime with the buffersize which needs to be processed each time onaudioprocess is called.
-    // The outputBuffer being passed to JS will be played after exhuasting previous outputBuffer by double-buffering.
+    // Calculate a playbackTime with the buffersize which needs to be processed
+    // each time onaudioprocess is called.  The outputBuffer being passed to JS
+    // will be played after exhuasting previous outputBuffer by
+    // double-buffering.
     double playbackTime = (context()->currentSampleFrame() + m_bufferSize) /
                           static_cast<double>(context()->sampleRate());
 
@@ -332,8 +343,9 @@ ScriptProcessorNode::ScriptProcessorNode(BaseAudioContext& context,
 }
 
 static size_t chooseBufferSize() {
-  // Choose a buffer size based on the audio hardware buffer size. Arbitarily make it a power of
-  // two that is 4 times greater than the hardware buffer size.
+  // Choose a buffer size based on the audio hardware buffer size. Arbitarily
+  // make it a power of two that is 4 times greater than the hardware buffer
+  // size.
   // FIXME: What is the best way to choose this?
   size_t hardwareBufferSize = Platform::current()->audioHardwareBufferSize();
   size_t bufferSize =

@@ -41,11 +41,13 @@ class BaseAudioContext;
 class AudioBuffer;
 class WaitableEvent;
 
-// ScriptProcessorNode is an AudioNode which allows for arbitrary synthesis or processing directly using JavaScript.
-// The API allows for a variable number of inputs and outputs, although it must have at least one input or output.
-// This basic implementation supports no more than one input and output.
-// The "onaudioprocess" attribute is an event listener which will get called periodically with an AudioProcessingEvent which has
-// AudioBuffers for each input and output.
+// ScriptProcessorNode is an AudioNode which allows for arbitrary synthesis or
+// processing directly using JavaScript.  The API allows for a variable number
+// of inputs and outputs, although it must have at least one input or output.
+// This basic implementation supports no more than one input and output.  The
+// "onaudioprocess" attribute is an event listener which will get called
+// periodically with an AudioProcessingEvent which has AudioBuffers for each
+// input and output.
 
 class ScriptProcessorHandler final : public AudioHandler {
  public:

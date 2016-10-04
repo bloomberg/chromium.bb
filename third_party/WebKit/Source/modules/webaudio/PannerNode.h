@@ -43,11 +43,13 @@ class BaseAudioContext;
 class PannerOptions;
 
 // PannerNode is an AudioNode with one input and one output.
-// It positions a sound in 3D space, with the exact effect dependent on the panning model.
-// It has a position and an orientation in 3D space which is relative to the position and orientation of the context's AudioListener.
-// A distance effect will attenuate the gain as the position moves away from the listener.
-// A cone effect will attenuate the gain as the orientation moves away from the listener.
-// All of these effects follow the OpenAL specification very closely.
+// It positions a sound in 3D space, with the exact effect dependent on the
+// panning model.  It has a position and an orientation in 3D space which is
+// relative to the position and orientation of the context's AudioListener.  A
+// distance effect will attenuate the gain as the position moves away from the
+// listener.  A cone effect will attenuate the gain as the orientation moves
+// away from the listener.  All of these effects follow the OpenAL specification
+// very closely.
 
 class PannerHandler final : public AudioHandler {
  public:
@@ -198,7 +200,8 @@ class PannerHandler final : public AudioHandler {
   FloatPoint3D m_lastPosition;
   FloatPoint3D m_lastOrientation;
 
-  // Synchronize process() with setting of the panning model, source's location information, listener, distance parameters and sound cones.
+  // Synchronize process() with setting of the panning model, source's location
+  // information, listener, distance parameters and sound cones.
   mutable Mutex m_processLock;
 };
 

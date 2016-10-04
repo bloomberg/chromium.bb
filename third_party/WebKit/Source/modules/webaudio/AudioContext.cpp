@@ -113,8 +113,8 @@ ScriptPromise AudioContext::suspendContext(ScriptState* scriptState) {
     if (destination())
       stopRendering();
 
-    // Since we don't have any way of knowing when the hardware actually stops, we'll just
-    // resolve the promise now.
+    // Since we don't have any way of knowing when the hardware actually stops,
+    // we'll just resolve the promise now.
     resolver->resolve();
   }
 
@@ -141,8 +141,8 @@ ScriptPromise AudioContext::resumeContext(ScriptState* scriptState) {
       startRendering();
   }
 
-  // Save the resolver which will get resolved when the destination node starts pulling on the
-  // graph again.
+  // Save the resolver which will get resolved when the destination node starts
+  // pulling on the graph again.
   {
     AutoLocker locker(this);
     m_resumeResolvers.append(resolver);
@@ -153,8 +153,8 @@ ScriptPromise AudioContext::resumeContext(ScriptState* scriptState) {
 
 ScriptPromise AudioContext::closeContext(ScriptState* scriptState) {
   if (isContextClosed()) {
-    // We've already closed the context previously, but it hasn't yet been resolved, so just
-    // create a new promise and reject it.
+    // We've already closed the context previously, but it hasn't yet been
+    // resolved, so just create a new promise and reject it.
     return ScriptPromise::rejectWithDOMException(
         scriptState,
         DOMException::create(InvalidStateError,
@@ -168,10 +168,11 @@ ScriptPromise AudioContext::closeContext(ScriptState* scriptState) {
   m_closeResolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = m_closeResolver->promise();
 
-  // Stop the audio context. This will stop the destination node from pulling audio anymore. And
-  // since we have disconnected the destination from the audio graph, and thus has no references,
-  // the destination node can GCed if JS has no references. uninitialize() will also resolve the Promise
-  // created here.
+  // Stop the audio context. This will stop the destination node from pulling
+  // audio anymore. And since we have disconnected the destination from the
+  // audio graph, and thus has no references, the destination node can GCed if
+  // JS has no references. uninitialize() will also resolve the Promise created
+  // here.
   uninitialize();
 
   return promise;

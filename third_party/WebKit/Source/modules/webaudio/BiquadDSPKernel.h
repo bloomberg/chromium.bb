@@ -34,7 +34,8 @@ namespace blink {
 
 class BiquadProcessor;
 
-// BiquadDSPKernel is an AudioDSPKernel and is responsible for filtering one channel of a BiquadProcessor using a Biquad object.
+// BiquadDSPKernel is an AudioDSPKernel and is responsible for filtering one
+// channel of a BiquadProcessor using a Biquad object.
 
 class BiquadDSPKernel final : public AudioDSPKernel {
  public:

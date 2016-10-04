@@ -48,11 +48,14 @@ class AudioNodeOutput;
 class AudioParam;
 class ExceptionState;
 
-// An AudioNode is the basic building block for handling audio within an BaseAudioContext.
-// It may be an audio source, an intermediate processing module, or an audio destination.
-// Each AudioNode can have inputs and/or outputs. An AudioSourceNode has no inputs and a single output.
-// An AudioDestinationNode has one input and no outputs and represents the final destination to the audio hardware.
-// Most processing nodes such as filters will have one input and one output, although multiple inputs and outputs are possible.
+// An AudioNode is the basic building block for handling audio within an
+// BaseAudioContext.  It may be an audio source, an intermediate processing
+// module, or an audio destination.  Each AudioNode can have inputs and/or
+// outputs. An AudioSourceNode has no inputs and a single output.
+// An AudioDestinationNode has one input and no outputs and represents the final
+// destination to the audio hardware.  Most processing nodes such as filters
+// will have one input and one output, although multiple inputs and outputs are
+// possible.
 
 // Each of AudioNode objects owns its dedicated AudioHandler object. AudioNode
 // is responsible to provide IDL-accessible interface and its lifetime is
@@ -107,10 +110,10 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
   // nullptr after dispose().  We must not call node() in an audio rendering
   // thread.
   AudioNode* node() const;
-  // context() returns a valid object until the BaseAudioContext dies, and returns
-  // nullptr otherwise.  This always returns a valid object in an audio
-  // rendering thread, and inside dispose().  We must not call context() in
-  // the destructor.
+  // context() returns a valid object until the BaseAudioContext dies, and
+  // returns nullptr otherwise.  This always returns a valid object in an audio
+  // rendering thread, and inside dispose().  We must not call context() in the
+  // destructor.
   virtual BaseAudioContext* context() const;
   void clearContext() { m_context = nullptr; }
 
@@ -128,11 +131,13 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
   // This function must be called before releasing a connection reference.
   void breakConnection();
 
-  // Can be called from main thread or context's audio thread.  It must be called while the context's graph lock is held.
+  // Can be called from main thread or context's audio thread.  It must be
+  // called while the context's graph lock is held.
   void breakConnectionWithLock();
 
-  // The AudioNodeInput(s) (if any) will already have their input data available when process() is called.
-  // Subclasses will take this input data and put the results in the AudioBus(s) of its AudioNodeOutput(s) (if any).
+  // The AudioNodeInput(s) (if any) will already have their input data available
+  // when process() is called.  Subclasses will take this input data and put the
+  // results in the AudioBus(s) of its AudioNodeOutput(s) (if any).
   // Called from context's audio thread.
   virtual void process(size_t framesToProcess) = 0;
 
@@ -164,15 +169,17 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
 
   virtual float sampleRate() const { return m_sampleRate; }
 
-  // processIfNecessary() is called by our output(s) when the rendering graph needs this AudioNode to process.
-  // This method ensures that the AudioNode will only process once per rendering time quantum even if it's called repeatedly.
-  // This handles the case of "fanout" where an output is connected to multiple AudioNode inputs.
-  // Called from context's audio thread.
+  // processIfNecessary() is called by our output(s) when the rendering graph
+  // needs this AudioNode to process.  This method ensures that the AudioNode
+  // will only process once per rendering time quantum even if it's called
+  // repeatedly.  This handles the case of "fanout" where an output is connected
+  // to multiple AudioNode inputs.  Called from context's audio thread.
   void processIfNecessary(size_t framesToProcess);
 
-  // Called when a new connection has been made to one of our inputs or the connection number of channels has changed.
-  // This potentially gives us enough information to perform a lazy initialization or, if necessary, a re-initialization.
-  // Called from main thread.
+  // Called when a new connection has been made to one of our inputs or the
+  // connection number of channels has changed.  This potentially gives us
+  // enough information to perform a lazy initialization or, if necessary, a
+  // re-initialization.  Called from main thread.
   virtual void checkNumberOfChannelsForInput(AudioNodeInput*);
 
 #if DEBUG_AUDIONODE_REFERENCES
@@ -191,8 +198,10 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
   // latency.
   virtual double latencyTime() const;
 
-  // propagatesSilence() should return true if the node will generate silent output when given silent input. By default, AudioNode
-  // will take tailTime() and latencyTime() into account when determining whether the node will propagate silence.
+  // propagatesSilence() should return true if the node will generate silent
+  // output when given silent input. By default, AudioNode will take tailTime()
+  // and latencyTime() into account when determining whether the node will
+  // propagate silence.
   virtual bool propagatesSilence() const;
   bool inputsAreSilent();
   void silenceOutputs();
@@ -226,9 +235,10 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
   void addInput();
   void addOutput(unsigned numberOfChannels);
 
-  // Called by processIfNecessary() to cause all parts of the rendering graph connected to us to process.
-  // Each rendering quantum, the audio data for each of the AudioNode's inputs will be available after this method is called.
-  // Called from context's audio thread.
+  // Called by processIfNecessary() to cause all parts of the rendering graph
+  // connected to us to process.  Each rendering quantum, the audio data for
+  // each of the AudioNode's inputs will be available after this method is
+  // called.  Called from context's audio thread.
   virtual void pullInputs(size_t framesToProcess);
 
   // Force all inputs to take any channel interpretation changes into account.
@@ -279,8 +289,8 @@ class MODULES_EXPORT AudioHandler : public ThreadSafeRefCounted<AudioHandler> {
   void setInternalChannelInterpretation(AudioBus::ChannelInterpretation);
 
   unsigned m_channelCount;
-  // The new channel count mode that will be used to set the actual mode in the pre or post
-  // rendering phase.
+  // The new channel count mode that will be used to set the actual mode in the
+  // pre or post rendering phase.
   ChannelCountMode m_newChannelCountMode;
   // The new channel interpretation that will be used to set the actual
   // intepretation in the pre or post rendering phase.
@@ -328,8 +338,8 @@ class MODULES_EXPORT AudioNode : public EventTargetWithInlineData {
 
   // Called inside AudioHandler constructors.
   void didAddOutput(unsigned numberOfOutputs);
-  // Like disconnect, but no exception is thrown if the outputIndex is invalid.  Just do nothing
-  // in that case.
+  // Like disconnect, but no exception is thrown if the outputIndex is invalid.
+  // Just do nothing in that case.
   void disconnectWithoutException(unsigned outputIndex);
 
  protected:

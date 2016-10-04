@@ -36,10 +36,11 @@
 
 // Note about empirical tuning:
 // The maximum FFT size affects reverb performance and accuracy.
-// If the reverb is single-threaded and processes entirely in the real-time audio thread,
-// it's important not to make this too high.  In this case 8192 is a good value.
-// But, the Reverb object is multi-threaded, so we want this as high as possible without losing too much accuracy.
-// Very large FFTs will have worse phase errors. Given these constraints 32768 is a good compromise.
+// If the reverb is single-threaded and processes entirely in the real-time
+// audio thread, it's important not to make this too high.  In this case 8192 is
+// a good value.  But, the Reverb object is multi-threaded, so we want this as
+// high as possible without losing too much accuracy.  Very large FFTs will have
+// worse phase errors. Given these constraints 32768 is a good compromise.
 const size_t MaxFFTSize = 32768;
 
 namespace blink {
@@ -77,13 +78,16 @@ void ConvolverHandler::process(size_t framesToProcess) {
       outputBus->zero();
     } else {
       // Process using the convolution engine.
-      // Note that we can handle the case where nothing is connected to the input, in which case we'll just feed silence into the convolver.
-      // FIXME:  If we wanted to get fancy we could try to factor in the 'tail time' and stop processing once the tail dies down if
+      // Note that we can handle the case where nothing is connected to the
+      // input, in which case we'll just feed silence into the convolver.
+      // FIXME:  If we wanted to get fancy we could try to factor in the 'tail
+      // time' and stop processing once the tail dies down if
       // we keep getting fed silence.
       m_reverb->process(input(0).bus(), outputBus, framesToProcess);
     }
   } else {
-    // Too bad - the tryLock() failed.  We must be in the middle of setting a new impulse response.
+    // Too bad - the tryLock() failed.  We must be in the middle of setting a
+    // new impulse response.
     outputBus->zero();
   }
 }
@@ -107,8 +111,9 @@ void ConvolverHandler::setBuffer(AudioBuffer* buffer,
   unsigned numberOfChannels = buffer->numberOfChannels();
   size_t bufferLength = buffer->length();
 
-  // The current implementation supports only 1-, 2-, or 4-channel impulse responses, with the
-  // 4-channel response being interpreted as true-stereo (see Reverb class).
+  // The current implementation supports only 1-, 2-, or 4-channel impulse
+  // responses, with the 4-channel response being interpreted as true-stereo
+  // (see Reverb class).
   bool isChannelCountGood =
       numberOfChannels == 1 || numberOfChannels == 2 || numberOfChannels == 4;
 
@@ -119,8 +124,9 @@ void ConvolverHandler::setBuffer(AudioBuffer* buffer,
     return;
   }
 
-  // Wrap the AudioBuffer by an AudioBus. It's an efficient pointer set and not a memcpy().
-  // This memory is simply used in the Reverb constructor and no reference to it is kept for later use in that class.
+  // Wrap the AudioBuffer by an AudioBus. It's an efficient pointer set and not
+  // a memcpy().  This memory is simply used in the Reverb constructor and no
+  // reference to it is kept for later use in that class.
   RefPtr<AudioBus> bufferBus =
       AudioBus::create(numberOfChannels, bufferLength, false);
   for (unsigned i = 0; i < numberOfChannels; ++i)
@@ -154,8 +160,8 @@ double ConvolverHandler::tailTime() const {
                ? m_reverb->impulseResponseLength() /
                      static_cast<double>(sampleRate())
                : 0;
-  // Since we don't want to block the Audio Device thread, we return a large value
-  // instead of trying to acquire the lock.
+  // Since we don't want to block the Audio Device thread, we return a large
+  // value instead of trying to acquire the lock.
   return std::numeric_limits<double>::infinity();
 }
 
@@ -165,8 +171,8 @@ double ConvolverHandler::latencyTime() const {
     return m_reverb
                ? m_reverb->latencyFrames() / static_cast<double>(sampleRate())
                : 0;
-  // Since we don't want to block the Audio Device thread, we return a large value
-  // instead of trying to acquire the lock.
+  // Since we don't want to block the Audio Device thread, we return a large
+  // value instead of trying to acquire the lock.
   return std::numeric_limits<double>::infinity();
 }
 

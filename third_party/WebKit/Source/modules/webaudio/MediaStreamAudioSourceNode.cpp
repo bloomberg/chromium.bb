@@ -110,8 +110,8 @@ void MediaStreamAudioSourceHandler::process(size_t numberOfFrames) {
   }
 
   // Use a tryLock() to avoid contention in the real-time audio thread.
-  // If we fail to acquire the lock then the MediaStream must be in the middle of
-  // a format change, so we output silence in this case.
+  // If we fail to acquire the lock then the MediaStream must be in the middle
+  // of a format change, so we output silence in this case.
   MutexTryLocker tryLocker(m_processLock);
   if (tryLocker.locked()) {
     getAudioSourceProvider()->provideInput(outputBus, numberOfFrames);
