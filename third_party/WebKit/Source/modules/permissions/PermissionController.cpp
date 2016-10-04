@@ -6,17 +6,15 @@
 
 #include "core/frame/LocalFrame.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "public/platform/modules/permissions/WebPermissionClient.h"
 
 namespace blink {
 
 PermissionController::~PermissionController() {}
 
-void PermissionController::provideTo(LocalFrame& frame,
-                                     WebPermissionClient* client) {
+void PermissionController::provideTo(LocalFrame& frame) {
   ASSERT(RuntimeEnabledFeatures::permissionsEnabled());
 
-  PermissionController* controller = new PermissionController(frame, client);
+  PermissionController* controller = new PermissionController(frame);
   Supplement<LocalFrame>::provideTo(frame, supplementName(), controller);
 }
 
@@ -25,20 +23,14 @@ PermissionController* PermissionController::from(LocalFrame& frame) {
       Supplement<LocalFrame>::from(frame, supplementName()));
 }
 
-PermissionController::PermissionController(LocalFrame& frame,
-                                           WebPermissionClient* client)
-    : DOMWindowProperty(&frame), m_client(client) {}
+PermissionController::PermissionController(LocalFrame& frame)
+    : DOMWindowProperty(&frame) {}
 
 const char* PermissionController::supplementName() {
   return "PermissionController";
 }
 
-WebPermissionClient* PermissionController::client() const {
-  return m_client;
-}
-
 void PermissionController::frameDestroyed() {
-  m_client = nullptr;
   DOMWindowProperty::frameDestroyed();
 }
 

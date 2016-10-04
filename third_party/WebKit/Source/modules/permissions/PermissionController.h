@@ -11,8 +11,6 @@
 
 namespace blink {
 
-class WebPermissionClient;
-
 class MODULES_EXPORT PermissionController final
     : public GarbageCollectedFinalized<PermissionController>,
       public Supplement<LocalFrame>,
@@ -23,21 +21,17 @@ class MODULES_EXPORT PermissionController final
  public:
   virtual ~PermissionController();
 
-  static void provideTo(LocalFrame&, WebPermissionClient*);
+  static void provideTo(LocalFrame&);
   static PermissionController* from(LocalFrame&);
   static const char* supplementName();
-
-  WebPermissionClient* client() const;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  PermissionController(LocalFrame&, WebPermissionClient*);
+  PermissionController(LocalFrame&);
 
   // Inherited from DOMWindowProperty.
   void frameDestroyed() override;
-
-  WebPermissionClient* m_client;
 };
 
 }  // namespace blink

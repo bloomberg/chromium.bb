@@ -16,7 +16,6 @@ class Dictionary;
 class ScriptPromiseResolver;
 class ScriptState;
 class ScriptValue;
-class WebPermissionClient;
 
 class Permissions final : public GarbageCollectedFinalized<Permissions>,
                           public ScriptWrappable {
