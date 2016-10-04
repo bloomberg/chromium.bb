@@ -31,5 +31,5 @@
 [
     NoInterfaceObject,
 ] interface DirectoryReaderSync {
-    [RaisesException] EntrySync[] readEntries();
+    [RaisesException] sequence<EntrySync> readEntries();
 };

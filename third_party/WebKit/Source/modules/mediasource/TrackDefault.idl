@@ -16,5 +16,9 @@ enum TrackDefaultType { "audio", "video", "text" };
     readonly attribute DOMString byteStreamTrackID;
     readonly attribute DOMString language;
     readonly attribute DOMString label;
+    // TODO(wolenetz): |kinds| should be [SameObject] FrozenArray<DOMString> or
+    // a getKinds() method returning sequence<DOMString>.
+    // https://github.com/w3c/media-source/issues/91
+    // https://crbug.com/619665
     readonly attribute DOMString[] kinds;
 };

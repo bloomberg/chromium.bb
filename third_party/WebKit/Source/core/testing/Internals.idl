@@ -96,7 +96,7 @@
 
     // If the argument is omitted, the top-level document is used.
     boolean hasAutofocusRequest(optional Document document);
-    [RaisesException] DOMString[] formControlStateOfHistoryItem();
+    [RaisesException] sequence<DOMString> formControlStateOfHistoryItem();
     [RaisesException] void setFormControlStateOfHistoryItem(sequence<DOMString> values);
     readonly attribute Window pagePopupWindow;
 
@@ -203,12 +203,12 @@
     unsigned long numberOfLiveNodes();
     unsigned long numberOfLiveDocuments();
     DOMString dumpRefCountedInstanceCounts();
-    unsigned long[] setMemoryCacheCapacities(unsigned long minDeadBytes, unsigned long maxDeadBytes, unsigned long totalBytes);
+    sequence<unsigned long> setMemoryCacheCapacities(unsigned long minDeadBytes, unsigned long maxDeadBytes, unsigned long totalBytes);
 
     DOMString counterValue(Element element);
     [RaisesException] long pageNumber(Element element, optional float pageWidth = 800, optional float pageHeight = 600);
-    DOMString[] shortcutIconURLs(Document document);
-    DOMString[] allIconURLs(Document document);
+    sequence<DOMString> shortcutIconURLs(Document document);
+    sequence<DOMString> allIconURLs(Document document);
     [RaisesException] long numberOfPages(optional double pageWidthInPixels = 800, optional double pageHeightInPixels = 600);
     [RaisesException] DOMString pageProperty(DOMString propertyName, long pageNumber);
     [RaisesException] DOMString pageSizeAndMarginsInPixels(long pageIndex, long width, long height, long marginTop, long marginRight, long marginBottom, long marginLeft);
@@ -236,7 +236,7 @@
     // into the binary of Release builds.
     PrivateScriptTest privateScriptTest();
 
-    DOMString[] getReferencedFilePaths();
+    sequence<DOMString> getReferencedFilePaths();
 
     // These functions both reset the tracked repaint rects. They are intended to be used in the following order:
     //  startTrackingRepaints(), repaintRectsAsText(), stopTrackingRepaints().
@@ -287,7 +287,7 @@
     [CallWith=ScriptState] Promise createResolvedPromise(any value);
     [CallWith=ScriptState] Promise createRejectedPromise(any reason);
     [CallWith=ScriptState] Promise addOneToPromise(Promise promise);
-    [CallWith=ScriptState, RaisesException] Promise promiseCheck(long arg1, boolean arg2, Dictionary arg3, DOMString arg4, DOMString[] arg5);
+    [CallWith=ScriptState, RaisesException] Promise promiseCheck(long arg1, boolean arg2, Dictionary arg3, DOMString arg4, sequence<DOMString> arg5);
     [CallWith=ScriptState] Promise promiseCheckWithoutExceptionState(Dictionary arg1, DOMString arg2, DOMString... variadic);
     [CallWith=ScriptState] Promise promiseCheckRange([EnforceRange] octet arg1);
     [CallWith=ScriptState] Promise promiseCheckOverload(Location arg1);
@@ -316,7 +316,7 @@
     DictionaryTest dictionaryTest();
     UnionTypesTest unionTypesTest();
     CallbackFunctionTest callbackFunctionTest();
-    [RaisesException] void setScrollChain(ScrollState scrollState, Element[] elements);
+    [RaisesException] void setScrollChain(ScrollState scrollState, sequence<Element> elements);
     void forceBlinkGCWithoutV8GC();
 
     DOMString selectedHTMLForClipboard();

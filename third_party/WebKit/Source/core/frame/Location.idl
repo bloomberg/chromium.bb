@@ -41,8 +41,8 @@
     [CallWith=(CurrentWindow,EnteredWindow), DoNotCheckSecurity, RaisesException] void replace(DOMString url);
     [CallWith=CurrentWindow] void reload();
 
-    // TODO(foolip): ancestorOrigins should have [SameObject] and be of type
-    // DOMString[], i.e. it should return the same array every time.
+    // TODO(foolip): |ancestorOrigins| should have [Unforgeable, SameObject] and
+    // be of type FrozenArray<USVString>.
     [Measure] readonly attribute DOMStringList ancestorOrigins;
 
     // TODO(foolip): Per spec, Location implements URLUtils. The below is

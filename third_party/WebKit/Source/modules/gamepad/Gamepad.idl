@@ -36,6 +36,7 @@ interface Gamepad {
     readonly attribute boolean connected;
     readonly attribute unsigned long long timestamp;
     readonly attribute DOMString mapping;
+    // https://github.com/w3c/gamepad/issues/28
     readonly attribute double[] axes;
     readonly attribute GamepadButton[] buttons;
     [RuntimeEnabled=GamepadExtensions] readonly attribute GamepadPose? pose;

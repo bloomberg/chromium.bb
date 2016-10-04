@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 [
-    Constructor(Element element, DOMString[] attributeArray),
+    Constructor(Element element, sequence<DOMString> attributeArray),
     ConstructorCallWith=ExecutionContext,
     Exposed=(Window,CompositorWorker),
     RaisesException=Constructor,

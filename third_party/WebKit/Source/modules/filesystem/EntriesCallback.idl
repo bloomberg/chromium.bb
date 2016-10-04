@@ -29,5 +29,5 @@
  */
 
 callback interface EntriesCallback {
-    void handleEvent(Entry[] entries);
+    void handleEvent(sequence<Entry> entries);
 };

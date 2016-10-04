@@ -37,6 +37,7 @@
     readonly attribute DOMString lastEventId;
     // TODO(bashi): |source| should be (WindowProxy or MessagePort)?
     readonly attribute EventTarget? source;
+    // TODO(foolip): |ports| should be FrozenArray<MessagePort>?
     readonly attribute MessagePort[]? ports;
     [RuntimeEnabled=suborigins] readonly attribute DOMString suborigin;
 
@@ -49,5 +50,5 @@
                                    [Default=Undefined] optional DOMString originArg,
                                    [Default=Undefined] optional DOMString lastEventIdArg,
                                    [Default=Undefined] optional Window sourceArg,
-                                   [Default=Undefined] optional MessagePort[] portsArg);
+                                   [Default=Undefined] optional sequence<MessagePort> portsArg);
 };

@@ -9,5 +9,6 @@
     Exposed=(Window,Worker),
 ] interface NavigatorLanguage {
     readonly attribute DOMString? language;
+    // TODO(foolip): |languages| should be FrozenArray<DOMString>.
     [CachedAttribute=hasLanguagesChanged] readonly attribute DOMString[] languages;
 };

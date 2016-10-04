@@ -27,6 +27,7 @@
     readonly attribute DOMString type;
     readonly attribute EventTarget? target;
     readonly attribute EventTarget? currentTarget;
+    [RuntimeEnabled=ShadowDOMV1, MeasureAs=EventComposedPath, CallWith=ScriptState] sequence<EventTarget> composedPath();
 
     const unsigned short NONE = 0;
     const unsigned short CAPTURING_PHASE = 1;
@@ -53,11 +54,6 @@
                              [Default=Undefined] optional boolean bubbles,
                              [Default=Undefined] optional boolean cancelable);
 
-    // Shadow DOM
-    // https://w3c.github.io/webcomponents/spec/shadow/#extensions-to-event-interface
-    [MeasureAs=EventPath, CallWith=ScriptState] readonly attribute EventTarget[] path;
-    [RuntimeEnabled=ShadowDOMV1, MeasureAs=EventComposedPath, CallWith=ScriptState] sequence<EventTarget> composedPath();
-
     // Non-standard APIs
     const unsigned short MOUSEDOWN = 1;
     const unsigned short MOUSEUP   = 2;
@@ -78,4 +74,5 @@
     [MeasureAs=EventSrcElement] readonly attribute EventTarget srcElement;
     [MeasureAs=EventReturnValue, CallWith=ExecutionContext, ImplementedAs=legacyReturnValue] attribute boolean returnValue;
     [MeasureAs=EventCancelBubble, CallWith=ExecutionContext] attribute boolean cancelBubble;
+    [MeasureAs=EventPath, CallWith=ScriptState] readonly attribute EventTarget[] path;
 };
