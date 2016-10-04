@@ -82,6 +82,7 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   // Callback used with AcquireFileAndDeleteDownload().
   typedef base::Callback<void(const base::FilePath&)> AcquireFileCallback;
 
+  // Used to represent an invalid download ID.
   static const uint32_t kInvalidId;
 
   // Interface that observers of a particular download must implement in order
@@ -126,18 +127,15 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   virtual void Pause() = 0;
 
   // Resume a download that has been paused or interrupted. Will have no effect
-  // if the download is neither.
+  // if the download is neither. Only does something if CanResume() returns
+  // true.
   virtual void Resume() = 0;
 
-  // Cancel the download operation. We need to distinguish between cancels at
-  // exit (DownloadManager destructor) from user interface initiated cancels
-  // because at exit, the history system may not exist, and any updates to it
-  // require AddRef'ing the DownloadManager in the destructor which results in
-  // a DCHECK failure. Set |user_cancel| to false when canceling from at
-  // exit to prevent this crash. This may result in a difference between the
-  // downloaded file's size on disk, and what the history system's last record
-  // of it is. At worst, we'll end up re-downloading a small portion of the file
-  // when resuming a download (assuming the server supports byte ranges).
+  // Cancel the download operation.
+  //
+  // Set |user_cancel| to true if the cancellation was triggered by an explicit
+  // user action. Non-user-initiated cancels typically happen when the browser
+  // is being closed with in-progress downloads.
   virtual void Cancel(bool user_cancel) = 0;
 
   // Removes the download from the views and history. If the download was
@@ -156,12 +154,13 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
 
   // Retrieve the ID for this download. The ID is provided by the owner of the
   // DownloadItem and is expected to uniquely identify the download within the
-  // context of its container during the lifetime of the download.
+  // context of its container during the lifetime of the download. A valid
+  // download will never return |kInvalidId|.
   virtual uint32_t GetId() const = 0;
 
   // Retrieve the GUID for this download. The returned string is never empty and
-  // will satisfy base::IsValidGUID(), in addition to uniquely identifying the
-  // download during its lifetime regardless of its container.
+  // will satisfy base::IsValidGUID() and uniquely identifies the download
+  // during its lifetime.
   virtual const std::string& GetGuid() const = 0;
 
   // Get the current state of the download. See DownloadState for descriptions
@@ -169,13 +168,17 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   virtual DownloadState GetState() const = 0;
 
   // Returns the most recent interrupt reason for this download. Returns
-  // DOWNLOAD_INTERRUPT_REASON_NONE if there is no previous interrupt reason.
-  // Cancelled downloads return DOWNLOAD_INTERRUPT_REASON_USER_CANCELLED. If
-  // the download was resumed, then the return value is the interrupt reason
-  // prior to resumption.
+  // |DOWNLOAD_INTERRUPT_REASON_NONE| if there is no previous interrupt reason.
+  // Interrupted downloads and resumed downloads return the last known interrupt
+  // reason.
   virtual DownloadInterruptReason GetLastReason() const = 0;
 
+  // The download is currently paused. Calling Resume() will transition out of
+  // this paused state.
   virtual bool IsPaused() const = 0;
+
+  // DEPRECATED. True if this is a temporary download and should not be
+  // persisted.
   virtual bool IsTemporary() const = 0;
 
   // Returns true if the download can be resumed. A download can be resumed if
@@ -190,22 +193,65 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
 
   //    Origin State accessors -------------------------------------------------
 
+  // Final URL. The primary resource being downloaded is from this URL. This is
+  // the tail of GetUrlChain(). May return an empty GURL if there is no valid
+  // download URL.
   virtual const GURL& GetURL() const = 0;
+
+  // The complete URL chain including redirects. URL at index i redirected to
+  // URL at index i+1.
   virtual const std::vector<GURL>& GetUrlChain() const = 0;
+
+  // The URL that the download request originally attempted to fetch. This may
+  // differ from GetURL() if there were redirects. The return value from this
+  // accessor is the same as the head of GetUrlChain().
   virtual const GURL& GetOriginalUrl() const = 0;
+
+  // URL of document that is considered the referrer for the original URL.
   virtual const GURL& GetReferrerUrl() const = 0;
+
+  // Site instance URL. Used to locate the correct storage partition during
+  // subsequent browser sessions. This may be different from all of
+  // GetOriginalUrl(), GetURL() and GetReferrerUrl().
   virtual const GURL& GetSiteUrl() const = 0;
+
+  // URL of the top level frame at the time the download was initiated.
   virtual const GURL& GetTabUrl() const = 0;
+
+  // Referrer URL for top level frame.
   virtual const GURL& GetTabReferrerUrl() const = 0;
+
+  // For downloads initiated via <a download>, this is the suggested download
+  // filename from the download attribute.
   virtual std::string GetSuggestedFilename() const = 0;
+
+  // Content-Disposition header value from HTTP response.
   virtual std::string GetContentDisposition() const = 0;
+
+  // Effective MIME type of downloaded content.
   virtual std::string GetMimeType() const = 0;
+
+  // Content-Type header value from HTTP response. May be different from
+  // GetMimeType() if a different effective MIME type was chosen after MIME
+  // sniffing.
   virtual std::string GetOriginalMimeType() const = 0;
+
+  // Remote address of server serving download contents.
   virtual std::string GetRemoteAddress() const = 0;
+
+  // Whether the download request was initiated in response to a user gesture.
   virtual bool HasUserGesture() const = 0;
+
+  // The page transition type associated with the download request.
   virtual ui::PageTransition GetTransitionType() const = 0;
+
+  // Last-Modified header value.
   virtual const std::string& GetLastModifiedTime() const = 0;
+
+  // ETag header value.
   virtual const std::string& GetETag() const = 0;
+
+  // Whether this download is a SavePackage download.
   virtual bool IsSavePackageDownload() const = 0;
 
   //    Destination State accessors --------------------------------------------
@@ -238,6 +284,7 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   // that display name. Otherwise returns the final target filename.
   virtual base::FilePath GetFileNameToReportUser() const = 0;
 
+  // See TargetDisposition.
   virtual TargetDisposition GetTargetDisposition() const = 0;
 
   // Final hash of completely downloaded file, or partial hash of an interrupted
@@ -281,16 +328,30 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
   // Simple speed estimate in bytes/s
   virtual int64_t CurrentSpeed() const = 0;
 
-  // Rough percent complete, -1 means we don't know (== we didn't receive a
-  // total size).
+  // Rough percent complete. Returns -1 if progress is unknown. 100 if the
+  // download is already complete.
   virtual int PercentComplete() const = 0;
 
-  // Returns true if this download has saved all of its data.
+  // Returns true if this download has saved all of its data. A download may
+  // have saved all its data but still be waiting for some other process to
+  // complete before the download is considered complete. E.g. A dangerous
+  // download needs to be accepted by the user before the file is renamed to its
+  // final name.
   virtual bool AllDataSaved() const = 0;
 
+  // Total number of expected bytes. Returns -1 if the total size is unknown.
   virtual int64_t GetTotalBytes() const = 0;
+
+  // Total number of bytes that have been received and written to the download
+  // file.
   virtual int64_t GetReceivedBytes() const = 0;
+
+  // Time the download was first started. This timestamp is always valid and
+  // doesn't change.
   virtual base::Time GetStartTime() const = 0;
+
+  // Time the download was marked as complete. Returns base::Time() if the
+  // download hasn't reached a completion state yet.
   virtual base::Time GetEndTime() const = 0;
 
   //    Open/Show State accessors ----------------------------------------------
@@ -315,10 +376,16 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
 
   //    Misc State accessors ---------------------------------------------------
 
+  // BrowserContext that indirectly owns this download. Always valid.
   virtual BrowserContext* GetBrowserContext() const = 0;
+
+  // WebContents associated with the download. Returns nullptr if the
+  // WebContents is unknown or if the download was not performed on behalf of a
+  // renderer.
   virtual WebContents* GetWebContents() const = 0;
 
   // External state transitions/setters ----------------------------------------
+
   // TODO(rdsmith): These should all be removed; the download item should
   // control its own state transitions.
 
