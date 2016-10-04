@@ -29,6 +29,7 @@ NSString* const kHeuristicsForPasswordGeneration =
 NSString* const kEnableReadingList = @"EnableReadingList";
 NSString* const kUpdatePasswordUIDisabled = @"UpdatePasswordUIDisabled";
 NSString* const kEnableNewClearBrowsingDataUI = @"EnableNewClearBrowsingDataUI";
+NSString* const kMDMIntegrationDisabled = @"MDMIntegrationDisabled";
 }  // namespace
 
 namespace experimental_flags {
@@ -178,6 +179,11 @@ bool IsPaymentRequestEnabled() {
 bool IsSpotlightActionsEnabled() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   return !command_line->HasSwitch(switches::kDisableSpotlightActions);
+}
+
+bool IsMDMIntegrationEnabled() {
+  return ![[NSUserDefaults standardUserDefaults]
+      boolForKey:kMDMIntegrationDisabled];
 }
 
 }  // namespace experimental_flags

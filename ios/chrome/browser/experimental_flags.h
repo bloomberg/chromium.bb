@@ -55,6 +55,9 @@ bool IsPaymentRequestEnabled();
 // Whether launching actions from Spotlight is enabled.
 bool IsSpotlightActionsEnabled();
 
+// Whether the iOS MDM integration is enabled.
+bool IsMDMIntegrationEnabled();
+
 }  // namespace experimental_flags
 
 #endif  // IOS_CHROME_BROWSER_EXPERIMENTAL_FLAGS_H_
