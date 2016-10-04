@@ -87,7 +87,8 @@ void readYUV(size_t maxDecodedBytes,
   std::unique_ptr<ImageDecoder> decoder = createDecoder(maxDecodedBytes);
   decoder->setData(data.get(), true);
 
-  // Setting a dummy ImagePlanes object signals to the decoder that we want to do YUV decoding.
+  // Setting a dummy ImagePlanes object signals to the decoder that we want to
+  // do YUV decoding.
   std::unique_ptr<ImagePlanes> dummyImagePlanes = wrapUnique(new ImagePlanes());
   decoder->setImagePlanes(std::move(dummyImagePlanes));
 
@@ -137,9 +138,9 @@ TEST(JPEGImageDecoderTest, tooBig) {
   EXPECT_TRUE(decoder->failed());
 }
 
-// Tests that JPEG decoder can downsample image whose width and height are multiple of 8,
-// to ensure we compute the correct decodedSize and pass correct parameters to libjpeg to
-// output image with the expected size.
+// Tests that the JPEG decoder can downsample image whose width and height are
+// multiples of 8, to ensure we compute the correct decodedSize and pass correct
+// parameters to libjpeg to output the image with the expected size.
 TEST(JPEGImageDecoderTest, downsampleImageSizeMultipleOf8) {
   const char* jpegFile =
       "/LayoutTests/fast/images/resources/lenna.jpg";  // 256x256
@@ -181,8 +182,8 @@ TEST(JPEGImageDecoderTest, downsampleImageSizeMultipleOf8) {
   EXPECT_EQ(224u, outputHeight);
 }
 
-// Tests that JPEG decoder can downsample image whose width and height are not multiple of 8.
-// Ensures that we round decodedSize and scale_num using the same algorithm as that of libjpeg.
+// Tests that JPEG decoder can downsample image whose width and height are not
+// multiple of 8. Ensures that we round using the same algorithm as libjpeg.
 TEST(JPEGImageDecoderTest, downsampleImageSizeNotMultipleOf8) {
   const char* jpegFile =
       "/LayoutTests/fast/images/resources/icc-v2-gbr.jpg";  // 275x207

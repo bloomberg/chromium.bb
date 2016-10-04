@@ -88,7 +88,8 @@ class PLATFORM_EXPORT WEBPImageDecoder final : public ImageDecoder {
   void clear();
   void clearDecoder();
 
-  // FIXME: Update libwebp's API so it does not require copying the data on each update.
+  // FIXME: Update libwebp's API so it does not require copying the data on each
+  // update.
   sk_sp<SkData> m_consolidatedData;
 };
 

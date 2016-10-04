@@ -363,7 +363,8 @@ TEST(GIFImageDecoderTest, updateRequiredPreviousFrameAfterFirstDecode) {
       readFile(layoutTestResourcesDir, "animated-10color.gif");
   ASSERT_TRUE(fullData.get());
 
-  // Give it data that is enough to parse but not decode in order to check the status
+  // Give it data that is enough to parse but not decode in order to check the
+  // status.
   // of requiredPreviousFrameIndex before decoding.
   size_t partialSize = 1;
   do {
@@ -442,7 +443,8 @@ TEST(GIFImageDecoderTest, resumePartialDecodeAfterClearFrameBufferCache) {
 }
 
 // The first LZW codes in the image are invalid values that try to create a loop
-// in the dictionary. Decoding should fail, but not infinitely loop or corrupt memory.
+// in the dictionary. Decoding should fail, but not infinitely loop or corrupt
+// memory.
 TEST(GIFImageDecoderTest, badInitialCode) {
   RefPtr<SharedBuffer> testData =
       readFile(decodersTestingDir, "bad-initial-code.gif");
@@ -455,7 +457,8 @@ TEST(GIFImageDecoderTest, badInitialCode) {
   EXPECT_TRUE(testDecoder->failed());
 }
 
-// The image has an invalid LZW code that exceeds dictionary size. Decoding should fail.
+// The image has an invalid LZW code that exceeds dictionary size. Decoding
+// should fail.
 TEST(GIFImageDecoderTest, badCode) {
   RefPtr<SharedBuffer> testData = readFile(decodersTestingDir, "bad-code.gif");
   ASSERT_TRUE(testData.get());
@@ -549,7 +552,8 @@ TEST(GIFImageDecoderTest, bitmapAlphaType) {
                                      ImageDecoder::GammaAndColorProfileApplied,
                                      ImageDecoder::noDecodedImageByteLimit));
 
-  // Partially decoded frame => the frame alpha type is unknown and should reflect the requested format.
+  // Partially decoded frame => the frame alpha type is unknown and should
+  // reflect the requested format.
   premulDecoder->setData(partialData.get(), false);
   ASSERT_TRUE(premulDecoder->frameCount());
   unpremulDecoder->setData(partialData.get(), false);

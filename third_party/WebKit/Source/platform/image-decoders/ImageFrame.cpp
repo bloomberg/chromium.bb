@@ -106,7 +106,8 @@ bool ImageFrame::takeBitmapDataIfWritable(ImageFrame* other) {
 bool ImageFrame::setSizeAndColorProfile(int newWidth,
                                         int newHeight,
                                         const ICCProfile& newIccProfile) {
-  // setSizeAndColorProfile() should only be called once, it leaks memory otherwise.
+  // setSizeAndColorProfile() should only be called once, it leaks memory
+  // otherwise.
   ASSERT(!width() && !height());
 
   sk_sp<SkColorSpace> colorSpace;

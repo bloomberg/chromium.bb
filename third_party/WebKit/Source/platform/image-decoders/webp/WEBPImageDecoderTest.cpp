@@ -142,10 +142,9 @@ void testByteByByteSizeAvailable(const char* webpFile,
   ASSERT_TRUE(data.get());
   EXPECT_LT(frameOffset, data->size());
 
-  // Send data to the decoder byte-by-byte and use the provided frame offset in the data to check
-  // isSizeAvailable() changes state only when that offset is reached, and the associated decoder
-  // state also: size, colorProfile, frameCount, repetitionCount ...
-
+  // Send data to the decoder byte-by-byte and use the provided frame offset in
+  // the data to check that isSizeAvailable() changes state only when that
+  // offset is reached. Also check other decoder state.
   for (size_t length = 1; length <= frameOffset; ++length) {
     RefPtr<SharedBuffer> tempData = SharedBuffer::create(data->data(), length);
     decoder->setData(tempData.get(), false);
@@ -237,7 +236,8 @@ void verifyFramesMatch(const char* webpFile,
   EXPECT_GE(2, maxDifference) << webpFile;
 }
 
-// Verify that result of alpha blending is similar for AlphaPremultiplied and AlphaNotPremultiplied cases.
+// Verifies that result of alpha blending is similar for AlphaPremultiplied and
+// AlphaNotPremultiplied cases.
 void testAlphaBlending(const char* webpFile) {
   RefPtr<SharedBuffer> data = readFile(webpFile);
   ASSERT_TRUE(data.get());
@@ -480,7 +480,8 @@ TEST(AnimatedWebPTests, truncatedInBetweenFrame) {
   EXPECT_TRUE(decoder->failed());
 }
 
-// Reproduce a crash that used to happen for a specific file with specific sequence of method calls.
+// Tests for a crash that used to happen for a specific file with specific
+// sequence of method calls.
 TEST(AnimatedWebPTests, reproCrash) {
   std::unique_ptr<ImageDecoder> decoder = createDecoder();
 
@@ -595,8 +596,8 @@ TEST(AnimatedWebPTests, updateRequiredPreviousFrameAfterFirstDecode) {
       readFile("/LayoutTests/fast/images/resources/webp-animated.webp");
   ASSERT_TRUE(fullData.get());
 
-  // Give it data that is enough to parse but not decode in order to check the status
-  // of requiredPreviousFrameIndex before decoding.
+  // Check the status of requiredPreviousFrameIndex before decoding, by
+  // supplying data sufficient to parse but not decode.
   size_t partialSize = 1;
   do {
     RefPtr<SharedBuffer> data =
@@ -713,8 +714,9 @@ TEST(StaticWebPTests, truncatedImage) {
   testInvalidImage("/LayoutTests/fast/images/resources/truncated2.webp", true);
 }
 
+// Regression test for a bug where some valid images were failing to decode
+// incrementally.
 TEST(StaticWebPTests, incrementalDecode) {
-  // Regression test for a bug where some valid images were failing to decode incrementally.
   testByteByByteDecode(&createDecoder,
                        "/LayoutTests/fast/images/resources/crbug.364830.webp",
                        1u, cAnimationNone);

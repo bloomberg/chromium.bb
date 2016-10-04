@@ -74,7 +74,8 @@ inline bool matchesBMPSignature(const char* contents) {
   return !memcmp(contents, "BM", 2);
 }
 
-// This needs to be updated if we ever add a matches*Signature() which requires more characters.
+// This needs to be updated if we ever add a matches*Signature() which requires
+// more characters.
 static constexpr size_t kLongestSignatureLength = sizeof("RIFF????WEBPVP") - 1;
 
 std::unique_ptr<ImageDecoder> ImageDecoder::create(
@@ -84,7 +85,8 @@ std::unique_ptr<ImageDecoder> ImageDecoder::create(
     GammaAndColorProfileOption colorOptions) {
   RefPtr<SegmentReader> data = passData;
 
-  // We need at least kLongestSignatureLength bytes to run the signature matcher.
+  // We need at least kLongestSignatureLength bytes to run the signature
+  // matcher.
   if (data->size() < kLongestSignatureLength)
     return nullptr;
 
@@ -255,7 +257,8 @@ size_t ImageDecoder::findRequiredPreviousFrame(size_t frameIndex,
     case ImageFrame::DisposeNotSpecified:
     case ImageFrame::DisposeKeep:
       // prevFrame will be used as the starting state for this frame.
-      // FIXME: Be even smarter by checking the frame sizes and/or alpha-containing regions.
+      // FIXME: Be even smarter by checking the frame sizes and/or
+      // alpha-containing regions.
       return prevFrame;
     case ImageFrame::DisposeOverwritePrevious:
       // Frames that use the DisposeOverwritePrevious method are effectively
@@ -337,7 +340,8 @@ void ImageDecoder::setTargetColorProfile(const WebVector<char>& profile) {
   if (profile.isEmpty())
     return;
 
-  // Take a lock around initializing and accessing the global device color profile.
+  // Take a lock around initializing and accessing the global device color
+  // profile.
   SpinLock::Guard guard(gTargetColorProfileLock);
 
   // Layout tests expect that only the first call will take effect.
@@ -370,13 +374,15 @@ void ImageDecoder::setColorProfileAndComputeTransform(const char* iccData,
                                                       unsigned iccLength,
                                                       bool hasAlpha,
                                                       bool useSRGB) {
-  // Sub-classes should not call this if they were instructed to ignore embedded color profiles.
+  // Sub-classes should not call this if they were instructed to ignore embedded
+  // color profiles.
   DCHECK(!m_ignoreGammaAndColorProfile);
 
   m_colorProfile.assign(iccData, iccLength);
   m_hasColorProfile = true;
 
-  // With color correct rendering, we use Skia instead of QCMS to color correct images.
+  // With color correct rendering, we use Skia instead of QCMS to color correct
+  // images.
   if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled())
     return;
 
@@ -403,10 +409,12 @@ void ImageDecoder::setColorProfileAndComputeTransform(const char* iccData,
   // We currently only support color profiles for RGB profiled images.
   ASSERT(rgbData == qcms_profile_get_color_space(inputProfile.get()));
 
-  // Take a lock around initializing and accessing the global device color profile.
+  // Take a lock around initializing and accessing the global device color
+  // profile.
   SpinLock::Guard guard(gTargetColorProfileLock);
 
-  // Initialize the output device profile to sRGB if it has not yet been initialized.
+  // Initialize the output device profile to sRGB if it has not yet been
+  // initialized.
   if (!gTargetColorProfile) {
     gTargetColorProfile = qcms_profile_sRGB();
     qcms_profile_precache_output_transform(gTargetColorProfile);
@@ -417,7 +425,8 @@ void ImageDecoder::setColorProfileAndComputeTransform(const char* iccData,
 
   qcms_data_type dataFormat = hasAlpha ? QCMS_DATA_RGBA_8 : QCMS_DATA_RGB_8;
 
-  // FIXME: Don't force perceptual intent if the image profile contains an intent.
+  // FIXME: Don't force perceptual intent if the image profile contains an
+  // intent.
   m_sourceToOutputDeviceColorTransform.reset(
       qcms_transform_create(inputProfile.get(), dataFormat, gTargetColorProfile,
                             QCMS_DATA_RGBA_8, QCMS_INTENT_PERCEPTUAL));

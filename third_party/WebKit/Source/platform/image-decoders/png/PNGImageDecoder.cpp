@@ -19,7 +19,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Alternatively, the contents of this file may be used under the terms
  * of either the Mozilla Public License Version 1.1, found at
@@ -225,12 +225,12 @@ void PNGImageDecoder::headerAvailable() {
     png_set_gray_to_rgb(png);
 
   if ((colorType & PNG_COLOR_MASK_COLOR) && !m_ignoreGammaAndColorProfile) {
-    // We only support color profiles for color PALETTE and RGB[A] PNG. Supporting
-    // color profiles for gray-scale images is slightly tricky, at least using the
-    // CoreGraphics ICC library, because we expand gray-scale images to RGB but we
-    // do not similarly transform the color profile. We'd either need to transform
-    // the color profile or we'd need to decode into a gray-scale image buffer and
-    // hand that to CoreGraphics.
+    // We only support color profiles for color PALETTE and RGB[A] PNG.
+    // Supporting color profiles for gray-scale images is slightly tricky, at
+    // least using the CoreGraphics ICC library, because we expand gray-scale
+    // images to RGB but we do not similarly transform the color profile. We'd
+    // either need to transform the color profile or we'd need to decode into a
+    // gray-scale image buffer and hand that to CoreGraphics.
     bool imageHasAlpha = (colorType & PNG_COLOR_MASK_ALPHA) || trnsCount;
 #ifdef PNG_iCCP_SUPPORTED
     if (png_get_valid(png, info, PNG_INFO_sRGB)) {
@@ -287,7 +287,7 @@ void PNGImageDecoder::headerAvailable() {
 // If we only needed the size, halt the reader.
 #if PNG_LIBPNG_VER_MAJOR > 1 || \
     (PNG_LIBPNG_VER_MAJOR == 1 && PNG_LIBPNG_VER_MINOR >= 5)
-    // '0' argument to png_process_data_pause means: Do not cache unprocessed data.
+    // Passing '0' tells png_process_data_pause() not to cache unprocessed data.
     m_reader->setReadOffset(m_reader->currentBufferSize() -
                             png_process_data_pause(png, 0));
 #else

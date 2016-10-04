@@ -98,9 +98,9 @@ bool ICOImageDecoder::setFailed() {
 }
 
 bool ICOImageDecoder::hotSpot(IntPoint& hotSpot) const {
-  // When unspecified, the default frame is always frame 0. This is consistent with
-  // BitmapImage where currentFrame() starts at 0 and only increases when animation is
-  // requested.
+  // When unspecified, the default frame is always frame 0. This is consistent
+  // with BitmapImage, where currentFrame() starts at 0 and only increases when
+  // animation is requested.
   return hotSpotAtIndex(0, hotSpot);
 }
 

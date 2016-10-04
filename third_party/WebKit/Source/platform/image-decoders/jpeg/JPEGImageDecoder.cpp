@@ -18,7 +18,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
  * Alternatively, the contents of this file may be used under the terms
  * of either the Mozilla Public License Version 1.1, found at
@@ -357,7 +357,8 @@ class JPEGImageReader final {
     const char* segment;
     const size_t bytes = m_data->getSomeData(segment, m_nextReadPosition);
     if (bytes == 0) {
-      // We had to suspend. When we resume, we will need to start from the restart position.
+      // We had to suspend. When we resume, we will need to start from the
+      // restart position.
       m_needsRestart = true;
       clearBuffer();
       return false;
@@ -377,12 +378,14 @@ class JPEGImageReader final {
 
     m_data = data;
 
-    // If a restart is needed, the next call to fillBuffer will read from the new SegmentReader.
+    // If a restart is needed, the next call to fillBuffer will read from the
+    // new SegmentReader.
     if (m_needsRestart)
       return;
 
-    // Otherwise, empty the buffer, and leave the position the same, so fillBuffer continues
-    // reading from the same position in the new SegmentReader.
+    // Otherwise, empty the buffer, and leave the position the same, so
+    // fillBuffer continues reading from the same position in the new
+    // SegmentReader.
     m_nextReadPosition -= m_info.src->bytes_in_buffer;
     clearBuffer();
   }
@@ -448,10 +451,11 @@ class JPEGImageReader final {
         // Calculate and set decoded size.
         m_info.scale_num = m_decoder->desiredScaleNumerator();
         m_info.scale_denom = scaleDenominator;
-        // Scaling caused by running low on memory isn't supported by YUV decoding since
-        // YUV decoding is performed on full sized images. At this point, buffers and various
-        // image info structs have already been setup to the scaled size after reading the
-        // image header using this decoder, so using the full size is no longer possible.
+        // Scaling caused by running low on memory isn't supported by YUV
+        // decoding since YUV decoding is performed on full sized images. At
+        // this point, buffers and various image info structs have already been
+        // set up for the scaled size after reading the image header using this
+        // decoder, so using the full size is no longer possible.
         if (m_info.scale_num != m_info.scale_denom)
           overrideColorSpace = JCS_UNKNOWN;
         jpeg_calc_output_dimensions(&m_info);
@@ -627,7 +631,8 @@ class JPEGImageReader final {
 
  private:
   JSAMPARRAY allocateSampleArray() {
-// Some output color spaces don't need the sample array: don't allocate in that case.
+// Some output color spaces don't need the sample array: don't allocate in that
+// case.
 #if defined(TURBO_JPEG_RGB_SWIZZLE)
     if (turboSwizzled(m_info.out_color_space))
       return nullptr;
@@ -638,12 +643,12 @@ class JPEGImageReader final {
           reinterpret_cast_ptr<j_common_ptr>(&m_info), JPOOL_IMAGE,
           4 * m_info.output_width, 1);
 
-    // Compute the width of the Y plane in bytes.  This may be larger than the output
-    // width, since the jpeg library requires that the allocated width be a multiple of
-    // DCTSIZE.  Note that this buffer will be used as garbage memory for rows that
-    // extend below the actual height of the image.  We can reuse the same memory for
-    // the U and V planes, since we are guaranteed that the Y plane width is at least
-    // as large as the U and V plane widths.
+    // Compute the width of the Y plane in bytes.  This may be larger than the
+    // output width, since the jpeg library requires that the allocated width be
+    // a multiple of DCTSIZE.  Note that this buffer will be used as garbage
+    // memory for rows that extend below the actual height of the image.  We can
+    // reuse the same memory for the U and V planes, since we are guaranteed
+    // that the Y plane width is at least as large as the U and V plane widths.
     int widthBytes = computeYUVWidthBytes(&m_info, 0);
     return (*m_info.mem->alloc_sarray)(
         reinterpret_cast_ptr<j_common_ptr>(&m_info), JPOOL_IMAGE, widthBytes,
@@ -652,7 +657,8 @@ class JPEGImageReader final {
 
   void updateRestartPosition() {
     if (m_lastSetByte != m_info.src->next_input_byte) {
-      // next_input_byte was updated by jpeg, meaning that it found a restart position.
+      // next_input_byte was updated by jpeg, meaning that it found a restart
+      // position.
       m_restartPosition = m_nextReadPosition - m_info.src->bytes_in_buffer;
     }
   }

@@ -142,7 +142,8 @@ class PLATFORM_EXPORT ImageFrame final {
   // SkImage to avoid copying bitmap in SkImage::MakeFromBitmap(m_bitmap).
   sk_sp<SkImage> finalizePixelsAndGetImage();
 
-  // Returns true if the pixels changed, but the bitmap has not yet been notified.
+  // Returns true if the pixels changed, but the bitmap has not yet been
+  // notified.
   bool pixelsChanged() const { return m_pixelsChanged; }
   size_t requiredPreviousFrameIndex() const {
     return m_requiredPreviousFrameIndex;
@@ -163,8 +164,9 @@ class PLATFORM_EXPORT ImageFrame final {
   void setMemoryAllocator(SkBitmap::Allocator* allocator) {
     m_allocator = allocator;
   }
-  // The pixelsChanged flag needs to be set when the raw pixel data was directly modified
-  // (e.g. through a pointer or setRGBA). The flag is usually set after a batch of changes was made.
+  // The pixelsChanged flag needs to be set when the raw pixel data was directly
+  // modified (e.g. through a pointer or setRGBA). The flag is usually set after
+  // a batch of changes was made.
   void setPixelsChanged(bool pixelsChanged) { m_pixelsChanged = pixelsChanged; }
   void setRequiredPreviousFrameIndex(size_t previousFrameIndex) {
     m_requiredPreviousFrameIndex = previousFrameIndex;

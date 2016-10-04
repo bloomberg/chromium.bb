@@ -77,8 +77,8 @@ inline uint32_t blendSrcOverDstNonPremultiplied(uint32_t src, uint32_t dst) {
   return SkPackARGB32NoCheck(blendA, blendR, blendG, blendB);
 }
 
-// Returns two point ranges (<left, width> pairs) at row 'canvasY', that belong to 'src' but not 'dst'.
-// A point range is empty if the corresponding width is 0.
+// Returns two point ranges (<left, width> pairs) at row |canvasY| which belong
+// to |src| but not |dst|. A range is empty if its width is 0.
 inline void findBlendRangeAtRow(const blink::IntRect& src,
                                 const blink::IntRect& dst,
                                 int canvasY,
@@ -299,17 +299,19 @@ bool WEBPImageDecoder::initFrameBuffer(size_t frameIndex) {
   }
 
   buffer.setStatus(ImageFrame::FramePartial);
-  // The buffer is transparent outside the decoded area while the image is loading.
-  // The correct value of 'hasAlpha' for the frame will be set when it is fully decoded.
+  // The buffer is transparent outside the decoded area while the image is
+  // loading. The correct alpha value for the frame will be set when it is fully
+  // decoded.
   buffer.setHasAlpha(true);
   return true;
 }
 
 size_t WEBPImageDecoder::clearCacheExceptFrame(size_t clearExceptFrame) {
   // If |clearExceptFrame| has status FrameComplete, we preserve that frame.
-  // Otherwise, we preserve a previous frame with status FrameComplete whose data is required
-  // to decode |clearExceptFrame|, either in initFrameBuffer() or ApplyPostProcessing().
-  // All other frames can be cleared.
+  // Otherwise, we preserve the most recent previous frame with status
+  // FrameComplete whose data will be required to decode |clearExceptFrame|,
+  // either in initFrameBuffer() or ApplyPostProcessing(). All other frames can
+  // be cleared.
   while ((clearExceptFrame < m_frameBufferCache.size()) &&
          (m_frameBufferCache[clearExceptFrame].getStatus() !=
           ImageFrame::FrameComplete))
@@ -322,7 +324,8 @@ size_t WEBPImageDecoder::clearCacheExceptFrame(size_t clearExceptFrame) {
 void WEBPImageDecoder::clearFrameBuffer(size_t frameIndex) {
   if (m_demux && m_demuxState >= WEBP_DEMUX_PARSED_HEADER &&
       m_frameBufferCache[frameIndex].getStatus() == ImageFrame::FramePartial) {
-    // Clear the decoder state so that this partial frame can be decoded again when requested.
+    // Clear the decoder state so that this partial frame can be decoded again
+    // when requested.
     clearDecoder();
   }
   ImageDecoder::clearFrameBuffer(frameIndex);
@@ -376,12 +379,13 @@ void WEBPImageDecoder::applyPostProcessing(size_t frameIndex) {
   }
 #endif  // USE(QCMSLIB)
 
-  // During the decoding of current frame, we may have set some pixels to be transparent (i.e. alpha < 255).
-  // However, the value of each of these pixels should have been determined by blending it against the value
-  // of that pixel in the previous frame if alpha blend source was 'BlendAtopPreviousFrame'. So, we correct these
-  // pixels based on disposal method of the previous frame and the previous frame buffer.
-  // FIXME: This could be avoided if libwebp decoder had an API that used the previous required frame
-  // to do the alpha-blending by itself.
+  // During the decoding of the current frame, we may have set some pixels to be
+  // transparent (i.e. alpha < 255). If the alpha blend source was
+  // 'BlendAtopPreviousFrame', the values of these pixels should be determined
+  // by blending them against the pixels of the corresponding previous frame.
+  // Compute the correct opaque values now.
+  // FIXME: This could be avoided if libwebp decoder had an API that used the
+  // previous required frame to do the alpha-blending by itself.
   if ((m_formatFlags & ANIMATION_FLAG) && frameIndex &&
       buffer.getAlphaBlendSource() == ImageFrame::BlendAtopPreviousFrame &&
       buffer.requiredPreviousFrameIndex() != kNotFound) {
@@ -389,17 +393,17 @@ void WEBPImageDecoder::applyPostProcessing(size_t frameIndex) {
     ASSERT(prevBuffer.getStatus() == ImageFrame::FrameComplete);
     ImageFrame::DisposalMethod prevDisposalMethod =
         prevBuffer.getDisposalMethod();
-    if (prevDisposalMethod ==
-        ImageFrame::
-            DisposeKeep) {  // Blend transparent pixels with pixels in previous canvas.
+    if (prevDisposalMethod == ImageFrame::DisposeKeep) {
+      // Blend transparent pixels with pixels in previous canvas.
       for (int y = m_decodedHeight; y < decodedHeight; ++y) {
         m_blendFunction(buffer, prevBuffer, top + y, left, width);
       }
     } else if (prevDisposalMethod == ImageFrame::DisposeOverwriteBgcolor) {
       const IntRect& prevRect = prevBuffer.originalFrameRect();
-      // We need to blend a transparent pixel with its value just after initFrame() call. That is:
-      //   * Blend with fully transparent pixel if it belongs to prevRect <-- This is a no-op.
-      //   * Blend with the pixel in the previous canvas otherwise <-- Needs alpha-blending.
+      // We need to blend a transparent pixel with the starting value (from just
+      // after the initFrame() call). If the pixel belongs to prevRect, the
+      // starting value was fully transparent, so this is a no-op. Otherwise, we
+      // need to blend against the pixel from the previous canvas.
       for (int y = m_decodedHeight; y < decodedHeight; ++y) {
         int canvasY = top + y;
         int left1, width1, left2, width2;
@@ -508,8 +512,9 @@ bool WEBPImageDecoder::decodeSingleFrame(const uint8_t* dataBytes,
                                        colorProfile()))
       return setFailed();
     buffer.setStatus(ImageFrame::FramePartial);
-    // The buffer is transparent outside the decoded area while the image is loading.
-    // The correct value of 'hasAlpha' for the frame will be set when it is fully decoded.
+    // The buffer is transparent outside the decoded area while the image is
+    // loading. The correct alpha value for the frame will be set when it is
+    // fully decoded.
     buffer.setHasAlpha(true);
     buffer.setOriginalFrameRect(IntRect(IntPoint(), size()));
   }

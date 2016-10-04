@@ -60,7 +60,8 @@ using QCMSTransformUniquePtr =
     std::unique_ptr<qcms_transform, QCMSTransformDeleter>;
 #endif  // USE(QCMSLIB)
 
-// ImagePlanes can be used to decode color components into provided buffers instead of using an ImageFrame.
+// ImagePlanes can be used to decode color components into provided buffers
+// instead of using an ImageFrame.
 class PLATFORM_EXPORT ImagePlanes final {
   USING_FAST_MALLOC(ImagePlanes);
   WTF_MAKE_NONCOPYABLE(ImagePlanes);

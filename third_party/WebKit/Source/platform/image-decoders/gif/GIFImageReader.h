@@ -38,8 +38,8 @@
 #ifndef GIFImageReader_h
 #define GIFImageReader_h
 
-// Define ourselves as the clientPtr.  Mozilla just hacked their C++ callback class into this old C decoder,
-// so we will too.
+// Define ourselves as the clientPtr.  Mozilla just hacked their C++ callback
+// class into this old C decoder, so we will too.
 #include "platform/image-decoders/FastSharedBufferReader.h"
 #include "platform/image-decoders/gif/GIFImageDecoder.h"
 #include "wtf/Allocator.h"
@@ -256,8 +256,8 @@ struct GIFFrameContext {
   unsigned m_yOffset;  // With respect to "screen" origin.
   unsigned m_width;
   unsigned m_height;
-  size_t
-      m_transparentPixel;  // Index of transparent pixel. Value is kNotFound if there is no transparent pixel.
+  size_t m_transparentPixel;  // Index of transparent pixel. Value is kNotFound
+                              // if there is no transparent pixel.
   blink::ImageFrame::DisposalMethod
       m_disposalMethod;  // Restore to background, leave in place, etc.
   int m_dataSize;
@@ -265,8 +265,8 @@ struct GIFFrameContext {
   bool m_progressiveDisplay;  // If true, do Haeberli interlace hack.
   bool m_interlaced;          // True, if scanlines arrive interlaced order.
 
-  unsigned
-      m_delayTime;  // Display time, in milliseconds, for this image in a multi-image GIF.
+  unsigned m_delayTime;  // Display time, in milliseconds, for this image in a
+                         // multi-image GIF.
 
   std::unique_ptr<GIFLZWContext> m_lzwContext;
   Vector<GIFLZWBlock> m_lzwBlocks;  // LZW blocks for this frame.
@@ -307,9 +307,10 @@ class PLATFORM_EXPORT GIFImageReader final {
     if (m_frames.isEmpty())
       return 0;
 
-    // This avoids counting an empty frame when the file is truncated right after
-    // GIFControlExtension but before GIFImageHeader.
-    // FIXME: This extra complexity is not necessary and we should just report m_frames.size().
+    // This avoids counting an empty frame when the file is truncated right
+    // after GIFControlExtension but before GIFImageHeader.
+    // FIXME: This extra complexity is not necessary and we should just report
+    // m_frames.size().
     return m_frames.last()->isHeaderDefined() ? m_frames.size()
                                               : m_frames.size() - 1;
   }
@@ -340,10 +341,10 @@ class PLATFORM_EXPORT GIFImageReader final {
   blink::GIFImageDecoder* m_client;
 
   // Parsing state machine.
-  GIFState m_state;  // Current decoder master state.
-  size_t
-      m_bytesToConsume;  // Number of bytes to consume for next stage of parsing.
-  size_t m_bytesRead;    // Number of bytes processed.
+  GIFState m_state;         // Current decoder master state.
+  size_t m_bytesToConsume;  // Number of bytes to consume for next stage of
+                            // parsing.
+  size_t m_bytesRead;       // Number of bytes processed.
 
   // Global (multi-image) state.
   int m_version;           // Either 89 for GIF89 or 87 for GIF87.
@@ -351,7 +352,8 @@ class PLATFORM_EXPORT GIFImageReader final {
   unsigned m_screenHeight;
   bool m_sentSizeToClient;
   GIFColorMap m_globalColorMap;
-  int m_loopCount;  // Netscape specific extension block to control the number of animation loops a GIF renders.
+  int m_loopCount;  // Netscape specific extension block to control the number
+                    // of animation loops a GIF renders.
 
   Vector<std::unique_ptr<GIFFrameContext>> m_frames;
 

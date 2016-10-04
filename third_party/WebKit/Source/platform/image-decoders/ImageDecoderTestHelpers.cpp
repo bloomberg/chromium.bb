@@ -80,7 +80,8 @@ void testByteByByteDecode(DecoderCreator createDecoder,
        ++length) {
     sourceData[0]->append(source, 1u);
     sourceData[1]->append(source++, 1u);
-    // Alternate the buffers to cover the JPEGImageDecoder::onSetData restart code.
+    // Alternate the buffers to cover the JPEGImageDecoder::onSetData restart
+    // code.
     decoder->setData(sourceData[length & 1].get(), length == data->size());
 
     EXPECT_LE(frameCount, decoder->frameCount());

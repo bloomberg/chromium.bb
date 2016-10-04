@@ -108,12 +108,14 @@ TEST(ImageDecoderTest, requiredPreviousFrameIndexDisposeOverwriteBgcolor) {
   decoder->initFrames(3);
   Vector<ImageFrame, 1>& frameBuffers = decoder->frameBufferCache();
 
-  // Fully covering DisposeOverwriteBgcolor previous frame resets the starting state.
+  // Fully covering DisposeOverwriteBgcolor previous frame resets the starting
+  // state.
   frameBuffers[1].setDisposalMethod(ImageFrame::DisposeOverwriteBgcolor);
   decoder->resetRequiredPreviousFrames();
   EXPECT_EQ(kNotFound, frameBuffers[2].requiredPreviousFrameIndex());
 
-  // Partially covering DisposeOverwriteBgcolor previous frame is required by this frame.
+  // Partially covering DisposeOverwriteBgcolor previous frame is required by
+  // this frame.
   frameBuffers[1].setOriginalFrameRect(IntRect(50, 50, 50, 50));
   decoder->resetRequiredPreviousFrames();
   EXPECT_EQ(1u, frameBuffers[2].requiredPreviousFrameIndex());
@@ -155,7 +157,8 @@ TEST(ImageDecoderTest, requiredPreviousFrameIndexBlendAtopBgcolor) {
   frameBuffers[1].setOriginalFrameRect(IntRect(25, 25, 50, 50));
   frameBuffers[2].setAlphaBlendSource(ImageFrame::BlendAtopBgcolor);
 
-  // A full frame with 'blending method == BlendAtopBgcolor' doesn't depend on any prior frames.
+  // A full frame with 'blending method == BlendAtopBgcolor' doesn't depend on
+  // any prior frames.
   for (int disposeMethod = ImageFrame::DisposeNotSpecified;
        disposeMethod <= ImageFrame::DisposeOverwritePrevious; ++disposeMethod) {
     frameBuffers[1].setDisposalMethod(
@@ -164,7 +167,8 @@ TEST(ImageDecoderTest, requiredPreviousFrameIndexBlendAtopBgcolor) {
     EXPECT_EQ(kNotFound, frameBuffers[2].requiredPreviousFrameIndex());
   }
 
-  // A non-full frame with 'blending method == BlendAtopBgcolor' does depend on a prior frame.
+  // A non-full frame with 'blending method == BlendAtopBgcolor' does depend on
+  // a prior frame.
   frameBuffers[2].setOriginalFrameRect(IntRect(50, 50, 50, 50));
   for (int disposeMethod = ImageFrame::DisposeNotSpecified;
        disposeMethod <= ImageFrame::DisposeOverwritePrevious; ++disposeMethod) {

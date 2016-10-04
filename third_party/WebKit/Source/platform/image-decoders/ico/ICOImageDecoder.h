@@ -93,7 +93,8 @@ class PLATFORM_EXPORT ICOImageDecoder final : public ImageDecoder {
   size_t decodeFrameCount() override;
   void decode(size_t index) override { decode(index, false); }
 
-  // TODO (scroggo): These functions are identical to functions in BMPImageReader. Share code?
+  // TODO (scroggo): These functions are identical to functions in
+  // BMPImageReader. Share code?
   inline uint8_t readUint8(size_t offset) const {
     return m_fastReader.getOneByte(m_decodedOffset + offset);
   }
