@@ -28,7 +28,8 @@ class CORE_EXPORT PropertyHandle {
 
   explicit PropertyHandle(const AtomicString& propertyName)
       : m_handleType(HandleCSSCustomProperty),
-        m_propertyName(propertyName.impl()) {}
+        m_svgAttribute(nullptr),
+        m_propertyName(propertyName) {}
 
   explicit PropertyHandle(const QualifiedName& attributeName)
       : m_handleType(HandleSVGAttribute), m_svgAttribute(&attributeName) {}
@@ -52,9 +53,9 @@ class CORE_EXPORT PropertyHandle {
   bool isCSSCustomProperty() const {
     return m_handleType == HandleCSSCustomProperty;
   }
-  AtomicString customPropertyName() const {
+  const AtomicString& customPropertyName() const {
     DCHECK(isCSSCustomProperty());
-    return AtomicString(m_propertyName);
+    return m_propertyName;
   }
 
   bool isPresentationAttribute() const {
@@ -100,8 +101,8 @@ class CORE_EXPORT PropertyHandle {
   union {
     CSSPropertyID m_cssProperty;
     const QualifiedName* m_svgAttribute;
-    StringImpl* m_propertyName;
   };
+  AtomicString m_propertyName;
 
   friend struct ::WTF::HashTraits<blink::PropertyHandle>;
 };
@@ -130,7 +131,7 @@ struct DefaultHash<blink::PropertyHandle> {
 template <>
 struct HashTraits<blink::PropertyHandle>
     : SimpleClassHashTraits<blink::PropertyHandle> {
-  static const bool needsDestruction = false;
+  static const bool needsDestruction = true;
   static void constructDeletedValue(blink::PropertyHandle& slot, bool) {
     new (NotNull, &slot) blink::PropertyHandle(
         blink::PropertyHandle::deletedValueForHashTraits());

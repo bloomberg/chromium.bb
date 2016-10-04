@@ -4,6 +4,8 @@
 
 #include "core/animation/PropertyHandle.h"
 
+#include "wtf/text/AtomicStringHash.h"
+
 namespace blink {
 
 bool PropertyHandle::operator==(const PropertyHandle& other) const {
@@ -28,7 +30,7 @@ unsigned PropertyHandle::hash() const {
     case HandleCSSProperty:
       return m_cssProperty;
     case HandleCSSCustomProperty:
-      return m_propertyName->existingHash();
+      return AtomicStringHash::hash(m_propertyName);
     case HandlePresentationAttribute:
       return -m_cssProperty;
     case HandleSVGAttribute:
