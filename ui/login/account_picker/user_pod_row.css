@@ -40,7 +40,7 @@ pin-keyboard {
   z-index: 0;
 }
 
-#account_picker.flying-pods .pod {
+.account-picker.flying-pods .pod {
   transition: all 180ms;
 }
 
