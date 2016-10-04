@@ -11,29 +11,4 @@ thestig@chromium.org
 # These are for the common case of adding or renaming files. If you're doing
 # structural changes, please get a review from a reviewer in this file.
 per-file *.gni=*
-per-file *.gypi=*
-per-file *.isolate=maruel@chromium.org
-per-file *.isolate=tandrii@chromium.org
-per-file *.isolate=vadimsh@chromium.org
 per-file BUILD.gn=file://build/OWNERS
-
-# Android OWNERS from chrome/android/OWNERS
-per-file chrome_android*.gypi=bauerb@chromium.org
-per-file chrome_android*.gypi=dtrainor@chromium.org
-per-file chrome_android*.gypi=miguelg@chromium.org
-per-file chrome_android*.gypi=nyquist@chromium.org
-per-file chrome_android*.gypi=tedchoc@chromium.org
-per-file chrome_android*.gypi=yfriedman@chromium.org
-
-# Chrome OS OWNERS from chrome/browser/chromeos/OWNERS
-per-file chrome_browser_chromeos.gypi=achuith@chromium.org
-per-file chrome_browser_chromeos.gypi=derat@chromium.org
-per-file chrome_browser_chromeos.gypi=oshima@chromium.org
-per-file chrome_browser_chromeos.gypi=satorux@chromium.org
-per-file chrome_browser_chromeos.gypi=stevenjb@chromium.org
-per-file chrome_browser_chromeos.gypi=xiyuan@chromium.org
-per-file chrome_browser_chromeos.gypi=zelidrag@chromium.org
-
-# Syzygy files.
-per-file chrome_syzygy.gyp*=chrisha@chromium.org
-per-file chrome_syzygy.gyp*=siggi@chromium.org

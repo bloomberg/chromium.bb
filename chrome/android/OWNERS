@@ -9,4 +9,3 @@ yfriedman@chromium.org
 
 per-file java_sources.gni=*
 per-file *.gn*=agrieve@chromium.org
-per-file *.gyp*=agrieve@chromium.org
