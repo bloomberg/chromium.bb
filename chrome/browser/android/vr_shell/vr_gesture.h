@@ -14,7 +14,6 @@ namespace vr_shell {
 
 typedef struct {
   gvr_vec3f delta;
-  int type;
 } GestureAngularMove;
 
 typedef struct {

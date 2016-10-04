@@ -30,7 +30,8 @@ class VrInputManager
                        float dy,
                        int type);
   void SendClickEvent(int64_t time_ms, float x, float y);
-  void SendMouseMoveEvent(int64_t time_ms, float x, float y, int type);
+  void SendMouseEvent(int64_t time_ms, float x, float y,
+                      WebInputEvent::Type type);
 
   void ScrollBegin(int64_t time_ms,
                    float x,

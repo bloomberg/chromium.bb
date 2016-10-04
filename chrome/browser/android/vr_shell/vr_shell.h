@@ -30,8 +30,12 @@ class WindowAndroid;
 namespace vr_shell {
 
 class VrCompositor;
+class VrController;
+class VrInputManager;
 class VrShellDelegate;
 class VrShellRenderer;
+struct VrGesture;
+
 
 class VrShell : public device::GvrDelegate {
  public:
@@ -146,16 +150,20 @@ class VrShell : public device::GvrDelegate {
   base::android::ScopedJavaGlobalRef<jobject> j_vr_shell_;
 
   gvr::Quatf controller_quat_;
-  bool controller_active_ = false;
 
   gvr::Vec3f target_point_;
   const ContentRectangle* target_element_ = nullptr;
+  VrInputManager* current_input_target_ = nullptr;
   int ui_tex_width_ = 0;
   int ui_tex_height_ = 0;
 
   bool webvr_mode_ = false;
   bool webvr_secure_origin_ = false;
   int64_t webvr_warning_end_nanos_ = 0;
+
+  std::unique_ptr<VrController> controller_;
+  scoped_refptr<VrInputManager> content_input_manager_;
+  scoped_refptr<VrInputManager> ui_input_manager_;
 
   base::WeakPtrFactory<VrShell> weak_ptr_factory_;
 

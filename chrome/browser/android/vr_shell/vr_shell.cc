@@ -8,7 +8,9 @@
 
 #include "chrome/browser/android/vr_shell/ui_scene.h"
 #include "chrome/browser/android/vr_shell/vr_compositor.h"
+#include "chrome/browser/android/vr_shell/vr_controller.h"
 #include "chrome/browser/android/vr_shell/vr_gl_util.h"
+#include "chrome/browser/android/vr_shell/vr_input_manager.h"
 #include "chrome/browser/android/vr_shell/vr_math.h"
 #include "chrome/browser/android/vr_shell/vr_shell_delegate.h"
 #include "chrome/browser/android/vr_shell/vr_shell_renderer.h"
@@ -198,6 +200,10 @@ void VrShell::GvrInit(JNIEnv* env,
 
   if (delegate_)
     delegate_->OnVrShellReady(this);
+  controller_.reset(
+      new VrController(reinterpret_cast<gvr_context*>(native_gvr_api)));
+  content_input_manager_ = new VrInputManager(content_cvc_->GetWebContents());
+  ui_input_manager_ = new VrInputManager(ui_cvc_->GetWebContents());
 }
 
 void VrShell::InitializeGl(JNIEnv* env,
@@ -224,17 +230,30 @@ void VrShell::InitializeGl(JNIEnv* env,
 }
 
 void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
-  if (!controller_active_) {
+  controller_->UpdateState();
+  std::unique_ptr<VrGesture> gesture = controller_->DetectGesture();
+
+  // TODO(asimjour) for now, scroll is sent to the main content.
+  if (gesture->type == WebInputEvent::GestureScrollBegin ||
+      gesture->type == WebInputEvent::GestureScrollUpdate ||
+      gesture->type == WebInputEvent::GestureScrollEnd) {
+    content_input_manager_->ProcessUpdatedGesture(*gesture.get());
+  }
+
+  WebInputEvent::Type original_type = gesture->type;
+  if (!controller_->IsConnected()) {
     // No controller detected, set up a gaze cursor that tracks the
     // forward direction.
     controller_quat_ = GetRotationFromZAxis(forward_vector);
+  } else {
+    controller_quat_ = controller_->Orientation();
   }
 
   gvr::Mat4f mat = QuatToMatrix(controller_quat_);
   gvr::Vec3f forward = MatrixVectorMul(mat, kNeutralPose);
   gvr::Vec3f origin = kHandPosition;
 
-  target_element_ = nullptr;;
+  target_element_ = nullptr;
   float distance = scene_.GetUiElementById(kBrowserUiElementId)
       ->GetRayDistance(origin, forward);
 
@@ -254,9 +273,16 @@ void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
   target_point_ = GetRayPoint(origin, forward, distance);
 
   // Determine which UI element (if any) the cursor is pointing to.
-  float closest_element = std::numeric_limits<float>::infinity();
+  float closest_element_distance = std::numeric_limits<float>::infinity();
+  int pixel_x = 0;
+  int pixel_y = 0;
+  VrInputManager* input_target = nullptr;
+
   for (std::size_t i = 0; i < scene_.GetUiElements().size(); ++i) {
     const ContentRectangle& plane = *scene_.GetUiElements()[i].get();
+    if (!plane.visible) {
+      continue;
+    }
     float distance_to_plane = plane.GetRayDistance(origin, forward);
     gvr::Vec3f plane_intersection_point =
         GetRayPoint(origin, forward, distance_to_plane);
@@ -265,14 +291,46 @@ void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
         MatrixVectorMul(plane.transform.from_world, plane_intersection_point);
     float x = rect_2d_point.x + 0.5f;
     float y = 0.5f - rect_2d_point.y;
-    if (distance_to_plane > 0 && distance_to_plane < closest_element) {
+    if (distance_to_plane > 0 && distance_to_plane < closest_element_distance) {
       bool is_inside = x >= 0.0f && x < 1.0f && y >= 0.0f && y < 1.0f;
       if (is_inside) {
-        closest_element = distance_to_plane;
+        closest_element_distance = distance_to_plane;
+        pixel_x =
+            static_cast<int>(plane.copy_rect.width * x + plane.copy_rect.x);
+        pixel_y =
+            static_cast<int>(plane.copy_rect.height * y + plane.copy_rect.y);
+
         target_point_ = plane_intersection_point;
         target_element_ = &plane;
+        input_target = (plane.id == kBrowserUiElementId)
+            ? content_input_manager_.get() : ui_input_manager_.get();
       }
     }
+  }
+  bool new_target = input_target != current_input_target_;
+  if (new_target && current_input_target_ != nullptr) {
+    // Send a move event indicating that the pointer moved off of an element.
+    gesture->type = WebInputEvent::MouseLeave;
+    gesture->details.move.delta.x = 0;
+    gesture->details.move.delta.y = 0;
+    current_input_target_->ProcessUpdatedGesture(*gesture.get());
+  }
+  current_input_target_ = input_target;
+  if (current_input_target_ == nullptr) {
+    return;
+  }
+
+  gesture->type = new_target ? WebInputEvent::MouseEnter
+                             : WebInputEvent::MouseMove;
+  gesture->details.move.delta.x = pixel_x;
+  gesture->details.move.delta.y = pixel_y;
+  current_input_target_->ProcessUpdatedGesture(*gesture.get());
+
+  if (original_type == WebInputEvent::GestureTap) {
+    gesture->type = WebInputEvent::GestureTap;
+    gesture->details.buttons.pos.x = pixel_x;
+    gesture->details.buttons.pos.y = pixel_y;
+    current_input_target_->ProcessUpdatedGesture(*gesture.get());
   }
 }
 
@@ -586,6 +644,7 @@ void VrShell::DrawWebVrEye(const gvr::Mat4f& view_matrix,
 void VrShell::OnPause(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   if (gvr_api_ == nullptr)
     return;
+  controller_->OnPause();
   gvr_api_->PauseTracking();
 }
 
@@ -595,6 +654,7 @@ void VrShell::OnResume(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 
   gvr_api_->RefreshViewerProfile();
   gvr_api_->ResumeTracking();
+  controller_->OnResume();
 }
 
 base::WeakPtr<VrShell> VrShell::GetWeakPtr() {

@@ -43,9 +43,11 @@ void VrInputManager::SendGesture(VrGesture gesture) {
   } else if (gesture.type == WebInputEvent::GestureTap) {
     SendClickEvent(event_time_milliseconds, gesture.details.buttons.pos.x,
                    gesture.details.buttons.pos.y);
-  } else if (gesture.type == WebInputEvent::MouseMove) {
-    SendMouseMoveEvent(event_time_milliseconds, gesture.details.move.delta.x,
-                       gesture.details.move.delta.y, gesture.details.move.type);
+  } else if (gesture.type == WebInputEvent::MouseMove ||
+             gesture.type == WebInputEvent::MouseEnter ||
+             gesture.type == WebInputEvent::MouseLeave) {
+    SendMouseEvent(event_time_milliseconds, gesture.details.move.delta.x,
+                   gesture.details.move.delta.y, gesture.type);
   }
 }
 
@@ -119,13 +121,13 @@ void VrInputManager::SendScrollEvent(int64_t time_ms,
   }
 }
 
-void VrInputManager::SendMouseMoveEvent(int64_t time_ms,
+void VrInputManager::SendMouseEvent(int64_t time_ms,
                                         float x,
                                         float y,
-                                        int type) {
+                                        WebInputEvent::Type type) {
   WebMouseEvent result;
 
-  result.type = WebInputEvent::MouseMove;
+  result.type = type;
   result.pointerType = blink::WebPointerProperties::PointerType::Mouse;
   result.x = x / dpi_scale_;
   result.y = y / dpi_scale_;
@@ -134,12 +136,6 @@ void VrInputManager::SendMouseMoveEvent(int64_t time_ms,
   result.timeStampSeconds = time_ms / 1000.0;
   result.clickCount = 1;
   result.modifiers = 0;
-
-  if (type == 1) {
-    result.type = WebInputEvent::MouseEnter;
-  } else if (type == 2) {
-    result.type = WebInputEvent::MouseLeave;
-  }
   result.button = WebMouseEvent::Button::NoButton;
 
   ForwardMouseEvent(result);
