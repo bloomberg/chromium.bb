@@ -676,7 +676,6 @@
   },
   "imageWriterPrivate": {
     "dependencies": ["permission:imageWriterPrivate"],
-    "extension_types": ["extension", "platform_app"],
     "contexts": ["blessed_extension"]
   },
   "quickUnlockPrivate": {
