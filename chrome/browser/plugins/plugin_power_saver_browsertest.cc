@@ -740,8 +740,8 @@ class PluginPowerSaverAllowTinyBrowserTest
     : public PluginPowerSaverBrowserTest {
  public:
   void SetUpInProcessBrowserTestFixture() override {
-    PluginPowerSaverBrowserTest::SetUpInProcessBrowserTestFixture();
-    feature_list.InitAndDisableFeature(features::kBlockSmallContent);
+    feature_list.InitWithFeatures(
+        {}, {features::kPreferHtmlOverPlugins, features::kBlockSmallContent});
   }
 
  private:
@@ -767,8 +767,10 @@ class PluginPowerSaverPreferHtmlBrowserTest
     : public PluginPowerSaverBrowserTest {
  public:
   void SetUpInProcessBrowserTestFixture() override {
-    PluginPowerSaverBrowserTest::SetUpInProcessBrowserTestFixture();
-    feature_list.InitAndEnableFeature(features::kPreferHtmlOverPlugins);
+    // Although these are redundant with the Field Trial testing configuration,
+    // the official builders don't use those, so enable them here.
+    feature_list.InitWithFeatures(
+        {features::kBlockSmallContent, features::kPreferHtmlOverPlugins}, {});
   }
 
  private:

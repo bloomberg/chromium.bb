@@ -175,14 +175,14 @@ TEST_F(ChromePluginServiceFilterTest,
                                  flash_plugin));
 
   SiteEngagementService* service = SiteEngagementService::Get(profile());
-  service->ResetScoreForURL(url, 0.5);
+  service->ResetScoreForURL(url, 10.0);
 
   // Should still be blocked.
   EXPECT_FALSE(IsPluginAvailable(url, url, profile()->GetResourceContext(),
                                  flash_plugin));
 
-  // Reaching 1.0 engagement should allow Flash.
-  service->ResetScoreForURL(url, 1.0);
+  // Reaching 30.0 engagement should allow Flash.
+  service->ResetScoreForURL(url, 30.0);
   EXPECT_TRUE(IsPluginAvailable(url, url, profile()->GetResourceContext(),
                                 flash_plugin));
 
@@ -215,7 +215,7 @@ TEST_F(ChromePluginServiceFilterTest, PreferHtmlOverPluginsCustomEngagement) {
 
   // Set the custom engagement threshold for Flash.
   std::map<std::string, std::string> params;
-  params[PluginsFieldTrial::kSiteEngagementThresholdForFlashKey] = "4";
+  params[PluginsFieldTrial::kSiteEngagementThresholdForFlashKey] = "50";
   ASSERT_TRUE(
       variations::AssociateVariationParams(kTrialName, kGroupName, params));
   std::map<std::string, std::string> actualParams;
@@ -234,18 +234,18 @@ TEST_F(ChromePluginServiceFilterTest, PreferHtmlOverPluginsCustomEngagement) {
   EXPECT_FALSE(IsPluginAvailable(url, url, profile()->GetResourceContext(),
                                  flash_plugin));
 
-  // Should still be blocked until engagement reaches 4.
+  // Should still be blocked until engagement reaches 50.
   SiteEngagementService* service = SiteEngagementService::Get(profile());
-  service->ResetScoreForURL(url, 0.5);
+  service->ResetScoreForURL(url, 0.0);
   EXPECT_FALSE(IsPluginAvailable(url, url, profile()->GetResourceContext(),
                                  flash_plugin));
-  service->ResetScoreForURL(url, 2.0);
+  service->ResetScoreForURL(url, 10.0);
   EXPECT_FALSE(IsPluginAvailable(url, url, profile()->GetResourceContext(),
                                  flash_plugin));
-  service->ResetScoreForURL(url, 3.0);
+  service->ResetScoreForURL(url, 40.0);
   EXPECT_FALSE(IsPluginAvailable(url, url, profile()->GetResourceContext(),
                                  flash_plugin));
-  service->ResetScoreForURL(url, 4.0);
+  service->ResetScoreForURL(url, 60.0);
   EXPECT_TRUE(IsPluginAvailable(url, url, profile()->GetResourceContext(),
                                  flash_plugin));
 
@@ -278,7 +278,7 @@ TEST_F(ChromePluginServiceFilterTest,
 
   // Add sufficient engagement to allow Flash in the original profile.
   SiteEngagementService* service = SiteEngagementService::Get(profile());
-  service->ResetScoreForURL(url, 1.0);
+  service->ResetScoreForURL(url, 30.0);
 
   // We should still fail the engagement check due to the block.
   EXPECT_FALSE(IsPluginAvailable(url, url, incognito->GetResourceContext(),
@@ -330,7 +330,7 @@ TEST_F(ChromePluginServiceFilterTest,
 
   // Add sufficient engagement to allow Flash in the incognito profile.
   SiteEngagementService* service = SiteEngagementService::Get(incognito);
-  service->ResetScoreForURL(url, 2.0);
+  service->ResetScoreForURL(url, 30.0);
 
   // Ensure we pass the engagement check in the incognito profile.
   EXPECT_TRUE(IsPluginAvailable(url, url, incognito->GetResourceContext(),
@@ -352,9 +352,9 @@ TEST_F(ChromePluginServiceFilterTest, BlockIfManagedSetting) {
                                 CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
 
   SiteEngagementService* service = SiteEngagementService::Get(profile());
-  // Reaching 1.0 engagement should allow Flash.
+  // Reaching 30.0 engagement should allow Flash.
   GURL url("http://www.google.com");
-  service->ResetScoreForURL(url, 1.0);
+  service->ResetScoreForURL(url, 30.0);
   EXPECT_TRUE(IsPluginAvailable(url, url, profile()->GetResourceContext(),
                                 flash_plugin));
 

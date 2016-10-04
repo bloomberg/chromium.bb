@@ -12,8 +12,9 @@
 namespace {
 
 // The default site engagement threshold to allow Flash to be presented as an
-// available plugin.
-const double kSiteEngagementThresholdForFlash = 1.0;
+// available plugin. This value is not used for normal uses, but only for
+// developers / testers that don't have a field trial configuration.
+const double kDefaultSiteEngagementThresholdForFlash = 30.0;
 
 }  // namespace
 
@@ -45,5 +46,5 @@ double PluginsFieldTrial::GetSiteEngagementThresholdForFlash() {
       PluginsFieldTrial::kSiteEngagementThresholdForFlashKey);
   if (base::StringToDouble(param, &threshold) && threshold >= 0)
     return threshold;
-  return kSiteEngagementThresholdForFlash;
+  return kDefaultSiteEngagementThresholdForFlash;
 }

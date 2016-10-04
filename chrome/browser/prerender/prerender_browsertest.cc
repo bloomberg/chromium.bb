@@ -1348,36 +1348,25 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderAlertAfterOnload) {
 // Checks that plugins are not loaded while a page is being preloaded, but
 // are loaded when the page is displayed.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDelayLoadPlugin) {
+  HostContentSettingsMap* content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(
+          current_browser()->profile());
+  content_settings_map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
+                                                 CONTENT_SETTING_ALLOW);
+
   PrerenderTestURL("/prerender/prerender_plugin_delay_load.html",
                    FINAL_STATUS_USED, 1);
   NavigateToDestURL();
 }
 
-// TODO(tommycli): Remove once we implement Plugin Power Saver on ALLOW.
-// See crbug.com/649814
-class PrerenderBrowserTestWithPluginPowerSaver : public PrerenderBrowserTest {
- public:
-  PrerenderBrowserTestWithPluginPowerSaver() {}
-  ~PrerenderBrowserTestWithPluginPowerSaver() override {}
-
-  void SetUpInProcessBrowserTestFixture() override {
-    PrerenderBrowserTest::SetUpInProcessBrowserTestFixture();
-    feature_list.InitAndDisableFeature(features::kPreferHtmlOverPlugins);
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list;
-};
-
 // For Plugin Power Saver, checks that plugins are not loaded while
 // a page is being preloaded, but are loaded when the page is displayed.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithPluginPowerSaver,
-                       PrerenderPluginPowerSaver) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPluginPowerSaver) {
   HostContentSettingsMap* content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(
           current_browser()->profile());
-  content_settings_map->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
+  content_settings_map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
+                                                 CONTENT_SETTING_ALLOW);
 
   PrerenderTestURL("/prerender/prerender_plugin_power_saver.html",
                    FINAL_STATUS_USED, 1);
@@ -1440,6 +1429,12 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNaClPluginDisabled) {
 #endif
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        MAYBE_PrerenderIframeDelayLoadPlugin) {
+  HostContentSettingsMap* content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(
+          current_browser()->profile());
+  content_settings_map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
+                                                 CONTENT_SETTING_ALLOW);
+
   PrerenderTestURL("/prerender/prerender_iframe_plugin_delay_load.html",
                    FINAL_STATUS_USED, 1);
   NavigateToDestURL();
