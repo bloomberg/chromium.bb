@@ -1,8 +1,8 @@
 # Histogram Guidelines
 
 This document gives the best practices on how to use histograms in code and how
-to document the histograms for the dashboard.  There are three general types of
-histograms: enumerated histograms (appropriate for enums), count histograms
+to document the histograms for the dashboards.  There are three general types
+of histograms: enumerated histograms (appropriate for enums), count histograms
 (appropriate for arbitrary numbers), and sparse histogram (appropriate for
 anything when the precision is important over a wide range is large and/or the
 range is not possible to specify a priori).
@@ -31,7 +31,7 @@ care about; don't try to derive it from other data.
 
 In general, the histogram code is highly optimized.  Do not be concerned about
 the processing cost of emitting to a histogram (unless you're using [sparse
-histograms](#when-to-use-sparse-histograms)).
+histograms](#When-To-Use-Sparse-Histograms)).
 
 ### Enum Histograms
 
@@ -67,7 +67,7 @@ will need to choose the histogram max (use the advice below).
 If none of the default macros work well for you, please thoughtfully choose
 a min, max, and bucket count for your histogram using the advice below.
 
-### Count Histograms: Choosing Min and Max
+#### Count Histograms: Choosing Min and Max
 
 For histogram max, choose a value so that very few emission to the histogram
 will exceed the max.  If many emissions hit the max, it can be difficult to
@@ -80,35 +80,24 @@ choose a min of 1.  (All histograms have an underflow bucket; emitted zeros
 will go there.  That's why a min of 1 is appropriate.)  Otherwise, choose the
 min appropriate for your particular situation.
 
-### Count Histograms: Choosing Number of Buckets
+#### Count Histograms: Choosing Number of Buckets
 
 Choose the smallest number of buckets that will get you the granularity you
 need.  By default count histograms bucket sizes scale exponentially so you can
-get finely granularity when the numbers are small yet still reasonable
-resolution for larger numbers.  The macros default to bucket sizes around 50
-which is appropriate for most purposes.  Because histograms pre-allocate all
-the buckets, the number of buckets selected directly dictate how much memory
-is used.  Do not exceed 100 buckets without good reason (and consider whether
-[sparse histograms](#when-to-use-sparse-histograms) might work better for you
-in that case--they do not pre-allocate their buckets).
-
-### Count Histograms with Linear Ranges
-
-If you want equally spaced buckets of size 1, use an enumerated histogram.
-While it's possible to do this with a count histogram, it's easy to make a
-mistake when setting the min, max, and number of buckets (because you have
-to remember how underflow and overflow buckets are handled) and end up with
-a histogram that ends up with mostly buckets of size 1 but not all.
-Using an enumerated histogram with a max value of your own choice is less
-error-prone.
+get fine granularity when the numbers are small yet still reasonable resolution
+for larger numbers.  The macros default to 50 (or 100 for large) buckets which
+is appropriate for most purposes.  Because histograms pre-allocate all the
+buckets, the number of buckets selected directly dictate how much memory is
+used.  Do not exceed 100 buckets without good reason (and consider whether
+[sparse histograms](#When-To-Use-Sparse-Histograms) might work better for you
+in that case--they do not pre- allocate their buckets).
 
 ### Testing
 
-Test your histograms using [chrome://histograms](chrome://histograms).  Make
-sure they're being emitted to when you expect and not emitted to at other times.
-Also check that the values emitted to are correct.  Finally, for count
-histograms, make sure that buckets capture enough precision for your needs over
-the range.
+Test your histograms using *chrome://histograms*.  Make sure they're being
+emitted to when you expect and not emitted to at other times. Also check that
+the values emitted to are correct.  Finally, for count histograms, make sure
+that buckets capture enough precision for your needs over the range.
 
 ### Revising Histograms
 
@@ -121,8 +110,7 @@ of the data and make no sense.
 
 Please delete the code that emits to histograms that are no longer needed.
 Histograms take up memory.  Cleaning up histograms that you no longer care about
-is good!  But see the note below on [Deleting Histogram Entries]
-(#deleting-histogram-entries).
+is good!  But see the note below on [Deleting Histogram Entries](#Deleting-Histogram-Entries).
 
 ## Documenting Histograms
 
@@ -176,5 +164,4 @@ stored has more overhead, compared to the other histogram types. However it
 may be more efficient in memory if the total number of sample values is small
 compared to the range of their values.
 
-For more information, see [sparse_histograms.h]
-(https://cs.chromium.org/chromium/src/base/metrics/sparse_histogram.h).
+For more information, see [sparse_histograms.h](https://cs.chromium.org/chromium/src/base/metrics/sparse_histogram.h).
