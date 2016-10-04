@@ -272,12 +272,11 @@ void ScrollView::SetVerticalScrollBar(ScrollBar* vert_sb) {
 }
 
 gfx::Size ScrollView::GetPreferredSize() const {
-  if (!is_bounded())
-    return View::GetPreferredSize();
-
   gfx::Size size = contents()->GetPreferredSize();
-  size.SetToMax(gfx::Size(size.width(), min_height_));
-  size.SetToMin(gfx::Size(size.width(), max_height_));
+  if (is_bounded()) {
+    size.SetToMax(gfx::Size(size.width(), min_height_));
+    size.SetToMin(gfx::Size(size.width(), max_height_));
+  }
   gfx::Insets insets = GetInsets();
   size.Enlarge(insets.width(), insets.height());
   return size;
