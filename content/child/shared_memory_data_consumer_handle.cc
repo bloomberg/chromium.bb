@@ -89,19 +89,16 @@ class SharedMemoryDataConsumerHandle::Context final
   }
   void ClearQueue() {
     lock_.AssertAcquired();
-    for (auto* data : queue_) {
-      delete data;
-    }
     queue_.clear();
     first_offset_ = 0;
   }
   RequestPeer::ThreadSafeReceivedData* Top() {
     lock_.AssertAcquired();
-    return queue_.front();
+    return queue_.front().get();
   }
   void Push(std::unique_ptr<RequestPeer::ThreadSafeReceivedData> data) {
     lock_.AssertAcquired();
-    queue_.push_back(data.release());
+    queue_.push_back(std::move(data));
   }
   size_t first_offset() const {
     lock_.AssertAcquired();
@@ -188,7 +185,6 @@ class SharedMemoryDataConsumerHandle::Context final
     first_offset_ += s;
     auto* top = Top();
     if (static_cast<size_t>(top->length()) <= first_offset_) {
-      delete top;
       queue_.pop_front();
       first_offset_ = 0;
     }
@@ -232,14 +228,8 @@ class SharedMemoryDataConsumerHandle::Context final
   }
   void Clear() {
     lock_.AssertAcquired();
-    for (auto* data : queue_) {
-      delete data;
-    }
-    queue_.clear();
-    first_offset_ = 0;
+    ClearQueue();
     client_ = nullptr;
-    // Note this doesn't work in the destructor if |on_reader_detached_| is not
-    // null. We have an assert in the destructor.
     ResetOnReaderDetached();
   }
   // Must be called with |lock_| not aquired.
@@ -249,21 +239,13 @@ class SharedMemoryDataConsumerHandle::Context final
   }
 
   friend class base::RefCountedThreadSafe<Context>;
-  ~Context() {
-    base::AutoLock lock(lock_);
-    DCHECK(on_reader_detached_.is_null());
-
-    // This is necessary because the queue stores raw pointers.
-    Clear();
-  }
+  ~Context() = default;
 
   base::Lock lock_;
   // |result_| stores the ultimate state of this handle if it has. Otherwise,
   // |Ok| is set.
   Result result_;
-  // TODO(yhirano): Use std::deque<std::unique_ptr<ThreadSafeReceivedData>>
-  // once it is allowed.
-  std::deque<RequestPeer::ThreadSafeReceivedData*> queue_;
+  std::deque<std::unique_ptr<RequestPeer::ThreadSafeReceivedData>> queue_;
   size_t first_offset_;
   Client* client_;
   scoped_refptr<base::SingleThreadTaskRunner> notification_task_runner_;
