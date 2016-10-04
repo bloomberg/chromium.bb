@@ -591,7 +591,7 @@ void BrowserAccessibilityManagerAndroid::Click(JNIEnv* env,
                                                jint id) {
   BrowserAccessibilityAndroid* node = GetFromUniqueID(id);
   if (node)
-    DoDefaultAction(*node);
+    node->manager()->DoDefaultAction(*node);
 }
 
 void BrowserAccessibilityManagerAndroid::Focus(JNIEnv* env,
@@ -599,7 +599,7 @@ void BrowserAccessibilityManagerAndroid::Focus(JNIEnv* env,
                                                jint id) {
   BrowserAccessibilityAndroid* node = GetFromUniqueID(id);
   if (node)
-    SetFocus(*node);
+    node->manager()->SetFocus(*node);
 }
 
 void BrowserAccessibilityManagerAndroid::Blur(
@@ -614,7 +614,8 @@ void BrowserAccessibilityManagerAndroid::ScrollToMakeNodeVisible(
     jint id) {
   BrowserAccessibilityAndroid* node = GetFromUniqueID(id);
   if (node)
-    ScrollToMakeVisible(*node, gfx::Rect(node->GetFrameBoundsRect().size()));
+    node->manager()->ScrollToMakeVisible(
+        *node, gfx::Rect(node->GetFrameBoundsRect().size()));
 }
 
 void BrowserAccessibilityManagerAndroid::SetTextFieldValue(
@@ -624,7 +625,7 @@ void BrowserAccessibilityManagerAndroid::SetTextFieldValue(
     const JavaParamRef<jstring>& value) {
   BrowserAccessibilityAndroid* node = GetFromUniqueID(id);
   if (node) {
-    BrowserAccessibilityManager::SetValue(
+    node->manager()->SetValue(
         *node, base::android::ConvertJavaStringToUTF16(env, value));
   }
 }
@@ -637,7 +638,7 @@ void BrowserAccessibilityManagerAndroid::SetSelection(
     jint end) {
   BrowserAccessibilityAndroid* node = GetFromUniqueID(id);
   if (node)
-    SetTextSelection(*node, start, end);
+    node->manager()->SetTextSelection(*node, start, end);
 }
 
 jboolean BrowserAccessibilityManagerAndroid::AdjustSlider(
@@ -668,7 +669,7 @@ jboolean BrowserAccessibilityManagerAndroid::AdjustSlider(
   value += (increment ? delta : -delta);
   value = std::max(std::min(value, max), min);
   if (value != original_value) {
-    BrowserAccessibilityManager::SetValue(
+    node->manager()->SetValue(
         *node, base::UTF8ToUTF16(base::DoubleToString(value)));
     return true;
   }
@@ -877,8 +878,14 @@ void BrowserAccessibilityManagerAndroid::SetAccessibilityFocus(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     jint id) {
-  if (delegate_)
-    delegate_->AccessibilitySetAccessibilityFocus(id);
+  BrowserAccessibilityAndroid* node = GetFromUniqueID(id);
+  if (!node)
+    return;
+
+  if (node->manager()->delegate()) {
+    node->manager()->delegate()->AccessibilitySetAccessibilityFocus(
+        node->GetId());
+  }
 }
 
 bool BrowserAccessibilityManagerAndroid::IsSlider(
