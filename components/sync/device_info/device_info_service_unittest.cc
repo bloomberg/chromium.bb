@@ -4,6 +4,7 @@
 
 #include "components/sync/device_info/device_info_service.h"
 
+#include <algorithm>
 #include <set>
 #include <utility>
 

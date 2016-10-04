@@ -4,8 +4,6 @@
 
 #include "chrome/browser/sync/test/integration/sync_arc_package_helper.h"
 
-#include <memory>
-#include <string>
 #include <vector>
 
 #include "base/command_line.h"

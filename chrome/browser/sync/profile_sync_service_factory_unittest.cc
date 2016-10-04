@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <vector>
 
 #include "base/command_line.h"
 #include "build/build_config.h"
@@ -50,7 +51,7 @@ class ProfileSyncServiceFactoryTest : public testing::Test {
     datatypes.push_back(syncer::THEMES);
     datatypes.push_back(syncer::SUPERVISED_USERS);
     datatypes.push_back(syncer::SUPERVISED_USER_SHARED_SETTINGS);
-#endif // !OS_ANDROID
+#endif  // !OS_ANDROID
 
     // Common types.
     datatypes.push_back(syncer::AUTOFILL);

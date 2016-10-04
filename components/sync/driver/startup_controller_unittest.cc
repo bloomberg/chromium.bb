@@ -4,7 +4,7 @@
 
 #include "components/sync/driver/startup_controller.h"
 
-#include <string>
+#include <memory>
 
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"

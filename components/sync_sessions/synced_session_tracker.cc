@@ -4,6 +4,8 @@
 
 #include "components/sync_sessions/synced_session_tracker.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"

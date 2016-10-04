@@ -39,7 +39,7 @@ DelayInfo CalculateDelay(int64_t current_delay) {
 // Fills the table with the maximum and minimum values for each retry, upto
 // |count| number of retries.
 void FillDelayTable(DelayInfo* delay_table, int count) {
-  DCHECK(count > 1);
+  DCHECK_GT(count, 1);
 
   // We start off with the minimum value of 2 seconds.
   delay_table[0].min_delay = static_cast<int64_t>(2);
@@ -104,7 +104,7 @@ void RetryVerifier::VerifyRetryInterval(const syncer::SyncCycleSnapshot& snap) {
   // has taken place.
   if (snap.sync_start_time() != last_sync_time_) {
     base::TimeDelta delta = snap.sync_start_time() - last_sync_time_;
-    success_ = IsRetryOnTime(delay_table_,retry_count_ -1, delta);
+    success_ = IsRetryOnTime(delay_table_, retry_count_ - 1, delta);
     last_sync_time_ = snap.sync_start_time();
     ++retry_count_;
     done_ = (retry_count_ >= kMaxRetry);

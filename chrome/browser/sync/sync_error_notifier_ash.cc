@@ -94,7 +94,7 @@ void SyncNotificationDelegate::ShowSyncSetup() {
   chrome::ShowSettingsSubPageForProfile(profile_, chrome::kSyncSetupSubPage);
 }
 
-} // namespace
+}  // namespace
 
 SyncErrorNotifier::SyncErrorNotifier(syncer::SyncErrorController* controller,
                                      Profile* profile)

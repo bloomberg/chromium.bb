@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_ENGINE_IMPL_SYNC_ENGINE_IMPL_EVENT_LISTENER_H_
-#define COMPONENTS_SYNC_ENGINE_IMPL_SYNC_ENGINE_IMPL_EVENT_LISTENER_H_
+#ifndef COMPONENTS_SYNC_ENGINE_IMPL_SYNC_ENGINE_EVENT_LISTENER_H_
+#define COMPONENTS_SYNC_ENGINE_IMPL_SYNC_ENGINE_EVENT_LISTENER_H_
 
 #include "base/time/time.h"
 #include "components/sync/base/model_type.h"
@@ -45,4 +45,4 @@ class SyncEngineEventListener {
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_SYNC_ENGINE_IMPL_SYNC_ENGINE_IMPL_EVENT_LISTENER_H_
+#endif  // COMPONENTS_SYNC_ENGINE_IMPL_SYNC_ENGINE_EVENT_LISTENER_H_

@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 
@@ -45,12 +44,6 @@ T& TrampolineForward(T& t) {
 template <typename T, typename R>
 base::internal::PassedWrapper<std::unique_ptr<T, R>> TrampolineForward(
     std::unique_ptr<T, R>& p) {
-  return base::Passed(&p);
-}
-
-template <typename T>
-base::internal::PassedWrapper<ScopedVector<T>> TrampolineForward(
-    ScopedVector<T>& p) {
   return base::Passed(&p);
 }
 

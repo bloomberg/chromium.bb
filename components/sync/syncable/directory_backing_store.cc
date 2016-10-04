@@ -8,6 +8,7 @@
 
 #include <limits>
 #include <unordered_set>
+#include <utility>
 
 #include "base/base64.h"
 #include "base/location.h"
@@ -235,7 +236,7 @@ bool SaveEntryToDB(sql::Statement* save_statement, const EntryKernel& entry) {
 // copy for some entries which create by copy-on-write mechanism.
 // entries_counts : entry counts for each model type.
 void UploadModelTypeEntryCount(const int total_specifics_copies,
-                               const int(&entries_counts)[MODEL_TYPE_COUNT]) {
+                               const int (&entries_counts)[MODEL_TYPE_COUNT]) {
   int total_entry_counts = 0;
   for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
     std::string model_type;

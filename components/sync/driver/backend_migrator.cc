@@ -13,7 +13,7 @@
 #include "components/sync/core/read_transaction.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/sync/syncable/directory.h"  // TODO(tim): Bug 131130.
+#include "components/sync/syncable/directory.h"
 
 namespace syncer {
 
@@ -215,4 +215,4 @@ ModelTypeSet BackendMigrator::GetPendingMigrationTypesForTest() const {
 
 #undef SLOG
 
-};  // namespace browser_sync
+};  // namespace syncer

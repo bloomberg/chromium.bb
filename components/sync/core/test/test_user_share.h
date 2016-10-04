@@ -32,6 +32,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/core/user_share.h"

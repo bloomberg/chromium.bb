@@ -25,7 +25,7 @@ using sync_datatype_helper::test;
 // unfortuately we can't test existing configurations of the sync server since
 // the tests don't support that.
 void MutateSomeSettings(
-    int seed, // used to modify the mutation values, not keys.
+    int seed,  // used to modify the mutation values, not keys.
     const std::string& extension0,
     const std::string& extension1,
     const std::string& extension2) {
@@ -182,41 +182,31 @@ testing::AssertionResult StartWithDifferentSettingsTest(
 IN_PROC_BROWSER_TEST_F(TwoClientExtensionSettingsAndAppSettingsSyncTest,
                        ExtensionsStartWithSameSettings) {
   ASSERT_TRUE(SetupClients());
-  ASSERT_PRED3(StartWithSameSettingsTest,
-    InstallExtensionForAllProfiles(0),
-    InstallExtensionForAllProfiles(1),
-    InstallExtensionForAllProfiles(2)
-  );
+  ASSERT_PRED3(StartWithSameSettingsTest, InstallExtensionForAllProfiles(0),
+               InstallExtensionForAllProfiles(1),
+               InstallExtensionForAllProfiles(2));
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientExtensionSettingsAndAppSettingsSyncTest,
                        AppsStartWithSameSettings) {
   ASSERT_TRUE(SetupClients());
-  ASSERT_PRED3(StartWithSameSettingsTest,
-    InstallAppForAllProfiles(0),
-    InstallAppForAllProfiles(1),
-    InstallAppForAllProfiles(2)
-  );
+  ASSERT_PRED3(StartWithSameSettingsTest, InstallAppForAllProfiles(0),
+               InstallAppForAllProfiles(1), InstallAppForAllProfiles(2));
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientExtensionSettingsAndAppSettingsSyncTest,
                        ExtensionsStartWithDifferentSettings) {
   ASSERT_TRUE(SetupClients());
-  ASSERT_PRED3(StartWithDifferentSettingsTest,
-    InstallExtensionForAllProfiles(0),
-    InstallExtensionForAllProfiles(1),
-    InstallExtensionForAllProfiles(2)
-  );
+  ASSERT_PRED3(
+      StartWithDifferentSettingsTest, InstallExtensionForAllProfiles(0),
+      InstallExtensionForAllProfiles(1), InstallExtensionForAllProfiles(2));
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientExtensionSettingsAndAppSettingsSyncTest,
                        AppsStartWithDifferentSettings) {
   ASSERT_TRUE(SetupClients());
-  ASSERT_PRED3(StartWithDifferentSettingsTest,
-    InstallAppForAllProfiles(0),
-    InstallAppForAllProfiles(1),
-    InstallAppForAllProfiles(2)
-  );
+  ASSERT_PRED3(StartWithDifferentSettingsTest, InstallAppForAllProfiles(0),
+               InstallAppForAllProfiles(1), InstallAppForAllProfiles(2));
 }
 
 }  // namespace

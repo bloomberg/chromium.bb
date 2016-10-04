@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SYNC_CORE_ACTIVATION_CONTEXT_H_
 #define COMPONENTS_SYNC_CORE_ACTIVATION_CONTEXT_H_
 
+#include <memory>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"

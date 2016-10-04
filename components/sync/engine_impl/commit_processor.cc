@@ -4,6 +4,7 @@
 
 #include "components/sync/engine_impl/commit_processor.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/metrics/histogram_macros.h"

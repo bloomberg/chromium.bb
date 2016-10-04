@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SYNC_DRIVER_GLUE_SYNC_BACKEND_HOST_MOCK_H_
 #define COMPONENTS_SYNC_DRIVER_GLUE_SYNC_BACKEND_HOST_MOCK_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"

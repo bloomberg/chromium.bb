@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SYNC_DEVICE_INFO_DEVICE_INFO_H_
 #define COMPONENTS_SYNC_DEVICE_INFO_DEVICE_INFO_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"

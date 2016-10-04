@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SYNC_DRIVER_STARTUP_CONTROLLER_H_
 #define COMPONENTS_SYNC_DRIVER_STARTUP_CONTROLLER_H_
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"

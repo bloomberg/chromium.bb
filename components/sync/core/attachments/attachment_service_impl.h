@@ -6,6 +6,7 @@
 #define COMPONENTS_SYNC_CORE_ATTACHMENTS_ATTACHMENT_SERVICE_IMPL_H_
 
 #include <deque>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"

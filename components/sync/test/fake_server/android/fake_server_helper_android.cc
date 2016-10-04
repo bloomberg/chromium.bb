@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include <memory>
 #include <set>
 #include <vector>
 

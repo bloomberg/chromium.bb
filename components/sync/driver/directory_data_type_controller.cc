@@ -4,6 +4,8 @@
 
 #include "components/sync/driver/directory_data_type_controller.h"
 
+#include <utility>
+
 #include "components/sync/core/user_share.h"
 #include "components/sync/driver/backend_data_type_configurer.h"
 #include "components/sync/driver/sync_service.h"

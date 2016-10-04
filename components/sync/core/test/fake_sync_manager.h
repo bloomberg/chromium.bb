@@ -5,7 +5,9 @@
 #ifndef COMPONENTS_SYNC_CORE_TEST_FAKE_SYNC_MANAGER_H_
 #define COMPONENTS_SYNC_CORE_TEST_FAKE_SYNC_MANAGER_H_
 
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SYNC_CORE_TEST_TEST_INTERNAL_COMPONENTS_FACTORY_H_
 #define COMPONENTS_SYNC_CORE_TEST_TEST_INTERNAL_COMPONENTS_FACTORY_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 

@@ -8,6 +8,7 @@
 #ifndef COMPONENTS_SYNC_CORE_INTERNAL_COMPONENTS_FACTORY_IMPL_H_
 #define COMPONENTS_SYNC_CORE_INTERNAL_COMPONENTS_FACTORY_IMPL_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 

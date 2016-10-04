@@ -81,7 +81,7 @@ void NonBlockingDataTypeController::GetAllNodes(
   // TODO(gangwu): Casting should happen "near" where the processor factory has
   // code that instantiates a new processor.
   SharedModelTypeProcessor* processor =
-      (SharedModelTypeProcessor*)service->change_processor();
+      static_cast<SharedModelTypeProcessor*>(service->change_processor());
   RunOnModelThread(FROM_HERE,
                    base::Bind(&SharedModelTypeProcessor::GetAllNodes,
                               base::Unretained(processor),

@@ -67,7 +67,7 @@ class ModelTypeStoreBackend
   friend class base::RefCountedThreadSafe<ModelTypeStoreBackend>;
   friend class ModelTypeStoreBackendTest;
 
-  ModelTypeStoreBackend(const std::string& path);
+  explicit ModelTypeStoreBackend(const std::string& path);
   ~ModelTypeStoreBackend();
 
   // In some scenarios ModelTypeStoreBackend holds ownership of env. Typical

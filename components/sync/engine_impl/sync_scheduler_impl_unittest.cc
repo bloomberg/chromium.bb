@@ -7,6 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/run_loop.h"

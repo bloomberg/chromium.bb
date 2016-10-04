@@ -64,8 +64,7 @@
 #ifndef COMPONENTS_SYNC_BASE_IMMUTABLE_H_
 #define COMPONENTS_SYNC_BASE_IMMUTABLE_H_
 
-// For std::swap().
-#include <algorithm>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"

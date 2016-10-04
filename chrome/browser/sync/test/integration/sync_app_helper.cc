@@ -4,6 +4,10 @@
 
 #include "chrome/browser/sync/test/integration/sync_app_helper.h"
 
+#include <list>
+#include <map>
+#include <memory>
+
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"

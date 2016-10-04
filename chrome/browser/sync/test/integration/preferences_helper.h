@@ -13,7 +13,7 @@
 
 #include "base/files/file_path.h"
 #include "base/values.h"
-#include "chrome/browser/sync/test/integration/multi_client_status_change_checker.h"
+#include "chrome/browser/sync/test/integration/status_change_checker.h"
 
 class PrefChangeRegistrar;
 class PrefService;

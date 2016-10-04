@@ -5,6 +5,7 @@
 #include "components/sync_sessions/lost_navigations_recorder.h"
 
 #include <memory>
+#include <string>
 
 #include "base/message_loop/message_loop.h"
 #include "base/test/histogram_tester.h"
@@ -16,7 +17,6 @@
 #include "components/sync/syncable/syncable_write_transaction.h"
 #include "components/sync/test/engine/test_directory_setter_upper.h"
 #include "components/sync/test/engine/test_id_factory.h"
-#include "components/sync_sessions/lost_navigations_recorder.h"
 #include "components/sync_sessions/sessions_sync_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -5,8 +5,9 @@
 #ifndef COMPONENTS_SYNC_DRIVER_DIRECTORY_DATA_TYPE_CONTROLLER_H__
 #define COMPONENTS_SYNC_DRIVER_DIRECTORY_DATA_TYPE_CONTROLLER_H__
 
-#include "components/sync/driver/data_type_controller.h"
+#include <memory>
 
+#include "components/sync/driver/data_type_controller.h"
 #include "components/sync/driver/sync_client.h"
 #include "components/sync/engine/model_safe_worker.h"
 #include "components/sync/syncable/directory.h"

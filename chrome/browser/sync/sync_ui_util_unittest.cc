@@ -4,6 +4,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include <set>
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"

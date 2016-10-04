@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SYNC_TEST_INTEGRATION_SYNC_ARC_PACKAGE_HELPER_H_
 #define CHROME_BROWSER_SYNC_TEST_INTEGRATION_SYNC_ARC_PACKAGE_HELPER_H_
 
+#include <memory>
+#include <string>
 #include <unordered_map>
 
 #include "base/macros.h"
@@ -14,7 +16,7 @@
 class Profile;
 class SyncTest;
 
-namespace arc{
+namespace arc {
 class FakeAppInstance;
 }
 

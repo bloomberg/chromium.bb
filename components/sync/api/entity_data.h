@@ -6,6 +6,7 @@
 #define COMPONENTS_SYNC_API_ENTITY_DATA_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 

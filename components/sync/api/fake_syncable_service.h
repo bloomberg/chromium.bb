@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SYNC_API_FAKE_SYNCABLE_SERVICE_H_
 #define COMPONENTS_SYNC_API_FAKE_SYNCABLE_SERVICE_H_
 
+#include <memory>
+
 #include "components/sync/api/syncable_service.h"
 
 namespace syncer {

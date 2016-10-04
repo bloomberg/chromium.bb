@@ -21,8 +21,8 @@ namespace sync_sessions {
 
 namespace {
 
-static const std::string kExampleUrl = "http://www.example.com";
-static const std::string kDifferentUrl = "http://www.different.com";
+const char kExampleUrl[] = "http://www.example.com";
+const char kDifferentUrl[] = "http://www.different.com";
 
 sessions::SerializedNavigationEntry Entry(const std::string& url) {
   return sessions::SerializedNavigationEntryTestHelper::CreateNavigation(url,

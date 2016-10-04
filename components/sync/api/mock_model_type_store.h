@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SYNC_API_MOCK_MODEL_TYPE_STORE_H_
 #define COMPONENTS_SYNC_API_MOCK_MODEL_TYPE_STORE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback.h"

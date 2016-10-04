@@ -6,6 +6,7 @@
 #define COMPONENTS_SYNC_CORE_SIMPLE_METADATA_CHANGE_LIST_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "components/sync/api/metadata_change_list.h"

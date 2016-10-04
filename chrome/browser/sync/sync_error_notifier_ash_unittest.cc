@@ -47,11 +47,10 @@ namespace test {
 
 namespace {
 
-static const char kTestAccountId[] = "testuser@test.com";
+const char kTestAccountId[] = "testuser@test.com";
 
 // Notification ID corresponding to kProfileSyncNotificationId + kTestAccountId.
-static const std::string kNotificationId =
-    "chrome://settings/sync/testuser@test.com";
+const char kNotificationId[] = "chrome://settings/sync/testuser@test.com";
 
 class FakeLoginUIService: public LoginUIService {
  public:
@@ -128,7 +127,6 @@ class SyncErrorNotifierTest : public AshTestBase  {
     display::Screen::SetScreenInstance(nullptr);
     test_screen_.reset();
 #endif
-
   }
 
  protected:

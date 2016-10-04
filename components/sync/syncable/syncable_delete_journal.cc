@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "components/sync/base/model_type.h"
 

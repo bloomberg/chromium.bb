@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SYNC_TEST_FAKE_SERVER_TOMBSTONE_ENTITY_H_
 #define COMPONENTS_SYNC_TEST_FAKE_SERVER_TOMBSTONE_ENTITY_H_
 
+#include <memory>
 #include <string>
 
 #include "components/sync/base/model_type.h"

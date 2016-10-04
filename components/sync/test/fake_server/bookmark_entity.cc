@@ -25,7 +25,7 @@ std::unique_ptr<FakeServerEntity> BookmarkEntity::CreateNew(
     const sync_pb::SyncEntity& client_entity,
     const string& parent_id,
     const string& client_guid) {
-  CHECK(client_entity.version() == 0) << "New entities must have version = 0.";
+  CHECK_EQ(0, client_entity.version()) << "New entities must have version = 0.";
   CHECK(IsBookmark(client_entity)) << "The given entity must be a bookmark.";
 
   const string id =
@@ -45,8 +45,8 @@ std::unique_ptr<FakeServerEntity> BookmarkEntity::CreateUpdatedVersion(
     const sync_pb::SyncEntity& client_entity,
     const FakeServerEntity& current_server_entity,
     const string& parent_id) {
-  CHECK(client_entity.version() != 0) << "Existing entities must not have a "
-                                      << "version = 0.";
+  CHECK_NE(0, client_entity.version()) << "Existing entities must not have a "
+                                       << "version = 0.";
   CHECK(IsBookmark(client_entity)) << "The given entity must be a bookmark.";
 
   const BookmarkEntity& current_bookmark_entity =

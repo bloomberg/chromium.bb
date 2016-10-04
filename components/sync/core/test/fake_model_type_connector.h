@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SYNC_CORE_TEST_FAKE_MODEL_TYPE_CONNECTOR_H_
 #define COMPONENTS_SYNC_CORE_TEST_FAKE_MODEL_TYPE_CONNECTOR_H_
 
+#include <memory>
+
 #include "components/sync/core/model_type_connector.h"
 
 namespace syncer {

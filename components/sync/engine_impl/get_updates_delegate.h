@@ -123,4 +123,4 @@ class PollGetUpdatesDelegate : public GetUpdatesDelegate {
 
 }  // namespace syncer
 
-#endif  // SYNC_ENGINE_IMPL_GET_UPDATES_DELEGATE_H_
+#endif  // COMPONENTS_SYNC_ENGINE_IMPL_GET_UPDATES_DELEGATE_H_

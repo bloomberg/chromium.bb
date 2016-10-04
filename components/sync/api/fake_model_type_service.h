@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SYNC_API_FAKE_MODEL_TYPE_SERVICE_H_
 #define COMPONENTS_SYNC_API_FAKE_MODEL_TYPE_SERVICE_H_
 
+#include <map>
 #include <memory>
 #include <string>
 

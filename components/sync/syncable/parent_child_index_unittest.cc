@@ -17,7 +17,7 @@ namespace syncable {
 
 namespace {
 
-static const std::string kCacheGuid = "8HhNIHlEOCGQbIAALr9QEg==";
+const char kCacheGuid[] = "8HhNIHlEOCGQbIAALr9QEg==";
 
 }  // namespace
 

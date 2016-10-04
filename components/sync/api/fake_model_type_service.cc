@@ -4,6 +4,8 @@
 
 #include "components/sync/api/fake_model_type_service.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "components/sync/core/data_batch_impl.h"

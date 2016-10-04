@@ -5,6 +5,7 @@
 #include "components/sync_sessions/revisit/sessions_page_revisit_observer.h"
 
 #include <string>
+#include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/test/histogram_tester.h"

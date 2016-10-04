@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_SYNC_SESSIONS_LOST_NAVIGATIONS_RECORDER_H_
 #define COMPONENTS_SYNC_SESSIONS_LOST_NAVIGATIONS_RECORDER_H_
 
+#include <map>
+#include <set>
+
 #include "base/macros.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sync/api/local_change_observer.h"

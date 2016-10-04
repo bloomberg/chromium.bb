@@ -4,6 +4,8 @@
 
 #include "components/sync/driver/backend_migrator.h"
 
+#include <memory>
+
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/tracked_objects.h"
@@ -13,7 +15,7 @@
 #include "components/sync/driver/data_type_manager_mock.h"
 #include "components/sync/driver/fake_sync_service.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/sync/syncable/directory.h"  // TODO(tim): Remove. Bug 131130.
+#include "components/sync/syncable/directory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -301,4 +303,4 @@ TEST_F(SyncBackendMigratorTest, ConfigureFailure) {
   EXPECT_EQ(BackendMigrator::IDLE, migrator()->state());
 }
 
-};  // namespace browser_sync
+};  // namespace syncer

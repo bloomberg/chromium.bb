@@ -4,6 +4,8 @@
 
 #include "components/sync/core/model_type_store_backend.h"
 
+#include <utility>
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/src/include/leveldb/env.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"

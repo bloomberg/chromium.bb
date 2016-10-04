@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SYNC_CORE_ATTACHMENTS_ON_DISK_ATTACHMENT_STORE_H_
 #define COMPONENTS_SYNC_CORE_ATTACHMENTS_ON_DISK_ATTACHMENT_STORE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/files/file_path.h"

@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/chrome_sync_client.h"
 
 #include <memory>
+#include <string>
 
 #include "chrome/common/url_constants.h"
 #include "components/sync/driver/sync_api_component_factory.h"
@@ -17,8 +18,8 @@ namespace browser_sync {
 
 namespace {
 
-const std::string kValidUrl = "http://www.example.com";
-const std::string kInvalidUrl = "invalid.url";
+const char kValidUrl[] = "http://www.example.com";
+const char kInvalidUrl[] = "invalid.url";
 
 class ChromeSyncClientTest : public testing::Test {
  public:

@@ -4,6 +4,8 @@
 
 #include "components/sync/syncable/model_neutral_mutable_entry.h"
 
+#include <memory>
+
 #include "components/sync/base/unique_position.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/scoped_kernel_lock.h"
