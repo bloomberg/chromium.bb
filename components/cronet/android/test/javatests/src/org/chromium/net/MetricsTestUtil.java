@@ -7,9 +7,12 @@ package org.chromium.net;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertNull;
 
+import android.os.ConditionVariable;
+
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 /**
  * Classes which are useful for testing Cronet's metrics implementation and are needed in more than
@@ -17,8 +20,8 @@ import java.util.concurrent.Executor;
  */
 public class MetricsTestUtil {
     /**
-     * Executor which runs tasks only when told to with runAllTasks().
-     */
+      * Executor which runs tasks only when told to with runAllTasks().
+      */
     public static class TestExecutor implements Executor {
         private final LinkedList<Runnable> mTaskQueue = new LinkedList<Runnable>();
 
@@ -43,9 +46,23 @@ public class MetricsTestUtil {
      */
     public static class TestRequestFinishedListener extends RequestFinishedInfo.Listener {
         private RequestFinishedInfo mRequestInfo;
+        private ConditionVariable mBlock;
+        private int mNumExpectedRequests = -1;
 
         public TestRequestFinishedListener(Executor executor) {
             super(executor);
+        }
+
+        public TestRequestFinishedListener(int numExpectedRequests) {
+            super(Executors.newSingleThreadExecutor());
+            mNumExpectedRequests = numExpectedRequests;
+            mBlock = new ConditionVariable();
+        }
+
+        public TestRequestFinishedListener() {
+            super(Executors.newSingleThreadExecutor());
+            mNumExpectedRequests = 1;
+            mBlock = new ConditionVariable();
         }
 
         public RequestFinishedInfo getRequestInfo() {
@@ -57,6 +74,14 @@ public class MetricsTestUtil {
             assertNull("onRequestFinished called repeatedly", mRequestInfo);
             assertNotNull(requestInfo);
             mRequestInfo = requestInfo;
+            mNumExpectedRequests--;
+            if (mNumExpectedRequests == 0) {
+                mBlock.open();
+            }
+        }
+
+        public void blockUntilDone() {
+            mBlock.block();
         }
     }
 }
