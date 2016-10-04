@@ -14,22 +14,20 @@ namespace {
 void GetIpcOverrides() {
   DWORD buffer_size = ::GetEnvironmentVariableW(L"hkcu_override", nullptr, 0);
   if (buffer_size > 0) {
-    wchar_t* content = new wchar_t[buffer_size];
+    std::wstring content(buffer_size, L'\0');
     buffer_size =
-        ::GetEnvironmentVariableW(L"hkcu_override", content, buffer_size);
+        ::GetEnvironmentVariableW(L"hkcu_override", &content[0], buffer_size);
     if (buffer_size)
-      ::wcsncpy(nt::HKCU_override, content, nt::g_kRegMaxPathLen - 1);
-    delete[] content;
+      nt::SetTestingOverride(nt::HKCU, content);
   }
 
   buffer_size = ::GetEnvironmentVariableW(L"hklm_override", nullptr, 0);
   if (buffer_size > 0) {
-    wchar_t* content = new wchar_t[buffer_size];
+    std::wstring content(buffer_size, L'\0');
     buffer_size =
-        ::GetEnvironmentVariableW(L"hklm_override", content, buffer_size);
+        ::GetEnvironmentVariableW(L"hklm_override", &content[0], buffer_size);
     if (buffer_size)
-      ::wcsncpy(nt::HKLM_override, content, nt::g_kRegMaxPathLen - 1);
-    delete[] content;
+      nt::SetTestingOverride(nt::HKLM, content);
   }
 
   return;

@@ -270,8 +270,9 @@ bool GetCollectStatsConsentImpl(const std::wstring& exe_path) {
   std::wstring full_key_path(kRegPathClientStateMedium);
   full_key_path.append(1, L'\\');
   full_key_path.append(app_guid);
-  if (system_install && nt::QueryRegValueDWORD(nt::HKLM, full_key_path.c_str(),
-                                               kRegValueUsageStats, &out_value))
+  if (system_install &&
+      nt::QueryRegValueDWORD(nt::HKLM, nt::WOW6432, full_key_path.c_str(),
+                             kRegValueUsageStats, &out_value))
     return (out_value == 1);
 
   // Second, try kRegPathClientState.
@@ -279,8 +280,8 @@ bool GetCollectStatsConsentImpl(const std::wstring& exe_path) {
   full_key_path.append(1, L'\\');
   full_key_path.append(app_guid);
   return (nt::QueryRegValueDWORD((system_install ? nt::HKLM : nt::HKCU),
-                                 full_key_path.c_str(), kRegValueUsageStats,
-                                 &out_value) &&
+                                 nt::WOW6432, full_key_path.c_str(),
+                                 kRegValueUsageStats, &out_value) &&
           out_value == 1);
 }
 
@@ -410,8 +411,8 @@ bool IsMultiInstall(bool is_system_install) {
   full_key_path.append(1, L'\\');
   full_key_path.append(kAppGuidGoogleChrome);
   if (!nt::QueryRegValueSZ((is_system_install ? nt::HKLM : nt::HKCU),
-                           full_key_path.c_str(), kUninstallArgumentsField,
-                           &args))
+                           nt::WOW6432, full_key_path.c_str(),
+                           kUninstallArgumentsField, &args))
     return false;
 
   return (args.find(L"--multi-install") != std::wstring::npos);
@@ -429,7 +430,7 @@ bool GetCollectStatsInSample() {
   std::wstring registry_path = GetChromeInstallRegistryPath();
 
   DWORD out_value = 0;
-  if (!nt::QueryRegValueDWORD(nt::HKCU, registry_path.c_str(),
+  if (!nt::QueryRegValueDWORD(nt::HKCU, nt::WOW6432, registry_path.c_str(),
                               kRegValueChromeStatsSample, &out_value)) {
     // If reading the value failed, treat it as though sampling isn't in effect,
     // implicitly meaning this install is in the sample.
@@ -442,8 +443,8 @@ bool SetCollectStatsInSample(bool in_sample) {
   std::wstring registry_path = GetChromeInstallRegistryPath();
 
   HANDLE key_handle = INVALID_HANDLE_VALUE;
-  if (!nt::CreateRegKey(nt::HKCU, registry_path.c_str(), KEY_SET_VALUE,
-                        &key_handle)) {
+  if (!nt::CreateRegKey(nt::HKCU, registry_path.c_str(),
+                        KEY_SET_VALUE | KEY_WOW64_32KEY, &key_handle)) {
     nt::CloseRegKey(key_handle);
     return false;
   }
@@ -456,14 +457,14 @@ bool ReportingIsEnforcedByPolicy(bool* crash_reporting_enabled) {
   DWORD value = 0;
 
   // First, try HKLM.
-  if (nt::QueryRegValueDWORD(nt::HKLM, kRegPathChromePolicy,
+  if (nt::QueryRegValueDWORD(nt::HKLM, nt::NONE, kRegPathChromePolicy,
                              kMetricsReportingEnabled, &value)) {
     *crash_reporting_enabled = (value != 0);
     return true;
   }
 
   // Second, try HKCU.
-  if (nt::QueryRegValueDWORD(nt::HKCU, kRegPathChromePolicy,
+  if (nt::QueryRegValueDWORD(nt::HKCU, nt::NONE, kRegPathChromePolicy,
                              kMetricsReportingEnabled, &value)) {
     *crash_reporting_enabled = (value != 0);
     return true;
@@ -643,13 +644,13 @@ void GetChromeChannelName(bool is_per_user_install,
     std::wstring full_key_path(kRegPathClientState);
     full_key_path.append(1, L'\\');
     full_key_path.append(kAppGuidGoogleBinaries);
-    nt::QueryRegValueSZ(is_per_user_install ? nt::HKCU : nt::HKLM,
+    nt::QueryRegValueSZ(is_per_user_install ? nt::HKCU : nt::HKLM, nt::WOW6432,
                         full_key_path.c_str(), kRegApField, &value);
   } else {
     std::wstring full_key_path(kRegPathClientState);
     full_key_path.append(1, L'\\');
     full_key_path.append(kAppGuidGoogleChrome);
-    nt::QueryRegValueSZ(is_per_user_install ? nt::HKCU : nt::HKLM,
+    nt::QueryRegValueSZ(is_per_user_install ? nt::HKCU : nt::HKLM, nt::WOW6432,
                         full_key_path.c_str(), kRegApField, &value);
   }
 
@@ -695,7 +696,7 @@ std::string GetGoogleUpdateVersion() {
   // Consider whether Chromium should connect to Google update to manage
   // updates. Should this be returning an empty string for Chromium builds?.
   std::wstring update_version;
-  if (nt::QueryRegValueSZ(nt::AUTO, kRegPathGoogleUpdate,
+  if (nt::QueryRegValueSZ(nt::AUTO, nt::WOW6432, kRegPathGoogleUpdate,
                           kRegGoogleUpdateVersion, &update_version))
     return UTF16ToUTF8(update_version);
 

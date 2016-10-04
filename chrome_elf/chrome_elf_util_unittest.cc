@@ -72,17 +72,25 @@ bool IsSecuritySet() {
 }
 
 void RegRedirect(nt::ROOT_KEY key,
-                 registry_util::RegistryOverrideManager& rom) {
+                 registry_util::RegistryOverrideManager* rom) {
+  ASSERT_NE(key, nt::AUTO);
   base::string16 temp;
 
   if (key == nt::HKCU) {
-    rom.OverrideRegistry(HKEY_CURRENT_USER, &temp);
-    ::wcsncpy(nt::HKCU_override, temp.c_str(), nt::g_kRegMaxPathLen - 1);
-  } else if (key == nt::HKLM) {
-    rom.OverrideRegistry(HKEY_LOCAL_MACHINE, &temp);
-    ::wcsncpy(nt::HKLM_override, temp.c_str(), nt::g_kRegMaxPathLen - 1);
+    rom->OverrideRegistry(HKEY_CURRENT_USER, &temp);
+    ASSERT_TRUE(nt::SetTestingOverride(nt::HKCU, temp));
+  } else {
+    rom->OverrideRegistry(HKEY_LOCAL_MACHINE, &temp);
+    ASSERT_TRUE(nt::SetTestingOverride(nt::HKLM, temp));
   }
-  // nt::AUTO should not be passed into this function.
+}
+
+void CancelRegRedirect(nt::ROOT_KEY key) {
+  ASSERT_NE(key, nt::AUTO);
+  if (key == nt::HKCU)
+    ASSERT_TRUE(nt::SetTestingOverride(nt::HKCU, base::string16()));
+  else
+    ASSERT_TRUE(nt::SetTestingOverride(nt::HKLM, base::string16()));
 }
 
 TEST(ChromeElfUtilTest, CanaryTest) {
@@ -108,7 +116,7 @@ TEST(ChromeElfUtilTest, BrowserProcessSecurityTest) {
 
   // Set up registry override for this test.
   registry_util::RegistryOverrideManager override_manager;
-  RegRedirect(nt::HKCU, override_manager);
+  RegRedirect(nt::HKCU, &override_manager);
 
   // First, ensure that the emergency-off finch signal works.
   EXPECT_TRUE(SetSecurityFinchFlag(true));
@@ -119,112 +127,8 @@ TEST(ChromeElfUtilTest, BrowserProcessSecurityTest) {
   // Second, test that the process mitigation is set when no finch signal.
   elf_security::EarlyBrowserSecurity();
   EXPECT_TRUE(IsSecuritySet());
-}
 
-//------------------------------------------------------------------------------
-// NT registry API tests (chrome_elf_reg)
-//------------------------------------------------------------------------------
-
-TEST(ChromeElfUtilTest, NTRegistry) {
-  HANDLE key_handle;
-  const wchar_t* dword_val_name = L"DwordTestValue";
-  DWORD dword_val = 1234;
-  const wchar_t* sz_val_name = L"SzTestValue";
-  base::string16 sz_val = L"blah de blah de blahhhhh.";
-  const wchar_t* sz_val_name2 = L"SzTestValueEmpty";
-  base::string16 sz_val2 = L"";
-  const wchar_t* multisz_val_name = L"SzmultiTestValue";
-  std::vector<base::string16> multisz_val;
-  base::string16 multi1 = L"one";
-  base::string16 multi2 = L"two";
-  base::string16 multi3 = L"three";
-  const wchar_t* multisz_val_name2 = L"SzmultiTestValueBad";
-  base::string16 multi_empty = L"";
-  const wchar_t* sz_new_key_1 = L"test\\new\\subkey";
-  const wchar_t* sz_new_key_2 = L"test\\new\\subkey\\blah\\";
-  const wchar_t* sz_new_key_3 = L"\\test\\new\\subkey\\\\blah2";
-
-  // Set up registry override for this test.
-  registry_util::RegistryOverrideManager override_manager;
-  RegRedirect(nt::HKCU, override_manager);
-
-  // Create a temp key to play under.
-  ASSERT_TRUE(nt::CreateRegKey(nt::HKCU, elf_sec::kRegSecurityPath,
-                               KEY_ALL_ACCESS, &key_handle));
-
-  // Exercise the supported getter & setter functions.
-  EXPECT_TRUE(nt::SetRegValueDWORD(key_handle, dword_val_name, dword_val));
-  EXPECT_TRUE(nt::SetRegValueSZ(key_handle, sz_val_name, sz_val));
-  EXPECT_TRUE(nt::SetRegValueSZ(key_handle, sz_val_name2, sz_val2));
-
-  DWORD get_dword = 0;
-  base::string16 get_sz;
-  EXPECT_TRUE(nt::QueryRegValueDWORD(key_handle, dword_val_name, &get_dword) &&
-              get_dword == dword_val);
-  EXPECT_TRUE(nt::QueryRegValueSZ(key_handle, sz_val_name, &get_sz) &&
-              get_sz.compare(sz_val) == 0);
-  EXPECT_TRUE(nt::QueryRegValueSZ(key_handle, sz_val_name2, &get_sz) &&
-              get_sz.compare(sz_val2) == 0);
-
-  multisz_val.push_back(multi1);
-  multisz_val.push_back(multi2);
-  multisz_val.push_back(multi3);
-  EXPECT_TRUE(
-      nt::SetRegValueMULTISZ(key_handle, multisz_val_name, multisz_val));
-  multisz_val.clear();
-  multisz_val.push_back(multi_empty);
-  EXPECT_TRUE(
-      nt::SetRegValueMULTISZ(key_handle, multisz_val_name2, multisz_val));
-  multisz_val.clear();
-
-  EXPECT_TRUE(
-      nt::QueryRegValueMULTISZ(key_handle, multisz_val_name, &multisz_val));
-  if (multisz_val.size() == 3) {
-    EXPECT_TRUE(multi1.compare(multisz_val.at(0)) == 0);
-    EXPECT_TRUE(multi2.compare(multisz_val.at(1)) == 0);
-    EXPECT_TRUE(multi3.compare(multisz_val.at(2)) == 0);
-  } else {
-    EXPECT_TRUE(false);
-  }
-  multisz_val.clear();
-
-  EXPECT_TRUE(
-      nt::QueryRegValueMULTISZ(key_handle, multisz_val_name2, &multisz_val));
-  if (multisz_val.size() == 1) {
-    EXPECT_TRUE(multi_empty.compare(multisz_val.at(0)) == 0);
-  } else {
-    EXPECT_TRUE(false);
-  }
-  multisz_val.clear();
-
-  // Clean up
-  EXPECT_TRUE(nt::DeleteRegKey(key_handle));
-  nt::CloseRegKey(key_handle);
-
-  // More tests for CreateRegKey recursion.
-  ASSERT_TRUE(
-      nt::CreateRegKey(nt::HKCU, sz_new_key_1, KEY_ALL_ACCESS, nullptr));
-  EXPECT_TRUE(nt::OpenRegKey(nt::HKCU, sz_new_key_1, KEY_ALL_ACCESS,
-                             &key_handle, nullptr));
-  EXPECT_TRUE(nt::DeleteRegKey(key_handle));
-  nt::CloseRegKey(key_handle);
-
-  ASSERT_TRUE(
-      nt::CreateRegKey(nt::HKCU, sz_new_key_2, KEY_ALL_ACCESS, nullptr));
-  EXPECT_TRUE(nt::OpenRegKey(nt::HKCU, sz_new_key_2, KEY_ALL_ACCESS,
-                             &key_handle, nullptr));
-  EXPECT_TRUE(nt::DeleteRegKey(key_handle));
-  nt::CloseRegKey(key_handle);
-
-  ASSERT_TRUE(
-      nt::CreateRegKey(nt::HKCU, sz_new_key_3, KEY_ALL_ACCESS, nullptr));
-  EXPECT_TRUE(nt::OpenRegKey(nt::HKCU, L"test\\new\\subkey\\blah2",
-                             KEY_ALL_ACCESS, &key_handle, nullptr));
-  EXPECT_TRUE(nt::DeleteRegKey(key_handle));
-  nt::CloseRegKey(key_handle);
-
-  ASSERT_TRUE(nt::CreateRegKey(nt::HKCU, nullptr, KEY_ALL_ACCESS, &key_handle));
-  nt::CloseRegKey(key_handle);
+  CancelRegRedirect(nt::HKCU);
 }
 
 // Parameterized test with paramters:
@@ -237,8 +141,8 @@ class ChromeElfUtilTest
  protected:
   void SetUp() override {
     // Set up registry override for these tests.
-    RegRedirect(nt::HKLM, override_manager_);
-    RegRedirect(nt::HKCU, override_manager_);
+    RegRedirect(nt::HKLM, &override_manager_);
+    RegRedirect(nt::HKCU, &override_manager_);
 
     const char* app;
     const char* level;
@@ -261,6 +165,11 @@ class ChromeElfUtilTest
       SetMultiInstallStateInRegistry(system_level_, true);
       app_guid_ = kAppGuidGoogleBinaries;
     }
+  }
+
+  void TearDown() override {
+    CancelRegRedirect(nt::HKCU);
+    CancelRegRedirect(nt::HKLM);
   }
 
   base::string16 BuildKey(const wchar_t* path, const wchar_t* guid) {

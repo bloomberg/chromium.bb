@@ -43,10 +43,10 @@ shared_library("chrome_elf") {
     ":constants",
     ":crash",
     ":hook_util",
+    ":nt_registry",
     ":security",
     "//build/config/sanitizers:deps",
     "//chrome/install_static:install_static_util",
-    "//chrome_elf/nt_registry:nt_registry",
   ]
   configs += [ "//build/config/win:windowed" ]
   configs -= [ "//build/config/win:console" ]
@@ -76,7 +76,7 @@ source_set("security") {
   ]
   deps = [
     ":constants",
-    "//chrome_elf/nt_registry:nt_registry",
+    ":nt_registry",
   ]
 }
 
@@ -126,9 +126,9 @@ static_library("blacklist") {
     ":constants",
     ":crash",
     ":hook_util",
+    ":nt_registry",
     "//base:base_static",  # pe_image
     "//chrome/install_static:install_static_util",
-    "//chrome_elf/nt_registry:nt_registry",
   ]
 }
 
@@ -159,9 +159,22 @@ static_library("hook_util") {
     "hook_util/hook_util.h",
   ]
   deps = [
+    ":nt_registry",  # utils
     "//base:base_static",  # pe_image
     "//sandbox",
   ]
+}
+
+# This target contains utility functions which must only depend on
+# kernel32. Please don't add dependencies on other system libraries.
+static_library("nt_registry") {
+  sources = [
+    "../sandbox/win/src/nt_internals.h",
+    "nt_registry/nt_registry.cc",
+    "nt_registry/nt_registry.h",
+  ]
+
+  libs = [ "kernel32.lib" ]
 }
 
 ##------------------------------------------------------------------------------
@@ -175,6 +188,7 @@ test("chrome_elf_unittests") {
     "chrome_elf_util_unittest.cc",
     "elf_imports_unittest.cc",
     "hook_util/test/hook_util_test.cc",
+    "nt_registry/nt_registry_unittest.cc",
     "run_all_unittests.cc",
   ]
   include_dirs = [ "$target_gen_dir" ]
@@ -185,13 +199,13 @@ test("chrome_elf_unittests") {
     ":crash",
     ":hook_util",
     ":hook_util_test_dll",
+    ":nt_registry",
     ":security",
     "//base",
     "//base/test:test_support",
     "//chrome",
     "//chrome/common:version_header",
     "//chrome/install_static:install_static_util",
-    "//chrome_elf/nt_registry:nt_registry",
     "//sandbox",
     "//testing/gtest",
   ]
@@ -222,20 +236,22 @@ test("chrome_elf_unittests") {
 }
 
 shared_library("blacklist_test_main_dll") {
+  testonly = true
   sources = [
     "blacklist/test/blacklist_test_main_dll.cc",
     "blacklist/test/blacklist_test_main_dll.def",
   ]
   deps = [
     ":blacklist",
+    ":nt_registry",
     "//base",
     "//build/config/sanitizers:deps",
     "//chrome/install_static:install_static_util",
-    "//chrome_elf/nt_registry:nt_registry",
   ]
 }
 
 loadable_module("blacklist_test_dll_1") {
+  testonly = true
   sources = [
     "blacklist/test/blacklist_test_dll_1.cc",
     "blacklist/test/blacklist_test_dll_1.def",
@@ -246,6 +262,7 @@ loadable_module("blacklist_test_dll_1") {
 }
 
 loadable_module("blacklist_test_dll_2") {
+  testonly = true
   sources = [
     "blacklist/test/blacklist_test_dll_2.cc",
     "blacklist/test/blacklist_test_dll_2.def",
@@ -261,6 +278,7 @@ loadable_module("blacklist_test_dll_2") {
 # which does), Ninja would get confused and always rebuild this target because
 # it sees a declared output file but that file doesn't exist on disk.
 loadable_module("blacklist_test_dll_3") {
+  testonly = true
   sources = [
     "blacklist/test/blacklist_test_dll_3.cc",
   ]
@@ -270,6 +288,7 @@ loadable_module("blacklist_test_dll_3") {
 }
 
 shared_library("hook_util_test_dll") {
+  testonly = true
   sources = [
     "hook_util/test/hook_util_test_dll.cc",
     "hook_util/test/hook_util_test_dll.h",

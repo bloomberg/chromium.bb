@@ -28,15 +28,26 @@
 
 namespace nt {
 
-// These globals are only used in test suites that use reg redirection
-// of HKLM and/or HKCU.
-extern const size_t g_kRegMaxPathLen;
-extern wchar_t HKLM_override[];
-extern wchar_t HKCU_override[];
+// Windows registry maximum lengths (in chars).  Not including null char.
+// https://msdn.microsoft.com/en-us/library/windows/desktop/ms724872(v=vs.85).aspx
+constexpr size_t g_kRegMaxPathLen = 255;
+constexpr size_t g_kRegMaxValueName = 16383;
 
 // AUTO will choose depending on system install or not.
 // Use HKLM or HKCU to override.
 typedef enum _ROOT_KEY { AUTO = 0, HKLM, HKCU } ROOT_KEY;
+
+// Used with wrapper functions to request registry redirection override.
+// Maps to KEY_WOW64_32KEY and KEY_WOW64_64KEY access flags.
+enum WOW64_OVERRIDE {
+  NONE = 0L,
+  WOW6432 = KEY_WOW64_32KEY,
+  WOW6464 = KEY_WOW64_64KEY
+};
+
+//------------------------------------------------------------------------------
+// Create, open, delete, close functions
+//------------------------------------------------------------------------------
 
 // Create and/or open a registry key.
 // - This function will recursively create multiple sub-keys if required for
@@ -66,7 +77,10 @@ bool DeleteRegKey(HANDLE key);
 
 // Delete a registry key.
 // - WRAPPER: Function opens and closes the target key for caller.
-bool DeleteRegKey(ROOT_KEY root, const wchar_t* key_path);
+// - Use |wow64_override| to force redirection behaviour, or pass nt::NONE.
+bool DeleteRegKey(ROOT_KEY root,
+                  WOW64_OVERRIDE wow64_override,
+                  const wchar_t* key_path);
 
 // Close a registry key handle that was opened with CreateRegKey or OpenRegKey.
 void CloseRegKey(HANDLE key);
@@ -96,7 +110,9 @@ bool QueryRegValueDWORD(HANDLE key,
 // Query DWORD value.
 // - WRAPPER: Function opens and closes the target key for caller, and works
 // with DWORD data type.
+// - Use |wow64_override| to force redirection behaviour, or pass nt::NONE.
 bool QueryRegValueDWORD(ROOT_KEY root,
+                        WOW64_OVERRIDE wow64_override,
                         const wchar_t* key_path,
                         const wchar_t* value_name,
                         DWORD* out_dword);
@@ -112,7 +128,9 @@ bool QueryRegValueSZ(HANDLE key,
 // Query SZ (string) value.
 // - WRAPPER: Function opens and closes the target key for caller, and works
 // with SZ data type.
+// - Use |wow64_override| to force redirection behaviour, or pass nt::NONE.
 bool QueryRegValueSZ(ROOT_KEY root,
+                     WOW64_OVERRIDE wow64_override,
                      const wchar_t* key_path,
                      const wchar_t* value_name,
                      std::wstring* out_sz);
@@ -128,7 +146,9 @@ bool QueryRegValueMULTISZ(HANDLE key,
 // Query MULTI_SZ (multiple strings) value.
 // - WRAPPER: Function opens and closes the target key for caller, and works
 // with MULTI_SZ data type.
+// - Use |wow64_override| to force redirection behaviour, or pass nt::NONE.
 bool QueryRegValueMULTISZ(ROOT_KEY root,
+                          WOW64_OVERRIDE wow64_override,
                           const wchar_t* key_path,
                           const wchar_t* value_name,
                           std::vector<std::wstring>* out_multi_sz);
@@ -155,7 +175,9 @@ bool SetRegValueDWORD(HANDLE key, const wchar_t* value_name, DWORD value);
 // Set DWORD value.
 // - WRAPPER: Function opens and closes the target key for caller, and works
 // with DWORD data type.
+// - Use |wow64_override| to force redirection behaviour, or pass nt::NONE.
 bool SetRegValueDWORD(ROOT_KEY root,
+                      WOW64_OVERRIDE wow64_override,
                       const wchar_t* key_path,
                       const wchar_t* value_name,
                       DWORD value);
@@ -171,7 +193,9 @@ bool SetRegValueSZ(HANDLE key,
 // Set SZ (string) value.
 // - WRAPPER: Function opens and closes the target key for caller, and works
 // with SZ data type.
+// - Use |wow64_override| to force redirection behaviour, or pass nt::NONE.
 bool SetRegValueSZ(ROOT_KEY root,
+                   WOW64_OVERRIDE wow64_override,
                    const wchar_t* key_path,
                    const wchar_t* value_name,
                    const std::wstring& value);
@@ -187,7 +211,9 @@ bool SetRegValueMULTISZ(HANDLE key,
 // Set MULTI_SZ (multiple strings) value.
 // - WRAPPER: Function opens and closes the target key for caller, and works
 // with MULTI_SZ data type.
+// - Use |wow64_override| to force redirection behaviour, or pass nt::NONE.
 bool SetRegValueMULTISZ(ROOT_KEY root,
+                        WOW64_OVERRIDE wow64_override,
                         const wchar_t* key_path,
                         const wchar_t* value_name,
                         const std::vector<std::wstring>& values);
@@ -198,6 +224,15 @@ bool SetRegValueMULTISZ(ROOT_KEY root,
 
 // Returns the current user SID in string form.
 const wchar_t* GetCurrentUserSidString();
+
+// Returns true if this process is WOW64.
+bool IsCurrentProcWow64();
+
+// Setter function for test suites that use reg redirection.
+bool SetTestingOverride(ROOT_KEY root, const std::wstring& new_path);
+
+// Getter function for test suites that use reg redirection.
+std::wstring GetTestingOverride(ROOT_KEY root);
 
 };  // namespace nt
 

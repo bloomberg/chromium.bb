@@ -11,7 +11,7 @@ assert(is_win)
 # Please don't add dependencies on other system libraries.
 static_library("install_static_util") {
   public_deps = [
-    "//chrome_elf/nt_registry:nt_registry",
+    "//chrome_elf:nt_registry",
   ]
 
   sources = [

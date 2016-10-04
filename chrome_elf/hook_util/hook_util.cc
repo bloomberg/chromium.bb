@@ -7,6 +7,7 @@
 #include <versionhelpers.h>  // windows.h must be before
 
 #include "base/win/pe_image.h"
+#include "chrome_elf/nt_registry/nt_registry.h"  // utils
 #include "sandbox/win/src/interception_internal.h"
 #include "sandbox/win/src/internal_types.h"
 #include "sandbox/win/src/sandbox_utils.h"
@@ -17,31 +18,6 @@ namespace {
 //------------------------------------------------------------------------------
 // Common hooking utility functions - LOCAL
 //------------------------------------------------------------------------------
-
-#if !defined(_WIN64)
-// Whether a process is running under WOW64 (the wrapper that allows 32-bit
-// processes to run on 64-bit versions of Windows).  This will return
-// WOW64_DISABLED for both "32-bit Chrome on 32-bit Windows" and "64-bit
-// Chrome on 64-bit Windows".  WOW64_UNKNOWN means "an error occurred", e.g.
-// the process does not have sufficient access rights to determine this.
-enum WOW64Status {
-  WOW64_DISABLED,
-  WOW64_ENABLED,
-  WOW64_UNKNOWN,
-};
-
-WOW64Status GetWOW64StatusForCurrentProcess() {
-  typedef BOOL(WINAPI * IsWow64ProcessFunc)(HANDLE, PBOOL);
-  IsWow64ProcessFunc is_wow64_process = reinterpret_cast<IsWow64ProcessFunc>(
-      GetProcAddress(GetModuleHandle(L"kernel32.dll"), "IsWow64Process"));
-  if (!is_wow64_process)
-    return WOW64_DISABLED;
-  BOOL is_wow64 = FALSE;
-  if (!is_wow64_process(GetCurrentProcess(), &is_wow64))
-    return WOW64_UNKNOWN;
-  return is_wow64 ? WOW64_ENABLED : WOW64_DISABLED;
-}
-#endif  // !defined(_WIN64)
 
 // Change the page protections to writable, copy the data,
 // restore protections. Returns a winerror code.
@@ -246,7 +222,7 @@ sandbox::ServiceResolverThunk* HookSystemService(bool relaxed) {
   // handling one like it does in 32-bit versions).
   thunk = new sandbox::ServiceResolverThunk(current_process, relaxed);
 #else
-  if (GetWOW64StatusForCurrentProcess() == WOW64_ENABLED) {
+  if (nt::IsCurrentProcWow64()) {
     if (::IsWindows10OrGreater())
       thunk = new sandbox::Wow64W10ResolverThunk(current_process, relaxed);
     else if (::IsWindows8OrGreater())

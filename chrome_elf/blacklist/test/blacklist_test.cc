@@ -133,20 +133,18 @@ class BlacklistTest : public testing::Test {
   // process-specific environment variables, for our test DLLs to access.
   // This will only work as long as the IPC is within the same process.
   void IpcOverrides() {
-    if (::wcslen(nt::HKCU_override) != 0) {
-      ASSERT_TRUE(
-          ::SetEnvironmentVariableW(L"hkcu_override", nt::HKCU_override));
-    }
-    if (::wcslen(nt::HKLM_override) != 0) {
-      ASSERT_TRUE(
-          ::SetEnvironmentVariableW(L"hklm_override", nt::HKLM_override));
-    }
+    base::string16 temp = nt::GetTestingOverride(nt::HKCU);
+    if (!temp.empty())
+      ASSERT_TRUE(::SetEnvironmentVariableW(L"hkcu_override", temp.c_str()));
+    temp = nt::GetTestingOverride(nt::HKLM);
+    if (!temp.empty())
+      ASSERT_TRUE(::SetEnvironmentVariableW(L"hklm_override", temp.c_str()));
   }
 
   void SetUp() override {
     base::string16 temp;
     override_manager_.OverrideRegistry(HKEY_CURRENT_USER, &temp);
-    ::wcsncpy(nt::HKCU_override, temp.c_str(), nt::g_kRegMaxPathLen - 1);
+    ASSERT_TRUE(nt::SetTestingOverride(nt::HKCU, temp));
 
     // Make the override path available to our test DLL.
     IpcOverrides();
@@ -203,10 +201,9 @@ class BlacklistTest : public testing::Test {
     TestDll_RemoveDllFromBlacklist(kTestDllName1);
     TestDll_RemoveDllFromBlacklist(kTestDllName2);
     TestDll_RemoveDllFromBlacklist(kTestDllName3);
-  }
 
-  // A scoped temporary directory to be destroyed with this test.
-  base::ScopedTempDir reg_override_dir_;
+    ASSERT_TRUE(nt::SetTestingOverride(nt::HKCU, base::string16()));
+  }
 };
 
 TEST_F(BlacklistTest, Beacon) {
