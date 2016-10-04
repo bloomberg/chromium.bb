@@ -43,10 +43,10 @@ void DOMWindowStorageController::didAddEventListener(
     LocalDOMWindow* window,
     const AtomicString& eventType) {
   if (eventType == EventTypeNames::storage) {
-    // Creating these blink::Storage objects informs the system that we'd like to receive
-    // notifications about storage events that might be triggered in other processes. Rather
-    // than subscribe to these notifications explicitly, we subscribe to them implicitly to
-    // simplify the work done by the system.
+    // Creating these blink::Storage objects informs the system that we'd like
+    // to receive notifications about storage events that might be triggered in
+    // other processes. Rather than subscribe to these notifications explicitly,
+    // we subscribe to them implicitly to simplify the work done by the system.
     DOMWindowStorage::from(*window).localStorage(IGNORE_EXCEPTION);
     DOMWindowStorage::from(*window).sessionStorage(IGNORE_EXCEPTION);
   }

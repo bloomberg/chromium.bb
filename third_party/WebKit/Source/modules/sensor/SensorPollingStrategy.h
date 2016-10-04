@@ -17,8 +17,8 @@ namespace blink {
 // - for 'CONTINUOUS' mode the polling function is invoked periodically
 //   with the given polling period (on timer event).
 // - for 'ONCHANGE' mode the polling function is invoked only after client
-//   calls 'onSensorReadingChanged()' however considering the given polling period:
-//   guaranteed not to be called more often than expected.
+//   calls 'onSensorReadingChanged()' however considering the given polling
+//   period: guaranteed not to be called more often than expected.
 class SensorPollingStrategy {
  public:
   static std::unique_ptr<SensorPollingStrategy> create(

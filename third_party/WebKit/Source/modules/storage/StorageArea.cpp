@@ -169,7 +169,8 @@ void StorageArea::dispatchLocalStorageEvent(
   for (Page* page : Page::ordinaryPages()) {
     for (Frame* frame = page->mainFrame(); frame;
          frame = frame->tree().traverseNext()) {
-      // FIXME: We do not yet have a way to dispatch events to out-of-process frames.
+      // FIXME: We do not yet have a way to dispatch events to out-of-process
+      // frames.
       if (!frame->isLocalFrame())
         continue;
       LocalFrame* localFrame = toLocalFrame(frame);
@@ -219,7 +220,8 @@ void StorageArea::dispatchSessionStorageEvent(
 
   for (Frame* frame = page->mainFrame(); frame;
        frame = frame->tree().traverseNext()) {
-    // FIXME: We do not yet have a way to dispatch events to out-of-process frames.
+    // FIXME: We do not yet have a way to dispatch events to out-of-process
+    // frames.
     if (!frame->isLocalFrame())
       continue;
     LocalFrame* localFrame = toLocalFrame(frame);

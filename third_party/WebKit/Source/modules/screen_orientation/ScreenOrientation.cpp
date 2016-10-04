@@ -15,7 +15,8 @@
 #include "modules/screen_orientation/ScreenOrientationController.h"
 #include "public/platform/modules/screen_orientation/WebScreenOrientationType.h"
 
-// This code assumes that WebScreenOrientationType values are included in WebScreenOrientationLockType.
+// This code assumes that WebScreenOrientationType values are included in
+// WebScreenOrientationLockType.
 #define STATIC_ASSERT_ENUM(a, b)                            \
   static_assert(static_cast<int>(a) == static_cast<int>(b), \
                 "mismatching enum: " #a)

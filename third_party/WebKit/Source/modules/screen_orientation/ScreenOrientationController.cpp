@@ -49,13 +49,14 @@ const char* ScreenOrientationController::supplementName() {
   return "ScreenOrientationController";
 }
 
-// Compute the screen orientation using the orientation angle and the screen width / height.
+// Compute the screen orientation using the orientation angle and the screen
+// width / height.
 WebScreenOrientationType ScreenOrientationController::computeOrientation(
     const IntRect& rect,
     uint16_t rotation) {
   // Bypass orientation detection in layout tests to get consistent results.
-  // FIXME: The screen dimension should be fixed when running the layout tests to avoid such
-  // issues.
+  // FIXME: The screen dimension should be fixed when running the layout tests
+  // to avoid such issues.
   if (LayoutTestSupport::isRunningLayoutTest())
     return WebScreenOrientationPortraitPrimary;
 
@@ -89,7 +90,8 @@ void ScreenOrientationController::updateOrientation() {
   WebScreenInfo screenInfo = chromeClient.screenInfo();
   WebScreenOrientationType orientationType = screenInfo.orientationType;
   if (orientationType == WebScreenOrientationUndefined) {
-    // The embedder could not provide us with an orientation, deduce it ourselves.
+    // The embedder could not provide us with an orientation, deduce it
+    // ourselves.
     orientationType = computeOrientation(chromeClient.screenInfo().rect,
                                          screenInfo.orientationAngle);
   }

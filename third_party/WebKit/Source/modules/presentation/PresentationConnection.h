@@ -73,7 +73,8 @@ class PresentationConnection final : public EventTargetWithInlineData,
   DEFINE_ATTRIBUTE_EVENT_LISTENER(close);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(terminate);
 
-  // Returns true if and only if the WebPresentationConnectionClient represents this connection.
+  // Returns true if and only if the WebPresentationConnectionClient represents
+  // this connection.
   bool matches(WebPresentationConnectionClient*) const;
 
   // Notifies the connection about its state change.

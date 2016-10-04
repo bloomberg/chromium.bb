@@ -65,7 +65,10 @@ class StorageEvent final : public Event {
                         Storage* storageArea);
 
   // Needed once we support init<blank>EventNS
-  // void initStorageEventNS(in DOMString namespaceURI, in DOMString typeArg, in boolean canBubbleArg, in boolean cancelableArg, in DOMString keyArg, in DOMString oldValueArg, in DOMString newValueArg, in DOMString urlArg, Storage storageAreaArg);
+  // void initStorageEventNS(in DOMString namespaceURI, in DOMString typeArg,
+  //     in boolean canBubbleArg, in boolean cancelableArg, in DOMString keyArg,
+  //     in DOMString oldValueArg, in DOMString newValueArg,
+  //     in DOMString urlArg, Storage storageAreaArg);
 
   const AtomicString& interfaceName() const override;
 

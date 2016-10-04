@@ -65,11 +65,12 @@ ScriptPromise RemotePlayback::getAvailability(ScriptState* scriptState) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
 
-  // TODO(avayvod): currently the availability is tracked for each media element
-  // as soon as it's created, we probably want to limit that to when the page/element
-  // is visible (see https://crbug.com/597281) and has default controls. If there's
-  // no default controls, we should also start tracking availability on demand
-  // meaning the Promise returned by getAvailability() will be resolved asynchronously.
+  // TODO(avayvod): Currently the availability is tracked for each media element
+  // as soon as it's created, we probably want to limit that to when the
+  // page/element is visible (see https://crbug.com/597281) and has default
+  // controls. If there are no default controls, we should also start tracking
+  // availability on demand meaning the Promise returned by getAvailability()
+  // will be resolved asynchronously.
   RemotePlaybackAvailability* availability =
       RemotePlaybackAvailability::take(resolver, m_availability);
   m_availabilityObjects.append(availability);

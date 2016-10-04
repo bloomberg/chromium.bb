@@ -16,8 +16,10 @@ class LocalFrame;
 class PresentationReceiver;
 class PresentationRequest;
 
-// Implements the main entry point of the Presentation API corresponding to the Presentation.idl
-// See https://w3c.github.io/presentation-api/#navigatorpresentation for details.
+// Implements the main entry point of the Presentation API corresponding to the
+// Presentation.idl
+// See https://w3c.github.io/presentation-api/#navigatorpresentation for
+// details.
 class Presentation final : public GarbageCollected<Presentation>,
                            public ScriptWrappable,
                            public DOMWindowProperty {

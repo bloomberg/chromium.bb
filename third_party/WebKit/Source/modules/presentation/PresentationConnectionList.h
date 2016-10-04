@@ -14,8 +14,8 @@
 
 namespace blink {
 
-// Implements the PresentationConnectionList interface from the Presentation API from
-// which represents set of presentation connections in the set of
+// Implements the PresentationConnectionList interface from the Presentation API
+// from which represents set of presentation connections in the set of
 // presentation controllers.
 class MODULES_EXPORT PresentationConnectionList final
     : public EventTargetWithInlineData,

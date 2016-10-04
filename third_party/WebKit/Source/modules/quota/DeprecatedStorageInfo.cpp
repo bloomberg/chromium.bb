@@ -47,7 +47,8 @@ void DeprecatedStorageInfo::queryUsageAndQuota(
     int storageType,
     StorageUsageCallback* successCallback,
     StorageErrorCallback* errorCallback) {
-  // Dispatching the request to DeprecatedStorageQuota, as this interface is deprecated in favor of DeprecatedStorageQuota.
+  // Dispatching the request to DeprecatedStorageQuota, as this interface is
+  // deprecated in favor of DeprecatedStorageQuota.
   DeprecatedStorageQuota* storageQuota = getStorageQuota(storageType);
   if (!storageQuota) {
     // Unknown storage type is requested.
@@ -65,7 +66,8 @@ void DeprecatedStorageInfo::requestQuota(ExecutionContext* executionContext,
                                          unsigned long long newQuotaInBytes,
                                          StorageQuotaCallback* successCallback,
                                          StorageErrorCallback* errorCallback) {
-  // Dispatching the request to DeprecatedStorageQuota, as this interface is deprecated in favor of DeprecatedStorageQuota.
+  // Dispatching the request to DeprecatedStorageQuota, as this interface is
+  // deprecated in favor of DeprecatedStorageQuota.
   DeprecatedStorageQuota* storageQuota = getStorageQuota(storageType);
   if (!storageQuota) {
     // Unknown storage type is requested.
