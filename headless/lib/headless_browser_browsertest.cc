@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_restrictions.h"
 #include "content/public/test/browser_test.h"
 #include "headless/public/domains/network.h"
 #include "headless/public/domains/page.h"
@@ -603,6 +604,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, SetCookiesWithDevTools) {
 #define MAYBE_RendererCommandPrefixTest DISABLED_RendererCommandPrefixTest
 #endif  // defined(OS_POSIX)
 IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, MAYBE_RendererCommandPrefixTest) {
+  base::ThreadRestrictions::SetIOAllowed(true);
   base::FilePath launcher_stamp;
   base::CreateTemporaryFile(&launcher_stamp);
 
