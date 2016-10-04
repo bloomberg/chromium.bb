@@ -67,7 +67,7 @@ static constexpr gvr::Vec3f kHandPosition = {0.2f, -0.5f, -0.2f};
 static constexpr float kReticleOffset = 0.99f;
 
 // Limit the rendering distance of the reticle to the distance to a corner of
-// the content quad, times this value.  This lets the rendering distance
+// the content quad, times this value. This lets the rendering distance
 // adjust according to content quad placement.
 static constexpr float kReticleDistanceMultiplier = 1.5f;
 
@@ -104,7 +104,7 @@ float Distance(const gvr::Vec3f& vec1, const gvr::Vec3f& vec2) {
 }
 
 // Generate a quaternion representing the rotation from the negative Z axis
-// (0, 0, -1) to a specified vector.  This is an optimized version of a more
+// (0, 0, -1) to a specified vector. This is an optimized version of a more
 // general vector-to-vector calculation.
 gvr::Quatf GetRotationFromZAxis(gvr::Vec3f vec) {
   vr_shell::NormalizeVector(vec);
@@ -257,12 +257,22 @@ void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
   float distance = scene_.GetUiElementById(kBrowserUiElementId)
       ->GetRayDistance(origin, forward);
 
+  // If we place the reticle based on elements intersecting the controller beam,
+  // we can end up with the reticle hiding behind elements, or jumping laterally
+  // in the field of view. This is physically correct, but hard to use. For
+  // usability, do the following instead:
+  //
+  // - Project the controller laser onto an outer surface, which is the
+  //   closer of the desktop plane, or a distance-limiting sphere.
+  // - Create a vector between the eyes and the outer surface point.
+  // - If any UI elements intersect this vector, choose the closest to the eyes,
+  //   and place the reticle at the intersection point.
+
   // Find distance to a corner of the content quad, and limit the cursor
-  // distance to a multiple of that distance.  This lets us keep the reticle on
+  // distance to a multiple of that distance. This lets us keep the reticle on
   // the content plane near the content window, and on the surface of a sphere
-  // in other directions.
-  // TODO(cjgrant): Note that this approach uses distance from controller,
-  // rather than eye, for simplicity.  This will make the sphere slightly
+  // in other directions. Note that this approach uses distance from controller,
+  // rather than eye, for simplicity. This will make the sphere slightly
   // off-center.
   gvr::Vec3f corner = {0.5f, 0.5f, 0.0f};
   corner = MatrixVectorMul(desktop_plane_->transform.to_world, corner);
@@ -271,8 +281,11 @@ void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
     distance = max_distance;
   }
   target_point_ = GetRayPoint(origin, forward, distance);
+  gvr::Vec3f eye_to_target = target_point_;
+  NormalizeVector(eye_to_target);
 
-  // Determine which UI element (if any) the cursor is pointing to.
+  // Determine which UI element (if any) intersects the line between the eyes
+  // and the controller target position.
   float closest_element_distance = std::numeric_limits<float>::infinity();
   int pixel_x = 0;
   int pixel_y = 0;
@@ -283,15 +296,15 @@ void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
     if (!plane.visible) {
       continue;
     }
-    float distance_to_plane = plane.GetRayDistance(origin, forward);
+    float distance_to_plane = plane.GetRayDistance(kOrigin, eye_to_target);
     gvr::Vec3f plane_intersection_point =
-        GetRayPoint(origin, forward, distance_to_plane);
+        GetRayPoint(kOrigin, eye_to_target, distance_to_plane);
 
     gvr::Vec3f rect_2d_point =
         MatrixVectorMul(plane.transform.from_world, plane_intersection_point);
-    float x = rect_2d_point.x + 0.5f;
-    float y = 0.5f - rect_2d_point.y;
     if (distance_to_plane > 0 && distance_to_plane < closest_element_distance) {
+      float x = rect_2d_point.x + 0.5f;
+      float y = 0.5f - rect_2d_point.y;
       bool is_inside = x >= 0.0f && x < 1.0f && y >= 0.0f && y < 1.0f;
       if (is_inside) {
         closest_element_distance = distance_to_plane;
