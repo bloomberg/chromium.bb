@@ -94,13 +94,21 @@ class VrShell : public device::GvrDelegate {
  private:
   virtual ~VrShell();
   void LoadUIContent();
+  bool IsUiTextureReady();
+  // Converts a pixel rectangle to (0..1) float texture coordinates.
+  // Callers need to ensure that the texture width/height is
+  // initialized by checking IsUiTextureReady() first.
+  Rectf MakeUiGlCopyRect(Recti pixel_rect);
   void DrawVrShell(const gvr::Mat4f& head_pose);
   void DrawEye(const gvr::Mat4f& view_matrix,
                const gvr::BufferViewport& params);
-  void DrawContentRect();
-  void DrawWebVr();
   void DrawUI(const gvr::Mat4f& render_matrix);
   void DrawCursor(const gvr::Mat4f& render_matrix);
+  void DrawWebVr();
+  void DrawWebVrOverlay(int64_t present_time_nanos);
+  void DrawWebVrEye(const gvr::Mat4f& view_matrix,
+                    const gvr::BufferViewport& params,
+                    int64_t present_time_nanos);
 
   void UpdateController(const gvr::Vec3f& forward_vector);
 
@@ -124,7 +132,6 @@ class VrShell : public device::GvrDelegate {
   std::unique_ptr<gvr::SwapChain> swap_chain_;
 
   gvr::Sizei render_size_;
-  float cursor_distance_;
 
   std::queue<base::Callback<void()>> task_queue_;
   base::Lock task_queue_lock_;
@@ -148,6 +155,7 @@ class VrShell : public device::GvrDelegate {
 
   bool webvr_mode_ = false;
   bool webvr_secure_origin_ = false;
+  int64_t webvr_warning_end_nanos_ = 0;
 
   base::WeakPtrFactory<VrShell> weak_ptr_factory_;
 

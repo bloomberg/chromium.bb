@@ -182,7 +182,7 @@ var vrShellUi = (function() {
     for (var i = 0; i < buttons.length; i++) {
       var b = document.createElement('div');
       b.position = 'absolute';
-      b.style.top = '200px';
+      b.style.top = '384px';
       b.style.left = 50 * i + 'px';
       b.style.width = '50px';
       b.style.height = '50px';
@@ -197,7 +197,7 @@ var vrShellUi = (function() {
       document.body.appendChild(b);
 
       // Add a UI rectangle for the button.
-      var el = new UiElement(50 * i, 200, 50, 50, buttonWidth, buttonHeight);
+      var el = new UiElement(50 * i, 384, 50, 50, buttonWidth, buttonHeight);
       el.parentId = 0;
       el.setAnchoring(XAnchoring.XNONE, YAnchoring.YBOTTOM);
       el.setTranslation(buttonStartPosition + buttonSpacing * i, -0.3, 0.0);

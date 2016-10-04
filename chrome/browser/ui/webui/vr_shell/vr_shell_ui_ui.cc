@@ -10,7 +10,9 @@
 #include "content/public/browser/web_ui.h"
 
 #if !defined(ENABLE_VR_SHELL_UI_DEV)
+#include "chrome/browser/browser_process.h"
 #include "chrome/grit/browser_resources.h"
+#include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_ui_data_source.h"
 #else
 #include <map>
@@ -179,7 +181,17 @@ content::WebUIDataSource* CreateVrShellUIHTMLSource() {
   source->AddResourcePath("vr_shell_ui.js", IDR_VR_SHELL_UI_JS);
   source->AddResourcePath("vr_shell_ui.css", IDR_VR_SHELL_UI_CSS);
   source->SetDefaultResource(IDR_VR_SHELL_UI_HTML);
-  source->DisableI18nAndUseGzipForAllPaths();
+  // We're localizing strings, so we can't currently use gzip since it's
+  // incompatible with i18n. TODO(klausw): re-enable gzip once an i18n
+  // compatible variant of WebUIDataSource's DisableI18nAndUseGzipForAllPaths
+  // gets added, and add compress=gzip to browser_resources.grd as appropriate.
+  source->AddLocalizedString(
+      "insecureWebVrContentPermanent",
+      IDS_WEBSITE_SETTINGS_INSECURE_WEBVR_CONTENT_PERMANENT);
+  source->AddLocalizedString(
+      "insecureWebVrContentTransient",
+      IDS_WEBSITE_SETTINGS_INSECURE_WEBVR_CONTENT_TRANSIENT);
+
   return source;
 }
 #endif

@@ -15,8 +15,22 @@ found in the LICENSE file.
 </if>
 <title>Vr Shell UIs</title>
 <link rel="stylesheet" href="vr_shell_ui.css">
+<link rel="stylesheet" href="chrome://resources/css/text_defaults_md.css">
 </head>
 <body>
+<div id="webvr-not-secure-permanent" class="webvr-message-box">
+  <div class="webvr-box">
+    <img class="webvr-not-secure-icon" width="36" height="36"
+         src="../../../../ui/webui/resources/images/i_circle.svg">
+    <div class="webvr-string">$i18n{insecureWebVrContentPermanent}</div>
+  </div>
+</div>
+<div id="webvr-not-secure-transient" class="webvr-message-box">
+  <div>
+    <div>$i18n{insecureWebVrContentTransient}</div>
+  </div>
+</div>
+
 </body>
 
 <!-- Run script after creating body, to let it add its own elements. -->

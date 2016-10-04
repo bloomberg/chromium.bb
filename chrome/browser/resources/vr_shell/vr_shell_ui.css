@@ -4,7 +4,6 @@
 
 html {
   background-color: rgba(255, 255, 255, 0.2);
-  font-size: 20px;
 }
 
 .ui-button {
@@ -14,4 +13,84 @@ html {
   position: absolute;
   text-align: center;
   vertical-align: middle;
+}
+
+.webvr-message-box {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: absolute;
+}
+
+/* Permanent security warning for WebVR. This uses a fixed-size absolutely
+ * positioned DIV, the rectangle must match kWebVrWarningPermanentRect
+ * in vr_shell.cc for use as a GL textured quad. */
+#webvr-not-secure-permanent {
+  height: 128px;
+  left: 0;
+  top: 0;
+  width: 512px;
+}
+
+#webvr-not-secure-permanent .webvr-not-secure-icon {
+  display: inline-block;
+  margin: 20px 0;
+  vertical-align: middle;
+}
+
+#webvr-not-secure-permanent .webvr-string {
+  display: inline-block;
+  margin: 20px 10.5px;
+  vertical-align: middle;
+}
+
+/* This is a single-line (nowrap) short message. The width has some elasticity
+ * for translations, and the underlying string had a request to translators
+ * to keep it short. The maximum is based on the fixed-size container DIV,
+ * excess will be clipped. There's space for about twice the length of the
+ * English "Not secure" message. */
+#webvr-not-secure-permanent .webvr-box {
+  background-color: white;
+  border-radius: 6px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  box-sizing: border-box;
+  color: #444;
+  font-size: 26px;
+  height: 78px;
+  max-width: 472px;
+  min-width: 226px;
+  overflow: hidden;
+  padding: 0 20px;
+  white-space: nowrap;
+}
+
+/* Transient security warning for WebVR. This uses a fixed-size absolutely
+ * positioned DIV, the rectangle must match kWebVrWarningTransientRect
+ * in vr_shell.cc for use as a GL textured quad. */
+#webvr-not-secure-transient {
+  height: 256px;
+  left: 0;
+  top: 128px;
+  width: 512px;
+}
+
+/* This uses fixed width but the height has some elasticity for translations.
+ * The maximum is based on the fixed-size container DIV, excess will be
+ * clipped. */
+#webvr-not-secure-transient > div {
+  background-color: rgba(26, 26, 26, 0.8);
+  border-radius: 6px;
+  box-sizing: border-box;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  font-size: 26px;
+  justify-content: center;
+  line-height: 1.4;
+  max-height: 210px;
+  min-height: 160px;
+  padding: 20px;
+  text-align: center;
+  width: 512px;
 }

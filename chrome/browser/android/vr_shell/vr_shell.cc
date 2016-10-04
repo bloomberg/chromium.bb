@@ -72,6 +72,23 @@ static constexpr float kReticleDistanceMultiplier = 1.5f;
 // UI element 0 is the browser content rectangle.
 static constexpr int kBrowserUiElementId = 0;
 
+// Positions and sizes of statically placed UI elements in the UI texture.
+// TODO(klausw): replace the hardcoded positions with JS position/offset
+// retrieval once the infrastructure for that is hooked up.
+//
+// UI is designed with 1 pixel = 1mm at 1m distance. It's rescaled to
+// maintain the same angular resolution if placed closer or further.
+// The warning overlays should be fairly close since they cut holes
+// into geometry (they ignore the Z buffer), leading to odd effects
+// if they are far away.
+static constexpr vr_shell::Recti kWebVrWarningTransientRect = {
+  0, 128, 512, 256};
+static constexpr vr_shell::Recti kWebVrWarningPermanentRect = {0, 0, 512, 128};
+static constexpr float kWebVrWarningDistance = 0.7f;  // meters
+static constexpr float kWebVrWarningPermanentAngle = 16.3f;  // degrees up
+// How long the transient warning needs to be displayed.
+static constexpr int64_t kWebVrWarningSeconds = 30;
+
 vr_shell::VrShell* g_instance;
 
 static const char kVrShellUIURL[] = "chrome://vr-shell-ui";
@@ -309,6 +326,9 @@ void VrShell::DrawFrame(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 
   if (webvr_mode_) {
     DrawWebVr();
+    if (!webvr_secure_origin_) {
+      DrawWebVrOverlay(target_time.monotonic_system_time_nanos);
+    }
   } else {
     DrawVrShell(head_pose);
   }
@@ -370,6 +390,19 @@ void VrShell::DrawEye(const gvr::Mat4f& view_matrix,
   // TODO(mthiesse): Draw order for transparency.
   DrawUI(render_matrix);
   DrawCursor(render_matrix);
+}
+
+bool VrShell::IsUiTextureReady() {
+  return ui_tex_width_ > 0 && ui_tex_height_ > 0;
+}
+
+Rectf VrShell::MakeUiGlCopyRect(Recti pixel_rect) {
+  CHECK(IsUiTextureReady());
+  return Rectf({
+      static_cast<float>(pixel_rect.x) / ui_tex_width_,
+      static_cast<float>(pixel_rect.y) / ui_tex_height_,
+      static_cast<float>(pixel_rect.width) / ui_tex_width_,
+      static_cast<float>(pixel_rect.height) / ui_tex_height_});
 }
 
 void VrShell::DrawUI(const gvr::Mat4f& render_matrix) {
@@ -468,10 +501,86 @@ void VrShell::DrawWebVr() {
 
   glViewport(0, 0, render_size_.width, render_size_.height);
   vr_shell_renderer_->GetWebVrRenderer()->Draw(content_texture_id_);
+}
 
-  if (!webvr_secure_origin_) {
-    // TODO(klausw): Draw the insecure origin warning here.
+void VrShell::DrawWebVrOverlay(int64_t present_time_nanos) {
+  // Draw WebVR security warning overlays for each eye. This uses the
+  // eye-from-head matrices but not the pose, goal is to place the icons in an
+  // eye-relative position so that they follow along with head rotations.
+
+  gvr::Mat4f left_eye_view_matrix =
+      gvr_api_->GetEyeFromHeadMatrix(GVR_LEFT_EYE);
+  gvr::Mat4f right_eye_view_matrix =
+      gvr_api_->GetEyeFromHeadMatrix(GVR_RIGHT_EYE);
+
+  buffer_viewport_list_->GetBufferViewport(GVR_LEFT_EYE,
+                                           buffer_viewport_.get());
+  DrawWebVrEye(left_eye_view_matrix, *buffer_viewport_, present_time_nanos);
+  buffer_viewport_list_->GetBufferViewport(GVR_RIGHT_EYE,
+                                           buffer_viewport_.get());
+  DrawWebVrEye(right_eye_view_matrix, *buffer_viewport_, present_time_nanos);
+}
+
+void VrShell::DrawWebVrEye(const gvr::Mat4f& view_matrix,
+                           const gvr::BufferViewport& params,
+                           int64_t present_time_nanos) {
+  gvr::Recti pixel_rect =
+      CalculatePixelSpaceRect(render_size_, params.GetSourceUv());
+  glViewport(pixel_rect.left, pixel_rect.bottom,
+             pixel_rect.right - pixel_rect.left,
+             pixel_rect.top - pixel_rect.bottom);
+  glScissor(pixel_rect.left, pixel_rect.bottom,
+            pixel_rect.right - pixel_rect.left,
+            pixel_rect.top - pixel_rect.bottom);
+
+  gvr::Mat4f projection_matrix =
+      PerspectiveMatrixFromView(params.GetSourceFov(), kZNear, kZFar);
+
+  if (!IsUiTextureReady()) {
+    // If the UI texture hasn't been initialized yet, we can't draw the overlay.
+    return;
   }
+
+  // Show IDS_WEBSITE_SETTINGS_INSECURE_WEBVR_CONTENT_PERMANENT text.
+  gvr::Mat4f icon_pos;
+  SetIdentityM(icon_pos);
+  // The UI is designed in pixels with the assumption that 1px = 1mm at 1m
+  // distance. Scale mm-to-m and adjust to keep the same angular size if the
+  // distance changes.
+  const float small_icon_width =
+      kWebVrWarningPermanentRect.width / 1000.f * kWebVrWarningDistance;
+  const float small_icon_height =
+      kWebVrWarningPermanentRect.height / 1000.f * kWebVrWarningDistance;
+  const float small_icon_angle =
+      kWebVrWarningPermanentAngle * M_PI / 180.f;  // Degrees to radians.
+  ScaleM(icon_pos, icon_pos, small_icon_width, small_icon_height, 1.0f);
+  TranslateM(icon_pos, icon_pos, 0.0f, 0.0f, -kWebVrWarningDistance);
+  icon_pos = MatrixMul(
+      QuatToMatrix(QuatFromAxisAngle({1.f, 0.f, 0.f}, small_icon_angle)),
+      icon_pos);
+  gvr::Mat4f combined = MatrixMul(projection_matrix,
+                                  MatrixMul(view_matrix, icon_pos));
+  vr_shell_renderer_->GetTexturedQuadRenderer()->Draw(
+      ui_texture_id_, combined, MakeUiGlCopyRect(kWebVrWarningPermanentRect));
+
+  // Check if we also need to show the transient warning.
+  if (present_time_nanos > webvr_warning_end_nanos_) {
+    return;
+  }
+
+  // Show IDS_WEBSITE_SETTINGS_INSECURE_WEBVR_CONTENT_TRANSIENT text.
+  SetIdentityM(icon_pos);
+  const float large_icon_width =
+      kWebVrWarningTransientRect.width / 1000.f * kWebVrWarningDistance;
+  const float large_icon_height =
+      kWebVrWarningTransientRect.height / 1000.f * kWebVrWarningDistance;
+  ScaleM(icon_pos, icon_pos, large_icon_width, large_icon_height, 1.0f);
+  TranslateM(icon_pos, icon_pos, 0.0f, 0.0f, -kWebVrWarningDistance);
+  combined = MatrixMul(projection_matrix,
+                       MatrixMul(view_matrix, icon_pos));
+  vr_shell_renderer_->GetTexturedQuadRenderer()->Draw(
+      ui_texture_id_, combined, MakeUiGlCopyRect(kWebVrWarningTransientRect));
+
 }
 
 void VrShell::OnPause(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -518,6 +627,13 @@ void VrShell::SetWebVrMode(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>& obj,
                            bool enabled) {
   webvr_mode_ = enabled;
+  if (enabled) {
+    int64_t now = gvr::GvrApi::GetTimePointNow().monotonic_system_time_nanos;
+    constexpr int64_t seconds_to_nanos = 1000 * 1000 * 1000;
+    webvr_warning_end_nanos_ = now + kWebVrWarningSeconds * seconds_to_nanos;
+  } else {
+    webvr_warning_end_nanos_ = 0;
+  }
 }
 
 void VrShell::SetWebVRSecureOrigin(bool secure_origin) {
