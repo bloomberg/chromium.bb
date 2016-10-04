@@ -75,9 +75,20 @@ void ShellBrowserContext::InitWhileIOAllowed() {
     ignore_certificate_errors_ = true;
   if (cmd_line->HasSwitch(switches::kContentShellDataPath)) {
     path_ = cmd_line->GetSwitchValuePath(switches::kContentShellDataPath);
-    BrowserContext::Initialize(this, path_);
-    return;
+    if (base::DirectoryExists(path_) || base::CreateDirectory(path_))  {
+      // BrowserContext needs an absolute path, which we would normally get via
+      // PathService. In this case, manually ensure the path is absolute.
+      if (!path_.IsAbsolute())
+        path_ = base::MakeAbsoluteFilePath(path_);
+      if (!path_.empty()) {
+        BrowserContext::Initialize(this, path_);
+        return;
+      }
+    } else {
+      LOG(WARNING) << "Unable to create data-path directory: " << path_.value();
+    }
   }
+
 #if defined(OS_WIN)
   CHECK(PathService::Get(base::DIR_LOCAL_APP_DATA, &path_));
   path_ = path_.Append(std::wstring(L"content_shell"));
