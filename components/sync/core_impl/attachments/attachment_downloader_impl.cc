@@ -4,8 +4,6 @@
 
 #include "components/sync/core/attachments/attachment_downloader_impl.h"
 
-#include <stdint.h>
-
 #include <utility>
 
 #include "base/base64.h"
@@ -27,7 +25,6 @@
 #include "net/http/http_util.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
-#include "url/gurl.h"
 
 namespace syncer {
 

@@ -4,7 +4,6 @@
 
 #include "components/sync_sessions/revisit/sessions_page_revisit_observer.h"
 
-#include <memory>
 #include <string>
 
 #include "base/memory/ptr_util.h"
@@ -12,7 +11,6 @@
 #include "components/sessions/core/serialized_navigation_entry.h"
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"
 #include "components/sessions/core/session_types.h"
-#include "components/sync_sessions/revisit/page_visit_observer.h"
 #include "components/sync_sessions/synced_session.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"

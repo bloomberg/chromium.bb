@@ -4,12 +4,7 @@
 
 #include "components/sync/base/ordinal.h"
 
-#include <stdint.h>
-
-#include <algorithm>
 #include <cctype>
-#include <cstddef>
-#include <string>
 #include <vector>
 
 #include "testing/gtest/include/gtest/gtest.h"

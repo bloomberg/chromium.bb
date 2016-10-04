@@ -6,9 +6,7 @@
 
 #include <stdint.h>
 
-#include "components/sync_sessions/revisit/page_visit_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/page_transition_types.h"
 
 namespace sync_sessions {
 

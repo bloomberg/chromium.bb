@@ -4,7 +4,6 @@
 
 #include "components/sync/base/immutable.h"
 
-#include <algorithm>
 #include <cstddef>
 #include <deque>
 #include <list>
@@ -12,8 +11,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {

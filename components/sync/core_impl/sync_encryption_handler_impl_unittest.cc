@@ -7,13 +7,11 @@
 #include <stdint.h>
 
 #include <memory>
-#include <string>
 
 #include "base/base64.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/run_loop.h"
 #include "base/tracked_objects.h"
-#include "components/sync/base/cryptographer.h"
 #include "components/sync/base/fake_encryptor.h"
 #include "components/sync/base/model_type_test_util.h"
 #include "components/sync/core/read_node.h"

@@ -7,7 +7,6 @@
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "components/sync/base/model_type.h"
 #include "components/sync/core/test/test_user_share.h"
 #include "components/sync/driver/change_processor_mock.h"
 #include "components/sync/driver/fake_sync_client.h"

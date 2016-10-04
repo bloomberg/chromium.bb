@@ -4,12 +4,10 @@
 
 #include "components/sync/core/attachments/attachment_store_frontend.h"
 
-#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"

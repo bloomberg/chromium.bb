@@ -4,8 +4,6 @@
 
 #include "components/sync/api/sync_error.h"
 
-#include <string>
-
 #include "base/location.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

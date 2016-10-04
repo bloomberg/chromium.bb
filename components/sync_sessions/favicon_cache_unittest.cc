@@ -4,10 +4,6 @@
 
 #include "components/sync_sessions/favicon_cache.h"
 
-#include <stddef.h>
-#include <stdint.h>
-
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"

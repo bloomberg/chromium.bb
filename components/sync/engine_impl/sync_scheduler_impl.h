@@ -101,7 +101,7 @@ class SyncSchedulerImpl : public SyncScheduler, public base::NonThreadSafe {
     UPDATE_INTERVAL,
   };
 
-  friend class SyncSchedulerTest;
+  friend class SyncSchedulerImplTest;
   friend class SyncSchedulerWhiteboxTest;
   friend class SyncerTest;
 

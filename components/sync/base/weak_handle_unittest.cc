@@ -4,12 +4,7 @@
 
 #include "components/sync/base/weak_handle.h"
 
-#include "base/bind.h"
-#include "base/compiler_specific.h"
-#include "base/location.h"
-#include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

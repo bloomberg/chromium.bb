@@ -4,8 +4,6 @@
 
 #include "components/sync/device_info/device_info_util.h"
 
-#include <string>
-
 #include "components/sync/protocol/sync.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

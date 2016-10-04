@@ -12,7 +12,6 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/passphrase_type.h"
 #include "components/sync/base/time.h"
-#include "components/sync/base/weak_handle.h"
 #include "components/sync/engine/sync_string_conversions.h"
 #include "components/sync/js/js_event_details.h"
 #include "components/sync/js/js_test_util.h"

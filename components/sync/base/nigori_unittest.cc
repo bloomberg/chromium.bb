@@ -4,8 +4,6 @@
 
 #include "components/sync/base/nigori.h"
 
-#include <string>
-
 #include "base/strings/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

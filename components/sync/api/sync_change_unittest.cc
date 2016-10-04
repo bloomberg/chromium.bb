@@ -5,7 +5,6 @@
 #include "components/sync/api/sync_change.h"
 
 #include <memory>
-#include <string>
 
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"

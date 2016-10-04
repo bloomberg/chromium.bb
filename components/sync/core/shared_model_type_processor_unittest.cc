@@ -7,8 +7,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <map>
-#include <memory>
 #include <utility>
 #include <vector>
 
@@ -19,12 +17,10 @@
 #include "base/run_loop.h"
 #include "components/sync/api/data_type_error_handler_mock.h"
 #include "components/sync/api/fake_model_type_service.h"
-#include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
 #include "components/sync/core/activation_context.h"
 #include "components/sync/core/simple_metadata_change_list.h"
 #include "components/sync/engine/commit_queue.h"
-#include "components/sync/protocol/sync.pb.h"
 #include "components/sync/test/engine/mock_model_type_worker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

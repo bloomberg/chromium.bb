@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/sync/engine_impl/sync_scheduler_impl.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
 #include "base/bind.h"
-#include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/location.h"
-#include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/test_timeouts.h"
@@ -19,8 +18,6 @@
 #include "components/sync/base/model_type_test_util.h"
 #include "components/sync/engine_impl/backoff_delay_provider.h"
 #include "components/sync/engine_impl/cycle/test_util.h"
-#include "components/sync/engine_impl/sync_scheduler_impl.h"
-#include "components/sync/engine_impl/syncer.h"
 #include "components/sync/test/callback_counter.h"
 #include "components/sync/test/engine/fake_model_worker.h"
 #include "components/sync/test/engine/mock_connection_manager.h"
@@ -108,9 +105,10 @@ static const size_t kMinNumSamples = 5;
 // 1ms.  Using 1ms delays may result in test flakiness.
 //
 // See crbug.com/402212 for more info.
-class SyncSchedulerTest : public testing::Test {
+class SyncSchedulerImplTest : public testing::Test {
  public:
-  SyncSchedulerTest() : syncer_(NULL), delay_(NULL), weak_ptr_factory_(this) {}
+  SyncSchedulerImplTest()
+      : syncer_(NULL), delay_(NULL), weak_ptr_factory_(this) {}
 
   class MockDelayProvider : public BackoffDelayProvider {
    public:
@@ -201,7 +199,7 @@ class SyncSchedulerTest : public testing::Test {
   // This stops the scheduler synchronously.
   void StopSyncScheduler() {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&SyncSchedulerTest::DoQuitLoopNow,
+        FROM_HERE, base::Bind(&SyncSchedulerImplTest::DoQuitLoopNow,
                               weak_ptr_factory_.GetWeakPtr()));
     RunLoop();
   }
@@ -254,7 +252,7 @@ class SyncSchedulerTest : public testing::Test {
   std::vector<scoped_refptr<ModelSafeWorker>> workers_;
   scoped_refptr<ExtensionsActivity> extensions_activity_;
   ModelSafeRoutingInfo routing_info_;
-  base::WeakPtrFactory<SyncSchedulerTest> weak_ptr_factory_;
+  base::WeakPtrFactory<SyncSchedulerImplTest> weak_ptr_factory_;
 };
 
 void RecordSyncShareImpl(SyncShareTimes* times) {
@@ -294,7 +292,7 @@ ACTION_P(QuitLoopNowAction, success) {
 }
 
 // Test nudge scheduling.
-TEST_F(SyncSchedulerTest, Nudge) {
+TEST_F(SyncSchedulerImplTest, Nudge) {
   SyncShareTimes times;
   ModelTypeSet model_types(THEMES);
 
@@ -323,7 +321,7 @@ TEST_F(SyncSchedulerTest, Nudge) {
 
 // Make sure a regular config command is scheduled fine in the absence of any
 // errors.
-TEST_F(SyncSchedulerTest, Config) {
+TEST_F(SyncSchedulerImplTest, Config) {
   SyncShareTimes times;
   const ModelTypeSet model_types(THEMES);
 
@@ -347,7 +345,7 @@ TEST_F(SyncSchedulerTest, Config) {
 }
 
 // Simulate a failure and make sure the config request is retried.
-TEST_F(SyncSchedulerTest, ConfigWithBackingOff) {
+TEST_F(SyncSchedulerImplTest, ConfigWithBackingOff) {
   UseMockDelayProvider();
   EXPECT_CALL(*delay(), GetDelay(_))
       .WillRepeatedly(Return(TimeDelta::FromMilliseconds(20)));
@@ -392,7 +390,7 @@ TEST_F(SyncSchedulerTest, ConfigWithBackingOff) {
 
 // Simuilate SyncSchedulerImpl::Stop being called in the middle of Configure.
 // This can happen if server returns NOT_MY_BIRTHDAY.
-TEST_F(SyncSchedulerTest, ConfigWithStop) {
+TEST_F(SyncSchedulerImplTest, ConfigWithStop) {
   UseMockDelayProvider();
   EXPECT_CALL(*delay(), GetDelay(_))
       .WillRepeatedly(Return(TimeDelta::FromMilliseconds(20)));
@@ -423,7 +421,7 @@ TEST_F(SyncSchedulerTest, ConfigWithStop) {
 
 // Issue a nudge when the config has failed. Make sure both the config and
 // nudge are executed.
-TEST_F(SyncSchedulerTest, NudgeWithConfigWithBackingOff) {
+TEST_F(SyncSchedulerImplTest, NudgeWithConfigWithBackingOff) {
   const ModelTypeSet model_types(THEMES);
   UseMockDelayProvider();
   EXPECT_CALL(*delay(), GetDelay(_))
@@ -476,7 +474,7 @@ TEST_F(SyncSchedulerTest, NudgeWithConfigWithBackingOff) {
 }
 
 // Test that nudges are coalesced.
-TEST_F(SyncSchedulerTest, NudgeCoalescing) {
+TEST_F(SyncSchedulerImplTest, NudgeCoalescing) {
   StartSyncScheduler(base::Time());
 
   SyncShareTimes times;
@@ -503,7 +501,7 @@ TEST_F(SyncSchedulerTest, NudgeCoalescing) {
 }
 
 // Test that nudges are coalesced.
-TEST_F(SyncSchedulerTest, NudgeCoalescingWithDifferentTimings) {
+TEST_F(SyncSchedulerImplTest, NudgeCoalescingWithDifferentTimings) {
   StartSyncScheduler(base::Time());
 
   SyncShareTimes times;
@@ -534,7 +532,7 @@ TEST_F(SyncSchedulerTest, NudgeCoalescingWithDifferentTimings) {
 }
 
 // Test nudge scheduling.
-TEST_F(SyncSchedulerTest, NudgeWithStates) {
+TEST_F(SyncSchedulerImplTest, NudgeWithStates) {
   StartSyncScheduler(base::Time());
 
   SyncShareTimes times1;
@@ -559,7 +557,7 @@ TEST_F(SyncSchedulerTest, NudgeWithStates) {
 }
 
 // Test that polling works as expected.
-TEST_F(SyncSchedulerTest, Polling) {
+TEST_F(SyncSchedulerImplTest, Polling) {
   SyncShareTimes times;
   TimeDelta poll_interval(TimeDelta::FromMilliseconds(30));
   EXPECT_CALL(*syncer(), PollSyncShare(_, _))
@@ -583,7 +581,7 @@ TEST_F(SyncSchedulerTest, Polling) {
 // Test that we reuse the previous poll time on startup, triggering the first
 // poll based on when the last one happened. Subsequent polls should have the
 // normal delay.
-TEST_F(SyncSchedulerTest, PollingPersistence) {
+TEST_F(SyncSchedulerImplTest, PollingPersistence) {
   SyncShareTimes times;
   // Use a large poll interval that wouldn't normally get hit on its own for
   // some time yet.
@@ -609,7 +607,7 @@ TEST_F(SyncSchedulerTest, PollingPersistence) {
 
 // Test that if the persisted poll is in the future, it's ignored (the case
 // where the local time has been modified).
-TEST_F(SyncSchedulerTest, PollingPersistenceBadClock) {
+TEST_F(SyncSchedulerImplTest, PollingPersistenceBadClock) {
   SyncShareTimes times;
   TimeDelta poll_interval(TimeDelta::FromMilliseconds(30));
   EXPECT_CALL(*syncer(), PollSyncShare(_, _))
@@ -632,7 +630,7 @@ TEST_F(SyncSchedulerTest, PollingPersistenceBadClock) {
 }
 
 // Test that the short poll interval is used.
-TEST_F(SyncSchedulerTest, PollNotificationsDisabled) {
+TEST_F(SyncSchedulerImplTest, PollNotificationsDisabled) {
   SyncShareTimes times;
   TimeDelta poll_interval(TimeDelta::FromMilliseconds(30));
   EXPECT_CALL(*syncer(), PollSyncShare(_, _))
@@ -655,7 +653,7 @@ TEST_F(SyncSchedulerTest, PollNotificationsDisabled) {
 }
 
 // Test that polling intervals are updated when needed.
-TEST_F(SyncSchedulerTest, PollIntervalUpdate) {
+TEST_F(SyncSchedulerImplTest, PollIntervalUpdate) {
   SyncShareTimes times;
   TimeDelta poll1(TimeDelta::FromMilliseconds(120));
   TimeDelta poll2(TimeDelta::FromMilliseconds(30));
@@ -680,7 +678,7 @@ TEST_F(SyncSchedulerTest, PollIntervalUpdate) {
 }
 
 // Test that no syncing occurs when throttled.
-TEST_F(SyncSchedulerTest, ThrottlingDoesThrottle) {
+TEST_F(SyncSchedulerImplTest, ThrottlingDoesThrottle) {
   const ModelTypeSet types(THEMES);
   TimeDelta poll(TimeDelta::FromMilliseconds(20));
   TimeDelta throttle(TimeDelta::FromMinutes(10));
@@ -710,7 +708,7 @@ TEST_F(SyncSchedulerTest, ThrottlingDoesThrottle) {
   ASSERT_EQ(1, retry_counter.times_called());
 }
 
-TEST_F(SyncSchedulerTest, ThrottlingExpiresFromPoll) {
+TEST_F(SyncSchedulerImplTest, ThrottlingExpiresFromPoll) {
   SyncShareTimes times;
   TimeDelta poll(TimeDelta::FromMilliseconds(15));
   TimeDelta throttle1(TimeDelta::FromMilliseconds(150));
@@ -736,7 +734,7 @@ TEST_F(SyncSchedulerTest, ThrottlingExpiresFromPoll) {
   AnalyzePollRun(times, kMinNumSamples, optimal_start, poll);
 }
 
-TEST_F(SyncSchedulerTest, ThrottlingExpiresFromNudge) {
+TEST_F(SyncSchedulerImplTest, ThrottlingExpiresFromNudge) {
   SyncShareTimes times;
   TimeDelta poll(TimeDelta::FromDays(1));
   TimeDelta throttle1(TimeDelta::FromMilliseconds(150));
@@ -764,7 +762,7 @@ TEST_F(SyncSchedulerTest, ThrottlingExpiresFromNudge) {
   StopSyncScheduler();
 }
 
-TEST_F(SyncSchedulerTest, ThrottlingExpiresFromConfigure) {
+TEST_F(SyncSchedulerImplTest, ThrottlingExpiresFromConfigure) {
   SyncShareTimes times;
   TimeDelta poll(TimeDelta::FromDays(1));
   TimeDelta throttle1(TimeDelta::FromMilliseconds(150));
@@ -800,7 +798,7 @@ TEST_F(SyncSchedulerTest, ThrottlingExpiresFromConfigure) {
   StopSyncScheduler();
 }
 
-TEST_F(SyncSchedulerTest, TypeThrottlingBlocksNudge) {
+TEST_F(SyncSchedulerImplTest, TypeThrottlingBlocksNudge) {
   UseMockDelayProvider();
   EXPECT_CALL(*delay(), GetDelay(_)).WillRepeatedly(Return(default_delay()));
 
@@ -830,7 +828,7 @@ TEST_F(SyncSchedulerTest, TypeThrottlingBlocksNudge) {
   StopSyncScheduler();
 }
 
-TEST_F(SyncSchedulerTest, TypeThrottlingDoesBlockOtherSources) {
+TEST_F(SyncSchedulerImplTest, TypeThrottlingDoesBlockOtherSources) {
   UseMockDelayProvider();
   EXPECT_CALL(*delay(), GetDelay(_)).WillRepeatedly(Return(default_delay()));
 
@@ -878,7 +876,7 @@ TEST_F(SyncSchedulerTest, TypeThrottlingDoesBlockOtherSources) {
 }
 
 // Test nudges / polls don't run in config mode and config tasks do.
-TEST_F(SyncSchedulerTest, ConfigurationMode) {
+TEST_F(SyncSchedulerImplTest, ConfigurationMode) {
   TimeDelta poll(TimeDelta::FromMilliseconds(15));
   SyncShareTimes times;
   scheduler()->OnReceivedLongPollIntervalUpdate(poll);
@@ -925,9 +923,9 @@ TEST_F(SyncSchedulerTest, ConfigurationMode) {
   Mock::VerifyAndClearExpectations(syncer());
 }
 
-class BackoffTriggersSyncSchedulerTest : public SyncSchedulerTest {
+class BackoffTriggersSyncSchedulerImplTest : public SyncSchedulerImplTest {
   void SetUp() override {
-    SyncSchedulerTest::SetUp();
+    SyncSchedulerImplTest::SetUp();
     UseMockDelayProvider();
     EXPECT_CALL(*delay(), GetDelay(_))
         .WillRepeatedly(Return(TimeDelta::FromMilliseconds(10)));
@@ -935,13 +933,13 @@ class BackoffTriggersSyncSchedulerTest : public SyncSchedulerTest {
 
   void TearDown() override {
     StopSyncScheduler();
-    SyncSchedulerTest::TearDown();
+    SyncSchedulerImplTest::TearDown();
   }
 };
 
 // Have the syncer fail during commit.  Expect that the scheduler enters
 // backoff.
-TEST_F(BackoffTriggersSyncSchedulerTest, FailCommitOnce) {
+TEST_F(BackoffTriggersSyncSchedulerImplTest, FailCommitOnce) {
   EXPECT_CALL(*syncer(), NormalSyncShare(_, _, _))
       .WillOnce(DoAll(Invoke(test_util::SimulateCommitFailed),
                       QuitLoopNowAction(false)));
@@ -950,7 +948,7 @@ TEST_F(BackoffTriggersSyncSchedulerTest, FailCommitOnce) {
 
 // Have the syncer fail during download updates and succeed on the first
 // retry.  Expect that this clears the backoff state.
-TEST_F(BackoffTriggersSyncSchedulerTest, FailDownloadOnceThenSucceed) {
+TEST_F(BackoffTriggersSyncSchedulerImplTest, FailDownloadOnceThenSucceed) {
   EXPECT_CALL(*syncer(), NormalSyncShare(_, _, _))
       .WillOnce(DoAll(Invoke(test_util::SimulateDownloadUpdatesFailed),
                       Return(false)))
@@ -961,7 +959,7 @@ TEST_F(BackoffTriggersSyncSchedulerTest, FailDownloadOnceThenSucceed) {
 
 // Have the syncer fail during commit and succeed on the first retry.  Expect
 // that this clears the backoff state.
-TEST_F(BackoffTriggersSyncSchedulerTest, FailCommitOnceThenSucceed) {
+TEST_F(BackoffTriggersSyncSchedulerImplTest, FailCommitOnceThenSucceed) {
   EXPECT_CALL(*syncer(), NormalSyncShare(_, _, _))
       .WillOnce(DoAll(Invoke(test_util::SimulateCommitFailed), Return(false)))
       .WillOnce(DoAll(Invoke(test_util::SimulateNormalSuccess),
@@ -971,7 +969,7 @@ TEST_F(BackoffTriggersSyncSchedulerTest, FailCommitOnceThenSucceed) {
 
 // Have the syncer fail to download updates and fail again on the retry.
 // Expect this will leave the scheduler in backoff.
-TEST_F(BackoffTriggersSyncSchedulerTest, FailDownloadTwice) {
+TEST_F(BackoffTriggersSyncSchedulerImplTest, FailDownloadTwice) {
   EXPECT_CALL(*syncer(), NormalSyncShare(_, _, _))
       .WillOnce(DoAll(Invoke(test_util::SimulateDownloadUpdatesFailed),
                       Return(false)))
@@ -982,7 +980,7 @@ TEST_F(BackoffTriggersSyncSchedulerTest, FailDownloadTwice) {
 
 // Have the syncer fail to get the encryption key yet succeed in downloading
 // updates. Expect this will leave the scheduler in backoff.
-TEST_F(BackoffTriggersSyncSchedulerTest, FailGetEncryptionKey) {
+TEST_F(BackoffTriggersSyncSchedulerImplTest, FailGetEncryptionKey) {
   EXPECT_CALL(*syncer(), ConfigureSyncShare(_, _, _))
       .WillOnce(DoAll(Invoke(test_util::SimulateGetEncryptionKeyFailed),
                       Return(false)))
@@ -1004,7 +1002,7 @@ TEST_F(BackoffTriggersSyncSchedulerTest, FailGetEncryptionKey) {
 }
 
 // Test that no polls or extraneous nudges occur when in backoff.
-TEST_F(SyncSchedulerTest, BackoffDropsJobs) {
+TEST_F(SyncSchedulerImplTest, BackoffDropsJobs) {
   SyncShareTimes times;
   TimeDelta poll(TimeDelta::FromMilliseconds(10));
   const ModelTypeSet types(THEMES);
@@ -1053,7 +1051,7 @@ TEST_F(SyncSchedulerTest, BackoffDropsJobs) {
 }
 
 // Test that backoff is shaping traffic properly with consecutive errors.
-TEST_F(SyncSchedulerTest, BackoffElevation) {
+TEST_F(SyncSchedulerImplTest, BackoffElevation) {
   SyncShareTimes times;
   UseMockDelayProvider();
 
@@ -1098,7 +1096,7 @@ TEST_F(SyncSchedulerTest, BackoffElevation) {
 }
 
 // Test that things go back to normal once a retry makes forward progress.
-TEST_F(SyncSchedulerTest, BackoffRelief) {
+TEST_F(SyncSchedulerImplTest, BackoffRelief) {
   SyncShareTimes times;
   UseMockDelayProvider();
 
@@ -1155,7 +1153,7 @@ TEST_F(SyncSchedulerTest, BackoffRelief) {
 
 // Test that poll failures are treated like any other failure. They should
 // result in retry with backoff.
-TEST_F(SyncSchedulerTest, TransientPollFailure) {
+TEST_F(SyncSchedulerImplTest, TransientPollFailure) {
   SyncShareTimes times;
   const TimeDelta poll_interval(TimeDelta::FromMilliseconds(10));
   scheduler()->OnReceivedLongPollIntervalUpdate(poll_interval);
@@ -1182,7 +1180,7 @@ TEST_F(SyncSchedulerTest, TransientPollFailure) {
 
 // Test that starting the syncer thread without a valid connection doesn't
 // break things when a connection is detected.
-TEST_F(SyncSchedulerTest, StartWhenNotConnected) {
+TEST_F(SyncSchedulerImplTest, StartWhenNotConnected) {
   connection()->SetServerNotReachable();
   connection()->UpdateConnectionStatus();
   EXPECT_CALL(*syncer(), NormalSyncShare(_, _, _))
@@ -1201,7 +1199,7 @@ TEST_F(SyncSchedulerTest, StartWhenNotConnected) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(SyncSchedulerTest, ServerConnectionChangeDuringBackoff) {
+TEST_F(SyncSchedulerImplTest, ServerConnectionChangeDuringBackoff) {
   UseMockDelayProvider();
   EXPECT_CALL(*delay(), GetDelay(_))
       .WillRepeatedly(Return(TimeDelta::FromMilliseconds(0)));
@@ -1230,7 +1228,7 @@ TEST_F(SyncSchedulerTest, ServerConnectionChangeDuringBackoff) {
 // This was supposed to test the scenario where we receive a nudge while a
 // connection change canary is scheduled, but has not run yet.  Since we've made
 // the connection change canary synchronous, this is no longer possible.
-TEST_F(SyncSchedulerTest, ConnectionChangeCanaryPreemptedByNudge) {
+TEST_F(SyncSchedulerImplTest, ConnectionChangeCanaryPreemptedByNudge) {
   UseMockDelayProvider();
   EXPECT_CALL(*delay(), GetDelay(_))
       .WillRepeatedly(Return(TimeDelta::FromMilliseconds(0)));
@@ -1263,7 +1261,7 @@ TEST_F(SyncSchedulerTest, ConnectionChangeCanaryPreemptedByNudge) {
 
 // Tests that we don't crash trying to run two canaries at once if we receive
 // extra connection status change notifications.  See crbug.com/190085.
-TEST_F(SyncSchedulerTest, DoubleCanaryInConfigure) {
+TEST_F(SyncSchedulerImplTest, DoubleCanaryInConfigure) {
   EXPECT_CALL(*syncer(), ConfigureSyncShare(_, _, _))
       .WillRepeatedly(DoAll(
           Invoke(test_util::SimulateConfigureConnectionFailure), Return(true)));
@@ -1287,7 +1285,7 @@ TEST_F(SyncSchedulerTest, DoubleCanaryInConfigure) {
   PumpLoop();  // Run the nudge, that will fail and schedule a quick retry.
 }
 
-TEST_F(SyncSchedulerTest, PollFromCanaryAfterAuthError) {
+TEST_F(SyncSchedulerImplTest, PollFromCanaryAfterAuthError) {
   SyncShareTimes times;
   TimeDelta poll(TimeDelta::FromMilliseconds(15));
   scheduler()->OnReceivedLongPollIntervalUpdate(poll);
@@ -1316,7 +1314,7 @@ TEST_F(SyncSchedulerTest, PollFromCanaryAfterAuthError) {
   StopSyncScheduler();
 }
 
-TEST_F(SyncSchedulerTest, SuccessfulRetry) {
+TEST_F(SyncSchedulerImplTest, SuccessfulRetry) {
   StartSyncScheduler(base::Time());
 
   SyncShareTimes times;
@@ -1334,7 +1332,7 @@ TEST_F(SyncSchedulerTest, SuccessfulRetry) {
   StopSyncScheduler();
 }
 
-TEST_F(SyncSchedulerTest, FailedRetry) {
+TEST_F(SyncSchedulerImplTest, FailedRetry) {
   SyncShareTimes times;
 
   UseMockDelayProvider();
@@ -1368,7 +1366,7 @@ ACTION_P2(VerifyRetryTimerDelay, scheduler_test, expected_delay) {
   EXPECT_EQ(expected_delay, scheduler_test->GetRetryTimerDelay());
 }
 
-TEST_F(SyncSchedulerTest, ReceiveNewRetryDelay) {
+TEST_F(SyncSchedulerImplTest, ReceiveNewRetryDelay) {
   StartSyncScheduler(base::Time());
 
   SyncShareTimes times;
@@ -1399,7 +1397,7 @@ TEST_F(SyncSchedulerTest, ReceiveNewRetryDelay) {
   StopSyncScheduler();
 }
 
-TEST_F(SyncSchedulerTest, ScheduleClearServerData_Succeeds) {
+TEST_F(SyncSchedulerImplTest, ScheduleClearServerData_Succeeds) {
   StartSyncConfiguration();
   scheduler()->Start(SyncScheduler::CLEAR_SERVER_DATA_MODE, base::Time());
   CallbackCounter success_counter;
@@ -1410,7 +1408,7 @@ TEST_F(SyncSchedulerTest, ScheduleClearServerData_Succeeds) {
   ASSERT_EQ(1, success_counter.times_called());
 }
 
-TEST_F(SyncSchedulerTest, ScheduleClearServerData_FailsRetriesSucceeds) {
+TEST_F(SyncSchedulerImplTest, ScheduleClearServerData_FailsRetriesSucceeds) {
   UseMockDelayProvider();
   TimeDelta delta(TimeDelta::FromMilliseconds(20));
   EXPECT_CALL(*delay(), GetDelay(_)).WillRepeatedly(Return(delta));

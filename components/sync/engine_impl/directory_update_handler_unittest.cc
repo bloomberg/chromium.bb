@@ -6,17 +6,14 @@
 
 #include <stdint.h>
 
-#include <memory>
 #include <set>
 #include <string>
 #include <utility>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "components/sync/base/attachment_id_proto.h"
-#include "components/sync/base/model_type.h"
 #include "components/sync/core/test/test_entry_factory.h"
 #include "components/sync/engine_impl/cycle/directory_type_debug_info_emitter.h"
 #include "components/sync/engine_impl/cycle/status_controller.h"

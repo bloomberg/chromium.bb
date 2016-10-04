@@ -4,7 +4,6 @@
 
 #include "components/sync/driver/ui_data_type_controller.h"
 
-#include <memory>
 #include <utility>
 
 #include "base/bind.h"

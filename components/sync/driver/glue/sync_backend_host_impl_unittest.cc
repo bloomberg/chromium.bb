@@ -4,11 +4,7 @@
 
 #include "components/sync/driver/glue/sync_backend_host_impl.h"
 
-#include <stdint.h>
-
 #include <cstddef>
-#include <map>
-#include <memory>
 #include <utility>
 
 #include "base/files/file_util.h"
@@ -25,7 +21,6 @@
 #include "components/invalidation/public/invalidator_state.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
 #include "components/sync/base/experiments.h"
-#include "components/sync/base/model_type.h"
 #include "components/sync/base/test_unrecoverable_error_handler.h"
 #include "components/sync/core/http_bridge_network_resources.h"
 #include "components/sync/core/network_resources.h"
@@ -40,8 +35,6 @@
 #include "components/sync/engine/cycle/update_counters.h"
 #include "components/sync/engine/model_safe_worker.h"
 #include "components/sync/engine/passive_model_worker.h"
-#include "components/sync/protocol/encryption.pb.h"
-#include "components/sync/protocol/sync_protocol_error.h"
 #include "components/sync/test/callback_counter.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
 #include "components/syncable_prefs/testing_pref_service_syncable.h"

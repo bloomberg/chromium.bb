@@ -8,7 +8,6 @@
 #include "components/sync/engine_impl/syncer.h"
 
 #include <stddef.h>
-#include <stdint.h>
 
 #include <algorithm>
 #include <limits>
@@ -20,10 +19,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/histogram_tester.h"
@@ -31,9 +28,7 @@
 #include "build/build_config.h"
 #include "components/sync/base/cancelation_signal.h"
 #include "components/sync/base/cryptographer.h"
-#include "components/sync/base/extensions_activity.h"
 #include "components/sync/base/fake_encryptor.h"
-#include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/cycle/commit_counters.h"
 #include "components/sync/engine/cycle/status_counters.h"

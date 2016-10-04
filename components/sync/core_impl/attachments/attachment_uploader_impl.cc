@@ -4,9 +4,6 @@
 
 #include "components/sync/core/attachments/attachment_uploader_impl.h"
 
-#include <stdint.h>
-
-#include <string>
 #include <utility>
 #include <vector>
 
@@ -14,14 +11,12 @@
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_byteorder.h"
-#include "base/threading/non_thread_safe.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/sync/api/attachments/attachment.h"
 #include "components/sync/protocol/sync.pb.h"

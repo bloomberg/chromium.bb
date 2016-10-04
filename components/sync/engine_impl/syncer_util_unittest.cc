@@ -4,15 +4,12 @@
 
 #include "components/sync/engine_impl/syncer_util.h"
 
-#include <stdint.h>
-
 #include <memory>
 
 #include "base/rand_util.h"
 #include "components/sync/base/unique_position.h"
 #include "components/sync/core/test/test_entry_factory.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/sync/syncable/mutable_entry.h"
 #include "components/sync/syncable/syncable_write_transaction.h"
 #include "components/sync/test/engine/test_directory_setter_upper.h"
 #include "testing/gtest/include/gtest/gtest.h"

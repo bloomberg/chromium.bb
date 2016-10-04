@@ -4,11 +4,9 @@
 
 #include "components/sync/core_impl/js_mutation_event_observer.h"
 
-#include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/base/weak_handle.h"
 #include "components/sync/js/js_event_details.h"
 #include "components/sync/js/js_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"

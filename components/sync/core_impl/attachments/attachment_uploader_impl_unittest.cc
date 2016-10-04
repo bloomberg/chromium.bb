@@ -4,7 +4,6 @@
 
 #include "components/sync/core/attachments/attachment_uploader_impl.h"
 
-#include <string>
 #include <utility>
 #include <vector>
 
@@ -20,16 +19,13 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/test/histogram_tester.h"
-#include "base/threading/non_thread_safe.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/sync/api/attachments/attachment.h"
-#include "components/sync/base/model_type.h"
 #include "components/sync/core/attachments/attachment_util.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "google_apis/gaia/gaia_constants.h"
-#include "google_apis/gaia/oauth2_token_service_request.h"
 #include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"

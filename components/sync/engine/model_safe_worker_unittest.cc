@@ -4,8 +4,6 @@
 
 #include "components/sync/engine/model_safe_worker.h"
 
-#include <memory>
-
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

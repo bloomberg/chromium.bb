@@ -4,8 +4,6 @@
 
 #include "components/sync/base/cryptographer.h"
 
-#include <string>
-
 #include "base/strings/string_util.h"
 #include "components/sync/base/fake_encryptor.h"
 #include "components/sync/protocol/password_specifics.pb.h"

@@ -7,7 +7,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/sync/driver/fake_sync_service.h"
 #include "components/sync/engine/sync_status.h"
-#include "components/version_info/version_info.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

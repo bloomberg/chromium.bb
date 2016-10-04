@@ -5,9 +5,7 @@
 #include "components/sync/core/change_record.h"
 
 #include <stddef.h>
-#include <stdint.h>
 
-#include <memory>
 #include <string>
 #include <utility>
 
@@ -16,7 +14,6 @@
 #include "base/values.h"
 #include "components/sync/protocol/extension_specifics.pb.h"
 #include "components/sync/protocol/proto_value_conversions.h"
-#include "components/sync/protocol/sync.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

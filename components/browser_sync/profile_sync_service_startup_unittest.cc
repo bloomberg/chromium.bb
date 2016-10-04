@@ -2,14 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <memory>
-#include <utility>
+#include "components/browser_sync/profile_sync_service.h"
 
 #include "base/files/file_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "build/build_config.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/browser_sync/profile_sync_test_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
@@ -17,18 +14,15 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/signin_pref_names.h"
-#include "components/sync/driver/data_type_manager.h"
 #include "components/sync/driver/data_type_manager_mock.h"
 #include "components/sync/driver/fake_data_type_controller.h"
 #include "components/sync/driver/glue/sync_backend_host_mock.h"
 #include "components/sync/driver/pref_names.h"
 #include "components/sync/driver/sync_api_component_factory_mock.h"
-#include "components/sync/driver/sync_prefs.h"
 #include "components/sync/driver/sync_service_observer.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_constants.h"
-#include "google_apis/gaia/oauth2_token_service.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

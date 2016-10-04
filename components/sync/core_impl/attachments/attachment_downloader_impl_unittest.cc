@@ -4,8 +4,6 @@
 
 #include "components/sync/core/attachments/attachment_downloader_impl.h"
 
-#include <stdint.h>
-
 #include <map>
 
 #include "base/bind.h"
@@ -17,7 +15,6 @@
 #include "base/test/histogram_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/sync/api/attachments/attachment.h"
-#include "components/sync/base/model_type.h"
 #include "components/sync/core/attachments/attachment_uploader_impl.h"
 #include "components/sync/core/attachments/attachment_util.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"

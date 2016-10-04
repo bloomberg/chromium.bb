@@ -4,13 +4,9 @@
 
 #include "components/sync/core/processor_entity_tracker.h"
 
-#include <stdint.h>
-
-#include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "base/time/time.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
 #include "components/sync/core/non_blocking_sync_common.h"

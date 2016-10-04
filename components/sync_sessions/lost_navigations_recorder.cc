@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/sync_sessions/lost_navigations_recorder.h"
+
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "components/sync/syncable/entry.h"
-#include "components/sync_sessions/lost_navigations_recorder.h"
 
 namespace sync_sessions {
 

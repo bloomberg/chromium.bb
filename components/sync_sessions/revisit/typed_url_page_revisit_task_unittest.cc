@@ -7,10 +7,7 @@
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "components/history/core/browser/history_backend.h"
-#include "components/history/core/browser/history_types.h"
-#include "components/sync_sessions/revisit/page_visit_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "url/gurl.h"
 
 namespace sync_sessions {
 

@@ -4,8 +4,6 @@
 
 #include "components/sync_sessions/tab_node_pool.h"
 
-#include <stddef.h>
-
 #include <vector>
 
 #include "components/sync/api/sync_change.h"

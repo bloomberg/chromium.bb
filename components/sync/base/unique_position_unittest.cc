@@ -4,13 +4,9 @@
 
 #include "components/sync/base/unique_position.h"
 
-#include <stddef.h>
-#include <stdint.h>
-
 #include <algorithm>
 #include <functional>
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/base64.h"

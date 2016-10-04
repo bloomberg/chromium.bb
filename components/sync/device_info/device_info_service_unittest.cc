@@ -4,10 +4,7 @@
 
 #include "components/sync/device_info/device_info_service.h"
 
-#include <map>
-#include <memory>
 #include <set>
-#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -20,7 +17,6 @@
 #include "components/sync/api/entity_data.h"
 #include "components/sync/api/fake_model_type_change_processor.h"
 #include "components/sync/api/metadata_batch.h"
-#include "components/sync/api/model_type_store.h"
 #include "components/sync/base/time.h"
 #include "components/sync/core/test/model_type_store_test_util.h"
 #include "components/sync/device_info/local_device_info_provider_mock.h"

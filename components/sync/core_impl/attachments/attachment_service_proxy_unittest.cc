@@ -16,9 +16,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/sync/api/attachments/attachment.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/core/attachments/attachment_service.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -4,10 +4,7 @@
 
 #include "components/sync/core_impl/protocol_event_buffer.h"
 
-#include <stddef.h>
 #include <stdint.h>
-
-#include <memory>
 
 #include "base/time/time.h"
 #include "components/sync/engine/events/poll_get_updates_request_event.h"

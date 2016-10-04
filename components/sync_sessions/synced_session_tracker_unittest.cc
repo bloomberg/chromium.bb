@@ -4,14 +4,10 @@
 
 #include "components/sync_sessions/synced_session_tracker.h"
 
-#include <string>
-#include <vector>
-
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"
-#include "components/sessions/core/session_types.h"
 #include "components/sync_sessions/fake_sync_sessions_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

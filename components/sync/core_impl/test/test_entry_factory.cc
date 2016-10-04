@@ -4,8 +4,6 @@
 
 #include "components/sync/core/test/test_entry_factory.h"
 
-#include <stdint.h>
-
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/entry.h"
 #include "components/sync/syncable/mutable_entry.h"

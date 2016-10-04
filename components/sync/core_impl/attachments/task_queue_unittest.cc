@@ -4,11 +4,8 @@
 
 #include "components/sync/core/attachments/task_queue.h"
 
-#include <utility>
 #include <vector>
 
-#include "base/bind.h"
-#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/timer/mock_timer.h"

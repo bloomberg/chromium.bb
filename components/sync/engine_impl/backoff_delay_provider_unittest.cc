@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/time/time.h"
 #include "components/sync/base/syncer_error.h"
 #include "components/sync/engine/cycle/model_neutral_state.h"
 #include "components/sync/engine/polling_constants.h"

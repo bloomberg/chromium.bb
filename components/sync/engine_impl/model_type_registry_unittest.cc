@@ -5,12 +5,10 @@
 #include "components/sync/engine_impl/model_type_registry.h"
 
 #include <utility>
-#include <vector>
 
 #include "base/deferred_sequenced_task_runner.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
-#include "components/sync/base/model_type.h"
 #include "components/sync/core/activation_context.h"
 #include "components/sync/core/test/fake_model_type_processor.h"
 #include "components/sync/protocol/data_type_state.pb.h"

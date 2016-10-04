@@ -5,11 +5,8 @@
 #include "components/sync/syncable/directory_backing_store.h"
 
 #include <stddef.h>
-#include <stdint.h>
 
 #include <map>
-#include <memory>
-#include <string>
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
@@ -22,12 +19,9 @@
 #include "components/sync/base/time.h"
 #include "components/sync/protocol/bookmark_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/on_disk_directory_backing_store.h"
 #include "components/sync/test/directory_backing_store_corruption_testing.h"
 #include "components/sync/test/test_directory_backing_store.h"
-#include "sql/connection.h"
-#include "sql/statement.h"
 #include "sql/test/test_helpers.h"
 #include "testing/gtest/include/gtest/gtest-param-test.h"
 #include "testing/gtest/include/gtest/gtest.h"

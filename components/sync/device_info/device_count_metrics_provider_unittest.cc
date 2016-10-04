@@ -4,9 +4,7 @@
 
 #include "components/sync/device_info/device_count_metrics_provider.h"
 
-#include <memory>
 #include <string>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/test/histogram_tester.h"

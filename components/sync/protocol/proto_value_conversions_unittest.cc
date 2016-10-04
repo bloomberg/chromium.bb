@@ -6,7 +6,6 @@
 
 #include "components/sync/protocol/proto_value_conversions.h"
 
-#include <memory>
 #include <string>
 
 #include "base/strings/string_number_conversions.h"

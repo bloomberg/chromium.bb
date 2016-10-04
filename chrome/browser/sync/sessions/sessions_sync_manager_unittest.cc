@@ -4,12 +4,10 @@
 
 #include "components/sync_sessions/sessions_sync_manager.h"
 
-#include <stddef.h>
 #include <stdint.h>
 
 #include <utility>
 
-#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -21,12 +19,9 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "components/sessions/content/content_serialized_navigation_builder.h"
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"
-#include "components/sessions/core/session_id.h"
-#include "components/sessions/core/session_types.h"
 #include "components/sync/api/attachments/attachment_id.h"
 #include "components/sync/api/sync_error_factory_mock.h"
 #include "components/sync/core/attachments/attachment_service_proxy_for_test.h"
-#include "components/sync/device_info/device_info.h"
 #include "components/sync/device_info/local_device_info_provider_mock.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync_sessions/session_sync_test_helper.h"

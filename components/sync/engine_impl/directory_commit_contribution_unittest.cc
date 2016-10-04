@@ -4,14 +4,11 @@
 
 #include "components/sync/engine_impl/directory_commit_contribution.h"
 
-#include <stdint.h>
-
 #include <set>
 #include <string>
 
 #include "base/message_loop/message_loop.h"
 #include "components/sync/base/attachment_id_proto.h"
-#include "components/sync/engine_impl/cycle/status_controller.h"
 #include "components/sync/syncable/entry.h"
 #include "components/sync/syncable/mutable_entry.h"
 #include "components/sync/syncable/syncable_read_transaction.h"

@@ -4,7 +4,6 @@
 
 #include "components/sync/engine_impl/cycle/nudge_tracker.h"
 
-#include <stddef.h>
 #include <stdint.h>
 
 #include <string>

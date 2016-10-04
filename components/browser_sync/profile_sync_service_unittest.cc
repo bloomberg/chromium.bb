@@ -4,15 +4,11 @@
 
 #include "components/browser_sync/profile_sync_service.h"
 
-#include <memory>
 #include <utility>
-#include <vector>
 
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/compiler_specific.h"
 #include "base/feature_list.h"
-#include "base/location.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -21,7 +17,6 @@
 #include "base/test/sequenced_worker_pool_owner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "build/build_config.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/browser_sync/profile_sync_test_util.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
@@ -29,18 +24,14 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/sync/driver/data_type_manager.h"
-#include "components/sync/driver/data_type_manager_observer.h"
 #include "components/sync/driver/fake_data_type_controller.h"
 #include "components/sync/driver/glue/sync_backend_host_mock.h"
 #include "components/sync/driver/pref_names.h"
 #include "components/sync/driver/sync_api_component_factory_mock.h"
 #include "components/sync/driver/sync_driver_switches.h"
-#include "components/sync/driver/sync_prefs.h"
 #include "components/sync/driver/sync_service_observer.h"
 #include "components/sync/driver/sync_util.h"
 #include "components/syncable_prefs/testing_pref_service_syncable.h"
-#include "components/version_info/version_info.h"
 #include "components/version_info/version_info_values.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"

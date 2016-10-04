@@ -4,19 +4,13 @@
 
 #include "components/sync/api/sync_data.h"
 
-#include <stdint.h>
-
 #include <memory>
-#include <string>
 
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/time/time.h"
-#include "components/sync/api/attachments/attachment_id.h"
 #include "components/sync/core/attachments/attachment_service.h"
 #include "components/sync/core/attachments/attachment_service_impl.h"
-#include "components/sync/core/attachments/attachment_service_proxy.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

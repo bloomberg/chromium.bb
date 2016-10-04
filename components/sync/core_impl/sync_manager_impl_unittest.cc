@@ -8,10 +8,7 @@
 
 #include "components/sync/core_impl/sync_manager_impl.h"
 
-#include <stdint.h>
-
 #include <cstddef>
-#include <map>
 #include <memory>
 #include <utility>
 
@@ -28,12 +25,10 @@
 #include "base/values.h"
 #include "components/sync/base/attachment_id_proto.h"
 #include "components/sync/base/cancelation_signal.h"
-#include "components/sync/base/cryptographer.h"
 #include "components/sync/base/extensions_activity.h"
 #include "components/sync/base/fake_encryptor.h"
 #include "components/sync/base/mock_unrecoverable_error_handler.h"
 #include "components/sync/base/model_type_test_util.h"
-#include "components/sync/base/time.h"
 #include "components/sync/core/change_record.h"
 #include "components/sync/core/http_post_provider_factory.h"
 #include "components/sync/core/http_post_provider_interface.h"
@@ -44,14 +39,12 @@
 #include "components/sync/core/test/test_user_share.h"
 #include "components/sync/core/write_node.h"
 #include "components/sync/core/write_transaction.h"
-#include "components/sync/core_impl/sync_encryption_handler_impl.h"
 #include "components/sync/core_impl/syncapi_internal.h"
 #include "components/sync/engine/events/protocol_event.h"
 #include "components/sync/engine/model_safe_worker.h"
 #include "components/sync/engine/polling_constants.h"
 #include "components/sync/engine_impl/cycle/sync_cycle.h"
 #include "components/sync/engine_impl/sync_scheduler.h"
-#include "components/sync/js/js_backend.h"
 #include "components/sync/js/js_event_handler.h"
 #include "components/sync/js/js_test_util.h"
 #include "components/sync/protocol/bookmark_specifics.pb.h"

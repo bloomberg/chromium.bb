@@ -4,18 +4,12 @@
 
 #include "components/sync/driver/sync_prefs.h"
 
-#include <stdint.h>
-
-#include <map>
-
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
-#include "base/time/time.h"
 #include "components/pref_registry/testing_pref_service_syncable.h"
 #include "components/prefs/pref_notifier_impl.h"
 #include "components/prefs/pref_value_store.h"
 #include "components/prefs/testing_pref_service.h"
-#include "components/sync/base/model_type.h"
 #include "components/sync/driver/pref_names.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

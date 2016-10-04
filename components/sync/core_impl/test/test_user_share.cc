@@ -4,8 +4,6 @@
 
 #include "components/sync/core/test/test_user_share.h"
 
-#include <stddef.h>
-
 #include "base/compiler_specific.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/mutable_entry.h"

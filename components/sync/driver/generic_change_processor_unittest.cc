@@ -6,20 +6,15 @@
 
 #include <stddef.h>
 
-#include <memory>
-#include <string>
 #include <utility>
 
-#include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "components/sync/api/attachments/attachment_id.h"
-#include "components/sync/api/attachments/attachment_store.h"
 #include "components/sync/api/data_type_error_handler_mock.h"
 #include "components/sync/api/fake_syncable_service.h"
 #include "components/sync/api/sync_change.h"
-#include "components/sync/api/sync_merge_result.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/core/attachments/attachment_service_impl.h"
 #include "components/sync/core/attachments/fake_attachment_downloader.h"

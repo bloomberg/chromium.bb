@@ -5,13 +5,8 @@
 #include "components/sync/device_info/device_info_sync_service.h"
 
 #include <stddef.h>
-#include <stdint.h>
-
-#include <string>
 
 #include "base/message_loop/message_loop.h"
-#include "components/sync/api/sync_change.h"
-#include "components/sync/api/sync_change_processor.h"
 #include "components/sync/api/sync_change_processor_wrapper_for_test.h"
 #include "components/sync/api/sync_error_factory_mock.h"
 #include "components/sync/base/time.h"

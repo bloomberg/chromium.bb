@@ -5,14 +5,8 @@
 
 #include "components/sync/engine_impl/worker_entity_tracker.h"
 
-#include <stdint.h>
-
-#include <memory>
-
-#include "base/time/time.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
-#include "components/sync/core/non_blocking_sync_common.h"
 #include "components/sync/syncable/syncable_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

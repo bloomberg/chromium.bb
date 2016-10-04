@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/macros.h"
 #include "components/sync/base/model_type_test_util.h"
+
+#include "base/macros.h"
 
 namespace syncer {
 

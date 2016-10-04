@@ -4,12 +4,8 @@
 
 #include "components/sync/api/attachments/attachment.h"
 
-#include <stdint.h>
-
 #include <string>
 
-#include "base/memory/ref_counted.h"
-#include "base/memory/ref_counted_memory.h"
 #include "components/sync/core/attachments/attachment_util.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"

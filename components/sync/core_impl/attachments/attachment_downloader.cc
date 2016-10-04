@@ -4,8 +4,6 @@
 
 #include "components/sync/core/attachments/attachment_downloader.h"
 
-#include <string>
-
 #include "components/sync/core/attachments/attachment_downloader_impl.h"
 
 namespace syncer {

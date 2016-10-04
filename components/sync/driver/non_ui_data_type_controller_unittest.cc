@@ -4,14 +4,12 @@
 
 #include "components/sync/driver/non_ui_data_type_controller.h"
 
-#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/run_loop.h"

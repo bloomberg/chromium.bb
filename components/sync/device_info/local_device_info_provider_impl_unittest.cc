@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/sync/device_info/local_device_info_provider_impl.h"
+
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "components/sync/base/get_session_name.h"
-#include "components/sync/device_info/local_device_info_provider_impl.h"
-#include "components/version_info/version_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -15,10 +15,10 @@ namespace syncer {
 const char kLocalDeviceGuid[] = "foo";
 const char kSigninScopedDeviceId[] = "device_id";
 
-class LocalDeviceInfoProviderTest : public testing::Test {
+class LocalDeviceInfoProviderImplTest : public testing::Test {
  public:
-  LocalDeviceInfoProviderTest() : called_back_(false) {}
-  ~LocalDeviceInfoProviderTest() override {}
+  LocalDeviceInfoProviderImplTest() : called_back_(false) {}
+  ~LocalDeviceInfoProviderImplTest() override {}
 
   void SetUp() override {
     provider_.reset(new LocalDeviceInfoProviderImpl(
@@ -45,7 +45,7 @@ class LocalDeviceInfoProviderTest : public testing::Test {
     base::RunLoop run_loop;
     std::unique_ptr<LocalDeviceInfoProvider::Subscription> subscription =
         provider_->RegisterOnInitializedCallback(
-            base::Bind(&LocalDeviceInfoProviderTest::QuitLoopOnInitialized,
+            base::Bind(&LocalDeviceInfoProviderImplTest::QuitLoopOnInitialized,
                        base::Unretained(this), &run_loop));
     run_loop.Run();
   }
@@ -68,7 +68,7 @@ class LocalDeviceInfoProviderTest : public testing::Test {
   base::MessageLoop message_loop_;
 };
 
-TEST_F(LocalDeviceInfoProviderTest, OnInitializedCallback) {
+TEST_F(LocalDeviceInfoProviderImplTest, OnInitializedCallback) {
   ASSERT_FALSE(called_back_);
   StartInitializeProvider();
   ASSERT_FALSE(called_back_);
@@ -76,7 +76,7 @@ TEST_F(LocalDeviceInfoProviderTest, OnInitializedCallback) {
   EXPECT_TRUE(called_back_);
 }
 
-TEST_F(LocalDeviceInfoProviderTest, GetLocalDeviceInfo) {
+TEST_F(LocalDeviceInfoProviderImplTest, GetLocalDeviceInfo) {
   ASSERT_EQ(nullptr, provider_->GetLocalDeviceInfo());
   StartInitializeProvider();
   ASSERT_EQ(nullptr, provider_->GetLocalDeviceInfo());
@@ -97,7 +97,7 @@ TEST_F(LocalDeviceInfoProviderTest, GetLocalDeviceInfo) {
   ASSERT_EQ(nullptr, provider_->GetLocalDeviceInfo());
 }
 
-TEST_F(LocalDeviceInfoProviderTest, GetLocalSyncCacheGUID) {
+TEST_F(LocalDeviceInfoProviderImplTest, GetLocalSyncCacheGUID) {
   EXPECT_TRUE(provider_->GetLocalSyncCacheGUID().empty());
 
   StartInitializeProvider();
@@ -110,7 +110,7 @@ TEST_F(LocalDeviceInfoProviderTest, GetLocalSyncCacheGUID) {
   EXPECT_TRUE(provider_->GetLocalSyncCacheGUID().empty());
 }
 
-TEST_F(LocalDeviceInfoProviderTest, InitClearRace) {
+TEST_F(LocalDeviceInfoProviderImplTest, InitClearRace) {
   EXPECT_TRUE(provider_->GetLocalSyncCacheGUID().empty());
   StartInitializeProvider();
 
@@ -123,7 +123,7 @@ TEST_F(LocalDeviceInfoProviderTest, InitClearRace) {
   EXPECT_TRUE(provider_->GetLocalSyncCacheGUID().empty());
 }
 
-TEST_F(LocalDeviceInfoProviderTest, InitClearInitRace) {
+TEST_F(LocalDeviceInfoProviderImplTest, InitClearInitRace) {
   EXPECT_TRUE(provider_->GetLocalSyncCacheGUID().empty());
   StartInitializeProvider();
   provider_->Clear();

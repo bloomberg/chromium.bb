@@ -4,8 +4,6 @@
 
 #include "components/sync/driver/system_encryptor.h"
 
-#include <string>
-
 #include "build/build_config.h"
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "testing/gtest/include/gtest/gtest.h"

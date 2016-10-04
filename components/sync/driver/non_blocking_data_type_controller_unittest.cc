@@ -4,7 +4,6 @@
 
 #include "components/sync/driver/non_blocking_data_type_controller.h"
 
-#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -17,9 +16,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/sync/api/fake_model_type_change_processor.h"
 #include "components/sync/api/stub_model_type_service.h"
-#include "components/sync/base/model_type.h"
 #include "components/sync/driver/fake_sync_client.h"
-#include "components/sync/driver/sync_prefs.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
