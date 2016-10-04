@@ -129,7 +129,7 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
 
     @Override
     public int getCount() {
-        return mSearchEngines.size();
+        return mSearchEngines == null ? 0 : mSearchEngines.size();
     }
 
     @Override
@@ -222,6 +222,7 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
     public void onTemplateUrlServiceLoaded() {
         TemplateUrlService.getInstance().unregisterLoadListener(this);
         initEntries();
+        notifyDataSetChanged();
     }
 
     // OnClickListener:
