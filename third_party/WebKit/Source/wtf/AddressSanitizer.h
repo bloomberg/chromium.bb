@@ -12,9 +12,11 @@
 // TODO(sof): Add SyZyASan support?
 #if defined(ADDRESS_SANITIZER)
 #include <sanitizer/asan_interface.h>
+#define NO_SANITIZE_ADDRESS __attribute__((no_sanitize_address))
 #else
 #define ASAN_POISON_MEMORY_REGION(addr, size) ((void)(addr), (void)(size))
 #define ASAN_UNPOISON_MEMORY_REGION(addr, size) ((void)(addr), (void)(size))
+#define NO_SANITIZE_ADDRESS
 #endif
 
 #if defined(LEAK_SANITIZER)
@@ -26,25 +28,12 @@
 
 #if defined(MEMORY_SANITIZER)
 #include <sanitizer/msan_interface.h>
-#endif
-
-// TODO(sof): Have to handle (ADDRESS_SANITIZER && _WIN32) differently as it
-// uses both Clang (which supports the __attribute__ syntax) and CL (which
-// doesn't) as long as we use "clang-cl /fallback". This shouldn't be needed
-// when Clang handles all the code without falling back to CL.
-#if defined(ADDRESS_SANITIZER) && (!OS(WIN) || COMPILER(CLANG))
-#define NO_SANITIZE_ADDRESS __attribute__((no_sanitize_address))
-#else
-#define NO_SANITIZE_ADDRESS
-#endif
-
-#if defined(MEMORY_SANITIZER) && (!OS(WIN) || COMPILER(CLANG))
 #define NO_SANITIZE_MEMORY __attribute__((no_sanitize_memory))
 #else
 #define NO_SANITIZE_MEMORY
 #endif
 
-#if defined(THREAD_SANITIZER) && (!OS(WIN) || COMPILER(CLANG))
+#if defined(THREAD_SANITIZER)
 #define NO_SANITIZE_THREAD __attribute__((no_sanitize_thread))
 #else
 #define NO_SANITIZE_THREAD
