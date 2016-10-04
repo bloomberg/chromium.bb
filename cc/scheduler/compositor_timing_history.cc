@@ -37,6 +37,7 @@ class CompositorTimingHistory::UMAReporter {
   virtual void AddActivateDuration(base::TimeDelta duration) = 0;
   virtual void AddDrawDuration(base::TimeDelta duration) = 0;
   virtual void AddSwapToAckLatency(base::TimeDelta duration) = 0;
+  virtual void AddSwapAckWasFast(bool was_fast) = 0;
 
   // Synchronization measurements
   virtual void AddMainAndImplFrameTimeDelta(base::TimeDelta delta) = 0;
@@ -57,6 +58,9 @@ const double kCommitToReadyToActivateEstimationPercentile = 90.0;
 const double kPrepareTilesEstimationPercentile = 90.0;
 const double kActivateEstimationPercentile = 90.0;
 const double kDrawEstimationPercentile = 90.0;
+
+constexpr base::TimeDelta kSwapAckWatchdogTimeout =
+    base::TimeDelta::FromSeconds(8);
 
 const int kUmaDurationMinMicros = 1;
 const int64_t kUmaDurationMaxMicros = base::Time::kMicrosecondsPerSecond / 5;
@@ -191,6 +195,10 @@ class RendererUMAReporter : public CompositorTimingHistory::UMAReporter {
                                         duration);
   }
 
+  void AddSwapAckWasFast(bool was_fast) override {
+    UMA_HISTOGRAM_BOOLEAN("Scheduling.Renderer.SwapAckWasFast", was_fast);
+  }
+
   void AddMainAndImplFrameTimeDelta(base::TimeDelta delta) override {
     UMA_HISTOGRAM_CUSTOM_TIMES_VSYNC_ALIGNED(
         "Scheduling.Renderer.MainAndImplFrameTimeDelta", delta);
@@ -264,6 +272,10 @@ class BrowserUMAReporter : public CompositorTimingHistory::UMAReporter {
                                         duration);
   }
 
+  void AddSwapAckWasFast(bool was_fast) override {
+    UMA_HISTOGRAM_BOOLEAN("Scheduling.Browser.SwapAckWasFast", was_fast);
+  }
+
   void AddMainAndImplFrameTimeDelta(base::TimeDelta delta) override {
     UMA_HISTOGRAM_CUSTOM_TIMES_VSYNC_ALIGNED(
         "Scheduling.Browser.MainAndImplFrameTimeDelta", delta);
@@ -289,6 +301,7 @@ class NullUMAReporter : public CompositorTimingHistory::UMAReporter {
   void AddActivateDuration(base::TimeDelta duration) override {}
   void AddDrawDuration(base::TimeDelta duration) override {}
   void AddSwapToAckLatency(base::TimeDelta duration) override {}
+  void AddSwapAckWasFast(bool was_fast) override {}
   void AddMainAndImplFrameTimeDelta(base::TimeDelta delta) override {}
 };
 
@@ -315,6 +328,7 @@ CompositorTimingHistory::CompositorTimingHistory(
       activate_duration_history_(kDurationHistorySize),
       draw_duration_history_(kDurationHistorySize),
       begin_main_frame_on_critical_path_(false),
+      swap_ack_watchdog_enabled_(false),
       uma_reporter_(CreateUMAReporter(uma_category)),
       rendering_stats_instrumentation_(rendering_stats_instrumentation) {}
 
@@ -443,6 +457,7 @@ void CompositorTimingHistory::DidCreateAndInitializeCompositorFrameSink() {
   // After we get a new output surface, we won't get a spurious
   // swap ack from the old output surface.
   swap_start_time_ = base::TimeTicks();
+  swap_ack_watchdog_enabled_ = false;
 }
 
 void CompositorTimingHistory::WillBeginImplFrame(
@@ -456,6 +471,15 @@ void CompositorTimingHistory::WillBeginImplFrame(
   if (!new_active_tree_is_likely && !did_send_begin_main_frame_) {
     SetBeginMainFrameNeededContinuously(false);
     SetBeginMainFrameCommittingContinuously(false);
+  }
+
+  if (swap_ack_watchdog_enabled_) {
+    base::TimeDelta swap_not_acked_time_ = Now() - swap_start_time_;
+    if (swap_not_acked_time_ >= kSwapAckWatchdogTimeout) {
+      uma_reporter_->AddSwapAckWasFast(false);
+      // Only record this UMA once per swap.
+      swap_ack_watchdog_enabled_ = false;
+    }
   }
 
   did_send_begin_main_frame_ = false;
@@ -697,12 +721,18 @@ void CompositorTimingHistory::DidDraw(bool used_new_active_tree,
 void CompositorTimingHistory::DidSwapBuffers() {
   DCHECK_EQ(base::TimeTicks(), swap_start_time_);
   swap_start_time_ = Now();
+  swap_ack_watchdog_enabled_ = true;
 }
 
 void CompositorTimingHistory::DidSwapBuffersComplete() {
   DCHECK_NE(base::TimeTicks(), swap_start_time_);
   base::TimeDelta swap_to_ack_duration = Now() - swap_start_time_;
   uma_reporter_->AddSwapToAckLatency(swap_to_ack_duration);
+  if (swap_ack_watchdog_enabled_) {
+    bool was_fast = swap_to_ack_duration < kSwapAckWatchdogTimeout;
+    uma_reporter_->AddSwapAckWasFast(was_fast);
+    swap_ack_watchdog_enabled_ = false;
+  }
   swap_start_time_ = base::TimeTicks();
 }
 

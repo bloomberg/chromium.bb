@@ -117,6 +117,9 @@ class CC_EXPORT CompositorTimingHistory {
   base::TimeTicks draw_start_time_;
   base::TimeTicks swap_start_time_;
 
+  // Watchdog timers.
+  bool swap_ack_watchdog_enabled_;
+
   std::unique_ptr<UMAReporter> uma_reporter_;
   RenderingStatsInstrumentation* rendering_stats_instrumentation_;
 
