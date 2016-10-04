@@ -124,25 +124,12 @@ struct LayoutMetrics {
 
 NSRect GetFirstButtonFrameForHeight(CGFloat height) {
   CGFloat y = height - bookmarks::kBookmarkFolderButtonHeight -
-      bookmarks::BookmarkTopVerticalPadding();
+      bookmarks::kBookmarkTopVerticalPadding;
   return NSMakeRect(0, y, bookmarks::kDefaultBookmarkWidth,
                     bookmarks::kBookmarkFolderButtonHeight);
 }
 
 }  // namespace
-
-namespace bookmarks {
-
-CGFloat BookmarkTopVerticalPadding() {
-  return bookmarks::BookmarkVerticalPadding();
-}
-
-CGFloat BookmarkBottomVerticalPadding() {
-  return ui::MaterialDesignController::IsModeMaterial()
-      ? 0 : bookmarks::BookmarkVerticalPadding();
-}
-
-}  // bookmarks
 
 
 // Required to set the right tracking bounds for our fake menus.
@@ -331,18 +318,15 @@ CGFloat BookmarkBottomVerticalPadding() {
 - (void)awakeFromNib {
   NSRect windowFrame = [[self window] frame];
   NSRect scrollViewFrame = [scrollView_ frame];
-  padding_ = NSWidth(windowFrame) - NSWidth(scrollViewFrame);
-  // In Material Design, each menu row spans the entire width of the menu.
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    scrollViewFrame.size.width += padding_;
-    scrollViewFrame.origin.x = 0;
-    // If we leave the scrollview's vertical position and height as is, it will
-    // cover the menu's rounded corners and we'll get a rectangular menu.
-    scrollViewFrame.origin.y += bookmarks::BookmarkVerticalPadding();
-    scrollViewFrame.size.height -= 2 * bookmarks::BookmarkVerticalPadding();
-    [scrollView_ setFrame:scrollViewFrame];
-    padding_ = 0;
-  }
+  // Each menu row spans the entire width of the menu.
+  scrollViewFrame.size.width += NSWidth(windowFrame) - NSWidth(scrollViewFrame);
+  scrollViewFrame.origin.x = 0;
+  // If we leave the scrollview's vertical position and height as is, it will
+  // cover the menu's rounded corners and we'll get a rectangular menu.
+  scrollViewFrame.origin.y += bookmarks::kBookmarkVerticalPadding;
+  scrollViewFrame.size.height -= 2 * bookmarks::kBookmarkVerticalPadding;
+  [scrollView_ setFrame:scrollViewFrame];
+  padding_ = 0;
   verticalScrollArrowHeight_ = NSHeight([scrollUpArrowView_ frame]);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -400,11 +384,7 @@ CGFloat BookmarkBottomVerticalPadding() {
                                                 text:nil
                                                image:image
                                       menuController:menuController];
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    [cell setTag:kMaterialMenuButtonTypeWithLimitedClickFeedback];
-  } else {
-    [cell setTag:kStandardButtonTypeWithLimitedClickFeedback];
-  }
+  [cell setTag:kMaterialMenuButtonTypeWithLimitedClickFeedback];
   return cell;
 }
 
@@ -453,11 +433,9 @@ CGFloat BookmarkBottomVerticalPadding() {
                                autorelease];
   DCHECK(button);
 
-  // Folder menu buttons have a flat background color in Material Design.
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    [button setBackgroundColor:
-        [BookmarkBarFolderWindowContentView backgroundColor]];
-  }
+  // Folder menu buttons have a flat background color.
+  [button setBackgroundColor:
+      [BookmarkBarFolderWindowContentView backgroundColor]];
   [button setCell:cell];
   [button setDelegate:self];
   if (node) {
@@ -553,9 +531,6 @@ CGFloat BookmarkBottomVerticalPadding() {
     newWindowTopLeft = NSMakePoint(
         buttonBottomLeftInScreen.x,
         bookmarkBarBottomLeftInScreen.y + bookmarks::kBookmarkBarMenuOffset);
-    if (!ui::MaterialDesignController::IsModeMaterial()) {
-      newWindowTopLeft.y += bookmarks::kBookmarkBarButtonOffset;
-    }
     // Make sure the window is on-screen; if not, push left or right. It is
     // intentional that top level folders "push left" or "push right" slightly
     // different than subfolders.
@@ -586,7 +561,7 @@ CGFloat BookmarkBottomVerticalPadding() {
     newWindowTopLeft.x = [self childFolderWindowLeftForWidth:windowWidth];
     NSPoint topOfWindow =
         NSMakePoint(0, NSMaxY([parentButton_ frame]) +
-            bookmarks::BookmarkTopVerticalPadding());
+            bookmarks::kBookmarkTopVerticalPadding);
     topOfWindow = ui::ConvertPointFromWindowToScreen(
         [parentButton_ window],
         [[parentButton_ superview] convertPoint:topOfWindow toView:nil]);
@@ -605,8 +580,8 @@ CGFloat BookmarkBottomVerticalPadding() {
   // This does not take into account any padding which may be required at the
   // top and/or bottom of the window.
   return (buttonCount * bookmarks::kBookmarkFolderButtonHeight) +
-      bookmarks::BookmarkTopVerticalPadding() +
-      bookmarks::BookmarkBottomVerticalPadding();
+      bookmarks::kBookmarkTopVerticalPadding +
+      bookmarks::kBookmarkBottomVerticalPadding;
 }
 
 - (void)adjustWindowLeft:(CGFloat)windowLeft
@@ -889,9 +864,7 @@ CGFloat BookmarkBottomVerticalPadding() {
   // 4pt of padding pushing the topmost item beyond the top of the
   // |scrollView_|. Scoot the |folderView_| down by this padding to avoid
   // clipping the topmost item.
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    folderFrame.origin.y -= bookmarks::BookmarkVerticalPadding();
-  }
+  folderFrame.origin.y -= bookmarks::kBookmarkVerticalPadding;
   [folderView_ setFrame:folderFrame];
 
   // For some reason, when opening a "large" bookmark folder (containing 12 or
@@ -1796,7 +1769,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
         [buttons_ objectAtIndex:static_cast<NSUInteger>(destIndex)];
     DCHECK(button);
     NSRect buttonFrame = [button frame];
-    y = NSMaxY(buttonFrame) + 0.5 * bookmarks::BookmarkTopVerticalPadding();
+    y = NSMaxY(buttonFrame) + 0.5 * bookmarks::kBookmarkTopVerticalPadding;
 
     // If it's a drop at the end (past the last button, if there are any) ...
   } else if (destIndex == numButtons) {
@@ -1808,7 +1781,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
       DCHECK(button);
       NSRect buttonFrame = [button frame];
       y = buttonFrame.origin.y -
-          0.5 * bookmarks::BookmarkBottomVerticalPadding();
+          0.5 * bookmarks::kBookmarkBottomVerticalPadding;
 
     }
   } else {

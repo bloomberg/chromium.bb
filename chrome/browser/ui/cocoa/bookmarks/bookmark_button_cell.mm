@@ -27,9 +27,7 @@ namespace {
 const int kHierarchyButtonRightPadding = 4;
 
 // Padding on the left side of the arrow icon.
-int HierarchyButtonLeftPadding() {
-  return ui::MaterialDesignController::IsModeMaterial() ? 11 : 2;
-}
+const int kHierarchyButtonLeftPadding = 11;
 
 const int kIconTextSpacer = 4;
 const int kTextRightPadding = 4;
@@ -56,12 +54,10 @@ const int kDefaultFontSize = 12;
 
 - (NSRect)imageRectForBounds:(NSRect)theRect {
   NSRect imageRect = [super imageRectForBounds:theRect];
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    // Make sure the chevron icon stays centered. Normally a bookmark bar item
-    // with no label has its icon placed at a fixed x-position.
-    CGFloat totalWidth = NSMaxX(theRect);
-    imageRect.origin.x = (totalWidth - [self image].size.width) / 2;
-  }
+  // Make sure the chevron icon stays centered. Normally a bookmark bar item
+  // with no label has its icon placed at a fixed x-position.
+  CGFloat totalWidth = NSMaxX(theRect);
+  imageRect.origin.x = (totalWidth - [self image].size.width) / 2;
   return imageRect;
 }
 
@@ -183,14 +179,9 @@ const int kDefaultFontSize = 12;
   [self setShowsBorderOnlyWhileMouseInside:YES];
   [self setControlSize:NSSmallControlSize];
   [self setAlignment:NSLeftTextAlignment];
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    [self setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-    [self setBezelStyle:NSShadowlessSquareBezelStyle];
-  } else {
-    [self setFont:[NSFont systemFontOfSize:kDefaultFontSize]];
-    [self setBordered:NO];
-    [self setBezeled:NO];
-  }
+  [self setFont:[NSFont systemFontOfSize:kDefaultFontSize]];
+  [self setBordered:NO];
+  [self setBezeled:NO];
   [self setWraps:NO];
   // NSLineBreakByTruncatingMiddle seems more common on OSX but let's
   // try to match Windows for a bit to see what happens.
@@ -214,18 +205,10 @@ const int kDefaultFontSize = 12;
 }
 
 - (NSSize)cellSizeForBounds:(NSRect)aRect {
-  // There's no bezel or border in Material Design so return cellSize.
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    NSSize size = [self cellSize];
-    size.width = std::min(aRect.size.width, size.width);
-    size.height = std::min(aRect.size.height, size.height);
-    return size;
-  }
-  NSSize size = [super cellSizeForBounds:aRect];
-  // Cocoa seems to slightly underestimate how much space we need, so we
-  // compensate here to avoid a clipped rendering.
-  size.width += 2;
-  size.height += 4;
+  // There's no bezel or border so return cellSize.
+  NSSize size = [self cellSize];
+  size.width = std::min(aRect.size.width, size.width);
+  size.height = std::min(aRect.size.height, size.height);
   return size;
 }
 
@@ -358,28 +341,24 @@ const int kDefaultFontSize = 12;
 // Does not sanity check to be sure this is actually a folder node.
 - (NSSize)cellSize {
   NSSize cellSize = NSZeroSize;
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    cellSize = [super cellSize];
+  // Return the space needed to display the image and title, with a little
+  // distance between them.
+  cellSize = NSMakeSize(kIconLeftPadding + [[self image] size].width,
+                        bookmarks::kBookmarkButtonHeight);
+  NSString* title = [self visibleTitle];
+  if ([title length] > 0) {
+    CGFloat textWidth =
+        [title sizeWithAttributes:[self titleTextAttributes]].width;
+    cellSize.width +=
+        kIconTextSpacer + std::ceil(textWidth) + kTextRightPadding;
   } else {
-    // Return the space needed to display the image and title, with a little
-    // distance between them.
-    cellSize = NSMakeSize(kIconLeftPadding + [[self image] size].width,
-                          bookmarks::kBookmarkButtonHeight);
-    NSString* title = [self visibleTitle];
-    if ([title length] > 0) {
-      CGFloat textWidth =
-          [title sizeWithAttributes:[self titleTextAttributes]].width;
-      cellSize.width +=
-          kIconTextSpacer + std::ceil(textWidth) + kTextRightPadding;
-    } else {
-      // Make buttons without visible titles 20pts wide (18 plus padding).
-      cellSize.width += kIconLeftPadding;
-    }
+    // Make buttons without visible titles 20pts wide (18 plus padding).
+    cellSize.width += kIconLeftPadding;
   }
 
   if (drawFolderArrow_) {
     cellSize.width += [arrowImage_ size].width +
-                      HierarchyButtonLeftPadding() +
+                      kHierarchyButtonLeftPadding +
                       kHierarchyButtonRightPadding;
   }
   return cellSize;
@@ -387,35 +366,28 @@ const int kDefaultFontSize = 12;
 
 - (NSRect)imageRectForBounds:(NSRect)theRect {
   NSRect imageRect = [super imageRectForBounds:theRect];
-  // In Material Design, add a little space between the image and the button's
-  // left edge, but only if there's a visible title.
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    imageRect.origin.y -= 1;
-    imageRect.origin.x = kIconLeftPadding;
-  }
+  // Add a little space between the image and the button's left edge, but only
+  // if there's a visible title.
+  imageRect.origin.y -= 1;
+  imageRect.origin.x = kIconLeftPadding;
   return imageRect;
 }
 
 - (CGFloat)textStartXOffset {
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    return [super textStartXOffset];
-  }
   return kIconLeftPadding + [[self image] size].width + kIconTextSpacer;
 }
 
 - (void)drawFocusRingMaskWithFrame:(NSRect)cellFrame
                             inView:(NSView*)controlView {
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    // In Material Design we have to adjust the focus ring slightly for the
-    // chevron and regular bookmark icons.
-    if ([self isOffTheSideButtonCell]) {
-      cellFrame.origin.y -= 2;
-    } else if ([self visibleTitle].length > 0) {
-      cellFrame.origin.x += 4;
-    }
-    if ([controlView cr_lineWidth] < 1) {
-      cellFrame.origin.y -= 0.5;
-    }
+  // We have to adjust the focus ring slightly for the chevron and regular
+  // bookmark icons.
+  if ([self isOffTheSideButtonCell]) {
+    cellFrame.origin.y -= 2;
+  } else if ([self visibleTitle].length > 0) {
+    cellFrame.origin.x += 4;
+  }
+  if ([controlView cr_lineWidth] < 1) {
+    cellFrame.origin.y -= 0.5;
   }
   [super drawFocusRingMaskWithFrame:cellFrame inView:controlView];
 }
@@ -449,9 +421,6 @@ const int kDefaultFontSize = 12;
 }
 
 - (int)verticalTextOffset {
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    return 0;
-  }
   return -1;
 }
 

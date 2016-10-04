@@ -31,9 +31,6 @@ using bookmarks::BookmarkNode;
 }
 
 - (int)verticalTextOffset {
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    return [super verticalTextOffset];
-  }
   return -3;
 }
 

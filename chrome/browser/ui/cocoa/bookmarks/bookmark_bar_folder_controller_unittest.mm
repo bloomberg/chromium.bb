@@ -625,7 +625,7 @@ TEST_F(BookmarkBarFolderControllerTest, MenuPlacementWhileScrollingDeleting) {
   // make sure the top has not moved.
   oldTop = newTop;
   const CGFloat scrollOneBookmark = bookmarks::kBookmarkFolderButtonHeight +
-      bookmarks::BookmarkVerticalPadding();
+      bookmarks::kBookmarkVerticalPadding;
   NSUInteger buttonCounter = 0;
   NSUInteger extraButtonLimit = 3;
   while (![bbfc canScrollDown] || extraButtonLimit > 0) {
@@ -777,7 +777,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DragMoveBarBookmarkToFolder) {
   BookmarkButton* draggedButton = [bar_ buttonWithTitleEqualTo:@"1b"];
   ASSERT_TRUE(draggedButton);
   CGFloat horizontalShift =
-      NSWidth([draggedButton frame]) + bookmarks::BookmarkHorizontalPadding();
+      NSWidth([draggedButton frame]) + bookmarks::kBookmarkHorizontalPadding;
   BookmarkButton* targetButton =
       [folderController buttonWithTitleEqualTo:@"2f1b"];
   ASSERT_TRUE(targetButton);
@@ -1290,8 +1290,8 @@ TEST_F(BookmarkBarFolderControllerMenuTest, MenuSizingAndScrollArrows) {
   EXPECT_TRUE(folderWindow);
   CGFloat expectedHeight =
       (CGFloat)bookmarks::kBookmarkFolderButtonHeight +
-      bookmarks::BookmarkTopVerticalPadding() +
-      bookmarks::BookmarkBottomVerticalPadding();
+      bookmarks::kBookmarkTopVerticalPadding +
+      bookmarks::kBookmarkBottomVerticalPadding;
   NSRect windowFrame = [folderWindow frame];
   CGFloat windowHeight = NSHeight(windowFrame);
   EXPECT_CGFLOAT_EQ(expectedHeight, windowHeight);
@@ -1322,11 +1322,7 @@ TEST_F(BookmarkBarFolderControllerMenuTest, MenuSizingAndScrollArrows) {
   EXPECT_CGFLOAT_EQ(scrollerWidth, buttonWidth);
   CGFloat visibleWidth = NSWidth(visibleFrame);
   EXPECT_CGFLOAT_EQ(visibleWidth - widthDelta, buttonWidth);
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    EXPECT_CGFLOAT_EQ(scrollerWidth, NSWidth([folderView frame]));
-  } else {
-    EXPECT_LT(scrollerWidth, NSWidth([folderView frame]));
-  }
+  EXPECT_CGFLOAT_EQ(scrollerWidth, NSWidth([folderView frame]));
 
   // Add a wider bookmark and make sure the button widths match.
   int reallyWideButtonNumber = folder->child_count();
@@ -1603,9 +1599,9 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DropPositionIndicator) {
   EXPECT_TRUE(folder);
 
   // Test a series of points starting at the top of the folder.
-  const CGFloat yTopOffset = 0.5 * bookmarks::BookmarkTopVerticalPadding();
+  const CGFloat yTopOffset = 0.5 * bookmarks::kBookmarkTopVerticalPadding;
   const CGFloat yBottomOffset =
-      0.5 * bookmarks::BookmarkBottomVerticalPadding();
+      0.5 * bookmarks::kBookmarkBottomVerticalPadding;
   BookmarkButton* targetButton = [folder buttonWithTitleEqualTo:@"2f1b"];
   ASSERT_TRUE(targetButton);
   NSPoint targetPoint = [targetButton top];

@@ -130,12 +130,9 @@ TEST_F(BookmarkBubbleControllerTest, TestBubbleWindow) {
   NSWindow* window = [controller window];
   EXPECT_TRUE(window);
   NSRect browser_window_frame = [browser()->window()->GetNativeWindow() frame];
-  // The metrics have changed slightly under Material Design, so that in this
-  // test case the bookmarks bubble's window frame extendeds slightly beyond its
-  // parent window's frame.
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    browser_window_frame.size.width += 1;
-  }
+  // In this test case the bookmarks bubble's window frame extendeds slightly
+  // beyond its parent window's frame.
+  browser_window_frame.size.width += 1;
   EXPECT_TRUE(NSContainsRect(browser_window_frame, [window frame]));
 }
 

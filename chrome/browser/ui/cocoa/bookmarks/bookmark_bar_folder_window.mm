@@ -68,7 +68,6 @@ const CGFloat kMDFolderWindowBackgroundColor = 237. / 255.;
 @implementation BookmarkBarFolderWindowContentView
 
 + (NSColor*)backgroundColor {
-  DCHECK(ui::MaterialDesignController::IsModeMaterial());
   static NSColor* backgroundColor =
       [[NSColor colorWithGenericGamma22White:kMDFolderWindowBackgroundColor
                                        alpha:1.0] retain];
@@ -81,25 +80,8 @@ const CGFloat kMDFolderWindowBackgroundColor = 237. / 255.;
       [NSBezierPath bezierPathWithRoundedRect:[self bounds]
                                       xRadius:kBookmarkBarMenuCornerRadius
                                       yRadius:kBookmarkBarMenuCornerRadius];
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    [[BookmarkBarFolderWindowContentView backgroundColor] set];
-    [bezier fill];
-  } else {
-    NSColor* startColor = [NSColor colorWithCalibratedWhite:0.91 alpha:1.0];
-    NSColor* midColor =
-        [startColor gtm_colorAdjustedFor:GTMColorationLightMidtone faded:YES];
-    NSColor* endColor =
-        [startColor gtm_colorAdjustedFor:GTMColorationLightPenumbra faded:YES];
-
-    base::scoped_nsobject<NSGradient> gradient(
-        [[NSGradient alloc] initWithColorsAndLocations:startColor, 0.0,
-                                                       midColor, 0.25,
-                                                       endColor, 0.5,
-                                                       midColor, 0.75,
-                                                       startColor, 1.0,
-                                                       nil]);
-    [gradient drawInBezierPath:bezier angle:0.0];
-  }
+  [[BookmarkBarFolderWindowContentView backgroundColor] set];
+  [bezier fill];
 }
 
 @end

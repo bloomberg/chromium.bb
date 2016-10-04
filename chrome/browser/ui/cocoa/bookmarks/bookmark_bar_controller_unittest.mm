@@ -1018,20 +1018,12 @@ TEST_F(BookmarkBarControllerTest, BookmarkButtonSizing) {
   // Make sure the internal bookmark button also is the correct height.
   NSArray* buttons = [bar_ buttons];
   EXPECT_GT([buttons count], 0u);
-  const bool kIsModeMaterial = ui::MaterialDesignController::IsModeMaterial();
 
   for (NSButton* button in buttons) {
-    if (kIsModeMaterial) {
-      EXPECT_FLOAT_EQ((chrome::kMinimumBookmarkBarHeight +
-                       bookmarks::kMaterialVisualHeightOffset) -
-                          2 * bookmarks::BookmarkVerticalPadding(),
-                      [button frame].size.height);
-    } else {
-      EXPECT_FLOAT_EQ(
-          (chrome::kMinimumBookmarkBarHeight + bookmarks::kVisualHeightOffset) -
-              2 * bookmarks::BookmarkVerticalPadding(),
-          [button frame].size.height);
-    }
+    EXPECT_FLOAT_EQ((chrome::kMinimumBookmarkBarHeight +
+                     bookmarks::kMaterialVisualHeightOffset) -
+                        2 * bookmarks::kBookmarkVerticalPadding,
+                    [button frame].size.height);
   }
 }
 
@@ -1611,43 +1603,26 @@ TEST_F(BookmarkBarControllerTest, DISABLED_LastBookmarkResizeBehavior) {
   //
   // The default font changed between OSX Mavericks, OSX Yosemite, and
   // OSX El Capitan, so this test requires different widths to trigger the
-  // appropriate results. Button widths and locations also changed with
-  // Material Design.
+  // appropriate results.
   CGFloat view_widths_el_capitan[] =
-      { 121.0, 122.0, 149.0, 150.0, 151.0, 152.0,
-        153.0, 200.0, 153.0, 152.0, 151.0, 150.0,
-        149.0, 122.0, 121.0 };
-  CGFloat view_widths_yosemite[] =
-      { 121.0, 122.0, 148.0, 149.0, 150.0, 151.0,
-        152.0, 200.0, 152.0, 151.0, 150.0, 149.0,
-        148.0, 122.0, 121.0 };
-  CGFloat view_widths_rest[] =
-      { 123.0, 124.0, 151.0, 152.0, 153.0, 154.0,
-        155.0, 200.0, 155.0, 154.0, 153.0, 152.0,
-        151.0, 124.0, 123.0 };
-  CGFloat material_view_widths_el_capitan[] =
       { 139.0, 140.0, 150.0, 151.0, 152.0, 153.0,
         154.0, 200.0, 154.0, 153.0, 152.0, 151.0,
         150.0, 140.0, 139.0 };
-  CGFloat material_view_widths_yosemite[] =
+  CGFloat view_widths_yosemite[] =
       { 140.0, 141.0, 150.0, 151.0, 152.0, 153.0,
         154.0, 200.0, 154.0, 153.0, 152.0, 151.0,
         150.0, 141.0, 140.0 };
-  CGFloat material_view_widths_rest[] =
+  CGFloat view_widths_rest[] =
       { 142.0, 143.0, 153.0, 154.0, 155.0, 156.0,
         157.0, 200.0, 157.0, 156.0, 155.0, 154.0,
         153.0, 143.0, 142.0 };
   CGFloat* view_widths = NULL;
-  bool is_mode_material = ui::MaterialDesignController::IsModeMaterial();
   if (base::mac::IsOS10_11()) {
-    view_widths = is_mode_material ? material_view_widths_el_capitan
-                                   : view_widths_el_capitan;
+    view_widths = view_widths_el_capitan;
   } else if (base::mac::IsOS10_10()) {
-    view_widths = is_mode_material ? material_view_widths_yosemite
-                                   : view_widths_yosemite;
+    view_widths = view_widths_yosemite;
   } else {
-    view_widths = is_mode_material ? material_view_widths_rest
-                                   : view_widths_rest;
+    view_widths = view_widths_rest;
   }
 
   BOOL off_the_side_button_is_hidden_results[] =
@@ -1656,7 +1631,7 @@ TEST_F(BookmarkBarControllerTest, DISABLED_LastBookmarkResizeBehavior) {
       { 1, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 2, 2, 2, 1 };
   for (unsigned int i = 0; i < arraysize(view_widths_yosemite); ++i) {
     NSRect frame = [[bar_ view] frame];
-    frame.size.width = view_widths[i] + bookmarks::BookmarkRightMargin();
+    frame.size.width = view_widths[i] + bookmarks::kBookmarkRightMargin;
     [[bar_ view] setFrame:frame];
     EXPECT_EQ(off_the_side_button_is_hidden_results[i],
               [bar_ offTheSideButtonIsHidden]);
@@ -2114,8 +2089,8 @@ TEST_F(BookmarkBarControllerDragDropTest, DropPositionIndicator) {
   BookmarkButton* targetButton = [bar_ buttonWithTitleEqualTo:@"1b"];
   ASSERT_TRUE(targetButton);
   NSPoint targetPoint = [targetButton left];
-  CGFloat leftMarginIndicatorPosition = bookmarks::BookmarkLeftMargin() - 0.5 *
-                                        bookmarks::BookmarkHorizontalPadding();
+  CGFloat leftMarginIndicatorPosition = bookmarks::kBookmarkLeftMargin - 0.5 *
+                                        bookmarks::kBookmarkHorizontalPadding;
   const CGFloat baseOffset = targetPoint.x;
   CGFloat expected = leftMarginIndicatorPosition;
   CGFloat actual = [bar_ indicatorPosForDragToPoint:targetPoint];
@@ -2128,7 +2103,7 @@ TEST_F(BookmarkBarControllerDragDropTest, DropPositionIndicator) {
   targetButton = [bar_ buttonWithTitleEqualTo:@"4b"];
   targetPoint = [targetButton right];
   targetPoint.x += 100;  // Somewhere off to the right.
-  CGFloat xDelta = 0.5 * bookmarks::BookmarkHorizontalPadding();
+  CGFloat xDelta = 0.5 * bookmarks::kBookmarkHorizontalPadding;
   expected = NSMaxX([targetButton frame]) + xDelta;
   actual = [bar_ indicatorPosForDragToPoint:targetPoint];
   EXPECT_CGFLOAT_EQ(expected, actual);

@@ -202,11 +202,7 @@ TEST_F(BookmarkButtonCellTest, VerticalTextOffset) {
   ASSERT_TRUE(bookmark_cell.get());
 
   EXPECT_EQ(1, [gradient_cell verticalTextOffset]);
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    EXPECT_EQ(-1, [bookmark_cell verticalTextOffset]);
-  } else {
-    EXPECT_EQ(0, [bookmark_cell verticalTextOffset]);
-  }
+  EXPECT_EQ(-1, [bookmark_cell verticalTextOffset]);
 
   EXPECT_NE([bookmark_cell verticalTextOffset],
             [gradient_cell verticalTextOffset]);

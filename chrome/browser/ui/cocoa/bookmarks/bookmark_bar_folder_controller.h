@@ -8,6 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
+#import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_button.h"
 #import "ui/base/cocoa/tracking_area.h"
 
@@ -23,10 +24,10 @@ class Profile;
 namespace bookmarks {
 
 // The padding between the top of the folder menu and the topmost button.
-CGFloat BookmarkTopVerticalPadding();
+const CGFloat kBookmarkTopVerticalPadding = bookmarks::kBookmarkVerticalPadding;
 
 // The padding between the bottom of the folder menu and the bottommost button.
-CGFloat BookmarkBottomVerticalPadding();
+const CGFloat kBookmarkBottomVerticalPadding = 0.0;
 
 }  // bookmarks
 

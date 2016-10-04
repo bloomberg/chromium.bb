@@ -433,10 +433,6 @@ BookmarkButton* gDraggedButton = nil; // Weak
 }
 
 - (void)updateIconToMatchTheme {
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    return;
-  }
-
   // During testing, the window might not be a browser window, and the
   // superview might not be a BookmarkBarView.
   if (![[self window] respondsToSelector:@selector(hasDarkTheme)] ||
