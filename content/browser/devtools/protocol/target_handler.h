@@ -37,7 +37,7 @@ class TargetHandler : public DevToolsAgentHostClient,
   // Domain implementation.
   Response Enable();
   Response Disable();
-  Response SetWaitForDebuggerOnStart(bool value);
+  Response SetAutoAttach(bool auto_attach, bool wait_for_debugger_on_start);
   Response SetAttachToFrames(bool value);
   Response SendMessageToTarget(const std::string& target_id,
                                const std::string& message);
@@ -52,6 +52,8 @@ class TargetHandler : public DevToolsAgentHostClient,
   void ReattachTargetsOfType(const HostsMap& new_hosts,
                              const std::string& type,
                              bool waiting_for_debugger);
+  void TargetCreatedInternal(DevToolsAgentHost* host);
+  void TargetRemovedInternal(DevToolsAgentHost* host);
   void AttachToTargetInternal(DevToolsAgentHost* host,
                               bool waiting_for_debugger);
   void DetachFromTargetInternal(DevToolsAgentHost* host);
@@ -71,6 +73,7 @@ class TargetHandler : public DevToolsAgentHostClient,
 
   std::unique_ptr<Client> client_;
   bool enabled_;
+  bool auto_attach_;
   bool wait_for_debugger_on_start_;
   bool attach_to_frames_;
   RenderFrameHostImpl* render_frame_host_;

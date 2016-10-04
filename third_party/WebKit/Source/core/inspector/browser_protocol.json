@@ -3264,7 +3264,7 @@
     },
     {
         "domain": "Target",
-        "description": "Supports discovery and auto-attach to related targets.",
+        "description": "Supports additional targets discovery and allows to attach to them.",
         "experimental": true,
         "types": [
             {
@@ -3290,7 +3290,7 @@
         "commands": [
             {
                 "name": "enable",
-                "description": "Start discovering targets and attach to all related targets from now on.",
+                "description": "Start discovering targets.",
                 "handlers": ["browser"]
             },
             {
@@ -3299,9 +3299,11 @@
                 "handlers": ["browser"]
             },
             {
-                "name": "setWaitForDebuggerOnStart",
+                "name": "setAutoAttach",
+                "description": "Controls whether to automatically attach to new targets which are considered to be related to this one. When turned on, attaches to all existing related targets as well. When turned off, does not automatically detach.",
                 "parameters": [
-                    { "name": "value", "type": "boolean", "description": "Whether to pause new targets when attaching to them. Use <code>Runtime.runIfWaitingForDebugger</code> to run puased targets." }
+                    { "name": "autoAttach", "type": "boolean", "description": "Whether to auto-attach to related targets." },
+                    { "name": "waitForDebuggerOnStart", "type": "boolean", "description": "Whether to pause new targets when attaching to them. Use <code>Runtime.runIfWaitingForDebugger</code> to run paused targets." }
                 ],
                 "handlers": ["browser"]
             },
@@ -3342,15 +3344,27 @@
             {
                 "name": "targetCreated",
                 "parameters": [
-                    { "name": "targetId", "$ref": "TargetID" },
-                    { "name": "type", "$ref": "TargetType" },
-                    { "name": "url", "type": "string" },
-                    { "name": "waitingForDebugger", "type": "boolean" }
+                    { "name": "targetInfo", "$ref": "TargetInfo" }
                 ],
                 "handlers": ["browser"]
             },
             {
                 "name": "targetRemoved",
+                "parameters": [
+                    { "name": "targetId", "$ref": "TargetID" }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "attachedToTarget",
+                "parameters": [
+                    { "name": "targetId", "$ref": "TargetID" },
+                    { "name": "waitingForDebugger", "type": "boolean" }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "detachedFromTarget",
                 "parameters": [
                     { "name": "targetId", "$ref": "TargetID" }
                 ],
