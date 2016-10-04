@@ -16,7 +16,6 @@
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "build/build_config.h"
-#include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/content_settings/local_shared_objects_container.h"
 #include "chrome/common/custom_handlers/protocol_handler.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
@@ -295,25 +294,15 @@ class TabSpecificContentSettings
     return pending_protocol_handler_setting_;
   }
 
-  // Returns the |LocalSharedObjectsCounter| instances corresponding to all
+  // Returns the |LocalSharedObjectsContainer| instances corresponding to all
   // allowed, and blocked, respectively, local shared objects like cookies,
   // local storage, ... .
-  const LocalSharedObjectsCounter& allowed_local_shared_objects() const {
+  const LocalSharedObjectsContainer& allowed_local_shared_objects() const {
     return allowed_local_shared_objects_;
   }
 
-  const LocalSharedObjectsCounter& blocked_local_shared_objects() const {
+  const LocalSharedObjectsContainer& blocked_local_shared_objects() const {
     return blocked_local_shared_objects_;
-  }
-
-  // Creates a new copy of a CookiesTreeModel for all allowed, and blocked,
-  // respectively, local shared objects.
-  std::unique_ptr<CookiesTreeModel> CreateAllowedCookiesTreeModel() const {
-    return allowed_local_shared_objects_.CreateCookiesTreeModel();
-  }
-
-  std::unique_ptr<CookiesTreeModel> CreateBlockedCookiesTreeModel() const {
-    return blocked_local_shared_objects_.CreateCookiesTreeModel();
   }
 
   bool load_plugins_link_enabled() { return load_plugins_link_enabled_; }

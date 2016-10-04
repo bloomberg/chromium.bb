@@ -11,6 +11,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
+#include "chrome/browser/content_settings/local_shared_objects_container.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -353,8 +354,11 @@ void CollectedCookiesMac::OnConstrainedWindowClosed(
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(webContents_);
 
-  allowedTreeModel_ = content_settings->CreateAllowedCookiesTreeModel();
-  blockedTreeModel_ = content_settings->CreateBlockedCookiesTreeModel();
+  allowedTreeModel_ =
+      content_settings->allowed_local_shared_objects().CreateCookiesTreeModel();
+
+  blockedTreeModel_ =
+      content_settings->blocked_local_shared_objects().CreateCookiesTreeModel();
 
   // Convert the model's icons from Skia to Cocoa.
   std::vector<gfx::ImageSkia> skiaIcons;

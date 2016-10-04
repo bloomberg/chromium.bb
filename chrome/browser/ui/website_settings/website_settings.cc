@@ -28,6 +28,7 @@
 #include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/content_settings/local_shared_objects_container.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/permissions/chooser_context_base.h"
@@ -47,7 +48,6 @@
 #include "chrome/grit/theme_resources.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "components/content_settings/core/browser/local_shared_objects_counter.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/rappor/rappor_utils.h"
@@ -771,9 +771,9 @@ void WebsiteSettings::PresentSitePermissions() {
 
 void WebsiteSettings::PresentSiteData() {
   CookieInfoList cookie_info_list;
-  const LocalSharedObjectsCounter& allowed_objects =
+  const LocalSharedObjectsContainer& allowed_objects =
       tab_specific_content_settings()->allowed_local_shared_objects();
-  const LocalSharedObjectsCounter& blocked_objects =
+  const LocalSharedObjectsContainer& blocked_objects =
       tab_specific_content_settings()->blocked_local_shared_objects();
 
   // Add first party cookie and site data counts.

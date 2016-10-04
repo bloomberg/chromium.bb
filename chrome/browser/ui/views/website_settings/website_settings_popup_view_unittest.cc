@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/website_settings/website_settings_popup_view.h"
 
 #include "base/macros.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/views/website_settings/chosen_object_row.h"
 #include "chrome/browser/ui/views/website_settings/permission_selector_row.h"

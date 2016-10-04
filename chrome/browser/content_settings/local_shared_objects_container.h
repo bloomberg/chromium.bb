@@ -11,7 +11,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "components/content_settings/core/browser/local_shared_objects_counter.h"
 
 class CannedBrowsingDataAppCacheHelper;
 class CannedBrowsingDataChannelIDHelper;
@@ -23,16 +22,19 @@ class CannedBrowsingDataLocalStorageHelper;
 class CannedBrowsingDataServiceWorkerHelper;
 class CannedBrowsingDataCacheStorageHelper;
 class CookiesTreeModel;
+class GURL;
 class Profile;
 
-class LocalSharedObjectsContainer : public LocalSharedObjectsCounter {
+class LocalSharedObjectsContainer {
  public:
   explicit LocalSharedObjectsContainer(Profile* profile);
-  ~LocalSharedObjectsContainer() override;
+  ~LocalSharedObjectsContainer();
 
-  // LocalSharedObjectsCounter:
-  size_t GetObjectCount() const override;
-  size_t GetObjectCountForDomain(const GURL& url) const override;
+  // Returns the number of objects stored in the container.
+  size_t GetObjectCount() const;
+
+  // Returns the number of objects for the given |origin|.
+  size_t GetObjectCountForDomain(const GURL& origin) const;
 
   // Empties the container.
   void Reset();
