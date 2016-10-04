@@ -15,7 +15,8 @@
     </style>
     <div class="settings-box first">
       <paper-input id="name" value="{{profileName}}" pattern=".*\S.*"
-          auto-validate required on-change="onProfileNameChanged_">
+          auto-validate required on-change="onProfileNameChanged_"
+          disabled="[[isProfileNameDisabled_(syncStatus)]]">
       </paper-input>
     </div>
     <cr-profile-avatar-selector id="selector" avatars="[[availableIcons]]"

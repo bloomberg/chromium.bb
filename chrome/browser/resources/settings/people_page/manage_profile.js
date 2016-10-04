@@ -33,6 +33,12 @@ Polymer({
     },
 
     /**
+     * The current sync status.
+     * @type {?settings.SyncStatus}
+     */
+    syncStatus: Object,
+
+    /**
      * @private {!settings.ManageProfileBrowserProxy}
      */
     browserProxy_: {
@@ -74,5 +80,14 @@ Polymer({
   onIconActivate_: function(event) {
     this.browserProxy_.setProfileIconAndName(event.detail.selected,
                                              this.profileName);
+  },
+
+  /**
+   * @param {?settings.SyncStatus} syncStatus
+   * @return {boolean} Whether the profile name field is disabled.
+   * @private
+   */
+  isProfileNameDisabled_: function(syncStatus) {
+    return !!syncStatus.supervisedUser && !syncStatus.childUser;
   },
 });

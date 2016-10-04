@@ -43,6 +43,7 @@ cr.define('settings_people_page_manage_profile', function() {
         manageProfile = document.createElement('settings-manage-profile');
         manageProfile.profileIconUrl = 'fake-icon-1.png';
         manageProfile.profileName = 'Initial Fake Name';
+        manageProfile.syncStatus = {supervisedUser: false, childUser: false};
         document.body.appendChild(manageProfile);
       });
 
@@ -93,6 +94,7 @@ cr.define('settings_people_page_manage_profile', function() {
       test('ManageProfileChangeName', function() {
         var nameField = manageProfile.$.name;
         assertTrue(!!nameField);
+        assertFalse(!!nameField.disabled);
 
         assertEquals('Initial Fake Name', nameField.value);
 
@@ -104,6 +106,16 @@ cr.define('settings_people_page_manage_profile', function() {
               assertEquals('fake-icon-1.png', args[0]);
               assertEquals('New Name', args[1]);
             });
+      });
+
+      test('ProfileNameIsDisabledForSupervisedUser', function() {
+        manageProfile.syncStatus = {supervisedUser: true, childUser: false};
+
+        var nameField = manageProfile.$.name;
+        assertTrue(!!nameField);
+
+        // Name field should be disabled for legacy supervised users.
+        assertTrue(!!nameField.disabled);
       });
 
       // Tests profile name updates pushed from the browser.

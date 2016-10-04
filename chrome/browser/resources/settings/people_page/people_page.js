@@ -364,6 +364,6 @@ Polymer({
    * @private
    */
   showSignin_: function(syncStatus) {
-    return syncStatus.signinAllowed && !syncStatus.signedIn;
+    return !!syncStatus.signinAllowed && !syncStatus.signedIn;
   },
 });
