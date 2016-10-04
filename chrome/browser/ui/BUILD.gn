@@ -1147,6 +1147,7 @@ split_static_library("ui") {
       "//chrome/common:features",
       "//components/feedback/proto",
       "//components/proximity_auth/webui",
+      "//components/web_modal",
       "//device/bluetooth",
       "//mash/public/interfaces",
     ]
@@ -2969,7 +2970,12 @@ split_static_library("ui") {
       ]
     }
   } else {  # 'OS!="win"
-    if (toolkit_views) {
+    # The Cast Linux build sets toolkit_views to false, but many files in this
+    # target include views-related files unconditionally, causing `gn check`
+    # to fail on this variant. Since this target is only referenced (but not
+    # compiled) on this variant, it's okay to add this "incorrect" dependency
+    # to Cast Linux builds so that `gn check` passes.
+    if (toolkit_views || (is_chromecast && is_linux)) {
       public_deps += [
         "//ui/views",
         "//ui/views/controls/webview",
@@ -2986,17 +2992,9 @@ split_static_library("ui") {
       "views/first_run_dialog.cc",
       "views/first_run_dialog.h",
       "views/frame/browser_desktop_window_tree_host.h",
-      "views/frame/browser_desktop_window_tree_host_x11.cc",
-      "views/frame/browser_desktop_window_tree_host_x11.h",
       "views/frame/desktop_browser_frame_auralinux.cc",
       "views/frame/desktop_browser_frame_auralinux.h",
-      "views/frame/global_menu_bar_registrar_x11.cc",
-      "views/frame/global_menu_bar_registrar_x11.h",
-      "views/frame/global_menu_bar_x11.cc",
-      "views/frame/global_menu_bar_x11.h",
       "views/frame/native_browser_frame_factory_auralinux.cc",
-      "views/javascript_app_modal_dialog_views_x11.cc",
-      "views/javascript_app_modal_dialog_views_x11.h",
       "views/status_icons/status_icon_linux_wrapper.cc",
       "views/status_icons/status_icon_linux_wrapper.h",
       "webui/help/version_updater_basic.cc",
@@ -3006,6 +3004,19 @@ split_static_library("ui") {
       "//ui/base/ime",
       "//ui/events:dom_keycode_converter",
     ]
+
+    if (use_x11) {
+      sources += [
+        "views/frame/browser_desktop_window_tree_host_x11.cc",
+        "views/frame/browser_desktop_window_tree_host_x11.h",
+        "views/frame/global_menu_bar_registrar_x11.cc",
+        "views/frame/global_menu_bar_registrar_x11.h",
+        "views/frame/global_menu_bar_x11.cc",
+        "views/frame/global_menu_bar_x11.h",
+        "views/javascript_app_modal_dialog_views_x11.cc",
+        "views/javascript_app_modal_dialog_views_x11.h",
+      ]
+    }
   }
   if (is_linux) {  # Both desktop Linux and ChromeOS.
     sources += [
@@ -3333,22 +3344,6 @@ split_static_library("ui") {
       "webui/local_discovery/local_discovery_ui.h",
       "webui/local_discovery/local_discovery_ui_handler.cc",
       "webui/local_discovery/local_discovery_ui_handler.h",
-    ]
-  }
-
-  if (is_chromecast && is_linux) {
-    # The Chromecast build sets toolkit_views to false but some targets in the
-    # build still reference views. But this target is referenced on the Cast
-    # bot (though not currently compiled) but is configured as Linux. This
-    # necessitates these extra dependencies to pass "gn check".
-    deps += [
-      "//chrome/browser/media/router",
-      "//components/web_modal",
-      "//ui/base/x",
-      "//ui/events/devices/x11",
-      "//ui/events/keycodes:x11",
-      "//ui/views",
-      "//ui/views/controls/webview",
     ]
   }
 }

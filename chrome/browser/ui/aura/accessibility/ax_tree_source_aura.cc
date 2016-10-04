@@ -15,7 +15,10 @@
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
 #include "ui/views/accessibility/ax_view_obj_wrapper.h"
-#include "ui/views/controls/webview/webview.h"
+
+#if defined(TOOLKIT_VIEWS)
+#include "ui/views/controls/webview/webview.h"  // nogncheck
+#endif
 
 using views::AXAuraObjCache;
 using views::AXAuraObjWrapper;

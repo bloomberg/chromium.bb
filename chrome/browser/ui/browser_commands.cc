@@ -111,7 +111,7 @@
 #endif
 
 #if defined(ENABLE_MEDIA_ROUTER)
-#include "chrome/browser/media/router/media_router_dialog_controller.h"
+#include "chrome/browser/media/router/media_router_dialog_controller.h"  // nogncheck
 #endif
 
 namespace {
