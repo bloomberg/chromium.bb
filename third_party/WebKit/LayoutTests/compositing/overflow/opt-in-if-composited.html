@@ -1,4 +1,5 @@
 <!DOCTYPE HTML>
+<script src="resources/composited-scroll.js"></script>
 <script>
 if (window.internals)
     window.internals.settings.setPreferCompositingToLCDTextEnabled(false);
@@ -8,24 +9,12 @@ if (window.testRunner) {
     window.testRunner.waitUntilDone();
 }
 
-function isUsingCompositedScrolling(layer) {
-    if (layer.bounds[1] == 1000)
-        return true;
-    if (layer.children) {
-        for (var i = 0; i < layer.children.length; i++) {
-            if (isUsingCompositedScrolling(layer.children[i]))
-                return true;
-        }
-    }
-    return false;
-}
-
 var result = "";
 onload = function() {
 
     if (window.internals) {
         result += "Should not be using composited scrolling: ";
-        if (!isUsingCompositedScrolling(JSON.parse(window.internals.layerTreeAsText(document))))
+        if (!isUsingCompositedScrolling(JSON.parse(window.internals.layerTreeAsText(document, window.internals.OUTPUT_CHILDREN_AS_LAYER_LIST))))
             result += "Pass.\n";
         else
             result += "Fail.\n"
@@ -35,7 +24,7 @@ onload = function() {
     requestAnimationFrame(function() {
         if (window.internals) {
             result += "Should be using composited scrolling (since we're compositing anyhow): ";
-            if (isUsingCompositedScrolling(JSON.parse(window.internals.layerTreeAsText(document))))
+            if (isUsingCompositedScrolling(JSON.parse(window.internals.layerTreeAsText(document, window.internals.OUTPUT_CHILDREN_AS_LAYER_LIST))))
                 result += "Pass.\n";
             else
                 result += "Fail.\n"
@@ -45,7 +34,7 @@ onload = function() {
         requestAnimationFrame(function() {
             if (window.internals) {
                 result += "Should not be using composited scrolling (since we've lost our direct reason): ";
-                if (!isUsingCompositedScrolling(JSON.parse(window.internals.layerTreeAsText(document))))
+                if (!isUsingCompositedScrolling(JSON.parse(window.internals.layerTreeAsText(document, window.internals.OUTPUT_CHILDREN_AS_LAYER_LIST))))
                     result += "Pass.\n";
                 else
                     result += "Fail.\n"

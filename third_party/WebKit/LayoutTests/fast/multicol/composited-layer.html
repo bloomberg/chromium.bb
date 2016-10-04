@@ -25,5 +25,5 @@ if (window.testRunner)
     testRunner.dumpAsText();
 
 if (window.internals)
-    document.getElementById("layers").innerText = internals.layerTreeAsText(document);
+    document.getElementById("layers").innerText = internals.layerTreeAsText(document, window.internals.OUTPUT_CHILDREN_AS_LAYER_LIST);
 </script>

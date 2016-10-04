@@ -33,7 +33,7 @@
 
       function dumpLayerTree() {
         if (window.internals)
-          document.getElementById("console").innerHTML = window.internals.layerTreeAsText(document);
+          document.getElementById("console").innerHTML = window.internals.layerTreeAsText(document, window.internals.OUTPUT_CHILDREN_AS_LAYER_LIST);
       }
 
       window.onload = dumpLayerTree;

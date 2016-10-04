@@ -1,45 +1,37 @@
 {
-  "name": "Content Root Layer",
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
       "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow DIV id='grandparent' class='composited'",
+      "position": [8, 8],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "shouldFlattenTransform": false,
+      "3dRenderingContext": 1,
       "drawsContent": true,
-      "children": [
-        {
-          "name": "LayoutBlockFlow DIV id='grandparent' class='composited'",
-          "position": [8, 8],
-          "bounds": [100, 100],
-          "contentsOpaque": true,
-          "shouldFlattenTransform": false,
-          "3dRenderingContext": 1,
-          "drawsContent": true,
-          "backgroundColor": "#008000",
-          "children": [
-            {
-              "name": "LayoutBlockFlow DIV id='parent' class='composited'",
-              "bounds": [100, 100],
-              "contentsOpaque": true,
-              "3dRenderingContext": 1,
-              "drawsContent": true,
-              "backgroundColor": "#008000",
-              "children": [
-                {
-                  "name": "LayoutBlockFlow DIV id='child' class='composited'",
-                  "bounds": [100, 100],
-                  "contentsOpaque": true,
-                  "shouldFlattenTransform": false,
-                  "3dRenderingContext": 2,
-                  "drawsContent": true,
-                  "backgroundColor": "#008000"
-                }
-              ]
-            }
-          ]
-        }
-      ]
+      "backgroundColor": "#008000"
+    },
+    {
+      "name": "LayoutBlockFlow DIV id='parent' class='composited'",
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "3dRenderingContext": 1,
+      "drawsContent": true,
+      "backgroundColor": "#008000"
+    },
+    {
+      "name": "LayoutBlockFlow DIV id='child' class='composited'",
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "shouldFlattenTransform": false,
+      "3dRenderingContext": 2,
+      "drawsContent": true,
+      "backgroundColor": "#008000"
     }
   ]
 }

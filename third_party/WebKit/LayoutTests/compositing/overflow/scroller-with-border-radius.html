@@ -1,4 +1,5 @@
 <!DOCTYPE HTML>
+<script src="resources/composited-scroll.js"></script>
 <style>
 #scroller {
     overflow: scroll;
@@ -27,18 +28,6 @@
     <div id="fixed"></div>
 </div>
 <script>
-function isUsingCompositedScrolling(layer) {
-    if (layer.bounds[1] == 1000)
-        return true;
-    if (layer.children) {
-        for (var i = 0; i < layer.children.length; i++) {
-            if (isUsingCompositedScrolling(layer.children[i]))
-                return true;
-        }
-    }
-    return false;
-}
-
 if (window.internals)
     window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
 
@@ -52,7 +41,7 @@ var result = "";
 onload = function() {
     if (window.internals) {
         result += "No border radius (should be using composited scrolling): ";
-        if (isUsingCompositedScrolling(JSON.parse(window.internals.layerTreeAsText(document))))
+        if (isUsingCompositedScrolling(JSON.parse(window.internals.layerTreeAsText(document, window.internals.OUTPUT_CHILDREN_AS_LAYER_LIST))))
             result += "Pass.\n";
         else
             result += "Fail.\n"
@@ -61,7 +50,7 @@ onload = function() {
     requestAnimationFrame(function() {
         if (window.internals) {
             result += "Has border radius (should not be using composited scrolling): ";
-            if (!isUsingCompositedScrolling(JSON.parse(window.internals.layerTreeAsText(document))))
+            if (!isUsingCompositedScrolling(JSON.parse(window.internals.layerTreeAsText(document, window.internals.OUTPUT_CHILDREN_AS_LAYER_LIST))))
                 result += "Pass.\n";
             else
                 result += "Fail.\n"
