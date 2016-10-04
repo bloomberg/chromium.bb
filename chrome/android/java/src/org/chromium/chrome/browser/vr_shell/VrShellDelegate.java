@@ -106,6 +106,7 @@ public class VrShellDelegate {
         if (inWebVR) mVrShell.setWebVrModeEnabled(true);
         mVrShell.setVrModeEnabled(true);
         mInVr = true;
+        tab.updateFullscreenEnabledState();
         return true;
     }
 
@@ -163,6 +164,8 @@ public class VrShellDelegate {
         clearVrModeWindowFlags();
         destroyVrShell();
         mInVr = false;
+        Tab tab = mActivity.getActivityTab();
+        if (tab != null) tab.updateFullscreenEnabledState();
     }
 
     private boolean createVrShell() {

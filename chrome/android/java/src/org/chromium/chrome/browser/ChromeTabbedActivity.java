@@ -81,6 +81,8 @@ import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoS
 import org.chromium.chrome.browser.signin.SigninPromoUtil;
 import org.chromium.chrome.browser.snackbar.undo.UndoBarController;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabDelegateFactory;
+import org.chromium.chrome.browser.tab.TopControlsVisibilityDelegate;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -103,6 +105,7 @@ import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.widget.Toast;
 
 import java.lang.annotation.Retention;
@@ -231,6 +234,43 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                 return false;
             }
             return super.isAssistSupported();
+        }
+    }
+
+    private class TabbedModeTopControlsVisibilityDelegate extends TopControlsVisibilityDelegate {
+        public TabbedModeTopControlsVisibilityDelegate(Tab tab) {
+            super(tab);
+        }
+
+        @Override
+        public boolean isShowingTopControlsEnabled() {
+            if (mVrShellDelegate.isInVR()) return false;
+            return super.isShowingTopControlsEnabled();
+        }
+
+        @Override
+        public boolean isHidingTopControlsEnabled() {
+            if (mVrShellDelegate.isInVR()) return true;
+            return super.isHidingTopControlsEnabled();
+        }
+    }
+
+    private class TabbedModeTabDelegateFactory extends TabDelegateFactory {
+        @Override
+        public TopControlsVisibilityDelegate createTopControlsVisibilityDelegate(Tab tab) {
+            return new TabbedModeTopControlsVisibilityDelegate(tab);
+        }
+    }
+
+    private class TabbedModeTabCreator extends ChromeTabCreator {
+        public TabbedModeTabCreator(ChromeActivity activity, WindowAndroid nativeWindow,
+                boolean incognito) {
+            super(activity, nativeWindow, incognito);
+        }
+
+        @Override
+        public TabDelegateFactory createDefaultTabDelegateFactory() {
+            return new TabbedModeTabDelegateFactory();
         }
     }
 
@@ -993,8 +1033,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             return;
         }
         setTabCreators(
-                new ChromeTabCreator(this, getWindowAndroid(), false),
-                new ChromeTabCreator(this, getWindowAndroid(), true));
+                new TabbedModeTabCreator(this, getWindowAndroid(), false),
+                new TabbedModeTabCreator(this, getWindowAndroid(), true));
         mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(mTabModelSelectorImpl) {
 
             private boolean mIsFirstPageLoadStart = true;
@@ -1563,9 +1603,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         mControlContainer.setVisibility(visibility);
         getCompositorViewHolder().getSurfaceView().setVisibility(visibility);
         getCompositorViewHolder().setVisibility(visibility);
-
-        // Enter HTML5 fullscreen to ensure the texture fills the entire composited surface.
-        getFullscreenManager().setPersistentFullscreenMode(visibility == View.GONE);
     }
 
     /**
