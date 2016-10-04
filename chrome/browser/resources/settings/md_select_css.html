@@ -3,8 +3,10 @@
 <dom-module id="md-select">
   <template>
     <style>
-      select {
-        background-color: transparent;
+      .md-select {
+        -webkit-appearance: none;
+        background: url(images/arrow_down.svg) 97% 70% no-repeat;
+        background-size: 0.9em;
         border-bottom: 1px solid var(--paper-grey-300);
         border-left: none;
         border-right: none;
@@ -18,7 +20,11 @@
         width: 200px;
       }
 
-      .select-underline {
+      :host-context([dir=rtl]) .md-select {
+        background-position-x: 3%;
+      }
+
+      .md-select-underline {
         border-top: 2px solid var(--paper-indigo-500);
         display: block;
         position: relative;
@@ -28,12 +34,12 @@
         width: 100%;
       }
 
-      select:focus + .select-underline {
+      .md-select:focus + .md-select-underline {
         transform: scale3d(1, 1, 1);
         transition: transform 200ms ease-out;
       }
 
-      .select-wrapper {
+      .md-select-wrapper {
         display: inline-block;
       }
     </style>

@@ -8,8 +8,9 @@
 <dom-module id="settings-dropdown-menu">
   <template>
     <style include="settings-shared md-select"></style>
-    <div class="select-wrapper">
-      <select id="dropdownMenu" on-change="onChange_" value="[[selected_]]"
+    <div class="md-select-wrapper">
+      <select class="md-select" id="dropdownMenu" on-change="onChange_"
+          value="[[selected_]]"
           disabled="[[shouldDisableMenu_(disabled, menuOptions)]]">
         <template is="dom-repeat" items="[[menuOptions]]">
           <option value="[[item.value]]" data-value$="[[item.value]]">
@@ -21,7 +22,7 @@
           $i18n{custom}
         </option>
       </select>
-      <span class="select-underline"></span>
+      <span class="md-select-underline"></span>
     </div>
   </template>
   <script src="settings_dropdown_menu.js"></script>

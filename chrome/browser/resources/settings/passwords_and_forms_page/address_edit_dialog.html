@@ -20,7 +20,7 @@
         width: calc((var(--paper-input-max-width) - 16px) / 2);
       }
 
-      select.address-column {
+      .md-select.address-column {
         -webkit-margin-end: 0;
         margin-bottom: 0;
       }
@@ -75,9 +75,9 @@
         </template>
         <div id="select-row" class="address-row">
           <div id="select-label">$i18n{addressCountry}</div>
-          <span class="select-wrapper">
-            <select class="address-column long" value="[[countryCode_]]"
-                  on-change="onCountryChange_">
+          <span class="md-select-wrapper">
+            <select class="md-select address-column long"
+                  value="[[countryCode_]]" on-change="onCountryChange_">
               <option value=""></option>
               <template is="dom-repeat" items="[[countries_]]">
                 <option value="[[getCode_(item)]]"
@@ -86,7 +86,7 @@
                 </option>
               </template>
             </select>
-            <span class="select-underline"></span>
+            <span class="md-select-underline"></span>
           </span>
         </div>
         <div class="address-row">

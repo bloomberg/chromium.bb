@@ -235,7 +235,8 @@
                  flattenhtml="true" />
       <structure name="IDR_SETTINGS_MD_SELECT_CSS_HTML"
                  file="md_select_css.html"
-                 type="chrome_html" />
+                 type="chrome_html"
+                 flattenhtml="true" />
       <structure name="IDR_SETTINGS_CR_SETTINGS_UI_HTML"
                  file="settings_ui/settings_ui.html"
                  type="chrome_html" />
