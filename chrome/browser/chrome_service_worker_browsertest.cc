@@ -523,6 +523,8 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchPPAPIPrivateTest,
 
 class ServiceWorkerSpeculativeLaunchTest : public ChromeServiceWorkerTest {
  protected:
+  static const std::string kNavigationHintLinkMouseDownMetricName;
+
   ServiceWorkerSpeculativeLaunchTest() {}
   ~ServiceWorkerSpeculativeLaunchTest() override {}
 
@@ -532,11 +534,73 @@ class ServiceWorkerSpeculativeLaunchTest : public ChromeServiceWorkerTest {
         features::kSpeculativeLaunchServiceWorker.name);
   }
 
+  void WriteTestHtmlFile() {
+    WriteFile(
+        FILE_PATH_LITERAL("test.html"),
+        "<script>"
+        "navigator.serviceWorker.register('./sw.js', {scope: './scope.html'})"
+        "  .then(function(reg) {"
+        "      reg.addEventListener('updatefound', function() {"
+        "          var worker = reg.installing;"
+        "          worker.addEventListener('statechange', function() {"
+        "              if (worker.state == 'activated')"
+        "                document.title = 'READY';"
+        "            });"
+        "        });"
+        "    });"
+        "</script>"
+        "<body style='margin:0; padding:0;'>"
+        "<a href='./scope.html' "
+        "style='position:fixed; width:1px; height:1px;'></a>"
+        "</body>");
+  }
+
+  void RunNavigationHintTest() {
+    embedded_test_server()->ServeFilesFromDirectory(
+        service_worker_dir_.GetPath());
+    ASSERT_TRUE(embedded_test_server()->Start());
+
+    content::ServiceWorkerContext* sw_context =
+        content::BrowserContext::GetDefaultStoragePartition(
+            browser()->profile())
+            ->GetServiceWorkerContext();
+
+    const base::string16 expected_title1 = base::ASCIIToUTF16("READY");
+    content::TitleWatcher title_watcher1(
+        browser()->tab_strip_model()->GetActiveWebContents(), expected_title1);
+    ui_test_utils::NavigateToURL(browser(),
+                                 embedded_test_server()->GetURL("/test.html"));
+    EXPECT_EQ(expected_title1, title_watcher1.WaitAndGetTitle());
+
+    histogram_tester_.ExpectBucketCount("ServiceWorker.StartNewWorker.Status",
+                                        0 /* SERVICE_WORKER_OK */, 1);
+
+    sw_context->StopAllServiceWorkersForOrigin(
+        embedded_test_server()->base_url());
+
+    const base::string16 expected_title2 = base::ASCIIToUTF16("Done");
+    content::TitleWatcher title_watcher2(
+        browser()->tab_strip_model()->GetActiveWebContents(), expected_title2);
+
+    histogram_tester_.ExpectTotalCount(kNavigationHintLinkMouseDownMetricName,
+                                       0);
+    content::SimulateMouseClickAt(
+        browser()->tab_strip_model()->GetActiveWebContents(), 0,
+        blink::WebMouseEvent::Button::Left, gfx::Point(0, 0));
+    EXPECT_EQ(expected_title2, title_watcher2.WaitAndGetTitle());
+  }
+
   base::HistogramTester histogram_tester_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerSpeculativeLaunchTest);
 };
+
+// static
+const std::string
+    ServiceWorkerSpeculativeLaunchTest::kNavigationHintLinkMouseDownMetricName =
+        "ServiceWorker.StartWorker.StatusByPurpose_"
+        "NAVIGATION_HINT_LINK_MOUSE_DOWN";
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerSpeculativeLaunchTest, MouseDown) {
   WriteFile(
@@ -545,63 +609,21 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerSpeculativeLaunchTest, MouseDown) {
       "  e.respondWith(new Response('<title>Done</title>',"
       "                             {headers: {'Content-Type': 'text/html'}}));"
       "};");
-  WriteFile(
-      FILE_PATH_LITERAL("test.html"),
-      "<script>"
-      "navigator.serviceWorker.register('./sw.js', {scope: './scope/'})"
-      "  .then(function(reg) {"
-      "      reg.addEventListener('updatefound', function() {"
-      "          var worker = reg.installing;"
-      "          worker.addEventListener('statechange', function() {"
-      "              if (worker.state == 'activated')"
-      "                document.title = 'READY';"
-      "            });"
-      "        });"
-      "    });"
-      "</script>"
-      "<body style='margin:0; padding:0;'>"
-      "<a href='./scope/' style='position:fixed; width:1px; height:1px;'></a>"
-      "</body>");
-
-  embedded_test_server()->ServeFilesFromDirectory(
-      service_worker_dir_.GetPath());
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  content::ServiceWorkerContext* sw_context =
-      content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
-          ->GetServiceWorkerContext();
-
-  const base::string16 expected_title1 = base::ASCIIToUTF16("READY");
-  content::TitleWatcher title_watcher1(
-      browser()->tab_strip_model()->GetActiveWebContents(), expected_title1);
-  ui_test_utils::NavigateToURL(browser(),
-                               embedded_test_server()->GetURL("/test.html"));
-  EXPECT_EQ(expected_title1, title_watcher1.WaitAndGetTitle());
-
-  histogram_tester_.ExpectBucketCount("ServiceWorker.StartNewWorker.Status",
-                                      0 /* SERVICE_WORKER_OK */, 1);
-
-  sw_context->StopAllServiceWorkersForOrigin(
-      embedded_test_server()->base_url());
-
-  const base::string16 expected_title2 = base::ASCIIToUTF16("Done");
-  content::TitleWatcher title_watcher2(
-      browser()->tab_strip_model()->GetActiveWebContents(), expected_title2);
-
-  histogram_tester_.ExpectTotalCount(
-      "ServiceWorker.StartWorker.StatusByPurpose_NAVIGATION_HINT_LINK_MOUSE_"
-      "DOWN",
-      0);
-  content::SimulateMouseClickAt(
-      browser()->tab_strip_model()->GetActiveWebContents(), 0,
-      blink::WebMouseEvent::Button::Left, gfx::Point(0, 0));
-  EXPECT_EQ(expected_title2, title_watcher2.WaitAndGetTitle());
-
+  WriteTestHtmlFile();
+  RunNavigationHintTest();
   // The service worker must be started by a navigation hint.
-  histogram_tester_.ExpectBucketCount(
-      "ServiceWorker.StartWorker.StatusByPurpose_NAVIGATION_HINT_LINK_MOUSE_"
-      "DOWN",
-      0 /* SERVICE_WORKER_OK */, 1);
+  histogram_tester_.ExpectBucketCount(kNavigationHintLinkMouseDownMetricName,
+                                      0 /* SERVICE_WORKER_OK */, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerSpeculativeLaunchTest,
+                       NoFetchEventHandler) {
+  WriteFile(FILE_PATH_LITERAL("sw.js"), "// no fetch event handler.");
+  WriteFile(FILE_PATH_LITERAL("scope.html"), "<title>Done</title>");
+  WriteTestHtmlFile();
+  RunNavigationHintTest();
+  // The service worker must NOT be started by a navigation hint.
+  histogram_tester_.ExpectTotalCount(kNavigationHintLinkMouseDownMetricName, 0);
 }
 
 }  // namespace

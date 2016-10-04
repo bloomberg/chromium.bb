@@ -341,6 +341,13 @@ void ServiceWorkerContextWrapper::DidFindRegistrationForNavigationHint(
     return;
   }
 
+  if (registration->active_version()->fetch_handler_existence() ==
+      ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST) {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(callback, false));
+    return;
+  }
+
   // Add the process reference of |render_process_id| not to launch a new
   // renderer process for the service worker.
   context_core_->process_manager()->AddProcessReferenceToPattern(
