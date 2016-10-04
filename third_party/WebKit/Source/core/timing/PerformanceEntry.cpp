@@ -65,17 +65,17 @@ double PerformanceEntry::duration() const {
 
 PerformanceEntry::EntryType PerformanceEntry::toEntryTypeEnum(
     const String& entryType) {
-  if (equalIgnoringCase(entryType, "composite"))
+  if (entryType == "composite")
     return Composite;
-  if (equalIgnoringCase(entryType, "longtask"))
+  if (entryType == "longtask")
     return LongTask;
-  if (equalIgnoringCase(entryType, "mark"))
+  if (entryType == "mark")
     return Mark;
-  if (equalIgnoringCase(entryType, "measure"))
+  if (entryType == "measure")
     return Measure;
-  if (equalIgnoringCase(entryType, "render"))
+  if (entryType == "render")
     return Render;
-  if (equalIgnoringCase(entryType, "resource"))
+  if (entryType == "resource")
     return Resource;
   return Invalid;
 }
