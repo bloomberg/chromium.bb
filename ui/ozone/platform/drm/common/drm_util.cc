@@ -30,6 +30,10 @@
 // TODO(dshwang): after most linux and libdrm has this definition, remove it.
 #define DRM_FORMAT_R8 fourcc_code('R', '8', ' ', ' ')
 #endif
+#if !defined(DRM_FORMAT_GR88)
+// TODO(dshwang): after most linux and libdrm has this definition, remove it.
+#define DRM_FORMAT_GR88 fourcc_code('G', 'R', '8', '8')
+#endif
 #if !defined(DRM_FORMAT_YV12)
 // TODO(dcastagna): after libdrm has this definition, remove it.
 #define DRM_FORMAT_YV12 fourcc_code('Y', 'V', '1', '2')
@@ -329,6 +333,8 @@ int GetFourCCFormatFromBufferFormat(gfx::BufferFormat format) {
   switch (format) {
     case gfx::BufferFormat::R_8:
       return DRM_FORMAT_R8;
+    case gfx::BufferFormat::RG_88:
+      return DRM_FORMAT_GR88;
     case gfx::BufferFormat::RGBA_8888:
       return DRM_FORMAT_ABGR8888;
     case gfx::BufferFormat::RGBX_8888:
@@ -353,6 +359,8 @@ gfx::BufferFormat GetBufferFormatFromFourCCFormat(int format) {
   switch (format) {
     case DRM_FORMAT_R8:
       return gfx::BufferFormat::R_8;
+    case DRM_FORMAT_GR88:
+      return gfx::BufferFormat::RG_88;
     case DRM_FORMAT_ABGR8888:
       return gfx::BufferFormat::RGBA_8888;
     case DRM_FORMAT_XBGR8888:

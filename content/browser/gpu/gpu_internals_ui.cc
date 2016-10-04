@@ -277,6 +277,8 @@ const char* BufferFormatToString(gfx::BufferFormat format) {
       return "ETC1";
     case gfx::BufferFormat::R_8:
       return "R_8";
+    case gfx::BufferFormat::RG_88:
+      return "RG_88";
     case gfx::BufferFormat::BGR_565:
       return "BGR_565";
     case gfx::BufferFormat::RGBA_4444:

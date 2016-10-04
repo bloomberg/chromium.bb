@@ -33,6 +33,7 @@ namespace {
 bool ValidInternalFormat(unsigned internalformat) {
   switch (internalformat) {
     case GL_RED:
+    case GL_RG:
     case GL_BGRA_EXT:
     case GL_RGB:
     case GL_RGB_YCBCR_420V_CHROMIUM:
@@ -53,6 +54,7 @@ bool ValidFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::UYVY_422:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
       return true;
+    case gfx::BufferFormat::RG_88:
     case gfx::BufferFormat::ATC:
     case gfx::BufferFormat::ATCIA:
     case gfx::BufferFormat::DXT1:
@@ -73,6 +75,8 @@ GLenum TextureFormat(gfx::BufferFormat format) {
   switch (format) {
     case gfx::BufferFormat::R_8:
       return GL_RED;
+    case gfx::BufferFormat::RG_88:
+      return GL_RG;
     case gfx::BufferFormat::BGRA_8888:
     case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::RGBA_8888:
@@ -102,6 +106,8 @@ GLenum DataFormat(gfx::BufferFormat format) {
   switch (format) {
     case gfx::BufferFormat::R_8:
       return GL_RED;
+    case gfx::BufferFormat::RG_88:
+      return GL_RG;
     case gfx::BufferFormat::BGRA_8888:
     case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::RGBA_8888:
@@ -129,6 +135,7 @@ GLenum DataFormat(gfx::BufferFormat format) {
 GLenum DataType(gfx::BufferFormat format) {
   switch (format) {
     case gfx::BufferFormat::R_8:
+    case gfx::BufferFormat::RG_88:
       return GL_UNSIGNED_BYTE;
     case gfx::BufferFormat::BGRA_8888:
     case gfx::BufferFormat::BGRX_8888:

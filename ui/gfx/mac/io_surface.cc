@@ -41,6 +41,7 @@ int32_t BytesPerElement(gfx::BufferFormat format, int plane) {
       static int32_t bytes_per_element[] = {1, 2};
       DCHECK_LT(static_cast<size_t>(plane), arraysize(bytes_per_element));
       return bytes_per_element[plane];
+    case gfx::BufferFormat::RG_88:
     case gfx::BufferFormat::UYVY_422:
       DCHECK_EQ(plane, 0);
       return 2;
@@ -73,6 +74,7 @@ int32_t PixelFormat(gfx::BufferFormat format) {
       return '420v';
     case gfx::BufferFormat::UYVY_422:
       return '2vuy';
+    case gfx::BufferFormat::RG_88:
     case gfx::BufferFormat::ATC:
     case gfx::BufferFormat::ATCIA:
     case gfx::BufferFormat::DXT1:

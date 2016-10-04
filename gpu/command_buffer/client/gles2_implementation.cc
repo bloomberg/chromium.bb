@@ -6054,6 +6054,7 @@ bool CreateImageValidInternalFormat(GLenum internalformat,
     case GL_ETC1_RGB8_OES:
       return capabilities.texture_format_etc1;
     case GL_RED:
+    case GL_RG_EXT:
     case GL_RGB:
     case GL_RGBA:
     case GL_RGB_YCBCR_422_CHROMIUM:
