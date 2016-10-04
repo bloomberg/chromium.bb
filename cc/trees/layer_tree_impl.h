@@ -139,6 +139,8 @@ class CC_EXPORT LayerTreeImpl {
 
   void MoveChangeTrackingToLayers();
 
+  void ForceRecalculateRasterScales();
+
   LayerImplList::const_iterator begin() const;
   LayerImplList::const_iterator end() const;
   LayerImplList::reverse_iterator rbegin();

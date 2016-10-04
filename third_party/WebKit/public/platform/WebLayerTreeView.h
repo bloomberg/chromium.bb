@@ -158,6 +158,10 @@ class WebLayerTreeView {
   // Mutations are plumbed back to the layer tree via the mutator client.
   virtual void setMutatorClient(std::unique_ptr<WebCompositorMutatorClient>) {}
 
+  // For when the embedder itself change scales on the page (e.g. devtools)
+  // and wants all of the content at the new scale to be crisp.
+  virtual void forceRecalculateRasterScales() {}
+
   // Input properties ---------------------------------------------------
   virtual void setEventListenerProperties(WebEventListenerClass,
                                           WebEventListenerProperties){};

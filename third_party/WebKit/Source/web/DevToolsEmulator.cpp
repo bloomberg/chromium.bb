@@ -428,7 +428,7 @@ void DevToolsEmulator::updateRootLayerTransform() {
   // viewport override.
   applyViewportOverride(&transform);
   applyDeviceEmulationTransform(&transform);
-  m_webViewImpl->setRootLayerTransform(transform);
+  m_webViewImpl->setDeviceEmulationTransform(transform);
 }
 
 WTF::Optional<IntRect> DevToolsEmulator::visibleContentRectForPainting() const {

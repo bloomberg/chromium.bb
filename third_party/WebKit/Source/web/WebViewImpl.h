@@ -297,8 +297,8 @@ class WEB_EXPORT WebViewImpl final
   void setBackgroundColorOverride(WebColor);
   void setZoomFactorOverride(float);
   void setCompositorDeviceScaleFactorOverride(float);
-  void setRootLayerTransform(const TransformationMatrix&);
-  TransformationMatrix getRootLayerTransformForTesting() const;
+  void setDeviceEmulationTransform(const TransformationMatrix&);
+  TransformationMatrix getDeviceEmulationTransformForTesting() const;
 
   Color baseBackgroundColor() const { return m_baseBackgroundColor; }
 
@@ -586,7 +586,7 @@ class WEB_EXPORT WebViewImpl final
   void reallocateRenderer();
   void updateLayerTreeViewport();
   void updateLayerTreeBackgroundColor();
-  void updateRootLayerTransform();
+  void updateDeviceEmulationTransform();
   void updateLayerTreeDeviceScaleFactor();
 
   // Helper function: Widens the width of |source| by the specified margins
@@ -689,7 +689,7 @@ class WEB_EXPORT WebViewImpl final
   bool m_ignoreInputEvents;
 
   float m_compositorDeviceScaleFactorOverride;
-  TransformationMatrix m_rootLayerTransform;
+  TransformationMatrix m_deviceEmulationTransform;
 
   // Webkit expects keyPress events to be suppressed if the associated keyDown
   // event was handled. Safari implements this behavior by peeking out the

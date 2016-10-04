@@ -119,6 +119,9 @@ class CC_EXPORT LayerTreeHost {
   // synchronization.
   virtual void SetNeedsCommit() = 0;
 
+  // Requests that the next frame re-chooses crisp raster scales for all layers.
+  virtual void SetNeedsRecalculateRasterScales() = 0;
+
   // Returns true if a main frame (for any pipeline stage above) has been
   // requested.
   virtual bool BeginMainFrameRequested() const = 0;

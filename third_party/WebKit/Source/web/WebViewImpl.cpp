@@ -3981,15 +3981,17 @@ void WebViewImpl::setCompositorDeviceScaleFactorOverride(
     updateLayerTreeDeviceScaleFactor();
 }
 
-void WebViewImpl::setRootLayerTransform(const TransformationMatrix& transform) {
-  if (transform == m_rootLayerTransform)
+void WebViewImpl::setDeviceEmulationTransform(
+    const TransformationMatrix& transform) {
+  if (transform == m_deviceEmulationTransform)
     return;
-  m_rootLayerTransform = transform;
-  updateRootLayerTransform();
+  m_deviceEmulationTransform = transform;
+  updateDeviceEmulationTransform();
 }
 
-TransformationMatrix WebViewImpl::getRootLayerTransformForTesting() const {
-  return m_rootLayerTransform;
+TransformationMatrix WebViewImpl::getDeviceEmulationTransformForTesting()
+    const {
+  return m_deviceEmulationTransform;
 }
 
 void WebViewImpl::enableDeviceEmulation(
@@ -4394,7 +4396,7 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* graphicsLayer) {
     m_rootGraphicsLayer = visualViewport.rootGraphicsLayer();
     m_visualViewportContainerLayer = visualViewport.containerLayer();
     m_rootLayer = m_rootGraphicsLayer->platformLayer();
-    updateRootLayerTransform();
+    updateDeviceEmulationTransform();
     m_layerTreeView->setRootLayer(*m_rootLayer);
     // We register viewport layers here since there may not be a layer
     // tree view prior to this point.
@@ -4576,9 +4578,15 @@ void WebViewImpl::updateLayerTreeDeviceScaleFactor() {
   m_layerTreeView->setDeviceScaleFactor(deviceScaleFactor);
 }
 
-void WebViewImpl::updateRootLayerTransform() {
-  if (m_visualViewportContainerLayer)
-    m_visualViewportContainerLayer->setTransform(m_rootLayerTransform);
+void WebViewImpl::updateDeviceEmulationTransform() {
+  if (!m_visualViewportContainerLayer)
+    return;
+
+  // When the device emulation transform is updated, to avoid incorrect
+  // scales and fuzzy raster from the compositor, force all content to
+  // pick ideal raster scales.
+  m_visualViewportContainerLayer->setTransform(m_deviceEmulationTransform);
+  m_layerTreeView->forceRecalculateRasterScales();
 }
 
 bool WebViewImpl::detectContentOnTouch(

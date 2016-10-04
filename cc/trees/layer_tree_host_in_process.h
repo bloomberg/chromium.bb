@@ -145,6 +145,7 @@ class CC_EXPORT LayerTreeHostInProcess : public LayerTreeHost {
   void SetNeedsAnimate() override;
   void SetNeedsUpdateLayers() override;
   void SetNeedsCommit() override;
+  void SetNeedsRecalculateRasterScales() override;
   bool BeginMainFrameRequested() const override;
   bool CommitRequested() const override;
   void SetDeferCommits(bool defer_commits) override;
@@ -351,7 +352,8 @@ class CC_EXPORT LayerTreeHostInProcess : public LayerTreeHost {
   bool did_complete_scale_animation_;
 
   int id_;
-  bool next_commit_forces_redraw_;
+  bool next_commit_forces_redraw_ = false;
+  bool next_commit_forces_recalculate_raster_scales_ = false;
 
   SharedBitmapManager* shared_bitmap_manager_;
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;

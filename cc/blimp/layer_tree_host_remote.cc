@@ -145,6 +145,11 @@ void LayerTreeHostRemote::SetNeedsCommit() {
   MainFrameRequested(FramePipelineStage::COMMIT);
 }
 
+void LayerTreeHostRemote::SetNeedsRecalculateRasterScales() {
+  // This is used by devtools to reraster content after changing device
+  // emulation modes, so doesn't need to be supported by Blimp.
+}
+
 bool LayerTreeHostRemote::BeginMainFrameRequested() const {
   return requested_pipeline_stage_for_next_frame_ != FramePipelineStage::NONE;
 }

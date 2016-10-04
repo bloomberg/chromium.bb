@@ -785,6 +785,10 @@ void RenderWidgetCompositor::setMutatorClient(
   layer_tree_host_->SetLayerTreeMutator(std::move(client));
 }
 
+void RenderWidgetCompositor::forceRecalculateRasterScales() {
+  layer_tree_host_->SetNeedsRecalculateRasterScales();
+}
+
 static_assert(static_cast<cc::EventListenerClass>(
                   blink::WebEventListenerClass::TouchStartOrMove) ==
                   cc::EventListenerClass::kTouchStartOrMove,

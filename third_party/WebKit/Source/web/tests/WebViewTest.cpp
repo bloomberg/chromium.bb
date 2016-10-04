@@ -3962,7 +3962,8 @@ TEST_F(WebViewTest, ForceAndResetViewport) {
 
   TransformationMatrix expectedMatrix;
   expectedMatrix.makeIdentity();
-  EXPECT_EQ(expectedMatrix, webViewImpl->getRootLayerTransformForTesting());
+  EXPECT_EQ(expectedMatrix,
+            webViewImpl->getDeviceEmulationTransformForTesting());
   EXPECT_FALSE(devToolsEmulator->visibleContentRectForPainting());
   EXPECT_TRUE(visualViewport->containerLayer()->masksToBounds());
 
@@ -3970,7 +3971,8 @@ TEST_F(WebViewTest, ForceAndResetViewport) {
   // visual viewport clipping.
   devToolsEmulator->forceViewport(WebFloatPoint(50, 55), 2.f);
   expectedMatrix.makeIdentity().scale(2.f).translate(-50, -55);
-  EXPECT_EQ(expectedMatrix, webViewImpl->getRootLayerTransformForTesting());
+  EXPECT_EQ(expectedMatrix,
+            webViewImpl->getDeviceEmulationTransformForTesting());
   EXPECT_EQ(IntRect(50, 55, 50, 75),
             *devToolsEmulator->visibleContentRectForPainting());
   EXPECT_FALSE(visualViewport->containerLayer()->masksToBounds());
@@ -3978,7 +3980,8 @@ TEST_F(WebViewTest, ForceAndResetViewport) {
   // Setting new override discards previous one.
   devToolsEmulator->forceViewport(WebFloatPoint(5.4f, 10.5f), 1.5f);
   expectedMatrix.makeIdentity().scale(1.5f).translate(-5.4f, -10.5f);
-  EXPECT_EQ(expectedMatrix, webViewImpl->getRootLayerTransformForTesting());
+  EXPECT_EQ(expectedMatrix,
+            webViewImpl->getDeviceEmulationTransformForTesting());
   EXPECT_EQ(IntRect(5, 10, 68, 101),
             *devToolsEmulator->visibleContentRectForPainting());
   EXPECT_FALSE(visualViewport->containerLayer()->masksToBounds());
@@ -3987,7 +3990,8 @@ TEST_F(WebViewTest, ForceAndResetViewport) {
   // visual viewport clipping.
   devToolsEmulator->resetViewport();
   expectedMatrix.makeIdentity();
-  EXPECT_EQ(expectedMatrix, webViewImpl->getRootLayerTransformForTesting());
+  EXPECT_EQ(expectedMatrix,
+            webViewImpl->getDeviceEmulationTransformForTesting());
   EXPECT_FALSE(devToolsEmulator->visibleContentRectForPainting());
   EXPECT_TRUE(visualViewport->containerLayer()->masksToBounds());
 }
@@ -4002,14 +4006,16 @@ TEST_F(WebViewTest, ViewportOverrideIntegratesDeviceMetricsOffsetAndScale) {
 
   TransformationMatrix expectedMatrix;
   expectedMatrix.makeIdentity();
-  EXPECT_EQ(expectedMatrix, webViewImpl->getRootLayerTransformForTesting());
+  EXPECT_EQ(expectedMatrix,
+            webViewImpl->getDeviceEmulationTransformForTesting());
 
   WebDeviceEmulationParams emulationParams;
   emulationParams.offset = WebFloatPoint(50, 50);
   emulationParams.scale = 2.f;
   webViewImpl->enableDeviceEmulation(emulationParams);
   expectedMatrix.makeIdentity().translate(50, 50).scale(2.f);
-  EXPECT_EQ(expectedMatrix, webViewImpl->getRootLayerTransformForTesting());
+  EXPECT_EQ(expectedMatrix,
+            webViewImpl->getDeviceEmulationTransformForTesting());
 
   // Device metrics offset and scale are applied before viewport override.
   webViewImpl->devToolsEmulator()->forceViewport(WebFloatPoint(5, 10), 1.5f);
@@ -4018,7 +4024,8 @@ TEST_F(WebViewTest, ViewportOverrideIntegratesDeviceMetricsOffsetAndScale) {
       .translate(-5, -10)
       .translate(50, 50)
       .scale(2.f);
-  EXPECT_EQ(expectedMatrix, webViewImpl->getRootLayerTransformForTesting());
+  EXPECT_EQ(expectedMatrix,
+            webViewImpl->getDeviceEmulationTransformForTesting());
 }
 
 TEST_F(WebViewTest, ViewportOverrideAdaptsToScaleAndScroll) {
@@ -4034,7 +4041,8 @@ TEST_F(WebViewTest, ViewportOverrideAdaptsToScaleAndScroll) {
 
   TransformationMatrix expectedMatrix;
   expectedMatrix.makeIdentity();
-  EXPECT_EQ(expectedMatrix, webViewImpl->getRootLayerTransformForTesting());
+  EXPECT_EQ(expectedMatrix,
+            webViewImpl->getDeviceEmulationTransformForTesting());
 
   // Initial transform takes current page scale and scroll position into
   // account.
@@ -4047,7 +4055,8 @@ TEST_F(WebViewTest, ViewportOverrideAdaptsToScaleAndScroll) {
       .translate(-50, -55)
       .translate(100, 150)
       .scale(1. / 1.5f);
-  EXPECT_EQ(expectedMatrix, webViewImpl->getRootLayerTransformForTesting());
+  EXPECT_EQ(expectedMatrix,
+            webViewImpl->getDeviceEmulationTransformForTesting());
   // Page scroll and scale are irrelevant for visibleContentRect.
   EXPECT_EQ(IntRect(50, 55, 50, 75),
             *devToolsEmulator->visibleContentRectForPainting());
@@ -4060,7 +4069,8 @@ TEST_F(WebViewTest, ViewportOverrideAdaptsToScaleAndScroll) {
       .translate(-50, -55)
       .translate(50, 55)
       .scale(1. / 1.5f);
-  EXPECT_EQ(expectedMatrix, webViewImpl->getRootLayerTransformForTesting());
+  EXPECT_EQ(expectedMatrix,
+            webViewImpl->getDeviceEmulationTransformForTesting());
   // visibleContentRect doesn't change.
   EXPECT_EQ(IntRect(50, 55, 50, 75),
             *devToolsEmulator->visibleContentRectForPainting());
@@ -4072,7 +4082,8 @@ TEST_F(WebViewTest, ViewportOverrideAdaptsToScaleAndScroll) {
       .translate(-50, -55)
       .translate(50, 55)
       .scale(1. / 2.f);
-  EXPECT_EQ(expectedMatrix, webViewImpl->getRootLayerTransformForTesting());
+  EXPECT_EQ(expectedMatrix,
+            webViewImpl->getDeviceEmulationTransformForTesting());
   // visibleContentRect doesn't change.
   EXPECT_EQ(IntRect(50, 55, 50, 75),
             *devToolsEmulator->visibleContentRectForPainting());

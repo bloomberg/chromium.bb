@@ -497,6 +497,11 @@ void LayerTreeImpl::MoveChangeTrackingToLayers() {
   }
 }
 
+void LayerTreeImpl::ForceRecalculateRasterScales() {
+  for (auto* layer : picture_layers_)
+    layer->ResetRasterScale();
+}
+
 LayerImplList::const_iterator LayerTreeImpl::begin() const {
   return layer_list_.cbegin();
 }
