@@ -67,11 +67,11 @@ enum {
 
   GetImageDataForcesNoAcceleration = 1,
 
-  // Whan a canvas is used as a source image, if its destination is
+  // When a canvas is used as a source image, if its destination is
   // non-accelerated and the source canvas is accelerated, a readback
-  // from the gpu is necessary. This option cause the source canvas to
+  // from the gpu is necessary. This option causes the source canvas to
   // switch to non-accelerated when this situation is encountered to
-  // prevent future canvas to canvas draws from requiring a readback.
+  // prevent future canvas-to-canvas draws from requiring a readback.
   DisableAccelerationToAvoidReadbacks = 1,
 
   // When drawing very large images to canvases, there is a point where
