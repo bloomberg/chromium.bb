@@ -14,6 +14,7 @@
 #include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_opt_out_store.h"
 #include "components/previews/core/previews_ui_service.h"
+#include "url/gurl.h"
 
 namespace previews {
 
@@ -48,6 +49,19 @@ void PreviewsIOData::InitializeOnIOThread(
   ui_task_runner_->PostTask(
       FROM_HERE, base::Bind(&PreviewsUIService::SetIOData, previews_ui_service_,
                             weak_factory_.GetWeakPtr()));
+}
+
+void PreviewsIOData::AddPreviewNavigation(const GURL& url,
+                                          bool opt_out,
+                                          PreviewsType type) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  previews_black_list_->AddPreviewNavigation(url, opt_out, type);
+}
+
+void PreviewsIOData::ClearBlackList(base::Time begin_time,
+                                    base::Time end_time) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  previews_black_list_->ClearBlackList(begin_time, end_time);
 }
 
 }  // namespace previews

@@ -78,6 +78,39 @@ bool PreviewsBlackList::IsLoadedAndAllowed(const GURL& url,
   return !black_list_item || !black_list_item->IsBlackListed(clock_->Now());
 }
 
+void PreviewsBlackList::ClearBlackList(base::Time begin_time,
+                                       base::Time end_time) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_LE(begin_time, end_time);
+  // If the |black_list_item_map_| has been loaded from |opt_out_store_|,
+  // synchronous operations will be accurate. Otherwise, queue the task to run
+  // asynchronously.
+  if (loaded_) {
+    ClearBlackListSync(begin_time, end_time);
+  } else {
+    QueuePendingTask(base::Bind(&PreviewsBlackList::ClearBlackListSync,
+                                weak_factory_.GetWeakPtr(), begin_time,
+                                end_time));
+  }
+}
+
+void PreviewsBlackList::ClearBlackListSync(base::Time begin_time,
+                                           base::Time end_time) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(loaded_);
+  DCHECK_LE(begin_time, end_time);
+  black_list_item_map_.reset(nullptr);
+  loaded_ = false;
+  // Delete relevant entries and reload the blacklist into memory.
+  if (opt_out_store_) {
+    opt_out_store_->ClearBlackList(begin_time, end_time);
+    opt_out_store_->LoadBlackList(base::Bind(
+        &PreviewsBlackList::LoadBlackListDone, weak_factory_.GetWeakPtr()));
+  } else {
+    LoadBlackListDone(base::MakeUnique<BlackListItemMap>());
+  }
+}
+
 void PreviewsBlackList::QueuePendingTask(base::Closure callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!loaded_);

@@ -18,7 +18,6 @@ base::LazyInstance<PreviewsServiceFactory> g_previews_factory =
 
 // static
 PreviewsService* PreviewsServiceFactory::GetForProfile(Profile* profile) {
-  DCHECK_NE(profile->GetProfileType(), Profile::INCOGNITO_PROFILE);
   return static_cast<PreviewsService*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }

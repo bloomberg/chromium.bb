@@ -51,6 +51,9 @@ class PreviewsOptOutStore {
   // Asynchronously loads a map of host names to PreviewsBlackListItem for that
   // host from the store. And runs |callback| once loading is finished.
   virtual void LoadBlackList(LoadBlackListCallback callback) = 0;
+
+  // Deletes all history in the store between |begin_time| and |end_time|.
+  virtual void ClearBlackList(base::Time begin_time, base::Time end_time) = 0;
 };
 
 }  // namespace previews

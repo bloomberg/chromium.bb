@@ -59,6 +59,12 @@ class PreviewsBlackList {
   // not used to make this decision.
   bool IsLoadedAndAllowed(const GURL& url, PreviewsType type) const;
 
+  // Asynchronously deletes all entries in the in-memory black list. Informs
+  // the backing store to delete entries between |begin_time| and |end_time|,
+  // and reloads entries into memory from the backing store. If the embedder
+  // passed in a null store, resets all history in the in-memory black list.
+  void ClearBlackList(base::Time begin_time, base::Time end_time);
+
  private:
   // Synchronous version of AddPreviewNavigation method.
   void AddPreviewNavigationSync(const GURL& host_name,
@@ -68,6 +74,9 @@ class PreviewsBlackList {
   // Returns the PreviewsBlackListItem representing |host_name|. If there is no
   // item for |host_name|, returns null.
   PreviewsBlackListItem* GetBlackListItem(const std::string& host_name) const;
+
+  // Synchronous version of ClearBlackList method.
+  void ClearBlackListSync(base::Time begin_time, base::Time end_time);
 
   // Returns a new PreviewsBlackListItem representing |host_name|. Adds the new
   // item to the in-memory map.

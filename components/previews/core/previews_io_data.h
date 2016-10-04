@@ -12,7 +12,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "base/time/time.h"
 #include "components/previews/core/previews_opt_out_store.h"
+
+class GURL;
 
 namespace previews {
 class PreviewsBlackList;
@@ -33,6 +36,14 @@ class PreviewsIOData {
   void Initialize(base::WeakPtr<PreviewsUIService> previews_ui_service,
                   std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store);
 
+  // Adds a navigation to |url| to the black list with result |opt_out|.
+  void AddPreviewNavigation(const GURL& url, bool opt_out, PreviewsType type);
+
+  // Clears the history of the black list between |begin_time| and |end_time|,
+  // both inclusive.
+  void ClearBlackList(base::Time begin_time, base::Time end_time);
+
+  // The previews black list that decides whether a navigation can use previews.
   PreviewsBlackList* black_list() const { return previews_black_list_.get(); }
 
  protected:

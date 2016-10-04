@@ -37,6 +37,8 @@
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
+#include "chrome/browser/previews/previews_service.h"
+#include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -64,6 +66,7 @@
 #include "components/power/origin_power_map.h"
 #include "components/power/origin_power_map_factory.h"
 #include "components/prefs/pref_service.h"
+#include "components/previews/core/previews_ui_service.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/web_cache/browser/web_cache_manager.h"
@@ -721,6 +724,14 @@ void BrowsingDataRemover::RemoveImpl(
         data_reduction_proxy_service->compression_stats()
             ->DeleteBrowsingHistory(delete_begin_, delete_end_);
       }
+    }
+
+    // |previews_service| is null if |profile_| is off the record.
+    PreviewsService* previews_service =
+        PreviewsServiceFactory::GetForProfile(profile_);
+    if (previews_service && previews_service->previews_ui_service()) {
+      previews_service->previews_ui_service()->ClearBlackList(delete_begin_,
+                                                              delete_end_);
     }
   }
 

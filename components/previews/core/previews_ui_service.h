@@ -14,6 +14,8 @@
 #include "base/time/time.h"
 #include "components/previews/core/previews_opt_out_store.h"
 
+class GURL;
+
 namespace base {
 class SingleThreadTaskRunner;
 }
@@ -34,6 +36,12 @@ class PreviewsUIService {
   // Sets |io_data_| to |io_data| to allow calls from the UI thread to the IO
   // thread. Virtualized in testing.
   virtual void SetIOData(base::WeakPtr<PreviewsIOData> io_data);
+
+  // Adds a navigation to |url| to the black list with result |opt_out|.
+  void AddPreviewNavigation(const GURL& url, PreviewsType type, bool opt_out);
+
+  // Clears the history of the black list between |begin_time| and |end_time|.
+  void ClearBlackList(base::Time begin_time, base::Time end_time);
 
  private:
   // The IO thread portion of the inter-thread communication for previews/.
