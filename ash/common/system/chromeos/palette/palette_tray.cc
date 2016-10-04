@@ -10,6 +10,7 @@
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/system/chromeos/palette/palette_tool_manager.h"
 #include "ash/common/system/chromeos/palette/palette_utils.h"
+#include "ash/common/system/tray/system_tray_controller.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_bubble_wrapper.h"
 #include "ash/common/system/tray/tray_constants.h"
@@ -124,12 +125,12 @@ class TitleView : public views::View, public views::ButtonListener {
     if (sender == settings_button_) {
       palette_tray_->RecordPaletteOptionsUsage(
           PaletteTrayOptions::PALETTE_SETTINGS_BUTTON);
-      WmShell::Get()->system_tray_delegate()->ShowPaletteSettings();
+      WmShell::Get()->system_tray_controller()->ShowPaletteSettings();
       palette_tray_->HidePalette();
     } else if (sender == help_button_) {
       palette_tray_->RecordPaletteOptionsUsage(
           PaletteTrayOptions::PALETTE_HELP_BUTTON);
-      WmShell::Get()->system_tray_delegate()->ShowPaletteHelp();
+      WmShell::Get()->system_tray_controller()->ShowPaletteHelp();
       palette_tray_->HidePalette();
     } else {
       NOTREACHED();

@@ -10,6 +10,7 @@
 #include "ash/common/system/date/date_view.h"
 #include "ash/common/system/tray/special_popup_row.h"
 #include "ash/common/system/tray/system_tray.h"
+#include "ash/common/system/tray/system_tray_controller.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_header_button.h"
@@ -153,7 +154,7 @@ void DateDefaultView::ButtonPressed(views::Button* sender,
   SystemTrayDelegate* tray_delegate = shell->system_tray_delegate();
   if (sender == help_button_) {
     shell->RecordUserMetricsAction(UMA_TRAY_HELP);
-    tray_delegate->ShowHelp();
+    shell->system_tray_controller()->ShowHelp();
   } else if (sender == shutdown_button_) {
     shell->RecordUserMetricsAction(UMA_TRAY_SHUT_DOWN);
     tray_delegate->RequestShutdown();

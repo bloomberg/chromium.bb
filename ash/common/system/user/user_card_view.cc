@@ -9,6 +9,7 @@
 
 #include "ash/common/login_status.h"
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/system/tray/system_tray_controller.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray/tray_constants.h"
@@ -268,7 +269,7 @@ void PublicAccountUserDetails::OnPaint(gfx::Canvas* canvas) {
 void PublicAccountUserDetails::LinkClicked(views::Link* source,
                                            int event_flags) {
   DCHECK_EQ(source, learn_more_);
-  WmShell::Get()->system_tray_delegate()->ShowPublicAccountInfo();
+  WmShell::Get()->system_tray_controller()->ShowPublicAccountInfo();
 }
 
 void PublicAccountUserDetails::CalculatePreferredSize(int max_allowed_width) {

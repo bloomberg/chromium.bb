@@ -10,6 +10,7 @@
 #include "ash/common/system/chromeos/power/power_status_view.h"
 #include "ash/common/system/tray/actionable_view.h"
 #include "ash/common/system/tray/fixed_sized_image_view.h"
+#include "ash/common/system/tray/system_tray_controller.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/wm_shell.h"
@@ -88,7 +89,7 @@ class SettingsDefaultView : public ActionableView,
       return false;
     }
 
-    WmShell::Get()->system_tray_delegate()->ShowSettings();
+    WmShell::Get()->system_tray_controller()->ShowSettings();
     CloseSystemBubble();
     return true;
   }

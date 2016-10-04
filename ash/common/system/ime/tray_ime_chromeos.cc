@@ -11,6 +11,7 @@
 #include "ash/common/system/chromeos/ime_menu/ime_list_view.h"
 #include "ash/common/system/tray/hover_highlight_view.h"
 #include "ash/common/system/tray/system_tray.h"
+#include "ash/common/system/tray/system_tray_controller.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray/tray_constants.h"
@@ -147,7 +148,7 @@ class IMEDetailedView : public ImeListView {
     if (view == settings_) {
       WmShell::Get()->RecordUserMetricsAction(
           UMA_STATUS_AREA_IME_SHOW_DETAILED);
-      WmShell::Get()->system_tray_delegate()->ShowIMESettings();
+      WmShell::Get()->system_tray_controller()->ShowIMESettings();
     }
   }
 

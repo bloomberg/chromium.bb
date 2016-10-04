@@ -17,9 +17,69 @@ SystemTrayController::SystemTrayController(shell::Connector* connector)
 
 SystemTrayController::~SystemTrayController() {}
 
+void SystemTrayController::ShowSettings() {
+  if (ConnectToSystemTrayClient())
+    system_tray_client_->ShowSettings();
+}
+
 void SystemTrayController::ShowDateSettings() {
   if (ConnectToSystemTrayClient())
     system_tray_client_->ShowDateSettings();
+}
+
+void SystemTrayController::ShowDisplaySettings() {
+  if (ConnectToSystemTrayClient())
+    system_tray_client_->ShowDisplaySettings();
+}
+
+void SystemTrayController::ShowPowerSettings() {
+  if (ConnectToSystemTrayClient())
+    system_tray_client_->ShowPowerSettings();
+}
+
+void SystemTrayController::ShowChromeSlow() {
+  if (ConnectToSystemTrayClient())
+    system_tray_client_->ShowChromeSlow();
+}
+
+void SystemTrayController::ShowIMESettings() {
+  if (ConnectToSystemTrayClient())
+    system_tray_client_->ShowIMESettings();
+}
+
+void SystemTrayController::ShowHelp() {
+  if (ConnectToSystemTrayClient())
+    system_tray_client_->ShowHelp();
+}
+
+void SystemTrayController::ShowAccessibilityHelp() {
+  if (ConnectToSystemTrayClient())
+    system_tray_client_->ShowAccessibilityHelp();
+}
+
+void SystemTrayController::ShowAccessibilitySettings() {
+  if (ConnectToSystemTrayClient())
+    system_tray_client_->ShowAccessibilitySettings();
+}
+
+void SystemTrayController::ShowPaletteHelp() {
+  if (ConnectToSystemTrayClient())
+    system_tray_client_->ShowPaletteHelp();
+}
+
+void SystemTrayController::ShowPaletteSettings() {
+  if (ConnectToSystemTrayClient())
+    system_tray_client_->ShowPaletteSettings();
+}
+
+void SystemTrayController::ShowPublicAccountInfo() {
+  if (ConnectToSystemTrayClient())
+    system_tray_client_->ShowPublicAccountInfo();
+}
+
+void SystemTrayController::ShowProxySettings() {
+  if (ConnectToSystemTrayClient())
+    system_tray_client_->ShowProxySettings();
 }
 
 void SystemTrayController::BindRequest(mojom::SystemTrayRequest request) {

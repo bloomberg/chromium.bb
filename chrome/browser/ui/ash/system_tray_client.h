@@ -16,6 +16,9 @@
 class SystemTrayClient : public ash::mojom::SystemTrayClient,
                          public chromeos::system::SystemClockObserver {
  public:
+  static const char kDisplaySettingsSubPageName[];
+  static const char kDisplayOverscanSettingsSubPageName[];
+
   SystemTrayClient();
   ~SystemTrayClient() override;
 

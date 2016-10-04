@@ -34,9 +34,22 @@ class SystemTrayController : public mojom::SystemTray {
   explicit SystemTrayController(shell::Connector* connector);
   ~SystemTrayController() override;
 
-  // Wrappers around the mojom::SystemTrayClient interface.
   base::HourClockType hour_clock_type() const { return hour_clock_type_; }
+
+  // Wrappers around the mojom::SystemTrayClient interface.
+  void ShowSettings();
   void ShowDateSettings();
+  void ShowDisplaySettings();
+  void ShowPowerSettings();
+  void ShowChromeSlow();
+  void ShowIMESettings();
+  void ShowHelp();
+  void ShowAccessibilityHelp();
+  void ShowAccessibilitySettings();
+  void ShowPaletteHelp();
+  void ShowPaletteSettings();
+  void ShowPublicAccountInfo();
+  void ShowProxySettings();
 
   // Binds the mojom::SystemTray interface to this object.
   void BindRequest(mojom::SystemTrayRequest request);

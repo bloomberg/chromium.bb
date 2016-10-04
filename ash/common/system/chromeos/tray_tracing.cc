@@ -9,7 +9,7 @@
 #include "ash/common/system/tray/actionable_view.h"
 #include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/system_tray.h"
-#include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/system/tray/system_tray_controller.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_item_style.h"
@@ -74,7 +74,7 @@ class DefaultTracingView : public ActionableView {
   bool PerformAction(const ui::Event& event) override {
     WmShell::Get()->RecordUserMetricsAction(
         UMA_STATUS_AREA_TRACING_DEFAULT_SELECTED);
-    WmShell::Get()->system_tray_delegate()->ShowChromeSlow();
+    WmShell::Get()->system_tray_controller()->ShowChromeSlow();
     CloseSystemBubble();
     return true;
   }

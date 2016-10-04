@@ -13,6 +13,7 @@
 #include "ash/common/system/chromeos/ime_menu/ime_list_view.h"
 #include "ash/common/system/tray/fixed_sized_scroll_view.h"
 #include "ash/common/system/tray/hover_highlight_view.h"
+#include "ash/common/system/tray/system_tray_controller.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray/tray_constants.h"
@@ -59,9 +60,8 @@ gfx::Range GetImeListViewRange() {
 
 // Shows language and input settings page.
 void ShowIMESettings() {
-  SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
   WmShell::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_IME_SHOW_DETAILED);
-  delegate->ShowIMESettings();
+  WmShell::Get()->system_tray_controller()->ShowIMESettings();
 }
 
 class ImeMenuLabel : public views::Label {

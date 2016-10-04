@@ -12,6 +12,7 @@
 #include "ash/common/system/chromeos/devicetype_utils.h"
 #include "ash/common/system/system_notifier.h"
 #include "ash/common/system/tray/fixed_sized_image_view.h"
+#include "ash/common/system/tray/system_tray_controller.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_notification_view.h"
@@ -79,7 +80,7 @@ bool OpenSettings() {
     case LoginStatus::KIOSK_APP:
       SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
       if (delegate->ShouldShowSettings()) {
-        delegate->ShowDisplaySettings();
+        WmShell::Get()->system_tray_controller()->ShowDisplaySettings();
         return true;
       }
   }

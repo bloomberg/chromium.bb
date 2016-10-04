@@ -10,6 +10,7 @@
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/tray/hover_highlight_view.h"
 #include "ash/common/system/tray/system_tray.h"
+#include "ash/common/system/tray/system_tray_controller.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray/tray_constants.h"
@@ -324,11 +325,11 @@ void AccessibilityDetailedView::HandleButtonPressed(views::Button* sender,
   if (MaterialDesignController::UseMaterialDesignSystemIcons())
     return;
 
-  SystemTrayDelegate* tray_delegate = WmShell::Get()->system_tray_delegate();
+  SystemTrayController* controller = WmShell::Get()->system_tray_controller();
   if (sender == help_view_)
-    tray_delegate->ShowAccessibilityHelp();
+    controller->ShowAccessibilityHelp();
   else if (sender == settings_view_)
-    tray_delegate->ShowAccessibilitySettings();
+    controller->ShowAccessibilitySettings();
   else
     return;
   owner()->system_tray()->CloseSystemBubble();

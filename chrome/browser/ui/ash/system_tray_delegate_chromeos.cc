@@ -72,7 +72,7 @@
 #include "chrome/browser/ui/ash/cast_config_delegate_media_router.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/networking_config_delegate_chromeos.h"
-#include "chrome/browser/ui/ash/system_tray_common.h"
+#include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/ash/system_tray_delegate_utils.h"
 #include "chrome/browser/ui/ash/volume_controller_chromeos.h"
 #include "chrome/browser/ui/ash/vpn_delegate_chromeos.h"
@@ -397,10 +397,6 @@ void SystemTrayDelegateChromeOS::GetSystemUpdateInfo(
   GetUpdateInfo(UpgradeDetector::GetInstance(), info);
 }
 
-void SystemTrayDelegateChromeOS::ShowSettings() {
-  SystemTrayCommon::ShowSettings();
-}
-
 bool SystemTrayDelegateChromeOS::ShouldShowSettings() {
   ash::WmShell* wm_shell = ash::WmShell::Get();
   return ChromeUserManager::Get()->GetCurrentUserFlow()->ShouldShowSettings() &&
@@ -408,13 +404,13 @@ bool SystemTrayDelegateChromeOS::ShouldShowSettings() {
 }
 
 void SystemTrayDelegateChromeOS::ShowSetTimeDialog() {
-  // TODO(mash): Refactor out GetNativeWindow and move to SystemTrayCommon.
+  // TODO(mash): Refactor out GetNativeWindow and move to SystemTrayClient.
   SetTimeDialog::ShowDialog(GetNativeWindow());
 }
 
 void SystemTrayDelegateChromeOS::ShowNetworkSettingsForGuid(
     const std::string& guid) {
-  // TODO(mash): Refactor out SessionStateDelegate and move to SystemTrayCommon.
+  // TODO(mash): Refactor out SessionStateDelegate and move to SystemTrayClient.
   ash::WmShell* wm_shell = ash::WmShell::Get();
   if (LoginState::Get()->IsUserLoggedIn() &&
       !wm_shell->GetSessionStateDelegate()->IsInSecondaryLoginScreen()) {
@@ -424,18 +420,6 @@ void SystemTrayDelegateChromeOS::ShowNetworkSettingsForGuid(
     content::RecordAction(base::UserMetricsAction("OpenInternetOptionsDialog"));
     ShowSettingsSubPageForActiveUser(page);
   }
-}
-
-void SystemTrayDelegateChromeOS::ShowDisplaySettings() {
-  SystemTrayCommon::ShowDisplaySettings();
-}
-
-void SystemTrayDelegateChromeOS::ShowPowerSettings() {
-  SystemTrayCommon::ShowPowerSettings();
-}
-
-void SystemTrayDelegateChromeOS::ShowChromeSlow() {
-  SystemTrayCommon::ShowChromeSlow();
 }
 
 bool SystemTrayDelegateChromeOS::ShouldShowDisplayNotification() {
@@ -453,42 +437,14 @@ bool SystemTrayDelegateChromeOS::ShouldShowDisplayNotification() {
 
   GURL visible_url = active_contents->GetLastCommittedURL();
   return !chrome::IsSettingsSubPage(
-             visible_url, SystemTrayCommon::kDisplaySettingsSubPageName) &&
+             visible_url, SystemTrayClient::kDisplaySettingsSubPageName) &&
          !chrome::IsSettingsSubPage(
              visible_url,
-             SystemTrayCommon::kDisplayOverscanSettingsSubPageName);
-}
-
-void SystemTrayDelegateChromeOS::ShowIMESettings() {
-  SystemTrayCommon::ShowIMESettings();
-}
-
-void SystemTrayDelegateChromeOS::ShowHelp() {
-  SystemTrayCommon::ShowHelp();
-}
-
-void SystemTrayDelegateChromeOS::ShowAccessibilityHelp() {
-  SystemTrayCommon::ShowAccessibilityHelp();
-}
-
-void SystemTrayDelegateChromeOS::ShowAccessibilitySettings() {
-  SystemTrayCommon::ShowAccessibilitySettings();
-}
-
-void SystemTrayDelegateChromeOS::ShowPaletteHelp() {
-  SystemTrayCommon::ShowPaletteHelp();
-}
-
-void SystemTrayDelegateChromeOS::ShowPaletteSettings() {
-  SystemTrayCommon::ShowPaletteSettings();
-}
-
-void SystemTrayDelegateChromeOS::ShowPublicAccountInfo() {
-  SystemTrayCommon::ShowPublicAccountInfo();
+             SystemTrayClient::kDisplayOverscanSettingsSubPageName);
 }
 
 void SystemTrayDelegateChromeOS::ShowEnterpriseInfo() {
-  // TODO(mash): Refactor out SessionStateDelegate and move to SystemTrayCommon.
+  // TODO(mash): Refactor out SessionStateDelegate and move to SystemTrayClient.
   ash::LoginStatus status = GetUserLoginStatus();
   ash::WmShell* wm_shell = ash::WmShell::Get();
   if (status == ash::LoginStatus::NOT_LOGGED_IN ||
@@ -720,10 +676,6 @@ bool SystemTrayDelegateChromeOS::GetBluetoothEnabled() {
 bool SystemTrayDelegateChromeOS::GetBluetoothDiscovering() {
   return bluetooth_discovery_session_ &&
          bluetooth_discovery_session_->IsActive();
-}
-
-void SystemTrayDelegateChromeOS::ShowProxySettings() {
-  SystemTrayCommon::ShowProxySettings();
 }
 
 ash::CastConfigDelegate* SystemTrayDelegateChromeOS::GetCastConfigDelegate() {
