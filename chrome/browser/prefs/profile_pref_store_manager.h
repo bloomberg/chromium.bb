@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "components/user_prefs/tracked/pref_hash_filter.h"
 
+class HashStoreContents;
 class PersistentPrefStore;
 class PrefHashStore;
 class PrefService;
@@ -70,6 +71,14 @@ class ProfilePrefStoreManager {
   // was built by ProfilePrefStoreManager.
   static void ClearResetTime(PrefService* pref_service);
 
+#if defined(OS_WIN)
+  // Call before startup tasks kick in to use a different registry path for
+  // storing and validating tracked preference MACs. Callers are responsible
+  // for ensuring that the key is deleted on shutdown. For testing only.
+  static void SetPreferenceValidationRegistryPathForTesting(
+      const base::string16* path);
+#endif
+
   // Creates a PersistentPrefStore providing access to the user preferences of
   // the managed profile. If |on_reset| is provided, it will be invoked if a
   // reset occurs as a result of loading the profile's prefs.
@@ -98,6 +107,12 @@ class ProfilePrefStoreManager {
   // (and, by extension, accept non-null newly protected preferences as
   // TrustedInitialized).
   std::unique_ptr<PrefHashStore> GetPrefHashStore(bool use_super_mac);
+
+  // Returns a PrefHashStore and HashStoreContents which can be be used for
+  // extra out-of-band verifications, or nullptrs if not available on this
+  // platform.
+  std::pair<std::unique_ptr<PrefHashStore>, std::unique_ptr<HashStoreContents>>
+  GetExternalVerificationPrefHashStorePair();
 
   const base::FilePath profile_path_;
   const std::vector<PrefHashFilter::TrackedPreferenceMetadata>

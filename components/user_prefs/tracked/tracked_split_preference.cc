@@ -27,6 +27,10 @@ TrackedSplitPreference::TrackedSplitPreference(
       delegate_(delegate) {
 }
 
+TrackedPreferenceType TrackedSplitPreference::GetType() const {
+  return TrackedPreferenceType::SPLIT;
+}
+
 void TrackedSplitPreference::OnNewValue(
     const base::Value* value,
     PrefHashStoreTransaction* transaction) const {
@@ -40,7 +44,8 @@ void TrackedSplitPreference::OnNewValue(
 
 bool TrackedSplitPreference::EnforceAndReport(
     base::DictionaryValue* pref_store_contents,
-    PrefHashStoreTransaction* transaction) const {
+    PrefHashStoreTransaction* transaction,
+    PrefHashStoreTransaction* external_validation_transaction) const {
   base::DictionaryValue* dict_value = NULL;
   if (!pref_store_contents->GetDictionary(pref_path_, &dict_value) &&
       pref_store_contents->Get(pref_path_, NULL)) {
@@ -58,12 +63,26 @@ bool TrackedSplitPreference::EnforceAndReport(
 
   helper_.ReportValidationResult(value_state, transaction->GetStoreUMASuffix());
 
-  TrackedPreferenceHelper::ResetAction reset_action =
-      helper_.GetAction(value_state);
+  PrefHashStoreTransaction::ValueState external_validation_value_state =
+      PrefHashStoreTransaction::UNCHANGED;
+  if (external_validation_transaction) {
+    std::vector<std::string> invalid_external_validation_keys;
+    external_validation_value_state =
+        external_validation_transaction->CheckSplitValue(
+            pref_path_, dict_value, &invalid_external_validation_keys);
+    helper_.ReportValidationResult(
+        external_validation_value_state,
+        external_validation_transaction->GetStoreUMASuffix());
+
+    // TODO(proberge): Call delegate_->OnSplitPreferenceValidation.
+  }
+
   if (delegate_) {
     delegate_->OnSplitPreferenceValidation(pref_path_, dict_value, invalid_keys,
                                            value_state, helper_.IsPersonal());
   }
+  TrackedPreferenceHelper::ResetAction reset_action =
+      helper_.GetAction(value_state);
   helper_.ReportAction(reset_action);
 
   bool was_reset = false;
@@ -86,6 +105,17 @@ bool TrackedSplitPreference::EnforceAndReport(
     const base::DictionaryValue* new_dict_value = NULL;
     pref_store_contents->GetDictionary(pref_path_, &new_dict_value);
     transaction->StoreSplitHash(pref_path_, new_dict_value);
+  }
+
+  // Update MACs in the external store if there is one and there either was a
+  // reset or external validation failed.
+  if (external_validation_transaction &&
+      (was_reset ||
+       external_validation_value_state !=
+           PrefHashStoreTransaction::UNCHANGED)) {
+    const base::DictionaryValue* new_dict_value = nullptr;
+    pref_store_contents->GetDictionary(pref_path_, &new_dict_value);
+    external_validation_transaction->StoreSplitHash(pref_path_, new_dict_value);
   }
 
   return was_reset;

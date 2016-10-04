@@ -190,11 +190,11 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
   void RunOrScheduleNextSuccessfulWriteCallback(bool write_success);
 
   // Handles the result of a write with result |write_success|. Runs
-  // |on_next_write| callback on the current thread and posts
-  // |RunOrScheduleNextSuccessfulWriteCallback| on |reply_task_runner|.
+  // |on_next_write_callback| on the current thread and posts
+  // |on_next_write_reply| on |reply_task_runner|.
   static void PostWriteCallback(
-      const base::Callback<void(bool success)>& on_next_write_reply,
       const base::Callback<void(bool success)>& on_next_write_callback,
+      const base::Callback<void(bool success)>& on_next_write_reply,
       scoped_refptr<base::SequencedTaskRunner> reply_task_runner,
       bool write_success);
 
@@ -252,8 +252,7 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
 
   std::set<std::string> keys_need_empty_value_;
 
-  bool has_pending_successful_write_reply_;
-  bool has_pending_write_callbacks_;
+  bool has_pending_write_reply_ = true;
   base::Closure on_next_successful_write_reply_;
 
   WriteCountHistogram write_count_histogram_;

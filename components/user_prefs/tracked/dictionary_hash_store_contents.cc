@@ -28,6 +28,16 @@ void DictionaryHashStoreContents::RegisterProfilePrefs(
   registry->RegisterStringPref(kSuperMACPref, std::string());
 }
 
+bool DictionaryHashStoreContents::IsCopyable() const {
+  return false;
+}
+
+std::unique_ptr<HashStoreContents> DictionaryHashStoreContents::MakeCopy()
+    const {
+  NOTREACHED() << "DictionaryHashStoreContents does not support MakeCopy";
+  return nullptr;
+}
+
 base::StringPiece DictionaryHashStoreContents::GetUMASuffix() const {
   // To stay consistent with existing reported data, do not append a suffix
   // when reporting UMA stats for this content.

@@ -16,9 +16,11 @@ namespace {
 constexpr base::char16 kRegistryPath[] = L"Foo\\TestStore";
 constexpr base::char16 kStoreKey[] = L"test_store_key";
 
-// MACs are 32 characters long.
-constexpr char kTestStringA[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-constexpr char kTestStringB[] = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
+// Hex-encoded MACs are 64 characters long.
+constexpr char kTestStringA[] =
+    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+constexpr char kTestStringB[] =
+    "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
 
 constexpr char kAtomicPrefPath[] = "path1";
 constexpr char kSplitPrefPath[] = "extension";
