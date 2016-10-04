@@ -3491,10 +3491,6 @@ test("unit_tests") {
     android_manifest =
         "//chrome/test/android/unit_tests_apk/AndroidManifest.xml"
     enable_multidex = true
-
-    # Some android targets still depend on --gc-sections to link.
-    # TODO: remove --gc-sections for Debug builds (crbug.com/159847).
-    ldflags = [ "-Wl,--gc-sections" ]
   } else {
     sources += [
       # Bookmark export/import are handled via the BookmarkColumns
