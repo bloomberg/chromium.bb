@@ -10,6 +10,8 @@ blink_modules_sources("permissions") {
     "NavigatorPermissions.h",
     "PermissionStatus.cpp",
     "PermissionStatus.h",
+    "PermissionUtils.cpp",
+    "PermissionUtils.h",
     "Permissions.cpp",
     "Permissions.h",
     "WorkerNavigatorPermissions.cpp",

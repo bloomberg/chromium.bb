@@ -8,7 +8,7 @@
 #include "core/dom/Document.h"
 #include "core/events/Event.h"
 #include "modules/EventTargetModulesNames.h"
-#include "modules/permissions/Permissions.h"
+#include "modules/permissions/PermissionUtils.h"
 #include "public/platform/Platform.h"
 #include "wtf/Functional.h"
 
@@ -17,17 +17,17 @@ namespace blink {
 // static
 PermissionStatus* PermissionStatus::take(ScriptPromiseResolver* resolver,
                                          MojoPermissionStatus status,
-                                         MojoPermissionName name) {
+                                         MojoPermissionDescriptor descriptor) {
   return PermissionStatus::createAndListen(resolver->getExecutionContext(),
-                                           status, name);
+                                           status, std::move(descriptor));
 }
 
 PermissionStatus* PermissionStatus::createAndListen(
     ExecutionContext* executionContext,
     MojoPermissionStatus status,
-    MojoPermissionName name) {
+    MojoPermissionDescriptor descriptor) {
   PermissionStatus* permissionStatus =
-      new PermissionStatus(executionContext, status, name);
+      new PermissionStatus(executionContext, status, std::move(descriptor));
   permissionStatus->suspendIfNeeded();
   permissionStatus->startListening();
   return permissionStatus;
@@ -35,11 +35,11 @@ PermissionStatus* PermissionStatus::createAndListen(
 
 PermissionStatus::PermissionStatus(ExecutionContext* executionContext,
                                    MojoPermissionStatus status,
-                                   MojoPermissionName name)
+                                   MojoPermissionDescriptor descriptor)
     : ActiveScriptWrappable(this),
       ActiveDOMObject(executionContext),
       m_status(status),
-      m_name(name) {}
+      m_descriptor(std::move(descriptor)) {}
 
 PermissionStatus::~PermissionStatus() {
   stopListening();
@@ -59,8 +59,10 @@ void PermissionStatus::permissionChanged(MojoPermissionStatus status) {
 
   m_status = status;
   dispatchEvent(Event::create(EventTypeNames::change));
+
   m_service->GetNextPermissionChange(
-      m_name, getExecutionContext()->getSecurityOrigin(), m_status,
+      m_descriptor->Clone(), getExecutionContext()->getSecurityOrigin(),
+      m_status,
       convertToBaseCallback(WTF::bind(&PermissionStatus::permissionChanged,
                                       wrapWeakPersistent(this))));
 }
@@ -83,10 +85,10 @@ void PermissionStatus::stop() {
 
 void PermissionStatus::startListening() {
   DCHECK(!m_service);
-  Permissions::connectToService(getExecutionContext(),
-                                mojo::GetProxy(&m_service));
+  connectToPermissionService(getExecutionContext(), mojo::GetProxy(&m_service));
   m_service->GetNextPermissionChange(
-      m_name, getExecutionContext()->getSecurityOrigin(), m_status,
+      m_descriptor->Clone(), getExecutionContext()->getSecurityOrigin(),
+      m_status,
       convertToBaseCallback(WTF::bind(&PermissionStatus::permissionChanged,
                                       wrapWeakPersistent(this))));
 }

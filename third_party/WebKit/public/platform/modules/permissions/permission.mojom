@@ -12,7 +12,6 @@ enum PermissionName {
   NOTIFICATIONS,
   PUSH_NOTIFICATIONS,
   MIDI,
-  MIDI_SYSEX,
   PROTECTED_MEDIA_IDENTIFIER,
   DURABLE_STORAGE,
   AUDIO_CAPTURE,
@@ -20,26 +19,42 @@ enum PermissionName {
   BACKGROUND_SYNC,
 };
 
+struct MidiPermissionDescriptor {
+  bool sysex;
+};
+
+// Union of possible extensions to the base PermissionDescriptor type.
+union PermissionDescriptorExtension {
+  MidiPermissionDescriptor midi;
+};
+
+// This struct roughly corresponds to the PermissionDescriptor dictionary as
+// defined by the Permissions API.
+struct PermissionDescriptor {
+  PermissionName name;
+  PermissionDescriptorExtension? extension;
+};
+
 // The Permission service provides permission handling capabilities by exposing
 // methods to check, request, and revoke permissions. It also allows a client to
 // start listening to permission changes.
 interface PermissionService {
-  HasPermission(PermissionName permission, url.mojom.Origin origin)
+  HasPermission(PermissionDescriptor permission, url.mojom.Origin origin)
     => (PermissionStatus status);
-  RequestPermission(PermissionName permission, url.mojom.Origin origin,
+  RequestPermission(PermissionDescriptor permission, url.mojom.Origin origin,
       bool user_gesture)
     => (PermissionStatus status);
-  RequestPermissions(array<PermissionName> permission, url.mojom.Origin origin,
+  RequestPermissions(array<PermissionDescriptor> permission, url.mojom.Origin origin,
       bool user_gesture)
     => (array<PermissionStatus> statuses);
-  RevokePermission(PermissionName permission, url.mojom.Origin origin)
+  RevokePermission(PermissionDescriptor permission, url.mojom.Origin origin)
     => (PermissionStatus status);
 
   // Runs the callback next time there is a permission status change for the
   // given { permission, origin }. Callers of this method will have to call it
   // again if they want to keep listening to the changes. To prevent race
   // conditions, the caller must pass the last known value.
-  GetNextPermissionChange(PermissionName permission,
+  GetNextPermissionChange(PermissionDescriptor permission,
                           url.mojom.Origin origin,
                           PermissionStatus last_known_status)
     => (PermissionStatus status);

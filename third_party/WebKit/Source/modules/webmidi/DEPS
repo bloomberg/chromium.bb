@@ -6,6 +6,7 @@ include_rules = [
     "+modules/EventModules.h",
     "+modules/EventTargetModules.h",
     "+modules/ModulesExport.h",
+    "+modules/permissions",
     "+modules/webmidi",
     "+platform",
     "+public/platform",

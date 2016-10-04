@@ -93,7 +93,7 @@ class MODULES_EXPORT MIDIAccessInitializer : public ScriptPromiseResolver,
 
   void contextDestroyed() override;
 
-  void onPermissionsUpdated(const Vector<mojom::blink::PermissionStatus>&);
+  void onPermissionsUpdated(mojom::blink::PermissionStatus);
   void onPermissionUpdated(mojom::blink::PermissionStatus);
 
   std::unique_ptr<MIDIAccessor> m_accessor;

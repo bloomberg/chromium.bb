@@ -26,17 +26,17 @@ class PermissionStatus final : public EventTargetWithInlineData,
   USING_GARBAGE_COLLECTED_MIXIN(PermissionStatus);
   DEFINE_WRAPPERTYPEINFO();
 
-  using MojoPermissionName = mojom::blink::PermissionName;
+  using MojoPermissionDescriptor = mojom::blink::PermissionDescriptorPtr;
   using MojoPermissionStatus = mojom::blink::PermissionStatus;
 
  public:
   static PermissionStatus* take(ScriptPromiseResolver*,
                                 MojoPermissionStatus,
-                                MojoPermissionName);
+                                MojoPermissionDescriptor);
 
   static PermissionStatus* createAndListen(ExecutionContext*,
                                            MojoPermissionStatus,
-                                           MojoPermissionName);
+                                           MojoPermissionDescriptor);
   ~PermissionStatus() override;
 
   // EventTarget implementation.
@@ -52,20 +52,22 @@ class PermissionStatus final : public EventTargetWithInlineData,
   void stop() override;
 
   String state() const;
-  void permissionChanged(mojom::blink::PermissionStatus);
+  void permissionChanged(MojoPermissionStatus);
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  PermissionStatus(ExecutionContext*, MojoPermissionStatus, MojoPermissionName);
+  PermissionStatus(ExecutionContext*,
+                   MojoPermissionStatus,
+                   MojoPermissionDescriptor);
 
   void startListening();
   void stopListening();
 
   MojoPermissionStatus m_status;
-  MojoPermissionName m_name;
+  MojoPermissionDescriptor m_descriptor;
   mojom::blink::PermissionServicePtr m_service;
 };
 

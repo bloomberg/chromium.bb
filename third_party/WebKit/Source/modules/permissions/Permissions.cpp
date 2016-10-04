@@ -17,8 +17,8 @@
 #include "core/frame/LocalFrame.h"
 #include "modules/permissions/PermissionDescriptor.h"
 #include "modules/permissions/PermissionStatus.h"
+#include "modules/permissions/PermissionUtils.h"
 #include "platform/UserGestureIndicator.h"
-#include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
 #include "wtf/Functional.h"
 #include "wtf/NotFound.h"
@@ -28,71 +28,45 @@
 
 namespace blink {
 
+using mojom::blink::PermissionDescriptorPtr;
 using mojom::blink::PermissionName;
 using mojom::blink::PermissionService;
 
 namespace {
 
+// Parses the raw permission dictionary and returns the Mojo
+// PermissionDescriptor if parsing was successful. If an exception occurs, it
+// will be stored in |exceptionState| and null will be returned. Therefore, the
+// |exceptionState| should be checked before attempting to use the returned
+// permission as the non-null assert will be fired otherwise.
+//
 // Websites will be able to run code when `name()` is called, changing the
 // current context. The caller should make sure that no assumption is made
 // after this has been called.
-PermissionName getPermissionName(ScriptState* scriptState,
-                                 const Dictionary& rawPermission,
-                                 const PermissionDescriptor& permission,
-                                 ExceptionState& exceptionState) {
-  const String& name = permission.name();
-  if (name == "geolocation")
-    return PermissionName::GEOLOCATION;
-  if (name == "notifications")
-    return PermissionName::NOTIFICATIONS;
-  if (name == "push")
-    return PermissionName::PUSH_NOTIFICATIONS;
-  if (name == "midi") {
-    MidiPermissionDescriptor midiPermission =
-        NativeValueTraits<MidiPermissionDescriptor>::nativeValue(
-            scriptState->isolate(), rawPermission.v8Value(), exceptionState);
-    return midiPermission.sysex() ? PermissionName::MIDI_SYSEX
-                                  : PermissionName::MIDI;
-  }
-  if (name == "background-sync")
-    return PermissionName::BACKGROUND_SYNC;
-
-  ASSERT_NOT_REACHED();
-  return PermissionName::GEOLOCATION;
-}
-
-// Parses the raw permission dictionary and returns the PermissionType if
-// parsing was successful. If an exception occurs, it will be stored in
-// |exceptionState| and null will be returned. Therefore, the |exceptionState|
-// should be checked before attempting to use the returned permission as the
-// non-null assert will be fired otherwise.
-Nullable<PermissionName> parsePermission(ScriptState* scriptState,
-                                         const Dictionary rawPermission,
-                                         ExceptionState& exceptionState) {
+PermissionDescriptorPtr parsePermission(ScriptState* scriptState,
+                                        const Dictionary rawPermission,
+                                        ExceptionState& exceptionState) {
   PermissionDescriptor permission =
       NativeValueTraits<PermissionDescriptor>::nativeValue(
           scriptState->isolate(), rawPermission.v8Value(), exceptionState);
 
   if (exceptionState.hadException()) {
     exceptionState.throwTypeError(exceptionState.message());
-    return Nullable<PermissionName>();
+    return nullptr;
   }
 
-  PermissionName name =
-      getPermissionName(scriptState, rawPermission, permission, exceptionState);
-  if (exceptionState.hadException()) {
-    exceptionState.throwTypeError(exceptionState.message());
-    return Nullable<PermissionName>();
-  }
-
-  // Here we reject any permissions which are not yet supported by Blink.
-  if (name == PermissionName::PUSH_NOTIFICATIONS) {
+  const String& name = permission.name();
+  if (name == "geolocation")
+    return createPermissionDescriptor(PermissionName::GEOLOCATION);
+  if (name == "notifications")
+    return createPermissionDescriptor(PermissionName::NOTIFICATIONS);
+  if (name == "push") {
     PushPermissionDescriptor pushPermission =
         NativeValueTraits<PushPermissionDescriptor>::nativeValue(
             scriptState->isolate(), rawPermission.v8Value(), exceptionState);
     if (exceptionState.hadException()) {
       exceptionState.throwTypeError(exceptionState.message());
-      return Nullable<PermissionName>();
+      return nullptr;
     }
 
     // Only "userVisibleOnly" push is supported for now.
@@ -100,39 +74,31 @@ Nullable<PermissionName> parsePermission(ScriptState* scriptState,
       exceptionState.throwDOMException(
           NotSupportedError,
           "Push Permission without userVisibleOnly:true isn't supported yet.");
-      return Nullable<PermissionName>();
+      return nullptr;
     }
-  }
 
-  return Nullable<PermissionName>(name);
+    return createPermissionDescriptor(PermissionName::PUSH_NOTIFICATIONS);
+  }
+  if (name == "midi") {
+    MidiPermissionDescriptor midiPermission =
+        NativeValueTraits<MidiPermissionDescriptor>::nativeValue(
+            scriptState->isolate(), rawPermission.v8Value(), exceptionState);
+    return createMidiPermissionDescriptor(midiPermission.sysex());
+  }
+  if (name == "background-sync")
+    return createPermissionDescriptor(PermissionName::BACKGROUND_SYNC);
+
+  return nullptr;
 }
 
 }  // anonymous namespace
-
-// static
-bool Permissions::connectToService(
-    ExecutionContext* executionContext,
-    mojom::blink::PermissionServiceRequest request) {
-  InterfaceProvider* interfaceProvider = nullptr;
-  if (executionContext->isDocument()) {
-    Document* document = toDocument(executionContext);
-    if (document->frame())
-      interfaceProvider = document->frame()->interfaceProvider();
-  } else {
-    interfaceProvider = Platform::current()->interfaceProvider();
-  }
-
-  if (interfaceProvider)
-    interfaceProvider->getInterface(std::move(request));
-  return interfaceProvider;
-}
 
 ScriptPromise Permissions::query(ScriptState* scriptState,
                                  const Dictionary& rawPermission) {
   ExceptionState exceptionState(ExceptionState::GetterContext, "query",
                                 "Permissions", scriptState->context()->Global(),
                                 scriptState->isolate());
-  Nullable<PermissionName> name =
+  PermissionDescriptorPtr descriptor =
       parsePermission(scriptState, rawPermission, exceptionState);
   if (exceptionState.hadException())
     return exceptionState.reject(scriptState);
@@ -154,11 +120,13 @@ ScriptPromise Permissions::query(ScriptState* scriptState,
   // meaningful value because most APIs are broken on file scheme and no
   // permission prompt will be shown even if the returned permission will most
   // likely be "prompt".
+  PermissionDescriptorPtr descriptorCopy = descriptor->Clone();
   service->HasPermission(
-      name.get(), scriptState->getExecutionContext()->getSecurityOrigin(),
-      convertToBaseCallback(WTF::bind(&Permissions::taskComplete,
-                                      wrapPersistent(this),
-                                      wrapPersistent(resolver), name.get())));
+      std::move(descriptor),
+      scriptState->getExecutionContext()->getSecurityOrigin(),
+      convertToBaseCallback(WTF::bind(
+          &Permissions::taskComplete, wrapPersistent(this),
+          wrapPersistent(resolver), passed(std::move(descriptorCopy)))));
   return promise;
 }
 
@@ -167,7 +135,7 @@ ScriptPromise Permissions::request(ScriptState* scriptState,
   ExceptionState exceptionState(ExceptionState::GetterContext, "request",
                                 "Permissions", scriptState->context()->Global(),
                                 scriptState->isolate());
-  Nullable<PermissionName> name =
+  PermissionDescriptorPtr descriptor =
       parsePermission(scriptState, rawPermission, exceptionState);
   if (exceptionState.hadException())
     return exceptionState.reject(scriptState);
@@ -184,12 +152,14 @@ ScriptPromise Permissions::request(ScriptState* scriptState,
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
 
+  PermissionDescriptorPtr descriptorCopy = descriptor->Clone();
   service->RequestPermission(
-      name.get(), scriptState->getExecutionContext()->getSecurityOrigin(),
+      std::move(descriptor),
+      scriptState->getExecutionContext()->getSecurityOrigin(),
       UserGestureIndicator::processingUserGesture(),
-      convertToBaseCallback(WTF::bind(&Permissions::taskComplete,
-                                      wrapPersistent(this),
-                                      wrapPersistent(resolver), name.get())));
+      convertToBaseCallback(WTF::bind(
+          &Permissions::taskComplete, wrapPersistent(this),
+          wrapPersistent(resolver), passed(std::move(descriptorCopy)))));
   return promise;
 }
 
@@ -198,7 +168,7 @@ ScriptPromise Permissions::revoke(ScriptState* scriptState,
   ExceptionState exceptionState(ExceptionState::GetterContext, "revoke",
                                 "Permissions", scriptState->context()->Global(),
                                 scriptState->isolate());
-  Nullable<PermissionName> name =
+  PermissionDescriptorPtr descriptor =
       parsePermission(scriptState, rawPermission, exceptionState);
   if (exceptionState.hadException())
     return exceptionState.reject(scriptState);
@@ -215,11 +185,13 @@ ScriptPromise Permissions::revoke(ScriptState* scriptState,
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
 
+  PermissionDescriptorPtr descriptorCopy = descriptor->Clone();
   service->RevokePermission(
-      name.get(), scriptState->getExecutionContext()->getSecurityOrigin(),
-      convertToBaseCallback(WTF::bind(&Permissions::taskComplete,
-                                      wrapPersistent(this),
-                                      wrapPersistent(resolver), name.get())));
+      std::move(descriptor),
+      scriptState->getExecutionContext()->getSecurityOrigin(),
+      convertToBaseCallback(WTF::bind(
+          &Permissions::taskComplete, wrapPersistent(this),
+          wrapPersistent(resolver), passed(std::move(descriptorCopy)))));
   return promise;
 }
 
@@ -229,26 +201,28 @@ ScriptPromise Permissions::requestAll(
   ExceptionState exceptionState(ExceptionState::GetterContext, "request",
                                 "Permissions", scriptState->context()->Global(),
                                 scriptState->isolate());
-  Vector<PermissionName> internalPermissions;
+  Vector<PermissionDescriptorPtr> internalPermissions;
   Vector<int> callerIndexToInternalIndex;
   callerIndexToInternalIndex.resize(rawPermissions.size());
   for (size_t i = 0; i < rawPermissions.size(); ++i) {
     const Dictionary& rawPermission = rawPermissions[i];
 
-    Nullable<PermissionName> name =
+    auto descriptor =
         parsePermission(scriptState, rawPermission, exceptionState);
     if (exceptionState.hadException())
       return exceptionState.reject(scriptState);
 
-    // Only append permissions to the vector that is passed to the client if it is not already
-    // in the vector (i.e. do not duplicate permisison types).
-    int internalIndex;
-    auto it = internalPermissions.find(name.get());
-    if (it == kNotFound) {
+    // Only append permissions types that are not already present in the vector.
+    size_t internalIndex = kNotFound;
+    for (size_t j = 0; j < internalPermissions.size(); ++j) {
+      if (internalPermissions[j]->name == descriptor->name) {
+        internalIndex = j;
+        break;
+      }
+    }
+    if (internalIndex == kNotFound) {
       internalIndex = internalPermissions.size();
-      internalPermissions.append(name.get());
-    } else {
-      internalIndex = it;
+      internalPermissions.append(std::move(descriptor));
     }
     callerIndexToInternalIndex[i] = internalIndex;
   }
@@ -265,20 +239,25 @@ ScriptPromise Permissions::requestAll(
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
 
+  Vector<PermissionDescriptorPtr> internalPermissionsCopy;
+  internalPermissionsCopy.reserveCapacity(internalPermissions.size());
+  for (const auto& descriptor : internalPermissions)
+    internalPermissionsCopy.append(descriptor->Clone());
+
   service->RequestPermissions(
-      internalPermissions,
+      std::move(internalPermissions),
       scriptState->getExecutionContext()->getSecurityOrigin(),
       UserGestureIndicator::processingUserGesture(),
-      convertToBaseCallback(
-          WTF::bind(&Permissions::batchTaskComplete, wrapPersistent(this),
-                    wrapPersistent(resolver), internalPermissions,
-                    callerIndexToInternalIndex)));
+      convertToBaseCallback(WTF::bind(
+          &Permissions::batchTaskComplete, wrapPersistent(this),
+          wrapPersistent(resolver), passed(std::move(internalPermissionsCopy)),
+          passed(std::move(callerIndexToInternalIndex)))));
   return promise;
 }
 
 PermissionService* Permissions::getService(ExecutionContext* executionContext) {
   if (!m_service &&
-      connectToService(executionContext, mojo::GetProxy(&m_service)))
+      connectToPermissionService(executionContext, mojo::GetProxy(&m_service)))
     m_service.set_connection_error_handler(convertToBaseCallback(WTF::bind(
         &Permissions::serviceConnectionError, wrapWeakPersistent(this))));
   return m_service.get();
@@ -289,17 +268,18 @@ void Permissions::serviceConnectionError() {
 }
 
 void Permissions::taskComplete(ScriptPromiseResolver* resolver,
-                               PermissionName name,
+                               mojom::blink::PermissionDescriptorPtr descriptor,
                                mojom::blink::PermissionStatus result) {
   if (!resolver->getExecutionContext() ||
       resolver->getExecutionContext()->activeDOMObjectsAreStopped())
     return;
-  resolver->resolve(PermissionStatus::take(resolver, result, name));
+  resolver->resolve(
+      PermissionStatus::take(resolver, result, std::move(descriptor)));
 }
 
 void Permissions::batchTaskComplete(
     ScriptPromiseResolver* resolver,
-    Vector<PermissionName> names,
+    Vector<mojom::blink::PermissionDescriptorPtr> descriptors,
     Vector<int> callerIndexToInternalIndex,
     const Vector<mojom::blink::PermissionStatus>& results) {
   if (!resolver->getExecutionContext() ||
@@ -311,10 +291,11 @@ void Permissions::batchTaskComplete(
   // using the internal index obtained.
   HeapVector<Member<PermissionStatus>> result;
   result.reserveInitialCapacity(callerIndexToInternalIndex.size());
-  for (int internalIndex : callerIndexToInternalIndex)
+  for (int internalIndex : callerIndexToInternalIndex) {
     result.append(PermissionStatus::createAndListen(
         resolver->getExecutionContext(), results[internalIndex],
-        names[internalIndex]));
+        descriptors[internalIndex]->Clone()));
+  }
   resolver->resolve(result);
 }
 

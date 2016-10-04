@@ -12,6 +12,7 @@
 #include "content/public/browser/permission_manager.h"
 #include "content/public/browser/permission_type.h"
 
+using blink::mojom::PermissionDescriptorPtr;
 using blink::mojom::PermissionName;
 using blink::mojom::PermissionStatus;
 
@@ -19,18 +20,22 @@ namespace content {
 
 namespace {
 
-PermissionType PermissionNameToPermissionType(PermissionName name) {
-  switch(name) {
+PermissionType PermissionDescriptorToPermissionType(
+    const PermissionDescriptorPtr& descriptor) {
+  switch (descriptor->name) {
     case PermissionName::GEOLOCATION:
       return PermissionType::GEOLOCATION;
     case PermissionName::NOTIFICATIONS:
       return PermissionType::NOTIFICATIONS;
     case PermissionName::PUSH_NOTIFICATIONS:
       return PermissionType::PUSH_MESSAGING;
-    case PermissionName::MIDI:
+    case PermissionName::MIDI: {
+      if (descriptor->extension && descriptor->extension->is_midi() &&
+          descriptor->extension->get_midi()->sysex) {
+        return PermissionType::MIDI_SYSEX;
+      }
       return PermissionType::MIDI;
-    case PermissionName::MIDI_SYSEX:
-      return PermissionType::MIDI_SYSEX;
+    }
     case PermissionName::PROTECTED_MEDIA_IDENTIFIER:
       return PermissionType::PROTECTED_MEDIA_IDENTIFIER;
     case PermissionName::DURABLE_STORAGE:
@@ -106,7 +111,7 @@ void PermissionServiceImpl::OnConnectionError() {
 }
 
 void PermissionServiceImpl::RequestPermission(
-    PermissionName permission,
+    PermissionDescriptorPtr permission,
     const url::Origin& origin,
     bool user_gesture,
     const PermissionStatusCallback& callback) {
@@ -121,15 +126,15 @@ void PermissionServiceImpl::RequestPermission(
   DCHECK(browser_context);
   if (!context_->render_frame_host() ||
       !browser_context->GetPermissionManager()) {
-    callback.Run(GetPermissionStatusFromName(permission, origin));
+    callback.Run(GetPermissionStatus(permission, origin));
     return;
   }
 
   int pending_request_id = pending_requests_.Add(new PendingRequest(
       base::Bind(&PermissionRequestResponseCallbackWrapper, callback), 1));
   int id = browser_context->GetPermissionManager()->RequestPermission(
-      PermissionNameToPermissionType(permission), context_->render_frame_host(),
-      GURL(origin.Serialize()), user_gesture,
+      PermissionDescriptorToPermissionType(permission),
+      context_->render_frame_host(), GURL(origin.Serialize()), user_gesture,
       base::Bind(&PermissionServiceImpl::OnRequestPermissionResponse,
                  weak_factory_.GetWeakPtr(), pending_request_id));
 
@@ -150,7 +155,7 @@ void PermissionServiceImpl::OnRequestPermissionResponse(
 }
 
 void PermissionServiceImpl::RequestPermissions(
-    const std::vector<PermissionName>& permissions,
+    std::vector<PermissionDescriptorPtr> permissions,
     const url::Origin& origin,
     bool user_gesture,
     const RequestPermissionsCallback& callback) {
@@ -166,16 +171,15 @@ void PermissionServiceImpl::RequestPermissions(
   if (!context_->render_frame_host() ||
       !browser_context->GetPermissionManager()) {
     std::vector<PermissionStatus> result(permissions.size());
-    for (size_t i = 0; i < permissions.size(); ++i) {
-      result[i] = GetPermissionStatusFromName(permissions[i], origin);
-    }
+    for (size_t i = 0; i < permissions.size(); ++i)
+      result[i] = GetPermissionStatus(permissions[i], origin);
     callback.Run(result);
     return;
   }
 
   std::vector<PermissionType> types(permissions.size());
   for (size_t i = 0; i < types.size(); ++i)
-    types[i] = PermissionNameToPermissionType(permissions[i]);
+    types[i] = PermissionDescriptorToPermissionType(permissions[i]);
 
   int pending_request_id = pending_requests_.Add(
       new PendingRequest(callback, permissions.size()));
@@ -233,17 +237,18 @@ void PermissionServiceImpl::CancelPendingOperations() {
 }
 
 void PermissionServiceImpl::HasPermission(
-    PermissionName permission,
+    PermissionDescriptorPtr permission,
     const url::Origin& origin,
     const PermissionStatusCallback& callback) {
-  callback.Run(GetPermissionStatusFromName(permission, origin));
+  callback.Run(GetPermissionStatus(permission, origin));
 }
 
 void PermissionServiceImpl::RevokePermission(
-    PermissionName permission,
+    PermissionDescriptorPtr permission,
     const url::Origin& origin,
     const PermissionStatusCallback& callback) {
-  PermissionType permission_type = PermissionNameToPermissionType(permission);
+  PermissionType permission_type =
+      PermissionDescriptorToPermissionType(permission);
   PermissionStatus status =
       GetPermissionStatusFromType(permission_type, origin);
 
@@ -260,12 +265,11 @@ void PermissionServiceImpl::RevokePermission(
 }
 
 void PermissionServiceImpl::GetNextPermissionChange(
-    PermissionName permission,
+    PermissionDescriptorPtr permission,
     const url::Origin& origin,
     PermissionStatus last_known_status,
     const PermissionStatusCallback& callback) {
-  PermissionStatus current_status =
-      GetPermissionStatusFromName(permission, origin);
+  PermissionStatus current_status = GetPermissionStatus(permission, origin);
   if (current_status != last_known_status) {
     callback.Run(current_status);
     return;
@@ -278,7 +282,8 @@ void PermissionServiceImpl::GetNextPermissionChange(
     return;
   }
 
-  PermissionType permission_type = PermissionNameToPermissionType(permission);
+  PermissionType permission_type =
+      PermissionDescriptorToPermissionType(permission);
 
   // We need to pass the id of PendingSubscription in pending_subscriptions_
   // to the callback but SubscribePermissionStatusChange() will also return an
@@ -298,11 +303,11 @@ void PermissionServiceImpl::GetNextPermissionChange(
                      weak_factory_.GetWeakPtr(), pending_subscription_id));
 }
 
-PermissionStatus PermissionServiceImpl::GetPermissionStatusFromName(
-    PermissionName permission,
+PermissionStatus PermissionServiceImpl::GetPermissionStatus(
+    const PermissionDescriptorPtr& permission,
     const url::Origin& origin) {
-  return GetPermissionStatusFromType(PermissionNameToPermissionType(permission),
-                                     origin);
+  return GetPermissionStatusFromType(
+      PermissionDescriptorToPermissionType(permission), origin);
 }
 
 PermissionStatus PermissionServiceImpl::GetPermissionStatusFromType(

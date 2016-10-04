@@ -149,8 +149,8 @@ let geolocationServiceMock = loadMojoModules(
      * for a call if necessary. Any permission request that is not for
      * geolocation is always denied.
      */
-    requestPermission(permissionName) {
-      if (permissionName != permission.PermissionName.GEOLOCATION)
+    requestPermission(permissionDescriptor) {
+      if (permissionDescriptor.name != permission.PermissionName.GEOLOCATION)
         return Promise.resolve(permissionStatus.PermissionStatus.DENIED);
 
       return new Promise(resolve => {

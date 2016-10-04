@@ -8,7 +8,7 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "modules/notifications/Notification.h"
 #include "modules/notifications/NotificationPermissionCallback.h"
-#include "modules/permissions/Permissions.h"
+#include "modules/permissions/PermissionUtils.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/InterfaceProvider.h"
@@ -66,8 +66,7 @@ ScriptPromise NotificationManager::requestPermission(
   ExecutionContext* context = scriptState->getExecutionContext();
 
   if (!m_permissionService) {
-    Permissions::connectToService(context,
-                                  mojo::GetProxy(&m_permissionService));
+    connectToPermissionService(context, mojo::GetProxy(&m_permissionService));
     m_permissionService.set_connection_error_handler(convertToBaseCallback(
         WTF::bind(&NotificationManager::onPermissionServiceConnectionError,
                   wrapWeakPersistent(this))));
@@ -77,7 +76,8 @@ ScriptPromise NotificationManager::requestPermission(
   ScriptPromise promise = resolver->promise();
 
   m_permissionService->RequestPermission(
-      mojom::blink::PermissionName::NOTIFICATIONS, context->getSecurityOrigin(),
+      createPermissionDescriptor(mojom::blink::PermissionName::NOTIFICATIONS),
+      context->getSecurityOrigin(),
       UserGestureIndicator::processingUserGesture(),
       convertToBaseCallback(
           WTF::bind(&NotificationManager::onPermissionRequestComplete,

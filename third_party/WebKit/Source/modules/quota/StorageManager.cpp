@@ -9,7 +9,7 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
-#include "modules/permissions/Permissions.h"
+#include "modules/permissions/PermissionUtils.h"
 #include "modules/quota/StorageEstimate.h"
 #include "platform/StorageQuotaCallbacks.h"
 #include "platform/UserGestureIndicator.h"
@@ -83,7 +83,7 @@ ScriptPromise StorageManager::persist(ScriptState* scriptState) {
     return promise;
   }
   permissionService->RequestPermission(
-      PermissionName::DURABLE_STORAGE,
+      createPermissionDescriptor(PermissionName::DURABLE_STORAGE),
       scriptState->getExecutionContext()->getSecurityOrigin(),
       UserGestureIndicator::processingUserGesture(),
       convertToBaseCallback(
@@ -105,7 +105,7 @@ ScriptPromise StorageManager::persisted(ScriptState* scriptState) {
     return promise;
   }
   permissionService->HasPermission(
-      PermissionName::DURABLE_STORAGE,
+      createPermissionDescriptor(PermissionName::DURABLE_STORAGE),
       scriptState->getExecutionContext()->getSecurityOrigin(),
       convertToBaseCallback(
           WTF::bind(&StorageManager::permissionRequestComplete,
@@ -138,11 +138,11 @@ ScriptPromise StorageManager::estimate(ScriptState* scriptState) {
 
 DEFINE_TRACE(StorageManager) {}
 
-mojom::blink::PermissionService* StorageManager::getPermissionService(
+PermissionService* StorageManager::getPermissionService(
     ExecutionContext* executionContext) {
   if (!m_permissionService &&
-      Permissions::connectToService(executionContext,
-                                    mojo::GetProxy(&m_permissionService)))
+      connectToPermissionService(executionContext,
+                                 mojo::GetProxy(&m_permissionService)))
     m_permissionService.set_connection_error_handler(convertToBaseCallback(
         WTF::bind(&StorageManager::permissionServiceConnectionError,
                   wrapWeakPersistent(this))));

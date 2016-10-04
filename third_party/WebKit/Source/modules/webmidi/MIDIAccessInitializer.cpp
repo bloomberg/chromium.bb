@@ -11,19 +11,19 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
+#include "modules/permissions/PermissionUtils.h"
 #include "modules/webmidi/MIDIAccess.h"
 #include "modules/webmidi/MIDIOptions.h"
 #include "modules/webmidi/MIDIPort.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/mojo/MojoHelper.h"
 #include "public/platform/InterfaceProvider.h"
-#include "third_party/WebKit/public/platform/modules/permissions/permission.mojom-blink.h"
+#include "public/platform/modules/permissions/permission.mojom-blink.h"
 
 namespace blink {
 
 using PortState = WebMIDIAccessorClient::MIDIPortState;
 
-using mojom::blink::PermissionName;
 using mojom::blink::PermissionStatus;
 
 MIDIAccessInitializer::MIDIAccessInitializer(ScriptState* scriptState,
@@ -39,22 +39,11 @@ ScriptPromise MIDIAccessInitializer::start() {
   ScriptPromise promise = this->promise();
   m_accessor = MIDIAccessor::create(this);
 
-  Document* document = toDocument(getExecutionContext());
-  DCHECK(document);
-
-  document->frame()->interfaceProvider()->getInterface(
-      mojo::GetProxy(&m_permissionService));
-
-  bool requestSysEx = m_options.hasSysex() && m_options.sysex();
-  Vector<PermissionName> permissions;
-  permissions.resize(requestSysEx ? 2 : 1);
-
-  permissions[0] = PermissionName::MIDI;
-  if (requestSysEx)
-    permissions[1] = PermissionName::MIDI_SYSEX;
-
-  m_permissionService->RequestPermissions(
-      permissions, getExecutionContext()->getSecurityOrigin(),
+  connectToPermissionService(getExecutionContext(),
+                             mojo::GetProxy(&m_permissionService));
+  m_permissionService->RequestPermission(
+      createMidiPermissionDescriptor(m_options.hasSysex() && m_options.sysex()),
+      getExecutionContext()->getSecurityOrigin(),
       UserGestureIndicator::processingUserGesture(),
       convertToBaseCallback(WTF::bind(
           &MIDIAccessInitializer::onPermissionsUpdated, wrapPersistent(this))));
@@ -130,17 +119,9 @@ ExecutionContext* MIDIAccessInitializer::getExecutionContext() const {
   return getScriptState()->getExecutionContext();
 }
 
-void MIDIAccessInitializer::onPermissionsUpdated(
-    const Vector<PermissionStatus>& statusArray) {
-  bool allowed = true;
-  for (const auto status : statusArray) {
-    if (status != PermissionStatus::GRANTED) {
-      allowed = false;
-      break;
-    }
-  }
+void MIDIAccessInitializer::onPermissionsUpdated(PermissionStatus status) {
   m_permissionService.reset();
-  if (allowed)
+  if (status == PermissionStatus::GRANTED)
     m_accessor->startSession();
   else
     reject(DOMException::create(SecurityError));

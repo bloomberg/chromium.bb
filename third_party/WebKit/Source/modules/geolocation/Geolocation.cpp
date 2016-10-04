@@ -33,8 +33,8 @@
 #include "core/frame/Settings.h"
 #include "modules/geolocation/Coordinates.h"
 #include "modules/geolocation/GeolocationError.h"
+#include "modules/permissions/PermissionUtils.h"
 #include "platform/UserGestureIndicator.h"
-#include "platform/mojo/MojoHelper.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
 #include "wtf/Assertions.h"
@@ -432,7 +432,7 @@ void Geolocation::requestPermission() {
 
   // Ask the embedder: it maintains the geolocation challenge policy itself.
   m_permissionService->RequestPermission(
-      mojom::blink::PermissionName::GEOLOCATION,
+      createPermissionDescriptor(mojom::blink::PermissionName::GEOLOCATION),
       getExecutionContext()->getSecurityOrigin(),
       UserGestureIndicator::processingUserGesture(),
       convertToBaseCallback(WTF::bind(
