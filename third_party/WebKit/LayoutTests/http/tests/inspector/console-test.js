@@ -349,9 +349,9 @@ InspectorTest.waitUntilConsoleEditorLoaded = function()
     var promise = new Promise(x => fulfill = x);
     var editor = WebInspector.ConsoleView.instance()._prompt._editor;
     if (editor)
-        fulfill();
+        fulfill(editor);
     else
-        InspectorTest.addSniffer(WebInspector.ConsolePrompt.prototype, "_editorSetForTest", _ => fulfill())
+        InspectorTest.addSniffer(WebInspector.ConsolePrompt.prototype, "_editorSetForTest", _ => fulfill(editor))
     return promise;
 }
 
