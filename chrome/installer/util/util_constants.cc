@@ -28,6 +28,10 @@ const char kConfigureUserSettings[] = "configure-user-settings";
 // in-use Chrome should be restarted ASAP.
 const char kCriticalUpdateVersion[] = "critical-update-version";
 
+// Delete files that belong to old versions of Chrome from the install
+// directory.
+const char kDeleteOldVersions[] = "delete-old-versions";
+
 // Delete user profile data. This param is useful only when specified with
 // kUninstall, otherwise it is silently ignored.
 const char kDeleteProfile[] = "delete-profile";

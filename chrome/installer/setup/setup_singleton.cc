@@ -126,7 +126,7 @@ std::unique_ptr<SetupSingleton> SetupSingleton::Acquire(
 
 SetupSingleton::~SetupSingleton() = default;
 
-bool SetupSingleton::WaitForInterrupt(const base::TimeDelta& max_time) {
+bool SetupSingleton::WaitForInterrupt(const base::TimeDelta& max_time) const {
   const bool exit_event_signaled = exit_event_.TimedWait(max_time);
   return exit_event_signaled;
 }

@@ -11,11 +11,13 @@
 #include <memory>
 #include <string>
 
+#include "base/command_line.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/process/launch.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -680,13 +682,57 @@ InstallStatus InstallOrUpdateProduct(
       }
     }
 
+    // Delete files that belong to old versions of Chrome. If that fails during
+    // a not-in-use update, launch a --delete-old-version process. If this is an
+    // in-use update, a --delete-old-versions process will be launched when
+    // executables are renamed.
     installer_state.SetStage(REMOVING_OLD_VERSIONS);
-    // TODO(fdoray): Launch a cleanup process when this fails during a not-in-
-    // use update. crbug.com/451546
-    DeleteOldVersions(installer_state.target_path());
+    const bool is_in_use =
+        (result == IN_USE_UPDATED || result == IN_USE_DOWNGRADE);
+    if (!DeleteOldVersions(installer_state.target_path()) && !is_in_use) {
+      const base::FilePath new_version_setup_path =
+          installer_state.GetInstallerDirectory(new_version)
+              .Append(setup_path.BaseName());
+      LaunchDeleteOldVersionsProcess(new_version_setup_path, installer_state);
+    }
   }
 
   return result;
+}
+
+void LaunchDeleteOldVersionsProcess(const base::FilePath& setup_path,
+                                    const InstallerState& installer_state) {
+  // Deleting old versions is relevant if multi-install binaries are being
+  // updated or if single-install Chrome is.
+  const Product* product =
+      installer_state.FindProduct(BrowserDistribution::CHROME_BINARIES);
+  if (!product)
+    product = installer_state.FindProduct(BrowserDistribution::CHROME_BROWSER);
+  if (!product)
+    return;
+
+  base::CommandLine command_line(setup_path);
+  product->AppendProductFlags(&command_line);
+  command_line.AppendSwitch(switches::kDeleteOldVersions);
+
+  if (installer_state.system_install())
+    command_line.AppendSwitch(switches::kSystemLevel);
+  // Unconditionally enable verbose logging for now to make diagnosing potential
+  // failures possible.
+  command_line.AppendSwitch(switches::kVerboseLogging);
+
+  base::LaunchOptions launch_options;
+  launch_options.start_hidden = true;
+  // Make sure not to launch from a version directory. Otherwise, it wouldn't be
+  // possible to delete it.
+  launch_options.current_directory = setup_path.DirName();
+  launch_options.force_breakaway_from_job_ = true;
+
+  VLOG(1) << "Launching \"" << command_line.GetCommandLineString()
+          << "\" to delete old versions.";
+  base::Process process = base::LaunchProcess(command_line, launch_options);
+  PLOG_IF(ERROR, !process.IsValid())
+      << "Failed to launch \"" << command_line.GetCommandLineString() << "\"";
 }
 
 void HandleOsUpgradeForBrowser(const installer::InstallerState& installer_state,

@@ -95,8 +95,22 @@ enum InstallStatus {
   SETUP_SINGLETON_ACQUISITION_FAILED = 60,  // The setup process could not
                                             // acquire the exclusive right to
                                             // modify the Chrome installation.
+  SETUP_SINGLETON_RELEASED           = 61,  // The task did not complete because
+                                            // another process asked this
+                                            // process to release the exclusive
+                                            // right to modify the Chrome
+                                            // installation.
+  DELETE_OLD_VERSIONS_SUCCESS        = 62,  // All files that belong to old
+                                            // versions of Chrome were
+                                            // successfully deleted.
+  DELETE_OLD_VERSIONS_TOO_MANY_ATTEMPTS = 63,  // A --delete-old-versions
+                                               // process exited after trying to
+                                               // delete all files that belong
+                                               // to old versions of Chrome too
+                                               // many times without success.
 
-  MAX_INSTALL_STATUS   = 61,  // Bump this out to make space for new results.
+  MAX_INSTALL_STATUS   = 64,  // When adding a new result, bump this and update
+                              // the InstallStatus enum in histograms.xml.
 };
 
 // The type of an update archive.
@@ -140,6 +154,7 @@ extern const char kChromeFrame[];
 extern const char kChromeSxS[];
 extern const char kConfigureUserSettings[];
 extern const char kCriticalUpdateVersion[];
+extern const char kDeleteOldVersions[];
 extern const char kDeleteProfile[];
 extern const char kDisableLogging[];
 extern const char kDoNotLaunchChrome[];

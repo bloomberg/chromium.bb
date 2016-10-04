@@ -129,6 +129,11 @@ InstallStatus InstallOrUpdateProduct(
     const installer::MasterPreferences& prefs,
     const base::Version& new_version);
 
+// Launches a process that deletes files that belong to old versions of Chrome.
+// |setup_path| is the path to the setup.exe executable to use.
+void LaunchDeleteOldVersionsProcess(const base::FilePath& setup_path,
+                                    const InstallerState& installer_state);
+
 // Performs installation-related tasks following an OS upgrade.
 // |chrome| The installed product (must be a browser).
 // |installed_version| the current version of this install.

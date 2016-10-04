@@ -26,6 +26,7 @@
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/memory.h"
+#include "base/process/process.h"
 #include "base/process/process_metrics.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -56,6 +57,7 @@
 #include "chrome/installer/setup/uninstall.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/delete_after_reboot_helper.h"
+#include "chrome/installer/util/delete_old_versions.h"
 #include "chrome/installer/util/delete_tree_work_item.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -386,14 +388,79 @@ void AddExistingMultiInstalls(const InstallationState& original_state,
   }
 }
 
+void RecordNumDeleteOldVersionsAttempsBeforeAbort(int num_attempts) {
+  UMA_HISTOGRAM_COUNTS_100(
+      "Setup.Install.NumDeleteOldVersionsAttemptsBeforeAbort", num_attempts);
+}
+
+// Repetitively attempts to delete all files that belong to old versions of
+// Chrome from |install_dir|. Waits 15 seconds before the first attempt and 5
+// minutes after each unsuccessful attempt. Returns when no files that belong to
+// an old version of Chrome remain or when another process tries to acquire the
+// SetupSingleton.
+installer::InstallStatus RepeatDeleteOldVersions(
+    const base::FilePath& install_dir,
+    const installer::SetupSingleton& setup_singleton) {
+  constexpr int kMaxNumAttempts = 12;
+  int num_attempts = 0;
+
+  while (num_attempts < kMaxNumAttempts) {
+    // Wait 15 seconds before the first attempt because trying to delete old
+    // files right away is likely to fail. Indeed, this is called in 2
+    // occasions:
+    // - When the installer fails to delete old files after a not-in-use update:
+    //   retrying immediately is likely to fail again.
+    // - When executables are successfully renamed on Chrome startup or
+    //   shutdown: old files can't be deleted because Chrome is still in use.
+    // Wait 5 minutes after an unsuccessful attempt because retrying immediately
+    // is likely to fail again.
+    const base::TimeDelta max_wait_time = num_attempts == 0
+                                              ? base::TimeDelta::FromSeconds(15)
+                                              : base::TimeDelta::FromMinutes(5);
+    if (setup_singleton.WaitForInterrupt(max_wait_time)) {
+      VLOG(1) << "Exiting --delete-old-versions process because another "
+                 "process tries to acquire the SetupSingleton.";
+      RecordNumDeleteOldVersionsAttempsBeforeAbort(num_attempts);
+      return installer::SETUP_SINGLETON_RELEASED;
+    }
+
+    const bool was_backgrounded =
+        base::Process::Current().SetProcessBackgrounded(true);
+    const bool delete_old_versions_success =
+        installer::DeleteOldVersions(install_dir);
+    if (!was_backgrounded)
+      base::Process::Current().SetProcessBackgrounded(false);
+    ++num_attempts;
+
+    if (delete_old_versions_success) {
+      VLOG(1) << "Successfully deleted all old files from "
+                 "--delete-old-versions process.";
+      UMA_HISTOGRAM_COUNTS_100(
+          "Setup.Install.NumDeleteOldVersionsAttemptsBeforeSuccess",
+          num_attempts);
+      return installer::DELETE_OLD_VERSIONS_SUCCESS;
+    } else if (num_attempts == 1) {
+      VLOG(1) << "Failed to delete all old files from --delete-old-versions "
+                 "process. Will retry every five minutes.";
+    }
+  }
+
+  VLOG(1) << "Exiting --delete-old-versions process after retrying too many "
+             "times to delete all old files.";
+  DCHECK_EQ(num_attempts, kMaxNumAttempts);
+  RecordNumDeleteOldVersionsAttempsBeforeAbort(num_attempts);
+  return installer::DELETE_OLD_VERSIONS_TOO_MANY_ATTEMPTS;
+}
+
 // This function is called when --rename-chrome-exe option is specified on
 // setup.exe command line. This function assumes an in-use update has happened
 // for Chrome so there should be a file called new_chrome.exe on the file
 // system and a key called 'opv' in the registry. This function will move
 // new_chrome.exe to chrome.exe and delete 'opv' key in one atomic operation.
 // This function also deletes elevation policies associated with the old version
-// if they exist.
+// if they exist. |setup_exe| is the path to the current executable.
 installer::InstallStatus RenameChromeExecutables(
+    const base::FilePath& setup_exe,
     const InstallationState& original_state,
     InstallerState* installer_state) {
   // See what products are already installed in multi mode.  When we do the
@@ -454,7 +521,9 @@ installer::InstallStatus RenameChromeExecutables(
       ->set_best_effort(true);
 
   installer::InstallStatus ret = installer::RENAME_SUCCESSFUL;
-  if (!install_list->Do()) {
+  if (install_list->Do()) {
+    installer::LaunchDeleteOldVersionsProcess(setup_exe, *installer_state);
+  } else {
     LOG(ERROR) << "Renaming of executables failed. Rolling back any changes.";
     install_list->Rollback();
     ret = installer::RENAME_FAILED;
@@ -1235,17 +1304,26 @@ bool HandleNonInstallCmdLineOptions(const base::FilePath& setup_exe,
       LOG(DFATAL) << "Can't register browser - Chrome distribution not found";
     }
     *exit_code = InstallUtil::GetInstallReturnCode(status);
-  } else if (cmd_line.HasSwitch(installer::switches::kRenameChromeExe)) {
-    // If --rename-chrome-exe is specified, we want to rename the executables
-    // and exit.
+  } else if (cmd_line.HasSwitch(installer::switches::kDeleteOldVersions) ||
+             cmd_line.HasSwitch(installer::switches::kRenameChromeExe)) {
     std::unique_ptr<installer::SetupSingleton> setup_singleton(
         installer::SetupSingleton::Acquire(
             cmd_line, MasterPreferences::ForCurrentProcess(), original_state,
             installer_state));
-    if (!setup_singleton)
+    if (!setup_singleton) {
       *exit_code = installer::SETUP_SINGLETON_ACQUISITION_FAILED;
-    else
-      *exit_code = RenameChromeExecutables(*original_state, installer_state);
+    } else if (cmd_line.HasSwitch(installer::switches::kDeleteOldVersions)) {
+      // In multi-install mode, determine what products are installed to
+      // populate the target_path() used below.
+      AddExistingMultiInstalls(*original_state, installer_state);
+
+      *exit_code = RepeatDeleteOldVersions(installer_state->target_path(),
+                                           *setup_singleton);
+    } else {
+      DCHECK(cmd_line.HasSwitch(installer::switches::kRenameChromeExe));
+      *exit_code =
+          RenameChromeExecutables(setup_exe, *original_state, installer_state);
+    }
   } else if (cmd_line.HasSwitch(
                  installer::switches::kRemoveChromeRegistration)) {
     // This is almost reverse of --register-chrome-browser option above.
