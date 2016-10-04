@@ -93,8 +93,10 @@ Value LocationPath::evaluate(EvaluationContext& evaluationContext) const {
   EvaluationContext clonedContext = evaluationContext;
   // http://www.w3.org/TR/xpath/
   // Section 2, Location Paths:
-  // "/ selects the document root (which is always the parent of the document element)"
-  // "A / by itself selects the root node of the document containing the context node."
+  // "/ selects the document root (which is always the parent of the document
+  // element)"
+  // "A / by itself selects the root node of the document containing the context
+  // node."
   // In the case of a tree that is detached from the document, we violate
   // the spec and treat / as the root node of the detached tree.
   // This is for compatibility with Firefox, and also seems like a more

@@ -309,7 +309,8 @@ inline bool Interval::contains(int value) const {
 void Function::setArguments(HeapVector<Member<Expression>>& args) {
   DCHECK(!subExprCount());
 
-  // Some functions use context node as implicit argument, so when explicit arguments are added, they may no longer be context node sensitive.
+  // Some functions use context node as implicit argument, so when explicit
+  // arguments are added, they may no longer be context node sensitive.
   if (m_name != "lang" && !args.isEmpty())
     setIsContextNodeSensitive(false);
 
@@ -358,8 +359,9 @@ Value FunId::evaluate(EvaluationContext& context) const {
     while (endPos < length && !isWhitespace(idList[endPos]))
       ++endPos;
 
-    // If there are several nodes with the same id, id() should return the first one.
-    // In WebKit, getElementById behaves so, too, although its behavior in this case is formally undefined.
+    // If there are several nodes with the same id, id() should return the first
+    // one.  In WebKit, getElementById behaves so, too, although its behavior in
+    // this case is formally undefined.
     Node* node = contextScope.getElementById(
         AtomicString(idList.substring(startPos, endPos - startPos)));
     if (node && resultSet.add(node).isNewEntry)
@@ -374,7 +376,8 @@ Value FunId::evaluate(EvaluationContext& context) const {
 }
 
 static inline String expandedNameLocalPart(Node* node) {
-  // The local part of an XPath expanded-name matches DOM local name for most node types, except for namespace nodes and processing instruction nodes.
+  // The local part of an XPath expanded-name matches DOM local name for most
+  // node types, except for namespace nodes and processing instruction nodes.
   // But note that Blink does not support namespace nodes.
   switch (node->getNodeType()) {
     case Node::kElementNode:
@@ -654,8 +657,9 @@ Value FunSum::evaluate(EvaluationContext& context) const {
 
   double sum = 0.0;
   const NodeSet& nodes = a.toNodeSet(&context);
-  // To be really compliant, we should sort the node-set, as floating point addition is not associative.
-  // However, this is unlikely to ever become a practical issue, and sorting is slow.
+  // To be really compliant, we should sort the node-set, as floating point
+  // addition is not associative.  However, this is unlikely to ever become a
+  // practical issue, and sorting is slow.
 
   for (unsigned i = 0; i < nodes.size(); i++)
     sum += Value(stringValue(nodes[i])).toNumber();

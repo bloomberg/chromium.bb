@@ -84,7 +84,8 @@ void XSLTProcessor::parseErrorFunc(void* userData, xmlError* error) {
       SourceLocation::create(error->file, error->line, 0, nullptr)));
 }
 
-// FIXME: There seems to be no way to control the ctxt pointer for loading here, thus we have globals.
+// FIXME: There seems to be no way to control the ctxt pointer for loading here,
+// thus we have globals.
 static XSLTProcessor* globalProcessor = nullptr;
 static ResourceFetcher* globalResourceFetcher = nullptr;
 
@@ -249,7 +250,8 @@ static xsltStylesheetPtr xsltStylesheetPointer(
     Member<XSLStyleSheet>& cachedStylesheet,
     Node* stylesheetRootNode) {
   if (!cachedStylesheet && stylesheetRootNode) {
-    // When using importStylesheet, we will use the given document as the imported stylesheet's owner.
+    // When using importStylesheet, we will use the given document as the
+    // imported stylesheet's owner.
     cachedStylesheet = XSLStyleSheet::createForXSLTProcessor(
         stylesheetRootNode->parentNode()
             ? &stylesheetRootNode->parentNode()->document()

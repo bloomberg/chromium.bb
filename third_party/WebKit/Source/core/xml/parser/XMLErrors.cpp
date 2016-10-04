@@ -131,9 +131,9 @@ static inline Element* createXHTMLParserErrorHeader(
 }
 
 void XMLErrors::insertErrorMessageBlock() {
-  // One or more errors occurred during parsing of the code. Display an error block to the user above
-  // the normal content (the DOM tree is created manually and includes line/col info regarding
-  // where the errors are located)
+  // One or more errors occurred during parsing of the code. Display an error
+  // block to the user above the normal content (the DOM tree is created
+  // manually and includes line/col info regarding where the errors are located)
 
   // Create elements for display
   Element* documentElement = m_document->documentElement();

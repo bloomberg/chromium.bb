@@ -103,7 +103,8 @@ class Step final : public ParseNode {
     AtomicString m_data;
     AtomicString m_namespaceURI;
 
-    // When possible, we merge some or all predicates with node test for better performance.
+    // When possible, we merge some or all predicates with node test for better
+    // performance.
     HeapVector<Member<Predicate>> m_mergedPredicates;
   };
 

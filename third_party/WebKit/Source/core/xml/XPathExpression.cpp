@@ -76,7 +76,8 @@ XPathResult* XPathExpression::evaluate(Node* contextNode,
       evaluationContext, m_topExpression->evaluate(evaluationContext));
 
   if (evaluationContext.hadTypeConversionError) {
-    // It is not specified what to do if type conversion fails while evaluating an expression.
+    // It is not specified what to do if type conversion fails while evaluating
+    // an expression.
     exceptionState.throwDOMException(
         SyntaxError, "Type conversion failed while evaluating the expression.");
     return nullptr;

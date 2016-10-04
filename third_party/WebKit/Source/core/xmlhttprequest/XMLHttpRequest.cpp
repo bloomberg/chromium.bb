@@ -17,7 +17,8 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ *  Foundation, Inc., 51 Franklin Street, Fifth Floor,
+ *  Boston, MA 02110-1301 USA
  */
 
 #include "core/xmlhttprequest/XMLHttpRequest.h"
@@ -110,7 +111,8 @@ void replaceCharsetInMediaType(String& mediaType, const String& charsetValue) {
     return;
   }
 
-  // Found at least one existing charset, replace all occurrences with new charset.
+  // Found at least one existing charset, replace all occurrences with new
+  // charset.
   while (len) {
     mediaType.replace(pos, len, charsetValue);
     unsigned start = pos + charsetValue.length();
@@ -121,8 +123,9 @@ void replaceCharsetInMediaType(String& mediaType, const String& charsetValue) {
 void logConsoleError(ExecutionContext* context, const String& message) {
   if (!context)
     return;
-  // FIXME: It's not good to report the bad usage without indicating what source line it came from.
-  // We should pass additional parameters so we can tell the console where the mistake occurred.
+  // FIXME: It's not good to report the bad usage without indicating what source
+  // line it came from.  We should pass additional parameters so we can tell the
+  // console where the mistake occurred.
   ConsoleMessage* consoleMessage =
       ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, message);
   context->addConsoleMessage(consoleMessage);
@@ -281,8 +284,9 @@ ScriptString XMLHttpRequest::responseJSONSource() {
 }
 
 void XMLHttpRequest::initResponseDocument() {
-  // The W3C spec requires the final MIME type to be some valid XML type, or text/html.
-  // If it is text/html, then the responseType of "document" must have been supplied explicitly.
+  // The W3C spec requires the final MIME type to be some valid XML type, or
+  // text/html.  If it is text/html, then the responseType of "document" must
+  // have been supplied explicitly.
   bool isHTML = responseIsHTML();
   if ((m_response.isHTTP() && !responseIsXML() && !isHTML) ||
       (isHTML && m_responseTypeCode == ResponseTypeDefault) ||
@@ -404,8 +408,11 @@ Stream* XMLHttpRequest::responseLegacyStream() {
 
 void XMLHttpRequest::setTimeout(unsigned timeout,
                                 ExceptionState& exceptionState) {
-  // FIXME: Need to trigger or update the timeout Timer here, if needed. http://webkit.org/b/98156
-  // XHR2 spec, 4.7.3. "This implies that the timeout attribute can be set while fetching is in progress. If that occurs it will still be measured relative to the start of fetching."
+  // FIXME: Need to trigger or update the timeout Timer here, if needed.
+  // http://webkit.org/b/98156
+  // XHR2 spec, 4.7.3. "This implies that the timeout attribute can be set while
+  // fetching is in progress. If that occurs it will still be measured relative
+  // to the start of fetching."
   if (getExecutionContext() && getExecutionContext()->isDocument() &&
       !m_async) {
     exceptionState.throwDOMException(InvalidAccessError,
@@ -417,8 +424,9 @@ void XMLHttpRequest::setTimeout(unsigned timeout,
   m_timeoutMilliseconds = timeout;
 
   // From http://www.w3.org/TR/XMLHttpRequest/#the-timeout-attribute:
-  // Note: This implies that the timeout attribute can be set while fetching is in progress. If
-  // that occurs it will still be measured relative to the start of fetching.
+  // Note: This implies that the timeout attribute can be set while fetching is
+  // in progress. If that occurs it will still be measured relative to the start
+  // of fetching.
   //
   // The timeout may be overridden after send.
   if (m_loader)
@@ -434,8 +442,9 @@ void XMLHttpRequest::setResponseType(const String& responseType,
     return;
   }
 
-  // Newer functionality is not available to synchronous requests in window contexts, as a spec-mandated
-  // attempt to discourage synchronous XHR use. responseType is one such piece of functionality.
+  // Newer functionality is not available to synchronous requests in window
+  // contexts, as a spec-mandated attempt to discourage synchronous XHR use.
+  // responseType is one such piece of functionality.
   if (getExecutionContext() && getExecutionContext()->isDocument() &&
       !m_async) {
     exceptionState.throwDOMException(InvalidAccessError,
@@ -618,7 +627,8 @@ void XMLHttpRequest::open(const AtomicString& method,
   if (!ContentSecurityPolicy::shouldBypassMainWorld(getExecutionContext()) &&
       !getExecutionContext()->contentSecurityPolicy()->allowConnectToSource(
           url)) {
-    // We can safely expose the URL to JavaScript, as these checks happen synchronously before redirection. JavaScript receives no new information.
+    // We can safely expose the URL to JavaScript, as these checks happen
+    // synchronously before redirection. JavaScript receives no new information.
     exceptionState.throwSecurityError(
         "Refused to connect to '" + url.elidedString() +
         "' because it violates the document's Content Security Policy.");
@@ -634,8 +644,9 @@ void XMLHttpRequest::open(const AtomicString& method,
       return;
     }
 
-    // Newer functionality is not available to synchronous requests in window contexts, as a spec-mandated
-    // attempt to discourage synchronous XHR use. responseType is one such piece of functionality.
+    // Newer functionality is not available to synchronous requests in window
+    // contexts, as a spec-mandated attempt to discourage synchronous XHR use.
+    // responseType is one such piece of functionality.
     if (m_responseTypeCode != ResponseTypeDefault) {
       exceptionState.throwDOMException(
           InvalidAccessError,
@@ -651,7 +662,8 @@ void XMLHttpRequest::open(const AtomicString& method,
     }
 
     // Here we just warn that firing sync XHR's may affect responsiveness.
-    // Eventually sync xhr will be deprecated and an "InvalidAccessError" exception thrown.
+    // Eventually sync xhr will be deprecated and an "InvalidAccessError"
+    // exception thrown.
     // Refer : https://xhr.spec.whatwg.org/#sync-warning
     // Use count for XHR synchronous requests on main thread only.
     if (!document()->processingBeforeUnload())
@@ -928,8 +940,9 @@ void XMLHttpRequest::createRequest(PassRefPtr<EncodedFormData> httpBody,
   DCHECK(getExecutionContext());
   ExecutionContext& executionContext = *getExecutionContext();
 
-  // The presence of upload event listeners forces us to use preflighting because POSTing to an URL that does not
-  // permit cross origin requests should look exactly like POSTing to an URL that does not respond at all.
+  // The presence of upload event listeners forces us to use preflighting
+  // because POSTing to an URL that does not permit cross origin requests should
+  // look exactly like POSTing to an URL that does not respond at all.
   // Also, only async requests support upload progress events.
   bool uploadEvents = false;
   if (m_async) {
@@ -949,8 +962,8 @@ void XMLHttpRequest::createRequest(PassRefPtr<EncodedFormData> httpBody,
     UseCounter::count(&executionContext,
                       UseCounter::XMLHttpRequestCrossOriginWithCredentials);
 
-  // We also remember whether upload events should be allowed for this request in case the upload listeners are
-  // added after the request is started.
+  // We also remember whether upload events should be allowed for this request
+  // in case the upload listeners are added after the request is started.
   m_uploadEventsAllowed =
       m_sameOriginRequest || uploadEvents ||
       !FetchUtils::isSimpleRequest(m_method, m_requestHeaders);
@@ -1237,9 +1250,10 @@ void XMLHttpRequest::handleRequestError(ExceptionCode exceptionCode,
       m_upload->handleRequestError(type);
   }
 
-  // Note: The below event dispatch may be called while |hasPendingActivity() == false|,
-  // when |handleRequestError| is called after |internalAbort()|.
-  // This is safe, however, as |this| will be kept alive from a strong ref |Event::m_target|.
+  // Note: The below event dispatch may be called while |hasPendingActivity() ==
+  // false|, when |handleRequestError| is called after |internalAbort()|.  This
+  // is safe, however, as |this| will be kept alive from a strong ref
+  // |Event::m_target|.
   dispatchProgressEvent(EventTypeNames::progress, receivedLength,
                         expectedLength);
   dispatchProgressEvent(type, receivedLength, expectedLength);
@@ -1449,7 +1463,8 @@ void XMLHttpRequest::didFail(const ResourceError& error) {
   NETWORK_DVLOG(1) << this << " didFail()";
   ScopedEventDispatchProtect protect(&m_eventDispatchRecursionLevel);
 
-  // If we are already in an error state, for instance we called abort(), bail out early.
+  // If we are already in an error state, for instance we called abort(), bail
+  // out early.
   if (m_error)
     return;
 
@@ -1503,10 +1518,11 @@ void XMLHttpRequest::didFinishLoading(unsigned long identifier, double) {
 
 void XMLHttpRequest::didFinishLoadingInternal() {
   if (m_responseDocumentParser) {
-    // |DocumentParser::finish()| tells the parser that we have reached end of the data.
-    // When using |HTMLDocumentParser|, which works asynchronously, we do not have the
-    // complete document just after the |DocumentParser::finish()| call.
-    // Wait for the parser to call us back in |notifyParserStopped| to progress state.
+    // |DocumentParser::finish()| tells the parser that we have reached end of
+    // the data.  When using |HTMLDocumentParser|, which works asynchronously,
+    // we do not have the complete document just after the
+    // |DocumentParser::finish()| call.  Wait for the parser to call us back in
+    // |notifyParserStopped| to progress state.
     m_responseDocumentParser->finish();
     DCHECK(m_responseDocument);
     return;

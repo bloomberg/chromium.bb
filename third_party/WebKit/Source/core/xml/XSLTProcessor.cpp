@@ -38,7 +38,8 @@
 namespace blink {
 
 static inline void transformTextStringToXHTMLDocumentString(String& text) {
-  // Modify the output so that it is a well-formed XHTML document with a <pre> tag enclosing the text.
+  // Modify the output so that it is a well-formed XHTML document with a <pre>
+  // tag enclosing the text.
   text.replace('&', "&amp;");
   text.replace('<', "&lt;");
   text =
@@ -75,9 +76,9 @@ Document* XSLTProcessor::createDocumentFromSource(const String& sourceString,
 
   if (frame) {
     Document* oldDocument = frame->document();
-    // Before parsing, we need to save & detach the old document and get the new document
-    // in place. Document::shutdown() tears down the FrameView, so remember whether or not
-    // there was one.
+    // Before parsing, we need to save & detach the old document and get the new
+    // document in place. Document::shutdown() tears down the FrameView, so
+    // remember whether or not there was one.
     bool hasView = frame->view();
     oldDocument->shutdown();
     // Re-create the FrameView if needed.

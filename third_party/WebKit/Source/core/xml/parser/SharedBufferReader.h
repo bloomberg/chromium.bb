@@ -40,7 +40,8 @@ namespace blink {
 
 class SharedBuffer;
 
-// Allows transfer of data in multiple chunks from a SharedBuffer to a provided buffer.
+// Allows transfer of data in multiple chunks from a SharedBuffer to a provided
+// buffer.
 class CORE_EXPORT SharedBufferReader {
   USING_FAST_MALLOC(SharedBufferReader);
 
@@ -49,8 +50,10 @@ class CORE_EXPORT SharedBufferReader {
 
   ~SharedBufferReader();
 
-  // Returns the number of bytes that were read (i.e. written to |outputBuffer|).
-  // TODO(junov): use size_t instead of int. Until then, readData uses safeCast internally.
+  // Returns the number of bytes that were read (i.e. written to
+  // |outputBuffer|).
+  // TODO(junov): use size_t instead of int. Until then, readData uses safeCast
+  // internally.
   int readData(char* outputBuffer, int askedToRead);
 
  private:

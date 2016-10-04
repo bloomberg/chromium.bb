@@ -387,7 +387,8 @@ void Step::nodesInAxis(EvaluationContext& evaluationContext,
           nodeTest().data() != starAtom) {
         Attr* attr = contextElement->getAttributeNodeNS(
             nodeTest().namespaceURI(), nodeTest().data());
-        // In XPath land, namespace nodes are not accessible on the attribute axis.
+        // In XPath land, namespace nodes are not accessible on the attribute
+        // axis.
         if (attr && attr->namespaceURI() != XMLNSNames::xmlnsNamespaceURI) {
           // Still need to check merged predicates.
           if (nodeMatches(evaluationContext, attr, AttributeAxis, nodeTest()))

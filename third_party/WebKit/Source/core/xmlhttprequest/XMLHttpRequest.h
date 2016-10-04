@@ -16,7 +16,8 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ *  MA 02110-1301 USA
  */
 
 #ifndef XMLHttpRequest_h
@@ -312,7 +313,8 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
 
   Member<XMLHttpRequestProgressEventThrottle> m_progressEventThrottle;
 
-  // An enum corresponding to the allowed string values for the responseType attribute.
+  // An enum corresponding to the allowed string values for the responseType
+  // attribute.
   ResponseTypeCode m_responseTypeCode;
   RefPtr<SecurityOrigin> m_isolatedWorldSecurityOrigin;
 

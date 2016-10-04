@@ -43,10 +43,9 @@ XSLStyleSheet::XSLStyleSheet(XSLImportRule* parentRule,
       m_originalURL(originalURL),
       m_finalURL(finalURL),
       m_isDisabled(false),
-      m_embedded(false)
-      // Child sheets get marked as processed when the libxslt engine has finally
-      // seen them.
-      ,
+      m_embedded(false),
+      // Child sheets get marked as processed when the libxslt engine has
+      // finally seen them.
       m_processed(false),
       m_stylesheetDoc(0),
       m_stylesheetDocTaken(false),

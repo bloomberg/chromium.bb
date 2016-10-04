@@ -101,7 +101,8 @@ void DocumentXSLT::applyXSLTransform(Document& document,
     document.setParsingState(Document::FinishedParsing);
     return;
   }
-  // FIXME: If the transform failed we should probably report an error (like Mozilla does).
+  // FIXME: If the transform failed we should probably report an error (like
+  // Mozilla does).
   LocalFrame* ownerFrame = document.frame();
   processor->createDocumentFromSource(newSource, resultEncoding, resultMIMEType,
                                       &document, ownerFrame);

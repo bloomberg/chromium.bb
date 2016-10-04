@@ -62,7 +62,8 @@ class ValueData : public GarbageCollectedFinalized<ValueData> {
   Member<NodeSet> m_nodeSet;
 };
 
-// Copying Value objects makes their data partially shared, so care has to be taken when dealing with copies.
+// Copying Value objects makes their data partially shared, so care has to be
+// taken when dealing with copies.
 class Value {
   DISALLOW_NEW();
 

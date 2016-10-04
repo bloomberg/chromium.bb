@@ -5,7 +5,8 @@
  * Copyright (C) 2007 Samuel Weinig (sam@webkit.org)
  * Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
  * Copyright (C) 2008 Holger Hans Peter Freyther
- * Copyright (C) 2008 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2008 Torch Mobile Inc. All rights reserved.
+ * (http://www.torchmobile.com/)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -387,8 +388,9 @@ void XMLDocumentParser::detach() {
 
 void XMLDocumentParser::end() {
   TRACE_EVENT0("blink", "XMLDocumentParser::end");
-  // XMLDocumentParserLibxml2 will do bad things to the document if doEnd() is called.
-  // I don't believe XMLDocumentParserQt needs doEnd called in the fragment case.
+  // XMLDocumentParserLibxml2 will do bad things to the document if doEnd() is
+  // called.  I don't believe XMLDocumentParserQt needs doEnd called in the
+  // fragment case.
   DCHECK(!m_parsingFragment);
 
   doEnd();
@@ -609,7 +611,8 @@ static bool shouldAllowExternalLoad(const KURL& url) {
   // same-origin requests only.
   if (!XMLDocumentParserScope::currentDocument->getSecurityOrigin()->canRequest(
           url)) {
-    // FIXME: This is copy/pasted. We should probably build console logging into canRequest().
+    // FIXME: This is copy/pasted. We should probably build console logging into
+    // canRequest().
     if (!url.isNull()) {
       String message =
           "Unsafe attempt to load URL " + url.elidedString() +
@@ -825,7 +828,8 @@ XMLDocumentParser::XMLDocumentParser(DocumentFragment* fragment,
     }
   }
 
-  // If the parent element is not in document tree, there may be no xmlns attribute; just default to the parent's namespace.
+  // If the parent element is not in document tree, there may be no xmlns
+  // attribute; just default to the parent's namespace.
   if (m_defaultNamespaceURI.isNull() && !parentElement->isConnected())
     m_defaultNamespaceURI = parentElement->namespaceURI();
 }
@@ -1386,7 +1390,8 @@ static size_t convertUTF16EntityToUTF8(const UChar* utf16Entity,
   if (conversionResult != WTF::Unicode::conversionOK)
     return 0;
 
-  // Even though we must pass the length, libxml expects the entity string to be null terminated.
+  // Even though we must pass the length, libxml expects the entity string to be
+  // null terminated.
   DCHECK_GT(target, originalTarget + 1);
   *target = '\0';
   return target - originalTarget;
@@ -1486,8 +1491,8 @@ void XMLDocumentParser::initializeParserContext(const CString& chunk) {
 
   // According to http://xmlsoft.org/html/libxml-tree.html#xmlSAXHandler and
   // http://xmlsoft.org/html/libxml-parser.html#fatalErrorSAXFunc the SAX
-  // fatalError callback is unused; error gets all the errors. Use normalErrorHandler
-  // for both the error and fatalError callbacks.
+  // fatalError callback is unused; error gets all the errors. Use
+  // normalErrorHandler for both the error and fatalError callbacks.
   sax.error = normalErrorHandler;
   sax.fatalError = normalErrorHandler;
   sax.characters = charactersHandler;

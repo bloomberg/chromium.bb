@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2010 Julien Chaffraix <jchaffraix@webkit.org>  All right reserved.
+ * Copyright (C) 2010 Julien Chaffraix <jchaffraix@webkit.org>  All right
+ * reserved.
  * Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies)
  *
  * Redistribution and use in source and binary forms, with or without
