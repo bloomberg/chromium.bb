@@ -77,6 +77,11 @@ html[dir='rtl'] div.reload-policies-button {
   float: right;
 }
 
+div.chrome-for-work {
+  -webkit-padding-start: 25px;
+  display: inline-block;
+}
+
 div.show-unset-checkbox {
   float: right;
 }
