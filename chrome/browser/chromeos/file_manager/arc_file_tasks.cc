@@ -75,8 +75,8 @@ scoped_refptr<arc::ActivityIconLoader> GetArcActivityIconLoader() {
   return arc_service_manager->icon_loader();
 }
 
-std::string ArcActionToString(arc::mojom::ActionType action) {
-  switch (action) {
+std::string ArcActionTypeToString(arc::mojom::ActionType action_type) {
+  switch (action_type) {
     case arc::mojom::ActionType::VIEW:
       return "view";
     case arc::mojom::ActionType::SEND:
@@ -88,7 +88,7 @@ std::string ArcActionToString(arc::mojom::ActionType action) {
   return "";
 }
 
-arc::mojom::ActionType StringToArcAction(const std::string& str) {
+arc::mojom::ActionType StringToArcActionType(const std::string& str) {
   if (str == "view")
     return arc::mojom::ActionType::VIEW;
   if (str == "send")
@@ -253,8 +253,8 @@ void OnArcIconEncoded(
   for (const arc::mojom::IntentHandlerInfoPtr& handler : handlers) {
     std::string name(handler->name);
     Verb handler_verb = Verb::VERB_NONE;
-    if (handler->action == arc::mojom::ActionType::SEND ||
-        handler->action == arc::mojom::ActionType::SEND_MULTIPLE) {
+    if (handler->action_type == arc::mojom::ActionType::SEND ||
+        handler->action_type == arc::mojom::ActionType::SEND_MULTIPLE) {
       handler_verb = Verb::VERB_SHARE_WITH;
     }
     const GURL& icon_url = (*icons)[arc::ActivityIconLoader::ActivityName(
@@ -262,9 +262,9 @@ void OnArcIconEncoded(
     result_list->push_back(FullTaskDescriptor(
         TaskDescriptor(
             ActivityNameToAppId(handler->package_name, handler->activity_name),
-            TASK_TYPE_ARC_APP, ArcActionToString(handler->action)),
+            TASK_TYPE_ARC_APP, ArcActionTypeToString(handler->action_type)),
         name, handler_verb, icon_url, false /* is_default */,
-        handler->action != arc::mojom::ActionType::VIEW /* is_generic */));
+        handler->action_type != arc::mojom::ActionType::VIEW /* is_generic */));
   }
   callback.Run(std::move(result_list));
 }
@@ -341,11 +341,11 @@ bool ExecuteArcTask(Profile* profile,
                          kArcIntentHelperVersionWithFullActivityName)) {
     arc_intent_helper->HandleUrlList(std::move(urls),
                                      AppIdToActivityName(task.app_id),
-                                     StringToArcAction(task.action_id));
+                                     StringToArcActionType(task.action_id));
   } else {
     arc_intent_helper->HandleUrlListDeprecated(
         std::move(urls), AppIdToActivityName(task.app_id)->package_name,
-        StringToArcAction(task.action_id));
+        StringToArcActionType(task.action_id));
   }
   return true;
 }
