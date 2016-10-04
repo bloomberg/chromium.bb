@@ -10,10 +10,10 @@
 #include "platform/graphics/gpu/DrawingBufferTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// These unit tests are separate from DrawingBufferTests.cpp because they are built
-// as a part of webkit_unittests instead blink_platform_unittests because the
-// software rendering mode has a dependency on the blink::Platform interface
-// for buffer allocations.
+// These unit tests are separate from DrawingBufferTests.cpp because they are
+// built as a part of webkit_unittests instead blink_platform_unittests. This is
+// because the software rendering mode has a dependency on the blink::Platform
+// interface for buffer allocations.
 
 namespace blink {
 namespace {

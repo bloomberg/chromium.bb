@@ -69,8 +69,8 @@ class WebExternalTextureLayer;
 class WebGraphicsContext3DProvider;
 class WebLayer;
 
-// Manages a rendering target (framebuffer + attachment) for a canvas.  Can publish its rendering
-// results to a WebLayer for compositing.
+// Manages a rendering target (framebuffer + attachment) for a canvas.  Can
+// publish its rendering results to a WebLayer for compositing.
 class PLATFORM_EXPORT DrawingBuffer
     : public NON_EXPORTED_BASE(cc::TextureLayerClient),
       public RefCounted<DrawingBuffer> {
@@ -109,19 +109,22 @@ class PLATFORM_EXPORT DrawingBuffer
   // Destruction will be completed after all mailboxes are released.
   void beginDestruction();
 
-  // Issues a glClear() on all framebuffers associated with this DrawingBuffer. The caller is responsible for
-  // making the context current and setting the clear values and masks. Modifies the framebuffer binding.
+  // Issues a glClear() on all framebuffers associated with this DrawingBuffer.
+  // The caller is responsible for making the context current and setting the
+  // clear values and masks. Modifies the framebuffer binding.
   void clearFramebuffers(GLbitfield clearMask);
 
-  // Indicates whether the DrawingBuffer internally allocated a packed depth-stencil renderbuffer
-  // in the situation where the end user only asked for a depth buffer. In this case, we need to
-  // upgrade clears of the depth buffer to clears of the depth and stencil buffers in order to
-  // avoid performance problems on some GPUs.
+  // Indicates whether the DrawingBuffer internally allocated a packed
+  // depth-stencil renderbuffer in the situation where the end user only asked
+  // for a depth buffer. In this case, we need to upgrade clears of the depth
+  // buffer to clears of the depth and stencil buffers in order to avoid
+  // performance problems on some GPUs.
   bool hasImplicitStencilBuffer() const { return m_hasImplicitStencilBuffer; }
   bool hasDepthBuffer() const { return !!m_depthStencilBuffer; }
   bool hasStencilBuffer() const { return !!m_depthStencilBuffer; }
 
-  // Given the desired buffer size, provides the largest dimensions that will fit in the pixel budget.
+  // Given the desired buffer size, provides the largest dimensions that will
+  // fit in the pixel budget.
   static IntSize adjustSize(const IntSize& desiredSize,
                             const IntSize& curSize,
                             int maxTextureSize);
@@ -136,7 +139,8 @@ class PLATFORM_EXPORT DrawingBuffer
   void bind(GLenum target);
   IntSize size() const { return m_size; }
 
-  // Copies the multisample color buffer to the normal color buffer and leaves m_fbo bound.
+  // Copies the multisample color buffer to the normal color buffer and leaves
+  // m_fbo bound.
   void commit();
 
   // commit should copy the full multisample buffer, and not respect the
@@ -196,8 +200,8 @@ class PLATFORM_EXPORT DrawingBuffer
     m_renderbufferBinding = renderbuffer;
   }
 
-  // Track the currently active texture unit. Texture unit 0 is used as host for a scratch
-  // texture.
+  // Track the currently active texture unit. Texture unit 0 is used as host for
+  // a scratch texture.
   void setActiveTextureUnit(GLint textureUnit) {
     m_activeTextureUnit = textureUnit;
   }
@@ -236,9 +240,10 @@ class PLATFORM_EXPORT DrawingBuffer
       cc::TextureMailbox* outMailbox,
       std::unique_ptr<cc::SingleReleaseCallback>* outReleaseCallback) override;
 
-  // Returns a StaticBitmapImage backed by a texture containing the/ current contents of
-  // the front buffer. This is done without any pixel copies. The texture in the ImageBitmap
-  // is from the active ContextProvider on the DrawingBuffer.
+  // Returns a StaticBitmapImage backed by a texture containing the current
+  // contents of the front buffer. This is done without any pixel copies. The
+  // texture in the ImageBitmap is from the active ContextProvider on the
+  // DrawingBuffer.
   PassRefPtr<StaticBitmapImage> transferToStaticBitmapImage();
 
   // Destroys the TEXTURE_2D binding for the owned context
@@ -289,7 +294,8 @@ class PLATFORM_EXPORT DrawingBuffer
 
   bool initialize(const IntSize&, bool useMultisampling);
 
-  // Shared memory bitmaps that were released by the compositor and can be used again by this DrawingBuffer.
+  // Shared memory bitmaps that were released by the compositor and can be used
+  // again by this DrawingBuffer.
   struct RecycledBitmap {
     std::unique_ptr<cc::SharedBitmap> bitmap;
     IntSize size;
@@ -374,7 +380,8 @@ class PLATFORM_EXPORT DrawingBuffer
 
   std::unique_ptr<cc::SharedBitmap> createOrRecycleBitmap();
 
-  // Updates the current size of the buffer, ensuring that s_currentResourceUsePixels is updated.
+  // Updates the current size of the buffer, ensuring that
+  // s_currentResourceUsePixels is updated.
   void setSize(const IntSize& size);
 
   // This is the order of bytes to use when doing a readback.
@@ -391,7 +398,8 @@ class PLATFORM_EXPORT DrawingBuffer
   // Helper function to flip a bitmap vertically.
   void flipVertically(uint8_t* data, int width, int height);
 
-  // Allocate a storage texture if possible. Otherwise, allocate a regular texture.
+  // Allocate a storage texture if possible. Otherwise, allocate a regular
+  // texture.
   void allocateConditionallyImmutableTexture(GLenum target,
                                              GLenum internalformat,
                                              GLsizei width,
@@ -399,7 +407,8 @@ class PLATFORM_EXPORT DrawingBuffer
                                              GLint border,
                                              GLenum format,
                                              GLenum type);
-  // Allocate buffer storage to be sent to compositor using either texImage2D or CHROMIUM_image based on available support.
+  // Allocate buffer storage to be sent to compositor using either texImage2D or
+  // CHROMIUM_image based on available support.
   void deleteChromiumImageForTexture(TextureInfo*);
 
   // If RGB emulation is required, then the CHROMIUM image's alpha channel
@@ -483,10 +492,12 @@ class PLATFORM_EXPORT DrawingBuffer
   // All information about the texture storage for |m_fbo|.
   TextureInfo m_colorBuffer;
 
-  // True if our contents have been modified since the last presentation of this buffer.
+  // True if our contents have been modified since the last presentation of this
+  // buffer.
   bool m_contentsChanged = true;
 
-  // True if commit() has been called since the last time markContentsChanged() had been called.
+  // True if commit() has been called since the last time markContentsChanged()
+  // had been called.
   bool m_contentsChangeCommitted = false;
   bool m_bufferClearNeeded = false;
 
@@ -525,7 +536,8 @@ class PLATFORM_EXPORT DrawingBuffer
    private:
     WTF_MAKE_NONCOPYABLE(RecycledMailbox);
   };
-  // Mailboxes that were released by the compositor can be used again by this DrawingBuffer.
+  // Mailboxes that were released by the compositor can be used again by this
+  // DrawingBuffer.
   Deque<RefPtr<RecycledMailbox>> m_recycledMailboxQueue;
 
   // If the width and height of the Canvas's backing store don't
@@ -538,10 +550,11 @@ class PLATFORM_EXPORT DrawingBuffer
   // Used to flip a bitmap vertically.
   Vector<uint8_t> m_scanline;
 
-  // In the case of OffscreenCanvas, we do not want to enable the WebGLImageChromium flag,
-  // so we replace all the RuntimeEnabledFeatures::webGLImageChromiumEnabled() call with
-  // shouldUseChromiumImage() call, and set m_chromiumImageUsage to DisallowChromiumImage
-  // in the case of OffscreenCanvas.
+  // In the case of OffscreenCanvas, we do not want to enable the
+  // WebGLImageChromium flag, so we replace all the
+  // RuntimeEnabledFeatures::webGLImageChromiumEnabled() call with
+  // shouldUseChromiumImage() calls, and set m_chromiumImageUsage to
+  // DisallowChromiumImage in the case of OffscreenCanvas.
   ChromiumImageUsage m_chromiumImageUsage;
   bool shouldUseChromiumImage();
 };

@@ -221,8 +221,8 @@ TEST_F(DrawingBufferTest, verifyOnlyOneRecycledMailboxMustBeKept) {
   m_drawingBuffer->markContentsChanged();
   releaseCallback2->Run(gpu::SyncToken(), false /* lostResource */);
 
-  // The first recycled mailbox must be 2. 1 and 3 were deleted by FIFO order because
-  // DrawingBuffer never keeps more than one mailbox.
+  // The first recycled mailbox must be 2. 1 and 3 were deleted by FIFO order
+  // because DrawingBuffer never keeps more than one mailbox.
   cc::TextureMailbox recycledTextureMailbox1;
   std::unique_ptr<cc::SingleReleaseCallback> recycledReleaseCallback1;
   m_drawingBuffer->markContentsChanged();
@@ -267,14 +267,16 @@ TEST_F(DrawingBufferTest, verifyInsertAndWaitSyncTokenCorrectly) {
   m_drawingBuffer->markContentsChanged();
   EXPECT_TRUE(m_drawingBuffer->PrepareTextureMailbox(&textureMailbox,
                                                      &releaseCallback));
-  // m_drawingBuffer waits for the sync point when recycling in PrepareTextureMailbox().
+  // m_drawingBuffer waits for the sync point when recycling in
+  // PrepareTextureMailbox().
   EXPECT_EQ(waitSyncToken, m_gl->mostRecentlyWaitedSyncToken());
 
   m_drawingBuffer->beginDestruction();
   m_gl->GenSyncTokenCHROMIUM(m_gl->InsertFenceSyncCHROMIUM(),
                              waitSyncToken.GetData());
   releaseCallback->Run(waitSyncToken, false /* lostResource */);
-  // m_drawingBuffer waits for the sync point because the destruction is in progress.
+  // m_drawingBuffer waits for the sync point because the destruction is in
+  // progress.
   EXPECT_EQ(waitSyncToken, m_gl->mostRecentlyWaitedSyncToken());
 }
 
@@ -501,11 +503,12 @@ struct DepthStencilTestCase {
   const char* const testCaseName;
 };
 
-// This tests that when the packed depth+stencil extension is supported DrawingBuffer always allocates
-// a single packed renderbuffer if either is requested and properly computes the actual context attributes
-// as defined by WebGL. We always allocate a packed buffer in this case since many desktop OpenGL drivers
-// that support this extension do not consider a framebuffer with only a depth or a stencil buffer attached
-// to be complete.
+// This tests that, when the packed depth+stencil extension is supported, and
+// either depth or stencil is requested, DrawingBuffer always allocates a single
+// packed renderbuffer and properly computes the actual context attributes as
+// defined by WebGL. We always allocate a packed buffer in this case since many
+// desktop OpenGL drivers that support this extension do not consider a
+// framebuffer with only a depth or a stencil buffer attached to be complete.
 TEST(DrawingBufferDepthStencilTest, packedDepthStencilSupported) {
   DepthStencilTestCase cases[] = {
       DepthStencilTestCase(false, false, 0, "neither"),

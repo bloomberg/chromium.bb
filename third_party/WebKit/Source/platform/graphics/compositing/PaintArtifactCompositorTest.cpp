@@ -538,8 +538,8 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, EffectTreeConversion) {
   ASSERT_EQ(3u, contentLayerCount());
 
   const cc::EffectTree& effectTree = propertyTrees().effect_tree;
-  // Node #0 reserved for null; #1 for root render surface; #2 for dummyRootEffect,
-  // plus 3 nodes for those created by this test.
+  // Node #0 reserved for null; #1 for root render surface; #2 for
+  // dummyRootEffect, plus 3 nodes for those created by this test.
   ASSERT_EQ(6u, effectTree.size());
 
   const cc::EffectNode& convertedDummyRootEffect = *effectTree.Node(2);

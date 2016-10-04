@@ -27,7 +27,8 @@ class PLATFORM_EXPORT Extensions3DUtil final {
   WTF_MAKE_NONCOPYABLE(Extensions3DUtil);
 
  public:
-  // Creates a new Extensions3DUtil. If the passed GLES2Interface has been spontaneously lost, returns null.
+  // Creates a new Extensions3DUtil. If the passed GLES2Interface has been
+  // spontaneously lost, returns null.
   static std::unique_ptr<Extensions3DUtil> create(gpu::gles2::GLES2Interface*);
   ~Extensions3DUtil();
 

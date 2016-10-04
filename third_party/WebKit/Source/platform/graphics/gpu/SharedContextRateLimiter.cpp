@@ -30,7 +30,8 @@ SharedContextRateLimiter::SharedContextRateLimiter(unsigned maxPendingTicks)
   if (gl && gl->GetGraphicsResetStatusKHR() == GL_NO_ERROR) {
     std::unique_ptr<Extensions3DUtil> extensionsUtil =
         Extensions3DUtil::create(gl);
-    // TODO(junov): when the GLES 3.0 command buffer is ready, we could use fenceSync instead
+    // TODO(junov): when the GLES 3.0 command buffer is ready, we could use
+    // fenceSync instead.
     m_canUseSyncQueries =
         extensionsUtil->supportsExtension("GL_CHROMIUM_sync_query");
   }

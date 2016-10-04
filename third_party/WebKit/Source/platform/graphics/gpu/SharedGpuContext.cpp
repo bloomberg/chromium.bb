@@ -53,8 +53,9 @@ void SharedGpuContext::createContextProviderIfNeeded() {
         wrapUnique(blink::Platform::current()
                        ->createSharedOffscreenGraphicsContext3DProvider());
   } else {
-    // This synchronous round-trip to the main thread is the reason why SharedGpuContext
-    // encasulates the context provider: so we only have to do this once per thread.
+    // This synchronous round-trip to the main thread is the reason why
+    // SharedGpuContext encasulates the context provider: so we only have to do
+    // this once per thread.
     WaitableEvent waitableEvent;
     WebTaskRunner* taskRunner =
         Platform::current()->mainThread()->getWebTaskRunner();

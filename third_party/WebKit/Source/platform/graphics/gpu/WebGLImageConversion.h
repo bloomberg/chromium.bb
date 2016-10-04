@@ -149,8 +149,9 @@ class PLATFORM_EXPORT WebGLImageConversion final {
     }
 
    private:
-    // Extract the image and keeps track of its status, such as width, height, Source Alignment,
-    // format and AlphaOp etc. This needs to lock the resources or relevant data if needed.
+    // Extracts the image and keeps track of its status, such as width, height,
+    // Source Alignment, format, AlphaOp, etc. This needs to lock the resources
+    // or relevant data if needed.
     void extractImage(bool premultiplyAlpha, bool ignoreGammaAndColorProfile);
 
     Image* m_image;
@@ -191,9 +192,9 @@ class PLATFORM_EXPORT WebGLImageConversion final {
                                         unsigned* paddingInBytes,
                                         unsigned* skipSizeInBytes);
 
-  // Check if the format is one of the formats from the ImageData or DOM elements.
-  // The formats from ImageData is always RGBA8.
-  // The formats from DOM elements vary with Graphics ports. It can only be RGBA8 or BGRA8.
+  // Check if the format is one of the formats from the ImageData or DOM
+  // elements. The format from ImageData is always RGBA8. The formats from DOM
+  // elements vary with Graphics ports, but can only be RGBA8 or BGRA8.
   static ALWAYS_INLINE bool srcFormatComeFromDOMElementOrImageData(
       DataFormat SrcFormat) {
     return SrcFormat == DataFormatBGRA8 || SrcFormat == DataFormatRGBA8;
@@ -202,11 +203,12 @@ class PLATFORM_EXPORT WebGLImageConversion final {
   // The input can be either format or internalformat.
   static unsigned getChannelBitsByFormat(GLenum);
 
-  // The Following functions are implemented in GraphicsContext3DImagePacking.cpp
+  // The Following functions are implemented in
+  // GraphicsContext3DImagePacking.cpp.
 
-  // Packs the contents of the given Image which is passed in |pixels| into the passed Vector
-  // according to the given format and type, and obeying the flipY and AlphaOp flags.
-  // Returns true upon success.
+  // Packs the contents of the given Image, which is passed in |pixels|, into
+  // the passed Vector according to the given format and type, and obeying the
+  // flipY and AlphaOp flags. Returns true upon success.
   static bool packImageData(Image*,
                             const void* pixels,
                             GLenum format,
@@ -251,12 +253,12 @@ class PLATFORM_EXPORT WebGLImageConversion final {
 
  private:
   friend class WebGLImageConversionTest;
-  // Helper for packImageData/extractImageData/extractTextureData which implement packing of pixel
-  // data into the specified OpenGL destination format and type.
-  // A sourceUnpackAlignment of zero indicates that the source
-  // data is tightly packed. Non-zero values may take a slow path.
-  // Destination data will have no gaps between rows.
-  // Implemented in GraphicsContext3DImagePacking.cpp
+  // Helper for packImageData/extractImageData/extractTextureData, which
+  // implement packing of pixel data into the specified OpenGL destination
+  // format and type. A sourceUnpackAlignment of zero indicates that the source
+  // data is tightly packed. Non-zero values may take a slow path. Destination
+  // data will have no gaps between rows. Implemented in
+  // GraphicsContext3DImagePacking.cpp.
   static bool packPixels(const uint8_t* sourceData,
                          DataFormat sourceDataFormat,
                          unsigned width,

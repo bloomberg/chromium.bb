@@ -122,7 +122,8 @@ class PaintArtifactCompositor::ContentLayerClientImpl
     tracking.trackedRasterInvalidations.append(*rasterInvalidationInfo);
 
     if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled()) {
-      // TODO(crbug.com/496260): Some antialiasing effects overflows the paint invalidation rect.
+      // TODO(crbug.com/496260): Some antialiasing effects overflow the paint
+      // invalidation rect.
       IntRect r = rasterInvalidationInfo->rect;
       r.inflate(1);
       tracking.rasterInvalidationRegionSinceLastPaint.unite(r);
@@ -277,7 +278,8 @@ constexpr int kPropertyTreeSequenceNumber = 1;
 
 // Creates a minimal set of property trees for the compositor.
 void setMinimalPropertyTrees(cc::PropertyTrees* propertyTrees, int ownerId) {
-  // cc is hardcoded to use transform node index 1 for device scale and transform.
+  // cc is hardcoded to use transform node index 1 for device scale and
+  // transform.
   cc::TransformTree& transformTree = propertyTrees->transform_tree;
   transformTree.clear();
   cc::TransformNode& transformNode = *transformTree.Node(
@@ -320,8 +322,9 @@ std::unique_ptr<PaintArtifactCompositor::ContentLayerClientImpl>
 PaintArtifactCompositor::clientForPaintChunk(
     const PaintChunk& paintChunk,
     const PaintArtifact& paintArtifact) {
-  // TODO(chrishtr): for now, just using a linear walk. In the future we can optimize this by using the same techniques used in
-  // PaintController for display lists.
+  // TODO(chrishtr): for now, just using a linear walk. In the future we can
+  // optimize this by using the same techniques used in PaintController for
+  // display lists.
   for (auto& client : m_contentLayerClients) {
     if (client && client->matches(paintChunk))
       return std::move(client);
@@ -371,8 +374,9 @@ scoped_refptr<cc::Layer> PaintArtifactCompositor::layerForPaintChunk(
     IntRect rect(enclosingIntRect(paintChunk.rasterInvalidationRects[index]));
     gfx::Rect ccInvalidationRect(rect.x(), rect.y(), std::max(0, rect.width()),
                                  std::max(0, rect.height()));
+    // Raster paintChunk.rasterInvalidationRects is in the space of the
+    // containing transform node, so need to subtract off the layer offset.
     ccInvalidationRect.Offset(-combinedBounds.OffsetFromOrigin());
-    // Raster paintChunk.rasterInvalidationRects is in the space of the containing transform node, so need to subtract off the layer offset.
     contentLayerClient->setNeedsDisplayRect(
         ccInvalidationRect,
         tracking ? &tracking->trackedRasterInvalidations[index] : nullptr);
@@ -657,12 +661,14 @@ void PropertyTreeManager::buildEffectNodesRecursively(
   m_effectNodesConverted.add(nextEffect);
 #endif
 
-  // We currently create dummy layers to host effect nodes and corresponding render surface.
-  // This should be removed once cc implements better support for freestanding property trees.
+  // We currently create dummy layers to host effect nodes and corresponding
+  // render surfaces. This should be removed once cc implements better support
+  // for freestanding property trees.
   scoped_refptr<cc::Layer> dummyLayer = cc::Layer::Create();
   m_rootLayer->AddChild(dummyLayer);
 
-  // Also cc assumes a clip node is always created by a layer that creates render surface.
+  // Also cc assumes a clip node is always created by a layer that creates
+  // render surface.
   cc::ClipNode& dummyClip =
       *clipTree().Node(clipTree().Insert(cc::ClipNode(), kSecondaryRootNodeId));
   dummyClip.owner_id = dummyLayer->id();

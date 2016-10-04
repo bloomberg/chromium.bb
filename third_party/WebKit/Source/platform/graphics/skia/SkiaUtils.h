@@ -28,7 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// All of the functions in this file should move to new homes and this file should be deleted.
+// All of the functions in this file should move to new homes and this file
+// should be deleted.
 
 #ifndef SkiaUtils_h
 #define SkiaUtils_h
@@ -51,9 +52,9 @@ class GraphicsContext;
 /**** constants ****/
 
 enum {
-  // Firefox limits width/height to 32767 pixels, but slows down dramatically before it
-  // reaches that limit. We limit by area instead, giving us larger maximum dimensions,
-  // in exchange for a smaller maximum canvas size.
+  // Firefox limits width/height to 32767 pixels, but slows down dramatically
+  // before it reaches that limit. We limit by area instead, giving us larger
+  // maximum dimensions, in exchange for a smaller maximum canvas size.
   kMaxCanvasArea = 32768 * 8192,  // Maximum canvas area in CSS pixels
 
   // In Skia, we will also limit width/height to 32767.
@@ -120,7 +121,8 @@ InterpolationQuality computeInterpolationQuality(float srcWidth,
                                                  float destHeight,
                                                  bool isDataComplete = true);
 
-// This replicates the old skia behavior when it used to take radius for blur. Now it takes sigma.
+// This replicates the old skia behavior when it used to take radius for blur.
+// Now it takes sigma.
 inline SkScalar skBlurRadiusToSigma(SkScalar radius) {
   SkASSERT(radius >= 0);
   if (radius == 0)
@@ -139,23 +141,23 @@ inline SkCanvas::SrcRectConstraint WebCoreClampingModeToSkiaRectConstraint(
              : SkCanvas::kFast_SrcRectConstraint;
 }
 
-// Skia's smart pointer APIs are preferable over their legacy raw pointer counterparts.
+// Skia's smart pointer APIs are preferable over their legacy raw pointer
+// counterparts.
 //
 // General guidelines
 //
 // When receiving ref counted objects from Skia:
 //
-//   1) use sk_sp-based Skia factories if available (e.g. SkShader::MakeFoo() instead of
-//      SkShader::CreateFoo())
-//
-//   2) use sk_sp<T> locals for all objects
+//   1) Use sk_sp-based Skia factories if available (e.g. SkShader::MakeFoo()
+//      instead of SkShader::CreateFoo()).
+//   2) Use sk_sp<T> locals for all objects.
 //
 // When passing ref counted objects to Skia:
 //
-//   1) use sk_sp-based Skia APIs when available (e.g. SkPaint::setShader(sk_sp<SkShader>)
-//      instead of SkPaint::setShader(SkShader*))
-//
-//   2) if the object ownership is being passed to Skia, use std::move(sk_sp<T>)
+//   1) Use sk_sp-based Skia APIs when available (e.g.
+//      SkPaint::setShader(sk_sp<SkShader>) instead of
+//      SkPaint::setShader(SkShader*)).
+//   2) If object ownership is being passed to Skia, use std::move(sk_sp<T>).
 //
 // Example (creating a SkShader and setting it on SkPaint):
 //

@@ -38,7 +38,8 @@ Extensions3DUtil::~Extensions3DUtil() {}
 void Extensions3DUtil::initializeExtensions() {
   if (m_gl->GetGraphicsResetStatusKHR() != GL_NO_ERROR) {
     // If the context is lost don't initialize the extension strings.
-    // This will cause supportsExtension, ensureExtensionEnabled, and isExtensionEnabled to always return false.
+    // This will cause supportsExtension, ensureExtensionEnabled, and
+    // isExtensionEnabled to always return false.
     m_isValid = false;
     return;
   }
@@ -76,8 +77,8 @@ bool Extensions3DUtil::canUseCopyTextureCHROMIUM(GLenum destTarget,
                                                  GLenum destFormat,
                                                  GLenum destType,
                                                  GLint level) {
-  // TODO(zmo): restriction of (RGB || RGBA)/UNSIGNED_BYTE/(Level 0) should be lifted when
-  // GLES2Interface::CopyTextureCHROMIUM(...) are fully functional.
+  // TODO(zmo): restriction of (RGB || RGBA)/UNSIGNED_BYTE/(Level 0) should be
+  // lifted when GLES2Interface::CopyTextureCHROMIUM(...) are fully functional.
   if (destTarget == GL_TEXTURE_2D &&
       (destFormat == GL_RGB || destFormat == GL_RGBA) &&
       destType == GL_UNSIGNED_BYTE && !level)

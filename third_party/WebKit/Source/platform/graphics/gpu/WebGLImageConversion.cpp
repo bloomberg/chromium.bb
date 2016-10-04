@@ -256,9 +256,11 @@ WebGLImageConversion::DataFormat getDataFormat(GLenum destinationFormat,
   return dstFormat;
 }
 
-// Following Float to Half-Float converion code is from the implementation of ftp://www.fox-toolkit.org/pub/fasthalffloatconversion.pdf,
-// "Fast Half Float Conversions" by Jeroen van der Zijp, November 2008 (Revised September 2010).
-// Specially, the basetable[512] and shifttable[512] are generated as follows:
+// The following Float to Half-Float conversion code is from the implementation
+// of ftp://www.fox-toolkit.org/pub/fasthalffloatconversion.pdf, "Fast Half
+// Float Conversions" by Jeroen van der Zijp, November 2008 (Revised September
+// 2010). Specially, the basetable[512] and shifttable[512] are generated as
+// follows:
 /*
 unsigned short basetable[512];
 unsigned char shifttable[512];
@@ -388,9 +390,11 @@ unsigned short convertFloatToHalfFloat(float f) {
 
 /* BEGIN CODE SHARED WITH MOZILLA FIREFOX */
 
-// The following packing and unpacking routines are expressed in terms of function templates and inline functions to achieve generality and speedup.
+// The following packing and unpacking routines are expressed in terms of
+// function templates and inline functions to achieve generality and speedup.
 // Explicit template specializations correspond to the cases that would occur.
-// Some code are merged back from Mozilla code in http://mxr.mozilla.org/mozilla-central/source/content/canvas/src/WebGLTexelConversions.h
+// Some code are merged back from Mozilla code in
+// http://mxr.mozilla.org/mozilla-central/source/content/canvas/src/WebGLTexelConversions.h
 
 //----------------------------------------------------------------------
 // Pixel unpacking routines.
@@ -2379,8 +2383,8 @@ template <WebGLImageConversion::DataFormat SrcFormat,
           WebGLImageConversion::DataFormat DstFormat,
           WebGLImageConversion::AlphaOp alphaOp>
 void FormatConverter::convert() {
-  // Many instantiations of this template function will never be entered, so we try
-  // to return immediately in these cases to avoid the compiler to generate useless code.
+  // Many instantiations of this template function will never be entered, so we
+  // try to return immediately in these cases to avoid generating useless code.
   if (SrcFormat == DstFormat &&
       alphaOp == WebGLImageConversion::AlphaDoNothing) {
     ASSERT_NOT_REACHED();
@@ -2391,14 +2395,16 @@ void FormatConverter::convert() {
     return;
   }
 
-  // Only textures uploaded from DOM elements or ImageData can allow DstFormat != SrcFormat.
+  // Only textures uploaded from DOM elements or ImageData can allow DstFormat
+  // != SrcFormat.
   const bool srcFormatComesFromDOMElementOrImageData =
       WebGLImageConversion::srcFormatComeFromDOMElementOrImageData(SrcFormat);
   if (!srcFormatComesFromDOMElementOrImageData && SrcFormat != DstFormat) {
     ASSERT_NOT_REACHED();
     return;
   }
-  // Likewise, only textures uploaded from DOM elements or ImageData can possibly have to be unpremultiplied.
+  // Likewise, only textures uploaded from DOM elements or ImageData can
+  // possibly need to be unpremultiplied.
   if (!srcFormatComesFromDOMElementOrImageData &&
       alphaOp == WebGLImageConversion::AlphaDoUnmultiply) {
     ASSERT_NOT_REACHED();
@@ -2415,8 +2421,9 @@ void FormatConverter::convert() {
     ASSERT_NOT_REACHED();
     return;
   }
-  // If converting DOM element data to UNSIGNED_INT_5_9_9_9_REV or UNSIGNED_INT_10F_11F_11F_REV,
-  // we should always switch to FLOAT instead to avoid unpack/pack to these two types.
+  // If converting DOM element data to UNSIGNED_INT_5_9_9_9_REV or
+  // UNSIGNED_INT_10F_11F_11F_REV, we should always switch to FLOAT instead to
+  // avoid unpacking/packing these two types.
   if (srcFormatComesFromDOMElementOrImageData && SrcFormat != DstFormat &&
       (DstFormat == WebGLImageConversion::DataFormatRGB5999 ||
        DstFormat == WebGLImageConversion::DataFormatRGB10F11F11F)) {
@@ -2721,10 +2728,13 @@ void WebGLImageConversion::ImageExtractor::extractImage(
     if (hasAlpha && premultiplyAlpha)
       m_alphaOp = AlphaDoPremultiply;
   } else if (!premultiplyAlpha && hasAlpha) {
-    // 1. For texImage2D with HTMLVideoElment input, assume no PremultiplyAlpha had been applied and the alpha value for each pixel is 0xFF
-    // which is true at present and may be changed in the future and needs adjustment accordingly.
-    // 2. For texImage2D with HTMLCanvasElement input in which Alpha is already Premultiplied in this port,
-    // do AlphaDoUnmultiply if UNPACK_PREMULTIPLY_ALPHA_WEBGL is set to false.
+    // 1. For texImage2D with HTMLVideoElment input, assume no PremultiplyAlpha
+    //    had been applied and the alpha value for each pixel is 0xFF.  This is
+    //    true at present; if it is changed in the future it will need
+    //    adjustment accordingly.
+    // 2. For texImage2D with HTMLCanvasElement input in which alpha is already
+    //    premultiplied in this port, do AlphaDoUnmultiply if
+    //    UNPACK_PREMULTIPLY_ALPHA_WEBGL is set to false.
     if (m_imageHtmlDomSource != HtmlDomVideo)
       m_alphaOp = AlphaDoUnmultiply;
   }

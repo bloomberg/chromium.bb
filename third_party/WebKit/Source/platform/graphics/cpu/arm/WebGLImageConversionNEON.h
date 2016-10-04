@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2012 Gabor Rapcsanyi (rgabor@inf.u-szeged.hu), University of Szeged
+ * Copyright (C) 2012 Gabor Rapcsanyi (rgabor@inf.u-szeged.hu), University of
+ * Szeged
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions

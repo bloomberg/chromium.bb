@@ -357,7 +357,8 @@ bool DrawingBuffer::prepareTextureMailboxInternal(
     attachColorBufferToReadFramebuffer();
 
     if (m_discardFramebufferSupported) {
-      // Explicitly discard framebuffer to save GPU memory bandwidth for tile-based GPU arch.
+      // Explicitly discard the framebuffer to save GPU memory bandwidth for
+      // tile-based GPU arch.
       const GLenum attachments[3] = {GL_COLOR_ATTACHMENT0, GL_DEPTH_ATTACHMENT,
                                      GL_STENCIL_ATTACHMENT};
       m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_fbo);
@@ -439,7 +440,8 @@ void DrawingBuffer::softwareMailboxReleased(
 }
 
 PassRefPtr<StaticBitmapImage> DrawingBuffer::transferToStaticBitmapImage() {
-  // This can be null if the context is lost before the first call to grContext().
+  // This can be null if the context is lost before the first call to
+  // grContext().
   GrContext* grContext = m_contextProvider->grContext();
 
   cc::TextureMailbox textureMailbox;
@@ -452,7 +454,9 @@ PassRefPtr<StaticBitmapImage> DrawingBuffer::transferToStaticBitmapImage() {
   }
   if (!success) {
     // If we can't get a mailbox, return an transparent black ImageBitmap.
-    // The only situation this could happen is when two or more calls to transferToImageBitmap are made back-to-back, or when the context gets lost.
+    // The only situation in which this could happen is when two or more calls
+    // to transferToImageBitmap are made back-to-back, or when the context gets
+    // lost.
     sk_sp<SkSurface> surface =
         SkSurface::MakeRasterN32Premul(m_size.width(), m_size.height());
     return StaticBitmapImage::create(surface->makeImageSnapshot());
@@ -461,18 +465,20 @@ PassRefPtr<StaticBitmapImage> DrawingBuffer::transferToStaticBitmapImage() {
   DCHECK_EQ(m_size.width(), textureMailbox.size_in_pixels().width());
   DCHECK_EQ(m_size.height(), textureMailbox.size_in_pixels().height());
 
-  // Make our own textureId that is a reference on the same texture backing being used as the front
-  // buffer (which was returned from PrepareTextureMailbox()).
-  // We do not need to wait on the sync token in |textureMailbox| since the mailbox was produced on
-  // the same |m_gl| context that we are using here. Similarly, the |releaseCallback| will run on
-  // the same context so we don't need to send a sync token for this consume action back to it.
-  // TODO(danakj): Instead of using PrepareTextureMailbox(), we could just use the actual texture id and
-  // avoid needing to produce/consume a mailbox.
+  // Make our own textureId that is a reference on the same texture backing
+  // being used as the front buffer (which was returned from
+  // PrepareTextureMailbox()). We do not need to wait on the sync token in
+  // |textureMailbox| since the mailbox was produced on the same |m_gl| context
+  // that we are using here. Similarly, the |releaseCallback| will run on the
+  // same context so we don't need to send a sync token for this consume action
+  // back to it.
+  // TODO(danakj): Instead of using PrepareTextureMailbox(), we could just use
+  // the actual texture id and avoid needing to produce/consume a mailbox.
   GLuint textureId = m_gl->CreateAndConsumeTextureCHROMIUM(
       GL_TEXTURE_2D, textureMailbox.name());
-  // Return the mailbox but report that the resource is lost to prevent trying to use
-  // the backing for future frames. We keep it alive with our own reference to the
-  // backing via our |textureId|.
+  // Return the mailbox but report that the resource is lost to prevent trying
+  // to use the backing for future frames. We keep it alive with our own
+  // reference to the backing via our |textureId|.
   releaseCallback->Run(gpu::SyncToken(), true /* lostResource */);
 
   // Store that texture id as the backing for an SkImage.
@@ -489,16 +495,19 @@ PassRefPtr<StaticBitmapImage> DrawingBuffer::transferToStaticBitmapImage() {
   sk_sp<SkImage> skImage =
       SkImage::MakeFromAdoptedTexture(grContext, backendTexture);
 
-  // We reuse the same mailbox name from above since our texture id was consumed from it.
+  // We reuse the same mailbox name from above since our texture id was consumed
+  // from it.
   const auto& skImageMailbox = textureMailbox.mailbox();
-  // Use the sync token generated after producing the mailbox. Waiting for this before trying to use
-  // the mailbox with some other context will ensure it is valid. We wouldn't need to wait for the
-  // consume done in this function because the texture id it generated would only be valid for the
+  // Use the sync token generated after producing the mailbox. Waiting for this
+  // before trying to use the mailbox with some other context will ensure it is
+  // valid. We wouldn't need to wait for the consume done in this function
+  // because the texture id it generated would only be valid for the
   // DrawingBuffer's context anyways.
   const auto& skImageSyncToken = textureMailbox.sync_token();
 
-  // TODO(xidachen): Create a small pool of recycled textures from ImageBitmapRenderingContext's
-  // transferFromImageBitmap, and try to use them in DrawingBuffer.
+  // TODO(xidachen): Create a small pool of recycled textures from
+  // ImageBitmapRenderingContext's transferFromImageBitmap, and try to use them
+  // in DrawingBuffer.
   return AcceleratedStaticBitmapImage::createFromWebGLContextImage(
       std::move(skImage), skImageMailbox, skImageSyncToken);
 }
@@ -640,10 +649,11 @@ bool DrawingBuffer::initialize(const IntSize& size, bool useMultisampling) {
       m_antiAliasingMode = ScreenSpaceAntialiasing;
     }
   }
-  // TODO(dshwang): enable storage texture on all platform. crbug.com/557848
-  // Linux ATI bot fails WebglConformance.conformance_textures_misc_tex_image_webgl
-  // So use storage texture only if ScreenSpaceAntialiasing is enabled,
-  // because ScreenSpaceAntialiasing is much faster with storage texture.
+  // TODO(dshwang): Enable storage textures on all platforms. crbug.com/557848
+  // The Linux ATI bot fails
+  // WebglConformance.conformance_textures_misc_tex_image_webgl, so use storage
+  // textures only if ScreenSpaceAntialiasing is enabled, because
+  // ScreenSpaceAntialiasing is much faster with storage textures.
   m_storageTextureSupported =
       (m_webGLVersion > WebGL1 ||
        m_extensionsUtil->supportsExtension("GL_EXT_texture_storage")) &&
@@ -666,7 +676,8 @@ bool DrawingBuffer::initialize(const IntSize& size, bool useMultisampling) {
   }
 
   if (m_gl->GetGraphicsResetStatusKHR() != GL_NO_ERROR) {
-    // It's possible that the drawing buffer allocation provokes a context loss, so check again just in case. http://crbug.com/512302
+    // It's possible that the drawing buffer allocation provokes a context loss,
+    // so check again just in case. http://crbug.com/512302
     return false;
   }
 
@@ -694,7 +705,8 @@ bool DrawingBuffer::copyToPlatformTexture(gpu::gles2::GLES2Interface* gl,
           GL_TEXTURE_2D, internalFormat, destType, level))
     return false;
 
-  // Contexts may be in a different share group. We must transfer the texture through a mailbox first
+  // Contexts may be in a different share group. We must transfer the texture
+  // through a mailbox first.
   GLint textureId = 0;
   GLenum target = 0;
   gpu::Mailbox mailbox;
@@ -851,8 +863,8 @@ void DrawingBuffer::resizeDepthStencil(const IntSize& size) {
   else
     m_gl->RenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8_OES,
                               size.width(), size.height());
-  // For ES 2.0 contexts DEPTH_STENCIL is not available natively, so we emulate it
-  // at the command buffer level for WebGL contexts.
+  // For ES 2.0 contexts DEPTH_STENCIL is not available natively, so we emulate
+  // it at the command buffer level for WebGL contexts.
   m_gl->FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
                                 GL_RENDERBUFFER, m_depthStencilBuffer);
   m_gl->BindRenderbuffer(GL_RENDERBUFFER, 0);
@@ -888,7 +900,8 @@ bool DrawingBuffer::resizeDefaultFramebuffer(const IntSize& size) {
 }
 
 void DrawingBuffer::clearFramebuffers(GLbitfield clearMask) {
-  // We will clear the multisample FBO, but we also need to clear the non-multisampled buffer.
+  // We will clear the multisample FBO, but we also need to clear the
+  // non-multisampled buffer.
   if (m_multisampleFBO) {
     m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_fbo);
     m_gl->Clear(GL_COLOR_BUFFER_BIT);
@@ -911,7 +924,8 @@ IntSize DrawingBuffer::adjustSize(const IntSize& desiredSize,
                                   int maxTextureSize) {
   IntSize adjustedSize = desiredSize;
 
-  // Clamp if the desired size is greater than the maximum texture size for the device.
+  // Clamp if the desired size is greater than the maximum texture size for the
+  // device.
   if (adjustedSize.height() > maxTextureSize)
     adjustedSize.setHeight(maxTextureSize);
 
