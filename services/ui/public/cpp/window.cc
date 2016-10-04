@@ -886,7 +886,6 @@ void Window::ReorderWithoutNotification(Window* window,
 }
 
 // static
-// Returns true if the order actually changed.
 bool Window::ReorderImpl(Window* window,
                          Window* relative,
                          mojom::OrderDirection direction,

@@ -332,6 +332,7 @@ class Window {
   static void ReorderWithoutNotification(Window* window,
                                          Window* relative,
                                          mojom::OrderDirection direction);
+  // Returns true if the order actually changed.
   static bool ReorderImpl(Window* window,
                           Window* relative,
                           mojom::OrderDirection direction,

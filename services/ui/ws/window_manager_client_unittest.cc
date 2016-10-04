@@ -861,15 +861,13 @@ TEST_F(WindowServerTest, Activation) {
 
   WaitForTreeSizeToMatch(parent, 6);
 
-  // |child2| and |child3| are stacked about |child1|.
-  EXPECT_GT(ValidIndexOf(parent->children(), child2),
-            ValidIndexOf(parent->children(), child1));
-  EXPECT_GT(ValidIndexOf(parent->children(), child3),
-            ValidIndexOf(parent->children(), child1));
+  EXPECT_EQ(0, ValidIndexOf(parent->children(), child1));
+  // NOTE: |child3| is after |child1| as |child3| is a transient child of
+  // |child1|.
+  EXPECT_EQ(1, ValidIndexOf(parent->children(), child3));
+  EXPECT_EQ(2, ValidIndexOf(parent->children(), child2));
 
-  // Set focus on |child11|. This should activate |child1|, and raise it over
-  // |child2|. But |child3| should still be above |child1| because of
-  // transiency.
+  // Set focus on |child11|, order of windows should not change.
   child11->SetFocus();
   ASSERT_TRUE(WaitForWindowToHaveFocus(child11));
   ASSERT_TRUE(WaitForWindowToHaveFocus(
@@ -878,13 +876,12 @@ TEST_F(WindowServerTest, Activation) {
             server_id(window_manager()->GetFocusedWindow()));
   EXPECT_EQ(server_id(child11), server_id(embedded1->GetFocusedWindow()));
   EXPECT_EQ(nullptr, embedded2->GetFocusedWindow());
-  EXPECT_GT(ValidIndexOf(parent->children(), child1),
-            ValidIndexOf(parent->children(), child2));
-  EXPECT_GT(ValidIndexOf(parent->children(), child3),
-            ValidIndexOf(parent->children(), child1));
+  EXPECT_EQ(0, ValidIndexOf(parent->children(), child1));
+  EXPECT_EQ(1, ValidIndexOf(parent->children(), child3));
+  EXPECT_EQ(2, ValidIndexOf(parent->children(), child2));
 
-  // Set focus on |child21|. This should activate |child2|, and raise it over
-  // |child1|.
+  // Set focus on |child21|. This should activate |child2|. Again, order should
+  // not change.
   child21->SetFocus();
   ASSERT_TRUE(WaitForWindowToHaveFocus(child21));
   ASSERT_TRUE(WaitForWindowToHaveFocus(
@@ -894,10 +891,9 @@ TEST_F(WindowServerTest, Activation) {
   EXPECT_EQ(server_id(child21), server_id(embedded2->GetFocusedWindow()));
   EXPECT_TRUE(WaitForNoWindowToHaveFocus(embedded1));
   EXPECT_EQ(nullptr, embedded1->GetFocusedWindow());
-  EXPECT_GT(ValidIndexOf(parent->children(), child2),
-            ValidIndexOf(parent->children(), child1));
-  EXPECT_GT(ValidIndexOf(parent->children(), child3),
-            ValidIndexOf(parent->children(), child1));
+  EXPECT_EQ(0, ValidIndexOf(parent->children(), child1));
+  EXPECT_EQ(1, ValidIndexOf(parent->children(), child3));
+  EXPECT_EQ(2, ValidIndexOf(parent->children(), child2));
 }
 
 TEST_F(WindowServerTest, ActivationNext) {
@@ -918,13 +914,11 @@ TEST_F(WindowServerTest, ActivationNext) {
   Window* child31 = NewVisibleWindow(GetFirstRoot(embedded3), embedded3);
   WaitForTreeSizeToMatch(parent, 7);
 
-  Window* expecteds[] = { child3, child2, child1, child3, nullptr };
   Window* focused[] = { child31, child21, child11, child31, nullptr };
-  for (size_t index = 0; expecteds[index]; ++index) {
+  for (size_t index = 0; focused[index]; ++index) {
     window_manager_client()->ActivateNextWindow();
     WaitForWindowToHaveFocus(focused[index]);
     EXPECT_TRUE(focused[index]->HasFocus());
-    EXPECT_EQ(parent->children().back(), expecteds[index]);
   }
 }
 

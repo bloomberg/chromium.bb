@@ -351,12 +351,9 @@ bool Display::CanHaveActiveChildren(ServerWindow* window) const {
 
 void Display::OnActivationChanged(ServerWindow* old_active_window,
                                   ServerWindow* new_active_window) {
-  DCHECK_NE(new_active_window, old_active_window);
-  if (new_active_window && new_active_window->parent()) {
-    // Raise the new active window.
-    // TODO(sad): Let the WM dictate whether to raise the window or not?
-    new_active_window->parent()->StackChildAtTop(new_active_window);
-  }
+  // Don't do anything here. We assume the window manager handles restacking. If
+  // we did attempt to restack than we would have to ensure clients see the
+  // restack.
 }
 
 void Display::OnFocusChanged(FocusControllerChangeSource change_source,
