@@ -65,8 +65,8 @@ namespace {
     EXPECT_FALSE(segment.isValid);                                            \
   }
 
-/* The BoxShape is based on a 100x50 rectangle at 0,0. The shape-margin value is 10,
- * so the shapeMarginBoundingBox rectangle is 120x70 at -10,-10:
+/* The BoxShape is based on a 100x50 rectangle at 0,0. The shape-margin value is
+ * 10, so the shapeMarginBoundingBox rectangle is 120x70 at -10,-10:
  *
  *   -10,-10   110,-10
  *       +--------+
@@ -115,8 +115,9 @@ TEST_F(BoxShapeTest, zeroRadii) {
   TEST_NO_EXCLUDED_INTERVAL(shape, LayoutUnit(100), LayoutUnit(200));
 }
 
-/* BoxShape geometry for this test. Corner radii are in parens, x and y intercepts
- * for the elliptical corners are noted. The rectangle itself is at 0,0 with width and height 100.
+/* BoxShape geometry for this test. Corner radii are in parens, x and y
+ * intercepts for the elliptical corners are noted. The rectangle itself is at
+ * 0,0 with width and height 100.
  *
  *         (10, 15)  x=10      x=90 (10, 20)
  *                (--+---------+--)

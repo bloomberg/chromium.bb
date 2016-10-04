@@ -54,10 +54,11 @@ struct LineSegment {
   bool isValid;
 };
 
-// A representation of a BasicShape that enables layout code to determine how to break a line up into segments
-// that will fit within or around a shape. The line is defined by a pair of logical Y coordinates and the
-// computed segments are returned as pairs of logical X coordinates. The BasicShape itself is defined in
-// physical coordinates.
+// A representation of a BasicShape that enables layout code to determine how to
+// break a line up into segments that will fit within or around a shape. The
+// line is defined by a pair of logical Y coordinates and the computed segments
+// are returned as pairs of logical X coordinates. The BasicShape itself is
+// defined in physical coordinates.
 
 class CORE_EXPORT Shape {
   USING_FAST_MALLOC(Shape);

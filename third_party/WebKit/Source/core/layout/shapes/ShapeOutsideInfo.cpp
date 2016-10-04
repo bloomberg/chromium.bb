@@ -184,8 +184,9 @@ const Shape& ShapeOutsideInfo::computedShape() const {
       *m_layoutBox.containingBlock()->style();
 
   WritingMode writingMode = containingBlockStyle.getWritingMode();
-  // Make sure contentWidth is not negative. This can happen when containing block has a vertical scrollbar and
-  // its content is smaller than the scrollbar width.
+  // Make sure contentWidth is not negative. This can happen when containing
+  // block has a vertical scrollbar and its content is smaller than the
+  // scrollbar width.
   LayoutUnit maximumValue =
       m_layoutBox.containingBlock()
           ? std::max(LayoutUnit(),

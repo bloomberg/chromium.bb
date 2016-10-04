@@ -237,8 +237,8 @@ std::unique_ptr<Shape> Shape::createRasterShape(Image* image,
 
   if (image && imageBuffer) {
     // FIXME: This is not totally correct but it is needed to prevent shapes
-    // that loads SVG Images during paint invalidations to mark layoutObjects for
-    // layout, which is not allowed. See https://crbug.com/429346
+    // that loads SVG Images during paint invalidations to mark layoutObjects
+    // for layout, which is not allowed. See https://crbug.com/429346
     ImageObserverDisabler disabler(image);
     SkPaint paint;
     IntRect imageSourceRect(IntPoint(), image->size());

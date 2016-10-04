@@ -109,8 +109,8 @@ static FloatShapeInterval clippedCircleXRange(const FloatPoint& center,
   if (center.y() >= y1 && center.y() <= y2)
     return FloatShapeInterval(center.x() - radius, center.x() + radius);
 
-  // Clip the circle to the vertical range y1,y2 and return the extent of the clipped circle's
-  // projection on the X axis
+  // Clip the circle to the vertical range y1,y2 and return the extent of the
+  // clipped circle's projection on the X axis
 
   float xi = circleXIntercept((y2 < center.y() ? y2 : y1) - center.y(), radius);
   return FloatShapeInterval(center.x() - xi, center.x() + xi);
