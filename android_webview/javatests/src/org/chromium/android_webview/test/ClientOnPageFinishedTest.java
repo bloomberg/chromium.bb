@@ -10,6 +10,7 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.net.test.util.TestWebServer;
 
@@ -52,6 +53,7 @@ public class ClientOnPageFinishedTest extends AwTestBase {
 
     @MediumTest
     @Feature({"AndroidWebView"})
+    @RetryOnFailure
     public void testCalledAfterError() throws Throwable {
         class LocalTestClient extends TestAwContentsClient {
             private boolean mIsOnReceivedErrorCalled = false;
