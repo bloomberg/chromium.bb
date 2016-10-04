@@ -206,8 +206,7 @@ class PingLoaderImpl : public GarbageCollectedFinalized<PingLoaderImpl>,
   // WebURLLoaderClient
   void willFollowRedirect(WebURLLoader*,
                           WebURLRequest&,
-                          const WebURLResponse&,
-                          int64_t encodedDataLength) override;
+                          const WebURLResponse&) override;
   void didReceiveResponse(WebURLLoader*, const WebURLResponse&) final;
   void didReceiveData(WebURLLoader*, const char*, int, int, int) final;
   void didFinishLoading(WebURLLoader*, double, int64_t) final;
@@ -292,8 +291,7 @@ void PingLoaderImpl::dispose() {
 void PingLoaderImpl::willFollowRedirect(
     WebURLLoader*,
     WebURLRequest& passedNewRequest,
-    const WebURLResponse& passedRedirectResponse,
-    int64_t encodedDataLength) {
+    const WebURLResponse& passedRedirectResponse) {
   if (!m_isBeacon)
     return;
 

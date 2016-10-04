@@ -97,6 +97,7 @@ ResourceResponse::ResourceResponse()
       m_serviceWorkerResponseType(WebServiceWorkerResponseTypeDefault),
       m_responseTime(0),
       m_remotePort(0),
+      m_encodedDataLength(0),
       m_encodedBodyLength(0),
       m_decodedBodyLength(0) {}
 
@@ -138,6 +139,7 @@ ResourceResponse::ResourceResponse(const KURL& url,
       m_serviceWorkerResponseType(WebServiceWorkerResponseTypeDefault),
       m_responseTime(0),
       m_remotePort(0),
+      m_encodedDataLength(0),
       m_encodedBodyLength(0),
       m_decodedBodyLength(0) {}
 
@@ -188,6 +190,7 @@ ResourceResponse::ResourceResponse(CrossThreadResourceResponseData* data)
   m_responseTime = data->m_responseTime;
   m_remoteIPAddress = AtomicString(data->m_remoteIPAddress);
   m_remotePort = data->m_remotePort;
+  m_encodedDataLength = data->m_encodedDataLength;
   m_encodedBodyLength = data->m_encodedBodyLength;
   m_decodedBodyLength = data->m_decodedBodyLength;
   m_downloadedFilePath = data->m_downloadedFilePath;
@@ -252,6 +255,7 @@ std::unique_ptr<CrossThreadResourceResponseData> ResourceResponse::copyData()
   data->m_responseTime = m_responseTime;
   data->m_remoteIPAddress = m_remoteIPAddress.getString().isolatedCopy();
   data->m_remotePort = m_remotePort;
+  data->m_encodedDataLength = m_encodedDataLength;
   data->m_encodedBodyLength = m_encodedBodyLength;
   data->m_decodedBodyLength = m_decodedBodyLength;
   data->m_downloadedFilePath = m_downloadedFilePath.isolatedCopy();
@@ -595,11 +599,15 @@ void ResourceResponse::setResourceLoadInfo(
   m_resourceLoadInfo = loadInfo;
 }
 
-void ResourceResponse::addToEncodedBodyLength(int value) {
+void ResourceResponse::addToEncodedDataLength(long long value) {
+  m_encodedDataLength += value;
+}
+
+void ResourceResponse::addToEncodedBodyLength(long long value) {
   m_encodedBodyLength += value;
 }
 
-void ResourceResponse::addToDecodedBodyLength(int value) {
+void ResourceResponse::addToDecodedBodyLength(long long value) {
   m_decodedBodyLength += value;
 }
 
@@ -613,6 +621,11 @@ void ResourceResponse::setDownloadedFilePath(const String& downloadedFilePath) {
   blobData->appendFile(m_downloadedFilePath);
   blobData->detachFromCurrentThread();
   m_downloadedFileHandle = BlobDataHandle::create(std::move(blobData), -1);
+}
+
+void ResourceResponse::appendRedirectResponse(
+    const ResourceResponse& response) {
+  m_redirectResponses.append(response);
 }
 
 bool ResourceResponse::compare(const ResourceResponse& a,

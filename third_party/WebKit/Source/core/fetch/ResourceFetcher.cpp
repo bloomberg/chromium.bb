@@ -95,6 +95,12 @@ enum SriResourceIntegrityMismatchEvent {
     DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, XSLStyleSheet)  \
   }
 
+bool IsCrossOrigin(const KURL& a, const KURL& b) {
+  RefPtr<SecurityOrigin> originA = SecurityOrigin::create(a);
+  RefPtr<SecurityOrigin> originB = SecurityOrigin::create(b);
+  return !originB->isSameSchemeHostPort(originA.get());
+}
+
 }  // namespace
 
 static void RecordSriResourceIntegrityMismatchEvent(
@@ -183,7 +189,10 @@ ResourceLoadPriority ResourceFetcher::computeLoadPriority(
 
 static void populateResourceTiming(ResourceTimingInfo* info,
                                    Resource* resource) {
-  info->setInitialRequest(resource->resourceRequest());
+  KURL initialURL = resource->response().redirectResponses().isEmpty()
+                        ? resource->resourceRequest().url()
+                        : resource->response().redirectResponses()[0].url();
+  info->setInitialURL(initialURL);
   info->setFinalResponse(resource->response());
 }
 
@@ -722,8 +731,15 @@ void ResourceFetcher::storeResourceTimingInitiatorInformation(
     return;
 
   bool isMainResource = resource->getType() == Resource::MainResource;
-  std::unique_ptr<ResourceTimingInfo> info = ResourceTimingInfo::create(
-      fetchInitiator, monotonicallyIncreasingTime(), isMainResource);
+
+  // The request can already be fetched in a previous navigation. Thus
+  // startTime must be set accordingly.
+  double startTime = resource->resourceRequest().navigationStartTime()
+                         ? resource->resourceRequest().navigationStartTime()
+                         : monotonicallyIncreasingTime();
+
+  std::unique_ptr<ResourceTimingInfo> info =
+      ResourceTimingInfo::create(fetchInitiator, startTime, isMainResource);
 
   if (resource->isCacheValidator()) {
     const AtomicString& timingAllowOrigin =
@@ -1098,6 +1114,17 @@ void ResourceFetcher::didFinishLoading(Resource* resource,
 
   if (std::unique_ptr<ResourceTimingInfo> info =
           m_resourceTimingInfoMap.take(resource)) {
+    // Store redirect responses that were packed inside the final response.
+    const Vector<ResourceResponse>& responses =
+        resource->response().redirectResponses();
+    for (size_t i = 0; i < responses.size(); ++i) {
+      const KURL& newURL = i + 1 < responses.size()
+                               ? KURL(responses[i + 1].url())
+                               : resource->resourceRequest().url();
+      bool crossOrigin = IsCrossOrigin(responses[i].url(), newURL);
+      info->addRedirect(responses[i], crossOrigin);
+    }
+
     if (resource->response().isHTTP() &&
         resource->response().httpStatusCode() < 400) {
       populateResourceTiming(info.get(), resource);
@@ -1294,8 +1321,7 @@ static bool isManualRedirectFetchRequest(const ResourceRequest& request) {
 bool ResourceFetcher::willFollowRedirect(
     Resource* resource,
     ResourceRequest& newRequest,
-    const ResourceResponse& redirectResponse,
-    int64_t encodedDataLength) {
+    const ResourceResponse& redirectResponse) {
   if (!isManualRedirectFetchRequest(resource->resourceRequest())) {
     if (!context().canRequest(resource->getType(), newRequest, newRequest.url(),
                               resource->options(), resource->isUnusedPreload(),
@@ -1326,13 +1352,8 @@ bool ResourceFetcher::willFollowRedirect(
 
   ResourceTimingInfoMap::iterator it = m_resourceTimingInfoMap.find(resource);
   if (it != m_resourceTimingInfoMap.end()) {
-    RefPtr<SecurityOrigin> originalSecurityOrigin =
-        SecurityOrigin::create(redirectResponse.url());
-    RefPtr<SecurityOrigin> redirectedSecurityOrigin =
-        SecurityOrigin::create(newRequest.url());
-    bool crossOrigin = !redirectedSecurityOrigin->isSameSchemeHostPort(
-        originalSecurityOrigin.get());
-    it->value->addRedirect(redirectResponse, encodedDataLength, crossOrigin);
+    bool crossOrigin = IsCrossOrigin(redirectResponse.url(), newRequest.url());
+    it->value->addRedirect(redirectResponse, crossOrigin);
   }
   newRequest.setAllowStoredCredentials(resource->options().allowCredentials ==
                                        AllowStoredCredentials);

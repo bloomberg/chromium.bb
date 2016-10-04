@@ -122,10 +122,7 @@ class CORE_EXPORT ResourceFetcher
   void stopFetching();
   bool isFetching() const;
 
-  bool willFollowRedirect(Resource*,
-                          ResourceRequest&,
-                          const ResourceResponse&,
-                          int64_t encodedDataLength);
+  bool willFollowRedirect(Resource*, ResourceRequest&, const ResourceResponse&);
   enum DidFinishLoadingReason {
     DidFinishLoading,
     DidFinishFirstPartInMultipart

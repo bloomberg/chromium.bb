@@ -123,8 +123,7 @@ int32_t PepperURLLoaderHost::OnResourceMessageReceived(
 void PepperURLLoaderHost::willFollowRedirect(
     WebURLLoader* loader,
     WebURLRequest& new_request,
-    const WebURLResponse& redirect_response,
-    int64_t encoded_data_length) {
+    const WebURLResponse& redirect_response) {
   DCHECK(out_of_order_replies_.empty());
   if (!request_data_.follow_redirects) {
     SaveResponse(redirect_response);

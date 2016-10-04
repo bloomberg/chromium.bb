@@ -326,6 +326,8 @@ void NavigationRequest::OnRequestRedirected(
   request_params_.navigation_timing.redirect_end = base::TimeTicks::Now();
   request_params_.navigation_timing.fetch_start = base::TimeTicks::Now();
 
+  request_params_.redirect_response.push_back(response->head);
+
   request_params_.redirects.push_back(common_params_.url);
   common_params_.url = redirect_info.new_url;
   common_params_.method = redirect_info.new_method;

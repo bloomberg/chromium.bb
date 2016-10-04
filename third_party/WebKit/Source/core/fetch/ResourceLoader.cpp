@@ -125,8 +125,7 @@ void ResourceLoader::cancel() {
 void ResourceLoader::willFollowRedirect(
     WebURLLoader*,
     WebURLRequest& passedNewRequest,
-    const WebURLResponse& passedRedirectResponse,
-    int64_t encodedDataLength) {
+    const WebURLResponse& passedRedirectResponse) {
   DCHECK(!passedNewRequest.isNull());
   DCHECK(!passedRedirectResponse.isNull());
 
@@ -137,7 +136,7 @@ void ResourceLoader::willFollowRedirect(
       ResourceRequest::RedirectStatus::FollowedRedirect);
 
   if (m_fetcher->willFollowRedirect(m_resource.get(), newRequest,
-                                    redirectResponse, encodedDataLength)) {
+                                    redirectResponse)) {
     m_resource->willFollowRedirect(newRequest, redirectResponse);
   } else {
     m_resource->willNotFollowRedirect();

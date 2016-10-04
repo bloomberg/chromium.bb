@@ -325,11 +325,14 @@ class PLATFORM_EXPORT ResourceResponse final {
   unsigned short remotePort() const { return m_remotePort; }
   void setRemotePort(unsigned short value) { m_remotePort = value; }
 
+  long long encodedDataLength() const { return m_encodedDataLength; }
+  void addToEncodedDataLength(long long value);
+
   long long encodedBodyLength() const { return m_encodedBodyLength; }
-  void addToEncodedBodyLength(int value);
+  void addToEncodedBodyLength(long long value);
 
   long long decodedBodyLength() const { return m_decodedBodyLength; }
-  void addToDecodedBodyLength(int value);
+  void addToDecodedBodyLength(long long value);
 
   const String& downloadedFilePath() const { return m_downloadedFilePath; }
   void setDownloadedFilePath(const String&);
@@ -344,6 +347,14 @@ class PLATFORM_EXPORT ResourceResponse final {
     // average size, mostly due to URL and Header Map strings
     return 1280;
   }
+
+  // PlzNavigate: Even if there is redirections, only one
+  // ResourceResponse is built: the final response.
+  // The redirect response chain can be accessed by this function.
+  const Vector<ResourceResponse>& redirectResponses() const {
+    return m_redirectResponses;
+  }
+  void appendRedirectResponse(const ResourceResponse&);
 
   // This method doesn't compare the all members.
   static bool compare(const ResourceResponse&, const ResourceResponse&);
@@ -457,6 +468,9 @@ class PLATFORM_EXPORT ResourceResponse final {
   // Remote port number of the socket which fetched this resource.
   unsigned short m_remotePort;
 
+  // Size of the response in bytes prior to decompression.
+  long long m_encodedDataLength;
+
   // Size of the response body in bytes prior to decompression.
   long long m_encodedBodyLength;
 
@@ -473,6 +487,10 @@ class PLATFORM_EXPORT ResourceResponse final {
 
   // ExtraData associated with the response.
   RefPtr<ExtraData> m_extraData;
+
+  // PlzNavigate: the redirect responses are transmitted
+  // inside the final response.
+  Vector<ResourceResponse> m_redirectResponses;
 };
 
 inline bool operator==(const ResourceResponse& a, const ResourceResponse& b) {
@@ -521,6 +539,7 @@ struct CrossThreadResourceResponseData {
   int64_t m_responseTime;
   String m_remoteIPAddress;
   unsigned short m_remotePort;
+  long long m_encodedDataLength;
   long long m_encodedBodyLength;
   long long m_decodedBodyLength;
   String m_downloadedFilePath;

@@ -291,6 +291,10 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT unsigned short remotePort() const;
   BLINK_PLATFORM_EXPORT void setRemotePort(unsigned short);
 
+  // Original size of the response before decompression.
+  BLINK_PLATFORM_EXPORT long long encodedDataLength() const;
+  BLINK_PLATFORM_EXPORT void addToEncodedDataLength(long long);
+
   // Original size of the response body before decompression.
   BLINK_PLATFORM_EXPORT long long encodedBodyLength() const;
   BLINK_PLATFORM_EXPORT void addToEncodedBodyLength(long long);
@@ -307,6 +311,8 @@ class WebURLResponse {
   // dissociated from any existing non-null extra data pointer.
   BLINK_PLATFORM_EXPORT ExtraData* getExtraData() const;
   BLINK_PLATFORM_EXPORT void setExtraData(ExtraData*);
+
+  BLINK_PLATFORM_EXPORT void appendRedirectResponse(const WebURLResponse&);
 
 #if INSIDE_BLINK
  protected:

@@ -139,10 +139,10 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
   ~TestWebURLLoaderClient() override {}
 
   // blink::WebURLLoaderClient implementation:
-  void willFollowRedirect(blink::WebURLLoader* loader,
-                          blink::WebURLRequest& newRequest,
-                          const blink::WebURLResponse& redirectResponse,
-                          int64_t encodedDataLength) override {
+  void willFollowRedirect(
+      blink::WebURLLoader* loader,
+      blink::WebURLRequest& newRequest,
+      const blink::WebURLResponse& redirectResponse) override {
     EXPECT_TRUE(loader_);
     EXPECT_EQ(loader_.get(), loader);
 

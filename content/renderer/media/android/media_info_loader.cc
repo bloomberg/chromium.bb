@@ -90,10 +90,10 @@ void MediaInfoLoader::Start(blink::WebFrame* frame) {
 
 /////////////////////////////////////////////////////////////////////////////
 // blink::WebURLLoaderClient implementation.
-void MediaInfoLoader::willFollowRedirect(WebURLLoader* loader,
-                                         WebURLRequest& newRequest,
-                                         const WebURLResponse& redirectResponse,
-                                         int64_t encodedDataLength) {
+void MediaInfoLoader::willFollowRedirect(
+    WebURLLoader* loader,
+    WebURLRequest& newRequest,
+    const WebURLResponse& redirectResponse) {
   // The load may have been stopped and |ready_cb| is destroyed.
   // In this case we shouldn't do anything.
   if (ready_cb_.is_null()) {

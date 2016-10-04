@@ -78,19 +78,15 @@ class PLATFORM_EXPORT ResourceTimingInfo {
   void setLoadFinishTime(double time) { m_loadFinishTime = time; }
   double loadFinishTime() const { return m_loadFinishTime; }
 
-  void setInitialRequest(const ResourceRequest& request) {
-    m_initialRequest = request;
-  }
-  const ResourceRequest& initialRequest() const { return m_initialRequest; }
+  void setInitialURL(const KURL& url) { m_initialURL = url; }
+  const KURL& initialURL() const { return m_initialURL; }
 
   void setFinalResponse(const ResourceResponse& response) {
     m_finalResponse = response;
   }
   const ResourceResponse& finalResponse() const { return m_finalResponse; }
 
-  void addRedirect(const ResourceResponse& redirectResponse,
-                   long long encodedDataLength,
-                   bool crossOrigin);
+  void addRedirect(const ResourceResponse& redirectResponse, bool crossOrigin);
   const Vector<ResourceResponse>& redirectChain() const {
     return m_redirectChain;
   }
@@ -120,7 +116,7 @@ class PLATFORM_EXPORT ResourceTimingInfo {
   AtomicString m_originalTimingAllowOrigin;
   double m_initialTime;
   double m_loadFinishTime;
-  ResourceRequest m_initialRequest;
+  KURL m_initialURL;
   ResourceResponse m_finalResponse;
   Vector<ResourceResponse> m_redirectChain;
   long long m_transferSize;
@@ -139,7 +135,7 @@ struct CrossThreadResourceTimingInfoData {
   String m_originalTimingAllowOrigin;
   double m_initialTime;
   double m_loadFinishTime;
-  std::unique_ptr<CrossThreadResourceRequestData> m_initialRequest;
+  KURL m_initialURL;
   std::unique_ptr<CrossThreadResourceResponseData> m_finalResponse;
   Vector<std::unique_ptr<CrossThreadResourceResponseData>> m_redirectChain;
   long long m_transferSize;

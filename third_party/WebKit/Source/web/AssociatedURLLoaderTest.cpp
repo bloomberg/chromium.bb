@@ -120,8 +120,7 @@ class AssociatedURLLoaderTest : public ::testing::Test,
   // WebURLLoaderClient implementation.
   void willFollowRedirect(WebURLLoader* loader,
                           WebURLRequest& newRequest,
-                          const WebURLResponse& redirectResponse,
-                          int64_t encodedDataLength) override {
+                          const WebURLResponse& redirectResponse) override {
     m_willFollowRedirect = true;
     EXPECT_EQ(m_expectedLoader.get(), loader);
     EXPECT_EQ(m_expectedNewRequest.url(), newRequest.url());

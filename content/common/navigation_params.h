@@ -19,6 +19,7 @@
 #include "content/public/common/page_state.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/request_context_type.h"
+#include "content/public/common/resource_response.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
@@ -240,6 +241,9 @@ struct CONTENT_EXPORT RequestNavigationParams {
   // Any redirect URLs that occurred before |url|. Useful for cross-process
   // navigations; defaults to empty.
   std::vector<GURL> redirects;
+
+  // The ResourceResponseInfos received during redirects.
+  std::vector<ResourceResponseInfo> redirect_response;
 
   // Whether or not this url should be allowed to access local file://
   // resources.

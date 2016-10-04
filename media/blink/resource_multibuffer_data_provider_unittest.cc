@@ -186,7 +186,7 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
         .WillOnce(
             Invoke(this, &ResourceMultiBufferDataProviderTest::SetUrlData));
 
-    loader_->willFollowRedirect(url_loader_, newRequest, redirectResponse, 0);
+    loader_->willFollowRedirect(url_loader_, newRequest, redirectResponse);
 
     base::RunLoop().RunUntilIdle();
   }

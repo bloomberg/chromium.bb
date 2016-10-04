@@ -171,8 +171,7 @@ void ResourceMultiBufferDataProvider::SetDeferred(bool deferred) {
 void ResourceMultiBufferDataProvider::willFollowRedirect(
     WebURLLoader* loader,
     WebURLRequest& newRequest,
-    const WebURLResponse& redirectResponse,
-    int64_t encodedDataLength) {
+    const WebURLResponse& redirectResponse) {
   redirects_to_ = newRequest.url();
   url_data_->set_valid_until(base::Time::Now() +
                              GetCacheValidUntil(redirectResponse));

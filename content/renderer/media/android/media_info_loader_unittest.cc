@@ -81,7 +81,7 @@ class MediaInfoLoaderTest : public testing::Test {
     blink::WebURLRequest new_request(redirect_url);
     blink::WebURLResponse redirect_response(gurl_);
 
-    loader_->willFollowRedirect(url_loader_, new_request, redirect_response, 0);
+    loader_->willFollowRedirect(url_loader_, new_request, redirect_response);
 
     base::RunLoop().RunUntilIdle();
   }

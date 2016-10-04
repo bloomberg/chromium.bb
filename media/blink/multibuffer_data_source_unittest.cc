@@ -1387,7 +1387,7 @@ TEST_F(MultibufferDataSourceTest, Http_RetryThenRedirect) {
   blink::WebURLRequest request((GURL(kHttpDifferentPathUrl)));
   blink::WebURLResponse response((GURL(kHttpUrl)));
   response.setHTTPStatusCode(307);
-  data_provider()->willFollowRedirect(url_loader(), request, response, 0);
+  data_provider()->willFollowRedirect(url_loader(), request, response);
   Respond(response_generator_->Generate206(kDataSize));
   ReceiveData(kDataSize);
   EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize * 3));
@@ -1403,7 +1403,7 @@ TEST_F(MultibufferDataSourceTest, Http_NotStreamingAfterRedirect) {
   blink::WebURLRequest request((GURL(kHttpDifferentPathUrl)));
   blink::WebURLResponse response((GURL(kHttpUrl)));
   response.setHTTPStatusCode(307);
-  data_provider()->willFollowRedirect(url_loader(), request, response, 0);
+  data_provider()->willFollowRedirect(url_loader(), request, response);
 
   EXPECT_CALL(host_, SetTotalBytes(response_generator_->content_length()));
   Respond(response_generator_->Generate206(0));
@@ -1425,7 +1425,7 @@ TEST_F(MultibufferDataSourceTest, Http_RangeNotSatisfiableAfterRedirect) {
   blink::WebURLRequest request((GURL(kHttpDifferentPathUrl)));
   blink::WebURLResponse response((GURL(kHttpUrl)));
   response.setHTTPStatusCode(307);
-  data_provider()->willFollowRedirect(url_loader(), request, response, 0);
+  data_provider()->willFollowRedirect(url_loader(), request, response);
 
   EXPECT_CALL(host_, AddBufferedByteRange(0, kDataSize));
   Respond(response_generator_->GenerateResponse(416));

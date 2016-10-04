@@ -4868,6 +4868,8 @@ void RenderFrameImpl::OnCommitNavigation(
       new StreamOverrideParameters());
   stream_override->stream_url = stream_url;
   stream_override->response = response;
+  stream_override->redirects = request_params.redirects;
+  stream_override->redirect_responses = request_params.redirect_response;
 
   // If the request was initiated in the context of a user gesture then make
   // sure that the navigation also executes in the context of a user gesture.
@@ -5545,10 +5547,14 @@ void RenderFrameImpl::NavigateInternal(
   request.setHasUserGesture(request_params.has_user_gesture);
 #endif
 
-  // PlzNavigate: Make sure that Blink's loader will not try to use browser side
-  // navigation for this request (since it already went to the browser).
-  if (browser_side_navigation)
+  if (browser_side_navigation) {
+    // PlzNavigate: Make sure that Blink's loader will not try to use browser
+    // side navigation for this request (since it already went to the browser).
     request.setCheckForBrowserSideNavigation(false);
+
+    request.setNavigationStartTime(
+        ConvertToBlinkTime(common_params.navigation_start));
+  }
 
   // If we are reloading, then use the history state of the current frame.
   // Otherwise, if we have history state, then we need to navigate to it, which

@@ -75,8 +75,7 @@ class CORE_EXPORT ResourceLoader final
   // callbacks via ResourceLoader::cancel()
   void willFollowRedirect(WebURLLoader*,
                           WebURLRequest&,
-                          const WebURLResponse& redirectResponse,
-                          int64_t encodedDataLength) override;
+                          const WebURLResponse& redirectResponse) override;
   void didSendData(WebURLLoader*,
                    unsigned long long bytesSent,
                    unsigned long long totalBytesToBeSent) override;

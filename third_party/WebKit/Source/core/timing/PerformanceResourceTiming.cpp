@@ -56,7 +56,7 @@ PerformanceResourceTiming::PerformanceResourceTiming(
     bool allowTimingDetails,
     bool allowRedirectDetails)
     : PerformanceEntry(
-          info.initialRequest().url().getString(),
+          info.initialURL().getString(),
           "resource",
           monotonicTimeToDOMHighResTimeStamp(timeOrigin, startTime),
           monotonicTimeToDOMHighResTimeStamp(timeOrigin,

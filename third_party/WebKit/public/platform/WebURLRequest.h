@@ -324,6 +324,8 @@ class WebURLRequest {
 
   BLINK_PLATFORM_EXPORT LoadingIPCType getLoadingIPCType() const;
 
+  BLINK_PLATFORM_EXPORT void setNavigationStartTime(double);
+
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT ResourceRequest& toMutableResourceRequest();
   BLINK_PLATFORM_EXPORT const ResourceRequest& toResourceRequest() const;

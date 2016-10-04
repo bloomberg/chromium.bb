@@ -392,8 +392,8 @@ double WebURLRequest::uiStartTime() const {
   return m_resourceRequest->uiStartTime();
 }
 
-void WebURLRequest::setUiStartTime(double time) {
-  m_resourceRequest->setUIStartTime(time);
+void WebURLRequest::setUiStartTime(double timeSeconds) {
+  m_resourceRequest->setUIStartTime(timeSeconds);
 }
 
 bool WebURLRequest::isExternalRequest() const {
@@ -404,6 +404,10 @@ WebURLRequest::LoadingIPCType WebURLRequest::getLoadingIPCType() const {
   if (RuntimeEnabledFeatures::loadingWithMojoEnabled())
     return WebURLRequest::LoadingIPCType::Mojo;
   return WebURLRequest::LoadingIPCType::ChromeIPC;
+}
+
+void WebURLRequest::setNavigationStartTime(double navigationStartSeconds) {
+  m_resourceRequest->setNavigationStartTime(navigationStartSeconds);
 }
 
 WebURLRequest::InputToLoadPerfMetricReportPolicy

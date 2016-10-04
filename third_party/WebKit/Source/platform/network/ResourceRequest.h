@@ -96,7 +96,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   void setCachePolicy(WebCachePolicy);
 
   double timeoutInterval() const;  // May return 0 when using platform default.
-  void setTimeoutInterval(double timeoutInterval);
+  void setTimeoutInterval(double);
 
   const KURL& firstPartyForCookies() const;
   void setFirstPartyForCookies(const KURL& firstPartyForCookies);
@@ -286,7 +286,9 @@ class PLATFORM_EXPORT ResourceRequest final {
   }
 
   double uiStartTime() const { return m_uiStartTime; }
-  void setUIStartTime(double uiStartTime) { m_uiStartTime = uiStartTime; }
+  void setUIStartTime(double uiStartTimeSeconds) {
+    m_uiStartTime = uiStartTimeSeconds;
+  }
 
   // https://mikewest.github.io/cors-rfc1918/#external-request
   bool isExternalRequest() const { return m_isExternalRequest; }
@@ -302,6 +304,9 @@ class PLATFORM_EXPORT ResourceRequest final {
 
   void setRedirectStatus(RedirectStatus status) { m_redirectStatus = status; }
   RedirectStatus redirectStatus() const { return m_redirectStatus; }
+
+  void setNavigationStartTime(double);
+  double navigationStartTime() const { return m_navigationStart; }
 
  private:
   void initialize(const KURL&);
@@ -350,6 +355,8 @@ class PLATFORM_EXPORT ResourceRequest final {
   static double s_defaultTimeoutInterval;
 
   RedirectStatus m_redirectStatus;
+
+  double m_navigationStart = 0;
 };
 
 struct CrossThreadResourceRequestData {

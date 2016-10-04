@@ -17,7 +17,7 @@ std::unique_ptr<ResourceTimingInfo> ResourceTimingInfo::adopt(
   info->m_originalTimingAllowOrigin =
       AtomicString(data->m_originalTimingAllowOrigin);
   info->m_loadFinishTime = data->m_loadFinishTime;
-  info->m_initialRequest = ResourceRequest(data->m_initialRequest.get());
+  info->m_initialURL = data->m_initialURL.copy();
   info->m_finalResponse = ResourceResponse(data->m_finalResponse.get());
   for (auto& responseData : data->m_redirectChain)
     info->m_redirectChain.append(ResourceResponse(responseData.get()));
@@ -34,7 +34,7 @@ ResourceTimingInfo::copyData() const {
       m_originalTimingAllowOrigin.getString().isolatedCopy();
   data->m_initialTime = m_initialTime;
   data->m_loadFinishTime = m_loadFinishTime;
-  data->m_initialRequest = m_initialRequest.copyData();
+  data->m_initialURL = m_initialURL.copy();
   data->m_finalResponse = m_finalResponse.copyData();
   for (const auto& response : m_redirectChain)
     data->m_redirectChain.append(response.copyData());
@@ -44,7 +44,6 @@ ResourceTimingInfo::copyData() const {
 }
 
 void ResourceTimingInfo::addRedirect(const ResourceResponse& redirectResponse,
-                                     long long encodedDataLength,
                                      bool crossOrigin) {
   m_redirectChain.append(redirectResponse);
   if (m_hasCrossOriginRedirect)
@@ -53,8 +52,8 @@ void ResourceTimingInfo::addRedirect(const ResourceResponse& redirectResponse,
     m_hasCrossOriginRedirect = true;
     m_transferSize = 0;
   } else {
-    DCHECK_GE(encodedDataLength, 0);
-    m_transferSize += encodedDataLength;
+    DCHECK_GE(redirectResponse.encodedDataLength(), 0);
+    m_transferSize += redirectResponse.encodedDataLength();
   }
 }
 

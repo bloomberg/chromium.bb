@@ -85,6 +85,7 @@ bool NavigationResourceHandler::OnRequestRedirected(
   // TODO(davidben): Perform a CSP check here, and anything else that would have
   // been done renderer-side.
   NetLogObserver::PopulateResponseInfo(request(), response);
+  response->head.encoded_data_length = request()->GetTotalReceivedBytes();
   core_->NotifyRequestRedirected(redirect_info, response);
   *defer = true;
   return true;

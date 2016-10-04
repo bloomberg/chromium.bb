@@ -43,15 +43,6 @@
   inspector-protocol/page/frameAttachedDetached.html [ Failure ]
   inspector-protocol/page/frameStartedLoading.html [ Failure ]
 
-# https://crbug.com/641912: PlzNavigate: Resource Timing API support
-  http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_redirects.html [ Failure ]
-  http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect_chain_allow_timing.html [ Timeout ]
-  http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect_chain.html [ Timeout ]
-  http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect_with_timing_allow_origin.html [ Timeout ]
-  http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect.html [ Timeout ]
-  http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_same_origin_redirect.html [ Timeout ]
-  http/tests/misc/resource-timing-sizes-tags.html [ Failure ]
-
 # https://crbug.com/625765: Need to solve duplicate output from
 # WebFrameTestClient::willSendRequest() that causes text failures.
   http/tests/history/post-replace-state-reload.html [ Failure ]

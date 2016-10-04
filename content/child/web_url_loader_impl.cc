@@ -329,6 +329,9 @@ void SetSecurityStyleAndDetails(const GURL& url,
 
 }  // namespace
 
+StreamOverrideParameters::StreamOverrideParameters() {}
+StreamOverrideParameters::~StreamOverrideParameters() {}
+
 // This inner class exists since the WebURLLoader may be deleted while inside a
 // call to WebURLLoaderClient.  Refcounting is to keep the context from being
 // deleted if it may have work to do after calling into the client.
@@ -640,8 +643,7 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
           : blink::WebURLRequest::SkipServiceWorker::All,
       &new_request);
 
-  client_->willFollowRedirect(loader_, new_request, response,
-                              info.encoded_data_length);
+  client_->willFollowRedirect(loader_, new_request, response);
   request_ = new_request;
 
   // Only follow the redirect if WebKit left the URL unmodified.
@@ -681,6 +683,23 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
   WebURLResponse response;
   PopulateURLResponse(request_.url(), info, &response,
                       request_.reportRawHeaders());
+
+  if (stream_override_.get()) {
+    CHECK(IsBrowserSideNavigationEnabled());
+    DCHECK(stream_override_->redirect_responses.size() ==
+           stream_override_->redirects.size());
+    for (size_t i = 0; i < stream_override_->redirects.size(); ++i) {
+      WebURLResponse previous_response;
+      // TODO(arthursonzogni) Once Devtool is supported by PlzNavigate, the
+      // |report_raw_header| argument must be checked.
+      WebURLLoaderImpl::PopulateURLResponse(
+          stream_override_->redirects[i],
+          stream_override_->redirect_responses[i],
+          &previous_response,
+          request_.reportRawHeaders());
+      response.appendRedirectResponse(previous_response);
+    }
+  }
 
   bool show_raw_listing = (GURL(request_.url()).query() == "raw");
 
@@ -1016,6 +1035,7 @@ void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,
       info.cors_exposed_header_names.end(), cors_exposed_header_names.begin(),
       [](const std::string& h) { return blink::WebString::fromLatin1(h); });
   response->setCorsExposedHeaderNames(cors_exposed_header_names);
+  response->addToEncodedDataLength(info.encoded_data_length);
 
   SetSecurityStyleAndDetails(url, info, response, report_security_info);
 

@@ -26,12 +26,16 @@ class ResourceDispatcher;
 struct ResourceResponseInfo;
 
 // PlzNavigate: Used to override parameters of the navigation request.
-struct StreamOverrideParameters {
+struct CONTENT_EXPORT StreamOverrideParameters {
  public:
+  StreamOverrideParameters();
+  ~StreamOverrideParameters();
   // TODO(clamy): The browser should be made aware on destruction of this struct
   // that it can release its associated stream handle.
   GURL stream_url;
   ResourceResponseHead response;
+  std::vector<GURL> redirects;
+  std::vector<ResourceResponseInfo> redirect_responses;
 };
 
 class CONTENT_EXPORT WebURLLoaderImpl

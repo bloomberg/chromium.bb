@@ -172,9 +172,8 @@ void AssociatedURLLoader::ClientAdapter::willFollowRedirect(
 
   WrappedResourceRequest wrappedNewRequest(newRequest);
   WrappedResourceResponse wrappedRedirectResponse(redirectResponse);
-  // TODO(ricea): Do we need to set encodedDataLength here?
   m_client->willFollowRedirect(m_loader, wrappedNewRequest,
-                               wrappedRedirectResponse, 0);
+                               wrappedRedirectResponse);
 }
 
 void AssociatedURLLoader::ClientAdapter::didSendData(

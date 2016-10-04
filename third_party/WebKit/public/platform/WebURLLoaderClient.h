@@ -49,8 +49,7 @@ class BLINK_PLATFORM_EXPORT WebURLLoaderClient {
   // for this redirect, or zero if the redirect was served from cache.
   virtual void willFollowRedirect(WebURLLoader*,
                                   WebURLRequest& newRequest,
-                                  const WebURLResponse& redirectResponse,
-                                  int64_t encodedDataLength) {}
+                                  const WebURLResponse& redirectResponse) {}
 
   // Called to report upload progress. The bytes reported correspond to
   // the HTTP message body.

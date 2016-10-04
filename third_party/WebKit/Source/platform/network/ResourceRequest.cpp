@@ -176,8 +176,8 @@ double ResourceRequest::timeoutInterval() const {
   return m_timeoutInterval;
 }
 
-void ResourceRequest::setTimeoutInterval(double timeoutInterval) {
-  m_timeoutInterval = timeoutInterval;
+void ResourceRequest::setTimeoutInterval(double timoutIntervalSeconds) {
+  m_timeoutInterval = timoutIntervalSeconds;
 }
 
 const KURL& ResourceRequest::firstPartyForCookies() const {
@@ -353,6 +353,10 @@ void ResourceRequest::setExternalRequestStateFromRequestorAddressSpace(
     targetSpace = WebAddressSpaceLocal;
 
   m_isExternalRequest = requestorSpace > targetSpace;
+}
+
+void ResourceRequest::setNavigationStartTime(double navigationStart) {
+  m_navigationStart = navigationStart;
 }
 
 bool ResourceRequest::isConditional() const {
