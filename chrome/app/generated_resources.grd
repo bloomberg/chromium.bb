@@ -11236,7 +11236,7 @@ I don't think this site should be blocked!
         Can't sign in to <ph name="USERNAME">$1<ex>Jane.Doe@gmail.com</ex></ph>
       </message>
       <message name="IDS_SIGNIN_ERROR_LEARN_MORE_LINK" desc="Label in the signin error tab modal dialog containing the link to go to the Chrome Help page for sync problems.">
-        <ph name="SIGNIN_ERROR">$1<ex>Signing in with this username has been disabled by your administrator.</ex></ph> <ph name="BEGIN_LINK">&lt;a id="learnMoreLink" href="#"&gt;Learn more&lt;/a&gt;</ph>
+        Learn more
       </message>
       <message name="IDS_SIGNIN_ERROR_CLOSE_BUTTON_LABEL" desc="Label of the Close button in the signin error dialog.">
         Close

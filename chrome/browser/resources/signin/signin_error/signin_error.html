@@ -32,7 +32,10 @@
   <body>
     <div class="container">
       <div class="top-title-bar">$i18n{signinErrorTitle}</div>
-      <div class="details">$i18nRaw{signinErrorMessage}</div>
+      <div class="details">
+        <p>$i18nRaw{signinErrorMessage}</p>
+        <a id="learnMoreLink" href="#">$i18nRaw{signinErrorLearnMore}</a>
+      </div>
       <div class="action-container">
         <paper-button class="primary-action" id="switchButton">
           $i18n{signinErrorSwitchLabel}

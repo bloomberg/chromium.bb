@@ -97,23 +97,21 @@ SigninErrorUI::SigninErrorUI(content::WebUI* web_ui,
     DCHECK(!existing_name.empty());
     source->AddString(
         "signinErrorMessage",
-        l10n_util::GetStringFUTF16(
-            IDS_SIGNIN_ERROR_LEARN_MORE_LINK,
-            l10n_util::GetStringFUTF16(IDS_SYNC_USER_NAME_IN_USE_BY_ERROR,
-                                       existing_name)));
+        l10n_util::GetStringFUTF16(IDS_SYNC_USER_NAME_IN_USE_BY_ERROR,
+                                   existing_name));
     // Elide the existing name for the switch user button label.
     existing_name =
         gfx::TruncateString(existing_name, 10, gfx::CHARACTER_BREAK);
   } else {
-    source->AddString("signinErrorMessage",
-                      l10n_util::GetStringFUTF16(
-                          IDS_SIGNIN_ERROR_LEARN_MORE_LINK, last_login_result));
+    source->AddString("signinErrorMessage", last_login_result);
   }
 
   // Add button label strings.
   source->AddString("signinErrorSwitchLabel",
                     l10n_util::GetStringFUTF16(
                         IDS_SIGNIN_ERROR_SWITCH_BUTTON_LABEL, existing_name));
+  source->AddLocalizedString("signinErrorLearnMore",
+                             IDS_SIGNIN_ERROR_LEARN_MORE_LINK);
   source->AddLocalizedString("signinErrorCloseLabel",
                              IDS_SIGNIN_ERROR_CLOSE_BUTTON_LABEL);
   source->AddLocalizedString("signinErrorOkLabel",
