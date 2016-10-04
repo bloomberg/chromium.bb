@@ -444,6 +444,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
   // Sets the interval between two consecutive advertisements. Valid ranges
   // for the interval are from 20ms to 10.24 seconds, with min <= max.
+  // Note: This is a best effort. The actual interval may vary non-trivially
+  // from the requested intervals. On some hardware, there is a minimum
+  // interval of 100ms. The minimum and maximum values are specified by the
+  // Core 4.2 Spec, Vol 2, Part E, Section 7.8.5.
   virtual void SetAdvertisingInterval(
       const base::TimeDelta& min,
       const base::TimeDelta& max,

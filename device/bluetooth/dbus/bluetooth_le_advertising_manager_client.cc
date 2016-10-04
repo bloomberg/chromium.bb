@@ -114,11 +114,9 @@ class BluetoothAdvertisementManagerClientImpl
                               uint16_t max_interval_ms,
                               const base::Closure& callback,
                               const ErrorCallback& error_callback) override {
-    // TODO(rkc): Replace the string "SetAdvertisingInterval" with the correct
-    // constant in service_constants.h once cros_system_api DEPS are rolled.
     dbus::MethodCall method_call(
         bluetooth_advertising_manager::kBluetoothAdvertisingManagerInterface,
-        "SetAdvertisingIntervals");
+        bluetooth_advertising_manager::kSetAdvertisingIntervals);
 
     dbus::MessageWriter writer(&method_call);
     writer.AppendUint16(min_interval_ms);

@@ -18,6 +18,8 @@ namespace bluez {
 namespace {
 
 constexpr char kAdvertisingManagerPath[] = "/fake/hci0";
+// According to the Bluetooth spec, these are the min and max values possible
+// for advertising interval. Core 4.2 Spec, Vol 2, Part E, Section 7.8.5.
 constexpr uint16_t kMinIntervalMs = 20;
 constexpr uint16_t kMaxIntervalMs = 10240;
 
