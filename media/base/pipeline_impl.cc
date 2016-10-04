@@ -753,6 +753,11 @@ void PipelineImpl::RendererWrapper::CompleteSeek(base::TimeDelta seek_time,
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(state_ == kStarting || state_ == kSeeking || state_ == kResuming);
 
+  if (state_ == kStarting) {
+    UMA_HISTOGRAM_ENUMERATION("Media.PipelineStatus.Start", status,
+                              PIPELINE_STATUS_MAX + 1);
+  }
+
   DCHECK(pending_callbacks_);
   pending_callbacks_.reset();
 
