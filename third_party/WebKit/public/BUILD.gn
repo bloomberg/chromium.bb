@@ -746,6 +746,6 @@ source_set("shared_typemap_traits") {
     "web/WindowFeaturesStructTraits.cpp",
   ]
   deps = [
-    ":new_wrapper_types_mojo_bindings__generator",
+    ":new_wrapper_types_mojo_bindings_shared__generator",
   ]
 }
