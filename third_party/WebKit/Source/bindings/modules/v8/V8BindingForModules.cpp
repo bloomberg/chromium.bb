@@ -455,7 +455,8 @@ bool injectV8KeyIntoV8Value(v8::Isolate* isolate,
   ASSERT(keyPath.getType() == IDBKeyPath::StringType);
   Vector<String> keyPathElements = parseKeyPath(keyPath.string());
 
-  // The conbination of a key generator and an empty key path is forbidden by spec.
+  // The conbination of a key generator and an empty key path is forbidden by
+  // spec.
   if (!keyPathElements.size()) {
     ASSERT_NOT_REACHED();
     return false;
@@ -605,7 +606,8 @@ void assertPrimaryKeyValidOrInjectable(ScriptState* scriptState,
   ScriptValue keyValue = ScriptValue::from(scriptState, value->primaryKey());
   ScriptValue scriptValue(scriptState, deserializeIDBValueData(isolate, value));
 
-  // This assertion is about already persisted data, so allow experimental types.
+  // This assertion is about already persisted data, so allow experimental
+  // types.
   const bool allowExperimentalTypes = true;
   TrackExceptionState exceptionState;
   IDBKey* expectedKey = createIDBKeyFromValueAndKeyPath(

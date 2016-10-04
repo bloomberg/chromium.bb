@@ -42,8 +42,9 @@ v8::Local<v8::Value> SerializedScriptValueForModulesFactory::deserialize(
     deserializer.setBlobInfoArray(blobInfo);
     return deserializer.deserialize();
   }
-  // deserialize() can run arbitrary script (e.g., setters), which could result in |this| being destroyed.
-  // Holding a RefPtr ensures we are alive (along with our internal data) throughout the operation.
+  // deserialize() can run arbitrary script (e.g., setters), which could result
+  // in |this| being destroyed.  Holding a RefPtr ensures we are alive (along
+  // with our internal data) throughout the operation.
   RefPtr<SerializedScriptValue> protect(value);
   String& data = value->data();
   if (!data.impl())

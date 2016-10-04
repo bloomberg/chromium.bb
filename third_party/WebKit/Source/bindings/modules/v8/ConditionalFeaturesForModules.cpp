@@ -52,7 +52,8 @@ void installConditionalFeaturesForModules(
          originTrialContext->isFeatureEnabled("DurableStorage"))) {
       V8NavigatorPartial::installDurableStorage(
           isolate, world, v8::Local<v8::Object>(), prototypeObject,
-          interfaceObject);  // Need to specify interface object explicitly to avoid looping back here
+          interfaceObject);  // Need to specify interface object explicitly to
+                             // avoid looping back here
     }
     if (RuntimeEnabledFeatures::webBluetoothEnabled() ||
         (originTrialContext &&
