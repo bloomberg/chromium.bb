@@ -159,7 +159,8 @@ MostVisitedSites::MostVisitedSites(PrefService* prefs,
       mv_source_(NTPTileSource::SUGGESTIONS_SERVICE),
       weak_ptr_factory_(this) {
   DCHECK(prefs_);
-  DCHECK(top_sites_);
+  // top_sites_ can be null in tests.
+  // TODO(sfiera): have iOS use a dummy TopSites in its tests.
   DCHECK(suggestions_service_);
   if (supervisor_)
     supervisor_->SetObserver(this);
