@@ -207,13 +207,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CursorTestIncognito) {
              true /* incognito */);
 }
 
-// crbug.com/513787
-#if defined(ANDROID)
-#define MAYBE_CursorPrefetch DISABLED_CursorPrefetch
-#else
-#define MAYBE_CursorPrefetch CursorPrefetch
-#endif
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, MAYBE_CursorPrefetch) {
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CursorPrefetch) {
   SimpleTest(GetTestUrl("indexeddb", "cursor_prefetch.html"));
 }
 

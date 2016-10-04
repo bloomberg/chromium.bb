@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// These constants should match the ones in renderer_webidbcursor_impl.h
-// to make sure the test hits the right code paths.
+// These constants should match the ones in
+// content/child/indexed_db/webidbcursor_impl.h to make sure the test hits the
+// right code paths.
 var kPrefetchThreshold = 2;
 var kMinPrefetchAmount = 5;
 
