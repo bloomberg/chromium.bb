@@ -98,6 +98,25 @@ define("mojo/public/js/connection", [
     return messagePipe.handle1;
   }
 
+  // Return a handle and proxy for a message pipe that's connected to a proxy
+  // for remoteInterface. Used by generated code for outgoing interface&
+  // (request) parameters
+  function getProxy(remoteInterface) {
+    var messagePipe = core.createMessagePipe();
+    if (messagePipe.result != core.RESULT_OK)
+      throw new Error("createMessagePipe failed " + messagePipe.result);
+
+    var proxy = new remoteInterface.proxyClass;
+    var router = new Router(messagePipe.handle0);
+    var connection = new BaseConnection(undefined, proxy, router);
+    ProxyBindings(proxy).connection = connection;
+
+    return {
+      requestHandle: messagePipe.handle1,
+      proxy: proxy
+    };
+  }
+
   // Return a handle for a message pipe that's connected to a stub for
   // localInterface. Used by generated code for outgoing interface
   // parameters: the caller  is given the generated stub via
@@ -168,6 +187,7 @@ define("mojo/public/js/connection", [
   exports.TestConnection = TestConnection;
 
   exports.bindProxy = bindProxy;
+  exports.getProxy = getProxy;
   exports.bindImpl = bindImpl;
   exports.bindHandleToProxy = bindHandleToProxy;
   exports.bindHandleToStub = bindHandleToStub;
