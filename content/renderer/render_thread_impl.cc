@@ -655,6 +655,8 @@ void RenderThreadImpl::Init(
                                ChildProcess::current()->io_task_runner());
   }
 #endif
+  gpu_memory_buffer_manager_ =
+      base::MakeUnique<ChildGpuMemoryBufferManager>(thread_safe_sender());
 
   InitializeWebKit(resource_task_queue);
 
@@ -1638,7 +1640,7 @@ gpu::GpuMemoryBufferManager* RenderThreadImpl::GetGpuMemoryBufferManager() {
   if (gpu_service_)
     return gpu_service_->gpu_memory_buffer_manager();
 #endif
-  return  gpu_memory_buffer_manager();
+  return gpu_memory_buffer_manager_.get();
 }
 
 blink::scheduler::RendererScheduler* RenderThreadImpl::GetRendererScheduler() {
@@ -1857,7 +1859,7 @@ scoped_refptr<gpu::GpuChannelHost> RenderThreadImpl::EstablishGpuChannelSync() {
     gpu_channel_ =
         gpu::GpuChannelHost::Create(this, client_id, gpu_info, channel_handle,
                                     ChildProcess::current()->GetShutDownEvent(),
-                                    gpu_memory_buffer_manager());
+                                    GetGpuMemoryBufferManager());
   } else {
 #if defined(USE_AURA)
     gpu_channel_ = gpu_service_->EstablishGpuChannelSync();

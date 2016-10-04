@@ -30,8 +30,7 @@ namespace {
 class ChildThreadImplBrowserTest : public ContentBrowserTest {
  public:
   ChildThreadImplBrowserTest()
-      : child_gpu_memory_buffer_manager_(nullptr),
-        child_discardable_shared_memory_manager_(nullptr) {}
+      : child_discardable_shared_memory_manager_(nullptr) {}
 
   // Overridden from BrowserTestBase:
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -44,10 +43,6 @@ class ChildThreadImplBrowserTest : public ContentBrowserTest {
                    base::Unretained(this)));
   }
 
-  ChildGpuMemoryBufferManager* child_gpu_memory_buffer_manager() {
-    return child_gpu_memory_buffer_manager_;
-  }
-
   ChildDiscardableSharedMemoryManager*
   child_discardable_shared_memory_manager() {
     return child_discardable_shared_memory_manager_;
@@ -55,13 +50,10 @@ class ChildThreadImplBrowserTest : public ContentBrowserTest {
 
  private:
   void SetUpOnChildThread() {
-    child_gpu_memory_buffer_manager_ =
-        ChildThreadImpl::current()->gpu_memory_buffer_manager();
     child_discardable_shared_memory_manager_ =
         ChildThreadImpl::current()->discardable_shared_memory_manager();
   }
 
-  ChildGpuMemoryBufferManager* child_gpu_memory_buffer_manager_;
   ChildDiscardableSharedMemoryManager* child_discardable_shared_memory_manager_;
 };
 
@@ -129,83 +121,6 @@ IN_PROC_BROWSER_TEST_F(ChildThreadImplBrowserTest,
 
   EXPECT_LT(base::TimeTicks::Now(), end);
 }
-
-enum NativeBufferFlag { kDisableNativeBuffers, kEnableNativeBuffers };
-
-class ChildThreadImplGpuMemoryBufferBrowserTest
-    : public ChildThreadImplBrowserTest,
-      public testing::WithParamInterface<
-          ::testing::tuple<NativeBufferFlag, gfx::BufferFormat>> {
- public:
-  // Overridden from BrowserTestBase:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ChildThreadImplBrowserTest::SetUpCommandLine(command_line);
-    NativeBufferFlag native_buffer_flag = ::testing::get<0>(GetParam());
-    switch (native_buffer_flag) {
-      case kEnableNativeBuffers:
-        command_line->AppendSwitch(switches::kEnableNativeGpuMemoryBuffers);
-        break;
-      case kDisableNativeBuffers:
-        command_line->AppendSwitch(switches::kDisableNativeGpuMemoryBuffers);
-        break;
-    }
-  }
-};
-
-IN_PROC_BROWSER_TEST_P(ChildThreadImplGpuMemoryBufferBrowserTest,
-                       DISABLED_Map) {
-  gfx::BufferFormat format = ::testing::get<1>(GetParam());
-  gfx::Size buffer_size(4, 4);
-
-  std::unique_ptr<gfx::GpuMemoryBuffer> buffer =
-      child_gpu_memory_buffer_manager()->AllocateGpuMemoryBuffer(
-          buffer_size, format, gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
-          gpu::kNullSurfaceHandle);
-  ASSERT_TRUE(buffer);
-  EXPECT_EQ(format, buffer->GetFormat());
-
-  // Map buffer planes.
-  ASSERT_TRUE(buffer->Map());
-
-  // Write to buffer and check result.
-  size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format);
-  for (size_t plane = 0; plane < num_planes; ++plane) {
-    ASSERT_TRUE(buffer->memory(plane));
-    ASSERT_TRUE(buffer->stride(plane));
-    size_t row_size_in_bytes =
-        gfx::RowSizeForBufferFormat(buffer_size.width(), format, plane);
-    EXPECT_GT(row_size_in_bytes, 0u);
-
-    std::unique_ptr<char[]> data(new char[row_size_in_bytes]);
-    memset(data.get(), 0x2a + plane, row_size_in_bytes);
-    size_t height = buffer_size.height() /
-                    gfx::SubsamplingFactorForBufferFormat(format, plane);
-    for (size_t y = 0; y < height; ++y) {
-      // Copy |data| to row |y| of |plane| and verify result.
-      memcpy(
-          static_cast<char*>(buffer->memory(plane)) + y * buffer->stride(plane),
-          data.get(), row_size_in_bytes);
-      EXPECT_EQ(0, memcmp(static_cast<char*>(buffer->memory(plane)) +
-                              y * buffer->stride(plane),
-                          data.get(), row_size_in_bytes));
-    }
-  }
-
-  buffer->Unmap();
-}
-
-INSTANTIATE_TEST_CASE_P(
-    ChildThreadImplGpuMemoryBufferBrowserTests,
-    ChildThreadImplGpuMemoryBufferBrowserTest,
-    ::testing::Combine(::testing::Values(kDisableNativeBuffers,
-                                         kEnableNativeBuffers),
-                       // These formats are guaranteed to work on all platforms.
-                       ::testing::Values(gfx::BufferFormat::R_8,
-                                         gfx::BufferFormat::BGR_565,
-                                         gfx::BufferFormat::RGBA_4444,
-                                         gfx::BufferFormat::RGBA_8888,
-                                         gfx::BufferFormat::BGRA_8888,
-                                         gfx::BufferFormat::YVU_420)));
 
 }  // namespace
 }  // namespace content

@@ -55,7 +55,6 @@ class WebFrame;
 namespace content {
 class ChildMessageFilter;
 class ChildDiscardableSharedMemoryManager;
-class ChildGpuMemoryBufferManager;
 class ChildHistogramMessageFilter;
 class ChildResourceMessageFilter;
 class ChildSharedBitmapManager;
@@ -135,10 +134,6 @@ class CONTENT_EXPORT ChildThreadImpl
 
   ChildSharedBitmapManager* shared_bitmap_manager() const {
     return shared_bitmap_manager_.get();
-  }
-
-  ChildGpuMemoryBufferManager* gpu_memory_buffer_manager() const {
-    return gpu_memory_buffer_manager_.get();
   }
 
   ChildDiscardableSharedMemoryManager* discardable_shared_memory_manager()
@@ -319,8 +314,6 @@ class CONTENT_EXPORT ChildThreadImpl
   scoped_refptr<PushDispatcher> push_dispatcher_;
 
   std::unique_ptr<ChildSharedBitmapManager> shared_bitmap_manager_;
-
-  std::unique_ptr<ChildGpuMemoryBufferManager> gpu_memory_buffer_manager_;
 
   std::unique_ptr<ChildDiscardableSharedMemoryManager>
       discardable_shared_memory_manager_;

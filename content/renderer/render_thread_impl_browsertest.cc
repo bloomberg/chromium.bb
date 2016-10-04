@@ -18,6 +18,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/output/buffer_to_texture_target_map.h"
 #include "content/app/mojo/mojo_init.h"
+#include "content/child/child_gpu_memory_buffer_manager.h"
 #include "content/common/in_process_child_thread_params.h"
 #include "content/common/mojo/mojo_child_connection.h"
 #include "content/common/resource_messages.h"
@@ -28,6 +29,8 @@
 #include "content/public/common/mojo_shell_connection.h"
 #include "content/public/common/service_names.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "content/public/test/content_browser_test.h"
+#include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_content_client_initializer.h"
 #include "content/public/test/test_mojo_shell_context.h"
@@ -40,6 +43,7 @@
 #include "mojo/edk/test/scoped_ipc_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
+#include "ui/gfx/buffer_format_util.h"
 
 // IPC messages for testing ----------------------------------------------------
 
@@ -271,6 +275,108 @@ TEST_F(RenderThreadImplBrowserTest,
 
   EXPECT_EQ(0, test_task_counter_->NumTasksPosted());
 }
+
+enum NativeBufferFlag { kDisableNativeBuffers, kEnableNativeBuffers };
+
+class RenderThreadImplGpuMemoryBufferBrowserTest
+    : public ContentBrowserTest,
+      public testing::WithParamInterface<
+          ::testing::tuple<NativeBufferFlag, gfx::BufferFormat>> {
+ public:
+  RenderThreadImplGpuMemoryBufferBrowserTest() {}
+  ~RenderThreadImplGpuMemoryBufferBrowserTest() override {}
+
+  gpu::GpuMemoryBufferManager* memory_buffer_manager() {
+    return memory_buffer_manager_;
+  }
+
+ private:
+  void SetUpOnRenderThread() {
+    memory_buffer_manager_ =
+        RenderThreadImpl::current()->GetGpuMemoryBufferManager();
+  }
+
+  // Overridden from BrowserTestBase:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(switches::kSingleProcess);
+    NativeBufferFlag native_buffer_flag = ::testing::get<0>(GetParam());
+    switch (native_buffer_flag) {
+      case kEnableNativeBuffers:
+        command_line->AppendSwitch(switches::kEnableNativeGpuMemoryBuffers);
+        break;
+      case kDisableNativeBuffers:
+        command_line->AppendSwitch(switches::kDisableNativeGpuMemoryBuffers);
+        break;
+    }
+  }
+
+  void SetUpOnMainThread() override {
+    NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+    PostTaskToInProcessRendererAndWait(base::Bind(
+        &RenderThreadImplGpuMemoryBufferBrowserTest::SetUpOnRenderThread,
+        base::Unretained(this)));
+  }
+
+  gpu::GpuMemoryBufferManager* memory_buffer_manager_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderThreadImplGpuMemoryBufferBrowserTest);
+};
+
+// https://crbug.com/652531
+IN_PROC_BROWSER_TEST_P(RenderThreadImplGpuMemoryBufferBrowserTest,
+                       DISABLED_Map) {
+  gfx::BufferFormat format = ::testing::get<1>(GetParam());
+  gfx::Size buffer_size(4, 4);
+
+  std::unique_ptr<gfx::GpuMemoryBuffer> buffer =
+      memory_buffer_manager()->AllocateGpuMemoryBuffer(
+          buffer_size, format, gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
+          gpu::kNullSurfaceHandle);
+  ASSERT_TRUE(buffer);
+  EXPECT_EQ(format, buffer->GetFormat());
+
+  // Map buffer planes.
+  ASSERT_TRUE(buffer->Map());
+
+  // Write to buffer and check result.
+  size_t num_planes = gfx::NumberOfPlanesForBufferFormat(format);
+  for (size_t plane = 0; plane < num_planes; ++plane) {
+    ASSERT_TRUE(buffer->memory(plane));
+    ASSERT_TRUE(buffer->stride(plane));
+    size_t row_size_in_bytes =
+        gfx::RowSizeForBufferFormat(buffer_size.width(), format, plane);
+    EXPECT_GT(row_size_in_bytes, 0u);
+
+    std::unique_ptr<char[]> data(new char[row_size_in_bytes]);
+    memset(data.get(), 0x2a + plane, row_size_in_bytes);
+    size_t height = buffer_size.height() /
+                    gfx::SubsamplingFactorForBufferFormat(format, plane);
+    for (size_t y = 0; y < height; ++y) {
+      // Copy |data| to row |y| of |plane| and verify result.
+      memcpy(
+          static_cast<char*>(buffer->memory(plane)) + y * buffer->stride(plane),
+          data.get(), row_size_in_bytes);
+      EXPECT_EQ(0, memcmp(static_cast<char*>(buffer->memory(plane)) +
+                              y * buffer->stride(plane),
+                          data.get(), row_size_in_bytes));
+    }
+  }
+
+  buffer->Unmap();
+}
+
+INSTANTIATE_TEST_CASE_P(
+    RenderThreadImplGpuMemoryBufferBrowserTests,
+    RenderThreadImplGpuMemoryBufferBrowserTest,
+    ::testing::Combine(::testing::Values(kDisableNativeBuffers,
+                                         kEnableNativeBuffers),
+                       // These formats are guaranteed to work on all platforms.
+                       ::testing::Values(gfx::BufferFormat::R_8,
+                                         gfx::BufferFormat::BGR_565,
+                                         gfx::BufferFormat::RGBA_4444,
+                                         gfx::BufferFormat::RGBA_8888,
+                                         gfx::BufferFormat::BGRA_8888,
+                                         gfx::BufferFormat::YVU_420)));
 
 }  // namespace
 }  // namespace content

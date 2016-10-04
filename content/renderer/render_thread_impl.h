@@ -105,6 +105,7 @@ class AudioRendererMixerManager;
 class BlobMessageFilter;
 class BrowserPluginManager;
 class CacheStorageDispatcher;
+class ChildGpuMemoryBufferManager;
 class CompositorForwardingMessageFilter;
 class ContextProviderCommandBuffer;
 class DBMessageFilter;
@@ -633,6 +634,8 @@ class CONTENT_EXPORT RenderThreadImpl
 
   // May be null if overridden by ContentRendererClient.
   std::unique_ptr<blink::scheduler::WebThreadBase> compositor_thread_;
+
+  std::unique_ptr<ChildGpuMemoryBufferManager> gpu_memory_buffer_manager_;
 
   // Utility class to provide GPU functionalities to media.
   // TODO(dcastagna): This should be just one scoped_ptr once
