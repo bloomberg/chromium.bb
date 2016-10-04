@@ -472,8 +472,7 @@ win::GattCharacteristic* BluetoothTestWin::GetSimulatedCharacteristic(
 
 void BluetoothTestWin::RunPendingTasksUntilCallback() {
   std::deque<base::TestPendingTask> tasks =
-      bluetooth_task_runner_->GetPendingTasks();
-  bluetooth_task_runner_->ClearPendingTasks();
+      bluetooth_task_runner_->TakePendingTasks();
   int original_callback_count = callback_count_;
   int original_error_callback_count = error_callback_count_;
   do {

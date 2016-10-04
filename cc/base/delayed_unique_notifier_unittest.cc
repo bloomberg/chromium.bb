@@ -45,9 +45,7 @@ class DelayedUniqueNotifierTest : public testing::Test {
   int NotificationCount() const { return notification_count_; }
 
   std::deque<base::TestPendingTask> TakePendingTasks() {
-    std::deque<base::TestPendingTask> tasks = task_runner_->GetPendingTasks();
-    task_runner_->ClearPendingTasks();
-    return tasks;
+    return task_runner_->TakePendingTasks();
   }
 
  protected:

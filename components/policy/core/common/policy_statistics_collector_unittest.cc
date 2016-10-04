@@ -117,7 +117,7 @@ class PolicyStatisticsCollectorTest : public testing::Test {
       ADD_FAILURE();
       return base::TimeDelta();
     }
-    return task_runner_->GetPendingTasks().front().delay;
+    return task_runner_->NextPendingTaskDelay();
   }
 
   const base::TimeDelta update_delay_;

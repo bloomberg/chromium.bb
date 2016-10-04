@@ -72,10 +72,9 @@ class CloudPolicyRefreshSchedulerTest : public testing::Test {
   }
 
   base::TimeDelta GetLastDelay() const {
-    const std::deque<base::TestPendingTask>& pending_tasks =
-        task_runner_->GetPendingTasks();
-    return
-        pending_tasks.empty() ? base::TimeDelta() : pending_tasks.back().delay;
+    if (!task_runner_->HasPendingTask())
+      return base::TimeDelta();
+    return task_runner_->FinalPendingTaskDelay();
   }
 
   void CheckTiming(int64_t expected_delay_ms) const {

@@ -413,7 +413,7 @@ bool CloudPolicyInvalidatorTest::CheckPolicyRefreshed(base::TimeDelta delay) {
 
   if (!task_runner_->HasPendingTask())
     return false;
-  base::TimeDelta actual_delay = task_runner_->GetPendingTasks().back().delay;
+  base::TimeDelta actual_delay = task_runner_->FinalPendingTaskDelay();
   EXPECT_GE(actual_delay, delay);
   EXPECT_LE(actual_delay, max_delay);
 

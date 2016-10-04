@@ -352,12 +352,11 @@ TEST_F(ExternalPolicyDataUpdaterTest, RetryWithBackoff) {
 
     // Verify that the retry delay has been doubled, with random jitter from 80%
     // to 100%.
-    const base::TestPendingTask task =
-        backend_task_runner_->GetPendingTasks().front();
-    EXPECT_GT(task.delay,
+    base::TimeDelta delay = backend_task_runner_->NextPendingTaskDelay();
+    EXPECT_GT(delay,
               base::TimeDelta::FromMilliseconds(
                   0.799 * expected_delay.InMilliseconds()));
-    EXPECT_LE(task.delay, expected_delay);
+    EXPECT_LE(delay, expected_delay);
 
     if (i < 10) {
       // The delay cap has not been reached yet.

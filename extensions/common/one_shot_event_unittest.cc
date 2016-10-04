@@ -23,6 +23,23 @@ TEST(OneShotEventTest, RecordsSignal) {
   EXPECT_TRUE(event.is_signaled());
 }
 
+TEST(OneShotEventTest, CallsQueueAsDistinctTask) {
+  OneShotEvent event;
+  scoped_refptr<base::TestSimpleTaskRunner> runner(
+      new base::TestSimpleTaskRunner);
+  int i = 0;
+  event.Post(FROM_HERE, base::Bind(&Increment, &i), runner);
+  event.Post(FROM_HERE, base::Bind(&Increment, &i), runner);
+  EXPECT_EQ(0U, runner->NumPendingTasks());
+  event.Signal();
+
+  auto pending_tasks = runner->TakePendingTasks();
+  ASSERT_EQ(2U, pending_tasks.size());
+  EXPECT_NE(pending_tasks[0].location.line_number(),
+            pending_tasks[1].location.line_number())
+      << "Make sure FROM_HERE is propagated.";
+}
+
 TEST(OneShotEventTest, CallsQueue) {
   OneShotEvent event;
   scoped_refptr<base::TestSimpleTaskRunner> runner(
@@ -33,9 +50,7 @@ TEST(OneShotEventTest, CallsQueue) {
   EXPECT_EQ(0U, runner->NumPendingTasks());
   event.Signal();
   ASSERT_EQ(2U, runner->NumPendingTasks());
-  EXPECT_NE(runner->GetPendingTasks()[0].location.line_number(),
-            runner->GetPendingTasks()[1].location.line_number())
-      << "Make sure FROM_HERE is propagated.";
+
   EXPECT_EQ(0, i);
   runner->RunPendingTasks();
   EXPECT_EQ(2, i);
