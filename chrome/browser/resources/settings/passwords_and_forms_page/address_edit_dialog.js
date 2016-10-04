@@ -65,10 +65,12 @@ Polymer({
       this.email_ =
           this.address.emailAddresses ? this.address.emailAddresses[0] : '';
 
-      if (this.countryCode_ == this.address.countryCode)
-        this.updateAddressWrapper_();
-      else
-        this.countryCode_ = this.address.countryCode;
+      this.async(function() {
+        if (this.countryCode_ == this.address.countryCode)
+          this.updateAddressWrapper_();
+        else
+          this.countryCode_ = this.address.countryCode;
+      }.bind(this));
     }.bind(this));
 
     // Open is called on the dialog after the address wrapper has been updated.
@@ -182,6 +184,12 @@ Polymer({
   onUpdateCountryCode_: function(countryCode) {
     this.address.countryCode = countryCode;
     this.updateAddressWrapper_();
+  },
+
+  /** @private */
+  onCountryChange_: function() {
+    var countrySelect = /** @type {!HTMLSelectElement} */ (this.$$('select'));
+    this.countryCode_ = countrySelect.value;
   },
 });
 })();

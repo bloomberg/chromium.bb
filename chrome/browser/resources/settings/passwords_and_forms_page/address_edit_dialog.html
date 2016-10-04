@@ -2,15 +2,14 @@
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-textarea.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-listbox/paper-listbox.html">
 <link rel="import" href="/settings_shared_css.html">
+<link rel="import" href="/select_css.html">
 
 <dom-module id="settings-address-edit-dialog">
   <template>
-    <style include="settings-shared">
+    <style include="settings-shared select">
       .address-row {
         display: flex;
       }
@@ -19,6 +18,20 @@
         -webkit-margin-end: 16px;
         margin-bottom: 8px;
         width: calc((var(--paper-input-max-width) - 16px) / 2);
+      }
+
+      select.address-column {
+        -webkit-margin-end: 0;
+        margin-bottom: 0;
+      }
+
+      #select-row {
+        display: block;
+      }
+
+      #select-label {
+       color: var(--light-theme-secondary-color);
+       font-size: 12px
       }
 
       .long {
@@ -60,21 +73,21 @@
             </template>
           </div>
         </template>
-        <div class="address-row">
-          <paper-dropdown-menu-light class="country-dropdown address-column long"
-              vertical-align="auto"
-              on-value-changed="updateCanSave_" label="$i18n{addressCountry}"
-              always-float-label>
-            <paper-listbox id="countryList" class="dropdown-content"
-                selected="{{countryCode_}}" attr-for-selected="code">
+        <div id="select-row" class="address-row">
+          <div id="select-label">$i18n{addressCountry}</div>
+          <span class="select-wrapper">
+            <select class="address-column long" value="[[countryCode_]]"
+                  on-change="onCountryChange_">
+              <option value=""></option>
               <template is="dom-repeat" items="[[countries_]]">
-                <button class="dropdown-item" role="option"
-                    code="[[getCode_(item)]]" disabled="[[isDivision_(item)]]">
+                <option value="[[getCode_(item)]]"
+                    disabled="[[isDivision_(item)]]">
                   [[getName_(item)]]
-                </button>
+                </option>
               </template>
-            </paper-listbox>
-          </paper-dropdown-menu-light>
+            </select>
+            <span class="select-underline"></span>
+          </span>
         </div>
         <div class="address-row">
           <paper-input id="phoneInput" type="text" label="$i18n{addressPhone}"

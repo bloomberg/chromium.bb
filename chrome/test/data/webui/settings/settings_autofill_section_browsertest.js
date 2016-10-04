@@ -429,11 +429,13 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'AddressTests', function() {
     test('verifyCountryIsSaved', function() {
       var address = FakeDataMaker.emptyAddressEntry();
       return self.createAddressDialog_(address).then(function(dialog) {
-        assertEquals(undefined, dialog.$.countryList.selected);
+        var countrySelect = dialog.$$('select');
+        assertEquals('', countrySelect.value);
         assertEquals(undefined, address.countryCode);
-        dialog.$.countryList.selected = 'US';
+        countrySelect.value = 'US';
+        countrySelect.dispatchEvent(new CustomEvent('change'));
         Polymer.dom.flush();
-        assertEquals('US', dialog.$.countryList.selected);
+        assertEquals('US', countrySelect.value);
         assertEquals('US', address.countryCode);
       });
     });
@@ -523,20 +525,30 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'AddressTests', function() {
 
     // Setting the country should allow the address to be saved.
     test('verifySaveIsNotClickableIfCountryNotSet', function() {
-      return self.createAddressDialog_(
-          FakeDataMaker.emptyAddressEntry()).then(function(dialog) {
-        var saveButton = dialog.$.saveButton;
-        var countries = dialog.$.countryList;
+      var dialog = null;
 
-        return expectEvent(dialog, 'on-update-can-save', function() {
-          assertTrue(saveButton.disabled);
-          countries.selected = 'US';
-        }).then(function() {
-            assertFalse(saveButton.disabled);
-            countries.selected = '';
-        }).then(function() {
-          assertTrue(saveButton.disabled);
-        });
+      var simulateCountryChange = function(countryCode) {
+        var countrySelect = dialog.$$('select');
+        countrySelect.value = countryCode;
+        countrySelect.dispatchEvent(new CustomEvent('change'));
+      };
+
+      return self.createAddressDialog_(
+          FakeDataMaker.emptyAddressEntry()).then(function(d) {
+        dialog = d;
+        assertTrue(dialog.$.saveButton.disabled);
+
+        return expectEvent(
+            dialog, 'on-update-can-save',
+            simulateCountryChange.bind(null, 'US'));
+      }).then(function() {
+        assertFalse(dialog.$.saveButton.disabled);
+
+        return expectEvent(
+            dialog, 'on-update-can-save',
+            simulateCountryChange.bind(null, ''));
+      }).then(function() {
+        assertTrue(dialog.$.saveButton.disabled);
       });
     });
 
@@ -628,7 +640,10 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'AddressLocaleTests', function() {
         row = rows[4];
         cols = row.querySelectorAll('.address-column');
         assertEquals(1, cols.length);
-        assertEquals('United States', cols[0].value);
+        var countrySelect = /** @type {!HTMLSelectElement} */ (cols[0]);
+        assertEquals(
+            'United States',
+            countrySelect.selectedOptions[0].textContent.trim());
         // Phone, Email
         row = rows[5];
         cols = row.querySelectorAll('.address-column');
@@ -690,7 +705,8 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'AddressLocaleTests', function() {
         row = rows[6];
         cols = row.querySelectorAll('.address-column');
         assertEquals(1, cols.length);
-        assertEquals('United Kingdom', cols[0].value);
+        assertEquals(
+            'United Kingdom', cols[0].selectedOptions[0].textContent.trim());
         // Phone, Email
         row = rows[7];
         cols = row.querySelectorAll('.address-column');
@@ -743,7 +759,8 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'AddressLocaleTests', function() {
         row = rows[4];
         cols = row.querySelectorAll('.address-column');
         assertEquals(1, cols.length);
-        assertEquals('Israel', cols[0].value);
+        assertEquals(
+            'Israel', cols[0].selectedOptions[0].textContent.trim());
         // Phone, Email
         row = rows[5];
         cols = row.querySelectorAll('.address-column');
@@ -763,6 +780,7 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'AddressLocaleTests', function() {
         var city = 'Los Angeles';
         var state = 'CA';
         var zip = '90291';
+        var countrySelect = dialog.$$('select');
 
         return expectEvent(dialog, 'on-update-address-wrapper', function() {
           // US:
@@ -777,7 +795,8 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'AddressLocaleTests', function() {
           cols[1].value = state;
           cols[2].value = zip;
 
-          dialog.$.countryList.selected = 'IL';
+          countrySelect.value = 'IL';
+          countrySelect.dispatchEvent(new CustomEvent('change'));
         }).then(function() {
           return expectEvent(dialog, 'on-update-address-wrapper', function() {
             // IL:
@@ -791,7 +810,8 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'AddressLocaleTests', function() {
             assertEquals(city, cols[0].value);
             assertEquals(zip, cols[1].value);
 
-            dialog.$.countryList.selected = 'US';
+            countrySelect.value = 'US';
+            countrySelect.dispatchEvent(new CustomEvent('change'));
           });
         }).then(function() {
           // US:
