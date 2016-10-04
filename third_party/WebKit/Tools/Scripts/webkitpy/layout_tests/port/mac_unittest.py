@@ -79,7 +79,3 @@ class MacPortTest(port_testcase.PortTestCase):
 
     def test_path_to_image_diff(self):
         self.assertEqual(self.make_port()._path_to_image_diff(), '/mock-checkout/out/Release/image_diff')
-
-    def test_expectation_files(self):
-        # FIXME: crbug.com/589709 - Delete this test override once the 10.11 failures have been rebaselined or triaged.
-        pass
