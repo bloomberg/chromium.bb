@@ -195,15 +195,20 @@ void InlineLoginHandler::ContinueHandleInitializeMessage() {
   const GURL& current_url = web_ui()->GetWebContents()->GetURL();
   signin_metrics::AccessPoint access_point =
       signin::GetAccessPointForPromoURL(current_url);
-  signin_metrics::LogSigninAccessPointStarted(access_point);
+  signin_metrics::Reason reason =
+      signin::GetSigninReasonForPromoURL(current_url);
+
+  if (reason != signin_metrics::Reason::REASON_REAUTHENTICATION ||
+      reason != signin_metrics::Reason::REASON_UNLOCK ||
+      reason != signin_metrics::Reason::REASON_ADD_SECONDARY_ACCOUNT) {
+    signin_metrics::LogSigninAccessPointStarted(access_point);
+  }
   RecordSigninUserActionForAccessPoint(access_point);
   content::RecordAction(base::UserMetricsAction("Signin_SigninPage_Loading"));
 
   params.SetString("continueUrl", signin::GetLandingURL(access_point).spec());
 
   Profile* profile = Profile::FromWebUI(web_ui());
-  signin_metrics::Reason reason =
-      signin::GetSigninReasonForPromoURL(current_url);
   std::string default_email;
   if (reason == signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT) {
     default_email =
