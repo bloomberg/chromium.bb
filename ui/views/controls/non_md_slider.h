@@ -40,6 +40,8 @@ class VIEWS_EXPORT NonMdSlider : public Slider {
   // Array used to hold current state of slider images.
   const gfx::ImageSkia* images_[4];
   int bar_height_;
+
+  DISALLOW_COPY_AND_ASSIGN(NonMdSlider);
 };
 
 }  // namespace views

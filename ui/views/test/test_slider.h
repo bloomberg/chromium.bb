@@ -29,6 +29,9 @@ class TestSlider : public Slider {
  protected:
   // ui::Slider:
   int GetThumbWidth() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestSlider);
 };
 
 }  // namespace views

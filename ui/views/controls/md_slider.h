@@ -10,10 +10,14 @@
 #include "ui/views/view.h"
 #include "ui/views/views_export.h"
 
+namespace gfx {
+class SlideAnimation;
+}
+
 namespace views {
 
 // TODO(yiyix): When material design is enabled by default, use
-// MaterialDesignSlider as the default slider implementation. (crbug.com/614453)
+// MdSlider as the default slider implementation. (crbug.com/614453)
 class VIEWS_EXPORT MdSlider : public Slider {
  public:
   explicit MdSlider(SliderListener* listener);
@@ -29,10 +33,22 @@ class VIEWS_EXPORT MdSlider : public Slider {
  protected:
   // ui::Slider:
   int GetThumbWidth() override;
+  void SetHighlighted(bool is_highlighted) override;
 
  private:
+  // gfx::AnimationDelegate:
+  void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationEnded(const gfx::Animation* animation) override;
+
   // Record whether the slider is in the active state or the disabled state.
   bool is_active_;
+
+  // Animating value of the current radius of the thumb's highlight.
+  float thumb_highlight_radius_;
+
+  std::unique_ptr<gfx::SlideAnimation> highlight_animation_;
+
+  DISALLOW_COPY_AND_ASSIGN(MdSlider);
 };
 
 }  // namespace views

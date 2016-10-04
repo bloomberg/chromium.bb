@@ -27,7 +27,7 @@
 #include "ui/views/widget/widget.h"
 
 namespace {
-const int kSlideValueChangeDurationMS = 150;
+const int kSlideValueChangeDurationMs = 150;
 
 // The image chunks.
 enum BorderElements {
@@ -51,11 +51,22 @@ Slider* Slider::CreateSlider(bool is_material_design,
   return new NonMdSlider(listener);
 }
 
+Slider::~Slider() {
+}
+
+void Slider::SetValue(float value) {
+  SetValueInternal(value, VALUE_CHANGED_BY_API);
+}
+
+void Slider::SetAccessibleName(const base::string16& name) {
+  accessible_name_ = name;
+}
+
 Slider::Slider(SliderListener* listener)
     : listener_(listener),
       value_(0.f),
       keyboard_increment_(0.1f),
-      animating_value_(0.f),
+      initial_animating_value_(0.f),
       value_is_valid_(false),
       accessibility_events_enabled_(true),
       focus_border_color_(0),
@@ -68,11 +79,28 @@ Slider::Slider(SliderListener* listener)
 #endif
 }
 
-Slider::~Slider() {
+float Slider::GetAnimatingValue() const{
+  return move_animation_ && move_animation_->is_animating()
+             ? move_animation_->CurrentValueBetween(initial_animating_value_,
+                                                    value_)
+             : value_;
 }
 
-void Slider::SetValue(float value) {
-  SetValueInternal(value, VALUE_CHANGED_BY_API);
+void Slider::SetHighlighted(bool is_highlighted) {}
+
+void Slider::OnPaint(gfx::Canvas* canvas) {
+  View::OnPaint(canvas);
+  OnPaintFocus(canvas);
+}
+
+void Slider::AnimationProgressed(const gfx::Animation* animation) {
+  if (animation == move_animation_.get())
+    SchedulePaint();
+}
+
+void Slider::AnimationEnded(const gfx::Animation* animation) {
+  if (animation == move_animation_.get())
+    move_animation_.reset();
 }
 
 void Slider::SetValueInternal(float value, SliderChangeReason reason) {
@@ -93,26 +121,24 @@ void Slider::SetValueInternal(float value, SliderChangeReason reason) {
   if (old_value_valid && base::MessageLoop::current()) {
     // Do not animate when setting the value of the slider for the first time.
     // There is no message-loop when running tests. So we cannot animate then.
-    animating_value_ = old_value;
-    move_animation_.reset(new gfx::SlideAnimation(this));
-    move_animation_->SetSlideDuration(kSlideValueChangeDurationMS);
-    move_animation_->Show();
-    AnimationProgressed(move_animation_.get());
+    if (!move_animation_) {
+      initial_animating_value_ = old_value;
+      move_animation_.reset(new gfx::SlideAnimation(this));
+      move_animation_->SetSlideDuration(kSlideValueChangeDurationMs);
+      move_animation_->Show();
+    }
   } else {
     SchedulePaint();
   }
-  if (accessibility_events_enabled_ && GetWidget()) {
-    NotifyAccessibilityEvent(
-        ui::AX_EVENT_VALUE_CHANGED, true);
-  }
+  if (accessibility_events_enabled_ && GetWidget())
+    NotifyAccessibilityEvent(ui::AX_EVENT_VALUE_CHANGED, true);
 }
 
 void Slider::PrepareForMove(const int new_x) {
   // Try to remember the position of the mouse cursor on the button.
   gfx::Insets inset = GetInsets();
   gfx::Rect content = GetContentsBounds();
-  float value = move_animation_.get() && move_animation_->is_animating() ?
-        animating_value_ : value_;
+  float value = GetAnimatingValue();
 
   const int thumb_width = GetThumbWidth();
   const int thumb_x = value * (content.width() - thumb_width);
@@ -137,10 +163,6 @@ void Slider::MoveButtonTo(const gfx::Point& point) {
       VALUE_CHANGED_BY_USER);
 }
 
-void Slider::SetAccessibleName(const base::string16& name) {
-  accessible_name_ = name;
-}
-
 void Slider::OnPaintFocus(gfx::Canvas* canvas) {
   if (!HasFocus())
     return;
@@ -154,6 +176,18 @@ void Slider::OnPaintFocus(gfx::Canvas* canvas) {
   }
 }
 
+void Slider::OnSliderDragStarted() {
+  SetHighlighted(true);
+  if (listener_)
+    listener_->SliderDragStarted(this);
+}
+
+void Slider::OnSliderDragEnded() {
+  SetHighlighted(false);
+  if (listener_)
+    listener_->SliderDragEnded(this);
+}
+
 const char* Slider::GetClassName() const {
   return kViewClassName;
 }
@@ -163,17 +197,6 @@ gfx::Size Slider::GetPreferredSize() const {
   const int kSizeMinor = 40;
 
   return gfx::Size(std::max(width(), kSizeMajor), kSizeMinor);
-}
-
-void Slider::OnPaint(gfx::Canvas* canvas) {
-  View::OnPaint(canvas);
-  OnPaintFocus(canvas);
-}
-
-float Slider::GetAnimatingValue() const{
-  return move_animation_.get() && move_animation_->is_animating()
-             ? animating_value_
-             : value_;
 }
 
 bool Slider::OnMousePressed(const ui::MouseEvent& event) {
@@ -204,6 +227,13 @@ bool Slider::OnKeyPressed(const ui::KeyEvent& event) {
     return false;
   SetValueInternal(new_value, VALUE_CHANGED_BY_USER);
   return true;
+}
+
+void Slider::GetAccessibleState(ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_SLIDER;
+  state->name = accessible_name_;
+  state->value = base::UTF8ToUTF16(
+      base::StringPrintf("%d%%", static_cast<int>(value_ * 100 + 0.5)));
 }
 
 void Slider::OnFocus() {
@@ -238,28 +268,6 @@ void Slider::OnGestureEvent(ui::GestureEvent* event) {
     default:
       break;
   }
-}
-
-void Slider::AnimationProgressed(const gfx::Animation* animation) {
-  animating_value_ = animation->CurrentValueBetween(animating_value_, value_);
-  SchedulePaint();
-}
-
-void Slider::GetAccessibleState(ui::AXViewState* state) {
-  state->role = ui::AX_ROLE_SLIDER;
-  state->name = accessible_name_;
-  state->value = base::UTF8ToUTF16(
-      base::StringPrintf("%d%%", static_cast<int>(value_ * 100 + 0.5)));
-}
-
-void Slider::OnSliderDragStarted() {
-  if (listener_)
-    listener_->SliderDragStarted(this);
-}
-
-void Slider::OnSliderDragEnded() {
-  if (listener_)
-    listener_->SliderDragEnded(this);
 }
 
 }  // namespace views

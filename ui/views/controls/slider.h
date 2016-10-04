@@ -77,10 +77,19 @@ class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
   // Returns the current position of the thumb on the slider.
   float GetAnimatingValue() const;
 
+  // Shows or hides the highlight on the slider thumb. The default
+  // implementation does nothing.
+  virtual void SetHighlighted(bool is_highlighted);
+
+  // Gets the size of the slider's thumb.
   virtual int GetThumbWidth() = 0;
 
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
+
+  // gfx::AnimationDelegate:
+  void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationEnded(const gfx::Animation* animation) override;
 
  private:
   friend class test::SliderTestApi;
@@ -117,9 +126,6 @@ class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
   // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
 
-  // gfx::AnimationDelegate:
-  void AnimationProgressed(const gfx::Animation* animation) override;
-
   void set_listener(SliderListener* listener) {
     listener_ = listener;
   }
@@ -130,7 +136,7 @@ class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
 
   float value_;
   float keyboard_increment_;
-  float animating_value_;
+  float initial_animating_value_;
   bool value_is_valid_;
   base::string16 accessible_name_;
   bool accessibility_events_enabled_;
