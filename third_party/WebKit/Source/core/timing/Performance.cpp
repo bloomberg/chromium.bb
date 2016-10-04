@@ -86,8 +86,7 @@ PerformanceTiming* Performance::timing() const {
 
 void Performance::updateLongTaskInstrumentation() {
   if (hasObserverFor(PerformanceEntry::LongTask) && !m_longTaskInspectorAgent) {
-    m_longTaskInspectorAgent =
-        new InspectorWebPerfAgent(InspectedFrames::create(frame()));
+    m_longTaskInspectorAgent = new InspectorWebPerfAgent(frame());
     m_longTaskInspectorAgent->enable();
   } else if (!hasObserverFor(PerformanceEntry::LongTask) &&
              m_longTaskInspectorAgent) {

@@ -32,8 +32,8 @@ bool canAccessOrigin(Frame* frame1, Frame* frame2) {
 }
 }  // namespace
 
-InspectorWebPerfAgent::InspectorWebPerfAgent(InspectedFrames* inspectedFrames)
-    : m_inspectedFrames(inspectedFrames) {}
+InspectorWebPerfAgent::InspectorWebPerfAgent(LocalFrame* localFrame)
+    : m_localFrame(localFrame) {}
 
 InspectorWebPerfAgent::~InspectorWebPerfAgent() {
   DCHECK(!m_enabled);
@@ -42,16 +42,14 @@ InspectorWebPerfAgent::~InspectorWebPerfAgent() {
 void InspectorWebPerfAgent::enable() {
   Platform::current()->currentThread()->addTaskTimeObserver(this);
   Platform::current()->currentThread()->addTaskObserver(this);
-  m_inspectedFrames->root()->instrumentingAgents()->addInspectorWebPerfAgent(
-      this);
+  m_localFrame->instrumentingAgents()->addInspectorWebPerfAgent(this);
   m_enabled = true;
 }
 
 void InspectorWebPerfAgent::disable() {
   Platform::current()->currentThread()->removeTaskTimeObserver(this);
   Platform::current()->currentThread()->removeTaskObserver(this);
-  m_inspectedFrames->root()->instrumentingAgents()->removeInspectorWebPerfAgent(
-      this);
+  m_localFrame->instrumentingAgents()->removeInspectorWebPerfAgent(this);
   m_enabled = false;
 }
 
@@ -82,14 +80,14 @@ void InspectorWebPerfAgent::ReportTaskTime(scheduler::TaskQueue*,
                                            double endTime) {
   if (((endTime - startTime) * 1000) <= kLongTaskThresholdMillis)
     return;
-  DOMWindow* domWindow = m_inspectedFrames->root()->domWindow();
+  DOMWindow* domWindow = m_localFrame->domWindow();
   if (!domWindow)
     return;
   Performance* performance = DOMWindowPerformance::performance(*domWindow);
   DCHECK(performance);
   performance->addLongTaskTiming(
-      startTime, endTime, sanitizedLongTaskName(m_frameContextLocations,
-                                                m_inspectedFrames->root()));
+      startTime, endTime,
+      sanitizedLongTaskName(m_frameContextLocations, m_localFrame));
 }
 
 String InspectorWebPerfAgent::sanitizedLongTaskName(
@@ -114,7 +112,7 @@ String InspectorWebPerfAgent::sanitizedLongTaskName(
 }
 
 DEFINE_TRACE(InspectorWebPerfAgent) {
-  visitor->trace(m_inspectedFrames);
+  visitor->trace(m_localFrame);
   visitor->trace(m_frameContextLocations);
 }
 

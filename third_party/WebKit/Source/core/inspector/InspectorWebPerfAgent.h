@@ -27,7 +27,7 @@ class CORE_EXPORT InspectorWebPerfAgent final
   friend class InspectorWebPerfAgentTest;
 
  public:
-  explicit InspectorWebPerfAgent(InspectedFrames*);
+  explicit InspectorWebPerfAgent(LocalFrame*);
   ~InspectorWebPerfAgent();
   DECLARE_VIRTUAL_TRACE();
 
@@ -52,7 +52,7 @@ class CORE_EXPORT InspectorWebPerfAgent final
       const HeapHashSet<Member<Location>>& frameContextLocations,
       Frame* rootFrame);
 
-  Member<InspectedFrames> m_inspectedFrames;
+  Member<LocalFrame> m_localFrame;
   HeapHashSet<Member<Location>> m_frameContextLocations;
 };
 

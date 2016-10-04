@@ -45,7 +45,7 @@ class InspectorWebPerfAgentTest : public ::testing::Test {
 void InspectorWebPerfAgentTest::SetUp() {
   m_pageHolder = DummyPageHolder::create(IntSize(800, 600));
   m_pageHolder->document().setURL(KURL(KURL(), "https://example.com/foo"));
-  m_agent = new InspectorWebPerfAgent(InspectedFrames::create(frame()));
+  m_agent = new InspectorWebPerfAgent(frame());
 
   // Create another dummy page holder and pretend this is the iframe.
   m_anotherPageHolder = DummyPageHolder::create(IntSize(400, 300));
