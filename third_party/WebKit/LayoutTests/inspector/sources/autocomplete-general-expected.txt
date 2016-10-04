@@ -29,6 +29,14 @@ Running: testAlphaNumericWords
 [foo2, foo3bar]
 =============
 
+Running: testRemoveDuplicate
+========= Text in editor =========
+|
+one
+======= Words in dictionary =======
+[one]
+=============
+
 Running: testSetText
 ========= Text in editor =========
 |dog cat 'mouse';dog bird

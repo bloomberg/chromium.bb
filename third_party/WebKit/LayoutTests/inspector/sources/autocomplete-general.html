@@ -45,6 +45,13 @@ function test()
             dumpDictionary(next);
         },
 
+        function testRemoveDuplicate(next)
+        {
+            textEditor.setText("one\none");
+            textEditor.setSelection(new WebInspector.TextRange(0, 0, 0, 3));
+            InspectorTest.typeIn(textEditor, "\b", dumpDictionary.bind(null, next));
+        },
+
         function testSetText(next)
         {
             textEditor.setText("dog cat 'mouse';dog bird");
