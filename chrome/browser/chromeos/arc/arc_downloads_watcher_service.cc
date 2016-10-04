@@ -4,6 +4,10 @@
 
 #include "chrome/browser/chromeos/arc/arc_downloads_watcher_service.h"
 
+#include <string.h>
+
+#include <algorithm>
+#include <iterator>
 #include <map>
 #include <memory>
 #include <utility>
@@ -13,6 +17,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -37,6 +42,56 @@ const base::FilePath::CharType kAndroidDownloadDir[] =
 // map.
 const base::TimeDelta kBuildTimestampMapDelay =
     base::TimeDelta::FromMilliseconds(1000);
+
+// The set of media file extensions supported by Android MediaScanner.
+// Entries must be lower-case and sorted by lexicographical order for
+// binary search.
+// The current list was taken from aosp-marshmallow version of
+// frameworks/base/media/java/android/media/MediaFile.java.
+const char* kAndroidSupportedMediaExtensions[] = {
+    ".3g2",    // FILE_TYPE_3GPP2, video/3gpp2
+    ".3gp",    // FILE_TYPE_3GPP, video/3gpp
+    ".3gpp",   // FILE_TYPE_3GPP, video/3gpp
+    ".3gpp2",  // FILE_TYPE_3GPP2, video/3gpp2
+    ".aac",    // FILE_TYPE_AAC, audio/aac, audio/aac-adts
+    ".amr",    // FILE_TYPE_AMR, audio/amr
+    ".asf",    // FILE_TYPE_ASF, video/x-ms-asf
+    ".avi",    // FILE_TYPE_AVI, video/avi
+    ".awb",    // FILE_TYPE_AWB, audio/amr-wb
+    ".bmp",    // FILE_TYPE_BMP, image/x-ms-bmp
+    ".fl",     // FILE_TYPE_FL, application/x-android-drm-fl
+    ".gif",    // FILE_TYPE_GIF, image/gif
+    ".imy",    // FILE_TYPE_IMY, audio/imelody
+    ".jpeg",   // FILE_TYPE_JPEG, image/jpeg
+    ".jpg",    // FILE_TYPE_JPEG, image/jpeg
+    ".m4a",    // FILE_TYPE_M4A, audio/mp4
+    ".m4v",    // FILE_TYPE_M4V, video/mp4
+    ".mid",    // FILE_TYPE_MID, audio/midi
+    ".midi",   // FILE_TYPE_MID, audio/midi
+    ".mka",    // FILE_TYPE_MKA, audio/x-matroska
+    ".mkv",    // FILE_TYPE_MKV, video/x-matroska
+    ".mp3",    // FILE_TYPE_MP3, audio/mpeg
+    ".mp4",    // FILE_TYPE_MP4, video/mp4
+    ".mpeg",   // FILE_TYPE_MP4, video/mpeg, video/mp2p
+    ".mpg",    // FILE_TYPE_MP4, video/mpeg, video/mp2p
+    ".mpga",   // FILE_TYPE_MP3, audio/mpeg
+    ".mxmf",   // FILE_TYPE_MID, audio/midi
+    ".oga",    // FILE_TYPE_OGG, application/ogg
+    ".ogg",    // FILE_TYPE_OGG, audio/ogg, application/ogg
+    ".ota",    // FILE_TYPE_MID, audio/midi
+    ".png",    // FILE_TYPE_PNG, image/png
+    ".rtttl",  // FILE_TYPE_MID, audio/midi
+    ".rtx",    // FILE_TYPE_MID, audio/midi
+    ".smf",    // FILE_TYPE_SMF, audio/sp-midi
+    ".ts",     // FILE_TYPE_MP2TS, video/mp2ts
+    ".wav",    // FILE_TYPE_WAV, audio/x-wav
+    ".wbmp",   // FILE_TYPE_WBMP, image/vnd.wap.wbmp
+    ".webm",   // FILE_TYPE_WEBM, video/webm
+    ".webp",   // FILE_TYPE_WEBP, image/webp
+    ".wma",    // FILE_TYPE_WMA, audio/x-ms-wma
+    ".wmv",    // FILE_TYPE_WMV, video/x-ms-wmv
+    ".xmf",    // FILE_TYPE_MID, audio/midi
+};
 
 // Compares two TimestampMaps and returns the list of file paths added/removed
 // or whose timestamp have changed.
@@ -86,6 +141,9 @@ TimestampMap BuildTimestampMap(base::FilePath downloads_dir) {
                                   base::FileEnumerator::FILES);
   for (base::FilePath cros_path = enumerator.Next(); !cros_path.empty();
        cros_path = enumerator.Next()) {
+    // Skip non-media files for efficiency.
+    if (!HasAndroidSupportedMediaExtension(cros_path))
+      continue;
     // Android file path can be obtained by replacing |downloads_dir| prefix
     // with |kAndroidDownloadDir|.
     base::FilePath android_path(kAndroidDownloadDir);
@@ -107,6 +165,21 @@ std::pair<base::TimeTicks, TimestampMap> BuildTimestampMapCallback(
 }
 
 }  // namespace
+
+bool HasAndroidSupportedMediaExtension(const base::FilePath& path) {
+  const std::string extension = base::ToLowerASCII(path.Extension());
+  const auto less_comparator = [](const char* a, const char* b) {
+    return strcmp(a, b) < 0;
+  };
+  DCHECK(std::is_sorted(std::begin(kAndroidSupportedMediaExtensions),
+                        std::end(kAndroidSupportedMediaExtensions),
+                        less_comparator));
+  auto iter = std::lower_bound(std::begin(kAndroidSupportedMediaExtensions),
+                               std::end(kAndroidSupportedMediaExtensions),
+                               extension.c_str(), less_comparator);
+  return iter != std::end(kAndroidSupportedMediaExtensions) &&
+         strcmp(*iter, extension.c_str()) == 0;
+}
 
 // The core part of ArcDownloadsWatcherService to watch for file changes in
 // Downloads directory.
