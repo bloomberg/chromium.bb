@@ -846,6 +846,26 @@
           "shiftKey": [true]
         }
       }
+    },
+    {
+      "command": "previousGroup",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [38],
+          "ctrlKey": [true]
+        }
+      }
+    },
+    {
+      "command": "nextGroup",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [40],
+          "ctrlKey": [true]
+        }
+      }
     }
   ]
 }

@@ -200,6 +200,7 @@ CommandHandler.onCommand = function(command) {
   var predErrorMsg = undefined;
   var rootPred = AutomationPredicate.root;
   var speechProps = {};
+  var skipSync = false;
   switch (command) {
     case 'nextCharacter':
       speechProps['phoneticCharacters'] = true;
@@ -390,6 +391,16 @@ CommandHandler.onCommand = function(command) {
     case 'left':
     case 'previousObject':
       current = current.move(cursors.Unit.NODE, Dir.BACKWARD);
+      break;
+    case 'previousGroup':
+      skipSync = true;
+      dir = Dir.BACKWARD;
+      pred = AutomationPredicate.group;
+      break;
+    case 'nextGroup':
+      skipSync = true;
+      dir = Dir.FORWARD;
+      pred = AutomationPredicate.group;
       break;
     case 'jumpToTop':
       var node = AutomationUtil.findNodePost(
@@ -643,7 +654,7 @@ CommandHandler.onCommand = function(command) {
       var node = AutomationUtil.findNextNode(
           bound, dir, pred, {skipInitialAncestry: true});
 
-      if (node) {
+      if (node && !skipSync) {
         node = AutomationUtil.findNodePre(
                    node, Dir.FORWARD, AutomationPredicate.object) ||
             node;
@@ -652,11 +663,29 @@ CommandHandler.onCommand = function(command) {
       if (node) {
         current = cursors.Range.fromNode(node);
       } else {
-        if (predErrorMsg) {
+        cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.WRAP);
+        var root = AutomationUtil.getTopLevelRoot(bound) || bound.root;
+        if (dir == Dir.FORWARD) {
+          bound = root;
+        } else {
+          bound = AutomationUtil.findNodePost(
+              root, dir, AutomationPredicate.leaf) || bound;
+        }
+        node = AutomationUtil.findNextNode(
+            bound, dir, pred, {skipInitialAncestry: true});
+
+      if (node && !skipSync) {
+        node = AutomationUtil.findNodePre(
+            node, Dir.FORWARD, AutomationPredicate.object) || node;
+      }
+
+      if (node) {
+        current = cursors.Range.fromNode(node);
+      } else if (predErrorMsg) {
           cvox.ChromeVox.tts.speak(
               Msgs.getMsg(predErrorMsg), cvox.QueueMode.FLUSH);
-        }
         return false;
+        }
       }
     }
   }

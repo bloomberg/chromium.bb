@@ -1125,9 +1125,9 @@ TEST_F('BackgroundTest', 'HeadingLevels', function() {
       mockFeedback.call(doCmd('nextHeading' + level))
           .expectSpeech('Heading ' + level)
           .call(doCmd('nextHeading' + level))
-          .expectSpeech('No next level ' + level + ' heading.')
+          .expectEarcon('wrap')
           .call(doCmd('previousHeading' + level))
-          .expectSpeech('No previous level ' + level + ' heading.');
+          .expectEarcon('wrap');
     };
     for (var i = 1; i <= 6; i++)
       makeLevelAssertions(i);

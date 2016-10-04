@@ -468,7 +468,8 @@ Output.RULES = {
       enter: '$nameFromNode= $role $state'
     },
     list: {
-      enter: '$role @@list_with_items($countChildren(listItem))'
+      enter: '$role @@list_with_items($countChildren(listItem))',
+      speak: '$descendants $role @@list_with_items($countChildren(listItem))'
     },
     listBox: {
       enter: '$nameFromNode ' +

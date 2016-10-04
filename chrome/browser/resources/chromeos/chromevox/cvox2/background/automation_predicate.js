@@ -71,7 +71,7 @@ AutomationPredicate.link = AutomationPredicate.roles([Role.link]);
 /** @type {AutomationPredicate.Unary} */
 AutomationPredicate.row = AutomationPredicate.roles([Role.row]);
 /** @type {AutomationPredicate.Unary} */
-AutomationPredicate.table = AutomationPredicate.roles([Role.table]);
+AutomationPredicate.table = AutomationPredicate.roles([Role.grid, Role.table]);
 
 /**
  * @param {!AutomationNode} node
@@ -197,6 +197,25 @@ AutomationPredicate.object = function(node) {
 };
 
 /**
+ * Matches against nodes visited during group navigation. An object as
+ * @param {!AutomationNode} node
+ * @return {boolean}
+ */
+AutomationPredicate.group = AutomationPredicate.match({
+  anyRole: [
+    Role.heading,
+    Role.list,
+    Role.paragraph
+  ],
+  anyPredicate: [
+    AutomationPredicate.editText,
+    AutomationPredicate.formField,
+    AutomationPredicate.object,
+    AutomationPredicate.table
+  ]
+});
+
+/**
  * @param {!AutomationNode} first
  * @param {!AutomationNode} second
  * @return {boolean}
@@ -234,12 +253,11 @@ AutomationPredicate.container = function(node) {
  * @param {!AutomationNode} node
  * @return {boolean}
  */
-AutomationPredicate.structuralContainer = function(node) {
-  return node.role == Role.rootWebArea ||
-      node.role == Role.embeddedObject ||
-      node.role == Role.iframe ||
-      node.role == Role.iframePresentational;
-};
+AutomationPredicate.structuralContainer = AutomationPredicate.roles([
+    Role.rootWebArea,
+    Role.embeddedObject,
+    Role.iframe,
+    Role.iframePresentational]);
 
 /**
  * Returns whether the given node should not be crossed when performing
