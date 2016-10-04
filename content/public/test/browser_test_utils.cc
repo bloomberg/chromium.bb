@@ -361,9 +361,11 @@ CrossSiteRedirectResponseHandler(const GURL& server_base_url,
 class TestNavigationManagerThrottle : public NavigationThrottle {
  public:
   TestNavigationManagerThrottle(NavigationHandle* handle,
-                                base::Closure on_will_start_request_closure)
+                                base::Closure on_will_start_request_closure,
+                                base::Closure on_will_process_response_closure)
       : NavigationThrottle(handle),
-        on_will_start_request_closure_(on_will_start_request_closure) {}
+        on_will_start_request_closure_(on_will_start_request_closure),
+        on_will_process_response_closure_(on_will_process_response_closure) {}
   ~TestNavigationManagerThrottle() override {}
 
  private:
@@ -374,7 +376,14 @@ class TestNavigationManagerThrottle : public NavigationThrottle {
     return NavigationThrottle::DEFER;
   }
 
+  NavigationThrottle::ThrottleCheckResult WillProcessResponse() override {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            on_will_process_response_closure_);
+    return NavigationThrottle::DEFER;
+  }
+
   base::Closure on_will_start_request_closure_;
+  base::Closure on_will_process_response_closure_;
 };
 
 bool HasGzipHeader(const base::RefCountedMemory& maybe_gzipped) {
@@ -1636,7 +1645,8 @@ TestNavigationManager::TestNavigationManager(WebContents* web_contents,
                                              const GURL& url)
     : WebContentsObserver(web_contents),
       url_(url),
-      navigation_paused_(false),
+      navigation_paused_in_will_start_(false),
+      navigation_paused_in_will_process_response_(false),
       handle_(nullptr),
       handled_navigation_(false),
       weak_factory_(this) {}
@@ -1649,8 +1659,9 @@ bool TestNavigationManager::WaitForWillStartRequest() {
   DCHECK(!did_finish_loop_runner_);
   if (!handle_ && handled_navigation_)
     return true;
-  if (navigation_paused_)
+  if (navigation_paused_in_will_start_)
     return true;
+  DCHECK(!navigation_paused_in_will_process_response_);
   will_start_loop_runner_ = new MessageLoopRunner();
   will_start_loop_runner_->Run();
   will_start_loop_runner_ = nullptr;
@@ -1661,13 +1672,33 @@ bool TestNavigationManager::WaitForWillStartRequest() {
   return !handled_navigation_;
 }
 
+bool TestNavigationManager::WaitForWillProcessResponse() {
+  DCHECK(!did_finish_loop_runner_);
+  if (!handle_ && handled_navigation_)
+    return true;
+  if (navigation_paused_in_will_process_response_)
+    return true;
+  // Ensure the navigation is resumed if the manager paused it previously.
+  if (navigation_paused_in_will_start_)
+    ResumeNavigation();
+  will_process_response_loop_runner_ = new MessageLoopRunner();
+  will_process_response_loop_runner_->Run();
+  will_process_response_loop_runner_ = nullptr;
+
+  // This will only be false if DidFinishNavigation is called before
+  // OnWillProcessResponse.
+  return !handled_navigation_;
+}
+
 void TestNavigationManager::WaitForNavigationFinished() {
   DCHECK(!will_start_loop_runner_);
   if (!handle_ && handled_navigation_)
     return;
   // Ensure the navigation is resumed if the manager paused it previously.
-  if (navigation_paused_)
+  if (navigation_paused_in_will_start_ ||
+      navigation_paused_in_will_process_response_) {
     ResumeNavigation();
+  }
   did_finish_loop_runner_ = new MessageLoopRunner();
   did_finish_loop_runner_->Run();
   did_finish_loop_runner_ = nullptr;
@@ -1681,7 +1712,9 @@ void TestNavigationManager::DidStartNavigation(NavigationHandle* handle) {
   std::unique_ptr<NavigationThrottle> throttle(
       new TestNavigationManagerThrottle(
           handle_, base::Bind(&TestNavigationManager::OnWillStartRequest,
-                              weak_factory_.GetWeakPtr())));
+                              weak_factory_.GetWeakPtr()),
+          base::Bind(&TestNavigationManager::OnWillProcessResponse,
+                     weak_factory_.GetWeakPtr())));
   handle_->RegisterThrottleForTesting(std::move(throttle));
 }
 
@@ -1690,7 +1723,8 @@ void TestNavigationManager::DidFinishNavigation(NavigationHandle* handle) {
     return;
   handle_ = nullptr;
   handled_navigation_ = true;
-  navigation_paused_ = false;
+  navigation_paused_in_will_start_ = false;
+  navigation_paused_in_will_process_response_ = false;
 
   // Resume any clients that are waiting for the end of the navigation. Note
   // that |will_start_loop_runner_| can be running if the navigation was
@@ -1699,22 +1733,39 @@ void TestNavigationManager::DidFinishNavigation(NavigationHandle* handle) {
     did_finish_loop_runner_->Quit();
   if (will_start_loop_runner_)
     will_start_loop_runner_->Quit();
+  if (will_process_response_loop_runner_)
+    will_process_response_loop_runner_->Quit();
 }
 
 void TestNavigationManager::OnWillStartRequest() {
-  navigation_paused_ = true;
+  navigation_paused_in_will_start_ = true;
   if (will_start_loop_runner_)
     will_start_loop_runner_->Quit();
 
-  // If waiting for the navigation to finish, resume the navigation.
+  // If waiting for further events in the navigation, resume the navigation.
+  if (did_finish_loop_runner_ || will_process_response_loop_runner_)
+    ResumeNavigation();
+}
+
+void TestNavigationManager::OnWillProcessResponse() {
+  navigation_paused_in_will_process_response_ = true;
+  DCHECK(!will_start_loop_runner_);
+  if (will_process_response_loop_runner_)
+    will_process_response_loop_runner_->Quit();
+
+  // If waiting for further events in the navigation, resume the navigation.
   if (did_finish_loop_runner_)
     ResumeNavigation();
 }
 
 void TestNavigationManager::ResumeNavigation() {
-  if (!navigation_paused_ || !handle_)
+  if (!(navigation_paused_in_will_start_ ||
+        navigation_paused_in_will_process_response_) ||
+      !handle_) {
     return;
-  navigation_paused_ = false;
+  }
+  navigation_paused_in_will_start_ = false;
+  navigation_paused_in_will_process_response_ = false;
   handle_->Resume();
 }
 

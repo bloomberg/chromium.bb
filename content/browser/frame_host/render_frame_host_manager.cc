@@ -632,6 +632,10 @@ void RenderFrameHostManager::SwapOutOldFrame(
       CreateRenderFrameProxyHost(old_render_frame_host->GetSiteInstance(),
                                  old_render_frame_host->render_view_host());
 
+  // Reset any NavigationHandle in the RenderFrameHost. This will prevent any
+  // ongoing navigation from attempting to transfer.
+  old_render_frame_host->SetNavigationHandle(nullptr);
+
   // Tell the old RenderFrameHost to swap out and be replaced by the proxy.
   old_render_frame_host->SwapOut(proxy, true);
 

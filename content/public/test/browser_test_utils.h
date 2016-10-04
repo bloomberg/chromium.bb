@@ -614,6 +614,10 @@ class TestNavigationManager : public WebContentsObserver {
   // stack. Returns false if the request was aborted before starting.
   WARN_UNUSED_RESULT bool WaitForWillStartRequest();
 
+  // Waits until the navigation response has been sent received. Returns false
+  // if the request was aborted before getting a response.
+  WARN_UNUSED_RESULT bool WaitForWillProcessResponse();
+
   // Waits until the navigation has been finished. Will automatically resume
   // navigations paused before this point.
   void WaitForNavigationFinished();
@@ -632,14 +636,20 @@ class TestNavigationManager : public WebContentsObserver {
   // WillStartRequest.
   void OnWillStartRequest();
 
+  // Called when the NavigationThrottle pauses the navigation in
+  // WillProcessResponse.
+  void OnWillProcessResponse();
+
   // Resumes the navigation.
   void ResumeNavigation();
 
   const GURL url_;
-  bool navigation_paused_;
+  bool navigation_paused_in_will_start_;
+  bool navigation_paused_in_will_process_response_;
   NavigationHandle* handle_;
   bool handled_navigation_;
   scoped_refptr<MessageLoopRunner> will_start_loop_runner_;
+  scoped_refptr<MessageLoopRunner> will_process_response_loop_runner_;
   scoped_refptr<MessageLoopRunner> did_finish_loop_runner_;
 
   base::WeakPtrFactory<TestNavigationManager> weak_factory_;

@@ -645,6 +645,10 @@ bool NavigationHandleImpl::MaybeTransferAndProceedInternal() {
   if (IsBrowserSideNavigationEnabled())
     return true;
 
+  // A navigation from a RenderFrame that is no longer active should not attempt
+  // to transfer.
+  CHECK(render_frame_host_->is_active());
+
   // Subframes shouldn't swap processes unless out-of-process iframes are
   // possible.
   if (!IsInMainFrame() && !SiteIsolationPolicy::AreCrossProcessFramesPossible())
