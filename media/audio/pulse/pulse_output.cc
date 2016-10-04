@@ -227,6 +227,9 @@ void PulseAudioOutputStream::Stop() {
 void PulseAudioOutputStream::SetVolume(double volume) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  // Waiting for the main loop lock will ensure outstanding callbacks have
+  // completed and |volume_| is not accessed from them.
+  AutoPulseLock auto_lock(pa_mainloop_);
   volume_ = static_cast<float>(volume);
 }
 
