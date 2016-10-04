@@ -164,10 +164,9 @@ bool SpeechRecognition::hasPendingActivity() const {
 SpeechRecognition::SpeechRecognition(Page* page, ExecutionContext* context)
     : ActiveScriptWrappable(this),
       ActiveDOMObject(context),
-      m_grammars(
-          SpeechGrammarList::
-              create())  // FIXME: The spec is not clear on the default value for the grammars attribute.
-      ,
+      m_grammars(SpeechGrammarList::create()),  // FIXME: The spec is not clear
+                                                // on the default value for the
+                                                // grammars attribute.
       m_audioTrack(nullptr),
       m_continuous(false),
       m_interimResults(false),
@@ -175,7 +174,8 @@ SpeechRecognition::SpeechRecognition(Page* page, ExecutionContext* context)
       m_controller(SpeechRecognitionController::from(page)),
       m_started(false),
       m_stopping(false) {
-  // FIXME: Need to hook up with Page to get notified when the visibility changes.
+  // FIXME: Need to hook up with Page to get notified when the visibility
+  // changes.
 }
 
 SpeechRecognition::~SpeechRecognition() {}

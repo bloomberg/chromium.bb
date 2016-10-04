@@ -61,7 +61,8 @@ const HeapVector<Member<SpeechSynthesisVoice>>& SpeechSynthesis::getVoices() {
   if (m_voiceList.size())
     return m_voiceList;
 
-  // If the voiceList is empty, that's the cue to get the voices from the platform again.
+  // If the voiceList is empty, that's the cue to get the voices from the
+  // platform again.
   const Vector<RefPtr<PlatformSpeechSynthesisVoice>>& platformVoices =
       m_platformSpeechSynthesizer->voiceList();
   size_t voiceCount = platformVoices.size();
@@ -72,8 +73,9 @@ const HeapVector<Member<SpeechSynthesisVoice>>& SpeechSynthesis::getVoices() {
 }
 
 bool SpeechSynthesis::speaking() const {
-  // If we have a current speech utterance, then that means we're assumed to be in a speaking state.
-  // This state is independent of whether the utterance happens to be paused.
+  // If we have a current speech utterance, then that means we're assumed to be
+  // in a speaking state. This state is independent of whether the utterance
+  // happens to be paused.
   return currentSpeechUtterance();
 }
 

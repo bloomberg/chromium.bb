@@ -42,8 +42,8 @@ class MODULES_EXPORT SpeechGrammar final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SpeechGrammar*
-  create();  // FIXME: The spec is not clear on what the constructor should look like.
+  static SpeechGrammar* create();  // FIXME: The spec is not clear on what the
+                                   // constructor should look like.
   static SpeechGrammar* create(const KURL& src, double weight);
 
   const KURL& src(ExecutionContext*) const { return m_src; }

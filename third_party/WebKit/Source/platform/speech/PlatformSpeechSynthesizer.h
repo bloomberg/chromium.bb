@@ -80,14 +80,16 @@ class PLATFORM_EXPORT PlatformSpeechSynthesizer
 
   void setVoiceList(Vector<RefPtr<PlatformSpeechSynthesisVoice>>&);
 
-  // Eager finalization is required to promptly release the owned WebSpeechSynthesizer.
+  // Eager finalization is required to promptly release the owned
+  // WebSpeechSynthesizer.
   //
-  // If not and delayed until lazily swept, m_webSpeechSynthesizerClient may end up
-  // being lazily swept first (i.e., before this PlatformSpeechSynthesizer), leaving
-  // m_webSpeechSynthesizer with a dangling pointer to a finalized object --
-  // WebSpeechSynthesizer embedder implementations calling notification methods in the
-  // other directions by way of m_webSpeechSynthesizerClient. Eagerly releasing
-  // WebSpeechSynthesizer prevents such unsafe accesses.
+  // If not and delayed until lazily swept, m_webSpeechSynthesizerClient may end
+  // up being lazily swept first (i.e., before this PlatformSpeechSynthesizer),
+  // leaving m_webSpeechSynthesizer with a dangling pointer to a finalized
+  // object -- WebSpeechSynthesizer embedder implementations calling
+  // notification methods in the other directions by way of
+  // m_webSpeechSynthesizerClient. Eagerly releasing WebSpeechSynthesizer
+  // prevents such unsafe accesses.
   EAGERLY_FINALIZE();
   DECLARE_VIRTUAL_TRACE();
 

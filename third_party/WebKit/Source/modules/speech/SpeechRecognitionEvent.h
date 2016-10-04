@@ -52,7 +52,8 @@ class SpeechRecognitionEvent final : public Event {
   unsigned long resultIndex() const { return m_resultIndex; }
   SpeechRecognitionResultList* results() const { return m_results; }
 
-  // These two methods are here to satisfy the specification which requires these attributes to exist.
+  // These two methods are here to satisfy the specification which requires
+  // these attributes to exist.
   Document* interpretation() { return nullptr; }
   Document* emma() { return nullptr; }
 
