@@ -49,6 +49,7 @@ class RuntimeFeatureWriter(in_generator.Writer):
         'feature_policy': None,
         'implied_by': [],
         'origin_trial_feature_name': None,
+        'origin_trial_os': [],
         'settable_from_internals': False,
         'status': None,
     }
