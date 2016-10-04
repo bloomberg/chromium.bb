@@ -16,7 +16,8 @@ namespace blink {
 class PaintLayer;
 
 enum ClipRectsCacheSlot {
-  // Relative to the ancestor treated as the root (e.g. transformed layer). Used for hit testing.
+  // Relative to the ancestor treated as the root (e.g. transformed layer).
+  // Used for hit testing.
   RootRelativeClipRects,
   RootRelativeClipRectsIgnoringViewportClip,
 

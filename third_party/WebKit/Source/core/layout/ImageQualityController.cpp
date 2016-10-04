@@ -91,7 +91,8 @@ InterpolationQuality ImageQualityController::chooseInterpolationQuality(
 }
 
 ImageQualityController::~ImageQualityController() {
-  // This will catch users of ImageQualityController that forget to call cleanUp.
+  // This will catch users of ImageQualityController that forget to call
+  // cleanUp.
   ASSERT(!gImageQualityController || gImageQualityController->isEmpty());
 }
 
@@ -167,8 +168,8 @@ bool ImageQualityController::shouldPaintAtLowQuality(
     const void* layer,
     const LayoutSize& layoutSize,
     double lastFrameTimeMonotonic) {
-  // If the image is not a bitmap image, then none of this is relevant and we just paint at high
-  // quality.
+  // If the image is not a bitmap image, then none of this is relevant and we
+  // just paint at high quality.
   if (!image || !image->isBitmapImage())
     return false;
 
@@ -203,12 +204,14 @@ bool ImageQualityController::shouldPaintAtLowQuality(
   }
 
   if (layoutSize == image->size()) {
-    // There is no scale in effect. If we had a scale in effect before, we can just remove this object from the list.
+    // There is no scale in effect. If we had a scale in effect before, we can
+    // just remove this object from the list.
     removeLayer(object, innerMap, layer);
     return false;
   }
 
-  // If an animated resize is active for this object, paint in low quality and kick the timer ahead.
+  // If an animated resize is active for this object, paint in low quality and
+  // kick the timer ahead.
   if (objectIsResizing) {
     bool sizesChanged = oldSize != layoutSize;
     set(object, innerMap, layer, layoutSize, sizesChanged);

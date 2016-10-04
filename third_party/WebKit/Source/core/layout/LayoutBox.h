@@ -75,7 +75,8 @@ struct LayoutBoxRareData {
         m_snapContainer(nullptr),
         m_snapAreas(nullptr) {}
 
-  // For spanners, the spanner placeholder that lays us out within the multicol container.
+  // For spanners, the spanner placeholder that lays us out within the multicol
+  // container.
   LayoutMultiColumnSpannerPlaceholder* m_spannerPlaceholder;
 
   LayoutUnit m_overrideLogicalContentWidth;
@@ -331,9 +332,10 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   virtual LayoutBox* locationContainer() const;
 
   // FIXME: Currently scrollbars are using int geometry and positioned based on
-  // pixelSnappedBorderBoxRect whose size may change when location changes because of
-  // pixel snapping. This function is used to change location of the LayoutBox outside
-  // of LayoutBox::layout(). Will remove when we use LayoutUnits for scrollbars.
+  // pixelSnappedBorderBoxRect whose size may change when location changes
+  // because of pixel snapping. This function is used to change location of the
+  // LayoutBox outside of LayoutBox::layout(). Will remove when we use
+  // LayoutUnits for scrollbars.
   void setLocationAndUpdateOverflowControlsIfNeeded(const LayoutPoint&);
 
   void setSize(const LayoutSize& size) {
@@ -374,7 +376,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     return pixelSnappedBorderBoxRect();
   }
 
-  // The content area of the box (excludes padding - and intrinsic padding for table cells, etc... - and border).
+  // The content area of the box (excludes padding - and intrinsic padding for
+  // table cells, etc... - and border).
   DISABLE_CFI_PERF LayoutRect contentBoxRect() const {
     return LayoutRect(borderLeft() + paddingLeft(), borderTop() + paddingTop(),
                       contentWidth(), contentHeight());
@@ -386,13 +389,16 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   IntRect absoluteContentBox() const;
   // The offset of the content box in absolute coords, ignoring transforms.
   IntSize absoluteContentBoxOffset() const;
-  // The content box converted to absolute coords (taking transforms into account).
+  // The content box converted to absolute coords (taking transforms into
+  // account).
   FloatQuad absoluteContentQuad() const;
   // The enclosing rectangle of the background with given opacity requirement.
   LayoutRect backgroundRect(BackgroundRectType) const;
 
-  // This returns the content area of the box (excluding padding and border). The only difference with contentBoxRect is that computedCSSContentBoxRect
-  // does include the intrinsic padding in the content box as this is what some callers expect (like getComputedStyle).
+  // This returns the content area of the box (excluding padding and border).
+  // The only difference with contentBoxRect is that computedCSSContentBoxRect
+  // does include the intrinsic padding in the content box as this is what some
+  // callers expect (like getComputedStyle).
   LayoutRect computedCSSContentBoxRect() const {
     return LayoutRect(
         borderLeft() + computedCSSPaddingLeft(),
@@ -412,17 +418,20 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   LayoutBox* nextInFlowSiblingBox() const;
   LayoutBox* parentBox() const;
 
-  // Return the previous sibling column set or spanner placeholder. Only to be used on multicol container children.
+  // Return the previous sibling column set or spanner placeholder. Only to be
+  // used on multicol container children.
   LayoutBox* previousSiblingMultiColumnBox() const;
-  // Return the next sibling column set or spanner placeholder. Only to be used on multicol container children.
+  // Return the next sibling column set or spanner placeholder. Only to be used
+  // on multicol container children.
   LayoutBox* nextSiblingMultiColumnBox() const;
 
   bool canResize() const;
 
-  // Visual and layout overflow are in the coordinate space of the box.  This means that they
-  // aren't purely physical directions. For horizontal-tb and vertical-lr they will match physical
-  // directions, but for vertical-rl, the left/right are flipped when compared to their physical
-  // counterparts.  For example minX is on the left in vertical-lr, but it is on the right in
+  // Visual and layout overflow are in the coordinate space of the box. This
+  // means that they aren't purely physical directions. For horizontal-tb and
+  // vertical-lr they will match physical directions, but for vertical-rl, the
+  // left/right are flipped when compared to their physical counterparts.
+  // For example minX is on the left in vertical-lr, but it is on the right in
   // vertical-rl.
   LayoutRect noOverflowRect() const;
   LayoutRect layoutOverflowRect() const {
@@ -460,10 +469,11 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     return m_overflow ? m_overflow->contentsVisualOverflowRect() : LayoutRect();
   }
 
-  // These methods don't mean the box *actually* has top/left overflow.  They mean that
-  // *if* the box overflows, it will overflow to the top/left rather than the bottom/right.
-  // This happens when child content is laid out right-to-left (e.g. direction:rtl) or
-  // or bottom-to-top (e.g. direction:rtl writing-mode:vertical-rl).
+  // These methods don't mean the box *actually* has top/left overflow. They
+  // mean that *if* the box overflows, it will overflow to the top/left rather
+  // than the bottom/right. This happens when child content is laid out
+  // right-to-left (e.g. direction:rtl) or or bottom-to-top (e.g. direction:rtl
+  // writing-mode:vertical-rl).
   virtual bool hasTopOverflow() const;
   virtual bool hasLeftOverflow() const;
 
@@ -500,16 +510,18 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
                                               : contentWidth();
   }
 
-  // IE extensions. Used to calculate offsetWidth/Height.  Overridden by inlines (LayoutFlow)
-  // to return the remaining width on a given line (and the height of a single line).
+  // IE extensions. Used to calculate offsetWidth/Height. Overridden by inlines
+  // (LayoutFlow) to return the remaining width on a given line (and the height
+  // of a single line).
   LayoutUnit offsetWidth() const override { return m_frameRect.width(); }
   LayoutUnit offsetHeight() const override { return m_frameRect.height(); }
 
   int pixelSnappedOffsetWidth(const Element*) const final;
   int pixelSnappedOffsetHeight(const Element*) const final;
 
-  // More IE extensions.  clientWidth and clientHeight represent the interior of an object
-  // excluding border and scrollbar.  clientLeft/Top are just the borderLeftWidth and borderTopWidth.
+  // More IE extensions.  clientWidth and clientHeight represent the interior of
+  // an object excluding border and scrollbar. clientLeft/Top are just the
+  // borderLeftWidth and borderTopWidth.
   DISABLE_CFI_PERF LayoutUnit clientLeft() const {
     return LayoutUnit(borderLeft() +
                       (shouldPlaceBlockDirectionScrollbarOnLogicalLeft()
@@ -537,11 +549,11 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   int pixelSnappedClientWidth() const;
   int pixelSnappedClientHeight() const;
 
-  // scrollWidth/scrollHeight will be the same as clientWidth/clientHeight unless the
-  // object has overflow:hidden/scroll/auto specified and also has overflow.
-  // scrollLeft/Top return the current scroll position.  These methods are virtual so that objects like
-  // textareas can scroll shadow content (but pretend that they are the objects that are
-  // scrolling).
+  // scrollWidth/scrollHeight will be the same as clientWidth/clientHeight
+  // unless the object has overflow:hidden/scroll/auto specified and also has
+  // overflow. scrollLeft/Top return the current scroll position. These methods
+  // are virtual so that objects like textareas can scroll shadow content (but
+  // pretend that they are the objects that are scrolling).
   virtual LayoutUnit scrollLeft() const;
   virtual LayoutUnit scrollTop() const;
   virtual LayoutUnit scrollWidth() const;
@@ -640,11 +652,11 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   }
 
   // The following functions are used to implement collapsing margins.
-  // All objects know their maximal positive and negative margins.  The
-  // formula for computing a collapsed margin is |maxPosMargin| - |maxNegmargin|.
-  // For a non-collapsing box, such as a leaf element, this formula will simply return
-  // the margin of the element.  Blocks override the maxMarginBefore and maxMarginAfter
-  // methods.
+  // All objects know their maximal positive and negative margins. The formula
+  // for computing a collapsed margin is |maxPosMargin| - |maxNegmargin|.
+  // For a non-collapsing box, such as a leaf element, this formula will simply
+  // return the margin of the element.  Blocks override the maxMarginBefore and
+  // maxMarginAfter methods.
   virtual bool isSelfCollapsingBlock() const { return false; }
   virtual LayoutUnit collapsedMarginBefore() const { return marginBefore(); }
   virtual LayoutUnit collapsedMarginAfter() const { return marginAfter(); }
@@ -659,7 +671,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   FloatRect localBoundingBoxRectForAccessibility() const final;
 
   int reflectionOffset() const;
-  // Given a rect in the object's coordinate space, returns the corresponding rect in the reflection.
+  // Given a rect in the object's coordinate space, returns the corresponding
+  // rect in the reflection.
   LayoutRect reflectedRect(const LayoutRect&) const;
 
   void layout() override;
@@ -672,10 +685,10 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   LayoutUnit minPreferredLogicalWidth() const override;
   LayoutUnit maxPreferredLogicalWidth() const override;
 
-  // FIXME: We should rename these back to overrideLogicalHeight/Width and have them store
-  // the border-box height/width like the regular height/width accessors on LayoutBox.
-  // Right now, these are different than contentHeight/contentWidth because they still
-  // include the scrollbar height/width.
+  // FIXME: We should rename these back to overrideLogicalHeight/Width and have
+  // them store the border-box height/width like the regular height/width
+  // accessors on LayoutBox. Right now, these are different than contentHeight/
+  // contentWidth because they still include the scrollbar height/width.
   LayoutUnit overrideLogicalContentWidth() const;
   LayoutUnit overrideLogicalContentHeight() const;
   bool hasOverrideLogicalContentHeight() const;
@@ -743,8 +756,9 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     ComputedMarginValues m_margins;
   };
 
-  // Resolve auto margins in the chosen direction of the containing block so that objects can be pushed to the start, middle or end
-  // of the containing block.
+  // Resolve auto margins in the chosen direction of the containing block so
+  // that objects can be pushed to the start, middle or end of the containing
+  // block.
   void computeMarginsForDirection(MarginDirection forDirection,
                                   const LayoutBlock* containingBlock,
                                   LayoutUnit containerWidth,
@@ -759,24 +773,26 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   LayoutUnit offsetFromLogicalTopOfFirstPage() const;
 
-  // The page logical offset is the object's offset from the top of the page in the page progression
-  // direction (so an x-offset in vertical text and a y-offset for horizontal text).
+  // The page logical offset is the object's offset from the top of the page in
+  // the page progression direction (so an x-offset in vertical text and a
+  // y-offset for horizontal text).
   LayoutUnit pageLogicalOffset() const {
     return m_rareData ? m_rareData->m_pageLogicalOffset : LayoutUnit();
   }
   void setPageLogicalOffset(LayoutUnit);
 
-  // Specify which page or column to associate with an offset, if said offset is exactly at a page
-  // or column boundary.
+  // Specify which page or column to associate with an offset, if said offset is
+  // exactly at a page or column boundary.
   enum PageBoundaryRule { AssociateWithFormerPage, AssociateWithLatterPage };
   LayoutUnit pageLogicalHeightForOffset(LayoutUnit) const;
   LayoutUnit pageRemainingLogicalHeightForOffset(LayoutUnit,
                                                  PageBoundaryRule) const;
 
-  // Calculate the strut to insert in order fit content of size |contentLogicalHeight|.
-  // |strutToNextPage| is the strut to add to |offset| to merely get to the top of the next page
-  // or column. This is what will be returned if the content can actually fit there. Otherwise,
-  // return the distance to the next fragmentainer that can fit this piece of content.
+  // Calculate the strut to insert in order fit content of size
+  // |contentLogicalHeight|. |strutToNextPage| is the strut to add to |offset|
+  // to merely get to the top of the next page or column. This is what will be
+  // returned if the content can actually fit there. Otherwise, return the
+  // distance to the next fragmentainer that can fit this piece of content.
   virtual LayoutUnit calculatePaginationStrutToFitContent(
       LayoutUnit offset,
       LayoutUnit strutToNextPage,
@@ -788,9 +804,10 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   virtual InlineBox* createInlineBox();
   void dirtyLineBoxes(bool fullLayout);
 
-  // For atomic inline elements, this function returns the inline box that contains us.  Enables
-  // the atomic inline LayoutObject to quickly determine what line it is contained on and to easily
-  // iterate over structures on the line.
+  // For atomic inline elements, this function returns the inline box that
+  // contains us. Enables the atomic inline LayoutObject to quickly determine
+  // what line it is contained on and to easily iterate over structures on the
+  // line.
   InlineBox* inlineBoxWrapper() const { return m_inlineBoxWrapper; }
   void setInlineBoxWrapper(InlineBox*);
   void deleteLineBoxWrapper();
@@ -801,15 +818,16 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     return m_rareData ? m_rareData->m_spannerPlaceholder : 0;
   }
 
-  // A pagination strut is the amount of space needed to push an in-flow block-level object (or
-  // float) to the logical top of the next page or column. It will be set both for forced breaks
-  // (e.g. page-break-before:always) and soft breaks (when there's not enough space in the current
-  // page / column for the object). The strut is baked into the logicalTop() of the object, so
-  // that logicalTop() - paginationStrut() == the original position in the previous column before
-  // deciding to break.
+  // A pagination strut is the amount of space needed to push an in-flow block-
+  // level object (or float) to the logical top of the next page or column. It
+  // will be set both for forced breaks (e.g. page-break-before:always) and soft
+  // breaks (when there's not enough space in the current page / column for the
+  // object). The strut is baked into the logicalTop() of the object, so that
+  // logicalTop() - paginationStrut() == the original position in the previous
+  // column before deciding to break.
   //
-  // Pagination struts are either set in front of a block-level box (here) or before a line
-  // (RootInlineBox::paginationStrut()).
+  // Pagination struts are either set in front of a block-level box (here) or
+  // before a line (RootInlineBox::paginationStrut()).
   LayoutUnit paginationStrut() const {
     return m_rareData ? m_rareData->m_paginationStrut : LayoutUnit();
   }
@@ -819,25 +837,27 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
       m_rareData->m_paginationStrut = LayoutUnit();
   }
 
-  // Is the specified break-before or break-after value supported on this object? It needs to be
-  // in-flow all the way up to a fragmentation context that supports the specified value.
+  // Is the specified break-before or break-after value supported on this
+  // object? It needs to be in-flow all the way up to a fragmentation context
+  // that supports the specified value.
   bool isBreakBetweenControllable(EBreak) const;
 
-  // Is the specified break-inside value supported on this object? It needs to be contained by a
-  // fragmentation context that supports the specified value.
+  // Is the specified break-inside value supported on this object? It needs to
+  // be contained by a fragmentation context that supports the specified value.
   bool isBreakInsideControllable(EBreak) const;
 
   virtual EBreak breakAfter() const;
   virtual EBreak breakBefore() const;
   EBreak breakInside() const;
 
-  // Join two adjacent break values specified on break-before and/or break-after. avoid* values
-  // win over auto values, and forced break values win over avoid* values. |firstValue| is
-  // specified on an element earlier in the flow than |secondValue|. This method is used at class
-  // A break points [1], to join the values of the previous break-after and the next
-  // break-before, to figure out whether we may, must, or should not, break at that point. It is
-  // also used when propagating break-before values from first children and break-after values on
-  // last children to their container.
+  // Join two adjacent break values specified on break-before and/or break-
+  // after. avoid* values win over auto values, and forced break values win over
+  // avoid* values. |firstValue| is specified on an element earlier in the flow
+  // than |secondValue|. This method is used at class A break points [1], to
+  // join the values of the previous break-after and the next break-before, to
+  // figure out whether we may, must, or should not, break at that point. It is
+  // also used when propagating break-before values from first children and
+  // break-after values on last children to their container.
   //
   // [1] https://drafts.csswg.org/css-break/#possible-breaks
   static EBreak joinFragmentainerBreakValues(EBreak firstValue,
@@ -847,9 +867,10 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   EBreak classABreakPointValue(EBreak previousBreakAfterValue) const;
 
-  // Return true if we should insert a break in front of this box. The box needs to start at a
-  // valid class A break point in order to allow a forced break. To determine whether or not to
-  // break, we also need to know the break-after value of the previous in-flow sibling.
+  // Return true if we should insert a break in front of this box. The box needs
+  // to start at a valid class A break point in order to allow a forced break.
+  // To determine whether or not to break, we also need to know the break-after
+  // value of the previous in-flow sibling.
   bool needsForcedBreakBefore(EBreak previousBreakAfterValue) const;
 
   bool paintedOutputOfObjectHasNoEffectRegardlessOfSize() const override;
@@ -873,10 +894,12 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   virtual void computeLogicalHeight(LayoutUnit logicalHeight,
                                     LayoutUnit logicalTop,
                                     LogicalExtentComputedValues&) const;
-  // This function will compute the logical border-box height, without laying out the box. This means that the result
-  // is only "correct" when the height is explicitly specified. This function exists so that intrinsic width calculations
-  // have a way to deal with children that have orthogonal flows.
-  // When there is no explicit height, this function assumes a content height of zero (and returns just border+padding)
+  // This function will compute the logical border-box height, without laying
+  // out the box. This means that the result is only "correct" when the height
+  // is explicitly specified. This function exists so that intrinsic width
+  // calculations have a way to deal with children that have orthogonal flows.
+  // When there is no explicit height, this function assumes a content height of
+  // zero (and returns just border+padding).
   LayoutUnit computeLogicalHeightWithoutLayout() const;
 
   void computeLogicalWidth(LogicalExtentComputedValues&) const;
@@ -898,8 +921,9 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     return m_intrinsicContentLogicalHeight;
   }
 
-  // Whether or not the element shrinks to its intrinsic width (rather than filling the width
-  // of a containing block).  HTML4 buttons, <select>s, <input>s, legends, and floating/compact elements do this.
+  // Whether or not the element shrinks to its intrinsic width (rather than
+  // filling the width of a containing block). HTML4 buttons, <select>s,
+  // <input>s, legends, and floating/compact elements do this.
   bool sizesLogicalWidthToFitContent(const Length& logicalWidth) const;
 
   LayoutUnit shrinkLogicalWidthToAvoidFloats(LayoutUnit childMarginStart,
@@ -939,14 +963,16 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   bool percentageLogicalHeightIsResolvable() const;
   LayoutUnit computePercentageLogicalHeight(const Length& height) const;
 
-  // Block flows subclass availableWidth/Height to handle multi column layout (shrinking the width/height available to children when laying out.)
+  // Block flows subclass availableWidth/Height to handle multi column layout
+  // (shrinking the width/height available to children when laying out.)
   LayoutUnit availableLogicalWidth() const { return contentLogicalWidth(); }
   LayoutUnit availableLogicalHeight(AvailableLogicalHeightType) const;
   LayoutUnit availableLogicalHeightUsing(const Length&,
                                          AvailableLogicalHeightType) const;
 
-  // There are a few cases where we need to refer specifically to the available physical width and available physical height.
-  // Relative positioning is one of those cases, since left/top offsets are physical.
+  // There are a few cases where we need to refer specifically to the available
+  // physical width and available physical height. Relative positioning is one
+  // of those cases, since left/top offsets are physical.
   LayoutUnit availableWidth() const {
     return style()->isHorizontalWritingMode()
                ? availableLogicalWidth()
@@ -1011,8 +1037,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
                                  hasAutoVerticalScrollbar());
   }
 
-  // Elements such as the <input> field override this to specify that they are scrollable
-  // outside the context of the CSS overflow style
+  // Elements such as the <input> field override this to specify that they are
+  // scrollable outside the context of the CSS overflow style
   virtual bool isIntrinsicallyScrollable(
       ScrollbarOrientation orientation) const {
     return false;
@@ -1022,9 +1048,12 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   // Page / column breakability inside block-level objects.
   enum PaginationBreakability {
-    AllowAnyBreaks,  // No restrictions on breaking. May examine children to find possible break points.
-    ForbidBreaks,    // Forbid breaks inside this object. Content cannot be split nicely into smaller pieces.
-    AvoidBreaks      // Preferably avoid breaks. If not possible, examine children to find possible break points.
+    AllowAnyBreaks,  // No restrictions on breaking. May examine children to
+                     // find possible break points.
+    ForbidBreaks,  // Forbid breaks inside this object. Content cannot be split
+                   // nicely into smaller pieces.
+    AvoidBreaks    // Preferably avoid breaks. If not possible, examine children
+                   // to find possible break points.
   };
   PaginationBreakability getPaginationBreakability() const;
 
@@ -1042,7 +1071,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     return LayoutRect();
   }
 
-  // Returns the combination of overflow clip, contain: paint clip and CSS clip for this object, in local space.
+  // Returns the combination of overflow clip, contain: paint clip and CSS clip
+  // for this object, in local space.
   LayoutRect clippingRect() const;
 
   virtual void paintBoxDecorationBackground(const PaintInfo&,
@@ -1063,7 +1093,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   virtual int firstLineBoxBaseline() const { return -1; }
   virtual int inlineBlockBaseline(LineDirectionMode) const {
     return -1;
-  }  // Returns -1 if we should skip this box when computing the baseline of an inline-block.
+  }  // Returns -1 if we should skip this box when computing the baseline of an
+     // inline-block.
 
   virtual Node* nodeForHitTest() const { return node(); }
 
@@ -1115,7 +1146,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   LayoutPoint flipForWritingModeForChild(const LayoutBox* child,
                                          const LayoutPoint&) const;
   LayoutUnit flipForWritingMode(LayoutUnit position) const WARN_UNUSED_RETURN {
-    // The offset is in the block direction (y for horizontal writing modes, x for vertical writing modes).
+    // The offset is in the block direction (y for horizontal writing modes, x
+    // for vertical writing modes).
     if (!UNLIKELY(hasFlippedBlocksWritingMode()))
       return position;
     return logicalHeight() - position;
@@ -1182,10 +1214,10 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   virtual IntSize originAdjustmentForScrollbars() const;
   IntSize scrolledContentOffset() const;
 
-  // Maps a rect in scrolling contents space to box space and apply overflow clip if needed.
-  // Returns true if no clipping applied or the rect actually intersects the clipping region.
-  // If edgeInclusive is true, then this method may return true even
-  // if the resulting rect has zero area.
+  // Maps a rect in scrolling contents space to box space and apply overflow
+  // clip if needed. Returns true if no clipping applied or the rect actually
+  // intersects the clipping region. If edgeInclusive is true, then this method
+  // may return true even if the resulting rect has zero area.
   bool mapScrollingContentsRectToBoxSpace(
       LayoutRect&,
       ApplyOverflowClipFlag,
@@ -1290,8 +1322,10 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     return ItemPositionStretch;
   }
 
-  // Returns false if it could not cheaply compute the extent (e.g. fixed background), in which case the returned rect may be incorrect.
-  // FIXME: make this a const method once the LayoutBox reference in BoxPainter is const.
+  // Returns false if it could not cheaply compute the extent (e.g. fixed
+  // background), in which case the returned rect may be incorrect.
+  // FIXME: make this a const method once the LayoutBox reference in BoxPainter
+  // is const.
   bool getBackgroundPaintedExtent(LayoutRect&) const;
   virtual bool foregroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect,
                                                  unsigned maxDepthToTest) const;
@@ -1424,10 +1458,12 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
                                   LayoutUnit& marginStart,
                                   LayoutUnit& marginEnd) const;
 
-  // Calculates the intrinsic(https://drafts.csswg.org/css-sizing-3/#intrinsic) logical widths for this layout box.
+  // Calculates the intrinsic(https://drafts.csswg.org/css-sizing-3/#intrinsic)
+  // logical widths for this layout box.
   //
   // intrinsicWidth is defined as:
-  //     intrinsic size of content (without our border and padding) + scrollbarWidth.
+  //     intrinsic size of content (without our border and padding) +
+  //     scrollbarWidth.
   //
   // preferredWidth is defined as:
   //     fixedWidth OR (intrinsicWidth plus border and padding).
@@ -1568,9 +1604,10 @@ inline LayoutBox* LayoutBox::nextSiblingMultiColumnBox() const {
 inline void LayoutBox::setInlineBoxWrapper(InlineBox* boxWrapper) {
   if (boxWrapper) {
     ASSERT(!m_inlineBoxWrapper);
-    // m_inlineBoxWrapper should already be nullptr. Deleting it is a safeguard against security issues.
-    // Otherwise, there will two line box wrappers keeping the reference to this layoutObject, and
-    // only one will be notified when the layoutObject is getting destroyed. The second line box wrapper
+    // m_inlineBoxWrapper should already be nullptr. Deleting it is a safeguard
+    // against security issues. Otherwise, there will two line box wrappers
+    // keeping the reference to this layoutObject, and only one will be notified
+    // when the layoutObject is getting destroyed. The second line box wrapper
     // will keep a stale reference.
     if (UNLIKELY(m_inlineBoxWrapper != nullptr))
       deleteLineBoxWrapper();

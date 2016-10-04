@@ -36,10 +36,12 @@
 
 namespace blink {
 
-// FIXME: Now that TransformState lazily creates its TransformationMatrix it takes up less space.
-// So there's really no need for a ref counted version. So This class should be removed and replaced
-// with TransformState. There are some minor differences (like the way translate() works slightly
-// differently than move()) so care has to be taken when this is done.
+// FIXME: Now that TransformState lazily creates its TransformationMatrix it
+// takes up less space.
+// So there's really no need for a ref counted version. So This class should be
+// removed and replaced with TransformState. There are some minor differences
+// (like the way translate() works slightly differently than move()) so care has
+// to be taken when this is done.
 class HitTestingTransformState : public RefCounted<HitTestingTransformState> {
  public:
   static PassRefPtr<HitTestingTransformState> create(const FloatPoint& p,
