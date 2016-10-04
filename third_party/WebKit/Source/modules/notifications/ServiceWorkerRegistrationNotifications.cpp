@@ -67,7 +67,8 @@ ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(
     ExceptionState& exceptionState) {
   ExecutionContext* executionContext = scriptState->getExecutionContext();
 
-  // If context object's active worker is null, reject promise with a TypeError exception.
+  // If context object's active worker is null, reject the promise with a
+  // TypeError exception.
   if (!registration.active())
     return ScriptPromise::reject(
         scriptState,
@@ -75,7 +76,8 @@ ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(
                                           "No active registration available on "
                                           "the ServiceWorkerRegistration."));
 
-  // If permission for notification's origin is not "granted", reject promise with a TypeError exception, and terminate these substeps.
+  // If permission for notification's origin is not "granted", reject the
+  // promise with a TypeError exception, and terminate these substeps.
   if (NotificationManager::from(executionContext)->permissionStatus() !=
       mojom::blink::PermissionStatus::GRANTED)
     return ScriptPromise::reject(
@@ -84,13 +86,16 @@ ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(
             scriptState->isolate(),
             "No notification permission has been granted for this origin."));
 
-  // Validate the developer-provided values to get a WebNotificationData object.
+  // Validate the developer-provided options to get the WebNotificationData.
   WebNotificationData data = createWebNotificationData(executionContext, title,
                                                        options, exceptionState);
   if (exceptionState.hadException())
     return exceptionState.reject(scriptState);
 
-  // Log number of actions developer provided in linear histogram: 0 -> underflow bucket, 1-16 -> distinct buckets, 17+ -> overflow bucket.
+  // Log number of actions developer provided in linear histogram:
+  //     0    -> underflow bucket,
+  //     1-16 -> distinct buckets,
+  //     17+  -> overflow bucket.
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       EnumerationHistogram, notificationCountHistogram,
       new EnumerationHistogram(

@@ -21,8 +21,8 @@ const int kMaxApplicationServerKeyLength = 255;
 String bufferSourceToString(
     const ArrayBufferOrArrayBufferView& applicationServerKey,
     ExceptionState& exceptionState) {
-  // Check the validity of the sender info. It must be a 65 byte unencrypted key,
-  // which has the byte 0x04 as the first byte as a marker.
+  // Check the validity of the sender info. It must be a 65-byte uncompressed
+  // key, which has the byte 0x04 as the first byte as a marker.
   unsigned char* input;
   int length;
   if (applicationServerKey.isArrayBuffer()) {

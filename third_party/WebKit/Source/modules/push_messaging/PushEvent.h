@@ -33,6 +33,7 @@ class MODULES_EXPORT PushEvent final : public ExtendableEvent {
 
   ~PushEvent() override;
 
+  // ExtendableEvent interface.
   const AtomicString& interfaceName() const override;
 
   PushMessageData* data();

@@ -16,10 +16,10 @@ class ScriptPromiseResolver;
 struct WebPushError;
 struct WebPushSubscription;
 
-// PushSubscriptionCallbacks is an implementation of WebPushSubscriptionCallbacks
-// that will resolve the underlying promise depending on the result passed to
-// the callback. It takes a ServiceWorkerRegistration in its constructor and
-// will pass it to the PushSubscription.
+// This class is an implementation of WebPushSubscriptionCallbacks that will
+// resolve the underlying promise depending on the result passed to the
+// callback. It takes a ServiceWorkerRegistration in its constructor and will
+// pass it to the PushSubscription.
 class PushSubscriptionCallbacks final : public WebPushSubscriptionCallbacks {
   WTF_MAKE_NONCOPYABLE(PushSubscriptionCallbacks);
   USING_FAST_MALLOC(PushSubscriptionCallbacks);
@@ -28,6 +28,7 @@ class PushSubscriptionCallbacks final : public WebPushSubscriptionCallbacks {
   PushSubscriptionCallbacks(ScriptPromiseResolver*, ServiceWorkerRegistration*);
   ~PushSubscriptionCallbacks() override;
 
+  // WebPushSubscriptionCallbacks interface.
   void onSuccess(std::unique_ptr<WebPushSubscription>) override;
   void onError(const WebPushError&) override;
 

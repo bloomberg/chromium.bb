@@ -35,6 +35,7 @@ class MODULES_EXPORT NotificationEvent final : public ExtendableEvent {
   String action() const { return m_action; }
   String reply() const { return m_reply; }
 
+  // ExtendableEvent interface.
   const AtomicString& interfaceName() const override;
 
   DECLARE_VIRTUAL_TRACE();

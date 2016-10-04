@@ -18,8 +18,9 @@ class ExceptionState;
 class ExecutionContext;
 class NotificationOptions;
 
-// Creates a WebNotificationData object based on the developer-provided notification data. When the
-// data is deemed invalid, an exception will be thrown to the passed exception state.
+// Creates a WebNotificationData object based on the developer-provided
+// notification options. An exception will be thrown on the ExceptionState when
+// the given options do not match the constraints imposed by the specification.
 MODULES_EXPORT WebNotificationData
 createWebNotificationData(ExecutionContext*,
                           const String& title,

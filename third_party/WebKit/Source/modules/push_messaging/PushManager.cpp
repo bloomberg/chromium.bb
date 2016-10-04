@@ -59,9 +59,9 @@ ScriptPromise PushManager::subscribe(ScriptState* scriptState,
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
 
-  // The document context is the only reasonable context from which to ask the user for permission
-  // to use the Push API. The embedder should persist the permission so that later calls in
-  // different contexts can succeed.
+  // The document context is the only reasonable context from which to ask the
+  // user for permission to use the Push API. The embedder should persist the
+  // permission so that later calls in different contexts can succeed.
   if (scriptState->getExecutionContext()->isDocument()) {
     Document* document = toDocument(scriptState->getExecutionContext());
     if (!document->domWindow() || !document->frame())

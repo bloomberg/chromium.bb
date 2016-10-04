@@ -40,7 +40,8 @@ void NotificationImageLoader::start(
   threadableLoaderOptions.preflightPolicy = PreventPreflight;
   threadableLoaderOptions.crossOriginRequestPolicy = AllowCrossOriginRequests;
 
-  // TODO(mvanouwerkerk): Add an entry for notifications to FetchInitiatorTypeNames and use it.
+  // TODO(mvanouwerkerk): Add an entry for notifications to
+  // FetchInitiatorTypeNames and use it.
   ResourceLoaderOptions resourceLoaderOptions;
   resourceLoaderOptions.allowCredentials = AllowStoredCredentials;
   if (executionContext->isWorkerGlobalScope())

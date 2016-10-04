@@ -104,7 +104,8 @@ TEST_F(NotificationDataTest, ReflectProperties) {
   EXPECT_EQ(kNotificationBody, notificationData.body);
   EXPECT_EQ(kNotificationTag, notificationData.tag);
 
-  // TODO(peter): Test the various icon properties when ExecutionContext::completeURL() works in this test.
+  // TODO(peter): Test the various icon properties when
+  // ExecutionContext::completeURL() works in this test.
 
   ASSERT_EQ(vibrationPattern.size(), notificationData.vibrate.size());
   for (size_t i = 0; i < vibrationPattern.size(); ++i)
@@ -243,8 +244,9 @@ TEST_F(NotificationDataTest, DefaultTimestampValue) {
       getExecutionContext(), kNotificationTitle, options, exceptionState);
   EXPECT_FALSE(exceptionState.hadException());
 
-  // The timestamp should be set to the current time since the epoch if it wasn't supplied by the developer.
-  // "32" has no significance, but an equal comparison of the value could lead to flaky failures.
+  // The timestamp should be set to the current time since the epoch if it
+  // wasn't supplied by the developer. "32" has no significance, but an equal
+  // comparison of the value could lead to flaky failures.
   EXPECT_NEAR(notificationData.timestamp, WTF::currentTimeMS(), 32);
 }
 

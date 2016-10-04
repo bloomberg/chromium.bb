@@ -44,7 +44,7 @@ class NotificationManager final
       ScriptState*,
       NotificationPermissionCallback* deprecatedCallback);
 
-  // ContextLifecycleObserver implementation.
+  // ContextLifecycleObserver interface.
   void contextDestroyed() override;
 
   DECLARE_VIRTUAL_TRACE();

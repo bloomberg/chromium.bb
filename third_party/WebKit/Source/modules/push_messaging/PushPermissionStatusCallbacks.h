@@ -30,7 +30,7 @@ class PushPermissionStatusCallbacks final
 
   void onSuccess(WebPushPermissionStatus) override;
 
-  // Called if for some reason the status of the push permission cannot be checked.
+  // Called if for some reason the status of the permission cannot be checked.
   void onError(const WebPushError&) override;
 
  private:

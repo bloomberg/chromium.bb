@@ -68,8 +68,8 @@ Notification* Notification::create(ExecutionContext* context,
                                    const String& title,
                                    const NotificationOptions& options,
                                    ExceptionState& exceptionState) {
-  // The Web Notification constructor may be disabled through a runtime feature. The
-  // behavior of the constructor is changing, but not completely agreed upon yet.
+  // The Notification constructor may be disabled through a runtime feature when
+  // the platform does not support non-persistent notifications.
   if (!RuntimeEnabledFeatures::notificationConstructorEnabled()) {
     exceptionState.throwTypeError(
         "Illegal constructor. Use ServiceWorkerRegistration.showNotification() "
@@ -77,7 +77,7 @@ Notification* Notification::create(ExecutionContext* context,
     return nullptr;
   }
 
-  // The Web Notification constructor may not be used in Service Worker contexts.
+  // The Notification constructor may not be used in Service Worker contexts.
   if (context->isServiceWorkerGlobalScope()) {
     exceptionState.throwTypeError("Illegal constructor.");
     return nullptr;
@@ -218,8 +218,8 @@ void Notification::dispatchErrorEvent() {
 }
 
 void Notification::dispatchCloseEvent() {
-  // The notification will be showing when the user initiated the close, or it will be
-  // closing if the developer initiated the close.
+  // The notification should be Showing if the user initiated the close, or it
+  // should be Closing if the developer initiated the close.
   if (m_state != State::Showing && m_state != State::Closing)
     return;
 
@@ -325,8 +325,8 @@ Vector<v8::Local<v8::Value>> Notification::actions(
     action.setIcon(m_data.actions[i].icon.string());
     action.setPlaceholder(m_data.actions[i].placeholder);
 
-    // Not just the sequence of actions itself, but also the actions contained within the
-    // sequence should be frozen per the Web Notification specification.
+    // Both the Action dictionaries themselves and the sequence they'll be
+    // returned in are expected to the frozen. This cannot be done with WebIDL.
     actions[i] =
         freezeV8Object(toV8(action, scriptState), scriptState->isolate());
   }
