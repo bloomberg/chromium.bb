@@ -104,7 +104,8 @@ struct ResourceLoaderOptions {
     // FIXME: check contentSecurityPolicyOption.
     // initiatorInfo is purely informational and should be benign for re-use.
     // requestInitiatorContext is benign (indicates document vs. worker)
-    // synchronousPolicy (safe to re-use an async XHR response for sync, etc.)
+    if (synchronousPolicy != other.synchronousPolicy)
+      return false;
     return corsEnabled == other.corsEnabled;
     // securityOrigin has more complicated checks which callers are responsible
     // for.

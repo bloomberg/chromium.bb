@@ -841,11 +841,6 @@ ResourceFetcher::determineRevalidationPolicy(Resource::Type type,
       existingResource->response().httpStatusCode() == 304)
     return Reload;
 
-  // Don't try to reuse an in-progress async request for a new sync request.
-  if (fetchRequest.options().synchronousPolicy == RequestSynchronously &&
-      existingResource->isLoading())
-    return Reload;
-
   // Don't reload resources while pasting.
   if (m_allowStaleResources)
     return Use;

@@ -118,10 +118,10 @@ class CachingCorrectnessTest : public ::testing::Test {
   }
 
   Resource* fetch() {
-    FetchRequest fetchRequest(
-        ResourceRequest(KURL(ParsedURLString, kResourceURL)),
-        FetchInitiatorInfo());
-    return RawResource::fetchSynchronously(fetchRequest, fetcher());
+    ResourceRequest resourceRequest(KURL(ParsedURLString, kResourceURL));
+    resourceRequest.setRequestContext(WebURLRequest::RequestContextInternal);
+    FetchRequest fetchRequest(resourceRequest, FetchInitiatorInfo());
+    return RawResource::fetch(fetchRequest, fetcher());
   }
 
   Resource* fetchImage() {
