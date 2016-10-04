@@ -9,7 +9,6 @@
 #include <memory>
 #include <string>
 
-
 namespace base {
 class DictionaryValue;
 }
@@ -20,7 +19,8 @@ struct NetworkProfile;
 
 namespace policy_util {
 
-typedef std::map<std::string, const base::DictionaryValue*> GuidToPolicyMap;
+using GuidToPolicyMap =
+    std::map<std::string, std::unique_ptr<base::DictionaryValue>>;
 
 // Creates a managed ONC dictionary from the given arguments. Depending on the
 // profile type, the policies are assumed to come from the user or device policy
@@ -36,7 +36,7 @@ std::unique_ptr<base::DictionaryValue> CreateManagedONC(
     const NetworkProfile* profile);
 
 // Adds properties to |shill_properties_to_update|, which are enforced on an
-// unamaged network by the global config |global_network_policy| of the policy.
+// unmanaged network by the global config |global_network_policy| of the policy.
 // |shill_dictionary| are the network's current properties read from Shill.
 void SetShillPropertiesForGlobalPolicy(
     const base::DictionaryValue& shill_dictionary,

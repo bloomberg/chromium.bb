@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
+#include "base/memory/ptr_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/network/network_type_pattern.h"
@@ -36,10 +36,10 @@ void LogErrorMessage(const tracked_objects::Location& from_where,
 const base::DictionaryValue* GetByGUID(
     const PolicyApplicator::GuidToPolicyMap& policies,
     const std::string& guid) {
-  PolicyApplicator::GuidToPolicyMap::const_iterator it = policies.find(guid);
+  auto it = policies.find(guid);
   if (it == policies.end())
     return NULL;
-  return it->second;
+  return it->second.get();
 }
 
 }  // namespace
@@ -53,14 +53,13 @@ PolicyApplicator::PolicyApplicator(
     : handler_(handler), profile_(profile), weak_ptr_factory_(this) {
   global_network_config_.MergeDictionary(&global_network_config);
   remaining_policies_.swap(*modified_policies);
-  for (GuidToPolicyMap::const_iterator it = all_policies.begin();
-       it != all_policies.end(); ++it) {
-    all_policies_.insert(std::make_pair(it->first, it->second->DeepCopy()));
+  for (const auto& policy_pair : all_policies) {
+    all_policies_.insert(std::make_pair(policy_pair.first,
+                                        policy_pair.second->CreateDeepCopy()));
   }
 }
 
 PolicyApplicator::~PolicyApplicator() {
-  base::STLDeleteValues(&all_policies_);
   VLOG(1) << "Destroying PolicyApplicator for " << profile_.userhash;
 }
 

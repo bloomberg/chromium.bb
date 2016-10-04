@@ -15,9 +15,9 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
@@ -279,7 +279,8 @@ class TimezoneSettingsBaseImpl : public chromeos::system::TimezoneSettings {
   void SetTimezoneFromID(const base::string16& timezone_id) override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
-  const std::vector<icu::TimeZone*>& GetTimezoneList() const override;
+  const std::vector<std::unique_ptr<icu::TimeZone>>& GetTimezoneList()
+      const override;
 
  protected:
   TimezoneSettingsBaseImpl();
@@ -295,7 +296,7 @@ class TimezoneSettingsBaseImpl : public chromeos::system::TimezoneSettings {
       const icu::TimeZone& timezone) const;
 
   base::ObserverList<Observer> observers_;
-  std::vector<icu::TimeZone*> timezones_;
+  std::vector<std::unique_ptr<icu::TimeZone>> timezones_;
   std::unique_ptr<icu::TimeZone> timezone_;
 
  private:
@@ -335,7 +336,6 @@ class TimezoneSettingsStubImpl : public TimezoneSettingsBaseImpl {
 };
 
 TimezoneSettingsBaseImpl::~TimezoneSettingsBaseImpl() {
-  base::STLDeleteElements(&timezones_);
 }
 
 const icu::TimeZone& TimezoneSettingsBaseImpl::GetTimezone() {
@@ -361,15 +361,15 @@ void TimezoneSettingsBaseImpl::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-const std::vector<icu::TimeZone*>&
+const std::vector<std::unique_ptr<icu::TimeZone>>&
 TimezoneSettingsBaseImpl::GetTimezoneList() const {
   return timezones_;
 }
 
 TimezoneSettingsBaseImpl::TimezoneSettingsBaseImpl() {
   for (size_t i = 0; i < arraysize(kTimeZones); ++i) {
-    timezones_.push_back(icu::TimeZone::createTimeZone(
-        icu::UnicodeString(kTimeZones[i], -1, US_INV)));
+    timezones_.push_back(base::WrapUnique(icu::TimeZone::createTimeZone(
+        icu::UnicodeString(kTimeZones[i], -1, US_INV))));
   }
 }
 

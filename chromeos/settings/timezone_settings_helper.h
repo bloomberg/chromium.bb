@@ -5,6 +5,7 @@
 #ifndef CHROMEOS_SETTINGS_TIMEZONE_SETTINGS_HELPER_H_
 #define CHROMEOS_SETTINGS_TIMEZONE_SETTINGS_HELPER_H_
 
+#include <memory>
 #include <vector>
 
 #include "third_party/icu/source/i18n/unicode/timezone.h"
@@ -17,7 +18,7 @@ namespace system {
 // the same rules. Otherwise, return null.
 const icu::TimeZone* GetKnownTimezoneOrNull(
     const icu::TimeZone& timezone,
-    const std::vector<icu::TimeZone*>& timezone_list);
+    const std::vector<std::unique_ptr<icu::TimeZone>>& timezone_list);
 
 }  // namespace system
 }  // namespace chromeos

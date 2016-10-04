@@ -14,7 +14,6 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chromeos/dbus/shill_manager_client.h"
@@ -82,10 +81,10 @@ void LogErrorWithDict(const tracked_objects::Location& from_where,
 
 const base::DictionaryValue* GetByGUID(const GuidToPolicyMap& policies,
                                        const std::string& guid) {
-  GuidToPolicyMap::const_iterator it = policies.find(guid);
+  auto it = policies.find(guid);
   if (it == policies.end())
     return NULL;
-  return it->second;
+  return it->second.get();
 }
 
 }  // namespace
@@ -97,9 +96,7 @@ struct ManagedNetworkConfigurationHandlerImpl::Policies {
   base::DictionaryValue global_network_config;
 };
 
-ManagedNetworkConfigurationHandlerImpl::Policies::~Policies() {
-  base::STLDeleteValues(&per_network_config);
-}
+ManagedNetworkConfigurationHandlerImpl::Policies::~Policies() {}
 
 void ManagedNetworkConfigurationHandlerImpl::AddObserver(
     NetworkPolicyObserver* observer) {
@@ -430,7 +427,7 @@ void ManagedNetworkConfigurationHandlerImpl::SetPolicy(
           ::onc::global_network_config::kDisableNetworkTypes,
           &prohibited_list) &&
       prohibited_technologies_handler_) {
-    // Prohobited technologies are only allowed in user policy.
+    // Prohibited technologies are only allowed in user policy.
     DCHECK_EQ(::onc::ONC_SOURCE_DEVICE_POLICY, onc_source);
 
     prohibited_technologies_handler_->SetProhibitedTechnologies(
@@ -445,7 +442,7 @@ void ManagedNetworkConfigurationHandlerImpl::SetPolicy(
 
   for (base::ListValue::const_iterator it = network_configs_onc.begin();
        it != network_configs_onc.end(); ++it) {
-    const base::DictionaryValue* network = NULL;
+    base::DictionaryValue* network = NULL;
     (*it)->GetAsDictionary(&network);
     DCHECK(network);
 
@@ -456,17 +453,16 @@ void ManagedNetworkConfigurationHandlerImpl::SetPolicy(
     if (policies->per_network_config.count(guid) > 0) {
       NET_LOG_ERROR("ONC from " + ToDebugString(onc_source, userhash) +
                     " contains several entries for the same GUID ", guid);
-      delete policies->per_network_config[guid];
     }
-    const base::DictionaryValue* new_entry = network->DeepCopy();
-    policies->per_network_config[guid] = new_entry;
+    base::DictionaryValue* new_entry = network->DeepCopy();
+    policies->per_network_config[guid] = base::WrapUnique(new_entry);
 
-    const base::DictionaryValue* old_entry = old_per_network_config[guid];
+    base::DictionaryValue* old_entry = old_per_network_config[guid].get();
     if (!old_entry || !old_entry->Equals(new_entry))
       modified_policies.insert(guid);
   }
 
-  base::STLDeleteValues(&old_per_network_config);
+  old_per_network_config.clear();
   ApplyOrQueuePolicies(userhash, &modified_policies);
   FOR_EACH_OBSERVER(NetworkPolicyObserver, observers_,
                     PoliciesChanged(userhash));
@@ -530,8 +526,7 @@ void ManagedNetworkConfigurationHandlerImpl::OnProfileAdded(
   }
 
   std::set<std::string> policy_guids;
-  for (GuidToPolicyMap::const_iterator it =
-           policies->per_network_config.begin();
+  for (auto it = policies->per_network_config.begin();
        it != policies->per_network_config.end(); ++it) {
     policy_guids.insert(it->first);
   }

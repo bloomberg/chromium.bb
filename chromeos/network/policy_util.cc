@@ -25,7 +25,7 @@ namespace policy_util {
 
 namespace {
 
-// This fake credential contains a random postfix which is extremly unlikely to
+// This fake credential contains a random postfix which is extremely unlikely to
 // be used by any user.
 const char kFakeCredential[] = "FAKE_CREDENTIAL_VPaJDV9x";
 
@@ -53,7 +53,7 @@ void RemoveFakeCredentials(
       if (field_signature)
         RemoveFakeCredentials(*field_signature->value_signature, nested_object);
       else
-        LOG(ERROR) << "ONC has unrecoginzed field: " << field_name;
+        LOG(ERROR) << "ONC has unrecognized field: " << field_name;
       continue;
     }
 
@@ -288,11 +288,11 @@ void SetShillPropertiesForGlobalPolicy(
   if (shill_dictionary.GetBooleanWithoutPathExpansion(
           shill::kAutoConnectProperty, &old_autoconnect) &&
       !old_autoconnect) {
-    // Autoconnect is already explictly disabled. No need to set it again.
+    // Autoconnect is already explicitly disabled. No need to set it again.
     return;
   }
 
-  // If autconnect is not explicitly set yet, it might automatically be enabled
+  // If autoconnect is not explicitly set yet, it might automatically be enabled
   // by Shill. To prevent that, disable it explicitly.
   shill_properties_to_update->SetBooleanWithoutPathExpansion(
       shill::kAutoConnectProperty, false);
@@ -398,10 +398,9 @@ std::unique_ptr<base::DictionaryValue> CreateShillConfiguration(
 const base::DictionaryValue* FindMatchingPolicy(
     const GuidToPolicyMap& policies,
     const base::DictionaryValue& actual_network) {
-  for (GuidToPolicyMap::const_iterator it = policies.begin();
-       it != policies.end(); ++it) {
+  for (auto it = policies.begin(); it != policies.end(); ++it) {
     if (IsPolicyMatching(*it->second, actual_network))
-      return it->second;
+      return it->second.get();
   }
   return NULL;
 }

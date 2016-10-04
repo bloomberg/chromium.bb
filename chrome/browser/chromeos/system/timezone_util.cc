@@ -149,12 +149,10 @@ namespace system {
 
 // Creates a list of pairs of each timezone's ID and name.
 std::unique_ptr<base::ListValue> GetTimezoneList() {
-  const std::vector<icu::TimeZone*> &timezones =
+  const auto& timezones =
       chromeos::system::TimezoneSettings::GetInstance()->GetTimezoneList();
   std::unique_ptr<base::ListValue> timezoneList(new base::ListValue());
-  for (std::vector<icu::TimeZone*>::const_iterator iter = timezones.begin();
-       iter != timezones.end(); ++iter) {
-    const icu::TimeZone* timezone = *iter;
+  for (const auto& timezone : timezones) {
     auto option = base::MakeUnique<base::ListValue>();
     option->AppendString(
         chromeos::system::TimezoneSettings::GetTimezoneID(*timezone));

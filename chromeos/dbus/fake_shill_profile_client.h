@@ -6,6 +6,7 @@
 #define CHROMEOS_DBUS_FAKE_SHILL_PROFILE_CLIENT_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -62,7 +63,7 @@ class CHROMEOS_EXPORT FakeShillProfileClient :
 
  private:
   struct ProfileProperties;
-  typedef std::map<std::string, ProfileProperties*> ProfileMap;
+  using ProfileMap = std::map<std::string, std::unique_ptr<ProfileProperties>>;
 
   bool AddOrUpdateServiceImpl(const std::string& profile_path,
                               const std::string& service_path,
@@ -71,8 +72,6 @@ class CHROMEOS_EXPORT FakeShillProfileClient :
   ProfileProperties* GetProfile(const dbus::ObjectPath& profile_path,
                                 const ErrorCallback& error_callback);
 
-  // The values are owned by this class and are explicitly destroyed where
-  // necessary.
   ProfileMap profiles_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeShillProfileClient);

@@ -47,7 +47,8 @@ class PolicyApplicator {
     DISALLOW_ASSIGN(ConfigurationHandler);
   };
 
-  typedef std::map<std::string, const base::DictionaryValue*> GuidToPolicyMap;
+  using GuidToPolicyMap =
+      std::map<std::string, std::unique_ptr<base::DictionaryValue>>;
 
   // |handler| must outlive this object.
   // |modified_policies| must not be NULL and will be empty afterwards.

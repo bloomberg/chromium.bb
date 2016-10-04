@@ -42,7 +42,8 @@ class CHROMEOS_EXPORT TimezoneSettings {
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
 
-  virtual const std::vector<icu::TimeZone*>& GetTimezoneList() const = 0;
+  virtual const std::vector<std::unique_ptr<icu::TimeZone>>& GetTimezoneList()
+      const = 0;
 
   // Gets timezone ID which is also used as timezone pref value.
   static base::string16 GetTimezoneID(const icu::TimeZone& timezone);

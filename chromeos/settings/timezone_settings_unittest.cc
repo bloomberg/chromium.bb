@@ -4,7 +4,7 @@
 
 #include <memory>
 
-#include "base/stl_util.h"
+#include "base/memory/ptr_util.h"
 #include "chromeos/settings/timezone_settings_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/icu/source/common/unicode/unistr.h"
@@ -36,14 +36,13 @@ class KnownTimeZoneTest : public testing::Test {
 
   void SetUp() override {
     for (const char* id : kTimeZones) {
-      timezones_.push_back(TimeZone::createTimeZone(UnicodeString(id)));
+      timezones_.push_back(
+          base::WrapUnique(TimeZone::createTimeZone(UnicodeString(id))));
     }
   }
 
-  void TearDown() override { base::STLDeleteElements(&timezones_); }
-
  protected:
-  std::vector<TimeZone*> timezones_;
+  std::vector<std::unique_ptr<TimeZone>> timezones_;
 };
 
 TEST_F(KnownTimeZoneTest, IdMatch) {

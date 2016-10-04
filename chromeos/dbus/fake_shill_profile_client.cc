@@ -7,8 +7,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -37,15 +37,11 @@ void PassDictionary(
 
 }  // namespace
 
-FakeShillProfileClient::FakeShillProfileClient() {
-}
+FakeShillProfileClient::FakeShillProfileClient() {}
 
-FakeShillProfileClient::~FakeShillProfileClient() {
-  base::STLDeleteValues(&profiles_);
-}
+FakeShillProfileClient::~FakeShillProfileClient() {}
 
-void FakeShillProfileClient::Init(dbus::Bus* bus) {
-}
+void FakeShillProfileClient::Init(dbus::Bus* bus) {}
 
 void FakeShillProfileClient::AddPropertyChangedObserver(
     const dbus::ObjectPath& profile_path,
@@ -131,10 +127,11 @@ void FakeShillProfileClient::AddProfile(const std::string& profile_path,
   if (GetProfile(dbus::ObjectPath(profile_path), ErrorCallback()))
     return;
 
-  ProfileProperties* profile = new ProfileProperties;
+  std::unique_ptr<ProfileProperties> profile =
+      base::MakeUnique<ProfileProperties>();
   profile->properties.SetStringWithoutPathExpansion(shill::kUserHashProperty,
                                                     userhash);
-  profiles_[profile_path] = profile;
+  profiles_[profile_path] = std::move(profile);
   DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
       AddProfile(profile_path);
 }
@@ -214,19 +211,16 @@ bool FakeShillProfileClient::AddOrUpdateServiceImpl(
 
 void FakeShillProfileClient::GetProfilePaths(
     std::vector<std::string>* profiles) {
-  for (ProfileMap::iterator iter = profiles_.begin();
-       iter != profiles_.end(); ++iter) {
+  for (auto iter = profiles_.begin(); iter != profiles_.end(); ++iter)
     profiles->push_back(iter->first);
-  }
 }
 
 bool FakeShillProfileClient::GetService(const std::string& service_path,
                                         std::string* profile_path,
                                         base::DictionaryValue* properties) {
   properties->Clear();
-  for (ProfileMap::const_iterator iter = profiles_.begin();
-       iter != profiles_.end(); ++iter) {
-    const ProfileProperties* profile = iter->second;
+  for (auto iter = profiles_.begin(); iter != profiles_.end(); ++iter) {
+    const ProfileProperties* profile = iter->second.get();
     const base::DictionaryValue* entry;
     if (!profile->entries.GetDictionaryWithoutPathExpansion(
             service_path, &entry)) {
@@ -240,20 +234,20 @@ bool FakeShillProfileClient::GetService(const std::string& service_path,
 }
 
 void FakeShillProfileClient::ClearProfiles() {
-  base::STLDeleteValues(&profiles_);
+  profiles_.clear();
 }
 
 FakeShillProfileClient::ProfileProperties* FakeShillProfileClient::GetProfile(
     const dbus::ObjectPath& profile_path,
     const ErrorCallback& error_callback) {
-  ProfileMap::const_iterator found = profiles_.find(profile_path.value());
+  auto found = profiles_.find(profile_path.value());
   if (found == profiles_.end()) {
     if (!error_callback.is_null())
       error_callback.Run("Error.InvalidProfile", "Invalid profile");
-    return NULL;
+    return nullptr;
   }
 
-  return found->second;
+  return found->second.get();
 }
 
 }  // namespace chromeos

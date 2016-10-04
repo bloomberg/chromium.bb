@@ -52,7 +52,8 @@ class NetworkPolicyObserver;
 // user consumption.
 class CHROMEOS_EXPORT ManagedNetworkConfigurationHandler {
  public:
-  using GuidToPolicyMap = std::map<std::string, const base::DictionaryValue*>;
+  using GuidToPolicyMap =
+      std::map<std::string, std::unique_ptr<base::DictionaryValue>>;
 
   virtual ~ManagedNetworkConfigurationHandler();
 
@@ -61,7 +62,7 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandler {
 
   // Provides the properties of the network with |service_path| to |callback|.
   // |userhash| is used to set the "Source" property. If not provided then
-  // user polcies will be ignored.
+  // user policies will be ignored.
   virtual void GetProperties(
       const std::string& userhash,
       const std::string& service_path,
