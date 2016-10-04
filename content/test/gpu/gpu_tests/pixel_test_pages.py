@@ -193,6 +193,20 @@ def ExperimentalCanvasFeaturesPages(base_name):
       test_rect=[0, 0, 350, 350],
       revision=1,
       browser_args=browser_args + unaccelerated_args),
+
+    PixelTestPage(
+      'pixel_offscreenCanvas_2d_commit_main.html',
+      base_name + '_OffscreenCanvasUnaccelerated2DGPUCompositing',
+      test_rect=[0, 0, 350, 350],
+      revision=1,
+      browser_args=browser_args + ['--disable-accelerated-2d-canvas']),
+
+    PixelTestPage(
+      'pixel_offscreenCanvas_2d_commit_worker.html',
+      base_name + '_OffscreenCanvasUnaccelerated2DGPUCompositingWorker',
+      test_rect=[0, 0, 350, 350],
+      revision=1,
+      browser_args=browser_args + ['--disable-accelerated-2d-canvas']),
   ]
 
 

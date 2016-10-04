@@ -41,14 +41,21 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
   const int m_height;
 
   unsigned m_nextResourceId;
-  unsigned getNextResourceIdAndIncrement() { return m_nextResourceId++; }
   HashMap<unsigned, RefPtr<StaticBitmapImage>> m_cachedImages;
   HashMap<unsigned, std::unique_ptr<cc::SharedBitmap>> m_sharedBitmaps;
+  HashMap<unsigned, GLuint> m_cachedTextureIds;
 
   bool verifyImageSize(const sk_sp<SkImage>&);
 
   cc::mojom::blink::MojoCompositorFrameSinkPtr m_sink;
   mojo::Binding<cc::mojom::blink::MojoCompositorFrameSinkClient> m_binding;
+
+  void setTransferableResourceInMemory(cc::TransferableResource&,
+                                       RefPtr<StaticBitmapImage>);
+  void setTransferableResourceMemoryToTexture(cc::TransferableResource&,
+                                              RefPtr<StaticBitmapImage>);
+  void setTransferableResourceInTexture(cc::TransferableResource&,
+                                        RefPtr<StaticBitmapImage>);
 };
 
 }  // namespace blink
