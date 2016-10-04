@@ -458,16 +458,22 @@ public class ShortcutHelper {
     }
 
     /**
-     * Returns true if WebAPKs are enabled and there is a WebAPK installed which can handle
+     * Returns the package name of the WebAPK if WebAPKs are enabled and there is an installed
+     * WebAPK which can handle {@link url}. Returns null otherwise.
+     */
+    @CalledByNative
+    private static String queryWebApkPackage(String url) {
+        if (!ChromeWebApkHost.isEnabled()) return null;
+        return WebApkValidator.queryWebApkPackage(ContextUtils.getApplicationContext(), url);
+    }
+
+    /**
+     * Returns true if WebAPKs are enabled and there is an installed WebAPK which can handle
      * {@link url}.
      */
     @CalledByNative
     private static boolean isWebApkInstalled(String url) {
-        if (!ChromeWebApkHost.isEnabled()) {
-            return false;
-        }
-        return WebApkValidator.queryWebApkPackage(ContextUtils.getApplicationContext(), url)
-                != null;
+        return queryWebApkPackage(url) != null;
     }
 
     /**

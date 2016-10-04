@@ -244,6 +244,22 @@ SkBitmap ShortcutHelper::FinalizeLauncherIconInBackground(
 }
 
 // static
+std::string ShortcutHelper::QueryWebApkPackage(const GURL& url) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> java_url =
+      base::android::ConvertUTF8ToJavaString(env, url.spec());
+  ScopedJavaLocalRef<jstring> java_webapk_package_name =
+      Java_ShortcutHelper_queryWebApkPackage(env, java_url);
+
+  std::string webapk_package_name = "";
+  if (java_webapk_package_name.obj()) {
+    webapk_package_name = base::android::ConvertJavaStringToUTF8(
+        env, java_webapk_package_name);
+  }
+  return webapk_package_name;
+}
+
+// static
 bool ShortcutHelper::IsWebApkInstalled(const GURL& url) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> java_url =

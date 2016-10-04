@@ -191,26 +191,36 @@ bool AppBannerInfoBarDelegateAndroid::AcceptWebApk(
     return true;
   }
 
-  // Request install the WebAPK.
-  install_state_ = INSTALLING;
+  // Check whether the WebAPK has been installed.
+  std::string installed_webapk_package_name =
+      ShortcutHelper::QueryWebApkPackage(web_contents->GetLastCommittedURL());
+  if (installed_webapk_package_name.empty()) {
+    // Request install the WebAPK.
+    install_state_ = INSTALLING;
+    TrackUserResponse(USER_RESPONSE_WEB_APP_ACCEPTED);
+    webapk::TrackInstallSource(webapk_install_source_);
+    AppBannerSettingsHelper::RecordBannerInstallEvent(
+        web_contents, shortcut_info_->url.spec(), AppBannerSettingsHelper::WEB);
+
+    Java_AppBannerInfoBarDelegateAndroid_setWebApkInstallingState(
+        env, java_delegate_, true);
+    UpdateInstallState(env, nullptr);
+    WebApkInstaller::FinishCallback callback =
+        base::Bind(&AppBannerInfoBarDelegateAndroid::OnWebApkInstallFinished,
+                    weak_ptr_factory_.GetWeakPtr());
+    ShortcutHelper::InstallWebApkWithSkBitmap(web_contents->GetBrowserContext(),
+                                              *shortcut_info_,
+                                              *icon_.get(), callback);
+    SendBannerAccepted(web_contents, "web");
+
+    // Prevent the infobar from disappearing, because the infobar will show
+    // "Adding" during the installation process.
+    return false;
+  }
+
+  // Bypass the installation since WebAPK is already installed.
   TrackUserResponse(USER_RESPONSE_WEB_APP_ACCEPTED);
-  webapk::TrackInstallSource(webapk_install_source_);
-  AppBannerSettingsHelper::RecordBannerInstallEvent(
-      web_contents, shortcut_info_->url.spec(), AppBannerSettingsHelper::WEB);
-
-  Java_AppBannerInfoBarDelegateAndroid_setWebApkInstallingState(
-      env, java_delegate_, true);
-  UpdateInstallState(env, nullptr);
-  WebApkInstaller::FinishCallback callback =
-      base::Bind(&AppBannerInfoBarDelegateAndroid::OnWebApkInstallFinished,
-                  weak_ptr_factory_.GetWeakPtr());
-  ShortcutHelper::InstallWebApkWithSkBitmap(web_contents->GetBrowserContext(),
-                                            *shortcut_info_,
-                                            *icon_.get(), callback);
-  SendBannerAccepted(web_contents, "web");
-
-  // Prevent the infobar from disappearing, because the infobar will show
-  // "Adding" during the installation process.
+  OnWebApkInstallFinished(true, installed_webapk_package_name);
   return false;
 }
 
