@@ -12,12 +12,15 @@
 
 namespace media {
 
+struct VideoCaptureFormat;
+
 class SinkFilterObserver {
  public:
   // SinkFilter will call this function with all frames delivered to it.
   // buffer in only valid during this function call.
   virtual void FrameReceived(const uint8_t* buffer,
                              int length,
+                             const VideoCaptureFormat& format,
                              base::TimeDelta timestamp) = 0;
 
  protected:

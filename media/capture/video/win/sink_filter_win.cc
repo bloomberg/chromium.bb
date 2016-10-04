@@ -39,10 +39,6 @@ void SinkFilter::SetRequestedMediaFormat(VideoPixelFormat pixel_format,
   input_pin_->SetRequestedMediaFormat(pixel_format, frame_rate, info_header);
 }
 
-const VideoCaptureFormat& SinkFilter::ResultingFormat() const {
-  return input_pin_->resulting_format();
-}
-
 size_t SinkFilter::NoOfPins() {
   return 1;
 }

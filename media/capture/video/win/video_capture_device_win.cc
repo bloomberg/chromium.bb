@@ -412,10 +412,6 @@ void VideoCaptureDeviceWin::AllocateAndStart(
     return;
   }
 
-  // Get the format back from the sink filter after the filter have been
-  // connected.
-  capture_format_ = sink_filter_->ResultingFormat();
-
   // Start capturing.
   hr = media_control_->Run();
   if (FAILED(hr)) {
@@ -456,6 +452,7 @@ void VideoCaptureDeviceWin::TakePhoto(TakePhotoCallback callback) {
 // Implements SinkFilterObserver::SinkFilterObserver.
 void VideoCaptureDeviceWin::FrameReceived(const uint8_t* buffer,
                                           int length,
+                                          const VideoCaptureFormat& format,
                                           base::TimeDelta timestamp) {
   if (first_ref_time_.is_null())
     first_ref_time_ = base::TimeTicks::Now();
@@ -465,14 +462,14 @@ void VideoCaptureDeviceWin::FrameReceived(const uint8_t* buffer,
   if (timestamp == media::kNoTimestamp)
     timestamp = base::TimeTicks::Now() - first_ref_time_;
 
-  client_->OnIncomingCapturedData(buffer, length, capture_format_, 0,
+  client_->OnIncomingCapturedData(buffer, length, format, 0,
                                   base::TimeTicks::Now(), timestamp);
 
   while (!take_photo_callbacks_.empty()) {
     TakePhotoCallback cb = std::move(take_photo_callbacks_.front());
     take_photo_callbacks_.pop();
 
-    mojom::BlobPtr blob = Blobify(buffer, length, capture_format_);
+    mojom::BlobPtr blob = Blobify(buffer, length, format);
     if (blob)
       cb.Run(std::move(blob));
   }

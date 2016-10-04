@@ -191,13 +191,14 @@ bool SinkInputPin::GetValidMediaType(int index, AM_MEDIA_TYPE* media_type) {
 
 HRESULT SinkInputPin::Receive(IMediaSample* sample) {
   const int length = sample->GetActualDataLength();
-  uint8_t* buffer = NULL;
 
-  if (length <= 0) {
-    DLOG(WARNING) << "Media sample length is 0 or less.";
+  if (length <= 0 ||
+      static_cast<size_t>(length) < resulting_format_.ImageAllocationSize()) {
+    DLOG(WARNING) << "Wrong media sample length: " << length;
     return S_FALSE;
   }
 
+  uint8_t* buffer = nullptr;
   if (FAILED(sample->GetPointer(&buffer)))
     return S_FALSE;
 
@@ -208,7 +209,7 @@ HRESULT SinkInputPin::Receive(IMediaSample* sample) {
     timestamp = base::TimeDelta::FromMicroseconds(start_time / 10);
   }
 
-  observer_->FrameReceived(buffer, length, timestamp);
+  observer_->FrameReceived(buffer, length, resulting_format_, timestamp);
   return S_OK;
 }
 
