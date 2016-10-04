@@ -20,6 +20,7 @@ namespace cc {
 class TestLayer {
  public:
   static std::unique_ptr<TestLayer> Create();
+  ~TestLayer();
 
   void ClearMutatedProperties();
 
@@ -51,46 +52,20 @@ class TestLayer {
     mutated_properties_[TargetProperty::SCROLL_OFFSET] = true;
   }
 
-  bool transform_is_currently_animating() const {
-    return transform_is_currently_animating_;
+  bool is_currently_animating(TargetProperty::Type property) const {
+    return is_currently_animating_[property];
   }
-  void set_transform_is_currently_animating(bool is_animating) {
-    transform_is_currently_animating_ = is_animating;
-  }
-
-  bool has_potential_transform_animation() const {
-    return has_potential_transform_animation_;
-  }
-  void set_has_potential_transform_animation(bool is_animating) {
-    has_potential_transform_animation_ = is_animating;
+  void set_is_currently_animating(TargetProperty::Type property,
+                                  bool is_animating) {
+    is_currently_animating_[property] = is_animating;
   }
 
-  bool opacity_is_currently_animating() const {
-    return opacity_is_currently_animating_;
+  bool has_potential_animation(TargetProperty::Type property) const {
+    return has_potential_animation_[property];
   }
-  void set_opacity_is_currently_animating(bool is_animating) {
-    opacity_is_currently_animating_ = is_animating;
-  }
-
-  bool has_potential_opacity_animation() const {
-    return has_potential_opacity_animation_;
-  }
-  void set_has_potential_opacity_animation(bool is_animating) {
-    has_potential_opacity_animation_ = is_animating;
-  }
-
-  bool filter_is_currently_animating() const {
-    return filter_is_currently_animating_;
-  }
-  void set_filter_is_currently_animating(bool is_animating) {
-    filter_is_currently_animating_ = is_animating;
-  }
-
-  bool has_potential_filter_animation() const {
-    return has_potential_filter_animation_;
-  }
-  void set_has_potential_filter_animation(bool is_animating) {
-    has_potential_filter_animation_ = is_animating;
+  void set_has_potential_animation(TargetProperty::Type property,
+                                   bool is_animating) {
+    has_potential_animation_[property] = is_animating;
   }
 
   bool is_property_mutated(TargetProperty::Type property) const {
@@ -104,14 +79,10 @@ class TestLayer {
   float opacity_;
   FilterOperations filters_;
   gfx::ScrollOffset scroll_offset_;
-  bool has_potential_transform_animation_;
-  bool transform_is_currently_animating_;
-  bool has_potential_opacity_animation_;
-  bool opacity_is_currently_animating_;
-  bool has_potential_filter_animation_;
-  bool filter_is_currently_animating_;
 
-  bool mutated_properties_[TargetProperty::LAST_TARGET_PROPERTY + 1];
+  TargetProperties has_potential_animation_;
+  TargetProperties is_currently_animating_;
+  TargetProperties mutated_properties_;
 };
 
 class TestHostClient : public MutatorHostClient {
@@ -144,20 +115,10 @@ class TestHostClient : public MutatorHostClient {
       ElementListType list_type,
       const gfx::ScrollOffset& scroll_offset) override;
 
-  void ElementTransformIsAnimatingChanged(ElementId element_id,
-                                          ElementListType list_type,
-                                          AnimationChangeType change_type,
-                                          bool is_animating) override;
-
-  void ElementOpacityIsAnimatingChanged(ElementId element_id,
-                                        ElementListType list_type,
-                                        AnimationChangeType change_type,
-                                        bool is_animating) override;
-
-  void ElementFilterIsAnimatingChanged(ElementId element_id,
-                                       ElementListType list_type,
-                                       AnimationChangeType change_type,
-                                       bool is_animating) override;
+  void ElementIsAnimatingChanged(ElementId element_id,
+                                 ElementListType list_type,
+                                 const PropertyAnimationState& mask,
+                                 const PropertyAnimationState& state) override;
 
   void ScrollOffsetAnimationFinished() override {}
 

@@ -4006,82 +4006,18 @@ void LayerTreeHostImpl::SetElementScrollOffsetMutated(
   }
 }
 
-void LayerTreeHostImpl::ElementTransformIsAnimatingChanged(
+void LayerTreeHostImpl::ElementIsAnimatingChanged(
     ElementId element_id,
     ElementListType list_type,
-    AnimationChangeType change_type,
-    bool is_animating) {
+    const PropertyAnimationState& mask,
+    const PropertyAnimationState& state) {
   LayerTreeImpl* tree =
       list_type == ElementListType::ACTIVE ? active_tree() : pending_tree();
   if (!tree)
     return;
   LayerImpl* layer = tree->LayerByElementId(element_id);
-  if (layer) {
-    switch (change_type) {
-      case AnimationChangeType::POTENTIAL:
-        layer->OnTransformIsPotentiallyAnimatingChanged(is_animating);
-        break;
-      case AnimationChangeType::RUNNING:
-        layer->OnTransformIsCurrentlyAnimatingChanged(is_animating);
-        break;
-      case AnimationChangeType::BOTH:
-        layer->OnTransformIsPotentiallyAnimatingChanged(is_animating);
-        layer->OnTransformIsCurrentlyAnimatingChanged(is_animating);
-        break;
-    }
-  }
-}
-
-void LayerTreeHostImpl::ElementOpacityIsAnimatingChanged(
-    ElementId element_id,
-    ElementListType list_type,
-    AnimationChangeType change_type,
-    bool is_animating) {
-  LayerTreeImpl* tree =
-      list_type == ElementListType::ACTIVE ? active_tree() : pending_tree();
-  if (!tree)
-    return;
-  LayerImpl* layer = tree->LayerByElementId(element_id);
-  if (layer) {
-    switch (change_type) {
-      case AnimationChangeType::POTENTIAL:
-        layer->OnOpacityIsPotentiallyAnimatingChanged(is_animating);
-        break;
-      case AnimationChangeType::RUNNING:
-        layer->OnOpacityIsCurrentlyAnimatingChanged(is_animating);
-        break;
-      case AnimationChangeType::BOTH:
-        layer->OnOpacityIsPotentiallyAnimatingChanged(is_animating);
-        layer->OnOpacityIsCurrentlyAnimatingChanged(is_animating);
-        break;
-    }
-  }
-}
-
-void LayerTreeHostImpl::ElementFilterIsAnimatingChanged(
-    ElementId element_id,
-    ElementListType list_type,
-    AnimationChangeType change_type,
-    bool is_animating) {
-  LayerTreeImpl* tree =
-      list_type == ElementListType::ACTIVE ? active_tree() : pending_tree();
-  if (!tree)
-    return;
-  LayerImpl* layer = tree->LayerByElementId(element_id);
-  if (layer) {
-    switch (change_type) {
-      case AnimationChangeType::POTENTIAL:
-        layer->OnFilterIsPotentiallyAnimatingChanged(is_animating);
-        break;
-      case AnimationChangeType::RUNNING:
-        layer->OnFilterIsCurrentlyAnimatingChanged(is_animating);
-        break;
-      case AnimationChangeType::BOTH:
-        layer->OnFilterIsPotentiallyAnimatingChanged(is_animating);
-        layer->OnFilterIsCurrentlyAnimatingChanged(is_animating);
-        break;
-    }
-  }
+  if (layer)
+    layer->OnIsAnimatingChanged(mask, state);
 }
 
 void LayerTreeHostImpl::ScrollOffsetAnimationFinished() {

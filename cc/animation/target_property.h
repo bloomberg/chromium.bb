@@ -5,6 +5,8 @@
 #ifndef CC_ANIMATION_TARGET_PROPERTY_H_
 #define CC_ANIMATION_TARGET_PROPERTY_H_
 
+#include <bitset>
+
 namespace cc {
 
 namespace TargetProperty {
@@ -23,6 +25,9 @@ enum Type {
 const char* GetName(TargetProperty::Type property);
 
 }  // namespace TargetProperty
+
+// A set of target properties. TargetProperty must be 0-based enum.
+using TargetProperties = std::bitset<TargetProperty::LAST_TARGET_PROPERTY + 1>;
 
 }  // namespace cc
 

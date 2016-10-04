@@ -5,7 +5,6 @@
 #ifndef CC_ANIMATION_ANIMATION_PLAYER_H_
 #define CC_ANIMATION_ANIMATION_PLAYER_H_
 
-#include <bitset>
 #include <vector>
 
 #include "base/macros.h"
@@ -108,9 +107,7 @@ class CC_EXPORT AnimationPlayer : public base::RefCounted<AnimationPlayer> {
   // Make animations affect active elements if and only if they affect
   // pending elements. Any animations that no longer affect any elements
   // are deleted.
-  void ActivateAnimations(bool* changed_transform_animation,
-                          bool* changed_opacity_animation,
-                          bool* changed_filter_animation);
+  void ActivateAnimations();
 
   bool HasFilterAnimationThatInflatesBounds() const;
   bool HasTransformAnimationThatInflatesBounds() const;
@@ -151,18 +148,14 @@ class CC_EXPORT AnimationPlayer : public base::RefCounted<AnimationPlayer> {
   // Returns the active animation for the given unique animation id.
   Animation* GetAnimationById(int animation_id) const;
 
-  void GetPropertyAnimationStateFor(TargetProperty::Type property,
-                                    PropertyAnimationState* state) const;
+  void GetPropertyAnimationState(PropertyAnimationState* pending_state,
+                                 PropertyAnimationState* active_state) const;
 
  private:
   friend class base::RefCounted<AnimationPlayer>;
 
   explicit AnimationPlayer(int id);
   ~AnimationPlayer();
-
-  // A set of target properties. TargetProperty must be 0-based enum.
-  using TargetProperties =
-      std::bitset<TargetProperty::LAST_TARGET_PROPERTY + 1>;
 
   void SetNeedsCommit();
 
@@ -172,7 +165,7 @@ class CC_EXPORT AnimationPlayer : public base::RefCounted<AnimationPlayer> {
   void BindElementAnimations();
   void UnbindElementAnimations();
 
-  void AnimationAddedForProperty(TargetProperty::Type target_property);
+  void AnimationAdded();
 
   void MarkAbortedAnimationsForDeletion(
       AnimationPlayer* animation_player_impl) const;

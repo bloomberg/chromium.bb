@@ -542,69 +542,65 @@ gfx::ScrollOffset LayerImpl::ScrollOffsetForAnimation() const {
   return CurrentScrollOffset();
 }
 
-void LayerImpl::OnTransformIsCurrentlyAnimatingChanged(
-    bool is_currently_animating) {
+void LayerImpl::OnIsAnimatingChanged(const PropertyAnimationState& mask,
+                                     const PropertyAnimationState& state) {
   DCHECK(layer_tree_impl_);
   PropertyTrees* property_trees = layer_tree_impl()->property_trees();
-  if (!property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::TRANSFORM,
-                                        id()))
-    return;
-  TransformNode* node = property_trees->transform_tree.Node(
-      property_trees->transform_id_to_index_map[id()]);
-  node->is_currently_animating = is_currently_animating;
-}
 
-void LayerImpl::OnTransformIsPotentiallyAnimatingChanged(
-    bool has_potential_animation) {
-  UpdatePropertyTreeTransformIsAnimated(has_potential_animation);
-  was_ever_ready_since_last_transform_animation_ = false;
-}
+  TransformNode* transform_node = nullptr;
+  if (property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::TRANSFORM,
+                                       id())) {
+    transform_node = property_trees->transform_tree.Node(
+        property_trees->transform_id_to_index_map[id()]);
+  }
 
-void LayerImpl::OnOpacityIsCurrentlyAnimatingChanged(
-    bool is_currently_animating) {
-  DCHECK(layer_tree_impl_);
-  PropertyTrees* property_trees = layer_tree_impl()->property_trees();
-  if (!property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::EFFECT, id()))
-    return;
-  EffectNode* node = property_trees->effect_tree.Node(
-      property_trees->effect_id_to_index_map[id()]);
+  EffectNode* effect_node = nullptr;
+  if (property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::EFFECT, id())) {
+    effect_node = property_trees->effect_tree.Node(
+        property_trees->effect_id_to_index_map[id()]);
+  }
 
-  node->is_currently_animating_opacity = is_currently_animating;
-}
-
-void LayerImpl::OnOpacityIsPotentiallyAnimatingChanged(
-    bool has_potential_animation) {
-  DCHECK(layer_tree_impl_);
-  PropertyTrees* property_trees = layer_tree_impl()->property_trees();
-  if (!property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::EFFECT, id()))
-    return;
-  EffectNode* node = property_trees->effect_tree.Node(
-      property_trees->effect_id_to_index_map[id()]);
-  node->has_potential_opacity_animation = has_potential_animation;
-  property_trees->effect_tree.set_needs_update(true);
-}
-
-void LayerImpl::OnFilterIsCurrentlyAnimatingChanged(
-    bool is_currently_animating) {
-  DCHECK(layer_tree_impl_);
-  PropertyTrees* property_trees = layer_tree_impl()->property_trees();
-  if (!property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::EFFECT, id()))
-    return;
-  EffectNode* node = property_trees->effect_tree.Node(
-      property_trees->effect_id_to_index_map[id()]);
-
-  node->is_currently_animating_filter = is_currently_animating;
-}
-
-void LayerImpl::OnFilterIsPotentiallyAnimatingChanged(
-    bool has_potential_animation) {
-  DCHECK(layer_tree_impl_);
-  PropertyTrees* property_trees = layer_tree_impl()->property_trees();
-  if (!property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::EFFECT, id()))
-    return;
-  EffectNode* node = property_trees->effect_tree.Node(
-      property_trees->effect_id_to_index_map[id()]);
-  node->has_potential_filter_animation = has_potential_animation;
+  for (int property = TargetProperty::FIRST_TARGET_PROPERTY;
+       property <= TargetProperty::LAST_TARGET_PROPERTY; ++property) {
+    switch (property) {
+      case TargetProperty::TRANSFORM:
+        if (transform_node) {
+          if (mask.currently_running[property])
+            transform_node->is_currently_animating =
+                state.currently_running[property];
+          if (mask.potentially_animating[property]) {
+            UpdatePropertyTreeTransformIsAnimated(
+                state.potentially_animating[property]);
+            was_ever_ready_since_last_transform_animation_ = false;
+          }
+        }
+        break;
+      case TargetProperty::OPACITY:
+        if (effect_node) {
+          if (mask.currently_running[property])
+            effect_node->is_currently_animating_opacity =
+                state.currently_running[property];
+          if (mask.potentially_animating[property]) {
+            effect_node->has_potential_opacity_animation =
+                state.potentially_animating[property];
+            property_trees->effect_tree.set_needs_update(true);
+          }
+        }
+        break;
+      case TargetProperty::FILTER:
+        if (effect_node) {
+          if (mask.currently_running[property])
+            effect_node->is_currently_animating_filter =
+                state.currently_running[property];
+          if (mask.potentially_animating[property])
+            effect_node->has_potential_filter_animation =
+                state.potentially_animating[property];
+        }
+        break;
+      default:
+        break;
+    }
+  }
 }
 
 bool LayerImpl::IsActive() const {

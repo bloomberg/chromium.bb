@@ -286,18 +286,11 @@ class CC_EXPORT LayerTreeHostImpl
       ElementId element_id,
       ElementListType list_type,
       const gfx::ScrollOffset& scroll_offset) override;
-  void ElementTransformIsAnimatingChanged(ElementId element_id,
-                                          ElementListType list_type,
-                                          AnimationChangeType change_type,
-                                          bool is_animating) override;
-  void ElementOpacityIsAnimatingChanged(ElementId element_id,
-                                        ElementListType list_type,
-                                        AnimationChangeType change_type,
-                                        bool is_animating) override;
-  void ElementFilterIsAnimatingChanged(ElementId element_id,
-                                       ElementListType list_type,
-                                       AnimationChangeType change_type,
-                                       bool is_animating) override;
+  void ElementIsAnimatingChanged(ElementId element_id,
+                                 ElementListType list_type,
+                                 const PropertyAnimationState& mask,
+                                 const PropertyAnimationState& state) override;
+
   void ScrollOffsetAnimationFinished() override;
   gfx::ScrollOffset GetScrollOffsetForAnimation(
       ElementId element_id) const override;

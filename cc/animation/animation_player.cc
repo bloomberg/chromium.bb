@@ -106,8 +106,8 @@ void AnimationPlayer::BindElementAnimations() {
       animation_host_->GetElementAnimationsForElementId(element_id_);
   DCHECK(element_animations_);
 
-  for (auto& animation : animations_)
-    AnimationAddedForProperty(animation->target_property());
+  if (!animations_.empty())
+    AnimationAdded();
 
   SetNeedsPushProperties();
 }
@@ -123,23 +123,21 @@ void AnimationPlayer::AddAnimation(std::unique_ptr<Animation> animation) {
   DCHECK(!animation->is_impl_only() ||
          animation->target_property() == TargetProperty::SCROLL_OFFSET);
 
-  TargetProperty::Type target_property = animation->target_property();
   animations_.push_back(std::move(animation));
   if (element_animations_) {
-    AnimationAddedForProperty(target_property);
+    AnimationAdded();
     SetNeedsPushProperties();
   }
 }
 
-void AnimationPlayer::AnimationAddedForProperty(
-    TargetProperty::Type target_property) {
+void AnimationPlayer::AnimationAdded() {
   DCHECK(element_animations_);
 
   SetNeedsCommit();
   needs_to_start_animations_ = true;
 
   element_animations_->UpdateActivationNormal();
-  element_animations_->UpdateClientAnimationState(target_property);
+  element_animations_->UpdateClientAnimationState();
 }
 
 void AnimationPlayer::PauseAnimation(int animation_id, double time_offset) {
@@ -160,9 +158,8 @@ void AnimationPlayer::PauseAnimation(int animation_id, double time_offset) {
 }
 
 void AnimationPlayer::RemoveAnimation(int animation_id) {
-  bool removed_transform_animation = false;
-  bool removed_opacity_animation = false;
-  bool removed_filter_animation = false;
+  bool animation_removed = false;
+
   // Since we want to use the animations that we're going to remove, we need to
   // use a stable_parition here instead of remove_if. Remove_if leaves the
   // removed items in an unspecified state.
@@ -175,15 +172,8 @@ void AnimationPlayer::RemoveAnimation(int animation_id) {
     if ((*it)->target_property() == TargetProperty::SCROLL_OFFSET) {
       if (element_animations_)
         element_animations_->SetScrollOffsetAnimationWasInterrupted();
-    } else if ((*it)->target_property() == TargetProperty::TRANSFORM &&
-               !(*it)->is_finished()) {
-      removed_transform_animation = true;
-    } else if ((*it)->target_property() == TargetProperty::OPACITY &&
-               !(*it)->is_finished()) {
-      removed_opacity_animation = true;
-    } else if ((*it)->target_property() == TargetProperty::FILTER &&
-               !(*it)->is_finished()) {
-      removed_filter_animation = true;
+    } else if (!(*it)->is_finished()) {
+      animation_removed = true;
     }
   }
 
@@ -191,9 +181,8 @@ void AnimationPlayer::RemoveAnimation(int animation_id) {
 
   if (element_animations_) {
     element_animations_->UpdateActivationNormal();
-    element_animations_->UpdateClientAnimationState(removed_transform_animation,
-                                                    removed_opacity_animation,
-                                                    removed_filter_animation);
+    if (animation_removed)
+      element_animations_->UpdateClientAnimationState();
     SetNeedsCommit();
     SetNeedsPushProperties();
   }
@@ -204,8 +193,7 @@ void AnimationPlayer::AbortAnimation(int animation_id) {
     if (!animation->is_finished()) {
       animation->SetRunState(Animation::ABORTED, last_tick_time_);
       if (element_animations_)
-        element_animations_->UpdateClientAnimationState(
-            animation->target_property());
+        element_animations_->UpdateClientAnimationState();
     }
   }
 
@@ -238,7 +226,7 @@ void AnimationPlayer::AbortAnimations(TargetProperty::Type target_property,
 
   if (element_animations_) {
     if (aborted_animation)
-      element_animations_->UpdateClientAnimationState(target_property);
+      element_animations_->UpdateClientAnimationState();
     SetNeedsCommit();
     SetNeedsPushProperties();
   }
@@ -447,8 +435,6 @@ void AnimationPlayer::StartAnimations(base::TimeTicks monotonic_time) {
       // case, the group's target properties need to be added to the lists of
       // blocked properties.
       bool null_intersection = true;
-      static_assert(TargetProperty::FIRST_TARGET_PROPERTY == 0,
-                    "TargetProperty must be 0-based enum");
       for (int property = TargetProperty::FIRST_TARGET_PROPERTY;
            property <= TargetProperty::LAST_TARGET_PROPERTY; ++property) {
         if (enqueued_properties[property]) {
@@ -726,40 +712,28 @@ void AnimationPlayer::TickAnimations(base::TimeTicks monotonic_time) {
 }
 
 void AnimationPlayer::MarkFinishedAnimations(base::TimeTicks monotonic_time) {
-  bool finished_transform_animation = false;
-  bool finished_opacity_animation = false;
-  bool finished_filter_animation = false;
+  bool animation_finished = false;
+
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (!animations_[i]->is_finished() &&
         animations_[i]->IsFinishedAt(monotonic_time)) {
       animations_[i]->SetRunState(Animation::FINISHED, monotonic_time);
-      if (animations_[i]->target_property() == TargetProperty::TRANSFORM)
-        finished_transform_animation = true;
-      else if (animations_[i]->target_property() == TargetProperty::OPACITY)
-        finished_opacity_animation = true;
-      else if (animations_[i]->target_property() == TargetProperty::FILTER)
-        finished_filter_animation = true;
+      animation_finished = true;
     }
   }
 
   DCHECK(element_animations_);
-  element_animations_->UpdateClientAnimationState(finished_transform_animation,
-                                                  finished_opacity_animation,
-                                                  finished_filter_animation);
+  if (animation_finished)
+    element_animations_->UpdateClientAnimationState();
 }
 
-void AnimationPlayer::ActivateAnimations(bool* changed_transform_animation,
-                                         bool* changed_opacity_animation,
-                                         bool* changed_filter_animation) {
+void AnimationPlayer::ActivateAnimations() {
+  bool animation_activated = false;
+
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (animations_[i]->affects_active_elements() !=
         animations_[i]->affects_pending_elements()) {
-      if (animations_[i]->target_property() == TargetProperty::TRANSFORM)
-        *changed_transform_animation = true;
-      else if (animations_[i]->target_property() == TargetProperty::OPACITY)
-        *changed_opacity_animation = true;
-      else if (animations_[i]->target_property() == TargetProperty::FILTER)
-        *changed_filter_animation = true;
+      animation_activated = true;
     }
     animations_[i]->set_affects_active_elements(
         animations_[i]->affects_pending_elements());
@@ -771,6 +745,9 @@ void AnimationPlayer::ActivateAnimations(bool* changed_transform_animation,
   animations_.erase(std::remove_if(animations_.begin(), animations_.end(),
                                    affects_no_elements),
                     animations_.end());
+
+  if (animation_activated)
+    element_animations_->UpdateClientAnimationState();
 }
 
 bool AnimationPlayer::HasFilterAnimationThatInflatesBounds() const {
@@ -996,31 +973,36 @@ Animation* AnimationPlayer::GetAnimationById(int animation_id) const {
   return nullptr;
 }
 
-void AnimationPlayer::GetPropertyAnimationStateFor(
-    TargetProperty::Type property,
-    PropertyAnimationState* state) const {
-  state->Clear();
+void AnimationPlayer::GetPropertyAnimationState(
+    PropertyAnimationState* pending_state,
+    PropertyAnimationState* active_state) const {
+  pending_state->Clear();
+  active_state->Clear();
+
   for (const auto& animation : animations_) {
-    if (!animation->is_finished() && animation->target_property() == property) {
-      state->potentially_animating_for_active_elements |=
-          animation->affects_active_elements();
-      state->potentially_animating_for_pending_elements |=
-          animation->affects_pending_elements();
-      state->currently_running_for_active_elements |=
-          animation->affects_active_elements() &&
-          animation->InEffect(last_tick_time_);
-      state->currently_running_for_pending_elements |=
-          animation->affects_pending_elements() &&
-          animation->InEffect(last_tick_time_);
+    if (!animation->is_finished()) {
+      bool in_effect = animation->InEffect(last_tick_time_);
+      bool active = animation->affects_active_elements();
+      bool pending = animation->affects_pending_elements();
+      TargetProperty::Type property = animation->target_property();
+
+      if (pending)
+        pending_state->potentially_animating[property] = true;
+      if (pending && in_effect)
+        pending_state->currently_running[property] = true;
+
+      if (active)
+        active_state->potentially_animating[property] = true;
+      if (active && in_effect)
+        active_state->currently_running[property] = true;
     }
   }
 }
 
 void AnimationPlayer::MarkAbortedAnimationsForDeletion(
     AnimationPlayer* animation_player_impl) const {
-  bool aborted_transform_animation = false;
-  bool aborted_opacity_animation = false;
-  bool aborted_filter_animation = false;
+  bool animation_aborted = false;
+
   auto& animations_impl = animation_player_impl->animations_;
   for (const auto& animation_impl : animations_impl) {
     // If the animation has been aborted on the main thread, mark it for
@@ -1031,20 +1013,13 @@ void AnimationPlayer::MarkAbortedAnimationsForDeletion(
                                     animation_player_impl->last_tick_time_);
         animation->SetRunState(Animation::WAITING_FOR_DELETION,
                                last_tick_time_);
-        if (animation_impl->target_property() == TargetProperty::TRANSFORM)
-          aborted_transform_animation = true;
-        else if (animation_impl->target_property() == TargetProperty::OPACITY)
-          aborted_opacity_animation = true;
-        else if (animation_impl->target_property() == TargetProperty::FILTER)
-          aborted_filter_animation = true;
+        animation_aborted = true;
       }
     }
   }
 
-  if (element_animations_)
-    element_animations_->SetNeedsUpdateImplClientState(
-        aborted_transform_animation, aborted_opacity_animation,
-        aborted_filter_animation);
+  if (element_animations_ && animation_aborted)
+    element_animations_->SetNeedsUpdateImplClientState();
 }
 
 void AnimationPlayer::PurgeAnimationsMarkedForDeletion() {
@@ -1107,9 +1082,8 @@ static bool IsCompleted(Animation* animation,
 
 void AnimationPlayer::RemoveAnimationsCompletedOnMainThread(
     AnimationPlayer* animation_player_impl) const {
-  bool removed_transform_animation = false;
-  bool removed_opacity_animation = false;
-  bool removed_filter_animation = false;
+  bool animation_completed = false;
+
   // Animations removed on the main thread should no longer affect pending
   // elements, and should stop affecting active elements after the next call
   // to ActivateAnimations. If already WAITING_FOR_DELETION, they can be removed
@@ -1118,12 +1092,7 @@ void AnimationPlayer::RemoveAnimationsCompletedOnMainThread(
   for (const auto& animation : animations) {
     if (IsCompleted(animation.get(), this)) {
       animation->set_affects_pending_elements(false);
-      if (animation->target_property() == TargetProperty::TRANSFORM)
-        removed_transform_animation = true;
-      else if (animation->target_property() == TargetProperty::OPACITY)
-        removed_opacity_animation = true;
-      else if (animation->target_property() == TargetProperty::FILTER)
-        removed_filter_animation = true;
+      animation_completed = true;
     }
   }
   auto affects_active_only_and_is_waiting_for_deletion =
@@ -1136,10 +1105,8 @@ void AnimationPlayer::RemoveAnimationsCompletedOnMainThread(
                      affects_active_only_and_is_waiting_for_deletion),
       animations.end());
 
-  if (element_animations_)
-    element_animations_->SetNeedsUpdateImplClientState(
-        removed_transform_animation, removed_opacity_animation,
-        removed_filter_animation);
+  if (element_animations_ && animation_completed)
+    element_animations_->SetNeedsUpdateImplClientState();
 }
 
 void AnimationPlayer::PushPropertiesToImplThread(

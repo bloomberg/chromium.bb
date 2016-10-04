@@ -93,12 +93,8 @@ class CC_EXPORT LayerImpl {
 
   // Interactions with attached animations.
   gfx::ScrollOffset ScrollOffsetForAnimation() const;
-  void OnTransformIsCurrentlyAnimatingChanged(bool is_currently_animating);
-  void OnTransformIsPotentiallyAnimatingChanged(bool has_potential_animation);
-  void OnOpacityIsCurrentlyAnimatingChanged(bool is_currently_animating);
-  void OnOpacityIsPotentiallyAnimatingChanged(bool has_potential_animation);
-  void OnFilterIsCurrentlyAnimatingChanged(bool is_currently_animating);
-  void OnFilterIsPotentiallyAnimatingChanged(bool has_potential_animation);
+  void OnIsAnimatingChanged(const PropertyAnimationState& mask,
+                            const PropertyAnimationState& state);
   bool IsActive() const;
 
   void DistributeScroll(ScrollState* scroll_state);

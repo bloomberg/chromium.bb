@@ -179,10 +179,8 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
   void SetNeedsPushProperties();
   bool needs_push_properties() const { return needs_push_properties_; }
 
-  // TODO(loyso): Rework UpdateClientAnimationState to use bitset.
-  void UpdateClientAnimationState(TargetProperty::Type target_property);
-  void UpdateClientAnimationState(bool transform, bool opacity, bool filter);
-  void SetNeedsUpdateImplClientState(bool transform, bool opacity, bool filter);
+  void UpdateClientAnimationState();
+  void SetNeedsUpdateImplClientState();
 
   void UpdateActivationNormal();
 
@@ -209,14 +207,6 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
   enum class ActivationType { NORMAL, FORCE };
   void UpdateActivation(ActivationType type);
 
-  void UpdateClientAnimationStateInternal(TargetProperty::Type property);
-
-  void NotifyClientAnimationChanged(
-      TargetProperty::Type property,
-      ElementListType list_type,
-      bool notify_elements_about_potential_animation,
-      bool notify_elements_about_running_animation);
-
   void OnFilterAnimated(ElementListType list_type,
                         const FilterOperations& filters);
   void OnOpacityAnimated(ElementListType list_type, float opacity);
@@ -224,12 +214,8 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
                            const gfx::Transform& transform);
   void OnScrollOffsetAnimated(ElementListType list_type,
                               const gfx::ScrollOffset& scroll_offset);
-  void IsAnimatingChanged(ElementListType list_type,
-                          TargetProperty::Type property,
-                          AnimationChangeType change_type,
-                          bool is_animating);
 
-  void ClearNeedsUpdateImplClientState();
+  static TargetProperties GetPropertiesMaskForAnimationState();
 
   std::unique_ptr<PlayersList> players_list_;
   AnimationHost* animation_host_;
@@ -247,13 +233,10 @@ class CC_EXPORT ElementAnimations : public base::RefCounted<ElementAnimations> {
 
   bool needs_push_properties_;
 
-  PropertyAnimationState filter_animation_state_;
-  PropertyAnimationState opacity_animation_state_;
-  PropertyAnimationState transform_animation_state_;
+  PropertyAnimationState active_state_;
+  PropertyAnimationState pending_state_;
 
-  bool needs_update_impl_client_state_transform_ : 1;
-  bool needs_update_impl_client_state_opacity_ : 1;
-  bool needs_update_impl_client_state_filter_ : 1;
+  bool needs_update_impl_client_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ElementAnimations);
 };

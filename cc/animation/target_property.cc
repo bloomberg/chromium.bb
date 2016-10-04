@@ -10,6 +10,9 @@ namespace cc {
 
 namespace {
 
+static_assert(TargetProperty::FIRST_TARGET_PROPERTY == 0,
+              "TargetProperty must be 0-based enum");
+
 // This should match the TargetProperty enum.
 static const char* const s_targetPropertyNames[] = {
     "TRANSFORM", "OPACITY", "FILTER", "SCROLL_OFFSET", "BACKGROUND_COLOR"};

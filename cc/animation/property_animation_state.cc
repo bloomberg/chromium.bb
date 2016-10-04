@@ -8,16 +8,19 @@
 
 namespace cc {
 
+PropertyAnimationState::PropertyAnimationState() {}
+
+PropertyAnimationState::PropertyAnimationState(
+    const PropertyAnimationState& rhs)
+    : currently_running(rhs.currently_running),
+      potentially_animating(rhs.potentially_animating) {}
+
+PropertyAnimationState::~PropertyAnimationState() {}
+
 bool PropertyAnimationState::operator==(
     const PropertyAnimationState& other) const {
-  return currently_running_for_active_elements ==
-             other.currently_running_for_active_elements &&
-         currently_running_for_pending_elements ==
-             other.currently_running_for_pending_elements &&
-         potentially_animating_for_active_elements ==
-             other.potentially_animating_for_active_elements &&
-         potentially_animating_for_pending_elements ==
-             other.potentially_animating_for_pending_elements;
+  return currently_running == other.currently_running &&
+         potentially_animating == other.potentially_animating;
 }
 
 bool PropertyAnimationState::operator!=(
@@ -27,28 +30,24 @@ bool PropertyAnimationState::operator!=(
 
 PropertyAnimationState& PropertyAnimationState::operator|=(
     const PropertyAnimationState& other) {
-  currently_running_for_active_elements |=
-      other.currently_running_for_active_elements;
-  currently_running_for_pending_elements |=
-      other.currently_running_for_pending_elements;
-  potentially_animating_for_active_elements |=
-      other.potentially_animating_for_active_elements;
-  potentially_animating_for_pending_elements |=
-      other.potentially_animating_for_pending_elements;
+  currently_running |= other.currently_running;
+  potentially_animating |= other.potentially_animating;
 
   return *this;
 }
 
 PropertyAnimationState& PropertyAnimationState::operator^=(
     const PropertyAnimationState& other) {
-  currently_running_for_active_elements ^=
-      other.currently_running_for_active_elements;
-  currently_running_for_pending_elements ^=
-      other.currently_running_for_pending_elements;
-  potentially_animating_for_active_elements ^=
-      other.potentially_animating_for_active_elements;
-  potentially_animating_for_pending_elements ^=
-      other.potentially_animating_for_pending_elements;
+  currently_running ^= other.currently_running;
+  potentially_animating ^= other.potentially_animating;
+
+  return *this;
+}
+
+PropertyAnimationState& PropertyAnimationState::operator&=(
+    const PropertyAnimationState& other) {
+  currently_running &= other.currently_running;
+  potentially_animating &= other.potentially_animating;
 
   return *this;
 }
@@ -62,18 +61,14 @@ PropertyAnimationState operator^(const PropertyAnimationState& lhs,
 
 bool PropertyAnimationState::IsValid() const {
   // currently_running must be a subset for potentially_animating.
-  // currently <= potentially.
-  return currently_running_for_active_elements <=
-             potentially_animating_for_active_elements &&
-         currently_running_for_pending_elements <=
-             potentially_animating_for_pending_elements;
+  // currently <= potentially i.e. potentially || !currently.
+  TargetProperties result = potentially_animating | ~currently_running;
+  return result.all();
 }
 
 void PropertyAnimationState::Clear() {
-  currently_running_for_active_elements = false;
-  currently_running_for_pending_elements = false;
-  potentially_animating_for_active_elements = false;
-  potentially_animating_for_pending_elements = false;
+  currently_running.reset();
+  potentially_animating.reset();
 }
 
 }  // namespace cc

@@ -5,7 +5,10 @@
 #ifndef CC_TREES_MUTATOR_HOST_CLIENT_H_
 #define CC_TREES_MUTATOR_HOST_CLIENT_H_
 
+// TODO(loyso) Move these headers out of cc/animation.
 #include "cc/animation/element_id.h"
+#include "cc/animation/property_animation_state.h"
+#include "cc/animation/target_property.h"
 
 namespace gfx {
 class Transform;
@@ -42,21 +45,12 @@ class MutatorHostClient {
       ElementListType list_type,
       const gfx::ScrollOffset& scroll_offset) = 0;
 
-  virtual void ElementTransformIsAnimatingChanged(
+  // Allows to change IsAnimating value for a set of properties.
+  virtual void ElementIsAnimatingChanged(
       ElementId element_id,
       ElementListType list_type,
-      AnimationChangeType change_type,
-      bool is_animating) = 0;
-
-  virtual void ElementOpacityIsAnimatingChanged(ElementId element_id,
-                                                ElementListType list_type,
-                                                AnimationChangeType change_type,
-                                                bool is_animating) = 0;
-
-  virtual void ElementFilterIsAnimatingChanged(ElementId element_id,
-                                               ElementListType list_type,
-                                               AnimationChangeType change_type,
-                                               bool is_animating) = 0;
+      const PropertyAnimationState& mask,
+      const PropertyAnimationState& state) = 0;
 
   virtual void ScrollOffsetAnimationFinished() = 0;
   virtual gfx::ScrollOffset GetScrollOffsetForAnimation(

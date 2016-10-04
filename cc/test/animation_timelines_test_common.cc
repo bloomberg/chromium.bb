@@ -24,20 +24,17 @@ TestLayer::TestLayer() {
   ClearMutatedProperties();
 }
 
+TestLayer::~TestLayer() {}
+
 void TestLayer::ClearMutatedProperties() {
   transform_ = gfx::Transform();
   opacity_ = 0;
   filters_ = FilterOperations();
   scroll_offset_ = gfx::ScrollOffset();
-  has_potential_transform_animation_ = false;
-  transform_is_currently_animating_ = false;
-  has_potential_opacity_animation_ = false;
-  opacity_is_currently_animating_ = false;
-  has_potential_filter_animation_ = false;
-  filter_is_currently_animating_ = false;
 
-  for (int i = 0; i <= TargetProperty::LAST_TARGET_PROPERTY; ++i)
-    mutated_properties_[i] = false;
+  has_potential_animation_.reset();
+  is_currently_animating_.reset();
+  mutated_properties_.reset();
 }
 
 int TestLayer::transform_x() const {
@@ -126,69 +123,25 @@ void TestHostClient::SetElementScrollOffsetMutated(
     layer->set_scroll_offset(scroll_offset);
 }
 
-void TestHostClient::ElementTransformIsAnimatingChanged(
+void TestHostClient::ElementIsAnimatingChanged(
     ElementId element_id,
     ElementListType list_type,
-    AnimationChangeType change_type,
-    bool is_animating) {
+    const PropertyAnimationState& mask,
+    const PropertyAnimationState& state) {
   TestLayer* layer = FindTestLayer(element_id, list_type);
-  if (layer) {
-    switch (change_type) {
-      case AnimationChangeType::POTENTIAL:
-        layer->set_has_potential_transform_animation(is_animating);
-        break;
-      case AnimationChangeType::RUNNING:
-        layer->set_transform_is_currently_animating(is_animating);
-        break;
-      case AnimationChangeType::BOTH:
-        layer->set_has_potential_transform_animation(is_animating);
-        layer->set_transform_is_currently_animating(is_animating);
-        break;
-    }
-  }
-}
+  if (!layer)
+    return;
 
-void TestHostClient::ElementOpacityIsAnimatingChanged(
-    ElementId element_id,
-    ElementListType list_type,
-    AnimationChangeType change_type,
-    bool is_animating) {
-  TestLayer* layer = FindTestLayer(element_id, list_type);
-  if (layer) {
-    switch (change_type) {
-      case AnimationChangeType::POTENTIAL:
-        layer->set_has_potential_opacity_animation(is_animating);
-        break;
-      case AnimationChangeType::RUNNING:
-        layer->set_opacity_is_currently_animating(is_animating);
-        break;
-      case AnimationChangeType::BOTH:
-        layer->set_has_potential_opacity_animation(is_animating);
-        layer->set_opacity_is_currently_animating(is_animating);
-        break;
-    }
-  }
-}
-
-void TestHostClient::ElementFilterIsAnimatingChanged(
-    ElementId element_id,
-    ElementListType list_type,
-    AnimationChangeType change_type,
-    bool is_animating) {
-  TestLayer* layer = FindTestLayer(element_id, list_type);
-  if (layer) {
-    switch (change_type) {
-      case AnimationChangeType::POTENTIAL:
-        layer->set_has_potential_filter_animation(is_animating);
-        break;
-      case AnimationChangeType::RUNNING:
-        layer->set_filter_is_currently_animating(is_animating);
-        break;
-      case AnimationChangeType::BOTH:
-        layer->set_has_potential_filter_animation(is_animating);
-        layer->set_filter_is_currently_animating(is_animating);
-        break;
-    }
+  for (int property = TargetProperty::FIRST_TARGET_PROPERTY;
+       property <= TargetProperty::LAST_TARGET_PROPERTY; ++property) {
+    TargetProperty::Type target_property =
+        static_cast<TargetProperty::Type>(property);
+    if (mask.potentially_animating[property])
+      layer->set_has_potential_animation(target_property,
+                                         state.potentially_animating[property]);
+    if (mask.currently_running[property])
+      layer->set_is_currently_animating(target_property,
+                                        state.currently_running[property]);
   }
 }
 
@@ -269,7 +222,7 @@ bool TestHostClient::GetTransformIsCurrentlyAnimating(
     ElementListType list_type) const {
   TestLayer* layer = FindTestLayer(element_id, list_type);
   EXPECT_TRUE(layer);
-  return layer->transform_is_currently_animating();
+  return layer->is_currently_animating(TargetProperty::TRANSFORM);
 }
 
 bool TestHostClient::GetHasPotentialTransformAnimation(
@@ -277,7 +230,7 @@ bool TestHostClient::GetHasPotentialTransformAnimation(
     ElementListType list_type) const {
   TestLayer* layer = FindTestLayer(element_id, list_type);
   EXPECT_TRUE(layer);
-  return layer->has_potential_transform_animation();
+  return layer->has_potential_animation(TargetProperty::TRANSFORM);
 }
 
 bool TestHostClient::GetOpacityIsCurrentlyAnimating(
@@ -285,7 +238,7 @@ bool TestHostClient::GetOpacityIsCurrentlyAnimating(
     ElementListType list_type) const {
   TestLayer* layer = FindTestLayer(element_id, list_type);
   EXPECT_TRUE(layer);
-  return layer->opacity_is_currently_animating();
+  return layer->is_currently_animating(TargetProperty::OPACITY);
 }
 
 bool TestHostClient::GetHasPotentialOpacityAnimation(
@@ -293,7 +246,7 @@ bool TestHostClient::GetHasPotentialOpacityAnimation(
     ElementListType list_type) const {
   TestLayer* layer = FindTestLayer(element_id, list_type);
   EXPECT_TRUE(layer);
-  return layer->has_potential_opacity_animation();
+  return layer->has_potential_animation(TargetProperty::OPACITY);
 }
 
 bool TestHostClient::GetFilterIsCurrentlyAnimating(
@@ -301,7 +254,7 @@ bool TestHostClient::GetFilterIsCurrentlyAnimating(
     ElementListType list_type) const {
   TestLayer* layer = FindTestLayer(element_id, list_type);
   EXPECT_TRUE(layer);
-  return layer->filter_is_currently_animating();
+  return layer->is_currently_animating(TargetProperty::FILTER);
 }
 
 bool TestHostClient::GetHasPotentialFilterAnimation(
@@ -309,7 +262,7 @@ bool TestHostClient::GetHasPotentialFilterAnimation(
     ElementListType list_type) const {
   TestLayer* layer = FindTestLayer(element_id, list_type);
   EXPECT_TRUE(layer);
-  return layer->has_potential_filter_animation();
+  return layer->has_potential_animation(TargetProperty::FILTER);
 }
 
 void TestHostClient::ExpectFilterPropertyMutated(ElementId element_id,

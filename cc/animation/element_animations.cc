@@ -32,9 +32,8 @@ ElementAnimations::ElementAnimations()
       has_element_in_active_list_(false),
       has_element_in_pending_list_(false),
       scroll_offset_animation_was_interrupted_(false),
-      needs_push_properties_(false) {
-  ClearNeedsUpdateImplClientState();
-}
+      needs_push_properties_(false),
+      needs_update_impl_client_state_(false) {}
 
 ElementAnimations::~ElementAnimations() {}
 
@@ -63,22 +62,33 @@ void ElementAnimations::InitAffectedElementTypes() {
   }
 }
 
+TargetProperties ElementAnimations::GetPropertiesMaskForAnimationState() {
+  TargetProperties properties;
+  properties[TargetProperty::TRANSFORM] = true;
+  properties[TargetProperty::OPACITY] = true;
+  properties[TargetProperty::FILTER] = true;
+  return properties;
+}
+
 void ElementAnimations::ClearAffectedElementTypes() {
   DCHECK(animation_host_);
 
+  TargetProperties disable_properties = GetPropertiesMaskForAnimationState();
+  PropertyAnimationState disabled_state_mask, disabled_state;
+  disabled_state_mask.currently_running = disable_properties;
+  disabled_state_mask.potentially_animating = disable_properties;
+
   if (has_element_in_active_list()) {
-    IsAnimatingChanged(ElementListType::ACTIVE, TargetProperty::TRANSFORM,
-                       AnimationChangeType::BOTH, false);
-    IsAnimatingChanged(ElementListType::ACTIVE, TargetProperty::OPACITY,
-                       AnimationChangeType::BOTH, false);
+    animation_host()->mutator_host_client()->ElementIsAnimatingChanged(
+        element_id(), ElementListType::ACTIVE, disabled_state_mask,
+        disabled_state);
   }
   set_has_element_in_active_list(false);
 
   if (has_element_in_pending_list()) {
-    IsAnimatingChanged(ElementListType::PENDING, TargetProperty::TRANSFORM,
-                       AnimationChangeType::BOTH, false);
-    IsAnimatingChanged(ElementListType::PENDING, TargetProperty::OPACITY,
-                       AnimationChangeType::BOTH, false);
+    animation_host()->mutator_host_client()->ElementIsAnimatingChanged(
+        element_id(), ElementListType::PENDING, disabled_state_mask,
+        disabled_state);
   }
   set_has_element_in_pending_list(false);
 
@@ -140,39 +150,12 @@ void ElementAnimations::PushPropertiesTo(
   scroll_offset_animation_was_interrupted_ = false;
 
   // Update impl client state.
-  element_animations_impl->UpdateClientAnimationState(
-      needs_update_impl_client_state_transform_,
-      needs_update_impl_client_state_opacity_,
-      needs_update_impl_client_state_filter_);
-  ClearNeedsUpdateImplClientState();
+  if (needs_update_impl_client_state_)
+    element_animations_impl->UpdateClientAnimationState();
+  needs_update_impl_client_state_ = false;
 
   element_animations_impl->UpdateActivation(ActivationType::NORMAL);
   UpdateActivation(ActivationType::NORMAL);
-}
-
-void ElementAnimations::UpdateClientAnimationState(
-    TargetProperty::Type target_property) {
-  switch (target_property) {
-    case TargetProperty::TRANSFORM:
-    case TargetProperty::OPACITY:
-    case TargetProperty::FILTER:
-      UpdateClientAnimationStateInternal(target_property);
-      break;
-    default:
-      // Do not update for other properties.
-      break;
-  }
-}
-
-void ElementAnimations::UpdateClientAnimationState(bool transform,
-                                                   bool opacity,
-                                                   bool filter) {
-  if (transform)
-    UpdateClientAnimationStateInternal(TargetProperty::TRANSFORM);
-  if (opacity)
-    UpdateClientAnimationStateInternal(TargetProperty::OPACITY);
-  if (filter)
-    UpdateClientAnimationStateInternal(TargetProperty::FILTER);
 }
 
 void ElementAnimations::AddAnimation(std::unique_ptr<Animation> animation) {
@@ -209,10 +192,7 @@ void ElementAnimations::Animate(base::TimeTicks monotonic_time) {
       player->TickAnimations(monotonic_time);
   }
   last_tick_time_ = monotonic_time;
-
-  UpdateClientAnimationStateInternal(TargetProperty::OPACITY);
-  UpdateClientAnimationStateInternal(TargetProperty::TRANSFORM);
-  UpdateClientAnimationStateInternal(TargetProperty::FILTER);
+  UpdateClientAnimationState();
 }
 
 void ElementAnimations::UpdateState(bool start_ready_animations,
@@ -260,23 +240,13 @@ void ElementAnimations::UpdateState(bool start_ready_animations,
 }
 
 void ElementAnimations::ActivateAnimations() {
-  bool changed_transform_animation = false;
-  bool changed_opacity_animation = false;
-  bool changed_filter_animation = false;
-
   ElementAnimations::PlayersList::Iterator it(players_list_.get());
   AnimationPlayer* player;
-  while ((player = it.GetNext()) != nullptr) {
-    player->ActivateAnimations(&changed_transform_animation,
-                               &changed_opacity_animation,
-                               &changed_filter_animation);
-  }
+  while ((player = it.GetNext()) != nullptr)
+    player->ActivateAnimations();
 
   scroll_offset_animation_was_interrupted_ = false;
   UpdateActivation(ActivationType::NORMAL);
-  UpdateClientAnimationState(changed_transform_animation,
-                             changed_opacity_animation,
-                             changed_filter_animation);
 }
 
 void ElementAnimations::NotifyAnimationStarted(const AnimationEvent& event) {
@@ -319,7 +289,7 @@ void ElementAnimations::NotifyAnimationAborted(const AnimationEvent& event) {
       break;
   }
 
-  UpdateClientAnimationState(event.target_property);
+  UpdateClientAnimationState();
 }
 
 void ElementAnimations::NotifyAnimationPropertyUpdate(
@@ -441,26 +411,9 @@ bool ElementAnimations::MaximumTargetScale(ElementListType list_type,
   return true;
 }
 
-void ElementAnimations::SetNeedsUpdateImplClientState(bool transform,
-                                                      bool opacity,
-                                                      bool filter) {
-  if (transform)
-    needs_update_impl_client_state_transform_ = true;
-  if (opacity)
-    needs_update_impl_client_state_opacity_ = true;
-  if (filter)
-    needs_update_impl_client_state_filter_ = true;
-
-  if (needs_update_impl_client_state_transform_ ||
-      needs_update_impl_client_state_opacity_ ||
-      needs_update_impl_client_state_filter_)
-    SetNeedsPushProperties();
-}
-
-void ElementAnimations::ClearNeedsUpdateImplClientState() {
-  needs_update_impl_client_state_transform_ = false;
-  needs_update_impl_client_state_opacity_ = false;
-  needs_update_impl_client_state_filter_ = false;
+void ElementAnimations::SetNeedsUpdateImplClientState() {
+  needs_update_impl_client_state_ = true;
+  SetNeedsPushProperties();
 }
 
 void ElementAnimations::UpdateActivation(ActivationType type) {
@@ -533,101 +486,50 @@ void ElementAnimations::NotifyClientScrollOffsetAnimated(
     OnScrollOffsetAnimated(ElementListType::PENDING, scroll_offset);
 }
 
-void ElementAnimations::NotifyClientAnimationChanged(
-    TargetProperty::Type property,
-    ElementListType list_type,
-    bool notify_elements_about_potential_animation,
-    bool notify_elements_about_running_animation) {
-  PropertyAnimationState* animation_state = nullptr;
-  switch (property) {
-    case TargetProperty::OPACITY:
-      animation_state = &opacity_animation_state_;
-      break;
-    case TargetProperty::TRANSFORM:
-      animation_state = &transform_animation_state_;
-      break;
-    case TargetProperty::FILTER:
-      animation_state = &filter_animation_state_;
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
+void ElementAnimations::UpdateClientAnimationState() {
+  if (!element_id())
+    return;
+  DCHECK(animation_host());
+  if (!animation_host()->mutator_host_client())
+    return;
 
-  bool notify_elements_about_potential_and_running_animation =
-      notify_elements_about_potential_animation &&
-      notify_elements_about_running_animation;
-  bool active = list_type == ElementListType::ACTIVE;
-  if (notify_elements_about_potential_and_running_animation) {
-    bool potentially_animating =
-        active ? animation_state->potentially_animating_for_active_elements
-               : animation_state->potentially_animating_for_pending_elements;
-    bool currently_animating =
-        active ? animation_state->currently_running_for_active_elements
-               : animation_state->currently_running_for_pending_elements;
-    DCHECK_EQ(potentially_animating, currently_animating);
-    IsAnimatingChanged(list_type, property, AnimationChangeType::BOTH,
-                       potentially_animating);
-  } else if (notify_elements_about_potential_animation) {
-    bool potentially_animating =
-        active ? animation_state->potentially_animating_for_active_elements
-               : animation_state->potentially_animating_for_pending_elements;
-    IsAnimatingChanged(list_type, property, AnimationChangeType::POTENTIAL,
-                       potentially_animating);
-  } else if (notify_elements_about_running_animation) {
-    bool currently_animating =
-        active ? animation_state->currently_running_for_active_elements
-               : animation_state->currently_running_for_pending_elements;
-    IsAnimatingChanged(list_type, property, AnimationChangeType::RUNNING,
-                       currently_animating);
-  }
-}
+  PropertyAnimationState prev_pending = pending_state_;
+  PropertyAnimationState prev_active = active_state_;
 
-void ElementAnimations::UpdateClientAnimationStateInternal(
-    TargetProperty::Type property) {
-  PropertyAnimationState* animation_state = nullptr;
-  switch (property) {
-    case TargetProperty::OPACITY:
-      animation_state = &opacity_animation_state_;
-      break;
-    case TargetProperty::TRANSFORM:
-      animation_state = &transform_animation_state_;
-      break;
-    case TargetProperty::FILTER:
-      animation_state = &filter_animation_state_;
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-
-  PropertyAnimationState previous_state = *animation_state;
-  animation_state->Clear();
-  DCHECK(previous_state.IsValid());
+  pending_state_.Clear();
+  active_state_.Clear();
 
   ElementAnimations::PlayersList::Iterator it(players_list_.get());
   AnimationPlayer* player;
   while ((player = it.GetNext()) != nullptr) {
-    PropertyAnimationState player_state;
-    player->GetPropertyAnimationStateFor(property, &player_state);
-    *animation_state |= player_state;
+    PropertyAnimationState player_pending_state, player_active_state;
+    player->GetPropertyAnimationState(&player_pending_state,
+                                      &player_active_state);
+    pending_state_ |= player_pending_state;
+    active_state_ |= player_active_state;
   }
 
-  if (*animation_state == previous_state)
-    return;
+  TargetProperties allowed_properties = GetPropertiesMaskForAnimationState();
+  PropertyAnimationState allowed_state;
+  allowed_state.currently_running = allowed_properties;
+  allowed_state.potentially_animating = allowed_properties;
 
-  PropertyAnimationState diff_state = previous_state ^ *animation_state;
+  pending_state_ &= allowed_state;
+  active_state_ &= allowed_state;
 
-  if (has_element_in_active_list())
-    NotifyClientAnimationChanged(
-        property, ElementListType::ACTIVE,
-        diff_state.potentially_animating_for_active_elements,
-        diff_state.currently_running_for_active_elements);
-  if (has_element_in_pending_list())
-    NotifyClientAnimationChanged(
-        property, ElementListType::PENDING,
-        diff_state.potentially_animating_for_pending_elements,
-        diff_state.currently_running_for_pending_elements);
+  DCHECK(pending_state_.IsValid());
+  DCHECK(active_state_.IsValid());
+
+  if (has_element_in_active_list() && prev_active != active_state_) {
+    PropertyAnimationState diff_active = prev_active ^ active_state_;
+    animation_host()->mutator_host_client()->ElementIsAnimatingChanged(
+        element_id(), ElementListType::ACTIVE, diff_active, active_state_);
+  }
+  if (has_element_in_pending_list() && prev_pending != pending_state_) {
+    PropertyAnimationState diff_pending = prev_pending ^ pending_state_;
+    animation_host()->mutator_host_client()->ElementIsAnimatingChanged(
+        element_id(), ElementListType::PENDING, diff_pending, pending_state_);
+  }
 }
 
 bool ElementAnimations::HasActiveAnimation() const {
@@ -779,40 +681,6 @@ void ElementAnimations::OnScrollOffsetAnimated(
   DCHECK(animation_host()->mutator_host_client());
   animation_host()->mutator_host_client()->SetElementScrollOffsetMutated(
       element_id(), list_type, scroll_offset);
-}
-
-void ElementAnimations::IsAnimatingChanged(ElementListType list_type,
-                                           TargetProperty::Type property,
-                                           AnimationChangeType change_type,
-                                           bool is_animating) {
-  if (!element_id())
-    return;
-  DCHECK(animation_host());
-  if (animation_host()->mutator_host_client()) {
-    switch (property) {
-      case TargetProperty::OPACITY:
-        animation_host()
-            ->mutator_host_client()
-            ->ElementOpacityIsAnimatingChanged(element_id(), list_type,
-                                               change_type, is_animating);
-        break;
-      case TargetProperty::TRANSFORM:
-        animation_host()
-            ->mutator_host_client()
-            ->ElementTransformIsAnimatingChanged(element_id(), list_type,
-                                                 change_type, is_animating);
-        break;
-      case TargetProperty::FILTER:
-        animation_host()
-            ->mutator_host_client()
-            ->ElementFilterIsAnimatingChanged(element_id(), list_type,
-                                              change_type, is_animating);
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
-  }
 }
 
 gfx::ScrollOffset ElementAnimations::ScrollOffsetForAnimation() const {

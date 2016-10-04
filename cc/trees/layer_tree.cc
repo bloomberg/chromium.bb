@@ -652,69 +652,13 @@ void LayerTree::SetElementScrollOffsetMutated(
   layer->OnScrollOffsetAnimated(scroll_offset);
 }
 
-void LayerTree::ElementTransformIsAnimatingChanged(
-    ElementId element_id,
-    ElementListType list_type,
-    AnimationChangeType change_type,
-    bool is_animating) {
+void LayerTree::ElementIsAnimatingChanged(ElementId element_id,
+                                          ElementListType list_type,
+                                          const PropertyAnimationState& mask,
+                                          const PropertyAnimationState& state) {
   Layer* layer = LayerByElementId(element_id);
-  if (layer) {
-    switch (change_type) {
-      case AnimationChangeType::POTENTIAL:
-        layer->OnTransformIsPotentiallyAnimatingChanged(is_animating);
-        break;
-      case AnimationChangeType::RUNNING:
-        layer->OnTransformIsCurrentlyAnimatingChanged(is_animating);
-        break;
-      case AnimationChangeType::BOTH:
-        layer->OnTransformIsPotentiallyAnimatingChanged(is_animating);
-        layer->OnTransformIsCurrentlyAnimatingChanged(is_animating);
-        break;
-    }
-  }
-}
-
-void LayerTree::ElementOpacityIsAnimatingChanged(
-    ElementId element_id,
-    ElementListType list_type,
-    AnimationChangeType change_type,
-    bool is_animating) {
-  Layer* layer = LayerByElementId(element_id);
-  if (layer) {
-    switch (change_type) {
-      case AnimationChangeType::POTENTIAL:
-        layer->OnOpacityIsPotentiallyAnimatingChanged(is_animating);
-        break;
-      case AnimationChangeType::RUNNING:
-        layer->OnOpacityIsCurrentlyAnimatingChanged(is_animating);
-        break;
-      case AnimationChangeType::BOTH:
-        layer->OnOpacityIsPotentiallyAnimatingChanged(is_animating);
-        layer->OnOpacityIsCurrentlyAnimatingChanged(is_animating);
-        break;
-    }
-  }
-}
-
-void LayerTree::ElementFilterIsAnimatingChanged(ElementId element_id,
-                                                ElementListType list_type,
-                                                AnimationChangeType change_type,
-                                                bool is_animating) {
-  Layer* layer = LayerByElementId(element_id);
-  if (layer) {
-    switch (change_type) {
-      case AnimationChangeType::POTENTIAL:
-        layer->OnFilterIsPotentiallyAnimatingChanged(is_animating);
-        break;
-      case AnimationChangeType::RUNNING:
-        layer->OnFilterIsCurrentlyAnimatingChanged(is_animating);
-        break;
-      case AnimationChangeType::BOTH:
-        layer->OnFilterIsPotentiallyAnimatingChanged(is_animating);
-        layer->OnFilterIsCurrentlyAnimatingChanged(is_animating);
-        break;
-    }
-  }
+  if (layer)
+    layer->OnIsAnimatingChanged(mask, state);
 }
 
 gfx::ScrollOffset LayerTree::GetScrollOffsetForAnimation(
