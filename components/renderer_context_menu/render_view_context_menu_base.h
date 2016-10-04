@@ -185,6 +185,9 @@ class RenderViewContextMenuBase : public ui::SimpleMenuModel::Delegate,
   // Renderer's frame id.
   const int render_frame_id_;
 
+  // The RenderFrameHost's IDs.
+  const int render_process_id_;
+
   // Our observers.
   mutable base::ObserverList<RenderViewContextMenuObserver> observers_;
 
@@ -196,9 +199,6 @@ class RenderViewContextMenuBase : public ui::SimpleMenuModel::Delegate,
 
  private:
   bool AppendCustomItems();
-
-  // The RenderFrameHost's IDs.
-  const int render_process_id_;
 
   std::unique_ptr<ToolkitDelegate> toolkit_delegate_;
 

@@ -505,6 +505,7 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, FilteredTest) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, UserAction) {
+  content::IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   // Wait for the extension to set itself up and return control to us.
@@ -519,7 +520,8 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, UserAction) {
       browser()->profile())->extension_service();
   const extensions::Extension* extension =
       service->GetExtensionById(last_loaded_extension_id(), false);
-  GURL url = extension->GetResourceURL("a.html");
+  GURL url = extension->GetResourceURL(
+      "a.html?" + base::IntToString(embedded_test_server()->port()));
 
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -530,7 +532,13 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, UserAction) {
   params.page_url = url;
   params.link_url = extension->GetResourceURL("b.html");
 
-  TestRenderViewContextMenu menu(tab->GetMainFrame(), params);
+  // Get the child frame, which will be the one associated with the context
+  // menu.
+  std::vector<content::RenderFrameHost*> frames = tab->GetAllFrames();
+  EXPECT_EQ(2UL, frames.size());
+  EXPECT_TRUE(frames[1]->GetParent());
+
+  TestRenderViewContextMenu menu(frames[1], params);
   menu.Init();
   menu.ExecuteCommand(IDC_CONTENT_CONTEXT_OPENLINKNEWTAB, 0);
 

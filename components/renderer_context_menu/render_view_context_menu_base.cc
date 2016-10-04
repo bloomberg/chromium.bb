@@ -161,9 +161,8 @@ RenderViewContextMenuBase::RenderViewContextMenuBase(
       browser_context_(source_web_contents_->GetBrowserContext()),
       menu_model_(this),
       render_frame_id_(render_frame_host->GetRoutingID()),
-      command_executed_(false),
-      render_process_id_(render_frame_host->GetProcess()->GetID()) {
-}
+      render_process_id_(render_frame_host->GetProcess()->GetID()),
+      command_executed_(false) {}
 
 RenderViewContextMenuBase::~RenderViewContextMenuBase() {
 }

@@ -1915,6 +1915,7 @@ void RenderViewContextMenu::NotifyURLOpened(
   RetargetingDetails details;
   details.source_web_contents = source_web_contents_;
   // Don't use GetRenderFrameHost() as it may be NULL. crbug.com/399789
+  details.source_render_process_id = render_process_id_;
   details.source_render_frame_id = render_frame_id_;
   details.target_url = url;
   details.target_web_contents = new_contents;

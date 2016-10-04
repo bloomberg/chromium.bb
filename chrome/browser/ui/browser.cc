@@ -1600,6 +1600,7 @@ bool Browser::ShouldCreateWebContents(
 }
 
 void Browser::WebContentsCreated(WebContents* source_contents,
+                                 int opener_render_process_id,
                                  int opener_render_frame_id,
                                  const std::string& frame_name,
                                  const GURL& target_url,
@@ -1616,6 +1617,7 @@ void Browser::WebContentsCreated(WebContents* source_contents,
   // Notify.
   RetargetingDetails details;
   details.source_web_contents = source_contents;
+  details.source_render_process_id = opener_render_process_id;
   details.source_render_frame_id = opener_render_frame_id;
   details.target_url = target_url;
   details.target_web_contents = new_contents;

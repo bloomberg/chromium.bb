@@ -243,6 +243,7 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest>,
       content::WebContents* source,
       const content::OpenURLParams& params) final;
   void WebContentsCreated(content::WebContents* source_contents,
+                          int opener_render_process_id,
                           int opener_render_frame_id,
                           const std::string& frame_name,
                           const GURL& target_url,

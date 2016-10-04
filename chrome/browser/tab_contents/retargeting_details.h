@@ -18,6 +18,10 @@ struct RetargetingDetails {
   // The source tab contents.
   content::WebContents* source_web_contents;
 
+  // The RenderProcessHost id of the source render frame from which the
+  // retargeting was triggered.
+  int source_render_process_id;
+
   // The routing id of the source render frame from which the retargeting was
   // triggered.
   int64_t source_render_frame_id;

@@ -2127,8 +2127,8 @@ void WebContentsImpl::CreateNewWindow(
 
   if (delegate_) {
     delegate_->WebContentsCreated(
-        this, params.opener_render_frame_id, params.frame_name,
-        params.target_url, new_contents);
+        this, render_process_id, params.opener_render_frame_id,
+        params.frame_name, params.target_url, new_contents);
   }
 
   if (params.opener_suppressed) {

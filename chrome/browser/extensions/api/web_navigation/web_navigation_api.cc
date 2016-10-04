@@ -160,8 +160,7 @@ void WebNavigationEventRouter::Retargeting(const RetargetingDetails* details) {
       tab_observer->frame_navigation_state();
 
   content::RenderFrameHost* frame_host = content::RenderFrameHost::FromID(
-      details->source_web_contents->GetRenderProcessHost()->GetID(),
-      details->source_render_frame_id);
+      details->source_render_process_id, details->source_render_frame_id);
   if (!frame_navigation_state.CanSendEvents(frame_host))
     return;
 
