@@ -1825,22 +1825,23 @@ LayoutUnit LayoutBox::shrinkLogicalWidthToAvoidFloats(
   LayoutUnit logicalTopPosition = logicalTop();
   LayoutUnit startOffsetForContent = cb->startOffsetForContent();
   LayoutUnit endOffsetForContent = cb->endOffsetForContent();
-  LayoutUnit startOffsetForLine =
-      cb->startOffsetForLine(logicalTopPosition, DoNotIndentText);
+  LayoutUnit logicalHeight = cb->logicalHeightForChild(*this);
+  LayoutUnit startOffsetForLine = cb->startOffsetForLine(
+      logicalTopPosition, DoNotIndentText, logicalHeight);
   LayoutUnit endOffsetForLine =
-      cb->endOffsetForLine(logicalTopPosition, DoNotIndentText);
+      cb->endOffsetForLine(logicalTopPosition, DoNotIndentText, logicalHeight);
 
   // If there aren't any floats constraining us then allow the margins to shrink/expand the width as much as they want.
   if (startOffsetForContent == startOffsetForLine &&
       endOffsetForContent == endOffsetForLine)
-    return cb->availableLogicalWidthForLine(logicalTopPosition,
-                                            DoNotIndentText) -
+    return cb->availableLogicalWidthForLine(logicalTopPosition, DoNotIndentText,
+                                            logicalHeight) -
            childMarginStart - childMarginEnd;
 
-  LayoutUnit width =
-      cb->availableLogicalWidthForLine(logicalTopPosition, DoNotIndentText) -
-      std::max(LayoutUnit(), childMarginStart) -
-      std::max(LayoutUnit(), childMarginEnd);
+  LayoutUnit width = cb->availableLogicalWidthForLine(
+                         logicalTopPosition, DoNotIndentText, logicalHeight) -
+                     std::max(LayoutUnit(), childMarginStart) -
+                     std::max(LayoutUnit(), childMarginEnd);
   // We need to see if margins on either the start side or the end side can contain the floats in question. If they can,
   // then just using the line width is inaccurate. In the case where a float completely fits, we don't need to use the line
   // offset at all, but can instead push all the way to the content edge of the containing block. In the case where the float
