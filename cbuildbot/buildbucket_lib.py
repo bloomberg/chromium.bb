@@ -17,6 +17,7 @@ from __future__ import print_function
 
 import json
 import os
+import urllib
 
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import topology
@@ -33,6 +34,10 @@ GET_METHOD = 'GET'
 STARTED_STATUS = 'STARTED'
 SCHEDULED_STATUS = 'SCHEDULED'
 COMPLETED_STATUS = 'COMPLETED'
+
+STATUS_LIST = (STARTED_STATUS, SCHEDULED_STATUS, COMPLETED_STATUS)
+
+SEARCH_LIMIT_COUNT = 50
 
 WATERFALL_BUCKET_MAP = {
     constants.WATERFALL_INTERNAL:
@@ -95,7 +100,7 @@ def BuildBucketRequest(http, url, method, body, dryrun):
     dryrun: Whether a dryrun.
 
   Returns:
-    Content if request succeeds.
+    A dict of response content if the request succeeds; else, None.
 
   Raises:
     BuildbucketResponseException when response['status'] is invalid.
@@ -133,7 +138,7 @@ def PutBuildBucket(body, http, testjob, dryrun):
     dryrun: Whether a dryrun.
 
   Returns:
-    Content if request succeeds.
+    A dict of response content if the request succeeds; else, None.
   """
   url = 'https://%(hostname)s/_ah/api/buildbucket/v1/builds' % {
       'hostname': GetHost(testjob)
@@ -151,7 +156,7 @@ def GetBuildBucket(buildbucket_id, http, testjob, dryrun):
     dryrun: Whether a dryrun.
 
   Returns:
-    Content if request succeeds.
+    A dict of response content if the request succeeds; else, None.
   """
   url = 'https://%(hostname)s/_ah/api/buildbucket/v1/builds/%(id)s' % {
       'hostname': GetHost(testjob),
@@ -170,7 +175,7 @@ def CancelBuildBucket(buildbucket_id, http, testjob, dryrun):
     dryrun: Whether a dryrun.
 
   Returns:
-    Content if request succeeds.
+    A dict of response content if the request succeeds; else, None.
   """
   url = 'https://%(hostname)s/_ah/api/buildbucket/v1/builds/%(id)s/cancel' % {
       'hostname': GetHost(testjob),
@@ -189,7 +194,7 @@ def CancelBatchBuildBucket(buildbucket_ids, http, testjob, dryrun):
     dryrun: Whether a dryrun.
 
   Returns:
-    Content if request succeeds.
+    A dict of response content if the request succeeds; else, None.
   """
   url = 'https://%(hostname)s/_ah/api/buildbucket/v1/builds/cancel' % {
       'hostname': GetHost(testjob)
@@ -198,6 +203,86 @@ def CancelBatchBuildBucket(buildbucket_ids, http, testjob, dryrun):
   body = json.dumps({'build_ids': buildbucket_ids})
 
   return BuildBucketRequest(http, url, POST_METHOD, body, dryrun)
+
+def SearchBuildBucket(http, testjob, dryrun,
+                      buckets=None, tags=None, status=None):
+  """Send Search requests to the Buildbucket server.
+
+  Args:
+    http: Http instance.
+    testjob: Whether to use the test instance of the buildbucket server.
+    dryrun: Whether a dryrun.
+    buckets: Search for builds the buckets.
+    tags: Search for builds containing all the tags.
+    status: Search for builds in this status.
+
+  Returns:
+    A dict of response content if the request succeeds; else, None.
+  """
+  params = []
+  if buckets:
+    assert isinstance(buckets, list), 'buckets must be a list of string.'
+    for bucket in buckets:
+      params.append(('bucket', bucket))
+  if tags:
+    assert isinstance(tags, list), 'tags must be a list of string.'
+    for tag in tags:
+      params.append(('tag', tag))
+  if status:
+    if status not in STATUS_LIST:
+      raise ValueError('status must be one of %s' % str(STATUS_LIST))
+    params.append(('status', status))
+
+  params_str = urllib.urlencode(params)
+
+  url = 'https://%(hostname)s/_ah/api/buildbucket/v1/search?%(params_str)s' % {
+      'hostname': GetHost(testjob),
+      'params_str': params_str
+  }
+
+  return BuildBucketRequest(http, url, GET_METHOD, None, dryrun)
+
+def SearchAllBuilds(http, testjob, dryrun, limit=SEARCH_LIMIT_COUNT,
+                    buckets=None, tags=None, status=None):
+  """Search all qualified builds.
+
+  Args:
+    http: Http instance.
+    testjob: Whether to use the test instance of the buildbucket server.
+    limit: the limit count of search results.
+    dryrun: Whether a dryrun.
+    buckets: Search for builds in the buckets.
+    tags: Search for builds containing all the tags.
+    status: Search for builds in this status.
+
+  Returns:
+    List of builds.
+  """
+  if limit <= 0:
+    raise ValueError('limit %s must be greater than 0.')
+
+  all_builds = []
+  while True:
+    content = SearchBuildBucket(
+        http, testjob, dryrun, buckets=buckets, tags=tags, status=status)
+
+    builds = GetBuilds(content)
+
+    if not builds:
+      logging.debug('No build found.')
+      break
+    if len(builds) + len(all_builds) >= limit:
+      all_builds.extend(builds[0:limit - len(all_builds)])
+      logging.info('Reached the search limit %s', limit)
+      break
+
+    all_builds.extend(builds)
+
+    if GetNextCursor(content) is None:
+      logging.debug('No next_cursor in the response.')
+      break
+
+  return all_builds
 
 def HasError(content):
   return content and content.get('error')
@@ -212,6 +297,12 @@ def HasBuild(content):
 def GetBuildId(content):
   return (content.get('build').get('id')
           if HasBuild(content) else None)
+
+def GetBuilds(content):
+  return content.get('builds', []) if content else []
+
+def GetBuildIds(content):
+  return [b.get('id') for b in GetBuilds(content)]
 
 def GetBuildStatus(content):
   return (content.get('build').get('status')
@@ -233,3 +324,10 @@ def GetResultMap(content):
       build_result_map[build_id] = r
 
   return build_result_map
+
+def HasNextCursor(content):
+  return content and content.get('next_cursor')
+
+def GetNextCursor(content):
+  return (content.get('next_cursor')
+          if HasNextCursor(content) else None)
