@@ -1403,6 +1403,7 @@ split_static_library("browser") {
     "//courgette:courgette_lib",
     "//crypto",
     "//crypto:platform",
+    "//device/bluetooth:mojo",
     "//device/core",
     "//device/usb/mojo",
     "//device/usb/public/interfaces",
@@ -3962,6 +3963,7 @@ grit("resources") {
     "//chrome/browser/ui/webui/omnibox:mojo_bindings__generator",
     "//chrome/browser/ui/webui/plugins:mojo_bindings__generator",
     "//chrome/browser/ui/webui/usb_internals:mojo_bindings__generator",
+    "//device/bluetooth/public/interfaces:experimental_interfaces__generator",
     "//url/mojo:url_mojom_gurl__generator",
     "//url/mojo:url_mojom_origin__generator",
   ]

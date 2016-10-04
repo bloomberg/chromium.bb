@@ -20,6 +20,18 @@ config("bluetooth_config") {
   }
 }
 
+source_set("mojo") {
+  sources = [
+    "adapter.cc",
+    "adapter.h",
+  ]
+
+  public_deps = [
+    ":bluetooth",
+    "//device/bluetooth/public/interfaces:experimental_interfaces",
+  ]
+}
+
 component("bluetooth") {
   sources = [
     "android/bluetooth_jni_registrar.cc",

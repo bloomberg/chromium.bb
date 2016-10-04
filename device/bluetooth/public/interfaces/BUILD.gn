@@ -4,10 +4,22 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-mojom("bluetooth_mojom_bluetooth_uuid") {
+mojom("interfaces") {
   sources = [
     "uuid.mojom",
   ]
 
   use_new_wrapper_types = false
+}
+
+mojom("experimental_interfaces") {
+  sources = [
+    "adapter.mojom",
+  ]
+
+  visibility = [
+    "//device/bluetooth:mojo",
+    "//chrome/browser:*",
+    "//chrome/browser/ui:*",
+  ]
 }

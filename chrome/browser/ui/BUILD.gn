@@ -560,6 +560,7 @@ split_static_library("ui") {
     "//content/app/resources",
     "//content/public/common",
     "//crypto",
+    "//device/bluetooth/public/interfaces:experimental_interfaces",
     "//device/core",
     "//device/usb",
     "//media",

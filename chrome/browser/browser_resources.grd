@@ -94,6 +94,7 @@
       <include name="IDR_BLUETOOTH_INTERNALS_CSS" file="resources\bluetooth_internals\bluetooth_internals.css" type="BINDATA" />
       <include name="IDR_BLUETOOTH_INTERNALS_HTML" file="resources\bluetooth_internals\bluetooth_internals.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_BLUETOOTH_INTERNALS_JS" file="resources\bluetooth_internals\bluetooth_internals.js" type="BINDATA" />
+      <include name="IDR_BLUETOOTH_MOJO_JS" file="${root_gen_dir}\device\bluetooth\public\interfaces\adapter.mojom.js" use_base_dir="false" type="BINDATA"/>
       <include name="IDR_BOOKMARKS_MANIFEST" file="resources\bookmark_manager\manifest.json" type="BINDATA" />
       <if expr="is_posix and not is_macosx and not is_ios">
         <include name="IDR_CERTIFICATE_VIEWER_HTML" file="resources\certificate_viewer.html" type="BINDATA" />
