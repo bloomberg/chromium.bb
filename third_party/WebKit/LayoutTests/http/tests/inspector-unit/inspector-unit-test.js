@@ -56,6 +56,25 @@ var UnitTest = {};
             console.log(text);
     }
 
+    UnitTest.runTests = function(tests)
+    {
+        nextTest();
+
+        function nextTest()
+        {
+            var test = tests.shift();
+            if (!test) {
+                UnitTest.completeTest();
+                return;
+            }
+            UnitTest.addResult("\ntest: " + test.name);
+            var testPromise = test();
+            if (!(testPromise instanceof Promise))
+                testPromise = Promise.resolve();
+            testPromise.then(nextTest);
+        }
+    }
+
     function completeTestOnError(message, source, lineno, colno, error)
     {
         UnitTest.addResult("TEST ENDED IN ERROR: " + error.stack);
