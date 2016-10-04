@@ -138,7 +138,8 @@ class PLATFORM_EXPORT Length {
     return *this;
   }
 
-  // FIXME: Make this private (if possible) or at least rename it (http://crbug.com/432707).
+  // FIXME: Make this private (if possible) or at least rename it
+  // (http://crbug.com/432707).
   inline float value() const {
     ASSERT(!isCalculated());
     return getFloatValue();
@@ -201,10 +202,10 @@ class PLATFORM_EXPORT Length {
 
   bool isMaxSizeNone() const { return type() == MaxSizeNone; }
 
-  // FIXME calc: https://bugs.webkit.org/show_bug.cgi?id=80357. A calculated Length
-  // always contains a percentage, and without a maxValue passed to these functions
-  // it's impossible to determine the sign or zero-ness. We assume all calc values
-  // are positive and non-zero for now.
+  // FIXME calc: https://bugs.webkit.org/show_bug.cgi?id=80357. A calculated
+  // Length always contains a percentage, and without a maxValue passed to these
+  // functions it's impossible to determine the sign or zero-ness. We assume all
+  // calc values are positive and non-zero for now.
   bool isZero() const {
     ASSERT(!isMaxSizeNone());
     if (isCalculated())

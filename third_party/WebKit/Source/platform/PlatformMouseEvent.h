@@ -36,12 +36,13 @@ namespace blink {
 class PlatformMouseEvent : public PlatformEvent {
  public:
   enum SyntheticEventType {
-    // Real mouse input events or synthetic events that behave just like real events
+    // Real mouse input events or synthetic events that behave just like real
+    // events
     RealOrIndistinguishable,
     // Synthetic mouse events derived from touch input
     FromTouch,
-    // Synthetic mouse events generated without a position, for example those generated
-    // from keyboard input.
+    // Synthetic mouse events generated without a position, for example those
+    // generated from keyboard input.
     Positionless,
   };
 

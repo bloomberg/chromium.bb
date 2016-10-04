@@ -130,7 +130,8 @@ TEST(SharedBufferTest, copy) {
   sharedBuffer->append(testData.data(), length);
   sharedBuffer->append(testData.data(), length);
   sharedBuffer->append(testData.data(), length);
-  // sharedBuffer must contain data more than segmentSize (= 0x1000) to check copy().
+  // sharedBuffer must contain data more than segmentSize (= 0x1000) to check
+  // copy().
   ASSERT_EQ(length * 4, sharedBuffer->size());
 
   RefPtr<SharedBuffer> clone = sharedBuffer->copy();
@@ -146,8 +147,8 @@ TEST(SharedBufferTest, constructorWithSizeOnly) {
   RefPtr<SharedBuffer> sharedBuffer = SharedBuffer::create(length);
   ASSERT_EQ(length, sharedBuffer->size());
 
-  // The internal flat buffer should have been resized to |length| therefore getSomeData() should
-  // directly return the full size.
+  // The internal flat buffer should have been resized to |length| therefore
+  // getSomeData() should directly return the full size.
   const char* data;
   ASSERT_EQ(length, sharedBuffer->getSomeData(data, static_cast<size_t>(0u)));
 }

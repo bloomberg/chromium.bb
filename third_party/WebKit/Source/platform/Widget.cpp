@@ -83,13 +83,13 @@ IntPoint Widget::convertFromRootFrame(const IntPoint& pointInRootFrame) const {
 
 FloatPoint Widget::convertFromRootFrame(
     const FloatPoint& pointInRootFrame) const {
-  // Widgets / windows are required to be IntPoint aligned, but we may need to convert
-  // FloatPoint values within them (eg. for event co-ordinates).
+  // Widgets / windows are required to be IntPoint aligned, but we may need to
+  // convert FloatPoint values within them (eg. for event co-ordinates).
   IntPoint flooredPoint = flooredIntPoint(pointInRootFrame);
   FloatPoint parentPoint = this->convertFromRootFrame(flooredPoint);
   FloatSize windowFraction = pointInRootFrame - flooredPoint;
-  // Use linear interpolation handle any fractional value (eg. for iframes subject to a transform
-  // beyond just a simple translation).
+  // Use linear interpolation handle any fractional value (eg. for iframes
+  // subject to a transform beyond just a simple translation).
   // FIXME: Add FloatPoint variants of all co-ordinate space conversion APIs.
   if (!windowFraction.isEmpty()) {
     const int kFactor = 1000;

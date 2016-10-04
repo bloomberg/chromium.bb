@@ -125,8 +125,9 @@ struct CrossThreadCopier<std::nullptr_t>
   STATIC_ONLY(CrossThreadCopier);
 };
 
-// To allow a type to be passed across threads using its copy constructor, add a forward declaration of the type and
-// provide a specialization of CrossThreadCopier<T> in this file, like IntRect below.
+// To allow a type to be passed across threads using its copy constructor, add a
+// forward declaration of the type and provide a specialization of
+// CrossThreadCopier<T> in this file, like IntRect below.
 template <>
 struct CrossThreadCopier<IntRect>
     : public CrossThreadCopierPassThrough<IntRect> {

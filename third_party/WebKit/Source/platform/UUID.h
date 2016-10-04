@@ -36,18 +36,22 @@
 
 namespace blink {
 
-// Creates a UUID that consists of 32 hexadecimal digits and returns its canonical form.
-// The canonical form is displayed in 5 groups separated by hyphens, in the form 8-4-4-4-12 for a total of 36 characters.
+// Creates a UUID that consists of 32 hexadecimal digits and returns its
+// canonical form.  The canonical form is displayed in 5 groups separated by
+// hyphens, in the form 8-4-4-4-12 for a total of 36 characters.
 // The hexadecimal values "a" through "f" are output as lower case characters.
 //
-// Note: for security reason, we should always generate version 4 UUID that use a scheme relying only on random numbers.
-// This algorithm sets the version number as well as two reserved bits. All other bits are set using a random or pseudorandom
-// data source. Version 4 UUIDs have the form xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx with hexadecimal digits for x and one of 8,
-// 9, A, or B for y.
+// Note: for security reason, we should always generate version 4 UUID that use
+// a scheme relying only on random numbers.  This algorithm sets the version
+// number as well as two reserved bits. All other bits are set using a random or
+// pseudorandom data source. Version 4 UUIDs have the form
+// xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx with hexadecimal digits for x and one of
+// 8, 9, A, or B for y.
 PLATFORM_EXPORT String createCanonicalUUIDString();
 
-// Check that the UUID is a valid UUID. A valid UUID is a string made out of 5 groups
-// of lower case hexadecimal characters separated by hyphens, in the form 8-4-4-4-12.
+// Check that the UUID is a valid UUID. A valid UUID is a string made out of 5
+// groups of lower case hexadecimal characters separated by hyphens, in the form
+// 8-4-4-4-12.
 PLATFORM_EXPORT bool isValidUUID(const String& uuid);
 
 }  // namespace blink

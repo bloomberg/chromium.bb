@@ -94,7 +94,8 @@ class PLATFORM_EXPORT FileChooser : public RefCounted<FileChooser> {
 
   void disconnectClient() { m_client = 0; }
 
-  // FIXME: We should probably just pass file paths that could be virtual paths with proper display names rather than passing structs.
+  // FIXME: We should probably just pass file paths that could be virtual paths
+  // with proper display names rather than passing structs.
   void chooseFiles(const Vector<FileChooserFileInfo>& files);
 
   const FileChooserSettings& settings() const { return m_settings; }

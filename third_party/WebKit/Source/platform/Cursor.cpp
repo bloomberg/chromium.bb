@@ -47,7 +47,8 @@ IntPoint determineHotSpot(Image* image,
                      imageRect.maxY() - 1));
   }
 
-  // If hot spot is not specified externally, it can be extracted from some image formats (e.g. .cur).
+  // If hot spot is not specified externally, it can be extracted from some
+  // image formats (e.g. .cur).
   IntPoint intrinsicHotSpot;
   bool imageHasIntrinsicHotSpot = image->getHotSpot(intrinsicHotSpot);
   if (imageHasIntrinsicHotSpot && imageRect.contains(intrinsicHotSpot))

@@ -133,10 +133,10 @@ void TimerBase::runInternal() {
 
   if (m_repeatInterval) {
     double now = timerMonotonicallyIncreasingTime();
-    // This computation should be drift free, and it will cope if we miss a beat,
-    // which can easily happen if the thread is busy.  It will also cope if we get
-    // called slightly before m_unalignedNextFireTime, which can happen due to lack
-    // of timer precision.
+    // This computation should be drift free, and it will cope if we miss a
+    // beat, which can easily happen if the thread is busy.  It will also cope
+    // if we get called slightly before m_unalignedNextFireTime, which can
+    // happen due to lack of timer precision.
     double intervalToNextFireTime =
         m_repeatInterval - fmod(now - m_nextFireTime, m_repeatInterval);
     setNextFireTime(timerMonotonicallyIncreasingTime(), intervalToNextFireTime);

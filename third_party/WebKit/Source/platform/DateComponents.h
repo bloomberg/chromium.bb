@@ -39,12 +39,14 @@
 
 namespace blink {
 
-// A DateComponents instance represents one of the following date and time combinations:
+// A DateComponents instance represents one of the following date and time
+// combinations:
 // * Month type: year-month
 // * Date type: year-month-day
 // * Week type: year-week
 // * Time type: hour-minute-second-millisecond
-// * DateTime or DateTimeLocal type: year-month-day hour-minute-second-millisecond
+// * DateTime or DateTimeLocal type:
+//   year-month-day hour-minute-second-millisecond
 class PLATFORM_EXPORT DateComponents {
   DISALLOW_NEW();
 
@@ -82,8 +84,9 @@ class PLATFORM_EXPORT DateComponents {
   Type getType() const { return m_type; }
 
   enum SecondFormat {
-    None,  // Suppress the second part and the millisecond part if they are 0.
-    Second,  // Always show the second part, and suppress the millisecond part if it is 0.
+    None,    // Suppress the second part and the millisecond part if they are 0.
+    Second,  // Always show the second part, and suppress the millisecond part
+             // if it is 0.
     Millisecond  // Always show the second part and the millisecond part.
   };
 
@@ -123,9 +126,11 @@ class PLATFORM_EXPORT DateComponents {
 
   // For Date type. Updates m_year, m_month and m_monthDay.
   bool setMillisecondsSinceEpochForDate(double ms);
-  // For DateTime type. Updates m_year, m_month, m_monthDay, m_hour, m_minute, m_second and m_millisecond.
+  // For DateTime type. Updates m_year, m_month, m_monthDay, m_hour, m_minute,
+  // m_second and m_millisecond.
   bool setMillisecondsSinceEpochForDateTime(double ms);
-  // For DateTimeLocal type. Updates m_year, m_month, m_monthDay, m_hour, m_minute, m_second and m_millisecond.
+  // For DateTimeLocal type. Updates m_year, m_month, m_monthDay, m_hour,
+  // m_minute, m_second and m_millisecond.
   bool setMillisecondsSinceEpochForDateTimeLocal(double ms);
   // For Month type. Updates m_year and m_month.
   bool setMillisecondsSinceEpochForMonth(double ms);

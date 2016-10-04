@@ -40,7 +40,8 @@ namespace blink {
 static bool resolveRelative(const KURL& base,
                             const String& relative,
                             url::RawCanonOutput<2048>* buffer) {
-  // We use these low-level GURL functions to avoid converting back and forth from UTF-8 unnecessarily.
+  // We use these low-level GURL functions to avoid converting back and forth
+  // from UTF-8 unnecessarily.
   url::Parsed parsed;
   StringUTF8Adaptor baseUTF8(base.getString());
   if (relative.is8Bit()) {

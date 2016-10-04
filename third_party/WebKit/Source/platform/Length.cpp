@@ -2,7 +2,8 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller ( mueller@kde.org )
- * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Apple Inc. All rights
+ * reserved.
  * Copyright (C) 2006 Andrew Wellington (proton@wiretapped.net)
  *
  * This library is free software; you can redistribute it and/or
@@ -41,8 +42,8 @@ class CalculationValueHandleMap {
   int insert(PassRefPtr<CalculationValue> calcValue) {
     ASSERT(m_index);
     // FIXME calc(): https://bugs.webkit.org/show_bug.cgi?id=80489
-    // This monotonically increasing handle generation scheme is potentially wasteful
-    // of the handle space. Consider reusing empty handles.
+    // This monotonically increasing handle generation scheme is potentially
+    // wasteful of the handle space. Consider reusing empty handles.
     while (m_map.contains(m_index))
       m_index++;
 
@@ -65,7 +66,8 @@ class CalculationValueHandleMap {
     ASSERT(m_map.contains(index));
     CalculationValue* value = m_map.get(index);
     if (value->hasOneRef()) {
-      // Force the CalculationValue destructor early to avoid a potential recursive call inside HashMap remove().
+      // Force the CalculationValue destructor early to avoid a potential
+      // recursive call inside HashMap remove().
       m_map.set(index, nullptr);
       m_map.remove(index);
     } else {

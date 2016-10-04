@@ -51,7 +51,8 @@ class PLATFORM_EXPORT HostWindow
   // Converts the rect from the viewport coordinates to screen coordinates.
   virtual IntRect viewportToScreen(const IntRect&, const Widget*) const = 0;
 
-  // Converts the scalar value from the window coordinates to the viewport scale.
+  // Converts the scalar value from the window coordinates to the viewport
+  // scale.
   virtual float windowToViewportScalar(const float) const = 0;
 
   virtual void scheduleAnimation(Widget*) = 0;

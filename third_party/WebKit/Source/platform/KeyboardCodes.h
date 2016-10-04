@@ -77,7 +77,8 @@ enum {
   // VKEY_KANA (15) Input Method Editor (IME) Kana mode
   VKEY_KANA = VK_KANA,
 
-  // VKEY_HANGUEL (15) IME Hanguel mode (maintained for compatibility, use VKEY_HANGUL)
+  // VKEY_HANGUEL (15) IME Hanguel mode (maintained for compatibility,
+  // use VKEY_HANGUL)
   // VKEY_HANGUL (15) IME Hangul mode
   VKEY_HANGUL = VK_HANGUL,
 
@@ -475,7 +476,8 @@ enum {
   // VKEY_LAUNCH_APP2 (B7) Windows 2000/XP: Start Application 2 key
   VKEY_MEDIA_LAUNCH_APP2 = 0xB7,
 
-  // VKEY_OEM_1 (BA) Used for miscellaneous characters, it can vary by keyboard. Windows 2000/XP: For the US standard keyboard, the ',:' key
+  // VKEY_OEM_1 (BA) Used for miscellaneous characters, it can vary by keyboard.
+  // Windows 2000/XP: For the US standard keyboard, the ',:' key
   VKEY_OEM_1 = VK_OEM_1,
 
   // VKEY_OEM_PLUS (BB) Windows 2000/XP: For any country/region, the '+' key
@@ -490,28 +492,36 @@ enum {
   // VKEY_OEM_PERIOD (BE) Windows 2000/XP: For any country/region, the '.' key
   VKEY_OEM_PERIOD = VK_OEM_PERIOD,
 
-  // VKEY_OEM_2 (BF) Used for miscellaneous characters, it can vary by keyboard. Windows 2000/XP: For the US standard keyboard, the '/?' key
+  // VKEY_OEM_2 (BF) Used for miscellaneous characters, it can vary by keyboard.
+  // Windows 2000/XP: For the US standard keyboard, the '/?' key
   VKEY_OEM_2 = VK_OEM_2,
 
-  // VKEY_OEM_3 (C0) Used for miscellaneous characters, it can vary by keyboard. Windows 2000/XP: For the US standard keyboard, the '`~' key
+  // VKEY_OEM_3 (C0) Used for miscellaneous characters, it can vary by keyboard.
+  // Windows 2000/XP: For the US standard keyboard, the '`~' key
   VKEY_OEM_3 = VK_OEM_3,
 
-  // VKEY_OEM_4 (DB) Used for miscellaneous characters, it can vary by keyboard. Windows 2000/XP: For the US standard keyboard, the '[{' key
+  // VKEY_OEM_4 (DB) Used for miscellaneous characters, it can vary by keyboard.
+  // Windows 2000/XP: For the US standard keyboard, the '[{' key
   VKEY_OEM_4 = VK_OEM_4,
 
-  // VKEY_OEM_5 (DC) Used for miscellaneous characters, it can vary by keyboard. Windows 2000/XP: For the US standard keyboard, the '\|' key
+  // VKEY_OEM_5 (DC) Used for miscellaneous characters, it can vary by keyboard.
+  // Windows 2000/XP: For the US standard keyboard, the '\|' key
   VKEY_OEM_5 = VK_OEM_5,
 
-  // VKEY_OEM_6 (DD) Used for miscellaneous characters, it can vary by keyboard. Windows 2000/XP: For the US standard keyboard, the ']}' key
+  // VKEY_OEM_6 (DD) Used for miscellaneous characters, it can vary by keyboard.
+  // Windows 2000/XP: For the US standard keyboard, the ']}' key
   VKEY_OEM_6 = VK_OEM_6,
 
-  // VKEY_OEM_7 (DE) Used for miscellaneous characters, it can vary by keyboard. Windows 2000/XP: For the US standard keyboard, the 'single-quote/double-quote' key
+  // VKEY_OEM_7 (DE) Used for miscellaneous characters, it can vary by keyboard.
+  // Windows 2000/XP: For the US standard keyboard, the
+  // 'single-quote/double-quote' key
   VKEY_OEM_7 = VK_OEM_7,
 
   // VKEY_OEM_8 (DF) Used for miscellaneous characters, it can vary by keyboard.
   VKEY_OEM_8 = VK_OEM_8,
 
-  // VKEY_OEM_102 (E2) Windows 2000/XP: Either the angle bracket key or the backslash key on the RT 102-key keyboard
+  // VKEY_OEM_102 (E2) Windows 2000/XP: Either the angle bracket key or the
+  // backslash key on the RT 102-key keyboard
   VKEY_OEM_102 = VK_OEM_102,
 
   // VKEY_OEM_103 (E3) GTV KEYCODE_MEDIA_REWIND
@@ -520,10 +530,14 @@ enum {
   // VKEY_OEM_104 (E4) GTV KEYCODE_MEDIA_FAST_FORWARD
   VKEY_OEM_104 = 0xE4,
 
-  // VKEY_PROCESSKEY (E5) Windows 95/98/Me, Windows NT 4.0, Windows 2000/XP: IME PROCESS key
+  // VKEY_PROCESSKEY (E5) Windows 95/98/Me, Windows NT 4.0, Windows 2000/XP: IME
+  // PROCESS key
   VKEY_PROCESSKEY = VK_PROCESSKEY,
 
-  // VKEY_PACKET (E7) Windows 2000/XP: Used to pass Unicode characters as if they were keystrokes. The VKEY_PACKET key is the low word of a 32-bit Virtual Key value used for non-keyboard input methods. For more information, see Remark in KEYBDINPUT,SendInput, WM_KEYDOWN, and WM_KEYUP
+  // VKEY_PACKET (E7) Windows 2000/XP: Used to pass Unicode characters as if
+  // they were keystrokes. The VKEY_PACKET key is the low word of a 32-bit
+  // Virtual Key value used for non-keyboard input methods. For more
+  // information, see Remark in KEYBDINPUT,SendInput, WM_KEYDOWN, and WM_KEYUP
   VKEY_PACKET = VK_PACKET,
 
   // VKEY_ATTN (F6) Attn key

@@ -64,7 +64,8 @@ LayoutUnit minimumValueForLength(const Length& length,
     case Fixed:
       return LayoutUnit(length.value());
     case Percent:
-      // Don't remove the extra cast to float. It is needed for rounding on 32-bit Intel machines that use the FPU stack.
+      // Don't remove the extra cast to float. It is needed for rounding on
+      // 32-bit Intel machines that use the FPU stack.
       return LayoutUnit(
           static_cast<float>(maximumValue * length.percent() / 100.0f));
     case Calculated:

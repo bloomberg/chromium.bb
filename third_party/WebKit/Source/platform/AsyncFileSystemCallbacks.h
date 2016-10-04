@@ -81,7 +81,9 @@ class PLATFORM_EXPORT AsyncFileSystemCallbacks {
     ASSERT_NOT_REACHED();
   }
 
-  // Called after a chunk of directory entries have been read (i.e. indicates it's good time to call back to the application). If hasMore is true there can be more chunks.
+  // Called after a chunk of directory entries have been read (i.e. indicates
+  // it's good time to call back to the application). If hasMore is true there
+  // can be more chunks.
   virtual void didReadDirectoryEntries(bool hasMore) { ASSERT_NOT_REACHED(); }
 
   // Called when an AsyncFileWrter has been created successfully.

@@ -124,9 +124,9 @@ class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
     return getAsBytesInternal(dest, 0, byteLength);
   }
 
-  // Copies "byteLength" bytes from "position"-th bytes (0 origin) of the content
-  // data into "dest" as a flat buffer,
-  // Returns true on success, otherwise the content of "dest" is not guaranteed.
+  // Copies "byteLength" bytes from "position"-th bytes (0 origin) of the
+  // content data into "dest" as a flat buffer, Returns true on success,
+  // otherwise the content of "dest" is not guaranteed.
   HAS_STRICTLY_TYPED_ARG
   bool getPartAsBytes(void* dest,
                       STRICTLY_TYPED_ARG(position),

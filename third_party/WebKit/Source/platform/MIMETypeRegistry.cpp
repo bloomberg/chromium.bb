@@ -100,10 +100,10 @@ bool MIMETypeRegistry::isSupportedMediaSourceMIMEType(const String& mimeType,
 }
 
 bool MIMETypeRegistry::isJavaAppletMIMEType(const String& mimeType) {
-  // Since this set is very limited and is likely to remain so we won't bother with the overhead
-  // of using a hash set.
-  // Any of the MIME types below may be followed by any number of specific versions of the JVM,
-  // which is why we use startsWith()
+  // Since this set is very limited and is likely to remain so we won't bother
+  // with the overhead of using a hash set.  Any of the MIME types below may be
+  // followed by any number of specific versions of the JVM, which is why we use
+  // startsWith()
   return mimeType.startsWith("application/x-java-applet",
                              TextCaseInsensitive) ||
          mimeType.startsWith("application/x-java-bean", TextCaseInsensitive) ||

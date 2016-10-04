@@ -40,7 +40,8 @@ String mimeTypeFromDataURL(const String& url) {
   if (index != kNotFound) {
     if (index > 5)
       return url.substring(5, index - 5).lower();
-    return "text/plain";  // Data URLs with no MIME type are considered text/plain.
+    // Data URLs with no MIME type are considered text/plain.
+    return "text/plain";
   }
   return "";
 }
@@ -49,7 +50,8 @@ String mimeTypeFromURL(const KURL& url) {
   String decodedPath = decodeURLEscapeSequences(url.path());
   String extension = decodedPath.substring(decodedPath.reverseFind('.') + 1);
 
-  // We don't use MIMETypeRegistry::getMIMETypeForPath() because it returns "application/octet-stream" upon failure
+  // We don't use MIMETypeRegistry::getMIMETypeForPath() because it returns
+  // "application/octet-stream" upon failure
   return MIMETypeRegistry::getMIMETypeForExtension(extension);
 }
 

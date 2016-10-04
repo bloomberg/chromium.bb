@@ -121,9 +121,10 @@ class LayoutUnit {
     return toInt();
   }
 
-  // Conversion to int or unsigned is lossy. 'explicit' on these operators won't work because
-  // there are also other implicit conversion paths (e.g. operator bool then to int which would
-  // generate wrong result). Use toInt() and toUnsigned() instead.
+  // Conversion to int or unsigned is lossy. 'explicit' on these operators won't
+  // work because there are also other implicit conversion paths (e.g. operator
+  // bool then to int which would generate wrong result). Use toInt() and
+  // toUnsigned() instead.
   operator int() const = delete;
   operator unsigned() const = delete;
 
@@ -178,8 +179,9 @@ class LayoutUnit {
   }
 
   LayoutUnit fraction() const {
-    // Add the fraction to the size (as opposed to the full location) to avoid overflows.
-    // Compute fraction using the mod operator to preserve the sign of the value as it may affect rounding.
+    // Add the fraction to the size (as opposed to the full location) to avoid
+    // overflows.  Compute fraction using the mod operator to preserve the sign
+    // of the value as it may affect rounding.
     LayoutUnit fraction;
     fraction.setRawValue(rawValue() % kFixedPointDenominator);
     return fraction;
@@ -203,7 +205,8 @@ class LayoutUnit {
     return m;
   }
 
-  // Versions of max/min that are slightly smaller/larger than max/min() to allow for roinding without overflowing.
+  // Versions of max/min that are slightly smaller/larger than max/min() to
+  // allow for roinding without overflowing.
   static const LayoutUnit nearlyMax() {
     LayoutUnit m;
     m.m_value = std::numeric_limits<int>::max() - kFixedPointDenominator / 2;
@@ -374,7 +377,8 @@ inline bool operator==(const float a, const LayoutUnit& b) {
   return a == b.toFloat();
 }
 
-// For multiplication that's prone to overflow, this bounds it to LayoutUnit::max() and ::min()
+// For multiplication that's prone to overflow, this bounds it to
+// LayoutUnit::max() and ::min()
 inline LayoutUnit boundedMultiply(const LayoutUnit& a, const LayoutUnit& b) {
   int64_t result = static_cast<int64_t>(a.rawValue()) *
                    static_cast<int64_t>(b.rawValue()) / kFixedPointDenominator;
@@ -383,7 +387,8 @@ inline LayoutUnit boundedMultiply(const LayoutUnit& a, const LayoutUnit& b) {
   uint32_t saturated =
       (static_cast<uint32_t>(a.rawValue() ^ b.rawValue()) >> 31) +
       std::numeric_limits<int>::max();
-  // If the higher 32 bits does not match the lower 32 with sign extension the operation overflowed.
+  // If the higher 32 bits does not match the lower 32 with sign extension the
+  // operation overflowed.
   if (high != low >> 31)
     result = saturated;
 
@@ -584,7 +589,8 @@ inline LayoutUnit operator-(const LayoutUnit& a) {
 
 // For returning the remainder after a division with integer results.
 inline LayoutUnit intMod(const LayoutUnit& a, const LayoutUnit& b) {
-  // This calculates the modulo so that: a = static_cast<int>(a / b) * b + intMod(a, b).
+  // This calculates the modulo so that: a = static_cast<int>(a / b) * b +
+  // intMod(a, b).
   LayoutUnit returnVal;
   returnVal.setRawValue(a.rawValue() % b.rawValue());
   return returnVal;

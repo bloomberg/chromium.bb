@@ -101,7 +101,8 @@ class DecimalTest : public ::testing::Test {
   }
 };
 
-// FIXME: We should use expectedSign without "Decimal::", however, g++ causes undefined references for DecimalTest::Positive and Negative.
+// FIXME: We should use expectedSign without "Decimal::", however, g++ causes
+// undefined references for DecimalTest::Positive and Negative.
 #define EXPECT_DECIMAL_ENCODED_DATA_EQ(expectedCoefficient, expectedExponent, \
                                        expectedSign, decimal)                 \
   EXPECT_EQ((expectedCoefficient), (decimal).value().coefficient());          \

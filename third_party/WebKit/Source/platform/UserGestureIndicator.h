@@ -80,8 +80,9 @@ class PLATFORM_EXPORT UserGestureIndicator final {
   static bool processingUserGesture();
 
   // Indicates that a user gesture (if any) is being used, without preventing it
-  // from being used again.  Returns whether a user gesture is currently in progress.
-  // If true, invokes (and then clears) any UserGestureUtilizedCallback.
+  // from being used again.  Returns whether a user gesture is currently in
+  // progress.  If true, invokes (and then clears) any
+  // UserGestureUtilizedCallback.
   static bool utilizeUserGesture();
 
   // Mark the current user gesture (if any) as having been used, such that

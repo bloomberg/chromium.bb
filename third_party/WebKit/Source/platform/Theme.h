@@ -42,7 +42,8 @@ namespace blink {
 class GraphicsContext;
 class ScrollableArea;
 
-// Unlike other platform classes, Theme does extensively use virtual functions.  This design allows a platform to switch between multiple themes at runtime.
+// Unlike other platform classes, Theme does extensively use virtual functions.
+// This design allows a platform to switch between multiple themes at runtime.
 class PLATFORM_EXPORT Theme {
   USING_FAST_MALLOC(Theme);
   WTF_MAKE_NONCOPYABLE(Theme);
@@ -51,21 +52,25 @@ class PLATFORM_EXPORT Theme {
   Theme() {}
   virtual ~Theme() {}
 
-  // A method to obtain the baseline position adjustment for a "leaf" control.  This will only be used if a baseline
-  // position cannot be determined by examining child content. Checkboxes and radio buttons are examples of
-  // controls that need to do this.  The adjustment is an offset that adds to the baseline, e.g., marginTop() + height() + |offset|.
+  // A method to obtain the baseline position adjustment for a "leaf" control.
+  // This will only be used if a baseline position cannot be determined by
+  // examining child content. Checkboxes and radio buttons are examples of
+  // controls that need to do this.  The adjustment is an offset that adds to
+  // the baseline, e.g., marginTop() + height() + |offset|.
   // The offset is not zoomed.
   virtual int baselinePositionAdjustment(ControlPart) const { return 0; }
 
-  // A method asking if the control changes its appearance when the window is inactive.
+  // A method asking if the control changes its appearance when the window is
+  // inactive.
   virtual bool controlHasInactiveAppearance(ControlPart) const { return false; }
 
-  // General methods for whether or not any of the controls in the theme change appearance when the window is inactive or
-  // when hovered over.
+  // General methods for whether or not any of the controls in the theme change
+  // appearance when the window is inactive or when hovered over.
   virtual bool controlsCanHaveInactiveAppearance() const { return false; }
   virtual bool controlsCanHaveHoveredAppearance() const { return false; }
 
-  // Used by LayoutTheme::isControlStyled to figure out if the native look and feel should be turned off.
+  // Used by LayoutTheme::isControlStyled to figure out if the native look and
+  // feel should be turned off.
   virtual bool controlDrawsBorder(ControlPart) const { return true; }
   virtual bool controlDrawsBackground(ControlPart) const { return true; }
   virtual bool controlDrawsFocusOutline(ControlPart) const { return true; }
@@ -91,7 +96,8 @@ class PLATFORM_EXPORT Theme {
     return fontDescription;
   }
 
-  // The size here is in zoomed coordinates already.  If a new size is returned, it also needs to be in zoomed coordinates.
+  // The size here is in zoomed coordinates already.  If a new size is returned,
+  // it also needs to be in zoomed coordinates.
   virtual LengthSize controlSize(ControlPart,
                                  const FontDescription&,
                                  const LengthSize& zoomedSize,
@@ -127,8 +133,9 @@ class PLATFORM_EXPORT Theme {
                      float /*zoomFactor*/,
                      ScrollableArea*) const {}
 
-  // Add visual overflow (e.g., the check on an OS X checkbox). The rect passed in is in zoomed coordinates so
-  // the inflation should take that into account and make sure the inflation amount is also scaled by the zoomFactor.
+  // Add visual overflow (e.g., the check on an OS X checkbox). The rect passed
+  // in is in zoomed coordinates so the inflation should take that into account
+  // and make sure the inflation amount is also scaled by the zoomFactor.
   virtual void addVisualOverflow(ControlPart,
                                  ControlStates,
                                  float zoomFactor,

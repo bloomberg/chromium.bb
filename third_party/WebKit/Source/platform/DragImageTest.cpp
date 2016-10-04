@@ -183,8 +183,8 @@ TEST(DragImageTest, InvalidRotatedBitmapImage) {
   std::unique_ptr<DragImage> dragImage =
       DragImage::create(image.get(), RespectImageOrientation);
 
-  // With an invalid pixel ref, BitmapImage should have no backing SkImage => we don't allocate
-  // a DragImage.
+  // With an invalid pixel ref, BitmapImage should have no backing SkImage =>
+  // we don't allocate a DragImage.
   ASSERT_FALSE(dragImage);
 }
 

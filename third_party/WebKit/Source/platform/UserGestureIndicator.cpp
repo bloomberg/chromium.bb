@@ -49,7 +49,8 @@ class GestureToken final : public UserGestureToken {
   ~GestureToken() final {}
 
   bool hasGestures() const override {
-    // Do not enforce timeouts for gestures which spawned javascript prompts or debugger pause.
+    // Do not enforce timeouts for gestures which spawned javascript prompts or
+    // debugger pause.
     if (m_consumableGestures < 1 ||
         (!m_javascriptPrompt && !m_pauseInDebugger &&
          hasTimedOut(m_outOfProcess ? userGestureOutOfProcessTimeout
@@ -135,7 +136,8 @@ UserGestureIndicator::UserGestureIndicator(
 
   m_previousState = s_state;
 
-  // We overwrite s_state only if the caller is definite about the gesture state.
+  // We overwrite s_state only if the caller is definite about the gesture
+  // state.
   if (isDefinite(state)) {
     if (!s_topmostIndicator) {
       s_topmostIndicator = this;

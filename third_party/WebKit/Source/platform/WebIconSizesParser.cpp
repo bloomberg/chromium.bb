@@ -19,7 +19,9 @@ static inline bool isIntegerStart(UChar c) {
 }
 
 static bool isWhitespace(UChar c) {
-  // Sizes space characters are U+0020 SPACE, U+0009 CHARACTER TABULATION (tab), U+000A LINE FEED (LF), U+000C FORM FEED (FF), and U+000D CARRIAGE RETURN (CR).
+  // Sizes space characters are U+0020 SPACE, U+0009 CHARACTER TABULATION (tab),
+  // U+000A LINE FEED (LF), U+000C FORM FEED (FF),
+  // and U+000D CARRIAGE RETURN (CR).
   return c == ' ' || c == '\t' || c == '\n' || c == '\f' || c == '\r';
 }
 

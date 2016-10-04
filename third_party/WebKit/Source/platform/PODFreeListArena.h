@@ -107,8 +107,8 @@ class PODFreeListArena : public RefCounted<PODFreeListArena<T>> {
 
   RefPtr<PODArena> m_arena;
 
-  // This free list contains pointers within every chunk that's been allocated so
-  // far. None of the individual chunks can be freed until the arena is
+  // This free list contains pointers within every chunk that's been allocated
+  // so far. None of the individual chunks can be freed until the arena is
   // destroyed.
   struct FixedSizeMemoryChunk {
     DISALLOW_NEW();

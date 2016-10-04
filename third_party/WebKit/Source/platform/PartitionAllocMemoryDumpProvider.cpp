@@ -155,7 +155,8 @@ bool PartitionAllocMemoryDumpProvider::OnMemoryDump(
       memoryDump->CreateAllocatorDump(base::StringPrintf(
           "%s/%s", kPartitionAllocDumpName, kPartitionsDumpName));
 
-  // This method calls memoryStats.partitionsDumpBucketStats with memory statistics.
+  // This method calls memoryStats.partitionsDumpBucketStats with memory
+  // statistics.
   WTF::Partitions::dumpMemoryStats(
       levelOfDetail != MemoryDumpLevelOfDetail::DETAILED,
       &partitionStatsDumper);
@@ -170,7 +171,8 @@ bool PartitionAllocMemoryDumpProvider::OnMemoryDump(
   return true;
 }
 
-// |m_allocationRegister| should be initialized only when necessary to avoid waste of memory.
+// |m_allocationRegister| should be initialized only when necessary to avoid
+// waste of memory.
 PartitionAllocMemoryDumpProvider::PartitionAllocMemoryDumpProvider()
     : m_allocationRegister(nullptr), m_isHeapProfilingEnabled(false) {}
 

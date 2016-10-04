@@ -60,8 +60,10 @@ class PLATFORM_EXPORT SharedBufferChunkReader final {
   // Returns a null string when the end of the buffer has been reached.
   String nextChunkAsUTF8StringWithLatin1Fallback(bool includeSeparator = false);
 
-  // Reads size bytes at the current location in the buffer, without changing the buffer position.
-  // Returns the number of bytes read. That number might be less than the specified size if the end of the buffer was reached.
+  // Reads size bytes at the current location in the buffer, without changing
+  // the buffer position.
+  // Returns the number of bytes read. That number might be less than the
+  // specified size if the end of the buffer was reached.
   size_t peek(Vector<char>&, size_t);
 
  private:

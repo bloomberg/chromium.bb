@@ -32,13 +32,15 @@
 
 namespace blink {
 
-// Wheel events come in two flavors:
-// The ScrollByPixelWheelEvent is a fine-grained event that specifies the precise number of pixels to scroll. It is sent directly by MacBook touchpads on OS X,
-// and synthesized in other cases where platforms generate line-by-line scrolling events.
-// The ScrollByPageWheelEvent indicates that the wheel event should scroll an entire page. In this case WebCore's built in paging behavior is used to page
-// up and down (you get the same behavior as if the user was clicking in a scrollbar track to page up or page down).
 enum PlatformWheelEventGranularity {
+  // Indicates that the wheel event should scroll an entire page. In this case
+  // WebCore's built in paging behavior is used to page up and down (you get the
+  // same behavior as if the user was clicking in a scrollbar track to page up
+  // or page down).
   ScrollByPageWheelEvent,
+  // A fine-grained event that specifies the precise number of pixels to scroll.
+  // It is sent directly by MacBook touchpads on OS X, and synthesized in other
+  // cases where platforms generate line-by-line scrolling events.
   ScrollByPixelWheelEvent,
 };
 

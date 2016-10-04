@@ -69,7 +69,8 @@ namespace blink {
 //
 //     MyClass* MyClass::from(MySupplementable* host)
 //     {
-//         return static_cast<MyClass*>(Supplement<MySupplementable>::from(host, supplementName()));
+//         return static_cast<MyClass*>(
+//             Supplement<MySupplementable>::from(host, supplementName()));
 //     }
 //
 // What you should know about thread checks

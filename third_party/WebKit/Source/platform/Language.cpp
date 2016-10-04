@@ -112,9 +112,10 @@ size_t indexOfBestMatchingLanguageInList(
     }
   }
 
-  // If we have both a language-only match and a languge-but-not-locale match, return the
-  // languge-only match as is considered a "better" match. For example, if the list
-  // provided has both "en-GB" and "en" and the user prefers "en-US" we will return "en".
+  // If we have both a language-only match and a languge-but-not-locale match,
+  // return the languge-only match as is considered a "better" match. For
+  // example, if the list provided has both "en-GB" and "en" and the user
+  // prefers "en-US" we will return "en".
   if (languageWithoutLocaleMatch.length())
     return languageWithoutLocaleMatchIndex;
 

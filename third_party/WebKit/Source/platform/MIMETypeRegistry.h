@@ -65,7 +65,8 @@ class PLATFORM_EXPORT MIMETypeRegistry {
   // document in a frame. Includes supported JavaScript MIME types.
   static bool isSupportedNonImageMIMEType(const String& mimeType);
 
-  // Check to see if the mime type and codecs are supported by the MediaSource implementation.
+  // Check to see if the mime type and codecs are supported by the MediaSource
+  // implementation.
   static bool isSupportedMediaSourceMIMEType(const String& mimeType,
                                              const String& codecs);
 

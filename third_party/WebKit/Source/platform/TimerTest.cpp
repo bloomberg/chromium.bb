@@ -52,8 +52,9 @@ class TimerTest : public testing::Test {
     m_platform.advanceClockSeconds(timeToAdvance);
   }
 
-  // Returns false if there are no pending delayed tasks, otherwise sets |time| to
-  // the delay in seconds till the next pending delayed task is scheduled to fire.
+  // Returns false if there are no pending delayed tasks, otherwise sets |time|
+  // to the delay in seconds till the next pending delayed task is scheduled to
+  // fire.
   bool timeTillNextDelayedTask(double* time) const {
     base::TimeTicks nextRunTime;
     if (!m_platform.rendererScheduler()
@@ -411,10 +412,10 @@ TEST_F(TimerTest, AugmentRepeatInterval) {
   EXPECT_FLOAT_EQ(20.0, timer.repeatInterval());
   EXPECT_FLOAT_EQ(18.0, timer.nextFireInterval());
 
-  // NOTE setAutoAdvanceNowToPendingTasks(true) (which uses cc::OrderedSimpleTaskRunner)
-  // results in somewhat strange behavior of the test clock which breaks this test.
-  // Specifically the test clock advancing logic ignores newly posted delayed tasks and
-  // advances too far.
+  // NOTE setAutoAdvanceNowToPendingTasks(true) (which uses
+  // cc::OrderedSimpleTaskRunner) results in somewhat strange behavior of the
+  // test clock which breaks this test.  Specifically the test clock advancing
+  // logic ignores newly posted delayed tasks and advances too far.
   runUntilDeadline(m_startTime + 50.0);
   EXPECT_THAT(m_runTimes, ElementsAre(m_startTime + 20.0, m_startTime + 40.0));
 }
@@ -444,22 +445,23 @@ TEST_F(TimerTest, RepeatingTimerDoesNotDrift) {
   recordNextFireTimeTask(
       &timer);  // Next scheduled task to run at m_startTime + 2.0
 
-  // Simulate timer firing early. Next scheduled task to run at m_startTime + 4.0
+  // Simulate timer firing early. Next scheduled task to run at
+  // m_startTime + 4.0
   m_platform.advanceClockSeconds(1.9);
   runUntilDeadline(monotonicallyIncreasingTime() + 0.2);
 
-  m_platform.runForPeriodSeconds(
-      2.0);  // Next scheduled task to run at m_startTime + 6.0
-  m_platform.runForPeriodSeconds(
-      2.1);  // Next scheduled task to run at m_startTime + 8.0
-  m_platform.runForPeriodSeconds(
-      2.9);  // Next scheduled task to run at m_startTime + 10.0
-  m_platform.runForPeriodSeconds(
-      3.1);  // Next scheduled task to run at m_startTime + 14.0 (skips a beat)
-  m_platform.runForPeriodSeconds(
-      4.0);  // Next scheduled task to run at m_startTime + 18.0 (skips a beat)
-  m_platform.runForPeriodSeconds(
-      10.0);  // Next scheduled task to run at m_startTime + 28.0 (skips 5 beats)
+  // Next scheduled task to run at m_startTime + 6.0
+  m_platform.runForPeriodSeconds(2.0);
+  // Next scheduled task to run at m_startTime + 8.0
+  m_platform.runForPeriodSeconds(2.1);
+  // Next scheduled task to run at m_startTime + 10.0
+  m_platform.runForPeriodSeconds(2.9);
+  // Next scheduled task to run at m_startTime + 14.0 (skips a beat)
+  m_platform.runForPeriodSeconds(3.1);
+  // Next scheduled task to run at m_startTime + 18.0 (skips a beat)
+  m_platform.runForPeriodSeconds(4.0);
+  // Next scheduled task to run at m_startTime + 28.0 (skips 5 beats)
+  m_platform.runForPeriodSeconds(10.0);
 
   EXPECT_THAT(
       m_nextFireTimes,

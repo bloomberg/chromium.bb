@@ -261,7 +261,8 @@
 #define VK_MEDIA_LAUNCH_APP2 \
   0xB7  // VK_LAUNCH_APP2 (B7) Windows 2000/XP: Start Application 2 key
 
-// VK_OEM_1 (BA) Used for miscellaneous characters; it can vary by keyboard. Windows 2000/XP: For the US standard keyboard, the ';:' key
+// VK_OEM_1 (BA) Used for miscellaneous characters; it can vary by keyboard.
+// Windows 2000/XP: For the US standard keyboard, the ';:' key
 #define VK_OEM_1 0xBA
 
 // Windows 2000/XP: For any country/region, the '+' key
@@ -276,34 +277,45 @@
 // Windows 2000/XP: For any country/region, the '.' key
 #define VK_OEM_PERIOD 0xBE
 
-// VK_OEM_2 (BF) Used for miscellaneous characters; it can vary by keyboard. Windows 2000/XP: For the US standard keyboard, the '/?' key
+// VK_OEM_2 (BF) Used for miscellaneous characters; it can vary by keyboard.
+// Windows 2000/XP: For the US standard keyboard, the '/?' key
 #define VK_OEM_2 0xBF
 
-// VK_OEM_3 (C0) Used for miscellaneous characters; it can vary by keyboard. Windows 2000/XP: For the US standard keyboard, the '`~' key
+// VK_OEM_3 (C0) Used for miscellaneous characters; it can vary by keyboard.
+// Windows 2000/XP: For the US standard keyboard, the '`~' key
 #define VK_OEM_3 0xC0
 
-// VK_OEM_4 (DB) Used for miscellaneous characters; it can vary by keyboard. Windows 2000/XP: For the US standard keyboard, the '[{' key
+// VK_OEM_4 (DB) Used for miscellaneous characters; it can vary by keyboard.
+// Windows 2000/XP: For the US standard keyboard, the '[{' key
 #define VK_OEM_4 0xDB
 
-// VK_OEM_5 (DC) Used for miscellaneous characters; it can vary by keyboard. Windows 2000/XP: For the US standard keyboard, the '\|' key
+// VK_OEM_5 (DC) Used for miscellaneous characters; it can vary by keyboard.
+// Windows 2000/XP: For the US standard keyboard, the '\|' key
 #define VK_OEM_5 0xDC
 
-// VK_OEM_6 (DD) Used for miscellaneous characters; it can vary by keyboard. Windows 2000/XP: For the US standard keyboard, the ']}' key
+// VK_OEM_6 (DD) Used for miscellaneous characters; it can vary by keyboard.
+// Windows 2000/XP: For the US standard keyboard, the ']}' key
 #define VK_OEM_6 0xDD
 
-// VK_OEM_7 (DE) Used for miscellaneous characters; it can vary by keyboard. Windows 2000/XP: For the US standard keyboard, the 'single-quote/double-quote' key
+// VK_OEM_7 (DE) Used for miscellaneous characters; it can vary by keyboard.
+// Windows 2000/XP: For the US standard keyboard, the
+// 'single-quote/double-quote' key
 #define VK_OEM_7 0xDE
 
 // VK_OEM_8 (DF) Used for miscellaneous characters; it can vary by keyboard.
 #define VK_OEM_8 0xDF
 
-// VK_OEM_102 (E2) Windows 2000/XP: Either the angle bracket key or the backslash key on the RT 102-key keyboard
+// VK_OEM_102 (E2) Windows 2000/XP: Either the angle bracket key or the
+// backslash key on the RT 102-key keyboard
 #define VK_OEM_102 0xE2
 
 // Windows 95/98/Me, Windows NT 4.0, Windows 2000/XP: IME PROCESS key
 #define VK_PROCESSKEY 0xE5
 
-// Windows 2000/XP: Used to pass Unicode characters as if they were keystrokes. The VK_PACKET key is the low word of a 32-bit Virtual Key value used for non-keyboard input methods. For more information, see Remark in KEYBDINPUT,SendInput, WM_KEYDOWN, and WM_KEYUP
+// Windows 2000/XP: Used to pass Unicode characters as if they were keystrokes.
+// The VK_PACKET key is the low word of a 32-bit Virtual Key value used for
+// non-keyboard input methods. For more information, see Remark in
+// KEYBDINPUT,SendInput, WM_KEYDOWN, and WM_KEYUP
 #define VK_PACKET 0xE7
 
 #define VK_ATTN 0xF6   // Attn key

@@ -70,8 +70,9 @@ class PlatformEvent {
     TouchScrollStarted,
   };
 
-  // These values are direct mappings of the values in WebInputEvent so the values can be cast between the
-  // enumerations. static_asserts checking this are in web/WebInputEventConversion.cpp.
+  // These values are direct mappings of the values in WebInputEvent so the
+  // values can be cast between the enumerations. static_asserts checking this
+  // are in web/WebInputEventConversion.cpp.
   enum Modifiers {
     NoModifiers = 0,
     ShiftKey = 1 << 0,

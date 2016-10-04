@@ -79,7 +79,8 @@ class LifecycleNotifier : public virtual GarbageCollectedMixin {
 
 template <typename T, typename Observer>
 inline LifecycleNotifier<T, Observer>::~LifecycleNotifier() {
-  // FIXME: Enable the following ASSERT. Also see a FIXME in Document::detachLayoutTree().
+  // FIXME: Enable the following ASSERT. Also see a FIXME in
+  // Document::detachLayoutTree().
   // ASSERT(!m_observers.size());
 }
 

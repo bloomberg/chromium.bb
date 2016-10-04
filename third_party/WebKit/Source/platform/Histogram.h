@@ -67,7 +67,8 @@ class PLATFORM_EXPORT ScopedUsHistogramTimer {
   CustomCountHistogram& m_counter;
 };
 
-// Use code like this to record time, in microseconds, to execute a block of code:
+// Use code like this to record time, in microseconds, to execute a block of
+// code:
 //
 // {
 //     SCOPED_BLINK_UMA_HISTOGRAM_TIMER(myUmaStatName)

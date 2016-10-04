@@ -69,7 +69,8 @@ CrossThreadCopier<ResourceResponse>::copy(const ResourceResponse& response) {
 class CopierThreadSafeRefCountedTest
     : public ThreadSafeRefCounted<CopierThreadSafeRefCountedTest> {};
 
-// Add a generic specialization which will let's us verify that no other template matches.
+// Add a generic specialization which will let's us verify that no other
+// template matches.
 template <typename T>
 struct CrossThreadCopierBase<T, false> {
   typedef int Type;
@@ -91,7 +92,8 @@ static_assert(
         CrossThreadCopier<CopierThreadSafeRefCountedTest*>::Type>::value),
     "Raw pointer + ThreadSafeRefCounted should NOT pass CrossThreadCopier");
 
-// Verify that RefCounted objects only match our generic template which exposes Type as int.
+// Verify that RefCounted objects only match our generic template which exposes
+// Type as int.
 class CopierRefCountedTest : public RefCounted<CopierRefCountedTest> {};
 
 static_assert(

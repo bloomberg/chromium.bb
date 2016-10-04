@@ -94,7 +94,8 @@ TEST(LayoutLocaleTest, ScriptTest) {
       {"en-JP", USCRIPT_LATIN, true, USCRIPT_KATAKANA_OR_HIRAGANA},
       {"en-KR", USCRIPT_LATIN, true, USCRIPT_HANGUL},
 
-      // Multiple regions are invalid, but it can still give hints for the font selection.
+      // Multiple regions are invalid, but it can still give hints for the font
+      // selection.
       {"en-US-JP", USCRIPT_LATIN, true, USCRIPT_KATAKANA_OR_HIRAGANA},
   };
 

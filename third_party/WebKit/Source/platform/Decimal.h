@@ -47,7 +47,8 @@ class SpecialValueHandler;
 //
 // FIXME: Once all C++ compiler support decimal type, we should replace this
 // class to compiler supported one. See below URI for current status of decimal
-// type for C++: // http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n1977.html
+// type for C++:
+// http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2006/n1977.html
 class PLATFORM_EXPORT Decimal {
   USING_FAST_MALLOC(Decimal);
 

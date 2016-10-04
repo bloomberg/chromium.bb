@@ -100,7 +100,8 @@ static unsigned countDigits(const String& src, unsigned start) {
   return index - start;
 }
 
-// Very strict integer parser. Do not allow leading or trailing whitespace unlike charactersToIntStrict().
+// Very strict integer parser. Do not allow leading or trailing whitespace
+// unlike charactersToIntStrict().
 static bool toInt(const String& src,
                   unsigned parseStart,
                   unsigned parseLength,
@@ -176,7 +177,8 @@ static bool withinHTMLDateLimits(int year,
     return true;
   if (monthDay > maximumDayInMaximumMonth)
     return false;
-  // (year, month, monthDay) = (maximumYear, maximumMonthInMaximumYear, maximumDayInMaximumMonth)
+  // (year, month, monthDay) =
+  // (maximumYear, maximumMonthInMaximumYear, maximumDayInMaximumMonth)
   return !hour && !minute && !second && !millisecond;
 }
 
@@ -283,7 +285,8 @@ bool DateComponents::addMinute(int minute) {
   return true;
 }
 
-// Parses a timezone part, and adjust year, month, monthDay, hour, minute, second, millisecond.
+// Parses a timezone part, and adjust year, month, monthDay, hour, minute,
+// second, millisecond.
 bool DateComponents::parseTimeZone(const String& src,
                                    unsigned start,
                                    unsigned& end) {
@@ -533,7 +536,8 @@ bool DateComponents::setMillisecondsSinceEpochForDateTime(double ms) {
 }
 
 bool DateComponents::setMillisecondsSinceEpochForDateTimeLocal(double ms) {
-  // Internal representation of DateTimeLocal is the same as DateTime except m_type.
+  // Internal representation of DateTimeLocal is the same as DateTime except
+  // m_type.
   if (!setMillisecondsSinceEpochForDateTime(ms))
     return false;
   m_type = DateTimeLocal;

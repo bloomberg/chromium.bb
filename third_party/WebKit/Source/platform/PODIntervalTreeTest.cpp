@@ -329,7 +329,8 @@ TEST(PODIntervalTreeTest, RandomDeletionAndInsertionRegressionTest3) {
 }
 
 TEST(PODIntervalTreeTest, RandomDeletionAndInsertionRegressionTest4) {
-  // Even further reduced test case for RandomDeletionAndInsertionRegressionTest3.
+  // Even further reduced test case for
+  // RandomDeletionAndInsertionRegressionTest3.
   PODIntervalTree<int> tree;
   tree.add(tree.createInterval(0, 5));
   ASSERT_TRUE(tree.checkInvariants());

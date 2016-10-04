@@ -42,7 +42,8 @@ class Event;
 class GraphicsContext;
 class HostWindow;
 
-// The Widget class serves as a base class for FrameView, Scrollbar, and PluginView.
+// The Widget class serves as a base class for FrameView, Scrollbar, and
+// PluginView.
 //
 // Widgets are connected in a hierarchy, with the restriction that plugins and
 // scrollbars are always leaves of the tree. Only FrameView can have children

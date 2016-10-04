@@ -151,8 +151,9 @@ class TaskRunnerTimer : public TimerBase {
   }
 
  private:
-  // FIXME: Oilpan: TimerBase should be moved to the heap and m_object should be traced.
-  // This raw pointer is safe as long as Timer<X> is held by the X itself (That's the case
+  // FIXME: Oilpan: TimerBase should be moved to the heap and m_object should be
+  // traced.  This raw pointer is safe as long as Timer<X> is held by the X
+  // itself (That's the case
   // in the current code base).
   GC_PLUGIN_IGNORE("363031")
   TimerFiredClass* m_object;
@@ -175,8 +176,9 @@ class Timer : public TaskRunnerTimer<TimerFiredClass> {
                                          timerFiredFunction) {}
 };
 
-// This subclass of Timer posts its tasks on the current thread's default task runner.
-// Tasks posted on there are not throttled when the tab is in the background.
+// This subclass of Timer posts its tasks on the current thread's default task
+// runner.  Tasks posted on there are not throttled when the tab is in the
+// background.
 template <typename TimerFiredClass>
 class UnthrottledThreadTimer : public TaskRunnerTimer<TimerFiredClass> {
  public:
