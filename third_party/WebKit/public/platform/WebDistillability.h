@@ -18,7 +18,8 @@ struct WebDistillabilityFeatures {
   unsigned passwordInputCount;
   unsigned pCount;
   unsigned preCount;
-  // The following scores are derived from the triggering logic in Readability from Mozilla.
+  // The following scores are derived from the triggering logic in Readability
+  // from Mozilla.
   // https://github.com/mozilla/readability/blob/85101066386a0872526a6c4ae164c18fcd6cc1db/Readability.js#L1704
   double mozScore;
   double mozScoreAllSqrt;

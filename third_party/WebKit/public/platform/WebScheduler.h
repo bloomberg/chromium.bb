@@ -38,9 +38,9 @@ class BLINK_PLATFORM_EXPORT WebScheduler {
   // the associated WebThread.
   virtual void shutdown() = 0;
 
-  // Returns true if there is high priority work pending on the associated WebThread
-  // and the caller should yield to let the scheduler service that work.
-  // Must be called on the associated WebThread.
+  // Returns true if there is high priority work pending on the associated
+  // WebThread and the caller should yield to let the scheduler service that
+  // work.  Must be called on the associated WebThread.
   virtual bool shouldYieldForHighPriorityWork() = 0;
 
   // Returns true if a currently running idle task could exceed its deadline

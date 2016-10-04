@@ -53,7 +53,8 @@ class WebURLLoaderMockFactory {
   // FrameTestHelpers instead.
   virtual void serveAsynchronousRequests() = 0;
 
-  // Set a delegate that allows callbacks for all WebURLLoaderClients to be intercepted.
+  // Set a delegate that allows callbacks for all WebURLLoaderClients to be
+  // intercepted.
   virtual void setLoaderDelegate(WebURLLoaderTestDelegate*) = 0;
 };
 

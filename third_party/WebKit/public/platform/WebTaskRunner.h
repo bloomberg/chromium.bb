@@ -58,20 +58,21 @@ class BLINK_PLATFORM_EXPORT WebTaskRunner {
 
   // ---
 
-  // Headless Chrome virtualises time for determinism and performance (fast forwarding
-  // of timers). To make this work some parts of blink (e.g. Timers) need to use virtual
-  // time, however by default new code should use the normal non-virtual time APIs.
+  // Headless Chrome virtualises time for determinism and performance (fast
+  // forwarding of timers). To make this work some parts of blink (e.g. Timers)
+  // need to use virtual time, however by default new code should use the normal
+  // non-virtual time APIs.
 
   // Returns a double which is the number of seconds since epoch (Jan 1, 1970).
   // This may represent either the real time, or a virtual time depending on
-  // whether or not the WebTaskRunner is associated with a virtual time domain or a
-  // real time domain.
+  // whether or not the WebTaskRunner is associated with a virtual time domain
+  // or a real time domain.
   virtual double virtualTimeSeconds() const = 0;
 
   // Returns a microsecond resolution platform dependant time source.
   // This may represent either the real time, or a virtual time depending on
-  // whether or not the WebTaskRunner is associated with a virtual time domain or a
-  // real time domain.
+  // whether or not the WebTaskRunner is associated with a virtual time domain
+  // or a real time domain.
   virtual double monotonicallyIncreasingVirtualTimeSeconds() const = 0;
 
   // Returns the underlying task runner object.

@@ -66,7 +66,8 @@ class WebCompositorSupport {
 
   virtual WebImageLayer* createImageLayer() { return nullptr; }
 
-  // The ownership of the WebScrollbarThemeGeometry pointer is passed to Chromium.
+  // The ownership of the WebScrollbarThemeGeometry pointer is passed to
+  // Chromium.
   virtual WebScrollbarLayer* createScrollbarLayer(WebScrollbar*,
                                                   WebScrollbarThemePainter,
                                                   WebScrollbarThemeGeometry*) {

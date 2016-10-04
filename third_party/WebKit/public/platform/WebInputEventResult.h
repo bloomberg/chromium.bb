@@ -12,7 +12,8 @@ enum class WebInputEventResult {
   NotHandled,
   // Event was consumed but suppressed before dispatched to application.
   HandledSuppressed,
-  // Event was consumed by application itself; ie. a script handler calling preventDefault.
+  // Event was consumed by application itself; ie. a script handler calling
+  // preventDefault.
   HandledApplication,
   // Event was consumed by the system; ie. executing the default action.
   HandledSystem,

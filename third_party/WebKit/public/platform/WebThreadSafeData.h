@@ -44,8 +44,8 @@ namespace blink {
 
 class RawData;
 
-// A container for raw bytes. It is inexpensive to copy a WebThreadSafeData object.
-// It is safe to pass a WebThreadSafeData across threads!!!
+// A container for raw bytes. It is inexpensive to copy a WebThreadSafeData
+// object.  It is safe to pass a WebThreadSafeData across threads.
 class WebThreadSafeData {
  public:
   WebThreadSafeData() {}

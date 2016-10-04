@@ -67,7 +67,8 @@ class WebSourceBuffer {
                                 size_t newDataSize) = 0;
 
   // Appends data and runs the segment parser loop algorithm.
-  // The algorithm may update |*timestampOffset| if |timestampOffset| is not null.
+  // The algorithm may update |*timestampOffset| if |timestampOffset| is not
+  // null.
   // Returns true on success, otherwise the append error algorithm needs to
   // run with the decode error parameter set to true.
   virtual bool append(const unsigned char* data,

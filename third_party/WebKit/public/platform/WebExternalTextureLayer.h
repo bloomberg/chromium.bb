@@ -50,7 +50,8 @@ class WebExternalTextureLayer {
   // Sets whether every pixel in this layer is opaque. Defaults to false.
   virtual void setOpaque(bool) = 0;
 
-  // Sets whether this layer's texture has premultiplied alpha or not. Defaults to true.
+  // Sets whether this layer's texture has premultiplied alpha or not. Defaults
+  // to true.
   virtual void setPremultipliedAlpha(bool) = 0;
 
   // Sets whether the texture should be blended with the background color

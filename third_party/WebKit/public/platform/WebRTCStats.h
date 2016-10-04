@@ -68,7 +68,8 @@ class WebRTCStatsMember {
   virtual WebRTCStatsMemberType type() const = 0;
   virtual bool isDefined() const = 0;
 
-  // Value getters. No conversion is performed; the function must match the member's |type|.
+  // Value getters. No conversion is performed; the function must match the
+  // member's |type|.
   virtual int32_t valueInt32() const = 0;
   virtual uint32_t valueUint32() const = 0;
   virtual int64_t valueInt64() const = 0;

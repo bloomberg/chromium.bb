@@ -71,8 +71,8 @@ class WebSecurityOrigin {
   BLINK_PLATFORM_EXPORT WebString host() const;
   BLINK_PLATFORM_EXPORT unsigned short port() const;
 
-  // |port()| will return 0 if the port is the default for an origin. This method
-  // instead returns the effective port, even if it is the default port
+  // |port()| will return 0 if the port is the default for an origin. This
+  // method instead returns the effective port, even if it is the default port
   // (e.g. "http" => 80).
   BLINK_PLATFORM_EXPORT unsigned short effectivePort() const;
 
@@ -115,8 +115,9 @@ class WebSecurityOrigin {
   BLINK_PLATFORM_EXPORT operator WTF::PassRefPtr<SecurityOrigin>() const;
   BLINK_PLATFORM_EXPORT SecurityOrigin* get() const;
 #else
-  // TODO(mkwst): A number of properties don't survive a round-trip ('document.domain', for instance).
-  // We'll need to fix that for OOPI-enabled embedders: https://crbug.com/490074.
+  // TODO(mkwst): A number of properties don't survive a round-trip
+  // ('document.domain', for instance).  We'll need to fix that for OOPI-enabled
+  // embedders, https://crbug.com/490074.
   operator url::Origin() const {
     return isUnique() ? url::Origin()
                       : url::Origin::UnsafelyCreateOriginWithoutNormalization(
@@ -137,7 +138,8 @@ class WebSecurityOrigin {
 #endif
 
  private:
-  // Present only to facilitate conversion from 'url::Origin'; this constructor shouldn't be used anywhere else.
+  // Present only to facilitate conversion from 'url::Origin'; this constructor
+  // shouldn't be used anywhere else.
   BLINK_PLATFORM_EXPORT static WebSecurityOrigin
   createFromTuple(const WebString& protocol, const WebString& host, int port);
 

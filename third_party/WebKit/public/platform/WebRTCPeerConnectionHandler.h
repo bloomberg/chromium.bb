@@ -51,7 +51,8 @@ class WebRTCVoidRequest;
 class WebString;
 struct WebRTCDataChannelInit;
 
-// Used to back histogram value of "WebRTC.PeerConnection.SelectedRtcpMuxPolicy", so treat as append-only.
+// Used to back histogram value of
+// "WebRTC.PeerConnection.SelectedRtcpMuxPolicy", so treat as append-only.
 enum RtcpMuxPolicy {
   RtcpMuxPolicyRequire,
   RtcpMuxPolicyNegotiate,
@@ -93,8 +94,9 @@ class WebRTCPeerConnectionHandler {
   virtual bool addStream(const WebMediaStream&, const WebMediaConstraints&) = 0;
   virtual void removeStream(const WebMediaStream&) = 0;
   virtual void getStats(const WebRTCStatsRequest&) = 0;
-  // Gets stats using the new stats collection API, see third_party/webrtc/api/stats/.
-  // These will replace the old stats collection API when the new API has matured enough.
+  // Gets stats using the new stats collection API, see
+  // third_party/webrtc/api/stats/.  These will replace the old stats collection
+  // API when the new API has matured enough.
   virtual void getStats(std::unique_ptr<WebRTCStatsReportCallback>) = 0;
   virtual WebRTCDataChannelHandler* createDataChannel(
       const WebString& label,

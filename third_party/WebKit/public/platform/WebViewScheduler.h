@@ -27,9 +27,9 @@ class BLINK_PLATFORM_EXPORT WebViewScheduler {
   virtual std::unique_ptr<WebFrameScheduler> createFrameScheduler(
       BlameContext*) = 0;
 
-  // Instructs this WebViewScheduler to use virtual time. When virtual time is enabled
-  // the system doesn't actually sleep for the delays between tasks before executing
-  // them. E.g: A-E are delayed tasks
+  // Instructs this WebViewScheduler to use virtual time. When virtual time is
+  // enabled the system doesn't actually sleep for the delays between tasks
+  // before executing them. E.g: A-E are delayed tasks
   //
   // |    A   B C  D           E  (normal)
   // |-----------------------------> time
@@ -42,25 +42,28 @@ class BLINK_PLATFORM_EXPORT WebViewScheduler {
   virtual bool virtualTimeAllowedToAdvance() const = 0;
 
   enum class VirtualTimePolicy {
-    // In this policy virtual time is allowed to advance. If the blink scheduler runs out of
-    // immediate work, the virtual timebase will be incremented so that the next sceduled
-    // timer may fire.  NOTE Tasks will be run in time order (as usual).
+    // In this policy virtual time is allowed to advance. If the blink scheduler
+    // runs out of immediate work, the virtual timebase will be incremented so
+    // that the next sceduled timer may fire.  NOTE Tasks will be run in time
+    // order (as usual).
     ADVANCE,
 
-    // In this policy virtual time is not allowed to advance. Delayed tasks posted to
-    // WebTaskRunners owned by any child WebFrameSchedulers will be paused, unless their
-    // scheduled run time is less than or equal to the current virtual time.  Note non-delayed
-    // tasks will run as normal.
+    // In this policy virtual time is not allowed to advance. Delayed tasks
+    // posted to WebTaskRunners owned by any child WebFrameSchedulers will be
+    // paused, unless their scheduled run time is less than or equal to the
+    // current virtual time.  Note non-delayed tasks will run as normal.
     PAUSE,
 
-    // In this policy virtual time is allowed to advance unless there are pending network
-    // fetches associated any child WebFrameScheduler, or a document is being parsed on a
-    // background thread. Initially virtual time is not allowed to advance until we have seen
-    // at least one load. The aim being to try and make loading (more) deterministic.
+    // In this policy virtual time is allowed to advance unless there are
+    // pending network fetches associated any child WebFrameScheduler, or a
+    // document is being parsed on a background thread. Initially virtual time
+    // is not allowed to advance until we have seen at least one load. The aim
+    // being to try and make loading (more) deterministic.
     DETERMINISTIC_LOADING
   };
 
-  // Sets the virtual time policy, which is applied imemdiatly to all child WebFrameSchedulers.
+  // Sets the virtual time policy, which is applied imemdiatly to all child
+  // WebFrameSchedulers.
   virtual void setVirtualTimePolicy(VirtualTimePolicy) = 0;
 };
 

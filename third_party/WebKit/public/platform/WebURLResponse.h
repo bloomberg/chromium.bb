@@ -121,7 +121,8 @@ class WebURLResponse {
     // All strings are human-readable values.
     WebString protocol;
     WebString keyExchange;
-    // keyExchangeGroup is the empty string if not applicable for the connection's key exchange.
+    // keyExchangeGroup is the empty string if not applicable for the
+    // connection's key exchange.
     WebString keyExchangeGroup;
     WebString cipher;
     // mac is the empty string when the connection cipher suite does not
@@ -227,8 +228,8 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT bool wasFetchedViaSPDY() const;
   BLINK_PLATFORM_EXPORT void setWasFetchedViaSPDY(bool);
 
-  // Flag whether this request was loaded after the TLS/Next-Protocol-Negotiation was used.
-  // This is related to SPDY.
+  // Flag whether this request was loaded after the
+  // TLS/Next-Protocol-Negotiation was used.  This is related to SPDY.
   BLINK_PLATFORM_EXPORT bool wasNpnNegotiated() const;
   BLINK_PLATFORM_EXPORT void setWasNpnNegotiated(bool);
 

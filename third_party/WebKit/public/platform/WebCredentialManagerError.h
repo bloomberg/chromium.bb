@@ -7,8 +7,8 @@
 
 namespace blink {
 
-// FIXME: This is a placeholder list of error conditions. We'll likely expand the
-// list as the API evolves.
+// FIXME: This is a placeholder list of error conditions. We'll likely expand
+// the list as the API evolves.
 enum WebCredentialManagerError {
   WebCredentialManagerNoError = 0,
   WebCredentialManagerDisabledError,

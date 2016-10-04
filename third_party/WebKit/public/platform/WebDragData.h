@@ -48,13 +48,13 @@ class WebDragData {
  public:
   struct Item {
     enum StorageType {
-      // String data with an associated MIME type. Depending on the MIME type, there may be
-      // optional metadata attributes as well.
+      // String data with an associated MIME type. Depending on the MIME type,
+      // there may be optional metadata attributes as well.
       StorageTypeString,
       // Stores the name of one file being dragged into the renderer.
       StorageTypeFilename,
-      // An image being dragged out of the renderer. Contains a buffer holding the image data
-      // as well as the suggested name for saving the image to.
+      // An image being dragged out of the renderer. Contains a buffer holding
+      // the image data as well as the suggested name for saving the image to.
       StorageTypeBinaryData,
       // Stores the filesystem URL of one file being dragged into the renderer.
       StorageTypeFileSystemFile,

@@ -68,8 +68,8 @@ class WebImage {
   BLINK_PLATFORM_EXPORT static WebImage fromData(const WebData&,
                                                  const WebSize& desiredSize);
 
-  // Returns a list of all frames in the image. Only the first frame at each pixel
-  // size will be returned.
+  // Returns a list of all frames in the image. Only the first frame at each
+  // pixel size will be returned.
   BLINK_PLATFORM_EXPORT static WebVector<WebImage> framesFromData(
       const WebData&);
 

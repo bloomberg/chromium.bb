@@ -39,7 +39,8 @@ namespace blink {
 // This interface is used by the embedder to call into webkit.
 class WebApplicationCacheHostClient {
  public:
-  // Called when a different cache, including possibly no cache, is associated with the host.
+  // Called when a different cache, including possibly no cache, is associated
+  // with the host.
   virtual void didChangeCacheAssociation() = 0;
 
   // Called to fire events in the scriptable interface.

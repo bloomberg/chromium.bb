@@ -80,9 +80,10 @@ class WebApplicationCacheHost {
       const WebApplicationCacheHost* spawningHost) {}
   virtual void willStartSubResourceRequest(WebURLRequest&) {}
 
-  // One or the other selectCache methods is called after having parsed the <html> tag.
-  // The latter returns false if the current document has been identified as a "foreign"
-  // entry, in which case the frame navigation will be restarted by webkit.
+  // One or the other selectCache methods is called after having parsed the
+  // <html> tag.  The latter returns false if the current document has been
+  // identified as a "foreign" entry, in which case the frame navigation will be
+  // restarted by webkit.
   virtual void selectCacheWithoutManifest() {}
   virtual bool selectCacheWithManifest(const WebURL& manifestURL) {
     return true;

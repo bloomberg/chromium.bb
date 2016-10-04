@@ -17,7 +17,8 @@ class WebSourceBufferClient {
  public:
   virtual ~WebSourceBufferClient() {}
 
-  // Complete media track info: track type, unique track id, kind, label, language.
+  // Complete media track info: track type, unique track id, kind, label,
+  // language.
   struct MediaTrackInfo {
     WebMediaPlayer::TrackType trackType;
     WebMediaPlayer::TrackId id;
@@ -27,8 +28,10 @@ class WebSourceBufferClient {
     WebString language;
   };
 
-  // Notifies SourceBuffer that parsing of a new init segment has been completed successfully. The input parameter is a collection
-  // of information about media tracks found in the new init segment. The return value is true in case of success.
+  // Notifies SourceBuffer that parsing of a new init segment has been completed
+  // successfully. The input parameter is a collection of information about
+  // media tracks found in the new init segment. The return value is true in
+  // case of success.
   virtual bool initializationSegmentReceived(
       const WebVector<MediaTrackInfo>& tracks) = 0;
 };

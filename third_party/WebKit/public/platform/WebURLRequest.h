@@ -58,7 +58,8 @@ class WebURLRequest {
     PriorityVeryHigh,
   };
 
-  // Corresponds to Fetch's "context": http://fetch.spec.whatwg.org/#concept-request-context
+  // Corresponds to Fetch's "context":
+  // http://fetch.spec.whatwg.org/#concept-request-context
   enum RequestContext {
     RequestContextUnspecified = 0,
     RequestContextAudio,
@@ -96,7 +97,8 @@ class WebURLRequest {
     RequestContextXSLT
   };
 
-  // Corresponds to Fetch's "context frame type": http://fetch.spec.whatwg.org/#concept-request-context-frame-type
+  // Corresponds to Fetch's "context frame type":
+  // http://fetch.spec.whatwg.org/#concept-request-context-frame-type
   enum FrameType {
     FrameTypeAuxiliary,
     FrameTypeNested,
@@ -134,11 +136,13 @@ class WebURLRequest {
     ReportIntent,  // Report metrics with UI action displayed intent.
   };
 
-  // The LoFi state which determines whether to request a Lo-Fi version of the resource.
+  // The LoFi state which determines whether to request a Lo-Fi version of the
+  // resource.
   enum LoFiState {
-    LoFiUnspecified,  // Let the browser process decide whether or not to request the Lo-Fi version.
-    LoFiOff,  // Request a normal (non-Lo-Fi) version of the resource.
-    LoFiOn,   // Request a Lo-Fi version of the resource.
+    LoFiUnspecified,  // Let the browser process decide whether or not to
+                      // request the Lo-Fi version.
+    LoFiOff,          // Request a normal (non-Lo-Fi) version of the resource.
+    LoFiOn,           // Request a Lo-Fi version of the resource.
   };
 
   // Indicates which types of ServiceWorkers should skip handling this request.
@@ -195,7 +199,8 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT void setHTTPMethod(const WebString&);
 
   BLINK_PLATFORM_EXPORT WebString httpHeaderField(const WebString& name) const;
-  // It's not possible to set the referrer header using this method. Use setHTTPReferrer instead.
+  // It's not possible to set the referrer header using this method. Use
+  // setHTTPReferrer instead.
   BLINK_PLATFORM_EXPORT void setHTTPHeaderField(const WebString& name,
                                                 const WebString& value);
   BLINK_PLATFORM_EXPORT void setHTTPReferrer(const WebString& referrer,
@@ -280,7 +285,8 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT FetchRedirectMode getFetchRedirectMode() const;
   BLINK_PLATFORM_EXPORT void setFetchRedirectMode(FetchRedirectMode);
 
-  // The LoFi state which determines whether to request a Lo-Fi version of the resource.
+  // The LoFi state which determines whether to request a Lo-Fi version of the
+  // resource.
   BLINK_PLATFORM_EXPORT LoFiState getLoFiState() const;
   BLINK_PLATFORM_EXPORT void setLoFiState(LoFiState);
 

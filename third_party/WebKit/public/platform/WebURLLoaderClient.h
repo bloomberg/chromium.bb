@@ -92,7 +92,8 @@ class BLINK_PLATFORM_EXPORT WebURLLoaderClient {
                               int encodedDataLength,
                               int encodedBodyLength) {}
 
-  // Called when a chunk of renderer-generated metadata is received from the cache.
+  // Called when a chunk of renderer-generated metadata is received from the
+  // cache.
   virtual void didReceiveCachedMetadata(WebURLLoader*,
                                         const char* data,
                                         int dataLength) {}
@@ -106,7 +107,8 @@ class BLINK_PLATFORM_EXPORT WebURLLoaderClient {
   // Called when the load completes with an error.
   virtual void didFail(WebURLLoader*, const WebURLError&) {}
 
-  // Value passed to didFinishLoading when total encoded data length isn't known.
+  // Value passed to didFinishLoading when total encoded data length isn't
+  // known.
   static const int64_t kUnknownEncodedDataLength = -1;
 
  protected:

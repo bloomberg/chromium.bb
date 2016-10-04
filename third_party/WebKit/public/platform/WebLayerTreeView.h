@@ -78,17 +78,21 @@ class WebLayerTreeView {
   // Sets the background transparency for the viewport. The default is 'false'.
   virtual void setHasTransparentBackground(bool) {}
 
-  // Sets whether this view is visible. In threaded mode, a view that is not visible will not
-  // composite or trigger updateAnimations() or layout() calls until it becomes visible.
+  // Sets whether this view is visible. In threaded mode, a view that is not
+  // visible will not composite or trigger updateAnimations() or layout() calls
+  // until it becomes visible.
   virtual void setVisible(bool) {}
 
-  // Sets the current page scale factor and minimum / maximum limits. Both limits are initially 1 (no page scale allowed).
+  // Sets the current page scale factor and minimum / maximum limits. Both
+  // limits are initially 1 (no page scale allowed).
   virtual void setPageScaleFactorAndLimits(float pageScaleFactor,
                                            float minimum,
                                            float maximum) {}
 
-  // Starts an animation of the page scale to a target scale factor and scroll offset.
-  // If useAnchor is true, destination is a point on the screen that will remain fixed for the duration of the animation.
+  // Starts an animation of the page scale to a target scale factor and scroll
+  // offset.
+  // If useAnchor is true, destination is a point on the screen that will remain
+  // fixed for the duration of the animation.
   // If useAnchor is false, destination is the final top-left scroll position.
   virtual void startPageScaleAnimation(const WebPoint& destination,
                                        bool useAnchor,
@@ -109,13 +113,14 @@ class WebLayerTreeView {
                                       WebTopControlsState current,
                                       bool animate) {}
 
-  // Set top controls height. If |shrinkViewport| is set to true, then Blink shrunk the viewport clip
-  // layers by the top controls height.
+  // Set top controls height. If |shrinkViewport| is set to true, then Blink
+  // shrunk the viewport clip layers by the top controls height.
   virtual void setTopControlsHeight(float height, bool shrinkViewport) {}
 
   // Flow control and scheduling ---------------------------------------
 
-  // Indicates that blink needs a BeginFrame, but that nothing might actually be dirty.
+  // Indicates that blink needs a BeginFrame, but that nothing might actually be
+  // dirty.
   virtual void setNeedsBeginFrame() {}
 
   // Indicates that blink needs a BeginFrame and to update compositor state.
@@ -125,19 +130,20 @@ class WebLayerTreeView {
   virtual void didStopFlinging() {}
 
   // Run layout and paint of all pending document changes asynchronously.
-  // The caller is resposible for keeping the WebLayoutAndPaintAsyncCallback object
-  // alive until it is called.
+  // The caller is resposible for keeping the WebLayoutAndPaintAsyncCallback
+  // object alive until it is called.
   virtual void layoutAndPaintAsync(WebLayoutAndPaintAsyncCallback*) {}
 
-  // The caller is responsible for keeping the WebCompositeAndReadbackAsyncCallback
-  // object alive until it is called.
+  // The caller is responsible for keeping the
+  // WebCompositeAndReadbackAsyncCallback object alive until it is called.
   virtual void compositeAndReadbackAsync(
       WebCompositeAndReadbackAsyncCallback*) {}
 
   // Prevents updates to layer tree from becoming visible.
   virtual void setDeferCommits(bool deferCommits) {}
 
-  // Identify key layers to the compositor when using the pinch virtual viewport.
+  // Identify key layers to the compositor when using the pinch virtual
+  // viewport.
   virtual void registerViewportLayers(
       const WebLayer* overscrollElasticityLayer,
       const WebLayer* pageScaleLayer,

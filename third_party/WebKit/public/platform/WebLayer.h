@@ -59,7 +59,8 @@ class WebLayer {
  public:
   virtual ~WebLayer() {}
 
-  // Returns a positive ID that will be unique across all WebLayers allocated in this process.
+  // Returns a positive ID that will be unique across all WebLayers allocated in
+  // this process.
   virtual int id() const = 0;
 
   // Sets a region of the layer as invalid, i.e. needs to update its content.
@@ -161,14 +162,16 @@ class WebLayer {
   virtual void setScrollPositionDouble(WebDoublePoint) = 0;
   virtual WebDoublePoint scrollPositionDouble() const = 0;
 
-  // To set a WebLayer as scrollable we must specify the corresponding clip layer.
+  // To set a WebLayer as scrollable we must specify the corresponding clip
+  // layer.
   virtual void setScrollClipLayer(WebLayer*) = 0;
   virtual bool scrollable() const = 0;
   virtual void setUserScrollable(bool horizontal, bool vertical) = 0;
   virtual bool userScrollableHorizontal() const = 0;
   virtual bool userScrollableVertical() const = 0;
 
-  // Indicates that this layer will always scroll on the main thread for the provided reason.
+  // Indicates that this layer will always scroll on the main thread for the
+  // provided reason.
   virtual void addMainThreadScrollingReasons(uint32_t) = 0;
   virtual void clearMainThreadScrollingReasons(
       uint32_t mainThreadScrollingReasonsToClear) = 0;

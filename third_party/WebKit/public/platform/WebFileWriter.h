@@ -44,11 +44,14 @@ class WebFileWriter {
   virtual ~WebFileWriter() {}
 
   // Only one write or one truncate operation can be in progress at a time.
-  // These functions are asynchronous and will report results through the WebFileWriter's associated WebFileWriterClient.
+  // These functions are asynchronous and will report results through the
+  // WebFileWriter's associated WebFileWriterClient.
   virtual void write(long long position, const WebString& blobUUID) {}
   virtual void truncate(long long length) = 0;
 
-  // Cancel will attempt to abort a running write or truncate. However, it may not be possible to cancel an in-progress action, or the call may have come in too late. Partial writes are possible.
+  // Cancel will attempt to abort a running write or truncate. However, it may
+  // not be possible to cancel an in-progress action, or the call may have come
+  // in too late. Partial writes are possible.
   // Do not call cancel when there is no write or truncate in progress.
   virtual void cancel() = 0;
 };

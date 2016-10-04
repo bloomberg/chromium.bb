@@ -156,8 +156,9 @@ enum class WebEditingCommandType {
   // Add new commands immediately above this line.
   NumberOfCommandTypes,
 
-  // These unsupported commands are listed here since they appear in the Microsoft
-  // documentation used as the starting point for our DOM executeCommand support.
+  // These unsupported commands are listed here since they appear in the
+  // Microsoft documentation used as the starting point for our DOM
+  // executeCommand support.
   //
   // 2D-Position (not supported)
   // AbsolutePosition (not supported)

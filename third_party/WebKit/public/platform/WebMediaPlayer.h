@@ -181,7 +181,8 @@ class WebMediaPlayer {
     return false;
   }
 
-  // Do a GPU-GPU textures copy. If the copy is impossible or fails, it returns false.
+  // Do a GPU-GPU textures copy. If the copy is impossible or fails, it returns
+  // false.
   virtual bool copyVideoTextureToPlatformTexture(gpu::gles2::GLES2Interface*,
                                                  unsigned target,
                                                  unsigned texture,
@@ -192,7 +193,8 @@ class WebMediaPlayer {
                                                  bool flipY) {
     return false;
   }
-  // Copy sub video frame texture to |texture|. If the copy is impossible or fails, it returns false.
+  // Copy sub video frame texture to |texture|. If the copy is impossible or
+  // fails, it returns false.
   virtual bool copyVideoSubTextureToPlatformTexture(gpu::gles2::GLES2Interface*,
                                                     unsigned target,
                                                     unsigned texture,

@@ -228,9 +228,9 @@ class WebInputEvent {
 
   static const int InputModifiers = ShiftKey | ControlKey | AltKey | MetaKey;
 
-  double
-      timeStampSeconds;  // Seconds since platform start with microsecond resolution.
-  unsigned size;         // The size of this structure, for serialization.
+  double timeStampSeconds;  // Seconds since platform start with microsecond
+                            // resolution.
+  unsigned size;            // The size of this structure, for serialization.
   Type type;
   int modifiers;
 
@@ -463,7 +463,7 @@ class WebMouseWheelEvent : public WebMouseEvent {
         dispatchType(Blocking) {}
 };
 
-// WebGestureEvent --------------------------------------------------------------
+// WebGestureEvent ---------------------------------------------------------
 
 class WebGestureEvent : public WebInputEvent {
  public:
@@ -539,12 +539,13 @@ class WebGestureEvent : public WebInputEvent {
       // If true, this event will skip hit testing to find a scroll
       // target and instead just scroll the viewport.
       bool targetViewport;
-      // The state of inertial phase scrolling. OSX has unique phases for normal and
-      // momentum scroll events. Should always be UnknownMomentumPhase for touch based
-      // input as it generates GestureFlingStart instead.
+      // The state of inertial phase scrolling. OSX has unique phases for normal
+      // and momentum scroll events. Should always be UnknownMomentumPhase for
+      // touch based input as it generates GestureFlingStart instead.
       InertialPhaseState inertialPhase;
-      // True if this event was synthesized in order to force a hit test; avoiding scroll
-      // latching behavior until crbug.com/526463 is fully implemented.
+      // True if this event was synthesized in order to force a hit test;
+      // avoiding scroll latching behavior until crbug.com/526463 is fully
+      // implemented.
       bool synthetic;
 
       // number of pointers down.
@@ -572,9 +573,9 @@ class WebGestureEvent : public WebInputEvent {
       // The original delta units the scrollBegin and scrollUpdates
       // were sent as.
       ScrollUnits deltaUnits;
-      // The state of inertial phase scrolling. OSX has unique phases for normal and
-      // momentum scroll events. Should always be UnknownMomentumPhase for touch based
-      // input as it generates GestureFlingStart instead.
+      // The state of inertial phase scrolling. OSX has unique phases for normal
+      // and momentum scroll events. Should always be UnknownMomentumPhase for
+      // touch based input as it generates GestureFlingStart instead.
       InertialPhaseState inertialPhase;
       // True if this event was synthesized in order to generate the proper
       // GSB/GSU/GSE matching sequences. This is a temporary so that a future
@@ -641,7 +642,8 @@ class WebTouchEvent : public WebInputEvent {
   // dispatched.
   bool dispatchedDuringFling;
 
-  // Whether this touch event is a touchstart or a first touchmove event per scroll.
+  // Whether this touch event is a touchstart or a first touchmove event per
+  // scroll.
   bool touchStartOrFirstTouchMove;
 
   // A unique identifier for the touch event. Valid ids start at one and

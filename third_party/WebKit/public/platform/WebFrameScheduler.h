@@ -23,7 +23,8 @@ class BLINK_PLATFORM_EXPORT WebFrameScheduler {
   virtual void setFrameVisible(bool) {}
 
   // Tells the scheduler that the page this frame belongs to is not visible.
-  // The scheduler may throttle tasks associated with pages that are not visible.
+  // The scheduler may throttle tasks associated with pages that are not
+  // visible.
   virtual void setPageVisible(bool) {}
 
   // Set whether this frame is cross origin w.r.t. the top level frame. Cross

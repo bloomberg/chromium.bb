@@ -41,7 +41,8 @@ namespace blink {
 
 class Prerender;
 
-// WebPrerenderRelType is a bitfield since multiple rel attributes can be set on the same prerender.
+// WebPrerenderRelType is a bitfield since multiple rel attributes can be set on
+// the same prerender.
 enum WebPrerenderRelType {
   PrerenderRelTypePrerender = 0x1,
   PrerenderRelTypeNext = 0x2,

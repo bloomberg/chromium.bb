@@ -328,7 +328,8 @@ class BLINK_PLATFORM_EXPORT Platform {
   // Message Ports -------------------------------------------------------
 
   // Creates a Message Port Channel pair. This can be called on any thread.
-  // The returned objects should only be used on the thread they were created on.
+  // The returned objects should only be used on the thread they were created
+  // on.
   virtual void createMessageChannel(WebMessagePortChannel** channel1,
                                     WebMessagePortChannel** channel2) {
     *channel1 = 0;
@@ -352,7 +353,8 @@ class BLINK_PLATFORM_EXPORT Platform {
                              const char* data,
                              size_t dataSize) {}
 
-  // A suggestion to cache this metadata in association with this URL which resource is in CacheStorage.
+  // A suggestion to cache this metadata in association with this URL which
+  // resource is in CacheStorage.
   virtual void cacheMetadataInCacheStorage(
       const WebURL&,
       int64_t responseTime,
@@ -361,7 +363,8 @@ class BLINK_PLATFORM_EXPORT Platform {
       const blink::WebSecurityOrigin& cacheStorageOrigin,
       const WebString& cacheStorageCacheName) {}
 
-  // Returns the decoded data url if url had a supported mimetype and parsing was successful.
+  // Returns the decoded data url if url had a supported mimetype and parsing
+  // was successful.
   virtual WebData parseDataURL(const WebURL&,
                                WebString& mimetype,
                                WebString& charset) {
@@ -429,8 +432,9 @@ class BLINK_PLATFORM_EXPORT Platform {
   // Returns a blob of data corresponding to the named resource.
   virtual WebData loadResource(const char* name) { return WebData(); }
 
-  // Decodes the in-memory audio file data and returns the linear PCM audio data in the destinationBus.
-  // A sample-rate conversion to sampleRate will occur if the file data is at a different sample-rate.
+  // Decodes the in-memory audio file data and returns the linear PCM audio data
+  // in the destinationBus.  A sample-rate conversion to sampleRate will occur
+  // if the file data is at a different sample-rate.
   // Returns true on success.
   virtual bool loadAudioResource(WebAudioBus* destinationBus,
                                  const char* audioFileData,
@@ -455,7 +459,8 @@ class BLINK_PLATFORM_EXPORT Platform {
   // Returns a value such as "en-US".
   virtual WebString defaultLocale() { return WebString(); }
 
-  // Returns an interface to the main thread. Can be null if blink was initialized on a thread without a message loop.
+  // Returns an interface to the main thread. Can be null if blink was
+  // initialized on a thread without a message loop.
   WebThread* mainThread() const;
 
   // Returns an interface to the compositor thread. This can be null if the
@@ -464,11 +469,14 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Testing -------------------------------------------------------------
 
-  // Gets a pointer to URLLoaderMockFactory for testing. Will not be available in production builds.
+  // Gets a pointer to URLLoaderMockFactory for testing. Will not be available
+  // in production builds.
   virtual WebURLLoaderMockFactory* getURLLoaderMockFactory() { return nullptr; }
 
-  // Record to a RAPPOR privacy-preserving metric, see: https://www.chromium.org/developers/design-documents/rappor.
-  // recordRappor records a sample string, while recordRapporURL records the eTLD+1 of a url.
+  // Record to a RAPPOR privacy-preserving metric, see:
+  // https://www.chromium.org/developers/design-documents/rappor.
+  // recordRappor records a sample string, while recordRapporURL records the
+  // eTLD+1 of a url.
   virtual void recordRappor(const char* metric, const WebString& sample) {}
   virtual void recordRapporURL(const char* metric, const blink::WebURL& url) {}
 
@@ -549,7 +557,8 @@ class BLINK_PLATFORM_EXPORT Platform {
   // WebRTC ----------------------------------------------------------
 
   // Creates a WebRTCPeerConnectionHandler for RTCPeerConnection.
-  // May return null if WebRTC functionality is not avaliable or if it's out of resources.
+  // May return null if WebRTC functionality is not avaliable or if it's out of
+  // resources.
   virtual WebRTCPeerConnectionHandler* createRTCPeerConnectionHandler(
       WebRTCPeerConnectionHandlerClient*) {
     return nullptr;
@@ -561,12 +570,14 @@ class BLINK_PLATFORM_EXPORT Platform {
     return nullptr;
   }
 
-  // May return null if WebRTC functionality is not available or out of resources.
+  // May return null if WebRTC functionality is not available or out of
+  // resources.
   virtual WebRTCCertificateGenerator* createRTCCertificateGenerator() {
     return nullptr;
   }
 
-  // May return null if WebRTC functionality is not available or out of resources.
+  // May return null if WebRTC functionality is not available or out of
+  // resources.
   virtual WebMediaStreamCenter* createMediaStreamCenter(
       WebMediaStreamCenterClient*) {
     return nullptr;
@@ -622,7 +633,8 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // This method converts from the supplied DOM code enum to the
   // embedder's DOM code value for the key pressed. |domCode| values are
-  // based on the value defined in ui/events/keycodes/dom4/keycode_converter_data.h.
+  // based on the value defined in
+  // ui/events/keycodes/dom4/keycode_converter_data.h.
   // Returns null string, if DOM code value is not found.
   virtual WebString domCodeStringFromEnum(int domCode) { return WebString(); }
 
@@ -633,8 +645,8 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual int domEnumFromCodeString(const WebString& codeString) { return 0; }
 
   // This method converts from the supplied DOM |key| enum to the
-  // corresponding DOM |key| string value for the key pressed. |domKey| values are
-  // based on the value defined in ui/events/keycodes/dom3/dom_key_data.h.
+  // corresponding DOM |key| string value for the key pressed. |domKey| values
+  // are based on the value defined in ui/events/keycodes/dom3/dom_key_data.h.
   // Returns empty string, if DOM key value is not found.
   virtual WebString domKeyStringFromEnum(int domKey) { return WebString(); }
 
@@ -667,7 +679,7 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   virtual WebPushProvider* pushProvider() { return nullptr; }
 
-  // Background Sync API------------------------------------------------------------
+  // Background Sync API-------------------------------------------------
 
   virtual WebSyncProvider* backgroundSyncProvider() { return nullptr; }
 

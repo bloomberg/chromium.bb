@@ -209,7 +209,8 @@ class WebCryptoAlgorithm {
   BLINK_PLATFORM_EXPORT const WebCryptoHkdfParams* hkdfParams() const;
   BLINK_PLATFORM_EXPORT const WebCryptoPbkdf2Params* pbkdf2Params() const;
 
-  // Returns true if the provided algorithm ID is for a hash (in other words, SHA-*)
+  // Returns true if the provided algorithm ID is for a hash (in other words,
+  // SHA-*)
   BLINK_PLATFORM_EXPORT static bool isHash(WebCryptoAlgorithmId);
   // Returns true if the provided algorithm ID is for a key derivation function
   BLINK_PLATFORM_EXPORT static bool isKdf(WebCryptoAlgorithmId);

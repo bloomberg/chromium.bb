@@ -45,8 +45,9 @@ class WebString;
 
 typedef WebVector<class WebMessagePortChannel*> WebMessagePortChannelArray;
 
-// Provides an interface to a Message Port Channel implementation. The object owns itself and
-// is signalled that its not needed anymore with the destroy() call.
+// Provides an interface to a Message Port Channel implementation. The object
+// owns itself and is signalled that its not needed anymore with the destroy()
+// call.
 class WebMessagePortChannel {
  public:
   virtual void setClient(WebMessagePortChannelClient*) = 0;

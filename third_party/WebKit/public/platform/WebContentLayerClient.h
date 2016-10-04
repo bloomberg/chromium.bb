@@ -42,7 +42,8 @@ class BLINK_PLATFORM_EXPORT WebContentLayerClient {
   enum PaintingControlSetting {
     // Returns the last PaintArtifact produced.
     PaintDefaultBehavior,
-    // Paints the content to simulate the behavior of FrameView::synchronizedPaint.
+    // Paints the content to simulate the behavior of
+    // FrameView::synchronizedPaint.
     PaintDefaultBehaviorForTest,
     // Puts the GraphicsContext in disabled mode and disables display item
     // construction in PaintController.
@@ -53,17 +54,18 @@ class BLINK_PLATFORM_EXPORT WebContentLayerClient {
     PartialInvalidation
   };
 
-  // The paintable region is the rectangular region, within the bounds of the layer
-  // this client paints, that the client is capable of painting via paintContents().
-  // Calling paintContents will return a WebDisplayitemList that is guaranteed valid
-  // only within this region.
-  // In particular, this is used to represent the interest rect in Blink.
+  // The paintable region is the rectangular region, within the bounds of the
+  // layer this client paints, that the client is capable of painting via
+  // paintContents().  Calling paintContents will return a WebDisplayitemList
+  // that is guaranteed valid only within this region.  In particular, this is
+  // used to represent the interest rect in Blink.
   virtual gfx::Rect paintableRegion() = 0;
 
   // Paints the content area for the layer, typically dirty rects submitted
   // through WebContentLayer::setNeedsDisplayInRect, submitting drawing commands
   // to populate the WebDisplayItemList.
-  // The |PaintingControlSetting| enum controls painting to isolate different components in performance tests.
+  // The |PaintingControlSetting| enum controls painting to isolate different
+  // components in performance tests.
   virtual void paintContents(WebDisplayItemList*,
                              PaintingControlSetting = PaintDefaultBehavior) = 0;
 

@@ -64,7 +64,8 @@ class WebScrollbarThemePainter {
   BLINK_PLATFORM_EXPORT void paintTickmarks(WebCanvas*, const WebRect&);
   BLINK_PLATFORM_EXPORT void paintThumb(WebCanvas*, const WebRect&);
 
-  // This opacity is applied on top of the content that is painted for the thumb.
+  // This opacity is applied on top of the content that is painted for the
+  // thumb.
   BLINK_PLATFORM_EXPORT float thumbOpacity() const;
 
   BLINK_PLATFORM_EXPORT bool trackNeedsRepaint() const;

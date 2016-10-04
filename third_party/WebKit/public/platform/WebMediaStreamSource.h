@@ -104,8 +104,8 @@ class WebMediaStreamSource {
   BLINK_PLATFORM_EXPORT ReadyState getReadyState() const;
 
   // Extra data associated with this object.
-  // If non-null, the extra data pointer will be deleted when the object is destroyed.
-  // Setting the extra data pointer will cause any existing non-null
+  // If non-null, the extra data pointer will be deleted when the object is
+  // destroyed.  Setting the extra data pointer will cause any existing non-null
   // extra data pointer to be deleted.
   BLINK_PLATFORM_EXPORT ExtraData* getExtraData() const;
   BLINK_PLATFORM_EXPORT void setExtraData(ExtraData*);
@@ -113,8 +113,8 @@ class WebMediaStreamSource {
   BLINK_PLATFORM_EXPORT WebMediaConstraints constraints();
 
   // Only used if if this is a WebAudio source.
-  // The WebAudioDestinationConsumer is not owned, and has to be disposed of separately
-  // after calling removeAudioConsumer.
+  // The WebAudioDestinationConsumer is not owned, and has to be disposed of
+  // separately after calling removeAudioConsumer.
   BLINK_PLATFORM_EXPORT bool requiresAudioConsumer() const;
   BLINK_PLATFORM_EXPORT void addAudioConsumer(WebAudioDestinationConsumer*);
   BLINK_PLATFORM_EXPORT bool removeAudioConsumer(WebAudioDestinationConsumer*);

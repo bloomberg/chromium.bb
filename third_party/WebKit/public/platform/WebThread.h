@@ -61,22 +61,26 @@ class BLINK_PLATFORM_EXPORT WebThread {
     virtual void didProcessTask() = 0;
   };
 
-  // Returns a WebTaskRunner bound to the underlying scheduler's default task queue.
+  // Returns a WebTaskRunner bound to the underlying scheduler's default task
+  // queue.
   virtual WebTaskRunner* getWebTaskRunner() { return nullptr; }
 
   virtual bool isCurrentThread() const = 0;
   virtual PlatformThreadId threadId() const { return 0; }
 
-  // TaskObserver is an object that receives task notifications from the MessageLoop
+  // TaskObserver is an object that receives task notifications from the
+  // MessageLoop
   // NOTE: TaskObserver implementation should be extremely fast!
-  // This API is performance sensitive. Use only if you have a compelling reason.
+  // This API is performance sensitive. Use only if you have a compelling
+  // reason.
   virtual void addTaskObserver(TaskObserver*) {}
   virtual void removeTaskObserver(TaskObserver*) {}
 
   // TaskTimeObserver is an object that receives notifications for
   // CPU time spent in each top-level MessageLoop task.
   // NOTE: TaskTimeObserver implementation should be extremely fast!
-  // This API is performance sensitive. Use only if you have a compelling reason.
+  // This API is performance sensitive. Use only if you have a compelling
+  // reason.
   virtual void addTaskTimeObserver(scheduler::TaskTimeObserver*) {}
   virtual void removeTaskTimeObserver(scheduler::TaskTimeObserver*) {}
 

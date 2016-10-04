@@ -85,7 +85,8 @@ class WebBlobRegistry {
   // TODO(dmurph): Deprecate and migrate to createBuilder
   virtual void registerBlobData(const WebString& uuid, const WebBlobData&) {}
 
-  // The blob is finalized (and sent to the browser) on calling build() on the Builder object.
+  // The blob is finalized (and sent to the browser) on calling build() on the
+  // Builder object.
   virtual std::unique_ptr<Builder> createBuilder(
       const WebString& uuid,
       const WebString& contentType) = 0;
