@@ -113,20 +113,18 @@ bool SwapNewChromeExeIfPresent() {
   base::FilePath cur_chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &cur_chrome_exe))
     return false;
-  bool user_install = InstallUtil::IsPerUserInstall(cur_chrome_exe);
 
-  // Ask Google Update to elevate and rename if the current process is in a
-  // per-machine install. Failing that, fall back to the direct approach.
-  if (!user_install && InvokeGoogleUpdateForRename())
-    return true;
+  // If this is a system-level install, ask Google Update to launch an elevated
+  // process to rename Chrome executables.
+  if (!InstallUtil::IsPerUserInstall(cur_chrome_exe))
+    return InvokeGoogleUpdateForRename();
 
-  // Open up the registry key containing current version and rename information.
-  HKEY reg_root = user_install ? HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
-  BrowserDistribution *dist = BrowserDistribution::GetDistribution();
+  // If this is a user-level install, directly launch a process to rename Chrome
+  // executables. Obtain the command to launch the process from the registry.
   base::win::RegKey key;
-  if (key.Open(reg_root, dist->GetVersionKey().c_str(),
+  if (key.Open(HKEY_CURRENT_USER,
+               BrowserDistribution::GetDistribution()->GetVersionKey().c_str(),
                KEY_QUERY_VALUE | KEY_WOW64_32KEY) == ERROR_SUCCESS) {
-    // First try to rename exe by launching rename command ourselves.
     std::wstring rename_cmd;
     if (key.ReadValue(google_update::kRegRenameCmdField,
                       &rename_cmd) == ERROR_SUCCESS) {
