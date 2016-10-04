@@ -412,7 +412,7 @@ void SyncBackendHostImpl::ActivateNonBlockingDataType(
     ModelType type,
     std::unique_ptr<ActivationContext> activation_context) {
   registrar_->RegisterNonBlockingType(type);
-  if (activation_context->data_type_state.initial_sync_done())
+  if (activation_context->model_type_state.initial_sync_done())
     registrar_->AddRestoredNonBlockingType(type);
   model_type_connector_->ConnectType(type, std::move(activation_context));
 }

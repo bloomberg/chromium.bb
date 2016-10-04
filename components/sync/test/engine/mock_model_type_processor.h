@@ -17,7 +17,7 @@
 #include "base/macros.h"
 #include "components/sync/core/model_type_processor.h"
 #include "components/sync/core/non_blocking_sync_common.h"
-#include "components/sync/protocol/data_type_state.pb.h"
+#include "components/sync/protocol/model_type_state.pb.h"
 
 namespace syncer {
 
@@ -42,9 +42,9 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
   // Implementation of ModelTypeProcessor.
   void ConnectSync(std::unique_ptr<CommitQueue> commit_queue) override;
   void DisconnectSync() override;
-  void OnCommitCompleted(const sync_pb::DataTypeState& type_state,
+  void OnCommitCompleted(const sync_pb::ModelTypeState& type_state,
                          const CommitResponseDataList& response_list) override;
-  void OnUpdateReceived(const sync_pb::DataTypeState& type_state,
+  void OnUpdateReceived(const sync_pb::ModelTypeState& type_state,
                         const UpdateResponseDataList& response_list) override;
 
   // By default, this object behaves as if all messages are processed
@@ -74,14 +74,14 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
   // Does not includes repsonses that are in pending tasks.
   size_t GetNumUpdateResponses() const;
   UpdateResponseDataList GetNthUpdateResponse(size_t n) const;
-  sync_pb::DataTypeState GetNthUpdateState(size_t n) const;
+  sync_pb::ModelTypeState GetNthUpdateState(size_t n) const;
 
   // Getters to access the log of received commit responses.
   //
   // Does not includes responses that are in pending tasks.
   size_t GetNumCommitResponses() const;
   CommitResponseDataList GetNthCommitResponse(size_t n) const;
-  sync_pb::DataTypeState GetNthCommitState(size_t n) const;
+  sync_pb::ModelTypeState GetNthCommitState(size_t n) const;
 
   // Getters to access the lastest update response for a given tag_hash.
   bool HasUpdateResponse(const std::string& tag_hash) const;
@@ -97,13 +97,13 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
   // Process a received commit response.
   //
   // Implemented as an Impl method so we can defer its execution in some cases.
-  void OnCommitCompletedImpl(const sync_pb::DataTypeState& type_state,
+  void OnCommitCompletedImpl(const sync_pb::ModelTypeState& type_state,
                              const CommitResponseDataList& response_list);
 
   // Process a received update response.
   //
   // Implemented as an Impl method so we can defer its execution in some cases.
-  void OnUpdateReceivedImpl(const sync_pb::DataTypeState& type_state,
+  void OnUpdateReceivedImpl(const sync_pb::ModelTypeState& type_state,
                             const UpdateResponseDataList& response_list);
 
   // Getter and setter for per-item sequence number tracking.
@@ -128,8 +128,8 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
   // A log of messages received by this object.
   std::vector<CommitResponseDataList> received_commit_responses_;
   std::vector<UpdateResponseDataList> received_update_responses_;
-  std::vector<sync_pb::DataTypeState> type_states_received_on_update_;
-  std::vector<sync_pb::DataTypeState> type_states_received_on_commit_;
+  std::vector<sync_pb::ModelTypeState> type_states_received_on_update_;
+  std::vector<sync_pb::ModelTypeState> type_states_received_on_commit_;
 
   // Latest responses received, indexed by tag_hash.
   std::map<const std::string, CommitResponseData> commit_response_items_;

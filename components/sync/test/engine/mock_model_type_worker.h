@@ -17,7 +17,7 @@
 #include "components/sync/core/model_type_processor.h"
 #include "components/sync/core/non_blocking_sync_common.h"
 #include "components/sync/engine/commit_queue.h"
-#include "components/sync/protocol/data_type_state.pb.h"
+#include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 
 namespace syncer {
@@ -29,7 +29,7 @@ namespace syncer {
 // plausible UpdateResponseData and CommitResponseData messages.
 class MockModelTypeWorker : public CommitQueue {
  public:
-  MockModelTypeWorker(const sync_pb::DataTypeState& data_type_state,
+  MockModelTypeWorker(const sync_pb::ModelTypeState& model_type_state,
                       ModelTypeProcessor* processor);
   ~MockModelTypeWorker() override;
 
@@ -108,7 +108,7 @@ class MockModelTypeWorker : public CommitQueue {
   int64_t GetServerVersion(const std::string& tag_hash);
   void SetServerVersion(const std::string& tag_hash, int64_t version);
 
-  sync_pb::DataTypeState data_type_state_;
+  sync_pb::ModelTypeState model_type_state_;
 
   // A pointer to the processor for this mock worker.
   ModelTypeProcessor* processor_;

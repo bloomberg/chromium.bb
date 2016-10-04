@@ -26,12 +26,12 @@ namespace syncer {
 
 ModelTypeWorker::ModelTypeWorker(
     ModelType type,
-    const sync_pb::DataTypeState& initial_state,
+    const sync_pb::ModelTypeState& initial_state,
     std::unique_ptr<Cryptographer> cryptographer,
     NudgeHandler* nudge_handler,
     std::unique_ptr<ModelTypeProcessor> model_type_processor)
     : type_(type),
-      data_type_state_(initial_state),
+      model_type_state_(initial_state),
       model_type_processor_(std::move(model_type_processor)),
       cryptographer_(std::move(cryptographer)),
       nudge_handler_(nudge_handler),
@@ -39,7 +39,7 @@ ModelTypeWorker::ModelTypeWorker(
   DCHECK(model_type_processor_);
 
   // Request an initial sync if it hasn't been completed yet.
-  if (!data_type_state_.initial_sync_done()) {
+  if (!model_type_state_.initial_sync_done()) {
     nudge_handler_->NudgeForInitialDownload(type_);
   }
 
@@ -70,19 +70,19 @@ void ModelTypeWorker::UpdateCryptographer(
 // UpdateHandler implementation.
 bool ModelTypeWorker::IsInitialSyncEnded() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return data_type_state_.initial_sync_done();
+  return model_type_state_.initial_sync_done();
 }
 
 void ModelTypeWorker::GetDownloadProgress(
     sync_pb::DataTypeProgressMarker* progress_marker) const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  progress_marker->CopyFrom(data_type_state_.progress_marker());
+  progress_marker->CopyFrom(model_type_state_.progress_marker());
 }
 
 void ModelTypeWorker::GetDataTypeContext(
     sync_pb::DataTypeContext* context) const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  context->CopyFrom(data_type_state_.type_context());
+  context->CopyFrom(model_type_state_.type_context());
 }
 
 SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
@@ -93,8 +93,8 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // TODO(rlarocque): Handle data type context conflicts.
-  *data_type_state_.mutable_type_context() = mutated_context;
-  *data_type_state_.mutable_progress_marker() = progress_marker;
+  *model_type_state_.mutable_type_context() = mutated_context;
+  *model_type_state_.mutable_progress_marker() = progress_marker;
 
   for (const sync_pb::SyncEntity* update_entity : applicable_updates) {
     // Skip updates for permanent folders.
@@ -158,7 +158,7 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
 void ModelTypeWorker::ApplyUpdates(StatusController* status) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // This should only ever be called after one PassiveApplyUpdates.
-  DCHECK(data_type_state_.initial_sync_done());
+  DCHECK(model_type_state_.initial_sync_done());
   // Download cycle is done, pass all updates to the processor.
   ApplyPendingUpdates();
 }
@@ -166,11 +166,11 @@ void ModelTypeWorker::ApplyUpdates(StatusController* status) {
 void ModelTypeWorker::PassiveApplyUpdates(StatusController* status) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // This should only be called at the end of the very first download cycle.
-  DCHECK(!data_type_state_.initial_sync_done());
+  DCHECK(!model_type_state_.initial_sync_done());
   // Indicate to the processor that the initial download is done. The initial
   // sync technically isn't done yet but by the time this value is persisted to
   // disk on the model thread it will be.
-  data_type_state_.set_initial_sync_done(true);
+  model_type_state_.set_initial_sync_done(true);
   ApplyPendingUpdates();
 }
 
@@ -178,7 +178,7 @@ void ModelTypeWorker::ApplyPendingUpdates() {
   DVLOG(1) << ModelTypeToString(type_) << ": "
            << base::StringPrintf("Delivering %" PRIuS " applicable updates.",
                                  pending_updates_.size());
-  model_type_processor_->OnUpdateReceived(data_type_state_, pending_updates_);
+  model_type_processor_->OnUpdateReceived(model_type_state_, pending_updates_);
   pending_updates_.clear();
 }
 
@@ -229,7 +229,7 @@ std::unique_ptr<CommitContribution> ModelTypeWorker::GetContribution(
     return std::unique_ptr<CommitContribution>();
 
   return base::MakeUnique<NonBlockingTypeCommitContribution>(
-      data_type_state_.type_context(), commit_entities, this);
+      model_type_state_.type_context(), commit_entities, this);
 }
 
 void ModelTypeWorker::OnCommitResponse(CommitResponseDataList* response_list) {
@@ -251,7 +251,7 @@ void ModelTypeWorker::OnCommitResponse(CommitResponseDataList* response_list) {
   // Send the responses back to the model thread. It needs to know which
   // items have been successfully committed so it can save that information in
   // permanent storage.
-  model_type_processor_->OnCommitCompleted(data_type_state_, *response_list);
+  model_type_processor_->OnCommitCompleted(model_type_state_, *response_list);
 }
 
 base::WeakPtr<ModelTypeWorker> ModelTypeWorker::AsWeakPtr() {
@@ -259,8 +259,8 @@ base::WeakPtr<ModelTypeWorker> ModelTypeWorker::AsWeakPtr() {
 }
 
 bool ModelTypeWorker::IsTypeInitialized() const {
-  return data_type_state_.initial_sync_done() &&
-         !data_type_state_.progress_marker().token().empty();
+  return model_type_state_.initial_sync_done() &&
+         !model_type_state_.progress_marker().token().empty();
 }
 
 bool ModelTypeWorker::CanCommitItems() const {
@@ -324,11 +324,11 @@ void ModelTypeWorker::OnCryptographerUpdated() {
   const std::string& new_key_name = cryptographer_->GetDefaultNigoriKeyName();
 
   // Handle a change in encryption key.
-  if (data_type_state_.encryption_key_name() != new_key_name) {
+  if (model_type_state_.encryption_key_name() != new_key_name) {
     DVLOG(1) << ModelTypeToString(type_) << ": Updating encryption key "
-             << data_type_state_.encryption_key_name() << " -> "
+             << model_type_state_.encryption_key_name() << " -> "
              << new_key_name;
-    data_type_state_.set_encryption_key_name(new_key_name);
+    model_type_state_.set_encryption_key_name(new_key_name);
     new_encryption_key = true;
   }
 
@@ -368,7 +368,7 @@ void ModelTypeWorker::OnCryptographerUpdated() {
              << base::StringPrintf("Delivering encryption key and %" PRIuS
                                    " decrypted updates.",
                                    response_datas.size());
-    model_type_processor_->OnUpdateReceived(data_type_state_, response_datas);
+    model_type_processor_->OnUpdateReceived(model_type_state_, response_datas);
   }
 }
 

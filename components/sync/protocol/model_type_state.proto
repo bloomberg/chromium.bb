@@ -11,7 +11,7 @@ package sync_pb;
 import "sync.proto";
 
 // Sync proto to store data type global metadata in model type storage.
-message DataTypeState {
+message ModelTypeState {
   // The latest progress markers received from the server.
   optional DataTypeProgressMarker progress_marker = 1;
 

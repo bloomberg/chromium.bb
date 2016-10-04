@@ -31,9 +31,9 @@ class ModelTypeProcessorProxy : public ModelTypeProcessor {
 
   void ConnectSync(std::unique_ptr<CommitQueue> worker) override;
   void DisconnectSync() override;
-  void OnCommitCompleted(const sync_pb::DataTypeState& type_state,
+  void OnCommitCompleted(const sync_pb::ModelTypeState& type_state,
                          const CommitResponseDataList& response_list) override;
-  void OnUpdateReceived(const sync_pb::DataTypeState& type_state,
+  void OnUpdateReceived(const sync_pb::ModelTypeState& type_state,
                         const UpdateResponseDataList& updates) override;
 
  private:
@@ -60,7 +60,7 @@ void ModelTypeProcessorProxy::DisconnectSync() {
 }
 
 void ModelTypeProcessorProxy::OnCommitCompleted(
-    const sync_pb::DataTypeState& type_state,
+    const sync_pb::ModelTypeState& type_state,
     const CommitResponseDataList& response_list) {
   processor_task_runner_->PostTask(
       FROM_HERE, base::Bind(&ModelTypeProcessor::OnCommitCompleted, processor_,
@@ -68,7 +68,7 @@ void ModelTypeProcessorProxy::OnCommitCompleted(
 }
 
 void ModelTypeProcessorProxy::OnUpdateReceived(
-    const sync_pb::DataTypeState& type_state,
+    const sync_pb::ModelTypeState& type_state,
     const UpdateResponseDataList& updates) {
   processor_task_runner_->PostTask(
       FROM_HERE, base::Bind(&ModelTypeProcessor::OnUpdateReceived, processor_,
@@ -130,7 +130,7 @@ void SharedModelTypeProcessor::OnMetadataLoaded(
     return;
   }
 
-  if (batch->GetDataTypeState().initial_sync_done()) {
+  if (batch->GetModelTypeState().initial_sync_done()) {
     EntityMetadataMap metadata_map(batch->TakeAllMetadata());
     std::vector<std::string> entities_to_commit;
 
@@ -144,7 +144,7 @@ void SharedModelTypeProcessor::OnMetadataLoaded(
           entity->metadata().client_tag_hash();
       entities_[entity->metadata().client_tag_hash()] = std::move(entity);
     }
-    data_type_state_ = batch->GetDataTypeState();
+    model_type_state_ = batch->GetModelTypeState();
     if (!entities_to_commit.empty()) {
       is_initial_pending_data_loaded_ = false;
       service_->GetData(
@@ -154,7 +154,7 @@ void SharedModelTypeProcessor::OnMetadataLoaded(
     }
   } else {
     // First time syncing; initialize metadata.
-    data_type_state_.mutable_progress_marker()->set_data_type_id(
+    model_type_state_.mutable_progress_marker()->set_data_type_id(
         GetSpecificsFieldNumberFromModelType(type_));
   }
 
@@ -172,7 +172,7 @@ void SharedModelTypeProcessor::ConnectIfReady() {
 
   if (!start_error_.IsSet()) {
     activation_context = base::WrapUnique(new ActivationContext);
-    activation_context->data_type_state = data_type_state_;
+    activation_context->model_type_state = model_type_state_;
     activation_context->type_processor =
         base::MakeUnique<ModelTypeProcessorProxy>(
             weak_ptr_factory_.GetWeakPtr(),
@@ -209,7 +209,7 @@ void SharedModelTypeProcessor::DisableSync() {
   for (auto it = entities_.begin(); it != entities_.end(); ++it) {
     change_list->ClearMetadata(it->second->storage_key());
   }
-  change_list->ClearDataTypeState();
+  change_list->ClearModelTypeState();
   // Nothing to do if this fails, so just ignore the error it might return.
   service_->ApplySyncChanges(std::move(change_list), EntityChangeList());
 }
@@ -256,7 +256,7 @@ void SharedModelTypeProcessor::Put(const std::string& storage_key,
   DCHECK(!data->non_unique_name.empty());
   DCHECK_EQ(type_, GetModelTypeFromSpecifics(data->specifics));
 
-  if (!data_type_state_.initial_sync_done()) {
+  if (!model_type_state_.initial_sync_done()) {
     // Ignore changes before the initial sync is done.
     return;
   }
@@ -291,7 +291,7 @@ void SharedModelTypeProcessor::Delete(
     MetadataChangeList* metadata_change_list) {
   DCHECK(IsAllowingChanges());
 
-  if (!data_type_state_.initial_sync_done()) {
+  if (!model_type_state_.initial_sync_done()) {
     // Ignore changes before the initial sync is done.
     return;
   }
@@ -319,7 +319,7 @@ void SharedModelTypeProcessor::FlushPendingCommitRequests() {
     return;
 
   // Don't send anything if the type is not ready to handle commits.
-  if (!data_type_state_.initial_sync_done())
+  if (!model_type_state_.initial_sync_done())
     return;
 
   // TODO(rlarocque): Do something smarter than iterate here.
@@ -337,13 +337,13 @@ void SharedModelTypeProcessor::FlushPendingCommitRequests() {
 }
 
 void SharedModelTypeProcessor::OnCommitCompleted(
-    const sync_pb::DataTypeState& type_state,
+    const sync_pb::ModelTypeState& type_state,
     const CommitResponseDataList& response_list) {
   std::unique_ptr<MetadataChangeList> change_list =
       service_->CreateMetadataChangeList();
 
-  data_type_state_ = type_state;
-  change_list->UpdateDataTypeState(data_type_state_);
+  model_type_state_ = type_state;
+  change_list->UpdateModelTypeState(model_type_state_);
 
   for (const CommitResponseData& data : response_list) {
     ProcessorEntityTracker* entity = GetEntityForTagHash(data.client_tag_hash);
@@ -372,10 +372,10 @@ void SharedModelTypeProcessor::OnCommitCompleted(
 }
 
 void SharedModelTypeProcessor::OnUpdateReceived(
-    const sync_pb::DataTypeState& data_type_state,
+    const sync_pb::ModelTypeState& model_type_state,
     const UpdateResponseDataList& updates) {
-  if (!data_type_state_.initial_sync_done()) {
-    OnInitialUpdateReceived(data_type_state, updates);
+  if (!model_type_state_.initial_sync_done()) {
+    OnInitialUpdateReceived(model_type_state, updates);
     return;
   }
 
@@ -383,11 +383,11 @@ void SharedModelTypeProcessor::OnUpdateReceived(
       service_->CreateMetadataChangeList();
   EntityChangeList entity_changes;
 
-  metadata_changes->UpdateDataTypeState(data_type_state);
+  metadata_changes->UpdateModelTypeState(model_type_state);
   bool got_new_encryption_requirements =
-      data_type_state_.encryption_key_name() !=
-      data_type_state.encryption_key_name();
-  data_type_state_ = data_type_state;
+      model_type_state_.encryption_key_name() !=
+      model_type_state.encryption_key_name();
+  model_type_state_ = model_type_state;
 
   // If new encryption requirements come from the server, the entities that are
   // in |updates| will be recorded here so they can be ignored during the
@@ -476,10 +476,10 @@ ProcessorEntityTracker* SharedModelTypeProcessor::ProcessUpdate(
 
   // If the received entity has out of date encryption, we schedule another
   // commit to fix it.
-  if (data_type_state_.encryption_key_name() != update.encryption_key_name) {
+  if (model_type_state_.encryption_key_name() != update.encryption_key_name) {
     DVLOG(2) << ModelTypeToString(type_) << ": Requesting re-encrypt commit "
              << update.encryption_key_name << " -> "
-             << data_type_state_.encryption_key_name();
+             << model_type_state_.encryption_key_name();
 
     entity->IncrementSequenceNumber();
     if (entity->RequiresCommitData()) {
@@ -589,20 +589,20 @@ void SharedModelTypeProcessor::RecommitAllForEncryption(
 }
 
 void SharedModelTypeProcessor::OnInitialUpdateReceived(
-    const sync_pb::DataTypeState& data_type_state,
+    const sync_pb::ModelTypeState& model_type_state,
     const UpdateResponseDataList& updates) {
   DCHECK(entities_.empty());
   // Ensure that initial sync was not already done and that the worker
   // correctly marked initial sync as done for this update.
-  DCHECK(!data_type_state_.initial_sync_done());
-  DCHECK(data_type_state.initial_sync_done());
+  DCHECK(!model_type_state_.initial_sync_done());
+  DCHECK(model_type_state.initial_sync_done());
 
   std::unique_ptr<MetadataChangeList> metadata_changes =
       service_->CreateMetadataChangeList();
   EntityDataMap data_map;
 
-  data_type_state_ = data_type_state;
-  metadata_changes->UpdateDataTypeState(data_type_state_);
+  model_type_state_ = model_type_state;
+  metadata_changes->UpdateModelTypeState(model_type_state_);
 
   for (const UpdateResponseData& update : updates) {
     ProcessorEntityTracker* entity = CreateEntity(update.entity.value());

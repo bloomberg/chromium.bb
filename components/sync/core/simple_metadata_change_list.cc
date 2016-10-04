@@ -10,13 +10,13 @@ SimpleMetadataChangeList::SimpleMetadataChangeList() {}
 
 SimpleMetadataChangeList::~SimpleMetadataChangeList() {}
 
-void SimpleMetadataChangeList::UpdateDataTypeState(
-    const sync_pb::DataTypeState& data_type_state) {
-  state_change_.reset(new DataTypeStateChange{UPDATE, data_type_state});
+void SimpleMetadataChangeList::UpdateModelTypeState(
+    const sync_pb::ModelTypeState& model_type_state) {
+  state_change_.reset(new ModelTypeStateChange{UPDATE, model_type_state});
 }
 
-void SimpleMetadataChangeList::ClearDataTypeState() {
-  state_change_.reset(new DataTypeStateChange{CLEAR});
+void SimpleMetadataChangeList::ClearModelTypeState() {
+  state_change_.reset(new ModelTypeStateChange{CLEAR});
 }
 
 void SimpleMetadataChangeList::UpdateMetadata(
@@ -34,12 +34,12 @@ SimpleMetadataChangeList::GetMetadataChanges() const {
   return metadata_changes_;
 }
 
-bool SimpleMetadataChangeList::HasDataTypeStateChange() const {
+bool SimpleMetadataChangeList::HasModelTypeStateChange() const {
   return state_change_.get() != nullptr;
 }
 
-const SimpleMetadataChangeList::DataTypeStateChange&
-SimpleMetadataChangeList::GetDataTypeStateChange() const {
+const SimpleMetadataChangeList::ModelTypeStateChange&
+SimpleMetadataChangeList::GetModelTypeStateChange() const {
   return *state_change_.get();
 }
 
@@ -62,7 +62,7 @@ void SimpleMetadataChangeList::TransferChanges(
     }
   }
   metadata_changes_.clear();
-  if (HasDataTypeStateChange()) {
+  if (HasModelTypeStateChange()) {
     switch (state_change_->type) {
       case UPDATE:
         store->WriteGlobalMetadata(write_batch,

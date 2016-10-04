@@ -22,7 +22,7 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/core/model_type_processor.h"
 #include "components/sync/core/non_blocking_sync_common.h"
-#include "components/sync/protocol/data_type_state.pb.h"
+#include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 
 namespace syncer {
@@ -77,9 +77,9 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
   // ModelTypeProcessor implementation.
   void ConnectSync(std::unique_ptr<CommitQueue> worker) override;
   void DisconnectSync() override;
-  void OnCommitCompleted(const sync_pb::DataTypeState& type_state,
+  void OnCommitCompleted(const sync_pb::ModelTypeState& type_state,
                          const CommitResponseDataList& response_list) override;
-  void OnUpdateReceived(const sync_pb::DataTypeState& type_state,
+  void OnUpdateReceived(const sync_pb::ModelTypeState& type_state,
                         const UpdateResponseDataList& updates) override;
 
  private:
@@ -108,7 +108,7 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
                                 MetadataChangeList* metadata_changes);
 
   // Handle the first update received from the server after being enabled.
-  void OnInitialUpdateReceived(const sync_pb::DataTypeState& type_state,
+  void OnInitialUpdateReceived(const sync_pb::ModelTypeState& type_state,
                                const UpdateResponseDataList& updates);
 
   // ModelTypeService::GetData() callback for initial pending commit data.
@@ -160,7 +160,7 @@ class SharedModelTypeProcessor : public ModelTypeProcessor,
       std::unique_ptr<DataBatch> batch);
 
   const ModelType type_;
-  sync_pb::DataTypeState data_type_state_;
+  sync_pb::ModelTypeState model_type_state_;
 
   // Stores the start callback in between OnSyncStarting() and ReadyToConnect().
   StartCallback start_callback_;

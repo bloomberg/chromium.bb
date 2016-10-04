@@ -15,7 +15,7 @@
 
 using sync_pb::EntitySpecifics;
 using sync_pb::EntityMetadata;
-using sync_pb::DataTypeState;
+using sync_pb::ModelTypeState;
 
 namespace syncer {
 
@@ -120,7 +120,7 @@ const sync_pb::EntityMetadata& FakeModelTypeService::Store::GetMetadata(
 std::unique_ptr<MetadataBatch>
 FakeModelTypeService::Store::CreateMetadataBatch() const {
   std::unique_ptr<MetadataBatch> metadata_batch(new MetadataBatch());
-  metadata_batch->SetDataTypeState(data_type_state_);
+  metadata_batch->SetModelTypeState(model_type_state_);
   for (const auto& kv : metadata_store_) {
     metadata_batch->AddMetadata(kv.first, kv.second);
   }
@@ -132,7 +132,7 @@ void FakeModelTypeService::Store::Reset() {
   metadata_change_count_ = 0;
   data_store_.clear();
   metadata_store_.clear();
-  data_type_state_.Clear();
+  model_type_state_.Clear();
 }
 
 FakeModelTypeService::FakeModelTypeService(
@@ -246,15 +246,15 @@ void FakeModelTypeService::ApplyMetadataChangeList(
         break;
     }
   }
-  if (changes->HasDataTypeStateChange()) {
-    const SimpleMetadataChangeList::DataTypeStateChange& state_change =
-        changes->GetDataTypeStateChange();
+  if (changes->HasModelTypeStateChange()) {
+    const SimpleMetadataChangeList::ModelTypeStateChange& state_change =
+        changes->GetModelTypeStateChange();
     switch (state_change.type) {
       case SimpleMetadataChangeList::UPDATE:
-        db_.set_data_type_state(state_change.state);
+        db_.set_model_type_state(state_change.state);
         break;
       case SimpleMetadataChangeList::CLEAR:
-        db_.set_data_type_state(DataTypeState());
+        db_.set_model_type_state(ModelTypeState());
         break;
     }
   }

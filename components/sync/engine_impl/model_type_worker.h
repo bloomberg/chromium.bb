@@ -21,7 +21,7 @@
 #include "components/sync/engine_impl/commit_contributor.h"
 #include "components/sync/engine_impl/nudge_handler.h"
 #include "components/sync/engine_impl/update_handler.h"
-#include "components/sync/protocol/data_type_state.pb.h"
+#include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 
 namespace base {
@@ -58,7 +58,7 @@ class ModelTypeWorker : public UpdateHandler,
                         public CommitQueue {
  public:
   ModelTypeWorker(ModelType type,
-                  const sync_pb::DataTypeState& initial_state,
+                  const sync_pb::ModelTypeState& initial_state,
                   std::unique_ptr<Cryptographer> cryptographer,
                   NudgeHandler* nudge_handler,
                   std::unique_ptr<ModelTypeProcessor> model_type_processor);
@@ -145,7 +145,7 @@ class ModelTypeWorker : public UpdateHandler,
   ModelType type_;
 
   // State that applies to the entire model type.
-  sync_pb::DataTypeState data_type_state_;
+  sync_pb::ModelTypeState model_type_state_;
 
   // Pointer to the ModelTypeProcessor associated with this worker. Never null.
   std::unique_ptr<ModelTypeProcessor> model_type_processor_;

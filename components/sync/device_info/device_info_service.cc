@@ -18,16 +18,16 @@
 #include "components/sync/base/time.h"
 #include "components/sync/core/data_batch_impl.h"
 #include "components/sync/device_info/device_info_util.h"
-#include "components/sync/protocol/data_type_state.pb.h"
+#include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 
 namespace syncer {
 
 using base::Time;
 using base::TimeDelta;
-using sync_pb::DataTypeState;
 using sync_pb::DeviceInfoSpecifics;
 using sync_pb::EntitySpecifics;
+using sync_pb::ModelTypeState;
 
 using Record = ModelTypeStore::Record;
 using RecordList = ModelTypeStore::RecordList;
@@ -386,9 +386,9 @@ void DeviceInfoService::OnReadAllMetadata(
   }
 
   std::unique_ptr<MetadataBatch> batch(new MetadataBatch());
-  DataTypeState state;
+  ModelTypeState state;
   if (state.ParseFromString(global_metadata)) {
-    batch->SetDataTypeState(state);
+    batch->SetModelTypeState(state);
   } else {
     // TODO(skym): How bad is this scenario? We may be able to just give an
     // empty batch to the processor and we'll treat corrupted data type state

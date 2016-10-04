@@ -149,7 +149,7 @@ void ModelTypeRegistry::ConnectType(
     cryptographer_copy.reset(new Cryptographer(*cryptographer_));
 
   std::unique_ptr<ModelTypeWorker> worker(new ModelTypeWorker(
-      type, activation_context->data_type_state, std::move(cryptographer_copy),
+      type, activation_context->model_type_state, std::move(cryptographer_copy),
       nudge_handler_, std::move(activation_context->type_processor)));
 
   // Initialize Processor -> Worker communication channel.

@@ -79,18 +79,18 @@ TEST_F(SimpleMetadataChangeListTest, TransferChangesClearsLocalState) {
   metadata.set_client_tag_hash("some_hash");
   cl.UpdateMetadata("client_tag", metadata);
 
-  sync_pb::DataTypeState state;
+  sync_pb::ModelTypeState state;
   state.set_encryption_key_name("ekn");
-  cl.UpdateDataTypeState(state);
+  cl.UpdateModelTypeState(state);
 
   EXPECT_NE(cl.GetMetadataChanges().size(), 0ul);
-  EXPECT_TRUE(cl.HasDataTypeStateChange());
+  EXPECT_TRUE(cl.HasModelTypeStateChange());
 
   std::unique_ptr<WriteBatch> batch = store()->CreateWriteBatch();
   cl.TransferChanges(store(), batch.get());
 
   EXPECT_EQ(cl.GetMetadataChanges().size(), 0ul);
-  EXPECT_FALSE(cl.HasDataTypeStateChange());
+  EXPECT_FALSE(cl.HasModelTypeStateChange());
 }
 
 TEST_F(SimpleMetadataChangeListTest, TransferChangesMultipleInvocationsSafe) {
@@ -99,9 +99,9 @@ TEST_F(SimpleMetadataChangeListTest, TransferChangesMultipleInvocationsSafe) {
   metadata.set_client_tag_hash("some_hash");
   cl.UpdateMetadata("client_tag", metadata);
 
-  sync_pb::DataTypeState state;
+  sync_pb::ModelTypeState state;
   state.set_encryption_key_name("ekn");
-  cl.UpdateDataTypeState(state);
+  cl.UpdateModelTypeState(state);
 
   std::string global_metadata;
   std::map<std::string, std::string> change_map;
@@ -132,11 +132,11 @@ TEST_F(SimpleMetadataChangeListTest, TransferChangesMultipleChanges) {
   metadata2.set_client_tag_hash("some_other_hash");
   cl.UpdateMetadata("client_tag2", metadata2);
 
-  sync_pb::DataTypeState state;
+  sync_pb::ModelTypeState state;
   state.set_encryption_key_name("ekn");
-  cl.UpdateDataTypeState(state);
+  cl.UpdateModelTypeState(state);
   state.set_encryption_key_name("ekn2");
-  cl.UpdateDataTypeState(state);
+  cl.UpdateModelTypeState(state);
 
   std::string global_metadata;
   std::map<std::string, std::string> change_map;
@@ -160,10 +160,10 @@ TEST_F(SimpleMetadataChangeListTest, TransferChangesDeletesClearedItems) {
   cl.UpdateMetadata("client_tag", metadata);
   cl.ClearMetadata("client_tag");
 
-  sync_pb::DataTypeState state;
+  sync_pb::ModelTypeState state;
   state.set_encryption_key_name("ekn");
-  cl.UpdateDataTypeState(state);
-  cl.ClearDataTypeState();
+  cl.UpdateModelTypeState(state);
+  cl.ClearModelTypeState();
 
   std::map<std::string, std::string> change_map;
   std::set<std::string> delete_set;

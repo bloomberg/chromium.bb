@@ -26,7 +26,7 @@
 
 using sync_pb::EntitySpecifics;
 using sync_pb::EntityMetadata;
-using sync_pb::DataTypeState;
+using sync_pb::ModelTypeState;
 
 namespace syncer {
 
@@ -80,9 +80,9 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
 
   void InitializeToMetadataLoaded() {
     CreateChangeProcessor();
-    DataTypeState data_type_state(db_.data_type_state());
-    data_type_state.set_initial_sync_done(true);
-    db_.set_data_type_state(data_type_state);
+    ModelTypeState model_type_state(db_.model_type_state());
+    model_type_state.set_initial_sync_done(true);
+    db_.set_model_type_state(model_type_state);
     OnMetadataLoaded();
   }
 
@@ -208,7 +208,7 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
     }
 
     std::unique_ptr<MockModelTypeWorker> worker(
-        new MockModelTypeWorker(context->data_type_state, type_processor()));
+        new MockModelTypeWorker(context->model_type_state, type_processor()));
     // Keep an unsafe pointer to the commit queue the processor will use.
     worker_ = worker.get();
     // The context contains a proxy to the processor, but this call is

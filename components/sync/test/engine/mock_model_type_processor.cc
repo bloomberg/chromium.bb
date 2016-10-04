@@ -29,7 +29,7 @@ void MockModelTypeProcessor::DisconnectSync() {
 }
 
 void MockModelTypeProcessor::OnCommitCompleted(
-    const sync_pb::DataTypeState& type_state,
+    const sync_pb::ModelTypeState& type_state,
     const CommitResponseDataList& response_list) {
   base::Closure task =
       base::Bind(&MockModelTypeProcessor::OnCommitCompletedImpl,
@@ -40,7 +40,7 @@ void MockModelTypeProcessor::OnCommitCompleted(
 }
 
 void MockModelTypeProcessor::OnUpdateReceived(
-    const sync_pb::DataTypeState& type_state,
+    const sync_pb::ModelTypeState& type_state,
     const UpdateResponseDataList& response_list) {
   base::Closure task =
       base::Bind(&MockModelTypeProcessor::OnUpdateReceivedImpl,
@@ -131,7 +131,7 @@ UpdateResponseDataList MockModelTypeProcessor::GetNthUpdateResponse(
   return received_update_responses_[n];
 }
 
-sync_pb::DataTypeState MockModelTypeProcessor::GetNthUpdateState(
+sync_pb::ModelTypeState MockModelTypeProcessor::GetNthUpdateState(
     size_t n) const {
   DCHECK_LT(n, GetNumUpdateResponses());
   return type_states_received_on_update_[n];
@@ -147,7 +147,7 @@ CommitResponseDataList MockModelTypeProcessor::GetNthCommitResponse(
   return received_commit_responses_[n];
 }
 
-sync_pb::DataTypeState MockModelTypeProcessor::GetNthCommitState(
+sync_pb::ModelTypeState MockModelTypeProcessor::GetNthCommitState(
     size_t n) const {
   DCHECK_LT(n, GetNumCommitResponses());
   return type_states_received_on_commit_[n];
@@ -189,7 +189,7 @@ void MockModelTypeProcessor::SetDisconnectCallback(
 }
 
 void MockModelTypeProcessor::OnCommitCompletedImpl(
-    const sync_pb::DataTypeState& type_state,
+    const sync_pb::ModelTypeState& type_state,
     const CommitResponseDataList& response_list) {
   received_commit_responses_.push_back(response_list);
   type_states_received_on_commit_.push_back(type_state);
@@ -204,7 +204,7 @@ void MockModelTypeProcessor::OnCommitCompletedImpl(
 }
 
 void MockModelTypeProcessor::OnUpdateReceivedImpl(
-    const sync_pb::DataTypeState& type_state,
+    const sync_pb::ModelTypeState& type_state,
     const UpdateResponseDataList& response_list) {
   received_update_responses_.push_back(response_list);
   type_states_received_on_update_.push_back(type_state);

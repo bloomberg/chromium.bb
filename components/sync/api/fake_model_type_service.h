@@ -13,8 +13,8 @@
 #include "components/sync/api/metadata_batch.h"
 #include "components/sync/api/model_type_service.h"
 #include "components/sync/core/non_blocking_sync_common.h"
-#include "components/sync/protocol/data_type_state.pb.h"
 #include "components/sync/protocol/entity_metadata.pb.h"
+#include "components/sync/protocol/model_type_state.pb.h"
 
 namespace syncer {
 
@@ -66,12 +66,12 @@ class FakeModelTypeService : public ModelTypeService {
     size_t data_change_count() const { return data_change_count_; }
     size_t metadata_change_count() const { return metadata_change_count_; }
 
-    const sync_pb::DataTypeState& data_type_state() const {
-      return data_type_state_;
+    const sync_pb::ModelTypeState& model_type_state() const {
+      return model_type_state_;
     }
 
-    void set_data_type_state(const sync_pb::DataTypeState& data_type_state) {
-      data_type_state_ = data_type_state;
+    void set_model_type_state(const sync_pb::ModelTypeState& model_type_state) {
+      model_type_state_ = model_type_state;
     }
 
     std::unique_ptr<MetadataBatch> CreateMetadataBatch() const;
@@ -82,7 +82,7 @@ class FakeModelTypeService : public ModelTypeService {
     size_t metadata_change_count_ = 0;
     std::map<std::string, std::unique_ptr<EntityData>> data_store_;
     std::map<std::string, sync_pb::EntityMetadata> metadata_store_;
-    sync_pb::DataTypeState data_type_state_;
+    sync_pb::ModelTypeState model_type_state_;
   };
 
   explicit FakeModelTypeService(

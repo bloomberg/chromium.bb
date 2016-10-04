@@ -11,7 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "components/sync/core/activation_context.h"
 #include "components/sync/core/test/fake_model_type_processor.h"
-#include "components/sync/protocol/data_type_state.pb.h"
+#include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/model_neutral_mutable_entry.h"
 #include "components/sync/syncable/syncable_model_neutral_write_transaction.h"
@@ -30,19 +30,19 @@ class ModelTypeRegistryTest : public ::testing::Test {
 
   ModelTypeRegistry* registry();
 
-  static sync_pb::DataTypeState MakeInitialDataTypeState(ModelType type) {
-    sync_pb::DataTypeState state;
+  static sync_pb::ModelTypeState MakeInitialModelTypeState(ModelType type) {
+    sync_pb::ModelTypeState state;
     state.mutable_progress_marker()->set_data_type_id(
         GetSpecificsFieldNumberFromModelType(type));
     return state;
   }
 
   static std::unique_ptr<ActivationContext> MakeActivationContext(
-      const sync_pb::DataTypeState& data_type_state,
+      const sync_pb::ModelTypeState& model_type_state,
       std::unique_ptr<ModelTypeProcessor> type_processor) {
     std::unique_ptr<ActivationContext> context =
         base::WrapUnique(new ActivationContext);
-    context->data_type_state = data_type_state;
+    context->model_type_state = model_type_state;
     context->type_processor = std::move(type_processor);
     return context;
   }
@@ -181,13 +181,13 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypes) {
 
   registry()->ConnectType(
       THEMES,
-      MakeActivationContext(MakeInitialDataTypeState(THEMES),
+      MakeActivationContext(MakeInitialModelTypeState(THEMES),
                             base::MakeUnique<FakeModelTypeProcessor>()));
   EXPECT_EQ(ModelTypeSet(THEMES), registry()->GetEnabledTypes());
 
   registry()->ConnectType(
       SESSIONS,
-      MakeActivationContext(MakeInitialDataTypeState(SESSIONS),
+      MakeActivationContext(MakeInitialModelTypeState(SESSIONS),
                             base::MakeUnique<FakeModelTypeProcessor>()));
   EXPECT_EQ(ModelTypeSet(THEMES, SESSIONS), registry()->GetEnabledTypes());
 
@@ -214,7 +214,7 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypesWithDirectoryTypes) {
   // Add the themes non-blocking type.
   registry()->ConnectType(
       THEMES,
-      MakeActivationContext(MakeInitialDataTypeState(THEMES),
+      MakeActivationContext(MakeInitialModelTypeState(THEMES),
                             base::MakeUnique<FakeModelTypeProcessor>()));
   current_types.Put(THEMES);
   EXPECT_EQ(current_types, registry()->GetEnabledTypes());
@@ -227,7 +227,7 @@ TEST_F(ModelTypeRegistryTest, NonBlockingTypesWithDirectoryTypes) {
   // Add sessions non-blocking type.
   registry()->ConnectType(
       SESSIONS,
-      MakeActivationContext(MakeInitialDataTypeState(SESSIONS),
+      MakeActivationContext(MakeInitialModelTypeState(SESSIONS),
                             base::MakeUnique<FakeModelTypeProcessor>()));
   current_types.Put(SESSIONS);
   EXPECT_EQ(current_types, registry()->GetEnabledTypes());
@@ -257,11 +257,11 @@ TEST_F(ModelTypeRegistryTest, GetInitialSyncEndedTypes) {
   // Only Autofill and Themes types finished initial sync.
   MarkInitialSyncEndedForDirectoryType(AUTOFILL);
 
-  sync_pb::DataTypeState data_type_state = MakeInitialDataTypeState(THEMES);
-  data_type_state.set_initial_sync_done(true);
+  sync_pb::ModelTypeState model_type_state = MakeInitialModelTypeState(THEMES);
+  model_type_state.set_initial_sync_done(true);
   registry()->ConnectType(
       THEMES,
-      MakeActivationContext(data_type_state,
+      MakeActivationContext(model_type_state,
                             base::WrapUnique(new FakeModelTypeProcessor())));
 
   EXPECT_EQ(ModelTypeSet(AUTOFILL, THEMES),

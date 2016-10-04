@@ -21,16 +21,16 @@
 #include "components/sync/base/time.h"
 #include "components/sync/core/test/model_type_store_test_util.h"
 #include "components/sync/device_info/local_device_info_provider_mock.h"
-#include "components/sync/protocol/data_type_state.pb.h"
+#include "components/sync/protocol/model_type_state.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
 
 using base::Time;
 using base::TimeDelta;
-using sync_pb::DataTypeState;
 using sync_pb::DeviceInfoSpecifics;
 using sync_pb::EntitySpecifics;
+using sync_pb::ModelTypeState;
 
 using DeviceInfoList = std::vector<std::unique_ptr<DeviceInfo>>;
 using StorageKeyList = ModelTypeService::StorageKeyList;
@@ -411,7 +411,7 @@ TEST_F(DeviceInfoServiceTest, TestWithLocalData) {
 
 TEST_F(DeviceInfoServiceTest, TestWithLocalMetadata) {
   std::unique_ptr<WriteBatch> batch = store()->CreateWriteBatch();
-  DataTypeState state;
+  ModelTypeState state;
   state.set_encryption_key_name("ekn");
   store()->WriteGlobalMetadata(batch.get(), state.SerializeAsString());
   store()->CommitWriteBatch(std::move(batch),
@@ -429,7 +429,7 @@ TEST_F(DeviceInfoServiceTest, TestWithLocalDataAndMetadata) {
   DeviceInfoSpecifics specifics(GenerateTestSpecifics());
   store()->WriteData(batch.get(), specifics.cache_guid(),
                      specifics.SerializeAsString());
-  DataTypeState state;
+  ModelTypeState state;
   state.set_encryption_key_name("ekn");
   store()->WriteGlobalMetadata(batch.get(), state.SerializeAsString());
   store()->CommitWriteBatch(std::move(batch),
@@ -443,7 +443,7 @@ TEST_F(DeviceInfoServiceTest, TestWithLocalDataAndMetadata) {
               *service()->GetDeviceInfo(specifics.cache_guid()).get());
   ASSERT_TRUE(processor()->metadata());
   ASSERT_EQ(state.encryption_key_name(),
-            processor()->metadata()->GetDataTypeState().encryption_key_name());
+            processor()->metadata()->GetModelTypeState().encryption_key_name());
 }
 
 TEST_F(DeviceInfoServiceTest, GetData) {
@@ -546,11 +546,11 @@ TEST_F(DeviceInfoServiceTest, ApplySyncChangesStore) {
   DeviceInfoSpecifics specifics = GenerateTestSpecifics();
   EntityChangeList data_changes;
   PushBackEntityChangeAdd(specifics, &data_changes);
-  DataTypeState state;
+  ModelTypeState state;
   state.set_encryption_key_name("ekn");
   std::unique_ptr<MetadataChangeList> metadata_changes(
       service()->CreateMetadataChangeList());
-  metadata_changes->UpdateDataTypeState(state);
+  metadata_changes->UpdateModelTypeState(state);
 
   const SyncError error =
       service()->ApplySyncChanges(std::move(metadata_changes), data_changes);
@@ -566,7 +566,7 @@ TEST_F(DeviceInfoServiceTest, ApplySyncChangesStore) {
 
   EXPECT_TRUE(processor()->metadata());
   EXPECT_EQ(state.encryption_key_name(),
-            processor()->metadata()->GetDataTypeState().encryption_key_name());
+            processor()->metadata()->GetModelTypeState().encryption_key_name());
 }
 
 TEST_F(DeviceInfoServiceTest, ApplySyncChangesWithLocalGuid) {
@@ -657,11 +657,11 @@ TEST_F(DeviceInfoServiceTest, MergeWithData) {
       SpecificsToEntity(conflict_remote);
   remote_input[unique_remote.cache_guid()] = SpecificsToEntity(unique_remote);
 
-  DataTypeState state;
+  ModelTypeState state;
   state.set_encryption_key_name("ekn");
   std::unique_ptr<MetadataChangeList> metadata_changes(
       service()->CreateMetadataChangeList());
-  metadata_changes->UpdateDataTypeState(state);
+  metadata_changes->UpdateModelTypeState(state);
 
   const SyncError error =
       service()->MergeSyncData(std::move(metadata_changes), remote_input);
@@ -685,7 +685,7 @@ TEST_F(DeviceInfoServiceTest, MergeWithData) {
 
   RestartService();
   ASSERT_EQ(state.encryption_key_name(),
-            processor()->metadata()->GetDataTypeState().encryption_key_name());
+            processor()->metadata()->GetModelTypeState().encryption_key_name());
 }
 
 TEST_F(DeviceInfoServiceTest, MergeLocalGuid) {

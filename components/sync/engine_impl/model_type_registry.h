@@ -22,9 +22,9 @@
 #include "components/sync/engine_impl/nudge_handler.h"
 
 namespace syncer {
-struct DataTypeState;
 class ModelTypeProcessor;
 class ModelTypeWorker;
+struct ModelTypeState;
 }
 
 namespace syncer {
