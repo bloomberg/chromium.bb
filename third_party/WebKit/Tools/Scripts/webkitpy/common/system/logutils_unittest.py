@@ -20,43 +20,14 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Unit tests for logutils.py."""
-
 import logging
-import os
 import unittest
 
-from webkitpy.common.system.logtesting import LogTesting
 from webkitpy.common.system.logtesting import TestLogStream
-from webkitpy.common.system import logutils
-
-
-class GetLoggerTest(unittest.TestCase):
-
-    """Tests get_logger()."""
-
-    def test_get_logger_in_webkitpy(self):
-        logger = logutils.get_logger(__file__)
-        self.assertEqual(logger.name, "webkitpy.common.system.logutils_unittest")
-
-    def test_get_logger_not_in_webkitpy(self):
-        # Temporarily change the working directory so that we
-        # can test get_logger() for a path outside of webkitpy.
-        working_directory = os.getcwd()
-        root_dir = "/"
-        os.chdir(root_dir)
-
-        logger = logutils.get_logger("/Tools/Scripts/test-webkitpy")
-        self.assertEqual(logger.name, "test-webkitpy")
-
-        logger = logutils.get_logger("/Tools/Scripts/test-webkitpy.py")
-        self.assertEqual(logger.name, "test-webkitpy")
-
-        os.chdir(working_directory)
+from webkitpy.common.system.logutils import configure_logging
 
 
 class ConfigureLoggingTestBase(unittest.TestCase):
-
     """Base class for configure_logging() unit tests."""
 
     def _logging_level(self):
@@ -76,9 +47,7 @@ class ConfigureLoggingTestBase(unittest.TestCase):
         logger.propagate = False
 
         logging_level = self._logging_level()
-        self._handlers = logutils.configure_logging(logging_level=logging_level,
-                                                    logger=logger,
-                                                    stream=log_stream)
+        self._handlers = configure_logging(logging_level=logging_level, logger=logger, stream=log_stream)
         self._log = logger
         self._log_stream = log_stream
 
