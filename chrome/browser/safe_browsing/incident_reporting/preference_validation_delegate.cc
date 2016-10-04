@@ -24,11 +24,10 @@ typedef ClientIncidentReport_IncidentData_TrackedPreferenceIncident TPIncident;
 typedef ClientIncidentReport_IncidentData_TrackedPreferenceIncident_ValueState
     TPIncident_ValueState;
 
-// Maps a primary PrefHashStoreTransaction::ValueState and an external
-// validation state to a TrackedPreferenceIncident::ValueState.
+// Maps a PrefHashStoreTransaction::ValueState to a
+// TrackedPreferenceIncident::ValueState.
 TPIncident_ValueState MapValueState(
-    PrefHashStoreTransaction::ValueState value_state,
-    PrefHashStoreTransaction::ValueState external_validation_value_state) {
+    PrefHashStoreTransaction::ValueState value_state) {
   switch (value_state) {
     case PrefHashStoreTransaction::CLEARED:
       return TPIncident::CLEARED;
@@ -37,14 +36,7 @@ TPIncident_ValueState MapValueState(
     case PrefHashStoreTransaction::UNTRUSTED_UNKNOWN_VALUE:
       return TPIncident::UNTRUSTED_UNKNOWN_VALUE;
     default:
-      switch (external_validation_value_state) {
-        case PrefHashStoreTransaction::CLEARED:
-          return TPIncident::BYPASS_CLEARED;
-        case PrefHashStoreTransaction::CHANGED:
-          return TPIncident::BYPASS_CHANGED;
-        default:
-          return TPIncident::UNKNOWN;
-      }
+      return TPIncident::UNKNOWN;
   }
 }
 
@@ -62,10 +54,8 @@ void PreferenceValidationDelegate::OnAtomicPreferenceValidation(
     const std::string& pref_path,
     const base::Value* value,
     PrefHashStoreTransaction::ValueState value_state,
-    PrefHashStoreTransaction::ValueState external_validation_value_state,
     bool is_personal) {
-  TPIncident_ValueState proto_value_state =
-      MapValueState(value_state, external_validation_value_state);
+  TPIncident_ValueState proto_value_state = MapValueState(value_state);
   if (proto_value_state != TPIncident::UNKNOWN) {
     std::unique_ptr<TPIncident> incident(
         new ClientIncidentReport_IncidentData_TrackedPreferenceIncident());
@@ -87,10 +77,8 @@ void PreferenceValidationDelegate::OnSplitPreferenceValidation(
     const base::DictionaryValue* /* dict_value */,
     const std::vector<std::string>& invalid_keys,
     PrefHashStoreTransaction::ValueState value_state,
-    PrefHashStoreTransaction::ValueState external_validation_value_state,
     bool is_personal) {
-  TPIncident_ValueState proto_value_state =
-      MapValueState(value_state, external_validation_value_state);
+  TPIncident_ValueState proto_value_state = MapValueState(value_state);
   if (proto_value_state != TPIncident::UNKNOWN) {
     std::unique_ptr<ClientIncidentReport_IncidentData_TrackedPreferenceIncident>
         incident(

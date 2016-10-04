@@ -28,7 +28,6 @@ class TrackedPreferenceValidationDelegate {
       const std::string& pref_path,
       const base::Value* value,
       PrefHashStoreTransaction::ValueState value_state,
-      PrefHashStoreTransaction::ValueState external_validation_value_state,
       bool is_personal) = 0;
 
   // Notifies observes of the result (|value_state|) of checking the split
@@ -39,7 +38,6 @@ class TrackedPreferenceValidationDelegate {
       const base::DictionaryValue* dict_value,
       const std::vector<std::string>& invalid_keys,
       PrefHashStoreTransaction::ValueState value_state,
-      PrefHashStoreTransaction::ValueState external_validation_value_state,
       bool is_personal) = 0;
 };
 

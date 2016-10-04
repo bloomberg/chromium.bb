@@ -1371,20 +1371,8 @@ TEST_P(PrefHashFilterTest, ExternalValidationValueChanged) {
   ASSERT_EQ(
       1u, mock_external_validation_pref_hash_store_->transactions_performed());
 
-  ASSERT_EQ(arraysize(kTestTrackedPrefs),
-            mock_validation_delegate_.recorded_validations_count());
-
-  // Regular validation should not have any CHANGED prefs.
-  ASSERT_EQ(arraysize(kTestTrackedPrefs),
-            mock_validation_delegate_.CountValidationsOfState(
-                PrefHashStoreTransaction::UNCHANGED));
-
-  // External validation should have two CHANGED prefs (kAtomic and kSplit).
-  ASSERT_EQ(2u, mock_validation_delegate_.CountExternalValidationsOfState(
-                    PrefHashStoreTransaction::CHANGED));
-  ASSERT_EQ(arraysize(kTestTrackedPrefs) - 2u,
-            mock_validation_delegate_.CountExternalValidationsOfState(
-                PrefHashStoreTransaction::UNCHANGED));
+  // TODO(proberge): query mock_validation_state_ for number of CHANGED
+  // and UNCHANGED preferences once the class supports external validation.
 }
 
 INSTANTIATE_TEST_CASE_P(PrefHashFilterTestInstance,

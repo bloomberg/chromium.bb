@@ -45,18 +45,19 @@ bool TrackedAtomicPreference::EnforceAndReport(
   helper_.ReportValidationResult(value_state, transaction->GetStoreUMASuffix());
 
   PrefHashStoreTransaction::ValueState external_validation_value_state =
-      PrefHashStoreTransaction::UNSUPPORTED;
+      PrefHashStoreTransaction::UNCHANGED;
   if (external_validation_transaction) {
     external_validation_value_state =
         external_validation_transaction->CheckValue(pref_path_, value);
     helper_.ReportValidationResult(
         external_validation_value_state,
         external_validation_transaction->GetStoreUMASuffix());
+
+    // TODO(proberge): Call delegate_->OnAtomicPreferenceValidation.
   }
 
   if (delegate_) {
     delegate_->OnAtomicPreferenceValidation(pref_path_, value, value_state,
-                                            external_validation_value_state,
                                             helper_.IsPersonal());
   }
   TrackedPreferenceHelper::ResetAction reset_action =

@@ -38,8 +38,6 @@ class PrefHashStoreTransaction {
     TRUSTED_UNKNOWN_VALUE,
     // NULL values are inherently trusted.
     TRUSTED_NULL_VALUE,
-    // This transaction's store type is not supported.
-    UNSUPPORTED,
   };
 
   // Finalizes any remaining work after the transaction has been performed.

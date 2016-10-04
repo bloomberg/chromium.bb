@@ -38,10 +38,6 @@ TrackedPreferenceHelper::ResetAction TrackedPreferenceHelper::GetAction(
     case PrefHashStoreTransaction::SECURE_LEGACY:
       // Accept secure legacy device ID based hashes.
       return DONT_RESET;
-    case PrefHashStoreTransaction::UNSUPPORTED:
-      NOTREACHED()
-          << "GetAction should not be called with an UNSUPPORTED value state";
-      return DONT_RESET;
     case PrefHashStoreTransaction::UNTRUSTED_UNKNOWN_VALUE:  // Falls through.
     case PrefHashStoreTransaction::CHANGED:
       return enforce_ ? DO_RESET : WANTED_RESET;
@@ -84,8 +80,6 @@ void TrackedPreferenceHelper::ReportValidationResult(
       histogram_name =
           user_prefs::tracked::kTrackedPrefHistogramNullInitialized;
       break;
-    case PrefHashStoreTransaction::UNSUPPORTED:
-      return;
     default:
       NOTREACHED() << "Unexpected PrefHashStoreTransaction::ValueState: "
                    << value_state;

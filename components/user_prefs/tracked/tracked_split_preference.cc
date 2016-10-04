@@ -64,7 +64,7 @@ bool TrackedSplitPreference::EnforceAndReport(
   helper_.ReportValidationResult(value_state, transaction->GetStoreUMASuffix());
 
   PrefHashStoreTransaction::ValueState external_validation_value_state =
-      PrefHashStoreTransaction::UNSUPPORTED;
+      PrefHashStoreTransaction::UNCHANGED;
   if (external_validation_transaction) {
     std::vector<std::string> invalid_external_validation_keys;
     external_validation_value_state =
@@ -73,12 +73,13 @@ bool TrackedSplitPreference::EnforceAndReport(
     helper_.ReportValidationResult(
         external_validation_value_state,
         external_validation_transaction->GetStoreUMASuffix());
+
+    // TODO(proberge): Call delegate_->OnSplitPreferenceValidation.
   }
 
   if (delegate_) {
-    delegate_->OnSplitPreferenceValidation(
-        pref_path_, dict_value, invalid_keys, value_state,
-        external_validation_value_state, helper_.IsPersonal());
+    delegate_->OnSplitPreferenceValidation(pref_path_, dict_value, invalid_keys,
+                                           value_state, helper_.IsPersonal());
   }
   TrackedPreferenceHelper::ResetAction reset_action =
       helper_.GetAction(value_state);
