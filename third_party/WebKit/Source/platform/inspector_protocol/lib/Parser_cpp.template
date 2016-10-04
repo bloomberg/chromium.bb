@@ -165,6 +165,8 @@ bool parseStringToken(const Char* start, const Char* end, const Char** tokenEnd)
     while (start < end) {
         Char c = *start++;
         if ('\\' == c) {
+	    if (start == end)
+	        return false;
             c = *start++;
             // Make sure the escaped char is valid.
             switch (c) {
@@ -338,6 +340,8 @@ bool decodeString(const Char* start, const Char* end, StringBuilder* output)
             output->append(c);
             continue;
         }
+	if (start == end)
+	    return false;
         c = *start++;
 
         if (c == 'x') {

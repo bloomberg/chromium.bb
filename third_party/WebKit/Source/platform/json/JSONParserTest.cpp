@@ -479,7 +479,7 @@ TEST(JSONParserTest, Reading) {
 TEST(JSONParserTest, InvalidSanity) {
   const char* const invalidJson[] = {
       "/* test *", "{\"foo\"", "{\"foo\":", "  [", "\"\\u123g\"", "{\n\"eh:\n}",
-      "////",      "*/**/",    "/**/",      "/*/", "//**/"};
+      "////",      "*/**/",    "/**/",      "/*/", "//**/",       "\"\\"};
 
   for (size_t i = 0; i < WTF_ARRAY_LENGTH(invalidJson); ++i) {
     std::unique_ptr<JSONValue> result = parseJSON(invalidJson[i]);

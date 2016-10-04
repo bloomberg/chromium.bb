@@ -143,6 +143,8 @@ bool parseStringToken(const CharType* start,
   while (start < end) {
     CharType c = *start++;
     if ('\\' == c) {
+      if (start == end)
+        return false;
       c = *start++;
       // Make sure the escaped char is valid.
       switch (c) {
@@ -320,6 +322,8 @@ bool decodeString(const CharType* start,
       output->append(c);
       continue;
     }
+    if (start == end)
+      return false;
     c = *start++;
 
     if (c == 'x') {
