@@ -113,8 +113,9 @@ sk_sp<SkImageFilter> buildBoxReflectFilter(const BoxReflection& reflection,
                                            sk_sp<SkImageFilter> input) {
   sk_sp<SkImageFilter> maskedInput;
   if (SkPicture* maskPicture = reflection.mask()) {
-    // Since SkPictures can't be serialized to the browser process, first raster the mask to a bitmap, then
-    // encode it in an SkImageSource, which can be serialized.
+    // Since SkPictures can't be serialized to the browser process, first raster
+    // the mask to a bitmap, then encode it in an SkImageSource, which can be
+    // serialized.
     SkBitmap bitmap;
     const SkRect cullRect = maskPicture->cullRect();
     bitmap.allocPixels(

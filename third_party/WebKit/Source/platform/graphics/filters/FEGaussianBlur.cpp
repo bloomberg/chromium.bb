@@ -48,8 +48,9 @@ IntSize FEGaussianBlur::calculateUnscaledKernelSize(const FloatPoint& std) {
   ASSERT(std.x() >= 0 && std.y() >= 0);
 
   IntSize kernelSize;
-  // Limit the kernel size to 1000. A bigger radius won't make a big difference for the result image but
-  // inflates the absolute paint rect to much. This is compatible with Firefox' behavior.
+  // Limit the kernel size to 1000. A bigger radius won't make a big difference
+  // for the result image but inflates the absolute paint rect too much. This is
+  // compatible with Firefox' behavior.
   if (std.x()) {
     int size = std::max<unsigned>(
         2,
@@ -78,7 +79,8 @@ FloatRect FEGaussianBlur::mapEffect(const FloatRect& rect) const {
   IntSize kernelSize =
       calculateKernelSize(getFilter(), FloatPoint(m_stdX, m_stdY));
 
-  // We take the half kernel size and multiply it with three, because we run box blur three times.
+  // We take the half kernel size and multiply it by three, because we run box
+  // blur three times.
   FloatRect result = rect;
   result.inflateX(3.0f * kernelSize.width() * 0.5f);
   result.inflateY(3.0f * kernelSize.height() * 0.5f);

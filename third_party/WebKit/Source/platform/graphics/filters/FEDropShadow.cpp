@@ -65,7 +65,8 @@ FloatRect FEDropShadow::mapEffect(const FloatRect& rect) const {
   IntSize kernelSize =
       FEGaussianBlur::calculateKernelSize(filter, FloatPoint(m_stdX, m_stdY));
 
-  // We take the half kernel size and multiply it with three, because we run box blur three times.
+  // We take the half kernel size and multiply it by three, because we run box
+  // blur three times.
   FloatRect result = unionRect(rect, offsetRect);
   result.inflateX(3.0f * kernelSize.width() * 0.5f);
   result.inflateY(3.0f * kernelSize.height() * 0.5f);

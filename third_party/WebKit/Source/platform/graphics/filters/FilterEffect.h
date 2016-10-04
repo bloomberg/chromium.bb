@@ -104,8 +104,8 @@ class PLATFORM_EXPORT FilterEffect
 
   virtual bool affectsTransparentPixels() const { return false; }
 
-  // Return false if the filter will only operate correctly on valid RGBA values, with
-  // alpha in [0,255] and each color component in [0, alpha].
+  // Return false if the filter will only operate correctly on valid RGBA
+  // values, with alpha in [0,255] and each color component in [0, alpha].
   virtual bool mayProduceInvalidPreMultipliedPixels() { return false; }
 
   SkImageFilter* getImageFilter(ColorSpace,
@@ -144,14 +144,16 @@ class PLATFORM_EXPORT FilterEffect
 
   Member<Filter> m_filter;
 
-  // The following member variables are SVG specific and will move to LayoutSVGResourceFilterPrimitive.
+  // The following member variables are SVG specific and will move to
+  // LayoutSVGResourceFilterPrimitive.
   // See bug https://bugs.webkit.org/show_bug.cgi?id=45614.
 
-  // The subregion of a filter primitive according to the SVG Filter specification in local coordinates.
-  // This is SVG specific and needs to move to LayoutSVGResourceFilterPrimitive.
+  // The subregion of a filter primitive according to the SVG Filter
+  // specification in local coordinates.
   FloatRect m_filterPrimitiveSubregion;
 
-  // Should the effect clip to its primitive region, or expand to use the combined region of its inputs.
+  // Whether the effect should clip to its primitive region, or expand to use
+  // the combined region of its inputs.
   bool m_clipsToBounds;
 
   bool m_originTainted;

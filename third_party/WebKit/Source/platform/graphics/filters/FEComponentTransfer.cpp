@@ -103,9 +103,7 @@ static void linear(unsigned char* values,
 static void gamma(unsigned char* values,
                   const ComponentTransferFunction& transferFunction) {
   for (unsigned i = 0; i < 256; ++i) {
-    double exponent =
-        transferFunction
-            .exponent;  // RCVT doesn't like passing a double and a float to pow, so promote this to double
+    double exponent = transferFunction.exponent;
     double val =
         255.0 * (transferFunction.amplitude * pow((i / 255.0), exponent) +
                  transferFunction.offset);

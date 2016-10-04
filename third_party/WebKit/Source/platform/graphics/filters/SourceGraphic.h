@@ -48,6 +48,6 @@ class PLATFORM_EXPORT SourceGraphic final : public FilterEffect {
   IntRect m_sourceRect;
 };
 
-}  //namespace blink
+}  // namespace blink
 
 #endif  // SourceGraphic_h

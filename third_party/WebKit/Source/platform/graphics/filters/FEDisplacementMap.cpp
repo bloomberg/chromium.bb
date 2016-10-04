@@ -123,7 +123,8 @@ sk_sp<SkImageFilter> FEDisplacementMap::createImageFilter() {
       toSkiaMode(m_yChannelSelector);
   SkImageFilter::CropRect cropRect = getCropRect();
   // FIXME : Only applyHorizontalScale is used and applyVerticalScale is ignored
-  // This can be fixed by adding a 2nd scale parameter to SkDisplacementMapEffect
+  // This can be fixed by adding a 2nd scale parameter to
+  // SkDisplacementMapEffect.
   return SkDisplacementMapEffect::Make(
       typeX, typeY, SkFloatToScalar(getFilter()->applyHorizontalScale(m_scale)),
       std::move(displ), std::move(color), &cropRect);

@@ -99,8 +99,9 @@ Color FilterEffect::adaptColorToOperatingColorSpace(const Color& deviceColor) {
 }
 
 TextStream& FilterEffect::externalRepresentation(TextStream& ts, int) const {
-  // FIXME: We should dump the subRegions of the filter primitives here later. This isn't
-  // possible at the moment, because we need more detailed informations from the target object.
+  // FIXME: We should dump the subRegions of the filter primitives here later.
+  // This isn't possible at the moment, because we need more detailed
+  // information from the target object.
   return ts;
 }
 

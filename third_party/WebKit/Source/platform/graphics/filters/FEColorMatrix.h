@@ -62,8 +62,8 @@ class PLATFORM_EXPORT FEColorMatrix final : public FilterEffect {
 
   ColorMatrixType m_type;
 
-  // The m_values vector may not contain the right number of values. Always check
-  // before accessing contents.
+  // The m_values vector may not contain the right number of values. Always
+  // check before accessing contents.
   Vector<float> m_values;
 };
 
