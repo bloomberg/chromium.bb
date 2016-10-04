@@ -41,22 +41,9 @@ static const char* kURL2 = "http://127.0.0.1/bubba2";
 // (as well as multi-window). We're currently only checking basic single-window/
 // single-tab functionality.
 
-// Fails on Win, see http://crbug.com/232313
-#if defined(OS_WIN)
-#define MAYBE_SingleClientChanged DISABLED_SingleClientChanged
-#define MAYBE_BothChanged DISABLED_BothChanged
-#define MAYBE_DeleteIdleSession DISABLED_DeleteIdleSession
-#define MAYBE_AllChanged DISABLED_AllChanged
-#else
-#define MAYBE_SingleClientChanged SingleClientChanged
-#define MAYBE_BothChanged BothChanged
-#define MAYBE_DeleteIdleSession DeleteIdleSession
-#define MAYBE_AllChanged AllChanged
-#endif
-
 
 IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
-                       E2E_ENABLED(MAYBE_SingleClientChanged)) {
+                       E2E_ENABLED(SingleClientChanged)) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   // Open tab and access a url on client 0
@@ -74,7 +61,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
 }
 
 IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
-                       E2E_ENABLED(MAYBE_AllChanged)) {
+                       E2E_ENABLED(AllChanged)) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   // Open tabs on all clients and retain window information.
@@ -146,7 +133,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
   ASSERT_TRUE(IsEncryptionComplete(1));
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, MAYBE_BothChanged) {
+IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, BothChanged) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
@@ -175,7 +162,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, MAYBE_BothChanged) {
   ASSERT_TRUE(WindowsMatch(sessions0[0]->windows, client1_windows));
 }
 
-IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, MAYBE_DeleteIdleSession) {
+IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, DeleteIdleSession) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));
@@ -203,7 +190,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest, MAYBE_DeleteIdleSession) {
 
 // Fails all release trybots. crbug.com/263369.
 IN_PROC_BROWSER_TEST_F(TwoClientSessionsSyncTest,
-                       DISABLED_DeleteActiveSession) {
+                       DeleteActiveSession) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   ASSERT_TRUE(CheckInitialState(0));

@@ -16,7 +16,6 @@ namespace {
 // Delays for syncer nudges.
 const int kDefaultNudgeDelayMilliseconds = 200;
 const int kSlowNudgeDelayMilliseconds = 2000;
-const int kDefaultSessionsCommitDelaySeconds = 10;
 const int kSyncRefreshDelayMilliseconds = 500;
 const int kSyncSchedulerDelayMilliseconds = 250;
 
@@ -29,15 +28,12 @@ base::TimeDelta GetDefaultDelayForType(ModelType model_type,
       return base::TimeDelta::FromSeconds(kDefaultShortPollIntervalSeconds);
     case BOOKMARKS:
     case PREFERENCES:
-      // Types with sometimes automatic changes get longer delays to allow more
-      // coalescing.
-      return base::TimeDelta::FromMilliseconds(kSlowNudgeDelayMilliseconds);
     case SESSIONS:
     case FAVICON_IMAGES:
     case FAVICON_TRACKING:
-      // Types with navigation triggered changes get longer delays to allow more
+      // Types with sometimes automatic changes get longer delays to allow more
       // coalescing.
-      return base::TimeDelta::FromSeconds(kDefaultSessionsCommitDelaySeconds);
+      return base::TimeDelta::FromMilliseconds(kSlowNudgeDelayMilliseconds);
     default:
       return minimum_delay;
   }
