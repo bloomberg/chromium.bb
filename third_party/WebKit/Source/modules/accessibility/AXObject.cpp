@@ -641,7 +641,8 @@ bool AXObject::computeAncestorExposesActiveDescendant() const {
   return parent->ancestorExposesActiveDescendant();
 }
 
-// Simplify whitespace, but preserve a single leading and trailing whitespace character if it's present.
+// Simplify whitespace, but preserve a single leading and trailing whitespace
+// character if it's present.
 // static
 String AXObject::collapseWhitespace(const String& str) {
   StringBuilder result;
@@ -708,11 +709,12 @@ bool AXObject::isHiddenForTextAlternativeCalculation() const {
   if (getLayoutObject())
     return getLayoutObject()->style()->visibility() != EVisibility::Visible;
 
-  // This is an obscure corner case: if a node has no LayoutObject, that means it's not rendered,
-  // but we still may be exploring it as part of a text alternative calculation, for example if it
-  // was explicitly referenced by aria-labelledby. So we need to explicitly call the style resolver
-  // to check whether it's invisible or display:none, rather than relying on the style cached in the
-  // LayoutObject.
+  // This is an obscure corner case: if a node has no LayoutObject, that means
+  // it's not rendered, but we still may be exploring it as part of a text
+  // alternative calculation, for example if it was explicitly referenced by
+  // aria-labelledby. So we need to explicitly call the style resolver to check
+  // whether it's invisible or display:none, rather than relying on the style
+  // cached in the LayoutObject.
   Document* doc = getDocument();
   if (doc && doc->frame() && getNode() && getNode()->isElementNode()) {
     RefPtr<ComputedStyle> style =
@@ -761,7 +763,8 @@ String AXObject::ariaTextAlternative(bool recursive,
         nameSources->last().attributeValue = ariaLabelledby;
 
       // Operate on a copy of |visited| so that if |nameSources| is not null,
-      // the set of visited objects is preserved unmodified for future calculations.
+      // the set of visited objects is preserved unmodified for future
+      // calculations.
       AXObjectSet visitedCopy = visited;
       textAlternative = textFromAriaLabelledby(visitedCopy, relatedObjects);
       if (!textAlternative.isNull()) {
@@ -1160,7 +1163,8 @@ String AXObject::language() const {
 
   AXObject* parent = parentObject();
 
-  // as a last resort, fall back to the content language specified in the meta tag
+  // As a last resort, fall back to the content language specified in the meta
+  // tag.
   if (!parent) {
     Document* doc = getDocument();
     if (doc)
@@ -1247,9 +1251,10 @@ void AXObject::getRelativeBounds(AXObject** outContainer,
   outBoundsInContainer = FloatRect();
   outContainerTransform.setIdentity();
 
-  // First check if it has explicit bounds, for example if this element is tied to a
-  // canvas path. When explicit coordinates are provided, the ID of the explicit container
-  // element that the coordinates are relative to must be provided too.
+  // First check if it has explicit bounds, for example if this element is tied
+  // to a canvas path. When explicit coordinates are provided, the ID of the
+  // explicit container element that the coordinates are relative to must be
+  // provided too.
   if (!m_explicitElementRect.isEmpty()) {
     *outContainer = axObjectCache().objectFromAXID(m_explicitContainerID);
     if (*outContainer) {
@@ -1269,9 +1274,10 @@ void AXObject::getRelativeBounds(AXObject** outContainer,
     return;
   }
 
-  // First compute the container. The container must be an ancestor in the accessibility tree, and
-  // its LayoutObject must be an ancestor in the layout tree. Get the first such ancestor that's
-  // either scrollable or has a paint layer.
+  // First compute the container. The container must be an ancestor in the
+  // accessibility tree, and its LayoutObject must be an ancestor in the layout
+  // tree. Get the first such ancestor that's either scrollable or has a paint
+  // layer.
   AXObject* container = parentObjectUnignored();
   LayoutObject* containerLayoutObject = nullptr;
   while (container) {
@@ -1300,10 +1306,10 @@ void AXObject::getRelativeBounds(AXObject** outContainer,
         FloatSize(scrollPosition.x(), scrollPosition.y()));
   }
 
-  // Compute the transform between the container's coordinate space and this object.
-  // If the transform is just a simple translation, apply that to the bounding box, but
-  // if it's a non-trivial transformation like a rotation, scaling, etc. then return
-  // the full matrix instead.
+  // Compute the transform between the container's coordinate space and this
+  // object.  If the transform is just a simple translation, apply that to the
+  // bounding box, but if it's a non-trivial transformation like a rotation,
+  // scaling, etc. then return the full matrix instead.
   TransformationMatrix transform = layoutObject->localToAncestorTransform(
       toLayoutBoxModelObject(containerLayoutObject));
   if (transform.isIdentityOr2DTranslation()) {
@@ -1431,7 +1437,8 @@ static int computeBestScrollOffset(int currentScrollOffset,
     if (subfocusMax - subfocusMin > viewportSize)
       subfocusMax = subfocusMin + viewportSize;
 
-    // Compute the size of an object centered on the subfocus, the size of the viewport.
+    // Compute the size of an object centered on the subfocus, the size of the
+    // viewport.
     int centeredObjectMin = (subfocusMin + subfocusMax - viewportSize) / 2;
     int centeredObjectMax = centeredObjectMin + viewportSize;
 
@@ -1498,8 +1505,8 @@ void AXObject::scrollToMakeVisibleWithSubFocus(const IntRect& subfocus) const {
 }
 
 void AXObject::scrollToGlobalPoint(const IntPoint& globalPoint) const {
-  // Search up the parent chain and create a vector of all scrollable parent objects
-  // and ending with this object itself.
+  // Search up the parent chain and create a vector of all scrollable parent
+  // objects and ending with this object itself.
   HeapVector<Member<const AXObject>> objects;
   AXObject* parentObject;
   for (parentObject = this->parentObject(); parentObject;
@@ -1541,8 +1548,8 @@ void AXObject::scrollToGlobalPoint(const IntPoint& globalPoint) const {
     outer->setScrollOffset(IntPoint(desiredX, desiredY));
 
     if (outer->isWebArea() && !inner->isWebArea()) {
-      // If outer object we just scrolled is a web area (frame) but the inner object
-      // is not, keep track of the coordinate transformation to apply to
+      // If outer object we just scrolled is a web area (frame) but the inner
+      // object is not, keep track of the coordinate transformation to apply to
       // future nested calculations.
       scrollPosition = scrollableArea->scrollPosition();
       offsetX -= (scrollPosition.x() + point.x());
@@ -1550,7 +1557,8 @@ void AXObject::scrollToGlobalPoint(const IntPoint& globalPoint) const {
       point.move(scrollPosition.x() - innerRect.x(),
                  scrollPosition.y() - innerRect.y());
     } else if (inner->isWebArea()) {
-      // Otherwise, if the inner object is a web area, reset the coordinate transformation.
+      // Otherwise, if the inner object is a web area, reset the coordinate
+      // transformation.
       offsetX = 0;
       offsetY = 0;
     }
@@ -1574,7 +1582,8 @@ int AXObject::lineForPosition(const VisiblePosition& position) const {
   if (position.isNull() || !getNode())
     return -1;
 
-  // If the position is not in the same editable region as this AX object, return -1.
+  // If the position is not in the same editable region as this AX object,
+  // return -1.
   Node* containerNode = position.deepEquivalent().computeContainerNode();
   if (!containerNode->isShadowIncludingInclusiveAncestorOf(getNode()) &&
       !getNode()->isShadowIncludingInclusiveAncestorOf(containerNode))
@@ -1584,9 +1593,9 @@ int AXObject::lineForPosition(const VisiblePosition& position) const {
   VisiblePosition currentPosition = position;
   VisiblePosition previousPosition;
 
-  // move up until we get to the top
-  // FIXME: This only takes us to the top of the rootEditableElement, not the top of the
-  // top document.
+  // Move up until we get to the top.
+  // FIXME: This only takes us to the top of the rootEditableElement, not the
+  // top of the top document.
   do {
     previousPosition = currentPosition;
     currentPosition =

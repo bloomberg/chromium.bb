@@ -123,7 +123,8 @@ void fillGlobalStates(AXObject* axObject,
                          createValue("grammar", AXValueTypeEnum::Token)));
       break;
     default:
-      // TODO(aboxhall): expose invalid: <nothing> and source: aria-invalid as invalid value
+      // TODO(aboxhall): expose invalid: <nothing> and source: aria-invalid as
+      // invalid value
       properties->addItem(createProperty(
           AXGlobalStatesEnum::Invalid,
           createValue(axObject->ariaInvalidValue(), AXValueTypeEnum::String)));

@@ -156,11 +156,13 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   AXObject* accessibilityHitTest(const IntPoint&) const override;
   AXObject* elementAccessibilityHitTest(const IntPoint&) const override;
 
-  // High-level accessibility tree access. Other modules should only use these functions.
+  // High-level accessibility tree access. Other modules should only use these
+  // functions.
   AXObject* computeParent() const override;
   AXObject* computeParentIfExists() const override;
 
-  // Low-level accessibility tree exploration, only for use within the accessibility module.
+  // Low-level accessibility tree exploration, only for use within the
+  // accessibility module.
   AXObject* rawFirstChild() const override;
   AXObject* rawNextSibling() const override;
   void addChildren() override;

@@ -184,7 +184,8 @@ bool AXNodeObject::computeAccessibilityIsIgnored(
   ASSERT(m_initialized);
 #endif
 
-  // If this element is within a parent that cannot have children, it should not be exposed.
+  // If this element is within a parent that cannot have children, it should not
+  // be exposed.
   if (isDescendantOfLeafNode()) {
     if (ignoredReasons)
       ignoredReasons->append(
@@ -240,19 +241,23 @@ static bool isPresentationalInTable(AXObject* parent,
     return false;
 
   // AXTable determines the role as checking isTableXXX.
-  // If Table has explicit role including presentation, AXTable doesn't assign implicit Role
-  // to a whole Table. That's why we should check it based on node.
+  // If Table has explicit role including presentation, AXTable doesn't assign
+  // implicit Role to a whole Table. That's why we should check it based on
+  // node.
   // Normal Table Tree is that
-  // cell(its role)-> tr(tr role)-> tfoot, tbody, thead(ignored role) -> table(table role).
+  // cell(its role)-> tr(tr role)-> tfoot, tbody, thead(ignored role) ->
+  //     table(table role).
   // If table has presentation role, it will be like
-  // cell(group)-> tr(unknown) -> tfoot, tbody, thead(ignored) -> table(presentation).
+  // cell(group)-> tr(unknown) -> tfoot, tbody, thead(ignored) ->
+  //     table(presentation).
   if (isHTMLTableCellElement(*currentElement) &&
       isHTMLTableRowElement(*parentNode))
     return parent->hasInheritedPresentationalRole();
 
   if (isHTMLTableRowElement(*currentElement) &&
       isHTMLTableSectionElement(toHTMLElement(*parentNode))) {
-    // Because TableSections have ignored role, presentation should be checked with its parent node
+    // Because TableSections have ignored role, presentation should be checked
+    // with its parent node.
     AXObject* tableObject = parent->parentObject();
     Node* tableNode = tableObject ? tableObject->getNode() : 0;
     return isHTMLTableElement(tableNode) &&
@@ -283,10 +288,11 @@ static bool isRequiredOwnedElement(AXObject* parent,
   if (isHTMLTableRowElement(*currentElement))
     return isHTMLTableSectionElement(toHTMLElement(*parentNode));
 
-  // In case of ListboxRole and it's child, ListBoxOptionRole,
-  // Inheritance of presentation role is handled in AXListBoxOption
-  // Because ListBoxOption Role doesn't have any child.
-  // If it's just ignored because of presentation, we can't see any AX tree related to ListBoxOption.
+  // In case of ListboxRole and its child, ListBoxOptionRole, inheritance of
+  // presentation role is handled in AXListBoxOption because ListBoxOption Role
+  // doesn't have any child.
+  // If it's just ignored because of presentation, we can't see any AX tree
+  // related to ListBoxOption.
   return false;
 }
 
@@ -299,7 +305,8 @@ const AXObject* AXNodeObject::inheritsPresentationalRoleFrom() const {
     return this;
 
   // http://www.w3.org/TR/wai-aria/complete#presentation
-  // ARIA spec says that the user agent MUST apply an inherited role of presentation
+  // ARIA spec says that the user agent MUST apply an inherited role of
+  // presentation
   // to any owned elements that do not have an explicit role defined.
   if (ariaRoleAttribute() != UnknownRole)
     return 0;
@@ -323,7 +330,8 @@ const AXObject* AXNodeObject::inheritsPresentationalRoleFrom() const {
       return 0;
   }
   // ARIA spec says that when a parent object is presentational and this object
-  // is a required owned element of that parent, then this object is also presentational.
+  // is a required owned element of that parent, then this object is also
+  // presentational.
   if (isRequiredOwnedElement(parent, roleValue(), element))
     return parent;
   return 0;
@@ -347,7 +355,8 @@ AccessibilityRole AXNodeObject::nativeAccessibilityRoleIgnoringAria() const {
     return UnknownRole;
 
   // HTMLAnchorElement sets isLink only when it has hrefAttr.
-  // We assume that it is also LinkRole if it has event listners even though it doesn't have hrefAttr.
+  // We assume that it is also LinkRole if it has event listners even though it
+  // doesn't have hrefAttr.
   if (getNode()->isLink() || (isHTMLAnchorElement(*getNode()) && isClickable()))
     return LinkRole;
 
@@ -496,7 +505,8 @@ AccessibilityRole AXNodeObject::nativeAccessibilityRoleIgnoringAria() const {
   if (isHTMLDialogElement(*getNode()))
     return DialogRole;
 
-  // The HTML element should not be exposed as an element. That's what the LayoutView element does.
+  // The HTML element should not be exposed as an element. That's what the
+  // LayoutView element does.
   if (isHTMLHtmlElement(*getNode()))
     return IgnoredRole;
 
@@ -507,8 +517,9 @@ AccessibilityRole AXNodeObject::nativeAccessibilityRoleIgnoringAria() const {
     return IframeRole;
   }
 
-  // There should only be one banner/contentInfo per page. If header/footer are being used within an article or section
-  // then it should not be exposed as whole page's banner/contentInfo but as a group role.
+  // There should only be one banner/contentInfo per page. If header/footer are
+  // being used within an article or section then it should not be exposed as
+  // whole page's banner/contentInfo but as a group role.
   if (getNode()->hasTagName(headerTag)) {
     if (isDescendantOfElementType(articleTag) ||
         isDescendantOfElementType(sectionTag) ||
@@ -662,21 +673,22 @@ bool AXNodeObject::isGenericFocusableElement() const {
     return false;
 
   // If the content editable attribute is set on this element, that's the reason
-  // it's focusable, and existing logic should handle this case already - so it's not a
-  // generic focusable element.
+  // it's focusable, and existing logic should handle this case already - so
+  // it's not a generic focusable element.
 
   if (hasContentEditableAttributeSet())
     return false;
 
-  // The web area and body element are both focusable, but existing logic handles these
-  // cases already, so we don't need to include them here.
+  // The web area and body element are both focusable, but existing logic
+  // handles these cases already, so we don't need to include them here.
   if (roleValue() == WebAreaRole)
     return false;
   if (isHTMLBodyElement(getNode()))
     return false;
 
-  // An SVG root is focusable by default, but it's probably not interactive, so don't
-  // include it. It can still be made accessible by giving it an ARIA role.
+  // An SVG root is focusable by default, but it's probably not interactive, so
+  // don't include it. It can still be made accessible by giving it an ARIA
+  // role.
   if (roleValue() == SVGRootRole)
     return false;
 
@@ -687,7 +699,8 @@ AXObject* AXNodeObject::menuButtonForMenu() const {
   Element* menuItem = menuItemElementForMenu();
 
   if (menuItem) {
-    // ARIA just has generic menu items. AppKit needs to know if this is a top level items like MenuBarButton or MenuBarItem
+    // ARIA just has generic menu items. AppKit needs to know if this is a top
+    // level items like MenuBarButton or MenuBarItem
     AXObject* menuItemAX = axObjectCache().getOrCreate(menuItem);
     if (menuItemAX && menuItemAX->isMenuButton())
       return menuItemAX;
@@ -730,8 +743,9 @@ Element* AXNodeObject::mouseButtonListener() const {
 
   for (Element* element = toElement(node); element;
        element = element->parentElement()) {
-    // It's a pretty common practice to put click listeners on the body or document, but that's
-    // almost never what the user wants when clicking on an accessible element.
+    // It's a pretty common practice to put click listeners on the body or
+    // document, but that's almost never what the user wants when clicking on an
+    // accessible element.
     if (isHTMLBodyElement(element))
       break;
 
@@ -748,8 +762,9 @@ Element* AXNodeObject::mouseButtonListener() const {
 AccessibilityRole AXNodeObject::remapAriaRoleDueToParent(
     AccessibilityRole role) const {
   // Some objects change their role based on their parent.
-  // However, asking for the unignoredParent calls accessibilityIsIgnored(), which can trigger a loop.
-  // While inside the call stack of creating an element, we need to avoid accessibilityIsIgnored().
+  // However, asking for the unignoredParent calls accessibilityIsIgnored(),
+  // which can trigger a loop.  While inside the call stack of creating an
+  // element, we need to avoid accessibilityIsIgnored().
   // https://bugs.webkit.org/show_bug.cgi?id=65174
 
   if (role != ListBoxOptionRole && role != MenuItemRole)
@@ -760,14 +775,17 @@ AccessibilityRole AXNodeObject::remapAriaRoleDueToParent(
        parent = parent->parentObject()) {
     AccessibilityRole parentAriaRole = parent->ariaRoleAttribute();
 
-    // Selects and listboxes both have options as child roles, but they map to different roles within WebCore.
+    // Selects and listboxes both have options as child roles, but they map to
+    // different roles within WebCore.
     if (role == ListBoxOptionRole && parentAriaRole == MenuRole)
       return MenuItemRole;
-    // An aria "menuitem" may map to MenuButton or MenuItem depending on its parent.
+    // An aria "menuitem" may map to MenuButton or MenuItem depending on its
+    // parent.
     if (role == MenuItemRole && parentAriaRole == GroupRole)
       return MenuButtonRole;
 
-    // If the parent had a different role, then we don't need to continue searching up the chain.
+    // If the parent had a different role, then we don't need to continue
+    // searching up the chain.
     if (parentAriaRole)
       break;
   }
@@ -996,7 +1014,8 @@ bool AXNodeObject::isClickable() const {
         toElement(getNode())->isDisabledFormControl())
       return false;
 
-    // Note: we can't call getNode()->willRespondToMouseClickEvents() because that triggers a style recalc and can delete this.
+    // Note: we can't call getNode()->willRespondToMouseClickEvents() because
+    // that triggers a style recalc and can delete this.
     if (getNode()->hasEventListeners(EventTypeNames::mouseup) ||
         getNode()->hasEventListeners(EventTypeNames::mousedown) ||
         getNode()->hasEventListeners(EventTypeNames::click) ||
@@ -1044,7 +1063,8 @@ bool AXNodeObject::isPressed() const {
   if (!node)
     return false;
 
-  // ARIA button with aria-pressed not undefined, then check for aria-pressed attribute rather than getNode()->active()
+  // ARIA button with aria-pressed not undefined, then check for aria-pressed
+  // attribute rather than getNode()->active()
   if (ariaRoleAttribute() == ToggleButtonRole) {
     if (equalIgnoringCase(getAttribute(aria_pressedAttr), "true") ||
         equalIgnoringCase(getAttribute(aria_pressedAttr), "mixed"))
@@ -1098,9 +1118,9 @@ bool AXNodeObject::canSetFocusAttribute() const {
       ancestorExposesActiveDescendant())
     return true;
 
-  // NOTE: It would be more accurate to ask the document whether setFocusedNode() would
-  // do anything. For example, setFocusedNode() will do nothing if the current focused
-  // node will not relinquish the focus.
+  // NOTE: It would be more accurate to ask the document whether
+  // setFocusedNode() would do anything. For example, setFocusedNode() will do
+  // nothing if the current focused node will not relinquish the focus.
   if (isDisabledFormControl(node))
     return false;
 
@@ -1516,9 +1536,9 @@ String AXNodeObject::stringValue() const {
   if (isNativeTextControl())
     return text();
 
-  // Handle other HTML input elements that aren't text controls, like date and time
-  // controls, by returning the string value, with the exception of checkboxes
-  // and radio buttons (which would return "on").
+  // Handle other HTML input elements that aren't text controls, like date and
+  // time controls, by returning the string value, with the exception of
+  // checkboxes and radio buttons (which would return "on").
   if (isHTMLInputElement(node)) {
     HTMLInputElement* input = toHTMLInputElement(node);
     if (input->type() != InputTypeNames::checkbox &&
@@ -1564,8 +1584,8 @@ static LayoutBlockFlow* nonInlineBlockFlow(LayoutObject* object) {
   return nullptr;
 }
 
-// Returns true if |r1| and |r2| are both non-null, both inline, and are contained
-// within the same non-inline LayoutBlockFlow.
+// Returns true if |r1| and |r2| are both non-null, both inline, and are
+// contained within the same non-inline LayoutBlockFlow.
 static bool isInSameNonInlineBlockFlow(LayoutObject* r1, LayoutObject* r2) {
   if (!r1 || !r2)
     return false;
@@ -1595,7 +1615,8 @@ String AXNodeObject::textAlternative(bool recursive,
                                      AXNameFrom& nameFrom,
                                      AXRelatedObjectVector* relatedObjects,
                                      NameSources* nameSources) const {
-  // If nameSources is non-null, relatedObjects is used in filling it in, so it must be non-null as well.
+  // If nameSources is non-null, relatedObjects is used in filling it in, so it
+  // must be non-null as well.
   if (nameSources)
     ASSERT(relatedObjects);
 
@@ -1713,18 +1734,19 @@ String AXNodeObject::textFromDescendants(AXObjectSet& visited,
 
   for (AXObject* child : children) {
     // Don't recurse into children that are explicitly marked as aria-hidden.
-    // Note that we don't call isInertOrAriaHidden because that would return true
-    // if any ancestor is hidden, but we need to be able to compute the accessible
-    // name of object inside hidden subtrees (for example, if aria-labelledby points
-    // to an object that's hidden).
+    // Note that we don't call isInertOrAriaHidden because that would return
+    // true if any ancestor is hidden, but we need to be able to compute the
+    // accessible name of object inside hidden subtrees (for example, if
+    // aria-labelledby points to an object that's hidden).
     if (equalIgnoringCase(child->getAttribute(aria_hiddenAttr), "true"))
       continue;
 
-    // If we're going between two layoutObjects that are in separate LayoutBoxes, add
-    // whitespace if it wasn't there already. Intuitively if you have
-    // <span>Hello</span><span>World</span>, those are part of the same LayoutBox
-    // so we should return "HelloWorld", but given <div>Hello</div><div>World</div> the
-    // strings are in separate boxes so we should return "Hello World".
+    // If we're going between two layoutObjects that are in separate
+    // LayoutBoxes, add whitespace if it wasn't there already. Intuitively if
+    // you have <span>Hello</span><span>World</span>, those are part of the same
+    // LayoutBox so we should return "HelloWorld", but given
+    // <div>Hello</div><div>World</div> the strings are in separate boxes so we
+    // should return "Hello World".
     if (previous && accumulatedText.length() &&
         !isHTMLSpace(accumulatedText[accumulatedText.length() - 1])) {
       if (!isInSameNonInlineBlockFlow(child->getLayoutObject(),
@@ -1745,9 +1767,10 @@ String AXNodeObject::textFromDescendants(AXObjectSet& visited,
 }
 
 bool AXNodeObject::nameFromLabelElement() const {
-  // This unfortunately duplicates a bit of logic from textAlternative and nativeTextAlternative,
-  // but it's necessary because nameFromLabelElement needs to be called from
-  // computeAccessibilityIsIgnored, which isn't allowed to call axObjectCache->getOrCreate.
+  // This unfortunately duplicates a bit of logic from textAlternative and
+  // nativeTextAlternative, but it's necessary because nameFromLabelElement
+  // needs to be called from computeAccessibilityIsIgnored, which isn't allowed
+  // to call axObjectCache->getOrCreate.
 
   if (!getNode() && !getLayoutObject())
     return false;
@@ -1767,7 +1790,8 @@ bool AXNodeObject::nameFromLabelElement() const {
   if (!ariaLabel.isEmpty())
     return false;
 
-  // Based on http://rawgit.com/w3c/aria/master/html-aam/html-aam.html#accessible-name-and-description-calculation
+  // Based on
+  // http://rawgit.com/w3c/aria/master/html-aam/html-aam.html#accessible-name-and-description-calculation
   // 5.1/5.5 Text inputs, Other labelable Elements
   HTMLElement* htmlElement = nullptr;
   if (getNode()->isHTMLElement())
@@ -1794,9 +1818,10 @@ void AXNodeObject::getRelativeBounds(AXObject** outContainer,
   outBoundsInContainer = FloatRect();
   outContainerTransform.setIdentity();
 
-  // First check if it has explicit bounds, for example if this element is tied to a
-  // canvas path. When explicit coordinates are provided, the ID of the explicit container
-  // element that the coordinates are relative to must be provided too.
+  // First check if it has explicit bounds, for example if this element is tied
+  // to a canvas path. When explicit coordinates are provided, the ID of the
+  // explicit container element that the coordinates are relative to must be
+  // provided too.
   if (!m_explicitElementRect.isEmpty()) {
     *outContainer = axObjectCache().objectFromAXID(m_explicitContainerID);
     if (*outContainer) {
@@ -1805,7 +1830,8 @@ void AXNodeObject::getRelativeBounds(AXObject** outContainer,
     }
   }
 
-  // If it's in a canvas but doesn't have an explicit rect, get the bounding rect of its children.
+  // If it's in a canvas but doesn't have an explicit rect, get the bounding
+  // rect of its children.
   if (getNode()->parentElement()->isInCanvasSubtree()) {
     Vector<FloatRect> rects;
     for (Node& child : NodeTraversal::childrenOf(*getNode())) {
@@ -1828,10 +1854,10 @@ void AXNodeObject::getRelativeBounds(AXObject** outContainer,
     }
   }
 
-  // If this object doesn't have an explicit element rect or computable from its children,
-  // for now, let's return the position of the ancestor that does have a position,
-  // and make it the width of that parent, and about the height of a line of text, so that
-  // it's clear the object is a child of the parent.
+  // If this object doesn't have an explicit element rect or computable from its
+  // children, for now, let's return the position of the ancestor that does have
+  // a position, and make it the width of that parent, and about the height of a
+  // line of text, so that it's clear the object is a child of the parent.
   for (AXObject* positionProvider = parentObject(); positionProvider;
        positionProvider = positionProvider->parentObject()) {
     if (positionProvider->isAXLayoutObject()) {
@@ -1852,7 +1878,8 @@ static Node* getParentNodeForComputeParent(Node* node) {
 
   Node* parentNode = nullptr;
 
-  // Skip over <optgroup> and consider the <select> the immediate parent of an <option>.
+  // Skip over <optgroup> and consider the <select> the immediate parent of an
+  // <option>.
   if (isHTMLOptionElement(node))
     parentNode = toHTMLOptionElement(node)->ownerSelectElement();
 
@@ -1903,7 +1930,8 @@ AXObject* AXNodeObject::rawNextSibling() const {
 void AXNodeObject::addChildren() {
   ASSERT(!isDetached());
   // If the need to add more children in addition to existing children arises,
-  // childrenChanged should have been called, leaving the object with no children.
+  // childrenChanged should have been called, leaving the object with no
+  // children.
   ASSERT(!m_haveChildren);
 
   if (!m_node)
@@ -1911,7 +1939,8 @@ void AXNodeObject::addChildren() {
 
   m_haveChildren = true;
 
-  // The only time we add children from the DOM tree to a node with a layoutObject is when it's a canvas.
+  // The only time we add children from the DOM tree to a node with a
+  // layoutObject is when it's a canvas.
   if (getLayoutObject() && !isHTMLCanvasElement(*m_node))
     return;
 
@@ -1939,9 +1968,11 @@ void AXNodeObject::insertChild(AXObject* child, unsigned index) {
   if (!child)
     return;
 
-  // If the parent is asking for this child's children, then either it's the first time (and clearing is a no-op),
-  // or its visibility has changed. In the latter case, this child may have a stale child cached.
-  // This can prevent aria-hidden changes from working correctly. Hence, whenever a parent is getting children, ensure data is not stale.
+  // If the parent is asking for this child's children, then either it's the
+  // first time (and clearing is a no-op), or its visibility has changed. In the
+  // latter case, this child may have a stale child cached.  This can prevent
+  // aria-hidden changes from working correctly. Hence, whenever a parent is
+  // getting children, ensure data is not stale.
   child->clearChildren();
 
   if (child->accessibilityIsIgnored()) {
@@ -1957,8 +1988,8 @@ void AXNodeObject::insertChild(AXObject* child, unsigned index) {
 
 bool AXNodeObject::canHaveChildren() const {
   // If this is an AXLayoutObject, then it's okay if this object
-  // doesn't have a node - there are some layoutObjects that don't have associated
-  // nodes, like scroll areas and css-generated text.
+  // doesn't have a node - there are some layoutObjects that don't have
+  // associated nodes, like scroll areas and css-generated text.
   if (!getNode() && !isAXLayoutObject())
     return false;
 
@@ -1967,9 +1998,10 @@ bool AXNodeObject::canHaveChildren() const {
 
   AccessibilityRole role = roleValue();
 
-  // If an element has an ARIA role of presentation, we need to consider the native
-  // role when deciding whether it can have children or not - otherwise giving something
-  // a role of presentation could expose inner implementation details.
+  // If an element has an ARIA role of presentation, we need to consider the
+  // native role when deciding whether it can have children or not - otherwise
+  // giving something a role of presentation could expose inner implementation
+  // details.
   if (isPresentational())
     role = nativeAccessibilityRoleIgnoringAria();
 
@@ -2045,7 +2077,8 @@ Element* AXNodeObject::anchorElement() const {
   AXObjectCacheImpl& cache = axObjectCache();
 
   // search up the DOM tree for an anchor element
-  // NOTE: this assumes that any non-image with an anchor is an HTMLAnchorElement
+  // NOTE: this assumes that any non-image with an anchor is an
+  // HTMLAnchorElement
   for (; node; node = node->parentNode()) {
     if (isHTMLAnchorElement(*node) ||
         (node->layoutObject() &&
@@ -2110,9 +2143,10 @@ void AXNodeObject::setFocused(bool on) {
   } else {
     Node* node = this->getNode();
     if (node && node->isElementNode()) {
-      // If this node is already the currently focused node, then calling focus() won't do anything.
-      // That is a problem when focus is removed from the webpage to chrome, and then returns.
-      // In these cases, we need to do what keyboard and mouse focus do, which is reset focus first.
+      // If this node is already the currently focused node, then calling
+      // focus() won't do anything.  That is a problem when focus is removed
+      // from the webpage to chrome, and then returns.  In these cases, we need
+      // to do what keyboard and mouse focus do, which is reset focus first.
       if (document->focusedElement() == node)
         document->clearFocusedElement();
 
@@ -2134,7 +2168,8 @@ void AXNodeObject::decrement() {
 }
 
 void AXNodeObject::childrenChanged() {
-  // This method is meant as a quick way of marking a portion of the accessibility tree dirty.
+  // This method is meant as a quick way of marking a portion of the
+  // accessibility tree dirty.
   if (!getNode() && !getLayoutObject())
     return;
 
@@ -2148,24 +2183,29 @@ void AXNodeObject::childrenChanged() {
 
   axObjectCache().postNotification(this, AXObjectCacheImpl::AXChildrenChanged);
 
-  // Go up the accessibility parent chain, but only if the element already exists. This method is
-  // called during layout, minimal work should be done.
-  // If AX elements are created now, they could interrogate the layout tree while it's in a funky state.
-  // At the same time, process ARIA live region changes.
+  // Go up the accessibility parent chain, but only if the element already
+  // exists. This method is called during layout, minimal work should be done.
+  // If AX elements are created now, they could interrogate the layout tree
+  // while it's in a funky state.  At the same time, process ARIA live region
+  // changes.
   for (AXObject* parent = this; parent;
        parent = parent->parentObjectIfExists()) {
     parent->setNeedsToUpdateChildren();
 
-    // These notifications always need to be sent because screenreaders are reliant on them to perform.
-    // In other words, they need to be sent even when the screen reader has not accessed this live region since the last update.
+    // These notifications always need to be sent because screenreaders are
+    // reliant on them to perform.  In other words, they need to be sent even
+    // when the screen reader has not accessed this live region since the last
+    // update.
 
-    // If this element supports ARIA live regions, then notify the AT of changes.
+    // If this element supports ARIA live regions, then notify the AT of
+    // changes.
     if (parent->isLiveRegion())
       axObjectCache().postNotification(parent,
                                        AXObjectCacheImpl::AXLiveRegionChanged);
 
-    // If this element is an ARIA text box or content editable, post a "value changed" notification on it
-    // so that it behaves just like a native input element or textarea.
+    // If this element is an ARIA text box or content editable, post a "value
+    // changed" notification on it so that it behaves just like a native input
+    // element or textarea.
     if (isNonNativeTextControl())
       axObjectCache().postNotification(parent,
                                        AXObjectCacheImpl::AXValueChanged);
@@ -2190,8 +2230,8 @@ void AXNodeObject::selectionChanged() {
 }
 
 void AXNodeObject::textChanged() {
-  // If this element supports ARIA live regions, or is part of a region with an ARIA editable role,
-  // then notify the AT of changes.
+  // If this element supports ARIA live regions, or is part of a region with an
+  // ARIA editable role, then notify the AT of changes.
   AXObjectCacheImpl& cache = axObjectCache();
   for (Node* parentNode = getNode(); parentNode;
        parentNode = parentNode->parentNode()) {
@@ -2203,8 +2243,9 @@ void AXNodeObject::textChanged() {
       cache.postNotification(parentNode,
                              AXObjectCacheImpl::AXLiveRegionChanged);
 
-    // If this element is an ARIA text box or content editable, post a "value changed" notification on it
-    // so that it behaves just like a native input element or textarea.
+    // If this element is an ARIA text box or content editable, post a "value
+    // changed" notification on it so that it behaves just like a native input
+    // element or textarea.
     if (parent->isNonNativeTextControl())
       cache.postNotification(parentNode, AXObjectCacheImpl::AXValueChanged);
   }
@@ -2214,7 +2255,8 @@ void AXNodeObject::updateAccessibilityRole() {
   bool ignoredStatus = accessibilityIsIgnored();
   m_role = determineAccessibilityRole();
 
-  // The AX hierarchy only needs to be updated if the ignored status of an element has changed.
+  // The AX hierarchy only needs to be updated if the ignored status of an
+  // element has changed.
   if (ignoredStatus != accessibilityIsIgnored())
     childrenChanged();
 }
@@ -2232,7 +2274,8 @@ void AXNodeObject::computeAriaOwnsChildren(
   axObjectCache().updateAriaOwns(this, idVector, ownedChildren);
 }
 
-// Based on http://rawgit.com/w3c/aria/master/html-aam/html-aam.html#accessible-name-and-description-calculation
+// Based on
+// http://rawgit.com/w3c/aria/master/html-aam/html-aam.html#accessible-name-and-description-calculation
 String AXNodeObject::nativeTextAlternative(
     AXObjectSet& visited,
     AXNameFrom& nameFrom,
@@ -2242,7 +2285,8 @@ String AXNodeObject::nativeTextAlternative(
   if (!getNode())
     return String();
 
-  // If nameSources is non-null, relatedObjects is used in filling it in, so it must be non-null as well.
+  // If nameSources is non-null, relatedObjects is used in filling it in, so it
+  // must be non-null as well.
   if (nameSources)
     ASSERT(relatedObjects);
 
@@ -2670,12 +2714,14 @@ String AXNodeObject::description(AXNameFrom nameFrom,
   return collapseWhitespace(result);
 }
 
-// Based on http://rawgit.com/w3c/aria/master/html-aam/html-aam.html#accessible-name-and-description-calculation
+// Based on
+// http://rawgit.com/w3c/aria/master/html-aam/html-aam.html#accessible-name-and-description-calculation
 String AXNodeObject::description(AXNameFrom nameFrom,
                                  AXDescriptionFrom& descriptionFrom,
                                  DescriptionSources* descriptionSources,
                                  AXRelatedObjectVector* relatedObjects) const {
-  // If descriptionSources is non-null, relatedObjects is used in filling it in, so it must be non-null as well.
+  // If descriptionSources is non-null, relatedObjects is used in filling it in,
+  // so it must be non-null as well.
   if (descriptionSources)
     ASSERT(relatedObjects);
 
@@ -2692,7 +2738,8 @@ String AXNodeObject::description(AXNameFrom nameFrom,
     descriptionSources->last().type = descriptionFrom;
   }
 
-  // aria-describedby overrides any other accessible description, from: http://rawgit.com/w3c/aria/master/html-aam/html-aam.html
+  // aria-describedby overrides any other accessible description, from:
+  // http://rawgit.com/w3c/aria/master/html-aam/html-aam.html
   const AtomicString& ariaDescribedby = getAttribute(aria_describedbyAttr);
   if (!ariaDescribedby.isNull()) {
     if (descriptionSources)
@@ -2719,7 +2766,8 @@ String AXNodeObject::description(AXNameFrom nameFrom,
   if (getNode()->isHTMLElement())
     htmlElement = toHTMLElement(getNode());
 
-  // placeholder, 5.1.2 from: http://rawgit.com/w3c/aria/master/html-aam/html-aam.html
+  // placeholder, 5.1.2 from:
+  // http://rawgit.com/w3c/aria/master/html-aam/html-aam.html
   if (nameFrom != AXNameFromPlaceholder && htmlElement &&
       htmlElement->isTextFormControl()) {
     descriptionFrom = AXDescriptionFromPlaceholder;
@@ -2771,7 +2819,8 @@ String AXNodeObject::description(AXNameFrom nameFrom,
     }
   }
 
-  // table caption, 5.9.2 from: http://rawgit.com/w3c/aria/master/html-aam/html-aam.html
+  // table caption, 5.9.2 from:
+  // http://rawgit.com/w3c/aria/master/html-aam/html-aam.html
   if (nameFrom != AXNameFromCaption && isHTMLTableElement(getNode())) {
     HTMLTableElement* tableElement = toHTMLTableElement(getNode());
 
@@ -2805,7 +2854,8 @@ String AXNodeObject::description(AXNameFrom nameFrom,
     }
   }
 
-  // summary, 5.6.2 from: http://rawgit.com/w3c/aria/master/html-aam/html-aam.html
+  // summary, 5.6.2 from:
+  // http://rawgit.com/w3c/aria/master/html-aam/html-aam.html
   if (nameFrom != AXNameFromContents && isHTMLSummaryElement(getNode())) {
     descriptionFrom = AXDescriptionFromContents;
     if (descriptionSources) {
@@ -2826,7 +2876,8 @@ String AXNodeObject::description(AXNameFrom nameFrom,
     }
   }
 
-  // title attribute, from: http://rawgit.com/w3c/aria/master/html-aam/html-aam.html
+  // title attribute, from:
+  // http://rawgit.com/w3c/aria/master/html-aam/html-aam.html
   if (nameFrom != AXNameFromTitle) {
     descriptionFrom = AXDescriptionFromAttribute;
     if (descriptionSources) {
@@ -2847,7 +2898,8 @@ String AXNodeObject::description(AXNameFrom nameFrom,
   }
 
   // aria-help.
-  // FIXME: this is not part of the official standard, but it's needed because the built-in date/time controls use it.
+  // FIXME: this is not part of the official standard, but it's needed because
+  // the built-in date/time controls use it.
   descriptionFrom = AXDescriptionFromAttribute;
   if (descriptionSources) {
     descriptionSources->append(

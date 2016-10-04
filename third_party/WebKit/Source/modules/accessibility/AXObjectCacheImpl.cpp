@@ -126,8 +126,8 @@ AXObject* AXObjectCacheImpl::root() {
 
 AXObject* AXObjectCacheImpl::focusedImageMapUIElement(
     HTMLAreaElement* areaElement) {
-  // Find the corresponding accessibility object for the HTMLAreaElement. This should be
-  // in the list of children for its corresponding image.
+  // Find the corresponding accessibility object for the HTMLAreaElement. This
+  // should be in the list of children for its corresponding image.
   if (!areaElement)
     return 0;
 
@@ -180,7 +180,8 @@ AXObject* AXObjectCacheImpl::focusedObject() {
   if (!obj)
     return nullptr;
 
-  // the HTML element, for example, is focusable but has an AX object that is ignored
+  // the HTML element, for example, is focusable but has an AX object that is
+  // ignored
   if (obj->accessibilityIsIgnored())
     obj = obj->parentObjectUnignored();
 
@@ -215,7 +216,8 @@ AXObject* AXObjectCacheImpl::get(Node* node) {
   if (!node)
     return 0;
 
-  // Menu list option and HTML area elements are indexed by DOM node, never by layout object.
+  // Menu list option and HTML area elements are indexed by DOM node, never by
+  // layout object.
   LayoutObject* layoutObject = node->layoutObject();
   if (isMenuListOption(node) || isHTMLAreaElement(node))
     layoutObject = nullptr;
@@ -228,8 +230,8 @@ AXObject* AXObjectCacheImpl::get(Node* node) {
 
   if (layoutObject && nodeID && !layoutID) {
     // This can happen if an AXNodeObject is created for a node that's not
-    // laid out, but later something changes and it gets a layoutObject (like if it's
-    // reparented).
+    // laid out, but later something changes and it gets a layoutObject (like if
+    // it's reparented).
     remove(nodeID);
     return 0;
   }
@@ -348,8 +350,9 @@ AXObject* AXObjectCacheImpl::getOrCreate(Node* node) {
   if (AXObject* obj = get(node))
     return obj;
 
-  // If the node has a layout object, prefer using that as the primary key for the AXObject,
-  // with the exception of an HTMLAreaElement, which is created based on its node.
+  // If the node has a layout object, prefer using that as the primary key for
+  // the AXObject, with the exception of an HTMLAreaElement, which is created
+  // based on its node.
   if (node->layoutObject() && !isHTMLAreaElement(node))
     return getOrCreate(node->layoutObject());
 
@@ -572,8 +575,8 @@ void AXObjectCacheImpl::removeAXID(AXObject* object) {
 }
 
 void AXObjectCacheImpl::selectionChanged(Node* node) {
-  // Find the nearest ancestor that already has an accessibility object, since we
-  // might be in the middle of a layout.
+  // Find the nearest ancestor that already has an accessibility object, since
+  // we might be in the middle of a layout.
   while (node) {
     if (AXObject* obj = get(node)) {
       obj->selectionChanged();
@@ -603,8 +606,9 @@ void AXObjectCacheImpl::textChanged(AXObject* obj) {
 }
 
 void AXObjectCacheImpl::updateCacheAfterNodeIsAttached(Node* node) {
-  // Calling get() will update the AX object if we had an AXNodeObject but now we need
-  // an AXLayoutObject, because it was reparented to a location outside of a canvas.
+  // Calling get() will update the AX object if we had an AXNodeObject but now
+  // we need an AXLayoutObject, because it was reparented to a location outside
+  // of a canvas.
   get(node);
   if (node->isElementNode())
     updateTreeIfElementIdIsAriaOwned(toElement(node));
@@ -703,8 +707,8 @@ void AXObjectCacheImpl::updateAriaOwns(
     const Vector<String>& idVector,
     HeapVector<Member<AXObject>>& ownedChildren) {
   //
-  // Update the map from the AXID of this element to the ids of the owned children,
-  // and the reverse map from ids to possible AXID owners.
+  // Update the map from the AXID of this element to the ids of the owned
+  // children, and the reverse map from ids to possible AXID owners.
   //
 
   HashSet<String> currentIds = m_ariaOwnerToIdsMapping.get(owner->axObjectID());
@@ -755,8 +759,9 @@ void AXObjectCacheImpl::updateAriaOwns(
       continue;
 
     // If this child is already aria-owned by a different owner, continue.
-    // It's an author error if this happens and we don't worry about which of the
-    // two owners wins ownership of the child, as long as only one of them does.
+    // It's an author error if this happens and we don't worry about which of
+    // the two owners wins ownership of the child, as long as only one of them
+    // does.
     if (isAriaOwned(child) && getAriaOwnedParent(child) != owner)
       continue;
 
@@ -764,8 +769,8 @@ void AXObjectCacheImpl::updateAriaOwns(
     if (child == owner)
       continue;
 
-    // Walk up the parents of the owner object, make sure that this child doesn't appear
-    // there, as that would create a cycle.
+    // Walk up the parents of the owner object, make sure that this child
+    // doesn't appear there, as that would create a cycle.
     bool foundCycle = false;
     for (AXObject* parent = owner->parentObject(); parent && !foundCycle;
          parent = parent->parentObject()) {
@@ -779,7 +784,8 @@ void AXObjectCacheImpl::updateAriaOwns(
     ownedChildren.append(child);
   }
 
-  // Compare this to the current list of owned children, and exit early if there are no changes.
+  // Compare this to the current list of owned children, and exit early if there
+  // are no changes.
   Vector<AXID> currentChildAXIDs =
       m_ariaOwnerToChildrenMapping.get(owner->axObjectID());
   bool same = true;
@@ -794,9 +800,9 @@ void AXObjectCacheImpl::updateAriaOwns(
   if (same)
     return;
 
-  // The list of owned children has changed. Even if they were just reordered, to be safe
-  // and handle all cases we remove all of the current owned children and add the new list
-  // of owned children.
+  // The list of owned children has changed. Even if they were just reordered,
+  // to be safe and handle all cases we remove all of the current owned children
+  // and add the new list of owned children.
   for (size_t i = 0; i < currentChildAXIDs.size(); ++i) {
     // Find the AXObject for the child that this owner no longer owns.
     AXID removedChildID = currentChildAXIDs[i];
@@ -807,13 +813,14 @@ void AXObjectCacheImpl::updateAriaOwns(
     if (removedChild && getAriaOwnedParent(removedChild) != owner)
       continue;
 
-    // Remove it from the child -> owner mapping so it's not owned by this owner anymore.
+    // Remove it from the child -> owner mapping so it's not owned by this owner
+    // anymore.
     m_ariaOwnedChildToOwnerMapping.remove(removedChildID);
 
     if (removedChild) {
-      // If the child still exists, find its "real" parent, and reparent it back to
-      // its real parent in the tree by detaching it from its current parent and
-      // calling childrenChanged on its real parent.
+      // If the child still exists, find its "real" parent, and reparent it back
+      // to its real parent in the tree by detaching it from its current parent
+      // and calling childrenChanged on its real parent.
       removedChild->detachFromParent();
       AXID realParentID =
           m_ariaOwnedChildToRealParentMapping.get(removedChildID);
@@ -821,8 +828,8 @@ void AXObjectCacheImpl::updateAriaOwns(
       childrenChanged(realParent);
     }
 
-    // Remove the child -> original parent mapping too since this object has now been
-    // reparented back to its original parent.
+    // Remove the child -> original parent mapping too since this object has now
+    // been reparented back to its original parent.
     m_ariaOwnedChildToRealParentMapping.remove(removedChildID);
   }
 
@@ -834,14 +841,15 @@ void AXObjectCacheImpl::updateAriaOwns(
     // Add this child to the mapping from child to owner.
     m_ariaOwnedChildToOwnerMapping.set(addedChildID, owner->axObjectID());
 
-    // Add its parent object to a mapping from child to real parent. If later this owner
-    // doesn't own this child anymore, we need to return it to its original parent.
+    // Add its parent object to a mapping from child to real parent. If later
+    // this owner doesn't own this child anymore, we need to return it to its
+    // original parent.
     AXObject* originalParent = addedChild->parentObject();
     m_ariaOwnedChildToRealParentMapping.set(addedChildID,
                                             originalParent->axObjectID());
 
-    // Now detach the object from its original parent and call childrenChanged on the
-    // original parent so that it can recompute its list of children.
+    // Now detach the object from its original parent and call childrenChanged
+    // on the original parent so that it can recompute its list of children.
     addedChild->detachFromParent();
     childrenChanged(originalParent);
   }
@@ -872,8 +880,8 @@ void AXObjectCacheImpl::updateTreeIfElementIdIsAriaOwned(Element* element) {
     return;
   }
 
-  // If it's not already owned, check the possible owners based on our mapping from
-  // ids to elements that have that id listed in their aria-owns attribute.
+  // If it's not already owned, check the possible owners based on our mapping
+  // from ids to elements that have that id listed in their aria-owns attribute.
   for (const auto& axID : *owners) {
     AXObject* owner = objectFromAXID(axID);
     if (owner)
@@ -908,8 +916,8 @@ void AXObjectCacheImpl::radiobuttonRemovedFromGroup(
   if (!obj || !obj->isAXRadioInput())
     return;
 
-  // The 'posInSet' and 'setSize' attributes should be updated from the first node,
-  // as the removed node is already detached from tree.
+  // The 'posInSet' and 'setSize' attributes should be updated from the first
+  // node, as the removed node is already detached from tree.
   HTMLInputElement* firstRadio =
       toAXRadioInput(obj)->findFirstRadioButtonInGroup(groupMember);
   AXObject* firstObj = get(firstRadio);
@@ -927,9 +935,9 @@ void AXObjectCacheImpl::handleLayoutComplete(LayoutObject* layoutObject) {
 
   m_modificationCount++;
 
-  // Create the AXObject if it didn't yet exist - that's always safe at the end of a layout, and it
-  // allows an AX notification to be sent when a page has its first layout, rather than when the
-  // document first loads.
+  // Create the AXObject if it didn't yet exist - that's always safe at the end
+  // of a layout, and it allows an AX notification to be sent when a page has
+  // its first layout, rather than when the document first loads.
   if (AXObject* obj = getOrCreate(layoutObject))
     postNotification(obj, AXLayoutComplete);
 }

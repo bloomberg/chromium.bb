@@ -62,8 +62,8 @@ Element* AXMenuListOption::actionElement() const {
 }
 
 bool AXMenuListOption::isEnabled() const {
-  // isDisabledFormControl() returns true if the parent <select> element is disabled,
-  // which we don't want.
+  // isDisabledFormControl() returns true if the parent <select> element is
+  // disabled, which we don't want.
   return m_element && !m_element->ownElementDisabled();
 }
 
@@ -131,7 +131,8 @@ String AXMenuListOption::textAlternative(bool recursive,
                                          AXNameFrom& nameFrom,
                                          AXRelatedObjectVector* relatedObjects,
                                          NameSources* nameSources) const {
-  // If nameSources is non-null, relatedObjects is used in filling it in, so it must be non-null as well.
+  // If nameSources is non-null, relatedObjects is used in filling it in, so it
+  // must be non-null as well.
   if (nameSources)
     ASSERT(relatedObjects);
 

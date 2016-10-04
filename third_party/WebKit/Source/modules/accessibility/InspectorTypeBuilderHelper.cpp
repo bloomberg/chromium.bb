@@ -180,8 +180,8 @@ String valueSourceType(AXNameFrom nameFrom) {
     case AXNameFromRelatedElement:
       return AXValueSourceTypeEnum::RelatedElement;
     default:
-      return AXValueSourceTypeEnum::
-          Implicit;  // TODO(aboxhall): what to do here?
+      return AXValueSourceTypeEnum::Implicit;  // TODO(aboxhall): what to do
+                                               // here?
   }
 }
 

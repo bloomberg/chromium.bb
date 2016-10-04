@@ -20,7 +20,8 @@ AXRadioInput::AXRadioInput(LayoutObject* layoutObject,
   // Updates posInSet and setSize for the current object and the next objects.
   if (!calculatePosInSet())
     return;
-  // When a new object is inserted, it needs to update setSize for the previous objects.
+  // When a new object is inserted, it needs to update setSize for the previous
+  // objects.
   requestUpdateToNextNode(false);
 }
 
@@ -45,8 +46,9 @@ void AXRadioInput::requestUpdateToNextNode(bool forward) {
   int position = 0;
   if (forward)
     position = posInSet() + 1;
-  // If it is backward, it keeps position as positions are already assigned for previous objects.
-  // updatePosAndSetSize() is called with '0' and it doesn't modify m_posInSet and updates m_setSize as size is increased.
+  // If it is backward, it keeps position as positions are already assigned for
+  // previous objects.  updatePosAndSetSize() is called with '0' and it doesn't
+  // modify m_posInSet and updates m_setSize as size is increased.
 
   toAXRadioInput(nextAXobject)->updatePosAndSetSize(position);
   axObjectCache().postNotification(nextAXobject,
@@ -76,15 +78,16 @@ int AXRadioInput::setSize() const {
 
 bool AXRadioInput::calculatePosInSet() {
   // Calculate 'posInSet' attribute when AXRadioInputs need to be updated
-  // as a new AXRadioInput Object is added or one of objects from RadioGroup is removed.
+  // as a new AXRadioInput Object is added or one of objects from RadioGroup is
+  // removed.
   bool needToUpdatePrev = false;
   int position = 1;
   HTMLInputElement* prevElement =
       RadioInputType::nextRadioButtonInGroup(element(), false);
   if (prevElement) {
     AXObject* object = axObjectCache().get(prevElement);
-    // If the previous element doesn't have AXObject yet, caculate position from the first element.
-    // Otherwise, get position from the previous AXObject.
+    // If the previous element doesn't have AXObject yet, caculate position from
+    // the first element.  Otherwise, get position from the previous AXObject.
     if (!object || !object->isAXRadioInput()) {
       position = countFromFirstElement();
     } else {

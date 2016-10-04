@@ -53,9 +53,10 @@ AccessibilityRole AXListBoxOption::determineAccessibilityRole() {
     return m_ariaRole;
 
   // http://www.w3.org/TR/wai-aria/complete#presentation
-  // ARIA spec says that the presentation role causes a given element to be treated
-  // as having no role or to be removed from the accessibility tree, but does not cause the
-  // content contained within the element to be removed from the accessibility tree.
+  // ARIA spec says that the presentation role causes a given element to be
+  // treated as having no role or to be removed from the accessibility tree, but
+  // does not cause the content contained within the element to be removed from
+  // the accessibility tree.
   if (isParentPresentationalRole())
     return StaticTextRole;
 
@@ -134,7 +135,8 @@ String AXListBoxOption::textAlternative(bool recursive,
                                         AXNameFrom& nameFrom,
                                         AXRelatedObjectVector* relatedObjects,
                                         NameSources* nameSources) const {
-  // If nameSources is non-null, relatedObjects is used in filling it in, so it must be non-null as well.
+  // If nameSources is non-null, relatedObjects is used in filling it in, so it
+  // must be non-null as well.
   if (nameSources)
     ASSERT(relatedObjects);
 

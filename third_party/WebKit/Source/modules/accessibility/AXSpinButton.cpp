@@ -112,8 +112,8 @@ void AXSpinButtonPart::getRelativeBounds(
   if (!parentObject())
     return;
 
-  // FIXME: This logic should exist in the layout tree or elsewhere, but there is no
-  // relationship that exists that can be queried.
+  // FIXME: This logic should exist in the layout tree or elsewhere, but there
+  // is no relationship that exists that can be queried.
   parentObject()->getRelativeBounds(outContainer, outBoundsInContainer,
                                     outContainerTransform);
   outBoundsInContainer = FloatRect(0, 0, outBoundsInContainer.width(),

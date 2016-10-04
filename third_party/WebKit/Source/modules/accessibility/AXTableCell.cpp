@@ -84,10 +84,11 @@ AXObject* AXTableCell::parentTable() const {
   if (isDetached())
     return 0;
 
-  // Do not use getOrCreate. parentTable() can be called while the layout tree is being modified
-  // by javascript, and creating a table element may try to access the layout tree while in a bad state.
-  // By using only get() implies that the AXTable must be created before AXTableCells. This should
-  // always be the case when AT clients access a table.
+  // Do not use getOrCreate. parentTable() can be called while the layout tree
+  // is being modified by javascript, and creating a table element may try to
+  // access the layout tree while in a bad state.  By using only get() implies
+  // that the AXTable must be created before AXTableCells. This should always be
+  // the case when AT clients access a table.
   // https://bugs.webkit.org/show_bug.cgi?id=42652
   return axObjectCache().get(toLayoutTableCell(m_layoutObject)->table());
 }
@@ -159,7 +160,8 @@ void AXTableCell::rowIndexRange(std::pair<unsigned, unsigned>& rowRange) {
   rowRange.first = layoutCell->rowIndex();
   rowRange.second = layoutCell->rowSpan();
 
-  // since our table might have multiple sections, we have to offset our row appropriately
+  // Since our table might have multiple sections, we have to offset our row
+  // appropriately.
   LayoutTableSection* section = layoutCell->section();
   LayoutTable* table = layoutCell->table();
   if (!table || !section)

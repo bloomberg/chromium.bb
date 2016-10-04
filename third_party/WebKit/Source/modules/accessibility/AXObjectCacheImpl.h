@@ -74,9 +74,11 @@ class MODULES_EXPORT AXObjectCacheImpl : public AXObjectCache {
 
   const Element* rootAXEditableElement(const Node*) override;
 
-  // Called by a node when text or a text equivalent (e.g. alt) attribute is changed.
+  // Called by a node when text or a text equivalent (e.g. alt) attribute is
+  // changed.
   void textChanged(LayoutObject*) override;
-  // Called when a node has just been attached, so we can make sure we have the right subclass of AXObject.
+  // Called when a node has just been attached, so we can make sure we have the
+  // right subclass of AXObject.
   void updateCacheAfterNodeIsAttached(Node*) override;
 
   void handleAttributeChanged(const QualifiedName& attrName, Element*) override;
@@ -147,8 +149,8 @@ class MODULES_EXPORT AXObjectCacheImpl : public AXObjectCache {
 
   AXID platformGenerateAXID() const;
 
-  // Counts the number of times the document has been modified. Some attribute values are cached
-  // as long as the modification count hasn't changed.
+  // Counts the number of times the document has been modified. Some attribute
+  // values are cached as long as the modification count hasn't changed.
   int modificationCount() const { return m_modificationCount; }
 
   void postNotification(LayoutObject*, AXNotification);
@@ -159,27 +161,30 @@ class MODULES_EXPORT AXObjectCacheImpl : public AXObjectCache {
   // Aria-owns support.
   //
 
-  // Returns true if the given object's position in the tree was due to aria-owns.
+  // Returns true if the given object's position in the tree was due to
+  // aria-owns.
   bool isAriaOwned(const AXObject*) const;
 
   // Returns the parent of the given object due to aria-owns.
   AXObject* getAriaOwnedParent(const AXObject*) const;
 
-  // Given an object that has an aria-owns attributes, and a vector of ids from the value of
-  // that attribute, updates the internal state to reflect the new set of children owned by
-  // this object, returning the result in |ownedChildren|. The result is validated - illegal,
-  // duplicate, or cyclical references have been removed.
+  // Given an object that has an aria-owns attributes, and a vector of ids from
+  // the value of that attribute, updates the internal state to reflect the new
+  // set of children owned by this object, returning the result in
+  // |ownedChildren|. The result is validated - illegal, duplicate, or cyclical
+  // references have been removed.
   //
-  // If one or more ids aren't found, they're added to a lookup table so that if an
-  // element with that id appears later, it can be added when you call updateTreeIfElementIdIsAriaOwned.
+  // If one or more ids aren't found, they're added to a lookup table so that if
+  // an element with that id appears later, it can be added when you call
+  // updateTreeIfElementIdIsAriaOwned.
   void updateAriaOwns(const AXObject* owner,
                       const Vector<String>& idVector,
                       HeapVector<Member<AXObject>>& ownedChildren);
 
-  // Given an element in the DOM tree that was either just added or whose id just changed,
-  // check to see if another object wants to be its parent due to aria-owns. If so, update
-  // the tree by calling childrenChanged() on the potential owner, possibly reparenting
-  // this element.
+  // Given an element in the DOM tree that was either just added or whose id
+  // just changed, check to see if another object wants to be its parent due to
+  // aria-owns. If so, update the tree by calling childrenChanged() on the
+  // potential owner, possibly reparenting this element.
   void updateTreeIfElementIdIsAriaOwned(Element*);
 
  protected:
@@ -221,18 +226,20 @@ class MODULES_EXPORT AXObjectCacheImpl : public AXObjectCache {
   HashMap<AXID, AXID> m_ariaOwnedChildToOwnerMapping;
 
   // Map from the AXID of a child to the AXID of its real parent in the tree if
-  // we ignored aria-owns. This is needed in case the owner no longer wants to own it.
+  // we ignored aria-owns. This is needed in case the owner no longer wants to
+  // own it.
   HashMap<AXID, AXID> m_ariaOwnedChildToRealParentMapping;
 
-  // Map from the AXID of any object with an aria-owns attribute to the set of ids
-  // of its children. This is *unvalidated*, it includes ids that may not currently
-  // exist in the tree.
+  // Map from the AXID of any object with an aria-owns attribute to the set of
+  // ids of its children. This is *unvalidated*, it includes ids that may not
+  // currently exist in the tree.
   HashMap<AXID, HashSet<String>> m_ariaOwnerToIdsMapping;
 
-  // Map from an ID (the ID attribute of a DOM element) to the set of elements that
-  // want to own that ID. This is *unvalidated*, it includes possible duplicates.
-  // This is used so that when an element with an ID is added to the tree or changes
-  // its ID, we can quickly determine if it affects an aria-owns relationship.
+  // Map from an ID (the ID attribute of a DOM element) to the set of elements
+  // that want to own that ID. This is *unvalidated*, it includes possible
+  // duplicates.  This is used so that when an element with an ID is added to
+  // the tree or changes its ID, we can quickly determine if it affects an
+  // aria-owns relationship.
   HashMap<String, std::unique_ptr<HashSet<AXID>>> m_idToAriaOwnersMapping;
 
   Timer<AXObjectCacheImpl> m_notificationPostTimer;

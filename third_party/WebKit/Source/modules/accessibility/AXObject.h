@@ -309,7 +309,8 @@ enum TextStyle {
 
 enum TextUnderElementMode {
   TextUnderElementAll,
-  TextUnderElementAny  // If the text is unimportant, just whether or not it's present
+  TextUnderElementAny  // If the text is unimportant, just whether or not it's
+                       // present
 };
 
 // The source of the accessible name of an element. This is needed
@@ -326,8 +327,9 @@ enum AXNameFrom {
   AXNameFromTitle,
 };
 
-// The potential native HTML-based text (name, description or placeholder) sources for an element.
-// See http://rawgit.com/w3c/aria/master/html-aam/html-aam.html#accessible-name-and-description-calculation
+// The potential native HTML-based text (name, description or placeholder)
+// sources for an element.  See
+// http://rawgit.com/w3c/aria/master/html-aam/html-aam.html#accessible-name-and-description-calculation
 enum AXTextFromNativeHTML {
   AXTextFromNativeHTMLUninitialized = -1,
   AXTextFromNativeHTMLFigcaption,
@@ -518,7 +520,8 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
              anchorOffset >= 0 && focusOffset >= 0;
     }
 
-    // Determines if the range only refers to text offsets under the current object.
+    // Determines if the range only refers to text offsets under the current
+    // object.
     bool isSimple() const {
       return anchorObject == focusObject || !anchorObject || !focusObject;
     }
@@ -544,10 +547,12 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual void detach();
   virtual bool isDetached() const;
 
-  // If the parent of this object is known, this can be faster than using computeParent().
+  // If the parent of this object is known, this can be faster than using
+  // computeParent().
   virtual void setParent(AXObject* parent) { m_parent = parent; }
 
-  // The AXObjectCacheImpl that owns this object, and its unique ID within this cache.
+  // The AXObjectCacheImpl that owns this object, and its unique ID within this
+  // cache.
   AXObjectCacheImpl& axObjectCache() const {
     ASSERT(m_axObjectCache);
     return *m_axObjectCache;
@@ -679,27 +684,29 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // Accessible name calculation
   //
 
-  // Retrieves the accessible name of the object, an enum indicating where the name
-  // was derived from, and a list of objects that were used to derive the name, if any.
+  // Retrieves the accessible name of the object, an enum indicating where the
+  // name was derived from, and a list of objects that were used to derive the
+  // name, if any.
   virtual String name(AXNameFrom&, AXObjectVector* nameObjects) const;
 
   typedef HeapVector<NameSource> NameSources;
-  // Retrieves the accessible name of the object and a list of all potential sources
-  // for the name, indicating which were used.
+  // Retrieves the accessible name of the object and a list of all potential
+  // sources for the name, indicating which were used.
   virtual String name(NameSources*) const;
 
   typedef HeapVector<DescriptionSource> DescriptionSources;
   // Takes the result of nameFrom from calling |name|, above, and retrieves the
-  // accessible description of the object, which is secondary to |name|, an enum indicating
-  // where the description was derived from, and a list of objects that were used to
-  // derive the description, if any.
+  // accessible description of the object, which is secondary to |name|, an enum
+  // indicating where the description was derived from, and a list of objects
+  // that were used to derive the description, if any.
   virtual String description(AXNameFrom,
                              AXDescriptionFrom&,
                              AXObjectVector* descriptionObjects) const {
     return String();
   }
 
-  // Same as above, but returns a list of all potential sources for the description, indicating which were used.
+  // Same as above, but returns a list of all potential sources for the
+  // description, indicating which were used.
   virtual String description(AXNameFrom,
                              AXDescriptionFrom&,
                              DescriptionSources*,
@@ -707,9 +714,9 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
     return String();
   }
 
-  // Takes the result of nameFrom and descriptionFrom from calling |name| and |description|,
-  // above, and retrieves the placeholder of the object, if present and if it wasn't already
-  // exposed by one of the two functions above.
+  // Takes the result of nameFrom and descriptionFrom from calling |name| and
+  // |description|, above, and retrieves the placeholder of the object, if
+  // present and if it wasn't already exposed by one of the two functions above.
   virtual String placeholder(AXNameFrom, AXDescriptionFrom) const {
     return String();
   }
@@ -733,9 +740,11 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // This is a simpler high-level interface to |name| used by Inspector.
   String computedName() const;
 
-  // Internal function used to determine whether the result of calling |name| on this object would
-  // return text that came from the an HTML label element or not. This is intended to be faster than calling
-  // |name| or |textAlternative|, and without side effects (it won't call axObjectCache->getOrCreate).
+  // Internal function used to determine whether the result of calling |name| on
+  // this object would return text that came from the an HTML label element or
+  // not. This is intended to be faster than calling |name| or
+  // |textAlternative|, and without side effects (it won't call
+  // axObjectCache->getOrCreate).
   virtual bool nameFromLabelElement() const { return false; }
 
   //
@@ -779,7 +788,8 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual void markers(Vector<DocumentMarker::MarkerType>&,
                        Vector<AXRange>&) const {}
   // For an inline text box.
-  // The integer horizontal pixel offset of each character in the string; negative values for RTL.
+  // The integer horizontal pixel offset of each character in the string;
+  // negative values for RTL.
   virtual void textCharacterOffsets(Vector<int>&) const {}
   // The start and end character offset of each word in the object's text.
   virtual void wordBoundaries(Vector<AXRange>&) const {}
@@ -856,9 +866,9 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // optionally a transformation matrix that needs to be applied too.
   // To compute the absolute bounding box of an element, start with its
   // boundsInContainer and apply the transform. Then as long as its container is
-  // not null, walk up to its container and offset by the container's offset from
-  // origin, the container's scroll position if any, and apply the container's transform.
-  // Do this until you reach the root of the tree.
+  // not null, walk up to its container and offset by the container's offset
+  // from origin, the container's scroll position if any, and apply the
+  // container's transform.  Do this until you reach the root of the tree.
   virtual void getRelativeBounds(AXObject** outContainer,
                                  FloatRect& outBoundsInContainer,
                                  SkMatrix44& outContainerTransform) const;
@@ -875,10 +885,12 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // Hit testing.
   // Called on the root AX object to return the deepest available element.
   virtual AXObject* accessibilityHitTest(const IntPoint&) const { return 0; }
-  // Called on the AX object after the layout tree determines which is the right AXLayoutObject.
+  // Called on the AX object after the layout tree determines which is the right
+  // AXLayoutObject.
   virtual AXObject* elementAccessibilityHitTest(const IntPoint&) const;
 
-  // High-level accessibility tree access. Other modules should only use these functions.
+  // High-level accessibility tree access. Other modules should only use these
+  // functions.
   const AXObjectVector& children();
   AXObject* parentObject() const;
   AXObject* parentObjectIfExists() const;
@@ -887,7 +899,8 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   AXObject* cachedParentObject() const { return m_parent; }
   AXObject* parentObjectUnignored() const;
 
-  // Low-level accessibility tree exploration, only for use within the accessibility module.
+  // Low-level accessibility tree exploration, only for use within the
+  // accessibility module.
   virtual AXObject* rawFirstChild() const { return 0; }
   virtual AXObject* rawNextSibling() const { return 0; }
   virtual void addChildren() {}
@@ -939,11 +952,14 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual void decrement() {}
   bool performDefaultAction() const { return press(); }
   virtual bool press() const;
-  // Make this object visible by scrolling as many nested scrollable views as needed.
+  // Make this object visible by scrolling as many nested scrollable views as
+  // needed.
   void scrollToMakeVisible() const;
-  // Same, but if the whole object can't be made visible, try for this subrect, in local coordinates.
+  // Same, but if the whole object can't be made visible, try for this subrect,
+  // in local coordinates.
   void scrollToMakeVisibleWithSubFocus(const IntRect&) const;
-  // Scroll this object to a given point in global coordinates of the top-level window.
+  // Scroll this object to a given point in global coordinates of the top-level
+  // window.
   void scrollToGlobalPoint(const IntPoint&) const;
   virtual void setFocused(bool) {}
   virtual void setSelected(bool) {}
@@ -1022,7 +1038,8 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   mutable Member<AXObject> m_parent;
 
   // The following cached attribute values (the ones starting with m_cached*)
-  // are only valid if m_lastModificationCount matches AXObjectCacheImpl::modificationCount().
+  // are only valid if m_lastModificationCount matches
+  // AXObjectCacheImpl::modificationCount().
   mutable int m_lastModificationCount;
   mutable RGBA32 m_cachedBackgroundColor;
   mutable bool m_cachedIsIgnored : 1;
@@ -1036,7 +1053,8 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
 
   Member<AXObjectCacheImpl> m_axObjectCache;
 
-  // Updates the cached attribute values. This may be recursive, so to prevent deadlocks,
+  // Updates the cached attribute values. This may be recursive, so to prevent
+  // deadlocks,
   // functions called here may only search up the tree (ancestors), not down.
   void updateCachedAttributeValuesIfNeeded() const;
 

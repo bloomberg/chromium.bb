@@ -115,7 +115,8 @@ bool AXTable::isDataTable() const {
   if (!isHTMLTableElement(tableNode))
     return false;
 
-  // Do not consider it a data table if any of its descendants have an ARIA role.
+  // Do not consider it a data table if any of its descendants have an ARIA
+  // role.
   HTMLTableElement* tableElement = toHTMLTableElement(tableNode);
   if (elementHasAriaRole(tableElement->tHead()))
     return false;
@@ -142,7 +143,8 @@ bool AXTable::isDataTable() const {
     }
   }
 
-  // If there is a caption element, summary, THEAD, or TFOOT section, it's most certainly a data table
+  // If there is a caption element, summary, THEAD, or TFOOT section, it's most
+  // certainly a data table
   if (!tableElement->summary().isEmpty() || tableElement->tHead() ||
       tableElement->tFoot() || tableElement->caption())
     return true;
@@ -173,7 +175,8 @@ bool AXTable::isDataTable() const {
   if (numRows >= 20)
     return true;
 
-  // Store the background color of the table to check against cell's background colors.
+  // Store the background color of the table to check against cell's background
+  // colors.
   const ComputedStyle* tableStyle = table->style();
   if (!tableStyle)
     return false;
@@ -184,7 +187,8 @@ bool AXTable::isDataTable() const {
   // Criteria:
   //   1) must have at least one valid cell (and)
   //   2) at least half of cells have borders (or)
-  //   3) at least half of cells have different bg colors than the table, and there is cell spacing
+  //   3) at least half of cells have different bg colors than the table, and
+  //      there is cell spacing
   unsigned validCellCount = 0;
   unsigned borderedCellCount = 0;
   unsigned backgroundDifferenceCellCount = 0;
@@ -213,15 +217,18 @@ bool AXTable::isDataTable() const {
       validCellCount++;
 
       bool isTHCell = cellNode->hasTagName(thTag);
-      // If the first row is comprised of all <th> tags, assume it is a data table.
+      // If the first row is comprised of all <th> tags, assume it is a data
+      // table.
       if (!row && isTHCell)
         headersInFirstRowCount++;
 
-      // If the first column is comprised of all <th> tags, assume it is a data table.
+      // If the first column is comprised of all <th> tags, assume it is a data
+      // table.
       if (!col && isTHCell)
         headersInFirstColumnCount++;
 
-      // in this case, the developer explicitly assigned a "data" table attribute
+      // In this case, the developer explicitly assigned a "data" table
+      // attribute.
       if (isHTMLTableCellElement(*cellNode)) {
         HTMLTableCellElement& cellElement = toHTMLTableCellElement(*cellNode);
         if (!cellElement.headers().isEmpty() || !cellElement.abbr().isEmpty() ||
@@ -242,8 +249,8 @@ bool AXTable::isDataTable() const {
           (cell->borderLeft() > 0 && cell->borderRight() > 0))
         borderedCellCount++;
 
-      // Also keep track of each individual border, so we can catch tables where most
-      // cells have a bottom border, for example.
+      // Also keep track of each individual border, so we can catch tables where
+      // most cells have a bottom border, for example.
       if (cell->borderTop() > 0)
         cellsWithTopBorder++;
       if (cell->borderBottom() > 0)
@@ -253,8 +260,9 @@ bool AXTable::isDataTable() const {
       if (cell->borderRight() > 0)
         cellsWithRightBorder++;
 
-      // If the cell has a different color from the table and there is cell spacing,
-      // then it is probably a data table cell (spacing and colors take the place of borders).
+      // If the cell has a different color from the table and there is cell
+      // spacing, then it is probably a data table cell (spacing and colors take
+      // the place of borders).
       Color cellColor =
           computedStyle->visitedDependentColor(CSSPropertyBackgroundColor);
       if (table->hBorderSpacing() > 0 && table->vBorderSpacing() > 0 &&
@@ -265,7 +273,8 @@ bool AXTable::isDataTable() const {
       if (borderedCellCount >= 10 || backgroundDifferenceCellCount >= 10)
         return true;
 
-      // For the first 5 rows, cache the background color so we can check if this table has zebra-striped rows.
+      // For the first 5 rows, cache the background color so we can check if
+      // this table has zebra-striped rows.
       if (row < 5 && row == alternatingRowColorCount) {
         LayoutObject* layoutRow = cell->parent();
         if (!layoutRow || !layoutRow->isBoxModelObject() ||
@@ -305,7 +314,8 @@ bool AXTable::isDataTable() const {
   if (backgroundDifferenceCellCount >= neededCellCount)
     return true;
 
-  // Check if there is an alternating row background color indicating a zebra striped style pattern.
+  // Check if there is an alternating row background color indicating a zebra
+  // striped style pattern.
   if (alternatingRowColorCount > 2) {
     Color firstColor = alternatingRowColors[0];
     for (int k = 1; k < alternatingRowColorCount; k++) {
@@ -378,7 +388,8 @@ void AXTable::addChildren() {
       m_children.append(captionObject);
   }
 
-  // Go through all the available sections to pull out the rows and add them as children.
+  // Go through all the available sections to pull out the rows and add them as
+  // children.
   table->recalcSectionsIfNeeded();
   LayoutTableSection* tableSection = table->topSection();
   if (!tableSection)
@@ -496,13 +507,14 @@ AXTableCell* AXTable::cellForColumnAndRow(unsigned column, unsigned row) {
   if (column >= columnCount() || row >= rowCount())
     return 0;
 
-  // Iterate backwards through the rows in case the desired cell has a rowspan and exists in a previous row.
+  // Iterate backwards through the rows in case the desired cell has a rowspan
+  // and exists in a previous row.
   for (unsigned rowIndexCounter = row + 1; rowIndexCounter > 0;
        --rowIndexCounter) {
     unsigned rowIndex = rowIndexCounter - 1;
     const auto& children = m_rows[rowIndex]->children();
-    // Since some cells may have colspans, we have to check the actual range of each
-    // cell to determine which is the right one.
+    // Since some cells may have colspans, we have to check the actual range of
+    // each cell to determine which is the right one.
     for (unsigned colIndexCounter =
              std::min(static_cast<unsigned>(children.size()), column + 1);
          colIndexCounter > 0; --colIndexCounter) {

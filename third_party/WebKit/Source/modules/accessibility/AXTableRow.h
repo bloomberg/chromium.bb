@@ -49,7 +49,8 @@ class AXTableRow : public AXLayoutObject {
 
   // retrieves the "row" header (a th tag in the rightmost column)
   virtual AXObject* headerObject();
-  // retrieves the "row" headers (th, scope) from left to right for the each row.
+  // Retrieves the "row" headers (th, scope) from left to right for the each
+  // row.
   virtual void headerObjectsForRow(AXObjectVector&);
   AXObject* parentTable() const;
 

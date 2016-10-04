@@ -100,12 +100,14 @@ void AXARIAGrid::addChildren() {
   unsigned columnCount = 0;
   for (const auto& child : children) {
     if (!addTableRowChild(child, appendedRows, columnCount)) {
-      // in case the layout tree doesn't match the expected ARIA hierarchy, look at the children
+      // in case the layout tree doesn't match the expected ARIA hierarchy, look
+      // at the children
       if (!child->hasChildren())
         child->addChildren();
 
-      // The children of this non-row will contain all non-ignored elements (recursing to find them).
-      // This allows the table to dive arbitrarily deep to find the rows.
+      // The children of this non-row will contain all non-ignored elements
+      // (recursing to find them).  This allows the table to dive arbitrarily
+      // deep to find the rows.
       for (const auto& childObject : child->children())
         addTableRowChild(childObject.get(), appendedRows, columnCount);
     }
