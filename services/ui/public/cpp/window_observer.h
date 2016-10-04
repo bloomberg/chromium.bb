@@ -64,8 +64,24 @@ class WindowObserver {
 
   virtual void OnWindowPredefinedCursorChanged(Window* window,
                                                mojom::Cursor cursor) {}
-  virtual void OnWindowVisibilityChanging(Window* window) {}
-  virtual void OnWindowVisibilityChanged(Window* window) {}
+
+  // Changing the visibility of a window results in the following sequence of
+  // functions being called:
+  // . OnWindowVisibilityChanging(): called on observers added to the window
+  //    whose visibility is changing. This is called before the visibility has
+  //    changed internally.
+  // The following are called after the visibility changes:
+  // . OnChildWindowVisibilityChanged(): called on observers added to the
+  //   parent of the window whose visibility changed. This function is generally
+  //   intended for layout managers that need to do processing before
+  //   OnWindowVisibilityChanged() is called on observers of the window.
+  // . OnWindowVisibilityChanged(): called on observers added to the window
+  //   whose visibility changed, as well as observers added to all ancestors and
+  //   all descendants of the window.
+  virtual void OnWindowVisibilityChanging(Window* window, bool visible) {}
+  virtual void OnChildWindowVisibilityChanged(Window* window, bool visible) {}
+  virtual void OnWindowVisibilityChanged(Window* window, bool visible) {}
+
   virtual void OnWindowOpacityChanged(Window* window,
                                       float old_opacity,
                                       float new_opacity) {}

@@ -544,7 +544,7 @@ class VisibilityChangeObserver : public WindowObserver {
 
  private:
   // Overridden from WindowObserver:
-  void OnWindowVisibilityChanged(Window* window) override {
+  void OnWindowVisibilityChanged(Window* window, bool visible) override {
     EXPECT_EQ(window, window_);
     EXPECT_TRUE(WindowServerTestBase::QuitRunLoop());
   }

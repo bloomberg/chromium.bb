@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// This has to be before any other includes, else default is picked up.
+// See base/logging for details on this.
+#define NOTIMPLEMENTED_POLICY 5
+
 #include "ui/views/mus/native_widget_mus.h"
 
 #include <utility>
@@ -408,11 +412,11 @@ class NativeWidgetMus::MusWindowObserver : public ui::WindowObserver {
   }
 
   // ui::WindowObserver:
-  void OnWindowVisibilityChanging(ui::Window* window) override {
-    native_widget_mus_->OnMusWindowVisibilityChanging(window);
+  void OnWindowVisibilityChanging(ui::Window* window, bool visible) override {
+    native_widget_mus_->OnMusWindowVisibilityChanging(window, visible);
   }
-  void OnWindowVisibilityChanged(ui::Window* window) override {
-    native_widget_mus_->OnMusWindowVisibilityChanged(window);
+  void OnWindowVisibilityChanged(ui::Window* window, bool visible) override {
+    native_widget_mus_->OnMusWindowVisibilityChanged(window, visible);
   }
   void OnWindowPredefinedCursorChanged(ui::Window* window,
                                        ui::mojom::Cursor cursor) override {
@@ -775,17 +779,17 @@ void NativeWidgetMus::OnWidgetInitDone() {
 }
 
 bool NativeWidgetMus::ShouldUseNativeFrame() const {
-  // NOTIMPLEMENTED();
+  NOTIMPLEMENTED();
   return false;
 }
 
 bool NativeWidgetMus::ShouldWindowContentsBeTransparent() const {
-  // NOTIMPLEMENTED();
+  NOTIMPLEMENTED();
   return true;
 }
 
 void NativeWidgetMus::FrameTypeChanged() {
-  // NOTIMPLEMENTED();
+  NOTIMPLEMENTED();
 }
 
 Widget* NativeWidgetMus::GetWidget() {
@@ -817,11 +821,11 @@ const ui::Layer* NativeWidgetMus::GetLayer() const {
 }
 
 void NativeWidgetMus::ReorderNativeViews() {
-  // NOTIMPLEMENTED();
+  NOTIMPLEMENTED();
 }
 
 void NativeWidgetMus::ViewRemoved(View* view) {
-  // NOTIMPLEMENTED();
+  NOTIMPLEMENTED();
 }
 
 // These methods are wrong in mojo. They're not usually used to associate
@@ -881,7 +885,7 @@ void NativeWidgetMus::CenterWindow(const gfx::Size& size) {
 void NativeWidgetMus::GetWindowPlacement(
       gfx::Rect* bounds,
       ui::WindowShowState* maximized) const {
-  // NOTIMPLEMENTED();
+  NOTIMPLEMENTED();
 }
 
 bool NativeWidgetMus::SetWindowTitle(const base::string16& title) {
@@ -999,19 +1003,19 @@ void NativeWidgetMus::SetSize(const gfx::Size& size) {
 }
 
 void NativeWidgetMus::StackAbove(gfx::NativeView native_view) {
-  // NOTIMPLEMENTED();
+  NOTIMPLEMENTED();
 }
 
 void NativeWidgetMus::StackAtTop() {
-  // NOTIMPLEMENTED();
+  NOTIMPLEMENTED();
 }
 
 void NativeWidgetMus::StackBelow(gfx::NativeView native_view) {
-  // NOTIMPLEMENTED();
+  NOTIMPLEMENTED();
 }
 
 void NativeWidgetMus::SetShape(std::unique_ptr<SkRegion> shape) {
-  // NOTIMPLEMENTED();
+  NOTIMPLEMENTED();
 }
 
 void NativeWidgetMus::Close() {
@@ -1188,7 +1192,7 @@ void NativeWidgetMus::SetOpacity(float opacity) {
 }
 
 void NativeWidgetMus::FlashFrame(bool flash_frame) {
-  // NOTIMPLEMENTED();
+  NOTIMPLEMENTED();
 }
 
 void NativeWidgetMus::RunShellDrag(View* view,
@@ -1221,7 +1225,7 @@ void NativeWidgetMus::SetCursor(gfx::NativeCursor cursor) {
 }
 
 bool NativeWidgetMus::IsMouseEventsEnabled() const {
-  // NOTIMPLEMENTED();
+  NOTIMPLEMENTED();
   return true;
 }
 
@@ -1239,7 +1243,7 @@ void NativeWidgetMus::ClearNativeFocus() {
 }
 
 gfx::Rect NativeWidgetMus::GetWorkAreaBoundsInScreen() const {
-  // NOTIMPLEMENTED();
+  NOTIMPLEMENTED();
   return gfx::Rect();
 }
 
@@ -1275,17 +1279,17 @@ void NativeWidgetMus::EndMoveLoop() {
 }
 
 void NativeWidgetMus::SetVisibilityChangedAnimationsEnabled(bool value) {
-  // NOTIMPLEMENTED();
+  NOTIMPLEMENTED();
 }
 
 void NativeWidgetMus::SetVisibilityAnimationDuration(
     const base::TimeDelta& duration) {
-  // NOTIMPLEMENTED();
+  NOTIMPLEMENTED();
 }
 
 void NativeWidgetMus::SetVisibilityAnimationTransition(
     Widget::VisibilityTransition transition) {
-  // NOTIMPLEMENTED();
+  NOTIMPLEMENTED();
 }
 
 ui::NativeTheme* NativeWidgetMus::GetNativeTheme() const {
@@ -1293,11 +1297,11 @@ ui::NativeTheme* NativeWidgetMus::GetNativeTheme() const {
 }
 
 void NativeWidgetMus::OnRootViewLayout() {
-  // NOTIMPLEMENTED();
+  NOTIMPLEMENTED();
 }
 
 bool NativeWidgetMus::IsTranslucentWindowOpacitySupported() const {
-  // NOTIMPLEMENTED();
+  NOTIMPLEMENTED();
   return true;
 }
 
@@ -1311,7 +1315,7 @@ void NativeWidgetMus::OnSizeConstraintsChanged() {
 }
 
 void NativeWidgetMus::RepostNativeEvent(gfx::NativeEvent native_event) {
-  // NOTIMPLEMENTED();
+  NOTIMPLEMENTED();
 }
 
 std::string NativeWidgetMus::GetName() const {
@@ -1498,25 +1502,25 @@ void NativeWidgetMus::OnWindowInputEvent(
   // |ack_handler| acks the event on destruction if necessary.
 }
 
-void NativeWidgetMus::OnMusWindowVisibilityChanging(ui::Window* window) {
-  if (window == window_) {
-    native_widget_delegate_->OnNativeWidgetVisibilityChanging(
-        !window->visible());
-  }
+void NativeWidgetMus::OnMusWindowVisibilityChanging(ui::Window* window,
+                                                    bool visible) {
+  if (window == window_)
+    native_widget_delegate_->OnNativeWidgetVisibilityChanging(visible);
 }
 
-void NativeWidgetMus::OnMusWindowVisibilityChanged(ui::Window* window) {
+void NativeWidgetMus::OnMusWindowVisibilityChanged(ui::Window* window,
+                                                   bool visible) {
   if (window != window_)
     return;
 
-  if (window->visible()) {
+  if (visible) {
     window_tree_host_->Show();
     GetNativeWindow()->Show();
   } else {
     window_tree_host_->Hide();
     GetNativeWindow()->Hide();
   }
-  native_widget_delegate_->OnNativeWidgetVisibilityChanged(window->visible());
+  native_widget_delegate_->OnNativeWidgetVisibilityChanged(visible);
 }
 
 void NativeWidgetMus::UpdateHitTestMask() {

@@ -256,8 +256,8 @@ class VIEWS_MUS_EXPORT NativeWidgetMus
   void set_last_cursor(ui::mojom::Cursor cursor) { last_cursor_ = cursor; }
   void SetShowState(ui::mojom::ShowState show_state);
 
-  void OnMusWindowVisibilityChanging(ui::Window* window);
-  void OnMusWindowVisibilityChanged(ui::Window* window);
+  void OnMusWindowVisibilityChanging(ui::Window* window, bool visible);
+  void OnMusWindowVisibilityChanged(ui::Window* window, bool visible);
 
   // Propagates the widget hit test mask, if any, to the ui::Window.
   // TODO(jamescook): Wire this through views::Widget so widgets can push

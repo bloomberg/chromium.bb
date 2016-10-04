@@ -146,12 +146,12 @@ MUS_DEFINE_WINDOW_PROPERTY_KEY(const char*, kStringKey, "squeamish");
 TEST_F(WindowTest, Property) {
   TestWindow w;
 
-  // Non-existent properties should return the default walues.
+  // Non-existent properties should return the default values.
   EXPECT_EQ(-2, w.GetLocalProperty(kIntKey));
   EXPECT_EQ(std::string("squeamish"), w.GetLocalProperty(kStringKey));
 
-  // A set property walue should be returned again (even if it's the default
-  // walue).
+  // A set property value should be returned again (even if it's the default
+  // value).
   w.SetLocalProperty(kIntKey, INT_MAX);
   EXPECT_EQ(INT_MAX, w.GetLocalProperty(kIntKey));
   w.SetLocalProperty(kIntKey, -2);
@@ -166,7 +166,7 @@ TEST_F(WindowTest, Property) {
   w.SetLocalProperty(kStringKey, "ossifrage");
   EXPECT_EQ(std::string("ossifrage"), w.GetLocalProperty(kStringKey));
 
-  // ClearProperty should restore the default walue.
+  // ClearProperty should restore the default value.
   w.ClearLocalProperty(kIntKey);
   EXPECT_EQ(-2, w.GetLocalProperty(kIntKey));
   w.ClearLocalProperty(kStringKey);
@@ -679,15 +679,20 @@ class VisibilityChangeObserver : public WindowObserver {
 
  private:
   // Overridden from WindowObserver:
-  void OnWindowVisibilityChanging(Window* window) override {
-    changes_.push_back(base::StringPrintf(
-        "window=%d phase=changing wisibility=%s", window->local_id(),
-        window->visible() ? "true" : "false"));
+  void OnWindowVisibilityChanging(Window* window, bool visible) override {
+    changes_.push_back(
+        base::StringPrintf("window=%d phase=changing visibility=%s",
+                           window->local_id(), visible ? "true" : "false"));
   }
-  void OnWindowVisibilityChanged(Window* window) override {
-    changes_.push_back(base::StringPrintf(
-        "window=%d phase=changed wisibility=%s", window->local_id(),
-        window->visible() ? "true" : "false"));
+  void OnChildWindowVisibilityChanged(Window* window, bool visible) override {
+    changes_.push_back(
+        base::StringPrintf("window=%d phase=child-changed visibility=%s",
+                           window->local_id(), visible ? "true" : "false"));
+  }
+  void OnWindowVisibilityChanged(Window* window, bool visible) override {
+    changes_.push_back(
+        base::StringPrintf("window=%d phase=changed visibility=%s",
+                           window->local_id(), visible ? "true" : "false"));
   }
 
   Window* window_;
@@ -705,17 +710,17 @@ TEST_F(WindowObserverTest, SetVisible) {
   w1.SetVisible(true);
   EXPECT_TRUE(w1.visible());
   {
-    // Change wisibility from true to false and make sure we get notifications.
+    // Change visibility from true to false and make sure we get notifications.
     VisibilityChangeObserver observer(&w1);
     w1.SetVisible(false);
 
     Changes changes = observer.GetAndClearChanges();
     ASSERT_EQ(2U, changes.size());
-    EXPECT_EQ("window=1 phase=changing wisibility=true", changes[0]);
-    EXPECT_EQ("window=1 phase=changed wisibility=false", changes[1]);
+    EXPECT_EQ("window=1 phase=changing visibility=false", changes[0]);
+    EXPECT_EQ("window=1 phase=changed visibility=false", changes[1]);
   }
   {
-    // Set visible to existing walue and werify no notifications.
+    // Set visible to existing value and verify no notifications.
     VisibilityChangeObserver observer(&w1);
     w1.SetVisible(false);
     EXPECT_TRUE(observer.GetAndClearChanges().empty());
@@ -733,14 +738,15 @@ TEST_F(WindowObserverTest, SetVisibleParent) {
   EXPECT_TRUE(parent.visible());
   EXPECT_TRUE(child.visible());
   {
-    // Change wisibility from true to false and make sure we get notifications
+    // Change visibility from true to false and make sure we get notifications
     // on the parent.
     VisibilityChangeObserver observer(&parent);
     child.SetVisible(false);
 
     Changes changes = observer.GetAndClearChanges();
-    ASSERT_EQ(1U, changes.size());
-    EXPECT_EQ("window=2 phase=changed wisibility=false", changes[0]);
+    ASSERT_EQ(2U, changes.size());
+    EXPECT_EQ("window=2 phase=child-changed visibility=false", changes[0]);
+    EXPECT_EQ("window=2 phase=changed visibility=false", changes[1]);
   }
 }
 
@@ -755,14 +761,14 @@ TEST_F(WindowObserverTest, SetVisibleChild) {
   EXPECT_TRUE(parent.visible());
   EXPECT_TRUE(child.visible());
   {
-    // Change wisibility from true to false and make sure we get notifications
+    // Change visibility from true to false and make sure we get notifications
     // on the child.
     VisibilityChangeObserver observer(&child);
     parent.SetVisible(false);
 
     Changes changes = observer.GetAndClearChanges();
     ASSERT_EQ(1U, changes.size());
-    EXPECT_EQ("window=1 phase=changed wisibility=false", changes[0]);
+    EXPECT_EQ("window=1 phase=changed visibility=false", changes[0]);
   }
 }
 

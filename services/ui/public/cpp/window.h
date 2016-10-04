@@ -314,15 +314,15 @@ class Window {
   void NotifyWindowStackingChanged();
   // Methods implementing visibility change notifications. See WindowObserver
   // for more details.
-  void NotifyWindowVisibilityChanged(Window* target);
+  void NotifyWindowVisibilityChanged(Window* target, bool visible);
   // Notifies this window's observers. Returns false if |this| was deleted
   // during the call (by an observer), otherwise true.
-  bool NotifyWindowVisibilityChangedAtReceiver(Window* target);
+  bool NotifyWindowVisibilityChangedAtReceiver(Window* target, bool visible);
   // Notifies this window and its child hierarchy. Returns false if |this| was
   // deleted during the call (by an observer), otherwise true.
-  bool NotifyWindowVisibilityChangedDown(Window* target);
+  bool NotifyWindowVisibilityChangedDown(Window* target, bool visible);
   // Notifies this window and its parent hierarchy.
-  void NotifyWindowVisibilityChangedUp(Window* target);
+  void NotifyWindowVisibilityChangedUp(Window* target, bool visible);
 
   // Returns true if embed is allowed for this node. If embedding is allowed all
   // the children are removed.

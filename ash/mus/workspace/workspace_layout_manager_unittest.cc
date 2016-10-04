@@ -524,8 +524,8 @@ class FocusObserver : public ui::WindowObserver {
   ~FocusObserver() override { window_->RemoveObserver(this); }
 
   // aura::test::TestWindowDelegate overrides:
-  void OnWindowVisibilityChanged(ui::Window* window) override {
-    if (window_->visible())
+  void OnWindowVisibilityChanged(ui::Window* window, bool visible) override {
+    if (visible)
       window_->SetFocus();
     show_state_ = WmWindowMus::Get(window_)->GetShowState();
   }

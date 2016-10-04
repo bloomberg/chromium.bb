@@ -732,9 +732,14 @@ void Window::LocalSetVisible(bool visible) {
     return;
 
   FOR_EACH_OBSERVER(WindowObserver, observers_,
-                    OnWindowVisibilityChanging(this));
+                    OnWindowVisibilityChanging(this, visible));
   visible_ = visible;
-  NotifyWindowVisibilityChanged(this);
+  if (parent_) {
+    FOR_EACH_OBSERVER(WindowObserver, parent_->observers_,
+                      OnChildWindowVisibilityChanged(this, visible));
+  }
+
+  NotifyWindowVisibilityChanged(this, visible);
 }
 
 void Window::LocalSetOpacity(float opacity) {
@@ -797,26 +802,27 @@ void Window::NotifyWindowStackingChanged() {
                               &ReorderWithoutNotification);
 }
 
-void Window::NotifyWindowVisibilityChanged(Window* target) {
-  if (!NotifyWindowVisibilityChangedDown(target)) {
+void Window::NotifyWindowVisibilityChanged(Window* target, bool visible) {
+  if (!NotifyWindowVisibilityChangedDown(target, visible))
     return;  // |this| has been deleted.
-  }
-  NotifyWindowVisibilityChangedUp(target);
+
+  NotifyWindowVisibilityChangedUp(target, visible);
 }
 
-bool Window::NotifyWindowVisibilityChangedAtReceiver(Window* target) {
+bool Window::NotifyWindowVisibilityChangedAtReceiver(Window* target,
+                                                     bool visible) {
   // |this| may be deleted during a call to OnWindowVisibilityChanged() on one
   // of the observers. We create an local observer for that. In that case we
   // exit without further access to any members.
   WindowTracker tracker;
   tracker.Add(this);
   FOR_EACH_OBSERVER(WindowObserver, observers_,
-                    OnWindowVisibilityChanged(target));
+                    OnWindowVisibilityChanged(target, visible));
   return tracker.Contains(this);
 }
 
-bool Window::NotifyWindowVisibilityChangedDown(Window* target) {
-  if (!NotifyWindowVisibilityChangedAtReceiver(target))
+bool Window::NotifyWindowVisibilityChangedDown(Window* target, bool visible) {
+  if (!NotifyWindowVisibilityChangedAtReceiver(target, visible))
     return false;  // |this| was deleted.
   std::set<const Window*> child_already_processed;
   bool child_destroyed = false;
@@ -826,7 +832,7 @@ bool Window::NotifyWindowVisibilityChangedDown(Window* target) {
          it != children_.end(); ++it) {
       if (!child_already_processed.insert(*it).second)
         continue;
-      if (!(*it)->NotifyWindowVisibilityChangedDown(target)) {
+      if (!(*it)->NotifyWindowVisibilityChangedDown(target, visible)) {
         // |*it| was deleted, |it| is invalid and |children_| has changed.  We
         // exit the current for-loop and enter a new one.
         child_destroyed = true;
@@ -837,11 +843,11 @@ bool Window::NotifyWindowVisibilityChangedDown(Window* target) {
   return true;
 }
 
-void Window::NotifyWindowVisibilityChangedUp(Window* target) {
+void Window::NotifyWindowVisibilityChangedUp(Window* target, bool visible) {
   // Start with the parent as we already notified |this|
   // in NotifyWindowVisibilityChangedDown.
   for (Window* window = parent(); window; window = window->parent()) {
-    bool ret = window->NotifyWindowVisibilityChangedAtReceiver(target);
+    bool ret = window->NotifyWindowVisibilityChangedAtReceiver(target, visible);
     DCHECK(ret);
   }
 }
