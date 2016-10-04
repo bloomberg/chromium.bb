@@ -4565,7 +4565,9 @@ interface Permissions
     method revoke
 interface PhotoCapabilities
     attribute @@toStringTag
+    getter brightness
     getter colorTemperature
+    getter contrast
     getter exposureCompensation
     getter exposureMode
     getter fillLightMode
@@ -4574,6 +4576,8 @@ interface PhotoCapabilities
     getter imageWidth
     getter iso
     getter redEyeReduction
+    getter saturation
+    getter sharpness
     getter whiteBalanceMode
     getter zoom
     method constructor

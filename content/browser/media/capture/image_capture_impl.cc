@@ -39,6 +39,10 @@ void RunFailedGetCapabilitiesCallback(
   empty_capabilities->zoom = media::mojom::Range::New();
   empty_capabilities->exposure_compensation = media::mojom::Range::New();
   empty_capabilities->color_temperature = media::mojom::Range::New();
+  empty_capabilities->brightness = media::mojom::Range::New();
+  empty_capabilities->contrast = media::mojom::Range::New();
+  empty_capabilities->saturation = media::mojom::Range::New();
+  empty_capabilities->sharpness = media::mojom::Range::New();
   cb.Run(std::move(empty_capabilities));
 }
 

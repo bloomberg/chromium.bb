@@ -99,6 +99,37 @@ async_test(function(t) {
       assert_equals(capabilities.colorTemperature.current,
                     mock_capabilities.color_temperature.current);
 
+      assert_true(capabilities.brightness instanceof MediaSettingsRange);
+      assert_equals(capabilities.brightness.max,
+                    mock_capabilities.brightness.max);
+      assert_equals(capabilities.brightness.min,
+                    mock_capabilities.brightness.min);
+      assert_equals(capabilities.brightness.current,
+                    mock_capabilities.brightness.current);
+
+      assert_true(capabilities.contrast instanceof MediaSettingsRange);
+      assert_equals(capabilities.contrast.max,
+                    mock_capabilities.contrast.max);
+      assert_equals(capabilities.contrast.min,
+                    mock_capabilities.contrast.min);
+      assert_equals(capabilities.contrast.current,
+                    mock_capabilities.contrast.current);
+
+      assert_true(capabilities.saturation instanceof MediaSettingsRange);
+      assert_equals(capabilities.saturation.max,
+                    mock_capabilities.saturation.max);
+      assert_equals(capabilities.saturation.min,
+                    mock_capabilities.saturation.min);
+      assert_equals(capabilities.saturation.current,
+                    mock_capabilities.saturation.current);
+
+      assert_true(capabilities.sharpness instanceof MediaSettingsRange);
+      assert_equals(capabilities.sharpness.max,
+                    mock_capabilities.sharpness.max);
+      assert_equals(capabilities.sharpness.min,
+                    mock_capabilities.sharpness.min);
+      assert_equals(capabilities.sharpness.current,
+                    mock_capabilities.sharpness.current);
       t.done();
     })
     .catch(error => {

@@ -30,6 +30,10 @@ struct PhotoCapabilities {
   bool red_eye_reduction;
   MeteringMode focus_mode;
 
+  Range brightness;
+  Range contrast;
+  Range saturation;
+  Range sharpness;
   Range height;
   Range width;
   Range zoom;
@@ -63,6 +67,14 @@ struct PhotoSettings {
   MeteringMode focus_mode;
   array<Point2D> points_of_interest;
 
+  bool has_brightness;
+  uint32 brightness;
+  bool has_contrast;
+  uint32 contrast;
+  bool has_saturation;
+  uint32 saturation;
+  bool has_sharpness;
+  uint32 sharpness;
   bool has_zoom;
   uint32 zoom;
   bool has_width;

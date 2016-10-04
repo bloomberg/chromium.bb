@@ -70,6 +70,18 @@ class PhotoCapabilities final
     m_colorTemperature = value;
   }
 
+  MediaSettingsRange* brightness() const { return m_brightness; }
+  void setBrightness(MediaSettingsRange* value) { m_brightness = value; }
+
+  MediaSettingsRange* contrast() const { return m_contrast; }
+  void setContrast(MediaSettingsRange* value) { m_contrast = value; }
+
+  MediaSettingsRange* saturation() const { return m_saturation; }
+  void setSaturation(MediaSettingsRange* value) { m_saturation = value; }
+
+  MediaSettingsRange* sharpness() const { return m_sharpness; }
+  void setSharpness(MediaSettingsRange* value) { m_sharpness = value; }
+
   DECLARE_VIRTUAL_TRACE();
 
  private:
@@ -89,8 +101,11 @@ class PhotoCapabilities final
   media::mojom::blink::FillLightMode m_fillLightMode =
       media::mojom::blink::FillLightMode::NONE;
   bool m_redEyeReduction;
-
   Member<MediaSettingsRange> m_colorTemperature;
+  Member<MediaSettingsRange> m_brightness;
+  Member<MediaSettingsRange> m_contrast;
+  Member<MediaSettingsRange> m_saturation;
+  Member<MediaSettingsRange> m_sharpness;
 };
 
 }  // namespace blink

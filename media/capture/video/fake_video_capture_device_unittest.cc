@@ -345,6 +345,18 @@ TEST_F(FakeVideoCaptureDeviceTest, GetAndSetCapabilities) {
   EXPECT_EQ(0, capabilities->color_temperature->min);
   EXPECT_EQ(0, capabilities->color_temperature->max);
   EXPECT_EQ(0, capabilities->color_temperature->current);
+  EXPECT_EQ(0, capabilities->brightness->min);
+  EXPECT_EQ(0, capabilities->brightness->max);
+  EXPECT_EQ(0, capabilities->brightness->current);
+  EXPECT_EQ(0, capabilities->contrast->min);
+  EXPECT_EQ(0, capabilities->contrast->max);
+  EXPECT_EQ(0, capabilities->contrast->current);
+  EXPECT_EQ(0, capabilities->saturation->min);
+  EXPECT_EQ(0, capabilities->saturation->max);
+  EXPECT_EQ(0, capabilities->saturation->current);
+  EXPECT_EQ(0, capabilities->sharpness->min);
+  EXPECT_EQ(0, capabilities->sharpness->max);
+  EXPECT_EQ(0, capabilities->sharpness->current);
 
   // Set options: zoom to the maximum value.
   const int max_zoom_value = capabilities->zoom->max;

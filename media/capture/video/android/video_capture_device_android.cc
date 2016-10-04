@@ -540,6 +540,11 @@ void VideoCaptureDeviceAndroid::DoGetPhotoCapabilities(
       caps.getCurrentColorTemperature();
   photo_capabilities->color_temperature->max = caps.getMaxColorTemperature();
   photo_capabilities->color_temperature->min = caps.getMinColorTemperature();
+  photo_capabilities->brightness = media::mojom::Range::New();
+  photo_capabilities->contrast = media::mojom::Range::New();
+  photo_capabilities->saturation = media::mojom::Range::New();
+  photo_capabilities->sharpness = media::mojom::Range::New();
+
   callback.Run(std::move(photo_capabilities));
 }
 

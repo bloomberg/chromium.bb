@@ -186,6 +186,18 @@ ScriptPromise ImageCapture::setOptions(ScriptState* scriptState,
   settings->has_color_temperature = photoSettings.hasColorTemperature();
   if (settings->has_color_temperature)
     settings->color_temperature = photoSettings.colorTemperature();
+  settings->has_brightness = photoSettings.hasBrightness();
+  if (settings->has_brightness)
+    settings->brightness = photoSettings.brightness();
+  settings->has_contrast = photoSettings.hasContrast();
+  if (settings->has_contrast)
+    settings->contrast = photoSettings.contrast();
+  settings->has_saturation = photoSettings.hasSaturation();
+  if (settings->has_saturation)
+    settings->saturation = photoSettings.saturation();
+  settings->has_sharpness = photoSettings.hasSharpness();
+  if (settings->has_sharpness)
+    settings->sharpness = photoSettings.sharpness();
 
   m_service->SetOptions(m_streamTrack->component()->source()->id(),
                         std::move(settings),
@@ -298,6 +310,18 @@ void ImageCapture::onCapabilities(
         MediaSettingsRange::create(capabilities->color_temperature->max,
                                    capabilities->color_temperature->min,
                                    capabilities->color_temperature->current);
+    MediaSettingsRange* brightness = MediaSettingsRange::create(
+        capabilities->brightness->max, capabilities->brightness->min,
+        capabilities->brightness->current);
+    MediaSettingsRange* contrast = MediaSettingsRange::create(
+        capabilities->contrast->max, capabilities->contrast->min,
+        capabilities->contrast->current);
+    MediaSettingsRange* saturation = MediaSettingsRange::create(
+        capabilities->saturation->max, capabilities->saturation->min,
+        capabilities->saturation->current);
+    MediaSettingsRange* sharpness = MediaSettingsRange::create(
+        capabilities->sharpness->max, capabilities->sharpness->min,
+        capabilities->sharpness->current);
     PhotoCapabilities* caps = PhotoCapabilities::create();
     caps->setIso(iso);
     caps->setImageHeight(height);
@@ -310,6 +334,10 @@ void ImageCapture::onCapabilities(
     caps->setFillLightMode(capabilities->fill_light_mode);
     caps->setRedEyeReduction(capabilities->red_eye_reduction);
     caps->setColorTemperature(colorTemperature);
+    caps->setBrightness(brightness);
+    caps->setContrast(contrast);
+    caps->setSaturation(saturation);
+    caps->setSharpness(sharpness);
     resolver->resolve(caps);
   }
   m_serviceRequests.remove(resolver);

@@ -201,16 +201,14 @@ void FakeVideoCaptureDevice::GetPhotoCapabilities(
   photo_capabilities->focus_mode = mojom::MeteringMode::NONE;
   photo_capabilities->exposure_mode = mojom::MeteringMode::NONE;
   photo_capabilities->exposure_compensation = mojom::Range::New();
-  photo_capabilities->exposure_compensation->current = 0;
-  photo_capabilities->exposure_compensation->max = 0;
-  photo_capabilities->exposure_compensation->min = 0;
   photo_capabilities->white_balance_mode = mojom::MeteringMode::NONE;
   photo_capabilities->fill_light_mode = mojom::FillLightMode::NONE;
   photo_capabilities->red_eye_reduction = false;
   photo_capabilities->color_temperature = mojom::Range::New();
-  photo_capabilities->color_temperature->current = 0;
-  photo_capabilities->color_temperature->max = 0;
-  photo_capabilities->color_temperature->min = 0;
+  photo_capabilities->brightness = media::mojom::Range::New();
+  photo_capabilities->contrast = media::mojom::Range::New();
+  photo_capabilities->saturation = media::mojom::Range::New();
+  photo_capabilities->sharpness = media::mojom::Range::New();
   callback.Run(std::move(photo_capabilities));
 }
 

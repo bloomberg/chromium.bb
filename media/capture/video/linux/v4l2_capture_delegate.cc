@@ -98,6 +98,28 @@ static std::string FourccToString(uint32_t fourcc) {
                             (fourcc >> 16) & 0xFF, (fourcc >> 24) & 0xFF);
 }
 
+// Creates a mojom::RangePtr with the range of values (min, max, current) of the
+// user control associated with |control_id|. Returns an empty Range otherwise.
+static mojom::RangePtr RetrieveUserControlRange(int device_fd, int control_id) {
+  mojom::RangePtr capability = mojom::Range::New();
+
+  v4l2_queryctrl range = {};
+  range.id = control_id;
+  range.type = V4L2_CTRL_TYPE_INTEGER;
+  if (HANDLE_EINTR(ioctl(device_fd, VIDIOC_QUERYCTRL, &range)) < 0)
+    return mojom::Range::New();
+  capability->max = range.maximum;
+  capability->min = range.minimum;
+
+  v4l2_control current = {};
+  current.id = control_id;
+  if (HANDLE_EINTR(ioctl(device_fd, VIDIOC_G_CTRL, &current)) < 0)
+    return mojom::Range::New();
+  capability->current = current.value;
+
+  return capability;
+}
+
 // Class keeping track of a SPLANE V4L2 buffer, mmap()ed on construction and
 // munmap()ed on destruction.
 class V4L2CaptureDelegate::BufferTracker
@@ -341,19 +363,8 @@ void V4L2CaptureDelegate::GetPhotoCapabilities(
   mojom::PhotoCapabilitiesPtr photo_capabilities =
       mojom::PhotoCapabilities::New();
 
-  photo_capabilities->zoom = mojom::Range::New();
-  v4l2_queryctrl zoom_range = {};
-  zoom_range.id = V4L2_CID_ZOOM_ABSOLUTE;
-  zoom_range.type = V4L2_CTRL_TYPE_INTEGER;
-  if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_QUERYCTRL, &zoom_range)) >=
-      0) {
-    photo_capabilities->zoom->max = zoom_range.maximum * kZoomMultiplier;
-    photo_capabilities->zoom->min = zoom_range.minimum * kZoomMultiplier;
-  }
-  v4l2_control zoom_current = {};
-  zoom_current.id = V4L2_CID_ZOOM_ABSOLUTE;
-  if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_G_CTRL, &zoom_current)) >= 0)
-    photo_capabilities->zoom->current = zoom_current.value * kZoomMultiplier;
+  photo_capabilities->zoom =
+      RetrieveUserControlRange(device_fd_.get(), V4L2_CID_ZOOM_ABSOLUTE);
 
   photo_capabilities->focus_mode = mojom::MeteringMode::NONE;
   v4l2_control auto_focus_current = {};
@@ -386,25 +397,8 @@ void V4L2CaptureDelegate::GetPhotoCapabilities(
                                     : mojom::MeteringMode::MANUAL;
   }
 
-  photo_capabilities->color_temperature = mojom::Range::New();
-  v4l2_queryctrl color_temperature_range = {};
-  color_temperature_range.id = V4L2_CID_WHITE_BALANCE_TEMPERATURE;
-  color_temperature_range.type = V4L2_CTRL_TYPE_INTEGER;
-  if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_QUERYCTRL,
-                         &color_temperature_range)) >= 0) {
-    photo_capabilities->color_temperature->max =
-        color_temperature_range.maximum;
-    photo_capabilities->color_temperature->min =
-        color_temperature_range.minimum;
-  }
-
-  v4l2_control color_temperature_current = {};
-  color_temperature_current.id = V4L2_CID_WHITE_BALANCE_TEMPERATURE;
-  if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_G_CTRL,
-                         &color_temperature_current)) >= 0) {
-    photo_capabilities->color_temperature->current =
-        color_temperature_current.value;
-  }
+  photo_capabilities->color_temperature = RetrieveUserControlRange(
+      device_fd_.get(), V4L2_CID_WHITE_BALANCE_TEMPERATURE);
 
   photo_capabilities->iso = mojom::Range::New();
   photo_capabilities->height = mojom::Range::New();
@@ -412,6 +406,16 @@ void V4L2CaptureDelegate::GetPhotoCapabilities(
   photo_capabilities->exposure_compensation = mojom::Range::New();
   photo_capabilities->fill_light_mode = mojom::FillLightMode::NONE;
   photo_capabilities->red_eye_reduction = false;
+
+  photo_capabilities->brightness =
+      RetrieveUserControlRange(device_fd_.get(), V4L2_CID_BRIGHTNESS);
+  photo_capabilities->contrast =
+      RetrieveUserControlRange(device_fd_.get(), V4L2_CID_CONTRAST);
+  photo_capabilities->saturation =
+      RetrieveUserControlRange(device_fd_.get(), V4L2_CID_SATURATION);
+  photo_capabilities->sharpness =
+      RetrieveUserControlRange(device_fd_.get(), V4L2_CID_SHARPNESS);
+
   callback.Run(std::move(photo_capabilities));
 }
 
@@ -452,6 +456,35 @@ void V4L2CaptureDelegate::SetPhotoOptions(
       set_temperature.value = settings->color_temperature;
       HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_S_CTRL, &set_temperature));
     }
+  }
+
+  if (settings->has_brightness) {
+    v4l2_control current = {};
+    current.id = V4L2_CID_BRIGHTNESS;
+    current.value = settings->brightness;
+    if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_S_CTRL, &current)) < 0)
+      DPLOG(ERROR) << "setting brightness to " << settings->brightness;
+  }
+  if (settings->has_contrast) {
+    v4l2_control current = {};
+    current.id = V4L2_CID_CONTRAST;
+    current.value = settings->contrast;
+    if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_S_CTRL, &current)) < 0)
+      DPLOG(ERROR) << "setting contrast to " << settings->contrast;
+  }
+  if (settings->has_saturation) {
+    v4l2_control current = {};
+    current.id = V4L2_CID_SATURATION;
+    current.value = settings->saturation;
+    if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_S_CTRL, &current)) < 0)
+      DPLOG(ERROR) << "setting saturation to " << settings->saturation;
+  }
+  if (settings->has_sharpness) {
+    v4l2_control current = {};
+    current.id = V4L2_CID_SHARPNESS;
+    current.value = settings->sharpness;
+    if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_S_CTRL, &current)) < 0)
+      DPLOG(ERROR) << "setting sharpness to " << settings->sharpness;
   }
 
   callback.Run(true);

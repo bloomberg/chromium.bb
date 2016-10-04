@@ -30,8 +30,10 @@ enum FillLightMode {
     readonly attribute boolean redEyeReduction;
     readonly attribute MeteringMode focusMode;
 
-    // TODO(mcasas): Implement |brightness|, |contrast|, |saturation| and
-    // |sharpness|, https://crbug.com/650676.
+    readonly attribute MediaSettingsRange brightness;
+    readonly attribute MediaSettingsRange contrast;
+    readonly attribute MediaSettingsRange saturation;
+    readonly attribute MediaSettingsRange sharpness;
     readonly attribute MediaSettingsRange imageHeight;
     readonly attribute MediaSettingsRange imageWidth;
     readonly attribute MediaSettingsRange zoom;

@@ -16,8 +16,11 @@
     MeteringMode focusMode;
     sequence<Point2D> pointsOfInterest;
 
-    // TODO(mcasas): Implement |brightness|, |contrast|, |saturation| and
-    // |sharpness|, https://crbug.com/650676.
+
+    unsigned long brightness;
+    unsigned long contrast;
+    unsigned long saturation;
+    unsigned long sharpness;
     unsigned long zoom;
     unsigned long imageHeight;
     unsigned long imageWidth;

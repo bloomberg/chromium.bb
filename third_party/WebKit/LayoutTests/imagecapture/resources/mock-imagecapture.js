@@ -27,6 +27,10 @@ let mockImageCaptureReady = define(
           fill_light_mode : imageCapture.FillLightMode.AUTO,
           red_eye_reduction : true,
           color_temperature : { min : 2500, max : 6500, current : 6000 },
+          brightness : { min : 1, max : 10, current : 5 },
+          contrast : { min : 2, max : 9, current : 5 },
+          saturation : { min : 3, max : 8, current : 6 },
+          sharpness : { min : 4, max : 7, current : 7 },
       }};
       this.settings_ = null;
     }
