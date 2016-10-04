@@ -75,7 +75,6 @@ const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
         {switches::kEnableUnifiedDesktop,
          prefs::kUnifiedDesktopEnabledByDefault, true},
 #endif
-        {switches::kDisableAsyncDns, prefs::kBuiltInDnsClientEnabled, false},
         {switches::kUnsafePacUrl, prefs::kPacHttpsUrlStrippingEnabled, false},
 };
 

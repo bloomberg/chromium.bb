@@ -173,9 +173,6 @@ const char kDisableAboutInSettings[]        = "disable-about-in-settings";
 // app to their shelf (or platform-specific equivalent)
 const char kDisableAddToShelf[] = "disable-add-to-shelf";
 
-// Disables the experimental asynchronous DNS client.
-const char kDisableAsyncDns[]               = "disable-async-dns";
-
 // Disable several subsystems which run network requests in the background.
 // This is for use when doing network performance testing to avoid noise in the
 // measurements.
