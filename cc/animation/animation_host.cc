@@ -128,7 +128,8 @@ void AnimationHost::RegisterPlayerForElement(ElementId element_id,
   if (!element_animations) {
     element_animations = ElementAnimations::Create();
     element_animations->SetElementId(element_id);
-    RegisterElementAnimations(element_animations.get());
+    element_to_animations_map_[element_animations->element_id()] =
+        element_animations;
   }
 
   if (element_animations->animation_host() != this) {
@@ -151,7 +152,8 @@ void AnimationHost::UnregisterPlayerForElement(ElementId element_id,
 
   if (element_animations->IsEmpty()) {
     element_animations->ClearAffectedElementTypes();
-    UnregisterElementAnimations(element_animations.get());
+    element_to_animations_map_.erase(element_animations->element_id());
+    DidDeactivateElementAnimations(element_animations.get());
     element_animations->SetAnimationHost(nullptr);
   }
 }
@@ -560,20 +562,6 @@ void AnimationHost::DidDeactivateElementAnimations(
     ElementAnimations* element_animations) {
   DCHECK(element_animations->element_id());
   active_element_to_animations_map_.erase(element_animations->element_id());
-}
-
-void AnimationHost::RegisterElementAnimations(
-    ElementAnimations* element_animations) {
-  DCHECK(element_animations->element_id());
-  element_to_animations_map_[element_animations->element_id()] =
-      element_animations;
-}
-
-void AnimationHost::UnregisterElementAnimations(
-    ElementAnimations* element_animations) {
-  DCHECK(element_animations->element_id());
-  element_to_animations_map_.erase(element_animations->element_id());
-  DidDeactivateElementAnimations(element_animations);
 }
 
 const AnimationHost::ElementToAnimationsMap&

@@ -117,9 +117,9 @@ class COMPOSITOR_EXPORT LayerAnimator
   void SwitchToLayer(scoped_refptr<cc::Layer> new_layer);
 
   // Attach AnimationPlayer to Layer and AnimationTimeline
-  void SetCompositor(Compositor* compositor);
+  void AttachLayerAndTimeline(Compositor* compositor);
   // Detach AnimationPlayer from Layer and AnimationTimeline
-  void ResetCompositor(Compositor* compositor);
+  void DetachLayerAndTimeline(Compositor* compositor);
 
   cc::AnimationPlayer* GetAnimationPlayerForTesting() const;
 
@@ -405,11 +405,6 @@ class COMPOSITOR_EXPORT LayerAnimator
   // Observers are notified when layer animations end, are scheduled or are
   // aborted.
   base::ObserverList<LayerAnimationObserver> observers_;
-
-  // We store a state of ElementAnimations here to save it in
-  // ResetCompositor/SetCompositor scope.
-  // TODO(loyso): Remove it. crbug.com/592873.
-  scoped_refptr<cc::ElementAnimations> element_animations_state_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerAnimator);
 };

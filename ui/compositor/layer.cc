@@ -223,7 +223,7 @@ void Layer::SetAnimator(LayerAnimator* animator) {
 
   if (animator_) {
     if (compositor)
-      animator_->ResetCompositor(compositor);
+      animator_->DetachLayerAndTimeline(compositor);
     animator_->SetDelegate(nullptr);
   }
 
@@ -232,7 +232,7 @@ void Layer::SetAnimator(LayerAnimator* animator) {
   if (animator_) {
     animator_->SetDelegate(this);
     if (compositor)
-      animator_->SetCompositor(compositor);
+      animator_->AttachLayerAndTimeline(compositor);
   }
 }
 
@@ -1056,7 +1056,7 @@ void Layer::SetCompositorForAnimatorsInTree(Compositor* compositor) {
   if (animator_) {
     if (animator_->is_animating())
       animator_->AddToCollection(collection);
-    animator_->SetCompositor(compositor);
+    animator_->AttachLayerAndTimeline(compositor);
   }
 
   for (auto* child : children_)
@@ -1068,7 +1068,7 @@ void Layer::ResetCompositorForAnimatorsInTree(Compositor* compositor) {
   LayerAnimatorCollection* collection = compositor->layer_animator_collection();
 
   if (animator_) {
-    animator_->ResetCompositor(compositor);
+    animator_->DetachLayerAndTimeline(compositor);
     animator_->RemoveFromCollection(collection);
   }
 

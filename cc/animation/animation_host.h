@@ -165,11 +165,6 @@ class CC_EXPORT AnimationHost {
   // element animations will no longer be ticked (since it's not active).
   void DidDeactivateElementAnimations(ElementAnimations* element_animations);
 
-  // Registers the given ElementAnimations as alive.
-  void RegisterElementAnimations(ElementAnimations* element_animations);
-  // Unregisters the given ElementAnimations as alive.
-  void UnregisterElementAnimations(ElementAnimations* element_animations);
-
   const ElementToAnimationsMap& active_element_animations_for_testing() const;
   const ElementToAnimationsMap& all_element_animations_for_testing() const;
 
