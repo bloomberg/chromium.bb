@@ -58,7 +58,7 @@ using ChosenObjectDeleteCallback =
 
 namespace {
 
-/**************** General ****************/
+// General ---------------------------------------------------------------------
 
 // The default width of the window, in view coordinates. It may be larger to
 // fit the content.
@@ -72,12 +72,12 @@ const CGFloat kSectionHorizontalPadding = 16;
 // align with other text.
 const CGFloat kLinkButtonXAdjustment = 1;
 
-/**************** Security Section ****************/
+// Security Section ------------------------------------------------------------
 
 // Spacing between security summary, security details, and cert decisions text.
 const CGFloat kSecurityParagraphSpacing = 12;
 
-/**************** Site Settings Section ****************/
+// Site Settings Section -------------------------------------------------------
 
 // Square size of the permission images.
 const CGFloat kPermissionImageSize = 16;
@@ -99,7 +99,7 @@ const CGFloat kPermissionIconYAdjustment = 1;
 // permission label.
 const CGFloat kPermissionPopupButtonYAdjustment = 3;
 
-/**************** Internal Page Bubble ****************/
+// Internal Page Bubble --------------------------------------------------------
 
 // Padding between the window frame and content for the internal page bubble.
 const CGFloat kInternalPageFramePadding = 10;
@@ -107,7 +107,7 @@ const CGFloat kInternalPageFramePadding = 10;
 // Spacing between the image and text for internal pages.
 const CGFloat kInternalPageImageSpacing = 10;
 
-/********************************/
+// -----------------------------------------------------------------------------
 
 // NOTE: This assumes that there will never be more than one website settings
 // popup shown, and that the one that is shown is associated with the current
