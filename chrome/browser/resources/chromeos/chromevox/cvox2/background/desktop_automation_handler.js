@@ -46,7 +46,7 @@ DesktopAutomationHandler = function(node) {
   var e = EventType;
   this.addListener_(e.activedescendantchanged, this.onActiveDescendantChanged);
   this.addListener_(e.alert, this.onAlert);
-  this.addListener_(e.ariaAttributeChanged, this.onEventIfInRange);
+  this.addListener_(e.ariaAttributeChanged, this.onAriaAttributeChanged);
   this.addListener_(e.autocorrectionOccured, this.onEventIfInRange);
   this.addListener_(e.checkedStateChanged, this.onCheckedStateChanged);
   this.addListener_(e.childrenChanged, this.onActiveDescendantChanged);
@@ -177,6 +177,15 @@ DesktopAutomationHandler.prototype = {
   onEventWithFlushedOutput: function(evt) {
     Output.forceModeForNextSpeechUtterance(cvox.QueueMode.FLUSH);
     this.onEventDefault(evt);
+  },
+
+  /**
+   * @param {!AutomationEvent} evt
+   */
+  onAriaAttributeChanged: function(evt) {
+    if (evt.target.state.editable)
+      return;
+    this.onEventIfInRange(evt);
   },
 
   /**
