@@ -93,9 +93,10 @@ void MIDIInput::didReceiveMIDIData(unsigned portIndex,
   if (getConnection() != ConnectionStateOpen)
     return;
 
-  // Drop sysex message here when the client does not request it. Note that this is not a security check but an
-  // automatic filtering for clients that do not want sysex message. Also note that sysex message will never be sent
-  // unless the current process has an explicit permission to handle sysex message.
+  // Drop sysex message here when the client does not request it. Note that this
+  // is not a security check but an automatic filtering for clients that do not
+  // want sysex message. Also note that sysex message will never be sent unless
+  // the current process has an explicit permission to handle sysex message.
   if (data[0] == 0xf0 && !midiAccess()->sysexEnabled())
     return;
   DOMUint8Array* array = DOMUint8Array::create(data, length);

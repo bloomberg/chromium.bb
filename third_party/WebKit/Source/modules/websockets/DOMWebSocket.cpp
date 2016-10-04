@@ -331,12 +331,14 @@ void DOMWebSocket::connect(const String& url,
     return;
   }
 
-  // FIXME: Convert this to check the isolated world's Content Security Policy once webkit.org/b/104520 is solved.
+  // FIXME: Convert this to check the isolated world's Content Security Policy
+  // once webkit.org/b/104520 is solved.
   if (!ContentSecurityPolicy::shouldBypassMainWorld(getExecutionContext()) &&
       !getExecutionContext()->contentSecurityPolicy()->allowConnectToSource(
           m_url)) {
     m_state = kClosed;
-    // The URL is safe to expose to JavaScript, as this check happens synchronously before redirection.
+    // The URL is safe to expose to JavaScript, as this check happens
+    // synchronously before redirection.
     exceptionState.throwSecurityError(
         "Refused to connect to '" + m_url.elidedString() +
         "' because it violates the document's Content Security Policy.");
@@ -435,7 +437,8 @@ void DOMWebSocket::send(const String& message, ExceptionState& exceptionState) {
     setInvalidStateErrorForSendMethod(exceptionState);
     return;
   }
-  // No exception is raised if the connection was once established but has subsequently been closed.
+  // No exception is raised if the connection was once established but has
+  // subsequently been closed.
   if (m_state == kClosing || m_state == kClosed) {
     updateBufferedAmountAfterClose(encodedMessage.length());
     return;
@@ -556,7 +559,8 @@ void DOMWebSocket::closeInternal(int code,
               String::number(code) + " is neither.");
       return;
     }
-    // Bindings specify USVString, so unpaired surrogates are already replaced with U+FFFD.
+    // Bindings specify USVString, so unpaired surrogates are already replaced
+    // with U+FFFD.
     CString utf8 = reason.utf8();
     if (utf8.length() > maxReasonSizeInBytes) {
       exceptionState.throwDOMException(

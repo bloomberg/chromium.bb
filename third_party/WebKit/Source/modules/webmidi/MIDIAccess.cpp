@@ -175,9 +175,11 @@ void MIDIAccess::didReceiveMIDIData(unsigned portIndex,
   if (portIndex >= m_inputs.size())
     return;
 
-  // Convert from time in seconds which is based on the time coordinate system of monotonicallyIncreasingTime()
-  // into time in milliseconds (a DOMHighResTimeStamp) according to the same time coordinate system as performance.now().
-  // This is how timestamps are defined in the Web MIDI spec.
+  // Convert from time in seconds which is based on the time coordinate system
+  // of monotonicallyIncreasingTime() into time in milliseconds (a
+  // DOMHighResTimeStamp) according to the same time coordinate system as
+  // performance.now().  This is how timestamps are defined in the Web MIDI
+  // spec.
   Document* document = toDocument(getExecutionContext());
   DCHECK(document);
 
@@ -196,13 +198,15 @@ void MIDIAccess::sendMIDIData(unsigned portIndex,
                               double timeStampInMilliseconds) {
   if (!data || !length || portIndex >= m_outputs.size())
     return;
-  // Convert from a time in milliseconds (a DOMHighResTimeStamp) according to the same time coordinate system as performance.now()
-  // into a time in seconds which is based on the time coordinate system of monotonicallyIncreasingTime().
+  // Convert from a time in milliseconds (a DOMHighResTimeStamp) according to
+  // the same time coordinate system as performance.now() into a time in seconds
+  // which is based on the time coordinate system of
+  // monotonicallyIncreasingTime().
   double timeStamp;
 
   if (!timeStampInMilliseconds) {
-    // We treat a value of 0 (which is the default value) as special, meaning "now".
-    // We need to translate it exactly to 0 seconds.
+    // We treat a value of 0 (which is the default value) as special, meaning
+    // "now".  We need to translate it exactly to 0 seconds.
     timeStamp = 0;
   } else {
     Document* document = toDocument(getExecutionContext());

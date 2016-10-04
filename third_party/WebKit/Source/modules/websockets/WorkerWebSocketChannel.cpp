@@ -434,7 +434,8 @@ void Bridge::send(const DOMArrayBuffer& binaryData,
                   unsigned byteOffset,
                   unsigned byteLength) {
   DCHECK(m_peer);
-  // ArrayBuffer isn't thread-safe, hence the content of ArrayBuffer is copied into Vector<char>.
+  // ArrayBuffer isn't thread-safe, hence the content of ArrayBuffer is copied
+  // into Vector<char>.
   std::unique_ptr<Vector<char>> data = wrapUnique(new Vector<char>(byteLength));
   if (binaryData.byteLength())
     memcpy(data->data(),

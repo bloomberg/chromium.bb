@@ -42,11 +42,13 @@ class KURL;
 class SecurityOrigin;
 class WebSocketHandleClient;
 
-// WebSocketHandle is an interface class designed to be a handle of WebSocket connection.
-// WebSocketHandle will be used together with WebSocketHandleClient.
+// WebSocketHandle is an interface class designed to be a handle of WebSocket
+// connection.  WebSocketHandle will be used together with
+// WebSocketHandleClient.
 //
-// Once a WebSocketHandle is deleted there will be no notification to the corresponding WebSocketHandleClient.
-// Once a WebSocketHandleClient receives didClose, any method of the corresponding WebSocketHandle can't be called.
+// Once a WebSocketHandle is deleted there will be no notification to the
+// corresponding WebSocketHandleClient.  Once a WebSocketHandleClient receives
+// didClose, any method of the corresponding WebSocketHandle can't be called.
 
 class WebSocketHandle {
  public:
