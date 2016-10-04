@@ -76,7 +76,6 @@ public class DeferredStartupHandler {
     private long mDeferredStartupDuration;
     private long mMaxTaskDuration;
     private final Context mAppContext;
-    private final LocaleManager mLocaleManager;
 
     private final Queue<Runnable> mDeferredTasks;
 
@@ -91,7 +90,6 @@ public class DeferredStartupHandler {
     private DeferredStartupHandler() {
         mAppContext = ContextUtils.getApplicationContext();
         mDeferredTasks = new LinkedList<>();
-        mLocaleManager = ((ChromeApplication) mAppContext).createLocaleManager();
     }
 
     /**
@@ -138,7 +136,7 @@ public class DeferredStartupHandler {
                 "UMA.Debug.EnableCrashUpload.DeferredStartUpCompleteTime",
                 SystemClock.uptimeMillis() - UmaUtils.getForegroundStartTime(),
                 TimeUnit.MILLISECONDS);
-        mLocaleManager.recordStartupMetrics();
+        LocaleManager.getInstance().recordStartupMetrics();
     }
 
     /**

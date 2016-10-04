@@ -2593,6 +2593,17 @@ You can control the Physical Web in Chrome Settings.
         Tap this button for quick access to your tabs.
       </message>
 
+      <!-- Special locale UI strings -->
+      <message name="IDS_SEARCH_WITH_SOGOU" desc="Text telling the user that the search engine will be switched to Sogou.">
+        Search with Sogou
+      </message>
+      <message name="IDS_SOGOU_EXPLANATION" desc="Text explaining why Sogou should be used as default search engine.">
+        Chrome can use Sogou for search in China. You can change this in <ph name="BEGIN_LINK">&lt;link&gt;</ph>Settings<ph name="END_LINK">&lt;/link&gt;</ph>.
+      </message>
+      <message name="IDS_KEEP_GOOGLE" desc="Text representing the option that the user wants to keep Google as the default search engine.">
+        Keep Google
+      </message>
+
       <!-- Item Chooser UI strings -->
       <message name="IDS_ITEM_CHOOSER_ITEM_NAME_WITH_ID" desc="To distinguish items with the same name, the item chooser shows the item name with id.">
         <ph name="ITEM_NAME">%1$s<ex>item_name</ex></ph> (<ph name="ITEM_ID">%2$s<ex>item id</ex></ph>)

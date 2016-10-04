@@ -63,6 +63,7 @@ import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.incognito.IncognitoNotificationManager;
 import org.chromium.chrome.browser.infobar.DataReductionPromoInfoBar;
+import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.metrics.ActivityStopMetrics;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.StartupMetrics;
@@ -201,6 +202,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     private Boolean mMergeTabsOnResume;
 
     private Boolean mIsAccessibilityEnabled;
+
+    private LocaleManager mLocaleManager;
 
     /**
      * Keeps track of whether or not a specific tab was created based on the startup intent.
@@ -346,6 +349,10 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             // background.
             int incognitoCount = TabWindowManager.getInstance().getIncognitoTabCount();
             if (incognitoCount == 0) IncognitoNotificationManager.dismissIncognitoNotification();
+
+            // LocaleManager can only function after the native library is loaded.
+            mLocaleManager = LocaleManager.getInstance();
+            mLocaleManager.showSearchEnginePromoIfNeeded(this);
 
             super.finishNativeInitialization();
         } finally {
@@ -523,6 +530,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                     // This assumes that the keyboard can not be seen at the same time as the
                     // newtab button on the toolbar.
                     getCurrentTabCreator().launchNTP();
+                    mLocaleManager.showSearchEnginePromoIfNeeded(ChromeTabbedActivity.this);
                 }
             };
             OnClickListener bookmarkClickHandler = new OnClickListener() {
@@ -653,6 +661,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             mIsOnFirstRun = false;
             if (resultCode == RESULT_OK) {
                 refreshSignIn();
+                mLocaleManager.showSearchEnginePromoIfNeeded(this);
             } else {
                 if (data != null && data.getBooleanExtra(
                         FirstRunActivity.RESULT_CLOSE_APP, false)) {
@@ -1031,6 +1040,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             RecordUserAction.record("MobileNewTabOpened");
             reportNewTabShortcutUsed(false);
             getTabCreator(false).launchUrl(UrlConstants.NTP_URL, TabLaunchType.FROM_CHROME_UI);
+            mLocaleManager.showSearchEnginePromoIfNeeded(this);
         } else if (id == R.id.new_incognito_tab_menu_id) {
             if (PrefServiceBridge.getInstance().isIncognitoModeEnabled()) {
                 getTabModelSelector().getModel(false).commitAllTabClosures();

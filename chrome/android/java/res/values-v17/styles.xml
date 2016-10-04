@@ -93,7 +93,7 @@
         <item name="tint">@color/dark_mode_tint</item>
     </style>
 
-    <style name="LightweightFreDialog" parent="AlertDialogTheme">
+    <style name="SimpleDialog" parent="AlertDialogTheme">
         <item name="windowNoTitle">true</item>
         <item name="windowActionBar">false</item>
     </style>
