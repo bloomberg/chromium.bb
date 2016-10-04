@@ -31,7 +31,8 @@ MediaStream* HTMLMediaElementCapture::captureStream(
 
   // Avoid capturing from EME-protected Media Elements.
   if (HTMLMediaElementEncryptedMedia::mediaKeys(element)) {
-    // This exception is not defined in the spec, see https://github.com/w3c/mediacapture-fromelement/issues/20.
+    // This exception is not defined in the spec, see
+    // https://github.com/w3c/mediacapture-fromelement/issues/20.
     exceptionState.throwDOMException(NotSupportedError,
                                      "Stream capture not supported with EME");
     return nullptr;

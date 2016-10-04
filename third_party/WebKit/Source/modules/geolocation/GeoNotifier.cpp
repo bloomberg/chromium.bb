@@ -76,8 +76,8 @@ void GeoNotifier::stopTimer() {
 void GeoNotifier::timerFired(TimerBase*) {
   m_timer.stop();
 
-  // Test for fatal error first. This is required for the case where the LocalFrame is
-  // disconnected and requests are cancelled.
+  // Test for fatal error first. This is required for the case where the
+  // LocalFrame is disconnected and requests are cancelled.
   if (m_fatalError) {
     runErrorCallback(m_fatalError);
     // This will cause this notifier to be deleted.

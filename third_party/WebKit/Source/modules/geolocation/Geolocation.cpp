@@ -185,7 +185,8 @@ int Geolocation::watchPosition(PositionCallback* successCallback,
   startRequest(notifier);
 
   int watchID;
-  // Keep asking for the next id until we're given one that we don't already have.
+  // Keep asking for the next id until we're given one that we don't already
+  // have.
   do {
     watchID = getExecutionContext()->circularSequentialID();
   } while (!m_watchers.add(watchID, notifier));
@@ -202,8 +203,9 @@ void Geolocation::startRequest(GeoNotifier* notifier) {
     return;
   }
 
-  // Check whether permissions have already been denied. Note that if this is the case,
-  // the permission state can not change again in the lifetime of this page.
+  // Check whether permissions have already been denied. Note that if this is
+  // the case, the permission state can not change again in the lifetime of
+  // this page.
   if (isDenied())
     notifier->setFatalError(PositionError::create(
         PositionError::kPermissionDenied, permissionDeniedErrorMessage));
@@ -212,7 +214,8 @@ void Geolocation::startRequest(GeoNotifier* notifier) {
   else if (!notifier->options().timeout())
     notifier->startTimer();
   else if (!isAllowed()) {
-    // if we don't yet have permission, request for permission before calling startUpdating()
+    // If we don't yet have permission, request for permission before calling
+    // startUpdating()
     m_pendingForPermissionNotifiers.add(notifier);
     requestPermission();
   } else {
@@ -281,14 +284,16 @@ void Geolocation::clearWatch(int watchID) {
 
 void Geolocation::onGeolocationPermissionUpdated(
     mojom::blink::PermissionStatus status) {
-  // This may be due to either a new position from the service, or a cached position.
+  // This may be due to either a new position from the service, or a cached
+  // position.
   m_geolocationPermission = status == mojom::blink::PermissionStatus::GRANTED
                                 ? PermissionAllowed
                                 : PermissionDenied;
   m_permissionService.reset();
 
-  // While we iterate through the list, we need not worry about the list being modified as the permission
-  // is already set to Yes/No and no new listeners will be added to the pending list.
+  // While we iterate through the list, we need not worry about the list being
+  // modified as the permission is already set to Yes/No and no new listeners
+  // will be added to the pending list.
   for (GeoNotifier* notifier : m_pendingForPermissionNotifiers) {
     if (isAllowed()) {
       // Start all pending notification requests as permission granted.
@@ -390,7 +395,8 @@ void Geolocation::handleError(PositionError* error) {
   if (error->isFatal())
     m_watchers.clear();
   else {
-    // Don't send non-fatal errors to notifiers due to receive a cached position.
+    // Don't send non-fatal errors to notifiers due to receive a cached
+    // position.
     extractNotifiersWithCachedPosition(oneShotsCopy,
                                        &oneShotsWithCachedPosition);
     extractNotifiersWithCachedPosition(watchersCopy, 0);

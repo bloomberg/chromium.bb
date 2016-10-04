@@ -61,7 +61,8 @@ void AllocateVideoAndAudioBitrates(ExceptionState& exceptionState,
   const bool useAudio = !stream->getAudioTracks().isEmpty();
 
   // Clamp incoming values into a signed integer's range.
-  // TODO(mcasas): This section would no be needed if the bit rates are signed or double, see https://github.com/w3c/mediacapture-record/issues/48.
+  // TODO(mcasas): This section would no be needed if the bit rates are signed
+  // or double, see https://github.com/w3c/mediacapture-record/issues/48.
   const unsigned kMaxIntAsUnsigned = std::numeric_limits<int>::max();
 
   int overallBps = 0;
@@ -110,7 +111,8 @@ void AllocateVideoAndAudioBitrates(ExceptionState& exceptionState,
     // Allocate the remaining |overallBps|, if any, to video.
     if (options.hasBitsPerSecond())
       videoBps = overallBps - audioBps;
-    // Clamp the video bit rate. Avoid clamping if the user has not set it explicitly.
+    // Clamp the video bit rate. Avoid clamping if the user has not set it
+    // explicitly.
     if (options.hasVideoBitsPerSecond() || options.hasBitsPerSecond()) {
       if (videoBps < kSmallestPossibleVpxBitRate) {
         context->addConsoleMessage(ConsoleMessage::create(
@@ -333,7 +335,8 @@ void MediaRecorder::writeData(const char* data,
     onError("Amount of tracks in MediaStream has changed.");
   }
 
-  // TODO(mcasas): Act as |m_ignoredMutedMedia| instructs if |m_stream| track(s) is in muted() state.
+  // TODO(mcasas): Act as |m_ignoredMutedMedia| instructs if |m_stream| track(s)
+  // is in muted() state.
 
   if (!m_blobData) {
     m_blobData = BlobData::create();
@@ -352,12 +355,14 @@ void MediaRecorder::writeData(const char* data,
 }
 
 void MediaRecorder::onError(const WebString& message) {
-  // TODO(mcasas): Beef up the Error Event and add the |message|, see https://github.com/w3c/mediacapture-record/issues/31
+  // TODO(mcasas): Beef up the Error Event and add the |message|, see
+  // https://github.com/w3c/mediacapture-record/issues/31
   scheduleDispatchEvent(Event::create(EventTypeNames::error));
 }
 
 void MediaRecorder::createBlobEvent(Blob* blob) {
-  // TODO(mcasas): Consider launching an Event with a TypedArray inside, see https://github.com/w3c/mediacapture-record/issues/17.
+  // TODO(mcasas): Consider launching an Event with a TypedArray inside, see
+  // https://github.com/w3c/mediacapture-record/issues/17.
   scheduleDispatchEvent(BlobEvent::create(EventTypeNames::dataavailable, blob));
 }
 

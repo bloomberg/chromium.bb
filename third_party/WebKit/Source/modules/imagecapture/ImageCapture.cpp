@@ -109,7 +109,8 @@ ScriptPromise ImageCapture::getPhotoCapabilities(
 
   m_serviceRequests.add(resolver);
 
-  // m_streamTrack->component()->source()->id() is the renderer "name" of the camera;
+  // m_streamTrack->component()->source()->id() is the renderer "name" of the
+  // camera;
   // TODO(mcasas) consider sending the security origin as well:
   // scriptState->getExecutionContext()->getSecurityOrigin()->toString()
   m_service->GetCapabilities(
@@ -212,7 +213,8 @@ ScriptPromise ImageCapture::takePhoto(ScriptState* scriptState,
 
   m_serviceRequests.add(resolver);
 
-  // m_streamTrack->component()->source()->id() is the renderer "name" of the camera;
+  // m_streamTrack->component()->source()->id() is the renderer "name" of the
+  // camera;
   // TODO(mcasas) consider sending the security origin as well:
   // scriptState->getExecutionContext()->getSecurityOrigin()->toString()
   m_service->TakePhoto(m_streamTrack->component()->source()->id(),
