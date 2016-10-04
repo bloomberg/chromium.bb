@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/i18n/rtl.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -14,6 +15,8 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
+#include "chrome/browser/interstitials/chrome_controller_client.h"
+#include "chrome/browser/interstitials/chrome_metrics_helper.h"
 #include "chrome/browser/ssl/cert_report_helper.h"
 #include "chrome/browser/ssl/ssl_cert_reporter.h"
 #include "chrome/grit/generated_resources.h"
@@ -32,6 +35,8 @@
 
 namespace {
 
+const char kMetricsName[] = "captive_portal";
+
 // Events for UMA.
 enum CaptivePortalBlockingPageEvent {
   SHOW_ALL,
@@ -42,6 +47,18 @@ enum CaptivePortalBlockingPageEvent {
 void RecordUMA(CaptivePortalBlockingPageEvent event) {
   UMA_HISTOGRAM_ENUMERATION("interstitial.captive_portal", event,
                             CAPTIVE_PORTAL_BLOCKING_PAGE_EVENT_COUNT);
+}
+
+std::unique_ptr<ChromeMetricsHelper> CreateMetricsHelper(
+    content::WebContents* web_contents,
+    const GURL& request_url) {
+  security_interstitials::MetricsHelper::ReportDetails reporting_info;
+  reporting_info.metric_prefix = kMetricsName;
+  std::unique_ptr<ChromeMetricsHelper> metrics_helper =
+      base::MakeUnique<ChromeMetricsHelper>(web_contents, request_url,
+                                            reporting_info, kMetricsName);
+  metrics_helper.get()->StartRecordingCaptivePortalMetrics(false);
+  return metrics_helper;
 }
 
 } // namespace
@@ -57,7 +74,9 @@ CaptivePortalBlockingPage::CaptivePortalBlockingPage(
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
     const net::SSLInfo& ssl_info,
     const base::Callback<void(content::CertificateRequestResultType)>& callback)
-    : SecurityInterstitialPage(web_contents, request_url, nullptr),
+    : SecurityInterstitialPage(web_contents,
+                               request_url,
+                               CreateMetricsHelper(web_contents, request_url)),
       login_url_(login_url),
       callback_(callback) {
   DCHECK(login_url_.is_valid());
@@ -194,20 +213,37 @@ void CaptivePortalBlockingPage::CommandReceived(const std::string& command) {
   int command_num = 0;
   bool command_is_num = base::StringToInt(command, &command_num);
   DCHECK(command_is_num) << command;
-  // Any command other than "open the login page" is ignored.
-  if (command_num == security_interstitials::CMD_OPEN_LOGIN) {
-    RecordUMA(OPEN_LOGIN_PAGE);
-    CaptivePortalTabHelper::OpenLoginTabForWebContents(web_contents(), true);
+  security_interstitials::SecurityInterstitialCommands cmd =
+      static_cast<security_interstitials::SecurityInterstitialCommands>(
+          command_num);
+  switch (cmd) {
+    case security_interstitials::CMD_OPEN_LOGIN:
+      RecordUMA(OPEN_LOGIN_PAGE);
+      CaptivePortalTabHelper::OpenLoginTabForWebContents(web_contents(), true);
+      break;
+    case security_interstitials::CMD_DO_REPORT:
+      controller()->SetReportingPreference(true);
+      break;
+    case security_interstitials::CMD_DONT_REPORT:
+      controller()->SetReportingPreference(false);
+      break;
+    case security_interstitials::CMD_OPEN_REPORTING_PRIVACY:
+      controller()->OpenExtendedReportingPrivacyPolicy();
+      break;
+    case security_interstitials::CMD_ERROR:
+    case security_interstitials::CMD_TEXT_FOUND:
+    case security_interstitials::CMD_TEXT_NOT_FOUND:
+      // Commands are for testing.
+      break;
+    default:
+      NOTREACHED() << "Command " << cmd
+                   << " isn't handled by the captive portal interstitial.";
   }
 }
 
 void CaptivePortalBlockingPage::OnProceed() {
-  if (cert_report_helper_) {
-    // Finish collecting information about invalid certificates, if the
-    // user opted in to.
-    cert_report_helper_->FinishCertCollection(
-        certificate_reporting::ErrorReport::USER_PROCEEDED);
-  }
+  NOTREACHED()
+      << "Cannot proceed through the error on a captive portal interstitial.";
 }
 
 void CaptivePortalBlockingPage::OnDontProceed() {
