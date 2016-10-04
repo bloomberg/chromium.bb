@@ -33,13 +33,10 @@ class TrackedSplitPreference : public TrackedPreference {
                          TrackedPreferenceValidationDelegate* delegate);
 
   // TrackedPreference implementation.
-  TrackedPreferenceType GetType() const override;
   void OnNewValue(const base::Value* value,
                   PrefHashStoreTransaction* transaction) const override;
-  bool EnforceAndReport(
-      base::DictionaryValue* pref_store_contents,
-      PrefHashStoreTransaction* transaction,
-      PrefHashStoreTransaction* external_validation_transaction) const override;
+  bool EnforceAndReport(base::DictionaryValue* pref_store_contents,
+                        PrefHashStoreTransaction* transaction) const override;
 
  private:
   const std::string pref_path_;

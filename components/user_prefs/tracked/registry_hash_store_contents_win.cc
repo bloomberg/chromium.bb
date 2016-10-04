@@ -7,7 +7,6 @@
 #include <windows.h>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
@@ -20,7 +19,7 @@ using base::win::RegistryValueIterator;
 
 namespace {
 
-constexpr size_t kMacSize = 64;
+constexpr size_t kMacSize = 32;
 
 base::string16 GetSplitPrefKeyName(const base::string16& reg_key_name,
                                    const std::string& split_key_name) {
@@ -72,18 +71,6 @@ RegistryHashStoreContentsWin::RegistryHashStoreContentsWin(
     const base::string16& registry_path,
     const base::string16& store_key)
     : preference_key_name_(registry_path + L"\\PreferenceMACs\\" + store_key) {}
-
-RegistryHashStoreContentsWin::RegistryHashStoreContentsWin(
-    const RegistryHashStoreContentsWin& other) = default;
-
-bool RegistryHashStoreContentsWin::IsCopyable() const {
-  return true;
-}
-
-std::unique_ptr<HashStoreContents> RegistryHashStoreContentsWin::MakeCopy()
-    const {
-  return base::WrapUnique(new RegistryHashStoreContentsWin(*this));
-}
 
 base::StringPiece RegistryHashStoreContentsWin::GetUMASuffix() const {
   return user_prefs::tracked::kTrackedPrefRegistryValidationSuffix;
@@ -154,6 +141,7 @@ void RegistryHashStoreContentsWin::SetSplitMac(const std::string& path,
 }
 
 bool RegistryHashStoreContentsWin::RemoveEntry(const std::string& path) {
+  // ClearSplitMac is first to avoid short-circuit issues.
   return ClearAtomicMac(preference_key_name_, path) ||
          ClearSplitMac(preference_key_name_, path);
 }
@@ -161,22 +149,22 @@ bool RegistryHashStoreContentsWin::RemoveEntry(const std::string& path) {
 void RegistryHashStoreContentsWin::ImportEntry(const std::string& path,
                                                const base::Value* in_value) {
   NOTREACHED()
-      << "RegistryHashStoreContents does not support the ImportEntry operation";
+      << "RegistryHashStore does not support the ImportEntry operation";
 }
 
 const base::DictionaryValue* RegistryHashStoreContentsWin::GetContents() const {
   NOTREACHED()
-      << "RegistryHashStoreContents does not support the GetContents operation";
+      << "RegistryHashStore does not support the GetContents operation";
   return NULL;
 }
 
 std::string RegistryHashStoreContentsWin::GetSuperMac() const {
   NOTREACHED()
-      << "RegistryHashStoreContents does not support the GetSuperMac operation";
+      << "RegistryHashStore does not support the GetSuperMac operation";
   return NULL;
 }
 
 void RegistryHashStoreContentsWin::SetSuperMac(const std::string& super_mac) {
   NOTREACHED()
-      << "RegistryHashStoreContents does not support the SetSuperMac operation";
+      << "RegistryHashStore does not support the SetSuperMac operation";
 }

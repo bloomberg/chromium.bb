@@ -26,15 +26,6 @@ class HashStoreContents {
  public:
   virtual ~HashStoreContents() {}
 
-  // Returns true if this implementation of HashStoreContents can be copied via
-  // MakeCopy().
-  virtual bool IsCopyable() const = 0;
-
-  // Returns a copy of this HashStoreContents. Must only be called on
-  // lightweight implementations (which return true from IsCopyable()) and only
-  // in scenarios where a copy cannot be avoided.
-  virtual std::unique_ptr<HashStoreContents> MakeCopy() const = 0;
-
   // Returns the suffix to be appended to UMA histograms for this store type.
   // The returned value must either be an empty string or one of the values in
   // histograms.xml's TrackedPreferencesExternalValidators.

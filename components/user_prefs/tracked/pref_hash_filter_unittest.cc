@@ -18,7 +18,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
@@ -387,189 +387,6 @@ std::vector<PrefHashFilter::TrackedPreferenceMetadata> GetConfiguration(
   return configuration;
 }
 
-class MockHashStoreContents : public HashStoreContents {
- public:
-  MockHashStoreContents(){};
-
-  // Returns the number of hashes stored.
-  size_t stored_hashes_count() const { return dictionary_.size(); }
-
-  // Returns the number of paths cleared.
-  size_t cleared_paths_count() const { return removed_entries_.size(); }
-
-  // Returns the stored MAC for an Atomic preference.
-  std::string GetStoredMac(const std::string& path) const;
-  // Returns the stored MAC for a Split preference.
-  std::string GetStoredSplitMac(const std::string& path,
-                                const std::string& split_path) const;
-
-  // HashStoreContents implementation.
-  bool IsCopyable() const override;
-  std::unique_ptr<HashStoreContents> MakeCopy() const override;
-  base::StringPiece GetUMASuffix() const override;
-  void Reset() override;
-  bool GetMac(const std::string& path, std::string* out_value) override;
-  bool GetSplitMacs(const std::string& path,
-                    std::map<std::string, std::string>* split_macs) override;
-  void SetMac(const std::string& path, const std::string& value) override;
-  void SetSplitMac(const std::string& path,
-                   const std::string& split_path,
-                   const std::string& value) override;
-  void ImportEntry(const std::string& path,
-                   const base::Value* in_value) override;
-  bool RemoveEntry(const std::string& path) override;
-  const base::DictionaryValue* GetContents() const override;
-  std::string GetSuperMac() const override;
-  void SetSuperMac(const std::string& super_mac) override;
-
- private:
-  MockHashStoreContents(MockHashStoreContents* origin_mock);
-
-  // Records calls to this mock's SetMac/SetSplitMac methods.
-  void RecordSetMac(const std::string& path, const std::string& mac) {
-    dictionary_.SetStringWithoutPathExpansion(path, mac);
-  }
-  void RecordSetSplitMac(const std::string& path,
-                         const std::string& split_path,
-                         const std::string& mac) {
-    base::DictionaryValue* mac_dict = nullptr;
-    dictionary_.GetDictionaryWithoutPathExpansion(path, &mac_dict);
-    if (!mac_dict) {
-      mac_dict = new base::DictionaryValue;
-      dictionary_.SetWithoutPathExpansion(path, mac_dict);
-    }
-    mac_dict->SetStringWithoutPathExpansion(split_path, mac);
-  }
-
-  // Records a call to this mock's RemoveEntry method.
-  void RecordRemoveEntry(const std::string& path) {
-    // Don't expect the same pref to be cleared more than once.
-    EXPECT_EQ(removed_entries_.end(), removed_entries_.find(path));
-    removed_entries_.insert(path);
-  }
-
-  base::DictionaryValue dictionary_;
-  std::set<std::string> removed_entries_;
-
-  // The code being tested copies its HashStoreContents for use in a callback
-  // which can be executed during shutdown. To be able to capture the behavior
-  // of the copy, we make it forward calls to the mock it was created from.
-  // Once set, |origin_mock_| must outlive this instance.
-  MockHashStoreContents* origin_mock_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockHashStoreContents);
-};
-
-std::string MockHashStoreContents::GetStoredMac(const std::string& path) const {
-  const base::Value* out_value;
-  if (dictionary_.GetWithoutPathExpansion(path, &out_value)) {
-    const base::StringValue* value_as_string;
-    EXPECT_TRUE(out_value->GetAsString(&value_as_string));
-
-    return value_as_string->GetString();
-  }
-
-  return std::string();
-}
-
-std::string MockHashStoreContents::GetStoredSplitMac(
-    const std::string& path,
-    const std::string& split_path) const {
-  const base::Value* out_value;
-  if (dictionary_.GetWithoutPathExpansion(path, &out_value)) {
-    const base::DictionaryValue* value_as_dict;
-    EXPECT_TRUE(out_value->GetAsDictionary(&value_as_dict));
-
-    if (value_as_dict->GetWithoutPathExpansion(split_path, &out_value)) {
-      const base::StringValue* value_as_string;
-      EXPECT_TRUE(out_value->GetAsString(&value_as_string));
-
-      return value_as_string->GetString();
-    }
-  }
-
-  return std::string();
-}
-
-MockHashStoreContents::MockHashStoreContents(MockHashStoreContents* origin_mock)
-    : origin_mock_(origin_mock) {}
-
-bool MockHashStoreContents::IsCopyable() const {
-  return true;
-}
-
-std::unique_ptr<HashStoreContents> MockHashStoreContents::MakeCopy() const {
-  // Return a new MockHashStoreContents which forwards all requests to this
-  // mock instance.
-  return std::unique_ptr<HashStoreContents>(
-      new MockHashStoreContents(const_cast<MockHashStoreContents*>(this)));
-}
-
-base::StringPiece MockHashStoreContents::GetUMASuffix() const {
-  return "Unused";
-}
-
-void MockHashStoreContents::Reset() {
-  ADD_FAILURE() << "Unexpected call.";
-}
-
-bool MockHashStoreContents::GetMac(const std::string& path,
-                                   std::string* out_value) {
-  ADD_FAILURE() << "Unexpected call.";
-  return false;
-}
-
-bool MockHashStoreContents::GetSplitMacs(
-    const std::string& path,
-    std::map<std::string, std::string>* split_macs) {
-  ADD_FAILURE() << "Unexpected call.";
-  return false;
-}
-
-void MockHashStoreContents::SetMac(const std::string& path,
-                                   const std::string& value) {
-  if (origin_mock_)
-    origin_mock_->RecordSetMac(path, value);
-  else
-    RecordSetMac(path, value);
-}
-
-void MockHashStoreContents::SetSplitMac(const std::string& path,
-                                        const std::string& split_path,
-                                        const std::string& value) {
-  if (origin_mock_)
-    origin_mock_->RecordSetSplitMac(path, split_path, value);
-  else
-    RecordSetSplitMac(path, split_path, value);
-}
-
-void MockHashStoreContents::ImportEntry(const std::string& path,
-                                        const base::Value* in_value) {
-  ADD_FAILURE() << "Unexpected call.";
-}
-
-bool MockHashStoreContents::RemoveEntry(const std::string& path) {
-  if (origin_mock_)
-    origin_mock_->RecordRemoveEntry(path);
-  else
-    RecordRemoveEntry(path);
-  return true;
-}
-
-const base::DictionaryValue* MockHashStoreContents::GetContents() const {
-  ADD_FAILURE() << "Unexpected call.";
-  return nullptr;
-}
-
-std::string MockHashStoreContents::GetSuperMac() const {
-  ADD_FAILURE() << "Unexpected call.";
-  return std::string();
-}
-
-void MockHashStoreContents::SetSuperMac(const std::string& super_mac) {
-  ADD_FAILURE() << "Unexpected call.";
-}
-
 class PrefHashFilterTest
     : public testing::TestWithParam<PrefHashFilter::EnforcementLevel> {
  public:
@@ -597,22 +414,9 @@ class PrefHashFilterTest
       PrefHashFilter::TrackedPreferenceMetadata>& configuration) {
     std::unique_ptr<MockPrefHashStore> temp_mock_pref_hash_store(
         new MockPrefHashStore);
-    std::unique_ptr<MockPrefHashStore>
-        temp_mock_external_validation_pref_hash_store(new MockPrefHashStore);
-    std::unique_ptr<MockHashStoreContents>
-        temp_mock_external_validation_hash_store_contents(
-            new MockHashStoreContents);
     mock_pref_hash_store_ = temp_mock_pref_hash_store.get();
-    mock_external_validation_pref_hash_store_ =
-        temp_mock_external_validation_pref_hash_store.get();
-    mock_external_validation_hash_store_contents_ =
-        temp_mock_external_validation_hash_store_contents.get();
     pref_hash_filter_.reset(new PrefHashFilter(
-        std::move(temp_mock_pref_hash_store),
-        PrefHashFilter::StoreContentsPair(
-            std::move(temp_mock_external_validation_pref_hash_store),
-            std::move(temp_mock_external_validation_hash_store_contents)),
-        configuration,
+        std::move(temp_mock_pref_hash_store), configuration,
         base::Bind(&PrefHashFilterTest::RecordReset, base::Unretained(this)),
         &mock_validation_delegate_, arraysize(kTestTrackedPrefs), true));
   }
@@ -638,8 +442,6 @@ class PrefHashFilterTest
   }
 
   MockPrefHashStore* mock_pref_hash_store_;
-  MockPrefHashStore* mock_external_validation_pref_hash_store_;
-  MockHashStoreContents* mock_external_validation_hash_store_contents_;
   std::unique_ptr<base::DictionaryValue> pref_store_contents_;
   MockValidationDelegate mock_validation_delegate_;
   std::unique_ptr<PrefHashFilter> pref_hash_filter_;
@@ -1259,120 +1061,6 @@ TEST_P(PrefHashFilterTest, DontResetReportOnly) {
 
     VerifyRecordedReset(false);
   }
-}
-
-TEST_P(PrefHashFilterTest, CallFilterSerializeDataCallbacks) {
-  base::DictionaryValue root_dict;
-  // Ownership of the following values is transfered to |root_dict|.
-  base::Value* int_value1 = new base::FundamentalValue(1);
-  base::Value* int_value2 = new base::FundamentalValue(2);
-  base::DictionaryValue* dict_value = new base::DictionaryValue;
-  dict_value->Set("a", new base::FundamentalValue(true));
-  root_dict.Set(kAtomicPref, int_value1);
-  root_dict.Set(kAtomicPref2, int_value2);
-  root_dict.Set(kSplitPref, dict_value);
-
-  // Skip updating kAtomicPref2.
-  pref_hash_filter_->FilterUpdate(kAtomicPref);
-  pref_hash_filter_->FilterUpdate(kSplitPref);
-
-  PrefHashFilter::OnWriteCallbackPair callbacks =
-      pref_hash_filter_->FilterSerializeData(&root_dict);
-
-  ASSERT_FALSE(callbacks.first.is_null());
-
-  // Prefs should be cleared from the external validation store only once the
-  // before-write callback is run.
-  ASSERT_EQ(
-      0u, mock_external_validation_hash_store_contents_->cleared_paths_count());
-  callbacks.first.Run();
-  ASSERT_EQ(
-      2u, mock_external_validation_hash_store_contents_->cleared_paths_count());
-
-  // No pref write should occur before the after-write callback is run.
-  ASSERT_EQ(
-      0u, mock_external_validation_hash_store_contents_->stored_hashes_count());
-
-  callbacks.second.Run(true);
-
-  ASSERT_EQ(
-      2u, mock_external_validation_hash_store_contents_->stored_hashes_count());
-  ASSERT_EQ(
-      "atomic mac for: atomic_pref",
-      mock_external_validation_hash_store_contents_->GetStoredMac(kAtomicPref));
-  ASSERT_EQ("split mac for: split_pref/a",
-            mock_external_validation_hash_store_contents_->GetStoredSplitMac(
-                kSplitPref, "a"));
-
-  // The callbacks should write directly to the contents without going through
-  // a pref hash store.
-  ASSERT_EQ(0u,
-            mock_external_validation_pref_hash_store_->stored_paths_count());
-}
-
-TEST_P(PrefHashFilterTest, CallFilterSerializeDataCallbacksWithFailure) {
-  base::DictionaryValue root_dict;
-  // Ownership of the following values is transfered to |root_dict|.
-  base::Value* int_value1 = new base::FundamentalValue(1);
-  root_dict.Set(kAtomicPref, int_value1);
-
-  // Only update kAtomicPref.
-  pref_hash_filter_->FilterUpdate(kAtomicPref);
-
-  PrefHashFilter::OnWriteCallbackPair callbacks =
-      pref_hash_filter_->FilterSerializeData(&root_dict);
-
-  ASSERT_FALSE(callbacks.first.is_null());
-
-  callbacks.first.Run();
-
-  // The pref should have been cleared from the external validation store.
-  ASSERT_EQ(
-      1u, mock_external_validation_hash_store_contents_->cleared_paths_count());
-
-  callbacks.second.Run(false);
-
-  // Expect no writes to the external validation hash store contents.
-  ASSERT_EQ(0u,
-            mock_external_validation_pref_hash_store_->stored_paths_count());
-  ASSERT_EQ(
-      0u, mock_external_validation_hash_store_contents_->stored_hashes_count());
-}
-
-TEST_P(PrefHashFilterTest, ExternalValidationValueChanged) {
-  // Ownership of this value is transfered to |pref_store_contents_|.
-  base::Value* int_value = new base::FundamentalValue(1234);
-  pref_store_contents_->Set(kAtomicPref, int_value);
-
-  base::DictionaryValue* dict_value = new base::DictionaryValue;
-  dict_value->SetString("a", "foo");
-  dict_value->SetInteger("b", 1234);
-  dict_value->SetInteger("c", 56);
-  dict_value->SetBoolean("d", false);
-  pref_store_contents_->Set(kSplitPref, dict_value);
-
-  mock_external_validation_pref_hash_store_->SetCheckResult(
-      kAtomicPref, PrefHashStoreTransaction::CHANGED);
-  mock_external_validation_pref_hash_store_->SetCheckResult(
-      kSplitPref, PrefHashStoreTransaction::CHANGED);
-
-  std::vector<std::string> mock_invalid_keys;
-  mock_invalid_keys.push_back("a");
-  mock_invalid_keys.push_back("c");
-  mock_external_validation_pref_hash_store_->SetInvalidKeysResult(
-      kSplitPref, mock_invalid_keys);
-
-  DoFilterOnLoad(false);
-
-  ASSERT_EQ(arraysize(kTestTrackedPrefs),
-            mock_external_validation_pref_hash_store_->checked_paths_count());
-  ASSERT_EQ(2u,
-            mock_external_validation_pref_hash_store_->stored_paths_count());
-  ASSERT_EQ(
-      1u, mock_external_validation_pref_hash_store_->transactions_performed());
-
-  // TODO(proberge): query mock_validation_state_ for number of CHANGED
-  // and UNCHANGED preferences once the class supports external validation.
 }
 
 INSTANTIATE_TEST_CASE_P(PrefHashFilterTestInstance,

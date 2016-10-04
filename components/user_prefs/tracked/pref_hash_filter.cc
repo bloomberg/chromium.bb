@@ -8,10 +8,8 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
@@ -53,27 +51,16 @@ void CleanupDeprecatedTrackedPreferences(
 
 PrefHashFilter::PrefHashFilter(
     std::unique_ptr<PrefHashStore> pref_hash_store,
-    StoreContentsPair external_validation_hash_store_pair,
     const std::vector<TrackedPreferenceMetadata>& tracked_preferences,
     const base::Closure& on_reset_on_load,
     TrackedPreferenceValidationDelegate* delegate,
     size_t reporting_ids_count,
     bool report_super_mac_validity)
     : pref_hash_store_(std::move(pref_hash_store)),
-      external_validation_hash_store_pair_(
-          external_validation_hash_store_pair.first
-              ? base::make_optional(
-                    std::move(external_validation_hash_store_pair))
-              : base::nullopt),
       on_reset_on_load_(on_reset_on_load),
       report_super_mac_validity_(report_super_mac_validity) {
   DCHECK(pref_hash_store_);
   DCHECK_GE(reporting_ids_count, tracked_preferences.size());
-  // Verify that, if |external_validation_hash_store_pair_| is present, both its
-  // items are non-null.
-  DCHECK(!external_validation_hash_store_pair_.has_value() ||
-         (external_validation_hash_store_pair_->first &&
-          external_validation_hash_store_pair_->second));
 
   for (size_t i = 0; i < tracked_preferences.size(); ++i) {
     const TrackedPreferenceMetadata& metadata = tracked_preferences[i];
@@ -152,7 +139,7 @@ void PrefHashFilter::Initialize(base::DictionaryValue* pref_store_contents) {
        it != tracked_paths_.end(); ++it) {
     const std::string& initialized_path = it->first;
     const TrackedPreference* initialized_preference = it->second;
-    const base::Value* value = nullptr;
+    const base::Value* value = NULL;
     pref_store_contents->Get(initialized_path, &value);
     initialized_preference->OnNewValue(value, hash_store_transaction.get());
   }
@@ -171,40 +158,31 @@ void PrefHashFilter::FilterUpdate(const std::string& path) {
 // is too expensive (see perf regression @ http://crbug.com/331273).
 PrefFilter::OnWriteCallbackPair PrefHashFilter::FilterSerializeData(
     base::DictionaryValue* pref_store_contents) {
-  // Generate the callback pair before clearing |changed_paths_|.
-  PrefFilter::OnWriteCallbackPair callback_pair =
-      GetOnWriteSynchronousCallbacks(pref_store_contents);
-
   if (!changed_paths_.empty()) {
     base::TimeTicks checkpoint = base::TimeTicks::Now();
     {
       DictionaryHashStoreContents dictionary_contents(pref_store_contents);
       std::unique_ptr<PrefHashStoreTransaction> hash_store_transaction(
           pref_hash_store_->BeginTransaction(&dictionary_contents));
-
-      std::unique_ptr<PrefHashStoreTransaction>
-          external_validation_hash_store_transaction;
-      if (external_validation_hash_store_pair_) {
-        external_validation_hash_store_transaction =
-            external_validation_hash_store_pair_->first->BeginTransaction(
-                external_validation_hash_store_pair_->second.get());
-      }
-
       for (ChangedPathsMap::const_iterator it = changed_paths_.begin();
            it != changed_paths_.end(); ++it) {
         const std::string& changed_path = it->first;
         const TrackedPreference* changed_preference = it->second;
-        const base::Value* value = nullptr;
+        const base::Value* value = NULL;
         pref_store_contents->Get(changed_path, &value);
         changed_preference->OnNewValue(value, hash_store_transaction.get());
       }
       changed_paths_.clear();
     }
+    // TODO(gab): Remove this histogram by Feb 21 2014; after sufficient timing
+    // data has been gathered from the wild to be confident this doesn't
+    // significantly affect performance on the UI thread.
     UMA_HISTOGRAM_TIMES("Settings.FilterSerializeDataTime",
                         base::TimeTicks::Now() - checkpoint);
   }
 
-  return callback_pair;
+  // TODO(proberge): return callbacks if external validation is enabled.
+  return std::make_pair(base::Closure(), base::Callback<void(bool success)>());
 }
 
 void PrefHashFilter::FinalizeFilterOnLoad(
@@ -220,14 +198,6 @@ void PrefHashFilter::FinalizeFilterOnLoad(
     std::unique_ptr<PrefHashStoreTransaction> hash_store_transaction(
         pref_hash_store_->BeginTransaction(&dictionary_contents));
 
-    std::unique_ptr<PrefHashStoreTransaction>
-        external_validation_hash_store_transaction;
-    if (external_validation_hash_store_pair_) {
-      external_validation_hash_store_transaction =
-          external_validation_hash_store_pair_->first->BeginTransaction(
-              external_validation_hash_store_pair_->second.get());
-    }
-
     CleanupDeprecatedTrackedPreferences(
         pref_store_contents.get(), hash_store_transaction.get());
 
@@ -238,9 +208,8 @@ void PrefHashFilter::FinalizeFilterOnLoad(
 
     for (TrackedPreferencesMap::const_iterator it = tracked_paths_.begin();
          it != tracked_paths_.end(); ++it) {
-      if (it->second->EnforceAndReport(
-              pref_store_contents.get(), hash_store_transaction.get(),
-              external_validation_hash_store_transaction.get())) {
+      if (it->second->EnforceAndReport(pref_store_contents.get(),
+                                       hash_store_transaction.get())) {
         did_reset = true;
         prefs_altered = true;
       }
@@ -259,114 +228,12 @@ void PrefHashFilter::FinalizeFilterOnLoad(
       on_reset_on_load_.Run();
   }
 
+  // TODO(gab): Remove this histogram by Feb 21 2014; after sufficient timing
+  // data has been gathered from the wild to be confident this doesn't
+  // significantly affect startup.
   UMA_HISTOGRAM_TIMES("Settings.FilterOnLoadTime",
                       base::TimeTicks::Now() - checkpoint);
 
   post_filter_on_load_callback.Run(std::move(pref_store_contents),
                                    prefs_altered);
-}
-
-// static
-void PrefHashFilter::ClearFromExternalStore(
-    HashStoreContents* external_validation_hash_store_contents,
-    const base::DictionaryValue* changed_paths_and_macs) {
-  DCHECK(!changed_paths_and_macs->empty());
-
-  for (base::DictionaryValue::Iterator it(*changed_paths_and_macs);
-       !it.IsAtEnd(); it.Advance()) {
-    external_validation_hash_store_contents->RemoveEntry(it.key());
-  }
-}
-
-// static
-void PrefHashFilter::FlushToExternalStore(
-    std::unique_ptr<HashStoreContents> external_validation_hash_store_contents,
-    std::unique_ptr<base::DictionaryValue> changed_paths_and_macs,
-    bool write_success) {
-  DCHECK(!changed_paths_and_macs->empty());
-  DCHECK(external_validation_hash_store_contents);
-  if (!write_success)
-    return;
-
-  for (base::DictionaryValue::Iterator it(*changed_paths_and_macs);
-       !it.IsAtEnd(); it.Advance()) {
-    const std::string& changed_path = it.key();
-
-    const base::DictionaryValue* split_values = nullptr;
-    if (it.value().GetAsDictionary(&split_values)) {
-      for (base::DictionaryValue::Iterator inner_it(*split_values);
-           !inner_it.IsAtEnd(); inner_it.Advance()) {
-        std::string mac;
-        bool is_string = inner_it.value().GetAsString(&mac);
-        DCHECK(is_string);
-
-        external_validation_hash_store_contents->SetSplitMac(
-            changed_path, inner_it.key(), mac);
-      }
-    } else {
-      const base::StringValue* value_as_string;
-      bool is_string = it.value().GetAsString(&value_as_string);
-      DCHECK(is_string);
-
-      external_validation_hash_store_contents->SetMac(
-          changed_path, value_as_string->GetString());
-    }
-  }
-}
-
-PrefFilter::OnWriteCallbackPair PrefHashFilter::GetOnWriteSynchronousCallbacks(
-    base::DictionaryValue* pref_store_contents) {
-  if (changed_paths_.empty() || !external_validation_hash_store_pair_) {
-    return std::make_pair(base::Closure(),
-                          base::Callback<void(bool success)>());
-  }
-
-  std::unique_ptr<base::DictionaryValue> changed_paths_macs =
-      base::MakeUnique<base::DictionaryValue>();
-
-  for (ChangedPathsMap::const_iterator it = changed_paths_.begin();
-       it != changed_paths_.end(); ++it) {
-    const std::string& changed_path = it->first;
-    const TrackedPreference* changed_preference = it->second;
-
-    switch (changed_preference->GetType()) {
-      case TrackedPreferenceType::ATOMIC: {
-        const base::Value* new_value = nullptr;
-        pref_store_contents->Get(changed_path, &new_value);
-        changed_paths_macs->SetStringWithoutPathExpansion(
-            changed_path,
-            external_validation_hash_store_pair_->first->ComputeMac(
-                changed_path, new_value));
-        break;
-      }
-      case TrackedPreferenceType::SPLIT: {
-        const base::DictionaryValue* dict_value = nullptr;
-        pref_store_contents->GetDictionary(changed_path, &dict_value);
-        changed_paths_macs->SetWithoutPathExpansion(
-            changed_path,
-            external_validation_hash_store_pair_->first->ComputeSplitMacs(
-                changed_path, dict_value));
-        break;
-      }
-    }
-  }
-
-  DCHECK(external_validation_hash_store_pair_->second->IsCopyable())
-      << "External HashStoreContents must be copyable as it needs to be used "
-         "off-thread";
-
-  std::unique_ptr<HashStoreContents> hash_store_contents_copy =
-      external_validation_hash_store_pair_->second->MakeCopy();
-
-  // We can use raw pointers for the first callback instead of making more
-  // copies as it will be executed in sequence before the second callback,
-  // which owns the pointers.
-  HashStoreContents* raw_contents = hash_store_contents_copy.get();
-  base::DictionaryValue* raw_changed_paths_macs = changed_paths_macs.get();
-
-  return std::make_pair(
-      base::Bind(&ClearFromExternalStore, base::Unretained(raw_contents),
-                 base::Unretained(raw_changed_paths_macs)),
-      base::Bind(&FlushToExternalStore, base::Passed(&hash_store_contents_copy),
-                 base::Passed(&changed_paths_macs)));
 }

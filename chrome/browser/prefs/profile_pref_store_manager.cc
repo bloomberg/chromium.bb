@@ -11,7 +11,6 @@
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "build/build_config.h"
@@ -24,11 +23,6 @@
 #include "components/user_prefs/tracked/segregated_pref_store.h"
 #include "components/user_prefs/tracked/tracked_preferences_migration.h"
 
-#if defined(OS_WIN)
-#include "chrome/installer/util/browser_distribution.h"
-#include "components/user_prefs/tracked/registry_hash_store_contents_win.h"
-#endif
-
 namespace {
 
 void RemoveValueSilently(const base::WeakPtr<JsonPrefStore> pref_store,
@@ -38,13 +32,6 @@ void RemoveValueSilently(const base::WeakPtr<JsonPrefStore> pref_store,
         key, WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
   }
 }
-
-#if defined(OS_WIN)
-// Forces a different registry key to be used for storing preference validation
-// MACs. See |SetPreferenceValidationRegistryPathForTesting|.
-const base::string16* g_preference_validation_registry_path_for_testing =
-    nullptr;
-#endif  // OS_WIN
 
 }  // namespace
 
@@ -90,15 +77,6 @@ void ProfilePrefStoreManager::ClearResetTime(PrefService* pref_service) {
   PrefHashFilter::ClearResetTime(pref_service);
 }
 
-#if defined(OS_WIN)
-// static
-void ProfilePrefStoreManager::SetPreferenceValidationRegistryPathForTesting(
-    const base::string16* path) {
-  DCHECK(!path->empty());
-  g_preference_validation_registry_path_for_testing = path;
-}
-#endif  // OS_WIN
-
 PersistentPrefStore* ProfilePrefStoreManager::CreateProfilePrefStore(
     const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
     const base::Closure& on_reset_on_load,
@@ -130,14 +108,12 @@ PersistentPrefStore* ProfilePrefStoreManager::CreateProfilePrefStore(
   }
 
   std::unique_ptr<PrefHashFilter> unprotected_pref_hash_filter(
-      new PrefHashFilter(GetPrefHashStore(false),
-                         GetExternalVerificationPrefHashStorePair(),
-                         unprotected_configuration, base::Closure(),
-                         validation_delegate, reporting_ids_count_, false));
+      new PrefHashFilter(GetPrefHashStore(false), unprotected_configuration,
+                         base::Closure(), validation_delegate,
+                         reporting_ids_count_, false));
   std::unique_ptr<PrefHashFilter> protected_pref_hash_filter(new PrefHashFilter(
-      GetPrefHashStore(true), GetExternalVerificationPrefHashStorePair(),
-      protected_configuration, on_reset_on_load, validation_delegate,
-      reporting_ids_count_, true));
+      GetPrefHashStore(true), protected_configuration, on_reset_on_load,
+      validation_delegate, reporting_ids_count_, true));
 
   PrefHashFilter* raw_unprotected_pref_hash_filter =
       unprotected_pref_hash_filter.get();
@@ -183,10 +159,11 @@ bool ProfilePrefStoreManager::InitializePrefsFromMasterPrefs(
     copy.reset(master_prefs.DeepCopy());
     to_serialize = copy.get();
     PrefHashFilter(GetPrefHashStore(false),
-                   GetExternalVerificationPrefHashStorePair(),
-                   tracking_configuration_, base::Closure(), NULL,
-                   reporting_ids_count_, false)
-        .Initialize(copy.get());
+                   tracking_configuration_,
+                   base::Closure(),
+                   NULL,
+                   reporting_ids_count_,
+                   false).Initialize(copy.get());
   }
 
   // This will write out to a single combined file which will be immediately
@@ -211,24 +188,4 @@ std::unique_ptr<PrefHashStore> ProfilePrefStoreManager::GetPrefHashStore(
 
   return std::unique_ptr<PrefHashStore>(
       new PrefHashStoreImpl(seed_, device_id_, use_super_mac));
-}
-
-std::pair<std::unique_ptr<PrefHashStore>, std::unique_ptr<HashStoreContents>>
-ProfilePrefStoreManager::GetExternalVerificationPrefHashStorePair() {
-  DCHECK(kPlatformSupportsPreferenceTracking);
-#if defined(OS_WIN)
-  return std::make_pair(
-      base::MakeUnique<PrefHashStoreImpl>(
-          "ChromeRegistryHashStoreValidationSeed", device_id_,
-          false /* use_super_mac */),
-      g_preference_validation_registry_path_for_testing
-          ? base::MakeUnique<RegistryHashStoreContentsWin>(
-                *g_preference_validation_registry_path_for_testing,
-                profile_path_.BaseName().LossyDisplayName())
-          : base::MakeUnique<RegistryHashStoreContentsWin>(
-                BrowserDistribution::GetDistribution()->GetRegistryPath(),
-                profile_path_.BaseName().LossyDisplayName()));
-#else
-  return std::make_pair(nullptr, nullptr);
-#endif
 }

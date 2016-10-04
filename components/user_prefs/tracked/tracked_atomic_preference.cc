@@ -24,10 +24,6 @@ TrackedAtomicPreference::TrackedAtomicPreference(
       delegate_(delegate) {
 }
 
-TrackedPreferenceType TrackedAtomicPreference::GetType() const {
-  return TrackedPreferenceType::ATOMIC;
-}
-
 void TrackedAtomicPreference::OnNewValue(
     const base::Value* value,
     PrefHashStoreTransaction* transaction) const {
@@ -36,32 +32,20 @@ void TrackedAtomicPreference::OnNewValue(
 
 bool TrackedAtomicPreference::EnforceAndReport(
     base::DictionaryValue* pref_store_contents,
-    PrefHashStoreTransaction* transaction,
-    PrefHashStoreTransaction* external_validation_transaction) const {
+    PrefHashStoreTransaction* transaction) const {
   const base::Value* value = NULL;
   pref_store_contents->Get(pref_path_, &value);
   PrefHashStoreTransaction::ValueState value_state =
       transaction->CheckValue(pref_path_, value);
+
   helper_.ReportValidationResult(value_state, transaction->GetStoreUMASuffix());
 
-  PrefHashStoreTransaction::ValueState external_validation_value_state =
-      PrefHashStoreTransaction::UNCHANGED;
-  if (external_validation_transaction) {
-    external_validation_value_state =
-        external_validation_transaction->CheckValue(pref_path_, value);
-    helper_.ReportValidationResult(
-        external_validation_value_state,
-        external_validation_transaction->GetStoreUMASuffix());
-
-    // TODO(proberge): Call delegate_->OnAtomicPreferenceValidation.
-  }
-
+  TrackedPreferenceHelper::ResetAction reset_action =
+      helper_.GetAction(value_state);
   if (delegate_) {
     delegate_->OnAtomicPreferenceValidation(pref_path_, value, value_state,
                                             helper_.IsPersonal());
   }
-  TrackedPreferenceHelper::ResetAction reset_action =
-      helper_.GetAction(value_state);
   helper_.ReportAction(reset_action);
 
   bool was_reset = false;
@@ -75,17 +59,6 @@ bool TrackedAtomicPreference::EnforceAndReport(
     const base::Value* new_value = NULL;
     pref_store_contents->Get(pref_path_, &new_value);
     transaction->StoreHash(pref_path_, new_value);
-  }
-
-  // Update MACs in the external store if there is one and there either was a
-  // reset or external validation failed.
-  if (external_validation_transaction &&
-      (was_reset ||
-       external_validation_value_state !=
-           PrefHashStoreTransaction::UNCHANGED)) {
-    const base::Value* new_value = nullptr;
-    pref_store_contents->Get(pref_path_, &new_value);
-    external_validation_transaction->StoreHash(pref_path_, new_value);
   }
 
   return was_reset;

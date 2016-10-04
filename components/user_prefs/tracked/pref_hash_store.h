@@ -12,7 +12,6 @@
 #include "components/user_prefs/tracked/pref_hash_store_transaction.h"
 
 class HashStoreContents;
-class PrefHashStoreTransaction;
 
 // Holds the configuration and implementation used to calculate and verify
 // preference MACs.
