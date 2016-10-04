@@ -70,10 +70,10 @@ void AddToHomescreenManager::AddShortcut(
 }
 
 void AddToHomescreenManager::Start(content::WebContents* web_contents) {
-  bool check_installable = false;
+  bool check_webapk_compatible = false;
   if (ChromeWebApkHost::AreWebApkEnabled() &&
       content::IsOriginSecure(web_contents->GetLastCommittedURL())) {
-    check_installable = true;
+    check_webapk_compatible = true;
   } else {
     ShowDialog();
   }
@@ -83,7 +83,7 @@ void AddToHomescreenManager::Start(content::WebContents* web_contents) {
       ShortcutHelper::GetMinimumHomescreenIconSizeInDp(),
       ShortcutHelper::GetIdealSplashImageSizeInDp(),
       ShortcutHelper::GetMinimumSplashImageSizeInDp(),
-      check_installable, this);
+      check_webapk_compatible, this);
 }
 
 AddToHomescreenManager::~AddToHomescreenManager() {
@@ -153,7 +153,7 @@ void AddToHomescreenManager::OnUserTitleAvailable(
 void AddToHomescreenManager::OnDataAvailable(const ShortcutInfo& info,
                                              const SkBitmap& icon) {
   if (is_webapk_compatible_) {
-    CreateInfoBarForWebAPK(info, icon);
+    CreateInfoBarForWebApk(info, icon);
     return;
   }
 
@@ -168,7 +168,7 @@ void AddToHomescreenManager::OnDataAvailable(const ShortcutInfo& info,
     AddShortcut(info, icon);
 }
 
-void AddToHomescreenManager::CreateInfoBarForWebAPK(const ShortcutInfo& info,
+void AddToHomescreenManager::CreateInfoBarForWebApk(const ShortcutInfo& info,
                                                     const SkBitmap& icon) {
   banners::AppBannerInfoBarDelegateAndroid::Create(
       data_fetcher_->web_contents(), nullptr, info.user_title,
