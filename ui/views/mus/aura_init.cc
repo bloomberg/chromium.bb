@@ -55,6 +55,16 @@ AuraInit::AuraInit(shell::Connector* connector,
   ui::MaterialDesignController::Initialize();
   InitializeResources(connector);
 
+// Initialize the skia font code to go ask fontconfig underneath.
+#if defined(OS_LINUX)
+  font_loader_ = sk_make_sp<font_service::FontLoader>(connector);
+  SkFontConfigInterface::SetGlobal(font_loader_.get());
+#endif
+
+  // There is a bunch of static state in gfx::Font, by running this now,
+  // before any other apps load, we ensure all the state is set up.
+  gfx::Font();
+
   ui::InitializeInputMethodForTesting();
 }
 
@@ -71,6 +81,8 @@ AuraInit::~AuraInit() {
 }
 
 void AuraInit::InitializeResources(shell::Connector* connector) {
+  // Resources may have already been initialized (e.g. when 'chrome --mash' is
+  // used to launch the current app).
   if (ui::ResourceBundle::HasSharedInstance())
     return;
 
@@ -92,16 +104,6 @@ void AuraInit::InitializeResources(shell::Connector* connector) {
   if (!resource_file_200_.empty())
     ui::ResourceBundle::GetSharedInstance().AddDataPackFromFile(
         loader.TakeFile(resource_file_200_), ui::SCALE_FACTOR_200P);
-
-// Initialize the skia font code to go ask fontconfig underneath.
-#if defined(OS_LINUX)
-  font_loader_ = sk_make_sp<font_service::FontLoader>(connector);
-  SkFontConfigInterface::SetGlobal(font_loader_.get());
-#endif
-
-  // There is a bunch of static state in gfx::Font, by running this now,
-  // before any other apps load, we ensure all the state is set up.
-  gfx::Font();
 }
 
 }  // namespace views

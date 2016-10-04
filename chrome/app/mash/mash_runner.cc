@@ -29,6 +29,9 @@
 #include "services/shell/public/interfaces/service_factory.mojom.h"
 #include "services/shell/runner/common/switches.h"
 #include "services/shell/runner/host/child_process_base.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_paths.h"
+#include "ui/base/ui_base_switches.h"
 
 using shell::mojom::ServiceFactory;
 
@@ -42,6 +45,16 @@ bool IsChild() {
              switches::kProcessType) &&
          base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
              switches::kProcessType) == kMashChild;
+}
+
+void InitializeResources() {
+  ui::RegisterPathProvider();
+  const std::string locale =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kLang);
+  // This loads the Chrome's resources (chrome_100_percent.pak etc.)
+  ui::ResourceBundle::InitSharedInstanceWithLocale(
+      locale, nullptr, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
 }
 
 // Convert the command line program from chrome_mash to chrome. This is
@@ -120,6 +133,7 @@ void MashRunner::RunMain() {
 
 void MashRunner::RunChild() {
   base::i18n::InitializeICU();
+  InitializeResources();
   shell::ChildProcessMainWithCallback(
       base::Bind(&MashRunner::StartChildApp, base::Unretained(this)));
 }
