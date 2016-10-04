@@ -18,6 +18,8 @@ import android.webkit.WebViewClient;
 public class TelemetryActivity extends Activity {
     static final String DEFAULT_START_UP_TRACE_TAG = "WebViewStartupInterval";
     static final String DEFAULT_LOAD_URL_TRACE_TAG = "WebViewBlankUrlLoadInterval";
+    static final String DEFAULT_START_UP_AND_LOAD_URL_TRACE_TAG =
+            "WebViewStartupAndLoadBlankUrlInterval";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -28,11 +30,15 @@ public class TelemetryActivity extends Activity {
         Intent intent = getIntent();
         final String startUpTraceTag = intent.getStringExtra("WebViewStartUpTraceTag");
         final String loadUrlTraceTag = intent.getStringExtra("WebViewLoadUrlTraceTag");
+        final String startUpAndLoadUrlTraceTag =
+                intent.getStringExtra("WebViewStartUpAndLoadUrlTraceTag");
 
+        Trace.beginSection(startUpTraceTag == null ? DEFAULT_START_UP_AND_LOAD_URL_TRACE_TAG
+                                                   : startUpAndLoadUrlTraceTag);
         Trace.beginSection(startUpTraceTag == null ? DEFAULT_START_UP_TRACE_TAG : startUpTraceTag);
         WebView webView = new WebView(this);
-        Trace.endSection();
         setContentView(webView);
+        Trace.endSection();
 
         CookieManager.setAcceptFileSchemeCookies(true);
         WebSettings settings = webView.getSettings();
@@ -55,6 +61,7 @@ public class TelemetryActivity extends Activity {
                 @Override
                 public void onPageFinished(WebView view, String url) {
                     super.onPageFinished(view, url);
+                    Trace.endSection();
                     Trace.endSection();
                 }
         });
