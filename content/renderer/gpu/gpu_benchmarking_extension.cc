@@ -861,28 +861,40 @@ float GpuBenchmarking::VisualViewportY() {
   GpuBenchmarkingContext context;
   if (!context.Init(false))
     return 0.0;
-  return context.web_view()->visualViewportOffset().y;
+  float y = context.web_view()->visualViewportOffset().y;
+  blink::WebRect rect(0, y, 0, 0);
+  context.render_view_impl()->convertViewportToWindow(&rect);
+  return rect.y;
 }
 
 float GpuBenchmarking::VisualViewportX() {
   GpuBenchmarkingContext context;
   if (!context.Init(false))
     return 0.0;
-  return context.web_view()->visualViewportOffset().x;
+  float x = context.web_view()->visualViewportOffset().x;
+  blink::WebRect rect(x, 0, 0, 0);
+  context.render_view_impl()->convertViewportToWindow(&rect);
+  return rect.x;
 }
 
 float GpuBenchmarking::VisualViewportHeight() {
   GpuBenchmarkingContext context;
   if (!context.Init(false))
     return 0.0;
-  return context.web_view()->visualViewportSize().height;
+  float height = context.web_view()->visualViewportSize().height;
+  blink::WebRect rect(0, 0, 0, height);
+  context.render_view_impl()->convertViewportToWindow(&rect);
+  return rect.height;
 }
 
 float GpuBenchmarking::VisualViewportWidth() {
   GpuBenchmarkingContext context;
   if (!context.Init(false))
     return 0.0;
-  return context.web_view()->visualViewportSize().width;
+  float width = context.web_view()->visualViewportSize().width;
+  blink::WebRect rect(0, 0, width, 0);
+  context.render_view_impl()->convertViewportToWindow(&rect);
+  return rect.width;
 }
 
 bool GpuBenchmarking::Tap(gin::Arguments* args) {
