@@ -17,6 +17,7 @@ namespace blink {
 class ScrollManager;
 class SelectionController;
 class PointerEventManager;
+class MouseEventManager;
 
 // This class takes care of gestures and delegating the action based on the
 // gesture to the responsible class.
@@ -27,6 +28,7 @@ class CORE_EXPORT GestureManager
  public:
   GestureManager(LocalFrame*,
                  ScrollManager*,
+                 MouseEventManager*,
                  PointerEventManager*,
                  SelectionController*);
   DECLARE_TRACE();
@@ -66,6 +68,7 @@ class CORE_EXPORT GestureManager
   const Member<LocalFrame> m_frame;
 
   Member<ScrollManager> m_scrollManager;
+  Member<MouseEventManager> m_mouseEventManager;
   Member<PointerEventManager> m_pointerEventManager;
 
   // Set on GestureTapDown if the |pointerdown| event corresponding to the

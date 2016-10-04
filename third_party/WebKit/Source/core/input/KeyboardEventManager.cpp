@@ -56,6 +56,11 @@ KeyboardEventManager::KeyboardEventManager(LocalFrame* frame,
                                            ScrollManager* scrollManager)
     : m_frame(frame), m_scrollManager(scrollManager) {}
 
+DEFINE_TRACE(KeyboardEventManager) {
+  visitor->trace(m_frame);
+  visitor->trace(m_scrollManager);
+}
+
 bool KeyboardEventManager::handleAccessKey(const WebKeyboardEvent& evt) {
   // FIXME: Ignoring the state of Shift key is what neither IE nor Firefox do.
   // IE matches lower and upper case access keys regardless of Shift key state - but if both upper and
@@ -308,11 +313,6 @@ void KeyboardEventManager::defaultTabEventHandler(KeyboardEvent* event) {
 void KeyboardEventManager::defaultEscapeEventHandler(KeyboardEvent* event) {
   if (HTMLDialogElement* dialog = m_frame->document()->activeModalDialog())
     dialog->dispatchEvent(Event::createCancelable(EventTypeNames::cancel));
-}
-
-DEFINE_TRACE(KeyboardEventManager) {
-  visitor->trace(m_frame);
-  visitor->trace(m_scrollManager);
 }
 
 static OverrideCapsLockState s_overrideCapsLockState;

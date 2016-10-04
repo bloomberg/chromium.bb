@@ -88,6 +88,22 @@ TouchEventManager::TouchEventManager(LocalFrame* frame) : m_frame(frame) {
   clear();
 }
 
+void TouchEventManager::clear() {
+  m_touchSequenceDocument.clear();
+  m_touchSequenceUserGestureToken.clear();
+  m_targetForTouchID.clear();
+  m_regionForTouchID.clear();
+  m_touchPressed = false;
+  m_touchScrollStarted = false;
+  m_currentEvent = PlatformEvent::NoType;
+}
+
+DEFINE_TRACE(TouchEventManager) {
+  visitor->trace(m_frame);
+  visitor->trace(m_touchSequenceDocument);
+  visitor->trace(m_targetForTouchID);
+}
+
 WebInputEventResult TouchEventManager::dispatchTouchEvents(
     const PlatformTouchEvent& event,
     const HeapVector<TouchInfo>& touchInfos,
@@ -526,25 +542,10 @@ WebInputEventResult TouchEventManager::handleTouchEvent(
   return dispatchTouchEvents(event, touchInfos, allTouchesReleased);
 }
 
-void TouchEventManager::clear() {
-  m_touchSequenceDocument.clear();
-  m_touchSequenceUserGestureToken.clear();
-  m_targetForTouchID.clear();
-  m_regionForTouchID.clear();
-  m_touchPressed = false;
-  m_touchScrollStarted = false;
-  m_currentEvent = PlatformEvent::NoType;
-}
-
 bool TouchEventManager::isAnyTouchActive() const {
   return m_touchPressed;
 }
 
-DEFINE_TRACE(TouchEventManager) {
-  visitor->trace(m_frame);
-  visitor->trace(m_touchSequenceDocument);
-  visitor->trace(m_targetForTouchID);
-}
 
 void TouchEventManager::userGestureUtilized() {
   // This is invoked for UserGestureIndicators created in TouchEventManger::handleTouchEvent which perhaps

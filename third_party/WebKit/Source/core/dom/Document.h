@@ -664,9 +664,10 @@ class CORE_EXPORT Document : public ContainerNode,
   TextLinkColors& textLinkColors() { return m_textLinkColors; }
   VisitedLinkState& visitedLinkState() const { return *m_visitedLinkState; }
 
-  MouseEventWithHitTestResults prepareMouseEvent(const HitTestRequest&,
-                                                 const LayoutPoint&,
-                                                 const PlatformMouseEvent&);
+  MouseEventWithHitTestResults performMouseEventHitTest(
+      const HitTestRequest&,
+      const LayoutPoint&,
+      const PlatformMouseEvent&);
 
   /* Newly proposed CSS3 mechanism for selecting alternate
        stylesheets using the DOM. May be subject to change as

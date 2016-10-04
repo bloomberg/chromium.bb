@@ -52,6 +52,35 @@ bool isInDocument(EventTarget* n) {
 
 }  // namespace
 
+PointerEventManager::PointerEventManager(LocalFrame* frame,
+                                         MouseEventManager* mouseEventManager)
+    : m_frame(frame),
+      m_touchEventManager(new TouchEventManager(frame)),
+      m_mouseEventManager(mouseEventManager) {
+  clear();
+}
+
+void PointerEventManager::clear() {
+  for (auto& entry : m_preventMouseEventForPointerType)
+    entry = false;
+  m_touchEventManager->clear();
+  m_inCanceledStateForPointerTypeTouch = false;
+  m_pointerEventFactory.clear();
+  m_touchIdsForCanceledPointerdowns.clear();
+  m_nodeUnderPointer.clear();
+  m_pointerCaptureTarget.clear();
+  m_pendingPointerCaptureTarget.clear();
+}
+
+DEFINE_TRACE(PointerEventManager) {
+  visitor->trace(m_frame);
+  visitor->trace(m_nodeUnderPointer);
+  visitor->trace(m_pointerCaptureTarget);
+  visitor->trace(m_pendingPointerCaptureTarget);
+  visitor->trace(m_touchEventManager);
+  visitor->trace(m_mouseEventManager);
+}
+
 PointerEventManager::PointerEventBoundaryEventDispatcher::
     PointerEventBoundaryEventDispatcher(
         PointerEventManager* pointerEventManager,
@@ -153,11 +182,9 @@ EventTarget* PointerEventManager::getEffectiveTargetForPointerEvent(
   return target;
 }
 
-void PointerEventManager::sendMouseAndPossiblyPointerBoundaryEvents(
-    Node* exitedNode,
+void PointerEventManager::sendMouseAndPointerBoundaryEvents(
     Node* enteredNode,
-    const PlatformMouseEvent& mouseEvent,
-    bool isFrameBoundaryTransition) {
+    const PlatformMouseEvent& mouseEvent) {
   // Mouse event type does not matter as this pointerevent will only be used
   // to create boundary pointer events and its type will be overridden in
   // |sendBoundaryEvents| function.
@@ -169,15 +196,13 @@ void PointerEventManager::sendMouseAndPossiblyPointerBoundaryEvents(
   // stage. So if the event is not frame boundary transition it is only a
   // compatibility mouse event and we do not need to change pointer event
   // behavior regarding preventMouseEvent state in that case.
-  if (isFrameBoundaryTransition && dummyPointerEvent->buttons() == 0 &&
-      dummyPointerEvent->isPrimary()) {
+  if (dummyPointerEvent->buttons() == 0 && dummyPointerEvent->isPrimary()) {
     m_preventMouseEventForPointerType[toPointerTypeIndex(
         mouseEvent.pointerProperties().pointerType)] = false;
   }
 
   processCaptureAndPositionOfPointerEvent(dummyPointerEvent, enteredNode,
-                                          exitedNode, mouseEvent, true,
-                                          isFrameBoundaryTransition);
+                                          mouseEvent, true);
 }
 
 void PointerEventManager::sendBoundaryEvents(EventTarget* exitedTarget,
@@ -410,10 +435,7 @@ WebInputEventResult PointerEventManager::sendTouchPointerEvent(
 WebInputEventResult PointerEventManager::sendMousePointerEvent(
     Node* target,
     const AtomicString& mouseEventType,
-    int clickCount,
-    const PlatformMouseEvent& mouseEvent,
-    Node* lastNodeUnderMouse,
-    Node** newNodeUnderMouse) {
+    const PlatformMouseEvent& mouseEvent) {
   PointerEvent* pointerEvent = m_pointerEventFactory.create(
       mouseEventType, mouseEvent, m_frame->document()->domWindow());
 
@@ -431,14 +453,7 @@ WebInputEventResult PointerEventManager::sendMousePointerEvent(
   }
 
   EventTarget* pointerEventTarget = processCaptureAndPositionOfPointerEvent(
-      pointerEvent, target, lastNodeUnderMouse, mouseEvent, true, true);
-
-  if (pointerEventTarget) {
-    // This is to prevent incorrect boundary events if capturing transition was
-    // delayed.
-    *newNodeUnderMouse = pointerEventTarget->toNode();
-    DCHECK(*newNodeUnderMouse);
-  }
+      pointerEvent, target, mouseEvent, true);
 
   EventTarget* effectiveTarget = getEffectiveTargetForPointerEvent(
       pointerEventTarget, pointerEvent->pointerId());
@@ -468,9 +483,8 @@ WebInputEventResult PointerEventManager::sendMousePointerEvent(
       }
     }
     result = EventHandlingUtil::mergeEventResult(
-        result,
-        m_mouseEventManager->dispatchMouseEvent(
-            mouseTarget, mouseEventType, mouseEvent, nullptr, clickCount));
+        result, m_mouseEventManager->dispatchMouseEvent(
+                    mouseTarget, mouseEventType, mouseEvent, nullptr));
   }
 
   if (pointerEvent->type() == EventTypeNames::pointerup ||
@@ -486,26 +500,6 @@ WebInputEventResult PointerEventManager::sendMousePointerEvent(
   }
 
   return result;
-}
-
-PointerEventManager::PointerEventManager(LocalFrame* frame,
-                                         MouseEventManager* mouseEventManager)
-    : m_frame(frame),
-      m_touchEventManager(new TouchEventManager(frame)),
-      m_mouseEventManager(mouseEventManager) {
-  clear();
-}
-
-void PointerEventManager::clear() {
-  for (auto& entry : m_preventMouseEventForPointerType)
-    entry = false;
-  m_touchEventManager->clear();
-  m_inCanceledStateForPointerTypeTouch = false;
-  m_pointerEventFactory.clear();
-  m_touchIdsForCanceledPointerdowns.clear();
-  m_nodeUnderPointer.clear();
-  m_pointerCaptureTarget.clear();
-  m_pendingPointerCaptureTarget.clear();
 }
 
 bool PointerEventManager::getPointerCaptureState(
@@ -532,27 +526,22 @@ bool PointerEventManager::getPointerCaptureState(
 EventTarget* PointerEventManager::processCaptureAndPositionOfPointerEvent(
     PointerEvent* pointerEvent,
     EventTarget* hitTestTarget,
-    EventTarget* lastNodeUnderMouse,
     const PlatformMouseEvent& mouseEvent,
-    bool sendMouseEvent,
-    bool setPointerPosition) {
-  if (setPointerPosition) {
-    processPendingPointerCapture(pointerEvent);
+    bool sendMouseEvent) {
+  processPendingPointerCapture(pointerEvent);
 
-    if (!RuntimeEnabledFeatures::pointerEventV1SpecCapturingEnabled()) {
-      PointerCapturingMap::const_iterator it =
-          m_pointerCaptureTarget.find(pointerEvent->pointerId());
-      if (EventTarget* pointercaptureTarget =
-              (it != m_pointerCaptureTarget.end()) ? it->value : nullptr)
-        hitTestTarget = pointercaptureTarget;
-    }
-
-    setNodeUnderPointer(pointerEvent, hitTestTarget);
+  if (!RuntimeEnabledFeatures::pointerEventV1SpecCapturingEnabled()) {
+    PointerCapturingMap::const_iterator it =
+        m_pointerCaptureTarget.find(pointerEvent->pointerId());
+    if (EventTarget* pointercaptureTarget =
+            (it != m_pointerCaptureTarget.end()) ? it->value : nullptr)
+      hitTestTarget = pointercaptureTarget;
   }
+
+  setNodeUnderPointer(pointerEvent, hitTestTarget);
   if (sendMouseEvent) {
-    // lastNodeUnderMouse is needed here because it is still stored in EventHandler.
-    m_mouseEventManager->sendBoundaryEvents(lastNodeUnderMouse, hitTestTarget,
-                                            mouseEvent);
+    m_mouseEventManager->setNodeUnderMouse(
+        hitTestTarget ? hitTestTarget->toNode() : nullptr, mouseEvent);
   }
   return hitTestTarget;
 }
@@ -688,15 +677,6 @@ bool PointerEventManager::primaryPointerdownCanceled(
 
 EventTarget* PointerEventManager::getMouseCapturingNode() {
   return getCapturingNode(PointerEventFactory::s_mouseId);
-}
-
-DEFINE_TRACE(PointerEventManager) {
-  visitor->trace(m_frame);
-  visitor->trace(m_nodeUnderPointer);
-  visitor->trace(m_pointerCaptureTarget);
-  visitor->trace(m_pendingPointerCaptureTarget);
-  visitor->trace(m_touchEventManager);
-  visitor->trace(m_mouseEventManager);
 }
 
 }  // namespace blink

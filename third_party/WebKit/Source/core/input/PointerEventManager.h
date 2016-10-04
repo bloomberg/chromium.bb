@@ -27,7 +27,7 @@ class CORE_EXPORT PointerEventManager
   WTF_MAKE_NONCOPYABLE(PointerEventManager);
 
  public:
-  explicit PointerEventManager(LocalFrame*, MouseEventManager*);
+  PointerEventManager(LocalFrame*, MouseEventManager*);
   DECLARE_TRACE();
 
   // Sends the mouse pointer events and the boundary events
@@ -36,29 +36,18 @@ class CORE_EXPORT PointerEventManager
   // in this function.
   WebInputEventResult sendMousePointerEvent(Node* target,
                                             const AtomicString& type,
-                                            int clickCount,
-                                            const PlatformMouseEvent&,
-                                            Node* lastNodeUnderMouse,
-                                            Node** newNodeUnderMouse);
+                                            const PlatformMouseEvent&);
 
   WebInputEventResult handleTouchEvents(const PlatformTouchEvent&);
 
-  // Sends boundary events mouseout/leave/over/enter to the
-  // corresponding targets. This function sends pointerout/leave/over/enter
-  // only when isFrameBoundaryTransition is true which indicates the
-  // transition is over the document boundary and not only the elements border
-  // inside the document. If isFrameBoundaryTransition is false,
-  // then the event is a compatibility event like those created by touch
-  // and in that case the corresponding pointer events will be handled by
-  // sendTouchPointerEvent for example and there is no need to send pointer
-  // boundary events. Note that normal mouse events (e.g. mousemove/down/up)
+  // Sends boundary events pointerout/leave/over/enter and
+  // mouseout/leave/over/enter to the corresponding targets.
+  // inside the document. This functions handles the cases that pointer is
+  // leaving a frame. Note that normal mouse events (e.g. mousemove/down/up)
   // and their corresponding boundary events will be handled altogether by
   // sendMousePointerEvent function.
-  void sendMouseAndPossiblyPointerBoundaryEvents(
-      Node* exitedNode,
-      Node* enteredNode,
-      const PlatformMouseEvent&,
-      bool isFrameBoundaryTransition);
+  void sendMouseAndPointerBoundaryEvents(Node* enteredNode,
+                                         const PlatformMouseEvent&);
 
   // Resets the internal state of this object.
   void clear();
@@ -166,10 +155,8 @@ class CORE_EXPORT PointerEventManager
   EventTarget* processCaptureAndPositionOfPointerEvent(
       PointerEvent*,
       EventTarget* hitTestTarget,
-      EventTarget* lastNodeUnderMouse = nullptr,
       const PlatformMouseEvent& = PlatformMouseEvent(),
-      bool sendMouseEvent = false,
-      bool setPointerPosition = true);
+      bool sendMouseEvent = false);
 
   void removeTargetFromPointerCapturingMapping(PointerCapturingMap&,
                                                const EventTarget*);

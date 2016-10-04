@@ -20,10 +20,12 @@ namespace blink {
 
 GestureManager::GestureManager(LocalFrame* frame,
                                ScrollManager* scrollManager,
+                               MouseEventManager* mouseEventManager,
                                PointerEventManager* pointerEventManager,
                                SelectionController* selectionController)
     : m_frame(frame),
       m_scrollManager(scrollManager),
+      m_mouseEventManager(mouseEventManager),
       m_pointerEventManager(pointerEventManager),
       m_selectionController(selectionController) {
   clear();
@@ -37,9 +39,10 @@ void GestureManager::clear() {
 
 DEFINE_TRACE(GestureManager) {
   visitor->trace(m_frame);
-  visitor->trace(m_selectionController);
-  visitor->trace(m_pointerEventManager);
   visitor->trace(m_scrollManager);
+  visitor->trace(m_mouseEventManager);
+  visitor->trace(m_pointerEventManager);
+  visitor->trace(m_selectionController);
 }
 
 HitTestRequest::HitTestRequestType GestureManager::getHitTypeForGestureType(
@@ -153,9 +156,8 @@ WebInputEventResult GestureManager::handleGestureTap(
         /* clickCount */ 0, static_cast<PlatformEvent::Modifiers>(modifiers),
         PlatformMouseEvent::FromTouch, gestureEvent.timestamp(),
         WebPointerProperties::PointerType::Mouse);
-    m_frame->eventHandler().dispatchMouseEvent(EventTypeNames::mousemove,
-                                               currentHitTest.innerNode(), 0,
-                                               fakeMouseMove);
+    m_mouseEventManager->setMousePositionAndDispatchMouseEvent(
+        currentHitTest.innerNode(), EventTypeNames::mousemove, fakeMouseMove);
   }
 
   // Do a new hit-test in case the mousemove event changed the DOM.
@@ -182,7 +184,7 @@ WebInputEventResult GestureManager::handleGestureTap(
   if (tappedNonTextNode && tappedNonTextNode->isTextNode())
     tappedNonTextNode = FlatTreeTraversal::parent(*tappedNonTextNode);
 
-  m_frame->eventHandler().setClickNode(tappedNonTextNode);
+  m_mouseEventManager->setClickNode(tappedNonTextNode);
 
   PlatformMouseEvent fakeMouseDown(
       gestureEvent.position(), gestureEvent.globalPosition(),
@@ -197,16 +199,19 @@ WebInputEventResult GestureManager::handleGestureTap(
   WebInputEventResult mouseDownEventResult =
       WebInputEventResult::HandledSuppressed;
   if (!m_suppressMouseEventsFromGestures) {
-    mouseDownEventResult = m_frame->eventHandler().dispatchMouseEvent(
-        EventTypeNames::mousedown, currentHitTest.innerNode(),
-        gestureEvent.tapCount(), fakeMouseDown);
+    m_mouseEventManager->setClickCount(gestureEvent.tapCount());
+
+    mouseDownEventResult =
+        m_mouseEventManager->setMousePositionAndDispatchMouseEvent(
+            currentHitTest.innerNode(), EventTypeNames::mousedown,
+            fakeMouseDown);
     m_selectionController->initializeSelectionState();
     if (mouseDownEventResult == WebInputEventResult::NotHandled)
-      mouseDownEventResult = m_frame->eventHandler().handleMouseFocus(
+      mouseDownEventResult = m_mouseEventManager->handleMouseFocus(
           currentHitTest,
           InputDeviceCapabilities::firesTouchEventsSourceCapabilities());
     if (mouseDownEventResult == WebInputEventResult::NotHandled)
-      mouseDownEventResult = m_frame->eventHandler().handleMousePressEvent(
+      mouseDownEventResult = m_mouseEventManager->handleMousePressEvent(
           MouseEventWithHitTestResults(fakeMouseDown, currentHitTest));
   }
 
@@ -236,9 +241,9 @@ WebInputEventResult GestureManager::handleGestureTap(
   WebInputEventResult mouseUpEventResult =
       m_suppressMouseEventsFromGestures
           ? WebInputEventResult::HandledSuppressed
-          : m_frame->eventHandler().dispatchMouseEvent(
-                EventTypeNames::mouseup, currentHitTest.innerNode(),
-                gestureEvent.tapCount(), fakeMouseUp);
+          : m_mouseEventManager->setMousePositionAndDispatchMouseEvent(
+                currentHitTest.innerNode(), EventTypeNames::mouseup,
+                fakeMouseUp);
 
   WebInputEventResult clickEventResult = WebInputEventResult::NotHandled;
   if (tappedNonTextNode) {
@@ -250,18 +255,18 @@ WebInputEventResult GestureManager::handleGestureTap(
       // because commonAncestor() will exit early if their documents are different.
       tappedNonTextNode->updateDistribution();
       Node* clickTargetNode = currentHitTest.innerNode()->commonAncestor(
-          *tappedNonTextNode, EventHandler::parentForClickEvent);
-      clickEventResult = m_frame->eventHandler().dispatchMouseEvent(
-          EventTypeNames::click, clickTargetNode, gestureEvent.tapCount(),
-          fakeMouseUp);
+          *tappedNonTextNode, EventHandlingUtil::parentForClickEvent);
+      clickEventResult =
+          m_mouseEventManager->setMousePositionAndDispatchMouseEvent(
+              clickTargetNode, EventTypeNames::click, fakeMouseUp);
     }
-    m_frame->eventHandler().setClickNode(nullptr);
+    m_mouseEventManager->setClickNode(nullptr);
   }
 
   if (mouseUpEventResult == WebInputEventResult::NotHandled)
-    mouseUpEventResult = m_frame->eventHandler().handleMouseReleaseEvent(
+    mouseUpEventResult = m_mouseEventManager->handleMouseReleaseEvent(
         MouseEventWithHitTestResults(fakeMouseUp, currentHitTest));
-  m_frame->eventHandler().clearDragHeuristicState();
+  m_mouseEventManager->clearDragHeuristicState();
 
   WebInputEventResult eventResult = EventHandlingUtil::mergeEventResult(
       EventHandlingUtil::mergeEventResult(mouseDownEventResult,
@@ -301,14 +306,14 @@ WebInputEventResult GestureManager::handleGestureLongPress(
                               !hitTestResult.absoluteMediaURL().isNull();
 
   if (!hitTestContainsLinks &&
-      m_frame->eventHandler().handleDragDropIfPossible(targetedEvent)) {
+      m_mouseEventManager->handleDragDropIfPossible(targetedEvent)) {
     m_longTapShouldInvokeContextMenu = true;
     return WebInputEventResult::HandledSystem;
   }
 
   if (m_selectionController->handleGestureLongPress(gestureEvent,
                                                     hitTestResult)) {
-    m_frame->eventHandler().focusDocumentView();
+    m_mouseEventManager->focusDocumentView();
     return WebInputEventResult::HandledSystem;
   }
 
@@ -344,8 +349,8 @@ WebInputEventResult GestureManager::sendContextMenuEventForGesture(
         /* clickCount */ 0, static_cast<PlatformEvent::Modifiers>(modifiers),
         PlatformMouseEvent::FromTouch, gestureEvent.timestamp(),
         WebPointerProperties::PointerType::Mouse);
-    m_frame->eventHandler().dispatchMouseEvent(
-        EventTypeNames::mousemove, targetedEvent.hitTestResult().innerNode(), 0,
+    m_mouseEventManager->setMousePositionAndDispatchMouseEvent(
+        targetedEvent.hitTestResult().innerNode(), EventTypeNames::mousemove,
         fakeMouseMove);
   }
 
@@ -363,21 +368,21 @@ WebInputEventResult GestureManager::sendContextMenuEventForGesture(
     HitTestRequest request(HitTestRequest::Active);
     LayoutPoint documentPoint =
         m_frame->view()->rootFrameToContents(targetedEvent.event().position());
-    MouseEventWithHitTestResults mev = m_frame->document()->prepareMouseEvent(
-        request, documentPoint, mouseEvent);
+    MouseEventWithHitTestResults mev =
+        m_frame->document()->performMouseEventHitTest(request, documentPoint,
+                                                      mouseEvent);
 
     WebInputEventResult eventResult =
-        m_frame->eventHandler().dispatchMouseEvent(
-            EventTypeNames::mousedown, mev.innerNode(), /* clickCount */ 0,
-            mouseEvent);
+        m_mouseEventManager->setMousePositionAndDispatchMouseEvent(
+            mev.innerNode(), EventTypeNames::mousedown, mouseEvent);
 
     if (eventResult == WebInputEventResult::NotHandled)
-      eventResult = m_frame->eventHandler().handleMouseFocus(
+      eventResult = m_mouseEventManager->handleMouseFocus(
           mev.hitTestResult(),
           InputDeviceCapabilities::firesTouchEventsSourceCapabilities());
 
     if (eventResult == WebInputEventResult::NotHandled)
-      m_frame->eventHandler().handleMousePressEvent(mev);
+      m_mouseEventManager->handleMousePressEvent(mev);
   }
 
   return m_frame->eventHandler().sendContextMenuEvent(mouseEvent);

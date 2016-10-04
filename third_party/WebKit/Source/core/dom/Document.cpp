@@ -3363,7 +3363,7 @@ String Document::outgoingReferrer() const {
   return referrerDocument->m_url.strippedForUseAsReferrer();
 }
 
-MouseEventWithHitTestResults Document::prepareMouseEvent(
+MouseEventWithHitTestResults Document::performMouseEventHitTest(
     const HitTestRequest& request,
     const LayoutPoint& documentPoint,
     const PlatformMouseEvent& event) {

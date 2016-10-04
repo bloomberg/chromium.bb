@@ -40,6 +40,14 @@ void ScrollManager::clear() {
   clearGestureScrollState();
 }
 
+DEFINE_TRACE(ScrollManager) {
+  visitor->trace(m_frame);
+  visitor->trace(m_scrollGestureHandlingNode);
+  visitor->trace(m_previousGestureScrolledNode);
+  visitor->trace(m_scrollbarHandlingScrollGesture);
+  visitor->trace(m_resizeScrollableArea);
+}
+
 void ScrollManager::clearGestureScrollState() {
   m_scrollGestureHandlingNode = nullptr;
   m_previousGestureScrolledNode = nullptr;
@@ -528,14 +536,6 @@ bool ScrollManager::canHandleGestureEvent(
     }
   }
   return false;
-}
-
-DEFINE_TRACE(ScrollManager) {
-  visitor->trace(m_frame);
-  visitor->trace(m_scrollGestureHandlingNode);
-  visitor->trace(m_previousGestureScrolledNode);
-  visitor->trace(m_scrollbarHandlingScrollGesture);
-  visitor->trace(m_resizeScrollableArea);
 }
 
 }  // namespace blink

@@ -5,12 +5,16 @@
 #ifndef EventHandlingUtil_h
 #define EventHandlingUtil_h
 
-#include "core/frame/LocalFrame.h"
 #include "core/layout/HitTestResult.h"
+#include "core/page/EventWithHitTestResults.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "public/platform/WebInputEventResult.h"
 
 namespace blink {
+
+class LocalFrame;
+class ScrollableArea;
+class PaintLayer;
 
 namespace EventHandlingUtil {
 
@@ -23,6 +27,19 @@ HitTestResult hitTestResultInFrame(
 WebInputEventResult mergeEventResult(WebInputEventResult resultA,
                                      WebInputEventResult resultB);
 WebInputEventResult toWebInputEventResult(DispatchEventResult);
+
+PaintLayer* layerForNode(Node*);
+ScrollableArea* associatedScrollableArea(const PaintLayer*);
+
+ContainerNode* parentForClickEvent(const Node&);
+
+LayoutPoint contentPointFromRootFrame(LocalFrame*,
+                                      const IntPoint& pointInRootFrame);
+
+MouseEventWithHitTestResults performMouseEventHitTest(
+    LocalFrame*,
+    const HitTestRequest&,
+    const PlatformMouseEvent&);
 
 }  // namespace EventHandlingUtil
 

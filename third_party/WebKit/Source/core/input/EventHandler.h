@@ -40,7 +40,6 @@
 #include "platform/Cursor.h"
 #include "platform/PlatformMouseEvent.h"
 #include "platform/PlatformTouchPoint.h"
-#include "platform/Timer.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/heap/Handle.h"
@@ -57,7 +56,6 @@ namespace blink {
 class DataTransfer;
 class PaintLayer;
 class Document;
-class DragState;
 class Element;
 class Event;
 class EventTarget;
@@ -83,15 +81,12 @@ class TextEvent;
 class WheelEvent;
 class Widget;
 
-enum class DragInitiator;
-
 class CORE_EXPORT EventHandler final
     : public GarbageCollectedFinalized<EventHandler> {
   WTF_MAKE_NONCOPYABLE(EventHandler);
 
  public:
   explicit EventHandler(LocalFrame*);
-  ~EventHandler();
   DECLARE_TRACE();
 
   void clear();
@@ -116,7 +111,7 @@ class CORE_EXPORT EventHandler final
                                                    HitTestRequest::Active,
       const LayoutSize& padding = LayoutSize());
 
-  bool mousePressed() const { return m_mousePressed; }
+  bool mousePressed() const { return m_mouseEventManager->mousePressed(); }
 
   void setCapturingMouseEventsNode(
       Node*);  // A caller is responsible for resetting capturing node to 0.
@@ -208,9 +203,7 @@ class CORE_EXPORT EventHandler final
 
   void elementRemoved(EventTarget*);
 
-  void setMouseDownMayStartAutoscroll() {
-    m_mouseDownMayStartAutoscroll = true;
-  }
+  void setMouseDownMayStartAutoscroll();
 
   bool handleAccessKey(const WebKeyboardEvent&);
   WebInputEventResult keyEvent(const WebKeyboardEvent&);
@@ -222,8 +215,6 @@ class CORE_EXPORT EventHandler final
   void defaultTextInputEventHandler(TextEvent*);
 
   void dragSourceEndedAt(const PlatformMouseEvent&, DragOperation);
-
-  void focusDocumentView();
 
   void capsLockStateMayHaveChanged();  // Only called by FrameSelection
 
@@ -259,24 +250,12 @@ class CORE_EXPORT EventHandler final
                      Node* startNode = nullptr);
 
  private:
-  static DragState& dragState();
-
-  DataTransfer* createDraggingDataTransfer() const;
 
   WebInputEventResult handleMouseMoveOrLeaveEvent(
       const PlatformMouseEvent&,
       HitTestResult* hoveredNode = nullptr,
       bool onlyUpdateScrollbars = false,
       bool forceLeave = false);
-  WebInputEventResult handleMousePressEvent(
-      const MouseEventWithHitTestResults&);
-  WebInputEventResult handleMouseFocus(
-      const HitTestResult&,
-      InputDeviceCapabilities* sourceCapabilities);
-  WebInputEventResult handleMouseDraggedEvent(
-      const MouseEventWithHitTestResults&);
-  WebInputEventResult handleMouseReleaseEvent(
-      const MouseEventWithHitTestResults&);
 
   HitTestRequest::HitTestRequestType getHitTypeForGestureType(
       PlatformEvent::EventType);
@@ -303,28 +282,11 @@ class CORE_EXPORT EventHandler final
   void cursorUpdateTimerFired(TimerBase*);
   void activeIntervalTimerFired(TimerBase*);
 
-  void fakeMouseMoveEventTimerFired(TimerBase*);
-  void cancelFakeMouseMoveEvent();
-  bool isCursorVisible() const;
   void updateCursor();
 
   ScrollableArea* associatedScrollableArea(const PaintLayer*) const;
 
-  void invalidateClick();
-
-  Node* updateMouseEventTargetNode(Node*, const PlatformMouseEvent&);
-  void updateMouseEventTargetNodeAndSendEvents(
-      Node*,
-      const PlatformMouseEvent&,
-      bool isFrameBoundaryTransition = false);
-
-  MouseEventWithHitTestResults prepareMouseEvent(const HitTestRequest&,
-                                                 const PlatformMouseEvent&);
-
-  WebInputEventResult dispatchMouseEvent(const AtomicString& eventType,
-                                         Node* target,
-                                         int clickCount,
-                                         const PlatformMouseEvent&);
+  Node* updateMouseEventTargetNode(Node*);
 
   // Dispatches ME after corresponding PE provided the PE has not been canceled. The eventType arg
   // must be a mouse event that can be gated though a preventDefaulted pointerdown (i.e., one of
@@ -334,30 +296,10 @@ class CORE_EXPORT EventHandler final
   WebInputEventResult updatePointerTargetAndDispatchEvents(
       const AtomicString& mouseEventType,
       Node* target,
-      int clickCount,
       const PlatformMouseEvent&);
-
-  WebInputEventResult dispatchDragEvent(const AtomicString& eventType,
-                                        Node* target,
-                                        const PlatformMouseEvent&,
-                                        DataTransfer*);
-
-  void clearDragDataTransfer();
-
-  bool handleDrag(const MouseEventWithHitTestResults&, DragInitiator);
-  bool tryStartDrag(const MouseEventWithHitTestResults&);
 
   // Clears drag target and related states. It is called when drag is done or canceled.
   void clearDragState();
-
-  // Resets the state that indicates the next events could cause a drag. It is called when
-  // we realize the next events should not cause drag based on the drag heuristics.
-  void clearDragHeuristicState();
-
-  WebInputEventResult dispatchDragSrcEvent(const AtomicString& eventType,
-                                           const PlatformMouseEvent&);
-
-  bool dragHysteresisExceeded(const IntPoint&) const;
 
   WebInputEventResult passMousePressEventToSubframe(
       MouseEventWithHitTestResults&,
@@ -380,22 +322,9 @@ class CORE_EXPORT EventHandler final
 
   void updateLastScrollbarUnderMouse(Scrollbar*, bool);
 
-  bool capturesDragging() const { return m_capturesDragging; }
-
   WebInputEventResult handleGestureShowPress();
 
-  void setLastKnownMousePosition(const PlatformMouseEvent&);
-
-  void setClickNode(Node*);
-  bool handleDragDropIfPossible(const GestureEventWithHitTestResults&);
-  static ContainerNode* parentForClickEvent(const Node&);
-
   bool shouldTopControlsConsumeScroll(FloatSize) const;
-
-  // If the given element is a shadow host and its root has delegatesFocus=false flag,
-  // slide focus to its inner element. Returns true if the resulting focus is different from
-  // the given element.
-  bool slideFocusOnShadowHostIfNecessary(const Element&);
 
   FrameHost* frameHost() const;
 
@@ -404,17 +333,7 @@ class CORE_EXPORT EventHandler final
 
   const Member<LocalFrame> m_frame;
 
-  // Current button-press state for mouse/mouse-like-stylus.
-  // TODO(crbug.com/563676): Buggy for chorded buttons.
-  bool m_mousePressed;
-
-  bool m_capturesDragging;
-  Member<Node> m_mousePressNode;
-
-  bool m_mouseDownMayStartDrag;
   const Member<SelectionController> m_selectionController;
-
-  LayoutPoint m_dragStartPos;
 
   Timer<EventHandler> m_hoverTimer;
 
@@ -422,37 +341,17 @@ class CORE_EXPORT EventHandler final
   // should move out of EventHandler to a new PageEventHandler class. crbug.com/449649
   Timer<EventHandler> m_cursorUpdateTimer;
 
-  bool m_mouseDownMayStartAutoscroll;
-
-  Timer<EventHandler> m_fakeMouseMoveEventTimer;
-
-  bool m_svgPan;
-
   Member<Node> m_capturingMouseEventsNode;
   bool m_eventHandlerWillResetCapturingMouseEventsNode;
 
-  // TODO(nzolghadr): Refactor the mouse related fields to MouseEventManager.
-  // Note the difference of this and m_nodeUnderPointer in PointerEventManager
-  Member<Node> m_nodeUnderMouse;
-
   Member<LocalFrame> m_lastMouseMoveEventSubframe;
   Member<Scrollbar> m_lastScrollbarUnderMouse;
-
-  int m_clickCount;
-  Member<Node> m_clickNode;
 
   Member<Node> m_dragTarget;
   bool m_shouldOnlyFireDragOverEvent;
 
   Member<HTMLFrameSetElement> m_frameSetBeingResized;
 
-  bool m_mousePositionIsUnknown;
-  // The last mouse movement position this frame has seen in root frame coordinates.
-  IntPoint m_lastKnownMousePosition;
-  IntPoint m_lastKnownMouseGlobalPosition;
-  IntPoint m_mouseDownPos;  // In our view's coords.
-  double m_mouseDownTimestamp;
-  PlatformMouseEvent m_mouseDown;
   RefPtr<UserGestureToken> m_lastMouseDownUserGestureToken;
 
   Member<ScrollManager> m_scrollManager;
@@ -474,8 +373,6 @@ class CORE_EXPORT EventHandler final
   // firing for the current gesture sequence (i.e. until next GestureTapDown).
   bool m_suppressMouseEventsFromGestures;
 
-  // TODO(nzolghadr): Temporary until further refactoring
-  friend GestureManager;
 };
 
 }  // namespace blink
