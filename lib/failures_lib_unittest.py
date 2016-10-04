@@ -6,8 +6,8 @@
 
 from __future__ import print_function
 
-from chromite.cbuildbot import constants
-from chromite.cbuildbot import failures_lib
+from chromite.lib import constants
+from chromite.lib import failures_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import fake_cidb
 

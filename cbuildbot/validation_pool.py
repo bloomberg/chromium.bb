@@ -20,9 +20,9 @@ import sys
 import time
 from xml.dom import minidom
 
-from chromite.cbuildbot import config_lib
-from chromite.cbuildbot import constants
-from chromite.cbuildbot import failures_lib
+from chromite.lib import config_lib
+from chromite.lib import constants
+from chromite.lib import failures_lib
 from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import tree_status
 from chromite.cbuildbot import triage_lib

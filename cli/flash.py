@@ -11,7 +11,7 @@ import re
 import shutil
 import tempfile
 
-from chromite.cbuildbot import constants
+from chromite.lib import constants
 from chromite.lib import auto_updater
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib

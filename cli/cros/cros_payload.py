@@ -11,7 +11,7 @@ import os
 import sys
 import textwrap
 
-from chromite.cbuildbot import constants
+from chromite.lib import constants
 from chromite.cli import command
 
 # Needed for the dev.host.lib import below.

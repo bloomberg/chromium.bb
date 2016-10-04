@@ -9,7 +9,7 @@ from __future__ import print_function
 import datetime
 import sys
 
-from chromite.cbuildbot import constants
+from chromite.lib import constants
 from chromite.lib import build_time_stats
 from chromite.cli import command
 from chromite.lib import commandline

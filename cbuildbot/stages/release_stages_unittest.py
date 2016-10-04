@@ -11,8 +11,8 @@ import mock
 from chromite.cbuildbot import cbuildbot_unittest
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import release_stages
-from chromite.cbuildbot import failures_lib
-from chromite.cbuildbot import results_lib
+from chromite.lib import failures_lib
+from chromite.lib import results_lib
 from chromite.lib import timeout_util
 
 from chromite.cbuildbot.stages.generic_stages_unittest import patch

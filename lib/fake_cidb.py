@@ -9,7 +9,7 @@ from __future__ import print_function
 import datetime
 import itertools
 
-from chromite.cbuildbot import constants
+from chromite.lib import constants
 from chromite.lib import cidb
 from chromite.lib import clactions
 

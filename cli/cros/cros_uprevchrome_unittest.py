@@ -16,7 +16,7 @@ from chromite.lib import git
 from chromite.cli import command_unittest
 from chromite.cli.cros import cros_pinchrome
 from chromite.cli.cros import cros_uprevchrome
-from chromite.cbuildbot import constants
+from chromite.lib import constants
 
 class MockUprevCommand(command_unittest.MockCommand):
   """Mock out the uprevchrome command."""

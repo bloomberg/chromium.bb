@@ -11,8 +11,8 @@ import json
 import math
 import os
 
-from chromite.cbuildbot import results_lib
-from chromite.cbuildbot import constants
+from chromite.lib import results_lib
+from chromite.lib import constants
 from chromite.lib import clactions
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging

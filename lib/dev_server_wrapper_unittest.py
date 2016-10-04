@@ -9,7 +9,7 @@ from __future__ import print_function
 import mock
 import os
 
-from cbuildbot import constants
+from chromite.lib import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import dev_server_wrapper
 

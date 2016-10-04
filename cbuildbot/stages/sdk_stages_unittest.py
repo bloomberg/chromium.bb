@@ -11,7 +11,7 @@ import os
 import unittest
 
 from chromite.cbuildbot import commands
-from chromite.cbuildbot import constants
+from chromite.lib import constants
 from chromite.cbuildbot.stages import sdk_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.lib import cros_build_lib

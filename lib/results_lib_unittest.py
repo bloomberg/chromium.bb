@@ -12,10 +12,10 @@ import signal
 import StringIO
 import time
 
-from chromite.cbuildbot import constants
-from chromite.cbuildbot import config_lib_unittest
-from chromite.cbuildbot import failures_lib
-from chromite.cbuildbot import results_lib
+from chromite.lib import constants
+from chromite.lib import config_lib_unittest
+from chromite.lib import failures_lib
+from chromite.lib import results_lib
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot.builders import simple_builders
 from chromite.cbuildbot.stages import generic_stages

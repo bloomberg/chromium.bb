@@ -14,7 +14,7 @@ import socket
 import urllib
 import urllib2
 
-from chromite.cbuildbot import constants
+from chromite.lib import constants
 from chromite.lib import alerts
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils

@@ -9,7 +9,7 @@ from __future__ import print_function
 import os
 
 from chromite.cbuildbot import commands
-from chromite.cbuildbot import config_lib
+from chromite.lib import config_lib
 
 from chromite.lib import cros_logging as logging
 from chromite.lib import gs

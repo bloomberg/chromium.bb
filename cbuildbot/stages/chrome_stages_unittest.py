@@ -10,7 +10,7 @@ import mock
 import os
 
 from chromite.cbuildbot import commands
-from chromite.cbuildbot import constants
+from chromite.lib import constants
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import cbuildbot_unittest
 from chromite.cbuildbot.stages import chrome_stages

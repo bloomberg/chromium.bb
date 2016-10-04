@@ -24,7 +24,7 @@ from chromite.lib import cros_build_lib
 #   path = os.path.dirname(os.path.realpath(__file__))
 #   while not os.path.exists(os.path.join(path, 'PRESUBMIT.cfg')):
 #     path = os.path.dirname(path)
-from chromite.cbuildbot import constants
+from chromite.lib import constants
 
 _CHROMITE_DIR = constants.CHROMITE_DIR
 _IN_VENV = 'IN_CHROMITE_VENV'

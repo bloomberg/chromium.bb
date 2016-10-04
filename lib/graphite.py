@@ -11,7 +11,7 @@ developer machines etc.) stay separate.
 
 from __future__ import print_function
 
-from chromite.cbuildbot import constants
+from chromite.lib import constants
 from chromite.cbuildbot import topology
 from chromite.lib import factory
 from chromite.lib.graphite_lib import es_utils

@@ -10,8 +10,8 @@ import glob
 import os
 
 from chromite.cbuildbot import commands
-from chromite.cbuildbot import config_lib
-from chromite.cbuildbot import constants
+from chromite.lib import config_lib
+from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import portage_util
 

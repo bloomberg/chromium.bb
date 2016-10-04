@@ -17,7 +17,7 @@ import httplib
 import urllib2
 import urlparse
 
-from chromite.cbuildbot import constants
+from chromite.lib import constants
 from chromite.cli import command
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging

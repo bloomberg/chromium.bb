@@ -13,8 +13,8 @@ import distutils.version
 import os
 
 from chromite.cbuildbot import archive_lib
-from chromite.cbuildbot import config_lib
-from chromite.cbuildbot import constants
+from chromite.lib import config_lib
+from chromite.lib import constants
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import tree_status
 from chromite.lib import commandline

@@ -8,7 +8,7 @@ from __future__ import print_function
 
 import cStringIO
 
-from chromite.cbuildbot import constants
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import gs
 from chromite.lib import portage_util

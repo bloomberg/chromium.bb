@@ -12,10 +12,10 @@ import sys
 import tempfile
 import traceback
 
-from chromite.cbuildbot import constants
-from chromite.cbuildbot import failures_lib
+from chromite.lib import constants
+from chromite.lib import failures_lib
 from chromite.cbuildbot import manifest_version
-from chromite.cbuildbot import results_lib
+from chromite.lib import results_lib
 from chromite.cbuildbot import trybot_patch_pool
 from chromite.cbuildbot.stages import build_stages
 from chromite.cbuildbot.stages import report_stages

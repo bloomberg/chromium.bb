@@ -16,8 +16,8 @@ import shutil
 import tempfile
 from xml.dom import minidom
 
-from chromite.cbuildbot import config_lib
-from chromite.cbuildbot import constants
+from chromite.lib import config_lib
+from chromite.lib import constants
 from chromite.cbuildbot import repository
 from chromite.lib import cidb
 from chromite.lib import cros_build_lib

@@ -17,13 +17,13 @@ import tempfile
 
 from chromite.cbuildbot import buildbucket_lib
 from chromite.cbuildbot import chromeos_config
-from chromite.cbuildbot import config_lib
-from chromite.cbuildbot import constants
-from chromite.cbuildbot import failures_lib
+from chromite.lib import config_lib
+from chromite.lib import constants
+from chromite.lib import failures_lib
 from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import manifest_version_unittest
-from chromite.cbuildbot import metadata_lib
+from chromite.lib import metadata_lib
 from chromite.cbuildbot import repository
 from chromite.cbuildbot import remote_try
 from chromite.cbuildbot import tree_status

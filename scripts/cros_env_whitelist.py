@@ -6,7 +6,7 @@
 
 from __future__ import print_function
 
-from chromite.cbuildbot import constants
+from chromite.lib import constants
 
 
 def main(_argv):

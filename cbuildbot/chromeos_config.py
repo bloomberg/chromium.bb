@@ -8,8 +8,8 @@ from __future__ import print_function
 
 import copy
 
-from chromite.cbuildbot import config_lib
-from chromite.cbuildbot import constants
+from chromite.lib import config_lib
+from chromite.lib import constants
 from chromite.lib import factory
 
 

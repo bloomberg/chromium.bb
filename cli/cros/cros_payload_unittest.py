@@ -10,7 +10,7 @@ import collections
 import os
 import sys
 
-from chromite.cbuildbot import constants
+from chromite.lib import constants
 from chromite.cli.cros import cros_payload
 from chromite.lib import cros_test_lib
 

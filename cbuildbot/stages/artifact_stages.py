@@ -14,9 +14,9 @@ import os
 import shutil
 
 from chromite.cbuildbot import commands
-from chromite.cbuildbot import failures_lib
-from chromite.cbuildbot import config_lib
-from chromite.cbuildbot import constants
+from chromite.lib import failures_lib
+from chromite.lib import config_lib
+from chromite.lib import constants
 from chromite.cbuildbot import prebuilts
 from chromite.cbuildbot.stages import generic_stages
 from chromite.lib import cros_build_lib

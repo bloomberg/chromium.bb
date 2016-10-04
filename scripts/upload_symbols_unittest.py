@@ -25,7 +25,7 @@ import urllib2
 # on the fly :(.
 os.environ.pop('http_proxy', None)
 
-from chromite.cbuildbot import constants
+from chromite.lib import constants
 
 # The isolateserver includes a bunch of third_party python packages that clash
 # with chromite's bundled third_party python packages (like oauth2client).

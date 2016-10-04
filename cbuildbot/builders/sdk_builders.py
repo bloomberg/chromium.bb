@@ -8,7 +8,7 @@ from __future__ import print_function
 
 import datetime
 
-from chromite.cbuildbot import constants
+from chromite.lib import constants
 from chromite.cbuildbot.builders import simple_builders
 from chromite.cbuildbot.stages import android_stages
 from chromite.cbuildbot.stages import artifact_stages

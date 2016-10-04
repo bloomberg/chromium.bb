@@ -11,8 +11,8 @@ import httplib
 import os
 import mock
 
-from chromite.cbuildbot import config_lib
-from chromite.cbuildbot import constants
+from chromite.lib import config_lib
+from chromite.lib import constants
 from chromite.cbuildbot import validation_pool
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib

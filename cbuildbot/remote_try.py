@@ -12,8 +12,8 @@ import os
 import time
 
 from chromite.cbuildbot import buildbucket_lib
-from chromite.cbuildbot import config_lib
-from chromite.cbuildbot import constants
+from chromite.lib import config_lib
+from chromite.lib import constants
 from chromite.cbuildbot import repository
 from chromite.cbuildbot import manifest_version
 from chromite.lib import cros_build_lib

@@ -11,8 +11,8 @@ import datetime
 import itertools
 import operator
 
-from chromite.cbuildbot import config_lib
-from chromite.cbuildbot import constants
+from chromite.lib import config_lib
+from chromite.lib import constants
 
 from chromite.lib import metrics
 

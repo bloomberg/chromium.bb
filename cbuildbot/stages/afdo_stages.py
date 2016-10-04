@@ -7,7 +7,7 @@
 from __future__ import print_function
 
 from chromite.cbuildbot import afdo
-from chromite.cbuildbot import constants
+from chromite.lib import constants
 from chromite.lib import alerts
 from chromite.lib import cros_logging as logging
 from chromite.lib import gs

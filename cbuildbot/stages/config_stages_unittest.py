@@ -8,7 +8,7 @@ from __future__ import print_function
 
 from chromite.cbuildbot.stages import config_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
-from chromite.cbuildbot import constants
+from chromite.lib import constants
 from chromite.cbuildbot import repository
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib

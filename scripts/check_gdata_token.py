@@ -19,7 +19,7 @@ import filecmp
 import os
 import shutil
 
-from chromite.cbuildbot import constants
+from chromite.lib import constants
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib as build_lib
 from chromite.lib import operation

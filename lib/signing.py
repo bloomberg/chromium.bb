@@ -8,7 +8,7 @@ from __future__ import print_function
 
 import os
 
-from chromite.cbuildbot import constants
+from chromite.lib import constants
 
 
 SIGNING_DIR = os.path.join(constants.CHROMITE_DIR, 'signing')

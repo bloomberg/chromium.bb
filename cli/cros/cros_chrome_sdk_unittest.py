@@ -11,7 +11,7 @@ import mock
 import os
 import shutil
 
-from chromite.cbuildbot import constants
+from chromite.lib import constants
 from chromite.cli import command_unittest
 from chromite.cli.cros import cros_chrome_sdk
 from chromite.lib import cache

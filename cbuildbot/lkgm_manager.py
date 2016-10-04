@@ -13,8 +13,8 @@ import tempfile
 from xml.dom import minidom
 from xml.parsers import expat
 
-from chromite.cbuildbot import config_lib
-from chromite.cbuildbot import constants
+from chromite.lib import config_lib
+from chromite.lib import constants
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import repository
 from chromite.cbuildbot import trybot_patch_pool

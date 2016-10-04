@@ -8,7 +8,7 @@ from __future__ import print_function
 
 import multiprocessing
 
-from chromite.cbuildbot import metadata_lib
+from chromite.lib import metadata_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import parallel
 

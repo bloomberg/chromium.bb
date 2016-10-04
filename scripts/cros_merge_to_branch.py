@@ -43,7 +43,7 @@ import shutil
 import sys
 import tempfile
 
-from chromite.cbuildbot import constants
+from chromite.lib import constants
 from chromite.cbuildbot import repository
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib

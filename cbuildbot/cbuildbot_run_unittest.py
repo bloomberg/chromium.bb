@@ -13,9 +13,9 @@ import time
 
 from chromite.cbuildbot import chromeos_config
 from chromite.cbuildbot import cbuildbot_run
-from chromite.cbuildbot import config_lib
-from chromite.cbuildbot import config_lib_unittest
-from chromite.cbuildbot import constants
+from chromite.lib import config_lib
+from chromite.lib import config_lib_unittest
+from chromite.lib import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import parallel
 

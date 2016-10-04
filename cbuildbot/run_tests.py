@@ -21,7 +21,7 @@ import stat
 import sys
 import tempfile
 
-from chromite.cbuildbot import constants
+from chromite.lib import constants
 from chromite.lib import cgroups
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib

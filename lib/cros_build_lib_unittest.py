@@ -21,7 +21,7 @@ import sys
 import time
 import __builtin__
 
-from chromite.cbuildbot import constants
+from chromite.lib import constants
 from chromite.cbuildbot import repository
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging

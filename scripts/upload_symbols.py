@@ -23,7 +23,7 @@ import time
 import urllib2
 import urlparse
 
-from chromite.cbuildbot import constants
+from chromite.lib import constants
 
 # The isolateserver includes a bunch of third_party python packages that clash
 # with chromite's bundled third_party python packages (like oauth2client).

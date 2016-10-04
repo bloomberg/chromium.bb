@@ -18,7 +18,7 @@ import os
 
 from xml.etree import ElementTree
 
-from chromite.cbuildbot import config_lib
+from chromite.lib import config_lib
 from chromite.cbuildbot import manifest_version
 from chromite.lib import commandline
 from chromite.lib import cros_logging as logging

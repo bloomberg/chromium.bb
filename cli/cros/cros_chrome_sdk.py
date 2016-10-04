@@ -24,8 +24,8 @@ from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import stats
 from chromite.cbuildbot import archive_lib
-from chromite.cbuildbot import config_lib
-from chromite.cbuildbot import constants
+from chromite.lib import config_lib
+from chromite.lib import constants
 from gn_helpers import gn_helpers
 
 

@@ -9,7 +9,7 @@ from __future__ import print_function
 import os
 import unittest
 
-from chromite.cbuildbot import constants
+from chromite.lib import constants
 from chromite.lib import commandline
 from chromite.lib import cros_logging as logging
 from chromite.lib import image_test_lib

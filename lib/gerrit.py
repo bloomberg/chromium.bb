@@ -8,7 +8,7 @@ from __future__ import print_function
 
 import operator
 
-from chromite.cbuildbot import config_lib
+from chromite.lib import config_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git

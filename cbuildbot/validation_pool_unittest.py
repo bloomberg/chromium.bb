@@ -19,9 +19,9 @@ import pickle
 import tempfile
 import time
 
-from chromite.cbuildbot import config_lib
-from chromite.cbuildbot import constants
-from chromite.cbuildbot import metadata_lib
+from chromite.lib import config_lib
+from chromite.lib import constants
+from chromite.lib import metadata_lib
 from chromite.cbuildbot import repository
 from chromite.cbuildbot import tree_status
 from chromite.cbuildbot import validation_pool

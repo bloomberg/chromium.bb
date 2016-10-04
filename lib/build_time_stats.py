@@ -14,7 +14,7 @@ from sets import Set
 import collections
 import datetime
 
-from chromite.cbuildbot import constants
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 # MUST be kept in sync with GetParser's build-type option.
 BUILD_TYPE_MAP = {

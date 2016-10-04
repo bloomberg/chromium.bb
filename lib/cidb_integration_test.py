@@ -13,8 +13,8 @@ import random
 import shutil
 import time
 
-from chromite.cbuildbot import constants
-from chromite.cbuildbot import metadata_lib
+from chromite.lib import constants
+from chromite.lib import metadata_lib
 from chromite.lib import cidb
 from chromite.lib import clactions
 from chromite.lib import cros_build_lib

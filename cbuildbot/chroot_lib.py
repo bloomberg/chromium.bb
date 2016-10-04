@@ -11,7 +11,7 @@ building.
 from __future__ import print_function
 import os
 
-from chromite.cbuildbot import constants
+from chromite.lib import constants
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import sudo

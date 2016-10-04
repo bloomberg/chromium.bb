@@ -9,8 +9,8 @@ import copy
 import os
 
 from chromite.cbuildbot import cbuildbot_run
-from chromite.cbuildbot import config_lib
-from chromite.cbuildbot import constants
+from chromite.lib import config_lib
+from chromite.lib import constants
 from chromite.cbuildbot.builders import generic_builders
 from chromite.cbuildbot.builders import simple_builders
 from chromite.lib import cros_test_lib

@@ -9,7 +9,7 @@ from __future__ import print_function
 import mock
 import urllib
 
-from chromite.cbuildbot import constants
+from chromite.lib import constants
 from chromite.cbuildbot import tree_status
 from chromite.lib import cros_test_lib
 from chromite.lib import timeout_util

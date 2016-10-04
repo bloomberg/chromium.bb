@@ -23,9 +23,9 @@ except ImportError:
   mox = None
 
 from chromite.cbuildbot import commands
-from chromite.cbuildbot import failures_lib
-from chromite.cbuildbot import results_lib
-from chromite.cbuildbot import constants
+from chromite.lib import failures_lib
+from chromite.lib import results_lib
+from chromite.lib import constants
 from chromite.cbuildbot import repository
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging

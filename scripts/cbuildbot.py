@@ -21,8 +21,8 @@ import sys
 
 from chromite.cbuildbot import builders
 from chromite.cbuildbot import cbuildbot_run
-from chromite.cbuildbot import config_lib
-from chromite.cbuildbot import constants
+from chromite.lib import config_lib
+from chromite.lib import constants
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import remote_try
 from chromite.cbuildbot import repository
@@ -30,7 +30,7 @@ from chromite.cbuildbot import tee
 from chromite.cbuildbot import topology
 from chromite.cbuildbot import tree_status
 from chromite.cbuildbot import trybot_patch_pool
-from chromite.cbuildbot import failures_lib
+from chromite.lib import failures_lib
 from chromite.cbuildbot.stages import completion_stages
 from chromite.lib import cidb
 from chromite.lib import cgroups

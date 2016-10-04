@@ -10,7 +10,7 @@ import collections
 import sys
 import traceback
 
-from chromite.cbuildbot import constants
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 
 

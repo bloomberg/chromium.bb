@@ -19,7 +19,7 @@ import json
 import os
 import urllib
 
-from chromite.cbuildbot import constants
+from chromite.lib import constants
 from chromite.cbuildbot import topology
 from chromite.lib import auth
 from chromite.lib import cros_logging as logging

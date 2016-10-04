@@ -10,8 +10,8 @@ import json
 import os
 
 from chromite.cbuildbot import commands
-from chromite.cbuildbot import failures_lib
-from chromite.cbuildbot import config_lib
+from chromite.lib import failures_lib
+from chromite.lib import config_lib
 from chromite.cbuildbot.stages import artifact_stages
 from chromite.cbuildbot.stages import generic_stages
 from chromite.lib import cros_logging as logging

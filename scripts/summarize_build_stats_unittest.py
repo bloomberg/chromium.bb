@@ -15,8 +15,8 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import fake_cidb
 from chromite.scripts import summarize_build_stats
-from chromite.cbuildbot import metadata_lib
-from chromite.cbuildbot import constants
+from chromite.lib import metadata_lib
+from chromite.lib import constants
 
 
 CQ = constants.CQ

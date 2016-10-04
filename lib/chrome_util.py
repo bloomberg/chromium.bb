@@ -13,7 +13,7 @@ import re
 import shlex
 import shutil
 
-from chromite.cbuildbot import failures_lib
+from chromite.lib import failures_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils

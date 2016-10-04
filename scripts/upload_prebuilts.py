@@ -28,7 +28,7 @@ import os
 import sys
 import tempfile
 
-from chromite.cbuildbot import constants
+from chromite.lib import constants
 from chromite.cbuildbot import commands
 from chromite.lib import binpkg
 from chromite.lib import commandline

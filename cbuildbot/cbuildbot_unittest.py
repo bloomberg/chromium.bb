@@ -13,8 +13,8 @@ import os
 
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import commands
-from chromite.cbuildbot import config_lib_unittest
-from chromite.cbuildbot import constants
+from chromite.lib import config_lib_unittest
+from chromite.lib import constants
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot.builders import simple_builders
 from chromite.lib import cidb

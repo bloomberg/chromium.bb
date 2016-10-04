@@ -10,8 +10,8 @@ import datetime
 import itertools
 import random
 
-from chromite.cbuildbot import constants
-from chromite.cbuildbot import metadata_lib
+from chromite.lib import constants
+from chromite.lib import metadata_lib
 from chromite.cbuildbot import validation_pool
 from chromite.lib import fake_cidb
 from chromite.lib import clactions

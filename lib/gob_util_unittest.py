@@ -10,7 +10,7 @@ import httplib
 import mock
 import tempfile
 
-from chromite.cbuildbot import config_lib
+from chromite.lib import config_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import gob_util
 
