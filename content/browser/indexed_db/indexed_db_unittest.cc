@@ -144,6 +144,7 @@ class ForceCloseDBCallbacks : public IndexedDBCallbacks {
     connection_ = std::move(connection);
     idb_context_->ConnectionOpened(origin_, connection_.get());
   }
+  bool IsValid() const override { return true; }
 
   IndexedDBConnection* connection() { return connection_.get(); }
 

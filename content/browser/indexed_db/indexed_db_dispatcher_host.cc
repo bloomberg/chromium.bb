@@ -95,6 +95,9 @@ void IndexedDBDispatcherHost::ResetDispatcherHosts() {
   // messages are processed.
   DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
 
+  // Prevent any pending connections from being processed.
+  is_open_ = false;
+
   // Note that we explicitly separate CloseAll() from destruction of the
   // DatabaseDispatcherHost, since CloseAll() can invoke callbacks which need to
   // be dispatched through database_dispatcher_host_.
@@ -246,6 +249,11 @@ void IndexedDBDispatcherHost::DropBlobData(const std::string& uuid) {
     blob_data_handle_map_.erase(iter);
   else
     --iter->second.second;
+}
+
+bool IndexedDBDispatcherHost::IsOpen() const {
+  DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
+  return is_open_;
 }
 
 IndexedDBCursor* IndexedDBDispatcherHost::GetCursorFromId(

@@ -604,6 +604,12 @@ void IndexedDBCallbacks::OnSuccess() {
   dispatcher_host_ = NULL;
 }
 
+bool IndexedDBCallbacks::IsValid() const {
+  DCHECK(dispatcher_host_.get());
+
+  return dispatcher_host_->IsOpen();
+}
+
 void IndexedDBCallbacks::SetConnectionOpenStartTime(
     const base::TimeTicks& start_time) {
   connection_open_start_time_ = start_time;
