@@ -225,22 +225,6 @@ int InfoBarView::OffsetY(views::View* view) const {
          (bar_target_height() - bar_height());
 }
 
-void InfoBarView::RunMenuAt(ui::MenuModel* menu_model,
-                            views::MenuButton* button,
-                            views::MenuAnchorPosition anchor) {
-  DCHECK(owner());  // We'd better not open any menus while we're closing.
-  gfx::Point screen_point;
-  views::View::ConvertPointToScreen(button, &screen_point);
-  menu_runner_.reset(
-      new views::MenuRunner(menu_model, views::MenuRunner::HAS_MNEMONICS));
-  // Ignore the result since we don't need to handle a deleted menu specially.
-  ignore_result(menu_runner_->RunMenuAt(GetWidget(),
-                                        button,
-                                        gfx::Rect(screen_point, button->size()),
-                                        anchor,
-                                        ui::MENU_SOURCE_NONE));
-}
-
 void InfoBarView::AddViewToContentArea(views::View* view) {
   child_container_->AddChildView(view);
 }

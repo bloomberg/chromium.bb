@@ -26,14 +26,14 @@ void RoundRectPainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
   SkPaint paint;
   paint.setColor(border_color_);
   paint.setStyle(SkPaint::kStroke_Style);
-  paint.setStrokeWidth(1);
+  paint.setStrokeWidth(kBorderWidth);
   paint.setFlags(SkPaint::kAntiAlias_Flag);
   gfx::Rect rect(size);
-  rect.Inset(0, 0, 1, 1);
+  rect.Inset(0, 0, kBorderWidth, kBorderWidth);
   SkRect skia_rect = gfx::RectToSkRect(rect);
-  skia_rect.offset(.5, .5);
+  skia_rect.offset(kBorderWidth / 2.f, kBorderWidth / 2.f);
   canvas->sk_canvas()->drawRoundRect(skia_rect, SkIntToScalar(corner_radius_),
-      SkIntToScalar(corner_radius_), paint);
+                                     SkIntToScalar(corner_radius_), paint);
 }
 
 }  // namespace views

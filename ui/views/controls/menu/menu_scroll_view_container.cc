@@ -283,10 +283,9 @@ void MenuScrollViewContainer::CreateDefaultBorder() {
                     ? kBorderPaddingDueToRoundedCorners
                     : 0;
 
-  int top = menu_config.menu_vertical_border_size + padding;
-  int left = menu_config.menu_horizontal_border_size + padding;
-  int bottom = menu_config.menu_vertical_border_size + padding;
-  int right = menu_config.menu_horizontal_border_size + padding;
+  const int vertical_inset = menu_config.menu_vertical_border_size + padding;
+  const int horizontal_inset =
+      menu_config.menu_horizontal_border_size + padding;
 
   if (menu_config.use_outer_border) {
     SkColor color = GetNativeTheme()
@@ -296,9 +295,10 @@ void MenuScrollViewContainer::CreateDefaultBorder() {
     SetBorder(views::Border::CreateBorderPainter(
         base::MakeUnique<views::RoundRectPainter>(color,
                                                   menu_config.corner_radius),
-        gfx::Insets(top, left, bottom, right)));
+        gfx::Insets(vertical_inset, horizontal_inset)));
   } else {
-    SetBorder(Border::CreateEmptyBorder(top, left, bottom, right));
+    SetBorder(Border::CreateEmptyBorder(vertical_inset, horizontal_inset,
+                                        vertical_inset, horizontal_inset));
   }
 }
 

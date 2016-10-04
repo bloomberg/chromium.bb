@@ -6,13 +6,14 @@
 
 #include "base/macros.h"
 #include "ui/views/controls/menu/menu_image_util.h"
+#include "ui/views/round_rect_painter.h"
 
 namespace views {
 
 MenuConfig::MenuConfig()
     : arrow_color(SK_ColorBLACK),
       menu_vertical_border_size(3),
-      menu_horizontal_border_size(0),
+      menu_horizontal_border_size(views::RoundRectPainter::kBorderWidth),
       submenu_horizontal_inset(3),
       item_top_margin(4),
       item_bottom_margin(3),

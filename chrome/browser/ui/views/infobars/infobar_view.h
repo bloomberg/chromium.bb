@@ -90,13 +90,6 @@ class InfoBarView : public infobars::InfoBar,
   // animate open and closed.
   int OffsetY(views::View* view) const;
 
-  // Shows a menu at the specified position.
-  // NOTE: This must not be called if we're unowned.  (Subclasses should ignore
-  // calls to RunMenu() in this case.)
-  void RunMenuAt(ui::MenuModel* menu_model,
-                 views::MenuButton* button,
-                 views::MenuAnchorPosition anchor);
-
  protected:
   // Adds |view| to the content area, i.e. |child_container_|. The |view| won't
   // automatically get any layout, so should still be laid out manually.
