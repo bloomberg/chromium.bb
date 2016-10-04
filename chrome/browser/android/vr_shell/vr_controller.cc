@@ -97,11 +97,11 @@ bool VrController::IsTouchUp() {
   return controller_state_.GetTouchUp();
 }
 
-bool VrController::IsButtonDown(const int32_t button) {
+bool VrController::IsButtonDown(gvr::ControllerButton button) {
   return controller_state_.GetButtonDown(button);
 }
 
-bool VrController::IsButtonUp(const int32_t button) {
+bool VrController::IsButtonUp(gvr::ControllerButton button) {
   return controller_state_.GetButtonUp(button);
 }
 

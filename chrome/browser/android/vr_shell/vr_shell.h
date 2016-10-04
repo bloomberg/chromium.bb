@@ -16,8 +16,8 @@
 #include "chrome/browser/android/vr_shell/ui_elements.h"
 #include "chrome/browser/android/vr_shell/ui_scene.h"
 #include "device/vr/android/gvr/gvr_delegate.h"
-#include "third_party/gvr-android-sdk/src/ndk-beta/include/vr/gvr/capi/include/gvr.h"
-#include "third_party/gvr-android-sdk/src/ndk-beta/include/vr/gvr/capi/include/gvr_types.h"
+#include "third_party/gvr-android-sdk/src/ndk/include/vr/gvr/capi/include/gvr.h"
+#include "third_party/gvr-android-sdk/src/ndk/include/vr/gvr/capi/include/gvr_types.h"
 
 namespace content {
 class ContentViewCore;

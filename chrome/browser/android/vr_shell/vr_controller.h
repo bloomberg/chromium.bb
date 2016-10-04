@@ -7,9 +7,9 @@
 
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/android/vr_shell/vr_gesture.h"
-#include "third_party/gvr-android-sdk/src/ndk-beta/include/vr/gvr/capi/include/gvr.h"
-#include "third_party/gvr-android-sdk/src/ndk-beta/include/vr/gvr/capi/include/gvr_controller.h"
-#include "third_party/gvr-android-sdk/src/ndk-beta/include/vr/gvr/capi/include/gvr_types.h"
+#include "third_party/gvr-android-sdk/src/ndk/include/vr/gvr/capi/include/gvr.h"
+#include "third_party/gvr-android-sdk/src/ndk/include/vr/gvr/capi/include/gvr_controller.h"
+#include "third_party/gvr-android-sdk/src/ndk/include/vr/gvr/capi/include/gvr_types.h"
 
 namespace vr_shell {
 
@@ -44,8 +44,8 @@ class VrController {
 
   bool IsTouchUp();
 
-  bool IsButtonUp(const int32_t button);
-  bool IsButtonDown(const int32_t button);
+  bool IsButtonUp(gvr::ControllerButton button);
+  bool IsButtonDown(gvr::ControllerButton button);
 
   bool IsConnected();
 

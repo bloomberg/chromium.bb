@@ -11,8 +11,8 @@
 #include "base/trace_event/trace_event.h"
 #include "device/vr/android/gvr/gvr_delegate.h"
 #include "device/vr/vr_device_manager.h"
-#include "third_party/gvr-android-sdk/src/ndk-beta/include/vr/gvr/capi/include/gvr.h"
-#include "third_party/gvr-android-sdk/src/ndk-beta/include/vr/gvr/capi/include/gvr_types.h"
+#include "third_party/gvr-android-sdk/src/ndk/include/vr/gvr/capi/include/gvr.h"
+#include "third_party/gvr-android-sdk/src/ndk/include/vr/gvr/capi/include/gvr_types.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/transform_util.h"
 
@@ -150,7 +150,9 @@ VRPosePtr GvrDevice::GetPose() {
   gvr::ClockTimePoint target_time = gvr::GvrApi::GetTimePointNow();
   target_time.monotonic_system_time_nanos += kPredictionTimeWithoutVsyncNanos;
 
-  gvr::Mat4f head_mat = gvr_api->GetHeadPoseInStartSpace(target_time);
+  gvr::Mat4f head_mat =
+      gvr_api->GetHeadSpaceFromStartSpaceRotation(target_time);
+  head_mat = gvr_api->ApplyNeckModel(head_mat, 1.0f);
 
   gfx::Transform inv_transform(
       head_mat.m[0][0], head_mat.m[0][1], head_mat.m[0][2], head_mat.m[0][3],

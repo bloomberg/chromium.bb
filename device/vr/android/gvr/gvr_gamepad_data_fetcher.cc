@@ -54,6 +54,8 @@ GvrGamepadDataFetcher::GvrGamepadDataFetcher(GvrDelegate* delegate,
   bool success = controller_api_->Init(options, gvr_api->GetContext());
   if (!success)
     controller_api_.reset(nullptr);
+
+  user_prefs_.reset(new gvr::UserPrefs(gvr_api->GetUserPrefs().cobj()));
 }
 
 GvrGamepadDataFetcher::~GvrGamepadDataFetcher() {}
@@ -94,7 +96,9 @@ void GvrGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
   pad.timestamp = controller_state_.GetLastOrientationTimestamp();
 
   // TODO: Query from API if avaialable.
-  pad.hand = GamepadHandRight;
+  gvr::ControllerHandedness handedness = user_prefs_->GetControllerHandedness();
+  pad.hand = (handedness == GVR_CONTROLLER_RIGHT_HANDED) ? GamepadHandRight
+                                                         : GamepadHandLeft;
 
   if (controller_state_.IsTouching()) {
     gvr_vec2f touch_position = controller_state_.GetTouchPos();

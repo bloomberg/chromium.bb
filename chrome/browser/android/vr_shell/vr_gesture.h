@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_ANDROID_VR_SHELL_VR_GESTURE_H_
 
 #include "third_party/WebKit/public/web/WebInputEvent.h"
-#include "third_party/gvr-android-sdk/src/ndk-beta/include/vr/gvr/capi/include/gvr_types.h"
+#include "third_party/gvr-android-sdk/src/ndk/include/vr/gvr/capi/include/gvr_types.h"
 
 using blink::WebInputEvent;
 
