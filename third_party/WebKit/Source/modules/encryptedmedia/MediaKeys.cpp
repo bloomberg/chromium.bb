@@ -169,7 +169,7 @@ MediaKeySession* MediaKeys::createSession(ScriptState* scriptState,
 ScriptPromise MediaKeys::setServerCertificate(
     ScriptState* scriptState,
     const DOMArrayPiece& serverCertificate) {
-  // From https://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#dom-setservercertificate:
+  // From https://w3c.github.io/encrypted-media/#setServerCertificate
   // The setServerCertificate(serverCertificate) method provides a server
   // certificate to be used to encrypt messages to the license server.
   // It must run the following steps:
