@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2000 Lars Knoll (knoll@kde.org)
- * Copyright (C) 2003, 2004, 2006, 2007, 2008, 2009, 2010 Apple Inc. All right reserved.
+ * Copyright (C) 2003, 2004, 2006, 2007, 2008, 2009, 2010 Apple Inc.
+ *               All right reserved.
  * Copyright (C) 2010 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
@@ -54,7 +55,8 @@ struct BidiIsolatedRun {
 
 // This class is used to LayoutInline subtrees, stepping by character within the
 // text children. InlineIterator will use bidiNext to find the next LayoutText
-// optionally notifying a BidiResolver every time it steps into/out of a LayoutInline.
+// optionally notifying a BidiResolver every time it steps into/out of a
+// LayoutInline.
 class InlineIterator {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
@@ -161,12 +163,14 @@ static inline void notifyObserverEnteredObject(Observer* observer,
   EUnicodeBidi unicodeBidi = style.unicodeBidi();
   if (unicodeBidi == UBNormal) {
     // http://dev.w3.org/csswg/css3-writing-modes/#unicode-bidi
-    // "The element does not open an additional level of embedding with respect to the bidirectional algorithm."
+    // "The element does not open an additional level of embedding with respect
+    // to the bidirectional algorithm."
     // Thus we ignore any possible dir= attribute on the span.
     return;
   }
   if (treatAsIsolated(style)) {
-    // Make sure that explicit embeddings are committed before we enter the isolated content.
+    // Make sure that explicit embeddings are committed before we enter the
+    // isolated content.
     observer->commitExplicitEmbedding(observer->runs());
     observer->enterIsolate();
     // Embedding/Override characters implied by dir= will be handled when
@@ -193,14 +197,16 @@ static inline void notifyObserverWillExitObject(Observer* observer,
     return;
   }
 
-  // Otherwise we pop any embed/override character we added when we opened this tag.
+  // Otherwise we pop any embed/override character we added when we opened this
+  // tag.
   if (!observer->inIsolate())
     observer->embed(WTF::Unicode::PopDirectionalFormat, FromStyleOrDOM);
 }
 
 static inline bool isIteratorTarget(LineLayoutItem object) {
-  ASSERT(
-      object);  // The iterator will of course return 0, but its not an expected argument to this function.
+  // The iterator will of course return 0, but its not an expected argument to
+  // this function.
+  DCHECK(object);
   return object.isText() || object.isFloating() ||
          object.isOutOfFlowPositioned() || object.isAtomicInlineLevel();
 }
@@ -230,7 +236,8 @@ static bool isEmptyInline(LineLayoutItem object) {
 
 // FIXME: This function is misleadingly named. It has little to do with bidi.
 // This function will iterate over inlines within a block, optionally notifying
-// a bidi resolver as it enters/exits inlines (so it can push/pop embedding levels).
+// a bidi resolver as it enters/exits inlines (so it can push/pop embedding
+// levels).
 template <class Observer>
 static inline LineLayoutItem bidiNextShared(
     LineLayoutItem root,
@@ -239,7 +246,8 @@ static inline LineLayoutItem bidiNextShared(
     EmptyInlineBehavior emptyInlineBehavior = SkipEmptyInlines,
     bool* endOfInlinePtr = nullptr) {
   LineLayoutItem next = nullptr;
-  // oldEndOfInline denotes if when we last stopped iterating if we were at the end of an inline.
+  // oldEndOfInline denotes if when we last stopped iterating if we were at the
+  // end of an inline.
   bool oldEndOfInline = endOfInlinePtr ? *endOfInlinePtr : false;
   bool endOfInline = false;
 
@@ -250,9 +258,11 @@ static inline LineLayoutItem bidiNextShared(
       notifyObserverEnteredObject(observer, next);
     }
 
-    // We hit this when either current has no children, or when current is not a layoutObject we care about.
+    // We hit this when either current has no children, or when current is not a
+    // layoutObject we care about.
     if (!next) {
-      // If it is a layoutObject we care about, and we're doing our inline-walk, return it.
+      // If it is a layoutObject we care about, and we're doing our inline-walk,
+      // return it.
       if (emptyInlineBehavior == IncludeEmptyInlines && !oldEndOfInline &&
           current.isLayoutInline()) {
         next = current;
@@ -301,17 +311,21 @@ static inline LineLayoutItem bidiNextSkippingEmptyInlines(
     LineLayoutItem root,
     LineLayoutItem current,
     Observer* observer) {
-  // TODO(rhogan): Rename this caller. It's used for a detailed walk of every object in an inline flow, for example during line layout.
-  // We always return empty inlines in bidiNextShared, which gives lie to the bidiNext[Skipping|Including]EmptyInlines
-  // naming scheme we use to call it. bidiNextSkippingEmptyInlines is the less fussy of the two callers,
-  // it will always try to advance and will return what it finds if it's a line layout object in isIteratorTarget or if
-  // it's an empty LayoutInline. If the LayoutInline has content, it will advance past the start of the LayoutLine and try to return
-  // one of its children.
-  // The SkipEmptyInlines callers never care about endOfInlinePtr.
+  // TODO(rhogan): Rename this caller. It's used for a detailed walk of every
+  // object in an inline flow, for example during line layout.
+  // We always return empty inlines in bidiNextShared, which gives lie to the
+  // bidiNext[Skipping|Including]EmptyInlines naming scheme we use to call it.
+  // bidiNextSkippingEmptyInlines is the less fussy of the two callers, it will
+  // always try to advance and will return what it finds if it's a line layout
+  // object in isIteratorTarget or if it's an empty LayoutInline. If the
+  // LayoutInline has content, it will advance past the start of the LayoutLine
+  // and try to return one of its children. The SkipEmptyInlines callers never
+  // care about endOfInlinePtr.
   return bidiNextShared(root, current, observer, SkipEmptyInlines);
 }
 
-// This makes callers cleaner as they don't have to specify a type for the observer when not providing one.
+// This makes callers cleaner as they don't have to specify a type for the
+// observer when not providing one.
 static inline LineLayoutItem bidiNextSkippingEmptyInlines(
     LineLayoutItem root,
     LineLayoutItem current) {
@@ -323,12 +337,15 @@ static inline LineLayoutItem bidiNextIncludingEmptyInlines(
     LineLayoutItem root,
     LineLayoutItem current,
     bool* endOfInlinePtr = nullptr) {
-  // TODO(rhogan): Rename this caller. It's used for quick and dirty walks of inline children by InlineWalker, which isn't
-  // interested in the contents of inlines. Use cases include dirtying objects or simplified layout that leaves lineboxes intact.
-  // bidiNextIncludingEmptyInlines will return if the iterator is at the start of a LayoutInline (even if it hasn't
-  // advanced yet) unless it previously stopped at the start of the same LayoutInline the last time it tried to iterate.
-  // If it finds itself inside a LayoutInline that doesn't have anything in isIteratorTarget it will return the enclosing
-  // LayoutInline.
+  // TODO(rhogan): Rename this caller. It's used for quick and dirty walks of
+  // inline children by InlineWalker, which isn't interested in the contents of
+  // inlines. Use cases include dirtying objects or simplified layout that
+  // leaves lineboxes intact. bidiNextIncludingEmptyInlines will return if the
+  // iterator is at the start of a LayoutInline (even if it hasn't advanced yet)
+  // unless it previously stopped at the start of the same LayoutInline the last
+  // time it tried to iterate.
+  // If it finds itself inside a LayoutInline that doesn't have anything in
+  // isIteratorTarget it will return the enclosing LayoutInline.
   InlineBidiResolver* observer =
       nullptr;  // Callers who include empty inlines, never use an observer.
   return bidiNextShared(root, current, observer, IncludeEmptyInlines,
@@ -384,15 +401,16 @@ inline void InlineIterator::fastIncrementInTextNode() {
     m_pos++;
 }
 
-// FIXME: This is used by LayoutBlockFlow for simplified layout, and has nothing to do with bidi
-// it shouldn't use functions called bidiFirst and bidiNext.
+// FIXME: This is used by LayoutBlockFlow for simplified layout, and has nothing
+// to do with bidi it shouldn't use functions called bidiFirst and bidiNext.
 class InlineWalker {
   STACK_ALLOCATED();
 
  public:
   InlineWalker(LineLayoutBlockFlow root)
       : m_root(root), m_current(nullptr), m_atEndOfInline(false) {
-    // FIXME: This class should be taught how to do the SkipEmptyInlines codepath as well.
+    // FIXME: This class should be taught how to do the SkipEmptyInlines
+    // codepath as well.
     m_current = bidiFirstIncludingEmptyInlines(m_root);
   }
 
@@ -611,8 +629,8 @@ static inline unsigned numberOfIsolateAncestors(const InlineIterator& iter) {
   return count;
 }
 
-// FIXME: This belongs on InlineBidiResolver, except it's a template specialization
-// of BidiResolver which knows nothing about LayoutObjects.
+// FIXME: This belongs on InlineBidiResolver, except it's a template
+// specialization of BidiResolver which knows nothing about LayoutObjects.
 static inline BidiRun* addPlaceholderRunForIsolatedInline(
     InlineBidiResolver& resolver,
     LineLayoutItem obj,
@@ -622,8 +640,9 @@ static inline BidiRun* addPlaceholderRunForIsolatedInline(
   BidiRun* isolatedRun =
       new BidiRun(pos, pos, obj, resolver.context(), resolver.dir());
   resolver.runs().addRun(isolatedRun);
-  // FIXME: isolatedRuns() could be a hash of object->run and then we could cheaply
-  // ASSERT here that we didn't create multiple objects for the same inline.
+  // FIXME: isolatedRuns() could be a hash of object->run and then we could
+  // cheaply ASSERT here that we didn't create multiple objects for the same
+  // inline.
   resolver.isolatedRuns().append(BidiIsolatedRun(obj, pos, root, *isolatedRun,
                                                  resolver.context()->level()));
   return isolatedRun;
@@ -671,9 +690,11 @@ class IsolateTracker {
                              unsigned end,
                              LineLayoutItem root,
                              InlineBidiResolver& resolver) {
-    // We only need to add a fake run for a given isolated span once during each call to createBidiRunsForLine.
-    // We'll be called for every span inside the isolated span so we just ignore subsequent calls.
-    // We also avoid creating a fake run until we hit a child that warrants one, e.g. we skip floats.
+    // We only need to add a fake run for a given isolated span once during each
+    // call to createBidiRunsForLine. We'll be called for every span inside the
+    // isolated span so we just ignore subsequent calls.
+    // We also avoid creating a fake run until we hit a child that warrants one,
+    // e.g. we skip floats.
     if (LayoutBlockFlow::shouldSkipCreatingRunsForObject(obj))
       return;
     if (!m_haveAddedFakeRunForRootIsolate) {
@@ -683,9 +704,11 @@ class IsolateTracker {
                                               m_midpointStateForRootIsolate);
       m_haveAddedFakeRunForRootIsolate = true;
     }
-    // obj and pos together denote a single position in the inline, from which the parsing of the isolate will start.
-    // We don't need to mark the end of the run because this is implicit: it is either endOfLine or the end of the
-    // isolate, when we call createBidiRunsForLine it will stop at whichever comes first.
+    // obj and pos together denote a single position in the inline, from which
+    // the parsing of the isolate will start.
+    // We don't need to mark the end of the run because this is implicit: it is
+    // either endOfLine or the end of the isolate, when we call
+    // createBidiRunsForLine it will stop at whichever comes first.
   }
 
  private:
@@ -764,8 +787,8 @@ static void adjustMidpointsAndAppendRunsForObjectIfNeeded(
       if (nextMidpoint.offset() + 1 <= end) {
         lineMidpointState.setBetweenMidpoints(true);
         lineMidpointState.incrementCurrentMidpoint();
-        if (nextMidpoint.offset() !=
-            UINT_MAX) {  // UINT_MAX means stop at the object and don't nclude any of it.
+        // UINT_MAX means stop at the object and don't include any of it.
+        if (nextMidpoint.offset() != UINT_MAX) {
           if (nextMidpoint.offset() + 1 > start)
             appendRunObjectIfNecessary(obj, start, nextMidpoint.offset() + 1,
                                        root, resolver, behavior, tracker);
@@ -796,8 +819,10 @@ template <>
 inline void InlineBidiResolver::appendRun(BidiRunList<BidiRun>& runs) {
   if (!m_emptyRun && !m_eor.atEnd() && !m_reachedEndOfLine) {
     // Keep track of when we enter/leave "unicode-bidi: isolate" inlines.
-    // Initialize our state depending on if we're starting in the middle of such an inline.
-    // FIXME: Could this initialize from this->inIsolate() instead of walking up the layout tree?
+    // Initialize our state depending on if we're starting in the middle of such
+    // an inline.
+    // FIXME: Could this initialize from this->inIsolate() instead of walking up
+    // the layout tree?
     IsolateTracker isolateTracker(runs, numberOfIsolateAncestors(m_sor));
     int start = m_sor.offset();
     LineLayoutItem obj = m_sor.getLineLayoutItem();
@@ -810,7 +835,8 @@ inline void InlineBidiResolver::appendRun(BidiRunList<BidiRun>& runs) {
         adjustMidpointsAndAppendRunsForObjectIfNeeded(
             obj, start, obj.length(), m_sor.root(), *this,
             AppendingRunsForObject, isolateTracker);
-      // FIXME: start/obj should be an InlineIterator instead of two separate variables.
+      // FIXME: start/obj should be an InlineIterator instead of two separate
+      // variables.
       start = 0;
       obj = bidiNextSkippingEmptyInlines(m_sor.root(), obj, &isolateTracker);
     }
@@ -824,7 +850,8 @@ inline void InlineBidiResolver::appendRun(BidiRunList<BidiRun>& runs) {
         m_reachedEndOfLine = true;
         pos = m_endOfRunAtEndOfLine.offset();
       }
-      // It's OK to add runs for zero-length LayoutObjects, just don't make the run larger than it should be
+      // It's OK to add runs for zero-length LayoutObjects, just don't make the
+      // run larger than it should be
       int end = obj.length() ? pos + 1 : 0;
       if (isolateTracker.inIsolate())
         addFakeRunIfNecessary(obj, start, end, m_sor.root(), *this,
@@ -837,7 +864,8 @@ inline void InlineBidiResolver::appendRun(BidiRunList<BidiRun>& runs) {
 
     if (isEndOfLine)
       m_reachedEndOfLine = true;
-    // If isolateTrack is inIsolate, the next |start of run| can not be the current isolated layoutObject.
+    // If isolateTrack is inIsolate, the next |start of run| can not be the
+    // current isolated layoutObject.
     if (isolateTracker.inIsolate())
       m_eor.moveTo(
           bidiNextSkippingEmptyInlines(m_eor.root(), m_eor.getLineLayoutItem()),

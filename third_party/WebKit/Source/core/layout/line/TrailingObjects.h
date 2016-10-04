@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2000 Lars Knoll (knoll@kde.org)
- * Copyright (C) 2003, 2004, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All right reserved.
+ * Copyright (C) 2003, 2004, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc.
+ *               All right reserved.
  * Copyright (C) 2010 Google Inc. All rights reserved.
  * Copyright (C) 2014 Adobe Systems Inc.
  *
@@ -44,18 +45,21 @@ typedef BidiResolver<InlineIterator, BidiRun, BidiIsolatedRun>
     InlineBidiResolver;
 typedef MidpointState<InlineIterator> LineMidpointState;
 
-// This class allows us to ensure lineboxes are created in the right place on the line when
-// an out-of-flow positioned object or an empty inline is encountered between a trailing space
-// and subsequent spaces and we want to ignore (i.e. collapse) surplus whitespace. So for example:
+// This class allows us to ensure lineboxes are created in the right place on
+// the line when an out-of-flow positioned object or an empty inline is
+// encountered between a trailing space and subsequent spaces and we want to
+// ignore (i.e. collapse) surplus whitespace. So for example:
 //   <div>X <span></span> Y</div>
 // or
 //   <div>X <div style="position: absolute"></div> Y</div>
-// In both of the above snippets the inline and the positioned object occur after a trailing space
-// and before a space that will cause our line breaking algorithm to start ignoring spaces. When it
-// does that we want to ensure that the inline/positioned object gets a linebox and that it is part
-// of the collapsed whitespace. So to achieve this we use appendObjectIfNeeded() to keep track of
-// objects encountered after a trailing whitespace and updateMidpointsForTrailingObjects() to put
-// them in the right place when we start ignoring surplus whitespace.
+// In both of the above snippets the inline and the positioned object occur
+// after a trailing space and before a space that will cause our line breaking
+// algorithm to start ignoring spaces. When it does that we want to ensure that
+// the inline/positioned object gets a linebox and that it is part of the
+// collapsed whitespace. So to achieve this we use appendObjectIfNeeded() to
+// keep track of objects encountered after a trailing whitespace and
+// updateMidpointsForTrailingObjects() to put them in the right place when we
+// start ignoring surplus whitespace.
 
 class TrailingObjects {
   STACK_ALLOCATED();

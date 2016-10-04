@@ -232,13 +232,12 @@ bool InlineBox::nodeAtPoint(HitTestResult& result,
                             const LayoutPoint& accumulatedOffset,
                             LayoutUnit /* lineTop */,
                             LayoutUnit /* lineBottom */) {
-  // Hit test all phases of replaced elements atomically, as though the replaced element established its
-  // own stacking context.  (See Appendix E.2, section 6.4 on inline block/table elements in the CSS2.1
-  // specification.)
+  // Hit test all phases of replaced elements atomically, as though the replaced
+  // element established its own stacking context. (See Appendix E.2, section
+  // 6.4 on inline block/table elements in the CSS2.1 specification.)
   LayoutPoint childPoint = accumulatedOffset;
-  if (parent()
-          ->getLineLayoutItem()
-          .hasFlippedBlocksWritingMode())  // Faster than calling containingBlock().
+  // Faster than calling containingBlock().
+  if (parent()->getLineLayoutItem().hasFlippedBlocksWritingMode())
     childPoint =
         getLineLayoutItem().containingBlock().flipForWritingModeForChild(
             LineLayoutBox(getLineLayoutItem()), childPoint);
@@ -401,8 +400,8 @@ void InlineBox::setShouldDoFullPaintInvalidationRecursively() {
 }
 
 void InlineBox::setLineLayoutItemShouldDoFullPaintInvalidationIfNeeded() {
-  // For RootInlineBox, we only need to invalidate if it's using the first line style.
-  // otherwise it paints nothing so we don't need to invalidate it.
+  // For RootInlineBox, we only need to invalidate if it's using the first line
+  // style. Otherwise it paints nothing so we don't need to invalidate it.
   if (!isRootInlineBox() || isFirstLineStyle())
     m_lineLayoutItem.setShouldDoFullPaintInvalidation();
 }

@@ -95,13 +95,15 @@ bool RootInlineBox::lineCanAccommodateEllipsis(bool ltr,
                                                int blockEdge,
                                                int lineBoxEdge,
                                                int ellipsisWidth) {
-  // First sanity-check the unoverflowed width of the whole line to see if there is sufficient room.
+  // First sanity-check the unoverflowed width of the whole line to see if there
+  // is sufficient room.
   int delta = ltr ? lineBoxEdge - blockEdge : blockEdge - lineBoxEdge;
   if (logicalWidth() - delta < ellipsisWidth)
     return false;
 
-  // Next iterate over all the line boxes on the line.  If we find a replaced element that intersects
-  // then we refuse to accommodate the ellipsis.  Otherwise we're ok.
+  // Next iterate over all the line boxes on the line. If we find a replaced
+  // element that intersects then we refuse to accommodate the ellipsis.
+  // Otherwise we're ok.
   return InlineFlowBox::canAccommodateEllipsis(ltr, blockEdge, ellipsisWidth);
 }
 
@@ -128,9 +130,9 @@ LayoutUnit RootInlineBox::placeEllipsis(const AtomicString& ellipsisStr,
     return logicalWidth() + ellipsisWidth;
   }
 
-  // Now attempt to find the nearest glyph horizontally and place just to the right (or left in RTL)
-  // of that glyph.  Mark all of the objects that intersect the ellipsis box as not painting (as being
-  // truncated).
+  // Now attempt to find the nearest glyph horizontally and place just to the
+  // right (or left in RTL) of that glyph.  Mark all of the objects that
+  // intersect the ellipsis box as not painting (as being truncated).
   bool foundBox = false;
   LayoutUnit truncatedWidth;
   LayoutUnit position =
@@ -291,8 +293,8 @@ LayoutUnit RootInlineBox::alignBoxesInBlockDirection(
 
   LayoutUnit annotationsAdjustment = beforeAnnotationsAdjustment();
   if (annotationsAdjustment) {
-    // FIXME: Need to handle pagination here. We might have to move to the next page/column as a result of the
-    // ruby expansion.
+    // FIXME: Need to handle pagination here. We might have to move to the next
+    // page/column as a result of the ruby expansion.
     moveInBlockDirection(annotationsAdjustment);
     heightOfBlock += annotationsAdjustment;
   }
@@ -333,7 +335,8 @@ LayoutUnit RootInlineBox::beforeAnnotationsAdjustment() const {
     if (!prevRootBox() || !prevRootBox()->hasAnnotationsAfter())
       return result;
 
-    // We have to compute the expansion for annotations over the previous line to see how much we should move.
+    // We have to compute the expansion for annotations over the previous line
+    // to see how much we should move.
     LayoutUnit lowestAllowedPosition =
         std::max(prevRootBox()->lineBottom(), lineTop()) - result;
     result =
@@ -398,8 +401,9 @@ LayoutUnit RootInlineBox::selectionTop() const {
 
   LayoutUnit prevBottom = prevRootBox()->selectionBottom();
   if (prevBottom < selectionTop && block().containsFloats()) {
-    // This line has actually been moved further down, probably from a large line-height, but possibly because the
-    // line was forced to clear floats.  If so, let's check the offsets, and only be willing to use the previous
+    // This line has actually been moved further down, probably from a large
+    // line-height, but possibly because the line was forced to clear floats.
+    // If so, let's check the offsets, and only be willing to use the previous
     // line's bottom if the offsets are greater on both sides.
     LayoutUnit prevLeft =
         block().logicalLeftOffsetForLine(prevBottom, DoNotIndentText);
@@ -432,8 +436,9 @@ LayoutUnit RootInlineBox::selectionBottom() const {
 
   LayoutUnit nextTop = nextRootBox()->selectionTop();
   if (nextTop > selectionBottom && block().containsFloats()) {
-    // The next line has actually been moved further over, probably from a large line-height, but possibly because the
-    // line was forced to clear floats.  If so, let's check the offsets, and only be willing to use the next
+    // The next line has actually been moved further over, probably from a large
+    // line-height, but possibly because the line was forced to clear floats.
+    // If so, let's check the offsets, and only be willing to use the next
     // line's top if the offsets are greater on both sides.
     LayoutUnit nextLeft =
         block().logicalLeftOffsetForLine(nextTop, DoNotIndentText);
@@ -495,16 +500,16 @@ InlineBox* RootInlineBox::closestLeafChildForLogicalLeftPosition(
   if (leftPosition <= firstLeaf->logicalLeft() &&
       !firstLeaf->getLineLayoutItem().isListMarker() &&
       (!onlyEditableLeaves || isEditableLeaf(firstLeaf))) {
-    // The leftPosition coordinate is less or equal to left edge of the firstLeaf.
-    // Return it.
+    // The leftPosition coordinate is less or equal to left edge of the
+    // firstLeaf. Return it.
     return firstLeaf;
   }
 
   if (leftPosition >= lastLeaf->logicalRight() &&
       !lastLeaf->getLineLayoutItem().isListMarker() &&
       (!onlyEditableLeaves || isEditableLeaf(lastLeaf))) {
-    // The leftPosition coordinate is greater or equal to right edge of the lastLeaf.
-    // Return it.
+    // The leftPosition coordinate is greater or equal to right edge of the
+    // lastLeaf. Return it.
     return lastLeaf;
   }
 
@@ -538,9 +543,9 @@ void RootInlineBox::setLineBreakInfo(LineLayoutItem obj,
                                      const BidiStatus& status) {
   // When setting lineBreakObj, the LayoutObject must not be a LayoutInline
   // with no line boxes, otherwise all sorts of invariants are broken later.
-  // This has security implications because if the LayoutObject does not
-  // point to at least one line box, then that LayoutInline can be deleted
-  // later without resetting the lineBreakObj, leading to use-after-free.
+  // This has security implications because if the LayoutObject does not point
+  // to at least one line box, then that LayoutInline can be deleted later
+  // without resetting the lineBreakObj, leading to use-after-free.
   ASSERT_WITH_SECURITY_IMPLICATION(!obj || obj.isText() ||
                                    !(obj.isLayoutInline() && obj.isBox() &&
                                      !LineLayoutBox(obj).inlineBoxWrapper()));
@@ -676,10 +681,12 @@ void RootInlineBox::ascentAndDescentForBox(
     setAscentAndDescent(ascent, descent, ascentWithLeading, descentWithLeading,
                         ascentDescentSet);
 
-    // Examine the font box for inline flows and text boxes to see if any part of it is above the baseline.
-    // If the top of our font box relative to the root box baseline is above the root box baseline, then
-    // we are contributing to the maxAscent value. Descent is similar. If any part of our font box is below
-    // the root box's baseline, then we contribute to the maxDescent value.
+    // Examine the font box for inline flows and text boxes to see if any part
+    // of it is above the baseline. If the top of our font box relative to the
+    // root box baseline is above the root box baseline, then we are
+    // contributing to the maxAscent value. Descent is similar. If any part of
+    // our font box is below the root box's baseline, then we contribute to the
+    // maxDescent value.
     affectsAscent = ascentWithLeading - box->logicalTop() > 0;
     affectsDescent = descentWithLeading + box->logicalTop() > 0;
   }
@@ -745,7 +752,8 @@ LayoutUnit RootInlineBox::verticalPositionForBox(
               .round());
     } else if (verticalAlign == VerticalAlignTextBottom) {
       verticalPosition += fontMetrics.descent(baselineType());
-      // lineHeight - baselinePosition is always 0 for replaced elements (except inline blocks), so don't bother wasting time in that case.
+      // lineHeight - baselinePosition is always 0 for replaced elements (except
+      // inline blocks), so don't bother wasting time in that case.
       if (!boxModel.isAtomicInlineLevel() ||
           boxModel.isInlineBlockOrInlineTable())
         verticalPosition -= (boxModel.lineHeight(firstLine, lineDirection) -
@@ -757,7 +765,8 @@ LayoutUnit RootInlineBox::verticalPositionForBox(
           boxModel.baselinePosition(baselineType(), firstLine, lineDirection);
     } else if (verticalAlign == VerticalAlignLength) {
       LayoutUnit lineHeight;
-      // Per http://www.w3.org/TR/CSS21/visudet.html#propdef-vertical-align: 'Percentages: refer to the 'line-height' of the element itself'.
+      // Per http://www.w3.org/TR/CSS21/visudet.html#propdef-vertical-align:
+      // 'Percentages: refer to the 'line-height' of the element itself'.
       if (boxModel.style()->getVerticalAlignLength().isPercentOrCalc())
         lineHeight = LayoutUnit(boxModel.style()->computedLineHeight());
       else

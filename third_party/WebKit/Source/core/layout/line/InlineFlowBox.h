@@ -65,11 +65,15 @@ class InlineFlowBox : public InlineBox {
         m_hasBadChildList(false)
 #endif
   {
-    // Internet Explorer and Firefox always create a marker for list items, even when the list-style-type is none.  We do not make a marker
-    // in the list-style-type: none case, since it is wasteful to do so.  However, in order to match other browsers we have to pretend like
-    // an invisible marker exists.  The side effect of having an invisible marker is that the quirks mode behavior of shrinking lines with no
-    // text children must not apply.  This change also means that gaps will exist between image bullet list items.  Even when the list bullet
-    // is an image, the line is still considered to be immune from the quirk.
+    // Internet Explorer and Firefox always create a marker for list items, even
+    // when the list-style-type is none.  We do not make a marker in the
+    // list-style-type: none case, since it is wasteful to do so.
+    // However, in order to match other browsers we have to pretend like an
+    // invisible marker exists.  The side effect of having an invisible marker
+    // is that the quirks mode behavior of shrinking lines with no text children
+    // must not apply. This change also means that gaps will exist between image
+    // bullet list items.  Even when the list bullet is an image, the line is
+    // still considered to be immune from the quirk.
     m_hasTextChildren = lineLayoutItem.style()->display() == EDisplay::ListItem;
     m_hasTextDescendants = m_hasTextChildren;
   }
@@ -280,11 +284,12 @@ class InlineFlowBox : public InlineBox {
   void checkConsistency() const;
   void setHasBadChildList();
 
-  // Line visual and layout overflow are in the coordinate space of the block.  This means that
-  // they aren't purely physical directions. For horizontal-tb and vertical-lr they will match
-  // physical directions, but for vertical-rl, the left/right respectively are flipped when
-  // compared to their physical counterparts.  For example minX is on the left in vertical-lr, but
-  // it is on the right in vertical-rl.
+  // Line visual and layout overflow are in the coordinate space of the block.
+  // This means that they aren't purely physical directions. For horizontal-tb
+  // and vertical-lr they will match physical directions, but for vertical-rl,
+  // the left/right respectively are flipped when compared to their physical
+  // counterparts.  For example minX is on the left in vertical-lr, but it is on
+  // the right in vertical-rl.
   LayoutRect layoutOverflowRect(LayoutUnit lineTop,
                                 LayoutUnit lineBottom) const {
     return m_overflow ? m_overflow->layoutOverflowRect()
@@ -373,12 +378,14 @@ class InlineFlowBox : public InlineBox {
     m_isFirstAfterPageBreak = isFirstAfterPageBreak;
   }
 
-  // Some callers (LayoutListItem) needs to set extra overflow on their line box.
+  // Some callers (LayoutListItem) needs to set extra overflow on their line
+  // box.
   void overrideOverflowFromLogicalRects(const LayoutRect& logicalLayoutOverflow,
                                         const LayoutRect& logicalVisualOverflow,
                                         LayoutUnit lineTop,
                                         LayoutUnit lineBottom) {
-    // If we are setting an overflow, then we can't pretend not to have an overflow.
+    // If we are setting an overflow, then we can't pretend not to have an
+    // overflow.
     clearKnownToHaveNoOverflow();
     setOverflowFromLogicalRects(logicalLayoutOverflow, logicalVisualOverflow,
                                 lineTop, lineBottom);
@@ -446,9 +453,11 @@ class InlineFlowBox : public InlineBox {
   unsigned m_descendantsHaveSameLineHeightAndBaseline : 1;
 
  protected:
-  // The following members are only used by RootInlineBox but moved here to keep the bits packed.
+  // The following members are only used by RootInlineBox but moved here to keep
+  // the bits packed.
 
-  // Whether or not this line uses alphabetic or ideographic baselines by default.
+  // Whether or not this line uses alphabetic or ideographic baselines by
+  // default.
   unsigned m_baselineType : 1;  // FontBaseline
 
   // If the line contains any ruby runs, then this will be true.

@@ -52,8 +52,6 @@ bool EllipsisBox::nodeAtPoint(HitTestResult& result,
                               const LayoutPoint& accumulatedOffset,
                               LayoutUnit lineTop,
                               LayoutUnit lineBottom) {
-  // FIXME: the call to roundedLayoutPoint() below is temporary and should be removed once
-  // the transition to LayoutUnit-based types is complete (crbug.com/321237)
   LayoutPoint adjustedLocation = accumulatedOffset + topLeft();
 
   LayoutPoint boxOrigin = locationIncludingFlipping();

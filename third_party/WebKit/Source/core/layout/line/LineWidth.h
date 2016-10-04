@@ -63,12 +63,14 @@ class LineWidth {
     return w <= m_availableWidth;
   }
 
-  // Note that m_uncommittedWidth may not be LayoutUnit-snapped at this point.  Because
-  // currentWidth() is used by the code that lays out words in a single LayoutText, it's
-  // expected that offsets will not be snapped until an InlineBox boundary is reached.
+  // Note that m_uncommittedWidth may not be LayoutUnit-snapped at this point.
+  // Because currentWidth() is used by the code that lays out words in a single
+  // LayoutText, it's expected that offsets will not be snapped until an
+  // InlineBox boundary is reached.
   float currentWidth() const { return m_committedWidth + m_uncommittedWidth; }
 
-  // FIXME: We should eventually replace these three functions by ones that work on a higher abstraction.
+  // FIXME: We should eventually replace these three functions by ones that work
+  // on a higher abstraction.
   float uncommittedWidth() const { return m_uncommittedWidth; }
   float committedWidth() const { return m_committedWidth; }
   float availableWidth() const { return m_availableWidth; }
@@ -103,8 +105,9 @@ class LineWidth {
   LineLayoutBlockFlow m_block;
   float m_uncommittedWidth;
   float m_committedWidth;
-  float
-      m_overhangWidth;  // The amount by which |m_availableWidth| has been inflated to account for possible contraction due to ruby overhang.
+  // The amount by which |m_availableWidth| has been inflated to account for
+  // possible contraction due to ruby overhang.
+  float m_overhangWidth;
   float m_trailingWhitespaceWidth;
   LayoutUnit m_left;
   LayoutUnit m_right;

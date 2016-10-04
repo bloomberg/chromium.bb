@@ -1,7 +1,8 @@
 /*
  * (C) 1999 Lars Knoll (knoll@kde.org)
  * (C) 2000 Dirk Mueller (mueller@kde.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc.
+ *               All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -177,10 +178,9 @@ SelectionState InlineTextBox::getSelectionState() const {
     if (state != SelectionNone) {
       int start, end;
       selectionStartEnd(start, end);
-      // The ellipsis should be considered to be selected if the end of
-      // the selection is past the beginning of the truncation and the
-      // beginning of the selection is before or at the beginning of the
-      // truncation.
+      // The ellipsis should be considered to be selected if the end of the
+      // selection is past the beginning of the truncation and the beginning of
+      // the selection is before or at the beginning of the truncation.
       ellipsis->setSelectionState(end >= m_truncation && start <= m_truncation
                                       ? SelectionInside
                                       : SelectionNone);
@@ -193,18 +193,18 @@ SelectionState InlineTextBox::getSelectionState() const {
 }
 
 bool InlineTextBox::hasWrappedSelectionNewline() const {
-  // TODO(wkorman): We shouldn't need layout at this point and it should
-  // be enforced by DocumentLifecycle. http://crbug.com/537821
-  // Bail out as currently looking up selection state can cause the editing
-  // code can force a re-layout while scrutinizing the editing position, and
+  // TODO(wkorman): We shouldn't need layout at this point and it should be
+  // enforced by DocumentLifecycle. http://crbug.com/537821
+  // Bail out as currently looking up selection state can cause the editing code
+  // can force a re-layout while scrutinizing the editing position, and
   // InlineTextBox instances are not guaranteed to survive a re-layout.
   if (getLineLayoutItem().needsLayout())
     return false;
 
   SelectionState state = getSelectionState();
   return (state == SelectionStart || state == SelectionInside)
-         // Checking last leaf child can be slow, so we make sure to do this only
-         // after the other simple conditionals.
+         // Checking last leaf child can be slow, so we make sure to do this
+         // only after the other simple conditionals.
          && (root().lastLeafChild() == this)
          // It's possible to have mixed LTR/RTL on a single line, and we only
          // want to paint a newline when we're the last leaf child and we make
@@ -244,7 +244,9 @@ LayoutRect InlineTextBox::localSelectionRect(int startPos, int endPos) const {
   if (sPos || ePos != static_cast<int>(m_len)) {
     r = LayoutRect(enclosingIntRect(font.selectionRectForText(
         textRun, FloatPoint(startingPoint), selHeight.toInt(), sPos, ePos)));
-  } else {  // Avoid computing the font width when the entire line box is selected as an optimization.
+  } else {
+    // Avoid computing the font width when the entire line box is selected as an
+    // optimization.
     r = LayoutRect(enclosingIntRect(
         LayoutRect(startingPoint, LayoutSize(m_logicalWidth, selHeight))));
   }
@@ -322,7 +324,8 @@ LayoutUnit InlineTextBox::placeEllipsisBox(bool flowIsLTR,
     return LayoutUnit(-1);
   }
 
-  // For LTR this is the left edge of the box, for RTL, the right edge in parent coordinates.
+  // For LTR this is the left edge of the box, for RTL, the right edge in parent
+  // coordinates.
   LayoutUnit ellipsisX = flowIsLTR ? visibleRightEdge - ellipsisWidth
                                    : visibleLeftEdge + ellipsisWidth;
 
@@ -333,7 +336,8 @@ LayoutUnit InlineTextBox::placeEllipsisBox(bool flowIsLTR,
   bool rtlFullTruncation =
       !flowIsLTR && ellipsisX >= logicalLeft() + logicalWidth();
   if (ltrFullTruncation || rtlFullTruncation) {
-    // Too far.  Just set full truncation, but return -1 and let the ellipsis just be placed at the edge of the box.
+    // Too far.  Just set full truncation, but return -1 and let the ellipsis
+    // just be placed at the edge of the box.
     setTruncation(cFullTruncation);
     foundBox = true;
     return LayoutUnit(-1);
@@ -344,12 +348,13 @@ LayoutUnit InlineTextBox::placeEllipsisBox(bool flowIsLTR,
   if (ltrEllipsisWithinBox || rtlEllipsisWithinBox) {
     foundBox = true;
 
-    // The inline box may have different directionality than it's parent.  Since truncation
-    // behavior depends both on both the parent and the inline block's directionality, we
-    // must keep track of these separately.
+    // The inline box may have different directionality than it's parent. Since
+    // truncation behavior depends both on both the parent and the inline
+    // block's directionality, we must keep track of these separately.
     bool ltr = isLeftToRightDirection();
     if (ltr != flowIsLTR) {
-      // Width in pixels of the visible portion of the box, excluding the ellipsis.
+      // Width in pixels of the visible portion of the box, excluding the
+      // ellipsis.
       int visibleBoxWidth =
           (visibleRightEdge - visibleLeftEdge - ellipsisWidth).toInt();
       ellipsisX = flowIsLTR ? logicalLeft() + visibleBoxWidth
@@ -358,8 +363,8 @@ LayoutUnit InlineTextBox::placeEllipsisBox(bool flowIsLTR,
 
     int offset = offsetForPosition(ellipsisX, false);
     if (offset == 0 && ltr == flowIsLTR) {
-      // No characters should be laid out.  Set ourselves to full truncation and place the ellipsis at the min of our start
-      // and the ellipsis edge.
+      // No characters should be laid out.  Set ourselves to full truncation and
+      // place the ellipsis at the min of our start and the ellipsis edge.
       setTruncation(cFullTruncation);
       truncatedWidth += ellipsisWidth;
       return std::min(ellipsisX, logicalLeft());
@@ -368,9 +373,10 @@ LayoutUnit InlineTextBox::placeEllipsisBox(bool flowIsLTR,
     // Set the truncation index on the text run.
     setTruncation(offset);
 
-    // If we got here that means that we were only partially truncated and we need to return the pixel offset at which
-    // to place the ellipsis. Where the text and its flow have opposite directions then our offset into the text is at
-    // the start of the part that will be visible.
+    // If we got here that means that we were only partially truncated and we
+    // need to return the pixel offset at which to place the ellipsis. Where the
+    // text and its flow have opposite directions then our offset into the text
+    // is at the start of the part that will be visible.
     LayoutUnit widthOfVisibleText(getLineLayoutItem().width(
         ltr == flowIsLTR ? m_start : offset,
         ltr == flowIsLTR ? offset : m_len - offset, textPos(),
@@ -379,8 +385,8 @@ LayoutUnit InlineTextBox::placeEllipsisBox(bool flowIsLTR,
     // The ellipsis needs to be placed just after the last visible character.
     // Where "after" is defined by the flow directionality, not the inline
     // box directionality.
-    // e.g. In the case of an LTR inline box truncated in an RTL flow then we can
-    // have a situation such as |Hello| -> |...He|
+    // e.g. In the case of an LTR inline box truncated in an RTL flow then we
+    // can have a situation such as |Hello| -> |...He|
     truncatedWidth += widthOfVisibleText + ellipsisWidth;
     if (flowIsLTR)
       return logicalLeft() + widthOfVisibleText;
@@ -423,25 +429,30 @@ bool InlineTextBox::nodeAtPoint(HitTestResult& result,
 bool InlineTextBox::getEmphasisMarkPosition(
     const ComputedStyle& style,
     TextEmphasisPosition& emphasisPosition) const {
-  // This function returns true if there are text emphasis marks and they are suppressed by ruby text.
+  // This function returns true if there are text emphasis marks and they are
+  // suppressed by ruby text.
   if (style.getTextEmphasisMark() == TextEmphasisMarkNone)
     return false;
 
   emphasisPosition = style.getTextEmphasisPosition();
+  // Ruby text is always over, so it cannot suppress emphasis marks under.
   if (emphasisPosition == TextEmphasisPositionUnder)
-    return true;  // Ruby text is always over, so it cannot suppress emphasis marks under.
+    return true;
 
   LineLayoutBox containingBlock = getLineLayoutItem().containingBlock();
+  // This text is not inside a ruby base, so it does not have ruby text over it.
   if (!containingBlock.isRubyBase())
-    return true;  // This text is not inside a ruby base, so it does not have ruby text over it.
+    return true;
 
+  // Cannot get the ruby text.
   if (!containingBlock.parent().isRubyRun())
-    return true;  // Cannot get the ruby text.
+    return true;
 
   LineLayoutRubyText rubyText =
       LineLayoutRubyRun(containingBlock.parent()).rubyText();
 
-  // The emphasis marks over are suppressed only if there is a ruby text box and it not empty.
+  // The emphasis marks over are suppressed only if there is a ruby text box and
+  // it not empty.
   return !rubyText || !rubyText.firstLineBox();
 }
 
@@ -506,8 +517,10 @@ int InlineTextBox::caretMaxOffset() const {
 }
 
 LayoutUnit InlineTextBox::textPos() const {
-  // When computing the width of a text run, LayoutBlock::computeInlineDirectionPositionsForLine() doesn't include the actual offset
-  // from the containing block edge in its measurement. textPos() should be consistent so the text are laid out in the same width.
+  // When computing the width of a text run, LayoutBlock::
+  // computeInlineDirectionPositionsForLine() doesn't include the actual offset
+  // from the containing block edge in its measurement. textPos() should be
+  // consistent so the text are laid out in the same width.
   if (logicalLeft() == 0)
     return LayoutUnit();
   return logicalLeft() - root().logicalLeft();
@@ -569,7 +582,8 @@ bool InlineTextBox::containsCaretOffset(int offset) const {
   if (isLineBreak())
     return false;
 
-  // Offsets at the end are "in" for normal boxes (but the caller has to check affinity).
+  // Offsets at the end are "in" for normal boxes (but the caller has to check
+  // affinity).
   return true;
 }
 
@@ -628,7 +642,8 @@ TextRun InlineTextBox::constructTextRun(
   run.setTabSize(!style.collapseWhiteSpace(), style.getTabSize());
   run.setTextJustify(style.getTextJustify());
 
-  // Propagate the maximum length of the characters buffer to the TextRun, even when we're only processing a substring.
+  // Propagate the maximum length of the characters buffer to the TextRun, even
+  // when we're only processing a substring.
   run.setCharactersLength(maximumLength);
   ASSERT(run.charactersLength() >= run.length());
   return run;

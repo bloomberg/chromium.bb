@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2000 Lars Knoll (knoll@kde.org)
- * Copyright (C) 2003, 2004, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All right reserved.
+ * Copyright (C) 2003, 2004, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc.
+ *               All right reserved.
  * Copyright (C) 2010 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
@@ -92,7 +93,8 @@ InlineIterator LineBreaker::nextLineBreak(InlineBidiResolver& resolver,
       context.handleReplaced();
     } else if (context.currentItem().isText()) {
       if (context.handleText(wordMeasurements, m_hyphenated)) {
-        // We've hit a hard text line break. Our line break iterator is updated, so go ahead and early return.
+        // We've hit a hard text line break. Our line break iterator is updated,
+        // so go ahead and early return.
         return context.lineBreak();
       }
     } else {

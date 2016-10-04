@@ -54,8 +54,10 @@ struct GlyphOverflow {
     right = std::max(0.0f, bounds.maxX() - textWidth);
   }
 
-  // Top and bottom are the amounts of glyph overflows exceeding the font metrics' ascent and descent, respectively.
-  // Left and right are the amounts of glyph overflows exceeding the left and right edge of normal layout boundary, respectively.
+  // Top and bottom are the amounts of glyph overflows exceeding the font
+  // metrics' ascent and descent, respectively. Left and right are the amounts
+  // of glyph overflows exceeding the left and right edge of normal layout
+  // boundary, respectively.
   float left;
   float right;
   float top;

@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2000 Lars Knoll (knoll@kde.org)
- * Copyright (C) 2003, 2004, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All right reserved.
+ * Copyright (C) 2003, 2004, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc.
+ *               All right reserved.
  * Copyright (C) 2010 Google Inc. All rights reserved.
  * Copyright (C) 2014 Adobe Systems Incorporated. All rights reserved.
  *
@@ -30,8 +31,9 @@
 
 namespace blink {
 
-// Like LayoutState for layout(), LineLayoutState keeps track of global information
-// during an entire linebox tree layout pass (aka layoutInlineChildren).
+// Like LayoutState for layout(), LineLayoutState keeps track of global
+// information during an entire linebox tree layout pass (aka
+// layoutInlineChildren).
 class LineLayoutState {
   STACK_ALLOCATED();
 
@@ -89,8 +91,8 @@ class LineLayoutState {
   unsigned m_floatIndex;
   LayoutUnit m_endLineLogicalTop;
   bool m_endLineMatched;
-  // Used as a performance optimization to avoid doing a full paint invalidation when our floats
-  // change but we don't have any inline children.
+  // Used as a performance optimization to avoid doing a full paint invalidation
+  // when our floats change but we don't have any inline children.
   bool m_hasInlineChild;
 
   bool m_isFullLayout;

@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2009, 2010, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2009, 2010, 2011 Apple Inc.
+ *               All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -91,9 +92,10 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
 
   virtual bool isLineBreak() const { return false; }
 
-  // These methods are called when the caller wants to move the position of InlineBox without full layout of it.
-  // The implementation should update the position of the whole subtree (e.g. position of descendants and overflow etc.
-  // should also be moved accordingly).
+  // These methods are called when the caller wants to move the position of
+  // InlineBox without full layout of it. The implementation should update the
+  // position of the whole subtree (e.g. position of descendants and overflow
+  // etc. should also be moved accordingly).
   virtual void move(const LayoutSize& delta);
   DISABLE_CFI_PERF void moveInLogicalDirection(
       const LayoutSize& deltaInLogicalDirection) {
@@ -204,8 +206,9 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
   InlineBox* prevLeafChild() const;
 
   // Helper functions for editing and hit-testing code.
-  // FIXME: These two functions should be moved to RenderedPosition once the code to convert between
-  // Position and inline box, offset pair is moved to RenderedPosition.
+  // FIXME: These two functions should be moved to RenderedPosition once the
+  // code to convert between Position and inline box, offset pair is moved to
+  // RenderedPosition.
   InlineBox* nextLeafChildIgnoringLineBreak() const;
   InlineBox* prevLeafChildIgnoringLineBreak() const;
 
@@ -220,7 +223,8 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
   const RootInlineBox& root() const;
   RootInlineBox& root();
 
-  // x() is the left side of the box in the containing block's coordinate system.
+  // x() is the left side of the box in the containing block's coordinate
+  // system.
   void setX(LayoutUnit x) { m_topLeft.setX(x); }
   LayoutUnit x() const { return m_topLeft.x(); }
   LayoutUnit left() const { return m_topLeft.x(); }
@@ -242,7 +246,8 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
   LayoutUnit right() const { return left() + width(); }
   LayoutUnit bottom() const { return top() + height(); }
 
-  // The logicalLeft position is the left edge of the line box in a horizontal line and the top edge in a vertical line.
+  // The logicalLeft position is the left edge of the line box in a horizontal
+  // line and the top edge in a vertical line.
   LayoutUnit logicalLeft() const {
     return isHorizontal() ? m_topLeft.x() : m_topLeft.y();
   }
@@ -258,7 +263,8 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
   int pixelSnappedLogicalTop() const { return logicalTop().toInt(); }
   int pixelSnappedLogicalBottom() const { return logicalBottom().ceil(); }
 
-  // The logicalTop[ position is the top edge of the line box in a horizontal line and the left edge in a vertical line.
+  // The logicalTop[ position is the top edge of the line box in a horizontal
+  // line and the left edge in a vertical line.
   LayoutUnit logicalTop() const {
     return isHorizontal() ? m_topLeft.y() : m_topLeft.x();
   }
@@ -270,11 +276,13 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
       setX(top);
   }
 
-  // The logical width is our extent in the line's overall inline direction, i.e., width for horizontal text and height for vertical text.
+  // The logical width is our extent in the line's overall inline direction,
+  // i.e., width for horizontal text and height for vertical text.
   void setLogicalWidth(LayoutUnit w) { m_logicalWidth = w; }
   LayoutUnit logicalWidth() const { return m_logicalWidth; }
 
-  // The logical height is our extent in the block flow direction, i.e., height for horizontal text and width for vertical text.
+  // The logical height is our extent in the block flow direction, i.e., height
+  // for horizontal text and width for vertical text.
   LayoutUnit logicalHeight() const;
 
   LayoutRect logicalFrameRect() const {
@@ -354,12 +362,13 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
 
   LayoutPoint locationIncludingFlipping() const;
 
-  // Converts from a rect in the logical space of the InlineBox to one in the physical space
-  // of the containing block. The logical space of an InlineBox may be transposed for vertical text and
-  // flipped for right-to-left text.
+  // Converts from a rect in the logical space of the InlineBox to one in the
+  // physical space of the containing block. The logical space of an InlineBox
+  // may be transposed for vertical text and flipped for right-to-left text.
   void logicalRectToPhysicalRect(LayoutRect&) const;
 
-  // TODO(szager): The Rect versions should return a rect, not modify the argument.
+  // TODO(szager): The Rect versions should return a rect, not modify the
+  // argument.
   void flipForWritingMode(FloatRect&) const;
   FloatPoint flipForWritingMode(const FloatPoint&) const;
   void flipForWritingMode(LayoutRect&) const;
@@ -375,7 +384,8 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
     m_bitfields.setDirOverride(dirOverride);
   }
 
-  // Set all LineLayoutItems in the inline box subtree should do full paint invalidation.
+  // Set all LineLayoutItems in the inline box subtree should do full paint
+  // invalidation.
   void setShouldDoFullPaintInvalidationRecursively();
 
 #define ADD_BOOLEAN_BITFIELD(name, Name) \
@@ -412,14 +422,16 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
           m_nextOnLineExists(false),
           m_expansion(0) {}
 
-    // Some of these bits are actually for subclasses and moved here to compact the structures.
+    // Some of these bits are actually for subclasses and moved here to compact
+    // the structures.
     // for this class
     ADD_BOOLEAN_BITFIELD(firstLine, FirstLine);
     ADD_BOOLEAN_BITFIELD(constructed, Constructed);
 
    private:
-    unsigned
-        m_bidiEmbeddingLevel : 6;  // The maximium bidi level is 62: http://unicode.org/reports/tr9/#Explicit_Levels_and_Directions
+    // The maximium bidi level is 62:
+    // http://unicode.org/reports/tr9/#Explicit_Levels_and_Directions
+    unsigned m_bidiEmbeddingLevel : 6;
 
    public:
     unsigned char bidiEmbeddingLevel() const { return m_bidiEmbeddingLevel; }
@@ -438,9 +450,9 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
     ADD_BOOLEAN_BITFIELD(hasSelectedChildrenOrCanHaveLeadingExpansion,
                          HasSelectedChildrenOrCanHaveLeadingExpansion);
 
-    // This boolean will never be set if there is potential for overflow,
-    // but it will be eagerly cleared in the opposite case. As such, it's
-    // a conservative tracking of the absence of overflow.
+    // This boolean will never be set if there is potential for overflow, but it
+    // will be eagerly cleared in the opposite case. As such, it's a
+    // conservative tracking of the absence of overflow.
     //
     // For whether we have overflow, callers should use m_overflow on
     // InlineFlowBox.
@@ -448,9 +460,9 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
     ADD_BOOLEAN_BITFIELD(hasEllipsisBoxOrHyphen, HasEllipsisBoxOrHyphen);
     // for InlineTextBox
     ADD_BOOLEAN_BITFIELD(dirOverride, DirOverride);
-    ADD_BOOLEAN_BITFIELD(
-        isText,
-        IsText);  // Whether or not this object represents text with a non-zero height. Includes non-image list markers, text boxes.
+    // Whether or not this object represents text with a non-zero height.
+    // Includes non-image list markers, text boxes.
+    ADD_BOOLEAN_BITFIELD(isText, IsText);
 
    private:
     mutable unsigned m_determinedIfNextOnLineExists : 1;
@@ -483,8 +495,9 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
 #undef ADD_BOOLEAN_BITFIELD
 
  private:
-  // Converts the given (top-left) position from the logical space of the InlineBox to the physical space of the
-  // containing block. The size indicates the size of the box whose point is being flipped.
+  // Converts the given (top-left) position from the logical space of the
+  // InlineBox to the physical space of the containing block. The size indicates
+  // the size of the box whose point is being flipped.
   LayoutPoint logicalPositionToPhysicalPoint(const LayoutPoint&,
                                              const LayoutSize&) const;
 
@@ -557,7 +570,8 @@ inline void InlineBox::setHasBadParent() {
   DEFINE_TYPE_CASTS(typeName, InlineBox, box, box->is##typeName(), \
                     box.is##typeName())
 
-// Allow equality comparisons of InlineBox's by reference or pointer, interchangeably.
+// Allow equality comparisons of InlineBox's by reference or pointer,
+// interchangeably.
 DEFINE_COMPARISON_OPERATORS_WITH_REFERENCES(InlineBox)
 
 }  // namespace blink

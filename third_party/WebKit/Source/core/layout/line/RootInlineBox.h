@@ -217,13 +217,14 @@ class RootInlineBox : public InlineFlowBox {
   // This folds into the padding at the end of InlineFlowBox on 64-bit.
   unsigned m_lineBreakPos;
 
-  // Where this line ended.  The exact object and the position within that object are stored so that
-  // we can create an InlineIterator beginning just after the end of this line.
+  // Where this line ended.  The exact object and the position within that
+  // object are stored so that we can create an InlineIterator beginning just
+  // after the end of this line.
   LineLayoutItem m_lineBreakObj;
   RefPtr<BidiContext> m_lineBreakContext;
 
-  // Floats hanging off the line are pushed into this vector during layout. It is only
-  // good for as long as the line has not been marked dirty.
+  // Floats hanging off the line are pushed into this vector during layout. It
+  // is only good for as long as the line has not been marked dirty.
   std::unique_ptr<Vector<LayoutBox*>> m_floats;
 
   LayoutUnit m_lineTop;

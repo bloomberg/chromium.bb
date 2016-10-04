@@ -1,7 +1,8 @@
 /*
  * (C) 1999 Lars Knoll (knoll@kde.org)
  * (C) 2000 Dirk Mueller (mueller@kde.org)
- * Copyright (C) 2004, 2005, 2006, 2009, 2010, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2009, 2010, 2011 Apple Inc.
+ *               All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -70,7 +71,8 @@ class CORE_EXPORT InlineTextBox : public InlineBox {
   void setNextTextBox(InlineTextBox* n) { m_nextTextBox = n; }
   void setPreviousTextBox(InlineTextBox* p) { m_prevTextBox = p; }
 
-  // FIXME: These accessors should ASSERT(!isDirty()). See https://bugs.webkit.org/show_bug.cgi?id=97264
+  // FIXME: These accessors should ASSERT(!isDirty()). See
+  // https://bugs.webkit.org/show_bug.cgi?id=97264
   unsigned start() const { return m_start; }
   unsigned end() const { return m_len ? m_start + m_len - 1 : m_start; }
   unsigned len() const { return m_len; }
@@ -106,7 +108,8 @@ class CORE_EXPORT InlineTextBox : public InlineBox {
     return logicalOverflowRect().maxY();
   }
 
-  // charactersWithHyphen, if provided, must not be destroyed before the TextRun.
+  // charactersWithHyphen, if provided, must not be destroyed before the
+  // TextRun.
   TextRun constructTextRun(const ComputedStyle&,
                            StringBuilder* charactersWithHyphen = nullptr) const;
   TextRun constructTextRun(const ComputedStyle&,
@@ -132,7 +135,8 @@ class CORE_EXPORT InlineTextBox : public InlineBox {
   bool isSelected(int startPos, int endPos) const;
   void selectionStartEnd(int& sPos, int& ePos) const;
 
-  // These functions both paint markers and update the DocumentMarker's renderedRect.
+  // These functions both paint markers and update the DocumentMarker's
+  // renderedRect.
   virtual void paintDocumentMarker(GraphicsContext&,
                                    const LayoutPoint& boxOrigin,
                                    DocumentMarker*,
@@ -200,30 +204,32 @@ class CORE_EXPORT InlineTextBox : public InlineBox {
   int caretMinOffset() const final;
   int caretMaxOffset() const final;
 
-  LayoutUnit textPos()
-      const;  // returns the x position relative to the left start of the text line.
+  // Returns the x position relative to the left start of the text line.
+  LayoutUnit textPos() const;
 
  public:
   virtual int offsetForPosition(LayoutUnit x,
                                 bool includePartialGlyphs = true) const;
   virtual LayoutUnit positionForOffset(int offset) const;
 
-  bool containsCaretOffset(
-      int offset) const;  // false for offset after line break
+  // Returns false for offset after line break.
+  bool containsCaretOffset(int offset) const;
 
   // Fills a vector with the pixel width of each character.
   void characterWidths(Vector<float>&) const;
 
  private:
-  InlineTextBox*
-      m_prevTextBox;  // The previous box that also uses our LayoutObject
-  InlineTextBox* m_nextTextBox;  // The next box that also uses our LayoutObject
+  // The previous box that also uses our LayoutObject.
+  InlineTextBox* m_prevTextBox;
+  // The next box that also uses our LayoutObject.
+  InlineTextBox* m_nextTextBox;
 
   int m_start;
   unsigned short m_len;
 
-  // Where to truncate when text overflow is applied.  We use special constants to denote
-  // no truncation (the whole run paints) and full truncation (nothing paints at all).
+  // Where to truncate when text overflow is applied.  We use special constants
+  // to denote no truncation (the whole run paints) and full truncation (nothing
+  // paints at all).
   unsigned short m_truncation;
 
  private:

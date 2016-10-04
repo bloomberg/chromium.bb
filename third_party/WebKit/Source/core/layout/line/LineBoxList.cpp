@@ -167,10 +167,12 @@ bool LineBoxList::rangeIntersectsRect(LineLayoutBoxModel layoutObject,
 bool LineBoxList::anyLineIntersectsRect(LineLayoutBoxModel layoutObject,
                                         const CullRect& cullRect,
                                         const LayoutPoint& offset) const {
-  // We can check the first box and last box and avoid painting/hit testing if we don't
-  // intersect.  This is a quick short-circuit that we can take to avoid walking any lines.
+  // We can check the first box and last box and avoid painting/hit testing if
+  // we don't intersect. This is a quick short-circuit that we can take to avoid
+  // walking any lines.
   // FIXME: This check is flawed in the following extremely obscure way:
-  // if some line in the middle has a huge overflow, it might actually extend below the last line.
+  // if some line in the middle has a huge overflow, it might actually extend
+  // below the last line.
   RootInlineBox& firstRootBox = firstLineBox()->root();
   RootInlineBox& lastRootBox = lastLineBox()->root();
   LayoutUnit firstLineTop =
@@ -204,11 +206,9 @@ bool LineBoxList::hitTest(LineLayoutBoxModel layoutObject,
   if (hitTestAction != HitTestForeground)
     return false;
 
-  ASSERT(
-      layoutObject.isLayoutBlock() ||
-      (layoutObject.isLayoutInline() &&
-       layoutObject
-           .hasLayer()));  // The only way an inline could hit test like this is if it has a layer.
+  // The only way an inline could hit test like this is if it has a layer.
+  DCHECK(layoutObject.isLayoutBlock() ||
+         (layoutObject.isLayoutInline() && layoutObject.hasLayer()));
 
   // If we have no lines then we have no work to do.
   if (!firstLineBox())
@@ -226,9 +226,9 @@ bool LineBoxList::hitTest(LineLayoutBoxModel layoutObject,
   if (!anyLineIntersectsRect(layoutObject, cullRect, accumulatedOffset))
     return false;
 
-  // See if our root lines contain the point.  If so, then we hit test
-  // them further.  Note that boxes can easily overlap, so we can't make any assumptions
-  // based off positions of our first line box or our last line box.
+  // See if our root lines contain the point. If so, then we hit test them
+  // further. Note that boxes can easily overlap, so we can't make any
+  // assumptions based off positions of our first line box or our last line box.
   for (InlineFlowBox* curr = lastLineBox(); curr; curr = curr->prevLineBox()) {
     RootInlineBox& root = curr->root();
     if (rangeIntersectsRect(
@@ -262,8 +262,8 @@ void LineBoxList::dirtyLinesFromChangedChild(LineLayoutItem container,
                                          ? LineLayoutInline(container)
                                          : LineLayoutInline();
 
-  // If we are attaching children dirtying lines is unnecessary as we will do a full layout
-  // of the inline's contents anyway.
+  // If we are attaching children dirtying lines is unnecessary as we will do a
+  // full layout of the inline's contents anyway.
   if (inlineContainer && inlineContainer.node() &&
       inlineContainer.node()->needsAttach())
     return;
@@ -274,20 +274,21 @@ void LineBoxList::dirtyLinesFromChangedChild(LineLayoutItem container,
 
   // If we have no first line box, then just bail early.
   if (!firstBox) {
-    // For an empty inline, go ahead and propagate the check up to our parent, unless the parent
-    // is already dirty.
+    // For an empty inline, go ahead and propagate the check up to our parent,
+    // unless the parent is already dirty.
     if (container.isInline() && !container.ancestorLineBoxDirty() &&
         canDirtyAncestors) {
       container.parent().dirtyLinesFromChangedChild(container);
-      container
-          .setAncestorLineBoxDirty();  // Mark the container to avoid dirtying the same lines again across multiple destroy() calls of the same subtree.
+      // Mark the container to avoid dirtying the same lines again across
+      // multiple destroy() calls of the same subtree.
+      container.setAncestorLineBoxDirty();
     }
     return;
   }
 
-  // Try to figure out which line box we belong in.  First try to find a previous
-  // line box by examining our siblings.  If we didn't find a line box, then use our
-  // parent's first line box.
+  // Try to figure out which line box we belong in. First try to find a previous
+  // line box by examining our siblings. If we didn't find a line box, then use
+  // our parent's first line box.
   RootInlineBox* box = nullptr;
   LineLayoutItem curr = nullptr;
   for (curr = child.previousSibling(); curr; curr = curr.previousSibling()) {
@@ -315,14 +316,16 @@ void LineBoxList::dirtyLinesFromChangedChild(LineLayoutItem container,
   if (!box) {
     if (inlineContainer && !inlineContainer.alwaysCreateLineBoxes()) {
       // https://bugs.webkit.org/show_bug.cgi?id=60778
-      // We may have just removed a <br> with no line box that was our first child. In this case
-      // we won't find a previous sibling, but firstBox can be pointing to a following sibling.
-      // This isn't good enough, since we won't locate the root line box that encloses the removed
-      // <br>. We have to just over-invalidate a bit and go up to our parent.
+      // We may have just removed a <br> with no line box that was our first
+      // child. In this case we won't find a previous sibling, but firstBox can
+      // be pointing to a following sibling. This isn't good enough, since we
+      // won't locate the root line box that encloses the removed <br>. We have
+      // to just over-invalidate a bit and go up to our parent.
       if (!inlineContainer.ancestorLineBoxDirty() && canDirtyAncestors) {
         inlineContainer.parent().dirtyLinesFromChangedChild(inlineContainer);
-        inlineContainer
-            .setAncestorLineBoxDirty();  // Mark the container to avoid dirtying the same lines again across multiple destroy() calls of the same subtree.
+        // Mark the container to avoid dirtying the same lines again across
+        // multiple destroy() calls of the same subtree.
+        inlineContainer.setAncestorLineBoxDirty();
       }
       return;
     }
@@ -335,15 +338,18 @@ void LineBoxList::dirtyLinesFromChangedChild(LineLayoutItem container,
 
     // dirty the adjacent lines that might be affected
     // NOTE: we dirty the previous line because RootInlineBox objects cache
-    // the address of the first object on the next line after a BR, which we may be
-    // invalidating here.  For more info, see how LayoutBlock::layoutInlineChildren
-    // calls setLineBreakInfo with the result of findNextLineBreak.  findNextLineBreak,
-    // despite the name, actually returns the first LayoutObject after the BR.
-    // <rdar://problem/3849947> "Typing after pasting line does not appear until after window resize."
+    // the address of the first object on the next line after a BR, which we may
+    // be invalidating here. For more info, see how LayoutBlock::
+    // layoutInlineChildren calls setLineBreakInfo with the result of
+    // findNextLineBreak. findNextLineBreak, despite the name, actually returns
+    // the first LayoutObject after the BR. <rdar://problem/3849947> "Typing
+    // after pasting line does not appear until after window resize."
     if (RootInlineBox* prevRootBox = box->prevRootBox())
       prevRootBox->markDirty();
-    // If |child| or any of its immediately previous siblings with culled lineboxes is the object after a line-break in |box| or the linebox after it
-    // then that means |child| actually sits on the linebox after |box| (or is its line-break object) and so we need to dirty it as well.
+    // If |child| or any of its immediately previous siblings with culled
+    // lineboxes is the object after a line-break in |box| or the linebox after
+    // it then that means |child| actually sits on the linebox after |box| (or
+    // is its line-break object) and so we need to dirty it as well.
     if (RootInlineBox* nextRootBox = box->nextRootBox())
       nextRootBox->markDirty();
   }

@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2000 Lars Knoll (knoll@kde.org)
- * Copyright (C) 2003, 2004, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All right reserved.
+ * Copyright (C) 2003, 2004, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc.
+ *               All right reserved.
  * Copyright (C) 2010 Google Inc. All rights reserved.
  * Copyright (C) 2013 Adobe Systems Incorporated.
  *
@@ -219,8 +220,9 @@ class BreakingContext {
   TrailingObjects m_trailingObjects;
 };
 
-// When ignoring spaces, this needs to be called for objects that need line boxes such as LayoutInlines or
-// hard line breaks to ensure that they're not ignored.
+// When ignoring spaces, this needs to be called for objects that need line
+// boxes such as LayoutInlines or hard line breaks to ensure that they're not
+// ignored.
 inline void ensureLineBoxInsideIgnoredSpaces(LineMidpointState* midpointState,
                                              LineLayoutItem item) {
   InlineIterator midpoint(0, item, 0);
@@ -232,9 +234,12 @@ inline bool shouldCollapseWhiteSpace(const ComputedStyle& style,
                                      const LineInfo& lineInfo,
                                      WhitespacePosition whitespacePosition) {
   // CSS2 16.6.1
-  // If a space (U+0020) at the beginning of a line has 'white-space' set to 'normal', 'nowrap', or 'pre-line', it is removed.
-  // If a space (U+0020) at the end of a line has 'white-space' set to 'normal', 'nowrap', or 'pre-line', it is also removed.
-  // If spaces (U+0020) or tabs (U+0009) at the end of a line have 'white-space' set to 'pre-wrap', UAs may visually collapse them.
+  // If a space (U+0020) at the beginning of a line has 'white-space' set to
+  // 'normal', 'nowrap', or 'pre-line', it is removed.
+  // If a space (U+0020) at the end of a line has 'white-space' set to 'normal',
+  // 'nowrap', or 'pre-line', it is also removed.
+  // If spaces (U+0020) or tabs (U+0009) at the end of a line have 'white-space'
+  // set to 'pre-wrap', UAs may visually collapse them.
   return style.collapseWhiteSpace() ||
          (whitespacePosition == TrailingWhitespace &&
           style.whiteSpace() == PRE_WRAP &&
@@ -258,9 +263,9 @@ inline bool requiresLineBoxForContent(LineLayoutInline flow,
 }
 
 inline bool alwaysRequiresLineBox(LineLayoutItem flow) {
-  // FIXME: Right now, we only allow line boxes for inlines that are truly empty.
-  // We need to fix this, though, because at the very least, inlines containing only
-  // ignorable whitespace should should also have line boxes.
+  // FIXME: Right now, we only allow line boxes for inlines that are truly
+  // empty. We need to fix this, though, because at the very least, inlines
+  // containing only ignorable whitespace should should also have line boxes.
   return isEmptyInline(flow) &&
          LineLayoutInline(flow).hasInlineDirectionBordersPaddingOrMargin();
 }
@@ -299,14 +304,15 @@ inline void setStaticPositions(LineLayoutBlockFlow block,
                                LineLayoutBox child,
                                IndentTextOrNot indentText) {
   ASSERT(child.isOutOfFlowPositioned());
-  // FIXME: The math here is actually not really right. It's a best-guess approximation that
-  // will work for the common cases
+  // FIXME: The math here is actually not really right. It's a best-guess
+  // approximation that will work for the common cases
   LineLayoutItem containerBlock = child.container();
   LayoutUnit blockHeight = block.logicalHeight();
   if (containerBlock.isLayoutInline()) {
-    // A relative positioned inline encloses us. In this case, we also have to determine our
-    // position as though we were an inline. Set |staticInlinePosition| and |staticBlockPosition| on the relative positioned
-    // inline so that we can obtain the value later.
+    // A relative positioned inline encloses us. In this case, we also have to
+    // determine our position as though we were an inline.
+    // Set |staticInlinePosition| and |staticBlockPosition| on the relative
+    // positioned inline so that we can obtain the value later.
     LineLayoutInline(containerBlock)
         .layer()
         ->setStaticInlinePosition(
@@ -315,8 +321,8 @@ inline void setStaticPositions(LineLayoutBlockFlow block,
         .layer()
         ->setStaticBlockPosition(blockHeight);
 
-    // If |child| is a leading or trailing positioned object this is its only opportunity to ensure it moves with an inline
-    // container changing width.
+    // If |child| is a leading or trailing positioned object this is its only
+    // opportunity to ensure it moves with an inline container changing width.
     child.moveWithEdgeOfInlineContainerIfNecessary(
         child.isHorizontalWritingMode());
   }
@@ -324,12 +330,12 @@ inline void setStaticPositions(LineLayoutBlockFlow block,
   child.layer()->setStaticBlockPosition(blockHeight);
 }
 
-// FIXME: The entire concept of the skipTrailingWhitespace function is flawed, since we really need to be building
-// line boxes even for containers that may ultimately collapse away. Otherwise we'll never get positioned
-// elements quite right. In other words, we need to build this function's work into the normal line
-// object iteration process.
-// NB. this function will insert any floating elements that would otherwise
-// be skipped but it will not position them.
+// FIXME: The entire concept of the skipTrailingWhitespace function is flawed,
+// since we really need to be building line boxes even for containers that may
+// ultimately collapse away. Otherwise we'll never get positioned elements quite
+// right. In other words, we need to build this function's work into the normal
+// line object iteration process. NB. this function will insert any floating
+// elements that would otherwise be skipped but it will not position them.
 inline void BreakingContext::skipTrailingWhitespace(InlineIterator& iterator,
                                                     const LineInfo& lineInfo) {
   while (!iterator.atEnd() &&
@@ -367,8 +373,8 @@ inline void BreakingContext::initializeForCurrentObject() {
 
   m_collapseWhiteSpace = ComputedStyle::collapseWhiteSpace(m_currWS);
 
-  // Ensure the whitespace in constructions like '<span style="white-space: pre-wrap">text <span><span> text</span>'
-  // does not collapse.
+  // Ensure the whitespace in constructions like '<span style="white-space:
+  // pre-wrap">text <span><span> text</span>' does not collapse.
   if (m_collapseWhiteSpace && !ComputedStyle::collapseWhiteSpace(m_lastWS))
     m_currentCharacterIsSpace = false;
 }
@@ -376,9 +382,9 @@ inline void BreakingContext::initializeForCurrentObject() {
 inline void BreakingContext::increment() {
   m_current.moveToStartOf(m_nextObject);
 
-  // When the line box tree is created, this position in the line will be snapped to
-  // LayoutUnit's, and those measurements will be used by the paint code.  Do the
-  // equivalent snapping here, to get consistent line measurements.
+  // When the line box tree is created, this position in the line will be
+  // snapped to LayoutUnit's, and those measurements will be used by the paint
+  // code. Do the equivalent snapping here, to get consistent line measurements.
   m_width.snapUncommittedWidth();
 
   m_atStart = false;
@@ -400,9 +406,9 @@ inline void BreakingContext::handleBR(EClear& clear) {
     m_trailingObjects.clear();
     m_lineInfo.setPreviousLineBrokeCleanly(true);
 
-    // A <br> with clearance always needs a linebox in case the lines below it get dirtied later and
-    // need to check for floats to clear - so if we're ignoring spaces, stop ignoring them and add a
-    // run for this object.
+    // A <br> with clearance always needs a linebox in case the lines below it
+    // get dirtied later and need to check for floats to clear - so if we're
+    // ignoring spaces, stop ignoring them and add a run for this object.
     if (m_ignoringSpaces && m_currentStyle->clear() != ClearNone)
       ensureLineBoxInsideIgnoredSpaces(&m_lineMidpointState, br);
 
@@ -460,9 +466,10 @@ inline void BreakingContext::handleOutOfFlowPositioned(
     m_block.setStaticInlinePositionForChild(box,
                                             m_block.startOffsetForContent());
   } else {
-    // If our original display was an INLINE type, then we can determine our static y position
-    // now. Note, however, that if we're paginated, we may have to update this position after
-    // the line has been laid out, since the line may be pushed by a pagination strut.
+    // If our original display was an INLINE type, then we can determine our
+    // static y position now. Note, however, that if we're paginated, we may
+    // have to update this position after the line has been laid out, since the
+    // line may be pushed by a pagination strut.
     box.layer()->setStaticBlockPosition(m_block.logicalHeight());
   }
 
@@ -485,10 +492,10 @@ inline void BreakingContext::handleOutOfFlowPositioned(
 inline void BreakingContext::handleFloat() {
   LineLayoutBox floatBox(m_current.getLineLayoutItem());
   FloatingObject* floatingObject = m_block.insertFloatingObject(floatBox);
-  // check if it fits in the current line.
-  // If it does, position it now, otherwise, position
-  // it after moving to next line (in newLine() func)
-  // FIXME: Bug 110372: Properly position multiple stacked floats with non-rectangular shape outside.
+  // Check if it fits in the current line; if it does, position it now,
+  // otherwise, position it after moving to next line (in newLine() func).
+  // FIXME: Bug 110372: Properly position multiple stacked floats with
+  // non-rectangular shape outside.
   if (m_floatsFitOnLine &&
       m_width.fitsOnLine(
           m_block.logicalWidthForFloat(*floatingObject).toFloat(),
@@ -501,12 +508,13 @@ inline void BreakingContext::handleFloat() {
   } else {
     m_floatsFitOnLine = false;
   }
-  // Update prior line break context characters, using U+FFFD (OBJECT REPLACEMENT CHARACTER) for floating element.
+  // Update prior line break context characters, using U+FFFD (OBJECT
+  // REPLACEMENT CHARACTER) for floating element.
   m_layoutTextInfo.m_lineBreakIterator.updatePriorContext(replacementCharacter);
 }
 
-// This is currently just used for list markers and inline flows that have line boxes. Neither should
-// have an effect on whitespace at the start of the line.
+// This is currently just used for list markers and inline flows that have line
+// boxes. Neither should have an effect on whitespace at the start of the line.
 inline bool shouldSkipWhitespaceAfterStartObject(
     LineLayoutBlockFlow block,
     LineLayoutItem o,
@@ -541,13 +549,14 @@ inline void BreakingContext::handleEmptyInline() {
 
   bool requiresLineBox = alwaysRequiresLineBox(m_current.getLineLayoutItem());
   if (requiresLineBox || requiresLineBoxForContent(flowBox, m_lineInfo)) {
-    // An empty inline that only has line-height, vertical-align or font-metrics will
-    // not force linebox creation (and thus affect the height of the line) if the rest of the line is empty.
+    // An empty inline that only has line-height, vertical-align or font-metrics
+    // will not force linebox creation (and thus affect the height of the line)
+    // if the rest of the line is empty.
     if (requiresLineBox)
       m_lineInfo.setEmpty(false);
     if (m_ignoringSpaces) {
-      // If we are in a run of ignored spaces then ensure we get a linebox if lineboxes are eventually
-      // created for the line...
+      // If we are in a run of ignored spaces then ensure we get a linebox if
+      // lineboxes are eventually created for the line...
       m_trailingObjects.clear();
       ensureLineBoxInsideIgnoredSpaces(&m_lineMidpointState,
                                        m_current.getLineLayoutItem());
@@ -557,13 +566,13 @@ inline void BreakingContext::handleEmptyInline() {
                shouldSkipWhitespaceAfterStartObject(
                    m_block, m_current.getLineLayoutItem(),
                    m_lineMidpointState)) {
-      // If this object is at the start of the line, we need to behave like list markers and
-      // start ignoring spaces.
+      // If this object is at the start of the line, we need to behave like list
+      // markers and start ignoring spaces.
       m_currentCharacterIsSpace = true;
       m_ignoringSpaces = true;
     } else {
-      // If we are after a trailing space but aren't ignoring spaces yet then ensure we get a linebox
-      // if we encounter collapsible whitepace.
+      // If we are after a trailing space but aren't ignoring spaces yet then
+      // ensure we get a linebox if we encounter collapsible whitepace.
       m_trailingObjects.appendObjectIfNeeded(m_current.getLineLayoutItem());
     }
   }
@@ -624,7 +633,8 @@ inline void BreakingContext::handleReplaced() {
   if (m_current.getLineLayoutItem().isRubyRun())
     m_width.applyOverhang(LineLayoutRubyRun(m_current.getLineLayoutItem()),
                           m_lastObject, m_nextObject);
-  // Update prior line break context characters, using U+FFFD (OBJECT REPLACEMENT CHARACTER) for replaced element.
+  // Update prior line break context characters, using U+FFFD (OBJECT
+  // REPLACEMENT CHARACTER) for replaced element.
   m_layoutTextInfo.m_lineBreakIterator.updatePriorContext(replacementCharacter);
 }
 
@@ -868,8 +878,9 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements,
 
   LineLayoutText layoutText(m_current.getLineLayoutItem());
 
-  // If we have left a no-wrap inline and entered an autowrap inline while ignoring spaces
-  // then we need to mark the start of the autowrap inline as a potential linebreak now.
+  // If we have left a no-wrap inline and entered an autowrap inline while
+  // ignoring spaces then we need to mark the start of the autowrap inline as a
+  // potential linebreak now.
   if (m_autoWrap && !ComputedStyle::autoWrap(m_lastWS) && m_ignoringSpaces) {
     m_width.commit();
     m_lineBreak.moveToStartOf(m_current.getLineLayoutItem());
@@ -885,8 +896,9 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements,
 
   float widthFromLastBreakingOpportunity = m_width.uncommittedWidth();
   float charWidth = 0;
-  // Auto-wrapping text should wrap in the middle of a word only if it could not wrap before the word,
-  // which is only possible if the word is the first thing on the line, that is, if |w| is zero.
+  // Auto-wrapping text should wrap in the middle of a word only if it could not
+  // wrap before the word, which is only possible if the word is the first thing
+  // on the line, that is, if |w| is zero.
   bool breakWords =
       m_currentStyle->breakWords() &&
       ((m_autoWrap && !m_width.committedWidth()) || m_currWS == PRE);
@@ -898,9 +910,9 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements,
                              layoutText.isCombineText() &&
                              LineLayoutTextCombine(layoutText).isCombined();
 
-  // This is currently only used for word-break: break-all, specifically for the case
-  // where we have a break opportunity within a word, then a string of non-breakable
-  // content that ends up making our word wider than the current line.
+  // This is currently only used for word-break: break-all, specifically for the
+  // case where we have a break opportunity within a word, then a string of non-
+  // breakable content that ends up making our word wider than the current line.
   // See: fast/css3-text/css3-word-break/word-break-all-wrap-with-floats.html
   float widthMeasurementAtLastBreakOpportunity = 0;
 
@@ -985,7 +997,8 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements,
           m_current.previousInSameNode() != softHyphenCharacter));
     m_current.setNextBreakablePosition(nextBreakablePosition);
 
-    // If we're in the middle of a word or at the start of a new one and can't break there, then continue to the next character.
+    // If we're in the middle of a word or at the start of a new one and can't
+    // break there, then continue to the next character.
     if (!betweenWords && !midWordBreak) {
       if (m_ignoringSpaces) {
         // Stop ignoring spaces and begin at this
@@ -1004,7 +1017,8 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements,
       continue;
     }
 
-    // If we're collapsing space and we're at a collapsible space such as a space or tab, continue to the next character.
+    // If we're collapsing space and we're at a collapsible space such as a
+    // space or tab, continue to the next character.
     if (m_ignoringSpaces && m_currentCharacterIsSpace) {
       lastSpaceWordSpacing = 0;
       // Just keep ignoring these spaces.
@@ -1012,9 +1026,11 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements,
       continue;
     }
 
-    // We're in the first whitespace after a word or in whitespace that we don't collapse, which means we may have a breaking opportunity here.
+    // We're in the first whitespace after a word or in whitespace that we don't
+    // collapse, which means we may have a breaking opportunity here.
 
-    // If we're here and we're collapsing space then the current character isn't a form of whitespace we can collapse. Stop ignoring spaces.
+    // If we're here and we're collapsing space then the current character isn't
+    // a form of whitespace we can collapse. Stop ignoring spaces.
     bool stoppedIgnoringSpaces = false;
     if (m_ignoringSpaces) {
       lastSpaceWordSpacing = 0;
@@ -1023,7 +1039,8 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements,
       stopIgnoringSpaces(lastSpace);
     }
 
-    // Update our tally of the width since the last breakable position with the width of the word we're now at the end of.
+    // Update our tally of the width since the last breakable position with the
+    // width of the word we're now at the end of.
     float lastWidthMeasurement;
     WordMeasurement& wordMeasurement = calculateWordWidth(
         wordMeasurements, layoutText, lastSpace, lastWidthMeasurement,
@@ -1031,15 +1048,18 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements,
     lastWidthMeasurement += lastSpaceWordSpacing;
     m_width.addUncommittedWidth(lastWidthMeasurement);
 
-    // We keep track of the total width contributed by trailing space as we often want to exclude it when determining
+    // We keep track of the total width contributed by trailing space as we
+    // often want to exclude it when determining
     // if a run fits on a line.
     if (m_collapseWhiteSpace && previousCharacterIsSpace &&
         m_currentCharacterIsSpace && lastWidthMeasurement)
       m_width.setTrailingWhitespaceWidth(lastWidthMeasurement);
 
-    // If this is the end of the first word in run of text then make sure we apply the width from any leading inlines.
-    // For example: '<span style="margin-left: 5px;"><span style="margin-left: 10px;">FirstWord</span></span>' would
-    // apply a width of 15px from the two span ancestors.
+    // If this is the end of the first word in run of text then make sure we
+    // apply the width from any leading inlines.
+    // For example: '<span style="margin-left: 5px;"><span style="margin-left:
+    // 10px;">FirstWord</span></span>' would apply a width of 15px from the two
+    // span ancestors.
     if (!m_appliedStartWidth) {
       m_width.addUncommittedWidth(
           inlineLogicalWidthFromAncestorsIfNeeded(m_current.getLineLayoutItem(),
@@ -1074,17 +1094,20 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements,
       }
     }
 
-    // If we haven't hit a breakable position yet and already don't fit on the line try to move below any floats.
+    // If we haven't hit a breakable position yet and already don't fit on the
+    // line try to move below any floats.
     if (!m_width.committedWidth() && m_autoWrap && !m_width.fitsOnLine() &&
         !widthMeasurementAtLastBreakOpportunity) {
       float availableWidthBefore = m_width.availableWidth();
       m_width.fitBelowFloats(m_lineInfo.isFirstLine());
-      // If availableWidth changes by moving the line below floats, needs to measure midWordBreak again.
+      // If availableWidth changes by moving the line below floats, needs to
+      // measure midWordBreak again.
       if (midWordBreak && availableWidthBefore != m_width.availableWidth())
         midWordBreak = false;
     }
 
-    // If there is a soft-break available at this whitespace position then take it.
+    // If there is a soft-break available at this whitespace position then take
+    // it.
     applyWordSpacing = wordSpacing && m_currentCharacterIsSpace;
     if (canBreakAtWhitespace(breakWords, wordMeasurement, stoppedIgnoringSpaces,
                              charWidth, hyphenated, disableSoftHyphen,
@@ -1094,7 +1117,8 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements,
                              applyWordSpacing, wordSpacing))
       return false;
 
-    // If there is a hard-break available at this whitespace position then take it.
+    // If there is a hard-break available at this whitespace position then take
+    // it.
     if (c == newlineCharacter && m_preservesNewline) {
       if (!stoppedIgnoringSpaces && m_current.offset())
         m_lineMidpointState.ensureCharacterGetsLineBox(m_current);
@@ -1105,8 +1129,8 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements,
       return true;
     }
 
-    // Auto-wrapping text should not wrap in the middle of a word once it has had an
-    // opportunity to break after a word.
+    // Auto-wrapping text should not wrap in the middle of a word once it has
+    // had an opportunity to break after a word.
     if (m_autoWrap && betweenWords) {
       m_width.commit();
       widthFromLastBreakingOpportunity = 0;
@@ -1124,14 +1148,15 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements,
       lastSpace = m_current.offset();
     }
 
-    // If we encounter a newline, or if we encounter a second space, we need to go ahead and break up
-    // this run and enter a mode where we start collapsing spaces.
+    // If we encounter a newline, or if we encounter a second space, we need to
+    // go ahead and break up this run and enter a mode where we start collapsing
+    // spaces.
     if (!m_ignoringSpaces && m_currentStyle->collapseWhiteSpace()) {
       if (m_currentCharacterIsSpace && previousCharacterIsSpace) {
         m_ignoringSpaces = true;
 
-        // We just entered a mode where we are ignoring spaces. Create a midpoint to terminate the run
-        // before the second space.
+        // We just entered a mode where we are ignoring spaces. Create a
+        // midpoint to terminate the run before the second space.
         m_lineMidpointState.startIgnoringSpaces(m_startOfIgnoredSpaces);
         m_trailingObjects.updateMidpointsForTrailingObjects(
             m_lineMidpointState, InlineIterator(),
@@ -1220,7 +1245,8 @@ inline void BreakingContext::prepareForNextCharacter(
     bool& prohibitBreakInside,
     bool previousCharacterIsSpace) {
   if (layoutText.isSVGInlineText() && m_current.offset()) {
-    // Force creation of new InlineBoxes for each absolute positioned character (those that start new text chunks).
+    // Force creation of new InlineBoxes for each absolute positioned character
+    // (those that start new text chunks).
     if (LineLayoutSVGInlineText(layoutText)
             .characterStartsNewTextChunk(m_current.offset()))
       m_lineMidpointState.ensureCharacterGetsLineBox(m_current);
@@ -1247,9 +1273,8 @@ inline void BreakingContext::prepareForNextCharacter(
 
 inline void BreakingContext::stopIgnoringSpaces(unsigned& lastSpace) {
   m_ignoringSpaces = false;
-  lastSpace =
-      m_current
-          .offset();  // e.g., "Foo    goo", don't add in any of the ignored spaces.
+  // e.g., "Foo    goo", don't add in any of the ignored spaces.
+  lastSpace = m_current.offset();
   m_lineMidpointState.stopIgnoringSpaces(
       InlineIterator(0, m_current.getLineLayoutItem(), m_current.offset()));
 }
@@ -1361,7 +1386,8 @@ inline bool BreakingContext::canBreakAtWhitespace(
         wordMeasurement.width = charWidth;
       }
     }
-    // Didn't fit. Jump to the end unless there's still an opportunity to collapse whitespace.
+    // Didn't fit. Jump to the end unless there's still an opportunity to
+    // collapse whitespace.
     if (m_ignoringSpaces || !m_collapseWhiteSpace ||
         !m_currentCharacterIsSpace || !previousCharacterIsSpace) {
       m_atEnd = true;
@@ -1398,8 +1424,8 @@ inline void BreakingContext::commitAndUpdateLineBreakIfNeeded() {
       if (nextText.textLength()) {
         UChar c = nextText.characterAt(0);
         // If the next item on the line is text, and if we did not end with
-        // a space, then the next text run continues our word (and so it needs to
-        // keep adding to the uncommitted width. Just update and continue.
+        // a space, then the next text run continues our word (and so it needs
+        // to keep adding to the uncommitted width. Just update and continue.
         checkForBreak =
             !m_currentCharacterIsSpace &&
             (c == spaceCharacter || c == tabulationCharacter ||
@@ -1434,8 +1460,8 @@ inline void BreakingContext::commitAndUpdateLineBreakIfNeeded() {
 
     m_width.fitBelowFloats(m_lineInfo.isFirstLine());
 
-    // |width| may have been adjusted because we got shoved down past a float (thus
-    // giving us more room), so we need to retest, and only jump to
+    // |width| may have been adjusted because we got shoved down past a float
+    // (thus giving us more room), so we need to retest, and only jump to the
     // the end label if we still don't fit on the line. -dwh
     if (!m_width.fitsOnLine()) {
       m_atEnd = true;
@@ -1443,8 +1469,8 @@ inline void BreakingContext::commitAndUpdateLineBreakIfNeeded() {
     }
   } else if (m_blockStyle->autoWrap() && !m_width.fitsOnLine() &&
              !m_width.committedWidth()) {
-    // If the container autowraps but the current child does not then we still need to ensure that it
-    // wraps and moves below any floats.
+    // If the container autowraps but the current child does not then we still
+    // need to ensure that it wraps and moves below any floats.
     m_width.fitBelowFloats(m_lineInfo.isFirstLine());
   }
 

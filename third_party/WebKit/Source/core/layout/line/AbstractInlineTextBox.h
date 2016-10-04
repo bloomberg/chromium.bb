@@ -89,7 +89,8 @@ class CORE_EXPORT AbstractInlineTextBox
  private:
   void detach();
 
-  // Weak ptrs; these are nulled when InlineTextBox::destroy() calls AbstractInlineTextBox::willDestroy.
+  // Weak ptrs; these are nulled when InlineTextBox::destroy() calls
+  // AbstractInlineTextBox::willDestroy.
   LineLayoutText m_lineLayoutItem;
   InlineTextBox* m_inlineTextBox;
 

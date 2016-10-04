@@ -80,10 +80,13 @@ void LineWidth::shrinkAvailableWidthForNewFloatIfNeeded(
   if (newFloat.getType() == FloatingObject::FloatLeft) {
     LayoutUnit newLeft = m_block.logicalRightForFloat(newFloat);
     if (shapeDeltas.isValid()) {
-      if (shapeDeltas.lineOverlapsShape())
+      if (shapeDeltas.lineOverlapsShape()) {
         newLeft += shapeDeltas.rightMarginBoxDelta();
-      else  // Per the CSS Shapes spec, If the line doesn't overlap the shape, then ignore this shape for this line.
+      } else {
+        // Per the CSS Shapes spec, If the line doesn't overlap the shape, then
+        // ignore this shape for this line.
         newLeft = m_left;
+      }
     }
     if (indentText() == IndentText && m_block.style()->isLeftToRightDirection())
       newLeft += floorToInt(m_block.textIndentOffset());
@@ -91,10 +94,13 @@ void LineWidth::shrinkAvailableWidthForNewFloatIfNeeded(
   } else {
     LayoutUnit newRight = m_block.logicalLeftForFloat(newFloat);
     if (shapeDeltas.isValid()) {
-      if (shapeDeltas.lineOverlapsShape())
+      if (shapeDeltas.lineOverlapsShape()) {
         newRight += shapeDeltas.leftMarginBoxDelta();
-      else  // Per the CSS Shapes spec, If the line doesn't overlap the shape, then ignore this shape for this line.
+      } else {
+        // Per the CSS Shapes spec, If the line doesn't overlap the shape, then
+        // ignore this shape for this line.
         newRight = m_right;
+      }
     }
     if (indentText() == IndentText &&
         !m_block.style()->isLeftToRightDirection())
