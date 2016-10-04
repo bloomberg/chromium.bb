@@ -18,6 +18,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/base/histograms.h"
@@ -37,10 +38,45 @@ namespace {
 // a tile is of solid color.
 const bool kUseColorEstimator = true;
 
+// TODO(enne): remove this histogram and its monitoring in M58 once there is
+// enough new data from the other two raster task timers.
 DEFINE_SCOPED_UMA_HISTOGRAM_AREA_TIMER(
-    ScopedRasterTaskTimer,
+    ScopedGeneralRasterTaskTimer,
     "Compositing.%s.RasterTask.RasterUs",
     "Compositing.%s.RasterTask.RasterPixelsPerMs");
+
+DEFINE_SCOPED_UMA_HISTOGRAM_AREA_TIMER(
+    ScopedSoftwareRasterTaskTimer,
+    "Compositing.%s.RasterTask.RasterUs.Software",
+    "Compositing.%s.RasterTask.RasterPixelsPerMs.Software");
+
+DEFINE_SCOPED_UMA_HISTOGRAM_AREA_TIMER(
+    ScopedGpuRasterTaskTimer,
+    "Compositing.%s.RasterTask.RasterUs.Gpu",
+    "Compositing.%s.RasterTask.RasterPixelsPerMs.Gpu");
+
+class ScopedRasterTaskTimer {
+ public:
+  explicit ScopedRasterTaskTimer(bool use_gpu_rasterization) {
+    if (use_gpu_rasterization)
+      gpu_timer_.emplace();
+    else
+      software_timer_.emplace();
+  }
+
+  void SetArea(int area) {
+    general_timer_.SetArea(area);
+    if (software_timer_)
+      software_timer_->SetArea(area);
+    if (gpu_timer_)
+      gpu_timer_->SetArea(area);
+  }
+
+ private:
+  ScopedGeneralRasterTaskTimer general_timer_;
+  base::Optional<ScopedSoftwareRasterTaskTimer> software_timer_;
+  base::Optional<ScopedGpuRasterTaskTimer> gpu_timer_;
+};
 
 class RasterTaskImpl : public TileTask {
  public:
@@ -54,8 +90,8 @@ class RasterTaskImpl : public TileTask {
                  uint64_t source_prepare_tiles_id,
                  std::unique_ptr<RasterBuffer> raster_buffer,
                  TileTask::Vector* dependencies,
-                 bool supports_concurrent_execution)
-      : TileTask(supports_concurrent_execution, dependencies),
+                 bool is_gpu_rasterization)
+      : TileTask(!is_gpu_rasterization, dependencies),
         tile_manager_(tile_manager),
         tile_(tile),
         resource_(resource),
@@ -70,6 +106,7 @@ class RasterTaskImpl : public TileTask {
         tile_tracing_id_(static_cast<void*>(tile)),
         new_content_id_(tile->id()),
         source_frame_number_(tile->source_frame_number()),
+        is_gpu_rasterization_(is_gpu_rasterization),
         raster_buffer_(std::move(raster_buffer)) {
     DCHECK(origin_thread_checker_.CalledOnValidThread());
   }
@@ -84,7 +121,7 @@ class RasterTaskImpl : public TileTask {
 
     frame_viewer_instrumentation::ScopedRasterTask raster_task(
         tile_tracing_id_, tile_resolution_, source_frame_number_, layer_id_);
-    ScopedRasterTaskTimer timer;
+    ScopedRasterTaskTimer timer(is_gpu_rasterization_);
     timer.SetArea(content_rect_.size().GetArea());
 
     DCHECK(raster_source_);
@@ -133,6 +170,7 @@ class RasterTaskImpl : public TileTask {
   void* tile_tracing_id_;
   uint64_t new_content_id_;
   int source_frame_number_;
+  bool is_gpu_rasterization_;
   std::unique_ptr<RasterBuffer> raster_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterTaskImpl);
@@ -973,7 +1011,6 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
       prepare_tiles_count_, prioritized_tile.priority().priority_bin);
   image_manager_.GetTasksForImagesAndRef(&images, &decode_tasks, tracing_info);
 
-  bool supports_concurrent_execution = !use_gpu_rasterization_;
   std::unique_ptr<RasterBuffer> raster_buffer =
       raster_buffer_provider_->AcquireBufferForRaster(
           resource, resource_content_id, tile->invalidated_id());
@@ -981,7 +1018,7 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
       this, tile, resource, prioritized_tile.raster_source(), playback_settings,
       prioritized_tile.priority().resolution, invalidated_rect,
       prepare_tiles_count_, std::move(raster_buffer), &decode_tasks,
-      supports_concurrent_execution));
+      use_gpu_rasterization_));
 }
 
 void TileManager::OnRasterTaskCompleted(
