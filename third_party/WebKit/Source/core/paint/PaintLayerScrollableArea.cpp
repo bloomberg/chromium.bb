@@ -490,11 +490,11 @@ IntRect PaintLayerScrollableArea::visibleContentRect(
   if (scrollbarInclusion == IncludeScrollbars) {
     verticalScrollbarWidth =
         (verticalScrollbar() && !verticalScrollbar()->isOverlayScrollbar())
-            ? verticalScrollbar()->width()
+            ? verticalScrollbar()->scrollbarThickness()
             : 0;
     horizontalScrollbarHeight =
         (horizontalScrollbar() && !horizontalScrollbar()->isOverlayScrollbar())
-            ? horizontalScrollbar()->height()
+            ? horizontalScrollbar()->scrollbarThickness()
             : 0;
   }
 
@@ -1002,7 +1002,7 @@ IntRect PaintLayerScrollableArea::rectForHorizontalScrollbar(
 
   return IntRect(horizontalScrollbarStart(borderBoxRect.x()),
                  borderBoxRect.maxY() - box().borderBottom() -
-                     horizontalScrollbar()->height(),
+                     horizontalScrollbar()->scrollbarThickness(),
                  borderBoxRect.width() -
                      (box().borderLeft() + box().borderRight()) -
                      scrollCorner.width(),
@@ -1027,14 +1027,14 @@ IntRect PaintLayerScrollableArea::rectForVerticalScrollbar(
 int PaintLayerScrollableArea::verticalScrollbarStart(int minX, int maxX) const {
   if (box().shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
     return minX + box().borderLeft();
-  return maxX - box().borderRight() - verticalScrollbar()->width();
+  return maxX - box().borderRight() - verticalScrollbar()->scrollbarThickness();
 }
 
 int PaintLayerScrollableArea::horizontalScrollbarStart(int minX) const {
   int x = minX + box().borderLeft();
   if (box().shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
     x += hasVerticalScrollbar()
-             ? verticalScrollbar()->width()
+             ? verticalScrollbar()->scrollbarThickness()
              : resizerCornerRect(box().pixelSnappedBorderBoxRect(),
                                  ResizerForPointer)
                    .width();
@@ -1191,7 +1191,7 @@ int PaintLayerScrollableArea::verticalScrollbarWidth(
       (overlayScrollbarClipBehavior == IgnoreOverlayScrollbarSize ||
        !verticalScrollbar()->shouldParticipateInHitTesting()))
     return 0;
-  return verticalScrollbar()->width();
+  return verticalScrollbar()->scrollbarThickness();
 }
 
 int PaintLayerScrollableArea::horizontalScrollbarHeight(
@@ -1202,7 +1202,7 @@ int PaintLayerScrollableArea::horizontalScrollbarHeight(
       (overlayScrollbarClipBehavior == IgnoreOverlayScrollbarSize ||
        !horizontalScrollbar()->shouldParticipateInHitTesting()))
     return 0;
-  return horizontalScrollbar()->height();
+  return horizontalScrollbar()->scrollbarThickness();
 }
 
 void PaintLayerScrollableArea::positionOverflowControls() {
@@ -1274,13 +1274,14 @@ bool PaintLayerScrollableArea::hitTestOverflowControls(
   int resizeControlSize = max(resizeControlRect.height(), 0);
   if (hasVerticalScrollbar() &&
       verticalScrollbar()->shouldParticipateInHitTesting()) {
-    LayoutRect vBarRect(
-        verticalScrollbarStart(0, box().size().width().toInt()),
-        box().borderTop(), verticalScrollbar()->width(),
-        box().size().height().toInt() -
-            (box().borderTop() + box().borderBottom()) -
-            (hasHorizontalScrollbar() ? horizontalScrollbar()->height()
-                                      : resizeControlSize));
+    LayoutRect vBarRect(verticalScrollbarStart(0, box().size().width().toInt()),
+                        box().borderTop(),
+                        verticalScrollbar()->scrollbarThickness(),
+                        box().size().height().toInt() -
+                            (box().borderTop() + box().borderBottom()) -
+                            (hasHorizontalScrollbar()
+                                 ? horizontalScrollbar()->scrollbarThickness()
+                                 : resizeControlSize));
     if (vBarRect.contains(localPoint)) {
       result.setScrollbar(verticalScrollbar());
       return true;
@@ -1294,13 +1295,13 @@ bool PaintLayerScrollableArea::hitTestOverflowControls(
     LayoutRect hBarRect(
         horizontalScrollbarStart(0),
         (box().size().height() - box().borderBottom() -
-         horizontalScrollbar()->height())
+         horizontalScrollbar()->scrollbarThickness())
             .toInt(),
         (box().size().width() - (box().borderLeft() + box().borderRight()) -
-         (hasVerticalScrollbar() ? verticalScrollbar()->width()
+         (hasVerticalScrollbar() ? verticalScrollbar()->scrollbarThickness()
                                  : resizeControlSize))
             .toInt(),
-        horizontalScrollbar()->height());
+        horizontalScrollbar()->scrollbarThickness());
     if (hBarRect.contains(localPoint)) {
       result.setScrollbar(horizontalScrollbar());
       return true;
