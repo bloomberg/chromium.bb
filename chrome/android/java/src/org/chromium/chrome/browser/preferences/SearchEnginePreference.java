@@ -102,4 +102,13 @@ public class SearchEnginePreference extends PreferenceFragment
             updateBottombarDivider();
         }
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        /**
+         * Handle UI update when location setting for a search engine is changed.
+         */
+        mSearchEngineAdapter.notifyDataSetChanged();
+    }
 }
