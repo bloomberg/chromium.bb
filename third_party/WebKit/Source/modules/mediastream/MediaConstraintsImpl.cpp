@@ -97,15 +97,11 @@ const char kGoogHighpassFilter[] = "googHighpassFilter";
 const char kGoogTypingNoiseDetection[] = "googTypingNoiseDetection";
 const char kGoogAudioMirroring[] = "googAudioMirroring";
 
-// From third_party/libjingle/source/talk/app/webrtc/mediaconstraintsinterface.cc
+// From
+// third_party/libjingle/source/talk/app/webrtc/mediaconstraintsinterface.cc
+
 // Audio constraints.
-// const char kExtendedFilterEchoCancellation[] = "googEchoCancellation2"; // duplicate k-name
 const char kDAEchoCancellation[] = "googDAEchoCancellation";
-// const char kNoiseSuppression[] = "googNoiseSuppression"; // duplicate k-name
-// const char kExperimentalNoiseSuppression[] = "googNoiseSuppression2"; // duplicate k-name
-// const char kHighpassFilter[] = "googHighpassFilter"; // duplicate k-name
-// const char kTypingNoiseDetection[] = "googTypingNoiseDetection"; // duplicate k-name
-// const char kAudioMirroring[] = "googAudioMirroring"; // duplicate k-name
 
 // Google-specific constraint keys for a local video source (getUserMedia).
 const char kNoiseReduction[] = "googNoiseReduction";
