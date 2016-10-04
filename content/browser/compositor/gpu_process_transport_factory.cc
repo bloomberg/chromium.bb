@@ -553,12 +553,12 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   auto compositor_frame_sink =
       vulkan_context_provider
           ? base::MakeUnique<cc::DirectCompositorFrameSink>(
-                surface_manager_.get(), compositor->surface_id_allocator(),
+                compositor->frame_sink_id(), surface_manager_.get(),
                 data->display.get(),
                 static_cast<scoped_refptr<cc::VulkanContextProvider>>(
                     vulkan_context_provider))
           : base::MakeUnique<cc::DirectCompositorFrameSink>(
-                surface_manager_.get(), compositor->surface_id_allocator(),
+                compositor->frame_sink_id(), surface_manager_.get(),
                 data->display.get(), context_provider,
                 shared_worker_context_provider_);
   data->display->Resize(compositor->size());

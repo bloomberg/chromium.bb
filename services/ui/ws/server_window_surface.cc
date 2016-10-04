@@ -21,19 +21,19 @@ ServerWindowSurface::ServerWindowSurface(
     ServerWindowSurfaceManager* manager,
     mojo::InterfaceRequest<Surface> request,
     mojom::SurfaceClientPtr client)
-    : manager_(manager),
-      surface_id_allocator_(cc::FrameSinkId(manager->window()
-                                                ->delegate()
-                                                ->GetDisplayCompositor()
-                                                ->GenerateNextClientId(),
-                                            0)),
-      surface_factory_(manager_->GetSurfaceManager(), this),
+    : frame_sink_id_(manager->window()
+                         ->delegate()
+                         ->GetDisplayCompositor()
+                         ->GenerateNextClientId(),
+                     0),
+      manager_(manager),
+      surface_id_allocator_(frame_sink_id_),
+      surface_factory_(frame_sink_id_, manager_->GetSurfaceManager(), this),
       client_(std::move(client)),
       binding_(this, std::move(request)) {
   cc::SurfaceManager* surface_manager = manager_->GetSurfaceManager();
-  surface_manager->RegisterFrameSinkId(surface_id_allocator_.frame_sink_id());
-  surface_manager->RegisterSurfaceFactoryClient(
-      surface_id_allocator_.frame_sink_id(), this);
+  surface_manager->RegisterFrameSinkId(frame_sink_id_);
+  surface_manager->RegisterSurfaceFactoryClient(frame_sink_id_, this);
 }
 
 ServerWindowSurface::~ServerWindowSurface() {
@@ -42,9 +42,8 @@ ServerWindowSurface::~ServerWindowSurface() {
   // |surface_factory_|'s resources early on.
   surface_factory_.DestroyAll();
   cc::SurfaceManager* surface_manager = manager_->GetSurfaceManager();
-  surface_manager->UnregisterSurfaceFactoryClient(
-      surface_id_allocator_.frame_sink_id());
-  surface_manager->InvalidateFrameSinkId(surface_id_allocator_.frame_sink_id());
+  surface_manager->UnregisterSurfaceFactoryClient(frame_sink_id_);
+  surface_manager->InvalidateFrameSinkId(frame_sink_id_);
 }
 
 void ServerWindowSurface::SubmitCompositorFrame(

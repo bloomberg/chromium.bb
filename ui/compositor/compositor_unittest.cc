@@ -33,7 +33,7 @@ class FakeCompositorFrameSink : public cc::SurfaceFactoryClient {
       : frame_sink_id_(frame_sink_id),
         manager_(manager),
         source_(nullptr),
-        factory_(manager, this) {
+        factory_(frame_sink_id, manager, this) {
     manager_->RegisterFrameSinkId(frame_sink_id_);
     manager_->RegisterSurfaceFactoryClient(frame_sink_id_, this);
   }

@@ -32,7 +32,8 @@ class EmptySurfaceFactoryClient : public SurfaceFactoryClient {
 
 class SurfaceAggregatorPerfTest : public testing::Test {
  public:
-  SurfaceAggregatorPerfTest() : factory_(&manager_, &empty_client_) {
+  SurfaceAggregatorPerfTest()
+      : factory_(kArbitraryFrameSinkId, &manager_, &empty_client_) {
     context_provider_ = TestContextProvider::Create();
     context_provider_->BindToCurrentThread();
     shared_bitmap_manager_.reset(new TestSharedBitmapManager);

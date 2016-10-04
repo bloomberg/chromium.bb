@@ -188,8 +188,8 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   // to the frame tree.
   RenderWidgetHostViewBase* GetParentView();
 
-  void RegisterSurfaceNamespaceId();
-  void UnregisterSurfaceNamespaceId();
+  void RegisterFrameSinkId();
+  void UnregisterFrameSinkId();
 
  protected:
   friend class RenderWidgetHostView;
@@ -207,6 +207,9 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   // Members will become private when RenderWidgetHostViewGuest is removed.
   // The model object.
   RenderWidgetHostImpl* host_;
+
+  // The ID for FrameSink associated with this view.
+  cc::FrameSinkId frame_sink_id_;
 
   // Surface-related state.
   std::unique_ptr<cc::SurfaceIdAllocator> id_allocator_;

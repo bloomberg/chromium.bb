@@ -1464,7 +1464,7 @@ void WebContentsImpl::AttachToOuterWebContentsFrame(
 
   static_cast<RenderWidgetHostViewChildFrame*>(
       render_manager->GetRenderWidgetHostView())
-      ->RegisterSurfaceNamespaceId();
+      ->RegisterFrameSinkId();
 
   // At this point, we should destroy the TextInputManager which will notify all
   // the RWHV in this WebContents. The RWHV in this WebContents should use the

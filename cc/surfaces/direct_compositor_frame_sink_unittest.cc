@@ -33,11 +33,10 @@ class DirectCompositorFrameSinkTest : public testing::Test {
   DirectCompositorFrameSinkTest()
       : now_src_(new base::SimpleTestTickClock()),
         task_runner_(new OrderedSimpleTaskRunner(now_src_.get(), true)),
-        allocator_(kArbitraryFrameSinkId),
         display_size_(1920, 1080),
         display_rect_(display_size_),
         context_provider_(TestContextProvider::Create()) {
-    surface_manager_.RegisterFrameSinkId(allocator_.frame_sink_id());
+    surface_manager_.RegisterFrameSinkId(kArbitraryFrameSinkId);
 
     std::unique_ptr<FakeOutputSurface> display_output_surface =
         FakeOutputSurface::Create3d();
@@ -57,8 +56,8 @@ class DirectCompositorFrameSinkTest : public testing::Test {
         std::move(scheduler),
         base::MakeUnique<TextureMailboxDeleter>(task_runner_.get())));
     compositor_frame_sink_.reset(new DirectCompositorFrameSink(
-        &surface_manager_, &allocator_, display_.get(), context_provider_,
-        nullptr));
+        kArbitraryFrameSinkId, &surface_manager_, display_.get(),
+        context_provider_, nullptr));
 
     compositor_frame_sink_->BindToClient(&compositor_frame_sink_client_);
     display_->Resize(display_size_);
@@ -96,7 +95,6 @@ class DirectCompositorFrameSinkTest : public testing::Test {
  protected:
   std::unique_ptr<base::SimpleTestTickClock> now_src_;
   scoped_refptr<OrderedSimpleTaskRunner> task_runner_;
-  SurfaceIdAllocator allocator_;
 
   const gfx::Size display_size_;
   const gfx::Rect display_rect_;

@@ -99,14 +99,14 @@ class TestDisplayScheduler : public DisplayScheduler {
 class DisplayTest : public testing::Test {
  public:
   DisplayTest()
-      : factory_(&manager_, &surface_factory_client_),
+      : factory_(kArbitraryFrameSinkId, &manager_, &surface_factory_client_),
         id_allocator_(kArbitraryFrameSinkId),
         task_runner_(new base::NullTaskRunner) {
-    manager_.RegisterFrameSinkId(id_allocator_.frame_sink_id());
+    manager_.RegisterFrameSinkId(kArbitraryFrameSinkId);
   }
 
   ~DisplayTest() override {
-    manager_.InvalidateFrameSinkId(id_allocator_.frame_sink_id());
+    manager_.InvalidateFrameSinkId(kArbitraryFrameSinkId);
   }
 
   void SetUpDisplay(const RendererSettings& settings,
@@ -182,7 +182,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
   SetUpDisplay(settings, nullptr);
 
   StubDisplayClient client;
-  display_->Initialize(&client, &manager_, id_allocator_.frame_sink_id());
+  display_->Initialize(&client, &manager_, kArbitraryFrameSinkId);
 
   SurfaceId surface_id(id_allocator_.GenerateId());
   EXPECT_FALSE(scheduler_->damaged);
@@ -445,7 +445,7 @@ TEST_F(DisplayTest, Finish) {
   SetUpDisplay(settings, std::move(context));
 
   StubDisplayClient client;
-  display_->Initialize(&client, &manager_, id_allocator_.frame_sink_id());
+  display_->Initialize(&client, &manager_, kArbitraryFrameSinkId);
 
   display_->SetSurfaceId(surface_id, 1.f);
 

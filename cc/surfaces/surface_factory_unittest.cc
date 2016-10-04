@@ -67,7 +67,8 @@ gpu::SyncToken GenTestSyncToken(int id) {
 class SurfaceFactoryTest : public testing::Test, public SurfaceDamageObserver {
  public:
   SurfaceFactoryTest()
-      : factory_(new SurfaceFactory(&manager_, &client_)),
+      : factory_(
+            new SurfaceFactory(kArbitraryFrameSinkId, &manager_, &client_)),
         surface_id_(kArbitraryFrameSinkId, 3, 0),
         frame_sync_token_(GenTestSyncToken(4)),
         consumer_sync_token_(GenTestSyncToken(5)) {
@@ -516,9 +517,10 @@ TEST_F(SurfaceFactoryTest, DestroySequence) {
 
 // Tests that Surface ID namespace invalidation correctly allows
 // Sequences to be ignored.
-TEST_F(SurfaceFactoryTest, InvalidClientId) {
-  FrameSinkId frame_sink_id(9, 9);
-  SurfaceId id(frame_sink_id, 5, 0);
+TEST_F(SurfaceFactoryTest, InvalidFrameSinkId) {
+  FrameSinkId frame_sink_id(1234, 5678);
+
+  SurfaceId id(factory_->frame_sink_id(), 5, 0);
   factory_->Create(id);
 
   manager_.RegisterFrameSinkId(frame_sink_id);

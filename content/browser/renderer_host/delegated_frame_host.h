@@ -91,7 +91,8 @@ class CONTENT_EXPORT DelegatedFrameHost
       public cc::SurfaceFactoryClient,
       public base::SupportsWeakPtr<DelegatedFrameHost> {
  public:
-  explicit DelegatedFrameHost(DelegatedFrameHostClient* client);
+  DelegatedFrameHost(const cc::FrameSinkId& frame_sink_id,
+                     DelegatedFrameHostClient* client);
   ~DelegatedFrameHost() override;
 
   // ui::CompositorObserver implementation.
@@ -247,6 +248,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   // initiate a copy-into-video-frame request.
   void AttemptFrameSubscriberCapture(const gfx::Rect& damage_rect);
 
+  const cc::FrameSinkId frame_sink_id_;
   DelegatedFrameHostClient* const client_;
   ui::Compositor* compositor_;
 

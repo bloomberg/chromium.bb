@@ -30,15 +30,14 @@ CompositorFrameSink::CompositorFrameSink(
     gfx::AcceleratedWidget widget,
     scoped_refptr<gpu::GpuChannelHost> gpu_channel,
     const scoped_refptr<DisplayCompositor>& display_compositor)
-    : task_runner_(task_runner),
+    : frame_sink_id_(display_compositor->GenerateNextClientId(), 0),
+      task_runner_(task_runner),
       display_compositor_(display_compositor),
-      factory_(display_compositor->manager(), this),
-      allocator_(
-          cc::FrameSinkId(display_compositor->GenerateNextClientId(), 0)) {
-  display_compositor_->manager()->RegisterFrameSinkId(
-      allocator_.frame_sink_id());
-  display_compositor_->manager()->RegisterSurfaceFactoryClient(
-      allocator_.frame_sink_id(), this);
+      factory_(frame_sink_id_, display_compositor->manager(), this),
+      allocator_(frame_sink_id_) {
+  display_compositor_->manager()->RegisterFrameSinkId(frame_sink_id_);
+  display_compositor_->manager()->RegisterSurfaceFactoryClient(frame_sink_id_,
+                                                               this);
 
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager =
       gpu_channel->gpu_memory_buffer_manager();
@@ -78,16 +77,14 @@ CompositorFrameSink::CompositorFrameSink(
       cc::RendererSettings(), std::move(synthetic_begin_frame_source),
       std::move(display_output_surface), std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(task_runner_.get())));
-  display_->Initialize(this, display_compositor_->manager(),
-                       allocator_.frame_sink_id());
+  display_->Initialize(this, display_compositor_->manager(), frame_sink_id_);
   display_->SetVisible(true);
 }
 
 CompositorFrameSink::~CompositorFrameSink() {
   display_compositor_->manager()->UnregisterSurfaceFactoryClient(
-      allocator_.frame_sink_id());
-  display_compositor_->manager()->InvalidateFrameSinkId(
-      allocator_.frame_sink_id());
+      frame_sink_id_);
+  display_compositor_->manager()->InvalidateFrameSinkId(frame_sink_id_);
 }
 
 void CompositorFrameSink::SubmitCompositorFrame(

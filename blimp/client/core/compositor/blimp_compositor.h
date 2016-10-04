@@ -189,6 +189,8 @@ class BlimpCompositor : public cc::LayerTreeHostClient,
 
   BlimpCompositorDependencies* compositor_dependencies_;
 
+  cc::FrameSinkId frame_sink_id_;
+
   std::unique_ptr<cc::LayerTreeHost> host_;
 
   // The SurfaceFactory is bound to the lifetime of the |proxy_client_|. When

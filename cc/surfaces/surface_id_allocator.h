@@ -23,8 +23,6 @@ class CC_SURFACES_EXPORT SurfaceIdAllocator {
 
   SurfaceId GenerateId();
 
-  const FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
-
  private:
   const FrameSinkId frame_sink_id_;
 

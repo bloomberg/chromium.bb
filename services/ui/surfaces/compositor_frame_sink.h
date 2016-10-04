@@ -70,6 +70,7 @@ class CompositorFrameSink : public cc::SurfaceFactoryClient,
                               const cc::RenderPassList& render_passes) override;
   void DisplayDidDrawAndSwap() override;
 
+  const cc::FrameSinkId frame_sink_id_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<DisplayCompositor> display_compositor_;
   cc::SurfaceFactory factory_;

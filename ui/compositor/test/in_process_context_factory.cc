@@ -194,8 +194,8 @@ void InProcessContextFactory::CreateCompositorFrameSink(
 
   auto* display = per_compositor_data_[compositor.get()].get();
   auto compositor_frame_sink = base::MakeUnique<cc::DirectCompositorFrameSink>(
-      surface_manager_, compositor->surface_id_allocator(), display,
-      context_provider, shared_worker_context_provider_);
+      compositor->frame_sink_id(), surface_manager_, display, context_provider,
+      shared_worker_context_provider_);
   compositor->SetCompositorFrameSink(std::move(compositor_frame_sink));
 }
 

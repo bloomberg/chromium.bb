@@ -194,8 +194,7 @@ void SurfaceFactoryOwner::SetBeginFrameSource(
 
 SurfaceFactoryOwner::~SurfaceFactoryOwner() {
   if (surface_factory_->manager()) {
-    surface_factory_->manager()->InvalidateFrameSinkId(
-        id_allocator_->frame_sink_id());
+    surface_factory_->manager()->InvalidateFrameSinkId(frame_sink_id_);
   }
 }
 
@@ -215,12 +214,13 @@ Surface::Surface()
   window_->SetEventTargeter(base::WrapUnique(new CustomWindowTargeter));
   window_->set_owned_by_parent(false);
   factory_owner_->surface_ = this;
-  factory_owner_->id_allocator_.reset(new cc::SurfaceIdAllocator(
-      aura::Env::GetInstance()->context_factory()->AllocateFrameSinkId()));
-  surface_manager_->RegisterFrameSinkId(
-      factory_owner_->id_allocator_->frame_sink_id());
-  factory_owner_->surface_factory_.reset(
-      new cc::SurfaceFactory(surface_manager_, factory_owner_.get()));
+  factory_owner_->frame_sink_id_ =
+      aura::Env::GetInstance()->context_factory()->AllocateFrameSinkId();
+  factory_owner_->id_allocator_.reset(
+      new cc::SurfaceIdAllocator(factory_owner_->frame_sink_id_));
+  surface_manager_->RegisterFrameSinkId(factory_owner_->frame_sink_id_);
+  factory_owner_->surface_factory_.reset(new cc::SurfaceFactory(
+      factory_owner_->frame_sink_id_, surface_manager_, factory_owner_.get()));
   aura::Env::GetInstance()->context_factory()->AddObserver(this);
 }
 

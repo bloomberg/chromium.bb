@@ -10,6 +10,7 @@
 #include "android_webview/browser/compositor_id.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "cc/surfaces/frame_sink_id.h"
 #include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_id.h"
 
@@ -66,6 +67,7 @@ class HardwareRenderer : public cc::SurfaceFactoryClient {
   std::unique_ptr<ChildFrame> child_frame_;
 
   const scoped_refptr<SurfacesInstance> surfaces_;
+  cc::FrameSinkId frame_sink_id_;
   const std::unique_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
   std::unique_ptr<cc::SurfaceFactory> surface_factory_;
   cc::SurfaceId child_id_;

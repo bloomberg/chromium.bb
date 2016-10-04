@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
+#include "cc/surfaces/frame_sink_id.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "content/common/content_export.h"
@@ -139,6 +140,8 @@ class CONTENT_EXPORT CompositorImpl
 
   bool HavePendingReadbacks();
 
+  cc::FrameSinkId frame_sink_id_;
+
   // root_layer_ is the persistent internal root layer, while subroot_layer_
   // is the one attached by the compositor client.
   scoped_refptr<cc::Layer> subroot_layer_;
@@ -147,7 +150,6 @@ class CONTENT_EXPORT CompositorImpl
   scoped_refptr<cc::Layer> readback_layer_tree_;
 
   // Destruction order matters here:
-  std::unique_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
   base::ObserverList<VSyncObserver, true> observer_list_;
   std::unique_ptr<cc::LayerTreeHost> host_;
   ui::ResourceManagerImpl resource_manager_;

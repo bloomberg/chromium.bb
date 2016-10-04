@@ -38,7 +38,8 @@ scoped_refptr<SurfacesInstance> SurfacesInstance::GetOrCreateInstance() {
   return make_scoped_refptr(new SurfacesInstance);
 }
 
-SurfacesInstance::SurfacesInstance() : next_frame_sink_id_(1u) {
+SurfacesInstance::SurfacesInstance()
+    : next_client_id_(1u), frame_sink_id_(AllocateFrameSinkId()) {
   cc::RendererSettings settings;
 
   // Should be kept in sync with compositor_impl_android.cc.
@@ -49,9 +50,8 @@ SurfacesInstance::SurfacesInstance() : next_frame_sink_id_(1u) {
   settings.should_clear_root_render_pass = false;
 
   surface_manager_.reset(new cc::SurfaceManager);
-  surface_id_allocator_.reset(new cc::SurfaceIdAllocator(
-      cc::FrameSinkId(next_frame_sink_id_++, 0 /* frame_sink_id */)));
-  surface_manager_->RegisterFrameSinkId(surface_id_allocator_->frame_sink_id());
+  surface_id_allocator_.reset(new cc::SurfaceIdAllocator(frame_sink_id_));
+  surface_manager_->RegisterFrameSinkId(frame_sink_id_);
 
   std::unique_ptr<cc::BeginFrameSource> begin_frame_source(
       new cc::StubBeginFrameSource);
@@ -70,11 +70,11 @@ SurfacesInstance::SurfacesInstance() : next_frame_sink_id_(1u) {
       nullptr /* gpu_memory_buffer_manager */, settings,
       std::move(begin_frame_source), std::move(output_surface_holder),
       std::move(scheduler), std::move(texture_mailbox_deleter)));
-  display_->Initialize(this, surface_manager_.get(),
-                       surface_id_allocator_->frame_sink_id());
+  display_->Initialize(this, surface_manager_.get(), frame_sink_id_);
   display_->SetVisible(true);
 
-  surface_factory_.reset(new cc::SurfaceFactory(surface_manager_.get(), this));
+  surface_factory_.reset(
+      new cc::SurfaceFactory(frame_sink_id_, surface_manager_.get(), this));
 
   DCHECK(!g_surfaces_instance);
   g_surfaces_instance = this;
@@ -89,12 +89,11 @@ SurfacesInstance::~SurfacesInstance() {
   if (!root_id_.is_null())
     surface_factory_->Destroy(root_id_);
 
-  surface_manager_->InvalidateFrameSinkId(
-      surface_id_allocator_->frame_sink_id());
+  surface_manager_->InvalidateFrameSinkId(frame_sink_id_);
 }
 
 cc::FrameSinkId SurfacesInstance::AllocateFrameSinkId() {
-  return cc::FrameSinkId(next_frame_sink_id_++, 0 /* sink_id */);
+  return cc::FrameSinkId(next_client_id_++, 0 /* sink_id */);
 }
 
 cc::SurfaceManager* SurfacesInstance::GetSurfaceManager() {

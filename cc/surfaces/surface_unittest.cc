@@ -35,7 +35,8 @@ class FakeSurfaceFactoryClient : public SurfaceFactoryClient {
 TEST(SurfaceTest, SurfaceLifetime) {
   SurfaceManager manager;
   FakeSurfaceFactoryClient surface_factory_client;
-  SurfaceFactory factory(&manager, &surface_factory_client);
+  SurfaceFactory factory(kArbitraryFrameSinkId, &manager,
+                         &surface_factory_client);
 
   SurfaceId surface_id(kArbitraryFrameSinkId, 6, 0);
   {

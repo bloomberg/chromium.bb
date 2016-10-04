@@ -42,6 +42,7 @@ namespace content {
 RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
     RenderWidgetHost* widget_host)
     : host_(RenderWidgetHostImpl::From(widget_host)),
+      frame_sink_id_(AllocateFrameSinkId()),
       next_surface_sequence_(1u),
       last_compositor_frame_sink_id_(0),
       current_surface_scale_factor_(1.f),
@@ -49,9 +50,9 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
       frame_connector_(nullptr),
       begin_frame_source_(nullptr),
       weak_factory_(this) {
-  id_allocator_.reset(new cc::SurfaceIdAllocator(AllocateFrameSinkId()));
-  GetSurfaceManager()->RegisterFrameSinkId(id_allocator_->frame_sink_id());
-  RegisterSurfaceNamespaceId();
+  id_allocator_.reset(new cc::SurfaceIdAllocator(frame_sink_id_));
+  GetSurfaceManager()->RegisterFrameSinkId(frame_sink_id_);
+  RegisterFrameSinkId();
 
   host_->SetView(this);
   GetTextInputManager();
@@ -62,7 +63,7 @@ RenderWidgetHostViewChildFrame::~RenderWidgetHostViewChildFrame() {
     surface_factory_->Destroy(surface_id_);
 
   if (GetSurfaceManager())
-    GetSurfaceManager()->InvalidateFrameSinkId(id_allocator_->frame_sink_id());
+    GetSurfaceManager()->InvalidateFrameSinkId(frame_sink_id_);
 }
 
 void RenderWidgetHostViewChildFrame::SetCrossProcessFrameConnector(
@@ -73,12 +74,11 @@ void RenderWidgetHostViewChildFrame::SetCrossProcessFrameConnector(
   if (frame_connector_) {
     if (!parent_frame_sink_id_.is_null()) {
       GetSurfaceManager()->UnregisterFrameSinkHierarchy(parent_frame_sink_id_,
-                                                        GetFrameSinkId());
+                                                        frame_sink_id_);
     }
     // Unregister the client here, as it is not guaranteed in tests that the
     // destructor will be called.
-    GetSurfaceManager()->UnregisterSurfaceFactoryClient(
-        id_allocator_->frame_sink_id());
+    GetSurfaceManager()->UnregisterSurfaceFactoryClient(frame_sink_id_);
 
     parent_frame_sink_id_ = cc::FrameSinkId();
 
@@ -91,15 +91,14 @@ void RenderWidgetHostViewChildFrame::SetCrossProcessFrameConnector(
   }
   frame_connector_ = frame_connector;
   if (frame_connector_) {
-    GetSurfaceManager()->RegisterSurfaceFactoryClient(
-        id_allocator_->frame_sink_id(), this);
+    GetSurfaceManager()->RegisterSurfaceFactoryClient(frame_sink_id_, this);
     RenderWidgetHostViewBase* parent_view =
         frame_connector_->GetParentRenderWidgetHostView();
     if (parent_view) {
       parent_frame_sink_id_ = parent_view->GetFrameSinkId();
       DCHECK(!parent_frame_sink_id_.is_null());
       GetSurfaceManager()->RegisterFrameSinkHierarchy(parent_frame_sink_id_,
-                                                      GetFrameSinkId());
+                                                      frame_sink_id_);
     }
   }
 }
@@ -305,21 +304,21 @@ RenderWidgetHostViewBase* RenderWidgetHostViewChildFrame::GetParentView() {
   return frame_connector_->GetParentRenderWidgetHostView();
 }
 
-void RenderWidgetHostViewChildFrame::RegisterSurfaceNamespaceId() {
+void RenderWidgetHostViewChildFrame::RegisterFrameSinkId() {
   // If Destroy() has been called before we get here, host_ may be null.
   if (host_ && host_->delegate() && host_->delegate()->GetInputEventRouter()) {
     RenderWidgetHostInputEventRouter* router =
         host_->delegate()->GetInputEventRouter();
-    if (!router->is_registered(GetFrameSinkId()))
-      router->AddFrameSinkIdOwner(GetFrameSinkId(), this);
+    if (!router->is_registered(frame_sink_id_))
+      router->AddFrameSinkIdOwner(frame_sink_id_, this);
   }
 }
 
-void RenderWidgetHostViewChildFrame::UnregisterSurfaceNamespaceId() {
+void RenderWidgetHostViewChildFrame::UnregisterFrameSinkId() {
   DCHECK(host_);
   if (host_->delegate() && host_->delegate()->GetInputEventRouter()) {
     host_->delegate()->GetInputEventRouter()->RemoveFrameSinkIdOwner(
-        GetFrameSinkId());
+        frame_sink_id_);
   }
 }
 
@@ -389,15 +388,16 @@ void RenderWidgetHostViewChildFrame::OnSwapCompositorFrame(
 
   if (!surface_factory_) {
     cc::SurfaceManager* manager = GetSurfaceManager();
-    surface_factory_ = base::MakeUnique<cc::SurfaceFactory>(manager, this);
+    surface_factory_ =
+        base::MakeUnique<cc::SurfaceFactory>(frame_sink_id_, manager, this);
   }
 
   if (surface_id_.is_null()) {
     surface_id_ = id_allocator_->GenerateId();
     surface_factory_->Create(surface_id_);
 
-    cc::SurfaceSequence sequence = cc::SurfaceSequence(
-        id_allocator_->frame_sink_id(), next_surface_sequence_++);
+    cc::SurfaceSequence sequence =
+        cc::SurfaceSequence(frame_sink_id_, next_surface_sequence_++);
     // The renderer process will satisfy this dependency when it creates a
     // SurfaceLayer.
     cc::SurfaceManager* manager = GetSurfaceManager();
@@ -469,7 +469,7 @@ bool RenderWidgetHostViewChildFrame::IsMouseLocked() {
 }
 
 cc::FrameSinkId RenderWidgetHostViewChildFrame::GetFrameSinkId() {
-  return id_allocator_->frame_sink_id();
+  return frame_sink_id_;
 }
 
 void RenderWidgetHostViewChildFrame::ProcessKeyboardEvent(

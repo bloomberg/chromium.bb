@@ -430,7 +430,6 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
                                                    bool is_guest_view_hack)
     : host_(RenderWidgetHostImpl::From(host)),
       window_(nullptr),
-      delegated_frame_host_(new DelegatedFrameHost(this)),
       in_shutdown_(false),
       in_bounds_changed_(false),
       is_fullscreen_(false),
@@ -455,6 +454,10 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
       last_active_widget_process_id_(ChildProcessHost::kInvalidUniqueID),
       last_active_widget_routing_id_(MSG_ROUTING_NONE),
       weak_ptr_factory_(this) {
+  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
+  delegated_frame_host_ = base::MakeUnique<DelegatedFrameHost>(
+      factory->GetContextFactory()->AllocateFrameSinkId(), this);
+
   if (!is_guest_view_hack_)
     host_->SetView(this);
 

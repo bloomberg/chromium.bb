@@ -15,13 +15,14 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace cc {
-SurfaceFactory::SurfaceFactory(SurfaceManager* manager,
+SurfaceFactory::SurfaceFactory(const FrameSinkId& frame_sink_id,
+                               SurfaceManager* manager,
                                SurfaceFactoryClient* client)
-    : manager_(manager),
+    : frame_sink_id_(frame_sink_id),
+      manager_(manager),
       client_(client),
       holder_(client),
-      needs_sync_points_(true) {
-}
+      needs_sync_points_(true) {}
 
 SurfaceFactory::~SurfaceFactory() {
   if (!surface_map_.empty()) {
@@ -40,6 +41,7 @@ void SurfaceFactory::DestroyAll() {
 }
 
 void SurfaceFactory::Create(const SurfaceId& surface_id) {
+  DCHECK(surface_id.frame_sink_id() == frame_sink_id_);
   std::unique_ptr<Surface> surface(new Surface(surface_id, this));
   manager_->RegisterSurface(surface.get());
   DCHECK(!surface_map_.count(surface_id));
@@ -47,6 +49,7 @@ void SurfaceFactory::Create(const SurfaceId& surface_id) {
 }
 
 void SurfaceFactory::Destroy(const SurfaceId& surface_id) {
+  DCHECK(surface_id.frame_sink_id() == frame_sink_id_);
   OwningSurfaceMap::iterator it = surface_map_.find(surface_id);
   DCHECK(it != surface_map_.end());
   DCHECK(it->second->factory().get() == this);
@@ -58,6 +61,8 @@ void SurfaceFactory::Destroy(const SurfaceId& surface_id) {
 
 void SurfaceFactory::SetPreviousFrameSurface(const SurfaceId& new_id,
                                              const SurfaceId& old_id) {
+  DCHECK(new_id.frame_sink_id() == frame_sink_id_);
+  DCHECK(old_id.frame_sink_id() == frame_sink_id_);
   OwningSurfaceMap::iterator it = surface_map_.find(new_id);
   DCHECK(it != surface_map_.end());
   Surface* old_surface = manager_->GetSurfaceForId(old_id);
@@ -70,6 +75,7 @@ void SurfaceFactory::SubmitCompositorFrame(const SurfaceId& surface_id,
                                            CompositorFrame frame,
                                            const DrawCallback& callback) {
   TRACE_EVENT0("cc", "SurfaceFactory::SubmitCompositorFrame");
+  DCHECK(surface_id.frame_sink_id() == frame_sink_id_);
   OwningSurfaceMap::iterator it = surface_map_.find(surface_id);
   DCHECK(it != surface_map_.end());
   DCHECK(it->second->factory().get() == this);
@@ -83,6 +89,7 @@ void SurfaceFactory::SubmitCompositorFrame(const SurfaceId& surface_id,
 void SurfaceFactory::RequestCopyOfSurface(
     const SurfaceId& surface_id,
     std::unique_ptr<CopyOutputRequest> copy_request) {
+  DCHECK(surface_id.frame_sink_id() == frame_sink_id_);
   OwningSurfaceMap::iterator it = surface_map_.find(surface_id);
   if (it == surface_map_.end()) {
     copy_request->SendEmptyResult();
@@ -95,6 +102,7 @@ void SurfaceFactory::RequestCopyOfSurface(
 
 void SurfaceFactory::WillDrawSurface(const SurfaceId& id,
                                      const gfx::Rect& damage_rect) {
+  DCHECK(id.frame_sink_id() == frame_sink_id_);
   client_->WillDrawSurface(id, damage_rect);
 }
 

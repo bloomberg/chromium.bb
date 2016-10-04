@@ -76,6 +76,8 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
 
   void UpdateBackgroundLayer();
 
+  const cc::FrameSinkId frame_sink_id_;
+
   ViewAndroid* view_;
 
   cc::SurfaceManager* surface_manager_;

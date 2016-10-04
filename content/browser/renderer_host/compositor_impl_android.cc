@@ -44,7 +44,6 @@
 #include "cc/surfaces/direct_compositor_frame_sink.h"
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/display_scheduler.h"
-#include "cc/surfaces/surface_id_allocator.h"
 #include "cc/trees/layer_tree_host_in_process.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "components/display_compositor/compositor_overlay_candidate_validator_android.h"
@@ -398,8 +397,8 @@ bool CompositorImpl::IsInitialized() {
 
 CompositorImpl::CompositorImpl(CompositorClient* client,
                                gfx::NativeWindow root_window)
-    : surface_id_allocator_(new cc::SurfaceIdAllocator(
-          ui::ContextProviderFactory::GetInstance()->AllocateFrameSinkId())),
+    : frame_sink_id_(
+          ui::ContextProviderFactory::GetInstance()->AllocateFrameSinkId()),
       resource_manager_(root_window),
       has_transparent_background_(false),
       device_scale_factor_(1),
@@ -415,7 +414,7 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
       weak_factory_(this) {
   ui::ContextProviderFactory::GetInstance()
       ->GetSurfaceManager()
-      ->RegisterFrameSinkId(surface_id_allocator_->frame_sink_id());
+      ->RegisterFrameSinkId(frame_sink_id_);
   DCHECK(client);
   DCHECK(root_window);
   DCHECK(root_window->GetLayer() == nullptr);
@@ -435,7 +434,7 @@ CompositorImpl::~CompositorImpl() {
   SetSurface(NULL);
   ui::ContextProviderFactory::GetInstance()
       ->GetSurfaceManager()
-      ->InvalidateFrameSinkId(surface_id_allocator_->frame_sink_id());
+      ->InvalidateFrameSinkId(frame_sink_id_);
 }
 
 ui::UIResourceProvider& CompositorImpl::GetUIResourceProvider() {
@@ -520,7 +519,7 @@ void CompositorImpl::CreateLayerTreeHost() {
   host_ = cc::LayerTreeHostInProcess::CreateSingleThreaded(this, &params);
   DCHECK(!host_->IsVisible());
   host_->GetLayerTree()->SetRootLayer(root_window_->GetLayer());
-  host_->SetFrameSinkId(surface_id_allocator_->frame_sink_id());
+  host_->SetFrameSinkId(frame_sink_id_);
   host_->GetLayerTree()->SetViewportSize(size_);
   host_->GetLayerTree()->set_has_transparent_background(
       has_transparent_background_);
@@ -725,11 +724,11 @@ void CompositorImpl::InitializeDisplay(
 
   auto compositor_frame_sink =
       vulkan_context_provider ? base::MakeUnique<cc::DirectCompositorFrameSink>(
-                                    manager, surface_id_allocator_.get(),
-                                    display_.get(), vulkan_context_provider)
+                                    frame_sink_id_, manager, display_.get(),
+                                    vulkan_context_provider)
                               : base::MakeUnique<cc::DirectCompositorFrameSink>(
-                                    manager, surface_id_allocator_.get(),
-                                    display_.get(), context_provider, nullptr);
+                                    frame_sink_id_, manager, display_.get(),
+                                    context_provider, nullptr);
 
   display_->SetVisible(true);
   display_->Resize(size_);
@@ -826,7 +825,7 @@ void CompositorImpl::SetNeedsAnimate() {
 }
 
 cc::FrameSinkId CompositorImpl::GetFrameSinkId() {
-  return surface_id_allocator_->frame_sink_id();
+  return frame_sink_id_;
 }
 
 bool CompositorImpl::HavePendingReadbacks() {

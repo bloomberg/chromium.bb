@@ -85,12 +85,11 @@ base::LazyInstance<SimpleTaskGraphRunner> g_task_graph_runner =
 BlimpEmbedderCompositor::BlimpEmbedderCompositor(
     CompositorDependencies* compositor_dependencies)
     : compositor_dependencies_(compositor_dependencies),
-      surface_id_allocator_(base::MakeUnique<cc::SurfaceIdAllocator>(
-          compositor_dependencies->AllocateFrameSinkId())),
+      frame_sink_id_(compositor_dependencies->AllocateFrameSinkId()),
       compositor_frame_sink_request_pending_(false),
       root_layer_(cc::Layer::Create()) {
   compositor_dependencies_->GetSurfaceManager()->RegisterFrameSinkId(
-      surface_id_allocator_->frame_sink_id());
+      frame_sink_id_);
 
   cc::LayerTreeHostInProcess::InitParams params;
   params.client = this;
@@ -105,14 +104,14 @@ BlimpEmbedderCompositor::BlimpEmbedderCompositor(
 
   root_layer_->SetBackgroundColor(SK_ColorWHITE);
   host_->GetLayerTree()->SetRootLayer(root_layer_);
-  host_->SetFrameSinkId(surface_id_allocator_->frame_sink_id());
+  host_->SetFrameSinkId(frame_sink_id_);
   host_->SetVisible(true);
 }
 
 BlimpEmbedderCompositor::~BlimpEmbedderCompositor() {
   SetContextProvider(nullptr);
   compositor_dependencies_->GetSurfaceManager()->InvalidateFrameSinkId(
-      surface_id_allocator_->frame_sink_id());
+      frame_sink_id_);
 }
 
 void BlimpEmbedderCompositor::SetContentLayer(
@@ -201,8 +200,8 @@ void BlimpEmbedderCompositor::HandlePendingCompositorFrameSinkRequest() {
 
   // The Browser compositor and display share the same context provider.
   auto compositor_frame_sink = base::MakeUnique<cc::DirectCompositorFrameSink>(
-      compositor_dependencies_->GetSurfaceManager(),
-      surface_id_allocator_.get(), display_.get(), context_provider_, nullptr);
+      frame_sink_id_, compositor_dependencies_->GetSurfaceManager(),
+      display_.get(), context_provider_, nullptr);
 
   host_->SetCompositorFrameSink(std::move(compositor_frame_sink));
 }

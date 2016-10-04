@@ -81,6 +81,7 @@ class SurfaceFactoryOwner : public base::RefCounted<SurfaceFactoryOwner>,
            std::pair<scoped_refptr<SurfaceFactoryOwner>,
                      std::unique_ptr<cc::SingleReleaseCallback>>>
       release_callbacks_;
+  cc::FrameSinkId frame_sink_id_;
   std::unique_ptr<cc::SurfaceIdAllocator> id_allocator_;
   std::unique_ptr<cc::SurfaceFactory> surface_factory_;
   Surface* surface_ = nullptr;

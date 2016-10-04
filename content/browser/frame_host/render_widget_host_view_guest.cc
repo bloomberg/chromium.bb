@@ -113,8 +113,8 @@ void RenderWidgetHostViewGuest::Show() {
     // set (e.g. showing an interstitial), so we resend our current surface to
     // the renderer.
     if (!surface_id_.is_null()) {
-      cc::SurfaceSequence sequence = cc::SurfaceSequence(
-          id_allocator_->frame_sink_id(), next_surface_sequence_++);
+      cc::SurfaceSequence sequence =
+          cc::SurfaceSequence(frame_sink_id_, next_surface_sequence_++);
       GetSurfaceManager()
           ->GetSurfaceForId(surface_id_)
           ->AddDestructionDependency(sequence);
@@ -293,15 +293,16 @@ void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
 
   if (!surface_factory_) {
     cc::SurfaceManager* manager = GetSurfaceManager();
-    surface_factory_ = base::MakeUnique<cc::SurfaceFactory>(manager, this);
+    surface_factory_ =
+        base::MakeUnique<cc::SurfaceFactory>(frame_sink_id_, manager, this);
   }
 
   if (surface_id_.is_null()) {
     surface_id_ = id_allocator_->GenerateId();
     surface_factory_->Create(surface_id_);
 
-    cc::SurfaceSequence sequence = cc::SurfaceSequence(
-        id_allocator_->frame_sink_id(), next_surface_sequence_++);
+    cc::SurfaceSequence sequence =
+        cc::SurfaceSequence(frame_sink_id_, next_surface_sequence_++);
     // The renderer process will satisfy this dependency when it creates a
     // SurfaceLayer.
     cc::SurfaceManager* manager = GetSurfaceManager();

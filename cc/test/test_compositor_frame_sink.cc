@@ -14,8 +14,7 @@
 #include "cc/output/output_surface.h"
 #include "cc/output/texture_mailbox_deleter.h"
 
-static constexpr uint32_t kCompositorClientId = 1;
-static constexpr uint32_t kCompositorSinkId = 1;
+static constexpr cc::FrameSinkId kCompositorFrameSinkId(1, 1);
 
 namespace cc {
 
@@ -31,10 +30,11 @@ TestCompositorFrameSink::TestCompositorFrameSink(
     bool force_disable_reclaim_resources)
     : CompositorFrameSink(std::move(compositor_context_provider),
                           std::move(worker_context_provider)),
+      frame_sink_id_(kCompositorFrameSinkId),
       surface_manager_(new SurfaceManager),
-      surface_id_allocator_(new SurfaceIdAllocator(
-          FrameSinkId(kCompositorClientId, kCompositorSinkId))),
-      surface_factory_(new SurfaceFactory(surface_manager_.get(), this)),
+      surface_id_allocator_(new SurfaceIdAllocator(frame_sink_id_)),
+      surface_factory_(
+          new SurfaceFactory(frame_sink_id_, surface_manager_.get(), this)),
       weak_ptrs_(this) {
   std::unique_ptr<SyntheticBeginFrameSource> begin_frame_source;
   std::unique_ptr<DisplayScheduler> scheduler;
@@ -90,11 +90,9 @@ bool TestCompositorFrameSink::BindToClient(CompositorFrameSinkClient* client) {
   if (!capabilities_.delegated_sync_points_required && context_provider())
     context_provider()->SetLostContextCallback(base::Closure());
 
-  surface_manager_->RegisterFrameSinkId(surface_id_allocator_->frame_sink_id());
-  surface_manager_->RegisterSurfaceFactoryClient(
-      surface_id_allocator_->frame_sink_id(), this);
-  display_->Initialize(this, surface_manager_.get(),
-                       surface_id_allocator_->frame_sink_id());
+  surface_manager_->RegisterFrameSinkId(frame_sink_id_);
+  surface_manager_->RegisterSurfaceFactoryClient(frame_sink_id_, this);
+  display_->Initialize(this, surface_manager_.get(), frame_sink_id_);
   display_->renderer_for_testing()->SetEnlargePassTextureAmountForTesting(
       enlarge_pass_texture_amount_);
   display_->SetVisible(true);
@@ -107,10 +105,8 @@ void TestCompositorFrameSink::DetachFromClient() {
   if (bound_) {
     if (!delegated_surface_id_.is_null())
       surface_factory_->Destroy(delegated_surface_id_);
-    surface_manager_->UnregisterSurfaceFactoryClient(
-        surface_id_allocator_->frame_sink_id());
-    surface_manager_->InvalidateFrameSinkId(
-        surface_id_allocator_->frame_sink_id());
+    surface_manager_->UnregisterSurfaceFactoryClient(frame_sink_id_);
+    surface_manager_->InvalidateFrameSinkId(frame_sink_id_);
     bound_ = false;
   }
   display_ = nullptr;

@@ -10,6 +10,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "cc/surfaces/display_client.h"
+#include "cc/surfaces/frame_sink_id.h"
 #include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_id.h"
 
@@ -69,7 +70,9 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
 
   void SetEmptyRootFrame();
 
-  uint32_t next_frame_sink_id_;
+  uint32_t next_client_id_;
+
+  cc::FrameSinkId frame_sink_id_;
 
   std::unique_ptr<cc::SurfaceManager> surface_manager_;
   std::unique_ptr<cc::Display> display_;

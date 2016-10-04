@@ -60,9 +60,8 @@ class CC_EXPORT CompositorFrameSink
   };
 
   // Constructor for GL-based and/or software compositing.
-  explicit CompositorFrameSink(
-      scoped_refptr<ContextProvider> context_provider,
-      scoped_refptr<ContextProvider> worker_context_provider);
+  CompositorFrameSink(scoped_refptr<ContextProvider> context_provider,
+                      scoped_refptr<ContextProvider> worker_context_provider);
 
   // Constructor for Vulkan-based compositing.
   explicit CompositorFrameSink(

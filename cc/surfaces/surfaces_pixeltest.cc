@@ -32,7 +32,8 @@ class EmptySurfaceFactoryClient : public SurfaceFactoryClient {
 class SurfacesPixelTest : public RendererPixelTest<GLRenderer> {
  public:
   SurfacesPixelTest()
-      : allocator_(kArbitraryFrameSinkId), factory_(&manager_, &client_) {}
+      : allocator_(kArbitraryFrameSinkId),
+        factory_(kArbitraryFrameSinkId, &manager_, &client_) {}
 
  protected:
   SurfaceManager manager_;

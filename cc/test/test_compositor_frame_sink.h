@@ -80,6 +80,7 @@ class TestCompositorFrameSink : public CompositorFrameSink,
  private:
   void DidDrawCallback(bool synchronous);
 
+  FrameSinkId frame_sink_id_;
   // TODO(danakj): These don't need to be stored in unique_ptrs when
   // CompositorFrameSink is owned/destroyed on the compositor thread.
   std::unique_ptr<SurfaceManager> surface_manager_;

@@ -13,6 +13,7 @@
 #include "android_webview/browser/render_thread_manager.h"
 #include "android_webview/browser/surfaces_instance.h"
 #include "android_webview/public/browser/draw_gl.h"
+#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/surfaces/surface_factory.h"
@@ -27,15 +28,15 @@ HardwareRenderer::HardwareRenderer(RenderThreadManager* state)
     : render_thread_manager_(state),
       last_egl_context_(eglGetCurrentContext()),
       surfaces_(SurfacesInstance::GetOrCreateInstance()),
+      frame_sink_id_(surfaces_->AllocateFrameSinkId()),
       surface_id_allocator_(
-          new cc::SurfaceIdAllocator(surfaces_->AllocateFrameSinkId())),
+          base::MakeUnique<cc::SurfaceIdAllocator>(frame_sink_id_)),
       last_committed_compositor_frame_sink_id_(0u),
       last_submitted_compositor_frame_sink_id_(0u) {
   DCHECK(last_egl_context_);
-  surfaces_->GetSurfaceManager()->RegisterFrameSinkId(
-      surface_id_allocator_->frame_sink_id());
-  surfaces_->GetSurfaceManager()->RegisterSurfaceFactoryClient(
-      surface_id_allocator_->frame_sink_id(), this);
+  surfaces_->GetSurfaceManager()->RegisterFrameSinkId(frame_sink_id_);
+  surfaces_->GetSurfaceManager()->RegisterSurfaceFactoryClient(frame_sink_id_,
+                                                               this);
 }
 
 HardwareRenderer::~HardwareRenderer() {
@@ -45,9 +46,8 @@ HardwareRenderer::~HardwareRenderer() {
     DestroySurface();
   surface_factory_.reset();
   surfaces_->GetSurfaceManager()->UnregisterSurfaceFactoryClient(
-      surface_id_allocator_->frame_sink_id());
-  surfaces_->GetSurfaceManager()->InvalidateFrameSinkId(
-      surface_id_allocator_->frame_sink_id());
+      frame_sink_id_);
+  surfaces_->GetSurfaceManager()->InvalidateFrameSinkId(frame_sink_id_);
 
   // Reset draw constraints.
   render_thread_manager_->PostExternalDrawConstraintsToChildCompositorOnRT(
@@ -99,8 +99,8 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info) {
       compositor_id_ = child_frame_->compositor_id;
       last_submitted_compositor_frame_sink_id_ =
           child_frame_->compositor_frame_sink_id;
-      surface_factory_.reset(
-          new cc::SurfaceFactory(surfaces_->GetSurfaceManager(), this));
+      surface_factory_.reset(new cc::SurfaceFactory(
+          frame_sink_id_, surfaces_->GetSurfaceManager(), this));
     }
 
     std::unique_ptr<cc::CompositorFrame> child_compositor_frame =

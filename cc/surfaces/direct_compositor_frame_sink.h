@@ -11,6 +11,7 @@
 #include "cc/surfaces/display_client.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_factory_client.h"
+#include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surfaces_export.h"
 
 namespace cc {
@@ -28,14 +29,14 @@ class CC_SURFACES_EXPORT DirectCompositorFrameSink
   // The underlying Display, SurfaceManager, and SurfaceIdAllocator must outlive
   // this class.
   DirectCompositorFrameSink(
+      const FrameSinkId& frame_sink_id,
       SurfaceManager* surface_manager,
-      SurfaceIdAllocator* allocator,
       Display* display,
       scoped_refptr<ContextProvider> context_provider,
       scoped_refptr<ContextProvider> worker_context_provider);
   DirectCompositorFrameSink(
+      const FrameSinkId& frame_sink_id,
       SurfaceManager* surface_manager,
-      SurfaceIdAllocator* allocator,
       Display* display,
       scoped_refptr<VulkanContextProvider> vulkan_context_provider);
   ~DirectCompositorFrameSink() override;
@@ -62,8 +63,9 @@ class CC_SURFACES_EXPORT DirectCompositorFrameSink
   // This class is only meant to be used on a single thread.
   base::ThreadChecker thread_checker_;
 
+  FrameSinkId frame_sink_id_;
   SurfaceManager* surface_manager_;
-  SurfaceIdAllocator* surface_id_allocator_;
+  SurfaceIdAllocator surface_id_allocator_;
   Display* display_;
   SurfaceFactory factory_;
   SurfaceId delegated_surface_id_;

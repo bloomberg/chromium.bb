@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "cc/ipc/compositor_frame.mojom.h"
+#include "cc/surfaces/frame_sink_id.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_id.h"
@@ -59,6 +60,8 @@ class ServerWindowSurface : public mojom::Surface,
   // SurfaceFactoryClient implementation.
   void ReturnResources(const cc::ReturnedResourceArray& resources) override;
   void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source) override;
+
+  const cc::FrameSinkId frame_sink_id_;
 
   ServerWindowSurfaceManager* manager_;  // Owns this.
 

@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/layers/layer.h"
+#include "cc/surfaces/frame_sink_id.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "ui/gfx/geometry/size.h"
@@ -16,7 +17,6 @@
 namespace cc {
 class Display;
 class LayerTreeHost;
-class SurfaceIdAllocator;
 class SurfaceManager;
 }  // namespace cc
 
@@ -76,9 +76,10 @@ class BlimpEmbedderCompositor : public cc::LayerTreeHostClient,
 
   CompositorDependencies* compositor_dependencies_;
 
+  cc::FrameSinkId frame_sink_id_;
+
   scoped_refptr<cc::ContextProvider> context_provider_;
 
-  std::unique_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
   bool compositor_frame_sink_request_pending_;
   std::unique_ptr<cc::Display> display_;
 

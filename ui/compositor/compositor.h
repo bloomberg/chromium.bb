@@ -384,9 +384,7 @@ class COMPOSITOR_EXPORT Compositor
     return &layer_animator_collection_;
   }
 
-  cc::SurfaceIdAllocator* surface_id_allocator() {
-    return surface_id_allocator_.get();
-  }
+  const cc::FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
 
  private:
   friend class base::RefCounted<Compositor>;
@@ -413,10 +411,10 @@ class COMPOSITOR_EXPORT Compositor
   ui::Window* window_;
 #endif
   // A map from child id to parent id.
-  std::unordered_map<cc::FrameSinkId, cc::FrameSinkId, cc::FrameSinkIdHash>
-      frame_sinks_;
+  std::unordered_set<cc::FrameSinkId, cc::FrameSinkIdHash> child_frame_sinks_;
   bool widget_valid_;
   bool compositor_frame_sink_requested_;
+  const cc::FrameSinkId frame_sink_id_;
   std::unique_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
   scoped_refptr<cc::Layer> root_web_layer_;
   std::unique_ptr<cc::LayerTreeHost> host_;

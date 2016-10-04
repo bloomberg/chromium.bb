@@ -45,7 +45,8 @@ void OffscreenCanvasCompositorFrameSink::SubmitCompositorFrame(
     const SubmitCompositorFrameCallback& callback) {
   if (!surface_factory_) {
     cc::SurfaceManager* manager = GetSurfaceManager();
-    surface_factory_ = base::MakeUnique<cc::SurfaceFactory>(manager, this);
+    surface_factory_ = base::MakeUnique<cc::SurfaceFactory>(
+        surface_id_.frame_sink_id(), manager, this);
     surface_factory_->Create(surface_id_);
 
     manager->RegisterFrameSinkId(surface_id_.frame_sink_id());

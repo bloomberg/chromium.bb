@@ -69,18 +69,18 @@ TestRenderWidgetHostView::TestRenderWidgetHostView(RenderWidgetHost* rwh)
 #if defined(OS_ANDROID)
   // Not all tests initialize or need a context provider factory.
   if (ContextProviderFactoryImpl::GetInstance()) {
-    surface_id_allocator_.reset(
-        new cc::SurfaceIdAllocator(AllocateFrameSinkId()));
-    GetSurfaceManager()->RegisterFrameSinkId(
-        surface_id_allocator_->frame_sink_id());
+    frame_sink_id_ = AllocateFrameSinkId();
+    surface_id_allocator_ =
+        base::MakeUnique<cc::SurfaceIdAllocator>(frame_sink_id_);
+    GetSurfaceManager()->RegisterFrameSinkId(frame_sink_id_);
   }
 #else
   // Not all tests initialize or need an image transport factory.
   if (ImageTransportFactory::GetInstance()) {
-    surface_id_allocator_.reset(
-        new cc::SurfaceIdAllocator(AllocateFrameSinkId()));
-    GetSurfaceManager()->RegisterFrameSinkId(
-        surface_id_allocator_->frame_sink_id());
+    frame_sink_id_ = AllocateFrameSinkId();
+    surface_id_allocator_ =
+        base::MakeUnique<cc::SurfaceIdAllocator>(frame_sink_id_);
+    GetSurfaceManager()->RegisterFrameSinkId(frame_sink_id_);
   }
 #endif
 
@@ -96,7 +96,7 @@ TestRenderWidgetHostView::~TestRenderWidgetHostView() {
   manager = GetSurfaceManager();
 #endif
   if (manager) {
-    manager->InvalidateFrameSinkId(surface_id_allocator_->frame_sink_id());
+    manager->InvalidateFrameSinkId(frame_sink_id_);
   }
 }
 
@@ -229,10 +229,7 @@ void TestRenderWidgetHostView::UnlockMouse() {
 }
 
 cc::FrameSinkId TestRenderWidgetHostView::GetFrameSinkId() {
-  // See constructor.  If a test needs this, its harness needs to construct an
-  // ImageTransportFactory.
-  DCHECK(surface_id_allocator_);
-  return surface_id_allocator_->frame_sink_id();
+  return frame_sink_id_;
 }
 
 TestRenderViewHost::TestRenderViewHost(

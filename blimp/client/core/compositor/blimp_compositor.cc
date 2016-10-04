@@ -64,6 +64,8 @@ BlimpCompositor::BlimpCompositor(
     : render_widget_id_(render_widget_id),
       client_(client),
       compositor_dependencies_(compositor_dependencies),
+      frame_sink_id_(compositor_dependencies_->GetEmbedderDependencies()
+                         ->AllocateFrameSinkId()),
       proxy_client_(nullptr),
       compositor_frame_sink_request_pending_(false),
       layer_(cc::Layer::Create()),
@@ -72,10 +74,9 @@ BlimpCompositor::BlimpCompositor(
       weak_ptr_factory_(this) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  surface_id_allocator_ = base::MakeUnique<cc::SurfaceIdAllocator>(
-      GetEmbedderDeps()->AllocateFrameSinkId());
-  GetEmbedderDeps()->GetSurfaceManager()->RegisterFrameSinkId(
-      surface_id_allocator_->frame_sink_id());
+  surface_id_allocator_ =
+      base::MakeUnique<cc::SurfaceIdAllocator>(frame_sink_id_);
+  GetEmbedderDeps()->GetSurfaceManager()->RegisterFrameSinkId(frame_sink_id_);
   CreateLayerTreeHost();
 }
 
@@ -83,8 +84,7 @@ BlimpCompositor::~BlimpCompositor() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   DestroyLayerTreeHost();
-  GetEmbedderDeps()->GetSurfaceManager()->InvalidateFrameSinkId(
-      surface_id_allocator_->frame_sink_id());
+  GetEmbedderDeps()->GetSurfaceManager()->InvalidateFrameSinkId(frame_sink_id_);
 
   CheckPendingCommitCounts(true /* flush */);
 }
@@ -211,7 +211,7 @@ void BlimpCompositor::BindToProxyClient(
 
   proxy_client_ = proxy_client;
   surface_factory_ = base::MakeUnique<cc::SurfaceFactory>(
-      GetEmbedderDeps()->GetSurfaceManager(), this);
+      frame_sink_id_, GetEmbedderDeps()->GetSurfaceManager(), this);
 }
 
 void BlimpCompositor::SwapCompositorFrame(cc::CompositorFrame frame) {

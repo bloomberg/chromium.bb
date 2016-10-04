@@ -8,6 +8,7 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_sink_client.h"
 #include "cc/surfaces/display.h"
+#include "cc/surfaces/frame_sink_id.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surface_manager.h"
@@ -15,17 +16,18 @@
 namespace cc {
 
 DirectCompositorFrameSink::DirectCompositorFrameSink(
+    const FrameSinkId& frame_sink_id,
     SurfaceManager* surface_manager,
-    SurfaceIdAllocator* surface_id_allocator,
     Display* display,
     scoped_refptr<ContextProvider> context_provider,
     scoped_refptr<ContextProvider> worker_context_provider)
     : CompositorFrameSink(std::move(context_provider),
                           std::move(worker_context_provider)),
+      frame_sink_id_(frame_sink_id),
       surface_manager_(surface_manager),
-      surface_id_allocator_(surface_id_allocator),
+      surface_id_allocator_(frame_sink_id),
       display_(display),
-      factory_(surface_manager, this) {
+      factory_(frame_sink_id, surface_manager, this) {
   DCHECK(thread_checker_.CalledOnValidThread());
   capabilities_.can_force_reclaim_resources = true;
   // Display and DirectCompositorFrameSink share a GL context, so sync
@@ -35,15 +37,16 @@ DirectCompositorFrameSink::DirectCompositorFrameSink(
 }
 
 DirectCompositorFrameSink::DirectCompositorFrameSink(
+    const FrameSinkId& frame_sink_id,
     SurfaceManager* surface_manager,
-    SurfaceIdAllocator* surface_id_allocator,
     Display* display,
     scoped_refptr<VulkanContextProvider> vulkan_context_provider)
     : CompositorFrameSink(std::move(vulkan_context_provider)),
+      frame_sink_id_(frame_sink_id),
       surface_manager_(surface_manager),
-      surface_id_allocator_(surface_id_allocator),
+      surface_id_allocator_(frame_sink_id_),
       display_(display),
-      factory_(surface_manager, this) {
+      factory_(frame_sink_id_, surface_manager, this) {
   DCHECK(thread_checker_.CalledOnValidThread());
   capabilities_.can_force_reclaim_resources = true;
 }
@@ -58,8 +61,7 @@ bool DirectCompositorFrameSink::BindToClient(
     CompositorFrameSinkClient* client) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  surface_manager_->RegisterSurfaceFactoryClient(
-      surface_id_allocator_->frame_sink_id(), this);
+  surface_manager_->RegisterSurfaceFactoryClient(frame_sink_id_, this);
 
   if (!CompositorFrameSink::BindToClient(client))
     return false;
@@ -72,8 +74,7 @@ bool DirectCompositorFrameSink::BindToClient(
 
   // Avoid initializing GL context here, as this should be sharing the
   // Display's context.
-  display_->Initialize(this, surface_manager_,
-                       surface_id_allocator_->frame_sink_id());
+  display_->Initialize(this, surface_manager_, frame_sink_id_);
   return true;
 }
 
@@ -81,8 +82,7 @@ void DirectCompositorFrameSink::DetachFromClient() {
   DCHECK(HasClient());
   // Unregister the SurfaceFactoryClient here instead of the dtor so that only
   // one client is alive for this namespace at any given time.
-  surface_manager_->UnregisterSurfaceFactoryClient(
-      surface_id_allocator_->frame_sink_id());
+  surface_manager_->UnregisterSurfaceFactoryClient(frame_sink_id_);
   if (!delegated_surface_id_.is_null())
     factory_.Destroy(delegated_surface_id_);
 
@@ -96,7 +96,7 @@ void DirectCompositorFrameSink::SwapBuffers(CompositorFrame frame) {
     if (!delegated_surface_id_.is_null()) {
       factory_.Destroy(delegated_surface_id_);
     }
-    delegated_surface_id_ = surface_id_allocator_->GenerateId();
+    delegated_surface_id_ = surface_id_allocator_.GenerateId();
     factory_.Create(delegated_surface_id_);
     last_swap_frame_size_ = frame_size;
   }

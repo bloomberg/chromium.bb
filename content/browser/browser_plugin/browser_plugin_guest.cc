@@ -780,7 +780,7 @@ void BrowserPluginGuest::OnWillAttachComplete(
   RenderWidgetHostViewGuest* rwhv = static_cast<RenderWidgetHostViewGuest*>(
       web_contents()->GetRenderWidgetHostView());
   if (rwhv)
-    rwhv->RegisterSurfaceNamespaceId();
+    rwhv->RegisterFrameSinkId();
   has_render_view_ = true;
 
   RecordAction(base::UserMetricsAction("BrowserPlugin.Guest.Attached"));
@@ -799,7 +799,7 @@ void BrowserPluginGuest::OnDetach(int browser_plugin_instance_id) {
           web_contents()->GetRenderWidgetHostView());
   // If the guest is terminated, our host may already be gone.
   if (rwhv)
-    rwhv->UnregisterSurfaceNamespaceId();
+    rwhv->UnregisterFrameSinkId();
 
   delegate_->DidDetach();
 }

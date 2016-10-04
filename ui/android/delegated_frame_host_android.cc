@@ -73,7 +73,9 @@ DelegatedFrameHostAndroid::DelegatedFrameHostAndroid(
     ui::ViewAndroid* view,
     SkColor background_color,
     ReturnResourcesCallback return_resources_callback)
-    : view_(view),
+    : frame_sink_id_(
+          ui::ContextProviderFactory::GetInstance()->AllocateFrameSinkId()),
+      view_(view),
       return_resources_callback_(return_resources_callback),
       background_layer_(cc::SolidColorLayer::Create()) {
   DCHECK(view_);
@@ -81,9 +83,8 @@ DelegatedFrameHostAndroid::DelegatedFrameHostAndroid(
 
   surface_manager_ =
       ui::ContextProviderFactory::GetInstance()->GetSurfaceManager();
-  surface_id_allocator_.reset(new cc::SurfaceIdAllocator(
-      ui::ContextProviderFactory::GetInstance()->AllocateFrameSinkId()));
-  surface_manager_->RegisterFrameSinkId(surface_id_allocator_->frame_sink_id());
+  surface_id_allocator_.reset(new cc::SurfaceIdAllocator(frame_sink_id_));
+  surface_manager_->RegisterFrameSinkId(frame_sink_id_);
 
   background_layer_->SetBackgroundColor(background_color);
   view_->GetLayer()->AddChild(background_layer_);
@@ -94,8 +95,7 @@ DelegatedFrameHostAndroid::~DelegatedFrameHostAndroid() {
   DestroyDelegatedContent();
   surface_factory_.reset();
   UnregisterFrameSinkHierarchy();
-  surface_manager_->InvalidateFrameSinkId(
-      surface_id_allocator_->frame_sink_id());
+  surface_manager_->InvalidateFrameSinkId(frame_sink_id_);
   background_layer_->RemoveFromParent();
 }
 
@@ -107,8 +107,8 @@ void DelegatedFrameHostAndroid::SubmitCompositorFrame(
     cc::CompositorFrame frame,
     cc::SurfaceFactory::DrawCallback draw_callback) {
   if (!surface_factory_) {
-    surface_factory_ =
-        base::WrapUnique(new cc::SurfaceFactory(surface_manager_, this));
+    surface_factory_ = base::WrapUnique(
+        new cc::SurfaceFactory(frame_sink_id_, surface_manager_, this));
   }
 
   cc::RenderPass* root_pass =
@@ -160,7 +160,7 @@ void DelegatedFrameHostAndroid::SubmitCompositorFrame(
 }
 
 cc::FrameSinkId DelegatedFrameHostAndroid::GetFrameSinkId() const {
-  return surface_id_allocator_->frame_sink_id();
+  return frame_sink_id_;
 }
 
 void DelegatedFrameHostAndroid::RequestCopyOfSurface(
@@ -227,19 +227,16 @@ void DelegatedFrameHostAndroid::RegisterFrameSinkHierarchy(
   if (!registered_parent_frame_sink_id_.is_null())
     UnregisterFrameSinkHierarchy();
   registered_parent_frame_sink_id_ = parent_id;
-  surface_manager_->RegisterSurfaceFactoryClient(
-      surface_id_allocator_->frame_sink_id(), this);
-  surface_manager_->RegisterFrameSinkHierarchy(
-      parent_id, surface_id_allocator_->frame_sink_id());
+  surface_manager_->RegisterSurfaceFactoryClient(frame_sink_id_, this);
+  surface_manager_->RegisterFrameSinkHierarchy(parent_id, frame_sink_id_);
 }
 
 void DelegatedFrameHostAndroid::UnregisterFrameSinkHierarchy() {
   if (registered_parent_frame_sink_id_.is_null())
     return;
-  surface_manager_->UnregisterSurfaceFactoryClient(
-      surface_id_allocator_->frame_sink_id());
+  surface_manager_->UnregisterSurfaceFactoryClient(frame_sink_id_);
   surface_manager_->UnregisterFrameSinkHierarchy(
-      registered_parent_frame_sink_id_, surface_id_allocator_->frame_sink_id());
+      registered_parent_frame_sink_id_, frame_sink_id_);
   registered_parent_frame_sink_id_ = cc::FrameSinkId();
 }
 

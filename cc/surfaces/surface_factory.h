@@ -40,8 +40,12 @@ class CC_SURFACES_EXPORT SurfaceFactory
  public:
   using DrawCallback = base::Callback<void()>;
 
-  SurfaceFactory(SurfaceManager* manager, SurfaceFactoryClient* client);
+  SurfaceFactory(const FrameSinkId& frame_sink_id,
+                 SurfaceManager* manager,
+                 SurfaceFactoryClient* client);
   ~SurfaceFactory();
+
+  const FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
 
   void Create(const SurfaceId& surface_id);
   void Destroy(const SurfaceId& surface_id);
@@ -83,6 +87,7 @@ class CC_SURFACES_EXPORT SurfaceFactory
   void DidDestroySurfaceManager() { manager_ = nullptr; }
 
  private:
+  FrameSinkId frame_sink_id_;
   SurfaceManager* manager_;
   SurfaceFactoryClient* client_;
   SurfaceResourceHolder holder_;
