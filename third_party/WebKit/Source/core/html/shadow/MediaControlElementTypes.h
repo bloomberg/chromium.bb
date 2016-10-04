@@ -179,7 +179,6 @@ class MediaControlInputElement : public HTMLInputElement,
 
  protected:
   MediaControlInputElement(MediaControls&, MediaControlElementType);
-  void defaultEventHandler(Event*) override;
 
  private:
   virtual void updateDisplayType() {}

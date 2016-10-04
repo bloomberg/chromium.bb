@@ -32,6 +32,7 @@
 #include "core/events/MouseEvent.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLMediaElement.h"
+#include "core/html/shadow/MediaControlsWindowEventListener.h"
 #include "core/html/track/TextTrackContainer.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTheme.h"
@@ -120,6 +121,9 @@ MediaControls::MediaControls(HTMLMediaElement& mediaElement)
       m_castButton(nullptr),
       m_fullscreenButton(nullptr),
       m_downloadButton(nullptr),
+      m_windowEventListener(MediaControlsWindowEventListener::create(
+          this,
+          WTF::bind(&MediaControls::hideAllMenus, wrapWeakPersistent(this)))),
       m_hideMediaControlsTimer(this,
                                &MediaControls::hideMediaControlsTimerFired),
       m_hideTimerBehaviorFlags(IgnoreNone),
@@ -519,6 +523,9 @@ void MediaControls::toggleTextTrackList() {
     return;
   }
 
+  if (!m_textTrackList->isWanted())
+    m_windowEventListener->start();
+
   m_textTrackList->setVisible(!m_textTrackList->isWanted());
 }
 
@@ -850,7 +857,19 @@ bool MediaControls::overflowMenuVisible() {
 
 void MediaControls::toggleOverflowMenu() {
   DCHECK(m_overflowList);
+
+  if (!m_overflowList->isWanted())
+    m_windowEventListener->start();
   m_overflowList->setIsWanted(!m_overflowList->isWanted());
+}
+
+void MediaControls::hideAllMenus() {
+  m_windowEventListener->stop();
+
+  if (m_overflowList->isWanted())
+    m_overflowList->setIsWanted(false);
+  if (m_textTrackList->isWanted())
+    m_textTrackList->setVisible(false);
 }
 
 DEFINE_TRACE(MediaControls) {
@@ -873,6 +892,7 @@ DEFINE_TRACE(MediaControls) {
   visitor->trace(m_overflowList);
   visitor->trace(m_castButton);
   visitor->trace(m_overlayCastButton);
+  visitor->trace(m_windowEventListener);
   HTMLDivElement::trace(visitor);
 }
 

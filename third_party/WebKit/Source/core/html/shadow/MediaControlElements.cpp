@@ -458,7 +458,6 @@ void MediaControlTextTrackListElement::defaultEventHandler(Event* event) {
       mediaElement().disableAutomaticTextTrackSelection();
     }
 
-    mediaControls().toggleTextTrackList();
     event->setDefaultHandled();
   }
   MediaControlDivElement::defaultEventHandler(event);

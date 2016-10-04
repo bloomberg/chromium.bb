@@ -55,6 +55,14 @@ function elementCoordinates(element)
     return new Array(x, y);
 }
 
+function coordinatesOutsideElement(element)
+{
+    var elementBoundingRect = element.getBoundingClientRect();
+    var x = elementBoundingRect.left - 1;
+    var y = elementBoundingRect.top - 1;
+    return new Array(x, y);
+}
+
 function mediaControlsButtonCoordinates(element, id)
 {
     var button = mediaControlsButton(element, id);

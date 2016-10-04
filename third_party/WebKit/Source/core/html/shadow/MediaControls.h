@@ -34,6 +34,7 @@ namespace blink {
 
 class Event;
 class TextTrackContainer;
+class MediaControlsWindowEventListener;
 
 class CORE_EXPORT MediaControls final : public HTMLDivElement {
  public:
@@ -121,6 +122,8 @@ class CORE_EXPORT MediaControls final : public HTMLDivElement {
 
   void panelWidthChangedTimerFired(TimerBase*);
 
+  void hideAllMenus();
+
   // Hide elements that don't fit, and show those things that we want which
   // do fit.  This requires that m_panelWidth is current.
   void computeWhichControlsFit();
@@ -154,6 +157,8 @@ class CORE_EXPORT MediaControls final : public HTMLDivElement {
   Member<MediaControlCastButtonElement> m_castButton;
   Member<MediaControlFullscreenButtonElement> m_fullscreenButton;
   Member<MediaControlDownloadButtonElement> m_downloadButton;
+
+  Member<MediaControlsWindowEventListener> m_windowEventListener;
 
   Timer<MediaControls> m_hideMediaControlsTimer;
   unsigned m_hideTimerBehaviorFlags;
