@@ -458,11 +458,21 @@ bool H264ConfigChangeDetector::DetectConfig(const uint8_t* stream,
   return true;
 }
 
+gfx::ColorSpace H264ConfigChangeDetector::current_color_space() const {
+  // TODO(hubbe): Is using last_sps_id_ correct here?
+  const H264SPS* sps = parser_->GetSPS(last_sps_id_);
+  if (sps)
+    return sps->GetColorSpace();
+  return gfx::ColorSpace();
+}
 
 DXVAVideoDecodeAccelerator::PendingSampleInfo::PendingSampleInfo(
     int32_t buffer_id,
-    IMFSample* sample)
-    : input_buffer_id(buffer_id), picture_buffer_id(-1) {
+    IMFSample* sample,
+    const gfx::ColorSpace& color_space)
+    : input_buffer_id(buffer_id),
+      picture_buffer_id(-1),
+      color_space(color_space) {
   output_sample.Attach(sample);
 }
 
@@ -1596,7 +1606,7 @@ bool DXVAVideoDecodeAccelerator::GetStreamsInfoAndBufferReqs() {
   return true;
 }
 
-void DXVAVideoDecodeAccelerator::DoDecode() {
+void DXVAVideoDecodeAccelerator::DoDecode(const gfx::ColorSpace& color_space) {
   TRACE_EVENT0("media", "DXVAVideoDecodeAccelerator::DoDecode");
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
   // This function is also called from FlushInternal in a loop which could
@@ -1608,7 +1618,6 @@ void DXVAVideoDecodeAccelerator::DoDecode() {
 
   MFT_OUTPUT_DATA_BUFFER output_data_buffer = {0};
   DWORD status = 0;
-
   HRESULT hr = decoder_->ProcessOutput(0,  // No flags
                                        1,  // # of out streams to pull from
                                        &output_data_buffer, &status);
@@ -1630,7 +1639,7 @@ void DXVAVideoDecodeAccelerator::DoDecode() {
       } else {
         DVLOG(1) << "Received output format change from the decoder."
                     " Recursively invoking DoDecode";
-        DoDecode();
+        DoDecode(color_space);
       }
       return;
     } else if (hr == MF_E_TRANSFORM_NEED_MORE_INPUT) {
@@ -1649,12 +1658,14 @@ void DXVAVideoDecodeAccelerator::DoDecode() {
 
   inputs_before_decode_ = 0;
 
-  RETURN_AND_NOTIFY_ON_FAILURE(ProcessOutputSample(output_data_buffer.pSample),
-                               "Failed to process output sample.",
-                               PLATFORM_FAILURE, );
+  RETURN_AND_NOTIFY_ON_FAILURE(
+      ProcessOutputSample(output_data_buffer.pSample, color_space),
+      "Failed to process output sample.", PLATFORM_FAILURE, );
 }
 
-bool DXVAVideoDecodeAccelerator::ProcessOutputSample(IMFSample* sample) {
+bool DXVAVideoDecodeAccelerator::ProcessOutputSample(
+    IMFSample* sample,
+    const gfx::ColorSpace& color_space) {
   RETURN_ON_FAILURE(sample, "Decode succeeded with NULL output sample", false);
 
   LONGLONG input_buffer_id = 0;
@@ -1666,7 +1677,7 @@ bool DXVAVideoDecodeAccelerator::ProcessOutputSample(IMFSample* sample) {
     base::AutoLock lock(decoder_lock_);
     DCHECK(pending_output_samples_.empty());
     pending_output_samples_.push_back(
-        PendingSampleInfo(input_buffer_id, sample));
+        PendingSampleInfo(input_buffer_id, sample, color_space));
   }
 
   if (pictures_requested_) {
@@ -1737,6 +1748,7 @@ void DXVAVideoDecodeAccelerator::ProcessPendingSamples() {
 
       pending_sample->picture_buffer_id = index->second->id();
       index->second->set_bound();
+      index->second->set_color_space(pending_sample->color_space);
       if (share_nv12_textures_) {
         main_thread_task_runner_->PostTask(
             FROM_HERE,
@@ -1890,14 +1902,17 @@ void DXVAVideoDecodeAccelerator::RequestPictureBuffers(int width, int height) {
   }
 }
 
-void DXVAVideoDecodeAccelerator::NotifyPictureReady(int picture_buffer_id,
-                                                    int input_buffer_id) {
+void DXVAVideoDecodeAccelerator::NotifyPictureReady(
+    int picture_buffer_id,
+    int input_buffer_id,
+    const gfx::ColorSpace& color_space) {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   // This task could execute after the decoder has been torn down.
   if (GetState() != kUninitialized && client_) {
     // TODO(henryhsu): Use correct visible size instead of (0, 0). We can't use
     // coded size here so use (0, 0) intentionally to have the client choose.
-    Picture picture(picture_buffer_id, input_buffer_id, gfx::Rect(0, 0), false);
+    Picture picture(picture_buffer_id, input_buffer_id, gfx::Rect(0, 0),
+                    color_space, false);
     client_->PictureReady(picture);
   }
 }
@@ -1976,7 +1991,7 @@ void DXVAVideoDecodeAccelerator::FlushInternal() {
   // Attempt to retrieve an output frame from the decoder. If we have one,
   // return and proceed when the output frame is processed. If we don't have a
   // frame then we are done.
-  DoDecode();
+  DoDecode(config_change_detector_->current_color_space());
   if (OutputSamplesPresent())
     return;
 
@@ -2025,6 +2040,8 @@ void DXVAVideoDecodeAccelerator::DecodeInternal(
     return;
   }
 
+  gfx::ColorSpace color_space = config_change_detector_->current_color_space();
+
   if (!inputs_before_decode_) {
     TRACE_EVENT_ASYNC_BEGIN0("gpu", "DXVAVideoDecodeAccelerator.Decoding",
                              this);
@@ -2042,7 +2059,7 @@ void DXVAVideoDecodeAccelerator::DecodeInternal(
   // process the input again. Failure in either of these steps is treated as a
   // decoder failure.
   if (hr == MF_E_NOTACCEPTING) {
-    DoDecode();
+    DoDecode(color_space);
     // If the DoDecode call resulted in an output frame then we should not
     // process any more input until that frame is copied to the target surface.
     if (!OutputSamplesPresent()) {
@@ -2074,7 +2091,7 @@ void DXVAVideoDecodeAccelerator::DecodeInternal(
   RETURN_AND_NOTIFY_ON_HR_FAILURE(hr, "Failed to process input sample",
                                   PLATFORM_FAILURE, );
 
-  DoDecode();
+  DoDecode(color_space);
 
   State state = GetState();
   RETURN_AND_NOTIFY_ON_FAILURE(
@@ -2254,7 +2271,7 @@ void DXVAVideoDecodeAccelerator::CopySurfaceComplete(
   RETURN_AND_NOTIFY_ON_FAILURE(result, "Failed to complete copying surface",
                                PLATFORM_FAILURE, );
 
-  NotifyPictureReady(picture_buffer->id(), input_buffer_id);
+  NotifyPictureReady(picture_buffer->id(), input_buffer_id, gfx::ColorSpace());
 
   {
     base::AutoLock lock(decoder_lock_);
@@ -2306,7 +2323,8 @@ void DXVAVideoDecodeAccelerator::BindPictureBufferToSample(
   RETURN_AND_NOTIFY_ON_FAILURE(result, "Failed to complete copying surface",
                                PLATFORM_FAILURE, );
 
-  NotifyPictureReady(picture_buffer->id(), input_buffer_id);
+  NotifyPictureReady(picture_buffer->id(), input_buffer_id,
+                     picture_buffer->color_space());
 
   {
     base::AutoLock lock(decoder_lock_);

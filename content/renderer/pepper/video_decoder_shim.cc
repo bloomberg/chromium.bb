@@ -1064,7 +1064,7 @@ void VideoDecoderShim::SendPictures() {
 
     host_->PictureReady(media::Picture(texture_id, frame->decode_id,
                                        frame->video_frame->visible_rect(),
-                                       false));
+                                       gfx::ColorSpace(), false));
     pending_frames_.pop();
   }
 

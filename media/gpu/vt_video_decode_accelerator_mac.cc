@@ -1105,8 +1105,10 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
 
   DVLOG(3) << "PictureReady(picture_id=" << picture_id << ", "
            << "bitstream_id=" << frame.bitstream_id << ")";
+  // TODO(hubbe): Use the correct color space.  http://crbug.com/647725
   client_->PictureReady(Picture(picture_id, frame.bitstream_id,
-                                gfx::Rect(frame.image_size), true));
+                                gfx::Rect(frame.image_size), gfx::ColorSpace(),
+                                true));
   return true;
 }
 

@@ -17,6 +17,8 @@
 #include "media/video/video_decode_accelerator.h"
 #include "ui/gfx/geometry/size.h"
 
+struct AcceleratedVideoDecoderHostMsg_PictureReady_Params;
+
 namespace gpu {
 class GpuChannelHost;
 }
@@ -69,11 +71,8 @@ class GpuVideoDecodeAcceleratorHost
                               const gfx::Size& dimensions,
                               uint32_t texture_target);
   void OnDismissPictureBuffer(int32_t picture_buffer_id);
-  void OnPictureReady(int32_t picture_buffer_id,
-                      int32_t bitstream_buffer_id,
-                      const gfx::Rect& visible_rect,
-                      bool allow_overlay,
-                      bool size_changed);
+  void OnPictureReady(
+      const AcceleratedVideoDecoderHostMsg_PictureReady_Params& params);
   void OnFlushDone();
   void OnResetDone();
   void OnNotifyError(uint32_t error);
