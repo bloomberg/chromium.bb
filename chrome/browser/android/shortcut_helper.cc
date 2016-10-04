@@ -261,10 +261,7 @@ std::string ShortcutHelper::QueryWebApkPackage(const GURL& url) {
 
 // static
 bool ShortcutHelper::IsWebApkInstalled(const GURL& url) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> java_url =
-      base::android::ConvertUTF8ToJavaString(env, url.spec());
-  return Java_ShortcutHelper_isWebApkInstalled(env, java_url);
+  return !QueryWebApkPackage(url).empty();
 }
 
 GURL ShortcutHelper::GetScopeFromURL(const GURL& url) {

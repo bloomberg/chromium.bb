@@ -468,15 +468,6 @@ public class ShortcutHelper {
     }
 
     /**
-     * Returns true if WebAPKs are enabled and there is an installed WebAPK which can handle
-     * {@link url}.
-     */
-    @CalledByNative
-    private static boolean isWebApkInstalled(String url) {
-        return queryWebApkPackage(url) != null;
-    }
-
-    /**
      * Compresses a bitmap into a PNG and converts into a Base64 encoded string.
      * The encoded string can be decoded using {@link decodeBitmapFromString(String)}.
      * @param bitmap The Bitmap to compress and encode.
