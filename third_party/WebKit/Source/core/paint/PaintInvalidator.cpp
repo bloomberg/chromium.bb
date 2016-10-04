@@ -20,6 +20,14 @@
 
 namespace blink {
 
+// TODO(wangxianzhu): Avoid using function when possible. For example, we can
+// avoid it by avoiding unnecessary conversions between LayoutRects and
+// FloatRects.
+static LayoutRect enclosingLayoutRectIfNotEmpty(const FloatRect& floatRect) {
+  return floatRect.isEmpty() ? LayoutRect(floatRect)
+                             : enclosingLayoutRect(floatRect);
+}
+
 static LayoutRect slowMapToVisualRectInAncestorSpace(
     const LayoutObject& object,
     const LayoutBoxModelObject& ancestor,
@@ -31,7 +39,7 @@ static LayoutRect slowMapToVisualRectInAncestorSpace(
     return result;
   }
 
-  LayoutRect result(rect);
+  LayoutRect result = enclosingLayoutRectIfNotEmpty(rect);
   if (object.isLayoutView())
     toLayoutView(object).mapToVisualRectInAncestorSpace(
         &ancestor, result, InputIsInFrameCoordinates, DefaultVisualRectFlags);
@@ -40,7 +48,9 @@ static LayoutRect slowMapToVisualRectInAncestorSpace(
   return result;
 }
 
-// TODO(wangxianzhu): Combine this into PaintInvalidator::mapLocalRectToPaintInvalidationBacking() when removing PaintInvalidationState.
+// TODO(wangxianzhu): Combine this into
+// PaintInvalidator::mapLocalRectToPaintInvalidationBacking() when removing
+// PaintInvalidationState.
 static LayoutRect mapLocalRectToPaintInvalidationBacking(
     GeometryMapper& geometryMapper,
     const LayoutObject& object,
@@ -70,7 +80,7 @@ static LayoutRect mapLocalRectToPaintInvalidationBacking(
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
     // In SPv2, visual rects are in the space of their local transform node.
     rect.moveBy(FloatPoint(context.treeBuilderContext.current.paintOffset));
-    return LayoutRect(rect);
+    return enclosingLayoutRectIfNotEmpty(rect);
   }
 
   LayoutRect result;
@@ -79,7 +89,7 @@ static LayoutRect mapLocalRectToPaintInvalidationBacking(
     result = slowMapToVisualRectInAncestorSpace(
         object, *context.paintInvalidationContainer, rect);
   } else if (object == context.paintInvalidationContainer) {
-    result = LayoutRect(rect);
+    result = enclosingLayoutRectIfNotEmpty(rect);
   } else {
     rect.moveBy(FloatPoint(context.treeBuilderContext.current.paintOffset));
 
@@ -94,9 +104,10 @@ static LayoutRect mapLocalRectToPaintInvalidationBacking(
         containerPaintProperties->contentsProperties();
 
     bool success = false;
-    result = LayoutRect(geometryMapper.mapToVisualRectInDestinationSpace(
-        rect, currentTreeState, containerContentsProperties.propertyTreeState,
-        success));
+    result = enclosingLayoutRectIfNotEmpty(
+        geometryMapper.mapToVisualRectInDestinationSpace(
+            rect, currentTreeState,
+            containerContentsProperties.propertyTreeState, success));
     DCHECK(success);
 
     // Convert the result to the container's contents space.

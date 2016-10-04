@@ -112,7 +112,7 @@ LayoutRect SVGLayoutSupport::transformPaintInvalidationRect(
   if (adjustedRect.isEmpty())
     return LayoutRect();
 
-  return LayoutRect(enclosingIntRect(adjustedRect));
+  return enclosingLayoutRect(adjustedRect);
 }
 
 static const LayoutSVGRoot& computeTransformToSVGRoot(
