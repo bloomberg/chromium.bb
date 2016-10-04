@@ -14,8 +14,10 @@ function test()
 
     function createNavigatorView()
     {
+        var workspace = WebInspector.workspace;
+        WebInspector.workspace = InspectorTest.testWorkspace;
         var navigatorView = new WebInspector.SourcesNavigatorView();
-        navigatorView._resetWorkspace(InspectorTest.testWorkspace);
+        WebInspector.workspace = workspace;
         navigatorView.show(WebInspector.inspectorView.element);
         return navigatorView;
     }
