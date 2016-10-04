@@ -10,6 +10,7 @@
 #include "content/common/p2p_messages.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
+#include "net/log/net_log_source.h"
 #include "net/socket/stream_socket.h"
 
 namespace {
@@ -23,7 +24,7 @@ P2PSocketHostTcpServer::P2PSocketHostTcpServer(IPC::Sender* message_sender,
                                                P2PSocketType client_type)
     : P2PSocketHost(message_sender, socket_id, P2PSocketHost::TCP),
       client_type_(client_type),
-      socket_(new net::TCPServerSocket(nullptr, net::NetLog::Source())),
+      socket_(new net::TCPServerSocket(nullptr, net::NetLogSource())),
       accept_callback_(base::Bind(&P2PSocketHostTcpServer::OnAccepted,
                                   base::Unretained(this))) {
 }

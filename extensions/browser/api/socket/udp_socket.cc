@@ -12,6 +12,7 @@
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
+#include "net/log/net_log_source.h"
 #include "net/udp/datagram_socket.h"
 #include "net/udp/udp_client_socket.h"
 
@@ -33,7 +34,7 @@ UDPSocket::UDPSocket(const std::string& owner_extension_id)
       socket_(net::DatagramSocket::DEFAULT_BIND,
               net::RandIntCallback(),
               NULL,
-              net::NetLog::Source()) {}
+              net::NetLogSource()) {}
 
 UDPSocket::~UDPSocket() { Disconnect(); }
 

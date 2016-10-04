@@ -14,6 +14,9 @@
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "net/log/net_log.h"
+#include "net/log/net_log_capture_mode.h"
+
 #include "net/log/net_log_event_type.h"
 
 namespace content {

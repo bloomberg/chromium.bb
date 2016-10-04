@@ -29,6 +29,7 @@
 #include "net/base/sys_addrinfo.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
+#include "net/log/net_log_source.h"
 #include "net/websockets/websocket_frame.h"
 
 #if defined(OS_WIN)
@@ -90,7 +91,7 @@ void WebSocket::Connect(const net::CompletionCallback& callback) {
     VLOG(0) << "resolved " << url_.HostNoBrackets() << " to " << json;
   }
 
-  net::NetLog::Source source;
+  net::NetLogSource source;
   socket_.reset(new net::TCPClientSocket(addresses, NULL, NULL, source));
 
   state_ = CONNECTING;

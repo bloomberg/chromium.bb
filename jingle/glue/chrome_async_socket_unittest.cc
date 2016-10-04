@@ -22,6 +22,7 @@
 #include "net/base/net_errors.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/http/transport_security_state.h"
+#include "net/log/net_log_source.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/ssl/ssl_config_service.h"
@@ -129,7 +130,7 @@ class MockXmppClientSocketFactory : public ResolvingClientSocketFactory {
   std::unique_ptr<net::StreamSocket> CreateTransportClientSocket(
       const net::HostPortPair& host_and_port) override {
     return mock_client_socket_factory_->CreateTransportClientSocket(
-        address_list_, NULL, NULL, net::NetLog::Source());
+        address_list_, NULL, NULL, net::NetLogSource());
   }
 
   std::unique_ptr<net::SSLClientSocket> CreateSSLClientSocket(

@@ -54,7 +54,10 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/referrer.h"
+#include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
+#include "net/log/net_log_parameters_callback.h"
+#include "net/log/net_log_source.h"
 
 namespace content {
 
@@ -1114,7 +1117,7 @@ void DownloadItemImpl::Init(bool active,
       file_name = GetURL().ExtractFileName();
   }
 
-  net::NetLog::ParametersCallback active_data =
+  net::NetLogParametersCallback active_data =
       base::Bind(&ItemActivatedNetLogCallback, this, download_type, &file_name);
   if (active) {
     net_log_.BeginEvent(net::NetLogEventType::DOWNLOAD_ITEM_ACTIVE,

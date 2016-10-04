@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "net/base/net_errors.h"
+#include "net/log/net_log_capture_mode.h"
 #include "url/gurl.h"
 
 namespace content {

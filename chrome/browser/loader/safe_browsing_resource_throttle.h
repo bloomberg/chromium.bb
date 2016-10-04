@@ -17,8 +17,8 @@
 #include "components/safe_browsing_db/database_manager.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/common/resource_type.h"
-#include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
+#include "net/log/net_log_with_source.h"
 #include "url/gurl.h"
 
 class ResourceDispatcherHost;

@@ -18,7 +18,8 @@
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
 #include "net/base/test_completion_callback.h"
-#include "net/log/net_log.h"
+#include "net/log/net_log_source.h"
+#include "net/log/net_log_with_source.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/stream_socket.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -102,7 +103,7 @@ class FakeSSLClientSocketTest : public testing::Test {
 
   std::unique_ptr<net::StreamSocket> MakeClientSocket() {
     return mock_client_socket_factory_.CreateTransportClientSocket(
-        net::AddressList(), NULL, NULL, net::NetLog::Source());
+        net::AddressList(), NULL, NULL, net::NetLogSource());
   }
 
   void SetData(const net::MockConnect& mock_connect,

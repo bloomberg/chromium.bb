@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/browser_thread.h"
@@ -14,6 +16,7 @@
 #include "net/http/http_request_info.h"
 #include "net/http/http_stream_factory.h"
 #include "net/http/http_transaction_factory.h"
+#include "net/log/net_log_with_source.h"
 #include "net/url_request/http_user_agent_settings.h"
 #include "net/url_request/url_request_context.h"
 

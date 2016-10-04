@@ -18,6 +18,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
+namespace net {
+class NetLogWithSource;
+}
+
 namespace content {
 class ByteStreamReader;
 

@@ -21,7 +21,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_interfaces.h"
-#include "net/log/net_log.h"
+#include "net/log/net_log_with_source.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality_estimator.h"
 #include "net/proxy/proxy_config.h"

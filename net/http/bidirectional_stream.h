@@ -17,7 +17,7 @@
 #include "net/base/load_timing_info.h"
 #include "net/http/bidirectional_stream_impl.h"
 #include "net/http/http_stream_factory.h"
-#include "net/log/net_log.h"
+#include "net/log/net_log_with_source.h"
 
 class GURL;
 

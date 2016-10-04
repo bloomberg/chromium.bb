@@ -21,7 +21,8 @@
 #include "net/base/network_interfaces.h"
 #include "net/base/sys_addrinfo.h"
 #include "net/dns/host_resolver.h"
-#include "net/log/net_log.h"
+#include "net/log/net_log_source.h"
+#include "net/log/net_log_with_source.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/udp/datagram_client_socket.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -371,7 +372,7 @@ net::IPAddress P2PSocketDispatcherHost::GetDefaultLocalAddress(int family) {
   std::unique_ptr<net::DatagramClientSocket> socket(
       net::ClientSocketFactory::GetDefaultFactory()->CreateDatagramClientSocket(
           net::DatagramSocket::DEFAULT_BIND, net::RandIntCallback(), nullptr,
-          net::NetLog::Source()));
+          net::NetLogSource()));
 
   net::IPAddress ip_address;
   if (family == AF_INET) {

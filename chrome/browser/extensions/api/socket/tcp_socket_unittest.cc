@@ -11,6 +11,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/rand_callback.h"
+#include "net/log/net_log_source.h"
 #include "net/socket/tcp_client_socket.h"
 #include "net/socket/tcp_server_socket.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -25,7 +26,7 @@ namespace extensions {
 class MockTCPSocket : public net::TCPClientSocket {
  public:
   explicit MockTCPSocket(const net::AddressList& address_list)
-      : net::TCPClientSocket(address_list, NULL, NULL, net::NetLog::Source()) {}
+      : net::TCPClientSocket(address_list, NULL, NULL, net::NetLogSource()) {}
 
   MOCK_METHOD3(Read, int(net::IOBuffer* buf, int buf_len,
                          const net::CompletionCallback& callback));
@@ -43,7 +44,7 @@ class MockTCPSocket : public net::TCPClientSocket {
 
 class MockTCPServerSocket : public net::TCPServerSocket {
  public:
-  MockTCPServerSocket() : net::TCPServerSocket(NULL, net::NetLog::Source()) {}
+  MockTCPServerSocket() : net::TCPServerSocket(NULL, net::NetLogSource()) {}
   MOCK_METHOD2(Listen, int(const net::IPEndPoint& address, int backlog));
   MOCK_METHOD2(Accept,
                int(std::unique_ptr<net::StreamSocket>* socket,

@@ -77,8 +77,8 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
-#include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
+#include "net/log/net_log_source.h"
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
@@ -157,7 +157,7 @@ const char kFtpTestFile[] = "BullRunSpeech.txt";
 void TestLoadTimingNotReused(const LoadTimingInfo& load_timing_info,
                              int connect_timing_flags) {
   EXPECT_FALSE(load_timing_info.socket_reused);
-  EXPECT_NE(NetLog::Source::kInvalidId, load_timing_info.socket_log_id);
+  EXPECT_NE(NetLogSource::kInvalidId, load_timing_info.socket_log_id);
 
   EXPECT_FALSE(load_timing_info.request_start_time.is_null());
   EXPECT_FALSE(load_timing_info.request_start.is_null());
@@ -180,7 +180,7 @@ void TestLoadTimingNotReusedWithProxy(
     const LoadTimingInfo& load_timing_info,
     int connect_timing_flags) {
   EXPECT_FALSE(load_timing_info.socket_reused);
-  EXPECT_NE(NetLog::Source::kInvalidId, load_timing_info.socket_log_id);
+  EXPECT_NE(NetLogSource::kInvalidId, load_timing_info.socket_log_id);
 
   EXPECT_FALSE(load_timing_info.request_start_time.is_null());
   EXPECT_FALSE(load_timing_info.request_start.is_null());
@@ -203,7 +203,7 @@ void TestLoadTimingNotReusedWithProxy(
 void TestLoadTimingReusedWithProxy(
     const LoadTimingInfo& load_timing_info) {
   EXPECT_TRUE(load_timing_info.socket_reused);
-  EXPECT_NE(NetLog::Source::kInvalidId, load_timing_info.socket_log_id);
+  EXPECT_NE(NetLogSource::kInvalidId, load_timing_info.socket_log_id);
 
   EXPECT_FALSE(load_timing_info.request_start_time.is_null());
   EXPECT_FALSE(load_timing_info.request_start.is_null());
@@ -246,7 +246,7 @@ void FillBuffer(char* buffer, size_t len) {
 void TestLoadTimingCacheHitNoNetwork(
     const LoadTimingInfo& load_timing_info) {
   EXPECT_FALSE(load_timing_info.socket_reused);
-  EXPECT_EQ(NetLog::Source::kInvalidId, load_timing_info.socket_log_id);
+  EXPECT_EQ(NetLogSource::kInvalidId, load_timing_info.socket_log_id);
 
   EXPECT_FALSE(load_timing_info.request_start_time.is_null());
   EXPECT_FALSE(load_timing_info.request_start.is_null());
@@ -266,7 +266,7 @@ void TestLoadTimingCacheHitNoNetwork(
 void TestLoadTimingNoHttpResponse(
     const LoadTimingInfo& load_timing_info) {
   EXPECT_FALSE(load_timing_info.socket_reused);
-  EXPECT_EQ(NetLog::Source::kInvalidId, load_timing_info.socket_log_id);
+  EXPECT_EQ(NetLogSource::kInvalidId, load_timing_info.socket_log_id);
 
   // Only the request times should be non-null.
   EXPECT_FALSE(load_timing_info.request_start_time.is_null());

@@ -32,6 +32,7 @@
 #include "net/base/network_interfaces.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
+#include "net/log/net_log.h"
 #include "net/log/net_log_source_type.h"
 #include "url/gurl.h"
 
@@ -164,7 +165,7 @@ DialServiceImpl::DialSocket::~DialSocket() {
 bool DialServiceImpl::DialSocket::CreateAndBindSocket(
     const IPAddress& bind_ip_address,
     net::NetLog* net_log,
-    net::NetLog::Source net_log_source) {
+    net::NetLogSource net_log_source) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!socket_);
   DCHECK(bind_ip_address.IsIPv4());

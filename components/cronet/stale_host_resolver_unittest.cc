@@ -17,6 +17,8 @@
 #include "net/cert/cert_verifier.h"
 #include "net/dns/host_resolver_proc.h"
 #include "net/http/http_network_session.h"
+#include "net/log/net_log.h"
+#include "net/log/net_log_with_source.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/url_request/url_request_context.h"

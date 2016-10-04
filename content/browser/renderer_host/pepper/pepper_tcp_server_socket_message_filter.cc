@@ -19,6 +19,7 @@
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
+#include "net/log/net_log_source.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
 #include "ppapi/host/dispatch_host_message.h"
@@ -184,7 +185,7 @@ void PepperTCPServerSocketMessageFilter::DoListen(
 
   state_ = STATE_LISTEN_IN_PROGRESS;
 
-  socket_.reset(new net::TCPSocket(NULL, NULL, net::NetLog::Source()));
+  socket_.reset(new net::TCPSocket(NULL, NULL, net::NetLogSource()));
   int net_result = net::OK;
   do {
     net::IPEndPoint ip_end_point(net::IPAddress(address), port);

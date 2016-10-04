@@ -11,6 +11,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "net/log/net_log.h"
+#include "net/log/net_log_entry.h"
+#include "net/log/net_log_source.h"
+#include "net/log/net_log_with_source.h"
 #include "net/proxy/proxy_server.h"
 
 namespace data_reduction_proxy {
@@ -19,14 +23,14 @@ namespace {
 
 std::unique_ptr<base::Value> BuildDataReductionProxyEvent(
     net::NetLogEventType type,
-    const net::NetLog::Source& source,
+    const net::NetLogSource& source,
     net::NetLogEventPhase phase,
-    const net::NetLog::ParametersCallback& parameters_callback) {
+    const net::NetLogParametersCallback& parameters_callback) {
   base::TimeTicks ticks_now = base::TimeTicks::Now();
-  net::NetLog::EntryData entry_data(type, source, phase, ticks_now,
-                                    &parameters_callback);
-  net::NetLog::Entry entry(&entry_data,
-                           net::NetLogCaptureMode::IncludeSocketBytes());
+  net::NetLogEntryData entry_data(type, source, phase, ticks_now,
+                                  &parameters_callback);
+  net::NetLogEntry entry(&entry_data,
+                         net::NetLogCaptureMode::IncludeSocketBytes());
   std::unique_ptr<base::Value> entry_value(entry.ToValue());
 
   return entry_value;
@@ -175,7 +179,7 @@ void DataReductionProxyEventCreator::AddProxyEnabledEvent(
     bool secure_transport_restricted,
     const std::vector<net::ProxyServer>& proxies_for_http) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  const net::NetLog::ParametersCallback& parameters_callback =
+  const net::NetLogParametersCallback& parameters_callback =
       base::Bind(&EnableDataReductionProxyCallback, secure_transport_restricted,
                  proxies_for_http);
   PostEnabledEvent(net_log, net::NetLogEventType::DATA_REDUCTION_PROXY_ENABLED,
@@ -185,7 +189,7 @@ void DataReductionProxyEventCreator::AddProxyEnabledEvent(
 void DataReductionProxyEventCreator::AddProxyDisabledEvent(
     net::NetLog* net_log) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  const net::NetLog::ParametersCallback& parameters_callback =
+  const net::NetLogParametersCallback& parameters_callback =
       base::Bind(&DisableDataReductionProxyCallback);
   PostEnabledEvent(net_log, net::NetLogEventType::DATA_REDUCTION_PROXY_ENABLED,
                    false, parameters_callback);
@@ -200,7 +204,7 @@ void DataReductionProxyEventCreator::AddBypassActionEvent(
     const base::TimeDelta& bypass_duration) {
   DCHECK(thread_checker_.CalledOnValidThread());
   int64_t expiration_ticks = GetExpirationTicks(bypass_duration.InSeconds());
-  const net::NetLog::ParametersCallback& parameters_callback =
+  const net::NetLogParametersCallback& parameters_callback =
       base::Bind(&UrlBypassActionCallback, bypass_action, request_method, url,
                  should_retry, bypass_duration.InSeconds(), expiration_ticks);
   PostNetLogWithSourceBypassEvent(
@@ -217,7 +221,7 @@ void DataReductionProxyEventCreator::AddBypassTypeEvent(
     const base::TimeDelta& bypass_duration) {
   DCHECK(thread_checker_.CalledOnValidThread());
   int64_t expiration_ticks = GetExpirationTicks(bypass_duration.InSeconds());
-  const net::NetLog::ParametersCallback& parameters_callback =
+  const net::NetLogParametersCallback& parameters_callback =
       base::Bind(&UrlBypassTypeCallback, bypass_type, request_method, url,
                  should_retry, bypass_duration.InSeconds(), expiration_ticks);
   PostNetLogWithSourceBypassEvent(
@@ -230,7 +234,7 @@ void DataReductionProxyEventCreator::AddProxyFallbackEvent(
     const std::string& proxy_url,
     int net_error) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  const net::NetLog::ParametersCallback& parameters_callback =
+  const net::NetLogParametersCallback& parameters_callback =
       base::Bind(&FallbackCallback, proxy_url, net_error);
   PostEvent(net_log, net::NetLogEventType::DATA_REDUCTION_PROXY_FALLBACK,
             parameters_callback);
@@ -241,7 +245,7 @@ void DataReductionProxyEventCreator::BeginSecureProxyCheck(
     const GURL& url) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // This callback must be invoked synchronously
-  const net::NetLog::ParametersCallback& parameters_callback =
+  const net::NetLogParametersCallback& parameters_callback =
       net::NetLog::StringCallback("url", &url.spec());
   PostNetLogWithSourceSecureProxyCheckEvent(
       net_log, net::NetLogEventType::DATA_REDUCTION_PROXY_CANARY_REQUEST,
@@ -256,7 +260,7 @@ void DataReductionProxyEventCreator::EndSecureProxyCheck(
     int http_response_code,
     bool succeeded) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  const net::NetLog::ParametersCallback& parameters_callback = base::Bind(
+  const net::NetLogParametersCallback& parameters_callback = base::Bind(
       &EndCanaryRequestCallback, net_error, http_response_code, succeeded);
   PostNetLogWithSourceSecureProxyCheckEvent(
       net_log, net::NetLogEventType::DATA_REDUCTION_PROXY_CANARY_REQUEST,
@@ -270,7 +274,7 @@ void DataReductionProxyEventCreator::BeginConfigRequest(
     const net::NetLogWithSource& net_log,
     const GURL& url) {
   // This callback must be invoked synchronously.
-  const net::NetLog::ParametersCallback& parameters_callback =
+  const net::NetLogParametersCallback& parameters_callback =
       net::NetLog::StringCallback("url", &url.spec());
   PostNetLogWithSourceConfigRequestEvent(
       net_log, net::NetLogEventType::DATA_REDUCTION_PROXY_CONFIG_REQUEST,
@@ -287,7 +291,7 @@ void DataReductionProxyEventCreator::EndConfigRequest(
     const base::TimeDelta& retry_delay) {
   int64_t refresh_duration_minutes = refresh_duration.InMinutes();
   int64_t expiration_ticks = GetExpirationTicks(retry_delay.InSeconds());
-  const net::NetLog::ParametersCallback& parameters_callback = base::Bind(
+  const net::NetLogParametersCallback& parameters_callback = base::Bind(
       &EndConfigRequestCallback, net_error, http_response_code, failure_count,
       proxies_for_http, refresh_duration_minutes, expiration_ticks);
   PostNetLogWithSourceConfigRequestEvent(
@@ -298,9 +302,9 @@ void DataReductionProxyEventCreator::EndConfigRequest(
 void DataReductionProxyEventCreator::PostEvent(
     net::NetLog* net_log,
     net::NetLogEventType type,
-    const net::NetLog::ParametersCallback& callback) {
+    const net::NetLogParametersCallback& callback) {
   std::unique_ptr<base::Value> event = BuildDataReductionProxyEvent(
-      type, net::NetLog::Source(), net::NetLogEventPhase::NONE, callback);
+      type, net::NetLogSource(), net::NetLogEventPhase::NONE, callback);
   if (event)
     storage_delegate_->AddEvent(std::move(event));
 
@@ -312,9 +316,9 @@ void DataReductionProxyEventCreator::PostEnabledEvent(
     net::NetLog* net_log,
     net::NetLogEventType type,
     bool enabled,
-    const net::NetLog::ParametersCallback& callback) {
+    const net::NetLogParametersCallback& callback) {
   std::unique_ptr<base::Value> event = BuildDataReductionProxyEvent(
-      type, net::NetLog::Source(), net::NetLogEventPhase::NONE, callback);
+      type, net::NetLogSource(), net::NetLogEventPhase::NONE, callback);
   if (event)
     storage_delegate_->AddEnabledEvent(std::move(event), enabled);
 
@@ -327,7 +331,7 @@ void DataReductionProxyEventCreator::PostNetLogWithSourceBypassEvent(
     net::NetLogEventType type,
     net::NetLogEventPhase phase,
     int64_t expiration_ticks,
-    const net::NetLog::ParametersCallback& callback) {
+    const net::NetLogParametersCallback& callback) {
   std::unique_ptr<base::Value> event =
       BuildDataReductionProxyEvent(type, net_log.source(), phase, callback);
   if (event)
@@ -341,7 +345,7 @@ void DataReductionProxyEventCreator::PostNetLogWithSourceSecureProxyCheckEvent(
     net::NetLogEventType type,
     net::NetLogEventPhase phase,
     DataReductionProxyEventStorageDelegate::SecureProxyCheckState state,
-    const net::NetLog::ParametersCallback& callback) {
+    const net::NetLogParametersCallback& callback) {
   std::unique_ptr<base::Value> event(
       BuildDataReductionProxyEvent(type, net_log.source(), phase, callback));
   if (event)
@@ -354,7 +358,7 @@ void DataReductionProxyEventCreator::PostNetLogWithSourceConfigRequestEvent(
     const net::NetLogWithSource& net_log,
     net::NetLogEventType type,
     net::NetLogEventPhase phase,
-    const net::NetLog::ParametersCallback& callback) {
+    const net::NetLogParametersCallback& callback) {
   std::unique_ptr<base::Value> event(
       BuildDataReductionProxyEvent(type, net_log.source(), phase, callback));
   if (event) {

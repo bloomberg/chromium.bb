@@ -29,6 +29,7 @@
 #include "net/base/file_stream.h"
 #include "net/base/mock_file_stream.h"
 #include "net/base/net_errors.h"
+#include "net/log/net_log_with_source.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

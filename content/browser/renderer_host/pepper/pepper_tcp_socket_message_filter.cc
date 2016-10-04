@@ -27,6 +27,8 @@
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
+#include "net/log/net_log_source.h"
+#include "net/log/net_log_with_source.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/ssl_client_socket.h"
@@ -76,7 +78,7 @@ PepperTCPSocketMessageFilter::PepperTCPSocketMessageFilter(
       rcvbuf_size_(0),
       sndbuf_size_(0),
       address_index_(0),
-      socket_(new net::TCPSocket(NULL, NULL, net::NetLog::Source())),
+      socket_(new net::TCPSocket(NULL, NULL, net::NetLogSource())),
       ssl_context_helper_(host->ssl_context_helper()),
       pending_accept_(false),
       pending_read_on_unthrottle_(false),
@@ -858,7 +860,7 @@ void PepperTCPSocketMessageFilter::OnConnectCompleted(
     // We have to recreate |socket_| because it doesn't allow a second connect
     // attempt. We won't lose any state such as bound address or set options,
     // because in the private or v1.0 API, connect must be the first operation.
-    socket_.reset(new net::TCPSocket(NULL, NULL, net::NetLog::Source()));
+    socket_.reset(new net::TCPSocket(NULL, NULL, net::NetLogSource()));
 
     if (address_index_ + 1 < address_list_.size()) {
       DCHECK_EQ(version_, ppapi::TCP_SOCKET_VERSION_PRIVATE);

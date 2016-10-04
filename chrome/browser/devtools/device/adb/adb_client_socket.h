@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_DEVTOOLS_DEVICE_ADB_ADB_CLIENT_SOCKET_H_
 #define CHROME_BROWSER_DEVTOOLS_DEVICE_ADB_ADB_CLIENT_SOCKET_H_
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "net/base/io_buffer.h"

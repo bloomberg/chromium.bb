@@ -16,7 +16,7 @@
 #include "net/dns/dns_protocol.h"
 #include "net/dns/dns_response.h"
 #include "net/dns/dns_transaction.h"
-#include "net/log/net_log.h"
+#include "net/log/net_log_with_source.h"
 
 using base::TimeDelta;
 using content::BrowserThread;
@@ -26,7 +26,6 @@ using net::DnsResponse;
 using net::DnsTransaction;
 using net::DnsTransactionFactory;
 using net::IPEndPoint;
-using net::NetLog;
 using net::NetLogWithSource;
 using net::NetworkChangeNotifier;
 

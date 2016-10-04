@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "net/base/ip_address.h"
+#include "net/log/net_log_source.h"
 #include "net/socket/socket_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -176,7 +177,7 @@ void GCMSocketStreamTest::WaitForData(int msg_size) {
 
 void GCMSocketStreamTest::OpenConnection() {
   socket_ = socket_factory_.CreateTransportClientSocket(
-      address_list_, NULL, NULL, net::NetLog::Source());
+      address_list_, NULL, NULL, net::NetLogSource());
   socket_->Connect(
       base::Bind(&GCMSocketStreamTest::ConnectCallback,
                  base::Unretained(this)));

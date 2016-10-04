@@ -26,6 +26,7 @@
 namespace base {
 class ListValue;
 class Value;
+class DictionaryValue;
 }
 
 namespace content {

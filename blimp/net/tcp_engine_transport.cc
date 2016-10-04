@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "blimp/net/message_port.h"
+#include "net/log/net_log_source.h"
 #include "net/socket/stream_socket.h"
 #include "net/socket/tcp_server_socket.h"
 
@@ -30,7 +31,7 @@ void TCPEngineTransport::Connect(const net::CompletionCallback& callback) {
 
   if (!server_socket_) {
     server_socket_.reset(
-        new net::TCPServerSocket(net_log_, net::NetLog::Source()));
+        new net::TCPServerSocket(net_log_, net::NetLogSource()));
     int result = server_socket_->Listen(address_, 5);
     if (result != net::OK) {
       server_socket_.reset();

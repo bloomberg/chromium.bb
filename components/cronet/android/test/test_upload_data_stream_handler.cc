@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "jni/TestUploadDataStreamHandler_jni.h"
 #include "net/base/net_errors.h"
+#include "net/log/net_log_with_source.h"
 
 using base::android::JavaParamRef;
 

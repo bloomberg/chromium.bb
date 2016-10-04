@@ -4,6 +4,8 @@
 
 #include "components/network_hints/browser/network_hints_message_filter.h"
 
+#include <string>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "components/network_hints/common/network_hints_common.h"
@@ -12,6 +14,7 @@
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
 #include "net/dns/host_resolver.h"
+#include "net/log/net_log_with_source.h"
 #include "url/gurl.h"
 
 namespace network_hints {

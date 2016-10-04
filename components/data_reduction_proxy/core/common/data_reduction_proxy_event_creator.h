@@ -14,8 +14,8 @@
 #include "base/threading/thread_checker.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_storage_delegate.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
-#include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
+#include "net/log/net_log_parameters_callback.h"
 
 class GURL;
 
@@ -27,6 +27,7 @@ class Value;
 namespace net {
 class NetLogWithSource;
 class ProxyServer;
+class NetLog;
 }
 
 namespace data_reduction_proxy {
@@ -112,14 +113,14 @@ class DataReductionProxyEventCreator {
   // parameters.
   void PostEvent(net::NetLog* net_log,
                  net::NetLogEventType type,
-                 const net::NetLog::ParametersCallback& callback);
+                 const net::NetLogParametersCallback& callback);
 
   // Prepare and post enabling/disabling proxy events for the event store on the
   // a net::NetLog.
   void PostEnabledEvent(net::NetLog* net_log,
                         net::NetLogEventType type,
                         bool enable,
-                        const net::NetLog::ParametersCallback& callback);
+                        const net::NetLogParametersCallback& callback);
 
   // Prepare and post a Data Reduction Proxy bypass event for the event store
   // on a NetLogWithSource.
@@ -128,7 +129,7 @@ class DataReductionProxyEventCreator {
       net::NetLogEventType type,
       net::NetLogEventPhase phase,
       int64_t expiration_ticks,
-      const net::NetLog::ParametersCallback& callback);
+      const net::NetLogParametersCallback& callback);
 
   // Prepare and post a secure proxy check event for the event store on a
   // NetLogWithSource.
@@ -137,7 +138,7 @@ class DataReductionProxyEventCreator {
       net::NetLogEventType type,
       net::NetLogEventPhase phase,
       DataReductionProxyEventStorageDelegate::SecureProxyCheckState state,
-      const net::NetLog::ParametersCallback& callback);
+      const net::NetLogParametersCallback& callback);
 
   // Prepare and post a config request event for the event store on a
   // NetLogWithSource.
@@ -145,7 +146,7 @@ class DataReductionProxyEventCreator {
       const net::NetLogWithSource& net_log,
       net::NetLogEventType type,
       net::NetLogEventPhase phase,
-      const net::NetLog::ParametersCallback& callback);
+      const net::NetLogParametersCallback& callback);
 
   // Must outlive |this|. Used for posting calls to the UI thread.
   DataReductionProxyEventStorageDelegate* storage_delegate_;

@@ -7,12 +7,14 @@
 
 #include <stdint.h>
 
+#include <string>
 #include <tuple>
 #include <vector>
 
 #include "content/common/p2p_messages.h"
 #include "ipc/ipc_sender.h"
 #include "net/base/net_errors.h"
+#include "net/log/net_log_with_source.h"
 #include "net/socket/stream_socket.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

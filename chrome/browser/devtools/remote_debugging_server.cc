@@ -23,6 +23,7 @@
 #include "content/public/browser/devtools_frontend_host.h"
 #include "content/public/browser/devtools_socket_factory.h"
 #include "net/base/net_errors.h"
+#include "net/log/net_log_source.h"
 #include "net/socket/tcp_server_socket.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -45,7 +46,7 @@ class TCPServerSocketFactory
  private:
   std::unique_ptr<net::ServerSocket> CreateLocalHostServerSocket(int port) {
     std::unique_ptr<net::ServerSocket> socket(
-        new net::TCPServerSocket(nullptr, net::NetLog::Source()));
+        new net::TCPServerSocket(nullptr, net::NetLogSource()));
     if (socket->ListenWithAddressAndPort(
             "127.0.0.1", port, kBackLog) == net::OK)
       return socket;
@@ -57,7 +58,7 @@ class TCPServerSocketFactory
   // content::DevToolsSocketFactory.
   std::unique_ptr<net::ServerSocket> CreateForHttpServer() override {
     std::unique_ptr<net::ServerSocket> socket(
-        new net::TCPServerSocket(nullptr, net::NetLog::Source()));
+        new net::TCPServerSocket(nullptr, net::NetLogSource()));
     if (address_.empty())
       return CreateLocalHostServerSocket(port_);
     if (socket->ListenWithAddressAndPort(address_, port_, kBackLog) == net::OK)

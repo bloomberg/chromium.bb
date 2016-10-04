@@ -12,6 +12,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "net/log/net_log_entry.h"
 
 namespace remoting {
 
@@ -21,7 +22,7 @@ class VlogNetLog::Observer : public net::NetLog::ThreadSafeObserver {
   ~Observer() override;
 
   // NetLog::ThreadSafeObserver overrides:
-  void OnAddEntry(const net::NetLog::Entry& entry) override;
+  void OnAddEntry(const net::NetLogEntry& entry) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Observer);
@@ -33,7 +34,7 @@ VlogNetLog::Observer::Observer() {
 VlogNetLog::Observer::~Observer() {
 }
 
-void VlogNetLog::Observer::OnAddEntry(const net::NetLog::Entry& entry) {
+void VlogNetLog::Observer::OnAddEntry(const net::NetLogEntry& entry) {
   if (VLOG_IS_ON(4)) {
     std::unique_ptr<base::Value> value(entry.ToValue());
     std::string json;

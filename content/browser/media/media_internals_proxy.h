@@ -52,7 +52,7 @@ class MediaInternalsProxy
   void GetEverything();
 
   // net::NetLog::ThreadSafeObserver implementation. Callable from any thread:
-  void OnAddEntry(const net::NetLog::Entry& entry) override;
+  void OnAddEntry(const net::NetLogEntry& entry) override;
 
  private:
   friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;

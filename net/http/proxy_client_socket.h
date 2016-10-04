@@ -22,6 +22,7 @@ class HttpResponseInfo;
 class HttpRequestHeaders;
 struct HttpRequestInfo;
 class HttpAuthController;
+class NetLogWithSource;
 
 class NET_EXPORT_PRIVATE ProxyClientSocket : public StreamSocket {
  public:

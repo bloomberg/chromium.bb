@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_SOCKET_MOCK_TCP_CLIENT_SOCKET_H_
 #define CHROME_BROWSER_EXTENSIONS_API_SOCKET_MOCK_TCP_CLIENT_SOCKET_H_
 
+#include "net/log/net_log_source.h"
+#include "net/log/net_log_with_source.h"
 #include "net/socket/tcp_client_socket.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -51,7 +53,7 @@ MockTCPClientSocket::MockTCPClientSocket()
     : TCPClientSocket(net::AddressList(),
                       nullptr,
                       nullptr,
-                      net::NetLog::Source()) {}
+                      net::NetLogSource()) {}
 MockTCPClientSocket::~MockTCPClientSocket() {}
 
 }  // namespace extensions

@@ -20,6 +20,7 @@
 #include "chrome/browser/devtools/devtools_network_upload_data_stream.h"
 #include "net/base/chunked_upload_data_stream.h"
 #include "net/http/http_transaction_test_util.h"
+#include "net/log/net_log_with_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

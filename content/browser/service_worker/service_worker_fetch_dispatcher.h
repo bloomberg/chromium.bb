@@ -13,7 +13,7 @@
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/resource_type.h"
-#include "net/log/net_log.h"
+#include "net/log/net_log_with_source.h"
 
 namespace content {
 

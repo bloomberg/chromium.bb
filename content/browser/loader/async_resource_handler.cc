@@ -32,7 +32,6 @@
 #include "ipc/ipc_message_macros.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
-#include "net/log/net_log.h"
 #include "net/url_request/redirect_info.h"
 
 using base::TimeDelta;

@@ -13,6 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "blimp/net/message_port.h"
 #include "blimp/net/stream_socket_connection.h"
+#include "net/log/net_log_source.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/stream_socket.h"
 #include "net/socket/tcp_client_socket.h"
@@ -39,7 +40,7 @@ void TCPClientTransport::Connect(const net::CompletionCallback& callback) {
 
   connect_callback_ = callback;
   socket_ = socket_factory_->CreateTransportClientSocket(
-      net::AddressList(ip_endpoint_), nullptr, net_log_, net::NetLog::Source());
+      net::AddressList(ip_endpoint_), nullptr, net_log_, net::NetLogSource());
   net::CompletionCallback completion_callback = base::Bind(
       &TCPClientTransport::OnTCPConnectComplete, base::Unretained(this));
 

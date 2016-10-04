@@ -18,13 +18,12 @@
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "net/dns/host_resolver.h"
-#include "net/log/net_log.h"
+#include "net/log/net_log_with_source.h"
 #include "net/socket/stream_socket.h"
 
 namespace net {
 
 class ClientSocketHandle;
-class NetLogWithSource;
 
 // The SOCKS client socket implementation
 class NET_EXPORT_PRIVATE SOCKSClientSocket : public StreamSocket {

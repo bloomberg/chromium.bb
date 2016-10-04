@@ -20,6 +20,8 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_ui.h"
+#include "net/log/net_log_capture_mode.h"
+#include "net/log/net_log_entry.h"
 #include "net/log/net_log_event_type.h"
 
 namespace content {
@@ -87,7 +89,7 @@ void MediaInternalsProxy::GetEverything() {
   CallJavaScriptFunctionOnUIThread("media.onReceiveConstants", GetConstants());
 }
 
-void MediaInternalsProxy::OnAddEntry(const net::NetLog::Entry& entry) {
+void MediaInternalsProxy::OnAddEntry(const net::NetLogEntry& entry) {
   bool is_event_interesting = false;
   for (size_t i = 0; i < arraysize(kNetEventTypeFilter); i++) {
     if (entry.type() == kNetEventTypeFilter[i]) {

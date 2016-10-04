@@ -14,7 +14,7 @@
 #include "base/time/time.h"
 #include "extensions/browser/extension_throttle_entry_interface.h"
 #include "net/base/backoff_entry.h"
-#include "net/log/net_log.h"
+#include "net/log/net_log_with_source.h"
 
 namespace extensions {
 

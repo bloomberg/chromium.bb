@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/log/net_log_with_source.h"
 
 namespace content {
 

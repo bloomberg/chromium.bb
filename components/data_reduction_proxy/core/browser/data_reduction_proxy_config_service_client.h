@@ -18,7 +18,7 @@
 #include "base/timer/timer.h"
 #include "net/base/backoff_entry.h"
 #include "net/base/network_change_notifier.h"
-#include "net/log/net_log.h"
+#include "net/log/net_log_with_source.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
@@ -30,6 +30,7 @@ namespace net {
 class HostPortPair;
 class HttpRequestHeaders;
 class HttpResponseHeaders;
+class NetLog;
 struct LoadTimingInfo;
 class URLFetcher;
 class URLRequestContextGetter;

@@ -92,7 +92,7 @@ class MockTCPSocket : public net::TCPClientSocket {
       : TCPClientSocket(net::AddressList(),
                         nullptr,
                         nullptr,
-                        net::NetLog::Source()),
+                        net::NetLogSource()),
         connect_data_(connect_data),
         do_nothing_(false) {}
 
@@ -100,7 +100,7 @@ class MockTCPSocket : public net::TCPClientSocket {
       : TCPClientSocket(net::AddressList(),
                         nullptr,
                         nullptr,
-                        net::NetLog::Source()) {
+                        net::NetLogSource()) {
     CHECK(do_nothing);
     do_nothing_ = do_nothing;
   }

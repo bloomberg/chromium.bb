@@ -15,6 +15,11 @@
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluetooth_task_manager_win.h"
+#include "net/log/net_log_source.h"
+
+namespace net {
+class NetLog;
+}
 
 namespace device {
 
@@ -30,7 +35,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWin : public BluetoothDevice {
       const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
       const scoped_refptr<BluetoothSocketThread>& socket_thread,
       net::NetLog* net_log,
-      const net::NetLog::Source& net_log_source);
+      const net::NetLogSource& net_log_source);
   ~BluetoothDeviceWin() override;
 
   // BluetoothDevice override
@@ -127,7 +132,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWin : public BluetoothDevice {
   scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
   scoped_refptr<BluetoothSocketThread> socket_thread_;
   net::NetLog* net_log_;
-  net::NetLog::Source net_log_source_;
+  net::NetLogSource net_log_source_;
 
   // The Bluetooth class of the device, a bitmask that may be decoded using
   // https://www.bluetooth.org/Technical/AssignedNumbers/baseband.htm

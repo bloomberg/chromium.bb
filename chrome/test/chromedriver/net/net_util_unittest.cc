@@ -19,6 +19,7 @@
 #include "chrome/test/chromedriver/net/url_request_context_getter.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
+#include "net/log/net_log_source.h"
 #include "net/server/http_server.h"
 #include "net/server/http_server_request_info.h"
 #include "net/socket/tcp_server_socket.h"
@@ -55,7 +56,7 @@ class FetchUrlTest : public testing::Test,
 
   void InitOnIO(base::WaitableEvent* event) {
     std::unique_ptr<net::ServerSocket> server_socket(
-        new net::TCPServerSocket(NULL, net::NetLog::Source()));
+        new net::TCPServerSocket(NULL, net::NetLogSource()));
     server_socket->ListenWithAddressAndPort("127.0.0.1", 0, 1);
     server_.reset(new net::HttpServer(std::move(server_socket), this));
     net::IPEndPoint address;

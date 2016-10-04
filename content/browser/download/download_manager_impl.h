@@ -29,7 +29,7 @@
 #include "content/public/browser/download_url_parameters.h"
 
 namespace net {
-class NetLogWithSource;
+class NetLog;
 }
 
 namespace content {

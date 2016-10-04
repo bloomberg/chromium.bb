@@ -25,6 +25,7 @@
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
+#include "net/log/net_log_source.h"
 #include "net/socket/stream_socket.h"
 #include "net/socket/tcp_server_socket.h"
 
@@ -231,7 +232,7 @@ class SimpleHttpServer : base::NonThreadSafe {
 SimpleHttpServer::SimpleHttpServer(const ParserFactory& factory,
                                    net::IPEndPoint endpoint)
     : factory_(factory),
-      socket_(new net::TCPServerSocket(nullptr, net::NetLog::Source())),
+      socket_(new net::TCPServerSocket(nullptr, net::NetLogSource())),
       weak_factory_(this) {
   socket_->Listen(endpoint, 5);
   OnConnect();

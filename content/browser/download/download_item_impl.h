@@ -22,7 +22,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
-#include "net/log/net_log.h"
+#include "net/log/net_log_with_source.h"
 #include "url/gurl.h"
 
 namespace content {

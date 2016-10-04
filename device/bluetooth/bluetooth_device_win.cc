@@ -34,7 +34,7 @@ BluetoothDeviceWin::BluetoothDeviceWin(
     const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
     const scoped_refptr<BluetoothSocketThread>& socket_thread,
     net::NetLog* net_log,
-    const net::NetLog::Source& net_log_source)
+    const net::NetLogSource& net_log_source)
     : BluetoothDevice(adapter),
       ui_task_runner_(ui_task_runner),
       socket_thread_(socket_thread),

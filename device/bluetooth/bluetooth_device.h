@@ -24,7 +24,6 @@
 #include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluetooth_uuid.h"
-#include "net/log/net_log.h"
 
 namespace base {
 class BinaryValue;

@@ -16,6 +16,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/rand_callback.h"
+#include "net/log/net_log_source.h"
 
 namespace media {
 namespace cast {
@@ -70,7 +71,7 @@ UdpTransport::UdpTransport(
       udp_socket_(new net::UDPSocket(net::DatagramSocket::DEFAULT_BIND,
                                      net::RandIntCallback(),
                                      net_log,
-                                     net::NetLog::Source())),
+                                     net::NetLogSource())),
       send_pending_(false),
       receive_pending_(false),
       client_connected_(false),

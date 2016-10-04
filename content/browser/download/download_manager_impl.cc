@@ -49,6 +49,7 @@
 #include "net/base/request_priority.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/log/net_log_source_type.h"
+#include "net/log/net_log_with_source.h"
 #include "net/url_request/url_request_context.h"
 #include "storage/browser/blob/blob_url_request_job_factory.h"
 #include "url/origin.h"

@@ -15,6 +15,8 @@
 #include "chrome/browser/devtools/device/adb/adb_client_socket.h"
 #include "net/base/net_errors.h"
 #include "net/dns/host_resolver.h"
+#include "net/log/net_log_source.h"
+#include "net/log/net_log_with_source.h"
 #include "net/socket/tcp_client_socket.h"
 
 namespace {
@@ -53,7 +55,7 @@ class ResolveHostAndOpenSocket final {
       return;
     }
     std::unique_ptr<net::StreamSocket> socket(new net::TCPClientSocket(
-        address_list_, NULL, NULL, net::NetLog::Source()));
+        address_list_, NULL, NULL, net::NetLogSource()));
     socket->Connect(
         base::Bind(&RunSocketCallback, callback_, base::Passed(&socket)));
     delete this;

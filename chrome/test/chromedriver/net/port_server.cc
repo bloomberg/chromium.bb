@@ -20,7 +20,7 @@
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/base/sys_addrinfo.h"
-#include "net/log/net_log.h"
+#include "net/log/net_log_source.h"
 #include "net/socket/tcp_server_socket.h"
 
 #if defined(OS_LINUX)
@@ -163,7 +163,7 @@ uint16_t PortManager::FindAvailablePort() const {
     if (taken_.count(try_port_uint16))
       continue;
 
-    net::NetLog::Source source;
+    net::NetLogSource source;
     net::TCPServerSocket sock(NULL, source);
     if (sock.Listen(
             net::IPEndPoint(net::IPAddress::IPv4Localhost(), try_port_uint16),

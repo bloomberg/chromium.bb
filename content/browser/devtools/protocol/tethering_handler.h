@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_DEVTOOLS_PROTOCOL_TETHERING_HANDLER_H_
 
 #include <stdint.h>
+#include <string>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"

@@ -47,6 +47,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/rand_callback.h"
+#include "net/log/net_log_source.h"
 #include "net/udp/udp_server_socket.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
@@ -336,7 +337,7 @@ class CastV2PerformanceTest
     // Method: Bind a UDP socket on port 0, and then check which port the
     // operating system assigned to it.
     std::unique_ptr<net::UDPServerSocket> receive_socket(
-        new net::UDPServerSocket(NULL, net::NetLog::Source()));
+        new net::UDPServerSocket(NULL, net::NetLogSource()));
     receive_socket->AllowAddressReuse();
     CHECK_EQ(net::OK, receive_socket->Listen(
                           net::IPEndPoint(net::IPAddress::IPv4Localhost(), 0)));

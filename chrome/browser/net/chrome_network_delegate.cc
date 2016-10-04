@@ -60,6 +60,7 @@
 #include "net/http/http_status_code.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
+#include "net/log/net_log_with_source.h"
 #include "net/url_request/url_request.h"
 
 #if BUILDFLAG(ANDROID_JAVA_UI)

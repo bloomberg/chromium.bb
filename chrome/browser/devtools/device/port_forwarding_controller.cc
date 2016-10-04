@@ -28,6 +28,8 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/dns/host_resolver.h"
+#include "net/log/net_log_source.h"
+#include "net/log/net_log_with_source.h"
 #include "net/socket/tcp_client_socket.h"
 
 using content::BrowserThread;
@@ -81,7 +83,7 @@ class SocketTunnel : public base::NonThreadSafe {
     }
 
     host_socket_.reset(new net::TCPClientSocket(address_list_, nullptr, nullptr,
-                                                net::NetLog::Source()));
+                                                net::NetLogSource()));
     result = host_socket_->Connect(base::Bind(&SocketTunnel::OnConnected,
                                               base::Unretained(this)));
     if (result != net::ERR_IO_PENDING)

@@ -7,12 +7,15 @@
 
 #include <stdint.h>
 
+#include <string>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/devtools/device/usb/android_usb_device.h"
 #include "net/base/ip_endpoint.h"
+#include "net/log/net_log_with_source.h"
 #include "net/socket/stream_socket.h"
 
 namespace base {

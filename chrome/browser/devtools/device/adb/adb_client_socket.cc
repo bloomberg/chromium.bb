@@ -17,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
+#include "net/log/net_log_source.h"
 #include "net/socket/tcp_client_socket.h"
 
 namespace {
@@ -184,7 +185,7 @@ void AdbClientSocket::Connect(const net::CompletionCallback& callback) {
   net::AddressList address_list =
       net::AddressList::CreateFromIPAddress(ip_address, port_);
   socket_.reset(new net::TCPClientSocket(address_list, NULL, NULL,
-                                         net::NetLog::Source()));
+                                         net::NetLogSource()));
   int result = socket_->Connect(callback);
   if (result != net::ERR_IO_PENDING)
     callback.Run(result);

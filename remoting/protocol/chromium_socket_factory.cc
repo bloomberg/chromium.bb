@@ -18,6 +18,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
+#include "net/log/net_log_source.h"
 #include "net/udp/udp_server_socket.h"
 #include "remoting/protocol/socket_util.h"
 #include "third_party/webrtc/base/asyncpacketsocket.h"
@@ -137,7 +138,7 @@ bool UdpPacketSocket::Init(const rtc::SocketAddress& local_address,
   }
 
   for (uint32_t port = min_port; port <= max_port; ++port) {
-    socket_.reset(new net::UDPServerSocket(nullptr, net::NetLog::Source()));
+    socket_.reset(new net::UDPServerSocket(nullptr, net::NetLogSource()));
     int result = socket_->Listen(
         net::IPEndPoint(local_endpoint.address(), static_cast<uint16_t>(port)));
     if (result == net::OK) {

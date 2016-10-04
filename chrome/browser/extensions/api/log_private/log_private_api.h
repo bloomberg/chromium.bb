@@ -90,7 +90,7 @@ class LogPrivateAPI : public BrowserContextKeyedAPI,
                            UnloadedExtensionInfo::Reason reason) override;
 
   // NetLog::ThreadSafeObserver implementation:
-  void OnAddEntry(const net::NetLog::Entry& entry) override;
+  void OnAddEntry(const net::NetLogEntry& entry) override;
 
   void PostPendingEntries();
   void AddEntriesOnUI(std::unique_ptr<base::ListValue> value);

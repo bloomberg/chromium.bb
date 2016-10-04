@@ -19,6 +19,7 @@
 #include "net/http/http_request_info.h"
 #include "net/http/http_response_info.h"
 #include "net/http/http_stream.h"
+#include "net/log/net_log_with_source.h"
 #include "net/quic/core/quic_spdy_stream.h"
 
 namespace net {

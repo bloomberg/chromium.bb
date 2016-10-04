@@ -14,7 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "net/base/load_timing_info.h"
 #include "net/http/bidirectional_stream_impl.h"
-#include "net/log/net_log.h"
 #include "net/quic/chromium/quic_chromium_client_session.h"
 #include "net/quic/chromium/quic_chromium_client_stream.h"
 #include "net/spdy/spdy_header_block.h"

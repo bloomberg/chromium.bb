@@ -22,7 +22,7 @@
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "crypto/secure_hash.h"
 #include "net/base/net_errors.h"
-#include "net/log/net_log.h"
+#include "net/log/net_log_with_source.h"
 #include "url/gurl.h"
 
 namespace content {

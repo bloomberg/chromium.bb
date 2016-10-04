@@ -9,6 +9,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
+#include "net/log/net_log_source.h"
 #include "net/socket/server_socket.h"
 #include "net/socket/stream_socket.h"
 #include "net/socket/tcp_server_socket.h"
@@ -161,7 +162,7 @@ class BoundSocket {
               const CreateServerSocketCallback& socket_callback)
       : accepted_callback_(accepted_callback),
         socket_callback_(socket_callback),
-        socket_(new net::TCPServerSocket(NULL, net::NetLog::Source())),
+        socket_(new net::TCPServerSocket(NULL, net::NetLogSource())),
         port_(0) {
   }
 

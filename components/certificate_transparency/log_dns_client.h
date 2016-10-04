@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "net/base/network_change_notifier.h"
-#include "net/log/net_log.h"
+#include "net/log/net_log_with_source.h"
 
 namespace net {
 class DnsClient;

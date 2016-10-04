@@ -43,6 +43,7 @@
 #include "net/http/http_stream_factory.h"
 #include "net/http/http_util.h"
 #include "net/log/net_log.h"
+#include "net/log/net_log_capture_mode.h"
 #include "net/log/write_to_file_net_log_observer.h"
 #include "net/proxy/proxy_service.h"
 #include "net/socket/ssl_client_socket.h"

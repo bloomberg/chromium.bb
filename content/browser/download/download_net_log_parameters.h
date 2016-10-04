@@ -12,12 +12,16 @@
 
 #include "content/public/browser/download_item.h"
 #include "net/base/net_errors.h"
-#include "net/log/net_log.h"
 
 class GURL;
 
 namespace base {
 class FilePath;
+class Value;
+}
+
+namespace net {
+class NetLogCaptureMode;
 }
 
 namespace content {

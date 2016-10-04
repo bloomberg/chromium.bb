@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_DEVTOOLS_DEVICE_PORT_FORWARDING_CONTROLLER_H_
 
 #include <map>
+#include <string>
 
 #include "base/macros.h"
 #include "chrome/browser/devtools/device/devtools_android_bridge.h"

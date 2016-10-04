@@ -13,8 +13,11 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
+#include "net/log/net_log_capture_mode.h"
+#include "net/log/net_log_entry.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source_type.h"
+#include "net/log/net_log_with_source.h"
 #include "net/spdy/spdy_header_block.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_netlog_params.h"
@@ -40,7 +43,7 @@ NetLogObserver::ResourceInfo* NetLogObserver::GetResourceInfo(uint32_t id) {
   return NULL;
 }
 
-void NetLogObserver::OnAddEntry(const net::NetLog::Entry& entry) {
+void NetLogObserver::OnAddEntry(const net::NetLogEntry& entry) {
   DCHECK(io_thread_checker_.Get().get());
 
   // The events that the Observer is interested in only occur on the IO thread.
@@ -51,7 +54,7 @@ void NetLogObserver::OnAddEntry(const net::NetLog::Entry& entry) {
     OnAddURLRequestEntry(entry);
 }
 
-void NetLogObserver::OnAddURLRequestEntry(const net::NetLog::Entry& entry) {
+void NetLogObserver::OnAddURLRequestEntry(const net::NetLogEntry& entry) {
   bool is_begin = entry.phase() == net::NetLogEventPhase::BEGIN;
   bool is_end = entry.phase() == net::NetLogEventPhase::END;
 

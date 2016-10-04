@@ -22,6 +22,7 @@
 #include "dbus/object_path.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_interfaces.h"
+#include "net/log/net_log_with_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 

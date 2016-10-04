@@ -66,7 +66,7 @@ class BluetoothDeviceWinTest : public testing::Test {
 
     device_.reset(new BluetoothDeviceWin(NULL, *device_state_, ui_task_runner,
                                          socket_thread, NULL,
-                                         net::NetLog::Source()));
+                                         net::NetLogSource()));
 
     // Add empty device.
     empty_device_state_.reset(new BluetoothTaskManagerWin::DeviceState());
@@ -74,7 +74,7 @@ class BluetoothDeviceWinTest : public testing::Test {
     empty_device_state_->address = kDeviceAddress;
     empty_device_.reset(new BluetoothDeviceWin(NULL, *empty_device_state_,
                                                ui_task_runner, socket_thread,
-                                               NULL, net::NetLog::Source()));
+                                               NULL, net::NetLogSource()));
   }
 
  protected:

@@ -60,7 +60,7 @@ class NET_EXPORT WriteToFileNetLogObserver : public NetLog::ThreadSafeObserver {
   void StopObserving(URLRequestContext* url_request_context);
 
   // net::NetLog::ThreadSafeObserver implementation:
-  void OnAddEntry(const NetLog::Entry& entry) override;
+  void OnAddEntry(const NetLogEntry& entry) override;
 
  private:
   // ----------------

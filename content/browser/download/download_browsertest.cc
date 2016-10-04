@@ -71,6 +71,10 @@ using ::testing::Return;
 using ::testing::StrictMock;
 using ::testing::_;
 
+namespace net {
+class NetLogWithSource;
+}
+
 namespace content {
 
 namespace {

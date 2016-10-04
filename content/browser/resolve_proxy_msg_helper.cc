@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "content/common/view_messages.h"
 #include "net/base/net_errors.h"
+#include "net/log/net_log_with_source.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 

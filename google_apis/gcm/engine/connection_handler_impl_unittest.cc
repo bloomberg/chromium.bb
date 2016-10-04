@@ -21,6 +21,7 @@
 #include "google_apis/gcm/base/socket_stream.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
 #include "net/base/ip_address.h"
+#include "net/log/net_log_source.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/stream_socket.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -210,7 +211,7 @@ net::StreamSocket* GCMConnectionHandlerImplTest::BuildSocket(
   socket_factory_.AddSocketDataProvider(data_provider_.get());
 
   socket_ = socket_factory_.CreateTransportClientSocket(
-      address_list_, NULL, NULL, net::NetLog::Source());
+      address_list_, NULL, NULL, net::NetLogSource());
   socket_->Connect(net::CompletionCallback());
 
   run_loop_.reset(new base::RunLoop());

@@ -26,13 +26,14 @@
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
-#include "net/log/net_log.h"
+#include "net/log/net_log_source.h"
 
 namespace net {
 class AddressList;
 class CertVerifier;
 class CTPolicyEnforcer;
 class CTVerifier;
+class NetLog;
 class SSLClientSocket;
 class StreamSocket;
 class TCPClientSocket;
@@ -296,7 +297,7 @@ class CastSocketImpl : public CastSocket {
   // The NetLog for this service.
   net::NetLog* net_log_;
   // The NetLog source for this service.
-  net::NetLog::Source net_log_source_;
+  net::NetLogSource net_log_source_;
   // True when keep-alive signaling should be handled for this socket.
   bool keep_alive_;
 

@@ -20,6 +20,7 @@
 #include "blimp/net/message_port.h"
 #include "blimp/net/packet_reader.h"
 #include "blimp/net/packet_writer.h"
+#include "net/log/net_log_with_source.h"
 #include "net/socket/stream_socket.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

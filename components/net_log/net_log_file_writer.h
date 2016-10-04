@@ -13,13 +13,13 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
-#include "net/log/net_log.h"
 
 namespace base {
 class DictionaryValue;
 }
 
 namespace net {
+class NetLogCaptureMode;
 class WriteToFileNetLogObserver;
 }
 

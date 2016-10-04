@@ -13,7 +13,7 @@
 #include "base/values.h"
 #include "extensions/browser/extension_throttle_manager.h"
 #include "net/base/load_flags.h"
-#include "net/log/net_log.h"
+#include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source_type.h"
 #include "net/url_request/url_request.h"

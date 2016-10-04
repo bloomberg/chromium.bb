@@ -32,7 +32,10 @@
 #include "net/cookies/parsed_cookie.h"
 #include "net/http/http_util.h"
 #include "net/log/net_log.h"
+#include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_event_type.h"
+#include "net/log/net_log_parameters_callback.h"
+#include "net/log/net_log_with_source.h"
 #include "net/url_request/url_request.h"
 #include "url/url_constants.h"
 
@@ -255,7 +258,7 @@ EventResponseDelta::~EventResponseDelta() {
 // Creates a NetLog callback the returns a Value with the ID of the extension
 // that caused an event.  |delta| must remain valid for the lifetime of the
 // callback.
-net::NetLog::ParametersCallback CreateNetLogExtensionIdCallback(
+net::NetLogParametersCallback CreateNetLogExtensionIdCallback(
     const EventResponseDelta* delta) {
   return net::NetLog::StringCallback("extension_id", &delta->extension_id);
 }

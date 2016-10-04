@@ -18,6 +18,7 @@
 #include "net/base/sdch_manager.h"
 #include "net/base/sdch_net_log_params.h"
 #include "net/log/net_log_event_type.h"
+#include "net/log/net_log_with_source.h"
 
 namespace net {
 

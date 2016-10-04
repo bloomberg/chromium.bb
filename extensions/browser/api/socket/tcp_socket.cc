@@ -14,6 +14,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/rand_callback.h"
+#include "net/log/net_log_source.h"
 #include "net/socket/tcp_client_socket.h"
 
 namespace extensions {
@@ -101,7 +102,7 @@ void TCPSocket::Connect(const net::AddressList& address,
   int result = net::ERR_CONNECTION_FAILED;
   if (!is_connected_) {
     socket_.reset(
-        new net::TCPClientSocket(address, NULL, NULL, net::NetLog::Source()));
+        new net::TCPClientSocket(address, NULL, NULL, net::NetLogSource()));
     result = socket_->Connect(
         base::Bind(&TCPSocket::OnConnectComplete, base::Unretained(this)));
   }
@@ -202,7 +203,7 @@ int TCPSocket::Listen(const std::string& address,
   socket_mode_ = SERVER;
 
   if (!server_socket_.get()) {
-    server_socket_.reset(new net::TCPServerSocket(NULL, net::NetLog::Source()));
+    server_socket_.reset(new net::TCPServerSocket(NULL, net::NetLogSource()));
   }
 
   int result = server_socket_->ListenWithAddressAndPort(address, port, backlog);

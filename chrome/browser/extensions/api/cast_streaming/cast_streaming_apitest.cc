@@ -31,6 +31,7 @@
 #include "media/cast/test/utility/standalone_cast_environment.h"
 #include "net/base/net_errors.h"
 #include "net/base/rand_callback.h"
+#include "net/log/net_log_source.h"
 #include "net/udp/udp_server_socket.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -345,7 +346,7 @@ class CastStreamingApiTestWithPixelOutput : public CastStreamingApiTest {
 #endif
 IN_PROC_BROWSER_TEST_F(CastStreamingApiTestWithPixelOutput, MAYBE_EndToEnd) {
   std::unique_ptr<net::UDPServerSocket> receive_socket(
-      new net::UDPServerSocket(NULL, net::NetLog::Source()));
+      new net::UDPServerSocket(NULL, net::NetLogSource()));
   receive_socket->AllowAddressReuse();
   ASSERT_EQ(net::OK, receive_socket->Listen(GetFreeLocalPort()));
   net::IPEndPoint receiver_end_point;

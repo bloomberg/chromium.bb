@@ -22,6 +22,8 @@ namespace net {
 
 class ClientSocketFactory;
 class SocketPerformanceWatcherFactory;
+class NetLog;
+class NetLogWithSource;
 
 typedef base::Callback<int(const AddressList&, const NetLogWithSource& net_log)>
     OnHostResolutionCallback;

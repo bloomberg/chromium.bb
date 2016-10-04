@@ -23,6 +23,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "net/http/http_network_session.h"
 #include "net/log/net_log.h"
+#include "net/log/net_log_with_source.h"
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"

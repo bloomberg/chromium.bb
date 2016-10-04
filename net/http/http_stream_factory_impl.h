@@ -16,7 +16,6 @@
 #include "base/memory/ref_counted.h"
 #include "net/base/host_port_pair.h"
 #include "net/http/http_stream_factory.h"
-#include "net/log/net_log.h"
 #include "net/proxy/proxy_server.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/spdy/spdy_session_key.h"
@@ -25,6 +24,7 @@ namespace net {
 
 class HttpNetworkSession;
 class SpdySession;
+class NetLogWithSource;
 
 class NET_EXPORT_PRIVATE HttpStreamFactoryImpl : public HttpStreamFactory {
  public:

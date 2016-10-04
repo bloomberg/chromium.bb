@@ -22,7 +22,9 @@
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
 #include "net/base/io_buffer.h"
+#include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
+#include "net/log/net_log_source.h"
 #include "net/log/net_log_source_type.h"
 
 namespace content {

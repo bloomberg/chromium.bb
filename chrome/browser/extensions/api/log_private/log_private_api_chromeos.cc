@@ -34,6 +34,7 @@
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/granted_file_entry.h"
+#include "net/log/net_log_entry.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/system_logs/debug_log_writer.h"
@@ -213,7 +214,7 @@ LogPrivateAPI::GetFactoryInstance() {
   return g_factory.Pointer();
 }
 
-void LogPrivateAPI::OnAddEntry(const net::NetLog::Entry& entry) {
+void LogPrivateAPI::OnAddEntry(const net::NetLogEntry& entry) {
   // We could receive events on whatever thread they happen to be generated,
   // since we are only interested in network events, we should ignore any
   // other thread than BrowserThread::IO.

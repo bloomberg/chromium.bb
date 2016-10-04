@@ -6,6 +6,7 @@
 #define COMPONENTS_CRONET_IOS_CRONET_ENVIRONMENT_H_
 
 #include <list>
+#include <string>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"

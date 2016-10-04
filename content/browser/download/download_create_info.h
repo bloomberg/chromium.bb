@@ -18,7 +18,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_save_info.h"
-#include "net/log/net_log.h"
+#include "net/log/net_log_with_source.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 

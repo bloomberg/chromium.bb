@@ -24,7 +24,6 @@
 #include "net/base/net_errors.h"
 #include "net/cookies/cookie_options.h"
 #include "net/http/http_status_code.h"
-#include "net/log/net_log.h"
 #include "net/url_request/url_request.h"
 
 namespace {

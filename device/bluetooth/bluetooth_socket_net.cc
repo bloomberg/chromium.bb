@@ -19,7 +19,7 @@
 #include "device/bluetooth/bluetooth_socket_thread.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
-#include "net/log/net_log.h"
+#include "net/log/net_log_source.h"
 
 namespace {
 
@@ -117,7 +117,7 @@ void BluetoothSocketNet::ResetData() {
 }
 
 void BluetoothSocketNet::ResetTCPSocket() {
-  tcp_socket_.reset(new net::TCPSocket(NULL, NULL, net::NetLog::Source()));
+  tcp_socket_.reset(new net::TCPSocket(NULL, NULL, net::NetLogSource()));
 }
 
 void BluetoothSocketNet::SetTCPSocket(

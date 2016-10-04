@@ -11,6 +11,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/net_errors.h"
+#include "net/log/net_log_source.h"
 
 using content::BrowserThread;
 
@@ -75,7 +76,7 @@ void WiFiDisplayMediaServiceImpl::SetDesinationPoint(
 
   rtp_socket_.reset(new net::UDPSocket(net::DatagramSocket::DEFAULT_BIND,
                                        net::RandIntCallback(), nullptr,
-                                       net::NetLog::Source()));
+                                       net::NetLogSource()));
   if (rtp_socket_->Open(end_point.GetFamily()) != net::OK ||
       rtp_socket_->Connect(end_point) != net::OK) {
     DVLOG(1) << "Could not connect to " << end_point.ToString();

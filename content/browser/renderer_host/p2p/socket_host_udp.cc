@@ -20,6 +20,7 @@
 #include "ipc/ipc_sender.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/log/net_log_source.h"
 #include "third_party/webrtc/media/base/rtputils.h"
 
 namespace {
@@ -445,7 +446,7 @@ bool P2PSocketHostUdp::SetOption(P2PSocketOption option, int value) {
 std::unique_ptr<net::DatagramServerSocket>
 P2PSocketHostUdp::DefaultSocketFactory() {
   net::UDPServerSocket* socket = new net::UDPServerSocket(
-      GetContentClient()->browser()->GetNetLog(), net::NetLog::Source());
+      GetContentClient()->browser()->GetNetLog(), net::NetLogSource());
 #if defined(OS_WIN)
   socket->UseNonBlockingIO();
 #endif

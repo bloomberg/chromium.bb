@@ -24,6 +24,7 @@ class Clock;
 }
 
 namespace net {
+class NetLogWithSource;
 class SdchManager;
 class URLRequestContext;
 

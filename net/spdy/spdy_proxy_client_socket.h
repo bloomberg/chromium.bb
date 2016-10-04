@@ -22,7 +22,7 @@
 #include "net/http/http_request_info.h"
 #include "net/http/http_response_info.h"
 #include "net/http/proxy_client_socket.h"
-#include "net/log/net_log.h"
+#include "net/log/net_log_with_source.h"
 #include "net/spdy/spdy_http_stream.h"
 #include "net/spdy/spdy_protocol.h"
 #include "net/spdy/spdy_read_queue.h"
