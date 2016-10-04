@@ -3719,6 +3719,57 @@ class ChromeLauncherControllerArcDefaultAppsTest
 
 }  // namespace
 
+TEST_F(ChromeLauncherControllerOrientationTest,
+       ArcOrientationLockBeforeWindowReady) {
+  ASSERT_TRUE(display::Display::HasInternalDisplay());
+
+  extension_service_->AddExtension(arc_support_host_.get());
+  EnableArc(true);
+
+  InitLauncherController();
+  arc::ArcAuthService::SetShelfDelegateForTesting(launcher_controller_.get());
+
+  ash::ScreenOrientationController* controller =
+      ash::Shell::GetInstance()->screen_orientation_controller();
+
+  std::string app_id1("org.chromium.arc.1");
+  int task_id1 = 1;
+  arc::mojom::AppInfo appinfo1 =
+      CreateAppInfo("Test1", "test", "com.example.app", OrientationLock::NONE);
+
+  AddArcAppAndShortcut(appinfo1);
+  NotifyOnTaskCreated(appinfo1, task_id1);
+  NotifyOnTaskOrientationLockRequested(task_id1, OrientationLock::PORTRAIT);
+
+  // Widgets will be deleted by the system.
+  CreateArcWindow(app_id1);
+
+  EXPECT_FALSE(controller->rotation_locked());
+
+  EnableTabletMode(true);
+  EXPECT_TRUE(controller->rotation_locked());
+  EXPECT_EQ(display::Display::ROTATE_90,
+            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
+
+  std::string app_id2("org.chromium.arc.2");
+  int task_id2 = 2;
+  arc::mojom::AppInfo appinfo2 =
+      CreateAppInfo("Test2", "test", "com.example.app", OrientationLock::NONE);
+  // Create in tablet mode.
+  AddArcAppAndShortcut(appinfo2);
+  NotifyOnTaskCreated(appinfo2, task_id2);
+  NotifyOnTaskOrientationLockRequested(task_id2, OrientationLock::LANDSCAPE);
+  EXPECT_TRUE(controller->rotation_locked());
+  EXPECT_EQ(display::Display::ROTATE_90,
+            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
+
+  // The screen will be locked when the window is created.
+  CreateArcWindow(app_id2);
+  EXPECT_TRUE(controller->rotation_locked());
+  EXPECT_EQ(display::Display::ROTATE_0,
+            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
+}
+
 TEST_F(ChromeLauncherControllerOrientationTest, ArcOrientationLock) {
   ASSERT_TRUE(display::Display::HasInternalDisplay());
 
