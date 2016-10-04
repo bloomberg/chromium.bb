@@ -575,33 +575,47 @@ void ResourcePrefetchPredictorTablesTest::ReopenDatabase() {
 // Test cases.
 
 TEST_F(ResourcePrefetchPredictorTablesTest, ComputeResourceScore) {
-  ResourceData js_resource = CreateResourceData(
-      "http://www.resources.google.com/script.js",
-      content::RESOURCE_TYPE_SCRIPT, 11, 0, 0, 1., net::MEDIUM, false, false);
-  ResourceData image_resource = CreateResourceData(
-      "http://www.resources.google.com/image.jpg", content::RESOURCE_TYPE_IMAGE,
-      11, 0, 0, 1., net::MEDIUM, false, false);
-  ResourceData css_resource =
-      CreateResourceData("http://www.resources.google.com/stylesheet.css",
-                         content::RESOURCE_TYPE_STYLESHEET, 11, 0, 0, 1.,
-                         net::MEDIUM, false, false);
-  ResourceData font_resource =
-      CreateResourceData("http://www.resources.google.com/font.woff",
-                         content::RESOURCE_TYPE_FONT_RESOURCE, 11, 0, 0, 1.,
-                         net::MEDIUM, false, false);
-  float js_resource_score =
-      ResourcePrefetchPredictorTables::ComputeResourceScore(js_resource);
-  float css_resource_score =
-      ResourcePrefetchPredictorTables::ComputeResourceScore(css_resource);
-  float font_resource_score =
-      ResourcePrefetchPredictorTables::ComputeResourceScore(font_resource);
-  float image_resource_score =
-      ResourcePrefetchPredictorTables::ComputeResourceScore(image_resource);
+  auto compute_score = [](net::RequestPriority priority,
+                          content::ResourceType resource_type,
+                          double average_position) {
+    return ResourcePrefetchPredictorTables::ComputeResourceScore(
+        CreateResourceData("", resource_type, 0, 0, 0, average_position,
+                           priority, false, false));
+  };
 
-  EXPECT_TRUE(js_resource_score == css_resource_score);
-  EXPECT_TRUE(js_resource_score == font_resource_score);
-  EXPECT_NEAR(199., js_resource_score, 1e-4);
-  EXPECT_NEAR(99., image_resource_score, 1e-4);
+  // Priority is more important than the rest.
+  EXPECT_TRUE(compute_score(net::HIGHEST, content::RESOURCE_TYPE_SCRIPT, 1.) >
+              compute_score(net::HIGHEST, content::RESOURCE_TYPE_IMAGE, 42.));
+
+  EXPECT_TRUE(compute_score(net::HIGHEST, content::RESOURCE_TYPE_IMAGE, 42.) >
+              compute_score(net::MEDIUM, content::RESOURCE_TYPE_SCRIPT, 1.));
+  EXPECT_TRUE(compute_score(net::HIGHEST, content::RESOURCE_TYPE_IMAGE, 42.) >
+              compute_score(net::LOW, content::RESOURCE_TYPE_SCRIPT, 1.));
+  EXPECT_TRUE(compute_score(net::HIGHEST, content::RESOURCE_TYPE_IMAGE, 42.) >
+              compute_score(net::LOWEST, content::RESOURCE_TYPE_SCRIPT, 1.));
+  EXPECT_TRUE(compute_score(net::HIGHEST, content::RESOURCE_TYPE_IMAGE, 42.) >
+              compute_score(net::IDLE, content::RESOURCE_TYPE_SCRIPT, 1.));
+
+  // Scripts and stylesheets are equivalent.
+  EXPECT_NEAR(
+      compute_score(net::HIGHEST, content::RESOURCE_TYPE_SCRIPT, 42.),
+      compute_score(net::HIGHEST, content::RESOURCE_TYPE_STYLESHEET, 42.),
+      1e-4);
+
+  // Scripts are more important than fonts and images, and the rest.
+  EXPECT_TRUE(
+      compute_score(net::HIGHEST, content::RESOURCE_TYPE_SCRIPT, 42.) >
+      compute_score(net::HIGHEST, content::RESOURCE_TYPE_FONT_RESOURCE, 42.));
+  EXPECT_TRUE(
+      compute_score(net::HIGHEST, content::RESOURCE_TYPE_FONT_RESOURCE, 42.) >
+      compute_score(net::HIGHEST, content::RESOURCE_TYPE_IMAGE, 42.));
+  EXPECT_TRUE(
+      compute_score(net::HIGHEST, content::RESOURCE_TYPE_FONT_RESOURCE, 42.) >
+      compute_score(net::HIGHEST, content::RESOURCE_TYPE_FAVICON, 42.));
+
+  // All else being equal, position matters.
+  EXPECT_TRUE(compute_score(net::HIGHEST, content::RESOURCE_TYPE_SCRIPT, 12.) >
+              compute_score(net::HIGHEST, content::RESOURCE_TYPE_SCRIPT, 42.));
 }
 
 TEST_F(ResourcePrefetchPredictorTablesTest, GetAllData) {

@@ -134,6 +134,7 @@ void ResourcePrefetchPredictorTables::SortResources(
     std::vector<ResourceData>* resources) {
   std::sort(resources->begin(), resources->end(),
             [](const ResourceData& x, const ResourceData& y) {
+              // Decreasing score ordering.
               return ComputeResourceScore(x) > ComputeResourceScore(y);
             });
 }
@@ -143,6 +144,7 @@ void ResourcePrefetchPredictorTables::SortRedirects(
     std::vector<RedirectStat>* redirects) {
   std::sort(redirects->begin(), redirects->end(),
             [](const RedirectStat& x, const RedirectStat& y) {
+              // Decreasing score ordering.
               return ComputeRedirectScore(x) > ComputeRedirectScore(y);
             });
 }
@@ -478,21 +480,46 @@ bool ResourcePrefetchPredictorTables::StringsAreSmallerThanDBLimit(
 // static
 float ResourcePrefetchPredictorTables::ComputeResourceScore(
     const ResourceData& data) {
-  // The score is calculated so that when the rows are sorted, stylesheets,
-  // scripts and fonts appear first, sorted by position(ascending) and then the
-  // rest of the resources sorted by position (ascending).
-  static const int kMaxResourcesPerType = 100;
+  // The ranking is done by considering, in this order:
+  // 1. Resource Priority
+  // 2. Request resource type
+  // 3. Finally, the average position, giving a higher priotity to earlier
+  //    resources.
+
+  int priority_multiplier;
+  switch (data.priority()) {
+    case ResourceData::REQUEST_PRIORITY_HIGHEST:
+      priority_multiplier = 3;
+      break;
+    case ResourceData::REQUEST_PRIORITY_MEDIUM:
+      priority_multiplier = 2;
+      break;
+    case ResourceData::REQUEST_PRIORITY_LOW:
+    case ResourceData::REQUEST_PRIORITY_LOWEST:
+    case ResourceData::REQUEST_PRIORITY_IDLE:
+    default:
+      priority_multiplier = 1;
+      break;
+  }
+
+  int type_multiplier;
   switch (data.resource_type()) {
     case ResourceData::RESOURCE_TYPE_STYLESHEET:
     case ResourceData::RESOURCE_TYPE_SCRIPT:
+      type_multiplier = 3;
+      break;
     case ResourceData::RESOURCE_TYPE_FONT_RESOURCE:
-      return (2 * kMaxResourcesPerType) - data.average_position();
-
+      type_multiplier = 2;
+      break;
     case ResourceData::RESOURCE_TYPE_IMAGE:
     default:
-      return kMaxResourcesPerType - data.average_position();
+      type_multiplier = 1;
   }
-  // TODO(lizeb): Take priority into account.
+
+  constexpr int kMaxResourcesPerType = 100;
+  return kMaxResourcesPerType *
+             (priority_multiplier * 100 + type_multiplier * 10) -
+         data.average_position();
 }
 
 // static
