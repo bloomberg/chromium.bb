@@ -286,8 +286,13 @@ bool Text::textLayoutObjectIsNeeded(const ComputedStyle& style,
   if (document().childNeedsDistributionRecalc())
     return true;
 
+  // Avoiding creation of a layoutObject for the text node is a non-essential memory optimization.
+  // So to avoid blowing up on very wide DOMs, we limit the number of siblings to visit.
+  unsigned maxSiblingsToVisit = 50;
+
   const LayoutObject* prev =
-      LayoutTreeBuilderTraversal::previousSiblingLayoutObject(*this);
+      LayoutTreeBuilderTraversal::previousSiblingLayoutObject(
+          *this, maxSiblingsToVisit);
   if (prev && prev->isBR())  // <span><br/> <br/></span>
     return false;
 
@@ -306,11 +311,13 @@ bool Text::textLayoutObjectIsNeeded(const ComputedStyle& style,
     unsigned maxSiblingsToVisit = 50;
 
     LayoutObject* first = parent.slowFirstChild();
-    while (first && first->isFloatingOrOutOfFlowPositioned() &&
-           maxSiblingsToVisit--)
-      first = first->nextSibling();
+    for (; first && first->isFloatingOrOutOfFlowPositioned() &&
+           maxSiblingsToVisit;
+         first = first->nextSibling(), --maxSiblingsToVisit) {
+    }
     if (!first || first == layoutObject() ||
-        LayoutTreeBuilderTraversal::nextSiblingLayoutObject(*this) == first) {
+        LayoutTreeBuilderTraversal::nextSiblingLayoutObject(
+            *this, maxSiblingsToVisit) == first) {
       // If we're adding children to this flow our previous siblings are not in
       // the layout tree yet so we cannot know if we will be the first child in
       // the line and collapse away. We have to assume we need a layout object.

@@ -214,8 +214,10 @@ Node* next(const Node& node, const Node* stayWithin) {
   return nextSkippingChildren(node, stayWithin);
 }
 
-LayoutObject* nextSiblingLayoutObject(const Node& node) {
-  for (Node* sibling = LayoutTreeBuilderTraversal::nextSibling(node); sibling;
+LayoutObject* nextSiblingLayoutObject(const Node& node, int32_t limit) {
+  DCHECK(limit == kTraverseAllSiblings || limit >= 0) << limit;
+  for (Node* sibling = LayoutTreeBuilderTraversal::nextSibling(node);
+       sibling && limit-- != 0;
        sibling = LayoutTreeBuilderTraversal::nextSibling(*sibling)) {
     LayoutObject* layoutObject = sibling->layoutObject();
     if (layoutObject && !isLayoutObjectReparented(layoutObject))
@@ -224,9 +226,10 @@ LayoutObject* nextSiblingLayoutObject(const Node& node) {
   return 0;
 }
 
-LayoutObject* previousSiblingLayoutObject(const Node& node) {
+LayoutObject* previousSiblingLayoutObject(const Node& node, int32_t limit) {
+  DCHECK(limit == kTraverseAllSiblings || limit >= 0) << limit;
   for (Node* sibling = LayoutTreeBuilderTraversal::previousSibling(node);
-       sibling;
+       sibling && limit-- != 0;
        sibling = LayoutTreeBuilderTraversal::previousSibling(*sibling)) {
     LayoutObject* layoutObject = sibling->layoutObject();
     if (layoutObject && !isLayoutObjectReparented(layoutObject))

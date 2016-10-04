@@ -30,12 +30,15 @@
 #include "core/CoreExport.h"
 #include "core/dom/Element.h"
 #include "core/dom/shadow/InsertionPoint.h"
+#include <cstdint>
 
 namespace blink {
 
 class LayoutObject;
 
 namespace LayoutTreeBuilderTraversal {
+
+const int32_t kTraverseAllSiblings = -2;
 
 class ParentDetails {
   STACK_ALLOCATED();
@@ -62,8 +65,10 @@ Node* previousSibling(const Node&);
 Node* previous(const Node&, const Node* stayWithin);
 Node* next(const Node&, const Node* stayWithin);
 Node* nextSkippingChildren(const Node&, const Node* stayWithin);
-LayoutObject* nextSiblingLayoutObject(const Node&);
-LayoutObject* previousSiblingLayoutObject(const Node&);
+LayoutObject* nextSiblingLayoutObject(const Node&,
+                                      int32_t limit = kTraverseAllSiblings);
+LayoutObject* previousSiblingLayoutObject(const Node&,
+                                          int32_t limit = kTraverseAllSiblings);
 LayoutObject* nextInTopLayer(const Element&);
 
 inline Element* parentElement(const Node& node) {
