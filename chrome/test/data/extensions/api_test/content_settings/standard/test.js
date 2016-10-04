@@ -30,12 +30,22 @@ var settings = {
   "popups": "allow",
   "location": "block",
   "notifications": "block",
-  "fullscreen": "allow",
-  "mouselock": "block",
+  "fullscreen": "block",  // Should be ignored.
+  "mouselock": "block",  // Should be ignored.
   "microphone": "block",
   "camera": "block",
   "unsandboxedPlugins": "block",
   "automaticDownloads": "block"
+};
+
+// List of settings that are expected to return different values than were
+// written, due to deprecation. For example, "fullscreen" is set to "block" but
+// we expect this to be ignored, and so read back as "allow". Any setting
+// omitted from this list is expected to read back whatever was written.
+var deprecatedSettingsExpectations = {
+  // Due to deprecation, these should be "allow", regardless of the setting.
+  "fullscreen": "allow",
+  "mouselock": "allow"
 };
 
 Object.prototype.forEach = function(f) {
@@ -80,6 +90,7 @@ chrome.test.runTests([
   },
   function getContentSettings() {
     settings.forEach(function(type, setting) {
+      setting = deprecatedSettingsExpectations[type] || setting;
       var message = "Setting for " + type + " should be " + setting;
       cs[type].get({
         'primaryUrl': 'http://www.google.com',

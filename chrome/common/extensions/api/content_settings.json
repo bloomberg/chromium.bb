@@ -211,12 +211,12 @@
       {
         "id": "FullscreenContentSetting",
         "type": "string",
-        "enum": ["allow", "ask"]
+        "enum": ["allow"]
       },
       {
         "id": "MouselockContentSetting",
         "type": "string",
-        "enum": ["allow", "block", "ask"]
+        "enum": ["allow"]
       },
       {
         "id": "MicrophoneContentSetting",
@@ -298,7 +298,7 @@
       },
       "fullscreen": {
         "$ref": "ContentSetting",
-        "description": "Whether to allow sites to toggle the fullscreen mode. One of<br><var>allow</var>: Allow sites to toggle the fullscreen mode,<br><var>ask</var>: Ask when a site wants to toggle the fullscreen mode. <br>Default is <var>ask</var>.<br>The primary URL is the URL of the document which requested to toggle the fullscreen mode. The secondary URL is the URL of the top-level frame (which may or may not differ from the requesting URL).",
+        "description": "<i>Deprecated.</i> No longer has any effect. Fullscreen permission is now automatically granted for all sites. Value is always <var>allow</var>.",
         "value": [
           "fullscreen",
           {"$ref":"FullscreenContentSetting"}
@@ -306,7 +306,7 @@
       },
       "mouselock": {
         "$ref": "ContentSetting",
-        "description": "Whether to allow sites to disable the mouse cursor. One of <br><var>allow</var>: Allow sites to disable the mouse cursor,<br><var>block</var>: Don't allow sites to disable the mouse cursor,<br><var>ask</var>: Ask when a site wants to disable the mouse cursor. <br>Default is <var>ask</var>.<br>The primary URL is the URL of the top-level frame. The secondary URL is not used.",
+        "description": "<i>Deprecated.</i> No longer has any effect. Mouse lock permission is now automatically granted for all sites. Value is always <var>allow</var>.",
         "value": [
           "mouselock",
           {"$ref":"MouselockContentSetting"}
