@@ -180,7 +180,8 @@ void CSSVisibilityInterpolationType::apply(
     const InterpolableValue& interpolableValue,
     const NonInterpolableValue* nonInterpolableValue,
     InterpolationEnvironment& environment) const {
-  // Visibility interpolation has been deferred to application time here due to its non-linear behaviour.
+  // Visibility interpolation has been deferred to application time here due to
+  // its non-linear behaviour.
   double fraction = toInterpolableNumber(interpolableValue).value();
   EVisibility visibility =
       toCSSVisibilityNonInterpolableValue(nonInterpolableValue)

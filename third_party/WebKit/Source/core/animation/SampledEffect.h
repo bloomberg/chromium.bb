@@ -15,7 +15,8 @@ namespace blink {
 
 class SVGElement;
 
-// Associates the results of sampling an EffectModel with metadata used for effect ordering and managing composited animations.
+// Associates the results of sampling an EffectModel with metadata used for
+// effect ordering and managing composited animations.
 class SampledEffect : public GarbageCollectedFinalized<SampledEffect> {
   WTF_MAKE_NONCOPYABLE(SampledEffect);
 

@@ -167,7 +167,8 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
 
   bool affects(const Element&, CSSPropertyID) const;
 
-  // Returns whether we should continue with the commit for this animation or wait until next commit.
+  // Returns whether we should continue with the commit for this animation or
+  // wait until next commit.
   bool preCommit(int compositorGroup, bool startOnCompositor);
   void postCommit(double timelineTime);
 

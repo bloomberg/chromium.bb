@@ -67,7 +67,8 @@ SVGLength* SVGLengthInterpolationType::resolveInterpolableSVGLength(
     value = 0;
     unitType = CSSPrimitiveValue::UnitType::UserUnits;
 
-    // SVGLength does not support calc expressions, so we convert to canonical units.
+    // SVGLength does not support calc expressions, so we convert to canonical
+    // units.
     for (size_t i = 0; i < CSSPrimitiveValue::LengthUnitTypeCount; i++) {
       double entry = toInterpolableNumber(listOfValues.get(i))->value();
       if (entry)

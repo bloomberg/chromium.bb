@@ -45,7 +45,8 @@ bool AnimatableRepeatable::usesDefaultInterpolationWith(
   for (size_t i = 0; i < size; ++i) {
     const AnimatableValue* from = fromValues[i % fromValues.size()].get();
     const AnimatableValue* to = toValues[i % toValues.size()].get();
-    // Spec: If a pair of values cannot be interpolated, then the lists are not interpolable.
+    // Spec: If a pair of values cannot be interpolated, then the lists are not
+    // interpolable.
     if (AnimatableValue::usesDefaultInterpolation(from, to))
       return true;
   }
@@ -57,7 +58,8 @@ bool AnimatableRepeatable::interpolateLists(
     const Vector<RefPtr<AnimatableValue>>& toValues,
     double fraction,
     Vector<RefPtr<AnimatableValue>>& interpolatedValues) {
-  // Interpolation behaviour spec: http://www.w3.org/TR/css3-transitions/#animtype-repeatable-list
+  // Interpolation behaviour spec:
+  // http://www.w3.org/TR/css3-transitions/#animtype-repeatable-list
   DCHECK(interpolatedValues.isEmpty());
   DCHECK(!fromValues.isEmpty() && !toValues.isEmpty());
   size_t size = lowestCommonMultiple(fromValues.size(), toValues.size());
@@ -65,7 +67,8 @@ bool AnimatableRepeatable::interpolateLists(
   for (size_t i = 0; i < size; ++i) {
     const AnimatableValue* from = fromValues[i % fromValues.size()].get();
     const AnimatableValue* to = toValues[i % toValues.size()].get();
-    // Spec: If a pair of values cannot be interpolated, then the lists are not interpolable.
+    // Spec: If a pair of values cannot be interpolated, then the lists are not
+    // interpolable.
     if (AnimatableValue::usesDefaultInterpolation(from, to))
       return false;
     interpolatedValues.append(interpolate(from, to, fraction));

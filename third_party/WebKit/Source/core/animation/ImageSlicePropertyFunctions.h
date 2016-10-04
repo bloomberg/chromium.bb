@@ -10,7 +10,8 @@
 
 namespace blink {
 
-// This struct doesn't retain ownership of the slices, treat it like a reference.
+// This struct doesn't retain ownership of the slices, treat it like a
+// reference.
 struct ImageSlice {
   ImageSlice(const LengthBox& slices, bool fill) : slices(slices), fill(fill) {}
 

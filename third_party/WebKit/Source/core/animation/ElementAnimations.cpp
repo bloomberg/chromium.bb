@@ -111,12 +111,13 @@ void ElementAnimations::clearBaseComputedStyle() {
 }
 
 bool ElementAnimations::isAnimationStyleChange() const {
-  // TODO(rune@opera.com): The FontFaceCache version number may be increased without forcing
-  // a style recalc (see crbug.com/471079). ComputedStyle objects created with different cache
-  // versions will not be considered equal as Font::operator== will compare versions, hence
-  // ComputedStyle::operator== will return false. We avoid using baseComputedStyle (the check for
-  // isFallbackValid()) in that case to avoid triggering the ComputedStyle comparison ASSERT
-  // in updateBaseComputedStyle.
+  // TODO(rune@opera.com): The FontFaceCache version number may be increased
+  // without forcing a style recalc (see crbug.com/471079). ComputedStyle
+  // objects created with different cache versions will not be considered equal
+  // as Font::operator== will compare versions, hence ComputedStyle::operator==
+  // will return false. We avoid using baseComputedStyle (the check for
+  // isFallbackValid()) in that case to avoid triggering the ComputedStyle
+  // comparison ASSERT in updateBaseComputedStyle.
   return m_animationStyleChange &&
          (!m_baseComputedStyle ||
           m_baseComputedStyle->font().isFallbackValid());

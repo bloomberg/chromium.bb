@@ -9,7 +9,8 @@
 
 namespace blink {
 
-// Represents components of a PropertySpecificKeyframe's value that either do not change or 50% flip when interpolating with an adjacent value.
+// Represents components of a PropertySpecificKeyframe's value that either do
+// not change or 50% flip when interpolating with an adjacent value.
 class NonInterpolableValue : public RefCounted<NonInterpolableValue> {
  public:
   virtual ~NonInterpolableValue() {}
@@ -18,7 +19,8 @@ class NonInterpolableValue : public RefCounted<NonInterpolableValue> {
   virtual Type getType() const = 0;
 };
 
-// These macros provide safe downcasts of NonInterpolableValue subclasses with debug assertions.
+// These macros provide safe downcasts of NonInterpolableValue subclasses with
+// debug assertions.
 // See CSSValueInterpolationType.cpp for example usage.
 #define DECLARE_NON_INTERPOLABLE_VALUE_TYPE() \
   static Type staticType;                     \

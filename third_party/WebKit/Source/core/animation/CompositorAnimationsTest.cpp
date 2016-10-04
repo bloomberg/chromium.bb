@@ -1233,7 +1233,8 @@ TEST_F(AnimationCompositorAnimationsTest,
       timing, *element.get(), animation2, *animationEffect2, 1));
   EXPECT_FALSE(animation2->hasActiveAnimationsOnCompositor());
 
-  // A fallback to blink implementation needed, so cancel all compositor-side opacity animations for this element.
+  // A fallback to blink implementation needed, so cancel all compositor-side
+  // opacity animations for this element.
   animation2->cancelIncompatibleAnimationsOnCompositor();
 
   EXPECT_FALSE(animation1->hasActiveAnimationsOnCompositor());

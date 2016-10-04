@@ -17,8 +17,9 @@ namespace blink {
 
 class StyleResolverState;
 
-// Represents an animation's effect between an adjacent pair of PropertySpecificKeyframes after converting
-// the keyframes to an internal format with respect to the animation environment and underlying values.
+// Represents an animation's effect between an adjacent pair of
+// PropertySpecificKeyframes after converting the keyframes to an internal
+// format with respect to the animation environment and underlying values.
 class PrimitiveInterpolation {
   USING_FAST_MALLOC(PrimitiveInterpolation);
   WTF_MAKE_NONCOPYABLE(PrimitiveInterpolation);
@@ -38,7 +39,8 @@ class PrimitiveInterpolation {
   PrimitiveInterpolation() {}
 };
 
-// Represents a pair of keyframes that are compatible for "smooth" interpolation eg. "0px" and "100px".
+// Represents a pair of keyframes that are compatible for "smooth" interpolation
+// eg. "0px" and "100px".
 class PairwisePrimitiveInterpolation : public PrimitiveInterpolation {
  public:
   ~PairwisePrimitiveInterpolation() override {}
@@ -96,7 +98,8 @@ class PairwisePrimitiveInterpolation : public PrimitiveInterpolation {
   RefPtr<NonInterpolableValue> m_nonInterpolableValue;
 };
 
-// Represents a pair of incompatible keyframes that fall back to 50% flip behaviour eg. "auto" and "0px".
+// Represents a pair of incompatible keyframes that fall back to 50% flip
+// behaviour eg. "auto" and "0px".
 class FlipPrimitiveInterpolation : public PrimitiveInterpolation {
  public:
   ~FlipPrimitiveInterpolation() override {}

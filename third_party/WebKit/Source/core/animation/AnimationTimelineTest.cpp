@@ -315,7 +315,8 @@ TEST_F(AnimationAnimationTimelineTest, DelayBeforeAnimationStart) {
 
   timeline->play(keyframeEffect);
 
-  // TODO: Put the animation startTime in the future when we add the capability to change animation startTime
+  // TODO: Put the animation startTime in the future when we add the capability
+  // to change animation startTime
   EXPECT_CALL(*platformTiming, wakeAfter(timing.startDelay - minimumDelay()));
   updateClockAndService(0);
 

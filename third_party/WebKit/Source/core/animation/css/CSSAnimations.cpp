@@ -268,7 +268,8 @@ void CSSAnimations::calculateCompositorAnimationUpdate(
   ElementAnimations* elementAnimations =
       animatingElement ? animatingElement->elementAnimations() : nullptr;
 
-  // We only update compositor animations in response to changes in the base style.
+  // We only update compositor animations in response to changes in the base
+  // style.
   if (!elementAnimations || elementAnimations->isAnimationStyleChange())
     return;
 
@@ -319,8 +320,9 @@ void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate& update,
       elementAnimations && elementAnimations->isAnimationStyleChange();
 
 #if !DCHECK_IS_ON()
-  // If we're in an animation style change, no animations can have started, been cancelled or changed play state.
-  // When DCHECK is enabled, we verify this optimization.
+  // If we're in an animation style change, no animations can have started, been
+  // cancelled or changed play state. When DCHECK is enabled, we verify this
+  // optimization.
   if (isAnimationStyleChange)
     return;
 #endif
@@ -464,7 +466,8 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element) {
   m_previousActiveInterpolationsForAnimations.swap(
       m_pendingUpdate.activeInterpolationsForAnimations());
 
-  // FIXME: cancelling, pausing, unpausing animations all query compositingState, which is not necessarily up to date here
+  // FIXME: cancelling, pausing, unpausing animations all query
+  // compositingState, which is not necessarily up to date here
   // since we call this from recalc style.
   // https://code.google.com/p/chromium/issues/detail?id=339847
   DisableCompositingQueryAsserts disabler;
@@ -683,7 +686,8 @@ void CSSAnimations::calculateTransitionUpdateForProperty(
     const double interruptedProgress =
         interruptedTransition->animation->effect()->progress();
     if (!std::isnan(interruptedProgress)) {
-      // const_cast because we need to take a ref later when passing to startTransition.
+      // const_cast because we need to take a ref later when passing to
+      // startTransition.
       reversingAdjustedStartValue =
           const_cast<AnimatableValue*>(interruptedTransition->to);
       reversingShorteningFactor =
@@ -753,10 +757,12 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate& update,
   const CSSTransitionData* transitionData = style.transitions();
 
 #if DCHECK_IS_ON()
-  // In debug builds we verify that it would have been safe to avoid populating and testing listedProperties if the style recalc is due to animation.
+  // In debug builds we verify that it would have been safe to avoid populating
+  // and testing listedProperties if the style recalc is due to animation.
   const bool animationStyleRecalc = false;
 #else
-  // In release builds we avoid the cost of checking for new and interrupted transitions if the style recalc is due to animation.
+  // In release builds we avoid the cost of checking for new and interrupted
+  // transitions if the style recalc is due to animation.
   const bool animationStyleRecalc =
       elementAnimations && elementAnimations->isAnimationStyleChange();
 #endif
@@ -783,7 +789,8 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate& update,
       const StylePropertyShorthand& propertyList =
           animateAll ? CSSAnimations::propertiesForTransitionAll()
                      : shorthandForProperty(property);
-      // If not a shorthand we only execute one iteration of this loop, and refer to the property directly.
+      // If not a shorthand we only execute one iteration of this loop, and
+      // refer to the property directly.
       for (unsigned j = 0; !j || j < propertyList.length(); ++j) {
         CSSPropertyID id =
             propertyList.length() ? propertyList.properties()[j] : property;
@@ -796,8 +803,9 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate& update,
             continue;
         }
 
-        // FIXME: We should transition if an !important property changes even when an animation is running,
-        // but this is a bit hard to do with the current applyMatchedProperties system.
+        // FIXME: We should transition if an !important property changes even
+        // when an animation is running, but this is a bit hard to do with the
+        // current applyMatchedProperties system.
         PropertyHandle property = PropertyHandle(id);
         if (!update.activeInterpolationsForAnimations().contains(property) &&
             (!elementAnimations ||
@@ -817,8 +825,11 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate& update,
       CSSPropertyID id = entry.key;
       if (!anyTransitionHadTransitionAll && !animationStyleRecalc &&
           !listedProperties.test(id - firstCSSProperty)) {
-        // TODO: Figure out why this fails on Chrome OS login page. crbug.com/365507
-        // DCHECK(animation.playStateInternal() == Animation::Finished || !(elementAnimations && elementAnimations->isAnimationStyleChange()));
+        // TODO(crbug.com/365507): Figure out why this fails on Chrome OS login
+        // page.
+        // DCHECK(animation.playStateInternal() == Animation::Finished ||
+        //       !(elementAnimations &&
+        //         elementAnimations->isAnimationStyleChange()));
         update.cancelTransition(id);
       } else if (entry.value.animation->finishedInternal()) {
         update.finishTransition(id);
@@ -870,10 +881,10 @@ void CSSAnimations::calculateAnimationActiveInterpolations(
   HeapVector<Member<const InertEffect>> newEffects;
   for (const auto& newAnimation : update.newAnimations())
     newEffects.append(newAnimation.effect);
+
+  // Animations with updates use a temporary InertEffect for the current frame.
   for (const auto& updatedAnimation : update.animationsWithUpdates())
-    newEffects.append(
-        updatedAnimation
-            .effect);  // Animations with updates use a temporary InertEffect for the current frame.
+    newEffects.append(updatedAnimation.effect);
 
   ActiveInterpolationsMap activeInterpolationsForAnimations(
       AnimationStack::activeInterpolations(
@@ -918,7 +929,8 @@ void CSSAnimations::calculateTransitionActiveInterpolations(
         KeyframeEffect::TransitionPriority, isStylePropertyHandle);
   }
 
-  // Properties being animated by animations don't get values from transitions applied.
+  // Properties being animated by animations don't get values from transitions
+  // applied.
   if (!update.activeInterpolationsForAnimations().isEmpty() &&
       !activeInterpolationsForTransitions.isEmpty()) {
     for (const auto& entry : update.activeInterpolationsForAnimations())
@@ -1030,7 +1042,8 @@ const StylePropertyShorthand& CSSAnimations::propertiesForTransitionAll() {
   if (properties.isEmpty()) {
     for (int i = firstCSSProperty; i < lastCSSProperty; ++i) {
       CSSPropertyID id = convertToCSSPropertyID(i);
-      // Avoid creating overlapping transitions with perspective-origin and transition-origin.
+      // Avoid creating overlapping transitions with perspective-origin and
+      // transition-origin.
       if (id == CSSPropertyWebkitPerspectiveOriginX ||
           id == CSSPropertyWebkitPerspectiveOriginY ||
           id == CSSPropertyWebkitTransformOriginX ||
@@ -1046,8 +1059,8 @@ const StylePropertyShorthand& CSSAnimations::propertiesForTransitionAll() {
   return propertyShorthand;
 }
 
-// Properties that affect animations are not allowed to be affected by animations.
-// http://w3c.github.io/web-animations/#not-animatable-section
+// Properties that affect animations are not allowed to be affected by
+// animations. http://w3c.github.io/web-animations/#not-animatable-section
 bool CSSAnimations::isAnimatableProperty(CSSPropertyID property) {
   switch (property) {
     case CSSPropertyAnimation:

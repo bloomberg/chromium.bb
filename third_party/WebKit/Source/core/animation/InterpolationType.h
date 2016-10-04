@@ -19,9 +19,12 @@ namespace blink {
 
 class InterpolationEnvironment;
 
-// Subclasses of InterpolationType implement the logic for a specific value type of a specific PropertyHandle to:
-// - Convert PropertySpecificKeyframe values to (Pairwise)?InterpolationValues: maybeConvertPairwise() and maybeConvertSingle()
-// - Convert the target Element's property value to an InterpolationValue: maybeConvertUnderlyingValue()
+// Subclasses of InterpolationType implement the logic for a specific value type
+// of a specific PropertyHandle to:
+// - Convert PropertySpecificKeyframe values to (Pairwise)?InterpolationValues:
+// maybeConvertPairwise() and maybeConvertSingle()
+// - Convert the target Element's property value to an InterpolationValue:
+// maybeConvertUnderlyingValue()
 // - Apply an InterpolationValue to a target Element's property: apply().
 class InterpolationType {
   USING_FAST_MALLOC(InterpolationType);
@@ -32,8 +35,10 @@ class InterpolationType {
 
   PropertyHandle getProperty() const { return m_property; }
 
-  // ConversionCheckers are returned from calls to maybeConvertPairwise() and maybeConvertSingle() to enable the caller to check
-  // whether the result is still valid given changes in the InterpolationEnvironment and underlying InterpolationValue.
+  // ConversionCheckers are returned from calls to maybeConvertPairwise() and
+  // maybeConvertSingle() to enable the caller to check whether the result is
+  // still valid given changes in the InterpolationEnvironment and underlying
+  // InterpolationValue.
   class ConversionChecker {
     USING_FAST_MALLOC(ConversionChecker);
     WTF_MAKE_NONCOPYABLE(ConversionChecker);
@@ -91,7 +96,8 @@ class InterpolationType {
                      const NonInterpolableValue*,
                      InterpolationEnvironment&) const = 0;
 
-  // Implement reference equality checking via pointer equality checking as these are singletons.
+  // Implement reference equality checking via pointer equality checking as
+  // these are singletons.
   bool operator==(const InterpolationType& other) const {
     return this == &other;
   }

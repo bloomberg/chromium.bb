@@ -37,7 +37,8 @@
 
 namespace blink {
 
-// This class represents collections of values that animate in a repeated fashion as described by the CSS Transitions spec:
+// This class represents collections of values that animate in a repeated
+// fashion as described by the CSS Transitions spec:
 // http://www.w3.org/TR/css3-transitions/#animtype-repeatable-list
 class CORE_EXPORT AnimatableRepeatable : public AnimatableValue {
  public:

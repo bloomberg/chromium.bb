@@ -14,7 +14,8 @@ namespace blink {
 
 class StyleSheetContents;
 
-// A specialization of Keyframe that associates user specified keyframe properties with either CSS properties or SVG attributes.
+// A specialization of Keyframe that associates user specified keyframe
+// properties with either CSS properties or SVG attributes.
 class StringKeyframe : public Keyframe {
  public:
   static PassRefPtr<StringKeyframe> create() {

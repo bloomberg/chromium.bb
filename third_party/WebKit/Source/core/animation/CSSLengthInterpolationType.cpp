@@ -141,8 +141,9 @@ void CSSLengthInterpolationType::apply(
       state.cssToLengthConversionData(), m_valueRange);
   if (LengthPropertyFunctions::setLength(cssProperty(), style, length)) {
 #if DCHECK_IS_ON()
-    // Assert that setting the length on ComputedStyle directly is identical to the StyleBuilder code path.
-    // This check is useful for catching differences in clamping behaviour.
+    // Assert that setting the length on ComputedStyle directly is identical to
+    // the StyleBuilder code path. This check is useful for catching differences
+    // in clamping behaviour.
     Length before;
     Length after;
     DCHECK(LengthPropertyFunctions::getLength(cssProperty(), style, before));

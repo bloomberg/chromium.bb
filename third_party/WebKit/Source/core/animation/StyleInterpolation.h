@@ -21,7 +21,8 @@ class CORE_EXPORT StyleInterpolation : public Interpolation {
   // 2) shove X into StyleResolverState
   // X can be:
   // (1) a CSSValue (and applied via StyleBuilder::applyProperty)
-  // (2) an AnimatableValue (and applied via // AnimatedStyleBuilder::applyProperty)
+  // (2) an AnimatableValue (and applied via
+  //     AnimatedStyleBuilder::applyProperty)
   // (3) a custom value that is inserted directly into the StyleResolverState.
   virtual void apply(StyleResolverState&) const = 0;
 

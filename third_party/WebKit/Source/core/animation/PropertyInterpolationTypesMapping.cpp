@@ -70,7 +70,8 @@ const InterpolationTypes& PropertyInterpolationTypesMapping::get(
     CSSPropertyID cssProperty = property.isCSSProperty()
                                     ? property.cssProperty()
                                     : property.presentationAttribute();
-    // We treat presentation attributes identically to their CSS property equivalents when interpolating.
+    // We treat presentation attributes identically to their CSS property
+    // equivalents when interpolating.
     PropertyHandle usedProperty =
         property.isCSSProperty() ? property : PropertyHandle(cssProperty);
     switch (cssProperty) {

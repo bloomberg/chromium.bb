@@ -95,13 +95,16 @@ static Length lengthFromUnsigned(unsigned short value) {
 bool LengthPropertyFunctions::getInitialLength(CSSPropertyID property,
                                                Length& result) {
   switch (property) {
-    // The computed value of "initial" for the following properties is 0px if the associated *-style property resolves to "none" or "hidden".
-    // border-width: https://drafts.csswg.org/css-backgrounds-3/#the-border-width
-    // outline-width: https://drafts.csswg.org/css-ui-3/#outline-width
-    // column-rule-width: https://drafts.csswg.org/css-multicol-1/#crw
-    // We ignore this value adjustment for animations and use the wrong value for hidden widths to avoid
-    // having to restart our animations based on the computed *-style values.
-    // This is acceptable since animations running on hidden widths are unobservable to the user, even via getComputedStyle().
+    // The computed value of "initial" for the following properties is 0px if
+    // the associated *-style property resolves to "none" or "hidden".
+    // - border-width:
+    //   https://drafts.csswg.org/css-backgrounds-3/#the-border-width
+    // - outline-width: https://drafts.csswg.org/css-ui-3/#outline-width
+    // - column-rule-width: https://drafts.csswg.org/css-multicol-1/#crw
+    // We ignore this value adjustment for animations and use the wrong value
+    // for hidden widths to avoid having to restart our animations based on the
+    // computed *-style values. This is acceptable since animations running on
+    // hidden widths are unobservable to the user, even via getComputedStyle().
     case CSSPropertyBorderBottomWidth:
     case CSSPropertyBorderLeftWidth:
     case CSSPropertyBorderRightWidth:
@@ -417,7 +420,8 @@ bool LengthPropertyFunctions::setLength(CSSPropertyID property,
       style.setLineHeight(value);
       return true;
 
-    // TODO(alancutter): Support setters that take a numeric value (need to resolve percentages).
+    // TODO(alancutter): Support setters that take a numeric value (need to
+    // resolve percentages).
     case CSSPropertyBorderBottomWidth:
     case CSSPropertyBorderLeftWidth:
     case CSSPropertyBorderRightWidth:

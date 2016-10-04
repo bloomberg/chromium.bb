@@ -251,7 +251,8 @@ bool CompositorAnimations::isCandidateForAnimationOnCompositor(
         keyframeEffect.getPropertySpecificKeyframes(property);
     DCHECK_GE(keyframes.size(), 2U);
     for (const auto& keyframe : keyframes) {
-      // FIXME: Determine candidacy based on the CSSValue instead of a snapshot AnimatableValue.
+      // FIXME: Determine candidacy based on the CSSValue instead of a snapshot
+      // AnimatableValue.
       bool isNeutralKeyframe =
           keyframe->isCSSPropertySpecificKeyframe() &&
           !toCSSPropertySpecificKeyframe(keyframe.get())->value() &&
@@ -401,7 +402,8 @@ void CompositorAnimations::pauseAnimationForTestingOnCompositor(
     const Animation& animation,
     int id,
     double pauseTime) {
-  // FIXME: canStartAnimationOnCompositor queries compositingState, which is not necessarily up to date.
+  // FIXME: canStartAnimationOnCompositor queries compositingState, which is not
+  // necessarily up to date.
   // https://code.google.com/p/chromium/issues/detail?id=339847
   DisableCompositingQueryAsserts disabler;
 

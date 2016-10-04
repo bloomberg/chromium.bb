@@ -13,8 +13,9 @@
 namespace blink {
 
 // Handles memory management of underlying InterpolationValues in applyStack()
-// Ensures we perform copy on write if we are not the owner of an underlying InterpolationValue.
-// This functions similar to a DataRef except on std::unique_ptr'd objects.
+// Ensures we perform copy on write if we are not the owner of an underlying
+// InterpolationValue. This functions similar to a DataRef except on
+// std::unique_ptr'd objects.
 class UnderlyingValueOwner {
   WTF_MAKE_NONCOPYABLE(UnderlyingValueOwner);
   STACK_ALLOCATED();

@@ -193,7 +193,8 @@ InterpolationValue CSSColorInterpolationType::maybeConvertInherit(
     ConversionCheckers& conversionCheckers) const {
   if (!state.parentStyle())
     return nullptr;
-  // Visited color can never explicitly inherit from parent visited color so only use the unvisited color.
+  // Visited color can never explicitly inherit from parent visited color so
+  // only use the unvisited color.
   const StyleColor inheritedColor = ColorPropertyFunctions::getUnvisitedColor(
       cssProperty(), *state.parentStyle());
   conversionCheckers.append(

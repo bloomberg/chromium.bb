@@ -71,7 +71,8 @@ bool CompositorPendingAnimations::update(bool startOnCompositor) {
 
   for (auto& animation : animations) {
     bool hadCompositorAnimation = animation->hasActiveAnimationsOnCompositor();
-    // Animations with a start time do not participate in compositor start-time grouping.
+    // Animations with a start time do not participate in compositor start-time
+    // grouping.
     if (animation->preCommit(animation->hasStartTime() ? 1 : compositorGroup,
                              startOnCompositor)) {
       if (animation->hasActiveAnimationsOnCompositor() &&

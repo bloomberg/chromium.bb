@@ -10,7 +10,8 @@
 
 namespace blink {
 
-// TODO(alancutter): The rotate attribute is marked as non-additive in the SVG specs:
+// TODO(alancutter): The rotate attribute is marked as non-additive in the SVG
+// specs:
 // http://www.w3.org/TR/SVG/text.html#TSpanElementRotateAttribute
 // http://www.w3.org/TR/SVG/text.html#TextElementRotateAttribute
 

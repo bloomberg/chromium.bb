@@ -37,7 +37,8 @@ namespace blink {
 TEST(AnimationTimingCalculationsTest, ActiveTime) {
   Timing timing;
 
-  // calculateActiveTime(activeDuration, fillMode, localTime, parentPhase, phase, timing)
+  // calculateActiveTime(
+  //     activeDuration, fillMode, localTime, parentPhase, phase, timing)
 
   // Before Phase
   timing.startDelay = 10;
@@ -140,7 +141,9 @@ TEST(AnimationTimingCalculationsTest, ScaledActiveTime) {
 TEST(AnimationTimingCalculationsTest, IterationTime) {
   Timing timing;
 
-  // calculateIterationTime(iterationDuration, repeatedDuration, scaledActiveTime, startOffset, phase, timing)
+  // calculateIterationTime(
+  //     iterationDuration, repeatedDuration, scaledActiveTime, startOffset,
+  //     phase, timing)
 
   // if the scaled active time is null
   EXPECT_TRUE(isNull(calculateIterationTime(
@@ -168,7 +171,8 @@ TEST(AnimationTimingCalculationsTest, IterationTime) {
 TEST(AnimationTimingCalculationsTest, CurrentIteration) {
   Timing timing;
 
-  // calculateCurrentIteration(iterationDuration, iterationTime, scaledActiveTime, timing)
+  // calculateCurrentIteration(
+  //     iterationDuration, iterationTime, scaledActiveTime, timing)
 
   // if the scaled active time is null
   EXPECT_TRUE(isNull(calculateCurrentIteration(1, 1, nullValue(), timing)));
@@ -188,7 +192,8 @@ TEST(AnimationTimingCalculationsTest, CurrentIteration) {
 TEST(AnimationTimingCalculationsTest, DirectedTime) {
   Timing timing;
 
-  // calculateDirectedTime(currentIteration, iterationDuration, iterationTime, timing)
+  // calculateDirectedTime(
+  //     currentIteration, iterationDuration, iterationTime, timing)
 
   // if the iteration time is null
   EXPECT_TRUE(isNull(calculateDirectedTime(1, 2, nullValue(), timing)));
@@ -218,7 +223,8 @@ TEST(AnimationTimingCalculationsTest, DirectedTime) {
 TEST(AnimationTimingCalculationsTest, TransformedTime) {
   Timing timing;
 
-  // calculateTransformedTime(currentIteration, iterationDuration, iterationTime, timing)
+  // calculateTransformedTime(
+  //     currentIteration, iterationDuration, iterationTime, timing)
 
   // Iteration time is null
   EXPECT_TRUE(isNull(calculateTransformedTime(1, 2, nullValue(), timing)));

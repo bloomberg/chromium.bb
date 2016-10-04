@@ -35,7 +35,8 @@ class ResolvedVariableChecker : public InterpolationType::ConversionChecker {
 
   bool isValid(const InterpolationEnvironment& environment,
                const InterpolationValue& underlying) const final {
-    // TODO(alancutter): Just check the variables referenced instead of doing a full CSSValue resolve.
+    // TODO(alancutter): Just check the variables referenced instead of doing a
+    // full CSSValue resolve.
     const CSSValue* resolvedValue =
         CSSVariableResolver::resolveVariableReferences(
             environment.state(), m_property, *m_variableReference);

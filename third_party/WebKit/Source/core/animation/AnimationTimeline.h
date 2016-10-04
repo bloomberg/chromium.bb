@@ -48,7 +48,8 @@ namespace blink {
 class Document;
 class AnimationEffectReadOnly;
 
-// AnimationTimeline is constructed and owned by Document, and tied to its lifecycle.
+// AnimationTimeline is constructed and owned by Document, and tied to its
+// lifecycle.
 class CORE_EXPORT AnimationTimeline
     : public GarbageCollectedFinalized<AnimationTimeline>,
       public ScriptWrappable {

@@ -118,9 +118,9 @@ class CORE_EXPORT AnimationEffectReadOnly
  protected:
   explicit AnimationEffectReadOnly(const Timing&, EventDelegate* = nullptr);
 
-  // When AnimationEffectReadOnly receives a new inherited time via updateInheritedTime
-  // it will (if necessary) recalculate timings and (if necessary) call
-  // updateChildrenAndEffects.
+  // When AnimationEffectReadOnly receives a new inherited time via
+  // updateInheritedTime it will (if necessary) recalculate timings and (if
+  // necessary) call updateChildrenAndEffects.
   void updateInheritedTime(double inheritedTime, TimingUpdateReason) const;
   void invalidate() const { m_needsUpdate = true; }
   bool requiresIterationEvents() const {

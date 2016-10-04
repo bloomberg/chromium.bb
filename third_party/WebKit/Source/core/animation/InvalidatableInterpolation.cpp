@@ -22,7 +22,8 @@ void InvalidatableInterpolation::interpolate(int, double fraction) {
   m_currentFraction = fraction;
   if (m_isCached && m_cachedPairConversion)
     m_cachedPairConversion->interpolateValue(fraction, m_cachedValue);
-  // We defer the interpolation to ensureValidInterpolation() if m_cachedPairConversion is null.
+  // We defer the interpolation to ensureValidInterpolation() if
+  // m_cachedPairConversion is null.
 }
 
 std::unique_ptr<PairwisePrimitiveInterpolation>
@@ -124,7 +125,8 @@ bool InvalidatableInterpolation::isCacheValid(
   if (isNeutralKeyframeActive()) {
     if (m_cachedPairConversion && m_cachedPairConversion->isFlip())
       return false;
-    // Pairwise interpolation can never happen between different InterpolationTypes, neutral values always represent the underlying value.
+    // Pairwise interpolation can never happen between different
+    // InterpolationTypes, neutral values always represent the underlying value.
     if (!underlyingValueOwner || !m_cachedValue ||
         m_cachedValue->type() != underlyingValueOwner.type())
       return false;

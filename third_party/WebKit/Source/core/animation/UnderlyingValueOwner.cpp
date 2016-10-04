@@ -28,8 +28,9 @@ void UnderlyingValueOwner::set(const InterpolationType& type,
                                const InterpolationValue& value) {
   DCHECK(value);
   m_type = &type;
-  // By clearing m_valueOwner we will perform a copy before attempting to mutate m_value,
-  // thus upholding the const contract for this instance of interpolationValue.
+  // By clearing m_valueOwner we will perform a copy before attempting to mutate
+  // m_value, thus upholding the const contract for this instance of
+  // interpolationValue.
   m_valueOwner.clear();
   m_value = &value;
 }

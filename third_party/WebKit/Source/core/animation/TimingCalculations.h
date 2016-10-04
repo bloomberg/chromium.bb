@@ -143,7 +143,8 @@ static inline bool endsOnIterationBoundary(double iterationCount,
   return !fmod(iterationCount + iterationStart, 1);
 }
 
-// TODO(crbug.com/630915): Align this function with current Web Animations spec text.
+// TODO(crbug.com/630915): Align this function with current Web Animations spec
+// text.
 static inline double calculateIterationTime(
     double iterationDuration,
     double repeatedDuration,

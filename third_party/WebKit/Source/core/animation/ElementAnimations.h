@@ -52,8 +52,9 @@ class ElementAnimations : public GarbageCollectedFinalized<ElementAnimations> {
   ElementAnimations();
   ~ElementAnimations();
 
-  // Animations that are currently active for this element, their effects will be applied
-  // during a style recalc. CSS Transitions are included in this stack.
+  // Animations that are currently active for this element, their effects will
+  // be applied during a style recalc. CSS Transitions are included in this
+  // stack.
   AnimationStack& animationStack() { return m_animationStack; }
   const AnimationStack& animationStack() const { return m_animationStack; }
   // Tracks long running animations that are responsible for applying mutations
@@ -64,9 +65,9 @@ class ElementAnimations : public GarbageCollectedFinalized<ElementAnimations> {
   const CustomCompositorAnimations& customCompositorAnimations() const {
     return m_customCompositorAnimations;
   }
-  // Tracks the state of active CSS Animations and Transitions. The individual animations
-  // will also be part of the animation stack, but the mapping betwen animation name and
-  // animation is kept here.
+  // Tracks the state of active CSS Animations and Transitions. The individual
+  // animations will also be part of the animation stack, but the mapping
+  // between animation name and animation is kept here.
   CSSAnimations& cssAnimations() { return m_cssAnimations; }
   const CSSAnimations& cssAnimations() const { return m_cssAnimations; }
 

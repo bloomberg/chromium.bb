@@ -89,7 +89,8 @@ InterpolationValue CSSPaintInterpolationType::maybeConvertValue(
 
 InterpolationValue CSSPaintInterpolationType::maybeConvertUnderlyingValue(
     const InterpolationEnvironment& environment) const {
-  // TODO(alancutter): Support capturing and animating with the visited paint color.
+  // TODO(alancutter): Support capturing and animating with the visited paint
+  // color.
   StyleColor underlyingColor;
   if (!PaintPropertyFunctions::getColor(
           cssProperty(), *environment.state().style(), underlyingColor))

@@ -179,7 +179,8 @@ class SVGTransformListChecker : public InterpolationType::ConversionChecker {
 
   bool isValid(const InterpolationEnvironment&,
                const InterpolationValue& underlying) const final {
-    // TODO(suzyh): change maybeConvertSingle so we don't have to recalculate for changes to the interpolable values
+    // TODO(suzyh): change maybeConvertSingle so we don't have to recalculate
+    // for changes to the interpolable values
     if (!underlying && !m_underlying)
       return true;
     if (!underlying || !m_underlying)
@@ -202,7 +203,8 @@ InterpolationValue SVGTransformListInterpolationType::maybeConvertNeutral(
     const InterpolationValue&,
     ConversionCheckers&) const {
   NOTREACHED();
-  // This function is no longer called, because maybeConvertSingle has been overridden.
+  // This function is no longer called, because maybeConvertSingle has been
+  // overridden.
   return nullptr;
 }
 

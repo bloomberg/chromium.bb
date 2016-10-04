@@ -233,8 +233,10 @@ void AnimationEffectReadOnly::updateInheritedTime(
     m_calculated.localTime = m_lastUpdateTime;
   }
 
-  // Test for events even if timing didn't need an update as the animation may have gained a start time.
-  // FIXME: Refactor so that we can DCHECK(m_animation) here, this is currently required to be nullable for testing.
+  // Test for events even if timing didn't need an update as the animation may
+  // have gained a start time.
+  // FIXME: Refactor so that we can DCHECK(m_animation) here, this is currently
+  // required to be nullable for testing.
   if (reason == TimingUpdateForAnimationFrame &&
       (!m_animation || m_animation->hasStartTime() || m_animation->paused())) {
     if (m_eventDelegate)

@@ -379,8 +379,9 @@ void Animation::notifyStartTime(double timelineTime) {
                            currentTimeInternal() / -m_playbackRate);
     }
 
-    // FIXME: This avoids marking this animation as outdated needlessly when a start time
-    // is notified, but we should refactor how outdating works to avoid this.
+    // FIXME: This avoids marking this animation as outdated needlessly when a
+    // start time is notified, but we should refactor how outdating works to
+    // avoid this.
     clearOutdated();
     m_currentTimePending = false;
   }
@@ -896,7 +897,8 @@ void Animation::endUpdatingState() {
 void Animation::createCompositorPlayer() {
   if (Platform::current()->isThreadedAnimationEnabled() &&
       !m_compositorPlayer) {
-    // We only need to pre-finalize if we are running animations on the compositor.
+    // We only need to pre-finalize if we are running animations on the
+    // compositor.
     if (!m_preFinalizerRegistered) {
       ThreadState::current()->registerPreFinalizer(this);
       m_preFinalizerRegistered = true;

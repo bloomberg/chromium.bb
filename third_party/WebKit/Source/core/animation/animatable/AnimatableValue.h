@@ -135,7 +135,8 @@ class CORE_EXPORT AnimatableValue : public RefCounted<AnimatableValue> {
 
  private:
   virtual AnimatableType type() const = 0;
-  // Implementations can assume that the object being compared has the same type as the object this is called on
+  // Implementations can assume that the object being compared has the same type
+  // as the object this is called on
   virtual bool equalTo(const AnimatableValue*) const = 0;
 
   template <class Keyframe>

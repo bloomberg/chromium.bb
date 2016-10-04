@@ -13,7 +13,8 @@ namespace blink {
 
 class InterpolationType;
 
-// Represents an interpolated value between an adjacent pair of PropertySpecificKeyframes.
+// Represents an interpolated value between an adjacent pair of
+// PropertySpecificKeyframes.
 class TypedInterpolationValue {
  public:
   static std::unique_ptr<TypedInterpolationValue> create(

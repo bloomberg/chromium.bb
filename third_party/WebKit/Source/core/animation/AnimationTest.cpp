@@ -74,7 +74,8 @@ class AnimationAnimationTest : public ::testing::Test {
   bool simulateFrame(double time) {
     document->animationClock().updateTime(time);
     document->compositorPendingAnimations().update(false);
-    // The timeline does not know about our animation, so we have to explicitly call update().
+    // The timeline does not know about our animation, so we have to explicitly
+    // call update().
     return animation->update(TimingUpdateForAnimationFrame);
   }
 
@@ -109,8 +110,8 @@ TEST_F(AnimationAnimationTest, CurrentTimeDoesNotSetOutdated) {
   EXPECT_EQ(0, animation->currentTimeInternal());
   EXPECT_FALSE(animation->outdated());
   // FIXME: We should split simulateFrame into a version that doesn't update
-  // the animation and one that does, as most of the tests don't require update()
-  // to be called.
+  // the animation and one that does, as most of the tests don't require
+  // update() to be called.
   document->animationClock().updateTime(10);
   EXPECT_EQ(10, animation->currentTimeInternal());
   EXPECT_FALSE(animation->outdated());

@@ -35,7 +35,8 @@ class CSSValueInterpolationType : public CSSInterpolationType {
     return nullptr;
   }
 
-  // As we override CSSInterpolationType::maybeConvertSingle, these are never called.
+  // As we override CSSInterpolationType::maybeConvertSingle, these are never
+  // called.
   InterpolationValue maybeConvertNeutral(const InterpolationValue& underlying,
                                          ConversionCheckers&) const final {
     NOTREACHED();

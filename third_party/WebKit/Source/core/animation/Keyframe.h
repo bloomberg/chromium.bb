@@ -80,7 +80,8 @@ class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
     virtual PassRefPtr<PropertySpecificKeyframe> cloneWithOffset(
         double offset) const = 0;
 
-    // FIXME: Remove this once CompositorAnimations no longer depends on AnimatableValues
+    // FIXME: Remove this once CompositorAnimations no longer depends on
+    // AnimatableValues
     virtual bool populateAnimatableValue(
         CSSPropertyID,
         Element&,

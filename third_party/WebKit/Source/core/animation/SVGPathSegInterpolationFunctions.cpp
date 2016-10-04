@@ -68,7 +68,8 @@ std::unique_ptr<InterpolableValue> consumeSingleCoordinate(
       1, consumeCoordinateAxis(segment.y(), isAbsolute, coordinates.currentY));
 
   if (toAbsolutePathSegType(segment.command) == PathSegMoveToAbs) {
-    // Any upcoming 'closepath' commands bring us back to the location we have just moved to.
+    // Any upcoming 'closepath' commands bring us back to the location we have
+    // just moved to.
     coordinates.initialX = coordinates.currentX;
     coordinates.initialY = coordinates.currentY;
   }
@@ -90,7 +91,8 @@ PathSegmentData consumeInterpolableSingleCoordinate(
       list.get(1), isAbsolute, coordinates.currentY));
 
   if (toAbsolutePathSegType(segType) == PathSegMoveToAbs) {
-    // Any upcoming 'closepath' commands bring us back to the location we have just moved to.
+    // Any upcoming 'closepath' commands bring us back to the location we have
+    // just moved to.
     coordinates.initialX = coordinates.currentX;
     coordinates.initialY = coordinates.currentY;
   }

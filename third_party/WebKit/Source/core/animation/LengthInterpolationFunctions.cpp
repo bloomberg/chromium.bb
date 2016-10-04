@@ -10,8 +10,9 @@
 
 namespace blink {
 
-// This class is implemented as a singleton whose instance represents the presence of percentages being used in a Length value
-// while nullptr represents the absence of any percentages.
+// This class is implemented as a singleton whose instance represents the
+// presence of percentages being used in a Length value while nullptr represents
+// the absence of any percentages.
 class CSSLengthNonInterpolableValue : public NonInterpolableValue {
  public:
   ~CSSLengthNonInterpolableValue() final { NOTREACHED(); }

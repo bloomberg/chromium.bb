@@ -87,8 +87,9 @@ WTF_ALLOW_INIT_WITH_MEM_FUNCTIONS(blink::UpdatedCSSAnimation);
 
 namespace blink {
 
-// This class stores the CSS Animations/Transitions information we use during a style recalc.
-// This includes updates to animations/transitions as well as the Interpolations to be applied.
+// This class stores the CSS Animations/Transitions information we use during a
+// style recalc. This includes updates to animations/transitions as well as the
+// Interpolations to be applied.
 class CSSAnimationUpdate final {
   DISALLOW_NEW();
   WTF_MAKE_NONCOPYABLE(CSSAnimationUpdate);
@@ -136,7 +137,8 @@ class CSSAnimationUpdate final {
     m_newAnimations.append(
         NewCSSAnimation(animationName, nameIndex, effect, timing, styleRule));
   }
-  // Returns whether animation has been suppressed and should be filtered during style application.
+  // Returns whether animation has been suppressed and should be filtered during
+  // style application.
   bool isSuppressedAnimation(const Animation* animation) const {
     return m_suppressedAnimations.contains(animation);
   }

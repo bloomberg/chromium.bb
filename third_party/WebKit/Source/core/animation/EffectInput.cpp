@@ -54,7 +54,8 @@ bool compareKeyframes(const RefPtr<StringKeyframe>& a,
   return a->offset() < b->offset();
 }
 
-// Gets offset value from keyframeDictionary and returns false if this value was invalid.
+// Gets offset value from keyframeDictionary and returns false if this value was
+// invalid.
 bool getAndCheckOffset(const Dictionary& keyframeDictionary,
                        double& offset,
                        double lastOffset,
@@ -177,7 +178,8 @@ EffectModel* EffectInput::convert(
   const Dictionary& dictionary = effectInput.getAsDictionary();
   DictionaryIterator iterator = dictionary.getIterator(executionContext);
   if (!iterator.isNull()) {
-    // TODO(alancutter): Convert keyframes during iteration rather than after to match spec.
+    // TODO(alancutter): Convert keyframes during iteration rather than after to
+    // match spec.
     Vector<Dictionary> keyframeDictionaries;
     if (exhaustDictionaryIterator(iterator, executionContext, exceptionState,
                                   keyframeDictionaries))

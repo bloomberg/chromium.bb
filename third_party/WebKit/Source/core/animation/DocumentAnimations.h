@@ -44,7 +44,8 @@ class DocumentAnimations {
   static bool needsAnimationTimingUpdate(const Document&);
   static void updateAnimationTimingIfNeeded(Document&);
 
-  // Updates existing animations as part of generating a new (document lifecycle) frame.
+  // Updates existing animations as part of generating a new (document
+  // lifecycle) frame.
   static void updateAnimations(Document&);
 
  private:

@@ -73,7 +73,8 @@ class InheritedSizeListChecker : public InterpolationType::ConversionChecker {
 };
 
 InterpolationValue convertSizeList(const SizeList& sizeList, float zoom) {
-  // Flatten pairs of width/height into individual items, even for contain and cover keywords.
+  // Flatten pairs of width/height into individual items, even for contain and
+  // cover keywords.
   return ListInterpolationFunctions::createList(
       sizeList.size() * 2,
       [&sizeList, zoom](size_t index) -> InterpolationValue {
@@ -84,7 +85,8 @@ InterpolationValue convertSizeList(const SizeList& sizeList, float zoom) {
 }
 
 InterpolationValue maybeConvertCSSSizeList(const CSSValue& value) {
-  // CSSPropertyParser doesn't put single values in lists so wrap it up in a temporary list.
+  // CSSPropertyParser doesn't put single values in lists so wrap it up in a
+  // temporary list.
   const CSSValueList* list = nullptr;
   if (!value.isBaseValueList()) {
     CSSValueList* tempList = CSSValueList::createCommaSeparated();
@@ -94,7 +96,8 @@ InterpolationValue maybeConvertCSSSizeList(const CSSValue& value) {
     list = toCSSValueList(&value);
   }
 
-  // Flatten pairs of width/height into individual items, even for contain and cover keywords.
+  // Flatten pairs of width/height into individual items, even for contain and
+  // cover keywords.
   return ListInterpolationFunctions::createList(
       list->length() * 2, [list](size_t index) -> InterpolationValue {
         const CSSValue& cssSize = list->item(index / 2);

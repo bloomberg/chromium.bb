@@ -191,7 +191,8 @@ PairwiseInterpolationValue CSSFilterListInterpolationType::maybeMergeSingles(
                                       std::move(end.interpolableValue),
                                       start.nonInterpolableValue.release());
 
-  // Extend the shorter InterpolableList with neutral values that are compatible with corresponding filters in the longer list.
+  // Extend the shorter InterpolableList with neutral values that are compatible
+  // with corresponding filters in the longer list.
   InterpolationValue& shorter = startLength < endLength ? start : end;
   InterpolationValue& longer = startLength < endLength ? end : start;
   size_t shorterLength =

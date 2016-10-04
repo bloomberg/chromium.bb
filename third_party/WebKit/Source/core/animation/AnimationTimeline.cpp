@@ -241,8 +241,8 @@ void AnimationTimeline::setCurrentTimeInternal(double currentTime) {
     animation->setOutdated();
   }
 
-  // Any corresponding compositor animation will need to be restarted. Marking the
-  // effect changed forces this.
+  // Any corresponding compositor animation will need to be restarted. Marking
+  // the effect changed forces this.
   setAllCompositorPending(true);
 }
 
