@@ -10,6 +10,7 @@
 #include "base/debug/alias.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/memory_coordinator_client_registry.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
@@ -311,6 +312,7 @@ SdchOwner::SdchOwner(SdchManager* sdch_manager, URLRequestContext* context)
       creation_time_(clock_->Now()) {
   manager_->AddObserver(this);
   InitializePrefStore(pref_store_);
+  base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
 }
 
 SdchOwner::~SdchOwner() {
@@ -339,6 +341,7 @@ SdchOwner::~SdchOwner() {
                               val / object_lifetime);
     }
   }
+  base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(this);
 }
 
 void SdchOwner::EnablePersistentStorage(
@@ -674,7 +677,28 @@ void SdchOwner::SetFetcherForTesting(
 void SdchOwner::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel level) {
   DCHECK_NE(base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE, level);
+  ClearData();
+}
 
+void SdchOwner::OnMemoryStateChange(base::MemoryState state) {
+  // TODO(hajimehoshi): When the state changes, adjust the sizes of the caches
+  // to reduce the limits. SdchOwner doesn't have the ability to limit at
+  // present.
+  switch (state) {
+    case base::MemoryState::NORMAL:
+      break;
+    case base::MemoryState::THROTTLED:
+      ClearData();
+      break;
+    case base::MemoryState::SUSPENDED:
+    // Note: Not supported at present. Fall through.
+    case base::MemoryState::UNKNOWN:
+      NOTREACHED();
+      break;
+  }
+}
+
+void SdchOwner::ClearData() {
   for (DictionaryPreferenceIterator it(pref_store_); !it.IsAtEnd();
        it.Advance()) {
     int new_uses = it.use_count() - use_counts_at_load_[it.server_hash()];
