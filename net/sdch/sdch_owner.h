@@ -15,6 +15,7 @@
 #include "base/memory/memory_coordinator_client.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/ref_counted.h"
+#include "net/base/net_export.h"
 #include "net/base/sdch_observer.h"
 #include "net/url_request/sdch_dictionary_fetcher.h"
 

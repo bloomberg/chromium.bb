@@ -10,6 +10,7 @@
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "net/base/net_export.h"
 #include "net/log/net_log.h"
 
 namespace base {

@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "crypto/ec_private_key.h"
 #include "net/base/net_error_details.h"
+#include "net/base/net_export.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_auth.h"
 #include "net/http/http_request_headers.h"

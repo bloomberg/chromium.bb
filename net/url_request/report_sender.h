@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "net/base/net_export.h"
 #include "net/http/transport_security_state.h"
 #include "net/url_request/url_request.h"
 

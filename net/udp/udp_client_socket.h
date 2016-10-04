@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "net/base/net_export.h"
 #include "net/base/rand_callback.h"
 #include "net/udp/datagram_client_socket.h"
 #include "net/udp/udp_socket.h"

@@ -23,6 +23,7 @@
 #include "net/base/address_list.h"
 #include "net/base/completion_callback.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
 #include "net/cert/cert_database.h"
 #include "net/http/http_server_properties.h"

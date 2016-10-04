@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "net/base/net_export.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/stream_socket.h"
 

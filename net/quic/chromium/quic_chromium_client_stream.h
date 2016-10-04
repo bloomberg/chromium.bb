@@ -15,6 +15,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "net/base/ip_endpoint.h"
+#include "net/base/net_export.h"
 #include "net/base/upload_data_stream.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_response_info.h"

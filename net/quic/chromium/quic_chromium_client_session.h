@@ -24,6 +24,7 @@
 #include "net/base/completion_callback.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/net_error_details.h"
+#include "net/base/net_export.h"
 #include "net/cert/ct_verify_result.h"
 #include "net/log/net_log_with_source.h"
 #include "net/proxy/proxy_server.h"
