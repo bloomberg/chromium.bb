@@ -117,6 +117,20 @@ public class WebShareTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     }
 
     /**
+     * Verify that WebShare fails if the origin trial is disabled.
+     * @throws Exception
+     */
+    @MediumTest
+    @CommandLineFlags.Add({
+            "enable-blink-features=WebShare", "origin-trial-disabled-features=WebShare"})
+    @Feature({"WebShare"})
+    public void testWebShareOriginTrialDisabled() throws Exception {
+        loadUrl(mUrl);
+        singleClickView(mTab.getView());
+        assertEquals("Fail: SecurityError: WebShare is disabled.", mUpdateWaiter.waitForUpdate());
+    }
+
+    /**
      * Verify WebShare fails if share is called from a user gesture, and canceled.
      * @throws Exception
      */

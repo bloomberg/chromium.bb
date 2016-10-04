@@ -24,6 +24,8 @@ class NavigatorShare::ShareClientImpl final
 
   void callback(const String& error);
 
+  void onConnectionError();
+
   DEFINE_INLINE_TRACE() {
     visitor->trace(m_navigator);
     visitor->trace(m_resolver);
@@ -49,6 +51,11 @@ void NavigatorShare::ShareClientImpl::callback(const String& error) {
     // TODO(mgiuca): Work out which error type to use.
     m_resolver->reject(DOMException::create(AbortError, error));
   }
+}
+
+void NavigatorShare::ShareClientImpl::onConnectionError() {
+  m_resolver->reject(
+      DOMException::create(SecurityError, "WebShare is disabled."));
 }
 
 NavigatorShare::~NavigatorShare() = default;
@@ -94,6 +101,8 @@ ScriptPromise NavigatorShare::share(ScriptState* scriptState,
     LocalFrame* frame = doc->frame();
     DCHECK(frame);
     frame->interfaceProvider()->getInterface(mojo::GetProxy(&m_service));
+    m_service.set_connection_error_handler(convertToBaseCallback(WTF::bind(
+        &NavigatorShare::onConnectionError, wrapWeakPersistent(this))));
     DCHECK(m_service);
   }
 
@@ -115,6 +124,14 @@ ScriptPromise NavigatorShare::share(ScriptState* scriptState,
                                     Navigator& navigator,
                                     const ShareData& shareData) {
   return from(navigator).share(scriptState, shareData);
+}
+
+void NavigatorShare::onConnectionError() {
+  for (auto& client : m_clients) {
+    client->onConnectionError();
+  }
+  m_clients.clear();
+  m_service.reset();
 }
 
 }  // namespace blink

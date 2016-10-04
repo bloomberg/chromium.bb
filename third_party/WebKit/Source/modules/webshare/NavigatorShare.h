@@ -43,6 +43,8 @@ class NavigatorShare final : public GarbageCollectedFinalized<NavigatorShare>,
   NavigatorShare();
   static const char* supplementName();
 
+  void onConnectionError();
+
   blink::mojom::blink::ShareServicePtr m_service;
 
   HeapHashSet<Member<ShareClientImpl>> m_clients;

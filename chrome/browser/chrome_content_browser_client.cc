@@ -103,6 +103,7 @@
 #include "chrome/common/env_vars.h"
 #include "chrome/common/features.h"
 #include "chrome/common/logging_chrome.h"
+#include "chrome/common/origin_trials/chrome_origin_trial_policy.h"
 #include "chrome/common/pepper_permission_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
@@ -1472,6 +1473,18 @@ void MaybeAppendBlinkSettingsSwitchForFieldTrial(
   command_line->AppendSwitchASCII(switches::kBlinkSettings,
                                   base::JoinString(blink_settings, ","));
 }
+
+#if BUILDFLAG(ANDROID_JAVA_UI)
+void ForwardShareServiceRequest(
+    base::WeakPtr<shell::InterfaceProvider> interface_provider,
+    blink::mojom::ShareServiceRequest request) {
+  if (!interface_provider ||
+      ChromeOriginTrialPolicy().IsFeatureDisabled("WebShare")) {
+    return;
+  }
+  interface_provider->GetInterface(std::move(request));
+}
+#endif
 
 }  // namespace
 
@@ -2995,8 +3008,8 @@ void ChromeContentBrowserClient::RegisterRenderFrameMojoInterfaces(
         web_contents->GetJavaInterfaces()
             ->CreateInterfaceFactory<blink::mojom::PaymentRequest>());
     registry->AddInterface(
-        web_contents->GetJavaInterfaces()
-            ->CreateInterfaceFactory<blink::mojom::ShareService>());
+        base::Bind(&ForwardShareServiceRequest,
+                   web_contents->GetJavaInterfaces()->GetWeakPtr()));
   }
 #endif
 
