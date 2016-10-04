@@ -17,7 +17,9 @@ class FilePathWatcher;
 
 class DevToolsFileWatcher {
  public:
-  using WatchCallback = base::Callback<void(const std::vector<std::string>&)>;
+  using WatchCallback = base::Callback<void(const std::vector<std::string>&,
+                                            const std::vector<std::string>&,
+                                            const std::vector<std::string>&)>;
   explicit DevToolsFileWatcher(const WatchCallback& callback);
   ~DevToolsFileWatcher();
 

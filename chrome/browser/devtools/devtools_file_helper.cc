@@ -456,6 +456,8 @@ void DevToolsFileHelper::FileSystemPathsSettingChanged() {
 }
 
 void DevToolsFileHelper::FilePathsChanged(
-    const std::vector<std::string>& paths) {
-  delegate_->FilePathsChanged(paths);
+    const std::vector<std::string>& changed_paths,
+    const std::vector<std::string>& added_paths,
+    const std::vector<std::string>& removed_paths) {
+  delegate_->FilePathsChanged(changed_paths, added_paths, removed_paths);
 }

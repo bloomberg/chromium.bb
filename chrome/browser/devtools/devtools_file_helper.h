@@ -47,7 +47,10 @@ class DevToolsFileHelper {
     virtual ~Delegate() {}
     virtual void FileSystemAdded(const FileSystem& file_system) = 0;
     virtual void FileSystemRemoved(const std::string& file_system_path) = 0;
-    virtual void FilePathsChanged(const std::vector<std::string>& paths) = 0;
+    virtual void FilePathsChanged(
+        const std::vector<std::string>& changed_paths,
+        const std::vector<std::string>& added_paths,
+        const std::vector<std::string>& removed_paths) = 0;
   };
 
   DevToolsFileHelper(content::WebContents* web_contents, Profile* profile,
@@ -132,7 +135,9 @@ class DevToolsFileHelper {
       const base::FilePath& path,
       bool allowed);
   void FileSystemPathsSettingChanged();
-  void FilePathsChanged(const std::vector<std::string>& paths);
+  void FilePathsChanged(const std::vector<std::string>& changed_paths,
+                        const std::vector<std::string>& added_paths,
+                        const std::vector<std::string>& removed_paths);
 
   content::WebContents* web_contents_;
   Profile* profile_;

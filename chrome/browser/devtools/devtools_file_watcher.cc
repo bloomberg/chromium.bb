@@ -13,6 +13,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_path_watcher.h"
+#include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -38,13 +39,15 @@ class DevToolsFileWatcher::SharedFileWatcher :
       DevToolsFileWatcher::SharedFileWatcher>;
   ~SharedFileWatcher();
 
+  using FilePathTimesMap = std::map<base::FilePath, base::Time>;
+  void GetModificationTimes(const base::FilePath& path,
+                            FilePathTimesMap* file_path_times);
   void DirectoryChanged(const base::FilePath& path, bool error);
   void DispatchNotifications();
 
   std::vector<DevToolsFileWatcher*> listeners_;
   std::map<base::FilePath, std::unique_ptr<base::FilePathWatcher>> watchers_;
-  using FilePathTimesMap = std::map<base::FilePath, base::Time>;
-  FilePathTimesMap file_path_times_;
+  std::map<base::FilePath, FilePathTimesMap> file_path_times_;
   std::set<base::FilePath> pending_paths_;
   base::Time last_event_time_;
   base::TimeDelta last_dispatch_cost_;
@@ -84,11 +87,17 @@ void DevToolsFileWatcher::SharedFileWatcher::AddWatch(
   if (!success)
     return;
 
+  GetModificationTimes(path, &file_path_times_[path]);
+}
+
+void DevToolsFileWatcher::SharedFileWatcher::GetModificationTimes(
+    const base::FilePath& path,
+    FilePathTimesMap* times_map) {
   base::FileEnumerator enumerator(path, true, base::FileEnumerator::FILES);
   base::FilePath file_path = enumerator.Next();
   while (!file_path.empty()) {
     base::FileEnumerator::FileInfo file_info = enumerator.GetInfo();
-    file_path_times_[file_path] = file_info.GetLastModifiedTime();
+    (*times_map)[file_path] = file_info.GetLastModifiedTime();
     file_path = enumerator.Next();
   }
 }
@@ -121,26 +130,38 @@ void DevToolsFileWatcher::SharedFileWatcher::DirectoryChanged(
 }
 
 void DevToolsFileWatcher::SharedFileWatcher::DispatchNotifications() {
+  if (!pending_paths_.size())
+    return;
   base::Time start = base::Time::Now();
+  std::vector<std::string> added_paths;
+  std::vector<std::string> removed_paths;
   std::vector<std::string> changed_paths;
-  for (auto path : pending_paths_) {
-    base::FileEnumerator enumerator(path, true, base::FileEnumerator::FILES);
-    base::FilePath file_path = enumerator.Next();
-    while (!file_path.empty()) {
-      base::FileEnumerator::FileInfo file_info = enumerator.GetInfo();
-      base::Time new_time = file_info.GetLastModifiedTime();
-      if (file_path_times_[file_path] != new_time) {
-        file_path_times_[file_path] = new_time;
-        changed_paths.push_back(file_path.AsUTF8Unsafe());
-      }
-      file_path = enumerator.Next();
+
+  for (const auto& path : pending_paths_) {
+    FilePathTimesMap& old_times = file_path_times_[path];
+    FilePathTimesMap current_times;
+    GetModificationTimes(path, &current_times);
+    for (const auto& path_time : current_times) {
+      const base::FilePath& path = path_time.first;
+      auto old_timestamp = old_times.find(path);
+      if (old_timestamp == old_times.end())
+        added_paths.push_back(path.AsUTF8Unsafe());
+      else if (old_timestamp->second != path_time.second)
+        changed_paths.push_back(path.AsUTF8Unsafe());
     }
+    for (const auto& path_time : old_times) {
+      const base::FilePath& path = path_time.first;
+      if (current_times.find(path) == current_times.end())
+        removed_paths.push_back(path.AsUTF8Unsafe());
+    }
+    old_times.swap(current_times);
   }
   pending_paths_.clear();
 
   for (auto* watcher : listeners_) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(watcher->callback_, changed_paths));
+                            base::Bind(watcher->callback_, changed_paths,
+                                       added_paths, removed_paths));
   }
   last_dispatch_cost_ = base::Time::Now() - start;
 }
