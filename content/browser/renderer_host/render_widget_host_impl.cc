@@ -155,6 +155,8 @@ inline blink::WebGestureEvent CreateScrollBeginForWrapping(
   wrap_gesture_scroll_begin.data.scrollBegin.deltaXHint = 0;
   wrap_gesture_scroll_begin.data.scrollBegin.deltaYHint = 0;
   wrap_gesture_scroll_begin.resendingPluginId = gesture_event.resendingPluginId;
+  wrap_gesture_scroll_begin.data.scrollBegin.deltaHintUnits =
+      gesture_event.data.scrollUpdate.deltaUnits;
 
   return wrap_gesture_scroll_begin;
 }
@@ -168,6 +170,8 @@ inline blink::WebGestureEvent CreateScrollEndForWrapping(
   wrap_gesture_scroll_end.timeStampSeconds = gesture_event.timeStampSeconds;
   wrap_gesture_scroll_end.sourceDevice = gesture_event.sourceDevice;
   wrap_gesture_scroll_end.resendingPluginId = gesture_event.resendingPluginId;
+  wrap_gesture_scroll_end.data.scrollEnd.deltaUnits =
+      gesture_event.data.scrollUpdate.deltaUnits;
 
   return wrap_gesture_scroll_end;
 }
@@ -1050,6 +1054,8 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
       gesture_event.type == blink::WebInputEvent::GestureScrollUpdate &&
       gesture_event.resendingPluginId != -1 && !(*is_in_gesture_scroll);
 
+  // TODO(crbug.com/544782): Fix WebViewGuestScrollTest.TestGuestWheelScrolls-
+  // Bubble to test the resending logic of gesture events.
   if (scroll_update_needs_wrapping) {
     ForwardGestureEventWithLatencyInfo(
         CreateScrollBeginForWrapping(gesture_event),
