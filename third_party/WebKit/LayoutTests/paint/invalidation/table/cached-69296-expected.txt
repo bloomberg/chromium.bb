@@ -1,7 +1,9 @@
 {
+  "name": "Content Root Layer",
   "bounds": [800, 600],
   "children": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -45,32 +47,66 @@
           "object": "LayoutTableCell TD",
           "rect": [20, 20, 54, 51],
           "reason": "style change"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "reason": "full"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "reason": "full"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableRow TR id='row1'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableRow TR id='row1'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
     }
   ]
 }
