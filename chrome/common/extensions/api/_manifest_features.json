@@ -191,12 +191,6 @@
     "channel": "stable",
     "extension_types": ["extension"]
   },
-  "permissions": {
-    "channel": "stable",
-    "extension_types": [
-      "extension", "legacy_packaged_app", "hosted_app", "platform_app"
-    ]
-  },
   "platforms": {
     "channel": "stable",
     "extension_types": "all"
