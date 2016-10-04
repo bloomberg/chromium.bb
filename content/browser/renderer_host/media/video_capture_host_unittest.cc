@@ -67,8 +67,8 @@ static const int kDeviceId = 555;
 // Define to use a real video capture device.
 // #define TEST_REAL_CAPTURE_DEVICE
 
-// Simple class used for dumping video to a file. This can be used for verifying
-// the output.
+// Simple class used for dumping video to a file. This can be used for
+// verifying the output.
 class DumpVideo {
  public:
   DumpVideo() {}
@@ -291,7 +291,7 @@ class VideoCaptureHostTest : public testing::Test {
     // Verifies and removes the expectations on host_ and
     // returns true iff successful.
     Mock::VerifyAndClearExpectations(host_.get());
-    EXPECT_TRUE(host_->controllers_.empty());
+    EXPECT_EQ(0u, host_->entries_.size());
 
     CloseSession();
 
@@ -402,7 +402,7 @@ class VideoCaptureHostTest : public testing::Test {
     params.requested_format = media::VideoCaptureFormat(
         gfx::Size(352, 288), 30, media::PIXEL_FORMAT_I420);
     host_->OnStartCapture(kDeviceId, opened_session_id_, params);
-    host_->StopCapture(kDeviceId);
+    host_->OnStopCapture(kDeviceId);
     run_loop.RunUntilIdle();
     WaitForVideoDeviceThread();
   }
@@ -433,7 +433,7 @@ class VideoCaptureHostTest : public testing::Test {
                 OnStateChanged(kDeviceId, VIDEO_CAPTURE_STATE_STOPPED))
         .WillOnce(ExitMessageLoop(task_runner_, run_loop.QuitClosure()));
 
-    host_->StopCapture(kDeviceId);
+    host_->OnStopCapture(kDeviceId);
     host_->SetReturnReceivedDibs(true);
     host_->ReturnReceivedDibs(kDeviceId);
 
@@ -441,7 +441,7 @@ class VideoCaptureHostTest : public testing::Test {
 
     host_->SetReturnReceivedDibs(false);
     // Expect the VideoCaptureDevice has been stopped
-    EXPECT_TRUE(host_->controllers_.empty());
+    EXPECT_EQ(0u, host_->entries_.size());
   }
 
   void NotifyPacketReady() {

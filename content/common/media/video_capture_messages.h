@@ -72,7 +72,7 @@ IPC_MESSAGE_CONTROL2(VideoCaptureMsg_FreeBuffer,
                      int /* buffer_id */)
 
 // Tell the renderer process that a Buffer is available from video capture, and
-// send the associated VideoFrame constituent parts as IPC parameters.
+// send the associated VideoFrame constituient parts as IPC parameters.
 IPC_MESSAGE_CONTROL1(VideoCaptureMsg_BufferReady,
                      VideoCaptureMsg_BufferReady_Params)
 
