@@ -199,7 +199,85 @@ public class OverlayPanelManagerTest extends InstrumentationTestCase {
         lowPriorityPanel.closePanel(StateChangeReason.UNKNOWN, false);
         highPriorityPanel.closePanel(StateChangeReason.UNKNOWN, false);
 
+        assertEquals(null, panelManager.getActivePanel());
+        assertEquals(0, panelManager.getSuppressedQueueSize());
+    }
+
+    @SmallTest
+    @Feature({"OverlayPanel"})
+    public void testSuppressedPanelPriority() {
+        Context context = getInstrumentation().getTargetContext();
+
+        OverlayPanelManager panelManager = new OverlayPanelManager();
+        OverlayPanel lowPriorityPanel =
+                new MockOverlayPanel(context, null, panelManager, PanelPriority.LOW, true);
+        OverlayPanel mediumPriorityPanel =
+                new MockOverlayPanel(context, null, panelManager, PanelPriority.MEDIUM, true);
+        OverlayPanel highPriorityPanel =
+                new MockOverlayPanel(context, null, panelManager, PanelPriority.HIGH, false);
+
+        // Only one panel is showing, should be medium priority.
+        mediumPriorityPanel.requestPanelShow(StateChangeReason.UNKNOWN);
+        assertEquals(panelManager.getActivePanel(), mediumPriorityPanel);
+
+        // High priority should have taken preciedence.
+        highPriorityPanel.requestPanelShow(StateChangeReason.UNKNOWN);
+        assertEquals(panelManager.getActivePanel(), highPriorityPanel);
+
+        // Low priority will be suppressed; high priority should still be showing.
+        lowPriorityPanel.requestPanelShow(StateChangeReason.UNKNOWN);
+        assertEquals(panelManager.getActivePanel(), highPriorityPanel);
+
+        // Start closing panels.
+        highPriorityPanel.closePanel(StateChangeReason.UNKNOWN, false);
+
+        // After high priority is closed, the medium priority panel should be visible.
+        assertEquals(panelManager.getActivePanel(), mediumPriorityPanel);
+        mediumPriorityPanel.closePanel(StateChangeReason.UNKNOWN, false);
+
+        // Finally the low priority panel should be showing.
+        assertEquals(panelManager.getActivePanel(), lowPriorityPanel);
+        lowPriorityPanel.closePanel(StateChangeReason.UNKNOWN, false);
+
+        // All panels are closed now.
+        assertEquals(null, panelManager.getActivePanel());
+        assertEquals(0, panelManager.getSuppressedQueueSize());
+    }
+
+    @SmallTest
+    @Feature({"OverlayPanel"})
+    public void testSuppressedPanelOrder() {
+        Context context = getInstrumentation().getTargetContext();
+
+        OverlayPanelManager panelManager = new OverlayPanelManager();
+        OverlayPanel lowPriorityPanel =
+                new MockOverlayPanel(context, null, panelManager, PanelPriority.LOW, true);
+        OverlayPanel mediumPriorityPanel =
+                new MockOverlayPanel(context, null, panelManager, PanelPriority.MEDIUM, true);
+        OverlayPanel highPriorityPanel =
+                new MockOverlayPanel(context, null, panelManager, PanelPriority.HIGH, false);
+
+        // Odd ordering for showing panels should still produce ordered suppression.
+        highPriorityPanel.requestPanelShow(StateChangeReason.UNKNOWN);
+        lowPriorityPanel.requestPanelShow(StateChangeReason.UNKNOWN);
+        mediumPriorityPanel.requestPanelShow(StateChangeReason.UNKNOWN);
+
+        assertEquals(2, panelManager.getSuppressedQueueSize());
+
+        // Start closing panels.
+        highPriorityPanel.closePanel(StateChangeReason.UNKNOWN, false);
+
+        // After high priority is closed, the medium priority panel should be visible.
+        assertEquals(panelManager.getActivePanel(), mediumPriorityPanel);
+        mediumPriorityPanel.closePanel(StateChangeReason.UNKNOWN, false);
+
+        // Finally the low priority panel should be showing.
+        assertEquals(panelManager.getActivePanel(), lowPriorityPanel);
+        lowPriorityPanel.closePanel(StateChangeReason.UNKNOWN, false);
+
+        // All panels are closed now.
         assertTrue(panelManager.getActivePanel() == null);
+        assertEquals(0, panelManager.getSuppressedQueueSize());
     }
 
     @SmallTest
