@@ -158,16 +158,15 @@ void FrameSelection::moveTo(const VisiblePosition& pos,
                             EUserTriggered userTriggered,
                             CursorAlignOnScroll align) {
   SetSelectionOptions options = CloseTyping | ClearTypingStyle | userTriggered;
-  setSelection(
-      createVisibleSelectionDeprecated(pos, pos, selection().isDirectional()),
-      options, align);
+  setSelection(createVisibleSelection(pos, pos, selection().isDirectional()),
+               options, align);
 }
 
 void FrameSelection::moveTo(const Position& pos, TextAffinity affinity) {
   SetSelectionOptions options = CloseTyping | ClearTypingStyle;
-  setSelection(createVisibleSelectionDeprecated(pos, affinity,
-                                                selection().isDirectional()),
-               options);
+  setSelection(
+      createVisibleSelection(pos, affinity, selection().isDirectional()),
+      options);
 }
 
 // TODO(xiaochengh): We should not use reference to return value.
@@ -906,7 +905,7 @@ void FrameSelection::selectFrameElementInParentIfFullySelected() {
 
   // Focus on the parent frame, and then select from before this element to after.
   VisibleSelection newSelection =
-      createVisibleSelectionDeprecated(beforeOwnerElement, afterOwnerElement);
+      createVisibleSelection(beforeOwnerElement, afterOwnerElement);
   page->focusController().setFocusedFrame(parent);
   // setFocusedFrame can dispatch synchronous focus/blur events.  The document
   // tree might be modified.
@@ -992,7 +991,7 @@ bool FrameSelection::setSelectedRange(const EphemeralRange& range,
   // can be modified by event handlers, we should create |Range| object before
   // calling it.
   Range* logicalRange = createRange(range);
-  VisibleSelection newSelection = createVisibleSelectionDeprecated(
+  VisibleSelection newSelection = createVisibleSelection(
       range.startPosition(), range.endPosition(), affinity,
       directional == SelectionDirectionalMode::Directional);
   setSelection(newSelection, options);
@@ -1305,9 +1304,14 @@ void FrameSelection::setSelectionFromNone() {
   if (!documentElement)
     return;
   if (HTMLBodyElement* body =
-          Traversal<HTMLBodyElement>::firstChild(*documentElement))
-    setSelection(createVisibleSelectionDeprecated(
-        firstPositionInOrBeforeNode(body), TextAffinity::Downstream));
+          Traversal<HTMLBodyElement>::firstChild(*documentElement)) {
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    document->updateStyleAndLayoutIgnorePendingStylesheets();
+
+    setSelection(createVisibleSelection(firstPositionInOrBeforeNode(body),
+                                        TextAffinity::Downstream));
+  }
 }
 
 // TODO(yoichio): We should have LocalFrame having FrameCaret,
@@ -1383,8 +1387,7 @@ bool FrameSelection::selectWordAroundPosition(const VisiblePosition& position) {
     String text =
         plainText(EphemeralRange(start.deepEquivalent(), end.deepEquivalent()));
     if (!text.isEmpty() && !isSeparator(text.characterStartingAt(0))) {
-      setSelection(createVisibleSelectionDeprecated(start, end),
-                   WordGranularity);
+      setSelection(createVisibleSelection(start, end), WordGranularity);
       return true;
     }
   }
@@ -1427,7 +1430,7 @@ void FrameSelection::moveRangeSelection(const VisiblePosition& basePosition,
                                         const VisiblePosition& extentPosition,
                                         TextGranularity granularity) {
   VisibleSelection newSelection =
-      createVisibleSelectionDeprecated(basePosition, extentPosition);
+      createVisibleSelection(basePosition, extentPosition);
   newSelection.expandUsingGranularity(granularity);
 
   if (newSelection.isNone())

@@ -233,6 +233,13 @@ void DOMSelection::collapseToEnd(ExceptionState& exceptionState) {
     return;
   }
 
+  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  // In the long term, we should change FrameSelection::setSelection to take a
+  // parameter that does not require clean layout, so that modifying selection
+  // no longer performs synchronous layout by itself.
+  frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
   frame()->selection().moveTo(selection.end(), SelDefaultAffinity);
 }
 
@@ -247,6 +254,13 @@ void DOMSelection::collapseToStart(ExceptionState& exceptionState) {
                                      "there is no selection.");
     return;
   }
+
+  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  // In the long term, we should change FrameSelection::setSelection to take a
+  // parameter that does not require clean layout, so that modifying selection
+  // no longer performs synchronous layout by itself.
+  frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
   frame()->selection().moveTo(selection.start(), SelDefaultAffinity);
 }
@@ -443,6 +457,13 @@ void DOMSelection::addRange(Range* newRange) {
     // "editing/selection/selection-in-iframe-removed-crash.html" goes here.
     return;
   }
+
+  // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  // In the long term, we should change FrameSelection::setSelection to take a
+  // parameter that does not require clean layout, so that modifying selection
+  // no longer performs synchronous layout by itself.
+  frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
   if (selection.isNone()) {
     selection.setSelectedRange(newRange, VP_DEFAULT_AFFINITY);
