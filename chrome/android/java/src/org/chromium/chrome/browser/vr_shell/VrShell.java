@@ -29,6 +29,7 @@ import com.google.vr.ndk.base.GvrLayout;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.tab.Tab;
@@ -45,9 +46,11 @@ import javax.microedition.khronos.opengles.GL10;
  * This view extends from GvrLayout which wraps a GLSurfaceView that renders VR shell.
  */
 @JNINamespace("vr_shell")
+@UsedByReflection("VrShellDelegate.java")
 public class VrShell extends GvrLayout implements GLSurfaceView.Renderer, VrShellInterface {
     private static final String TAG = "VrShell";
 
+    @UsedByReflection("VrShellDelegate.java")
     public static final String VR_EXTRA = com.google.vr.sdk.base.Constants.EXTRA_VR_LAUNCH;
 
     private Activity mActivity;
@@ -94,6 +97,7 @@ public class VrShell extends GvrLayout implements GLSurfaceView.Renderer, VrShel
         }
     }
 
+    @UsedByReflection("VrShellDelegate.java")
     public VrShell(Activity activity) {
         super(activity);
         mActivity = activity;
