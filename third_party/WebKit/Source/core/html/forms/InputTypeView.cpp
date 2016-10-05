@@ -65,7 +65,7 @@ void InputTypeView::handleDOMActivateEvent(Event*) {}
 void InputTypeView::forwardEvent(Event*) {}
 
 void InputTypeView::dispatchSimulatedClickIfActive(KeyboardEvent* event) const {
-  if (element().active())
+  if (element().isActive())
     element().dispatchSimulatedClick(event);
   event->setDefaultHandled();
 }

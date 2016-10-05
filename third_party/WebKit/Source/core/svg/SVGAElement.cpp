@@ -110,7 +110,7 @@ LayoutObject* SVGAElement::createLayoutObject(const ComputedStyle&) {
 
 void SVGAElement::defaultEventHandler(Event* event) {
   if (isLink()) {
-    if (focused() && isEnterKeyKeydownEvent(event)) {
+    if (isFocused() && isEnterKeyKeydownEvent(event)) {
       event->setDefaultHandled();
       dispatchSimulatedClick(event);
       return;

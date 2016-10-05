@@ -382,7 +382,7 @@ bool MediaControls::shouldHideMediaControls(unsigned behaviorFlags) const {
     return false;
   // Don't hide if the mouse is over the controls.
   const bool ignoreControlsHover = behaviorFlags & IgnoreControlsHover;
-  if (!ignoreControlsHover && m_panel->hovered())
+  if (!ignoreControlsHover && m_panel->isHovered())
     return false;
   // Don't hide if the mouse is over the video area.
   const bool ignoreVideoHover = behaviorFlags & IgnoreVideoHover;
@@ -393,7 +393,7 @@ bool MediaControls::shouldHideMediaControls(unsigned behaviorFlags) const {
   // through all the potential ancestor hosts for the focused element.)
   const bool ignoreFocus = behaviorFlags & IgnoreFocus;
   if (!ignoreFocus &&
-      (mediaElement().focused() || contains(document().focusedElement())))
+      (mediaElement().isFocused() || contains(document().focusedElement())))
     return false;
   // Don't hide the media controls when a panel is showing.
   if (m_textTrackList->isWanted() || m_overflowList->isWanted())

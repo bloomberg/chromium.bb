@@ -738,7 +738,7 @@ Node* Node::focusDelegate() {
 }
 
 bool Node::shouldHaveFocusAppearance() const {
-  DCHECK(focused());
+  DCHECK(isFocused());
   return true;
 }
 

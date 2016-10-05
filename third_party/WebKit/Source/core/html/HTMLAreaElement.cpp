@@ -202,7 +202,7 @@ bool HTMLAreaElement::layoutObjectIsFocusable() const {
 }
 
 void HTMLAreaElement::setFocus(bool shouldBeFocused) {
-  if (focused() == shouldBeFocused)
+  if (isFocused() == shouldBeFocused)
     return;
 
   HTMLAnchorElement::setFocus(shouldBeFocused);

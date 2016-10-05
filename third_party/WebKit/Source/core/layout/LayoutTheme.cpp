@@ -441,7 +441,7 @@ bool LayoutTheme::shouldDrawDefaultFocusRing(
     return true;
   // We can't use LayoutTheme::isFocused because outline:auto might be
   // specified to non-:focus rulesets.
-  if (node->focused() && !node->shouldHaveFocusAppearance())
+  if (node->isFocused() && !node->shouldHaveFocusAppearance())
     return false;
   return true;
 }
@@ -529,7 +529,7 @@ bool LayoutTheme::isFocused(const LayoutObject& o) {
   node = node->focusDelegate();
   Document& document = node->document();
   LocalFrame* frame = document.frame();
-  return node == document.focusedElement() && node->focused() &&
+  return node == document.focusedElement() && node->isFocused() &&
          node->shouldHaveFocusAppearance() && frame &&
          frame->selection().isFocusedAndActive();
 }
@@ -537,12 +537,12 @@ bool LayoutTheme::isFocused(const LayoutObject& o) {
 bool LayoutTheme::isPressed(const LayoutObject& o) {
   if (!o.node())
     return false;
-  return o.node()->active();
+  return o.node()->isActive();
 }
 
 bool LayoutTheme::isSpinUpButtonPartPressed(const LayoutObject& o) {
   Node* node = o.node();
-  if (!node || !node->active() || !node->isElementNode() ||
+  if (!node || !node->isActive() || !node->isElementNode() ||
       !toElement(node)->isSpinButtonElement())
     return false;
   SpinButtonElement* element = toSpinButtonElement(node);
@@ -563,9 +563,9 @@ bool LayoutTheme::isHovered(const LayoutObject& o) {
   if (!node)
     return false;
   if (!node->isElementNode() || !toElement(node)->isSpinButtonElement())
-    return node->hovered();
+    return node->isHovered();
   SpinButtonElement* element = toSpinButtonElement(node);
-  return element->hovered() &&
+  return element->isHovered() &&
          element->getUpDownState() != SpinButtonElement::Indeterminate;
 }
 

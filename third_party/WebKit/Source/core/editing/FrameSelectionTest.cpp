@@ -107,7 +107,7 @@ TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout) {
 
   document().body()->setContentEditable("true", ASSERT_NO_EXCEPTION);
   document().body()->focus();
-  EXPECT_TRUE(document().body()->focused());
+  EXPECT_TRUE(document().body()->isFocused());
 
   VisibleSelection validSelection =
       createVisibleSelection(Position(text, 0), Position(text, 0));
@@ -140,7 +140,7 @@ TEST_F(FrameSelectionTest, InvalidatePreviousCaretAfterRemovingLastCharacter) {
 
   document().body()->setContentEditable("true", ASSERT_NO_EXCEPTION);
   document().body()->focus();
-  EXPECT_TRUE(document().body()->focused());
+  EXPECT_TRUE(document().body()->isFocused());
 
   selection().setCaretVisible(true);
   EXPECT_TRUE(selection().isCaret());

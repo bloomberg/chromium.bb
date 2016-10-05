@@ -873,7 +873,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context,
       if (InspectorInstrumentation::forcePseudoState(&element,
                                                      CSSSelector::PseudoHover))
         return true;
-      return element.hovered();
+      return element.isHovered();
     case CSSSelector::PseudoActive:
       if (m_mode == SharingRules)
         return true;
@@ -890,7 +890,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context,
       if (InspectorInstrumentation::forcePseudoState(&element,
                                                      CSSSelector::PseudoActive))
         return true;
-      return element.active();
+      return element.isActive();
     case CSSSelector::PseudoEnabled:
       return element.matchesEnabledPseudoClass();
     case CSSSelector::PseudoFullPageMedia:
@@ -1256,7 +1256,7 @@ bool SelectorChecker::matchesFocusPseudoClass(const Element& element) {
   if (InspectorInstrumentation::forcePseudoState(const_cast<Element*>(&element),
                                                  CSSSelector::PseudoFocus))
     return true;
-  return element.focused() && isFrameFocused(element);
+  return element.isFocused() && isFrameFocused(element);
 }
 
 }  // namespace blink

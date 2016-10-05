@@ -296,7 +296,7 @@ void HTMLTextAreaElement::subtreeHasChanged() {
   setAutofilled(false);
   updatePlaceholderVisibility();
 
-  if (!focused())
+  if (!isFocused())
     return;
 
   // When typing in a textarea, childrenChanged is not called, so we need to force the directionality check.
@@ -327,7 +327,7 @@ void HTMLTextAreaElement::handleBeforeTextInsertedEvent(
   // selection length. The selection is the source of text drag-and-drop in
   // that case, and nothing in the text field will be removed.
   unsigned selectionLength = 0;
-  if (focused()) {
+  if (isFocused()) {
     // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
     // needs to be audited.  See http://crbug.com/590369 for more details.
     document().updateStyleAndLayoutIgnorePendingStylesheets();

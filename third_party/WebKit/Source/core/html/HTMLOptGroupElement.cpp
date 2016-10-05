@@ -151,7 +151,7 @@ String HTMLOptGroupElement::defaultToolTip() const {
 void HTMLOptGroupElement::accessKeyAction(bool) {
   HTMLSelectElement* select = ownerSelectElement();
   // send to the parent to bring focus to the list box
-  if (select && !select->focused())
+  if (select && !select->isFocused())
     select->accessKeyAction(false);
 }
 

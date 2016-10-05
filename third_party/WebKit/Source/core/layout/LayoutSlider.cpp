@@ -75,7 +75,7 @@ void LayoutSlider::layout() {
 }
 
 bool LayoutSlider::inDragMode() const {
-  return sliderThumbElement()->active();
+  return sliderThumbElement()->isActive();
 }
 
 }  // namespace blink

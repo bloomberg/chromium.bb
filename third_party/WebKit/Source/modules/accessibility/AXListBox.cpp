@@ -81,7 +81,7 @@ void AXListBox::activeIndexChanged() {
     return;
 
   m_activeIndex = activeIndex;
-  if (!select->focused())
+  if (!select->isFocused())
     return;
 
   axObjectCache().postNotification(

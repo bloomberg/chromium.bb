@@ -151,7 +151,7 @@ void AXMenuList::didHidePopup() {
   AXMenuListPopup* popup = toAXMenuListPopup(children()[0].get());
   popup->didHide();
 
-  if (getNode() && getNode()->focused())
+  if (getNode() && getNode()->isFocused())
     axObjectCache().postNotification(
         this, AXObjectCacheImpl::AXFocusedUIElementChanged);
 }

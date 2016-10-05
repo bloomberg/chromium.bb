@@ -838,11 +838,9 @@ bool AXNodeObject::isHeading() const {
 }
 
 bool AXNodeObject::isHovered() const {
-  Node* node = this->getNode();
-  if (!node)
-    return false;
-
-  return node->hovered();
+  if (Node* node = this->getNode())
+    return node->isHovered();
+  return false;
 }
 
 bool AXNodeObject::isImage() const {
@@ -1070,7 +1068,7 @@ bool AXNodeObject::isPressed() const {
     return false;
   }
 
-  return node->active();
+  return node->isActive();
 }
 
 bool AXNodeObject::isReadOnly() const {

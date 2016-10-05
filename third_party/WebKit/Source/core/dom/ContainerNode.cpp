@@ -1020,7 +1020,7 @@ void ContainerNode::setFocus(bool received) {
           received && toElement(this)->authorShadowRoot()->delegatesFocus();
   }
 
-  if (focused() == received)
+  if (isFocused() == received)
     return;
 
   Node::setFocus(received);
@@ -1042,7 +1042,7 @@ void ContainerNode::setFocus(bool received) {
 }
 
 void ContainerNode::setActive(bool down) {
-  if (down == active())
+  if (down == isActive())
     return;
 
   Node::setActive(down);
@@ -1112,7 +1112,7 @@ void ContainerNode::setDragged(bool newValue) {
 }
 
 void ContainerNode::setHovered(bool over) {
-  if (over == hovered())
+  if (over == isHovered())
     return;
 
   Node::setHovered(over);

@@ -189,7 +189,7 @@ WebElement WebNode::querySelector(const WebString& selector) const {
 }
 
 bool WebNode::focused() const {
-  return m_private->focused();
+  return m_private->isFocused();
 }
 
 WebPluginContainer* WebNode::pluginContainerFromNode(const Node* node) {

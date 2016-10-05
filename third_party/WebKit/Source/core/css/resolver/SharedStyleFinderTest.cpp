@@ -98,8 +98,8 @@ TEST_F(SharedStyleFinderTest, AttributeAffectedByHover) {
   ASSERT_TRUE(a);
   ASSERT_TRUE(b);
 
-  EXPECT_FALSE(a->hovered());
-  EXPECT_FALSE(b->hovered());
+  EXPECT_FALSE(a->isHovered());
+  EXPECT_FALSE(b->isHovered());
 
   EXPECT_TRUE(matchesUncommonAttributeRuleSet(*a));
   EXPECT_FALSE(matchesUncommonAttributeRuleSet(*b));
@@ -117,8 +117,8 @@ TEST_F(SharedStyleFinderTest, AttributeAffectedByHoverNegated) {
   ASSERT_TRUE(a);
   ASSERT_TRUE(b);
 
-  EXPECT_FALSE(a->hovered());
-  EXPECT_FALSE(b->hovered());
+  EXPECT_FALSE(a->isHovered());
+  EXPECT_FALSE(b->isHovered());
 
   EXPECT_TRUE(matchesUncommonAttributeRuleSet(*a));
   EXPECT_FALSE(matchesUncommonAttributeRuleSet(*b));
@@ -136,8 +136,8 @@ TEST_F(SharedStyleFinderTest, AttributeAffectedByFocus) {
   ASSERT_TRUE(a);
   ASSERT_TRUE(b);
 
-  EXPECT_FALSE(a->focused());
-  EXPECT_FALSE(b->focused());
+  EXPECT_FALSE(a->isFocused());
+  EXPECT_FALSE(b->isFocused());
 
   EXPECT_TRUE(matchesUncommonAttributeRuleSet(*a));
   EXPECT_FALSE(matchesUncommonAttributeRuleSet(*b));
@@ -155,8 +155,8 @@ TEST_F(SharedStyleFinderTest, AttributeAffectedByActive) {
   ASSERT_TRUE(a);
   ASSERT_TRUE(b);
 
-  EXPECT_FALSE(a->active());
-  EXPECT_FALSE(b->active());
+  EXPECT_FALSE(a->isActive());
+  EXPECT_FALSE(b->isActive());
 
   EXPECT_TRUE(matchesUncommonAttributeRuleSet(*a));
   EXPECT_FALSE(matchesUncommonAttributeRuleSet(*b));

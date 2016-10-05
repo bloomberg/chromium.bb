@@ -422,7 +422,7 @@ void HTMLOptionElement::updateLabel() {
 
 bool HTMLOptionElement::spatialNavigationFocused() const {
   HTMLSelectElement* select = ownerSelectElement();
-  if (!select || !select->focused())
+  if (!select || !select->isFocused())
     return false;
   return select->spatialNavigationFocusedOption() == this;
 }

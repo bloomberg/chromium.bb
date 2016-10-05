@@ -378,9 +378,7 @@ class CORE_EXPORT Node : public EventTarget {
     setFlag(flag, IsUserActionElementFlag);
   }
 
-  // TODO(yosin): We should rename |active()| to |isActive()| as
-  // |UserActionElementSet|.
-  bool active() const {
+  bool isActive() const {
     return isUserActionElement() && isUserActionElementActive();
   }
   bool inActiveChain() const {
@@ -389,17 +387,15 @@ class CORE_EXPORT Node : public EventTarget {
   bool isDragged() const {
     return isUserActionElement() && isUserActionElementDragged();
   }
-  // TODO(yosin): We should rename |hovered()| to |isHovered()| as
-  // |UserActionElementSet|.
-  bool hovered() const {
+  bool isHovered() const {
     return isUserActionElement() && isUserActionElementHovered();
   }
   // Note: As a shadow host whose root with delegatesFocus=false may become
   // focused state when an inner element gets focused, in that case more than
-  // one elements in a document can return true for |focused()|.  Use
+  // one elements in a document can return true for |isFocused()|.  Use
   // Element::isFocusedElementInDocument() or Document::focusedElement() to
   // check which element is exactly focused.
-  bool focused() const {
+  bool isFocused() const {
     return isUserActionElement() && isUserActionElementFocused();
   }
 

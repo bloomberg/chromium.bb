@@ -564,7 +564,7 @@ void LayoutThemeMac::updateFocusedState(NSCell* cell, const LayoutObject& o) {
 
 void LayoutThemeMac::updatePressedState(NSCell* cell, const LayoutObject& o) {
   bool oldPressed = [cell isHighlighted];
-  bool pressed = o.node() && o.node()->active();
+  bool pressed = o.node() && o.node()->isActive();
   if (pressed != oldPressed)
     [cell setHighlighted:pressed];
 }

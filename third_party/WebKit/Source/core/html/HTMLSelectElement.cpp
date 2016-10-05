@@ -1727,7 +1727,7 @@ void HTMLSelectElement::typeAheadFind(KeyboardEvent* event) {
 
 void HTMLSelectElement::selectOptionByAccessKey(HTMLOptionElement* option) {
   // First bring into focus the list box.
-  if (!focused())
+  if (!isFocused())
     accessKeyAction(false);
 
   if (!option || option->ownerSelectElement() != this)

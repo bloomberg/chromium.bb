@@ -142,7 +142,7 @@ void HTMLButtonElement::defaultEventHandler(Event* event) {
     }
     if (event->type() == EventTypeNames::keyup &&
         toKeyboardEvent(event)->key() == " ") {
-      if (active())
+      if (isActive())
         dispatchSimulatedClick(event);
       event->setDefaultHandled();
       return;

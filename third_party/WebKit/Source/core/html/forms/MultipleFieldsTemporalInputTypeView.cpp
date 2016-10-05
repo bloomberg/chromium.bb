@@ -434,7 +434,7 @@ void MultipleFieldsTemporalInputTypeView::requiredAttributeChanged() {
 
 void MultipleFieldsTemporalInputTypeView::handleKeydownEvent(
     KeyboardEvent* event) {
-  if (!element().focused())
+  if (!element().isFocused())
     return;
   if (m_pickerIndicatorIsVisible &&
       ((event->key() == "ArrowDown" && event->getModifierState("Alt")) ||

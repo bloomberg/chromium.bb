@@ -162,7 +162,7 @@ void TextFieldInputType::setValue(const String& sanitizedValue,
       // If the user is still editing this field, dispatch an input event rather
       // than a change event.  The change event will be dispatched when editing
       // finishes.
-      if (element().focused())
+      if (element().isFocused())
         element().dispatchFormControlInputEvent();
       else
         element().dispatchFormControlChangeEvent();
@@ -178,13 +178,13 @@ void TextFieldInputType::setValue(const String& sanitizedValue,
       break;
   }
 
-  if (!element().focused())
+  if (!element().isFocused())
     element().setTextAsOfLastFormControlChangeEvent(
         sanitizedValue.isNull() ? element().defaultValue() : sanitizedValue);
 }
 
 void TextFieldInputType::handleKeydownEvent(KeyboardEvent* event) {
-  if (!element().focused())
+  if (!element().isFocused())
     return;
   if (ChromeClient* chromeClient = this->chromeClient()) {
     chromeClient->handleKeyboardEventOnTextField(element(), *event);
@@ -413,7 +413,7 @@ void TextFieldInputType::handleBeforeTextInsertedEvent(
   // selection length. The selection is the source of text drag-and-drop in
   // that case, and nothing in the text field will be removed.
   unsigned selectionLength = 0;
-  if (element().focused()) {
+  if (element().isFocused()) {
     // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
     // needs to be audited.  See http://crbug.com/590369 for more details.
     element().document().updateStyleAndLayoutIgnorePendingStylesheets();
@@ -502,7 +502,7 @@ void TextFieldInputType::subtreeHasChanged() {
 }
 
 void TextFieldInputType::didSetValueByUserEdit(ValueChangeState state) {
-  if (!element().focused())
+  if (!element().isFocused())
     return;
   if (ChromeClient* chromeClient = this->chromeClient())
     chromeClient->didChangeValueInTextField(element());
@@ -542,7 +542,7 @@ bool TextFieldInputType::shouldSpinButtonRespondToMouseEvents() {
 }
 
 bool TextFieldInputType::shouldSpinButtonRespondToWheelEvents() {
-  return shouldSpinButtonRespondToMouseEvents() && element().focused();
+  return shouldSpinButtonRespondToMouseEvents() && element().isFocused();
 }
 
 void TextFieldInputType::spinButtonDidReleaseMouseCapture(
