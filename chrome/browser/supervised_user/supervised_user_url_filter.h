@@ -215,6 +215,7 @@ class SupervisedUserURLFilter
 
   re2::RE2 amp_cache_path_regex_;
   re2::RE2 google_amp_viewer_path_regex_;
+  re2::RE2 google_web_cache_query_regex_;
 
   scoped_refptr<base::TaskRunner> blocking_task_runner_;
 

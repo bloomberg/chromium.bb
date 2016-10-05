@@ -95,6 +95,28 @@ TEST_F(SupervisedUserURLFilterTest, EffectiveURL) {
   EXPECT_TRUE(
       IsURLWhitelisted("https://www.google.com/amp/s/example.com/path"));
   EXPECT_FALSE(IsURLWhitelisted("https://www.google.com/amp/other.com"));
+
+  EXPECT_FALSE(IsURLWhitelisted("https://webcache.googleusercontent.com"));
+  EXPECT_FALSE(
+      IsURLWhitelisted("https://webcache.googleusercontent.com/search"));
+  EXPECT_FALSE(IsURLWhitelisted(
+      "https://webcache.googleusercontent.com/search?q=example.com"));
+  EXPECT_TRUE(IsURLWhitelisted(
+      "https://webcache.googleusercontent.com/search?q=cache:example.com"));
+  EXPECT_TRUE(
+      IsURLWhitelisted("https://webcache.googleusercontent.com/"
+                       "search?q=cache:example.com+search_query"));
+  EXPECT_TRUE(
+      IsURLWhitelisted("https://webcache.googleusercontent.com/"
+                       "search?q=cache:123456789-01:example.com+search_query"));
+  EXPECT_FALSE(IsURLWhitelisted(
+      "https://webcache.googleusercontent.com/search?q=cache:other.com"));
+  EXPECT_FALSE(
+      IsURLWhitelisted("https://webcache.googleusercontent.com/"
+                       "search?q=cache:other.com+example.com"));
+  EXPECT_FALSE(
+      IsURLWhitelisted("https://webcache.googleusercontent.com/"
+                       "search?q=cache:123456789-01:other.com+example.com"));
 }
 
 TEST_F(SupervisedUserURLFilterTest, Inactive) {
@@ -550,4 +572,57 @@ TEST_F(SupervisedUserURLFilterTest, GetEmbeddedURLGoogleAmpViewer) {
   EXPECT_EQ(GURL(), GetEmbeddedURL("https://mail.google.com/amp/example.com"));
   // Invalid TLD.
   EXPECT_EQ(GURL(), GetEmbeddedURL("https://www.google.nope/amp/example.com"));
+}
+
+TEST_F(SupervisedUserURLFilterTest, GetEmbeddedURLGoogleWebCache) {
+  // Base case.
+  EXPECT_EQ(GURL("http://example.com"),
+            GetEmbeddedURL("https://webcache.googleusercontent.com/"
+                           "search?q=cache:ABCDEFGHI-JK:example.com/"));
+  // With search query.
+  EXPECT_EQ(
+      GURL("http://example.com"),
+      GetEmbeddedURL("https://webcache.googleusercontent.com/"
+                     "search?q=cache:ABCDEFGHI-JK:example.com/+search_query"));
+  // Without fingerprint.
+  EXPECT_EQ(GURL("http://example.com"),
+            GetEmbeddedURL("https://webcache.googleusercontent.com/"
+                           "search?q=cache:example.com/"));
+  // With search query, without fingerprint.
+  EXPECT_EQ(GURL("http://example.com"),
+            GetEmbeddedURL("https://webcache.googleusercontent.com/"
+                           "search?q=cache:example.com/+search_query"));
+  // Query params other than "q=" don't matter.
+  EXPECT_EQ(GURL("http://example.com"),
+            GetEmbeddedURL("https://webcache.googleusercontent.com/"
+                           "search?a=b&q=cache:example.com/&c=d"));
+  // With scheme.
+  EXPECT_EQ(GURL("http://example.com"),
+            GetEmbeddedURL("https://webcache.googleusercontent.com/"
+                           "search?q=cache:http://example.com/"));
+  // Preserve https.
+  EXPECT_EQ(GURL("https://example.com"),
+            GetEmbeddedURL("https://webcache.googleusercontent.com/"
+                           "search?q=cache:https://example.com/"));
+
+  // Wrong host.
+  EXPECT_EQ(GURL(), GetEmbeddedURL("https://www.googleusercontent.com/"
+                                   "search?q=cache:example.com/"));
+  // Wrong path.
+  EXPECT_EQ(GURL(), GetEmbeddedURL("https://webcache.googleusercontent.com/"
+                                   "path?q=cache:example.com/"));
+  EXPECT_EQ(GURL(), GetEmbeddedURL("https://webcache.googleusercontent.com/"
+                                   "path/search?q=cache:example.com/"));
+  // Missing "cache:".
+  EXPECT_EQ(GURL(), GetEmbeddedURL("https://webcache.googleusercontent.com/"
+                                   "search?q=example.com"));
+  // Wrong fingerprint.
+  EXPECT_EQ(GURL(), GetEmbeddedURL("https://webcache.googleusercontent.com/"
+                                   "search?q=cache:123:example.com/"));
+  // Wrong query param.
+  EXPECT_EQ(GURL(), GetEmbeddedURL("https://webcache.googleusercontent.com/"
+                                   "search?a=cache:example.com/"));
+  // Invalid scheme.
+  EXPECT_EQ(GURL(), GetEmbeddedURL("https://webcache.googleusercontent.com/"
+                                   "search?q=cache:abc://example.com/"));
 }

@@ -29,6 +29,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/base/escape.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/base/url_util.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
@@ -191,6 +192,12 @@ const char kAmpCachePathPattern[] = "/[a-z]/(s/)?(.*)";
 // Regex pattern for the path of Google AMP Viewer URLs.
 const char kGoogleAmpViewerPathPattern[] = "/amp/(s/)?(.*)";
 
+// Host, path prefix, and query regex pattern for Google web cache URLs
+const char kGoogleWebCacheHost[] = "webcache.googleusercontent.com";
+const char kGoogleWebCachePathPrefix[] = "/search";
+const char kGoogleWebCacheQueryPattern[] =
+    "cache:(.{12}:)?(https?://)?([^ :]*)( [^:]*)?";
+
 GURL BuildURL(bool is_https, const std::string& host_and_path) {
   std::string scheme = is_https ? url::kHttpsScheme : url::kHttpScheme;
   return GURL(scheme + "://" + host_and_path);
@@ -204,6 +211,7 @@ SupervisedUserURLFilter::SupervisedUserURLFilter()
       blacklist_(nullptr),
       amp_cache_path_regex_(kAmpCachePathPattern),
       google_amp_viewer_path_regex_(kGoogleAmpViewerPathPattern),
+      google_web_cache_query_regex_(kGoogleWebCacheQueryPattern),
       blocking_task_runner_(
           BrowserThread::GetBlockingPool()
               ->GetTaskRunnerWithShutdownBehavior(
@@ -211,6 +219,7 @@ SupervisedUserURLFilter::SupervisedUserURLFilter()
               .get()) {
   DCHECK(amp_cache_path_regex_.ok());
   DCHECK(google_amp_viewer_path_regex_.ok());
+  DCHECK(google_web_cache_query_regex_.ok());
   // Detach from the current thread so we can be constructed on a different
   // thread than the one where we're used.
   DetachFromThread();
@@ -536,6 +545,21 @@ GURL SupervisedUserURLFilter::GetEmbeddedURL(const GURL& url) const {
           net::UnescapeRule::SPACES | net::UnescapeRule::PATH_SEPARATORS |
               net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
       return BuildURL(!s.empty(), embedded);
+    }
+  }
+
+  // Check for Google web cache URLs
+  // ("webcache.googleusercontent.com/search?q=cache:...").
+  std::string query;
+  if (url.host_piece() == kGoogleWebCacheHost &&
+      url.path_piece().starts_with(kGoogleWebCachePathPrefix) &&
+      net::GetValueForKeyInQuery(url, "q", &query)) {
+    std::string fingerprint;
+    std::string scheme;
+    std::string embedded;
+    if (re2::RE2::FullMatch(query, google_web_cache_query_regex_, &fingerprint,
+                            &scheme, &embedded)) {
+      return BuildURL(scheme == "https://", embedded);
     }
   }
 
