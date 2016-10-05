@@ -91,9 +91,10 @@ class CORE_EXPORT Stream final : public GarbageCollectedFinalized<Stream>,
  protected:
   Stream(ExecutionContext*, const String& mediaType);
 
-  // This is an internal URL referring to the blob data associated with this object. It serves
-  // as an identifier for this blob. The internal URL is never used to source the blob's content
-  // into an HTML or for FileRead'ing, public blob URLs must be used for those purposes.
+  // This is an internal URL referring to the blob data associated with this
+  // object. It serves as an identifier for this blob. The internal URL is never
+  // used to source the blob's content into an HTML or for FileRead'ing, public
+  // blob URLs must be used for those purposes.
   KURL m_internalURL;
 
   String m_mediaType;

@@ -121,8 +121,8 @@ class Internals final : public GarbageCollectedFinalized<Internals>,
   void disableCompositedAnimation(Animation*);
   void disableCSSAdditiveAnimations();
 
-  // Modifies m_desiredFrameStartTime in BitmapImage to advance the next frame time
-  // for testing whether animated images work properly.
+  // Modifies m_desiredFrameStartTime in BitmapImage to advance the next frame
+  // time for testing whether animated images work properly.
   void advanceTimeForImage(Element* image,
                            double deltaTimeInSeconds,
                            ExceptionState&);
@@ -272,7 +272,8 @@ class Internals final : public GarbageCollectedFinalized<Internals>,
   AtomicString svgNamespace();
   Vector<AtomicString> svgTags();
 
-  // This is used to test rect based hit testing like what's done on touch screens.
+  // This is used to test rect based hit testing like what's done on touch
+  // screens.
   StaticNodeList* nodesFromRect(Document*,
                                 int x,
                                 int y,
@@ -473,8 +474,9 @@ class Internals final : public GarbageCollectedFinalized<Internals>,
                       ExceptionState&);
 
   // Schedule a forced Blink GC run (Oilpan) at the end of event loop.
-  // Note: This is designed to be only used from PerformanceTests/BlinkGC to explicitly measure only Blink GC time.
-  //       Normal LayoutTests should use gc() instead as it would trigger both Blink GC and V8 GC.
+  // Note: This is designed to be only used from PerformanceTests/BlinkGC to
+  //       explicitly measure only Blink GC time.  Normal LayoutTests should use
+  //       gc() instead as it would trigger both Blink GC and V8 GC.
   void forceBlinkGCWithoutV8GC();
 
   String selectedHTMLForClipboard();
@@ -511,12 +513,14 @@ class Internals final : public GarbageCollectedFinalized<Internals>,
   // TODO(liberato): remove once autoplay gesture override experiment concludes.
   void triggerAutoplayViewportCheck(HTMLMediaElement*);
 
-  // Returns the run state of the node's scroll animator (see ScrollAnimatorCompositorCoordinater::RunState),
-  // or -1 if the node does not have a scrollable area.
+  // Returns the run state of the node's scroll animator (see
+  // ScrollAnimatorCompositorCoordinater::RunState), or -1 if the node does not
+  // have a scrollable area.
   String getScrollAnimationState(Node*) const;
 
-  // Returns the run state of the node's programmatic scroll animator (see ScrollAnimatorCompositorCoordinater::RunState),
-  // or -1 if the node does not have a scrollable area.
+  // Returns the run state of the node's programmatic scroll animator (see
+  // ScrollAnimatorCompositorCoordinater::RunState), or -1 if the node does not
+  // have a scrollable area.
   String getProgrammaticScrollAnimationState(Node*) const;
 
   // Returns the visual rect of a node's LayoutObject.

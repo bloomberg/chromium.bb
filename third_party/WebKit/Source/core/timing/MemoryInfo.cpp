@@ -74,8 +74,9 @@ class HeapSizeCache {
 
  private:
   void maybeUpdate() {
-    // We rate-limit queries to once every twenty minutes to make it more difficult
-    // for attackers to compare memory usage before and after some event.
+    // We rate-limit queries to once every twenty minutes to make it more
+    // difficult for attackers to compare memory usage before and after some
+    // event.
     double now = monotonicallyIncreasingTime();
     if (now - m_lastUpdateTime >= TwentyMinutesInSeconds) {
       update();
@@ -95,10 +96,10 @@ class HeapSizeCache {
   HeapInfo m_info;
 };
 
-// We quantize the sizes to make it more difficult for an attacker to see precise
-// impact of operations on memory. The values are used for performance tuning,
-// and hence don't need to be as refined when the value is large, so we threshold
-// at a list of exponentially separated buckets.
+// We quantize the sizes to make it more difficult for an attacker to see
+// precise impact of operations on memory. The values are used for performance
+// tuning, and hence don't need to be as refined when the value is large, so we
+// threshold at a list of exponentially separated buckets.
 size_t quantizeMemorySize(size_t size) {
   const int numberOfBuckets = 100;
   DEFINE_STATIC_LOCAL(Vector<size_t>, bucketSizeList, ());

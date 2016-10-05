@@ -48,7 +48,8 @@
 namespace blink {
 
 static DragOperation convertEffectAllowedToDragOperation(const String& op) {
-  // Values specified in http://www.whatwg.org/specs/web-apps/current-work/multipage/dnd.html#dom-datatransfer-effectallowed
+  // Values specified in
+  // http://www.whatwg.org/specs/web-apps/current-work/multipage/dnd.html#dom-datatransfer-effectallowed
   if (op == "uninitialized")
     return DragOperationEvery;
   if (op == "none")
@@ -93,8 +94,9 @@ static String convertDragOperationToEffectAllowed(DragOperation op) {
   return "none";
 }
 
-// We provide the IE clipboard types (URL and Text), and the clipboard types specified in the WHATWG Web Applications 1.0 draft
-// see http://www.whatwg.org/specs/web-apps/current-work/ Section 6.3.5.3
+// We provide the IE clipboard types (URL and Text), and the clipboard types
+// specified in the WHATWG Web Applications 1.0 draft see
+// http://www.whatwg.org/specs/web-apps/current-work/ Section 6.3.5.3
 static String normalizeType(const String& type, bool* convertToURL = 0) {
   String cleanType = type.stripWhiteSpace().lower();
   if (cleanType == mimeTypeText || cleanType.startsWith(mimeTypeTextPlainEtc))
@@ -119,13 +121,15 @@ void DataTransfer::setDropEffect(const String& effect) {
   if (!isForDragAndDrop())
     return;
 
-  // The attribute must ignore any attempts to set it to a value other than none, copy, link, and move.
+  // The attribute must ignore any attempts to set it to a value other than
+  // none, copy, link, and move.
   if (effect != "none" && effect != "copy" && effect != "link" &&
       effect != "move")
     return;
 
-  // FIXME: The spec actually allows this in all circumstances, even though there's no point in
-  // setting the drop effect when this condition is not true.
+  // FIXME: The spec actually allows this in all circumstances, even though
+  // there's no point in setting the drop effect when this condition is not
+  // true.
   if (canReadTypes())
     m_dropEffect = effect;
 }
@@ -140,7 +144,8 @@ void DataTransfer::setEffectAllowed(const String& effect) {
     // and not set m_effectAllowed.
 
     // The attribute must ignore any attempts to set it to a value other than
-    // none, copy, copyLink, copyMove, link, linkMove, move, all, and uninitialized.
+    // none, copy, copyLink, copyMove, link, linkMove, move, all, and
+    // uninitialized.
     return;
   }
 
@@ -285,7 +290,8 @@ static void writeImageToDataObject(DataObject* dataObject,
   if (filename.isEmpty()) {
     filename = element->getAttribute(HTMLNames::altAttr);
   } else {
-    // Strip any existing extension. Assume that alt text is usually not a filename.
+    // Strip any existing extension. Assume that alt text is usually not a
+    // filename.
     int extensionIndex = filename.reverseFind('.');
     if (extensionIndex != -1) {
       fileExtension = filename.substring(extensionIndex + 1);
@@ -297,7 +303,8 @@ static void writeImageToDataObject(DataObject* dataObject,
     String imageMimeType =
         MIMETypeRegistry::getMIMETypeForExtension(imageExtension);
     ASSERT(imageMimeType.startsWith("image/"));
-    // Use the file extension only if it has imageMimeType: it's untrustworthy otherwise.
+    // Use the file extension only if it has imageMimeType: it's untrustworthy
+    // otherwise.
     if (imageMimeType ==
         MIMETypeRegistry::getMIMETypeForExtension(fileExtension))
       imageExtension = fileExtension;
@@ -422,9 +429,10 @@ bool DataTransfer::hasDropZoneType(const String& keyword) {
 }
 
 DataTransferItemList* DataTransfer::items() {
-  // FIXME: According to the spec, we are supposed to return the same collection of items each
-  // time. We now return a wrapper that always wraps the *same* set of items, so JS shouldn't be
-  // able to tell, but we probably still want to fix this.
+  // FIXME: According to the spec, we are supposed to return the same collection
+  // of items each time. We now return a wrapper that always wraps the *same*
+  // set of items, so JS shouldn't be able to tell, but we probably still want
+  // to fix this.
   return DataTransferItemList::create(this, m_dataObject);
 }
 

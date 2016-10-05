@@ -47,8 +47,10 @@ class Node;
 class Range;
 
 // Used for drag and drop and copy/paste.
-// Drag and Drop: http://www.whatwg.org/specs/web-apps/current-work/multipage/dnd.html
-// Clipboard API (copy/paste): http://dev.w3.org/2006/webapi/clipops/clipops.html
+// Drag and Drop:
+// http://www.whatwg.org/specs/web-apps/current-work/multipage/dnd.html
+// Clipboard API (copy/paste):
+// http://dev.w3.org/2006/webapi/clipops/clipops.html
 class CORE_EXPORT DataTransfer final
     : public GarbageCollectedFinalized<DataTransfer>,
       public ScriptWrappable {
@@ -103,10 +105,11 @@ class CORE_EXPORT DataTransfer final
   bool canReadTypes() const;
   bool canReadData() const;
   bool canWriteData() const;
-  // Note that the spec doesn't actually allow drag image modification outside the dragstart
-  // event. This capability is maintained for backwards compatiblity for ports that have
-  // supported this in the past. On many ports, attempting to set a drag image outside the
-  // dragstart operation is a no-op anyway.
+  // Note that the spec doesn't actually allow drag image modification outside
+  // the dragstart event. This capability is maintained for backwards
+  // compatiblity for ports that have supported this in the past. On many ports,
+  // attempting to set a drag image outside the dragstart operation is a no-op
+  // anyway.
   bool canSetDragImage() const;
 
   DragOperation sourceOperation() const;
@@ -130,7 +133,8 @@ class CORE_EXPORT DataTransfer final
   bool hasFileOfType(const String&) const;
   bool hasStringOfType(const String&) const;
 
-  // Instead of using this member directly, prefer to use the can*() methods above.
+  // Instead of using this member directly, prefer to use the can*() methods
+  // above.
   DataTransferAccessPolicy m_policy;
   String m_dropEffect;
   String m_effectAllowed;

@@ -63,7 +63,8 @@ class CORE_EXPORT DataObjectItem
   String getAsString() const;
   Blob* getAsFile() const;
 
-  // Used to support legacy DataTransfer APIs and renderer->browser serialization.
+  // Used to support legacy DataTransfer APIs and renderer->browser
+  // serialization.
   PassRefPtr<SharedBuffer> sharedBuffer() const { return m_sharedBuffer; }
   String title() const { return m_title; }
   KURL baseURL() const { return m_baseURL; }

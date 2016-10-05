@@ -126,8 +126,9 @@ unsigned long long PerformanceTiming::domainLookupStart() const {
   if (!timing)
     return fetchStart();
 
-  // This will be zero when a DNS request is not performed.
-  // Rather than exposing a special value that indicates no DNS, we "backfill" with fetchStart.
+  // This will be zero when a DNS request is not performed.  Rather than
+  // exposing a special value that indicates no DNS, we "backfill" with
+  // fetchStart.
   double dnsStart = timing->dnsStart();
   if (dnsStart == 0.0)
     return fetchStart();
@@ -140,8 +141,9 @@ unsigned long long PerformanceTiming::domainLookupEnd() const {
   if (!timing)
     return domainLookupStart();
 
-  // This will be zero when a DNS request is not performed.
-  // Rather than exposing a special value that indicates no DNS, we "backfill" with domainLookupStart.
+  // This will be zero when a DNS request is not performed.  Rather than
+  // exposing a special value that indicates no DNS, we "backfill" with
+  // domainLookupStart.
   double dnsEnd = timing->dnsEnd();
   if (dnsEnd == 0.0)
     return domainLookupStart();
@@ -158,14 +160,16 @@ unsigned long long PerformanceTiming::connectStart() const {
   if (!timing)
     return domainLookupEnd();
 
-  // connectStart will be zero when a network request is not made.
-  // Rather than exposing a special value that indicates no new connection, we "backfill" with domainLookupEnd.
+  // connectStart will be zero when a network request is not made.  Rather than
+  // exposing a special value that indicates no new connection, we "backfill"
+  // with domainLookupEnd.
   double connectStart = timing->connectStart();
   if (connectStart == 0.0 || loader->response().connectionReused())
     return domainLookupEnd();
 
-  // ResourceLoadTiming's connect phase includes DNS, however Navigation Timing's
-  // connect phase should not. So if there is DNS time, trim it from the start.
+  // ResourceLoadTiming's connect phase includes DNS, however Navigation
+  // Timing's connect phase should not. So if there is DNS time, trim it from
+  // the start.
   if (timing->dnsEnd() > 0.0 && timing->dnsEnd() > connectStart)
     connectStart = timing->dnsEnd();
 
@@ -181,8 +185,9 @@ unsigned long long PerformanceTiming::connectEnd() const {
   if (!timing)
     return connectStart();
 
-  // connectEnd will be zero when a network request is not made.
-  // Rather than exposing a special value that indicates no new connection, we "backfill" with connectStart.
+  // connectEnd will be zero when a network request is not made.  Rather than
+  // exposing a special value that indicates no new connection, we "backfill"
+  // with connectStart.
   double connectEnd = timing->connectEnd();
   if (connectEnd == 0.0 || loader->response().connectionReused())
     return connectStart();

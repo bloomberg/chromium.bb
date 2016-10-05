@@ -742,7 +742,8 @@ ShadowRoot* Internals::createUserAgentShadowRoot(Element* host) {
 }
 
 ShadowRoot* Internals::shadowRoot(Element* host) {
-  // FIXME: Internals::shadowRoot() in tests should be converted to youngestShadowRoot() or oldestShadowRoot().
+  // FIXME: Internals::shadowRoot() in tests should be converted to
+  // youngestShadowRoot() or oldestShadowRoot().
   // https://bugs.webkit.org/show_bug.cgi?id=78465
   return youngestShadowRoot(host);
 }
@@ -1199,7 +1200,8 @@ Range* Internals::rangeFromLocationAndLength(Element* scope,
 
 unsigned Internals::locationFromRange(Element* scope, const Range* range) {
   ASSERT(scope && range);
-  // PlainTextRange depends on Layout information, make sure layout it up to date.
+  // PlainTextRange depends on Layout information, make sure layout it up to
+  // date.
   scope->document().updateStyleAndLayoutIgnorePendingStylesheets();
 
   return PlainTextRange::create(*scope, *range).start();
@@ -1207,7 +1209,8 @@ unsigned Internals::locationFromRange(Element* scope, const Range* range) {
 
 unsigned Internals::lengthFromRange(Element* scope, const Range* range) {
   ASSERT(scope && range);
-  // PlainTextRange depends on Layout information, make sure layout it up to date.
+  // PlainTextRange depends on Layout information, make sure layout it up to
+  // date.
   scope->document().updateStyleAndLayoutIgnorePendingStylesheets();
 
   return PlainTextRange::create(*scope, *range).length();
@@ -1573,8 +1576,8 @@ static PaintLayer* findLayerForGraphicsLayer(PaintLayer* searchRoot,
     return searchRoot;
   }
 
-  // Search right to left to increase the chances that we'll choose the top-most layers in a
-  // grouped mapping for squashing.
+  // Search right to left to increase the chances that we'll choose the top-most
+  // layers in a grouped mapping for squashing.
   for (PaintLayer* child = searchRoot->lastChild(); child;
        child = child->previousSibling()) {
     PaintLayer* foundLayer =
@@ -1765,7 +1768,8 @@ StaticNodeList* Internals::nodesFromRect(Document* document,
 
   HitTestRequest request(hitType);
 
-  // When ignoreClipping is false, this method returns null for coordinates outside of the viewport.
+  // When ignoreClipping is false, this method returns null for coordinates
+  // outside of the viewport.
   if (!request.ignoreClipping() &&
       !frameView->visibleContentRect().intersects(HitTestLocation::rectForPoint(
           point, topPadding, rightPadding, bottomPadding, leftPadding)))

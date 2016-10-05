@@ -54,11 +54,12 @@ class CORE_EXPORT Pasteboard {
   bool isHTMLAvailable();
   String plainText();
 
-  // If no data is read, an empty string will be returned and all out parameters will be cleared.
-  // If applicable, the page URL will be assigned to the KURL parameter.
-  // fragmentStart and fragmentEnd are indexes into the returned markup that indicate
-  // the start and end of the returned markup. If there is no additional context,
-  // fragmentStart will be zero and fragmentEnd will be the same as the length of the markup.
+  // If no data is read, an empty string will be returned and all out parameters
+  // will be cleared.  If applicable, the page URL will be assigned to the KURL
+  // parameter.  fragmentStart and fragmentEnd are indexes into the returned
+  // markup that indicate the start and end of the returned markup. If there is
+  // no additional context, fragmentStart will be zero and fragmentEnd will be
+  // the same as the length of the markup.
   String readHTML(KURL&, unsigned& fragmentStart, unsigned& fragmentEnd);
 
   void writeHTML(const String& markup,

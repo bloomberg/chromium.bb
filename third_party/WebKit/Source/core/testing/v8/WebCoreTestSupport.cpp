@@ -59,7 +59,8 @@ v8::Local<v8::Value> createInternalsObject(v8::Local<v8::Context> context) {
 }
 
 void injectInternalsObject(v8::Local<v8::Context> context) {
-  // Set conditional features installation function to |installConditionalFeaturesForTests|
+  // Set conditional features installation function to
+  // |installConditionalFeaturesForTests|
   if (!s_originalInstallConditionalFeaturesFunction) {
     s_originalInstallConditionalFeaturesFunction =
         setInstallConditionalFeaturesFunction(
@@ -112,7 +113,8 @@ void resetInternalsObject(v8::Local<v8::Context> context) {
   Document* document = toDocument(scriptState->getExecutionContext());
   ASSERT(document);
   LocalFrame* frame = document->frame();
-  // Should the document have been detached, the page is assumed being destroyed (=> no reset required.)
+  // Should the document have been detached, the page is assumed being destroyed
+  // (=> no reset required.)
   if (!frame)
     return;
   Page* page = frame->page();

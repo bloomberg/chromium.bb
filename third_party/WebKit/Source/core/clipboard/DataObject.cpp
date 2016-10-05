@@ -267,7 +267,8 @@ DataObject* DataObject::create(WebDragData data) {
         // This should never happen when dragging in.
         break;
       case WebDragData::Item::StorageTypeFileSystemFile: {
-        // FIXME: The file system URL may refer a user visible file, see http://crbug.com/429077
+        // FIXME: The file system URL may refer a user visible file, see
+        // http://crbug.com/429077
         FileMetadata fileMetadata;
         fileMetadata.length = item.fileSystemFileSize;
         dataObject->add(File::createForFileSystemFile(
@@ -312,7 +313,8 @@ WebDragData DataObject::toWebDragData() {
             item.fileSystemURL = file->fileSystemURL();
             item.fileSystemFileSize = file->size();
           } else {
-            // FIXME: support dragging constructed Files across renderers, see http://crbug.com/394955
+            // FIXME: support dragging constructed Files across renderers, see
+            // http://crbug.com/394955
             item.storageType = WebDragData::Item::StorageTypeString;
             item.stringType = "text/plain";
             item.stringData = file->name();

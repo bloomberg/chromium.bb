@@ -44,7 +44,8 @@ TEST_F(PerformanceTest, LongTaskObserverInstrumentation) {
   m_performance->updateLongTaskInstrumentation();
   EXPECT_TRUE(hasLongTaskInspectorAgent());
 
-  // While LongTask observer is present, updateLongTaskInstrumentation has no effect.
+  // While LongTask observer is present, updateLongTaskInstrumentation has no
+  // effect.
   m_performance->updateLongTaskInstrumentation();
   EXPECT_TRUE(hasLongTaskInspectorAgent());
 

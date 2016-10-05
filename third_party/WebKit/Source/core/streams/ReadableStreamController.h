@@ -28,17 +28,19 @@ class CORE_EXPORT ReadableStreamController final
     m_jsController.setPhantom();
   }
 
-  // Users of the ReadableStreamController can call this to note that the stream has been canceled and thus they
-  // don't anticipate using the ReadableStreamController anymore. (close/desiredSize/enqueue/error will become no-ops
-  // afterward.)
+  // Users of the ReadableStreamController can call this to note that the stream
+  // has been canceled and thus they don't anticipate using the
+  // ReadableStreamController anymore.  (close/desiredSize/enqueue/error will
+  // become no-ops afterward.)
   void noteHasBeenCanceled() { m_jsController.clear(); }
 
   bool isActive() const { return !m_jsController.isEmpty(); }
 
   void close() {
     ScriptState* scriptState = m_scriptState.get();
-    ScriptState::Scope scope(
-        scriptState);  // will assert context is valid; do not call this method when the context is invalidated
+    // This will assert that the context is valid; do not call this method when
+    // the context is invalidated.
+    ScriptState::Scope scope(scriptState);
     v8::Isolate* isolate = scriptState->isolate();
 
     v8::Local<v8::Value> controller = m_jsController.newLocal(isolate);
@@ -54,8 +56,9 @@ class CORE_EXPORT ReadableStreamController final
 
   double desiredSize() const {
     ScriptState* scriptState = m_scriptState.get();
-    ScriptState::Scope scope(
-        scriptState);  // will assert context is valid; do not call this method when the context is invalidated
+    // This will assert that the context is valid; do not call this method when
+    // the context is invalidated.
+    ScriptState::Scope scope(scriptState);
     v8::Isolate* isolate = scriptState->isolate();
 
     v8::Local<v8::Value> controller = m_jsController.newLocal(isolate);
@@ -72,8 +75,9 @@ class CORE_EXPORT ReadableStreamController final
   template <typename ChunkType>
   void enqueue(ChunkType chunk) const {
     ScriptState* scriptState = m_scriptState.get();
-    ScriptState::Scope scope(
-        scriptState);  // will assert context is valid; do not call this method when the context is invalidated
+    // This will assert that the context is valid; do not call this method when
+    // the context is invalidated.
+    ScriptState::Scope scope(scriptState);
     v8::Isolate* isolate = scriptState->isolate();
 
     v8::Local<v8::Value> controller = m_jsController.newLocal(isolate);
@@ -90,8 +94,9 @@ class CORE_EXPORT ReadableStreamController final
   template <typename ErrorType>
   void error(ErrorType error) {
     ScriptState* scriptState = m_scriptState.get();
-    ScriptState::Scope scope(
-        scriptState);  // will assert context is valid; do not call this method when the context is invalidated
+    // This will assert that the context is valid; do not call this method when
+    // the context is invalidated.
+    ScriptState::Scope scope(scriptState);
     v8::Isolate* isolate = scriptState->isolate();
 
     v8::Local<v8::Value> controller = m_jsController.newLocal(isolate);

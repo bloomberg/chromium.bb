@@ -64,7 +64,8 @@ class CORE_EXPORT DataObject : public GarbageCollectedFinalized<DataObject>,
   // DataTransferItemList support.
   size_t length() const;
   DataObjectItem* item(unsigned long index);
-  // FIXME: Implement V8DataTransferItemList::indexedPropertyDeleter to get this called.
+  // FIXME: Implement V8DataTransferItemList::indexedPropertyDeleter to get this
+  // called.
   void deleteItem(unsigned long index);
   void clearAll();
   // Returns null if an item already exists with the provided type.

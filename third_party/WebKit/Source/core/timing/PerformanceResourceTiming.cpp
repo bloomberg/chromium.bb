@@ -205,7 +205,8 @@ double PerformanceResourceTiming::responseStart() const {
   if (!m_timing)
     return requestStart();
 
-  // FIXME: This number isn't exactly correct. See the notes in PerformanceTiming::responseStart().
+  // FIXME: This number isn't exactly correct. See the notes in
+  // PerformanceTiming::responseStart().
   return monotonicTimeToDOMHighResTimeStamp(m_timeOrigin,
                                             m_timing->receiveHeadersEnd());
 }

@@ -51,12 +51,15 @@ typedef void (*FrameSettingOverrideFunction)(Settings&);
 
 // Creates a dummy Page, LocalFrame, and FrameView whose clients are all no-op.
 //
-// This class can be used when you write unit tests for components which do not work correctly without layoutObjects.
-// To make sure the layoutObjects are created, you need to call |frameView().layout()| after you add nodes into
+// This class can be used when you write unit tests for components which do not
+// work correctly without layoutObjects.  To make sure the layoutObjects are
+// created, you need to call |frameView().layout()| after you add nodes into
 // |document()|.
 //
-// Since DummyPageHolder stores empty clients in it, it must outlive the Page, LocalFrame, FrameView and any other objects
-// created by it. DummyPageHolder's destructor ensures this condition by checking remaining references to the LocalFrame.
+// Since DummyPageHolder stores empty clients in it, it must outlive the Page,
+// LocalFrame, FrameView and any other objects created by it. DummyPageHolder's
+// destructor ensures this condition by checking remaining references to the
+// LocalFrame.
 
 class DummyPageHolder {
   WTF_MAKE_NONCOPYABLE(DummyPageHolder);

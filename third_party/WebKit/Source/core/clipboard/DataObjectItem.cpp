@@ -105,9 +105,9 @@ Blob* DataObjectItem::getAsFile() const {
     if (m_file)
       return m_file.get();
     ASSERT(m_sharedBuffer);
-    // FIXME: This code is currently impossible--we never populate m_sharedBuffer when dragging
-    // in. At some point though, we may need to support correctly converting a shared buffer
-    // into a file.
+    // FIXME: This code is currently impossible--we never populate
+    // m_sharedBuffer when dragging in. At some point though, we may need to
+    // support correctly converting a shared buffer into a file.
     return nullptr;
   }
 
@@ -155,8 +155,9 @@ String DataObjectItem::getAsString() const {
 }
 
 bool DataObjectItem::isFilename() const {
-  // FIXME: https://bugs.webkit.org/show_bug.cgi?id=81261: When we properly support File dragout,
-  // we'll need to make sure this works as expected for DragDataChromium.
+  // FIXME: https://bugs.webkit.org/show_bug.cgi?id=81261: When we properly
+  // support File dragout, we'll need to make sure this works as expected for
+  // DragDataChromium.
   return m_kind == FileKind && m_file;
 }
 
