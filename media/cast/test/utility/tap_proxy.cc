@@ -17,13 +17,16 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+
 #include <deque>
 #include <map>
+#include <memory>
 #include <utility>
 
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/files/file_descriptor_watcher_posix.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
@@ -69,13 +72,13 @@ class SendToFDPipe : public PacketPipe {
   int fd_;
 };
 
-class QueueManager : public base::MessageLoopForIO::Watcher {
+class QueueManager {
  public:
   QueueManager(int input_fd, int output_fd, std::unique_ptr<PacketPipe> pipe)
       : input_fd_(input_fd), packet_pipe_(std::move(pipe)) {
-    CHECK(base::MessageLoopForIO::current()->WatchFileDescriptor(
-        input_fd_, true, base::MessageLoopForIO::WATCH_READ,
-        &read_socket_watcher_, this));
+    read_socket_watch_controller_ = base::FileDescriptorWatcher::WatchReadable(
+        input_fd_, base::Bind(&QueueManager::OnFileCanReadWithoutBlocking,
+                              base::Unretained(this)));
 
     std::unique_ptr<PacketPipe> tmp(new SendToFDPipe(output_fd));
     if (packet_pipe_) {
@@ -87,10 +90,8 @@ class QueueManager : public base::MessageLoopForIO::Watcher {
                                  &tick_clock_);
   }
 
-  ~QueueManager() final {}
-
-  // MessageLoopForIO::Watcher methods
-  void OnFileCanReadWithoutBlocking(int fd) final {
+ private:
+  void OnFileCanReadWithoutBlocking() {
     std::unique_ptr<Packet> packet(new Packet(kMaxPacketSize));
     int nread = read(input_fd_,
                      reinterpret_cast<char*>(&packet->front()),
@@ -104,12 +105,11 @@ class QueueManager : public base::MessageLoopForIO::Watcher {
     packet->resize(nread);
     packet_pipe_->Send(std::move(packet));
   }
-  void OnFileCanWriteWithoutBlocking(int fd) final { NOTREACHED(); }
 
- private:
   int input_fd_;
   std::unique_ptr<PacketPipe> packet_pipe_;
-  base::MessageLoopForIO::FileDescriptorWatcher read_socket_watcher_;
+  std::unique_ptr<base::FileDescriptorWatcher::Controller>
+      read_socket_watch_controller_;
   base::DefaultTickClock tick_clock_;
 };
 
@@ -306,6 +306,7 @@ int main(int argc, char **argv) {
   int fd2 = tun_alloc(argv[2], IFF_TAP);
 
   base::MessageLoopForIO message_loop;
+  base::FileDescriptorWatcher file_descriptor_watcher(&message_loop);
   last_printout = base::TimeTicks::Now();
   media::cast::test::QueueManager qm1(fd1, fd2, std::move(in_pipe));
   media::cast::test::QueueManager qm2(fd2, fd1, std::move(out_pipe));
