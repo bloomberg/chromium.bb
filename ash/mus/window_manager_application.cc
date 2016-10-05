@@ -36,43 +36,33 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"  // nogncheck
+#include "ui/chromeos/network/network_connect.h"
 #endif
 
 namespace ash {
 namespace mus {
-namespace {
 
-void InitializeComponents() {
-  message_center::MessageCenter::Initialize();
 #if defined(OS_CHROMEOS)
-  // Must occur after mojo::ApplicationRunner has initialized AtExitManager, but
-  // before WindowManager::Init().
-  chromeos::DBusThreadManager::Initialize(
-      chromeos::DBusThreadManager::PROCESS_ASH);
+// TODO(mash): Replace ui::NetworkConnect::Delegate with a mojo interface on a
+// NetworkConfig service. http://crbug.com/644355
+class WindowManagerApplication::StubNetworkConnectDelegate
+    : public ui::NetworkConnect::Delegate {
+ public:
+  StubNetworkConnectDelegate() {}
+  ~StubNetworkConnectDelegate() override {}
 
-  // See ChromeBrowserMainPartsChromeos for ordering details.
-  bluez::BluezDBusManager::Initialize(
-      chromeos::DBusThreadManager::Get()->GetSystemBus(),
-      chromeos::DBusThreadManager::Get()->IsUsingFakes());
-  chromeos::NetworkHandler::Initialize();
-  // TODO(jamescook): Initialize real audio handler.
-  chromeos::CrasAudioHandler::InitializeForTesting();
-  PowerStatus::Initialize();
-#endif
-}
+  void ShowNetworkConfigure(const std::string& network_id) override {}
+  void ShowNetworkSettingsForGuid(const std::string& network_id) override {}
+  bool ShowEnrollNetwork(const std::string& network_id) override {
+    return false;
+  }
+  void ShowMobileSimDialog() override {}
+  void ShowMobileSetupDialog(const std::string& service_path) override {}
 
-void ShutdownComponents() {
-#if defined(OS_CHROMEOS)
-  PowerStatus::Shutdown();
-  chromeos::CrasAudioHandler::Shutdown();
-  chromeos::NetworkHandler::Shutdown();
-  bluez::BluezDBusManager::Shutdown();
-  chromeos::DBusThreadManager::Shutdown();
-#endif
-  message_center::MessageCenter::Shutdown();
-}
-
-}  // namespace
+ private:
+  DISALLOW_COPY_AND_ASSIGN(StubNetworkConnectDelegate);
+};
+#endif  // OS_CHROMEOS
 
 WindowManagerApplication::WindowManagerApplication()
     : screenlock_state_listener_binding_(this) {}
@@ -126,6 +116,40 @@ void WindowManagerApplication::InitWindowManager(
   window_manager_->Init(std::move(window_tree_client), blocking_pool);
   native_widget_factory_mus_ =
       base::MakeUnique<NativeWidgetFactoryMus>(window_manager_.get());
+}
+
+void WindowManagerApplication::InitializeComponents() {
+  message_center::MessageCenter::Initialize();
+#if defined(OS_CHROMEOS)
+  // Must occur after mojo::ApplicationRunner has initialized AtExitManager, but
+  // before WindowManager::Init().
+  chromeos::DBusThreadManager::Initialize(
+      chromeos::DBusThreadManager::PROCESS_ASH);
+
+  // See ChromeBrowserMainPartsChromeos for ordering details.
+  bluez::BluezDBusManager::Initialize(
+      chromeos::DBusThreadManager::Get()->GetSystemBus(),
+      chromeos::DBusThreadManager::Get()->IsUsingFakes());
+  chromeos::NetworkHandler::Initialize();
+  network_connect_delegate_.reset(new StubNetworkConnectDelegate());
+  ui::NetworkConnect::Initialize(network_connect_delegate_.get());
+  // TODO(jamescook): Initialize real audio handler.
+  chromeos::CrasAudioHandler::InitializeForTesting();
+  PowerStatus::Initialize();
+#endif
+}
+
+void WindowManagerApplication::ShutdownComponents() {
+#if defined(OS_CHROMEOS)
+  PowerStatus::Shutdown();
+  chromeos::CrasAudioHandler::Shutdown();
+  ui::NetworkConnect::Shutdown();
+  network_connect_delegate_.reset();
+  chromeos::NetworkHandler::Shutdown();
+  bluez::BluezDBusManager::Shutdown();
+  chromeos::DBusThreadManager::Shutdown();
+#endif
+  message_center::MessageCenter::Shutdown();
 }
 
 void WindowManagerApplication::OnStart(const shell::Identity& identity) {

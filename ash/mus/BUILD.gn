@@ -141,6 +141,7 @@ source_set("lib") {
       "//chromeos",
       "//chromeos:power_manager_proto",
       "//device/bluetooth",
+      "//ui/chromeos",
     ]
   }
 }

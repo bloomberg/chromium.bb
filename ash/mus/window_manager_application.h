@@ -75,6 +75,10 @@ class WindowManagerApplication
       std::unique_ptr<ui::WindowTreeClient> window_tree_client,
       const scoped_refptr<base::SequencedWorkerPool>& blocking_pool);
 
+  // Initializes lower-level OS-specific components (e.g. D-Bus services).
+  void InitializeComponents();
+  void ShutdownComponents();
+
   // shell::Service:
   void OnStart(const shell::Identity& identity) override;
   bool OnConnect(const shell::Identity& remote_identity,
@@ -118,6 +122,8 @@ class WindowManagerApplication
       screenlock_state_listener_binding_;
 
 #if defined(OS_CHROMEOS)
+  class StubNetworkConnectDelegate;
+  std::unique_ptr<StubNetworkConnectDelegate> network_connect_delegate_;
   std::unique_ptr<chromeos::system::ScopedFakeStatisticsProvider>
       statistics_provider_;
 #endif
