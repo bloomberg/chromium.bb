@@ -134,8 +134,11 @@ body {
   display: -webkit-flex;
   justify-content: flex-end;
   left: 20px;
-  position: absolute;
   right: 20px;
+}
+
+.content .top-buttons {
+  position: absolute;
 }
 
 .content .remove-file-button {

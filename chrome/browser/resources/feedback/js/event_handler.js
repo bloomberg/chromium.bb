@@ -13,7 +13,7 @@ var FEEDBACK_WIDTH = 500;
  * @type {number}
  * @const
  */
-var FEEDBACK_HEIGHT = 585;
+var FEEDBACK_HEIGHT = 610;
 
 /**
  * @type {string}
