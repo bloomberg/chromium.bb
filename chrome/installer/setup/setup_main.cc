@@ -424,11 +424,11 @@ installer::InstallStatus RepeatDeleteOldVersions(
       return installer::SETUP_SINGLETON_RELEASED;
     }
 
-    const bool was_backgrounded =
+    const bool priority_was_changed_to_background =
         base::Process::Current().SetProcessBackgrounded(true);
     const bool delete_old_versions_success =
         installer::DeleteOldVersions(install_dir);
-    if (!was_backgrounded)
+    if (priority_was_changed_to_background)
       base::Process::Current().SetProcessBackgrounded(false);
     ++num_attempts;
 
