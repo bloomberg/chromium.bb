@@ -35,10 +35,11 @@ class TargetHandler : public DevToolsAgentHostClient,
   void UpdateFrames();
 
   // Domain implementation.
-  Response Enable();
-  Response Disable();
+  Response SetDiscoverTargets(bool discover);
   Response SetAutoAttach(bool auto_attach, bool wait_for_debugger_on_start);
   Response SetAttachToFrames(bool value);
+  Response AttachToTarget(const std::string& target_id, bool* out_success);
+  Response DetachFromTarget(const std::string& target_id);
   Response SendMessageToTarget(const std::string& target_id,
                                const std::string& message);
   Response GetTargetInfo(const std::string& target_id,
@@ -54,7 +55,7 @@ class TargetHandler : public DevToolsAgentHostClient,
                              bool waiting_for_debugger);
   void TargetCreatedInternal(DevToolsAgentHost* host);
   void TargetRemovedInternal(DevToolsAgentHost* host);
-  void AttachToTargetInternal(DevToolsAgentHost* host,
+  bool AttachToTargetInternal(DevToolsAgentHost* host,
                               bool waiting_for_debugger);
   void DetachFromTargetInternal(DevToolsAgentHost* host);
 
@@ -72,7 +73,7 @@ class TargetHandler : public DevToolsAgentHostClient,
                        bool replaced_with_another_client) override;
 
   std::unique_ptr<Client> client_;
-  bool enabled_;
+  bool discover_;
   bool auto_attach_;
   bool wait_for_debugger_on_start_;
   bool attach_to_frames_;

@@ -3289,18 +3289,16 @@
         ],
         "commands": [
             {
-                "name": "enable",
-                "description": "Start discovering targets.",
-                "handlers": ["browser"]
-            },
-            {
-                "name": "disable",
-                "description": "Stop discovering targets and detach from all currently attached targets.",
+                "name": "setDiscoverTargets",
+                "description": "Controls whether to discover available targets and notify via <code>targetCreated/targetRemoved</code> events.",
+                "parameters": [
+                    { "name": "discover", "type": "boolean", "description": "Whether to discover available targets." }
+                ],
                 "handlers": ["browser"]
             },
             {
                 "name": "setAutoAttach",
-                "description": "Controls whether to automatically attach to new targets which are considered to be related to this one. When turned on, attaches to all existing related targets as well. When turned off, does not automatically detach.",
+                "description": "Controls whether to automatically attach to new targets which are considered to be related to this one. When turned on, attaches to all existing related targets as well. When turned off, automatically detaches from all currently attached targets.",
                 "parameters": [
                     { "name": "autoAttach", "type": "boolean", "description": "Whether to auto-attach to related targets." },
                     { "name": "waitForDebuggerOnStart", "type": "boolean", "description": "Whether to pause new targets when attaching to them. Use <code>Runtime.runIfWaitingForDebugger</code> to run paused targets." }
@@ -3334,6 +3332,23 @@
             },
             {
                 "name": "activateTarget",
+                "parameters": [
+                    { "name": "targetId", "$ref": "TargetID" }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "attachToTarget",
+                "parameters": [
+                    { "name": "targetId", "$ref": "TargetID" }
+                ],
+                "returns": [
+                    { "name": "success", "type": "boolean", "description": "Whether attach succeeded." }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "detachFromTarget",
                 "parameters": [
                     { "name": "targetId", "$ref": "TargetID" }
                 ],

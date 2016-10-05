@@ -86,7 +86,7 @@ ServiceWorkerDevToolsAgentHost::Map GetMatchingServiceWorkers(
 }  // namespace
 
 TargetHandler::TargetHandler()
-    : enabled_(false),
+    : discover_(false),
       auto_attach_(false),
       wait_for_debugger_on_start_(false),
       attach_to_frames_(false),
@@ -94,7 +94,7 @@ TargetHandler::TargetHandler()
 }
 
 TargetHandler::~TargetHandler() {
-  Disable();
+  Detached();
 }
 
 void TargetHandler::SetRenderFrameHost(RenderFrameHostImpl* render_frame_host) {
@@ -107,7 +107,8 @@ void TargetHandler::SetClient(std::unique_ptr<Client> client) {
 }
 
 void TargetHandler::Detached() {
-  Disable();
+  SetAutoAttach(false, false);
+  SetDiscoverTargets(false);
 }
 
 void TargetHandler::UpdateServiceWorkers() {
@@ -115,7 +116,7 @@ void TargetHandler::UpdateServiceWorkers() {
 }
 
 void TargetHandler::UpdateFrames() {
-  if (!enabled_ || !auto_attach_ || !attach_to_frames_)
+  if (!auto_attach_ || !attach_to_frames_)
     return;
 
   HostsMap new_hosts;
@@ -143,7 +144,7 @@ void TargetHandler::UpdateFrames() {
 }
 
 void TargetHandler::UpdateServiceWorkers(bool waiting_for_debugger) {
-  if (!enabled_ || !auto_attach_)
+  if (!auto_attach_)
     return;
 
   frame_urls_.clear();
@@ -199,15 +200,15 @@ void TargetHandler::TargetRemovedInternal(DevToolsAgentHost* host) {
       ->set_target_id(host->GetId()));
 }
 
-void TargetHandler::AttachToTargetInternal(
+bool TargetHandler::AttachToTargetInternal(
     DevToolsAgentHost* host, bool waiting_for_debugger) {
-  if (host->IsAttached())
-    return;
+  if (!host->AttachClient(this))
+    return false;
   attached_hosts_[host->GetId()] = host;
-  host->AttachClient(this);
   client_->AttachedToTarget(AttachedToTargetParams::Create()
       ->set_target_id(host->GetId())
       ->set_waiting_for_debugger(waiting_for_debugger));
+  return true;
 }
 
 void TargetHandler::DetachFromTargetInternal(DevToolsAgentHost* host) {
@@ -222,26 +223,11 @@ void TargetHandler::DetachFromTargetInternal(DevToolsAgentHost* host) {
 
 // ----------------- Protocol ----------------------
 
-Response TargetHandler::Enable() {
-  if (enabled_)
+Response TargetHandler::SetDiscoverTargets(bool discover) {
+  if (discover_ == discover)
     return Response::OK();
-  enabled_ = true;
-  ServiceWorkerDevToolsManager::GetInstance()->AddObserver(this);
-  UpdateServiceWorkers();
-  UpdateFrames();
-  return Response::OK();
-}
-
-Response TargetHandler::Disable() {
-  if (!enabled_)
-    return Response::OK();
-  enabled_ = false;
-  auto_attach_ = false;
-  wait_for_debugger_on_start_ = false;
-  ServiceWorkerDevToolsManager::GetInstance()->RemoveObserver(this);
-  for (const auto& pair : attached_hosts_)
-    pair.second->DetachClient(this);
-  attached_hosts_.clear();
+  discover_ = discover;
+  // TODO(dgozman): observe all agent hosts here.
   return Response::OK();
 }
 
@@ -252,8 +238,14 @@ Response TargetHandler::SetAutoAttach(
     return Response::OK();
   auto_attach_ = auto_attach;
   if (auto_attach_) {
+    ServiceWorkerDevToolsManager::GetInstance()->AddObserver(this);
     UpdateServiceWorkers();
     UpdateFrames();
+  } else {
+    ServiceWorkerDevToolsManager::GetInstance()->RemoveObserver(this);
+    HostsMap empty;
+    ReattachTargetsOfType(empty, DevToolsAgentHost::kTypeFrame, false);
+    ReattachTargetsOfType(empty, DevToolsAgentHost::kTypeServiceWorker, false);
   }
   return Response::OK();
 }
@@ -268,6 +260,24 @@ Response TargetHandler::SetAttachToFrames(bool value) {
     HostsMap empty;
     ReattachTargetsOfType(empty, DevToolsAgentHost::kTypeFrame, false);
   }
+  return Response::OK();
+}
+
+Response TargetHandler::AttachToTarget(const std::string& target_id,
+                                       bool* out_success) {
+  scoped_refptr<DevToolsAgentHost> agent_host(
+      DevToolsAgentHost::GetForId(target_id));
+  if (!agent_host)
+    return Response::InvalidParams("No target with such id");
+  *out_success = AttachToTargetInternal(agent_host.get(), false);
+  return Response::OK();
+}
+
+Response TargetHandler::DetachFromTarget(const std::string& target_id) {
+  auto it = attached_hosts_.find(target_id);
+  if (it == attached_hosts_.end())
+    return Response::InternalError("Not attached to the target");
+  DetachFromTargetInternal(it->second.get());
   return Response::OK();
 }
 
@@ -323,9 +333,10 @@ void TargetHandler::DispatchProtocolMessage(
 void TargetHandler::AgentHostClosed(
     DevToolsAgentHost* host,
     bool replaced_with_another_client) {
-  client_->TargetRemoved(TargetRemovedParams::Create()->
+  client_->DetachedFromTarget(DetachedFromTargetParams::Create()->
       set_target_id(host->GetId()));
   attached_hosts_.erase(host->GetId());
+  TargetRemovedInternal(host);
 }
 
 // -------- ServiceWorkerDevToolsManager::Observer ----------
