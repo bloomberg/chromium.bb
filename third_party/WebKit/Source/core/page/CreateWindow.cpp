@@ -145,7 +145,8 @@ static Frame* createWindowHelper(LocalFrame& openerFrame,
   if (!window) {
     // Sandboxed frames cannot open new auxiliary browsing contexts.
     if (openerFrame.document()->isSandboxed(SandboxPopups)) {
-      // FIXME: This message should be moved off the console once a solution to https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
+      // FIXME: This message should be moved off the console once a solution to
+      // https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
       openerFrame.document()->addConsoleMessage(ConsoleMessage::create(
           SecurityMessageSource, ErrorMessageLevel,
           "Blocked opening '" + request.resourceRequest().url().elidedString() +
@@ -197,22 +198,25 @@ DOMWindow* createWindow(const String& urlString,
   frameRequest.resourceRequest().setRequestorOrigin(
       SecurityOrigin::create(activeFrame->document()->url()));
 
-  // Normally, FrameLoader would take care of setting the referrer for a navigation that is
-  // triggered from javascript. However, creating a window goes through sufficient processing
-  // that it eventually enters FrameLoader as an embedder-initiated navigation. FrameLoader
-  // assumes no responsibility for generating an embedder-initiated navigation's referrer,
-  // so we need to ensure the proper referrer is set now.
+  // Normally, FrameLoader would take care of setting the referrer for a
+  // navigation that is triggered from javascript. However, creating a window
+  // goes through sufficient processing that it eventually enters FrameLoader as
+  // an embedder-initiated navigation.  FrameLoader assumes no responsibility
+  // for generating an embedder-initiated navigation's referrer, so we need to
+  // ensure the proper referrer is set now.
   frameRequest.resourceRequest().setHTTPReferrer(
       SecurityPolicy::generateReferrer(
           activeFrame->document()->getReferrerPolicy(), completedURL,
           activeFrame->document()->outgoingReferrer()));
 
-  // Records HasUserGesture before the value is invalidated inside createWindow(LocalFrame& openerFrame, ...).
+  // Records HasUserGesture before the value is invalidated inside
+  // createWindow(LocalFrame& openerFrame, ...).
   // This value will be set in ResourceRequest loaded in a new LocalFrame.
   bool hasUserGesture = UserGestureIndicator::processingUserGesture();
 
-  // We pass the opener frame for the lookupFrame in case the active frame is different from
-  // the opener frame, and the name references a frame relative to the opener frame.
+  // We pass the opener frame for the lookupFrame in case the active frame is
+  // different from the opener frame, and the name references a frame relative
+  // to the opener frame.
   bool created;
   Frame* newFrame =
       createWindowHelper(openerFrame, *activeFrame, openerFrame, frameRequest,
@@ -223,13 +227,15 @@ DOMWindow* createWindow(const String& urlString,
                                                     completedURL))
     return newFrame->domWindow();
 
-  // TODO(dcheng): Special case for window.open("about:blank") to ensure it loads synchronously into
-  // a new window. This is our historical behavior, and it's consistent with the creation of
-  // a new iframe with src="about:blank". Perhaps we could get rid of this if we started reporting
-  // the initial empty document's url as about:blank? See crbug.com/471239.
-  // TODO(japhet): This special case is also necessary for behavior asserted by some extensions tests.
-  // Using NavigationScheduler::scheduleNavigationChange causes the navigation to be flagged as a
-  // client redirect, which is observable via the webNavigation extension api.
+  // TODO(dcheng): Special case for window.open("about:blank") to ensure it
+  // loads synchronously into a new window. This is our historical behavior, and
+  // it's consistent with the creation of a new iframe with src="about:blank".
+  // Perhaps we could get rid of this if we started reporting the initial empty
+  // document's url as about:blank? See crbug.com/471239.
+  // TODO(japhet): This special case is also necessary for behavior asserted by
+  // some extensions tests.  Using NavigationScheduler::scheduleNavigationChange
+  // causes the navigation to be flagged as a client redirect, which is
+  // observable via the webNavigation extension api.
   if (created) {
     FrameLoadRequest request(callingWindow.document(), completedURL);
     request.resourceRequest().setHasUserGesture(hasUserGesture);

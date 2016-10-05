@@ -59,8 +59,8 @@ bool spatialNavigationIgnoresEventHandlers(const LocalFrame*);
 //   |_|                  |_|_|_|_|
 //
 //
-// 2) Partially aligned: There is a partial intersection between the rects, either
-//    vertically or horizontally.
+// 2) Partially aligned: There is a partial intersection between the rects,
+//    either vertically or horizontally.
 //
 // * Horizontally       * Vertically
 //    _                   _ _ _ _ _
@@ -114,9 +114,10 @@ struct FocusCandidate {
     return visibleNode ? &visibleNode->document() : nullptr;
   }
 
-  // We handle differently visibleNode and FocusableNode to properly handle the areas of imagemaps,
-  // where visibleNode would represent the image element and focusableNode would represent the area element.
-  // In all other cases, visibleNode and focusableNode are one and the same.
+  // We handle differently visibleNode and FocusableNode to properly handle the
+  // areas of imagemaps, where visibleNode would represent the image element and
+  // focusableNode would represent the area element.  In all other cases,
+  // visibleNode and focusableNode are one and the same.
   Member<Node> visibleNode;
   Member<Node> focusableNode;
   Member<Node> enclosingScrollableBox;

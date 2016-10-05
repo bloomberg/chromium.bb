@@ -106,8 +106,8 @@ void findGoodTouchTargets(const IntRect& touchBoxInRootFrame,
       result.listBasedTestResult();
 
   // Blacklist nodes that are container of disambiguated nodes.
-  // It is not uncommon to have a clickable <div> that contains other clickable objects.
-  // This heuristic avoids excessive disambiguation in that case.
+  // It is not uncommon to have a clickable <div> that contains other clickable
+  // objects.  This heuristic avoids excessive disambiguation in that case.
   HeapHashSet<Member<Node>> blackList;
   for (const auto& hitResult : hitResults) {
     // Ignore any Nodes that can't be clicked on.
@@ -150,8 +150,10 @@ void findGoodTouchTargets(const IntRect& touchBoxInRootFrame,
   }
 
   for (const auto& touchTarget : touchTargets) {
-    // Currently the scoring function uses the overlap area with the fat point as the score.
-    // We ignore the candidates that has less than 1/2 overlap (we consider not really ambiguous enough) than the best candidate to avoid excessive popups.
+    // Currently the scoring function uses the overlap area with the fat point
+    // as the score.  We ignore the candidates that has less than 1/2 overlap
+    // (we consider not really ambiguous enough) than the best candidate to
+    // avoid excessive popups.
     if (touchTarget.value.score < bestScore * 0.5)
       continue;
     goodTargets.append(touchTarget.value.windowBoundingBox);

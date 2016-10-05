@@ -25,7 +25,8 @@ SnapCoordinator* SnapCoordinator::create() {
 
 // Returns the scroll container that can be affected by this snap area.
 static LayoutBox* findSnapContainer(const LayoutBox& snapArea) {
-  // According to the new spec https://drafts.csswg.org/css-scroll-snap/#snap-model
+  // According to the new spec
+  // https://drafts.csswg.org/css-scroll-snap/#snap-model
   // "Snap positions must only affect the nearest ancestor (on the element’s
   // containing block chain) scroll container".
   Element* viewportDefiningElement =

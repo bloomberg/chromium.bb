@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012 Apple, Inc. All rights reserved.
+ * Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012 Apple, Inc. All rights
+ * reserved.
  * Copyright (C) 2010 Nokia Corporation and/or its subsidiary(-ies).
  * Copyright (C) 2012 Samsung Electronics. All rights reserved.
  *
@@ -214,8 +215,9 @@ class CORE_EXPORT ChromeClient : public HostWindow {
 
   // This function is used for:
   //  - Mandatory date/time choosers if !ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-  //  - Date/time choosers for types for which LayoutTheme::supportsCalendarPicker
-  //    returns true, if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
+  //  - Date/time choosers for types for which
+  //    LayoutTheme::supportsCalendarPicker returns true, if
+  //    ENABLE(INPUT_MULTIPLE_FIELDS_UI)
   //  - <datalist> UI for date/time input types regardless of
   //    ENABLE(INPUT_MULTIPLE_FIELDS_UI)
   virtual DateTimeChooser* openDateTimeChooser(
@@ -226,7 +228,8 @@ class CORE_EXPORT ChromeClient : public HostWindow {
 
   virtual void openFileChooser(LocalFrame*, PassRefPtr<FileChooser>) = 0;
 
-  // Asychronous request to enumerate all files in a directory chosen by the user.
+  // Asychronous request to enumerate all files in a directory chosen by the
+  // user.
   virtual void enumerateChosenDirectory(FileChooser*) = 0;
 
   // Pass nullptr as the GraphicsLayer to detach the root layer.
@@ -329,7 +332,8 @@ class CORE_EXPORT ChromeClient : public HostWindow {
   virtual std::unique_ptr<WebFrameScheduler> createFrameScheduler(
       BlameContext*) = 0;
 
-  // Returns the time of the beginning of the last beginFrame, in seconds, if any, and 0.0 otherwise.
+  // Returns the time of the beginning of the last beginFrame, in seconds, if
+  // any, and 0.0 otherwise.
   virtual double lastFrameTimeMonotonic() const { return 0.0; }
 
   virtual void installSupplements(LocalFrame&) {}

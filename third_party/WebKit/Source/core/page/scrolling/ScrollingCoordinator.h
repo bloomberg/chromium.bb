@@ -68,7 +68,8 @@ class CORE_EXPORT ScrollingCoordinator final
 
   void willBeDestroyed();
 
-  // Return whether this scrolling coordinator handles scrolling for the given frame view.
+  // Return whether this scrolling coordinator handles scrolling for the given
+  // frame view.
   bool coordinatesScrollingForFrameView(FrameView*) const;
 
   // Called when any frame has done its layout or compositing has changed.
@@ -78,10 +79,12 @@ class CORE_EXPORT ScrollingCoordinator final
 
   void updateAfterCompositingChangeIfNeeded();
 
-  // Should be called whenever a scrollable area is added or removed, or gains/loses a composited layer.
+  // Should be called whenever a scrollable area is added or removed, or
+  // gains/loses a composited layer.
   void scrollableAreasDidChange();
 
-  // Should be called whenever the slow repaint objects counter changes between zero and one.
+  // Should be called whenever the slow repaint objects counter changes between
+  // zero and one.
   void frameViewHasBackgroundAttachmentFixedObjectsDidChange(FrameView*);
 
   // Should be called whenever the set of fixed objects changes.
@@ -91,7 +94,8 @@ class CORE_EXPORT ScrollingCoordinator final
   void frameViewRootLayerDidChange(FrameView*);
 
 #if OS(MACOSX)
-  // Dispatched by the scrolling tree during handleWheelEvent. This is required as long as scrollbars are painted on the main thread.
+  // Dispatched by the scrolling tree during handleWheelEvent. This is required
+  // as long as scrollbars are painted on the main thread.
   void handleWheelEventPhase(PlatformWheelEventPhase);
 #endif
 
@@ -132,8 +136,8 @@ class CORE_EXPORT ScrollingCoordinator final
     return m_programmaticScrollAnimatorTimeline.get();
   }
 
-  // For testing purposes only. This ScrollingCoordinator is reused between layout test, and must be reset
-  // for the results to be valid.
+  // For testing purposes only. This ScrollingCoordinator is reused between
+  // layout test, and must be reset for the results to be valid.
   void reset();
 
  protected:
@@ -144,7 +148,8 @@ class CORE_EXPORT ScrollingCoordinator final
 
   Member<Page> m_page;
 
-  // Dirty flags used to idenfity what really needs to be computed after compositing is updated.
+  // Dirty flags used to idenfity what really needs to be computed after
+  // compositing is updated.
   bool m_scrollGestureRegionIsDirty;
   bool m_touchEventTargetRectsAreDirty;
   bool m_shouldScrollOnMainThreadDirty;

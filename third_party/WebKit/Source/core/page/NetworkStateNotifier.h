@@ -101,11 +101,12 @@ class CORE_EXPORT NetworkStateNotifier {
   void setWebConnection(WebConnectionType, double maxBandwidthMbps);
 
   // When called, successive setWebConnectionType/setOnLine calls are stored,
-  // and supplied overridden values are used instead until clearOverride() is called.
-  // This is used for layout tests (see crbug.com/377736) and inspector emulation.
+  // and supplied overridden values are used instead until clearOverride() is
+  // called.  This is used for layout tests (see crbug.com/377736) and inspector
+  // emulation.
   //
-  // Since this class is a singleton, tests must clear override when completed to
-  // avoid indeterminate state across the test harness.
+  // Since this class is a singleton, tests must clear override when completed
+  // to avoid indeterminate state across the test harness.
   void setOverride(bool onLine, WebConnectionType, double maxBandwidthMbps);
   void clearOverride();
 
@@ -133,9 +134,9 @@ class CORE_EXPORT NetworkStateNotifier {
     double maxBandwidthMbps = kInvalidMaxBandwidth;
   };
 
-  // This helper scope issues required notifications when mutating the state if something has changed.
-  // It's only possible to mutate the state on the main thread.
-  // Note that ScopedNotifier must be destroyed when not holding a lock
+  // This helper scope issues required notifications when mutating the state if
+  // something has changed.  It's only possible to mutate the state on the main
+  // thread.  Note that ScopedNotifier must be destroyed when not holding a lock
   // so that onLine notifications can be dispatched without a deadlock.
   class ScopedNotifier {
    public:
@@ -147,9 +148,10 @@ class CORE_EXPORT NetworkStateNotifier {
     NetworkState m_before;
   };
 
-  // The ObserverListMap is cross-thread accessed, adding/removing Observers running
-  // within an ExecutionContext. Kept off-heap to ease cross-thread allocation and use;
-  // the observers are (already) responsible for explicitly unregistering while finalizing.
+  // The ObserverListMap is cross-thread accessed, adding/removing Observers
+  // running within an ExecutionContext. Kept off-heap to ease cross-thread
+  // allocation and use; the observers are (already) responsible for explicitly
+  // unregistering while finalizing.
   using ObserverListMap =
       HashMap<UntracedMember<ExecutionContext>, std::unique_ptr<ObserverList>>;
 

@@ -47,17 +47,22 @@ class CORE_EXPORT PrintContext
   LocalFrame* frame() const { return m_frame; }
 
   // Break up a page into rects without relayout.
-  // FIXME: This means that CSS page breaks won't be on page boundary if the size is different than what was passed to begin(). That's probably not always desirable.
+  // FIXME: This means that CSS page breaks won't be on page boundary if the
+  // size is different than what was passed to begin(). That's probably not
+  // always desirable.
   // FIXME: Header and footer height should be applied before layout, not after.
-  // FIXME: The printRect argument is only used to determine page aspect ratio, it would be better to pass a FloatSize with page dimensions instead.
+  // FIXME: The printRect argument is only used to determine page aspect ratio,
+  // it would be better to pass a FloatSize with page dimensions instead.
   virtual void computePageRects(const FloatRect& printRect,
                                 float headerHeight,
                                 float footerHeight,
                                 float userScaleFactor,
                                 float& outPageHeight);
 
-  // Deprecated. Page size computation is already in this class, clients shouldn't be copying it.
-  // FIXME: Everyone passes |false| for the second paramer. We should remove the second parameter.
+  // Deprecated. Page size computation is already in this class, clients
+  // shouldn't be copying it.
+  // FIXME: Everyone passes |false| for the second paramer. We should remove the
+  // second parameter.
   virtual void computePageRectsWithPageSize(const FloatSize& pageSizeInPixels);
 
   // These are only valid after page rects are computed.
@@ -68,7 +73,8 @@ class CORE_EXPORT PrintContext
   const Vector<IntRect>& pageRects() const { return m_pageRects; }
 
   // Enter print mode, updating layout for new page size.
-  // This function can be called multiple times to apply new print options without going back to screen mode.
+  // This function can be called multiple times to apply new print options
+  // without going back to screen mode.
   virtual void begin(float width, float height = 0);
 
   // Return to screen mode.
@@ -104,7 +110,8 @@ class CORE_EXPORT PrintContext
   void computePageRectsWithPageSizeInternal(const FloatSize& pageSizeInPixels);
   void collectLinkedDestinations(Node*);
 
-  // Used to prevent misuses of begin() and end() (e.g., call end without begin).
+  // Used to prevent misuses of begin() and end() (e.g., call end without
+  // begin).
   bool m_isPrinting;
 
   HeapHashMap<String, Member<Element>> m_linkedDestinations;

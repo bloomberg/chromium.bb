@@ -48,7 +48,8 @@ enum AutoscrollType {
   AutoscrollForMiddleClick,
 };
 
-// AutscrollController handels autoscroll and middle click autoscroll for EventHandler.
+// AutscrollController handels autoscroll and middle click autoscroll for
+// EventHandler.
 class CORE_EXPORT AutoscrollController final
     : public GarbageCollected<AutoscrollController> {
  public:

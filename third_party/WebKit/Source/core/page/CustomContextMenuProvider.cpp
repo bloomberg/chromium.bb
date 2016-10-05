@@ -78,8 +78,9 @@ void CustomContextMenuProvider::appendMenuItem(HTMLMenuItemElement* menuItem,
   bool enabled = !menuItem->fastHasAttribute(disabledAttr);
   String icon = menuItem->fastGetAttribute(iconAttr);
   if (!icon.isEmpty()) {
-    // To obtain the absolute URL of the icon when the attribute's value is not the empty string,
-    // the attribute's value must be resolved relative to the element.
+    // To obtain the absolute URL of the icon when the attribute's value is not
+    // the empty string, the attribute's value must be resolved relative to the
+    // element.
     KURL iconURL = KURL(menuItem->baseURI(), icon);
     icon = iconURL.getString();
   }

@@ -97,10 +97,12 @@ EventSource* EventSource::create(ExecutionContext* context,
     return nullptr;
   }
 
-  // FIXME: Convert this to check the isolated world's Content Security Policy once webkit.org/b/104520 is solved.
+  // FIXME: Convert this to check the isolated world's Content Security Policy
+  // once webkit.org/b/104520 is solved.
   if (!ContentSecurityPolicy::shouldBypassMainWorld(context) &&
       !context->contentSecurityPolicy()->allowConnectToSource(fullURL)) {
-    // We can safely expose the URL to JavaScript, as this exception is generate synchronously before any redirects take place.
+    // We can safely expose the URL to JavaScript, as this exception is generate
+    // synchronously before any redirects take place.
     exceptionState.throwSecurityError(
         "Refused to connect to '" + fullURL.elidedString() +
         "' because it violates the document's Content Security Policy.");
@@ -140,8 +142,10 @@ void EventSource::connect() {
   request.setExternalRequestStateFromRequestorAddressSpace(
       executionContext.securityContext().addressSpace());
   if (m_parser && !m_parser->lastEventId().isEmpty()) {
-    // HTTP headers are Latin-1 byte strings, but the Last-Event-ID header is encoded as UTF-8.
-    // TODO(davidben): This should be captured in the type of setHTTPHeaderField's arguments.
+    // HTTP headers are Latin-1 byte strings, but the Last-Event-ID header is
+    // encoded as UTF-8.
+    // TODO(davidben): This should be captured in the type of
+    // setHTTPHeaderField's arguments.
     CString lastEventIdUtf8 = m_parser->lastEventId().utf8();
     request.setHTTPHeaderField(
         HTTPNames::Last_Event_ID,
@@ -171,7 +175,8 @@ void EventSource::connect() {
   resourceLoaderOptions.securityOrigin = origin;
 
   InspectorInstrumentation::willSendEventSourceRequest(&executionContext, this);
-  // InspectorInstrumentation::documentThreadableLoaderStartedLoadingForClient will be called synchronously.
+  // InspectorInstrumentation::documentThreadableLoaderStartedLoadingForClient
+  // will be called synchronously.
   m_loader = ThreadableLoader::create(executionContext, this, options,
                                       resourceLoaderOptions);
   m_loader->start(request);
@@ -217,7 +222,8 @@ void EventSource::close() {
   if (m_parser)
     m_parser->stop();
 
-  // Stop trying to reconnect if EventSource was explicitly closed or if ActiveDOMObject::stop() was called.
+  // Stop trying to reconnect if EventSource was explicitly closed or if
+  // ActiveDOMObject::stop() was called.
   if (m_connectTimer.isActive()) {
     m_connectTimer.stop();
   }
@@ -265,7 +271,8 @@ void EventSource::didReceiveResponse(
           JSMessageSource, ErrorMessageLevel, message.toString()));
     }
   } else {
-    // To keep the signal-to-noise ratio low, we only log 200-response with an invalid MIME type.
+    // To keep the signal-to-noise ratio low, we only log 200-response with an
+    // invalid MIME type.
     if (statusCode == 200 && !mimeTypeIsValid) {
       StringBuilder message;
       message.append("EventSource's response has a MIME type (\"");

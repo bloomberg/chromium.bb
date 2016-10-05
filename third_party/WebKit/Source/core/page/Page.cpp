@@ -1,6 +1,8 @@
 /*
- * Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 Apple Inc. All Rights Reserved.
- * Copyright (C) 2008 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 Apple Inc. All
+ * Rights Reserved.
+ * Copyright (C) 2008 Torch Mobile Inc. All rights reserved.
+ * (http://www.torchmobile.com/)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -76,7 +78,8 @@ void Page::networkStateChanged(bool online) {
   for (Page* page : allPages()) {
     for (Frame* frame = page->mainFrame(); frame;
          frame = frame->tree().traverseNext()) {
-      // FIXME: There is currently no way to dispatch events to out-of-process frames.
+      // FIXME: There is currently no way to dispatch events to out-of-process
+      // frames.
       if (frame->isLocalFrame())
         frames.append(toLocalFrame(frame));
     }
@@ -455,9 +458,9 @@ void Page::didCommitLoad(LocalFrame* frame) {
     deprecation().clearSuppression();
     frameHost().visualViewport().sendUMAMetrics();
 
-    // Need to reset visual viewport position here since before commit load we would update the previous history item,
-    // Page::didCommitLoad is called after a new history item is created in FrameLoader.
-    // fix for crbug.com/642279
+    // Need to reset visual viewport position here since before commit load we
+    // would update the previous history item, Page::didCommitLoad is called
+    // after a new history item is created in FrameLoader. See crbug.com/642279
     frameHost().visualViewport().setScrollPosition(DoublePoint(),
                                                    ProgrammaticScroll);
     m_hostsUsingFeatures.updateMeasurementsAndClear();
@@ -468,8 +471,8 @@ void Page::didCommitLoad(LocalFrame* frame) {
 void Page::acceptLanguagesChanged() {
   HeapVector<Member<LocalFrame>> frames;
 
-  // Even though we don't fire an event from here, the LocalDOMWindow's will fire
-  // an event so we keep the frames alive until we are done.
+  // Even though we don't fire an event from here, the LocalDOMWindow's will
+  // fire an event so we keep the frames alive until we are done.
   for (Frame* frame = mainFrame(); frame;
        frame = frame->tree().traverseNext()) {
     if (frame->isLocalFrame())

@@ -56,7 +56,8 @@ void PointerLockController::requestPointerLock(Element* target) {
                       UseCounter::ElementRequestPointerLockInShadow);
 
   if (target->document().isSandboxed(SandboxPointerLock)) {
-    // FIXME: This message should be moved off the console once a solution to https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
+    // FIXME: This message should be moved off the console once a solution to
+    // https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
     target->document().addConsoleMessage(ConsoleMessage::create(
         SecurityMessageSource, ErrorMessageLevel,
         "Blocked pointer lock on an element because the element's frame is "

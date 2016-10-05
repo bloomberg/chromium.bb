@@ -109,7 +109,8 @@ TEST_P(SnapCoordinatorTest, EmptyRepeat) {
 }
 
 TEST_P(SnapCoordinatorTest, ZeroAndNegativeRepeat) {
-  // These be rejected as an invalid repeat values thus no snap offset is created
+  // These be rejected as an invalid repeat values thus no snap offset is
+  // created.
   snapContainer().setAttribute(
       styleAttr,
       "scroll-snap-points-x: repeat(-1px); scroll-snap-points-y: repeat(0px);");
@@ -118,14 +119,16 @@ TEST_P(SnapCoordinatorTest, ZeroAndNegativeRepeat) {
   EXPECT_EQ(0U, snapOffsets(snapContainer(), HorizontalScrollbar).size());
   EXPECT_EQ(0U, snapOffsets(snapContainer(), VerticalScrollbar).size());
 
-  // Calc values are not be rejected outright but instead clamped to 1px min repeat value
+  // Calc values are not be rejected outright but instead clamped to 1px min
+  // repeat value.
   snapContainer().setAttribute(styleAttr,
                                "scroll-snap-points-x: repeat(calc(10px - "
                                "100%)); scroll-snap-points-y: "
                                "repeat(calc(0px));");
   document().updateStyleAndLayout();
 
-  // A repeat value of 1px should give us |(scroll size - client size) / 1| snap offsets
+  // A repeat value of 1px should give us |(scroll size - client size) / 1| snap
+  // offsets.
   unsigned expectedHorizontalSnapOffsets =
       snapContainer().scrollWidth() - snapContainer().clientWidth();
   EXPECT_EQ(expectedHorizontalSnapOffsets,

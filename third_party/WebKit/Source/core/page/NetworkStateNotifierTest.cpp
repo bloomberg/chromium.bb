@@ -84,7 +84,8 @@ class NetworkStateNotifierTest : public ::testing::Test {
  public:
   NetworkStateNotifierTest()
       : m_document(Document::create()), m_document2(Document::create()) {
-    // Initialize connection, so that future calls to setWebConnection issue notifications.
+    // Initialize connection, so that future calls to setWebConnection issue
+    // notifications.
     m_notifier.setWebConnection(WebConnectionTypeUnknown, 0.0);
   }
 
@@ -300,7 +301,8 @@ TEST_F(NetworkStateNotifierTest, SetOverride) {
   EXPECT_EQ(WebConnectionTypeEthernet, m_notifier.connectionType());
   EXPECT_EQ(kEthernetMaxBandwidthMbps, m_notifier.maxBandwidth());
 
-  // When override is active, calls to setOnLine and setConnection are temporary ignored.
+  // When override is active, calls to setOnLine and setConnection are temporary
+  // ignored.
   m_notifier.setOnLine(false);
   setConnection(WebConnectionTypeNone, kNoneMaxBandwidthMbps);
   testing::runPendingTasks();

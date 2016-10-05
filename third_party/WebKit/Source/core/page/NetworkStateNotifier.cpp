@@ -162,7 +162,8 @@ void NetworkStateNotifier::notifyObserversOfConnectionChangeOnContext(
     ExecutionContext* context) {
   ObserverList* observerList = lockAndFindObserverList(context);
 
-  // The context could have been removed before the notification task got to run.
+  // The context could have been removed before the notification task got to
+  // run.
   if (!observerList)
     return;
 

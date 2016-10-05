@@ -44,7 +44,8 @@ namespace TouchAdjustment {
 
 const float zeroTolerance = 1e-6f;
 
-// Class for remembering absolute quads of a target node and what node they represent.
+// Class for remembering absolute quads of a target node and what node they
+// represent.
 class SubtargetGeometry {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
@@ -87,9 +88,9 @@ bool nodeRespondsToTapGesture(Node* node) {
     return true;
   if (node->isElementNode()) {
     Element* element = toElement(node);
-    // Tapping on a text field or other focusable item should trigger adjustment, except
-    // that iframe elements are hard-coded to support focus but the effect is often invisible
-    // so they should be excluded.
+    // Tapping on a text field or other focusable item should trigger
+    // adjustment, except that iframe elements are hard-coded to support focus
+    // but the effect is often invisible so they should be excluded.
     if (element->isMouseFocusable() && !isHTMLIFrameElement(element))
       return true;
     // Accept nodes that has a CSS effect when touched.
@@ -113,8 +114,9 @@ bool nodeIsZoomTarget(Node* node) {
 }
 
 bool providesContextMenuItems(Node* node) {
-  // This function tries to match the nodes that receive special context-menu items in
-  // ContextMenuController::populate(), and should be kept uptodate with those.
+  // This function tries to match the nodes that receive special context-menu
+  // items in ContextMenuController::populate(), and should be kept uptodate
+  // with those.
   ASSERT(node->layoutObject() || node->isShadowRoot());
   if (!node->layoutObject())
     return false;
@@ -128,15 +130,16 @@ bool providesContextMenuItems(Node* node) {
   if (node->layoutObject()->isMedia())
     return true;
   if (node->layoutObject()->canBeSelectionLeaf()) {
-    // If the context menu gesture will trigger a selection all selectable nodes are valid targets.
+    // If the context menu gesture will trigger a selection all selectable nodes
+    // are valid targets.
     if (node->layoutObject()
             ->frame()
             ->editor()
             .behavior()
             .shouldSelectOnContextualMenuClick())
       return true;
-    // Only the selected part of the layoutObject is a valid target, but this will be corrected in
-    // appendContextSubtargetsForNode.
+    // Only the selected part of the layoutObject is a valid target, but this
+    // will be corrected in appendContextSubtargetsForNode.
     if (node->layoutObject()->getSelectionState() != SelectionNone)
       return true;
   }
@@ -168,8 +171,8 @@ static inline void appendBasicSubtargetsForNode(
 static inline void appendContextSubtargetsForNode(
     Node* node,
     SubtargetGeometryList& subtargets) {
-  // This is a variant of appendBasicSubtargetsForNode that adds special subtargets for
-  // selected or auto-selectable parts of text nodes.
+  // This is a variant of appendBasicSubtargetsForNode that adds special
+  // subtargets for selected or auto-selectable parts of text nodes.
   ASSERT(node->layoutObject());
 
   if (!node->isTextNode())
@@ -240,7 +243,8 @@ static inline void appendZoomableSubtargets(Node* node,
   quads.append(layoutObject->localToAbsoluteQuad(borderBoxRect));
   if (borderBoxRect != contentBoxRect)
     quads.append(layoutObject->localToAbsoluteQuad(contentBoxRect));
-  // FIXME: For LayoutBlocks, add column boxes and content boxes cleared for floats.
+  // FIXME: For LayoutBlocks, add column boxes and content boxes cleared for
+  // floats.
 
   Vector<FloatQuad>::const_iterator it = quads.begin();
   const Vector<FloatQuad>::const_iterator end = quads.end();
@@ -267,24 +271,27 @@ void compileSubtargetList(const HeapVector<Member<Node>>& intersectedNodes,
   HeapVector<Member<Node>> candidates;
   HeapHashSet<Member<Node>> editableAncestors;
 
-  // A node matching the NodeFilter is called a responder. Candidate nodes must either be a
-  // responder or have an ancestor that is a responder.
-  // This iteration tests all ancestors at most once by caching earlier results.
+  // A node matching the NodeFilter is called a responder. Candidate nodes must
+  // either be a responder or have an ancestor that is a responder.  This
+  // iteration tests all ancestors at most once by caching earlier results.
   for (unsigned i = 0; i < intersectedNodes.size(); ++i) {
     Node* node = intersectedNodes[i].get();
     HeapVector<Member<Node>> visitedNodes;
     Node* respondingNode = nullptr;
     for (Node* visitedNode = node; visitedNode;
          visitedNode = visitedNode->parentOrShadowHostNode()) {
-      // Check if we already have a result for a common ancestor from another candidate.
+      // Check if we already have a result for a common ancestor from another
+      // candidate.
       respondingNode = responderMap.get(visitedNode);
       if (respondingNode)
         break;
       visitedNodes.append(visitedNode);
-      // Check if the node filter applies, which would mean we have found a responding node.
+      // Check if the node filter applies, which would mean we have found a
+      // responding node.
       if (nodeFilter(visitedNode)) {
         respondingNode = visitedNode;
-        // Continue the iteration to collect the ancestors of the responder, which we will need later.
+        // Continue the iteration to collect the ancestors of the responder,
+        // which we will need later.
         for (visitedNode = parentShadowHostOrOwner(visitedNode); visitedNode;
              visitedNode = parentShadowHostOrOwner(visitedNode)) {
           HeapHashSet<Member<Node>>::AddResult addResult =
@@ -303,13 +310,15 @@ void compileSubtargetList(const HeapVector<Member<Node>>& intersectedNodes,
       candidates.append(node);
   }
 
-  // We compile the list of component absolute quads instead of using the bounding rect
-  // to be able to perform better hit-testing on inline links on line-breaks.
+  // We compile the list of component absolute quads instead of using the
+  // bounding rect to be able to perform better hit-testing on inline links on
+  // line-breaks.
   for (unsigned i = 0; i < candidates.size(); i++) {
     Node* candidate = candidates[i];
-    // Skip nodes who's responders are ancestors of other responders. This gives preference to
-    // the inner-most event-handlers. So that a link is always preferred even when contained
-    // in an element that monitors all click-events.
+    // Skip nodes who's responders are ancestors of other responders. This gives
+    // preference to the inner-most event-handlers. So that a link is always
+    // preferred even when contained in an element that monitors all
+    // click-events.
     Node* respondingNode = responderMap.get(candidate);
     ASSERT(respondingNode);
     if (ancestorsToRespondersSet.contains(respondingNode))
@@ -347,15 +356,17 @@ void compileZoomableSubtargets(const HeapVector<Member<Node>>& intersectedNodes,
   }
 }
 
-// This returns quotient of the target area and its intersection with the touch area.
-// This will prioritize largest intersection and smallest area, while balancing the two against each other.
+// This returns quotient of the target area and its intersection with the touch
+// area.  This will prioritize largest intersection and smallest area, while
+// balancing the two against each other.
 float zoomableIntersectionQuotient(const IntPoint& touchHotspot,
                                    const IntRect& touchArea,
                                    const SubtargetGeometry& subtarget) {
   IntRect rect = subtarget.node()->document().view()->contentsToRootFrame(
       subtarget.boundingBox());
 
-  // Check the rectangle is meaningful zoom target. It should at least contain the hotspot.
+  // Check the rectangle is meaningful zoom target. It should at least contain
+  // the hotspot.
   if (!rect.contains(touchHotspot))
     return std::numeric_limits<float>::infinity();
   IntRect intersection = rect;
@@ -365,12 +376,13 @@ float zoomableIntersectionQuotient(const IntPoint& touchHotspot,
   return rect.size().area() / (float)intersection.size().area();
 }
 
-// Uses a hybrid of distance to adjust and intersect ratio, normalizing each score between 0 and 1
-// and combining them. The distance to adjust works best for disambiguating clicks on targets such
-// as links, where the width may be significantly larger than the touch width. Using area of overlap
-// in such cases can lead to a bias towards shorter links. Conversely, percentage of overlap can
-// provide strong confidence in tapping on a small target, where the overlap is often quite high,
-// and works well for tightly packed controls.
+// Uses a hybrid of distance to adjust and intersect ratio, normalizing each
+// score between 0 and 1 and combining them. The distance to adjust works best
+// for disambiguating clicks on targets such as links, where the width may be
+// significantly larger than the touch width.  Using area of overlap in such
+// cases can lead to a bias towards shorter links. Conversely, percentage of
+// overlap can provide strong confidence in tapping on a small target, where the
+// overlap is often quite high, and works well for tightly packed controls.
 float hybridDistanceFunction(const IntPoint& touchHotspot,
                              const IntRect& touchRect,
                              const SubtargetGeometry& subtarget) {
@@ -400,7 +412,8 @@ FloatPoint contentsToRootFrame(FrameView* view, FloatPoint pt) {
   return FloatPoint(adjusted.x(), adjusted.y());
 }
 
-// Adjusts 'point' to the nearest point inside rect, and leaves it unchanged if already inside.
+// Adjusts 'point' to the nearest point inside rect, and leaves it unchanged if
+// already inside.
 void adjustPointToRect(FloatPoint& point, const FloatRect& rect) {
   if (point.x() < rect.x())
     point.setX(rect.x());
@@ -434,10 +447,12 @@ bool snapTo(const SubtargetGeometry& geom,
     return false;
   }
 
-  // The following code tries to adjust the point to place inside a both the touchArea and the non-rectilinear quad.
-  // FIXME: This will return the point inside the touch area that is the closest to the quad center, but does not
-  // guarantee that the point will be inside the quad. Corner-cases exist where the quad will intersect but this
-  // will fail to adjust the point to somewhere in the intersection.
+  // The following code tries to adjust the point to place inside a both the
+  // touchArea and the non-rectilinear quad.
+  // FIXME: This will return the point inside the touch area that is the closest
+  // to the quad center, but does not guarantee that the point will be inside
+  // the quad. Corner-cases exist where the quad will intersect but this will
+  // fail to adjust the point to somewhere in the intersection.
 
   FloatPoint p1 = contentsToRootFrame(view, quad.p1());
   FloatPoint p2 = contentsToRootFrame(view, quad.p2());
@@ -459,9 +474,10 @@ bool snapTo(const SubtargetGeometry& geom,
   return quad.containsPoint(adjustedPoint);
 }
 
-// A generic function for finding the target node with the lowest distance metric. A distance metric here is the result
-// of a distance-like function, that computes how well the touch hits the node.
-// Distance functions could for instance be distance squared or area of intersection.
+// A generic function for finding the target node with the lowest distance
+// metric. A distance metric here is the result of a distance-like function,
+// that computes how well the touch hits the node.  Distance functions could for
+// instance be distance squared or area of intersection.
 bool findNodeWithLowestDistanceMetric(Node*& targetNode,
                                       IntPoint& targetPoint,
                                       IntRect& targetArea,

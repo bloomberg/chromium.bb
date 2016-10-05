@@ -137,8 +137,9 @@ void ScrollingCoordinator::scrollableAreasDidChange() {
       !m_page->deprecatedLocalMainFrame()->view())
     return;
 
-  // Layout may update scrollable area bounding boxes. It also sets the same dirty
-  // flag making this one redundant (See |ScrollingCoordinator::notifyGeometryChanged|).
+  // Layout may update scrollable area bounding boxes. It also sets the same
+  // dirty flag making this one redundant (See
+  // |ScrollingCoordinator::notifyGeometryChanged|).
   // So if layout is expected, ignore this call allowing scrolling coordinator
   // to be notified post-layout to recompute gesture regions.
   if (m_page->deprecatedLocalMainFrame()->view()->needsLayout())
@@ -158,13 +159,14 @@ void ScrollingCoordinator::updateAfterCompositingChangeIfNeeded() {
                "ScrollingCoordinator::updateAfterCompositingChangeIfNeeded");
 
   if (m_scrollGestureRegionIsDirty) {
-    // Compute the region of the page where we can't handle scroll gestures and mousewheel events
+    // Compute the region of the page where we can't handle scroll gestures and
+    // mousewheel events
     // on the impl thread. This currently includes:
-    // 1. All scrollable areas, such as subframes, overflow divs and list boxes, whose composited
-    // scrolling are not enabled. We need to do this even if the frame view whose layout was updated
-    // is not the main frame.
-    // 2. Resize control areas, e.g. the small rect at the right bottom of div/textarea/iframe when
-    // CSS property "resize" is enabled.
+    // 1. All scrollable areas, such as subframes, overflow divs and list boxes,
+    //    whose composited scrolling are not enabled. We need to do this even if
+    //    the frame view whose layout was updated is not the main frame.
+    // 2. Resize control areas, e.g. the small rect at the right bottom of
+    //    div/textarea/iframe when CSS property "resize" is enabled.
     // 3. Plugin areas.
     Region shouldHandleScrollGestureOnMainThreadRegion =
         computeShouldHandleScrollGestureOnMainThreadRegion(
@@ -255,8 +257,10 @@ static WebLayerPositionConstraint computePositionConstraint(
 
     layer = layer->parent();
 
-    // Composited layers that inherit a fixed position state will be positioned with respect to the nearest compositedLayerMapping's GraphicsLayer.
-    // So, once we find a layer that has its own compositedLayerMapping, we can stop searching for a fixed position LayoutObject.
+    // Composited layers that inherit a fixed position state will be positioned
+    // with respect to the nearest compositedLayerMapping's GraphicsLayer.
+    // So, once we find a layer that has its own compositedLayerMapping, we can
+    // stop searching for a fixed position LayoutObject.
   } while (layer && !layer->hasCompositedLayerMapping());
   return WebLayerPositionConstraint();
 }
@@ -471,7 +475,8 @@ bool ScrollingCoordinator::scrollableAreaScrollLayerDidChange(
       setupScrollbarLayer(verticalScrollbarLayer, scrollbarLayer, webLayer);
   }
 
-  // Update the viewport layer registration if the outer viewport may have changed.
+  // Update the viewport layer registration if the outer viewport may have
+  // changed.
   if (RuntimeEnabledFeatures::rootLayerScrollingEnabled() &&
       isForRootLayer(scrollableArea))
     m_page->chromeClient().registerViewportLayers();
@@ -485,10 +490,10 @@ bool ScrollingCoordinator::scrollableAreaScrollLayerDidChange(
 using GraphicsLayerHitTestRects =
     WTF::HashMap<const GraphicsLayer*, Vector<LayoutRect>>;
 
-// In order to do a DFS cross-frame walk of the Layer tree, we need to know which
-// Layers have child frames inside of them. This computes a mapping for the
-// current frame which we can consult while walking the layers of that frame.
-// Whenever we descend into a new frame, a new map will be created.
+// In order to do a DFS cross-frame walk of the Layer tree, we need to know
+// which Layers have child frames inside of them. This computes a mapping for
+// the current frame which we can consult while walking the layers of that
+// frame.  Whenever we descend into a new frame, a new map will be created.
 using LayerFrameMap =
     HeapHashMap<const PaintLayer*, HeapVector<Member<const LocalFrame>>>;
 static void makeLayerChildFrameMap(const LocalFrame* currentFrame,
@@ -526,7 +531,8 @@ static void projectRectsToGraphicsLayerSpaceRecursive(
   // Project any rects for the current layer
   LayerHitTestRects::const_iterator layerIter = layerRects.find(curLayer);
   if (layerIter != layerRects.end()) {
-    // Find the enclosing composited layer when it's in another document (for non-composited iframes).
+    // Find the enclosing composited layer when it's in another document (for
+    // non-composited iframes).
     const PaintLayer* compositedLayer =
         layerIter->key
             ->enclosingLayerForPaintInvalidationCrossingFrameBoundaries();
@@ -552,9 +558,9 @@ static void projectRectsToGraphicsLayerSpaceRecursive(
         FloatQuad compositorQuad = geometryMap.mapToAncestor(
             FloatRect(rect), compositedLayer->layoutObject());
         rect = LayoutRect(compositorQuad.boundingBox());
-        // If the enclosing composited layer itself is scrolled, we have to undo the subtraction
-        // of its scroll offset since we want the offset relative to the scrolling content, not
-        // the element itself.
+        // If the enclosing composited layer itself is scrolled, we have to undo
+        // the subtraction of its scroll offset since we want the offset
+        // relative to the scrolling content, not the element itself.
         if (compositedLayer->layoutObject()->hasOverflowClip())
           rect.move(compositedLayer->layoutBox()->scrolledContentOffset());
       }
@@ -576,7 +582,8 @@ static void projectRectsToGraphicsLayerSpaceRecursive(
     }
   }
 
-  // If this layer has any frames of interest as a child of it, walk those (with an updated frame map).
+  // If this layer has any frames of interest as a child of it, walk those (with
+  // an updated frame map).
   LayerFrameMap::iterator mapIter = layerChildFrameMap.find(curLayer);
   if (mapIter != layerChildFrameMap.end()) {
     for (size_t i = 0; i < mapIter->value.size(); i++) {
@@ -604,10 +611,11 @@ static void projectRectsToGraphicsLayerSpace(
                "ScrollingCoordinator::projectRectsToGraphicsLayerSpace");
   bool touchHandlerInChildFrame = false;
 
-  // We have a set of rects per Layer, we need to map them to their bounding boxes in their
-  // enclosing composited layer. To do this most efficiently we'll walk the Layer tree using
-  // LayoutGeometryMap. First record all the branches we should traverse in the tree (including
-  // all documents on the page).
+  // We have a set of rects per Layer, we need to map them to their bounding
+  // boxes in their enclosing composited layer. To do this most efficiently
+  // we'll walk the Layer tree using LayoutGeometryMap. First record all the
+  // branches we should traverse in the tree (including all documents on the
+  // page).
   HashSet<const PaintLayer*> layersWithRects;
   for (const auto& layerRect : layerRects) {
     const PaintLayer* layer = layerRect.key;
@@ -674,8 +682,9 @@ void ScrollingCoordinator::reset() {
       m_lastMainThreadScrollingReasons);
 }
 
-// Note that in principle this could be called more often than computeTouchEventTargetRects, for
-// example during a non-composited scroll (although that's not yet implemented - crbug.com/261307).
+// Note that in principle this could be called more often than
+// computeTouchEventTargetRects, for example during a non-composited scroll
+// (although that's not yet implemented - crbug.com/261307).
 void ScrollingCoordinator::setTouchEventTargetRects(
     LayerHitTestRects& layerRects) {
   TRACE_EVENT0("input", "ScrollingCoordinator::setTouchEventTargetRects");
@@ -693,9 +702,10 @@ void ScrollingCoordinator::setTouchEventTargetRects(
     }
   }
 
-  // Ensure we have an entry for each composited layer that previously had rects (so that old
-  // ones will get cleared out). Note that ideally we'd track this on GraphicsLayer instead of
-  // Layer, but we have no good hook into the lifetime of a GraphicsLayer.
+  // Ensure we have an entry for each composited layer that previously had rects
+  // (so that old ones will get cleared out). Note that ideally we'd track this
+  // on GraphicsLayer instead of Layer, but we have no good hook into the
+  // lifetime of a GraphicsLayer.
   for (const PaintLayer* layer : oldLayersWithTouchRects) {
     if (!layerRects.contains(layer))
       layerRects.add(layer, Vector<LayoutRect>());
@@ -727,8 +737,9 @@ void ScrollingCoordinator::touchEventTargetRectsDidChange() {
   if (m_page->deprecatedLocalMainFrame()->view()->needsLayout())
     return;
 
-  // FIXME: scheduleAnimation() is just a method of forcing the compositor to realize that it
-  // needs to commit here. We should expose a cleaner API for this.
+  // FIXME: scheduleAnimation() is just a method of forcing the compositor to
+  // realize that it needs to commit here. We should expose a cleaner API for
+  // this.
   LayoutViewItem layoutView =
       m_page->deprecatedLocalMainFrame()->contentLayoutItem();
   if (!layoutView.isNull() && layoutView.compositor() &&
@@ -883,10 +894,10 @@ Region ScrollingCoordinator::computeShouldHandleScrollGestureOnMainThreadRegion(
     }
   }
 
-  // We use GestureScrollBegin/Update/End for moving the resizer handle. So we mark these
-  // small resizer areas as non-fast-scrollable to allow the scroll gestures to be passed to
-  // main thread if they are targeting the resizer area. (Resizing is done in EventHandler.cpp
-  // on main thread).
+  // We use GestureScrollBegin/Update/End for moving the resizer handle. So we
+  // mark these small resizer areas as non-fast-scrollable to allow the scroll
+  // gestures to be passed to main thread if they are targeting the resizer
+  // area. (Resizing is done in EventHandler.cpp on main thread).
   if (const FrameView::ResizerAreaSet* resizerAreas =
           frameView->resizerAreas()) {
     for (const LayoutBox* box : *resizerAreas) {
@@ -933,14 +944,16 @@ static void accumulateDocumentTouchEventTargetRects(LayerHitTestRects& rects,
   if (!targets)
     return;
 
-  // If there's a handler on the window, document, html or body element (fairly common in practice),
-  // then we can quickly mark the entire document and skip looking at any other handlers.
-  // Note that technically a handler on the body doesn't cover the whole document, but it's
-  // reasonable to be conservative and report the whole document anyway.
+  // If there's a handler on the window, document, html or body element (fairly
+  // common in practice), then we can quickly mark the entire document and skip
+  // looking at any other handlers.  Note that technically a handler on the body
+  // doesn't cover the whole document, but it's reasonable to be conservative
+  // and report the whole document anyway.
   //
-  // Fullscreen HTML5 video when OverlayFullscreenVideo is enabled is implemented by replacing the
-  // root cc::layer with the video layer so doing this optimization causes the compositor to think
-  // that there are no handlers, therefore skip it.
+  // Fullscreen HTML5 video when OverlayFullscreenVideo is enabled is
+  // implemented by replacing the root cc::layer with the video layer so doing
+  // this optimization causes the compositor to think that there are no
+  // handlers, therefore skip it.
   if (!document->layoutViewItem().compositor()->inOverlayFullscreenVideo()) {
     for (const auto& eventTarget : *targets) {
       EventTarget* target = eventTarget.key;
@@ -969,8 +982,8 @@ static void accumulateDocumentTouchEventTargetRects(LayerHitTestRects& rects,
     if (!node || !node->isConnected())
       continue;
 
-    // If the document belongs to an invisible subframe it does not have a composited layer
-    // and should be skipped.
+    // If the document belongs to an invisible subframe it does not have a
+    // composited layer and should be skipped.
     if (node->document().isInInvisibleSubframe())
       continue;
 
@@ -1001,11 +1014,12 @@ static void accumulateDocumentTouchEventTargetRects(LayerHitTestRects& rects,
             enclosingNonCompositedScrollLayer = parent;
         }
 
-        // Report the whole non-composited scroll layer as a touch hit rect because any
-        // rects inside of it may move around relative to their enclosing composited layer
-        // without causing the rects to be recomputed. Non-composited scrolling occurs on
-        // the main thread, so we're not getting much benefit from compositor touch hit
-        // testing in this case anyway.
+        // Report the whole non-composited scroll layer as a touch hit rect
+        // because any rects inside of it may move around relative to their
+        // enclosing composited layer without causing the rects to be
+        // recomputed. Non-composited scrolling occurs on the main thread, so
+        // we're not getting much benefit from compositor touch hit testing in
+        // this case anyway.
         if (enclosingNonCompositedScrollLayer)
           enclosingNonCompositedScrollLayer->computeSelfHitTestRects(rects);
 
@@ -1147,8 +1161,8 @@ MainThreadScrollingReasons ScrollingCoordinator::mainThreadScrollingReasons()
     return reasons;
 
   // TODO(flackr) Currently we combine reasons for main thread scrolling from
-  // all frames but we should only look at the targetted frame (and its ancestors
-  // if the scroll bubbles up). http://crbug.com/568901
+  // all frames but we should only look at the targetted frame (and its
+  // ancestors if the scroll bubbles up). http://crbug.com/568901
   for (Frame* frame = m_page->mainFrame(); frame;
        frame = frame->tree().traverseNext()) {
     if (!frame->isLocalFrame())
@@ -1178,8 +1192,8 @@ MainThreadScrollingReasons ScrollingCoordinator::mainThreadScrollingReasons()
 
     // TODO(awoloszyn) Currently crbug.com/304810 will let certain
     // overflow:hidden elements scroll on the compositor thread, so we should
-    // not let this move there path as an optimization, when we have slow-repaint
-    // elements.
+    // not let this move there path as an optimization, when we have
+    // slow-repaint elements.
     if (mayBeScrolledByScript &&
         hasVisibleSlowRepaintViewportConstrainedObjects(frameView)) {
       reasons |=

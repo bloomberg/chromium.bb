@@ -1,6 +1,8 @@
 /*
- * Copyright (C) 2006, 2007, 2008, 2009, 2010, 2013 Apple Inc. All rights reserved.
- * Copyright (C) 2008 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2006, 2007, 2008, 2009, 2010, 2013 Apple Inc. All rights
+ * reserved.
+ * Copyright (C) 2008 Torch Mobile Inc. All rights reserved.
+ * (http://www.torchmobile.com/)
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -77,7 +79,8 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   friend class Settings;
 
  public:
-  // It is up to the platform to ensure that non-null clients are provided where required.
+  // It is up to the platform to ensure that non-null clients are provided where
+  // required.
   struct CORE_EXPORT PageClients final {
     STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(PageClients);
@@ -281,7 +284,8 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   bool m_isPainting;
 #endif
 
-  // A pointer to all the interfaces provided to in-process Frames for this Page.
+  // A pointer to all the interfaces provided to in-process Frames for this
+  // Page.
   // FIXME: Most of the members of Page should move onto FrameHost.
   Member<FrameHost> m_frameHost;
 };

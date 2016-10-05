@@ -143,11 +143,11 @@ PaintLayer* RootScrollerController::rootScrollerPaintLayer() const {
   LayoutBox* box = toLayoutBox(m_effectiveRootScroller->layoutObject());
   PaintLayer* layer = box->layer();
 
-  // If the root scroller is the <html> element we do a bit of a fake out because
-  // while <html> has a PaintLayer, scrolling for it is handled by the #document's
-  // PaintLayer (i.e. the PaintLayerCompositor's root layer). The reason the root
-  // scroller is the <html> layer and not #document is because the latter is a Node
-  // but not an Element.
+  // If the root scroller is the <html> element we do a bit of a fake out
+  // because while <html> has a PaintLayer, scrolling for it is handled by the
+  // #document's PaintLayer (i.e. the PaintLayerCompositor's root layer). The
+  // reason the root scroller is the <html> layer and not #document is because
+  // the latter is a Node but not an Element.
   if (m_effectiveRootScroller->isSameNode(m_document->documentElement())) {
     if (!layer || !layer->compositor())
       return nullptr;

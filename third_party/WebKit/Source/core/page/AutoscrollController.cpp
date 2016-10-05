@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2013 Google Inc. All rights reserved.
- * Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights
+ * reserved.
  * Copyright (C) 2006 Alexey Proskuryakov (ap@webkit.org)
  * Copyright (C) 2012 Digia Plc. and/or its subsidiary(-ies)
  *
@@ -40,7 +41,8 @@
 
 namespace blink {
 
-// Delay time in second for start autoscroll if pointer is in border edge of scrollable element.
+// Delay time in second for start autoscroll if pointer is in border edge of
+// scrollable element.
 static double autoscrollDelay = 0.2;
 
 AutoscrollController* AutoscrollController::create(Page& page) {
@@ -69,7 +71,8 @@ bool AutoscrollController::autoscrollInProgress(
 
 void AutoscrollController::startAutoscrollForSelection(
     LayoutObject* layoutObject) {
-  // We don't want to trigger the autoscroll or the middleClickAutoscroll if it's already active
+  // We don't want to trigger the autoscroll or the middleClickAutoscroll if
+  // it's already active.
   if (m_autoscrollType != NoAutoscroll)
     return;
   LayoutBox* scrollable = LayoutBox::findAutoscrollable(layoutObject);
@@ -223,7 +226,8 @@ void AutoscrollController::startMiddleClickAutoscroll(
     LayoutBox* scrollable,
     const IntPoint& lastKnownMousePosition) {
   DCHECK(RuntimeEnabledFeatures::middleClickAutoscrollEnabled());
-  // We don't want to trigger the autoscroll or the middleClickAutoscroll if it's already active
+  // We don't want to trigger the autoscroll or the middleClickAutoscroll if
+  // it's already active.
   if (m_autoscrollType != NoAutoscroll)
     return;
 
@@ -293,8 +297,8 @@ void AutoscrollController::updateMiddleClickAutoscrollState(
     FrameView* view,
     const IntPoint& lastKnownMousePosition) {
   DCHECK(RuntimeEnabledFeatures::middleClickAutoscrollEnabled());
-  // At the original click location we draw a 4 arrowed icon. Over this icon there won't be any scroll
-  // So we don't want to change the cursor over this area
+  // At the original click location we draw a 4 arrowed icon. Over this icon
+  // there won't be any scroll, So don't change the cursor over this area.
   bool east = m_middleClickAutoscrollStartPos.x() <
               (lastKnownMousePosition.x() - noMiddleClickAutoscrollRadius);
   bool west = m_middleClickAutoscrollStartPos.x() >

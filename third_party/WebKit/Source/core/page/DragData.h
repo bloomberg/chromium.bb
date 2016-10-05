@@ -55,7 +55,8 @@ class CORE_EXPORT DragData {
  public:
   enum FilenameConversionPolicy { DoNotConvertFilenames, ConvertFilenames };
 
-  // clientPosition is taken to be the position of the drag event within the target window, with (0,0) at the top left
+  // clientPosition is taken to be the position of the drag event within the
+  // target window, with (0,0) at the top left.
   DragData(DataObject*,
            const IntPoint& clientPosition,
            const IntPoint& globalPosition,

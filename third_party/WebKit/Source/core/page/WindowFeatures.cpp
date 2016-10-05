@@ -1,7 +1,8 @@
 /*
  *  Copyright (C) 2000 Harri Porten (porten@kde.org)
  *  Copyright (C) 2006 Jon Shier (jshier@iastate.edu)
- *  Copyright (C) 2003, 2004, 2005, 2006, 2007, 2010 Apple Inc. All rights reseved.
+ *  Copyright (C) 2003, 2004, 2005, 2006, 2007, 2010 Apple Inc. All rights
+ * reseved.
  *  Copyright (C) 2006 Alexey Proskuryakov (ap@webkit.org)
  *
  *  This library is free software; you can redistribute it and/or
@@ -29,7 +30,8 @@
 
 namespace blink {
 
-// Though isspace() considers \t and \v to be whitespace, Win IE doesn't when parsing window features.
+// Though isspace() considers \t and \v to be whitespace, Win IE doesn't when
+// parsing window features.
 static bool isWindowFeaturesSeparator(UChar c) {
   return c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '=' ||
          c == ',' || c == '\0';
@@ -49,9 +51,9 @@ WindowFeatures::WindowFeatures(const String& features)
       dialog(false),
       noopener(false) {
   /*
-     The IE rule is: all features except for channelmode and fullscreen default to YES, but
-     if the user specifies a feature string, all features default to NO. (There is no public
-     standard that applies to this method.)
+     The IE rule is: all features except for channelmode and fullscreen default
+     to YES, but if the user specifies a feature string, all features default to
+     NO. (There is no public standard that applies to this method.)
 
      <http://msdn.microsoft.com/workshop/author/dhtml/reference/methods/open_0.asp>
      We always allow a window to be resized, which is consistent with Firefox.
@@ -72,7 +74,8 @@ WindowFeatures::WindowFeatures(const String& features)
   locationBarVisible = false;
   scrollbarsVisible = false;
 
-  // Tread lightly in this code -- it was specifically designed to mimic Win IE's parsing behavior.
+  // Tread lightly in this code -- it was specifically designed to mimic Win
+  // IE's parsing behavior.
   unsigned keyBegin, keyEnd;
   unsigned valueBegin, valueEnd;
 
@@ -100,7 +103,8 @@ WindowFeatures::WindowFeatures(const String& features)
 
     ASSERT_WITH_SECURITY_IMPLICATION(i <= length);
 
-    // skip to first non-separator, but don't skip past a ',' or the end of the string
+    // Skip to first non-separator, but don't skip past a ',' or the end of the
+    // string.
     while (i < length && isWindowFeaturesSeparator(buffer[i])) {
       if (buffer[i] == ',')
         break;
@@ -134,8 +138,9 @@ void WindowFeatures::setWindowFeature(const String& keyString,
   else
     value = valueString.toInt();
 
-  // We treat keyString of "resizable" here as an additional feature rather than setting resizeable to true.
-  // This is consistent with Firefox, but could also be handled at another level.
+  // We treat keyString of "resizable" here as an additional feature rather than
+  // setting resizeable to true.  This is consistent with Firefox, but could
+  // also be handled at another level.
 
   if (keyString == "left" || keyString == "screenx") {
     xSet = true;
@@ -187,16 +192,18 @@ WindowFeatures::WindowFeatures(const String& dialogFeaturesString,
   // - default font settings
   // - width, height, left, and top specified in units other than "px"
   // - edge (sunken or raised, default is raised)
-  // - dialogHide: trusted && boolFeature(features, "dialoghide"), makes dialog hide when you print
-  // - help: boolFeature(features, "help", true), makes help icon appear in dialog (what does it do on Windows?)
+  // - dialogHide: trusted && boolFeature(features, "dialoghide"), makes dialog
+  //               hide when you print
+  // - help: boolFeature(features, "help", true), makes help icon appear in
+  //         dialog (what does it do on Windows?)
   // - unadorned: trusted && boolFeature(features, "unadorned");
 
-  width =
-      intFeature(features, "dialogwidth", 100, screenAvailableRect.width(),
-                 620);  // default here came from frame size of dialog in MacIE
-  height =
-      intFeature(features, "dialogheight", 100, screenAvailableRect.height(),
-                 450);  // default here came from frame size of dialog in MacIE
+  // default here came from frame size of dialog in MacIE
+  width = intFeature(features, "dialogwidth", 100, screenAvailableRect.width(),
+                     620);
+  // default here came from frame size of dialog in MacIE
+  height = intFeature(features, "dialogheight", 100,
+                      screenAvailableRect.height(), 450);
 
   x = intFeature(features, "dialogleft", screenAvailableRect.x(),
                  screenAvailableRect.maxX() - width, -1);

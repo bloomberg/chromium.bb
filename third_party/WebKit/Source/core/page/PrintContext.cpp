@@ -104,9 +104,9 @@ void PrintContext::computePageRectsWithPageSizeInternal(
   IntRect docRect = view.documentRect();
 
   int pageWidth = pageSizeInPixels.width();
-  // We scaled with floating point arithmetic and need to ensure results like 13329.99
-  // are treated as 13330 so that we don't mistakenly assign an extra page for the
-  // stray pixel.
+  // We scaled with floating point arithmetic and need to ensure results like
+  // 13329.99 are treated as 13330 so that we don't mistakenly assign an extra
+  // page for the stray pixel.
   int pageHeight = pageSizeInPixels.height() + LayoutUnit::epsilon();
 
   bool isHorizontal = view.style()->isHorizontalWritingMode();
@@ -167,7 +167,8 @@ void PrintContext::begin(float width, float height) {
   ASSERT(width > 0);
   ASSERT(height > 0);
 
-  // This function can be called multiple times to adjust printing parameters without going back to screen mode.
+  // This function can be called multiple times to adjust printing parameters
+  // without going back to screen mode.
   m_isPrinting = true;
 
   FloatSize originalPageSize = FloatSize(width, height);
@@ -175,7 +176,8 @@ void PrintContext::begin(float width, float height) {
       originalPageSize, FloatSize(width * printingMinimumShrinkFactor,
                                   height * printingMinimumShrinkFactor));
 
-  // This changes layout, so callers need to make sure that they don't paint to screen while in printing mode.
+  // This changes layout, so callers need to make sure that they don't paint to
+  // screen while in printing mode.
   m_frame->setPrinting(
       true, minLayoutSize, originalPageSize,
       printingMaximumShrinkFactor / printingMinimumShrinkFactor);
@@ -279,8 +281,9 @@ String PrintContext::pageProperty(LocalFrame* frame,
                                   int pageNumber) {
   Document* document = frame->document();
   PrintContext printContext(frame);
-  // Any non-zero size is OK here. We don't care about actual layout. We just want to collect
-  // @page rules and figure out what declarations apply on a given page (that may or may not exist).
+  // Any non-zero size is OK here. We don't care about actual layout. We just
+  // want to collect @page rules and figure out what declarations apply on a
+  // given page (that may or may not exist).
   printContext.begin(800, 1000);
   RefPtr<ComputedStyle> style = document->styleForPage(pageNumber);
 
