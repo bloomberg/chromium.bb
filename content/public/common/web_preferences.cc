@@ -206,6 +206,7 @@ WebPreferences::WebPreferences()
       resue_global_for_unowned_main_frame(false),
       autoplay_muted_videos_enabled(false),
       progress_bar_completion(ProgressBarCompletion::LOAD_EVENT),
+      spellcheck_enabled_by_default(true),
 #endif
 #if defined(OS_ANDROID)
       default_minimum_page_scale_factor(0.25f),

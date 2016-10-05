@@ -438,6 +438,11 @@ void AwSettings::PopulateWebPreferencesLocked(JNIEnv* env,
 
   // We use system scrollbars, so make Blink's scrollbars invisible.
   web_prefs->hide_scrollbars = true;
+
+  // Keep spellcheck disabled on html elements unless the spellcheck="true"
+  // attribute is explicitly specified. This "opt-in" behavior is for backward
+  // consistency in apps that use WebView (see crbug.com/652314).
+  web_prefs->spellcheck_enabled_by_default = false;
 }
 
 static jlong Init(JNIEnv* env,

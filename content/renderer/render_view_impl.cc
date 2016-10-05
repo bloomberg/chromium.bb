@@ -1153,6 +1153,7 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setForcePreloadNoneForMediaElements(is_low_end_device);
   WebRuntimeFeatures::enableAutoplayMutedVideos(
       prefs.autoplay_muted_videos_enabled && !is_low_end_device);
+  settings->setSpellCheckEnabledByDefault(prefs.spellcheck_enabled_by_default);
 #endif
 
   settings->setAutoplayExperimentMode(

@@ -238,6 +238,9 @@ struct CONTENT_EXPORT WebPreferences {
   bool resue_global_for_unowned_main_frame;
   bool autoplay_muted_videos_enabled;
   ProgressBarCompletion progress_bar_completion;
+  // Specifies default setting for spellcheck when the spellcheck attribute is
+  // not explicitly specified.
+  bool spellcheck_enabled_by_default;
 #endif
 
   // String that describes how media element autoplay behavior should be
