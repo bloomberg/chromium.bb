@@ -34,8 +34,8 @@ class PixelExpectations(GpuTestExpectations):
     # TODO(xlai) check / generate reference images.
     self.Fail('Pixel_OffscreenCanvasUnaccelerated2D', bug=563852)
     self.Fail('Pixel_OffscreenCanvasUnaccelerated2DWorker', bug=563858)
-    self.Fail('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing', bug=563852)
-    self.Fail('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker', bug=563858)
+    self.Fail('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker',
+              ['mac', ('nvidia', 0xfe9)], bug=652931)
 
     # TODO(kbr): flakily timing out on this configuration.
     self.Flaky('*', ['linux', 'intel', 'debug'], bug=648369)
