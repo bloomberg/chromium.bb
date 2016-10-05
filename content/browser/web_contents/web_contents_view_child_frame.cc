@@ -87,7 +87,7 @@ void WebContentsViewChildFrame::CreateView(const gfx::Size& initial_size,
 RenderWidgetHostViewBase* WebContentsViewChildFrame::CreateViewForWidget(
     RenderWidgetHost* render_widget_host,
     bool is_guest_view_hack) {
-  return new RenderWidgetHostViewChildFrame(render_widget_host);
+  return RenderWidgetHostViewChildFrame::Create(render_widget_host);
 }
 
 RenderWidgetHostViewBase* WebContentsViewChildFrame::CreateViewForPopupWidget(

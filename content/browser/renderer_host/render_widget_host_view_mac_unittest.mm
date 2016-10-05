@@ -1051,8 +1051,8 @@ TEST_F(RenderWidgetHostViewMacTest, GuestViewDoesNotLeak) {
   view->SetDelegate(view_delegate.get());
 
   base::WeakPtr<RenderWidgetHostViewBase> guest_rwhv_weak =
-      (new RenderWidgetHostViewGuest(
-           rwh, NULL, view->GetWeakPtr()))->GetWeakPtr();
+      (RenderWidgetHostViewGuest::Create(rwh, NULL, view->GetWeakPtr()))
+          ->GetWeakPtr();
 
   // Remove the cocoa_view() so |view| also goes away before |rwh|.
   {

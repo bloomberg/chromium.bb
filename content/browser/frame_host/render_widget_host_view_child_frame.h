@@ -53,7 +53,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
       public cc::SurfaceFactoryClient,
       public cc::BeginFrameObserver {
  public:
-  explicit RenderWidgetHostViewChildFrame(RenderWidgetHost* widget);
+  static RenderWidgetHostViewChildFrame* Create(RenderWidgetHost* widget);
   ~RenderWidgetHostViewChildFrame() override;
 
   void SetCrossProcessFrameConnector(
@@ -195,6 +195,9 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   friend class RenderWidgetHostView;
   friend class RenderWidgetHostViewChildFrameTest;
   friend class RenderWidgetHostViewGuestSurfaceTest;
+
+  explicit RenderWidgetHostViewChildFrame(RenderWidgetHost* widget);
+  void Init();
 
   // Clears current compositor surface, if one is in use.
   void ClearCompositorSurfaceIfNecessary();

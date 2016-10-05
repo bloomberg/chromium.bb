@@ -148,9 +148,8 @@ RenderWidgetHostViewBase* WebContentsViewGuest::CreateViewForWidget(
   RenderWidgetHostViewBase* platform_widget =
       platform_view_->CreateViewForWidget(render_widget_host, true);
 
-  return new RenderWidgetHostViewGuest(render_widget_host,
-                                       guest_,
-                                       platform_widget->GetWeakPtr());
+  return RenderWidgetHostViewGuest::Create(render_widget_host, guest_,
+                                           platform_widget->GetWeakPtr());
 }
 
 RenderWidgetHostViewBase* WebContentsViewGuest::CreateViewForPopupWidget(

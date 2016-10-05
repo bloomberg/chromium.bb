@@ -39,6 +39,15 @@
 
 namespace content {
 
+// static
+RenderWidgetHostViewChildFrame* RenderWidgetHostViewChildFrame::Create(
+    RenderWidgetHost* widget) {
+  RenderWidgetHostViewChildFrame* view =
+      new RenderWidgetHostViewChildFrame(widget);
+  view->Init();
+  return view;
+}
+
 RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
     RenderWidgetHost* widget_host)
     : host_(RenderWidgetHostImpl::From(widget_host)),
@@ -54,10 +63,6 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
       weak_factory_(this) {
   id_allocator_.reset(new cc::SurfaceIdAllocator(frame_sink_id_));
   GetSurfaceManager()->RegisterFrameSinkId(frame_sink_id_);
-  RegisterFrameSinkId();
-
-  host_->SetView(this);
-  GetTextInputManager();
 }
 
 RenderWidgetHostViewChildFrame::~RenderWidgetHostViewChildFrame() {
@@ -66,6 +71,12 @@ RenderWidgetHostViewChildFrame::~RenderWidgetHostViewChildFrame() {
 
   if (GetSurfaceManager())
     GetSurfaceManager()->InvalidateFrameSinkId(frame_sink_id_);
+}
+
+void RenderWidgetHostViewChildFrame::Init() {
+  RegisterFrameSinkId();
+  host_->SetView(this);
+  GetTextInputManager();
 }
 
 void RenderWidgetHostViewChildFrame::SetCrossProcessFrameConnector(

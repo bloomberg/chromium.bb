@@ -891,7 +891,7 @@ bool RenderFrameHostImpl::CreateRenderFrame(int proxy_routing_id,
   // RenderWidgetHostImpl. https://crbug.com/545684
   if (parent_routing_id != MSG_ROUTING_NONE && render_widget_host_) {
     RenderWidgetHostView* rwhv =
-        new RenderWidgetHostViewChildFrame(render_widget_host_);
+        RenderWidgetHostViewChildFrame::Create(render_widget_host_);
     rwhv->Hide();
   }
 

@@ -532,6 +532,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Forwards a mouse event to this view's parent window delegate.
   void ForwardMouseEventToParent(ui::MouseEvent* event);
 
+  void UpdateNeedsBeginFramesInternal();
+
   // Returns the RenderViewHostDelegateView instance for this view. Returns
   // NULL on failure.
   RenderViewHostDelegateView* GetRenderViewHostDelegateView();
@@ -592,7 +594,12 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // The begin frame source being observed.  Null if none.
   cc::BeginFrameSource* begin_frame_source_;
   cc::BeginFrameArgs last_begin_frame_args_;
+
+  // Whether a request for begin frames has been issued.
   bool needs_begin_frames_;
+
+  // Whether or not a frame observer has been added.
+  bool added_frame_observer_;
 
   // Used to record the last position of the mouse.
   // While the mouse is locked, they store the last known position just as mouse

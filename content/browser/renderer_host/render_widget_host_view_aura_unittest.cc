@@ -700,8 +700,8 @@ class RenderWidgetHostViewGuestAuraTest : public RenderWidgetHostViewAuraTest {
 
     RenderWidgetHostViewAuraTest::SetUp();
 
-    guest_view_weak_ = (new RenderWidgetHostViewGuest(widget_host_, nullptr,
-                                                      view_->GetWeakPtr()))
+    guest_view_weak_ = (RenderWidgetHostViewGuest::Create(widget_host_, nullptr,
+                                                          view_->GetWeakPtr()))
                            ->GetWeakPtr();
   }
 

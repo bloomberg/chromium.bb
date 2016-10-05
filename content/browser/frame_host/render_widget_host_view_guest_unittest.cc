@@ -70,7 +70,7 @@ class RenderWidgetHostViewGuestTest : public testing::Test {
     int32_t routing_id = process_host->GetNextRoutingID();
     widget_host_ =
         new RenderWidgetHostImpl(&delegate_, process_host, routing_id, false);
-    view_ = new RenderWidgetHostViewGuest(
+    view_ = RenderWidgetHostViewGuest::Create(
         widget_host_, NULL,
         (new TestRenderWidgetHostView(widget_host_))->GetWeakPtr());
   }
@@ -190,7 +190,7 @@ class RenderWidgetHostViewGuestSurfaceTest
     int32_t routing_id = process_host->GetNextRoutingID();
     widget_host_ =
         new RenderWidgetHostImpl(&delegate_, process_host, routing_id, false);
-    view_ = new RenderWidgetHostViewGuest(
+    view_ = RenderWidgetHostViewGuest::Create(
         widget_host_, browser_plugin_guest_,
         (new TestRenderWidgetHostView(widget_host_))->GetWeakPtr());
   }

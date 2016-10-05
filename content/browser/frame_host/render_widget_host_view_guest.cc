@@ -65,6 +65,17 @@ class ScopedInputScaleDisabler {
 
 }  // namespace
 
+// static
+RenderWidgetHostViewGuest* RenderWidgetHostViewGuest::Create(
+    RenderWidgetHost* widget,
+    BrowserPluginGuest* guest,
+    base::WeakPtr<RenderWidgetHostViewBase> platform_view) {
+  RenderWidgetHostViewGuest* view =
+      new RenderWidgetHostViewGuest(widget, guest, platform_view);
+  view->Init();
+  return view;
+}
+
 RenderWidgetHostViewGuest::RenderWidgetHostViewGuest(
     RenderWidgetHost* widget_host,
     BrowserPluginGuest* guest,

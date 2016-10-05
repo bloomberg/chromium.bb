@@ -45,7 +45,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
     : public RenderWidgetHostViewChildFrame,
       public ui::GestureConsumer {
  public:
-  RenderWidgetHostViewGuest(
+  static RenderWidgetHostViewGuest* Create(
       RenderWidgetHost* widget,
       BrowserPluginGuest* guest,
       base::WeakPtr<RenderWidgetHostViewBase> platform_view);
@@ -132,6 +132,11 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   friend class RenderWidgetHostView;
 
  private:
+  RenderWidgetHostViewGuest(
+      RenderWidgetHost* widget,
+      BrowserPluginGuest* guest,
+      base::WeakPtr<RenderWidgetHostViewBase> platform_view);
+
   RenderWidgetHostViewBase* GetOwnerRenderWidgetHostView() const;
 
   // Since we now route GestureEvents directly to the guest renderer, we need

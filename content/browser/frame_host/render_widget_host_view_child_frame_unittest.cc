@@ -96,7 +96,7 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
     int32_t routing_id = process_host->GetNextRoutingID();
     widget_host_ =
         new RenderWidgetHostImpl(&delegate_, process_host, routing_id, false);
-    view_ = new RenderWidgetHostViewChildFrame(widget_host_);
+    view_ = RenderWidgetHostViewChildFrame::Create(widget_host_);
 
     test_frame_connector_ = new MockCrossProcessFrameConnector();
     view_->SetCrossProcessFrameConnector(test_frame_connector_);
