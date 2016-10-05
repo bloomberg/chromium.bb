@@ -20,6 +20,7 @@
 #include "media/base/android/media_drm_bridge_cdm_context.h"
 #include "media/base/android/sdk_media_codec_bridge.h"
 #include "media/base/media_keys.h"
+#include "media/gpu/avda_codec_allocator.h"
 #include "media/gpu/avda_picture_buffer_manager.h"
 #include "media/gpu/avda_state_provider.h"
 #include "media/gpu/avda_surface_tracker.h"
@@ -120,10 +121,10 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
     // is only a hint.
     gfx::Size initial_expected_coded_size_;
 
-    // Should we allow MediaCodec to autodetect the codec type (true), or
-    // select a software decoder manually (false).  This is because fallback to
-    // software when autodetecting can sometimes hang mediaserver.
-    bool allow_autodetection_ = false;
+    // The type of allocation to use for this.  We use this to select the right
+    // thread for construction / destruction, and to decide if we should
+    // restrict the codec to be software only.
+    AVDACodecAllocator::TaskType task_type_;
 
    protected:
     friend class base::RefCountedThreadSafe<CodecConfig>;
