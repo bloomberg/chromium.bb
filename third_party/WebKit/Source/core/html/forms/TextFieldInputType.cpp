@@ -228,13 +228,9 @@ void TextFieldInputType::forwardEvent(Event* event) {
         if (PaintLayer* innerLayer = innerEditorLayoutObject->layer()) {
           if (PaintLayerScrollableArea* innerScrollableArea =
                   innerLayer->getScrollableArea()) {
-            IntSize scrollOffset(
-                !layoutTextControl->style()->isLeftToRightDirection()
-                    ? innerScrollableArea->scrollWidth().toInt()
-                    : 0,
-                0);
-            innerScrollableArea->scrollToOffset(scrollOffset,
-                                                ScrollOffsetClamped);
+            innerScrollableArea->setScrollPosition(
+                DoublePoint(innerScrollableArea->scrollOrigin()),
+                ProgrammaticScroll, ScrollBehaviorInstant);
           }
         }
       }

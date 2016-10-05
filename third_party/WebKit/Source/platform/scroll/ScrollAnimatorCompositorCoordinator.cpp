@@ -291,8 +291,7 @@ void ScrollAnimatorCompositorCoordinator::adjustAnimationAndSetScrollPosition(
     const DoublePoint& position,
     ScrollType scrollType) {
   // Subclasses should override this and adjust the animation as necessary.
-  DoublePoint adjustedPos = getScrollableArea()->clampScrollPosition(position);
-  scrollPositionChanged(adjustedPos, scrollType);
+  scrollPositionChanged(position, scrollType);
 }
 
 void ScrollAnimatorCompositorCoordinator::adjustImplOnlyScrollOffsetAnimation(
