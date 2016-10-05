@@ -17,18 +17,10 @@ namespace switches {
 MIDI_EXPORT extern const char kUseAndroidMidiApi[];
 #endif
 
-}  // namespace switches
-
-namespace media {
-namespace midi {
-namespace features {
-
 #if defined(OS_WIN)
-MIDI_EXPORT extern const base::Feature kMidiManagerWinrt;
+MIDI_EXPORT extern const char kDisableWinrtMidiApi[];
 #endif
 
-}  // namespace features
-}  // namespace midi
-}  // namespace media
+}  // namespace switches
 
 #endif  // MEDIA_MIDI_MIDI_SWITCHES_H_
