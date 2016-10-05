@@ -2986,7 +2986,8 @@ void WebContentsImpl::LoadStateChanged(
 
 void WebContentsImpl::DidGetResourceResponseStart(
   const ResourceRequestDetails& details) {
-  controller_.ssl_manager()->DidStartResourceResponse(details);
+  controller_.ssl_manager()->DidStartResourceResponse(
+      details.url, details.has_certificate, details.ssl_cert_status);
 
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidGetResourceResponseStart(details));
@@ -2994,8 +2995,6 @@ void WebContentsImpl::DidGetResourceResponseStart(
 
 void WebContentsImpl::DidGetRedirectForResourceRequest(
   const ResourceRedirectDetails& details) {
-  controller_.ssl_manager()->DidReceiveResourceRedirect(details);
-
   FOR_EACH_OBSERVER(
       WebContentsObserver,
       observers_,

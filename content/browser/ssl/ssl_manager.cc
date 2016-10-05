@@ -8,18 +8,21 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/supports_user_data.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/ssl/ssl_error_handler.h"
-#include "content/browser/ssl/ssl_policy.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/security_style_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/certificate_request_result_type.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/navigation_details.h"
-#include "content/public/browser/resource_request_details.h"
+#include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/ssl_status.h"
 #include "net/url_request/url_request.h"
 
@@ -28,6 +31,45 @@ namespace content {
 namespace {
 
 const char kSSLManagerKeyName[] = "content_ssl_manager";
+
+// Events for UMA. Do not reorder or change!
+enum SSLGoodCertSeenEvent {
+  NO_PREVIOUS_EXCEPTION = 0,
+  HAD_PREVIOUS_EXCEPTION = 1,
+  SSL_GOOD_CERT_SEEN_EVENT_MAX = 2
+};
+
+void OnAllowCertificate(SSLErrorHandler* handler,
+                        SSLHostStateDelegate* state_delegate,
+                        CertificateRequestResultType decision) {
+  DCHECK(handler->ssl_info().is_valid());
+  switch (decision) {
+    case CERTIFICATE_REQUEST_RESULT_TYPE_CONTINUE:
+      // Note that we should not call SetMaxSecurityStyle here, because
+      // the active NavigationEntry has just been deleted (in
+      // HideInterstitialPage) and the new NavigationEntry will not be
+      // set until DidNavigate.  This is ok, because the new
+      // NavigationEntry will have its max security style set within
+      // DidNavigate.
+      //
+      // While AllowCert() executes synchronously on this thread,
+      // ContinueRequest() gets posted to a different thread. Calling
+      // AllowCert() first ensures deterministic ordering.
+      if (state_delegate) {
+        state_delegate->AllowCert(handler->request_url().host(),
+                                  *handler->ssl_info().cert.get(),
+                                  handler->cert_error());
+      }
+      handler->ContinueRequest();
+      return;
+    case CERTIFICATE_REQUEST_RESULT_TYPE_DENY:
+      handler->DenyRequest();
+      return;
+    case CERTIFICATE_REQUEST_RESULT_TYPE_CANCEL:
+      handler->CancelRequest();
+      return;
+  }
+}
 
 class SSLManagerSet : public base::SupportsUserData::Data {
  public:
@@ -68,7 +110,7 @@ void HandleSSLErrorOnUI(
   SSLManager* manager =
       static_cast<NavigationControllerImpl*>(&web_contents->GetController())
           ->ssl_manager();
-  manager->policy()->OnCertError(std::move(handler));
+  manager->OnCertError(std::move(handler));
 }
 
 }  // namespace
@@ -122,9 +164,9 @@ void SSLManager::NotifySSLInternalStateChanged(BrowserContext* context) {
 }
 
 SSLManager::SSLManager(NavigationControllerImpl* controller)
-    : backend_(controller),
-      policy_(new SSLPolicy(&backend_)),
-      controller_(controller) {
+    : controller_(controller),
+      ssl_host_state_delegate_(
+          controller->GetBrowserContext()->GetSSLHostStateDelegate()) {
   DCHECK(controller_);
 
   SSLManagerSet* managers = static_cast<SSLManagerSet*>(
@@ -144,40 +186,154 @@ SSLManager::~SSLManager() {
 
 void SSLManager::DidCommitProvisionalLoad(const LoadCommittedDetails& details) {
   NavigationEntryImpl* entry = controller_->GetLastCommittedEntry();
-  policy()->UpdateEntry(entry, controller_->delegate()->GetWebContents());
+  UpdateEntry(entry);
   // Always notify the WebContents that the SSL state changed when a
   // load is committed, in case the active navigation entry has changed.
   NotifyDidChangeVisibleSSLState();
 }
 
 void SSLManager::DidRunInsecureContent(const GURL& security_origin) {
-  NavigationEntryImpl* navigation_entry = controller_->GetLastCommittedEntry();
-  policy()->DidRunInsecureContent(navigation_entry, security_origin);
-  UpdateEntry(navigation_entry);
+  NavigationEntryImpl* entry = controller_->GetLastCommittedEntry();
+  if (!entry)
+    return;
+
+  SiteInstance* site_instance = entry->site_instance();
+  if (!site_instance)
+    return;
+
+  if (ssl_host_state_delegate_) {
+    ssl_host_state_delegate_->HostRanInsecureContent(
+        security_origin.host(), site_instance->GetProcess()->GetID(),
+        SSLHostStateDelegate::MIXED_CONTENT);
+  }
+  UpdateEntry(entry);
+  NotifySSLInternalStateChanged(controller_->GetBrowserContext());
 }
 
 void SSLManager::DidRunContentWithCertErrors(const GURL& security_origin) {
-  NavigationEntryImpl* navigation_entry = controller_->GetLastCommittedEntry();
-  policy()->DidRunContentWithCertErrors(navigation_entry, security_origin);
-  UpdateEntry(navigation_entry);
+  NavigationEntryImpl* entry = controller_->GetLastCommittedEntry();
+  if (!entry)
+    return;
+
+  SiteInstance* site_instance = entry->site_instance();
+  if (!site_instance)
+    return;
+
+  if (ssl_host_state_delegate_) {
+    ssl_host_state_delegate_->HostRanInsecureContent(
+        security_origin.host(), site_instance->GetProcess()->GetID(),
+        SSLHostStateDelegate::CERT_ERRORS_CONTENT);
+  }
+  UpdateEntry(entry);
+  NotifySSLInternalStateChanged(controller_->GetBrowserContext());
 }
 
-void SSLManager::DidStartResourceResponse(
-    const ResourceRequestDetails& details) {
-  // Notify our policy that we started a resource request.  Ideally, the
-  // policy should have the ability to cancel the request, but we can't do
-  // that yet.
-  policy()->OnRequestStarted(details.url, details.has_certificate,
-                             details.ssl_cert_status);
+void SSLManager::OnCertError(std::unique_ptr<SSLErrorHandler> handler) {
+  bool expired_previous_decision = false;
+  // First we check if we know the policy for this error.
+  DCHECK(handler->ssl_info().is_valid());
+  SSLHostStateDelegate::CertJudgment judgment =
+      ssl_host_state_delegate_
+          ? ssl_host_state_delegate_->QueryPolicy(
+                handler->request_url().host(), *handler->ssl_info().cert.get(),
+                handler->cert_error(), &expired_previous_decision)
+          : SSLHostStateDelegate::DENIED;
+
+  if (judgment == SSLHostStateDelegate::ALLOWED) {
+    handler->ContinueRequest();
+    return;
+  }
+
+  // For all other hosts, which must be DENIED, a blocking page is shown to the
+  // user every time they come back to the page.
+  int options_mask = 0;
+  switch (handler->cert_error()) {
+    case net::ERR_CERT_COMMON_NAME_INVALID:
+    case net::ERR_CERT_DATE_INVALID:
+    case net::ERR_CERT_AUTHORITY_INVALID:
+    case net::ERR_CERT_WEAK_SIGNATURE_ALGORITHM:
+    case net::ERR_CERT_WEAK_KEY:
+    case net::ERR_CERT_NAME_CONSTRAINT_VIOLATION:
+    case net::ERR_CERT_VALIDITY_TOO_LONG:
+    case net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED:
+      if (!handler->fatal())
+        options_mask |= OVERRIDABLE;
+      else
+        options_mask |= STRICT_ENFORCEMENT;
+      if (expired_previous_decision)
+        options_mask |= EXPIRED_PREVIOUS_DECISION;
+      OnCertErrorInternal(std::move(handler), options_mask);
+      break;
+    case net::ERR_CERT_NO_REVOCATION_MECHANISM:
+      // Ignore this error.
+      handler->ContinueRequest();
+      break;
+    case net::ERR_CERT_UNABLE_TO_CHECK_REVOCATION:
+      // We ignore this error but will show a warning status in the location
+      // bar.
+      handler->ContinueRequest();
+      break;
+    case net::ERR_CERT_CONTAINS_ERRORS:
+    case net::ERR_CERT_REVOKED:
+    case net::ERR_CERT_INVALID:
+    case net::ERR_SSL_WEAK_SERVER_EPHEMERAL_DH_KEY:
+    case net::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN:
+      if (handler->fatal())
+        options_mask |= STRICT_ENFORCEMENT;
+      if (expired_previous_decision)
+        options_mask |= EXPIRED_PREVIOUS_DECISION;
+      OnCertErrorInternal(std::move(handler), options_mask);
+      break;
+    default:
+      NOTREACHED();
+      handler->CancelRequest();
+      break;
+  }
 }
 
-void SSLManager::DidReceiveResourceRedirect(
-    const ResourceRedirectDetails& details) {
-  // TODO(abarth): Make sure our redirect behavior is correct.  If we ever see a
-  //               non-HTTPS resource in the redirect chain, we want to trigger
-  //               insecure content, even if the redirect chain goes back to
-  //               HTTPS.  This is because the network attacker can redirect the
-  //               HTTP request to https://attacker.com/payload.js.
+void SSLManager::DidStartResourceResponse(const GURL& url,
+                                          bool has_certificate,
+                                          net::CertStatus ssl_cert_status) {
+  if (has_certificate && url.SchemeIsCryptographic() &&
+      !net::IsCertStatusError(ssl_cert_status)) {
+    // If the scheme is https: or wss: *and* the security info for the
+    // cert has been set (i.e. the cert id is not 0) and the cert did
+    // not have any errors, revoke any previous decisions that
+    // have occurred. If the cert info has not been set, do nothing since it
+    // isn't known if the connection was actually a valid connection or if it
+    // had a cert error.
+    SSLGoodCertSeenEvent event = NO_PREVIOUS_EXCEPTION;
+    if (ssl_host_state_delegate_ &&
+        ssl_host_state_delegate_->HasAllowException(url.host())) {
+      // If there's no certificate error, a good certificate has been seen, so
+      // clear out any exceptions that were made by the user for bad
+      // certificates. This intentionally does not apply to cached resources
+      // (see https://crbug.com/634553 for an explanation).
+      ssl_host_state_delegate_->RevokeUserAllowExceptions(url.host());
+      event = HAD_PREVIOUS_EXCEPTION;
+    }
+    UMA_HISTOGRAM_ENUMERATION("interstitial.ssl.good_cert_seen", event,
+                              SSL_GOOD_CERT_SEEN_EVENT_MAX);
+  }
+}
+
+void SSLManager::OnCertErrorInternal(std::unique_ptr<SSLErrorHandler> handler,
+                                     int options_mask) {
+  bool overridable = (options_mask & OVERRIDABLE) != 0;
+  bool strict_enforcement = (options_mask & STRICT_ENFORCEMENT) != 0;
+  bool expired_previous_decision =
+      (options_mask & EXPIRED_PREVIOUS_DECISION) != 0;
+
+  WebContents* web_contents = handler->web_contents();
+  int cert_error = handler->cert_error();
+  const net::SSLInfo& ssl_info = handler->ssl_info();
+  const GURL& request_url = handler->request_url();
+  ResourceType resource_type = handler->resource_type();
+  GetContentClient()->browser()->AllowCertificateError(
+      web_contents, cert_error, ssl_info, request_url, resource_type,
+      overridable, strict_enforcement, expired_previous_decision,
+      base::Bind(&OnAllowCertificate, base::Owned(handler.release()),
+                 ssl_host_state_delegate_));
 }
 
 void SSLManager::UpdateEntry(NavigationEntryImpl* entry) {
@@ -188,7 +344,49 @@ void SSLManager::UpdateEntry(NavigationEntryImpl* entry) {
 
   SSLStatus original_ssl_status = entry->GetSSL();  // Copy!
 
-  policy()->UpdateEntry(entry, controller_->delegate()->GetWebContents());
+  // Initialize the entry with an initial SecurityStyle if needed.
+  if (entry->GetSSL().security_style == SECURITY_STYLE_UNKNOWN) {
+    entry->GetSSL().security_style = GetSecurityStyleForResource(
+        entry->GetURL(), !!entry->GetSSL().certificate,
+        entry->GetSSL().cert_status);
+  }
+
+  WebContentsImpl* web_contents_impl =
+      static_cast<WebContentsImpl*>(controller_->delegate()->GetWebContents());
+  if (entry->GetSSL().security_style == SECURITY_STYLE_UNAUTHENTICATED)
+    return;
+
+  // Update the entry's flags for insecure content.
+  if (!web_contents_impl->DisplayedInsecureContent())
+    entry->GetSSL().content_status &= ~SSLStatus::DISPLAYED_INSECURE_CONTENT;
+  if (web_contents_impl->DisplayedInsecureContent())
+    entry->GetSSL().content_status |= SSLStatus::DISPLAYED_INSECURE_CONTENT;
+  if (!web_contents_impl->DisplayedContentWithCertErrors())
+    entry->GetSSL().content_status &=
+        ~SSLStatus::DISPLAYED_CONTENT_WITH_CERT_ERRORS;
+  if (web_contents_impl->DisplayedContentWithCertErrors())
+    entry->GetSSL().content_status |=
+        SSLStatus::DISPLAYED_CONTENT_WITH_CERT_ERRORS;
+
+  SiteInstance* site_instance = entry->site_instance();
+  // Note that |site_instance| can be NULL here because NavigationEntries don't
+  // necessarily have site instances.  Without a process, the entry can't
+  // possibly have insecure content.  See bug http://crbug.com/12423.
+  if (site_instance && ssl_host_state_delegate_ &&
+      ssl_host_state_delegate_->DidHostRunInsecureContent(
+          entry->GetURL().host(), site_instance->GetProcess()->GetID(),
+          SSLHostStateDelegate::MIXED_CONTENT)) {
+    entry->GetSSL().security_style = SECURITY_STYLE_AUTHENTICATION_BROKEN;
+    entry->GetSSL().content_status |= SSLStatus::RAN_INSECURE_CONTENT;
+  }
+
+  if (site_instance && ssl_host_state_delegate_ &&
+      ssl_host_state_delegate_->DidHostRunInsecureContent(
+          entry->GetURL().host(), site_instance->GetProcess()->GetID(),
+          SSLHostStateDelegate::CERT_ERRORS_CONTENT)) {
+    entry->GetSSL().security_style = SECURITY_STYLE_AUTHENTICATION_BROKEN;
+    entry->GetSSL().content_status |= SSLStatus::RAN_CONTENT_WITH_CERT_ERRORS;
+  }
 
   if (!entry->GetSSL().Equals(original_ssl_status))
     NotifyDidChangeVisibleSSLState();

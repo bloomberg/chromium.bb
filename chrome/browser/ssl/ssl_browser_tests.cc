@@ -63,6 +63,7 @@
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -256,6 +257,12 @@ class FaviconFilter : public net::URLRequestInterceptor {
  private:
   DISALLOW_COPY_AND_ASSIGN(FaviconFilter);
 };
+
+std::string EncodeQuery(const std::string& query) {
+  url::RawCanonOutputT<char> buffer;
+  url::EncodeURIComponent(query.data(), query.size(), &buffer);
+  return std::string(buffer.data(), buffer.length());
+}
 
 }  // namespace
 
@@ -2058,6 +2065,96 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRedirectHTTPSToHTTP) {
                                GURL(https_url.spec() + http_url.spec()));
   CheckUnauthenticatedState(
       browser()->tab_strip_model()->GetActiveWebContents(), AuthState::NONE);
+}
+
+class SSLUITestWaitForDOMNotification : public SSLUITestIgnoreCertErrors,
+                                        public content::NotificationObserver {
+ public:
+  SSLUITestWaitForDOMNotification() : SSLUITestIgnoreCertErrors() {}
+
+  ~SSLUITestWaitForDOMNotification() override { registrar_.RemoveAll(); };
+
+  void SetUpOnMainThread() override {
+    registrar_.Add(this, content::NOTIFICATION_DOM_OPERATION_RESPONSE,
+                   content::NotificationService::AllSources());
+  }
+
+  void set_expected_notification(const std::string& expected_notification) {
+    expected_notification_ = expected_notification;
+  }
+
+  // content::NotificationObserver
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
+    if (type == content::NOTIFICATION_DOM_OPERATION_RESPONSE) {
+      content::Details<std::string> dom_op_result(details);
+      if (*dom_op_result.ptr() == expected_notification_) {
+        base::MessageLoopForUI::current()->QuitWhenIdle();
+      }
+    }
+  }
+
+ private:
+  content::NotificationRegistrar registrar_;
+  std::string expected_notification_;
+
+  DISALLOW_COPY_AND_ASSIGN(SSLUITestWaitForDOMNotification);
+};
+
+// Tests that a mixed resource which includes HTTP in the redirect chain
+// is marked as mixed content, even if the end result is HTTPS.
+IN_PROC_BROWSER_TEST_F(SSLUITestWaitForDOMNotification,
+                       TestMixedContentWithHTTPInRedirectChain) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(https_server_.Start());
+
+  host_resolver()->AddRule("*", embedded_test_server()->GetURL("/").host());
+
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL("/ssl/blank_page.html"));
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  CheckAuthenticatedState(tab, AuthState::NONE);
+
+  // Construct a URL which will be dynamically added to the page as an
+  // image. The URL redirects through HTTP, though it ends up at an
+  // HTTPS resource.
+  GURL http_url = embedded_test_server()->GetURL("/server-redirect?");
+  GURL::Replacements http_url_replacements;
+  // Be sure to use a non-localhost name for the mixed content request,
+  // since local hostnames are not considered mixed content.
+  http_url_replacements.SetHostStr("example.test");
+  std::string http_url_query =
+      EncodeQuery(https_server_.GetURL("/ssl/google_files/logo.gif").spec());
+  http_url_replacements.SetQueryStr(http_url_query);
+  http_url = http_url.ReplaceComponents(http_url_replacements);
+
+  GURL https_url = https_server_.GetURL("/server-redirect?");
+  GURL::Replacements https_url_replacements;
+  std::string https_url_query = EncodeQuery(http_url.spec());
+  https_url_replacements.SetQueryStr(https_url_query);
+  https_url = https_url.ReplaceComponents(https_url_replacements);
+
+  // Load the image. It starts at |https_server_|, which redirects to an
+  // embedded_test_server() HTTP URL, which redirects back to
+  // |https_server_| for the final HTTPS image. Because the redirect
+  // chain passes through HTTP, the page should be marked as mixed
+  // content.
+  set_expected_notification("\"mixed-image-loaded\"");
+  ASSERT_TRUE(content::ExecuteScript(
+      tab,
+      "var loaded = function () {"
+      "  window.domAutomationController.setAutomationId(0);"
+      "  window.domAutomationController.send('mixed-image-loaded');"
+      "};"
+      "var img = document.createElement('img');"
+      "img.onload = loaded;"
+      "img.src = '" +
+          https_url.spec() + "';"
+                             "document.body.appendChild(img);"));
+
+  content::RunMessageLoop();
+  CheckAuthenticatedState(tab, AuthState::DISPLAYED_INSECURE_CONTENT);
 }
 
 // Visits a page to which we could not connect (bad port) over http and https

@@ -18,14 +18,15 @@
 #include "content/browser/media/media_web_contents_observer.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
-#include "content/browser/ssl/ssl_policy.h"
 #include "content/browser/webui/content_web_ui_controller_factory.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/media/media_player_delegate_messages.h"
+#include "content/common/security_style_util.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/javascript_dialog_manager.h"
@@ -33,6 +34,8 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/resource_request_details.h"
+#include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -3377,16 +3380,17 @@ TEST_F(WebContentsImplTest, LoadResourceWithEmptySecurityInfo) {
 
   scoped_refptr<net::X509Certificate> cert =
       net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
-  SSLPolicyBackend* backend = contents()->controller_.ssl_manager()->backend();
   const GURL test_url("https://example.test");
 
-  backend->AllowCertForHost(*cert, test_url.host(), 1);
-  EXPECT_TRUE(backend->HasAllowException(test_url.host()));
+  SSLHostStateDelegate* state_delegate =
+      contents()->controller_.GetBrowserContext()->GetSSLHostStateDelegate();
+  ASSERT_TRUE(state_delegate);
+  state_delegate->AllowCert(test_url.host(), *cert.get(), 1);
+  EXPECT_TRUE(state_delegate->HasAllowException(test_url.host()));
+  contents()->controller_.ssl_manager()->DidStartResourceResponse(test_url,
+                                                                  false, 0);
 
-  contents()->controller_.ssl_manager()->policy()->OnRequestStarted(
-      test_url, 0, 0);
-
-  EXPECT_TRUE(backend->HasAllowException(test_url.host()));
+  EXPECT_TRUE(state_delegate->HasAllowException(test_url.host()));
 
   DeleteContents();
 }

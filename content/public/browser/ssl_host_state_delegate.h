@@ -33,11 +33,6 @@ class SSLHostStateDelegate {
   };
 
   // The types of nonsecure subresources that this class keeps track of.
-  //
-  // TODO(estark): Currently, MIXED_CONTENT is used for all insecure
-  // content, as SSLManager/SSLPolicy do not separate signals for mixed
-  // content from signals for subresources with cert errors. Fixing this
-  // is in progress as part of https://crbug.com/634171.
   enum InsecureContentType {
     // A  MIXED subresource was loaded over HTTP on an HTTPS page.
     MIXED_CONTENT,
