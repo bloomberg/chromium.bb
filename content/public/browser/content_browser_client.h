@@ -278,7 +278,8 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Returns true if the given navigation redirect should cause a renderer
   // process swap.
-  virtual bool ShouldSwapProcessesForRedirect(BrowserContext* browser_context,
+  // This is called on the IO thread.
+  virtual bool ShouldSwapProcessesForRedirect(ResourceContext* resource_context,
                                               const GURL& current_url,
                                               const GURL& new_url);
 

@@ -56,7 +56,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   SpeechRecognitionManagerDelegate* CreateSpeechRecognitionManagerDelegate()
       override;
   net::NetLog* GetNetLog() override;
-  bool ShouldSwapProcessesForRedirect(BrowserContext* browser_context,
+  bool ShouldSwapProcessesForRedirect(ResourceContext* resource_context,
                                       const GURL& current_url,
                                       const GURL& new_url) override;
   DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;

@@ -109,8 +109,7 @@ std::unique_ptr<media::CdmFactory> ContentBrowserClient::CreateCdmFactory() {
 }
 
 bool ContentBrowserClient::ShouldSwapProcessesForRedirect(
-    BrowserContext* browser_context,
-    const GURL& current_url,
+    ResourceContext* resource_context, const GURL& current_url,
     const GURL& new_url) {
   return false;
 }

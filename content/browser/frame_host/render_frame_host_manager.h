@@ -28,6 +28,7 @@
 namespace content {
 class BrowserContext;
 class CrossProcessFrameConnector;
+class CrossSiteTransferringRequest;
 class FrameNavigationEntry;
 class FrameTreeNode;
 class InterstitialPageImpl;
@@ -298,8 +299,12 @@ class CONTENT_EXPORT RenderFrameHostManager
   // The |pending_render_frame_host| is ready to commit a page.  We should
   // ensure that the old RenderFrameHost runs its unload handler first and
   // determine whether a RenderFrameHost transfer is needed.
+  // |cross_site_transferring_request| is NULL if a request is not being
+  // transferred between renderers.
   void OnCrossSiteResponse(RenderFrameHostImpl* pending_render_frame_host,
                            const GlobalRequestID& global_request_id,
+                           std::unique_ptr<CrossSiteTransferringRequest>
+                               cross_site_transferring_request,
                            const std::vector<GURL>& transfer_url_chain,
                            const Referrer& referrer,
                            ui::PageTransition page_transition,
@@ -771,6 +776,12 @@ class CONTENT_EXPORT RenderFrameHostManager
   // while a cross-site request is pending until it calls DidNavigate.
   // Note: This member is not used in PlzNavigate.
   std::unique_ptr<RenderFrameHostImpl> pending_render_frame_host_;
+
+  // If a pending request needs to be transferred to another process, this
+  // owns the request until it's transferred to the new process, so it will be
+  // cleaned up if the navigation is cancelled.  Otherwise, this is NULL.
+  std::unique_ptr<CrossSiteTransferringRequest>
+      cross_site_transferring_request_;
 
   // This is used to temporarily store the NavigationHandle during
   // transferring navigations. The handle needs to be stored because the old

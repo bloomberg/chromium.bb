@@ -43,7 +43,7 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
   void CancelRequest(bool from_renderer);
 
   bool is_transferring() const { return is_transferring_; }
-  void MarkAsTransferring(const base::Closure& on_transfer_complete_callback);
+  void MarkAsTransferring(const scoped_refptr<ResourceResponse>& response);
   void CompleteTransfer();
 
   net::URLRequest* request() { return request_.get(); }
@@ -128,9 +128,6 @@ class CONTENT_EXPORT ResourceLoader : public net::URLRequest::Delegate,
   // consumer.  We are waiting for a notification to complete the transfer, at
   // which point we'll receive a new ResourceHandler.
   bool is_transferring_;
-
-  // Called when a navigation has finished transfer.
-  base::Closure on_transfer_complete_callback_;
 
   // Instrumentation add to investigate http://crbug.com/503306.
   // TODO(mmenke): Remove once bug is fixed.

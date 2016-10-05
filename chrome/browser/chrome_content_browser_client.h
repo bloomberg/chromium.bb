@@ -108,7 +108,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const GURL& current_url,
       const GURL& new_url) override;
   bool ShouldSwapProcessesForRedirect(
-      content::BrowserContext* browser_context,
+      content::ResourceContext* resource_context,
       const GURL& current_url,
       const GURL& new_url) override;
   bool ShouldAssignSiteForURL(const GURL& url) override;

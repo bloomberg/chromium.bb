@@ -17,7 +17,6 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_data.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/ssl_status.h"
@@ -33,7 +32,6 @@ class NavigatorDelegate;
 class ResourceRequestBodyImpl;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerNavigationHandle;
-class SiteInstance;
 
 // This class keeps track of a single navigation. It is created upon receipt of
 // a DidStartProvisionalLoad IPC in a RenderFrameHost. The RenderFrameHost owns
@@ -225,18 +223,11 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // NavigationHandle will not call |callback| with a result of DEFER.
   // If the result is PROCEED, then 'ReadyToCommitNavigation' will be called
   // with |render_frame_host| and |response_headers| just before calling
-  // |callback|. Should a transfer navigation happen, |transfer_callback| will
-  // be run on the IO thread.
-  // PlzNavigate: transfer navigations are not possible.
+  // |callback|.
   void WillProcessResponse(
       RenderFrameHostImpl* render_frame_host,
       scoped_refptr<net::HttpResponseHeaders> response_headers,
       const SSLStatus& ssl_status,
-      const GlobalRequestID& request_id,
-      bool should_replace_current_entry,
-      bool is_download,
-      bool is_stream,
-      const base::Closure& transfer_callback,
       const ThrottleChecksFinishedCallback& callback);
 
   // Returns the FrameTreeNode this navigation is happening in.
@@ -262,18 +253,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   }
 
   SSLStatus ssl_status() { return ssl_status_; }
-
-  // This is valid after the network response has started.
-  // TODO(clamy): See if this can be initialized earlier if needed by
-  // non-transfer code. There may be some issues in PlzNavigate, where
-  // WillStartRequest will be called before starting a request on the IO thread.
-  const GlobalRequestID& request_id() const {
-    DCHECK_GE(state_, WILL_PROCESS_RESPONSE);
-    return request_id_;
-  }
-
-  // Called when the navigation is transferred to a different renderer.
-  void Transfer();
 
   NavigationUIData* navigation_ui_data() const {
     return navigation_ui_data_.get();
@@ -310,19 +289,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   NavigationThrottle::ThrottleCheckResult CheckWillRedirectRequest();
   NavigationThrottle::ThrottleCheckResult CheckWillProcessResponse();
 
-  // Called when WillProcessResponse checks are done, to find the final
-  // RenderFrameHost for the navigation. Checks whether the navigation should be
-  // transferred. Returns false if the transfer attempt results in the
-  // destruction of this NavigationHandle and the navigation should no longer
-  // proceed. This can happen when the RenderFrameHostManager determines a
-  // transfer is needed, but WebContentsDelegate::ShouldTransferNavigation
-  // returns false.
-  bool MaybeTransferAndProceed();
-
-  // Helper method for MaybeTransferAndProceed. Returns false if the transfer
-  // attempt results in the destruction of this NavigationHandle.
-  bool MaybeTransferAndProceedInternal();
-
   // Helper function to run and reset the |complete_callback_|. This marks the
   // end of a round of NavigationThrottleChecks.
   void RunCompleteCallback(NavigationThrottle::ThrottleCheckResult result);
@@ -347,10 +313,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   const bool is_srcdoc_;
   bool was_redirected_;
   scoped_refptr<net::HttpResponseHeaders> response_headers_;
-
-  // The original url of the navigation. This may differ from |url_| if the
-  // navigation encounters redirects.
-  const GURL original_url_;
 
   // The HTTP method used for the navigation.
   std::string method_;
@@ -402,26 +364,8 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   SSLStatus ssl_status_;
 
-  // The id of the URLRequest tied to this navigation.
-  GlobalRequestID request_id_;
-
-  // Whether the current NavigationEntry should be replaced upon commit.
-  bool should_replace_current_entry_;
-
-  // The chain of redirects.
-  std::vector<GURL> redirect_chain_;
-
-  // A callback to run on the IO thread if the navigation transfers.
-  base::Closure transfer_callback_;
-
-  // Whether the navigation ended up being a download or a stream.
-  bool is_download_;
-  bool is_stream_;
-
   // False by default unless the navigation started within a context menu.
   bool started_from_context_menu_;
-
-  base::WeakPtrFactory<NavigationHandleImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationHandleImpl);
 };

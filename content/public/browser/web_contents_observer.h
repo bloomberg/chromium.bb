@@ -156,13 +156,13 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // Called when a navigation encountered a server redirect.
   virtual void DidRedirectNavigation(NavigationHandle* navigation_handle) {}
 
+  // PlzNavigate
   // Called when the navigation is ready to be committed in a renderer. Most
   // observers should use DidFinishNavigation instead, which happens right
   // after the navigation commits. This method is for observers that want to
   // initialize renderer-side state just before the RenderFrame commits the
   // navigation.
   //
-  // PlzNavigate
   // This is the first point in time where a RenderFrameHost is associated with
   // the navigation.
   virtual void ReadyToCommitNavigation(NavigationHandle* navigation_handle) {}

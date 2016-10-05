@@ -406,12 +406,8 @@ void NavigationRequest::OnResponseStarted(
   body_ = std::move(body);
 
   // Check if the navigation should be allowed to proceed.
-  // TODO(clamy): pass the right values for request_id, is_download and
-  // is_stream.
   navigation_handle_->WillProcessResponse(
       render_frame_host, response->head.headers.get(), ssl_status,
-      GlobalRequestID(), common_params_.should_replace_current_entry, false,
-      false, base::Closure(),
       base::Bind(&NavigationRequest::OnWillProcessResponseChecksComplete,
                  base::Unretained(this)));
 }

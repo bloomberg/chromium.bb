@@ -144,7 +144,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // resumed by a new process.
   void MarkAsTransferredNavigation(
       const GlobalRequestID& id,
-      const base::Closure& on_transfer_complete_callback);
+      const scoped_refptr<ResourceResponse>& response);
 
   // Cancels a request previously marked as being transferred, for use when a
   // navigation was cancelled.

@@ -107,8 +107,8 @@ onload = function() {
               [ "a-onCompleted",
                 "b-onBeforeNavigate",
                 "c-onBeforeNavigate",
-                "c-onErrorOccurred",
-                "b-onCommitted" ]]);
+                "b-onCommitted",
+                "c-onErrorOccurred" ]]);
 
           chrome.tabs.update(
               tabId,

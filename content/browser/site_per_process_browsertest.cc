@@ -8231,41 +8231,4 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigateInUnloadHandler) {
       DepictFrameTree(root));
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       RFHTransfersWhilePendingDeletion) {
-  GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
-  NavigateToURL(shell(), main_url);
-
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
-
-  // Start a cross-process navigation and wait until the response is received.
-  GURL cross_site_url_1 =
-      embedded_test_server()->GetURL("b.com", "/title1.html");
-  TestNavigationManager cross_site_manager(shell()->web_contents(),
-                                           cross_site_url_1);
-  shell()->web_contents()->GetController().LoadURL(
-      cross_site_url_1, Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
-  EXPECT_TRUE(cross_site_manager.WaitForWillProcessResponse());
-
-  // Start a renderer-initiated navigation to a cross-process url and make sure
-  // the navigation will be blocked before being transferred.
-  GURL cross_site_url_2 =
-      embedded_test_server()->GetURL("c.com", "/title1.html");
-  TestNavigationManager transfer_manager(shell()->web_contents(),
-                                         cross_site_url_2);
-  EXPECT_TRUE(ExecuteScript(
-      root, "location.href = '" + cross_site_url_2.spec() + "';"));
-  EXPECT_TRUE(transfer_manager.WaitForWillProcessResponse());
-
-  // Now have the cross-process navigation commit and mark the current RFH as
-  // pending deletion.
-  cross_site_manager.WaitForNavigationFinished();
-
-  // Resume the navigation in the previous RFH that has just been marked as
-  // pending deletion. We should not crash.
-  transfer_manager.WaitForNavigationFinished();
-}
-
 }  // namespace content

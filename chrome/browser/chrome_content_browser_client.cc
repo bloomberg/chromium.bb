@@ -1350,12 +1350,11 @@ bool ChromeContentBrowserClient::ShouldSwapBrowsingInstancesForNavigation(
 }
 
 bool ChromeContentBrowserClient::ShouldSwapProcessesForRedirect(
-    content::BrowserContext* browser_context,
-    const GURL& current_url,
+    content::ResourceContext* resource_context, const GURL& current_url,
     const GURL& new_url) {
 #if defined(ENABLE_EXTENSIONS)
   return ChromeContentBrowserClientExtensionsPart::
-      ShouldSwapProcessesForRedirect(browser_context, current_url, new_url);
+      ShouldSwapProcessesForRedirect(resource_context, current_url, new_url);
 #else
   return false;
 #endif
