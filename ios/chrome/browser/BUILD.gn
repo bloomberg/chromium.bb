@@ -558,8 +558,6 @@ source_set("browser") {
     "ui/show_privacy_settings_util.mm",
     "ui/side_swipe_gesture_recognizer.h",
     "ui/side_swipe_gesture_recognizer.mm",
-    "ui/size_class_support_util.h",
-    "ui/size_class_support_util.mm",
     "ui/ui_util.h",
     "ui/ui_util.mm",
     "ui/uikit_ui_util.h",
