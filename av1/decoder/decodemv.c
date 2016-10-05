@@ -572,7 +572,7 @@ static int read_mv_component(aom_reader *r, nmv_component *mvcomp, int usehp) {
   int mag, d, fr, hp;
   const int sign = aom_read(r, mvcomp->sign, ACCT_STR);
   const int mv_class =
-#if CONFIG_DAALA_EC
+#if CONFIG_DAALA_EC || CONFIG_RANS
       aom_read_symbol(r, mvcomp->class_cdf, MV_CLASSES, ACCT_STR);
 #else
       aom_read_tree(r, av1_mv_class_tree, mvcomp->classes, ACCT_STR);
@@ -593,7 +593,7 @@ static int read_mv_component(aom_reader *r, nmv_component *mvcomp, int usehp) {
   }
 
 // Fractional part
-#if CONFIG_DAALA_EC
+#if CONFIG_DAALA_EC || CONFIG_RANS
   fr = aom_read_symbol(r, class0 ? mvcomp->class0_fp_cdf[d] : mvcomp->fp_cdf,
                        MV_FP_SIZE, ACCT_STR);
 #else
@@ -614,7 +614,7 @@ static INLINE void read_mv(aom_reader *r, MV *mv, const MV *ref,
                            nmv_context *ctx, nmv_context_counts *counts,
                            int allow_hp) {
   const MV_JOINT_TYPE joint_type =
-#if CONFIG_DAALA_EC
+#if CONFIG_DAALA_EC || CONFIG_RANS
       (MV_JOINT_TYPE)aom_read_symbol(r, ctx->joint_cdf, MV_JOINTS, ACCT_STR);
 #else
       (MV_JOINT_TYPE)aom_read_tree(r, av1_mv_joint_tree, ctx->joints, ACCT_STR);
