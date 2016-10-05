@@ -315,10 +315,6 @@ DragSession DragController::dragEnteredOrUpdated(DragData* dragData) {
           ? DragDestinationActionAny
           : static_cast<DragDestinationAction>(DragDestinationActionDHTML |
                                                DragDestinationActionEdit);
-  if (m_dragDestinationAction == DragDestinationActionNone) {
-    cancelDrag();  // FIXME: Why not call mouseMovedIntoDocument(0)?
-    return DragSession();
-  }
 
   DragSession dragSession;
   m_documentIsHandlingDrag =
