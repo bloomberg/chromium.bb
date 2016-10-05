@@ -181,6 +181,9 @@
       <message name="IDS_ASH_STATUS_TRAY_WIFI_SCANNING_MESSAGE" desc="Scanning for wifi networks">
         Searching for Wi-Fi networks...
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_WIFI" desc="The label used in the tray popup to separate Wi-Fi networks.">
+        Wi-Fi
+      </message>
 
       <!-- Default user profile images. -->
       <!-- User Image default image accessible descriptions -->

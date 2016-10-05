@@ -35,10 +35,12 @@ class UI_CHROMEOS_EXPORT NetworkListViewBase {
                               std::string* service_path) const = 0;
 
  protected:
+  views::View* container() { return container_; }
+
+ private:
   // The container that holds the actual list entries.
   views::View* container_ = nullptr;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(NetworkListViewBase);
 };
 

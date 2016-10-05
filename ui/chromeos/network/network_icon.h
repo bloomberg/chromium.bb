@@ -22,9 +22,9 @@ class AnimationObserver;
 
 // Type of icon which dictates color theme and VPN badging
 enum IconType {
-  ICON_TYPE_TRAY,  // light icons with VPN badges
+  ICON_TYPE_TRAY,          // light icons with VPN badges
   ICON_TYPE_DEFAULT_VIEW,  // dark icons with VPN badges
-  ICON_TYPE_LIST,  // dark icons without VPN badges
+  ICON_TYPE_LIST,          // dark icons without VPN badges
 };
 
 // Gets the image for the network associated with |service_path|. |network| must
@@ -34,13 +34,19 @@ UI_CHROMEOS_EXPORT gfx::ImageSkia GetImageForNetwork(
     const chromeos::NetworkState* network,
     IconType icon_type);
 
-// Gets the fulls strength image for a wifi network.
+// Gets the full strength image for a Wi-Fi network.
 // TODO(estade): Expose SignalStrengthImageSource and use that instead.
 UI_CHROMEOS_EXPORT gfx::ImageSkia GetImageForConnectedMobileNetwork();
 
 // Gets the disconnected image for a cell network.
 // TODO(estade): Expose SignalStrengthImageSource and use that instead.
 UI_CHROMEOS_EXPORT gfx::ImageSkia GetImageForDisconnectedCellNetwork();
+
+// Gets the full strength image for a Wi-Fi network using |icon_color| for the
+// main icon and |badge_color| for the badge.
+UI_CHROMEOS_EXPORT gfx::ImageSkia GetImageForNewWifiNetwork(
+    SkColor icon_color,
+    SkColor badge_color);
 
 // Returns a vpn image suitable for use on a light background.
 UI_CHROMEOS_EXPORT gfx::ImageSkia GetVpnImage();

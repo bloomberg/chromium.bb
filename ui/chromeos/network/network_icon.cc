@@ -196,7 +196,7 @@ const int kNumNetworkImages = 5;
 // Number of discrete images to use for alpha fade animation
 const int kNumFadeImages = 10;
 
-SkColor GetBaseColorForIconType(IconType icon_type) {
+SkColor GetDefaultColorForIconType(IconType icon_type) {
   // TODO(estade): use kTrayIconColor and kMenuIconColor.
   return icon_type == ICON_TYPE_TRAY ? SK_ColorWHITE : gfx::kChromeIconGrey;
 }
@@ -316,6 +316,7 @@ class SignalStrengthImageSource : public gfx::CanvasImageSource {
       : CanvasImageSource(GetSizeForIconType(icon_type), false),
         image_type_(image_type),
         icon_type_(icon_type),
+        color_(GetDefaultColorForIconType(icon_type_)),
         signal_strength_(signal_strength) {
     if (image_type_ == NONE)
       image_type_ = ARCS;
@@ -324,6 +325,8 @@ class SignalStrengthImageSource : public gfx::CanvasImageSource {
     DCHECK_LT(signal_strength, kNumNetworkImages);
   }
   ~SignalStrengthImageSource() override {}
+
+  void set_color(SkColor color) { color_ = color; }
 
   // gfx::CanvasImageSource:
   void Draw(gfx::Canvas* canvas) override {
@@ -360,16 +363,15 @@ class SignalStrengthImageSource : public gfx::CanvasImageSource {
     SkPaint paint;
     paint.setAntiAlias(true);
     paint.setStyle(SkPaint::kFill_Style);
-    const SkColor base_color = GetBaseColorForIconType(icon_type_);
     // Background. Skip drawing for full signal.
     if (signal_strength_ != kNumNetworkImages - 1) {
-      paint.setColor(SkColorSetA(base_color, kBgAlpha));
+      paint.setColor(SkColorSetA(color_, kBgAlpha));
       canvas->sk_canvas()->drawArc(gfx::RectFToSkRect(oval_bounds), kStartAngle,
                                    kSweepAngle, true, paint);
     }
     // Foreground (signal strength).
     if (signal_strength_ != 0) {
-      paint.setColor(base_color);
+      paint.setColor(color_);
       // Percent of the height of the background wedge that we draw the
       // foreground wedge, indexed by signal strength.
       static const float kWedgeHeightPercentages[] = {0.f, 0.375f, 0.5833f,
@@ -406,15 +408,14 @@ class SignalStrengthImageSource : public gfx::CanvasImageSource {
     SkPaint paint;
     paint.setAntiAlias(true);
     paint.setStyle(SkPaint::kFill_Style);
-    const SkColor base_color = GetBaseColorForIconType(icon_type_);
     // Background. Skip drawing for full signal.
     if (signal_strength_ != kNumNetworkImages - 1) {
-      paint.setColor(SkColorSetA(base_color, kBgAlpha));
+      paint.setColor(SkColorSetA(color_, kBgAlpha));
       canvas->DrawPath(make_triangle(kFullTriangleSide), paint);
     }
     // Foreground (signal strength).
     if (signal_strength_ != 0) {
-      paint.setColor(base_color);
+      paint.setColor(color_);
       // As a percentage of the bg triangle, the length of one of the short
       // sides of the fg triangle, indexed by signal strength.
       static const float kTriangleSidePercents[] = {0.f, 0.5f, 0.625f, 0.75f,
@@ -427,6 +428,7 @@ class SignalStrengthImageSource : public gfx::CanvasImageSource {
 
   ImageType image_type_;
   IconType icon_type_;
+  SkColor color_;
 
   // On a scale of 0 to kNum{Arcs,Bars}Images - 1, how connected we are.
   int signal_strength_;
@@ -541,7 +543,7 @@ gfx::ImageSkia ConnectingVpnBadge(double animation, IconType icon_type) {
     // Lazily cache images.
     gfx::ImageSkia badge =
         UseMd() ? gfx::CreateVectorIcon(gfx::VectorIconId::NETWORK_BADGE_VPN,
-                                        GetBaseColorForIconType(icon_type))
+                                        GetDefaultColorForIconType(icon_type))
                 : *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
                       IDR_AURA_UBER_TRAY_NETWORK_VPN_BADGE);
     s_vpn_badges[index] = new gfx::ImageSkia(
@@ -586,7 +588,7 @@ gfx::ImageSkia BadgeForNetworkTechnology(const NetworkState* network,
     } else {
       return gfx::ImageSkia();
     }
-    return gfx::CreateVectorIcon(id, GetBaseColorForIconType(icon_type));
+    return gfx::CreateVectorIcon(id, GetDefaultColorForIconType(icon_type));
   }
 
   int id = -1;
@@ -632,10 +634,10 @@ gfx::ImageSkia GetIcon(const NetworkState* network,
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (network->Matches(NetworkTypePattern::Ethernet())) {
     DCHECK_NE(ICON_TYPE_TRAY, icon_type);
-    return UseMd()
-               ? gfx::CreateVectorIcon(gfx::VectorIconId::NETWORK_ETHERNET,
-                                       GetBaseColorForIconType(ICON_TYPE_LIST))
-               : *rb.GetImageSkiaNamed(IDR_AURA_UBER_TRAY_NETWORK_WIRED);
+    return UseMd() ? gfx::CreateVectorIcon(
+                         gfx::VectorIconId::NETWORK_ETHERNET,
+                         GetDefaultColorForIconType(ICON_TYPE_LIST))
+                   : *rb.GetImageSkiaNamed(IDR_AURA_UBER_TRAY_NETWORK_WIRED);
   } else if (network->Matches(NetworkTypePattern::Wireless())) {
     DCHECK(strength_index > 0);
     return GetImageForIndex(ImageTypeForNetworkType(network->type()), icon_type,
@@ -781,7 +783,7 @@ bool NetworkIconImpl::UpdateVPNBadge() {
   if (vpn && vpn_badge_.isNull()) {
     vpn_badge_ =
         UseMd() ? gfx::CreateVectorIcon(gfx::VectorIconId::NETWORK_BADGE_VPN,
-                                        GetBaseColorForIconType(icon_type_))
+                                        GetDefaultColorForIconType(icon_type_))
                 : *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
                       IDR_AURA_UBER_TRAY_NETWORK_VPN_BADGE);
     return true;
@@ -799,7 +801,7 @@ void NetworkIconImpl::GetBadges(const NetworkState* network, Badges* badges) {
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
 
   const std::string& type = network->type();
-  const SkColor icon_color = GetBaseColorForIconType(icon_type_);
+  const SkColor icon_color = GetDefaultColorForIconType(icon_type_);
   if (type == shill::kTypeWifi) {
     if (network->security_class() != shill::kSecurityNone &&
         IconTypeIsDark(icon_type_)) {
@@ -911,10 +913,23 @@ gfx::ImageSkia GetImageForDisconnectedCellNetwork() {
   return GetDisconnectedImage(ICON_TYPE_LIST, shill::kTypeCellular);
 }
 
+gfx::ImageSkia GetImageForNewWifiNetwork(SkColor icon_color,
+                                         SkColor badge_color) {
+  SignalStrengthImageSource* source =
+      new SignalStrengthImageSource(ImageTypeForNetworkType(shill::kTypeWifi),
+                                    ICON_TYPE_LIST, kNumNetworkImages - 1);
+  source->set_color(icon_color);
+  gfx::ImageSkia icon = gfx::ImageSkia(source, source->size());
+  Badges badges;
+  badges.bottom_right = gfx::CreateVectorIcon(
+      gfx::VectorIconId::NETWORK_BADGE_ADD_OTHER, badge_color);
+  return NetworkIconImageSourceMd::CreateImage(icon, badges);
+}
+
 gfx::ImageSkia GetVpnImage() {
   return UseMd()
              ? gfx::CreateVectorIcon(gfx::VectorIconId::NETWORK_VPN,
-                                     GetBaseColorForIconType(ICON_TYPE_LIST))
+                                     GetDefaultColorForIconType(ICON_TYPE_LIST))
              : *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
                    IDR_AURA_UBER_TRAY_NETWORK_VPN);
 }

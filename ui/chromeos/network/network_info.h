@@ -30,6 +30,7 @@ struct UI_CHROMEOS_EXPORT NetworkInfo {
   gfx::ImageSkia image;
   bool disable;
   bool highlight;
+  bool is_wifi;
 };
 
 }  // namespace ui

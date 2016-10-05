@@ -96,6 +96,8 @@ action("aggregate_vector_icons") {
     "navigate_reload.icon",
     "navigate_stop.1x.icon",
     "navigate_stop.icon",
+    "network_badge_add_other.1x.icon",
+    "network_badge_add_other.icon",
     "network_badge_captive_portal.1x.icon",
     "network_badge_captive_portal.icon",
     "network_badge_roaming.1x.icon",

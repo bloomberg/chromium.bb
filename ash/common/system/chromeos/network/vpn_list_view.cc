@@ -269,11 +269,11 @@ void VPNListView::Update() {
   }
 
   // Clear the list.
-  container_->RemoveAllChildViews(true);
+  container()->RemoveAllChildViews(true);
   provider_view_key_map_.clear();
   network_view_service_path_map_.clear();
   list_empty_ = true;
-  container_->SetLayoutManager(
+  container()->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
 
   // Get the list of available VPN networks, in shill's priority order.
@@ -315,12 +315,12 @@ void VPNListView::Update() {
   }
 
   // Layout the updated list.
-  container_->SizeToPreferredSize();
+  container()->SizeToPreferredSize();
   delegate_->RelayoutScrollList();
 
   if (scroll_to_show_view) {
     // Scroll the list so that |scroll_to_show_view| is in view.
-    container_->ScrollRectToVisible(scroll_to_show_view->bounds());
+    container()->ScrollRectToVisible(scroll_to_show_view->bounds());
   }
 }
 
@@ -358,7 +358,7 @@ void VPNListView::OnViewClicked(views::View* sender) {
 
 void VPNListView::AddNetwork(const chromeos::NetworkState* network) {
   views::View* entry(new VPNListNetworkEntry(this, network));
-  container_->AddChildView(entry);
+  container()->AddChildView(entry);
   network_view_service_path_map_[entry] = network->path();
   list_empty_ = false;
 }
@@ -372,13 +372,13 @@ void VPNListView::AddProviderAndNetworks(
     views::Separator* const separator =
         new views::Separator(views::Separator::HORIZONTAL);
     separator->SetColor(kBorderLightColor);
-    container_->AddChildView(separator);
+    container()->AddChildView(separator);
   } else {
     list_empty_ = false;
   }
   // Add a list entry for the VPN provider.
   views::View* provider(new VPNListProviderEntry(this, name));
-  container_->AddChildView(provider);
+  container()->AddChildView(provider);
   provider_view_key_map_[provider] = key;
   // Add the networks belonging to this provider, in the priority order returned
   // by shill.

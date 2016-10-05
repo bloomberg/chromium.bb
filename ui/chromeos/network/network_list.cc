@@ -65,8 +65,8 @@ bool IsProhibitedByPolicy(const chromeos::NetworkState* network) {
 
 NetworkListView::NetworkListView(NetworkListDelegate* delegate)
     : delegate_(delegate),
-      no_wifi_networks_view_(NULL),
-      no_cellular_networks_view_(NULL) {
+      no_wifi_networks_view_(nullptr),
+      no_cellular_networks_view_(nullptr) {
   CHECK(delegate_);
 }
 
@@ -75,7 +75,7 @@ NetworkListView::~NetworkListView() {
 }
 
 void NetworkListView::Update() {
-  CHECK(container_);
+  CHECK(container());
   NetworkStateHandler::NetworkStateList network_list;
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
   handler->GetVisibleNetworkList(&network_list);
@@ -132,6 +132,7 @@ void NetworkListView::UpdateNetworkIcons() {
     info->disable =
         (network->activation_state() == shill::kActivationStateActivating) ||
         prohibited_by_policy;
+    info->is_wifi = network->Matches(NetworkTypePattern::WiFi());
     if (prohibited_by_policy) {
       info->tooltip =
           l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NETWORK_PROHIBITED);
@@ -160,7 +161,7 @@ void NetworkListView::UpdateNetworkListInternal() {
     if (new_service_paths.find(it->first) == new_service_paths.end()) {
       remove_service_paths.insert(it->first);
       network_map_.erase(it->second);
-      container_->RemoveChildView(it->second);
+      delete it->second;
       needs_relayout = true;
     }
   }
@@ -177,17 +178,17 @@ void NetworkListView::UpdateNetworkListInternal() {
 }
 
 void NetworkListView::HandleRelayout() {
-  views::View* selected_view = NULL;
+  views::View* selected_view = nullptr;
   for (auto& iter : service_path_map_) {
     if (delegate_->IsViewHovered(iter.second)) {
       selected_view = iter.second;
       break;
     }
   }
-  container_->SizeToPreferredSize();
+  container()->SizeToPreferredSize();
   delegate_->RelayoutScrollList();
   if (selected_view)
-    container_->ScrollRectToVisible(selected_view->bounds());
+    container()->ScrollRectToVisible(selected_view->bounds());
 }
 
 bool NetworkListView::UpdateNetworkListEntries(
@@ -263,32 +264,32 @@ bool NetworkListView::UpdateNetworkChildren(
 
 bool NetworkListView::UpdateNetworkChild(int index, const NetworkInfo* info) {
   bool needs_relayout = false;
-  views::View* container = NULL;
+  views::View* network_view = nullptr;
   ServicePathMap::const_iterator found =
       service_path_map_.find(info->service_path);
   if (found == service_path_map_.end()) {
-    container = delegate_->CreateViewForNetwork(*info);
-    container_->AddChildViewAt(container, index);
+    network_view = delegate_->CreateViewForNetwork(*info);
+    container()->AddChildViewAt(network_view, index);
     needs_relayout = true;
   } else {
-    container = found->second;
-    container->RemoveAllChildViews(true);
-    delegate_->UpdateViewForNetwork(container, *info);
-    container->Layout();
-    container->SchedulePaint();
-    needs_relayout = PlaceViewAtIndex(container, index);
+    network_view = found->second;
+    network_view->RemoveAllChildViews(true);
+    delegate_->UpdateViewForNetwork(network_view, *info);
+    network_view->Layout();
+    network_view->SchedulePaint();
+    needs_relayout = PlaceViewAtIndex(network_view, index);
   }
   if (info->disable)
-    container->SetEnabled(false);
-  network_map_[container] = info->service_path;
-  service_path_map_[info->service_path] = container;
+    network_view->SetEnabled(false);
+  network_map_[network_view] = info->service_path;
+  service_path_map_[info->service_path] = network_view;
   return needs_relayout;
 }
 
 bool NetworkListView::PlaceViewAtIndex(views::View* view, int index) {
-  if (container_->child_at(index) == view)
+  if (container()->child_at(index) == view)
     return false;
-  container_->ReorderChildView(view, index);
+  container()->ReorderChildView(view, index);
   return true;
 }
 
@@ -303,16 +304,15 @@ bool NetworkListView::UpdateInfoLabel(int message_id,
     if (!*label) {
       *label = delegate_->CreateInfoLabel();
       (*label)->SetText(text);
-      container_->AddChildViewAt(*label, index);
+      container()->AddChildViewAt(*label, index);
       needs_relayout = true;
     } else {
       (*label)->SetText(text);
       needs_relayout = PlaceViewAtIndex(*label, index);
     }
   } else if (*label) {
-    container_->RemoveChildView(*label);
     delete *label;
-    *label = NULL;
+    *label = nullptr;
     needs_relayout = true;
   }
   return needs_relayout;

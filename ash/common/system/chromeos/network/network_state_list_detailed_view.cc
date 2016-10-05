@@ -51,6 +51,7 @@
 #include "ui/chromeos/network/network_icon_animation.h"
 #include "ui/chromeos/network/network_info.h"
 #include "ui/chromeos/network/network_list.h"
+#include "ui/chromeos/network/network_list_md.h"
 #include "ui/chromeos/network/network_list_view_base.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #include "ui/compositor/layer.h"
@@ -325,7 +326,13 @@ NetworkStateListDetailedView::NetworkStateListDetailedView(
     network_list_view_.reset(new VPNListView(this));
   } else {
     // Use a common class to list any other network types.
-    network_list_view_.reset(new ui::NetworkListView(this));
+    // TODO(varkha): NetworkListViewMd is a temporary fork of NetworkListView.
+    // NetworkListView will go away when Material Design becomes default.
+    // See crbug.com/614453.
+    if (MaterialDesignController::IsSystemTrayMenuMaterial())
+      network_list_view_.reset(new ui::NetworkListViewMd(this));
+    else
+      network_list_view_.reset(new ui::NetworkListView(this));
   }
 }
 
@@ -356,7 +363,8 @@ void NetworkStateListDetailedView::Init() {
   scanning_throbber_ = nullptr;
 
   CreateScrollableList();
-  CreateNetworkExtra();
+  if (!MaterialDesignController::IsSystemTrayMenuMaterial())
+    CreateNetworkExtra();
   CreateTitleRow(IDS_ASH_STATUS_TRAY_NETWORK);
 
   network_list_view_->set_container(scroll_content());
@@ -405,9 +413,7 @@ void NetworkStateListDetailedView::HandleButtonPressed(views::Button* sender,
     delegate->ShowOtherNetworkDialog(shill::kTypeCellular);
     close_bubble = true;
   } else if (sender == other_wifi_) {
-    WmShell::Get()->RecordUserMetricsAction(
-        UMA_STATUS_AREA_NETWORK_JOIN_OTHER_CLICKED);
-    delegate->ShowOtherNetworkDialog(shill::kTypeWifi);
+    OnOtherWifiClicked();
     close_bubble = true;
   } else {
     NOTREACHED();
@@ -935,6 +941,13 @@ views::Label* NetworkStateListDetailedView::CreateInfoLabel() {
 
 void NetworkStateListDetailedView::OnNetworkEntryClicked(views::View* sender) {
   HandleViewClicked(sender);
+}
+
+void NetworkStateListDetailedView::OnOtherWifiClicked() {
+  WmShell::Get()->RecordUserMetricsAction(
+      UMA_STATUS_AREA_NETWORK_JOIN_OTHER_CLICKED);
+  SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
+  delegate->ShowOtherNetworkDialog(shill::kTypeWifi);
 }
 
 void NetworkStateListDetailedView::RelayoutScrollList() {

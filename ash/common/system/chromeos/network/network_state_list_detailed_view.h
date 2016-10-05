@@ -114,6 +114,7 @@ class NetworkStateListDetailedView
                             const ui::NetworkInfo& info) override;
   views::Label* CreateInfoLabel() override;
   void OnNetworkEntryClicked(views::View* sender) override;
+  void OnOtherWifiClicked() override;
   void RelayoutScrollList() override;
 
   // Type of list (all networks or vpn)

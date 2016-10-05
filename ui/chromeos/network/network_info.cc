@@ -6,12 +6,10 @@
 
 namespace ui {
 
-NetworkInfo::NetworkInfo() : disable(false), highlight(false) {
-}
+NetworkInfo::NetworkInfo() : disable(false), highlight(false), is_wifi(false) {}
 
 NetworkInfo::NetworkInfo(const std::string& path)
-    : service_path(path), disable(false), highlight(false) {
-}
+    : service_path(path), disable(false), highlight(false), is_wifi(false) {}
 
 NetworkInfo::~NetworkInfo() {
 }
