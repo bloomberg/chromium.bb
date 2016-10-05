@@ -8,6 +8,14 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace {
+const int kFirstBackoff = 10;
+const int kSecondBackoff = 10;
+const int kThirdBackoff = 60;
+const int kFourthBackoff = 120;
+const int kFifthBackoff = 120;
+}  // namespace
+
 TEST(ReadingListEntry, CompareIgnoreTitle) {
   const ReadingListEntry e1(GURL("http://example.com"), "bar");
   const ReadingListEntry e2(GURL("http://example.com"), "foo");
@@ -67,26 +75,46 @@ TEST(ReadingListEntry, TimeUntilNextTry) {
 
   ReadingListEntry e(GURL("http://example.com"), "bar", std::move(backoff));
 
+  double fuzzing = ReadingListEntry::kBackoffPolicy.jitter_factor;
+
   ASSERT_EQ(0, e.TimeUntilNextTry().InSeconds());
 
+  // First error.
   e.SetDistilledState(ReadingListEntry::ERROR);
-  EXPECT_EQ(1, e.TimeUntilNextTry().InSeconds());
+  int nextTry = e.TimeUntilNextTry().InMinutes();
+  EXPECT_NEAR(kFirstBackoff, nextTry, kFirstBackoff * fuzzing);
   e.SetDistilledState(ReadingListEntry::WILL_RETRY);
-  EXPECT_EQ(1, e.TimeUntilNextTry().InSeconds());
+  EXPECT_EQ(nextTry, e.TimeUntilNextTry().InMinutes());
 
   e.SetDistilledState(ReadingListEntry::PROCESSING);
-  EXPECT_EQ(1, e.TimeUntilNextTry().InSeconds());
+  EXPECT_EQ(nextTry, e.TimeUntilNextTry().InMinutes());
 
+  // Second error.
   e.SetDistilledState(ReadingListEntry::WILL_RETRY);
-  EXPECT_EQ(2, e.TimeUntilNextTry().InSeconds());
+  nextTry = e.TimeUntilNextTry().InMinutes();
+  EXPECT_NEAR(kSecondBackoff, nextTry, kSecondBackoff * fuzzing);
   e.SetDistilledState(ReadingListEntry::ERROR);
-  EXPECT_EQ(2, e.TimeUntilNextTry().InSeconds());
+  EXPECT_EQ(nextTry, e.TimeUntilNextTry().InMinutes());
 
   e.SetDistilledState(ReadingListEntry::PROCESSING);
-  EXPECT_EQ(2, e.TimeUntilNextTry().InSeconds());
+  EXPECT_EQ(nextTry, e.TimeUntilNextTry().InMinutes());
 
+  // Third error.
   e.SetDistilledState(ReadingListEntry::WILL_RETRY);
-  EXPECT_EQ(4, e.TimeUntilNextTry().InSeconds());
+  EXPECT_NEAR(kThirdBackoff, e.TimeUntilNextTry().InMinutes(),
+              kThirdBackoff * fuzzing);
+
+  // Fourth error.
+  e.SetDistilledState(ReadingListEntry::PROCESSING);
+  e.SetDistilledState(ReadingListEntry::ERROR);
+  EXPECT_NEAR(kFourthBackoff, e.TimeUntilNextTry().InMinutes(),
+              kFourthBackoff * fuzzing);
+
+  // Fifth error.
+  e.SetDistilledState(ReadingListEntry::PROCESSING);
+  e.SetDistilledState(ReadingListEntry::ERROR);
+  EXPECT_NEAR(kFifthBackoff, e.TimeUntilNextTry().InMinutes(),
+              kFifthBackoff * fuzzing);
 }
 
 // Tests that if the time until next try is in the past, 0 is returned.
@@ -97,18 +125,20 @@ TEST(ReadingListEntry, TimeUntilNextTryInThePast) {
       base::MakeUnique<net::BackoffEntry>(&ReadingListEntry::kBackoffPolicy,
                                           &clock);
   ReadingListEntry e(GURL("http://example.com"), "bar", std::move(backoff));
+  double fuzzing = ReadingListEntry::kBackoffPolicy.jitter_factor;
 
   e.SetDistilledState(ReadingListEntry::ERROR);
-  ASSERT_EQ(1, e.TimeUntilNextTry().InSeconds());
+  ASSERT_NEAR(kFirstBackoff, e.TimeUntilNextTry().InMinutes(),
+              kFirstBackoff * fuzzing);
 
   // Action.
-  clock.Advance(base::TimeDelta::FromSeconds(2));
+  clock.Advance(base::TimeDelta::FromMinutes(kFirstBackoff * 2));
 
   // Test.
   EXPECT_EQ(0, e.TimeUntilNextTry().InMilliseconds());
 }
 
-// Tests that if the time until next try is in the past, 0 is returned.
+// Tests that if the entry gets a distilled URL, 0 is returned.
 TEST(ReadingListEntry, ResetTimeUntilNextTry) {
   // Setup.
   base::SimpleTestTickClock clock;
@@ -116,11 +146,11 @@ TEST(ReadingListEntry, ResetTimeUntilNextTry) {
       base::MakeUnique<net::BackoffEntry>(&ReadingListEntry::kBackoffPolicy,
                                           &clock);
   ReadingListEntry e(GURL("http://example.com"), "bar", std::move(backoff));
+  double fuzzing = ReadingListEntry::kBackoffPolicy.jitter_factor;
 
   e.SetDistilledState(ReadingListEntry::ERROR);
-  e.SetDistilledState(ReadingListEntry::PROCESSING);
-  e.SetDistilledState(ReadingListEntry::ERROR);
-  ASSERT_EQ(2, e.TimeUntilNextTry().InSeconds());
+  ASSERT_NEAR(kFirstBackoff, e.TimeUntilNextTry().InMinutes(),
+              kFirstBackoff * fuzzing);
 
   // Action.
   e.SetDistilledURL(GURL("http://example.com"));
@@ -128,7 +158,8 @@ TEST(ReadingListEntry, ResetTimeUntilNextTry) {
   // Test.
   EXPECT_EQ(0, e.TimeUntilNextTry().InSeconds());
   e.SetDistilledState(ReadingListEntry::ERROR);
-  EXPECT_EQ(1, e.TimeUntilNextTry().InSeconds());
+  ASSERT_NEAR(kFirstBackoff, e.TimeUntilNextTry().InMinutes(),
+              kFirstBackoff * fuzzing);
 }
 
 // Tests that the failed download counter is incremented when the state change

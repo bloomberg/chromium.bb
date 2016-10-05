@@ -6,29 +6,31 @@
 
 #include "base/memory/ptr_util.h"
 
+// The backoff time is the following: 10min, 10min, 1h, 2h, 2h..., starting
+// after the first failure.
 const net::BackoffEntry::Policy ReadingListEntry::kBackoffPolicy = {
     // Number of initial errors (in sequence) to ignore before applying
     // exponential back-off rules.
-    0,
+    2,
 
     // Initial delay for exponential back-off in ms.
-    1000,  // 1 second.
+    10 * 60 * 1000,  // 10 minutes.
 
     // Factor by which the waiting time will be multiplied.
-    2,
+    6,
 
     // Fuzzing percentage. ex: 10% will spread requests randomly
     // between 90%-100% of the calculated time.
-    0,  // 0%.
+    0.1,  // 10%.
 
     // Maximum amount of time we are willing to delay our request in ms.
-    120 * 1000,  // 2 minutes.
+    2 * 3600 * 1000,  // 2 hours.
 
     // Time to keep an entry from being discarded even when it
     // has no significant state, -1 to never discard.
     -1,
 
-    false,  // Don't use initial delay unless the last request was an error.
+    true,  // Don't use initial delay unless the last request was an error.
 };
 
 ReadingListEntry::ReadingListEntry(const GURL& url, const std::string& title)
