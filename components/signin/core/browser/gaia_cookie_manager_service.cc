@@ -479,7 +479,33 @@ void GaiaCookieManagerService::OnCookieChanged(
   // are pending, will be lost.  However, trying to process these changes could
   // cause an endless loop (see crbug.com/516070).
   if (requests_.empty()) {
-    requests_.push_back(GaiaCookieRequest::CreateListAccountsRequest(source_));
+    // Build gaia "source" based on cause to help track down channel id issues.
+    std::string source(source_);
+    switch (cause) {
+      case net::CookieStore::ChangeCause::INSERTED:
+        source += "INSERTED";
+        break;
+      case net::CookieStore::ChangeCause::EXPLICIT:
+        source += "EXPLICIT";
+        break;
+      case net::CookieStore::ChangeCause::UNKNOWN_DELETION:
+        source += "UNKNOWN_DELETION";
+        break;
+      case net::CookieStore::ChangeCause::OVERWRITE:
+        source += "OVERWRITE";
+        break;
+      case net::CookieStore::ChangeCause::EXPIRED:
+        source += "EXPIRED";
+        break;
+      case net::CookieStore::ChangeCause::EVICTED:
+        source += "EVICTED";
+        break;
+      case net::CookieStore::ChangeCause::EXPIRED_OVERWRITE:
+        source += "EXPIRED_OVERWRITE";
+        break;
+    }
+
+    requests_.push_back(GaiaCookieRequest::CreateListAccountsRequest(source));
     fetcher_retries_ = 0;
     signin_client_->DelayNetworkCall(
         base::Bind(&GaiaCookieManagerService::StartFetchingListAccounts,
