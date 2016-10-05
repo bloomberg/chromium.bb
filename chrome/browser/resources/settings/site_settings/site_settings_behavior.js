@@ -159,7 +159,7 @@ var SiteSettingsBehaviorImpl = {
       case settings.ContentSettingsTypes.POPUPS:
         return 'cr:open-in-new';
       case settings.ContentSettingsTypes.PROTOCOL_HANDLERS:
-        return 'settings:open-with';
+        return 'settings:protocol-handler';
       case settings.ContentSettingsTypes.UNSANDBOXED_PLUGINS:
         return 'cr:extension';
       case settings.ContentSettingsTypes.USB_DEVICES:
