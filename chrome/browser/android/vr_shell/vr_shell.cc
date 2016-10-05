@@ -4,8 +4,6 @@
 
 #include "chrome/browser/android/vr_shell/vr_shell.h"
 
-#include <thread>
-
 #include "chrome/browser/android/vr_shell/ui_scene.h"
 #include "chrome/browser/android/vr_shell/vr_compositor.h"
 #include "chrome/browser/android/vr_shell/vr_controller.h"
@@ -141,7 +139,6 @@ VrShell::VrShell(JNIEnv* env,
       desktop_height_(kDesktopHeightDefault),
       content_cvc_(content_cvc),
       ui_cvc_(ui_cvc),
-      delegate_(nullptr),
       weak_ptr_factory_(this) {
   g_instance = this;
   j_vr_shell_.Reset(env, obj);
@@ -340,7 +337,8 @@ void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
   gesture->details.move.delta.y = pixel_y;
   current_input_target_->ProcessUpdatedGesture(*gesture.get());
 
-  if (original_type == WebInputEvent::GestureTap) {
+  if (original_type == WebInputEvent::GestureTap || touch_pending_) {
+    touch_pending_ = false;
     gesture->type = WebInputEvent::GestureTap;
     gesture->details.buttons.pos.x = pixel_x;
     gesture->details.buttons.pos.y = pixel_y;
@@ -629,6 +627,11 @@ void VrShell::DrawWebVrEye(const gvr::Mat4f& view_matrix,
   vr_shell_renderer_->GetTexturedQuadRenderer()->Draw(
       ui_texture_id_, combined, MakeUiGlCopyRect(kWebVrWarningTransientRect));
 
+}
+
+void VrShell::OnTriggerEvent(JNIEnv* env, const JavaParamRef<jobject>& obj) {
+  // Set a flag to handle this on the render thread at the next frame.
+  touch_pending_ = true;
 }
 
 void VrShell::OnPause(JNIEnv* env, const JavaParamRef<jobject>& obj) {

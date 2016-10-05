@@ -86,13 +86,14 @@ public class VrShell extends GvrLayout implements GLSurfaceView.Renderer, VrShel
     private ContentViewCore mUiCVC;
     private VrWindowAndroid mUiVrWindowAndroid;
 
-    private static class ContentViewCoreContainer extends FrameLayout {
+    private class ContentViewCoreContainer extends FrameLayout {
         public ContentViewCoreContainer(Context context) {
             super(context);
         }
 
         @Override
         public boolean dispatchTouchEvent(MotionEvent event) {
+            VrShell.this.onTouchEvent(event);
             return true;
         }
     }
@@ -321,6 +322,10 @@ public class VrShell extends GvrLayout implements GLSurfaceView.Renderer, VrShel
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+            nativeOnTriggerEvent(mNativeVrShell);
+        }
+
         return true;
     }
 
@@ -354,6 +359,7 @@ public class VrShell extends GvrLayout implements GLSurfaceView.Renderer, VrShel
     private native void nativeInitializeGl(
             long nativeVrShell, int contentTextureHandle, int uiTextureHandle);
     private native void nativeDrawFrame(long nativeVrShell);
+    private native void nativeOnTriggerEvent(long nativeVrShell);
     private native void nativeOnPause(long nativeVrShell);
     private native void nativeOnResume(long nativeVrShell);
     private native void nativeContentSurfaceChanged(

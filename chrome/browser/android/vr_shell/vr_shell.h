@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_ANDROID_VR_SHELL_VR_SHELL_H_
 
 #include <jni.h>
+
 #include <memory>
 #include <vector>
 
@@ -60,6 +61,8 @@ class VrShell : public device::GvrDelegate {
                     jint content_texture_handle,
                     jint ui_texture_handle);
   void DrawFrame(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void OnTriggerEvent(JNIEnv* env,
+                      const base::android::JavaParamRef<jobject>& obj);
   void OnPause(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void OnResume(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void SetWebVrMode(JNIEnv* env,
@@ -146,10 +149,11 @@ class VrShell : public device::GvrDelegate {
   std::unique_ptr<VrCompositor> ui_compositor_;
   content::ContentViewCore* ui_cvc_;
 
-  VrShellDelegate* delegate_;
+  VrShellDelegate* delegate_ = nullptr;
   std::unique_ptr<VrShellRenderer> vr_shell_renderer_;
   base::android::ScopedJavaGlobalRef<jobject> j_vr_shell_;
 
+  bool touch_pending_ = false;
   gvr::Quatf controller_quat_;
 
   gvr::Vec3f target_point_;
