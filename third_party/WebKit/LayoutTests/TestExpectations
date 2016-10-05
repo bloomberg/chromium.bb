@@ -409,7 +409,7 @@ crbug.com/412381 imported/wpt/mediacapture-streams/GUM-empty-option-param.https.
 crbug.com/412381 imported/wpt/mediacapture-streams/GUM-unknownkey-option-param.https.html [ Failure ]
 crbug.com/412381 imported/wpt/mediacapture-streams/MediaStream-MediaElement-preload-none.https.html [ Pass Timeout Failure ]
 
-crbug.com/650247 fast/js/string-prototype-properties.html [ NeedsManualRebaseline ]
+crbug.com/650247 fast/js/string-prototype-properties.html [ NeedsRebaseline ]
 
 crbug.com/325673 imported/wpt/custom-elements/v0/concepts/custom-elements-type-allowed-chars-first-char.html [ Failure Timeout ]
 crbug.com/325673 imported/wpt/custom-elements/v0/concepts/custom-elements-type-allowed-chars.html [ Failure Timeout ]
