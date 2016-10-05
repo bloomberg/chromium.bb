@@ -22,6 +22,7 @@ component("common") {
     "get_client_auth_token.h",
     "logging.cc",
     "logging.h",
+    "mandatory_callback.h",
     "switches.cc",
     "switches.h",
   ]
@@ -67,12 +68,14 @@ source_set("unit_tests") {
     "compositor/reference_tracker_unittest.cc",
     "create_blimp_message_unittest.cc",
     "logging_unittest.cc",
+    "mandatory_callback_unittest.cc",
   ]
 
   deps = [
     ":common",
     ":test_support",
     "//base",
+    "//base/test:test_support",
     "//blimp/common/proto",
     "//blimp/net:test_support",
     "//crypto",
