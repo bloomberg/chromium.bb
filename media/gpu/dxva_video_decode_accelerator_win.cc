@@ -1010,11 +1010,14 @@ void DXVAVideoDecodeAccelerator::Reset() {
   DVLOG(1) << "DXVAVideoDecodeAccelerator::Reset";
 
   State state = GetState();
-  RETURN_AND_NOTIFY_ON_FAILURE((state == kNormal || state == kStopped),
-                               "Reset: invalid state: " << state,
-                               ILLEGAL_STATE, );
+  RETURN_AND_NOTIFY_ON_FAILURE(
+      (state == kNormal || state == kStopped || state == kFlushing),
+      "Reset: invalid state: " << state, ILLEGAL_STATE, );
 
   decoder_thread_.Stop();
+
+  if (state == kFlushing)
+    NotifyFlushDone();
 
   SetState(kResetting);
 
