@@ -9,6 +9,7 @@ public_headers = [
   "//ui/gfx/geometry/size.h",
   "//ui/gfx/geometry/rect.h",
   "//ui/gfx/geometry/rect_f.h",
+  "//ui/gfx/geometry/safe_integer_conversions.h",
   "//ui/gfx/geometry/insets.h",
   "//ui/gfx/geometry/vector2d.h",
   "//ui/gfx/geometry/vector2d_f.h",

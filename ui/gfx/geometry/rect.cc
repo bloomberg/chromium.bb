@@ -65,8 +65,10 @@ void Rect::Inset(const Insets& insets) {
 
 void Rect::Inset(int left, int top, int right, int bottom) {
   origin_ += Vector2d(left, top);
-  set_width(std::max(width() - left - right, static_cast<int>(0)));
-  set_height(std::max(height() - top - bottom, static_cast<int>(0)));
+  // left+right might overflow/underflow, but width() - (left+right) might
+  // overflow as well.
+  set_width(SafeSubtract(width(), SafeAdd(left, right)));
+  set_height(SafeSubtract(height(), SafeAdd(top, bottom)));
 }
 
 void Rect::Offset(int horizontal, int vertical) {
@@ -151,7 +153,9 @@ void Rect::Union(const Rect& rect) {
   int rr = std::max(right(), rect.right());
   int rb = std::max(bottom(), rect.bottom());
 
-  SetRect(rx, ry, rr - rx, rb - ry);
+  // Subtracting to get width/height might overflow integers, so clamp them.
+  SetRect(rx, ry, GetClampedWidthFromExtents(rx, rr),
+          GetClampedWidthFromExtents(ry, rb));
 }
 
 void Rect::Subtract(const Rect& rect) {

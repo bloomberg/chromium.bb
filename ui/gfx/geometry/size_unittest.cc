@@ -122,4 +122,35 @@ TEST(SizeTest, ClampSizeF) {
   EXPECT_EQ(SizeF(3.5f, 5.5f).ToString(), a.ToString());
 }
 
+TEST(SizeTest, Enlarge) {
+  Size test(3, 4);
+  test.Enlarge(5, -8);
+  EXPECT_EQ(test, Size(8, -4));
+}
+
+TEST(SizeTest, IntegerOverflow) {
+  int int_max = std::numeric_limits<int>::max();
+  int int_min = std::numeric_limits<int>::min();
+
+  Size max_size(int_max, int_max);
+  Size min_size(int_min, int_min);
+  Size test;
+
+  test = Size();
+  test.Enlarge(int_max, int_max);
+  EXPECT_EQ(test, max_size);
+
+  test = Size();
+  test.Enlarge(int_min, int_min);
+  EXPECT_EQ(test, min_size);
+
+  test = Size(10, 20);
+  test.Enlarge(int_max, int_max);
+  EXPECT_EQ(test, max_size);
+
+  test = Size(-10, -20);
+  test.Enlarge(int_min, int_min);
+  EXPECT_EQ(test, min_size);
+}
+
 }  // namespace gfx

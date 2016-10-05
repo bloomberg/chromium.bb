@@ -910,8 +910,10 @@ TEST(RectTest, ManhattanInternalDistance) {
 }
 
 TEST(RectTest, IntegerOverflow) {
+  int limit = std::numeric_limits<int>::max();
+  int min_limit = std::numeric_limits<int>::min();
   int expected = 10;
-  int large_number = std::numeric_limits<int>::max() - expected;
+  int large_number = limit - expected;
 
   Rect height_overflow(0, large_number, 100, 100);
   EXPECT_EQ(large_number, height_overflow.y());
@@ -970,10 +972,32 @@ TEST(RectTest, IntegerOverflow) {
   EXPECT_EQ(large_offset, set_rect_overflow.origin());
   EXPECT_EQ(expected_size, set_rect_overflow.size());
 
+  // Insetting an empty rect, but the total inset (left + right) could overflow.
   Rect inset_overflow;
   inset_overflow.Inset(large_number, large_number, 100, 100);
   EXPECT_EQ(large_offset, inset_overflow.origin());
-  EXPECT_EQ(expected_size, inset_overflow.size());
+  EXPECT_EQ(gfx::Size(), inset_overflow.size());
+
+  // Insetting where the total inset (width - left - right) could overflow.
+  // Also, this insetting by the min limit in all directions cannot
+  // represent width() without overflow, so that will also clamp.
+  Rect inset_overflow2;
+  inset_overflow2.Inset(min_limit, min_limit, min_limit, min_limit);
+  EXPECT_EQ(inset_overflow2, gfx::Rect(min_limit, min_limit, limit, limit));
+
+  // Insetting where the width shouldn't change, but if the insets operations
+  // clamped in the wrong order, e.g. ((width - left) - right) vs (width - (left
+  // + right)) then this will not work properly.  This is the proper order,
+  // as if left + right overflows, the width cannot be decreased by more than
+  // max int anyway.  Additionally, if left + right underflows, it cannot be
+  // increased by more then max int.
+  Rect inset_overflow3(0, 0, limit, limit);
+  inset_overflow3.Inset(-100, -100, 100, 100);
+  EXPECT_EQ(inset_overflow3, gfx::Rect(-100, -100, limit, limit));
+
+  Rect inset_overflow4(-1000, -1000, limit, limit);
+  inset_overflow4.Inset(100, 100, -100, -100);
+  EXPECT_EQ(inset_overflow4, gfx::Rect(-900, -900, limit, limit));
 
   Rect offset_overflow(0, 0, 100, 100);
   offset_overflow.Offset(large_number, large_number);
@@ -984,6 +1008,52 @@ TEST(RectTest, IntegerOverflow) {
   operator_overflow += Vector2d(large_number, large_number);
   EXPECT_EQ(large_offset, operator_overflow.origin());
   EXPECT_EQ(expected_size, operator_overflow.size());
+
+  Rect origin_maxint(limit, limit, limit, limit);
+  EXPECT_EQ(origin_maxint, Rect(gfx::Point(limit, limit), gfx::Size()));
+
+  // Expect a rect at the origin and a rect whose right/bottom is maxint
+  // create a rect that extends from 0..maxint in both extents.
+  {
+    Rect origin_small(0, 0, 100, 100);
+    Rect big_clamped(50, 50, limit, limit);
+    EXPECT_EQ(big_clamped.right(), limit);
+
+    Rect unioned = UnionRects(origin_small, big_clamped);
+    Rect rect_limit(0, 0, limit, limit);
+    EXPECT_EQ(unioned, rect_limit);
+  }
+
+  // Expect a rect that would overflow width (but not right) to be clamped
+  // and to have maxint extents after unioning.
+  {
+    Rect small(-500, -400, 100, 100);
+    Rect big(-400, -500, limit, limit);
+    // Technically, this should be limit + 100 width, but will clamp to maxint.
+    EXPECT_EQ(UnionRects(small, big), Rect(-500, -500, limit, limit));
+  }
+
+  // Expect a rect that would overflow right *and* width to be clamped.
+  {
+    Rect clamped(500, 500, limit, limit);
+    Rect positive_origin(100, 100, 500, 500);
+
+    // Ideally, this should be (100, 100, limit + 400, limit + 400).
+    // However, width overflows and would be clamped to limit, but right
+    // overflows too and so will be clamped to limit - 100.
+    Rect expected(100, 100, limit - 100, limit - 100);
+    EXPECT_EQ(UnionRects(clamped, positive_origin), expected);
+  }
+
+  // Unioning a left=minint rect with a right=maxint rect.
+  // Width is always clamped before adjusting position, so this
+  // should taking the min left/top and then finding the max width.
+  {
+    Rect left_minint(min_limit, min_limit, 1, 1);
+    Rect right_maxint(limit - 1, limit - 1, limit, limit);
+    Rect expected(min_limit, min_limit, limit, limit);
+    EXPECT_EQ(UnionRects(left_minint, right_maxint), expected);
+  }
 }
 
 TEST(RectTest, ScaleToEnclosingRectSafe) {

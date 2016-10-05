@@ -160,4 +160,77 @@ TEST(PointTest, ClampPointF) {
   EXPECT_EQ(PointF(3.5f, 5.5f).ToString(), a.ToString());
 }
 
+TEST(PointTest, Offset) {
+  Point test(3, 4);
+  test.Offset(5, -8);
+  EXPECT_EQ(test, Point(8, -4));
+}
+
+TEST(PointTest, VectorMath) {
+  Point test = Point(3, 4);
+  test += Vector2d(5, -8);
+  EXPECT_EQ(test, Point(8, -4));
+
+  Point test2 = Point(3, 4);
+  test2 -= Vector2d(5, -8);
+  EXPECT_EQ(test2, Point(-2, 12));
+}
+
+TEST(PointTest, IntegerOverflow) {
+  int int_max = std::numeric_limits<int>::max();
+  int int_min = std::numeric_limits<int>::min();
+
+  Point max_point(int_max, int_max);
+  Point min_point(int_min, int_min);
+  Point test;
+
+  test = Point();
+  test.Offset(int_max, int_max);
+  EXPECT_EQ(test, max_point);
+
+  test = Point();
+  test.Offset(int_min, int_min);
+  EXPECT_EQ(test, min_point);
+
+  test = Point(10, 20);
+  test.Offset(int_max, int_max);
+  EXPECT_EQ(test, max_point);
+
+  test = Point(-10, -20);
+  test.Offset(int_min, int_min);
+  EXPECT_EQ(test, min_point);
+
+  test = Point();
+  test += Vector2d(int_max, int_max);
+  EXPECT_EQ(test, max_point);
+
+  test = Point();
+  test += Vector2d(int_min, int_min);
+  EXPECT_EQ(test, min_point);
+
+  test = Point(10, 20);
+  test += Vector2d(int_max, int_max);
+  EXPECT_EQ(test, max_point);
+
+  test = Point(-10, -20);
+  test += Vector2d(int_min, int_min);
+  EXPECT_EQ(test, min_point);
+
+  test = Point();
+  test -= Vector2d(int_max, int_max);
+  EXPECT_EQ(test, Point(-int_max, -int_max));
+
+  test = Point();
+  test -= Vector2d(int_min, int_min);
+  EXPECT_EQ(test, max_point);
+
+  test = Point(10, 20);
+  test -= Vector2d(int_min, int_min);
+  EXPECT_EQ(test, max_point);
+
+  test = Point(-10, -20);
+  test -= Vector2d(int_max, int_max);
+  EXPECT_EQ(test, min_point);
+}
+
 }  // namespace gfx

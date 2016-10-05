@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "base/strings/stringprintf.h"
+#include "ui/gfx/geometry/safe_integer_conversions.h"
 
 namespace gfx {
 
@@ -15,13 +16,13 @@ bool Vector2d::IsZero() const {
 }
 
 void Vector2d::Add(const Vector2d& other) {
-  x_ += other.x_;
-  y_ += other.y_;
+  x_ = SafeAdd(other.x_, x_);
+  y_ = SafeAdd(other.y_, y_);
 }
 
 void Vector2d::Subtract(const Vector2d& other) {
-  x_ -= other.x_;
-  y_ -= other.y_;
+  x_ = SafeSubtract(x_, other.x_);
+  y_ = SafeSubtract(y_, other.y_);
 }
 
 int64_t Vector2d::LengthSquared() const {

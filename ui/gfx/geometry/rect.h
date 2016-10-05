@@ -16,9 +16,9 @@
 #include <iosfwd>
 #include <string>
 
-#include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d.h"
 
@@ -207,23 +207,17 @@ class GFX_EXPORT Rect {
   gfx::Size size_;
 
   // Clamp the size to avoid integer overflow in bottom() and right().
-  // There are three conditions to determine whether there is a potential
-  // overflow:
-  // 1) Origin > 0: if the origin is a negative value, origin + size will
-  //    definitely be less than int_max.
-  // 2) size > 0: if size <= 0, it will be clamped to 0 making x + 0 valid for
-  //    all x.
-  // 3) We cast the values to unsigned int because the compiler can optimize
-  //    this check away entirely but it is not smart enough to know that it
-  //    won't overflow. It can't overflow since origin is positive ensured by
-  //    part 1). If size > int_max - origin it will overflow when added to
-  //    origin.
+  // This returns the width given an origin and a width.
   static constexpr int GetClampedValue(int origin, int size) {
-    return origin > 0 && size > 0 &&
-                   static_cast<unsigned>(std::numeric_limits<int>::max() -
-                                         origin) < static_cast<unsigned>(size)
+    return AddWouldOverflow(origin, size)
                ? std::numeric_limits<int>::max() - origin
                : size;
+  }
+
+  // Returns a clamped width given a right and a left, assuming right > left.
+  static constexpr int GetClampedWidthFromExtents(int left, int right) {
+    return SubtractWouldOverflow(right, left) ? std::numeric_limits<int>::max()
+                                              : right - left;
   }
 };
 
