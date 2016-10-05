@@ -18,7 +18,8 @@ void ReceivedBadMessage(content::RenderProcessHost* host,
       << static_cast<int>(reason);
   UMA_HISTOGRAM_SPARSE_SLOWLY("Stability.BadMessageTerminated.PasswordManager",
                               static_cast<int>(reason));
-  host->ShutdownForBadMessage();
+  host->ShutdownForBadMessage(
+      content::RenderProcessHost::CrashReportMode::GENERATE_CRASH_DUMP);
 }
 
 }  // namespace bad_message

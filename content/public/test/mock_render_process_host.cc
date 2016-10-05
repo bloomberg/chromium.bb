@@ -128,7 +128,8 @@ void MockRenderProcessHost::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-void MockRenderProcessHost::ShutdownForBadMessage() {
+void MockRenderProcessHost::ShutdownForBadMessage(
+    CrashReportMode crash_report_mode) {
   ++bad_msg_count_;
 }
 

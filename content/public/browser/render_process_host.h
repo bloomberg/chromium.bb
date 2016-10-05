@@ -65,6 +65,12 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
     int exit_code;
   };
 
+  // Crash reporting mode for ShutdownForBadMessage.
+  enum class CrashReportMode {
+    NO_CRASH_DUMP,
+    GENERATE_CRASH_DUMP,
+  };
+
   // General functions ---------------------------------------------------------
 
   ~RenderProcessHost() override {}
@@ -95,7 +101,10 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // Most callers should not call this directly, but instead should call
   // bad_message::BadMessageReceived() or an equivalent method outside of the
   // content module.
-  virtual void ShutdownForBadMessage() = 0;
+  //
+  // If |crash_report_mode| is GENERATE_CRASH_DUMP, then a browser crash dump
+  // will be reported as well.
+  virtual void ShutdownForBadMessage(CrashReportMode crash_report_mode) = 0;
 
   // Track the count of visible widgets. Called by listeners to register and
   // unregister visibility.

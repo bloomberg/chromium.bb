@@ -17,7 +17,8 @@ void ReceivedBadMessage(content::RenderProcessHost* host,
              << reason;
   UMA_HISTOGRAM_SPARSE_SLOWLY("Stability.BadMessageTerminated.Extensions",
                               reason);
-  host->ShutdownForBadMessage();
+  host->ShutdownForBadMessage(
+      content::RenderProcessHost::CrashReportMode::GENERATE_CRASH_DUMP);
 }
 
 }  // namespace bad_message

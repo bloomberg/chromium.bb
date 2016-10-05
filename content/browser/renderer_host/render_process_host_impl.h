@@ -121,7 +121,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void RemoveRoute(int32_t routing_id) override;
   void AddObserver(RenderProcessHostObserver* observer) override;
   void RemoveObserver(RenderProcessHostObserver* observer) override;
-  void ShutdownForBadMessage() override;
+  void ShutdownForBadMessage(CrashReportMode crash_report_mode) override;
   void WidgetRestored() override;
   void WidgetHidden() override;
   int VisibleWidgetCount() const override;
@@ -378,10 +378,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   base::FilePath GetAecDumpFilePathWithExtensions(const base::FilePath& file);
 #endif
 
-  static void OnMojoError(
-      base::WeakPtr<RenderProcessHostImpl> process,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      const std::string& error);
+  static void OnMojoError(int render_process_id, const std::string& error);
 
   template <typename InterfaceType>
   using AddInterfaceCallback =

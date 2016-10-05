@@ -36,7 +36,8 @@ void BrowserMediaSessionManager::OnSetMetadata(
   // coming from a known and secure source. It must be processed accordingly.
   if (insecure_metadata.has_value() &&
       !MediaMetadataSanitizer::CheckSanity(insecure_metadata.value())) {
-    render_frame_host_->GetProcess()->ShutdownForBadMessage();
+    render_frame_host_->GetProcess()->ShutdownForBadMessage(
+        RenderProcessHost::CrashReportMode::GENERATE_CRASH_DUMP);
     return;
   }
 

@@ -23,7 +23,8 @@ void LogBadMessage(BadMessageReason reason) {
 void ReceivedBadMessage(content::RenderProcessHost* host,
                         BadMessageReason reason) {
   LogBadMessage(reason);
-  host->ShutdownForBadMessage();
+  host->ShutdownForBadMessage(
+      content::RenderProcessHost::CrashReportMode::GENERATE_CRASH_DUMP);
 }
 
 void ReceivedBadMessage(content::BrowserMessageFilter* filter,
