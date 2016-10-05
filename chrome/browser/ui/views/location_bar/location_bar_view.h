@@ -113,7 +113,7 @@ class LocationBarView : public LocationBar,
   };
 
   // Width (and height) of icons in location bar.
-  static constexpr int kLocationBarIconWidth = 16;
+  static constexpr int kIconWidth = 16;
 
   // The location bar view's class name.
   static const char kViewClassName[];

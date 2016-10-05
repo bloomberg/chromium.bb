@@ -192,7 +192,7 @@ void BubbleIconView::UpdateIcon() {
               ui::NativeTheme::kColorId_ProminentButtonColor)
           : GetInkDropBaseColor();
   image_->SetImage(gfx::CreateVectorIcon(
-      GetVectorIcon(), LocationBarView::kLocationBarIconWidth, icon_color));
+      GetVectorIcon(), LocationBarView::kIconWidth, icon_color));
 }
 
 void BubbleIconView::SetActiveInternal(bool active) {

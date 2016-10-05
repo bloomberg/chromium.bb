@@ -827,7 +827,7 @@ void LocationBarView::RefreshLocationIcon() {
           ? color_utils::DeriveDefaultIconColor(GetColor(TEXT))
           : GetSecureTextColor(security_level);
   location_icon_view_->SetImage(gfx::CreateVectorIcon(
-      omnibox_view_->GetVectorIcon(), kLocationBarIconWidth, icon_color));
+      omnibox_view_->GetVectorIcon(), kIconWidth, icon_color));
 }
 
 bool LocationBarView::RefreshContentSettingViews() {
