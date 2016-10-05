@@ -388,15 +388,13 @@ const char* const kSafePermissionStrings[] = {
     // Schedule code to run at future times.
     "alarms",
 
-    // Allow, but keep PS UX on top regardless.
-    // "app.window.alwaysOnTop",
+    // PS UX can always be seen, this one doesn't go over it so it's fine.
+    "app.window.alwaysOnTop",
 
-    // TODO(isandrk): The following permissions need to be adjusted
-    // (crbug/651071).
-    // Fullscreen is a no-op for Public Session.  Whitelisting nevertheless to
-    // broaden the range of supported apps.  (The recommended permission names
-    // are "app.window.*" but their unprefixed counterparts are still
-    // supported.)
+    // Fullscreen is crippled in Public Sessions, maximizes instead, so both
+    // fullscreen and overrideEsc are safe for use in PS. (The recommended
+    // permission names are "app.window.*" but their unprefixed counterparts are
+    // still supported.)
     "app.window.fullscreen",
     "app.window.fullscreen.overrideEsc",
     "fullscreen",
