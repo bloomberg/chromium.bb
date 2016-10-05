@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/profiles/avatar_button.h"
 #include "chrome/grit/generated_resources.h"
+#import "chrome/browser/themes/theme_properties.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -251,11 +252,13 @@ const CGFloat kMaterialTitleKern = 0.25;
 }
 
 - (void)themeDidChangeNotification:(NSNotification*)aNotification {
-  // Redraw the button if the window has switched between themed and native.
+  // Redraw the button if the window has switched between themed and native
+  // or if we're in MD design.
   ThemeService* themeService =
       ThemeServiceFactory::GetForProfile(browser_->profile());
   BOOL updatedIsThemedWindow = !themeService->UsingSystemTheme();
-  if (isThemedWindow_ != updatedIsThemedWindow) {
+  if (isThemedWindow_ != updatedIsThemedWindow ||
+      ui::MaterialDesignController::IsModeMaterial()) {
     isThemedWindow_ = updatedIsThemedWindow;
     [[button_ cell] setIsThemedWindow:isThemedWindow_];
     [self updateAvatarButtonAndLayoutParent:YES];
@@ -270,12 +273,16 @@ const CGFloat kMaterialTitleKern = 0.25;
   BOOL isMaterial = ui::MaterialDesignController::IsModeMaterial();
 
   NSColor* foregroundColor;
-  if (browser_->profile()->IsGuestSession() && isMaterial)
-    foregroundColor = [NSColor colorWithCalibratedWhite:1.0 alpha:0.9];
-  else if (!isThemedWindow_)
-    foregroundColor = [NSColor blackColor];
-  else
-    foregroundColor = [NSColor blackColor];
+  if (isMaterial) {
+    const ui::ThemeProvider* theme =
+        &ThemeService::GetThemeProviderForProfile(browser_->profile());
+    foregroundColor = theme ? theme->GetNSColor(ThemeProperties::COLOR_TAB_TEXT)
+                            : [NSColor blackColor];
+  } else {
+    foregroundColor = browser_->profile()->IsGuestSession()
+                          ? [NSColor colorWithCalibratedWhite:1.0 alpha:0.9]
+                          : [NSColor blackColor];
+  }
 
   ProfileAttributesStorage& storage =
       g_browser_process->profile_manager()->GetProfileAttributesStorage();
