@@ -119,4 +119,6 @@ trie.longestPrefix("football", false) = "foo"
 trie.longestPrefix("football", true) = "fo"
 trie.longestPrefix("bar", false) = ""
 trie.longestPrefix("bar", true) = ""
+trie.longestPrefix("foo", false) = "foo"
+trie.longestPrefix("foo", true) = "fo"
 
