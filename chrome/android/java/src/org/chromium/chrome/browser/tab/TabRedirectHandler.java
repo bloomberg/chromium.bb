@@ -80,14 +80,10 @@ public class TabRedirectHandler {
         }
         mIsCustomTabIntent = ChromeLauncherActivity.isCustomTabIntent(intent);
 
-        // Copies minimum information to retrieve resolvers.
-        mInitialIntent = new Intent(Intent.ACTION_VIEW);
-        mInitialIntent.setData(intent.getData());
-        if (intent.getCategories() != null) {
-            for (String category : intent.getCategories()) {
-                mInitialIntent.addCategory(category);
-            }
-        }
+        // A copy of the intent with component cleared to find resolvers.
+        mInitialIntent = new Intent(intent).setComponent(null);
+        Intent selector = mInitialIntent.getSelector();
+        if (selector != null) selector.setComponent(null);
     }
 
     private void clearIntentHistory() {
@@ -257,5 +253,12 @@ public class TabRedirectHandler {
             }
         }
         return false;
+    }
+
+    /**
+     * @return The initial intent of a redirect chain, if available.
+     */
+    public Intent getInitialIntent() {
+        return mInitialIntent;
     }
 }

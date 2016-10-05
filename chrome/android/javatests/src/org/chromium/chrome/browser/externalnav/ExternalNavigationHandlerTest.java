@@ -1133,7 +1133,8 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
         }
 
         @Override
-        public boolean maybeLaunchInstantApp(Tab tab, String url, String referrerUrl) {
+        public boolean maybeLaunchInstantApp(Tab tab, String url, String referrerUrl,
+                boolean isIncomingRedirect) {
             return false;
         }
 

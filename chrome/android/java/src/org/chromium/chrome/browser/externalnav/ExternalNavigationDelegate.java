@@ -136,7 +136,9 @@ interface ExternalNavigationDelegate {
      * @param tab The current tab.
      * @param url The current URL.
      * @param referrerUrl The referrer URL.
+     * @param isIncomingRedirect Whether we are handling an incoming redirect to an instant app.
      * @return Whether we launched an instant app.
      */
-    boolean maybeLaunchInstantApp(Tab tab, String url, String referrerUrl);
+    boolean maybeLaunchInstantApp(Tab tab, String url, String referrerUrl,
+            boolean isIncomingRedirect);
 }

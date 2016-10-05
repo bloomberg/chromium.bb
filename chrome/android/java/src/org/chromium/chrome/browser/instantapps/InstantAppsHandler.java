@@ -186,6 +186,8 @@ public class InstantAppsHandler {
         // Used to search for the intent handlers. Needs null component to return correct results.
         Intent intentCopy = new Intent(intent);
         intentCopy.setComponent(null);
+        Intent selector = intentCopy.getSelector();
+        if (selector != null) selector.setComponent(null);
 
         if (!(isCustomTabsIntent || isChromeDefaultHandler(context))
                 || ExternalNavigationDelegateImpl.isPackageSpecializedHandler(

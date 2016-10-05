@@ -396,8 +396,12 @@ public class ExternalNavigationHandler {
                     return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
                 }
 
-                if (linkNotFromIntent && !params.isIncognito() && mDelegate.maybeLaunchInstantApp(
-                        params.getTab(), params.getUrl(), params.getReferrerUrl())) {
+                if (incomingIntentRedirect && mDelegate.maybeLaunchInstantApp(
+                        params.getTab(), params.getUrl(), params.getReferrerUrl(), true)) {
+                    return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
+                } else if (linkNotFromIntent && !params.isIncognito()
+                        && mDelegate.maybeLaunchInstantApp(params.getTab(), params.getUrl(),
+                                params.getReferrerUrl(), false)) {
                     return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
                 }
 

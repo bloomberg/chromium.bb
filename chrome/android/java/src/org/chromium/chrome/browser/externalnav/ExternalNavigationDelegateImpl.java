@@ -560,11 +560,27 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public boolean maybeLaunchInstantApp(Tab tab, String url, String referrerUrl) {
+    public boolean maybeLaunchInstantApp(Tab tab, String url, String referrerUrl,
+            boolean isIncomingRedirect) {
         if (tab == null) return false;
-        return InstantAppsHandler.getInstance().handleNavigation(
-                getAvailableContext(), url,
-                TextUtils.isEmpty(referrerUrl) ? null : Uri.parse(referrerUrl),
-                tab.getWebContents());
+
+        InstantAppsHandler handler = InstantAppsHandler.getInstance();
+        Intent intent = tab.getTabRedirectHandler() != null
+                ? tab.getTabRedirectHandler().getInitialIntent() : null;
+        // TODO(mariakhomenko): consider also handling NDEF_DISCOVER action redirects.
+        if (isIncomingRedirect && intent != null && intent.getAction() == Intent.ACTION_VIEW) {
+            // Set the URL the redirect was resolved to for checking the existence of the
+            // instant app inside handleIncomingIntent().
+            Intent resolvedIntent = new Intent(intent);
+            resolvedIntent.setData(Uri.parse(url));
+            return handler.handleIncomingIntent(getAvailableContext(), resolvedIntent,
+                    ChromeLauncherActivity.isCustomTabIntent(resolvedIntent));
+        } else if (!isIncomingRedirect) {
+            return handler.handleNavigation(
+                    getAvailableContext(), url,
+                    TextUtils.isEmpty(referrerUrl) ? null : Uri.parse(referrerUrl),
+                    tab.getWebContents());
+        }
+        return false;
     }
 }
