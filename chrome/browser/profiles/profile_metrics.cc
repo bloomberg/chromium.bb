@@ -335,7 +335,8 @@ void ProfileMetrics::LogProfileDeleteUser(ProfileDelete metric) {
   UMA_HISTOGRAM_ENUMERATION("Profile.DeleteProfileAction", metric,
                             NUM_DELETE_PROFILE_METRICS);
   if (metric != DELETE_PROFILE_USER_MANAGER_SHOW_WARNING &&
-      metric != DELETE_PROFILE_SETTINGS_SHOW_WARNING) {
+      metric != DELETE_PROFILE_SETTINGS_SHOW_WARNING &&
+      metric != DELETE_PROFILE_ABORTED) {
     // If a user was actually deleted, update the net user count.
     UMA_HISTOGRAM_ENUMERATION("Profile.NetUserCount", PROFILE_DELETED,
                               NUM_PROFILE_NET_METRICS);

@@ -45,6 +45,8 @@ class ProfileMetrics {
     DELETE_PROFILE_USER_MANAGER_SHOW_WARNING,
     // Show the delete profile warning in the Settings page.
     DELETE_PROFILE_SETTINGS_SHOW_WARNING,
+    // Aborts profile deletion in an OnBeforeUnload event in any browser tab.
+    DELETE_PROFILE_ABORTED,
     NUM_DELETE_PROFILE_METRICS
   };
 

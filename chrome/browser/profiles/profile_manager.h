@@ -190,10 +190,9 @@ class ProfileManager : public base::NonThreadSafe,
   ProfileShortcutManager* profile_shortcut_manager();
 
 #if !defined(OS_ANDROID)
-  // Less strict version of ScheduleProfileForDeletion(), silently fail if
-  // profile already marked for deletion. Returns true if the profile scheduled
-  // for deletion.
-  bool MaybeScheduleProfileForDeletion(
+  // Less strict version of ScheduleProfileForDeletion(), silently exits if
+  // profile is either scheduling or marked for deletion.
+  void MaybeScheduleProfileForDeletion(
       const base::FilePath& profile_dir,
       const CreateCallback& callback,
       ProfileMetrics::ProfileDelete deletion_source);
@@ -300,6 +299,14 @@ class ProfileManager : public base::NonThreadSafe,
   Profile* CreateAndInitializeProfile(const base::FilePath& profile_dir);
 
 #if !defined(OS_ANDROID)
+  // Continues the scheduled profile deletion after closing all the profile's
+  // browsers tabs. Creates a new profile if the profile to be deleted is the
+  // last non-supervised profile. In the Mac, loads the next non-supervised
+  // profile if the profile to be deleted is the active profile.
+  void EnsureActiveProfileExistsBeforeDeletion(
+      const CreateCallback& callback,
+      const base::FilePath& profile_dir);
+
   // Schedules the profile at the given path to be deleted on shutdown,
   // and marks the new profile as active.
   void FinishDeletingProfile(const base::FilePath& profile_dir,

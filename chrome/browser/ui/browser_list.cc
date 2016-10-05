@@ -125,7 +125,8 @@ void BrowserList::CloseAllBrowsersWithProfile(Profile* profile) {
 
 // static
 void BrowserList::CloseAllBrowsersWithProfile(Profile* profile,
-    const base::Callback<void(const base::FilePath&)>& on_close_success) {
+    const CloseCallback& on_close_success,
+    const CloseCallback& on_close_aborted) {
   BrowserVector browsers_to_close;
   for (auto* browser : *BrowserList::GetInstance()) {
     if (browser->profile()->GetOriginalProfile() ==
@@ -133,14 +134,14 @@ void BrowserList::CloseAllBrowsersWithProfile(Profile* profile,
       browsers_to_close.push_back(browser);
   }
 
-  TryToCloseBrowserList(browsers_to_close,
-                        on_close_success,
+  TryToCloseBrowserList(browsers_to_close, on_close_success, on_close_aborted,
                         profile->GetPath());
 }
 
 // static
 void BrowserList::TryToCloseBrowserList(const BrowserVector& browsers_to_close,
-    const base::Callback<void(const base::FilePath&)>& on_close_success,
+    const CloseCallback& on_close_success,
+    const CloseCallback& on_close_aborted,
     const base::FilePath& profile_path) {
   for (BrowserVector::const_iterator it = browsers_to_close.begin();
        it != browsers_to_close.end(); ++it) {
@@ -148,6 +149,7 @@ void BrowserList::TryToCloseBrowserList(const BrowserVector& browsers_to_close,
             base::Bind(&BrowserList::PostBeforeUnloadHandlers,
                        browsers_to_close,
                        on_close_success,
+                       on_close_aborted,
                        profile_path))) {
       return;
     }
@@ -166,7 +168,8 @@ void BrowserList::TryToCloseBrowserList(const BrowserVector& browsers_to_close,
 // static
 void BrowserList::PostBeforeUnloadHandlers(
     const BrowserVector& browsers_to_close,
-    const base::Callback<void(const base::FilePath&)>& on_close_success,
+    const CloseCallback& on_close_success,
+    const CloseCallback& on_close_aborted,
     const base::FilePath& profile_path,
     bool tab_close_confirmed) {
   // We need this bool to avoid infinite recursion when resetting the
@@ -175,13 +178,15 @@ void BrowserList::PostBeforeUnloadHandlers(
   static bool resetting_handlers = false;
 
   if (tab_close_confirmed) {
-    TryToCloseBrowserList(browsers_to_close, on_close_success, profile_path);
+    TryToCloseBrowserList(browsers_to_close, on_close_success, on_close_aborted,
+                          profile_path);
   } else if (!resetting_handlers) {
     base::AutoReset<bool> resetting_handlers_scoper(&resetting_handlers, true);
     for (BrowserVector::const_iterator it = browsers_to_close.begin();
          it != browsers_to_close.end(); ++it) {
       (*it)->ResetBeforeUnloadHandlers();
     }
+    on_close_aborted.Run(profile_path);
   }
 }
 
