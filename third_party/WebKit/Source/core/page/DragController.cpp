@@ -462,8 +462,11 @@ static bool setSelectionToDragCaret(LocalFrame* frame,
                                     const IntPoint& point) {
   frame->selection().setSelection(dragCaret);
   if (frame->selection().isNone()) {
-    dragCaret =
-        createVisibleSelectionDeprecated(frame->positionForPoint(point));
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
+    dragCaret = createVisibleSelection(frame->positionForPoint(point));
     frame->selection().setSelection(dragCaret);
     range = createRange(dragCaret.toNormalizedEphemeralRange());
   }
@@ -473,13 +476,14 @@ static bool setSelectionToDragCaret(LocalFrame* frame,
 DispatchEventResult DragController::dispatchTextInputEventFor(
     LocalFrame* innerFrame,
     DragData* dragData) {
+  // Layout should be clean due to a hit test performed in |elementUnderMouse|.
+  DCHECK(!innerFrame->document()->needsLayoutTreeUpdate());
   ASSERT(m_page->dragCaretController().hasCaret());
   String text = m_page->dragCaretController().isContentRichlyEditable()
                     ? ""
                     : dragData->asPlainText();
-  Element* target =
-      innerFrame->editor().findEventTargetFrom(createVisibleSelectionDeprecated(
-          m_page->dragCaretController().caretPosition()));
+  Element* target = innerFrame->editor().findEventTargetFrom(
+      createVisibleSelection(m_page->dragCaretController().caretPosition()));
   return target->dispatchEvent(
       TextEvent::createForDrop(innerFrame->domWindow(), text));
 }
@@ -524,8 +528,18 @@ bool DragController::concludeEditDrag(DragData* dragData) {
     return false;
   }
 
-  VisibleSelection dragCaret = createVisibleSelectionDeprecated(
-      m_page->dragCaretController().caretPosition());
+  if (m_page->dragCaretController().hasCaret()) {
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    m_page->dragCaretController()
+        .caretPosition()
+        .position()
+        .document()
+        ->updateStyleAndLayoutIgnorePendingStylesheets();
+  }
+
+  VisibleSelection dragCaret =
+      createVisibleSelection(m_page->dragCaretController().caretPosition());
   m_page->dragCaretController().clear();
   // |innerFrame| can be removed by event handler called by
   // |dispatchTextInputEventFor()|.
@@ -815,7 +829,7 @@ static void prepareDataTransferForImageDrag(LocalFrame* source,
     Range* range = source->document()->createRange();
     range->selectNode(node, ASSERT_NO_EXCEPTION);
     source->selection().setSelection(
-        createVisibleSelectionDeprecated(EphemeralRange(range)));
+        createVisibleSelection(EphemeralRange(range)));
   }
   dataTransfer->declareAndWriteDragImage(
       node, !linkURL.isEmpty() ? linkURL : imageURL, label);
