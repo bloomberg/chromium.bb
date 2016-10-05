@@ -16,9 +16,12 @@ WebInspector.PersistenceBinding.prototype.toString = function()
 
 InspectorTest.waitForBinding = function(fileName)
 {
-    var bindings = WebInspector.persistence._bindings.valuesArray();
-    for (var binding of bindings) {
-        if (binding.network.name() === fileName || binding.fileSystem.name() === fileName)
+    var uiSourceCodes = WebInspector.workspace.uiSourceCodes();
+    for (var uiSourceCode of uiSourceCodes) {
+        var binding = WebInspector.persistence.binding(uiSourceCode);
+        if (!binding)
+            continue;
+        if (uiSourceCode.name() === fileName)
             return Promise.resolve(binding);
     }
     var fulfill;
