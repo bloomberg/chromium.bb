@@ -549,7 +549,10 @@ void NetworkPortalDetectorImpl::OnAttemptCompleted(
       same_detection_result_count_ >= kMaxOfflineResultsBeforeReport) {
     OnDetectionCompleted(network, state);
   }
-  ScheduleAttempt(results.retry_after_delta);
+
+  // Observers (via OnDetectionCompleted) may already schedule new attempt.
+  if (is_idle())
+    ScheduleAttempt(results.retry_after_delta);
 }
 
 void NetworkPortalDetectorImpl::Observe(
