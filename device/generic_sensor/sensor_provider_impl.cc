@@ -96,9 +96,9 @@ void SensorProviderImpl::SensorCreated(
   init_params->mode = sensor->GetReportingMode();
   init_params->default_configuration = sensor->GetDefaultConfiguration();
 
-  mojo::MakeStrongBinding(std::move(sensor_impl), std::move(sensor_request));
+  NotifySensorCreated(std::move(init_params), sensor_impl.get(), callback);
 
-  NotifySensorCreated(nullptr, nullptr, callback);
+  mojo::MakeStrongBinding(std::move(sensor_impl), std::move(sensor_request));
 }
 
 }  // namespace device
