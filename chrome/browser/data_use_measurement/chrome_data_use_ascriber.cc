@@ -19,7 +19,7 @@ ChromeDataUseAscriber::~ChromeDataUseAscriber() {
 }
 
 DataUseRecorder* ChromeDataUseAscriber::GetDataUseRecorder(
-    const net::URLRequest* request) {
+    net::URLRequest* request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   return nullptr;
 }

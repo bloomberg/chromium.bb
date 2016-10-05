@@ -40,7 +40,15 @@ void DataUseWebContentsObserver::CreateForWebContents(
 DataUseWebContentsObserver::DataUseWebContentsObserver(
     content::WebContents* web_contents,
     ChromeDataUseAscriberService* service)
-    : content::WebContentsObserver(web_contents), service_(service) {}
+    : content::WebContentsObserver(web_contents), service_(service) {
+  // Call RenderFrameCreated for live frames so that |service_| knows about
+  // all the RenderFrameHosts.
+  for (content::RenderFrameHost* frame : web_contents->GetAllFrames()) {
+    if (frame->IsRenderFrameLive()) {
+      service_->RenderFrameCreated(frame);
+    }
+  }
+}
 
 DataUseWebContentsObserver::~DataUseWebContentsObserver() {}
 

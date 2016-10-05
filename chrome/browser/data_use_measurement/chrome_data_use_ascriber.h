@@ -42,7 +42,7 @@ class ChromeDataUseAscriber : public DataUseAscriber {
   ~ChromeDataUseAscriber() override;
 
   // DataUseAscriber:
-  DataUseRecorder* GetDataUseRecorder(const net::URLRequest* request) override;
+  DataUseRecorder* GetDataUseRecorder(net::URLRequest* request) override;
 
   // Called when a render frame host is created.
   void RenderFrameCreated(int render_process_id,

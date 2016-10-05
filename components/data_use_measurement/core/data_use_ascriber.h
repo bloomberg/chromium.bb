@@ -36,8 +36,7 @@ class DataUseAscriber {
   // Returns the DataUseRecorder to which data usage for the given URL should
   // be ascribed. If no existing DataUseRecorder exists, a new one will be
   // created.
-  virtual DataUseRecorder* GetDataUseRecorder(
-      const net::URLRequest* request) = 0;
+  virtual DataUseRecorder* GetDataUseRecorder(net::URLRequest* request) = 0;
 
   // Methods called by DataUseNetworkDelegate to propagate data use information:
   virtual void OnBeforeUrlRequest(net::URLRequest* request);
