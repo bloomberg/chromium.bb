@@ -111,8 +111,7 @@ class PermissionUpdateInfoBarDelegate implements WindowAndroid.PermissionCallbac
             hasAllPermissions = false;
         } else {
             for (int i = 0; i < mAndroidPermisisons.length; i++) {
-                hasAllPermissions &=
-                        mContentViewCore.getWindowAndroid().hasPermission(mAndroidPermisisons[i]);
+                hasAllPermissions &= windowAndroid.hasPermission(mAndroidPermisisons[i]);
             }
         }
         if (mNativePtr != 0) nativeOnPermissionResult(mNativePtr, hasAllPermissions);
