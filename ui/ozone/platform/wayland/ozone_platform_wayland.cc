@@ -5,7 +5,7 @@
 #include "ui/ozone/platform/wayland/ozone_platform_wayland.h"
 
 #include "base/memory/ptr_util.h"
-#include "ui/ozone/common/native_display_delegate_ozone.h"
+#include "ui/display/fake_display_delegate.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
 #include "ui/ozone/platform/wayland/wayland_connection.h"
 #include "ui/ozone/platform/wayland/wayland_surface_factory.h"
@@ -62,7 +62,7 @@ class OzonePlatformWayland : public OzonePlatform {
 
   std::unique_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate()
       override {
-    return base::WrapUnique(new NativeDisplayDelegateOzone);
+    return base::MakeUnique<display::FakeDisplayDelegate>();
   }
 
   void InitializeUI() override {
