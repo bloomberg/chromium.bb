@@ -99,6 +99,33 @@ class CORE_EXPORT ScriptWrappableVisitor : public WrapperVisitor,
   static void performCleanup(v8::Isolate*);
 
   void TracePrologue(v8::EmbedderReachableReferenceReporter*) override;
+
+  static WrapperVisitor* currentVisitor(v8::Isolate*);
+
+  template <typename T>
+  static void writeBarrier(const void* object, const Member<T> value) {
+    writeBarrier(object, value.get());
+  }
+
+  template <typename T>
+  static void writeBarrier(const void* object, const T* other) {
+    if (!RuntimeEnabledFeatures::traceWrappablesEnabled()) {
+      return;
+    }
+    if (!object || !other) {
+      return;
+    }
+    if (!HeapObjectHeader::fromPayload(object)->isWrapperHeaderMarked()) {
+      return;
+    }
+    HeapObjectHeader* otherObjectHeader =
+        TraceTrait<T>::heapObjectHeader(other);
+    if (!otherObjectHeader->isWrapperHeaderMarked()) {
+      currentVisitor(ThreadState::current()->isolate())
+          ->traceWrappers(otherObjectHeader->payload());
+    }
+  }
+
   void RegisterV8References(const std::vector<std::pair<void*, void*>>&
                                 internalFieldsOfPotentialWrappers) override;
   void RegisterV8Reference(const std::pair<void*, void*>& internalFields);

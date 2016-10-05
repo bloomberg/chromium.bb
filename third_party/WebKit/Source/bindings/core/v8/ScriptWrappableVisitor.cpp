@@ -280,4 +280,8 @@ void ScriptWrappableVisitor::performCleanup(v8::Isolate* isolate) {
     scriptWrappableVisitor->performCleanup();
 }
 
+WrapperVisitor* ScriptWrappableVisitor::currentVisitor(v8::Isolate* isolate) {
+  return V8PerIsolateData::from(isolate)->scriptWrappableVisitor();
+}
+
 }  // namespace blink

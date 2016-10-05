@@ -98,8 +98,9 @@ class PLATFORM_EXPORT WrapperVisitor {
   void traceWrappers(const T* traceable) const {
     static_assert(sizeof(T), "T must be fully defined");
 
-    if (!traceable)
+    if (!traceable) {
       return;
+    }
 
     if (TraceTrait<T>::heapObjectHeader(traceable)->isWrapperHeaderMarked()) {
       return;

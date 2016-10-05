@@ -6,6 +6,7 @@
 #define DeathAwareScriptWrappable_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ScriptWrappableVisitor.h"
 #include "platform/heap/Heap.h"
 #include "wtf/text/WTFString.h"
 #include <signal.h>
@@ -36,8 +37,19 @@ class DeathAwareScriptWrappable
     s_instance = instance;
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
-  DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {}
+  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(m_dependency); }
+
+  DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
+    visitor->traceWrappers(m_dependency);
+  }
+
+  void setDependency(DeathAwareScriptWrappable* dependency) {
+    ScriptWrappableVisitor::writeBarrier(this, dependency);
+    m_dependency = dependency;
+  }
+
+ private:
+  Member<DeathAwareScriptWrappable> m_dependency;
 };
 
 }  // namespace blink
