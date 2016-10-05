@@ -219,7 +219,8 @@ def SetupWpr(device, wpr_archive_path, record, network_condition_name,
   """Sets up the WebPageReplay server if needed."""
   if wpr_archive_path or record or network_condition_name or out_log_path:
     return device_setup.RemoteWprHost(device, wpr_archive_path, record,
-                                      network_condition_name, out_log_path)
+                                      network_condition_name,
+                                      out_log_path=out_log_path)
   # WebPageReplay disabled.
   return DummyWprHost()
 
