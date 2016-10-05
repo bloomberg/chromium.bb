@@ -88,6 +88,7 @@ class CSSPropertyParser {
                                  bool important);
   bool consumeBackgroundShorthand(const StylePropertyShorthand&,
                                   bool important);
+  bool consumeOffsetShorthand(bool important);
 
   bool consumeColumns(bool important);
 

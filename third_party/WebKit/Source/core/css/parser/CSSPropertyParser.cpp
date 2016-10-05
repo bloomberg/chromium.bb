@@ -1605,6 +1605,24 @@ CSSValue* consumeOffsetPosition(CSSParserTokenRange& range,
   return consumePosition(range, cssParserMode, UnitlessQuirk::Forbid);
 }
 
+// offset: <offset-path> <offset-distance> <offset-rotation>
+bool CSSPropertyParser::consumeOffsetShorthand(bool important) {
+  const CSSValue* offsetPath = consumePathOrNone(m_range);
+  const CSSValue* offsetDistance =
+      consumeLengthOrPercent(m_range, m_context.mode(), ValueRangeAll);
+  const CSSValue* offsetRotation = consumeOffsetRotation(m_range);
+  if (!offsetPath || !offsetDistance || !offsetRotation || !m_range.atEnd())
+    return false;
+
+  addProperty(CSSPropertyOffsetPath, CSSPropertyOffset, *offsetPath, important);
+  addProperty(CSSPropertyOffsetDistance, CSSPropertyOffset, *offsetDistance,
+              important);
+  addProperty(CSSPropertyOffsetRotation, CSSPropertyOffset, *offsetRotation,
+              important);
+
+  return true;
+}
+
 static CSSValue* consumeTextEmphasisStyle(CSSParserTokenRange& range) {
   CSSValueID id = range.peek().id();
   if (id == CSSValueNone)
@@ -5067,7 +5085,7 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty,
     case CSSPropertyMotion:
       return consumeShorthandGreedily(motionShorthand(), important);
     case CSSPropertyOffset:
-      return consumeShorthandGreedily(offsetShorthand(), important);
+      return consumeOffsetShorthand(important);
     case CSSPropertyWebkitTextEmphasis:
       return consumeShorthandGreedily(webkitTextEmphasisShorthand(), important);
     case CSSPropertyOutline:
