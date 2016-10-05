@@ -43,7 +43,7 @@ MockBluetoothDevice::MockBluetoothDevice(MockBluetoothAdapter* adapter,
       .WillByDefault(testing::Return(
           base::UTF8ToUTF16(name_ ? name_.value() : "Unnamed Device")));
   ON_CALL(*this, GetDeviceType())
-      .WillByDefault(testing::Return(DEVICE_UNKNOWN));
+      .WillByDefault(testing::Return(BluetoothDeviceType::UNKNOWN));
   ON_CALL(*this, IsPaired())
       .WillByDefault(testing::Return(paired));
   ON_CALL(*this, IsConnected())

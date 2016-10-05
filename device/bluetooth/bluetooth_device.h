@@ -60,26 +60,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
     VENDOR_ID_MAX_VALUE = VENDOR_ID_USB
   };
 
-  // Possible values that may be returned by GetDeviceType(), representing
-  // different types of bluetooth device that we support or are aware of
-  // decoded from the bluetooth class information.
-  enum DeviceType {
-    DEVICE_UNKNOWN,
-    DEVICE_COMPUTER,
-    DEVICE_PHONE,
-    DEVICE_MODEM,
-    DEVICE_AUDIO,
-    DEVICE_CAR_AUDIO,
-    DEVICE_VIDEO,
-    DEVICE_PERIPHERAL,
-    DEVICE_JOYSTICK,
-    DEVICE_GAMEPAD,
-    DEVICE_KEYBOARD,
-    DEVICE_MOUSE,
-    DEVICE_TABLET,
-    DEVICE_KEYBOARD_MOUSE_COMBO
-  };
-
   // The value returned if the RSSI or transmit power cannot be read.
   static const int kUnknownPower = 127;
   // The value returned if the appearance is not present.
@@ -269,7 +249,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // of, by decoding the bluetooth class information for Classic devices or
   // by decoding the device's appearance for LE devices. For example,
   // Microsoft Universal Foldable Keyboard only advertises the appearance.
-  DeviceType GetDeviceType() const;
+  BluetoothDeviceType GetDeviceType() const;
 
   // Indicates whether the device is known to support pairing based on its
   // device class and address.

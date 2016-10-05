@@ -128,7 +128,7 @@ class ProximityAuthBluetoothConnectionFinderTest : public testing::Test {
       : adapter_(new NiceMock<device::MockBluetoothAdapter>),
         bluetooth_device_(new NiceMock<device::MockBluetoothDevice>(
             adapter_.get(),
-            device::BluetoothDevice::DEVICE_PHONE,
+            static_cast<uint32_t>(device::BluetoothDeviceType::PHONE),
             kTestRemoteDeviceName,
             kTestRemoteDeviceBluetoothAddress,
             true,

@@ -29,10 +29,10 @@ const char kBTPairingState[] = "pairing";
 // Standard length of pincode for pairing BT keyboards.
 const int kPincodeLength = 6;
 
-bool DeviceIsPointing(device::BluetoothDevice::DeviceType device_type) {
-  return device_type == device::BluetoothDevice::DEVICE_MOUSE ||
-         device_type == device::BluetoothDevice::DEVICE_KEYBOARD_MOUSE_COMBO ||
-         device_type == device::BluetoothDevice::DEVICE_TABLET;
+bool DeviceIsPointing(device::BluetoothDeviceType device_type) {
+  return device_type == device::BluetoothDeviceType::MOUSE ||
+         device_type == device::BluetoothDeviceType::KEYBOARD_MOUSE_COMBO ||
+         device_type == device::BluetoothDeviceType::TABLET;
 }
 
 bool DeviceIsPointing(const device::InputServiceLinux::InputDeviceInfo& info) {
@@ -40,9 +40,9 @@ bool DeviceIsPointing(const device::InputServiceLinux::InputDeviceInfo& info) {
          info.is_tablet;
 }
 
-bool DeviceIsKeyboard(device::BluetoothDevice::DeviceType device_type) {
-  return device_type == device::BluetoothDevice::DEVICE_KEYBOARD ||
-         device_type == device::BluetoothDevice::DEVICE_KEYBOARD_MOUSE_COMBO;
+bool DeviceIsKeyboard(device::BluetoothDeviceType device_type) {
+  return device_type == device::BluetoothDeviceType::KEYBOARD ||
+         device_type == device::BluetoothDeviceType::KEYBOARD_MOUSE_COMBO;
 }
 
 }  // namespace
@@ -258,19 +258,18 @@ void HIDDetectionScreen::ConnectBTDevice(device::BluetoothDevice* device) {
                       device->IsConnecting();
   if (!device->IsPairable() || device_busy)
     return;
-  device::BluetoothDevice::DeviceType device_type = device->GetDeviceType();
+  device::BluetoothDeviceType device_type = device->GetDeviceType();
 
-  if (device_type == device::BluetoothDevice::DEVICE_MOUSE ||
-      device_type == device::BluetoothDevice::DEVICE_TABLET) {
+  if (device_type == device::BluetoothDeviceType::MOUSE ||
+      device_type == device::BluetoothDeviceType::TABLET) {
     if (mouse_is_pairing_)
       return;
     mouse_is_pairing_ = true;
-  } else if (device_type == device::BluetoothDevice::DEVICE_KEYBOARD) {
+  } else if (device_type == device::BluetoothDeviceType::KEYBOARD) {
     if (keyboard_is_pairing_)
       return;
     keyboard_is_pairing_ = true;
-  } else if (device_type ==
-      device::BluetoothDevice::DEVICE_KEYBOARD_MOUSE_COMBO) {
+  } else if (device_type == device::BluetoothDeviceType::KEYBOARD_MOUSE_COMBO) {
     if (mouse_is_pairing_ && keyboard_is_pairing_)
       return;
     mouse_is_pairing_ = true;
@@ -284,8 +283,7 @@ void HIDDetectionScreen::ConnectBTDevice(device::BluetoothDevice* device) {
                        device->GetAddress(), device_type));
 }
 
-void HIDDetectionScreen::BTConnected(
-    device::BluetoothDevice::DeviceType device_type) {
+void HIDDetectionScreen::BTConnected(device::BluetoothDeviceType device_type) {
   if (DeviceIsPointing(device_type))
     mouse_is_pairing_ = false;
   if (DeviceIsKeyboard(device_type)) {
@@ -299,7 +297,7 @@ void HIDDetectionScreen::BTConnected(
 
 void HIDDetectionScreen::BTConnectError(
     const std::string& address,
-    device::BluetoothDevice::DeviceType device_type,
+    device::BluetoothDeviceType device_type,
     device::BluetoothDevice::ConnectErrorCode error_code) {
   LOG(WARNING) << "BTConnectError while connecting " << address
                << " error code = " << error_code;

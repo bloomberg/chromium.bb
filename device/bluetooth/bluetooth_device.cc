@@ -101,42 +101,42 @@ base::string16 BluetoothDevice::GetNameForDisplay() const {
 
 base::string16 BluetoothDevice::GetAddressWithLocalizedDeviceTypeName() const {
   base::string16 address_utf16 = base::UTF8ToUTF16(GetAddress());
-  BluetoothDevice::DeviceType device_type = GetDeviceType();
+  BluetoothDeviceType device_type = GetDeviceType();
   switch (device_type) {
-    case DEVICE_COMPUTER:
+    case BluetoothDeviceType::COMPUTER:
       return l10n_util::GetStringFUTF16(IDS_BLUETOOTH_DEVICE_COMPUTER,
                                         address_utf16);
-    case DEVICE_PHONE:
+    case BluetoothDeviceType::PHONE:
       return l10n_util::GetStringFUTF16(IDS_BLUETOOTH_DEVICE_PHONE,
                                         address_utf16);
-    case DEVICE_MODEM:
+    case BluetoothDeviceType::MODEM:
       return l10n_util::GetStringFUTF16(IDS_BLUETOOTH_DEVICE_MODEM,
                                         address_utf16);
-    case DEVICE_AUDIO:
+    case BluetoothDeviceType::AUDIO:
       return l10n_util::GetStringFUTF16(IDS_BLUETOOTH_DEVICE_AUDIO,
                                         address_utf16);
-    case DEVICE_CAR_AUDIO:
+    case BluetoothDeviceType::CAR_AUDIO:
       return l10n_util::GetStringFUTF16(IDS_BLUETOOTH_DEVICE_CAR_AUDIO,
                                         address_utf16);
-    case DEVICE_VIDEO:
+    case BluetoothDeviceType::VIDEO:
       return l10n_util::GetStringFUTF16(IDS_BLUETOOTH_DEVICE_VIDEO,
                                         address_utf16);
-    case DEVICE_JOYSTICK:
+    case BluetoothDeviceType::JOYSTICK:
       return l10n_util::GetStringFUTF16(IDS_BLUETOOTH_DEVICE_JOYSTICK,
                                         address_utf16);
-    case DEVICE_GAMEPAD:
+    case BluetoothDeviceType::GAMEPAD:
       return l10n_util::GetStringFUTF16(IDS_BLUETOOTH_DEVICE_GAMEPAD,
                                         address_utf16);
-    case DEVICE_KEYBOARD:
+    case BluetoothDeviceType::KEYBOARD:
       return l10n_util::GetStringFUTF16(IDS_BLUETOOTH_DEVICE_KEYBOARD,
                                         address_utf16);
-    case DEVICE_MOUSE:
+    case BluetoothDeviceType::MOUSE:
       return l10n_util::GetStringFUTF16(IDS_BLUETOOTH_DEVICE_MOUSE,
                                         address_utf16);
-    case DEVICE_TABLET:
+    case BluetoothDeviceType::TABLET:
       return l10n_util::GetStringFUTF16(IDS_BLUETOOTH_DEVICE_TABLET,
                                         address_utf16);
-    case DEVICE_KEYBOARD_MOUSE_COMBO:
+    case BluetoothDeviceType::KEYBOARD_MOUSE_COMBO:
       return l10n_util::GetStringFUTF16(
           IDS_BLUETOOTH_DEVICE_KEYBOARD_MOUSE_COMBO, address_utf16);
     default:
@@ -145,13 +145,13 @@ base::string16 BluetoothDevice::GetAddressWithLocalizedDeviceTypeName() const {
   }
 }
 
-BluetoothDevice::DeviceType BluetoothDevice::GetDeviceType() const {
+BluetoothDeviceType BluetoothDevice::GetDeviceType() const {
   // https://www.bluetooth.org/Technical/AssignedNumbers/baseband.htm
   uint32_t bluetooth_class = GetBluetoothClass();
   switch ((bluetooth_class & 0x1f00) >> 8) {
     case 0x01:
       // Computer major device class.
-      return DEVICE_COMPUTER;
+      return BluetoothDeviceType::COMPUTER;
     case 0x02:
       // Phone major device class.
       switch ((bluetooth_class & 0xfc) >> 2) {
@@ -159,11 +159,11 @@ BluetoothDevice::DeviceType BluetoothDevice::GetDeviceType() const {
         case 0x02:
         case 0x03:
           // Cellular, cordless and smart phones.
-          return DEVICE_PHONE;
+          return BluetoothDeviceType::PHONE;
         case 0x04:
         case 0x05:
           // Modems: wired or voice gateway and common ISDN access.
-          return DEVICE_MODEM;
+          return BluetoothDeviceType::MODEM;
       }
       break;
     case 0x04:
@@ -171,7 +171,7 @@ BluetoothDevice::DeviceType BluetoothDevice::GetDeviceType() const {
       switch ((bluetooth_class & 0xfc) >> 2) {
         case 0x08:
           // Car audio.
-          return DEVICE_CAR_AUDIO;
+          return BluetoothDeviceType::CAR_AUDIO;
         case 0x0b:
         case 0x0c:
         case 0x0d:
@@ -179,9 +179,9 @@ BluetoothDevice::DeviceType BluetoothDevice::GetDeviceType() const {
         case 0x0f:
         case 0x010:
           // Video devices.
-          return DEVICE_VIDEO;
+          return BluetoothDeviceType::VIDEO;
         default:
-          return DEVICE_AUDIO;
+          return BluetoothDeviceType::AUDIO;
       }
       break;
     case 0x05:
@@ -192,31 +192,31 @@ BluetoothDevice::DeviceType BluetoothDevice::GetDeviceType() const {
           switch ((bluetooth_class & 0x01e) >> 2) {
             case 0x01:
               // Joystick.
-              return DEVICE_JOYSTICK;
+              return BluetoothDeviceType::JOYSTICK;
             case 0x02:
               // Gamepad.
-              return DEVICE_GAMEPAD;
+              return BluetoothDeviceType::GAMEPAD;
             default:
-              return DEVICE_PERIPHERAL;
+              return BluetoothDeviceType::PERIPHERAL;
           }
           break;
         case 0x01:
           // Keyboard.
-          return DEVICE_KEYBOARD;
+          return BluetoothDeviceType::KEYBOARD;
         case 0x02:
           // Pointing device.
           switch ((bluetooth_class & 0x01e) >> 2) {
             case 0x05:
               // Digitizer tablet.
-              return DEVICE_TABLET;
+              return BluetoothDeviceType::TABLET;
             default:
               // Mouse.
-              return DEVICE_MOUSE;
+              return BluetoothDeviceType::MOUSE;
           }
           break;
         case 0x03:
           // Combo device.
-          return DEVICE_KEYBOARD_MOUSE_COMBO;
+          return BluetoothDeviceType::KEYBOARD_MOUSE_COMBO;
       }
       break;
   }
@@ -229,45 +229,45 @@ BluetoothDevice::DeviceType BluetoothDevice::GetDeviceType() const {
   switch ((appearance & 0xffc0) >> 6) {
     case 0x01:
       // Generic phone
-      return DEVICE_PHONE;
+      return BluetoothDeviceType::PHONE;
     case 0x02:
       // Generic computer
-      return DEVICE_COMPUTER;
+      return BluetoothDeviceType::COMPUTER;
     case 0x0f:
       // HID subtype
       switch (appearance & 0x3f) {
         case 0x01:
           // Keyboard.
-          return DEVICE_KEYBOARD;
+          return BluetoothDeviceType::KEYBOARD;
         case 0x02:
           // Mouse
-          return DEVICE_MOUSE;
+          return BluetoothDeviceType::MOUSE;
         case 0x03:
           // Joystick
-          return DEVICE_JOYSTICK;
+          return BluetoothDeviceType::JOYSTICK;
         case 0x04:
           // Gamepad
-          return DEVICE_GAMEPAD;
+          return BluetoothDeviceType::GAMEPAD;
         case 0x05:
           // Digitizer tablet
-          return DEVICE_TABLET;
+          return BluetoothDeviceType::TABLET;
       }
   }
 
-  return DEVICE_UNKNOWN;
+  return BluetoothDeviceType::UNKNOWN;
 }
 
 bool BluetoothDevice::IsPairable() const {
-  DeviceType type = GetDeviceType();
+  BluetoothDeviceType type = GetDeviceType();
 
   // Get the vendor part of the address: "00:11:22" for "00:11:22:33:44:55"
   std::string vendor = GetAddress().substr(0, 8);
 
   // Verbatim "Bluetooth Mouse", model 96674
-  if (type == DEVICE_MOUSE && vendor == "00:12:A1")
+  if (type == BluetoothDeviceType::MOUSE && vendor == "00:12:A1")
     return false;
   // Microsoft "Microsoft Bluetooth Notebook Mouse 5000", model X807028-001
-  if (type == DEVICE_MOUSE && vendor == "7C:ED:8D")
+  if (type == BluetoothDeviceType::MOUSE && vendor == "7C:ED:8D")
     return false;
   // Sony PlayStation Dualshock3
   if (IsTrustable())

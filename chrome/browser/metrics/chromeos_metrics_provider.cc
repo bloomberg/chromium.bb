@@ -40,35 +40,35 @@ typedef SystemProfileProto::Hardware::Bluetooth::PairedDevice PairedDevice;
 namespace {
 
 PairedDevice::Type AsBluetoothDeviceType(
-    device::BluetoothDevice::DeviceType device_type) {
+    device::BluetoothDeviceType device_type) {
   switch (device_type) {
-    case device::BluetoothDevice::DEVICE_UNKNOWN:
+    case device::BluetoothDeviceType::UNKNOWN:
       return PairedDevice::DEVICE_UNKNOWN;
-    case device::BluetoothDevice::DEVICE_COMPUTER:
+    case device::BluetoothDeviceType::COMPUTER:
       return PairedDevice::DEVICE_COMPUTER;
-    case device::BluetoothDevice::DEVICE_PHONE:
+    case device::BluetoothDeviceType::PHONE:
       return PairedDevice::DEVICE_PHONE;
-    case device::BluetoothDevice::DEVICE_MODEM:
+    case device::BluetoothDeviceType::MODEM:
       return PairedDevice::DEVICE_MODEM;
-    case device::BluetoothDevice::DEVICE_AUDIO:
+    case device::BluetoothDeviceType::AUDIO:
       return PairedDevice::DEVICE_AUDIO;
-    case device::BluetoothDevice::DEVICE_CAR_AUDIO:
+    case device::BluetoothDeviceType::CAR_AUDIO:
       return PairedDevice::DEVICE_CAR_AUDIO;
-    case device::BluetoothDevice::DEVICE_VIDEO:
+    case device::BluetoothDeviceType::VIDEO:
       return PairedDevice::DEVICE_VIDEO;
-    case device::BluetoothDevice::DEVICE_PERIPHERAL:
+    case device::BluetoothDeviceType::PERIPHERAL:
       return PairedDevice::DEVICE_PERIPHERAL;
-    case device::BluetoothDevice::DEVICE_JOYSTICK:
+    case device::BluetoothDeviceType::JOYSTICK:
       return PairedDevice::DEVICE_JOYSTICK;
-    case device::BluetoothDevice::DEVICE_GAMEPAD:
+    case device::BluetoothDeviceType::GAMEPAD:
       return PairedDevice::DEVICE_GAMEPAD;
-    case device::BluetoothDevice::DEVICE_KEYBOARD:
+    case device::BluetoothDeviceType::KEYBOARD:
       return PairedDevice::DEVICE_KEYBOARD;
-    case device::BluetoothDevice::DEVICE_MOUSE:
+    case device::BluetoothDeviceType::MOUSE:
       return PairedDevice::DEVICE_MOUSE;
-    case device::BluetoothDevice::DEVICE_TABLET:
+    case device::BluetoothDeviceType::TABLET:
       return PairedDevice::DEVICE_TABLET;
-    case device::BluetoothDevice::DEVICE_KEYBOARD_MOUSE_COMBO:
+    case device::BluetoothDeviceType::KEYBOARD_MOUSE_COMBO:
       return PairedDevice::DEVICE_KEYBOARD_MOUSE_COMBO;
   }
 

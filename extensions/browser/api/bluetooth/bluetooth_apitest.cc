@@ -25,6 +25,7 @@
 
 using device::BluetoothAdapter;
 using device::BluetoothDevice;
+using device::BluetoothDeviceType;
 using device::BluetoothDiscoverySession;
 using device::BluetoothUUID;
 using device::MockBluetoothAdapter;
@@ -420,7 +421,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, DeviceInfo) {
   EXPECT_CALL(*device1_, GetBluetoothClass())
       .WillRepeatedly(testing::Return(0x080104));
   EXPECT_CALL(*device1_, GetDeviceType())
-      .WillRepeatedly(testing::Return(BluetoothDevice::DEVICE_COMPUTER));
+      .WillRepeatedly(testing::Return(BluetoothDeviceType::COMPUTER));
   EXPECT_CALL(*device1_, GetVendorIDSource())
       .WillRepeatedly(testing::Return(BluetoothDevice::VENDOR_ID_BLUETOOTH));
   EXPECT_CALL(*device1_, GetVendorID()).WillRepeatedly(testing::Return(0x00E0));

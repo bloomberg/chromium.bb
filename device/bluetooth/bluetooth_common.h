@@ -24,6 +24,26 @@ enum BluetoothTransport : uint8_t {
       (BLUETOOTH_TRANSPORT_CLASSIC | BLUETOOTH_TRANSPORT_LE)
 };
 
+// Possible values that may be returned by BluetoothDevice::GetDeviceType(),
+// representing different types of bluetooth device that we support or are aware
+// of decoded from the bluetooth class information.
+enum class BluetoothDeviceType {
+  UNKNOWN,
+  COMPUTER,
+  PHONE,
+  MODEM,
+  AUDIO,
+  CAR_AUDIO,
+  VIDEO,
+  PERIPHERAL,
+  JOYSTICK,
+  GAMEPAD,
+  KEYBOARD,
+  MOUSE,
+  TABLET,
+  KEYBOARD_MOUSE_COMBO
+};
+
 }  // namespace device
 
 #endif  // DEVICE_BLUETOOTH_BLUETOOTH_TYPES_H_

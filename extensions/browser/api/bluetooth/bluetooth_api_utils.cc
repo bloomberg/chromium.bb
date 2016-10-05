@@ -13,6 +13,7 @@
 namespace bluetooth = extensions::api::bluetooth;
 
 using device::BluetoothDevice;
+using device::BluetoothDeviceType;
 using bluetooth::VendorIdSource;
 
 namespace {
@@ -35,49 +36,49 @@ bool ConvertVendorIDSourceToApi(const BluetoothDevice::VendorIDSource& input,
   }
 }
 
-bool ConvertDeviceTypeToApi(const BluetoothDevice::DeviceType& input,
+bool ConvertDeviceTypeToApi(const BluetoothDeviceType& input,
                             bluetooth::DeviceType* output) {
   switch (input) {
-    case BluetoothDevice::DEVICE_UNKNOWN:
+    case BluetoothDeviceType::UNKNOWN:
       *output = bluetooth::DEVICE_TYPE_NONE;
       return true;
-    case BluetoothDevice::DEVICE_COMPUTER:
+    case BluetoothDeviceType::COMPUTER:
       *output = bluetooth::DEVICE_TYPE_COMPUTER;
       return true;
-    case BluetoothDevice::DEVICE_PHONE:
+    case BluetoothDeviceType::PHONE:
       *output = bluetooth::DEVICE_TYPE_PHONE;
       return true;
-    case BluetoothDevice::DEVICE_MODEM:
+    case BluetoothDeviceType::MODEM:
       *output = bluetooth::DEVICE_TYPE_MODEM;
       return true;
-    case BluetoothDevice::DEVICE_AUDIO:
+    case BluetoothDeviceType::AUDIO:
       *output = bluetooth::DEVICE_TYPE_AUDIO;
       return true;
-    case BluetoothDevice::DEVICE_CAR_AUDIO:
+    case BluetoothDeviceType::CAR_AUDIO:
       *output = bluetooth::DEVICE_TYPE_CARAUDIO;
       return true;
-    case BluetoothDevice::DEVICE_VIDEO:
+    case BluetoothDeviceType::VIDEO:
       *output = bluetooth::DEVICE_TYPE_VIDEO;
       return true;
-    case BluetoothDevice::DEVICE_PERIPHERAL:
+    case BluetoothDeviceType::PERIPHERAL:
       *output = bluetooth::DEVICE_TYPE_PERIPHERAL;
       return true;
-    case BluetoothDevice::DEVICE_JOYSTICK:
+    case BluetoothDeviceType::JOYSTICK:
       *output = bluetooth::DEVICE_TYPE_JOYSTICK;
       return true;
-    case BluetoothDevice::DEVICE_GAMEPAD:
+    case BluetoothDeviceType::GAMEPAD:
       *output = bluetooth::DEVICE_TYPE_GAMEPAD;
       return true;
-    case BluetoothDevice::DEVICE_KEYBOARD:
+    case BluetoothDeviceType::KEYBOARD:
       *output = bluetooth::DEVICE_TYPE_KEYBOARD;
       return true;
-    case BluetoothDevice::DEVICE_MOUSE:
+    case BluetoothDeviceType::MOUSE:
       *output = bluetooth::DEVICE_TYPE_MOUSE;
       return true;
-    case BluetoothDevice::DEVICE_TABLET:
+    case BluetoothDeviceType::TABLET:
       *output = bluetooth::DEVICE_TYPE_TABLET;
       return true;
-    case BluetoothDevice::DEVICE_KEYBOARD_MOUSE_COMBO:
+    case BluetoothDeviceType::KEYBOARD_MOUSE_COMBO:
       *output = bluetooth::DEVICE_TYPE_KEYBOARDMOUSECOMBO;
       return true;
     default:

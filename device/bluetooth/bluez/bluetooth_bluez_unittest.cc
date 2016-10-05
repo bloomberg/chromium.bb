@@ -35,6 +35,7 @@
 using device::BluetoothAdapter;
 using device::BluetoothAdapterFactory;
 using device::BluetoothDevice;
+using device::BluetoothDeviceType;
 using device::BluetoothDiscoveryFilter;
 using device::BluetoothDiscoverySession;
 using device::BluetoothUUID;
@@ -2146,7 +2147,7 @@ TEST_F(BluetoothBlueZTest, DeviceProperties) {
   EXPECT_EQ(
       base::UTF8ToUTF16(bluez::FakeBluetoothDeviceClient::kPairedDeviceAlias),
       devices[idx]->GetNameForDisplay());
-  EXPECT_EQ(BluetoothDevice::DEVICE_COMPUTER, devices[idx]->GetDeviceType());
+  EXPECT_EQ(BluetoothDeviceType::COMPUTER, devices[idx]->GetDeviceType());
   EXPECT_TRUE(devices[idx]->IsPaired());
   EXPECT_FALSE(devices[idx]->IsConnected());
   EXPECT_FALSE(devices[idx]->IsConnecting());
@@ -2176,7 +2177,7 @@ TEST_F(BluetoothBlueZTest, DeviceClassChanged) {
   int idx = GetDeviceIndexByAddress(
       devices, bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress);
   ASSERT_NE(-1, idx);
-  ASSERT_EQ(BluetoothDevice::DEVICE_COMPUTER, devices[idx]->GetDeviceType());
+  ASSERT_EQ(BluetoothDeviceType::COMPUTER, devices[idx]->GetDeviceType());
 
   // Install an observer; expect the DeviceChanged method to be called when
   // we change the class of the device.
@@ -2191,7 +2192,7 @@ TEST_F(BluetoothBlueZTest, DeviceClassChanged) {
   EXPECT_EQ(1, observer.device_changed_count());
   EXPECT_EQ(devices[idx], observer.last_device());
 
-  EXPECT_EQ(BluetoothDevice::DEVICE_MOUSE, devices[idx]->GetDeviceType());
+  EXPECT_EQ(BluetoothDeviceType::MOUSE, devices[idx]->GetDeviceType());
 }
 
 TEST_F(BluetoothBlueZTest, DeviceAppearance) {
@@ -2204,7 +2205,7 @@ TEST_F(BluetoothBlueZTest, DeviceAppearance) {
   int idx = GetDeviceIndexByAddress(
       devices, bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress);
   ASSERT_NE(-1, idx);
-  ASSERT_EQ(BluetoothDevice::DEVICE_COMPUTER, devices[idx]->GetDeviceType());
+  ASSERT_EQ(BluetoothDeviceType::COMPUTER, devices[idx]->GetDeviceType());
 
   // Install an observer; expect the DeviceChanged method to be called when
   // we change the appearance of the device.
@@ -2260,7 +2261,7 @@ TEST_F(BluetoothBlueZTest, DeviceTypebyAppearanceNotBluetoothClass) {
   int idx = GetDeviceIndexByAddress(
       devices, bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress);
   ASSERT_NE(-1, idx);
-  ASSERT_EQ(BluetoothDevice::DEVICE_COMPUTER, devices[idx]->GetDeviceType());
+  ASSERT_EQ(BluetoothDeviceType::COMPUTER, devices[idx]->GetDeviceType());
 
   // Install an observer; expect the DeviceChanged method to be called when
   // we change the appearance of the device.
@@ -2273,14 +2274,14 @@ TEST_F(BluetoothBlueZTest, DeviceTypebyAppearanceNotBluetoothClass) {
   // Let the device come without bluetooth_class.
   properties->bluetooth_class.ReplaceValue(0);  // DeviceChanged method called
   properties->appearance.ReplaceValue(0);       // DeviceChanged method called
-  EXPECT_EQ(BluetoothDevice::DEVICE_UNKNOWN, devices[idx]->GetDeviceType());
+  EXPECT_EQ(BluetoothDeviceType::UNKNOWN, devices[idx]->GetDeviceType());
   EXPECT_EQ(2, observer.device_changed_count());
   EXPECT_EQ(devices[idx], observer.last_device());
 
   // Set the device appearance as keyboard.
   properties->appearance.ReplaceValue(961);  // DeviceChanged method called
   properties->appearance.set_valid(true);
-  EXPECT_EQ(BluetoothDevice::DEVICE_KEYBOARD, devices[idx]->GetDeviceType());
+  EXPECT_EQ(BluetoothDeviceType::KEYBOARD, devices[idx]->GetDeviceType());
   EXPECT_EQ(3, observer.device_changed_count());
   EXPECT_EQ(devices[idx], observer.last_device());
   // When discovery is over, the value should be invalidated.
@@ -2289,12 +2290,12 @@ TEST_F(BluetoothBlueZTest, DeviceTypebyAppearanceNotBluetoothClass) {
   properties->NotifyPropertyChanged(properties->appearance.name());
   EXPECT_EQ(4, observer.device_changed_count());
   EXPECT_EQ(devices[idx], observer.last_device());
-  EXPECT_EQ(BluetoothDevice::DEVICE_UNKNOWN, devices[idx]->GetDeviceType());
+  EXPECT_EQ(BluetoothDeviceType::UNKNOWN, devices[idx]->GetDeviceType());
 
   // Change the device appearance to mouse.
   properties->appearance.ReplaceValue(962);  // DeviceChanged method called
   properties->appearance.set_valid(true);
-  EXPECT_EQ(BluetoothDevice::DEVICE_MOUSE, devices[idx]->GetDeviceType());
+  EXPECT_EQ(BluetoothDeviceType::MOUSE, devices[idx]->GetDeviceType());
   EXPECT_EQ(5, observer.device_changed_count());
   EXPECT_EQ(devices[idx], observer.last_device());
   // When discovery is over, the value should be invalidated.
@@ -2303,7 +2304,7 @@ TEST_F(BluetoothBlueZTest, DeviceTypebyAppearanceNotBluetoothClass) {
   properties->NotifyPropertyChanged(properties->appearance.name());
   EXPECT_EQ(6, observer.device_changed_count());
   EXPECT_EQ(devices[idx], observer.last_device());
-  EXPECT_EQ(BluetoothDevice::DEVICE_UNKNOWN, devices[idx]->GetDeviceType());
+  EXPECT_EQ(BluetoothDeviceType::UNKNOWN, devices[idx]->GetDeviceType());
 }
 
 TEST_F(BluetoothBlueZTest, DeviceNameChanged) {

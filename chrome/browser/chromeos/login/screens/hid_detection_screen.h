@@ -160,13 +160,13 @@ class HIDDetectionScreen : public HIDDetectionModel,
 
   // Called by device::BluetoothDevice on a successful pairing and connection
   // to a device.
-  void BTConnected(device::BluetoothDevice::DeviceType device_type);
+  void BTConnected(device::BluetoothDeviceType device_type);
 
   // Called by device::BluetoothDevice in response to a failure to
   // connect to the device with bluetooth address |address| due to an error
   // encoded in |error_code|.
   void BTConnectError(const std::string& address,
-                      device::BluetoothDevice::DeviceType device_type,
+                      device::BluetoothDeviceType device_type,
                       device::BluetoothDevice::ConnectErrorCode error_code);
 
   // Sends a notification to the Web UI of the status of available Bluetooth/USB
