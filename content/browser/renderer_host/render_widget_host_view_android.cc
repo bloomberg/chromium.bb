@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/android/application_status_listener.h"
 #include "base/android/build_info.h"
 #include "base/android/context_utils.h"
 #include "base/bind.h"
@@ -16,6 +17,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
@@ -100,6 +102,29 @@ const int kUndefinedCompositorFrameSinkId = -1;
 
 static const char kAsyncReadBackString[] = "Compositing.CopyFromSurfaceTime";
 
+class PendingReadbackLock;
+
+PendingReadbackLock* g_pending_readback_lock = nullptr;
+
+class PendingReadbackLock : public base::RefCounted<PendingReadbackLock> {
+ public:
+  PendingReadbackLock() {
+    DCHECK_EQ(g_pending_readback_lock, nullptr);
+    g_pending_readback_lock = this;
+  }
+
+ private:
+  friend class base::RefCounted<PendingReadbackLock>;
+
+  ~PendingReadbackLock() {
+    DCHECK_EQ(g_pending_readback_lock, this);
+    g_pending_readback_lock = nullptr;
+  }
+};
+
+using base::android::ApplicationState;
+using base::android::ApplicationStatusListener;
+
 class GLHelperHolder {
  public:
   static GLHelperHolder* Create();
@@ -111,16 +136,31 @@ class GLHelperHolder {
     return provider_->ContextGL()->GetGraphicsResetStatusKHR() != GL_NO_ERROR;
   }
 
+  void ReleaseIfPossible();
+
  private:
-  GLHelperHolder() = default;
+  GLHelperHolder();
   void Initialize();
   void OnContextLost();
+  void OnApplicationStatusChanged(ApplicationState new_state);
 
   scoped_refptr<ContextProviderCommandBuffer> provider_;
   std::unique_ptr<display_compositor::GLHelper> gl_helper_;
 
+  // Set to |false| if there are only stopped activities (or none).
+  bool has_running_or_paused_activities_;
+
+  std::unique_ptr<ApplicationStatusListener> app_status_listener_;
+
   DISALLOW_COPY_AND_ASSIGN(GLHelperHolder);
 };
+
+GLHelperHolder::GLHelperHolder()
+    : has_running_or_paused_activities_(
+          (ApplicationStatusListener::GetState() ==
+           base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES) ||
+          (ApplicationStatusListener::GetState() ==
+           base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES)) {}
 
 GLHelperHolder* GLHelperHolder::Create() {
   GLHelperHolder* holder = new GLHelperHolder;
@@ -184,19 +224,42 @@ void GLHelperHolder::Initialize() {
       base::Bind(&GLHelperHolder::OnContextLost, base::Unretained(this)));
   gl_helper_.reset(new display_compositor::GLHelper(
       provider_->ContextGL(), provider_->ContextSupport()));
+
+  // Unretained() is safe because |this| owns the following two callbacks.
+  app_status_listener_.reset(new ApplicationStatusListener(base::Bind(
+      &GLHelperHolder::OnApplicationStatusChanged, base::Unretained(this))));
+}
+
+void GLHelperHolder::ReleaseIfPossible() {
+  if (!has_running_or_paused_activities_ && !g_pending_readback_lock) {
+    gl_helper_.reset();
+    provider_ = nullptr;
+    // Make sure this will get recreated on next use.
+    DCHECK(IsLost());
+  }
 }
 
 void GLHelperHolder::OnContextLost() {
+  app_status_listener_.reset();
+  gl_helper_.reset();
   // Need to post a task because the command buffer client cannot be deleted
   // from within this callback.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&RenderWidgetHostViewAndroid::OnContextLost));
 }
 
-// This can only be used for readback postprocessing. It may return null if the
-// channel was lost and not reestablished yet.
-display_compositor::GLHelper* GetPostReadbackGLHelper() {
+void GLHelperHolder::OnApplicationStatusChanged(ApplicationState new_state) {
+  has_running_or_paused_activities_ =
+      new_state == base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES ||
+      new_state == base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES;
+  ReleaseIfPossible();
+}
+
+GLHelperHolder* GetPostReadbackGLHelperHolder(bool create_if_necessary) {
   static GLHelperHolder* g_readback_helper_holder = nullptr;
+
+  if (!create_if_necessary && !g_readback_helper_holder)
+    return nullptr;
 
   if (g_readback_helper_holder && g_readback_helper_holder->IsLost()) {
     delete g_readback_helper_holder;
@@ -206,7 +269,21 @@ display_compositor::GLHelper* GetPostReadbackGLHelper() {
   if (!g_readback_helper_holder)
     g_readback_helper_holder = GLHelperHolder::Create();
 
-  return g_readback_helper_holder->gl_helper();
+  return g_readback_helper_holder;
+}
+
+display_compositor::GLHelper* GetPostReadbackGLHelper() {
+  bool create_if_necessary = true;
+  return GetPostReadbackGLHelperHolder(create_if_necessary)->gl_helper();
+}
+
+void ReleaseGLHelper() {
+  bool create_if_necessary = false;
+  GLHelperHolder* holder = GetPostReadbackGLHelperHolder(create_if_necessary);
+
+  if (holder) {
+    holder->ReleaseIfPossible();
+  }
 }
 
 void CopyFromCompositingSurfaceFinished(
@@ -215,6 +292,7 @@ void CopyFromCompositingSurfaceFinished(
     std::unique_ptr<SkBitmap> bitmap,
     const base::TimeTicks& start_time,
     std::unique_ptr<SkAutoLockPixels> bitmap_pixels_lock,
+    scoped_refptr<PendingReadbackLock> readback_lock,
     bool result) {
   TRACE_EVENT0(
       "cc", "RenderWidgetHostViewAndroid::CopyFromCompositingSurfaceFinished");
@@ -225,6 +303,12 @@ void CopyFromCompositingSurfaceFinished(
     if (gl_helper)
       gl_helper->GenerateSyncToken(&sync_token);
   }
+
+  // PostTask() to make sure the |readback_lock| is released. Also do this
+  // synchronous GPU operation in a clean callstack.
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(&ReleaseGLHelper));
+
   const bool lost_resource = !sync_token.HasData();
   release_callback->Run(sync_token, lost_resource);
   UMA_HISTOGRAM_TIMES(kAsyncReadBackString,
@@ -268,7 +352,67 @@ gfx::RectF GetSelectionRect(const ui::TouchSelectionController& controller) {
   return rect;
 }
 
-}  // anonymous namespace
+// TODO(wjmaclean): There is significant overlap between
+// PrepareTextureCopyOutputResult and CopyFromCompositingSurfaceFinished in
+// this file, and the versions in surface_utils.cc. They should
+// be merged. See https://crbug.com/582955
+void PrepareTextureCopyOutputResult(
+    const gfx::Size& dst_size_in_pixel,
+    SkColorType color_type,
+    const base::TimeTicks& start_time,
+    const ReadbackRequestCallback& callback,
+    scoped_refptr<PendingReadbackLock> readback_lock,
+    std::unique_ptr<cc::CopyOutputResult> result) {
+  base::ScopedClosureRunner scoped_callback_runner(
+      base::Bind(callback, SkBitmap(), READBACK_FAILED));
+  TRACE_EVENT0("cc",
+               "RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult");
+  if (!result->HasTexture() || result->IsEmpty() || result->size().IsEmpty())
+    return;
+  cc::TextureMailbox texture_mailbox;
+  std::unique_ptr<cc::SingleReleaseCallback> release_callback;
+  result->TakeTexture(&texture_mailbox, &release_callback);
+  DCHECK(texture_mailbox.IsTexture());
+  if (!texture_mailbox.IsTexture())
+    return;
+  display_compositor::GLHelper* gl_helper = GetPostReadbackGLHelper();
+  if (!gl_helper)
+    return;
+  if (!gl_helper->IsReadbackConfigSupported(color_type))
+    color_type = kRGBA_8888_SkColorType;
+
+  gfx::Size output_size_in_pixel;
+  if (dst_size_in_pixel.IsEmpty())
+    output_size_in_pixel = result->size();
+  else
+    output_size_in_pixel = dst_size_in_pixel;
+
+  std::unique_ptr<SkBitmap> bitmap(new SkBitmap);
+  if (!bitmap->tryAllocPixels(SkImageInfo::Make(output_size_in_pixel.width(),
+                                                output_size_in_pixel.height(),
+                                                color_type,
+                                                kOpaque_SkAlphaType))) {
+    scoped_callback_runner.ReplaceClosure(
+        base::Bind(callback, SkBitmap(), READBACK_BITMAP_ALLOCATION_FAILURE));
+    return;
+  }
+
+  std::unique_ptr<SkAutoLockPixels> bitmap_pixels_lock(
+      new SkAutoLockPixels(*bitmap));
+  uint8_t* pixels = static_cast<uint8_t*>(bitmap->getPixels());
+
+  ignore_result(scoped_callback_runner.Release());
+
+  gl_helper->CropScaleReadbackAndCleanMailbox(
+      texture_mailbox.mailbox(), texture_mailbox.sync_token(), result->size(),
+      gfx::Rect(result->size()), output_size_in_pixel, pixels, color_type,
+      base::Bind(&CopyFromCompositingSurfaceFinished, callback,
+                 base::Passed(&release_callback), base::Passed(&bitmap),
+                 start_time, base::Passed(&bitmap_pixels_lock), readback_lock),
+      display_compositor::GLHelper::SCALER_QUALITY_GOOD);
+}
+
+}  // namespace
 
 RenderWidgetHostViewAndroid::LastFrameInfo::LastFrameInfo(
     uint32_t compositor_frame_sink_id,
@@ -864,10 +1008,13 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
       content_view_core_->GetWindowAndroid()->GetCompositor();
   DCHECK(compositor);
   DCHECK(delegated_frame_host_);
+  scoped_refptr<PendingReadbackLock> readback_lock(
+      g_pending_readback_lock ? g_pending_readback_lock
+                              : new PendingReadbackLock);
   delegated_frame_host_->RequestCopyOfSurface(
       compositor, src_subrect_in_pixel,
       base::Bind(&PrepareTextureCopyOutputResult, dst_size_in_pixel,
-                 preferred_color_type, start_time, callback));
+                 preferred_color_type, start_time, callback, readback_lock));
 }
 
 void RenderWidgetHostViewAndroid::CopyFromCompositingSurfaceToVideoFrame(
@@ -1789,67 +1936,6 @@ void RenderWidgetHostViewAndroid::OnLostResources() {
   ReleaseLocksOnSurface();
   DestroyDelegatedContent();
   DCHECK(ack_callbacks_.empty());
-}
-
-// TODO(wjmaclean): There is significant overlap between
-// PrepareTextureCopyOutputResult and CopyFromCompositingSurfaceFinished in
-// this file, and the versions in surface_utils.cc. They should
-// be merged. See https://crbug.com/582955
-
-// static
-void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
-    const gfx::Size& dst_size_in_pixel,
-    SkColorType color_type,
-    const base::TimeTicks& start_time,
-    const ReadbackRequestCallback& callback,
-    std::unique_ptr<cc::CopyOutputResult> result) {
-  base::ScopedClosureRunner scoped_callback_runner(
-      base::Bind(callback, SkBitmap(), READBACK_FAILED));
-  TRACE_EVENT0("cc",
-               "RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult");
-  if (!result->HasTexture() || result->IsEmpty() || result->size().IsEmpty())
-    return;
-  cc::TextureMailbox texture_mailbox;
-  std::unique_ptr<cc::SingleReleaseCallback> release_callback;
-  result->TakeTexture(&texture_mailbox, &release_callback);
-  DCHECK(texture_mailbox.IsTexture());
-  if (!texture_mailbox.IsTexture())
-    return;
-  display_compositor::GLHelper* gl_helper = GetPostReadbackGLHelper();
-  if (!gl_helper)
-    return;
-  if (!gl_helper->IsReadbackConfigSupported(color_type))
-    color_type = kRGBA_8888_SkColorType;
-
-  gfx::Size output_size_in_pixel;
-  if (dst_size_in_pixel.IsEmpty())
-    output_size_in_pixel = result->size();
-  else
-    output_size_in_pixel = dst_size_in_pixel;
-
-  std::unique_ptr<SkBitmap> bitmap(new SkBitmap);
-  if (!bitmap->tryAllocPixels(SkImageInfo::Make(output_size_in_pixel.width(),
-                                                output_size_in_pixel.height(),
-                                                color_type,
-                                                kOpaque_SkAlphaType))) {
-    scoped_callback_runner.ReplaceClosure(
-        base::Bind(callback, SkBitmap(), READBACK_BITMAP_ALLOCATION_FAILURE));
-    return;
-  }
-
-  std::unique_ptr<SkAutoLockPixels> bitmap_pixels_lock(
-      new SkAutoLockPixels(*bitmap));
-  uint8_t* pixels = static_cast<uint8_t*>(bitmap->getPixels());
-
-  ignore_result(scoped_callback_runner.Release());
-
-  gl_helper->CropScaleReadbackAndCleanMailbox(
-      texture_mailbox.mailbox(), texture_mailbox.sync_token(), result->size(),
-      gfx::Rect(result->size()), output_size_in_pixel, pixels, color_type,
-      base::Bind(&CopyFromCompositingSurfaceFinished, callback,
-                 base::Passed(&release_callback), base::Passed(&bitmap),
-                 start_time, base::Passed(&bitmap_pixels_lock)),
-      display_compositor::GLHelper::SCALER_QUALITY_GOOD);
 }
 
 void RenderWidgetHostViewAndroid::OnStylusSelectBegin(float x0,
