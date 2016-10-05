@@ -146,7 +146,7 @@ class MHTMLTest : public ::testing::Test {
     addResource("http://www.test.com/ol-dot.png", "image/png", "ol-dot.png");
   }
 
-  static PassRefPtr<SharedBuffer> generateMHTMLData(
+  static PassRefPtr<RawData> generateMHTMLData(
       const Vector<SerializedResource>& resources,
       MHTMLArchive::EncodingPolicy encodingPolicy,
       const String& title,
@@ -155,20 +155,20 @@ class MHTMLTest : public ::testing::Test {
     // all the examples in the MHTML spec - RFC 2557.
     String boundary = String::fromUTF8("boundary-example");
 
-    RefPtr<SharedBuffer> mhtmlData = SharedBuffer::create();
-    MHTMLArchive::generateMHTMLHeader(boundary, title, mimeType, *mhtmlData);
+    RefPtr<RawData> mhtmlData = RawData::create();
+    MHTMLArchive::generateMHTMLHeader(boundary, title, mimeType,
+                                      *mhtmlData->mutableData());
     for (const auto& resource : resources) {
       MHTMLArchive::generateMHTMLPart(boundary, String(), encodingPolicy,
-                                      resource, *mhtmlData);
+                                      resource, *mhtmlData->mutableData());
     }
-    MHTMLArchive::generateMHTMLFooter(boundary, *mhtmlData);
+    MHTMLArchive::generateMHTMLFooter(boundary, *mhtmlData->mutableData());
     return mhtmlData.release();
   }
 
-  PassRefPtr<SharedBuffer> serialize(
-      const char* title,
-      const char* mime,
-      MHTMLArchive::EncodingPolicy encodingPolicy) {
+  PassRefPtr<RawData> serialize(const char* title,
+                                const char* mime,
+                                MHTMLArchive::EncodingPolicy encodingPolicy) {
     return generateMHTMLData(m_resources, encodingPolicy, title, mime);
   }
 
@@ -206,12 +206,12 @@ TEST_F(MHTMLTest, CheckDomain) {
 
 TEST_F(MHTMLTest, TestMHTMLEncoding) {
   addTestResources();
-  RefPtr<SharedBuffer> data = serialize("Test Serialization", "text/html",
-                                        MHTMLArchive::UseDefaultEncoding);
+  RefPtr<RawData> data = serialize("Test Serialization", "text/html",
+                                   MHTMLArchive::UseDefaultEncoding);
 
   // Read the MHTML data line per line and do some pseudo-parsing to make sure
   // the right encoding is used for the different sections.
-  LineReader lineReader(std::string(data->data(), data->size()));
+  LineReader lineReader(std::string(data->data(), data->length()));
   int sectionCheckedCount = 0;
   const char* expectedEncoding = 0;
   std::string line;
@@ -242,8 +242,10 @@ TEST_F(MHTMLTest, TestMHTMLEncoding) {
 
 TEST_F(MHTMLTest, MHTMLFromScheme) {
   addTestResources();
-  RefPtr<SharedBuffer> data = serialize("Test Serialization", "text/html",
-                                        MHTMLArchive::UseDefaultEncoding);
+  RefPtr<RawData> rawData = serialize("Test Serialization", "text/html",
+                                      MHTMLArchive::UseDefaultEncoding);
+  RefPtr<SharedBuffer> data =
+      SharedBuffer::create(rawData->data(), rawData->length());
   KURL httpURL = toKURL("http://www.example.com");
   KURL contentURL = toKURL("content://foo");
   KURL fileURL = toKURL("file://foo");

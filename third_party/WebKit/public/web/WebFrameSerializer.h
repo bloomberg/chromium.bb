@@ -32,8 +32,8 @@
 #define WebFrameSerializer_h
 
 #include "../platform/WebCommon.h"
-#include "../platform/WebData.h"
 #include "../platform/WebString.h"
+#include "../platform/WebThreadSafeData.h"
 #include "../platform/WebURL.h"
 #include "../platform/WebVector.h"
 #include "WebFrameSerializerCacheControlPolicy.h"
@@ -77,7 +77,7 @@ class WebFrameSerializer {
   // Same |boundary| needs to used for all generateMHTMLHeader and
   // generateMHTMLParts and generateMHTMLFooter calls that belong to the same
   // MHTML document (see also rfc1341, section 7.2.1, "boundary" description).
-  BLINK_EXPORT static WebData generateMHTMLHeader(
+  BLINK_EXPORT static WebThreadSafeData generateMHTMLHeader(
       const WebString& boundary,
       WebLocalFrame*,
       MHTMLPartsGenerationDelegate*);
@@ -88,16 +88,18 @@ class WebFrameSerializer {
   // Same |boundary| needs to used for all generateMHTMLHeader and
   // generateMHTMLParts and generateMHTMLFooter calls that belong to the same
   // MHTML document (see also rfc1341, section 7.2.1, "boundary" description).
-  BLINK_EXPORT static WebData generateMHTMLParts(const WebString& boundary,
-                                                 WebLocalFrame*,
-                                                 MHTMLPartsGenerationDelegate*);
+  BLINK_EXPORT static WebThreadSafeData generateMHTMLParts(
+      const WebString& boundary,
+      WebLocalFrame*,
+      MHTMLPartsGenerationDelegate*);
 
   // Generates and returns an MHTML footer.
   //
   // Same |boundary| needs to used for all generateMHTMLHeader and
   // generateMHTMLParts and generateMHTMLFooter calls that belong to the same
   // MHTML document (see also rfc1341, section 7.2.1, "boundary" description).
-  BLINK_EXPORT static WebData generateMHTMLFooter(const WebString& boundary);
+  BLINK_EXPORT static WebThreadSafeData generateMHTMLFooter(
+      const WebString& boundary);
 
   // IMPORTANT:
   // The API below is an older implementation of frame serialization that

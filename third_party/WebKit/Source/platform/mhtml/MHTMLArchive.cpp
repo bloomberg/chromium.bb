@@ -110,7 +110,7 @@ bool MHTMLArchive::canLoadArchive(const KURL& url) {
 void MHTMLArchive::generateMHTMLHeader(const String& boundary,
                                        const String& title,
                                        const String& mimeType,
-                                       SharedBuffer& outputBuffer) {
+                                       Vector<char>& outputBuffer) {
   ASSERT(!boundary.isEmpty());
   ASSERT(!mimeType.isEmpty());
 
@@ -149,7 +149,7 @@ void MHTMLArchive::generateMHTMLPart(const String& boundary,
                                      const String& contentID,
                                      EncodingPolicy encodingPolicy,
                                      const SerializedResource& resource,
-                                     SharedBuffer& outputBuffer) {
+                                     Vector<char>& outputBuffer) {
   ASSERT(!boundary.isEmpty());
   ASSERT(contentID.isEmpty() || contentID[0] == '<');
 
@@ -229,7 +229,7 @@ void MHTMLArchive::generateMHTMLPart(const String& boundary,
 }
 
 void MHTMLArchive::generateMHTMLFooter(const String& boundary,
-                                       SharedBuffer& outputBuffer) {
+                                       Vector<char>& outputBuffer) {
   ASSERT(!boundary.isEmpty());
   CString asciiString = String("--" + boundary + "--\r\n").utf8();
   outputBuffer.append(asciiString.data(), asciiString.length());

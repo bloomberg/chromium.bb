@@ -874,6 +874,14 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnCopyToFindPboard();
 #endif
 
+  // Callback scheduled from OnSerializeAsMHTML for when writing serialized
+  // MHTML to file has been completed in the file thread.
+  void OnWriteMHTMLToDiskComplete(
+      int job_id,
+      std::set<std::string> serialized_resources_uri_digests,
+      base::TimeDelta main_thread_use_time,
+      bool success);
+
   // Requests that the browser process navigates to |url|. If
   // |is_history_navigation_in_new_child| is true, the browser process should
   // look for a matching FrameNavigationEntry in the last committed entry to use

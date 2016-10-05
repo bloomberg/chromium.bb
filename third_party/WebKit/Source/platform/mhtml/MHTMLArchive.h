@@ -61,7 +61,7 @@ class PLATFORM_EXPORT MHTMLArchive final
   static void generateMHTMLHeader(const String& boundary,
                                   const String& title,
                                   const String& mimeType,
-                                  SharedBuffer& outputBuffer);
+                                  Vector<char>& outputBuffer);
 
   // Serializes SerializedResource as an MHTML part and appends it in
   // |outputBuffer|.
@@ -76,7 +76,7 @@ class PLATFORM_EXPORT MHTMLArchive final
                                 const String& contentID,
                                 EncodingPolicy,
                                 const SerializedResource&,
-                                SharedBuffer& outputBuffer);
+                                Vector<char>& outputBuffer);
 
   // Generates an MHTML footer and appends it to |outputBuffer|.
   //
@@ -84,7 +84,7 @@ class PLATFORM_EXPORT MHTMLArchive final
   // generateMHTMLPart and generateMHTMLFooter calls that belong to the same
   // MHTML document (see also rfc1341, section 7.2.1, "boundary" description).
   static void generateMHTMLFooter(const String& boundary,
-                                  SharedBuffer& outputBuffer);
+                                  Vector<char>& outputBuffer);
 
   typedef HeapHashMap<String, Member<ArchiveResource>> SubArchiveResources;
 

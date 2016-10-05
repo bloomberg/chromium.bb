@@ -187,7 +187,7 @@ bool frameShouldBeSerializedAsMHTML(
 
 }  // namespace
 
-WebData WebFrameSerializer::generateMHTMLHeader(
+WebThreadSafeData WebFrameSerializer::generateMHTMLHeader(
     const WebString& boundary,
     WebLocalFrame* frame,
     MHTMLPartsGenerationDelegate* delegate) {
@@ -196,20 +196,21 @@ WebData WebFrameSerializer::generateMHTMLHeader(
   DCHECK(delegate);
 
   if (!frameShouldBeSerializedAsMHTML(frame, delegate->cacheControlPolicy()))
-    return WebData();
+    return WebThreadSafeData();
 
   WebLocalFrameImpl* webLocalFrameImpl = toWebLocalFrameImpl(frame);
   DCHECK(webLocalFrameImpl);
 
   Document* document = webLocalFrameImpl->frame()->document();
 
-  RefPtr<SharedBuffer> buffer = SharedBuffer::create();
+  RefPtr<RawData> buffer = RawData::create();
   MHTMLArchive::generateMHTMLHeader(boundary, document->title(),
-                                    document->suggestedMIMEType(), *buffer);
+                                    document->suggestedMIMEType(),
+                                    *buffer->mutableData());
   return buffer.release();
 }
 
-WebData WebFrameSerializer::generateMHTMLParts(
+WebThreadSafeData WebFrameSerializer::generateMHTMLParts(
     const WebString& boundary,
     WebLocalFrame* webFrame,
     MHTMLPartsGenerationDelegate* webDelegate) {
@@ -219,7 +220,7 @@ WebData WebFrameSerializer::generateMHTMLParts(
 
   if (!frameShouldBeSerializedAsMHTML(webFrame,
                                       webDelegate->cacheControlPolicy()))
-    return WebData();
+    return WebThreadSafeData();
 
   // Translate arguments from public to internal blink APIs.
   LocalFrame* frame = toWebLocalFrameImpl(webFrame)->frame();
@@ -248,7 +249,7 @@ WebData WebFrameSerializer::generateMHTMLParts(
   String frameContentID = webDelegate->getContentID(webFrame);
 
   // Encode serializer's output as MHTML.
-  RefPtr<SharedBuffer> output = SharedBuffer::create();
+  RefPtr<RawData> output = RawData::create();
   {
     SCOPED_BLINK_UMA_HISTOGRAM_TIMER(
         "PageSerialization.MhtmlGeneration.EncodingTime.SingleFrame");
@@ -261,7 +262,7 @@ WebData WebFrameSerializer::generateMHTMLParts(
       String contentID = isFirstResource ? frameContentID : String();
 
       MHTMLArchive::generateMHTMLPart(boundary, contentID, encodingPolicy,
-                                      resource, *output);
+                                      resource, *output->mutableData());
 
       isFirstResource = false;
     }
@@ -269,10 +270,11 @@ WebData WebFrameSerializer::generateMHTMLParts(
   return output.release();
 }
 
-WebData WebFrameSerializer::generateMHTMLFooter(const WebString& boundary) {
+WebThreadSafeData WebFrameSerializer::generateMHTMLFooter(
+    const WebString& boundary) {
   TRACE_EVENT0("page-serialization", "WebFrameSerializer::generateMHTMLFooter");
-  RefPtr<SharedBuffer> buffer = SharedBuffer::create();
-  MHTMLArchive::generateMHTMLFooter(boundary, *buffer);
+  RefPtr<RawData> buffer = RawData::create();
+  MHTMLArchive::generateMHTMLFooter(boundary, *buffer->mutableData());
   return buffer.release();
 }
 
