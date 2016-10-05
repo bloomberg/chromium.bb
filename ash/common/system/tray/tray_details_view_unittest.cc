@@ -193,6 +193,11 @@ TEST_F(TrayDetailsViewTest, TransitionToDefaultViewTest) {
 
 // Tests that HoverHighlightView enters hover state in response to touch.
 TEST_F(TrayDetailsViewTest, HoverHighlightViewTouchFeedback) {
+  // Material design detailed views will not use the visual feedback from
+  // HoverHighlightView.
+  if (MaterialDesignController::IsSystemTrayMenuMaterial())
+    return;
+
   HoverHighlightView* view = CreateAndShowHoverHighlightView();
   EXPECT_FALSE(view->hover());
 
@@ -206,6 +211,11 @@ TEST_F(TrayDetailsViewTest, HoverHighlightViewTouchFeedback) {
 
 // Tests that touch events leaving HoverHighlightView cancel the hover state.
 TEST_F(TrayDetailsViewTest, HoverHighlightViewTouchFeedbackCancellation) {
+  // Material design detailed views will not use the visual feedback from
+  // HoverHighlightView.
+  if (MaterialDesignController::IsSystemTrayMenuMaterial())
+    return;
+
   HoverHighlightView* view = CreateAndShowHoverHighlightView();
   EXPECT_FALSE(view->hover());
 
