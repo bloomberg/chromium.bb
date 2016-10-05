@@ -480,7 +480,10 @@ std::string SegmentURLInternal(std::string* text, url::Parsed* parts) {
 
   // Construct the text to parse by inserting the scheme.
   std::string inserted_text(scheme);
-  inserted_text.append(url::kStandardSchemeSeparator);
+  // Assume a leading colon was meant to be a scheme separator (which GURL will
+  // fix up for us into the full "://").  Otherwise add the separator ourselves.
+  if (first_nonwhite == text->end() || *first_nonwhite != ':')
+    inserted_text.append(url::kStandardSchemeSeparator);
   std::string text_to_parse(text->begin(), first_nonwhite);
   text_to_parse.append(inserted_text);
   text_to_parse.append(first_nonwhite, text->end());

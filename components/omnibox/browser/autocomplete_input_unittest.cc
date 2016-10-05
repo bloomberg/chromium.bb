@@ -161,8 +161,8 @@ TEST(AutocompleteInputTest, InputType) {
     { ASCIIToUTF16("chrome-search://"), metrics::OmniboxInputType::QUERY },
     { ASCIIToUTF16("chrome-devtools:"), metrics::OmniboxInputType::QUERY },
     { ASCIIToUTF16("about://f;"), metrics::OmniboxInputType::QUERY },
-    { ASCIIToUTF16("://w"), metrics::OmniboxInputType::QUERY },
-    { ASCIIToUTF16(":w"), metrics::OmniboxInputType::QUERY },
+    { ASCIIToUTF16("://w"), metrics::OmniboxInputType::UNKNOWN },
+    { ASCIIToUTF16(":w"), metrics::OmniboxInputType::UNKNOWN },
     { base::WideToUTF16(L".\u062A"), metrics::OmniboxInputType::UNKNOWN },
   };
 

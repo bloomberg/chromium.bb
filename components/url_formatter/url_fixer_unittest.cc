@@ -182,12 +182,11 @@ static const SegmentCase segment_cases[] = {
     url::Component(), // query
     url::Component(), // ref
   },
-  // Can't do anything useful with this.
-  { ":b005::68]", "",
-    url::Component(0, 0), // scheme
+  { ":b005::68]", "http",
+    url::Component(), // scheme
     url::Component(), // username
     url::Component(), // password
-    url::Component(), // host
+    url::Component(1, 9), // host
     url::Component(), // port
     url::Component(), // path
     url::Component(), // query
@@ -297,8 +296,10 @@ struct FixupCase {
   {"[::]:80", "http://[::]/"},
   {"[::]:80/path", "http://[::]/path"},
   {"[::]:180/path", "http://[::]:180/path"},
-  // TODO(pmarks): Maybe we should parse bare IPv6 literals someday.
-  {"::1", "::1"},
+  // TODO(pmarks): Maybe we should parse bare IPv6 literals someday. Currently
+  // the first colon is treated as a scheme separator, and we default
+  // unspecified schemes to "http".
+  {"::1", "http://:1/"},
   // Semicolon as scheme separator for standard schemes.
   {"http;//www.google.com/", "http://www.google.com/"},
   {"about;chrome", "chrome://chrome/"},
