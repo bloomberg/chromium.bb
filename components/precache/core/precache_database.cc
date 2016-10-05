@@ -209,8 +209,12 @@ void PrecacheDatabase::RecordURLPrefetchInternal(
     const std::string& referrer_host,
     bool is_precached,
     const base::Time& fetch_time) {
-  auto referrer_host_id = precache_referrer_host_table_.UpdateReferrerHost(
-      referrer_host, 0, fetch_time);
+  int64_t referrer_host_id =
+      precache_referrer_host_table_.GetReferrerHost(referrer_host).id;
+  if (referrer_host_id == PrecacheReferrerHostEntry::kInvalidId) {
+    referrer_host_id = precache_referrer_host_table_.UpdateReferrerHost(
+        referrer_host, 0, fetch_time);
+  }
   DCHECK_NE(referrer_host_id, PrecacheReferrerHostEntry::kInvalidId);
   precache_url_table_.AddURL(url, referrer_host_id, is_precached, fetch_time);
 }

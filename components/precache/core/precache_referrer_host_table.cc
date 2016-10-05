@@ -52,7 +52,7 @@ int64_t PrecacheReferrerHostTable::UpdateReferrerHost(
     const std::string& referrer_host,
     int64_t manifest_id,
     const base::Time& time) {
-  auto referrer_host_id = GetReferrerHost(referrer_host).id;
+  int64_t referrer_host_id = GetReferrerHost(referrer_host).id;
   if (referrer_host_id == PrecacheReferrerHostEntry::kInvalidId) {
     Statement statement(
         db_->GetCachedStatement(SQL_FROM_HERE,

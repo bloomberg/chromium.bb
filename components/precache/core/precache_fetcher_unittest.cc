@@ -1231,9 +1231,9 @@ TEST_F(PrecacheFetcherTest, SendUsedUnusedResourceHash) {
   unfinished_work->add_top_host()->set_hostname("top-host-2.com");
   unfinished_work->add_top_host()->set_hostname("top-host-3.com");
 
-  UpdatePrecacheReferrerHost("top-host-1.com", 1);
-  UpdatePrecacheReferrerHost("top-host-2.com", 2);
-  UpdatePrecacheReferrerHost("top-host-3.com", 3);
+  UpdatePrecacheReferrerHost("top-host-1.com", 1001);
+  UpdatePrecacheReferrerHost("top-host-2.com", 1002);
+  UpdatePrecacheReferrerHost("top-host-3.com", 1003);
 
   // Mark some resources as precached.
   RecordURLPrefetch(GURL("http://used-resource-1/a.js"), "top-host-1.com");
@@ -1252,7 +1252,7 @@ TEST_F(PrecacheFetcherTest, SendUsedUnusedResourceHash) {
                            net::URLRequestStatus::SUCCESS);
   factory_.SetFakeResponse(
       GURL(std::string(kManifestURLPrefix) +
-           "top-host-1.com?manifest=1&used_resources=" +
+           "top-host-1.com?manifest=1001&used_resources=" +
            net::EscapeQueryParamValue(
                PrecacheFetcher::GetResourceURLBase64HashForTesting(
                    {GURL("http://used-resource-1/a.js"),
@@ -1266,7 +1266,7 @@ TEST_F(PrecacheFetcherTest, SendUsedUnusedResourceHash) {
       std::string(), net::HTTP_OK, net::URLRequestStatus::SUCCESS);
   factory_.SetFakeResponse(
       GURL(std::string(kManifestURLPrefix) +
-           "top-host-2.com?manifest=2&used_resources=&unused_resources=" +
+           "top-host-2.com?manifest=1002&used_resources=&unused_resources=" +
            net::EscapeQueryParamValue(
                PrecacheFetcher::GetResourceURLBase64HashForTesting(
                    {GURL("http://unused-resource-2/a.js"),
@@ -1275,7 +1275,7 @@ TEST_F(PrecacheFetcherTest, SendUsedUnusedResourceHash) {
       std::string(), net::HTTP_OK, net::URLRequestStatus::SUCCESS);
   factory_.SetFakeResponse(
       GURL(std::string(kManifestURLPrefix) +
-           "top-host-3.com?manifest=3&used_resources=&unused_resources="),
+           "top-host-3.com?manifest=1003&used_resources=&unused_resources="),
       std::string(), net::HTTP_OK, net::URLRequestStatus::SUCCESS);
 
   {

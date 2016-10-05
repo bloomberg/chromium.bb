@@ -194,9 +194,10 @@ std::deque<ManifestHostInfo> RetrieveManifestInfo(
       std::vector<GURL> used_urls, unused_urls;
       precache_database->GetURLListForReferrerHost(referrer_host_info.id,
                                                    &used_urls, &unused_urls);
-      hosts_info.push_back(ManifestHostInfo(
-          referrer_host_info.id, host, GetResourceURLBase64Hash(used_urls),
-          GetResourceURLBase64Hash(unused_urls)));
+      hosts_info.push_back(
+          ManifestHostInfo(referrer_host_info.manifest_id, host,
+                           GetResourceURLBase64Hash(used_urls),
+                           GetResourceURLBase64Hash(unused_urls)));
     } else {
       hosts_info.push_back(
           ManifestHostInfo(PrecacheReferrerHostEntry::kInvalidId, host,
