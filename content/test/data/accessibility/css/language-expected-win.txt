@@ -1,5 +1,4 @@
-ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE language:en-US language:fr-FR ia2_hypertext='<obj0><obj1>'
+ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE language:en-US language:fr-FR ia2_hypertext='<obj0>Comment allez-vous?'
 ++IA2_ROLE_PARAGRAPH language:en-US ia2_hypertext='How are you?'
 ++++ROLE_SYSTEM_STATICTEXT name='How are you?' language:en-US ia2_hypertext='How are you?'
-++IA2_ROLE_PARAGRAPH language:fr-FR ia2_hypertext='Comment allez-vous?'
-++++ROLE_SYSTEM_STATICTEXT name='Comment allez-vous?' language:fr-FR ia2_hypertext='Comment allez-vous?'
+++ROLE_SYSTEM_STATICTEXT name='Comment allez-vous?' language:fr-FR ia2_hypertext='Comment allez-vous?'

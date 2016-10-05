@@ -128,6 +128,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityCSSFontStyle) {
   RunCSSTest(FILE_PATH_LITERAL("font-style.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityCSSFontFamily) {
+  RunCSSTest(FILE_PATH_LITERAL("font-family.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityCSSLanguage) {
   RunCSSTest(FILE_PATH_LITERAL("language.html"));
 }

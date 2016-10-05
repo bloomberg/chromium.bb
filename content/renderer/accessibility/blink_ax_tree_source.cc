@@ -54,15 +54,20 @@ namespace content {
 
 namespace {
 
+WebAXObject ParentObjectUnignored(WebAXObject child) {
+  WebAXObject parent = child.parentObject();
+  while (!parent.isDetached() && parent.accessibilityIsIgnored())
+    parent = parent.parentObject();
+  return parent;
+}
+
 // Returns true if |ancestor| is the first unignored parent of |child|,
 // which means that when walking up the parent chain from |child|,
 // |ancestor| is the *first* ancestor that isn't marked as
 // accessibilityIsIgnored().
 bool IsParentUnignoredOf(WebAXObject ancestor,
                          WebAXObject child) {
-  WebAXObject parent = child.parentObject();
-  while (!parent.isDetached() && parent.accessibilityIsIgnored())
-    parent = parent.parentObject();
+  WebAXObject parent = ParentObjectUnignored(child);
   return parent.equals(ancestor);
 }
 
@@ -359,8 +364,8 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
   if (src.color())
     dst->AddIntAttribute(ui::AX_ATTR_COLOR, src.color());
 
+  WebAXObject parent = ParentObjectUnignored(src);
   if (src.fontFamily().length()) {
-    WebAXObject parent = src.parentObject();
     if (parent.isNull() || parent.fontFamily() != src.fontFamily())
       dst->AddStringAttribute(ui::AX_ATTR_FONT_FAMILY, src.fontFamily().utf8());
   }
@@ -448,7 +453,6 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
   }
 
   if (src.language().length()) {
-    WebAXObject parent = src.parentObject();
     if (parent.isNull() || parent.language() != src.language())
       dst->AddStringAttribute(ui::AX_ATTR_LANGUAGE, src.language().utf8());
   }
