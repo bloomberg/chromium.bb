@@ -48,9 +48,9 @@ enum CSSParserMode {
   HTMLAttributeMode,
   // SVG attributes are parsed in quirks mode but rules differ slightly.
   SVGAttributeMode,
-  // @viewport rules are parsed in standards mode but CSSOM modifications (via StylePropertySet)
-  // must call parseViewportProperties so needs a special mode.
+  // @viewport/@font-face rules are specially tagged in StylePropertySet so CSSOM modifications don't treat them as style rules.
   CSSViewportRuleMode,
+  CSSFontFaceRuleMode,
   // User agent stylesheets are parsed in standards mode but also allows internal properties and values.
   UASheetMode
 };

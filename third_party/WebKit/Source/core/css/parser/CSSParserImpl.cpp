@@ -49,6 +49,8 @@ bool CSSParserImpl::parseValue(MutableStylePropertySet* declaration,
   StyleRule::RuleType ruleType = StyleRule::Style;
   if (declaration->cssParserMode() == CSSViewportRuleMode)
     ruleType = StyleRule::Viewport;
+  else if (declaration->cssParserMode() == CSSFontFaceRuleMode)
+    ruleType = StyleRule::FontFace;
   CSSTokenizer::Scope scope(string);
   parser.consumeDeclarationValue(scope.tokenRange(), unresolvedProperty,
                                  important, ruleType);
@@ -633,7 +635,7 @@ StyleRuleFontFace* CSSParserImpl::consumeFontFaceRule(
 
   consumeDeclarationList(block, StyleRule::FontFace);
   return StyleRuleFontFace::create(
-      createStylePropertySet(m_parsedProperties, m_context.mode()));
+      createStylePropertySet(m_parsedProperties, CSSFontFaceRuleMode));
 }
 
 StyleRuleKeyframes* CSSParserImpl::consumeKeyframesRule(
