@@ -175,6 +175,12 @@ all other OS specific variables will be false.
       <message name="IDS_IOS_FLAGS_CONTEXTUAL_SEARCH_DESCRIPTION" desc="Description for the flag to enable Contextual Search.">
         Whether or not Contextual Search is enabled.
       </message>
+      <message name="IDS_IOS_FLAGS_PHYSICAL_WEB" desc="Title for the flag to enable Physical Web in the omnibox.">
+        Physical Web
+      </message>
+      <message name="IDS_IOS_FLAGS_PHYSICAL_WEB_DESCRIPTION" desc="Description for the flag to enable Physical Web in the omnibox.">
+        When enabled, the omnibox will include suggestions for web pages broadcast by devices near you.
+      </message>
       <message name="IDS_IOS_SAVE_IMAGE_RESTRICTED_PRIVACY_ALERT_MESSAGE" desc="Message to inform user that Save Image failed due to insufficient privilege in Privacy Settings and that the user cannot grant such privilege. This message is displayed as the message body in an alert box with a single OK button. [Length: 120em]">
         A device policy blocked access to your photos
       </message>

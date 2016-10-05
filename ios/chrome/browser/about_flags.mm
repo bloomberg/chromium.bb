@@ -50,10 +50,13 @@ namespace {
 // When adding a new choice, add it to the end of the list.
 const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"contextual-search", IDS_IOS_FLAGS_CONTEXTUAL_SEARCH,
-     IDS_IOS_FLAGS_CONTEXTUAL_SEARCH_DESCRIPTION,
-     flags_ui::kOsIos,
+     IDS_IOS_FLAGS_CONTEXTUAL_SEARCH_DESCRIPTION, flags_ui::kOsIos,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableContextualSearch,
                                switches::kDisableContextualSearch)},
+    {"ios-physical-web", IDS_IOS_FLAGS_PHYSICAL_WEB,
+     IDS_IOS_FLAGS_PHYSICAL_WEB_DESCRIPTION, flags_ui::kOsIos,
+     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableIOSPhysicalWeb,
+                               switches::kDisableIOSPhysicalWeb)},
 };
 
 // Add all switches from experimental flags to |command_line|.
