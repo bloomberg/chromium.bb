@@ -124,6 +124,8 @@ bool DefaultAccessibilityDelegate::IsBrailleDisplayConnected() const {
 
 void DefaultAccessibilityDelegate::SilenceSpokenFeedback() const {}
 
+void DefaultAccessibilityDelegate::ClearFocusHighlight() const {}
+
 void DefaultAccessibilityDelegate::ToggleSpokenFeedback(
     AccessibilityNotificationVisibility notify) {
   spoken_feedback_enabled_ = !spoken_feedback_enabled_;

@@ -35,6 +35,7 @@
 #include "chrome/browser/chromeos/policy/display_rotation_default_handler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
+#include "chrome/browser/chromeos/ui/accessibility_focus_ring_controller.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -257,6 +258,12 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
 
   void SilenceSpokenFeedback() const override {
     TtsController::GetInstance()->Stop();
+  }
+
+  void ClearFocusHighlight() const override {
+    chromeos::AccessibilityFocusRingController::GetInstance()->SetFocusRing(
+        std::vector<gfx::Rect>(),
+        chromeos::AccessibilityFocusRingController::PERSIST_FOCUS_RING);
   }
 
   void SaveScreenMagnifierScale(double scale) override {

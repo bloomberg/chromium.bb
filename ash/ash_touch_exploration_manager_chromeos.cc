@@ -121,6 +121,10 @@ void AshTouchExplorationManager::UpdateTouchExplorationState() {
         root_window_controller_->GetRootWindow(), this));
   } else if (!spoken_feedback_enabled || pass_through_surface) {
     touch_exploration_controller_.reset();
+    if (spoken_feedback_enabled) {
+      SilenceSpokenFeedback();
+      WmShell::Get()->accessibility_delegate()->ClearFocusHighlight();
+    }
   }
 }
 
