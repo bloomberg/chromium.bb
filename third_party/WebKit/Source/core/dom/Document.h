@@ -328,6 +328,9 @@ class CORE_EXPORT Document : public ContainerNode,
   Range* caretRangeFromPoint(int x, int y);
   Element* scrollingElement();
 
+  void addNonAttachedStyle(Element&, RefPtr<ComputedStyle>);
+  ComputedStyle* getNonAttachedStyle(Element&);
+
   String readyState() const;
 
   AtomicString characterSet() const { return Document::encodingName(); }
@@ -1410,6 +1413,8 @@ class CORE_EXPORT Document : public ContainerNode,
   Member<ResourceFetcher> m_fetcher;
   Member<DocumentParser> m_parser;
   Member<ContextFeatures> m_contextFeatures;
+
+  HeapHashMap<Member<Element>, RefPtr<ComputedStyle>> m_nonAttachedStyle;
 
   bool m_wellFormed;
 

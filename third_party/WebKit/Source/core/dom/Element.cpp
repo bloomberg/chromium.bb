@@ -1946,10 +1946,8 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change) {
   }
 
   if (localChange == Reattach) {
-    // TODO(nainar): Remove the style parameter being passed into
-    // buildLayoutTree().  ComputedStyle will now be stored on Node and accessed
-    // in buildLayoutTree() using mutableComputedStyle().
-    return rebuildLayoutTree(*newStyle);
+    document().addNonAttachedStyle(*this, std::move(newStyle));
+    return rebuildLayoutTree();
   }
 
   DCHECK(oldStyle);
@@ -1991,9 +1989,9 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change) {
   return localChange;
 }
 
-StyleRecalcChange Element::rebuildLayoutTree(ComputedStyle& newStyle) {
+StyleRecalcChange Element::rebuildLayoutTree() {
   AttachContext reattachContext;
-  reattachContext.resolvedStyle = &newStyle;
+  reattachContext.resolvedStyle = document().getNonAttachedStyle(*this);
   bool layoutObjectWillChange = needsAttach() || layoutObject();
   reattachLayoutTree(reattachContext);
   if (layoutObjectWillChange || layoutObject())

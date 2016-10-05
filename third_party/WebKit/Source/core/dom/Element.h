@@ -814,8 +814,7 @@ class CORE_EXPORT Element : public ContainerNode {
   PassRefPtr<ComputedStyle> propagateInheritedProperties(StyleRecalcChange);
 
   StyleRecalcChange recalcOwnStyle(StyleRecalcChange);
-  // TODO(nainar): Make this const ComputedStyle&.
-  StyleRecalcChange rebuildLayoutTree(ComputedStyle&);
+  StyleRecalcChange rebuildLayoutTree();
 
   inline void checkForEmptyStyleChange();
 

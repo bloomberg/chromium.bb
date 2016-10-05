@@ -1246,6 +1246,19 @@ Element* Document::scrollingElement() {
   return body();
 }
 
+// We use HashMap::set over HashMap::add here as we want to
+// replace the ComputedStyle but not the Element if the Element is
+// already present.
+void Document::addNonAttachedStyle(Element& element,
+                                   RefPtr<ComputedStyle> computedStyle) {
+  m_nonAttachedStyle.set(&element, computedStyle);
+}
+
+ComputedStyle* Document::getNonAttachedStyle(Element& element) {
+  RefPtr<ComputedStyle> style = m_nonAttachedStyle.get(&element);
+  return style.get();
+}
+
 /*
  * Performs three operations:
  *  1. Convert control characters to spaces
@@ -1917,6 +1930,9 @@ void Document::updateStyle() {
 
   view()->recalcOverflowAfterStyleChange();
 
+  // Only retain the HashMap for the duration of StyleRecalc and
+  // LayoutTreeConstruction.
+  m_nonAttachedStyle.clear();
   clearChildNeedsStyleRecalc();
 
   resolver.clearStyleSharingList();
@@ -1927,6 +1943,7 @@ void Document::updateStyle() {
   DCHECK(!childNeedsStyleRecalc());
   DCHECK(inStyleRecalc());
   DCHECK_EQ(styleResolver(), &resolver);
+  DCHECK(m_nonAttachedStyle.isEmpty());
   m_lifecycle.advanceTo(DocumentLifecycle::StyleClean);
   if (shouldRecordStats) {
     TRACE_EVENT_END2("blink,blink_style", "Document::updateStyle",
@@ -6327,6 +6344,7 @@ DEFINE_TRACE(Document) {
   visitor->trace(m_snapCoordinator);
   visitor->trace(m_resizeObserverController);
   visitor->trace(m_propertyRegistry);
+  visitor->trace(m_nonAttachedStyle);
   Supplementable<Document>::trace(visitor);
   TreeScope::trace(visitor);
   ContainerNode::trace(visitor);
