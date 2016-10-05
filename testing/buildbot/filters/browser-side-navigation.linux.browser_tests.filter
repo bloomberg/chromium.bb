@@ -31,7 +31,6 @@
 -MediaGalleriesPlatformAppBrowserTest.Scan
 -MediaGalleriesPlatformAppBrowserTest.ToURL
 -OptionsWebUIExtendedTest.OverlayBackToChild
--PasswordManagerBrowserTestBase.NoPromptIfLinkClicked
 -PDFExtensionTest.PdfAccessibilityInOOPIF
 -PlatformAppBrowserTest.ActiveAppsAreRecorded
 -PlatformAppBrowserTest.Restrictions
