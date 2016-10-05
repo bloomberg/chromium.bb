@@ -3,8 +3,7 @@
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2005 Allan Sandfeld Jensen (kde@carewolf.com)
  *           (C) 2005, 2006 Samuel Weinig (sam.weinig@gmail.com)
- * Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010 Apple Inc.
- *               All rights reserved.
+ * Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights reserved.
  * Copyright (C) 2013 Adobe Systems Incorporated. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
@@ -103,9 +102,8 @@ LayoutBox::LayoutBox(ContainerNode* node)
 }
 
 PaintLayerType LayoutBox::layerTypeRequired() const {
-  // hasAutoZIndex only returns true if the element is positioned or a flex-item
-  // since position:static elements that are not flex-items get their z-index
-  // coerced to auto.
+  // hasAutoZIndex only returns true if the element is positioned or a flex-item since
+  // position:static elements that are not flex-items get their z-index coerced to auto.
   if (isPositioned() || createsGroup() || hasClipPath() ||
       hasTransformRelatedProperty() || style()->hasCompositorProxy() ||
       hasHiddenBackface() || hasReflection() || style()->specifiesColumns() ||
@@ -187,9 +185,8 @@ void LayoutBox::styleWillChange(StyleDifference diff,
     if (flowThread && flowThread != this)
       flowThread->flowThreadDescendantStyleWillChange(this, diff, newStyle);
 
-    // The background of the root element or the body element could propagate up
-    // to the canvas. Just dirty the entire canvas when our style changes
-    // substantially.
+    // The background of the root element or the body element could propagate up to
+    // the canvas. Just dirty the entire canvas when our style changes substantially.
     if ((diff.needsPaintInvalidation() || diff.needsLayout()) && node() &&
         (isHTMLHtmlElement(*node()) || isHTMLBodyElement(*node()))) {
       view()->setShouldDoFullPaintInvalidation();
@@ -199,16 +196,14 @@ void LayoutBox::styleWillChange(StyleDifference diff,
         view()->compositor()->setNeedsUpdateFixedBackground();
     }
 
-    // When a layout hint happens and an object's position style changes, we
-    // have to do a layout to dirty the layout tree using the old position
-    // value now.
+    // When a layout hint happens and an object's position style changes, we have to do a layout
+    // to dirty the layout tree using the old position value now.
     if (diff.needsFullLayout() && parent() &&
         oldStyle->position() != newStyle.position()) {
       if (!oldStyle->hasOutOfFlowPosition() &&
           newStyle.hasOutOfFlowPosition()) {
-        // We're about to go out of flow. Before that takes place, we need to
-        // mark the current containing block chain for preferred widths
-        // recalculation.
+        // We're about to go out of flow. Before that takes place, we need to mark the
+        // current containing block chain for preferred widths recalculation.
         setNeedsLayoutAndPrefWidthsRecalc(
             LayoutInvalidationReason::StyleChange);
       } else {
@@ -222,9 +217,8 @@ void LayoutBox::styleWillChange(StyleDifference diff,
           newStyle.hasOutOfFlowPosition())
         removeFloatingOrPositionedChildFromBlockLists();
     }
-    // FIXME: This branch runs when !oldStyle, which means that layout was never
-    // called so what's the point in invalidating the whole view that we never
-    // painted?
+    // FIXME: This branch runs when !oldStyle, which means that layout was never called
+    // so what's the point in invalidating the whole view that we never painted?
   } else if (isBody()) {
     view()->setShouldDoFullPaintInvalidation();
   }
@@ -234,10 +228,9 @@ void LayoutBox::styleWillChange(StyleDifference diff,
 
 void LayoutBox::styleDidChange(StyleDifference diff,
                                const ComputedStyle* oldStyle) {
-  // Horizontal writing mode definition is updated in LayoutBoxModelObject::
-  // updateFromStyle, (as part of the LayoutBoxModelObject::styleDidChange call
-  // below). So, we can safely cache the horizontal writing mode value before
-  // style change here.
+  // Horizontal writing mode definition is updated in LayoutBoxModelObject::updateFromStyle,
+  // (as part of the LayoutBoxModelObject::styleDidChange call below). So, we can safely cache the horizontal
+  // writing mode value before style change here.
   bool oldHorizontalWritingMode = isHorizontalWritingMode();
 
   LayoutBoxModelObject::styleDidChange(diff, oldStyle);
@@ -262,8 +255,8 @@ void LayoutBox::styleDidChange(StyleDifference diff,
     clearPercentHeightDescendants();
   }
 
-  // If our zoom factor changes and we have a defined scrollLeft/Top, we need to
-  // adjust that value into the new zoomed coordinate space.
+  // If our zoom factor changes and we have a defined scrollLeft/Top, we need to adjust that value into the
+  // new zoomed coordinate space.
   if (hasOverflowClip() && oldStyle &&
       oldStyle->effectiveZoom() != newStyle.effectiveZoom()) {
     PaintLayerScrollableArea* scrollableArea = this->getScrollableArea();
@@ -321,28 +314,27 @@ void LayoutBox::styleDidChange(StyleDifference diff,
     updateScrollSnapMappingAfterStyleChange(&newStyle, oldStyle);
   }
 
-  // Non-atomic inlines should be LayoutInline or LayoutText, not LayoutBox.
-  DCHECK(!isInline() || isAtomicInlineLevel());
+  ASSERT(
+      !isInline() ||
+      isAtomicInlineLevel());  // Non-atomic inlines should be LayoutInline or LayoutText, not LayoutBox.
 }
 
 void LayoutBox::updateBackgroundAttachmentFixedStatusAfterStyleChange() {
   if (!frameView())
     return;
 
-  // On low-powered/mobile devices, preventing blitting on a scroll can cause
-  // noticeable delays when scrolling a page with a fixed background image. As
-  // an optimization, assuming there are no fixed positoned elements on the
-  // page, we can acclerate scrolling (via blitting) if we ignore the CSS
-  // property "background-attachment: fixed".
+  // On low-powered/mobile devices, preventing blitting on a scroll can cause noticeable delays
+  // when scrolling a page with a fixed background image. As an optimization, assuming there are
+  // no fixed positoned elements on the page, we can acclerate scrolling (via blitting) if we
+  // ignore the CSS property "background-attachment: fixed".
   bool ignoreFixedBackgroundAttachment =
       RuntimeEnabledFeatures::fastMobileScrollingEnabled();
   if (ignoreFixedBackgroundAttachment)
     return;
 
-  // An object needs to be repainted on frame scroll when it has background-
-  // attachment:fixed. LayoutView is responsible for painting root background,
-  // thus the root element (and the body element if html element has no
-  // background) skips painting backgrounds.
+  // An object needs to be repainted on frame scroll when it has background-attachment:fixed.
+  // LayoutView is responsible for painting root background, thus the root element (and the
+  // body element if html element has no background) skips painting backgrounds.
   bool isBackgroundAttachmentFixedObject = !isDocumentElement() &&
                                            !backgroundStolenForBeingBody() &&
                                            styleRef().hasFixedBackgroundImage();
@@ -372,8 +364,7 @@ void LayoutBox::updateShapeOutsideInfoAfterStyleChange(
       oldStyle ? oldStyle->shapeImageThreshold()
                : ComputedStyle::initialShapeImageThreshold();
 
-  // FIXME: A future optimization would do a deep comparison for equality. (bug
-  // 100811)
+  // FIXME: A future optimization would do a deep comparison for equality. (bug 100811)
   if (shapeOutside == oldShapeOutside && shapeMargin == oldShapeMargin &&
       shapeImageThreshold == oldShapeImageThreshold)
     return;
@@ -400,8 +391,7 @@ void LayoutBox::updateGridPositionAfterStyleChange(
       oldStyle->hasOutOfFlowPosition() == style()->hasOutOfFlowPosition())
     return;
 
-  // It should be possible to not dirty the grid in some cases (like moving an
-  // explicitly placed grid item).
+  // It should be possible to not dirty the grid in some cases (like moving an explicitly placed grid item).
   // For now, it's more simple to just always recompute the grid.
   toLayoutGrid(parent())->dirtyGrid();
 }
@@ -471,8 +461,8 @@ void LayoutBox::layout() {
   clearNeedsLayout();
 }
 
-// More IE extensions.  clientWidth and clientHeight represent the interior of
-// an object excluding border and scrollbar.
+// More IE extensions.  clientWidth and clientHeight represent the interior of an object
+// excluding border and scrollbar.
 DISABLE_CFI_PERF
 LayoutUnit LayoutBox::clientWidth() const {
   return m_frameRect.width() - borderLeft() - borderRight() -
@@ -545,8 +535,8 @@ int LayoutBox::pixelSnappedScrollHeight() const {
 }
 
 void LayoutBox::setScrollLeft(LayoutUnit newLeft) {
-  // This doesn't hit in any tests, but since the equivalent code in
-  // setScrollTop does, presumably this code does as well.
+  // This doesn't hit in any tests, but since the equivalent code in setScrollTop
+  // does, presumably this code does as well.
   DisableCompositingQueryAsserts disabler;
 
   if (hasOverflowClip())
@@ -555,8 +545,7 @@ void LayoutBox::setScrollLeft(LayoutUnit newLeft) {
 }
 
 void LayoutBox::setScrollTop(LayoutUnit newTop) {
-  // Hits in
-  // compositing/overflow/do-not-assert-on-invisible-composited-layers.html
+  // Hits in compositing/overflow/do-not-assert-on-invisible-composited-layers.html
   DisableCompositingQueryAsserts disabler;
 
   if (hasOverflowClip())
@@ -566,8 +555,8 @@ void LayoutBox::setScrollTop(LayoutUnit newTop) {
 
 void LayoutBox::scrollToOffset(const DoubleSize& offset,
                                ScrollBehavior scrollBehavior) {
-  // This doesn't hit in any tests, but since the equivalent code in
-  // setScrollTop does, presumably this code does as well.
+  // This doesn't hit in any tests, but since the equivalent code in setScrollTop
+  // does, presumably this code does as well.
   DisableCompositingQueryAsserts disabler;
 
   if (hasOverflowClip())
@@ -575,8 +564,7 @@ void LayoutBox::scrollToOffset(const DoubleSize& offset,
                                         scrollBehavior);
 }
 
-// Returns true iff we are attempting an autoscroll inside an iframe with
-// scrolling="no".
+// Returns true iff we are attempting an autoscroll inside an iframe with scrolling="no".
 static bool isDisallowedAutoscroll(HTMLFrameOwnerElement* ownerElement,
                                    FrameView* frameView) {
   if (ownerElement && isHTMLFrameElementBase(*ownerElement)) {
@@ -615,11 +603,8 @@ void LayoutBox::scrollRectToVisible(const LayoutRect& rect,
   }
 
   if (hasOverflowClip() && !restrictedByLineClamp) {
-    // Don't scroll to reveal an overflow layer that is restricted by the
-    // -webkit-line-clamp property. This will prevent us from revealing text
-    // hidden by the slider in Safari RSS.
-    // TODO(eae): We probably don't need this any more as we don't share any
-    //            code with the Safari RSS reeder.
+    // Don't scroll to reveal an overflow layer that is restricted by the -webkit-line-clamp property.
+    // This will prevent us from revealing text hidden by the slider in Safari RSS.
     newRect = getScrollableArea()->scrollIntoView(rectToScroll, alignX, alignY,
                                                   scrollType);
     if (newRect.isEmpty())
@@ -685,8 +670,7 @@ FloatRect LayoutBox::localBoundingBoxRectForAccessibility() const {
 }
 
 void LayoutBox::updateLayerTransformAfterLayout() {
-  // Transform-origin depends on box size, so we need to update the layer
-  // transform after layout.
+  // Transform-origin depends on box size, so we need to update the layer transform after layout.
   if (hasLayer())
     layer()->updateTransformationMatrix();
 }
@@ -723,8 +707,7 @@ LayoutUnit LayoutBox::constrainLogicalHeightByMinMax(
 LayoutUnit LayoutBox::constrainContentBoxLogicalHeightByMinMax(
     LayoutUnit logicalHeight,
     LayoutUnit intrinsicContentHeight) const {
-  // If the min/max height and logical height are both percentages we take
-  // advantage of already knowing the current resolved percentage height
+  // If the min/max height and logical height are both percentages we take advantage of already knowing the current resolved percentage height
   // to avoid recursing up through our containing blocks again to determine it.
   const ComputedStyle& styleToUse = styleRef();
   if (!styleToUse.logicalMaxHeight().isMaxSizeNone()) {
@@ -832,8 +815,8 @@ LayoutRect LayoutBox::backgroundRect(BackgroundRectType rectType) const {
           cur->attachment() == LocalBackgroundAttachment)
         currentClip = PaddingFillBox;
 
-      // If we're asking for the clip rect, a content-box clipped fill layer can
-      // be scrolled into the padding box of the overflow container.
+      // If we're asking for the clip rect, a content-box clipped fill layer can be scrolled
+      // into the padding box of the overflow container.
       if (rectType == BackgroundClipRect && currentClip == ContentFillBox &&
           cur->attachment() == LocalBackgroundAttachment) {
         currentClip = PaddingFillBox;
@@ -1074,8 +1057,7 @@ void LayoutBox::middleClickAutoscroll(const IntPoint& sourcePoint) {
   IntPoint lastKnownMousePosition =
       frame->eventHandler().lastKnownMousePosition();
 
-  // We need to check if the last known mouse position is out of the window.
-  // When the mouse is out of the window, the position is incoherent
+  // We need to check if the last known mouse position is out of the window. When the mouse is out of the window, the position is incoherent
   static IntPoint previousMousePosition;
   if (lastKnownMousePosition.x() < 0 || lastKnownMousePosition.y() < 0)
     lastKnownMousePosition = previousMousePosition;
@@ -1084,8 +1066,9 @@ void LayoutBox::middleClickAutoscroll(const IntPoint& sourcePoint) {
 
   IntSize delta = lastKnownMousePosition - sourcePoint;
 
-  // at the center we let the space for the icon.
-  if (abs(delta.width()) <= AutoscrollController::noMiddleClickAutoscrollRadius)
+  if (abs(delta.width()) <=
+      AutoscrollController::
+          noMiddleClickAutoscrollRadius)  // at the center we let the space for the icon
     delta.setWidth(0);
   if (abs(delta.height()) <=
       AutoscrollController::noMiddleClickAutoscrollRadius)
@@ -1109,8 +1092,7 @@ void LayoutBox::scrollByRecursively(const DoubleSize& delta,
     DoubleSize newScrollOffset = scrollableArea->adjustedScrollOffset() + delta;
     scrollableArea->scrollToOffset(newScrollOffset, clamp);
 
-    // If this layer can't do the scroll we ask the next layer up that can
-    // scroll to try.
+    // If this layer can't do the scroll we ask the next layer up that can scroll to try
     DoubleSize remainingScrollOffset =
         newScrollOffset - scrollableArea->adjustedScrollOffset();
     if (!remainingScrollOffset.isZero() && parent()) {
@@ -1122,14 +1104,12 @@ void LayoutBox::scrollByRecursively(const DoubleSize& delta,
         frame->page()->autoscrollController().updateAutoscrollLayoutObject();
     }
   } else if (view()->frameView()) {
-    // If we are here, we were called on a layoutObject that can be
-    // programmatically scrolled, but doesn't have an overflow clip. Which means
-    // that it is a document node that can be scrolled.
+    // If we are here, we were called on a layoutObject that can be programmatically scrolled, but doesn't
+    // have an overflow clip. Which means that it is a document node that can be scrolled.
     // FIXME: Pass in DoubleSize. crbug.com/414283.
     view()->frameView()->scrollBy(flooredIntSize(delta), UserScroll);
 
-    // FIXME: If we didn't scroll the whole way, do we want to try looking at
-    // the frames ownerElement?
+    // FIXME: If we didn't scroll the whole way, do we want to try looking at the frames ownerElement?
     // https://bugs.webkit.org/show_bug.cgi?id=28237
   }
 }
@@ -1189,9 +1169,8 @@ bool LayoutBox::mapScrollingContentsRectToBoxSpace(
     rect.move(offset);
   }
 
-  // This won't work fully correctly for fixed-position elements, who should
-  // receive CSS clip but for whom the current object is not in the containing
-  // block chain.
+  // This won't work fully correctly for fixed-position elements, who should receive CSS clip but for whom the current object
+  // is not in the containing block chain.
   LayoutRect clipRect = clippingRect();
 
   bool doesIntersect;
@@ -1282,36 +1261,31 @@ LayoutUnit LayoutBox::overrideLogicalContentHeight() const {
   return m_rareData->m_overrideLogicalContentHeight;
 }
 
-// TODO (lajava) Now that we have implemented these functions based on physical
-// direction, we'd rather remove the logical ones.
+// TODO (lajava) Now that we have implemented these functions based on physical direction, we'd rather remove the logical ones.
 LayoutUnit LayoutBox::overrideContainingBlockContentLogicalWidth() const {
   DCHECK(hasOverrideContainingBlockLogicalWidth());
   return m_rareData->m_overrideContainingBlockContentLogicalWidth;
 }
 
-// TODO (lajava) Shouldn't we implement these functions based on physical
-// direction ?.
+// TODO (lajava) Shouldn't we implement these functions based on physical direction ?.
 LayoutUnit LayoutBox::overrideContainingBlockContentLogicalHeight() const {
   DCHECK(hasOverrideContainingBlockLogicalHeight());
   return m_rareData->m_overrideContainingBlockContentLogicalHeight;
 }
 
-// TODO (lajava) Shouldn't we implement these functions based on physical
-// direction ?.
+// TODO (lajava) Shouldn't we implement these functions based on physical direction ?.
 bool LayoutBox::hasOverrideContainingBlockLogicalWidth() const {
   return m_rareData &&
          m_rareData->m_hasOverrideContainingBlockContentLogicalWidth;
 }
 
-// TODO (lajava) Shouldn't we implement these functions based on physical
-// direction ?.
+// TODO (lajava) Shouldn't we implement these functions based on physical direction ?.
 bool LayoutBox::hasOverrideContainingBlockLogicalHeight() const {
   return m_rareData &&
          m_rareData->m_hasOverrideContainingBlockContentLogicalHeight;
 }
 
-// TODO (lajava) Shouldn't we implement these functions based on physical
-// direction ?.
+// TODO (lajava) Shouldn't we implement these functions based on physical direction ?.
 void LayoutBox::setOverrideContainingBlockContentLogicalWidth(
     LayoutUnit logicalWidth) {
   DCHECK_GE(logicalWidth, LayoutUnit(-1));
@@ -1319,8 +1293,7 @@ void LayoutBox::setOverrideContainingBlockContentLogicalWidth(
   ensureRareData().m_hasOverrideContainingBlockContentLogicalWidth = true;
 }
 
-// TODO (lajava) Shouldn't we implement these functions based on physical
-// direction ?.
+// TODO (lajava) Shouldn't we implement these functions based on physical direction ?.
 void LayoutBox::setOverrideContainingBlockContentLogicalHeight(
     LayoutUnit logicalHeight) {
   DCHECK_GE(logicalHeight, LayoutUnit(-1));
@@ -1329,8 +1302,7 @@ void LayoutBox::setOverrideContainingBlockContentLogicalHeight(
   ensureRareData().m_hasOverrideContainingBlockContentLogicalHeight = true;
 }
 
-// TODO (lajava) Shouldn't we implement these functions based on physical
-// direction ?.
+// TODO (lajava) Shouldn't we implement these functions based on physical direction ?.
 void LayoutBox::clearContainingBlockOverrideSize() {
   if (!m_rareData)
     return;
@@ -1338,8 +1310,7 @@ void LayoutBox::clearContainingBlockOverrideSize() {
   ensureRareData().m_hasOverrideContainingBlockContentLogicalHeight = false;
 }
 
-// TODO (lajava) Shouldn't we implement these functions based on physical
-// direction ?.
+// TODO (lajava) Shouldn't we implement these functions based on physical direction ?.
 void LayoutBox::clearOverrideContainingBlockContentLogicalHeight() {
   if (!m_rareData)
     return;
@@ -1539,9 +1510,8 @@ bool LayoutBox::getBackgroundPaintedExtent(LayoutRect& paintedExtent) const {
   }
 
   BackgroundImageGeometry geometry;
-  // TODO(jchaffraix): This function should be rethought as it's called during
-  // and outside of the paint phase. Potentially returning different results at
-  // different phases.
+  // TODO(jchaffraix): This function should be rethought as it's called during and outside
+  // of the paint phase. Potentially returning different results at different phases.
   geometry.calculate(*this, nullptr, GlobalPaintNormalPhase,
                      style()->backgroundLayers(), backgroundRect);
   if (geometry.hasNonLocalGeometry())
@@ -1617,8 +1587,7 @@ bool LayoutBox::foregroundIsKnownToBeOpaqueInRect(
     LayoutRect childLocalRect = localRect;
     childLocalRect.moveBy(-childLocation);
     if (childLocalRect.y() < 0 || childLocalRect.x() < 0) {
-      // If there is unobscured area above/left of a static positioned box then
-      // the rect is probably not covered.
+      // If there is unobscured area above/left of a static positioned box then the rect is probably not covered.
       if (!childBox->isPositioned())
         return false;
       continue;
@@ -1661,8 +1630,7 @@ void LayoutBox::paintMask(const PaintInfo& paintInfo,
 }
 
 void LayoutBox::imageChanged(WrappedImagePtr image, const IntRect*) {
-  // TODO(chrishtr): support PaintInvalidationDelayedFull for animated border
-  // images.
+  // TODO(chrishtr): support PaintInvalidationDelayedFull for animated border images.
   if ((styleRef().borderImage().image() &&
        styleRef().borderImage().image()->data() == image) ||
       (styleRef().maskBoxImage().image() &&
@@ -1714,8 +1682,8 @@ ResourcePriority LayoutBox::computeResourcePriority() const {
   LayoutRect viewBounds = viewRect();
   LayoutRect objectBounds = LayoutRect(absoluteContentBox());
 
-  // The object bounds might be empty right now, so intersects will fail since
-  // it doesn't deal with empty rects. Use LayoutRect::contains in that case.
+  // The object bounds might be empty right now, so intersects will fail since it doesn't deal
+  // with empty rects. Use LayoutRect::contains in that case.
   bool isVisible;
   if (!objectBounds.isEmpty())
     isVisible = viewBounds.intersects(objectBounds);
@@ -1863,8 +1831,7 @@ LayoutUnit LayoutBox::shrinkLogicalWidthToAvoidFloats(
   LayoutUnit endOffsetForLine =
       cb->endOffsetForLine(logicalTopPosition, DoNotIndentText, logicalHeight);
 
-  // If there aren't any floats constraining us then allow the margins to
-  // shrink/expand the width as much as they want.
+  // If there aren't any floats constraining us then allow the margins to shrink/expand the width as much as they want.
   if (startOffsetForContent == startOffsetForLine &&
       endOffsetForContent == endOffsetForLine)
     return cb->availableLogicalWidthForLine(logicalTopPosition, DoNotIndentText,
@@ -1875,14 +1842,11 @@ LayoutUnit LayoutBox::shrinkLogicalWidthToAvoidFloats(
                          logicalTopPosition, DoNotIndentText, logicalHeight) -
                      std::max(LayoutUnit(), childMarginStart) -
                      std::max(LayoutUnit(), childMarginEnd);
-  // We need to see if margins on either the start side or the end side can
-  // contain the floats in question. If they can, then just using the line width
-  // is inaccurate. In the case where a float completely fits, we don't need to
-  // use the line offset at all, but can instead push all the way to the content
-  // edge of the containing block. In the case where the float doesn't fit, we
-  // can use the line offset, but we need to grow it by the margin to reflect
-  // the fact that the margin was "consumed" by the float. Negative margins
-  // aren't consumed by the float, and so we ignore them.
+  // We need to see if margins on either the start side or the end side can contain the floats in question. If they can,
+  // then just using the line width is inaccurate. In the case where a float completely fits, we don't need to use the line
+  // offset at all, but can instead push all the way to the content edge of the containing block. In the case where the float
+  // doesn't fit, we can use the line offset, but we need to grow it by the margin to reflect the fact that the margin was
+  // "consumed" by the float. Negative margins aren't consumed by the float, and so we ignore them.
   width += portionOfMarginNotConsumedByFloat(
       childMarginStart, startOffsetForContent, startOffsetForLine);
   width += portionOfMarginNotConsumedByFloat(
@@ -1943,8 +1907,7 @@ LayoutUnit LayoutBox::perpendicularContainingBlockLogicalHeight() const {
   const ComputedStyle& containingBlockStyle = cb->styleRef();
   Length logicalHeightLength = containingBlockStyle.logicalHeight();
 
-  // FIXME: For now just support fixed heights.  Eventually should support
-  // percentage heights as well.
+  // FIXME: For now just support fixed heights.  Eventually should support percentage heights as well.
   if (!logicalHeightLength.isFixed()) {
     LayoutUnit fillFallbackExtent =
         LayoutUnit(containingBlockStyle.isHorizontalWritingMode()
@@ -1967,9 +1930,8 @@ void LayoutBox::mapLocalToAncestor(const LayoutBoxModelObject* ancestor,
                                    MapCoordinatesFlags mode) const {
   bool isFixedPos = style()->position() == FixedPosition;
 
-  // If this box has a transform or contains paint, it acts as a fixed position
-  // container for fixed descendants, and may itself also be fixed position. So
-  // propagate 'fixed' up only if this box is fixed position.
+  // If this box has a transform or contains paint, it acts as a fixed position container for fixed descendants,
+  // and may itself also be fixed position. So propagate 'fixed' up only if this box is fixed position.
   if (style()->canContainFixedPositionObjects() && !isFixedPos)
     mode &= ~IsFixed;
   else if (isFixedPos)
@@ -1986,9 +1948,8 @@ void LayoutBox::mapAncestorToLocal(const LayoutBoxModelObject* ancestor,
 
   bool isFixedPos = style()->position() == FixedPosition;
 
-  // If this box has a transform or contains paint, it acts as a fixed position
-  // container for fixed descendants, and may itself also be fixed position. So
-  // propagate 'fixed' up only if this box is fixed position.
+  // If this box has a transform or contains paint, it acts as a fixed position container for fixed descendants,
+  // and may itself also be fixed position. So propagate 'fixed' up only if this box is fixed position.
   if (style()->canContainFixedPositionObjects() && !isFixedPos)
     mode &= ~IsFixed;
   else if (isFixedPos)
@@ -2037,16 +1998,16 @@ void LayoutBox::positionLineBox(InlineBox* box) {
     bool originallyInline = style()->isOriginalDisplayInlineType();
     if (originallyInline) {
       // The value is cached in the xPos of the box.  We only need this value if
-      // our object was inline originally, since otherwise it would have ended
-      // up underneath the inlines.
+      // our object was inline originally, since otherwise it would have ended up underneath
+      // the inlines.
       RootInlineBox& root = box->root();
       root.block().setStaticInlinePositionForChild(LineLayoutBox(this),
                                                    box->logicalLeft());
     } else {
-      // Our object was a block originally, so we make our normal flow position
-      // be just below the line box (as though all the inlines that came before
-      // us got wrapped in an anonymous block, which is what would have happened
-      // had we been in flow). This value was cached in the y() of the box.
+      // Our object was a block originally, so we make our normal flow position be
+      // just below the line box (as though all the inlines that came before us got
+      // wrapped in an anonymous block, which is what would have happened had we been
+      // in flow).  This value was cached in the y() of the box.
       layer()->setStaticBlockPosition(box->logicalTop());
     }
 
@@ -2057,9 +2018,8 @@ void LayoutBox::positionLineBox(InlineBox* box) {
     box->remove(DontMarkLineBoxes);
     box->destroy();
   } else if (isAtomicInlineLevel()) {
-    // FIXME: the call to roundedLayoutPoint() below is temporary and should be
-    // removed once the transition to LayoutUnit-based types is complete
-    // (crbug.com/321237).
+    // FIXME: the call to roundedLayoutPoint() below is temporary and should be removed once
+    // the transition to LayoutUnit-based types is complete (crbug.com/321237)
     setLocationAndUpdateOverflowControlsIfNeeded(box->topLeft());
     setInlineBoxWrapper(box);
   }
@@ -2068,11 +2028,9 @@ void LayoutBox::positionLineBox(InlineBox* box) {
 void LayoutBox::moveWithEdgeOfInlineContainerIfNecessary(bool isHorizontal) {
   ASSERT(isOutOfFlowPositioned() && container()->isLayoutInline() &&
          container()->isInFlowPositioned());
-  // If this object is inside a relative positioned inline and its inline
-  // position is an explicit offset from the edge of its container then it will
-  // need to move if its inline container has changed width. We do not track if
-  // the width has changed but if we are here then we are laying out lines
-  // inside it, so it probably has - mark our object for layout so that it can
+  // If this object is inside a relative positioned inline and its inline position is an explicit offset from the edge of its container
+  // then it will need to move if its inline container has changed width. We do not track if the width has changed
+  // but if we are here then we are laying out lines inside it, so it probably has - mark our object for layout so that it can
   // move to the new offset created by the new width.
   if (!normalChildNeedsLayout() &&
       !style()->hasStaticInlinePosition(isHorizontal))
@@ -2090,8 +2048,10 @@ void LayoutBox::deleteLineBoxWrapper() {
 
 void LayoutBox::setSpannerPlaceholder(
     LayoutMultiColumnSpannerPlaceholder& placeholder) {
-  // Not expected to change directly from one spanner to another.
-  RELEASE_ASSERT(!m_rareData || !m_rareData->m_spannerPlaceholder);
+  RELEASE_ASSERT(
+      !m_rareData ||
+      !m_rareData
+           ->m_spannerPlaceholder);  // not expected to change directly from one spanner to another.
   ensureRareData().m_spannerPlaceholder = &placeholder;
 }
 
@@ -2110,9 +2070,8 @@ void LayoutBox::setPaginationStrut(LayoutUnit strut) {
 bool LayoutBox::isBreakBetweenControllable(EBreak breakValue) const {
   if (breakValue == BreakAuto)
     return true;
-  // We currently only support non-auto break-before and break-after values on
-  // in-flow block level elements, which is the minimum requirement according to
-  // the spec.
+  // We currently only support non-auto break-before and break-after values on in-flow block
+  // level elements, which is the minimum requirement according to the spec.
   if (isInline() || isFloatingOrOutOfFlowPositioned())
     return false;
   const LayoutBlock* curr = containingBlock();
@@ -2136,8 +2095,8 @@ bool LayoutBox::isBreakBetweenControllable(EBreak breakValue) const {
         return !isMulticolValue;
       if (isMulticolValue)
         return true;
-      // If this is a flow thread for a multicol container, and we have a break
-      // value for paged, we need to keep looking.
+      // If this is a flow thread for a multicol container, and we have a break value for
+      // paged, we need to keep looking.
     }
     if (curr->isFloatingOrOutOfFlowPositioned())
       return false;
@@ -2164,8 +2123,8 @@ bool LayoutBox::isBreakInsideControllable(EBreak breakValue) const {
     return true;  // The view is paginated, probably because we're printing.
   if (!flowThread)
     return false;  // We're not inside any pagination context
-  // We're inside a flow thread. We need to be contained by a flow thread for
-  // paged overflow in order for pagination values to be valid, though.
+  // We're inside a flow thread. We need to be contained by a flow thread for paged overflow in
+  // order for pagination values to be valid, though.
   for (const LayoutBlock* ancestor = flowThread; ancestor;
        ancestor = ancestor->containingBlock()) {
     if (ancestor->isLayoutFlowThread() &&
@@ -2196,9 +2155,8 @@ EBreak LayoutBox::breakInside() const {
   return BreakAuto;
 }
 
-// At a class A break point [1], the break value with the highest precedence
-// wins. If the two values have the same precedence (e.g. "left" and "right"),
-// the value specified on a latter object wins.
+// At a class A break point [1], the break value with the highest precedence wins. If the two values
+// have the same precedence (e.g. "left" and "right"), the value specified on a latter object wins.
 //
 // [1] https://drafts.csswg.org/css-break/#possible-breaks
 static inline int fragmentainerBreakPrecedence(EBreak breakValue) {
@@ -2208,8 +2166,7 @@ static inline int fragmentainerBreakPrecedence(EBreak breakValue) {
   // "avoid" wins over "avoid-page".
   // Forced break values win over "avoid".
   // Any forced page break value wins over "column" forced break.
-  // More specific break values (left, right, recto, verso) wins over generic
-  // "page" values.
+  // More specific break values (left, right, recto, verso) wins over generic "page" values.
 
   switch (breakValue) {
     default:
@@ -2251,10 +2208,9 @@ EBreak LayoutBox::classABreakPointValue(EBreak previousBreakAfterValue) const {
 }
 
 bool LayoutBox::needsForcedBreakBefore(EBreak previousBreakAfterValue) const {
-  // Forced break values are only honored when specified on in-flow objects, but
-  // floats and out-of-flow positioned objects may be affected by a break-after
-  // value of the previous in-flow object, even though we're not at a class A
-  // break point.
+  // Forced break values are only honored when specified on in-flow objects, but floats and
+  // out-of-flow positioned objects may be affected by a break-after value of the previous
+  // in-flow object, even though we're not at a class A break point.
   EBreak breakValue = isFloatingOrOutOfFlowPositioned()
                           ? previousBreakAfterValue
                           : classABreakPointValue(previousBreakAfterValue);
@@ -2262,8 +2218,8 @@ bool LayoutBox::needsForcedBreakBefore(EBreak previousBreakAfterValue) const {
 }
 
 bool LayoutBox::paintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
-  // In case scrollbars got repositioned (which will typically happen if the box
-  // got resized), we cannot skip invalidation.
+  // In case scrollbars got repositioned (which will typically happen if the box got
+  // resized), we cannot skip invalidation.
   if (hasNonCompositedScrollbars())
     return false;
 
@@ -2272,13 +2228,11 @@ bool LayoutBox::paintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
       styleRef().hasBoxDecorations() || styleRef().hasVisualOverflowingEffect())
     return false;
 
-  // If the box has clip, we need issue a paint invalidation to cover the
-  // changed part of children because of change of clip when the box got
-  // resized. In theory the children should invalidate themselves when ancestor
-  // clip changes, but for now this is missing and ensuring it may hurt
-  // performance.
-  // TODO(wangxianzhu): Paint invalidation for clip change will be different in
-  //                    spv2.
+  // If the box has clip, we need issue a paint invalidation to cover the changed part of
+  // children because of change of clip when the box got resized. In theory the children
+  // should invalidate themselves when ancestor clip changes, but for now this is missing
+  // and ensuring it may hurt performance.
+  // TODO(wangxianzhu): Paint invalidation for clip change will be different in spv2.
   if (hasClipRelatedProperty() || hasControlClip())
     return false;
 
@@ -2296,16 +2250,14 @@ void LayoutBox::inflateVisualRectForFilterUnderContainer(
     LayoutRect& rect,
     const LayoutObject& container,
     const LayoutBoxModelObject* ancestorToStopAt) const {
-  // Apply visual overflow caused by reflections and filters defined on objects
-  // between this object and container (not included) or ancestorToStopAt
-  // (included).
+  // Apply visual overflow caused by reflections and filters defined on objects between this object
+  // and container (not included) or ancestorToStopAt (included).
   LayoutSize offsetFromContainer = this->offsetFromContainer(&container);
   rect.move(offsetFromContainer);
   for (LayoutObject* parent = this->parent(); parent && parent != container;
        parent = parent->parent()) {
     if (parent->isBox()) {
-      // Convert rect into coordinate space of parent to apply parent's
-      // reflection and filter.
+      // Convert rect into coordinate space of parent to apply parent's reflection and filter.
       LayoutSize parentOffset = parent->offsetFromAncestorContainer(&container);
       rect.move(-parentOffset);
       toLayoutBox(parent)->inflateVisualRectForFilter(rect);
@@ -2346,28 +2298,25 @@ bool LayoutBox::mapToVisualRectInAncestorSpace(
   if (filterSkipped)
     inflateVisualRectForFilterUnderContainer(rect, *container, ancestor);
 
-  // We are now in our parent container's coordinate space. Apply our transform
-  // to obtain a bounding box in the parent's coordinate space that encloses us.
+  // We are now in our parent container's coordinate space.  Apply our transform to obtain a bounding box
+  // in the parent's coordinate space that encloses us.
   if (hasLayer() && layer()->transform()) {
-    // Use enclosingIntRect because we cannot properly compute pixel snapping
-    // for painted elements within the transform since we don't know the desired
-    // subpixel accumulation at this point, and the transform may include a
-    // scale.
+    // Use enclosingIntRect because we cannot properly compute pixel snapping for painted elements within
+    // the transform since we don't know the desired subpixel accumulation at this point, and the transform may
+    // include a scale.
     rect = LayoutRect(layer()->transform()->mapRect(enclosingIntRect(rect)));
   }
   LayoutPoint topLeft = rect.location();
   if (container->isBox()) {
     topLeft.moveBy(topLeftLocation(toLayoutBox(container)));
-    // If the row is the ancestor, however, add its offset back in. In effect,
-    // this passes from the joint <td> / <tr> coordinate space to the parent
-    // space, then back to <tr> / <td>.
+    // If the row is the ancestor, however, add its offset back in. In effect, this passes from the joint <td> / <tr>
+    // coordinate space to the parent space, then back to <tr> / <td>.
     if (tableRowContainer)
       topLeft.moveBy(
           -tableRowContainer->topLeftLocation(toLayoutBox(container)));
   } else if (container->isRuby()) {
-    // TODO(wkorman): Generalize Ruby specialization and/or document more
-    // clearly. See the accompanying specialization in
-    // LayoutInline::mapToVisualRectInAncestorSpace.
+    // TODO(wkorman): Generalize Ruby specialization and/or document more clearly.
+    // See the accompanying specialization in LayoutInline::mapToVisualRectInAncestorSpace.
     topLeft.moveBy(topLeftLocation());
   } else {
     topLeft.moveBy(location());
@@ -2380,17 +2329,15 @@ bool LayoutBox::mapToVisualRectInAncestorSpace(
     topLeft +=
         toLayoutInline(container)->offsetForInFlowPositionedInline(*this);
   } else if (styleToUse.hasInFlowPosition() && layer()) {
-    // Apply the relative position offset when invalidating a rectangle. The
-    // layer is translated, but the layout box isn't, so we need to do this to
-    // get the right dirty rect.  Since this is called from
-    // LayoutObject::setStyle, the relative position flag on the LayoutObject
-    // has been cleared, so use the one on the style().
+    // Apply the relative position offset when invalidating a rectangle.  The layer
+    // is translated, but the layout box isn't, so we need to do this to get the
+    // right dirty rect.  Since this is called from LayoutObject::setStyle, the relative position
+    // flag on the LayoutObject has been cleared, so use the one on the style().
     topLeft += layer()->offsetForInFlowPosition();
   }
 
-  // FIXME: We ignore the lightweight clipping rect that controls use, since if
-  // |o| is in mid-layout, its controlClipRect will be wrong. For overflow clip
-  // we use the values cached by the layer.
+  // FIXME: We ignore the lightweight clipping rect that controls use, since if |o| is in mid-layout,
+  // its controlClipRect will be wrong. For overflow clip we use the values cached by the layer.
   rect.setLocation(topLeft);
 
   if (container->isBox() &&
@@ -2401,13 +2348,11 @@ bool LayoutBox::mapToVisualRectInAncestorSpace(
     return false;
 
   if (ancestorSkipped) {
-    // If the ancestor is below the container, then we need to map the rect into
-    // ancestor's coordinates.
+    // If the ancestor is below the container, then we need to map the rect into ancestor's coordinates.
     LayoutSize containerOffset =
         ancestor->offsetFromAncestorContainer(container);
     rect.move(-containerOffset);
-    // If the ancestor is fixed, then the rect is already in its coordinates so
-    // doesn't need viewport-adjusting.
+    // If the ancestor is fixed, then the rect is already in its coordinates so doesn't need viewport-adjusting.
     if (ancestor->style()->position() != FixedPosition &&
         container->isLayoutView() && position == FixedPosition)
       toLayoutView(container)->adjustOffsetForFixedPosition(rect);
@@ -2501,10 +2446,8 @@ void LayoutBox::computeLogicalWidth(
   bool inVerticalBox = parent()->isDeprecatedFlexibleBox() &&
                        (parent()->style()->boxOrient() == VERTICAL);
   bool stretching = (parent()->style()->boxAlign() == BSTRETCH);
-  // TODO (lajava): Stretching is the only reason why we don't want the box to
-  // be treated as a replaced element, so we could perhaps refactor all this
-  // logic, not only for flex and grid since alignment is intended to be applied
-  // to any block.
+  // TODO (lajava): Stretching is the only reason why we don't want the box to be treated as a replaced element, so we could perhaps
+  // refactor all this logic, not only for flex and grid since alignment is intended to be applied to any block.
   bool treatAsReplaced = shouldComputeSizeAsReplaced() &&
                          (!inVerticalBox || !stretching) &&
                          (!isGridItem() || !hasStretchedLogicalWidth());
@@ -2585,8 +2528,7 @@ void LayoutBox::computeLogicalWidth(
     Node* parentNode = generatingNode();
     if (parentNode &&
         (isHTMLOListElement(*parentNode) || isHTMLUListElement(*parentNode))) {
-      // Make sure the markers in a list are properly positioned (i.e. not
-      // chopped off) when autosized.
+      // Make sure the markers in a list are properly positioned (i.e. not chopped off) when autosized.
       const float adjustedMargin =
           (1 - 1.0 / styleToUse.textAutosizingMultiplier()) *
           getMaxWidthListMarker(this);
@@ -2662,8 +2604,7 @@ LayoutUnit LayoutBox::computeLogicalWidthUsing(SizeType widthType,
     return adjustBorderBoxLogicalWidthForBoxSizing(0);
 
   if (!logicalWidth.isIntrinsicOrAuto()) {
-    // FIXME: If the containing block flow is perpendicular to our direction we
-    // need to use the available logical height instead.
+    // FIXME: If the containing block flow is perpendicular to our direction we need to use the available logical height instead.
     return adjustBorderBoxLogicalWidthForBoxSizing(
         valueForLength(logicalWidth, availableLogicalWidth));
   }
@@ -2691,8 +2632,8 @@ LayoutUnit LayoutBox::computeLogicalWidthUsing(SizeType widthType,
 }
 
 bool LayoutBox::columnFlexItemHasStretchAlignment() const {
-  // auto margins mean we don't stretch. Note that this function will only be
-  // used for widths, so we don't have to check marginBefore/marginAfter.
+  // auto margins mean we don't stretch. Note that this function will only be used for
+  // widths, so we don't have to check marginBefore/marginAfter.
   const auto& parentStyle = parent()->styleRef();
   DCHECK(parentStyle.isColumnFlexDirection());
   if (styleRef().marginStart().isAuto() || styleRef().marginEnd().isAuto())
@@ -2711,8 +2652,7 @@ bool LayoutBox::isStretchingColumnFlexItem() const {
       parent->style()->boxAlign() == BSTRETCH)
     return true;
 
-  // We don't stretch multiline flexboxes because they need to apply line
-  // spacing (align-content) first.
+  // We don't stretch multiline flexboxes because they need to apply line spacing (align-content) first.
   if (parent->isFlexibleBox() && parent->style()->flexWrap() == FlexNoWrap &&
       parent->style()->isColumnFlexDirection() &&
       columnFlexItemHasStretchAlignment())
@@ -2720,8 +2660,7 @@ bool LayoutBox::isStretchingColumnFlexItem() const {
   return false;
 }
 
-// TODO (lajava) Can/Should we move this inside specific layout classes (flex.
-// grid)? Can we refactor columnFlexItemHasStretchAlignment logic?
+// TODO (lajava) Can/Should we move this inside specific layout classes (flex. grid)? Can we refactor columnFlexItemHasStretchAlignment logic?
 bool LayoutBox::hasStretchedLogicalWidth() const {
   const ComputedStyle& style = styleRef();
   if (!style.logicalWidth().isAuto() || style.marginStart().isAuto() ||
@@ -2729,9 +2668,8 @@ bool LayoutBox::hasStretchedLogicalWidth() const {
     return false;
   LayoutBlock* cb = containingBlock();
   if (!cb) {
-    // We are evaluating align-self/justify-self, which default to 'normal' for
-    // the root element. The 'normal' value behaves like 'start' except for
-    // Flexbox Items, which obviously should have a container.
+    // We are evaluating align-self/justify-self, which default to 'normal' for the root element.
+    // The 'normal' value behaves like 'start' except for Flexbox Items, which obviously should have a container.
     return false;
   }
   const ComputedStyle* parentStyle = isAnonymous() ? cb->style() : nullptr;
@@ -2754,13 +2692,11 @@ bool LayoutBox::sizesLogicalWidthToFitContent(
   if (isGridItem())
     return !hasStretchedLogicalWidth();
 
-  // Flexible box items should shrink wrap, so we lay them out at their
-  // intrinsic widths. In the case of columns that have a stretch alignment, we
-  // go ahead and layout at the stretched size to avoid an extra layout when
-  // applying alignment.
+  // Flexible box items should shrink wrap, so we lay them out at their intrinsic widths.
+  // In the case of columns that have a stretch alignment, we go ahead and layout at the
+  // stretched size to avoid an extra layout when applying alignment.
   if (parent()->isFlexibleBox()) {
-    // For multiline columns, we need to apply align-content first, so we can't
-    // stretch now.
+    // For multiline columns, we need to apply align-content first, so we can't stretch now.
     if (!parent()->style()->isColumnFlexDirection() ||
         parent()->style()->flexWrap() != FlexNoWrap)
       return true;
@@ -2768,9 +2704,8 @@ bool LayoutBox::sizesLogicalWidthToFitContent(
       return true;
   }
 
-  // Flexible horizontal boxes lay out children at their intrinsic widths. Also
-  // vertical boxes that don't stretch their kids lay out their children at
-  // their intrinsic widths.
+  // Flexible horizontal boxes lay out children at their intrinsic widths.  Also vertical boxes
+  // that don't stretch their kids lay out their children at their intrinsic widths.
   // FIXME: Think about writing-mode here.
   // https://bugs.webkit.org/show_bug.cgi?id=46473
   if (parent()->isDeprecatedFlexibleBox() &&
@@ -2778,8 +2713,8 @@ bool LayoutBox::sizesLogicalWidthToFitContent(
        parent()->style()->boxAlign() != BSTRETCH))
     return true;
 
-  // Button, input, select, textarea, and legend treat width value of 'auto' as
-  // 'intrinsic' unless it's in a stretching column flexbox.
+  // Button, input, select, textarea, and legend treat width value of 'auto' as 'intrinsic' unless it's in a
+  // stretching column flexbox.
   // FIXME: Think about writing-mode here.
   // https://bugs.webkit.org/show_bug.cgi?id=46473
   if (logicalWidth.isAuto() && !isStretchingColumnFlexItem() &&
@@ -2807,8 +2742,7 @@ void LayoutBox::computeMarginsForDirection(MarginDirection flowDirection,
                                            LayoutUnit& marginEnd,
                                            Length marginStartLength,
                                            Length marginEndLength) const {
-  // First assert that we're not calling this method on box types that don't
-  // support margins.
+  // First assert that we're not calling this method on box types that don't support margins.
   ASSERT(!isTableCell());
   ASSERT(!isTableRow());
   ASSERT(!isTableSection());
@@ -2824,8 +2758,8 @@ void LayoutBox::computeMarginsForDirection(MarginDirection flowDirection,
 
   if (containingBlock->isFlexibleBox()) {
     // We need to let flexbox handle the margin adjustment - otherwise, flexbox
-    // will think we're wider than we actually are and calculate line sizes
-    // wrong. See also http://dev.w3.org/csswg/css-flexbox/#auto-margins
+    // will think we're wider than we actually are and calculate line sizes wrong.
+    // See also http://dev.w3.org/csswg/css-flexbox/#auto-margins
     if (marginStartLength.isAuto())
       marginStartLength.setValue(0);
     if (marginEndLength.isAuto())
@@ -2847,26 +2781,22 @@ void LayoutBox::computeMarginsForDirection(MarginDirection flowDirection,
     }
   }
 
-  // CSS 2.1 (10.3.3): "If 'width' is not 'auto' and 'border-left-width' +
-  // 'padding-left' + 'width' + 'padding-right' + 'border-right-width' (plus any
-  // of 'margin-left' or 'margin-right' that are not 'auto') is larger than the
-  // width of the containing block, then any 'auto' values for 'margin-left' or
-  // 'margin-right' are, for the following rules, treated as zero.
+  // CSS 2.1 (10.3.3): "If 'width' is not 'auto' and 'border-left-width' + 'padding-left' + 'width' + 'padding-right' + 'border-right-width'
+  // (plus any of 'margin-left' or 'margin-right' that are not 'auto') is larger than the width of the containing block, then any 'auto'
+  // values for 'margin-left' or 'margin-right' are, for the following rules, treated as zero.
   LayoutUnit marginBoxWidth =
       childWidth + (!style()->width().isAuto()
                         ? marginStartWidth + marginEndWidth
                         : LayoutUnit());
 
   if (marginBoxWidth < availableWidth) {
-    // CSS 2.1: "If both 'margin-left' and 'margin-right' are 'auto', their used
-    // values are equal. This horizontally centers the element with respect to
-    // the edges of the containing block."
+    // CSS 2.1: "If both 'margin-left' and 'margin-right' are 'auto', their used values are equal. This horizontally centers the element
+    // with respect to the edges of the containing block."
     const ComputedStyle& containingBlockStyle = containingBlock->styleRef();
     if ((marginStartLength.isAuto() && marginEndLength.isAuto()) ||
         (!marginStartLength.isAuto() && !marginEndLength.isAuto() &&
          containingBlockStyle.textAlign() == WEBKIT_CENTER)) {
-      // Other browsers center the margin box for align=center elements so we
-      // match them here.
+      // Other browsers center the margin box for align=center elements so we match them here.
       LayoutUnit centeredMarginBoxStart = std::max(
           LayoutUnit(),
           (availableWidth - childWidth - marginStartWidth - marginEndWidth) /
@@ -2891,8 +2821,7 @@ void LayoutBox::computeMarginsForDirection(MarginDirection flowDirection,
       }
     }
 
-    // CSS 2.1: "If there is exactly one value specified as 'auto', its used
-    // value follows from the equality."
+    // CSS 2.1: "If there is exactly one value specified as 'auto', its used value follows from the equality."
     if (marginEndLength.isAuto()) {
       marginStart = marginStartWidth;
       marginEnd = availableWidth - childWidth - marginStart;
@@ -2906,8 +2835,7 @@ void LayoutBox::computeMarginsForDirection(MarginDirection flowDirection,
     }
   }
 
-  // Either no auto margins, or our margin box width is >= the container width,
-  // auto margins will just turn into 0.
+  // Either no auto margins, or our margin box width is >= the container width, auto margins will just turn into 0.
   marginStart = marginStartWidth;
   marginEnd = marginEndWidth;
 }
@@ -2944,15 +2872,11 @@ void LayoutBox::computeLogicalHeight(
   } else {
     LayoutBlock* cb = containingBlock();
 
-    // If we are perpendicular to our containing block then we need to resolve
-    // our block-start and block-end margins so that if they are 'auto' we are
-    // centred or aligned within the inline flow containing block: this is done
-    // by computing the margins as though they are inline.
-    // Note that as this is the 'sizing phase' we are using our own writing mode
-    // rather than the containing block's. We use the containing block's writing
-    // mode when figuring out the block-direction margins for positioning in
-    // |computeAndSetBlockDirectionMargins| (i.e. margin collapsing etc.).
-    // http://www.w3.org/TR/2014/CR-css-writing-modes-3-20140320/#orthogonal-flows
+    // If we are perpendicular to our containing block then we need to resolve our block-start and block-end margins so that if they
+    // are 'auto' we are centred or aligned within the inline flow containing block: this is done by computing the margins as though they are inline.
+    // Note that as this is the 'sizing phase' we are using our own writing mode rather than the containing block's. We use the containing block's
+    // writing mode when figuring out the block-direction margins for positioning in |computeAndSetBlockDirectionMargins| (i.e. margin collapsing etc.).
+    // See http://www.w3.org/TR/2014/CR-css-writing-modes-3-20140320/#orthogonal-flows
     MarginDirection flowDirection =
         isHorizontalWritingMode() != cb->isHorizontalWritingMode()
             ? InlineDirection
@@ -2977,8 +2901,8 @@ void LayoutBox::computeLogicalHeight(
         shouldComputeSizeAsReplaced() && (!inHorizontalBox || !stretching);
     bool checkMinMaxHeight = false;
 
-    // The parent box is flexing us, so it has increased or decreased our
-    // height. We have to grab our cached flexible height.
+    // The parent box is flexing us, so it has increased or decreased our height.  We have to
+    // grab our cached flexible height.
     // FIXME: Account for writing-mode in flexible boxes.
     // https://bugs.webkit.org/show_bug.cgi?id=46418
     if (hasOverrideLogicalContentHeight()) {
@@ -3025,9 +2949,9 @@ void LayoutBox::computeLogicalHeight(
           heightResult,
           computedValues.m_extent - borderAndPaddingLogicalHeight());
     } else {
-      // The only times we don't check min/max height are when a fixed length
-      // has been given as an override.  Just use that.  The value has already
-      // been adjusted for box-sizing.
+      // The only times we don't check min/max height are when a fixed length has
+      // been given as an override.  Just use that.  The value has already been adjusted
+      // for box-sizing.
       ASSERT(h.isFixed());
       heightResult = LayoutUnit(h.value()) + borderAndPaddingLogicalHeight();
     }
@@ -3040,13 +2964,11 @@ void LayoutBox::computeLogicalHeight(
         style()->marginAfter());
   }
 
-  // WinIE quirk: The <html> block always fills the entire canvas in quirks
-  // mode. The <body> always fills the <html> block in quirks mode. Only apply
-  // this quirk if the block is normal flow and no height is specified. When
-  // we're printing, we also need this quirk if the body or root has a
-  // percentage height since we don't set a height in LayoutView when we're
-  // printing. So without this quirk, the height has nothing to be a percentage
-  // of, and it ends up being 0. That is bad.
+  // WinIE quirk: The <html> block always fills the entire canvas in quirks mode.  The <body> always fills the
+  // <html> block in quirks mode.  Only apply this quirk if the block is normal flow and no height
+  // is specified. When we're printing, we also need this quirk if the body or root has a percentage
+  // height since we don't set a height in LayoutView when we're printing. So without this quirk, the
+  // height has nothing to be a percentage of, and it ends up being 0. That is bad.
   bool paginatedContentNeedsBaseHeight =
       document().printing() && h.isPercentOrCalc() &&
       (isDocumentElement() || (isBody() &&
@@ -3074,9 +2996,8 @@ void LayoutBox::computeLogicalHeight(
 }
 
 LayoutUnit LayoutBox::computeLogicalHeightWithoutLayout() const {
-  // TODO(cbiesinger): We should probably return something other than just
-  // border + padding, but for now we have no good way to do anything else
-  // without layout, so we just use that.
+  // TODO(cbiesinger): We should probably return something other than just border + padding, but for now
+  // we have no good way to do anything else without layout, so we just use that.
   LogicalExtentComputedValues computedValues;
   computeLogicalHeight(borderAndPaddingLogicalHeight(), LayoutUnit(),
                        computedValues);
@@ -3120,8 +3041,7 @@ LayoutUnit LayoutBox::computeIntrinsicLogicalContentHeightUsing(
     const Length& logicalHeightLength,
     LayoutUnit intrinsicContentHeight,
     LayoutUnit borderAndPadding) const {
-  // FIXME(cbiesinger): The css-sizing spec is considering changing what
-  // min-content/max-content should resolve to.
+  // FIXME(cbiesinger): The css-sizing spec is considering changing what min-content/max-content should resolve to.
   // If that happens, this code will have to change.
   if (logicalHeightLength.isMinContent() ||
       logicalHeightLength.isMaxContent() ||
@@ -3144,8 +3064,7 @@ LayoutUnit LayoutBox::computeContentAndScrollbarLogicalHeightUsing(
     LayoutUnit intrinsicContentHeight) const {
   if (height.isAuto())
     return heightType == MinSize ? LayoutUnit() : LayoutUnit(-1);
-  // FIXME(cbiesinger): The css-sizing spec is considering changing what
-  // min-content/max-content should resolve to.
+  // FIXME(cbiesinger): The css-sizing spec is considering changing what min-content/max-content should resolve to.
   // If that happens, this code will have to change.
   if (height.isIntrinsic()) {
     if (intrinsicContentHeight == -1)
@@ -3172,26 +3091,22 @@ bool LayoutBox::stretchesToViewportInQuirksMode() const {
 
 bool LayoutBox::skipContainingBlockForPercentHeightCalculation(
     const LayoutBox* containingBlock) const {
-  // If the writing mode of the containing block is orthogonal to ours, it means
-  // that we shouldn't skip anything, since we're going to resolve the
-  // percentage height against a containing block *width*.
+  // If the writing mode of the containing block is orthogonal to ours, it means that we shouldn't
+  // skip anything, since we're going to resolve the percentage height against a containing block *width*.
   if (isHorizontalWritingMode() != containingBlock->isHorizontalWritingMode())
     return false;
 
-  // Anonymous blocks should not impede percentage resolution on a child.
-  // Examples of such anonymous blocks are blocks wrapped around inlines that
-  // have block siblings (from the CSS spec) and multicol flow threads (an
-  // implementation detail). Another implementation detail, ruby runs, create
-  // anonymous inline-blocks, so skip those too. All other types of anonymous
-  // objects, such as table-cells, will be treated just as if they were
-  // non-anonymous.
+  // Anonymous blocks should not impede percentage resolution on a child. Examples of such
+  // anonymous blocks are blocks wrapped around inlines that have block siblings (from the CSS
+  // spec) and multicol flow threads (an implementation detail). Another implementation detail,
+  // ruby runs, create anonymous inline-blocks, so skip those too. All other types of anonymous
+  // objects, such as table-cells, will be treated just as if they were non-anonymous.
   if (containingBlock->isAnonymous()) {
     EDisplay display = containingBlock->styleRef().display();
     return display == EDisplay::Block || display == EDisplay::InlineBlock;
   }
 
-  // For quirks mode, we skip most auto-height containing blocks when computing
-  // percentages.
+  // For quirks mode, we skip most auto-height containing blocks when computing percentages.
   return document().inQuirksMode() && !containingBlock->isTableCell() &&
          !containingBlock->isOutOfFlowPositioned() &&
          !containingBlock->isLayoutGrid() &&
@@ -3223,21 +3138,17 @@ LayoutUnit LayoutBox::computePercentageLogicalHeight(
     availableHeight = overrideContainingBlockContentLogicalHeight();
   } else if (cb->isTableCell()) {
     if (!skippedAutoHeightContainingBlock) {
-      // Table cells violate what the CSS spec says to do with heights.
-      // Basically we don't care if the cell specified a height or not. We just
-      // always make ourselves be a percentage of the cell's current content
-      // height.
+      // Table cells violate what the CSS spec says to do with heights. Basically we
+      // don't care if the cell specified a height or not. We just always make ourselves
+      // be a percentage of the cell's current content height.
       if (!cb->hasOverrideLogicalContentHeight()) {
-        // Normally we would let the cell size intrinsically, but scrolling
-        // overflow has to be treated differently, since WinIE lets scrolled
-        // overflow regions shrink as needed.
-        // While we can't get all cases right, we can at least detect when the
-        // cell has a specified height or when the table has a specified height.
-        // In these cases we want to initially have no size and allow the
-        // flexing of the table or the cell to its specified height to cause us
-        // to grow to fill the space. This could end up being wrong in some
-        // cases, but it is preferable to the alternative (sizing intrinsically
-        // and making the row end up too big).
+        // Normally we would let the cell size intrinsically, but scrolling overflow has to be
+        // treated differently, since WinIE lets scrolled overflow regions shrink as needed.
+        // While we can't get all cases right, we can at least detect when the cell has a specified
+        // height or when the table has a specified height. In these cases we want to initially have
+        // no size and allow the flexing of the table or the cell to its specified height to cause us
+        // to grow to fill the space. This could end up being wrong in some cases, but it is
+        // preferable to the alternative (sizing intrinsically and making the row end up too big).
         LayoutTableCell* cell = toLayoutTableCell(cb);
         if (scrollsOverflowY() &&
             (!cell->style()->logicalHeight().isAuto() ||
@@ -3265,8 +3176,7 @@ LayoutUnit LayoutBox::computePercentageLogicalHeight(
                     cb->hasOverrideLogicalContentHeight());
 
   if (includeBorderPadding) {
-    // FIXME: Table cells should default to box-sizing: border-box so we can
-    // avoid this hack.
+    // FIXME: Table cells should default to box-sizing: border-box so we can avoid this hack.
     // It is necessary to use the border-box to match WinIE's broken
     // box model. This is essential for sizing inside
     // table cells using percentage heights.
@@ -3326,16 +3236,16 @@ LayoutUnit LayoutBox::computeReplacedLogicalWidthUsing(
     case FillAvailable:
     case Percent:
     case Calculated: {
-      // FIXME: containingBlockLogicalWidthForContent() is wrong if the replaced
-      // element's writing-mode is perpendicular to the containing block's
-      // writing-mode. https://bugs.webkit.org/show_bug.cgi?id=46496
+      // FIXME: containingBlockLogicalWidthForContent() is wrong if the replaced element's writing-mode is perpendicular to the
+      // containing block's writing-mode.
+      // https://bugs.webkit.org/show_bug.cgi?id=46496
       const LayoutUnit cw = isOutOfFlowPositioned()
                                 ? containingBlockLogicalWidthForPositioned(
                                       toLayoutBoxModelObject(container()))
                                 : containingBlockLogicalWidthForContent();
       Length containerLogicalWidth = containingBlock()->style()->logicalWidth();
-      // FIXME: Handle cases when containing block width is calculated or
-      // viewport percent. https://bugs.webkit.org/show_bug.cgi?id=91071
+      // FIXME: Handle cases when containing block width is calculated or viewport percent.
+      // https://bugs.webkit.org/show_bug.cgi?id=91071
       if (logicalWidth.isIntrinsic())
         return computeIntrinsicLogicalWidthUsing(
                    logicalWidth, cw, borderAndPaddingLogicalWidth()) -
@@ -3383,10 +3293,8 @@ bool LayoutBox::logicalHeightComputesAsNone(SizeType sizeType) const {
 
 LayoutUnit LayoutBox::computeReplacedLogicalHeightRespectingMinMaxHeight(
     LayoutUnit logicalHeight) const {
-  // If the height of the containing block is not specified explicitly (i.e., it
-  // depends on content height), and this element is not absolutely positioned,
-  // the percentage value is treated as '0' (for 'min-height') or 'none' (for
-  // 'max-height').
+  // If the height of the containing block is not specified explicitly (i.e., it depends on content height), and this element is not absolutely positioned,
+  // the percentage value is treated as '0' (for 'min-height') or 'none' (for 'max-height').
   LayoutUnit minLogicalHeight;
   if (!logicalHeightComputesAsNone(MinSize))
     minLogicalHeight =
@@ -3411,10 +3319,8 @@ LayoutUnit LayoutBox::computeReplacedLogicalHeightUsing(
       return adjustContentBoxLogicalHeightForBoxSizing(logicalHeight.value());
     case Percent:
     case Calculated: {
-      // TODO(rego): Check if we can somehow reuse
-      // LayoutBox::computePercentageLogicalHeight() and/or
-      // LayoutBlock::availableLogicalHeightForPercentageComputation() (see
-      // http://crbug.com/635655).
+      // TODO(rego): Check if we can somehow reuse LayoutBox::computePercentageLogicalHeight() and/or
+      // LayoutBlock::availableLogicalHeightForPercentageComputation() (see http://crbug.com/635655).
       LayoutObject* cb =
           isOutOfFlowPositioned() ? container() : containingBlock();
       while (cb->isAnonymous())
@@ -3448,8 +3354,8 @@ LayoutUnit LayoutBox::computeReplacedLogicalHeightUsing(
             valueForLength(logicalHeight, newHeight));
       }
 
-      // FIXME: availableLogicalHeight() is wrong if the replaced element's
-      // writing-mode is perpendicular to the containing block's writing-mode.
+      // FIXME: availableLogicalHeight() is wrong if the replaced element's writing-mode is perpendicular to the
+      // containing block's writing-mode.
       // https://bugs.webkit.org/show_bug.cgi?id=46496
       LayoutUnit availableHeight;
       if (isOutOfFlowPositioned()) {
@@ -3465,8 +3371,7 @@ LayoutUnit LayoutBox::computeReplacedLogicalHeightUsing(
         // It is necessary to use the border-box to match WinIE's broken
         // box model.  This is essential for sizing inside
         // table cells using percentage heights.
-        // FIXME: This needs to be made writing-mode-aware. If the cell and
-        // image are perpendicular writing-modes, this isn't right.
+        // FIXME: This needs to be made writing-mode-aware. If the cell and image are perpendicular writing-modes, this isn't right.
         // https://bugs.webkit.org/show_bug.cgi?id=46997
         while (cb && !cb->isLayoutView() &&
                (cb->style()->logicalHeight().isAuto() ||
@@ -3503,8 +3408,7 @@ LayoutUnit LayoutBox::computeReplacedLogicalHeightUsing(
 
 LayoutUnit LayoutBox::availableLogicalHeight(
     AvailableLogicalHeightType heightType) const {
-  // http://www.w3.org/TR/CSS2/visudet.html#propdef-height - We are interested
-  // in the content height.
+  // http://www.w3.org/TR/CSS2/visudet.html#propdef-height - We are interested in the content height.
   // FIXME: Should we pass intrinsicContentLogicalHeight() instead of -1 here?
   return constrainContentBoxLogicalHeightByMinMax(
       availableLogicalHeightUsing(style()->logicalHeight(), heightType),
@@ -3521,10 +3425,9 @@ LayoutUnit LayoutBox::availableLogicalHeightUsing(
             : toLayoutView(this)->frameView()->visibleContentSize().width());
   }
 
-  // We need to stop here, since we don't want to increase the height of the
-  // table artificially.  We're going to rely on this cell getting expanded to
-  // some new height, and then when we lay out again we'll use the calculation
-  // below.
+  // We need to stop here, since we don't want to increase the height of the table
+  // artificially.  We're going to rely on this cell getting expanded to some new
+  // height, and then when we lay out again we'll use the calculation below.
   if (isTableCell() && (h.isAuto() || h.isPercentOrCalc())) {
     if (hasOverrideLogicalContentHeight())
       return overrideLogicalContentHeight();
@@ -3540,8 +3443,7 @@ LayoutUnit LayoutBox::availableLogicalHeightUsing(
   }
 
   if (h.isPercentOrCalc() && isOutOfFlowPositioned()) {
-    // FIXME: This is wrong if the containingBlock has a perpendicular writing
-    // mode.
+    // FIXME: This is wrong if the containingBlock has a perpendicular writing mode.
     LayoutUnit availableHeight =
         containingBlockLogicalHeightForPositioned(containingBlock());
     return adjustContentBoxLogicalHeightForBoxSizing(
@@ -3557,8 +3459,7 @@ LayoutUnit LayoutBox::availableLogicalHeightUsing(
                                       heightIncludingScrollbar) -
                                       scrollbarLogicalHeight());
 
-  // FIXME: Check logicalTop/logicalBottom here to correctly handle vertical
-  // writing-mode.
+  // FIXME: Check logicalTop/logicalBottom here to correctly handle vertical writing-mode.
   // https://bugs.webkit.org/show_bug.cgi?id=46500
   if (isLayoutBlock() && isOutOfFlowPositioned() &&
       style()->height().isAuto() &&
@@ -3573,13 +3474,11 @@ LayoutUnit LayoutBox::availableLogicalHeightUsing(
     return adjustContentBoxLogicalHeightForBoxSizing(newContentHeight);
   }
 
-  // FIXME: This is wrong if the containingBlock has a perpendicular writing
-  // mode.
+  // FIXME: This is wrong if the containingBlock has a perpendicular writing mode.
   LayoutUnit availableHeight =
       containingBlockLogicalHeightForContent(heightType);
   if (heightType == ExcludeMarginBorderPadding) {
-    // FIXME: Margin collapsing hasn't happened yet, so this incorrectly removes
-    // collapsed margins.
+    // FIXME: Margin collapsing hasn't happened yet, so this incorrectly removes collapsed margins.
     availableHeight -=
         marginBefore() + marginAfter() + borderAndPaddingLogicalHeight();
   }
@@ -3595,10 +3494,8 @@ void LayoutBox::computeAndSetBlockDirectionMargins(
       logicalHeight(), marginBefore, marginAfter,
       style()->marginBeforeUsing(containingBlock->style()),
       style()->marginAfterUsing(containingBlock->style()));
-  // Note that in this 'positioning phase' of the layout we are using the
-  // containing block's writing mode rather than our own when calculating
-  // margins.
-  // http://www.w3.org/TR/2014/CR-css-writing-modes-3-20140320/#orthogonal-flows
+  // Note that in this 'positioning phase' of the layout we are using the containing block's writing mode rather than our own when calculating margins.
+  // See http://www.w3.org/TR/2014/CR-css-writing-modes-3-20140320/#orthogonal-flows
   containingBlock->setMarginBeforeForChild(*this, marginBefore);
   containingBlock->setMarginAfterForChild(*this, marginAfter);
 }
@@ -3615,8 +3512,7 @@ LayoutUnit LayoutBox::containingBlockLogicalWidthForPositioned(
       !document().printing()) {
     const LayoutView* view = toLayoutView(containingBlock);
     if (FrameView* frameView = view->frameView()) {
-      // Don't use visibleContentRect since the PaintLayer's size has not been
-      // set yet.
+      // Don't use visibleContentRect since the PaintLayer's size has not been set yet.
       LayoutSize viewportSize(
           frameView->layoutViewportScrollableArea()->excludeScrollbars(
               frameView->frameRect().size()));
@@ -3629,9 +3525,8 @@ LayoutUnit LayoutBox::containingBlockLogicalWidthForPositioned(
   if (hasOverrideContainingBlockLogicalWidth())
     return overrideContainingBlockContentLogicalWidth();
 
-  // Ensure we compute our width based on the width of our rel-pos inline
-  // container rather than any anonymous block created to manage a block-flow
-  // ancestor of ours in the rel-pos inline's inline flow.
+  // Ensure we compute our width based on the width of our rel-pos inline container rather than any anonymous block
+  // created to manage a block-flow ancestor of ours in the rel-pos inline's inline flow.
   if (containingBlock->isAnonymousBlock() && containingBlock->isRelPositioned())
     containingBlock = toLayoutBox(containingBlock)->continuation();
   else if (containingBlock->isBox())
@@ -3676,8 +3571,7 @@ LayoutUnit LayoutBox::containingBlockLogicalHeightForPositioned(
       !document().printing()) {
     const LayoutView* view = toLayoutView(containingBlock);
     if (FrameView* frameView = view->frameView()) {
-      // Don't use visibleContentRect since the PaintLayer's size has not been
-      // set yet.
+      // Don't use visibleContentRect since the PaintLayer's size has not been set yet.
       LayoutSize viewportSize(
           frameView->layoutViewportScrollableArea()->excludeScrollbars(
               frameView->frameRect().size()));
@@ -3728,9 +3622,9 @@ static LayoutUnit accumulateStaticOffsetForFlowThread(
   if (!layoutBox.isLayoutFlowThread())
     return LayoutUnit();
   LayoutUnit previousInlinePosition = inlinePosition;
-  // We're walking out of a flowthread here. This flow thread is not in the
-  // containing block chain, so we need to convert the position from the
-  // coordinate space of this flowthread to the containing coordinate space.
+  // We're walking out of a flowthread here. This flow thread is not in the containing block
+  // chain, so we need to convert the position from the coordinate space of this flowthread to
+  // the containing coordinate space.
   toLayoutFlowThread(layoutBox).flowThreadToContainingCoordinateSpace(
       blockPosition, inlinePosition);
   return inlinePosition - previousInlinePosition;
@@ -3745,12 +3639,11 @@ void LayoutBox::computeInlineStaticDistance(
   if (!logicalLeft.isAuto() || !logicalRight.isAuto())
     return;
 
-  // For multicol we also need to keep track of the block position, since that
-  // determines which column we're in and thus affects the inline position.
+  // For multicol we also need to keep track of the block position, since that determines which
+  // column we're in and thus affects the inline position.
   LayoutUnit staticBlockPosition = child->layer()->staticBlockPosition();
 
-  // FIXME: The static distance computation has not been patched for mixed
-  // writing modes yet.
+  // FIXME: The static distance computation has not been patched for mixed writing modes yet.
   if (child->parent()->style()->direction() == LTR) {
     LayoutUnit staticPosition = child->layer()->staticInlinePosition() -
                                 containerBlock->borderLogicalLeft();
@@ -3818,20 +3711,19 @@ void LayoutBox::computeInlineStaticDistance(
 void LayoutBox::computePositionedLogicalWidth(
     LogicalExtentComputedValues& computedValues) const {
   // QUESTIONS
-  // FIXME 1: Should we still deal with these the cases of 'left' or 'right'
-  // having the type 'static' in determining whether to calculate the static
-  // distance?
+  // FIXME 1: Should we still deal with these the cases of 'left' or 'right' having
+  // the type 'static' in determining whether to calculate the static distance?
   // NOTE: 'static' is not a legal value for 'left' or 'right' as of CSS 2.1.
 
-  // FIXME 2: Can perhaps optimize out cases when max-width/min-width are
-  // greater than or less than the computed width(). Be careful of box-sizing
-  // and percentage issues.
+  // FIXME 2: Can perhaps optimize out cases when max-width/min-width are greater
+  // than or less than the computed width().  Be careful of box-sizing and
+  // percentage issues.
 
   // The following is based off of the W3C Working Draft from April 11, 2006 of
   // CSS 2.1: Section 10.3.7 "Absolutely positioned, non-replaced elements"
   // <http://www.w3.org/TR/CSS21/visudet.html#abs-non-replaced-width>
-  // (block-style-comments in this function and in
-  // computePositionedLogicalWidthUsing() correspond to text from the spec)
+  // (block-style-comments in this function and in computePositionedLogicalWidthUsing()
+  // correspond to text from the spec)
 
   // We don't use containingBlock(), since we may be positioned by an enclosing
   // relative positioned inline.
@@ -3841,9 +3733,9 @@ void LayoutBox::computePositionedLogicalWidth(
   const LayoutUnit containerLogicalWidth =
       containingBlockLogicalWidthForPositioned(containerBlock);
 
-  // Use the container block's direction except when calculating the static
-  // distance. This conforms with the reference results for
-  // abspos-replaced-width-margin-000.htm of the CSS 2.1 test suite.
+  // Use the container block's direction except when calculating the static distance
+  // This conforms with the reference results for abspos-replaced-width-margin-000.htm
+  // of the CSS 2.1 test suite
   TextDirection containerDirection = containerBlock->style()->direction();
 
   bool isHorizontal = isHorizontalWritingMode();
@@ -3855,29 +3747,31 @@ void LayoutBox::computePositionedLogicalWidth(
 
   Length logicalLeftLength = style()->logicalLeft();
   Length logicalRightLength = style()->logicalRight();
-  // ---------------------------------------------------------------------------
-  //  For the purposes of this section and the next, the term "static position"
-  //  (of an element) refers, roughly, to the position an element would have had
-  //  in the normal flow. More precisely:
-  //
-  //  * The static position for 'left' is the distance from the left edge of the
-  //    containing block to the left margin edge of a hypothetical box that
-  //    would have been the first box of the element if its 'position' property
-  //    had been 'static' and 'float' had been 'none'. The value is negative if
-  //    the hypothetical box is to the left of the containing block.
-  //  * The static position for 'right' is the distance from the right edge of
-  //    the containing block to the right margin edge of the same hypothetical
-  //    box as above. The value is positive if the hypothetical box is to the
-  //    left of the containing block's edge.
-  //
-  //  But rather than actually calculating the dimensions of that hypothetical
-  //  box, user agents are free to make a guess at its probable position.
-  //
-  //  For the purposes of calculating the static position, the containing block
-  //  of fixed positioned elements is the initial containing block instead of
-  //  the viewport, and all scrollable boxes should be assumed to be scrolled to
-  //  their origin.
-  // ---------------------------------------------------------------------------
+
+  /*---------------------------------------------------------------------------*\
+     * For the purposes of this section and the next, the term "static position"
+     * (of an element) refers, roughly, to the position an element would have had
+     * in the normal flow. More precisely:
+     *
+     * * The static position for 'left' is the distance from the left edge of the
+     *   containing block to the left margin edge of a hypothetical box that would
+     *   have been the first box of the element if its 'position' property had
+     *   been 'static' and 'float' had been 'none'. The value is negative if the
+     *   hypothetical box is to the left of the containing block.
+     * * The static position for 'right' is the distance from the right edge of the
+     *   containing block to the right margin edge of the same hypothetical box as
+     *   above. The value is positive if the hypothetical box is to the left of the
+     *   containing block's edge.
+     *
+     * But rather than actually calculating the dimensions of that hypothetical box,
+     * user agents are free to make a guess at its probable position.
+     *
+     * For the purposes of calculating the static position, the containing block of
+     * fixed positioned elements is the initial containing block instead of the
+     * viewport, and all scrollable boxes should be assumed to be scrolled to their
+     * origin.
+    \*---------------------------------------------------------------------------*/
+
   // see FIXME 1
   // Calculate the static distance if needed.
   computeInlineStaticDistance(logicalLeftLength, logicalRightLength, this,
@@ -3937,10 +3831,8 @@ void LayoutBox::computeLogicalLeftPositionedOffset(
     LayoutUnit logicalWidthValue,
     const LayoutBoxModelObject* containerBlock,
     LayoutUnit containerLogicalWidth) {
-  // Deal with differing writing modes here. Our offset needs to be in the
-  // containing block's coordinate space. If the containing block is flipped
-  // along this axis, then we need to flip the coordinate. This can only happen
-  // if the containing block is both a flipped mode and perpendicular to us.
+  // Deal with differing writing modes here.  Our offset needs to be in the containing block's coordinate space. If the containing block is flipped
+  // along this axis, then we need to flip the coordinate.  This can only happen if the containing block is both a flipped mode and perpendicular to us.
   if (containerBlock->isHorizontalWritingMode() !=
           child->isHorizontalWritingMode() &&
       containerBlock->style()->isFlippedBlocksWritingMode()) {
@@ -3997,8 +3889,7 @@ void LayoutBox::computePositionedLogicalWidthUsing(
   // converted to the static position already
   ASSERT(!(logicalLeft.isAuto() && logicalRight.isAuto()));
 
-  // minimumValueForLength will convert 'auto' to 0 so that it doesn't impact
-  // the available space computation below.
+  // minimumValueForLength will convert 'auto' to 0 so that it doesn't impact the available space computation below.
   LayoutUnit logicalLeftValue =
       minimumValueForLength(logicalLeft, containerLogicalWidth);
   LayoutUnit logicalRightValue =
@@ -4017,18 +3908,18 @@ void LayoutBox::computePositionedLogicalWidthUsing(
                                             ? computedValues.m_margins.m_end
                                             : computedValues.m_margins.m_start;
   if (!logicalLeftIsAuto && !logicalWidthIsAuto && !logicalRightIsAuto) {
-    // -------------------------------------------------------------------------
-    // If none of the three is 'auto': If both 'margin-left' and 'margin-
-    // right' are 'auto', solve the equation under the extra constraint that
-    // the two margins get equal values, unless this would make them negative,
-    // in which case when direction of the containing block is 'ltr' ('rtl'),
-    // set 'margin-left' ('margin-right') to zero and solve for 'margin-right'
-    // ('margin-left'). If one of 'margin-left' or 'margin-right' is 'auto',
-    // solve the equation for that value. If the values are over-constrained,
-    // ignore the value for 'left' (in case the 'direction' property of the
-    // containing block is 'rtl') or 'right' (in case 'direction' is 'ltr')
-    // and solve for that value.
-    // -------------------------------------------------------------------------
+    /*-----------------------------------------------------------------------*\
+         * If none of the three is 'auto': If both 'margin-left' and 'margin-
+         * right' are 'auto', solve the equation under the extra constraint that
+         * the two margins get equal values, unless this would make them negative,
+         * in which case when direction of the containing block is 'ltr' ('rtl'),
+         * set 'margin-left' ('margin-right') to zero and solve for 'margin-right'
+         * ('margin-left'). If one of 'margin-left' or 'margin-right' is 'auto',
+         * solve the equation for that value. If the values are over-constrained,
+         * ignore the value for 'left' (in case the 'direction' property of the
+         * containing block is 'rtl') or 'right' (in case 'direction' is 'ltr')
+         * and solve for that value.
+        \*-----------------------------------------------------------------------*/
     // NOTE:  It is not necessary to solve for 'right' in the over constrained
     // case because the value is not used for any further calculations.
 
@@ -4081,43 +3972,44 @@ void LayoutBox::computePositionedLogicalWidthUsing(
                            marginLogicalLeftValue - marginLogicalRightValue;
     }
   } else {
-    // -------------------------------------------------------------------------
-    // Otherwise, set 'auto' values for 'margin-left' and 'margin-right'
-    // to 0, and pick the one of the following six rules that applies.
-    //
-    // 1. 'left' and 'width' are 'auto' and 'right' is not 'auto', then the
-    //    width is shrink-to-fit. Then solve for 'left'
-    //
-    //              OMIT RULE 2 AS IT SHOULD NEVER BE HIT
-    // ------------------------------------------------------------------
-    // 2. 'left' and 'right' are 'auto' and 'width' is not 'auto', then if
-    //    the 'direction' property of the containing block is 'ltr' set
-    //    'left' to the static position, otherwise set 'right' to the
-    //    static position. Then solve for 'left' (if 'direction is 'rtl')
-    //    or 'right' (if 'direction' is 'ltr').
-    // ------------------------------------------------------------------
-    //
-    // 3. 'width' and 'right' are 'auto' and 'left' is not 'auto', then the
-    //    width is shrink-to-fit . Then solve for 'right'
-    // 4. 'left' is 'auto', 'width' and 'right' are not 'auto', then solve
-    //    for 'left'
-    // 5. 'width' is 'auto', 'left' and 'right' are not 'auto', then solve
-    //    for 'width'
-    // 6. 'right' is 'auto', 'left' and 'width' are not 'auto', then solve
-    //    for 'right'
-    //
-    // Calculation of the shrink-to-fit width is similar to calculating the
-    // width of a table cell using the automatic table layout algorithm.
-    // Roughly: calculate the preferred width by formatting the content without
-    // breaking lines other than where explicit line breaks occur, and also
-    // calculate the preferred minimum width, e.g., by trying all possible line
-    // breaks. CSS 2.1 does not define the exact algorithm.
-    // Thirdly, calculate the available width: this is found by solving for
-    // 'width' after setting 'left' (in case 1) or 'right' (in case 3) to 0.
-    //
-    // Then the shrink-to-fit width is:
-    // min(max(preferred minimum width, available width), preferred width).
-    // -------------------------------------------------------------------------
+    /*--------------------------------------------------------------------*\
+         * Otherwise, set 'auto' values for 'margin-left' and 'margin-right'
+         * to 0, and pick the one of the following six rules that applies.
+         *
+         * 1. 'left' and 'width' are 'auto' and 'right' is not 'auto', then the
+         *    width is shrink-to-fit. Then solve for 'left'
+         *
+         *              OMIT RULE 2 AS IT SHOULD NEVER BE HIT
+         * ------------------------------------------------------------------
+         * 2. 'left' and 'right' are 'auto' and 'width' is not 'auto', then if
+         *    the 'direction' property of the containing block is 'ltr' set
+         *    'left' to the static position, otherwise set 'right' to the
+         *    static position. Then solve for 'left' (if 'direction is 'rtl')
+         *    or 'right' (if 'direction' is 'ltr').
+         * ------------------------------------------------------------------
+         *
+         * 3. 'width' and 'right' are 'auto' and 'left' is not 'auto', then the
+         *    width is shrink-to-fit . Then solve for 'right'
+         * 4. 'left' is 'auto', 'width' and 'right' are not 'auto', then solve
+         *    for 'left'
+         * 5. 'width' is 'auto', 'left' and 'right' are not 'auto', then solve
+         *    for 'width'
+         * 6. 'right' is 'auto', 'left' and 'width' are not 'auto', then solve
+         *    for 'right'
+         *
+         * Calculation of the shrink-to-fit width is similar to calculating the
+         * width of a table cell using the automatic table layout algorithm.
+         * Roughly: calculate the preferred width by formatting the content
+         * without breaking lines other than where explicit line breaks occur,
+         * and also calculate the preferred minimum width, e.g., by trying all
+         * possible line breaks. CSS 2.1 does not define the exact algorithm.
+         * Thirdly, calculate the available width: this is found by solving
+         * for 'width' after setting 'left' (in case 1) or 'right' (in case 3)
+         * to 0.
+         *
+         * Then the shrink-to-fit width is:
+         * min(max(preferred minimum width, available width), preferred width).
+        \*--------------------------------------------------------------------*/
     // NOTE: For rules 3 and 6 it is not necessary to solve for 'right'
     // because the value is not used for any further calculations.
 
@@ -4165,10 +4057,10 @@ void LayoutBox::computePositionedLogicalWidthUsing(
 
   // Use computed values to calculate the horizontal position.
 
-  // FIXME: This hack is needed to calculate the  logical left position for a
-  // 'rtl' relatively positioned, inline because right now, it is using the
-  // logical left position of the first line box when really it should use the
-  // last line box. When this is fixed elsewhere, this block should be removed.
+  // FIXME: This hack is needed to calculate the  logical left position for a 'rtl' relatively
+  // positioned, inline because right now, it is using the logical left position
+  // of the first line box when really it should use the last line box.  When
+  // this is fixed elsewhere, this block should be removed.
   if (containerBlock->isLayoutInline() &&
       !containerBlock->style()->isLeftToRightDirection()) {
     const LayoutInline* flow = toLayoutInline(containerBlock);
@@ -4205,8 +4097,7 @@ void LayoutBox::computeBlockStaticDistance(
   if (!logicalTop.isAuto() || !logicalBottom.isAuto())
     return;
 
-  // FIXME: The static distance computation has not been patched for mixed
-  // writing modes.
+  // FIXME: The static distance computation has not been patched for mixed writing modes.
   LayoutUnit staticLogicalTop = child->layer()->staticBlockPosition();
   for (LayoutObject* curr = child->parent(); curr && curr != containerBlock;
        curr = curr->container()) {
@@ -4216,11 +4107,10 @@ void LayoutBox::computeBlockStaticDistance(
     staticLogicalTop += box.logicalTop();
     if (!box.isLayoutFlowThread())
       continue;
-    // We're walking out of a flowthread here. This flow thread is not in the
-    // containing block chain, so we need to convert the position from the
-    // coordinate space of this flowthread to the containing coordinate space.
-    // The inline position cannot affect the block position, so we don't bother
-    // calculating it.
+    // We're walking out of a flowthread here. This flow thread is not in the containing block
+    // chain, so we need to convert the position from the coordinate space of this flowthread
+    // to the containing coordinate space. The inline position cannot affect the block
+    // position, so we don't bother calculating it.
     LayoutUnit dummyInlinePosition;
     toLayoutFlowThread(box).flowThreadToContainingCoordinateSpace(
         staticLogicalTop, dummyInlinePosition);
@@ -4233,12 +4123,10 @@ void LayoutBox::computePositionedLogicalHeight(
   // The following is based off of the W3C Working Draft from April 11, 2006 of
   // CSS 2.1: Section 10.6.4 "Absolutely positioned, non-replaced elements"
   // <http://www.w3.org/TR/2005/WD-CSS21-20050613/visudet.html#abs-non-replaced-height>
-  // (block-style-comments in this function and in
-  // computePositionedLogicalHeightUsing()
+  // (block-style-comments in this function and in computePositionedLogicalHeightUsing()
   // correspond to text from the spec)
 
-  // We don't use containingBlock(), since we may be positioned by an enclosing
-  // relpositioned inline.
+  // We don't use containingBlock(), since we may be positioned by an enclosing relpositioned inline.
   const LayoutBoxModelObject* containerBlock =
       toLayoutBoxModelObject(container());
 
@@ -4252,22 +4140,23 @@ void LayoutBox::computePositionedLogicalHeight(
   Length logicalTopLength = styleToUse.logicalTop();
   Length logicalBottomLength = styleToUse.logicalBottom();
 
-  // ---------------------------------------------------------------------------
-  // For the purposes of this section and the next, the term "static position"
-  // (of an element) refers, roughly, to the position an element would have had
-  // in the normal flow. More precisely, the static position for 'top' is the
-  // distance from the top edge of the containing block to the top margin edge
-  // of a hypothetical box that would have been the first box of the element if
-  // its 'position' property had been 'static' and 'float' had been 'none'. The
-  // value is negative if the hypothetical box is above the containing block.
-  //
-  // But rather than actually calculating the dimensions of that hypothetical
-  // box, user agents are free to make a guess at its probable position.
-  //
-  // For the purposes of calculating the static position, the containing block
-  // of fixed positioned elements is the initial containing block instead of
-  // the viewport.
-  // ---------------------------------------------------------------------------
+  /*---------------------------------------------------------------------------*\
+     * For the purposes of this section and the next, the term "static position"
+     * (of an element) refers, roughly, to the position an element would have had
+     * in the normal flow. More precisely, the static position for 'top' is the
+     * distance from the top edge of the containing block to the top margin edge
+     * of a hypothetical box that would have been the first box of the element if
+     * its 'position' property had been 'static' and 'float' had been 'none'. The
+     * value is negative if the hypothetical box is above the containing block.
+     *
+     * But rather than actually calculating the dimensions of that hypothetical
+     * box, user agents are free to make a guess at its probable position.
+     *
+     * For the purposes of calculating the static position, the containing block
+     * of fixed positioned elements is the initial containing block instead of
+     * the viewport.
+    \*---------------------------------------------------------------------------*/
+
   // see FIXME 1
   // Calculate the static distance if needed.
   computeBlockStaticDistance(logicalTopLength, logicalBottomLength, this,
@@ -4281,8 +4170,7 @@ void LayoutBox::computePositionedLogicalHeight(
       logicalTopLength, logicalBottomLength, marginBefore, marginAfter,
       computedValues);
 
-  // Avoid doing any work in the common case (where the values of min-height and
-  // max-height are their defaults).
+  // Avoid doing any work in the common case (where the values of min-height and max-height are their defaults).
   // see FIXME 2
 
   // Calculate constraint equation values for 'max-height' case.
@@ -4335,10 +4223,8 @@ void LayoutBox::computeLogicalTopPositionedOffset(
     LayoutUnit logicalHeightValue,
     const LayoutBoxModelObject* containerBlock,
     LayoutUnit containerLogicalHeight) {
-  // Deal with differing writing modes here. Our offset needs to be in the
-  // containing block's coordinate space. If the containing block is flipped
-  // along this axis, then we need to flip the coordinate.  This can only happen
-  // if the containing block is both a flipped mode and perpendicular to us.
+  // Deal with differing writing modes here.  Our offset needs to be in the containing block's coordinate space. If the containing block is flipped
+  // along this axis, then we need to flip the coordinate.  This can only happen if the containing block is both a flipped mode and perpendicular to us.
   if ((child->style()->isFlippedBlocksWritingMode() &&
        child->isHorizontalWritingMode() !=
            containerBlock->isHorizontalWritingMode()) ||
@@ -4348,8 +4234,7 @@ void LayoutBox::computeLogicalTopPositionedOffset(
            containerBlock->isHorizontalWritingMode()))
     logicalTopPos = containerLogicalHeight - logicalHeightValue - logicalTopPos;
 
-  // Our offset is from the logical bottom edge in a flipped environment, e.g.,
-  // right for vertical-rl.
+  // Our offset is from the logical bottom edge in a flipped environment, e.g., right for vertical-rl.
   if (containerBlock->style()->isFlippedBlocksWritingMode() &&
       child->isHorizontalWritingMode() ==
           containerBlock->isHorizontalWritingMode()) {
@@ -4413,13 +4298,14 @@ void LayoutBox::computePositionedLogicalHeightUsing(
   }
 
   if (!logicalTopIsAuto && !logicalHeightIsAuto && !logicalBottomIsAuto) {
-    // -------------------------------------------------------------------------
-    // If none of the three are 'auto': If both 'margin-top' and 'margin-bottom'
-    // are 'auto', solve the equation under the extra constraint that the two
-    // margins get equal values. If one of 'margin-top' or 'margin- bottom' is
-    // 'auto', solve the equation for that value. If the values are over-
-    // constrained, ignore the value for 'bottom' and solve for that value.
-    // -------------------------------------------------------------------------
+    /*-----------------------------------------------------------------------*\
+         * If none of the three are 'auto': If both 'margin-top' and 'margin-
+         * bottom' are 'auto', solve the equation under the extra constraint that
+         * the two margins get equal values. If one of 'margin-top' or 'margin-
+         * bottom' is 'auto', solve the equation for that value. If the values
+         * are over-constrained, ignore the value for 'bottom' and solve for that
+         * value.
+        \*-----------------------------------------------------------------------*/
     // NOTE:  It is not necessary to solve for 'bottom' in the over constrained
     // case because the value is not used for any further calculations.
 
@@ -4462,28 +4348,28 @@ void LayoutBox::computePositionedLogicalHeightUsing(
           valueForLength(marginAfter, containerRelativeLogicalWidth);
     }
   } else {
-    // -------------------------------------------------------------------------
-    // Otherwise, set 'auto' values for 'margin-top' and 'margin-bottom'
-    // to 0, and pick the one of the following six rules that applies.
-    //
-    // 1. 'top' and 'height' are 'auto' and 'bottom' is not 'auto', then
-    //    the height is based on the content, and solve for 'top'.
-    //
-    //              OMIT RULE 2 AS IT SHOULD NEVER BE HIT
-    // ------------------------------------------------------------------
-    // 2. 'top' and 'bottom' are 'auto' and 'height' is not 'auto', then
-    //    set 'top' to the static position, and solve for 'bottom'.
-    // ------------------------------------------------------------------
-    //
-    // 3. 'height' and 'bottom' are 'auto' and 'top' is not 'auto', then
-    //    the height is based on the content, and solve for 'bottom'.
-    // 4. 'top' is 'auto', 'height' and 'bottom' are not 'auto', and
-    //    solve for 'top'.
-    // 5. 'height' is 'auto', 'top' and 'bottom' are not 'auto', and
-    //    solve for 'height'.
-    // 6. 'bottom' is 'auto', 'top' and 'height' are not 'auto', and
-    //    solve for 'bottom'.
-    // -------------------------------------------------------------------------
+    /*--------------------------------------------------------------------*\
+         * Otherwise, set 'auto' values for 'margin-top' and 'margin-bottom'
+         * to 0, and pick the one of the following six rules that applies.
+         *
+         * 1. 'top' and 'height' are 'auto' and 'bottom' is not 'auto', then
+         *    the height is based on the content, and solve for 'top'.
+         *
+         *              OMIT RULE 2 AS IT SHOULD NEVER BE HIT
+         * ------------------------------------------------------------------
+         * 2. 'top' and 'bottom' are 'auto' and 'height' is not 'auto', then
+         *    set 'top' to the static position, and solve for 'bottom'.
+         * ------------------------------------------------------------------
+         *
+         * 3. 'height' and 'bottom' are 'auto' and 'top' is not 'auto', then
+         *    the height is based on the content, and solve for 'bottom'.
+         * 4. 'top' is 'auto', 'height' and 'bottom' are not 'auto', and
+         *    solve for 'top'.
+         * 5. 'height' is 'auto', 'top' and 'bottom' are not 'auto', and
+         *    solve for 'height'.
+         * 6. 'bottom' is 'auto', 'top' and 'height' are not 'auto', and
+         *    solve for 'bottom'.
+        \*--------------------------------------------------------------------*/
     // NOTE: For rules 3 and 6 it is not necessary to solve for 'bottom'
     // because the value is not used for any further calculations.
 
@@ -4546,12 +4432,10 @@ void LayoutBox::computePositionedLogicalHeightUsing(
 LayoutRect LayoutBox::localCaretRect(InlineBox* box,
                                      int caretOffset,
                                      LayoutUnit* extraWidthToEndOfLine) {
-  // VisiblePositions at offsets inside containers either a) refer to the
-  // positions before/after those containers (tables and select elements) or
-  // b) refer to the position inside an empty block.
+  // VisiblePositions at offsets inside containers either a) refer to the positions before/after
+  // those containers (tables and select elements) or b) refer to the position inside an empty block.
   // They never refer to children.
-  // FIXME: Paint the carets inside empty blocks differently than the carets
-  // before/after elements.
+  // FIXME: Paint the carets inside empty blocks differently than the carets before/after elements.
 
   LayoutRect rect(location(), LayoutSize(caretWidth(), size().height()));
   bool ltr =
@@ -4570,10 +4454,9 @@ LayoutRect LayoutBox::localCaretRect(InlineBox* box,
   // If height of box is smaller than font height, use the latter one,
   // otherwise the caret might become invisible.
   //
-  // Also, if the box is not an atomic inline-level element, always use the font
-  // height. This prevents the "big caret" bug described in:
-  // <rdar://problem/3777804> Deleting all content in a document can result in
-  // giant tall-as-window insertion point
+  // Also, if the box is not an atomic inline-level element, always use the font height.
+  // This prevents the "big caret" bug described in:
+  // <rdar://problem/3777804> Deleting all content in a document can result in giant tall-as-window insertion point
   //
   // FIXME: ignoring :first-line, missing good reason to take care of
   LayoutUnit fontHeight = LayoutUnit(style()->getFontMetrics().height());
@@ -4602,8 +4485,7 @@ LayoutRect LayoutBox::localCaretRect(InlineBox* box,
 }
 
 PositionWithAffinity LayoutBox::positionForPoint(const LayoutPoint& point) {
-  // no children...return this layout object's element, if there is one, and
-  // offset 0
+  // no children...return this layout object's element, if there is one, and offset 0
   LayoutObject* firstChild = slowFirstChild();
   if (!firstChild)
     return createPositionWithAffinity(
@@ -4658,9 +4540,8 @@ PositionWithAffinity LayoutBox::positionForPoint(const LayoutPoint& point) {
       return layoutBox->positionForPoint(point - layoutBox->locationOffset());
     }
 
-    // Find the distance from (x, y) to the box.  Split the space around the box
-    // into 8 pieces and use a different compare depending on which piece (x, y)
-    // is in.
+    // Find the distance from (x, y) to the box.  Split the space around the box into 8 pieces
+    // and use a different compare depending on which piece (x, y) is in.
     LayoutPoint cmp;
     if (point.x() > right) {
       if (point.y() < top)
@@ -4702,8 +4583,7 @@ PositionWithAffinity LayoutBox::positionForPoint(const LayoutPoint& point) {
 
 DISABLE_CFI_PERF
 bool LayoutBox::shrinkToAvoidFloats() const {
-  // Floating objects don't shrink.  Objects that don't avoid floats don't
-  // shrink.
+  // Floating objects don't shrink.  Objects that don't avoid floats don't shrink.
   if (isInline() || !avoidsFloats() || isFloating())
     return false;
 
@@ -4712,8 +4592,7 @@ bool LayoutBox::shrinkToAvoidFloats() const {
 }
 
 static bool shouldBeConsideredAsReplaced(Node* node) {
-  // Checkboxes and radioboxes are not isAtomicInlineLevel() nor do they have
-  // their own layoutObject in which to override avoidFloats().
+  // Checkboxes and radioboxes are not isAtomicInlineLevel() nor do they have their own layoutObject in which to override avoidFloats().
   return node && node->isElementNode() &&
          (toElement(node)->isFormControlElement() ||
           isHTMLImageElement(toElement(node)));
@@ -4799,8 +4678,7 @@ LayoutRectOutsets LayoutBox::computeVisualEffectOverflowOutsets() const {
     left = std::max(left, borderOutsets.left());
   }
 
-  // Box-shadow and border-image-outsets are in physical direction. Flip into
-  // block direction.
+  // Box-shadow and border-image-outsets are in physical direction. Flip into block direction.
   if (UNLIKELY(hasFlippedBlocksWritingMode()))
     std::swap(left, right);
 
@@ -4827,19 +4705,17 @@ void LayoutBox::addOverflowFromChild(LayoutBox* child,
   if (child->isLayoutFlowThread())
     return;
 
-  // Only propagate layout overflow from the child if the child isn't clipping
-  // its overflow.  If it is, then its overflow is internal to it, and we don't
-  // care about it. layoutOverflowRectForPropagation takes care of this and just
-  // propagates the border box rect instead.
+  // Only propagate layout overflow from the child if the child isn't clipping its overflow.  If it is, then
+  // its overflow is internal to it, and we don't care about it.  layoutOverflowRectForPropagation takes care of this
+  // and just propagates the border box rect instead.
   LayoutRect childLayoutOverflowRect =
       child->layoutOverflowRectForPropagation(styleRef());
   childLayoutOverflowRect.move(delta);
   addLayoutOverflow(childLayoutOverflowRect);
 
-  // Add in visual overflow from the child.  Even if the child clips its
-  // overflow, it may still have visual overflow of its own set from box shadows
-  // or reflections. It is unnecessary to propagate this overflow if we are
-  // clipping our own overflow.
+  // Add in visual overflow from the child.  Even if the child clips its overflow, it may still
+  // have visual overflow of its own set from box shadows or reflections.  It is unnecessary to propagate this
+  // overflow if we are clipping our own overflow.
   if (child->hasSelfPaintingLayer())
     return;
   LayoutRect childVisualOverflowRect =
@@ -4865,14 +4741,11 @@ void LayoutBox::addLayoutOverflow(const LayoutRect& rect) {
   if (clientBox.contains(rect))
     return;
 
-  // For overflow clip objects, we don't want to propagate overflow into
-  // unreachable areas.
+  // For overflow clip objects, we don't want to propagate overflow into unreachable areas.
   LayoutRect overflowRect(rect);
   if (hasOverflowClip() || isLayoutView()) {
-    // Overflow is in the block's coordinate space and thus is flipped for
-    // vertical-rl writing
-    // mode.  At this stage that is actually a simplification, since we can
-    // treat vertical-lr/rl
+    // Overflow is in the block's coordinate space and thus is flipped for vertical-rl writing
+    // mode.  At this stage that is actually a simplification, since we can treat vertical-lr/rl
     // as the same.
     if (hasTopOverflow())
       overflowRect.shiftMaxYEdgeTo(
@@ -4885,8 +4758,7 @@ void LayoutBox::addLayoutOverflow(const LayoutRect& rect) {
     else
       overflowRect.shiftXEdgeTo(std::max(overflowRect.x(), clientBox.x()));
 
-    // Now re-test with the adjusted rectangle and see if it has become
-    // unreachable or fully
+    // Now re-test with the adjusted rectangle and see if it has become unreachable or fully
     // contained.
     if (clientBox.contains(overflowRect) || overflowRect.isEmpty())
       return;
@@ -4916,11 +4788,9 @@ void LayoutBox::addContentsVisualOverflow(const LayoutRect& rect) {
   if (rect.isEmpty())
     return;
 
-  // If hasOverflowClip() we always save contents visual overflow because we
-  // need it
+  // If hasOverflowClip() we always save contents visual overflow because we need it
   // e.g. to determine whether to apply rounded corner clip on contents.
-  // Otherwise we save contents visual overflow only if it overflows the border
-  // box.
+  // Otherwise we save contents visual overflow only if it overflows the border box.
   LayoutRect borderBox = borderBoxRect();
   if (!hasOverflowClip() && borderBox.contains(rect))
     return;
@@ -4949,26 +4819,23 @@ bool LayoutBox::percentageLogicalHeightIsResolvable() const {
 
 DISABLE_CFI_PERF
 bool LayoutBox::hasUnsplittableScrollingOverflow() const {
-  // We will paginate as long as we don't scroll overflow in the pagination
-  // direction.
+  // We will paginate as long as we don't scroll overflow in the pagination direction.
   bool isHorizontal = isHorizontalWritingMode();
   if ((isHorizontal && !scrollsOverflowY()) ||
       (!isHorizontal && !scrollsOverflowX()))
     return false;
 
-  // Fragmenting scrollbars is only problematic in interactive media, e.g.
-  // multicol on a screen. If we're printing, which is non-interactive media, we
-  // should allow objects with non-visible overflow to be paginated as normally.
+  // Fragmenting scrollbars is only problematic in interactive media, e.g. multicol on a
+  // screen. If we're printing, which is non-interactive media, we should allow objects with
+  // non-visible overflow to be paginated as normally.
   if (document().printing())
     return false;
 
-  // We do have overflow. We'll still be willing to paginate as long as the
-  // block has auto logical height, auto or undefined max-logical-height and a
-  // zero or auto min-logical-height.
-  // Note this is just a heuristic, and it's still possible to have overflow
-  // under these conditions, but it should work out to be good enough for common
-  // cases. Paginating overflow with scrollbars present is not the end of the
-  // world and is what we used to do in the old model anyway.
+  // We do have overflow. We'll still be willing to paginate as long as the block
+  // has auto logical height, auto or undefined max-logical-height and a zero or auto min-logical-height.
+  // Note this is just a heuristic, and it's still possible to have overflow under these
+  // conditions, but it should work out to be good enough for common cases. Paginating overflow
+  // with scrollbars present is not the end of the world and is what we used to do in the old model anyway.
   return !style()->logicalHeight().isIntrinsicOrAuto() ||
          (!style()->logicalMaxHeight().isIntrinsicOrAuto() &&
           !style()->logicalMaxHeight().isMaxSizeNone() &&
@@ -5050,9 +4917,8 @@ LayoutRect LayoutBox::visualOverflowRectForPropagation(
   if (parentStyle.getWritingMode() == style()->getWritingMode())
     return rect;
 
-  // We are putting ourselves into our parent's coordinate space. If there is a
-  // flipped block mismatch in a particular axis, then we have to flip the rect
-  // along that axis.
+  // We are putting ourselves into our parent's coordinate space.  If there is a flipped block mismatch
+  // in a particular axis, then we have to flip the rect along that axis.
   if (style()->getWritingMode() == RightToLeftWritingMode ||
       parentStyle.getWritingMode() == RightToLeftWritingMode)
     rect.setX(size().width() - rect.maxX());
@@ -5074,8 +4940,8 @@ LayoutRect LayoutBox::layoutOverflowRectForPropagation(
     const ComputedStyle& parentStyle) const {
   // Only propagate interior layout overflow if we don't clip it.
   LayoutRect rect = borderBoxRect();
-  // We want to include the margin, but only when it adds height. Quirky margins
-  // don't contribute height nor do the margins of self-collapsing blocks.
+  // We want to include the margin, but only when it adds height. Quirky margins don't contribute height
+  // nor do the margins of self-collapsing blocks.
   if (!styleRef().hasMarginAfterQuirk() && !isSelfCollapsingBlock())
     rect.expand(isHorizontalWritingMode()
                     ? LayoutSize(LayoutUnit(), marginAfter())
@@ -5086,9 +4952,9 @@ LayoutRect LayoutBox::layoutOverflowRectForPropagation(
 
   bool hasTransform = hasLayer() && layer()->transform();
   if (isInFlowPositioned() || hasTransform) {
-    // If we are relatively positioned or if we have a transform, then we have
-    // to convert this rectangle into physical coordinates, apply relative
-    // positioning and transforms to it, and then convert it back.
+    // If we are relatively positioned or if we have a transform, then we have to convert
+    // this rectangle into physical coordinates, apply relative positioning and transforms
+    // to it, and then convert it back.
     flipForWritingMode(rect);
 
     if (hasTransform)
@@ -5106,9 +4972,8 @@ LayoutRect LayoutBox::layoutOverflowRectForPropagation(
   if (parentStyle.getWritingMode() == style()->getWritingMode())
     return rect;
 
-  // We are putting ourselves into our parent's coordinate space. If there is a
-  // flipped block mismatch in a particular axis, then we have to flip the rect
-  // along that axis.
+  // We are putting ourselves into our parent's coordinate space.  If there is a flipped block mismatch
+  // in a particular axis, then we have to flip the rect along that axis.
   if (style()->getWritingMode() == RightToLeftWritingMode ||
       parentStyle.getWritingMode() == RightToLeftWritingMode)
     rect.setX(size().width() - rect.maxX());
@@ -5118,12 +4983,11 @@ LayoutRect LayoutBox::layoutOverflowRectForPropagation(
 
 DISABLE_CFI_PERF
 LayoutRect LayoutBox::noOverflowRect() const {
-  // Because of the special coordinate system used for overflow rectangles and
-  // many other rectangles (not quite logical, not quite physical), we need to
-  // flip the block progression coordinate in vertical-rl writing mode. In other
-  // words, the rectangle returned is physical, except for the block direction
-  // progression coordinate (x in vertical writing mode), which is always
-  // "logical top". Apart from the flipping, this method does the same thing as
+  // Because of the special coordinate system used for overflow rectangles and many other
+  // rectangles (not quite logical, not quite physical), we need to flip the block progression
+  // coordinate in vertical-rl writing mode. In other words, the rectangle returned is physical,
+  // except for the block direction progression coordinate (x in vertical writing mode), which is
+  // always "logical top". Apart from the flipping, this method does the same thing as
   // clientBoxRect().
 
   const int scrollBarWidth = verticalScrollbarWidth();
@@ -5137,16 +5001,15 @@ LayoutRect LayoutBox::noOverflowRect() const {
   LayoutRect rect(left, top, size().width() - left - right,
                   size().height() - top - bottom);
   flipForWritingMode(rect);
-  // Subtract space occupied by scrollbars. Order is important here: first flip,
-  // then subtract scrollbars. This may seem backwards and weird, since one
-  // would think that a vertical scrollbar at the physical right in vertical-rl
-  // ought to be at the logical left (physical right), between the logical left
-  // (physical right) border and the logical left (physical right) padding. But
-  // this is how the rest of the code expects us to behave. This is highly
+  // Subtract space occupied by scrollbars. Order is important here: first flip, then subtract
+  // scrollbars. This may seem backwards and weird, since one would think that a vertical
+  // scrollbar at the physical right in vertical-rl ought to be at the logical left (physical
+  // right), between the logical left (physical right) border and the logical left (physical
+  // right) padding. But this is how the rest of the code expects us to behave. This is highly
   // related to https://bugs.webkit.org/show_bug.cgi?id=76129
-  // FIXME: when the above mentioned bug is fixed, it should hopefully be
-  // possible to call clientBoxRect() or paddingBoxRect() in this method, rather
-  // than fiddling with the edges on our own.
+  // FIXME: when the above mentioned bug is fixed, it should hopefully be possible to call
+  // clientBoxRect() or paddingBoxRect() in this method, rather than fiddling with the edges on
+  // our own.
   if (shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
     rect.contract(0, scrollBarHeight);
   else
@@ -5222,9 +5085,8 @@ static void markBoxForRelayoutAfterSplit(LayoutBox* box) {
   // FIXME: The table code should handle that automatically. If not,
   // we should fix it and remove the table part checks.
   if (box->isTable()) {
-    // Because we may have added some sections with already computed column
-    // structures, we need to sync the table structure with them now. This
-    // avoids crashes when adding new cells to the table.
+    // Because we may have added some sections with already computed column structures, we need to
+    // sync the table structure with them now. This avoids crashes when adding new cells to the table.
     toLayoutTable(box)->forceSectionsRecalc();
   } else if (box->isTableSection()) {
     toLayoutTableSection(box)->setNeedsCellRecalc();
@@ -5258,8 +5120,7 @@ LayoutObject* LayoutBox::splitAnonymousBoxesAroundChild(
       postBox->setChildrenInline(boxToSplit->childrenInline());
       LayoutBox* parentBox = toLayoutBox(boxToSplit->parent());
       // We need to invalidate the |parentBox| before inserting the new node
-      // so that the table paint invalidation logic knows the structure is
-      // dirty.
+      // so that the table paint invalidation logic knows the structure is dirty.
       // See for example LayoutTableCell:localOverflowRectForPaintInvalidation.
       markBoxForRelayoutAfterSplit(parentBox);
       parentBox->virtualChildren()->insertChildNode(parentBox, postBox,
@@ -5285,9 +5146,8 @@ LayoutObject* LayoutBox::splitAnonymousBoxesAroundChild(
     }
   }
 
-  // Splitting the box means the left side of the container chain will lose any
-  // percent height descendants below |boxAtTopOfNewBranch| on the right hand
-  // side.
+  // Splitting the box means the left side of the container chain will lose any percent height descendants
+  // below |boxAtTopOfNewBranch| on the right hand side.
   if (boxAtTopOfNewBranch) {
     boxAtTopOfNewBranch->clearPercentHeightDescendants();
     markBoxForRelayoutAfterSplit(this);
@@ -5309,12 +5169,11 @@ LayoutUnit LayoutBox::offsetFromLogicalTopOfFirstPage() const {
                                      : offsetDelta.width();
   }
 
-  // A LayoutBlock always establishes a layout state, and this method is only
-  // meant to be called on the object currently being laid out.
+  // A LayoutBlock always establishes a layout state, and this method is only meant to be called
+  // on the object currently being laid out.
   ASSERT(!isLayoutBlock());
 
-  // In case this box doesn't establish a layout state, try the containing
-  // block.
+  // In case this box doesn't establish a layout state, try the containing block.
   LayoutBlock* containerBlock = containingBlock();
   ASSERT(layoutState->layoutObject() == containerBlock);
   return containerBlock->offsetFromLogicalTopOfFirstPage() + logicalTop();
@@ -5501,8 +5360,7 @@ void LayoutBox::removeFromPercentHeightContainer() {
 
   ASSERT(percentHeightContainer()->hasPercentHeightDescendant(this));
   percentHeightContainer()->removePercentHeightDescendant(this);
-  // The above call should call this object's
-  // setPercentHeightContainer(nullptr).
+  // The above call should call this object's setPercentHeightContainer(nullptr).
   ASSERT(!percentHeightContainer());
 }
 
@@ -5535,9 +5393,9 @@ LayoutUnit LayoutBox::pageRemainingLogicalHeightForOffset(
     LayoutUnit remainingHeight =
         pageLogicalHeight - intMod(offset, pageLogicalHeight);
     if (pageBoundaryRule == AssociateWithFormerPage) {
-      // An offset exactly at a page boundary will act as being part of the
-      // former page in question (i.e. no remaining space), rather than being
-      // part of the latter (i.e. one whole page length of remaining space).
+      // An offset exactly at a page boundary will act as being part of the former page in
+      // question (i.e. no remaining space), rather than being part of the latter (i.e. one
+      // whole page length of remaining space).
       remainingHeight = intMod(remainingHeight, pageLogicalHeight);
     }
     return remainingHeight;
@@ -5555,21 +5413,18 @@ LayoutUnit LayoutBox::calculatePaginationStrutToFitContent(
          pageRemainingLogicalHeightForOffset(offset, AssociateWithLatterPage));
   LayoutUnit nextPageLogicalTop = offset + strutToNextPage;
   if (pageLogicalHeightForOffset(nextPageLogicalTop) >= contentLogicalHeight)
-    return strutToNextPage;  // Content fits just fine in the next page or
-                             // column.
+    return strutToNextPage;  // Content fits just fine in the next page or column.
 
-  // Moving to the top of the next page or column doesn't result in enough space
-  // for the content that we're trying to fit. If we're in a nested
-  // fragmentation context, we may find enough space if we move to a column
-  // further ahead, by effectively breaking to the next outer fragmentainer.
+  // Moving to the top of the next page or column doesn't result in enough space for the content
+  // that we're trying to fit. If we're in a nested fragmentation context, we may find enough
+  // space if we move to a column further ahead, by effectively breaking to the next outer
+  // fragmentainer.
   LayoutFlowThread* flowThread = flowThreadContainingBlock();
   if (!flowThread) {
-    // If there's no flow thread, we're not nested. All pages have the same
-    // height. Give up.
+    // If there's no flow thread, we're not nested. All pages have the same height. Give up.
     return strutToNextPage;
   }
-  // Start searching for a suitable offset at the top of the next page or
-  // column.
+  // Start searching for a suitable offset at the top of the next page or column.
   LayoutUnit flowThreadOffset =
       offsetFromLogicalTopOfFirstPage() + nextPageLogicalTop;
   return strutToNextPage +

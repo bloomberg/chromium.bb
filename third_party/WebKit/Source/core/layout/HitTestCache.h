@@ -17,12 +17,12 @@ namespace blink {
 // in the visible viewport. The cache is cleared on dom modifications,
 // scrolling, CSS style modifications.
 //
-// Multiple hit tests can occur when processing events. Typically the DOM
-// doesn't change when each event is processed so in order to decrease the time
-// spent processing the events a hit cache is useful. For example a GestureTap
-// event will generate a series of simulated mouse events (move, down, up,
-// click) with the same co-ordinates and ideally we'd like to do the hit test
-// once and use the result for the targetting of each event.
+// Multiple hit tests can occur when processing events. Typically the DOM doesn't
+// change when each event is processed so in order to decrease the time spent
+// processing the events a hit cache is useful. For example a GestureTap event
+// will generate a series of simulated mouse events (move, down, up, click)
+// with the same co-ordinates and ideally we'd like to do the hit test once
+// and use the result for the targetting of each event.
 //
 // Some of the related design, motivation can be found in:
 // https://docs.google.com/document/d/1b0NYAD4S9BJIpHGa4JD2HLmW28f2rUh1jlqrgpU3zVU/

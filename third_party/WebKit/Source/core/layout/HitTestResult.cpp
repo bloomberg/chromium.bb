@@ -238,8 +238,7 @@ bool HitTestResult::isSelected() const {
 String HitTestResult::title(TextDirection& dir) const {
   dir = LTR;
   // Find the title in the nearest enclosing DOM node.
-  // For <area> tags in image maps, walk the tree for the <area>, not the <img>
-  // using it.
+  // For <area> tags in image maps, walk the tree for the <area>, not the <img> using it.
   if (m_innerNode.get())
     m_innerNode->updateDistribution();
   for (Node* titleNode = m_innerNode.get(); titleNode;
@@ -304,10 +303,9 @@ KURL HitTestResult::absoluteImageURL() const {
     return KURL();
 
   AtomicString urlString;
-  // Always return a url for image elements and input elements with type=image,
-  // even if they don't have a LayoutImage (e.g. because the image didn't load
-  // and we are using an alt container). For other elements we don't create alt
-  // containers so ensure they contain a loaded image.
+  // Always return a url for image elements and input elements with type=image, even if they
+  // don't have a LayoutImage (e.g. because the image didn't load and we are using an alt container).
+  // For other elements we don't create alt containers so ensure they contain a loaded image.
   if (isHTMLImageElement(*innerNodeOrImageMapImage) ||
       (isHTMLInputElement(*innerNodeOrImageMapImage) &&
        toHTMLInputElement(innerNodeOrImageMapImage)->type() ==
@@ -364,11 +362,10 @@ String HitTestResult::textContent() const {
   return m_innerURLElement->textContent();
 }
 
-// FIXME: This function needs a better name and may belong in a different class.
-// It's not really isContentEditable(); it's more like needsEditingContextMenu.
-// In many ways, this function would make more sense in the ContextMenu class,
-// except that WebElementDictionary hooks into it. Anyway, we should architect
-// this better.
+// FIXME: This function needs a better name and may belong in a different class. It's not
+// really isContentEditable(); it's more like needsEditingContextMenu(). In many ways, this
+// function would make more sense in the ContextMenu class, except that WebElementDictionary
+// hooks into it. Anyway, we should architect this better.
 bool HitTestResult::isContentEditable() const {
   if (!m_innerNode)
     return false;
@@ -472,10 +469,10 @@ void HitTestResult::resolveRectBasedTest(
   m_innerPossiblyPseudoNode = nullptr;
   m_listBasedTestResult = nullptr;
 
-  // Update the HitTestResult as if the supplied node had been hit in normal
-  // point-based hit-test.
-  // Note that we don't know the local point after a rect-based hit-test, but we
-  // never use it so shouldn't bother with the cost of computing it.  resolvedInnerNode->layoutObject()->updateHitTestResult(*this, LayoutPoint());
+  // Update the HitTestResult as if the supplied node had been hit in normal point-based hit-test.
+  // Note that we don't know the local point after a rect-based hit-test, but we never use
+  // it so shouldn't bother with the cost of computing it.
+  resolvedInnerNode->layoutObject()->updateHitTestResult(*this, LayoutPoint());
   ASSERT(!isRectBasedTest());
 }
 

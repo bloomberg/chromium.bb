@@ -42,15 +42,13 @@ CounterNode::CounterNode(LayoutObject& o, bool hasResetType, int value)
       m_lastChild(nullptr) {}
 
 CounterNode::~CounterNode() {
-  // Ideally this would be an assert and this would never be reached. In reality
-  // this happens a lot so we need to handle these cases. The node is still
-  // connected to the tree so we need to detach it.
+  // Ideally this would be an assert and this would never be reached. In reality this happens a lot
+  // so we need to handle these cases. The node is still connected to the tree so we need to detach it.
   if (m_parent || m_previousSibling || m_nextSibling || m_firstChild ||
       m_lastChild) {
     CounterNode* oldParent = nullptr;
     CounterNode* oldPreviousSibling = nullptr;
-    // Instead of calling removeChild() we do this safely as the tree is likely
-    // broken if we get here.
+    // Instead of calling removeChild() we do this safely as the tree is likely broken if we get here.
     if (m_parent) {
       if (m_parent->m_firstChild == this)
         m_parent->m_firstChild = m_nextSibling;
@@ -204,11 +202,9 @@ void CounterNode::removeLayoutObject(LayoutCounter* value) {
 }
 
 void CounterNode::resetLayoutObjects() {
-  while (m_rootLayoutObject) {
-    // This makes m_rootLayoutObject point to the next layoutObject if any since
-    // it disconnects the m_rootLayoutObject from this.
-    m_rootLayoutObject->invalidate();
-  }
+  while (m_rootLayoutObject)
+    m_rootLayoutObject
+        ->invalidate();  // This makes m_rootLayoutObject point to the next layoutObject if any since it disconnects the m_rootLayoutObject from this.
 }
 
 void CounterNode::resetThisAndDescendantsLayoutObjects() {
@@ -237,10 +233,8 @@ void CounterNode::insertAfter(CounterNode* newChild,
   ASSERT(!newChild->m_parent);
   ASSERT(!newChild->m_previousSibling);
   ASSERT(!newChild->m_nextSibling);
-  // If the refChild is not our child we can not complete the request. This
-  // hardens against bugs in LayoutCounter.
-  // When layoutObjects are reparented it may request that we insert counter
-  // nodes improperly.
+  // If the refChild is not our child we can not complete the request. This hardens against bugs in LayoutCounter.
+  // When layoutObjects are reparented it may request that we insert counter nodes improperly.
   if (refChild && refChild->m_parent != this)
     return;
 
@@ -279,8 +273,8 @@ void CounterNode::insertAfter(CounterNode* newChild,
     return;
   }
 
-  // The code below handles the case when a formerly root increment counter is
-  // loosing its root position and therefore its children become next siblings.
+  // The code below handles the case when a formerly root increment counter is loosing its root position
+  // and therefore its children become next siblings.
   CounterNode* last = newChild->m_lastChild;
   CounterNode* first = newChild->m_firstChild;
 
@@ -292,17 +286,15 @@ void CounterNode::insertAfter(CounterNode* newChild,
 
     first->m_previousSibling = newChild;
 
-    // The case when the original next sibling of the inserted node becomes a
-    // child of one of the former children of the inserted node is not handled
-    // as it is believed to be impossible since:
-    // 1. if the increment counter node lost it's root position as a result of
-    //    another counter node being created, it will be inserted as the last
-    //    child so next is null.
-    // 2. if the increment counter node lost it's root position as a result of a
-    //    layoutObject being inserted into the document's layout tree, all its
-    //    former children counters are attached to children of the inserted
-    //    layoutObject and hence cannot be in scope for counter nodes attached
-    // to layoutObjects that were already in the document's layout tree.
+    // The case when the original next sibling of the inserted node becomes a child of
+    // one of the former children of the inserted node is not handled as it is believed
+    // to be impossible since:
+    // 1. if the increment counter node lost it's root position as a result of another
+    //    counter node being created, it will be inserted as the last child so next is null.
+    // 2. if the increment counter node lost it's root position as a result of a layoutObject being
+    //    inserted into the document's layout tree, all its former children counters are attached
+    //    to children of the inserted layoutObject and hence cannot be in scope for counter nodes
+    //    attached to layoutObjects that were already in the document's layout tree.
     last->m_nextSibling = next;
     if (next) {
       ASSERT(next->m_previousSibling == newChild);

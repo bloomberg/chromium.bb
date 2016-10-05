@@ -2,8 +2,7 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2007 David Smith (catfish.man@gmail.com)
- * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc.
- *               All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
  * Copyright (C) Research In Motion Limited 2010. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
@@ -89,25 +88,20 @@ FloatingObject::FloatingObject(LayoutBox* layoutObject,
 {
   m_shouldPaint = shouldPaint;
   // TODO(chrishtr): Avoid the following hack when performing an unsafe clone.
-  // This avoids a use-after-free bug due to the fact that we sometimes fail to
-  // remove floats from their container when detaching (crbug.com/619380).
-  // This is actually a bug in the floats detach machinery, which needs to be
-  // fixed, in which case this workaround can be removed. In any case, it should
-  // be safe because moving floats from one owner to another should cause
-  // layout, which will in turn update the m_shouldPaint property.
+  // This avoids a use-after-free bug due to the fact that we sometimes fail to remove
+  // floats from their container when detaching (crbug.com/619380). This is actually a bug in the
+  // floats detach machinery, which needs to be fixed, in which case this workaround can be removed.
+  // In any case, it should be safe because moving floats from one owner to another should cause layout,
+  // which will in turn update the m_shouldPaint property.
   if (!performingUnsafeClone)
     m_shouldPaint = m_shouldPaint || shouldPaintForCompositedLayoutPart();
 }
 
 bool FloatingObject::shouldPaintForCompositedLayoutPart() {
-  // HACK: only non-self-painting floats should paint. However, due to the
-  // fundamental compositing bug, some LayoutPart objects may become
-  // self-painting due to being composited. This leads to a chicken-egg issue
-  // because layout may not depend on compositing.
-  // If this is the case, set shouldPaint() to true even if the layer is
-  // technically self-painting. This lets the float which contains a LayoutPart
-  // start painting as soon as it stops being composited, without having to
-  // re-layout the float.
+  // HACK: only non-self-painting floats should paint. However, due to the fundamental compositing bug, some LayoutPart objects
+  // may become self-painting due to being composited. This leads to a chicken-egg issue because layout may not depend on compositing.
+  // If this is the case, set shouldPaint() to true even if the layer is technically self-painting. This lets the float which contains
+  // a LayoutPart start painting as soon as it stops being composited, without having to re-layout the float.
   // This hack can be removed after SPv2.
   return m_layoutObject->layer() &&
          m_layoutObject->layer()->isSelfPaintingOnlyBecauseIsCompositedPart() &&
@@ -119,8 +113,7 @@ std::unique_ptr<FloatingObject> FloatingObject::create(
   std::unique_ptr<FloatingObject> newObj =
       wrapUnique(new FloatingObject(layoutObject));
 
-  // If a layer exists, the float will paint itself. Otherwise someone else
-  // will.
+  // If a layer exists, the float will paint itself. Otherwise someone else will.
   newObj->setShouldPaint(!layoutObject->hasSelfPaintingLayer() ||
                          newObj->shouldPaintForCompositedLayoutPart());
 
@@ -295,8 +288,7 @@ inline void FindNextFloatLogicalBottomAdapter::collectIfNeeded(
         m_layoutObject.logicalTopForFloat(floatingObject) +
         m_layoutObject.marginBeforeForChild(*floatingObject.layoutObject()) +
         shapeOutside->shapeLogicalBottom();
-    // Use the shapeBottom unless it extends outside of the margin box, in which
-    // case it is clipped.
+    // Use the shapeBottom unless it extends outside of the margin box, in which case it is clipped.
     m_nextShapeLogicalBottom = m_nextShapeLogicalBottom
                                    ? std::min(shapeBottom, floatBottom)
                                    : shapeBottom;
@@ -689,8 +681,7 @@ ComputeFloatOffsetAdapter<FloatTypeValue>::collectIfNeeded(
                        m_lineBottom))
     return;
 
-  // Make sure the float hasn't changed since it was added to the placed floats
-  // tree.
+  // Make sure the float hasn't changed since it was added to the placed floats tree.
   ASSERT(floatingObject.isPlaced());
   ASSERT(interval.low() == m_layoutObject->logicalTopForFloat(floatingObject));
   ASSERT(interval.high() ==

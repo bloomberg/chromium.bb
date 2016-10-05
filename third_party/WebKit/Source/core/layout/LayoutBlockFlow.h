@@ -163,10 +163,9 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 
   RootInlineBox* createAndAppendRootInlineBox();
 
-  // Return the number of lines in *this* block flow. Does not recurse into
-  // block flow children.
-  // Will start counting from the first line, and stop counting right after
-  // |stopRootInlineBox|, if specified.
+  // Return the number of lines in *this* block flow. Does not recurse into block flow children.
+  // Will start counting from the first line, and stop counting right after |stopRootInlineBox|,
+  // if specified.
   int lineCount(const RootInlineBox* stopRootInlineBox = nullptr) const;
 
   int firstLineBoxBaseline() const override;
@@ -279,27 +278,23 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 
   void addOverflowFromInlineChildren();
 
-  // FIXME: This should be const to avoid a const_cast, but can modify child
-  // dirty bits and LayoutTextCombine.
+  // FIXME: This should be const to avoid a const_cast, but can modify child dirty bits and LayoutTextCombine
   void computeInlinePreferredLogicalWidths(LayoutUnit& minLogicalWidth,
                                            LayoutUnit& maxLogicalWidth);
 
   bool allowsPaginationStrut() const;
-  // Pagination strut caused by the first line or child block inside this
-  // block-level object.
+  // Pagination strut caused by the first line or child block inside this block-level object.
   //
-  // When the first piece of content (first child block or line) inside an
-  // object wants to insert a soft page or column break, rather than setting a
-  // pagination strut on itself it normally propagates the strut to its
-  // containing block (|this|), as long as our implementation can handle it.
-  // The idea is that we want to push the entire object to the next page or
-  // column along with the child content that caused the break, instead of
-  // leaving unusable space at the beginning of the object at the end of one
-  // column or page and just push the first line or block to the next column or
-  // page. That would waste space in the container for no good reason, and it
-  // would also be a spec violation, since there is no break opportunity defined
-  // between the content logical top of an object and its first child or line
-  // (only *between* blocks or lines).
+  // When the first piece of content (first child block or line) inside an object wants to insert
+  // a soft page or column break, rather than setting a pagination strut on itself it normally
+  // propagates the strut to its containing block (|this|), as long as our implementation can
+  // handle it. The idea is that we want to push the entire object to the next page or column
+  // along with the child content that caused the break, instead of leaving unusable space at the
+  // beginning of the object at the end of one column or page and just push the first line or
+  // block to the next column or page. That would waste space in the container for no good
+  // reason, and it would also be a spec violation, since there is no break opportunity defined
+  // between the content logical top of an object and its first child or line (only *between*
+  // blocks or lines).
   LayoutUnit paginationStrutPropagatedFromChild() const {
     return m_rareData ? m_rareData->m_paginationStrutPropagatedFromChild
                       : LayoutUnit();
@@ -468,8 +463,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
                                      LayoutUnit newLogicalTop,
                                      BlockChildrenLayoutInfo&);
 
-  // Handle breaking policy before the child, and insert a forced break in front
-  // of it if needed.
+  // Handle breaking policy before the child, and insert a forced break in front of it if needed.
   void insertForcedBreakBeforeChildIfNeeded(LayoutBox& child,
                                             BlockChildrenLayoutInfo&);
 
@@ -541,15 +535,14 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   void createOrDestroyMultiColumnFlowThreadIfNeeded(
       const ComputedStyle* oldStyle);
 
-  // Merge children of |siblingThatMayBeDeleted| into this object if possible,
-  // and delete |siblingThatMayBeDeleted|. Returns true if we were able to
-  // merge. In that case, |siblingThatMayBeDeleted| will be dead. We'll only be
-  // able to merge if both blocks are anonymous.
+  // Merge children of |siblingThatMayBeDeleted| into this object if possible, and delete
+  // |siblingThatMayBeDeleted|. Returns true if we were able to merge. In that case,
+  // |siblingThatMayBeDeleted| will be dead. We'll only be able to merge if both blocks are
+  // anonymous.
   bool mergeSiblingContiguousAnonymousBlock(
       LayoutBlockFlow* siblingThatMayBeDeleted);
 
-  // Reparent subsequent or preceding adjacent floating or out-of-flow siblings
-  // into this object.
+  // Reparent subsequent or preceding adjacent floating or out-of-flow siblings into this object.
   void reparentSubsequentFloatingOrOutOfFlowSiblings();
   void reparentPrecedingFloatingOrOutOfFlowSiblings();
 
@@ -755,8 +748,8 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
     return maxPositiveMarginAfter() - maxNegativeMarginAfter();
   }
 
-  // Floats' margins do not collapse with page or column boundaries, and we
-  // therefore need to treat them specially in some cases.
+  // Floats' margins do not collapse with page or column boundaries, and we therefore need to
+  // treat them specially in some cases.
   LayoutUnit marginBeforeIfFloating() const {
     return isFloating() ? marginBefore() : LayoutUnit();
   }
@@ -786,8 +779,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
                               MarginInfo&);
   void setCollapsedBottomMargin(const MarginInfo&);
 
-  // Apply any forced fragmentainer break that's set on the current class A
-  // break point.
+  // Apply any forced fragmentainer break that's set on the current class A break point.
   LayoutUnit applyForcedBreak(LayoutUnit logicalOffset, EBreak);
 
   void setBreakBefore(EBreak);
@@ -799,20 +791,17 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
                                            LayoutBox& child,
                                            BlockChildrenLayoutInfo&,
                                            bool atBeforeSideOfBlock);
-  // Computes a deltaOffset value that put a line at the top of the next page if
-  // it doesn't fit on the current page.
+  // Computes a deltaOffset value that put a line at the top of the next page if it doesn't fit on the current page.
   void adjustLinePositionForPagination(RootInlineBox&, LayoutUnit& deltaOffset);
-  // If the child is unsplittable and can't fit on the current page, return the
-  // top of the next page/column.
+  // If the child is unsplittable and can't fit on the current page, return the top of the next page/column.
   LayoutUnit adjustForUnsplittableChild(LayoutBox&,
                                         LayoutUnit logicalOffset) const;
 
   // Used to store state between styleWillChange and styleDidChange
   static bool s_canPropagateFloatIntoSibling;
 
-  LineBoxList m_lineBoxes;  // All of the root line boxes created for this block
-                            // flow.  For example, <div>Hello<br>world.</div>
-                            // will have two total lines for the <div>.
+  LineBoxList
+      m_lineBoxes;  // All of the root line boxes created for this block flow.  For example, <div>Hello<br>world.</div> will have two total lines for the <div>.
 
   LayoutBlockFlowRareData& ensureRareData();
 
@@ -826,8 +815,8 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   friend class MarginInfo;
   friend class LineWidth;  // needs to know FloatingObject
 
-  // LayoutRubyBase objects need to be able to split and merge, moving their
-  // children around (calling makeChildrenNonInline).
+  // LayoutRubyBase objects need to be able to split and merge, moving their children around
+  // (calling makeChildrenNonInline).
   // TODO(mstensho): Try to get rid of this friendship.
   friend class LayoutRubyBase;
 
@@ -909,8 +898,8 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   void markLinesDirtyInBlockRange(LayoutUnit logicalTop,
                                   LayoutUnit logicalBottom,
                                   RootInlineBox* highest = nullptr);
-  // Positions new floats and also adjust all floats encountered on the line if
-  // any of them have to move to the next page/column.
+  // Positions new floats and also adjust all floats encountered on the line if any of them
+  // have to move to the next page/column.
   void positionDialog();
 
   // END METHODS DEFINED IN LayoutBlockFlowLine

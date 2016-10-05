@@ -2,8 +2,7 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2007 David Smith (catfish.man@gmail.com)
- * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc.
- *               All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
  * Copyright (C) Research In Motion Limited 2010. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
@@ -83,9 +82,9 @@ static_assert(sizeof(LayoutBlock) == sizeof(SameSizeAsLayoutBlock),
 static TrackedDescendantsMap* gPositionedDescendantsMap = nullptr;
 static TrackedContainerMap* gPositionedContainerMap = nullptr;
 
-// This map keeps track of the descendants whose 'height' is percentage
-// associated with a containing block. Like |gPositionedDescendantsMap|, it is
-// also recomputed for every layout (see the comment above about why).
+// This map keeps track of the descendants whose 'height' is percentage associated
+// with a containing block. Like |gPositionedDescendantsMap|, it is also recomputed
+// for every layout (see the comment above about why).
 static TrackedDescendantsMap* gPercentHeightDescendantsMap = nullptr;
 
 LayoutBlock::LayoutBlock(ContainerNode* node)
@@ -160,21 +159,18 @@ void LayoutBlock::styleWillChange(StyleDifference diff,
     if ((oldStyleContainsFixedPosition && !newStyleContainsFixedPosition) ||
         (oldStyleContainsAbsolutePosition &&
          !newStyleContainsAbsolutePosition)) {
-      // Clear our positioned objects list. Our absolute and fixed positioned
-      // descendants will be inserted into our containing block's positioned
-      // objects list during layout.
+      // Clear our positioned objects list. Our absolute and fixed positioned descendants will be
+      // inserted into our containing block's positioned objects list during layout.
       removePositionedObjects(nullptr, NewContainingBlock);
     }
     if (!oldStyleContainsAbsolutePosition && newStyleContainsAbsolutePosition) {
-      // Remove our absolutely positioned descendants from their current
-      // containing block.
+      // Remove our absolutely positioned descendants from their current containing block.
       // They will be inserted into our positioned objects list during layout.
       if (LayoutBlock* cb = containingBlockForAbsolutePosition())
         cb->removePositionedObjects(this, NewContainingBlock);
     }
     if (!oldStyleContainsFixedPosition && newStyleContainsFixedPosition) {
-      // Remove our fixed positioned descendants from their current containing
-      // block.
+      // Remove our fixed positioned descendants from their current containing block.
       // They will be inserted into our positioned objects list during layout.
       if (LayoutBlock* cb = containerForFixedPosition())
         cb->removePositionedObjects(this, NewContainingBlock);
@@ -211,18 +207,17 @@ void LayoutBlock::styleDidChange(StyleDifference diff,
   if (oldStyle && parent()) {
     if (oldStyle->position() != newStyle.position() &&
         newStyle.position() != StaticPosition) {
-      // In LayoutObject::styleWillChange() we already removed ourself from our
-      // old containing block's positioned descendant list, and we will be
-      // inserted to the new containing block's list during layout. However the
-      // positioned descendant layout logic assumes layout objects to obey
-      // parent-child order in the list. Remove our descendants here so they
-      // will be re-inserted after us.
+      // In LayoutObject::styleWillChange() we already removed ourself from our old containing
+      // block's positioned descendant list, and we will be inserted to the new containing
+      // block's list during layout. However the positioned descendant layout logic assumes
+      // layout objects to obey parent-child order in the list. Remove our descendants here
+      // so they will be re-inserted after us.
       if (LayoutBlock* cb = containingBlock()) {
         cb->removePositionedObjects(this, NewContainingBlock);
         if (isOutOfFlowPositioned()) {
-          // Insert this object into containing block's positioned descendants
-          // list in case the parent won't layout. This is needed especially
-          // there are descendants scheduled for overflow recalc.
+          // Insert this object into containing block's positioned descendants list
+          // in case the parent won't layout. This is needed especially there are
+          // descendants scheduled for overflow recalc.
           cb->insertPositionedObject(this);
         }
       }
@@ -234,9 +229,8 @@ void LayoutBlock::styleDidChange(StyleDifference diff,
 
   propagateStyleToAnonymousChildren();
 
-  // It's possible for our border/padding to change, but for the overall logical
-  // width or height of the block to end up being the same. We keep track of
-  // this change so in layoutBlock, we can know to set relayoutChildren=true.
+  // It's possible for our border/padding to change, but for the overall logical width or height of the block to
+  // end up being the same. We keep track of this change so in layoutBlock, we can know to set relayoutChildren=true.
   m_widthAvailableToChildrenChanged |=
       oldStyle && diff.needsFullLayout() && needsLayout() &&
       borderOrPaddingLogicalDimensionChanged(*oldStyle, newStyle, LogicalWidth);
@@ -272,17 +266,14 @@ void LayoutBlock::addChildBeforeDescendant(LayoutObject* newChild,
     beforeDescendantContainer = beforeDescendantContainer->parent();
   ASSERT(beforeDescendantContainer);
 
-  // We really can't go on if what we have found isn't anonymous. We're not
-  // supposed to use some random non-anonymous object and put the child there.
-  // That's a recipe for security issues.
+  // We really can't go on if what we have found isn't anonymous. We're not supposed to use some
+  // random non-anonymous object and put the child there. That's a recipe for security issues.
   RELEASE_ASSERT(beforeDescendantContainer->isAnonymous());
 
-  // If the requested insertion point is not one of our children, then this is
-  // because there is an anonymous container within this object that contains
-  // the beforeDescendant.
+  // If the requested insertion point is not one of our children, then this is because
+  // there is an anonymous container within this object that contains the beforeDescendant.
   if (beforeDescendantContainer->isAnonymousBlock()
-      // Full screen layoutObjects and full screen placeholders act as anonymous
-      // blocks, not tables:
+      // Full screen layoutObjects and full screen placeholders act as anonymous blocks, not tables:
       || beforeDescendantContainer->isLayoutFullScreen() ||
       beforeDescendantContainer->isLayoutFullScreenPlaceholder()) {
     // Insert the child into the anonymous block box instead of here.
@@ -319,15 +310,13 @@ void LayoutBlock::addChild(LayoutObject* newChild, LayoutObject* beforeChild) {
     return;
   }
 
-  // Only LayoutBlockFlow should have inline children, and then we shouldn't be
-  // here.
+  // Only LayoutBlockFlow should have inline children, and then we shouldn't be here.
   ASSERT(!childrenInline());
 
   if (newChild->isInline() || newChild->isFloatingOrOutOfFlowPositioned()) {
-    // If we're inserting an inline child but all of our children are blocks,
-    // then we have to make sure it is put into an anomyous block box. We try to
-    // use an existing anonymous box if possible, otherwise a new one is created
-    // and inserted into our list of children in the appropriate position.
+    // If we're inserting an inline child but all of our children are blocks, then we have to make sure
+    // it is put into an anomyous block box. We try to use an existing anonymous box if possible, otherwise
+    // a new one is created and inserted into our list of children in the appropriate position.
     LayoutObject* afterChild =
         beforeChild ? beforeChild->previousSibling() : lastChild();
 
@@ -359,25 +348,21 @@ void LayoutBlock::removeLeftoverAnonymousBlock(LayoutBlock* child) {
   if (isFieldset())
     return;
 
-  // Promote all the leftover anonymous block's children (to become children of
-  // this block instead). We still want to keep the leftover block in the tree
-  // for a moment, for notification purposes done further below (flow threads
-  // and grids).
+  // Promote all the leftover anonymous block's children (to become children of this block
+  // instead). We still want to keep the leftover block in the tree for a moment, for notification
+  // purposes done further below (flow threads and grids).
   child->moveAllChildrenTo(this, child->nextSibling());
 
-  // Remove all the information in the flow thread associated with the leftover
-  // anonymous block.
+  // Remove all the information in the flow thread associated with the leftover anonymous block.
   child->removeFromLayoutFlowThread();
 
-  // LayoutGrid keeps track of its children, we must notify it about changes in
-  // the tree.
+  // LayoutGrid keeps track of its children, we must notify it about changes in the tree.
   if (child->parent()->isLayoutGrid())
     toLayoutGrid(child->parent())->dirtyGrid();
 
-  // Now remove the leftover anonymous block from the tree, and destroy it.
-  // We'll rip it out manually from the tree before destroying it, because we
-  // don't want to trigger any tree adjustments with regards to anonymous blocks
-  // (or any other kind of undesired chain-reaction).
+  // Now remove the leftover anonymous block from the tree, and destroy it. We'll rip it out
+  // manually from the tree before destroying it, because we don't want to trigger any tree
+  // adjustments with regards to anonymous blocks (or any other kind of undesired chain-reaction).
   children()->removeChildNode(this, child, false);
   child->destroy();
 }
@@ -385,8 +370,8 @@ void LayoutBlock::removeLeftoverAnonymousBlock(LayoutBlock* child) {
 void LayoutBlock::updateAfterLayout() {
   invalidateStickyConstraints();
 
-  // Update our scroll information if we're overflow:auto/scroll/hidden now that
-  // we know if we overflow or not.
+  // Update our scroll information if we're overflow:auto/scroll/hidden now that we know if
+  // we overflow or not.
   if (hasOverflowClip())
     layer()->getScrollableArea()->updateAfterLayout();
 }
@@ -401,22 +386,19 @@ void LayoutBlock::layout() {
   if (needsScrollAnchoring)
     getScrollableArea()->scrollAnchor()->save();
 
-  // Table cells call layoutBlock directly, so don't add any logic here.  Put
-  // code into layoutBlock().
+  // Table cells call layoutBlock directly, so don't add any logic here.  Put code into
+  // layoutBlock().
   layoutBlock(false);
 
-  // It's safe to check for control clip here, since controls can never be table
-  // cells. If we have a lightweight clip, there can never be any overflow from
-  // children.
+  // It's safe to check for control clip here, since controls can never be table cells.
+  // If we have a lightweight clip, there can never be any overflow from children.
   if (hasControlClip() && m_overflow)
     clearLayoutOverflow();
 
   invalidateBackgroundObscurationStatus();
 
-  // If clamping is delayed, we will restore in
-  // PaintLayerScrollableArea::clampScrollPositionsAfterLayout.
-  // Restoring during the intermediate layout may clamp the scroller to the
-  // wrong bounds.
+  // If clamping is delayed, we will restore in PaintLayerScrollableArea::clampScrollPositionsAfterLayout.
+  // Restoring during the intermediate layout may clamp the scroller to the wrong bounds.
   bool clampingDelayed = PaintLayerScrollableArea::
       DelayScrollPositionClampScope::clampingIsDelayed();
   if (needsScrollAnchoring && !clampingDelayed)
@@ -426,13 +408,11 @@ void LayoutBlock::layout() {
 }
 
 bool LayoutBlock::widthAvailableToChildrenHasChanged() {
-  // TODO(robhogan): Does m_widthAvailableToChildrenChanged always get reset
-  // when it needs to?
+  // TODO(robhogan): Does m_widthAvailableToChildrenChanged always get reset when it needs to?
   bool widthAvailableToChildrenHasChanged = m_widthAvailableToChildrenChanged;
   m_widthAvailableToChildrenChanged = false;
 
-  // If we use border-box sizing, have percentage padding, and our parent has
-  // changed width then the width available to our children has changed even
+  // If we use border-box sizing, have percentage padding, and our parent has changed width then the width available to our children has changed even
   // though our own width has remained the same.
   widthAvailableToChildrenHasChanged |=
       style()->boxSizing() == BoxSizingBorderBox &&
@@ -472,10 +452,9 @@ void LayoutBlock::computeOverflow(LayoutUnit oldClientAfterEdge, bool) {
   addOverflowFromPositionedObjects();
 
   if (hasOverflowClip()) {
-    // When we have overflow clip, propagate the original spillout since it will
-    // include collapsed bottom margins and bottom padding. Set the axis we
-    // don't care about to be 1, since we want this overflow to always be
-    // considered reachable.
+    // When we have overflow clip, propagate the original spillout since it will include collapsed bottom margins
+    // and bottom padding.  Set the axis we don't care about to be 1, since we want this overflow to always
+    // be considered reachable.
     LayoutRect clientRect(noOverflowRect());
     LayoutRect rectToApply;
     if (isHorizontalWritingMode())
@@ -495,8 +474,7 @@ void LayoutBlock::computeOverflow(LayoutUnit oldClientAfterEdge, bool) {
   addVisualEffectOverflow();
   addVisualOverflowFromTheme();
 
-  // An enclosing composited layer will need to update its bounds if we now
-  // overflow it.
+  // An enclosing composited layer will need to update its bounds if we now overflow it.
   PaintLayer* layer = enclosingLayer();
   if (!needsLayout() && layer->hasCompositedLayerMapping() &&
       !layer->visualRect().contains(visualOverflowRect()))
@@ -517,8 +495,7 @@ void LayoutBlock::addOverflowFromPositionedObjects() {
     return;
 
   for (auto* positionedObject : *positionedDescendants) {
-    // Fixed positioned elements don't contribute to layout overflow, since they
-    // don't scroll with the content.
+    // Fixed positioned elements don't contribute to layout overflow, since they don't scroll with the content.
     if (positionedObject->style()->position() != FixedPosition)
       addOverflowFromChild(positionedObject,
                            toLayoutSize(positionedObject->location()));
@@ -556,16 +533,14 @@ static inline bool changeInAvailableLogicalHeightAffectsChild(
 void LayoutBlock::updateBlockChildDirtyBitsBeforeLayout(bool relayoutChildren,
                                                         LayoutBox& child) {
   if (child.isOutOfFlowPositioned()) {
-    // It's rather useless to mark out-of-flow children at this point. We may
-    // not be their containing block (and if we are, it's just pure luck), so
-    // this would be the wrong place for it. Furthermore, it would cause trouble
-    // for out-of-flow descendants of column spanners, if the containing block
-    // is outside the spanner but inside the multicol container.
+    // It's rather useless to mark out-of-flow children at this point. We may not be their
+    // containing block (and if we are, it's just pure luck), so this would be the wrong place
+    // for it. Furthermore, it would cause trouble for out-of-flow descendants of column
+    // spanners, if the containing block is outside the spanner but inside the multicol container.
     return;
   }
-  // FIXME: Technically percentage height objects only need a relayout if their
-  // percentage isn't going to be turned into an auto value. Add a method to
-  // determine this, so that we can avoid the relayout.
+  // FIXME: Technically percentage height objects only need a relayout if their percentage isn't going to be turned into
+  // an auto value. Add a method to determine this, so that we can avoid the relayout.
   bool hasRelativeLogicalHeight =
       child.hasRelativeLogicalHeight() ||
       (child.isAnonymous() && this->hasRelativeLogicalHeight()) ||
@@ -575,8 +550,7 @@ void LayoutBlock::updateBlockChildDirtyBitsBeforeLayout(bool relayoutChildren,
        changeInAvailableLogicalHeightAffectsChild(this, child))) {
     child.setChildNeedsLayout(MarkOnlyThis);
 
-    // If the child has percentage padding or an embedded content box, we also
-    // need to invalidate the childs pref widths.
+    // If the child has percentage padding or an embedded content box, we also need to invalidate the childs pref widths.
     if (child.needsPreferredWidthsRecalculation())
       child.setPreferredLogicalWidthsDirty(MarkOnlyThis);
   }
@@ -624,19 +598,15 @@ bool LayoutBlock::simplifiedLayout() {
 
     TextAutosizer::LayoutScope textAutosizerLayoutScope(this);
 
-    // Lay out positioned descendants or objects that just need to recompute
-    // overflow.
+    // Lay out positioned descendants or objects that just need to recompute overflow.
     if (needsSimplifiedNormalFlowLayout())
       simplifiedNormalFlowLayout();
 
     // Lay out our positioned objects if our positioned child bit is set.
-    // Also, if an absolute position element inside a relative positioned
-    // container moves, and the absolute element has a fixed position child
-    // neither the fixed element nor its container learn of the movement since
-    // posChildNeedsLayout() is only marked as far as the relative positioned
-    // container. So if we can have fixed pos objects in our positioned objects
-    // list check if any of them are statically positioned and thus need to move
-    // with their absolute ancestors.
+    // Also, if an absolute position element inside a relative positioned container moves, and the absolute element has a fixed position
+    // child, neither the fixed element nor its container learn of the movement since posChildNeedsLayout() is only marked as far as the
+    // relative positioned container. So if we can have fixed pos objects in our positioned objects list check if any of them
+    // are statically positioned and thus need to move with their absolute ancestors.
     bool canContainFixedPosObjects = canContainFixedPositionObjects();
     if (posChildNeedsLayout() || needsPositionedMovementLayout() ||
         canContainFixedPosObjects)
@@ -648,14 +618,12 @@ bool LayoutBlock::simplifiedLayout() {
                             : DefaultLayout));
 
     // Recompute our overflow information.
-    // FIXME: We could do better here by computing a temporary overflow object
-    // from layoutPositionedObjects and only updating our overflow if we either
-    // used to have overflow or if the new temporary object has overflow.
-    // For now just always recompute overflow. This is no worse performance-wise
-    // than the old code that called rightmostPosition and lowestPosition on
-    // every relayout so it's not a regression. computeOverflow expects the
-    // bottom edge before we clamp our height. Since this information isn't
-    // available during simplifiedLayout, we cache the value in m_overflow.
+    // FIXME: We could do better here by computing a temporary overflow object from layoutPositionedObjects and only
+    // updating our overflow if we either used to have overflow or if the new temporary object has overflow.
+    // For now just always recompute overflow. This is no worse performance-wise than the old code that called rightmostPosition and
+    // lowestPosition on every relayout so it's not a regression.
+    // computeOverflow expects the bottom edge before we clamp our height. Since this information isn't available during
+    // simplifiedLayout, we cache the value in m_overflow.
     LayoutUnit oldClientAfterEdge = hasOverflowModel()
                                         ? m_overflow->layoutClientAfterEdge()
                                         : clientLogicalBottom();
@@ -724,8 +692,8 @@ LayoutUnit LayoutBlock::marginIntrinsicLogicalWidthForChild(
 }
 
 static bool needsLayoutDueToStaticPosition(LayoutBox* child) {
-  // When a non-positioned block element moves, it may have positioned children
-  // that are implicitly positioned relative to the non-positioned block.
+  // When a non-positioned block element moves, it may have positioned children that are
+  // implicitly positioned relative to the non-positioned block.
   const ComputedStyle* style = child->style();
   bool isHorizontal = style->isHorizontalWritingMode();
   if (style->hasStaticBlockPosition(isHorizontal)) {
@@ -762,10 +730,9 @@ void LayoutBlock::layoutPositionedObjects(bool relayoutChildren,
     positionedObject->setMayNeedPaintInvalidation();
 
     SubtreeLayoutScope layoutScope(*positionedObject);
-    // A fixed position element with an absolute positioned ancestor has no way
-    // of knowing if the latter has changed position. So if this is a fixed
-    // position element, mark it for layout if it has an abspos ancestor and
-    // needs to move with that ancestor, i.e. it has static position.
+    // A fixed position element with an absolute positioned ancestor has no way of knowing if the latter has changed position. So
+    // if this is a fixed position element, mark it for layout if it has an abspos ancestor and needs to move with that ancestor, i.e.
+    // it has static position.
     markFixedPositionObjectForLayoutIfNeeded(positionedObject, layoutScope);
     if (info == LayoutOnlyFixedPositionedObjects) {
       positionedObject->layoutIfNeeded();
@@ -777,8 +744,7 @@ void LayoutBlock::layoutPositionedObjects(bool relayoutChildren,
          needsLayoutDueToStaticPosition(positionedObject)))
       layoutScope.setChildNeedsLayout(positionedObject);
 
-    // If relayoutChildren is set and the child has percentage padding or an
-    // embedded content box, we also need to invalidate the childs pref widths.
+    // If relayoutChildren is set and the child has percentage padding or an embedded content box, we also need to invalidate the childs pref widths.
     if (relayoutChildren &&
         positionedObject->needsPreferredWidthsRecalculation())
       positionedObject->setPreferredLogicalWidthsDirty(MarkOnlyThis);
@@ -788,12 +754,11 @@ void LayoutBlock::layoutPositionedObjects(bool relayoutChildren,
         isPaginated &&
         positionedObject->getPaginationBreakability() != ForbidBreaks;
     if (needsBlockDirectionLocationSetBeforeLayout) {
-      // Out-of-flow objects are normally positioned after layout (while in-flow
-      // objects are positioned before layout). If the child object is paginated
-      // in the same context as we are, estimate its logical top now. We need to
-      // know this up-front, to correctly evaluate if we need to mark for
-      // relayout, and, if our estimate is correct, we'll even be able to insert
-      // correct pagination struts on the first attempt.
+      // Out-of-flow objects are normally positioned after layout (while in-flow objects are
+      // positioned before layout). If the child object is paginated in the same context as
+      // we are, estimate its logical top now. We need to know this up-front, to correctly
+      // evaluate if we need to mark for relayout, and, if our estimate is correct, we'll
+      // even be able to insert correct pagination struts on the first attempt.
       LogicalExtentComputedValues computedValues;
       positionedObject->computeLogicalHeight(positionedObject->logicalHeight(),
                                              positionedObject->logicalTop(),
@@ -805,9 +770,8 @@ void LayoutBlock::layoutPositionedObjects(bool relayoutChildren,
     if (!positionedObject->needsLayout())
       markChildForPaginationRelayoutIfNeeded(*positionedObject, layoutScope);
 
-    // FIXME: We should be able to do a r->setNeedsPositionedMovementLayout()
-    // here instead of a full layout. Need to investigate why it does not
-    // trigger the correct invalidations in that case. crbug.com/350756
+    // FIXME: We should be able to do a r->setNeedsPositionedMovementLayout() here instead of a full layout. Need
+    // to investigate why it does not trigger the correct invalidations in that case. crbug.com/350756
     if (info == ForcedLayoutAfterContainingBlockMoved)
       positionedObject->setNeedsLayout(LayoutInvalidationReason::AncestorMoved,
                                        MarkOnlyThis);
@@ -819,11 +783,9 @@ void LayoutBlock::layoutPositionedObjects(bool relayoutChildren,
     if (parent->isFlexibleBox() &&
         toLayoutFlexibleBox(parent)->setStaticPositionForPositionedLayout(
             *positionedObject)) {
-      // The static position of an abspos child of a flexbox depends on its size
-      // (for example, they can be centered). So we may have to reposition the
-      // item after layout.
-      // TODO(cbiesinger): We could probably avoid a layout here and just
-      // reposition?
+      // The static position of an abspos child of a flexbox depends on its size (for example,
+      // they can be centered). So we may have to reposition the item after layout.
+      // TODO(cbiesinger): We could probably avoid a layout here and just reposition?
       positionedObject->forceChildLayout();
       layoutChanged = true;
     }
@@ -863,8 +825,7 @@ bool LayoutBlock::isSelectionRoot() const {
     return false;
   ASSERT(node() || isAnonymous());
 
-  // FIXME: Eventually tables should have to learn how to fill gaps between
-  // cells, at least in simple non-spanning cases.
+  // FIXME: Eventually tables should have to learn how to fill gaps between cells, at least in simple non-spanning cases.
   if (isTable())
     return false;
 
@@ -1036,13 +997,10 @@ void LayoutBlock::removePositionedObjects(
         if (positionedObject->needsPreferredWidthsRecalculation())
           positionedObject->setPreferredLogicalWidthsDirty(MarkOnlyThis);
 
-        // The positioned object changing containing block may change paint
-        // invalidation container.
-        // Invalidate it (including non-compositing descendants) on its original
-        // paint invalidation container.
+        // The positioned object changing containing block may change paint invalidation container.
+        // Invalidate it (including non-compositing descendants) on its original paint invalidation container.
         if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-          // This valid because we need to invalidate based on the current
-          // status.
+          // This valid because we need to invalidate based on the current status.
           DisableCompositingQueryAsserts compositingDisabler;
           if (!positionedObject->isPaintInvalidationContainer())
             ObjectPaintInvalidator(*positionedObject)
@@ -1050,8 +1008,7 @@ void LayoutBlock::removePositionedObjects(
         }
       }
 
-      // It is parent blocks job to add positioned child to positioned objects
-      // list of its containing block
+      // It is parent blocks job to add positioned child to positioned objects list of its containing block
       // Parent layout needs to be invalidated to ensure this happens.
       LayoutObject* p = positionedObject->parent();
       while (p && !p->isLayoutBlock())
@@ -1238,8 +1195,7 @@ PositionWithAffinity LayoutBlock::positionForPointRespectingEditingBoundaries(
   if (child.isInFlowPositioned())
     childLocation += child.offsetForInFlowPosition();
 
-  // FIXME: This is wrong if the child's writing-mode is different from the
-  // parent's.
+  // FIXME: This is wrong if the child's writing-mode is different from the parent's.
   LayoutPoint pointInChildCoordinates(
       toLayoutPoint(pointInParentCoordinates - childLocation));
 
@@ -1248,20 +1204,17 @@ PositionWithAffinity LayoutBlock::positionForPointRespectingEditingBoundaries(
   if (!childNode)
     return child.positionForPoint(pointInChildCoordinates);
 
-  // Otherwise, first make sure that the editability of the parent and child
-  // agree. If they don't agree, then we return a visible position just before
-  // or after the child
+  // Otherwise, first make sure that the editability of the parent and child agree.
+  // If they don't agree, then we return a visible position just before or after the child
   LayoutObject* ancestor = this;
   while (ancestor && !ancestor->nonPseudoNode())
     ancestor = ancestor->parent();
 
-  // If we can't find an ancestor to check editability on, or editability is
-  // unchanged, we recur like normal
+  // If we can't find an ancestor to check editability on, or editability is unchanged, we recur like normal
   if (isEditingBoundary(ancestor, child))
     return child.positionForPoint(pointInChildCoordinates);
 
-  // Otherwise return before or after the child, depending on if the click was
-  // to the logical left or logical right of the child
+  // Otherwise return before or after the child, depending on if the click was to the logical left or logical right of the child
   LayoutUnit childMiddle = logicalWidthForChildSize(child.size()) / 2;
   LayoutUnit logicalLeft = isHorizontalWritingMode()
                                ? pointInChildCoordinates.x()
@@ -1275,8 +1228,7 @@ PositionWithAffinity LayoutBlock::positionForPointRespectingEditingBoundaries(
 PositionWithAffinity LayoutBlock::positionForPointIfOutsideAtomicInlineLevel(
     const LayoutPoint& point) {
   ASSERT(isAtomicInlineLevel());
-  // FIXME: This seems wrong when the object's writing-mode doesn't match the
-  // line's writing-mode.
+  // FIXME: This seems wrong when the object's writing-mode doesn't match the line's writing-mode.
   LayoutUnit pointLogicalLeft =
       isHorizontalWritingMode() ? point.x() : point.y();
   LayoutUnit pointLogicalTop =
@@ -1336,8 +1288,7 @@ PositionWithAffinity LayoutBlock::positionForPoint(const LayoutPoint& point) {
         continue;
       LayoutUnit childLogicalBottom =
           logicalTopForChild(*childBox) + logicalHeightForChild(*childBox);
-      // We hit child if our click is above the bottom of its padding box (like
-      // IE6/7 and FF3).
+      // We hit child if our click is above the bottom of its padding box (like IE6/7 and FF3).
       if (isChildHitTestCandidate(childBox) &&
           (pointInLogicalContents.y() < childLogicalBottom ||
            (blocksAreFlipped &&
@@ -1347,8 +1298,7 @@ PositionWithAffinity LayoutBlock::positionForPoint(const LayoutPoint& point) {
     }
   }
 
-  // We only get here if there are no hit test candidate children below the
-  // click.
+  // We only get here if there are no hit test candidate children below the click.
   return LayoutBox::positionForPoint(point);
 }
 
@@ -1362,10 +1312,10 @@ void LayoutBlock::offsetForContents(LayoutPoint& offset) const {
 }
 
 int LayoutBlock::columnGap() const {
-  if (style()->hasNormalColumnGap()) {
-    // "1em" is recommended as the normal gap setting. Matches <p> margins.
-    return style()->getFontDescription().computedPixelSize();
-  }
+  if (style()->hasNormalColumnGap())
+    return style()
+        ->getFontDescription()
+        .computedPixelSize();  // "1em" is recommended as the normal gap setting. Matches <p> margins.
   return static_cast<int>(style()->columnGap());
 }
 
@@ -1416,9 +1366,8 @@ void LayoutBlock::computePreferredLogicalWidths() {
   m_minPreferredLogicalWidth = LayoutUnit();
   m_maxPreferredLogicalWidth = LayoutUnit();
 
-  // FIXME: The isFixed() calls here should probably be checking for isSpecified
-  // since you should be able to use percentage, calc or viewport relative
-  // values for width.
+  // FIXME: The isFixed() calls here should probably be checking for isSpecified since you
+  // should be able to use percentage, calc or viewport relative values for width.
   const ComputedStyle& styleToUse = styleRef();
   if (!isTableCell() && styleToUse.logicalWidth().isFixed() &&
       styleToUse.logicalWidth().value() >= 0 &&
@@ -1453,8 +1402,7 @@ void LayoutBlock::computePreferredLogicalWidths() {
                      LayoutUnit(styleToUse.logicalMaxWidth().value())));
   }
 
-  // Table layout uses integers, ceil the preferred widths to ensure that they
-  // can contain the contents.
+  // Table layout uses integers, ceil the preferred widths to ensure that they can contain the contents.
   if (isTableCell()) {
     m_minPreferredLogicalWidth = LayoutUnit(m_minPreferredLogicalWidth.ceil());
     m_maxPreferredLogicalWidth = LayoutUnit(m_maxPreferredLogicalWidth.ceil());
@@ -1477,8 +1425,8 @@ void LayoutBlock::computeBlockPreferredLogicalWidths(
   LayoutBlock* containingBlock = this->containingBlock();
   LayoutUnit floatLeftWidth, floatRightWidth;
   while (child) {
-    // Positioned children don't affect the min/max width. Spanners only affect
-    // the min/max width of the multicol container, not the flow thread.
+    // Positioned children don't affect the min/max width. Spanners only affect the min/max
+    // width of the multicol container, not the flow thread.
     if (child->isOutOfFlowPositioned() || child->isColumnSpanAll()) {
       child = child->nextSibling();
       continue;
@@ -1498,8 +1446,7 @@ void LayoutBlock::computeBlockPreferredLogicalWidths(
       }
     }
 
-    // A margin basically has three types: fixed, percentage, and auto
-    // (variable).
+    // A margin basically has three types: fixed, percentage, and auto (variable).
     // Auto and percentage margins simply become 0 when computing min/max width.
     // Fixed margins can be added in as is.
     Length startMarginLength = childStyle->marginStartUsing(&styleToUse);
@@ -1528,10 +1475,9 @@ void LayoutBlock::computeBlockPreferredLogicalWidths(
 
     if (!child->isFloating()) {
       if (child->isBox() && toLayoutBox(child)->avoidsFloats()) {
-        // Determine a left and right max value based off whether or not the
-        // floats can fit in the margins of the object. For negative margins, we
-        // will attempt to overlap the float if the negative margin is smaller
-        // than the float width.
+        // Determine a left and right max value based off whether or not the floats can fit in the
+        // margins of the object.  For negative margins, we will attempt to overlap the float if the negative margin
+        // is smaller than the float width.
         bool ltr = containingBlock
                        ? containingBlock->style()->isLeftToRightDirection()
                        : styleToUse.isLeftToRightDirection();
@@ -1579,8 +1525,7 @@ void LayoutBlock::computeChildPreferredLogicalWidths(
     LayoutUnit& maxPreferredLogicalWidth) const {
   if (child.isBox() &&
       child.isHorizontalWritingMode() != isHorizontalWritingMode()) {
-    // If the child is an orthogonal flow, child's height determines the width,
-    // but the height is not available until layout.
+    // If the child is an orthogonal flow, child's height determines the width, but the height is not available until layout.
     // http://dev.w3.org/csswg/css-writing-modes-3/#orthogonal-shrink-to-fit
     if (!child.needsLayout()) {
       minPreferredLogicalWidth = maxPreferredLogicalWidth =
@@ -1594,9 +1539,8 @@ void LayoutBlock::computeChildPreferredLogicalWidths(
   minPreferredLogicalWidth = child.minPreferredLogicalWidth();
   maxPreferredLogicalWidth = child.maxPreferredLogicalWidth();
 
-  // For non-replaced blocks if the inline size is min|max-content or a definite
-  // size the min|max-content contribution is that size plus border, padding and
-  // margin https://drafts.csswg.org/css-sizing/#block-intrinsic
+  // For non-replaced blocks if the inline size is min|max-content or a definite size the min|max-content contribution
+  // is that size plus border, padding and margin https://drafts.csswg.org/css-sizing/#block-intrinsic
   if (child.isLayoutBlock()) {
     const Length& computedInlineSize = child.styleRef().logicalWidth();
     if (computedInlineSize.isMaxContent())
@@ -1649,11 +1593,9 @@ int LayoutBlock::baselinePosition(FontBaseline baselineType,
   // box, then the fact that we're an inline-block is irrelevant, and we behave
   // just like a block.
   if (isInline() && linePositionMode == PositionOnContainingLine) {
-    // For "leaf" theme objects, let the theme decide what the baseline position
-    // is.
-    // FIXME: Might be better to have a custom CSS property instead, so that if
-    //        the theme is turned off, checkboxes/radios will still have decent
-    //        baselines.
+    // For "leaf" theme objects, let the theme decide what the baseline position is.
+    // FIXME: Might be better to have a custom CSS property instead, so that if the theme
+    // is turned off, checkboxes/radios will still have decent baselines.
     // FIXME: Need to patch form controls to deal with vertical lines.
     if (style()->hasAppearance() &&
         !LayoutTheme::theme().isControlContainer(style()->appearance()))
@@ -1685,8 +1627,7 @@ int LayoutBlock::baselinePosition(FontBaseline baselineType,
                                        linePositionMode);
   }
 
-  // If we're not replaced, we'll only get called with
-  // PositionOfInteriorLineBoxes.
+  // If we're not replaced, we'll only get called with PositionOfInteriorLineBoxes.
   // Note that inline-block counts as replaced here.
   ASSERT(linePositionMode == PositionOfInteriorLineBoxes);
 
@@ -1711,11 +1652,10 @@ LayoutUnit LayoutBlock::minLineHeightForReplacedObject(
                  PositionOfInteriorLineBoxes));
 }
 
-// TODO(mstensho): Figure out if all of this baseline code is needed here, or if
-// it should be moved down to LayoutBlockFlow. LayoutDeprecatedFlexibleBox and
-// LayoutGrid lack baseline calculation overrides, so the code is here just for
-// them. Just walking the block children in logical order seems rather wrong for
-// those two layout modes, though.
+// TODO(mstensho): Figure out if all of this baseline code is needed here, or if it should be moved
+// down to LayoutBlockFlow. LayoutDeprecatedFlexibleBox and LayoutGrid lack baseline calculation
+// overrides, so the code is here just for them. Just walking the block children in logical order
+// seems rather wrong for those two layout modes, though.
 
 int LayoutBlock::firstLineBoxBaseline() const {
   ASSERT(!childrenInline());
@@ -1738,8 +1678,7 @@ int LayoutBlock::inlineBlockBaseline(LineDirectionMode lineDirection) const {
   if ((!style()->isOverflowVisible() &&
        !shouldIgnoreOverflowPropertyForInlineBlockBaseline()) ||
       style()->containsSize()) {
-    // We are not calling LayoutBox::baselinePosition here because the caller
-    // should add the margin-top/margin-right, not us.
+    // We are not calling LayoutBox::baselinePosition here because the caller should add the margin-top/margin-right, not us.
     return (lineDirection == HorizontalLine ? size().height() + marginBottom()
                                             : size().width() + marginLeft())
         .toInt();
@@ -1904,77 +1843,71 @@ void LayoutBlock::paginatedContentWasLaidOut(
 
 LayoutUnit LayoutBlock::collapsedMarginBeforeForChild(
     const LayoutBox& child) const {
-  // If the child has the same directionality as we do, then we can just return
-  // its collapsed margin.
+  // If the child has the same directionality as we do, then we can just return its
+  // collapsed margin.
   if (!child.isWritingModeRoot())
     return child.collapsedMarginBefore();
 
-  // The child has a different directionality.  If the child is parallel, then
-  // it's just flipped relative to us.  We can use the collapsed margin for the
-  // opposite edge.
+  // The child has a different directionality.  If the child is parallel, then it's just
+  // flipped relative to us.  We can use the collapsed margin for the opposite edge.
   if (child.isHorizontalWritingMode() == isHorizontalWritingMode())
     return child.collapsedMarginAfter();
 
-  // The child is perpendicular to us, which means its margins don't collapse
-  // but are on the "logical left/right" sides of the child box. We can just
-  // return the raw margin in this case.
+  // The child is perpendicular to us, which means its margins don't collapse but are on the
+  // "logical left/right" sides of the child box.  We can just return the raw margin in this case.
   return marginBeforeForChild(child);
 }
 
 LayoutUnit LayoutBlock::collapsedMarginAfterForChild(
     const LayoutBox& child) const {
-  // If the child has the same directionality as we do, then we can just return
-  // its collapsed margin.
+  // If the child has the same directionality as we do, then we can just return its
+  // collapsed margin.
   if (!child.isWritingModeRoot())
     return child.collapsedMarginAfter();
 
-  // The child has a different directionality.  If the child is parallel, then
-  // it's just flipped relative to us.  We can use the collapsed margin for the
-  // opposite edge.
+  // The child has a different directionality.  If the child is parallel, then it's just
+  // flipped relative to us.  We can use the collapsed margin for the opposite edge.
   if (child.isHorizontalWritingMode() == isHorizontalWritingMode())
     return child.collapsedMarginBefore();
 
-  // The child is perpendicular to us, which means its margins don't collapse
-  // but are on the "logical left/right" side of the child box. We can just
-  // return the raw margin in this case.
+  // The child is perpendicular to us, which means its margins don't collapse but are on the
+  // "logical left/right" side of the child box.  We can just return the raw margin in this case.
   return marginAfterForChild(child);
 }
 
 bool LayoutBlock::hasMarginBeforeQuirk(const LayoutBox* child) const {
-  // If the child has the same directionality as we do, then we can just return
-  // its margin quirk.
+  // If the child has the same directionality as we do, then we can just return its
+  // margin quirk.
   if (!child->isWritingModeRoot())
     return child->isLayoutBlock() ? toLayoutBlock(child)->hasMarginBeforeQuirk()
                                   : child->style()->hasMarginBeforeQuirk();
 
-  // The child has a different directionality. If the child is parallel, then
-  // it's just flipped relative to us. We can use the opposite edge.
+  // The child has a different directionality. If the child is parallel, then it's just
+  // flipped relative to us. We can use the opposite edge.
   if (child->isHorizontalWritingMode() == isHorizontalWritingMode())
     return child->isLayoutBlock() ? toLayoutBlock(child)->hasMarginAfterQuirk()
                                   : child->style()->hasMarginAfterQuirk();
 
-  // The child is perpendicular to us and box sides are never quirky in
-  // html.css, and we don't really care about whether or not authors specified
-  // quirky ems, since they're an implementation detail.
+  // The child is perpendicular to us and box sides are never quirky in html.css, and we don't really care about
+  // whether or not authors specified quirky ems, since they're an implementation detail.
   return false;
 }
 
 bool LayoutBlock::hasMarginAfterQuirk(const LayoutBox* child) const {
-  // If the child has the same directionality as we do, then we can just return
-  // its margin quirk.
+  // If the child has the same directionality as we do, then we can just return its
+  // margin quirk.
   if (!child->isWritingModeRoot())
     return child->isLayoutBlock() ? toLayoutBlock(child)->hasMarginAfterQuirk()
                                   : child->style()->hasMarginAfterQuirk();
 
-  // The child has a different directionality. If the child is parallel, then
-  // it's just flipped relative to us. We can use the opposite edge.
+  // The child has a different directionality. If the child is parallel, then it's just
+  // flipped relative to us. We can use the opposite edge.
   if (child->isHorizontalWritingMode() == isHorizontalWritingMode())
     return child->isLayoutBlock() ? toLayoutBlock(child)->hasMarginBeforeQuirk()
                                   : child->style()->hasMarginBeforeQuirk();
 
-  // The child is perpendicular to us and box sides are never quirky in
-  // html.css, and we don't really care about whether or not authors specified
-  // quirky ems, since they're an implementation detail.
+  // The child is perpendicular to us and box sides are never quirky in html.css, and we don't really care about
+  // whether or not authors specified quirky ems, since they're an implementation detail.
   return false;
 }
 
@@ -1986,8 +1919,7 @@ const char* LayoutBlock::name() const {
 LayoutBlock* LayoutBlock::createAnonymousWithParentAndDisplay(
     const LayoutObject* parent,
     EDisplay display) {
-  // FIXME: Do we need to convert all our inline displays to block-type in the
-  // anonymous logic ?
+  // FIXME: Do we need to convert all our inline displays to block-type in the anonymous logic ?
   EDisplay newDisplay;
   LayoutBlock* newBox = nullptr;
   if (display == EDisplay::Flex || display == EDisplay::InlineFlex) {
@@ -2087,15 +2019,13 @@ bool LayoutBlock::recalcOverflowAfterStyleChange() {
   return !hasOverflowClip();
 }
 
-// Called when a positioned object moves but doesn't necessarily change size.
-// A simplified layout is attempted that just updates the object's position.
-// If the size does change, the object remains dirty.
+// Called when a positioned object moves but doesn't necessarily change size.  A simplified layout is attempted
+// that just updates the object's position. If the size does change, the object remains dirty.
 bool LayoutBlock::tryLayoutDoingPositionedMovementOnly() {
   LayoutUnit oldWidth = logicalWidth();
   LogicalExtentComputedValues computedValues;
   logicalExtentAfterUpdatingLogicalWidth(logicalTop(), computedValues);
-  // If we shrink to fit our width may have changed, so we still need full
-  // layout.
+  // If we shrink to fit our width may have changed, so we still need full layout.
   if (oldWidth != computedValues.m_extent)
     return false;
   setLogicalWidth(computedValues.m_extent);
@@ -2146,16 +2076,14 @@ void LayoutBlock::checkPositionedObjectsNeedLayout() {
 LayoutUnit LayoutBlock::availableLogicalHeightForPercentageComputation() const {
   LayoutUnit availableHeight(-1);
 
-  // For anonymous blocks that are skipped during percentage height calculation,
-  // we consider them to have an indefinite height.
+  // For anonymous blocks that are skipped during percentage height calculation, we consider them to have an indefinite height.
   if (skipContainingBlockForPercentHeightCalculation(this))
     return availableHeight;
 
   const ComputedStyle& style = styleRef();
 
-  // A positioned element that specified both top/bottom or that specifies
-  // height should be treated as though it has a height explicitly specified
-  // that can be used for any percentage computations.
+  // A positioned element that specified both top/bottom or that specifies height should be treated as though it has a height
+  // explicitly specified that can be used for any percentage computations.
   bool isOutOfFlowPositionedWithSpecifiedHeight =
       isOutOfFlowPositioned() &&
       (!style.logicalHeight().isAuto() ||

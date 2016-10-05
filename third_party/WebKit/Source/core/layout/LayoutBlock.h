@@ -2,8 +2,7 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2007 David Smith (catfish.man@gmail.com)
- * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010 Apple Inc.
- *               All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -89,8 +88,7 @@ enum ContainingBlockState { NewContainingBlock, SameContainingBlock };
 //
 // Sample code of how to handle positioned objects in LayoutBlock:
 //
-// for (LayoutObject* child = firstChild(); child; child = child->nextSibling())
-// {
+// for (LayoutObject* child = firstChild(); child; child = child->nextSibling()) {
 //     if (child->isOutOfFlowPositioned())
 //         continue;
 //
@@ -142,11 +140,10 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   const char* name() const override;
 
  protected:
-  // Insert a child correctly into the tree when |beforeDescendant| isn't a
-  // direct child of |this|. This happens e.g. when there's an anonymous block
-  // child of |this| and |beforeDescendant| has been reparented into that one.
-  // Such things are invisible to the DOM, and addChild() is typically called
-  // with the DOM tree (and not the layout tree) in mind.
+  // Insert a child correctly into the tree when |beforeDescendant| isn't a direct child of
+  // |this|. This happens e.g. when there's an anonymous block child of |this| and
+  // |beforeDescendant| has been reparented into that one. Such things are invisible to the DOM,
+  // and addChild() is typically called with the DOM tree (and not the layout tree) in mind.
   void addChildBeforeDescendant(LayoutObject* newChild,
                                 LayoutObject* beforeDescendant);
 
@@ -231,8 +228,7 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
 
   int columnGap() const;
 
-  // Accessors for logical width/height and margins in the containing block's
-  // block-flow direction.
+  // Accessors for logical width/height and margins in the containing block's block-flow direction.
   LayoutUnit logicalWidthForChild(const LayoutBox& child) const {
     return logicalWidthForChildSize(child.size());
   }
@@ -338,11 +334,9 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   //   </div>
   // </div>
 
-  // Returns the nearest enclosing block (including this block) that contributes
-  // a first-line style to our first line.
+  // Returns the nearest enclosing block (including this block) that contributes a first-line style to our first line.
   const LayoutBlock* enclosingFirstLineStyleBlock() const;
-  // Returns this block or the nearest inner block containing the actual first
-  // line.
+  // Returns this block or the nearest inner block containing the actual first line.
   LayoutBlockFlow* nearestInnerBlockWithFirstLine();
 
  protected:
@@ -414,9 +408,8 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
   void updateFromStyle() override;
 
-  // Returns true if non-visible overflow should be respected. Otherwise
-  // hasOverflowClip() will be false and we won't create scrollable area for
-  // this object even if overflow is non-visible.
+  // Returns true if non-visible overflow should be respected. Otherwise hasOverflowClip() will be
+  // false and we won't create scrollable area for this object even if overflow is non-visible.
   virtual bool allowsOverflowClip() const;
 
   virtual bool hasLineIfEmpty() const;
@@ -439,10 +432,9 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
 
   void updateBlockChildDirtyBitsBeforeLayout(bool relayoutChildren, LayoutBox&);
 
-  // TODO(jchaffraix): We should rename this function as inline-flex and
-  // inline-grid as also covered.
-  // Alternatively it should be removed as we clarify the meaning of
-  // isAtomicInlineLevel to imply isInline.
+  // TODO(jchaffraix): We should rename this function as inline-flex and inline-grid as also covered.
+  // Alternatively it should be removed as we clarify the meaning of isAtomicInlineLevel to imply
+  // isInline.
   bool isInlineBlockOrInlineTable() const final {
     return isInline() && isAtomicInlineLevel();
   }
@@ -512,8 +504,8 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   LayoutUnit nextPageLogicalTop(LayoutUnit logicalOffset) const;
 
   // Paginated content inside this block was laid out.
-  // |logicalBottomOffsetAfterPagination| is the logical bottom offset of the
-  // child content after applying any forced or unforced breaks as needed.
+  // |logicalBottomOffsetAfterPagination| is the logical bottom offset of the child content after
+  // applying any forced or unforced breaks as needed.
   void paginatedContentWasLaidOut(
       LayoutUnit logicalBottomOffsetAfterPagination);
 
@@ -530,16 +522,15 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
 
   LayoutObjectChildList m_children;
 
-  unsigned m_hasMarginBeforeQuirk : 1;  // Note these quirk values can't be put
-                                        // in LayoutBlockRareData since they are
-                                        // set too frequently.
+  unsigned
+      m_hasMarginBeforeQuirk : 1;  // Note these quirk values can't be put in LayoutBlockRareData since they are set too frequently.
   unsigned m_hasMarginAfterQuirk : 1;
   unsigned m_beingDestroyed : 1;
   unsigned m_hasMarkupTruncation : 1;
   unsigned m_widthAvailableToChildrenChanged : 1;
   unsigned m_heightAvailableToChildrenChanged : 1;
-  unsigned m_isSelfCollapsing : 1;  // True if margin-before and margin-after
-                                    // are adjoining.
+  unsigned
+      m_isSelfCollapsing : 1;  // True if margin-before and margin-after are adjoining.
   unsigned m_descendantsWithFloatsMarkedForLayout : 1;
 
   unsigned m_hasPositionedObjects : 1;
@@ -554,8 +545,8 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   friend class NGBox;
 
  public:
-  // TODO(lunalu): Temporary in order to ensure compatibility with existing
-  // layout test results.
+  // TODO(lunalu): Temporary in order to ensure compatibility with existing layout test
+  // results.
   virtual void adjustChildDebugRect(LayoutRect&) const {}
 };
 

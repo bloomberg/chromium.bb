@@ -110,21 +110,18 @@ void HitTestLocation::move(const LayoutSize& offset) {
 template <typename RectType>
 bool HitTestLocation::intersectsRect(const RectType& rect,
                                      const RectType& boundingBox) const {
-  // FIXME: When the hit test is not rect based we should use
-  // rect.contains(m_point).
+  // FIXME: When the hit test is not rect based we should use rect.contains(m_point).
   // That does change some corner case tests though.
 
   // First check if rect even intersects our bounding box.
   if (!rect.intersects(boundingBox))
     return false;
 
-  // If the transformed rect is rectilinear the bounding box intersection was
-  // accurate.
+  // If the transformed rect is rectilinear the bounding box intersection was accurate.
   if (m_isRectilinear)
     return true;
 
-  // If rect fully contains our bounding box, we are also sure of an
-  // intersection.
+  // If rect fully contains our bounding box, we are also sure of an intersection.
   if (rect.contains(boundingBox))
     return true;
 
@@ -157,10 +154,8 @@ IntRect HitTestLocation::rectForPoint(const LayoutPoint& point,
   actualPoint -= IntSize(leftPadding, topPadding);
 
   IntSize actualPadding(leftPadding + rightPadding, topPadding + bottomPadding);
-  // As IntRect is left inclusive and right exclusive (seeing
-  // IntRect::contains(x, y)), adding "1".
-  // FIXME: Remove this once non-rect based hit-detection stops using
-  // IntRect:intersects.
+  // As IntRect is left inclusive and right exclusive (seeing IntRect::contains(x, y)), adding "1".
+  // FIXME: Remove this once non-rect based hit-detection stops using IntRect:intersects.
   actualPadding += IntSize(1, 1);
 
   return IntRect(actualPoint, actualPadding);
