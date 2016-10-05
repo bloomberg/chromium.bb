@@ -432,6 +432,18 @@ int Internals::getResourcePriority(const String& url, Document* document) {
   return resource->resourceRequest().priority();
 }
 
+String Internals::getResourceHeader(const String& url,
+                                    const String& header,
+                                    Document* document) {
+  if (!document)
+    return String();
+  Resource* resource = document->fetcher()->allResources().get(
+      URLTestHelpers::toKURL(url.utf8().data()));
+  if (!resource)
+    return String();
+  return resource->resourceRequest().httpHeaderField(header.utf8().data());
+}
+
 bool Internals::isSharingStyle(Element* element1, Element* element2) const {
   ASSERT(element1 && element2);
   return element1->computedStyle() == element2->computedStyle();

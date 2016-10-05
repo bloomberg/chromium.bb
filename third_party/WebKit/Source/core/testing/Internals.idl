@@ -37,6 +37,7 @@
     boolean isPreloadedBy(DOMString url, Document document);
     boolean isLoadingFromMemoryCache(DOMString url);
     unsigned long getResourcePriority (DOMString url, Document document);
+    DOMString getResourceHeader (DOMString url, DOMString header, Document document);
 
     boolean isSharingStyle(Element element1, Element element2);
 

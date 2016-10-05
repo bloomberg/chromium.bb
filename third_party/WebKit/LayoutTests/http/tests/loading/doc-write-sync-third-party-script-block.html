@@ -59,6 +59,10 @@
         assert_true(jsLoaded);
         assert_true(loadSuccess);
     }, "cross-origin script not blocked since it is cached");
+    if (window.internals) {
+        header = internals.getResourceHeader(src, 'Intervention', document);
+        console.log(src + " Intervention header has value " + header);
+    }
 </script>
 <script>
     jsLoaded = false;

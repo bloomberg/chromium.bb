@@ -70,7 +70,7 @@ class CORE_EXPORT FrameFetchContext final : public FetchContext {
                                    FetchResourceType) override;
   CachePolicy getCachePolicy() const override;
   WebCachePolicy resourceRequestCachePolicy(
-      const ResourceRequest&,
+      ResourceRequest&,
       Resource::Type,
       FetchRequest::DeferOption) const override;
   void dispatchDidChangeResourcePriority(unsigned long identifier,

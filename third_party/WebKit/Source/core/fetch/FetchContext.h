@@ -72,8 +72,11 @@ class CORE_EXPORT FetchContext
 
   virtual void addAdditionalRequestHeaders(ResourceRequest&, FetchResourceType);
   virtual CachePolicy getCachePolicy() const;
+  // Returns the cache policy for the resource. ResourceRequest is not passed as
+  // a const reference as a header needs to be added for doc.write blocking
+  // intervention.
   virtual WebCachePolicy resourceRequestCachePolicy(
-      const ResourceRequest&,
+      ResourceRequest&,
       Resource::Type,
       FetchRequest::DeferOption) const;
 

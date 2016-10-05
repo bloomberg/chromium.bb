@@ -647,9 +647,10 @@ void ResourceFetcher::initializeResourceRequest(
     ResourceRequest& request,
     Resource::Type type,
     FetchRequest::DeferOption defer) {
-  if (request.getCachePolicy() == WebCachePolicy::UseProtocolCachePolicy)
+  if (request.getCachePolicy() == WebCachePolicy::UseProtocolCachePolicy) {
     request.setCachePolicy(
         context().resourceRequestCachePolicy(request, type, defer));
+  }
   if (request.requestContext() == WebURLRequest::RequestContextUnspecified)
     determineRequestContext(request, type);
   if (type == Resource::LinkPrefetch)

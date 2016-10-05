@@ -98,6 +98,7 @@ class Internals final : public GarbageCollectedFinalized<Internals>,
   bool isPreloadedBy(const String& url, Document*);
   bool isLoadingFromMemoryCache(const String& url);
   int getResourcePriority(const String& url, Document*);
+  String getResourceHeader(const String& url, const String& header, Document*);
 
   bool isSharingStyle(Element*, Element*) const;
 

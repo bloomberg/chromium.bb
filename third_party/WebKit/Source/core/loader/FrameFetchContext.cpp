@@ -107,7 +107,7 @@ bool isConnectionEffectively2G(WebEffectiveConnectionType effectiveType) {
   return false;
 }
 
-bool shouldDisallowFetchForMainFrameScript(const ResourceRequest& request,
+bool shouldDisallowFetchForMainFrameScript(ResourceRequest& request,
                                            FetchRequest::DeferOption defer,
                                            Document& document) {
   // Only scripts inserted via document.write are candidates for having their
@@ -151,6 +151,9 @@ bool shouldDisallowFetchForMainFrameScript(const ResourceRequest& request,
     return false;
 
   emitWarningForDocWriteScripts(request.url().getString(), document);
+  request.setHTTPHeaderField("Intervention",
+                             "<https://www.chromestatus.com/feature/"
+                             "5718547946799104>; level=\"warning\"");
 
   // Do not block scripts if it is a page reload. This is to enable pages to
   // recover if blocking of a script is leading to a page break and the user
@@ -295,7 +298,7 @@ static WebCachePolicy memoryCachePolicyToResourceRequestCachePolicy(
 }
 
 WebCachePolicy FrameFetchContext::resourceRequestCachePolicy(
-    const ResourceRequest& request,
+    ResourceRequest& request,
     Resource::Type type,
     FetchRequest::DeferOption defer) const {
   DCHECK(frame());
