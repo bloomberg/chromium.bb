@@ -1,124 +1,96 @@
-<!DOCTYPE html>
-<html>
-<body oncopy="copy(event)" onpaste="paste(event)">
-<div>This file tests the basic functionality and properties of DataTransferItems. This test requires DRT.</div>
-<div id="console"></div>
-
-<script src="../editing.js"></script>
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-var undefined;
-var pendingCallbacks = 0;
-var savedDataTransferItems = null;
-var savedDataTransferItem = null;
+const t = async_test('DataTransferItems test');
+let pendingCallbackCount = 0;
 
-function log(text)
-{
-    var console = document.getElementById('console');
-    console.appendChild(document.createTextNode(text));
-    console.appendChild(document.createElement('br'));
+function removeStyle(text) {
+  return text.replace(/ style=".*"/, '');
 }
 
-function removeFontName(text)
-{
-    if (!text)
-        return text;
-    return text.replace(/font-family: .+?; /, '');
+function checkItem(which, items, index, expectedData, expectedType) {
+  assert_equals(items[index].kind, 'string',
+      `${which}: items[${index}].kind`);
+  assert_equals(items[index].type, expectedType,
+      `${which}: items[${index}].type`);
+  items[index].getAsString(actualData => {
+      t.step(() =>
+        assert_equals(removeStyle(actualData), expectedData,
+            `${which}: items[${index}].getAsString()`));
+      --pendingCallbackCount;
+      if (pendingCallbackCount > 0)
+          return;
+      t.done();
+  });
 }
 
-function handleEvent(data)
-{
-    log(data);
-    if (--pendingCallbacks == 0) {
-        window.testRunner.notifyDone();
-    }
-}
+t.step(() => {
+    assert_not_equals(window.internals, undefined,
+      'This test requires window.internals to access clipboard');
 
-function copy(ev)
-{
-    var items = event.clipboardData.items;
-    log('Populating DataTransferItems...');
-    items.add('Hello World!', 'text/plain');
-    items.add('<b>Hello World!', 'text/html');
+    assert_selection(
+      '<div contenteditable>^xyz|</div>',
+      selection => {
+        const editor = selection.document.querySelector('div');
 
-    // Check that an exception is properly raised when attempting to add a duplicate string type.
-    try {
-        items.add('Moo', 'text/plain');
-    } catch (e) {
-        log('Caught exception "' + e + '" as expected.');
-    }
+        let savedDataTransferItems;
+        let savedDataTransferItem;
 
-    // Check that the container didn't change.
-    log('Verifying contents of DataTransferItems...');
-    log('items.length: ' + items.length);
-    log('items[0].kind: ' + items[0].kind);
-    log('items[0].type: ' + items[0].type);
-    log('items[1].kind: ' + items[1].kind);
-    log('items[1].type: ' + items[1].type);
-    items[0].getAsString(function (data) { handleEvent('copy: items[0] value: ' + data); });
-    pendingCallbacks++;
-    items[1].getAsString(function (data) { handleEvent('copy: items[1] value: ' + data); });
-    pendingCallbacks++;
+        editor.addEventListener('copy', event => {
+          const items = event.clipboardData.items;
+          // Replace exiting clipboard data.
+          items.add('abc', 'text/plain');
+          items.add('<b>def</b>', 'text/html');
 
-    log('Checking if items past the end of the collection can be indexed:');
-    log('items[2] is undefined: ' + typeof items[2]);
-}
+          assert_equals(items.length, 2, 'copy: items.length');
+          assert_equals(items[3], undefined, 'copy: items[3]');
+          checkItem('copy', items, 0, 'abc', 'text/plain');
+          checkItem('copy', items, 1, '<b>def</b>', 'text/html');
 
-function paste(ev)
-{
-    var items = event.clipboardData.items;
+          // Check that an exception is properly raised when attempting to
+          // add a duplicate string type.
+          assert_throws('NotSupportedError',
+              () => items.add('Moo', 'text/plain'),
+              'Adding another text/plain data');
+        });
 
-    // Cache references to make sure they aren't accessible outside the event handler.
-    savedDataTransferItems = items;
-    savedDataTransferItem = items[0];
+        editor.addEventListener('paste', event => {
+          const items = event.clipboardData.items;
 
-    var originalLength = items.length;
-    log('Checking that a read-only DataTransferItems cannot be mutated...');
-    // Should be immutable.
-    items.add('Hello World!', 'text/plain');
-    log('items.length: ' + items.length);
-    log('items[0].kind: ' + items[0].kind);
-    log('items[0].type: ' + items[0].type);
-    items[0].getAsString(function (data) { handleEvent('paste: items[0] value: ' + removeFontName(data)); });
-    pendingCallbacks++;
-    log('items[1].kind: ' + items[1].kind);
-    log('items[1].type: ' + items[1].type);
-    items[1].getAsString(function (data) { handleEvent('paste: items[1] value: ' + removeFontName(data)); });
-    pendingCallbacks++;
-    log('items[2] is undefined: ' + typeof items[2]);
-}
+          // Cache references to make sure they are not  accessible
+          // outside the event handler.
+          savedDataTransferItems = items;
+          savedDataTransferItem = items[0];
 
-function runTest() {
-    if (!window.testRunner)
-        return;
-    testRunner.waitUntilDone();
-    testRunner.dumpAsText();
+          // Checking that a read-only DataTransferItems cannot be
+          // mutated...
+          items.add('new', 'text/plain');
 
-    eventSender.mouseMoveTo(0, 0);
-    for (var i = 0; i < 3; i++) {
-        eventSender.mouseDown();
-        eventSender.mouseUp();
-    }
-    copyCommand();
-    pasteCommand();
+          assert_equals(items.length, 2, 'paste: items.length');
+          assert_equals(items[3], undefined, 'paste: items[3]');
+          checkItem('paste', items, 0, 'abc', 'text/plain');
+          checkItem('paste', items, 1, '<b>def</b>', 'text/html');
+        });
 
-    log('Testing if DataTransferItems can be accessed outside an event handler...');
-    if (savedDataTransferItems.length != 0) {
-        log('DataTransferItems.length non-zero outside event handler!');
-    }
-    savedDataTransferItems.add('Security?', 'text/foo');
-    if (savedDataTransferItems.length != 0) {
-        log('DataTransferItems mutated outside event handler!');
-    }
-    if (typeof savedDataTransferItems[0] == 'undefined') {
-        log('DataTransferItem accessed outside event handler!');
-    }
-    if (typeof savedDataTransferItem == 'undefined') {
-        log('DataTransferItem accessed outside event handler!');
-    }
-}
+        selection.document.execCommand('copy');
+        selection.document.execCommand('paste');
+        assert_equals(savedDataTransferItems.length, 0,
+            'savedDataTransferItems.length');
 
-runTest();
+        savedDataTransferItems.add('Security?', 'text/foo');
+        assert_equals(savedDataTransferItems.length, 0,
+            'savedDataTransferItems.length after add()');
 
+        assert_equals(savedDataTransferItems[0], undefined,
+            'savedDataTransferItems[0]');
+
+        assert_equals(typeof(savedDataTransferItem), 'object',
+            'savedDataTransferItem');
+      },
+      '<div contenteditable>xyz|</div>',
+      {description: 'DataTransferItem(s) API at copy and paste time',
+       removeSampleIfSucceeded: false});
+});
 </script>
-</body>
-</html>
