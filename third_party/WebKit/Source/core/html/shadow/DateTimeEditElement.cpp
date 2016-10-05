@@ -558,7 +558,8 @@ DateTimeEditElement* DateTimeEditElement::create(
 }
 
 PassRefPtr<ComputedStyle> DateTimeEditElement::customStyleForLayoutObject() {
-  // FIXME: This is a kind of layout. We might want to introduce new layoutObject.
+  // FIXME: This is a kind of layout. We might want to introduce new
+  // layoutObject.
   RefPtr<ComputedStyle> originalStyle = originalStyleForLayoutObject();
   RefPtr<ComputedStyle> style = ComputedStyle::clone(*originalStyle);
   float width = 0;

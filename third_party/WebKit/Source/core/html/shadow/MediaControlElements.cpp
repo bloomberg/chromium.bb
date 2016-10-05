@@ -63,7 +63,8 @@ namespace {
 const double fadeOutDuration = 0.3;
 
 const QualifiedName& trackIndexAttrName() {
-  // Save the track index in an attribute to avoid holding a pointer to the text track.
+  // Save the track index in an attribute to avoid holding a pointer to the text
+  // track.
   DEFINE_STATIC_LOCAL(QualifiedName, trackIndexAttr,
                       (nullAtom, "data-track-index", nullAtom));
   return trackIndexAttr;
@@ -79,7 +80,8 @@ bool isUserInteractionEvent(Event* event) {
          event->isKeyboardEvent() || event->isTouchEvent();
 }
 
-// Sliders (the volume control and timeline) need to capture some additional events used when dragging the thumb.
+// Sliders (the volume control and timeline) need to capture some additional
+// events used when dragging the thumb.
 bool isUserInteractionEventForSlider(Event* event, LayoutObject* layoutObject) {
   // It is unclear if this can be converted to isUserInteractionEvent(), since
   // mouse* events seem to be eaten during a drag anyway.  crbug.com/516416 .
@@ -109,8 +111,8 @@ Element* elementFromCenter(Element& element) {
 bool hasDuplicateLabel(TextTrack* currentTrack) {
   DCHECK(currentTrack);
   TextTrackList* trackList = currentTrack->trackList();
-  // The runtime of this method is quadratic but since there are usually very few text tracks it won't
-  // affect the performance much.
+  // The runtime of this method is quadratic but since there are usually very
+  // few text tracks it won't affect the performance much.
   String currentTrackLabel = currentTrack->label();
   for (unsigned i = 0; i < trackList->length(); i++) {
     TextTrack* track = trackList->anonymousIndexedGetter(i);
@@ -215,7 +217,8 @@ bool MediaControlPanelElement::keepEventInNode(Event* event) {
 
 MediaControlPanelEnclosureElement::MediaControlPanelEnclosureElement(
     MediaControls& mediaControls)
-    // Mapping onto same MediaControlElementType as panel element, since it has similar properties.
+    // Mapping onto same MediaControlElementType as panel element, since it has
+    // similar properties.
     : MediaControlDivElement(mediaControls, MediaControlsPanel) {}
 
 MediaControlPanelEnclosureElement* MediaControlPanelEnclosureElement::create(
@@ -231,7 +234,8 @@ MediaControlPanelEnclosureElement* MediaControlPanelEnclosureElement::create(
 
 MediaControlOverlayEnclosureElement::MediaControlOverlayEnclosureElement(
     MediaControls& mediaControls)
-    // Mapping onto same MediaControlElementType as panel element, since it has similar properties.
+    // Mapping onto same MediaControlElementType as panel element, since it has
+    // similar properties.
     : MediaControlDivElement(mediaControls, MediaControlsPanel) {}
 
 MediaControlOverlayEnclosureElement*
@@ -245,10 +249,12 @@ MediaControlOverlayEnclosureElement::create(MediaControls& mediaControls) {
 
 EventDispatchHandlingState*
 MediaControlOverlayEnclosureElement::preDispatchEventHandler(Event* event) {
-  // When the media element is clicked or touched we want to make the overlay cast button visible
-  // (if the other requirements are right) even if JavaScript is doing its own handling of the event.
-  // Doing it in preDispatchEventHandler prevents any interference from JavaScript.
-  // Note that we can't simply test for click, since JS handling of touch events can prevent their translation to click events.
+  // When the media element is clicked or touched we want to make the overlay
+  // cast button visible (if the other requirements are right) even if
+  // JavaScript is doing its own handling of the event.  Doing it in
+  // preDispatchEventHandler prevents any interference from JavaScript.
+  // Note that we can't simply test for click, since JS handling of touch events
+  // can prevent their translation to click events.
   if (event && (event->type() == EventTypeNames::click ||
                 event->type() == EventTypeNames::touchstart))
     mediaControls().showOverlayCastButtonIfNeeded();
@@ -324,8 +330,9 @@ void MediaControlPlayButtonElement::defaultEventHandler(Event* event) {
       Platform::current()->recordAction(
           UserMetricsAction("Media.Controls.Pause"));
 
-    // Allow play attempts for plain src= media to force a reload in the error state. This allows potential
-    // recovery for transient network and decoder resource issues.
+    // Allow play attempts for plain src= media to force a reload in the error
+    // state. This allows potential recovery for transient network and decoder
+    // resource issues.
     const String& url = mediaElement().currentSrc().getString();
     if (mediaElement().error() && !HTMLMediaElement::isMediaStreamURL(url) &&
         !HTMLMediaSource::lookup(url))
@@ -505,7 +512,8 @@ String MediaControlTextTrackListElement::getTextTrackLabel(TextTrack* track) {
   return trackLabel;
 }
 
-// TextTrack parameter when passed in as a nullptr, creates the "Off" list item in the track list.
+// TextTrack parameter when passed in as a nullptr, creates the "Off" list item
+// in the track list.
 Element* MediaControlTextTrackListElement::createTextTrackListItem(
     TextTrack* track) {
   int trackIndex = track ? track->trackIndex() : trackIndexOffValue;
@@ -531,7 +539,8 @@ Element* MediaControlTextTrackListElement::createTextTrackListItem(
   trackItem->appendChild(trackItemInput);
   String trackLabel = getTextTrackLabel(track);
   trackItem->appendChild(Text::create(document(), trackLabel));
-  // Add a track kind marker icon if there are multiple tracks with the same label or if the track has no label.
+  // Add a track kind marker icon if there are multiple tracks with the same
+  // label or if the track has no label.
   if (track && (track->label().isEmpty() || hasDuplicateLabel(track))) {
     HTMLSpanElement* trackKindMarker = HTMLSpanElement::create(document());
     if (track->kind() == track->captionsKeyword()) {
@@ -555,8 +564,8 @@ void MediaControlTextTrackListElement::refreshTextTrackListMenu() {
   EventDispatchForbiddenScope::AllowUserAgentEvents allowEvents;
   removeChildren(OmitSubtreeModifiedEvent);
 
-  // Construct a menu for subtitles and captions
-  // Pass in a nullptr to createTextTrackListItem to create the "Off" track item.
+  // Construct a menu for subtitles and captions.  Pass in a nullptr to
+  // createTextTrackListItem to create the "Off" track item.
   appendChild(createTextTrackListItem(nullptr));
 
   TextTrackList* trackList = mediaElement().textTracks();

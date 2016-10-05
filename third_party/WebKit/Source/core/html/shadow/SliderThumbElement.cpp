@@ -167,7 +167,8 @@ void SliderThumbElement::setPositionFromPoint(const LayoutPoint& point) {
   if (valueString == input->value())
     return;
 
-  // FIXME: This is no longer being set from renderer. Consider updating the method name.
+  // FIXME: This is no longer being set from renderer. Consider updating the
+  // method name.
   input->setValueFromRenderer(valueString);
   if (layoutObject())
     layoutObject()->setNeedsLayoutAndFullPaintInvalidation(
@@ -202,7 +203,8 @@ void SliderThumbElement::defaultEventHandler(Event* event) {
   }
 
   // FIXME: Should handle this readonly/disabled check in more general way.
-  // Missing this kind of check is likely to occur elsewhere if adding it in each shadow element.
+  // Missing this kind of check is likely to occur elsewhere if adding it in
+  // each shadow element.
   HTMLInputElement* input = hostInput();
   if (!input || input->isDisabledOrReadOnly()) {
     stopDragging();
@@ -260,8 +262,8 @@ void SliderThumbElement::detachLayoutTree(const AttachContext& context) {
 }
 
 HTMLInputElement* SliderThumbElement::hostInput() const {
-  // Only HTMLInputElement creates SliderThumbElement instances as its shadow nodes.
-  // So, ownerShadowHost() must be an HTMLInputElement.
+  // Only HTMLInputElement creates SliderThumbElement instances as its shadow
+  // nodes.  So, ownerShadowHost() must be an HTMLInputElement.
   return toHTMLInputElement(ownerShadowHost());
 }
 
@@ -358,7 +360,8 @@ void SliderContainerElement::handleTouchEvent(TouchEvent* event) {
         m_slidingDirection = getDirection(currentPoint, m_startPoint);
       }
 
-      // m_slidingDirection has been updated, so check whether it's okay to slide again.
+      // m_slidingDirection has been updated, so check whether it's okay to
+      // slide again.
       if (canSlide()) {
         thumb->setPositionFromPoint(touches->item(0)->absoluteLocation());
         event->setDefaultHandled();

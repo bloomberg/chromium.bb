@@ -113,7 +113,8 @@ TextControlInnerEditorElement* TextControlInnerEditorElement::create(
 
 void TextControlInnerEditorElement::defaultEventHandler(Event* event) {
   // FIXME: In the future, we should add a way to have default event listeners.
-  // Then we would add one to the text field's inner div, and we wouldn't need this subclass.
+  // Then we would add one to the text field's inner div, and we wouldn't need
+  // this subclass.
   // Or possibly we could just use a normal event listener.
   if (event->isBeforeTextInsertedEvent() ||
       event->type() == EventTypeNames::webkitEditableContentChanged) {

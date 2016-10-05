@@ -144,32 +144,54 @@ MediaControls* MediaControls::create(HTMLMediaElement& mediaElement) {
 
 // The media controls DOM structure looks like:
 //
-// MediaControls                                       (-webkit-media-controls)
-// +-MediaControlOverlayEnclosureElement               (-webkit-media-controls-overlay-enclosure)
-// | +-MediaControlOverlayPlayButtonElement            (-webkit-media-controls-overlay-play-button)
+// MediaControls
+//     (-webkit-media-controls)
+// +-MediaControlOverlayEnclosureElement
+// |    (-webkit-media-controls-overlay-enclosure)
+// | +-MediaControlOverlayPlayButtonElement
+// | |    (-webkit-media-controls-overlay-play-button)
 // | | {if mediaControlsOverlayPlayButtonEnabled}
-// | \-MediaControlCastButtonElement                   (-internal-media-controls-overlay-cast-button)
-// \-MediaControlPanelEnclosureElement                 (-webkit-media-controls-enclosure)
-//   \-MediaControlPanelElement                        (-webkit-media-controls-panel)
-//     +-MediaControlPlayButtonElement                 (-webkit-media-controls-play-button)
+// | \-MediaControlCastButtonElement
+// |     (-internal-media-controls-overlay-cast-button)
+// \-MediaControlPanelEnclosureElement
+//   |    (-webkit-media-controls-enclosure)
+//   \-MediaControlPanelElement
+//     |    (-webkit-media-controls-panel)
+//     +-MediaControlPlayButtonElement
+//     |    (-webkit-media-controls-play-button)
 //     | {if !RTE::newMediaPlaybackUi()}
-//     +-MediaControlTimelineElement                   (-webkit-media-controls-timeline)
-//     +-MediaControlCurrentTimeDisplayElement         (-webkit-media-controls-current-time-display)
-//     +-MediaControlTimeRemainingDisplayElement       (-webkit-media-controls-time-remaining-display)
+//     +-MediaControlTimelineElement
+//     |    (-webkit-media-controls-timeline)
+//     +-MediaControlCurrentTimeDisplayElement
+//     |    (-webkit-media-controls-current-time-display)
+//     +-MediaControlTimeRemainingDisplayElement
+//     |    (-webkit-media-controls-time-remaining-display)
 //     | {if RTE::newMediaPlaybackUi()}
-//     +-MediaControlTimelineElement                   (-webkit-media-controls-timeline)
-//     +-MediaControlMuteButtonElement                 (-webkit-media-controls-mute-button)
-//     +-MediaControlVolumeSliderElement               (-webkit-media-controls-volume-slider)
-//     +-MediaControlFullscreenButtonElement           (-webkit-media-controls-fullscreen-button)
-//     +-MediaControlDownloadButtonElement             (-internal-media-controls-download-button)
-//     +-MediaControlToggleClosedCaptionsButtonElement (-webkit-media-controls-toggle-closed-captions-button)
-//     \-MediaControlCastButtonElement                 (-internal-media-controls-cast-button)
-// +-MediaControlTextTrackListElement                (-internal-media-controls-text-track-list)
+//     +-MediaControlTimelineElement
+//     |    (-webkit-media-controls-timeline)
+//     +-MediaControlMuteButtonElement
+//     |    (-webkit-media-controls-mute-button)
+//     +-MediaControlVolumeSliderElement
+//     |    (-webkit-media-controls-volume-slider)
+//     +-MediaControlFullscreenButtonElement
+//     |    (-webkit-media-controls-fullscreen-button)
+//     +-MediaControlDownloadButtonElement
+//     |    (-internal-media-controls-download-button)
+//     +-MediaControlToggleClosedCaptionsButtonElement
+//     |    (-webkit-media-controls-toggle-closed-captions-button)
+//     \-MediaControlCastButtonElement
+//         (-internal-media-controls-cast-button)
+// +-MediaControlTextTrackListElement
+// |    (-internal-media-controls-text-track-list)
 // | {for each renderable text track}
-//  \-MediaControlTextTrackListItem                 (-internal-media-controls-text-track-list-item)
-//  +-MediaControlTextTrackListItemInput            (-internal-media-controls-text-track-list-item-input)
-//  +-MediaControlTextTrackListItemCaptions         (-internal-media-controls-text-track-list-kind-captions)
-//  +-MediaControlTextTrackListItemSubtitles        (-internal-media-controls-text-track-list-kind-subtitles)
+//  \-MediaControlTextTrackListItem
+//  |   (-internal-media-controls-text-track-list-item)
+//  +-MediaControlTextTrackListItemInput
+//  |    (-internal-media-controls-text-track-list-item-input)
+//  +-MediaControlTextTrackListItemCaptions
+//  |    (-internal-media-controls-text-track-list-kind-captions)
+//  +-MediaControlTextTrackListItemSubtitles
+//       (-internal-media-controls-text-track-list-kind-subtitles)
 void MediaControls::initializeControls() {
   const bool useNewUi = RuntimeEnabledFeatures::newMediaPlaybackUiEnabled();
   MediaControlOverlayEnclosureElement* overlayEnclosure =
@@ -191,7 +213,8 @@ void MediaControls::initializeControls() {
   m_overlayEnclosure = overlayEnclosure;
   appendChild(overlayEnclosure);
 
-  // Create an enclosing element for the panel so we can visually offset the controls correctly.
+  // Create an enclosing element for the panel so we can visually offset the
+  // controls correctly.
   MediaControlPanelEnclosureElement* enclosure =
       MediaControlPanelEnclosureElement::create(*this);
 
@@ -279,8 +302,9 @@ void MediaControls::initializeControls() {
   appendChild(overflowList);
 
   // The order in which we append elements to the overflow list is significant
-  // because it determines how the elements show up in the overflow menu relative to each other.
-  // The first item appended appears at the top of the overflow menu.
+  // because it determines how the elements show up in the overflow menu
+  // relative to each other.  The first item appended appears at the top of the
+  // overflow menu.
   m_overflowList->appendChild(m_playButton->createOverflowElement(
       *this, MediaControlPlayButtonElement::create(*this)));
   m_overflowList->appendChild(m_fullscreenButton->createOverflowElement(
@@ -477,7 +501,8 @@ void MediaControls::updateCurrentTimeDisplay() {
 
 void MediaControls::updateVolume() {
   m_muteButton->updateDisplayType();
-  // Invalidate the mute button because it paints differently according to volume.
+  // Invalidate the mute button because it paints differently according to
+  // volume.
   invalidate(m_muteButton);
 
   if (mediaElement().muted())
@@ -498,13 +523,15 @@ void MediaControls::updateVolume() {
   // is true, then we choose to hide or show the mute button to save space.
   // If enableNew* is not set, then we never touch the mute button, and
   // instead leave it to the CSS.
-  // Note that this is why m_allowHiddenVolumeControls isn't rolled into prefer...().
+  // Note that this is why m_allowHiddenVolumeControls isn't rolled into
+  // prefer...().
   if (m_allowHiddenVolumeControls) {
     // If there is no audio track, then hide the mute button.
     m_muteButton->setIsWanted(mediaElement().hasAudio());
   }
 
-  // Invalidate the volume slider because it paints differently according to volume.
+  // Invalidate the volume slider because it paints differently according to
+  // volume.
   invalidate(m_volumeSlider);
 }
 
@@ -541,11 +568,13 @@ void MediaControls::refreshCastButtonVisibilityWithoutUpdate() {
     return;
   }
 
-  // The reason for the autoplay test is that some pages (e.g. vimeo.com) have an autoplay background video, which
-  // doesn't autoplay on Chrome for Android (we prevent it) so starts paused. In such cases we don't want to automatically
-  // show the cast button, since it looks strange and is unlikely to correspond with anything the user wants to do.
-  // If a user does want to cast a paused autoplay video then they can still do so by touching or clicking on the
-  // video, which will cause the cast button to appear.
+  // The reason for the autoplay test is that some pages (e.g. vimeo.com) have
+  // an autoplay background video, which doesn't autoplay on Chrome for Android
+  // (we prevent it) so starts paused. In such cases we don't want to
+  // automatically show the cast button, since it looks strange and is unlikely
+  // to correspond with anything the user wants to do.  If a user does want to
+  // cast a paused autoplay video then they can still do so by touching or
+  // clicking on the video, which will cause the cast button to appear.
   if (!mediaElement().shouldShowControls() && !mediaElement().autoplay() &&
       mediaElement().paused()) {
     // Note that this is a case where we add the overlay cast button
@@ -607,10 +636,10 @@ void MediaControls::stoppedCasting() {
 void MediaControls::defaultEventHandler(Event* event) {
   HTMLDivElement::defaultEventHandler(event);
 
-  // Add IgnoreControlsHover to m_hideTimerBehaviorFlags when we see a touch event,
-  // to allow the hide-timer to do the right thing when it fires.
-  // FIXME: Preferably we would only do this when we're actually handling the event
-  // here ourselves.
+  // Add IgnoreControlsHover to m_hideTimerBehaviorFlags when we see a touch
+  // event, to allow the hide-timer to do the right thing when it fires.
+  // FIXME: Preferably we would only do this when we're actually handling the
+  // event here ourselves.
   bool wasLastEventTouch =
       event->isTouchEvent() || event->isGestureEvent() ||
       (event->isMouseEvent() && toMouseEvent(event)->fromTouch());
