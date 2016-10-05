@@ -17,7 +17,6 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "components/arc/arc_bridge_host_impl.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
@@ -38,6 +37,9 @@ ArcBridgeServiceImpl::ArcBridgeServiceImpl()
 }
 
 ArcBridgeServiceImpl::~ArcBridgeServiceImpl() {
+  if (bootstrap_)
+    bootstrap_->RemoveObserver(this);
+
   DCHECK(g_arc_bridge_service == this);
   g_arc_bridge_service = nullptr;
 }
@@ -82,9 +84,12 @@ void ArcBridgeServiceImpl::PrerequisitesChanged() {
     VLOG(0) << "Prerequisites met, starting ARC";
     SetStopReason(StopReason::SHUTDOWN);
 
+    if (bootstrap_)
+      bootstrap_->RemoveObserver(this);
+
     SetState(State::CONNECTING);
     bootstrap_ = factory_.Run();
-    bootstrap_->set_delegate(this);
+    bootstrap_->AddObserver(this);
     bootstrap_->Start();
   } else {
     if (session_started_)
@@ -107,21 +112,17 @@ void ArcBridgeServiceImpl::StopInstance() {
   VLOG(1) << "Stopping ARC";
   DCHECK(bootstrap_.get());
   SetState(State::STOPPING);
-  arc_bridge_host_.reset();
 
   // Note: this can call OnStopped() internally as a callback.
   bootstrap_->Stop();
 }
 
-void ArcBridgeServiceImpl::OnConnectionEstablished(
-    mojom::ArcBridgeInstancePtr instance) {
+void ArcBridgeServiceImpl::OnReady() {
   DCHECK(CalledOnValidThread());
   if (state() != State::CONNECTING) {
     VLOG(1) << "StopInstance() called while connecting";
     return;
   }
-
-  arc_bridge_host_.reset(new ArcBridgeHostImpl(std::move(instance)));
 
   // The container can be considered to have been successfully launched, so
   // restart if the connection goes down without being requested.
@@ -133,7 +134,7 @@ void ArcBridgeServiceImpl::OnConnectionEstablished(
 void ArcBridgeServiceImpl::OnStopped(StopReason stop_reason) {
   DCHECK(CalledOnValidThread());
   VLOG(0) << "ARC stopped: " << stop_reason;
-  arc_bridge_host_.reset();
+  bootstrap_->RemoveObserver(this);
   bootstrap_.reset();
   SetStopReason(stop_reason);
   SetState(State::STOPPED);

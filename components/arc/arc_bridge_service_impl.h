@@ -25,7 +25,7 @@ namespace arc {
 
 // Real IPC based ArcBridgeService that is used in production.
 class ArcBridgeServiceImpl : public ArcBridgeService,
-                             public ArcBridgeBootstrap::Delegate {
+                             public ArcBridgeBootstrap::Observer {
  public:
   // This is the factory interface to inject ArcBridgeBootstrap instance
   // for testing purpose.
@@ -65,18 +65,14 @@ class ArcBridgeServiceImpl : public ArcBridgeService,
   // Stops the running instance.
   void StopInstance();
 
-  // ArcBridgeBootstrap::Delegate:
-  void OnConnectionEstablished(mojom::ArcBridgeInstancePtr instance) override;
+  // ArcBridgeBootstrap::Observer:
+  void OnReady() override;
   void OnStopped(StopReason reason) override;
 
   std::unique_ptr<ArcBridgeBootstrap> bootstrap_;
 
   // If the user's session has started.
   bool session_started_;
-
-  // Mojo endpoint.
-  // TODO(hidehiko): Move this to ArcBridgeBootstrap.
-  std::unique_ptr<mojom::ArcBridgeHost> arc_bridge_host_;
 
   // If the instance had already been started but the connection to it was
   // lost. This should make the instance restart.

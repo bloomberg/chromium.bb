@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "components/arc/arc_bridge_bootstrap.h"
-#include "components/arc/test/fake_arc_bridge_instance.h"
 
 namespace arc {
 
@@ -42,7 +41,6 @@ class FakeArcBridgeBootstrap : public ArcBridgeBootstrap {
  private:
   bool boot_failure_emulation_enabled_ = false;
   ArcBridgeService::StopReason boot_failure_reason_;
-  FakeArcBridgeInstance instance_;
 
   bool boot_suspended_ = false;
 

@@ -165,8 +165,6 @@ static_library("arc_test_support") {
     "test/fake_app_instance.h",
     "test/fake_arc_bridge_bootstrap.cc",
     "test/fake_arc_bridge_bootstrap.h",
-    "test/fake_arc_bridge_instance.cc",
-    "test/fake_arc_bridge_instance.h",
     "test/fake_arc_bridge_service.cc",
     "test/fake_arc_bridge_service.h",
     "test/fake_bluetooth_instance.cc",

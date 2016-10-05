@@ -10,7 +10,6 @@
 
 #include "base/callback.h"
 #include "components/arc/common/intent_helper.mojom.h"
-#include "components/arc/test/fake_arc_bridge_instance.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace arc {

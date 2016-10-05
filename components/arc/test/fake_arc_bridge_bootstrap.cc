@@ -5,7 +5,6 @@
 #include "components/arc/test/fake_arc_bridge_bootstrap.h"
 
 #include <memory>
-#include <utility>
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -17,13 +16,11 @@ FakeArcBridgeBootstrap::FakeArcBridgeBootstrap() = default;
 FakeArcBridgeBootstrap::~FakeArcBridgeBootstrap() = default;
 
 void FakeArcBridgeBootstrap::Start() {
-  DCHECK(delegate_);
   if (boot_failure_emulation_enabled_) {
-    delegate_->OnStopped(boot_failure_reason_);
+    FOR_EACH_OBSERVER(Observer, observer_list_,
+                      OnStopped(boot_failure_reason_));
   } else if (!boot_suspended_) {
-    mojom::ArcBridgeInstancePtr instance_ptr;
-    instance_.Bind(mojo::GetProxy(&instance_ptr));
-    delegate_->OnConnectionEstablished(std::move(instance_ptr));
+    FOR_EACH_OBSERVER(Observer, observer_list_, OnReady());
   }
 }
 
@@ -33,9 +30,7 @@ void FakeArcBridgeBootstrap::Stop() {
 
 void FakeArcBridgeBootstrap::StopWithReason(
     ArcBridgeService::StopReason reason) {
-  DCHECK(delegate_);
-  instance_.Unbind();
-  delegate_->OnStopped(reason);
+  FOR_EACH_OBSERVER(Observer, observer_list_, OnStopped(reason));
 }
 
 void FakeArcBridgeBootstrap::EnableBootFailureEmulation(

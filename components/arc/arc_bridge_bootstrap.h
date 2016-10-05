@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "components/arc/arc_bridge_service.h"
@@ -26,27 +27,25 @@ namespace arc {
 // Rename this to ArcSession.
 class ArcBridgeBootstrap {
  public:
-  // TODO(hidehiko): Switch to Observer style, which fits more for this design.
-  class Delegate {
+  class Observer {
    public:
+    Observer() = default;
+    virtual ~Observer() = default;
+
     // Called when the connection with ARC instance has been established.
-    // TODO(hidehiko): Moving ArcBridgeHost to the ArcBridgeBootstrapImpl
-    // so that this can be replaced by OnReady() simply.
-    virtual void OnConnectionEstablished(
-        mojom::ArcBridgeInstancePtr instance_ptr) = 0;
+    virtual void OnReady() = 0;
 
     // Called when ARC instance is stopped. This is called exactly once
     // per instance which is Start()ed.
     virtual void OnStopped(ArcBridgeService::StopReason reason) = 0;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Observer);
   };
 
   // Creates a default instance of ArcBridgeBootstrap.
   static std::unique_ptr<ArcBridgeBootstrap> Create();
-  virtual ~ArcBridgeBootstrap() = default;
-
-  // This must be called before calling Start() or Stop(). |delegate| is owned
-  // by the caller and must outlive this instance.
-  void set_delegate(Delegate* delegate) { delegate_ = delegate; }
+  virtual ~ArcBridgeBootstrap();
 
   // Starts and bootstraps a connection with the instance. The Delegate's
   // OnConnectionEstablished() will be called if the bootstrapping is
@@ -58,11 +57,13 @@ class ArcBridgeBootstrap {
   // The completion is notified via OnStopped() of the Delegate.
   virtual void Stop() = 0;
 
- protected:
-  ArcBridgeBootstrap() = default;
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
-  // Owned by the caller.
-  Delegate* delegate_ = nullptr;
+ protected:
+  ArcBridgeBootstrap();
+
+  base::ObserverList<Observer> observer_list_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ArcBridgeBootstrap);

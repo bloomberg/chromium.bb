@@ -10,7 +10,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "components/arc/instance_holder.h"
-#include "components/arc/test/fake_arc_bridge_instance.h"
 #include "components/arc/test/fake_arc_bridge_service.h"
 #include "components/arc/test/fake_notifications_instance.h"
 #include "testing/gtest/include/gtest/gtest.h"

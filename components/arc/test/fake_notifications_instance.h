@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "components/arc/common/notifications.mojom.h"
-#include "components/arc/test/fake_arc_bridge_instance.h"
 
 namespace arc {
 

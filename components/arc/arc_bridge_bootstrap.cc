@@ -26,6 +26,7 @@
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "components/arc/arc_bridge_host_impl.h"
 #include "components/arc/arc_features.h"
 #include "components/user_manager/user_manager.h"
 #include "ipc/unix_domain_socket_util.h"
@@ -126,7 +127,7 @@ class ArcBridgeBootstrapImpl : public ArcBridgeBootstrap,
   //
   // At any state, Stop() can be called. It does not immediately stop the
   // instance, but will eventually stop it.
-  // The actual stop will be notified via OnStopped() of the |delegate_|.
+  // The actual stop will be notified via Observer::OnStopped().
   //
   // When Stop() is called, it makes various behavior based on the current
   // phase.
@@ -248,6 +249,9 @@ class ArcBridgeBootstrapImpl : public ArcBridgeBootstrap,
   // to notify cancelling of the procedure.
   base::ScopedFD accept_cancel_pipe_;
 
+  // Mojo endpoint.
+  std::unique_ptr<mojom::ArcBridgeHost> arc_bridge_host_;
+
   base::ThreadChecker thread_checker_;
 
   // WeakPtrFactory to use callbacks.
@@ -277,7 +281,6 @@ ArcBridgeBootstrapImpl::~ArcBridgeBootstrapImpl() {
 
 void ArcBridgeBootstrapImpl::Start() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(delegate_);
   DCHECK_EQ(state_, State::NOT_STARTED);
   VLOG(2) << "Starting ARC session.";
   VLOG(2) << "Checking disk space...";
@@ -514,17 +517,15 @@ void ArcBridgeBootstrapImpl::OnMojoConnected(base::ScopedFD fd) {
   mojom::ArcBridgeInstancePtr instance;
   instance.Bind(mojo::InterfacePtrInfo<mojom::ArcBridgeInstance>(
       std::move(server_pipe), 0u));
-  // TODO(hidehiko): Move to creating ArcBridgeHost here to fix the twisted
-  // state change.
+  arc_bridge_host_.reset(new ArcBridgeHostImpl(std::move(instance)));
 
   VLOG(2) << "Mojo is connected. ARC is running.";
   state_ = State::RUNNING;
-  delegate_->OnConnectionEstablished(std::move(instance));
+  FOR_EACH_OBSERVER(ArcBridgeBootstrap::Observer, observer_list_, OnReady());
 }
 
 void ArcBridgeBootstrapImpl::Stop() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(delegate_);
   VLOG(2) << "Stopping ARC session is requested.";
 
   // For second time or later, just do nothing.
@@ -533,6 +534,7 @@ void ArcBridgeBootstrapImpl::Stop() {
     return;
 
   stop_requested_ = true;
+  arc_bridge_host_.reset();
   switch (state_) {
     case State::NOT_STARTED:
       OnStopped(ArcBridgeService::StopReason::SHUTDOWN);
@@ -617,11 +619,24 @@ void ArcBridgeBootstrapImpl::OnStopped(ArcBridgeService::StopReason reason) {
   // OnStopped() should be called once per instance.
   DCHECK_NE(state_, State::STOPPED);
   VLOG(2) << "ARC session is stopped.";
+  arc_bridge_host_.reset();
   state_ = State::STOPPED;
-  delegate_->OnStopped(reason);
+  FOR_EACH_OBSERVER(ArcBridgeBootstrap::Observer, observer_list_,
+                    OnStopped(reason));
 }
 
 }  // namespace
+
+ArcBridgeBootstrap::ArcBridgeBootstrap() = default;
+ArcBridgeBootstrap::~ArcBridgeBootstrap() = default;
+
+void ArcBridgeBootstrap::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void ArcBridgeBootstrap::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
 
 // static
 std::unique_ptr<ArcBridgeBootstrap> ArcBridgeBootstrap::Create() {

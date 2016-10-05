@@ -8,7 +8,6 @@
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/common/policy.mojom.h"
 #include "components/arc/instance_holder.h"
-#include "components/arc/test/fake_arc_bridge_instance.h"
 
 namespace arc {
 
