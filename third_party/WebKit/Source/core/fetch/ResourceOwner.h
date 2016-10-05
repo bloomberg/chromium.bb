@@ -32,32 +32,15 @@
 #define ResourceOwner_h
 
 #include "core/fetch/Resource.h"
-#include <type_traits>
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
-template <typename Client, bool isClientGarbageCollectedMixin>
-class ResourceOwnerBase;
-
-template <typename Client>
-class ResourceOwnerBase<Client, true> : public Client {
- public:
-  DEFINE_INLINE_VIRTUAL_TRACE() { Client::trace(visitor); }
-};
-
-// TODO(yhirano): Remove this template once all ResourceClients become
-// GarbageCollectedMixin.
-template <typename Client>
-class ResourceOwnerBase<Client, false> : public GarbageCollectedMixin,
-                                         public Client {
- public:
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
-};
+template <class R, class C>
+class GC_PLUGIN_IGNORE("https://crbug.com/652966") ResourceOwner;
 
 template <class R, class C = typename R::ClientType>
-class ResourceOwner : public ResourceOwnerBase<
-                          C,
-                          std::is_base_of<GarbageCollectedMixin, C>::value> {
+class ResourceOwner : public C {
   USING_PRE_FINALIZER(ResourceOwner, clearResource);
 
  public:
@@ -67,8 +50,7 @@ class ResourceOwner : public ResourceOwnerBase<
 
   DEFINE_INLINE_TRACE() {
     visitor->trace(m_resource);
-    ResourceOwnerBase<
-        C, std::is_base_of<GarbageCollectedMixin, C>::value>::trace(visitor);
+    C::trace(visitor);
   }
 
  protected:
