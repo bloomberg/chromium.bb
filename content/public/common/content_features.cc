@@ -40,11 +40,6 @@ const base::Feature kDefaultEnableGpuRasterization{
 const base::Feature kDocumentWriteEvaluator{"DocumentWriteEvaluator",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Throttle tasks in Blink background timer queues based on CPU budgets
-// for the background tab. Bug: https://crbug.com/639852.
-const base::Feature kExpensiveBackgroundTimerThrottling{
-    "ExpensiveBackgroundTimerThrottling", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables the Feature Policy framework for granting and removing access to
 // other features through HTTP headers.
 const base::Feature kFeaturePolicy{"FeaturePolicy",

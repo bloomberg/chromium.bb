@@ -54,7 +54,6 @@ class BLINK_PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
   friend class WebViewSchedulerImpl;
 
   void DetachFromWebViewScheduler();
-  void RemoveTimerQueueFromBackgroundTimeBudgetPool();
   void ApplyPolicyToTimerQueue();
   bool ShouldThrottleTimers() const;
   void UpdateTimerThrottling(bool was_throttled);

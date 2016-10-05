@@ -132,7 +132,6 @@ class WebRuntimeFeatures {
   BLINK_EXPORT static void enableAutoplayMutedVideos(bool);
   BLINK_EXPORT static void enableTimerThrottlingForBackgroundTabs(bool);
   BLINK_EXPORT static void enableTimerThrottlingForHiddenFrames(bool);
-  BLINK_EXPORT static void enableExpensiveBackgroundTimerThrottling(bool);
   BLINK_EXPORT static void enableCanvas2dDynamicRenderingModeSwitching(bool);
   BLINK_EXPORT static void enableSendBeaconThrowForBlobWithNonSimpleType(bool);
 

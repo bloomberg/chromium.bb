@@ -15532,14 +15532,6 @@ read aloud to screenreader users to announce that a completion is available.">
     <message name="IDS_MEDIA_REMOTING_EXIT_FULL_SCREEN_BUTTON" desc="A button on a full screened tab, which, on click, will exit full screen mode.">
       Exit Full Screen
     </message>
-
-    <!-- Expensive background timer throttling flag -->
-    <message name="IDS_FLAGS_EXPENSIVE_BACKGROUND_TIMER_THROTTLING_NAME" desc="Name for the flag to enable expensive background timer throttling">
-      Throttle expensive background timers
-    </message>
-    <message name="IDS_FLAGS_EXPENSIVE_BACKGROUND_TIMER_THROTTLING_DESCRIPTION" desc="Description for the flag to enable expensive background timer throttling">
-      Enables intervention to limit CPU usage of background timers to 1%.
-    </message>
   </messages>
  </release>
 </grit>
