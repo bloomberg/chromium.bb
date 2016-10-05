@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<meta charset=utf-8>
+<title>Read-only interface type tests</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../imported/wpt/web-animations/testcommon.js"></script>
+<body>
+<script>
+"use strict";
+
+// TODO(suzyh): Upstream these tests to W3C web platform tests
+test(function(t) {
+  var target = createDiv(t);
+  var effect = new KeyframeEffect(target, null);
+  assert_class_string(effect, "KeyframeEffect");
+  assert_class_string(effect.timing, "AnimationEffectTiming");
+}, "KeyframeEffect constructor creates and exposes an AnimationEffectTiming"
+   + " object");
+
+test(function(t) {
+  var target = createDiv(t);
+  var effect = new KeyframeEffectReadOnly(target, null);
+  assert_class_string(effect, "KeyframeEffectReadOnly");
+  assert_class_string(effect.timing, "AnimationEffectTimingReadOnly");
+}, "KeyframeEffectReadOnly constructor creates and exposes an"
+   + " AnimationEffectTimingReadOnly object");
+</script>
+</body>
