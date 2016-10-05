@@ -1077,8 +1077,7 @@ bool FocusController::advanceFocusInDocumentOrder(
     newDocument.updateStyleAndLayoutIgnorePendingStylesheets();
 
     Position position = firstPositionInOrBeforeNode(element);
-    VisibleSelection newSelection =
-        createVisibleSelectionDeprecated(position, position);
+    VisibleSelection newSelection = createVisibleSelection(position, position);
     frame->selection().setSelection(newSelection);
   }
 
