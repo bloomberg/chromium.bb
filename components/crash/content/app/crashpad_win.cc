@@ -6,12 +6,15 @@
 
 #include <memory>
 
+#include "base/debug/crash_logging.h"
 #include "base/environment.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/crash/content/app/crash_reporter_client.h"
@@ -162,7 +165,15 @@ MSVC_PUSH_DISABLE_WARNING(4748)
 
 // Note that this function must be in a namespace for the [Renderer hang]
 // annotations to work on the crash server.
-DWORD WINAPI DumpProcessWithoutCrashThread(void*) {
+DWORD WINAPI DumpProcessWithoutCrashThread(void* crash_keys_str) {
+  base::StringPairs crash_keys;
+  if (crash_keys_str && base::SplitStringIntoKeyValuePairs(
+                            reinterpret_cast<const char*>(crash_keys_str), ':',
+                            ',', &crash_keys)) {
+    for (const auto& crash_key : crash_keys) {
+      base::debug::SetCrashKeyValue(crash_key.first, crash_key.second);
+    }
+  }
   DumpProcessWithoutCrash();
   return 0;
 }
@@ -201,11 +212,17 @@ int __declspec(dllexport) CrashForException(
 }
 
 // Injects a thread into a remote process to dump state when there is no crash.
+// |serialized_crash_keys| is a nul terminated string that represents serialized
+// crash keys sent from the browser. Keys and values are separated by ':', and
+// key/value pairs are separated by ','. All keys should be previously
+// registered as crash keys.
 HANDLE __declspec(dllexport) __cdecl InjectDumpProcessWithoutCrash(
-    HANDLE process) {
+    HANDLE process,
+    void* serialized_crash_keys) {
   return CreateRemoteThread(
       process, nullptr, 0,
-      crash_reporter::internal::DumpProcessWithoutCrashThread, 0, 0, nullptr);
+      crash_reporter::internal::DumpProcessWithoutCrashThread,
+      serialized_crash_keys, 0, nullptr);
 }
 
 HANDLE __declspec(dllexport) __cdecl InjectDumpForHangDebugging(

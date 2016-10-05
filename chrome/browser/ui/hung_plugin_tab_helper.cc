@@ -85,7 +85,8 @@ void DumpRenderersInBlockingPool(OwnedHandleVector* renderer_handles) {
 
 void DumpAndTerminatePluginInBlockingPool(
     base::win::ScopedHandle* plugin_handle) {
-  CrashDumpAndTerminateHungChildProcess(plugin_handle->Get());
+  base::StringPairs crash_keys;
+  CrashDumpAndTerminateHungChildProcess(plugin_handle->Get(), crash_keys);
 }
 
 #endif  // defined(OS_WIN)

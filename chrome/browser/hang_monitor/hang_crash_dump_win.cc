@@ -4,7 +4,9 @@
 
 #include "chrome/browser/hang_monitor/hang_crash_dump_win.h"
 
+#include "base/debug/crash_logging.h"
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "content/public/common/result_codes.h"
 
@@ -18,11 +20,13 @@ static const int kGenerateDumpTimeoutMS = 10000;
 
 }  // namespace
 
-void CrashDumpAndTerminateHungChildProcess(HANDLE hprocess) {
+void CrashDumpAndTerminateHungChildProcess(
+    HANDLE hprocess,
+    const base::StringPairs& additional_child_crash_keys) {
   // Before terminating the process we try collecting a dump. Which
   // a transient thread in the child process will do for us.
-  typedef HANDLE (__cdecl *DumpFunction)(HANDLE);
-  static DumpFunction request_dump = NULL;
+  typedef HANDLE(__cdecl * DumpFunction)(HANDLE, void*);
+  static DumpFunction request_dump = nullptr;
   if (!request_dump) {
     request_dump = reinterpret_cast<DumpFunction>(
         GetProcAddress(GetModuleHandle(chrome::kChromeElfDllName),
@@ -32,7 +36,31 @@ void CrashDumpAndTerminateHungChildProcess(HANDLE hprocess) {
   }
 
   if (request_dump) {
-    HANDLE remote_thread = request_dump(hprocess);
+    void* remote_memory = nullptr;
+    bool send_remote_memory = false;
+    std::vector<std::string> keys;
+    for (const auto& crash_key : additional_child_crash_keys) {
+      DCHECK(base::debug::LookupCrashKey(crash_key.first));
+      std::string serialized_key = crash_key.first;
+      serialized_key.append(":");
+      serialized_key.append(crash_key.second);
+      keys.push_back(serialized_key);
+    }
+    std::string serialized_keys = base::JoinString(keys, ",");
+
+    if (!serialized_keys.empty()) {
+      size_t data_length = serialized_keys.length() + 1;
+      remote_memory = VirtualAllocEx(hprocess, nullptr, data_length,
+                                     MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+      if (remote_memory) {
+        send_remote_memory =
+            !!WriteProcessMemory(hprocess, remote_memory,
+                                 serialized_keys.c_str(), data_length, nullptr);
+      }
+    }
+
+    HANDLE remote_thread =
+        request_dump(hprocess, send_remote_memory ? remote_memory : nullptr);
     DCHECK(remote_thread) << "Failed creating remote thread: error " <<
         GetLastError();
     if (remote_thread) {

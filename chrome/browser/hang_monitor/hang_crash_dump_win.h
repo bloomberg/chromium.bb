@@ -7,9 +7,15 @@
 
 #include <windows.h>
 
+#include "base/strings/string_split.h"
+
 // Causes the given child process to generate a crash dump and terminates the
-// process.
-void CrashDumpAndTerminateHungChildProcess(HANDLE hprocess);
+// process. |additional_serialized_crash_keys| are additional key/value string
+// pairs that will be logged in the child crash report. The crash keys provided
+// must be preregistered before calling this method.
+void CrashDumpAndTerminateHungChildProcess(
+    HANDLE hprocess,
+    const base::StringPairs& additional_crash_keys);
 
 // TODO(yzshen): Remove when enough information is collected and the hang rate
 // of pepper/renderer processes is reduced.
