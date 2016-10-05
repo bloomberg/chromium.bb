@@ -2,7 +2,6 @@ include_rules = [
     "+bindings",
     "+core",
     "+device/geolocation/public/interfaces",
-    "+heap",
     "-modules",
     "+modules/EventModules.h",
     "+modules/ModulesExport.h",

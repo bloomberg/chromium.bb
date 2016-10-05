@@ -3,7 +3,6 @@ include_rules = [
     "+bindings",
     "+core",
     "+gin/public",
-    "+heap",
     "+modules",
     "+painting",
     "+platform",

@@ -3,5 +3,4 @@ include_rules = [
     # directories and files instead of writing 'base/'.
     "+base/debug/alias.h",
     "+base/sys_info.h",
-    "+heap",
 ]
