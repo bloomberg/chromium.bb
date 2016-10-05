@@ -702,8 +702,13 @@ void BrowsingDataRemover::RemoveImpl(
     }
 
     // Clear the history information (last launch time and origin URL) of any
-    // registered webapps.
-    webapp_registry_->ClearWebappHistoryForUrls(filter);
+    // registered webapps. The webapp_registry makes a JNI call into a Java-side
+    // AsyncTask, so don't wait for the reply.
+    waiting_for_clear_webapp_history_ = true;
+    webapp_registry_->ClearWebappHistoryForUrls(
+        filter,
+        base::Bind(&BrowsingDataRemover::OnClearedWebappHistory,
+                   weak_ptr_factory_.GetWeakPtr()));
 #endif
 
     data_reduction_proxy::DataReductionProxySettings*
@@ -1155,9 +1160,15 @@ void BrowsingDataRemover::RemoveImpl(
   }
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
-  // Clear all data associated with registered webapps.
-  if (remove_mask & REMOVE_WEBAPP_DATA)
-    webapp_registry_->UnregisterWebappsForUrls(filter);
+  if (remove_mask & REMOVE_WEBAPP_DATA) {
+    // Clear all data associated with registered webapps. The webapp_registry
+    // makes a JNI call into a Java-side AsyncTask, so don't wait for the reply.
+    waiting_for_clear_webapp_data_ = true;
+    webapp_registry_->UnregisterWebappsForUrls(
+        filter,
+        base::Bind(&BrowsingDataRemover::OnClearedWebappData,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
 
   // For now we're considering offline pages as cache, so if we're removing
   // cache we should remove offline pages as well.
@@ -1265,6 +1276,8 @@ bool BrowsingDataRemover::AllDone() {
          !waiting_for_clear_pnacl_cache_ &&
 #if BUILDFLAG(ANDROID_JAVA_UI)
          !waiting_for_clear_precache_history_ &&
+         !waiting_for_clear_webapp_data_ &&
+         !waiting_for_clear_webapp_history_ &&
          !waiting_for_clear_offline_page_data_ &&
 #endif
 #if defined(ENABLE_WEBRTC)
@@ -1520,6 +1533,18 @@ void BrowsingDataRemover::OnClearedWebRtcLogs() {
 void BrowsingDataRemover::OnClearedPrecacheHistory() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   waiting_for_clear_precache_history_ = false;
+  NotifyIfDone();
+}
+
+void BrowsingDataRemover::OnClearedWebappData() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  waiting_for_clear_webapp_data_ = false;
+  NotifyIfDone();
+}
+
+void BrowsingDataRemover::OnClearedWebappHistory() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  waiting_for_clear_webapp_history_ = false;
   NotifyIfDone();
 }
 

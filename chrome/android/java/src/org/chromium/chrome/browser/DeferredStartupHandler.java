@@ -48,7 +48,6 @@ import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
 import org.chromium.chrome.browser.webapps.WebApkVersionManager;
-import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.content.browser.ChildProcessLauncher;
 
 import java.util.ArrayList;
@@ -174,10 +173,6 @@ public class DeferredStartupHandler {
         mDeferredTasks.add(new Runnable() {
             @Override
             public void run() {
-                // Initialize the WebappRegistry if it's not already initialized. Must be done on
-                // the main thread.
-                WebappRegistry.getInstance();
-
                 // Punt all tasks that may block on disk off onto a background thread.
                 initAsyncDiskTask();
 
@@ -281,20 +276,10 @@ public class DeferredStartupHandler {
                             SystemClock.uptimeMillis() - asyncTaskStartTime,
                             TimeUnit.MILLISECONDS);
 
-                    // Warm up all web app shared prefs. This must be run after the WebappRegistry
-                    // instance is initialized.
-                    WebappRegistry.warmUpSharedPrefs();
-
                     return null;
                 } finally {
                     TraceEvent.end("ChromeBrowserInitializer.onDeferredStartup.doInBackground");
                 }
-            }
-
-            @Override
-            protected void onPostExecute(Void params) {
-                // Must be run on the UI thread after the WebappRegistry has been completely warmed.
-                WebappRegistry.getInstance().unregisterOldWebapps(System.currentTimeMillis());
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }

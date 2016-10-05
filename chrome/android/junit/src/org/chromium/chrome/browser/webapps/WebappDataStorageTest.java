@@ -13,21 +13,19 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Config;
-import org.robolectric.shadows.ShadowLooper;
-
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.testing.local.BackgroundShadowAsyncTask;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowLooper;
 
 import java.util.concurrent.TimeUnit;
 
@@ -77,10 +75,10 @@ public class WebappDataStorageTest {
     public void setUp() throws Exception {
         ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
         mSharedPreferences = ContextUtils.getApplicationContext().getSharedPreferences(
-                WebappDataStorage.SHARED_PREFS_FILE_PREFIX + "test", Context.MODE_PRIVATE);
+                "webapp_test", Context.MODE_PRIVATE);
 
         // Set the last_used as if the web app had been registered by WebappRegistry.
-        mSharedPreferences.edit().putLong(WebappDataStorage.KEY_LAST_USED, 0).apply();
+        mSharedPreferences.edit().putLong("last_used", 0).apply();
 
         mCallbackCalled = false;
     }
@@ -113,9 +111,13 @@ public class WebappDataStorageTest {
     @Test
     @Feature({"Webapp"})
     public void testLastUsedRetrieval() throws Exception {
-        long lastUsed = 100;
-        mSharedPreferences.edit().putLong(WebappDataStorage.KEY_LAST_USED, lastUsed).apply();
-        assertEquals(lastUsed, new WebappDataStorage("test").getLastUsedTime());
+        mSharedPreferences.edit().putLong(WebappDataStorage.KEY_LAST_USED, 100L).apply();
+
+        WebappDataStorage.getLastUsedTime("test", new FetchCallback<Long>(new Long(100L)));
+        BackgroundShadowAsyncTask.runBackgroundTasks();
+        ShadowLooper.runUiThreadTasks();
+
+        assertTrue(mCallbackCalled);
     }
 
     @Test
@@ -125,9 +127,9 @@ public class WebappDataStorageTest {
         mSharedPreferences.edit()
                 .putString(WebappDataStorage.KEY_SPLASH_ICON,
                         ShortcutHelper.encodeBitmapAsString(expected))
-                .apply();
-        WebappDataStorage.open("test").getSplashScreenImage(
-                new WebappDataStorage.FetchCallback<Bitmap>() {
+                .commit();
+        WebappDataStorage.open("test")
+                .getSplashScreenImage(new WebappDataStorage.FetchCallback<Bitmap>() {
                     @Override
                     public void onDataRetrieved(Bitmap actual) {
                         mCallbackCalled = true;
@@ -150,7 +152,6 @@ public class WebappDataStorageTest {
         final Bitmap expectedImage = createBitmap();
         WebappDataStorage.open("test").updateSplashScreenImage(expectedImage);
         BackgroundShadowAsyncTask.runBackgroundTasks();
-        ShadowLooper.runUiThreadTasks();
 
         assertEquals(ShortcutHelper.encodeBitmapAsString(expectedImage),
                 mSharedPreferences.getString(WebappDataStorage.KEY_SPLASH_ICON, null));
@@ -159,17 +160,27 @@ public class WebappDataStorageTest {
     @Test
     @Feature({"Webapp"})
     public void testScopeRetrieval() throws Exception {
-        String scope = "http://drive.google.com";
+        final String scope = "http://drive.google.com";
         mSharedPreferences.edit().putString(WebappDataStorage.KEY_SCOPE, scope).apply();
-        assertEquals(scope, new WebappDataStorage("test").getScope());
+
+        WebappDataStorage.getScope("test", new FetchCallback<String>(scope));
+        BackgroundShadowAsyncTask.runBackgroundTasks();
+        ShadowLooper.runUiThreadTasks();
+
+        assertTrue(mCallbackCalled);
     }
 
     @Test
     @Feature({"Webapp"})
     public void testUrlRetrieval() throws Exception {
-        String url = "https://www.google.com";
+        final String url = "https://www.google.com";
         mSharedPreferences.edit().putString(WebappDataStorage.KEY_URL, url).apply();
-        assertEquals(url, new WebappDataStorage("test").getUrl());
+
+        WebappDataStorage.getUrl("test", new FetchCallback<String>(url));
+        BackgroundShadowAsyncTask.runBackgroundTasks();
+        ShadowLooper.runUiThreadTasks();
+
+        assertTrue(mCallbackCalled);
     }
 
     @Test
@@ -180,10 +191,14 @@ public class WebappDataStorageTest {
 
         // Opening a data storage doesn't count as a launch.
         WebappDataStorage storage = WebappDataStorage.open("test");
+        BackgroundShadowAsyncTask.runBackgroundTasks();
+        ShadowLooper.runUiThreadTasks();
         assertTrue(!storage.wasLaunchedRecently());
 
         // When the last used time is updated, then it is a launch.
         storage.updateLastUsedTime();
+        BackgroundShadowAsyncTask.runBackgroundTasks();
+        ShadowLooper.runUiThreadTasks();
         assertTrue(storage.wasLaunchedRecently());
 
         long lastUsedTime = mSharedPreferences.getLong(WebappDataStorage.KEY_LAST_USED,
@@ -248,6 +263,8 @@ public class WebappDataStorageTest {
 
         WebappDataStorage storage = WebappDataStorage.open("test");
         storage.updateFromShortcutIntent(shortcutIntent);
+        BackgroundShadowAsyncTask.runBackgroundTasks();
+        ShadowLooper.runUiThreadTasks();
 
         assertEquals(action, mSharedPreferences.getString(WebappDataStorage.KEY_ACTION, null));
         assertEquals(url, mSharedPreferences.getString(WebappDataStorage.KEY_URL, null));
@@ -295,6 +312,8 @@ public class WebappDataStorageTest {
 
         // Update again from the intent and ensure that the data is restored.
         storage.updateFromShortcutIntent(shortcutIntent);
+        BackgroundShadowAsyncTask.runBackgroundTasks();
+        ShadowLooper.runUiThreadTasks();
 
         assertEquals(action, mSharedPreferences.getString(WebappDataStorage.KEY_ACTION, null));
         assertEquals(url, mSharedPreferences.getString(WebappDataStorage.KEY_URL, null));

@@ -14,7 +14,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge.OnClearBrowsingDataListener;
-import org.chromium.chrome.browser.webapps.TestFetchStorageCallback;
+import org.chromium.chrome.browser.webapps.WebappDataStorage;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.test.util.Criteria;
@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Integration tests for the native BrowsingDataRemover.
@@ -66,12 +67,18 @@ public class BrowsingDataRemoverIntegrationTest extends ChromeActivityTestCaseBa
                 return ShortcutHelper.createWebappShortcutIntentForTesting(webappId, webappUrl);
             }
         };
-
         final Intent shortcutIntent = shortcutIntentTask.execute().get();
-        TestFetchStorageCallback callback = new TestFetchStorageCallback();
-        WebappRegistry.getInstance().register(webappId, callback);
-        callback.waitForCallback(0);
-        callback.getStorage().updateFromShortcutIntent(shortcutIntent);
+
+        WebappRegistry.registerWebapp(
+                webappId, new WebappRegistry.FetchWebappDataStorageCallback() {
+                    @Override
+                    public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
+                        storage.updateFromShortcutIntent(shortcutIntent);
+                        mCallbackCalled = true;
+                    }
+                });
+
+        CriteriaHelper.pollUiThread(new CallbackCriteria());
     }
 
     /**
@@ -91,7 +98,16 @@ public class BrowsingDataRemoverIntegrationTest extends ChromeActivityTestCaseBa
         for (final Map.Entry<String, String> app : apps.entrySet()) {
             registerWebapp(app.getKey(), app.getValue());
         }
-        assertEquals(apps.keySet(), WebappRegistry.getRegisteredWebappIdsForTesting());
+
+        // Wait for the registration to finish.
+        WebappRegistry.getRegisteredWebappIds(new WebappRegistry.FetchCallback() {
+            @Override
+            public void onWebappIdsRetrieved(Set<String> ids) {
+                assertEquals(apps.keySet(), ids);
+                mCallbackCalled = true;
+            }
+        });
+        CriteriaHelper.pollUiThread(new CallbackCriteria());
 
         // Clear cookies and site data excluding the registrable domain "google.com".
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -115,8 +131,14 @@ public class BrowsingDataRemoverIntegrationTest extends ChromeActivityTestCaseBa
         CriteriaHelper.pollUiThread(new CallbackCriteria());
 
         // The last two webapps should have been unregistered.
-        assertEquals(new HashSet<String>(Arrays.asList("webapp1")),
-                WebappRegistry.getRegisteredWebappIdsForTesting());
+        WebappRegistry.getRegisteredWebappIds(new WebappRegistry.FetchCallback() {
+            @Override
+            public void onWebappIdsRetrieved(Set<String> ids) {
+                assertEquals(new HashSet<String>(Arrays.asList("webapp1")), ids);
+                mCallbackCalled = true;
+            }
+        });
+        CriteriaHelper.pollUiThread(new CallbackCriteria());
 
         // Clear cookies and site data with no url filter.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -136,6 +158,13 @@ public class BrowsingDataRemoverIntegrationTest extends ChromeActivityTestCaseBa
         CriteriaHelper.pollUiThread(new CallbackCriteria());
 
         // All webapps should have been unregistered.
-        assertTrue(WebappRegistry.getRegisteredWebappIdsForTesting().isEmpty());
+        WebappRegistry.getRegisteredWebappIds(new WebappRegistry.FetchCallback() {
+            @Override
+            public void onWebappIdsRetrieved(Set<String> ids) {
+                assertTrue(ids.isEmpty());
+                mCallbackCalled = true;
+            }
+        });
+        CriteriaHelper.pollUiThread(new CallbackCriteria());
     }
 }
