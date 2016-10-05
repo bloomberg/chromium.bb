@@ -425,15 +425,15 @@ Polymer({
 
   /**
    * A handler for activating one of the menu action items.
-   * @param {!{model: !{item: !{origin: string}},
-   *           detail: !{selected: string}}} event
+   * @param {!{model: !{item: !{origin: string}}}} event
+   * @param {string} action The permission to set (Allow, Block, SessionOnly,
+   *     etc).
    * @private
    */
-  onActionMenuIronActivate_: function(event) {
+  onActionMenuActivate_: function(event, action) {
     var origin = event.model.item.origin;
     var incognito = event.model.item.incognito;
     var embeddingOrigin = event.model.item.embeddingOrigin;
-    var action = event.detail.selected;
     if (action == settings.PermissionValues.DEFAULT) {
       this.browserProxy.resetCategoryPermissionForOrigin(
           origin, embeddingOrigin, this.category, incognito);
@@ -441,6 +441,26 @@ Polymer({
       this.browserProxy.setCategoryPermissionForOrigin(
           origin, embeddingOrigin, this.category, action, incognito);
     }
+  },
+
+  /** @private */
+  onAllowTap_: function(event) {
+    this.onActionMenuActivate_(event, settings.PermissionValues.ALLOW);
+  },
+
+  /** @private */
+  onBlockTap_: function(event) {
+    this.onActionMenuActivate_(event, settings.PermissionValues.BLOCK);
+  },
+
+  /** @private */
+  onSessionOnlyTap_: function(event) {
+    this.onActionMenuActivate_(event, settings.PermissionValues.SESSION_ONLY);
+  },
+
+  /** @private */
+  onResetTap_: function(event) {
+    this.onActionMenuActivate_(event, settings.PermissionValues.DEFAULT);
   },
 
   /**

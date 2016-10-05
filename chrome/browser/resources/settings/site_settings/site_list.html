@@ -1,13 +1,11 @@
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-dropdown/iron-dropdown.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-submenu.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-menu-button/paper-menu-button.html">
 <link rel="import" href="/i18n_setup.html">
 <link rel="import" href="/icons.html">
 <link rel="import" href="/route.html">
@@ -20,10 +18,8 @@
 <dom-module id="site-list">
   <template>
     <style include="settings-shared">
-      paper-menu-button {
+      paper-icon-button {
         left: 8px;
-        margin: 0;
-        padding: 0;
         right: 8px;
       }
 
@@ -60,38 +56,34 @@
               <iron-icon icon="[[computeIconControlledBy_(item)]]"></iron-icon>
             </template>
 
-            <paper-menu-button hidden="[[!shouldShowMenu_(item.source)]]"
-                horizontal-align="right">
-              <paper-icon-button icon="cr:more-vert" class="dropdown-trigger">
-              </paper-icon-button>
-              <paper-menu id="actionMenu" class="dropdown-content"
-                  on-iron-activate="onActionMenuIronActivate_"
-                  attr-for-selected="menu-value">
-                <paper-item
-                    hidden="[[!showAllowAction_]]" actionable
-                    menu-value$="[[PermissionValues.ALLOW]]">
-                  $i18n{siteSettingsActionAllow}
-                </paper-item>
-                <paper-item
-                    hidden="[[!showBlockAction_]]" actionable
-                    menu-value$="[[PermissionValues.BLOCK]]">
-                  $i18n{siteSettingsActionBlock}
-                </paper-item>
-                <paper-item
-                    hidden="[[!showSessionOnlyActionForSite_(item)]]" actionable
-                    menu-value$="[[PermissionValues.SESSION_ONLY]]">
-                  $i18n{siteSettingsActionSessionOnly}
-                </paper-item>
-                <paper-item
-                    menu-value$="[[PermissionValues.DEFAULT]]" actionable>
-                  $i18n{siteSettingsActionReset}
-                </paper-item>
-              </paper-menu>
-            </paper-menu-button>
-            <div on-tap="onOriginTap_" actionable>
-              <button class="icon-arrow-right" is="paper-icon-button-light">
-              </button>
-            </div>
+            <paper-icon-button id="dots" icon="cr:more-vert" toggles
+                  active="{{item.menuOpened}}"
+                  hidden="[[isExceptionControlled_(item.source)]]">
+            </paper-icon-button>
+            <template is="dom-if" if="[[item.menuOpened]]">
+              <iron-dropdown vertical-align="auto" horizontal-align="right"
+                  opened="{{item.menuOpened}}">
+                <div class="dropdown-content">
+                  <button class="dropdown-item" role="option" id="allow"
+                      on-tap="onAllowTap_" hidden$="[[!showAllowAction_]]">
+                    $i18n{siteSettingsActionAllow}
+                  </button>
+                  <button class="dropdown-item" role="option" id="block"
+                      on-tap="onBlockTap_" hidden$="[[!showBlockAction_]]">
+                    $i18n{siteSettingsActionBlock}
+                  </button>
+                  <button class="dropdown-item" role="option" id="sessionOnly"
+                      on-tap="onSessionOnlyTap_"
+                      hidden$="[[!showSessionOnlyActionForSite_(item)]]">
+                    $i18n{siteSettingsActionSessionOnly}
+                  </button>
+                  <button class="dropdown-item" role="option" id="reset"
+                      on-tap="onResetTap_">
+                    $i18n{siteSettingsActionReset}
+                  </button>
+                </div>
+              </iron-dropdown>
+            </template>
           </div>
         </template>
 

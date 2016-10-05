@@ -327,7 +327,19 @@ cr.define('site_list', function() {
        */
       function getMenuItems(listContainer, index) {
         return listContainer.children[index].querySelectorAll(
-            'paper-menu-button paper-item:not([hidden])');
+            'iron-dropdown .dropdown-item:not([hidden])');
+      }
+
+      /**
+       * Opens the action menu for a particular element in the list.
+       * @param {number} index The index of the child element (which site) to
+       *     open the action menu for.
+       */
+      function openActionMenu(index) {
+        var item = testElement.$.listContainer.children[index];
+        var dots = item.querySelector('paper-icon-button');
+        MockInteractions.tap(dots);
+        Polymer.dom.flush();
       }
 
       /**
@@ -416,6 +428,7 @@ cr.define('site_list', function() {
               assertEquals(
                   settings.PermissionValues.ALLOW, testElement.categorySubtype);
               Polymer.dom.flush();  // Populates action menu.
+              openActionMenu(0);
               assertMenu(['Block', 'Remove'], testElement);
               assertEquals('Allow - 2', testElement.$.header.innerText.trim());
 
@@ -447,6 +460,7 @@ cr.define('site_list', function() {
               assertEquals(
                   settings.PermissionValues.BLOCK, testElement.categorySubtype);
               Polymer.dom.flush();  // Populates action menu.
+              openActionMenu(0);
               assertMenu(['Allow', 'Remove'], testElement);
               assertEquals('Block - 2', testElement.$.header.innerText.trim());
 
@@ -475,6 +489,7 @@ cr.define('site_list', function() {
               assertEquals(settings.PermissionValues.SESSION_ONLY,
                   testElement.categorySubtype);
               Polymer.dom.flush();  // Populates action menu.
+              openActionMenu(0);
               assertMenu(['Allow', 'Block', 'Remove'], testElement);
               assertEquals('Clear on exit - 1',
                   testElement.$.header.innerText.trim());
@@ -505,6 +520,7 @@ cr.define('site_list', function() {
               assertEquals(settings.PermissionValues.BLOCK,
                   testElement.categorySubtype);
               Polymer.dom.flush();  // Populates action menu.
+              openActionMenu(0);
               // 'Clear on exit' is visible as this is not an incognito item.
               assertMenu(['Allow', 'Clear on exit', 'Remove'], testElement);
               assertEquals('Block - 1',
@@ -541,12 +557,14 @@ cr.define('site_list', function() {
               assertEquals(settings.PermissionValues.ALLOW,
                   testElement.categorySubtype);
               Polymer.dom.flush();  // Populates action menu.
+              openActionMenu(0);
               // 'Clear on exit' is hidden for incognito items.
               assertMenu(['Block', 'Remove'], testElement);
               assertEquals('Allow - 2',
                   testElement.$.header.innerText.trim());
 
               // Select 'Remove' from menu on 'foo.com'.
+              openActionMenu(1);
               var menuItems = getMenuItems(testElement.$.listContainer, 1);
               assertTrue(!!menuItems);
               MockInteractions.tap(menuItems[1]);
@@ -779,6 +797,7 @@ cr.define('site_list', function() {
         return browserProxy.whenCalled('getExceptionList').then(function(
             contentType) {
           Polymer.dom.flush();
+          openActionMenu(0);
           var menuItems = getMenuItems(testElement.$.listContainer, 0);
           assertTrue(!!menuItems);
           MockInteractions.tap(menuItems[0]);
@@ -792,6 +811,7 @@ cr.define('site_list', function() {
         return browserProxy.whenCalled('getExceptionList').then(function(
             contentType) {
           Polymer.dom.flush();
+          openActionMenu(0);
           assertMenu(['Allow', 'Remove'], testElement);
 
           var menuItems = getMenuItems(testElement.$.listContainer, 0);
