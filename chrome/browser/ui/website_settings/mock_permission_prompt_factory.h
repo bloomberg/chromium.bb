@@ -41,6 +41,10 @@ class MockPermissionPromptFactory {
     response_type_ = type;
   }
 
+  PermissionRequestManager::AutoResponseType response_type() {
+    return response_type_;
+  }
+
   // If the current view is visible.
   bool is_visible();
   // Number of times |Show| was called on any bubble.

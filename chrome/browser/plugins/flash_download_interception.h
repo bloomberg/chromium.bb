@@ -23,7 +23,7 @@ class GURL;
 // Chrome already ships with it. Note that this is an UI thread class.
 class FlashDownloadInterception {
  public:
-  static void InterceptFlashDownloadNavigation(content::WebContents* source);
+  static void ShowRunFlashPrompt(content::WebContents* web_contents);
   static bool ShouldStopFlashDownloadAction(
       HostContentSettingsMap* host_content_settings_map,
       const GURL& source_url,
@@ -34,7 +34,7 @@ class FlashDownloadInterception {
       content::NavigationHandle* handle);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(FlashDownloadInterception);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(FlashDownloadInterception);
 };
 
 #endif  // CHROME_BROWSER_PLUGINS_FLASH_DOWNLOAD_INTERCEPTION_H_

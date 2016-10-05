@@ -11,23 +11,33 @@
     window.domAutomationController.send(true);
   }
 
-  function flashIsEnabled() {
-    var plugin = document.getElementById('flash-object');
+  function flashIsEnabledForPlugin(plugin) {
     plugin.addEventListener('message', function handleEvent(event) {
-      if (event.data.source === 'getPowerSaverStatusResponse') {
+     if (event.data.source === 'getPowerSaverStatusResponse') {
         plugin.removeEventListener('message', handleEvent);
         window.domAutomationController.send(true);
       }
     });
-    if (plugin.postMessage) {
+    if (plugin.postMessage)
       plugin.postMessage('getPowerSaverStatus');
-    } else {
+    else
       window.domAutomationController.send(false);
-    }
+  }
+
+  function flashIsEnabled() {
+    flashIsEnabledForPlugin(document.getElementById('flash-object'));
+  }
+
+  function flashIsEnabledForPluginWithoutFallback() {
+    flashIsEnabledForPlugin(
+        document.getElementById('flash-object-no-fallback'));
   }
 </script>
 <body>
-  <object id="flash-object" name="plugin" data="test.swf"
+  <object id="flash-object-no-fallback" data="test.swf"
+      type="application/x-shockwave-flash" width="400" height="100">
+  </object>
+  <object id="flash-object" data="test.swf"
       type="application/x-shockwave-flash" width="400" height="100">
     Flash not supported.
     <br>

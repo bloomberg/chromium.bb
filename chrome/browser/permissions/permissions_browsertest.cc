@@ -30,8 +30,7 @@ void PermissionsBrowserTest::SetUpOnMainThread() {
 
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  ui_test_utils::NavigateToURL(browser(),
-                               embedded_test_server()->GetURL(test_url()));
+  ui_test_utils::NavigateToURL(browser(), GetTestUrl());
 }
 
 void PermissionsBrowserTest::TearDownOnMainThread() {
@@ -51,6 +50,10 @@ content::WebContents* PermissionsBrowserTest::GetWebContents() {
   return browser()->tab_strip_model()->GetActiveWebContents();
 }
 
+GURL PermissionsBrowserTest::GetTestUrl() {
+  return embedded_test_server()->GetURL(test_url());
+}
+
 void PermissionsBrowserTest::CommonFailsBeforeRequesting() {
   EXPECT_EQ(0, prompt_factory()->total_request_count());
   // Dismiss any prompts if they are shown when using the feature.
@@ -63,8 +66,8 @@ void PermissionsBrowserTest::CommonFailsIfDismissed() {
   prompt_factory()->set_response_type(PermissionRequestManager::DISMISS);
   TriggerPrompt();
 
-  EXPECT_EQ(1, prompt_factory()->total_request_count());
   EXPECT_FALSE(FeatureUsageSucceeds());
+  EXPECT_EQ(1, prompt_factory()->total_request_count());
 }
 
 void PermissionsBrowserTest::CommonFailsIfBlocked() {
@@ -72,8 +75,8 @@ void PermissionsBrowserTest::CommonFailsIfBlocked() {
   prompt_factory()->set_response_type(PermissionRequestManager::DENY_ALL);
   TriggerPrompt();
 
-  EXPECT_EQ(1, prompt_factory()->total_request_count());
   EXPECT_FALSE(FeatureUsageSucceeds());
+  EXPECT_EQ(1, prompt_factory()->total_request_count());
 }
 
 void PermissionsBrowserTest::CommonSucceedsIfAllowed() {
@@ -81,6 +84,6 @@ void PermissionsBrowserTest::CommonSucceedsIfAllowed() {
   prompt_factory()->set_response_type(PermissionRequestManager::ACCEPT_ALL);
   TriggerPrompt();
 
-  EXPECT_EQ(1, prompt_factory()->total_request_count());
   EXPECT_TRUE(FeatureUsageSucceeds());
+  EXPECT_EQ(1, prompt_factory()->total_request_count());
 }

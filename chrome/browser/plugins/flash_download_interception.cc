@@ -34,21 +34,21 @@ void DoNothing(blink::mojom::PermissionStatus result) {}
 bool InterceptNavigation(
     content::WebContents* source,
     const navigation_interception::NavigationParams& params) {
-  FlashDownloadInterception::InterceptFlashDownloadNavigation(source);
+  FlashDownloadInterception::ShowRunFlashPrompt(source);
   return true;
 }
 
 }  // namespace
 
 // static
-void FlashDownloadInterception::InterceptFlashDownloadNavigation(
-    content::WebContents* source) {
+void FlashDownloadInterception::ShowRunFlashPrompt(
+    content::WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   PermissionManager* manager = PermissionManager::Get(
-      Profile::FromBrowserContext(source->GetBrowserContext()));
+      Profile::FromBrowserContext(web_contents->GetBrowserContext()));
   manager->RequestPermission(
-      content::PermissionType::FLASH, source->GetMainFrame(),
-      source->GetLastCommittedURL(), true, base::Bind(&DoNothing));
+      content::PermissionType::FLASH, web_contents->GetMainFrame(),
+      web_contents->GetLastCommittedURL(), true, base::Bind(&DoNothing));
 }
 
 // static

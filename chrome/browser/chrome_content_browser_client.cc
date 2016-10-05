@@ -642,7 +642,7 @@ void HandleFlashDownloadActionOnUIThread(int render_process_id,
     return;
   WebContents* web_contents =
       WebContents::FromRenderFrameHost(render_frame_host);
-  FlashDownloadInterception::InterceptFlashDownloadNavigation(web_contents);
+  FlashDownloadInterception::ShowRunFlashPrompt(web_contents);
 }
 #endif  // defined(ENABLE_PLUGINS)
 
