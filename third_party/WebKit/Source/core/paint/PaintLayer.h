@@ -1189,8 +1189,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
 #ifndef NDEBUG
 // Outside the WebCore namespace for ease of invocation from gdb.
-void showLayerTree(const blink::PaintLayer*);
-void showLayerTree(const blink::LayoutObject*);
+CORE_EXPORT void showLayerTree(const blink::PaintLayer*);
+CORE_EXPORT void showLayerTree(const blink::LayoutObject*);
 #endif
 
 #endif  // Layer_h

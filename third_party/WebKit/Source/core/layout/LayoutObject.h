@@ -2487,13 +2487,13 @@ inline double adjustScrollForAbsoluteZoom(double value,
 
 #ifndef NDEBUG
 // Outside the blink namespace for ease of invocation from gdb.
-void showTree(const blink::LayoutObject*);
-void showLineTree(const blink::LayoutObject*);
-void showLayoutTree(const blink::LayoutObject* object1);
+CORE_EXPORT void showTree(const blink::LayoutObject*);
+CORE_EXPORT void showLineTree(const blink::LayoutObject*);
+CORE_EXPORT void showLayoutTree(const blink::LayoutObject* object1);
 // We don't make object2 an optional parameter so that showLayoutTree
 // can be called from gdb easily.
-void showLayoutTree(const blink::LayoutObject* object1,
-                    const blink::LayoutObject* object2);
+CORE_EXPORT void showLayoutTree(const blink::LayoutObject* object1,
+                                const blink::LayoutObject* object2);
 
 #endif
 
