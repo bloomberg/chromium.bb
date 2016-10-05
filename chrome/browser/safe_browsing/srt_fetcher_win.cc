@@ -716,6 +716,8 @@ void MaybeFetchSRT(Browser* browser, const base::Version& reporter_version) {
   new SRTFetcher(profile);
 }
 
+}  // namespace
+
 // This class tries to run a queue of reporters and react to their exit codes.
 // It schedules subsequent runs of the queue as needed, or retries as soon as a
 // browser is available when none is on first try.
@@ -775,26 +777,7 @@ class ReporterRunner : public chrome::BrowserListObserver {
     if (g_testing_delegate_)
       g_testing_delegate_->NotifyLaunchReady();
 
-    // Add switches for users who opted into extended Safe Browsing reporting.
-    // The invocation object is changed locally right before the actual process
-    // is launched because user status can change between this and the next run
-    // for this ReporterRunner object. For example, the ReporterDone() callback
-    // schedules the next run for a few days later, and the user might have
-    // changed settings in the meantime.
-    PrefService* local_state = g_browser_process->local_state();
-    if (next_invocation.BehaviourIsSupported(
-            SwReporterInvocation::BEHAVIOUR_ALLOW_SEND_REPORTER_LOGS) &&
-        local_state && ShouldSendReporterLogs(*local_state)) {
-      next_invocation.logs_upload_enabled = true;
-      AddSwitchesForExtendedReporterUser(&next_invocation);
-      // Set the local state value before the first attempt to run the
-      // reporter, because we only want to upload logs once in the window
-      // defined by |kDaysBetweenReporterLogsSent|. If we set with other local
-      // state values after the reporter runs, we could send logs again too
-      // quickly (for example, if Chrome stops before the reporter finishes).
-      local_state->SetInt64(prefs::kSwReporterLastTimeSentReport,
-                            base::Time::Now().ToInternalValue());
-    }
+    AppendInvocationSpecificSwitches(&next_invocation);
 
     // It's OK to simply |PostTaskAndReplyWithResult| so that
     // |LaunchAndWaitForExit| doesn't need to access |main_thread_task_runner_|
@@ -973,7 +956,37 @@ class ReporterRunner : public chrome::BrowserListObserver {
     return false;
   }
 
-  void AddSwitchesForExtendedReporterUser(SwReporterInvocation* invocation) {
+  // Appends switches to the next invocation that depend on the user current
+  // state with respect to opting into extended Safe Browsing reporting and
+  // metrics and crash reporting. The invocation object is changed locally right
+  // before the actual process is launched because user status can change
+  // between this and the next run for this ReporterRunner object. For example,
+  // the ReporterDone() callback schedules the next run for a few days later,
+  // and the user might have changed settings in the meantime.
+  void AppendInvocationSpecificSwitches(SwReporterInvocation* next_invocation) {
+    // Add switches for users who opted into extended Safe Browsing reporting.
+    PrefService* local_state = g_browser_process->local_state();
+    if (next_invocation->BehaviourIsSupported(
+            SwReporterInvocation::BEHAVIOUR_ALLOW_SEND_REPORTER_LOGS) &&
+        local_state && ShouldSendReporterLogs(*local_state)) {
+      next_invocation->logs_upload_enabled = true;
+      AddSwitchesForExtendedReportingUser(next_invocation);
+      // Set the local state value before the first attempt to run the
+      // reporter, because we only want to upload logs once in the window
+      // defined by |kDaysBetweenReporterLogsSent|. If we set with other local
+      // state values after the reporter runs, we could send logs again too
+      // quickly (for example, if Chrome stops before the reporter finishes).
+      local_state->SetInt64(prefs::kSwReporterLastTimeSentReport,
+                            base::Time::Now().ToInternalValue());
+    }
+
+    if (ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled())
+      next_invocation->command_line.AppendSwitch(kEnableCrashReporting);
+  }
+
+  // Adds switches to be sent to the Software Reporter when the user opted into
+  // extended Safe Browsing reporting and is not incognito.
+  void AddSwitchesForExtendedReportingUser(SwReporterInvocation* invocation) {
     invocation->command_line.AppendSwitch(kExtendedSafeBrowsingEnabledSwitch);
     invocation->command_line.AppendSwitchASCII(
         kChromeVersionSwitch, version_info::GetVersionNumber());
@@ -1006,8 +1019,6 @@ class ReporterRunner : public chrome::BrowserListObserver {
 };
 
 ReporterRunner* ReporterRunner::instance_ = nullptr;
-
-}  // namespace
 
 SwReporterInvocation::SwReporterInvocation()
     : command_line(base::CommandLine::NO_PROGRAM) {}

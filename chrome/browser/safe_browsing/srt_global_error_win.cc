@@ -53,7 +53,6 @@ const base::FilePath::CharType kExecutableExtension[] = L"exe";
 // A switch to add to the command line when executing the SRT.
 const char kChromePromptSwitch[] = "chrome-prompt";
 const char kChromeSystemInstallSwitch[] = "chrome-system-install";
-const char kEnableCrashReporting[] = "enable-crash-reporting";
 const char kUmaUserSwitch[] = "uma-user";
 
 void MaybeExecuteSRTFromBlockingPool(

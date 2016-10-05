@@ -12,6 +12,7 @@ namespace safe_browsing {
 
 const char kChromeVersionSwitch[] = "chrome-version";
 const char kChromeChannelSwitch[] = "chrome-channel";
+const char kEnableCrashReporting[] = "enable-crash-reporting";
 
 int ChannelAsInt() {
   switch (chrome::GetChannel()) {

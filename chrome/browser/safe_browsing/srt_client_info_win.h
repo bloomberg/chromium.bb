@@ -9,6 +9,7 @@ namespace safe_browsing {
 
 extern const char kChromeVersionSwitch[];
 extern const char kChromeChannelSwitch[];
+extern const char kEnableCrashReporting[];
 
 // Encodes Chrome's channel as an integer to be passed to the SRT on the command
 // line. The SRT binary expects to receive Chrome's channel encoded as:
