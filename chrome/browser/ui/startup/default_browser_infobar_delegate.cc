@@ -97,34 +97,24 @@ DefaultBrowserInfoBarDelegate::GetIdentifier() const {
   return DEFAULT_BROWSER_INFOBAR_DELEGATE;
 }
 
-int DefaultBrowserInfoBarDelegate::GetIconId() const {
-  return IDR_PRODUCT_LOGO_32;
-}
-
 gfx::VectorIconId DefaultBrowserInfoBarDelegate::GetVectorIconId() const {
-#if defined(OS_MACOSX) || defined(OS_ANDROID)
-  return gfx::VectorIconId::VECTOR_ICON_NONE;
-#else
   return gfx::VectorIconId::CHROME_PRODUCT;
-#endif
 }
 
 #if defined(OS_WIN)
 gfx::Image DefaultBrowserInfoBarDelegate::GetIcon() const {
   // Experiment for the chrome product icon used on the default browser
   // prompt.
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    std::string icon_color = variations::GetVariationParamValue(
-        kDefaultBrowserPromptStyle, "IconColor");
-    if (icon_color == "Colored") {
-      return ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-          IDR_PRODUCT_LOGO_16);
-    }
-    if ((icon_color == "Blue") && (GetInfoBarType() == WARNING_TYPE)) {
-      // WARNING_TYPE infobars use orange icons by default.
-      return gfx::Image(
-          gfx::CreateVectorIcon(GetVectorIconId(), 16, gfx::kGoogleBlue500));
-    }
+  std::string icon_color = variations::GetVariationParamValue(
+      kDefaultBrowserPromptStyle, "IconColor");
+  if (icon_color == "Colored") {
+    return ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+        IDR_PRODUCT_LOGO_16);
+  }
+  if ((icon_color == "Blue") && (GetInfoBarType() == WARNING_TYPE)) {
+    // WARNING_TYPE infobars use orange icons by default.
+    return gfx::Image(
+        gfx::CreateVectorIcon(GetVectorIconId(), 16, gfx::kGoogleBlue500));
   }
   return ConfirmInfoBarDelegate::GetIcon();
 }

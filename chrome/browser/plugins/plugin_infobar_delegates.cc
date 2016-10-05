@@ -30,6 +30,7 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/vector_icons_public.h"
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
 #include "chrome/browser/plugins/plugin_installer.h"
@@ -108,8 +109,8 @@ void OutdatedPluginInfoBarDelegate::InfoBarDismissed() {
   content::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Dismissed"));
 }
 
-int OutdatedPluginInfoBarDelegate::GetIconId() const {
-  return IDR_INFOBAR_PLUGIN_INSTALL;
+gfx::VectorIconId OutdatedPluginInfoBarDelegate::GetVectorIconId() const {
+  return gfx::VectorIconId::EXTENSION;
 }
 
 base::string16 OutdatedPluginInfoBarDelegate::GetMessageText() const {

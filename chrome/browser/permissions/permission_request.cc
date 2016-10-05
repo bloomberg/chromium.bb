@@ -12,6 +12,10 @@ gfx::VectorIconId PermissionRequest::GetVectorIconId() const {
   return gfx::VectorIconId::VECTOR_ICON_NONE;
 }
 
+int PermissionRequest::GetIconId() const {
+  return 0;
+}
+
 bool PermissionRequest::ShouldShowPersistenceToggle() const {
   return false;
 }

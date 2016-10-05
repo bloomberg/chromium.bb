@@ -30,6 +30,7 @@
 #include "content/public/common/process_type.h"
 #include "content/public/common/result_codes.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/vector_icons_public.h"
 
 #if defined(OS_WIN)
 #include "base/win/scoped_handle.h"
@@ -148,7 +149,7 @@ class HungPluginInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // ConfirmInfoBarDelegate:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
-  int GetIconId() const override;
+  gfx::VectorIconId GetVectorIconId() const override;
   base::string16 GetMessageText() const override;
   int GetButtons() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
@@ -193,8 +194,8 @@ HungPluginInfoBarDelegate::GetIdentifier() const {
   return HUNG_PLUGIN_INFOBAR_DELEGATE;
 }
 
-int HungPluginInfoBarDelegate::GetIconId() const {
-  return IDR_INFOBAR_PLUGIN_CRASHED;
+gfx::VectorIconId HungPluginInfoBarDelegate::GetVectorIconId() const {
+  return gfx::VectorIconId::EXTENSION_CRASHED;
 }
 
 base::string16 HungPluginInfoBarDelegate::GetMessageText() const {

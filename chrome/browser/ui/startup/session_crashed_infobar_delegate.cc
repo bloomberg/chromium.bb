@@ -15,7 +15,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/theme_resources.h"
 #include "components/infobars/core/infobar.h"
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
@@ -63,16 +62,8 @@ SessionCrashedInfoBarDelegate::GetIdentifier() const {
   return SESSION_CRASHED_INFOBAR_DELEGATE;
 }
 
-int SessionCrashedInfoBarDelegate::GetIconId() const {
-  return IDR_INFOBAR_RESTORE_SESSION;
-}
-
 gfx::VectorIconId SessionCrashedInfoBarDelegate::GetVectorIconId() const {
-#if defined(OS_MACOSX)
-  return gfx::VectorIconId::VECTOR_ICON_NONE;
-#else
   return gfx::VectorIconId::SAD_TAB;
-#endif
 }
 
 base::string16 SessionCrashedInfoBarDelegate::GetMessageText() const {

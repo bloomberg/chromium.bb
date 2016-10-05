@@ -50,7 +50,7 @@ class OutdatedPluginInfoBarDelegate : public ConfirmInfoBarDelegate,
   // ConfirmInfoBarDelegate:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   void InfoBarDismissed() override;
-  int GetIconId() const override;
+  gfx::VectorIconId GetVectorIconId() const override;
   base::string16 GetMessageText() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
   bool Accept() override;

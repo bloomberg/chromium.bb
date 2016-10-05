@@ -5,9 +5,9 @@
 #include "chrome/browser/download/download_permission_request.h"
 
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/theme_resources.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/vector_icons_public.h"
 
 DownloadPermissionRequest::DownloadPermissionRequest(
     base::WeakPtr<DownloadRequestLimiter::TabDownloadState> host)
@@ -19,8 +19,8 @@ DownloadPermissionRequest::DownloadPermissionRequest(
 
 DownloadPermissionRequest::~DownloadPermissionRequest() {}
 
-int DownloadPermissionRequest::GetIconId() const {
-  return IDR_INFOBAR_MULTIPLE_DOWNLOADS;
+gfx::VectorIconId DownloadPermissionRequest::GetVectorIconId() const {
+  return gfx::VectorIconId::FILE_DOWNLOAD;
 }
 
 base::string16 DownloadPermissionRequest::GetMessageTextFragment() const {

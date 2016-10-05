@@ -22,7 +22,7 @@ class DownloadPermissionRequest : public PermissionRequest {
 
  private:
   // PermisisonBubbleDelegate:
-  int GetIconId() const override;
+  gfx::VectorIconId GetVectorIconId() const override;
   base::string16 GetMessageTextFragment() const override;
   GURL GetOrigin() const override;
   void PermissionGranted() override;

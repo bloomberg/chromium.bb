@@ -24,7 +24,6 @@ class SessionCrashedInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // ConfirmInfoBarDelegate:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
-  int GetIconId() const override;
   gfx::VectorIconId GetVectorIconId() const override;
   base::string16 GetMessageText() const override;
   int GetButtons() const override;

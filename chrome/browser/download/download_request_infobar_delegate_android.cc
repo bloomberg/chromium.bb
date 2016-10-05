@@ -4,6 +4,7 @@
 
 #include "chrome/browser/download/download_request_infobar_delegate_android.h"
 
+#include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
@@ -60,7 +61,7 @@ DownloadRequestInfoBarDelegateAndroid::GetIdentifier() const {
 }
 
 int DownloadRequestInfoBarDelegateAndroid::GetIconId() const {
-  return IDR_INFOBAR_MULTIPLE_DOWNLOADS;
+  return IDR_ANDROID_INFOBAR_MULTIPLE_DOWNLOADS;
 }
 
 base::string16 DownloadRequestInfoBarDelegateAndroid::GetMessageText() const {

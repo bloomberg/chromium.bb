@@ -4,9 +4,9 @@
 
 #include "chrome/browser/media/midi_permission_infobar_delegate_android.h"
 
+#include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/theme_resources.h"
 #include "components/infobars/core/infobar.h"
 
 // static
@@ -42,7 +42,7 @@ MidiPermissionInfoBarDelegateAndroid::GetIdentifier() const {
 }
 
 int MidiPermissionInfoBarDelegateAndroid::GetIconId() const {
-  return IDR_INFOBAR_MIDI;
+  return IDR_ANDROID_INFOBAR_MIDI;
 }
 
 int MidiPermissionInfoBarDelegateAndroid::GetMessageResourceId() const {

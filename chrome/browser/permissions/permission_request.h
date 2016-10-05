@@ -68,8 +68,8 @@ class PermissionRequest {
   virtual gfx::VectorIconId GetVectorIconId() const;
 
   // The icon to use next to the message text fragment in the permission bubble.
-  // Must be a valid icon of size 18x18.
-  virtual int GetIconId() const = 0;
+  // TODO(estade): remove this in favor of GetVectorIconId().
+  virtual int GetIconId() const;
 
   // Returns the shortened prompt text for this permission.  Must be phrased
   // as a heading, e.g. "Location", or "Camera". The permission bubble may

@@ -11,7 +11,6 @@
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/theme_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/infobars/core/infobar.h"
 #include "components/strings/grit/components_strings.h"
@@ -23,7 +22,7 @@
 #include "content/public/common/referrer.h"
 #include "content/public/common/webplugininfo.h"
 #include "ui/base/l10n/l10n_util.h"
-
+#include "ui/gfx/vector_icons_public.h"
 
 // static
 void PepperBrokerInfoBarDelegate::Create(
@@ -93,8 +92,8 @@ PepperBrokerInfoBarDelegate::GetIdentifier() const {
   return PEPPER_BROKER_INFOBAR_DELEGATE;
 }
 
-int PepperBrokerInfoBarDelegate::GetIconId() const {
-  return IDR_INFOBAR_PLUGIN_INSTALL;
+gfx::VectorIconId PepperBrokerInfoBarDelegate::GetVectorIconId() const {
+  return gfx::VectorIconId::EXTENSION;
 }
 
 base::string16 PepperBrokerInfoBarDelegate::GetMessageText() const {

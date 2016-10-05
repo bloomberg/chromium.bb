@@ -140,7 +140,6 @@ class ReloadPluginInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // ConfirmInfobarDelegate:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
-  int GetIconId() const override;
   gfx::VectorIconId GetVectorIconId() const override;
   base::string16 GetMessageText() const override;
   int GetButtons() const override;
@@ -174,16 +173,8 @@ ReloadPluginInfoBarDelegate::GetIdentifier() const {
   return RELOAD_PLUGIN_INFOBAR_DELEGATE;
 }
 
-int ReloadPluginInfoBarDelegate::GetIconId() const {
-  return IDR_INFOBAR_PLUGIN_CRASHED;
-}
-
 gfx::VectorIconId ReloadPluginInfoBarDelegate::GetVectorIconId() const {
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
   return gfx::VectorIconId::EXTENSION_CRASHED;
-#else
-  return gfx::VectorIconId::VECTOR_ICON_NONE;
-#endif
 }
 
 base::string16 ReloadPluginInfoBarDelegate::GetMessageText() const {
@@ -467,13 +458,8 @@ void PluginObserver::OnCouldNotLoadPlugin(const base::FilePath& plugin_path) {
       PluginService::GetInstance()->GetPluginDisplayNameByPath(plugin_path);
   SimpleAlertInfoBarDelegate::Create(
       InfoBarService::FromWebContents(web_contents()),
-      infobars::InfoBarDelegate::PLUGIN_OBSERVER,
-      IDR_INFOBAR_PLUGIN_CRASHED,
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+      infobars::InfoBarDelegate::PLUGIN_OBSERVER, 0,
       gfx::VectorIconId::EXTENSION_CRASHED,
-#else
-      gfx::VectorIconId::VECTOR_ICON_NONE,
-#endif
       l10n_util::GetStringFUTF16(IDS_PLUGIN_INITIALIZATION_ERROR_PROMPT,
                                  plugin_name),
       true);

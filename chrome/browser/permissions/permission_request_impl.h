@@ -38,7 +38,9 @@ class PermissionRequestImpl : public PermissionRequest {
  private:
   // PermissionRequest:
   gfx::VectorIconId GetVectorIconId() const override;
+#if defined(OS_ANDROID)
   int GetIconId() const override;
+#endif
   base::string16 GetMessageTextFragment() const override;
   GURL GetOrigin() const override;
   // Remember to call RegisterActionTaken for these methods if you are

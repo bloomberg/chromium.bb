@@ -45,6 +45,9 @@
 #include "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/gfx/color_palette.h"
+#include "ui/gfx/image/image_skia_util_mac.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "url/gurl.h"
 
 using base::UserMetricsAction;
@@ -506,8 +509,9 @@ const NSInteger kFullscreenLeftOffset = 40;
       [[NSView alloc] initWithFrame:NSZeroRect]);
   base::scoped_nsobject<NSImageView> permissionIcon(
       [[NSImageView alloc] initWithFrame:NSZeroRect]);
-  [permissionIcon setImage:ui::ResourceBundle::GetSharedInstance().
-      GetNativeImageNamed(request->GetIconId()).ToNSImage()];
+  [permissionIcon setImage:NSImageFromImageSkia(
+      gfx::CreateVectorIcon(request->GetVectorIconId(), 18,
+                            gfx::kChromeIconGrey))];
   [permissionIcon setFrameSize:kPermissionIconSize];
   [permissionView addSubview:permissionIcon];
 
