@@ -84,7 +84,6 @@
 #include "ui/display/screen.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/blink/did_overscroll_params.h"
-#include "ui/events/blink/web_input_event_traits.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 #include "ui/events/gesture_detection/motion_event.h"
 #include "ui/gfx/android/device_display_info.h"
@@ -844,7 +843,7 @@ bool RenderWidgetHostViewAndroid::OnTouchEvent(
 
   blink::WebTouchEvent web_event = ui::CreateWebTouchEventFromMotionEvent(
       event, result.moved_beyond_slop_region);
-  ui::LatencyInfo latency_info(ui::SourceEventType::TOUCH);
+  ui::LatencyInfo latency_info;
   latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
   host_->ForwardTouchEventWithLatencyInfo(web_event, latency_info);
 
@@ -877,11 +876,9 @@ void RenderWidgetHostViewAndroid::ResetGestureDetection() {
   std::unique_ptr<ui::MotionEvent> cancel_event = current_down_event->Cancel();
   if (gesture_provider_.OnTouchEvent(*cancel_event).succeeded) {
     bool causes_scrolling = false;
-    ui::LatencyInfo latency_info(ui::SourceEventType::TOUCH);
-    latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
     host_->ForwardTouchEventWithLatencyInfo(
         ui::CreateWebTouchEventFromMotionEvent(*cancel_event, causes_scrolling),
-        latency_info);
+        ui::LatencyInfo());
   }
 }
 
@@ -1660,7 +1657,7 @@ void RenderWidgetHostViewAndroid::SendMouseEvent(
 void RenderWidgetHostViewAndroid::SendMouseWheelEvent(
     const blink::WebMouseWheelEvent& event) {
   if (host_) {
-    ui::LatencyInfo latency_info(ui::SourceEventType::WHEEL);
+    ui::LatencyInfo latency_info;
     latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
     host_->ForwardWheelEventWithLatencyInfo(event, latency_info);
   }
@@ -1672,11 +1669,8 @@ void RenderWidgetHostViewAndroid::SendGestureEvent(
   if (overscroll_controller_)
     overscroll_controller_->Enable();
 
-  if (host_) {
-    ui::LatencyInfo latency_info =
-        ui::WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(event);
-    host_->ForwardGestureEventWithLatencyInfo(event, latency_info);
-  }
+  if (host_)
+    host_->ForwardGestureEventWithLatencyInfo(event, ui::LatencyInfo());
 }
 
 void RenderWidgetHostViewAndroid::MoveCaret(const gfx::Point& point) {

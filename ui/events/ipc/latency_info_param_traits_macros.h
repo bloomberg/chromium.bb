@@ -21,7 +21,4 @@ IPC_STRUCT_TRAITS_BEGIN(ui::LatencyInfo::LatencyComponent)
   IPC_STRUCT_TRAITS_MEMBER(event_count)
 IPC_STRUCT_TRAITS_END()
 
-IPC_ENUM_TRAITS_MAX_VALUE(ui::SourceEventType,
-                          ui::SourceEventType::SOURCE_EVENT_TYPE_LAST)
-
 #endif // UI_EVENTS_IPC_LATENCY_INFO_PARAM_TRAITS_MACROS_H_

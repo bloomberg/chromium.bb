@@ -16,7 +16,6 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/frame_messages.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
-#include "ui/events/blink/web_input_event_traits.h"
 
 namespace {
 
@@ -170,8 +169,7 @@ RenderWidgetHostViewBase* RenderWidgetHostInputEventRouter::FindEventTarget(
 
 void RenderWidgetHostInputEventRouter::RouteMouseEvent(
     RenderWidgetHostViewBase* root_view,
-    blink::WebMouseEvent* event,
-    const ui::LatencyInfo& latency) {
+    blink::WebMouseEvent* event) {
   RenderWidgetHostViewBase* target;
   gfx::Point transformed_point;
   const int mouse_button_modifiers = blink::WebInputEvent::LeftButtonDown |
@@ -195,7 +193,8 @@ void RenderWidgetHostInputEventRouter::RouteMouseEvent(
   // events, so they have to go by the double-hop forwarding path through
   // the embedding renderer and then BrowserPluginGuest.
   if (target && target->IsRenderWidgetHostViewGuest()) {
-    root_view->ProcessMouseEvent(*event, latency);
+    ui::LatencyInfo latency_info;
+    root_view->ProcessMouseEvent(*event, latency_info);
     return;
   }
 
@@ -215,13 +214,15 @@ void RenderWidgetHostInputEventRouter::RouteMouseEvent(
 
   event->x = transformed_point.x();
   event->y = transformed_point.y();
-  target->ProcessMouseEvent(*event, latency);
+  // TODO(wjmaclean): Initialize latency info correctly for OOPIFs.
+  // https://crbug.com/613628
+  ui::LatencyInfo latency_info;
+  target->ProcessMouseEvent(*event, latency_info);
 }
 
 void RenderWidgetHostInputEventRouter::RouteMouseWheelEvent(
     RenderWidgetHostViewBase* root_view,
-    blink::WebMouseWheelEvent* event,
-    const ui::LatencyInfo& latency) {
+    blink::WebMouseWheelEvent* event) {
   gfx::Point transformed_point;
   RenderWidgetHostViewBase* target = FindEventTarget(
       root_view, gfx::Point(event->x, event->y), &transformed_point);
@@ -230,7 +231,10 @@ void RenderWidgetHostInputEventRouter::RouteMouseWheelEvent(
 
   event->x = transformed_point.x();
   event->y = transformed_point.y();
-  target->ProcessMouseWheelEvent(*event, latency);
+  // TODO(wjmaclean): Initialize latency info correctly for OOPIFs.
+  // https://crbug.com/613628
+  ui::LatencyInfo latency_info;
+  target->ProcessMouseWheelEvent(*event, latency_info);
 }
 
 void RenderWidgetHostInputEventRouter::RouteGestureEvent(
@@ -470,14 +474,11 @@ void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
   DCHECK(!first_bubbling_scroll_target_.target ==
          !bubbling_gesture_scroll_target_.target);
 
-  ui::LatencyInfo latency_info =
-      ui::WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(event);
-
   // If target_view is already set up for bubbled scrolls, we forward
   // the event to the current scroll target without further consideration.
   if (target_view == first_bubbling_scroll_target_.target) {
-    bubbling_gesture_scroll_target_.target->ProcessGestureEvent(event,
-                                                                latency_info);
+    bubbling_gesture_scroll_target_.target->ProcessGestureEvent(
+        event, ui::LatencyInfo());
     if (event.type == blink::WebInputEvent::GestureScrollEnd) {
       first_bubbling_scroll_target_.target = nullptr;
       bubbling_gesture_scroll_target_.target = nullptr;
@@ -495,8 +496,8 @@ void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
   // have been sent to a renderer before the first one was ACKed, and the ACK
   // caused a bubble retarget. In this case they all get forwarded.
   if (target_view == bubbling_gesture_scroll_target_.target) {
-    bubbling_gesture_scroll_target_.target->ProcessGestureEvent(event,
-                                                                latency_info);
+    bubbling_gesture_scroll_target_.target->ProcessGestureEvent(
+        event, ui::LatencyInfo());
     return;
   }
 
@@ -521,7 +522,7 @@ void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
   bubbling_gesture_scroll_target_.target = target_view;
 
   SendGestureScrollBegin(target_view, event);
-  target_view->ProcessGestureEvent(event, latency_info);
+  target_view->ProcessGestureEvent(event, ui::LatencyInfo());
 }
 
 void RenderWidgetHostInputEventRouter::SendGestureScrollBegin(
@@ -535,9 +536,7 @@ void RenderWidgetHostInputEventRouter::SendGestureScrollBegin(
   scroll_begin.data.scrollBegin.deltaYHint = event.data.scrollUpdate.deltaY;
   scroll_begin.data.scrollBegin.deltaHintUnits =
       event.data.scrollUpdate.deltaUnits;
-  view->ProcessGestureEvent(
-      scroll_begin,
-      ui::WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(event));
+  view->ProcessGestureEvent(scroll_begin, ui::LatencyInfo());
 }
 
 void RenderWidgetHostInputEventRouter::SendGestureScrollEnd(
@@ -552,9 +551,7 @@ void RenderWidgetHostInputEventRouter::SendGestureScrollEnd(
   scroll_end.data.scrollEnd.inertialPhase =
       event.data.scrollUpdate.inertialPhase;
   scroll_end.data.scrollEnd.deltaUnits = event.data.scrollUpdate.deltaUnits;
-  view->ProcessGestureEvent(
-      scroll_end,
-      ui::WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(event));
+  view->ProcessGestureEvent(scroll_end, ui::LatencyInfo());
 }
 
 void RenderWidgetHostInputEventRouter::CancelScrollBubbling(

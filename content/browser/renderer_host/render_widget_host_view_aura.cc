@@ -1959,7 +1959,7 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
     if (mouse_wheel_event.deltaX != 0 || mouse_wheel_event.deltaY != 0) {
       if (ShouldRouteEvent(event)) {
         host_->delegate()->GetInputEventRouter()->RouteMouseWheelEvent(
-            this, &mouse_wheel_event, *event->latency());
+            this, &mouse_wheel_event);
       } else {
         ProcessMouseWheelEvent(mouse_wheel_event, *event->latency());
       }
@@ -1978,8 +1978,8 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
           *event, base::Bind(&GetScreenLocationFromEvent));
       ModifyEventMovementAndCoords(&mouse_event);
       if (ShouldRouteEvent(event)) {
-        host_->delegate()->GetInputEventRouter()->RouteMouseEvent(
-            this, &mouse_event, *event->latency());
+        host_->delegate()->GetInputEventRouter()->RouteMouseEvent(this,
+                                                                  &mouse_event);
       } else {
         ProcessMouseEvent(mouse_event, *event->latency());
       }
@@ -2113,9 +2113,9 @@ void RenderWidgetHostViewAura::OnScrollEvent(ui::ScrollEvent* event) {
         *event, base::Bind(&GetScreenLocationFromEvent));
     if (ShouldRouteEvent(event)) {
       host_->delegate()->GetInputEventRouter()->RouteGestureEvent(
-          this, &gesture_event, ui::LatencyInfo(ui::SourceEventType::WHEEL));
+          this, &gesture_event, ui::LatencyInfo());
       host_->delegate()->GetInputEventRouter()->RouteMouseWheelEvent(
-          this, &mouse_wheel_event, *event->latency());
+          this, &mouse_wheel_event);
     } else {
       host_->ForwardGestureEvent(gesture_event);
       host_->ForwardWheelEventWithLatencyInfo(mouse_wheel_event,
@@ -2128,7 +2128,7 @@ void RenderWidgetHostViewAura::OnScrollEvent(ui::ScrollEvent* event) {
         *event, base::Bind(&GetScreenLocationFromEvent));
     if (ShouldRouteEvent(event)) {
       host_->delegate()->GetInputEventRouter()->RouteGestureEvent(
-          this, &gesture_event, ui::LatencyInfo(ui::SourceEventType::WHEEL));
+          this, &gesture_event, ui::LatencyInfo());
     } else {
       host_->ForwardGestureEvent(gesture_event);
     }
@@ -2214,7 +2214,7 @@ void RenderWidgetHostViewAura::OnGestureEvent(ui::GestureEvent* event) {
     fling_cancel.sourceDevice = blink::WebGestureDeviceTouchscreen;
     if (ShouldRouteEvent(event)) {
       host_->delegate()->GetInputEventRouter()->RouteGestureEvent(
-          this, &fling_cancel, ui::LatencyInfo(ui::SourceEventType::TOUCH));
+          this, &fling_cancel, ui::LatencyInfo());
     } else {
       host_->ForwardGestureEvent(fling_cancel);
     }
