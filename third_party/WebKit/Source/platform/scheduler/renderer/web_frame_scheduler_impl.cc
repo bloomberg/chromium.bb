@@ -36,6 +36,7 @@ WebFrameSchedulerImpl::~WebFrameSchedulerImpl() {
   }
 
   if (timer_task_queue_) {
+    RemoveTimerQueueFromBackgroundTimeBudgetPool();
     timer_task_queue_->UnregisterTaskQueue();
     timer_task_queue_->SetBlameContext(nullptr);
   }
@@ -50,7 +51,26 @@ WebFrameSchedulerImpl::~WebFrameSchedulerImpl() {
 }
 
 void WebFrameSchedulerImpl::DetachFromWebViewScheduler() {
+  RemoveTimerQueueFromBackgroundTimeBudgetPool();
+
   parent_web_view_scheduler_ = nullptr;
+}
+
+void WebFrameSchedulerImpl::RemoveTimerQueueFromBackgroundTimeBudgetPool() {
+  if (!timer_task_queue_)
+    return;
+
+  if (!parent_web_view_scheduler_)
+    return;
+
+  TaskQueueThrottler::TimeBudgetPool* time_budget_pool =
+      parent_web_view_scheduler_->background_time_budget_pool();
+
+  if (!time_budget_pool)
+    return;
+
+  time_budget_pool->RemoveQueue(renderer_scheduler_->tick_clock()->NowTicks(),
+                                timer_task_queue_.get());
 }
 
 void WebFrameSchedulerImpl::setFrameVisible(bool frame_visible) {
@@ -88,6 +108,14 @@ blink::WebTaskRunner* WebFrameSchedulerImpl::timerTaskRunner() {
     timer_task_queue_ =
         renderer_scheduler_->NewTimerTaskRunner("frame_timer_tq");
     timer_task_queue_->SetBlameContext(blame_context_);
+
+    TaskQueueThrottler::TimeBudgetPool* time_budget_pool =
+        parent_web_view_scheduler_->background_time_budget_pool();
+    if (time_budget_pool) {
+      time_budget_pool->AddQueue(renderer_scheduler_->tick_clock()->NowTicks(),
+                                 timer_task_queue_.get());
+    }
+
     if (ShouldThrottleTimers()) {
       renderer_scheduler_->task_queue_throttler()->IncreaseThrottleRefCount(
           timer_task_queue_.get());

@@ -287,6 +287,10 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kDisableBackgroundTimerThrottling))
     WebRuntimeFeatures::enableTimerThrottlingForBackgroundTabs(false);
 
+  WebRuntimeFeatures::enableExpensiveBackgroundTimerThrottling(
+      base::FeatureList::IsEnabled(
+          features::kExpensiveBackgroundTimerThrottling));
+
   WebRuntimeFeatures::enableRenderingPipelineThrottling(
     base::FeatureList::IsEnabled(features::kRenderingPipelineThrottling));
 
