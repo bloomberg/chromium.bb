@@ -240,12 +240,9 @@ struct VideoDecoderConfig {
   EncryptionScheme encryption_scheme;
 };
 
-// This defines a mojo transport format for media::SubsampleEntry.
-// See media/base/decrypt_config.h for descriptions.
-struct SubsampleEntry {
-  uint32 clear_bytes;
-  uint32 cypher_bytes;
-};
+// Native struct media::SubsampleEntry;
+[Native]
+struct SubsampleEntry;
 
 // This defines a mojo transport format for media::DecryptConfig.
 // See media/base/decrypt_config.h for descriptions.

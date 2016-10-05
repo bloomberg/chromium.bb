@@ -4,5 +4,6 @@
 
 typemaps = [
   "//media/mojo/interfaces/audio_parameters.typemap",
+  "//media/mojo/interfaces/media_types.typemap",
   "//media/mojo/interfaces/pipeline_statistics.typemap",
 ]

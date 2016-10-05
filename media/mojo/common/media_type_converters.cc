@@ -21,6 +21,7 @@
 #include "media/base/demuxer_stream.h"
 #include "media/base/encryption_scheme.h"
 #include "media/base/media_keys.h"
+#include "media/base/subsample_entry.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
 #include "media/mojo/common/mojo_shared_buffer_video_frame.h"
@@ -394,24 +395,6 @@ TypeConverter<media::EncryptionScheme, media::mojom::EncryptionSchemePtr>::
 }
 
 // static
-media::mojom::SubsampleEntryPtr
-TypeConverter<media::mojom::SubsampleEntryPtr, media::SubsampleEntry>::Convert(
-    const media::SubsampleEntry& input) {
-  media::mojom::SubsampleEntryPtr mojo_subsample_entry(
-      media::mojom::SubsampleEntry::New());
-  mojo_subsample_entry->clear_bytes = input.clear_bytes;
-  mojo_subsample_entry->cypher_bytes = input.cypher_bytes;
-  return mojo_subsample_entry;
-}
-
-// static
-media::SubsampleEntry
-TypeConverter<media::SubsampleEntry, media::mojom::SubsampleEntryPtr>::Convert(
-    const media::mojom::SubsampleEntryPtr& input) {
-  return media::SubsampleEntry(input->clear_bytes, input->cypher_bytes);
-}
-
-// static
 media::mojom::DecryptConfigPtr
 TypeConverter<media::mojom::DecryptConfigPtr, media::DecryptConfig>::Convert(
     const media::DecryptConfig& input) {
@@ -420,7 +403,8 @@ TypeConverter<media::mojom::DecryptConfigPtr, media::DecryptConfig>::Convert(
   mojo_decrypt_config->key_id = input.key_id();
   mojo_decrypt_config->iv = input.iv();
   mojo_decrypt_config->subsamples =
-      Array<media::mojom::SubsampleEntryPtr>::From(input.subsamples());
+      Array<media::SubsampleEntry>::From(input.subsamples());
+
   return mojo_decrypt_config;
 }
 

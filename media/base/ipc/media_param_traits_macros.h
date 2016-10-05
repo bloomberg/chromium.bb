@@ -7,6 +7,7 @@
 
 #include "ipc/ipc_message_macros.h"
 #include "media/base/audio_parameters.h"
+#include "media/base/subsample_entry.h"
 #include "media/base/video_capture_types.h"
 #include "media/base/video_types.h"
 
@@ -17,5 +18,10 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::AudioLatency::LatencyType,
                           media::AudioLatency::LATENCY_COUNT)
 IPC_ENUM_TRAITS_MAX_VALUE(media::VideoPixelFormat, media::PIXEL_FORMAT_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(media::VideoPixelStorage, media::PIXEL_STORAGE_MAX)
+
+IPC_STRUCT_TRAITS_BEGIN(media::SubsampleEntry)
+  IPC_STRUCT_TRAITS_MEMBER(clear_bytes)
+  IPC_STRUCT_TRAITS_MEMBER(cypher_bytes)
+IPC_STRUCT_TRAITS_END()
 
 #endif  // MEDIA_BASE_IPC_MEDIA_PARAM_TRAITS_MACROS_H_

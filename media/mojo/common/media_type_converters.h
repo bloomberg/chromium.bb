@@ -22,7 +22,6 @@ class VideoDecoderConfig;
 class VideoFrame;
 struct CdmConfig;
 struct CdmKeyInformation;
-struct SubsampleEntry;
 }
 
 // These are specializations of mojo::TypeConverter and have to be in the mojo
@@ -40,17 +39,6 @@ struct TypeConverter<media::EncryptionScheme,
                      media::mojom::EncryptionSchemePtr> {
   static media::EncryptionScheme Convert(
       const media::mojom::EncryptionSchemePtr& input);
-};
-
-template <>
-struct TypeConverter<media::mojom::SubsampleEntryPtr, media::SubsampleEntry> {
-  static media::mojom::SubsampleEntryPtr Convert(
-      const media::SubsampleEntry& input);
-};
-template <>
-struct TypeConverter<media::SubsampleEntry, media::mojom::SubsampleEntryPtr> {
-  static media::SubsampleEntry Convert(
-      const media::mojom::SubsampleEntryPtr& input);
 };
 
 template <>

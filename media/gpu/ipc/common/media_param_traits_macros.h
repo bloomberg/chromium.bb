@@ -34,11 +34,6 @@ IPC_STRUCT_TRAITS_BEGIN(media::VideoDecodeAccelerator::Config)
   IPC_STRUCT_TRAITS_MEMBER(supported_output_formats)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(media::SubsampleEntry)
-  IPC_STRUCT_TRAITS_MEMBER(clear_bytes)
-  IPC_STRUCT_TRAITS_MEMBER(cypher_bytes)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_TRAITS_BEGIN(media::CreateVideoEncoderParams)
   IPC_STRUCT_TRAITS_MEMBER(input_format)
   IPC_STRUCT_TRAITS_MEMBER(input_visible_size)
