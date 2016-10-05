@@ -483,6 +483,8 @@ void It2MeHost::OnReceivedSupportID(
 void It2MeHost::ValidateConnectionDetails(
     const std::string& remote_jid,
     const protocol::ValidatingAuthenticator::ResultCallback& result_callback) {
+  DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
+
   // First ensure the JID we received is valid.
   std::string client_username;
   if (!SplitJidResource(remote_jid, &client_username, /*resource=*/nullptr)) {
@@ -490,6 +492,7 @@ void It2MeHost::ValidateConnectionDetails(
                << ": Invalid JID.";
     result_callback.Run(
         protocol::ValidatingAuthenticator::Result::ERROR_INVALID_ACCOUNT);
+    DisconnectOnNetworkThread();
     return;
   }
 
@@ -497,6 +500,7 @@ void It2MeHost::ValidateConnectionDetails(
     LOG(ERROR) << "Invalid user name passed in: " << remote_jid;
     result_callback.Run(
         protocol::ValidatingAuthenticator::Result::ERROR_INVALID_ACCOUNT);
+    DisconnectOnNetworkThread();
     return;
   }
 
@@ -508,6 +512,7 @@ void It2MeHost::ValidateConnectionDetails(
       LOG(ERROR) << "Rejecting incoming connection from " << remote_jid
                  << ": Domain mismatch.";
       result_callback.Run(ValidationResult::ERROR_INVALID_ACCOUNT);
+      DisconnectOnNetworkThread();
       return;
     }
   }
@@ -524,6 +529,8 @@ void It2MeHost::ValidateConnectionDetails(
 void It2MeHost::OnConfirmationResult(
     const protocol::ValidatingAuthenticator::ResultCallback& result_callback,
     It2MeConfirmationDialog::Result result) {
+  DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
+
   switch (result) {
     case It2MeConfirmationDialog::Result::OK:
       result_callback.Run(ValidationResult::SUCCESS);
@@ -531,6 +538,7 @@ void It2MeHost::OnConfirmationResult(
 
     case It2MeConfirmationDialog::Result::CANCEL:
       result_callback.Run(ValidationResult::ERROR_REJECTED_BY_USER);
+      DisconnectOnNetworkThread();
       break;
   }
 }
