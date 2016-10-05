@@ -1126,8 +1126,6 @@ component("base") {
       "debug/crash_logging.h",
       "debug/stack_trace.cc",
       "debug/stack_trace_posix.cc",
-      "files/file_descriptor_watcher_posix.cc",
-      "files/file_descriptor_watcher_posix.h",
       "files/file_enumerator_posix.cc",
       "files/file_proxy.cc",
       "files/file_util_proxy.cc",
@@ -1169,6 +1167,8 @@ component("base") {
       configs += [ ":nacl_nonsfi_warnings" ]
     } else {
       sources -= [
+        "files/file_descriptor_watcher_posix.cc",
+        "files/file_descriptor_watcher_posix.h",
         "files/file_util.cc",
         "files/file_util.h",
         "files/file_util_posix.cc",
