@@ -235,6 +235,7 @@ public class QuicTest extends CronetTestBase {
 
         MetricsTestUtil.checkTimingMetrics(metrics, startTime, endTime);
         MetricsTestUtil.checkHasConnectTiming(metrics, startTime, endTime, true);
+        assertTrue(metrics.getSentBytesCount() > 0);
 
         // Second request should use the same connection and not have ConnectTiming numbers
         callback = new TestUrlRequestCallback();
@@ -257,6 +258,7 @@ public class QuicTest extends CronetTestBase {
 
         MetricsTestUtil.checkTimingMetrics(metrics, startTime, endTime);
         MetricsTestUtil.checkNoConnectTiming(metrics);
+        assertTrue(metrics.getSentBytesCount() > 0);
 
         mTestFramework.mCronetEngine.shutdown();
     }

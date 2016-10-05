@@ -430,8 +430,8 @@ void CronetURLRequestAdapter::MaybeReportMetrics(JNIEnv* env) const {
       ConvertTime(metrics.push_end, start_ticks, start_time),
       ConvertTime(metrics.receive_headers_end, start_ticks, start_time),
       ConvertTime(base::TimeTicks::Now(), start_ticks, start_time),
-      // TODO(mgersh): report total bytes sent
-      metrics.socket_reused, 0, url_request_->GetTotalReceivedBytes());
+      metrics.socket_reused, url_request_->GetTotalSentBytes(),
+      url_request_->GetTotalReceivedBytes());
 }
 
 net::URLRequest* CronetURLRequestAdapter::GetURLRequestForTesting() {

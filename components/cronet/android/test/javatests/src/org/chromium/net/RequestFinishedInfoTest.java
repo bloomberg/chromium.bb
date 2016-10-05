@@ -112,6 +112,7 @@ public class RequestFinishedInfoTest extends CronetTestBase {
         assertNull(metrics.getPushStart());
         assertNull(metrics.getPushEnd());
         // Check data use metrics
+        assertTrue(metrics.getSentBytesCount() > 0);
         assertTrue(metrics.getReceivedBytesCount() > 0);
         mTestFramework.mCronetEngine.shutdown();
     }
@@ -154,6 +155,7 @@ public class RequestFinishedInfoTest extends CronetTestBase {
         assertTrue(metrics.getTotalTimeMs() >= metrics.getTtfbMs());
         MetricsTestUtil.checkTimingMetrics(metrics, startTime, endTime);
         MetricsTestUtil.checkHasConnectTiming(metrics, startTime, endTime, false);
+        assertTrue(metrics.getSentBytesCount() > 0);
         assertTrue(metrics.getReceivedBytesCount() > 0);
         mTestFramework.mCronetEngine.shutdown();
     }
@@ -203,6 +205,7 @@ public class RequestFinishedInfoTest extends CronetTestBase {
         assertTrue(firstMetrics.getTotalTimeMs() >= firstMetrics.getTtfbMs());
         MetricsTestUtil.checkTimingMetrics(firstMetrics, startTime, endTime);
         MetricsTestUtil.checkHasConnectTiming(firstMetrics, startTime, endTime, false);
+        assertTrue(firstMetrics.getSentBytesCount() > 0);
         assertTrue(firstMetrics.getReceivedBytesCount() > 0);
         RequestFinishedInfo.Metrics secondMetrics = secondRequestInfo.getMetrics();
         assertNotNull("RequestFinishedInfo.getMetrics() must not be null", secondMetrics);
@@ -210,6 +213,7 @@ public class RequestFinishedInfoTest extends CronetTestBase {
         assertTrue(secondMetrics.getTotalTimeMs() >= secondMetrics.getTtfbMs());
         MetricsTestUtil.checkTimingMetrics(secondMetrics, startTime, endTime);
         MetricsTestUtil.checkHasConnectTiming(secondMetrics, startTime, endTime, false);
+        assertTrue(secondMetrics.getSentBytesCount() > 0);
         assertTrue(secondMetrics.getReceivedBytesCount() > 0);
         mTestFramework.mCronetEngine.shutdown();
     }
@@ -260,8 +264,8 @@ public class RequestFinishedInfoTest extends CronetTestBase {
                 || metrics.getResponseEnd().equals(endTime));
         // Entire request should take more than 0 ms
         assertTrue(metrics.getResponseEnd().getTime() - metrics.getRequestStart().getTime() > 0);
-
-        assertTrue(metrics.getReceivedBytesCount() == null || metrics.getReceivedBytesCount() == 0);
+        assertTrue(metrics.getSentBytesCount() == 0);
+        assertTrue(metrics.getReceivedBytesCount() == 0);
         mTestFramework.mCronetEngine.shutdown();
     }
 
@@ -331,6 +335,7 @@ public class RequestFinishedInfoTest extends CronetTestBase {
         assertNull(metrics.getPushStart());
         assertNull(metrics.getPushEnd());
         // Check data use metrics
+        assertTrue(metrics.getSentBytesCount() > 0);
         assertTrue(metrics.getReceivedBytesCount() > 0);
         mTestFramework.mCronetEngine.shutdown();
     }
