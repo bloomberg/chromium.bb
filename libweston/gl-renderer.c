@@ -160,6 +160,10 @@ struct gl_surface_state {
 	int height; /* in pixels */
 	int y_inverted;
 
+	/* Extension needed for SHM YUV texture */
+	int offset[3]; /* offset per plane */
+	int hvsub[3];  /* horizontal vertical subsampling per plane */
+
 	struct weston_surface *surface;
 
 	struct wl_listener surface_destroy_listener;
@@ -205,6 +209,8 @@ struct gl_renderer {
 
 	int has_dmabuf_import;
 	struct wl_list dmabuf_images;
+
+	int has_gl_texture_rg;
 
 	struct gl_shader texture_shader_rgba;
 	struct gl_shader texture_shader_rgbx;
@@ -1230,7 +1236,7 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 	bool texture_used;
 	pixman_box32_t *rectangles;
 	void *data;
-	int i, n;
+	int i, j, n;
 
 	pixman_region32_union(&gs->texture_damage,
 			      &gs->texture_damage, &surface->damage);
@@ -1257,29 +1263,43 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 	    !gs->needs_full_upload)
 		goto done;
 
-	glBindTexture(GL_TEXTURE_2D, gs->textures[0]);
+	data = wl_shm_buffer_get_data(buffer->shm_buffer);
 
 	if (!gr->has_unpack_subimage) {
 		wl_shm_buffer_begin_access(buffer->shm_buffer);
-		glTexImage2D(GL_TEXTURE_2D, 0, gs->gl_format,
-			     gs->pitch, buffer->height, 0,
-			     gs->gl_format, gs->gl_pixel_type,
-			     wl_shm_buffer_get_data(buffer->shm_buffer));
+		for (j = 0; j < gs->num_textures; j++) {
+			glBindTexture(GL_TEXTURE_2D, gs->textures[j]);
+			glTexImage2D(GL_TEXTURE_2D, 0,
+				     gs->gl_format,
+				     gs->pitch / gs->hvsub[j],
+				     buffer->height / gs->hvsub[j],
+				     0,
+				     gs->gl_format,
+				     gs->gl_pixel_type,
+				     data + gs->offset[j]);
+		}
 		wl_shm_buffer_end_access(buffer->shm_buffer);
 
 		goto done;
 	}
 
 	glPixelStorei(GL_UNPACK_ROW_LENGTH_EXT, gs->pitch);
-	data = wl_shm_buffer_get_data(buffer->shm_buffer);
 
 	if (gs->needs_full_upload) {
 		glPixelStorei(GL_UNPACK_SKIP_PIXELS_EXT, 0);
 		glPixelStorei(GL_UNPACK_SKIP_ROWS_EXT, 0);
 		wl_shm_buffer_begin_access(buffer->shm_buffer);
-		glTexImage2D(GL_TEXTURE_2D, 0, gs->gl_format,
-			     gs->pitch, buffer->height, 0,
-			     gs->gl_format, gs->gl_pixel_type, data);
+		for (j = 0; j < gs->num_textures; j++) {
+			glBindTexture(GL_TEXTURE_2D, gs->textures[j]);
+			glTexImage2D(GL_TEXTURE_2D, 0,
+				     gs->gl_format,
+				     gs->pitch / gs->hvsub[j],
+				     buffer->height / gs->hvsub[j],
+				     0,
+				     gs->gl_format,
+				     gs->gl_pixel_type,
+				     data + gs->offset[j]);
+		}
 		wl_shm_buffer_end_access(buffer->shm_buffer);
 		goto done;
 	}
@@ -1293,9 +1313,17 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 
 		glPixelStorei(GL_UNPACK_SKIP_PIXELS_EXT, r.x1);
 		glPixelStorei(GL_UNPACK_SKIP_ROWS_EXT, r.y1);
-		glTexSubImage2D(GL_TEXTURE_2D, 0, r.x1, r.y1,
-				r.x2 - r.x1, r.y2 - r.y1,
-				gs->gl_format, gs->gl_pixel_type, data);
+		for (j = 0; j < gs->num_textures; j++) {
+			glBindTexture(GL_TEXTURE_2D, gs->textures[j]);
+			glTexSubImage2D(GL_TEXTURE_2D, 0,
+					r.x1 / gs->hvsub[j],
+					r.y1 / gs->hvsub[j],
+					(r.x2 - r.x1) / gs->hvsub[j],
+					(r.y2 - r.y1) / gs->hvsub[j],
+					gs->gl_format,
+					gs->gl_pixel_type,
+					data + gs->offset[j]);
+		}
 	}
 	wl_shm_buffer_end_access(buffer->shm_buffer);
 
@@ -1336,10 +1364,15 @@ gl_renderer_attach_shm(struct weston_surface *es, struct weston_buffer *buffer,
 	struct gl_surface_state *gs = get_surface_state(es);
 	GLenum gl_format, gl_pixel_type;
 	int pitch;
+	int num_planes;
 
 	buffer->shm_buffer = shm_buffer;
 	buffer->width = wl_shm_buffer_get_width(shm_buffer);
 	buffer->height = wl_shm_buffer_get_height(shm_buffer);
+
+	num_planes = 1;
+	gs->offset[0] = 0;
+	gs->hvsub[0] = 1;
 
 	switch (wl_shm_buffer_get_format(shm_buffer)) {
 	case WL_SHM_FORMAT_XRGB8888:
@@ -1359,6 +1392,22 @@ gl_renderer_attach_shm(struct weston_surface *es, struct weston_buffer *buffer,
 		pitch = wl_shm_buffer_get_stride(shm_buffer) / 2;
 		gl_format = GL_RGB;
 		gl_pixel_type = GL_UNSIGNED_SHORT_5_6_5;
+		break;
+	case WL_SHM_FORMAT_YUV420:
+		gs->shader = &gr->texture_shader_y_u_v;
+		pitch = wl_shm_buffer_get_stride(shm_buffer);
+		if (gr->has_gl_texture_rg)
+			gl_format = GL_R8_EXT;
+		else
+			gl_format = GL_LUMINANCE;
+		gl_pixel_type = GL_UNSIGNED_BYTE;
+		num_planes = 3;
+		gs->offset[1] = gs->offset[0] + (pitch / gs->hvsub[0]) *
+					    (buffer->height / gs->hvsub[0]);
+		gs->hvsub[1] = 2;
+		gs->offset[2] = gs->offset[1] + (pitch / gs->hvsub[1]) *
+					    (buffer->height / gs->hvsub[1]);
+		gs->hvsub[2] = 2;
 		break;
 	default:
 		weston_log("warning: unknown shm buffer format: %08x\n",
@@ -1385,7 +1434,7 @@ gl_renderer_attach_shm(struct weston_surface *es, struct weston_buffer *buffer,
 
 		gs->surface = es;
 
-		ensure_textures(gs, 1);
+		ensure_textures(gs, num_planes);
 	}
 }
 
@@ -2756,6 +2805,9 @@ gl_renderer_setup_egl_extensions(struct weston_compositor *ec)
 	if (weston_check_egl_extension(extensions, "EGL_EXT_image_dma_buf_import"))
 		gr->has_dmabuf_import = 1;
 
+	if (weston_check_egl_extension(extensions, "GL_EXT_texture_rg"))
+		gr->has_gl_texture_rg = 1;
+
 	renderer_setup_egl_client_extensions(gr);
 
 	return 0;
@@ -3006,6 +3058,7 @@ gl_renderer_create(struct weston_compositor *ec, EGLenum platform,
 	}
 
 	wl_display_add_shm_format(ec->wl_display, WL_SHM_FORMAT_RGB565);
+	wl_display_add_shm_format(ec->wl_display, WL_SHM_FORMAT_YUV420);
 
 	wl_signal_init(&gr->destroy_signal);
 
