@@ -52,7 +52,11 @@ bool IframeSource::ShouldDenyXFrameOptions() const {
 bool IframeSource::GetOrigin(
     const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
     std::string* origin) const {
+  if (wc_getter.is_null())
+    return false;
   content::WebContents* contents = wc_getter.Run();
+  if (!contents)
+    return false;
   const content::NavigationEntry* entry =
       contents->GetController().GetVisibleEntry();
   if (entry == NULL)

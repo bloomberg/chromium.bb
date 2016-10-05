@@ -112,8 +112,9 @@ void AppLauncherPageUI::HTMLSource::StartDataRequest(
   NTPResourceCache* resource = AppResourceCacheFactory::GetForProfile(profile_);
   resource->set_should_show_other_devices_menu(false);
 
+  content::WebContents* web_contents = wc_getter.Run();
   content::RenderProcessHost* render_host =
-      wc_getter.Run()->GetRenderProcessHost();
+      web_contents ? web_contents->GetRenderProcessHost() : nullptr;
   NTPResourceCache::WindowType win_type = NTPResourceCache::GetWindowType(
       profile_, render_host);
   scoped_refptr<base::RefCountedMemory> html_bytes(

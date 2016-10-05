@@ -697,10 +697,13 @@ bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
   }
 
   // Look up additional request info to pass down.
+  int child_id = -1;
   ResourceRequestInfo::WebContentsGetter wc_getter;
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
-  if (info)
+  if (info) {
+    child_id = info->GetChildID();
     wc_getter = info->GetWebContentsGetterForRequest();
+  }
 
   // Forward along the request to the data source.
   base::MessageLoop* target_message_loop =
@@ -729,7 +732,7 @@ bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
     // usually the UI thread, for this path.
     target_message_loop->task_runner()->PostTask(
         FROM_HERE, base::Bind(&URLDataManagerBackend::CallStartRequest,
-                              base::RetainedRef(source), path,
+                              base::RetainedRef(source), path, child_id,
                               wc_getter, request_id));
   }
   return true;
@@ -756,13 +759,16 @@ URLDataSourceImpl* URLDataManagerBackend::GetDataSourceFromURL(
 void URLDataManagerBackend::CallStartRequest(
     scoped_refptr<URLDataSourceImpl> source,
     const std::string& path,
+    int child_id,
     const ResourceRequestInfo::WebContentsGetter& wc_getter,
     int request_id) {
-  if (BrowserThread::CurrentlyOn(BrowserThread::UI) && !wc_getter.is_null() &&
-      !wc_getter.Run()) {
-    // Make the request fail if its initiating WebContents is no longer valid.
+  if (BrowserThread::CurrentlyOn(BrowserThread::UI) && child_id != -1 &&
+      !RenderProcessHost::FromID(child_id)) {
+    // Make the request fail if its initiating renderer is no longer valid.
     // This can happen when the IO thread posts this task just before the
-    // WebContents shuts down.
+    // renderer shuts down.
+    // Note we check the process id instead of wc_getter because requests from
+    // workers wouldn't have a WebContents.
     source->SendResponse(request_id, nullptr);
     return;
   }

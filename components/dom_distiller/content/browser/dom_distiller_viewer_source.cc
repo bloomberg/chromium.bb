@@ -231,6 +231,8 @@ void DomDistillerViewerSource::StartDataRequest(
     const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
   content::WebContents* web_contents = wc_getter.Run();
+  if (!web_contents)
+    return;
   if (kViewerCssPath == path) {
     std::string css = viewer::GetCss();
     callback.Run(base::RefCountedString::TakeString(&css));

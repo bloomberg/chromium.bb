@@ -76,6 +76,7 @@ class URLDataManagerBackend : public base::SupportsUserData::Data {
   static void CallStartRequest(
       scoped_refptr<URLDataSourceImpl> source,
       const std::string& path,
+      int child_id,
       const ResourceRequestInfo::WebContentsGetter& wc_getter,
       int request_id);
 

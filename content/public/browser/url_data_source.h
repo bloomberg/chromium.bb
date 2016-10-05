@@ -54,9 +54,9 @@ class CONTENT_EXPORT URLDataSource {
   // the path of the request. The child class should run |callback| when the
   // data is available or if the request could not be satisfied. This can be
   // called either in this callback or asynchronously with the response.
-  // |wc_getter| can be called to return the WebContents for this request, but
-  // only on the UI thread. If this method is called on the UI thread, then it's
-  // guaranteed that wc_getter will return a non-null WebContents.
+  // |wc_getter| can be called on the UI thread to return the WebContents for
+  // this request if it originates from a render frame. If it originated from a
+  // worker or if the frame has destructed it will return null.
   virtual void StartDataRequest(
       const std::string& path,
       const ResourceRequestInfo::WebContentsGetter& wc_getter,
