@@ -28,7 +28,7 @@ class TestAdapter : public PrerenderAdapter {
         fail_start_(false),
         observer_(observer),
         web_contents_(nullptr),
-        final_status_(prerender::FinalStatus::FINAL_STATUS_MAX) {}
+        final_status_(prerender::FINAL_STATUS_MAX) {}
   ~TestAdapter() override {}
 
   // PrerenderAdapter implementation.
@@ -185,7 +185,7 @@ TEST_F(PrerenderingLoaderTest, StopLoadingWhenIdle) {
 TEST_F(PrerenderingLoaderTest, LoadPageLoadSucceededFromDomContentLoaded) {
   test_adapter()->Configure(
       content::WebContentsTester::CreateTestWebContents(profile(), NULL),
-      prerender::FinalStatus::FINAL_STATUS_USED);
+      prerender::FINAL_STATUS_USED);
   GURL gurl("http://testit.sea");
   EXPECT_TRUE(loader()->IsIdle());
   EXPECT_FALSE(loader()->IsLoaded());
@@ -210,7 +210,7 @@ TEST_F(PrerenderingLoaderTest, LoadPageLoadSucceededFromDomContentLoaded) {
 TEST_F(PrerenderingLoaderTest, LoadPageLoadSucceededFromPrerenderStopLoading) {
   test_adapter()->Configure(
       content::WebContentsTester::CreateTestWebContents(profile(), NULL),
-      prerender::FinalStatus::FINAL_STATUS_USED);
+      prerender::FINAL_STATUS_USED);
   GURL gurl("http://testit.sea");
   EXPECT_TRUE(loader()->IsIdle());
   EXPECT_FALSE(loader()->IsLoaded());
@@ -239,9 +239,8 @@ TEST_F(PrerenderingLoaderTest, LoadPageLoadSucceededFromPrerenderStopLoading) {
 }
 
 TEST_F(PrerenderingLoaderTest, LoadPageLoadFailedNoContent) {
-  test_adapter()->Configure(
-      nullptr /* web_contents */,
-      prerender::FinalStatus::FINAL_STATUS_MEMORY_LIMIT_EXCEEDED);
+  test_adapter()->Configure(nullptr /* web_contents */,
+                            prerender::FINAL_STATUS_MEMORY_LIMIT_EXCEEDED);
   GURL gurl("http://testit.sea");
   EXPECT_TRUE(loader()->IsIdle());
   EXPECT_TRUE(loader()->LoadPage(
@@ -263,10 +262,57 @@ TEST_F(PrerenderingLoaderTest, LoadPageLoadFailedNoContent) {
   PumpLoop();
 }
 
+TEST_F(PrerenderingLoaderTest, LoadPageLoadFailedNoRetry) {
+  test_adapter()->Configure(nullptr /* web_contents */,
+                            prerender::FINAL_STATUS_SAFE_BROWSING);
+  GURL gurl("http://testit.sea");
+  EXPECT_TRUE(loader()->IsIdle());
+  EXPECT_TRUE(loader()->LoadPage(
+      gurl,
+      base::Bind(&PrerenderingLoaderTest::OnLoadDone, base::Unretained(this))));
+  EXPECT_FALSE(loader()->IsIdle());
+  EXPECT_FALSE(loader()->IsLoaded());
+
+  test_adapter()->GetObserver()->OnPrerenderDomContentLoaded();
+  PumpLoop();
+  EXPECT_TRUE(loader()->IsIdle());
+  EXPECT_TRUE(callback_called());
+  // We did not provide any WebContents for the callback so expect did not load.
+  // FinalStatus is non-retryable failure.
+  EXPECT_EQ(Offliner::RequestStatus::PRERENDERING_FAILED_NO_RETRY,
+            callback_load_status());
+
+  // Stopped event causes no harm.
+  test_adapter()->GetObserver()->OnPrerenderStop();
+  PumpLoop();
+}
+
+TEST_F(PrerenderingLoaderTest, LoadPageLoadCanceled) {
+  test_adapter()->Configure(nullptr /* web_contents */,
+                            prerender::FINAL_STATUS_CANCELLED);
+  GURL gurl("http://testit.sea");
+  EXPECT_TRUE(loader()->IsIdle());
+  EXPECT_TRUE(loader()->LoadPage(
+      gurl,
+      base::Bind(&PrerenderingLoaderTest::OnLoadDone, base::Unretained(this))));
+  EXPECT_FALSE(loader()->IsIdle());
+  EXPECT_FALSE(loader()->IsLoaded());
+
+  test_adapter()->GetObserver()->OnPrerenderDomContentLoaded();
+  PumpLoop();
+  EXPECT_TRUE(loader()->IsIdle());
+  EXPECT_TRUE(callback_called());
+  EXPECT_EQ(Offliner::RequestStatus::PRERENDERING_CANCELED,
+            callback_load_status());
+
+  // Stopped event causes no harm.
+  test_adapter()->GetObserver()->OnPrerenderStop();
+  PumpLoop();
+}
+
 TEST_F(PrerenderingLoaderTest, LoadPageLoadFailedUnsupportedScheme) {
-  test_adapter()->Configure(
-      nullptr /* web_contents */,
-      prerender::FinalStatus::FINAL_STATUS_UNSUPPORTED_SCHEME);
+  test_adapter()->Configure(nullptr /* web_contents */,
+                            prerender::FINAL_STATUS_UNSUPPORTED_SCHEME);
   GURL gurl("http://testit.sea");
   EXPECT_TRUE(loader()->IsIdle());
   EXPECT_TRUE(loader()->LoadPage(

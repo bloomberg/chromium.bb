@@ -42,6 +42,8 @@ class Offliner {
     REQUEST_COORDINATOR_TIMED_OUT = 8,
     // The loader did not accept/start the request.
     PRERENDERING_NOT_STARTED = 9,
+    // Prerendering failed with hard error so should not retry the request.
+    PRERENDERING_FAILED_NO_RETRY = 10,
     // NOTE: insert new values above this line and update histogram enum too.
     STATUS_COUNT
   };

@@ -477,7 +477,6 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestSucceeded) {
 
   // Call the OfflinerDoneCallback to simulate the page being completed, wait
   // for callbacks.
-  EnableOfflinerCallback(true);
   SendOfflinerDoneCallback(request, Offliner::RequestStatus::SAVED);
   PumpLoop();
 
@@ -532,7 +531,6 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailed) {
 
   // Call the OfflinerDoneCallback to simulate the request failed, wait
   // for callbacks.
-  EnableOfflinerCallback(true);
   SendOfflinerDoneCallback(request,
                            Offliner::RequestStatus::PRERENDERING_FAILED);
   PumpLoop();
@@ -541,7 +539,6 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailed) {
   // and verifying that there is no attempt to pick another request following
   // this failure code.
 
-  // Verify neither request is removed from the queue; wait for callbacks.
   coordinator()->queue()->GetRequests(
       base::Bind(&RequestCoordinatorTest::GetRequestsDone,
                  base::Unretained(this)));
@@ -554,6 +551,57 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailed) {
   // subsequent notification that the request was removed).
   EXPECT_TRUE(observer().completed_called());
   EXPECT_EQ(RequestCoordinator::BackgroundSavePageResult::RETRY_COUNT_EXCEEDED,
+            observer().last_status());
+}
+
+TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailedNoRetryFailure) {
+  // Add a request to the queue, wait for callbacks to finish.
+  offline_pages::SavePageRequest request(kRequestId1, kUrl1, kClientId1,
+                                         base::Time::Now(), kUserRequested);
+  request.MarkAttemptStarted(base::Time::Now());
+  coordinator()->queue()->AddRequest(
+      request, base::Bind(&RequestCoordinatorTest::AddRequestDone,
+                          base::Unretained(this)));
+  PumpLoop();
+
+  // Add second request to the queue to check handling when first fails.
+  offline_pages::SavePageRequest request2(kRequestId2, kUrl2, kClientId2,
+                                          base::Time::Now(), kUserRequested);
+  coordinator()->queue()->AddRequest(
+      request2, base::Bind(&RequestCoordinatorTest::AddRequestDone,
+                           base::Unretained(this)));
+  PumpLoop();
+
+  // We need to give a callback to the request.
+  base::Callback<void(bool)> callback = base::Bind(
+      &RequestCoordinatorTest::EmptyCallbackFunction, base::Unretained(this));
+  coordinator()->SetProcessingCallbackForTest(callback);
+
+  // Set up device conditions for the test.
+  DeviceConditions device_conditions(false, 75,
+                                     net::NetworkChangeNotifier::CONNECTION_3G);
+  SetDeviceConditionsForTest(device_conditions);
+
+  // Call the OfflinerDoneCallback to simulate the request failed, wait
+  // for callbacks.
+  SendOfflinerDoneCallback(
+      request, Offliner::RequestStatus::PRERENDERING_FAILED_NO_RETRY);
+  PumpLoop();
+
+  // TODO(dougarnett): Consider injecting mock RequestPicker for this test
+  // and verifying that there is as attempt to pick another request following
+  // this non-retryable failure code.
+
+  coordinator()->queue()->GetRequests(base::Bind(
+      &RequestCoordinatorTest::GetRequestsDone, base::Unretained(this)));
+  PumpLoop();
+
+  // Now just one request in the queue since non-retryable failure.
+  EXPECT_EQ(1UL, last_requests().size());
+  // Check that the observer got the notification that we failed (and the
+  // subsequent notification that the request was removed).
+  EXPECT_TRUE(observer().completed_called());
+  EXPECT_EQ(RequestCoordinator::BackgroundSavePageResult::PRERENDER_FAILURE,
             observer().last_status());
 }
 
@@ -579,7 +627,6 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneForegroundCancel) {
 
   // Call the OfflinerDoneCallback to simulate the request failed, wait
   // for callbacks.
-  EnableOfflinerCallback(true);
   SendOfflinerDoneCallback(request,
                            Offliner::RequestStatus::FOREGROUND_CANCELED);
   PumpLoop();
@@ -617,7 +664,6 @@ TEST_F(RequestCoordinatorTest, OfflinerDonePrerenderingCancel) {
 
   // Call the OfflinerDoneCallback to simulate the request failed, wait
   // for callbacks.
-  EnableOfflinerCallback(true);
   SendOfflinerDoneCallback(request,
                            Offliner::RequestStatus::PRERENDERING_CANCELED);
   PumpLoop();

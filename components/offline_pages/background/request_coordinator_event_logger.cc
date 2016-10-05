@@ -31,6 +31,8 @@ static std::string OfflinerRequestStatusToString(
       return "REQUEST_COORDINATOR_TIMED_OUT";
     case Offliner::PRERENDERING_NOT_STARTED:
       return "PRERENDERING_NOT_STARTED";
+    case Offliner::PRERENDERING_FAILED_NO_RETRY:
+      return "PRERENDERING_FAILED_NO_RETRY";
     default:
       NOTREACHED();
       return std::to_string(static_cast<int>(request_status));

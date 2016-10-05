@@ -17,6 +17,33 @@
 
 namespace offline_pages {
 
+
+// Classifies the appropriate RequestStatus for for the given prerender
+// FinalStatus.
+Offliner::RequestStatus ClassifyFinalStatus(
+    prerender::FinalStatus final_status) {
+  switch (final_status) {
+
+    // Identify aborted/canceled operations
+
+    case prerender::FINAL_STATUS_CANCELLED:
+    // TODO(dougarnett): Reconsider if/when get better granularity (642768)
+    case prerender::FINAL_STATUS_UNSUPPORTED_SCHEME:
+      return Offliner::PRERENDERING_CANCELED;
+
+    // Identify non-retryable failues.
+
+    case prerender::FINAL_STATUS_SAFE_BROWSING:
+    case prerender::FINAL_STATUS_CREATING_AUDIO_STREAM:
+    case prerender::FINAL_STATUS_JAVASCRIPT_ALERT:
+      return Offliner::RequestStatus::PRERENDERING_FAILED_NO_RETRY;
+
+    // Otherwise, assume retryable failure.
+    default:
+      return Offliner::RequestStatus::PRERENDERING_FAILED;
+  }
+}
+
 PrerenderingLoader::PrerenderingLoader(content::BrowserContext* browser_context)
     : state_(State::IDLE),
       snapshot_controller_(nullptr),
@@ -145,7 +172,7 @@ void PrerenderingLoader::HandleLoadEvent() {
 }
 
 void PrerenderingLoader::HandleLoadingStopped() {
-  // Loading has stopped so unless the Loader has already transistioned to the
+  // Loading has stopped so unless the Loader has already transitioned to the
   // idle state, clean up the previous request state, transition to the idle
   // state, and post callback.
   // Note: it is possible to receive some asynchronous stopped indication after
@@ -155,32 +182,32 @@ void PrerenderingLoader::HandleLoadingStopped() {
   if (IsIdle())
     return;
 
-  // Request status depends on whether we are still loading (failed) or
-  // did load and then loading was stopped (cancel - from prerender stack).
-  Offliner::RequestStatus request_status =
-      IsLoaded() ? Offliner::RequestStatus::PRERENDERING_CANCELED
-                 : Offliner::RequestStatus::PRERENDERING_FAILED;
+  Offliner::RequestStatus request_status;
 
-  if (adapter_->IsActive()) {
+  if (IsLoaded()) {
+    // If page already loaded, then prerender is telling us that it is
+    // canceling (and we should stop using the loaded WebContents).
+    request_status = Offliner::RequestStatus::PRERENDERING_CANCELED;
+  } else if (adapter_->IsActive()) {
+    // Get the available FinalStatus to better identify the outcome.
     prerender::FinalStatus final_status = adapter_->GetFinalStatus();
     DVLOG(1) << "Load failed: " << final_status;
+    request_status = ClassifyFinalStatus(final_status);
 
     // Loss of network connection can show up as unsupported scheme per
     // a redirect to a special data URL is used to navigate to error page.
-    // We want to be able to retry these request so for now treat any
-    // unsupported scheme error as a cancel.
-    // TODO(dougarnett): Use new FinalStatus code if/when supported (642768).
-    // TODO(dougarnett): Create whitelist of final status codes that should
-    // not be considered failures (and define new RequestStatus code for them).
-    if (adapter_->GetFinalStatus() ==
-        prerender::FinalStatus::FINAL_STATUS_UNSUPPORTED_SCHEME) {
-      request_status = Offliner::RequestStatus::PRERENDERING_CANCELED;
+    // Capture the current connectivity here in case we can leverage that
+    // to differentiate how to treat it.
+    if (final_status == prerender::FINAL_STATUS_UNSUPPORTED_SCHEME) {
       UMA_HISTOGRAM_ENUMERATION(
           "OfflinePages.Background.UnsupportedScheme.ConnectionType",
           net::NetworkChangeNotifier::GetConnectionType(),
           net::NetworkChangeNotifier::ConnectionType::CONNECTION_LAST + 1);
     }
     adapter_->DestroyActive();
+  } else {
+    // No access to FinalStatus so classify as retryable failure.
+    request_status = Offliner::RequestStatus::PRERENDERING_FAILED;
   }
 
   snapshot_controller_.reset(nullptr);

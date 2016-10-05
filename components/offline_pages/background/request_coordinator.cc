@@ -516,6 +516,9 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
   } else if (status == Offliner::RequestStatus::SAVED) {
     // Remove the request from the queue if it succeeded.
     RemoveAttemptedRequest(request, BackgroundSavePageResult::SUCCESS);
+  } else if (status == Offliner::RequestStatus::PRERENDERING_FAILED_NO_RETRY) {
+    RemoveAttemptedRequest(request,
+                           BackgroundSavePageResult::PRERENDER_FAILURE);
   } else if (request.completed_attempt_count() + 1 >=
              policy_->GetMaxCompletedTries()) {
     // Remove from the request queue if we exceeded max retries. The +1
@@ -541,13 +544,12 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
 
   // Determine whether we might try another request in this
   // processing window based on how the previous request completed.
-  //
-  // TODO(dougarnett): Need to split PRERENDERING_FAILED into separate
-  // codes as to whether we should try another request or not.
   switch (status) {
     case Offliner::RequestStatus::SAVED:
     case Offliner::RequestStatus::SAVE_FAILED:
-    case Offliner::RequestStatus::REQUEST_COORDINATOR_CANCELED:  // timeout
+    case Offliner::RequestStatus::REQUEST_COORDINATOR_CANCELED:
+    case Offliner::RequestStatus::REQUEST_COORDINATOR_TIMED_OUT:
+    case Offliner::RequestStatus::PRERENDERING_FAILED_NO_RETRY:
       // Consider processing another request in this service window.
       TryNextRequest();
       break;
