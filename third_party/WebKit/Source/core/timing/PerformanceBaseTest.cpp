@@ -25,7 +25,9 @@ class TestPerformanceBase : public PerformanceBase {
 
   int numObservers() { return m_observers.size(); }
 
-  int numLongTaskTimingEntries() { return m_longTaskTimingBuffer.size(); }
+  bool hasPerformanceObserverFor(PerformanceEntry::EntryType entryType) {
+    return hasObserverFor(entryType);
+  }
 
   DEFINE_INLINE_TRACE() { PerformanceBase::trace(visitor); }
 };
@@ -39,6 +41,10 @@ class PerformanceBaseTest : public ::testing::Test {
     m_cb =
         PerformanceObserverCallback::create(scriptState->isolate(), callback);
     m_observer = PerformanceObserver::create(scriptState, m_base, m_cb);
+  }
+
+  int numPerformanceEntriesInObserver() {
+    return m_observer->m_performanceEntries.size();
   }
 
   Persistent<TestPerformanceBase> m_base;
@@ -88,7 +94,8 @@ TEST_F(PerformanceBaseTest, AddLongTaskTiming) {
 
   // Add a long task entry, but no observer registered.
   m_base->addLongTaskTiming(1234, 5678, "www.foo.com/bar", nullptr);
-  EXPECT_EQ(0, m_base->numLongTaskTimingEntries());  // has no effect
+  EXPECT_FALSE(m_base->hasPerformanceObserverFor(PerformanceEntry::LongTask));
+  EXPECT_EQ(0, numPerformanceEntriesInObserver());  // has no effect
 
   // Make an observer for longtask
   NonThrowableExceptionState exceptionState;
@@ -98,9 +105,9 @@ TEST_F(PerformanceBaseTest, AddLongTaskTiming) {
   options.setEntryTypes(entryTypeVec);
   m_observer->observe(options, exceptionState);
 
+  EXPECT_TRUE(m_base->hasPerformanceObserverFor(PerformanceEntry::LongTask));
   // Add a long task entry
   m_base->addLongTaskTiming(1234, 5678, "www.foo.com/bar", nullptr);
-  EXPECT_EQ(1, m_base->numLongTaskTimingEntries());  // added an entry
+  EXPECT_EQ(1, numPerformanceEntriesInObserver());  // added an entry
 }
-
 }  // namespace blink

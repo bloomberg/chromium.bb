@@ -171,7 +171,6 @@ PASS childWindow.pageYOffset is 0
 PASS childWindow.performance.navigation.redirectCount is 0
 PASS childWindow.performance.navigation.type is 0
 PASS childWindow.performance.onframetimingbufferfull is null
-PASS childWindow.performance.onlongtasktimingbufferfull is null
 PASS childWindow.performance.onresourcetimingbufferfull is null
 PASS childWindow.performance.onwebkitresourcetimingbufferfull is null
 PASS childWindow.performance.timing.connectEnd is 0

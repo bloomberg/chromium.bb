@@ -96,11 +96,6 @@ class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(frametimingbufferfull);
 
-  void clearLongTaskTimings();
-  void setLongTaskTimingBufferSize(unsigned);
-
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(longtasktimingbufferfull);
-
   void addLongTaskTiming(double, double, const String&, DOMWindow*);
 
   void addResourceTiming(const ResourceTimingInfo&);
@@ -135,9 +130,6 @@ class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
   bool isFrameTimingBufferFull();
   void addFrameTimingBuffer(PerformanceEntry&);
 
-  bool isLongTaskTimingBufferFull();
-  void addLongTaskTimingBuffer(PerformanceEntry&);
-
   void notifyObserversOfEntry(PerformanceEntry&);
   bool hasObserverFor(PerformanceEntry::EntryType) const;
 
@@ -147,8 +139,6 @@ class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
   unsigned m_frameTimingBufferSize;
   PerformanceEntryVector m_resourceTimingBuffer;
   unsigned m_resourceTimingBufferSize;
-  PerformanceEntryVector m_longTaskTimingBuffer;
-  unsigned m_longTaskTimingBufferSize;
   Member<UserTiming> m_userTiming;
 
   double m_timeOrigin;

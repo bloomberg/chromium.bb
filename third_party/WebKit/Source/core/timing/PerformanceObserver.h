@@ -27,6 +27,7 @@ class CORE_EXPORT PerformanceObserver final
       public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
   friend class PerformanceBase;
+  friend class PerformanceBaseTest;
   friend class PerformanceObserverTest;
 
  public:

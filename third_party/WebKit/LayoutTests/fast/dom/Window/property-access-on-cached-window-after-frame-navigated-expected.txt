@@ -172,7 +172,6 @@ PASS oldChildWindow.pageYOffset is newChildWindow.pageYOffset
 PASS oldChildWindow.performance.navigation.redirectCount is newChildWindow.performance.navigation.redirectCount
 PASS oldChildWindow.performance.navigation.type is newChildWindow.performance.navigation.type
 PASS oldChildWindow.performance.onframetimingbufferfull is newChildWindow.performance.onframetimingbufferfull
-PASS oldChildWindow.performance.onlongtasktimingbufferfull is newChildWindow.performance.onlongtasktimingbufferfull
 PASS oldChildWindow.performance.onresourcetimingbufferfull is newChildWindow.performance.onresourcetimingbufferfull
 PASS oldChildWindow.performance.onwebkitresourcetimingbufferfull is newChildWindow.performance.onwebkitresourcetimingbufferfull
 PASS oldChildWindow.performance.timing.connectEnd is newChildWindow.performance.timing.connectEnd

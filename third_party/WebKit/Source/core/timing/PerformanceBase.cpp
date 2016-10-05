@@ -51,12 +51,10 @@ using PerformanceObserverVector = HeapVector<Member<PerformanceObserver>>;
 
 static const size_t defaultResourceTimingBufferSize = 150;
 static const size_t defaultFrameTimingBufferSize = 150;
-static const size_t defaultLongTaskTimingBufferSize = 150;
 
 PerformanceBase::PerformanceBase(double timeOrigin)
     : m_frameTimingBufferSize(defaultFrameTimingBufferSize),
       m_resourceTimingBufferSize(defaultResourceTimingBufferSize),
-      m_longTaskTimingBufferSize(defaultLongTaskTimingBufferSize),
       m_userTiming(nullptr),
       m_timeOrigin(timeOrigin),
       m_observerFilterOptions(PerformanceEntry::Invalid),
@@ -79,7 +77,6 @@ PerformanceEntryVector PerformanceBase::getEntries() const {
 
   entries.appendVector(m_resourceTimingBuffer);
   entries.appendVector(m_frameTimingBuffer);
-  entries.appendVector(m_longTaskTimingBuffer);
 
   if (m_userTiming) {
     entries.appendVector(m_userTiming->getMarks());
@@ -100,6 +97,10 @@ PerformanceEntryVector PerformanceBase::getEntriesByType(
   switch (type) {
     case PerformanceEntry::Invalid:
       return entries;
+    case PerformanceEntry::LongTask:
+      // Unsupported for LongTask. Per the spec, Long task entries can only be
+      // accessed via Performance Observer. No separate buffer is maintained.
+      return entries;
     case PerformanceEntry::Resource:
       for (const auto& resource : m_resourceTimingBuffer)
         entries.append(resource);
@@ -119,10 +120,6 @@ PerformanceEntryVector PerformanceBase::getEntriesByType(
     case PerformanceEntry::Measure:
       if (m_userTiming)
         entries.appendVector(m_userTiming->getMeasures());
-      break;
-    case PerformanceEntry::LongTask:
-      for (const auto& longTask : m_longTaskTimingBuffer)
-        entries.append(longTask);
       break;
   }
 
@@ -190,16 +187,6 @@ void PerformanceBase::setFrameTimingBufferSize(unsigned size) {
   m_frameTimingBufferSize = size;
   if (isFrameTimingBufferFull())
     dispatchEvent(Event::create(EventTypeNames::frametimingbufferfull));
-}
-
-void PerformanceBase::clearLongTaskTimings() {
-  m_longTaskTimingBuffer.clear();
-}
-
-void PerformanceBase::setLongTaskTimingBufferSize(unsigned size) {
-  m_longTaskTimingBufferSize = size;
-  if (isLongTaskTimingBufferFull())
-    dispatchEvent(Event::create(EventTypeNames::longtasktimingbufferfull));
 }
 
 static bool passesTimingAllowCheck(
@@ -363,24 +350,12 @@ void PerformanceBase::addLongTaskTiming(double startTime,
                                         double endTime,
                                         const String& name,
                                         DOMWindow* culpritWindow) {
-  if (isLongTaskTimingBufferFull() ||
-      !hasObserverFor(PerformanceEntry::LongTask))
+  if (!hasObserverFor(PerformanceEntry::LongTask))
     return;
   PerformanceEntry* entry = PerformanceLongTaskTiming::create(
       monotonicTimeToDOMHighResTimeStampInMillis(startTime),
       monotonicTimeToDOMHighResTimeStampInMillis(endTime), name, culpritWindow);
   notifyObserversOfEntry(*entry);
-  addLongTaskTimingBuffer(*entry);
-}
-
-void PerformanceBase::addLongTaskTimingBuffer(PerformanceEntry& entry) {
-  m_longTaskTimingBuffer.append(&entry);
-  if (isLongTaskTimingBufferFull())
-    dispatchEvent(Event::create(EventTypeNames::longtasktimingbufferfull));
-}
-
-bool PerformanceBase::isLongTaskTimingBufferFull() {
-  return m_longTaskTimingBuffer.size() >= m_longTaskTimingBufferSize;
 }
 
 void PerformanceBase::mark(const String& markName,
@@ -518,7 +493,6 @@ DOMHighResTimeStamp PerformanceBase::now() const {
 DEFINE_TRACE(PerformanceBase) {
   visitor->trace(m_frameTimingBuffer);
   visitor->trace(m_resourceTimingBuffer);
-  visitor->trace(m_longTaskTimingBuffer);
   visitor->trace(m_userTiming);
   visitor->trace(m_observers);
   visitor->trace(m_activeObservers);
