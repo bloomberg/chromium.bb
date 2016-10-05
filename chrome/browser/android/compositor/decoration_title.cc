@@ -17,7 +17,6 @@
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 
-namespace chrome {
 namespace android {
 
 DecorationTitle::DecorationTitle(ui::ResourceManager* resource_manager,
@@ -242,4 +241,3 @@ scoped_refptr<cc::Layer> DecorationTitle::layer() {
 }
 
 }  // namespace android
-}  // namespace chrome

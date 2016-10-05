@@ -41,7 +41,6 @@ typedef base::Callback<void(float, const SkBitmap&)> TabReadbackCallback;
 
 }  // namespace
 
-namespace chrome {
 namespace android {
 
 class TabContentManager::TabReadbackRequest {
@@ -350,4 +349,3 @@ jlong Init(JNIEnv* env,
 }
 
 }  // namespace android
-}  // namespace chrome

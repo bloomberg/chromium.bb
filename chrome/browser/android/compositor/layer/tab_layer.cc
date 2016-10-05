@@ -27,7 +27,6 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/transform.h"
 
-namespace chrome {
 namespace android {
 
 // static
@@ -684,4 +683,3 @@ void TabLayer::SetTitle(DecorationTitle* title) {
 }
 
 }  //  namespace android
-}  //  namespace chrome

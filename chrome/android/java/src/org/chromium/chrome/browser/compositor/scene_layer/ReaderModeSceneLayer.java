@@ -13,9 +13,8 @@ import org.chromium.ui.resources.ResourceManager;
 /**
  * A SceneLayer to render layers for Reader Mode.
  */
-@JNINamespace("chrome::android")
+@JNINamespace("android")
 public class ReaderModeSceneLayer extends SceneOverlayLayer {
-
     /** Pointer to native ReaderModeSceneLayer. */
     private long mNativePtr;
 

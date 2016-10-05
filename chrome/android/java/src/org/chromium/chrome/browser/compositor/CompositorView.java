@@ -45,7 +45,7 @@ import org.chromium.ui.resources.ResourceManager;
 /**
  * The is the {@link View} displaying the ui compositor results; including webpages and tabswitcher.
  */
-@JNINamespace("chrome::android")
+@JNINamespace("android")
 public class CompositorView
         extends SurfaceView implements ContentOffsetProvider, SurfaceHolder.Callback {
     private static final String TAG = "CompositorView";

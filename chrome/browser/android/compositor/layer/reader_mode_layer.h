@@ -17,7 +17,6 @@ namespace ui {
 class ResourceManager;
 }
 
-namespace chrome {
 namespace android {
 
 class ReaderModeLayer : public OverlayPanelLayer {
@@ -45,6 +44,5 @@ class ReaderModeLayer : public OverlayPanelLayer {
 };
 
 }  //  namespace android
-}  //  namespace chrome
 
 #endif  // CHROME_BROWSER_ANDROID_COMPOSITOR_LAYER_READER_MODE_LAYER_H_

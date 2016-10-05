@@ -7,13 +7,11 @@
 
 #include <jni.h>
 
-namespace chrome {
 namespace android {
 
 // Register all JNI bindings necessary for chrome browser process.
 bool RegisterBrowserJNI(JNIEnv* env);
 
-} // namespace android
-} // namespace chrome
+}  // namespace android
 
 #endif  // CHROME_BROWSER_ANDROID_CHROME_JNI_REGISTRAR_H_

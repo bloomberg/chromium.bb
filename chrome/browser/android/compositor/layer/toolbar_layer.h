@@ -19,7 +19,6 @@ class SolidColorLayer;
 class UIResourceLayer;
 }
 
-namespace chrome {
 namespace android {
 
 class ToolbarLayer : public Layer {
@@ -70,6 +69,5 @@ class ToolbarLayer : public Layer {
 };
 
 }  //  namespace android
-}  //  namespace chrome
 
 #endif  // CHROME_BROWSER_ANDROID_COMPOSITOR_LAYER_TOOLBAR_LAYER_H_

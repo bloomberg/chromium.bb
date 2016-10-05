@@ -27,9 +27,8 @@ import java.util.List;
 /**
  * A SceneLayer to render layers for the toolbar.
  */
-@JNINamespace("chrome::android")
+@JNINamespace("android")
 public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay {
-
     /** Pointer to native ToolbarSceneLayer. */
     private long mNativePtr;
 

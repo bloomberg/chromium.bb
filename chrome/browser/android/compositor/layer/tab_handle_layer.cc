@@ -14,7 +14,6 @@
 #include "ui/android/resources/resource_manager.h"
 #include "ui/base/l10n/l10n_util_android.h"
 
-namespace chrome {
 namespace android {
 
 // static
@@ -193,4 +192,3 @@ TabHandleLayer::~TabHandleLayer() {
 }
 
 }  // namespace android
-}  // namespace chrome

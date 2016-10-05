@@ -31,9 +31,8 @@ JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
     base::android::DisableManualJniRegistration();
     ret = android_webview::OnJNIOnLoadInit();
   } else {
-    ret = chrome::android::OnJNIOnLoadRegisterJNI(vm,
-                                                  base::Bind(&RegisterJNI)) &&
-      chrome::android::OnJNIOnLoadInit(base::Bind(&Init));
+    ret = android::OnJNIOnLoadRegisterJNI(vm, base::Bind(&RegisterJNI)) &&
+          android::OnJNIOnLoadInit(base::Bind(&Init));
   }
   return ret ? JNI_VERSION_1_4 : -1;
 }

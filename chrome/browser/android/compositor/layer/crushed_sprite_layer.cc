@@ -13,7 +13,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/skia_util.h"
 
-namespace chrome {
 namespace android {
 
 // static
@@ -70,7 +69,7 @@ void CrushedSpriteLayer::DrawSpriteFrame(
     // assumption does not hold.
     if (sprite_frame != 0 && sprite_frame != resource->GetFrameCount() - 1) {
       // Draw the previous frame.
-      if (previous_frame_ != -1){
+      if (previous_frame_ != -1) {
         canvas->drawBitmap(previous_frame_bitmap_, 0, 0, nullptr);
       }
 
@@ -127,4 +126,3 @@ CrushedSpriteLayer::~CrushedSpriteLayer() {
 }
 
 }  // namespace android
-}  // namespace chrome

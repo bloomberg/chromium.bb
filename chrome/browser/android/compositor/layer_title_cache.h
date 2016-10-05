@@ -25,7 +25,6 @@ namespace ui {
 class ResourceManager;
 }
 
-namespace chrome {
 namespace android {
 
 class DecorationTitle;
@@ -93,6 +92,5 @@ class LayerTitleCache {
 bool RegisterLayerTitleCache(JNIEnv* env);
 
 }  // namespace android
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_ANDROID_COMPOSITOR_LAYER_TITLE_CACHE_H_

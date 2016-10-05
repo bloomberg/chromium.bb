@@ -25,7 +25,6 @@ class Rect;
 class RectF;
 }
 
-namespace chrome {
 namespace android {
 
 // Chromium Android specific WebContentsDelegate.
@@ -105,6 +104,5 @@ class TabWebContentsDelegateAndroid
 bool RegisterTabWebContentsDelegateAndroid(JNIEnv* env);
 
 }  // namespace android
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_ANDROID_TAB_WEB_CONTENTS_DELEGATE_ANDROID_H_

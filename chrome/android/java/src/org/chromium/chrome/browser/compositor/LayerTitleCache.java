@@ -29,7 +29,7 @@ import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
  * A version of the {@link LayerTitleCache} that builds native cc::Layer objects
  * that represent the cached title textures.
  */
-@JNINamespace("chrome::android")
+@JNINamespace("android")
 public class LayerTitleCache implements TitleCache {
     private static int sNextResourceId = 1;
 

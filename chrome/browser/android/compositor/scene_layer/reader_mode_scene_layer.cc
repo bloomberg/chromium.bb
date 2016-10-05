@@ -17,7 +17,6 @@
 
 using base::android::JavaParamRef;
 
-namespace chrome {
 namespace android {
 
 ReaderModeSceneLayer::ReaderModeSceneLayer(JNIEnv* env, jobject jobj)
@@ -163,4 +162,3 @@ bool RegisterReaderModeSceneLayer(JNIEnv* env) {
 }
 
 }  // namespace android
-}  // namespace chrome

@@ -11,7 +11,6 @@
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
-namespace chrome {
 namespace android {
 
 // static
@@ -68,4 +67,3 @@ bool RegisterSceneLayer(JNIEnv* env) {
 }
 
 }  // namespace android
-}  // namespace chrome

@@ -23,7 +23,6 @@ namespace ui {
 class ResourceManager;
 }
 
-namespace chrome {
 namespace android {
 
 class LayerTitleCache;
@@ -136,6 +135,5 @@ class TabListSceneLayer : public SceneLayer {
 bool RegisterTabListSceneLayer(JNIEnv* env);
 
 }  // namespace android
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_ANDROID_COMPOSITOR_SCENE_LAYER_TAB_LIST_SCENE_LAYER_H_

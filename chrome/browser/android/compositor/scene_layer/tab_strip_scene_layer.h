@@ -20,7 +20,6 @@ namespace cc {
 class SolidColorLayer;
 }
 
-namespace chrome {
 namespace android {
 
 class LayerTitleCache;
@@ -137,6 +136,5 @@ class TabStripSceneLayer : public SceneLayer {
 bool RegisterTabStripSceneLayer(JNIEnv* env);
 
 }  // namespace android
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_ANDROID_COMPOSITOR_SCENE_LAYER_TAB_STRIP_SCENE_LAYER_H_

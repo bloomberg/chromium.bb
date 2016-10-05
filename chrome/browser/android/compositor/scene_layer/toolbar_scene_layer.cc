@@ -16,7 +16,6 @@
 
 using base::android::JavaParamRef;
 
-namespace chrome {
 namespace android {
 
 ToolbarSceneLayer::ToolbarSceneLayer(JNIEnv* env, jobject jobj)
@@ -127,4 +126,3 @@ bool RegisterToolbarSceneLayer(JNIEnv* env) {
 }
 
 }  // namespace android
-}  // namespace chrome

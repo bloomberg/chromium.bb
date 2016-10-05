@@ -13,7 +13,6 @@
 #include "cc/output/filter_operations.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace chrome {
 namespace android {
 
 // A simple wrapper for cc::Layer. You can override this to contain
@@ -33,6 +32,5 @@ class Layer : public base::RefCounted<Layer> {
 };
 
 }  // namespace android
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_ANDROID_COMPOSITOR_LAYER_LAYER_H_

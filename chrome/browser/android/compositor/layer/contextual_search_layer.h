@@ -24,7 +24,6 @@ namespace ui {
 class ResourceManager;
 }
 
-namespace chrome {
 namespace android {
 
 class CrushedSpriteLayer;
@@ -122,6 +121,5 @@ class ContextualSearchLayer : public OverlayPanelLayer {
 };
 
 }  //  namespace android
-}  //  namespace chrome
 
 #endif  // CHROME_BROWSER_ANDROID_COMPOSITOR_LAYER_CONTEXTUAL_SEARCH_LAYER_H_

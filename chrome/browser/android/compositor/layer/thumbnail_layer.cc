@@ -9,7 +9,6 @@
 #include "content/public/browser/android/compositor.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
-namespace chrome {
 namespace android {
 
 // static
@@ -66,4 +65,3 @@ void ThumbnailLayer::UpdateSizes(const gfx::SizeF& content_size,
 }
 
 }  // namespace android
-}  // namespace chrome

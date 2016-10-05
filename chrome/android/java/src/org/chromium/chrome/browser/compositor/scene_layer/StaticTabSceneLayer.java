@@ -15,7 +15,7 @@ import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 /**
  * A SceneLayer to render a static tab.
  */
-@JNINamespace("chrome::android")
+@JNINamespace("android")
 public class StaticTabSceneLayer extends SceneLayer {
     // NOTE: If you use SceneLayer's native pointer here, the JNI generator will try to
     // downcast using reinterpret_cast<>. We keep a separate pointer to avoid it.

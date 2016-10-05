@@ -20,7 +20,6 @@ class Layer;
 class SolidColorLayer;
 }
 
-namespace chrome {
 namespace android {
 
 class ToolbarLayer;
@@ -79,6 +78,5 @@ class ToolbarSceneLayer : public SceneLayer {
 bool RegisterToolbarSceneLayer(JNIEnv* env);
 
 }  // namespace android
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_ANDROID_COMPOSITOR_SCENE_LAYER_TOOLBAR_SCENE_LAYER_H_

@@ -9,7 +9,6 @@
 #include "content/public/browser/android/compositor.h"
 #include "ui/android/resources/resource_manager.h"
 
-namespace chrome {
 namespace android {
 
 // static
@@ -63,4 +62,3 @@ ReaderModeLayer::~ReaderModeLayer() {
 }
 
 }  //  namespace android
-}  //  namespace chrome

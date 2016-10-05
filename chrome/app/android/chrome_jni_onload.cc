@@ -10,7 +10,6 @@
 #include "chrome/browser/android/chrome_jni_registrar.h"
 #include "content/public/app/content_jni_onload.h"
 
-namespace chrome {
 namespace android {
 
 namespace {
@@ -46,4 +45,3 @@ bool OnJNIOnLoadInit(base::android::InitCallback callback) {
 }
 
 }  // namespace android
-}  // namespace chrome

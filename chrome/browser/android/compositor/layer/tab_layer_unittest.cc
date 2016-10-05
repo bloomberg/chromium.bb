@@ -8,7 +8,7 @@
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
 
-using chrome::android::TabLayer;
+using android::TabLayer;
 
 TEST(ComputePaddingPositionsTest, NoSideOrBottomPadding) {
   gfx::Size content_size(100, 400);

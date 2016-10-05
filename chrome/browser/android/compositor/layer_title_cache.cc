@@ -20,7 +20,6 @@
 
 using base::android::JavaParamRef;
 
-namespace chrome {
 namespace android {
 
 // static
@@ -143,4 +142,3 @@ jlong Init(JNIEnv* env,
 }
 
 }  // namespace android
-}  // namespace chrome

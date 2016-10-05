@@ -44,7 +44,6 @@ class ResourceManager;
 class UIResourceProvider;
 }
 
-namespace chrome {
 namespace android {
 
 class LayerTitleCache;
@@ -135,6 +134,5 @@ class CompositorView : public content::CompositorClient,
 bool RegisterCompositorView(JNIEnv* env);
 
 }  // namespace android
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_ANDROID_COMPOSITOR_COMPOSITOR_VIEW_H_

@@ -28,7 +28,6 @@ class ResourceManager;
 
 class SkBitmap;
 
-namespace chrome {
 namespace android {
 
 class ContentLayer;
@@ -151,6 +150,5 @@ class TabLayer : public Layer {
 };
 
 }  //  namespace android
-}  //  namespace chrome
 
 #endif  // CHROME_BROWSER_ANDROID_COMPOSITOR_LAYER_TAB_LAYER_H_

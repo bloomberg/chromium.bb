@@ -22,7 +22,6 @@
 
 using base::android::JavaParamRef;
 
-namespace chrome {
 namespace android {
 
 ContextualSearchSceneLayer::ContextualSearchSceneLayer(JNIEnv* env,
@@ -267,4 +266,3 @@ bool RegisterContextualSearchSceneLayer(JNIEnv* env) {
 }
 
 }  // namespace android
-}  // namespace chrome

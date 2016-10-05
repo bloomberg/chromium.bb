@@ -20,7 +20,6 @@ class Layer;
 class SolidColorLayer;
 }
 
-namespace chrome {
 namespace android {
 
 class ContextualSearchLayer;
@@ -127,6 +126,5 @@ class ContextualSearchSceneLayer : public SceneLayer,
 bool RegisterContextualSearchSceneLayer(JNIEnv* env);
 
 }  // namespace android
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_ANDROID_COMPOSITOR_SCENE_LAYER_CONTEXTUAL_SEARCH_SCENE_LAYER_H_

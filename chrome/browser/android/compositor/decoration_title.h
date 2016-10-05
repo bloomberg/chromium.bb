@@ -24,7 +24,6 @@ namespace ui {
 class ResourceManager;
 }
 
-namespace chrome {
 namespace android {
 
 class DecorationTitle {
@@ -89,6 +88,5 @@ class DecorationTitle {
 };
 
 }  // namespace android
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_ANDROID_COMPOSITOR_DECORATION_TITLE_H_

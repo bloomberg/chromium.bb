@@ -44,11 +44,9 @@ namespace chrome {
 struct NavigateParams;
 }
 
-namespace chrome {
 namespace android {
 class TabWebContentsDelegateAndroid;
 class TabContentManager;
-}
 }
 
 namespace content {
@@ -278,10 +276,10 @@ class TabAndroid : public CoreTabHelperDelegate,
   content::NotificationRegistrar notification_registrar_;
 
   scoped_refptr<cc::Layer> content_layer_;
-  chrome::android::TabContentManager* tab_content_manager_;
+  android::TabContentManager* tab_content_manager_;
 
   std::unique_ptr<content::WebContents> web_contents_;
-  std::unique_ptr<chrome::android::TabWebContentsDelegateAndroid>
+  std::unique_ptr<android::TabWebContentsDelegateAndroid>
       web_contents_delegate_;
 
   std::unique_ptr<blimp::client::BlimpContents> blimp_contents_;

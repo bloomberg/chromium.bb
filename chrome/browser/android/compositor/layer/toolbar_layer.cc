@@ -12,7 +12,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/android/resources/resource_manager.h"
 
-namespace chrome {
 namespace android {
 
 // static
@@ -179,4 +178,3 @@ ToolbarLayer::~ToolbarLayer() {
 }
 
 }  //  namespace android
-}  //  namespace chrome

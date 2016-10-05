@@ -29,7 +29,6 @@ const SkAlpha kPeekPromoBackgroundMaximumAlphaBlend = 0.25f * 255;
 
 }  // namespace
 
-namespace chrome {
 namespace android {
 
 // static
@@ -647,4 +646,3 @@ ContextualSearchLayer::~ContextualSearchLayer() {
 }
 
 }  //  namespace android
-}  //  namespace chrome

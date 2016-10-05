@@ -20,8 +20,8 @@ bool Init() {
 
 // This is called by the VM when the shared library is first loaded.
 JNI_EXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
-  if (!chrome::android::OnJNIOnLoadRegisterJNI(vm, base::Bind(&RegisterJNI)) ||
-      !chrome::android::OnJNIOnLoadInit(base::Bind(&Init))) {
+  if (!android::OnJNIOnLoadRegisterJNI(vm, base::Bind(&RegisterJNI)) ||
+      !android::OnJNIOnLoadInit(base::Bind(&Init))) {
     return -1;
   }
   return JNI_VERSION_1_4;

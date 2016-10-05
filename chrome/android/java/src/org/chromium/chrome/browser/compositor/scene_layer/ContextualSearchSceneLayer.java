@@ -20,9 +20,8 @@ import org.chromium.ui.resources.ResourceManager;
 /**
  * A SceneLayer to render layers for ContextualSearchLayout.
  */
-@JNINamespace("chrome::android")
+@JNINamespace("android")
 public class ContextualSearchSceneLayer extends SceneOverlayLayer {
-
     // NOTE: If you use SceneLayer's native pointer here, the JNI generator will try to
     // downcast using reinterpret_cast<>. We keep a separate pointer to avoid it.
     private long mNativePtr;

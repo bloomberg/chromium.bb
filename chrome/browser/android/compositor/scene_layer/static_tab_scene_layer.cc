@@ -15,7 +15,6 @@
 
 using base::android::JavaParamRef;
 
-namespace chrome {
 namespace android {
 
 StaticTabSceneLayer::StaticTabSceneLayer(JNIEnv* env, jobject jobj)
@@ -62,10 +61,9 @@ void StaticTabSceneLayer::UpdateTabLayer(
                                   content_viewport_height);
   gfx::Point content_viewport_offset(content_viewport_x, content_viewport_y);
   if (!content_layer_.get()) {
-    chrome::android::TabContentManager* tab_content_manager =
-        chrome::android::TabContentManager::FromJavaObject(
-            jtab_content_manager);
-    content_layer_ = chrome::android::ContentLayer::Create(tab_content_manager);
+    android::TabContentManager* tab_content_manager =
+        android::TabContentManager::FromJavaObject(jtab_content_manager);
+    content_layer_ = android::ContentLayer::Create(tab_content_manager);
     layer_->AddChild(content_layer_->layer());
   }
 
@@ -135,4 +133,3 @@ bool RegisterStaticTabSceneLayer(JNIEnv* env) {
 }
 
 }  // namespace android
-}  // namespace chrome

@@ -21,7 +21,7 @@ import org.chromium.ui.resources.ResourceManager;
  * composed of {@link StripLayoutTab}s) to the screen.  This object keeps the layers up to date and
  * removes/creates children as necessary.  This object is built by its native counterpart.
  */
-@JNINamespace("chrome::android")
+@JNINamespace("android")
 public class TabStripSceneLayer extends SceneOverlayLayer {
     private long mNativePtr;
     private final float mDpToPx;

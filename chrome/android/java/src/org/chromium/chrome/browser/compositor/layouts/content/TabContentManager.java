@@ -26,7 +26,7 @@ import java.util.List;
  * The TabContentManager is responsible for serving tab contents to the UI components. Contents
  * could be live or static thumbnails.
  */
-@JNINamespace("chrome::android")
+@JNINamespace("android")
 public class TabContentManager {
     private final Context mContext;
     private final float mThumbnailScale;

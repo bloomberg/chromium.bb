@@ -20,7 +20,6 @@ class Layer;
 class SolidColorLayer;
 }
 
-namespace chrome {
 namespace android {
 
 class ReaderModeLayer;
@@ -86,6 +85,5 @@ class ReaderModeSceneLayer : public SceneLayer {
 bool RegisterReaderModeSceneLayer(JNIEnv* env);
 
 }  // namespace android
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_ANDROID_COMPOSITOR_SCENE_LAYER_READER_MODE_SCENE_LAYER_H_

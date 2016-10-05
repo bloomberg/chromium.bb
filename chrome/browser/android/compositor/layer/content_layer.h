@@ -17,7 +17,6 @@ namespace cc {
 class Layer;
 }
 
-namespace chrome {
 namespace android {
 
 class TabContentManager;
@@ -70,6 +69,5 @@ class ContentLayer : public Layer {
 };
 
 }  //  namespace android
-}  //  namespace chrome
 
 #endif  // CHROME_BROWSER_ANDROID_COMPOSITOR_LAYER_CONTENT_LAYER_H_

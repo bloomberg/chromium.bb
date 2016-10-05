@@ -26,7 +26,6 @@ const float kDefaultIconWidthDp = 36.0f;
 
 }  // namespace
 
-namespace chrome {
 namespace android {
 
 scoped_refptr<cc::Layer> OverlayPanelLayer::GetIconLayer() {
@@ -316,4 +315,3 @@ scoped_refptr<cc::Layer> OverlayPanelLayer::layer() {
 }
 
 }  //  namespace android
-}  //  namespace chrome

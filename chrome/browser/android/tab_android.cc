@@ -385,9 +385,9 @@ void TabAndroid::InitWebContents(
       SetViewAndroid(web_contents()->GetNativeView());
   CoreTabHelper::FromWebContents(web_contents())->set_delegate(this);
   SearchTabHelper::FromWebContents(web_contents())->set_delegate(this);
-  web_contents_delegate_.reset(
-      new chrome::android::TabWebContentsDelegateAndroid(
-          env, jweb_contents_delegate));
+  web_contents_delegate_ =
+      base::MakeUnique<android::TabWebContentsDelegateAndroid>(
+          env, jweb_contents_delegate);
   web_contents_delegate_->LoadProgressChanged(web_contents(), 0);
   web_contents()->SetDelegate(web_contents_delegate_.get());
 
@@ -462,9 +462,9 @@ void TabAndroid::UpdateDelegates(
     const JavaParamRef<jobject>& jcontext_menu_populator) {
   ContextMenuHelper::FromWebContents(web_contents())->SetPopulator(
       jcontext_menu_populator);
-  web_contents_delegate_.reset(
-      new chrome::android::TabWebContentsDelegateAndroid(
-          env, jweb_contents_delegate));
+  web_contents_delegate_ =
+      base::MakeUnique<android::TabWebContentsDelegateAndroid>(
+          env, jweb_contents_delegate);
   web_contents()->SetDelegate(web_contents_delegate_.get());
 }
 
@@ -867,8 +867,8 @@ void TabAndroid::AttachToTabContentManager(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& jtab_content_manager) {
-  chrome::android::TabContentManager* tab_content_manager =
-      chrome::android::TabContentManager::FromJavaObject(jtab_content_manager);
+  android::TabContentManager* tab_content_manager =
+      android::TabContentManager::FromJavaObject(jtab_content_manager);
   if (tab_content_manager == tab_content_manager_)
     return;
 

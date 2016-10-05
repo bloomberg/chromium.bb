@@ -12,7 +12,6 @@
 #include "content/public/browser/android/compositor.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace chrome {
 namespace android {
 
 // static
@@ -227,4 +226,3 @@ void ContentLayer::ClipStaticLayer(scoped_refptr<ThumbnailLayer> static_layer,
 }
 
 }  //  namespace android
-}  //  namespace chrome

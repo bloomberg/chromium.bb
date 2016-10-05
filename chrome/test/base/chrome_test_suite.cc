@@ -78,8 +78,8 @@ void ChromeTestSuite::Initialize() {
   }
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
-  ASSERT_TRUE(chrome::android::RegisterBrowserJNI(
-      base::android::AttachCurrentThread()));
+  ASSERT_TRUE(
+      android::RegisterBrowserJNI(base::android::AttachCurrentThread()));
 #endif
 
   // Disable external libraries load if we are under python process in

@@ -21,7 +21,6 @@ class CrushedSpriteResource;
 class ResourceManager;
 }
 
-namespace chrome {
 namespace android {
 
 // A layer which manages drawing frames from a CrushedSpriteResource into an
@@ -61,6 +60,5 @@ class CrushedSpriteLayer : public Layer {
 };
 
 }  // namespace android
-}  // namespace chrome
 
 #endif  // CHROME_BROWSER_ANDROID_COMPOSITOR_LAYER_CRUSHED_SPRITE_LAYER_H_

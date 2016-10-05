@@ -93,7 +93,6 @@ infobars::InfoBar* FindHungRendererInfoBar(InfoBarService* infobar_service) {
 
 }  // anonymous namespace
 
-namespace chrome {
 namespace android {
 
 TabWebContentsDelegateAndroid::TabWebContentsDelegateAndroid(JNIEnv* env,
@@ -406,7 +405,6 @@ void TabWebContentsDelegateAndroid::RequestAppBannerFromDevTools(
 }
 
 }  // namespace android
-}  // namespace chrome
 
 void OnRendererUnresponsive(JNIEnv* env,
                             const JavaParamRef<jclass>& clazz,

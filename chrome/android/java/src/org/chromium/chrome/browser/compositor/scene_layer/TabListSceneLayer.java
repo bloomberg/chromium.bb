@@ -23,7 +23,7 @@ import org.chromium.ui.resources.ResourceManager;
  * A SceneLayer to render a tab stack.
  * TODO(changwan): change layouts to share one instance of this.
  */
-@JNINamespace("chrome::android")
+@JNINamespace("android")
 public class TabListSceneLayer extends SceneLayer {
     private long mNativePtr;
 
