@@ -148,7 +148,7 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
     // Mac has a different "pressed button" styling because it doesn't use
     // ripples.
     case kColorId_ButtonPressedShade:
-      return SkColorSetA(SK_ColorBLACK, 0x08);
+      return SkColorSetA(SK_ColorBLACK, 0x10);
 
     // There's a system setting General > Highlight color which sets the
     // background color for text selections. We honor that setting.
