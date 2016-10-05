@@ -32,6 +32,7 @@
 #define KeyframeEffect_h
 
 #include "core/CoreExport.h"
+#include "core/animation/AnimationEffectTiming.h"
 #include "core/animation/EffectInput.h"
 #include "core/animation/EffectModel.h"
 #include "core/animation/KeyframeEffectReadOnly.h"
@@ -41,10 +42,10 @@
 
 namespace blink {
 
-class KeyframeEffectOptions;
 class Dictionary;
 class Element;
 class ExceptionState;
+class KeyframeEffectOptions;
 class PropertyHandle;
 class SampledEffect;
 
@@ -112,6 +113,8 @@ class CORE_EXPORT KeyframeEffect final : public KeyframeEffectReadOnly {
       const Vector<int>& compositorAnimationIds) {
     m_compositorAnimationIds = compositorAnimationIds;
   }
+
+  AnimationEffectTiming* timing() override;
 
   DECLARE_VIRTUAL_TRACE();
 

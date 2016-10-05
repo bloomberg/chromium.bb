@@ -46,7 +46,7 @@ interface AnimationEffectReadOnly
     getter timing
     method constructor
     method getComputedTiming
-interface AnimationEffectTiming
+interface AnimationEffectTiming : AnimationEffectTimingReadOnly
     attribute @@toStringTag
     getter delay
     getter direction
@@ -65,6 +65,17 @@ interface AnimationEffectTiming
     setter fill
     setter iterationStart
     setter iterations
+interface AnimationEffectTimingReadOnly
+    attribute @@toStringTag
+    getter delay
+    getter direction
+    getter duration
+    getter easing
+    getter endDelay
+    getter fill
+    getter iterationStart
+    getter iterations
+    method constructor
 interface AnimationEvent : Event
     attribute @@toStringTag
     getter animationName

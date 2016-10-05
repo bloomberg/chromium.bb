@@ -40,7 +40,7 @@ namespace blink {
 
 class Animation;
 class AnimationEffectReadOnly;
-class AnimationEffectTiming;
+class AnimationEffectTimingReadOnly;
 class ComputedTimingProperties;
 
 enum TimingUpdateReason { TimingUpdateOnDemand, TimingUpdateForAnimationFrame };
@@ -107,7 +107,7 @@ class CORE_EXPORT AnimationEffectReadOnly
   const Animation* animation() const { return m_animation; }
   Animation* animation() { return m_animation; }
   const Timing& specifiedTiming() const { return m_timing; }
-  AnimationEffectTiming* timing();
+  virtual AnimationEffectTimingReadOnly* timing();
   void updateSpecifiedTiming(const Timing&);
 
   void getComputedTiming(ComputedTimingProperties&);

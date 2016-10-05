@@ -33,6 +33,6 @@
 [
     RuntimeEnabled=WebAnimationsAPI,
 ] interface AnimationEffectReadOnly {
-    readonly attribute AnimationEffectTiming timing;
+    readonly attribute AnimationEffectTimingReadOnly timing;
     ComputedTimingProperties getComputedTiming();
 };

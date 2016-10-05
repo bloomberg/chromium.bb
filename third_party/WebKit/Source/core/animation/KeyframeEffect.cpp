@@ -33,6 +33,7 @@
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/animation/Animation.h"
+#include "core/animation/AnimationEffectTiming.h"
 #include "core/animation/AnimationTimeline.h"
 #include "core/animation/CompositorAnimations.h"
 #include "core/animation/ElementAnimations.h"
@@ -382,6 +383,10 @@ void KeyframeEffect::attachCompositedLayers() {
   DCHECK(m_target);
   DCHECK(animation());
   CompositorAnimations::attachCompositedLayers(*m_target, *animation());
+}
+
+AnimationEffectTiming* KeyframeEffect::timing() {
+  return AnimationEffectTiming::create(this);
 }
 
 DEFINE_TRACE(KeyframeEffect) {

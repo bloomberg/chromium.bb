@@ -382,12 +382,13 @@ void InspectorAnimationAgent::setTiming(ErrorString* errorString,
     newFrames[1]->setOffset(delay / (delay + duration));
     model->setFrames(newFrames);
 
-    AnimationEffectTiming* timing = animation->effect()->timing();
+    AnimationEffectTiming* timing = effect->timing();
     UnrestrictedDoubleOrString unrestrictedDuration;
     unrestrictedDuration.setUnrestrictedDouble(duration + delay);
     timing->setDuration(unrestrictedDuration, exceptionState);
   } else {
-    AnimationEffectTiming* timing = animation->effect()->timing();
+    AnimationEffectTiming* timing =
+        toAnimationEffectTiming(animation->effect()->timing());
     UnrestrictedDoubleOrString unrestrictedDuration;
     unrestrictedDuration.setUnrestrictedDouble(duration);
     timing->setDuration(unrestrictedDuration, exceptionState);

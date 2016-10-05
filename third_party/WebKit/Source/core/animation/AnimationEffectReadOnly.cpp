@@ -31,7 +31,7 @@
 #include "core/animation/AnimationEffectReadOnly.h"
 
 #include "core/animation/Animation.h"
-#include "core/animation/AnimationEffectTiming.h"
+#include "core/animation/AnimationEffectTimingReadOnly.h"
 #include "core/animation/ComputedTimingProperties.h"
 #include "core/animation/TimingCalculations.h"
 
@@ -263,8 +263,8 @@ AnimationEffectReadOnly::ensureCalculated() const {
   return m_calculated;
 }
 
-AnimationEffectTiming* AnimationEffectReadOnly::timing() {
-  return AnimationEffectTiming::create(this);
+AnimationEffectTimingReadOnly* AnimationEffectReadOnly::timing() {
+  return AnimationEffectTimingReadOnly::create(this);
 }
 
 DEFINE_TRACE(AnimationEffectReadOnly) {

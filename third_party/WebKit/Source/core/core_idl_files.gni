@@ -30,6 +30,7 @@ core_idl_files = get_path_info([
                                  "animation/KeyframeEffectReadOnly.idl",
                                  "animation/AnimationEffectReadOnly.idl",
                                  "animation/AnimationEffectTiming.idl",
+                                 "animation/AnimationEffectTimingReadOnly.idl",
                                  "animation/Animation.idl",
                                  "animation/AnimationTimeline.idl",
                                  "animation/DocumentTimeline.idl",

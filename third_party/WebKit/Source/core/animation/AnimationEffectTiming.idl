@@ -3,11 +3,10 @@
 // found in the LICENSE file.
 
 // https://w3c.github.io/web-animations/#the-animationeffecttiming-interface
-// TODO(dstockwell): Should extend AnimationEffectTimingReadOnly
 
 [
     RuntimeEnabled=WebAnimationsAPI,
-] interface AnimationEffectTiming {
+] interface AnimationEffectTiming : AnimationEffectTimingReadOnly {
     attribute double delay;
     attribute double endDelay;
     attribute DOMString fill;

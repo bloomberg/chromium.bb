@@ -7,6 +7,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/UnrestrictedDoubleOrString.h"
 #include "core/animation/AnimationEffectReadOnly.h"
+#include "core/animation/AnimationEffectTimingReadOnly.h"
 #include "core/animation/KeyframeEffect.h"
 #include "platform/animation/TimingFunction.h"
 
@@ -18,47 +19,7 @@ AnimationEffectTiming* AnimationEffectTiming::create(
 }
 
 AnimationEffectTiming::AnimationEffectTiming(AnimationEffectReadOnly* parent)
-    : m_parent(parent) {}
-
-double AnimationEffectTiming::delay() {
-  return m_parent->specifiedTiming().startDelay * 1000;
-}
-
-double AnimationEffectTiming::endDelay() {
-  return m_parent->specifiedTiming().endDelay * 1000;
-}
-
-String AnimationEffectTiming::fill() {
-  return Timing::fillModeString(m_parent->specifiedTiming().fillMode);
-}
-
-double AnimationEffectTiming::iterationStart() {
-  return m_parent->specifiedTiming().iterationStart;
-}
-
-double AnimationEffectTiming::iterations() {
-  return m_parent->specifiedTiming().iterationCount;
-}
-
-void AnimationEffectTiming::duration(UnrestrictedDoubleOrString& returnValue) {
-  if (std::isnan(m_parent->specifiedTiming().iterationDuration))
-    returnValue.setString("auto");
-  else
-    returnValue.setUnrestrictedDouble(
-        m_parent->specifiedTiming().iterationDuration * 1000);
-}
-
-double AnimationEffectTiming::playbackRate() {
-  return m_parent->specifiedTiming().playbackRate;
-}
-
-String AnimationEffectTiming::direction() {
-  return Timing::playbackDirectionString(m_parent->specifiedTiming().direction);
-}
-
-String AnimationEffectTiming::easing() {
-  return m_parent->specifiedTiming().timingFunction->toString();
-}
+    : AnimationEffectTimingReadOnly(parent) {}
 
 void AnimationEffectTiming::setDelay(double delay) {
   Timing timing = m_parent->specifiedTiming();
@@ -125,7 +86,7 @@ void AnimationEffectTiming::setEasing(String easing,
 }
 
 DEFINE_TRACE(AnimationEffectTiming) {
-  visitor->trace(m_parent);
+  AnimationEffectTimingReadOnly::trace(visitor);
 }
 
 }  // namespace blink
