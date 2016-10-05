@@ -312,7 +312,8 @@ void MainThreadDebugger::consoleAPIMessage(
     return;
   if (type == v8_inspector::V8ConsoleAPIType::kClear && frame->host())
     frame->host()->consoleMessageStorage().clear();
-  // TODO(dgozman): we can save a copy of message and url here by making FrameConsole work with StringView.
+  // TODO(dgozman): we can save a copy of message and url here by making
+  // FrameConsole work with StringView.
   std::unique_ptr<SourceLocation> location =
       SourceLocation::create(toCoreString(url), lineNumber, columnNumber,
                              stackTrace ? stackTrace->clone() : nullptr, 0);
@@ -394,7 +395,8 @@ void MainThreadDebugger::querySelectorAllCallback(
   ExceptionState exceptionState(ExceptionState::ExecutionContext, "$$",
                                 "CommandLineAPI", info.Holder(),
                                 info.GetIsolate());
-  // toV8(elementList) doesn't work here, since we need a proper Array instance, not NodeList.
+  // toV8(elementList) doesn't work here, since we need a proper Array instance,
+  // not NodeList.
   StaticElementList* elementList = toContainerNode(node)->querySelectorAll(
       AtomicString(selector), exceptionState);
   if (exceptionState.hadException() || !elementList)

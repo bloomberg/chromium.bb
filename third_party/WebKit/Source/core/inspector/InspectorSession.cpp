@@ -104,8 +104,9 @@ void InspectorSession::sendProtocolResponse(int callId, const String& message) {
 void InspectorSession::sendProtocolResponse(
     int callId,
     const v8_inspector::StringView& message) {
-  // We can potentially avoid copies if WebString would convert to utf8 right from StringView,
-  // but it uses StringImpl itself, so we don't create any extra copies here.
+  // We can potentially avoid copies if WebString would convert to utf8 right
+  // from StringView, but it uses StringImpl itself, so we don't create any
+  // extra copies here.
   sendProtocolResponse(callId, toCoreString(message));
 }
 

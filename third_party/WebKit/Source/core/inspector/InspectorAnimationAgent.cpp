@@ -372,13 +372,15 @@ void InspectorAnimationAgent::setTiming(ErrorString* errorString,
     KeyframeEffectModelBase* model = toKeyframeEffectModelBase(effect->model());
     const AnimatableValueKeyframeEffectModel* oldModel =
         toAnimatableValueKeyframeEffectModel(model);
-    // Refer to CSSAnimations::calculateTransitionUpdateForProperty() for the structure of transitions.
+    // Refer to CSSAnimations::calculateTransitionUpdateForProperty() for the
+    // structure of transitions.
     const KeyframeVector& frames = oldModel->getFrames();
     ASSERT(frames.size() == 3);
     KeyframeVector newFrames;
     for (int i = 0; i < 3; i++)
       newFrames.append(toAnimatableValueKeyframe(frames[i]->clone().get()));
-    // Update delay, represented by the distance between the first two keyframes.
+    // Update delay, represented by the distance between the first two
+    // keyframes.
     newFrames[1]->setOffset(delay / (delay + duration));
     model->setFrames(newFrames);
 

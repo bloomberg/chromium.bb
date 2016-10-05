@@ -383,7 +383,8 @@ void ThreadDebugger::getEventListenersCallback(
   int groupId = debugger->contextGroupId(toExecutionContext(context));
 
   V8EventListenerInfoList listenerInfo;
-  // eventListeners call can produce message on ErrorEvent during lazy event listener compilation.
+  // eventListeners call can produce message on ErrorEvent during lazy event
+  // listener compilation.
   if (groupId)
     debugger->muteMetrics(groupId);
   InspectorDOMDebuggerAgent::eventListenersInfoForTarget(isolate, info[0],
@@ -424,20 +425,23 @@ void ThreadDebugger::getEventListenersCallback(
 }
 
 void ThreadDebugger::consoleTime(const v8_inspector::StringView& title) {
-  // TODO(dgozman): we can save on a copy here if trace macro would take a pointer with length.
+  // TODO(dgozman): we can save on a copy here if trace macro would take a
+  // pointer with length.
   TRACE_EVENT_COPY_ASYNC_BEGIN0("blink.console",
                                 toCoreString(title).utf8().data(), this);
 }
 
 void ThreadDebugger::consoleTimeEnd(const v8_inspector::StringView& title) {
-  // TODO(dgozman): we can save on a copy here if trace macro would take a pointer with length.
+  // TODO(dgozman): we can save on a copy here if trace macro would take a
+  // pointer with length.
   TRACE_EVENT_COPY_ASYNC_END0("blink.console",
                               toCoreString(title).utf8().data(), this);
 }
 
 void ThreadDebugger::consoleTimeStamp(const v8_inspector::StringView& title) {
   v8::Isolate* isolate = m_isolate;
-  // TODO(dgozman): we can save on a copy here if TracedValue would take a StringView.
+  // TODO(dgozman): we can save on a copy here if TracedValue would take a
+  // StringView.
   TRACE_EVENT_INSTANT1(
       "devtools.timeline", "TimeStamp", TRACE_EVENT_SCOPE_THREAD, "data",
       InspectorTimeStampEvent::data(currentExecutionContext(isolate),

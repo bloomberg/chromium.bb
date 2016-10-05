@@ -872,9 +872,9 @@ void InspectorCSSAgent::getMatchedStylesForNode(
     return;
   }
 
-  // FIXME: It's really gross for the inspector to reach in and access StyleResolver
-  // directly here. We need to provide the Inspector better APIs to get this information
-  // without grabbing at internal style classes!
+  // FIXME: It's really gross for the inspector to reach in and access
+  // StyleResolver directly here. We need to provide the Inspector better APIs
+  // to get this information without grabbing at internal style classes!
 
   // Matched rules.
   StyleResolver& styleResolver = ownerDocument->ensureStyleResolver();
@@ -1824,8 +1824,9 @@ InspectorStyleSheet* InspectorCSSAgent::inspectorStyleSheetForRule(
   if (!rule)
     return nullptr;
 
-  // CSSRules returned by StyleResolver::pseudoCSSRulesForElement lack parent pointers if they are coming from
-  // user agent stylesheets. To work around this issue, we use CSSOM wrapper created by inspector.
+  // CSSRules returned by StyleResolver::pseudoCSSRulesForElement lack parent
+  // pointers if they are coming from user agent stylesheets. To work around
+  // this issue, we use CSSOM wrapper created by inspector.
   if (!rule->parentStyleSheet()) {
     if (!m_inspectorUserAgentStyleSheet)
       m_inspectorUserAgentStyleSheet = CSSStyleSheet::create(
@@ -1911,14 +1912,16 @@ std::unique_ptr<protocol::CSS::CSSRule> InspectorCSSAgent::buildObjectForRule(
 
 static inline bool matchesPseudoElement(const CSSSelector* selector,
                                         PseudoId elementPseudoId) {
-  // According to http://www.w3.org/TR/css3-selectors/#pseudo-elements, "Only one pseudo-element may appear per selector."
+  // According to http://www.w3.org/TR/css3-selectors/#pseudo-elements, "Only
+  // one pseudo-element may appear per selector."
   // As such, check the last selector in the tag history.
   for (; !selector->isLastInTagHistory(); ++selector) {
   }
   PseudoId selectorPseudoId = CSSSelector::pseudoId(selector->getPseudoType());
 
-  // FIXME: This only covers the case of matching pseudo-element selectors against PseudoElements.
-  // We should come up with a solution for matching pseudo-element selectors against ordinary Elements, too.
+  // FIXME: This only covers the case of matching pseudo-element selectors
+  // against PseudoElements.  We should come up with a solution for matching
+  // pseudo-element selectors against ordinary Elements, too.
   return selectorPseudoId == elementPseudoId;
 }
 

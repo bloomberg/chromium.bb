@@ -118,8 +118,8 @@ Node* DOMPatchSupport::patchNode(Node* node,
                          ? node->parentElementOrShadowRoot()
                          : document().documentElement();
 
-  // Use the document BODY as the context element when editing immediate shadow root children,
-  // as it provides an equivalent parsing context.
+  // Use the document BODY as the context element when editing immediate shadow
+  // root children, as it provides an equivalent parsing context.
   if (targetNode->isShadowRoot())
     targetNode = document().body();
   Element* targetElement = toElement(targetNode);
@@ -146,11 +146,15 @@ Node* DOMPatchSupport::patchNode(Node* node,
   for (Node* child = fragment->firstChild(); child;
        child = child->nextSibling()) {
     if (isHTMLHeadElement(*child) && !child->hasChildren() &&
-        markupCopy.find("</head>") == kNotFound)
-      continue;  // HTML5 parser inserts empty <head> tag whenever it parses <body>
+        markupCopy.find("</head>") == kNotFound) {
+      // HTML5 parser inserts empty <head> tag whenever it parses <body>
+      continue;
+    }
     if (isHTMLBodyElement(*child) && !child->hasChildren() &&
-        markupCopy.find("</body>") == kNotFound)
-      continue;  // HTML5 parser inserts empty <body> tag whenever it parses </head>
+        markupCopy.find("</body>") == kNotFound) {
+      // HTML5 parser inserts empty <body> tag whenever it parses </head>
+      continue;
+    }
     newList.append(createDigest(child, &m_unusedNodesMap));
   }
   for (Node* child = node->nextSibling(); child; child = child->nextSibling())
@@ -192,7 +196,8 @@ bool DOMPatchSupport::innerPatchNode(Digest* oldDigest,
   Element* oldElement = toElement(oldNode);
   Element* newElement = toElement(newNode);
   if (oldDigest->m_attrsSHA1 != newDigest->m_attrsSHA1) {
-    // FIXME: Create a function in Element for removing all properties. Take in account whether did/willModifyAttribute are important.
+    // FIXME: Create a function in Element for removing all properties. Take in
+    // account whether did/willModifyAttribute are important.
     while (oldElement->attributesWithoutUpdate().size()) {
       const Attribute& attribute = oldElement->attributesWithoutUpdate().at(0);
       if (!m_domEditor->removeAttribute(oldElement, attribute.name().toString(),
@@ -200,7 +205,8 @@ bool DOMPatchSupport::innerPatchNode(Digest* oldDigest,
         return false;
     }
 
-    // FIXME: Create a function in Element for copying properties. cloneDataFromElement() is close but not enough for this case.
+    // FIXME: Create a function in Element for copying properties.
+    // cloneDataFromElement() is close but not enough for this case.
     for (auto& attribute : newElement->attributesWithoutUpdate()) {
       if (!m_domEditor->setAttribute(oldElement, attribute.name().toString(),
                                      attribute.value(), exceptionState))
@@ -322,7 +328,8 @@ bool DOMPatchSupport::innerPatchChildren(
   Digest* oldHead = nullptr;
   Digest* oldBody = nullptr;
 
-  // 1. First strip everything except for the nodes that retain. Collect pending merges.
+  // 1. First strip everything except for the nodes that retain. Collect pending
+  // merges.
   HeapHashMap<Member<Digest>, Member<Digest>> merges;
   HashSet<size_t, WTF::IntHash<size_t>,
           WTF::UnsignedWithZeroKeyHashTraits<size_t>>
@@ -335,8 +342,8 @@ bool DOMPatchSupport::innerPatchChildren(
       oldMap[i].second = 0;
     }
 
-    // Always match <head> and <body> tags with each other - we can't remove them from the DOM
-    // upon patching.
+    // Always match <head> and <body> tags with each other - we can't remove
+    // them from the DOM upon patching.
     if (isHTMLHeadElement(*oldList[i]->m_node)) {
       oldHead = oldList[i].get();
       continue;
@@ -346,7 +353,8 @@ bool DOMPatchSupport::innerPatchChildren(
       continue;
     }
 
-    // Check if this change is between stable nodes. If it is, consider it as "modified".
+    // Check if this change is between stable nodes. If it is, consider it as
+    // "modified".
     if (!m_unusedNodesMap.contains(oldList[i]->m_sha1) &&
         (!i || oldMap[i - 1].first) &&
         (i == oldMap.size() - 1 || oldMap[i + 1].first)) {
@@ -418,8 +426,10 @@ bool DOMPatchSupport::innerPatchChildren(
     Node* anchorNode = NodeTraversal::childAt(*parentNode, oldMap[i].second);
     if (node == anchorNode)
       continue;
-    if (isHTMLBodyElement(*node) || isHTMLHeadElement(*node))
-      continue;  // Never move head or body, move the rest of the nodes around them.
+    if (isHTMLBodyElement(*node) || isHTMLHeadElement(*node)) {
+      // Never move head or body, move the rest of the nodes around them.
+      continue;
+    }
 
     if (!m_domEditor->insertBefore(parentNode, node, anchorNode,
                                    exceptionState))
@@ -502,10 +512,11 @@ bool DOMPatchSupport::removeChildAndMoveToNew(Digest* oldDigest,
     return false;
 
   // Diff works within levels. In order not to lose the node identity when user
-  // prepends their HTML with "<div>" (i.e. all nodes are shifted to the next nested level),
-  // prior to dropping the original node on the floor, check whether new DOM has a digest
-  // with matching sha1. If it does, replace it with the original DOM chunk. Chances are
-  // high that it will get merged back into the original DOM during the further patching.
+  // prepends their HTML with "<div>" (i.e. all nodes are shifted to the next
+  // nested level), prior to dropping the original node on the floor, check
+  // whether new DOM has a digest with matching sha1. If it does, replace it
+  // with the original DOM chunk.  Chances are high that it will get merged back
+  // into the original DOM during the further patching.
   UnusedNodesMap::iterator it = m_unusedNodesMap.find(oldDigest->m_sha1);
   if (it != m_unusedNodesMap.end()) {
     Digest* newDigest = it->value;

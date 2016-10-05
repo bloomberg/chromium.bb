@@ -203,8 +203,8 @@ void InspectorInputAgent::dispatchTouchEvent(
       return;
     }
 
-    // Some platforms may have flipped coordinate systems, but the given coordinates
-    // assume the origin is in the top-left of the window. Convert.
+    // Some platforms may have flipped coordinate systems, but the given
+    // coordinates assume the origin is in the top-left of the window. Convert.
     IntPoint convertedPoint, globalPoint;
     ConvertInspectorPoint(m_inspectedFrames->root(),
                           IntPoint(point->getX(), point->getY()),

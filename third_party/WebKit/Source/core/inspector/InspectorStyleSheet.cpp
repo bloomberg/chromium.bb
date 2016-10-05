@@ -366,7 +366,8 @@ void StyleSheetHandler::observeComment(unsigned startOffset,
       !m_currentRuleDataStack.last()->styleSourceData)
     return;
 
-  // The lexer is not inside a property AND it is scanning a declaration-aware rule body.
+  // The lexer is not inside a property AND it is scanning a declaration-aware
+  // rule body.
   String commentText =
       m_parsedText.substring(startOffset, endOffset - startOffset);
 
@@ -539,7 +540,8 @@ void flattenSourceData(const RuleSourceDataList& dataList,
   for (size_t i = 0; i < dataList.size(); ++i) {
     const RefPtr<CSSRuleSourceData>& data = dataList.at(i);
 
-    // The result->append()'ed types should be exactly the same as in collectFlatRules().
+    // The result->append()'ed types should be exactly the same as in
+    // collectFlatRules().
     switch (data->type) {
       case StyleRule::Style:
       case StyleRule::Import:
@@ -585,7 +587,8 @@ void collectFlatRules(RuleList ruleList, CSSRuleVector* result) {
   for (unsigned i = 0, size = ruleList->length(); i < size; ++i) {
     CSSRule* rule = ruleList->item(i);
 
-    // The result->append()'ed types should be exactly the same as in flattenSourceData().
+    // The result->append()'ed types should be exactly the same as in
+    // flattenSourceData().
     switch (rule->type()) {
       case CSSRule::kStyleRule:
       case CSSRule::kImportRule:
@@ -1529,7 +1532,8 @@ InspectorStyleSheet::selectorsFromSource(CSSRuleSourceData* sourceData,
     const SourceRange& range = ranges.at(i);
     String selector = sheetText.substring(range.start, range.length());
 
-    // We don't want to see any comments in the selector components, only the meaningful parts.
+    // We don't want to see any comments in the selector components, only the
+    // meaningful parts.
     int matchLength;
     int offset = 0;
     while ((offset = comment.match(selector, offset, &matchLength)) >= 0)
@@ -1550,7 +1554,8 @@ InspectorStyleSheet::buildObjectForSelectorList(CSSStyleRule* rule) {
   CSSRuleSourceData* sourceData = sourceDataForRule(rule);
   std::unique_ptr<protocol::Array<protocol::CSS::Value>> selectors;
 
-  // This intentionally does not rely on the source data to avoid catching the trailing comments (before the declaration starting '{').
+  // This intentionally does not rely on the source data to avoid catching the
+  // trailing comments (before the declaration starting '{').
   String selectorText = rule->selectorText();
 
   if (sourceData) {
@@ -1684,7 +1689,8 @@ String InspectorStyleSheet::sourceURL() {
 }
 
 String InspectorStyleSheet::url() {
-  // "sourceURL" is present only for regular rules, otherwise "origin" should be used in the frontend.
+  // "sourceURL" is present only for regular rules, otherwise "origin" should be
+  // used in the frontend.
   if (m_origin != protocol::CSS::StyleSheetOriginEnum::Regular)
     return String();
 

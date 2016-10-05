@@ -83,7 +83,8 @@ static void removeEventListenerCallback(
       !v8Target->IsObject())
     return;
   EventTarget* target = V8EventTarget::toImplWithTypeCheck(isolate, v8Target);
-  // We need to handle LocalDOMWindow specially, because LocalDOMWindow wrapper exists on prototype chain.
+  // We need to handle LocalDOMWindow specially, because LocalDOMWindow wrapper
+  // exists on prototype chain.
   if (!target)
     target = toDOMWindow(isolate, v8Target);
   if (!target || !target->getExecutionContext())
@@ -178,7 +179,8 @@ void InspectorDOMDebuggerAgent::eventListenersInfoForTarget(
     v8::Local<v8::Value> value,
     V8EventListenerInfoList& eventInformation) {
   EventTarget* target = V8EventTarget::toImplWithTypeCheck(isolate, value);
-  // We need to handle LocalDOMWindow specially, because LocalDOMWindow wrapper exists on prototype chain.
+  // We need to handle LocalDOMWindow specially, because LocalDOMWindow wrapper
+  // exists on prototype chain.
   if (!target)
     target = toDOMWindow(isolate, value);
   if (!target || !target->getExecutionContext())
@@ -186,7 +188,8 @@ void InspectorDOMDebuggerAgent::eventListenersInfoForTarget(
 
   ExecutionContext* executionContext = target->getExecutionContext();
 
-  // Nodes and their Listeners for the concerned event types (order is top to bottom)
+  // Nodes and their Listeners for the concerned event types (order is top to
+  // bottom).
   Vector<AtomicString> eventTypes = target->eventTypes();
   for (size_t j = 0; j < eventTypes.size(); ++j) {
     AtomicString& type = eventTypes[j];
@@ -576,8 +579,9 @@ void InspectorDOMDebuggerAgent::breakProgramOnDOMEvent(Node* target,
 
   Node* breakpointOwner = target;
   if ((1 << breakpointType) & inheritableDOMBreakpointTypesMask) {
-    // For inheritable breakpoint types, target node isn't always the same as the node that owns a breakpoint.
-    // Target node may be unknown to frontend, so we need to push it first.
+    // For inheritable breakpoint types, target node isn't always the same as
+    // the node that owns a breakpoint.  Target node may be unknown to frontend,
+    // so we need to push it first.
     description->setInteger("targetNodeId",
                             m_domAgent->pushNodePathToFrontend(target));
 

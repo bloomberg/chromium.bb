@@ -74,7 +74,9 @@ class CORE_EXPORT MainThreadDebugger final : public ThreadDebugger {
   bool isPaused() const { return m_paused; }
   void setClientMessageLoop(std::unique_ptr<ClientMessageLoop>);
 
-  // TODO(dgozman): by making this method virtual, we can move many methods to ThreadDebugger and avoid some duplication. Should be careful about performance.
+  // TODO(dgozman): by making this method virtual, we can move many methods to
+  // ThreadDebugger and avoid some duplication. Should be careful about
+  // performance.
   int contextGroupId(LocalFrame*);
   void didClearContextsForFrame(LocalFrame*);
   void contextCreated(ScriptState*, LocalFrame*, SecurityOrigin*);

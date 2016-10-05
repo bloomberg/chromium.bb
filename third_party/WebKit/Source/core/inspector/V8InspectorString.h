@@ -18,7 +18,8 @@
 
 namespace blink {
 
-// Note that passed string must outlive the resulting StringView. This implies it must not be a temporary object.
+// Note that passed string must outlive the resulting StringView. This implies
+// it must not be a temporary object.
 CORE_EXPORT v8_inspector::StringView toV8InspectorStringView(const StringView&);
 CORE_EXPORT std::unique_ptr<v8_inspector::StringBuffer>
 toV8InspectorStringBuffer(const StringView&);

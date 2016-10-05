@@ -167,7 +167,8 @@ void InspectorRevalidateDOMTask::scheduleStyleAttrRevalidationFor(
 }
 
 void InspectorRevalidateDOMTask::onTimer(TimerBase*) {
-  // The timer is stopped on m_domAgent destruction, so this method will never be called after m_domAgent has been destroyed.
+  // The timer is stopped on m_domAgent destruction, so this method will never
+  // be called after m_domAgent has been destroyed.
   HeapVector<Member<Element>> elements;
   for (auto& attribute : m_styleAttrInvalidatedElements)
     elements.append(attribute.get());
@@ -747,7 +748,8 @@ void InspectorDOMAgent::setAttributesAsText(ErrorString* errorString,
 
   bool shouldIgnoreCase =
       element->document().isHTMLDocument() && element->isHTMLElement();
-  // Not all elements can represent the context (i.e. IFRAME), hence using document.body.
+  // Not all elements can represent the context (i.e. IFRAME), hence using
+  // document.body.
   if (shouldIgnoreCase && element->document().body())
     fragment->parseHTML(markup, element->document().body(),
                         AllowScriptingContent);
@@ -962,9 +964,10 @@ void InspectorDOMAgent::performSearch(
     String* searchId,
     int* resultCount) {
   // FIXME: Few things are missing here:
-  // 1) Search works with node granularity - number of matches within node is not calculated.
-  // 2) There is no need to push all search results to the front-end at a time, pushing next / previous result
-  //    is sufficient.
+  // 1) Search works with node granularity - number of matches within node is
+  //    not calculated.
+  // 2) There is no need to push all search results to the front-end at a time,
+  //    pushing next / previous result is sufficient.
 
   bool includeUserAgentShadowDOM =
       optionalIncludeUserAgentShadowDOM.fromMaybe(false);
@@ -1721,7 +1724,8 @@ InspectorDOMAgent::buildArrayForContainerChildren(Node* container,
   std::unique_ptr<protocol::Array<protocol::DOM::Node>> children =
       protocol::Array<protocol::DOM::Node>::create();
   if (depth == 0) {
-    // Special-case the only text child - pretend that container's children have been requested.
+    // Special-case the only text child - pretend that container's children have
+    // been requested.
     Node* firstChild = container->firstChild();
     if (firstChild && firstChild->getNodeType() == Node::kTextNode &&
         !firstChild->nextSibling()) {
@@ -1843,7 +1847,7 @@ Node* InspectorDOMAgent::innerParentNode(Node* node) {
 }
 
 bool InspectorDOMAgent::isWhitespace(Node* node) {
-  //TODO: pull ignoreWhitespace setting from the frontend and use here.
+  // TODO: pull ignoreWhitespace setting from the frontend and use here.
   return node && node->getNodeType() == Node::kTextNode &&
          node->nodeValue().stripWhiteSpace().length() == 0;
 }
@@ -2083,8 +2087,8 @@ void InspectorDOMAgent::frameDocumentUpdated(LocalFrame* frame) {
   if (frame != m_inspectedFrames->root())
     return;
 
-  // Only update the main frame document, nested frame document updates are not required
-  // (will be handled by invalidateFrameOwnerElement()).
+  // Only update the main frame document, nested frame document updates are not
+  // required (will be handled by invalidateFrameOwnerElement()).
   setDocument(document);
 }
 
@@ -2128,9 +2132,10 @@ static ShadowRoot* shadowRootForNode(Node* node, const String& type) {
 }
 
 Node* InspectorDOMAgent::nodeForPath(const String& path) {
-  // The path is of form "1,HTML,2,BODY,1,DIV" (<index> and <nodeName> interleaved).
-  // <index> may also be "a" (author shadow root) or "u" (user-agent shadow root),
-  // in which case <nodeName> MUST be "#document-fragment".
+  // The path is of form "1,HTML,2,BODY,1,DIV" (<index> and <nodeName>
+  // interleaved).  <index> may also be "a" (author shadow root) or "u"
+  // (user-agent shadow root), in which case <nodeName> MUST be
+  // "#document-fragment".
   if (!m_document)
     return nullptr;
 

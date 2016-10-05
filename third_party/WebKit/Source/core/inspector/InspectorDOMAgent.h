@@ -281,8 +281,9 @@ class CORE_EXPORT InspectorDOMAgent final
 
   InspectorHistory* history() { return m_history.get(); }
 
-  // We represent embedded doms as a part of the same hierarchy. Hence we treat children of frame owners differently.
-  // We also skip whitespace text nodes conditionally. Following methods encapsulate these specifics.
+  // We represent embedded doms as a part of the same hierarchy. Hence we treat
+  // children of frame owners differently.  We also skip whitespace text nodes
+  // conditionally. Following methods encapsulate these specifics.
   static Node* innerFirstChild(Node*);
   static Node* innerNextSibling(Node*);
   static Node* innerPreviousSibling(Node*);

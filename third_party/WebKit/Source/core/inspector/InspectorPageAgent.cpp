@@ -120,7 +120,8 @@ static bool prepareResourceBuffer(Resource* cachedResource, bool* hasZeroSize) {
   if (cachedResource->getDataBufferingPolicy() == DoNotBufferData)
     return false;
 
-  // Zero-sized resources don't have data at all -- so fake the empty buffer, instead of indicating error by returning 0.
+  // Zero-sized resources don't have data at all -- so fake the empty buffer,
+  // instead of indicating error by returning 0.
   if (!cachedResource->encodedSize()) {
     *hasZeroSize = true;
     return true;
@@ -413,8 +414,9 @@ void InspectorPageAgent::addScriptToEvaluateOnLoad(ErrorString*,
     m_state->setObject(PageAgentState::pageAgentScriptsToEvaluateOnLoad,
                        std::move(newScripts));
   }
-  // Assure we don't override existing ids -- m_lastScriptIdentifier could get out of sync WRT actual
-  // scripts once we restored the scripts from the cookie during navigation.
+  // Assure we don't override existing ids -- m_lastScriptIdentifier could get
+  // out of sync WRT actual scripts once we restored the scripts from the cookie
+  // during navigation.
   do {
     *identifier = String::number(++m_lastScriptIdentifier);
   } while (scripts->get(*identifier));
@@ -472,8 +474,8 @@ static void cachedResourcesForDocument(Document* document,
     if (!cachedResource)
       continue;
 
-    // Skip images that were not auto loaded (images disabled in the user agent),
-    // fonts that were referenced in CSS but never used/downloaded, etc.
+    // Skip images that were not auto loaded (images disabled in the user
+    // agent), fonts that were referenced in CSS but never used/downloaded, etc.
     if (cachedResource->stillNeedsLoad())
       continue;
     if (cachedResource->getType() == Resource::Raw && skipXHRs)

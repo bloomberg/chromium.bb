@@ -310,7 +310,8 @@ void LayoutEditor::overlayStartedPropertyChange(const String& anchorName) {
       m_factor = m_element->computedStyle()->computedFontSize();
       break;
     case CSSPrimitiveValue::UnitType::Percentage:
-      // It is hard to correctly support percentages, so we decided hack it this way: 100% = 1000px
+      // It is hard to correctly support percentages, so we decided hack it this
+      // way: 100% = 1000px
       m_factor = 10;
       break;
     case CSSPrimitiveValue::UnitType::Rems:

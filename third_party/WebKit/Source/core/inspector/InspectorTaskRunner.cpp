@@ -9,7 +9,8 @@ namespace blink {
 InspectorTaskRunner::IgnoreInterruptsScope::IgnoreInterruptsScope(
     InspectorTaskRunner* taskRunner)
     : m_wasIgnoring(taskRunner->m_ignoreInterrupts), m_taskRunner(taskRunner) {
-  // There may be nested scopes e.g. when tasks are being executed on XHR breakpoint.
+  // There may be nested scopes e.g. when tasks are being executed on XHR
+  // breakpoint.
   m_taskRunner->m_ignoreInterrupts = true;
 }
 

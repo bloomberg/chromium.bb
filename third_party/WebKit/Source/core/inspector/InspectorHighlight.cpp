@@ -328,7 +328,8 @@ void InspectorHighlight::appendNodeHighlight(
   if (!layoutObject)
     return;
 
-  // LayoutSVGRoot should be highlighted through the isBox() code path, all other SVG elements should just dump their absoluteQuads().
+  // LayoutSVGRoot should be highlighted through the isBox() code path, all
+  // other SVG elements should just dump their absoluteQuads().
   if (layoutObject->node() && layoutObject->node()->isSVGElement() &&
       !layoutObject->isSVGRoot()) {
     Vector<FloatQuad> quads;
@@ -451,7 +452,9 @@ bool InspectorHighlight::buildNodeQuads(Node* node,
   if (layoutObject->isBox()) {
     LayoutBox* layoutBox = toLayoutBox(layoutObject);
 
-    // LayoutBox returns the "pure" content area box, exclusive of the scrollbars (if present), which also count towards the content area in CSS.
+    // LayoutBox returns the "pure" content area box, exclusive of the
+    // scrollbars (if present), which also count towards the content area in
+    // CSS.
     const int verticalScrollbarWidth = layoutBox->verticalScrollbarWidth();
     const int horizontalScrollbarHeight =
         layoutBox->horizontalScrollbarHeight();
@@ -472,7 +475,8 @@ bool InspectorHighlight::buildNodeQuads(Node* node,
   } else {
     LayoutInline* layoutInline = toLayoutInline(layoutObject);
 
-    // LayoutInline's bounding box includes paddings and borders, excludes margins.
+    // LayoutInline's bounding box includes paddings and borders, excludes
+    // margins.
     borderBox = LayoutRect(layoutInline->linesBoundingBox());
     paddingBox = LayoutRect(borderBox.x() + layoutInline->borderLeft(),
                             borderBox.y() + layoutInline->borderTop(),

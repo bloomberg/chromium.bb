@@ -256,7 +256,8 @@ class CORE_EXPORT InspectorCSSAgent final
   typedef HeapHashMap<String, Member<InspectorStyleSheetForInlineStyle>>
       IdToInspectorStyleSheetForInlineStyle;
   typedef HeapHashMap<Member<Node>, Member<InspectorStyleSheetForInlineStyle>>
-      NodeToInspectorStyleSheet;  // bogus "stylesheets" with elements' inline styles
+      NodeToInspectorStyleSheet;  // bogus "stylesheets" with elements' inline
+                                  // styles
   typedef HashMap<int, unsigned> NodeIdToForcedPseudoState;
 
   void resourceContentLoaded(std::unique_ptr<EnableCallback>);

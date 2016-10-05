@@ -177,9 +177,9 @@ DEFINE_TRACE(InspectorLayerTreeAgent) {
 }
 
 void InspectorLayerTreeAgent::restore() {
-  // We do not re-enable layer agent automatically after navigation. This is because
-  // it depends on DOMAgent and node ids in particular, so we let front-end request document
-  // and re-enable the agent manually after this.
+  // We do not re-enable layer agent automatically after navigation. This is
+  // because it depends on DOMAgent and node ids in particular, so we let
+  // front-end request document and re-enable the agent manually after this.
 }
 
 void InspectorLayerTreeAgent::enable(ErrorString*) {
@@ -203,7 +203,8 @@ void InspectorLayerTreeAgent::layerTreeDidChange() {
 void InspectorLayerTreeAgent::didPaint(const GraphicsLayer* graphicsLayer,
                                        GraphicsContext&,
                                        const LayoutRect& rect) {
-  // Should only happen for FrameView paints when compositing is off. Consider different instrumentation method for that.
+  // Should only happen for FrameView paints when compositing is off. Consider
+  // different instrumentation method for that.
   if (!graphicsLayer)
     return;
 

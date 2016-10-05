@@ -705,8 +705,9 @@ void InspectorNetworkAgent::didReceiveResourceResponse(
                                  monotonicallyIncreasingTime(),
                                  InspectorPageAgent::resourceTypeJson(type),
                                  std::move(resourceResponse));
-  // If we revalidated the resource and got Not modified, send content length following didReceiveResponse
-  // as there will be no calls to didReceiveData from the network stack.
+  // If we revalidated the resource and got Not modified, send content length
+  // following didReceiveResponse as there will be no calls to didReceiveData
+  // from the network stack.
   if (isNotModified && cachedResource && cachedResource->encodedSize())
     didReceiveData(frame, identifier, 0, cachedResource->encodedSize(), 0);
 }
@@ -1325,7 +1326,8 @@ void InspectorNetworkAgent::emulateNetworkConditions(
     if (!errorString->isEmpty())
       return;
   }
-  // TODO(dgozman): networkStateNotifier is per-process. It would be nice to have per-frame override instead.
+  // TODO(dgozman): networkStateNotifier is per-process. It would be nice to
+  // have per-frame override instead.
   if (offline || latency || downloadThroughput || uploadThroughput)
     networkStateNotifier().setOverride(!offline, type,
                                        downloadThroughput / (1024 * 1024 / 8));
