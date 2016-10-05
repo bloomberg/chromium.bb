@@ -108,7 +108,8 @@ public class MetricsTestUtil {
         assertTrue(metrics.getRequestStart().after(startTime)
                 || metrics.getRequestStart().equals(startTime));
         assertNotNull(metrics.getSendingStart());
-        assertTrue(metrics.getSendingStart().after(startTime));
+        assertTrue(metrics.getSendingStart().after(startTime)
+                || metrics.getSendingStart().equals(startTime));
         assertNotNull(metrics.getSendingEnd());
         assertTrue(metrics.getSendingEnd().before(endTime));
         assertNotNull(metrics.getResponseStart());
@@ -127,16 +128,19 @@ public class MetricsTestUtil {
     public static void checkHasConnectTiming(
             RequestFinishedInfo.Metrics metrics, Date startTime, Date endTime, boolean isSsl) {
         assertNotNull(metrics.getDnsStart());
-        assertTrue(metrics.getDnsStart().after(startTime));
+        assertTrue(
+                metrics.getDnsStart().after(startTime) || metrics.getDnsStart().equals(startTime));
         assertNotNull(metrics.getDnsEnd());
         assertTrue(metrics.getDnsEnd().before(endTime));
         assertNotNull(metrics.getConnectStart());
-        assertTrue(metrics.getConnectStart().after(startTime));
+        assertTrue(metrics.getConnectStart().after(startTime)
+                || metrics.getConnectStart().equals(startTime));
         assertNotNull(metrics.getConnectEnd());
         assertTrue(metrics.getConnectEnd().before(endTime));
         if (isSsl) {
             assertNotNull(metrics.getSslStart());
-            assertTrue(metrics.getSslStart().after(startTime));
+            assertTrue(metrics.getSslStart().after(startTime)
+                    || metrics.getSslStart().equals(startTime));
             assertNotNull(metrics.getSslEnd());
             assertTrue(metrics.getSslEnd().before(endTime));
         } else {
