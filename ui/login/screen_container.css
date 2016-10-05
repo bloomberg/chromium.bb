@@ -120,7 +120,7 @@
 }
 
 #oobe[md-mode] #step-logo {
-  visibility: hidden;
+  display: none;
 }
 
 #progress-dots {
