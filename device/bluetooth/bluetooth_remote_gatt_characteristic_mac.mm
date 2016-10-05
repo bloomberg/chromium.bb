@@ -316,11 +316,6 @@ void BluetoothRemoteGattCharacteristicMac::DidWriteValue(NSError* error) {
     callbacks.second.Run(error_code);
     return;
   }
-  NSData* nsdata_value = cb_characteristic_.get().value;
-  const uint8_t* buffer = static_cast<const uint8_t*>(nsdata_value.bytes);
-  std::vector<uint8_t> gatt_value(buffer, buffer + nsdata_value.length);
-  gatt_service_->GetMacAdapter()->NotifyGattCharacteristicValueChanged(this,
-                                                                       value_);
   callbacks.first.Run();
 }
 

@@ -559,6 +559,8 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, WriteRemoteCharacteristic) {
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(
       BluetoothRemoteGattCharacteristic::PROPERTY_WRITE));
 
+  TestBluetoothAdapterObserver observer(adapter_);
+
   uint8_t values[] = {0, 1, 2, 3, 4, 0xf, 0xf0, 0xff};
   std::vector<uint8_t> test_vector(values, values + arraysize(values));
   characteristic1_->WriteRemoteCharacteristic(
@@ -568,6 +570,10 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, WriteRemoteCharacteristic) {
   SimulateGattCharacteristicWrite(characteristic1_);
 
   EXPECT_EQ(1, gatt_write_characteristic_attempts_);
+#if !defined(OS_WIN)
+  // TODO(crbug.com/653291): remove this #if once the bug on windows is fixed.
+  EXPECT_EQ(0, observer.gatt_characteristic_value_changed_count());
+#endif
   EXPECT_EQ(test_vector, last_write_value_);
 }
 #endif  // defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
