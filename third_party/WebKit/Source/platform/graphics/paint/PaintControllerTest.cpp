@@ -1082,8 +1082,8 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder) {
                 UnorderedElementsAre(FloatRect(LayoutRect::infiniteIntRect())));
   }
 
-  // Simulate the situation when |container1| gets a z-index that is greater than
-  // that of |container2|.
+  // Simulate the situation when |container1| gets a z-index that is greater
+  // than that of |container2|.
   if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled()) {
     // When under-invalidation-checking is enabled,
     // useCachedSubsequenceIfPossible is forced off, and the client is expected

@@ -14,9 +14,10 @@
 
 namespace blink {
 
-// A complete set of paint properties including those that are inherited from other objects.
-// RefPtrs are used to guard against use-after-free bugs and DCHECKs ensure PropertyTreeState
-// never retains the last reference to a property tree node.
+// A complete set of paint properties including those that are inherited from
+// other objects.  RefPtrs are used to guard against use-after-free bugs and
+// DCHECKs ensure PropertyTreeState never retains the last reference to a
+// property tree node.
 class PropertyTreeState {
  public:
   PropertyTreeState(const TransformPaintPropertyNode* transform,

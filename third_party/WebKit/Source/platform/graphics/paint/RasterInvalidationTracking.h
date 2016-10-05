@@ -20,7 +20,8 @@ class DisplayItemClient;
 
 struct RasterInvalidationInfo {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-  // This is for comparison only. Don't dereference because the client may have died.
+  // This is for comparison only. Don't dereference because the client may have
+  // died.
   const DisplayItemClient* client;
   String clientDebugName;
   IntRect rect;

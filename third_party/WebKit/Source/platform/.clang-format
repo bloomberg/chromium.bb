@@ -1,0 +1,5 @@
+# TODO(thakis): Remove this once Source/.clang-format no longer says
+# `ReflowComments: false`.
+BasedOnStyle: Chromium
+Standard: Cpp11
+ReflowComments: true

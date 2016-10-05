@@ -88,9 +88,7 @@ class PLATFORM_EXPORT ImageBufferSurface {
 
   // Like flush, but flushes all the way down to the GPU context if the surface
   // uses the GPU.
-  virtual void flushGpu(FlushReason reason) {
-    flush(reason);
-  }
+  virtual void flushGpu(FlushReason reason) { flush(reason); }
 
   virtual void prepareSurfaceForPaintingIfNeeded() {}
   virtual bool writePixels(const SkImageInfo& origInfo,

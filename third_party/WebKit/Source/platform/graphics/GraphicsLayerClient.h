@@ -51,16 +51,15 @@ typedef unsigned GraphicsLayerPaintingPhase;
 
 enum {
   LayerTreeNormal = 0,
-  LayerTreeIncludesDebugInfo =
-      1 << 0,  // Dump extra debugging info like layer addresses.
+  // Dump extra debugging info like layer addresses.
+  LayerTreeIncludesDebugInfo = 1 << 0,
   LayerTreeIncludesPaintInvalidations = 1 << 1,
   LayerTreeIncludesPaintingPhases = 1 << 2,
   LayerTreeIncludesRootLayer = 1 << 3,
   LayerTreeIncludesClipAndScrollParents = 1 << 4,
   LayerTreeIncludesCompositingReasons = 1 << 5,
-  OutputChildrenAsLayerList =
-      1
-      << 6,  // Outputs all children of the given layer as a layer list, in paint order.
+  // Outputs all children of the given layer as a layer list, in paint order.
+  OutputChildrenAsLayerList = 1 << 6,
 };
 typedef unsigned LayerTreeFlags;
 

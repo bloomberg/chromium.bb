@@ -353,7 +353,7 @@ static bool inverse(const TransformationMatrix::Matrix4& matrix,
         "v18", "v19", "v20", "v21", "v22", "v23", "24", "25", "v26", "v27",
         "v28", "v29", "v30");
 #elif HAVE(MIPS_MSA_INTRINSICS)
-  const double rDet = 1/det;
+  const double rDet = 1 / det;
   const double* mat = &(matrix[0][0]);
   v2f64 mat0, mat1, mat2, mat3, mat4, mat5, mat6, mat7;
   v2f64 rev2, rev3, rev4, rev5, rev6, rev7;
@@ -367,9 +367,9 @@ static bool inverse(const TransformationMatrix::Matrix4& matrix,
   LD_DP8(mat, 2, mat0, mat1, mat2, mat3, mat4, mat5, mat6, mat7);
 
   // Right half
-  rev3 = SLDI_D(mat3, mat3, 8); // m13 m12
-  rev5 = SLDI_D(mat5, mat5, 8); // m23 m22
-  rev7 = SLDI_D(mat7, mat7, 8); // m33 m32
+  rev3 = SLDI_D(mat3, mat3, 8);  // m13 m12
+  rev5 = SLDI_D(mat5, mat5, 8);  // m23 m22
+  rev7 = SLDI_D(mat7, mat7, 8);  // m33 m32
 
   // 2*2 Determinants
   // for A00 & A01
@@ -382,29 +382,29 @@ static bool inverse(const TransformationMatrix::Matrix4& matrix,
   // for A20 & A21
   tmp5 = mat1 * rev3;
   // for A30 & A31
-  tmp6 = (v2f64) __msa_ilvr_d((v2i64) tmp1, (v2i64) tmp0);
-  tmp7 = (v2f64) __msa_ilvl_d((v2i64) tmp1, (v2i64) tmp0);
+  tmp6 = (v2f64)__msa_ilvr_d((v2i64)tmp1, (v2i64)tmp0);
+  tmp7 = (v2f64)__msa_ilvl_d((v2i64)tmp1, (v2i64)tmp0);
   det0 = tmp6 - tmp7;
-  tmp6 = (v2f64) __msa_ilvr_d((v2i64) tmp3, (v2i64) tmp2);
-  tmp7 = (v2f64) __msa_ilvl_d((v2i64) tmp3, (v2i64) tmp2);
+  tmp6 = (v2f64)__msa_ilvr_d((v2i64)tmp3, (v2i64)tmp2);
+  tmp7 = (v2f64)__msa_ilvl_d((v2i64)tmp3, (v2i64)tmp2);
   det1 = tmp6 - tmp7;
-  tmp6 = (v2f64) __msa_ilvr_d((v2i64) tmp5, (v2i64) tmp4);
-  tmp7 = (v2f64) __msa_ilvl_d((v2i64) tmp5, (v2i64) tmp4);
+  tmp6 = (v2f64)__msa_ilvr_d((v2i64)tmp5, (v2i64)tmp4);
+  tmp7 = (v2f64)__msa_ilvl_d((v2i64)tmp5, (v2i64)tmp4);
   det2 = tmp6 - tmp7;
 
   // Co-factors
-  tmp0 = mat0 * (v2f64) __msa_splati_d((v2i64) det0, 0);
-  tmp1 = mat0 * (v2f64) __msa_splati_d((v2i64) det0, 1);
-  tmp2 = mat0 * (v2f64) __msa_splati_d((v2i64) det1, 0);
-  tmp3 = mat2 * (v2f64) __msa_splati_d((v2i64) det0, 0);
-  tmp4 = mat2 * (v2f64) __msa_splati_d((v2i64) det1, 1);
-  tmp5 = mat2 * (v2f64) __msa_splati_d((v2i64) det2, 0);
-  tmp6 = mat4 * (v2f64) __msa_splati_d((v2i64) det0, 1);
-  tmp7 = mat4 * (v2f64) __msa_splati_d((v2i64) det1, 1);
-  tmp8 = mat4 * (v2f64) __msa_splati_d((v2i64) det2, 1);
-  tmp9 = mat6 * (v2f64) __msa_splati_d((v2i64) det1, 0);
-  tmp10 = mat6 * (v2f64) __msa_splati_d((v2i64) det2, 0);
-  tmp11 = mat6 * (v2f64) __msa_splati_d((v2i64) det2, 1);
+  tmp0 = mat0 * (v2f64)__msa_splati_d((v2i64)det0, 0);
+  tmp1 = mat0 * (v2f64)__msa_splati_d((v2i64)det0, 1);
+  tmp2 = mat0 * (v2f64)__msa_splati_d((v2i64)det1, 0);
+  tmp3 = mat2 * (v2f64)__msa_splati_d((v2i64)det0, 0);
+  tmp4 = mat2 * (v2f64)__msa_splati_d((v2i64)det1, 1);
+  tmp5 = mat2 * (v2f64)__msa_splati_d((v2i64)det2, 0);
+  tmp6 = mat4 * (v2f64)__msa_splati_d((v2i64)det0, 1);
+  tmp7 = mat4 * (v2f64)__msa_splati_d((v2i64)det1, 1);
+  tmp8 = mat4 * (v2f64)__msa_splati_d((v2i64)det2, 1);
+  tmp9 = mat6 * (v2f64)__msa_splati_d((v2i64)det1, 0);
+  tmp10 = mat6 * (v2f64)__msa_splati_d((v2i64)det2, 0);
+  tmp11 = mat6 * (v2f64)__msa_splati_d((v2i64)det2, 1);
 
   tmp0 -= tmp7;
   tmp1 -= tmp4;
@@ -431,9 +431,9 @@ static bool inverse(const TransformationMatrix::Matrix4& matrix,
   result[1][2] = -tmp1[0];
   result[1][3] = tmp2[0];
   // Left half
-  rev2 = SLDI_D(mat2, mat2, 8); // m13 m12
-  rev4 = SLDI_D(mat4, mat4, 8); // m23 m22
-  rev6 = SLDI_D(mat6, mat6, 8); // m33 m32
+  rev2 = SLDI_D(mat2, mat2, 8);  // m13 m12
+  rev4 = SLDI_D(mat4, mat4, 8);  // m23 m22
+  rev6 = SLDI_D(mat6, mat6, 8);  // m33 m32
 
   // 2*2 Determinants
   // for A00 & A01
@@ -446,29 +446,29 @@ static bool inverse(const TransformationMatrix::Matrix4& matrix,
   // for A20 & A21
   tmp5 = mat0 * rev2;
   // for A30 & A31
-  tmp6 = (v2f64) __msa_ilvr_d((v2i64) tmp1, (v2i64) tmp0);
-  tmp7 = (v2f64) __msa_ilvl_d((v2i64) tmp1, (v2i64) tmp0);
+  tmp6 = (v2f64)__msa_ilvr_d((v2i64)tmp1, (v2i64)tmp0);
+  tmp7 = (v2f64)__msa_ilvl_d((v2i64)tmp1, (v2i64)tmp0);
   det0 = tmp6 - tmp7;
-  tmp6 = (v2f64) __msa_ilvr_d((v2i64) tmp3, (v2i64) tmp2);
-  tmp7 = (v2f64) __msa_ilvl_d((v2i64) tmp3, (v2i64) tmp2);
+  tmp6 = (v2f64)__msa_ilvr_d((v2i64)tmp3, (v2i64)tmp2);
+  tmp7 = (v2f64)__msa_ilvl_d((v2i64)tmp3, (v2i64)tmp2);
   det1 = tmp6 - tmp7;
-  tmp6 = (v2f64) __msa_ilvr_d((v2i64) tmp5, (v2i64) tmp4);
-  tmp7 = (v2f64) __msa_ilvl_d((v2i64) tmp5, (v2i64) tmp4);
+  tmp6 = (v2f64)__msa_ilvr_d((v2i64)tmp5, (v2i64)tmp4);
+  tmp7 = (v2f64)__msa_ilvl_d((v2i64)tmp5, (v2i64)tmp4);
   det2 = tmp6 - tmp7;
 
   // Co-factors
-  tmp0 = mat3 * (v2f64) __msa_splati_d((v2i64) det0, 0);
-  tmp1 = mat1 * (v2f64) __msa_splati_d((v2i64) det0, 1);
-  tmp2 = mat1 * (v2f64) __msa_splati_d((v2i64) det0, 0);
-  tmp3 = mat1 * (v2f64) __msa_splati_d((v2i64) det1, 0);
-  tmp4 = mat3 * (v2f64) __msa_splati_d((v2i64) det1, 1);
-  tmp5 = mat3 * (v2f64) __msa_splati_d((v2i64) det2, 0);
-  tmp6 = mat5 * (v2f64) __msa_splati_d((v2i64) det0, 1);
-  tmp7 = mat5 * (v2f64) __msa_splati_d((v2i64) det1, 1);
-  tmp8 = mat5 * (v2f64) __msa_splati_d((v2i64) det2, 1);
-  tmp9 = mat7 * (v2f64) __msa_splati_d((v2i64) det1, 0);
-  tmp10 = mat7 * (v2f64) __msa_splati_d((v2i64) det2, 0);
-  tmp11 = mat7 * (v2f64) __msa_splati_d((v2i64) det2, 1);
+  tmp0 = mat3 * (v2f64)__msa_splati_d((v2i64)det0, 0);
+  tmp1 = mat1 * (v2f64)__msa_splati_d((v2i64)det0, 1);
+  tmp2 = mat1 * (v2f64)__msa_splati_d((v2i64)det0, 0);
+  tmp3 = mat1 * (v2f64)__msa_splati_d((v2i64)det1, 0);
+  tmp4 = mat3 * (v2f64)__msa_splati_d((v2i64)det1, 1);
+  tmp5 = mat3 * (v2f64)__msa_splati_d((v2i64)det2, 0);
+  tmp6 = mat5 * (v2f64)__msa_splati_d((v2i64)det0, 1);
+  tmp7 = mat5 * (v2f64)__msa_splati_d((v2i64)det1, 1);
+  tmp8 = mat5 * (v2f64)__msa_splati_d((v2i64)det2, 1);
+  tmp9 = mat7 * (v2f64)__msa_splati_d((v2i64)det1, 0);
+  tmp10 = mat7 * (v2f64)__msa_splati_d((v2i64)det2, 0);
+  tmp11 = mat7 * (v2f64)__msa_splati_d((v2i64)det2, 1);
   tmp0 -= tmp6;
   tmp1 -= tmp4;
   tmp2 -= tmp7;
@@ -1339,7 +1339,8 @@ TransformationMatrix& TransformationMatrix::multiply(
         "v2", "v3", "v4", "v5", "v6", "v7");
 #elif HAVE(MIPS_MSA_INTRINSICS)
   v2f64 vleftM0, vleftM1, vleftM2, vleftM3, vleftM4, vleftM5, vleftM6, vleftM7;
-  v2f64 vRightM0, vRightM1, vRightM2, vRightM3, vRightM4, vRightM5, vRightM6, vRightM7;
+  v2f64 vRightM0, vRightM1, vRightM2, vRightM3, vRightM4, vRightM5, vRightM6,
+      vRightM7;
   v2f64 vTmpM0, vTmpM1, vTmpM2, vTmpM3;
 
   vRightM0 = LD_DP(&(m_matrix[0][0]));
