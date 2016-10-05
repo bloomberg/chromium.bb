@@ -24,9 +24,14 @@ define("mojo/public/js/validator", [
         'VALIDATION_ERROR_DIFFERENT_SIZED_ARRAYS_IN_MAP',
     INVALID_UNION_SIZE: 'VALIDATION_ERROR_INVALID_UNION_SIZE',
     UNEXPECTED_NULL_UNION: 'VALIDATION_ERROR_UNEXPECTED_NULL_UNION',
+    UNKNOWN_ENUM_VALUE: 'VALIDATION_ERROR_UNKNOWN_ENUM_VALUE',
   };
 
   var NULL_MOJO_POINTER = "NULL_MOJO_POINTER";
+
+  function isEnumClass(cls) {
+    return cls instanceof codec.Enum;
+  }
 
   function isStringClass(cls) {
     return cls === codec.String || cls === codec.NullableString;
@@ -96,6 +101,13 @@ define("mojo/public/js/validator", [
     // This is safe because handle indices are uint32.
     this.handleIndex = index + 1;
     return true;
+  }
+
+  Validator.prototype.validateEnum = function(offset, enumClass, nullable) {
+    // Note: Assumes that enums are always 32 bits! But this matches
+    // mojom::generate::pack::PackedField::GetSizeForKind, so it should be okay.
+    var value = this.message.buffer.getInt32(offset);
+    return enumClass.validate(value);
   }
 
   Validator.prototype.validateHandle = function(offset, nullable) {
@@ -347,6 +359,8 @@ define("mojo/public/js/validator", [
       return this.validateArrayElements(
           elementsOffset, numElements, elementType.cls, nullable,
           expectedDimensionSizes, currentDimension + 1);
+    if (isEnumClass(elementType))
+      return this.validateEnum(elementsOffset, elementType.cls, nullable);
 
     return validationError.NONE;
   }

@@ -28,6 +28,10 @@ err = messageValidator.validateInterface({{offset}}, {{field|validate_interface_
 // validate {{name}}
 err = messageValidator.validateHandle({{offset}}, {{field|validate_handle_params}})
 {{_check_err()}}
+{%-   elif field|is_enum_field %}
+// validate {{name}}
+err = messageValidator.validateEnum({{offset}}, {{field|validate_enum_params}});
+{{_check_err()}}
 {%-   endif %}
 {%- endmacro %}
 

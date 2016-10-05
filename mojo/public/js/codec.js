@@ -711,6 +711,20 @@ define("mojo/public/js/codec", [
     encoder.writeDouble(val);
   };
 
+  function Enum(cls) {
+    this.cls = cls;
+  }
+
+  Enum.prototype.encodedSize = 4;
+
+  Enum.prototype.decode = function(decoder) {
+    return decoder.readInt32();
+  };
+
+  Enum.prototype.encode = function(encoder, val) {
+    encoder.writeInt32(val);
+  };
+
   function PointerTo(cls) {
     this.cls = cls;
   }
@@ -863,6 +877,7 @@ define("mojo/public/js/codec", [
   exports.Float = Float;
   exports.Double = Double;
   exports.String = String;
+  exports.Enum = Enum;
   exports.NullableString = NullableString;
   exports.PointerTo = PointerTo;
   exports.NullablePointerTo = NullablePointerTo;

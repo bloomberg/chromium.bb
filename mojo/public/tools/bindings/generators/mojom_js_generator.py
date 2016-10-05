@@ -37,9 +37,13 @@ _kind_to_javascript_default_value = {
 
 
 def JavaScriptType(kind):
+  name = []
   if kind.imported_from:
-    return kind.imported_from["unique_name"] + "." + kind.name
-  return kind.name
+    name.append(kind.imported_from["unique_name"])
+  if kind.parent_kind:
+    name.append(kind.parent_kind.name)
+  name.append(kind.name)
+  return ".".join(name)
 
 
 def JavaScriptDefaultValue(field):
@@ -129,7 +133,8 @@ def CodecType(kind):
   if mojom.IsAssociatedInterfaceRequestKind(kind):
     return "codec.AssociatedInterfaceRequestNotSupported"
   if mojom.IsEnumKind(kind):
-    return _kind_to_codec_type[mojom.INT32]
+    element_type = kind.name
+    return "new codec.Enum(%s)" % (element_type)
   if mojom.IsMapKind(kind):
     map_type = "NullableMapOf" if mojom.IsNullableKind(kind) else "MapOf"
     key_type = ElementCodecType(kind.key_kind)
@@ -140,6 +145,7 @@ def CodecType(kind):
 
 def ElementCodecType(kind):
   return "codec.PackedBool" if mojom.IsBoolKind(kind) else CodecType(kind)
+
 
 def JavaScriptDecodeSnippet(kind):
   if (kind in mojom.PRIMITIVES or mojom.IsUnionKind(kind) or
@@ -227,6 +233,11 @@ def JavaScriptValidateArrayParams(field):
       (element_size, element_type, nullable,
        expected_dimension_sizes)
 
+
+def JavaScriptValidateEnumParams(field):
+  nullable = JavaScriptNullableParam(field)
+  enum_type = JavaScriptType(field.kind)
+  return "%s, %s" % (enum_type, nullable)
 
 def JavaScriptValidateStructParams(field):
   nullable = JavaScriptNullableParam(field)
@@ -316,6 +327,9 @@ def ExpressionToText(value):
 def IsArrayPointerField(field):
   return mojom.IsArrayKind(field.kind)
 
+def IsEnumField(field):
+  return mojom.IsEnumKind(field.kind)
+
 def IsStringPointerField(field):
   return mojom.IsStringKind(field.kind)
 
@@ -355,6 +369,7 @@ class Generator(generator.Generator):
     "has_callbacks": mojom.HasCallbacks,
     "is_array_pointer_field": IsArrayPointerField,
     "is_bool_field": IsBoolField,
+    "is_enum_field": IsEnumField,
     "is_map_pointer_field": IsMapPointerField,
     "is_struct_pointer_field": IsStructPointerField,
     "is_string_pointer_field": IsStringPointerField,
@@ -367,6 +382,7 @@ class Generator(generator.Generator):
     "js_stub_method_parameter_value": JavaScriptStubMethodParameterValue,
     "stylize_method": generator.StudlyCapsToCamel,
     "validate_array_params": JavaScriptValidateArrayParams,
+    "validate_enum_params": JavaScriptValidateEnumParams,
     "validate_handle_params": JavaScriptValidateHandleParams,
     "validate_interface_params": JavaScriptValidateInterfaceParams,
     "validate_map_params": JavaScriptValidateMapParams,
