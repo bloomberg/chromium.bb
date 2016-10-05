@@ -108,6 +108,7 @@ class VM(object):
 
     self.Stop()
 
+    logging.debug('Start VM')
     if not self.kvm_path:
       self.kvm_path = self._FindKVMBinary()
     logging.debug('kvm path=%s', self.kvm_path)
@@ -154,7 +155,7 @@ class VM(object):
                                         redirect_stdout=True).output.rstrip()
     if not pid.isdigit():
       raise VMError('%s in %s is not a pid.' % (pid, self.pidfile))
-    return pid
+    return int(pid)
 
   def IsRunning(self):
     """Returns True if there's a running VM.
@@ -166,18 +167,27 @@ class VM(object):
       pid = self._GetVMPid()
     except VMError:
       return False
-    return bool(pid)
+
+    if not pid:
+      return False
+
+    # Make sure the process actually exists.
+    res = cros_build_lib.SudoRunCommand(['kill', '-0', str(pid)],
+                                        error_code_ok=True)
+    return res.returncode == 0
 
   def Stop(self):
     """Stop the VM."""
+    logging.debug('Stop VM')
 
     pid = self._GetVMPid()
     if not pid:
       return
 
-    logging.info('Killing %s.', pid)
+    logging.info('Killing %d.', pid)
     if not self.dry_run:
-      cros_build_lib.SudoRunCommand(['kill', '-9', pid])
+      cros_build_lib.SudoRunCommand(['kill', '-9', str(pid)],
+                                    error_code_ok=True)
     self._CleanupFiles(recreate=False)
 
   def WaitForBoot(self, timeout=10, poll_interval=0.1):
@@ -209,7 +219,6 @@ class VM(object):
 
     Args:
       cmd: command to run, of list type.
-      verbose: verbose logging output.
     """
     if not isinstance(cmd, list):
       raise VMError('cmd must be a list.')
