@@ -114,7 +114,7 @@ class TestCopyExistingBaselinesInternal(BaseTestCase):
 
         port = self.tool.port_factory.get('test-mac-mac10.10')
         self._write(
-            port._filesystem.join(
+            port.host.filesystem.join(
                 port.layout_tests_dir(),
                 'platform/test-mac-mac10.10/failures/expected/image-expected.txt'),
             'original mac10.11 result')
@@ -145,7 +145,7 @@ class TestCopyExistingBaselinesInternal(BaseTestCase):
 
         port = self.tool.port_factory.get('test-win-win7')
         self._write(
-            port._filesystem.join(port.layout_tests_dir(), 'platform/test-win-win7/failures/expected/image-expected.txt'),
+            port.host.filesystem.join(port.layout_tests_dir(), 'platform/test-win-win7/failures/expected/image-expected.txt'),
             'original win7 result')
 
         oc = OutputCapture()
@@ -177,8 +177,11 @@ class TestCopyExistingBaselinesInternal(BaseTestCase):
         self.tool.executive = MockExecutive2()
 
         port = self.tool.port_factory.get('test-win-win7')
-        self._write(port._filesystem.join(port.layout_tests_dir(),
-                                          'platform/test-win-win7/failures/expected/image-expected.txt'), 'original win7 result')
+        self._write(
+            port.host.filesystem.join(
+                port.layout_tests_dir(),
+                'platform/test-win-win7/failures/expected/image-expected.txt'),
+            'original win7 result')
 
         oc = OutputCapture()
         try:
@@ -341,8 +344,11 @@ class TestRebaselineTest(BaseTestCase):
         self.tool.executive = MockExecutive2()
 
         port = self.tool.port_factory.get('test-win-win7')
-        self._write(port._filesystem.join(port.layout_tests_dir(),
-                                          'platform/test-win-win10/failures/expected/image-expected.txt'), 'original win10 result')
+        self._write(
+            port.host.filesystem.join(
+                port.layout_tests_dir(),
+                'platform/test-win-win10/failures/expected/image-expected.txt'),
+            'original win10 result')
 
         oc = OutputCapture()
         try:
@@ -360,8 +366,11 @@ class TestRebaselineTest(BaseTestCase):
         finally:
             out, _, _ = oc.restore_output()
 
-        self.assertMultiLineEqual(self._read(self.tool.filesystem.join(port.layout_tests_dir(
-        ), 'platform/test-win-win10/failures/expected/image-expected.txt')), 'MOCK Web result, convert 404 to None=True')
+        self.assertMultiLineEqual(
+            self._read(self.tool.filesystem.join(
+                port.layout_tests_dir(),
+                'platform/test-win-win10/failures/expected/image-expected.txt')),
+            'MOCK Web result, convert 404 to None=True')
         self.assertFalse(self.tool.filesystem.exists(self.tool.filesystem.join(
             port.layout_tests_dir(), 'platform/test-win-win7/failures/expected/image-expected.txt')))
         self.assertMultiLineEqual(

@@ -47,8 +47,8 @@ class ServerBase(object):
 
     def __init__(self, port_obj, output_dir):
         self._port_obj = port_obj
-        self._executive = port_obj._executive
-        self._filesystem = port_obj._filesystem
+        self._executive = port_obj.host.executive
+        self._filesystem = port_obj.host.filesystem
         self._platform = port_obj.host.platform
         self._output_dir = output_dir
 

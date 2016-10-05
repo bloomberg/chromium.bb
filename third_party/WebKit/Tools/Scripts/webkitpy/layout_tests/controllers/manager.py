@@ -446,13 +446,13 @@ class Manager(object):
         sample_files = self._port.look_for_new_samples(crashed_processes, start_time)
         if sample_files:
             for test, sample_file in sample_files.iteritems():
-                writer = TestResultWriter(self._port._filesystem, self._port, self._port.results_directory(), test)
+                writer = TestResultWriter(self._filesystem, self._port, self._port.results_directory(), test)
                 writer.copy_sample_file(sample_file)
 
         crash_logs = self._port.look_for_new_crash_logs(crashed_processes, start_time)
         if crash_logs:
             for test, crash_log in crash_logs.iteritems():
-                writer = TestResultWriter(self._port._filesystem, self._port, self._port.results_directory(), test)
+                writer = TestResultWriter(self._filesystem, self._port, self._port.results_directory(), test)
                 writer.write_crash_log(crash_log)
 
     def _clobber_old_results(self):

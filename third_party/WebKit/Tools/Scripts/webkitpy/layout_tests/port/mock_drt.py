@@ -194,7 +194,7 @@ class MockDRT(object):
             driver_input = self.input_from_line(line)
             dirname, basename = self._port.split_test(driver_input.test_name)
             is_reftest = (self._port.reference_files(driver_input.test_name) or
-                          self._port.is_reference_html_file(self._port._filesystem, dirname, basename))
+                          self._port.is_reference_html_file(self._port.host.filesystem, dirname, basename))
             output = self.output_for_test(driver_input, is_reftest)
             self.write_test_output(driver_input, output, is_reftest)
 
@@ -241,18 +241,18 @@ class MockDRT(object):
             actual_image = port.expected_image(test_input.test_name)
 
         if self._options.actual_directory:
-            actual_path = port._filesystem.join(self._options.actual_directory, test_input.test_name)
-            root, _ = port._filesystem.splitext(actual_path)
+            actual_path = port.host.filesystem.join(self._options.actual_directory, test_input.test_name)
+            root, _ = port.host.filesystem.splitext(actual_path)
             text_path = root + '-actual.txt'
-            if port._filesystem.exists(text_path):
-                actual_text = port._filesystem.read_binary_file(text_path)
+            if port.host.filesystem.exists(text_path):
+                actual_text = port.host.filesystem.read_binary_file(text_path)
             audio_path = root + '-actual.wav'
-            if port._filesystem.exists(audio_path):
-                actual_audio = port._filesystem.read_binary_file(audio_path)
+            if port.host.filesystem.exists(audio_path):
+                actual_audio = port.host.filesystem.read_binary_file(audio_path)
             image_path = root + '-actual.png'
-            if port._filesystem.exists(image_path):
-                actual_image = port._filesystem.read_binary_file(image_path)
-                with port._filesystem.open_binary_file_for_reading(image_path) as filehandle:
+            if port.host.filesystem.exists(image_path):
+                actual_image = port.host.filesystem.read_binary_file(image_path)
+                with port.host.filesystem.open_binary_file_for_reading(image_path) as filehandle:
                     actual_checksum = read_checksum_from_png.read_checksum(filehandle)
 
         return DriverOutput(actual_text, actual_image, actual_checksum, actual_audio)

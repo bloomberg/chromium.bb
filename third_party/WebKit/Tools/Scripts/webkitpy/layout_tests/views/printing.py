@@ -414,7 +414,7 @@ class Printer(object):
 
     def _print_baseline(self, test_name, extension):
         baseline = self._port.expected_filename(test_name, extension)
-        if self._port._filesystem.exists(baseline):
+        if self._port.host.filesystem.exists(baseline):
             relpath = self._port.relative_test_filename(baseline)
         else:
             relpath = '<none>'

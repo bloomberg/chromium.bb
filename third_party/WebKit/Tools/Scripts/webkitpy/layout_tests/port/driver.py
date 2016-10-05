@@ -310,7 +310,7 @@ class Driver(object):
 
     def _start(self, pixel_tests, per_test_args, wait_for_ready=True):
         self.stop()
-        self._driver_tempdir = self._port._filesystem.mkdtemp(prefix='%s-' % self._port.driver_name())
+        self._driver_tempdir = self._port.host.filesystem.mkdtemp(prefix='%s-' % self._port.driver_name())
         server_name = self._port.driver_name()
         environment = self._port.setup_environ_for_server()
         environment = self._setup_environ_for_driver(environment)
@@ -359,7 +359,7 @@ class Driver(object):
                 self._profiler.profile_after_exit()
 
         if self._driver_tempdir:
-            self._port._filesystem.rmtree(str(self._driver_tempdir))
+            self._port.host.filesystem.rmtree(str(self._driver_tempdir))
             self._driver_tempdir = None
 
         self._current_cmd_line = None

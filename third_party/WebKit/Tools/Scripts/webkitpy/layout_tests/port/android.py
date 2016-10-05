@@ -1290,7 +1290,8 @@ class ChromiumAndroidDriver(driver.Driver):
         dumps = self._android_commands.run(['shell', 'ls', self._driver_details.device_crash_dumps_directory()])
         for dump in dumps.splitlines():
             device_dump = '%s/%s' % (self._driver_details.device_crash_dumps_directory(), dump)
-            local_dump = self._port._filesystem.join(self._port._dump_reader.crash_dumps_directory(), dump)
+            local_dump = self._port.host.filesystem.join(
+                self._port._dump_reader.crash_dumps_directory(), dump)  # pylint: disable=protected-access
 
             # FIXME: crbug.com/321489. Figure out why these commands would fail ...
             err = self._android_commands.run(['shell', 'chmod', '777', device_dump])
@@ -1299,7 +1300,7 @@ class ChromiumAndroidDriver(driver.Driver):
             if not err:
                 self._android_commands.run(['shell', 'rm', '-f', device_dump])
 
-            if self._port._filesystem.exists(local_dump):
+            if self._port.host.filesystem.exists(local_dump):
                 result.append(local_dump)
         return result
 
@@ -1318,7 +1319,7 @@ class ChromiumAndroidDriver(driver.Driver):
     def _command_from_driver_input(self, driver_input):
         command = super(ChromiumAndroidDriver, self)._command_from_driver_input(driver_input)
         if command.startswith('/'):
-            fs = self._port._filesystem
+            fs = self._port.host.filesystem
             # FIXME: what happens if command lies outside of the layout_tests_dir on the host?
             relative_test_filename = fs.relpath(command, fs.dirname(self._port.layout_tests_dir()))
             command = DEVICE_WEBKIT_BASE_DIR + relative_test_filename

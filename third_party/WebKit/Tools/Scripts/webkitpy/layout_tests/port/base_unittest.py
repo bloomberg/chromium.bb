@@ -199,7 +199,7 @@ class PortTest(unittest.TestCase):
 
         # Simple additional platform directory
         port._options.additional_platform_directory = ['/tmp/local-baselines']
-        port._filesystem.write_text_file('/tmp/local-baselines/fast/test-expected.txt', 'foo')
+        port.host.filesystem.write_text_file('/tmp/local-baselines/fast/test-expected.txt', 'foo')
         self.assertEqual(
             port.expected_baselines(test_file, '.txt'),
             [('/tmp/local-baselines', 'fast/test-expected.txt')])
@@ -221,19 +221,21 @@ class PortTest(unittest.TestCase):
         port = self.make_port(port_name='foo')
         port.expectations_files = lambda: ['/mock-checkout/third_party/WebKit/LayoutTests/platform/exists/TestExpectations',
                                            '/mock-checkout/third_party/WebKit/LayoutTests/platform/nonexistant/TestExpectations']
-        port._filesystem.write_text_file('/mock-checkout/third_party/WebKit/LayoutTests/platform/exists/TestExpectations', '')
+        port.host.filesystem.write_text_file('/mock-checkout/third_party/WebKit/LayoutTests/platform/exists/TestExpectations', '')
         self.assertEqual('\n'.join(port.expectations_dict().keys()),
                          '/mock-checkout/third_party/WebKit/LayoutTests/platform/exists/TestExpectations')
 
     def test_additional_expectations(self):
         port = self.make_port(port_name='foo')
         port.port_name = 'foo'
-        port._filesystem.write_text_file('/mock-checkout/third_party/WebKit/LayoutTests/platform/foo/TestExpectations', '')
-        port._filesystem.write_text_file(
+        port.host.filesystem.write_text_file(
+            '/mock-checkout/third_party/WebKit/LayoutTests/platform/foo/TestExpectations', '')
+        port.host.filesystem.write_text_file(
             '/tmp/additional-expectations-1.txt', 'content1\n')
-        port._filesystem.write_text_file(
+        port.host.filesystem.write_text_file(
             '/tmp/additional-expectations-2.txt', 'content2\n')
-        port._filesystem.write_text_file('/mock-checkout/third_party/WebKit/LayoutTests/FlagExpectations/special-flag', 'content3')
+        port.host.filesystem.write_text_file(
+            '/mock-checkout/third_party/WebKit/LayoutTests/FlagExpectations/special-flag', 'content3')
 
         self.assertEqual('\n'.join(port.expectations_dict().values()), '')
 
@@ -427,18 +429,18 @@ class PortTest(unittest.TestCase):
 
     def test_good_virtual_test_suite_file(self):
         port = self.make_port()
-        fs = port._filesystem
-        fs.write_text_file(fs.join(port.layout_tests_dir(), 'VirtualTestSuites'),
-                           '[{"prefix": "bar", "base": "fast/bar", "args": ["--bar"]}]')
+        port.host.filesystem.write_text_file(
+            port.host.filesystem.join(port.layout_tests_dir(), 'VirtualTestSuites'),
+            '[{"prefix": "bar", "base": "fast/bar", "args": ["--bar"]}]')
 
         # If this call returns successfully, we found and loaded the LayoutTests/VirtualTestSuites.
         _ = port.virtual_test_suites()
 
     def test_virtual_test_suite_file_is_not_json(self):
         port = self.make_port()
-        fs = port._filesystem
-        fs.write_text_file(fs.join(port.layout_tests_dir(), 'VirtualTestSuites'),
-                           '{[{[')
+        port.host.filesystem.write_text_file(
+            port.host.filesystem.join(port.layout_tests_dir(), 'VirtualTestSuites'),
+            '{[{[')
         self.assertRaises(ValueError, port.virtual_test_suites)
 
     def test_missing_virtual_test_suite_file(self):
@@ -458,7 +460,7 @@ class PortTest(unittest.TestCase):
     def test_results_directory(self):
         port = self.make_port(options=optparse.Values({'results_directory': 'some-directory/results'}))
         # A results directory can be given as an option, and it is relative to current working directory.
-        self.assertEqual(port._filesystem.cwd, '/')
+        self.assertEqual(port.host.filesystem.cwd, '/')
         self.assertEqual(port.results_directory(), '/some-directory/results')
 
 

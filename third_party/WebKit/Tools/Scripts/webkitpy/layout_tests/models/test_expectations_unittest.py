@@ -362,9 +362,11 @@ Bug(test) failures/expected/timeout.html [ Timeout ]
         self.parse_exp("Bug(x) failures/expected [ Skip ]\n"
                        "Bug(x) failures/expected/text.html [ Failure ]\n")
         self.assert_exp('failures/expected/text.html', FAIL)
-        self.assertFalse(self._port._filesystem.join(self._port.layout_tests_dir(),
-                                                     'failures/expected/text.html') in
-                         self._exp.get_tests_with_result_type(SKIP))
+        self.assertNotIn(
+            self._port.host.filesystem.join(
+                self._port.layout_tests_dir(),
+                'failures/expected/text.html'),
+            self._exp.get_tests_with_result_type(SKIP))
 
     def test_bot_test_expectations(self):
         """Test that expectations are merged rather than overridden when using flaky option 'unexpected'."""
@@ -393,7 +395,10 @@ class SkippedTests(Base):
 
     def check(self, expectations, overrides, skips, lint=False, expected_results=[WONTFIX, SKIP, FAIL]):
         port = MockHost().port_factory.get('test-win-win7')
-        port._filesystem.write_text_file(port._filesystem.join(port.layout_tests_dir(), 'failures/expected/text.html'), 'foo')
+        port.host.filesystem.write_text_file(
+            port.host.filesystem.join(
+                port.layout_tests_dir(), 'failures/expected/text.html'),
+            'foo')
         expectations_dict = OrderedDict()
         expectations_dict['expectations'] = expectations
         if overrides:

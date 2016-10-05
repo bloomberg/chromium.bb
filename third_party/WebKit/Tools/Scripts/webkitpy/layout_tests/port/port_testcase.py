@@ -212,7 +212,7 @@ class PortTestCase(unittest.TestCase):
         mock_image_diff = "MOCK Image Diff"
 
         def mock_run_command(args):
-            port._filesystem.write_binary_file(args[4], mock_image_diff)
+            port.host.filesystem.write_binary_file(args[4], mock_image_diff)
             return 1
 
         # Images are different.
@@ -308,19 +308,19 @@ class PortTestCase(unittest.TestCase):
         port = self.make_port()
         self.assertEqual(port.expectations_files(), [
             port.path_to_generic_test_expectations_file(),
-            port._filesystem.join(port.layout_tests_dir(), 'NeverFixTests'),
-            port._filesystem.join(port.layout_tests_dir(), 'StaleTestExpectations'),
-            port._filesystem.join(port.layout_tests_dir(), 'SlowTests'),
+            port.host.filesystem.join(port.layout_tests_dir(), 'NeverFixTests'),
+            port.host.filesystem.join(port.layout_tests_dir(), 'StaleTestExpectations'),
+            port.host.filesystem.join(port.layout_tests_dir(), 'SlowTests'),
         ])
 
     def test_expectations_files_wptserve_enabled(self):
         port = self.make_port(options=optparse.Values(dict(enable_wptserve=True)))
         self.assertEqual(port.expectations_files(), [
             port.path_to_generic_test_expectations_file(),
-            port._filesystem.join(port.layout_tests_dir(), 'NeverFixTests'),
-            port._filesystem.join(port.layout_tests_dir(), 'StaleTestExpectations'),
-            port._filesystem.join(port.layout_tests_dir(), 'SlowTests'),
-            port._filesystem.join(port.layout_tests_dir(), 'WPTServeExpectations'),
+            port.host.filesystem.join(port.layout_tests_dir(), 'NeverFixTests'),
+            port.host.filesystem.join(port.layout_tests_dir(), 'StaleTestExpectations'),
+            port.host.filesystem.join(port.layout_tests_dir(), 'SlowTests'),
+            port.host.filesystem.join(port.layout_tests_dir(), 'WPTServeExpectations'),
         ])
 
     def test_check_sys_deps(self):
@@ -333,16 +333,16 @@ class PortTestCase(unittest.TestCase):
     def test_expectations_ordering(self):
         port = self.make_port()
         for path in port.expectations_files():
-            port._filesystem.write_text_file(path, '')
+            port.host.filesystem.write_text_file(path, '')
         ordered_dict = port.expectations_dict()
         self.assertEqual(port.path_to_generic_test_expectations_file(), ordered_dict.keys()[0])
 
         options = optparse.Values(dict(additional_expectations=['/tmp/foo', '/tmp/bar']))
         port = self.make_port(options=options)
         for path in port.expectations_files():
-            port._filesystem.write_text_file(path, '')
-        port._filesystem.write_text_file('/tmp/foo', 'foo')
-        port._filesystem.write_text_file('/tmp/bar', 'bar')
+            port.host.filesystem.write_text_file(path, '')
+        port.host.filesystem.write_text_file('/tmp/foo', 'foo')
+        port.host.filesystem.write_text_file('/tmp/bar', 'bar')
         ordered_dict = port.expectations_dict()
         self.assertEqual(ordered_dict.keys()[-2:], options.additional_expectations)  # pylint: disable=E1101
         self.assertEqual(ordered_dict.values()[-2:], ['foo', 'bar'])
@@ -402,7 +402,7 @@ class PortTestCase(unittest.TestCase):
 
         port.host.environ['WEBKIT_HTTP_SERVER_CONF_PATH'] = '/path/to/httpd.conf'
         self.assertRaises(IOError, port.path_to_apache_config_file)
-        port._filesystem.write_text_file('/existing/httpd.conf', 'Hello, world!')
+        port.host.filesystem.write_text_file('/existing/httpd.conf', 'Hello, world!')
         port.host.environ['WEBKIT_HTTP_SERVER_CONF_PATH'] = '/existing/httpd.conf'
         self.assertEqual(port.path_to_apache_config_file(), '/existing/httpd.conf')
 

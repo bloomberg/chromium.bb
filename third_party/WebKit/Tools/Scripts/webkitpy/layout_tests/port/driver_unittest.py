@@ -217,27 +217,27 @@ class DriverTest(unittest.TestCase):
     def test_creating_a_port_does_not_write_to_the_filesystem(self):
         port = TestWebKitPort()
         Driver(port, 0, pixel_tests=True)
-        self.assertEqual(port._filesystem.written_files, {})
-        self.assertIsNone(port._filesystem.last_tmpdir)
+        self.assertEqual(port.host.filesystem.written_files, {})
+        self.assertIsNone(port.host.filesystem.last_tmpdir)
 
     def test_stop_cleans_up_properly(self):
         port = TestWebKitPort()
         port._server_process_constructor = MockServerProcess
         driver = Driver(port, 0, pixel_tests=True)
         driver.start(True, [], None)
-        last_tmpdir = port._filesystem.last_tmpdir
+        last_tmpdir = port.host.filesystem.last_tmpdir
         self.assertIsNotNone(last_tmpdir)
         driver.stop()
-        self.assertFalse(port._filesystem.isdir(last_tmpdir))
+        self.assertFalse(port.host.filesystem.isdir(last_tmpdir))
 
     def test_two_starts_cleans_up_properly(self):
         port = TestWebKitPort()
         port._server_process_constructor = MockServerProcess
         driver = Driver(port, 0, pixel_tests=True)
         driver.start(True, [], None)
-        last_tmpdir = port._filesystem.last_tmpdir
+        last_tmpdir = port.host.filesystem.last_tmpdir
         driver._start(True, [])
-        self.assertFalse(port._filesystem.isdir(last_tmpdir))
+        self.assertFalse(port.host.filesystem.isdir(last_tmpdir))
 
     def test_start_actually_starts(self):
         port = TestWebKitPort()

@@ -66,7 +66,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         ]
         for test in tests:
             # pylint: disable=protected-access
-            self._write(port._filesystem.join(port.layout_tests_dir(), test), 'contents')
+            self._write(port.host.filesystem.join(port.layout_tests_dir(), test), 'contents')
 
     def tearDown(self):
         BaseTestCase.tearDown(self)
@@ -165,7 +165,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         # pylint: disable=protected-access
         port = self.tool.port_factory.get('test-win-win7')
         self._write(
-            port._filesystem.join(port.layout_tests_dir(), 'fast/dom/prototype-taco.html'),
+            port.host.filesystem.join(port.layout_tests_dir(), 'fast/dom/prototype-taco.html'),
             'test contents')
 
         self.command._rebaseline(
