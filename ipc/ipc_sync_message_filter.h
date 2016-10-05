@@ -17,6 +17,10 @@
 #include "ipc/ipc_sync_message.h"
 #include "ipc/message_filter.h"
 #include "ipc/mojo_event.h"
+#include "mojo/public/cpp/bindings/associated_group.h"
+#include "mojo/public/cpp/bindings/associated_interface_ptr.h"
+#include "mojo/public/cpp/bindings/associated_interface_request.h"
+#include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -42,6 +46,20 @@ class IPC_EXPORT SyncMessageFilter : public MessageFilter, public Sender {
   void OnChannelClosing() override;
   bool OnMessageReceived(const Message& message) override;
 
+  // Binds an associated interface proxy to an interface in the browser process.
+  // Interfaces acquired through this method are associated with the IPC Channel
+  // and as such retain FIFO with legacy IPC messages.
+  //
+  // NOTE: This must ONLY be called on the Channel's thread, after
+  // OnFilterAdded.
+  template <typename Interface>
+  void GetRemoteAssociatedInterface(
+      mojo::AssociatedInterfacePtr<Interface>* proxy) {
+    mojo::AssociatedInterfaceRequest<Interface> request =
+        mojo::GetProxy(proxy, &channel_associated_group_);
+    GetGenericRemoteAssociatedInterface(Interface::Name_, request.PassHandle());
+  }
+
  protected:
   explicit SyncMessageFilter(base::WaitableEvent* shutdown_event);
   ~SyncMessageFilter() override;
@@ -58,6 +76,11 @@ class IPC_EXPORT SyncMessageFilter : public MessageFilter, public Sender {
 
   void OnShutdownEventSignaled(base::WaitableEvent* event);
   void OnIOMessageLoopDestroyed();
+
+  // NOTE: This must ONLY be called on the Channel's thread.
+  void GetGenericRemoteAssociatedInterface(
+      const std::string& interface_name,
+      mojo::ScopedInterfaceEndpointHandle handle);
 
   // The channel to which this filter was added.
   Channel* channel_;
@@ -88,6 +111,10 @@ class IPC_EXPORT SyncMessageFilter : public MessageFilter, public Sender {
   MojoEvent shutdown_mojo_event_;
 
   scoped_refptr<IOMessageLoopObserver> io_message_loop_observer_;
+
+  // The AssociatedGroup for the underlying channel, used to construct new
+  // associated interface endpoints.
+  mojo::AssociatedGroup channel_associated_group_;
 
   base::WeakPtrFactory<SyncMessageFilter> weak_factory_;
 

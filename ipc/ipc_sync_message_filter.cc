@@ -172,6 +172,11 @@ void SyncMessageFilter::OnFilterAdded(Channel* channel) {
   {
     base::AutoLock auto_lock(lock_);
     channel_ = channel;
+    Channel::AssociatedInterfaceSupport* support =
+        channel_->GetAssociatedInterfaceSupport();
+    if (support)
+      channel_associated_group_ = *support->GetAssociatedGroup();
+
     io_task_runner_ = base::ThreadTaskRunnerHandle::Get();
     shutdown_watcher_.StartWatching(
         shutdown_event_,
@@ -268,6 +273,20 @@ void SyncMessageFilter::OnIOMessageLoopDestroyed() {
   // message loop is destroyed. Since that destruction indicates shutdown
   // anyway, we manually signal the shutdown event in this case.
   shutdown_mojo_event_.Signal();
+}
+
+void SyncMessageFilter::GetGenericRemoteAssociatedInterface(
+    const std::string& interface_name,
+    mojo::ScopedInterfaceEndpointHandle handle) {
+  base::AutoLock auto_lock(lock_);
+  DCHECK(io_task_runner_ && io_task_runner_->BelongsToCurrentThread());
+  if (!channel_)
+    return;
+
+  Channel::AssociatedInterfaceSupport* support =
+      channel_->GetAssociatedInterfaceSupport();
+  support->GetGenericRemoteAssociatedInterface(
+      interface_name, std::move(handle));
 }
 
 }  // namespace IPC
