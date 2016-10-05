@@ -20,11 +20,6 @@ bool IsPaletteFeatureEnabled() {
       switches::kAshEnablePalette);
 }
 
-bool ArePaletteExperimentalFeaturesEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAshEnablePaletteExperimentalFeatures);
-}
-
 bool IsPaletteEnabledOnEveryDisplay() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAshEnablePaletteOnAllDisplays);

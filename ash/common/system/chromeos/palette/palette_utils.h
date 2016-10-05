@@ -17,9 +17,6 @@ namespace ash {
 // been disabled by the user.
 ASH_EXPORT bool IsPaletteFeatureEnabled();
 
-// Are experimental palette features enabled?
-ASH_EXPORT bool ArePaletteExperimentalFeaturesEnabled();
-
 // Returns true if the palette should be shown on every display.
 ASH_EXPORT bool IsPaletteEnabledOnEveryDisplay();
 

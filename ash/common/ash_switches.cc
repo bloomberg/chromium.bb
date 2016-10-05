@@ -57,10 +57,6 @@ const char kAshEnableMagnifierKeyScroller[] =
 // Enables the palette next to the status area.
 const char kAshEnablePalette[] = "ash-enable-palette";
 
-// Enables experimental ash palette tools.
-const char kAshEnablePaletteExperimentalFeatures[] =
-    "ash-enable-palette-experimental-features";
-
 // Enables the palette on every display, instead of only the internal one.
 const char kAshEnablePaletteOnAllDisplays[] =
     "ash-enable-palette-on-all-displays";
