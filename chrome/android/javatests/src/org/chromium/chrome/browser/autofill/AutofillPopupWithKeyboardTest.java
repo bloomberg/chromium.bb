@@ -14,6 +14,7 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.components.autofill.AutofillPopup;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -21,7 +22,6 @@ import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.R;
 import org.chromium.ui.UiUtils;
-import org.chromium.ui.autofill.AutofillPopup;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;

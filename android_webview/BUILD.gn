@@ -616,6 +616,7 @@ android_library("android_webview_java") {
     ":resources",
     ":strings_grd",
     "//base:base_java",
+    "//components/autofill/android:autofill_java",
     "//components/navigation_interception/android:navigation_interception_java",
     "//components/web_contents_delegate_android:web_contents_delegate_android_java",
     "//components/web_restrictions:web_restrictions_java",
