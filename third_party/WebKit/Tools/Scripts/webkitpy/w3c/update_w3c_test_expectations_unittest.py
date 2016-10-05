@@ -3,18 +3,20 @@
 # found in the LICENSE file.
 
 import json
+import copy
 
 from webkitpy.common.host_mock import MockHost
 from webkitpy.common.net.buildbot import Build
 from webkitpy.common.net.buildbot_mock import MockBuildBot
 from webkitpy.common.net.layouttestresults import LayoutTestResult, LayoutTestResults
 from webkitpy.common.net.web_mock import MockWeb
-from webkitpy.common.system import logtesting
+from webkitpy.common.system.logtesting import LoggingTestCase
+from webkitpy.common.system.executive_mock import MockExecutive2
 from webkitpy.layout_tests.builder_list import BuilderList
 from webkitpy.w3c.update_w3c_test_expectations import W3CExpectationsLineAdder
 
 
-class UpdateW3CTestExpectationsTest(logtesting.LoggingTestCase):
+class UpdateW3CTestExpectationsTest(LoggingTestCase):
 
     def setUp(self):
         super(UpdateW3CTestExpectationsTest, self).setUp()
@@ -244,16 +246,48 @@ class UpdateW3CTestExpectationsTest(logtesting.LoggingTestCase):
         line_adder = W3CExpectationsLineAdder(self.host)
         self.assertFalse(line_adder.is_js_test('foo/bar.html'))
 
-    def test_get_test_to_rebaseline(self):
-        self.host = MockHost()
+    def test_get_test_to_rebaseline_returns_only_tests_with_failures(self):
+        self.host.filesystem.files['/mock-checkout/third_party/WebKit/LayoutTests/imported/fake/test/path.html'] = (
+            '<script src="/resources/testharness.js"></script>')
+        self.host.filesystem.files['/mock-checkout/third_party/WebKit/LayoutTests/imported/other/test/path.html'] = (
+            '<script src="/resources/testharness.js"></script>')
+        line_adder = W3CExpectationsLineAdder(self.host)
+        tests_to_rebaseline, _ = line_adder.get_tests_to_rebaseline(
+            ['imported/fake/test/path.html', 'imported/other/test/path.html'], self.mock_dict_two)
+        # The other test doesn't have an entry in the test results dict, so it is not listed as a test to rebaseline.
+        self.assertEqual(tests_to_rebaseline, ['imported/fake/test/path.html'])
+
+    def test_get_test_to_rebaseline_returns_only_js_tests(self):
+        self.host.filesystem.files['/mock-checkout/third_party/WebKit/LayoutTests/imported/fake/test/path.html'] = (
+            'this file does not look like a testharness JS test.')
+        line_adder = W3CExpectationsLineAdder(self.host)
+        tests_to_rebaseline, _ = line_adder.get_tests_to_rebaseline(
+            ['imported/fake/test/path.html'], self.mock_dict_two)
+        self.assertEqual(tests_to_rebaseline, [])
+
+    def test_get_tests_to_rebaseline_returns_updated_dict(self):
+        test_results_dict = {
+            'imported/fake/test/path.html': {
+                'one': {'expected': 'PASS', 'actual': 'TEXT', 'bug': 'crbug.com/626703'},
+                'two': {'expected': 'PASS', 'actual': 'TIMEOUT', 'bug': 'crbug.com/626703'},
+            },
+        }
+        test_results_dict_copy = copy.deepcopy(test_results_dict)
         self.host.filesystem.files['/mock-checkout/third_party/WebKit/LayoutTests/imported/fake/test/path.html'] = (
             '<script src="/resources/testharness.js"></script>')
         line_adder = W3CExpectationsLineAdder(self.host)
-        tests = ['third_party/WebKit/LayoutTests/imported/fake/test/path.html']
-        test_dict = {'imported/fake/test/path.html': self.mock_dict_two['imported/fake/test/path.html']}
-        tests_to_rebaseline, tests_results = line_adder.get_tests_to_rebaseline(tests, test_dict)
+        tests_to_rebaseline, modified_test_results = line_adder.get_tests_to_rebaseline(
+            ['imported/fake/test/path.html'], test_results_dict)
         self.assertEqual(tests_to_rebaseline, ['imported/fake/test/path.html'])
-        self.assertEqual(tests_results, test_dict)
+        # The record for the builder with a timeout is kept, but not with a text mismatch,
+        # since that should be covered by downloading a new baseline.
+        self.assertEqual(modified_test_results, {
+            'imported/fake/test/path.html': {
+                'two': {'expected': 'PASS', 'actual': 'TIMEOUT', 'bug': 'crbug.com/626703'},
+            },
+        })
+        # The original dict isn't modified.
+        self.assertEqual(test_results_dict, test_results_dict_copy)
 
     def test_run_no_issue_number(self):
         line_adder = W3CExpectationsLineAdder(self.host)
@@ -281,3 +315,16 @@ class UpdateW3CTestExpectationsTest(logtesting.LoggingTestCase):
                 'https://codereview.chromium.org/api/11112222/1'
             ])
         self.assertLog(['ERROR: No try job information was collected.\n'])
+
+    def test_get_modified_existing_tests(self):
+        line_adder = W3CExpectationsLineAdder(self.host)
+        modified_files = [
+            'third_party/WebKit/LayoutTests/a/b.html',
+            'third_party/WebKit/LayoutTests/a/c.html',
+            'x/y/z.cc',
+        ]
+        self.host.filesystem.files['/mock-checkout/third_party/WebKit/LayoutTests/a/b.html'] = ''
+        self.host.filesystem.files['/mock-checkout/x/y/z.cc'] = ''
+        self.host.executive = MockExecutive2(output='\n'.join(modified_files))
+        tests = line_adder.get_modified_existing_tests()
+        self.assertEqual(tests, ['a/b.html'])

@@ -12,13 +12,14 @@ This is used as part of the w3c test auto-import process.
 """
 
 import argparse
+import copy
 import logging
 
 from webkitpy.common.net.git_cl import GitCL
 from webkitpy.common.net.rietveld import Rietveld
 from webkitpy.common.webkit_finder import WebKitFinder
-from webkitpy.w3c.test_parser import TestParser
 from webkitpy.layout_tests.models.test_expectations import TestExpectationLine
+from webkitpy.w3c.test_parser import TestParser
 
 _log = logging.getLogger(__name__)
 
@@ -301,8 +302,8 @@ class W3CExpectationsLineAdder(object):
             testharness.js tests that required new baselines to be downloaded
             from `webkit-patch rebaseline-from-try-jobs`.
         """
-        modified_files = self.host.executive.run_command(['git', 'diff', 'origin/master', '--name-only']).splitlines()
-        tests_to_rebaseline, tests_results = self.get_tests_to_rebaseline(modified_files, tests_results)
+        modified_tests = self.get_modified_existing_tests()
+        tests_to_rebaseline, tests_results = self.get_tests_to_rebaseline(modified_tests, tests_results)
         _log.debug('Tests to rebaseline: %r', tests_to_rebaseline)
         if tests_to_rebaseline:
             webkit_patch = self.host.filesystem.join(
@@ -317,7 +318,23 @@ class W3CExpectationsLineAdder(object):
             ] + tests_to_rebaseline)
         return tests_results
 
-    def get_tests_to_rebaseline(self, modified_files, tests_results):
+    def get_modified_existing_tests(self):
+        """Returns a list of layout test names for layout tests that have been modified."""
+        diff_output = self.host.executive.run_command(
+            ['git', 'diff', 'origin/master', '--name-only', '-diff-filter=AMR'])  # Added, modified, and renamed files.
+        paths_from_chromium_root = diff_output.splitlines()
+        modified_tests = []
+        for path in paths_from_chromium_root:
+            absolute_path = self.host.filesystem.join(self.finder.chromium_base(), path)
+            if not self.host.filesystem.exists(absolute_path):
+                _log.warning('File does not exist: %s', absolute_path)
+                continue
+            test_path = self.finder.layout_test_name(path)
+            if test_path:
+                modified_tests.append(test_path)
+        return modified_tests
+
+    def get_tests_to_rebaseline(self, modified_tests, test_results):
         """Returns a list of tests to download new baselines for.
 
         Creates a list of tests to rebaseline depending on the tests' platform-
@@ -325,27 +342,26 @@ class W3CExpectationsLineAdder(object):
         due to a baseline mismatch (rather than crash or timeout).
 
         Args:
-            modified_files: A list of paths to modified files (which should
+            modified_tests: A list of paths to modified files (which should
                 be added, removed or modified files in the imported w3c
-                directory), relative to the Chromium checkout root.
-            tests_results: A dictionary of failing tests results.
+                directory), relative to the LayoutTests directory.
+            test_results: A dictionary of failing tests results.
 
         Returns:
-            A pair: A set of tests to be rebaselined, and an updated
-            tests_results dictionary. These tests to be rebaselined includes
-            both testharness.js tests and ref tests that failed some try job.
+            A pair: A set of tests to be rebaselined, and a modified copy of
+            the test results dictionary. The tests to be rebaselined should include
+            testharness.js tests that failed due to a baseline mismatch.
         """
+        test_results = copy.deepcopy(test_results)
         tests_to_rebaseline = set()
-        layout_tests_rel_path = self.host.filesystem.relpath(
-            self.finder.layout_tests_dir(), self.finder.chromium_base())
-        for file_path in modified_files:
-            test_path = self.host.filesystem.relpath(file_path, layout_tests_rel_path)
-            if self.is_js_test(test_path) and tests_results.get(test_path):
-                for platform in tests_results[test_path].keys():
-                    if tests_results[test_path][platform]['actual'] not in ['CRASH', 'TIMEOUT']:
-                        del tests_results[test_path][platform]
-                        tests_to_rebaseline.add(test_path)
-        return list(tests_to_rebaseline), tests_results
+        for test_path in modified_tests:
+            if not (self.is_js_test(test_path) and test_results.get(test_path)):
+                continue
+            for platform in test_results[test_path].keys():
+                if test_results[test_path][platform]['actual'] not in ['CRASH', 'TIMEOUT']:
+                    del test_results[test_path][platform]
+                    tests_to_rebaseline.add(test_path)
+        return sorted(tests_to_rebaseline), test_results
 
     def is_js_test(self, test_path):
         """Checks whether a given file is a testharness.js test.
