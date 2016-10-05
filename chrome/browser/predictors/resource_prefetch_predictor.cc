@@ -521,7 +521,7 @@ bool ResourcePrefetchPredictor::GetPrefetchData(const GURL& main_frame_url,
 void ResourcePrefetchPredictor::PopulatePrefetcherRequest(
     const PrefetchData& data,
     std::vector<GURL>* urls) {
-  for (const ResourceData& resource : data.resources) {
+  for (const ResourceData& resource : data.resources()) {
     float confidence =
         static_cast<float>(resource.number_of_hits()) /
         (resource.number_of_hits() + resource.number_of_misses());
@@ -711,13 +711,13 @@ void ResourcePrefetchPredictor::RemoveOldestEntryInPrefetchDataMap(
   if (data_map->empty())
     return;
 
-  base::Time oldest_time;
+  uint64_t oldest_time = UINT64_MAX;
   std::string key_to_delete;
-  for (PrefetchDataMap::iterator it = data_map->begin();
-       it != data_map->end(); ++it) {
-    if (key_to_delete.empty() || it->second.last_visit < oldest_time) {
-      key_to_delete = it->first;
-      oldest_time = it->second.last_visit;
+  for (const auto& kv : *data_map) {
+    const PrefetchData& data = kv.second;
+    if (key_to_delete.empty() || data.last_visit_time() < oldest_time) {
+      key_to_delete = data.primary_key();
+      oldest_time = data.last_visit_time();
     }
   }
 
@@ -809,32 +809,33 @@ void ResourcePrefetchPredictor::LearnNavigation(
     if (data_map->size() >= max_data_map_size)
       RemoveOldestEntryInPrefetchDataMap(key_type, data_map);
 
-    cache_entry = data_map->insert(std::make_pair(
-        key, PrefetchData(key_type, key))).first;
-    cache_entry->second.last_visit = base::Time::Now();
+    cache_entry = data_map->insert(std::make_pair(key, PrefetchData())).first;
+    PrefetchData& data = cache_entry->second;
+    data.set_primary_key(key);
+    data.set_last_visit_time(base::Time::Now().ToInternalValue());
     size_t new_resources_size = new_resources.size();
     std::set<GURL> resources_seen;
     for (size_t i = 0; i < new_resources_size; ++i) {
-      if (resources_seen.find(new_resources[i].resource_url) !=
-          resources_seen.end()) {
+      const URLRequestSummary& summary = new_resources[i];
+      if (resources_seen.find(summary.resource_url) != resources_seen.end())
         continue;
-      }
-      ResourceData resource_to_add;
-      resource_to_add.set_resource_url(new_resources[i].resource_url.spec());
-      resource_to_add.set_resource_type(static_cast<ResourceData::ResourceType>(
-          new_resources[i].resource_type));
-      resource_to_add.set_number_of_hits(1);
-      resource_to_add.set_average_position(i + 1);
-      resource_to_add.set_priority(
-          static_cast<ResourceData::Priority>(new_resources[i].priority));
-      resource_to_add.set_has_validators(new_resources[i].has_validators);
-      resource_to_add.set_always_revalidate(new_resources[i].always_revalidate);
-      cache_entry->second.resources.push_back(resource_to_add);
-      resources_seen.insert(new_resources[i].resource_url);
+
+      ResourceData* resource_to_add = data.add_resources();
+      resource_to_add->set_resource_url(summary.resource_url.spec());
+      resource_to_add->set_resource_type(
+          static_cast<ResourceData::ResourceType>(summary.resource_type));
+      resource_to_add->set_number_of_hits(1);
+      resource_to_add->set_average_position(i + 1);
+      resource_to_add->set_priority(
+          static_cast<ResourceData::Priority>(summary.priority));
+      resource_to_add->set_has_validators(summary.has_validators);
+      resource_to_add->set_always_revalidate(summary.always_revalidate);
+
+      resources_seen.insert(summary.resource_url);
     }
   } else {
-    std::vector<ResourceData>& old_resources = cache_entry->second.resources;
-    cache_entry->second.last_visit = base::Time::Now();
+    PrefetchData& data = cache_entry->second;
+    data.set_last_visit_time(base::Time::Now().ToInternalValue());
 
     // Build indices over the data.
     std::map<GURL, int> new_index, old_index;
@@ -845,43 +846,46 @@ void ResourcePrefetchPredictor::LearnNavigation(
       if (new_index.find(summary.resource_url) == new_index.end())
         new_index[summary.resource_url] = i;
     }
-    int old_resources_size = static_cast<int>(old_resources.size());
+    int old_resources_size = static_cast<int>(data.resources_size());
     for (int i = 0; i < old_resources_size; ++i) {
-      const ResourceData& resource = old_resources[i];
-      GURL resource_url(resource.resource_url());
-      DCHECK(old_index.find(resource_url) == old_index.end());
-      old_index[resource_url] = i;
+      bool is_new =
+          old_index
+              .insert(std::make_pair(GURL(data.resources(i).resource_url()), i))
+              .second;
+      DCHECK(is_new);
     }
 
     // Go through the old urls and update their hit/miss counts.
     for (int i = 0; i < old_resources_size; ++i) {
-      ResourceData& old_resource = old_resources[i];
-      GURL resource_url(old_resource.resource_url());
+      ResourceData* old_resource = data.mutable_resources(i);
+      GURL resource_url(old_resource->resource_url());
       if (new_index.find(resource_url) == new_index.end()) {
-        old_resource.set_number_of_misses(old_resource.number_of_misses() + 1);
-        old_resource.set_consecutive_misses(old_resource.consecutive_misses() +
-                                            1);
+        old_resource->set_number_of_misses(old_resource->number_of_misses() +
+                                           1);
+        old_resource->set_consecutive_misses(
+            old_resource->consecutive_misses() + 1);
       } else {
         const URLRequestSummary& new_summary =
             new_resources[new_index[resource_url]];
 
         // Update the resource type since it could have changed.
-        if (new_summary.resource_type != content::RESOURCE_TYPE_LAST_TYPE)
-          old_resource.set_resource_type(
+        if (new_summary.resource_type != content::RESOURCE_TYPE_LAST_TYPE) {
+          old_resource->set_resource_type(
               static_cast<ResourceData::ResourceType>(
                   new_summary.resource_type));
+        }
 
-        old_resource.set_priority(
+        old_resource->set_priority(
             static_cast<ResourceData::Priority>(new_summary.priority));
 
         int position = new_index[resource_url] + 1;
         int total =
-            old_resource.number_of_hits() + old_resource.number_of_misses();
-        old_resource.set_average_position(
-            ((old_resource.average_position() * total) + position) /
+            old_resource->number_of_hits() + old_resource->number_of_misses();
+        old_resource->set_average_position(
+            ((old_resource->average_position() * total) + position) /
             (total + 1));
-        old_resource.set_number_of_hits(old_resource.number_of_hits() + 1);
-        old_resource.set_consecutive_misses(0);
+        old_resource->set_number_of_hits(old_resource->number_of_hits() + 1);
+        old_resource->set_consecutive_misses(0);
       }
     }
 
@@ -892,38 +896,38 @@ void ResourcePrefetchPredictor::LearnNavigation(
         continue;
 
       // Only need to add new stuff.
-      ResourceData resource_to_add;
-      resource_to_add.set_resource_url(summary.resource_url.spec());
-      resource_to_add.set_resource_type(
+      ResourceData* resource_to_add = data.add_resources();
+      resource_to_add->set_resource_url(summary.resource_url.spec());
+      resource_to_add->set_resource_type(
           static_cast<ResourceData::ResourceType>(summary.resource_type));
-      resource_to_add.set_number_of_hits(1);
-      resource_to_add.set_average_position(i + 1);
-      resource_to_add.set_priority(
+      resource_to_add->set_number_of_hits(1);
+      resource_to_add->set_average_position(i + 1);
+      resource_to_add->set_priority(
           static_cast<ResourceData::Priority>(summary.priority));
-      resource_to_add.set_has_validators(new_resources[i].has_validators);
-      resource_to_add.set_always_revalidate(new_resources[i].always_revalidate);
-      old_resources.push_back(resource_to_add);
+      resource_to_add->set_has_validators(new_resources[i].has_validators);
+      resource_to_add->set_always_revalidate(
+          new_resources[i].always_revalidate);
 
       // To ensure we dont add the same url twice.
       old_index[summary.resource_url] = 0;
     }
   }
 
+  PrefetchData& data = cache_entry->second;
   // Trim and sort the resources after the update.
-  std::vector<ResourceData>& resources = cache_entry->second.resources;
-  for (auto it = resources.begin(); it != resources.end();) {
-    if (it->consecutive_misses() >= config_.max_consecutive_misses)
-      it = resources.erase(it);
-    else
-      ++it;
+  ResourcePrefetchPredictorTables::TrimResources(
+      &data, config_.max_consecutive_misses);
+  ResourcePrefetchPredictorTables::SortResources(&data);
+  if (data.resources_size() >
+      static_cast<int>(config_.max_resources_per_entry)) {
+    data.mutable_resources()->DeleteSubrange(
+        config_.max_resources_per_entry,
+        data.resources_size() - config_.max_resources_per_entry);
   }
-  ResourcePrefetchPredictorTables::SortResources(&resources);
-  if (resources.size() > config_.max_resources_per_entry)
-    resources.resize(config_.max_resources_per_entry);
 
   // If the row has no resources, remove it from the cache and delete the
   // entry in the database. Else update the database.
-  if (resources.empty()) {
+  if (data.resources_size() == 0) {
     data_map->erase(key);
     BrowserThread::PostTask(
         BrowserThread::DB, FROM_HERE,
@@ -931,13 +935,11 @@ void ResourcePrefetchPredictor::LearnNavigation(
             &ResourcePrefetchPredictorTables::DeleteSingleResourceDataPoint,
             tables_, key, key_type));
   } else {
-    bool is_host = key_type == PREFETCH_KEY_TYPE_HOST;
-    PrefetchData empty_data(
-        !is_host ? PREFETCH_KEY_TYPE_HOST : PREFETCH_KEY_TYPE_URL,
-        std::string());
+    PrefetchData empty_data;
     RedirectData empty_redirect_data;
-    const PrefetchData& host_data = is_host ? cache_entry->second : empty_data;
-    const PrefetchData& url_data = is_host ? empty_data : cache_entry->second;
+    bool is_host = key_type == PREFETCH_KEY_TYPE_HOST;
+    const PrefetchData& host_data = is_host ? data : empty_data;
+    const PrefetchData& url_data = is_host ? empty_data : data;
     BrowserThread::PostTask(
         BrowserThread::DB, FROM_HERE,
         base::Bind(&ResourcePrefetchPredictorTables::UpdateData, tables_,
@@ -957,28 +959,29 @@ void ResourcePrefetchPredictor::LearnRedirect(const std::string& key,
                                               size_t max_redirect_map_size,
                                               RedirectDataMap* redirect_map) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // If the primary key is too long reject it.
+  if (key.length() > ResourcePrefetchPredictorTables::kMaxStringLength)
+    return;
 
   RedirectDataMap::iterator cache_entry = redirect_map->find(key);
   if (cache_entry == redirect_map->end()) {
     if (redirect_map->size() >= max_redirect_map_size)
       RemoveOldestEntryInRedirectDataMap(key_type, redirect_map);
 
-    RedirectData new_data;
-    new_data.set_primary_key(key);
-    cache_entry = redirect_map->insert(std::make_pair(key, new_data)).first;
-    cache_entry->second.set_last_visit_time(
-        base::Time::Now().ToInternalValue());
-    RedirectStat* redirect_to_add =
-        cache_entry->second.add_redirect_endpoints();
+    cache_entry =
+        redirect_map->insert(std::make_pair(key, RedirectData())).first;
+    RedirectData& data = cache_entry->second;
+    data.set_primary_key(key);
+    data.set_last_visit_time(base::Time::Now().ToInternalValue());
+    RedirectStat* redirect_to_add = data.add_redirect_endpoints();
     redirect_to_add->set_url(final_redirect);
     redirect_to_add->set_number_of_hits(1);
   } else {
-    bool need_to_add = true;
-    cache_entry->second.set_last_visit_time(
-        base::Time::Now().ToInternalValue());
+    RedirectData& data = cache_entry->second;
+    data.set_last_visit_time(base::Time::Now().ToInternalValue());
 
-    for (RedirectStat& redirect :
-         *(cache_entry->second.mutable_redirect_endpoints())) {
+    bool need_to_add = true;
+    for (RedirectStat& redirect : *(data.mutable_redirect_endpoints())) {
       if (redirect.url() == final_redirect) {
         need_to_add = false;
         redirect.set_number_of_hits(redirect.number_of_hits() + 1);
@@ -990,28 +993,19 @@ void ResourcePrefetchPredictor::LearnRedirect(const std::string& key,
     }
 
     if (need_to_add) {
-      RedirectStat* redirect_to_add =
-          cache_entry->second.add_redirect_endpoints();
+      RedirectStat* redirect_to_add = data.add_redirect_endpoints();
       redirect_to_add->set_url(final_redirect);
       redirect_to_add->set_number_of_hits(1);
     }
   }
 
-  // Trim and sort redirects after update.
-  std::vector<RedirectStat> redirects;
-  redirects.reserve(cache_entry->second.redirect_endpoints_size());
-  for (const RedirectStat& redirect :
-       cache_entry->second.redirect_endpoints()) {
-    if (redirect.consecutive_misses() < config_.max_consecutive_misses)
-      redirects.push_back(redirect);
-  }
-  ResourcePrefetchPredictorTables::SortRedirects(&redirects);
+  RedirectData& data = cache_entry->second;
+  // Trim and sort the redirects after the update.
+  ResourcePrefetchPredictorTables::TrimRedirects(
+      &data, config_.max_consecutive_misses);
+  ResourcePrefetchPredictorTables::SortRedirects(&data);
 
-  cache_entry->second.clear_redirect_endpoints();
-  for (const RedirectStat& redirect : redirects)
-    cache_entry->second.add_redirect_endpoints()->CopyFrom(redirect);
-
-  if (redirects.empty()) {
+  if (data.redirect_endpoints_size() == 0) {
     redirect_map->erase(cache_entry);
     BrowserThread::PostTask(
         BrowserThread::DB, FROM_HERE,
@@ -1019,18 +1013,17 @@ void ResourcePrefetchPredictor::LearnRedirect(const std::string& key,
             &ResourcePrefetchPredictorTables::DeleteSingleRedirectDataPoint,
             tables_, key, key_type));
   } else {
-    bool is_host = key_type == PREFETCH_KEY_TYPE_HOST;
     RedirectData empty_redirect_data;
-    PrefetchData empty_url_data(PREFETCH_KEY_TYPE_URL, std::string());
-    PrefetchData empty_host_data(PREFETCH_KEY_TYPE_HOST, std::string());
+    PrefetchData empty_data;
+    bool is_host = key_type == PREFETCH_KEY_TYPE_HOST;
     const RedirectData& host_redirect_data =
-        is_host ? cache_entry->second : empty_redirect_data;
+        is_host ? data : empty_redirect_data;
     const RedirectData& url_redirect_data =
-        is_host ? empty_redirect_data : cache_entry->second;
+        is_host ? empty_redirect_data : data;
     BrowserThread::PostTask(
         BrowserThread::DB, FROM_HERE,
         base::Bind(&ResourcePrefetchPredictorTables::UpdateData, tables_,
-                   empty_url_data, empty_host_data, url_redirect_data,
+                   empty_data, empty_data, url_redirect_data,
                    host_redirect_data));
   }
 }

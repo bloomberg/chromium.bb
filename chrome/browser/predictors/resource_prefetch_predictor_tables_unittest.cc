@@ -45,8 +45,6 @@ class ResourcePrefetchPredictorTablesTest : public testing::Test {
   using RedirectDataMap = ResourcePrefetchPredictorTables::RedirectDataMap;
 
  private:
-  using PrefetchData = ResourcePrefetchPredictorTables::PrefetchData;
-
   // Initializes the tables, |test_url_data_| and |test_host_data_|.
   void InitializeSampleData();
 
@@ -227,36 +225,31 @@ void ResourcePrefetchPredictorTablesTest::TestDeleteSingleDataPoint() {
 }
 
 void ResourcePrefetchPredictorTablesTest::TestUpdateData() {
-  PrefetchData google(PREFETCH_KEY_TYPE_URL, "http://www.google.com");
-  google.last_visit = base::Time::FromInternalValue(10);
-  google.resources.push_back(CreateResourceData(
-      "http://www.google.com/style.css", content::RESOURCE_TYPE_STYLESHEET, 6,
-      2, 0, 1.0, net::MEDIUM, true, false));
-  google.resources.push_back(CreateResourceData(
-      "http://www.google.com/image.png", content::RESOURCE_TYPE_IMAGE, 6, 4, 1,
-      4.2, net::MEDIUM, false, false));
-  google.resources.push_back(CreateResourceData(
-      "http://www.google.com/a.xml", content::RESOURCE_TYPE_LAST_TYPE, 1, 0, 0,
-      6.1, net::MEDIUM, false, false));
-  google.resources.push_back(CreateResourceData(
-      "http://www.resources.google.com/script.js",
-      content::RESOURCE_TYPE_SCRIPT, 12, 0, 0, 8.5, net::MEDIUM, true, true));
+  PrefetchData google = CreatePrefetchData("http://www.google.com", 10);
+  InitializeResourceData(google.add_resources(),
+                         "http://www.google.com/style.css",
+                         content::RESOURCE_TYPE_STYLESHEET, 6, 2, 0, 1.0,
+                         net::MEDIUM, true, false);
+  InitializeResourceData(
+      google.add_resources(), "http://www.google.com/image.png",
+      content::RESOURCE_TYPE_IMAGE, 6, 4, 1, 4.2, net::MEDIUM, false, false);
+  InitializeResourceData(google.add_resources(), "http://www.google.com/a.xml",
+                         content::RESOURCE_TYPE_LAST_TYPE, 1, 0, 0, 6.1,
+                         net::MEDIUM, false, false);
+  InitializeResourceData(
+      google.add_resources(), "http://www.resources.google.com/script.js",
+      content::RESOURCE_TYPE_SCRIPT, 12, 0, 0, 8.5, net::MEDIUM, true, true);
 
-  PrefetchData yahoo(PREFETCH_KEY_TYPE_HOST, "www.yahoo.com");
-  yahoo.last_visit = base::Time::FromInternalValue(7);
-  yahoo.resources.push_back(CreateResourceData(
-      "http://www.yahoo.com/image.png", content::RESOURCE_TYPE_IMAGE, 120, 1, 1,
-      10.0, net::MEDIUM, true, false));
+  PrefetchData yahoo = CreatePrefetchData("www.yahoo.com", 7);
+  InitializeResourceData(
+      yahoo.add_resources(), "http://www.yahoo.com/image.png",
+      content::RESOURCE_TYPE_IMAGE, 120, 1, 1, 10.0, net::MEDIUM, true, false);
 
-  RedirectData facebook;
-  facebook.set_primary_key("http://fb.com/google");
-  facebook.set_last_visit_time(20);
+  RedirectData facebook = CreateRedirectData("http://fb.com/google", 20);
   InitializeRedirectStat(facebook.add_redirect_endpoints(),
                          "https://facebook.fr/google", 4, 2, 1);
 
-  RedirectData microsoft;
-  microsoft.set_primary_key("microsoft.com");
-  microsoft.set_last_visit_time(21);
+  RedirectData microsoft = CreateRedirectData("microsoft.com", 21);
   InitializeRedirectStat(microsoft.add_redirect_endpoints(), "m.microsoft.com",
                          5, 7, 1);
   InitializeRedirectStat(microsoft.add_redirect_endpoints(), "microsoft.org", 7,
@@ -313,13 +306,18 @@ void ResourcePrefetchPredictorTablesTest::TestPrefetchDataAreEqual(
     const PrefetchDataMap& rhs) const {
   EXPECT_EQ(lhs.size(), rhs.size());
 
-  for (const std::pair<std::string, PrefetchData>& p : rhs) {
+  for (const auto& p : rhs) {
     const auto lhs_it = lhs.find(p.first);
     ASSERT_TRUE(lhs_it != lhs.end()) << p.first;
-    EXPECT_TRUE(lhs_it->second.key_type == p.second.key_type);
-    EXPECT_TRUE(lhs_it->second.last_visit == p.second.last_visit);
+    EXPECT_TRUE(lhs_it->second.primary_key() == p.second.primary_key());
+    EXPECT_TRUE(lhs_it->second.last_visit_time() == p.second.last_visit_time());
 
-    TestResourcesAreEqual(lhs_it->second.resources, p.second.resources);
+    std::vector<ResourceData> lhs_resources(lhs_it->second.resources().begin(),
+                                            lhs_it->second.resources().end());
+    std::vector<ResourceData> rhs_resources(p.second.resources().begin(),
+                                            p.second.resources().end());
+
+    TestResourcesAreEqual(lhs_resources, rhs_resources);
   }
 }
 
@@ -328,20 +326,22 @@ void ResourcePrefetchPredictorTablesTest::TestResourcesAreEqual(
     const std::vector<ResourceData>& rhs) const {
   EXPECT_EQ(lhs.size(), rhs.size());
 
-  std::set<std::string> resources_seen;
-  for (const auto& rhs_resource : rhs) {
-    const std::string& resource = rhs_resource.resource_url();
-    EXPECT_FALSE(base::ContainsKey(resources_seen, resource));
+  std::map<std::string, ResourceData> lhs_index;
+  // Repeated resources are not allowed.
+  for (const auto& r : lhs)
+    EXPECT_TRUE(lhs_index.insert(std::make_pair(r.resource_url(), r)).second);
 
-    for (const auto& lhs_resource : lhs) {
-      if (lhs_resource == rhs_resource) {
-        resources_seen.insert(resource);
-        break;
-      }
+  for (const auto& r : rhs) {
+    auto lhs_it = lhs_index.find(r.resource_url());
+    if (lhs_it != lhs_index.end()) {
+      EXPECT_EQ(r, lhs_it->second);
+      lhs_index.erase(lhs_it);
+    } else {
+      ADD_FAILURE() << r.resource_url();
     }
-    EXPECT_TRUE(base::ContainsKey(resources_seen, resource));
   }
-  EXPECT_EQ(lhs.size(), resources_seen.size());
+
+  EXPECT_TRUE(lhs_index.empty());
 }
 
 void ResourcePrefetchPredictorTablesTest::TestRedirectDataAreEqual(
@@ -414,113 +414,106 @@ void ResourcePrefetchPredictorTablesTest::AddKey(RedirectDataMap* m,
 }
 
 void ResourcePrefetchPredictorTablesTest::InitializeSampleData() {
-  PrefetchData empty_url_data(PREFETCH_KEY_TYPE_URL, std::string());
-  PrefetchData empty_host_data(PREFETCH_KEY_TYPE_HOST, std::string());
-  RedirectData empty_url_redirect_data;
-  RedirectData empty_host_redirect_data;
+  PrefetchData empty_resource_data;
+  RedirectData empty_redirect_data;
 
   {  // Url data.
-    PrefetchData google(PREFETCH_KEY_TYPE_URL, "http://www.google.com");
-    google.last_visit = base::Time::FromInternalValue(1);
-    google.resources.push_back(CreateResourceData(
-        "http://www.google.com/style.css", content::RESOURCE_TYPE_STYLESHEET, 5,
-        2, 1, 1.1, net::MEDIUM, false, false));
-    google.resources.push_back(CreateResourceData(
-        "http://www.google.com/script.js", content::RESOURCE_TYPE_SCRIPT, 4, 0,
-        1, 2.1, net::MEDIUM, false, false));
-    google.resources.push_back(CreateResourceData(
-        "http://www.google.com/image.png", content::RESOURCE_TYPE_IMAGE, 6, 3,
-        0, 2.2, net::MEDIUM, false, false));
-    google.resources.push_back(CreateResourceData(
-        "http://www.google.com/a.font", content::RESOURCE_TYPE_LAST_TYPE, 2, 0,
-        0, 5.1, net::MEDIUM, false, false));
-    google.resources.push_back(
-        CreateResourceData("http://www.resources.google.com/script.js",
+    PrefetchData google = CreatePrefetchData("http://www.google.com", 1);
+    InitializeResourceData(google.add_resources(),
+                           "http://www.google.com/style.css",
+                           content::RESOURCE_TYPE_STYLESHEET, 5, 2, 1, 1.1,
+                           net::MEDIUM, false, false);
+    InitializeResourceData(
+        google.add_resources(), "http://www.google.com/script.js",
+        content::RESOURCE_TYPE_SCRIPT, 4, 0, 1, 2.1, net::MEDIUM, false, false);
+    InitializeResourceData(
+        google.add_resources(), "http://www.google.com/image.png",
+        content::RESOURCE_TYPE_IMAGE, 6, 3, 0, 2.2, net::MEDIUM, false, false);
+    InitializeResourceData(google.add_resources(),
+                           "http://www.google.com/a.font",
+                           content::RESOURCE_TYPE_LAST_TYPE, 2, 0, 0, 5.1,
+                           net::MEDIUM, false, false);
+    InitializeResourceData(google.add_resources(),
+                           "http://www.resources.google.com/script.js",
                            content::RESOURCE_TYPE_SCRIPT, 11, 0, 0, 8.5,
-                           net::MEDIUM, false, false));
+                           net::MEDIUM, false, false);
 
-    PrefetchData reddit(PREFETCH_KEY_TYPE_URL, "http://www.reddit.com");
-    reddit.last_visit = base::Time::FromInternalValue(2);
-    reddit.resources.push_back(CreateResourceData(
-        "http://reddit-resource.com/script1.js", content::RESOURCE_TYPE_SCRIPT,
-        4, 0, 1, 1.0, net::MEDIUM, false, false));
-    reddit.resources.push_back(CreateResourceData(
-        "http://reddit-resource.com/script2.js", content::RESOURCE_TYPE_SCRIPT,
-        2, 0, 0, 2.1, net::MEDIUM, false, false));
+    PrefetchData reddit = CreatePrefetchData("http://www.reddit.com", 2);
+    InitializeResourceData(
+        reddit.add_resources(), "http://reddit-resource.com/script1.js",
+        content::RESOURCE_TYPE_SCRIPT, 4, 0, 1, 1.0, net::MEDIUM, false, false);
+    InitializeResourceData(
+        reddit.add_resources(), "http://reddit-resource.com/script2.js",
+        content::RESOURCE_TYPE_SCRIPT, 2, 0, 0, 2.1, net::MEDIUM, false, false);
 
-    PrefetchData yahoo(PREFETCH_KEY_TYPE_URL, "http://www.yahoo.com");
-    yahoo.last_visit = base::Time::FromInternalValue(3);
-    yahoo.resources.push_back(CreateResourceData(
-        "http://www.google.com/image.png", content::RESOURCE_TYPE_IMAGE, 20, 1,
-        0, 10.0, net::MEDIUM, false, false));
+    PrefetchData yahoo = CreatePrefetchData("http://www.yahoo.com", 3);
+    InitializeResourceData(yahoo.add_resources(),
+                           "http://www.google.com/image.png",
+                           content::RESOURCE_TYPE_IMAGE, 20, 1, 0, 10.0,
+                           net::MEDIUM, false, false);
 
     test_url_data_.clear();
-    test_url_data_.insert(std::make_pair("http://www.google.com", google));
-    test_url_data_.insert(std::make_pair("http://www.reddit.com", reddit));
-    test_url_data_.insert(std::make_pair("http://www.yahoo.com", yahoo));
+    test_url_data_.insert(std::make_pair(google.primary_key(), google));
+    test_url_data_.insert(std::make_pair(reddit.primary_key(), reddit));
+    test_url_data_.insert(std::make_pair(yahoo.primary_key(), yahoo));
 
-    tables_->UpdateData(google, empty_host_data, empty_url_redirect_data,
-                        empty_host_redirect_data);
-    tables_->UpdateData(reddit, empty_host_data, empty_url_redirect_data,
-                        empty_host_redirect_data);
-    tables_->UpdateData(yahoo, empty_host_data, empty_url_redirect_data,
-                        empty_host_redirect_data);
+    tables_->UpdateData(google, empty_resource_data, empty_redirect_data,
+                        empty_redirect_data);
+    tables_->UpdateData(reddit, empty_resource_data, empty_redirect_data,
+                        empty_redirect_data);
+    tables_->UpdateData(yahoo, empty_resource_data, empty_redirect_data,
+                        empty_redirect_data);
   }
 
   {  // Host data.
-    PrefetchData facebook(PREFETCH_KEY_TYPE_HOST, "www.facebook.com");
-    facebook.last_visit = base::Time::FromInternalValue(4);
-    facebook.resources.push_back(CreateResourceData(
-        "http://www.facebook.com/style.css", content::RESOURCE_TYPE_STYLESHEET,
-        5, 2, 1, 1.1, net::MEDIUM, false, false));
-    facebook.resources.push_back(CreateResourceData(
-        "http://www.facebook.com/script.js", content::RESOURCE_TYPE_SCRIPT, 4,
-        0, 1, 2.1, net::MEDIUM, false, false));
-    facebook.resources.push_back(CreateResourceData(
-        "http://www.facebook.com/image.png", content::RESOURCE_TYPE_IMAGE, 6, 3,
-        0, 2.2, net::MEDIUM, false, false));
-    facebook.resources.push_back(CreateResourceData(
-        "http://www.facebook.com/a.font", content::RESOURCE_TYPE_LAST_TYPE, 2,
-        0, 0, 5.1, net::MEDIUM, false, false));
-    facebook.resources.push_back(
-        CreateResourceData("http://www.resources.facebook.com/script.js",
+    PrefetchData facebook = CreatePrefetchData("www.facebook.com", 4);
+    InitializeResourceData(facebook.add_resources(),
+                           "http://www.facebook.com/style.css",
+                           content::RESOURCE_TYPE_STYLESHEET, 5, 2, 1, 1.1,
+                           net::MEDIUM, false, false);
+    InitializeResourceData(
+        facebook.add_resources(), "http://www.facebook.com/script.js",
+        content::RESOURCE_TYPE_SCRIPT, 4, 0, 1, 2.1, net::MEDIUM, false, false);
+    InitializeResourceData(
+        facebook.add_resources(), "http://www.facebook.com/image.png",
+        content::RESOURCE_TYPE_IMAGE, 6, 3, 0, 2.2, net::MEDIUM, false, false);
+    InitializeResourceData(facebook.add_resources(),
+                           "http://www.facebook.com/a.font",
+                           content::RESOURCE_TYPE_LAST_TYPE, 2, 0, 0, 5.1,
+                           net::MEDIUM, false, false);
+    InitializeResourceData(facebook.add_resources(),
+                           "http://www.resources.facebook.com/script.js",
                            content::RESOURCE_TYPE_SCRIPT, 11, 0, 0, 8.5,
-                           net::MEDIUM, false, false));
+                           net::MEDIUM, false, false);
 
-    PrefetchData yahoo(PREFETCH_KEY_TYPE_HOST, "www.yahoo.com");
-    yahoo.last_visit = base::Time::FromInternalValue(5);
-    yahoo.resources.push_back(CreateResourceData(
-        "http://www.google.com/image.png", content::RESOURCE_TYPE_IMAGE, 20, 1,
-        0, 10.0, net::MEDIUM, false, false));
+    PrefetchData yahoo = CreatePrefetchData("www.yahoo.com", 5);
+    InitializeResourceData(yahoo.add_resources(),
+                           "http://www.google.com/image.png",
+                           content::RESOURCE_TYPE_IMAGE, 20, 1, 0, 10.0,
+                           net::MEDIUM, false, false);
 
     test_host_data_.clear();
-    test_host_data_.insert(std::make_pair("www.facebook.com", facebook));
-    test_host_data_.insert(std::make_pair("www.yahoo.com", yahoo));
+    test_host_data_.insert(std::make_pair(facebook.primary_key(), facebook));
+    test_host_data_.insert(std::make_pair(yahoo.primary_key(), yahoo));
 
-    tables_->UpdateData(empty_url_data, facebook, empty_url_redirect_data,
-                        empty_host_redirect_data);
-    tables_->UpdateData(empty_url_data, yahoo, empty_url_redirect_data,
-                        empty_host_redirect_data);
+    tables_->UpdateData(empty_resource_data, facebook, empty_redirect_data,
+                        empty_redirect_data);
+    tables_->UpdateData(empty_resource_data, yahoo, empty_redirect_data,
+                        empty_redirect_data);
   }
 
   {  // Url redirect data.
-    RedirectData facebook;
-    facebook.set_primary_key("http://fb.com/google");
-    facebook.set_last_visit_time(6);
+    RedirectData facebook = CreateRedirectData("http://fb.com/google", 6);
     InitializeRedirectStat(facebook.add_redirect_endpoints(),
                            "https://facebook.com/google", 5, 1, 0);
     InitializeRedirectStat(facebook.add_redirect_endpoints(),
                            "https://facebook.com/login", 3, 5, 1);
 
-    RedirectData nytimes;
-    nytimes.set_primary_key("http://nyt.com");
-    nytimes.set_last_visit_time(7);
+    RedirectData nytimes = CreateRedirectData("http://nyt.com", 7);
     InitializeRedirectStat(nytimes.add_redirect_endpoints(),
                            "https://nytimes.com", 2, 0, 0);
 
-    RedirectData google;
-    google.set_primary_key("http://google.com");
-    google.set_last_visit_time(8);
+    RedirectData google = CreateRedirectData("http://google.com", 8);
     InitializeRedirectStat(google.add_redirect_endpoints(),
                            "https://google.com", 3, 0, 0);
 
@@ -532,26 +525,22 @@ void ResourcePrefetchPredictorTablesTest::InitializeSampleData() {
     test_url_redirect_data_.insert(
         std::make_pair(google.primary_key(), google));
 
-    tables_->UpdateData(empty_url_data, empty_host_data, facebook,
-                        empty_host_redirect_data);
-    tables_->UpdateData(empty_url_data, empty_host_data, nytimes,
-                        empty_host_redirect_data);
-    tables_->UpdateData(empty_url_data, empty_host_data, google,
-                        empty_host_redirect_data);
+    tables_->UpdateData(empty_resource_data, empty_resource_data, facebook,
+                        empty_redirect_data);
+    tables_->UpdateData(empty_resource_data, empty_resource_data, nytimes,
+                        empty_redirect_data);
+    tables_->UpdateData(empty_resource_data, empty_resource_data, google,
+                        empty_redirect_data);
   }
 
   {  // Host redirect data.
-    RedirectData bbc;
-    bbc.set_primary_key("bbc.com");
-    bbc.set_last_visit_time(9);
+    RedirectData bbc = CreateRedirectData("bbc.com", 9);
     InitializeRedirectStat(bbc.add_redirect_endpoints(), "www.bbc.com", 8, 4,
                            1);
     InitializeRedirectStat(bbc.add_redirect_endpoints(), "m.bbc.com", 5, 8, 0);
     InitializeRedirectStat(bbc.add_redirect_endpoints(), "bbc.co.uk", 1, 3, 0);
 
-    RedirectData microsoft;
-    microsoft.set_primary_key("microsoft.com");
-    microsoft.set_last_visit_time(10);
+    RedirectData microsoft = CreateRedirectData("microsoft.com", 10);
     InitializeRedirectStat(microsoft.add_redirect_endpoints(),
                            "www.microsoft.com", 10, 0, 0);
 
@@ -559,10 +548,10 @@ void ResourcePrefetchPredictorTablesTest::InitializeSampleData() {
     test_host_redirect_data_.insert(std::make_pair(bbc.primary_key(), bbc));
     test_host_redirect_data_.insert(
         std::make_pair(microsoft.primary_key(), microsoft));
-    tables_->UpdateData(empty_url_data, empty_host_data,
-                        empty_url_redirect_data, bbc);
-    tables_->UpdateData(empty_url_data, empty_host_data,
-                        empty_url_redirect_data, microsoft);
+    tables_->UpdateData(empty_resource_data, empty_resource_data,
+                        empty_redirect_data, bbc);
+    tables_->UpdateData(empty_resource_data, empty_resource_data,
+                        empty_redirect_data, microsoft);
   }
 }
 
@@ -578,9 +567,10 @@ TEST_F(ResourcePrefetchPredictorTablesTest, ComputeResourceScore) {
   auto compute_score = [](net::RequestPriority priority,
                           content::ResourceType resource_type,
                           double average_position) {
-    return ResourcePrefetchPredictorTables::ComputeResourceScore(
-        CreateResourceData("", resource_type, 0, 0, 0, average_position,
-                           priority, false, false));
+    ResourceData resource;
+    InitializeResourceData(&resource, "", resource_type, 0, 0, 0,
+                           average_position, priority, false, false);
+    return ResourcePrefetchPredictorTables::ComputeResourceScore(resource);
   };
 
   // Priority is more important than the rest.

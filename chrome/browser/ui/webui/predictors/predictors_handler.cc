@@ -118,7 +118,7 @@ void PredictorsHandler::AddPrefetchDataMapToListValue(
     std::unique_ptr<base::DictionaryValue> main(new base::DictionaryValue());
     main->SetString("main_frame_url", p.first);
     base::ListValue* resources = new base::ListValue();
-    for (const predictors::ResourceData& r : p.second.resources) {
+    for (const predictors::ResourceData& r : p.second.resources()) {
       std::unique_ptr<base::DictionaryValue> resource(
           new base::DictionaryValue());
       resource->SetString("resource_url", r.resource_url());

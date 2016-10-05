@@ -10,15 +10,16 @@
 
 namespace predictors {
 
-ResourceData CreateResourceData(const std::string& resource_url,
-                                content::ResourceType resource_type,
-                                int number_of_hits,
-                                int number_of_misses,
-                                int consecutive_misses,
-                                double average_position,
-                                net::RequestPriority priority,
-                                bool has_validators,
-                                bool always_revalidate);
+void InitializeResourceData(ResourceData* resource,
+                            const std::string& resource_url,
+                            content::ResourceType resource_type,
+                            int number_of_hits,
+                            int number_of_misses,
+                            int consecutive_misses,
+                            double average_position,
+                            net::RequestPriority priority,
+                            bool has_validators,
+                            bool always_revalidate);
 
 void InitializeRedirectStat(RedirectStat* redirect,
                             const std::string& url,
@@ -26,20 +27,21 @@ void InitializeRedirectStat(RedirectStat* redirect,
                             int number_of_misses,
                             int consecutive_misses);
 
-RedirectData CreateRedirectData(const std::string& primary_key);
+PrefetchData CreatePrefetchData(const std::string& primary_key,
+                                uint64_t last_visit_time = 0);
+RedirectData CreateRedirectData(const std::string& primary_key,
+                                uint64_t last_visit_time = 0);
 
 // For printing failures nicely.
-void PrintTo(const ResourcePrefetchPredictorTables::PrefetchData& data,
-             ::std::ostream* os);
+void PrintTo(const PrefetchData& data, ::std::ostream* os);
 void PrintTo(const ResourceData& resource, ::std::ostream* os);
-void PrintTo(const RedirectStat& redirect, ::std::ostream* os);
 void PrintTo(const RedirectData& data, ::std::ostream* os);
+void PrintTo(const RedirectStat& redirect, ::std::ostream* os);
 
-bool operator==(const ResourcePrefetchPredictorTables::PrefetchData& lhs,
-                const ResourcePrefetchPredictorTables::PrefetchData& rhs);
+bool operator==(const PrefetchData& lhs, const PrefetchData& rhs);
 bool operator==(const ResourceData& lhs, const ResourceData& rhs);
-bool operator==(const RedirectStat& lhs, const RedirectStat& rhs);
 bool operator==(const RedirectData& lhs, const RedirectData& rhs);
+bool operator==(const RedirectStat& lhs, const RedirectStat& rhs);
 
 }  // namespace predictors
 

@@ -8,13 +8,13 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/time/time.h"
 #include "chrome/browser/predictors/predictor_table_base.h"
 #include "chrome/browser/predictors/resource_prefetch_common.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.pb.h"
@@ -37,30 +37,11 @@ using RedirectStat = RedirectData_RedirectStat;
 //
 // Currently manages:
 //  - UrlResourceTable - resources per Urls.
-//  - UrlMetadataTable - misc data for Urls (like last visit time).
 //  - UrlRedirectTable - redirects per Urls.
 //  - HostResourceTable - resources per host.
-//  - HostMetadataTable - misc data for hosts.
 //  - HostRedirectTable - redirects per host.
 class ResourcePrefetchPredictorTables : public PredictorTableBase {
  public:
-  // Aggregated data for a Url or Host. Although the data differs slightly, we
-  // store them in the same structure, because most of the fields are common and
-  // it allows us to use the same functions.
-  struct PrefetchData {
-    PrefetchData(PrefetchKeyType key_type, const std::string& primary_key);
-    PrefetchData(const PrefetchData& other);
-    ~PrefetchData();
-
-    bool is_host() const { return key_type == PREFETCH_KEY_TYPE_HOST; }
-
-    // Is the data a host as opposed to a Url?
-    PrefetchKeyType key_type;  // Not const to be able to assign.
-    std::string primary_key;   // is_host() ? host : main frame url.
-
-    base::Time last_visit;
-    std::vector<ResourceData> resources;
-  };
   // Map from primary key to PrefetchData for the key.
   typedef std::map<std::string, PrefetchData> PrefetchDataMap;
 
@@ -103,18 +84,26 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
   // Deletes all data in all the tables.
   virtual void DeleteAllData();
 
+  // Removes the resources with more than |max_consecutive_misses| consecutive
+  // misses from |data|.
+  static void TrimResources(PrefetchData* data, size_t max_consecutive_misses);
+
   // Sorts the resources by score, decreasing.
-  static void SortResources(std::vector<ResourceData>* resources);
+  static void SortResources(PrefetchData* data);
+
+  // Removes the redirects with more than |max_consecutive_misses| consecutive
+  // misses from |data|.
+  static void TrimRedirects(RedirectData* data, size_t max_consecutive_misses);
 
   // Sorts the redirects by score, decreasing.
-  static void SortRedirects(std::vector<RedirectStat>* redirects);
+  static void SortRedirects(RedirectData* data);
 
   // The maximum length of the string that can be stored in the DB.
   static constexpr size_t kMaxStringLength = 1024;
 
  private:
   // Represents the type of information that is stored in prefetch database.
-  enum class PrefetchDataType { RESOURCE, REDIRECT, METADATA };
+  enum class PrefetchDataType { RESOURCE, REDIRECT };
 
   enum class TableOperationType { INSERT, REMOVE };
 
@@ -133,22 +122,16 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
   // Helper functions below help perform functions on the Url and host table
   // using the same code.
   void GetAllResourceDataHelper(PrefetchKeyType key_type,
-                                PrefetchDataMap* data_map,
-                                std::vector<std::string>* to_delete);
+                                PrefetchDataMap* data_map);
   void GetAllRedirectDataHelper(PrefetchKeyType key_type,
                                 RedirectDataMap* redirect_map);
-  bool UpdateResourceDataHelper(PrefetchKeyType key_type,
-                                const PrefetchData& data);
-  bool UpdateRedirectDataHelper(PrefetchKeyType key_type,
-                                const RedirectData& data);
+  bool UpdateDataHelper(PrefetchKeyType key_type,
+                        PrefetchDataType data_type,
+                        const std::string& key,
+                        const google::protobuf::MessageLite& data);
   void DeleteDataHelper(PrefetchKeyType key_type,
                         PrefetchDataType data_type,
                         const std::vector<std::string>& keys);
-
-  // Returns true if the strings in the |data| are less than |kMaxStringLength|
-  // in length.
-  static bool StringsAreSmallerThanDBLimit(const PrefetchData& data);
-  static bool StringsAreSmallerThanDBLimit(const RedirectData& data);
 
   // Computes score of |data|.
   static float ComputeResourceScore(const ResourceData& data);
@@ -160,7 +143,7 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
 
   // Database version. Always increment it when any change is made to the data
   // schema (including the .proto).
-  static constexpr int kDatabaseVersion = 3;
+  static constexpr int kDatabaseVersion = 4;
 
   static bool DropTablesIfOutdated(sql::Connection* db);
   static int GetDatabaseVersion(sql::Connection* db);
@@ -172,12 +155,8 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
       PrefetchDataType data_type,
       TableOperationType op_type);
 
-  static const char* GetTableUpdateStatementTemplate(
-      TableOperationType op_type,
-      PrefetchDataType data_type);
-  static const char* GetTableUpdateStatementTableName(
-      PrefetchKeyType key_type,
-      PrefetchDataType data_type);
+  static const char* GetTableName(PrefetchKeyType key_type,
+                                  PrefetchDataType data_type);
 
   DISALLOW_COPY_AND_ASSIGN(ResourcePrefetchPredictorTables);
 };

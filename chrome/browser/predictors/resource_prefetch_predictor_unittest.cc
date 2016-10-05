@@ -36,7 +36,6 @@ using testing::StrictMock;
 namespace predictors {
 
 typedef ResourcePrefetchPredictor::URLRequestSummary URLRequestSummary;
-typedef ResourcePrefetchPredictorTables::PrefetchData PrefetchData;
 typedef ResourcePrefetchPredictorTables::PrefetchDataMap PrefetchDataMap;
 typedef ResourcePrefetchPredictorTables::RedirectDataMap RedirectDataMap;
 
@@ -281,10 +280,8 @@ class ResourcePrefetchPredictorTest : public testing::Test {
   PrefetchDataMap test_host_data_;
   RedirectDataMap test_url_redirect_data_;
   RedirectDataMap test_host_redirect_data_;
-  PrefetchData empty_url_data_;
-  PrefetchData empty_host_data_;
-  RedirectData empty_url_redirect_data_;
-  RedirectData empty_host_redirect_data_;
+  PrefetchData empty_resource_data_;
+  RedirectData empty_redirect_data_;
 
   MockURLRequestJobFactory url_request_job_factory_;
   EmptyURLRequestDelegate url_request_delegate_;
@@ -296,10 +293,8 @@ ResourcePrefetchPredictorTest::ResourcePrefetchPredictorTest()
       db_thread_(content::BrowserThread::DB, &loop_),
       profile_(new TestingProfile()),
       mock_tables_(new StrictMock<MockResourcePrefetchPredictorTables>()),
-      empty_url_data_(PREFETCH_KEY_TYPE_URL, std::string()),
-      empty_host_data_(PREFETCH_KEY_TYPE_HOST, std::string()),
-      empty_url_redirect_data_(),
-      empty_host_redirect_data_() {}
+      empty_resource_data_(),
+      empty_redirect_data_() {}
 
 ResourcePrefetchPredictorTest::~ResourcePrefetchPredictorTest() {
   profile_.reset(NULL);
@@ -337,94 +332,87 @@ void ResourcePrefetchPredictorTest::TearDown() {
 
 void ResourcePrefetchPredictorTest::InitializeSampleData() {
   {  // Url data.
-    PrefetchData google(PREFETCH_KEY_TYPE_URL, "http://www.google.com/");
-    google.last_visit = base::Time::FromInternalValue(1);
-    google.resources.push_back(CreateResourceData(
-        "http://google.com/style1.css", content::RESOURCE_TYPE_STYLESHEET, 3, 2,
-        1, 1.0, net::MEDIUM, false, false));
-    google.resources.push_back(CreateResourceData(
-        "http://google.com/script3.js", content::RESOURCE_TYPE_SCRIPT, 4, 0, 1,
-        2.1, net::MEDIUM, false, false));
-    google.resources.push_back(CreateResourceData(
-        "http://google.com/script4.js", content::RESOURCE_TYPE_SCRIPT, 11, 0, 0,
-        2.1, net::MEDIUM, false, false));
-    google.resources.push_back(CreateResourceData(
-        "http://google.com/image1.png", content::RESOURCE_TYPE_IMAGE, 6, 3, 0,
-        2.2, net::MEDIUM, false, false));
-    google.resources.push_back(CreateResourceData(
-        "http://google.com/a.font", content::RESOURCE_TYPE_LAST_TYPE, 2, 0, 0,
-        5.1, net::MEDIUM, false, false));
+    PrefetchData google = CreatePrefetchData("http://www.google.com/", 1);
+    InitializeResourceData(google.add_resources(),
+                           "http://google.com/style1.css",
+                           content::RESOURCE_TYPE_STYLESHEET, 3, 2, 1, 1.0,
+                           net::MEDIUM, false, false);
+    InitializeResourceData(
+        google.add_resources(), "http://google.com/script3.js",
+        content::RESOURCE_TYPE_SCRIPT, 4, 0, 1, 2.1, net::MEDIUM, false, false);
+    InitializeResourceData(google.add_resources(),
+                           "http://google.com/script4.js",
+                           content::RESOURCE_TYPE_SCRIPT, 11, 0, 0, 2.1,
+                           net::MEDIUM, false, false);
+    InitializeResourceData(
+        google.add_resources(), "http://google.com/image1.png",
+        content::RESOURCE_TYPE_IMAGE, 6, 3, 0, 2.2, net::MEDIUM, false, false);
+    InitializeResourceData(google.add_resources(), "http://google.com/a.font",
+                           content::RESOURCE_TYPE_LAST_TYPE, 2, 0, 0, 5.1,
+                           net::MEDIUM, false, false);
 
-    PrefetchData reddit(PREFETCH_KEY_TYPE_URL, "http://www.reddit.com/");
-    reddit.last_visit = base::Time::FromInternalValue(2);
-    reddit.resources.push_back(CreateResourceData(
-        "http://reddit-resource.com/script1.js", content::RESOURCE_TYPE_SCRIPT,
-        4, 0, 1, 1.0, net::MEDIUM, false, false));
-    reddit.resources.push_back(CreateResourceData(
-        "http://reddit-resource.com/script2.js", content::RESOURCE_TYPE_SCRIPT,
-        2, 0, 0, 2.1, net::MEDIUM, false, false));
+    PrefetchData reddit = CreatePrefetchData("http://www.reddit.com/", 2);
+    InitializeResourceData(
+        reddit.add_resources(), "http://reddit-resource.com/script1.js",
+        content::RESOURCE_TYPE_SCRIPT, 4, 0, 1, 1.0, net::MEDIUM, false, false);
+    InitializeResourceData(
+        reddit.add_resources(), "http://reddit-resource.com/script2.js",
+        content::RESOURCE_TYPE_SCRIPT, 2, 0, 0, 2.1, net::MEDIUM, false, false);
 
-    PrefetchData yahoo(PREFETCH_KEY_TYPE_URL, "http://www.yahoo.com/");
-    yahoo.last_visit = base::Time::FromInternalValue(3);
-    yahoo.resources.push_back(CreateResourceData(
-        "http://google.com/image.png", content::RESOURCE_TYPE_IMAGE, 20, 1, 0,
-        10.0, net::MEDIUM, false, false));
+    PrefetchData yahoo = CreatePrefetchData("http://www.yahoo.com/", 3);
+    InitializeResourceData(yahoo.add_resources(), "http://google.com/image.png",
+                           content::RESOURCE_TYPE_IMAGE, 20, 1, 0, 10.0,
+                           net::MEDIUM, false, false);
 
     test_url_data_.clear();
-    test_url_data_.insert(std::make_pair("http://www.google.com/", google));
-    test_url_data_.insert(std::make_pair("http://www.reddit.com/", reddit));
-    test_url_data_.insert(std::make_pair("http://www.yahoo.com/", yahoo));
+    test_url_data_.insert(std::make_pair(google.primary_key(), google));
+    test_url_data_.insert(std::make_pair(reddit.primary_key(), reddit));
+    test_url_data_.insert(std::make_pair(yahoo.primary_key(), yahoo));
   }
 
   {  // Host data.
-    PrefetchData facebook(PREFETCH_KEY_TYPE_HOST, "www.facebook.com");
-    facebook.last_visit = base::Time::FromInternalValue(4);
-    facebook.resources.push_back(CreateResourceData(
-        "http://www.facebook.com/style.css", content::RESOURCE_TYPE_STYLESHEET,
-        5, 2, 1, 1.1, net::MEDIUM, false, false));
-    facebook.resources.push_back(CreateResourceData(
-        "http://www.facebook.com/script.js", content::RESOURCE_TYPE_SCRIPT, 4,
-        0, 1, 2.1, net::MEDIUM, false, false));
-    facebook.resources.push_back(CreateResourceData(
-        "http://www.facebook.com/image.png", content::RESOURCE_TYPE_IMAGE, 6, 3,
-        0, 2.2, net::MEDIUM, false, false));
-    facebook.resources.push_back(CreateResourceData(
-        "http://www.facebook.com/a.font", content::RESOURCE_TYPE_LAST_TYPE, 2,
-        0, 0, 5.1, net::MEDIUM, false, false));
-    facebook.resources.push_back(
-        CreateResourceData("http://www.resources.facebook.com/script.js",
+    PrefetchData facebook = CreatePrefetchData("www.facebook.com", 4);
+    InitializeResourceData(facebook.add_resources(),
+                           "http://www.facebook.com/style.css",
+                           content::RESOURCE_TYPE_STYLESHEET, 5, 2, 1, 1.1,
+                           net::MEDIUM, false, false);
+    InitializeResourceData(
+        facebook.add_resources(), "http://www.facebook.com/script.js",
+        content::RESOURCE_TYPE_SCRIPT, 4, 0, 1, 2.1, net::MEDIUM, false, false);
+    InitializeResourceData(
+        facebook.add_resources(), "http://www.facebook.com/image.png",
+        content::RESOURCE_TYPE_IMAGE, 6, 3, 0, 2.2, net::MEDIUM, false, false);
+    InitializeResourceData(facebook.add_resources(),
+                           "http://www.facebook.com/a.font",
+                           content::RESOURCE_TYPE_LAST_TYPE, 2, 0, 0, 5.1,
+                           net::MEDIUM, false, false);
+    InitializeResourceData(facebook.add_resources(),
+                           "http://www.resources.facebook.com/script.js",
                            content::RESOURCE_TYPE_SCRIPT, 11, 0, 0, 8.5,
-                           net::MEDIUM, false, false));
+                           net::MEDIUM, false, false);
 
-    PrefetchData yahoo(PREFETCH_KEY_TYPE_HOST, "www.yahoo.com");
-    yahoo.last_visit = base::Time::FromInternalValue(5);
-    yahoo.resources.push_back(CreateResourceData(
-        "http://google.com/image.png", content::RESOURCE_TYPE_IMAGE, 20, 1, 0,
-        10.0, net::MEDIUM, false, false));
+    PrefetchData yahoo = CreatePrefetchData("www.yahoo.com", 5);
+    InitializeResourceData(yahoo.add_resources(), "http://google.com/image.png",
+                           content::RESOURCE_TYPE_IMAGE, 20, 1, 0, 10.0,
+                           net::MEDIUM, false, false);
 
     test_host_data_.clear();
-    test_host_data_.insert(std::make_pair("www.facebook.com", facebook));
-    test_host_data_.insert(std::make_pair("www.yahoo.com", yahoo));
+    test_host_data_.insert(std::make_pair(facebook.primary_key(), facebook));
+    test_host_data_.insert(std::make_pair(yahoo.primary_key(), yahoo));
   }
 
   {  // Url redirect data.
-    RedirectData facebook;
-    facebook.set_primary_key("http://fb.com/google");
-    facebook.set_last_visit_time(6);
+    RedirectData facebook = CreateRedirectData("http://fb.com/google", 6);
     InitializeRedirectStat(facebook.add_redirect_endpoints(),
                            "https://facebook.com/google", 5, 1, 0);
     InitializeRedirectStat(facebook.add_redirect_endpoints(),
                            "https://facebook.com/login", 3, 5, 1);
 
-    RedirectData nytimes;
-    nytimes.set_primary_key("http://nyt.com");
-    nytimes.set_last_visit_time(7);
+    RedirectData nytimes = CreateRedirectData("http://nyt.com", 7);
     InitializeRedirectStat(nytimes.add_redirect_endpoints(),
                            "https://nytimes.com", 2, 0, 0);
 
-    RedirectData google;
-    google.set_primary_key("http://google.com");
-    google.set_last_visit_time(8);
+    RedirectData google = CreateRedirectData("http://google.com", 8);
     InitializeRedirectStat(google.add_redirect_endpoints(),
                            "https://google.com", 3, 0, 0);
 
@@ -438,17 +426,13 @@ void ResourcePrefetchPredictorTest::InitializeSampleData() {
   }
 
   {  // Host redirect data.
-    RedirectData bbc;
-    bbc.set_primary_key("bbc.com");
-    bbc.set_last_visit_time(9);
+    RedirectData bbc = CreateRedirectData("bbc.com", 9);
     InitializeRedirectStat(bbc.add_redirect_endpoints(), "www.bbc.com", 8, 4,
                            1);
     InitializeRedirectStat(bbc.add_redirect_endpoints(), "m.bbc.com", 5, 8, 0);
     InitializeRedirectStat(bbc.add_redirect_endpoints(), "bbc.co.uk", 1, 3, 0);
 
-    RedirectData microsoft;
-    microsoft.set_primary_key("microsoft.com");
-    microsoft.set_last_visit_time(10);
+    RedirectData microsoft = CreateRedirectData("microsoft.com", 10);
     InitializeRedirectStat(microsoft.add_redirect_endpoints(),
                            "www.microsoft.com", 10, 0, 0);
 
@@ -525,19 +509,20 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationNotRecorded) {
       content::RESOURCE_TYPE_SCRIPT, net::MEDIUM, "text/javascript", false);
   predictor_->RecordURLResponse(resource3);
 
-  PrefetchData host_data(PREFETCH_KEY_TYPE_HOST, "www.google.com");
-  host_data.resources.push_back(CreateResourceData(
-      "https://google.com/style1.css", content::RESOURCE_TYPE_STYLESHEET, 1, 0,
-      0, 1.0, net::MEDIUM, false, false));
-  host_data.resources.push_back(CreateResourceData(
-      "https://google.com/script1.js", content::RESOURCE_TYPE_SCRIPT, 1, 0, 0,
-      2.0, net::MEDIUM, false, false));
-  host_data.resources.push_back(CreateResourceData(
-      "https://google.com/script2.js", content::RESOURCE_TYPE_SCRIPT, 1, 0, 0,
-      3.0, net::MEDIUM, false, false));
+  PrefetchData host_data = CreatePrefetchData("www.google.com");
+  InitializeResourceData(host_data.add_resources(),
+                         "https://google.com/style1.css",
+                         content::RESOURCE_TYPE_STYLESHEET, 1, 0, 0, 1.0,
+                         net::MEDIUM, false, false);
+  InitializeResourceData(
+      host_data.add_resources(), "https://google.com/script1.js",
+      content::RESOURCE_TYPE_SCRIPT, 1, 0, 0, 2.0, net::MEDIUM, false, false);
+  InitializeResourceData(
+      host_data.add_resources(), "https://google.com/script2.js",
+      content::RESOURCE_TYPE_SCRIPT, 1, 0, 0, 3.0, net::MEDIUM, false, false);
   EXPECT_CALL(*mock_tables_.get(),
-              UpdateData(empty_url_data_, host_data, empty_url_redirect_data_,
-                         empty_host_redirect_data_));
+              UpdateData(empty_resource_data_, host_data, empty_redirect_data_,
+                         empty_redirect_data_));
 
   predictor_->RecordMainFrameLoadComplete(main_frame.navigation_id);
   profile_->BlockUntilHistoryProcessesPendingRequests();
@@ -582,28 +567,30 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlNotInDB) {
       content::RESOURCE_TYPE_STYLESHEET, net::MEDIUM, "text/css", true);
   predictor_->RecordURLResponse(resource7);
 
-  PrefetchData url_data(PREFETCH_KEY_TYPE_URL, "http://www.google.com/");
-  url_data.resources.push_back(CreateResourceData(
-      "http://google.com/style1.css", content::RESOURCE_TYPE_STYLESHEET, 1, 0,
-      0, 1.0, net::MEDIUM, false, false));
-  url_data.resources.push_back(CreateResourceData(
-      "http://google.com/script1.js", content::RESOURCE_TYPE_SCRIPT, 1, 0, 0,
-      2.0, net::MEDIUM, false, false));
-  url_data.resources.push_back(CreateResourceData(
-      "http://google.com/script2.js", content::RESOURCE_TYPE_SCRIPT, 1, 0, 0,
-      3.0, net::MEDIUM, false, false));
-  url_data.resources.push_back(CreateResourceData(
-      "http://google.com/style2.css", content::RESOURCE_TYPE_STYLESHEET, 1, 0,
-      0, 7.0, net::MEDIUM, false, false));
+  PrefetchData url_data = CreatePrefetchData("http://www.google.com/");
+  InitializeResourceData(url_data.add_resources(),
+                         "http://google.com/style1.css",
+                         content::RESOURCE_TYPE_STYLESHEET, 1, 0, 0, 1.0,
+                         net::MEDIUM, false, false);
+  InitializeResourceData(
+      url_data.add_resources(), "http://google.com/script1.js",
+      content::RESOURCE_TYPE_SCRIPT, 1, 0, 0, 2.0, net::MEDIUM, false, false);
+  InitializeResourceData(
+      url_data.add_resources(), "http://google.com/script2.js",
+      content::RESOURCE_TYPE_SCRIPT, 1, 0, 0, 3.0, net::MEDIUM, false, false);
+  InitializeResourceData(url_data.add_resources(),
+                         "http://google.com/style2.css",
+                         content::RESOURCE_TYPE_STYLESHEET, 1, 0, 0, 7.0,
+                         net::MEDIUM, false, false);
   EXPECT_CALL(*mock_tables_.get(),
-              UpdateData(url_data, empty_host_data_, empty_url_redirect_data_,
-                         empty_host_redirect_data_));
+              UpdateData(url_data, empty_resource_data_, empty_redirect_data_,
+                         empty_redirect_data_));
 
-  PrefetchData host_data(PREFETCH_KEY_TYPE_HOST, "www.google.com");
-  host_data.resources = url_data.resources;
+  PrefetchData host_data = CreatePrefetchData("www.google.com");
+  host_data.mutable_resources()->CopyFrom(url_data.resources());
   EXPECT_CALL(*mock_tables_.get(),
-              UpdateData(empty_url_data_, host_data, empty_url_redirect_data_,
-                         empty_host_redirect_data_));
+              UpdateData(empty_resource_data_, host_data, empty_redirect_data_,
+                         empty_redirect_data_));
 
   predictor_->OnNavigationComplete(main_frame.navigation_id);
   profile_->BlockUntilHistoryProcessesPendingRequests();
@@ -661,42 +648,45 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlInDB) {
       content::RESOURCE_TYPE_STYLESHEET, net::MEDIUM, "text/css", true);
   predictor_->RecordURLResponse(resource7);
 
-  PrefetchData url_data(PREFETCH_KEY_TYPE_URL, "http://www.google.com/");
-  url_data.resources.push_back(CreateResourceData(
-      "http://google.com/style1.css", content::RESOURCE_TYPE_STYLESHEET, 4, 2,
-      0, 1.0, net::MEDIUM, false, false));
-  url_data.resources.push_back(CreateResourceData(
-      "http://google.com/script1.js", content::RESOURCE_TYPE_SCRIPT, 1, 0, 0,
-      2.0, net::MEDIUM, false, false));
-  url_data.resources.push_back(CreateResourceData(
-      "http://google.com/script4.js", content::RESOURCE_TYPE_SCRIPT, 11, 1, 1,
-      2.1, net::MEDIUM, false, false));
-  url_data.resources.push_back(CreateResourceData(
-      "http://google.com/script2.js", content::RESOURCE_TYPE_SCRIPT, 1, 0, 0,
-      3.0, net::MEDIUM, false, false));
+  PrefetchData url_data = CreatePrefetchData("http://www.google.com/");
+  InitializeResourceData(url_data.add_resources(),
+                         "http://google.com/style1.css",
+                         content::RESOURCE_TYPE_STYLESHEET, 4, 2, 0, 1.0,
+                         net::MEDIUM, false, false);
+  InitializeResourceData(
+      url_data.add_resources(), "http://google.com/script1.js",
+      content::RESOURCE_TYPE_SCRIPT, 1, 0, 0, 2.0, net::MEDIUM, false, false);
+  InitializeResourceData(
+      url_data.add_resources(), "http://google.com/script4.js",
+      content::RESOURCE_TYPE_SCRIPT, 11, 1, 1, 2.1, net::MEDIUM, false, false);
+  InitializeResourceData(
+      url_data.add_resources(), "http://google.com/script2.js",
+      content::RESOURCE_TYPE_SCRIPT, 1, 0, 0, 3.0, net::MEDIUM, false, false);
   EXPECT_CALL(*mock_tables_.get(),
-              UpdateData(url_data, empty_host_data_, empty_url_redirect_data_,
-                         empty_host_redirect_data_));
+              UpdateData(url_data, empty_resource_data_, empty_redirect_data_,
+                         empty_redirect_data_));
   EXPECT_CALL(*mock_tables_.get(),
               DeleteSingleResourceDataPoint("www.facebook.com",
                                             PREFETCH_KEY_TYPE_HOST));
 
-  PrefetchData host_data(PREFETCH_KEY_TYPE_HOST, "www.google.com");
-  host_data.resources.push_back(CreateResourceData(
-      "http://google.com/style1.css", content::RESOURCE_TYPE_STYLESHEET, 1, 0,
-      0, 1.0, net::MEDIUM, false, false));
-  host_data.resources.push_back(CreateResourceData(
-      "http://google.com/script1.js", content::RESOURCE_TYPE_SCRIPT, 1, 0, 0,
-      2.0, net::MEDIUM, false, false));
-  host_data.resources.push_back(CreateResourceData(
-      "http://google.com/script2.js", content::RESOURCE_TYPE_SCRIPT, 1, 0, 0,
-      3.0, net::MEDIUM, false, false));
-  host_data.resources.push_back(CreateResourceData(
-      "http://google.com/style2.css", content::RESOURCE_TYPE_STYLESHEET, 1, 0,
-      0, 7.0, net::MEDIUM, false, false));
+  PrefetchData host_data = CreatePrefetchData("www.google.com");
+  InitializeResourceData(host_data.add_resources(),
+                         "http://google.com/style1.css",
+                         content::RESOURCE_TYPE_STYLESHEET, 1, 0, 0, 1.0,
+                         net::MEDIUM, false, false);
+  InitializeResourceData(
+      host_data.add_resources(), "http://google.com/script1.js",
+      content::RESOURCE_TYPE_SCRIPT, 1, 0, 0, 2.0, net::MEDIUM, false, false);
+  InitializeResourceData(
+      host_data.add_resources(), "http://google.com/script2.js",
+      content::RESOURCE_TYPE_SCRIPT, 1, 0, 0, 3.0, net::MEDIUM, false, false);
+  InitializeResourceData(host_data.add_resources(),
+                         "http://google.com/style2.css",
+                         content::RESOURCE_TYPE_STYLESHEET, 1, 0, 0, 7.0,
+                         net::MEDIUM, false, false);
   EXPECT_CALL(*mock_tables_.get(),
-              UpdateData(empty_url_data_, host_data, empty_url_redirect_data_,
-                         empty_host_redirect_data_));
+              UpdateData(empty_resource_data_, host_data, empty_redirect_data_,
+                         empty_redirect_data_));
 
   predictor_->OnNavigationComplete(main_frame.navigation_id);
   profile_->BlockUntilHistoryProcessesPendingRequests();
@@ -740,22 +730,22 @@ TEST_F(ResourcePrefetchPredictorTest, NavigationUrlNotInDBAndDBFull) {
               DeleteSingleResourceDataPoint("www.facebook.com",
                                             PREFETCH_KEY_TYPE_HOST));
 
-  PrefetchData url_data(PREFETCH_KEY_TYPE_URL, "http://www.nike.com/");
-  url_data.resources.push_back(CreateResourceData(
-      "http://nike.com/style1.css", content::RESOURCE_TYPE_STYLESHEET, 1, 0, 0,
-      1.0, net::MEDIUM, false, false));
-  url_data.resources.push_back(CreateResourceData(
-      "http://nike.com/image2.png", content::RESOURCE_TYPE_IMAGE, 1, 0, 0, 2.0,
-      net::MEDIUM, false, false));
+  PrefetchData url_data = CreatePrefetchData("http://www.nike.com/");
+  InitializeResourceData(url_data.add_resources(), "http://nike.com/style1.css",
+                         content::RESOURCE_TYPE_STYLESHEET, 1, 0, 0, 1.0,
+                         net::MEDIUM, false, false);
+  InitializeResourceData(url_data.add_resources(), "http://nike.com/image2.png",
+                         content::RESOURCE_TYPE_IMAGE, 1, 0, 0, 2.0,
+                         net::MEDIUM, false, false);
   EXPECT_CALL(*mock_tables_.get(),
-              UpdateData(url_data, empty_host_data_, empty_url_redirect_data_,
-                         empty_host_redirect_data_));
+              UpdateData(url_data, empty_resource_data_, empty_redirect_data_,
+                         empty_redirect_data_));
 
-  PrefetchData host_data(PREFETCH_KEY_TYPE_HOST, "www.nike.com");
-  host_data.resources = url_data.resources;
+  PrefetchData host_data = CreatePrefetchData("www.nike.com");
+  host_data.mutable_resources()->CopyFrom(url_data.resources());
   EXPECT_CALL(*mock_tables_.get(),
-              UpdateData(empty_url_data_, host_data, empty_url_redirect_data_,
-                         empty_host_redirect_data_));
+              UpdateData(empty_resource_data_, host_data, empty_redirect_data_,
+                         empty_redirect_data_));
 
   predictor_->OnNavigationComplete(main_frame.navigation_id);
   profile_->BlockUntilHistoryProcessesPendingRequests();
@@ -784,21 +774,19 @@ TEST_F(ResourcePrefetchPredictorTest, RedirectUrlNotInDB) {
   EXPECT_CALL(*mock_tables_.get(), DeleteSingleResourceDataPoint(
                                        "facebook.com", PREFETCH_KEY_TYPE_HOST));
 
-  RedirectData url_redirect_data;
-  url_redirect_data.set_primary_key("http://fb.com/google");
+  RedirectData url_redirect_data = CreateRedirectData("http://fb.com/google");
   InitializeRedirectStat(url_redirect_data.add_redirect_endpoints(),
                          "https://facebook.com/google", 1, 0, 0);
   EXPECT_CALL(*mock_tables_.get(),
-              UpdateData(empty_url_data_, empty_host_data_, url_redirect_data,
-                         empty_host_redirect_data_));
+              UpdateData(empty_resource_data_, empty_resource_data_,
+                         url_redirect_data, empty_redirect_data_));
 
-  RedirectData host_redirect_data;
-  host_redirect_data.set_primary_key("fb.com");
+  RedirectData host_redirect_data = CreateRedirectData("fb.com");
   InitializeRedirectStat(host_redirect_data.add_redirect_endpoints(),
                          "facebook.com", 1, 0, 0);
   EXPECT_CALL(*mock_tables_.get(),
-              UpdateData(empty_url_data_, empty_host_data_,
-                         empty_url_redirect_data_, host_redirect_data));
+              UpdateData(empty_resource_data_, empty_resource_data_,
+                         empty_redirect_data_, host_redirect_data));
 
   predictor_->RecordMainFrameLoadComplete(fb_end);
   profile_->BlockUntilHistoryProcessesPendingRequests();
@@ -845,23 +833,21 @@ TEST_F(ResourcePrefetchPredictorTest, RedirectUrlInDB) {
   EXPECT_CALL(*mock_tables_.get(), DeleteSingleResourceDataPoint(
                                        "facebook.com", PREFETCH_KEY_TYPE_HOST));
 
-  RedirectData url_redirect_data;
-  url_redirect_data.set_primary_key("http://fb.com/google");
+  RedirectData url_redirect_data = CreateRedirectData("http://fb.com/google");
   InitializeRedirectStat(url_redirect_data.add_redirect_endpoints(),
                          "https://facebook.com/google", 6, 1, 0);
   // Existing redirect to https://facebook.com/login will be deleted because of
   // too many consecutive misses.
   EXPECT_CALL(*mock_tables_.get(),
-              UpdateData(empty_url_data_, empty_host_data_, url_redirect_data,
-                         empty_host_redirect_data_));
+              UpdateData(empty_resource_data_, empty_resource_data_,
+                         url_redirect_data, empty_redirect_data_));
 
-  RedirectData host_redirect_data;
-  host_redirect_data.set_primary_key("fb.com");
+  RedirectData host_redirect_data = CreateRedirectData("fb.com");
   InitializeRedirectStat(host_redirect_data.add_redirect_endpoints(),
                          "facebook.com", 1, 0, 0);
   EXPECT_CALL(*mock_tables_.get(),
-              UpdateData(empty_url_data_, empty_host_data_,
-                         empty_url_redirect_data_, host_redirect_data));
+              UpdateData(empty_resource_data_, empty_resource_data_,
+                         empty_redirect_data_, host_redirect_data));
 
   predictor_->RecordMainFrameLoadComplete(fb_end);
   profile_->BlockUntilHistoryProcessesPendingRequests();
@@ -869,31 +855,25 @@ TEST_F(ResourcePrefetchPredictorTest, RedirectUrlInDB) {
 
 TEST_F(ResourcePrefetchPredictorTest, DeleteUrls) {
   // Add some dummy entries to cache.
+  predictor_->url_table_cache_->insert(
+      std::make_pair("http://www.google.com/page1.html",
+                     CreatePrefetchData("http://www.google.com/page1.html")));
+  predictor_->url_table_cache_->insert(
+      std::make_pair("http://www.google.com/page2.html",
+                     CreatePrefetchData("http://www.google.com/page2.html")));
   predictor_->url_table_cache_->insert(std::make_pair(
-      "http://www.google.com/page1.html",
-      PrefetchData(PREFETCH_KEY_TYPE_URL, "http://www.google.com/page1.html")));
+      "http://www.yahoo.com/", CreatePrefetchData("http://www.yahoo.com/")));
   predictor_->url_table_cache_->insert(std::make_pair(
-      "http://www.google.com/page2.html",
-      PrefetchData(PREFETCH_KEY_TYPE_URL, "http://www.google.com/page2.html")));
+      "http://www.apple.com/", CreatePrefetchData("http://www.apple.com/")));
   predictor_->url_table_cache_->insert(std::make_pair(
-      "http://www.yahoo.com/",
-      PrefetchData(PREFETCH_KEY_TYPE_URL, "http://www.yahoo.com/")));
-  predictor_->url_table_cache_->insert(std::make_pair(
-      "http://www.apple.com/",
-      PrefetchData(PREFETCH_KEY_TYPE_URL, "http://www.apple.com/")));
-  predictor_->url_table_cache_->insert(std::make_pair(
-      "http://www.nike.com/",
-      PrefetchData(PREFETCH_KEY_TYPE_URL, "http://www.nike.com/")));
+      "http://www.nike.com/", CreatePrefetchData("http://www.nike.com/")));
 
-  predictor_->host_table_cache_->insert(std::make_pair(
-      "www.google.com",
-      PrefetchData(PREFETCH_KEY_TYPE_HOST, "www.google.com")));
-  predictor_->host_table_cache_->insert(std::make_pair(
-      "www.yahoo.com",
-      PrefetchData(PREFETCH_KEY_TYPE_HOST, "www.yahoo.com")));
-  predictor_->host_table_cache_->insert(std::make_pair(
-      "www.apple.com",
-      PrefetchData(PREFETCH_KEY_TYPE_HOST, "www.apple.com")));
+  predictor_->host_table_cache_->insert(
+      std::make_pair("www.google.com", CreatePrefetchData("www.google.com")));
+  predictor_->host_table_cache_->insert(
+      std::make_pair("www.yahoo.com", CreatePrefetchData("www.yahoo.com")));
+  predictor_->host_table_cache_->insert(
+      std::make_pair("www.apple.com", CreatePrefetchData("www.apple.com")));
 
   predictor_->url_redirect_table_cache_->insert(
       std::make_pair("http://www.google.com/page1.html",

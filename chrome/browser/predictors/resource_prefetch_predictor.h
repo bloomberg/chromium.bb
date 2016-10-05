@@ -204,7 +204,6 @@ class ResourcePrefetchPredictor
     DISALLOW_COPY_AND_ASSIGN(GetUrlVisitCountTask);
   };
 
-  typedef ResourcePrefetchPredictorTables::PrefetchData PrefetchData;
   typedef ResourcePrefetchPredictorTables::PrefetchDataMap PrefetchDataMap;
   typedef ResourcePrefetchPredictorTables::RedirectDataMap RedirectDataMap;
 
