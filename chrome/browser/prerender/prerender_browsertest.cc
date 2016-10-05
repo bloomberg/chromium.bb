@@ -609,6 +609,15 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
                                     switches::kPrerenderModeSwitchValueEnabled);
   }
 
+  void SetUpInProcessBrowserTestFixture() override {
+    test_utils::PrerenderInProcessBrowserTest::
+        SetUpInProcessBrowserTestFixture();
+
+    // Although PreferHtmlOverPlugins is redundant with the Field Trial testing
+    // configuration, the official builders don't use those, so enable it here.
+    feature_list_.InitAndEnableFeature(features::kPreferHtmlOverPlugins);
+  }
+
   void NavigateToDestURL() const {
     NavigateToDestURLWithDisposition(WindowOpenDisposition::CURRENT_TAB, true);
   }
@@ -1066,6 +1075,7 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
   std::string loader_path_;
   std::string loader_query_;
   base::HistogramTester histogram_tester_;
+  base::test::ScopedFeatureList feature_list_;
 };
 
 // Checks that a page is correctly prerendered in the case of a
