@@ -9,7 +9,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="{{package|default('com.android.webview')}}">
     <uses-sdk android:minSdkVersion="{{minsdk|default(21)}}"
-              android:targetSdkVersion="{{targetsdk|default(23)}}">
+              android:targetSdkVersion="{{targetsdk|default(24)}}">
     </uses-sdk>
 
     <uses-feature android:name="android.hardware.touchscreen"
@@ -42,8 +42,8 @@
                  android:process=":sandboxed_process0"
                  android:isolatedProcess="true"
                  android:exported="true"
-                 tools:ignore="ExportedService"
-                 {{sandboxed_service_extra_flags|default('')}} />
+                 android:externalService="true"
+                 tools:ignore="ExportedService" />
         <meta-data android:name="org.chromium.content.browser.NUM_PRIVILEGED_SERVICES"
                    android:value="0"/>
     </application>
