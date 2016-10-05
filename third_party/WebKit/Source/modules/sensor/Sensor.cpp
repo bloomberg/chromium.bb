@@ -168,8 +168,10 @@ void Sensor::onSensorReadingChanged() {
     m_polling->onSensorReadingChanged();
 }
 
-void Sensor::onSensorError() {
-  reportError();
+void Sensor::onSensorError(ExceptionCode code,
+                           const String& sanitizedMessage,
+                           const String& unsanitizedMessage) {
+  reportError(code, sanitizedMessage, unsanitizedMessage);
 }
 
 void Sensor::onStartRequestCompleted(bool result) {
@@ -177,7 +179,9 @@ void Sensor::onStartRequestCompleted(bool result) {
     return;
 
   if (!result) {
-    reportError();
+    reportError(
+        OperationError,
+        "start() call has failed possibly due to inappropriate options.");
     return;
   }
 
@@ -196,7 +200,7 @@ void Sensor::onStopRequestCompleted(bool result) {
     return;
 
   if (!result)
-    reportError();
+    reportError(OperationError);
 
   DCHECK(m_sensorProxy);
   m_sensorProxy->removeObserver(this);
@@ -293,9 +297,18 @@ void Sensor::updateState(Sensor::SensorState newState) {
   updatePollingStatus();
 }
 
-void Sensor::reportError() {
+void Sensor::reportError(ExceptionCode code,
+                         const String& sanitizedMessage,
+                         const String& unsanitizedMessage) {
   updateState(Sensor::SensorState::ERRORED);
-  // TODO(Mikhail) : Dispatch Sensor Error event.
+  if (getExecutionContext()) {
+    auto error =
+        DOMException::create(code, sanitizedMessage, unsanitizedMessage);
+    getExecutionContext()->postTask(
+        BLINK_FROM_HERE,
+        createSameThreadTask(&Sensor::notifyError, wrapWeakPersistent(this),
+                             wrapPersistent(error)));
+  }
 }
 
 void Sensor::updatePollingStatus() {
@@ -317,6 +330,11 @@ void Sensor::notifySensorReadingChanged() {
 
 void Sensor::notifyStateChanged() {
   dispatchEvent(Event::create(EventTypeNames::statechange));
+}
+
+void Sensor::notifyError(DOMException* error) {
+  dispatchEvent(
+      SensorErrorEvent::create(EventTypeNames::error, std::move(error)));
 }
 
 }  // namespace blink

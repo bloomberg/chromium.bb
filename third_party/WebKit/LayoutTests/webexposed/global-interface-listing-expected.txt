@@ -6056,8 +6056,9 @@ interface Sensor : EventTarget
     setter onchange
     setter onerror
     setter onstatechange
-interface SensorErrorEvent : ErrorEvent
+interface SensorErrorEvent : Event
     attribute @@toStringTag
+    getter error
     method constructor
 interface SensorReading
     attribute @@toStringTag

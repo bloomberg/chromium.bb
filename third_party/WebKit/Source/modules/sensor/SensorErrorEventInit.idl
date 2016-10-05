@@ -6,5 +6,5 @@
 // https://w3c.github.io/sensors/#dictdef-sensorerroreventinit
 
 dictionary SensorErrorEventInit : EventInit {
-    any error;
+    DOMException error;
 };

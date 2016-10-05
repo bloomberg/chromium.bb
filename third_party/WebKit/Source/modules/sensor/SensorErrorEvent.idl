@@ -7,8 +7,7 @@
 
 [
     RuntimeEnabled=Sensor,
-    Constructor(DOMString type, SensorErrorEventInit errorEventInitDict)
-] interface SensorErrorEvent : ErrorEvent {
-    // TODO(riju) : Later on we need to add sensorID.
-    // At this moment SensorErrorEvent looks like ErrorEvent.
+    Constructor(DOMString type, SensorErrorEventInit eventInitDict)
+] interface SensorErrorEvent : Event {
+    readonly attribute DOMException error;
 };

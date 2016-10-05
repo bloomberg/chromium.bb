@@ -83,7 +83,9 @@ class Sensor : public EventTargetWithInlineData,
   // SensorController::Observer overrides.
   void onSensorInitialized() override;
   void onSensorReadingChanged() override;
-  void onSensorError() override;
+  void onSensorError(ExceptionCode,
+                     const String& sanitizedMessage,
+                     const String& unsanitizedMessage) override;
 
   void onStartRequestCompleted(bool);
   void onStopRequestCompleted(bool);
@@ -98,12 +100,15 @@ class Sensor : public EventTargetWithInlineData,
   void pollForData();
 
   void updateState(SensorState newState);
-  void reportError();
+  void reportError(ExceptionCode = UnknownError,
+                   const String& sanitizedMessage = String(),
+                   const String& unsanitizedMessage = String());
 
   void updatePollingStatus();
 
   void notifySensorReadingChanged();
   void notifyStateChanged();
+  void notifyError(DOMException* error);
 
  private:
   Member<SensorReading> m_sensorReading;

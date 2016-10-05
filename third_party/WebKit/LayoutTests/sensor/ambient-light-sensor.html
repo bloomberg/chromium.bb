@@ -36,6 +36,42 @@ sensor_test(sensor => {
 }, 'Test that sensor state changes to "errored" when sensor is not supported.');
 
 sensor_test(sensor => {
+  sensor.mockSensorProvider.setGetSensorShouldFail(true);
+  let ambientLightSensor = new AmbientLightSensor();
+  ambientLightSensor.start();
+  return new Promise((resolve, reject) => {
+    ambientLightSensor.onerror = event => {
+      assert_equals(ambientLightSensor.state, 'errored');
+      console.log(event.error.message);
+      assert_equals(event.error.name, 'NotFoundError');
+      resolve();
+    };
+
+  });
+}, 'Test that "onerror" is send when sensor is not supported.');
+
+
+sensor_test(sensor => {
+  let ambientLightSensor = new AmbientLightSensor({frequency: 560});
+  ambientLightSensor.start();
+
+  let testPromise = sensor.mockSensorProvider.getCreatedSensor()
+      .then(mockSensor => {
+        mockSensor.setStartShouldFail(true);
+        return mockSensor.addConfigurationCalled(); })
+      .then(mockSensor => {
+        return new Promise((resolve, reject) => {
+          ambientLightSensor.onerror = event => {
+            assert_equals(ambientLightSensor.state, 'errored');
+            assert_equals(event.error.name, 'OperationError');
+            resolve();
+          };
+        });
+      });
+  return testPromise;
+}, 'Test that "onerror" is send when start() call has failed.');
+
+sensor_test(sensor => {
   let ambientLightSensor = new AmbientLightSensor({frequency: 560});
   ambientLightSensor.start();
 

@@ -55,8 +55,6 @@ void SensorProxy::initialize() {
       WTF::bind(&SensorProxy::onSensorCreated, wrapWeakPersistent(this)));
   m_provider->sensorProvider()->GetSensor(m_type, mojo::GetProxy(&m_sensor),
                                           callback);
-  m_sensor.set_connection_error_handler(convertToBaseCallback(
-      WTF::bind(&SensorProxy::handleSensorError, wrapWeakPersistent(this))));
 }
 
 void SensorProxy::addConfiguration(
@@ -114,7 +112,9 @@ void SensorProxy::SensorReadingChanged() {
     observer->onSensorReadingChanged();
 }
 
-void SensorProxy::handleSensorError() {
+void SensorProxy::handleSensorError(ExceptionCode code,
+                                    const String& sanitizedMessage,
+                                    const String& unsanitizedMessage) {
   m_state = Uninitialized;
   m_sensor.reset();
   m_sharedBuffer.reset();
@@ -123,14 +123,14 @@ void SensorProxy::handleSensorError() {
   m_clientBinding.Close();
 
   for (Observer* observer : m_observers)
-    observer->onSensorError();
+    observer->onSensorError(code, sanitizedMessage, unsanitizedMessage);
 }
 
 void SensorProxy::onSensorCreated(SensorInitParamsPtr params,
                                   SensorClientRequest clientRequest) {
   DCHECK_EQ(Initializing, m_state);
   if (!params) {
-    handleSensorError();
+    handleSensorError(NotFoundError, "Sensor is not present on the platform.");
     return;
   }
 
@@ -155,6 +155,12 @@ void SensorProxy::onSensorCreated(SensorInitParamsPtr params,
     handleSensorError();
     return;
   }
+
+  auto errorCallback =
+      WTF::bind(&SensorProxy::handleSensorError, wrapWeakPersistent(this),
+                UnknownError, String("Internal error"), String());
+  m_sensor.set_connection_error_handler(
+      convertToBaseCallback(std::move(errorCallback)));
 
   m_state = Initialized;
   for (Observer* observer : m_observers)

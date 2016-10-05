@@ -5,7 +5,7 @@
 #ifndef SensorErrorEvent_h
 #define SensorErrorEvent_h
 
-#include "core/events/ErrorEvent.h"
+#include "core/dom/DOMException.h"
 #include "modules/EventModules.h"
 #include "modules/sensor/SensorErrorEventInit.h"
 #include "platform/heap/Handle.h"
@@ -16,8 +16,9 @@ class SensorErrorEvent : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SensorErrorEvent* create(const AtomicString& eventType) {
-    return new SensorErrorEvent(eventType);
+  static SensorErrorEvent* create(const AtomicString& eventType,
+                                  DOMException* error) {
+    return new SensorErrorEvent(eventType, error);
   }
 
   static SensorErrorEvent* create(const AtomicString& eventType,
@@ -31,9 +32,14 @@ class SensorErrorEvent : public Event {
 
   const AtomicString& interfaceName() const override;
 
-  explicit SensorErrorEvent(const AtomicString& eventType);
+  DOMException* error() { return m_error; }
+
+ private:
+  SensorErrorEvent(const AtomicString& eventType, DOMException* error);
   SensorErrorEvent(const AtomicString& eventType,
                    const SensorErrorEventInit& initializer);
+
+  Member<DOMException> m_error;
 };
 
 DEFINE_TYPE_CASTS(SensorErrorEvent,

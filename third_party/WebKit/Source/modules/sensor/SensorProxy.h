@@ -5,6 +5,7 @@
 #ifndef SensorProxy_h
 #define SensorProxy_h
 
+#include "core/dom/ExceptionCode.h"
 #include "device/generic_sensor/public/interfaces/sensor.mojom-blink.h"
 #include "device/generic_sensor/public/interfaces/sensor_provider.mojom-blink.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -31,7 +32,9 @@ class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
     // Platfrom sensort reading has changed (for 'ONCHANGE' reporting mode).
     virtual void onSensorReadingChanged() {}
     // An error has occurred.
-    virtual void onSensorError() {}
+    virtual void onSensorError(ExceptionCode,
+                               const String& sanitizedMessage,
+                               const String& unsanitizedMessage) {}
   };
 
   ~SensorProxy();
@@ -83,7 +86,9 @@ class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
   void SensorReadingChanged() override;
 
   // Generic handler for a fatal error.
-  void handleSensorError();
+  void handleSensorError(ExceptionCode = UnknownError,
+                         const String& sanitizedMessage = String(),
+                         const String& unsanitizedMessage = String());
 
   void onSensorCreated(device::mojom::blink::SensorInitParamsPtr,
                        device::mojom::blink::SensorClientRequest);
