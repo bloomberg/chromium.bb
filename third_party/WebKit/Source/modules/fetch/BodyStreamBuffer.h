@@ -11,7 +11,6 @@
 #include "core/streams/UnderlyingSourceBase.h"
 #include "modules/ModulesExport.h"
 #include "modules/fetch/BytesConsumer.h"
-#include "modules/fetch/FetchDataConsumerHandle.h"
 #include "modules/fetch/FetchDataLoader.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebDataConsumerHandle.h"

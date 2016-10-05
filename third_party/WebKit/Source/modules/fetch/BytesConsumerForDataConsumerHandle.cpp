@@ -17,9 +17,9 @@ namespace blink {
 
 BytesConsumerForDataConsumerHandle::BytesConsumerForDataConsumerHandle(
     ExecutionContext* executionContext,
-    std::unique_ptr<FetchDataConsumerHandle> handle)
+    std::unique_ptr<WebDataConsumerHandle> handle)
     : m_executionContext(executionContext),
-      m_reader(handle->obtainFetchDataReader(this)) {}
+      m_reader(handle->obtainReader(this)) {}
 
 BytesConsumerForDataConsumerHandle::~BytesConsumerForDataConsumerHandle() {}
 
@@ -75,37 +75,6 @@ BytesConsumer::Result BytesConsumerForDataConsumerHandle::endRead(size_t read) {
                              wrapPersistent(this)));
   }
   return Result::Ok;
-}
-
-PassRefPtr<BlobDataHandle>
-BytesConsumerForDataConsumerHandle::drainAsBlobDataHandle(
-    BlobSizePolicy policy) {
-  if (!m_reader)
-    return nullptr;
-
-  RefPtr<BlobDataHandle> handle;
-  if (policy == BlobSizePolicy::DisallowBlobWithInvalidSize) {
-    handle = m_reader->drainAsBlobDataHandle(
-        FetchDataConsumerHandle::Reader::DisallowBlobWithInvalidSize);
-  } else {
-    DCHECK_EQ(BlobSizePolicy::AllowBlobWithInvalidSize, policy);
-    handle = m_reader->drainAsBlobDataHandle(
-        FetchDataConsumerHandle::Reader::AllowBlobWithInvalidSize);
-  }
-
-  if (handle)
-    close();
-  return handle.release();
-}
-
-PassRefPtr<EncodedFormData>
-BytesConsumerForDataConsumerHandle::drainAsFormData() {
-  if (!m_reader)
-    return nullptr;
-  RefPtr<EncodedFormData> formData = m_reader->drainAsFormData();
-  if (formData)
-    close();
-  return formData.release();
 }
 
 void BytesConsumerForDataConsumerHandle::setClient(

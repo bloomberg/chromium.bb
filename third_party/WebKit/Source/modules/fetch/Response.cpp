@@ -22,7 +22,6 @@
 #include "core/streams/ReadableStreamOperations.h"
 #include "modules/fetch/BlobBytesConsumer.h"
 #include "modules/fetch/BodyStreamBuffer.h"
-#include "modules/fetch/DataConsumerHandleUtil.h"
 #include "modules/fetch/FormDataBytesConsumer.h"
 #include "modules/fetch/ResponseInit.h"
 #include "platform/network/EncodedFormData.h"

@@ -208,8 +208,9 @@ TEST_F(BlobBytesConsumerTest, FailLoadingAfterResponseReceived) {
   EXPECT_EQ(PublicState::ReadableOrWaiting, consumer->getPublicState());
 
   int numOnStateChangeCalled = client->numOnStateChangeCalled();
-  consumer->didReceiveResponse(0, ResourceResponse(),
-                               createWaitingDataConsumerHandle());
+  consumer->didReceiveResponse(
+      0, ResourceResponse(),
+      DataConsumerHandleTestUtil::createWaitingDataConsumerHandle());
   EXPECT_EQ(numOnStateChangeCalled + 1, client->numOnStateChangeCalled());
   EXPECT_EQ(Result::ShouldWait, consumer->beginRead(&buffer, &available));
   EXPECT_EQ(PublicState::ReadableOrWaiting, consumer->getPublicState());

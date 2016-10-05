@@ -10,6 +10,32 @@
 
 namespace blink {
 
+using Result = WebDataConsumerHandle::Result;
+
+namespace {
+
+class WaitingHandle final : public WebDataConsumerHandle {
+ private:
+  class ReaderImpl final : public WebDataConsumerHandle::Reader {
+   public:
+    Result beginRead(const void** buffer,
+                     WebDataConsumerHandle::Flags,
+                     size_t* available) override {
+      *available = 0;
+      *buffer = nullptr;
+      return ShouldWait;
+    }
+    Result endRead(size_t) override { return UnexpectedError; }
+  };
+  std::unique_ptr<Reader> obtainReader(Client*) override {
+    return WTF::wrapUnique(new ReaderImpl);
+  }
+
+  const char* debugName() const override { return "WaitingHandle"; }
+};
+
+}  // namespace
+
 DataConsumerHandleTestUtil::Thread::Thread(
     const char* name,
     InitializationPolicy initializationPolicy)
@@ -302,6 +328,11 @@ void DataConsumerHandleTestUtil::HandleTwoPhaseReader::runOnFinishedReading(
   std::unique_ptr<OnFinishedReading> onFinishedReading(
       std::move(m_onFinishedReading));
   (*onFinishedReading)(std::move(result));
+}
+
+std::unique_ptr<WebDataConsumerHandle>
+DataConsumerHandleTestUtil::createWaitingDataConsumerHandle() {
+  return wrapUnique(new WaitingHandle);
 }
 
 }  // namespace blink

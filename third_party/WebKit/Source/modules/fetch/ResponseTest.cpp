@@ -14,7 +14,6 @@
 #include "modules/fetch/BytesConsumer.h"
 #include "modules/fetch/BytesConsumerTestUtil.h"
 #include "modules/fetch/DataConsumerHandleTestUtil.h"
-#include "modules/fetch/DataConsumerHandleUtil.h"
 #include "modules/fetch/FetchResponseData.h"
 #include "platform/blob/BlobData.h"
 #include "platform/testing/UnitTestHelpers.h"

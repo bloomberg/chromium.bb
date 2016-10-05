@@ -8,8 +8,6 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "core/testing/NullExecutionContext.h"
 #include "gin/public/isolate_holder.h"
-#include "modules/fetch/DataConsumerHandleUtil.h"
-#include "modules/fetch/FetchDataConsumerHandle.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WaitableEvent.h"
 #include "platform/WebThreadSupportingGC.h"
@@ -326,39 +324,6 @@ class DataConsumerHandleTestUtil {
     std::unique_ptr<WebDataConsumerHandle> m_handle;
   };
 
-  class MockFetchDataConsumerHandle : public FetchDataConsumerHandle {
-   public:
-    static std::unique_ptr<::testing::StrictMock<MockFetchDataConsumerHandle>>
-    create() {
-      return wrapUnique(new ::testing::StrictMock<MockFetchDataConsumerHandle>);
-    }
-    MOCK_METHOD1(obtainFetchDataReader, std::unique_ptr<Reader>(Client*));
-
-   private:
-    const char* debugName() const override {
-      return "MockFetchDataConsumerHandle";
-    }
-  };
-
-  class MockFetchDataConsumerReader : public FetchDataConsumerHandle::Reader {
-   public:
-    static std::unique_ptr<::testing::StrictMock<MockFetchDataConsumerReader>>
-    create() {
-      return wrapUnique(new ::testing::StrictMock<MockFetchDataConsumerReader>);
-    }
-
-    using Result = WebDataConsumerHandle::Result;
-    using Flags = WebDataConsumerHandle::Flags;
-    MOCK_METHOD4(read, Result(void*, size_t, Flags, size_t*));
-    MOCK_METHOD3(beginRead, Result(const void**, Flags, size_t*));
-    MOCK_METHOD1(endRead, Result(size_t));
-    MOCK_METHOD1(drainAsBlobDataHandle,
-                 PassRefPtr<BlobDataHandle>(BlobSizePolicy));
-
-    ~MockFetchDataConsumerReader() override { destruct(); }
-    MOCK_METHOD0(destruct, void());
-  };
-
   class Command final {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
@@ -547,6 +512,9 @@ class DataConsumerHandleTestUtil {
 
     std::unique_ptr<T> m_handleReader;
   };
+
+  static std::unique_ptr<WebDataConsumerHandle>
+  createWaitingDataConsumerHandle();
 };
 
 }  // namespace blink

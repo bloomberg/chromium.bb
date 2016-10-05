@@ -7,7 +7,6 @@
 #include "core/fetch/FetchInitiatorTypeNames.h"
 #include "core/loader/ThreadableLoader.h"
 #include "modules/fetch/BytesConsumerForDataConsumerHandle.h"
-#include "modules/fetch/DataConsumerHandleUtil.h"
 #include "platform/blob/BlobData.h"
 #include "platform/blob/BlobRegistry.h"
 #include "platform/blob/BlobURL.h"
@@ -205,9 +204,8 @@ void BlobBytesConsumer::didReceiveResponse(
   DCHECK(!m_body);
   DCHECK_EQ(PublicState::ReadableOrWaiting, m_state);
 
-  m_body = new BytesConsumerForDataConsumerHandle(
-      getExecutionContext(),
-      createFetchDataConsumerHandleFromWebHandle(std::move(handle)));
+  m_body = new BytesConsumerForDataConsumerHandle(getExecutionContext(),
+                                                  std::move(handle));
   m_body->setClient(this);
 
   if (isClean()) {

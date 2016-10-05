@@ -11,7 +11,6 @@
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "core/loader/ThreadableLoader.h"
 #include "modules/fetch/BodyStreamBuffer.h"
-#include "modules/fetch/DataConsumerHandleUtil.h"
 #include "modules/fetch/FetchManager.h"
 #include "modules/fetch/RequestInit.h"
 #include "platform/HTTPNames.h"

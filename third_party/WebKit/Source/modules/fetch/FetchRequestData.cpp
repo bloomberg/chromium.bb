@@ -12,7 +12,6 @@
 #include "modules/fetch/BlobBytesConsumer.h"
 #include "modules/fetch/BodyStreamBuffer.h"
 #include "modules/fetch/BytesConsumer.h"
-#include "modules/fetch/DataConsumerHandleUtil.h"
 #include "modules/fetch/FetchHeaderList.h"
 #include "platform/HTTPNames.h"
 #include "platform/network/ResourceRequest.h"

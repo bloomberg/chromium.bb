@@ -7,7 +7,6 @@
 
 #include "modules/ModulesExport.h"
 #include "modules/fetch/BytesConsumer.h"
-#include "modules/fetch/FetchDataConsumerHandle.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebDataConsumerHandle.h"
 #include "wtf/PassRefPtr.h"
@@ -27,12 +26,10 @@ class MODULES_EXPORT BytesConsumerForDataConsumerHandle final
 
  public:
   BytesConsumerForDataConsumerHandle(ExecutionContext*,
-                                     std::unique_ptr<FetchDataConsumerHandle>);
+                                     std::unique_ptr<WebDataConsumerHandle>);
   ~BytesConsumerForDataConsumerHandle() override;
 
   Result beginRead(const char** buffer, size_t* available) override;
-  PassRefPtr<BlobDataHandle> drainAsBlobDataHandle(BlobSizePolicy) override;
-  PassRefPtr<EncodedFormData> drainAsFormData() override;
   Result endRead(size_t readSize) override;
   void setClient(BytesConsumer::Client*) override;
   void clearClient() override;
@@ -58,7 +55,7 @@ class MODULES_EXPORT BytesConsumerForDataConsumerHandle final
   void notify();
 
   Member<ExecutionContext> m_executionContext;
-  std::unique_ptr<FetchDataConsumerHandle::Reader> m_reader;
+  std::unique_ptr<WebDataConsumerHandle::Reader> m_reader;
   Member<BytesConsumer::Client> m_client;
   InternalState m_state = InternalState::Waiting;
   Error m_error;

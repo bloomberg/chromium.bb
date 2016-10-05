@@ -25,7 +25,6 @@
 #include "modules/fetch/BodyStreamBuffer.h"
 #include "modules/fetch/BytesConsumer.h"
 #include "modules/fetch/BytesConsumerForDataConsumerHandle.h"
-#include "modules/fetch/DataConsumerHandleUtil.h"
 #include "modules/fetch/FetchRequestData.h"
 #include "modules/fetch/FormDataBytesConsumer.h"
 #include "modules/fetch/Response.h"
@@ -418,8 +417,7 @@ void FetchManager::Loader::didReceiveResponse(
     responseData = FetchResponseData::createWithBuffer(new BodyStreamBuffer(
         scriptState,
         new BytesConsumerForDataConsumerHandle(
-            scriptState->getExecutionContext(),
-            createFetchDataConsumerHandleFromWebHandle(std::move(handle)))));
+            scriptState->getExecutionContext(), std::move(handle))));
   } else {
     sriConsumer = new SRIBytesConsumer();
     responseData = FetchResponseData::createWithBuffer(
