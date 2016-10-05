@@ -146,6 +146,9 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
                 LayoutText* layoutObject,
                 int textStartOffset,
                 int textEndOffset);
+  size_t restoreCollapsedTrailingSpace(InlineTextBox* nextTextBox,
+                                       size_t subrunEnd);
+  unsigned restoreCollapsedLeadingSpace(unsigned runStart);
 
   // Used by selection preservation code.  There should be one character emitted between every VisiblePosition
   // in the Range used to create the TextIterator.

@@ -582,6 +582,53 @@ bool TextIteratorAlgorithm<Strategy>::handleTextNode() {
   return true;
 }
 
+// Restore the collapsed space for copy & paste. See http://crbug.com/318925
+template <typename Strategy>
+size_t TextIteratorAlgorithm<Strategy>::restoreCollapsedTrailingSpace(
+    InlineTextBox* nextTextBox,
+    size_t subrunEnd) {
+  if (nextTextBox || !m_textBox->root().nextRootBox() ||
+      m_textBox->root().lastChild() != m_textBox)
+    return subrunEnd;
+
+  const String& text = toLayoutText(m_node->layoutObject())->text();
+  if (text.endsWith(' ') == 0 || subrunEnd != text.length() - 1 ||
+      text[subrunEnd - 1] == ' ')
+    return subrunEnd;
+
+  // If there is the leading space in the next line, we don't need to restore the trailing space.
+  // Example: <div style="width: 2em;"><b><i>foo </i></b> bar</div>
+  InlineBox* firstBoxOfNextLine = m_textBox->root().nextRootBox()->firstChild();
+  if (!firstBoxOfNextLine)
+    return subrunEnd + 1;
+  Node* firstNodeOfNextLine = firstBoxOfNextLine->getLineLayoutItem().node();
+  if (!firstNodeOfNextLine || firstNodeOfNextLine->nodeValue()[0] != ' ')
+    return subrunEnd + 1;
+
+  return subrunEnd;
+}
+
+template <typename Strategy>
+unsigned TextIteratorAlgorithm<Strategy>::restoreCollapsedLeadingSpace(
+    unsigned runStart) {
+  if (emitsImageAltText() || doesNotBreakAtReplacedElement() ||
+      forInnerText() || !m_textBox->root().prevRootBox() ||
+      m_textBox->root().firstChild() != m_textBox)
+    return runStart;
+
+  const String& text = toLayoutText(m_node->layoutObject())->text();
+  InlineBox* lastBoxOfPrevLine = m_textBox->root().prevRootBox()->lastChild();
+  if (m_textBox->getLineLayoutItem() ==
+          lastBoxOfPrevLine->getLineLayoutItem() ||
+      lastBoxOfPrevLine->getLineLayoutItem().isBR() ||
+      lastBoxOfPrevLine->isInlineFlowBox())
+    return runStart;
+  if (runStart > 0 && text.length() >= 2 && text[0] == ' ' && text[1] != ' ')
+    return runStart - 1;
+
+  return runStart;
+}
+
 template <typename Strategy>
 void TextIteratorAlgorithm<Strategy>::handleTextBox() {
   LayoutText* layoutObject = m_firstLetterText
@@ -665,40 +712,8 @@ void TextIteratorAlgorithm<Strategy>::handleTextBox() {
           size_t subrunEnd = str.find('\n', runStart);
           if (subrunEnd == kNotFound || subrunEnd > runEnd) {
             subrunEnd = runEnd;
-            // Restore the collapsed space for copy & paste.
-            // See http://crbug.com/318925
-            // For trailing space.
-            if (!nextTextBox && m_textBox->root().nextRootBox() &&
-                m_textBox->root().lastChild() == m_textBox) {
-              if (str.endsWith(' ') && subrunEnd == str.length() - 1 &&
-                  str[subrunEnd - 1] != ' ') {
-                // If there is the leading space in the next line, we don't need to restore the trailing space.
-                // Example: <div style="width: 2em;"><b><i>foo </i></b> bar</div>
-                InlineBox* firstBoxOfNextLine =
-                    m_textBox->root().nextRootBox()->firstChild();
-                Node* firstNodeOfNextLine = nullptr;
-                if (firstBoxOfNextLine)
-                  firstNodeOfNextLine =
-                      firstBoxOfNextLine->getLineLayoutItem().node();
-                if (!firstNodeOfNextLine ||
-                    firstNodeOfNextLine->nodeValue()[0] != ' ')
-                  ++subrunEnd;
-              }
-            }
-            // For leading space.
-            if (!emitsImageAltText() && !doesNotBreakAtReplacedElement() &&
-                !forInnerText() && m_textBox->root().prevRootBox() &&
-                m_textBox->root().firstChild() == m_textBox) {
-              InlineBox* lastChildOfPrevRoot =
-                  m_textBox->root().prevRootBox()->lastChild();
-              if (m_textBox->getLineLayoutItem() !=
-                      lastChildOfPrevRoot->getLineLayoutItem() &&
-                  !lastChildOfPrevRoot->getLineLayoutItem().isBR() &&
-                  !lastChildOfPrevRoot->isInlineFlowBox()) {
-                if (runStart > 0 && str[0] == ' ' && str[1] != ' ')
-                  --runStart;
-              }
-            }
+            runStart = restoreCollapsedLeadingSpace(runStart);
+            subrunEnd = restoreCollapsedTrailingSpace(nextTextBox, subrunEnd);
           }
 
           m_offset = subrunEnd;
