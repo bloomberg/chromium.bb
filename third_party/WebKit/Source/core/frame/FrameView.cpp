@@ -836,14 +836,6 @@ void FrameView::performPreLayoutTasks() {
   document->updateStyleAndLayoutTree();
   lifecycle().advanceTo(DocumentLifecycle::StyleClean);
 
-  if (m_frame->isMainFrame() && !m_viewportScrollableArea) {
-    ScrollableArea& visualViewport = m_frame->host()->visualViewport();
-    ScrollableArea* layoutViewport = layoutViewportScrollableArea();
-    DCHECK(layoutViewport);
-    m_viewportScrollableArea =
-        RootFrameViewport::create(visualViewport, *layoutViewport);
-  }
-
   if (shouldPerformScrollAnchoring())
     m_scrollAnchor.save();
 }
