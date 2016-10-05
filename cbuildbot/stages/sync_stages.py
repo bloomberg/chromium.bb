@@ -507,7 +507,7 @@ class SyncStage(generic_stages.BuilderStage):
             }
         }),
         'tags':['build_type:%s' % build_config.build_type,
-                'master: False']
+                'master:False']
     })
 
     content = buildbucket_lib.PutBuildBucket(

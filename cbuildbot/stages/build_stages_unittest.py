@@ -9,6 +9,7 @@ from __future__ import print_function
 import contextlib
 import os
 
+from chromite.cbuildbot import buildbucket_lib
 from chromite.cbuildbot import cbuildbot_unittest
 from chromite.cbuildbot import chromeos_config
 from chromite.cbuildbot import commands
@@ -321,3 +322,83 @@ class BuildImageStageTest(BuildPackagesStageTest):
     # TODO: This test is broken atm with tag=None.
     steps = [lambda tag=x: task(tag) for x in (release_tag,)]
     parallel.RunParallelSteps(steps)
+
+class CleanUpStageTest(generic_stages_unittest.StageTestCase):
+  """Test CleanUpStage."""
+
+  BOT_ID = 'master-paladin'
+
+  def setUp(self):
+    self.PatchObject(buildbucket_lib, 'GetServiceAccount',
+                     return_value=True)
+    self.PatchObject(buildbucket_lib, 'BuildBucketAuth')
+    self._Prepare()
+
+  def ConstructStage(self):
+    return build_stages.CleanUpStage(self._run)
+
+  def testCancelObsoleteSlaveBuilds(self):
+    """Test CancelObsoleteSlaveBuilds."""
+    buildbucket_id_1 = 'test_buildbucket_id_1'
+    buildbucket_id_2 = 'test_buildbucket_id_2'
+
+    searched_builds = [{
+        'status': 'COMPLETED',
+        'id': buildbucket_id_1,
+        'tags':[
+            'bot_id:build265-m2',
+            'build_type:tryjob',
+            'master:False']
+    }, {
+        'status': 'COMPLETED',
+        'id': buildbucket_id_2,
+        'tags':[
+            'bot_id:build265-m2',
+            'build_type:tryjob',
+            'master:False']
+    }]
+    self.PatchObject(buildbucket_lib, 'SearchAllBuilds',
+                     return_value=searched_builds)
+
+    cancel_content = {
+        'kind': 'kind',
+        'etag': 'etag',
+        'results':[{
+            'build_id': buildbucket_id_1,
+            'build': {
+                'status': 'COMPLETED',
+                'result': 'CANCELED',
+            }
+        }, {
+            'build_id': buildbucket_id_2,
+            'error': {
+                'message': "Cannot cancel a completed build",
+                'reason': 'BUILD_IS_COMPLETED',
+            }
+        }]
+    }
+    cancel_mock = self.PatchObject(buildbucket_lib,
+                                   'CancelBatchBuildBucket',
+                                   return_value=cancel_content)
+
+    stage = self.ConstructStage()
+    stage.CancelObsoleteSlaveBuilds()
+
+    self.assertEqual(cancel_mock.call_count, 1)
+
+  def testNoObsoleteSlaveBuilds(self):
+    """Test no obsolete slave builds."""
+    search_content = {
+        'kind': 'kind',
+        'etag': 'etag'
+    }
+    self.PatchObject(buildbucket_lib, 'SearchBuildBucket',
+                     return_value=search_content)
+
+    cancel_mock = self.PatchObject(buildbucket_lib,
+                                   'CancelBatchBuildBucket')
+
+    stage = self.ConstructStage()
+    stage.CancelObsoleteSlaveBuilds()
+
+    self.assertEqual(cancel_mock.call_count, 0)

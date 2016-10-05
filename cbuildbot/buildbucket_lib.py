@@ -284,6 +284,7 @@ def SearchAllBuilds(http, testjob, dryrun, limit=SEARCH_LIMIT_COUNT,
 
   return all_builds
 
+# TODO(nxia): Refactor the following lib methods.
 def HasError(content):
   return content and content.get('error')
 
@@ -303,6 +304,10 @@ def GetBuilds(content):
 
 def GetBuildIds(content):
   return [b.get('id') for b in GetBuilds(content)]
+
+def ExtractBuildIds(builds):
+  return ([b.get('id') for b in builds]
+          if builds is not None else [])
 
 def GetBuildStatus(content):
   return (content.get('build').get('status')

@@ -229,6 +229,10 @@ class BuildbucketLibTest(cros_test_lib.TestCase):
         self.http, False, False)
     self.assertEqual(len(all_builds), 2)
 
+    build_ids = buildbucket_lib.ExtractBuildIds(all_builds)
+    self.assertTrue(buildbucket_id_1 in build_ids and
+                    buildbucket_id_2 in build_ids)
+
     content = json.dumps({
         'kind': 'kind',
         'etag': 'etag',
