@@ -7,6 +7,8 @@
 
 #include <map>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -44,14 +46,14 @@ class ResourcePrefetcherManager
   // The prefetchers need to be deleted on the IO thread.
   void ShutdownOnIOThread();
 
-  // Will create a new ResourcePrefetcher for the main frame url of the input
-  // navigation if there isn't one already for the same host.
-  void MaybeAddPrefetch(const NavigationID& navigation_id,
+  // Will create a new ResourcePrefetcher for a given main frame url if there
+  // isn't one already for the same host.
+  void MaybeAddPrefetch(const GURL& main_frame_url,
                         const std::vector<GURL>& urls);
 
-  // Stops the ResourcePrefetcher for the input navigation, if one was in
+  // Stops the ResourcePrefetcher for a given main frame URL, if one was in
   // progress.
-  void MaybeRemovePrefetch(const NavigationID& navigation_id);
+  void MaybeRemovePrefetch(const GURL& main_frame_url);
 
   // ResourcePrefetcher::Delegate methods.
   void ResourcePrefetcherFinished(ResourcePrefetcher* prefetcher) override;

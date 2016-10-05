@@ -286,6 +286,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/customtabs/SeparateTaskCustomTabActivity8.java",
   "java/src/org/chromium/chrome/browser/customtabs/SeparateTaskCustomTabActivity9.java",
   "java/src/org/chromium/chrome/browser/customtabs/SeparateTaskManagedCustomTabActivity.java",
+  "java/src/org/chromium/chrome/browser/customtabs/ResourcePrefetchPredictor.java",
   "java/src/org/chromium/chrome/browser/database/SQLiteCursor.java",
   "java/src/org/chromium/chrome/browser/datausage/DataUseTabUIManager.java",
   "java/src/org/chromium/chrome/browser/datausage/ExternalDataUseObserver.java",

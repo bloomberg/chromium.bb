@@ -394,7 +394,7 @@ void ResourcePrefetchPredictor::OnMainFrameRequest(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(INITIALIZED, initialization_state_);
 
-  StartPrefetching(request.navigation_id);
+  StartPrefetching(request.navigation_id.main_frame_url);
 
   // Cleanup older navigations.
   CleanupAbandonedNavigations(request.navigation_id);
@@ -412,7 +412,7 @@ void ResourcePrefetchPredictor::OnMainFrameResponse(
   if (initialization_state_ != INITIALIZED)
     return;
 
-  StopPrefetching(response.navigation_id);
+  StopPrefetching(response.navigation_id.main_frame_url);
 }
 
 void ResourcePrefetchPredictor::OnMainFrameRedirect(
@@ -420,7 +420,7 @@ void ResourcePrefetchPredictor::OnMainFrameRedirect(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Stop any inflight prefetching. Remove the older navigation.
-  StopPrefetching(response.navigation_id);
+  StopPrefetching(response.navigation_id.main_frame_url);
 
   std::unique_ptr<PageRequestSummary> summary;
   NavigationMap::iterator nav_it =
@@ -489,15 +489,9 @@ void ResourcePrefetchPredictor::OnNavigationComplete(
       &history_lookup_consumer_);
 }
 
-bool ResourcePrefetchPredictor::GetPrefetchData(
-    const NavigationID& navigation_id,
-    std::vector<GURL>* urls,
-    PrefetchKeyType* key_type) {
+bool ResourcePrefetchPredictor::GetPrefetchData(const GURL& main_frame_url,
+                                                std::vector<GURL>* urls) {
   DCHECK(urls);
-  DCHECK(key_type);
-
-  *key_type = PREFETCH_KEY_TYPE_URL;
-  const GURL& main_frame_url = navigation_id.main_frame_url;
 
   bool use_url_data = config_.IsPrefetchingEnabled(profile_) ?
       config_.IsURLPrefetchingEnabled(profile_) :
@@ -508,17 +502,17 @@ bool ResourcePrefetchPredictor::GetPrefetchData(
     if (iterator != url_table_cache_->end())
       PopulatePrefetcherRequest(iterator->second, urls);
   }
+  if (!urls->empty())
+    return true;
 
   bool use_host_data = config_.IsPrefetchingEnabled(profile_) ?
       config_.IsHostPrefetchingEnabled(profile_) :
       config_.IsHostLearningEnabled();
-  if (urls->empty() && use_host_data) {
+  if (use_host_data) {
     PrefetchDataMap::const_iterator iterator =
         host_table_cache_->find(main_frame_url.host());
-    if (iterator != host_table_cache_->end()) {
-      *key_type = PREFETCH_KEY_TYPE_HOST;
+    if (iterator != host_table_cache_->end())
       PopulatePrefetcherRequest(iterator->second, urls);
-    }
   }
 
   return !urls->empty();
@@ -541,15 +535,12 @@ void ResourcePrefetchPredictor::PopulatePrefetcherRequest(
   }
 }
 
-void ResourcePrefetchPredictor::StartPrefetching(
-    const NavigationID& navigation_id) {
+void ResourcePrefetchPredictor::StartPrefetching(const GURL& url) {
   if (!prefetch_manager_.get())  // Prefetching not enabled.
     return;
 
-  // Prefer URL based data first.
-  std::vector<GURL> urls;
-  PrefetchKeyType key_type;
-  if (!GetPrefetchData(navigation_id, &urls, &key_type)) {
+  std::vector<GURL> subresource_urls;
+  if (!GetPrefetchData(url, &subresource_urls)) {
     // No prefetching data at host or URL level.
     return;
   }
@@ -557,19 +548,17 @@ void ResourcePrefetchPredictor::StartPrefetching(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&ResourcePrefetcherManager::MaybeAddPrefetch,
-                 prefetch_manager_, navigation_id, urls));
+                 prefetch_manager_, url, subresource_urls));
 }
 
-void ResourcePrefetchPredictor::StopPrefetching(
-    const NavigationID& navigation_id) {
+void ResourcePrefetchPredictor::StopPrefetching(const GURL& url) {
   if (!prefetch_manager_.get())  // Not enabled.
     return;
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&ResourcePrefetcherManager::MaybeRemovePrefetch,
-                 prefetch_manager_,
-                 navigation_id));
+                 prefetch_manager_, url));
 }
 
 void ResourcePrefetchPredictor::StartInitialization() {

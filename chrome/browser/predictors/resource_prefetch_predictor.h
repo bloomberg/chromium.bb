@@ -240,24 +240,23 @@ class ResourcePrefetchPredictor
   // this point are the only ones considered for prefetching.
   void OnNavigationComplete(const NavigationID& nav_id_without_timing_info);
 
-  // Returns true if there is PrefetchData that can be used for the
-  // navigation and fills in the |prefetch_data| to resources that need to be
-  // prefetched.
-  bool GetPrefetchData(const NavigationID& navigation_id,
-                       std::vector<GURL>* urls,
-                       PrefetchKeyType* key_type);
+  // Returns true if there is PrefetchData that can be used for a URL and fills
+  // |urls| with resources that need to be prefetched.
+  bool GetPrefetchData(const GURL& main_frame_url, std::vector<GURL>* urls);
 
   // Converts a PrefetchData into a list of URLs.
   void PopulatePrefetcherRequest(const PrefetchData& data,
                                  std::vector<GURL>* urls);
 
+ public:
   // Starts prefetching if it is enabled and prefetching data exists for the
   // NavigationID either at the URL or at the host level.
-  void StartPrefetching(const NavigationID& navigation_id);
+  void StartPrefetching(const GURL& main_frame_url);
 
   // Stops prefetching that may be in progress corresponding to |navigation_id|.
-  void StopPrefetching(const NavigationID& navigation_id);
+  void StopPrefetching(const GURL& main_frame_url);
 
+ private:
   // Starts initialization by posting a task to the DB thread to read the
   // predictor database.
   void StartInitialization();

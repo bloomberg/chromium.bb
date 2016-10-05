@@ -119,6 +119,7 @@
 #include "chrome/browser/password_manager/account_chooser_dialog_android.h"
 #include "chrome/browser/password_manager/auto_signin_first_run_dialog_android.h"
 #include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
+#include "chrome/browser/predictors/resource_prefetch_predictor_android.h"
 #include "chrome/browser/prerender/external_prerender_handler_android.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/search_engines/template_url_service_android.h"
@@ -336,6 +337,8 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"ReaderModeSceneLayer", RegisterReaderModeSceneLayer},
     {"RemoteMediaPlayerBridge",
      remote_media::RemoteMediaPlayerBridge::RegisterRemoteMediaPlayerBridge},
+    {"ResourcePrefetchPredictor",
+     predictors::RegisterResourcePrefetchPredictor},
     {"RevenueStats", RegisterRevenueStats},
     {"SafeBrowsingApiBridge", safe_browsing::RegisterSafeBrowsingApiBridge},
     {"SceneLayer", chrome::android::RegisterSceneLayer},

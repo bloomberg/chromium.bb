@@ -51,12 +51,11 @@ void ResourcePrefetcherManager::ShutdownOnIOThread() {
 }
 
 void ResourcePrefetcherManager::MaybeAddPrefetch(
-    const NavigationID& navigation_id,
+    const GURL& main_frame_url,
     const std::vector<GURL>& urls) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   // Don't add a duplicate prefetch for the same host.
-  const GURL& main_frame_url = navigation_id.main_frame_url;
   std::string key = main_frame_url.host();
   if (base::ContainsKey(prefetcher_map_, key))
     return;
@@ -68,17 +67,14 @@ void ResourcePrefetcherManager::MaybeAddPrefetch(
 }
 
 void ResourcePrefetcherManager::MaybeRemovePrefetch(
-    const NavigationID& navigation_id) {
+    const GURL& main_frame_url) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  const GURL& main_frame_url = navigation_id.main_frame_url;
   std::string key = main_frame_url.host();
-
   auto it = prefetcher_map_.find(key);
   if (it != prefetcher_map_.end() &&
-      it->second->main_frame_url() == navigation_id.main_frame_url) {
+      it->second->main_frame_url() == main_frame_url) {
     it->second->Stop();
-    return;
   }
 }
 
