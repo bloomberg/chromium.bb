@@ -5,6 +5,7 @@
 #include "chrome/browser/android/offline_pages/prerendering_offliner.h"
 
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sys_info.h"
 #include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
 #include "chrome/browser/net/prediction_options.h"
@@ -32,6 +33,12 @@ bool IsNetworkPredictionDisabled(content::BrowserContext* browser_context) {
              ->GetInteger(prefs::kNetworkPredictionOptions) ==
          chrome_browser_net::NETWORK_PREDICTION_NEVER;
 }
+
+enum class OfflinePagesCctApiPrerenderAllowedStatus {
+  PRERENDER_ALLOWED,
+  THIRD_PARTY_COOKIES_DISABLED,
+  NETWORK_PREDICTION_DISABLED,
+};
 
 }  // namespace
 
@@ -150,7 +157,39 @@ bool PrerenderingOffliner::LoadAndSave(const SavePageRequest& request,
        IsNetworkPredictionDisabled(browser_context_))) {
     DVLOG(1) << "WARNING: Unable to load when 3rd party cookies blocked or "
              << "prediction disabled";
+    // Record user metrics for third party cookies being disabled or network
+    // prediction being disabled.
+    if (AreThirdPartyCookiesBlocked(browser_context_)) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "OfflinePages.Background.CctApiDisableStatus",
+          static_cast<int>(OfflinePagesCctApiPrerenderAllowedStatus::
+                               THIRD_PARTY_COOKIES_DISABLED),
+          static_cast<int>(OfflinePagesCctApiPrerenderAllowedStatus::
+                               NETWORK_PREDICTION_DISABLED) +
+              1);
+    }
+    if (IsNetworkPredictionDisabled(browser_context_)) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "OfflinePages.Background.CctApiDisableStatus",
+          static_cast<int>(OfflinePagesCctApiPrerenderAllowedStatus::
+                               NETWORK_PREDICTION_DISABLED),
+          static_cast<int>(OfflinePagesCctApiPrerenderAllowedStatus::
+                               NETWORK_PREDICTION_DISABLED) +
+              1);
+    }
+
     return false;
+  }
+
+  // Record UMA that the prerender was allowed to proceed.
+  if (request.client_id().name_space == kCCTNamespace) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "OfflinePages.Background.CctApiDisableStatus",
+        static_cast<int>(
+            OfflinePagesCctApiPrerenderAllowedStatus::PRERENDER_ALLOWED),
+        static_cast<int>(OfflinePagesCctApiPrerenderAllowedStatus::
+                         NETWORK_PREDICTION_DISABLED) +
+        1);
   }
 
   if (!OfflinePageModel::CanSaveURL(request.url())) {
