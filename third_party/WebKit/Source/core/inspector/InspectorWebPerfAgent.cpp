@@ -21,8 +21,12 @@ namespace blink {
 
 namespace {
 static const double kLongTaskThresholdMillis = 50.0;
-static const char* unknownAttribution = "unknown";
-static const char* ambiguousAttribution = "multiple-contexts";
+static const char kUnknownAttribution[] = "unknown";
+static const char kAmbugiousAttribution[] = "multiple-contexts";
+static const char kSameOriginAttribution[] = "same-origin";
+static const char kAncestorAttribution[] = "cross-origin-ancestor";
+static const char kDescendantAttribution[] = "cross-origin-descendant";
+static const char kCrossOriginAttribution[] = "cross-origin-unreachable";
 
 bool canAccessOrigin(Frame* frame1, Frame* frame2) {
   SecurityOrigin* securityOrigin1 =
@@ -89,30 +93,57 @@ void InspectorWebPerfAgent::ReportTaskTime(scheduler::TaskQueue*,
     return;
   Performance* performance = DOMWindowPerformance::performance(*domWindow);
   DCHECK(performance);
-  performance->addLongTaskTiming(
-      startTime, endTime,
-      sanitizedLongTaskName(m_frameContextLocations, m_localFrame));
+
+  std::pair<String, DOMWindow*> attribution =
+      sanitizedAttribution(m_frameContextLocations, m_localFrame);
+  performance->addLongTaskTiming(startTime, endTime, attribution.first,
+                                 attribution.second);
 }
 
-String InspectorWebPerfAgent::sanitizedLongTaskName(
+/**
+ * Report sanitized name based on cross-origin policy.
+ * See detailed Security doc here: http://bit.ly/2duD3F7
+ */
+std::pair<String, DOMWindow*> InspectorWebPerfAgent::sanitizedAttribution(
     const HeapHashSet<Member<Location>>& frameContextLocations,
-    Frame* rootFrame) {
+    Frame* observerFrame) {
   if (frameContextLocations.size() == 0) {
     // Unable to attribute as no script was involved.
-    return unknownAttribution;
+    return std::make_pair(kUnknownAttribution, nullptr);
   }
   if (frameContextLocations.size() > 1) {
     // Unable to attribute, multiple script execution contents were involved.
-    return ambiguousAttribution;
+    return std::make_pair(kAmbugiousAttribution, nullptr);
   }
   // Exactly one culprit location, attribute based on origin boundary.
   DCHECK_EQ(1u, frameContextLocations.size());
   Location* culpritLocation = *frameContextLocations.begin();
-  if (canAccessOrigin(rootFrame, culpritLocation->frame())) {
-    // For same origin, it's safe to to return culprit location URL.
-    return culpritLocation->href();
+  if (canAccessOrigin(observerFrame, culpritLocation->frame())) {
+    // From accessible frames or same origin, return culprit location URL.
+    return std::make_pair(kSameOriginAttribution,
+                          culpritLocation->frame()->domWindow());
   }
-  return "cross-origin";
+  // For cross-origin, if the culprit is the descendant or ancestor of
+  // observer then indicate the *closest* cross-origin frame between
+  // the observer and the culprit, in the corresponding direction.
+  if (culpritLocation->frame()->tree().isDescendantOf(observerFrame)) {
+    // If culprit is a descendant of the observer, then walk up the tree from culprit
+    // to observer, and report the *last* cross-origin (from observer) frame.
+    // If no intermediate cross-origin frame is found, then report the culprit directly.
+    Frame* lastCrossOriginFrame = culpritLocation->frame();
+    for (Frame* frame = culpritLocation->frame(); frame != observerFrame;
+         frame = frame->tree().parent()) {
+      if (!canAccessOrigin(observerFrame, frame)) {
+        lastCrossOriginFrame = frame;
+      }
+    }
+    return std::make_pair(kDescendantAttribution,
+                          lastCrossOriginFrame->domWindow());
+  }
+  if (observerFrame->tree().isDescendantOf(culpritLocation->frame())) {
+    return std::make_pair(kAncestorAttribution, nullptr);
+  }
+  return std::make_pair(kCrossOriginAttribution, nullptr);
 }
 
 DEFINE_TRACE(InspectorWebPerfAgent) {

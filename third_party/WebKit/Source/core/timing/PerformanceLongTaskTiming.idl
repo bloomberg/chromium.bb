@@ -6,4 +6,5 @@
 [
     OriginTrialEnabled=LongTaskObserver,
 ] interface PerformanceLongTaskTiming : PerformanceEntry {
+    readonly attribute Window? culpritWindow;
 };

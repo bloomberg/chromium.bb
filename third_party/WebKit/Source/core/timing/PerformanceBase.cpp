@@ -361,13 +361,14 @@ bool PerformanceBase::isFrameTimingBufferFull() {
 
 void PerformanceBase::addLongTaskTiming(double startTime,
                                         double endTime,
-                                        const String& frameContextUrl) {
+                                        const String& name,
+                                        DOMWindow* culpritWindow) {
   if (isLongTaskTimingBufferFull() ||
       !hasObserverFor(PerformanceEntry::LongTask))
     return;
   PerformanceEntry* entry = PerformanceLongTaskTiming::create(
       monotonicTimeToDOMHighResTimeStampInMillis(startTime),
-      monotonicTimeToDOMHighResTimeStampInMillis(endTime), frameContextUrl);
+      monotonicTimeToDOMHighResTimeStampInMillis(endTime), name, culpritWindow);
   notifyObserversOfEntry(*entry);
   addLongTaskTimingBuffer(*entry);
 }

@@ -12,6 +12,7 @@
 
 namespace blink {
 
+class DOMWindow;
 class ExecutionContext;
 class Frame;
 class LocalFrame;
@@ -48,9 +49,9 @@ class CORE_EXPORT InspectorWebPerfAgent final
 
  private:
   bool m_enabled;
-  String sanitizedLongTaskName(
+  std::pair<String, DOMWindow*> sanitizedAttribution(
       const HeapHashSet<Member<Location>>& frameContextLocations,
-      Frame* rootFrame);
+      Frame* observerFrame);
 
   Member<LocalFrame> m_localFrame;
   HeapHashSet<Member<Location>> m_frameContextLocations;

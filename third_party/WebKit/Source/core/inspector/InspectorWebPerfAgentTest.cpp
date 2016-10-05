@@ -34,7 +34,8 @@ class InspectorWebPerfAgentTest : public ::testing::Test {
   String sanitizedLongTaskName(
       HeapHashSet<Member<Location>> frameContextLocations,
       Frame* rootFrame) {
-    return m_agent->sanitizedLongTaskName(frameContextLocations, rootFrame);
+    return m_agent->sanitizedAttribution(frameContextLocations, rootFrame)
+        .first;
   }
 
   Persistent<InspectorWebPerfAgent> m_agent;
@@ -135,12 +136,23 @@ TEST_F(InspectorWebPerfAgentTest, SanitizedLongTaskName) {
 
   // Attribute for same context (and same origin).
   frameContextLocations.add(Location::create(frame()));
-  EXPECT_EQ("https://example.com/foo",
+  EXPECT_EQ("same-origin",
             sanitizedLongTaskName(frameContextLocations, frame()));
 
   // Unable to attribute, when multiple script execution contents are involved.
   frameContextLocations.add(Location::create(frame()));
   EXPECT_EQ("multiple-contexts",
+            sanitizedLongTaskName(frameContextLocations, frame()));
+}
+
+TEST_F(InspectorWebPerfAgentTest, SanitizedLongTaskName_CrossOrigin) {
+  HeapHashSet<Member<Location>> frameContextLocations;
+  // Unable to attribute, when no execution contents are available.
+  EXPECT_EQ("unknown", sanitizedLongTaskName(frameContextLocations, frame()));
+
+  // Attribute for same context (and same origin).
+  frameContextLocations.add(Location::create(anotherFrame()));
+  EXPECT_EQ("cross-origin-unreachable",
             sanitizedLongTaskName(frameContextLocations, frame()));
 }
 

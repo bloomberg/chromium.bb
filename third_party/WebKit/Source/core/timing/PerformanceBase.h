@@ -45,6 +45,7 @@
 
 namespace blink {
 
+class DOMWindow;
 class Document;
 class ExceptionState;
 class PerformanceObserver;
@@ -100,7 +101,7 @@ class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(longtasktimingbufferfull);
 
-  void addLongTaskTiming(double, double, const String& frameContextUrl);
+  void addLongTaskTiming(double, double, const String&, DOMWindow*);
 
   void addResourceTiming(const ResourceTimingInfo&);
 

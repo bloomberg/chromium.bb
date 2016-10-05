@@ -87,7 +87,7 @@ TEST_F(PerformanceBaseTest, AddLongTaskTiming) {
   initialize(scope.getScriptState());
 
   // Add a long task entry, but no observer registered.
-  m_base->addLongTaskTiming(1234, 5678, "www.foo.com/bar");
+  m_base->addLongTaskTiming(1234, 5678, "www.foo.com/bar", nullptr);
   EXPECT_EQ(0, m_base->numLongTaskTimingEntries());  // has no effect
 
   // Make an observer for longtask
@@ -99,7 +99,7 @@ TEST_F(PerformanceBaseTest, AddLongTaskTiming) {
   m_observer->observe(options, exceptionState);
 
   // Add a long task entry
-  m_base->addLongTaskTiming(1234, 5678, "www.foo.com/bar");
+  m_base->addLongTaskTiming(1234, 5678, "www.foo.com/bar", nullptr);
   EXPECT_EQ(1, m_base->numLongTaskTimingEntries());  // added an entry
 }
 
