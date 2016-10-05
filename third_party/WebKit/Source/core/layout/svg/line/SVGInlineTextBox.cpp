@@ -174,10 +174,7 @@ TextRun SVGInlineTextBox::constructTextRun(
     const ComputedStyle& style,
     const SVGTextFragment& fragment) const {
   LineLayoutText text = getLineLayoutItem();
-
-  // FIXME(crbug.com/264211): This should not be necessary but can occur if we
-  //                          layout during layout. Remove this when 264211 is fixed.
-  RELEASE_ASSERT(!text.needsLayout());
+  CHECK(!text.needsLayout());
 
   TextRun run(
       // characters, will be set below if non-zero.
