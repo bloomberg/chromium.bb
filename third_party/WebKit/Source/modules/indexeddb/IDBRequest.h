@@ -151,8 +151,8 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   bool m_contextStopped = false;
   Member<IDBTransaction> m_transaction;
   ReadyState m_readyState = PENDING;
-  bool m_requestAborted =
-      false;  // May be aborted by transaction then receive async onsuccess; ignore vs. assert.
+  bool m_requestAborted = false;  // May be aborted by transaction then receive
+                                  // async onsuccess; ignore vs. assert.
 
  private:
   void setResultCursor(IDBCursor*,
@@ -173,9 +173,11 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   // Only used if the result type will be a cursor.
   IndexedDB::CursorType m_cursorType = IndexedDB::CursorKeyAndValue;
   WebIDBCursorDirection m_cursorDirection = WebIDBCursorDirectionNext;
-  // When a cursor is continued/advanced, m_result is cleared and m_pendingCursor holds it.
+  // When a cursor is continued/advanced, m_result is cleared and
+  // m_pendingCursor holds it.
   Member<IDBCursor> m_pendingCursor;
-  // New state is not applied to the cursor object until the event is dispatched.
+  // New state is not applied to the cursor object until the event is
+  // dispatched.
   Member<IDBKey> m_cursorKey;
   Member<IDBKey> m_cursorPrimaryKey;
   RefPtr<IDBValue> m_cursorValue;

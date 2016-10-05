@@ -349,7 +349,8 @@ class DataConsumerHandleTestUtil {
     Vector<char> m_body;
   };
 
-  // ReplayingHandle stores commands via |add| and replays the stored commends when read.
+  // ReplayingHandle stores commands via |add| and replays the stored commends
+  // when read.
   class ReplayingHandle final : public WebDataConsumerHandle {
     USING_FAST_MALLOC(ReplayingHandle);
 

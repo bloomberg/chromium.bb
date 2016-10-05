@@ -111,11 +111,13 @@ bool DOMFilePath::isValidPath(const String& path) {
   if (path.find(static_cast<UChar>(0)) != WTF::kNotFound)
     return false;
 
-  // While not [yet] restricted by the spec, '\\' complicates implementation for Chromium.
+  // While not [yet] restricted by the spec, '\\' complicates implementation for
+  // Chromium.
   if (path.find('\\') != WTF::kNotFound)
     return false;
 
-  // This method is only called on fully-evaluated absolute paths. Any sign of ".." or "." is likely an attempt to break out of the sandbox.
+  // This method is only called on fully-evaluated absolute paths. Any sign of
+  // ".." or "." is likely an attempt to break out of the sandbox.
   Vector<String> components;
   path.split(DOMFilePath::separator, components);
   for (size_t i = 0; i < components.size(); ++i) {

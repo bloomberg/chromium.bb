@@ -55,7 +55,8 @@ IDBRequest* IDBRequest::create(ScriptState* scriptState,
                                IDBTransaction* transaction) {
   IDBRequest* request = new IDBRequest(scriptState, source, transaction);
   request->suspendIfNeeded();
-  // Requests associated with IDBFactory (open/deleteDatabase/getDatabaseNames) are not associated with transactions.
+  // Requests associated with IDBFactory (open/deleteDatabase/getDatabaseNames)
+  // are not associated with transactions.
   if (transaction)
     transaction->registerRequest(request);
   return request;
@@ -90,7 +91,8 @@ DEFINE_TRACE(IDBRequest) {
 
 ScriptValue IDBRequest::result(ExceptionState& exceptionState) {
   if (m_readyState != DONE) {
-    // Must throw if returning an empty value. Message is arbitrary since it will never be seen.
+    // Must throw if returning an empty value. Message is arbitrary since it
+    // will never be seen.
     exceptionState.throwDOMException(
         InvalidStateError, IDBDatabase::requestNotFinishedErrorMessage);
     return ScriptValue();
@@ -368,9 +370,9 @@ void IDBRequest::onSuccess(IDBKey* key,
 }
 
 bool IDBRequest::hasPendingActivity() const {
-  // FIXME: In an ideal world, we should return true as long as anyone has a or can
-  //        get a handle to us and we have event listeners. This is order to handle
-  //        user generated events properly.
+  // FIXME: In an ideal world, we should return true as long as anyone has a or
+  //        can get a handle to us and we have event listeners. This is order to
+  //        handle user generated events properly.
   return m_hasPendingActivity && !m_contextStopped;
 }
 
@@ -431,7 +433,8 @@ DispatchEventResult IDBRequest::dispatchEventInternal(Event* event) {
     targets.append(m_transaction->db());
   }
 
-  // Cursor properties should not be updated until the success event is being dispatched.
+  // Cursor properties should not be updated until the success event is being
+  // dispatched.
   IDBCursor* cursorToNotify = nullptr;
   if (event->type() == EventTypeNames::success) {
     cursorToNotify = getResultCursor();
@@ -446,7 +449,8 @@ DispatchEventResult IDBRequest::dispatchEventInternal(Event* event) {
     m_didFireUpgradeNeededEvent = true;
   }
 
-  // FIXME: When we allow custom event dispatching, this will probably need to change.
+  // FIXME: When we allow custom event dispatching, this will probably need to
+  // change.
   DCHECK(event->type() == EventTypeNames::success ||
          event->type() == EventTypeNames::error ||
          event->type() == EventTypeNames::blocked ||
@@ -468,8 +472,9 @@ DispatchEventResult IDBRequest::dispatchEventInternal(Event* event) {
     if (m_readyState == DONE)
       m_transaction->unregisterRequest(this);
 
-    // Possibly abort the transaction. This must occur after unregistering (so this request
-    // doesn't receive a second error) and before deactivating (which might trigger commit).
+    // Possibly abort the transaction. This must occur after unregistering (so
+    // this request doesn't receive a second error) and before deactivating
+    // (which might trigger commit).
     if (event->type() == EventTypeNames::error &&
         dispatchResult == DispatchEventResult::NotCanceled &&
         !m_requestAborted) {
@@ -477,7 +482,8 @@ DispatchEventResult IDBRequest::dispatchEventInternal(Event* event) {
       m_transaction->abort(IGNORE_EXCEPTION);
     }
 
-    // If this was the last request in the transaction's list, it may commit here.
+    // If this was the last request in the transaction's list, it may commit
+    // here.
     if (setTransactionActive)
       m_transaction->setActive(false);
   }
@@ -485,8 +491,8 @@ DispatchEventResult IDBRequest::dispatchEventInternal(Event* event) {
   if (cursorToNotify)
     cursorToNotify->postSuccessHandlerCallback();
 
-  // An upgradeneeded event will always be followed by a success or error event, so must
-  // be kept alive.
+  // An upgradeneeded event will always be followed by a success or error event,
+  // so must be kept alive.
   if (m_readyState == DONE && event->type() != EventTypeNames::upgradeneeded)
     m_hasPendingActivity = false;
 

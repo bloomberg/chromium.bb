@@ -66,8 +66,8 @@ class MODULES_EXPORT DOMFileSystemBase
     Asynchronous,
   };
 
-  // Path prefixes that are used in the filesystem URLs (that can be obtained by toURL()).
-  // http://www.w3.org/TR/file-system-api/#widl-Entry-toURL
+  // Path prefixes that are used in the filesystem URLs (that can be obtained by
+  // toURL()).  http://www.w3.org/TR/file-system-api/#widl-Entry-toURL
   static const char persistentPathPrefix[];
   static const char temporaryPathPrefix[];
   static const char isolatedPathPrefix[];
@@ -112,7 +112,8 @@ class MODULES_EXPORT DOMFileSystemBase
                           FileSystemType,
                           const String name);
 
-  // Actual FileSystem API implementations. All the validity checks on virtual paths are done at this level.
+  // Actual FileSystem API implementations. All the validity checks on virtual
+  // paths are done at this level.
   void getMetadata(const EntryBase*,
                    MetadataCallback*,
                    ErrorCallbackBase*,

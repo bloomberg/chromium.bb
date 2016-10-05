@@ -68,10 +68,12 @@ Entry* DataTransferItemFileSystem::webkitGetAsEntry(
     return 0;
   }
 
-  // The dropped entries are mapped as top-level entries in the isolated filesystem.
+  // The dropped entries are mapped as top-level entries in the isolated
+  // filesystem.
   String virtualPath = DOMFilePath::append("/", toFile(file)->name());
 
-  // FIXME: This involves synchronous file operation. Consider passing file type data when we dispatch drag event.
+  // FIXME: This involves synchronous file operation. Consider passing file type
+  // data when we dispatch drag event.
   FileMetadata metadata;
   if (!getFileMetadata(toFile(file)->path(), metadata))
     return 0;

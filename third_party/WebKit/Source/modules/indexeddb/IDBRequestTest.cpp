@@ -76,11 +76,12 @@ TEST(IDBRequestTest, AbortErrorAfterAbort) {
       scope.getScriptState(), IDBAny::createUndefined(), transaction);
   EXPECT_EQ(request->readyState(), "pending");
 
-  // Simulate the IDBTransaction having received onAbort from back end and aborting the request:
+  // Simulate the IDBTransaction having received onAbort from back end and
+  // aborting the request:
   request->abort();
 
-  // Now simulate the back end having fired an abort error at the request to clear up any intermediaries.
-  // Ensure an assertion is not raised.
+  // Now simulate the back end having fired an abort error at the request to
+  // clear up any intermediaries.  Ensure an assertion is not raised.
   request->onError(DOMException::create(AbortError, "Description goes here."));
 
   // Stop the request lest it be GCed and its destructor

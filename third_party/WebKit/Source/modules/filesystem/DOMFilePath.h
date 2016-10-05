@@ -50,13 +50,16 @@ class DOMFilePath {
   // Returns the parent directory path of the given path.
   static String getDirectory(const String& path);
 
-  // Checks if a given path is a parent of mayBeChild. This method assumes given paths are absolute and do not have extra references to a parent (i.e. "../").
+  // Checks if a given path is a parent of mayBeChild. This method assumes given
+  // paths are absolute and do not have extra references to a parent (i.e.
+  // "../").
   static bool isParentOf(const String& path, const String& mayBeChild);
 
   // Appends the separator at the end of the path if it's not there already.
   static String ensureDirectoryPath(const String& path);
 
-  // Returns a new path by appending a separator and the supplied path component to the path.
+  // Returns a new path by appending a separator and the supplied path component
+  // to the path.
   static String append(const String& path, const String& component);
 
   static bool isAbsolute(const String& path) {
@@ -67,7 +70,8 @@ class DOMFilePath {
     return path[path.length() - 1] == DOMFilePath::separator;
   }
 
-  // Evaluates all "../" and "./" segments. Note that "/../" expands to "/", so you can't ever refer to anything above the root directory.
+  // Evaluates all "../" and "./" segments. Note that "/../" expands to "/", so
+  // you can't ever refer to anything above the root directory.
   static String removeExtraParentReferences(const String& path);
 
   // Checks if the given path follows the FileSystem API naming restrictions.

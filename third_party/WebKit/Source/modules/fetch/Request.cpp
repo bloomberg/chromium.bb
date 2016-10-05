@@ -354,8 +354,8 @@ Request* Request::createRequestWithRequestOrString(
     }
   }
 
-  // TODO(mkwst): See the comment in RequestInit about serializing the attached credential
-  // prior to hitting the Service Worker machinery.
+  // TODO(mkwst): See the comment in RequestInit about serializing the attached
+  // credential prior to hitting the Service Worker machinery.
   if (request->credentials() == WebURLRequest::FetchCredentialsModePassword) {
     r->getHeaders()->append(HTTPNames::Content_Type, init.contentType,
                             exceptionState);
@@ -496,7 +496,8 @@ String Request::method() const {
 }
 
 KURL Request::url() const {
-  // The url attribute's getter must return request's url, serialized with the exclude fragment flag set.
+  // The url attribute's getter must return request's url, serialized with the
+  // exclude fragment flag set.
   if (!m_request->url().hasFragmentIdentifier())
     return m_request->url();
   KURL url(m_request->url());
@@ -710,8 +711,9 @@ void Request::populateWebServiceWorkerRequest(
   webRequest.setReferrer(
       m_request->referrerString(),
       static_cast<WebReferrerPolicy>(m_request->getReferrerPolicy()));
-  // FIXME: How can we set isReload properly? What is the correct place to load it in to the Request object? We should investigate the right way
-  // to plumb this information in to here.
+  // FIXME: How can we set isReload properly? What is the correct place to load
+  // it in to the Request object? We should investigate the right way to plumb
+  // this information in to here.
 }
 
 String Request::mimeType() const {

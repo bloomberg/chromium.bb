@@ -101,12 +101,14 @@ RequestInit::RequestInit(ExecutionContext* context,
   v8::Isolate* isolate = toIsolate(context);
   if (isCredentialSet) {
     if (V8PasswordCredential::hasInstance(v8Credential, isolate)) {
-      // TODO(mkwst): According to the spec, we'd serialize this once we touch the network. We're
-      // serializing it here, ahead of time, because lifetime issues around ResourceRequest make
-      // it pretty difficult to pass a PasswordCredential around at the platform level, and the
-      // hop between the browser and renderer processes to deal with service workers is equally
-      // painful. There should be no developer-visible difference in behavior with this option,
-      // except that the `Content-Type` header will be set early. That seems reasonable.
+      // TODO(mkwst): According to the spec, we'd serialize this once we touch
+      // the network. We're serializing it here, ahead of time, because lifetime
+      // issues around ResourceRequest make it pretty difficult to pass a
+      // PasswordCredential around at the platform level, and the hop between
+      // the browser and renderer processes to deal with service workers is
+      // equally painful. There should be no developer-visible difference in
+      // behavior with this option, except that the `Content-Type` header will
+      // be set early. That seems reasonable.
       PasswordCredential* credential =
           V8PasswordCredential::toImpl(v8Credential.As<v8::Object>());
       attachedCredential = credential->encodeFormData(contentType);

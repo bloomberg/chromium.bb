@@ -119,7 +119,8 @@ KURL DOMFileSystemBase::createFileSystemURL(const String& fullPath) const {
   ASSERT(DOMFilePath::isAbsolute(fullPath));
 
   if (type() == FileSystemTypeExternal) {
-    // For external filesystem originString could be different from what we have in m_filesystemRootURL.
+    // For external filesystem originString could be different from what we have
+    // in m_filesystemRootURL.
     StringBuilder result;
     result.append("filesystem:");
     result.append(getSecurityOrigin()->toString());
@@ -131,7 +132,9 @@ KURL DOMFileSystemBase::createFileSystemURL(const String& fullPath) const {
     return KURL(ParsedURLString, result.toString());
   }
 
-  // For regular types we can just append the entry's fullPath to the m_filesystemRootURL that should look like 'filesystem:<origin>/<typePrefix>'.
+  // For regular types we can just append the entry's fullPath to the
+  // m_filesystemRootURL that should look like
+  // 'filesystem:<origin>/<typePrefix>'.
   ASSERT(!m_filesystemRootURL.isEmpty());
   KURL url = m_filesystemRootURL;
   // Remove the extra leading slash.
@@ -178,9 +181,11 @@ File* DOMFileSystemBase::createFile(const FileMetadata& metadata,
                                     const KURL& fileSystemURL,
                                     FileSystemType type,
                                     const String name) {
-  // For regular filesystem types (temporary or persistent), we should not cache file metadata as it could change File semantics.
-  // For other filesystem types (which could be platform-specific ones), there's a chance that the files are on remote filesystem.
-  // If the port has returned metadata just pass it to File constructor (so we may cache the metadata).
+  // For regular filesystem types (temporary or persistent), we should not cache
+  // file metadata as it could change File semantics.  For other filesystem
+  // types (which could be platform-specific ones), there's a chance that the
+  // files are on remote filesystem.  If the port has returned metadata just
+  // pass it to File constructor (so we may cache the metadata).
   // FIXME: We should use the snapshot metadata for all files.
   // https://www.w3.org/Bugs/Public/show_bug.cgi?id=17746
   if (type == FileSystemTypeTemporary || type == FileSystemTypePersistent)
@@ -191,7 +196,8 @@ File* DOMFileSystemBase::createFile(const FileMetadata& metadata,
                                                   : File::IsNotUserVisible;
 
   if (!metadata.platformPath.isEmpty()) {
-    // If the platformPath in the returned metadata is given, we create a File object for the snapshot path.
+    // If the platformPath in the returned metadata is given, we create a File
+    // object for the snapshot path.
     return File::createForFileSystemFile(name, metadata, userVisibility);
   } else {
     // Otherwise we create a File object for the fileSystemURL.
@@ -230,12 +236,14 @@ static bool verifyAndGetDestinationPathForCopyOrMove(const EntryBase* source,
   const bool isSameFileSystem =
       (*source->filesystem() == *parent->filesystem());
 
-  // It is an error to try to copy or move an entry inside itself at any depth if it is a directory.
+  // It is an error to try to copy or move an entry inside itself at any depth
+  // if it is a directory.
   if (source->isDirectory() && isSameFileSystem &&
       DOMFilePath::isParentOf(source->fullPath(), parent->fullPath()))
     return false;
 
-  // It is an error to copy or move an entry into its parent if a name different from its current one isn't provided.
+  // It is an error to copy or move an entry into its parent if a name different
+  // from its current one isn't provided.
   if (isSameFileSystem && (newName.isEmpty() || source->name() == newName) &&
       DOMFilePath::getDirectory(source->fullPath()) == parent->fullPath())
     return false;

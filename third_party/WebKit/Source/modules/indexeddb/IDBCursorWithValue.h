@@ -49,8 +49,9 @@ class IDBCursorWithValue final : public IDBCursor {
                                     IDBTransaction*);
   ~IDBCursorWithValue() override;
 
-  // The value attribute defined in the IDL is simply implemented in IDBCursor (but not exposed via
-  // its IDL). This is to make the implementation more simple while matching what the spec says.
+  // The value attribute defined in the IDL is simply implemented in IDBCursor
+  // (but not exposed via its IDL). This is to make the implementation more
+  // simple while matching what the spec says.
 
   bool isKeyCursor() const override { return false; }
   bool isCursorWithValue() const override { return true; }

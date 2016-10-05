@@ -84,7 +84,8 @@ class MODULES_EXPORT DOMFileSystem final : public DOMFileSystemBase,
   void createWriter(const FileEntry*, FileWriterCallback*, ErrorCallbackBase*);
   void createFile(const FileEntry*, BlobCallback*, ErrorCallbackBase*);
 
-  // Schedule a callback. This should not cross threads (should be called on the same context thread).
+  // Schedule a callback. This should not cross threads (should be called on the
+  // same context thread).
   static void scheduleCallback(ExecutionContext* executionContext,
                                std::unique_ptr<ExecutionContextTask> task) {
     DCHECK(executionContext->isContextThread());

@@ -699,7 +699,8 @@ void FetchManager::Loader::performHTTPFetch(bool corsFlag,
       SchemeRegistry::shouldTreatURLSchemeAsSupportingFetchAPI(
           m_request->url().protocol()) ||
       (m_request->url().protocolIs("blob") && !corsFlag && !corsPreflightFlag));
-  // CORS preflight fetch procedure is implemented inside DocumentThreadableLoader.
+  // CORS preflight fetch procedure is implemented inside
+  // DocumentThreadableLoader.
 
   // "1. Let |HTTPRequest| be a copy of |request|, except that |HTTPRequest|'s
   //  body is a tee of |request|'s body."
@@ -832,7 +833,8 @@ void FetchManager::Loader::performDataFetch() {
   request.setUseStreamOnResponse(true);
   request.setHTTPMethod(m_request->method());
   request.setFetchRedirectMode(WebURLRequest::FetchRedirectModeError);
-  // We intentionally skip 'setExternalRequestStateFromRequestorAddressSpace', as 'data:' can never be external.
+  // We intentionally skip 'setExternalRequestStateFromRequestorAddressSpace',
+  // as 'data:' can never be external.
 
   ResourceLoaderOptions resourceLoaderOptions;
   resourceLoaderOptions.dataBufferingPolicy = DoNotBufferData;

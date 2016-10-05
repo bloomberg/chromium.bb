@@ -51,8 +51,8 @@ class DOMWindowFileSystem {
                                               EntryCallback*,
                                               ErrorCallback*);
 
-  // They are placed here and in all capital letters so they can be checked against the constants in the
-  // IDL at compile time.
+  // They are placed here and in all capital letters so they can be checked
+  // against the constants in the IDL at compile time.
   enum {
     kTemporary,
     kPersistent,

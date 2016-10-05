@@ -67,7 +67,8 @@ EntryHeapVector HTMLInputElementFileSystem::webkitEntries(
     if (!getFileMetadata(file->path(), metadata))
       continue;
 
-    // The dropped entries are mapped as top-level entries in the isolated filesystem.
+    // The dropped entries are mapped as top-level entries in the isolated
+    // filesystem.
     String virtualPath = DOMFilePath::append("/", file->name());
     if (metadata.type == FileMetadata::TypeDirectory)
       entries.append(DirectoryEntry::create(filesystem, virtualPath));

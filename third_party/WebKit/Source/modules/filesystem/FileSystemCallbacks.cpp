@@ -387,10 +387,12 @@ void SnapshotFileCallback::didCreateSnapshotFile(
   if (!m_successCallback)
     return;
 
-  // We can't directly use the snapshot blob data handle because the content type on it hasn't been set.
-  // The |snapshot| param is here to provide a a chain of custody thru thread bridging that is held onto until
-  // *after* we've coined a File with a new handle that has the correct type set on it. This allows the
-  // blob storage system to track when a temp file can and can't be safely deleted.
+  // We can't directly use the snapshot blob data handle because the content
+  // type on it hasn't been set.  The |snapshot| param is here to provide a a
+  // chain of custody thru thread bridging that is held onto until *after* we've
+  // coined a File with a new handle that has the correct type set on it. This
+  // allows the blob storage system to track when a temp file can and can't be
+  // safely deleted.
 
   handleEventOrScheduleCallback(
       m_successCallback.release(),

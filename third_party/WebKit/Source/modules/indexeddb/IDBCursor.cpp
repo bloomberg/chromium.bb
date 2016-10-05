@@ -314,8 +314,9 @@ void IDBCursor::continueFunction(IDBKey* key,
     }
   }
 
-  // FIXME: We're not using the context from when continue was called, which means the callback
-  //        will be on the original context openCursor was called on. Is this right?
+  // FIXME: We're not using the context from when continue was called, which
+  // means the callback will be on the original context openCursor was called
+  // on. Is this right?
   m_request->setPendingCursor(this);
   m_gotValue = false;
   m_backend->continueFunction(key, primaryKey,

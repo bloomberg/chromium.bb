@@ -39,7 +39,8 @@ void ImageBitmapRenderingContext::transferFromImageBitmap(
 
   sk_sp<SkImage> skImage = m_image->imageForCurrentFrame();
   if (skImage->isTextureBacked()) {
-    // TODO(junov): crbug.com/585607 Eliminate this readback and use an ExternalTextureLayer
+    // TODO(junov): crbug.com/585607 Eliminate this readback and use an
+    // ExternalTextureLayer
     sk_sp<SkSurface> surface =
         SkSurface::MakeRasterN32Premul(skImage->width(), skImage->height());
     if (!surface) {

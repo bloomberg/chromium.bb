@@ -73,8 +73,8 @@ DOMFileSystem* DOMFileSystem::createIsolatedFileSystem(
   filesystemName.append(":Isolated_");
   filesystemName.append(filesystemId);
 
-  // The rootURL created here is going to be attached to each filesystem request and
-  // is to be validated each time the request is being handled.
+  // The rootURL created here is going to be attached to each filesystem request
+  // and is to be validated each time the request is being handled.
   StringBuilder rootURL;
   rootURL.append("filesystem:");
   rootURL.append(context->getSecurityOrigin()->toString());

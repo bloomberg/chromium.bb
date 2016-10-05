@@ -307,7 +307,8 @@ void IDBTransaction::onAbort(DOMException* error) {
   if (isVersionChange())
     m_database->close();
 
-  // Enqueue events before notifying database, as database may close which enqueues more events and order matters.
+  // Enqueue events before notifying database, as database may close which
+  // enqueues more events and order matters.
   enqueueEvent(Event::createBubble(EventTypeNames::abort));
   finished();
 }
@@ -322,15 +323,17 @@ void IDBTransaction::onComplete() {
   DCHECK_NE(m_state, Finished);
   m_state = Finishing;
 
-  // Enqueue events before notifying database, as database may close which enqueues more events and order matters.
+  // Enqueue events before notifying database, as database may close which
+  // enqueues more events and order matters.
   enqueueEvent(Event::create(EventTypeNames::complete));
   finished();
 }
 
 bool IDBTransaction::hasPendingActivity() const {
-  // FIXME: In an ideal world, we should return true as long as anyone has a or can
-  //        get a handle to us or any child request object and any of those have
-  //        event listeners. This is  in order to handle user generated events properly.
+  // FIXME: In an ideal world, we should return true as long as anyone has a or
+  // can get a handle to us or any child request object and any of those have
+  // event listeners. This is  in order to handle user generated events
+  // properly.
   return m_hasPendingActivity && !m_contextStopped;
 }
 
@@ -401,7 +404,8 @@ DispatchEventResult IDBTransaction::dispatchEventInternal(Event* event) {
   targets.append(this);
   targets.append(db());
 
-  // FIXME: When we allow custom event dispatching, this will probably need to change.
+  // FIXME: When we allow custom event dispatching, this will probably need to
+  // change.
   DCHECK(event->type() == EventTypeNames::complete ||
          event->type() == EventTypeNames::abort);
   DispatchEventResult dispatchResult =

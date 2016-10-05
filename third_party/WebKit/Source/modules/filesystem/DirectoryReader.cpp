@@ -52,7 +52,8 @@ class DirectoryReader::EntriesCallbackHelper final : public EntriesCallback {
   }
 
  private:
-  // FIXME: This Member keeps the reader alive until all of the readDirectory results are received. crbug.com/350285
+  // FIXME: This Member keeps the reader alive until all of the readDirectory
+  // results are received. crbug.com/350285
   Member<DirectoryReader> m_reader;
 };
 
@@ -93,7 +94,8 @@ void DirectoryReader::readEntries(EntriesCallback* entriesCallback,
   }
 
   if (m_entriesCallback) {
-    // Non-null m_entriesCallback means multiple readEntries() calls are made concurrently. We don't allow doing it.
+    // Non-null m_entriesCallback means multiple readEntries() calls are made
+    // concurrently. We don't allow doing it.
     filesystem()->reportError(ScriptErrorCallback::wrap(errorCallback),
                               FileError::kInvalidStateErr);
     return;

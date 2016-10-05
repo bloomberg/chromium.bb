@@ -73,7 +73,8 @@ const AtomicString& FileWriter::interfaceName() const {
 }
 
 void FileWriter::contextDestroyed() {
-  // Make sure we've actually got something to stop, and haven't already called abort().
+  // Make sure we've actually got something to stop, and haven't already called
+  // abort().
   if (!writer() || m_readyState != kWriting)
     return;
   doOperation(OperationAbort);
@@ -104,7 +105,8 @@ void FileWriter::write(Blob* data, ExceptionState& exceptionState) {
   m_bytesToWrite = data->size();
   ASSERT(m_queuedOperation == OperationNone);
   if (m_operationInProgress != OperationNone) {
-    // We must be waiting for an abort to complete, since m_readyState wasn't kWriting.
+    // We must be waiting for an abort to complete, since m_readyState wasn't
+    // kWriting.
     ASSERT(m_operationInProgress == OperationAbort);
     m_queuedOperation = OperationWrite;
   } else
@@ -143,7 +145,8 @@ void FileWriter::truncate(long long position, ExceptionState& exceptionState) {
   m_truncateLength = position;
   ASSERT(m_queuedOperation == OperationNone);
   if (m_operationInProgress != OperationNone) {
-    // We must be waiting for an abort to complete, since m_readyState wasn't kWriting.
+    // We must be waiting for an abort to complete, since m_readyState wasn't
+    // kWriting.
     ASSERT(m_operationInProgress == OperationAbort);
     m_queuedOperation = OperationTruncate;
   } else

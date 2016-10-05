@@ -119,8 +119,10 @@ void IDBObjectStore::setName(const String& name,
   m_transaction->objectStoreRenamed(m_metadata.name, name);
   m_metadata.name = name;
 
-  // The name inside the database's version of the object store metadata is used by IDBDatabase.objectStoreNames().
-  // If the transaction is aborted, this name will be reverted when the metadata is overwritten with the previousMetadata in IDBTransaction.
+  // The name inside the database's version of the object store metadata is used
+  // by IDBDatabase.objectStoreNames().  If the transaction is aborted, this
+  // name will be reverted when the metadata is overwritten with the
+  // previousMetadata in IDBTransaction.
   m_transaction->db()->objectStoreRenamed(id(), name);
 }
 
@@ -429,7 +431,8 @@ IDBRequest* IDBObjectStore::put(ScriptState* scriptState,
     return nullptr;
   }
 
-  // This test logically belongs in IDBCursor, but must operate on the cloned value.
+  // This test logically belongs in IDBCursor, but must operate on the cloned
+  // value.
   if (putMode == WebIDBPutModeCursorUpdate && usesInLineKeys) {
     DCHECK(key);
     if (clone.isEmpty())
@@ -770,7 +773,8 @@ IDBIndex* IDBObjectStore::createIndex(ScriptState* scriptState,
                  WebIDBTaskTypePreemptive);
   indexRequest->preventPropagation();
 
-  // This is kept alive by being the success handler of the request, which is in turn kept alive by the owning transaction.
+  // This is kept alive by being the success handler of the request, which is in
+  // turn kept alive by the owning transaction.
   IndexPopulator* indexPopulator =
       IndexPopulator::create(scriptState, transaction()->db(),
                              m_transaction->id(), id(), indexMetadata);

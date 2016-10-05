@@ -125,7 +125,8 @@ void NavigatorGamepad::didUpdateData() {
   DCHECK(document->frame());
   DCHECK(document->frame()->domWindow());
 
-  // We register to the dispatcher before sampling gamepads so we need to check if we actually have an event listener.
+  // We register to the dispatcher before sampling gamepads so we need to check
+  // if we actually have an event listener.
   if (!m_hasEventListener)
     return;
 
@@ -245,8 +246,8 @@ void NavigatorGamepad::pageVisibilityChanged() {
   if (!visible || !m_hasEventListener)
     return;
 
-  // Tell the page what has changed. m_gamepads contains the state before we became hidden.
-  // We create a new snapshot and compare them.
+  // Tell the page what has changed. m_gamepads contains the state before we
+  // became hidden.  We create a new snapshot and compare them.
   GamepadList* oldGamepads = m_gamepads.release();
   gamepads();
   GamepadList* newGamepads = m_gamepads.get();

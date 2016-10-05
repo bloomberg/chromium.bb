@@ -51,8 +51,8 @@ class MODULES_EXPORT FetchResponseData final
 
   FetchResponseData* createBasicFilteredResponse() const;
   // Creates a CORS filtered response, settings the response's cors exposed
-  // header names list to the result of parsing the Access-Control-Expose-Headers
-  // header.
+  // header names list to the result of parsing the
+  // Access-Control-Expose-Headers header.
   FetchResponseData* createCORSFilteredResponse() const;
   // Creates a CORS filtered response with an explicit set of exposed header
   // names.

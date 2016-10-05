@@ -504,7 +504,8 @@ class OpenCursorCallback final : public EventListener {
       return;
     }
 
-    // Continue cursor before making injected script calls, otherwise transaction might be finished.
+    // Continue cursor before making injected script calls, otherwise
+    // transaction might be finished.
     TrackExceptionState exceptionState;
     idbCursor->continueFunction(nullptr, nullptr, exceptionState);
     if (exceptionState.hadException()) {

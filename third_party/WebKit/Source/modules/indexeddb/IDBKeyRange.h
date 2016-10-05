@@ -51,7 +51,8 @@ class MODULES_EXPORT IDBKeyRange final : public GarbageCollected<IDBKeyRange>,
                              UpperBoundType upperType) {
     return new IDBKeyRange(lower, upper, lowerType, upperType);
   }
-  // Null if the script value is null or undefined, the range if it is one, otherwise tries to convert to a key and throws if it fails.
+  // Null if the script value is null or undefined, the range if it is one,
+  // otherwise tries to convert to a key and throws if it fails.
   static IDBKeyRange* fromScriptValue(ExecutionContext*,
                                       const ScriptValue&,
                                       ExceptionState&);

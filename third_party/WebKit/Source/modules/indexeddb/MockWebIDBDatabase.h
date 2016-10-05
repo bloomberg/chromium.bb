@@ -59,7 +59,8 @@ class MockWebIDBDatabase : public testing::StrictMock<WebIDBDatabase> {
                     long long indexId,
                     const WebString& newName));
 
-  // Gmock does not support movable type, so cannot use MOCK_METHOD for addObserver. Issue: https://github.com/google/googletest/issues/395.
+  // Gmock does not support movable type, so cannot use MOCK_METHOD for
+  // addObserver. Issue: https://github.com/google/googletest/issues/395.
   int32_t addObserver(std::unique_ptr<WebIDBObserver>,
                       long long transactionId) {
     return -1;

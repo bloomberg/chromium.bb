@@ -501,7 +501,8 @@ void IDBDatabase::objectStoreRenamed(int64_t objectStoreId,
 
 bool IDBDatabase::hasPendingActivity() const {
   // The script wrapper must not be collected before the object is closed or
-  // we can't fire a "versionchange" event to let script manually close the connection.
+  // we can't fire a "versionchange" event to let script manually close the
+  // connection.
   return !m_closePending && hasEventListeners() && !m_contextStopped;
 }
 

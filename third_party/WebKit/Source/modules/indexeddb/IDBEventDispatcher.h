@@ -43,10 +43,9 @@ class IDBEventDispatcher {
   STATIC_ONLY(IDBEventDispatcher);
 
  public:
-  static DispatchEventResult dispatch(
-      Event*,
-      HeapVector<Member<
-          EventTarget>>&);  // The target first and then its ancestors in order of how the event bubbles.
+  // The second argument contains the target first and then its ancestors in
+  // order of how the event bubbles.
+  static DispatchEventResult dispatch(Event*, HeapVector<Member<EventTarget>>&);
 };
 
 }  // namespace blink
