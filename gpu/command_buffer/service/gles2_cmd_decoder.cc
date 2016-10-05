@@ -5886,9 +5886,6 @@ void GLES2DecoderImpl::InvalidateFramebufferImpl(
   for (GLsizei i = 0; i < validated_count; ++i) {
     if (framebuffer) {
       if (validated_attachments[i] == GL_DEPTH_STENCIL_ATTACHMENT) {
-        // TODO(qiankun.miao@intel.com): We should only mark DEPTH and STENCIL
-        // attachments as cleared when command buffer handles DEPTH_STENCIL
-        // well. http://crbug.com/630568
         framebuffer->MarkAttachmentAsCleared(renderbuffer_manager(),
                                              texture_manager(),
                                              GL_DEPTH_ATTACHMENT,
@@ -5896,10 +5893,6 @@ void GLES2DecoderImpl::InvalidateFramebufferImpl(
         framebuffer->MarkAttachmentAsCleared(renderbuffer_manager(),
                                              texture_manager(),
                                              GL_STENCIL_ATTACHMENT,
-                                             false);
-        framebuffer->MarkAttachmentAsCleared(renderbuffer_manager(),
-                                             texture_manager(),
-                                             GL_DEPTH_STENCIL_ATTACHMENT,
                                              false);
       } else {
         framebuffer->MarkAttachmentAsCleared(renderbuffer_manager(),
@@ -7149,19 +7142,21 @@ void GLES2DecoderImpl::DoFramebufferRenderbuffer(
     }
     service_id = renderbuffer->service_id();
   }
-  LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glFramebufferRenderbuffer");
+  std::vector<GLenum> attachments;
   if (attachment == GL_DEPTH_STENCIL_ATTACHMENT) {
-    glFramebufferRenderbufferEXT(
-        target, GL_DEPTH_ATTACHMENT, renderbuffertarget, service_id);
-    glFramebufferRenderbufferEXT(
-        target, GL_STENCIL_ATTACHMENT, renderbuffertarget, service_id);
+    attachments.push_back(GL_DEPTH_ATTACHMENT);
+    attachments.push_back(GL_STENCIL_ATTACHMENT);
   } else {
-    glFramebufferRenderbufferEXT(
-        target, attachment, renderbuffertarget, service_id);
+    attachments.push_back(attachment);
   }
-  GLenum error = LOCAL_PEEK_GL_ERROR("glFramebufferRenderbuffer");
-  if (error == GL_NO_ERROR) {
-    framebuffer->AttachRenderbuffer(attachment, renderbuffer);
+  LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glFramebufferRenderbuffer");
+  for (GLenum attachment_point : attachments) {
+    glFramebufferRenderbufferEXT(
+        target, attachment_point, renderbuffertarget, service_id);
+    GLenum error = LOCAL_PEEK_GL_ERROR("glFramebufferRenderbuffer");
+    if (error == GL_NO_ERROR) {
+      framebuffer->AttachRenderbuffer(attachment_point, renderbuffer);
+    }
   }
   if (framebuffer == framebuffer_state_.bound_draw_framebuffer.get()) {
     framebuffer_state_.clear_state_dirty = true;
@@ -7249,16 +7244,14 @@ void GLES2DecoderImpl::ClearUnclearedAttachments(
     }
   }
 
-  if (framebuffer->HasUnclearedAttachment(GL_STENCIL_ATTACHMENT) ||
-      framebuffer->HasUnclearedAttachment(GL_DEPTH_STENCIL_ATTACHMENT)) {
+  if (framebuffer->HasUnclearedAttachment(GL_STENCIL_ATTACHMENT)) {
     glClearStencil(0);
     state_.SetDeviceStencilMaskSeparate(GL_FRONT, kDefaultStencilMask);
     state_.SetDeviceStencilMaskSeparate(GL_BACK, kDefaultStencilMask);
     clear_bits |= GL_STENCIL_BUFFER_BIT;
   }
 
-  if (framebuffer->HasUnclearedAttachment(GL_DEPTH_ATTACHMENT) ||
-      framebuffer->HasUnclearedAttachment(GL_DEPTH_STENCIL_ATTACHMENT)) {
+  if (framebuffer->HasUnclearedAttachment(GL_DEPTH_ATTACHMENT)) {
     glClearDepth(1.0f);
     state_.SetDeviceDepthMask(GL_TRUE);
     clear_bits |= GL_DEPTH_BUFFER_BIT;
@@ -7404,11 +7397,11 @@ void GLES2DecoderImpl::DoFramebufferTexture2DCommon(
             target, attachments[ii], textarget, service_id, level, samples);
       }
     }
-  }
-  GLenum error = LOCAL_PEEK_GL_ERROR(name);
-  if (error == GL_NO_ERROR) {
-    framebuffer->AttachTexture(attachment, texture_ref, textarget, level,
-         samples);
+    GLenum error = LOCAL_PEEK_GL_ERROR(name);
+    if (error == GL_NO_ERROR) {
+      framebuffer->AttachTexture(attachments[ii], texture_ref, textarget, level,
+                                 samples);
+    }
   }
   if (framebuffer == framebuffer_state_.bound_draw_framebuffer.get()) {
     framebuffer_state_.clear_state_dirty = true;
@@ -7458,8 +7451,15 @@ void GLES2DecoderImpl::DoFramebufferTextureLayer(
     }
   }
   glFramebufferTextureLayer(target, attachment, service_id, level, layer);
-  framebuffer->AttachTextureLayer(
-      attachment, texture_ref, texture_target, level, layer);
+  if (attachment == GL_DEPTH_STENCIL_ATTACHMENT) {
+    framebuffer->AttachTextureLayer(
+        GL_DEPTH_ATTACHMENT, texture_ref, texture_target, level, layer);
+    framebuffer->AttachTextureLayer(
+        GL_STENCIL_ATTACHMENT, texture_ref, texture_target, level, layer);
+  } else {
+    framebuffer->AttachTextureLayer(
+        attachment, texture_ref, texture_target, level, layer);
+  }
   if (framebuffer == framebuffer_state_.bound_draw_framebuffer.get()) {
     framebuffer_state_.clear_state_dirty = true;
   }
@@ -7513,6 +7513,21 @@ void GLES2DecoderImpl::DoGetFramebufferAttachmentParameteriv(
         default:
           NOTREACHED();
           break;
+      }
+    }
+  } else {
+    if (attachment == GL_DEPTH_STENCIL_ATTACHMENT) {
+      const Framebuffer::Attachment* depth =
+          framebuffer->GetAttachment(GL_DEPTH_ATTACHMENT);
+      const Framebuffer::Attachment* stencil =
+          framebuffer->GetAttachment(GL_STENCIL_ATTACHMENT);
+      if ((!depth && !stencil) ||
+          (depth && stencil && depth->IsSameAttachment(stencil))) {
+        attachment = GL_DEPTH_ATTACHMENT;
+      } else {
+        LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName,
+                           "depth and stencil attachment mismatch");
+        return;
       }
     }
   }
@@ -7624,9 +7639,9 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
     DCHECK(read_framebuffer && draw_framebuffer);
     if ((mask & GL_DEPTH_BUFFER_BIT) != 0) {
       const Framebuffer::Attachment* depth_buffer_read =
-          read_framebuffer->GetDepthAttachment();
+          read_framebuffer->GetAttachment(GL_DEPTH_ATTACHMENT);
       const Framebuffer::Attachment* depth_buffer_draw =
-          draw_framebuffer->GetDepthAttachment();
+          draw_framebuffer->GetAttachment(GL_DEPTH_ATTACHMENT);
       if (!depth_buffer_draw || !depth_buffer_read) {
         mask &= ~GL_DEPTH_BUFFER_BIT;
       } else if (depth_buffer_draw->IsSameAttachment(depth_buffer_read)) {
@@ -7635,9 +7650,9 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
     }
     if ((mask & GL_STENCIL_BUFFER_BIT) != 0) {
       const Framebuffer::Attachment* stencil_buffer_read =
-          read_framebuffer->GetStencilAttachment();
+          read_framebuffer->GetAttachment(GL_STENCIL_ATTACHMENT);
       const Framebuffer::Attachment* stencil_buffer_draw =
-          draw_framebuffer->GetStencilAttachment();
+          draw_framebuffer->GetAttachment(GL_STENCIL_ATTACHMENT);
       if (!stencil_buffer_draw || !stencil_buffer_read) {
         mask &= ~GL_STENCIL_BUFFER_BIT;
       } else if (stencil_buffer_draw->IsSameAttachment(stencil_buffer_read)) {

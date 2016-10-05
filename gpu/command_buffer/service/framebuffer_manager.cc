@@ -19,22 +19,6 @@
 namespace gpu {
 namespace gles2 {
 
-namespace {
-
-bool DetectWebGL1DepthStencilAttachmentConflicts(
-    uint32_t needed_channels, uint32_t channels) {
-  switch (needed_channels) {
-    case GLES2Util::kDepth:
-    case GLES2Util::kStencil:
-    case GLES2Util::kDepth | GLES2Util::kStencil:
-      return (needed_channels != channels);
-    default:
-      return false;
-  }
-}
-
-}  // namespace anonymous
-
 DecoderFramebufferState::DecoderFramebufferState()
     : clear_state_dirty(false),
       bound_read_framebuffer(NULL),
@@ -109,15 +93,11 @@ class RenderbufferAttachment
   bool IsLayerValid() const override { return true; }
 
   bool ValidForAttachmentType(GLenum attachment_type,
-                              ContextType context_type,
                               uint32_t max_color_attachments) override {
     uint32_t need = GLES2Util::GetChannelsNeededForAttachmentType(
         attachment_type, max_color_attachments);
     DCHECK_NE(0u, need);
     uint32_t have = GLES2Util::GetChannelsForFormat(internal_format());
-    if (context_type == CONTEXT_TYPE_WEBGL1 &&
-        DetectWebGL1DepthStencilAttachmentConflicts(need, have))
-      return false;
     return (need & have) != 0;
   }
 
@@ -271,7 +251,6 @@ class TextureAttachment
   }
 
   bool ValidForAttachmentType(GLenum attachment_type,
-                              ContextType context_type,
                               uint32_t max_color_attachments) override {
     GLenum type = 0;
     GLenum internal_format = 0;
@@ -290,9 +269,6 @@ class TextureAttachment
         internal_format == GL_LUMINANCE_ALPHA) {
       return false;
     }
-    if (context_type == CONTEXT_TYPE_WEBGL1 &&
-        DetectWebGL1DepthStencilAttachmentConflicts(need, have))
-      return need == have;
     return (need & have) != 0;
   }
 
@@ -333,7 +309,6 @@ class TextureAttachment
 FramebufferManager::FramebufferManager(
     uint32_t max_draw_buffers,
     uint32_t max_color_attachments,
-    ContextType context_type,
     const scoped_refptr<FramebufferCompletenessCache>&
         framebuffer_combo_complete_cache)
     : framebuffer_state_change_count_(1),
@@ -341,7 +316,6 @@ FramebufferManager::FramebufferManager(
       have_context_(true),
       max_draw_buffers_(max_draw_buffers),
       max_color_attachments_(max_color_attachments),
-      context_type_(context_type),
       framebuffer_combo_complete_cache_(framebuffer_combo_complete_cache) {
   DCHECK_GT(max_draw_buffers_, 0u);
   DCHECK_GT(max_color_attachments_, 0u);
@@ -426,23 +400,12 @@ Framebuffer::~Framebuffer() {
 bool Framebuffer::HasUnclearedAttachment(
     GLenum attachment_type) const {
   const Attachment* attachment = GetAttachment(attachment_type);
-  switch (attachment_type) {
-    case GL_DEPTH_ATTACHMENT:
-    case GL_STENCIL_ATTACHMENT:
-      attachment = attachment ? attachment :
-          GetAttachment(GL_DEPTH_STENCIL_ATTACHMENT);
-      break;
-   default:
-      break;
-  }
   return attachment && !attachment->cleared();
 }
 
 bool Framebuffer::HasDepthStencilFormatAttachment() const {
   const Attachment* depth_attachment = GetAttachment(GL_DEPTH_ATTACHMENT);
   const Attachment* stencil_attachment = GetAttachment(GL_STENCIL_ATTACHMENT);
-  const Attachment* depth_stencil_attachment = GetAttachment(
-      GL_DEPTH_STENCIL_ATTACHMENT);
   if (depth_attachment && stencil_attachment) {
     GLenum depth_format = depth_attachment->internal_format();
     depth_format = TextureManager::ExtractFormatFromStorageFormat(depth_format);
@@ -450,13 +413,7 @@ bool Framebuffer::HasDepthStencilFormatAttachment() const {
     stencil_format = TextureManager::ExtractFormatFromStorageFormat(
         stencil_format);
     return depth_format == GL_DEPTH_STENCIL &&
-        stencil_format == GL_DEPTH_STENCIL;
-  }
-  if (depth_stencil_attachment) {
-    GLenum depth_stencil_format = depth_stencil_attachment->internal_format();
-    depth_stencil_format = TextureManager::ExtractFormatFromStorageFormat(
-        depth_stencil_format);
-    return depth_stencil_format == GL_DEPTH_STENCIL;
+           stencil_format == GL_DEPTH_STENCIL;
   }
   return false;
 }
@@ -647,13 +604,11 @@ bool Framebuffer::HasColorAttachment(int index) const {
 }
 
 bool Framebuffer::HasDepthAttachment() const {
-  return attachments_.find(GL_DEPTH_STENCIL_ATTACHMENT) != attachments_.end() ||
-         attachments_.find(GL_DEPTH_ATTACHMENT) != attachments_.end();
+  return attachments_.find(GL_DEPTH_ATTACHMENT) != attachments_.end();
 }
 
 bool Framebuffer::HasStencilAttachment() const {
-  return attachments_.find(GL_DEPTH_STENCIL_ATTACHMENT) != attachments_.end() ||
-         attachments_.find(GL_STENCIL_ATTACHMENT) != attachments_.end();
+  return attachments_.find(GL_STENCIL_ATTACHMENT) != attachments_.end();
 }
 
 GLenum Framebuffer::GetReadBufferInternalFormat() const {
@@ -692,36 +647,22 @@ GLsizei Framebuffer::GetSamples() const {
   return attachment->samples();
 }
 
-const Framebuffer::Attachment* Framebuffer::GetDepthAttachment() const {
-  auto iter = attachments_.find(GL_DEPTH_STENCIL_ATTACHMENT);
-  if (iter == attachments_.end())
-    iter = attachments_.find(GL_DEPTH_ATTACHMENT);
-  if (iter == attachments_.end())
-    return nullptr;
-  Attachment* attachment = iter->second.get();
-  DCHECK(attachment);
-  return attachment;
-}
-
-const Framebuffer::Attachment* Framebuffer::GetStencilAttachment() const {
-  auto iter = attachments_.find(GL_DEPTH_STENCIL_ATTACHMENT);
-  if (iter == attachments_.end())
-    iter = attachments_.find(GL_STENCIL_ATTACHMENT);
-  if (iter == attachments_.end())
-    return nullptr;
-  Attachment* attachment = iter->second.get();
-  DCHECK(attachment);
-  return attachment;
-}
-
 GLenum Framebuffer::GetDepthFormat() const {
-  const Attachment* attachment = GetDepthAttachment();
-  return attachment ? attachment->internal_format() : 0;
+  auto iter = attachments_.find(GL_DEPTH_ATTACHMENT);
+  if (iter == attachments_.end())
+    return 0;
+  Attachment* attachment = iter->second.get();
+  DCHECK(attachment);
+  return attachment->internal_format();
 }
 
 GLenum Framebuffer::GetStencilFormat() const {
-  const Attachment* attachment = GetStencilAttachment();
-  return attachment ? attachment->internal_format() : 0;
+  auto iter = attachments_.find(GL_STENCIL_ATTACHMENT);
+  if (iter == attachments_.end())
+    return 0;
+  Attachment* attachment = iter->second.get();
+  DCHECK(attachment);
+  return attachment->internal_format();
 }
 
 GLenum Framebuffer::IsPossiblyComplete(const FeatureInfo* feature_info) const {
@@ -740,7 +681,6 @@ GLenum Framebuffer::IsPossiblyComplete(const FeatureInfo* feature_info) const {
     GLenum attachment_type = it->first;
     Attachment* attachment = it->second.get();
     if (!attachment->ValidForAttachmentType(attachment_type,
-                                            feature_info->context_type(),
                                             manager_->max_color_attachments_)) {
       return GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
     }
@@ -796,6 +736,30 @@ GLenum Framebuffer::IsPossiblyComplete(const FeatureInfo* feature_info) const {
     if (!depth_attachment->IsSameAttachment(stencil_attachment)) {
       return GL_FRAMEBUFFER_UNSUPPORTED;
     }
+    DCHECK_EQ(depth_attachment->internal_format(),
+              stencil_attachment->internal_format());
+  }
+  if (feature_info->context_type() == CONTEXT_TYPE_WEBGL1) {
+    // WebGL1 has specific additional restrictions on depth and stencil
+    // attachments (e.g. it is forbidden to bind a DEPTH_STENCIL attachement to
+    // a (pure) GL_DEPTH_ATTACHMENT. Note that in WebGL1,
+    // GL_DEPTH_STENCIL_ATTACHMENT is a separate bind point, but that logic is
+    // handled in Blink and translated to
+    // GL_DEPTH_ATTACHMENT+GL_STENCIL_ATTACHMENT.
+    uint32_t need_channels = 0;
+    uint32_t have_channels = 0;
+    if (depth_attachment) {
+      need_channels |= GLES2Util::kDepth;
+      have_channels |=
+          GLES2Util::GetChannelsForFormat(depth_attachment->internal_format());
+    }
+    if (stencil_attachment) {
+      need_channels |= GLES2Util::kStencil;
+      have_channels |= GLES2Util::GetChannelsForFormat(
+          stencil_attachment->internal_format());
+    }
+    if (need_channels != have_channels)
+      return GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
   }
 
   // This does not mean the framebuffer is actually complete. It just means our
@@ -997,6 +961,7 @@ void Framebuffer::DoUnbindGLAttachmentsForWorkaround(GLenum target) {
 
 void Framebuffer::AttachRenderbuffer(
     GLenum attachment, Renderbuffer* renderbuffer) {
+  DCHECK(attachment != GL_DEPTH_STENCIL_ATTACHMENT);
   const Attachment* a = GetAttachment(attachment);
   if (a)
     a->DetachFromFramebuffer(this);
@@ -1012,6 +977,7 @@ void Framebuffer::AttachRenderbuffer(
 void Framebuffer::AttachTexture(
     GLenum attachment, TextureRef* texture_ref, GLenum target,
     GLint level, GLsizei samples) {
+  DCHECK(attachment != GL_DEPTH_STENCIL_ATTACHMENT);
   const Attachment* a = GetAttachment(attachment);
   if (a)
     a->DetachFromFramebuffer(this);
@@ -1028,6 +994,7 @@ void Framebuffer::AttachTexture(
 void Framebuffer::AttachTextureLayer(
     GLenum attachment, TextureRef* texture_ref, GLenum target,
     GLint level, GLint layer) {
+  DCHECK(attachment != GL_DEPTH_STENCIL_ATTACHMENT);
   const Attachment* a = GetAttachment(attachment);
   if (a)
     a->DetachFromFramebuffer(this);

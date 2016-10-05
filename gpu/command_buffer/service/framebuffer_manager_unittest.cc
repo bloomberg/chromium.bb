@@ -39,7 +39,7 @@ const bool kUseDefaultTextures = false;
 class FramebufferManagerTest : public GpuServiceTest {
  public:
   FramebufferManagerTest()
-      : manager_(1, 1, CONTEXT_TYPE_OPENGLES2, nullptr),
+      : manager_(1, 1, nullptr),
         feature_info_(new FeatureInfo()) {
     texture_manager_.reset(new TextureManager(nullptr,
                                               feature_info_.get(),
@@ -117,9 +117,9 @@ class FramebufferInfoTestBase : public GpuServiceTest {
   static const GLuint kService1Id = 11;
 
   explicit FramebufferInfoTestBase(ContextType context_type)
-      : manager_(kMaxDrawBuffers,
+      : context_type_(context_type),
+        manager_(kMaxDrawBuffers,
                  kMaxColorAttachments,
-                 context_type,
                  new FramebufferCompletenessCache),
         feature_info_(new FeatureInfo()) {
     texture_manager_.reset(new TextureManager(nullptr,
@@ -149,7 +149,7 @@ class FramebufferInfoTestBase : public GpuServiceTest {
   void InitializeContext(const char* gl_version, const char* extensions) {
     GpuServiceTest::SetUpWithGLVersion(gl_version, extensions);
     TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(gl_.get(),
-        extensions, "", gl_version, manager_.context_type());
+        extensions, "", gl_version, context_type_);
     feature_info_->InitializeForTesting();
     decoder_.reset(new MockGLES2Decoder());
     manager_.CreateFramebuffer(kClient1Id, kService1Id);
@@ -158,6 +158,7 @@ class FramebufferInfoTestBase : public GpuServiceTest {
     ASSERT_TRUE(framebuffer_ != nullptr);
   }
 
+  ContextType context_type_;
   FramebufferManager manager_;
   Framebuffer* framebuffer_;
   scoped_refptr<FeatureInfo> feature_info_;
@@ -184,8 +185,6 @@ TEST_F(FramebufferInfoTest, Basic) {
   EXPECT_TRUE(nullptr == framebuffer_->GetAttachment(GL_COLOR_ATTACHMENT0));
   EXPECT_TRUE(nullptr == framebuffer_->GetAttachment(GL_DEPTH_ATTACHMENT));
   EXPECT_TRUE(nullptr == framebuffer_->GetAttachment(GL_STENCIL_ATTACHMENT));
-  EXPECT_TRUE(
-      nullptr == framebuffer_->GetAttachment(GL_DEPTH_STENCIL_ATTACHMENT));
   EXPECT_FALSE(framebuffer_->HasDepthAttachment());
   EXPECT_FALSE(framebuffer_->HasStencilAttachment());
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT),
@@ -233,8 +232,6 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
   EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_DEPTH_ATTACHMENT));
   EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_STENCIL_ATTACHMENT));
-  EXPECT_FALSE(
-      framebuffer_->HasUnclearedAttachment(GL_DEPTH_STENCIL_ATTACHMENT));
 
   renderbuffer_manager_->CreateRenderbuffer(
       kRenderbufferClient1Id, kRenderbufferService1Id);
@@ -506,8 +503,6 @@ TEST_F(FramebufferInfoTest, AttachTexture2D) {
   EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
   EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_DEPTH_ATTACHMENT));
   EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_STENCIL_ATTACHMENT));
-  EXPECT_FALSE(
-      framebuffer_->HasUnclearedAttachment(GL_DEPTH_STENCIL_ATTACHMENT));
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT),
             framebuffer_->IsPossiblyComplete(feature_info_.get()));
 
@@ -1564,7 +1559,7 @@ class FramebufferInfoES3Test : public FramebufferInfoTestBase {
   void InitializeContext(const char* gl_version, const char* extensions) {
     GpuServiceTest::SetUpWithGLVersion(gl_version, extensions);
     TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(gl_.get(),
-        extensions, "", gl_version, manager_.context_type());
+        extensions, "", gl_version, context_type_);
     feature_info_->InitializeForTesting(CONTEXT_TYPE_OPENGLES3);
     decoder_.reset(new MockGLES2Decoder());
     manager_.CreateFramebuffer(kClient1Id, kService1Id);
@@ -1591,8 +1586,6 @@ TEST_F(FramebufferInfoES3Test, DifferentDimensions) {
   EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
   EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_DEPTH_ATTACHMENT));
   EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_STENCIL_ATTACHMENT));
-  EXPECT_FALSE(
-      framebuffer_->HasUnclearedAttachment(GL_DEPTH_STENCIL_ATTACHMENT));
 
   renderbuffer_manager_->CreateRenderbuffer(
       kRenderbufferClient1Id, kRenderbufferService1Id);

@@ -2528,25 +2528,8 @@ void WebGLRenderingContextBase::framebufferRenderbuffer(
                       "no framebuffer bound");
     return;
   }
-  GLuint bufferObject = objectOrZero(buffer);
-  if (isWebGL2OrHigher() && attachment == GL_DEPTH_STENCIL_ATTACHMENT) {
-    // On ES3, DEPTH_STENCIL_ATTACHMENT is like an alias for DEPTH_ATTACHMENT +
-    // STENCIL_ATTACHMENT.  We divide it here so in WebGLFramebuffer, we don't
-    // have to handle DEPTH_STENCIL_ATTACHMENT in WebGL 2.
-    contextGL()->FramebufferRenderbuffer(target, GL_DEPTH_ATTACHMENT,
-                                         renderbuffertarget, bufferObject);
-    contextGL()->FramebufferRenderbuffer(target, GL_STENCIL_ATTACHMENT,
-                                         renderbuffertarget, bufferObject);
-    framebufferBinding->setAttachmentForBoundFramebuffer(
-        target, GL_DEPTH_ATTACHMENT, buffer);
-    framebufferBinding->setAttachmentForBoundFramebuffer(
-        target, GL_STENCIL_ATTACHMENT, buffer);
-  } else {
-    contextGL()->FramebufferRenderbuffer(target, attachment, renderbuffertarget,
-                                         bufferObject);
-    framebufferBinding->setAttachmentForBoundFramebuffer(target, attachment,
-                                                         buffer);
-  }
+  framebufferBinding->setAttachmentForBoundFramebuffer(target, attachment,
+                                                       buffer);
   applyStencilTest();
 }
 
@@ -2573,25 +2556,8 @@ void WebGLRenderingContextBase::framebufferTexture2D(GLenum target,
                       "no framebuffer bound");
     return;
   }
-  GLuint textureObject = objectOrZero(texture);
-  if (isWebGL2OrHigher() && attachment == GL_DEPTH_STENCIL_ATTACHMENT) {
-    // On ES3, DEPTH_STENCIL_ATTACHMENT is like an alias for DEPTH_ATTACHMENT +
-    // STENCIL_ATTACHMENT.  We divide it here so in WebGLFramebuffer, we don't
-    // have to handle DEPTH_STENCIL_ATTACHMENT in WebGL 2.
-    contextGL()->FramebufferTexture2D(target, GL_DEPTH_ATTACHMENT, textarget,
-                                      textureObject, level);
-    contextGL()->FramebufferTexture2D(target, GL_STENCIL_ATTACHMENT, textarget,
-                                      textureObject, level);
-    framebufferBinding->setAttachmentForBoundFramebuffer(
-        target, GL_DEPTH_ATTACHMENT, textarget, texture, level, 0);
-    framebufferBinding->setAttachmentForBoundFramebuffer(
-        target, GL_STENCIL_ATTACHMENT, textarget, texture, level, 0);
-  } else {
-    contextGL()->FramebufferTexture2D(target, attachment, textarget,
-                                      textureObject, level);
-    framebufferBinding->setAttachmentForBoundFramebuffer(
-        target, attachment, textarget, texture, level, 0);
-  }
+  framebufferBinding->setAttachmentForBoundFramebuffer(
+      target, attachment, textarget, texture, level, 0);
   applyStencilTest();
 }
 

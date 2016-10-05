@@ -179,6 +179,37 @@ TEST_P(GLES3DecoderTest, FramebufferTexture2DValidArgs) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
+TEST_P(GLES3DecoderTest, FramebufferTexture2DDepthStencil) {
+  DoBindFramebuffer(
+      GL_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
+  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .WillOnce(Return(GL_NO_ERROR))
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_,
+              FramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                                      GL_TEXTURE_2D, kServiceTextureId, 4))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_,
+              FramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
+                                      GL_TEXTURE_2D, kServiceTextureId, 4))
+      .Times(1)
+      .RetiresOnSaturation();
+  FramebufferTexture2D cmd;
+  cmd.Init(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D,
+           client_texture_id_, 4);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  Framebuffer* framebuffer = GetFramebuffer(client_framebuffer_id_);
+  ASSERT_TRUE(framebuffer);
+  ASSERT_FALSE(framebuffer->GetAttachment(GL_DEPTH_STENCIL_ATTACHMENT));
+  ASSERT_TRUE(framebuffer->GetAttachment(GL_DEPTH_ATTACHMENT));
+  ASSERT_TRUE(framebuffer->GetAttachment(GL_STENCIL_ATTACHMENT));
+}
+
 TEST_P(GLES2DecoderTest, FramebufferTexture2DInvalidArgs0_0) {
   EXPECT_CALL(*gl_, FramebufferTexture2DEXT(_, _, _, _, _)).Times(0);
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
@@ -1569,8 +1600,7 @@ TEST_P(GLES2DecoderTest, FramebufferRenderbufferClearStencil) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
-#if 0  // Turn this test on once we allow GL_DEPTH_STENCIL_ATTACHMENT
-TEST_P(GLES2DecoderTest, FramebufferRenderbufferClearDepthStencil) {
+TEST_P(GLES3DecoderTest, FramebufferRenderbufferClearDepthStencil) {
   DoBindFramebuffer(GL_FRAMEBUFFER, client_framebuffer_id_,
                     kServiceFramebufferId);
   ClearDepthf depth_cmd;
@@ -1588,16 +1618,34 @@ TEST_P(GLES2DecoderTest, FramebufferRenderbufferClearDepthStencil) {
   EXPECT_CALL(*gl_, ClearStencil(123))
       .Times(1)
       .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
   EXPECT_CALL(*gl_, FramebufferRenderbufferEXT(
-      GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
+      GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER,
       kServiceRenderbufferId))
       .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, FramebufferRenderbufferEXT(
+      GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
+      kServiceRenderbufferId))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
       .RetiresOnSaturation();
   EXPECT_EQ(error::kNoError, ExecuteCmd(depth_cmd));
   EXPECT_EQ(error::kNoError, ExecuteCmd(stencil_cmd));
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  Framebuffer* framebuffer = GetFramebuffer(client_framebuffer_id_);
+  ASSERT_TRUE(framebuffer);
+  ASSERT_FALSE(framebuffer->GetAttachment(GL_DEPTH_STENCIL_ATTACHMENT));
+  ASSERT_TRUE(framebuffer->GetAttachment(GL_DEPTH_ATTACHMENT));
+  ASSERT_TRUE(framebuffer->GetAttachment(GL_STENCIL_ATTACHMENT));
 }
-#endif
 
 TEST_P(GLES2DecoderManualInitTest, ActualAlphaMatchesRequestedAlpha) {
   InitState init;
@@ -2182,7 +2230,9 @@ TEST_P(GLES3DecoderTest, ClearBufferfiValidArgs) {
   Framebuffer* framebuffer =
       group().framebuffer_manager()->GetFramebuffer(client_framebuffer_id_);
   framebuffer->MarkAttachmentAsCleared(group().renderbuffer_manager(), nullptr,
-                                       GL_DEPTH_STENCIL_ATTACHMENT, true);
+                                       GL_DEPTH_ATTACHMENT, true);
+  framebuffer->MarkAttachmentAsCleared(group().renderbuffer_manager(), nullptr,
+                                       GL_STENCIL_ATTACHMENT, true);
 
   Enable cmd_enable;
   cmd_enable.Init(GL_STENCIL_TEST);
@@ -3568,6 +3618,27 @@ TEST_P(GLES3DecoderTest, FramebufferTextureLayerValidArgs) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
+TEST_P(GLES3DecoderTest, FramebufferTextureLayerDepthStencil) {
+  DoBindFramebuffer(
+      GL_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
+  DoBindTexture(GL_TEXTURE_2D_ARRAY, client_texture_id_, kServiceTextureId);
+  EXPECT_CALL(*gl_, FramebufferTextureLayer(GL_FRAMEBUFFER,
+                                            GL_DEPTH_STENCIL_ATTACHMENT,
+                                            kServiceTextureId, 4, 5))
+      .Times(1)
+      .RetiresOnSaturation();
+  FramebufferTextureLayer cmd;
+  cmd.Init(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, client_texture_id_, 4,
+           5);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  Framebuffer* framebuffer = GetFramebuffer(client_framebuffer_id_);
+  ASSERT_TRUE(framebuffer);
+  ASSERT_FALSE(framebuffer->GetAttachment(GL_DEPTH_STENCIL_ATTACHMENT));
+  ASSERT_TRUE(framebuffer->GetAttachment(GL_DEPTH_ATTACHMENT));
+  ASSERT_TRUE(framebuffer->GetAttachment(GL_STENCIL_ATTACHMENT));
+}
+
 TEST_P(GLES3DecoderTest, InvalidateFramebufferDepthStencilAttachment) {
   DoBindFramebuffer(
       GL_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
@@ -3582,15 +3653,14 @@ TEST_P(GLES3DecoderTest, InvalidateFramebufferDepthStencilAttachment) {
 
   Framebuffer* framebuffer =
       group().framebuffer_manager()->GetFramebuffer(client_framebuffer_id_);
-  // TODO(qiankun.miao@intel.com): We should only mark DEPTH and STENCIL
-  // attachments as cleared when command buffer handles DEPTH_STENCIL well.
-  // http://crbug.com/630568
+  ASSERT_TRUE(framebuffer);
+  ASSERT_FALSE(framebuffer->GetAttachment(GL_DEPTH_STENCIL_ATTACHMENT));
+  ASSERT_TRUE(framebuffer->GetAttachment(GL_DEPTH_ATTACHMENT));
+  ASSERT_TRUE(framebuffer->GetAttachment(GL_STENCIL_ATTACHMENT));
   framebuffer->MarkAttachmentAsCleared(group().renderbuffer_manager(), nullptr,
                                        GL_DEPTH_ATTACHMENT, true);
   framebuffer->MarkAttachmentAsCleared(group().renderbuffer_manager(), nullptr,
                                        GL_STENCIL_ATTACHMENT, true);
-  framebuffer->MarkAttachmentAsCleared(group().renderbuffer_manager(), nullptr,
-                                       GL_DEPTH_STENCIL_ATTACHMENT, true);
   EXPECT_TRUE(framebuffer->IsCleared());
 
   const GLenum target = GL_FRAMEBUFFER;
@@ -3610,8 +3680,6 @@ TEST_P(GLES3DecoderTest, InvalidateFramebufferDepthStencilAttachment) {
   EXPECT_TRUE(framebuffer->IsCleared());
   EXPECT_FALSE(framebuffer->HasUnclearedAttachment(GL_DEPTH_ATTACHMENT));
   EXPECT_FALSE(framebuffer->HasUnclearedAttachment(GL_STENCIL_ATTACHMENT));
-  EXPECT_FALSE(framebuffer->HasUnclearedAttachment(
-      GL_DEPTH_STENCIL_ATTACHMENT));
 
   attachments[0] = GL_DEPTH_STENCIL_ATTACHMENT;
   EXPECT_CALL(*gl_, InvalidateFramebuffer(target, 1, _))
@@ -3625,8 +3693,6 @@ TEST_P(GLES3DecoderTest, InvalidateFramebufferDepthStencilAttachment) {
   EXPECT_FALSE(framebuffer->IsCleared());
   EXPECT_TRUE(framebuffer->HasUnclearedAttachment(GL_DEPTH_ATTACHMENT));
   EXPECT_TRUE(framebuffer->HasUnclearedAttachment(GL_STENCIL_ATTACHMENT));
-  EXPECT_TRUE(framebuffer->HasUnclearedAttachment(
-      GL_DEPTH_STENCIL_ATTACHMENT));
 }
 
 TEST_P(GLES3DecoderTest, BlitFramebufferFeedbackLoopDefaultFramebuffer) {
@@ -3748,30 +3814,6 @@ TEST_P(GLES3DecoderTest, BlitFramebufferMissingDepthOrStencil) {
         false,    // scissor test
         0, 0, 128, 64);
     EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_READ_FRAMEBUFFER))
-        .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
-        .RetiresOnSaturation();
-    EXPECT_CALL(*gl_, BlitFramebufferEXT(0, 0, 1, 1, 0, 0, 1, 1,
-                                         _, _))
-        .Times(0);
-    BlitFramebufferCHROMIUM cmd;
-    cmd.Init(0, 0, 1, 1, 0, 0, 1, 1, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-    EXPECT_EQ(GL_NO_ERROR, GetGLError());
-    cmd.Init(0, 0, 1, 1, 0, 0, 1, 1, GL_STENCIL_BUFFER_BIT, GL_NEAREST);
-    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-    EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  }
-
-  // Same using DEPTH_STENCIL_ATTACHMENT instead of separate ones.
-  DoFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-                            GL_RENDERBUFFER, 0, 0, GL_NO_ERROR);
-  DoFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
-                            GL_RENDERBUFFER, 0, 0, GL_NO_ERROR);
-  DoFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
-                            GL_RENDERBUFFER, client_renderbuffer_id_,
-                            kServiceRenderbufferId, GL_NO_ERROR);
-  {
-    EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_DRAW_FRAMEBUFFER))
         .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
         .RetiresOnSaturation();
     EXPECT_CALL(*gl_, BlitFramebufferEXT(0, 0, 1, 1, 0, 0, 1, 1,

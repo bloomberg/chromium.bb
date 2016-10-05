@@ -82,9 +82,6 @@ class WebGLFramebuffer final : public WebGLContextObject {
                                         WebGLRenderbuffer*);
   // If an object is attached to the currently bound framebuffer, remove it.
   void removeAttachmentFromBoundFramebuffer(GLenum target, WebGLSharedObject*);
-  // If a given attachment point for the currently bound framebuffer is not
-  // null, remove the attached object.
-  void removeAttachmentFromBoundFramebuffer(GLenum target, GLenum attachment);
   WebGLSharedObject* getAttachmentObject(GLenum) const;
 
   // WebGL 1 specific:
@@ -125,12 +122,22 @@ class WebGLFramebuffer final : public WebGLContextObject {
   // Check if the framebuffer is currently bound.
   bool isBound(GLenum target) const;
 
-  // attach 'attachment' at 'attachmentPoint'.
-  void attach(GLenum target, GLenum attachment, GLenum attachmentPoint);
-
-  // Check if a new drawBuffers call should be issued. This is called when we
-  // add or remove an attachment.
+  // Check if a new drawBuffers call should be issued. This is called when we add or remove an attachment.
   void drawBuffersIfNecessary(bool force);
+
+  void setAttachmentInternal(GLenum target,
+                             GLenum attachment,
+                             GLenum texTarget,
+                             WebGLTexture*,
+                             GLint level,
+                             GLint layer);
+  void setAttachmentInternal(GLenum target,
+                             GLenum attachment,
+                             WebGLRenderbuffer*);
+  // If a given attachment point for the currently bound framebuffer is not null, remove the attached object.
+  void removeAttachmentInternal(GLenum target, GLenum attachment);
+
+  void commitWebGL1DepthStencilIfConsistent(GLenum target);
 
   GLuint m_object;
 
@@ -140,6 +147,7 @@ class WebGLFramebuffer final : public WebGLContextObject {
   bool m_destructionInProgress;
 
   bool m_hasEverBeenBound;
+  bool m_webGL1DepthStencilConsistent;
 
   Vector<GLenum> m_drawBuffers;
   Vector<GLenum> m_filteredDrawBuffers;
