@@ -8,11 +8,13 @@
 
 #include "base/logging.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/browser/website_settings_registry.h"
 #include "content/public/browser/browser_thread.h"
@@ -37,9 +39,30 @@ void DurableStoragePermissionContext::DecidePermission(
     bool user_gesture,
     const BrowserPermissionCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK_NE(CONTENT_SETTING_ALLOW,
+            GetPermissionStatus(requesting_origin, embedding_origin));
+  DCHECK_NE(CONTENT_SETTING_BLOCK,
+            GetPermissionStatus(requesting_origin, embedding_origin));
 
-  // TODO(dgrogan): Remove bookmarks check in favor of site engagement. In the
-  // meantime maybe grant permission to A2HS origins as well.
+  // Durable is only allowed to be granted to the top-level origin. Embedding
+  // origin is the last committed navigation origin to the web contents.
+  if (requesting_origin != embedding_origin) {
+    NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
+                        false /* persist */, CONTENT_SETTING_DEFAULT);
+    return;
+  }
+
+  // Don't grant durable if we can't write cookies.
+  scoped_refptr<content_settings::CookieSettings> cookie_settings =
+      CookieSettingsFactory::GetForProfile(profile());
+  if (!cookie_settings->IsSettingCookieAllowed(requesting_origin,
+                                               requesting_origin)) {
+    NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
+                        false /* persist */, CONTENT_SETTING_DEFAULT);
+    return;
+  }
+
+  // TODO(dmurph): Remove bookmarks check in favor of important sites.
   BookmarkModel* model =
       BookmarkModelFactory::GetForBrowserContextIfExists(profile());
   if (model) {

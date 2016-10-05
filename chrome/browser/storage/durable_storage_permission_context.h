@@ -17,7 +17,7 @@ class DurableStoragePermissionContext : public PermissionContextBase {
   ~DurableStoragePermissionContext() override = default;
 
   // PermissionContextBase implementation.
-  // Grant if requesting_origin is bookmarked or already granted.
+  // Grant if requesting_origin is bookmarked.
   void DecidePermission(content::WebContents* web_contents,
                         const PermissionRequestID& id,
                         const GURL& requesting_origin,
