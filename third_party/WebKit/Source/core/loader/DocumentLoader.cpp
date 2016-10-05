@@ -718,6 +718,9 @@ DocumentWriter* DocumentLoader::createWriterFor(
   Document* document =
       frame->localDOMWindow()->installNewDocument(mimeType, init);
 
+  if (!init.shouldReuseDefaultView())
+    frame->page()->chromeClient().installSupplements(*frame);
+
   // This should be set before receivedFirstData().
   if (!overridingURL.isEmpty())
     frame->document()->setBaseURLOverride(overridingURL);

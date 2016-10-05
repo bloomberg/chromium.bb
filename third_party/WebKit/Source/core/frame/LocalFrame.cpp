@@ -476,6 +476,7 @@ void LocalFrame::detachChildren() {
 }
 
 void LocalFrame::setDOMWindow(LocalDOMWindow* domWindow) {
+  // TODO(haraken): Update this comment.
   // Oilpan: setDOMWindow() cannot be used when finalizing. Which
   // is acceptable as its actions are either not needed or handled
   // by other means --
@@ -496,7 +497,6 @@ void LocalFrame::setDOMWindow(LocalDOMWindow* domWindow) {
   if (m_domWindow)
     m_domWindow->reset();
   m_domWindow = domWindow;
-  page()->chromeClient().installSupplements(*this);
 }
 
 Document* LocalFrame::document() const {
