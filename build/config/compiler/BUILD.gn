@@ -86,6 +86,10 @@ declare_args() {
   # builds. To use it, set auto_profile_path to the path to a file containing
   # the needed gcov profiling data.
   auto_profile_path = ""
+
+  # Optimize for coverage guided fuzzing (balance between speed and number of
+  # branches)
+  optimize_for_fuzzing = false
 }
 
 if (is_clang && !is_nacl) {
@@ -1461,6 +1465,12 @@ config("optimize_speed") {
   }
 }
 
+config("optimize_fuzzing") {
+  cflags = [ "-O1" ] + common_optimize_on_cflags
+  ldflags = common_optimize_on_ldflags
+  visibility = [ ":default_optimization" ]
+}
+
 # The default optimization applied to all targets. This will be equivalent to
 # either "optimize" or "no_optimize", depending on the build flags.
 config("default_optimization") {
@@ -1470,6 +1480,9 @@ config("default_optimization") {
     configs = [ "//build/config/nacl:irt_optimize" ]
   } else if (is_debug) {
     configs = [ ":no_optimize" ]
+  } else if (optimize_for_fuzzing) {
+    assert(!is_win, "Fuzzing optimize level not supported on Windows")
+    configs = [ ":optimize_fuzzing" ]
   } else {
     configs = [ ":optimize" ]
   }
