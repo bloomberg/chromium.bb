@@ -16,10 +16,14 @@ namespace device {
 // Its implementations must be accessed via GetInstance() method.
 class PlatformSensorProviderBase : public base::NonThreadSafe {
  public:
+  using CreateSensorCallback =
+      base::Callback<void(scoped_refptr<PlatformSensor>)>;
+
   // Creates new instance of PlatformSensor.
-  scoped_refptr<PlatformSensor> CreateSensor(mojom::SensorType type,
-                                             uint64_t size,
-                                             uint64_t offset);
+  void CreateSensor(mojom::SensorType type,
+                    uint64_t size,
+                    uint64_t offset,
+                    const CreateSensorCallback& callback);
 
   // Gets previously created instance of PlatformSensor by sensor type |type|.
   scoped_refptr<PlatformSensor> GetSensor(mojom::SensorType type);
@@ -32,19 +36,24 @@ class PlatformSensorProviderBase : public base::NonThreadSafe {
   virtual ~PlatformSensorProviderBase();
 
   // Method that must be implemented by platform specific classes.
-  virtual scoped_refptr<PlatformSensor> CreateSensorInternal(
-      mojom::SensorType type,
-      mojo::ScopedSharedBufferMapping mapping,
-      uint64_t buffer_size) = 0;
+  virtual void CreateSensorInternal(mojom::SensorType type,
+                                    mojo::ScopedSharedBufferMapping mapping,
+                                    uint64_t buffer_size,
+                                    const CreateSensorCallback& callback) = 0;
 
  private:
   friend class PlatformSensor;  // To call RemoveSensor();
 
   bool CreateSharedBufferIfNeeded();
   void RemoveSensor(mojom::SensorType type);
+  void NotifySensorCreated(mojom::SensorType type,
+                           scoped_refptr<PlatformSensor> sensor);
 
  private:
+  using CallbackQueue = std::vector<CreateSensorCallback>;
+
   std::map<mojom::SensorType, PlatformSensor*> sensor_map_;
+  std::map<mojom::SensorType, CallbackQueue> requests_map_;
   mojo::ScopedSharedBufferHandle shared_buffer_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformSensorProviderBase);

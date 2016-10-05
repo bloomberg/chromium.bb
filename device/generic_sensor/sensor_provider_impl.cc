@@ -20,6 +20,21 @@ uint64_t GetBufferOffset(mojom::SensorType type) {
          mojom::SensorInitParams::kReadBufferSize;
 }
 
+void RunCallback(mojom::SensorInitParamsPtr init_params,
+                 SensorImpl* sensor,
+                 const SensorProviderImpl::GetSensorCallback& callback) {
+  callback.Run(std::move(init_params), sensor->GetClient());
+}
+
+void NotifySensorCreated(
+    mojom::SensorInitParamsPtr init_params,
+    SensorImpl* sensor,
+    const SensorProviderImpl::GetSensorCallback& callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(RunCallback, base::Passed(&init_params), sensor, callback));
+}
+
 }  // namespace
 
 // static
@@ -32,7 +47,7 @@ void SensorProviderImpl::Create(mojom::SensorProviderRequest request) {
 }
 
 SensorProviderImpl::SensorProviderImpl(PlatformSensorProvider* provider)
-    : provider_(provider) {
+    : provider_(provider), weak_ptr_factory_(this) {
   DCHECK(provider_);
 }
 
@@ -43,18 +58,33 @@ void SensorProviderImpl::GetSensor(mojom::SensorType type,
                                    const GetSensorCallback& callback) {
   auto cloned_handle = provider_->CloneSharedBufferHandle();
   if (!cloned_handle.is_valid()) {
-    callback.Run(nullptr, nullptr);
+    NotifySensorCreated(nullptr, nullptr, callback);
     return;
   }
 
   scoped_refptr<PlatformSensor> sensor = provider_->GetSensor(type);
   if (!sensor) {
-    sensor = provider_->CreateSensor(
-        type, mojom::SensorInitParams::kReadBufferSize, GetBufferOffset(type));
+    PlatformSensorProviderBase::CreateSensorCallback cb = base::Bind(
+        &SensorProviderImpl::SensorCreated, weak_ptr_factory_.GetWeakPtr(),
+        type, base::Passed(&cloned_handle), base::Passed(&sensor_request),
+        callback);
+    provider_->CreateSensor(type, mojom::SensorInitParams::kReadBufferSize,
+                            GetBufferOffset(type), cb);
+    return;
   }
 
+  SensorCreated(type, std::move(cloned_handle), std::move(sensor_request),
+                callback, std::move(sensor));
+}
+
+void SensorProviderImpl::SensorCreated(
+    mojom::SensorType type,
+    mojo::ScopedSharedBufferHandle cloned_handle,
+    mojom::SensorRequest sensor_request,
+    const GetSensorCallback& callback,
+    scoped_refptr<PlatformSensor> sensor) {
   if (!sensor) {
-    callback.Run(nullptr, nullptr);
+    NotifySensorCreated(nullptr, nullptr, callback);
     return;
   }
 
@@ -66,9 +96,9 @@ void SensorProviderImpl::GetSensor(mojom::SensorType type,
   init_params->mode = sensor->GetReportingMode();
   init_params->default_configuration = sensor->GetDefaultConfiguration();
 
-  callback.Run(std::move(init_params), sensor_impl->GetClient());
-
   mojo::MakeStrongBinding(std::move(sensor_impl), std::move(sensor_request));
+
+  NotifySensorCreated(nullptr, nullptr, callback);
 }
 
 }  // namespace device

@@ -23,10 +23,10 @@ class PlatformSensorProviderAndroid : public PlatformSensorProvider {
   static PlatformSensorProviderAndroid* GetInstance();
 
  protected:
-  scoped_refptr<PlatformSensor> CreateSensorInternal(
-      mojom::SensorType type,
-      mojo::ScopedSharedBufferMapping mapping,
-      uint64_t buffer_size) override;
+  void CreateSensorInternal(mojom::SensorType type,
+                            mojo::ScopedSharedBufferMapping mapping,
+                            uint64_t buffer_size,
+                            const CreateSensorCallback& callback) override;
 
  private:
   // Java object org.chromium.device.sensors.PlatformSensorProvider
@@ -55,20 +55,22 @@ PlatformSensorProviderAndroid::PlatformSensorProviderAndroid() {
 
 PlatformSensorProviderAndroid::~PlatformSensorProviderAndroid() = default;
 
-scoped_refptr<PlatformSensor>
-PlatformSensorProviderAndroid::CreateSensorInternal(
+void PlatformSensorProviderAndroid::CreateSensorInternal(
     mojom::SensorType type,
     mojo::ScopedSharedBufferMapping mapping,
-    uint64_t buffer_size) {
+    uint64_t buffer_size,
+    const CreateSensorCallback& callback) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> sensor = Java_PlatformSensorProvider_createSensor(
       env, j_object_.obj(), static_cast<jint>(type));
 
   if (!sensor.obj())
-    return nullptr;
+    callback.Run(nullptr);
 
-  return new PlatformSensorAndroid(type, std::move(mapping), buffer_size, this,
-                                   sensor);
+  scoped_refptr<PlatformSensorAndroid> concrete_sensor =
+      new PlatformSensorAndroid(type, std::move(mapping), buffer_size, this,
+                                sensor);
+  callback.Run(concrete_sensor);
 }
 
 }  // namespace device

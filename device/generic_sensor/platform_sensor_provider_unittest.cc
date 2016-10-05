@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
+
 #include "device/generic_sensor/fake_platform_sensor.h"
 #include "device/generic_sensor/fake_platform_sensor_provider.h"
 #include "device/generic_sensor/public/interfaces/sensor_provider.mojom.h"
@@ -21,7 +25,37 @@ uint64_t GetBufferOffset(mojom::SensorType type) {
          SensorInitParams::kReadBufferSize;
 }
 
+using CreateSensorCallback =
+    base::Callback<void(scoped_refptr<PlatformSensor>)>;
+;
+
 }  // namespace
+
+class TestSensorCreateCallback {
+ public:
+  TestSensorCreateCallback()
+      : callback_(base::Bind(&TestSensorCreateCallback::SetResult,
+                             base::Unretained(this))) {}
+
+  scoped_refptr<PlatformSensor> WaitForResult() {
+    run_loop_.Run();
+    scoped_refptr<PlatformSensor> sensor = sensor_;
+    sensor_ = nullptr;
+    return sensor;
+  }
+
+  const CreateSensorCallback& callback() const { return callback_; }
+
+ private:
+  void SetResult(scoped_refptr<PlatformSensor> sensor) {
+    sensor_ = sensor;
+    run_loop_.Quit();
+  }
+
+  const CreateSensorCallback callback_;
+  base::RunLoop run_loop_;
+  scoped_refptr<PlatformSensor> sensor_;
+};
 
 class PlatformSensorTestClient : public PlatformSensor::Client {
  public:
@@ -65,37 +99,52 @@ class PlatformSensorTestClient : public PlatformSensor::Client {
 class PlatformSensorProviderTest : public ::testing::Test {
  public:
   PlatformSensorProviderTest()
-      : sensor_client_(new PlatformSensorTestClient()) {}
+      : sensor_client_(new PlatformSensorTestClient()) {
+    message_loop_.reset(new base::MessageLoopForIO);
+  }
 
  protected:
-  scoped_refptr<PlatformSensor> CreateSensor(mojom::SensorType type) {
-    return FakePlatformSensorProvider::GetInstance()->CreateSensor(
-        type, SensorInitParams::kReadBufferSize, GetBufferOffset(type));
+  scoped_refptr<PlatformSensor> CreateSensor(
+      mojom::SensorType type,
+      TestSensorCreateCallback* callback) {
+    FakePlatformSensorProvider::GetInstance()->CreateSensor(
+        type, SensorInitParams::kReadBufferSize, GetBufferOffset(type),
+        callback->callback());
+    return callback->WaitForResult();
   }
 
   std::unique_ptr<PlatformSensorTestClient> sensor_client_;
+  std::unique_ptr<base::MessageLoop> message_loop_;
 };
 
 TEST_F(PlatformSensorProviderTest, CreateSensorsAndCheckType) {
+  TestSensorCreateCallback callback1;
   scoped_refptr<PlatformSensor> sensor1 =
-      CreateSensor(SensorType::AMBIENT_LIGHT);
+      CreateSensor(SensorType::AMBIENT_LIGHT, &callback1);
   EXPECT_TRUE(sensor1);
   EXPECT_EQ(SensorType::AMBIENT_LIGHT, sensor1->GetType());
 
-  scoped_refptr<PlatformSensor> sensor2 = CreateSensor(SensorType::PROXIMITY);
+  TestSensorCreateCallback callback2;
+  scoped_refptr<PlatformSensor> sensor2 =
+      CreateSensor(SensorType::PROXIMITY, &callback2);
   EXPECT_TRUE(sensor2);
   EXPECT_EQ(SensorType::PROXIMITY, sensor2->GetType());
 
+  TestSensorCreateCallback callback3;
   scoped_refptr<PlatformSensor> sensor3 =
-      CreateSensor(SensorType::ACCELEROMETER);
+      CreateSensor(SensorType::ACCELEROMETER, &callback3);
   EXPECT_TRUE(sensor3);
   EXPECT_EQ(SensorType::ACCELEROMETER, sensor3->GetType());
 
-  scoped_refptr<PlatformSensor> sensor4 = CreateSensor(SensorType::GYROSCOPE);
+  TestSensorCreateCallback callback4;
+  scoped_refptr<PlatformSensor> sensor4 =
+      CreateSensor(SensorType::GYROSCOPE, &callback4);
   EXPECT_TRUE(sensor4);
   EXPECT_EQ(SensorType::GYROSCOPE, sensor4->GetType());
 
-  scoped_refptr<PlatformSensor> sensor5 = CreateSensor(SensorType::PRESSURE);
+  TestSensorCreateCallback callback5;
+  scoped_refptr<PlatformSensor> sensor5 =
+      CreateSensor(SensorType::PRESSURE, &callback5);
   EXPECT_TRUE(sensor5);
   EXPECT_EQ(SensorType::PRESSURE, sensor5->GetType());
 }
@@ -105,8 +154,9 @@ TEST_F(PlatformSensorProviderTest, CreateAndGetSensor) {
       FakePlatformSensorProvider::GetInstance();
 
   // Create Ambient Light sensor.
+  TestSensorCreateCallback callback1;
   scoped_refptr<PlatformSensor> sensor1 =
-      CreateSensor(SensorType::AMBIENT_LIGHT);
+      CreateSensor(SensorType::AMBIENT_LIGHT, &callback1);
   EXPECT_TRUE(sensor1);
   EXPECT_EQ(SensorType::AMBIENT_LIGHT, sensor1->GetType());
 
@@ -123,8 +173,10 @@ TEST_F(PlatformSensorProviderTest, CreateAndGetSensor) {
   EXPECT_EQ(sensor1->GetType(), sensor3->GetType());
 
   // Try to create a sensor with zero buffer and offset.
-  scoped_refptr<PlatformSensor> sensor4 =
-      sensor_provider->CreateSensor(SensorType::GYROSCOPE, 0, 0);
+  TestSensorCreateCallback callback4;
+  sensor_provider->CreateSensor(SensorType::GYROSCOPE, 0, 0,
+                                callback4.callback());
+  scoped_refptr<PlatformSensor> sensor4 = callback4.WaitForResult();
   EXPECT_FALSE(sensor4);
 
   scoped_refptr<PlatformSensor> sensor5 =
@@ -137,8 +189,9 @@ TEST_F(PlatformSensorProviderTest, TestSensorLeaks) {
       FakePlatformSensorProvider::GetInstance();
 
   // Create Ambient Light sensor.
+  TestSensorCreateCallback callback1;
   scoped_refptr<PlatformSensor> sensor1 =
-      CreateSensor(SensorType::AMBIENT_LIGHT);
+      CreateSensor(SensorType::AMBIENT_LIGHT, &callback1);
   EXPECT_TRUE(sensor1);
   EXPECT_EQ(SensorType::AMBIENT_LIGHT, sensor1->GetType());
 
@@ -156,8 +209,9 @@ TEST_F(PlatformSensorProviderTest, TestSensorLeaks) {
 TEST_F(PlatformSensorProviderTest, StartListeningWithDifferentParameters) {
   const double too_high_frequency = 60;
   const double normal_frequency = 39;
+  TestSensorCreateCallback callback;
   scoped_refptr<PlatformSensor> sensor =
-      CreateSensor(SensorType::AMBIENT_LIGHT);
+      CreateSensor(SensorType::AMBIENT_LIGHT, &callback);
   FakePlatformSensor* fake_sensor =
       static_cast<FakePlatformSensor*>(sensor.get());
   EXPECT_TRUE(fake_sensor);
@@ -181,7 +235,9 @@ TEST_F(PlatformSensorProviderTest, StartListeningWithDifferentParameters) {
 // notification must not be sent to the client but NotifySensorError() must be.
 TEST_F(PlatformSensorProviderTest, TestNotificationSuspended) {
   const int num = 5;
-  scoped_refptr<PlatformSensor> sensor = CreateSensor(SensorType::GYROSCOPE);
+  TestSensorCreateCallback callback;
+  scoped_refptr<PlatformSensor> sensor =
+      CreateSensor(SensorType::GYROSCOPE, &callback);
   FakePlatformSensor* fake_sensor =
       static_cast<FakePlatformSensor*>(sensor.get());
 
@@ -219,8 +275,9 @@ TEST_F(PlatformSensorProviderTest, TestNotificationSuspended) {
 TEST_F(PlatformSensorProviderTest, TestAddRemoveClients) {
   const int num = 5;
 
+  TestSensorCreateCallback callback;
   scoped_refptr<PlatformSensor> sensor =
-      CreateSensor(SensorType::AMBIENT_LIGHT);
+      CreateSensor(SensorType::AMBIENT_LIGHT, &callback);
   FakePlatformSensor* fake_sensor =
       static_cast<FakePlatformSensor*>(sensor.get());
   EXPECT_TRUE(fake_sensor->config_map().empty());
@@ -246,8 +303,9 @@ TEST_F(PlatformSensorProviderTest, TestAddRemoveClients) {
 
 // Tests a sensor cannot be updated if it has one suspended client.
 TEST_F(PlatformSensorProviderTest, TestUpdateSensorOneClient) {
+  TestSensorCreateCallback callback;
   scoped_refptr<PlatformSensor> sensor =
-      CreateSensor(SensorType::AMBIENT_LIGHT);
+      CreateSensor(SensorType::AMBIENT_LIGHT, &callback);
   FakePlatformSensor* fake_sensor =
       static_cast<FakePlatformSensor*>(sensor.get());
   EXPECT_TRUE(fake_sensor->config_map().empty());
@@ -275,8 +333,9 @@ TEST_F(PlatformSensorProviderTest, TestUpdateSensorOneClient) {
 TEST_F(PlatformSensorProviderTest, TestUpdateSensorManyClients) {
   const int num = 5;
 
+  TestSensorCreateCallback callback;
   scoped_refptr<PlatformSensor> sensor =
-      CreateSensor(SensorType::AMBIENT_LIGHT);
+      CreateSensor(SensorType::AMBIENT_LIGHT, &callback);
   FakePlatformSensor* fake_sensor =
       static_cast<FakePlatformSensor*>(sensor.get());
   EXPECT_TRUE(fake_sensor->config_map().empty());

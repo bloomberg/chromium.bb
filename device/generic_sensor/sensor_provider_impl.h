@@ -11,6 +11,7 @@
 namespace device {
 
 class PlatformSensorProvider;
+class PlatformSensor;
 
 // Implementation of SensorProvider mojo interface.
 // Uses PlatformSensorProvider singleton to create platform specific instances
@@ -29,7 +30,15 @@ class SensorProviderImpl final : public mojom::SensorProvider {
                  mojom::SensorRequest sensor_request,
                  const GetSensorCallback& callback) override;
 
+  // Helper callback method to return created sensors.
+  void SensorCreated(mojom::SensorType type,
+                     mojo::ScopedSharedBufferHandle cloned_handle,
+                     mojom::SensorRequest sensor_request,
+                     const GetSensorCallback& callback,
+                     scoped_refptr<PlatformSensor> sensor);
+
   PlatformSensorProvider* provider_;
+  base::WeakPtrFactory<SensorProviderImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SensorProviderImpl);
 };
