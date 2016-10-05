@@ -557,6 +557,9 @@ Output.RULES = {
           '$inputType, $inputType, $role)) $description $state',
       braille: ''
     },
+        timer: {
+      speak: '$nameFromNode $descendants $value $state $description'
+    },
     toggleButton: {
       speak: '$if($pressed, $earcon(CHECK_ON), $earcon(CHECK_OFF)) ' +
           '$name $role ' +

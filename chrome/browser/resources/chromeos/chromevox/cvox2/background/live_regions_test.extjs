@@ -197,6 +197,9 @@ TEST_F('LiveRegionsTest', 'FocusThenLiveRegion', function() {
 });
 
 TEST_F('LiveRegionsTest', 'LiveRegionCategoryFlush', function() {
+  // Adjust the live region queue time to be shorter (i.e. flushes happen for
+  // live regions coming 1 ms in time). Also, can help with flakeyness.
+  LiveRegions.LIVE_REGION_QUEUE_TIME_MS = 1;
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
     function() {/*!

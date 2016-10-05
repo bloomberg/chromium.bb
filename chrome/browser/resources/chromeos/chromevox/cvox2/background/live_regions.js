@@ -52,7 +52,7 @@ LiveRegions = function(chromeVoxState) {
  * @type {number}
  * @const
  */
-LiveRegions.LIVE_REGION_QUEUE_TIME_MS = 500;
+LiveRegions.LIVE_REGION_QUEUE_TIME_MS = 5000;
 
 /**
  * Live region events received on the same node in fewer than this many
@@ -98,15 +98,20 @@ LiveRegions.prototype = {
 
     var type = treeChange.type;
     var relevant = node.containerLiveRelevant;
-    if (relevant.indexOf('additions') >= 0 &&
-        (type == 'nodeCreated' || type == 'subtreeCreated')) {
+    var additions = relevant.indexOf('additions') >= 0;
+    var text = relevant.indexOf('text') >= 0;
+    var removals = relevant.indexOf('removals') >= 0;
+    var all = relevant.indexOf('all') >= 0;
+
+    if (all || (additions &&
+        (type == 'nodeCreated' || type == 'subtreeCreated'))) {
       this.outputLiveRegionChange_(node, null);
     }
 
-    if (relevant.indexOf('text') >= 0 && type == 'textChanged')
+    if (all || (text && type == 'textChanged'))
       this.outputLiveRegionChange_(node, null);
 
-    if (relevant.indexOf('removals') >= 0 && type == 'nodeRemoved')
+    if (all || (removals && type == 'nodeRemoved'))
       this.outputLiveRegionChange_(node, '@live_regions_removed');
   },
 
