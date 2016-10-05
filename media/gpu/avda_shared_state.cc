@@ -16,7 +16,14 @@ namespace media {
 AVDASharedState::AVDASharedState()
     : surface_texture_service_id_(0),
       frame_available_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                             base::WaitableEvent::InitialState::NOT_SIGNALED) {}
+                             base::WaitableEvent::InitialState::NOT_SIGNALED),
+
+      gl_matrix_{
+          1, 0, 1, 0,  // Default to a sane guess just in case we can't get the
+          0, 1, 0, 0,  // matrix on the first call. Will be Y-flipped later.
+          0, 0, 1, 0,  //
+          0, 0, 0, 1,  // Comment preserves 4x4 formatting.
+      } {}
 
 AVDASharedState::~AVDASharedState() {
   if (!surface_texture_service_id_)
@@ -105,6 +112,16 @@ void AVDASharedState::RenderCodecBufferToSurfaceTexture(
     WaitForFrameAvailable();
   codec->ReleaseOutputBuffer(codec_buffer_index, true);
   release_time_ = base::TimeTicks::Now();
+}
+
+void AVDASharedState::UpdateTexImage() {
+  surface_texture_->UpdateTexImage();
+  // Helpfully, this is already column major.
+  surface_texture_->GetTransformMatrix(gl_matrix_);
+}
+
+void AVDASharedState::GetTransformMatrix(float matrix[16]) const {
+  memcpy(matrix, gl_matrix_, sizeof(gl_matrix_));
 }
 
 }  // namespace media

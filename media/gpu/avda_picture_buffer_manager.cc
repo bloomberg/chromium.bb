@@ -292,7 +292,7 @@ void AVDAPictureBufferManager::AssignOnePictureBuffer(
   // We use a refptr here in case SetImageForPicture fails.
   scoped_refptr<gpu::gles2::GLStreamTextureImage> gl_image =
       new AVDACodecImage(picture_buffer.id(), shared_state_, media_codec_,
-                         state_provider_->GetGlDecoder(), surface_texture_);
+                         state_provider_->GetGlDecoder());
   SetImageForPicture(picture_buffer, gl_image);
 
   if (!surface_texture_ && have_context) {

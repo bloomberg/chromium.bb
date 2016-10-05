@@ -75,6 +75,13 @@ class AVDASharedState : public base::RefCounted<AVDASharedState> {
   void RenderCodecBufferToSurfaceTexture(MediaCodecBridge* codec,
                                          int codec_buffer_index);
 
+  // Helper methods for interacting with |surface_texture_|. See
+  // gfx::SurfaceTexture for method details.
+  void UpdateTexImage();
+  // Returns a matrix that needs to be y flipped in order to match the
+  // StreamTextureMatrix contract. See GLStreamTextureImage::YInvertMatrix().
+  void GetTransformMatrix(float matrix[16]) const;
+
  protected:
   virtual ~AVDASharedState();
 
@@ -101,6 +108,9 @@ class AVDASharedState : public base::RefCounted<AVDASharedState> {
   // if there has been no last call or WaitForFrameAvailable() has been called
   // since the last call.
   base::TimeTicks release_time_;
+
+  // Texture matrix of the front buffer of the surface texture.
+  float gl_matrix_[16];
 
   DISALLOW_COPY_AND_ASSIGN(AVDASharedState);
 };

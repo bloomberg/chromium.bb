@@ -22,20 +22,14 @@ AVDACodecImage::AVDACodecImage(
     int picture_buffer_id,
     const scoped_refptr<AVDASharedState>& shared_state,
     VideoCodecBridge* codec,
-    const base::WeakPtr<gpu::gles2::GLES2Decoder>& decoder,
-    const scoped_refptr<gl::SurfaceTexture>& surface_texture)
+    const base::WeakPtr<gpu::gles2::GLES2Decoder>& decoder)
     : shared_state_(shared_state),
       codec_buffer_index_(kInvalidCodecBufferIndex),
       media_codec_(codec),
       decoder_(decoder),
-      surface_texture_(surface_texture),
+      has_surface_texture_(!!shared_state_->surface_texture_service_id()),
       texture_(0),
       picture_buffer_id_(picture_buffer_id) {
-  // Default to a sane guess of "flip Y", just in case we can't get
-  // the matrix on the first call.
-  memset(gl_matrix_, 0, sizeof(gl_matrix_));
-  gl_matrix_[0] = gl_matrix_[10] = gl_matrix_[13] = gl_matrix_[15] = 1.0f;
-  gl_matrix_[5] = -1.0f;
   shared_state_->SetImageForPicture(picture_buffer_id_, this);
 }
 
@@ -60,7 +54,7 @@ bool AVDACodecImage::BindTexImage(unsigned target) {
 void AVDACodecImage::ReleaseTexImage(unsigned target) {}
 
 bool AVDACodecImage::CopyTexImage(unsigned target) {
-  if (!surface_texture_)
+  if (!has_surface_texture_)
     return false;
 
   if (target != GL_TEXTURE_EXTERNAL_OES)
@@ -102,7 +96,7 @@ bool AVDACodecImage::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                                           const gfx::Rect& bounds_rect,
                                           const gfx::RectF& crop_rect) {
   // This should only be called when we're rendering to a SurfaceView.
-  if (surface_texture_) {
+  if (has_surface_texture_) {
     DVLOG(1) << "Invalid call to ScheduleOverlayPlane; this image is "
                 "SurfaceTexture backed.";
     return false;
@@ -117,7 +111,7 @@ void AVDACodecImage::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
                                   const std::string& dump_name) {}
 
 void AVDACodecImage::UpdateSurfaceTexture(RestoreBindingsMode mode) {
-  DCHECK(surface_texture_);
+  DCHECK(has_surface_texture_);
   DCHECK_EQ(codec_buffer_index_, kUpdateOnly);
   codec_buffer_index_ = kRendered;
 
@@ -135,12 +129,9 @@ void AVDACodecImage::UpdateSurfaceTexture(RestoreBindingsMode mode) {
   if (mode == kDoRestoreBindings)
     glGetIntegerv(GL_TEXTURE_BINDING_EXTERNAL_OES, &bound_service_id);
 
-  surface_texture_->UpdateTexImage();
+  shared_state_->UpdateTexImage();
   if (mode == kDoRestoreBindings)
     glBindTexture(GL_TEXTURE_EXTERNAL_OES, bound_service_id);
-
-  // Helpfully, this is already column major.
-  surface_texture_->GetTransformMatrix(gl_matrix_);
 }
 
 void AVDACodecImage::UpdateSurface(UpdateMode update_mode) {
@@ -161,7 +152,7 @@ void AVDACodecImage::UpdateSurfaceInternal(
   ReleaseOutputBuffer(update_mode);
 
   // SurfaceViews are updated implicitly, so no further steps are necessary.
-  if (!surface_texture_) {
+  if (!has_surface_texture_) {
     DCHECK(update_mode != UpdateMode::RENDER_TO_BACK_BUFFER);
     return;
   }
@@ -190,7 +181,7 @@ void AVDACodecImage::ReleaseOutputBuffer(UpdateMode update_mode) {
   DCHECK(update_mode == UpdateMode::RENDER_TO_BACK_BUFFER ||
          update_mode == UpdateMode::RENDER_TO_FRONT_BUFFER);
 
-  if (!surface_texture_) {
+  if (!has_surface_texture_) {
     DCHECK(update_mode == UpdateMode::RENDER_TO_FRONT_BUFFER);
     DCHECK_GE(codec_buffer_index_, 0);
     media_codec_->ReleaseOutputBuffer(codec_buffer_index_, true);
@@ -201,7 +192,7 @@ void AVDACodecImage::ReleaseOutputBuffer(UpdateMode update_mode) {
   // If we've already released to the back buffer, there's nothing left to do,
   // but wait for the previously released buffer if necessary.
   if (codec_buffer_index_ != kUpdateOnly) {
-    DCHECK(surface_texture_);
+    DCHECK(has_surface_texture_);
     DCHECK_GE(codec_buffer_index_, 0);
     shared_state_->RenderCodecBufferToSurfaceTexture(media_codec_,
                                                      codec_buffer_index_);
@@ -228,9 +219,9 @@ std::unique_ptr<ui::ScopedMakeCurrent> AVDACodecImage::MakeCurrentIfNeeded() {
 
 void AVDACodecImage::GetTextureMatrix(float matrix[16]) {
   // Our current matrix may be stale.  Update it if possible.
-  if (surface_texture_)
+  if (has_surface_texture_)
     UpdateSurface(UpdateMode::RENDER_TO_FRONT_BUFFER);
-  memcpy(matrix, gl_matrix_, sizeof(gl_matrix_));
+  shared_state_->GetTransformMatrix(matrix);
   YInvertMatrix(matrix);
 }
 
