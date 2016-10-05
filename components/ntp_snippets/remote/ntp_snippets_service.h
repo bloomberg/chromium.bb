@@ -162,6 +162,8 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
                            RemoveExpiredDismissedContent);
   FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceTest, RescheduleOnStateChange);
   FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceTest, StatusChanges);
+  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceTest,
+                           SuggestionsFetchedOnSignInAndSignOut);
 
   // Possible state transitions:
   //       NOT_INITED --------+
@@ -261,10 +263,10 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
                                         const std::string& id_within_category,
                                         const gfx::Image& image);
 
-  // Triggers a state transition depending on the provided reason to be
-  // disabled (or lack thereof). This method is called when a change is detected
-  // by |snippets_status_service_|.
-  void OnDisabledReasonChanged(DisabledReason disabled_reason);
+  // Triggers a state transition depending on the provided snippets status. This
+  // method is called when a change is detected by |snippets_status_service_|.
+  void OnSnippetsStatusChanged(SnippetsStatus old_snippets_status,
+                               SnippetsStatus new_snippets_status);
 
   // Verifies state transitions (see |State|'s documentation) and applies them.
   // Also updates the provider status. Does nothing except updating the provider

@@ -924,27 +924,49 @@ void NTPSnippetsService::FinishInitialization() {
   // Note: Initializing the status service will run the callback right away with
   // the current state.
   snippets_status_service_->Init(base::Bind(
-      &NTPSnippetsService::OnDisabledReasonChanged, base::Unretained(this)));
+      &NTPSnippetsService::OnSnippetsStatusChanged, base::Unretained(this)));
 
   // Always notify here even if we got nothing from the database, because we
   // don't know how long the fetch will take or if it will even complete.
   NotifyNewSuggestions();
 }
 
-void NTPSnippetsService::OnDisabledReasonChanged(
-    DisabledReason disabled_reason) {
-  switch (disabled_reason) {
-    case DisabledReason::NONE:
-      // Do not change the status. That will be done in EnterStateReady().
-      EnterState(State::READY);
+void NTPSnippetsService::OnSnippetsStatusChanged(
+    SnippetsStatus old_snippets_status,
+    SnippetsStatus new_snippets_status) {
+  switch (new_snippets_status) {
+    case SnippetsStatus::ENABLED_AND_SIGNED_IN:
+      if (old_snippets_status == SnippetsStatus::ENABLED_AND_SIGNED_OUT) {
+        DCHECK(state_ == State::READY);
+        // Clear nonpersonalized suggestions.
+        NukeAllSnippets();
+        // Fetch personalized ones.
+        FetchSnippets(/*interactive_request=*/true);
+      } else {
+        // Do not change the status. That will be done in EnterStateReady().
+        EnterState(State::READY);
+      }
       break;
 
-    case DisabledReason::EXPLICITLY_DISABLED:
+    case SnippetsStatus::ENABLED_AND_SIGNED_OUT:
+      if (old_snippets_status == SnippetsStatus::ENABLED_AND_SIGNED_IN) {
+        DCHECK(state_ == State::READY);
+        // Clear personalized suggestions.
+        NukeAllSnippets();
+        // Fetch nonpersonalized ones.
+        FetchSnippets(/*interactive_request=*/true);
+      } else {
+        // Do not change the status. That will be done in EnterStateReady().
+        EnterState(State::READY);
+      }
+      break;
+
+    case SnippetsStatus::EXPLICITLY_DISABLED:
       EnterState(State::DISABLED);
       UpdateAllCategoryStatus(CategoryStatus::CATEGORY_EXPLICITLY_DISABLED);
       break;
 
-    case DisabledReason::SIGNED_OUT:
+    case SnippetsStatus::SIGNED_OUT_AND_DISABLED:
       EnterState(State::DISABLED);
       UpdateAllCategoryStatus(CategoryStatus::SIGNED_OUT);
       break;

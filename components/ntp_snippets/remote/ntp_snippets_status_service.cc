@@ -25,7 +25,7 @@ const char kFetchingRequiresSigninDisabled[] = "false";
 NTPSnippetsStatusService::NTPSnippetsStatusService(
     SigninManagerBase* signin_manager,
     PrefService* pref_service)
-    : disabled_reason_(DisabledReason::EXPLICITLY_DISABLED),
+    : snippets_status_(SnippetsStatus::EXPLICITLY_DISABLED),
       require_signin_(false),
       signin_manager_(signin_manager),
       pref_service_(pref_service),
@@ -50,15 +50,16 @@ void NTPSnippetsStatusService::RegisterProfilePrefs(
 }
 
 void NTPSnippetsStatusService::Init(
-    const DisabledReasonChangeCallback& callback) {
-  DCHECK(disabled_reason_change_callback_.is_null());
+    const SnippetsStatusChangeCallback& callback) {
+  DCHECK(snippets_status_change_callback_.is_null());
 
-  disabled_reason_change_callback_ = callback;
+  snippets_status_change_callback_ = callback;
 
   // Notify about the current state before registering the observer, to make
   // sure we don't get a double notification due to an undefined start state.
-  disabled_reason_ = GetDisabledReasonFromDeps();
-  disabled_reason_change_callback_.Run(disabled_reason_);
+  SnippetsStatus old_snippets_status = snippets_status_;
+  snippets_status_ = GetSnippetsStatusFromDeps();
+  snippets_status_change_callback_.Run(old_snippets_status, snippets_status_);
 
   signin_observer_.Add(signin_manager_);
 
@@ -70,52 +71,49 @@ void NTPSnippetsStatusService::Init(
 }
 
 void NTPSnippetsStatusService::OnSnippetsEnabledChanged() {
-  OnStateChanged(GetDisabledReasonFromDeps());
+  OnStateChanged(GetSnippetsStatusFromDeps());
 }
 
 void NTPSnippetsStatusService::OnStateChanged(
-    DisabledReason new_disabled_reason) {
-  if (new_disabled_reason == disabled_reason_)
+    SnippetsStatus new_snippets_status) {
+  if (new_snippets_status == snippets_status_)
     return;
 
-  disabled_reason_ = new_disabled_reason;
-  disabled_reason_change_callback_.Run(disabled_reason_);
+  snippets_status_change_callback_.Run(snippets_status_, new_snippets_status);
+  snippets_status_ = new_snippets_status;
+}
+
+bool NTPSnippetsStatusService::IsSignedIn() const {
+  return signin_manager_ && signin_manager_->IsAuthenticated();
 }
 
 void NTPSnippetsStatusService::GoogleSigninSucceeded(
     const std::string& account_id,
     const std::string& username,
     const std::string& password) {
-  // TODO(dgn): The snippets should be refetched: https://crbug.com/650666
-  OnStateChanged(GetDisabledReasonFromDeps());
+  OnStateChanged(GetSnippetsStatusFromDeps());
 }
 
 void NTPSnippetsStatusService::GoogleSignedOut(const std::string& account_id,
                                                const std::string& username) {
-  if (!require_signin_ && disabled_reason_ == DisabledReason::NONE) {
-    // Temporary enter |SIGNED_OUT| state to clear all personalised suggestions.
-    OnStateChanged(DisabledReason::SIGNED_OUT);
-  }
-
-  // Depending on |require_signin_|, will still report as SIGNED_OUT or switch
-  // back to |DisabledReason::NONE|
-  OnStateChanged(GetDisabledReasonFromDeps());
+  OnStateChanged(GetSnippetsStatusFromDeps());
 }
 
-DisabledReason NTPSnippetsStatusService::GetDisabledReasonFromDeps() const {
+SnippetsStatus NTPSnippetsStatusService::GetSnippetsStatusFromDeps() const {
   if (!pref_service_->GetBoolean(prefs::kEnableSnippets)) {
-    DVLOG(1) << "[GetNewDisabledReason] Disabled via pref";
-    return DisabledReason::EXPLICITLY_DISABLED;
+    DVLOG(1) << "[GetNewSnippetsStatus] Disabled via pref";
+    return SnippetsStatus::EXPLICITLY_DISABLED;
   }
 
-  if (require_signin_ &&
-      (!signin_manager_ || !signin_manager_->IsAuthenticated())) {
-    DVLOG(1) << "[GetNewDisabledReason] Signed out";
-    return DisabledReason::SIGNED_OUT;
+  if (require_signin_ && !IsSignedIn()) {
+    DVLOG(1) << "[GetNewSnippetsStatus] Signed out and disabled due to this.";
+    return SnippetsStatus::SIGNED_OUT_AND_DISABLED;
   }
 
-  DVLOG(1) << "[GetNewDisabledReason] Enabled";
-  return DisabledReason::NONE;
+  DVLOG(1) << "[GetNewSnippetsStatus] Enabled, signed "
+           << (IsSignedIn() ? "in" : "out");
+  return IsSignedIn() ? SnippetsStatus::ENABLED_AND_SIGNED_IN
+                      : SnippetsStatus::ENABLED_AND_SIGNED_OUT;
 }
 
 }  // namespace ntp_snippets

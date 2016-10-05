@@ -574,11 +574,13 @@ TEST_F(NTPSnippetsServiceTest, RescheduleOnStateChange) {
   auto service = MakeSnippetsService();
   ASSERT_TRUE(service->ready());
 
-  service->OnDisabledReasonChanged(DisabledReason::EXPLICITLY_DISABLED);
+  service->OnSnippetsStatusChanged(SnippetsStatus::ENABLED_AND_SIGNED_IN,
+                                   SnippetsStatus::EXPLICITLY_DISABLED);
   ASSERT_FALSE(service->ready());
   base::RunLoop().RunUntilIdle();
 
-  service->OnDisabledReasonChanged(DisabledReason::NONE);
+  service->OnSnippetsStatusChanged(SnippetsStatus::EXPLICITLY_DISABLED,
+                                   SnippetsStatus::ENABLED_AND_SIGNED_OUT);
   ASSERT_TRUE(service->ready());
   base::RunLoop().RunUntilIdle();
 }
@@ -992,7 +994,8 @@ TEST_F(NTPSnippetsServiceTest, StatusChanges) {
 
   // Simulate user signed out
   SetUpFetchResponse(GetTestJson({GetSnippet()}));
-  service->OnDisabledReasonChanged(DisabledReason::SIGNED_OUT);
+  service->OnSnippetsStatusChanged(SnippetsStatus::ENABLED_AND_SIGNED_IN,
+                                   SnippetsStatus::SIGNED_OUT_AND_DISABLED);
 
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(observer().StatusForCategory(articles_category()),
@@ -1003,7 +1006,8 @@ TEST_F(NTPSnippetsServiceTest, StatusChanges) {
 
   // Simulate user sign in. The service should be ready again and load snippets.
   SetUpFetchResponse(GetTestJson({GetSnippet()}));
-  service->OnDisabledReasonChanged(DisabledReason::NONE);
+  service->OnSnippetsStatusChanged(SnippetsStatus::SIGNED_OUT_AND_DISABLED,
+                                   SnippetsStatus::ENABLED_AND_SIGNED_IN);
   EXPECT_THAT(observer().StatusForCategory(articles_category()),
               Eq(CategoryStatus::AVAILABLE_LOADING));
 
@@ -1076,6 +1080,26 @@ TEST_F(NTPSnippetsServiceTest, ClearHistoryRemovesAllSuggestions) {
   EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
   EXPECT_THAT(service->GetDismissedSnippetsForTesting(articles_category()),
               IsEmpty());
+}
+
+TEST_F(NTPSnippetsServiceTest, SuggestionsFetchedOnSignInAndSignOut) {
+  auto service = MakeSnippetsService();
+  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(0));
+
+  // |MakeSnippetsService()| creates a service where user is signed in already,
+  // so we start by signing out.
+  SetUpFetchResponse(GetTestJson({GetSnippetN(1)}));
+  service->OnSnippetsStatusChanged(SnippetsStatus::ENABLED_AND_SIGNED_IN,
+                                   SnippetsStatus::ENABLED_AND_SIGNED_OUT);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
+
+  // Sign in to check a transition from signed out to signed in.
+  SetUpFetchResponse(GetTestJson({GetSnippetN(1), GetSnippetN(2)}));
+  service->OnSnippetsStatusChanged(SnippetsStatus::ENABLED_AND_SIGNED_OUT,
+                                   SnippetsStatus::ENABLED_AND_SIGNED_IN);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(2));
 }
 
 }  // namespace ntp_snippets

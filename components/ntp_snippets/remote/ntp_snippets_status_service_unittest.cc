@@ -42,17 +42,18 @@ TEST_F(NTPSnippetsStatusServiceTest, DisabledViaPref) {
   auto service = MakeService();
 
   // The default test setup is signed out. The service is enabled.
-  ASSERT_EQ(DisabledReason::NONE, service->GetDisabledReasonFromDeps());
+  ASSERT_EQ(SnippetsStatus::ENABLED_AND_SIGNED_OUT,
+            service->GetSnippetsStatusFromDeps());
 
   // Once the enabled pref is set to false, we should be disabled.
   utils_.pref_service()->SetBoolean(prefs::kEnableSnippets, false);
-  EXPECT_EQ(DisabledReason::EXPLICITLY_DISABLED,
-            service->GetDisabledReasonFromDeps());
+  EXPECT_EQ(SnippetsStatus::EXPLICITLY_DISABLED,
+            service->GetSnippetsStatusFromDeps());
 
   // Signing-in shouldn't matter anymore.
   utils_.fake_signin_manager()->SignIn("foo@bar.com");
-  EXPECT_EQ(DisabledReason::EXPLICITLY_DISABLED,
-            service->GetDisabledReasonFromDeps());
+  EXPECT_EQ(SnippetsStatus::EXPLICITLY_DISABLED,
+            service->GetSnippetsStatusFromDeps());
 }
 
 }  // namespace ntp_snippets

@@ -16,20 +16,24 @@ class PrefService;
 
 namespace ntp_snippets {
 
-enum class DisabledReason : int {
-  // Snippets are enabled
-  NONE,
+enum class SnippetsStatus : int {
+  // Snippets are enabled and the user is signed in.
+  ENABLED_AND_SIGNED_IN,
+  // Snippets are enabled and the user is signed out (sign in is not required).
+  ENABLED_AND_SIGNED_OUT,
   // Snippets have been disabled as part of the service configuration.
   EXPLICITLY_DISABLED,
   // The user is not signed in, and the service requires it to be enabled.
-  SIGNED_OUT,
+  SIGNED_OUT_AND_DISABLED,
 };
 
 // Aggregates data from preferences and signin to notify the snippet service of
 // relevant changes in their states.
 class NTPSnippetsStatusService : public SigninManagerBase::Observer {
  public:
-  using DisabledReasonChangeCallback = base::Callback<void(DisabledReason)>;
+  using SnippetsStatusChangeCallback =
+      base::Callback<void(SnippetsStatus /*old_status*/,
+                          SnippetsStatus /*new_status*/)>;
 
   NTPSnippetsStatusService(SigninManagerBase* signin_manager,
                            PrefService* pref_service);
@@ -40,7 +44,7 @@ class NTPSnippetsStatusService : public SigninManagerBase::Observer {
 
   // Starts listening for changes from the dependencies. |callback| will be
   // called when a significant change in state is detected.
-  void Init(const DisabledReasonChangeCallback& callback);
+  void Init(const SnippetsStatusChangeCallback& callback);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(NTPSnippetsStatusServiceTest, DisabledViaPref);
@@ -55,12 +59,14 @@ class NTPSnippetsStatusService : public SigninManagerBase::Observer {
   // Callback for the PrefChangeRegistrar.
   void OnSnippetsEnabledChanged();
 
-  void OnStateChanged(DisabledReason new_disabled_reason);
+  void OnStateChanged(SnippetsStatus new_snippets_status);
 
-  DisabledReason GetDisabledReasonFromDeps() const;
+  bool IsSignedIn() const;
 
-  DisabledReason disabled_reason_;
-  DisabledReasonChangeCallback disabled_reason_change_callback_;
+  SnippetsStatus GetSnippetsStatusFromDeps() const;
+
+  SnippetsStatus snippets_status_;
+  SnippetsStatusChangeCallback snippets_status_change_callback_;
 
   bool require_signin_;
   SigninManagerBase* signin_manager_;
