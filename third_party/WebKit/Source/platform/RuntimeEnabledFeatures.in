@@ -235,7 +235,6 @@ Touch status=stable
 TraceWrappables
 TrustedEventsDefaultAction status=stable
 UnsafeES3APIs
-UnsandboxedAuxiliary status=stable
 UserSelectAll status=stable
 WebAnimationsAPI status=experimental
 WebAnimationsSVG status=experimental
