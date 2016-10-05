@@ -38,6 +38,10 @@ TrackedPreferenceHelper::ResetAction TrackedPreferenceHelper::GetAction(
     case PrefHashStoreTransaction::SECURE_LEGACY:
       // Accept secure legacy device ID based hashes.
       return DONT_RESET;
+    case PrefHashStoreTransaction::UNSUPPORTED:
+      NOTREACHED()
+          << "GetAction should not be called with an UNSUPPORTED value state";
+      return DONT_RESET;
     case PrefHashStoreTransaction::UNTRUSTED_UNKNOWN_VALUE:  // Falls through.
     case PrefHashStoreTransaction::CHANGED:
       return enforce_ ? DO_RESET : WANTED_RESET;
@@ -54,7 +58,7 @@ bool TrackedPreferenceHelper::IsPersonal() const {
 void TrackedPreferenceHelper::ReportValidationResult(
     PrefHashStoreTransaction::ValueState value_state,
     base::StringPiece validation_type_suffix) const {
-  const char* histogram_name;
+  const char* histogram_name = nullptr;
   switch (value_state) {
     case PrefHashStoreTransaction::UNCHANGED:
       histogram_name = user_prefs::tracked::kTrackedPrefHistogramUnchanged;
@@ -80,11 +84,12 @@ void TrackedPreferenceHelper::ReportValidationResult(
       histogram_name =
           user_prefs::tracked::kTrackedPrefHistogramNullInitialized;
       break;
-    default:
-      NOTREACHED() << "Unexpected PrefHashStoreTransaction::ValueState: "
-                   << value_state;
+    case PrefHashStoreTransaction::UNSUPPORTED:
+      NOTREACHED() << "ReportValidationResult should not be called with an "
+                      "UNSUPPORTED value state";
       return;
   }
+  DCHECK(histogram_name);
 
   std::string full_histogram_name(histogram_name);
   if (!validation_type_suffix.empty()) {

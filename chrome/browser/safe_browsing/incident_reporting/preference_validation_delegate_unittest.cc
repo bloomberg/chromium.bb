@@ -40,6 +40,7 @@ class PreferenceValidationDelegateTest : public testing::Test {
     testing::Test::SetUp();
     invalid_keys_.push_back(std::string("one"));
     invalid_keys_.push_back(std::string("two"));
+    external_validation_invalid_keys_.push_back(std::string("three"));
     std::unique_ptr<safe_browsing::MockIncidentReceiver> receiver(
         new NiceMock<safe_browsing::MockIncidentReceiver>());
     ON_CALL(*receiver, DoAddIncidentForProfile(IsNull(), _))
@@ -50,6 +51,7 @@ class PreferenceValidationDelegateTest : public testing::Test {
 
   static void ExpectValueStatesEquate(
       PrefHashStoreTransaction::ValueState store_state,
+      PrefHashStoreTransaction::ValueState external_validation_value_state,
       safe_browsing::
           ClientIncidentReport_IncidentData_TrackedPreferenceIncident_ValueState
               incident_state) {
@@ -66,7 +68,15 @@ class PreferenceValidationDelegateTest : public testing::Test {
         EXPECT_EQ(TPIncident::UNTRUSTED_UNKNOWN_VALUE, incident_state);
         break;
       default:
-        FAIL() << "unexpected store state";
+        if (external_validation_value_state ==
+            PrefHashStoreTransaction::CLEARED) {
+          EXPECT_EQ(TPIncident::BYPASS_CLEARED, incident_state);
+        } else if (external_validation_value_state ==
+                   PrefHashStoreTransaction::CHANGED) {
+          EXPECT_EQ(TPIncident::BYPASS_CHANGED, incident_state);
+        } else {
+          FAIL() << "unexpected store state";
+        }
         break;
     }
   }
@@ -85,15 +95,15 @@ class PreferenceValidationDelegateTest : public testing::Test {
   std::unique_ptr<base::Value> null_value_;
   base::DictionaryValue dict_value_;
   std::vector<std::string> invalid_keys_;
+  std::vector<std::string> external_validation_invalid_keys_;
   std::unique_ptr<TrackedPreferenceValidationDelegate> instance_;
 };
 
 // Tests that a NULL value results in an incident with no value.
 TEST_F(PreferenceValidationDelegateTest, NullValue) {
-  instance_->OnAtomicPreferenceValidation(kPrefPath_,
-                                          NULL,
-                                          PrefHashStoreTransaction::CLEARED,
-                                          false /* is_personal */);
+  instance_->OnAtomicPreferenceValidation(
+      kPrefPath_, NULL, PrefHashStoreTransaction::CLEARED,
+      PrefHashStoreTransaction::UNSUPPORTED, false /* is_personal */);
   std::unique_ptr<safe_browsing::ClientIncidentReport_IncidentData> incident(
       incidents_.back()->TakePayload());
   EXPECT_FALSE(incident->tracked_preference().has_atomic_value());
@@ -154,10 +164,10 @@ class PreferenceValidationDelegateValues
 };
 
 TEST_P(PreferenceValidationDelegateValues, Value) {
-  instance_->OnAtomicPreferenceValidation(kPrefPath_,
-                                          MakeValue(value_type_).get(),
-                                          PrefHashStoreTransaction::CLEARED,
-                                          false /* is_personal */);
+  instance_->OnAtomicPreferenceValidation(
+      kPrefPath_, MakeValue(value_type_).get(),
+      PrefHashStoreTransaction::CLEARED, PrefHashStoreTransaction::UNSUPPORTED,
+      false /* is_personal */);
   ASSERT_EQ(1U, incidents_.size());
   std::unique_ptr<safe_browsing::ClientIncidentReport_IncidentData> incident(
       incidents_.back()->TakePayload());
@@ -190,60 +200,71 @@ INSTANTIATE_TEST_CASE_P(
 // Tests that no incidents are reported for relevant combinations of ValueState.
 class PreferenceValidationDelegateNoIncident
     : public PreferenceValidationDelegateTest,
-      public testing::WithParamInterface<PrefHashStoreTransaction::ValueState> {
+      public testing::WithParamInterface<
+          std::tr1::tuple<PrefHashStoreTransaction::ValueState,
+                          PrefHashStoreTransaction::ValueState>> {
  protected:
   void SetUp() override {
     PreferenceValidationDelegateTest::SetUp();
-    value_state_ = GetParam();
+    value_state_ = std::tr1::get<0>(GetParam());
+    external_validation_value_state_ = std::tr1::get<1>(GetParam());
   }
 
   PrefHashStoreTransaction::ValueState value_state_;
+  PrefHashStoreTransaction::ValueState external_validation_value_state_;
 };
 
 TEST_P(PreferenceValidationDelegateNoIncident, Atomic) {
-  instance_->OnAtomicPreferenceValidation(kPrefPath_,
-                                          null_value_.get(),
-                                          value_state_,
-                                          false /* is_personal */);
+  instance_->OnAtomicPreferenceValidation(
+      kPrefPath_, null_value_.get(), value_state_,
+      external_validation_value_state_, false /* is_personal */);
   EXPECT_EQ(0U, incidents_.size());
 }
 
 TEST_P(PreferenceValidationDelegateNoIncident, Split) {
-  instance_->OnSplitPreferenceValidation(kPrefPath_,
-                                         &dict_value_,
-                                         invalid_keys_,
-                                         value_state_,
-                                         false /* is_personal */);
+  instance_->OnSplitPreferenceValidation(
+      kPrefPath_, &dict_value_, invalid_keys_,
+      external_validation_invalid_keys_, value_state_,
+      external_validation_value_state_, false /* is_personal */);
   EXPECT_EQ(0U, incidents_.size());
 }
 
 INSTANTIATE_TEST_CASE_P(
     NoIncident,
     PreferenceValidationDelegateNoIncident,
-    testing::Values(PrefHashStoreTransaction::UNCHANGED,
-                    PrefHashStoreTransaction::SECURE_LEGACY,
-                    PrefHashStoreTransaction::TRUSTED_UNKNOWN_VALUE));
+    testing::Combine(
+        testing::Values(PrefHashStoreTransaction::UNCHANGED,
+                        PrefHashStoreTransaction::SECURE_LEGACY,
+                        PrefHashStoreTransaction::TRUSTED_UNKNOWN_VALUE),
+        testing::Values(PrefHashStoreTransaction::UNCHANGED,
+                        PrefHashStoreTransaction::UNSUPPORTED,
+                        PrefHashStoreTransaction::UNTRUSTED_UNKNOWN_VALUE)));
 
 // Tests that incidents are reported for relevant combinations of ValueState and
 // impersonal/personal.
 class PreferenceValidationDelegateWithIncident
     : public PreferenceValidationDelegateTest,
       public testing::WithParamInterface<
-          std::tr1::tuple<PrefHashStoreTransaction::ValueState, bool>> {
+          std::tr1::tuple<PrefHashStoreTransaction::ValueState,
+                          PrefHashStoreTransaction::ValueState,
+                          bool>> {
  protected:
   void SetUp() override {
     PreferenceValidationDelegateTest::SetUp();
     value_state_ = std::tr1::get<0>(GetParam());
-    is_personal_ = std::tr1::get<1>(GetParam());
+    external_validation_value_state_ = std::tr1::get<1>(GetParam());
+    is_personal_ = std::tr1::get<2>(GetParam());
   }
 
   PrefHashStoreTransaction::ValueState value_state_;
+  PrefHashStoreTransaction::ValueState external_validation_value_state_;
   bool is_personal_;
 };
 
 TEST_P(PreferenceValidationDelegateWithIncident, Atomic) {
   instance_->OnAtomicPreferenceValidation(
-      kPrefPath_, null_value_.get(), value_state_, is_personal_);
+      kPrefPath_, null_value_.get(), value_state_,
+      external_validation_value_state_, is_personal_);
   ASSERT_EQ(1U, incidents_.size());
   std::unique_ptr<safe_browsing::ClientIncidentReport_IncidentData> incident(
       incidents_.back()->TakePayload());
@@ -260,12 +281,15 @@ TEST_P(PreferenceValidationDelegateWithIncident, Atomic) {
     EXPECT_FALSE(tp_incident.has_atomic_value());
   }
   EXPECT_TRUE(tp_incident.has_value_state());
-  ExpectValueStatesEquate(value_state_, tp_incident.value_state());
+  ExpectValueStatesEquate(value_state_, external_validation_value_state_,
+                          tp_incident.value_state());
 }
 
 TEST_P(PreferenceValidationDelegateWithIncident, Split) {
   instance_->OnSplitPreferenceValidation(
-      kPrefPath_, &dict_value_, invalid_keys_, value_state_, is_personal_);
+      kPrefPath_, &dict_value_, invalid_keys_,
+      external_validation_invalid_keys_, value_state_,
+      external_validation_value_state_, is_personal_);
   ASSERT_EQ(1U, incidents_.size());
   std::unique_ptr<safe_browsing::ClientIncidentReport_IncidentData> incident(
       incidents_.back()->TakePayload());
@@ -275,12 +299,21 @@ TEST_P(PreferenceValidationDelegateWithIncident, Split) {
           incident->tracked_preference();
   EXPECT_EQ(kPrefPath_, tp_incident.path());
   EXPECT_FALSE(tp_incident.has_atomic_value());
-  if (!is_personal_)
-    ExpectKeysEquate(invalid_keys_, tp_incident.split_key());
-  else
+  if (!is_personal_) {
+    if (value_state_ == PrefHashStoreTransaction::CLEARED ||
+        value_state_ == PrefHashStoreTransaction::CHANGED ||
+        value_state_ == PrefHashStoreTransaction::UNTRUSTED_UNKNOWN_VALUE) {
+      ExpectKeysEquate(invalid_keys_, tp_incident.split_key());
+    } else {
+      ExpectKeysEquate(external_validation_invalid_keys_,
+                       tp_incident.split_key());
+    }
+  } else {
     EXPECT_EQ(0, tp_incident.split_key_size());
+  }
   EXPECT_TRUE(tp_incident.has_value_state());
-  ExpectValueStatesEquate(value_state_, tp_incident.value_state());
+  ExpectValueStatesEquate(value_state_, external_validation_value_state_,
+                          tp_incident.value_state());
 }
 
 INSTANTIATE_TEST_CASE_P(
@@ -290,4 +323,29 @@ INSTANTIATE_TEST_CASE_P(
         testing::Values(PrefHashStoreTransaction::CLEARED,
                         PrefHashStoreTransaction::CHANGED,
                         PrefHashStoreTransaction::UNTRUSTED_UNKNOWN_VALUE),
+        testing::Values(PrefHashStoreTransaction::UNCHANGED,
+                        PrefHashStoreTransaction::UNSUPPORTED,
+                        PrefHashStoreTransaction::UNTRUSTED_UNKNOWN_VALUE),
+        testing::Bool()));
+
+INSTANTIATE_TEST_CASE_P(
+    WithBypassIncident,
+    PreferenceValidationDelegateWithIncident,
+    testing::Combine(
+        testing::Values(PrefHashStoreTransaction::UNCHANGED,
+                        PrefHashStoreTransaction::SECURE_LEGACY,
+                        PrefHashStoreTransaction::TRUSTED_UNKNOWN_VALUE),
+        testing::Values(PrefHashStoreTransaction::CHANGED,
+                        PrefHashStoreTransaction::CLEARED),
+        testing::Bool()));
+
+INSTANTIATE_TEST_CASE_P(
+    WithIncidentIgnoreBypass,
+    PreferenceValidationDelegateWithIncident,
+    testing::Combine(
+        testing::Values(PrefHashStoreTransaction::CLEARED,
+                        PrefHashStoreTransaction::CHANGED,
+                        PrefHashStoreTransaction::UNTRUSTED_UNKNOWN_VALUE),
+        testing::Values(PrefHashStoreTransaction::CHANGED,
+                        PrefHashStoreTransaction::CLEARED),
         testing::Bool()));

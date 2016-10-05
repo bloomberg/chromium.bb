@@ -20,6 +20,16 @@ size_t MockValidationDelegate::CountValidationsOfState(
   return count;
 }
 
+size_t MockValidationDelegate::CountExternalValidationsOfState(
+    PrefHashStoreTransaction::ValueState value_state) const {
+  size_t count = 0;
+  for (size_t i = 0; i < validations_.size(); ++i) {
+    if (validations_[i].external_validation_value_state == value_state)
+      ++count;
+  }
+  return count;
+}
+
 const MockValidationDelegate::ValidationEvent*
 MockValidationDelegate::GetEventForPath(const std::string& pref_path) const {
   for (size_t i = 0; i < validations_.size(); ++i) {
@@ -33,26 +43,31 @@ void MockValidationDelegate::OnAtomicPreferenceValidation(
     const std::string& pref_path,
     const base::Value* value,
     PrefHashStoreTransaction::ValueState value_state,
+    PrefHashStoreTransaction::ValueState external_validation_value_state,
     bool is_personal) {
-  RecordValidation(pref_path, value_state, is_personal,
-                   PrefHashFilter::TRACKING_STRATEGY_ATOMIC);
+  RecordValidation(pref_path, value_state, external_validation_value_state,
+                   is_personal, PrefHashFilter::TRACKING_STRATEGY_ATOMIC);
 }
 
 void MockValidationDelegate::OnSplitPreferenceValidation(
     const std::string& pref_path,
     const base::DictionaryValue* dict_value,
     const std::vector<std::string>& invalid_keys,
+    const std::vector<std::string>& external_validation_invalid_keys,
     PrefHashStoreTransaction::ValueState value_state,
+    PrefHashStoreTransaction::ValueState external_validation_value_state,
     bool is_personal) {
-  RecordValidation(pref_path, value_state, is_personal,
-                   PrefHashFilter::TRACKING_STRATEGY_SPLIT);
+  RecordValidation(pref_path, value_state, external_validation_value_state,
+                   is_personal, PrefHashFilter::TRACKING_STRATEGY_SPLIT);
 }
 
 void MockValidationDelegate::RecordValidation(
     const std::string& pref_path,
     PrefHashStoreTransaction::ValueState value_state,
+    PrefHashStoreTransaction::ValueState external_validation_value_state,
     bool is_personal,
     PrefHashFilter::PrefTrackingStrategy strategy) {
-  validations_.push_back(
-      ValidationEvent(pref_path, value_state, is_personal, strategy));
+  validations_.push_back(ValidationEvent(pref_path, value_state,
+                                         external_validation_value_state,
+                                         is_personal, strategy));
 }

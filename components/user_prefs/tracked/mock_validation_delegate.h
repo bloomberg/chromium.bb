@@ -20,17 +20,21 @@
 class MockValidationDelegate : public TrackedPreferenceValidationDelegate {
  public:
   struct ValidationEvent {
-    ValidationEvent(const std::string& path,
-                    PrefHashStoreTransaction::ValueState state,
-                    bool is_personal,
-                    PrefHashFilter::PrefTrackingStrategy tracking_strategy)
+    ValidationEvent(
+        const std::string& path,
+        PrefHashStoreTransaction::ValueState state,
+        PrefHashStoreTransaction::ValueState external_validation_state,
+        bool is_personal,
+        PrefHashFilter::PrefTrackingStrategy tracking_strategy)
         : pref_path(path),
           value_state(state),
+          external_validation_value_state(external_validation_state),
           is_personal(is_personal),
           strategy(tracking_strategy) {}
 
     std::string pref_path;
     PrefHashStoreTransaction::ValueState value_state;
+    PrefHashStoreTransaction::ValueState external_validation_value_state;
     bool is_personal;
     PrefHashFilter::PrefTrackingStrategy strategy;
   };
@@ -45,6 +49,10 @@ class MockValidationDelegate : public TrackedPreferenceValidationDelegate {
   size_t CountValidationsOfState(
       PrefHashStoreTransaction::ValueState value_state) const;
 
+  // Returns the number of external validations of a given value state.
+  size_t CountExternalValidationsOfState(
+      PrefHashStoreTransaction::ValueState value_state) const;
+
   // Returns the event for the preference with a given path.
   const ValidationEvent* GetEventForPath(const std::string& pref_path) const;
 
@@ -53,20 +61,25 @@ class MockValidationDelegate : public TrackedPreferenceValidationDelegate {
       const std::string& pref_path,
       const base::Value* value,
       PrefHashStoreTransaction::ValueState value_state,
+      PrefHashStoreTransaction::ValueState external_validation_value_state,
       bool is_personal) override;
   void OnSplitPreferenceValidation(
       const std::string& pref_path,
       const base::DictionaryValue* dict_value,
       const std::vector<std::string>& invalid_keys,
+      const std::vector<std::string>& external_validation_invalid_keys,
       PrefHashStoreTransaction::ValueState value_state,
+      PrefHashStoreTransaction::ValueState external_validation_value_state,
       bool is_personal) override;
 
  private:
   // Adds a new validation event.
-  void RecordValidation(const std::string& pref_path,
-                        PrefHashStoreTransaction::ValueState value_state,
-                        bool is_personal,
-                        PrefHashFilter::PrefTrackingStrategy strategy);
+  void RecordValidation(
+      const std::string& pref_path,
+      PrefHashStoreTransaction::ValueState value_state,
+      PrefHashStoreTransaction::ValueState external_validation_value_state,
+      bool is_personal,
+      PrefHashFilter::PrefTrackingStrategy strategy);
 
   std::vector<ValidationEvent> validations_;
 

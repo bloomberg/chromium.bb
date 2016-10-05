@@ -34,12 +34,15 @@ class PreferenceValidationDelegate
       const std::string& pref_path,
       const base::Value* value,
       PrefHashStoreTransaction::ValueState value_state,
+      PrefHashStoreTransaction::ValueState external_validation_value_state,
       bool is_personal) override;
   void OnSplitPreferenceValidation(
       const std::string& pref_path,
       const base::DictionaryValue* dict_value,
       const std::vector<std::string>& invalid_keys,
+      const std::vector<std::string>& external_validation_invalid_keys,
       PrefHashStoreTransaction::ValueState value_state,
+      PrefHashStoreTransaction::ValueState external_validation_value_state,
       bool is_personal) override;
 
   Profile* profile_;
