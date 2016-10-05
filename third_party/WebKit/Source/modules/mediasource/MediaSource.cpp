@@ -571,7 +571,8 @@ void MediaSource::durationChangeAlgorithm(double newDuration,
   }
 
   // 5. If a user agent is unable to partially render audio frames or text cues
-  //    that start before and end after the duration, then run the following steps:
+  //    that start before and end after the duration, then run the following
+  //    steps:
   //    NOTE: Currently we assume that the media engine is able to render
   //    partial frames/cues. If a media engine gets added that doesn't support
   //    this, then we'll need to add logic to handle the substeps.

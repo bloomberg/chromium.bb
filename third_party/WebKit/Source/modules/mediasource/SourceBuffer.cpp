@@ -739,9 +739,9 @@ const TrackDefault* SourceBuffer::getTrackDefault(
   // https://w3c.github.io/media-source/#sourcebuffer-default-track-language
 
   // 1. If trackDefaults contains a TrackDefault object with a type attribute
-  //    equal to type and a byteStreamTrackID attribute equal to byteStreamTrackID,
-  //    then return the value of the label/language attribute on this matching
-  //    object and abort these steps.
+  //    equal to type and a byteStreamTrackID attribute equal to
+  //    byteStreamTrackID, then return the value of the label/language attribute
+  //    on this matching object and abort these steps.
   // 2. If trackDefaults contains a TrackDefault object with a type attribute
   //    equal to type and a byteStreamTrackID attribute equal to an empty
   //    string, then return the value of the label/language attribute on this
@@ -937,7 +937,8 @@ bool SourceBuffer::initializationSegmentReceived(
         language = defaultTrackLanguage(TrackDefault::audioKeyword(),
                                         byteStreamTrackID);
       // 5.2.4 Let audio label be a label specified in the initialization
-      //       segment for this track or an empty string if no label info is present.
+      //       segment for this track or an empty string if no label info is
+      //       present.
       WebString label = trackInfo.label;
       // 5.3.5 If audio label equals an empty string, then run the default track
       //       label algorithm with byteStreamTrackID set to audio byte stream
@@ -997,7 +998,8 @@ bool SourceBuffer::initializationSegmentReceived(
         language = defaultTrackLanguage(TrackDefault::videoKeyword(),
                                         byteStreamTrackID);
       // 5.3.4 Let video label be a label specified in the initialization
-      //       segment for this track or an empty string if no label info is present.
+      //       segment for this track or an empty string if no label info is
+      //       present.
       WebString label = trackInfo.label;
       // 5.3.5 If video label equals an empty string, then run the default track
       //       label algorithm with byteStreamTrackID set to video byte stream

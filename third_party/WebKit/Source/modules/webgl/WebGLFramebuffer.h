@@ -122,7 +122,8 @@ class WebGLFramebuffer final : public WebGLContextObject {
   // Check if the framebuffer is currently bound.
   bool isBound(GLenum target) const;
 
-  // Check if a new drawBuffers call should be issued. This is called when we add or remove an attachment.
+  // Check if a new drawBuffers call should be issued. This is called when we
+  // add or remove an attachment.
   void drawBuffersIfNecessary(bool force);
 
   void setAttachmentInternal(GLenum target,
@@ -134,7 +135,8 @@ class WebGLFramebuffer final : public WebGLContextObject {
   void setAttachmentInternal(GLenum target,
                              GLenum attachment,
                              WebGLRenderbuffer*);
-  // If a given attachment point for the currently bound framebuffer is not null, remove the attached object.
+  // If a given attachment point for the currently bound framebuffer is not
+  // null, remove the attached object.
   void removeAttachmentInternal(GLenum target, GLenum attachment);
 
   void commitWebGL1DepthStencilIfConsistent(GLenum target);

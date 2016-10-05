@@ -175,7 +175,8 @@ MediaKeySystemAccessInitializer::MediaKeySystemAccessInitializer(
     if (config.hasSessionTypes()) {
       webConfig.sessionTypes = convertSessionTypes(config.sessionTypes());
     } else {
-      // From the spec (http://w3c.github.io/encrypted-media/#idl-def-mediakeysystemconfiguration):
+      // From the spec
+      // (http://w3c.github.io/encrypted-media/#idl-def-mediakeysystemconfiguration):
       // If this member is not present when the dictionary is passed to
       // requestMediaKeySystemAccess(), the dictionary will be treated
       // as if this member is set to [ "temporary" ].
