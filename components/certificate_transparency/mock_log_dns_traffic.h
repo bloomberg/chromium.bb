@@ -94,11 +94,16 @@ class MockLogDnsTraffic {
   // This will reduce the DNS timeout to minimize test duration.
   void ExpectRequestAndTimeout(base::StringPiece qname);
   // Expect a CT DNS request for the domain |qname|.
+  // Such a request will receive a DNS TXT response containing |txt_strings|.
+  void ExpectRequestAndResponse(
+    base::StringPiece qname,
+    const std::vector<base::StringPiece>& txt_strings);
+  // Expect a CT DNS request for the domain |qname|.
   // Such a request will receive a DNS response containing |leaf_index|.
   // A description of such a request and response can be seen here:
   // https://github.com/google/certificate-transparency-rfcs/blob/c8844de6bd0b5d3d16bac79865e6edef533d760b/dns/draft-ct-over-dns.md#hash-query-hashquery
   void ExpectLeafIndexRequestAndResponse(base::StringPiece qname,
-                                         base::StringPiece leaf_index);
+                                         uint64_t leaf_index);
   // Expect a CT DNS request for the domain |qname|.
   // Such a request will receive a DNS response containing the inclusion proof
   // nodes between |audit_path_start| and |audit_path_end|.
@@ -131,11 +136,6 @@ class MockLogDnsTraffic {
   }
 
  private:
-  // Expect A CT DNS request for the domain |qname|.
-  // Such a request will receive a DNS response containing |answer|.
-  void ExpectRequestAndResponse(base::StringPiece qname,
-                                base::StringPiece answer);
-
   // Constructs MockSocketData from |args| and adds it to |socket_factory_|.
   template <typename... Args>
   void EmplaceMockSocketData(Args&&... args);

@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/big_endian.h"
+#include "base/numerics/safe_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/sys_byteorder.h"
 #include "base/test/test_timeouts.h"
 #include "net/dns/dns_client.h"
@@ -193,15 +195,24 @@ void MockLogDnsTraffic::ExpectRequestAndTimeout(base::StringPiece qname) {
   SetDnsTimeout(TestTimeouts::tiny_timeout());
 }
 
+void MockLogDnsTraffic::ExpectRequestAndResponse(
+    base::StringPiece qname,
+    const std::vector<base::StringPiece>& txt_strings) {
+  std::string answer;
+  for (base::StringPiece str : txt_strings) {
+    // The size of the string must precede it. The size must fit into 1 byte.
+    answer.insert(answer.end(), base::checked_cast<uint8_t>(str.size()));
+    str.AppendToString(&answer);
+  }
+
+  std::vector<char> request = CreateDnsTxtRequest(qname);
+  EmplaceMockSocketData(request, CreateDnsTxtResponse(request, answer));
+}
+
 void MockLogDnsTraffic::ExpectLeafIndexRequestAndResponse(
     base::StringPiece qname,
-    base::StringPiece leaf_index) {
-  // Prepend size to leaf_index to create the query answer (rdata)
-  ASSERT_LE(leaf_index.size(), 0xFFul);  // size must fit into a single byte
-  std::string answer = leaf_index.as_string();
-  answer.insert(answer.begin(), static_cast<char>(leaf_index.size()));
-
-  ExpectRequestAndResponse(qname, answer);
+    uint64_t leaf_index) {
+  ExpectRequestAndResponse(qname, { base::Uint64ToString(leaf_index) });
 }
 
 void MockLogDnsTraffic::ExpectAuditProofRequestAndResponse(
@@ -212,11 +223,7 @@ void MockLogDnsTraffic::ExpectAuditProofRequestAndResponse(
   std::string proof =
       std::accumulate(audit_path_start, audit_path_end, std::string());
 
-  // Prepend size to proof to create the query answer (rdata)
-  ASSERT_LE(proof.size(), 0xFFul);  // size must fit into a single byte
-  proof.insert(proof.begin(), static_cast<char>(proof.size()));
-
-  ExpectRequestAndResponse(qname, proof);
+  ExpectRequestAndResponse(qname, { proof });
 }
 
 void MockLogDnsTraffic::InitializeDnsConfig() {
@@ -244,12 +251,6 @@ void MockLogDnsTraffic::SetDnsConfig(const net::DnsConfig& config) {
 std::unique_ptr<net::DnsClient> MockLogDnsTraffic::CreateDnsClient() {
   return net::DnsClient::CreateClientForTesting(nullptr, &socket_factory_,
                                                 base::Bind(&FakeRandInt));
-}
-
-void MockLogDnsTraffic::ExpectRequestAndResponse(base::StringPiece qname,
-                                                 base::StringPiece answer) {
-  std::vector<char> request = CreateDnsTxtRequest(qname);
-  EmplaceMockSocketData(request, CreateDnsTxtResponse(request, answer));
 }
 
 template <typename... Args>

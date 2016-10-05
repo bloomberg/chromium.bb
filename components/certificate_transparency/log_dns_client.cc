@@ -29,6 +29,10 @@ namespace certificate_transparency {
 
 namespace {
 
+// Parses the DNS response and extracts a single string from the TXT RDATA.
+// If the response is malformed, not a TXT record, or contains any number of
+// strings other than 1, this returns false and extracts nothing.
+// Otherwise, it returns true and the extracted string is assigned to |*txt|.
 bool ParseTxtResponse(const net::DnsResponse& response, std::string* txt) {
   DCHECK(txt);
 
@@ -44,10 +48,17 @@ bool ParseTxtResponse(const net::DnsResponse& response, std::string* txt) {
   if (txt_record == nullptr)
     return false;
 
-  *txt = base::JoinString(txt_record->texts(), "");
+  // The draft CT-over-DNS RFC says that there MUST be exactly one string in the
+  // TXT record.
+  if (txt_record->texts().size() != 1)
+    return false;
+
+  *txt = txt_record->texts().front();
   return true;
 }
 
+// Extracts a leaf index value from a DNS response's TXT RDATA.
+// Returns true on success, false otherwise.
 bool ParseLeafIndex(const net::DnsResponse& response, uint64_t* index) {
   DCHECK(index);
 
@@ -58,6 +69,11 @@ bool ParseLeafIndex(const net::DnsResponse& response, uint64_t* index) {
   return base::StringToUint64(index_str, index);
 }
 
+// Extracts audit proof nodes from a DNS response's TXT RDATA.
+// Returns true on success, false otherwise.
+// It will fail if there is not a whole number of nodes present > 0.
+// There must only be one string in the TXT RDATA.
+// The nodes will be appended to |proof->nodes|
 bool ParseAuditPath(const net::DnsResponse& response,
                     net::ct::MerkleAuditProof* proof) {
   DCHECK(proof);
