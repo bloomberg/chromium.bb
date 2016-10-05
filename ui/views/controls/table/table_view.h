@@ -341,8 +341,12 @@ class VIEWS_EXPORT TableView
 
   int row_height_;
 
-  // The last width for which column sizes were calculated.
-  int last_layout_width_;
+  // Width of the ScrollView last time Layout() was invoked. Used to determine
+  // when we should invoke UpdateVisibleColumnSizes().
+  int last_parent_width_;
+
+  // The width we layout to. This may differ from |last_parent_width_|.
+  int layout_width_;
 
   // Current sort.
   SortDescriptors sort_descriptors_;

@@ -137,7 +137,8 @@ TableView::TableView(ui::TableModel* model,
       select_on_remove_(true),
       table_view_observer_(NULL),
       row_height_(font_list_.GetHeight() + kTextVerticalPadding * 2),
-      last_layout_width_(0),
+      last_parent_width_(0),
+      layout_width_(0),
       grouper_(NULL),
       in_set_visible_column_width_(false) {
   for (size_t i = 0; i < columns.size(); ++i) {
@@ -316,17 +317,30 @@ int TableView::ViewToModel(int view_index) const {
 }
 
 void TableView::Layout() {
-  View* viewport = parent();
-  if (viewport && last_layout_width_ != viewport->width() &&
-      !in_set_visible_column_width_) {
-    last_layout_width_ = viewport->width();
-    UpdateVisibleColumnSizes();
+  // parent()->parent() is the scrollview. When its width changes we force
+  // recalculating column sizes.
+  View* scroll_view = parent() ? parent()->parent() : NULL;
+  if (scroll_view) {
+    const int scroll_view_width = scroll_view->GetContentsBounds().width();
+    if (scroll_view_width != last_parent_width_) {
+      last_parent_width_ = scroll_view_width;
+      if (!in_set_visible_column_width_) {
+        // Layout to the parent (the Viewport), which differs from
+        // |scroll_view_width| when scrollbars are present.
+        layout_width_ = parent()->width();
+        UpdateVisibleColumnSizes();
+      }
+    }
   }
   // We have to override Layout like this since we're contained in a ScrollView.
   gfx::Size pref = GetPreferredSize();
-  if (viewport)
-    pref.SetToMax(viewport->size());
-  SetSize(pref);
+  int width = pref.width();
+  int height = pref.height();
+  if (parent()) {
+    width = std::max(parent()->width(), width);
+    height = std::max(parent()->height(), height);
+  }
+  SetBounds(x(), y(), width, height);
 }
 
 const char* TableView::GetClassName() const {
@@ -727,8 +741,7 @@ void TableView::UpdateVisibleColumnSizes() {
     first_column_padding += kGroupingIndicatorSize + kTextHorizontalPadding;
 
   std::vector<int> sizes = views::CalculateTableColumnSizes(
-      last_layout_width_, first_column_padding, header_->font_list(),
-      font_list_,
+      layout_width_, first_column_padding, header_->font_list(), font_list_,
       std::max(kTextHorizontalPadding, TableHeader::kHorizontalPadding) * 2,
       TableHeader::kSortIndicatorWidth, columns, model_);
   DCHECK_EQ(visible_columns_.size(), sizes.size());

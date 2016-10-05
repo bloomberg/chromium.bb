@@ -152,16 +152,7 @@ void TaskManagerView::SetSortDescriptor(const TableSortDescriptor& descriptor) {
 }
 
 gfx::Size TaskManagerView::GetPreferredSize() const {
-  gfx::Size table_size = tab_table_parent_->GetPreferredSize();
-  // The task name column expands to use excess space but also defaults to
-  // to a very narrow width: just enough to fit "Task" in English, and not
-  // enough to fit most actual task names such as "Tab: My email inbox". Add
-  // some extra width here to make the task names more readable.
-  table_size.set_width(table_size.width() + 180);
-  table_size.set_height(270);
-  gfx::Insets border = GetInsets();
-  table_size.Enlarge(border.width(), border.height());
-  return table_size;
+  return gfx::Size(460, 270);
 }
 
 bool TaskManagerView::AcceleratorPressed(const ui::Accelerator& accelerator) {
