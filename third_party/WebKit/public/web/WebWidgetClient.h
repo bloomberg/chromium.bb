@@ -89,9 +89,15 @@ class WebWidgetClient {
   // Called to show the widget according to the given policy.
   virtual void show(WebNavigationPolicy) {}
 
-  // Called to get/set the position of the widget in screen coordinates.
+  // Called to get/set the position of the widget's window in screen
+  // coordinates. Note, the window includes any decorations such as borders,
+  // scrollbars, URL bar, tab strip, etc. if they exist.
   virtual WebRect windowRect() { return WebRect(); }
   virtual void setWindowRect(const WebRect&) {}
+
+  // Called to get the view rect in screen coordinates. This is the actual
+  // content view area, i.e. doesn't include any window decorations.
+  virtual WebRect viewRect() { return WebRect(); }
 
   // Called when a tooltip should be shown at the current cursor position.
   virtual void setToolTipText(const WebString&, WebTextDirection hint) {}

@@ -624,7 +624,7 @@ bool GpuBenchmarking::SmoothScrollBy(gin::Arguments* args) {
     return false;
 
   float page_scale_factor = context.web_view()->pageScaleFactor();
-  blink::WebRect rect = context.render_view_impl()->GetWidget()->windowRect();
+  blink::WebRect rect = context.render_view_impl()->GetWidget()->viewRect();
 
   float pixels_to_scroll = 0;
   v8::Local<v8::Function> callback;
@@ -694,7 +694,7 @@ bool GpuBenchmarking::Swipe(gin::Arguments* args) {
     return false;
 
   float page_scale_factor = context.web_view()->pageScaleFactor();
-  blink::WebRect rect = context.render_view_impl()->GetWidget()->windowRect();
+  blink::WebRect rect = context.render_view_impl()->GetWidget()->viewRect();
 
   std::string direction = "up";
   float pixels_to_scroll = 0;
@@ -729,7 +729,7 @@ bool GpuBenchmarking::ScrollBounce(gin::Arguments* args) {
     return false;
 
   float page_scale_factor = context.web_view()->pageScaleFactor();
-  blink::WebRect rect = context.render_view_impl()->GetWidget()->windowRect();
+  blink::WebRect rect = context.render_view_impl()->GetWidget()->viewRect();
 
   std::string direction = "down";
   float distance_length = 0;

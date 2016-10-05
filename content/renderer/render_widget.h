@@ -265,6 +265,7 @@ class CONTENT_EXPORT RenderWidget
   void closeWidgetSoon() override;
   void show(blink::WebNavigationPolicy) override;
   blink::WebRect windowRect() override;
+  blink::WebRect viewRect() override;
   void setToolTipText(const blink::WebString& text,
                       blink::WebTextDirection hint) override;
   void setWindowRect(const blink::WebRect&) override;
@@ -384,10 +385,6 @@ class CONTENT_EXPORT RenderWidget
 
   // Called when the Widget has changed size as a result of an auto-resize.
   void DidAutoResize(const gfx::Size& new_size);
-
-  // Called to get the position of the root window containing the widget in
-  // screen coordinates.
-  gfx::Rect RootWindowRect();
 
   // Indicates whether this widget has focus.
   bool has_focus() const { return has_focus_; }

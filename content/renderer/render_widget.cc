@@ -689,8 +689,6 @@ void RenderWidget::OnWasShown(bool needs_repainting,
 void RenderWidget::OnRequestMoveAck() {
   DCHECK(pending_window_rect_count_);
   pending_window_rect_count_--;
-  if (!pending_window_rect_count_)
-    view_screen_rect_ = pending_window_rect_;
 }
 
 GURL RenderWidget::GetURLForGraphicsContext3D() {
@@ -1339,10 +1337,20 @@ void RenderWidget::Close() {
 }
 
 WebRect RenderWidget::windowRect() {
-  if (pending_window_rect_count_)
+  if (pending_window_rect_count_) {
+    // NOTE(mbelshe): If there is a pending_window_rect_, then getting
+    // the RootWindowRect is probably going to return wrong results since the
+    // browser may not have processed the Move yet.  There isn't really anything
+    // good to do in this case, and it shouldn't happen - since this size is
+    // only really needed for windowToScreen, which is only used for Popups.
     return pending_window_rect_;
+  }
 
-  return view_screen_rect_;
+  return window_screen_rect_;
+}
+
+WebRect RenderWidget::viewRect() {
+    return view_screen_rect_;
 }
 
 void RenderWidget::setToolTipText(const blink::WebString& text,
@@ -1375,19 +1383,13 @@ void RenderWidget::setWindowRect(const WebRect& rect_in_screen) {
 void RenderWidget::SetPendingWindowRect(const WebRect& rect) {
   pending_window_rect_ = rect;
   pending_window_rect_count_++;
-}
 
-gfx::Rect RenderWidget::RootWindowRect() {
-  if (pending_window_rect_count_) {
-    // NOTE(mbelshe): If there is a pending_window_rect_, then getting
-    // the RootWindowRect is probably going to return wrong results since the
-    // browser may not have processed the Move yet.  There isn't really anything
-    // good to do in this case, and it shouldn't happen - since this size is
-    // only really needed for windowToScreen, which is only used for Popups.
-    return pending_window_rect_;
+  // Popups don't get size updates back from the browser so just store the set
+  // values.
+  if (popup_type_ != blink::WebPopupTypeNone) {
+      window_screen_rect_ = rect;
+      view_screen_rect_ = rect;
   }
-
-  return window_screen_rect_;
 }
 
 WebRect RenderWidget::windowResizerRect() {
@@ -1520,11 +1522,10 @@ void RenderWidget::OnUpdateScreenRects(const gfx::Rect& view_screen_rect,
 
 void RenderWidget::OnUpdateWindowScreenRect(
     const gfx::Rect& window_screen_rect) {
-  if (screen_metrics_emulator_) {
+  if (screen_metrics_emulator_)
     screen_metrics_emulator_->OnUpdateWindowScreenRect(window_screen_rect);
-  } else {
+  else
     window_screen_rect_ = window_screen_rect;
-  }
 }
 
 void RenderWidget::OnSetFrameSinkId(const cc::FrameSinkId& frame_sink_id) {
@@ -1859,7 +1860,7 @@ void RenderWidget::DidAutoResize(const gfx::Size& new_size) {
     size_ = gfx::Size(new_size_in_window.width, new_size_in_window.height);
 
     if (resizing_mode_selector_->is_synchronous_mode()) {
-      gfx::Rect new_pos(RootWindowRect().x(), RootWindowRect().y(),
+      gfx::Rect new_pos(windowRect().x, windowRect().y,
                         size_.width(), size_.height());
       view_screen_rect_ = new_pos;
       window_screen_rect_ = new_pos;

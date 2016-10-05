@@ -581,9 +581,9 @@ IntRect ChromeClientImpl::viewportToScreen(const IntRect& rectInViewport,
 
   if (client) {
     client->convertViewportToWindow(&screenRect);
-    WebRect windowRect = client->windowRect();
-    screenRect.x += windowRect.x;
-    screenRect.y += windowRect.y;
+    WebRect viewRect = client->viewRect();
+    screenRect.x += viewRect.x;
+    screenRect.y += viewRect.y;
   }
 
   return screenRect;
