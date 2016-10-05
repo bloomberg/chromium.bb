@@ -181,7 +181,6 @@ QuarantineFileResult SetInternetZoneIdentifierDirectly(
 //               will not be set.
 // |client_guid|: the GUID to be set in the IAttachmentExecute client slot.
 //                Used to identify the app to the system AV function.
-//                If GUID_NULL is passed, no client GUID is set.
 // |save_result|: Receives the result of invoking IAttachmentExecute::Save().
 bool InvokeAttachmentServices(const base::FilePath& full_path,
                               const std::string& source_url,
