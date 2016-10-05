@@ -176,14 +176,16 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* scriptState,
                                "https://bit.ly/WebBluetoothOriginTrial"));
   }
 
-  // 1. If the incumbent settings object is not a secure context, reject promise with a SecurityError and abort these steps.
+  // 1. If the incumbent settings object is not a secure context, reject promise
+  //    with a SecurityError and abort these steps.
   String errorMessage;
   if (!context->isSecureContext(errorMessage)) {
     return ScriptPromise::rejectWithDOMException(
         scriptState, DOMException::create(SecurityError, errorMessage));
   }
 
-  // 2. If the algorithm is not allowed to show a popup, reject promise with a SecurityError and abort these steps.
+  // 2. If the algorithm is not allowed to show a popup, reject promise with a
+  //    SecurityError and abort these steps.
   if (!UserGestureIndicator::consumeUserGesture()) {
     return ScriptPromise::rejectWithDOMException(
         scriptState,
@@ -198,7 +200,8 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* scriptState,
     return ScriptPromise::rejectWithDOMException(
         scriptState, DOMException::create(NotSupportedError));
 
-  // 3. In order to convert the arguments from service names and aliases to just UUIDs, do the following substeps:
+  // 3. In order to convert the arguments from service names and aliases to just
+  //    UUIDs, do the following substeps:
   WebRequestDeviceOptions webOptions;
   convertRequestDeviceOptions(options, webOptions, exceptionState);
   if (exceptionState.hadException())

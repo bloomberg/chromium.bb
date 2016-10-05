@@ -421,7 +421,8 @@ void InspectorCacheStorageAgent::requestCacheNames(
 
   // Cache Storage API is restricted to trustworthy origins.
   if (!secOrigin->isPotentiallyTrustworthy()) {
-    // Don't treat this as an error, just don't attempt to open and enumerate the caches.
+    // Don't treat this as an error, just don't attempt to open and enumerate
+    // the caches.
     callback->sendSuccess(Array<protocol::CacheStorage::Cache>::create());
     return;
   }

@@ -1063,7 +1063,8 @@ bool parseAlgorithmIdentifier(const AlgorithmIdentifier& raw,
                               AlgorithmError* error) {
   context.add("Algorithm");
 
-  // If the AlgorithmIdentifier is a String, treat it the same as a Dictionary with a "name" attribute and nothing else.
+  // If the AlgorithmIdentifier is a String, treat it the same as a Dictionary
+  // with a "name" attribute and nothing else.
   if (raw.isString()) {
     return parseAlgorithmDictionary(raw.getAsString(), Dictionary(), op,
                                     algorithm, context, error);

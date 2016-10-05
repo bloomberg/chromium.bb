@@ -65,7 +65,8 @@ class SubtleCrypto final : public GarbageCollected<SubtleCrypto>,
                      const AlgorithmIdentifier&,
                      CryptoKey*,
                      const BufferSource&);
-  // Note that this is not named "verify" because when compiling on Mac that expands to a macro and breaks.
+  // Note that this is not named "verify" because when compiling on Mac that
+  // expands to a macro and breaks.
   ScriptPromise verifySignature(ScriptState*,
                                 const AlgorithmIdentifier&,
                                 CryptoKey*,

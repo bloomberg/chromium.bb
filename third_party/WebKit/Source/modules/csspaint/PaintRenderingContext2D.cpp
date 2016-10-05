@@ -17,7 +17,8 @@ PaintRenderingContext2D::PaintRenderingContext2D(
   m_clipAntialiasing = AntiAliased;
   modifiableState().setShouldAntialias(true);
 
-  // RecordingImageBufferSurface doesn't call ImageBufferSurface::clear explicitly.
+  // RecordingImageBufferSurface doesn't call ImageBufferSurface::clear
+  // explicitly.
   DCHECK(m_imageBuffer);
   m_imageBuffer->canvas()->clear(hasAlpha ? SK_ColorTRANSPARENT
                                           : SK_ColorBLACK);

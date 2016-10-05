@@ -18,8 +18,9 @@ class Page;
 class WebCredential;
 class WebURL;
 
-// CredentialManagerClient lives as a supplement to Page, and wraps the embedder-provided
-// WebCredentialManagerClient's methods to make them visible to the bindings code.
+// CredentialManagerClient lives as a supplement to Page, and wraps the
+// embedder-provided WebCredentialManagerClient's methods to make them visible
+// to the bindings code.
 class MODULES_EXPORT CredentialManagerClient final
     : public GarbageCollectedFinalized<CredentialManagerClient>,
       public Supplement<Page> {

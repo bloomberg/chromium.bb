@@ -21,7 +21,8 @@ class MODULES_EXPORT AudioOutputDeviceClient : public Supplement<LocalFrame> {
  public:
   virtual ~AudioOutputDeviceClient() {}
 
-  // Checks that a given sink exists and has permissions to be used from the origin of the current frame.
+  // Checks that a given sink exists and has permissions to be used from the
+  // origin of the current frame.
   virtual void checkIfAudioSinkExistsAndIsAuthorized(
       ExecutionContext*,
       const WebString& sinkId,

@@ -175,7 +175,8 @@ ScriptPromise SubtleCrypto::encrypt(ScriptState* scriptState,
                                     const AlgorithmIdentifier& rawAlgorithm,
                                     CryptoKey* key,
                                     const BufferSource& rawData) {
-  // Method described by: https://w3c.github.io/webcrypto/Overview.html#dfn-SubtleCrypto-method-encrypt
+  // Method described by:
+  // https://w3c.github.io/webcrypto/Overview.html#dfn-SubtleCrypto-method-encrypt
 
   CryptoResultImpl* result = CryptoResultImpl::create(scriptState);
   ScriptPromise promise = result->promise();
@@ -215,7 +216,8 @@ ScriptPromise SubtleCrypto::decrypt(ScriptState* scriptState,
                                     const AlgorithmIdentifier& rawAlgorithm,
                                     CryptoKey* key,
                                     const BufferSource& rawData) {
-  // Method described by: https://w3c.github.io/webcrypto/Overview.html#dfn-SubtleCrypto-method-decrypt
+  // Method described by:
+  // https://w3c.github.io/webcrypto/Overview.html#dfn-SubtleCrypto-method-decrypt
 
   CryptoResultImpl* result = CryptoResultImpl::create(scriptState);
   ScriptPromise promise = result->promise();
@@ -255,7 +257,8 @@ ScriptPromise SubtleCrypto::sign(ScriptState* scriptState,
                                  const AlgorithmIdentifier& rawAlgorithm,
                                  CryptoKey* key,
                                  const BufferSource& rawData) {
-  // Method described by: https://w3c.github.io/webcrypto/Overview.html#dfn-SubtleCrypto-method-sign
+  // Method described by:
+  // https://w3c.github.io/webcrypto/Overview.html#dfn-SubtleCrypto-method-sign
 
   CryptoResultImpl* result = CryptoResultImpl::create(scriptState);
   ScriptPromise promise = result->promise();
@@ -297,7 +300,8 @@ ScriptPromise SubtleCrypto::verifySignature(
     CryptoKey* key,
     const BufferSource& rawSignature,
     const BufferSource& rawData) {
-  // Method described by: https://w3c.github.io/webcrypto/Overview.html#SubtleCrypto-method-verify
+  // Method described by:
+  // https://w3c.github.io/webcrypto/Overview.html#SubtleCrypto-method-verify
 
   CryptoResultImpl* result = CryptoResultImpl::create(scriptState);
   ScriptPromise promise = result->promise();
@@ -321,8 +325,8 @@ ScriptPromise SubtleCrypto::verifySignature(
     return promise;
 
   // 14.3.4.9: If the name member of normalizedAlgorithm is not equal to the
-  //           name attribute of the [[algorithm]] internal slot of key then throw an
-  //           InvalidAccessError.
+  //           name attribute of the [[algorithm]] internal slot of key then
+  //           throw an InvalidAccessError.
   //
   // 14.3.4.10: If the [[usages]] internal slot of key does not contain an
   //            entry that is "verify", then throw an InvalidAccessError.
@@ -341,7 +345,8 @@ ScriptPromise SubtleCrypto::verifySignature(
 ScriptPromise SubtleCrypto::digest(ScriptState* scriptState,
                                    const AlgorithmIdentifier& rawAlgorithm,
                                    const BufferSource& rawData) {
-  // Method described by: https://w3c.github.io/webcrypto/Overview.html#SubtleCrypto-method-digest
+  // Method described by:
+  // https://w3c.github.io/webcrypto/Overview.html#SubtleCrypto-method-digest
 
   CryptoResultImpl* result = CryptoResultImpl::create(scriptState);
   ScriptPromise promise = result->promise();
@@ -370,7 +375,8 @@ ScriptPromise SubtleCrypto::generateKey(ScriptState* scriptState,
                                         const AlgorithmIdentifier& rawAlgorithm,
                                         bool extractable,
                                         const Vector<String>& rawKeyUsages) {
-  // Method described by: https://w3c.github.io/webcrypto/Overview.html#SubtleCrypto-method-generateKey
+  // Method described by:
+  // https://w3c.github.io/webcrypto/Overview.html#SubtleCrypto-method-generateKey
 
   CryptoResultImpl* result = CryptoResultImpl::create(scriptState);
   ScriptPromise promise = result->promise();
@@ -407,7 +413,8 @@ ScriptPromise SubtleCrypto::importKey(
     const AlgorithmIdentifier& rawAlgorithm,
     bool extractable,
     const Vector<String>& rawKeyUsages) {
-  // Method described by: https://w3c.github.io/webcrypto/Overview.html#SubtleCrypto-method-importKey
+  // Method described by:
+  // https://w3c.github.io/webcrypto/Overview.html#SubtleCrypto-method-importKey
 
   CryptoResultImpl* result = CryptoResultImpl::create(scriptState);
   ScriptPromise promise = result->promise();
@@ -489,7 +496,8 @@ ScriptPromise SubtleCrypto::importKey(
 ScriptPromise SubtleCrypto::exportKey(ScriptState* scriptState,
                                       const String& rawFormat,
                                       CryptoKey* key) {
-  // Method described by: https://w3c.github.io/webcrypto/Overview.html#dfn-SubtleCrypto-method-exportKey
+  // Method described by:
+  // https://w3c.github.io/webcrypto/Overview.html#dfn-SubtleCrypto-method-exportKey
 
   CryptoResultImpl* result = CryptoResultImpl::create(scriptState);
   ScriptPromise promise = result->promise();
@@ -521,7 +529,8 @@ ScriptPromise SubtleCrypto::wrapKey(
     CryptoKey* key,
     CryptoKey* wrappingKey,
     const AlgorithmIdentifier& rawWrapAlgorithm) {
-  // Method described by: https://w3c.github.io/webcrypto/Overview.html#SubtleCrypto-method-wrapKey
+  // Method described by:
+  // https://w3c.github.io/webcrypto/Overview.html#SubtleCrypto-method-wrapKey
 
   CryptoResultImpl* result = CryptoResultImpl::create(scriptState);
   ScriptPromise promise = result->promise();
@@ -584,7 +593,8 @@ ScriptPromise SubtleCrypto::unwrapKey(
     const AlgorithmIdentifier& rawUnwrappedKeyAlgorithm,
     bool extractable,
     const Vector<String>& rawKeyUsages) {
-  // Method described by: https://w3c.github.io/webcrypto/Overview.html#SubtleCrypto-method-unwrapKey
+  // Method described by:
+  // https://w3c.github.io/webcrypto/Overview.html#SubtleCrypto-method-unwrapKey
 
   CryptoResultImpl* result = CryptoResultImpl::create(scriptState);
   ScriptPromise promise = result->promise();
@@ -654,7 +664,8 @@ ScriptPromise SubtleCrypto::deriveBits(ScriptState* scriptState,
                                        const AlgorithmIdentifier& rawAlgorithm,
                                        CryptoKey* baseKey,
                                        unsigned lengthBits) {
-  // Method described by: https://w3c.github.io/webcrypto/Overview.html#dfn-SubtleCrypto-method-deriveBits
+  // Method described by:
+  // https://w3c.github.io/webcrypto/Overview.html#dfn-SubtleCrypto-method-deriveBits
 
   CryptoResultImpl* result = CryptoResultImpl::create(scriptState);
   ScriptPromise promise = result->promise();
@@ -694,7 +705,8 @@ ScriptPromise SubtleCrypto::deriveKey(
     const AlgorithmIdentifier& rawDerivedKeyType,
     bool extractable,
     const Vector<String>& rawKeyUsages) {
-  // Method described by: https://w3c.github.io/webcrypto/Overview.html#SubtleCrypto-method-deriveKey
+  // Method described by:
+  // https://w3c.github.io/webcrypto/Overview.html#SubtleCrypto-method-deriveKey
 
   CryptoResultImpl* result = CryptoResultImpl::create(scriptState);
   ScriptPromise promise = result->promise();

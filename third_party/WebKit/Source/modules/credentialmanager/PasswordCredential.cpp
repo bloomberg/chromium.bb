@@ -88,8 +88,9 @@ PasswordCredential* PasswordCredential::create(HTMLFormElement* form,
     return nullptr;
   ASSERT(credential);
 
-  // After creating the Credential, populate its 'additionalData', 'idName', and 'passwordName' attributes.
-  // If the form's 'enctype' is anything other than multipart, generate a URLSearchParams using the
+  // After creating the Credential, populate its 'additionalData', 'idName', and
+  // 'passwordName' attributes.  If the form's 'enctype' is anything other than
+  // multipart, generate a URLSearchParams using the
   // data in |formData|.
   credential->setIdName(idName);
   credential->setPasswordName(passwordName);
@@ -128,7 +129,8 @@ PasswordCredential::PasswordCredential(const String& id,
 PassRefPtr<EncodedFormData> PasswordCredential::encodeFormData(
     String& contentType) const {
   if (m_additionalData.isURLSearchParams()) {
-    // If |additionalData| is a 'URLSearchParams' object, build a urlencoded response.
+    // If |additionalData| is a 'URLSearchParams' object, build a urlencoded
+    // response.
     URLSearchParams* params = URLSearchParams::create(URLSearchParamsInit());
     URLSearchParams* additionalData = m_additionalData.getAsURLSearchParams();
     for (const auto& param : additionalData->params()) {

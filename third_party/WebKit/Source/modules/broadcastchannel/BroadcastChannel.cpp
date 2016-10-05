@@ -40,7 +40,8 @@ BroadcastChannel* BroadcastChannel::create(ExecutionContext* executionContext,
                                            const String& name,
                                            ExceptionState& exceptionState) {
   if (executionContext->getSecurityOrigin()->isUnique()) {
-    // TODO(mek): Decide what to do here depending on https://github.com/whatwg/html/issues/1319
+    // TODO(mek): Decide what to do here depending on
+    // https://github.com/whatwg/html/issues/1319
     exceptionState.throwDOMException(
         NotSupportedError, "Can't create BroadcastChannel in an opaque origin");
     return nullptr;
@@ -124,13 +125,15 @@ BroadcastChannel::BroadcastChannel(ExecutionContext* executionContext,
   mojom::blink::BroadcastChannelProviderPtr& provider =
       getThreadSpecificProvider();
 
-  // Local BroadcastChannelClient for messages send from the browser to this channel.
+  // Local BroadcastChannelClient for messages send from the browser to this
+  // channel.
   mojom::blink::BroadcastChannelClientAssociatedPtrInfo localClientInfo;
   m_binding.Bind(&localClientInfo, provider.associated_group());
   m_binding.set_connection_error_handler(convertToBaseCallback(
       WTF::bind(&BroadcastChannel::onError, wrapWeakPersistent(this))));
 
-  // Remote BroadcastChannelClient for messages send from this channel to the browser.
+  // Remote BroadcastChannelClient for messages send from this channel to the
+  // browser.
   mojom::blink::BroadcastChannelClientAssociatedPtrInfo remoteClientInfo;
   mojo::AssociatedInterfaceRequest<mojom::blink::BroadcastChannelClient>
       remoteCientRequest;

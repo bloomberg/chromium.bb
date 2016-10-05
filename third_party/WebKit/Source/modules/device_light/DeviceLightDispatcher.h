@@ -11,7 +11,8 @@
 
 namespace blink {
 
-// This class listens to device light data and notifies all registered controllers.
+// This class listens to device light data and notifies all registered
+// controllers.
 class DeviceLightDispatcher final
     : public GarbageCollectedFinalized<DeviceLightDispatcher>,
       public PlatformEventDispatcher,

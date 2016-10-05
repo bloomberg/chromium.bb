@@ -50,7 +50,8 @@ void DeviceOrientationAbsoluteController::didAddEventListener(
       Deprecation::countDeprecation(
           document().frame(),
           UseCounter::DeviceOrientationAbsoluteInsecureOrigin);
-      // TODO: add rappor logging of insecure origins as in DeviceOrientationController.
+      // TODO: add rappor logging of insecure origins as in
+      // DeviceOrientationController.
       if (document().frame()->settings()->strictPowerfulFeatureRestrictions())
         return;
     }

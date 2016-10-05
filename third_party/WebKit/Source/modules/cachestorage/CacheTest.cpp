@@ -71,7 +71,8 @@ class ScopedFetcherForTests final
                          "Unexpected call to fetch, no response available."));
   }
 
-  // This does not take ownership of its parameter. The provided sample object is used to check the parameter when called.
+  // This does not take ownership of its parameter. The provided sample object
+  // is used to check the parameter when called.
   void setExpectedFetchUrl(const String* expectedUrl) {
     m_expectedUrl = expectedUrl;
   }
@@ -92,8 +93,10 @@ class ScopedFetcherForTests final
   Member<Response> m_response;
 };
 
-// A test implementation of the WebServiceWorkerCache interface which returns a (provided) error for every operation, and optionally checks arguments
-// to methods against provided arguments. Also used as a base class for test specific caches.
+// A test implementation of the WebServiceWorkerCache interface which returns a
+// (provided) error for every operation, and optionally checks arguments to
+// methods against provided arguments. Also used as a base class for test
+// specific caches.
 class ErrorWebCacheForTests : public WebServiceWorkerCache {
  public:
   ErrorWebCacheForTests(const WebServiceWorkerCacheError error)
@@ -108,7 +111,8 @@ class ErrorWebCacheForTests : public WebServiceWorkerCache {
     return old;
   }
 
-  // These methods do not take ownership of their parameter. They provide an optional sample object to check parameters against.
+  // These methods do not take ownership of their parameter. They provide an
+  // optional sample object to check parameters against.
   void setExpectedUrl(const String* expectedUrl) {
     m_expectedUrl = expectedUrl;
   }
@@ -305,8 +309,8 @@ class CacheStorageTest : public ::testing::Test {
         : ScriptFunction(scriptState) {}
   };
 
-  // A ScriptFunction that saves its parameter; used by tests to assert on correct
-  // values being passed.
+  // A ScriptFunction that saves its parameter; used by tests to assert on
+  // correct values being passed.
   class TestFunction : public ScriptFunction {
    public:
     static v8::Local<v8::Function> create(ScriptState* scriptState,
@@ -375,8 +379,8 @@ TEST_F(CacheStorageTest, Basics) {
             getRejectString(matchPromise));
 }
 
-// Tests that arguments are faithfully passed on calls to Cache methods, except for methods which use batch operations,
-// which are tested later.
+// Tests that arguments are faithfully passed on calls to Cache methods, except
+// for methods which use batch operations, which are tested later.
 TEST_F(CacheStorageTest, BasicArguments) {
   ScriptState::Scope scope(getScriptState());
   NonThrowableExceptionState exceptionState;
@@ -446,7 +450,8 @@ TEST_F(CacheStorageTest, BasicArguments) {
   EXPECT_EQ(kNotImplementedString, getRejectString(stringKeysResult2));
 }
 
-// Tests that arguments are faithfully passed to API calls that degrade to batch operations.
+// Tests that arguments are faithfully passed to API calls that degrade to batch
+// operations.
 TEST_F(CacheStorageTest, BatchOperationArguments) {
   ScriptState::Scope scope(getScriptState());
   NonThrowableExceptionState exceptionState;

@@ -38,7 +38,8 @@ class MODULES_EXPORT Credential : public GarbageCollectedFinalized<Credential>,
   Credential(PlatformCredential*);
   Credential(const String& id, const String& name, const KURL& icon);
 
-  // Parses a string as a KURL. Throws an exception via |exceptionState| if an invalid URL is produced.
+  // Parses a string as a KURL. Throws an exception via |exceptionState| if an
+  // invalid URL is produced.
   static KURL parseStringAsURL(const String&, ExceptionState&);
 
   Member<PlatformCredential> m_platformCredential;

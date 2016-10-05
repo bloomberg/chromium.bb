@@ -42,7 +42,8 @@ namespace blink {
 class DeviceOrientationData;
 class WebDeviceOrientationData;
 
-// This class listens to device orientation data and notifies all registered controllers.
+// This class listens to device orientation data and notifies all registered
+// controllers.
 class DeviceOrientationDispatcher final
     : public GarbageCollectedFinalized<DeviceOrientationDispatcher>,
       public PlatformEventDispatcher,

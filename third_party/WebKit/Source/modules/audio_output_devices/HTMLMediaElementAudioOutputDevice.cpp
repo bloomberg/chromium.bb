@@ -68,7 +68,8 @@ void SetSinkIdResolver::timerFired(TimerBase* timer) {
       wrapUnique(new SetSinkIdCallbacks(this, *m_element, m_sinkId));
   WebMediaPlayer* webMediaPlayer = m_element->webMediaPlayer();
   if (webMediaPlayer) {
-    // Using release() to transfer ownership because |webMediaPlayer| is a platform object that takes raw pointers
+    // Using release() to transfer ownership because |webMediaPlayer| is a
+    // platform object that takes raw pointers.
     webMediaPlayer->setSinkId(m_sinkId,
                               WebSecurityOrigin(context->getSecurityOrigin()),
                               callbacks.release());
@@ -78,7 +79,8 @@ void SetSinkIdResolver::timerFired(TimerBase* timer) {
       client->checkIfAudioSinkExistsAndIsAuthorized(context, m_sinkId,
                                                     std::move(callbacks));
     } else {
-      // The context has been detached. Impossible to get a security origin to check.
+      // The context has been detached. Impossible to get a security origin to
+      // check.
       ASSERT(context->activeDOMObjectsAreStopped());
       reject(DOMException::create(
           SecurityError,

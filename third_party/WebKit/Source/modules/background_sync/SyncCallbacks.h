@@ -21,14 +21,16 @@ struct WebSyncError;
 struct WebSyncRegistration;
 class WebString;
 
-// SyncRegistrationCallbacks is an implementation of WebSyncRegistrationCallbacks
-// that will resolve the underlying promise depending on the result passed to
-// the callback. It takes a ServiceWorkerRegistration in its constructor and
-// will pass it to the SyncRegistration.
+// SyncRegistrationCallbacks is an implementation of
+// WebSyncRegistrationCallbacks that will resolve the underlying promise
+// depending on the result passed to the callback. It takes a
+// ServiceWorkerRegistration in its constructor and will pass it to the
+// SyncRegistration.
 class SyncRegistrationCallbacks final : public WebSyncRegistrationCallbacks {
   WTF_MAKE_NONCOPYABLE(SyncRegistrationCallbacks);
-  // FIXME(tasak): when making public/platform classes to use PartitionAlloc,
-  // the following macro should be moved to WebCallbacks defined in public/platformWebCallbacks.h.
+  // FIXME(tasak): When making public/platform classes to use PartitionAlloc,
+  // the following macro should be moved to WebCallbacks defined in
+  // public/platformWebCallbacks.h.
   USING_FAST_MALLOC(SyncRegistrationCallbacks);
 
  public:
@@ -43,15 +45,17 @@ class SyncRegistrationCallbacks final : public WebSyncRegistrationCallbacks {
   Persistent<ServiceWorkerRegistration> m_serviceWorkerRegistration;
 };
 
-// SyncGetRegistrationsCallbacks is an implementation of WebSyncGetRegistrationsCallbacks
-// that will resolve the underlying promise depending on the result passed to
-// the callback. It takes a ServiceWorkerRegistration in its constructor and
-// will pass it to the SyncRegistration.
+// SyncGetRegistrationsCallbacks is an implementation of
+// WebSyncGetRegistrationsCallbacks that will resolve the underlying promise
+// depending on the result passed to the callback. It takes a
+// ServiceWorkerRegistration in its constructor and will pass it to the
+// SyncRegistration.
 class SyncGetRegistrationsCallbacks final
     : public WebSyncGetRegistrationsCallbacks {
   WTF_MAKE_NONCOPYABLE(SyncGetRegistrationsCallbacks);
-  // FIXME(tasak): when making public/platform classes to use PartitionAlloc,
-  // the following macro should be moved to WebCallbacks defined in public/platformWebCallbacks.h.
+  // FIXME(tasak): When making public/platform classes to use PartitionAlloc,
+  // the following macro should be moved to WebCallbacks defined in
+  // public/platformWebCallbacks.h.
   USING_FAST_MALLOC(SyncGetRegistrationsCallbacks);
 
  public:

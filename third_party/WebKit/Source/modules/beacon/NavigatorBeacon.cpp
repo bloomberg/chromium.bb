@@ -61,7 +61,8 @@ bool NavigatorBeacon::canSendBeacon(ExecutionContext* context,
   // FIXME: CSP is not enforced on redirects, crbug.com/372197
   if (!ContentSecurityPolicy::shouldBypassMainWorld(context) &&
       !context->contentSecurityPolicy()->allowConnectToSource(url)) {
-    // We can safely expose the URL to JavaScript, as these checks happen synchronously before redirection. JavaScript receives no new information.
+    // We can safely expose the URL to JavaScript, as these checks happen
+    // synchronously before redirection. JavaScript receives no new information.
     exceptionState.throwSecurityError(
         "Refused to send beacon to '" + url.elidedString() +
         "' because it violates the document's Content Security Policy.");

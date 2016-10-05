@@ -13,7 +13,8 @@ namespace blink {
 
 class ExceptionState;
 
-// This class provides a way for script to look up UUIDs by name so they don't need to be replicated in each application.
+// This class provides a way for script to look up UUIDs by name so they don't
+// need to be replicated in each application.
 class BluetoothUUID final : public GarbageCollected<BluetoothUUID>,
                             public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();

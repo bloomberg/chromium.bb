@@ -68,8 +68,9 @@ TextDecoder::~TextDecoder() {}
 
 String TextDecoder::encoding() const {
   String name = String(m_encoding.name()).lower();
-  // Where possible, encoding aliases should be handled by changes to Chromium's ICU or Blink's WTF.
-  // The same codec is used, but WTF maintains a different name/identity for these.
+  // Where possible, encoding aliases should be handled by changes to Chromium's
+  // ICU or Blink's WTF.  The same codec is used, but WTF maintains a different
+  // name/identity for these.
   if (name == "iso-8859-1" || name == "us-ascii")
     return "windows-1252";
   return name;

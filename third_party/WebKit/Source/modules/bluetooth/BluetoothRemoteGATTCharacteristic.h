@@ -25,13 +25,13 @@ class ScriptPromise;
 class ScriptPromiseResolver;
 class ScriptState;
 
-// BluetoothRemoteGATTCharacteristic represents a GATT Characteristic, which is a
-// basic data element that provides further information about a peripheral's
+// BluetoothRemoteGATTCharacteristic represents a GATT Characteristic, which is
+// a basic data element that provides further information about a peripheral's
 // service.
 //
-// Callbacks providing WebBluetoothRemoteGATTCharacteristicInit objects are handled by
-// CallbackPromiseAdapter templatized with this class. See this class's
-// "Interface required by CallbackPromiseAdapter" section and the
+// Callbacks providing WebBluetoothRemoteGATTCharacteristicInit objects are
+// handled by CallbackPromiseAdapter templatized with this class. See this
+// class's "Interface required by CallbackPromiseAdapter" section and the
 // CallbackPromiseAdapter class comments.
 class BluetoothRemoteGATTCharacteristic final
     : public EventTargetWithInlineData,
