@@ -77,11 +77,12 @@ public class SearchEnginePromoDialog extends Dialog implements View.OnClickListe
     }
 
     private void keepGoogle() {
+        mLocaleManager.setSearchEngineAutoSwitch(false);
         mLocaleManager.addSpecialSearchEngines();
-        // TODO(ianwen): Disable search engine auto switching here.
     }
 
     private void useSogou() {
+        mLocaleManager.setSearchEngineAutoSwitch(true);
         mLocaleManager.addSpecialSearchEngines();
         mLocaleManager.overrideDefaultSearchEngine();
     }

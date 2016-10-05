@@ -50,6 +50,7 @@ public class Snackbar {
     public static final int UMA_TAB_CLOSE_UNDO = 11;
     public static final int UMA_TAB_CLOSE_ALL_UNDO = 12;
     public static final int UMA_DOWNLOAD_DELETE_UNDO = 13;
+    public static final int UMA_SPECIAL_LOCALE = 14;
 
     private SnackbarController mController;
     private CharSequence mText;

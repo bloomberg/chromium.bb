@@ -112,6 +112,25 @@ void SpecialLocaleHandler::OverrideDefaultSearchProvider(
   }
 }
 
+void SpecialLocaleHandler::SetGoogleAsDefaultSearch(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  // If the user has changed his default search provider, no-op.
+  TemplateURL* current_dsp = template_url_service_->GetDefaultSearchProvider();
+  if (!current_dsp ||
+      current_dsp->prepopulate_id() !=
+          GetDesignatedPrepopulatedIdForLocale(locale_)) {
+    return;
+  }
+
+  TemplateURL* turl =
+      FindURLByPrepopulateID(template_url_service_->GetTemplateURLs(),
+                             TemplateURLPrepopulateData::google.id);
+  if (turl) {
+    template_url_service_->SetUserSelectedDefaultSearchProvider(turl);
+  }
+}
+
 SpecialLocaleHandler::~SpecialLocaleHandler() {}
 
 // static

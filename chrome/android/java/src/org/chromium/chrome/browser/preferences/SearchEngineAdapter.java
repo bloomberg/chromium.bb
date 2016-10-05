@@ -71,6 +71,9 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
     // if current search engine is managed and set to something other than the pre-populated values.
     private int mSelectedSearchEnginePosition = -1;
 
+    // The position of the default search engine before user's action.
+    private int mInitialEnginePosition = -1;
+
     /**
      * Construct a SearchEngineAdapter.
      * @param context The current context.
@@ -83,6 +86,13 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
         mCallback = callback;
 
         initEntries();
+    }
+
+    /**
+     * @return The index of the selected engine before user's action.
+     */
+    public int getInitialSearchEnginePosition() {
+        return mInitialEnginePosition;
     }
 
     // Used for testing.
@@ -116,6 +126,7 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
                 mSelectedSearchEnginePosition = i;
             }
         }
+        mInitialEnginePosition = mSelectedSearchEnginePosition;
 
         // Report back what is selected.
         mCallback.currentSearchEngineDetermined(toIndex(mSelectedSearchEnginePosition));

@@ -403,6 +403,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     @Override
     public void onResumeWithNative() {
         super.onResumeWithNative();
+
         CookiesFetcher.restoreCookies(this);
         StartupMetrics.getInstance().recordHistogram(false);
 
@@ -416,6 +417,9 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             mMergeTabsOnResume = false;
         }
         if (mVrShellDelegate.isInVR()) mVrShellDelegate.resumeVR();
+
+        mLocaleManager.setSnackbarManager(getSnackbarManager());
+        mLocaleManager.startObservingPhoneChanges();
     }
 
     @Override
@@ -423,6 +427,10 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         mTabModelSelectorImpl.commitAllTabClosures();
         CookiesFetcher.persistCookies(this);
         if (mVrShellDelegate.isInVR()) mVrShellDelegate.pauseVR();
+
+        mLocaleManager.setSnackbarManager(null);
+        mLocaleManager.stopObservingPhoneChanges();
+
         super.onPauseWithNative();
     }
 
@@ -435,8 +443,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         mTabModelSelectorImpl.saveState();
         StartupMetrics.getInstance().recordHistogram(true);
         mActivityStopMetrics.onStopWithNative(this);
-
-        mLocaleManager.stopObservingPhoneChanges();
     }
 
     @Override
@@ -450,8 +456,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         super.onStartWithNative();
         // If we don't have a current tab, show the overview mode.
         if (getActivityTab() == null) mLayoutManager.showOverview(false);
-
-        mLocaleManager.startObservingPhoneChanges();
 
         resetSavedInstanceState();
     }

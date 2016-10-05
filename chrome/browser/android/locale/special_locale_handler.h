@@ -23,6 +23,7 @@ class SpecialLocaleHandler {
   void RemoveTemplateUrls(JNIEnv* env, const JavaParamRef<jobject>& obj);
   void OverrideDefaultSearchProvider(JNIEnv* env,
                                      const JavaParamRef<jobject>& obj);
+  void SetGoogleAsDefaultSearch(JNIEnv* env, const JavaParamRef<jobject>& obj);
 
  private:
   virtual ~SpecialLocaleHandler();

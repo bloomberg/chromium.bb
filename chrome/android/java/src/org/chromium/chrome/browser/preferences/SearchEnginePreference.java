@@ -14,6 +14,7 @@ import android.widget.ListView;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 
 /**
@@ -75,6 +76,9 @@ public class SearchEnginePreference extends PreferenceFragment
             getActivity().finish();
         } else if (v == mSaveButton) {
             TemplateUrlService.getInstance().setSearchEngine(mSelectedIndex);
+            // If the user has manually set the default search engine, disable auto switching.
+            LocaleManager.getInstance().setSearchEngineAutoSwitch(
+                    mSelectedIndex == mSearchEngineAdapter.getInitialSearchEnginePosition());
             getActivity().finish();
         }
     }

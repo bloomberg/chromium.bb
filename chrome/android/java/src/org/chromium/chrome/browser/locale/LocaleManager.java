@@ -5,29 +5,57 @@
 package org.chromium.chrome.browser.locale;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.preferences.PreferencesLauncher;
+import org.chromium.chrome.browser.preferences.SearchEnginePreference;
+import org.chromium.chrome.browser.snackbar.Snackbar;
+import org.chromium.chrome.browser.snackbar.SnackbarManager;
+import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
+
+import java.lang.ref.WeakReference;
 
 /**
  * Manager for some locale specific logics.
  */
 public class LocaleManager {
+    public static final String PREF_AUTO_SWITCH = "LocaleManager_PREF_AUTO_SWITCH";
     public static final String PREF_PROMO_SHOWN = "LocaleManager_PREF_PROMO_SHOWN";
     public static final String PREF_WAS_IN_SPECIAL_LOCALE = "LocaleManager_WAS_IN_SPECIAL_LOCALE";
     public static final String SPECIAL_LOCALE_ID = "US";
 
     private static LocaleManager sInstance;
 
+    // LocaleManager is a singleton and it should not have strong reference to UI objects.
+    // SnackbarManager is owned by ChromeActivity and is not null as long as the activity is alive.
+    private WeakReference<SnackbarManager> mSnackbarManager;
     private SpecialLocaleHandler mLocaleHandler;
+
+    private SnackbarController mSnackbarController = new SnackbarController() {
+        @Override
+        public void onDismissNoAction(Object actionData) { }
+
+        @Override
+        public void onAction(Object actionData) {
+            Context context = ContextUtils.getApplicationContext();
+            Intent intent = PreferencesLauncher.createIntentForSettingsPage(context,
+                    SearchEnginePreference.class.getName());
+            context.startActivity(intent);
+        }
+    };
 
     /**
      * Starts listening to state changes of the phone.
      */
-    public void startObservingPhoneChanges() {}
+    public void startObservingPhoneChanges() {
+        maybeAutoSwitchSearchEngine();
+    }
 
     /**
      * Stops listening to state changes of the phone.
@@ -82,21 +110,48 @@ public class LocaleManager {
     }
 
     /**
-     * Overrides the default search engine to a different search engine we designate. This is a
-     * no-op if the user has changed DSP settings before.
-     */
-    public void overrideDefaultSearchEngine() {
-        // TODO(ianwen): Implement search engine auto switching.
-        if (!isSpecialLocaleEnabled()) return;
-        getSpecialLocaleHandler().overrideDefaultSearchProvider();
-    }
-
-    /**
      * Removes local search engines for special locale.
      */
     public void removeSpecialSearchEngines() {
         if (isSpecialLocaleEnabled()) return;
         getSpecialLocaleHandler().removeTemplateUrls();
+    }
+
+    /**
+     * Overrides the default search engine to a different search engine we designate. This is a
+     * no-op if the user has manually changed DSP settings.
+     */
+    public void overrideDefaultSearchEngine() {
+        if (!isSearchEngineAutoSwitchEnabled() || !isSpecialLocaleEnabled()) return;
+        getSpecialLocaleHandler().overrideDefaultSearchProvider();
+        showSnackbar(ContextUtils.getApplicationContext().getString(R.string.using_sogou));
+    }
+
+    /**
+     * Reverts the temporary change made in {@link #overrideDefaultSearchEngine()}. This is a no-op
+     * if the user has manually changed DSP settings.
+     */
+    public void revertDefaultSearchEngineOverride() {
+        if (!isSearchEngineAutoSwitchEnabled() || isSpecialLocaleEnabled()) return;
+        getSpecialLocaleHandler().setGoogleAsDefaultSearch();
+        showSnackbar(ContextUtils.getApplicationContext().getString(R.string.using_google));
+    }
+
+    /**
+     * Switches the default search engine based on the current locale, if the user has delegated
+     * Chrome to do so.
+     */
+    protected void maybeAutoSwitchSearchEngine() {
+        SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
+        boolean wasInSpecialLocale = preferences.getBoolean(PREF_WAS_IN_SPECIAL_LOCALE, false);
+        boolean isInSpecialLocale = isSpecialLocaleEnabled();
+        if (wasInSpecialLocale && !isInSpecialLocale) {
+            revertDefaultSearchEngineOverride();
+            removeSpecialSearchEngines();
+        } else if (isInSpecialLocale && !wasInSpecialLocale) {
+            addSpecialSearchEngines();
+            overrideDefaultSearchEngine();
+        }
     }
 
     /**
@@ -116,6 +171,39 @@ public class LocaleManager {
 
         preferences.edit().putBoolean(PREF_PROMO_SHOWN, true).apply();
         return true;
+    }
+
+    /**
+     * @return Whether auto switch for search engine is enabled.
+     */
+    public boolean isSearchEngineAutoSwitchEnabled() {
+        return ContextUtils.getAppSharedPreferences().getBoolean(PREF_AUTO_SWITCH, false);
+    }
+
+    /**
+     * Sets whether auto switch for search engine is enabled.
+     */
+    public void setSearchEngineAutoSwitch(boolean isEnabled) {
+        ContextUtils.getAppSharedPreferences().edit().putBoolean(PREF_AUTO_SWITCH, isEnabled)
+                .apply();
+    }
+
+    /**
+     * Sets the {@link SnackbarManager} used by this instance.
+     */
+    public void setSnackbarManager(SnackbarManager manager) {
+        mSnackbarManager = new WeakReference<SnackbarManager>(manager);
+    }
+
+    private void showSnackbar(CharSequence title) {
+        SnackbarManager manager = mSnackbarManager.get();
+        if (manager == null) return;
+
+        Context context = ContextUtils.getApplicationContext();
+        Snackbar snackbar = Snackbar.make(title, mSnackbarController, Snackbar.TYPE_NOTIFICATION,
+                Snackbar.UMA_SPECIAL_LOCALE);
+        snackbar.setAction(context.getString(R.string.preferences), null);
+        manager.showSnackbar(snackbar);
     }
 
     /**

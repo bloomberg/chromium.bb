@@ -62,9 +62,18 @@ public class SpecialLocaleHandler {
         nativeOverrideDefaultSearchProvider(mNativeSpecialLocaleHandler);
     }
 
+    /**
+     * Sets the default search provider back to Google.
+     */
+    public void setGoogleAsDefaultSearch() {
+        assert mNativeSpecialLocaleHandler != 0;
+        nativeSetGoogleAsDefaultSearch(mNativeSpecialLocaleHandler);
+    }
+
     private static native long nativeInit(String localeId);
     private static native void nativeDestroy(long nativeSpecialLocaleHandler);
     private static native boolean nativeLoadTemplateUrls(long nativeSpecialLocaleHandler);
     private static native void nativeRemoveTemplateUrls(long nativeSpecialLocaleHandler);
     private static native void nativeOverrideDefaultSearchProvider(long nativeSpecialLocaleHandler);
+    private static native void nativeSetGoogleAsDefaultSearch(long nativeSpecialLocaleHandler);
 }
