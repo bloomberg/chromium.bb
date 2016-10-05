@@ -222,9 +222,14 @@ void VRDeviceManager::ExitPresent(VRServiceImpl* service, unsigned int index) {
   if (presenting_device_->id() != index)
     return;
 
+  // Tell the client we're done. This must happen before the device's
+  // ExitPresent to avoid invalid mojo state.
+  if (presenting_service_->client()) {
+    presenting_service_->client()->OnExitPresent(index);
+  }
+
   // Tell the device to stop presenting.
   presenting_device_->ExitPresent();
-  presenting_service_->client()->OnExitPresent(index);
 
   // Clear the presenting service and device.
   presenting_service_ = nullptr;
