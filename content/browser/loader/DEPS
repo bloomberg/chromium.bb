@@ -326,6 +326,7 @@ specific_include_rules = {
     "+content/browser/loader/test_url_loader_client.h",
     "+content/browser/loader/resource_dispatcher_host_impl.h",
     "+content/browser/loader/resource_message_filter.h",
+    "+content/browser/loader/resource_request_info_impl.h",
     "+content/browser/loader/url_loader_factory_impl.h",
     "+content/browser/loader_delegate_impl.h",
     "+content/common/resource_request.h",

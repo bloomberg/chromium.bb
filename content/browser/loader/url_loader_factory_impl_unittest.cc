@@ -22,6 +22,7 @@
 #include "content/browser/loader/navigation_resource_throttle.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_message_filter.h"
+#include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/loader/test_url_loader_client.h"
 #include "content/browser/loader_delegate_impl.h"
 #include "content/common/resource_request.h"
@@ -53,6 +54,8 @@ namespace content {
 
 namespace {
 
+constexpr int kChildId = 99;
+
 class RejectingResourceDispatcherHostDelegate final
     : public ResourceDispatcherHostDelegate {
  public:
@@ -76,7 +79,7 @@ class URLLoaderFactoryImplTest : public ::testing::TestWithParam<size_t> {
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
         browser_context_(new TestBrowserContext()),
         resource_message_filter_(new ResourceMessageFilter(
-            0,
+            kChildId,
             // If browser side navigation is enabled then
             // ResourceDispatcherHostImpl prevents main frame URL requests from
             // the renderer. Ensure that these checks don't trip us up by
@@ -130,6 +133,8 @@ class URLLoaderFactoryImplTest : public ::testing::TestWithParam<size_t> {
 };
 
 TEST_P(URLLoaderFactoryImplTest, GetResponse) {
+  constexpr int32_t kRoutingId = 81;
+  constexpr int32_t kRequestId = 28;
   NavigationResourceThrottle::set_ui_checks_always_succeed_for_testing(true);
   mojom::URLLoaderPtr loader;
   base::FilePath root;
@@ -142,7 +147,8 @@ TEST_P(URLLoaderFactoryImplTest, GetResponse) {
   request.url = net::URLRequestMockHTTPJob::GetMockUrl("hello.html");
   request.method = "GET";
   request.is_main_frame = true;
-  factory_->CreateLoaderAndStart(mojo::GetProxy(&loader), 1, request,
+  factory_->CreateLoaderAndStart(mojo::GetProxy(&loader), kRoutingId,
+                                 kRequestId, request,
                                  client.CreateInterfacePtrAndBind());
 
   ASSERT_FALSE(client.has_received_response());
@@ -150,6 +156,17 @@ TEST_P(URLLoaderFactoryImplTest, GetResponse) {
   ASSERT_FALSE(client.has_received_completion());
 
   client.RunUntilResponseReceived();
+
+  net::URLRequest* url_request =
+      rdh_.GetURLRequest(GlobalRequestID(kChildId, kRequestId));
+  ASSERT_TRUE(url_request);
+  ResourceRequestInfoImpl* request_info =
+      ResourceRequestInfoImpl::ForRequest(url_request);
+  ASSERT_TRUE(request_info);
+  EXPECT_EQ(kChildId, request_info->GetChildID());
+  EXPECT_EQ(kRoutingId, request_info->GetRouteID());
+  EXPECT_EQ(kRequestId, request_info->GetRequestID());
+
   ASSERT_FALSE(client.has_received_completion());
   ASSERT_FALSE(client.has_received_completion());
 
@@ -194,7 +211,7 @@ TEST_P(URLLoaderFactoryImplTest, GetFailedResponse) {
   request.url = net::URLRequestFailedJob::GetMockHttpUrlWithFailurePhase(
       net::URLRequestFailedJob::START, net::ERR_TIMED_OUT);
   request.method = "GET";
-  factory_->CreateLoaderAndStart(mojo::GetProxy(&loader), 1, request,
+  factory_->CreateLoaderAndStart(mojo::GetProxy(&loader), 2, 1, request,
                                  client.CreateInterfacePtrAndBind());
 
   client.RunUntilComplete();
@@ -212,7 +229,7 @@ TEST_P(URLLoaderFactoryImplTest, InvalidURL) {
   request.url = GURL();
   request.method = "GET";
   ASSERT_FALSE(request.url.is_valid());
-  factory_->CreateLoaderAndStart(mojo::GetProxy(&loader), 1, request,
+  factory_->CreateLoaderAndStart(mojo::GetProxy(&loader), 2, 1, request,
                                  client.CreateInterfacePtrAndBind());
 
   client.RunUntilComplete();
@@ -231,7 +248,7 @@ TEST_P(URLLoaderFactoryImplTest, ShouldNotRequestURL) {
   TestURLLoaderClient client;
   request.url = GURL("http://localhost/");
   request.method = "GET";
-  factory_->CreateLoaderAndStart(mojo::GetProxy(&loader), 1, request,
+  factory_->CreateLoaderAndStart(mojo::GetProxy(&loader), 2, 1, request,
                                  client.CreateInterfacePtrAndBind());
 
   client.RunUntilComplete();

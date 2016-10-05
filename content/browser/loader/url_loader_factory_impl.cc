@@ -26,13 +26,12 @@ URLLoaderFactoryImpl::~URLLoaderFactoryImpl() {
 
 void URLLoaderFactoryImpl::CreateLoaderAndStart(
     mojom::URLLoaderRequest request,
+    int32_t routing_id,
     int32_t request_id,
     const ResourceRequest& url_request,
     mojom::URLLoaderClientPtr client) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  // TODO(yhirano): Provide the right routing ID.
-  const int routing_id = 0;
   ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
   rdh->OnRequestResourceWithMojo(routing_id, request_id, url_request,
                                  std::move(request), std::move(client),

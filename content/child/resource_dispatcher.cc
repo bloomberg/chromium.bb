@@ -664,7 +664,7 @@ int ResourceDispatcher::StartAsync(
         new URLLoaderClientImpl(request_id, this, main_thread_task_runner_));
     mojom::URLLoaderPtr url_loader;
     url_loader_factory->CreateLoaderAndStart(
-        GetProxy(&url_loader), request_id, *request,
+        GetProxy(&url_loader), routing_id, request_id, *request,
         client->CreateInterfacePtrAndBind());
     pending_requests_[request_id]->url_loader = std::move(url_loader);
     pending_requests_[request_id]->url_loader_client = std::move(client);

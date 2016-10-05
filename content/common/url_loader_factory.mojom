@@ -12,6 +12,7 @@ interface URLLoaderFactory {
   // (e.g., response arrival) happen. |request_id| is for compatibility with
   // the existing Chrome IPC.
   CreateLoaderAndStart(URLLoader& loader,
+                       int32 routing_id,
                        int32 request_id,
                        URLRequest request,
                        URLLoaderClient client);
