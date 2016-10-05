@@ -35,9 +35,12 @@ BluetoothAdapterFactoryWrapper& BluetoothAdapterFactoryWrapper::Get() {
   return g_singleton.Get();
 }
 
-bool BluetoothAdapterFactoryWrapper::IsBluetoothAdapterAvailable() {
+bool BluetoothAdapterFactoryWrapper::IsLowEnergyAvailable() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return BluetoothAdapterFactory::IsBluetoothAdapterAvailable();
+  if (adapter_ != nullptr) {
+    return true;
+  }
+  return BluetoothAdapterFactory::IsLowEnergyAvailable();
 }
 
 void BluetoothAdapterFactoryWrapper::AcquireAdapter(
@@ -53,7 +56,7 @@ void BluetoothAdapterFactoryWrapper::AcquireAdapter(
     return;
   }
 
-  DCHECK(BluetoothAdapterFactory::IsBluetoothAdapterAvailable());
+  DCHECK(BluetoothAdapterFactory::IsLowEnergyAvailable());
   BluetoothAdapterFactory::GetAdapter(
       base::Bind(&BluetoothAdapterFactoryWrapper::OnGetAdapter,
                  weak_ptr_factory_.GetWeakPtr(), callback));

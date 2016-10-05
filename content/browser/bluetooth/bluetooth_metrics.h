@@ -74,6 +74,7 @@ enum class UMARequestDeviceOutcome {
   BLUETOOTH_CHOOSER_POLICY_DISABLED = 15,
   BLUETOOTH_GLOBALLY_DISABLED = 16,
   BLUETOOTH_CHOOSER_EVENT_HANDLER_INVALID = 17,
+  BLUETOOTH_LOW_ENERGY_NOT_AVAILABLE = 18,
   // NOTE: Add new requestDevice() outcomes immediately above this line. Make
   // sure to update the enum list in
   // tools/metrics/histograms/histograms.xml accordingly.

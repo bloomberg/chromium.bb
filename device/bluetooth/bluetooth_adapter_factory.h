@@ -24,6 +24,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFactory {
   // platform.
   static bool IsBluetoothAdapterAvailable();
 
+  // Returns true if Bluetooth Low Energy is available for the current
+  // platform.
+  static bool IsLowEnergyAvailable();
+
   // Returns the shared instance of the default adapter, creating and
   // initializing it if necessary. |callback| is called with the adapter
   // instance passed only once the adapter is fully initialized and ready to

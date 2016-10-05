@@ -95,6 +95,8 @@ DOMException* BluetoothError::take(
                 "No Characteristics with specified UUID found in Service.");
       MAP_ERROR(NO_CHARACTERISTICS_FOUND, NotFoundError,
                 "No Characteristics found in service.");
+      MAP_ERROR(BLUETOOTH_LOW_ENERGY_NOT_AVAILABLE, NotFoundError,
+                "Bluetooth Low Energy not available.");
 
       // NotSupportedErrors:
       MAP_ERROR(GATT_UNKNOWN_ERROR, NotSupportedError, "GATT Error Unknown.");

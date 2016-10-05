@@ -13,6 +13,10 @@
 #include "build/build_config.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#endif
+
 namespace device {
 
 namespace {
@@ -61,6 +65,25 @@ bool BluetoothAdapterFactory::IsBluetoothAdapterAvailable() {
 #else
   return false;
 #endif
+}
+
+// static
+bool BluetoothAdapterFactory::IsLowEnergyAvailable() {
+  DCHECK(IsBluetoothAdapterAvailable());
+
+  // SetAdapterForTesting() may be used to provide a test or mock adapter
+  // instance even on platforms that would otherwise not support it.
+  if (default_adapter.Get())
+    return true;
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_WIN) || \
+    defined(OS_LINUX)
+  return true;
+#elif defined(OS_MACOSX)
+  return base::mac::IsAtLeastOS10_10();
+#else
+  return false;
+#endif  // defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_WIN) ||
+        // defined(OS_LINUX)
 }
 
 // static
