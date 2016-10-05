@@ -26,10 +26,11 @@ class PLATFORM_EXPORT SkPictureBuilder final : public DisplayItemClient {
   WTF_MAKE_NONCOPYABLE(SkPictureBuilder);
 
  public:
-  // Constructs a new builder with the given bounds for the resulting recorded picture. If
-  // |metadata| is specified, that metadata is propagated to the builder's internal canvas. If
-  // |containingContext| is specified, the device scale factor, printing, and disabled state are
-  // propagated to the builder's internal context.
+  // Constructs a new builder with the given bounds for the resulting recorded
+  // picture. If |metadata| is specified, that metadata is propagated to the
+  // builder's internal canvas. If |containingContext| is specified, the device
+  // scale factor, printing, and disabled state are propagated to the builder's
+  // internal context.
   SkPictureBuilder(const FloatRect& bounds,
                    SkMetaData* = nullptr,
                    GraphicsContext* containingContext = nullptr);
@@ -37,8 +38,8 @@ class PLATFORM_EXPORT SkPictureBuilder final : public DisplayItemClient {
 
   GraphicsContext& context() { return *m_context; }
 
-  // Returns a picture capturing all drawing performed on the builder's context since
-  // construction.
+  // Returns a picture capturing all drawing performed on the builder's context
+  // since construction.
   sk_sp<SkPicture> endRecording();
 
   // DisplayItemClient methods

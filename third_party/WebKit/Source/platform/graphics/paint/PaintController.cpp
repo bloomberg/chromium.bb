@@ -46,8 +46,8 @@ bool PaintController::useCachedDrawingIfPossible(
 
   if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled() &&
       isCheckingUnderInvalidation()) {
-    // We are checking under-invalidation of a subsequence enclosing this display item.
-    // Let the client continue to actually paint the display item.
+    // We are checking under-invalidation of a subsequence enclosing this
+    // display item. Let the client continue to actually paint the display item.
     return false;
   }
 
@@ -63,7 +63,8 @@ bool PaintController::useCachedDrawingIfPossible(
     processNewItem(moveItemFromCurrentListToNewList(cachedItem));
 
   m_nextItemToMatch = cachedItem + 1;
-  // Items before m_nextItemToMatch have been copied so we don't need to index them.
+  // Items before m_nextItemToMatch have been copied so we don't need to index
+  // them.
   if (m_nextItemToMatch > m_nextItemToIndex)
     m_nextItemToIndex = m_nextItemToMatch;
 
@@ -73,8 +74,8 @@ bool PaintController::useCachedDrawingIfPossible(
       m_underInvalidationCheckingEnd = cachedItem + 1;
       m_underInvalidationMessagePrefix = "";
     }
-    // Return false to let the painter actually paint, and we will check if the new painting
-    // is the same as the cached.
+    // Return false to let the painter actually paint. We will check if the new
+    // painting is the same as the cached one.
     return false;
   }
 
@@ -91,9 +92,10 @@ bool PaintController::useCachedSubsequenceIfPossible(
 
   if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled() &&
       isCheckingUnderInvalidation()) {
-    // We are checking under-invalidation of an ancestor subsequence enclosing this one.
-    // The ancestor subsequence is supposed to have already "copied", so we should let the
-    // client continue to actually paint the descendant subsequences without "copying".
+    // We are checking under-invalidation of an ancestor subsequence enclosing
+    // this one. The ancestor subsequence is supposed to have already "copied",
+    // so we should let the client continue to actually paint the descendant
+    // subsequences without "copying".
     return false;
   }
 
@@ -104,7 +106,8 @@ bool PaintController::useCachedSubsequenceIfPossible(
     return false;
   }
 
-  // |cachedItem| will point to the first item after the subsequence or end of the current list.
+  // |cachedItem| will point to the first item after the subsequence or end of
+  // the current list.
   ensureNewDisplayItemListInitialCapacity();
   copyCachedSubsequence(cachedItem);
 
@@ -114,8 +117,8 @@ bool PaintController::useCachedSubsequenceIfPossible(
     m_nextItemToIndex = cachedItem;
 
   if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled()) {
-    // Return false to let the painter actually paint, and we will check if the new painting
-    // is the same as the cached.
+    // Return false to let the painter actually paint. We will check if the new
+    // painting is the same as the cached one.
     return false;
   }
 
@@ -179,7 +182,8 @@ void PaintController::processNewItem(DisplayItem& displayItem) {
 
       if (!m_currentSubsequenceClients.isEmpty()) {
         // Mark the client shouldKeepAlive under the current subsequence.
-        // The status will end when the subsequence owner is invalidated or deleted.
+        // The status will end when the subsequence owner is invalidated or
+        // deleted.
         displayItem.client().beginShouldKeepAlive(
             m_currentSubsequenceClients.last());
       }
@@ -318,11 +322,13 @@ void PaintController::addItemToIndexIfNeeded(
 size_t PaintController::findCachedItem(const DisplayItem::Id& id) {
   DCHECK(clientCacheIsValid(id.client));
 
-  // Try to find the item sequentially first. This is fast if the current list and the new list are in
-  // the same order around the new item. If found, we don't need to update and lookup the index.
+  // Try to find the item sequentially first. This is fast if the current list
+  // and the new list are in the same order around the new item. If found, we
+  // don't need to update and lookup the index.
   for (size_t i = m_nextItemToMatch;
        i < m_currentPaintArtifact.getDisplayItemList().size(); ++i) {
-    // We encounter an item that has already been copied which indicates we can't do sequential matching.
+    // We encounter an item that has already been copied which indicates we
+    // can't do sequential matching.
     const DisplayItem& item = m_currentPaintArtifact.getDisplayItemList()[i];
     if (!item.hasValidClient())
       break;
@@ -332,7 +338,8 @@ size_t PaintController::findCachedItem(const DisplayItem::Id& id) {
 #endif
       return i;
     }
-    // We encounter a different cacheable item which also indicates we can't do sequential matching.
+    // We encounter a different cacheable item which also indicates we can't do
+    // sequential matching.
     if (item.isCacheable())
       break;
   }
@@ -379,16 +386,18 @@ size_t PaintController::findOutOfOrderCachedItemForward(
   if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled())
     CHECK(false) << "Can't find cached display item";
 
-  // We did not find the cached display item. This should be impossible, but may occur if there is a bug
-  // in the system, such as under-invalidation, incorrect cache checking or duplicate display ids.
-  // In this case, the caller should fall back to repaint the display item.
+  // We did not find the cached display item. This should be impossible, but may
+  // occur if there is a bug in the system, such as under-invalidation,
+  // incorrect cache checking or duplicate display ids. In this case, the caller
+  // should fall back to repaint the display item.
   return kNotFound;
 }
 
 // Copies a cached subsequence from current list to the new list. On return,
-// |cachedItemIndex| points to the item after the EndSubsequence item of the subsequence.
-// When paintUnderInvaldiationCheckingEnabled() we'll not actually copy the subsequence,
-// but mark the begin and end of the subsequence for under-invalidation checking.
+// |cachedItemIndex| points to the item after the EndSubsequence item of the
+// subsequence. When paintUnderInvaldiationCheckingEnabled() we'll not actually
+// copy the subsequence, but mark the begin and end of the subsequence for
+// under-invalidation checking.
 void PaintController::copyCachedSubsequence(size_t& cachedItemIndex) {
   AutoReset<size_t> subsequenceBeginIndex(
       &m_currentCachedSubsequenceBeginIndexInNewList,
@@ -414,7 +423,7 @@ void PaintController::copyCachedSubsequence(size_t& cachedItemIndex) {
     updateCurrentPaintChunkProperties(
         cachedChunk->id ? &*cachedChunk->id : nullptr, cachedChunk->properties);
   } else {
-    // This is to avoid compilation error about uninitialized variable on Windows.
+    // Avoid uninitialized variable error on Windows.
     cachedChunk = m_currentPaintArtifact.paintChunks().begin();
   }
 
@@ -683,7 +692,8 @@ void PaintController::generateChunkRasterInvalidationRectsComparingOldChunk(
       if (m_newDisplayItemList[movedToIndex].drawsContent()) {
         if (movedToIndex < newChunk.beginIndex ||
             movedToIndex >= newChunk.endIndex) {
-          // The item has been moved into another chunk, so need to invalidate it in the old chunk.
+          // The item has been moved into another chunk, so need to invalidate
+          // it in the old chunk.
           clientToInvalidate = &m_newDisplayItemList[movedToIndex].client();
           // And invalidate in the new chunk into which the item was moved.
           PaintChunk& movedToChunk =
@@ -692,8 +702,9 @@ void PaintController::generateChunkRasterInvalidationRectsComparingOldChunk(
               clientToInvalidate, movedToChunk,
               FloatRect(clientToInvalidate->visualRect()));
         } else if (movedToIndex < highestMovedToIndex) {
-          // The item has been moved behind other cached items, so need to invalidate the area
-          // that is probably exposed by the item moved earlier.
+          // The item has been moved behind other cached items, so need to
+          // invalidate the area that is probably exposed by the item moved
+          // earlier.
           clientToInvalidate = &m_newDisplayItemList[movedToIndex].client();
         } else {
           highestMovedToIndex = movedToIndex;
@@ -773,7 +784,8 @@ void PaintController::checkUnderInvalidation() {
   bool oldAndNewEqual = oldItem && newItem.equals(*oldItem);
   if (!oldAndNewEqual) {
     if (newItem.isBegin()) {
-      // Temporarily skip mismatching begin display item which may be removed when we remove a no-op pair.
+      // Temporarily skip mismatching begin display item which may be removed
+      // when we remove a no-op pair.
       ++m_skippedProbableUnderInvalidationCount;
       return;
     }
@@ -781,8 +793,8 @@ void PaintController::checkUnderInvalidation() {
       DCHECK_GE(m_newDisplayItemList.size(), 2u);
       if (m_newDisplayItemList[m_newDisplayItemList.size() - 2].getType() ==
           DisplayItem::kBeginCompositing) {
-        // This might be a drawing item between a pair of begin/end compositing display items that will be folded
-        // into a single drawing display item.
+        // This might be a drawing item between a pair of begin/end compositing
+        // display items that will be folded into a single drawing display item.
         ++m_skippedProbableUnderInvalidationCount;
         return;
       }
@@ -790,7 +802,8 @@ void PaintController::checkUnderInvalidation() {
   }
 
   if (m_skippedProbableUnderInvalidationCount || !oldAndNewEqual) {
-    // If we ever skipped reporting any under-invalidations, report the earliest one.
+    // If we ever skipped reporting any under-invalidations, report the earliest
+    // one.
     showUnderInvalidationError(
         "under-invalidation: display item changed",
         m_newDisplayItemList[m_newDisplayItemList.size() -
@@ -800,9 +813,11 @@ void PaintController::checkUnderInvalidation() {
     CHECK(false);
   }
 
-  // Discard the forced repainted display item and move the cached item into m_newDisplayItemList.
-  // This is to align with the non-under-invalidation-checking path to empty the original cached slot,
-  // leaving only disappeared or invalidated display items in the old list after painting.
+  // Discard the forced repainted display item and move the cached item into
+  // m_newDisplayItemList. This is to align with the
+  // non-under-invalidation-checking path to empty the original cached slot,
+  // leaving only disappeared or invalidated display items in the old list after
+  // painting.
   m_newDisplayItemList.removeLast();
   moveItemFromCurrentListToNewList(oldItemIndex);
 
@@ -829,8 +844,9 @@ String PaintController::displayItemListAsDebugString(
         stringBuilder.append(", clientIsAlive: false");
       } else {
 #else
-      // debugName() and clientCacheIsValid() can only be called on alive client, so only output it for
-      // m_newDisplayItemList in which we are sure the clients are all alive.
+      // debugName() and clientCacheIsValid() can only be called on a live
+      // client, so only output it for m_newDisplayItemList, in which we are
+      // sure the clients are all alive.
       if (&list == &m_newDisplayItemList) {
 #endif
 #ifdef NDEBUG

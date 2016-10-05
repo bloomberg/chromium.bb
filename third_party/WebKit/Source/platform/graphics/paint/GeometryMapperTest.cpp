@@ -242,7 +242,8 @@ TEST_F(GeometryMapperTest, NestedTransformsScaleAndTranslation) {
   localState.setTransform(transform2.get());
 
   FloatRect input(0, 0, 100, 100);
-  // Note: unlike NestedTransforms, the order of these transforms matters. This tests correct order of matrix multiplication.
+  // Note: unlike NestedTransforms, the order of these transforms matters. This
+  // tests correct order of matrix multiplication.
   TransformationMatrix final = scaleTransform * translateTransform;
   FloatRect output = final.mapRect(input);
 
@@ -402,12 +403,13 @@ TEST_F(GeometryMapperTest, TwoClipsWithTransformBetween) {
     FloatRect mappedClip = rotateTransform.mapRect(clip2->clipRect().rect());
     mappedClip.intersect(clip1->clipRect().rect());
 
-    // All clips are performed in the space of the ancestor. In cases such as this, this means the
-    // clip is a bit lossy.
+    // All clips are performed in the space of the ancestor. In cases such as
+    // this, this means the clip is a bit lossy.
     FloatRect output(input);
     // Map to transformed rect in ancestor space.
     output = rotateTransform.mapRect(output);
-    // Intersect with all clips between local and ancestor, independently mapped to ancestor space.
+    // Intersect with all clips between local and ancestor, independently mapped
+    // to ancestor space.
     output.intersect(mappedClip);
 
     CHECK_MAPPINGS(
@@ -421,7 +423,8 @@ TEST_F(GeometryMapperTest, TwoClipsWithTransformBetween) {
 }
 
 TEST_F(GeometryMapperTest, SiblingTransforms) {
-  // These transforms are siblings. Thus mapping from one to the other requires going through the root.
+  // These transforms are siblings. Thus mapping from one to the other requires
+  // going through the root.
   TransformationMatrix rotateTransform1;
   rotateTransform1.rotate(45);
   RefPtr<TransformPaintPropertyNode> transform1 =
@@ -479,7 +482,8 @@ TEST_F(GeometryMapperTest, SiblingTransforms) {
 }
 
 TEST_F(GeometryMapperTest, SiblingTransformsWithClip) {
-  // These transforms are siblings. Thus mapping from one to the other requires going through the root.
+  // These transforms are siblings. Thus mapping from one to the other requires
+  // going through the root.
   TransformationMatrix rotateTransform1;
   rotateTransform1.rotate(45);
   RefPtr<TransformPaintPropertyNode> transform1 =
@@ -509,10 +513,12 @@ TEST_F(GeometryMapperTest, SiblingTransformsWithClip) {
   FloatRect expected =
       rotateTransform2.inverse().mapRect(rotateTransform1.mapRect(input));
 
-  // mapToVisualRectInDestinationSpace ignores clip from the common ancestor to destination.
+  // mapToVisualRectInDestinationSpace ignores clip from the common ancestor to
+  // destination.
   FloatRect result = geometryMapper->mapToVisualRectInDestinationSpace(
       input, transform1State, transform2AndClipState, success);
-  // Fails, because the clip of the destination state is not an ancestor of the clip of the source state.
+  // Fails, because the clip of the destination state is not an ancestor of the
+  // clip of the source state.
   EXPECT_FALSE(success);
 
   // mapRectToDestinationSpace ignores clip.
@@ -527,7 +533,8 @@ TEST_F(GeometryMapperTest, SiblingTransformsWithClip) {
   FloatRect expectedClipped = rotateTransform1.inverse().mapRect(
       rotateTransform2.mapRect(FloatRect(10, 10, 70, 70)));
 
-  // mapToVisualRectInDestinationSpace ignores clip from the common ancestor to destination.
+  // mapToVisualRectInDestinationSpace ignores clip from the common ancestor to
+  // destination.
   result = geometryMapper->mapToVisualRectInDestinationSpace(
       input, transform2AndClipState, transform1State, success);
   EXPECT_TRUE(success);

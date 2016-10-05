@@ -111,8 +111,8 @@ bool DrawingDisplayItem::equals(const DisplayItem& other) const {
   if (picturesEqual(picture, otherPicture))
     return true;
 
-  // Sometimes the client may produce different pictures for the same visual result
-  // which should be treated as equal.
+  // Sometimes the client may produce different pictures for the same visual
+  // result, which should be treated as equal.
   return bitmapsEqual(picture, otherPicture);
 }
 

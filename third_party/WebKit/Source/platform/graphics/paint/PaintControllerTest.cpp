@@ -123,7 +123,8 @@ enum TestConfigurations {
   UnderInvalidationCheckingSPv2,
 };
 
-// Tests using this class will be tested with under-invalidation-checking enabled and disabled.
+// Tests using this class will be tested with under-invalidation-checking
+// enabled and disabled.
 class PaintControllerTest
     : public PaintControllerTestBase,
       public testing::WithParamInterface<TestConfigurations> {
@@ -390,8 +391,8 @@ TEST_P(PaintControllerTest, UpdateSwapOrderWithInvalidation) {
                 UnorderedElementsAre(
                     FloatRect(100, 100, 100, 100),    // Old bounds of |first|.
                     FloatRect(100, 100, 100, 100)));  // New bounds of |first|.
-                                                      // No need to invalidate raster of |second| because the client (|first|) which swapped order
-    // with it has been invalidated.
+    // No need to invalidate raster of |second|, because the client (|first|)
+    // which swapped order with it has been invalidated.
   }
 }
 
@@ -872,7 +873,8 @@ TEST_P(PaintControllerTest, UpdateSwapOrderWithChildren) {
     getPaintController().updateCurrentPaintChunkProperties(
         &m_rootPaintChunkId, PaintChunkProperties());
 
-  // Simulate the situation when container1 e.g. gets a z-index that is now greater than container2,
+  // Simulate the situation when |container1| gets a z-index that is greater
+  // than that of |container2|.
   drawRect(context, container2, backgroundDrawingType,
            FloatRect(100, 200, 100, 100));
   drawRect(context, content2, backgroundDrawingType,
@@ -906,12 +908,10 @@ TEST_P(PaintControllerTest, UpdateSwapOrderWithChildren) {
     EXPECT_THAT(
         getPaintController().paintChunks()[0].rasterInvalidationRects,
         UnorderedElementsAre(
-            FloatRect(
-                100, 200, 100,
-                100),  // Bounds of |container2| which was moved behind |container1|.
-            FloatRect(
-                100, 200, 50,
-                200)));  // Bounds of |content2| which was moved along with |container2|.
+            FloatRect(100, 200, 100, 100),   // Bounds of |container2| which was
+                                             // moved behind |container1|.
+            FloatRect(100, 200, 50, 200)));  // Bounds of |content2| which was
+                                             // moved along with |container2|.
   }
 }
 
@@ -959,8 +959,8 @@ TEST_P(PaintControllerTest, UpdateSwapOrderWithChildrenAndInvalidation) {
     getPaintController().updateCurrentPaintChunkProperties(
         &m_rootPaintChunkId, PaintChunkProperties());
 
-  // Simulate the situation when container1 e.g. gets a z-index that is now greater than container2.
-  // and container1 is invalidated.
+  // Simulate the situation when |container1| gets a z-index that is greater
+  // than that of |container2|, and |container1| is invalidated.
   container1.setDisplayItemsUncached();
   drawRect(context, container2, backgroundDrawingType,
            FloatRect(100, 200, 100, 100));
@@ -995,14 +995,12 @@ TEST_P(PaintControllerTest, UpdateSwapOrderWithChildrenAndInvalidation) {
     EXPECT_THAT(
         getPaintController().paintChunks()[0].rasterInvalidationRects,
         UnorderedElementsAre(
-            FloatRect(100, 100, 100, 100),  // Old bounds of |container1|.
-            FloatRect(100, 100, 100, 100),  // New bounds of |container1|.
-            FloatRect(
-                100, 200, 100,
-                100),  // Bounds of |container2| which was moved behind |container1|.
-            FloatRect(
-                100, 200, 50,
-                200)));  // Bounds of |content2| which was moved along with |container2|.
+            FloatRect(100, 100, 100, 100),   // Old bounds of |container1|.
+            FloatRect(100, 100, 100, 100),   // New bounds of |container1|.
+            FloatRect(100, 200, 100, 100),   // Bounds of |container2| which was
+                                             // moved behind |container1|.
+            FloatRect(100, 200, 50, 200)));  // Bounds of |content2| which was
+                                             // moved along with |container2|.
   }
 }
 
@@ -1084,10 +1082,12 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder) {
                 UnorderedElementsAre(FloatRect(LayoutRect::infiniteIntRect())));
   }
 
-  // Simulate the situation when container1 e.g. gets a z-index that is now greater than container2.
+  // Simulate the situation when |container1| gets a z-index that is greater than
+  // that of |container2|.
   if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled()) {
-    // When under-invalidation-checking is enabled, useCachedSubsequenceIfPossible is forced off,
-    // and the client is expected to create the same painting as in the previous paint.
+    // When under-invalidation-checking is enabled,
+    // useCachedSubsequenceIfPossible is forced off, and the client is expected
+    // to create the same painting as in the previous paint.
     EXPECT_FALSE(SubsequenceRecorder::useCachedSubsequenceIfPossible(
         context, container2));
     {
@@ -1456,8 +1456,9 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate) {
     SubsequenceRecorder r(context, container1);
     // Use cached subsequence of content1.
     if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled()) {
-      // When under-invalidation-checking is enabled, useCachedSubsequenceIfPossible is forced off,
-      // and the client is expected to create the same painting as in the previous paint.
+      // When under-invalidation-checking is enabled,
+      // useCachedSubsequenceIfPossible is forced off, and the client is
+      // expected to create the same painting as in the previous paint.
       EXPECT_FALSE(SubsequenceRecorder::useCachedSubsequenceIfPossible(
           context, content1));
       if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
@@ -1932,7 +1933,8 @@ TEST_F(
 #endif
 }
 
-// Temporarily disabled (pref regressions due to GPU veto stickiness: http://crbug.com/603969).
+// Temporarily disabled (pref regressions due to GPU veto stickiness:
+// http://crbug.com/603969).
 TEST_F(PaintControllerTestBase,
        DISABLED_IsNotSuitableForGpuRasterizationConcaveClipPath) {
   Path path;
@@ -2026,7 +2028,8 @@ class PaintControllerUnderInvalidationTest : public PaintControllerTestBase {
     EXPECT_FALSE(SubsequenceRecorder::useCachedSubsequenceIfPossible(
         context, container));
     {
-      // Generate some no-op pairs which should not affect under-invalidation checking.
+      // Generate some no-op pairs which should not affect under-invalidation
+      // checking.
       ClipRecorder r1(context, container, clipType, IntRect(1, 1, 9, 9));
       ClipRecorder r2(context, container, clipType, IntRect(1, 1, 2, 2));
       ClipRecorder r3(context, container, clipType, IntRect(1, 1, 3, 3));
@@ -2213,9 +2216,10 @@ TEST_F(PaintControllerUnderInvalidationTest, MoreDrawing) {
 }
 
 TEST_F(PaintControllerUnderInvalidationTest, LessDrawing) {
-  // We don't detect under-invalidation in this case, and PaintController can also handle the case gracefully.
-  // However, less-drawing at a time often means more-drawing at another time so eventually we'll detect
-  // such under-invalidations.
+  // We don't detect under-invalidation in this case, and PaintController can
+  // also handle the case gracefully. However, less drawing at one time often
+  // means more-drawing at another time, so eventually we'll detect such
+  // under-invalidations.
   testLessDrawing();
 }
 
@@ -2249,8 +2253,9 @@ TEST_F(PaintControllerUnderInvalidationTest, ChangeNonCacheableInSubsequence) {
 }
 
 TEST_F(PaintControllerUnderInvalidationTest, InvalidationInSubsequence) {
-  // We allow invalidated display item clients as long as they would produce the same display items.
-  // The cases of changed display items are tested by other test cases.
+  // We allow invalidated display item clients as long as they would produce the
+  // same display items. The cases of changed display items are tested by other
+  // test cases.
   testInvalidationInSubsequence();
 }
 

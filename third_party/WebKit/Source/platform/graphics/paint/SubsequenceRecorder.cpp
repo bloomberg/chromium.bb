@@ -31,7 +31,8 @@ SubsequenceRecorder::~SubsequenceRecorder() {
     ASSERT(m_beginSubsequenceIndex ==
            m_paintController.newDisplayItemList().size() - 1);
     // Remove uncacheable no-op BeginSubsequence/EndSubsequence pairs.
-    // Don't remove cacheable no-op pairs because we need to match them later with CachedSubsequences.
+    // Don't remove cacheable no-op pairs because we need to match them later
+    // with CachedSubsequences.
     if (m_paintController.newDisplayItemList().last().skippedCache()) {
       m_paintController.removeLastDisplayItem();
       return;

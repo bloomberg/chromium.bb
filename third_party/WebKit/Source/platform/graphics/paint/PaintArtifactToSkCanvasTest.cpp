@@ -216,8 +216,10 @@ static SkRegion getCanvasClipAsRegion(SkCanvas* canvas) {
 
 TEST_F(PaintArtifactToSkCanvasTest, ClipWithScrollEscaping) {
   // The setup is to simulate scenario similar to this html:
-  // <div style="position:absolute; left:0; top:0; clip:rect(200px,200px,300px,100px);">
-  //     <div style="position:fixed; left:150px; top:150px; width:100px; height:100px; overflow:hidden;">
+  // <div style="position:absolute; left:0; top:0;
+  //             clip:rect(200px,200px,300px,100px);">
+  //     <div style="position:fixed; left:150px; top:150px; width:100px;
+  //                 height:100px; overflow:hidden;">
   //         client1
   //     </div>
   // </div>

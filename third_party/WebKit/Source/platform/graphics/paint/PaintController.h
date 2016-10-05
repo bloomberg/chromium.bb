@@ -50,7 +50,8 @@ class PLATFORM_EXPORT PaintController {
   }
 
   ~PaintController() {
-    // New display items should be committed before PaintController is destructed.
+    // New display items should be committed before PaintController is
+    // destructed.
     DCHECK(m_newDisplayItemList.isEmpty());
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
     DisplayItemClient::endShouldKeepAliveAllClients(this);
@@ -102,12 +103,14 @@ class PLATFORM_EXPORT PaintController {
       createAndAppend<DisplayItemClass>(std::forward<Args>(args)...);
   }
 
-  // Tries to find the cached drawing display item corresponding to the given parameters. If found,
-  // appends the cached display item to the new display list and returns true. Otherwise returns false.
+  // Tries to find the cached drawing display item corresponding to the given
+  // parameters. If found, appends the cached display item to the new display
+  // list and returns true. Otherwise returns false.
   bool useCachedDrawingIfPossible(const DisplayItemClient&, DisplayItem::Type);
 
-  // Tries to find the cached subsequence corresponding to the given parameters. If found, copies the
-  // cache subsequence to the new display list and returns true. Otherwise returns false.
+  // Tries to find the cached subsequence corresponding to the given parameters.
+  // If found, copies the cache subsequence to the new display list and returns
+  // true. Otherwise returns false.
   bool useCachedSubsequenceIfPossible(const DisplayItemClient&);
 
   // True if the last display item is a begin that doesn't draw content.
@@ -122,8 +125,8 @@ class PLATFORM_EXPORT PaintController {
   }
   bool isSkippingCache() const { return m_skippingCacheCount; }
 
-  // Must be called when a painting is finished.
-  // offsetFromLayoutObject is the offset between the space of the GraphicsLayer which owns this
+  // Must be called when a painting is finished. |offsetFromLayoutObject| is the
+  // offset between the space of the GraphicsLayer which owns this
   // PaintController and the coordinate space of the owning LayoutObject.
   void commitNewDisplayItems(
       const LayoutSize& offsetFromLayoutObject = LayoutSize());
@@ -246,9 +249,10 @@ class PLATFORM_EXPORT PaintController {
   size_t findOutOfOrderCachedItemForward(const DisplayItem::Id&);
   void copyCachedSubsequence(size_t&);
 
-  // Resets the indices (e.g. m_nextItemToMatch) of m_currentPaintArtifact.getDisplayItemList()
-  // to their initial values. This should be called when the DisplayItemList in m_currentPaintArtifact
-  // is newly created, or is changed causing the previous indices to be invalid.
+  // Resets the indices (e.g. m_nextItemToMatch) of
+  // m_currentPaintArtifact.getDisplayItemList() to their initial values. This
+  // should be called when the DisplayItemList in m_currentPaintArtifact is
+  // newly created, or is changed causing the previous indices to be invalid.
   void resetCurrentListIndices();
 
   void generateChunkRasterInvalidationRects(PaintChunk& newChunk);
@@ -278,19 +282,22 @@ class PLATFORM_EXPORT PaintController {
   DisplayItemList m_newDisplayItemList;
   PaintChunker m_newPaintChunks;
 
-  // Stores indices into m_newDisplayItemList for display items that have been moved from
-  // m_currentPaintArtifact.getDisplayItemList(), indexed by the positions of the display
-  // items before move. The values are undefined for display items that are not moved.
+  // Stores indices into m_newDisplayItemList for display items that have been
+  // moved from m_currentPaintArtifact.getDisplayItemList(), indexed by the
+  // positions of the display items before the move. The values are undefined
+  // for display items that are not moved.
   Vector<size_t> m_itemsMovedIntoNewList;
 
-  // Allow display item construction to be disabled to isolate the costs of construction
-  // in performance metrics.
+  // Allows display item construction to be disabled to isolate the costs of
+  // construction in performance metrics.
   bool m_constructionDisabled;
 
-  // Allow subsequence caching to be disabled to test the cost of display item caching.
+  // Allows subsequence caching to be disabled to test the cost of display item
+  // caching.
   bool m_subsequenceCachingDisabled;
 
-  // Indicates this PaintController has ever had text. It is never reset to false.
+  // Indicates this PaintController has ever had text. It is never reset to
+  // false.
   bool m_textPainted;
   bool m_imagePainted;
 
@@ -298,24 +305,28 @@ class PLATFORM_EXPORT PaintController {
 
   int m_numCachedNewItems;
 
-  // Stores indices to valid cacheable display items in m_currentPaintArtifact.displayItemList()
-  // that have not been matched by requests of cached display items (using useCachedDrawingIfPossible()
-  // and useCachedSubsequenceIfPossible()) during sequential matching . The indexed items will be
-  // matched by later out-of-order requests of cached display items. This ensures that when
-  // out-of-order cached display items are requested, we only traverse at most once over
-  // the current display list looking for potential matches. Thus we can ensure that the
-  // algorithm runs in linear time.
+  // Stores indices to valid cacheable display items in
+  // m_currentPaintArtifact.displayItemList() that have not been matched by
+  // requests of cached display items (using useCachedDrawingIfPossible() and
+  // useCachedSubsequenceIfPossible()) during sequential matching. The indexed
+  // items will be matched by later out-of-order requests of cached display
+  // items. This ensures that when out-of-order cached display items are
+  // requested, we only traverse at most once over the current display list
+  // looking for potential matches. Thus we can ensure that the algorithm runs
+  // in linear time.
   IndicesByClientMap m_outOfOrderItemIndices;
 
   // The next item in the current list for sequential match.
   size_t m_nextItemToMatch;
 
-  // The next item in the current list to be indexed for out-of-order cache requests.
+  // The next item in the current list to be indexed for out-of-order cache
+  // requests.
   size_t m_nextItemToIndex;
 
   // Similar to m_outOfOrderItemIndices but
   // - the indices are chunk indices in m_currentPaintArtifacts.paintChunks();
-  // - chunks are matched not only for requests of cached display items, but also non-cached display items.
+  // - chunks are matched not only for requests of cached display items, but
+  //   also non-cached display items.
   IndicesByClientMap m_outOfOrderChunkIndices;
 
   size_t m_currentCachedSubsequenceBeginIndexInNewList;
@@ -335,16 +346,18 @@ class PLATFORM_EXPORT PaintController {
   IndicesByClientMap m_newDisplayItemIndicesByClient;
 #endif
 
-  // These are set in useCachedDrawingIfPossible() and useCachedSubsequenceIfPossible()
-  // when we could use cached drawing or subsequence and under-invalidation checking is on,
-  // indicating the begin and end of the cached drawing or subsequence in the current list.
-  // The functions return false to let the client do actual painting, and PaintController
-  // will check if the actual painting results are the same as the cached.
+  // These are set in useCachedDrawingIfPossible() and
+  // useCachedSubsequenceIfPossible() when we could use cached drawing or
+  // subsequence and under-invalidation checking is on, indicating the begin and
+  // end of the cached drawing or subsequence in the current list. The functions
+  // return false to let the client do actual painting, and PaintController will
+  // check if the actual painting results are the same as the cached.
   size_t m_underInvalidationCheckingBegin;
   size_t m_underInvalidationCheckingEnd;
-  // Number of probable under-invalidations that have been skipped temporarily because the
-  // mismatching display items may be removed in the future because of no-op pairs or
-  // compositing folding.
+
+  // Number of probable under-invalidations that have been skipped temporarily
+  // because the mismatching display items may be removed in the future because
+  // of no-op pairs or compositing folding.
   int m_skippedProbableUnderInvalidationCount;
   String m_underInvalidationMessagePrefix;
 

@@ -43,8 +43,9 @@ FloatRect GeometryMapper::slowMapToVisualRectInDestinationSpace(
       sourceState.transform(), destinationState.transform());
   DCHECK(lcaTransform);
 
-  // Assume that the clip of destinationState is an ancestor of the clip of sourceState
-  // and is under the space of lcaTransform. Otherwise localToAncestorClipRect() will fail.
+  // Assume that the clip of destinationState is an ancestor of the clip of
+  // sourceState and is under the space of lcaTransform. Otherwise
+  // localToAncestorClipRect() will fail.
   PropertyTreeState lcaState = destinationState;
   lcaState.setTransform(lcaTransform);
 
@@ -163,8 +164,8 @@ FloatRect GeometryMapper::localToAncestorClipRect(
   FloatRect clip(LayoutRect::infiniteIntRect());
 
   bool found = false;
-  // Iterate over the path from localState.clip to ancestorState.clip. Stop if we've found a memoized (precomputed) clip
-  // for any particular node.
+  // Iterate over the path from localState.clip to ancestorState.clip. Stop if
+  // we've found a memoized (precomputed) clip for any particular node.
   while (clipNode) {
     auto it = precomputedData.toAncestorClipRects.find(clipNode);
     if (it != precomputedData.toAncestorClipRects.end()) {
@@ -184,7 +185,8 @@ FloatRect GeometryMapper::localToAncestorClipRect(
     return clip;
   }
 
-  // Iterate down from the top intermediate node found in the previous loop, computing and memoizing clip rects as we go.
+  // Iterate down from the top intermediate node found in the previous loop,
+  // computing and memoizing clip rects as we go.
   for (auto it = intermediateNodes.rbegin(); it != intermediateNodes.rend();
        ++it) {
     if ((*it) != ancestorState.clip()) {
@@ -216,8 +218,9 @@ const TransformationMatrix& GeometryMapper::localToAncestorMatrix(
   TransformationMatrix transformMatrix;
 
   bool found = false;
-  // Iterate over the path from localTransformNode to ancestorState.transform. Stop if we've found a memoized (precomputed) transform
-  // for any particular node.
+  // Iterate over the path from localTransformNode to ancestorState.transform.
+  // Stop if we've found a memoized (precomputed) transform for any particular
+  // node.
   while (transformNode) {
     auto it = precomputedData.toAncestorTransforms.find(transformNode);
     if (it != precomputedData.toAncestorTransforms.end()) {
@@ -238,7 +241,8 @@ const TransformationMatrix& GeometryMapper::localToAncestorMatrix(
     return m_identity;
   }
 
-  // Iterate down from the top intermediate node found in the previous loop, computing and memoizing transforms as we go.
+  // Iterate down from the top intermediate node found in the previous loop,
+  // computing and memoizing transforms as we go.
   for (auto it = intermediateNodes.rbegin(); it != intermediateNodes.rend();
        it++) {
     if ((*it) != ancestorState.transform()) {

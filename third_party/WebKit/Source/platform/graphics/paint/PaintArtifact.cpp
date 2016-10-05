@@ -27,7 +27,8 @@ void computeChunkBoundsAndOpaqueness(const DisplayItemList& displayItems,
       const auto& drawing = static_cast<const DrawingDisplayItem&>(item);
       if (const SkPicture* picture = drawing.picture()) {
         if (drawing.knownToBeOpaque()) {
-          // TODO(pdr): It may be too conservative to round in to the enclosedIntRect.
+          // TODO(pdr): It may be too conservative to round in to the
+          // enclosedIntRect.
           SkIRect conservativelyRoundedPictureRect;
           const SkRect& pictureRect = picture->cullRect();
           pictureRect.roundIn(&conservativelyRoundedPictureRect);

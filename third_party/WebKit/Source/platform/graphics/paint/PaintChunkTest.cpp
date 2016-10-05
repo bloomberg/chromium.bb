@@ -75,7 +75,8 @@ TEST(PaintChunkTest, IdNotMatchesJustCreated) {
   EXPECT_TRUE(client->isJustCreated());
 
   DisplayItem::Id id(*client, DisplayItem::kDrawingFirst);
-  // A chunk of a newly created client doesn't match any chunk because it's never cached.
+  // A chunk of a newly created client doesn't match any chunk because it's
+  // never cached.
   EXPECT_FALSE(PaintChunk(0, 1, &id, properties)
                    .matches(PaintChunk(0, 1, &id, properties)));
 

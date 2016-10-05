@@ -38,25 +38,34 @@ class PLATFORM_EXPORT DisplayItem {
   // Some display item types can be categorized using the following directives:
   // - In enum Type:
   //   - enum value <Category>First;
-  //   - enum values of the category, first of which should equal <Category>First;
-  //     (for ease of maintenance, the values should be in alphabetic order)
-  //   - enum value <Category>Last which should be equal to the last of the enum values of the category
-  // - DEFINE_CATEGORY_METHODS(<Category>) to define is<Category>Type(Type) and is<Category>() methods.
+  //   - enum values of the category, first of which should equal
+  //     <Category>First (for ease of maintenance, the values should be in
+  //     alphabetic order);
+  //   - enum value <Category>Last which should be equal to the last of the enum
+  //     values of the category
+  // - DEFINE_CATEGORY_METHODS(<Category>) to define is<Category>Type(Type) and
+  //   is<Category>() methods.
   //
-  // A category or subset of a category can contain types each of which corresponds to a PaintPhase:
+  // A category or subset of a category can contain types each of which
+  // corresponds to a PaintPhase:
   // - In enum Type:
   //   - enum value <Category>[<Subset>]PaintPhaseFirst;
-  //   - enum value <Category>[<Subset>]PaintPhaseLast = <Category>[<Subset>]PaintPhaseFirst + PaintPhaseMax;
+  //   - enum value <Category>[<Subset>]PaintPhaseLast =
+  //     <Category>[<Subset>]PaintPhaseFirst + PaintPhaseMax;
   // - DEFINE_PAINT_PHASE_CONVERSION_METHOD(<Category>[<Subset>]) to define
   //   paintPhaseTo<Category>[<Subset>]Type(PaintPhase) method.
   //
-  // A category can be derived from another category, containing types each of which corresponds to a
-  // value of the latter category:
+  // A category can be derived from another category, containing types each of
+  // which corresponds to a value of the latter category:
   // - In enum Type:
   //   - enum value <Category>First;
-  //   - enum value <Category>Last = <Category>First + <BaseCategory>Last - <BaseCategory>First;
-  // - DEFINE_CONVERSION_METHODS(<Category>, <category>, <BaseCategory>, <baseCategory>) to define methods to
-  //   convert types between the categories;
+  //   - enum value <Category>Last =
+  //     <Category>First + <BaseCategory>Last - <BaseCategory>First;
+  // - DEFINE_CONVERSION_METHODS(<Category>,
+  //                             <category>,
+  //                             <BaseCategory>,
+  //                             <baseCategory>)
+  //   to define methods to convert types between the categories.
   enum Type {
     kDrawingFirst,
     kDrawingPaintPhaseFirst = kDrawingFirst,
@@ -101,9 +110,11 @@ class PLATFORM_EXPORT DisplayItem {
     kTableCellBackgroundFromColumn,
     kTableCellBackgroundFromSection,
     kTableCellBackgroundFromRow,
-    // Table collapsed borders can be painted together (e.g., left & top) but there are at most 4 phases of collapsed
-    // border painting for a single cell. To disambiguate these phases of collapsed border painting, a mask is used.
-    // TableCollapsedBorderBase can be larger than TableCollapsedBorderUnalignedBase to ensure the base lower bits are 0's.
+    // Table collapsed borders can be painted together (e.g., left & top) but
+    // there are at most 4 phases of collapsed border painting for a single
+    // cell. To disambiguate these phases of collapsed border painting, a mask
+    // is used. TableCollapsedBorderBase can be larger than
+    // TableCollapsedBorderUnalignedBase to ensure the base lower bits are 0's.
     kTableCollapsedBorderUnalignedBase,
     kTableCollapsedBorderBase =
         (((kTableCollapsedBorderUnalignedBase - 1) >> 4) + 1) << 4,
@@ -195,7 +206,8 @@ class PLATFORM_EXPORT DisplayItem {
                 "TableCollapsedBorder types overlap with other types");
   static_assert((kTableCollapsedBorderBase & 0xf) == 0,
                 "The lowest 4 bits of TableCollapsedBorderBase should be zero");
-  // Bits or'ed onto TableCollapsedBorderBase to generate a real table collapsed border type.
+  // Bits or'ed onto TableCollapsedBorderBase to generate a real table collapsed
+  // border type.
   enum TableCollapsedBorderSides {
     TableCollapsedBorderTop = 1 << 0,
     TableCollapsedBorderRight = 1 << 1,
@@ -247,7 +259,8 @@ class PLATFORM_EXPORT DisplayItem {
   // supply this to the DisplayItem constructor.
   size_t derivedSize() const { return m_derivedSize; }
 
-  // For PaintController only. Painters should use DisplayItemCacheSkipper instead.
+  // For PaintController only. Painters should use DisplayItemCacheSkipper
+  // instead.
   void setSkippedCache() { m_skippedCache = true; }
   bool skippedCache() const { return m_skippedCache; }
 

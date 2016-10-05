@@ -15,30 +15,33 @@
 
 namespace blink {
 
-// The class for objects that can be associated with display items.
-// A DisplayItemClient object should live at least longer than the document cycle
-// in which its display items are created during painting.
-// After the document cycle, a pointer/reference to DisplayItemClient should be
-// no longer dereferenced unless we can make sure the client is still valid.
+// The class for objects that can be associated with display items. A
+// DisplayItemClient object should live at least longer than the document cycle
+// in which its display items are created during painting. After the document
+// cycle, a pointer/reference to DisplayItemClient should be no longer
+// dereferenced unless we can make sure the client is still valid.
 class PLATFORM_EXPORT DisplayItemClient {
  public:
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
   DisplayItemClient();
   virtual ~DisplayItemClient();
 
-  // Tests if this DisplayItemClient object has been created and has not been deleted yet.
+  // Tests if this DisplayItemClient object has been created and has not been
+  // deleted yet.
   bool isAlive() const;
 
-  // Called when any DisplayItem of this DisplayItemClient is added into PaintController
-  // using PaintController::createAndAppend() or into a cached subsequence.
+  // Called when any DisplayItem of this DisplayItemClient is added into
+  // PaintController using PaintController::createAndAppend() or into a cached
+  // subsequence.
   void beginShouldKeepAlive(const void* owner) const;
 
-  // Called when the DisplayItemClient is sure that it can safely die before its owners
-  // have chance to remove it from the aliveness control.
+  // Called when the DisplayItemClient is sure that it can safely die before its
+  // owners have chance to remove it from the aliveness control.
   void endShouldKeepAlive() const;
 
-  // Clears all should-keep-alive DisplayItemClients of a PaintController. Called after
-  // PaintController commits new display items or the subsequence owner is invalidated.
+  // Clears all should-keep-alive DisplayItemClients of a PaintController.
+  // Called after PaintController commits new display items or the subsequence
+  // owner is invalidated.
   static void endShouldKeepAliveAllClients(const void* owner);
   static void endShouldKeepAliveAllClients();
 #else
@@ -47,8 +50,9 @@ class PLATFORM_EXPORT DisplayItemClient {
 
   virtual String debugName() const = 0;
 
-  // The visual rect of this DisplayItemClient, in object space of the object that owns the GraphicsLayer, i.e.
-  // offset by offsetFromLayoutObjectWithSubpixelAccumulation().
+  // The visual rect of this DisplayItemClient, in the object space of the
+  // object that owns the GraphicsLayer, i.e. offset by
+  // offsetFromLayoutObjectWithSubpixelAccumulation().
   virtual LayoutRect visualRect() const = 0;
 
   void setDisplayItemsUncached(
@@ -65,7 +69,8 @@ class PLATFORM_EXPORT DisplayItemClient {
     return m_cacheGenerationOrInvalidationReason.getPaintInvalidationReason();
   }
 
-  // A client is considered "just created" if its display items have never been committed.
+  // A client is considered "just created" if its display items have never been
+  // committed.
   bool isJustCreated() const {
     return m_cacheGenerationOrInvalidationReason.isJustCreated();
   }
@@ -77,21 +82,24 @@ class PLATFORM_EXPORT DisplayItemClient {
   friend class FakeDisplayItemClient;
   friend class PaintController;
 
-  // Holds a unique cache generation id of DisplayItemClients and PaintControllers,
-  // or PaintInvalidationReason if the DisplayItemClient or PaintController is
-  // invalidated.
+  // Holds a unique cache generation id of DisplayItemClients and
+  // PaintControllers, or PaintInvalidationReason if the DisplayItemClient or
+  // PaintController is invalidated.
   //
-  // A paint controller sets its cache generation to DisplayItemCacheGeneration::next()
-  // at the end of each commitNewDisplayItems, and updates the cache generation of each
-  // client with cached drawings by calling DisplayItemClient::setDisplayItemsCached().
-  // A display item is treated as validly cached in a paint controller if its cache generation
-  // matches the paint controller's cache generation.
+  // A paint controller sets its cache generation to
+  // DisplayItemCacheGeneration::next() at the end of each
+  // commitNewDisplayItems, and updates the cache generation of each client with
+  // cached drawings by calling DisplayItemClient::setDisplayItemsCached(). A
+  // display item is treated as validly cached in a paint controller if its
+  // cache generation matches the paint controller's cache generation.
   //
-  // SPv1 only: If a display item is painted on multiple paint controllers, because cache
-  // generations are unique, the client's cache generation matches the last paint controller
-  // only. The client will be treated as invalid on other paint controllers regardless if
-  // it's validly cached by these paint controllers. The situation is very rare (about 0.07%
-  // clients were painted on multiple paint controllers) so the performance penalty is trivial.
+  // SPv1 only: If a display item is painted on multiple paint controllers,
+  // because cache generations are unique, the client's cache generation matches
+  // the last paint controller only. The client will be treated as invalid on
+  // other paint controllers regardless if it's validly cached by these paint
+  // controllers. This situation is very rare (about 0.07% of clients were
+  // painted on multiple paint controllers) so the performance penalty is
+  // trivial.
   class PLATFORM_EXPORT CacheGenerationOrInvalidationReason {
     DISALLOW_NEW();
 

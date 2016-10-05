@@ -13,7 +13,8 @@ using testing::ElementsAre;
 namespace blink {
 namespace {
 
-// TODO(crbug.com/629946): The tests fail mysteriously on some Windows debug bots.
+// TODO(crbug.com/629946): The tests fail mysteriously on some Windows debug
+// bots.
 #if defined(NDEBUG) || !OS(WIN)
 
 static PaintChunkProperties rootPaintChunkProperties() {
@@ -165,7 +166,8 @@ TEST_F(PaintChunkerTest, BuildMultipleChunksWithDifferentPropertyChanges) {
   chunker.incrementDisplayItemIndex(NormalTestDisplayItem());
   chunker.incrementDisplayItemIndex(NormalTestDisplayItem());
 
-  // Test that going back to a previous chunk property still creates a new chunk.
+  // Test that going back to a previous chunk property still creates a new
+  // chunk.
   chunker.updateCurrentPaintChunkProperties(nullptr, simpleTransformAndEffect);
   chunker.incrementDisplayItemIndex(NormalTestDisplayItem());
   chunker.incrementDisplayItemIndex(NormalTestDisplayItem());
@@ -185,7 +187,8 @@ TEST_F(PaintChunkerTest, BuildMultipleChunksWithDifferentPropertyChanges) {
 TEST_F(PaintChunkerTest, BuildChunksFromNestedTransforms) {
   // Test that "nested" transforms linearize using the following
   // sequence of transforms and display items:
-  // <root xform>, <paint>, <a xform>, <paint>, <paint>, </a xform>, <paint>, </root xform>
+  // <root xform>, <paint>, <a xform>, <paint>, <paint>, </a xform>, <paint>,
+  // </root xform>
   PaintChunker chunker;
   chunker.updateCurrentPaintChunkProperties(nullptr,
                                             rootPaintChunkProperties());

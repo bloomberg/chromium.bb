@@ -41,10 +41,13 @@ void CompositingRecorder::beginCompositing(GraphicsContext& graphicsContext,
 
 void CompositingRecorder::endCompositing(GraphicsContext& graphicsContext,
                                          const DisplayItemClient& client) {
-  // If the end of the current display list is of the form [BeginCompositingDisplayItem] [DrawingDisplayItem],
-  // then fold the BeginCompositingDisplayItem into a new DrawingDisplayItem that replaces them both. This allows
-  // Skia to optimize for the case when the BeginCompositingDisplayItem represents a simple opacity/color that can be merged into
-  // the opacity/color of the drawing. See crbug.com/628831 for more details.
+  // If the end of the current display list is of the form
+  // [BeginCompositingDisplayItem] [DrawingDisplayItem], then fold the
+  // BeginCompositingDisplayItem into a new DrawingDisplayItem that replaces
+  // them both. This allows Skia to optimize for the case when the
+  // BeginCompositingDisplayItem represents a simple opacity/color that can be
+  // merged into the opacity/color of the drawing. See crbug.com/628831 for more
+  // details.
   PaintController& paintController = graphicsContext.getPaintController();
   const DisplayItem* lastDisplayItem = paintController.lastDisplayItem(0);
   const DisplayItem* secondToLastDisplayItem =
@@ -74,10 +77,12 @@ void CompositingRecorder::endCompositing(GraphicsContext& graphicsContext,
     paintController
         .removeLastDisplayItem();  // Remove the BeginCompositingDisplayItem.
 
-    // The new item cannot be cached, because it is a mutation of the DisplayItem the client thought it was painting.
+    // The new item cannot be cached, because it is a mutation of the
+    // DisplayItem the client thought it was painting.
     paintController.beginSkippingCache();
     {
-      // Replay the new SKPicture into a new DrawingDisplayItem in the original DisplayItemList.
+      // Replay the new SKPicture into a new DrawingDisplayItem in the original
+      // DisplayItemList.
       DrawingRecorder newRecorder(graphicsContext, displayItemClient,
                                   displayItemType, cullRect);
       pictureBuilder.endRecording()->playback(graphicsContext.canvas());

@@ -29,7 +29,8 @@ class ScopedPaintChunkProperties {
     m_paintController.updateCurrentPaintChunkProperties(&id, properties);
   }
 
-  // Omits the type parameter, in case that the client creates only one PaintChunkProperties node during each painting.
+  // Omits the type parameter, in case that the client creates only one
+  // PaintChunkProperties node during each painting.
   ScopedPaintChunkProperties(PaintController& paintController,
                              const DisplayItemClient& client,
                              const PaintChunkProperties& properties)
@@ -39,11 +40,12 @@ class ScopedPaintChunkProperties {
                                    properties) {}
 
   ~ScopedPaintChunkProperties() {
-    // We should not return to the previous id, because that may cause a new chunk to use
-    // the same id as that of the previous chunk before this ScopedPaintChunkProperties.
-    // The painter should create another scope of paint properties with new id, or the
-    // new chunk will have no id and will not match any old chunk and will be treated as
-    // fully invalidated for rasterization.
+    // We should not return to the previous id, because that may cause a new
+    // chunk to use the same id as that of the previous chunk before this
+    // ScopedPaintChunkProperties. The painter should create another scope of
+    // paint properties with new id, or the new chunk will have no id and will
+    // not match any old chunk and will be treated as fully invalidated for
+    // rasterization.
     m_paintController.updateCurrentPaintChunkProperties(nullptr,
                                                         m_previousProperties);
   }

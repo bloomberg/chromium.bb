@@ -25,7 +25,8 @@ void BeginClipPathDisplayItem::appendToWebDisplayItemList(
 
 void BeginClipPathDisplayItem::analyzeForGpuRasterization(
     SkPictureGpuAnalyzer& analyzer) const {
-  // Temporarily disabled (pref regressions due to GPU veto stickiness: http://crbug.com/603969).
+  // Temporarily disabled (pref regressions due to GPU veto stickiness:
+  // http://crbug.com/603969).
   // analyzer.analyzeClipPath(m_clipPath, SkRegion::kIntersect_Op, true);
 }
 

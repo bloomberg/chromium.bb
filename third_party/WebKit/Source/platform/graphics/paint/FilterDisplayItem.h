@@ -40,16 +40,16 @@ class PLATFORM_EXPORT BeginFilterDisplayItem final
   void dumpPropertiesAsDebugString(WTF::StringBuilder&) const override;
 #endif
   bool equals(const DisplayItem& other) const final {
-    return DisplayItem::equals(other)
-           // TODO(wangxianzhu): compare m_imageFilter and m_webFilterOperations.
-           &&
-           m_bounds ==
-               static_cast<const BeginFilterDisplayItem&>(other).m_bounds &&
-           m_origin ==
-               static_cast<const BeginFilterDisplayItem&>(other).m_origin;
+    // TODO(wangxianzhu): compare m_imageFilter and m_webFilterOperations.
+    const auto& other_display_item =
+        static_cast<const BeginFilterDisplayItem&>(other);
+    return DisplayItem::equals(other) &&
+           m_bounds == other_display_item.m_bounds &&
+           m_origin == other_display_item.m_origin;
   }
 
-  // FIXME: m_imageFilter should be replaced with m_webFilterOperations when copying data to the compositor.
+  // FIXME: m_imageFilter should be replaced with m_webFilterOperations when
+  // copying data to the compositor.
   sk_sp<SkImageFilter> m_imageFilter;
   CompositorFilterOperations m_compositorFilterOperations;
   const FloatRect m_bounds;

@@ -53,8 +53,9 @@ struct PaintChunk {
     CHECK(id->client.isAlive());
 #endif
     // A chunk whose client is just created should not match any cached chunk,
-    // even if it's id equals the old chunk's id (which may happen if this chunk's
-    // client is just created at the same address of the old chunk's deleted client).
+    // even if it's id equals the old chunk's id (which may happen if this
+    // chunk's client is just created at the same address of the old chunk's
+    // deleted client).
     return !id->client.isJustCreated();
   }
 
@@ -65,19 +66,20 @@ struct PaintChunk {
   // |endIndex - beginIndex| drawings in the chunk.
   size_t endIndex;
 
-  // Identifier of this chunk. If it has a value, it should be unique.
-  // It's used to match a new chunk to a cached old chunk to track changes of chunk
-  // contents, so the id should be stable across document cycles.
-  // If the contents of the chunk can't be cached (e.g. it's created when PaintController
-  // is skipping cache, normally because display items can't be uniquely identified),
-  // id is nullopt so that the chunk won't match any other chunk.
+  // Identifier of this chunk. If it has a value, it should be unique. This is
+  // used to match a new chunk to a cached old chunk to track changes of chunk
+  // contents, so the id should be stable across document cycles. If the
+  // contents of the chunk can't be cached (e.g. it's created when
+  // PaintController is skipping the cache, normally because display items can't
+  // be uniquely identified), |id| is nullopt so that the chunk won't match any
+  // other chunk.
   using Id = DisplayItem::Id;
   Optional<Id> id;
 
   // The paint properties which apply to this chunk.
   PaintChunkProperties properties;
 
-  // The total bounds of this paint chunk's contents, in -the coordinate space of
+  // The total bounds of this paint chunk's contents, in the coordinate space of
   // the containing transform node.
   FloatRect bounds;
 
