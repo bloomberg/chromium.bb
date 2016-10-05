@@ -87,10 +87,11 @@ void AutomaticTrackSelection::performAutomaticTextTrackSelection(
     if (textTrack->kind() == preferredTrackKind())
       trackScore += 1;
     if (trackScore) {
-      // * If the text track kind is subtitles or captions and the user has indicated an interest in having a
-      // track with this text track kind, text track language, and text track label enabled, and there is no
-      // other text track in the media element's list of text tracks with a text track kind of either subtitles
-      // or captions whose text track mode is showing
+      // * If the text track kind is subtitles or captions and the user has
+      // indicated an interest in having a track with this text track kind, text
+      // track language, and text track label enabled, and there is no other
+      // text track in the media element's list of text tracks with a text track
+      // kind of either subtitles or captions whose text track mode is showing
       //    Let the text track mode be showing.
       if (trackScore > highestTrackScore) {
         preferredTrack = textTrack;
@@ -102,8 +103,9 @@ void AutomaticTrackSelection::performAutomaticTextTrackSelection(
       if (!fallbackTrack)
         fallbackTrack = textTrack;
     } else if (!group.visibleTrack && !defaultTrack && textTrack->isDefault()) {
-      // * If the track element has a default attribute specified, and there is no other text track in the media
-      // element's list of text tracks whose text track mode is showing or showing by default
+      // * If the track element has a default attribute specified, and there is
+      // no other text track in the media element's list of text tracks whose
+      // text track mode is showing or showing by default
       //    Let the text track mode be showing by default.
       defaultTrack = textTrack;
     }
@@ -186,12 +188,13 @@ void AutomaticTrackSelection::perform(TextTrackList& textTracks) {
     if (!currentGroup->defaultTrack && textTrack->isDefault())
       currentGroup->defaultTrack = textTrack;
 
-    // Do not add this track to the group if it has already been automatically configured
-    // as we only want to perform selection once per track so that adding another track
-    // after the initial configuration doesn't reconfigure every track - only those that
-    // should be changed by the new addition. For example all metadata tracks are
-    // disabled by default, and we don't want a track that has been enabled by script
-    // to be disabled automatically when a new metadata track is added later.
+    // Do not add this track to the group if it has already been automatically
+    // configured as we only want to perform selection once per track so that
+    // adding another track after the initial configuration doesn't reconfigure
+    // every track - only those that should be changed by the new addition. For
+    // example all metadata tracks are disabled by default, and we don't want a
+    // track that has been enabled by script to be disabled automatically when a
+    // new metadata track is added later.
     if (textTrack->hasBeenConfigured())
       continue;
 

@@ -130,7 +130,8 @@ static bool isInvalidPercentage(double value, ExceptionState& exceptionState) {
   return false;
 }
 
-// Sets inline CSS properties on passed in element if value is not an empty string
+// Sets inline CSS properties on passed in element if value is not an empty
+// string.
 static void setInlineStylePropertyIfNotEmpty(Element& element,
                                              CSSPropertyID propertyID,
                                              const String& value) {
@@ -148,7 +149,8 @@ void VTTCueBox::applyCSSProperties(
     const VTTDisplayParameters& displayParameters) {
   // http://dev.w3.org/html5/webvtt/#applying-css-properties-to-webvtt-node-objects
 
-  // Initialize the (root) list of WebVTT Node Objects with the following CSS settings:
+  // Initialize the (root) list of WebVTT Node Objects with the following CSS
+  // settings:
 
   // the 'position' property must be set to 'absolute'
   setInlineStyleProperty(CSSPropertyPosition, CSSValueAbsolute);
@@ -173,7 +175,8 @@ void VTTCueBox::applyCSSProperties(
   setInlineStyleProperty(CSSPropertyLeft, position.x(),
                          CSSPrimitiveValue::UnitType::Percentage);
 
-  // the 'width' property must be set to width, and the 'height' property  must be set to height
+  // the 'width' property must be set to width, and the 'height' property  must
+  // be set to height
   if (displayParameters.writingMode == CSSValueHorizontalTb) {
     setInlineStyleProperty(CSSPropertyWidth, displayParameters.size,
                            CSSPrimitiveValue::UnitType::Percentage);
@@ -435,8 +438,8 @@ void VTTCue::setText(const String& text) {
     return;
 
   cueWillChange();
-  // Clear the document fragment but don't bother to create it again just yet as we can do that
-  // when it is requested.
+  // Clear the document fragment but don't bother to create it again just yet as
+  // we can do that when it is requested.
   m_vttNodeTree = nullptr;
   m_text = text;
   cueDidChange();
@@ -530,7 +533,8 @@ class VTTTextRunIterator : public TextRunIterator {
 
   bool atParagraphSeparator() const {
     // Within a cue, paragraph boundaries are only denoted by Type B characters,
-    // such as U+000A LINE FEED (LF), U+0085 NEXT LINE (NEL), and U+2029 PARAGRAPH SEPARATOR.
+    // such as U+000A LINE FEED (LF), U+0085 NEXT LINE (NEL),
+    // and U+2029 PARAGRAPH SEPARATOR.
     return WTF::Unicode::category(current()) &
            WTF::Unicode::Separator_Paragraph;
   }
@@ -586,11 +590,13 @@ float VTTCue::calculateComputedTextPosition() const {
     return m_textPosition;
 
   switch (m_cueAlignment) {
-    // 2. If the cue text alignment is start or left, return 0 and abort these steps.
+    // 2. If the cue text alignment is start or left, return 0 and abort these
+    // steps.
     case Start:
     case Left:
       return 0;
-    // 3. If the cue text alignment is end or right, return 100 and abort these steps.
+    // 3. If the cue text alignment is end or right, return 100 and abort these
+    // steps.
     case End:
     case Right:
       return 100;
@@ -793,9 +799,10 @@ VTTCueBox* VTTCue::getDisplayTree() {
   DCHECK_EQ(m_displayTree->firstChild(), m_cueBackgroundBox);
 
   if (!m_displayTreeShouldChange) {
-    // Apply updated user style overrides for text tracks when display tree doesn't change.
-    // This ensures that the track settings are refreshed when the video is
-    // replayed or when the user slides back to an already rendered track.
+    // Apply updated user style overrides for text tracks when display tree
+    // doesn't change.  This ensures that the track settings are refreshed when
+    // the video is replayed or when the user slides back to an already rendered
+    // track.
     applyUserOverrideCSSProperties();
     return m_displayTree;
   }
@@ -869,7 +876,8 @@ void VTTCue::updateDisplay(HTMLDivElement& container) {
     // whose region identifier is identical to cue's region identifier, run
     // the following substeps:
     if (displayBox->hasChildren() && !container.contains(displayBox)) {
-      // Note: the display tree of a cue is removed when the active flag of the cue is unset.
+      // Note: the display tree of a cue is removed when the active flag of the
+      // cue is unset.
       container.appendChild(displayBox);
     }
   } else {
@@ -930,27 +938,37 @@ void VTTCue::parseSettings(const String& inputString) {
   VTTScanner input(inputString);
 
   while (!input.isAtEnd()) {
-    // The WebVTT cue settings part of a WebVTT cue consists of zero or more of the following components, in any order,
-    // separated from each other by one or more U+0020 SPACE characters or U+0009 CHARACTER TABULATION (tab) characters.
+    // The WebVTT cue settings part of a WebVTT cue consists of zero or more of
+    // the following components, in any order, separated from each other by one
+    // or more U+0020 SPACE characters or U+0009 CHARACTER TABULATION (tab)
+    // characters.
     input.skipWhile<VTTParser::isValidSettingDelimiter>();
 
     if (input.isAtEnd())
       break;
 
-    // When the user agent is to parse the WebVTT settings given by a string input for a text track cue cue,
+    // When the user agent is to parse the WebVTT settings given by a string
+    // input for a text track cue cue,
     // the user agent must run the following steps:
     // 1. Let settings be the result of splitting input on spaces.
-    // 2. For each token setting in the list settings, run the following substeps:
-    //    1. If setting does not contain a U+003A COLON character (:), or if the first U+003A COLON character (:)
-    //       in setting is either the first or last character of setting, then jump to the step labeled next setting.
-    //    2. Let name be the leading substring of setting up to and excluding the first U+003A COLON character (:) in that string.
+    // 2. For each token setting in the list settings, run the following
+    //    substeps:
+    //    1. If setting does not contain a U+003A COLON character (:), or if the
+    //       first U+003A COLON character (:) in setting is either the first or
+    //       last character of setting, then jump to the step labeled next
+    //       setting.
+    //    2. Let name be the leading substring of setting up to and excluding
+    //       the first U+003A COLON character (:) in that string.
     CueSetting name = settingName(input);
 
-    // 3. Let value be the trailing substring of setting starting from the character immediately after the first U+003A COLON character (:) in that string.
+    // 3. Let value be the trailing substring of setting starting from the
+    //    character immediately after the first U+003A COLON character (:) in
+    //    that string.
     VTTScanner::Run valueRun =
         input.collectUntil<VTTParser::isValidSettingDelimiter>();
 
-    // 4. Run the appropriate substeps that apply for the value of name, as follows:
+    // 4. Run the appropriate substeps that apply for the value of name, as
+    //    follows:
     switch (name) {
       case Vertical: {
         // If name is a case-sensitive match for "vertical"
@@ -973,7 +991,8 @@ void VTTCue::parseSettings(const String& inputString) {
         float number;
         // 3. If linepos does not contain at least one ASCII digit, then
         //    jump to the step labeled next setting.
-        // 4. If the last character in linepos is a U+0025 PERCENT SIGN character (%)
+        // 4. If the last character in linepos is a U+0025 PERCENT SIGN
+        //    character (%)
         //
         //    If parse a percentage string from linepos doesn't fail, let
         //    number be the returned percentage, otherwise jump to the step

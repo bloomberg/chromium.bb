@@ -249,9 +249,9 @@ void ImageBitmapFactories::ImageBitmapLoader::didFail(FileError::ErrorCode) {
 
 void ImageBitmapFactories::ImageBitmapLoader::scheduleAsyncImageBitmapDecoding(
     DOMArrayBuffer* arrayBuffer) {
-  // For a 4000*4000 png image where each 10*10 tile is filled in by a random RGBA value,
-  // the byteLength is around 2M, and it typically takes around 4.5ms to decode on a
-  // current model of Linux desktop.
+  // For a 4000*4000 png image where each 10*10 tile is filled in by a random
+  // RGBA value, the byteLength is around 2M, and it typically takes around
+  // 4.5ms to decode on a current model of Linux desktop.
   const int longTaskByteLengthThreshold = 2000000;
   BackgroundTaskRunner::TaskSize taskSize =
       BackgroundTaskRunner::TaskSizeShortRunningTask;

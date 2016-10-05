@@ -143,7 +143,8 @@ void VTTParser::parse() {
           break;
         }
 
-        // Step 15 - Break out of header loop if the line could be a timestamp line.
+        // Step 15 - Break out of header loop if the line could be a timestamp
+        // line.
         if (line.contains("-->"))
           m_state = recoverCue(line);
 
@@ -151,14 +152,16 @@ void VTTParser::parse() {
         break;
 
       case Id:
-        // Steps 17 - 20 - Allow any number of line terminators, then initialize new cue values.
+        // Steps 17 - 20 - Allow any number of line terminators, then initialize
+        // new cue values.
         if (line.isEmpty())
           break;
 
         // Step 21 - Cue creation (start a new cue).
         resetCueValues();
 
-        // Steps 22 - 25 - Check if this line contains an optional identifier or timing data.
+        // Steps 22 - 25 - Check if this line contains an optional identifier or
+        // timing data.
         m_state = collectCueId(line);
         break;
 
@@ -174,12 +177,14 @@ void VTTParser::parse() {
         break;
 
       case CueText:
-        // Steps 31 - 41 - Collect the cue text, create a cue, and add it to the output.
+        // Steps 31 - 41 - Collect the cue text, create a cue, and add it to the
+        // output.
         m_state = collectCueText(line);
         break;
 
       case BadCue:
-        // Steps 42 - 48 - Discard lines until an empty line or a potential timing line is seen.
+        // Steps 42 - 48 - Discard lines until an empty line or a potential
+        // timing line is seen.
         m_state = ignoreBadCue(line);
         break;
     }
@@ -188,7 +193,8 @@ void VTTParser::parse() {
 
 void VTTParser::flushPendingCue() {
   DCHECK(m_lineReader.isAtEndOfStream());
-  // If we're in the CueText state when we run out of data, we emit the pending cue.
+  // If we're in the CueText state when we run out of data, we emit the pending
+  // cue.
   if (m_state == CueText)
     createNewCue();
 }
@@ -220,8 +226,8 @@ void VTTParser::collectMetadataHeader(const String& line) {
   if (!RuntimeEnabledFeatures::webVTTRegionsEnabled())
     return;
 
-  // Step 12.4 If line contains the character ":" (A U+003A COLON), then set metadata's
-  // name to the substring of line before the first ":" character and
+  // Step 12.4 If line contains the character ":" (A U+003A COLON), then set
+  // metadata's name to the substring of line before the first ":" character and
   // metadata's value to the substring after this character.
   size_t colonPosition = line.find(':');
   if (colonPosition == kNotFound)
@@ -232,7 +238,8 @@ void VTTParser::collectMetadataHeader(const String& line) {
   // Steps 12.5 If metadata's name equals "Region":
   if (headerName == regionHeaderName) {
     String headerValue = line.substring(colonPosition + 1);
-    // Steps 12.5.1 - 12.5.11 Region creation: Let region be a new text track region [...]
+    // Steps 12.5.1 - 12.5.11 Region creation: Let region be a new text track
+    // region [...]
     createNewRegion(headerValue);
   }
 }
@@ -247,26 +254,34 @@ VTTParser::ParseState VTTParser::collectCueId(const String& line) {
 VTTParser::ParseState VTTParser::collectTimingsAndSettings(const String& line) {
   VTTScanner input(line);
 
-  // Collect WebVTT cue timings and settings. (5.3 WebVTT cue timings and settings parsing.)
-  // Steps 1 - 3 - Let input be the string being parsed and position be a pointer into input.
+  // Collect WebVTT cue timings and settings. (5.3 WebVTT cue timings and
+  // settings parsing.)
+  // Steps 1 - 3 - Let input be the string being parsed and position be a
+  // pointer into input.
   input.skipWhile<isASpace>();
 
-  // Steps 4 - 5 - Collect a WebVTT timestamp. If that fails, then abort and return failure. Otherwise, let cue's text track cue start time be the collected time.
+  // Steps 4 - 5 - Collect a WebVTT timestamp. If that fails, then abort and
+  // return failure. Otherwise, let cue's text track cue start time be the
+  // collected time.
   if (!collectTimeStamp(input, m_currentStartTime))
     return BadCue;
   input.skipWhile<isASpace>();
 
-  // Steps 6 - 9 - If the next three characters are not "-->", abort and return failure.
+  // Steps 6 - 9 - If the next three characters are not "-->", abort and return
+  // failure.
   if (!input.scan("-->"))
     return BadCue;
   input.skipWhile<isASpace>();
 
-  // Steps 10 - 11 - Collect a WebVTT timestamp. If that fails, then abort and return failure. Otherwise, let cue's text track cue end time be the collected time.
+  // Steps 10 - 11 - Collect a WebVTT timestamp. If that fails, then abort and
+  // return failure. Otherwise, let cue's text track cue end time be the
+  // collected time.
   if (!collectTimeStamp(input, m_currentEndTime))
     return BadCue;
   input.skipWhile<isASpace>();
 
-  // Step 12 - Parse the WebVTT settings for the cue (conducted in TextTrackCue).
+  // Step 12 - Parse the WebVTT settings for the cue (conducted in
+  // TextTrackCue).
   m_currentSettings = input.restOfInputAsString();
   return CueText;
 }
@@ -417,7 +432,8 @@ bool VTTParser::collectTimeStamp(VTTScanner& input, double& timeStamp) {
   if (value1Digits != 2 || value1 > 59)
     mode = Hours;
 
-  // Steps 8 - 11 - Collect the next sequence of 0-9 after ':' (must be 2 chars).
+  // Steps 8 - 11 - Collect the next sequence of 0-9 after ':' (must be 2
+  // chars).
   int value2;
   if (!input.scan(':') || input.scanDigits(value2) != 2)
     return false;

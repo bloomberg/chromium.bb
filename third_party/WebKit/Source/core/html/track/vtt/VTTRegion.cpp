@@ -46,7 +46,8 @@
 
 namespace blink {
 
-// The following values default values are defined within the WebVTT Regions Spec.
+// The following values default values are defined within the WebVTT Regions
+// Spec.
 // https://dvcs.w3.org/hg/text-tracks/raw-file/default/608toVTT/region.html
 
 // The region occupies by default 100% of the width of the video viewport.
@@ -352,9 +353,9 @@ void VTTRegion::displayLastVTTCueBox() {
   DVLOG(VTT_LOG_LEVEL) << "displayLastVTTCueBox";
   DCHECK(m_cueContainer);
 
-  // FIXME: This should not be causing recalc styles in a loop to set the "top" css
-  // property to move elements. We should just scroll the text track cues on the
-  // compositor with an animation.
+  // FIXME: This should not be causing recalc styles in a loop to set the "top"
+  // css property to move elements. We should just scroll the text track cues on
+  // the compositor with an animation.
 
   if (m_scrollTimer.isActive())
     return;

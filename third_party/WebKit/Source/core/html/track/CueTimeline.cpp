@@ -136,7 +136,8 @@ void CueTimeline::updateActiveCues(double movieTime) {
   CueList currentCues;
 
   // The user agent must synchronously unset [the text track cue active] flag
-  // whenever ... the media element's readyState is changed back to kHaveNothing.
+  // whenever ... the media element's readyState is changed back to
+  // kHaveNothing.
   if (mediaElement.getReadyState() != HTMLMediaElement::kHaveNothing &&
       mediaElement.webMediaPlayer())
     currentCues =
@@ -315,7 +316,8 @@ void CueTimeline::updateActiveCues(double movieTime) {
                  trackIndexCompare);
 
   // 15 - For each text track in affected tracks, in the list order, queue a
-  // task to fire a simple event named cuechange at the TextTrack object, and, ...
+  // task to fire a simple event named cuechange at the TextTrack object, and,
+  // ...
   for (size_t i = 0; i < affectedTracks.size(); ++i) {
     mediaElement.scheduleEvent(createEventWithTarget(EventTypeNames::cuechange,
                                                      affectedTracks[i].get()));

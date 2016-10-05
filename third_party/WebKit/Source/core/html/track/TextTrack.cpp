@@ -135,8 +135,8 @@ void TextTrack::setMode(const AtomicString& mode) {
   DCHECK(mode == disabledKeyword() || mode == hiddenKeyword() ||
          mode == showingKeyword());
 
-  // On setting, if the new value isn't equal to what the attribute would currently
-  // return, the new value must be processed as follows ...
+  // On setting, if the new value isn't equal to what the attribute would
+  // currently return, the new value must be processed as follows ...
   if (m_mode == mode)
     return;
 
@@ -198,10 +198,10 @@ void TextTrack::addListOfCues(HeapVector<Member<TextTrackCue>>& listOfNewCues) {
 
 TextTrackCueList* TextTrack::activeCues() {
   // 4.8.10.12.5 If the text track mode ... is not the text track disabled mode,
-  // then the activeCues attribute must return a live TextTrackCueList object ...
+  // then the activeCues attribute must return a live TextTrackCueList object
   // ... whose active flag was set when the script started, in text track cue
-  // order. Otherwise, it must return null. When an object is returned, the
-  // same object must be returned each time.
+  // order. Otherwise, it must return null. When an object is returned, the same
+  // object must be returned each time.
   // http://www.whatwg.org/specs/web-apps/current-work/#dom-texttrack-activecues
   if (!m_cues || m_mode == disabledKeyword())
     return nullptr;
@@ -223,16 +223,19 @@ void TextTrack::addCue(TextTrackCue* cue) {
 
   // https://html.spec.whatwg.org/multipage/embedded-content.html#dom-texttrack-addcue
 
-  // The addCue(cue) method of TextTrack objects, when invoked, must run the following steps:
+  // The addCue(cue) method of TextTrack objects, when invoked, must run the
+  // following steps:
 
-  // (Steps 1 and 2 - pertaining to association of rendering rules - are not implemented.)
+  // (Steps 1 and 2 - pertaining to association of rendering rules - are not
+  // implemented.)
 
   // 3. If the given cue is in a text track list of cues, then remove cue
   // from that text track list of cues.
   if (TextTrack* cueTrack = cue->track())
     cueTrack->removeCue(cue, ASSERT_NO_EXCEPTION);
 
-  // 4. Add cue to the method's TextTrack object's text track's text track list of cues.
+  // 4. Add cue to the method's TextTrack object's text track's text track list
+  // of cues.
   cue->setTrack(this);
   ensureTextTrackCueList()->add(cue);
 
@@ -245,10 +248,12 @@ void TextTrack::removeCue(TextTrackCue* cue, ExceptionState& exceptionState) {
 
   // https://html.spec.whatwg.org/multipage/embedded-content.html#dom-texttrack-removecue
 
-  // The removeCue(cue) method of TextTrack objects, when invoked, must run the following steps:
+  // The removeCue(cue) method of TextTrack objects, when invoked, must run the
+  // following steps:
 
   // 1. If the given cue is not currently listed in the method's TextTrack
-  // object's text track's text track list of cues, then throw a NotFoundError exception.
+  // object's text track's text track list of cues, then throw a NotFoundError
+  // exception.
   if (cue->track() != this) {
     exceptionState.throwDOMException(
         NotFoundError,
@@ -261,7 +266,8 @@ void TextTrack::removeCue(TextTrackCue* cue, ExceptionState& exceptionState) {
   // should be in it.
   DCHECK(m_cues);
 
-  // 2. Remove cue from the method's TextTrack object's text track's text track list of cues.
+  // 2. Remove cue from the method's TextTrack object's text track's text track
+  // list of cues.
   bool wasRemoved = m_cues->remove(cue);
   DCHECK(wasRemoved);
 
@@ -346,8 +352,8 @@ void TextTrack::removeRegion(VTTRegion* region,
 }
 
 void TextTrack::cueWillChange(TextTrackCue* cue) {
-  // The cue may need to be repositioned in the media element's interval tree, may need to
-  // be re-rendered, etc, so remove it before the modification...
+  // The cue may need to be repositioned in the media element's interval tree,
+  // may need to be re-rendered, etc, so remove it before the modification...
   if (cueTimeline())
     cueTimeline()->removeCue(this, cue);
 }
@@ -393,7 +399,8 @@ bool TextTrack::isRendered() const {
 }
 
 bool TextTrack::canBeRendered() const {
-  // A track can be displayed when it's of kind captions or subtitles and hasn't failed to load.
+  // A track can be displayed when it's of kind captions or subtitles and hasn't
+  // failed to load.
   return getReadinessState() != FailedToLoad && isVisualKind();
 }
 

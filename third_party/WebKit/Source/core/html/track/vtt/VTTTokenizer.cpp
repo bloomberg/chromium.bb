@@ -115,8 +115,9 @@ bool VTTTokenizer::nextToken(VTTToken& token) {
         if (result.isEmpty()) {
           WEBVTT_ADVANCE_TO(TagState);
         } else {
-          // We don't want to advance input or perform a state transition - just return a (new) token.
-          // (On the next call to nextToken we will see '<' again, but take the other branch in this if instead.)
+          // We don't want to advance input or perform a state transition - just
+          // return a (new) token.  (On the next call to nextToken we will see
+          // '<' again, but take the other branch in this if instead.)
           return emitToken(token, VTTToken::StringToken(result.toString()));
         }
       } else if (cc == kEndOfFileMarker) {

@@ -81,8 +81,9 @@ class VTTParser final : public GarbageCollectedFinalized<VTTParser> {
     return c == ' ' || c == '\t' || c == '\n' || c == '\f' || c == '\r';
   }
   static inline bool isValidSettingDelimiter(UChar c) {
-    // ... a WebVTT cue consists of zero or more of the following components, in any order, separated from each other by one or more
-    // U+0020 SPACE characters or U+0009 CHARACTER TABULATION (tab) characters.
+    // ... a WebVTT cue consists of zero or more of the following components, in
+    // any order, separated from each other by one or more U+0020 SPACE
+    // characters or U+0009 CHARACTER TABULATION (tab) characters.
     return c == ' ' || c == '\t';
   }
   static bool collectTimeStamp(const String&, double& timeStamp);

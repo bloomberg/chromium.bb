@@ -82,7 +82,8 @@ class CORE_EXPORT VTTScanner {
   }
   // Check if the input pointer points at the end of the input.
   bool isAtEnd() const { return getPosition() == end(); }
-  // Match the character |c| against the character at the input pointer (~lookahead).
+  // Match the character |c| against the character at the input pointer
+  // (~lookahead).
   bool match(char c) const { return !isAtEnd() && currentChar() == c; }
   // Scan the character |c|.
   bool scan(char);

@@ -17,10 +17,10 @@ class HTMLMediaElement;
 class TextTrackCueList;
 
 // TODO(Oilpan): This needs to be PODIntervalTree<double, Member<TextTrackCue>>.
-// However, it is not easy to move PODIntervalTree to the heap (for a C++-template
-// reason) so we leave it as a raw pointer at the moment. This is safe
-// because CueTimeline and TextTrackCue are guaranteed to die at the same time
-// when the owner HTMLMediaElement dies. Thus the raw TextTrackCue* cannot
+// However, it is not easy to move PODIntervalTree to the heap (for a
+// C++-template reason) so we leave it as a raw pointer at the moment. This is
+// safe because CueTimeline and TextTrackCue are guaranteed to die at the same
+// time when the owner HTMLMediaElement dies. Thus the raw TextTrackCue* cannot
 // become stale pointers.
 typedef PODIntervalTree<double, TextTrackCue*> CueIntervalTree;
 typedef CueIntervalTree::IntervalType CueInterval;
