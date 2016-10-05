@@ -21,7 +21,6 @@
 #include "chrome/browser/page_load_metrics/observers/no_state_prefetch_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/previews_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/service_worker_page_load_metrics_observer.h"
-#include "chrome/browser/page_load_metrics/observers/stale_while_revalidate_metrics_observer.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
@@ -67,9 +66,6 @@ void PageLoadMetricsEmbedder::RegisterObservers(
   tracker->AddObserver(base::MakeUnique<FromGWSPageLoadMetricsObserver>());
   tracker->AddObserver(
       base::MakeUnique<google_captcha_observer::GoogleCaptchaObserver>());
-  // TODO(ricea): Remove this in April 2016 or before. crbug.com/348877
-  tracker->AddObserver(
-      base::MakeUnique<chrome::StaleWhileRevalidateMetricsObserver>());
   tracker->AddObserver(
       base::MakeUnique<DocumentWritePageLoadMetricsObserver>());
   tracker->AddObserver(
