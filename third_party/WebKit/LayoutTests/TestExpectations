@@ -99,8 +99,6 @@ crbug.com/636271 [ Mac ] paint/invalidation/resize-iframe-text.html [ Pass Failu
 crbug.com/636271 [ Linux ] paint/invalidation/resize-iframe-text.html [ Pass Failure ]
 crbug.com/636271 [ Win ] paint/invalidation/resize-iframe-text.html [ Pass Failure ]
 
-crbug.com/638293 [ Linux ] virtual/gpu-rasterization/fast/images/color-profile-reflection.html [ NeedsRebaseline ]
-
 crbug.com/639147 svg/wicd/test-rightsizing-b.xhtml [ Failure Pass ]
 
 # ====== LayoutNG-only failures from here ======
