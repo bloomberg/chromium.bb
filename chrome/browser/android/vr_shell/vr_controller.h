@@ -103,6 +103,8 @@ class VrController {
   // before, update the touch point and return true. Otherwise, return false.
   bool UpdateCurrentTouchpoint();
 
+  void UpdateOverallVelocity();
+
   // State of gesture detector.
   GestureDetectorState state_;
 
@@ -128,6 +130,9 @@ class VrController {
 
   // Overall velocity
   gvr::Vec2f overall_velocity_;
+
+  int64_t last_touch_timestamp_ = 0;
+  int64_t last_timestamp_nanos_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(VrController);
 };
