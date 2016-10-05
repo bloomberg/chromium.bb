@@ -10,6 +10,7 @@
 #include "core/dom/DOMSharedArrayBuffer.h"
 #include "core/dom/MessagePort.h"
 #include "core/fileapi/Blob.h"
+#include "core/fileapi/File.h"
 #include "core/frame/ImageBitmap.h"
 #include "core/html/ImageData.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
@@ -17,6 +18,7 @@
 #include "platform/graphics/CompositorMutableProperties.h"
 #include "public/platform/WebBlobInfo.h"
 #include "wtf/CheckedNumeric.h"
+#include "wtf/DateMath.h"
 
 namespace blink {
 
@@ -145,6 +147,10 @@ ScriptWrappable* V8ScriptValueDeserializer::readDOMObject(
       return CompositorProxy::create(m_scriptState->getExecutionContext(),
                                      element, properties);
     }
+    case FileTag:
+      return readFile();
+    case FileIndexTag:
+      return readFileIndex();
     case ImageBitmapTag: {
       uint32_t originClean = 0, isPremultiplied = 0, width = 0, height = 0,
                pixelLength = 0;
@@ -208,6 +214,49 @@ ScriptWrappable* V8ScriptValueDeserializer::readDOMObject(
   return nullptr;
 }
 
+File* V8ScriptValueDeserializer::readFile() {
+  if (version() < 3)
+    return nullptr;
+  String path, name, relativePath, uuid, type;
+  uint32_t hasSnapshot = 0;
+  uint64_t size = 0;
+  double lastModifiedMs = 0;
+  if (!readUTF8String(&path) || (version() >= 4 && !readUTF8String(&name)) ||
+      (version() >= 4 && !readUTF8String(&relativePath)) ||
+      !readUTF8String(&uuid) || !readUTF8String(&type) ||
+      (version() >= 4 && !readUint32(&hasSnapshot)))
+    return nullptr;
+  if (hasSnapshot) {
+    if (!readUint64(&size) || !readDouble(&lastModifiedMs))
+      return nullptr;
+    if (version() < 8)
+      lastModifiedMs *= msPerSecond;
+  }
+  uint32_t isUserVisible = 1;
+  if (version() >= 7 && !readUint32(&isUserVisible))
+    return nullptr;
+  const File::UserVisibility userVisibility =
+      isUserVisible ? File::IsUserVisible : File::IsNotUserVisible;
+  const uint64_t sizeForDataHandle = static_cast<uint64_t>(-1);
+  return File::createFromSerialization(
+      path, name, relativePath, userVisibility, hasSnapshot, size,
+      lastModifiedMs, getOrCreateBlobDataHandle(uuid, type, sizeForDataHandle));
+}
+
+File* V8ScriptValueDeserializer::readFileIndex() {
+  if (version() < 6 || !m_blobInfoArray)
+    return nullptr;
+  uint32_t index;
+  if (!readUint32(&index) || index >= m_blobInfoArray->size())
+    return nullptr;
+  const WebBlobInfo& info = (*m_blobInfoArray)[index];
+  // FIXME: transition WebBlobInfo.lastModified to be milliseconds-based also.
+  double lastModifiedMs = info.lastModified() * msPerSecond;
+  return File::createFromIndexedSerialization(
+      info.filePath(), info.fileName(), info.size(), lastModifiedMs,
+      getOrCreateBlobDataHandle(info.uuid(), info.type(), info.size()));
+}
+
 RefPtr<BlobDataHandle> V8ScriptValueDeserializer::getOrCreateBlobDataHandle(
     const String& uuid,
     const String& type,
@@ -226,12 +275,8 @@ RefPtr<BlobDataHandle> V8ScriptValueDeserializer::getOrCreateBlobDataHandle(
   // For example in sharedWorker.postMessage(...).
   BlobDataHandleMap& handles = m_serializedScriptValue->blobDataHandles();
   BlobDataHandleMap::const_iterator it = handles.find(uuid);
-  if (it != handles.end()) {
-    RefPtr<BlobDataHandle> handle = it->value;
-    DCHECK_EQ(handle->type(), type);
-    DCHECK_EQ(handle->size(), size);
-    return handle;
-  }
+  if (it != handles.end())
+    return it->value;
   return BlobDataHandle::create(uuid, type, size);
 }
 

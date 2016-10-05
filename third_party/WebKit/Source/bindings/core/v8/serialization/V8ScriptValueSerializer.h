@@ -17,6 +17,7 @@
 
 namespace blink {
 
+class File;
 class Transferables;
 
 // Serializes V8 values according to the HTML structured clone algorithm:
@@ -57,6 +58,7 @@ class GC_PLUGIN_IGNORE("https://crbug.com/644725")
   }
   void writeUint32(uint32_t value) { m_serializer.WriteUint32(value); }
   void writeUint64(uint64_t value) { m_serializer.WriteUint64(value); }
+  void writeDouble(double value) { m_serializer.WriteDouble(value); }
   void writeRawBytes(const void* data, size_t size) {
     m_serializer.WriteRawBytes(data, size);
   }
@@ -70,6 +72,8 @@ class GC_PLUGIN_IGNORE("https://crbug.com/644725")
   // happening if there's a failure earlier in serialization).
   void prepareTransfer(Transferables*);
   void finalizeTransfer(ExceptionState&);
+
+  bool writeFile(File*, ExceptionState&);
 
   // v8::ValueSerializer::Delegate
   void ThrowDataCloneError(v8::Local<v8::String> message) override;

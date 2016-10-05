@@ -7,6 +7,7 @@
 #include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8Blob.h"
 #include "bindings/core/v8/V8CompositorProxy.h"
+#include "bindings/core/v8/V8File.h"
 #include "bindings/core/v8/V8ImageBitmap.h"
 #include "bindings/core/v8/V8ImageData.h"
 #include "bindings/core/v8/V8MessagePort.h"
@@ -16,6 +17,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/WebBlobInfo.h"
 #include "wtf/AutoReset.h"
+#include "wtf/DateMath.h"
 #include "wtf/text/StringUTF8Adaptor.h"
 
 namespace blink {
@@ -171,6 +173,9 @@ bool V8ScriptValueSerializer::writeDOMObject(ScriptWrappable* wrappable,
     writeUint32(proxy->compositorMutableProperties());
     return true;
   }
+  if (wrapperTypeInfo == &V8File::wrapperTypeInfo) {
+    return writeFile(wrappable->toImpl<File>(), exceptionState);
+  }
   if (wrapperTypeInfo == &V8ImageBitmap::wrapperTypeInfo) {
     ImageBitmap* imageBitmap = wrappable->toImpl<ImageBitmap>();
     if (imageBitmap->isNeutered()) {
@@ -267,6 +272,53 @@ bool V8ScriptValueSerializer::writeDOMObject(ScriptWrappable* wrappable,
     return true;
   }
   return false;
+}
+
+bool V8ScriptValueSerializer::writeFile(File* file,
+                                        ExceptionState& exceptionState) {
+  if (file->isClosed()) {
+    exceptionState.throwDOMException(
+        DataCloneError,
+        "A File object has been closed, and could therefore not be cloned.");
+    return false;
+  }
+  m_serializedScriptValue->blobDataHandles().set(file->uuid(),
+                                                 file->blobDataHandle());
+  if (m_blobInfoArray) {
+    size_t index = m_blobInfoArray->size();
+    DCHECK_LE(index, std::numeric_limits<uint32_t>::max());
+    long long size = -1;
+    double lastModifiedMs = invalidFileTime();
+    file->captureSnapshot(size, lastModifiedMs);
+    // FIXME: transition WebBlobInfo.lastModified to be milliseconds-based also.
+    double lastModified = lastModifiedMs / msPerSecond;
+    m_blobInfoArray->emplaceAppend(file->uuid(), file->path(), file->name(),
+                                   file->type(), lastModified, size);
+    writeTag(FileIndexTag);
+    writeUint32(static_cast<uint32_t>(index));
+  } else {
+    writeTag(FileTag);
+    writeUTF8String(file->hasBackingFile() ? file->path() : emptyString());
+    writeUTF8String(file->name());
+    writeUTF8String(file->webkitRelativePath());
+    writeUTF8String(file->uuid());
+    writeUTF8String(file->type());
+    // TODO(jsbell): metadata is unconditionally captured in the index case.
+    // Why this inconsistency?
+    if (file->hasValidSnapshotMetadata()) {
+      writeUint32(1);
+      long long size;
+      double lastModifiedMs;
+      file->captureSnapshot(size, lastModifiedMs);
+      DCHECK_GE(size, 0);
+      writeUint64(static_cast<uint64_t>(size));
+      writeDouble(lastModifiedMs);
+    } else {
+      writeUint32(0);
+    }
+    writeUint32(file->getUserVisibility() == File::IsUserVisible ? 1 : 0);
+  }
+  return true;
 }
 
 void V8ScriptValueSerializer::ThrowDataCloneError(

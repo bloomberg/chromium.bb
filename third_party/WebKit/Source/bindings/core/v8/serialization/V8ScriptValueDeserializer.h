@@ -16,6 +16,8 @@
 
 namespace blink {
 
+class File;
+
 // Deserializes V8 values serialized using V8ScriptValueSerializer (or its
 // predecessor, ScriptValueSerializer).
 //
@@ -55,6 +57,7 @@ class GC_PLUGIN_IGNORE("https://crbug.com/644725") CORE_EXPORT
   }
   bool readUint32(uint32_t* value) { return m_deserializer.ReadUint32(value); }
   bool readUint64(uint64_t* value) { return m_deserializer.ReadUint64(value); }
+  bool readDouble(double* value) { return m_deserializer.ReadDouble(value); }
   bool readRawBytes(size_t size, const void** data) {
     return m_deserializer.ReadRawBytes(size, data);
   }
@@ -62,6 +65,9 @@ class GC_PLUGIN_IGNORE("https://crbug.com/644725") CORE_EXPORT
 
  private:
   void transfer();
+
+  File* readFile();
+  File* readFileIndex();
 
   RefPtr<BlobDataHandle> getOrCreateBlobDataHandle(const String& uuid,
                                                    const String& type,

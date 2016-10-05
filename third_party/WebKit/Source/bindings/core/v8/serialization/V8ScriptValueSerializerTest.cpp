@@ -11,6 +11,7 @@
 #include "bindings/core/v8/V8Blob.h"
 #include "bindings/core/v8/V8CompositorProxy.h"
 #include "bindings/core/v8/V8DOMException.h"
+#include "bindings/core/v8/V8File.h"
 #include "bindings/core/v8/V8ImageBitmap.h"
 #include "bindings/core/v8/V8ImageData.h"
 #include "bindings/core/v8/V8MessagePort.h"
@@ -20,6 +21,7 @@
 #include "core/dom/CompositorProxy.h"
 #include "core/dom/MessagePort.h"
 #include "core/fileapi/Blob.h"
+#include "core/fileapi/File.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/ImageData.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
@@ -34,6 +36,8 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "wtf/CurrentTime.h"
+#include "wtf/DateMath.h"
 
 namespace blink {
 namespace {
@@ -622,6 +626,274 @@ TEST(V8ScriptValueSerializerTest, DecodeBlobIndexOutOfRange) {
     WebBlobInfoArray blobInfoArray;
     blobInfoArray.emplaceAppend("d875dfc2-4505-461b-98fe-0cf6cc5eaf44",
                                 "text/plain", 12);
+    V8ScriptValueDeserializer deserializer(scope.getScriptState(), input);
+    deserializer.setBlobInfoArray(&blobInfoArray);
+    ASSERT_TRUE(deserializer.deserialize()->IsNull());
+  }
+}
+
+TEST(V8ScriptValueSerializerTest, RoundTripFileNative) {
+  ScopedEnableV8BasedStructuredClone enable;
+  V8TestingScope scope;
+  File* file = File::create("/native/path");
+  v8::Local<v8::Value> wrapper = toV8(file, scope.getScriptState());
+  v8::Local<v8::Value> result = roundTrip(wrapper, scope);
+  ASSERT_TRUE(V8File::hasInstance(result, scope.isolate()));
+  File* newFile = V8File::toImpl(result.As<v8::Object>());
+  EXPECT_TRUE(newFile->hasBackingFile());
+  EXPECT_EQ("/native/path", newFile->path());
+  EXPECT_TRUE(newFile->fileSystemURL().isEmpty());
+}
+
+TEST(V8ScriptValueSerializerTest, RoundTripFileBackedByBlob) {
+  ScopedEnableV8BasedStructuredClone enable;
+  V8TestingScope scope;
+  const double modificationTime = 0.0;
+  RefPtr<BlobDataHandle> blobDataHandle = BlobDataHandle::create();
+  File* file = File::create("/native/path", modificationTime, blobDataHandle);
+  v8::Local<v8::Value> wrapper = toV8(file, scope.getScriptState());
+  v8::Local<v8::Value> result = roundTrip(wrapper, scope);
+  ASSERT_TRUE(V8File::hasInstance(result, scope.isolate()));
+  File* newFile = V8File::toImpl(result.As<v8::Object>());
+  EXPECT_FALSE(newFile->hasBackingFile());
+  EXPECT_TRUE(file->path().isEmpty());
+  EXPECT_TRUE(newFile->fileSystemURL().isEmpty());
+}
+
+TEST(V8ScriptValueSerializerTest, RoundTripFileNativeSnapshot) {
+  ScopedEnableV8BasedStructuredClone enable;
+  V8TestingScope scope;
+  FileMetadata metadata;
+  metadata.platformPath = "/native/snapshot";
+  File* file =
+      File::createForFileSystemFile("name", metadata, File::IsUserVisible);
+  v8::Local<v8::Value> wrapper = toV8(file, scope.getScriptState());
+  v8::Local<v8::Value> result = roundTrip(wrapper, scope);
+  ASSERT_TRUE(V8File::hasInstance(result, scope.isolate()));
+  File* newFile = V8File::toImpl(result.As<v8::Object>());
+  EXPECT_TRUE(newFile->hasBackingFile());
+  EXPECT_EQ("/native/snapshot", newFile->path());
+  EXPECT_TRUE(newFile->fileSystemURL().isEmpty());
+}
+
+TEST(V8ScriptValueSerializerTest, RoundTripFileNonNativeSnapshot) {
+  // Preserving behavior, filesystem URL is not preserved across cloning.
+  ScopedEnableV8BasedStructuredClone enable;
+  V8TestingScope scope;
+  KURL url(ParsedURLString,
+           "filesystem:http://example.com/isolated/hash/non-native-file");
+  File* file =
+      File::createForFileSystemFile(url, FileMetadata(), File::IsUserVisible);
+  v8::Local<v8::Value> wrapper = toV8(file, scope.getScriptState());
+  v8::Local<v8::Value> result = roundTrip(wrapper, scope);
+  ASSERT_TRUE(V8File::hasInstance(result, scope.isolate()));
+  File* newFile = V8File::toImpl(result.As<v8::Object>());
+  EXPECT_FALSE(newFile->hasBackingFile());
+  EXPECT_TRUE(file->path().isEmpty());
+  EXPECT_TRUE(newFile->fileSystemURL().isEmpty());
+}
+
+// Used for checking that times provided are between now and the current time
+// when the checker was constructed, according to WTF::currentTime.
+class TimeIntervalChecker {
+ public:
+  TimeIntervalChecker() : m_startTime(WTF::currentTime()) {}
+  bool wasAliveAt(double timeInMilliseconds) {
+    double time = timeInMilliseconds / msPerSecond;
+    return m_startTime <= time && time <= WTF::currentTime();
+  }
+
+ private:
+  const double m_startTime;
+};
+
+TEST(V8ScriptValueSerializerTest, DecodeFileV3) {
+  ScopedEnableV8BasedStructuredClone enable;
+  V8TestingScope scope;
+  TimeIntervalChecker timeIntervalChecker;
+  RefPtr<SerializedScriptValue> input = serializedValue(
+      {0xff, 0x03, 0x3f, 0x00, 0x66, 0x04, 'p', 'a', 't', 'h', 0x24, 'f',
+       '4',  'a',  '6',  'e',  'd',  'd',  '5', '-', '6', '5', 'a',  'd',
+       '-',  '4',  'd',  'c',  '3',  '-',  'b', '6', '7', 'c', '-',  'a',
+       '7',  '7',  '9',  'c',  '0',  '2',  'f', '0', 'f', 'a', '3',  0x0a,
+       't',  'e',  'x',  't',  '/',  'p',  'l', 'a', 'i', 'n'});
+  v8::Local<v8::Value> result =
+      V8ScriptValueDeserializer(scope.getScriptState(), input).deserialize();
+  ASSERT_TRUE(V8File::hasInstance(result, scope.isolate()));
+  File* newFile = V8File::toImpl(result.As<v8::Object>());
+  EXPECT_EQ("path", newFile->path());
+  EXPECT_EQ("f4a6edd5-65ad-4dc3-b67c-a779c02f0fa3", newFile->uuid());
+  EXPECT_EQ("text/plain", newFile->type());
+  EXPECT_FALSE(newFile->hasValidSnapshotMetadata());
+  EXPECT_EQ(0u, newFile->size());
+  EXPECT_TRUE(timeIntervalChecker.wasAliveAt(newFile->lastModifiedDate()));
+  EXPECT_EQ(File::IsUserVisible, newFile->getUserVisibility());
+}
+
+TEST(V8ScriptValueSerializerTest, DecodeFileV4) {
+  ScopedEnableV8BasedStructuredClone enable;
+  V8TestingScope scope;
+  TimeIntervalChecker timeIntervalChecker;
+  RefPtr<SerializedScriptValue> input = serializedValue(
+      {0xff, 0x04, 0x3f, 0x00, 0x66, 0x04, 'p', 'a',  't',  'h', 0x04, 'n',
+       'a',  'm',  'e',  0x03, 'r',  'e',  'l', 0x24, 'f',  '4', 'a',  '6',
+       'e',  'd',  'd',  '5',  '-',  '6',  '5', 'a',  'd',  '-', '4',  'd',
+       'c',  '3',  '-',  'b',  '6',  '7',  'c', '-',  'a',  '7', '7',  '9',
+       'c',  '0',  '2',  'f',  '0',  'f',  'a', '3',  0x0a, 't', 'e',  'x',
+       't',  '/',  'p',  'l',  'a',  'i',  'n', 0x00});
+  v8::Local<v8::Value> result =
+      V8ScriptValueDeserializer(scope.getScriptState(), input).deserialize();
+  ASSERT_TRUE(V8File::hasInstance(result, scope.isolate()));
+  File* newFile = V8File::toImpl(result.As<v8::Object>());
+  EXPECT_EQ("path", newFile->path());
+  EXPECT_EQ("name", newFile->name());
+  EXPECT_EQ("rel", newFile->webkitRelativePath());
+  EXPECT_EQ("f4a6edd5-65ad-4dc3-b67c-a779c02f0fa3", newFile->uuid());
+  EXPECT_EQ("text/plain", newFile->type());
+  EXPECT_FALSE(newFile->hasValidSnapshotMetadata());
+  EXPECT_EQ(0u, newFile->size());
+  EXPECT_TRUE(timeIntervalChecker.wasAliveAt(newFile->lastModifiedDate()));
+  EXPECT_EQ(File::IsUserVisible, newFile->getUserVisibility());
+}
+
+TEST(V8ScriptValueSerializerTest, DecodeFileV4WithSnapshot) {
+  ScopedEnableV8BasedStructuredClone enable;
+  V8TestingScope scope;
+  RefPtr<SerializedScriptValue> input = serializedValue(
+      {0xff, 0x04, 0x3f, 0x00, 0x66, 0x04, 'p', 'a',  't',  'h',  0x04, 'n',
+       'a',  'm',  'e',  0x03, 'r',  'e',  'l', 0x24, 'f',  '4',  'a',  '6',
+       'e',  'd',  'd',  '5',  '-',  '6',  '5', 'a',  'd',  '-',  '4',  'd',
+       'c',  '3',  '-',  'b',  '6',  '7',  'c', '-',  'a',  '7',  '7',  '9',
+       'c',  '0',  '2',  'f',  '0',  'f',  'a', '3',  0x0a, 't',  'e',  'x',
+       't',  '/',  'p',  'l',  'a',  'i',  'n', 0x01, 0x80, 0x04, 0x00, 0x00,
+       0x00, 0x00, 0x00, 0x00, 0xd0, 0xbf});
+  v8::Local<v8::Value> result =
+      V8ScriptValueDeserializer(scope.getScriptState(), input).deserialize();
+  ASSERT_TRUE(V8File::hasInstance(result, scope.isolate()));
+  File* newFile = V8File::toImpl(result.As<v8::Object>());
+  EXPECT_EQ("path", newFile->path());
+  EXPECT_EQ("name", newFile->name());
+  EXPECT_EQ("rel", newFile->webkitRelativePath());
+  EXPECT_EQ("f4a6edd5-65ad-4dc3-b67c-a779c02f0fa3", newFile->uuid());
+  EXPECT_EQ("text/plain", newFile->type());
+  EXPECT_TRUE(newFile->hasValidSnapshotMetadata());
+  EXPECT_EQ(512u, newFile->size());
+  // From v4 to v7, the last modified time is written in seconds.
+  // So -0.25 represents 250 ms before the Unix epoch.
+  EXPECT_EQ(-250.0, newFile->lastModifiedDate());
+}
+
+TEST(V8ScriptValueSerializerTest, DecodeFileV7) {
+  ScopedEnableV8BasedStructuredClone enable;
+  V8TestingScope scope;
+  TimeIntervalChecker timeIntervalChecker;
+  RefPtr<SerializedScriptValue> input = serializedValue(
+      {0xff, 0x07, 0x3f, 0x00, 0x66, 0x04, 'p', 'a',  't',  'h', 0x04, 'n',
+       'a',  'm',  'e',  0x03, 'r',  'e',  'l', 0x24, 'f',  '4', 'a',  '6',
+       'e',  'd',  'd',  '5',  '-',  '6',  '5', 'a',  'd',  '-', '4',  'd',
+       'c',  '3',  '-',  'b',  '6',  '7',  'c', '-',  'a',  '7', '7',  '9',
+       'c',  '0',  '2',  'f',  '0',  'f',  'a', '3',  0x0a, 't', 'e',  'x',
+       't',  '/',  'p',  'l',  'a',  'i',  'n', 0x00, 0x00, 0x00});
+  v8::Local<v8::Value> result =
+      V8ScriptValueDeserializer(scope.getScriptState(), input).deserialize();
+  ASSERT_TRUE(V8File::hasInstance(result, scope.isolate()));
+  File* newFile = V8File::toImpl(result.As<v8::Object>());
+  EXPECT_EQ("path", newFile->path());
+  EXPECT_EQ("name", newFile->name());
+  EXPECT_EQ("rel", newFile->webkitRelativePath());
+  EXPECT_EQ("f4a6edd5-65ad-4dc3-b67c-a779c02f0fa3", newFile->uuid());
+  EXPECT_EQ("text/plain", newFile->type());
+  EXPECT_FALSE(newFile->hasValidSnapshotMetadata());
+  EXPECT_EQ(0u, newFile->size());
+  EXPECT_TRUE(timeIntervalChecker.wasAliveAt(newFile->lastModifiedDate()));
+  EXPECT_EQ(File::IsNotUserVisible, newFile->getUserVisibility());
+}
+
+TEST(V8ScriptValueSerializerTest, DecodeFileV8WithSnapshot) {
+  ScopedEnableV8BasedStructuredClone enable;
+  V8TestingScope scope;
+  RefPtr<SerializedScriptValue> input = serializedValue(
+      {0xff, 0x08, 0x3f, 0x00, 0x66, 0x04, 'p',  'a',  't',  'h',  0x04, 'n',
+       'a',  'm',  'e',  0x03, 'r',  'e',  'l',  0x24, 'f',  '4',  'a',  '6',
+       'e',  'd',  'd',  '5',  '-',  '6',  '5',  'a',  'd',  '-',  '4',  'd',
+       'c',  '3',  '-',  'b',  '6',  '7',  'c',  '-',  'a',  '7',  '7',  '9',
+       'c',  '0',  '2',  'f',  '0',  'f',  'a',  '3',  0x0a, 't',  'e',  'x',
+       't',  '/',  'p',  'l',  'a',  'i',  'n',  0x01, 0x80, 0x04, 0x00, 0x00,
+       0x00, 0x00, 0x00, 0x00, 0xd0, 0xbf, 0x01, 0x00});
+  v8::Local<v8::Value> result =
+      V8ScriptValueDeserializer(scope.getScriptState(), input).deserialize();
+  ASSERT_TRUE(V8File::hasInstance(result, scope.isolate()));
+  File* newFile = V8File::toImpl(result.As<v8::Object>());
+  EXPECT_EQ("path", newFile->path());
+  EXPECT_EQ("name", newFile->name());
+  EXPECT_EQ("rel", newFile->webkitRelativePath());
+  EXPECT_EQ("f4a6edd5-65ad-4dc3-b67c-a779c02f0fa3", newFile->uuid());
+  EXPECT_EQ("text/plain", newFile->type());
+  EXPECT_TRUE(newFile->hasValidSnapshotMetadata());
+  EXPECT_EQ(512u, newFile->size());
+  // From v8, the last modified time is written in milliseconds.
+  // So -0.25 represents 0.25 ms before the Unix epoch.
+  EXPECT_EQ(-0.25, newFile->lastModifiedDate());
+  EXPECT_EQ(File::IsUserVisible, newFile->getUserVisibility());
+}
+
+TEST(V8ScriptValueSerializerTest, RoundTripFileIndex) {
+  ScopedEnableV8BasedStructuredClone enable;
+  V8TestingScope scope;
+  File* file = File::create("/native/path");
+  v8::Local<v8::Value> wrapper = toV8(file, scope.getScriptState());
+  WebBlobInfoArray blobInfoArray;
+  v8::Local<v8::Value> result =
+      roundTrip(wrapper, scope, nullptr, nullptr, &blobInfoArray);
+
+  // As above, the resulting blob should be correct.
+  ASSERT_TRUE(V8File::hasInstance(result, scope.isolate()));
+  File* newFile = V8File::toImpl(result.As<v8::Object>());
+  EXPECT_TRUE(newFile->hasBackingFile());
+  EXPECT_EQ("/native/path", newFile->path());
+  EXPECT_TRUE(newFile->fileSystemURL().isEmpty());
+
+  // The blob info array should also contain the details since it was serialized
+  // by index into this array.
+  ASSERT_EQ(1u, blobInfoArray.size());
+  const WebBlobInfo& info = blobInfoArray[0];
+  EXPECT_TRUE(info.isFile());
+  EXPECT_EQ("/native/path", info.filePath());
+  EXPECT_EQ(file->uuid(), String(info.uuid()));
+}
+
+TEST(V8ScriptValueSerializerTest, DecodeFileIndex) {
+  ScopedEnableV8BasedStructuredClone enable;
+  V8TestingScope scope;
+  RefPtr<SerializedScriptValue> input =
+      serializedValue({0xff, 0x09, 0x3f, 0x00, 0x65, 0x00});
+  WebBlobInfoArray blobInfoArray;
+  blobInfoArray.emplaceAppend("d875dfc2-4505-461b-98fe-0cf6cc5eaf44",
+                              "/native/path", "path", "text/plain");
+  V8ScriptValueDeserializer deserializer(scope.getScriptState(), input);
+  deserializer.setBlobInfoArray(&blobInfoArray);
+  v8::Local<v8::Value> result = deserializer.deserialize();
+  ASSERT_TRUE(V8File::hasInstance(result, scope.isolate()));
+  File* newFile = V8File::toImpl(result.As<v8::Object>());
+  EXPECT_EQ("d875dfc2-4505-461b-98fe-0cf6cc5eaf44", newFile->uuid());
+  EXPECT_EQ("text/plain", newFile->type());
+  EXPECT_EQ("/native/path", newFile->path());
+  EXPECT_EQ("path", newFile->name());
+}
+
+TEST(V8ScriptValueSerializerTest, DecodeFileIndexOutOfRange) {
+  ScopedEnableV8BasedStructuredClone enable;
+  V8TestingScope scope;
+  RefPtr<SerializedScriptValue> input =
+      serializedValue({0xff, 0x09, 0x3f, 0x00, 0x65, 0x01});
+  {
+    V8ScriptValueDeserializer deserializer(scope.getScriptState(), input);
+    ASSERT_TRUE(deserializer.deserialize()->IsNull());
+  }
+  {
+    WebBlobInfoArray blobInfoArray;
+    blobInfoArray.emplaceAppend("d875dfc2-4505-461b-98fe-0cf6cc5eaf44",
+                                "/native/path", "path", "text/plain");
     V8ScriptValueDeserializer deserializer(scope.getScriptState(), input);
     deserializer.setBlobInfoArray(&blobInfoArray);
     ASSERT_TRUE(deserializer.deserialize()->IsNull());
