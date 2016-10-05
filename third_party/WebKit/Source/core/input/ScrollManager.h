@@ -74,7 +74,8 @@ class CORE_EXPORT ScrollManager
   // TODO(crbug.com/616491): Consider moving all gesture related functions to
   // another class.
 
-  // Handle the provided scroll gesture event, propagating down to child frames as necessary.
+  // Handle the provided scroll gesture event, propagating down to child frames
+  // as necessary.
   WebInputEventResult handleGestureScrollEvent(const PlatformGestureEvent&);
 
   WebInputEventResult handleGestureScrollEnd(const PlatformGestureEvent&);

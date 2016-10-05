@@ -94,8 +94,9 @@ class CORE_EXPORT MouseEventManager
 
   void focusDocumentView();
 
-  // Resets the state that indicates the next events could cause a drag. It is called when
-  // we realize the next events should not cause drag based on the drag heuristics.
+  // Resets the state that indicates the next events could cause a drag. It is
+  // called when we realize the next events should not cause drag based on the
+  // drag heuristics.
   void clearDragHeuristicState();
 
   void dragSourceEndedAt(const PlatformMouseEvent&, DragOperation);
@@ -165,9 +166,9 @@ class CORE_EXPORT MouseEventManager
     Member<EventTarget> m_exitedTarget;
   };
 
-  // If the given element is a shadow host and its root has delegatesFocus=false flag,
-  // slide focus to its inner element. Returns true if the resulting focus is different from
-  // the given element.
+  // If the given element is a shadow host and its root has delegatesFocus=false
+  // flag, slide focus to its inner element. Returns true if the resulting focus
+  // is different from the given element.
   bool slideFocusOnShadowHostIfNecessary(const Element&);
 
   bool dragHysteresisExceeded(const IntPoint&) const;
@@ -183,10 +184,12 @@ class CORE_EXPORT MouseEventManager
   Member<ScrollManager> m_scrollManager;
 
   // The effective position of the mouse pointer.
-  // See https://w3c.github.io/pointerevents/#dfn-tracking-the-effective-position-of-the-legacy-mouse-pointer.
+  // See
+  // https://w3c.github.io/pointerevents/#dfn-tracking-the-effective-position-of-the-legacy-mouse-pointer.
   Member<Node> m_nodeUnderMouse;
 
-  // The last mouse movement position this frame has seen in root frame coordinates.
+  // The last mouse movement position this frame has seen in root frame
+  // coordinates.
   IntPoint m_lastKnownMousePosition;
   IntPoint m_lastKnownMouseGlobalPosition;
 

@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights
+ * reserved.
  * Copyright (C) 2006 Alexey Proskuryakov (ap@webkit.org)
  * Copyright (C) 2012 Digia Plc. and/or its subsidiary(-ies)
  *
@@ -107,10 +108,11 @@ namespace blink {
 
 namespace {
 
-// Refetch the event target node if it is removed or currently is the shadow node inside an <input> element.
-// If a mouse event handler changes the input element type to one that has a widget associated,
-// we'd like to EventHandler::handleMousePressEvent to pass the event to the widget and thus the
-// event target node can't still be the shadow node.
+// Refetch the event target node if it is removed or currently is the shadow
+// node inside an <input> element.  If a mouse event handler changes the input
+// element type to one that has a widget associated, we'd like to
+// EventHandler::handleMousePressEvent to pass the event to the widget and thus
+// the event target node can't still be the shadow node.
 bool shouldRefetchEventTarget(const MouseEventWithHitTestResults& mev) {
   Node* targetNode = mev.innerNode();
   if (!targetNode || !targetNode->parentNode())
@@ -129,9 +131,10 @@ static const double cursorUpdateInterval = 0.02;
 
 static const int maximumCursorSize = 128;
 
-// It's pretty unlikely that a scale of less than one would ever be used. But all we really
-// need to ensure here is that the scale isn't so small that integer overflow can occur when
-// dividing cursor sizes (limited above) by the scale.
+// It's pretty unlikely that a scale of less than one would ever be used. But
+// all we really need to ensure here is that the scale isn't so small that
+// integer overflow can occur when dividing cursor sizes (limited above) by the
+// scale.
 static const double minimumCursorScale = 0.001;
 
 // The minimum amount of time an element stays active after a ShowPress
@@ -255,18 +258,19 @@ HitTestResult EventHandler::hitTestResultAtPoint(
     }
   }
 
-  // hitTestResultAtPoint is specifically used to hitTest into all frames, thus it always allows child frame content.
+  // hitTestResultAtPoint is specifically used to hitTest into all frames, thus
+  // it always allows child frame content.
   HitTestRequest request(hitType | HitTestRequest::AllowChildFrameContent);
   HitTestResult result(request, point, padding.height().toUnsigned(),
                        padding.width().toUnsigned(),
                        padding.height().toUnsigned(),
                        padding.width().toUnsigned());
 
-  // LayoutView::hitTest causes a layout, and we don't want to hit that until the first
-  // layout because until then, there is nothing shown on the screen - the user can't
-  // have intentionally clicked on something belonging to this page. Furthermore,
-  // mousemove events before the first layout should not lead to a premature layout()
-  // happening, which could show a flash of white.
+  // LayoutView::hitTest causes a layout, and we don't want to hit that until
+  // the first layout because until then, there is nothing shown on the screen -
+  // the user can't have intentionally clicked on something belonging to this
+  // page.  Furthermore, mousemove events before the first layout should not
+  // lead to a premature layout() happening, which could show a flash of white.
   // See also the similar code in Document::performMouseEventHitTest.
   if (m_frame->contentLayoutItem().isNull() || !m_frame->view() ||
       !m_frame->view()->didFirstLayout())
@@ -347,8 +351,8 @@ void EventHandler::cursorUpdateTimerFired(TimerBase*) {
 void EventHandler::updateCursor() {
   TRACE_EVENT0("input", "EventHandler::updateCursor");
 
-  // We must do a cross-frame hit test because the frame that triggered the cursor
-  // update could be occluded by a different frame.
+  // We must do a cross-frame hit test because the frame that triggered the
+  // cursor update could be occluded by a different frame.
   ASSERT(m_frame == m_frame->localFrameRoot());
 
   if (m_mouseEventManager->isMousePositionUnknown())
@@ -541,7 +545,8 @@ OptionalCursor EventHandler::selectAutoCursor(const HitTestResult& result,
   }
 
   // During selection, use an I-beam no matter what we're over.
-  // If a drag may be starting or we're capturing mouse events for a particular node, don't treat this as a selection.
+  // If a drag may be starting or we're capturing mouse events for a particular
+  // node, don't treat this as a selection.
   if (m_mouseEventManager->mousePressed() &&
       selectionController().mouseDownMayStartSelect() &&
       !m_mouseEventManager->mouseDownMayStartDrag() &&
@@ -579,8 +584,8 @@ WebInputEventResult EventHandler::handleMousePressEvent(
     return WebInputEventResult::NotHandled;
 
   HitTestRequest request(HitTestRequest::Active);
-  // Save the document point we generate in case the window coordinate is invalidated by what happens
-  // when we dispatch the event.
+  // Save the document point we generate in case the window coordinate is
+  // invalidated by what happens when we dispatch the event.
   LayoutPoint documentPoint =
       m_frame->view()->rootFrameToContents(mouseEvent.position());
   MouseEventWithHitTestResults mev =
@@ -599,10 +604,10 @@ WebInputEventResult EventHandler::handleMousePressEvent(
   LocalFrame* subframe = subframeForHitTestResult(mev);
   if (subframe) {
     WebInputEventResult result = passMousePressEventToSubframe(mev, subframe);
-    // Start capturing future events for this frame.  We only do this if we didn't clear
-    // the m_mousePressed flag, which may happen if an AppKit widget entered a modal event loop.
-    // The capturing should be done only when the result indicates it
-    // has been handled. See crbug.com/269917
+    // Start capturing future events for this frame.  We only do this if we
+    // didn't clear the m_mousePressed flag, which may happen if an AppKit
+    // widget entered a modal event loop.  The capturing should be done only
+    // when the result indicates it has been handled. See crbug.com/269917
     m_mouseEventManager->setCapturesDragging(
         subframe->eventHandler().m_mouseEventManager->capturesDragging());
     if (m_mouseEventManager->mousePressed() &&
@@ -615,14 +620,16 @@ WebInputEventResult EventHandler::handleMousePressEvent(
   }
 
   if (RuntimeEnabledFeatures::middleClickAutoscrollEnabled()) {
-    // We store whether middle click autoscroll is in progress before calling stopAutoscroll()
-    // because it will set m_autoscrollType to NoAutoscroll on return.
+    // We store whether middle click autoscroll is in progress before calling
+    // stopAutoscroll() because it will set m_autoscrollType to NoAutoscroll on
+    // return.
     bool isMiddleClickAutoscrollInProgress =
         m_scrollManager->middleClickAutoscrollInProgress();
     m_scrollManager->stopAutoscroll();
     if (isMiddleClickAutoscrollInProgress) {
-      // We invalidate the click when exiting middle click auto scroll so that we don't inadvertently navigate
-      // away from the current page (e.g. the click was on a hyperlink). See <rdar://problem/6095023>.
+      // We invalidate the click when exiting middle click auto scroll so that
+      // we don't inadvertently navigate away from the current page (e.g. the
+      // click was on a hyperlink). See <rdar://problem/6095023>.
       m_mouseEventManager->invalidateClick();
       return WebInputEventResult::HandledSuppressed;
     }
@@ -673,8 +680,9 @@ WebInputEventResult EventHandler::handleMousePressEvent(
   m_mouseEventManager->setCapturesDragging(
       eventResult == WebInputEventResult::NotHandled || mev.scrollbar());
 
-  // If the hit testing originally determined the event was in a scrollbar, refetch the MouseEventWithHitTestResults
-  // in case the scrollbar widget was destroyed when the mouse event was handled.
+  // If the hit testing originally determined the event was in a scrollbar,
+  // refetch the MouseEventWithHitTestResults in case the scrollbar widget was
+  // destroyed when the mouse event was handled.
   if (mev.scrollbar()) {
     const bool wasLastScrollBar =
         mev.scrollbar() == m_lastScrollbarUnderMouse.get();
@@ -686,7 +694,8 @@ WebInputEventResult EventHandler::handleMousePressEvent(
   }
 
   if (eventResult != WebInputEventResult::NotHandled) {
-    // scrollbars should get events anyway, even disabled controls might be scrollable
+    // Scrollbars should get events anyway, even disabled controls might be
+    // scrollable.
     passMousePressEventToScrollbar(mev);
   } else {
     if (shouldRefetchEventTarget(mev)) {
@@ -783,22 +792,25 @@ WebInputEventResult EventHandler::handleMouseMoveOrLeaveEvent(
   if (m_mouseEventManager->mousePressed()) {
     hitType |= HitTestRequest::Active;
   } else if (onlyUpdateScrollbars) {
-    // Mouse events should be treated as "read-only" if we're updating only scrollbars. This
-    // means that :hover and :active freeze in the state they were in, rather than updating
-    // for nodes the mouse moves while the window is not key (which will be the case if
-    // onlyUpdateScrollbars is true).
+    // Mouse events should be treated as "read-only" if we're updating only
+    // scrollbars. This means that :hover and :active freeze in the state they
+    // were in, rather than updating for nodes the mouse moves while the window
+    // is not key (which will be the case if onlyUpdateScrollbars is true).
     hitType |= HitTestRequest::ReadOnly;
   }
 
-  // Treat any mouse move events as readonly if the user is currently touching the screen.
+  // Treat any mouse move events as readonly if the user is currently touching
+  // the screen.
   if (m_pointerEventManager->isAnyTouchActive())
     hitType |= HitTestRequest::Active | HitTestRequest::ReadOnly;
   HitTestRequest request(hitType);
   MouseEventWithHitTestResults mev = MouseEventWithHitTestResults(
       mouseEvent, HitTestResult(request, LayoutPoint()));
 
-  // We don't want to do a hit-test in forceLeave scenarios because there might actually be some other frame above this one at the specified co-ordinate.
-  // So we must force the hit-test to fail, while still clearing hover/active state.
+  // We don't want to do a hit-test in forceLeave scenarios because there might
+  // actually be some other frame above this one at the specified co-ordinate.
+  // So we must force the hit-test to fail, while still clearing hover/active
+  // state.
   if (forceLeave) {
     m_frame->document()->updateHoverActiveState(request, 0);
   } else {
@@ -829,7 +841,8 @@ WebInputEventResult EventHandler::handleMouseMoveOrLeaveEvent(
           ? subframeForTargetNode(m_capturingMouseEventsNode.get())
           : subframeForHitTestResult(mev);
 
-  // We want mouseouts to happen first, from the inside out.  First send a move event to the last subframe so that it will fire mouseouts.
+  // We want mouseouts to happen first, from the inside out.  First send a move
+  // event to the last subframe so that it will fire mouseouts.
   if (m_lastMouseMoveEventSubframe &&
       m_lastMouseMoveEventSubframe->tree().isDescendantOf(m_frame) &&
       m_lastMouseMoveEventSubframe != newSubframe)
@@ -841,14 +854,17 @@ WebInputEventResult EventHandler::handleMouseMoveOrLeaveEvent(
     m_pointerEventManager->sendMouseAndPointerBoundaryEvents(
         updateMouseEventTargetNode(mev.innerNode()), mev.event());
 
-    // Event dispatch in sendMouseAndPointerBoundaryEvents may have caused the subframe of the target
-    // node to be detached from its FrameView, in which case the event should not be passed.
+    // Event dispatch in sendMouseAndPointerBoundaryEvents may have caused the
+    // subframe of the target node to be detached from its FrameView, in which
+    // case the event should not be passed.
     if (newSubframe->view())
       eventResult = passMouseMoveEventToSubframe(mev, newSubframe, hoveredNode);
   } else {
-    if (scrollbar && !m_mouseEventManager->mousePressed())
-      scrollbar->mouseMoved(
-          mev.event());  // Handle hover effects on platforms that support visual feedback on scrollbar hovering.
+    if (scrollbar && !m_mouseEventManager->mousePressed()) {
+      // Handle hover effects on platforms that support visual feedback on
+      // scrollbar hovering.
+      scrollbar->mouseMoved(mev.event());
+    }
     if (FrameView* view = m_frame->view()) {
       OptionalCursor optionalCursor = selectCursor(mev.hitTestResult());
       if (optionalCursor.isCursorChange()) {
@@ -1019,7 +1035,8 @@ WebInputEventResult EventHandler::updateDragAndDrop(
   MouseEventWithHitTestResults mev =
       EventHandlingUtil::performMouseEventHitTest(m_frame, request, event);
 
-  // Drag events should never go to text nodes (following IE, and proper mouseover/out dispatch)
+  // Drag events should never go to text nodes (following IE, and proper
+  // mouseover/out dispatch)
   Node* newTarget = mev.innerNode();
   if (newTarget && newTarget->isTextNode())
     newTarget = FlatTreeTraversal::parent(*newTarget);
@@ -1034,16 +1051,19 @@ WebInputEventResult EventHandler::updateDragAndDrop(
     // it is sometimes incorrect when dragging within subframes, as seen with
     // LayoutTests/fast/events/drag-in-frames.html.
     //
-    // Moreover, this ordering conforms to section 7.9.4 of the HTML 5 spec. <http://dev.w3.org/html5/spec/Overview.html#drag-and-drop-processing-model>.
+    // Moreover, this ordering conforms to section 7.9.4 of the HTML 5 spec.
+    // <http://dev.w3.org/html5/spec/Overview.html#drag-and-drop-processing-model>.
     LocalFrame* targetFrame;
     if (targetIsFrame(newTarget, targetFrame)) {
       if (targetFrame)
         eventResult =
             targetFrame->eventHandler().updateDragAndDrop(event, dataTransfer);
     } else if (newTarget) {
-      // As per section 7.9.4 of the HTML 5 spec., we must always fire a drag event before firing a dragenter, dragleave, or dragover event.
+      // As per section 7.9.4 of the HTML 5 spec., we must always fire a drag
+      // event before firing a dragenter, dragleave, or dragover event.
       if (m_mouseEventManager->dragState().m_dragSrc) {
-        // for now we don't care if event handler cancels default behavior, since there is none
+        // For now we don't care if event handler cancels default behavior,
+        // since there is none.
         m_mouseEventManager->dispatchDragSrcEvent(EventTypeNames::drag, event);
       }
       eventResult = m_mouseEventManager->dispatchDragEvent(
@@ -1063,8 +1083,10 @@ WebInputEventResult EventHandler::updateDragAndDrop(
     }
 
     if (newTarget) {
-      // We do not explicitly call m_mouseEventManager->dispatchDragEvent here because it could ultimately result in the appearance that
-      // two dragover events fired. So, we mark that we should only fire a dragover event on the next call to this function.
+      // We do not explicitly call m_mouseEventManager->dispatchDragEvent here
+      // because it could ultimately result in the appearance that two dragover
+      // events fired. So, we mark that we should only fire a dragover event on
+      // the next call to this function.
       m_shouldOnlyFireDragOverEvent = true;
     }
   } else {
@@ -1074,10 +1096,12 @@ WebInputEventResult EventHandler::updateDragAndDrop(
         eventResult =
             targetFrame->eventHandler().updateDragAndDrop(event, dataTransfer);
     } else if (newTarget) {
-      // Note, when dealing with sub-frames, we may need to fire only a dragover event as a drag event may have been fired earlier.
+      // Note, when dealing with sub-frames, we may need to fire only a dragover
+      // event as a drag event may have been fired earlier.
       if (!m_shouldOnlyFireDragOverEvent &&
           m_mouseEventManager->dragState().m_dragSrc) {
-        // for now we don't care if event handler cancels default behavior, since there is none
+        // For now we don't care if event handler cancels default behavior,
+        // since there is none.
         m_mouseEventManager->dispatchDragSrcEvent(EventTypeNames::drag, event);
       }
       eventResult = m_mouseEventManager->dispatchDragEvent(
@@ -1150,7 +1174,8 @@ Node* EventHandler::updateMouseEventTargetNode(Node* targetNode) {
   } else if (m_capturingMouseEventsNode) {
     newNodeUnderMouse = m_capturingMouseEventsNode.get();
   } else {
-    // If the target node is a text node, dispatch on the parent node - rdar://4196646
+    // If the target node is a text node, dispatch on the parent node -
+    // rdar://4196646
     if (newNodeUnderMouse && newNodeUnderMouse->isTextNode())
       newNodeUnderMouse = FlatTreeTraversal::parent(*newNodeUnderMouse);
   }
@@ -1162,7 +1187,8 @@ bool EventHandler::isPointerEventActive(int pointerId) {
 }
 
 void EventHandler::setPointerCapture(int pointerId, EventTarget* target) {
-  // TODO(crbug.com/591387): This functionality should be per page not per frame.
+  // TODO(crbug.com/591387): This functionality should be per page not per
+  // frame.
   m_pointerEventManager->setPointerCapture(pointerId, target);
 }
 
@@ -1202,7 +1228,8 @@ WebInputEventResult EventHandler::handleWheelEvent(
 #if OS(MACOSX)
   // Filter Mac OS specific phases, usually with a zero-delta.
   // https://crbug.com/553732
-  // TODO(chongz): EventSender sends events with |PlatformWheelEventPhaseNone|, but it shouldn't.
+  // TODO(chongz): EventSender sends events with |PlatformWheelEventPhaseNone|,
+  // but it shouldn't.
   const int kPlatformWheelEventPhaseNoEventMask =
       PlatformWheelEventPhaseEnded | PlatformWheelEventPhaseCancelled |
       PlatformWheelEventPhaseMayBegin;
@@ -1259,13 +1286,15 @@ WebInputEventResult EventHandler::handleGestureEvent(
   // Propagation to inner frames is handled below this function.
   ASSERT(m_frame == m_frame->localFrameRoot());
 
-  // Scrolling-related gesture events invoke EventHandler recursively for each frame down
-  // the chain, doing a single-frame hit-test per frame. This matches handleWheelEvent.
+  // Scrolling-related gesture events invoke EventHandler recursively for each
+  // frame down the chain, doing a single-frame hit-test per frame. This matches
+  // handleWheelEvent.
   // FIXME: Add a test that traverses this path, e.g. for devtools overlay.
   if (gestureEvent.isScrollEvent())
     return handleGestureScrollEvent(gestureEvent);
 
-  // Hit test across all frames and do touch adjustment as necessary for the event type.
+  // Hit test across all frames and do touch adjustment as necessary for the
+  // event type.
   GestureEventWithHitTestResults targetedEvent =
       targetGestureEvent(gestureEvent);
 
@@ -1279,11 +1308,13 @@ WebInputEventResult EventHandler::handleGestureEvent(
   // Propagation to inner frames is handled below this function.
   ASSERT(m_frame == m_frame->localFrameRoot());
 
-  // Non-scrolling related gesture events do a single cross-frame hit-test and jump
-  // directly to the inner most frame. This matches handleMousePressEvent etc.
+  // Non-scrolling related gesture events do a single cross-frame hit-test and
+  // jump directly to the inner most frame. This matches handleMousePressEvent
+  // etc.
   ASSERT(!targetedEvent.event().isScrollEvent());
 
-  // update mouseout/leave/over/enter events before jumping directly to the inner most frame
+  // Update mouseout/leave/over/enter events before jumping directly to the
+  // inner most frame.
   if (targetedEvent.event().type() == PlatformEvent::GestureTap)
     updateGestureTargetNodeForMouseEvent(targetedEvent);
 
@@ -1291,7 +1322,8 @@ WebInputEventResult EventHandler::handleGestureEvent(
   if (LocalFrame* innerFrame = targetedEvent.hitTestResult().innerNodeFrame())
     return innerFrame->eventHandler().handleGestureEventInFrame(targetedEvent);
 
-  // No hit test result, handle in root instance. Perhaps we should just return false instead?
+  // No hit test result, handle in root instance. Perhaps we should just return
+  // false instead?
   return m_gestureManager->handleGestureEventInFrame(targetedEvent);
 }
 
@@ -1336,8 +1368,9 @@ bool EventHandler::bestClickableNodeForHitTestResult(
   TRACE_EVENT0("input", "EventHandler::bestClickableNodeForHitTestResult");
   ASSERT(result.isRectBasedTest());
 
-  // If the touch is over a scrollbar, don't adjust the touch point since touch adjustment only takes into account
-  // DOM nodes so a touch over a scrollbar will be adjusted towards nearby nodes. This leads to things like textarea
+  // If the touch is over a scrollbar, don't adjust the touch point since touch
+  // adjustment only takes into account DOM nodes so a touch over a scrollbar
+  // will be adjusted towards nearby nodes. This leads to things like textarea
   // scrollbars being untouchable.
   if (result.scrollbar()) {
     targetNode = 0;
@@ -1352,7 +1385,8 @@ bool EventHandler::bestClickableNodeForHitTestResult(
   HeapVector<Member<Node>, 11> nodes;
   copyToVector(result.listBasedTestResult(), nodes);
 
-  // FIXME: the explicit Vector conversion copies into a temporary and is wasteful.
+  // FIXME: the explicit Vector conversion copies into a temporary and is
+  // wasteful.
   return findBestClickableCandidate(targetNode, targetPoint, touchCenter,
                                     touchRect, HeapVector<Member<Node>>(nodes));
 }
@@ -1369,7 +1403,8 @@ bool EventHandler::bestContextMenuNodeForHitTestResult(
   HeapVector<Member<Node>, 11> nodes;
   copyToVector(result.listBasedTestResult(), nodes);
 
-  // FIXME: the explicit Vector conversion copies into a temporary and is wasteful.
+  // FIXME: the explicit Vector conversion copies into a temporary and is
+  // wasteful.
   return findBestContextMenuCandidate(targetNode, targetPoint, touchCenter,
                                       touchRect,
                                       HeapVector<Member<Node>>(nodes));
@@ -1394,14 +1429,17 @@ bool EventHandler::bestZoomableAreaForTouchPoint(const IntPoint& touchCenter,
   HeapVector<Member<Node>, 11> nodes;
   copyToVector(result.listBasedTestResult(), nodes);
 
-  // FIXME: the explicit Vector conversion copies into a temporary and is wasteful.
+  // FIXME: the explicit Vector conversion copies into a temporary and is
+  // wasteful.
   return findBestZoomableArea(targetNode, targetArea, touchCenter, touchRect,
                               HeapVector<Member<Node>>(nodes));
 }
 
 // Update the hover and active state across all frames for this gesture.
-// This logic is different than the mouse case because mice send MouseLeave events to frames as they're exited.
-// With gestures, a single event conceptually both 'leaves' whatever frame currently had hover and enters a new frame
+// This logic is different than the mouse case because mice send MouseLeave
+// events to frames as they're exited.  With gestures, a single event
+// conceptually both 'leaves' whatever frame currently had hover and enters a
+// new frame
 void EventHandler::updateGestureHoverActiveState(const HitTestRequest& request,
                                                  Element* innerElement) {
   ASSERT(m_frame == m_frame->localFrameRoot());
@@ -1409,9 +1447,10 @@ void EventHandler::updateGestureHoverActiveState(const HitTestRequest& request,
   HeapVector<Member<LocalFrame>> newHoverFrameChain;
   LocalFrame* newHoverFrameInDocument =
       innerElement ? innerElement->document().frame() : nullptr;
-  // Insert the ancestors of the frame having the new hovered node to the frame chain
-  // The frame chain doesn't include the main frame to avoid the redundant work that cleans the hover state.
-  // Because the hover state for the main frame is updated by calling Document::updateHoverActiveState
+  // Insert the ancestors of the frame having the new hovered node to the frame
+  // chain The frame chain doesn't include the main frame to avoid the redundant
+  // work that cleans the hover state.  Because the hover state for the main
+  // frame is updated by calling Document::updateHoverActiveState
   while (newHoverFrameInDocument && newHoverFrameInDocument != m_frame) {
     newHoverFrameChain.append(newHoverFrameInDocument);
     Frame* parentFrame = newHoverFrameInDocument->tree().parent();
@@ -1426,7 +1465,8 @@ void EventHandler::updateGestureHoverActiveState(const HitTestRequest& request,
   if (newInnermostHoverNode != oldHoverNodeInCurDoc) {
     size_t indexFrameChain = newHoverFrameChain.size();
 
-    // Clear the hover state on any frames which are no longer in the frame chain of the hovered elemen
+    // Clear the hover state on any frames which are no longer in the frame
+    // chain of the hovered element.
     while (oldHoverNodeInCurDoc &&
            oldHoverNodeInCurDoc->isFrameOwnerElement()) {
       LocalFrame* newHoverFrame = nullptr;
@@ -1453,24 +1493,31 @@ void EventHandler::updateGestureHoverActiveState(const HitTestRequest& request,
     }
   }
 
-  // Recursively set the new active/hover states on every frame in the chain of innerElement.
+  // Recursively set the new active/hover states on every frame in the chain of
+  // innerElement.
   m_frame->document()->updateHoverActiveState(request, innerElement);
 }
 
-// Update the mouseover/mouseenter/mouseout/mouseleave events across all frames for this gesture,
-// before passing the targeted gesture event directly to a hit frame.
+// Update the mouseover/mouseenter/mouseout/mouseleave events across all frames
+// for this gesture, before passing the targeted gesture event directly to a hit
+// frame.
 void EventHandler::updateGestureTargetNodeForMouseEvent(
     const GestureEventWithHitTestResults& targetedEvent) {
   ASSERT(m_frame == m_frame->localFrameRoot());
 
   // Behaviour of this function is as follows:
   // - Create the chain of all entered frames.
-  // - Compare the last frame chain under the gesture to newly entered frame chain from the main frame one by one.
-  // - If the last frame doesn't match with the entered frame, then create the chain of exited frames from the last frame chain.
-  // - Dispatch mouseout/mouseleave events of the exited frames from the inside out.
-  // - Dispatch mouseover/mouseenter events of the entered frames into the inside.
+  // - Compare the last frame chain under the gesture to newly entered frame
+  //   chain from the main frame one by one.
+  // - If the last frame doesn't match with the entered frame, then create the
+  //   chain of exited frames from the last frame chain.
+  // - Dispatch mouseout/mouseleave events of the exited frames from the inside
+  //   out.
+  // - Dispatch mouseover/mouseenter events of the entered frames into the
+  //   inside.
 
-  // Insert the ancestors of the frame having the new target node to the entered frame chain
+  // Insert the ancestors of the frame having the new target node to the entered
+  // frame chain.
   HeapVector<Member<LocalFrame>> enteredFrameChain;
   LocalFrame* enteredFrameInDocument =
       targetedEvent.hitTestResult().innerNodeFrame();
@@ -1485,7 +1532,8 @@ void EventHandler::updateGestureTargetNodeForMouseEvent(
   size_t indexEnteredFrameChain = enteredFrameChain.size();
   LocalFrame* exitedFrameInDocument = m_frame;
   HeapVector<Member<LocalFrame>> exitedFrameChain;
-  // Insert the frame from the disagreement between last frames and entered frames
+  // Insert the frame from the disagreement between last frames and entered
+  // frames.
   while (exitedFrameInDocument) {
     Node* lastNodeUnderTap = exitedFrameInDocument->eventHandler()
                                  .m_mouseEventManager->getNodeUnderMouse();
@@ -1593,9 +1641,10 @@ GestureEventWithHitTestResults EventHandler::targetGestureEvent(
 GestureEventWithHitTestResults EventHandler::hitTestResultForGestureEvent(
     const PlatformGestureEvent& gestureEvent,
     HitTestRequest::HitTestRequestType hitType) {
-  // Perform the rect-based hit-test (or point-based if adjustment is disabled). Note that
-  // we don't yet apply hover/active state here because we need to resolve touch adjustment
-  // first so that we apply hover/active it to the final adjusted node.
+  // Perform the rect-based hit-test (or point-based if adjustment is disabled).
+  // Note that we don't yet apply hover/active state here because we need to
+  // resolve touch adjustment first so that we apply hover/active it to the
+  // final adjusted node.
   IntPoint hitTestPoint =
       m_frame->view()->rootFrameToContents(gestureEvent.position());
   LayoutSize padding;
@@ -1609,15 +1658,17 @@ GestureEventWithHitTestResults EventHandler::hitTestResultForGestureEvent(
   HitTestResult hitTestResult = hitTestResultAtPoint(
       hitTestPoint, hitType | HitTestRequest::ReadOnly, padding);
 
-  // Adjust the location of the gesture to the most likely nearby node, as appropriate for the
-  // type of event.
+  // Adjust the location of the gesture to the most likely nearby node, as
+  // appropriate for the type of event.
   PlatformGestureEvent adjustedEvent = gestureEvent;
   applyTouchAdjustment(&adjustedEvent, &hitTestResult);
 
-  // Do a new hit-test at the (adjusted) gesture co-ordinates. This is necessary because
-  // rect-based hit testing and touch adjustment sometimes return a different node than
-  // what a point-based hit test would return for the same point.
-  // FIXME: Fix touch adjustment to avoid the need for a redundant hit test. http://crbug.com/398914
+  // Do a new hit-test at the (adjusted) gesture co-ordinates. This is necessary
+  // because rect-based hit testing and touch adjustment sometimes return a
+  // different node than what a point-based hit test would return for the same
+  // point.
+  // FIXME: Fix touch adjustment to avoid the need for a redundant hit test.
+  // http://crbug.com/398914
   if (shouldApplyTouchAdjustment(gestureEvent)) {
     LocalFrame* hitFrame = hitTestResult.innerNodeFrame();
     if (!hitFrame)
@@ -1628,8 +1679,9 @@ GestureEventWithHitTestResults EventHandler::hitTestResultForGestureEvent(
         (hitType | HitTestRequest::ReadOnly) & ~HitTestRequest::ListBased);
   }
 
-  // If we did a rect-based hit test it must be resolved to the best single node by now to
-  // ensure consumers don't accidentally use one of the other candidates.
+  // If we did a rect-based hit test it must be resolved to the best single node
+  // by now to ensure consumers don't accidentally use one of the other
+  // candidates.
   ASSERT(!hitTestResult.isRectBasedTest());
 
   return GestureEventWithHitTestResults(adjustedEvent, hitTestResult);
@@ -1661,8 +1713,10 @@ void EventHandler::applyTouchAdjustment(PlatformGestureEvent* gestureEvent,
       ASSERT_NOT_REACHED();
   }
 
-  // Update the hit-test result to be a point-based result instead of a rect-based result.
-  // FIXME: We should do this even when no candidate matches the node filter. crbug.com/398914
+  // Update the hit-test result to be a point-based result instead of a
+  // rect-based result.
+  // FIXME: We should do this even when no candidate matches the node filter.
+  // crbug.com/398914
   if (adjusted) {
     hitTestResult->resolveRectBasedTest(
         adjustedNode, m_frame->view()->rootFrameToContents(adjustedPoint));
@@ -1677,15 +1731,16 @@ WebInputEventResult EventHandler::sendContextMenuEvent(
   if (!v)
     return WebInputEventResult::NotHandled;
 
-  // Clear mouse press state to avoid initiating a drag while context menu is up.
+  // Clear mouse press state to avoid initiating a drag while context menu is
+  // up.
   m_mouseEventManager->setMousePressed(false);
   LayoutPoint positionInContents = v->rootFrameToContents(event.position());
   HitTestRequest request(HitTestRequest::Active);
   MouseEventWithHitTestResults mev =
       m_frame->document()->performMouseEventHitTest(request, positionInContents,
                                                     event);
-  // Since |Document::performMouseEventHitTest()| modifies layout tree for setting
-  // hover element, we need to update layout tree for requirement of
+  // Since |Document::performMouseEventHitTest()| modifies layout tree for
+  // setting hover element, we need to update layout tree for requirement of
   // |SelectionController::sendContextMenuEvent()|.
   m_frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
@@ -1732,7 +1787,8 @@ WebInputEventResult EventHandler::sendContextMenuEventForKey(
         selection.selection().toNormalizedEphemeralRange());
 
     int x = rightAligned ? firstRect.maxX() : firstRect.x();
-    // In a multiline edit, firstRect.maxY() would endup on the next line, so -1.
+    // In a multiline edit, firstRect.maxY() would end up on the next line, so
+    // -1.
     int y = firstRect.maxY() ? firstRect.maxY() - 1 : 0;
     locationInRootFrame = view->contentsToRootFrame(IntPoint(x, y));
   } else if (focusedElement) {
@@ -1766,8 +1822,8 @@ WebInputEventResult EventHandler::sendContextMenuEventForKey(
   result.setInnerNode(targetNode);
   doc->updateHoverActiveState(request, result.innerElement());
 
-  // The contextmenu event is a mouse event even when invoked using the keyboard.
-  // This is required for web compatibility.
+  // The contextmenu event is a mouse event even when invoked using the
+  // keyboard.  This is required for web compatibility.
   PlatformEvent::EventType eventType = PlatformEvent::MousePressed;
   if (m_frame->settings() && m_frame->settings()->showContextMenuOnMouseUp())
     eventType = PlatformEvent::MouseReleased;
@@ -1788,8 +1844,8 @@ void EventHandler::scheduleHoverStateUpdate() {
 }
 
 void EventHandler::scheduleCursorUpdate() {
-  // We only want one timer for the page, rather than each frame having it's own timer
-  // competing which eachother (since there's only one mouse cursor).
+  // We only want one timer for the page, rather than each frame having it's own
+  // timer competing which eachother (since there's only one mouse cursor).
   ASSERT(m_frame == m_frame->localFrameRoot());
 
   if (!m_cursorUpdateTimer.isActive())
@@ -1852,7 +1908,8 @@ void EventHandler::activeIntervalTimerFired(TimerBase*) {
 }
 
 void EventHandler::notifyElementActivated() {
-  // Since another element has been set to active, stop current timer and clear reference.
+  // Since another element has been set to active, stop current timer and clear
+  // reference.
   if (m_activeIntervalTimer.isActive())
     m_activeIntervalTimer.stop();
   m_lastDeferredTapElement = nullptr;
@@ -1879,7 +1936,8 @@ void EventHandler::dragSourceEndedAt(const PlatformMouseEvent& event,
 
 void EventHandler::updateDragStateAfterEditDragIfNeeded(
     Element* rootEditableElement) {
-  // If inserting the dragged contents removed the drag source, we still want to fire dragend at the root editble element.
+  // If inserting the dragged contents removed the drag source, we still want to
+  // fire dragend at the root editble element.
   if (m_mouseEventManager->dragState().m_dragSrc &&
       !m_mouseEventManager->dragState().m_dragSrc->isConnected())
     m_mouseEventManager->dragState().m_dragSrc = rootEditableElement;
@@ -1888,8 +1946,9 @@ void EventHandler::updateDragStateAfterEditDragIfNeeded(
 bool EventHandler::handleTextInputEvent(const String& text,
                                         Event* underlyingEvent,
                                         TextEventInputType inputType) {
-  // Platforms should differentiate real commands like selectAll from text input in disguise (like insertNewline),
-  // and avoid dispatching text input events from keydown default handlers.
+  // Platforms should differentiate real commands like selectAll from text input
+  // in disguise (like insertNewline), and avoid dispatching text input events
+  // from keydown default handlers.
   ASSERT(!underlyingEvent || !underlyingEvent->isKeyboardEvent() ||
          toKeyboardEvent(underlyingEvent)->type() == EventTypeNames::keypress);
 
@@ -1989,7 +2048,6 @@ WebInputEventResult EventHandler::passMouseReleaseEventToSubframe(
     return result;
   return WebInputEventResult::HandledSystem;
 }
-
 
 FrameHost* EventHandler::frameHost() const {
   if (!m_frame->page())

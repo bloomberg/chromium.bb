@@ -74,17 +74,22 @@ void BoundaryEventDispatcher::sendBoundaryEvents(EventTarget* exitedTarget,
   size_t exitedAncestorsCommonParentIndex = 0;
   size_t enteredAncestorsCommonParentIndex = 0;
 
-  // A note on mouseenter and mouseleave: These are non-bubbling events, and they are dispatched if there
-  // is a capturing event handler on an ancestor or a normal event handler on the element itself. This special
-  // handling is necessary to avoid O(n^2) capturing event handler checks.
+  // A note on mouseenter and mouseleave: These are non-bubbling events, and
+  // they are dispatched if there is a capturing event handler on an ancestor or
+  // a normal event handler on the element itself. This special handling is
+  // necessary to avoid O(n^2) capturing event handler checks.
   //
-  //   Note, however, that this optimization can possibly cause some unanswered/missing/redundant mouseenter or
-  // mouseleave events in certain contrived eventhandling scenarios, e.g., when:
-  // - the mouseleave handler for a node sets the only capturing-mouseleave-listener in its ancestor, or
-  // - DOM mods in any mouseenter/mouseleave handler changes the common ancestor of exited & entered nodes, etc.
-  // We think the spec specifies a "frozen" state to avoid such corner cases (check the discussion on "candidate event
-  // listeners" at http://www.w3.org/TR/uievents), but our code below preserves one such behavior from past only to
-  // match Firefox and IE behavior.
+  // Note, however, that this optimization can possibly cause some
+  // unanswered/missing/redundant mouseenter or mouseleave events in certain
+  // contrived eventhandling scenarios, e.g., when:
+  // - the mouseleave handler for a node sets the only
+  //   capturing-mouseleave-listener in its ancestor, or
+  // - DOM mods in any mouseenter/mouseleave handler changes the common ancestor
+  //   of exited & entered nodes, etc.
+  // We think the spec specifies a "frozen" state to avoid such corner cases
+  // (check the discussion on "candidate event listeners" at
+  // http://www.w3.org/TR/uievents), but our code below preserves one such
+  // behavior from past only to match Firefox and IE behavior.
   //
   // TODO(mustaq): Confirm spec conformance, double-check with other browsers.
 
@@ -110,8 +115,8 @@ void BoundaryEventDispatcher::sendBoundaryEvents(EventTarget* exitedTarget,
   if (isInDocument(enteredTarget))
     dispatchOver(enteredTarget, exitedTarget);
 
-  // Defer locating capturing enter listener until /after/ dispatching the leave events because
-  // the leave handlers might set a capturing enter handler.
+  // Defer locating capturing enter listener until /after/ dispatching the leave
+  // events because the leave handlers might set a capturing enter handler.
   bool enteredNodeHasCapturingAncestor = false;
   const AtomicString& enterEvent = getEnterEvent();
   for (size_t i = 0; i < enteredAncestors.size(); i++) {

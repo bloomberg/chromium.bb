@@ -126,7 +126,8 @@ class CORE_EXPORT EventHandler final
   void scheduleHoverStateUpdate();
   void scheduleCursorUpdate();
 
-  // Return whether a mouse cursor update is currently pending.  Used for testing.
+  // Return whether a mouse cursor update is currently pending.  Used for
+  // testing.
   bool cursorUpdatePending();
 
   void setResizingFrameSet(HTMLFrameSetElement*);
@@ -154,12 +155,14 @@ class CORE_EXPORT EventHandler final
   WebInputEventResult handleGestureEvent(const PlatformGestureEvent&);
   WebInputEventResult handleGestureEvent(const GestureEventWithHitTestResults&);
 
-  // Clear the old hover/active state within frames before moving the hover state to the another frame
+  // Clear the old hover/active state within frames before moving the hover
+  // state to the another frame
   void updateGestureHoverActiveState(const HitTestRequest&, Element*);
 
-  // Hit-test the provided (non-scroll) gesture event, applying touch-adjustment and updating
-  // hover/active state across all frames if necessary. This should be called at most once
-  // per gesture event, and called on the local root frame.
+  // Hit-test the provided (non-scroll) gesture event, applying touch-adjustment
+  // and updating hover/active state across all frames if necessary. This should
+  // be called at most once per gesture event, and called on the local root
+  // frame.
   // Note: This is similar to (the less clearly named) prepareMouseEvent.
   // FIXME: Remove readOnly param when there is only ever a single call to this.
   GestureEventWithHitTestResults targetGestureEvent(const PlatformGestureEvent&,
@@ -167,11 +170,13 @@ class CORE_EXPORT EventHandler final
   GestureEventWithHitTestResults hitTestResultForGestureEvent(
       const PlatformGestureEvent&,
       HitTestRequest::HitTestRequestType);
-  // Handle the provided non-scroll gesture event. Should be called only on the inner frame.
+  // Handle the provided non-scroll gesture event. Should be called only on the
+  // inner frame.
   WebInputEventResult handleGestureEventInFrame(
       const GestureEventWithHitTestResults&);
 
-  // Handle the provided scroll gesture event, propagating down to child frames as necessary.
+  // Handle the provided scroll gesture event, propagating down to child frames
+  // as necessary.
   WebInputEventResult handleGestureScrollEvent(const PlatformGestureEvent&);
   WebInputEventResult handleGestureScrollEnd(const PlatformGestureEvent&);
   bool isScrollbarHandlingGestures() const;
@@ -182,7 +187,8 @@ class CORE_EXPORT EventHandler final
   bool bestContextMenuNodeForHitTestResult(const HitTestResult&,
                                            IntPoint& targetPoint,
                                            Node*& targetNode);
-  // FIXME: This doesn't appear to be used outside tests anymore, what path are we using now and is it tested?
+  // FIXME: This doesn't appear to be used outside tests anymore, what path are
+  // we using now and is it tested?
   bool bestZoomableAreaForTouchPoint(const IntPoint& touchCenter,
                                      const IntSize& touchRadius,
                                      IntRect& targetArea,
@@ -250,7 +256,6 @@ class CORE_EXPORT EventHandler final
                      Node* startNode = nullptr);
 
  private:
-
   WebInputEventResult handleMouseMoveOrLeaveEvent(
       const PlatformMouseEvent&,
       HitTestResult* hoveredNode = nullptr,
@@ -288,17 +293,20 @@ class CORE_EXPORT EventHandler final
 
   Node* updateMouseEventTargetNode(Node*);
 
-  // Dispatches ME after corresponding PE provided the PE has not been canceled. The eventType arg
-  // must be a mouse event that can be gated though a preventDefaulted pointerdown (i.e., one of
+  // Dispatches ME after corresponding PE provided the PE has not been canceled.
+  // The eventType arg must be a mouse event that can be gated though a
+  // preventDefaulted pointerdown (i.e., one of
   // {mousedown, mousemove, mouseup}).
-  // TODO(mustaq): Can we avoid the clickCount param, instead use PlatformMouseEvent's count?
+  // TODO(mustaq): Can we avoid the clickCount param, instead use
+  // PlatformMouseEvent's count?
   //     Same applied to dispatchMouseEvent() above.
   WebInputEventResult updatePointerTargetAndDispatchEvents(
       const AtomicString& mouseEventType,
       Node* target,
       const PlatformMouseEvent&);
 
-  // Clears drag target and related states. It is called when drag is done or canceled.
+  // Clears drag target and related states. It is called when drag is done or
+  // canceled.
   void clearDragState();
 
   WebInputEventResult passMousePressEventToSubframe(
@@ -337,8 +345,9 @@ class CORE_EXPORT EventHandler final
 
   Timer<EventHandler> m_hoverTimer;
 
-  // TODO(rbyers): Mouse cursor update is page-wide, not per-frame.  Page-wide state
-  // should move out of EventHandler to a new PageEventHandler class. crbug.com/449649
+  // TODO(rbyers): Mouse cursor update is page-wide, not per-frame.  Page-wide
+  // state should move out of EventHandler to a new PageEventHandler class.
+  // crbug.com/449649
   Timer<EventHandler> m_cursorUpdateTimer;
 
   Member<Node> m_capturingMouseEventsNode;
@@ -372,7 +381,6 @@ class CORE_EXPORT EventHandler final
   // triggering |touchstart| event was canceled. This suppresses mouse event
   // firing for the current gesture sequence (i.e. until next GestureTapDown).
   bool m_suppressMouseEventsFromGestures;
-
 };
 
 }  // namespace blink

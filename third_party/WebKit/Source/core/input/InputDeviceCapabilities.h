@@ -17,10 +17,12 @@ class CORE_EXPORT InputDeviceCapabilities final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  // This return a static local InputDeviceCapabilities pointer which has firesTouchEvents set to be true.
+  // This return a static local InputDeviceCapabilities pointer which has
+  // firesTouchEvents set to be true.
   static InputDeviceCapabilities* firesTouchEventsSourceCapabilities();
 
-  // This return a static local InputDeviceCapabilities pointer which has firesTouchEvents set to be false.
+  // This return a static local InputDeviceCapabilities pointer which has
+  // firesTouchEvents set to be false.
   static InputDeviceCapabilities* doesntFireTouchEventsSourceCapabilities();
 
   static InputDeviceCapabilities* create(bool firesTouchEvents) {

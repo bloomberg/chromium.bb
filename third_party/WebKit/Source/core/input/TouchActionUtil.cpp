@@ -15,9 +15,11 @@ namespace TouchActionUtil {
 namespace {
 
 // touch-action applies to all elements with both width AND height properties.
-// According to the CSS Box Model Spec (http://dev.w3.org/csswg/css-box/#the-width-and-height-properties)
-// width applies to all elements but non-replaced inline elements, table rows, and row groups and
-// height applies to all elements but non-replaced inline elements, table columns, and column groups.
+// According to the CSS Box Model Spec
+// (http://dev.w3.org/csswg/css-box/#the-width-and-height-properties)
+// width applies to all elements but non-replaced inline elements, table rows,
+// and row groups and height applies to all elements but non-replaced inline
+// elements, table columns, and column groups.
 bool supportsTouchAction(const LayoutObject& object) {
   if (object.isInline() && !object.isAtomicInlineLevel())
     return false;
@@ -61,7 +63,8 @@ TouchAction computeEffectiveTouchAction(const Node& node) {
           break;
       }
 
-      // If we've reached an ancestor that supports panning, stop allowing panning to be disabled.
+      // If we've reached an ancestor that supports panning, stop allowing
+      // panning to be disabled.
       if ((layoutObject->isBox() &&
            toLayoutBox(layoutObject)->scrollsOverflow()) ||
           layoutObject->isLayoutView())

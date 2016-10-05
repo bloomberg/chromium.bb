@@ -201,7 +201,8 @@ WebInputEventResult TouchEventManager::dispatchTouchEvents(
       // touch-start or the first touch-move.
       if (event.touchStartOrFirstTouchMove() && touchInfos.size() == 1 &&
           m_frame->isMainFrame()) {
-        // Record the disposition and latency of touch starts and first touch moves before and after the page is fully loaded respectively.
+        // Record the disposition and latency of touch starts and first touch
+        // moves before and after the page is fully loaded respectively.
         int64_t latencyInMicros = static_cast<int64_t>(
             (monotonicallyIncreasingTime() - event.timestamp()) * 1000000.0);
         if (event.cancelable()) {
@@ -370,9 +371,9 @@ void TouchEventManager::setAllPropertiesOfTouchInfos(
     bool knownTarget = false;
     if (touchNode) {
       Document& doc = touchNode->document();
-      // If the target node has moved to a new document while it was being touched,
-      // we can't send events to the new document because that could leak nodes
-      // from one document to another. See http://crbug.com/394339.
+      // If the target node has moved to a new document while it was being
+      // touched, we can't send events to the new document because that could
+      // leak nodes from one document to another. See http://crbug.com/394339.
       if (&doc == m_touchSequenceDocument.get()) {
         targetFrame = doc.frame();
         knownTarget = true;
@@ -437,8 +438,8 @@ bool TouchEventManager::reHitTestTouchPointsIfNeeded(
   ASSERT(m_frame->view());
   if (m_touchSequenceDocument && (!m_touchSequenceDocument->frame() ||
                                   !m_touchSequenceDocument->frame()->view())) {
-    // If the active touch document has no frame or view, it's probably being destroyed
-    // so we can't dispatch events.
+    // If the active touch document has no frame or view, it's probably being
+    // destroyed so we can't dispatch events.
     return false;
   }
 
@@ -498,7 +499,8 @@ WebInputEventResult TouchEventManager::handleTouchEvent(
       allTouchesReleased = false;
   }
 
-  // Whether a touch should be considered a "user gesture" or not is a tricky question.
+  // Whether a touch should be considered a "user gesture" or not is a tricky
+  // question.
   // https://docs.google.com/document/d/1oF1T3O7_E4t1PYHV6gyCwHxOi3ystm0eSL5xZu7nvOg/edit#
 
   // The touchend corresponding to a tap is always a user gesture.
@@ -507,8 +509,8 @@ WebInputEventResult TouchEventManager::handleTouchEvent(
       event.touchPoints()[0].state() == PlatformTouchPoint::TouchReleased &&
       !event.causesScrollingIfUncanceled();
 
-  // For now, disallow dragging as a user gesture when the events are being sent to a
-  // cross-origin iframe (crbug.com/582140).
+  // For now, disallow dragging as a user gesture when the events are being sent
+  // to a cross-origin iframe (crbug.com/582140).
   bool isSameOrigin = false;
   if (m_touchSequenceDocument && m_touchSequenceDocument->frame()) {
     SecurityOrigin* securityOrigin = m_touchSequenceDocument->frame()
@@ -546,10 +548,10 @@ bool TouchEventManager::isAnyTouchActive() const {
   return m_touchPressed;
 }
 
-
 void TouchEventManager::userGestureUtilized() {
-  // This is invoked for UserGestureIndicators created in TouchEventManger::handleTouchEvent which perhaps
-  // represent touch actions which shouldn't be considered a user-gesture.  Trigger a UseCounter based
+  // This is invoked for UserGestureIndicators created in
+  // TouchEventManger::handleTouchEvent which perhaps represent touch actions
+  // which shouldn't be considered a user-gesture.  Trigger a UseCounter based
   // on the touch event that's currently being dispatched.
   UseCounter::Feature feature;
 

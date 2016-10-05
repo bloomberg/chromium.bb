@@ -53,7 +53,8 @@ HitTestRequest::HitTestRequestType GestureManager::getHitTypeForGestureType(
     case PlatformEvent::GestureTapUnconfirmed:
       return hitType | HitTestRequest::Active;
     case PlatformEvent::GestureTapDownCancel:
-      // A TapDownCancel received when no element is active shouldn't really be changing hover state.
+      // A TapDownCancel received when no element is active shouldn't really be
+      // changing hover state.
       if (!m_frame->document()->activeHoverElement())
         hitType |= HitTestRequest::ReadOnly;
       return hitType | HitTestRequest::Release;
@@ -142,8 +143,8 @@ WebInputEventResult GestureManager::handleGestureTap(
 
   HitTestResult currentHitTest = targetedEvent.hitTestResult();
 
-  // We use the adjusted position so the application isn't surprised to see a event with
-  // co-ordinates outside the target's bounds.
+  // We use the adjusted position so the application isn't surprised to see a
+  // event with co-ordinates outside the target's bounds.
   IntPoint adjustedPoint =
       frameView->rootFrameToContents(gestureEvent.position());
 
@@ -161,12 +162,14 @@ WebInputEventResult GestureManager::handleGestureTap(
   }
 
   // Do a new hit-test in case the mousemove event changed the DOM.
-  // Note that if the original hit test wasn't over an element (eg. was over a scrollbar) we
-  // don't want to re-hit-test because it may be in the wrong frame (and there's no way the page
-  // could have seen the event anyway).
-  // Also note that the position of the frame may have changed, so we need to recompute the content
-  // co-ordinates (updating layout/style as hitTestResultAtPoint normally would).
-  // FIXME: Use a hit-test cache to avoid unnecessary hit tests. http://crbug.com/398920
+  // Note that if the original hit test wasn't over an element (eg. was over a
+  // scrollbar) we don't want to re-hit-test because it may be in the wrong
+  // frame (and there's no way the page could have seen the event anyway).  Also
+  // note that the position of the frame may have changed, so we need to
+  // recompute the content co-ordinates (updating layout/style as
+  // hitTestResultAtPoint normally would).
+  // FIXME: Use a hit-test cache to avoid unnecessary hit tests.
+  // http://crbug.com/398920
   if (currentHitTest.innerNode()) {
     LocalFrame* mainFrame = m_frame->localFrameRoot();
     if (mainFrame && mainFrame->view())
@@ -222,7 +225,8 @@ WebInputEventResult GestureManager::handleGestureTap(
     m_frame->chromeClient().onMouseDown(result.innerNode());
   }
 
-  // FIXME: Use a hit-test cache to avoid unnecessary hit tests. http://crbug.com/398920
+  // FIXME: Use a hit-test cache to avoid unnecessary hit tests.
+  // http://crbug.com/398920
   if (currentHitTest.innerNode()) {
     LocalFrame* mainFrame = m_frame->localFrameRoot();
     if (mainFrame && mainFrame->view())
@@ -248,11 +252,12 @@ WebInputEventResult GestureManager::handleGestureTap(
   WebInputEventResult clickEventResult = WebInputEventResult::NotHandled;
   if (tappedNonTextNode) {
     if (currentHitTest.innerNode()) {
-      // Updates distribution because a mouseup (or mousedown) event listener can make the
-      // tree dirty at dispatchMouseEvent() invocation above.
-      // Unless distribution is updated, commonAncestor would hit DCHECK.
-      // Both tappedNonTextNode and currentHitTest.innerNode()) don't need to be updated
-      // because commonAncestor() will exit early if their documents are different.
+      // Updates distribution because a mouseup (or mousedown) event listener
+      // can make the tree dirty at dispatchMouseEvent() invocation above.
+      // Unless distribution is updated, commonAncestor would hit DCHECK.  Both
+      // tappedNonTextNode and currentHitTest.innerNode()) don't need to be
+      // updated because commonAncestor() will exit early if their documents are
+      // different.
       tappedNonTextNode->updateDistribution();
       Node* clickTargetNode = currentHitTest.innerNode()->commonAncestor(
           *tappedNonTextNode, EventHandlingUtil::parentForClickEvent);
@@ -291,9 +296,10 @@ WebInputEventResult GestureManager::handleGestureLongPress(
     const GestureEventWithHitTestResults& targetedEvent) {
   const PlatformGestureEvent& gestureEvent = targetedEvent.event();
 
-  // FIXME: Ideally we should try to remove the extra mouse-specific hit-tests here (re-using the
-  // supplied HitTestResult), but that will require some overhaul of the touch drag-and-drop code
-  // and LongPress is such a special scenario that it's unlikely to matter much in practice.
+  // FIXME: Ideally we should try to remove the extra mouse-specific hit-tests
+  // here (re-using the supplied HitTestResult), but that will require some
+  // overhaul of the touch drag-and-drop code and LongPress is such a special
+  // scenario that it's unlikely to matter much in practice.
 
   IntPoint hitTestPoint =
       m_frame->view()->rootFrameToContents(gestureEvent.position());

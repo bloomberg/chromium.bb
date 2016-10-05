@@ -68,7 +68,8 @@ class CORE_EXPORT TouchEventManager
   // Indicate that a touch scroll has started.
   void setTouchScrollStarted() { m_touchScrollStarted = true; }
 
-  // Invoked when a UserGestureIndicator corresponding to a touch event is utilized.
+  // Invoked when a UserGestureIndicator corresponding to a touch event is
+  // utilized.
   void userGestureUtilized() override;
 
  private:
@@ -97,7 +98,8 @@ class CORE_EXPORT TouchEventManager
                                  WTF::UnsignedWithZeroKeyHashTraits<unsigned>>;
   TouchRegionMap m_regionForTouchID;
 
-  // If set, the document of the active touch sequence. Unset if no touch sequence active.
+  // If set, the document of the active touch sequence. Unset if no touch
+  // sequence active.
   Member<Document> m_touchSequenceDocument;
 
   RefPtr<UserGestureToken> m_touchSequenceUserGestureToken;

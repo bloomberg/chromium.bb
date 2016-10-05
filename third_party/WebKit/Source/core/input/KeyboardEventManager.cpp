@@ -63,9 +63,10 @@ DEFINE_TRACE(KeyboardEventManager) {
 
 bool KeyboardEventManager::handleAccessKey(const WebKeyboardEvent& evt) {
   // FIXME: Ignoring the state of Shift key is what neither IE nor Firefox do.
-  // IE matches lower and upper case access keys regardless of Shift key state - but if both upper and
-  // lower case variants are present in a document, the correct element is matched based on Shift key state.
-  // Firefox only matches an access key if Shift is not pressed, and does that case-insensitively.
+  // IE matches lower and upper case access keys regardless of Shift key state -
+  // but if both upper and lower case variants are present in a document, the
+  // correct element is matched based on Shift key state.  Firefox only matches
+  // an access key if Shift is not pressed, and does that case-insensitively.
   DCHECK(!(kAccessKeyModifiers & WebInputEvent::ShiftKey));
   if ((evt.modifiers & (WebKeyboardEvent::KeyModifiers &
                         ~WebInputEvent::ShiftKey)) != kAccessKeyModifiers)
@@ -87,7 +88,8 @@ WebInputEventResult KeyboardEventManager::keyEvent(
 
   if (m_scrollManager->middleClickAutoscrollInProgress()) {
     DCHECK(RuntimeEnabledFeatures::middleClickAutoscrollEnabled());
-    // If a key is pressed while the middleClickAutoscroll is in progress then we want to stop
+    // If a key is pressed while the middleClickAutoscroll is in progress then
+    // we want to stop.
     if (initialKeyEvent.type == WebInputEvent::KeyDown ||
         initialKeyEvent.type == WebInputEvent::RawKeyDown)
       m_scrollManager->stopAutoscroll();
@@ -96,24 +98,29 @@ WebInputEventResult KeyboardEventManager::keyEvent(
     return WebInputEventResult::HandledSuppressed;
   }
 
-  // Check for cases where we are too early for events -- possible unmatched key up
-  // from pressing return in the location bar.
+  // Check for cases where we are too early for events -- possible unmatched key
+  // up from pressing return in the location bar.
   Node* node = eventTargetNodeForDocument(m_frame->document());
   if (!node)
     return WebInputEventResult::NotHandled;
 
   UserGestureIndicator gestureIndicator(DefinitelyProcessingUserGesture);
 
-  // In IE, access keys are special, they are handled after default keydown processing, but cannot be canceled - this is hard to match.
-  // On Mac OS X, we process them before dispatching keydown, as the default keydown handler implements Emacs key bindings, which may conflict
-  // with access keys. Then we dispatch keydown, but suppress its default handling.
-  // On Windows, WebKit explicitly calls handleAccessKey() instead of dispatching a keypress event for WM_SYSCHAR messages.
-  // Other platforms currently match either Mac or Windows behavior, depending on whether they send combined KeyDown events.
+  // In IE, access keys are special, they are handled after default keydown
+  // processing, but cannot be canceled - this is hard to match.  On Mac OS X,
+  // we process them before dispatching keydown, as the default keydown handler
+  // implements Emacs key bindings, which may conflict with access keys. Then we
+  // dispatch keydown, but suppress its default handling.
+  // On Windows, WebKit explicitly calls handleAccessKey() instead of
+  // dispatching a keypress event for WM_SYSCHAR messages.  Other platforms
+  // currently match either Mac or Windows behavior, depending on whether they
+  // send combined KeyDown events.
   bool matchedAnAccessKey = false;
   if (initialKeyEvent.type == WebInputEvent::KeyDown)
     matchedAnAccessKey = handleAccessKey(initialKeyEvent);
 
-  // FIXME: it would be fair to let an input method handle KeyUp events before DOM dispatch.
+  // FIXME: it would be fair to let an input method handle KeyUp events before
+  // DOM dispatch.
   if (initialKeyEvent.type == WebInputEvent::KeyUp ||
       initialKeyEvent.type == WebInputEvent::Char) {
     KeyboardEvent* domEvent = KeyboardEvent::create(
@@ -135,7 +142,8 @@ WebInputEventResult KeyboardEventManager::keyEvent(
   DispatchEventResult dispatchResult = node->dispatchEvent(keydown);
   if (dispatchResult != DispatchEventResult::NotCanceled)
     return EventHandlingUtil::toWebInputEventResult(dispatchResult);
-  // If frame changed as a result of keydown dispatch, then return early to avoid sending a subsequent keypress message to the new frame.
+  // If frame changed as a result of keydown dispatch, then return early to
+  // avoid sending a subsequent keypress message to the new frame.
   bool changedFocusedFrame =
       m_frame->page() &&
       m_frame != m_frame->page()->focusController().focusedOrMainFrame();
@@ -146,7 +154,8 @@ WebInputEventResult KeyboardEventManager::keyEvent(
     return WebInputEventResult::NotHandled;
 
   // Focus may have changed during keydown handling, so refetch node.
-  // But if we are dispatching a fake backward compatibility keypress, then we pretend that the keypress happened on the original node.
+  // But if we are dispatching a fake backward compatibility keypress, then we
+  // pretend that the keypress happened on the original node.
   node = eventTargetNodeForDocument(m_frame->document());
   if (!node)
     return WebInputEventResult::NotHandled;
@@ -280,7 +289,8 @@ void KeyboardEventManager::defaultArrowEventHandler(WebFocusType focusType,
 void KeyboardEventManager::defaultTabEventHandler(KeyboardEvent* event) {
   DCHECK_EQ(event->type(), EventTypeNames::keydown);
 
-  // We should only advance focus on tabs if no special modifier keys are held down.
+  // We should only advance focus on tabs if no special modifier keys are held
+  // down.
   if (event->ctrlKey() || event->metaKey())
     return;
 

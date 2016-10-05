@@ -160,7 +160,8 @@ bool ScrollManager::bubblingScroll(ScrollDirection direction,
                                    Node* startingNode,
                                    Node* mousePressNode) {
   // The layout needs to be up to date to determine if we can scroll. We may be
-  // here because of an onLoad event, in which case the final layout hasn't been performed yet.
+  // here because of an onLoad event, in which case the final layout hasn't been
+  // performed yet.
   m_frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
   // FIXME: enable scroll customization in this case. See crbug.com/410974.
   if (logicalScroll(direction, granularity, startingNode, mousePressNode))
@@ -202,8 +203,9 @@ WebInputEventResult ScrollManager::handleGestureScrollBegin(
   if (document->layoutViewItem().isNull())
     return WebInputEventResult::NotHandled;
 
-  // If there's no layoutObject on the node, send the event to the nearest ancestor with a layoutObject.
-  // Needed for <option> and <optgroup> elements so we can touch scroll <select>s
+  // If there's no layoutObject on the node, send the event to the nearest
+  // ancestor with a layoutObject.  Needed for <option> and <optgroup> elements
+  // so we can touch scroll <select>s
   while (m_scrollGestureHandlingNode &&
          !m_scrollGestureHandlingNode->layoutObject())
     m_scrollGestureHandlingNode =

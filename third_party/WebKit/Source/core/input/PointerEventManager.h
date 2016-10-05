@@ -68,7 +68,8 @@ class CORE_EXPORT PointerEventManager
   // Returns whether there is any touch on the screen.
   bool isAnyTouchActive() const;
 
-  // TODO(crbug.com/625843): This can be hidden when mouse refactoring in EventHandler is done.
+  // TODO(crbug.com/625843): This can be hidden when mouse refactoring in
+  // EventHandler is done.
   EventTarget* getMouseCapturingNode();
 
   // Returns true if the primary pointerdown corresponding to the given
@@ -121,12 +122,14 @@ class CORE_EXPORT PointerEventManager
     Member<PointerEvent> m_pointerEvent;
   };
 
-  // Inhibits firing of touch-type PointerEvents until unblocked by unblockTouchPointers(). Also
-  // sends pointercancels for existing touch-type PointerEvents.
-  // See: www.w3.org/TR/pointerevents/#declaring-candidate-regions-for-default-touch-behaviors
+  // Inhibits firing of touch-type PointerEvents until unblocked by
+  // unblockTouchPointers(). Also sends pointercancels for existing touch-type
+  // PointerEvents.  See:
+  // www.w3.org/TR/pointerevents/#declaring-candidate-regions-for-default-touch-behaviors
   void blockTouchPointers();
 
-  // Enables firing of touch-type PointerEvents after they were inhibited by blockTouchPointers().
+  // Enables firing of touch-type PointerEvents after they were inhibited by
+  // blockTouchPointers().
   void unblockTouchPointers();
 
   // Sends touch pointer events and sets consumed bits in TouchInfo array
@@ -142,8 +145,9 @@ class CORE_EXPORT PointerEventManager
                           PointerEvent*);
   void setNodeUnderPointer(PointerEvent*, EventTarget*);
 
-  // Processes the assignment of |m_pointerCaptureTarget| from |m_pendingPointerCaptureTarget|
-  // and sends the got/lostpointercapture events, as per the spec:
+  // Processes the assignment of |m_pointerCaptureTarget| from
+  // |m_pendingPointerCaptureTarget| and sends the got/lostpointercapture
+  // events, as per the spec:
   // https://w3c.github.io/pointerevents/#process-pending-pointer-capture
   void processPendingPointerCapture(PointerEvent*);
 
@@ -177,14 +181,15 @@ class CORE_EXPORT PointerEventManager
 
   const Member<LocalFrame> m_frame;
 
-  // Prevents firing mousedown, mousemove & mouseup in-between a canceled pointerdown and next pointerup/pointercancel.
+  // Prevents firing mousedown, mousemove & mouseup in-between a canceled
+  // pointerdown and next pointerup/pointercancel.
   // See "PREVENT MOUSE EVENT flag" in the spec:
   //   https://w3c.github.io/pointerevents/#compatibility-mapping-with-mouse-events
   bool m_preventMouseEventForPointerType
       [static_cast<size_t>(WebPointerProperties::PointerType::LastEntry) + 1];
 
-  // Set upon sending a pointercancel for touch, prevents PE dispatches for touches until
-  // all touch-points become inactive.
+  // Set upon sending a pointercancel for touch, prevents PE dispatches for
+  // touches until all touch-points become inactive.
   bool m_inCanceledStateForPointerTypeTouch;
 
   Deque<uint32_t> m_touchIdsForCanceledPointerdowns;

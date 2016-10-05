@@ -45,7 +45,8 @@ PlatformMouseEvent mouseEventWithRegion(Node* node,
 
   HTMLCanvasElement* canvas =
       Traversal<HTMLCanvasElement>::firstAncestorOrSelf(*element);
-  // In this case, the event target is canvas and mouse rerouting doesn't happen.
+  // In this case, the event target is canvas and mouse rerouting doesn't
+  // happen.
   if (canvas == element)
     return mouseEvent;
   String region = canvas->getIdFromControl(element);
@@ -65,8 +66,8 @@ const double kTextDragDelay = 0.0;
 #endif
 
 // The link drag hysteresis is much larger than the others because there
-// needs to be enough space to cancel the link press without starting a link drag,
-// and because dragging links is rare.
+// needs to be enough space to cancel the link press without starting a link
+// drag, and because dragging links is rare.
 const int kLinkDragHysteresis = 40;
 const int kImageDragHysteresis = 5;
 const int kTextDragHysteresis = 3;
@@ -234,7 +235,9 @@ WebInputEventResult MouseEventManager::dispatchMouseClickIfNeeded(
                           mev.event().pointerProperties().button ==
                               WebPointerProperties::Button::Right;
 #if OS(MACOSX)
-  // FIXME: The Mac port achieves the same behavior by checking whether the context menu is currently open in WebPage::mouseEvent(). Consider merging the implementations.
+  // FIXME: The Mac port achieves the same behavior by checking whether the
+  // context menu is currently open in WebPage::mouseEvent(). Consider merging
+  // the implementations.
   if (mev.event().pointerProperties().button ==
           WebPointerProperties::Button::Left &&
       mev.event().getModifiers() & PlatformEvent::CtrlKey)
@@ -291,7 +294,8 @@ void MouseEventManager::fakeMouseMoveEventTimerFired(TimerBase* timer) {
   if (!m_frame->page() || !m_frame->page()->focusController().isActive())
     return;
 
-  // Don't dispatch a synthetic mouse move event if the mouse cursor is not visible to the user.
+  // Don't dispatch a synthetic mouse move event if the mouse cursor is not
+  // visible to the user.
   if (!m_frame->page()->isCursorVisible())
     return;
 
@@ -460,13 +464,15 @@ bool MouseEventManager::slideFocusOnShadowHostIfNecessary(
       return true;
     }
 
-    // If the host has a focusable inner element, focus it. Otherwise, the host takes focus.
+    // If the host has a focusable inner element, focus it. Otherwise, the host
+    // takes focus.
     Page* page = m_frame->page();
     DCHECK(page);
     Element* found =
         page->focusController().findFocusableElementInShadowHost(element);
     if (found && element.isShadowIncludingInclusiveAncestorOf(found)) {
-      // Use WebFocusTypeForward instead of WebFocusTypeMouse here to mean the focus has slided.
+      // Use WebFocusTypeForward instead of WebFocusTypeMouse here to mean the
+      // focus has slided.
       found->focus(FocusParams(SelectionBehaviorOnFocus::Reset,
                                WebFocusTypeForward, nullptr));
       return true;
@@ -736,8 +742,8 @@ WebInputEventResult MouseEventManager::handleMouseDraggedEvent(
 bool MouseEventManager::handleDrag(const MouseEventWithHitTestResults& event,
                                    DragInitiator initiator) {
   DCHECK(event.event().type() == PlatformEvent::MouseMoved);
-  // Callers must protect the reference to FrameView, since this function may dispatch DOM
-  // events, causing page/FrameView to go away.
+  // Callers must protect the reference to FrameView, since this function may
+  // dispatch DOM events, causing page/FrameView to go away.
   DCHECK(m_frame);
   DCHECK(m_frame->view());
   if (!m_frame->page())
@@ -773,14 +779,16 @@ bool MouseEventManager::handleDrag(const MouseEventWithHitTestResults& event,
   }
 
   // We are starting a text/image/url drag, so the cursor should be an arrow
-  // FIXME <rdar://7577595>: Custom cursors aren't supported during drag and drop (default to pointer).
+  // FIXME <rdar://7577595>: Custom cursors aren't supported during drag and
+  // drop (default to pointer).
   m_frame->view()->setCursor(pointerCursor());
 
   if (initiator == DragInitiator::Mouse &&
       !dragHysteresisExceeded(event.event().position()))
     return true;
 
-  // Once we're past the hysteresis point, we don't want to treat this gesture as a click
+  // Once we're past the hysteresis point, we don't want to treat this gesture
+  // as a click
   invalidateClick();
 
   if (!tryStartDrag(event)) {
@@ -790,7 +798,8 @@ bool MouseEventManager::handleDrag(const MouseEventWithHitTestResults& event,
   }
 
   m_mouseDownMayStartDrag = false;
-  // Whether or not the drag actually started, no more default handling (like selection).
+  // Whether or not the drag actually started, no more default handling (like
+  // selection).
   return true;
 }
 
@@ -817,8 +826,9 @@ bool MouseEventManager::tryStartDrag(
       dragState().m_dragDataTransfer->setDragImageElement(
           dragState().m_dragSrc.get(), IntPoint(delta));
     } else {
-      // The layoutObject has disappeared, this can happen if the onStartDrag handler has hidden
-      // the element in some way. In this case we just kill the drag.
+      // The layoutObject has disappeared, this can happen if the onStartDrag
+      // handler has hidden the element in some way. In this case we just kill
+      // the drag.
       return false;
     }
   }
@@ -839,12 +849,14 @@ bool MouseEventManager::tryStartDrag(
           WebInputEventResult::NotHandled &&
       !m_frame->selection().isInPasswordField() && dragState().m_dragSrc;
 
-  // Invalidate clipboard here against anymore pasteboard writing for security. The drag
-  // image can still be changed as we drag, but not the pasteboard data.
+  // Invalidate clipboard here against anymore pasteboard writing for security.
+  // The drag image can still be changed as we drag, but not the pasteboard
+  // data.
   dragState().m_dragDataTransfer->setAccessPolicy(DataTransferImageWritable);
 
   if (m_mouseDownMayStartDrag) {
-    // Dispatching the event could cause Page to go away. Make sure it's still valid before trying to use DragController.
+    // Dispatching the event could cause Page to go away. Make sure it's still
+    // valid before trying to use DragController.
     if (m_frame->page() &&
         dragController.startDrag(m_frame, dragState(), event.event(),
                                  m_mouseDownPos))
@@ -856,7 +868,8 @@ bool MouseEventManager::tryStartDrag(
   return false;
 }
 
-// returns if we should continue "default processing", i.e., whether eventhandler canceled
+// Returns if we should continue "default processing", i.e., whether
+// eventhandler canceled.
 WebInputEventResult MouseEventManager::dispatchDragSrcEvent(
     const AtomicString& eventType,
     const PlatformMouseEvent& event) {
@@ -896,13 +909,15 @@ void MouseEventManager::clearDragDataTransfer() {
 
 void MouseEventManager::dragSourceEndedAt(const PlatformMouseEvent& event,
                                           DragOperation operation) {
-  // Send a hit test request so that Layer gets a chance to update the :hover and :active pseudoclasses.
+  // Send a hit test request so that Layer gets a chance to update the :hover
+  // and :active pseudoclasses..
   HitTestRequest request(HitTestRequest::Release);
   EventHandlingUtil::performMouseEventHitTest(m_frame, request, event);
 
   if (dragState().m_dragSrc) {
     dragState().m_dragDataTransfer->setDestinationOperation(operation);
-    // for now we don't care if event handler cancels default behavior, since there is none
+    // For now we don't care if event handler cancels default behavior, since
+    // there is none.
     dispatchDragSrcEvent(EventTypeNames::dragend, event);
   }
   clearDragDataTransfer();

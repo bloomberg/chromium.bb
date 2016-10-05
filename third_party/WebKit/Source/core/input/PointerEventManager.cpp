@@ -263,9 +263,9 @@ void PointerEventManager::blockTouchPointers() {
 
     processCaptureAndPositionOfPointerEvent(pointerEvent, target);
 
-    // TODO(nzolghadr): This event follows implicit TE capture. The actual target
-    // would depend on PE capturing. Perhaps need to split TE/PE event path upstream?
-    // crbug.com/579553.
+    // TODO(nzolghadr): This event follows implicit TE capture. The actual
+    // target would depend on PE capturing. Perhaps need to split TE/PE event
+    // path upstream?  crbug.com/579553.
     dispatchPointerEvent(
         getEffectiveTargetForPointerEvent(target, pointerEvent->pointerId()),
         pointerEvent);
@@ -312,7 +312,8 @@ WebInputEventResult PointerEventManager::handleTouchEvents(
 void PointerEventManager::dispatchTouchPointerEvents(
     const PlatformTouchEvent& event,
     HeapVector<TouchEventManager::TouchInfo>& touchInfos) {
-  // Iterate through the touch points, sending PointerEvents to the targets as required.
+  // Iterate through the touch points, sending PointerEvents to the targets as
+  // required.
   for (const auto& touchPoint : event.touchPoints()) {
     TouchEventManager::TouchInfo touchInfo;
     touchInfo.point = touchPoint;
