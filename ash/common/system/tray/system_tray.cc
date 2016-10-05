@@ -839,7 +839,7 @@ bool SystemTray::PerformAction(const ui::Event& event) {
       }
     }
     ShowDefaultViewWithOffset(BUBBLE_CREATE_NEW, arrow_offset, false);
-    if (event.IsKeyEvent())
+    if (event.IsKeyEvent() || (event.flags() & ui::EF_TOUCH_ACCESSIBILITY))
       ActivateBubble();
   }
   return true;
