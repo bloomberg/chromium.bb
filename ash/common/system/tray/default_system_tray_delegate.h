@@ -18,8 +18,7 @@ class ASH_EXPORT DefaultSystemTrayDelegate : public SystemTrayDelegate {
   DefaultSystemTrayDelegate();
   ~DefaultSystemTrayDelegate() override;
 
-  // SystemTrayDelegate
-  bool GetTrayVisibilityOnStartup() override;
+  // SystemTrayDelegate:
   LoginStatus GetUserLoginStatus() const override;
   std::string GetSupervisedUserManager() const override;
   bool IsUserSupervised() const override;

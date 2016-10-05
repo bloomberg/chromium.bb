@@ -35,10 +35,6 @@ SystemTrayDelegate::~SystemTrayDelegate() {}
 
 void SystemTrayDelegate::Initialize() {}
 
-bool SystemTrayDelegate::GetTrayVisibilityOnStartup() {
-  return false;
-}
-
 LoginStatus SystemTrayDelegate::GetUserLoginStatus() const {
   return LoginStatus::NOT_LOGGED_IN;
 }

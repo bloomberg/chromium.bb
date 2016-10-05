@@ -313,12 +313,6 @@ SystemTrayDelegateChromeOS::~SystemTrayDelegateChromeOS() {
   user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
 }
 
-// Overridden from ash::SystemTrayDelegate:
-bool SystemTrayDelegateChromeOS::GetTrayVisibilityOnStartup() {
-  // In case of OOBE / sign in screen tray will be shown later.
-  return LoginState::Get()->IsUserLoggedIn();
-}
-
 ash::LoginStatus SystemTrayDelegateChromeOS::GetUserLoginStatus() const {
   if (!LoginState::Get()->IsUserLoggedIn())
     return ash::LoginStatus::NOT_LOGGED_IN;

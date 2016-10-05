@@ -19,10 +19,6 @@ DefaultSystemTrayDelegate::DefaultSystemTrayDelegate()
 
 DefaultSystemTrayDelegate::~DefaultSystemTrayDelegate() {}
 
-bool DefaultSystemTrayDelegate::GetTrayVisibilityOnStartup() {
-  return true;
-}
-
 LoginStatus DefaultSystemTrayDelegate::GetUserLoginStatus() const {
   return LoginStatus::USER;
 }

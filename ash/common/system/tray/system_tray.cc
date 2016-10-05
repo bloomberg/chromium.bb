@@ -210,11 +210,11 @@ void SystemTray::Shutdown() {
 }
 
 void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
-  WmShell* wm_shell = WmShell::Get();
 #if !defined(OS_WIN)
   // Create user items for each possible user.
-  int maximum_user_profiles =
-      wm_shell->GetSessionStateDelegate()->GetMaximumNumberOfLoggedInUsers();
+  int maximum_user_profiles = WmShell::Get()
+                                  ->GetSessionStateDelegate()
+                                  ->GetMaximumNumberOfLoggedInUsers();
   for (int i = 0; i < maximum_user_profiles; i++)
     AddTrayItem(new TrayUser(this, i));
 
@@ -266,8 +266,6 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   AddTrayItem(tray_update_);
   AddTrayItem(tray_date_);
 #endif
-
-  SetVisible(wm_shell->system_tray_delegate()->GetTrayVisibilityOnStartup());
 }
 
 void SystemTray::AddTrayItem(SystemTrayItem* item) {

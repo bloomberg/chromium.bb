@@ -191,8 +191,9 @@ TEST_P(ShelfWidgetTest, ShelfInitiallySizedAfterLogin) {
   ASSERT_TRUE(shelf_widget1);
   ASSERT_TRUE(shelf_widget2);
 
+  // Simulate login.
   SetUserLoggedIn(true);
-  Shell::GetInstance()->CreateShelf();
+  SetSessionStarted(true);
 
   // The shelf view and status area horizontally fill the shelf widget.
   const int status_width1 =

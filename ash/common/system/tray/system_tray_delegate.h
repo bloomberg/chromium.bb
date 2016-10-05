@@ -110,9 +110,6 @@ class ASH_EXPORT SystemTrayDelegate {
   // Called after SystemTray has been instantiated.
   virtual void Initialize();
 
-  // Returns true if system tray should be visible on startup.
-  virtual bool GetTrayVisibilityOnStartup();
-
   // Gets information about the active user.
   virtual LoginStatus GetUserLoginStatus() const;
 
