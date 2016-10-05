@@ -96,7 +96,7 @@ class WebKitPatch(Host):
             RebaselineServer(),
             RebaselineTest(),
         ]
-        self.help_command = HelpCommand()
+        self.help_command = HelpCommand(tool=self)
         self.commands.append(self.help_command)
 
     def main(self, argv=None):
@@ -142,7 +142,7 @@ class WebKitPatch(Host):
     def _create_option_parser(self):
         usage = "Usage: %prog [options] COMMAND [ARGS]"
         name = optparse.OptionParser().get_prog_name()
-        return HelpPrintingOptionParser(epilog_method=self.help_command._help_epilog, prog=name, usage=usage)
+        return HelpPrintingOptionParser(epilog_method=self.help_command.help_epilog, prog=name, usage=usage)
 
     def _add_global_options(self, option_parser):
         global_options = self.global_options or []

@@ -36,7 +36,7 @@ class HelpCommand(Command):
     help_text = "Display information about this program or its subcommands"
     argument_names = "[COMMAND]"
 
-    def __init__(self):
+    def __init__(self, tool=None):
         options = [
             optparse.make_option(
                 "-a",
@@ -46,11 +46,12 @@ class HelpCommand(Command):
                 help="Print all available commands"),
         ]
         super(HelpCommand, self).__init__(options)
-        # A hack used to pass --all-commands to _help_epilog even though it's called by the OptionParser.
+        # A hack used to pass --all-commands to help_epilog even though it's called by the OptionParser.
         self.show_all_commands = False
-        self._tool = None
+        # self._tool is used in help_epilog, so it's passed in the initializer rather than set in the execute method.
+        self._tool = tool
 
-    def _help_epilog(self):
+    def help_epilog(self):
         # Only show commands which are relevant to this checkout's SCM system.  Might this be confusing to some users?
         if self.show_all_commands:
             epilog = "All %prog commands:\n"
@@ -73,7 +74,6 @@ class HelpCommand(Command):
             self.option_parser.remove_option(option.get_opt_string())
 
     def execute(self, options, args, tool):
-        self._tool = tool
         if args:
             command = self._tool.command_by_name(args[0])
             if command:
