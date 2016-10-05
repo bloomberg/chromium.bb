@@ -458,6 +458,18 @@
       ]
     },
     {
+      "name": "hana",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "oak",
+          "arch": "UNKNOWN"
+        }
+      ]
+    },
+    {
       "name": "heli",
       "configs": [
         {
