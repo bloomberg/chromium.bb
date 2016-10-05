@@ -157,9 +157,7 @@ class StyleSheetHandler final : public CSSParserObserver {
       : m_parsedText(parsedText),
         m_document(document),
         m_result(result),
-        m_currentRuleData(nullptr),
-        m_currentMediaQueryData(nullptr),
-        m_mediaQueryExpValueRangeStart(UINT_MAX) {
+        m_currentRuleData(nullptr) {
     ASSERT(m_result);
   }
 
@@ -174,10 +172,6 @@ class StyleSheetHandler final : public CSSParserObserver {
                        bool isImportant,
                        bool isParsed) override;
   void observeComment(unsigned startOffset, unsigned endOffset) override;
-  void startMediaQueryExp(unsigned offset) override;
-  void endMediaQueryExp(unsigned offset) override;
-  void startMediaQuery() override;
-  void endMediaQuery() override;
 
   void addNewRuleToSourceTree(PassRefPtr<CSSRuleSourceData>);
   PassRefPtr<CSSRuleSourceData> popRuleData();
@@ -190,8 +184,6 @@ class StyleSheetHandler final : public CSSParserObserver {
   RuleSourceDataList* m_result;
   RuleSourceDataList m_currentRuleDataStack;
   CSSRuleSourceData* m_currentRuleData;
-  CSSMediaQuerySourceData* m_currentMediaQueryData;
-  unsigned m_mediaQueryExpValueRangeStart;
 };
 
 void StyleSheetHandler::startRuleHeader(StyleRule::RuleType type,
@@ -411,39 +403,6 @@ void StyleSheetHandler::observeComment(unsigned startOffset,
   m_currentRuleDataStack.last()->styleSourceData->propertyData.append(
       CSSPropertySourceData(propertyData.name, propertyData.value, false, true,
                             true, SourceRange(startOffset, endOffset)));
-}
-
-void StyleSheetHandler::startMediaQueryExp(unsigned offset) {
-  ASSERT(m_currentMediaQueryData);
-  m_mediaQueryExpValueRangeStart = offset;
-}
-
-void StyleSheetHandler::endMediaQueryExp(unsigned offset) {
-  ASSERT(m_currentMediaQueryData);
-  ASSERT(offset >= m_mediaQueryExpValueRangeStart);
-  ASSERT(offset <= m_parsedText.length());
-  while (offset > m_mediaQueryExpValueRangeStart &&
-         isSpaceOrNewline(m_parsedText[offset - 1]))
-    --offset;
-  while (offset > m_mediaQueryExpValueRangeStart &&
-         isSpaceOrNewline(m_parsedText[m_mediaQueryExpValueRangeStart]))
-    ++m_mediaQueryExpValueRangeStart;
-  m_currentMediaQueryData->expData.append(CSSMediaQueryExpSourceData(
-      SourceRange(m_mediaQueryExpValueRangeStart, offset)));
-}
-
-void StyleSheetHandler::startMediaQuery() {
-  ASSERT(m_currentRuleDataStack.size() &&
-         m_currentRuleDataStack.last()->mediaSourceData);
-  std::unique_ptr<CSSMediaQuerySourceData> data =
-      CSSMediaQuerySourceData::create();
-  m_currentMediaQueryData = data.get();
-  m_currentRuleDataStack.last()->mediaSourceData->queryData.append(
-      std::move(data));
-}
-
-void StyleSheetHandler::endMediaQuery() {
-  m_currentMediaQueryData = nullptr;
 }
 
 bool verifyRuleText(Document* document, const String& ruleText) {

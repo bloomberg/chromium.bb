@@ -46,11 +46,6 @@ class CSSParserObserver {
                                bool isImportant,
                                bool isParsed) = 0;
   virtual void observeComment(unsigned startOffset, unsigned endOffset) = 0;
-  // TODO(timloh): Unused, should be removed
-  virtual void startMediaQueryExp(unsigned offset) = 0;
-  virtual void endMediaQueryExp(unsigned offset) = 0;
-  virtual void startMediaQuery() = 0;
-  virtual void endMediaQuery() = 0;
 };
 
 }  // namespace blink
