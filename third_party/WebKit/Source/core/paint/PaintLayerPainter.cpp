@@ -30,10 +30,12 @@
 namespace blink {
 
 static inline bool shouldSuppressPaintingLayer(const PaintLayer& layer) {
-  // Avoid painting descendants of the root layer when stylesheets haven't loaded. This avoids some FOUC.
-  // It's ok not to draw, because later on, when all the stylesheets do load, Document::styleResolverMayHaveChanged()
-  // will invalidate all painted output via a call to LayoutView::invalidatePaintForViewAndCompositedLayers().
-  // We also avoid caching subsequences in this mode; see shouldCreateSubsequence().
+  // Avoid painting descendants of the root layer when stylesheets haven't
+  // loaded. This avoids some FOUC.  It's ok not to draw, because later on, when
+  // all the stylesheets do load, Document::styleResolverMayHaveChanged() will
+  // invalidate all painted output via a call to
+  // LayoutView::invalidatePaintForViewAndCompositedLayers().  We also avoid
+  // caching subsequences in this mode; see shouldCreateSubsequence().
   if (layer.layoutObject()->document().didLayoutWithPendingStylesheets() &&
       !layer.isRootLayer() && !layer.layoutObject()->isDocumentElement())
     return true;
@@ -72,14 +74,16 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayer(
   if (m_paintLayer.compositingState() != NotComposited) {
     if (paintingInfo.getGlobalPaintFlags() &
         GlobalPaintFlattenCompositingLayers) {
-      // FIXME: ok, but what about GlobalPaintFlattenCompositingLayers? That's for printing and drag-image.
-      // FIXME: why isn't the code here global, as opposed to being set on each paintLayer() call?
+      // FIXME: ok, but what about GlobalPaintFlattenCompositingLayers? That's
+      // for printing and drag-image.
+      // FIXME: why isn't the code here global, as opposed to being set on each
+      // paintLayer() call?
       paintFlags |= PaintLayerUncachedClipRects;
     }
   }
 
-  // Non self-painting layers without self-painting descendants don't need to be painted as their
-  // layoutObject() should properly paint itself.
+  // Non self-painting layers without self-painting descendants don't need to be
+  // painted as their layoutObject() should properly paint itself.
   if (!m_paintLayer.isSelfPaintingLayer() &&
       !m_paintLayer.hasSelfPaintingLayerDescendant())
     return FullyPainted;
@@ -132,14 +136,16 @@ static bool shouldCreateSubsequence(const PaintLayer& paintLayer,
   if (context.printing())
     return false;
 
-  // Don't create subsequence for a composited layer because if it can be cached,
-  // we can skip the whole painting in GraphicsLayer::paint() with CachedDisplayItemList.
-  // This also avoids conflict of PaintLayer::previousXXX() when paintLayer is composited
-  // scrolling and is painted twice for GraphicsLayers of container and scrolling contents.
+  // Don't create subsequence for a composited layer because if it can be
+  // cached, we can skip the whole painting in GraphicsLayer::paint() with
+  // CachedDisplayItemList.  This also avoids conflict of
+  // PaintLayer::previousXXX() when paintLayer is composited scrolling and is
+  // painted twice for GraphicsLayers of container and scrolling contents.
   if (paintLayer.compositingState() == PaintsIntoOwnBacking)
     return false;
 
-  // Don't create subsequence during special painting to avoid cache conflict with normal painting.
+  // Don't create subsequence during special painting to avoid cache conflict
+  // with normal painting.
   if (paintingInfo.getGlobalPaintFlags() & GlobalPaintFlattenCompositingLayers)
     return false;
   if (paintFlags &
@@ -151,14 +157,16 @@ static bool shouldCreateSubsequence(const PaintLayer& paintLayer,
   if (!paintLayer.stackingNode()->isStackingContext())
     return false;
 
-  // The layer doesn't have children. Subsequence caching is not worth because normally the actual painting will be cheap.
+  // The layer doesn't have children. Subsequence caching is not worth because
+  // normally the actual painting will be cheap.
   if (!PaintLayerStackingNodeIterator(*paintLayer.stackingNode(), AllChildren)
            .next())
     return false;
 
   // When in FOUC-avoidance mode, don't cache any subsequences, to avoid having
-  // to invalidate all of them when leaving this mode. There is an early-out in BlockPainter::paintContents that may result
-  // in nothing getting painted in thos mode, in addition to early-out logic in PaintLayerPainter.
+  // to invalidate all of them when leaving this mode. There is an early-out in
+  // BlockPainter::paintContents that may result in nothing getting painted in
+  // this mode, in addition to early-out logic in PaintLayerPainter.
   if (paintLayer.layoutObject()->document().didLayoutWithPendingStylesheets())
     return false;
 
@@ -173,14 +181,15 @@ static bool shouldRepaintSubsequence(
     bool& shouldClearEmptyPaintPhaseFlags) {
   bool needsRepaint = false;
 
-  // We should set shouldResetEmptyPaintPhaseFlags if some previously unpainted objects may begin
-  // to be painted, causing a previously empty paint phase to become non-empty.
+  // We should set shouldResetEmptyPaintPhaseFlags if some previously unpainted
+  // objects may begin to be painted, causing a previously empty paint phase to
+  // become non-empty.
 
   // Repaint subsequence if the layer is marked for needing repaint.
-  // We don't set needsResetEmptyPaintPhase here, but clear the empty paint phase flags
-  // in PaintLayer::setNeedsPaintPhaseXXX(), to ensure that we won't clear
-  // previousPaintPhaseXXXEmpty flags when unrelated things changed which won't
-  // cause the paint phases to become non-empty.
+  // We don't set needsResetEmptyPaintPhase here, but clear the empty paint
+  // phase flags in PaintLayer::setNeedsPaintPhaseXXX(), to ensure that we won't
+  // clear previousPaintPhaseXXXEmpty flags when unrelated things changed which
+  // won't cause the paint phases to become non-empty.
   if (paintLayer.needsRepaint())
     needsRepaint = true;
 
@@ -195,7 +204,8 @@ static bool shouldRepaintSubsequence(
   }
   paintLayer.setPreviousPaintingClipRects(clipRects);
 
-  // Repaint if previously the layer might be clipped by paintDirtyRect and paintDirtyRect changes.
+  // Repaint if previously the layer might be clipped by paintDirtyRect and
+  // paintDirtyRect changes.
   if (paintLayer.previousPaintResult() ==
           PaintLayerPainter::MayBeClippedByPaintDirtyRect &&
       paintLayer.previousPaintDirtyRect() != paintingInfo.paintDirtyRect) {
@@ -236,12 +246,12 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(
       paintFlags & PaintLayerPaintingCompositingBackgroundPhase;
   bool isPaintingOverflowContents =
       paintFlags & PaintLayerPaintingOverflowContents;
-  // Outline always needs to be painted even if we have no visible content. Also,
-  // the outline is painted in the background phase during composited scrolling.
-  // If it were painted in the foreground phase, it would move with the scrolled
-  // content. When not composited scrolling, the outline is painted in the
-  // foreground phase. Since scrolled contents are moved by paint invalidation in this
-  // case, the outline won't get 'dragged along'.
+  // Outline always needs to be painted even if we have no visible content.
+  // Also, the outline is painted in the background phase during composited
+  // scrolling.  If it were painted in the foreground phase, it would move with
+  // the scrolled content. When not composited scrolling, the outline is painted
+  // in the foreground phase. Since scrolled contents are moved by paint
+  // invalidation in this case, the outline won't get 'dragged along'.
   bool shouldPaintSelfOutline =
       isSelfPaintingLayer && !isPaintingOverlayScrollbars &&
       ((isPaintingScrollingContent && isPaintingCompositedBackground) ||
@@ -306,11 +316,13 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(
     UseCounter::count(m_paintLayer.layoutObject()->document(),
                       UseCounter::ClipPathOfPositionedElement);
 
-  // These helpers output clip and compositing operations using a RAII pattern. Stack-allocated-varibles are destructed in the reverse order of construction,
-  // so they are nested properly.
+  // These helpers output clip and compositing operations using a RAII pattern.
+  // Stack-allocated-varibles are destructed in the reverse order of
+  // construction, so they are nested properly.
   Optional<ClipPathClipper> clipPathClipper;
-  // Clip-path, like border radius, must not be applied to the contents of a composited-scrolling container.
-  // It must, however, still be applied to the mask layer, so that the compositor can properly mask the
+  // Clip-path, like border radius, must not be applied to the contents of a
+  // composited-scrolling container.  It must, however, still be applied to the
+  // mask layer, so that the compositor can properly mask the
   // scrolling contents and scrollbars.
   if (m_paintLayer.layoutObject()->hasClipPath() &&
       (!m_paintLayer.needsCompositedScrolling() ||
@@ -318,8 +330,9 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(
     paintingInfo.ancestorHasClipPathClipping = true;
 
     LayoutRect referenceBox(m_paintLayer.boxForClipPath());
-    // Note that this isn't going to work correctly if crossing a column boundary. The reference box should be
-    // determined per-fragment, and hence this ought to be performed after fragmentation.
+    // Note that this isn't going to work correctly if crossing a column
+    // boundary. The reference box should be determined per-fragment, and hence
+    // this ought to be performed after fragmentation.
     if (m_paintLayer.enclosingPaginationLayer())
       m_paintLayer.convertFromFlowThreadToVisualBoundingBoxInAncestor(
           paintingInfo.rootLayer, referenceBox);
@@ -332,9 +345,11 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(
   }
 
   Optional<CompositingRecorder> compositingRecorder;
-  // Blending operations must be performed only with the nearest ancestor stacking context.
-  // Note that there is no need to composite if we're painting the root.
-  // FIXME: this should be unified further into PaintLayer::paintsWithTransparency().
+  // Blending operations must be performed only with the nearest ancestor
+  // stacking context.  Note that there is no need to composite if we're
+  // painting the root.
+  // FIXME: this should be unified further into
+  // PaintLayer::paintsWithTransparency().
   bool shouldCompositeForBlendMode =
       (!m_paintLayer.layoutObject()->isDocumentElement() ||
        m_paintLayer.layoutObject()->isSVGRoot()) &&
@@ -359,12 +374,14 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(
   PaintLayerFragments layerFragments;
   if (shouldPaintContent || shouldPaintSelfOutline ||
       isPaintingOverlayScrollbars) {
-    // Collect the fragments. This will compute the clip rectangles and paint offsets for each layer fragment.
+    // Collect the fragments. This will compute the clip rectangles and paint
+    // offsets for each layer fragment.
     ClipRectsCacheSlot cacheSlot = (paintFlags & PaintLayerUncachedClipRects)
                                        ? UncachedClipRects
                                        : PaintingClipRects;
-    // TODO(trchen): We haven't decided how to handle visual fragmentation with SPv2.
-    // Related thread https://groups.google.com/a/chromium.org/forum/#!topic/graphics-dev/81XuWFf-mxM
+    // TODO(trchen): We haven't decided how to handle visual fragmentation with
+    // SPv2.  Related thread
+    // https://groups.google.com/a/chromium.org/forum/#!topic/graphics-dev/81XuWFf-mxM
     if (fragmentPolicy == ForceSingleFragment ||
         RuntimeEnabledFeatures::slimmingPaintV2Enabled())
       m_paintLayer.appendSingleFragmentIgnoringPagination(
@@ -379,10 +396,11 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(
                                     respectOverflowClip, &offsetFromRoot,
                                     localPaintingInfo.subPixelAccumulation);
 
-    // TODO(trchen): Needs to adjust cull rect between transform spaces. https://crbug.com/593596
-    // Disables layer culling for SPv2 for now because the space of the cull rect doesn't match
-    // the space we paint in. Clipping will still be done by clip nodes, so this won't cause
-    // rendering issues, only performance.
+    // TODO(trchen): Needs to adjust cull rect between transform spaces.
+    // https://crbug.com/593596
+    // Disables layer culling for SPv2 for now because the space of the cull
+    // rect doesn't match the space we paint in. Clipping will still be done by
+    // clip nodes, so this won't cause rendering issues, only performance.
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
       layerFragments[0].backgroundRect =
           LayoutRect(LayoutRect::infiniteIntRect());
@@ -391,7 +409,8 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(
     }
 
     if (shouldPaintContent) {
-      // TODO(wangxianzhu): This is for old slow scrolling. Implement similar optimization for slimming paint v2.
+      // TODO(wangxianzhu): This is for old slow scrolling. Implement similar
+      // optimization for slimming paint v2.
       shouldPaintContent = atLeastOneFragmentIntersectsDamageRect(
           layerFragments, localPaintingInfo, paintFlags, offsetFromRoot);
       if (!shouldPaintContent)
@@ -518,7 +537,8 @@ bool PaintLayerPainter::atLeastOneFragmentIntersectsDamageRect(
     PaintLayerFlags localPaintFlags,
     const LayoutPoint& offsetFromRoot) {
   if (m_paintLayer.enclosingPaginationLayer())
-    return true;  // The fragments created have already been found to intersect with the damage rect.
+    return true;  // The fragments created have already been found to intersect
+                  // with the damage rect.
 
   if (&m_paintLayer == localPaintingInfo.rootLayer &&
       (localPaintFlags & PaintLayerPaintingOverflowContents))
@@ -526,10 +546,11 @@ bool PaintLayerPainter::atLeastOneFragmentIntersectsDamageRect(
 
   for (PaintLayerFragment& fragment : fragments) {
     LayoutPoint newOffsetFromRoot = offsetFromRoot + fragment.paginationOffset;
-    // Note that this really only works reliably on the first fragment. If the layer has visible
-    // overflow and a subsequent fragment doesn't intersect with the border box of the layer
-    // (i.e. only contains an overflow portion of the layer), intersection will fail. The reason
-    // for this is that fragment.layerBounds is set to the border box, not the bounding box, of
+    // Note that this really only works reliably on the first fragment. If the
+    // layer has visible overflow and a subsequent fragment doesn't intersect
+    // with the border box of the layer (i.e. only contains an overflow portion
+    // of the layer), intersection will fail. The reason for this is that
+    // fragment.layerBounds is set to the border box, not the bounding box, of
     // the layer.
     if (m_paintLayer.intersectsDamageRect(fragment.layerBounds,
                                           fragment.backgroundRect.rect(),
@@ -552,8 +573,9 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerWithTransform(
   if (!layerTransform.isInvertible())
     return FullyPainted;
 
-  // FIXME: We should make sure that we don't walk past paintingInfo.rootLayer here.
-  // m_paintLayer may be the "root", and then we should avoid looking at its parent.
+  // FIXME: We should make sure that we don't walk past paintingInfo.rootLayer
+  // here.  m_paintLayer may be the "root", and then we should avoid looking at
+  // its parent.
   PaintLayer* parentLayer = m_paintLayer.parent();
 
   ClipRect ancestorBackgroundClipRect;
@@ -578,11 +600,11 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerWithTransform(
       object->container() == view && view->pageLogicalHeight();
   PaintLayer* paginationLayer = m_paintLayer.enclosingPaginationLayer();
   PaintLayerFragments fragments;
-  // TODO(crbug.com/619094): Figure out the correct behaviour for fixed position objects
-  // in paged media with vertical writing modes.
+  // TODO(crbug.com/619094): Figure out the correct behaviour for fixed position
+  // objects in paged media with vertical writing modes.
   if (isFixedPosObjectInPagedMedia && view->isHorizontalWritingMode()) {
     // "For paged media, boxes with fixed positions are repeated on every page."
-    // - https://www.w3.org/TR/2011/REC-CSS2-20110607/visuren.html#fixed-positioning
+    // https://www.w3.org/TR/2011/REC-CSS2-20110607/visuren.html#fixed-positioning
     unsigned pages =
         ceilf(view->documentRect().height() / view->pageLogicalHeight());
     LayoutPoint paginationOffset;
@@ -594,30 +616,31 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerWithTransform(
       paginationOffset += LayoutPoint(LayoutUnit(), view->pageLogicalHeight());
     }
   } else if (paginationLayer) {
-    // FIXME: This is a mess. Look closely at this code and the code in Layer and fix any
-    // issues in it & refactor to make it obvious from code structure what it does and that it's
-    // correct.
+    // FIXME: This is a mess. Look closely at this code and the code in Layer
+    // and fix any issues in it & refactor to make it obvious from code
+    // structure what it does and that it's correct.
     ClipRectsCacheSlot cacheSlot = (paintFlags & PaintLayerUncachedClipRects)
                                        ? UncachedClipRects
                                        : PaintingClipRects;
     ShouldRespectOverflowClipType respectOverflowClip =
         shouldRespectOverflowClip(paintFlags, m_paintLayer.layoutObject());
-    // Calculate the transformed bounding box in the current coordinate space, to figure out
-    // which fragmentainers (e.g. columns) we need to visit.
+    // Calculate the transformed bounding box in the current coordinate space,
+    // to figure out which fragmentainers (e.g. columns) we need to visit.
     LayoutRect transformedExtent = PaintLayer::transparencyClipBox(
         &m_paintLayer, paginationLayer, PaintLayer::PaintingTransparencyClipBox,
         PaintLayer::RootOfTransparencyClipBox,
         paintingInfo.subPixelAccumulation, paintingInfo.getGlobalPaintFlags());
-    // FIXME: we don't check if paginationLayer is within paintingInfo.rootLayer here.
+    // FIXME: we don't check if paginationLayer is within paintingInfo.rootLayer
+    // here.
     paginationLayer->collectFragments(
         fragments, paintingInfo.rootLayer, paintingInfo.paintDirtyRect,
         cacheSlot, IgnoreOverlayScrollbarSize, respectOverflowClip, 0,
         paintingInfo.subPixelAccumulation, &transformedExtent);
   } else {
-    // We don't need to collect any fragments in the regular way here. We have already
-    // calculated a clip rectangle for the ancestry if it was needed, and clipping this
-    // layer is something that can be done further down the path, when the transform has
-    // been applied.
+    // We don't need to collect any fragments in the regular way here. We have
+    // already calculated a clip rectangle for the ancestry if it was needed,
+    // and clipping this layer is something that can be done further down the
+    // path, when the transform has been applied.
     PaintLayerFragment fragment;
     fragment.backgroundRect = paintingInfo.paintDirtyRect;
     fragments.append(fragment);
@@ -632,8 +655,8 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerWithTransform(
     Optional<LayerClipRecorder> clipRecorder;
     if (parentLayer) {
       ClipRect clipRectForFragment(ancestorBackgroundClipRect);
-      // A fixed-position object is repeated on every page, but if it is clipped by an ancestor layer then
-      // the repetitions are clipped out.
+      // A fixed-position object is repeated on every page, but if it is clipped
+      // by an ancestor layer then the repetitions are clipped out.
       if (!isFixedPosObjectInPagedMedia)
         clipRectForFragment.moveBy(fragment.paginationOffset);
       clipRectForFragment.intersect(fragment.backgroundRect);
@@ -670,8 +693,9 @@ PaintLayerPainter::paintFragmentByApplyingTransform(
   // Transforms will be applied by property nodes directly for SPv2.
   ASSERT(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
 
-  // This involves subtracting out the position of the layer in our current coordinate space, but preserving
-  // the accumulated error for sub-pixel layout.
+  // This involves subtracting out the position of the layer in our current
+  // coordinate space, but preserving the accumulated error for sub-pixel
+  // layout.
   LayoutPoint delta;
   m_paintLayer.convertToLayerCoords(paintingInfo.rootLayer, delta);
   delta.moveBy(fragmentTranslation);
@@ -732,8 +756,9 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintChildren(
 
   for (; child; child = iterator.next()) {
     PaintLayerPainter childPainter(*child->layer());
-    // If this Layer should paint into its own backing or a grouped backing, that will be done via CompositedLayerMapping::paintContents()
-    // and CompositedLayerMapping::doPaintTask().
+    // If this Layer should paint into its own backing or a grouped backing,
+    // that will be done via CompositedLayerMapping::paintContents() and
+    // CompositedLayerMapping::doPaintTask().
     if (!childPainter.shouldPaintLayerInSoftwareMode(
             paintingInfo.getGlobalPaintFlags(), paintFlags))
       continue;
@@ -741,7 +766,8 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintChildren(
     PaintLayerPaintingInfo childPaintingInfo = paintingInfo;
     childPaintingInfo.scrollOffsetAccumulation =
         scrollOffsetAccumulationForChildren;
-    // Rare case: accumulate scroll offset of non-stacking-context ancestors up to m_paintLayer.
+    // Rare case: accumulate scroll offset of non-stacking-context ancestors up
+    // to m_paintLayer.
     for (PaintLayer* parentLayer = child->layer()->parent();
          parentLayer != &m_paintLayer; parentLayer = parentLayer->parent()) {
       if (parentLayer->layoutObject()->hasOverflowClip())
@@ -826,7 +852,8 @@ void PaintLayerPainter::paintFragmentWithPhase(
         DisplayItem::paintPhaseToClipLayerFragmentType(phase);
     LayerClipRecorder::BorderRadiusClippingRule clippingRule;
     switch (phase) {
-      case PaintPhaseSelfBlockBackgroundOnly:  // Background painting will handle clipping to self.
+      case PaintPhaseSelfBlockBackgroundOnly:  // Background painting will
+                                               // handle clipping to self.
       case PaintPhaseSelfOutlineOnly:
       case PaintPhaseMask:  // Mask painting will handle clipping to self.
         clippingRule = LayerClipRecorder::DoNotIncludeSelfForBorderRadius;
@@ -854,10 +881,12 @@ void PaintLayerPainter::paintFragmentWithPhase(
   } else {
     paintOffset += toSize(fragment.layerBounds.location());
     if (!paintingInfo.scrollOffsetAccumulation.isZero()) {
-      // As a descendant of the root layer, m_paintLayer's painting is not controlled by the ScrollRecorders
-      // created by BlockPainter of the ancestor layers up to the root layer, so we need to issue ScrollRecorder
-      // for this layer seperately, with the scroll offset accumulated from the root layer to the parent of this
-      // layer, to get the same result as ScrollRecorder in BlockPainter.
+      // As a descendant of the root layer, m_paintLayer's painting is not
+      // controlled by the ScrollRecorders created by BlockPainter of the
+      // ancestor layers up to the root layer, so we need to issue
+      // ScrollRecorder for this layer seperately, with the scroll offset
+      // accumulated from the root layer to the parent of this layer, to get the
+      // same result as ScrollRecorder in BlockPainter.
       paintOffset += paintingInfo.scrollOffsetAccumulation;
 
       newCullRect.move(paintingInfo.scrollOffsetAccumulation);
@@ -912,8 +941,9 @@ void PaintLayerPainter::paintForegroundForFragments(
     clipState = HasClipped;
   }
 
-  // We have to loop through every fragment multiple times, since we have to issue paint invalidations in each specific phase in order for
-  // interleaving of the fragments to work properly.
+  // We have to loop through every fragment multiple times, since we have to
+  // issue paint invalidations in each specific phase in order for interleaving
+  // of the fragments to work properly.
   if (selectionOnly) {
     paintForegroundForFragmentsWithPhase(PaintPhaseSelection, layerFragments,
                                          context, localPaintingInfo, paintFlags,

@@ -95,11 +95,11 @@ FloatSize SVGImagePainter::computeImageViewportSize() const {
 
   ImageResource* cachedImage = m_layoutSVGImage.imageResource()->cachedImage();
 
-  // Images with preserveAspectRatio=none should force non-uniform scaling. This can be achieved
-  // by setting the image's container size to its viewport size (i.e. concrete object size
-  // returned by the default sizing algorithm.)  See
-  // https://www.w3.org/TR/SVG/single-page.html#coords-PreserveAspectRatioAttribute and
-  // https://drafts.csswg.org/css-images-3/#default-sizing.
+  // Images with preserveAspectRatio=none should force non-uniform scaling. This
+  // can be achieved by setting the image's container size to its viewport size
+  // (i.e. concrete object size returned by the default sizing algorithm.)  See
+  // https://www.w3.org/TR/SVG/single-page.html#coords-PreserveAspectRatioAttribute
+  // and https://drafts.csswg.org/css-images-3/#default-sizing.
 
   // Avoid returning the size of the broken image.
   if (cachedImage->errorOccurred())

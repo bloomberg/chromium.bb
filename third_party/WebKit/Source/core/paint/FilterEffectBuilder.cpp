@@ -67,7 +67,8 @@ inline void lastMatrixRow(Vector<float>& matrix) {
 Vector<float> grayscaleMatrix(double amount) {
   double oneMinusAmount = clampTo(1 - amount, 0.0, 1.0);
 
-  // See https://dvcs.w3.org/hg/FXTF/raw-file/tip/filters/index.html#grayscaleEquivalent
+  // See
+  // https://dvcs.w3.org/hg/FXTF/raw-file/tip/filters/index.html#grayscaleEquivalent
   // for information on parameters.
   Vector<float> matrix;
   matrix.reserveInitialCapacity(20);
@@ -94,7 +95,8 @@ Vector<float> grayscaleMatrix(double amount) {
 Vector<float> sepiaMatrix(double amount) {
   double oneMinusAmount = clampTo(1 - amount, 0.0, 1.0);
 
-  // See https://dvcs.w3.org/hg/FXTF/raw-file/tip/filters/index.html#sepiaEquivalent
+  // See
+  // https://dvcs.w3.org/hg/FXTF/raw-file/tip/filters/index.html#sepiaEquivalent
   // for information on parameters.
   Vector<float> matrix;
   matrix.reserveInitialCapacity(20);
@@ -136,7 +138,8 @@ FilterEffectBuilder::FilterEffectBuilder(Node* target,
 
 FilterEffect* FilterEffectBuilder::buildFilterEffect(
     const FilterOperations& operations) const {
-  // Create a parent filter for shorthand filters. These have already been scaled by the CSS code for page zoom, so scale is 1.0 here.
+  // Create a parent filter for shorthand filters. These have already been
+  // scaled by the CSS code for page zoom, so scale is 1.0 here.
   Filter* parentFilter = Filter::create(1.0f);
   FilterEffect* previousEffect = parentFilter->getSourceGraphic();
   for (FilterOperation* filterOperation : operations.operations()) {
@@ -278,7 +281,8 @@ FilterEffect* FilterEffectBuilder::buildFilterEffect(
 
     if (effect) {
       if (filterOperation->type() != FilterOperation::REFERENCE) {
-        // Unlike SVG, filters applied here should not clip to their primitive subregions.
+        // Unlike SVG, filters applied here should not clip to their primitive
+        // subregions.
         effect->setClipsToBounds(false);
         effect->setOperatingColorSpace(ColorSpaceDeviceRGB);
         effect->inputEffects().append(previousEffect);

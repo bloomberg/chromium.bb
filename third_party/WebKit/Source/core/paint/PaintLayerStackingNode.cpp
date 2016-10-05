@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012 Apple Inc. All rights
+ * reserved.
  *
  * Portions are Copyright (C) 1998 Netscape Communications Corporation.
  *
@@ -24,7 +25,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  *
  * Alternatively, the contents of this file may be used under the terms
  * of either the Mozilla Public License Version 1.1, found at
@@ -67,8 +68,8 @@ PaintLayerStackingNode::PaintLayerStackingNode(PaintLayer* layer)
 {
   m_isStacked = layoutObject()->styleRef().isStacked();
 
-  // Non-stacking contexts should have empty z-order lists. As this is already the case,
-  // there is no need to dirty / recompute these lists.
+  // Non-stacking contexts should have empty z-order lists. As this is already
+  // the case, there is no need to dirty / recompute these lists.
   m_zOrderListsDirty = isStackingContext();
 }
 
@@ -133,12 +134,15 @@ void PaintLayerStackingNode::rebuildZOrderLists() {
     std::stable_sort(m_negZOrderList->begin(), m_negZOrderList->end(),
                      compareZIndex);
 
-  // Append layers for top layer elements after normal layer collection, to ensure they are on top regardless of z-indexes.
-  // The layoutObjects of top layer elements are children of the view, sorted in top layer stacking order.
+  // Append layers for top layer elements after normal layer collection, to
+  // ensure they are on top regardless of z-indexes.  The layoutObjects of top
+  // layer elements are children of the view, sorted in top layer stacking
+  // order.
   if (layer()->isRootLayer()) {
     LayoutBlockFlow* rootBlock = layoutObject()->view();
-    // If the viewport is paginated, everything (including "top-layer" elements) gets
-    // redirected to the flow thread. So that's where we have to look, in that case.
+    // If the viewport is paginated, everything (including "top-layer" elements)
+    // gets redirected to the flow thread. So that's where we have to look, in
+    // that case.
     if (LayoutBlockFlow* multiColumnFlowThread =
             rootBlock->multiColumnFlowThread())
       rootBlock = multiColumnFlowThread;

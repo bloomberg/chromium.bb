@@ -34,8 +34,9 @@ static LayoutRect scrollControlPaintInvalidationRect(
     const LayoutBox& box,
     const PaintInvalidatorContext& context) {
   LayoutRect paintInvalidationRect(scrollControlRect);
-  // No need to apply any paint offset. Scroll controls paint in a different transform space than their contained box
-  // (the scrollbarPaintOffset transform node).
+  // No need to apply any paint offset. Scroll controls paint in a different
+  // transform space than their contained box (the scrollbarPaintOffset
+  // transform node).
   if (!paintInvalidationRect.isEmpty() &&
       !RuntimeEnabledFeatures::slimmingPaintV2Enabled())
     context.mapLocalRectToPaintInvalidationBacking(box, paintInvalidationRect);
@@ -75,7 +76,8 @@ static void invalidatePaintOfScrollbarIfNeeded(
     const PaintInvalidatorContext& context) {
   bool isOverlay = scrollbar && scrollbar->isOverlayScrollbar();
 
-  // Calculate paint invalidation rect of the scrollbar, except overlay composited scrollbars because we invalidate the graphics layer only.
+  // Calculate paint invalidation rect of the scrollbar, except overlay
+  // composited scrollbars because we invalidate the graphics layer only.
   LayoutRect newPaintInvalidationRect;
   if (scrollbar && !(graphicsLayer && isOverlay))
     newPaintInvalidationRect = scrollControlPaintInvalidationRect(
@@ -83,22 +85,26 @@ static void invalidatePaintOfScrollbarIfNeeded(
 
   bool needsPaintInvalidation = needsPaintInvalidationArg;
   if (needsPaintInvalidation && graphicsLayer) {
-    // If the scrollbar needs paint invalidation but didn't change location/size or the scrollbar is an
-    // overlay scrollbar (paint invalidation rect is empty), invalidating the graphics layer is enough
-    // (which has been done in ScrollableArea::setScrollbarNeedsPaintInvalidation()).
-    // Otherwise invalidatePaintOfScrollControlIfNeeded() below will invalidate the old and new location
-    // of the scrollbar on the box's paint invalidation container to ensure newly expanded/shrunk areas
-    // of the box to be invalidated.
+    // If the scrollbar needs paint invalidation but didn't change location/size
+    // or the scrollbar is an overlay scrollbar (paint invalidation rect is
+    // empty), invalidating the graphics layer is enough (which has been done in
+    // ScrollableArea::setScrollbarNeedsPaintInvalidation()).
+    // Otherwise invalidatePaintOfScrollControlIfNeeded() below will invalidate
+    // the old and new location of the scrollbar on the box's paint invalidation
+    // container to ensure newly expanded/shrunk areas of the box to be
+    // invalidated.
     needsPaintInvalidation = false;
     DCHECK(!graphicsLayer->drawsContent() ||
            graphicsLayer->getPaintController().cacheIsEmpty());
   }
 
-  // Invalidate the box's display item client if the box's padding box size is affected by change of the
-  // non-overlay scrollbar width. We detect change of paint invalidation rect size instead of change of
-  // scrollbar width change, which may have some false-positives (e.g. the scrollbar changed length but
-  // not width) but won't invalidate more than expected because in the false-positive case the box must
-  // have changed size and have been invalidated.
+  // Invalidate the box's display item client if the box's padding box size is
+  // affected by change of the non-overlay scrollbar width. We detect change of
+  // paint invalidation rect size instead of change of scrollbar width change,
+  // which may have some false-positives (e.g. the scrollbar changed length but
+  // not width) but won't invalidate more than expected because in the
+  // false-positive case the box must have changed size and have been
+  // invalidated.
   const LayoutBoxModelObject& paintInvalidationContainer =
       *context.paintInvalidationContainer;
   LayoutSize newScrollbarUsedSpaceInBox;

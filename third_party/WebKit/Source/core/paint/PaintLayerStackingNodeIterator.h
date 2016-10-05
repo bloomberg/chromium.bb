@@ -70,8 +70,8 @@ class PaintLayerStackingNodeIterator {
   PaintLayer* m_currentNormalFlowChild;
 };
 
-// This iterator is similar to PaintLayerStackingNodeIterator but it walks the lists in reverse order
-// (from the last item to the first one).
+// This iterator is similar to PaintLayerStackingNodeIterator but it walks the
+// lists in reverse order (from the last item to the first one).
 class PaintLayerStackingNodeReverseIterator {
   STACK_ALLOCATED();
   WTF_MAKE_NONCOPYABLE(PaintLayerStackingNodeReverseIterator);

@@ -44,7 +44,8 @@ class LayoutObjectDrawingRecorder final {
                               const LayoutObject& layoutObject,
                               DisplayItem::Type displayItemType,
                               const FloatRect& clip) {
-    // We may paint a delayed-invalidation object before it's actually invalidated.
+    // We may paint a delayed-invalidation object before it's actually
+    // invalidated.
     if (layoutObject.fullPaintInvalidationReason() ==
         PaintInvalidationDelayedFull)
       m_cacheSkipper.emplace(context);

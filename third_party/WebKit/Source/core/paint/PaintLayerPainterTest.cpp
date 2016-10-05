@@ -163,7 +163,8 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
 }
 
 TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange) {
-  // TODO(wangxianzhu): SPv2 deals with interest rect differently, so disable this test for SPv2 temporarily.
+  // TODO(wangxianzhu): SPv2 deals with interest rect differently, so disable
+  // this test for SPv2 temporarily.
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
     return;
 
@@ -242,7 +243,8 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange) {
   // because it was fully painted before;
   // Container2's intersection with the interest rect changes;
   // Content2b is out of the interest rect and outputs nothing;
-  // Container3 becomes out of the interest rect and outputs empty subsequence pair.
+  // Container3 becomes out of the interest rect and outputs empty subsequence
+  // pair.
   EXPECT_EQ(7, numCachedNewItems());
 
   commit();
@@ -279,9 +281,8 @@ TEST_P(PaintLayerPainterTest,
       "100px; background-color: green'></div>"
       "</div>");
   document().view()->updateAllLifecyclePhasesExceptPaint();
-  IntRect interestRect(
-      0, 0, 50,
-      300);  // PaintResult of all subsequences will be MayBeClippedByPaintDirtyRect.
+  // PaintResult of all subsequences will be MayBeClippedByPaintDirtyRect.
+  IntRect interestRect(0, 0, 50, 300);
   paint(&interestRect);
 
   PaintLayer& htmlLayer =
@@ -417,7 +418,8 @@ TEST_P(PaintLayerPainterTest, PaintPhaseOutline) {
   EXPECT_FALSE(selfPaintingLayer.needsPaintPhaseDescendantOutlines());
   EXPECT_FALSE(nonSelfPaintingLayer.needsPaintPhaseDescendantOutlines());
 
-  // Outline on the self-painting-layer node itself doesn't affect PaintPhaseDescendantOutlines.
+  // Outline on the self-painting-layer node itself doesn't affect
+  // PaintPhaseDescendantOutlines.
   toHTMLElement(selfPaintingLayerObject.node())
       ->setAttribute(HTMLNames::styleAttr,
                      "position: absolute; outline: 1px solid green");
@@ -428,7 +430,8 @@ TEST_P(PaintLayerPainterTest, PaintPhaseOutline) {
       rootPaintController().getDisplayItemList(), selfPaintingLayerObject,
       DisplayItem::paintPhaseToDrawingType(PaintPhaseSelfOutlineOnly)));
 
-  // needsPaintPhaseDescendantOutlines should be set when any descendant on the same layer has outline.
+  // needsPaintPhaseDescendantOutlines should be set when any descendant on the
+  // same layer has outline.
   toHTMLElement(outlineDiv.node())
       ->setAttribute(HTMLNames::styleAttr, styleWithOutline);
   document().view()->updateAllLifecyclePhasesExceptPaint();
@@ -439,7 +442,8 @@ TEST_P(PaintLayerPainterTest, PaintPhaseOutline) {
       rootPaintController().getDisplayItemList(), outlineDiv,
       DisplayItem::paintPhaseToDrawingType(PaintPhaseSelfOutlineOnly)));
 
-  // needsPaintPhaseDescendantOutlines should be reset when no outline is actually painted.
+  // needsPaintPhaseDescendantOutlines should be reset when no outline is
+  // actually painted.
   toHTMLElement(outlineDiv.node())
       ->setAttribute(HTMLNames::styleAttr, styleWithoutOutline);
   document().view()->updateAllLifecyclePhases();
@@ -478,7 +482,8 @@ TEST_P(PaintLayerPainterTest, PaintPhaseFloat) {
   EXPECT_FALSE(selfPaintingLayer.needsPaintPhaseFloat());
   EXPECT_FALSE(nonSelfPaintingLayer.needsPaintPhaseFloat());
 
-  // needsPaintPhaseFloat should be set when any descendant on the same layer has float.
+  // needsPaintPhaseFloat should be set when any descendant on the same layer
+  // has float.
   toHTMLElement(floatDiv.node())
       ->setAttribute(HTMLNames::styleAttr, styleWithFloat);
   document().view()->updateAllLifecyclePhasesExceptPaint();
@@ -489,7 +494,8 @@ TEST_P(PaintLayerPainterTest, PaintPhaseFloat) {
       displayItemListContains(rootPaintController().getDisplayItemList(),
                               floatDiv, DisplayItem::kBoxDecorationBackground));
 
-  // needsPaintPhaseFloat should be reset when there is no float actually painted.
+  // needsPaintPhaseFloat should be reset when there is no float actually
+  // painted.
   toHTMLElement(floatDiv.node())
       ->setAttribute(HTMLNames::styleAttr, styleWithoutFloat);
   document().view()->updateAllLifecyclePhases();
@@ -565,7 +571,8 @@ TEST_P(PaintLayerPainterTest, PaintPhaseBlockBackground) {
   EXPECT_FALSE(
       nonSelfPaintingLayer.needsPaintPhaseDescendantBlockBackgrounds());
 
-  // Background on the self-painting-layer node itself doesn't affect PaintPhaseDescendantBlockBackgrounds.
+  // Background on the self-painting-layer node itself doesn't affect
+  // PaintPhaseDescendantBlockBackgrounds.
   toHTMLElement(selfPaintingLayerObject.node())
       ->setAttribute(HTMLNames::styleAttr,
                      "position: absolute; background: green");
@@ -577,7 +584,8 @@ TEST_P(PaintLayerPainterTest, PaintPhaseBlockBackground) {
       rootPaintController().getDisplayItemList(), selfPaintingLayerObject,
       DisplayItem::kBoxDecorationBackground));
 
-  // needsPaintPhaseDescendantBlockBackgrounds should be set when any descendant on the same layer has Background.
+  // needsPaintPhaseDescendantBlockBackgrounds should be set when any descendant
+  // on the same layer has Background.
   toHTMLElement(backgroundDiv.node())
       ->setAttribute(HTMLNames::styleAttr, styleWithBackground);
   document().view()->updateAllLifecyclePhasesExceptPaint();
@@ -589,7 +597,8 @@ TEST_P(PaintLayerPainterTest, PaintPhaseBlockBackground) {
       rootPaintController().getDisplayItemList(), backgroundDiv,
       DisplayItem::kBoxDecorationBackground));
 
-  // needsPaintPhaseDescendantBlockBackgrounds should be reset when no outline is actually painted.
+  // needsPaintPhaseDescendantBlockBackgrounds should be reset when no outline
+  // is actually painted.
   toHTMLElement(backgroundDiv.node())
       ->setAttribute(HTMLNames::styleAttr, styleWithoutBackground);
   document().view()->updateAllLifecyclePhases();
@@ -725,13 +734,14 @@ TEST_P(PaintLayerPainterTest, PaintPhasesUpdateOnBecomingNonSelfPainting) {
 
 TEST_P(PaintLayerPainterTest,
        TableCollapsedBorderNeedsPaintPhaseDescendantBlockBackgrounds) {
-  // TODO(wangxianzhu): Enable this test slimmingPaintInvalidation when its fully functional.
+  // TODO(wangxianzhu): Enable this test slimmingPaintInvalidation when its
+  // fully functional.
   if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
     return;
 
   // "position: relative" makes the table and td self-painting layers.
-  // The table's layer should be marked needsPaintPhaseDescendantBlockBackground because it
-  // will paint collapsed borders in the phase.
+  // The table's layer should be marked needsPaintPhaseDescendantBlockBackground
+  // because it will paint collapsed borders in the phase.
   setBodyInnerHTML(
       "<table id='table' style='position: relative; border-collapse: collapse'>"
       "  <tr><td style='position: relative; border: 1px solid "
@@ -747,7 +757,8 @@ TEST_P(PaintLayerPainterTest,
 
 TEST_P(PaintLayerPainterTest,
        TableCollapsedBorderNeedsPaintPhaseDescendantBlockBackgroundsDynamic) {
-  // TODO(wangxianzhu): Enable this test slimmingPaintInvalidation when its fully functional.
+  // TODO(wangxianzhu): Enable this test slimmingPaintInvalidation when its
+  // fully functional.
   if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
     return;
 

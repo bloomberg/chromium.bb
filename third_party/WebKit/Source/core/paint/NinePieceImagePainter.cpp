@@ -30,24 +30,28 @@ bool NinePieceImagePainter::paint(GraphicsContext& graphicsContext,
     return false;
 
   if (!styleImage->isLoaded())
-    return true;  // Never paint a nine-piece image incrementally, but don't paint the fallback borders either.
+    return true;  // Never paint a nine-piece image incrementally, but don't
+                  // paint the fallback borders either.
 
   if (!styleImage->canRender())
     return false;
 
-  // FIXME: border-image is broken with full page zooming when tiling has to happen, since the tiling function
-  // doesn't have any understanding of the zoom that is in effect on the tile.
+  // FIXME: border-image is broken with full page zooming when tiling has to
+  // happen, since the tiling function doesn't have any understanding of the
+  // zoom that is in effect on the tile.
   LayoutRect rectWithOutsets = rect;
   rectWithOutsets.expand(style.imageOutsets(ninePieceImage));
   LayoutRect borderImageRect = rectWithOutsets;
 
-  // NinePieceImage returns the image slices without effective zoom applied and thus we compute
-  // the nine piece grid on top of the image in unzoomed coordinates.
+  // NinePieceImage returns the image slices without effective zoom applied and
+  // thus we compute the nine piece grid on top of the image in unzoomed
+  // coordinates.
   //
-  // FIXME: The default object size passed to imageSize() should be scaled by the zoom factor
-  // passed in. In this case it means that borderImageRect should be passed in compensated by
-  // effective zoom, since the scale factor is one. For generated images, the actual image data
-  // (gradient stops, etc.) are scaled to effective zoom instead so we must take care not to cause
+  // FIXME: The default object size passed to imageSize() should be scaled by
+  // the zoom factor passed in. In this case it means that borderImageRect
+  // should be passed in compensated by effective zoom, since the scale factor
+  // is one. For generated images, the actual image data (gradient stops, etc.)
+  // are scaled to effective zoom instead so we must take care not to cause
   // scale of them again.
   IntSize imageSize = roundedIntSize(
       styleImage->imageSize(m_layoutObject, 1, borderImageRect.size()));

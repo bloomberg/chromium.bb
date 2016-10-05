@@ -19,9 +19,11 @@ namespace blink {
 
 void ViewPainter::paint(const PaintInfo& paintInfo,
                         const LayoutPoint& paintOffset) {
-  // If we ever require layout but receive a paint anyway, something has gone horribly wrong.
+  // If we ever require layout but receive a paint anyway, something has gone
+  // horribly wrong.
   DCHECK(!m_layoutView.needsLayout());
-  // LayoutViews should never be called to paint with an offset not on device pixels.
+  // LayoutViews should never be called to paint with an offset not on device
+  // pixels.
   DCHECK(LayoutPoint(IntPoint(paintOffset.x().toInt(),
                               paintOffset.y().toInt())) == paintOffset);
 
@@ -40,21 +42,24 @@ void ViewPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo) {
 
   // This function overrides background painting for the LayoutView.
   // View background painting is special in the following ways:
-  // 1. The view paints background for the root element, the background positioning respects
-  //    the positioning and transformation of the root element.
-  // 2. CSS background-clip is ignored, the background layers always expand to cover the whole
-  //    canvas. None of the stacking context effects (except transformation) on the root element
-  //    affects the background.
-  // 3. The main frame is also responsible for painting the user-agent-defined base background
-  //    color. Conceptually it should be painted by the embedder but painting it here allows
-  //    culling and pre-blending optimization when possible.
+  // 1. The view paints background for the root element, the background
+  //    positioning respects the positioning and transformation of the root
+  //    element.
+  // 2. CSS background-clip is ignored, the background layers always expand to
+  //    cover the whole canvas. None of the stacking context effects (except
+  //    transformation) on the root element affects the background.
+  // 3. The main frame is also responsible for painting the user-agent-defined
+  //    base background color. Conceptually it should be painted by the embedder
+  //    but painting it here allows culling and pre-blending optimization when
+  //    possible.
 
   GraphicsContext& context = paintInfo.context;
   if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(
           context, m_layoutView, DisplayItem::kDocumentBackground))
     return;
 
-  // The background fill rect is the size of the LayoutView's main GraphicsLayer.
+  // The background fill rect is the size of the LayoutView's main
+  // GraphicsLayer.
   IntRect backgroundRect =
       pixelSnappedIntRect(m_layoutView.layer()->boundingBoxForCompositing());
   const Document& document = m_layoutView.document();
@@ -81,7 +86,8 @@ void ViewPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo) {
       BoxPainter::shouldForceWhiteBackgroundForPrintEconomy(
           m_layoutView.styleRef(), document);
   if (forceBackgroundToWhite) {
-    // If for any reason the view background is not transparent, paint white instead, otherwise keep transparent as is.
+    // If for any reason the view background is not transparent, paint white
+    // instead, otherwise keep transparent as is.
     if (paintsBaseBackground || rootBackgroundColor.alpha() ||
         m_layoutView.style()->backgroundLayers().image())
       context.fillRect(backgroundRect, Color::white, SkXfermode::kSrc_Mode);
@@ -90,10 +96,11 @@ void ViewPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo) {
 
   // Compute the enclosing rect of the view, in root element space.
   //
-  // For background colors we can simply paint the document rect in the default space.
-  // However for background image, the root element transform applies. The strategy is to apply
-  // root element transform on the context and issue draw commands in the local space, therefore
-  // we need to apply inverse transform on the document rect to get to the root element space.
+  // For background colors we can simply paint the document rect in the default
+  // space.  However for background image, the root element transform applies.
+  // The strategy is to apply root element transform on the context and issue
+  // draw commands in the local space, therefore we need to apply inverse
+  // transform on the document rect to get to the root element space.
   bool backgroundRenderable = true;
   TransformationMatrix transform;
   IntRect paintRect = backgroundRect;
@@ -135,12 +142,14 @@ void ViewPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo) {
               reversedPaintList, m_layoutView.style()->backgroundLayers());
   ASSERT(reversedPaintList.size());
 
-  // If the root background color is opaque, isolation group can be skipped because the canvas
+  // If the root background color is opaque, isolation group can be skipped
+  // because the canvas
   // will be cleared by root background color.
   if (!rootBackgroundColor.hasAlpha())
     shouldDrawBackgroundInSeparateBuffer = false;
 
-  // We are going to clear the canvas with transparent pixels, isolation group can be skipped.
+  // We are going to clear the canvas with transparent pixels, isolation group
+  // can be skipped.
   if (!baseBackgroundColor.alpha() && shouldClearCanvas)
     shouldDrawBackgroundInSeparateBuffer = false;
 

@@ -45,17 +45,20 @@ class ObjectPainter {
                                  bool antialias = false);
 
   // Paints the object atomically as if it created a new stacking context, for:
-  // - inline blocks, inline tables, inline-level replaced elements (Section 7.2.1.4 in
+  // - inline blocks, inline tables, inline-level replaced elements (Section
+  //   7.2.1.4 in http://www.w3.org/TR/CSS2/zindex.html#painting-order),
+  // - non-positioned floating objects (Section 5 in
   //   http://www.w3.org/TR/CSS2/zindex.html#painting-order),
-  // - non-positioned floating objects (Section 5 in http://www.w3.org/TR/CSS2/zindex.html#painting-order),
   // - flex items (http://www.w3.org/TR/css-flexbox-1/#painting),
   // - grid items (http://www.w3.org/TR/css-grid-1/#z-order),
   // - custom scrollbar parts.
-  // Also see https://chromium.googlesource.com/chromium/src.git/+/master/third_party/WebKit/Source/core/paint/README.md.
+  // Also see core/paint/README.md.
   //
-  // It is expected that the caller will call this function independent of the value of paintInfo.phase,
-  // and this function will do atomic paint (for PaintPhaseForeground), normal paint (for PaintPhaseSelection
-  // and PaintPhaseTextClip) or nothing (other paint phases) according to paintInfo.phase.
+  // It is expected that the caller will call this function independent of the
+  // value of paintInfo.phase, and this function will do atomic paint (for
+  // PaintPhaseForeground), normal paint (for PaintPhaseSelection and
+  // PaintPhaseTextClip) or nothing (other paint phases) according to
+  // paintInfo.phase.
   void paintAllPhasesAtomically(const PaintInfo&,
                                 const LayoutPoint& paintOffset);
 

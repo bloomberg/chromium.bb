@@ -445,8 +445,9 @@ bool ThemePainterDefault::paintSearchFieldCancelButton(
       std::min(inputContentBox.width(),
                std::min(inputContentBox.height(), LayoutUnit(r.height())));
   // Calculate cancel button's coordinates relative to the input element.
-  // Center the button vertically.  Round up though, so if it has to be one pixel off-center, it will
-  // be one pixel closer to the bottom of the field.  This tends to look better with the text.
+  // Center the button vertically.  Round up though, so if it has to be one
+  // pixel off-center, it will be one pixel closer to the bottom of the field.
+  // This tends to look better with the text.
   LayoutRect cancelButtonRect(
       cancelButtonObject.offsetFromAncestorContainer(&inputLayoutBox).width(),
       inputContentBox.y() +

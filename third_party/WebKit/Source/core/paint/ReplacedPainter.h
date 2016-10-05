@@ -22,7 +22,8 @@ class ReplacedPainter {
 
   void paint(const PaintInfo&, const LayoutPoint&);
 
-  // The adjustedPaintOffset should include the location (offset) of the object itself.
+  // The adjustedPaintOffset should include the location (offset) of the object
+  // itself.
   bool shouldPaint(const PaintInfo&,
                    const LayoutPoint& adjustedPaintOffset) const;
 

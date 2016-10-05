@@ -54,12 +54,14 @@ BackgroundBleedAvoidance BoxDecorationData::determineBackgroundBleedAvoidance(
       layoutBox.canRenderBorderImage()) {
     if (layoutBox.backgroundShouldAlwaysBeClipped())
       return BackgroundBleedClipOnly;
-    // Border radius clipping may require layer bleed avoidance if we are going to draw
-    // an image over something else, because we do not want the antialiasing to lead to bleeding
+    // Border radius clipping may require layer bleed avoidance if we are going
+    // to draw an image over something else, because we do not want the
+    // antialiasing to lead to bleeding
     if (boxStyle.hasBackgroundImage() && hasBorderRadius) {
-      // But if the top layer is opaque for the purposes of background painting, we do not
-      // need the bleed avoidance because we will not paint anything behind the top layer.
-      // But only if we need to draw something underneath.
+      // But if the top layer is opaque for the purposes of background painting,
+      // we do not need the bleed avoidance because we will not paint anything
+      // behind the top layer.  But only if we need to draw something
+      // underneath.
       const FillLayer& fillLayer = layoutBox.style()->backgroundLayers();
       if ((backgroundColor.alpha() || fillLayer.next()) &&
           !fillLayer.imageOccludesNextLayers(layoutBox))

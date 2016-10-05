@@ -48,7 +48,8 @@ void TablePainter::paintObject(const PaintInfo& paintInfo,
         shouldPaintDescendantBlockBackgrounds(paintPhase) &&
         m_layoutTable.style()->visibility() == EVisibility::Visible) {
       // Using our cached sorted styles, we then do individual passes,
-      // painting each style of border from lowest precedence to highest precedence.
+      // painting each style of border from lowest precedence to highest
+      // precedence.
       LayoutTable::CollapsedBorderValues collapsedBorders =
           m_layoutTable.collapsedBorders();
       size_t count = collapsedBorders.size();

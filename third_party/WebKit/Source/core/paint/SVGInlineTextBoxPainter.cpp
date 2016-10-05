@@ -29,8 +29,9 @@ namespace blink {
 
 static inline bool textShouldBePainted(
     const LayoutSVGInlineText& textLayoutObject) {
-  // Font::pixelSize(), returns FontDescription::computedPixelSize(), which returns "int(x + 0.5)".
-  // If the absolute font size on screen is below x=0.5, don't render anything.
+  // Font::pixelSize(), returns FontDescription::computedPixelSize(), which
+  // returns "int(x + 0.5)".  If the absolute font size on screen is below
+  // x=0.5, don't render anything.
   return textLayoutObject.scaledFont().getFontDescription().computedPixelSize();
 }
 
@@ -50,9 +51,9 @@ FloatRect SVGInlineTextBoxPainter::boundsForDrawingRecorder(
     const ComputedStyle& style,
     const LayoutPoint& paintOffset,
     bool includeSelectionRect) const {
-  // We compute the paint rect with what looks like the logical values, to match the
-  // computation in SVGInlineTextBox::calculateBoundaries, and the fact that vertical (etc)
-  // layouts are handled by SVGTextLayoutEngine.
+  // We compute the paint rect with what looks like the logical values, to match
+  // the computation in SVGInlineTextBox::calculateBoundaries, and the fact that
+  // vertical (etc) layouts are handled by SVGTextLayoutEngine.
   LayoutRect bounds(LayoutPoint(m_svgInlineTextBox.topLeft() + paintOffset),
                     LayoutSize(m_svgInlineTextBox.logicalWidth(),
                                m_svgInlineTextBox.logicalHeight()));
@@ -91,8 +92,9 @@ void SVGInlineTextBoxPainter::paint(const PaintInfo& paintInfo,
       !m_svgInlineTextBox.len())
     return;
 
-  // We're explicitly not supporting composition & custom underlines and custom highlighters -- unlike InlineTextBox.
-  // If we ever need that for SVG, it's very easy to refactor and reuse the code.
+  // We're explicitly not supporting composition & custom underlines and custom
+  // highlighters -- unlike InlineTextBox.  If we ever need that for SVG, it's
+  // very easy to refactor and reuse the code.
 
   bool haveSelection = shouldPaintSelection(paintInfo);
   if (!haveSelection && paintInfo.phase == PaintPhaseSelection)
@@ -171,7 +173,9 @@ void SVGInlineTextBoxPainter::paintTextFragments(
       paintInfo.context.concatCTM(fragment.buildFragmentTransform());
     }
 
-    // Spec: All text decorations except line-through should be drawn before the text is filled and stroked; thus, the text is rendered on top of these decorations.
+    // Spec: All text decorations except line-through should be drawn before the
+    // text is filled and stroked; thus, the text is rendered on top of these
+    // decorations.
     unsigned decorations = style.textDecorationsInEffect();
     if (decorations & TextDecorationUnderline)
       paintDecoration(paintInfo, TextDecorationUnderline, fragment);
@@ -199,7 +203,8 @@ void SVGInlineTextBoxPainter::paintTextFragments(
       }
     }
 
-    // Spec: Line-through should be drawn after the text is filled and stroked; thus, the line-through is rendered on top of the text.
+    // Spec: Line-through should be drawn after the text is filled and stroked;
+    // thus, the line-through is rendered on top of the text.
     if (decorations & TextDecorationLineThrough)
       paintDecoration(paintInfo, TextDecorationLineThrough, fragment);
   }
@@ -250,7 +255,8 @@ void SVGInlineTextBoxPainter::paintSelectionBackground(
 
 static inline LayoutObject* findLayoutObjectDefininingTextDecoration(
     InlineFlowBox* parentBox) {
-  // Lookup first layout object in parent hierarchy which has text-decoration set.
+  // Lookup first layout object in parent hierarchy which has text-decoration
+  // set.
   LayoutObject* layoutObject = nullptr;
   while (parentBox) {
     layoutObject =
@@ -267,11 +273,13 @@ static inline LayoutObject* findLayoutObjectDefininingTextDecoration(
   return layoutObject;
 }
 
-// Offset from the baseline for |decoration|. Positive offsets are above the baseline.
+// Offset from the baseline for |decoration|. Positive offsets are above the
+// baseline.
 static inline float baselineOffsetForDecoration(TextDecoration decoration,
                                                 const FontMetrics& fontMetrics,
                                                 float thickness) {
-  // FIXME: For SVG Fonts we need to use the attributes defined in the <font-face> if specified.
+  // FIXME: For SVG Fonts we need to use the attributes defined in the
+  // <font-face> if specified.
   // Compatible with Batik/Presto.
   if (decoration == TextDecorationUnderline)
     return -thickness * 1.5f;
@@ -285,7 +293,8 @@ static inline float baselineOffsetForDecoration(TextDecoration decoration,
 }
 
 static inline float thicknessForDecoration(TextDecoration, const Font& font) {
-  // FIXME: For SVG Fonts we need to use the attributes defined in the <font-face> if specified.
+  // FIXME: For SVG Fonts we need to use the attributes defined in the
+  // <font-face> if specified.
   // Compatible with Batik/Presto
   return font.getFontDescription().computedSize() / 20.0f;
 }
@@ -301,7 +310,8 @@ void SVGInlineTextBoxPainter::paintDecoration(const PaintInfo& paintInfo,
   if (fragment.width <= 0)
     return;
 
-  // Find out which style defined the text-decoration, as its fill/stroke properties have to be used for drawing instead of ours.
+  // Find out which style defined the text-decoration, as its fill/stroke
+  // properties have to be used for drawing instead of ours.
   LayoutObject* decorationLayoutObject =
       findLayoutObjectDefininingTextDecoration(m_svgInlineTextBox.parent());
   const ComputedStyle& decorationStyle = decorationLayoutObject->styleRef();
@@ -461,7 +471,8 @@ void SVGInlineTextBoxPainter::paintText(const PaintInfo& paintInfo,
             fragment, startPosition, endPosition);
   }
 
-  // Fast path if there is no selection, just draw the whole chunk part using the regular style
+  // Fast path if there is no selection, just draw the whole chunk part using
+  // the regular style.
   TextRun textRun = m_svgInlineTextBox.constructTextRun(style, fragment);
   if (!shouldPaintSelection || startPosition >= endPosition) {
     SkPaint paint;
@@ -470,7 +481,8 @@ void SVGInlineTextBoxPainter::paintText(const PaintInfo& paintInfo,
     return;
   }
 
-  // Eventually draw text using regular style until the start position of the selection
+  // Eventually draw text using regular style until the start position of the
+  // selection.
   bool paintSelectedTextOnly = paintInfo.phase == PaintPhaseSelection;
   if (startPosition > 0 && !paintSelectedTextOnly) {
     SkPaint paint;
@@ -478,7 +490,8 @@ void SVGInlineTextBoxPainter::paintText(const PaintInfo& paintInfo,
       paintText(paintInfo, textRun, fragment, 0, startPosition, paint);
   }
 
-  // Draw text using selection style from the start to the end position of the selection
+  // Draw text using selection style from the start to the end position of the
+  // selection.
   if (style != selectionStyle) {
     StyleDifference diff;
     diff.setNeedsPaintInvalidationObject();
@@ -497,7 +510,8 @@ void SVGInlineTextBoxPainter::paintText(const PaintInfo& paintInfo,
                                           style);
   }
 
-  // Eventually draw text using regular style from the end position of the selection to the end of the current chunk part
+  // Eventually draw text using regular style from the end position of the
+  // selection to the end of the current chunk part.
   if (endPosition < static_cast<int>(fragment.length) &&
       !paintSelectedTextOnly) {
     SkPaint paint;
@@ -511,7 +525,8 @@ Vector<SVGTextFragmentWithRange> SVGInlineTextBoxPainter::collectTextMatches(
     DocumentMarker* marker) const {
   const Vector<SVGTextFragmentWithRange> emptyTextMatchList;
 
-  // SVG does not support grammar or spellcheck markers, so skip anything but TextMatch.
+  // SVG does not support grammar or spellcheck markers, so skip anything but
+  // TextMatch.
   if (marker->type() != DocumentMarker::TextMatch)
     return emptyTextMatchList;
 

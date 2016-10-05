@@ -14,9 +14,9 @@ class FrameView;
 class LayoutObject;
 struct PrePaintTreeWalkContext;
 
-// This class walks the whole layout tree, beginning from the root FrameView, across
-// frame boundaries. Helper classes are called for each tree node to perform actual actions.
-// It expects to be invoked in InPrePaint phase.
+// This class walks the whole layout tree, beginning from the root FrameView,
+// across frame boundaries. Helper classes are called for each tree node to
+// perform actual actions.  It expects to be invoked in InPrePaint phase.
 class PrePaintTreeWalk {
  public:
   void walk(FrameView& rootFrame);

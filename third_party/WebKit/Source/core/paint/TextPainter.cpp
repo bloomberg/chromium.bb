@@ -134,7 +134,8 @@ TextPainter::Style TextPainter::textPaintingStyle(LineLayoutItem lineLayoutItem,
   bool isPrinting = paintInfo.isPrinting();
 
   if (paintInfo.phase == PaintPhaseTextClip) {
-    // When we use the text as a clip, we only care about the alpha, thus we make all the colors black.
+    // When we use the text as a clip, we only care about the alpha, thus we
+    // make all the colors black.
     textStyle.currentColor = Color::black;
     textStyle.fillColor = Color::black;
     textStyle.strokeColor = Color::black;

@@ -101,7 +101,8 @@ void SVGShapePainter::paint(const PaintInfo& paintInfo) {
                                                   stateSaver))
                   return;
 
-                // Non-scaling stroke needs to reset the transform back to the host transform.
+                // Non-scaling stroke needs to reset the transform back to the
+                // host transform.
                 additionalPaintServerTransform = &nonScalingTransform;
               }
 

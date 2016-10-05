@@ -24,7 +24,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  *
  * Alternatively, the contents of this file may be used under the terms
  * of either the Mozilla Public License Version 1.1, found at
@@ -125,16 +125,18 @@ class CORE_EXPORT PaintLayerScrollableArea final
   class ScrollbarManager {
     DISALLOW_NEW();
 
-    // Helper class to manage the life cycle of Scrollbar objects.  Some layout containers
-    // (e.g., flexbox, table) run multi-pass layout on their children, applying different
-    // constraints.  If a child has overflow:auto, it may gain and lose scrollbars multiple
-    // times during multi-pass layout, causing pointless allocation/deallocation thrashing,
-    // and potentially leading to other problems (crbug.com/528940).
+    // Helper class to manage the life cycle of Scrollbar objects.  Some layout
+    // containers (e.g., flexbox, table) run multi-pass layout on their
+    // children, applying different constraints.  If a child has overflow:auto,
+    // it may gain and lose scrollbars multiple times during multi-pass layout,
+    // causing pointless allocation/deallocation thrashing, and potentially
+    // leading to other problems (crbug.com/528940).
 
-    // ScrollbarManager allows a ScrollableArea to delay the destruction of a scrollbar that
-    // is no longer needed, until the end of multi-pass layout.  If the scrollbar is then
-    // re-added before multi-pass layout finishes, the previously "deleted" scrollbar will
-    // be restored, rather than constructing a new one.
+    // ScrollbarManager allows a ScrollableArea to delay the destruction of a
+    // scrollbar that is no longer needed, until the end of multi-pass layout.
+    // If the scrollbar is then re-added before multi-pass layout finishes, the
+    // previously "deleted" scrollbar will be restored, rather than constructing
+    // a new one.
    public:
     ScrollbarManager(PaintLayerScrollableArea&);
 
@@ -214,10 +216,11 @@ class CORE_EXPORT PaintLayerScrollableArea final
     static int s_count;
   };
 
-  // If a DelayScrollPositionClampScope object is alive, updateAfterLayout() will not
-  // clamp scroll positions to ensure they are in the valid range.  When
-  // the last DelayScrollPositionClampScope object is destructed, all PaintLayerScrollableArea's
-  // that delayed clamping their positions will immediately clamp them.
+  // If a DelayScrollPositionClampScope object is alive, updateAfterLayout()
+  // will not clamp scroll positions to ensure they are in the valid range.
+  // When the last DelayScrollPositionClampScope object is destructed, all
+  // PaintLayerScrollableArea's that delayed clamping their positions will
+  // immediately clamp them.
   class DelayScrollPositionClampScope {
     STACK_ALLOCATED();
 
@@ -334,9 +337,9 @@ class CORE_EXPORT PaintLayerScrollableArea final
   void setScrollPositionUnconditionally(const DoublePoint&,
                                         ScrollType = ProgrammaticScroll);
 
-  // TODO(szager): Actually run these after all of layout is finished.  Currently, they
-  // run at the end of box()'es layout (or after all flexbox layout has finished) but while
-  // document layout is still happening.
+  // TODO(szager): Actually run these after all of layout is finished.
+  // Currently, they run at the end of box()'es layout (or after all flexbox
+  // layout has finished) but while document layout is still happening.
   void updateAfterLayout();
   void clampScrollPositionsAfterLayout();
 
@@ -380,8 +383,8 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   void positionOverflowControls();
 
-  // isPointInResizeControl() is used for testing if a pointer/touch position is in the resize control
-  // area.
+  // isPointInResizeControl() is used for testing if a pointer/touch position is
+  // in the resize control area.
   bool isPointInResizeControl(const IntPoint& absolutePoint,
                               ResizerHitTestType) const;
   bool hitTestOverflowControls(HitTestResult&, const IntPoint& localPoint);
@@ -396,9 +399,11 @@ class CORE_EXPORT PaintLayerScrollableArea final
                             const ScrollAlignment& alignY,
                             ScrollType = ProgrammaticScroll) override;
 
-  // Returns true if scrollable area is in the FrameView's collection of scrollable areas. This can
-  // only happen if we're scrollable, visible to hit test, and do in fact overflow. This means that
-  // 'overflow: hidden' or 'pointer-events: none' layers never get added to the FrameView's collection.
+  // Returns true if scrollable area is in the FrameView's collection of
+  // scrollable areas. This can only happen if we're scrollable, visible to hit
+  // test, and do in fact overflow. This means that 'overflow: hidden' or
+  // 'pointer-events: none' layers never get added to the FrameView's
+  // collection.
   bool scrollsOverflow() const { return m_scrollsOverflow; }
 
   // Rectangle encompassing the scroll corner and resizer rect.
@@ -450,15 +455,16 @@ class CORE_EXPORT PaintLayerScrollableArea final
   }
   void resetRebuildScrollbarLayerFlags();
 
-  // Did DelayScrollPositionClampScope prevent us from running clampScrollPositionsAfterLayout()
+  // Did DelayScrollPositionClampScope prevent us from running
+  // clampScrollPositionsAfterLayout()
   // in updateAfterLayout()?
   bool needsScrollPositionClamp() const { return m_needsScrollPositionClamp; }
   void setNeedsScrollPositionClamp(bool val) {
     m_needsScrollPositionClamp = val;
   }
 
-  // Did PreventRelayoutScope prevent us from running re-layout due to adding/subtracting
-  // scrollbars in updateAfterLayout()?
+  // Did PreventRelayoutScope prevent us from running re-layout due to
+  // adding/subtracting scrollbars in updateAfterLayout()?
   bool needsRelayout() const { return m_needsRelayout; }
   void setNeedsRelayout(bool val) { m_needsRelayout = val; }
 
@@ -537,7 +543,8 @@ class CORE_EXPORT PaintLayerScrollableArea final
   PaintLayer* m_nextTopmostScrollChild;
   PaintLayer* m_topmostScrollChild;
 
-  // Keeps track of whether the layer is currently resizing, so events can cause resizing to start and stop.
+  // Keeps track of whether the layer is currently resizing, so events can cause
+  // resizing to start and stop.
   unsigned m_inResizeMode : 1;
   unsigned m_scrollsOverflow : 1;
 

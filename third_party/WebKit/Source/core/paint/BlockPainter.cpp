@@ -36,7 +36,8 @@ void BlockPainter::paint(const PaintInfo& paintInfo,
   PaintInfo localPaintInfo(paintInfo);
   PaintPhase originalPhase = localPaintInfo.phase;
 
-  // There are some cases where not all clipped visual overflow is accounted for.
+  // There are some cases where not all clipped visual overflow is accounted
+  // for.
   // FIXME: reduce the number of such cases.
   ContentsClipBehavior contentsClipBehavior = ForceContentsClip;
   if (m_layoutBlock.hasOverflowClip() && !m_layoutBlock.hasControlClip() &&
@@ -64,9 +65,9 @@ void BlockPainter::paint(const PaintInfo& paintInfo,
     m_layoutBlock.paintObject(localPaintInfo, adjustedPaintOffset);
   }
 
-  // Our scrollbar widgets paint exactly when we tell them to, so that they work properly with
-  // z-index. We paint after we painted the background/border, so that the scrollbars will
-  // sit above the background/border.
+  // Our scrollbar widgets paint exactly when we tell them to, so that they work
+  // properly with z-index. We paint after we painted the background/border, so
+  // that the scrollbars will sit above the background/border.
   localPaintInfo.phase = originalPhase;
   paintOverflowControlsIfNeeded(localPaintInfo, adjustedPaintOffset);
 }
@@ -137,14 +138,16 @@ void BlockPainter::paintInlineBox(const InlineBox& inlineBox,
       paintInfo.phase != PaintPhaseSelection)
     return;
 
-  // Text clips are painted only for the direct inline children of the object that has a text clip style on it, not block children.
+  // Text clips are painted only for the direct inline children of the object
+  // that has a text clip style on it, not block children.
   ASSERT(paintInfo.phase != PaintPhaseTextClip);
 
   LayoutPoint childPoint = paintOffset;
   if (inlineBox.parent()
           ->getLineLayoutItem()
           .style()
-          ->isFlippedBlocksWritingMode())  // Faster than calling containingBlock().
+          ->isFlippedBlocksWritingMode()) {
+    // Faster than calling containingBlock().
     childPoint =
         LineLayoutAPIShim::layoutObjectFrom(inlineBox.getLineLayoutItem())
             ->containingBlock()
@@ -152,6 +155,7 @@ void BlockPainter::paintInlineBox(const InlineBox& inlineBox,
                 toLayoutBox(LineLayoutAPIShim::layoutObjectFrom(
                     inlineBox.getLineLayoutItem())),
                 childPoint);
+  }
 
   ObjectPainter(
       *LineLayoutAPIShim::constLayoutObjectFrom(inlineBox.getLineLayoutItem()))
@@ -239,8 +243,8 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo,
   if (shouldPaintSelfOutline(paintPhase))
     ObjectPainter(m_layoutBlock).paintOutline(paintInfo, paintOffset);
 
-  // If the caret's node's layout object's containing block is this block, and the paint action is PaintPhaseForeground,
-  // then paint the caret.
+  // If the caret's node's layout object's containing block is this block, and
+  // the paint action is PaintPhaseForeground, then paint the caret.
   if (paintPhase == PaintPhaseForeground && m_layoutBlock.hasCaret())
     paintCarets(paintInfo, paintOffset);
 }
@@ -263,10 +267,11 @@ bool BlockPainter::intersectsPaintRect(
   LayoutRect overflowRect;
   if (paintInfo.isPrinting() && m_layoutBlock.isAnonymousBlock() &&
       m_layoutBlock.childrenInline()) {
-    // For case <a href="..."><div>...</div></a>, when m_layoutBlock is the anonymous container
-    // of <a>, the anonymous container's visual overflow is empty, but we need to continue
-    // painting to output <a>'s PDF URL rect which covers the continuations, as if we included
-    // <a>'s PDF URL rect into m_layoutBlock's visual overflow.
+    // For case <a href="..."><div>...</div></a>, when m_layoutBlock is the
+    // anonymous container of <a>, the anonymous container's visual overflow is
+    // empty, but we need to continue painting to output <a>'s PDF URL rect
+    // which covers the continuations, as if we included <a>'s PDF URL rect into
+    // m_layoutBlock's visual overflow.
     Vector<LayoutRect> rects;
     m_layoutBlock.addElementVisualOverflowRects(rects, LayoutPoint());
     overflowRect = unionRect(rects);
@@ -282,7 +287,8 @@ bool BlockPainter::intersectsPaintRect(
   }
   m_layoutBlock.flipForWritingMode(overflowRect);
 
-  // Scrolling is applied in physical space, which is why it is after the flip above.
+  // Scrolling is applied in physical space, which is why it is after the flip
+  // above.
   if (usesCompositedScrolling) {
     overflowRect.move(-m_layoutBlock.scrolledContentOffset());
   }

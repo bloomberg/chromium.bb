@@ -55,9 +55,10 @@ bool SVGClipPainter::prepareEffect(const LayoutObject& target,
 
   AffineTransform animatedLocalTransform =
       toSVGClipPathElement(m_clip.element())->calculateAnimatedLocalTransform();
-  // When drawing a clip for non-SVG elements, the CTM does not include the zoom factor.
-  // In this case, we need to apply the zoom scale explicitly - but only for clips with
-  // userSpaceOnUse units (the zoom is accounted for objectBoundingBox-resolved lengths).
+  // When drawing a clip for non-SVG elements, the CTM does not include the zoom
+  // factor.  In this case, we need to apply the zoom scale explicitly - but
+  // only for clips with userSpaceOnUse units (the zoom is accounted for
+  // objectBoundingBox-resolved lengths).
   if (!target.isSVG() &&
       m_clip.clipPathUnits() == SVGUnitTypes::kSvgUnitTypeUserspaceonuse) {
     DCHECK(m_clip.style());
@@ -105,7 +106,8 @@ void SVGClipPainter::finishEffect(const LayoutObject& target,
                                   ClipperState& clipperState) {
   switch (clipperState) {
     case ClipperState::AppliedPath:
-      // Path-only clipping, no layers to restore but we need to emit an end to the clip path display item.
+      // Path-only clipping, no layers to restore but we need to emit an end to
+      // the clip path display item.
       context.getPaintController().endItem<EndClipPathDisplayItem>(target);
       break;
     case ClipperState::AppliedMask:

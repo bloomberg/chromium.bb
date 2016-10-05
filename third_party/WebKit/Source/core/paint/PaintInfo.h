@@ -3,7 +3,8 @@
  *           (C) 2000 Antti Koivisto (koivisto@kde.org)
  *           (C) 2000 Dirk Mueller (mueller@kde.org)
  *           (C) 2004 Allan Sandfeld Jensen (kde@carewolf.com)
- * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights
+ * reserved.
  * Copyright (C) 2009 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
@@ -27,8 +28,9 @@
 #define PaintInfo_h
 
 #include "core/CoreExport.h"
-// TODO(jchaffraix): Once we unify PaintBehavior and PaintLayerFlags, we should move
-// PaintLayerFlags to PaintPhase and rename it. Thus removing the need for this #include.#include "core/paint/PaintLayerPaintingInfo.h"
+// TODO(jchaffraix): Once we unify PaintBehavior and PaintLayerFlags, we should
+// move PaintLayerFlags to PaintPhase and rename it. Thus removing the need for
+// this #include "core/paint/PaintLayerPaintingInfo.h"
 #include "core/paint/PaintLayerPaintingInfo.h"
 #include "core/paint/PaintPhase.h"
 #include "platform/geometry/IntRect.h"
@@ -72,8 +74,8 @@ struct CORE_EXPORT PaintInfo {
         m_paintFlags(copyOtherFieldsFrom.m_paintFlags),
         m_globalPaintFlags(copyOtherFieldsFrom.m_globalPaintFlags) {}
 
-  // Creates a PaintInfo for painting descendants. See comments about the paint phases
-  // in PaintPhase.h for details.
+  // Creates a PaintInfo for painting descendants. See comments about the paint
+  // phases in PaintPhase.h for details.
   PaintInfo forDescendants() const {
     PaintInfo result(*this);
     if (phase == PaintPhaseDescendantOutlinesOnly)
@@ -112,14 +114,16 @@ struct CORE_EXPORT PaintInfo {
 
   void updateCullRect(const AffineTransform& localToParentTransform);
 
-  // FIXME: Introduce setters/getters at some point. Requires a lot of changes throughout layout/.
+  // FIXME: Introduce setters/getters at some point. Requires a lot of changes
+  // throughout layout/.
   GraphicsContext& context;
   PaintPhase phase;
 
  private:
   CullRect m_cullRect;
-  const LayoutBoxModelObject*
-      m_paintContainer;  // the box model object that originates the current painting
+  const LayoutBoxModelObject* m_paintContainer;  // the box model object that
+                                                 // originates the current
+                                                 // painting
 
   const PaintLayerFlags m_paintFlags;
   const GlobalPaintFlags m_globalPaintFlags;

@@ -124,13 +124,17 @@ inline AffineTransform TextPainter::rotation(
     RotationDirection rotationDirection) {
   // Why this matrix is correct: consider the case of a clockwise rotation.
 
-  // Let the corner points that define |boxRect| be ABCD, where A is top-left and B is bottom-left.
+  // Let the corner points that define |boxRect| be ABCD, where A is top-left
+  // and B is bottom-left.
 
-  // 1. We want B to end up at the same pixel position after rotation as A is before rotation.
+  // 1. We want B to end up at the same pixel position after rotation as A is
+  //    before rotation.
   // 2. Before rotation, B is at (x(), maxY())
-  // 3. Rotating clockwise by 90 degrees places B at the coordinates (-maxY(), x()).
+  // 3. Rotating clockwise by 90 degrees places B at the coordinates
+  //    (-maxY(), x()).
   // 4. Point A before rotation is at (x(), y())
-  // 5. Therefore the translation from (3) to (4) is (x(), y()) - (-maxY(), x()) = (x() + maxY(), y() - x())
+  // 5. Therefore the translation from (3) to (4) is (x(), y()) - (-maxY(), x())
+  //    = (x() + maxY(), y() - x())
 
   // A similar argument derives the counter-clockwise case.
   return rotationDirection == Clockwise

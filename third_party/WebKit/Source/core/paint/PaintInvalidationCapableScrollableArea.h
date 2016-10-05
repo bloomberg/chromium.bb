@@ -18,8 +18,10 @@ class PaintInvalidationContainer;
 class PaintInvalidationState;
 struct PaintInvalidatorContext;
 
-// Base class of FrameView and PaintLayerScrollableArea to share paint invalidation code.
-// TODO(wangxianzhu): Combine this into PaintLayerScrollableArea when root-layer-scrolls launches.
+// Base class of FrameView and PaintLayerScrollableArea to share paint
+// invalidation code.
+// TODO(wangxianzhu): Combine this into PaintLayerScrollableArea when
+// root-layer-scrolls launches.
 class CORE_EXPORT PaintInvalidationCapableScrollableArea
     : public ScrollableArea {
  public:
@@ -32,7 +34,8 @@ class CORE_EXPORT PaintInvalidationCapableScrollableArea
   void invalidatePaintOfScrollControlsIfNeeded(const PaintInvalidationState&);
   void invalidatePaintOfScrollControlsIfNeeded(const PaintInvalidatorContext&);
 
-  // Should be called when the previous paint invalidation rects are no longer valid.
+  // Should be called when the previous paint invalidation rects are no longer
+  // valid.
   void clearPreviousPaintInvalidationRects();
 
   virtual IntRect scrollCornerAndResizerRect() const {

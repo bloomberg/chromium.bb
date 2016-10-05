@@ -17,14 +17,16 @@ namespace blink {
 
 namespace {
 
-// Return the amount of space to leave between image tiles for the background-repeat: space property.
+// Return the amount of space to leave between image tiles for the
+// background-repeat: space property.
 inline LayoutUnit getSpaceBetweenImageTiles(LayoutUnit areaSize,
                                             LayoutUnit tileSize) {
   int numberOfTiles = (areaSize / tileSize).toInt();
   LayoutUnit space(-1);
 
   if (numberOfTiles > 1) {
-    // Spec doesn't specify rounding, so use the same method as for background-repeat: round.
+    // Spec doesn't specify rounding, so use the same method as for
+    // background-repeat: round.
     space = (areaSize - numberOfTiles * tileSize) / (numberOfTiles - 1);
   }
 
@@ -106,11 +108,13 @@ LayoutSize calculateFillTileSize(const LayoutBoxModelObject& obj,
       return tileSize;
     }
     case SizeNone: {
-      // If both values are 'auto' then the intrinsic width and/or height of the image should be used, if any.
+      // If both values are 'auto' then the intrinsic width and/or height of the
+      // image should be used, if any.
       if (!imageIntrinsicSize.isEmpty())
         return imageIntrinsicSize;
 
-      // If the image has neither an intrinsic width nor an intrinsic height, its size is determined as for 'contain'.
+      // If the image has neither an intrinsic width nor an intrinsic height,
+      // its size is determined as for 'contain'.
       type = Contain;
     }
     case Contain:
@@ -125,9 +129,9 @@ LayoutSize calculateFillTileSize(const LayoutBoxModelObject& obj,
                                             imageIntrinsicSize.height()
                                       : 1.0f;
       // Force the dimension that determines the size to exactly match the
-      // positioningAreaSize in that dimension, so that rounding of floating point
-      // approximation to LayoutUnit do not shrink the image to smaller than the
-      // positioningAreaSize.
+      // positioningAreaSize in that dimension, so that rounding of floating
+      // point approximation to LayoutUnit do not shrink the image to smaller
+      // than the positioningAreaSize.
       if (type == Contain) {
         if (horizontalScaleFactor < verticalScaleFactor)
           return LayoutSize(
@@ -169,12 +173,12 @@ IntPoint accumulatedScrollOffsetForFixedBackground(
   return result;
 }
 
-// When we match the sub-pixel fraction of the destination rect in a dimension, we
-// snap the same way. This commonly occurs when the background is meant to fill the
-// padding box but there's a border (which in Blink is always stored as an integer).
-// Otherwise we floor to avoid growing our tile size. Often these tiles are from a
-// sprite map, and bleeding adjacent sprites is visually worse than clipping the
-// intended one.
+// When we match the sub-pixel fraction of the destination rect in a dimension,
+// we snap the same way. This commonly occurs when the background is meant to
+// fill the padding box but there's a border (which in Blink is always stored as
+// an integer).  Otherwise we floor to avoid growing our tile size. Often these
+// tiles are from a sprite map, and bleeding adjacent sprites is visually worse
+// than clipping the intended one.
 LayoutSize applySubPixelHeuristicToImageSize(const LayoutSize& size,
                                              const LayoutRect& destination) {
   LayoutSize snappedSize =
@@ -210,8 +214,9 @@ void BackgroundImageGeometry::setRepeatX(const FillLayer& fillLayer,
                                          LayoutUnit snappedAvailableWidth,
                                          LayoutUnit unsnappedAvailableWidth,
                                          LayoutUnit extraOffset) {
-  // We would like to identify the phase as a fraction of the image size in the absence of snapping,
-  // then re-apply it to the snapped values. This is to handle large positions.
+  // We would like to identify the phase as a fraction of the image size in the
+  // absence of snapping, then re-apply it to the snapped values. This is to
+  // handle large positions.
   if (unsnappedTileWidth) {
     LayoutUnit computedXPosition = roundedMinimumValueForLength(
         fillLayer.xPosition(), unsnappedAvailableWidth);
@@ -243,8 +248,9 @@ void BackgroundImageGeometry::setRepeatY(const FillLayer& fillLayer,
                                          LayoutUnit snappedAvailableHeight,
                                          LayoutUnit unsnappedAvailableHeight,
                                          LayoutUnit extraOffset) {
-  // We would like to identify the phase as a fraction of the image size in the absence of snapping,
-  // then re-apply it to the snapped values. This is to handle large positions.
+  // We would like to identify the phase as a fraction of the image size in the
+  // absence of snapping, then re-apply it to the snapped values. This is to
+  // handle large positions.
   if (unsnappedTileHeight) {
     LayoutUnit computedYPosition = roundedMinimumValueForLength(
         fillLayer.yPosition(), unsnappedAvailableHeight);
@@ -329,16 +335,18 @@ void BackgroundImageGeometry::calculate(
   const LayoutBoxModelObject& positioningBox =
       isLayoutView ? static_cast<const LayoutBoxModelObject&>(*rootBox) : obj;
 
-  // Determine the background positioning area and set destRect to the background painting area.
-  // destRect will be adjusted later if the background is non-repeating.
-  // FIXME: transforms spec says that fixed backgrounds behave like scroll inside transforms.
+  // Determine the background positioning area and set destRect to the
+  // background painting area.  destRect will be adjusted later if the
+  // background is non-repeating.
+  // FIXME: transforms spec says that fixed backgrounds behave like scroll
+  // inside transforms.
   bool fixedAttachment = fillLayer.attachment() == FixedBackgroundAttachment;
 
   if (RuntimeEnabledFeatures::fastMobileScrollingEnabled()) {
-    // As a side effect of an optimization to blit on scroll, we do not honor the CSS
-    // property "background-attachment: fixed" because it may result in rendering
-    // artifacts. Note, these artifacts only appear if we are blitting on scroll of
-    // a page that has fixed background images.
+    // As a side effect of an optimization to blit on scroll, we do not honor
+    // the CSS property "background-attachment: fixed" because it may result in
+    // rendering artifacts. Note, these artifacts only appear if we are blitting
+    // on scroll of a page that has fixed background images.
     fixedAttachment = false;
   }
 
@@ -362,15 +370,16 @@ void BackgroundImageGeometry::calculate(
     }
 
     if (isLayoutView) {
-      // The background of the box generated by the root element covers the entire canvas and will
-      // be painted by the view object, but the we should still use the root element box for
-      // positioning.
+      // The background of the box generated by the root element covers the
+      // entire canvas and will be painted by the view object, but the we should
+      // still use the root element box for positioning.
       positioningAreaSize =
           rootBox->size() - LayoutSize(left + right, top + bottom),
       rootBox->location();
-      // The input paint rect is specified in root element local coordinate (i.e. a transform
-      // is applied on the context for painting), and is expanded to cover the whole canvas.
-      // Since left/top is relative to the paint rect, we need to offset them back.
+      // The input paint rect is specified in root element local coordinate
+      // (i.e. a transform is applied on the context for painting), and is
+      // expanded to cover the whole canvas.  Since left/top is relative to the
+      // paint rect, we need to offset them back.
       left -= paintRect.x();
       top -= paintRect.y();
     } else {
@@ -402,8 +411,9 @@ void BackgroundImageGeometry::calculate(
 
   LayoutSize fillTileSize(
       calculateFillTileSize(positioningBox, fillLayer, positioningAreaSize));
-  // It's necessary to apply the heuristic here prior to any further calculations to avoid
-  // incorrectly using sub-pixel values that won't be present in the painted tile.
+  // It's necessary to apply the heuristic here prior to any further
+  // calculations to avoid incorrectly using sub-pixel values that won't be
+  // present in the painted tile.
   setTileSize(applySubPixelHeuristicToImageSize(fillTileSize, m_destRect));
 
   EFillRepeat backgroundRepeatX = fillLayer.repeatX();

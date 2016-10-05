@@ -37,7 +37,8 @@ inline bool includesEdge(BorderEdgeFlags flags, BoxSide side) {
 }
 
 inline bool includesAdjacentEdges(BorderEdgeFlags flags) {
-  // The set includes adjacent edges iff it contains at least one horizontal and one vertical edge.
+  // The set includes adjacent edges iff it contains at least one horizontal and
+  // one vertical edge.
   return (flags & (TopBorderEdge | BottomBorderEdge)) &&
          (flags & (LeftBorderEdge | RightBorderEdge));
 }
@@ -61,8 +62,9 @@ inline bool borderStyleIsDottedOrDashed(EBorderStyle style) {
   return style == BorderStyleDotted || style == BorderStyleDashed;
 }
 
-// BorderStyleOutset darkens the bottom and right (and maybe lightens the top and left)
-// BorderStyleInset darkens the top and left (and maybe lightens the bottom and right)
+// BorderStyleOutset darkens the bottom and right (and maybe lightens the top
+// and left) BorderStyleInset darkens the top and left (and maybe lightens the
+// bottom and right).
 inline bool borderStyleHasUnmatchedColorsAtCorner(EBorderStyle style,
                                                   BoxSide side,
                                                   BoxSide adjacentSide) {
@@ -102,11 +104,13 @@ inline bool borderWillArcInnerEdge(const FloatSize& firstRadius,
 inline bool willOverdraw(BoxSide side,
                          EBorderStyle style,
                          BorderEdgeFlags completedEdges) {
-  // If we're done with this side, it will obviously not overdraw any portion of the current edge.
+  // If we're done with this side, it will obviously not overdraw any portion of
+  // the current edge.
   if (includesEdge(completedEdges, side))
     return false;
 
-  // The side is still to be drawn. It overdraws the current edge iff it has a solid fill style.
+  // The side is still to be drawn. It overdraws the current edge iff it has a
+  // solid fill style.
   return borderStyleFillsBorderArea(style);
 }
 
@@ -177,9 +181,10 @@ FloatRect calculateSideRectIncludingInner(const FloatRoundedRect& outerBorder,
 FloatRoundedRect calculateAdjustedInnerBorder(
     const FloatRoundedRect& innerBorder,
     BoxSide side) {
-  // Expand the inner border as necessary to make it a rounded rect (i.e. radii contained within each edge).
-  // This function relies on the fact we only get radii not contained within each edge if one of the radii
-  // for an edge is zero, so we can shift the arc towards the zero radius corner.
+  // Expand the inner border as necessary to make it a rounded rect (i.e. radii
+  // contained within each edge).  This function relies on the fact we only get
+  // radii not contained within each edge if one of the radii for an edge is
+  // zero, so we can shift the arc towards the zero radius corner.
   FloatRoundedRect::Radii newRadii = innerBorder.getRadii();
   FloatRect newRect = innerBorder.rect();
 
@@ -190,8 +195,8 @@ FloatRoundedRect calculateAdjustedInnerBorder(
     case BSTop:
       overshoot = newRadii.topLeft().width() + newRadii.topRight().width() -
                   newRect.width();
-      // FIXME: once we start pixel-snapping rounded rects after this point, the overshoot concept
-      // should disappear.
+      // FIXME: once we start pixel-snapping rounded rects after this point, the
+      // overshoot concept should disappear.
       if (overshoot > 0.1) {
         newRect.setWidth(newRect.width() + overshoot);
         if (!newRadii.topLeft().width())
@@ -296,9 +301,10 @@ void drawBleedAdjustedDRRect(GraphicsContext& context,
                              Color color) {
   switch (bleedAvoidance) {
     case BackgroundBleedClipLayer: {
-      // BackgroundBleedClipLayer clips the outer rrect for the whole layer. Based on this,
-      // we can avoid background bleeding by filling the *outside* of inner rrect, all the
-      // way to the layer bounds (enclosing int rect for the clip, in device space).
+      // BackgroundBleedClipLayer clips the outer rrect for the whole layer.
+      // Based on this, we can avoid background bleeding by filling the
+      // *outside* of inner rrect, all the way to the layer bounds (enclosing
+      // int rect for the clip, in device space).
       ASSERT(outer.isRounded());
 
       SkPath path;
@@ -350,8 +356,9 @@ static_assert(BSRight == 1, "unexpected BoxSide value");
 static_assert(BSBottom == 2, "unexpected BoxSide value");
 static_assert(BSLeft == 3, "unexpected BoxSide value");
 
-// Style-based paint order: non-solid edges (dashed/dotted/double) are painted before
-// solid edges (inset/outset/groove/ridge/solid) to maximize overdraw opportunities.
+// Style-based paint order: non-solid edges (dashed/dotted/double) are painted
+// before solid edges (inset/outset/groove/ridge/solid) to maximize overdraw
+// opportunities.
 const unsigned kStylePriority[] = {
     0 /* BorderStyleNone */,   0 /* BorderStyleHidden */,
     2 /* BorderStyleInset */,  2 /* BorderStyleGroove */,
@@ -360,8 +367,8 @@ const unsigned kStylePriority[] = {
     3 /* BorderStyleSolid */,  1 /* BorderStyleDouble */
 };
 
-// Given the same style, prefer drawing in non-adjacent order to minimize the number of sides
-// which require miters.
+// Given the same style, prefer drawing in non-adjacent order to minimize the
+// number of sides which require miters.
 const unsigned kSidePriority[] = {
     0, /* BSTop */
     2, /* BSRight */
@@ -369,8 +376,8 @@ const unsigned kSidePriority[] = {
     3, /* BSLeft */
 };
 
-// Edges sharing the same opacity. Stores both a side list and an edge bitfield to support
-// constant time iteration + membership tests.
+// Edges sharing the same opacity. Stores both a side list and an edge bitfield
+// to support constant time iteration + membership tests.
 struct OpacityGroup {
   OpacityGroup(unsigned alpha) : edgeFlags(0), alpha(alpha) {}
 
@@ -408,7 +415,8 @@ struct BoxBorderPainter::ComplexBorderInfo {
     }
     ASSERT(!sortedSides.isEmpty());
 
-    // Then sort them in paint order, based on three (prioritized) criteria: alpha, style, side.
+    // Then sort them in paint order, based on three (prioritized) criteria:
+    // alpha, style, side.
     std::sort(
         sortedSides.begin(), sortedSides.end(),
         [&borderPainter](BoxSide a, BoxSide b) -> bool {
@@ -523,8 +531,8 @@ bool BoxBorderPainter::paintBorderFastPath(GraphicsContext& context,
     return true;
   }
 
-  // This is faster than the normal complex border path only if it avoids creating transparency
-  // layers (when the border is translucent).
+  // This is faster than the normal complex border path only if it avoids
+  // creating transparency layers (when the border is translucent).
   if (firstEdge().borderStyle() == BorderStyleSolid && !m_outer.isRounded() &&
       m_hasAlpha) {
     ASSERT(m_visibleEdgeSet != AllBorderEdges);
@@ -648,7 +656,8 @@ void BoxBorderPainter::paintBorder(const PaintInfo& info,
   bool clipToOuterBorder = m_outer.isRounded();
   GraphicsContextStateSaver stateSaver(graphicsContext, clipToOuterBorder);
   if (clipToOuterBorder) {
-    // For BackgroundBleedClip{Only,Layer}, the outer rrect clip is already applied.
+    // For BackgroundBleedClip{Only,Layer}, the outer rrect clip is already
+    // applied.
     if (!bleedAvoidanceIsClipping(m_bleedAvoidance))
       graphicsContext.clipRoundedRect(m_outer);
 
@@ -660,20 +669,22 @@ void BoxBorderPainter::paintBorder(const PaintInfo& info,
   paintOpacityGroup(graphicsContext, borderInfo, 0, 1);
 }
 
-// In order to maximize the use of overdraw as a corner seam avoidance technique, we draw
-// translucent border sides using the following algorithm:
+// In order to maximize the use of overdraw as a corner seam avoidance
+// technique, we draw translucent border sides using the following algorithm:
 //
-//   1) cluster sides sharing the same opacity into "opacity groups" [ComplexBorderInfo]
+//   1) cluster sides sharing the same opacity into "opacity groups"
+//      [ComplexBorderInfo]
 //   2) sort groups in increasing opacity order [ComplexBorderInfo]
-//   3) reverse-iterate over groups (decreasing opacity order), pushing nested transparency
-//      layers with adjusted/relative opacity [paintOpacityGroup]
-//   4) iterate over groups (increasing opacity order), painting actual group contents and
-//      then ending their corresponding transparency layer [paintOpacityGroup]
+//   3) reverse-iterate over groups (decreasing opacity order), pushing nested
+//      transparency layers with adjusted/relative opacity [paintOpacityGroup]
+//   4) iterate over groups (increasing opacity order), painting actual group
+//      contents and then ending their corresponding transparency layer
+//      [paintOpacityGroup]
 //
-// Layers are created in decreasing opacity order (top -> bottom), while actual border sides are
-// drawn in increasing opacity order (bottom -> top). At each level, opacity is adjusted to acount
-// for accumulated/ancestor layer alpha. Because opacity is applied via layers, the actual draw
-// paint is opaque.
+// Layers are created in decreasing opacity order (top -> bottom), while actual
+// border sides are drawn in increasing opacity order (bottom -> top). At each
+// level, opacity is adjusted to acount for accumulated/ancestor layer alpha.
+// Because opacity is applied via layers, the actual draw paint is opaque.
 //
 // As an example, let's consider a border with the following sides/opacities:
 //
@@ -690,17 +701,17 @@ void BoxBorderPainter::paintBorder(const PaintInfo& info,
 //
 // Applying the algorithm yields the following paint sequence:
 //
-//                                 // no layer needed for group 0 (alpha == 1)
-//   beginLayer(0.5)               // layer for group 1
-//     beginLayer(0.5)             // layer for group 2 (effective opacity: 0.5 * 0.5 == 0.25)
-//       paintSides(right, left)   // paint group 2
+//                                // no layer needed for group 0 (alpha = 1)
+//   beginLayer(0.5)              // layer for group 1
+//     beginLayer(0.5)            // layer for group 2 (alpha: 0.5 * 0.5 = 0.25)
+//       paintSides(right, left)  // paint group 2
 //     endLayer
-//     paintSides(bottom)          // paint group 1
+//     paintSides(bottom)         // paint group 1
 //   endLayer
-//   paintSides(top)               // paint group 0
+//   paintSides(top)              // paint group 0
 //
-// Note that we're always drawing using opaque paints on top of less-opaque content - hence
-// we can use overdraw to mask portions of the previous sides.
+// Note that we're always drawing using opaque paints on top of less-opaque
+// content - hence we can use overdraw to mask portions of the previous sides.
 //
 BorderEdgeFlags BoxBorderPainter::paintOpacityGroup(
     GraphicsContext& context,
@@ -715,18 +726,19 @@ BorderEdgeFlags BoxBorderPainter::paintOpacityGroup(
   if (index >= opacityGroupCount)
     return ~m_visibleEdgeSet;
 
-  // Groups are sorted in increasing opacity order, but we need to create layers in
-  // decreasing opacity order - hence the reverse iteration.
+  // Groups are sorted in increasing opacity order, but we need to create layers
+  // in decreasing opacity order - hence the reverse iteration.
   const OpacityGroup& group =
       borderInfo.opacityGroups[opacityGroupCount - index - 1];
 
-  // Adjust this group's paint opacity to account for ancestor transparency layers
-  // (needed in case we avoid creating a layer below).
+  // Adjust this group's paint opacity to account for ancestor transparency
+  // layers (needed in case we avoid creating a layer below).
   unsigned paintAlpha = group.alpha / effectiveOpacity;
   ASSERT(paintAlpha <= 255);
 
-  // For the last (bottom) group, we can skip the layer even in the presence of opacity iff
-  // it contains no adjecent edges (no in-group overdraw possibility).
+  // For the last (bottom) group, we can skip the layer even in the presence of
+  // opacity iff it contains no adjecent edges (no in-group overdraw
+  // possibility).
   bool needsLayer =
       group.alpha != 255 && (includesAdjacentEdges(group.edgeFlags) ||
                              (index + 1 < borderInfo.opacityGroups.size()));
@@ -738,7 +750,8 @@ BorderEdgeFlags BoxBorderPainter::paintOpacityGroup(
     context.beginLayer(groupOpacity / effectiveOpacity);
     effectiveOpacity = groupOpacity;
 
-    // Group opacity is applied via a layer => we draw the members using opaque paint.
+    // Group opacity is applied via a layer => we draw the members using opaque
+    // paint.
     paintAlpha = 255;
   }
 
@@ -749,7 +762,8 @@ BorderEdgeFlags BoxBorderPainter::paintOpacityGroup(
   BorderEdgeFlags completedEdges =
       paintOpacityGroup(context, borderInfo, index + 1, effectiveOpacity);
 
-  // Paint the actual group edges with an alpha adjusted to account for ancenstor layers opacity.
+  // Paint the actual group edges with an alpha adjusted to account for
+  // ancenstor layers opacity.
   for (BoxSide side : group.sides) {
     paintSide(context, borderInfo, side, paintAlpha, completedEdges);
     completedEdges |= edgeFlagForSide(side);
@@ -774,7 +788,8 @@ void BoxBorderPainter::paintSide(GraphicsContext& context,
   FloatRect sideRect = m_outer.rect();
   const Path* path = nullptr;
 
-  // TODO(fmalita): find a way to consolidate these without sacrificing readability.
+  // TODO(fmalita): find a way to consolidate these without sacrificing
+  // readability.
   switch (side) {
     case BSTop: {
       bool usePath = m_isRounded &&
@@ -852,17 +867,19 @@ BoxBorderPainter::MiterType BoxBorderPainter::computeMiter(
   if (willOverdraw(adjacentSide, adjacentEdge.borderStyle(), completedEdges))
     return NoMiter;
 
-  // Color transitions require miters. Use miters compatible with the AA drawing mode to avoid
-  // introducing extra clips.
+  // Color transitions require miters. Use miters compatible with the AA drawing
+  // mode to avoid introducing extra clips.
   if (!colorsMatchAtCorner(side, adjacentSide, m_edges))
     return antialias ? SoftMiter : HardMiter;
 
-  // Non-anti-aliased miters ensure correct same-color seaming when required by style.
+  // Non-anti-aliased miters ensure correct same-color seaming when required by
+  // style.
   if (borderStylesRequireMiter(side, adjacentSide, m_edges[side].borderStyle(),
                                adjacentEdge.borderStyle()))
     return HardMiter;
 
-  // Overdraw the adjacent edge when the colors match and we have no style restrictions.
+  // Overdraw the adjacent edge when the colors match and we have no style
+  // restrictions.
   return NoMiter;
 }
 
@@ -870,7 +887,8 @@ bool BoxBorderPainter::mitersRequireClipping(MiterType miter1,
                                              MiterType miter2,
                                              EBorderStyle style,
                                              bool antialias) {
-  // Clipping is required if any of the present miters doesn't match the current AA mode.
+  // Clipping is required if any of the present miters doesn't match the current
+  // AA mode.
   bool shouldClip = antialias ? miter1 == HardMiter || miter2 == HardMiter
                               : miter1 == SoftMiter || miter2 == SoftMiter;
 
@@ -968,11 +986,12 @@ void BoxBorderPainter::drawBoxSideFromPath(GraphicsContext& graphicsContext,
       graphicsContext.setStrokeStyle(
           borderStyle == BorderStyleDashed ? DashedStroke : DottedStroke);
 
-      // If the number of dashes that fit in the path is odd and non-integral then we
-      // will have an awkwardly-sized dash at the end of the path. To try to avoid that
-      // here, we simply make the whitespace dashes ever so slightly bigger.
-      // FIXME: This could be even better if we tried to manipulate the dash offset
-      // and possibly the gapLength to get the corners dash-symmetrical.
+      // If the number of dashes that fit in the path is odd and non-integral
+      // then we will have an awkwardly-sized dash at the end of the path. To
+      // try to avoid that here, we simply make the whitespace dashes ever so
+      // slightly bigger.
+      // FIXME: This could be even better if we tried to manipulate the dash
+      // offset and possibly the gapLength to get the corners dash-symmetrical.
       float dashLength =
           thickness * ((borderStyle == BorderStyleDashed) ? 3.0f : 1.0f);
       float gapLength = dashLength;
@@ -995,7 +1014,8 @@ void BoxBorderPainter::drawBoxSideFromPath(GraphicsContext& graphicsContext,
 
       // FIXME: stroking the border path causes issues with tight corners:
       // https://bugs.webkit.org/show_bug.cgi?id=58711
-      // Also, to get the best appearance we should stroke a path between the two borders.
+      // Also, to get the best appearance we should stroke a path between the
+      // two borders.
       graphicsContext.strokePath(borderPath);
       return;
     }
@@ -1109,8 +1129,8 @@ void BoxBorderPainter::clipBorderSidePolygon(GraphicsContext& graphicsContext,
   const LayoutRect outerRect(m_outer.rect());
   const LayoutRect innerRect(m_inner.rect());
 
-  // For each side, create a quad that encompasses all parts of that side that may draw,
-  // including areas inside the innerBorder.
+  // For each side, create a quad that encompasses all parts of that side that
+  // may draw, including areas inside the innerBorder.
   //
   //         0----------------3
   //       0  \              /  0

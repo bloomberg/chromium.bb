@@ -152,8 +152,9 @@ TEST_P(PaintPropertyTreeBuilderTest, FixedPosition) {
   FrameView* frameView = document().view();
   frameView->updateAllLifecyclePhases();
 
-  // target1 is a fixed-position element inside an absolute-position scrolling element.
-  // It should be attached under the viewport to skip scrolling and offset of the parent.
+  // target1 is a fixed-position element inside an absolute-position scrolling
+  // element.  It should be attached under the viewport to skip scrolling and
+  // offset of the parent.
   Element* target1 = document().getElementById("target1");
   const ObjectPaintProperties* target1Properties =
       target1->layoutObject()->objectPaintProperties();
@@ -165,9 +166,11 @@ TEST_P(PaintPropertyTreeBuilderTest, FixedPosition) {
             target1Properties->overflowClip()->localTransformSpace());
   EXPECT_EQ(FloatRoundedRect(0, 0, 100, 100),
             target1Properties->overflowClip()->clipRect());
-  // Likewise, it inherits clip from the viewport, skipping overflow clip of the scroller.
+  // Likewise, it inherits clip from the viewport, skipping overflow clip of the
+  // scroller.
   EXPECT_EQ(frameContentClip(), target1Properties->overflowClip()->parent());
-  // target1 should not have it's own scroll node and instead should inherit positionedScroll's.
+  // target1 should not have it's own scroll node and instead should inherit
+  // positionedScroll's.
   const ObjectPaintProperties* positionedScrollProperties =
       positionedScroll->layoutObject()->objectPaintProperties();
   EXPECT_TRUE(positionedScrollProperties->scroll()->parent()->isRoot());
@@ -198,7 +201,8 @@ TEST_P(PaintPropertyTreeBuilderTest, FixedPosition) {
             target2Properties->overflowClip()->clipRect());
   EXPECT_EQ(scrollerProperties->overflowClip(),
             target2Properties->overflowClip()->parent());
-  // target2 should not have it's own scroll node and instead should inherit transformedScroll's.
+  // target2 should not have it's own scroll node and instead should inherit
+  // transformedScroll's.
   const ObjectPaintProperties* transformedScrollProperties =
       transformedScroll->layoutObject()->objectPaintProperties();
   EXPECT_TRUE(transformedScrollProperties->scroll()->parent()->isRoot());
@@ -241,8 +245,8 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionAndScroll) {
                             scroller->layoutObject(), frameView->layoutView());
   }
 
-  // The relative-positioned element should have accumulated box offset (exclude scrolling),
-  // and should be affected by ancestor scroll transforms.
+  // The relative-positioned element should have accumulated box offset (exclude
+  // scrolling), and should be affected by ancestor scroll transforms.
   Element* relPos = document().getElementById("rel-pos");
   const ObjectPaintProperties* relPosProperties =
       relPos->layoutObject()->objectPaintProperties();
@@ -259,7 +263,8 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionAndScroll) {
   CHECK_EXACT_VISUAL_RECT(LayoutRect(), relPos->layoutObject(),
                           frameView->layoutView());
 
-  // The absolute-positioned element should not be affected by non-positioned scroller at all.
+  // The absolute-positioned element should not be affected by non-positioned
+  // scroller at all.
   Element* absPos = document().getElementById("abs-pos");
   const ObjectPaintProperties* absPosProperties =
       absPos->layoutObject()->objectPaintProperties();
@@ -316,13 +321,15 @@ TEST_P(PaintPropertyTreeBuilderTest, Perspective) {
       perspective->layoutObject()->objectPaintProperties();
   EXPECT_EQ(TransformationMatrix().applyPerspective(100),
             perspectiveProperties->perspective()->matrix());
-  // The perspective origin is the center of the border box plus accumulated paint offset.
+  // The perspective origin is the center of the border box plus accumulated
+  // paint offset.
   EXPECT_EQ(FloatPoint3D(250, 250, 0),
             perspectiveProperties->perspective()->origin());
   EXPECT_EQ(framePreTranslation(),
             perspectiveProperties->perspective()->parent());
 
-  // Adding perspective doesn't clear paint offset. The paint offset will be passed down to children.
+  // Adding perspective doesn't clear paint offset. The paint offset will be
+  // passed down to children.
   Element* inner = document().getElementById("inner");
   const ObjectPaintProperties* innerProperties =
       inner->layoutObject()->objectPaintProperties();
@@ -539,7 +546,8 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodesInSVG) {
   EXPECT_EQ(groupWithOpacityProperties->effect(),
             rectWithOpacityProperties->effect()->parent());
 
-  // Ensure that opacity nodes are created for LayoutSVGText which inherits from LayoutSVGBlock instead of LayoutSVGModelObject.
+  // Ensure that opacity nodes are created for LayoutSVGText which inherits from
+  // LayoutSVGBlock instead of LayoutSVGModelObject.
   LayoutObject& textWithOpacity =
       *document().getElementById("textWithOpacity")->layoutObject();
   const ObjectPaintProperties* textWithOpacityProperties =
@@ -548,7 +556,8 @@ TEST_P(PaintPropertyTreeBuilderTest, EffectNodesInSVG) {
   EXPECT_EQ(groupWithOpacityProperties->effect(),
             textWithOpacityProperties->effect()->parent());
 
-  // Ensure that opacity nodes are created for LayoutSVGTSpan which inherits from LayoutSVGInline instead of LayoutSVGModelObject.
+  // Ensure that opacity nodes are created for LayoutSVGTSpan which inherits
+  // from LayoutSVGInline instead of LayoutSVGModelObject.
   LayoutObject& tspanWithOpacity =
       *document().getElementById("tspanWithOpacity")->layoutObject();
   const ObjectPaintProperties* tspanWithOpacityProperties =
@@ -757,7 +766,8 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGRootLocalToBorderBoxTransformNode) {
   EXPECT_EQ(svgProperties->transform(),
             svgProperties->svgLocalToBorderBoxTransform()->parent());
 
-  // Ensure the rect's transform is a child of the local to border box transform.
+  // Ensure the rect's transform is a child of the local to border box
+  // transform.
   LayoutObject& rect = *document().getElementById("rect")->layoutObject();
   const ObjectPaintProperties* rectProperties = rect.objectPaintProperties();
   EXPECT_EQ(TransformationMatrix().translate(17, 19),
@@ -866,7 +876,8 @@ TEST_P(PaintPropertyTreeBuilderTest,
       fixed->layoutObject()->objectPaintProperties();
   EXPECT_EQ(TransformationMatrix().translate(200, 150),
             fixedProperties->paintOffsetTranslation()->matrix());
-  // Ensure the fixed position element is rooted at the nearest transform container.
+  // Ensure the fixed position element is rooted at the nearest transform
+  // container.
   EXPECT_EQ(containerProperties->transform(),
             fixedProperties->paintOffsetTranslation()->parent());
 }
@@ -888,7 +899,8 @@ TEST_P(PaintPropertyTreeBuilderTest, ControlClip) {
   LayoutObject& button = *document().getElementById("button")->layoutObject();
   const ObjectPaintProperties* buttonProperties =
       button.objectPaintProperties();
-  // No scroll translation because the document does not scroll (not enough content).
+  // No scroll translation because the document does not scroll (not enough
+  // content).
   EXPECT_TRUE(!frameScrollTranslation());
   EXPECT_EQ(framePreTranslation(),
             buttonProperties->overflowClip()->localTransformSpace());
@@ -920,22 +932,26 @@ TEST_P(PaintPropertyTreeBuilderTest, BorderRadiusClip) {
 
   LayoutObject& div = *document().getElementById("div")->layoutObject();
   const ObjectPaintProperties* divProperties = div.objectPaintProperties();
-  // No scroll translation because the document does not scroll (not enough content).
+  // No scroll translation because the document does not scroll (not enough
+  // content).
   EXPECT_TRUE(!frameScrollTranslation());
   EXPECT_EQ(framePreTranslation(),
             divProperties->overflowClip()->localTransformSpace());
   // The overflow clip rect includes only the padding box.
-  // padding box = border box(500+60+50, 400+45+55) - border outset(60+50, 45+55) - scrollbars(15, 15)
+  // padding box = border box(500+60+50, 400+45+55) - border outset(60+50,
+  // 45+55) - scrollbars(15, 15)
   EXPECT_EQ(FloatRoundedRect(60, 45, 500, 400),
             divProperties->overflowClip()->clipRect());
   const ClipPaintPropertyNode* borderRadiusClip =
       divProperties->overflowClip()->parent();
   EXPECT_EQ(framePreTranslation(), borderRadiusClip->localTransformSpace());
-  // The border radius clip is the area enclosed by inner border edge, including the scrollbars.
-  // As the border-radius is specified in outer radius, the inner radius is calculated by:
+  // The border radius clip is the area enclosed by inner border edge, including
+  // the scrollbars.  As the border-radius is specified in outer radius, the
+  // inner radius is calculated by:
   // inner radius = max(outer radius - border width, 0)
-  // In the case that two adjacent borders have different width, the inner radius of the corner
-  // may transition from one value to the other. i.e. being an ellipse.
+  // In the case that two adjacent borders have different width, the inner
+  // radius of the corner may transition from one value to the other. i.e. being
+  // an ellipse.
   EXPECT_EQ(
       FloatRoundedRect(
           FloatRect(60, 45, 500,
@@ -990,7 +1006,8 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodesAcrossSubframes) {
   CHECK_EXACT_VISUAL_RECT(LayoutRect(12, 14, 100, 145), innerDivWithTransform,
                           frameView->layoutView());
 
-  // Ensure that the inner div's transform is correctly rooted in the root frame's transform tree.
+  // Ensure that the inner div's transform is correctly rooted in the root
+  // frame's transform tree.
   // This asserts that we have the following tree structure:
   // ...
   //   Transform transform=translation=1.000000,2.000000,3.000000
@@ -1029,8 +1046,8 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodesInTransformedSubframes) {
   //     PaintOffsetTranslation transform=translation=7.000000,7.000000,0.000000
   //       Transform transform=translation=4.000000,5.000000,6.000000
   //         PreTranslation transform=translation=42.000000,42.000000,0.000000
-  //           ScrollTranslation transform=translation=0.000000,0.000000,0.000000
-  //             PaintOffsetTranslation transform=translation=31.000000,31.000000,0.000000
+  //           ScrollTranslation transform=translation=0.000000,0.000000,0.00000
+  //             PaintOffsetTranslation transform=translation=31.00,31.00,0.00
   //               Transform transform=translation=7.000000,8.000000,9.000000
 
   LayoutObject* innerDivWithTransform =
@@ -1074,9 +1091,9 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodesInTransformedSubframes) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, TreeContextClipByNonStackingContext) {
-  // This test verifies the tree builder correctly computes and records the property tree context
-  // for a (pseudo) stacking context that is scrolled by a containing block that is not one of
-  // the painting ancestors.
+  // This test verifies the tree builder correctly computes and records the
+  // property tree context for a (pseudo) stacking context that is scrolled by a
+  // containing block that is not one of the painting ancestors.
   setBodyInnerHTML(
       "<style>body { margin: 0; }</style>"
       "<div id='scroller' style='overflow:scroll; width:400px; height:300px;'>"
@@ -1110,9 +1127,10 @@ TEST_P(PaintPropertyTreeBuilderTest, TreeContextClipByNonStackingContext) {
 
 TEST_P(PaintPropertyTreeBuilderTest,
        TreeContextUnclipFromParentStackingContext) {
-  // This test verifies the tree builder correctly computes and records the property tree context
-  // for a (pseudo) stacking context that has a scrolling painting ancestor that is not its
-  // containing block (thus should not be scrolled by it).
+  // This test verifies the tree builder correctly computes and records the
+  // property tree context for a (pseudo) stacking context that has a scrolling
+  // painting ancestor that is not its containing block (thus should not be
+  // scrolled by it).
 
   setBodyInnerHTML(
       "<style>body { margin: 0; }</style>"
@@ -1147,8 +1165,9 @@ TEST_P(PaintPropertyTreeBuilderTest,
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, TableCellLayoutLocation) {
-  // This test verifies that the border box space of a table cell is being correctly computed.
-  // Table cells have weird location adjustment in our layout/paint implementation.
+  // This test verifies that the border box space of a table cell is being
+  // correctly computed.  Table cells have weird location adjustment in our
+  // layout/paint implementation.
   setBodyInnerHTML(
       "<style>"
       "  body {"
@@ -1189,8 +1208,9 @@ TEST_P(PaintPropertyTreeBuilderTest, TableCellLayoutLocation) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, CSSClipFixedPositionDescendant) {
-  // This test verifies that clip tree hierarchy being generated correctly for the hard case
-  // such that a fixed position element getting clipped by an absolute position CSS clip.
+  // This test verifies that clip tree hierarchy being generated correctly for
+  // the hard case such that a fixed position element getting clipped by an
+  // absolute position CSS clip.
   setBodyInnerHTML(
       "<style>"
       "  #clip {"
@@ -1221,10 +1241,10 @@ TEST_P(PaintPropertyTreeBuilderTest, CSSClipFixedPositionDescendant) {
             clipProperties->cssClip()->localTransformSpace());
   EXPECT_EQ(FloatRoundedRect(FloatRect(absoluteClipRect)),
             clipProperties->cssClip()->clipRect());
-  CHECK_VISUAL_RECT(
-      absoluteClipRect, &clip, document().view()->layoutView(),
-      // TODO(crbug.com/599939): mapToVisualRectInAncestorSpace() doesn't apply css clip on the object itself.
-      LayoutUnit::max());
+  CHECK_VISUAL_RECT(absoluteClipRect, &clip, document().view()->layoutView(),
+                    // TODO(crbug.com/599939): mapToVisualRectInAncestorSpace()
+                    // doesn't apply css clip on the object itself.
+                    LayoutUnit::max());
 
   LayoutObject* fixed = document().getElementById("fixed")->layoutObject();
   const ObjectPaintProperties* fixedProperties = fixed->objectPaintProperties();
@@ -1240,15 +1260,17 @@ TEST_P(PaintPropertyTreeBuilderTest, CSSClipFixedPositionDescendant) {
                 ->matrix());
   EXPECT_EQ(LayoutPoint(),
             fixedProperties->localBorderBoxProperties()->paintOffset);
-  CHECK_VISUAL_RECT(
-      LayoutRect(), fixed, document().view()->layoutView(),
-      // TODO(crbug.com/599939): CSS clip of fixed-position descendants is broken in mapToVisualRectInAncestorSpace().
-      LayoutUnit::max());
+  CHECK_VISUAL_RECT(LayoutRect(), fixed, document().view()->layoutView(),
+                    // TODO(crbug.com/599939): CSS clip of fixed-position
+                    // descendants is broken in
+                    // mapToVisualRectInAncestorSpace().
+                    LayoutUnit::max());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, CSSClipAbsPositionDescendant) {
-  // This test verifies that clip tree hierarchy being generated correctly for the hard case
-  // such that a fixed position element getting clipped by an absolute position CSS clip.
+  // This test verifies that clip tree hierarchy being generated correctly for
+  // the hard case such that a fixed position element getting clipped by an
+  // absolute position CSS clip.
   setBodyInnerHTML(
       "<style>"
       "  #clip {"
@@ -1276,16 +1298,17 @@ TEST_P(PaintPropertyTreeBuilderTest, CSSClipAbsPositionDescendant) {
   LayoutObject* clip = document().getElementById("clip")->layoutObject();
   const ObjectPaintProperties* clipProperties = clip->objectPaintProperties();
   EXPECT_EQ(frameContentClip(), clipProperties->cssClip()->parent());
-  // No scroll translation because the document does not scroll (not enough content).
+  // No scroll translation because the document does not scroll (not enough
+  // content).
   EXPECT_TRUE(!frameScrollTranslation());
   EXPECT_EQ(framePreTranslation(),
             clipProperties->cssClip()->localTransformSpace());
   EXPECT_EQ(FloatRoundedRect(FloatRect(absoluteClipRect)),
             clipProperties->cssClip()->clipRect());
-  CHECK_VISUAL_RECT(
-      absoluteClipRect, clip, document().view()->layoutView(),
-      // TODO(crbug.com/599939): mapToVisualRectInAncestorSpace() doesn't apply css clip on the object itself.
-      LayoutUnit::max());
+  CHECK_VISUAL_RECT(absoluteClipRect, clip, document().view()->layoutView(),
+                    // TODO(crbug.com/599939): mapToVisualRectInAncestorSpace()
+                    // doesn't apply css clip on the object itself.
+                    LayoutUnit::max());
 
   LayoutObject* absolute =
       document().getElementById("absolute")->layoutObject();
@@ -1298,15 +1321,17 @@ TEST_P(PaintPropertyTreeBuilderTest, CSSClipAbsPositionDescendant) {
                                        ->propertyTreeState.transform());
   EXPECT_EQ(LayoutPoint(123, 456),
             absPosProperties->localBorderBoxProperties()->paintOffset);
-  CHECK_VISUAL_RECT(
-      LayoutRect(), absolute, document().view()->layoutView(),
-      // TODO(crbug.com/599939): CSS clip of fixed-position descendants is broken in mapToVisualRectInAncestorSpace().
-      LayoutUnit::max());
+  CHECK_VISUAL_RECT(LayoutRect(), absolute, document().view()->layoutView(),
+                    // TODO(crbug.com/599939): CSS clip of fixed-position
+                    // descendants is broken in
+                    // mapToVisualRectInAncestorSpace().
+                    LayoutUnit::max());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, CSSClipFixedPositionDescendantNonShared) {
   // This test is similar to CSSClipFixedPositionDescendant above, except that
-  // now we have a parent overflow clip that should be escaped by the fixed descendant.
+  // now we have a parent overflow clip that should be escaped by the fixed
+  // descendant.
   setBodyInnerHTML(
       "<style>"
       "  body {"
@@ -1342,7 +1367,8 @@ TEST_P(PaintPropertyTreeBuilderTest, CSSClipFixedPositionDescendantNonShared) {
   const ObjectPaintProperties* overflowProperties =
       overflow.objectPaintProperties();
   EXPECT_EQ(frameContentClip(), overflowProperties->overflowClip()->parent());
-  // No scroll translation because the document does not scroll (not enough content).
+  // No scroll translation because the document does not scroll (not enough
+  // content).
   EXPECT_TRUE(!frameScrollTranslation());
   EXPECT_EQ(framePreTranslation(),
             overflowProperties->scrollTranslation()->parent());
@@ -1379,10 +1405,10 @@ TEST_P(PaintPropertyTreeBuilderTest, CSSClipFixedPositionDescendantNonShared) {
                 ->matrix());
   EXPECT_EQ(LayoutPoint(),
             fixedProperties->localBorderBoxProperties()->paintOffset);
-  CHECK_VISUAL_RECT(
-      LayoutRect(), fixed, document().view()->layoutView(),
-      // TODO(crbug.com/599939): CSS clip of fixed-position descendants is broken in geometry mapping.
-      LayoutUnit::max());
+  CHECK_VISUAL_RECT(LayoutRect(), fixed, document().view()->layoutView(),
+                    // TODO(crbug.com/599939): CSS clip of fixed-position
+                    // descendants is broken in geometry mapping.
+                    LayoutUnit::max());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, ColumnSpannerUnderRelativePositioned) {
@@ -1460,15 +1486,16 @@ TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetWithBasicPixelSnapping) {
   CHECK_EXACT_VISUAL_RECT(LayoutRect(FloatRect(0.3, 0.3, 40, 40)), b,
                           frameView->layoutView());
 
-  // c should be painted starting at subpixelAccumulation + (0.1,0.1) = (0.4,0.4).
+  // c should be painted starting at subpixelAccumulation + (0.1,0.1) =
+  // (0.4,0.4).
   LayoutObject* c = document().getElementById("c")->layoutObject();
   LayoutPoint cPaintOffset =
       subpixelAccumulation + LayoutPoint(FloatPoint(0.1, 0.1));
   const ObjectPaintProperties* cProperties = c->objectPaintProperties();
   EXPECT_EQ(cPaintOffset, cProperties->localBorderBoxProperties()->paintOffset);
-  // Visual rects via the non-paint properties system use enclosingIntRect before applying transforms,
-  // because they are computed bottom-up and therefore can't apply pixel snapping. Therefore apply a
-  // slop of 1px.
+  // Visual rects via the non-paint properties system use enclosingIntRect
+  // before applying transforms, because they are computed bottom-up and
+  // therefore can't apply pixel snapping. Therefore apply a slop of 1px.
   CHECK_VISUAL_RECT(LayoutRect(FloatRect(0.4, 0.4, 40, 40)), c,
                     frameView->layoutView(), 1);
 }
@@ -1505,15 +1532,16 @@ TEST_P(PaintPropertyTreeBuilderTest,
                                      LayoutUnit(40), LayoutUnit(40)),
                           b, frameView->layoutView());
 
-  // c should be painted starting at subpixelAccumulation + (0.7,0.7) = (0.4,0.4).
+  // c should be painted starting at subpixelAccumulation + (0.7,0.7) =
+  // (0.4,0.4).
   LayoutObject* c = document().getElementById("c")->layoutObject();
   LayoutPoint cPaintOffset =
       subpixelAccumulation + LayoutPoint(FloatPoint(0.7, 0.7));
   const ObjectPaintProperties* cProperties = c->objectPaintProperties();
   EXPECT_EQ(cPaintOffset, cProperties->localBorderBoxProperties()->paintOffset);
-  // Visual rects via the non-paint properties system use enclosingIntRect before applying transforms,
-  // because they are computed bottom-up and therefore can't apply pixel snapping. Therefore apply a
-  // slop of 1px.
+  // Visual rects via the non-paint properties system use enclosingIntRect
+  // before applying transforms, because they are computed bottom-up and
+  // therefore can't apply pixel snapping. Therefore apply a slop of 1px.
   CHECK_VISUAL_RECT(LayoutRect(LayoutUnit(0.7) + LayoutUnit(0.7),
                                LayoutUnit(0.7) + LayoutUnit(0.7),
                                LayoutUnit(40), LayoutUnit(40)),
@@ -1559,8 +1587,8 @@ TEST_P(PaintPropertyTreeBuilderTest,
   const ObjectPaintProperties* cProperties = c->objectPaintProperties();
   EXPECT_EQ(TransformationMatrix().translate3d(11, 13, 0),
             cProperties->transform()->matrix());
-  // The paint offset should be (-0.3,-0.3) but the paint offset transform should still be at
-  // (0,0) because it should be snapped.
+  // The paint offset should be (-0.3,-0.3) but the paint offset transform
+  // should still be at (0,0) because it should be snapped.
   EXPECT_EQ(TransformationMatrix().translate(0, 0),
             cProperties->transform()->parent()->matrix());
   // The residual subpixel adjustment should still be (-0.3,-0.3).
@@ -1570,15 +1598,16 @@ TEST_P(PaintPropertyTreeBuilderTest,
                                      LayoutUnit(40), LayoutUnit(40)),
                           c, frameView->layoutView());
 
-  // d should be painted starting at subpixelAccumulation + (0.7,0.7) = (0.4,0.4).
+  // d should be painted starting at subpixelAccumulation + (0.7,0.7) =
+  // (0.4,0.4).
   LayoutObject* d = document().getElementById("d")->layoutObject();
   LayoutPoint dPaintOffset =
       subpixelAccumulation + LayoutPoint(FloatPoint(0.7, 0.7));
   const ObjectPaintProperties* dProperties = d->objectPaintProperties();
   EXPECT_EQ(dPaintOffset, dProperties->localBorderBoxProperties()->paintOffset);
-  // Visual rects via the non-paint properties system use enclosingIntRect before applying transforms,
-  // because they are computed bottom-up and therefore can't apply pixel snapping. Therefore apply a
-  // slop of 1px.
+  // Visual rects via the non-paint properties system use enclosingIntRect
+  // before applying transforms, because they are computed bottom-up and
+  // therefore can't apply pixel snapping. Therefore apply a slop of 1px.
   CHECK_VISUAL_RECT(LayoutRect(LayoutUnit(16.7) + LayoutUnit(0.7),
                                LayoutUnit(20.7) + LayoutUnit(0.7),
                                LayoutUnit(40), LayoutUnit(40)),
@@ -1633,9 +1662,9 @@ TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetWithPixelSnappingWithFixedPos) {
       subpixelAccumulation + LayoutPoint(FloatPoint(0.7, 0));
   const ObjectPaintProperties* dProperties = d->objectPaintProperties();
   EXPECT_EQ(dPaintOffset, dProperties->localBorderBoxProperties()->paintOffset);
-  // Visual rects via the non-paint properties system use enclosingIntRect before applying transforms,
-  // because they are computed bottom-up and therefore can't apply pixel snapping. Therefore apply a
-  // slop of 1px.
+  // Visual rects via the non-paint properties system use enclosingIntRect
+  // before applying transforms, because they are computed bottom-up and
+  // therefore can't apply pixel snapping. Therefore apply a slop of 1px.
   CHECK_VISUAL_RECT(LayoutRect(LayoutUnit(0.7) + LayoutUnit(0.7), LayoutUnit(),
                                LayoutUnit(40), LayoutUnit(40)),
                     d, frameView->layoutView(), 1);
@@ -1667,7 +1696,8 @@ TEST_P(PaintPropertyTreeBuilderTest, SvgPixelSnappingShouldResetPaintOffset) {
   EXPECT_EQ(TransformationMatrix().translate(1, 1),
             rectWithTransformProperties->transform()->matrix());
 
-  // Ensure there is no PaintOffset transform between the rect and the svg's transform.
+  // Ensure there is no PaintOffset transform between the rect and the svg's
+  // transform.
   EXPECT_EQ(svgWithTransformProperties->transform(),
             rectWithTransformProperties->transform()->parent());
 }
@@ -1928,8 +1958,9 @@ TEST_P(PaintPropertyTreeBuilderTest, CachedProperties) {
   CHECK_EXACT_VISUAL_RECT(LayoutRect(165, 198, 10, 20), c->layoutObject(),
                           frameView->layoutView());
 
-  // Change transform of b. B's transform node should be a new node with the new value,
-  // and a and c's transform nodes should be unchanged (with c's parent adjusted).
+  // Change transform of b. B's transform node should be a new node with the new
+  // value, and a and c's transform nodes should be unchanged (with c's parent
+  // adjusted).
   b->setAttribute(HTMLNames::styleAttr, "transform: translate(111px, 222px)");
   document().view()->updateAllLifecyclePhases();
 
@@ -1953,8 +1984,9 @@ TEST_P(PaintPropertyTreeBuilderTest, CachedProperties) {
   CHECK_EXACT_VISUAL_RECT(LayoutRect(221, 354, 10, 20), c->layoutObject(),
                           frameView->layoutView());
 
-  // Remove transform from b. B's transform node should be removed from the tree,
-  // and a and c's transform nodes should be unchanged (with c's parent adjusted).
+  // Remove transform from b. B's transform node should be removed from the
+  // tree, and a and c's transform nodes should be unchanged (with c's parent
+  // adjusted).
   b->setAttribute(HTMLNames::styleAttr, "");
   document().view()->updateAllLifecyclePhases();
 
@@ -1976,7 +2008,8 @@ TEST_P(PaintPropertyTreeBuilderTest, CachedProperties) {
                           frameView->layoutView());
 
   // Re-add transform to b. B's transform node should be inserted into the tree,
-  // and a and c's transform nodes should be unchanged (with c's parent adjusted).
+  // and a and c's transform nodes should be unchanged (with c's parent
+  // adjusted).
   b->setAttribute(HTMLNames::styleAttr, "transform: translate(4px, 5px)");
   document().view()->updateAllLifecyclePhases();
 
@@ -2001,9 +2034,9 @@ TEST_P(PaintPropertyTreeBuilderTest, CachedProperties) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, OverflowClipContentsTreeState) {
-  // This test verifies the tree builder correctly computes and records the property tree context
-  // for a (pseudo) stacking context that is scrolled by a containing block that is not one of
-  // the painting ancestors.
+  // This test verifies the tree builder correctly computes and records the
+  // property tree context for a (pseudo) stacking context that is scrolled by a
+  // containing block that is not one of the painting ancestors.
   setBodyInnerHTML(
       "<style>body { margin: 20px 30px; }</style>"
       "<div id='clipper' style='overflow:hidden; width:400px; height:300px;'>"
@@ -2018,7 +2051,8 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowClipContentsTreeState) {
   LayoutObject* child = document().getElementById("child")->layoutObject();
   const ObjectPaintProperties* childProperties = child->objectPaintProperties();
 
-  // No scroll translation because the document does not scroll (not enough content).
+  // No scroll translation because the document does not scroll (not enough
+  // content).
   EXPECT_TRUE(!frameScrollTranslation());
   EXPECT_EQ(framePreTranslation(), clipProperties->localBorderBoxProperties()
                                        ->propertyTreeState.transform());
@@ -2060,7 +2094,8 @@ TEST_P(PaintPropertyTreeBuilderTest, ContainsPaintContentsTreeState) {
   LayoutObject* child = document().getElementById("child")->layoutObject();
   const ObjectPaintProperties* childProperties = child->objectPaintProperties();
 
-  // No scroll translation because the document does not scroll (not enough content).
+  // No scroll translation because the document does not scroll (not enough
+  // content).
   EXPECT_TRUE(!frameScrollTranslation());
   EXPECT_EQ(framePreTranslation(), clipProperties->localBorderBoxProperties()
                                        ->propertyTreeState.transform());
@@ -2088,9 +2123,9 @@ TEST_P(PaintPropertyTreeBuilderTest, ContainsPaintContentsTreeState) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollContentsTreeState) {
-  // This test verifies the tree builder correctly computes and records the property tree context
-  // for a (pseudo) stacking context that is scrolled by a containing block that is not one of
-  // the painting ancestors.
+  // This test verifies the tree builder correctly computes and records the
+  // property tree context for a (pseudo) stacking context that is scrolled by a
+  // containing block that is not one of the painting ancestors.
   setBodyInnerHTML(
       "<style>body { margin: 20px 30px; }</style>"
       "<div id='clipper' style='overflow:scroll; width:400px; height:300px;'>"
@@ -2168,7 +2203,8 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollWithRoundedRect) {
                        FloatSize(50, 50), FloatSize(50, 50), FloatSize(50, 50)),
       roundedBoxProperties->innerBorderRadiusClip()->clipRect());
 
-  // Unlike the inner border radius clip, the overflow clip is inset by the scrollbars (13px).
+  // Unlike the inner border radius clip, the overflow clip is inset by the
+  // scrollbars (13px).
   EXPECT_EQ(FloatRoundedRect(50, 50, 187, 187),
             roundedBoxProperties->overflowClip()->clipRect());
   EXPECT_EQ(frameContentClip(),
@@ -2178,9 +2214,9 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollWithRoundedRect) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, CssClipContentsTreeState) {
-  // This test verifies the tree builder correctly computes and records the property tree context
-  // for a (pseudo) stacking context that is scrolled by a containing block that is not one of
-  // the painting ancestors.
+  // This test verifies the tree builder correctly computes and records the
+  // property tree context for a (pseudo) stacking context that is scrolled by a
+  // containing block that is not one of the painting ancestors.
   setBodyInnerHTML(
       "<style>body { margin: 20px 30px; }</style>"
       "<div id='clipper' style='position: absolute; clip: rect(10px, 80px, "
@@ -2195,7 +2231,8 @@ TEST_P(PaintPropertyTreeBuilderTest, CssClipContentsTreeState) {
       clipper->objectPaintProperties();
   LayoutObject* child = document().getElementById("child")->layoutObject();
 
-  // No scroll translation because the document does not scroll (not enough content).
+  // No scroll translation because the document does not scroll (not enough
+  // content).
   EXPECT_TRUE(!frameScrollTranslation());
   EXPECT_EQ(framePreTranslation(), clipProperties->localBorderBoxProperties()
                                        ->propertyTreeState.transform());
@@ -2274,7 +2311,8 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowHiddenScrollProperties) {
 
   const ObjectPaintProperties* overflowHiddenScrollProperties =
       overflowHidden->layoutObject()->objectPaintProperties();
-  // Because the frameView is does not scroll, overflowHidden's scroll should be under the root.
+  // Because the frameView is does not scroll, overflowHidden's scroll should be
+  // under the root.
   EXPECT_TRUE(overflowHiddenScrollProperties->scroll()->parent()->isRoot());
   EXPECT_EQ(TransformationMatrix().translate(0, -37),
             overflowHiddenScrollProperties->scroll()
@@ -2282,10 +2320,11 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowHiddenScrollProperties) {
                 ->matrix());
   // This should match the overflow's dimensions.
   EXPECT_EQ(IntSize(5, 3), overflowHiddenScrollProperties->scroll()->clip());
-  // The scrolling content's bounds should include both the overflow's dimensions (5x3) and the
-  // 0x79 "forceScroll" object.
+  // The scrolling content's bounds should include both the overflow's
+  // dimensions (5x3) and the 0x79 "forceScroll" object.
   EXPECT_EQ(IntSize(5, 79), overflowHiddenScrollProperties->scroll()->bounds());
-  // Although overflow: hidden is programmatically scrollable, it is not user scrollable.
+  // Although overflow: hidden is programmatically scrollable, it is not user
+  // scrollable.
   EXPECT_FALSE(
       overflowHiddenScrollProperties->scroll()->userScrollableHorizontal());
   EXPECT_FALSE(
@@ -2328,20 +2367,23 @@ TEST_P(PaintPropertyTreeBuilderTest, NestedScrollProperties) {
 
   const ObjectPaintProperties* overflowAScrollProperties =
       overflowA->layoutObject()->objectPaintProperties();
-  // Because the frameView is does not scroll, overflowA's scroll should be under the root.
+  // Because the frameView is does not scroll, overflowA's scroll should be
+  // under the root.
   EXPECT_TRUE(overflowAScrollProperties->scroll()->parent()->isRoot());
   EXPECT_EQ(
       TransformationMatrix().translate(0, -37),
       overflowAScrollProperties->scroll()->scrollOffsetTranslation()->matrix());
   EXPECT_EQ(IntSize(5, 3), overflowAScrollProperties->scroll()->clip());
-  // 107 is the forceScroll element plus the height of the overflow scroll child (overflowB).
+  // 107 is the forceScroll element plus the height of the overflow scroll child
+  // (overflowB).
   EXPECT_EQ(IntSize(9, 107), overflowAScrollProperties->scroll()->bounds());
   EXPECT_TRUE(overflowAScrollProperties->scroll()->userScrollableHorizontal());
   EXPECT_TRUE(overflowAScrollProperties->scroll()->userScrollableVertical());
 
   const ObjectPaintProperties* overflowBScrollProperties =
       overflowB->layoutObject()->objectPaintProperties();
-  // The overflow child's scroll node should be a child of the parent's (overflowA) scroll node.
+  // The overflow child's scroll node should be a child of the parent's
+  // (overflowA) scroll node.
   EXPECT_EQ(overflowAScrollProperties->scroll(),
             overflowBScrollProperties->scroll()->parent());
   EXPECT_EQ(
@@ -2414,13 +2456,15 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionedScrollerIsNotNested) {
       TransformationMatrix().translate(0, -37),
       overflowScrollProperties->scroll()->scrollOffsetTranslation()->matrix());
   EXPECT_EQ(IntSize(5, 3), overflowScrollProperties->scroll()->clip());
-  // The height should be 4000px because the (dom-order) overflow children are positioned and do not
-  // contribute to the height. Only the 4000px "forceScroll" height is present.
+  // The height should be 4000px because the (dom-order) overflow children are
+  // positioned and do not contribute to the height. Only the 4000px
+  // "forceScroll" height is present.
   EXPECT_EQ(IntSize(5, 4000), overflowScrollProperties->scroll()->bounds());
 
   const ObjectPaintProperties* absposOverflowScrollProperties =
       absposOverflow->layoutObject()->objectPaintProperties();
-  // The absolute position overflow scroll node is parented under the frame, not the dom-order parent.
+  // The absolute position overflow scroll node is parented under the frame, not
+  // the dom-order parent.
   EXPECT_EQ(frameScroll(), absposOverflowScrollProperties->scroll()->parent());
   EXPECT_EQ(TransformationMatrix().translate(0, -41),
             absposOverflowScrollProperties->scroll()
@@ -2432,7 +2476,8 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionedScrollerIsNotNested) {
 
   const ObjectPaintProperties* fixedOverflowScrollProperties =
       fixedOverflow->layoutObject()->objectPaintProperties();
-  // The fixed position overflow scroll node is parented under the root, not the dom-order parent or frame's scroll.
+  // The fixed position overflow scroll node is parented under the root, not the
+  // dom-order parent or frame's scroll.
   EXPECT_TRUE(fixedOverflowScrollProperties->scroll()->parent()->isRoot());
   EXPECT_EQ(TransformationMatrix().translate(0, -43),
             fixedOverflowScrollProperties->scroll()
@@ -2485,20 +2530,23 @@ TEST_P(PaintPropertyTreeBuilderTest, NestedPositionedScrollProperties) {
 
   const ObjectPaintProperties* overflowAScrollProperties =
       overflowA->layoutObject()->objectPaintProperties();
-  // Because the frameView is does not scroll, overflowA's scroll should be under the root.
+  // Because the frameView is does not scroll, overflowA's scroll should be
+  // under the root.
   EXPECT_TRUE(overflowAScrollProperties->scroll()->parent()->isRoot());
   EXPECT_EQ(
       TransformationMatrix().translate(0, -37),
       overflowAScrollProperties->scroll()->scrollOffsetTranslation()->matrix());
   EXPECT_EQ(IntSize(20, 20), overflowAScrollProperties->scroll()->clip());
-  // 100 is the forceScroll element's height because the overflow child does not contribute to the height.
+  // 100 is the forceScroll element's height because the overflow child does not
+  // contribute to the height.
   EXPECT_EQ(IntSize(20, 100), overflowAScrollProperties->scroll()->bounds());
   EXPECT_TRUE(overflowAScrollProperties->scroll()->userScrollableHorizontal());
   EXPECT_TRUE(overflowAScrollProperties->scroll()->userScrollableVertical());
 
   const ObjectPaintProperties* overflowBScrollProperties =
       overflowB->layoutObject()->objectPaintProperties();
-  // The overflow child's scroll node should be a child of the parent's (overflowA) scroll node.
+  // The overflow child's scroll node should be a child of the parent's
+  // (overflowA) scroll node.
   EXPECT_EQ(overflowAScrollProperties->scroll(),
             overflowBScrollProperties->scroll()->parent());
   EXPECT_EQ(

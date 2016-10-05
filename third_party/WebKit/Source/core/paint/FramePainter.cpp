@@ -125,12 +125,13 @@ void FramePainter::paintContents(GraphicsContext& context,
     return;
   }
 
-  // TODO(crbug.com/590856): It's still broken when we choose not to crash when the check fails.
+  // TODO(crbug.com/590856): It's still broken when we choose not to crash when
+  // the check fails.
   if (!frameView().checkDoesNotNeedLayout())
     return;
 
-  // TODO(wangxianzhu): The following check should be stricter, but currently this is blocked
-  // by the svg root issue (crbug.com/442939).
+  // TODO(wangxianzhu): The following check should be stricter, but currently
+  // this is blocked by the svg root issue (crbug.com/442939).
   DCHECK(document->lifecycle().state() >= DocumentLifecycle::CompositingClean);
 
   TRACE_EVENT1("devtools.timeline,rail", "Paint", "data",
@@ -168,7 +169,8 @@ void FramePainter::paintContents(GraphicsContext& context,
     layerPainter.paintOverlayScrollbars(context, LayoutRect(rect),
                                         localPaintFlags);
 
-  // Regions may have changed as a result of the visibility/z-index of element changing.
+  // Regions may have changed as a result of the visibility/z-index of element
+  // changing.
   if (document->annotatedRegionsDirty())
     frameView().updateDocumentAnnotatedRegions();
 

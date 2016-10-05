@@ -28,7 +28,8 @@ void FrameSetPainter::paintColumnBorder(const PaintInfo& paintInfo,
   if (!paintInfo.cullRect().intersectsCullRect(borderRect))
     return;
 
-  // FIXME: We should do something clever when borders from distinct framesets meet at a join.
+  // FIXME: We should do something clever when borders from distinct framesets
+  // meet at a join.
 
   // Fill first.
   GraphicsContext& context = paintInfo.context;
@@ -37,8 +38,8 @@ void FrameSetPainter::paintColumnBorder(const PaintInfo& paintInfo,
                                          CSSPropertyBorderLeftColor)
                                    : borderFillColor());
 
-  // Now stroke the edges but only if we have enough room to paint both edges with a little
-  // bit of the fill color showing through.
+  // Now stroke the edges but only if we have enough room to paint both edges
+  // with a little bit of the fill color showing through.
   if (borderRect.width() >= 3) {
     context.fillRect(
         IntRect(borderRect.location(), IntSize(1, borderRect.height())),
@@ -51,7 +52,8 @@ void FrameSetPainter::paintColumnBorder(const PaintInfo& paintInfo,
 
 void FrameSetPainter::paintRowBorder(const PaintInfo& paintInfo,
                                      const IntRect& borderRect) {
-  // FIXME: We should do something clever when borders from distinct framesets meet at a join.
+  // FIXME: We should do something clever when borders from distinct framesets
+  // meet at a join.
 
   // Fill first.
   GraphicsContext& context = paintInfo.context;
@@ -60,8 +62,8 @@ void FrameSetPainter::paintRowBorder(const PaintInfo& paintInfo,
                                          CSSPropertyBorderLeftColor)
                                    : borderFillColor());
 
-  // Now stroke the edges but only if we have enough room to paint both edges with a little
-  // bit of the fill color showing through.
+  // Now stroke the edges but only if we have enough room to paint both edges
+  // with a little bit of the fill color showing through.
   if (borderRect.height() >= 3) {
     context.fillRect(
         IntRect(borderRect.location(), IntSize(borderRect.width(), 1)),
@@ -134,7 +136,8 @@ void FrameSetPainter::paintChildren(const PaintInfo& paintInfo,
   size_t cols = m_layoutFrameSet.columns().m_sizes.size();
   for (size_t r = 0; r < rows; r++) {
     for (size_t c = 0; c < cols; c++) {
-      // Self-painting layers are painted during the PaintLayer paint recursion, not LayoutObject.
+      // Self-painting layers are painted during the PaintLayer paint recursion,
+      // not LayoutObject.
       if (!child->isBoxModelObject() ||
           !toLayoutBoxModelObject(child)->hasSelfPaintingLayer())
         child->paint(paintInfo, adjustedPaintOffset);

@@ -27,17 +27,20 @@ class CORE_EXPORT LayerClipRecorder {
     DoNotIncludeSelfForBorderRadius
   };
 
-  // Set rounded clip rectangles defined by border radii all the way from the PaintLayerPaintingInfo
-  // "root" layer down to the specified layer (or the parent of said layer, in case
-  // BorderRadiusClippingRule says to skip self). fragmentOffset is used for multicol, to specify
-  // the translation required to get from flow thread coordinates to visual coordinates for a
-  // certain column.
-  // FIXME: The BorderRadiusClippingRule parameter is really useless now. If we want to skip self,
+  // Set rounded clip rectangles defined by border radii all the way from the
+  // PaintLayerPaintingInfo "root" layer down to the specified layer (or the
+  // parent of said layer, in case BorderRadiusClippingRule says to skip self).
+  // fragmentOffset is used for multicol, to specify the translation required to
+  // get from flow thread coordinates to visual coordinates for a certain
+  // column.
+  // FIXME: The BorderRadiusClippingRule parameter is really useless now. If we
+  // want to skip self,
   // why not just supply the parent layer as the first parameter instead?
-  // FIXME: The ClipRect passed is in visual coordinates (not flow thread coordinates), but at the
-  // same time we pass a fragmentOffset, so that we can translate from flow thread coordinates to
-  // visual coordinates. This may look rather confusing/redundant, but it is needed for rounded
-  // border clipping. Would be nice to clean up this.
+  // FIXME: The ClipRect passed is in visual coordinates (not flow thread
+  // coordinates), but at the same time we pass a fragmentOffset, so that we can
+  // translate from flow thread coordinates to visual coordinates. This may look
+  // rather confusing/redundant, but it is needed for rounded border clipping.
+  // Would be nice to clean up this.
   explicit LayerClipRecorder(
       GraphicsContext&,
       const LayoutBoxModelObject&,

@@ -42,11 +42,9 @@ void LineBoxListPainter::paint(const LayoutBoxModelObject& layoutObject,
       paintInfo.phase != PaintPhaseMask)
     return;
 
-  ASSERT(
-      layoutObject.isLayoutBlock() ||
-      (layoutObject.isLayoutInline() &&
-       layoutObject
-           .hasLayer()));  // The only way an inline could paint like this is if it has a layer.
+  // The only way an inline could paint like this is if it has a layer.
+  ASSERT(layoutObject.isLayoutBlock() ||
+         (layoutObject.isLayoutInline() && layoutObject.hasLayer()));
 
   if (paintInfo.phase == PaintPhaseForeground && paintInfo.isPrinting())
     addPDFURLRectsForInlineChildrenRecursively(layoutObject, paintInfo,

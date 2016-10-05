@@ -24,8 +24,9 @@ class ImagePainter {
   void paint(const PaintInfo&, const LayoutPoint& paintOffset);
   void paintReplaced(const PaintInfo&, const LayoutPoint& paintOffset);
 
-  // Paint the image into |destRect|, after clipping by |contentRect|. Both |destRect| and
-  // |contentRect| should be in local coordinates plus the paint offset.
+  // Paint the image into |destRect|, after clipping by |contentRect|. Both
+  // |destRect| and |contentRect| should be in local coordinates plus the paint
+  // offset.
   void paintIntoRect(GraphicsContext&,
                      const LayoutRect& destRect,
                      const LayoutRect& contentRect);

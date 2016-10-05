@@ -613,7 +613,8 @@ bool ThemePainterMac::paintCheckbox(const LayoutObject& object,
   ControlStates states = LayoutTheme::controlStatesForLayoutObject(object);
   float zoomFactor = object.styleRef().effectiveZoom();
 
-  // Determine the width and height needed for the control and prepare the cell for painting.
+  // Determine the width and height needed for the control and prepare the cell
+  // for painting.
   NSButtonCell* checkboxCell =
       ThemeMac::checkbox(states, zoomedRect, zoomFactor);
   GraphicsContextStateSaver stateSaver(paintInfo.context);
@@ -652,7 +653,8 @@ bool ThemePainterMac::paintRadio(const LayoutObject& object,
   ControlStates states = LayoutTheme::controlStatesForLayoutObject(object);
   float zoomFactor = object.styleRef().effectiveZoom();
 
-  // Determine the width and height needed for the control and prepare the cell for painting.
+  // Determine the width and height needed for the control and prepare the cell
+  // for painting.
   NSButtonCell* radioCell = ThemeMac::radio(states, zoomedRect, zoomFactor);
   GraphicsContextStateSaver stateSaver(paintInfo.context);
 
@@ -692,16 +694,17 @@ bool ThemePainterMac::paintButton(const LayoutObject& object,
   ControlStates states = LayoutTheme::controlStatesForLayoutObject(object);
   float zoomFactor = object.styleRef().effectiveZoom();
 
-  // Determine the width and height needed for the control and prepare the cell for painting.
+  // Determine the width and height needed for the control and prepare the cell
+  // for painting.
   NSButtonCell* buttonCell = ThemeMac::button(object.styleRef().appearance(),
                                               states, zoomedRect, zoomFactor);
   GraphicsContextStateSaver stateSaver(paintInfo.context);
 
   NSControlSize controlSize = [buttonCell controlSize];
   IntSize zoomedSize = ThemeMac::buttonSizes()[controlSize];
-  zoomedSize.setWidth(
-      zoomedRect
-          .width());  // Buttons don't ever constrain width, so the zoomed width can just be honored.
+  // Buttons don't ever constrain width, so the zoomed width can just be
+  // honored.
+  zoomedSize.setWidth(zoomedRect.width());
   zoomedSize.setHeight(zoomedSize.height() * zoomFactor);
   IntRect inflatedRect = zoomedRect;
   if ([buttonCell bezelStyle] == NSRoundedBezelStyle) {
@@ -747,7 +750,8 @@ static ThemeDrawState convertControlStatesToThemeDrawState(
   if (!(states & EnabledControlState))
     return kThemeStateUnavailableInactive;
 
-  // Do not process PressedState if !EnabledControlState or ReadOnlyControlState.
+  // Do not process PressedState if !EnabledControlState or
+  // ReadOnlyControlState.
   if (states & PressedControlState) {
     if (kind == kThemeIncDecButton || kind == kThemeIncDecButtonSmall ||
         kind == kThemeIncDecButtonMini)

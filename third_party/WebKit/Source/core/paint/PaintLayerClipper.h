@@ -25,7 +25,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  *
  * Alternatively, the contents of this file may be used under the terms
  * of either the Mozilla Public License Version 1.1, found at
@@ -155,7 +155,8 @@ class CORE_EXPORT PaintLayerClipper {
   void clearClipRectsIncludingDescendants();
   void clearClipRectsIncludingDescendants(ClipRectsCacheSlot);
 
-  // Returns the background clip rect of the layer in the local coordinate space. Only looks for clips up to the given ancestor.
+  // Returns the background clip rect of the layer in the local coordinate
+  // space. Only looks for clips up to the given ancestor.
   LayoutRect localClipRect(const PaintLayer* ancestorLayer) const;
 
   ClipRect backgroundClipRect(const ClipRectsContext&) const;

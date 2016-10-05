@@ -26,7 +26,8 @@ RoundedInnerRectClipper::RoundedInnerRectClipper(
   if (clipRect.isRenderable()) {
     roundedRectClips.append(clipRect);
   } else {
-    // We create a rounded rect for each of the corners and clip it, while making sure we clip opposing corners together.
+    // We create a rounded rect for each of the corners and clip it, while
+    // making sure we clip opposing corners together.
     if (!clipRect.getRadii().topLeft().isEmpty() ||
         !clipRect.getRadii().bottomRight().isEmpty()) {
       FloatRect topCorner(clipRect.rect().x(), clipRect.rect().y(),

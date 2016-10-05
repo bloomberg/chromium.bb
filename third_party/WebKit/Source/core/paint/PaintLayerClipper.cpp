@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012 Apple Inc. All rights
+ * reserved.
  *
  * Portions are Copyright (C) 1998 Netscape Communications Corporation.
  *
@@ -24,7 +25,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  *
  * Alternatively, the contents of this file may be used under the terms
  * of either the Mozilla Public License Version 1.1, found at
@@ -54,8 +55,9 @@ namespace blink {
 static void adjustClipRectsForChildren(const LayoutBoxModelObject& layoutObject,
                                        ClipRects& clipRects) {
   EPosition position = layoutObject.styleRef().position();
-  // A fixed object is essentially the root of its containing block hierarchy, so when
-  // we encounter such an object, we reset our clip rects to the fixedClipRect.
+  // A fixed object is essentially the root of its containing block hierarchy,
+  // so when we encounter such an object, we reset our clip rects to the
+  // fixedClipRect.
   if (position == FixedPosition) {
     clipRects.setPosClipRect(clipRects.fixedClipRect());
     clipRects.setOverflowClipRect(clipRects.fixedClipRect());
@@ -245,22 +247,24 @@ void PaintLayerClipper::calculateRects(
     if (layoutObject.styleRef().hasBorderRadius())
       foregroundRect.setHasRadius(true);
 
-    // FIXME: Does not do the right thing with columns yet, since we don't yet factor in the
-    // individual column boxes as overflow.
+    // FIXME: Does not do the right thing with columns yet, since we don't yet
+    // factor in the individual column boxes as overflow.
 
-    // The LayoutView is special since its overflow clipping rect may be larger than its box rect (crbug.com/492871).
+    // The LayoutView is special since its overflow clipping rect may be larger
+    // than its box rect (crbug.com/492871).
     LayoutRect layerBoundsWithVisualOverflow =
         layoutObject.isLayoutView()
             ? toLayoutView(layoutObject).viewRect()
             : toLayoutBox(layoutObject).visualOverflowRect();
-    toLayoutBox(layoutObject)
-        .flipForWritingMode(
-            layerBoundsWithVisualOverflow);  // PaintLayer are in physical coordinates, so the overflow has to be flipped.
+    // PaintLayer are in physical coordinates, so the overflow has to be
+    // flipped.
+    toLayoutBox(layoutObject).flipForWritingMode(layerBoundsWithVisualOverflow);
     layerBoundsWithVisualOverflow.moveBy(offset);
     backgroundRect.intersect(layerBoundsWithVisualOverflow);
   }
 
-  // CSS clip (different than clipping due to overflow) can clip to any box, even if it falls outside of the border box.
+  // CSS clip (different than clipping due to overflow) can clip to any box,
+  // even if it falls outside of the border box.
   if (layoutObject.hasClip()) {
     // Clip applies to *us* as well, so go ahead and update the damageRect.
     LayoutRect newPosClip = toLayoutBox(layoutObject).clipRect(offset);
@@ -283,10 +287,12 @@ void PaintLayerClipper::calculateClipRects(const ClipRectsContext& context,
 
   bool isClippingRoot = &m_layer == context.rootLayer;
 
-  // For transformed layers, the root layer was shifted to be us, so there is no need to
-  // examine the parent. We want to cache clip rects with us as the root.
+  // For transformed layers, the root layer was shifted to be us, so there is no
+  // need to examine the parent. We want to cache clip rects with us as the
+  // root.
   PaintLayer* parentLayer = !isClippingRoot ? m_layer.parent() : nullptr;
-  // Ensure that our parent's clip has been calculated so that we can examine the values.
+  // Ensure that our parent's clip has been calculated so that we can examine
+  // the values.
   if (parentLayer) {
     parentLayer->clipper().getOrCalculateClipRects(context, clipRects);
   } else {
@@ -299,9 +305,10 @@ void PaintLayerClipper::calculateClipRects(const ClipRectsContext& context,
       (layoutObject.isSVGRoot() &&
        toLayoutSVGRoot(&layoutObject)->shouldApplyViewportClip()) ||
       layoutObject.hasClip() || layoutObject.styleRef().containsPaint()) {
-    // This offset cannot use convertToLayerCoords, because sometimes our rootLayer may be across
-    // some transformed layer boundary, for example, in the PaintLayerCompositor overlapMap, where
-    // clipRects are needed in view space.
+    // This offset cannot use convertToLayerCoords, because sometimes our
+    // rootLayer may be across some transformed layer boundary, for example, in
+    // the PaintLayerCompositor overlapMap, where clipRects are needed in view
+    // space.
     applyClipRects(context, layoutObject,
                    roundedLayoutPoint(layoutObject.localToAncestorPoint(
                        FloatPoint(), context.rootLayer->layoutObject())),
@@ -336,7 +343,8 @@ ClipRect PaintLayerClipper::backgroundClipRect(
   ClipRect result = backgroundClipRectForPosition(
       *parentClipRects, m_layer.layoutObject()->styleRef().position());
 
-  // Note: infinite clipRects should not be scrolled here, otherwise they will accidentally no longer be considered infinite.
+  // Note: infinite clipRects should not be scrolled here, otherwise they will
+  // accidentally no longer be considered infinite.
   if (parentClipRects->fixed() &&
       context.rootLayer->layoutObject() == layoutView &&
       result != LayoutRect(LayoutRect::infiniteIntRect()))

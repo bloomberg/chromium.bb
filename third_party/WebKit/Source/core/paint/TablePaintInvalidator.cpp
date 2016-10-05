@@ -18,11 +18,13 @@ PaintInvalidationReason TablePaintInvalidator::invalidatePaintIfNeeded() {
   PaintInvalidationReason reason =
       BoxPaintInvalidator(m_table, m_context).invalidatePaintIfNeeded();
 
-  // Table cells paint background from the containing column group, column, section and row.
-  // If background of any of them changed, we need to invalidate all affected cells.
-  // Here use shouldDoFullPaintInvalidation() as a broader condition of background change.
+  // Table cells paint background from the containing column group, column,
+  // section and row.  If background of any of them changed, we need to
+  // invalidate all affected cells.  Here use shouldDoFullPaintInvalidation() as
+  // a broader condition of background change.
 
-  // If any col changed background, we'll check all cells for background changes.
+  // If any col changed background, we'll check all cells for background
+  // changes.
   bool hasColChangedBackground = false;
   for (LayoutTableCol* col = m_table.firstColumn(); col;
        col = col->nextColumn()) {
@@ -49,8 +51,9 @@ PaintInvalidationReason TablePaintInvalidator::invalidatePaintIfNeeded() {
       for (LayoutTableCell* cell = row->firstCell(); cell;
            cell = cell->nextCell()) {
         bool invalidated = false;
-        // Table cells paint container's background on the container's backing instead of its own (if any),
-        // so we must invalidate it by the containers.
+        // Table cells paint container's background on the container's backing
+        // instead of its own (if any), so we must invalidate it by the
+        // containers.
         if (section->backgroundChangedSinceLastPaintInvalidation()) {
           sectionInvalidator
               .slowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(

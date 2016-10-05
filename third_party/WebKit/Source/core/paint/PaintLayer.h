@@ -25,7 +25,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  *
  * Alternatively, the contents of this file may be used under the terms
  * of either the Mozilla Public License Version 1.1, found at
@@ -103,39 +103,45 @@ struct PaintLayerRareData {
 
   std::unique_ptr<TransformationMatrix> transform;
 
-  // Pointer to the enclosing Layer that caused us to be paginated. It is 0 if we are not paginated.
+  // Pointer to the enclosing Layer that caused us to be paginated. It is 0 if
+  // we are not paginated.
   //
   // See LayoutMultiColumnFlowThread and
   // https://sites.google.com/a/chromium.org/dev/developers/design-documents/multi-column-layout
-  // for more information about the multicol implementation. It's important to understand the
-  // difference between flow thread coordinates and visual coordinates when working with multicol
-  // in Layer, since Layer is one of the few places where we have to worry about the
-  // visual ones. Internally we try to use flow-thread coordinates whenever possible.
+  // for more information about the multicol implementation. It's important to
+  // understand the difference between flow thread coordinates and visual
+  // coordinates when working with multicol in Layer, since Layer is one of the
+  // few places where we have to worry about the visual ones. Internally we try
+  // to use flow-thread coordinates whenever possible.
   PaintLayer* enclosingPaginationLayer;
 
-  // These compositing reasons are updated whenever style changes, not while updating compositing layers.
-  // They should not be used to infer the compositing state of this layer.
+  // These compositing reasons are updated whenever style changes, not while
+  // updating compositing layers.  They should not be used to infer the
+  // compositing state of this layer.
   CompositingReasons potentialCompositingReasonsFromStyle;
 
-  // Once computed, indicates all that a layer needs to become composited using the CompositingReasons enum bitfield.
+  // Once computed, indicates all that a layer needs to become composited using
+  // the CompositingReasons enum bitfield.
   CompositingReasons compositingReasons;
 
   // This captures reasons why a paint layer might be forced to be separately
   // composited rather than sharing a backing with another layer.
   SquashingDisallowedReasons squashingDisallowedReasons;
 
-  // If the layer paints into its own backings, this keeps track of the backings.
-  // It's nullptr if the layer is not composited or paints into grouped backing.
+  // If the layer paints into its own backings, this keeps track of the
+  // backings.  It's nullptr if the layer is not composited or paints into
+  // grouped backing.
   std::unique_ptr<CompositedLayerMapping> compositedLayerMapping;
 
-  // If the layer paints into grouped backing (i.e. squashed), this points to the
-  // grouped CompositedLayerMapping. It's null if the layer is not composited or
-  // paints into its own backing.
+  // If the layer paints into grouped backing (i.e. squashed), this points to
+  // the grouped CompositedLayerMapping. It's null if the layer is not
+  // composited or paints into its own backing.
   CompositedLayerMapping* groupedMapping;
 
   Persistent<PaintLayerFilterInfo> filterInfo;
 
-  // The accumulated subpixel offset of a composited layer's composited bounds compared to absolute coordinates.
+  // The accumulated subpixel offset of a composited layer's composited bounds
+  // compared to absolute coordinates.
   LayoutSize subpixelAccumulation;
 };
 
@@ -229,8 +235,9 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   PaintLayer* firstChild() const { return m_first; }
   PaintLayer* lastChild() const { return m_last; }
 
-  // TODO(wangxianzhu): Find a better name for it. 'paintContainer' might be good but
-  // we can't use it for now because it conflicts with PaintInfo::paintContainer.
+  // TODO(wangxianzhu): Find a better name for it. 'paintContainer' might be
+  // good but we can't use it for now because it conflicts with
+  // PaintInfo::paintContainer.
   PaintLayer* compositingContainer() const;
 
   void addChild(PaintLayer* newChild, PaintLayer* beforeChild = 0);
@@ -244,8 +251,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // FIXME: Many people call this function while it has out-of-date information.
   bool isSelfPaintingLayer() const { return m_isSelfPaintingLayer; }
 
-  // PaintLayers which represent LayoutParts may become self-painting due to being composited.
-  // If this is the case, this method returns true.
+  // PaintLayers which represent LayoutParts may become self-painting due to
+  // being composited.  If this is the case, this method returns true.
   bool isSelfPaintingOnlyBecauseIsCompositedPart() const;
 
   bool isTransparent() const {
@@ -264,8 +271,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     ASSERT(!m_needsPositionUpdate);
     return m_location;
   }
-  // FIXME: size() should ASSERT(!m_needsPositionUpdate) as well, but that fails in some tests,
-  // for example, fast/repaint/clipped-relative.html.
+  // FIXME: size() should ASSERT(!m_needsPositionUpdate) as well, but that fails
+  // in some tests, for example, fast/repaint/clipped-relative.html.
   const IntSize& size() const { return m_size; }
   void setSizeHackForLayoutTreeAsText(const IntSize& size) { m_size = size; }
 
@@ -275,8 +282,9 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   PaintLayerCompositor* compositor() const;
 
-  // Notification from the layoutObject that its content changed (e.g. current frame of image changed).
-  // Allows updates of layer content without invalidating paint.
+  // Notification from the layoutObject that its content changed (e.g. current
+  // frame of image changed).  Allows updates of layer content without
+  // invalidating paint.
   void contentChanged(ContentChangeType);
 
   void updateLayerPosition();
@@ -305,13 +313,15 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     return !hasVisibleContent() && !hasVisibleDescendant();
   }
 
-  // FIXME: hasVisibleContent() should call updateDescendantDependentFlags() if m_isVisibleContentDirty.
+  // FIXME: hasVisibleContent() should call updateDescendantDependentFlags() if
+  // m_isVisibleContentDirty.
   bool hasVisibleContent() const {
     DCHECK(!m_isVisibleContentDirty);
     return m_hasVisibleContent;
   }
 
-  // FIXME: hasVisibleDescendant() should call updateDescendantDependentFlags() if m_isVisibleDescendantDirty.
+  // FIXME: hasVisibleDescendant() should call updateDescendantDependentFlags()
+  // if m_isVisibleDescendantDirty.
   bool hasVisibleDescendant() const {
     DCHECK(!m_isVisibleDescendantDirty);
     return m_hasVisibleDescendant;
@@ -331,24 +341,27 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     return m_isAllScrollingContentComposited;
   }
 
-  // Gets the ancestor layer that serves as the containing block of this layer. This is either
-  // another out of flow positioned layer, or one that contains paint.
-  // If |ancestor| is specified, |*skippedAncestor| will be set to true if |ancestor| is found in
-  // the ancestry chain between this layer and the containing block layer; if not found, it will
-  // be set to false. Either both |ancestor| and |skippedAncestor| should be nullptr, or none of
-  // them should.
+  // Gets the ancestor layer that serves as the containing block of this layer.
+  // This is either another out of flow positioned layer, or one that contains
+  // paint.  If |ancestor| is specified, |*skippedAncestor| will be set to true
+  // if |ancestor| is found in the ancestry chain between this layer and the
+  // containing block layer; if not found, it will be set to false. Either both
+  // |ancestor| and |skippedAncestor| should be nullptr, or none of them should.
   PaintLayer* containingLayerForOutOfFlowPositioned(
       const PaintLayer* ancestor = nullptr,
       bool* skippedAncestor = nullptr) const;
 
   bool isPaintInvalidationContainer() const;
 
-  // Do *not* call this method unless you know what you are dooing. You probably want to call enclosingCompositingLayerForPaintInvalidation() instead.
+  // Do *not* call this method unless you know what you are dooing. You probably
+  // want to call enclosingCompositingLayerForPaintInvalidation() instead.
   // If includeSelf is true, may return this.
   PaintLayer* enclosingLayerWithCompositedLayerMapping(IncludeSelfOrNot) const;
 
-  // Returns the enclosing layer root into which this layer paints, inclusive of this one. Note that the enclosing layer may or may not have its own
-  // GraphicsLayer backing, but is nevertheless the root for a call to the Layer::paint*() methods.
+  // Returns the enclosing layer root into which this layer paints, inclusive of
+  // this one. Note that the enclosing layer may or may not have its own
+  // GraphicsLayer backing, but is nevertheless the root for a call to the
+  // Layer::paint*() methods.
   PaintLayer* enclosingLayerForPaintInvalidation() const;
 
   PaintLayer* enclosingLayerForPaintInvalidationCrossingFrameBoundaries() const;
@@ -356,7 +369,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   bool hasAncestorWithFilterThatMovesPixels() const;
 
   bool canUseConvertToLayerCoords() const {
-    // These LayoutObjects have an impact on their layers without the layoutObjects knowing about it.
+    // These LayoutObjects have an impact on their layers without the
+    // layoutObjects knowing about it.
     return !layoutObject()->hasTransformRelatedProperty() &&
            !layoutObject()->isSVGRoot();
   }
@@ -365,29 +379,35 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
                             LayoutPoint&) const;
   void convertToLayerCoords(const PaintLayer* ancestorLayer, LayoutRect&) const;
 
-  // Does the same as convertToLayerCoords() when not in multicol. For multicol, however,
-  // convertToLayerCoords() calculates the offset in flow-thread coordinates (what the layout
-  // engine uses internally), while this method calculates the visual coordinates; i.e. it figures
-  // out which column the layer starts in and adds in the offset. See
-  // http://www.chromium.org/developers/design-documents/multi-column-layout for more info.
+  // Does the same as convertToLayerCoords() when not in multicol. For multicol,
+  // however, convertToLayerCoords() calculates the offset in flow-thread
+  // coordinates (what the layout engine uses internally), while this method
+  // calculates the visual coordinates; i.e. it figures out which column the
+  // layer starts in and adds in the offset. See
+  // http://www.chromium.org/developers/design-documents/multi-column-layout for
+  // more info.
   LayoutPoint visualOffsetFromAncestor(const PaintLayer* ancestorLayer) const;
 
-  // Convert a bounding box from flow thread coordinates, relative to |this|, to visual coordinates, relative to |ancestorLayer|.
-  // See http://www.chromium.org/developers/design-documents/multi-column-layout for more info on these coordinate types.
-  // This method requires this layer to be paginated; i.e. it must have an enclosingPaginationLayer().
+  // Convert a bounding box from flow thread coordinates, relative to |this|, to
+  // visual coordinates, relative to |ancestorLayer|.
+  // See http://www.chromium.org/developers/design-documents/multi-column-layout
+  // for more info on these coordinate types.  This method requires this layer
+  // to be paginated; i.e. it must have an enclosingPaginationLayer().
   void convertFromFlowThreadToVisualBoundingBoxInAncestor(
       const PaintLayer* ancestorLayer,
       LayoutRect&) const;
 
-  // The hitTest() method looks for mouse events by walking layers that intersect the point from front to back.
+  // The hitTest() method looks for mouse events by walking layers that
+  // intersect the point from front to back.
   bool hitTest(HitTestResult&);
 
   bool intersectsDamageRect(const LayoutRect& layerBounds,
                             const LayoutRect& damageRect,
                             const LayoutPoint& offsetFromRoot) const;
 
-  // MaybeIncludeTransformForAncestorLayer means that a transform on |ancestorLayer| may be applied to the bounding box,
-  // in particular if paintsWithTransform() is true.
+  // MaybeIncludeTransformForAncestorLayer means that a transform on
+  // |ancestorLayer| may be applied to the bounding box, in particular if
+  // paintsWithTransform() is true.
   enum CalculateBoundsOptions {
     MaybeIncludeTransformForAncestorLayer,
     NeverIncludeTransformForAncestorLayer,
@@ -407,8 +427,9 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   LayoutRect boundingBoxForCompositingOverlapTest() const;
 
-  // If true, this layer's children are included in its bounds for overlap testing.
-  // We can't rely on the children's positions if this layer has a filter that could have moved the children's pixels around.
+  // If true, this layer's children are included in its bounds for overlap
+  // testing.  We can't rely on the children's positions if this layer has a
+  // filter that could have moved the children's pixels around.
   bool overlapBoundsIncludeChildren() const;
   LayoutRect boundingBoxForCompositing(
       const PaintLayer* ancestorLayer = 0,
@@ -435,9 +456,9 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     return m_rareData ? m_rareData->transform.get() : nullptr;
   }
 
-  // currentTransform computes a transform which takes accelerated animations into account. The
-  // resulting transform has transform-origin baked in. If the layer does not have a transform,
-  // returns the identity matrix.
+  // currentTransform computes a transform which takes accelerated animations
+  // into account. The resulting transform has transform-origin baked in. If the
+  // layer does not have a transform, returns the identity matrix.
   TransformationMatrix currentTransform() const;
   TransformationMatrix renderableTransform(GlobalPaintFlags) const;
 
@@ -452,7 +473,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
            !m_rareData->transform->isAffine();
   }
 
-  // FIXME: reflections should force transform-style to be flat in the style: https://bugs.webkit.org/show_bug.cgi?id=106959
+  // FIXME: reflections should force transform-style to be flat in the style:
+  // https://bugs.webkit.org/show_bug.cgi?id=106959
   bool shouldPreserve3D() const {
     return !layoutObject()->hasReflection() &&
            layoutObject()->style()->preserves3D();
@@ -472,8 +494,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   CompositingState compositingState() const;
 
-  // This returns true if our document is in a phase of its lifestyle during which
-  // compositing state may legally be read.
+  // This returns true if our document is in a phase of its lifestyle during
+  // which compositing state may legally be read.
   bool isAllowedToQueryCompositingState() const;
 
   // Don't null check this.
@@ -482,15 +504,17 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   GraphicsLayer* graphicsLayerBacking() const;
   GraphicsLayer* graphicsLayerBackingForScrolling() const;
   // Returns true for layers with scrollable overflow which have a background
-  // that can be painted into the composited scrolling contents layer when it exist
-  // (i.e. the background can scroll with the content). When the background is also
-  // opaque this allows us to composite the scroller even on low DPI as we can
-  // draw with subpixel anti-aliasing.
+  // that can be painted into the composited scrolling contents layer when it
+  // exist (i.e. the background can scroll with the content). When the
+  // background is also opaque this allows us to composite the scroller even on
+  // low DPI as we can draw with subpixel anti-aliasing.
   bool canPaintBackgroundOntoScrollingContentsLayer() const;
-  // NOTE: If you are using hasCompositedLayerMapping to determine the state of compositing for this layer,
-  // (and not just to do bookkeeping related to the mapping like, say, allocating or deallocating a mapping),
-  // then you may have incorrect logic. Use compositingState() instead.
-  // FIXME: This is identical to null checking compositedLayerMapping(), why not just call that?
+  // NOTE: If you are using hasCompositedLayerMapping to determine the state of
+  // compositing for this layer, (and not just to do bookkeeping related to the
+  // mapping like, say, allocating or deallocating a mapping), then you may have
+  // incorrect logic. Use compositingState() instead.
+  // FIXME: This is identical to null checking compositedLayerMapping(), why not
+  // just call that?
   bool hasCompositedLayerMapping() const {
     return m_rareData && m_rareData->compositedLayerMapping;
   }
@@ -518,8 +542,10 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       const LayoutBoxModelObject& paintInvalidationContainer,
       LayoutRect&);
 
-  // Adjusts the given rect (in the coordinate space of the LayoutObject) to the coordinate space of |paintInvalidationContainer|'s GraphicsLayer backing.
-  // Should use PaintInvalidationState::mapRectToPaintInvalidationBacking() instead if PaintInvalidationState is available.
+  // Adjusts the given rect (in the coordinate space of the LayoutObject) to the
+  // coordinate space of |paintInvalidationContainer|'s GraphicsLayer backing.
+  // Should use PaintInvalidationState::mapRectToPaintInvalidationBacking()
+  // instead if PaintInvalidationState is available.
   static void mapRectToPaintInvalidationBacking(
       const LayoutObject&,
       const LayoutBoxModelObject& paintInvalidationContainer,
@@ -582,7 +608,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // Compute rects only for this layer
   void computeSelfHitTestRects(LayerHitTestRects&) const;
 
-  // FIXME: This should probably return a ScrollableArea but a lot of internal methods are mistakenly exposed.
+  // FIXME: This should probably return a ScrollableArea but a lot of internal
+  // methods are mistakenly exposed.
   PaintLayerScrollableArea* getScrollableArea() const {
     return m_scrollableArea.get();
   }
@@ -792,8 +819,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   void updateOrRemoveFilterEffect();
 
   void updateSelfPaintingLayer();
-  // This is O(depth) so avoid calling this in loops. Instead use optimizations like
-  // those in PaintInvalidationState.
+  // This is O(depth) so avoid calling this in loops. Instead use optimizations
+  // like those in PaintInvalidationState.
   PaintLayer* enclosingSelfPaintingLayer();
 
   PaintLayer* enclosingTransformedAncestor() const;
@@ -857,9 +884,11 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   void setNeedsRepaint();
   void clearNeedsRepaintRecursively();
 
-  // These previousXXX() functions are for subsequence caching. They save the painting status of the layer
-  // during the previous painting with subsequence. A painting without subsequence [1] doesn't change this status.
-  // [1] See shouldCreateSubsequence() in PaintLayerPainter.cpp for the cases we use subsequence when painting a PaintLayer.
+  // These previousXXX() functions are for subsequence caching. They save the
+  // painting status of the layer during the previous painting with subsequence.
+  // A painting without subsequence [1] doesn't change this status.  [1] See
+  // shouldCreateSubsequence() in PaintLayerPainter.cpp for the cases we use
+  // subsequence when painting a PaintLayer.
 
   IntSize previousScrollOffsetAccumulationForPainting() const {
     return m_previousScrollOffsetAccumulationForPainting;
@@ -888,9 +917,10 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     ASSERT(m_previousPaintResult == static_cast<unsigned>(result));
   }
 
-  // Used to skip PaintPhaseDescendantOutlinesOnly for layers that have never had descendant outlines.
-  // The flag is set during paint invalidation on a self painting layer if any contained object has outline.
-  // It's cleared during painting if PaintPhaseDescendantOutlinesOnly painted nothing.
+  // Used to skip PaintPhaseDescendantOutlinesOnly for layers that have never
+  // had descendant outlines.  The flag is set during paint invalidation on a
+  // self painting layer if any contained object has outline.  It's cleared
+  // during painting if PaintPhaseDescendantOutlinesOnly painted nothing.
   // For more details, see core/paint/REAME.md#Empty paint phase optimization.
   bool needsPaintPhaseDescendantOutlines() const {
     return m_needsPaintPhaseDescendantOutlines &&
@@ -1042,8 +1072,9 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   FilterOperations addReflectionToFilterOperations(const ComputedStyle&) const;
   FilterEffect* updateFilterEffect() const;
 
-  // FIXME: We could lazily allocate our ScrollableArea based on style properties ('overflow', ...)
-  // but for now, we are always allocating it for LayoutBox as it's safer. crbug.com/467721.
+  // FIXME: We could lazily allocate our ScrollableArea based on style
+  // properties ('overflow', ...) but for now, we are always allocating it for
+  // LayoutBox as it's safer.  crbug.com/467721.
   bool requiresScrollableArea() const { return layoutBox(); }
   void updateScrollableArea();
 
@@ -1082,13 +1113,17 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   bool shouldFragmentCompositedBounds(const PaintLayer* compositingLayer) const;
 
-  // Self-painting layer is an optimization where we avoid the heavy Layer painting
-  // machinery for a Layer allocated only to handle the overflow clip case.
-  // FIXME(crbug.com/332791): Self-painting layer should be merged into the overflow-only concept.
+  // Self-painting layer is an optimization where we avoid the heavy Layer
+  // painting machinery for a Layer allocated only to handle the overflow clip
+  // case.
+  // FIXME(crbug.com/332791): Self-painting layer should be merged into the
+  // overflow-only concept.
   unsigned m_isSelfPaintingLayer : 1;
 
-  // If have no self-painting descendants, we don't have to walk our children during painting. This can lead to
-  // significant savings, especially if the tree has lots of non-self-painting layers grouped together (e.g. table cells).
+  // If have no self-painting descendants, we don't have to walk our children
+  // during painting. This can lead to significant savings, especially if the
+  // tree has lots of non-self-painting layers grouped together (e.g. table
+  // cells).
   mutable unsigned m_hasSelfPaintingLayerDescendant : 1;
   mutable unsigned m_hasSelfPaintingLayerDescendantDirty : 1;
 
@@ -1114,18 +1149,21 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   unsigned m_needsDescendantDependentCompositingInputsUpdate : 1;
   unsigned m_childNeedsCompositingInputsUpdate : 1;
 
-  // Used only while determining what layers should be composited. Applies to the tree of z-order lists.
+  // Used only while determining what layers should be composited. Applies to
+  // the tree of z-order lists.
   unsigned m_hasCompositingDescendant : 1;
 
-  // True iff we have scrollable overflow and all children of m_layoutObject are known to paint
-  // exclusively into their own composited layers.  Set by updateScrollingStateAfterCompositingChange().
+  // True iff we have scrollable overflow and all children of m_layoutObject are
+  // known to paint exclusively into their own composited layers.  Set by
+  // updateScrollingStateAfterCompositingChange().
   unsigned m_isAllScrollingContentComposited : 1;
 
   // Should be for stacking contexts having unisolated blending descendants.
   unsigned m_shouldIsolateCompositedDescendants : 1;
 
-  // True if this layout layer just lost its grouped mapping due to the CompositedLayerMapping being destroyed,
-  // and we don't yet know to what graphics layer this Layer will be assigned.
+  // True if this layout layer just lost its grouped mapping due to the
+  // CompositedLayerMapping being destroyed, and we don't yet know to what
+  // graphics layer this Layer will be assigned.
   unsigned m_lostGroupedMapping : 1;
 
   unsigned m_needsRepaint : 1;
@@ -1138,7 +1176,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   unsigned m_needsPaintPhaseDescendantBlockBackgrounds : 1;
   unsigned m_previousPaintPhaseDescendantBlockBackgroundsWasEmpty : 1;
 
-  // These bitfields are part of ancestor/descendant dependent compositing inputs.
+  // These bitfields are part of ancestor/descendant dependent compositing
+  // inputs.
   unsigned m_hasDescendantWithClipPath : 1;
   unsigned m_hasNonIsolatedDescendantWithBlendMode : 1;
   unsigned m_hasAncestorWithClipPath : 1;
@@ -1161,7 +1200,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // box. Otherwise, this is the LayoutInline's lines' bounding box.
   IntSize m_size;
 
-  // Cached normal flow values for absolute positioned elements with static left/top values.
+  // Cached normal flow values for absolute positioned elements with static
+  // left/top values.
   LayoutUnit m_staticInlinePosition;
   LayoutUnit m_staticBlockPosition;
 

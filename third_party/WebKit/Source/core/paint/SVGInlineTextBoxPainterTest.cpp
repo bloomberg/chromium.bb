@@ -27,7 +27,8 @@ namespace {
 class SVGInlineTextBoxPainterTest : public RenderingTest {
  public:
   const DrawingDisplayItem* getDrawingForSVGTextById(const char* elementName) {
-    // Look up the inline text box that serves as the display item client for the painted text.
+    // Look up the inline text box that serves as the display item client for
+    // the painted text.
     LayoutSVGText* targetSVGText = toLayoutSVGText(
         document().getElementById(AtomicString(elementName))->layoutObject());
     LayoutSVGInlineText* targetInlineText =

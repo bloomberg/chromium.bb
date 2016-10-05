@@ -44,8 +44,10 @@ FilterPainter::FilterPainter(PaintLayer& layer,
     return;
 
   // We'll handle clipping to the dirty rect before filter rasterization.
-  // Filter processing will automatically expand the clip rect and the offscreen to accommodate any filter outsets.
-  // FIXME: It is incorrect to just clip to the damageRect here once multiple fragments are involved.
+  // Filter processing will automatically expand the clip rect and the offscreen
+  // to accommodate any filter outsets.
+  // FIXME: It is incorrect to just clip to the damageRect here once multiple
+  // fragments are involved.
 
   // Subsequent code should not clip to the dirty rect, since we've already
   // done it above, and doing it later will defeat the outsets.
@@ -71,7 +73,8 @@ FilterPainter::FilterPainter(PaintLayer& layer,
     LayoutRect visualBounds(
         layer.physicalBoundingBoxIncludingStackingChildren(offsetFromRoot));
     if (layer.enclosingPaginationLayer()) {
-      // Filters are set up before pagination, so we need to make the bounding box visual on our own.
+      // Filters are set up before pagination, so we need to make the bounding
+      // box visual on our own.
       visualBounds.moveBy(-offsetFromRoot);
       layer.convertFromFlowThreadToVisualBoundingBoxInAncestor(
           paintingInfo.rootLayer, visualBounds);

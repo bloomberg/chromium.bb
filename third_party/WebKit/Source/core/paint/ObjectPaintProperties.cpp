@@ -13,8 +13,8 @@ ObjectPaintProperties::contentsProperties() const {
   if (svgLocalToBorderBoxTransform()) {
     propertiesWithOffset.propertyTreeState.setTransform(
         svgLocalToBorderBoxTransform());
-    // There's no paint offset for the contents because svgLocalToBorderBoxTransform bakes in
-    // the paint offset.
+    // There's no paint offset for the contents because
+    // svgLocalToBorderBoxTransform bakes in the paint offset.
     propertiesWithOffset.paintOffset = LayoutPoint();
   } else if (scrollTranslation()) {
     propertiesWithOffset.propertyTreeState.setTransform(scrollTranslation());

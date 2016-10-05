@@ -37,7 +37,8 @@ inline NinePiece& operator++(NinePiece& piece) {
   return piece;
 }
 
-// The NinePieceImageGrid class is responsible for computing drawing information for the nine piece image.
+// The NinePieceImageGrid class is responsible for computing drawing information
+// for the nine piece image.
 //
 // http://dev.w3.org/csswg/css-backgrounds-3/#border-image-process
 //
@@ -73,7 +74,8 @@ class CORE_EXPORT NinePieceImageGrid {
     FloatRect destination;
     FloatRect source;
 
-    // tileScale and tileRule are only useful for non-corners, i.e. edge and center pieces.
+    // tileScale and tileRule are only useful for non-corners, i.e. edge and
+    // center pieces.
     FloatSize tileScale;
     struct {
       Image::TileRule horizontal;

@@ -39,9 +39,10 @@ class ThemePainter {
  public:
   explicit ThemePainter();
 
-  // This method is called to paint the widget as a background of the LayoutObject.  A widget's foreground, e.g., the
-  // text of a button, is always rendered by the engine itself.  The boolean return value indicates
-  // whether the CSS border/background should also be painted.
+  // This method is called to paint the widget as a background of the
+  // LayoutObject.  A widget's foreground, e.g., the text of a button, is always
+  // rendered by the engine itself.  The boolean return value indicates whether
+  // the CSS border/background should also be painted.
   bool paint(const LayoutObject&, const PaintInfo&, const IntRect&);
   bool paintBorderOnly(const LayoutObject&, const PaintInfo&, const IntRect&);
   bool paintDecorations(const LayoutObject&, const PaintInfo&, const IntRect&);

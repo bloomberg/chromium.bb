@@ -65,15 +65,16 @@ void BoxPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo,
   Optional<ScrollRecorder> scrollRecorder;
   if (isPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
           &m_layoutBox, paintInfo)) {
-    // For the case where we are painting the background into the scrolling contents layer
-    // of a composited scroller we need to include the entire overflow rect.
+    // For the case where we are painting the background into the scrolling
+    // contents layer of a composited scroller we need to include the entire
+    // overflow rect.
     paintRect = m_layoutBox.layoutOverflowRect();
     scrollRecorder.emplace(paintInfo.context, m_layoutBox, paintInfo.phase,
                            m_layoutBox.scrolledContentOffset());
 
-    // The background painting code assumes that the borders are part of the paintRect so we
-    // expand the paintRect by the border size when painting the background into the
-    // scrolling contents layer.
+    // The background painting code assumes that the borders are part of the
+    // paintRect so we expand the paintRect by the border size when painting the
+    // background into the scrolling contents layer.
     paintRect.expandEdges(LayoutUnit(m_layoutBox.borderTop()),
                           LayoutUnit(m_layoutBox.borderRight()),
                           LayoutUnit(m_layoutBox.borderBottom()),
@@ -117,13 +118,15 @@ void BoxPainter::paintBoxDecorationBackgroundWithRect(
   const ComputedStyle& style = m_layoutBox.styleRef();
 
   Optional<DisplayItemCacheSkipper> cacheSkipper;
-  // Disable cache in under-invalidation checking mode for MediaSliderPart because we always paint using the
-  // latest data (buffered ranges, current time and duration) which may be different from the cached data.
+  // Disable cache in under-invalidation checking mode for MediaSliderPart
+  // because we always paint using the latest data (buffered ranges, current
+  // time and duration) which may be different from the cached data.
   if ((RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled() &&
        style.appearance() == MediaSliderPart)
-      // We may paint a delayed-invalidation object before it's actually invalidated. Note this would be handled for
-      // us by LayoutObjectDrawingRecorder but we have to use DrawingRecorder as we may use the scrolling contents
-      // layer as DisplayItemClient below.
+      // We may paint a delayed-invalidation object before it's actually
+      // invalidated. Note this would be handled for us by
+      // LayoutObjectDrawingRecorder but we have to use DrawingRecorder as we
+      // may use the scrolling contents layer as DisplayItemClient below.
       ||
       m_layoutBox.fullPaintInvalidationReason() ==
           PaintInvalidationDelayedFull) {
@@ -149,8 +152,9 @@ void BoxPainter::paintBoxDecorationBackgroundWithRect(
   GraphicsContextStateSaver stateSaver(paintInfo.context, false);
 
   if (!paintingOverflowContents) {
-    // FIXME: Should eventually give the theme control over whether the box shadow should paint, since controls could have
-    // custom shadows of their own.
+    // FIXME: Should eventually give the theme control over whether the box
+    // shadow should paint, since controls could have custom shadows of their
+    // own.
     if (!m_layoutBox.boxShadowShouldBeAppliedToBackground(
             boxDecorationData.bleedAvoidance)) {
       paintBoxShadow(paintInfo, paintRect, style, Normal);
@@ -166,8 +170,9 @@ void BoxPainter::paintBoxDecorationBackgroundWithRect(
     }
   }
 
-  // If we have a native theme appearance, paint that before painting our background.
-  // The theme will tell us whether or not we should also paint the CSS background.
+  // If we have a native theme appearance, paint that before painting our
+  // background.  The theme will tell us whether or not we should also paint the
+  // CSS background.
   IntRect snappedPaintRect(pixelSnappedIntRect(paintRect));
   ThemePainter& themePainter = LayoutTheme::theme().painter();
   bool themePainted =
@@ -187,7 +192,8 @@ void BoxPainter::paintBoxDecorationBackgroundWithRect(
   if (!paintingOverflowContents) {
     paintBoxShadow(paintInfo, paintRect, style, Inset);
 
-    // The theme will tell us whether or not we should also paint the CSS border.
+    // The theme will tell us whether or not we should also paint the CSS
+    // border.
     if (boxDecorationData.hasBorderDecoration &&
         (!boxDecorationData.hasAppearance ||
          (!themePainted &&
@@ -227,18 +233,20 @@ bool BoxPainter::calculateFillLayerOcclusionCulling(
        currentLayer = currentLayer->next()) {
     reversedPaintList.append(currentLayer);
     // Stop traversal when an opaque layer is encountered.
-    // FIXME : It would be possible for the following occlusion culling test to be more aggressive
-    // on layers with no repeat by testing whether the image covers the layout rect.
-    // Testing that here would imply duplicating a lot of calculations that are currently done in
-    // LayoutBoxModelObject::paintFillLayer. A more efficient solution might be to move the layer
-    // recursion into paintFillLayer, or to compute the layer geometry here and pass it down.
+    // FIXME : It would be possible for the following occlusion culling test to
+    // be more aggressive on layers with no repeat by testing whether the image
+    // covers the layout rect.  Testing that here would imply duplicating a lot
+    // of calculations that are currently done in
+    // LayoutBoxModelObject::paintFillLayer. A more efficient solution might be
+    // to move the layer recursion into paintFillLayer, or to compute the layer
+    // geometry here and pass it down.
 
     // TODO(trchen): Need to check compositing mode as well.
     if (currentLayer->blendMode() != WebBlendModeNormal)
       isNonAssociative = true;
 
-    // TODO(trchen): A fill layer cannot paint if the calculated tile size is empty.
-    // This occlusion check can be wrong.
+    // TODO(trchen): A fill layer cannot paint if the calculated tile size is
+    // empty.  This occlusion check can be wrong.
     if (currentLayer->clipOccludesNextLayers() &&
         currentLayer->imageOccludesNextLayers(m_layoutBox)) {
       if (currentLayer->clip() == BorderFillBox)
@@ -256,17 +264,20 @@ void BoxPainter::paintFillLayers(const PaintInfo& paintInfo,
                                  BackgroundBleedAvoidance bleedAvoidance,
                                  SkXfermode::Mode op,
                                  const LayoutObject* backgroundObject) {
-  // TODO(trchen): Box shadow optimization and background color are concepts that only
-  // apply to background layers. Ideally we should refactor those out of paintFillLayer.
+  // TODO(trchen): Box shadow optimization and background color are concepts
+  // that only apply to background layers. Ideally we should refactor those out
+  // of paintFillLayer.
   FillLayerOcclusionOutputList reversedPaintList;
   bool shouldDrawBackgroundInSeparateBuffer = false;
   if (!m_layoutBox.boxShadowShouldBeAppliedToBackground(bleedAvoidance)) {
     shouldDrawBackgroundInSeparateBuffer =
         calculateFillLayerOcclusionCulling(reversedPaintList, fillLayer);
   } else {
-    // If we are responsible for painting box shadow, don't perform fill layer culling.
-    // TODO(trchen): In theory we only need to make sure the last layer has border box clipping
-    // and make it paint the box shadow. Investigate optimization opportunity later.
+    // If we are responsible for painting box shadow, don't perform fill layer
+    // culling.
+    // TODO(trchen): In theory we only need to make sure the last layer has
+    // border box clipping and make it paint the box shadow. Investigate
+    // optimization opportunity later.
     for (auto currentLayer = &fillLayer; currentLayer;
          currentLayer = currentLayer->next()) {
       reversedPaintList.append(currentLayer);
@@ -276,8 +287,9 @@ void BoxPainter::paintFillLayers(const PaintInfo& paintInfo,
     }
   }
 
-  // TODO(trchen): We can optimize out isolation group if we have a non-transparent
-  // background color and the bottom layer encloses all other layers.
+  // TODO(trchen): We can optimize out isolation group if we have a
+  // non-transparent background color and the bottom layer encloses all other
+  // layers.
 
   GraphicsContext& context = paintInfo.context;
 
@@ -354,11 +366,12 @@ FloatRoundedRect backgroundRoundedRectAdjustedForBleedAvoidance(
     bool includeLogicalLeftEdge,
     bool includeLogicalRightEdge) {
   if (bleedAvoidance == BackgroundBleedShrinkBackground) {
-    // Inset the background rect by a "safe" amount: 1/2 border-width for opaque border styles,
-    // 1/6 border-width for double borders.
+    // Inset the background rect by a "safe" amount: 1/2 border-width for opaque
+    // border styles, 1/6 border-width for double borders.
 
-    // TODO(fmalita): we should be able to fold these parameters into BoxBorderInfo or
-    // BoxDecorationData and avoid calling getBorderEdgeInfo redundantly here.
+    // TODO(fmalita): we should be able to fold these parameters into
+    // BoxBorderInfo or BoxDecorationData and avoid calling getBorderEdgeInfo
+    // redundantly here.
     BorderEdge edges[4];
     obj.style()->getBorderEdgeInfo(edges, includeLogicalLeftEdge,
                                    includeLogicalRightEdge);
@@ -412,14 +425,16 @@ struct FillLayerInfo {
                                         LocalBackgroundAttachment) {
     // When printing backgrounds is disabled or using economy mode,
     // change existing background colors and images to a solid white background.
-    // If there's no bg color or image, leave it untouched to avoid affecting transparency.
-    // We don't try to avoid loading the background images, because this style flag is only set
-    // when printing, and at that point we've already loaded the background images anyway. (To avoid
-    // loading the background images we'd have to do this check when applying styles rather than
-    // while layout.)
+    // If there's no bg color or image, leave it untouched to avoid affecting
+    // transparency.  We don't try to avoid loading the background images,
+    // because this style flag is only set when printing, and at that point
+    // we've already loaded the background images anyway. (To avoid loading the
+    // background images we'd have to do this check when applying styles rather
+    // than while layout.)
     if (BoxPainter::shouldForceWhiteBackgroundForPrintEconomy(obj.styleRef(),
                                                               obj.document())) {
-      // Note that we can't reuse this variable below because the bgColor might be changed
+      // Note that we can't reuse this variable below because the bgColor might
+      // be changed.
       bool shouldPaintBackgroundColor = isBottomLayer && color.alpha();
       if (image || shouldPaintBackgroundColor) {
         color = Color::white;
@@ -429,7 +444,8 @@ struct FillLayerInfo {
 
     const bool hasRoundedBorder =
         obj.style()->hasBorderRadius() && (includeLeftEdge || includeRightEdge);
-    // BorderFillBox radius clipping is taken care of by BackgroundBleedClip{Only,Layer}
+    // BorderFillBox radius clipping is taken care of by
+    // BackgroundBleedClip{Only,Layer}
     isRoundedFill = hasRoundedBorder &&
                     !(isBorderFill && bleedAvoidanceIsClipping(bleedAvoidance));
 
@@ -442,8 +458,9 @@ struct FillLayerInfo {
         obj.boxShadowShouldBeAppliedToBackground(bleedAvoidance, box);
   }
 
-  // FillLayerInfo is a temporary, stack-allocated container which cannot outlive the StyleImage.
-  // This would normally be a raw pointer, if not for the Oilpan tooling complaints.
+  // FillLayerInfo is a temporary, stack-allocated container which cannot
+  // outlive the StyleImage.  This would normally be a raw pointer, if not for
+  // the Oilpan tooling complaints.
   Member<StyleImage> image;
   Color color;
 
@@ -529,7 +546,8 @@ inline bool paintFastBottomLayer(const LayoutBoxModelObject& obj,
   if (!info.shouldPaintColor && !info.shouldPaintImage)
     return true;
 
-  // When the layer has an image, figure out whether it is covered by a single tile.
+  // When the layer has an image, figure out whether it is covered by a single
+  // tile.
   FloatRect imageTile;
   if (info.shouldPaintImage) {
     DCHECK(!geometry);
@@ -554,8 +572,9 @@ inline bool paintFastBottomLayer(const LayoutBoxModelObject& obj,
     }
   }
 
-  // At this point we're committed to the fast path: the destination (r)rect fits within a single
-  // tile, and we can paint it using direct draw(R)Rect() calls.
+  // At this point we're committed to the fast path: the destination (r)rect
+  // fits within a single tile, and we can paint it using direct draw(R)Rect()
+  // calls.
   GraphicsContext& context = paintInfo.context;
   FloatRoundedRect border =
       info.isRoundedFill ? backgroundRoundedRectAdjustedForBleedAvoidance(
@@ -566,7 +585,8 @@ inline bool paintFastBottomLayer(const LayoutBoxModelObject& obj,
   Optional<RoundedInnerRectClipper> clipper;
   if (info.isRoundedFill && !border.isRenderable()) {
     // When the rrect is not renderable, we resort to clipping.
-    // RoundedInnerRectClipper handles this case via discrete, corner-wise clipping.
+    // RoundedInnerRectClipper handles this case via discrete, corner-wise
+    // clipping.
     clipper.emplace(obj, paintInfo, rect, border, ApplyToContext);
     border.setRadii(FloatRoundedRect::Radii());
   }
@@ -674,7 +694,8 @@ void BoxPainter::paintFillLayer(const LayoutBoxModelObject& obj,
     // TODO(chrishtr): this should be pixel-snapped.
     context.clip(FloatRect(thisBox.overflowClipRect(rect.location())));
 
-    // Adjust the paint rect to reflect a scrolled content box with borders at the ends.
+    // Adjust the paint rect to reflect a scrolled content box with borders at
+    // the ends.
     IntSize offset = thisBox.scrolledContentOffset();
     scrolledPaintRect.move(-offset);
     scrolledPaintRect.setWidth(bLeft + thisBox.scrollWidth() + bRight);
@@ -710,12 +731,13 @@ void BoxPainter::paintFillLayer(const LayoutBoxModelObject& obj,
       break;
     }
     case TextFillBox: {
-      // First figure out how big the mask has to be. It should be no bigger than what we need
-      // to actually render, so we should intersect the dirty rect with the border box of the background.
+      // First figure out how big the mask has to be. It should be no bigger
+      // than what we need to actually render, so we should intersect the dirty
+      // rect with the border box of the background.
       maskRect = pixelSnappedIntRect(rect);
 
-      // We draw the background into a separate layer, to be later masked with yet another layer
-      // holding the text content.
+      // We draw the background into a separate layer, to be later masked with
+      // yet another layer holding the text content.
       backgroundClipStateSaver.save();
       context.clip(maskRect);
       context.beginLayer();
@@ -729,9 +751,11 @@ void BoxPainter::paintFillLayer(const LayoutBoxModelObject& obj,
       break;
   }
 
-  // Paint the color first underneath all images, culled if background image occludes it.
-  // TODO(trchen): In the !bgLayer.hasRepeatXY() case, we could improve the culling test
-  // by verifying whether the background image covers the entire painting area.
+  // Paint the color first underneath all images, culled if background image
+  // occludes it.
+  // TODO(trchen): In the !bgLayer.hasRepeatXY() case, we could improve the
+  // culling test by verifying whether the background image covers the entire
+  // painting area.
   if (info.isBottomLayer && info.color.alpha()) {
     IntRect backgroundRect(pixelSnappedIntRect(scrolledPaintRect));
     if (info.shouldPaintColor || info.shouldPaintShadow) {
@@ -770,7 +794,8 @@ void BoxPainter::paintFillLayer(const LayoutBoxModelObject& obj,
     // Create the text mask layer.
     context.beginLayer(1, SkXfermode::kDstIn_Mode);
 
-    // Now draw the text into the mask. We do this by painting using a special paint phase that signals to
+    // Now draw the text into the mask. We do this by painting using a special
+    // paint phase that signals to
     // InlineTextBoxes that they should just add their contents to the clip.
     PaintInfo info(context, maskRect, PaintPhaseTextClip,
                    GlobalPaintNormalPhase, 0);
@@ -780,7 +805,8 @@ void BoxPainter::paintFillLayer(const LayoutBoxModelObject& obj,
                                    scrolledPaintRect.y() - box->y()),
                  root.lineTop(), root.lineBottom());
     } else {
-      // FIXME: this should only have an effect for the line box list within |obj|. Change this to create a LineBoxListPainter directly.
+      // FIXME: this should only have an effect for the line box list within
+      // |obj|. Change this to create a LineBoxListPainter directly.
       LayoutSize localOffset =
           obj.isBox() ? toLayoutBox(&obj)->locationOffset() : LayoutSize();
       obj.paint(info, scrolledPaintRect.location() - localOffset);
@@ -826,7 +852,8 @@ void BoxPainter::paintMaskImages(const PaintInfo& paintInfo,
     StyleImage* maskBoxImage = m_layoutBox.style()->maskBoxImage().image();
     const FillLayer& maskLayers = m_layoutBox.style()->maskLayers();
 
-    // Don't render a masked element until all the mask images have loaded, to prevent a flash of unmasked content.
+    // Don't render a masked element until all the mask images have loaded, to
+    // prevent a flash of unmasked content.
     if (maskBoxImage)
       allMaskImagesLoaded &= maskBoxImage->isLoaded();
 
@@ -912,7 +939,8 @@ void BoxPainter::paintBoxShadow(const PaintInfo& info,
                                 ShadowStyle shadowStyle,
                                 bool includeLogicalLeftEdge,
                                 bool includeLogicalRightEdge) {
-  // FIXME: Deal with border-image. Would be great to use border-image as a mask.
+  // FIXME: Deal with border-image. Would be great to use border-image as a
+  // mask.
   GraphicsContext& context = info.context;
   if (!style.boxShadow())
     return;
@@ -963,23 +991,26 @@ void BoxPainter::paintBoxShadow(const PaintInfo& info,
         if (hasBorderRadius) {
           FloatRoundedRect rectToClipOut = border;
 
-          // If the box is opaque, it is unnecessary to clip it out. However, doing so saves time
-          // when painting the shadow. On the other hand, it introduces subpixel gaps along the
-          // corners. Those are avoided by insetting the clipping path by one CSS pixel.
+          // If the box is opaque, it is unnecessary to clip it out. However,
+          // doing so saves time when painting the shadow. On the other hand, it
+          // introduces subpixel gaps along the corners. Those are avoided by
+          // insetting the clipping path by one CSS pixel.
           if (hasOpaqueBackground)
             rectToClipOut.inflateWithRadii(-1);
 
           if (!rectToClipOut.isEmpty())
             context.clipOutRoundedRect(rectToClipOut);
         } else {
-          // This IntRect is correct even with fractional shadows, because it is used for the rectangle
-          // of the box itself, which is always pixel-aligned.
+          // This IntRect is correct even with fractional shadows, because it is
+          // used for the rectangle of the box itself, which is always
+          // pixel-aligned.
           FloatRect rectToClipOut = border.rect();
 
-          // If the box is opaque, it is unnecessary to clip it out. However, doing so saves time
-          // when painting the shadow. On the other hand, it introduces subpixel gaps along the
-          // edges if they are not pixel-aligned. Those are avoided by insetting the clipping path
-          // by one CSS pixel.
+          // If the box is opaque, it is unnecessary to clip it out. However,
+          // doing so saves time when painting the shadow. On the other hand, it
+          // introduces subpixel gaps along the edges if they are not
+          // pixel-aligned. Those are avoided by insetting the clipping path by
+          // one CSS pixel.
           if (hasOpaqueBackground)
             rectToClipOut.inflate(-1);
 

@@ -39,10 +39,11 @@ class TableSectionPainter {
   void paintCell(const LayoutTableCell&, const PaintInfo&, const LayoutPoint&);
   void paintBoxShadow(const PaintInfo&, const LayoutPoint&, ShadowStyle);
 
-  // Returns the primary cell that should be painted for the grid item at (row, column)
-  // intersecting dirtiedRows and dirtiedColumns. Returns nullptr if we have painted the grid item
-  // when painting the grid item left to or above (row, column) when painting cells intersecting
-  // dirtiedRows and dirtiedColumns.
+  // Returns the primary cell that should be painted for the grid item at (row,
+  // column) intersecting dirtiedRows and dirtiedColumns. Returns nullptr if we
+  // have painted the grid item when painting the grid item left to or above
+  // (row, column) when painting cells intersecting dirtiedRows and
+  // dirtiedColumns.
   const LayoutTableCell* primaryCellToPaint(
       unsigned row,
       unsigned column,

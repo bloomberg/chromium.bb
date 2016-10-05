@@ -262,8 +262,8 @@ static void paintSliderRangeHighlight(const IntRect& rect,
                                       int endPosition,
                                       Color startColor,
                                       Color endColor) {
-  // Calculate border radius; need to avoid being smaller than half the slider height
-  // because of https://bugs.webkit.org/show_bug.cgi?id=30143.
+  // Calculate border radius; need to avoid being smaller than half the slider
+  // height because of https://bugs.webkit.org/show_bug.cgi?id=30143.
   float borderRadius = rect.height() / 2.0f;
   FloatSize radii(borderRadius, borderRadius);
 
@@ -275,7 +275,8 @@ static void paintSliderRangeHighlight(const IntRect& rect,
   if (rangeWidth <= 0)
     return;
 
-  // Make sure the range width is bigger than border radius at the edges to retain rounded corners.
+  // Make sure the range width is bigger than border radius at the edges to
+  // retain rounded corners.
   if (startOffset < borderRadius && rangeWidth < borderRadius)
     rangeWidth = borderRadius;
   if (endOffset < borderRadius && rangeWidth < borderRadius)
@@ -298,7 +299,8 @@ static void paintSliderRangeHighlight(const IntRect& rect,
   gradient->addColorStop(0.0, startColor);
   gradient->addColorStop(1.0, endColor);
 
-  // Fill highlight rectangle with gradient, potentially rounded if on left or right edge.
+  // Fill highlight rectangle with gradient, potentially rounded if on left or
+  // right edge.
   SkPaint gradientPaint(context.fillPaint());
   gradient->applyToPaint(gradientPaint, SkMatrix::I());
 
@@ -361,8 +363,9 @@ void MediaControlsPainter::paintMediaSliderInternal(const LayoutObject& object,
 
   paintRoundedSliderBackground(rect, style, context, sliderBackgroundColor);
 
-  // Draw the buffered range. Since the element may have multiple buffered ranges and it'd be
-  // distracting/'busy' to show all of them, show only the buffered range containing the current play head.
+  // Draw the buffered range. Since the element may have multiple buffered
+  // ranges and it'd be distracting/'busy' to show all of them, show only the
+  // buffered range containing the current play head.
   TimeRanges* bufferedTimeRanges = mediaElement->buffered();
   float duration = mediaElement->duration();
   float currentTime = mediaElement->currentTime();
@@ -388,7 +391,8 @@ void MediaControlsPainter::paintMediaSliderInternal(const LayoutObject& object,
     int endPosition = int(end * rect.width() / duration);
 
     if (!useNewUi) {
-      // Add half the thumb width proportionally adjusted to the current painting position.
+      // Add half the thumb width proportionally adjusted to the current
+      // painting position.
       int thumbCenter = mediaSliderThumbWidth / 2;
       int addWidth = thumbCenter * (1.0 - 2.0 * currentPosition / rect.width());
       currentPosition += addWidth;
@@ -605,8 +609,9 @@ bool MediaControlsPainter::paintMediaCastButton(const LayoutObject& object,
       platformResource("mediaplayerCastOn", "mediaplayerCastOnNew");
   static Image* mediaCastOff =
       platformResource("mediaplayerCastOff", "mediaplayerCastOffNew");
-  // To ensure that the overlaid cast button is visible when overlaid on pale videos we use a
-  // different version of it for the overlaid case with a semi-opaque background.
+  // To ensure that the overlaid cast button is visible when overlaid on pale
+  // videos we use a different version of it for the overlaid case with a
+  // semi-opaque background.
   static Image* mediaOverlayCastOff = platformResource(
       "mediaplayerOverlayCastOff", "mediaplayerOverlayCastOffNew");
 

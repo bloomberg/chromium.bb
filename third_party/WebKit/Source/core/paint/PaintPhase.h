@@ -3,7 +3,8 @@
  *           (C) 2000 Antti Koivisto (koivisto@kde.org)
  *           (C) 2000 Dirk Mueller (mueller@kde.org)
  *           (C) 2004 Allan Sandfeld Jensen (kde@carewolf.com)
- * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights
+ * reserved.
  * Copyright (C) 2009 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
@@ -28,15 +29,15 @@
 
 namespace blink {
 
-//  The painting of a layer occurs in 4 phases, Each involves a recursive descent
-// into the layer's layout objects in painting order:
+// The painting of a layer occurs in 4 phases, Each involves a recursive
+// descent into the layer's layout objects in painting order:
 //  1. Background phase: backgrounds and borders of all blocks are painted.
 //     Inlines are not painted at all.
-//  2. Float phase: floating objects are painted above block backgrounds but entirely
-//     below inline content that can overlap them.
-//  3. Foreground phase: all inlines are fully painted. Atomic inline elements will
-//     get all 4 phases invoked on them during this phase, as if they were stacking
-//     contexts (see ObjectPainter::paintAllPhasesAtomically()).
+//  2. Float phase: floating objects are painted above block backgrounds but
+//     entirely below inline content that can overlap them.
+//  3. Foreground phase: all inlines are fully painted. Atomic inline elements
+//     will get all 4 phases invoked on them during this phase, as if they were
+//     stacking contexts (see ObjectPainter::paintAllPhasesAtomically()).
 //  4. Outline phase: outlines are painted over the foreground.
 
 enum PaintPhase {
@@ -45,15 +46,17 @@ enum PaintPhase {
   // Paint background of the current object and non-self-painting descendants.
   PaintPhaseBlockBackground = 0,
   //
-  // The following two values are added besides the normal PaintPhaseBlockBackground
-  // to distinguish backgrounds for the object itself and for descendants, because
-  // the two backgrounds are often painted with different scroll offsets and clips.
+  // The following two values are added besides the normal
+  // PaintPhaseBlockBackground to distinguish backgrounds for the object itself
+  // and for descendants, because the two backgrounds are often painted with
+  // different scroll offsets and clips.
   //
   // Paint background of the current object only.
   PaintPhaseSelfBlockBackgroundOnly = 1,
-  // Paint backgrounds of non-self-painting descendants only. The painter should call
-  // each non-self-painting child's paint method by passing paintInfo.forDescendants() which
-  // converts PaintPhaseDescendantsBlockBackgroundsOnly to PaintPhaseBlockBackground.
+  // Paint backgrounds of non-self-painting descendants only. The painter should
+  // call each non-self-painting child's paint method by passing
+  // paintInfo.forDescendants() which converts
+  // PaintPhaseDescendantsBlockBackgroundsOnly to PaintPhaseBlockBackground.
   PaintPhaseDescendantBlockBackgroundsOnly = 2,
 
   // Float phase
@@ -67,13 +70,14 @@ enum PaintPhase {
   // Paint outline for the current object and non-self-painting descendants.
   PaintPhaseOutline = 5,
   //
-  // Similar to the background phase, the following two values are added for painting
-  // outlines of the object itself and for descendants.
+  // Similar to the background phase, the following two values are added for
+  // painting outlines of the object itself and for descendants.
   //
   // Paint outline for the current object only.
   PaintPhaseSelfOutlineOnly = 6,
-  // Paint outlines of non-self-painting descendants only. The painter should call each
-  // non-self-painting child's paint method by passing paintInfo.forDescendants() which
+  // Paint outlines of non-self-painting descendants only. The painter should
+  // call each non-self-painting child's paint method by passing
+  // paintInfo.forDescendants() which
   // converts PaintPhaseDescendantsOutlinesOnly to PaintPhaseBlockOutline.
   PaintPhaseDescendantOutlinesOnly = 7,
 
@@ -84,7 +88,8 @@ enum PaintPhase {
   PaintPhaseClippingMask = 11,
 
   PaintPhaseMax = PaintPhaseClippingMask,
-  // These values must be kept in sync with DisplayItem::Type and DisplayItem::typeAsDebugString().
+  // These values must be kept in sync with DisplayItem::Type and
+  // DisplayItem::typeAsDebugString().
 };
 
 inline bool shouldPaintSelfBlockBackground(PaintPhase phase) {

@@ -52,8 +52,8 @@ void HTMLCanvasPainter::paintReplaced(const PaintInfo& paintInfo,
     context.clip(FloatRect(contentRect));
   }
 
-  // FIXME: InterpolationNone should be used if ImageRenderingOptimizeContrast is set.
-  // See bug for more details: crbug.com/353716.
+  // FIXME: InterpolationNone should be used if ImageRenderingOptimizeContrast
+  // is set.  See bug for more details: crbug.com/353716.
   InterpolationQuality interpolationQuality =
       m_layoutHTMLCanvas.style()->imageRendering() ==
               ImageRenderingOptimizeContrast

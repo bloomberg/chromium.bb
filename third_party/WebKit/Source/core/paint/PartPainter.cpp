@@ -69,8 +69,9 @@ void PartPainter::paint(const PaintInfo& paintInfo,
     return;
 
   if (m_layoutPart.widget()) {
-    // TODO(schenney) crbug.com/93805 Speculative release assert to verify that the crashes
-    // we see in widget painting are due to a destroyed LayoutPart object.
+    // TODO(schenney) crbug.com/93805 Speculative release assert to verify that
+    // the crashes we see in widget painting are due to a destroyed LayoutPart
+    // object.
     RELEASE_ASSERT(m_layoutPart.node());
     Optional<RoundedInnerRectClipper> clipper;
     if (m_layoutPart.style()->hasBorderRadius()) {
@@ -122,9 +123,10 @@ void PartPainter::paintContents(const PaintInfo& paintInfo,
   IntPoint paintLocation(roundedIntPoint(
       adjustedPaintOffset + m_layoutPart.replacedContentRect().location()));
 
-  // Widgets don't support painting with a paint offset, but instead offset themselves using the
-  // frame rect location. To paint widgets at our desired location, we need to apply paint offset
-  // as a transform, with the frame rect neutralized.
+  // Widgets don't support painting with a paint offset, but instead offset
+  // themselves using the frame rect location. To paint widgets at our desired
+  // location, we need to apply paint offset as a transform, with the frame rect
+  // neutralized.
   IntSize widgetPaintOffset = paintLocation - widget->frameRect().location();
   TransformRecorder transform(
       paintInfo.context, m_layoutPart,

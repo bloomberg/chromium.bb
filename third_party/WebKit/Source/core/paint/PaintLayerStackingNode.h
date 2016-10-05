@@ -25,7 +25,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  *
  * Alternatively, the contents of this file may be used under the terms
  * of either the Mozilla Public License Version 1.1, found at
@@ -60,7 +60,8 @@ class LayoutBoxModelObject;
 
 // PaintLayerStackingNode represents a stacked element which is either a
 // stacking context or a positioned element.
-// See https://chromium.googlesource.com/chromium/src.git/+/master/third_party/WebKit/Source/core/paint/README.md
+// See
+// https://chromium.googlesource.com/chromium/src.git/+/master/third_party/WebKit/Source/core/paint/README.md
 // for more details of stacked elements.
 //
 // Stacked elements are the basis for the CSS painting algorithm. The paint
@@ -87,7 +88,8 @@ class LayoutBoxModelObject;
 // Only a real stacking context can have non-empty z-order lists thus contain
 // child nodes in the tree. The z-order lists of a positioned element with auto
 // z-index are always empty (i.e. it's a leaf of the stacked element tree).
-// A real stacking context can also be a leaf if it doesn't contain any stacked elements.
+// A real stacking context can also be a leaf if it doesn't contain any stacked
+// elements.
 class CORE_EXPORT PaintLayerStackingNode {
   USING_FAST_MALLOC(PaintLayerStackingNode);
   WTF_MAKE_NONCOPYABLE(PaintLayerStackingNode);
@@ -102,9 +104,10 @@ class CORE_EXPORT PaintLayerStackingNode {
     return layoutObject()->style()->isStackingContext();
   }
 
-  // Whether the node is stacked. See documentation for the class about "stacked".
-  // For now every PaintLayer has a PaintLayerStackingNode, even if the layer is not stacked
-  // (e.g. a scrollable layer which is statically positioned and is not a stacking context).
+  // Whether the node is stacked. See documentation for the class about
+  // "stacked".  For now every PaintLayer has a PaintLayerStackingNode, even if
+  // the layer is not stacked (e.g. a scrollable layer which is statically
+  // positioned and is not a stacking context).
   bool isStacked() const { return m_isStacked; }
 
   // Update our normal and z-index lists.
@@ -178,10 +181,11 @@ class CORE_EXPORT PaintLayerStackingNode {
   PaintLayer* m_layer;
 
   // m_posZOrderList holds a sorted list of all the descendant nodes within
-  // that have z-indices of 0 (or is treated as 0 for positioned objects) or greater.
+  // that have z-indices of 0 (or is treated as 0 for positioned objects) or
+  // greater.
+  std::unique_ptr<Vector<PaintLayerStackingNode*>> m_posZOrderList;
   // m_negZOrderList holds descendants within our stacking context with
   // negative z-indices.
-  std::unique_ptr<Vector<PaintLayerStackingNode*>> m_posZOrderList;
   std::unique_ptr<Vector<PaintLayerStackingNode*>> m_negZOrderList;
 
   // This boolean caches whether the z-order lists above are dirty.
@@ -189,9 +193,10 @@ class CORE_EXPORT PaintLayerStackingNode {
   // have z-order lists.
   bool m_zOrderListsDirty : 1;
 
-  // This attribute caches whether the element was stacked. It's needed to check the
-  // current stacked status (instead of the new stacked status determined by the new
-  // style which has not been realized yet) when a layer is removed due to style change.
+  // This attribute caches whether the element was stacked. It's needed to check
+  // the current stacked status (instead of the new stacked status determined by
+  // the new style which has not been realized yet) when a layer is removed due
+  // to style change.
   bool m_isStacked : 1;
 
 #if ENABLE(ASSERT)

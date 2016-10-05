@@ -36,7 +36,8 @@ class BackgroundImageGeometry {
   // Space-size represents extra width and height that may be added to
   // the image if used as a pattern with background-repeat: space.
   const LayoutSize& spaceSize() const { return m_repeatSpacing; }
-  // Has background-attachment: fixed. Implies that we can't always cheaply compute destRect.
+  // Has background-attachment: fixed. Implies that we can't always cheaply
+  // compute destRect.
   bool hasNonLocalGeometry() const { return m_hasNonLocalGeometry; }
 
  private:

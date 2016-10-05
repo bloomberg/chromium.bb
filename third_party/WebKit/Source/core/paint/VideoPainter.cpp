@@ -39,7 +39,8 @@ void VideoPainter::paintReplaced(const PaintInfo& paintInfo,
   LayoutRect contentRect = m_layoutVideo.contentBoxRect();
   contentRect.moveBy(paintOffset);
 
-  // Video frames are only painted in software for printing or capturing node images via web APIs.
+  // Video frames are only painted in software for printing or capturing node
+  // images via web APIs.
   bool forceSoftwareVideoPaint =
       paintInfo.getGlobalPaintFlags() & GlobalPaintFlattenCompositingLayers;
 
@@ -61,7 +62,8 @@ void VideoPainter::paintReplaced(const PaintInfo& paintInfo,
                                               paintInfo.phase, contentRect);
 
   if (displayingPoster || !forceSoftwareVideoPaint) {
-    // This will display the poster image, if one is present, and otherwise paint nothing.
+    // This will display the poster image, if one is present, and otherwise
+    // paint nothing.
     ImagePainter(m_layoutVideo)
         .paintIntoRect(context, replacedRect, contentRect);
   } else {

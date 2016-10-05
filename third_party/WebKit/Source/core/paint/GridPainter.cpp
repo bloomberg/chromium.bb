@@ -15,7 +15,8 @@ static GridSpan dirtiedGridAreas(const Vector<LayoutUnit>& coordinates,
                                  LayoutUnit start,
                                  LayoutUnit end) {
   // This function does a binary search over the coordinates.
-  // This doesn't work with grid items overflowing their grid areas, but that is managed with m_gridItemsOverflowingGridArea.
+  // This doesn't work with grid items overflowing their grid areas, but that is
+  // managed with m_gridItemsOverflowingGridArea.
 
   size_t startGridAreaIndex =
       std::upper_bound(coordinates.begin(), coordinates.end() - 1, start) -
@@ -58,11 +59,13 @@ void GridPainter::paintChildren(const PaintInfo& paintInfo,
 
   Vector<LayoutUnit> columnPositions = m_layoutGrid.columnPositions();
   if (!m_layoutGrid.styleRef().isLeftToRightDirection()) {
-    // Translate columnPositions in RTL as we need the physical coordinates of the columns in order to call dirtiedGridAreas().
+    // Translate columnPositions in RTL as we need the physical coordinates of
+    // the columns in order to call dirtiedGridAreas().
     for (size_t i = 0; i < columnPositions.size(); i++)
       columnPositions[i] =
           m_layoutGrid.translateRTLCoordinate(columnPositions[i]);
-    // We change the order of tracks in columnPositions, as in RTL the leftmost track will be the last one.
+    // We change the order of tracks in columnPositions, as in RTL the leftmost
+    // track will be the last one.
     std::sort(columnPositions.begin(), columnPositions.end());
   }
 
@@ -74,7 +77,8 @@ void GridPainter::paintChildren(const PaintInfo& paintInfo,
                                           localPaintInvalidationRect.maxY());
 
   if (!m_layoutGrid.styleRef().isLeftToRightDirection()) {
-    // As we changed the order of tracks previously, we need to swap the dirtied columns in RTL.
+    // As we changed the order of tracks previously, we need to swap the dirtied
+    // columns in RTL.
     size_t lastLine = columnPositions.size() - 1;
     dirtiedColumns = GridSpan::translatedDefiniteGridSpan(
         lastLine - dirtiedColumns.endLine(),
@@ -106,8 +110,8 @@ void GridPainter::paintChildren(const PaintInfo& paintInfo,
 
   LayoutBox* previous = 0;
   for (const auto& gridItemAndPaintIndex : gridItemsToBePainted) {
-    // We might have duplicates because of spanning children are included in all cells they span.
-    // Skip them here to avoid painting items several times.
+    // We might have duplicates because of spanning children are included in all
+    // cells they span.  Skip them here to avoid painting items several times.
     LayoutBox* current = gridItemAndPaintIndex.first;
     if (current == previous)
       continue;

@@ -22,10 +22,11 @@ void MultiColumnSetPainter::paintObject(const PaintInfo& paintInfo,
   BlockPainter(m_layoutMultiColumnSet).paintObject(paintInfo, paintOffset);
 
   // FIXME: Right now we're only painting in the foreground phase.
-  // Columns should technically respect phases and allow for background/float/foreground overlap etc., just like
-  // LayoutBlocks do. Note this is a pretty minor issue, since the old column implementation clipped columns
-  // anyway, thus making it impossible for them to overlap one another. It's also really unlikely that the columns
-  // would overlap another block.
+  // Columns should technically respect phases and allow for
+  // background/float/foreground overlap etc., just like LayoutBlocks do. Note
+  // this is a pretty minor issue, since the old column implementation clipped
+  // columns anyway, thus making it impossible for them to overlap one another.
+  // It's also really unlikely that the columns would overlap another block.
   if (!m_layoutMultiColumnSet.flowThread() ||
       (paintInfo.phase != PaintPhaseForeground &&
        paintInfo.phase != PaintPhaseSelection))

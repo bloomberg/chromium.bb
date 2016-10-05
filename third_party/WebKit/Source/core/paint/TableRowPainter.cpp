@@ -18,7 +18,8 @@ void TableRowPainter::paint(const PaintInfo& paintInfo,
                             const LayoutPoint& paintOffset) {
   DCHECK(m_layoutTableRow.hasSelfPaintingLayer());
 
-  // TODO(crbug.com/577282): This painting order is inconsistent with other outlines.
+  // TODO(crbug.com/577282): This painting order is inconsistent with other
+  // outlines.
   if (shouldPaintSelfOutline(paintInfo.phase))
     paintOutline(paintInfo, paintOffset);
   if (paintInfo.phase == PaintPhaseSelfOutlineOnly)

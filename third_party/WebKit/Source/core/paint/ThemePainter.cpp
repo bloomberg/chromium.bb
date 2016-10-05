@@ -164,7 +164,8 @@ bool ThemePainter::paint(const LayoutObject& o,
       break;
   }
 
-  return true;  // We don't support the appearance, so let the normal background/border paint.
+  return true;  // We don't support the appearance, so let the normal
+                // background/border paint.
 }
 
 bool ThemePainter::paintBorderOnly(const LayoutObject& o,
@@ -289,7 +290,8 @@ void ThemePainter::paintSliderTicks(const LayoutObject& o,
       input->userAgentShadowRoot()
           ->getElementById(ShadowElementNames::sliderTrack())
           ->layoutObject();
-  // We can ignoring transforms because transform is handled by the graphics context.
+  // We can ignoring transforms because transform is handled by the graphics
+  // context.
   if (trackLayoutObject)
     trackBounds =
         trackLayoutObject->absoluteBoundingBoxRectIgnoringTransforms();

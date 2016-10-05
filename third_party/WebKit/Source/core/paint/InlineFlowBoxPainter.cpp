@@ -62,8 +62,8 @@ void InlineFlowBoxPainter::paintFillLayers(const PaintInfo& paintInfo,
                                            const FillLayer& fillLayer,
                                            const LayoutRect& rect,
                                            SkXfermode::Mode op) {
-  // FIXME: This should be a for loop or similar. It's a little non-trivial to do so, however, since the layers need to be
-  // painted in reverse order.
+  // FIXME: This should be a for loop or similar. It's a little non-trivial to
+  // do so, however, since the layers need to be painted in reverse order.
   if (fillLayer.next())
     paintFillLayers(paintInfo, c, *fillLayer.next(), rect, op);
   paintFillLayer(paintInfo, c, fillLayer, rect, op);
@@ -117,8 +117,9 @@ void InlineFlowBoxPainter::paintBoxShadow(const PaintInfo& info,
       !m_inlineFlowBox.parent()) {
     BoxPainter::paintBoxShadow(info, paintRect, s, shadowStyle);
   } else {
-    // FIXME: We can do better here in the multi-line case. We want to push a clip so that the shadow doesn't
-    // protrude incorrectly at the edges, and we want to possibly include shadows cast from the previous/following lines
+    // FIXME: We can do better here in the multi-line case. We want to push a
+    // clip so that the shadow doesn't protrude incorrectly at the edges, and we
+    // want to possibly include shadows cast from the previous/following lines
     BoxPainter::paintBoxShadow(info, paintRect, s, shadowStyle,
                                m_inlineFlowBox.includeLogicalLeftEdge(),
                                m_inlineFlowBox.includeLogicalRightEdge());
@@ -159,10 +160,11 @@ LayoutRect InlineFlowBoxPainter::paintRectForImageStrip(
     TextDirection direction) const {
   // We have a fill/border/mask image that spans multiple lines.
   // We need to adjust the offset by the width of all previous lines.
-  // Think of background painting on inlines as though you had one long line, a single continuous
-  // strip. Even though that strip has been broken up across multiple lines, you still paint it
-  // as though you had one single line. This means each line has to pick up the background where
-  // the previous line left off.
+  // Think of background painting on inlines as though you had one long line, a
+  // single continuous strip. Even though that strip has been broken up across
+  // multiple lines, you still paint it as though you had one single line. This
+  // means each line has to pick up the background where the previous line left
+  // off.
   LayoutUnit logicalOffsetOnLine;
   LayoutUnit totalLogicalWidth;
   if (direction == LTR) {
@@ -208,8 +210,9 @@ InlineFlowBoxPainter::getBorderPaintType(const LayoutRect& adjustedFrameRect,
     if (hasBorderImage && !borderImageSource->isLoaded())
       return DontPaintBorders;
 
-    // The simple case is where we either have no border image or we are the only box for this object.
-    // In those cases only a single call to draw is required.
+    // The simple case is where we either have no border image or we are the
+    // only box for this object.  In those cases only a single call to draw is
+    // required.
     if (!hasBorderImage ||
         (!m_inlineFlowBox.prevLineBox() && !m_inlineFlowBox.nextLineBox()))
       return PaintBordersWithoutClip;
@@ -231,8 +234,8 @@ void InlineFlowBoxPainter::paintBoxDecorationBackground(
       EVisibility::Visible)
     return;
 
-  // You can use p::first-line to specify a background. If so, the root line boxes for
-  // a line may actually have to paint a background.
+  // You can use p::first-line to specify a background. If so, the root line
+  // boxes for a line may actually have to paint a background.
   LayoutObject* inlineFlowBoxLayoutObject =
       LineLayoutAPIShim::layoutObjectFrom(m_inlineFlowBox.getLineLayoutItem());
   const ComputedStyle* styleToUse = m_inlineFlowBox.getLineLayoutItem().style(
@@ -297,8 +300,9 @@ void InlineFlowBoxPainter::paintBoxDecorationBackground(
           m_inlineFlowBox.includeLogicalRightEdge());
       break;
     case PaintBordersWithClip:
-      // FIXME: What the heck do we do with RTL here? The math we're using is obviously not right,
-      // but it isn't even clear how this should work at all.
+      // FIXME: What the heck do we do with RTL here? The math we're using is
+      // obviously not right, but it isn't even clear how this should work at
+      // all.
       LayoutRect imageStripPaintRect =
           paintRectForImageStrip(adjustedPaintOffset, frameRect.size(), LTR);
       GraphicsContextStateSaver stateSaver(paintInfo.context);
@@ -350,11 +354,12 @@ void InlineFlowBoxPainter::paintMask(const PaintInfo& paintInfo,
       pushTransparencyLayer = true;
       paintInfo.context.beginLayer(1.0f, SkXfermode::kDstIn_Mode);
     } else {
-      // TODO(fmalita): passing a dst-in xfer mode down to paintFillLayers/paintNinePieceImage
-      //   seems dangerous: it is only correct if applied atomically (single draw call). While
-      //   the heuristic above presumably ensures that is the case, this approach seems super
-      //   fragile. We should investigate dropping this optimization in favour of the more
-      //   robust layer branch above.
+      // TODO(fmalita): passing a dst-in xfer mode down to
+      // paintFillLayers/paintNinePieceImage seems dangerous: it is only correct
+      // if applied atomically (single draw call). While the heuristic above
+      // presumably ensures that is the case, this approach seems super fragile.
+      // We should investigate dropping this optimization in favour of the more
+      // robust layer branch above.
       compositeOp = SkXfermode::kDstIn_Mode;
     }
   }
@@ -382,8 +387,8 @@ void InlineFlowBoxPainter::paintMask(const PaintInfo& paintInfo,
         compositeOp);
   } else {
     // We have a mask image that spans multiple lines.
-    // FIXME: What the heck do we do with RTL here? The math we're using is obviously not right,
-    // but it isn't even clear how this should work at all.
+    // FIXME: What the heck do we do with RTL here? The math we're using is
+    // obviously not right, but it isn't even clear how this should work at all.
     LayoutRect imageStripPaintRect =
         paintRectForImageStrip(adjustedPaintOffset, frameRect.size(), LTR);
     FloatRect clipRect(clipRectForNinePieceImageStrip(

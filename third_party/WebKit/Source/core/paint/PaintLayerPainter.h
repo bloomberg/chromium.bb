@@ -27,29 +27,34 @@ class CORE_EXPORT PaintLayerPainter {
  public:
   enum FragmentPolicy { AllowMultipleFragments, ForceSingleFragment };
 
-  // When adding new values, must update the number of bits of PaintLayer::m_previousPaintingResult.
+  // When adding new values, must update the number of bits of
+  // PaintLayer::m_previousPaintingResult.
   enum PaintResult {
-    // The layer is fully painted. This includes cases that nothing needs painting
-    // regardless of the paint rect.
+    // The layer is fully painted. This includes cases that nothing needs
+    // painting regardless of the paint rect.
     FullyPainted,
-    // Some part of the layer is out of the paint rect and may be not fully painted.
-    // The results cannot be cached because they may change when paint rect changes.
+    // Some part of the layer is out of the paint rect and may be not fully
+    // painted.  The results cannot be cached because they may change when paint
+    // rect changes.
     MayBeClippedByPaintDirtyRect
   };
 
   PaintLayerPainter(PaintLayer& paintLayer) : m_paintLayer(paintLayer) {}
 
-  // The paint() method paints the layers that intersect the damage rect from back to front.
-  //  paint() assumes that the caller will clip to the bounds of damageRect if necessary.
+  // The paint() method paints the layers that intersect the damage rect from
+  // back to front.  paint() assumes that the caller will clip to the bounds of
+  // damageRect if necessary.
   void paint(GraphicsContext&,
              const LayoutRect& damageRect,
              const GlobalPaintFlags = GlobalPaintNormalPhase,
              PaintLayerFlags = 0);
-  // paintLayer() assumes that the caller will clip to the bounds of the painting dirty if necessary.
+  // paintLayer() assumes that the caller will clip to the bounds of the
+  // painting dirty if necessary.
   PaintResult paintLayer(GraphicsContext&,
                          const PaintLayerPaintingInfo&,
                          PaintLayerFlags);
-  // paintLayerContents() assumes that the caller will clip to the bounds of the painting dirty rect if necessary.
+  // paintLayerContents() assumes that the caller will clip to the bounds of the
+  // painting dirty rect if necessary.
   PaintResult paintLayerContents(GraphicsContext&,
                                  const PaintLayerPaintingInfo&,
                                  PaintLayerFlags,
@@ -129,8 +134,8 @@ class CORE_EXPORT PaintLayerPainter {
   static bool needsToClip(const PaintLayerPaintingInfo& localPaintingInfo,
                           const ClipRect&);
 
-  // Returns whether this layer should be painted during sofware painting (i.e., not via calls from CompositedLayerMapping to draw into composited
-  // layers).
+  // Returns whether this layer should be painted during sofware painting (i.e.,
+  // not via calls from CompositedLayerMapping to draw into composited layers).
   bool shouldPaintLayerInSoftwareMode(const GlobalPaintFlags,
                                       PaintLayerFlags paintFlags);
 

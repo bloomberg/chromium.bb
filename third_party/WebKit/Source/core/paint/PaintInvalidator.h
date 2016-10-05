@@ -33,8 +33,8 @@ struct PaintInvalidatorContext {
             parentContext.paintInvalidationContainerForStackedContents),
         paintingLayer(parentContext.paintingLayer) {}
 
-  // This method is temporary to adapt PaintInvalidatorContext and the legacy PaintInvalidationState
-  // for code shared by old code and new code.
+  // This method is temporary to adapt PaintInvalidatorContext and the legacy
+  // PaintInvalidationState for code shared by old code and new code.
   virtual void mapLocalRectToPaintInvalidationBacking(const LayoutObject&,
                                                       LayoutRect&) const;
 
@@ -45,21 +45,24 @@ struct PaintInvalidatorContext {
     ForcedSubtreeInvalidationRectUpdate = 1 << 1,
     ForcedSubtreeFullInvalidation = 1 << 2,
     ForcedSubtreeFullInvalidationForStackedContents = 1 << 3,
-    // TODO(crbug.com/637313): This is temporary before we support filters in paint property tree.
+    // TODO(crbug.com/637313): This is temporary before we support filters in
+    // paint property tree.
     ForcedSubtreeSlowPathRect = 1 << 4,
   };
   unsigned forcedSubtreeInvalidationFlags = 0;
 
-  // The following fields can be null only before PaintInvalidator::updateContext().
+  // The following fields can be null only before
+  // PaintInvalidator::updateContext().
 
   // The current paint invalidation container for normal flow objects.
   // It is the enclosing composited object.
   const LayoutBoxModelObject* paintInvalidationContainer = nullptr;
 
-  // The current paint invalidation container for stacked contents (stacking contexts or positioned objects).
-  // It is the nearest ancestor composited object which establishes a stacking context.
-  // See Source/core/paint/README.md ### PaintInvalidationState for details on how stacked contents'
-  // paint invalidation containers differ.
+  // The current paint invalidation container for stacked contents (stacking
+  // contexts or positioned objects).  It is the nearest ancestor composited
+  // object which establishes a stacking context.  See
+  // Source/core/paint/README.md ### PaintInvalidationState for details on how
+  // stacked contents' paint invalidation containers differ.
   const LayoutBoxModelObject* paintInvalidationContainerForStackedContents =
       nullptr;
 

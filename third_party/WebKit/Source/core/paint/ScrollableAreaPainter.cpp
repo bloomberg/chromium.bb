@@ -48,8 +48,8 @@ void ScrollableAreaPainter::paintResizer(GraphicsContext& context,
 
   drawPlatformResizerImage(context, absRect);
 
-  // Draw a frame around the resizer (1px grey line) if there are any scrollbars present.
-  // Clipping will exclude the right and bottom edges of this frame.
+  // Draw a frame around the resizer (1px grey line) if there are any scrollbars
+  // present.  Clipping will exclude the right and bottom edges of this frame.
   if (!getScrollableArea().hasOverlayScrollbars() &&
       getScrollableArea().hasScrollbar()) {
     GraphicsContextStateSaver stateSaver(context);
@@ -118,15 +118,17 @@ void ScrollableAreaPainter::paintOverflowControls(
 
   CullRect adjustedCullRect(cullRect, -adjustedPaintOffset);
 
-  // Overlay scrollbars paint in a second pass through the layer tree so that they will paint
-  // on top of everything else. If this is the normal painting pass, paintingOverlayControls
-  // will be false, and we should just tell the root layer that there are overlay scrollbars
-  // that need to be painted. That will cause the second pass through the layer tree to run,
-  // and we'll paint the scrollbars then. In the meantime, cache tx and ty so that the
-  // second pass doesn't need to re-enter the LayoutTree to get it right.
+  // Overlay scrollbars paint in a second pass through the layer tree so that
+  // they will paint on top of everything else. If this is the normal painting
+  // pass, paintingOverlayControls will be false, and we should just tell the
+  // root layer that there are overlay scrollbars that need to be painted. That
+  // will cause the second pass through the layer tree to run, and we'll paint
+  // the scrollbars then. In the meantime, cache tx and ty so that the second
+  // pass doesn't need to re-enter the LayoutTree to get it right.
   if (getScrollableArea().hasOverlayScrollbars() && !paintingOverlayControls) {
     getScrollableArea().setCachedOverlayScrollbarOffset(paintOffset);
-    // It's not necessary to do the second pass if the scrollbars paint into layers.
+    // It's not necessary to do the second pass if the scrollbars paint into
+    // layers.
     if ((getScrollableArea().horizontalScrollbar() &&
          getScrollableArea().layerForHorizontalScrollbar()) ||
         (getScrollableArea().verticalScrollbar() &&
@@ -187,8 +189,8 @@ void ScrollableAreaPainter::paintOverflowControls(
   if (getScrollableArea().layerForScrollCorner())
     return;
 
-  // We fill our scroll corner with white if we have a scrollbar that doesn't run all the way up to the
-  // edge of the box.
+  // We fill our scroll corner with white if we have a scrollbar that doesn't
+  // run all the way up to the edge of the box.
   paintScrollCorner(context, adjustedPaintOffset, cullRect);
 
   // Paint our resizer last, since it sits on top of the scroll corner.

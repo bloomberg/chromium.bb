@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012 Apple Inc. All rights
+ * reserved.
  *
  * Portions are Copyright (C) 1998 Netscape Communications Corporation.
  *
@@ -24,7 +25,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  *
  * Alternatively, the contents of this file may be used under the terms
  * of either the Mozilla Public License Version 1.1, found at
@@ -224,8 +225,9 @@ PaintLayerCompositor* PaintLayer::compositor() const {
 }
 
 void PaintLayer::contentChanged(ContentChangeType changeType) {
-  // updateLayerCompositingState will query compositingReasons for accelerated overflow scrolling.
-  // This is tripped by LayoutTests/compositing/content-changed-chicken-egg.html
+  // updateLayerCompositingState will query compositingReasons for accelerated
+  // overflow scrolling.  This is tripped by
+  // LayoutTests/compositing/content-changed-chicken-egg.html
   DisableCompositingQueryAsserts disabler;
 
   if (changeType == CanvasChanged)
@@ -287,8 +289,8 @@ void PaintLayer::updateLayerPositionsAfterLayout() {
   updateLayerPositionRecursive();
 
   {
-    // FIXME: Remove incremental compositing updates after fixing the chicken/egg issues
-    // https://code.google.com/p/chromium/issues/detail?id=343756
+    // FIXME: Remove incremental compositing updates after fixing the
+    // chicken/egg issues, https://crbug.com/343756
     DisableCompositingQueryAsserts disabler;
     updatePaginationRecursive(enclosingPaginationLayer());
   }
@@ -297,8 +299,9 @@ void PaintLayer::updateLayerPositionsAfterLayout() {
 void PaintLayer::updateLayerPositionRecursive() {
   updateLayerPosition();
 
-  // FIXME(400589): We would like to do this in PaintLayerScrollableArea::updateAfterLayout,
-  // but it depends on the size computed by updateLayerPosition.
+  // FIXME(400589): We would like to do this in
+  // PaintLayerScrollableArea::updateAfterLayout, but it depends on the size
+  // computed by updateLayerPosition.
   if (m_scrollableArea) {
     if (ScrollAnimatorBase* scrollAnimator =
             m_scrollableArea->existingScrollAnimator())
@@ -333,8 +336,9 @@ void PaintLayer::updateHasSelfPaintingLayerDescendant() const {
 void PaintLayer::dirtyAncestorChainHasSelfPaintingLayerDescendantStatus() {
   for (PaintLayer* layer = this; layer; layer = layer->parent()) {
     layer->m_hasSelfPaintingLayerDescendantDirty = true;
-    // If we have reached a self-painting layer, we know our parent should have a self-painting descendant
-    // in this case, there is no need to dirty our ancestors further.
+    // If we have reached a self-painting layer, we know our parent should have
+    // a self-painting descendant in this case, there is no need to dirty our
+    // ancestors further.
     if (layer->isSelfPaintingLayer()) {
       ASSERT(!parent() || parent()->m_hasSelfPaintingLayerDescendantDirty ||
              parent()->m_hasSelfPaintingLayerDescendant);
@@ -370,11 +374,14 @@ void PaintLayer::updateLayerPositionsAfterScrollRecursive(
   updateLayerPosition();
   if (paintInvalidationContainerWasScrolled &&
       !isPaintInvalidationContainer()) {
-    // Paint invalidation rects are in the coordinate space of the paint invalidation container.
-    // If it has scrolled, the rect must be adjusted. Note that it is not safe to reset it to
-    // the current bounds rect, as the LayoutObject may have moved since the last invalidation.
-    // FIXME(416535): Ideally, pending invalidations of scrolling content should be stored in
-    // the coordinate space of the scrolling content layer, so that they need no adjustment.
+    // Paint invalidation rects are in the coordinate space of the paint
+    // invalidation container.  If it has scrolled, the rect must be adjusted.
+    // Note that it is not safe to reset it to the current bounds rect, as the
+    // LayoutObject may have moved since the
+    // last invalidation.
+    // FIXME(416535): Ideally, pending invalidations of scrolling content should
+    // be stored in the coordinate space of the scrolling content layer, so that
+    // they need no adjustment.
     m_layoutObject->adjustPreviousPaintInvalidationForScrollIfNeeded(
         scrollDelta);
   }
@@ -403,8 +410,8 @@ void PaintLayer::updateTransform(const ComputedStyle* oldStyle,
   if (oldStyle && newStyle.transformDataEquivalent(*oldStyle))
     return;
 
-  // hasTransform() on the layoutObject is also true when there is transform-style: preserve-3d or perspective set,
-  // so check style too.
+  // hasTransform() on the layoutObject is also true when there is
+  // transform-style: preserve-3d or perspective set, so check style too.
   bool hasTransform =
       layoutObject()->hasTransformRelatedProperty() && newStyle.hasTransform();
   bool had3DTransform = has3DTransform();
@@ -416,7 +423,8 @@ void PaintLayer::updateTransform(const ComputedStyle* oldStyle,
     else
       m_rareData->transform.reset();
 
-    // PaintLayers with transforms act as clip rects roots, so clear the cached clip rects here.
+    // PaintLayers with transforms act as clip rects roots, so clear the cached
+    // clip rects here.
     clipper().clearClipRectsIncludingDescendants();
   } else if (hasTransform) {
     clipper().clearClipRectsIncludingDescendants(AbsoluteClipRects);
@@ -502,14 +510,15 @@ void PaintLayer::convertFromFlowThreadToVisualBoundingBoxInAncestor(
   LayoutFlowThread* flowThread =
       toLayoutFlowThread(paginationLayer->layoutObject());
 
-  // First make the flow thread rectangle relative to the flow thread, not to |layer|.
+  // First make the flow thread rectangle relative to the flow thread, not to
+  // |layer|.
   LayoutPoint offsetWithinPaginationLayer;
   convertToLayerCoords(paginationLayer, offsetWithinPaginationLayer);
   rect.moveBy(offsetWithinPaginationLayer);
 
-  // Then make the rectangle visual, relative to the fragmentation context. Split our box up into
-  // the actual fragment boxes that layout in the columns/pages and unite those together to get
-  // our true bounding box.
+  // Then make the rectangle visual, relative to the fragmentation context.
+  // Split our box up into the actual fragment boxes that layout in the
+  // columns/pages and unite those together to get our true bounding box.
   rect = flowThread->fragmentsBoundingBox(rect);
 
   // Finally, make the visual rectangle relative to |ancestorLayer|.
@@ -517,8 +526,9 @@ void PaintLayer::convertFromFlowThreadToVisualBoundingBoxInAncestor(
     rect.moveBy(paginationLayer->visualOffsetFromAncestor(ancestorLayer));
     return;
   }
-  // The ancestor layer is inside the same pagination layer as |layer|, so we need to subtract
-  // the visual distance from the ancestor layer to the pagination layer.
+  // The ancestor layer is inside the same pagination layer as |layer|, so we
+  // need to subtract the visual distance from the ancestor layer to the
+  // pagination layer.
   rect.moveBy(-ancestorLayer->visualOffsetFromAncestor(paginationLayer));
 }
 
@@ -530,11 +540,12 @@ void PaintLayer::updatePaginationRecursive(bool needsPaginationUpdate) {
     needsPaginationUpdate = true;
 
   if (needsPaginationUpdate) {
-    // Each paginated layer has to paint on its own. There is no recurring into child layers. Each
-    // layer has to be checked individually and genuinely know if it is going to have to split
-    // itself up when painting only its contents (and not any other descendant layers). We track an
-    // enclosingPaginationLayer instead of using a simple bit, since we want to be able to get back
-    // to that layer easily.
+    // Each paginated layer has to paint on its own. There is no recurring into
+    // child layers. Each layer has to be checked individually and genuinely
+    // know if it is going to have to split itself up when painting only its
+    // contents (and not any other descendant layers). We track an
+    // enclosingPaginationLayer instead of using a simple bit, since we want to
+    // be able to get back to that layer easily.
     if (LayoutFlowThread* containingFlowThread =
             layoutObject()->flowThreadContainingBlock())
       ensureRareData().enclosingPaginationLayer = containingFlowThread->layer();
@@ -566,8 +577,8 @@ void PaintLayer::mapPointInPaintInvalidationContainerToBacking(
   if (!transformedAncestor)
     return;
 
-  // |paintInvalidationContainer| may have a local 2D transform on it, so take that into account when mapping into the space of the
-  // transformed ancestor.
+  // |paintInvalidationContainer| may have a local 2D transform on it, so take
+  // that into account when mapping into the space of the transformed ancestor.
   point = paintInvalidationContainer.localToAncestorPoint(point,
                                                           transformedAncestor);
 
@@ -590,8 +601,8 @@ void PaintLayer::mapRectInPaintInvalidationContainerToBacking(
   if (!transformedAncestor)
     return;
 
-  // |paintInvalidationContainer| may have a local 2D transform on it, so take that into account when mapping into the space of the
-  // transformed ancestor.
+  // |paintInvalidationContainer| may have a local 2D transform on it, so take
+  // that into account when mapping into the space of the transformed ancestor.
   rect =
       LayoutRect(paintInvalidationContainer
                      .localToAncestorQuad(FloatRect(rect), transformedAncestor)
@@ -611,10 +622,13 @@ void PaintLayer::mapRectToPaintInvalidationBacking(
     return;
   }
 
-  // This code adjusts the paint invalidation rectangle to be in the space of the transformed ancestor of the grouped (i.e. squashed)
-  // layer. This is because all layers that squash together need to issue paint invalidations w.r.t. a single container that is
-  // an ancestor of all of them, in order to properly take into account any local transforms etc.
-  // FIXME: remove this special-case code that works around the paint invalidation code structure.
+  // This code adjusts the paint invalidation rectangle to be in the space of
+  // the transformed ancestor of the grouped (i.e. squashed) layer. This is
+  // because all layers that squash together need to issue paint invalidations
+  // w.r.t. a single container that is an ancestor of all of them, in order to
+  // properly take into account any local transforms etc.
+  // FIXME: remove this special-case code that works around the paint
+  // invalidation code structure.
   layoutObject.mapToVisualRectInAncestorSpace(&paintInvalidationContainer,
                                               rect);
 
@@ -627,7 +641,8 @@ void PaintLayer::dirtyVisibleContentStatus() {
   m_isVisibleContentDirty = true;
   if (parent())
     parent()->dirtyAncestorChainVisibleDescendantStatus();
-  // Non-self-painting layers paint into their ancestor layer, and count as part of the "visible contents" of the parent, so we need to dirty it.
+  // Non-self-painting layers paint into their ancestor layer, and count as part
+  // of the "visible contents" of the parent, so we need to dirty it.
   if (!isSelfPaintingLayer())
     parent()->dirtyVisibleContentStatus();
 }
@@ -651,7 +666,8 @@ void PaintLayer::dirtyAncestorChainVisibleDescendantStatus() {
 }
 
 // FIXME: this is quite brute-force. We could be more efficient if we were to
-// track state and update it as appropriate as changes are made in the layout tree.
+// track state and update it as appropriate as changes are made in the layout
+// tree.
 void PaintLayer::updateScrollingStateAfterCompositingChange() {
   TRACE_EVENT0("blink",
                "PaintLayer::updateScrollingStateAfterCompositingChange");
@@ -746,8 +762,9 @@ void PaintLayer::dirty3DTransformedDescendantStatus() {
 
   stackingNode->layer()->m_is3DTransformedDescendantDirty = true;
 
-  // This propagates up through preserve-3d hierarchies to the enclosing flattening layer.
-  // Note that preserves3D() creates stacking context, so we can just run up the stacking containers.
+  // This propagates up through preserve-3d hierarchies to the enclosing
+  // flattening layer.  Note that preserves3D() creates stacking context, so we
+  // can just run up the stacking containers.
   while (stackingNode && stackingNode->layer()->preserves3D()) {
     stackingNode->layer()->m_is3DTransformedDescendantDirty = true;
     stackingNode = stackingNode->ancestorStackingContextNode();
@@ -761,8 +778,8 @@ bool PaintLayer::update3DTransformedDescendantStatus() {
 
     m_stackingNode->updateZOrderLists();
 
-    // Transformed or preserve-3d descendants can only be in the z-order lists, not
-    // in the normal flow list, so we only need to check those.
+    // Transformed or preserve-3d descendants can only be in the z-order lists,
+    // not in the normal flow list, so we only need to check those.
     PaintLayerStackingNodeIterator iterator(
         *m_stackingNode.get(), PositiveZOrderChildren | NegativeZOrderChildren);
     while (PaintLayerStackingNode* node = iterator.next())
@@ -772,8 +789,8 @@ bool PaintLayer::update3DTransformedDescendantStatus() {
     m_is3DTransformedDescendantDirty = false;
   }
 
-  // If we live in a 3d hierarchy, then the layer at the root of that hierarchy needs
-  // the m_has3DTransformedDescendant set.
+  // If we live in a 3d hierarchy, then the layer at the root of that hierarchy
+  // needs the m_has3DTransformedDescendant set.
   if (preserves3D())
     return has3DTransform() || m_has3DTransformedDescendant;
 
@@ -816,7 +833,8 @@ void PaintLayer::updateLayerPosition() {
           layoutObject()->isOutOfFlowPositioned()
               ? containingLayerForOutOfFlowPositioned()
               : nullptr) {
-    // For positioned layers, we subtract out the enclosing positioned layer's scroll offset.
+    // For positioned layers, we subtract out the enclosing positioned layer's
+    // scroll offset.
     if (containingLayer->layoutObject()->hasOverflowClip()) {
       IntSize offset = containingLayer->layoutBox()->scrolledContentOffset();
       localPoint -= offset;
@@ -882,9 +900,9 @@ FloatPoint PaintLayer::perspectiveOrigin() const {
 PaintLayer* PaintLayer::containingLayerForOutOfFlowPositioned(
     const PaintLayer* ancestor,
     bool* skippedAncestor) const {
-  ASSERT(
-      !ancestor ||
-      skippedAncestor);  // If we have specified an ancestor, surely the caller needs to know whether we skipped it.
+  // If we have specified an ancestor, surely the caller needs to know whether
+  // we skipped it.
+  ASSERT(!ancestor || skippedAncestor);
   if (skippedAncestor)
     *skippedAncestor = false;
   if (layoutObject()->style()->position() == FixedPosition) {
@@ -940,8 +958,9 @@ bool PaintLayer::isPaintInvalidationContainer() const {
          compositingState() == PaintsIntoGroupedBacking;
 }
 
-// Note: enclosingCompositingLayer does not include squashed layers. Compositing stacking children of squashed layers
-// receive graphics layers that are parented to the compositing ancestor of the squashed layer.
+// Note: enclosingCompositingLayer does not include squashed layers. Compositing
+// stacking children of squashed layers receive graphics layers that are
+// parented to the compositing ancestor of the squashed layer.
 PaintLayer* PaintLayer::enclosingLayerWithCompositedLayerMapping(
     IncludeSelfOrNot includeSelf) const {
   ASSERT(isAllowedToQueryCompositingState());
@@ -1110,11 +1129,12 @@ static void expandClipRectForDescendantsAndReflection(
     PaintLayer::TransparencyClipBoxBehavior transparencyBehavior,
     const LayoutSize& subPixelAccumulation,
     GlobalPaintFlags globalPaintFlags) {
-  // If we have a mask, then the clip is limited to the border box area (and there is
-  // no need to examine child layers).
+  // If we have a mask, then the clip is limited to the border box area (and
+  // there is no need to examine child layers).
   if (!layer->layoutObject()->hasMask()) {
-    // Note: we don't have to walk z-order lists since transparent elements always establish
-    // a stacking container. This means we can just walk the layer tree directly.
+    // Note: we don't have to walk z-order lists since transparent elements
+    // always establish a stacking container. This means we can just walk the
+    // layer tree directly.
     for (PaintLayer* curr = layer->firstChild(); curr;
          curr = curr->nextSibling())
       clipRect.unite(PaintLayer::transparencyClipBox(
@@ -1123,10 +1143,11 @@ static void expandClipRectForDescendantsAndReflection(
           globalPaintFlags));
   }
 
-  // If we have a reflection, then we need to account for that when we push the clip.  Reflect our entire
-  // current transparencyClipBox to catch all child layers.
-  // FIXME: Accelerated compositing will eventually want to do something smart here to avoid incorporating this
-  // size into the parent layer.
+  // If we have a reflection, then we need to account for that when we push the
+  // clip.  Reflect our entire current transparencyClipBox to catch all child
+  // layers.
+  // FIXME: Accelerated compositing will eventually want to do something smart
+  // here to avoid incorporating this size into the parent layer.
   if (layer->layoutObject()->hasReflection()) {
     LayoutPoint delta;
     layer->convertToLayerCoords(rootLayer, delta);
@@ -1143,17 +1164,18 @@ LayoutRect PaintLayer::transparencyClipBox(
     TransparencyClipBoxMode transparencyMode,
     const LayoutSize& subPixelAccumulation,
     GlobalPaintFlags globalPaintFlags) {
-  // FIXME: Although this function completely ignores CSS-imposed clipping, we did already intersect with the
-  // paintDirtyRect, and that should cut down on the amount we have to paint.  Still it
-  // would be better to respect clips.
+  // FIXME: Although this function completely ignores CSS-imposed clipping, we
+  // did already intersect with the paintDirtyRect, and that should cut down on
+  // the amount we have to paint.  Still it would be better to respect clips.
 
   if (rootLayer != layer &&
       ((transparencyBehavior == PaintingTransparencyClipBox &&
         layer->paintsWithTransform(globalPaintFlags)) ||
        (transparencyBehavior == HitTestingTransparencyClipBox &&
         layer->hasTransformRelatedProperty()))) {
-    // The best we can do here is to use enclosed bounding boxes to establish a "fuzzy" enough clip to encompass
-    // the transformed layer and all of its children.
+    // The best we can do here is to use enclosed bounding boxes to establish a
+    // "fuzzy" enough clip to encompass the transformed layer and all of its
+    // children.
     const PaintLayer* paginationLayer =
         transparencyMode == DescendantsOfTransparencyClipBox
             ? layer->enclosingPaginationLayer()
@@ -1170,8 +1192,8 @@ LayoutRect PaintLayer::transparencyClipBox(
     if (layer->transform())
       transform = transform * *layer->transform();
 
-    // We don't use fragment boxes when collecting a transformed layer's bounding box, since it always
-    // paints unfragmented.
+    // We don't use fragment boxes when collecting a transformed layer's
+    // bounding box, since it always paints unfragmented.
     LayoutRect clipRect = layer->physicalBoundingBox(LayoutPoint());
     expandClipRectForDescendantsAndReflection(
         clipRect, layer, layer, transparencyBehavior, subPixelAccumulation,
@@ -1182,8 +1204,8 @@ LayoutRect PaintLayer::transparencyClipBox(
       return result;
 
     // We have to break up the transformed extent across our columns.
-    // Split our box up into the actual fragment boxes that layout in the columns/pages and unite those together to
-    // get our true bounding box.
+    // Split our box up into the actual fragment boxes that layout in the
+    // columns/pages and unite those together to get our true bounding box.
     LayoutFlowThread* enclosingFlowThread =
         toLayoutFlowThread(paginationLayer->layoutObject());
     result = enclosingFlowThread->fragmentsBoundingBox(result);
@@ -1243,7 +1265,8 @@ void PaintLayer::addChild(PaintLayer* child, PaintLayer* beforeChild) {
 
   child->m_parent = this;
 
-  // The ancestor overflow layer is calculated during compositing inputs update and should not be set yet.
+  // The ancestor overflow layer is calculated during compositing inputs update
+  // and should not be set yet.
   ASSERT(!child->ancestorOverflowLayer());
 
   setNeedsCompositingInputsUpdate();
@@ -1253,13 +1276,15 @@ void PaintLayer::addChild(PaintLayer* child, PaintLayer* beforeChild) {
     compositor()->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
 
   if (child->stackingNode()->isStacked() || child->firstChild()) {
-    // Dirty the z-order list in which we are contained. The ancestorStackingContextNode() can be null in the
-    // case where we're building up generated content layers. This is ok, since the lists will start
-    // off dirty in that case anyway.
+    // Dirty the z-order list in which we are contained. The
+    // ancestorStackingContextNode() can be null in the case where we're
+    // building up generated content layers. This is ok, since the lists will
+    // start off dirty in that case anyway.
     child->stackingNode()->dirtyStackingContextZOrderLists();
   }
 
-  // Non-self-painting children paint into this layer, so the visible contents status of this layer is affected.
+  // Non-self-painting children paint into this layer, so the visible contents
+  // status of this layer is affected.
   if (!child->isSelfPaintingLayer())
     dirtyVisibleContentStatus();
 
@@ -1288,8 +1313,8 @@ PaintLayer* PaintLayer::removeChild(PaintLayer* oldChild) {
 
   if (oldChild->stackingNode()->isStacked() || oldChild->firstChild()) {
     // Dirty the z-order list in which we are contained.  When called via the
-    // reattachment process in removeOnlyThisLayer, the layer may already be disconnected
-    // from the main layer tree, so we need to null-check the
+    // reattachment process in removeOnlyThisLayer, the layer may already be
+    // disconnected from the main layer tree, so we need to null-check the
     // |stackingContext| value.
     oldChild->stackingNode()->dirtyStackingContextZOrderLists();
   }
@@ -1329,9 +1354,9 @@ void PaintLayer::removeOnlyThisLayerAfterStyleChange() {
     DisableCompositingQueryAsserts
         disabler;  // We need the current compositing status.
     if (isPaintInvalidationContainer()) {
-      // Our children will be reparented and contained by a new paint invalidation container,
-      // so need paint invalidation. CompositingUpdate can't see this layer (which has been
-      // removed) so won't do this for us.
+      // Our children will be reparented and contained by a new paint
+      // invalidation container, so need paint invalidation. CompositingUpdate
+      // can't see this layer (which has been removed) so won't do this for us.
       DisablePaintInvalidationStateAsserts disabler;
       ObjectPaintInvalidator(*layoutObject())
           .invalidatePaintIncludingNonCompositingDescendants();
@@ -1379,14 +1404,15 @@ void PaintLayer::insertOnlyThisLayerAfterStyleChange() {
     parentLayer->addChild(this, beforeChild);
   }
 
-  // Remove all descendant layers from the hierarchy and add them to the new position.
+  // Remove all descendant layers from the hierarchy and add them to the new
+  // position.
   for (LayoutObject* curr = layoutObject()->slowFirstChild(); curr;
        curr = curr->nextSibling())
     curr->moveLayers(m_parent, this);
 
-  // If the previous paint invalidation container is not a stacking context and this object is
-  // stacked content, creating this layer may cause this object and its descendants to change
-  // paint invalidation container.
+  // If the previous paint invalidation container is not a stacking context and
+  // this object is stacked content, creating this layer may cause this object
+  // and its descendants to change paint invalidation container.
   bool didSetPaintInvalidation = false;
   if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() &&
       !layoutObject()->isLayoutView() && layoutObject()->isRooted() &&
@@ -1425,8 +1451,8 @@ static inline const PaintLayer* accumulateOffsetTowardsAncestor(
 
   if (position == FixedPosition &&
       (!ancestorLayer || ancestorLayer == layoutObject->view()->layer())) {
-    // If the fixed layer's container is the root, just add in the offset of the view. We can obtain this by calling
-    // localToAbsolute() on the LayoutView.
+    // If the fixed layer's container is the root, just add in the offset of the
+    // view. We can obtain this by calling localToAbsolute() on the LayoutView.
     FloatPoint absPos = layoutObject->localToAbsolute();
     location += LayoutSize(absPos.x(), absPos.y());
     return ancestorLayer;
@@ -1439,8 +1465,8 @@ static inline const PaintLayer* accumulateOffsetTowardsAncestor(
         ancestorLayer, &foundAncestorFirst);
 
     if (foundAncestorFirst) {
-      // Found ancestorLayer before the container of the out-of-flow object, so compute offset
-      // of both relative to the container and subtract.
+      // Found ancestorLayer before the container of the out-of-flow object, so
+      // compute offset of both relative to the container and subtract.
 
       LayoutPoint thisCoords;
       layer->convertToLayerCoords(parentLayer, thisCoords);
@@ -1508,8 +1534,9 @@ LayoutPoint PaintLayer::visualOffsetFromAncestor(
   if (ancestorLayer->enclosingPaginationLayer() != paginationLayer) {
     offset.moveBy(paginationLayer->visualOffsetFromAncestor(ancestorLayer));
   } else {
-    // The ancestor layer is also inside the pagination layer, so we need to subtract the visual
-    // distance from the ancestor layer to the pagination layer.
+    // The ancestor layer is also inside the pagination layer, so we need to
+    // subtract the visual distance from the ancestor layer to the pagination
+    // layer.
     offset.moveBy(-ancestorLayer->visualOffsetFromAncestor(paginationLayer));
   }
   return offset;
@@ -1519,8 +1546,9 @@ void PaintLayer::didUpdateNeedsCompositedScrolling() {
   bool wasSelfPaintingLayer = isSelfPaintingLayer();
   updateSelfPaintingLayer();
 
-  // If the floating object becomes non-self-painting, so some ancestor should paint it;
-  // if it becomes self-painting, it should paint itself and no ancestor should paint it.
+  // If the floating object becomes non-self-painting, so some ancestor should
+  // paint it; if it becomes self-painting, it should paint itself and no
+  // ancestor should paint it.
   if (wasSelfPaintingLayer != isSelfPaintingLayer() &&
       m_layoutObject->isFloating())
     LayoutBlockFlow::setAncestorShouldPaintFloatingObject(*layoutBox());
@@ -1605,8 +1633,10 @@ void PaintLayer::collectFragments(
   LayoutPoint offsetWithinPaginatedLayer;
   convertToLayerCoords(enclosingPaginationLayer(), offsetWithinPaginatedLayer);
 
-  // Calculate clip rects relative to the enclosingPaginationLayer. The purpose of this call is to determine our bounds clipped to intermediate
-  // layers between us and the pagination context. It's important to minimize the number of fragments we need to create and this helps with that.
+  // Calculate clip rects relative to the enclosingPaginationLayer. The purpose
+  // of this call is to determine our bounds clipped to intermediate layers
+  // between us and the pagination context. It's important to minimize the
+  // number of fragments we need to create and this helps with that.
   ClipRectsContext paginationClipRectsContext(enclosingPaginationLayer(),
                                               clipRectsCacheSlot,
                                               overlayScrollbarClipBehavior);
@@ -1628,35 +1658,38 @@ void PaintLayer::collectFragments(
 
   LayoutFlowThread* enclosingFlowThread =
       toLayoutFlowThread(enclosingPaginationLayer()->layoutObject());
-  LayoutPoint
-      offsetOfPaginationLayerFromRoot;  // Visual offset from the root layer to the nearest fragmentation context.
+  // Visual offset from the root layer to the nearest fragmentation context.
+  LayoutPoint offsetOfPaginationLayerFromRoot;
   bool rootLayerIsInsidePaginationLayer =
       rootLayer->enclosingPaginationLayer() == enclosingPaginationLayer();
   if (rootLayerIsInsidePaginationLayer) {
-    // The root layer is in the same fragmentation context as this layer, so we need to look
-    // inside it and subtract the offset between the fragmentation context and the root layer.
+    // The root layer is in the same fragmentation context as this layer, so we
+    // need to look inside it and subtract the offset between the fragmentation
+    // context and the root layer.
     offsetOfPaginationLayerFromRoot =
         -rootLayer->visualOffsetFromAncestor(enclosingPaginationLayer());
   } else {
     offsetOfPaginationLayerFromRoot =
         enclosingPaginationLayer()->visualOffsetFromAncestor(rootLayer);
   }
-  // Make the dirty rect relative to the fragmentation context (multicol container, etc.).
+  // Make the dirty rect relative to the fragmentation context (multicol
+  // container, etc.).
   LayoutRect dirtyRectInMulticolContainer(dirtyRect);
   dirtyRectInMulticolContainer.move(enclosingPaginationLayer()->location() -
                                     offsetOfPaginationLayerFromRoot);
 
-  // Slice the layer into fragments. Each fragment needs to be processed (e.g. painted)
-  // separately. We pass enough information to walk a minimal number of fragments based on the
-  // pages/columns that intersect the actual dirtyRect as well as the pages/columns that
-  // intersect our layer's bounding box.
+  // Slice the layer into fragments. Each fragment needs to be processed (e.g.
+  // painted) separately. We pass enough information to walk a minimal number of
+  // fragments based on the pages/columns that intersect the actual dirtyRect as
+  // well as the pages/columns that intersect our layer's bounding box.
   FragmentainerIterator iterator(*enclosingFlowThread,
                                  layerBoundingBoxInFlowThread,
                                  dirtyRectInMulticolContainer);
   if (iterator.atEnd())
     return;
 
-  // Get the parent clip rects of the pagination layer, since we need to intersect with that when painting column contents.
+  // Get the parent clip rects of the pagination layer, since we need to
+  // intersect with that when painting column contents.
   ClipRect ancestorClipRect = dirtyRect;
   if (const PaintLayer* paginationParentLayer =
           enclosingPaginationLayer()->parent()) {
@@ -1681,27 +1714,30 @@ void PaintLayer::collectFragments(
     fragment.paginationOffset = toLayoutPoint(iterator.paginationOffset());
     fragment.paginationClip = iterator.clipRectInFlowThread();
 
-    // Set our four rects with all clipping applied that was internal to the flow thread.
+    // Set our four rects with all clipping applied that was internal to the
+    // flow thread.
     fragment.setRects(layerBoundsInFlowThread, backgroundRectInFlowThread,
                       foregroundRectInFlowThread);
 
-    // Shift to the root-relative physical position used when painting the flow thread in this fragment.
+    // Shift to the root-relative physical position used when painting the flow
+    // thread in this fragment.
     fragment.moveBy(fragment.paginationOffset +
                     offsetOfPaginationLayerFromRoot +
                     subPixelAccumulationIfNeeded);
 
-    // Intersect the fragment with our ancestor's background clip so that e.g., columns in an overflow:hidden block are
-    // properly clipped by the overflow.
+    // Intersect the fragment with our ancestor's background clip so that e.g.,
+    // columns in an overflow:hidden block are properly clipped by the overflow.
     fragment.intersect(ancestorClipRect.rect());
 
-    // Now intersect with our pagination clip. This will typically mean we're just intersecting the dirty rect with the column
-    // clip, so the column clip ends up being all we apply.
+    // Now intersect with our pagination clip. This will typically mean we're
+    // just intersecting the dirty rect with the column clip, so the column clip
+    // ends up being all we apply.
     fragment.intersect(fragment.paginationClip);
 
-    // TODO(mstensho): Don't add empty fragments. We've always done that in some cases, but
-    // there should be no reason to do so. Either filter them out here, or, even better: pass a
-    // better clip rectangle to the fragmentainer iterator, so that we won't end up with empty
-    // fragments here.
+    // TODO(mstensho): Don't add empty fragments. We've always done that in some
+    // cases, but there should be no reason to do so. Either filter them out
+    // here, or, even better: pass a better clip rectangle to the fragmentainer
+    // iterator, so that we won't end up with empty fragments here.
     fragments.append(fragment);
   }
 }
@@ -1745,9 +1781,9 @@ bool PaintLayer::hitTest(HitTestResult& result) {
       // delivered to the document.
       // TODO(miletus): Capture behavior inconsistent with iframes
       // crbug.com/522109.
-      // TODO(majidvp): This should apply more consistently across different event types and we
-      // should not use RequestType for it. Perhaps best for it to be done at a higher level. See
-      // http://crbug.com/505825
+      // TODO(majidvp): This should apply more consistently across different
+      // event types and we should not use RequestType for it. Perhaps best for
+      // it to be done at a higher level. See http://crbug.com/505825
     } else if ((request.active() || request.release()) &&
                !request.isChildFrameHitTest()) {
       fallback = true;
@@ -1763,13 +1799,14 @@ bool PaintLayer::hitTest(HitTestResult& result) {
     }
   }
 
-  // Now determine if the result is inside an anchor - if the urlElement isn't already set.
+  // Now determine if the result is inside an anchor - if the urlElement isn't
+  // already set.
   Node* node = result.innerNode();
   if (node && !result.URLElement())
     result.setURLElement(node->enclosingLinkEventParentOrSelf());
 
-  // Now return whether we were inside this layer (this will always be true for the root
-  // layer).
+  // Now return whether we were inside this layer (this will always be true for
+  // the root layer).
   return insideLayer;
 }
 
@@ -1788,8 +1825,9 @@ bool PaintLayer::isInTopLayer() const {
 }
 
 // Compute the z-offset of the point in the transformState.
-// This is effectively projecting a ray normal to the plane of ancestor, finding where that
-// ray intersects target, and computing the z delta between those two points.
+// This is effectively projecting a ray normal to the plane of ancestor, finding
+// where that ray intersects target, and computing the z delta between those two
+// points.
 static double computeZOffset(const HitTestingTransformState& transformState) {
   // We got an affine transform, so no z-offset
   if (transformState.m_accumulatedTransform.isAffine())
@@ -1814,12 +1852,13 @@ PassRefPtr<HitTestingTransformState> PaintLayer::createLocalTransformState(
   RefPtr<HitTestingTransformState> transformState;
   LayoutPoint offset;
   if (containerTransformState) {
-    // If we're already computing transform state, then it's relative to the container (which we know is non-null).
+    // If we're already computing transform state, then it's relative to the
+    // container (which we know is non-null).
     transformState = HitTestingTransformState::create(*containerTransformState);
     convertToLayerCoords(containerLayer, offset);
   } else {
-    // If this is the first time we need to make transform state, then base it off of hitTestLocation,
-    // which is relative to rootLayer.
+    // If this is the first time we need to make transform state, then base it
+    // off of hitTestLocation, which is relative to rootLayer.
     transformState = HitTestingTransformState::create(
         hitTestLocation.transformedPoint(), hitTestLocation.transformedRect(),
         FloatQuad(FloatRect(hitTestRect)));
@@ -1850,14 +1889,16 @@ static bool isHitCandidate(const PaintLayer* hitLayer,
   if (!hitLayer)
     return false;
 
-  // The hit layer is depth-sorting with other layers, so just say that it was hit.
+  // The hit layer is depth-sorting with other layers, so just say that it was
+  // hit.
   if (canDepthSort)
     return true;
 
   // We need to look at z-depth to decide if this layer was hit.
   if (zOffset) {
     ASSERT(transformState);
-    // This is actually computing our z, but that's OK because the hitLayer is coplanar with us.
+    // This is actually computing our z, but that's OK because the hitLayer is
+    // coplanar with us.
     double childZOffset = computeZOffset(*transformState);
     if (childZOffset > *zOffset) {
       *zOffset = childZOffset;
@@ -1871,12 +1912,16 @@ static bool isHitCandidate(const PaintLayer* hitLayer,
 
 // hitTestLocation and hitTestRect are relative to rootLayer.
 // A 'flattening' layer is one preserves3D() == false.
-// transformState.m_accumulatedTransform holds the transform from the containing flattening layer.
-// transformState.m_lastPlanarPoint is the hitTestLocation in the plane of the containing flattening layer.
-// transformState.m_lastPlanarQuad is the hitTestRect as a quad in the plane of the containing flattening layer.
+// transformState.m_accumulatedTransform holds the transform from the containing
+// flattening layer.
+// transformState.m_lastPlanarPoint is the hitTestLocation in the plane of the
+// containing flattening layer.
+// transformState.m_lastPlanarQuad is the hitTestRect as a quad in the plane of
+// the containing flattening layer.
 //
-// If zOffset is non-null (which indicates that the caller wants z offset information),
-//  *zOffset on return is the z offset of the hit point relative to the containing flattening layer.
+// If zOffset is non-null (which indicates that the caller wants z offset
+// information), *zOffset on return is the z offset of the hit point relative to
+// the containing flattening layer.
 PaintLayer* PaintLayer::hitTestLayer(
     PaintLayer* rootLayer,
     PaintLayer* containerLayer,
@@ -1926,14 +1971,17 @@ PaintLayer* PaintLayer::hitTestLayer(
   m_stackingNode->updateLayerListsIfNeeded();
   update3DTransformedDescendantStatus();
 
-  // The natural thing would be to keep HitTestingTransformState on the stack, but it's big, so we heap-allocate.
+  // The natural thing would be to keep HitTestingTransformState on the stack,
+  // but it's big, so we heap-allocate.
   RefPtr<HitTestingTransformState> localTransformState;
   if (appliedTransform) {
-    // We computed the correct state in the caller (above code), so just reference it.
+    // We computed the correct state in the caller (above code), so just
+    // reference it.
     ASSERT(transformState);
     localTransformState = const_cast<HitTestingTransformState*>(transformState);
   } else if (transformState || m_has3DTransformedDescendant || preserves3D()) {
-    // We need transform state for the first time, or to offset the container state, so create it here.
+    // We need transform state for the first time, or to offset the container
+    // state, so create it here.
     localTransformState =
         createLocalTransformState(rootLayer, containerLayer, hitTestRect,
                                   hitTestLocation, transformState);
@@ -1945,7 +1993,8 @@ PaintLayer* PaintLayer::hitTestLayer(
           BackfaceVisibilityHidden) {
     TransformationMatrix invertedMatrix =
         localTransformState->m_accumulatedTransform.inverse();
-    // If the z-vector of the matrix is negative, the back is facing towards the viewer.
+    // If the z-vector of the matrix is negative, the back is facing towards the
+    // viewer.
     if (invertedMatrix.m33() < 0)
       return nullptr;
   }
@@ -1953,15 +2002,16 @@ PaintLayer* PaintLayer::hitTestLayer(
   RefPtr<HitTestingTransformState> unflattenedTransformState =
       localTransformState;
   if (localTransformState && !preserves3D()) {
-    // Keep a copy of the pre-flattening state, for computing z-offsets for the container
+    // Keep a copy of the pre-flattening state, for computing z-offsets for the
+    // container
     unflattenedTransformState =
         HitTestingTransformState::create(*localTransformState);
     // This layer is flattening, so flatten the state passed to descendants.
     localTransformState->flatten();
   }
 
-  // The following are used for keeping track of the z-depth of the hit point of 3d-transformed
-  // descendants.
+  // The following are used for keeping track of the z-depth of the hit point of
+  // 3d-transformed descendants.
   double localZOffset = -std::numeric_limits<double>::infinity();
   double* zOffsetForDescendantsPtr = 0;
   double* zOffsetForContentsPtr = 0;
@@ -1969,7 +2019,8 @@ PaintLayer* PaintLayer::hitTestLayer(
   bool depthSortDescendants = false;
   if (preserves3D()) {
     depthSortDescendants = true;
-    // Our layers can depth-test with our container, so share the z depth pointer with the container, if it passed one down.
+    // Our layers can depth-test with our container, so share the z depth
+    // pointer with the container, if it passed one down.
     zOffsetForDescendantsPtr = zOffset ? zOffset : &localZOffset;
     zOffsetForContentsPtr = zOffset ? zOffset : &localZOffset;
   } else if (zOffset) {
@@ -1981,7 +2032,8 @@ PaintLayer* PaintLayer::hitTestLayer(
   // This variable tracks which layer the mouse ends up being inside.
   PaintLayer* candidateLayer = 0;
 
-  // Begin by walking our list of positive layers from highest z-index down to the lowest z-index.
+  // Begin by walking our list of positive layers from highest z-index down to
+  // the lowest z-index.
   PaintLayer* hitLayer = hitTestChildren(
       PositiveZOrderChildren, rootLayer, result, hitTestRect, hitTestLocation,
       localTransformState.get(), zOffsetForDescendantsPtr, zOffset,
@@ -2003,7 +2055,8 @@ PaintLayer* PaintLayer::hitTestLayer(
     candidateLayer = hitLayer;
   }
 
-  // Collect the fragments. This will compute the clip rectangles for each layer fragment.
+  // Collect the fragments. This will compute the clip rectangles for each layer
+  // fragment.
   PaintLayerFragments layerFragments;
   if (appliedTransform)
     appendSingleFragmentIgnoringPagination(
@@ -2020,10 +2073,11 @@ PaintLayer* PaintLayer::hitTestLayer(
     return this;
   }
 
-  // Next we want to see if the mouse pos is inside the child LayoutObjects of the layer. Check
-  // every fragment in reverse order.
+  // Next we want to see if the mouse pos is inside the child LayoutObjects of
+  // the layer. Check every fragment in reverse order.
   if (isSelfPaintingLayer()) {
-    // Hit test with a temporary HitTestResult, because we only want to commit to 'result' if we know we're frontmost.
+    // Hit test with a temporary HitTestResult, because we only want to commit
+    // to 'result' if we know we're frontmost.
     HitTestResult tempResult(result.hitTestRequest(), result.hitTestLocation());
     bool insideFragmentForegroundRect = false;
     if (hitTestContentsForFragments(layerFragments, tempResult, hitTestLocation,
@@ -2037,7 +2091,8 @@ PaintLayer* PaintLayer::hitTestLayer(
         result = tempResult;
       if (!depthSortDescendants)
         return this;
-      // Foreground can depth-sort with descendant layers, so keep this as a candidate.
+      // Foreground can depth-sort with descendant layers, so keep this as a
+      // candidate.
       candidateLayer = this;
     } else if (insideFragmentForegroundRect &&
                result.hitTestRequest().listBased()) {
@@ -2056,7 +2111,8 @@ PaintLayer* PaintLayer::hitTestLayer(
     candidateLayer = hitLayer;
   }
 
-  // If we found a layer, return. Child layers, and foreground always render in front of background.
+  // If we found a layer, return. Child layers, and foreground always render in
+  // front of background.
   if (candidateLayer)
     return candidateLayer;
 
@@ -2129,8 +2185,8 @@ PaintLayer* PaintLayer::hitTestTransformedLayerInFragments(
   for (int i = enclosingPaginationFragments.size() - 1; i >= 0; --i) {
     const PaintLayerFragment& fragment = enclosingPaginationFragments.at(i);
 
-    // Apply the page/column clip for this fragment, as well as any clips established by layers in between us and
-    // the enclosing pagination layer.
+    // Apply the page/column clip for this fragment, as well as any clips
+    // established by layers in between us and the enclosing pagination layer.
     LayoutRect clipRect = fragment.backgroundRect.rect();
 
     // Now compute the clips within a given fragment
@@ -2180,12 +2236,13 @@ PaintLayer* PaintLayer::hitTestLayerByApplyingTransform(
   if (!newTransformState->m_accumulatedTransform.isInvertible())
     return 0;
 
-  // Compute the point and the hit test rect in the coords of this layer by using the values
-  // from the transformState, which store the point and quad in the coords of the last flattened
-  // layer, and the accumulated transform which lets up map through preserve-3d layers.
+  // Compute the point and the hit test rect in the coords of this layer by
+  // using the values from the transformState, which store the point and quad in
+  // the coords of the last flattened layer, and the accumulated transform which
+  // lets up map through preserve-3d layers.
   //
-  // We can't just map hitTestLocation and hitTestRect because they may have been flattened (losing z)
-  // by our container.
+  // We can't just map hitTestLocation and hitTestRect because they may have
+  // been flattened (losing z) by our container.
   FloatPoint localPoint = newTransformState->mappedPoint();
   FloatQuad localPointQuad = newTransformState->mappedQuad();
   LayoutRect localHitTestRect = newTransformState->boundsOfMappedArea();
@@ -2211,30 +2268,33 @@ bool PaintLayer::hitTestContents(HitTestResult& result,
           result, hitTestLocation,
           toLayoutPoint(layerBounds.location() - layoutBoxLocation()),
           hitTestFilter)) {
-    // It's wrong to set innerNode, but then claim that you didn't hit anything, unless it is
-    // a rect-based test.
+    // It's wrong to set innerNode, but then claim that you didn't hit anything,
+    // unless it is a rect-based test.
     ASSERT(!result.innerNode() || (result.hitTestRequest().listBased() &&
                                    result.listBasedTestResult().size()));
     return false;
   }
 
   if (!result.innerNode()) {
-    // We hit something anonymous, and we didn't find a DOM node ancestor in this layer.
+    // We hit something anonymous, and we didn't find a DOM node ancestor in
+    // this layer.
 
     if (layoutObject()->isLayoutFlowThread()) {
-      // For a flow thread it's safe to just say that we didn't hit anything. That means that
-      // we'll continue as normally, and eventually hit a column set sibling instead. Column
-      // sets are also anonymous, but, unlike flow threads, they don't establish layers, so
-      // we'll fall back and hit the multicol container parent (which should have a DOM node).
+      // For a flow thread it's safe to just say that we didn't hit anything.
+      // That means that we'll continue as normally, and eventually hit a column
+      // set sibling instead. Column sets are also anonymous, but, unlike flow
+      // threads, they don't establish layers, so we'll fall back and hit the
+      // multicol container parent (which should have a DOM node).
       return false;
     }
 
     Node* e = enclosingNode();
-    // FIXME: should be a call to result.setNodeAndPosition. What we would really want to do here is to
-    // return and look for the nearest non-anonymous ancestor, and ignore aunts and uncles on
-    // our way. It's bad to look for it manually like we do here, and give up on setting a local
-    // point in the result, because that has bad implications for text selection and
-    // caretRangeFromPoint(). See crbug.com/461791
+    // FIXME: should be a call to result.setNodeAndPosition. What we would
+    // really want to do here is to return and look for the nearest
+    // non-anonymous ancestor, and ignore aunts and uncles on our way. It's bad
+    // to look for it manually like we do here, and give up on setting a local
+    // point in the result, because that has bad implications for text selection
+    // and caretRangeFromPoint(). See crbug.com/461791
     if (!result.innerNode())
       result.setInnerNode(e);
   }
@@ -2266,8 +2326,8 @@ PaintLayer* PaintLayer::hitTestChildren(
                                         hitTestRect, hitTestLocation, false,
                                         transformState, zOffsetForDescendants);
 
-    // If it is a list-based test, we can safely append the temporary result since it might had hit
-    // nodes but not necesserily had hitLayer set.
+    // If it is a list-based test, we can safely append the temporary result
+    // since it might had hit nodes but not necesserily had hitLayer set.
     ASSERT(!result.isRectBasedTest() || result.hitTestRequest().listBased());
     if (result.hitTestRequest().listBased())
       result.append(tempResult);
@@ -2350,13 +2410,13 @@ bool PaintLayer::intersectsDamageRect(const LayoutRect& layerBounds,
                                       const LayoutRect& damageRect,
                                       const LayoutPoint& offsetFromRoot) const {
   // Always examine the canvas and the root.
-  // FIXME: Could eliminate the isDocumentElement() check if we fix background painting so that the LayoutView
-  // paints the root's background.
+  // FIXME: Could eliminate the isDocumentElement() check if we fix background
+  // painting so that the LayoutView paints the root's background.
   if (isRootLayer() || layoutObject()->isDocumentElement())
     return true;
 
-  // If we aren't an inline flow, and our layer bounds do intersect the damage rect, then we
-  // can go ahead and return true.
+  // If we aren't an inline flow, and our layer bounds do intersect the damage
+  // rect, then we can go ahead and return true.
   LayoutView* view = layoutObject()->view();
   ASSERT(view);
   if (view && !layoutObject()->isLayoutInline()) {
@@ -2364,8 +2424,8 @@ bool PaintLayer::intersectsDamageRect(const LayoutRect& layerBounds,
       return true;
   }
 
-  // Otherwise we need to compute the bounding box of this single layer and see if it intersects
-  // the damage rect.
+  // Otherwise we need to compute the bounding box of this single layer and see
+  // if it intersects the damage rect.
   return physicalBoundingBox(offsetFromRoot).intersects(damageRect);
 }
 
@@ -2411,11 +2471,12 @@ LayoutRect PaintLayer::fragmentsBoundingBox(
 }
 
 LayoutRect PaintLayer::boundingBoxForCompositingOverlapTest() const {
-  // Apply NeverIncludeTransformForAncestorLayer, because the geometry map in CompositingInputsUpdater will take care of applying the
-  // transform of |this| (== the ancestorLayer argument to boundingBoxForCompositing).
-  // TODO(trchen): Layer fragmentation is inhibited across compositing boundary. Should we
-  // return the unfragmented bounds for overlap testing? Or perhaps assume fragmented layers
-  // always overlap?
+  // Apply NeverIncludeTransformForAncestorLayer, because the geometry map in
+  // CompositingInputsUpdater will take care of applying the transform of |this|
+  // (== the ancestorLayer argument to boundingBoxForCompositing).
+  // TODO(trchen): Layer fragmentation is inhibited across compositing boundary.
+  // Should we return the unfragmented bounds for overlap testing? Or perhaps
+  // assume fragmented layers always overlap?
   return overlapBoundsIncludeChildren()
              ? boundingBoxForCompositing(this,
                                          NeverIncludeTransformForAncestorLayer)
@@ -2477,7 +2538,8 @@ LayoutRect PaintLayer::boundingBoxForCompositing(
   if (!ancestorLayer)
     ancestorLayer = this;
 
-  // FIXME: This could be improved to do a check like hasVisibleNonCompositingDescendantLayers() (bug 92580).
+  // FIXME: This could be improved to do a check like
+  // hasVisibleNonCompositingDescendantLayers() (bug 92580).
   if (this != ancestorLayer && !hasVisibleContent() && !hasVisibleDescendant())
     return LayoutRect();
 
@@ -2485,15 +2547,17 @@ LayoutRect PaintLayer::boundingBoxForCompositing(
   if (isRootLayer() && !needsCompositedScrolling())
     return LayoutRect(m_layoutObject->view()->documentRect());
 
-  // The layer created for the LayoutFlowThread is just a helper for painting and hit-testing,
-  // and should not contribute to the bounding box. The LayoutMultiColumnSets will contribute
-  // the correct size for the layout content of the multicol container.
+  // The layer created for the LayoutFlowThread is just a helper for painting
+  // and hit-testing, and should not contribute to the bounding box. The
+  // LayoutMultiColumnSets will contribute the correct size for the layout
+  // content of the multicol container.
   if (layoutObject()->isLayoutFlowThread())
     return LayoutRect();
 
-  // If there is a clip applied by an ancestor to this PaintLayer but below or equal to |ancestorLayer|,
-  // use that clip as the bounds rather than the recursive bounding boxes, since the latter may be larger than the
-  // actual size. See https://bugs.webkit.org/show_bug.cgi?id=80372 for examples.
+  // If there is a clip applied by an ancestor to this PaintLayer but below or
+  // equal to |ancestorLayer|, use that clip as the bounds rather than the
+  // recursive bounding boxes, since the latter may be larger than the actual
+  // size. See https://bugs.webkit.org/show_bug.cgi?id=80372 for examples.
   LayoutRect result = clipper().localClipRect(ancestorLayer);
   // TODO(chrishtr): avoid converting to IntRect and back.
   if (result == LayoutRect(LayoutRect::infiniteIntRect())) {
@@ -2503,8 +2567,8 @@ LayoutRect PaintLayer::boundingBoxForCompositing(
 
     expandRectForStackingChildren(this, result, options);
 
-    // Only enlarge by the filter outsets if we know the filter is going to be rendered in software.
-    // Accelerated filters will handle their own outsets.
+    // Only enlarge by the filter outsets if we know the filter is going to be
+    // rendered in software.  Accelerated filters will handle their own outsets.
     if (paintsWithFilters())
       result = mapLayoutRectForFilter(result);
   }
@@ -2604,8 +2668,8 @@ void PaintLayer::clearCompositedLayerMapping(bool layerBeingDestroyed) {
   if (!layerBeingDestroyed) {
     // We need to make sure our decendants get a geometry update. In principle,
     // we could call setNeedsGraphicsLayerUpdate on our children, but that would
-    // require walking the z-order lists to find them. Instead, we over-invalidate
-    // by marking our parent as needing a geometry update.
+    // require walking the z-order lists to find them. Instead, we
+    // over-invalidate by marking our parent as needing a geometry update.
     if (PaintLayer* compositingParent =
             enclosingLayerWithCompositedLayerMapping(ExcludeSelf))
       compositingParent->compositedLayerMapping()->setNeedsGraphicsLayerUpdate(
@@ -2658,8 +2722,9 @@ bool PaintLayer::backgroundIsKnownToBeOpaqueInRect(
   if (paintsWithTransparency(GlobalPaintNormalPhase))
     return false;
 
-  // We can't use hasVisibleContent(), because that will be true if our layoutObject is hidden, but some child
-  // is visible and that child doesn't cover the entire rect.
+  // We can't use hasVisibleContent(), because that will be true if our
+  // layoutObject is hidden, but some child is visible and that child doesn't
+  // cover the entire rect.
   if (layoutObject()->style()->visibility() != EVisibility::Visible)
     return false;
 
@@ -2677,8 +2742,9 @@ bool PaintLayer::backgroundIsKnownToBeOpaqueInRect(
     return false;
 
   // This function should not be called when layer-lists are dirty.
-  // TODO(schenney) This check never hits in layout tests or most platforms, but does hit in
-  // PopupBlockerBrowserTest.AllowPopupThroughContentSetting on Win 7 Test Builder.
+  // TODO(schenney) This check never hits in layout tests or most platforms, but
+  // does hit in PopupBlockerBrowserTest.AllowPopupThroughContentSetting on
+  // Win 7 Test Builder.
   if (m_stackingNode->zOrderListsDirty())
     return false;
 
@@ -2693,10 +2759,10 @@ bool PaintLayer::backgroundIsKnownToBeOpaqueInRect(
   if (layoutObject()->hasClipRelatedProperty())
     return false;
 
-  // TODO(schenney): This could be improved by unioning the opaque regions of all the children.
-  // That would require a refactoring because currently children just check they at least
-  // cover the given rect, but a unioning method would require children to compute and report
-  // their rects.
+  // TODO(schenney): This could be improved by unioning the opaque regions of
+  // all the children.  That would require a refactoring because currently
+  // children just check they at least cover the given rect, but a unioning
+  // method would require children to compute and report their rects.
   return childBackgroundIsKnownToBeOpaqueInRect(localRect);
 }
 
@@ -3063,14 +3129,14 @@ void PaintLayer::filterNeedsPaintInvalidation() {
   {
     DeprecatedScheduleStyleRecalcDuringLayout marker(
         layoutObject()->document().lifecycle());
-    // It's possible for scheduleSVGFilterLayerUpdateHack to schedule a style recalc, which
-    // is a problem because this function can be called right before performing layout but
-    // after style recalc.
+    // It's possible for scheduleSVGFilterLayerUpdateHack to schedule a style
+    // recalc, which is a problem because this function can be called right
+    // before performing layout but after style recalc.
     //
     // See LayoutView::layout() and the call to
-    // invalidateSVGRootsWithRelativeLengthDescendents(). This violation is worked around
-    // in FrameView::updateStyleAndLayoutIfNeededRecursive() by doing an extra style recalc
-    // and layout in case it's needed.
+    // invalidateSVGRootsWithRelativeLengthDescendents(). This violation is
+    // worked around in FrameView::updateStyleAndLayoutIfNeededRecursive() by
+    // doing an extra style recalc and layout in case it's needed.
     toElement(layoutObject()->node())->scheduleSVGFilterLayerUpdateHack();
   }
 
@@ -3088,12 +3154,12 @@ void PaintLayer::computeSelfHitTestRects(LayerHitTestRects& rects) const {
     Vector<LayoutRect> rect;
 
     if (layoutBox() && layoutBox()->scrollsOverflow()) {
-      // For scrolling layers, rects are taken to be in the space of the contents.
-      // We need to include the bounding box of the layer in the space of its parent
-      // (eg. for border / scroll bars) and if it's composited then the entire contents
-      // as well as they may be on another composited layer. Skip reporting contents
-      // for non-composited layers as they'll get projected to the same layer as the
-      // bounding box.
+      // For scrolling layers, rects are taken to be in the space of the
+      // contents.  We need to include the bounding box of the layer in the
+      // space of its parent (eg. for border / scroll bars) and if it's
+      // composited then the entire contents as well as they may be on another
+      // composited layer. Skip reporting contents for non-composited layers as
+      // they'll get projected to the same layer as the bounding box.
       if (compositingState() != NotComposited)
         rect.append(m_scrollableArea->overflowRect());
 
@@ -3117,7 +3183,8 @@ void PaintLayer::computeSelfHitTestRects(LayerHitTestRects& rects) const {
 void PaintLayer::setNeedsRepaint() {
   setNeedsRepaintInternal();
 
-  // Do this unconditionally to ensure container chain is marked when compositing status of the layer changes.
+  // Do this unconditionally to ensure container chain is marked when
+  // compositing status of the layer changes.
   markCompositingContainerChainForNeedsRepaint();
 }
 
@@ -3127,7 +3194,8 @@ void PaintLayer::setNeedsRepaintInternal() {
 }
 
 void PaintLayer::markCompositingContainerChainForNeedsRepaint() {
-  // Need to access compositingState(). We've ensured correct flag setting when compositingState() changes.
+  // Need to access compositingState(). We've ensured correct flag setting when
+  // compositingState() changes.
   DisableCompositingQueryAsserts disabler;
 
   PaintLayer* layer = this;
@@ -3135,8 +3203,9 @@ void PaintLayer::markCompositingContainerChainForNeedsRepaint() {
     if (layer->compositingState() == PaintsIntoOwnBacking)
       return;
     if (CompositedLayerMapping* groupedMapping = layer->groupedMapping()) {
-      // TODO(wkorman): As we clean up the CompositedLayerMapping needsRepaint logic to
-      // delegate to scrollbars, we may be able to remove the line below as well.
+      // TODO(wkorman): As we clean up the CompositedLayerMapping needsRepaint
+      // logic to delegate to scrollbars, we may be able to remove the line
+      // below as well.
       groupedMapping->owningLayer().setNeedsRepaint();
       return;
     }

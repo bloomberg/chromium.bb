@@ -59,9 +59,10 @@ NinePieceImageGrid::NinePieceImageGrid(const NinePieceImage& ninePieceImage,
                                   borderWidths.left(), m_left.slice,
                                   borderImageArea.width());
 
-  // The spec says: Given Lwidth as the width of the border image area, Lheight as its height, and Wside as the border
-  // image width offset for the side, let f = min(Lwidth/(Wleft+Wright), Lheight/(Wtop+Wbottom)). If f < 1, then all W
-  // are reduced by multiplying them by f.
+  // The spec says: Given Lwidth as the width of the border image area, Lheight
+  // as its height, and Wside as the border image width offset for the side, let
+  // f = min(Lwidth/(Wleft+Wright), Lheight/(Wtop+Wbottom)). If f < 1, then all
+  // W are reduced by multiplying them by f.
   int borderSideWidth = std::max(1, m_left.width + m_right.width);
   int borderSideHeight = std::max(1, m_top.width + m_bottom.width);
   float borderSideScaleFactor =
@@ -75,8 +76,8 @@ NinePieceImageGrid::NinePieceImageGrid(const NinePieceImage& ninePieceImage,
   }
 }
 
-// Given a rectangle, construct a subrectangle using offset, width and height. Negative offsets are relative to the
-// extent of the given rectangle.
+// Given a rectangle, construct a subrectangle using offset, width and height.
+// Negative offsets are relative to the extent of the given rectangle.
 static FloatRect subrect(IntRect rect,
                          float offsetX,
                          float offsetY,
@@ -258,9 +259,11 @@ void NinePieceImageGrid::setDrawInfoMiddle(NinePieceDrawInfo& drawInfo) const {
     middleScaleFactor.setHeight(m_right.scale());
 
   if (!sourceSize.isEmpty()) {
-    // For "stretch" rules, just override the scale factor and replace. We only have to do this for the center tile,
-    // since sides don't even use the scale factor unless they have a rule other than "stretch". The middle however
-    // can have "stretch" specified in one axis but not the other, so we have to correct the scale here.
+    // For "stretch" rules, just override the scale factor and replace. We only
+    // have to do this for the center tile, since sides don't even use the scale
+    // factor unless they have a rule other than "stretch". The middle however
+    // can have "stretch" specified in one axis but not the other, so we have to
+    // correct the scale here.
     if (m_horizontalTileRule == (Image::TileRule)StretchImageRule)
       middleScaleFactor.setWidth((float)destinationSize.width() /
                                  sourceSize.width());
@@ -292,8 +295,8 @@ NinePieceImageGrid::NinePieceDrawInfo NinePieceImageGrid::getNinePieceDrawInfo(
     setDrawInfoMiddle(drawInfo);
 
   if (imageScaleFactor != 1) {
-    // The nine piece grid is computed in unscaled image coordinates but must be drawn using
-    // scaled image coordinates.
+    // The nine piece grid is computed in unscaled image coordinates but must be
+    // drawn using scaled image coordinates.
     drawInfo.source.scale(imageScaleFactor);
 
     // Compensate for source scaling by scaling down the individual tiles.

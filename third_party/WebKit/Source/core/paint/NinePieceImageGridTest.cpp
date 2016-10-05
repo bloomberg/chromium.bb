@@ -278,7 +278,8 @@ TEST_F(NinePieceImageGridTest, NinePieceImagePainting) {
            {false, false, FloatRect(0, 0, 0, 0), FloatRect(0, 0, 0, 0), 0, 0,
             Image::StretchTile, Image::RoundTile},
        }},
-      {// All borders but no slices, with fill (stretch horizontally, space vertically)
+      {// All borders but no slices, with fill (stretch horizontally, space
+       // vertically)
        IntSize(100, 100),
        IntRect(0, 0, 100, 100),
        IntRectOutsets(10, 10, 10, 10),

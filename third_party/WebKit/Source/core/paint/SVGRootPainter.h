@@ -24,9 +24,10 @@ class SVGRootPainter {
 
   void paintReplaced(const PaintInfo&, const LayoutPoint&);
 
-  // The embedded SVG document uses an unsnapped viewport box for layout, while SVG root's border
-  // box ultimately gets snapped during paint. This translate/scale transform is applied to
-  // compensate the difference, in addition to applying the local to border box transform.
+  // The embedded SVG document uses an unsnapped viewport box for layout, while
+  // SVG root's border box ultimately gets snapped during paint. This
+  // translate/scale transform is applied to compensate the difference, in
+  // addition to applying the local to border box transform.
   AffineTransform transformToPixelSnappedBorderBox(
       const LayoutPoint& paintOffset) const;
 

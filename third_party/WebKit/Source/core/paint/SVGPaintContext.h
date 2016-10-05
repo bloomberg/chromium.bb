@@ -43,8 +43,9 @@ class LayoutSVGResourceFilter;
 class LayoutSVGResourceMasker;
 class SVGResources;
 
-// This class hooks up the correct paint property transform node when spv2 is enabled, and otherwise
-// works like a TransformRecorder which emits Transform display items for spv1.
+// This class hooks up the correct paint property transform node when spv2 is
+// enabled, and otherwise works like a TransformRecorder which emits Transform
+// display items for spv1.
 class SVGTransformContext : public TransformRecorder {
   STACK_ALLOCATED();
 
@@ -115,7 +116,8 @@ class SVGPaintContext {
     return m_filterPaintInfo ? *m_filterPaintInfo : m_paintInfo;
   }
 
-  // Return true if these operations aren't necessary or if they are successfully applied.
+  // Return true if these operations aren't necessary or if they are
+  // successfully applied.
   bool applyClipMaskAndFilterIfNecessary();
 
   static void paintSubtree(GraphicsContext&, const LayoutObject*);
@@ -134,10 +136,12 @@ class SVGPaintContext {
   void applyCompositingIfNecessary();
   void applyClipIfNecessary();
 
-  // Return true if no masking is necessary or if the mask is successfully applied.
+  // Return true if no masking is necessary or if the mask is successfully
+  // applied.
   bool applyMaskIfNecessary(SVGResources*);
 
-  // Return true if no filtering is necessary or if the filter is successfully applied.
+  // Return true if no filtering is necessary or if the filter is successfully
+  // applied.
   bool applyFilterIfNecessary(SVGResources*);
 
   bool isIsolationInstalled() const;

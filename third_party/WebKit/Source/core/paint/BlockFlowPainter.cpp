@@ -15,9 +15,10 @@ namespace blink {
 
 void BlockFlowPainter::paintContents(const PaintInfo& paintInfo,
                                      const LayoutPoint& paintOffset) {
-  // Avoid painting descendants of the root element when stylesheets haven't loaded. This eliminates FOUC.
-  // It's ok not to draw, because later on, when all the stylesheets do load, styleResolverMayHaveChanged()
-  // on Document will trigger a full paint invalidation.
+  // Avoid painting descendants of the root element when stylesheets haven't
+  // loaded. This eliminates FOUC.  It's ok not to draw, because later on, when
+  // all the stylesheets do load, styleResolverMayHaveChanged() on Document will
+  // trigger a full paint invalidation.
   if (m_layoutBlockFlow.document().didLayoutWithPendingStylesheets() &&
       !m_layoutBlockFlow.isLayoutView())
     return;
@@ -52,7 +53,8 @@ void BlockFlowPainter::paintFloats(const PaintInfo& paintInfo,
       continue;
 
     const LayoutBox* floatingLayoutObject = floatingObject->layoutObject();
-    // FIXME: LayoutPoint version of xPositionForFloatIncludingMargin would make this much cleaner.
+    // FIXME: LayoutPoint version of xPositionForFloatIncludingMargin would make
+    // this much cleaner.
     LayoutPoint childPoint = m_layoutBlockFlow.flipFloatForWritingModeForChild(
         *floatingObject,
         LayoutPoint(paintOffset.x() +

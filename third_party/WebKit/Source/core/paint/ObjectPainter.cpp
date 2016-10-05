@@ -48,7 +48,8 @@ int adjustJoint(int outlineWidth,
                 OutlineEdgeInfo& edge1,
                 OutlineEdgeInfo& edge2) {
   // A clockwise joint:
-  // - needs no adjustment of edge length because our edges are along the clockwise outer edge of the outline;
+  // - needs no adjustment of edge length because our edges are along the
+  //   clockwise outer edge of the outline;
   // - needs a positive adjacent joint width (required by drawLineForBoxSide).
   // A counterclockwise joint:
   // - needs to increase the edge length to include the joint;
@@ -175,7 +176,8 @@ void paintComplexOutline(GraphicsContext& graphicsContext,
   ASSERT(count >= 4 && edges.size() == count);
   int firstAdjacentWidth = adjustJoint(width, edges.last(), edges.first());
 
-  // The width of the angled part of starting and ending joint of the current edge.
+  // The width of the angled part of starting and ending joint of the current
+  // edge.
   int adjacentWidthStart = firstAdjacentWidth;
   int adjacentWidthEnd;
   for (size_t i = 0; i < count; ++i) {
@@ -224,7 +226,8 @@ void ObjectPainter::paintOutline(const PaintInfo& paintInfo,
       styleToUse.visibility() != EVisibility::Visible)
     return;
 
-  // Only paint the focus ring by hand if the theme isn't able to draw the focus ring.
+  // Only paint the focus ring by hand if the theme isn't able to draw the focus
+  // ring.
   if (styleToUse.outlineStyleIsAuto() &&
       !LayoutTheme::theme().shouldDrawDefaultFocusRing(m_layoutObject))
     return;
@@ -354,9 +357,9 @@ void ObjectPainter::drawLineForBoxSide(GraphicsContext& graphicsContext,
     length = y2 - y1;
   }
 
-  // We would like this check to be an ASSERT as we don't want to draw empty borders. However
-  // nothing guarantees that the following recursive calls to drawLineForBoxSide will have
-  // positive thickness and length.
+  // We would like this check to be an ASSERT as we don't want to draw empty
+  // borders. However nothing guarantees that the following recursive calls to
+  // drawLineForBoxSide will have positive thickness and length.
   if (length <= 0 || thickness <= 0)
     return;
 
@@ -667,8 +670,9 @@ void ObjectPainter::drawSolidBoxSide(GraphicsContext& graphicsContext,
 
 void ObjectPainter::paintAllPhasesAtomically(const PaintInfo& paintInfo,
                                              const LayoutPoint& paintOffset) {
-  // Pass PaintPhaseSelection and PaintPhaseTextClip to the descendants so that they will paint
-  // for selection and text clip respectively. We don't need complete painting for these phases.
+  // Pass PaintPhaseSelection and PaintPhaseTextClip to the descendants so that
+  // they will paint for selection and text clip respectively. We don't need
+  // complete painting for these phases.
   if (paintInfo.phase == PaintPhaseSelection ||
       paintInfo.phase == PaintPhaseTextClip) {
     m_layoutObject.paint(paintInfo, paintOffset);

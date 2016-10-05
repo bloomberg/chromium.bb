@@ -70,7 +70,8 @@ void ReplacedPainter::paint(const PaintInfo& paintInfo,
       if (borderRect.isEmpty()) {
         completelyClippedOut = true;
       } else if (shouldApplyViewportClip(m_layoutReplaced)) {
-        // Push a clip if we have a border radius, since we want to round the foreground content that gets painted.
+        // Push a clip if we have a border radius, since we want to round the
+        // foreground content that gets painted.
         FloatRoundedRect roundedInnerRect =
             m_layoutReplaced.style()->getRoundedInnerBorderFor(
                 borderRect,
@@ -99,8 +100,8 @@ void ReplacedPainter::paint(const PaintInfo& paintInfo,
     }
   }
 
-  // The selection tint never gets clipped by border-radius rounding, since we want it to run right up to the edges of
-  // surrounding content.
+  // The selection tint never gets clipped by border-radius rounding, since we
+  // want it to run right up to the edges of surrounding content.
   bool drawSelectionTint =
       paintInfo.phase == PaintPhaseForeground &&
       m_layoutReplaced.getSelectionState() != SelectionNone &&
@@ -132,7 +133,8 @@ bool ReplacedPainter::shouldPaint(
     return false;
 
   // If we're invisible or haven't received a layout yet, just bail.
-  // But if it's an SVG root, there can be children, so we'll check visibility later.
+  // But if it's an SVG root, there can be children, so we'll check visibility
+  // later.
   if (!m_layoutReplaced.isSVGRoot() &&
       m_layoutReplaced.style()->visibility() != EVisibility::Visible)
     return false;

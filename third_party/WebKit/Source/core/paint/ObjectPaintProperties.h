@@ -20,11 +20,13 @@
 
 namespace blink {
 
-// This class stores property tree related information associated with a LayoutObject.
+// This class stores property tree related information associated with a
+// LayoutObject.
 // Currently there are two groups of information:
 // 1. The set of property nodes created locally by this LayoutObject.
-// 2. The set of property nodes (inherited, or created locally) and paint offset that can be used
-//    to paint the border box of this LayoutObject (see: localBorderBoxProperties).
+// 2. The set of property nodes (inherited, or created locally) and paint offset
+//    that can be used to paint the border box of this LayoutObject (see:
+//    localBorderBoxProperties).
 class CORE_EXPORT ObjectPaintProperties {
   WTF_MAKE_NONCOPYABLE(ObjectPaintProperties);
   USING_FAST_MALLOC(ObjectPaintProperties);
@@ -34,19 +36,27 @@ class CORE_EXPORT ObjectPaintProperties {
     return wrapUnique(new ObjectPaintProperties());
   }
 
-  // The hierarchy of the transform subtree created by a LayoutObject is as follows:
-  // [ paintOffsetTranslation ]           Normally paint offset is accumulated without creating a node
-  // |                                    until we see, for example, transform or position:fixed.
+  // The hierarchy of the transform subtree created by a LayoutObject is as
+  // follows:
+  // [ paintOffsetTranslation ]           Normally paint offset is accumulated
+  // |                                    without creating a node until we see,
+  // |                                    for example, transform or
+  // |                                    position:fixed.
   // +---[ transform ]                    The space created by CSS transform.
-  //     |                                This is the local border box space, see: localBorderBoxProperties below.
+  //     |                                This is the local border box space,
+  //     |                                see: localBorderBoxProperties below.
   //     +---[ perspective ]              The space created by CSS perspective.
-  //     |   +---[ svgLocalToBorderBoxTransform ] Additional transform for children of the outermost root SVG.
+  //     |   +---[ svgLocalToBorderBoxTransform ] Additional transform for
+  //                                      children of the outermost root SVG.
   //     |              OR                (SVG does not support scrolling.)
   //     |   +---[ scrollTranslation ]    The space created by overflow clip.
-  //     +---[ scrollbarPaintOffset ]     TODO(trchen): Remove this once we bake the paint offset into frameRect.
-  //                                      This is equivalent to the local border box space above,
-  //                                      with pixel snapped paint offset baked in. It is really redundant,
-  //                                      but it is a pain to teach scrollbars to paint with an offset.
+  //     +---[ scrollbarPaintOffset ]     TODO(trchen): Remove this once we bake
+  //                                      the paint offset into frameRect.  This
+  //                                      is equivalent to the local border box
+  //                                      space above, with pixel snapped paint
+  //                                      offset baked in. It is really
+  //                                      redundant, but it is a pain to teach
+  //                                      scrollbars to paint with an offset.
   const TransformPaintPropertyNode* paintOffsetTranslation() const {
     return m_paintOffsetTranslation.get();
   }
@@ -66,9 +76,9 @@ class CORE_EXPORT ObjectPaintProperties {
     return m_scrollbarPaintOffset.get();
   }
 
-  // Auxiliary scrolling information. Includes information such as the hierarchy of scrollable
-  // areas, the extent that can be scrolled, etc. The actual scroll offset is stored in the
-  // transform tree (m_scrollTranslation).
+  // Auxiliary scrolling information. Includes information such as the hierarchy
+  // of scrollable areas, the extent that can be scrolled, etc. The actual
+  // scroll offset is stored in the transform tree (m_scrollTranslation).
   const ScrollPaintPropertyNode* scroll() const { return m_scroll.get(); }
 
   const EffectPaintPropertyNode* effect() const { return m_effect.get(); }
@@ -76,9 +86,10 @@ class CORE_EXPORT ObjectPaintProperties {
   // The hierarchy of the clip subtree created by a LayoutObject is as follows:
   // [ css clip ]
   // [ css clip fixed position]
-  // [ inner border radius clip ] Clip created by a rounded border with overflow clip. This clip
-  //                              is not inset by scrollbars.
-  // +--- [ overflow clip ]       Clip created by overflow clip and is inset by the scrollbars.
+  // [ inner border radius clip ] Clip created by a rounded border with overflow
+  //                              clip. This clip is not inset by scrollbars.
+  // +--- [ overflow clip ]       Clip created by overflow clip and is inset by
+  //                              the scrollbars.
   const ClipPaintPropertyNode* cssClip() const { return m_cssClip.get(); }
   const ClipPaintPropertyNode* cssClipFixedPosition() const {
     return m_cssClipFixedPosition.get();
@@ -90,8 +101,9 @@ class CORE_EXPORT ObjectPaintProperties {
     return m_overflowClip.get();
   }
 
-  // The complete set of property tree nodes (inherited, or created locally) and paint offset that
-  // can be used to paint. |paintOffset| is relative to the propertyTreeState's transform space.
+  // The complete set of property tree nodes (inherited, or created locally) and
+  // paint offset that can be used to paint. |paintOffset| is relative to the
+  // propertyTreeState's transform space.
   // See: localBorderBoxProperties and contentsProperties.
   struct PropertyTreeStateWithOffset {
     PropertyTreeStateWithOffset(LayoutPoint offset, PropertyTreeState treeState)
@@ -100,14 +112,15 @@ class CORE_EXPORT ObjectPaintProperties {
     PropertyTreeState propertyTreeState;
   };
 
-  // This is a complete set of property nodes and paint offset that should be used as a starting
-  // point to paint this layout object. This is cached because some properties inherit from the
-  // containing block chain instead of the painting parent and cannot be derived in O(1) during
-  // the paint walk.
-  // For example, <div style='opacity: 0.3; position: relative; margin: 11px;'/> would have a
-  // paint offset of (11px, 11px) and propertyTreeState.effect() would be an effect node with
-  // opacity of 0.3 which was created by the div itself. Note that propertyTreeState.transform()
-  // would not be null but would instead point to the transform space setup by div's ancestors.
+  // This is a complete set of property nodes and paint offset that should be
+  // used as a starting point to paint this layout object. This is cached
+  // because some properties inherit from the containing block chain instead of
+  // the painting parent and cannot be derived in O(1) during the paint walk.
+  // For example, <div style='opacity: 0.3; position: relative; margin: 11px;'/>
+  // would have a paint offset of (11px, 11px) and propertyTreeState.effect()
+  // would be an effect node with opacity of 0.3 which was created by the div
+  // itself. Note that propertyTreeState.transform() would not be null but would
+  // instead point to the transform space setup by div's ancestors.
   const PropertyTreeStateWithOffset* localBorderBoxProperties() const {
     return m_localBorderBoxProperties.get();
   }
@@ -116,9 +129,10 @@ class CORE_EXPORT ObjectPaintProperties {
     m_localBorderBoxProperties = std::move(properties);
   }
 
-  // This is the complete set of property nodes and paint offset that can be used to paint the
-  // contents of this object. It is similar to localBorderBoxProperties but includes properties
-  // (e.g., overflow clip, scroll translation) that apply to contents. This is suitable for paint
+  // This is the complete set of property nodes and paint offset that can be
+  // used to paint the contents of this object. It is similar to
+  // localBorderBoxProperties but includes properties (e.g., overflow clip,
+  // scroll translation) that apply to contents. This is suitable for paint
   // invalidation.
   ObjectPaintProperties::PropertyTreeStateWithOffset contentsProperties() const;
 

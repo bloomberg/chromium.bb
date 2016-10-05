@@ -42,7 +42,8 @@ class BlockPainter {
                              const PaintInfo&,
                              const LayoutPoint& paintOffset);
 
-  // The adjustedPaintOffset should include the location (offset) of the object itself.
+  // The adjustedPaintOffset should include the location (offset) of the object
+  // itself.
   bool intersectsPaintRect(const PaintInfo&,
                            const LayoutPoint& adjustedPaintOffset) const;
 

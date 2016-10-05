@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012 Apple Inc. All rights
+ * reserved.
  *
  * Portions are Copyright (C) 1998 Netscape Communications Corporation.
  *
@@ -24,7 +25,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA
  *
  * Alternatively, the contents of this file may be used under the terms
  * of either the Mozilla Public License Version 1.1, found at
@@ -111,7 +112,8 @@ PaintLayerScrollableArea::PaintLayerScrollableArea(PaintLayer& layer)
 {
   Node* node = box().node();
   if (node && node->isElementNode()) {
-    // We save and restore only the scrollOffset as the other scroll values are recalculated.
+    // We save and restore only the scrollOffset as the other scroll values are
+    // recalculated.
     Element* element = toElement(node);
     m_scrollOffset = element->savedLayerScrollOffset();
     if (!m_scrollOffset.isZero()) {
@@ -173,8 +175,9 @@ void PaintLayerScrollableArea::dispose() {
 
   clearScrollAnimators();
 
-  // Note: it is not safe to call ScrollAnchor::clear if the document is being destroyed,
-  // because LayoutObjectChildList::removeChildNode skips the call to willBeRemovedFromTree,
+  // Note: it is not safe to call ScrollAnchor::clear if the document is being
+  // destroyed, because LayoutObjectChildList::removeChildNode skips the call to
+  // willBeRemovedFromTree,
   // leaving the ScrollAnchor with a stale LayoutObject pointer.
   if (RuntimeEnabledFeatures::scrollAnchoringEnabled() &&
       !box().documentBeingDestroyed())
@@ -264,8 +267,9 @@ static IntRect cornerRect(const LayoutBox& box,
   int horizontalThickness;
   int verticalThickness;
   if (!verticalScrollbar && !horizontalScrollbar) {
-    // FIXME: This isn't right. We need to know the thickness of custom scrollbars
-    // even when they don't exist in order to set the resizer square size properly.
+    // FIXME: This isn't right. We need to know the thickness of custom
+    // scrollbars even when they don't exist in order to set the resizer square
+    // size properly.
     horizontalThickness = ScrollbarTheme::theme().scrollbarThickness();
     verticalThickness = horizontalThickness;
   } else if (verticalScrollbar && !horizontalScrollbar) {
@@ -285,7 +289,8 @@ static IntRect cornerRect(const LayoutBox& box,
 }
 
 IntRect PaintLayerScrollableArea::scrollCornerRect() const {
-  // We have a scrollbar corner when a scrollbar is visible and not filling the entire length of the box.
+  // We have a scrollbar corner when a scrollbar is visible and not filling the
+  // entire length of the box.
   // This happens when:
   // (a) A resizer is present and at least one scrollbar is present
   // (b) Both scrollbars are present.
@@ -377,10 +382,12 @@ void PaintLayerScrollableArea::setScrollOffset(
   // compositing state, and remove this disabler.
   DisableCompositingQueryAsserts disabler;
 
-  // Update the positions of our child layers (if needed as only fixed layers should be impacted by a scroll).
-  // We don't update compositing layers, because we need to do a deep update from the compositing ancestor.
+  // Update the positions of our child layers (if needed as only fixed layers
+  // should be impacted by a scroll).  We don't update compositing layers,
+  // because we need to do a deep update from the compositing ancestor.
   if (!frameView->isInPerformLayout()) {
-    // If we're in the middle of layout, we'll just update layers once layout has finished.
+    // If we're in the middle of layout, we'll just update layers once layout
+    // has finished.
     layer()->updateLayerPositionsAfterOverflowScroll(scrollDelta);
     // Update regions, scrolling may change the clip of a particular region.
     frameView->updateDocumentAnnotatedRegions();
@@ -441,7 +448,8 @@ void PaintLayerScrollableArea::setScrollOffset(
     cache->handleScrollPositionChanged(&box());
   box().view()->clearHitTestCache();
 
-  // Inform the FrameLoader of the new scroll position, so it can be restored when navigating back.
+  // Inform the FrameLoader of the new scroll position, so it can be restored
+  // when navigating back.
   if (layer()->isRootLayer()) {
     frameView->frame().loader().saveScrollState();
     frameView->didChangeScrollOffset();
@@ -622,7 +630,8 @@ int PaintLayerScrollableArea::pixelSnappedScrollHeight() const {
 }
 
 void PaintLayerScrollableArea::updateScrollOrigin() {
-  // This should do nothing prior to first layout; the if-clause will catch that.
+  // This should do nothing prior to first layout; the if-clause will catch
+  // that.
   if (overflowRect().isEmpty())
     return;
   LayoutPoint scrollableOverflow =
@@ -669,7 +678,8 @@ void PaintLayerScrollableArea::updateAfterLayout() {
       hasVerticalOverflow && box().pixelSnappedClientWidth();
 
   {
-    // Hits in compositing/overflow/automatically-opt-into-composited-scrolling-after-style-change.html.
+    // Hits in
+    // compositing/overflow/automatically-opt-into-composited-scrolling-after-style-change.html.
     DisableCompositingQueryAsserts disabler;
 
     // overflow:scroll should just enable/disable.
@@ -679,8 +689,8 @@ void PaintLayerScrollableArea::updateAfterLayout() {
       verticalScrollbar()->setEnabled(hasVerticalOverflow);
   }
 
-  // We need to layout again if scrollbars are added or removed by overflow:auto,
-  // or by changing between native and custom.
+  // We need to layout again if scrollbars are added or removed by
+  // overflow:auto, or by changing between native and custom.
   bool horizontalScrollbarShouldChange =
       (box().hasAutoHorizontalScrollbar() &&
        (hasHorizontalScrollbar() != shouldHaveAutoHorizontalScrollbar)) ||
@@ -726,7 +736,8 @@ void PaintLayerScrollableArea::updateAfterLayout() {
       }
       if (relayoutIsPrevented) {
         // We're not doing re-layout right now, but we still want to
-        // add the scrollbar to the logical width now, to facilitate parent layout.
+        // add the scrollbar to the logical width now, to facilitate parent
+        // layout.
         box().updateLogicalWidth();
         PreventRelayoutScope::setBoxNeedsLayout(*this, hadHorizontalScrollbar,
                                                 hadVerticalScrollbar);
@@ -753,7 +764,8 @@ void PaintLayerScrollableArea::updateAfterLayout() {
   }
 
   {
-    // Hits in compositing/overflow/automatically-opt-into-composited-scrolling-after-style-change.html.
+    // Hits in
+    // compositing/overflow/automatically-opt-into-composited-scrolling-after-style-change.html.
     DisableCompositingQueryAsserts disabler;
 
     // Set up the range (and page step/line step).
@@ -789,10 +801,10 @@ void PaintLayerScrollableArea::updateAfterLayout() {
 }
 
 void PaintLayerScrollableArea::clampScrollPositionsAfterLayout() {
-  // If a vertical scrollbar was removed, the min/max scroll positions may have changed,
-  // so the scroll positions needs to be clamped.  If the scroll position did not change,
-  // but the scroll origin *did* change, we still need to notify the scrollbars to
-  // update their dimensions.
+  // If a vertical scrollbar was removed, the min/max scroll positions may have
+  // changed, so the scroll positions needs to be clamped.  If the scroll
+  // position did not change, but the scroll origin *did* change, we still need
+  // to notify the scrollbars to update their dimensions.
 
   if (DelayScrollPositionClampScope::clampingIsDelayed()) {
     DelayScrollPositionClampScope::setNeedsClamp(this);
@@ -882,7 +894,8 @@ void PaintLayerScrollableArea::updateAfterStyleChange(
   if (!canHaveOverflowScrollbars(box()))
     return;
 
-  // Avoid drawing two sets of scrollbars when one is provided by the visual viewport.
+  // Avoid drawing two sets of scrollbars when one is provided by the visual
+  // viewport.
   if (visualViewportSuppliesScrollbars()) {
     setHasHorizontalScrollbar(false);
     setHasVerticalScrollbar(false);
@@ -901,9 +914,11 @@ void PaintLayerScrollableArea::updateAfterStyleChange(
        overflowDefinesAutomaticScrollbar(overflowY)) ||
       overflowRequiresScrollbar(overflowY);
 
-  // Look for the scrollbarModes and reset the needs Horizontal & vertical Scrollbar values based on scrollbarModes, as during force style change
-  // StyleResolver::styleForDocument returns documentStyle with  no overflow values, due to which we are destorying the scrollbars that was
-  // already present.
+  // Look for the scrollbarModes and reset the needs Horizontal & vertical
+  // Scrollbar values based on scrollbarModes, as during force style change
+  // StyleResolver::styleForDocument returns documentStyle with  no overflow
+  // values, due to which we are destorying the scrollbars that was already
+  // present.
   if (box().isLayoutView()) {
     if (LocalFrame* frame = box().frame()) {
       if (FrameView* frameView = frame->view()) {
@@ -935,7 +950,8 @@ void PaintLayerScrollableArea::updateAfterStyleChange(
     verticalScrollbar()->setEnabled(true);
   }
 
-  // FIXME: Need to detect a swap from custom to native scrollbars (and vice versa).
+  // FIXME: Need to detect a swap from custom to native scrollbars (and vice
+  // versa).
   if (horizontalScrollbar())
     horizontalScrollbar()->styleChanged();
   if (verticalScrollbar())
@@ -1141,7 +1157,8 @@ void PaintLayerScrollableArea::setHasHorizontalScrollbar(bool hasScrollbar) {
 
   updateScrollOrigin();
 
-  // Destroying or creating one bar can cause our scrollbar corner to come and go. We need to update the opposite scrollbar's style.
+  // Destroying or creating one bar can cause our scrollbar corner to come and
+  // go. We need to update the opposite scrollbar's style.
   if (hasHorizontalScrollbar())
     horizontalScrollbar()->styleChanged();
   if (hasVerticalScrollbar())
@@ -1171,7 +1188,8 @@ void PaintLayerScrollableArea::setHasVerticalScrollbar(bool hasScrollbar) {
 
   updateScrollOrigin();
 
-  // Destroying or creating one bar can cause our scrollbar corner to come and go. We need to update the opposite scrollbar's style.
+  // Destroying or creating one bar can cause our scrollbar corner to come and
+  // go. We need to update the opposite scrollbar's style.
   if (hasHorizontalScrollbar())
     horizontalScrollbar()->styleChanged();
   if (hasVerticalScrollbar())
@@ -1225,9 +1243,9 @@ void PaintLayerScrollableArea::positionOverflowControls() {
     m_resizer->setFrameRect(
         LayoutRect(resizerCornerRect(borderBox, ResizerForPointer)));
 
-  // FIXME, this should eventually be removed, once we are certain that composited
-  // controls get correctly positioned on a compositor update. For now, conservatively
-  // leaving this unchanged.
+  // FIXME, this should eventually be removed, once we are certain that
+  // composited controls get correctly positioned on a compositor update. For
+  // now, conservatively leaving this unchanged.
   if (layer()->hasCompositedLayerMapping())
     layer()->compositedLayerMapping()->positionOverflowControlsLayers();
 }
@@ -1309,7 +1327,8 @@ bool PaintLayerScrollableArea::hitTestOverflowControls(
     }
   }
 
-  // FIXME: We should hit test the m_scrollCorner and pass it back through the result.
+  // FIXME: We should hit test the m_scrollCorner and pass it back through the
+  // result.
 
   return false;
 }
@@ -1436,8 +1455,10 @@ void PaintLayerScrollableArea::invalidateStickyConstraintsFor(
 
 IntSize PaintLayerScrollableArea::offsetFromResizeCorner(
     const IntPoint& absolutePoint) const {
-  // Currently the resize corner is either the bottom right corner or the bottom left corner.
-  // FIXME: This assumes the location is 0, 0. Is this guaranteed to always be the case?
+  // Currently the resize corner is either the bottom right corner or the bottom
+  // left corner.
+  // FIXME: This assumes the location is 0, 0. Is this guaranteed to always be
+  // the case?
   IntSize elementSize = layer()->size();
   if (box().shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
     elementSize.setWidth(0);
@@ -1506,7 +1527,8 @@ void PaintLayerScrollableArea::resize(const PlatformEvent& evt,
   EResize resize = box().style()->resize();
   if (resize != RESIZE_VERTICAL && difference.width()) {
     if (element->isFormControlElement()) {
-      // Make implicit margins from the theme explicit (see <http://bugs.webkit.org/show_bug.cgi?id=9547>).
+      // Make implicit margins from the theme explicit (see
+      // <http://bugs.webkit.org/show_bug.cgi?id=9547>).
       element->setInlineStyleProperty(CSSPropertyMarginLeft,
                                       box().marginLeft() / zoomFactor,
                                       CSSPrimitiveValue::UnitType::Pixels);
@@ -1525,7 +1547,8 @@ void PaintLayerScrollableArea::resize(const PlatformEvent& evt,
 
   if (resize != RESIZE_HORIZONTAL && difference.height()) {
     if (element->isFormControlElement()) {
-      // Make implicit margins from the theme explicit (see <http://bugs.webkit.org/show_bug.cgi?id=9547>).
+      // Make implicit margins from the theme explicit (see
+      // <http://bugs.webkit.org/show_bug.cgi?id=9547>).
       element->setInlineStyleProperty(CSSPropertyMarginTop,
                                       box().marginTop() / zoomFactor,
                                       CSSPrimitiveValue::UnitType::Pixels);
@@ -1544,7 +1567,8 @@ void PaintLayerScrollableArea::resize(const PlatformEvent& evt,
 
   document.updateStyleAndLayout();
 
-  // FIXME (Radar 4118564): We should also autoscroll the window as necessary to keep the point under the cursor in view.
+  // FIXME (Radar 4118564): We should also autoscroll the window as necessary to
+  // keep the point under the cursor in view.
 }
 
 LayoutRect PaintLayerScrollableArea::scrollIntoView(
@@ -1630,7 +1654,8 @@ void PaintLayerScrollableArea::updateCompositingLayersAfterScroll() {
 }
 
 bool PaintLayerScrollableArea::usesCompositedScrolling() const {
-  // See https://codereview.chromium.org/176633003/ for the tests that fail without this disabler.
+  // See https://codereview.chromium.org/176633003/ for the tests that fail
+  // without this disabler.
   DisableCompositingQueryAsserts disabler;
   return layer()->hasCompositedLayerMapping() &&
          layer()->compositedLayerMapping()->scrollingLayer();
@@ -1660,9 +1685,10 @@ static bool layerNeedsCompositedScrolling(
         CompositorMutableProperty::kScrollLeft)))
     return true;
 
-  // TODO(schenney): LCD Text also requires integer scroll offsets for the layer. While we
-  // use integer scroll offsets locally when !layer->compositor()->preferCompositingToLCDTextEnabled(),
-  // we do not check offsets accumulated from the root (including translates). crbug.com/644833
+  // TODO(schenney): LCD Text also requires integer scroll offsets for the
+  // layer. While we use integer scroll offsets locally when
+  // !layer->compositor()->preferCompositingToLCDTextEnabled(), we do not check
+  // offsets accumulated from the root (including translates).  crbug.com/644833
   bool backgroundSupportsLCDText =
       RuntimeEnabledFeatures::compositeOpaqueScrollersEnabled() &&
       layer->canPaintBackgroundOntoScrollingContentsLayer() &&
@@ -1673,9 +1699,10 @@ static bool layerNeedsCompositedScrolling(
       !backgroundSupportsLCDText)
     return false;
 
-  // TODO(schenney) Tests fail if we do not also exclude layer->layoutObject()->style()->hasBorderDecoration()
-  // (missing background behind dashed borders). Resolve this case, or not, and update this check with
-  // the results.
+  // TODO(schenney) Tests fail if we do not also exclude
+  // layer->layoutObject()->style()->hasBorderDecoration() (missing background
+  // behind dashed borders). Resolve this case, or not, and update this check
+  // with the results.
   return !(layer->size().isEmpty() || layer->hasDescendantWithClipPath() ||
            layer->hasAncestorWithClipPath() ||
            layer->layoutObject()->style()->hasBorderRadius());
@@ -1755,8 +1782,8 @@ void PaintLayerScrollableArea::ScrollbarManager::destroyDetachedScrollbars() {
 void PaintLayerScrollableArea::ScrollbarManager::setHasHorizontalScrollbar(
     bool hasScrollbar) {
   if (hasScrollbar) {
-    // This doesn't hit in any tests, but since the equivalent code in setHasVerticalScrollbar
-    // does, presumably this code does as well.
+    // This doesn't hit in any tests, but since the equivalent code in
+    // setHasVerticalScrollbar does, presumably this code does as well.
     DisableCompositingQueryAsserts disabler;
     if (!m_hBar) {
       m_hBar = createScrollbar(HorizontalScrollbar);

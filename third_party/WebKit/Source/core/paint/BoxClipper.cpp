@@ -64,7 +64,8 @@ BoxClipper::BoxClipper(const LayoutBox& box,
     clipRoundedRect = m_box.style()->getRoundedInnerBorderFor(
         LayoutRect(accumulatedOffset, m_box.size()));
 
-  // Selection may extend beyond visual overflow, so this optimization is invalid if selection is present.
+  // Selection may extend beyond visual overflow, so this optimization is
+  // invalid if selection is present.
   if (contentsClipBehavior == SkipContentsClipIfPossible &&
       box.getSelectionState() == SelectionNone) {
     LayoutRect contentsVisualOverflow = m_box.contentsVisualOverflowRect();

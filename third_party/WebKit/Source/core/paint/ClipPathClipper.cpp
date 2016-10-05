@@ -26,7 +26,8 @@ LayoutSVGResourceClipper* resolveElementReference(
         SVGResourcesCache::cachedResourcesForLayoutObject(&layoutObject);
     return resources ? resources->clipper() : nullptr;
   }
-  // TODO(fs): It doesn't work with forward or external SVG references (https://bugs.webkit.org/show_bug.cgi?id=90405)
+  // TODO(fs): It doesn't work with forward or external SVG references
+  // (https://bugs.webkit.org/show_bug.cgi?id=90405)
   Element* element = layoutObject.document().getElementById(
       referenceClipPathOperation.fragment());
   if (!isSVGClipPathElement(element) || !element->layoutObject())
@@ -60,9 +61,10 @@ ClipPathClipper::ClipPathClipper(GraphicsContext& context,
       return;
     // Compute the (conservative) bounds of the clip-path.
     FloatRect clipPathBounds = clipper->resourceBoundingBox(referenceBox);
-    // When SVG applies the clip, and the coordinate system is "userspace on use", we must explicitly pass in
-    // the offset to have the clip paint in the correct location. When the coordinate system is
-    // "object bounding box" the offset should already be accounted for in the reference box.
+    // When SVG applies the clip, and the coordinate system is "userspace on
+    // use", we must explicitly pass in the offset to have the clip paint in the
+    // correct location. When the coordinate system is "object bounding box" the
+    // offset should already be accounted for in the reference box.
     FloatPoint originTranslation;
     if (clipper->clipPathUnits() == SVGUnitTypes::kSvgUnitTypeUserspaceonuse) {
       clipPathBounds.moveBy(origin);

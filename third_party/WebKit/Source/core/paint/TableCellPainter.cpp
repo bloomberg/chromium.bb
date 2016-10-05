@@ -109,7 +109,8 @@ void TableCellPainter::paintCollapsedBorders(
   int leftWidth = leftBorderValue.width();
   int rightWidth = rightBorderValue.width();
 
-  // Adjust our x/y/width/height so that we paint the collapsed borders at the correct location.
+  // Adjust our x/y/width/height so that we paint the collapsed borders at the
+  // correct location.
   LayoutRect paintRect =
       paintRectNotIncludingVisualOverflow(adjustedPaintOffset);
   IntRect borderRect = pixelSnappedIntRect(
@@ -128,8 +129,8 @@ void TableCellPainter::paintCollapsedBorders(
       static_cast<DisplayItem::Type>(displayItemType), borderRect);
   Color cellColor = m_layoutTableCell.resolveColor(CSSPropertyColor);
 
-  // We never paint diagonals at the joins.  We simply let the border with the highest
-  // precedence paint on top of borders with lower precedence.
+  // We never paint diagonals at the joins.  We simply let the border with the
+  // highest precedence paint on top of borders with lower precedence.
   if (displayItemType & DisplayItem::TableCollapsedBorderTop) {
     ObjectPainter::drawLineForBoxSide(
         graphicsContext, borderRect.x(), borderRect.y(), borderRect.maxX(),

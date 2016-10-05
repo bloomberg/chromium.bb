@@ -62,8 +62,9 @@ bool SVGPaintContext::applyClipMaskAndFilterIfNecessary() {
   m_applyClipMaskAndFilterIfNecessaryCalled = true;
 #endif
 
-  // When rendering clip paths as masks, only geometric operations should be included so skip
-  // non-geometric operations such as compositing, masking, and filtering.
+  // When rendering clip paths as masks, only geometric operations should be
+  // included so skip non-geometric operations such as compositing, masking, and
+  // filtering.
   if (paintInfo().isRenderingClipPathAsMaskImage()) {
     DCHECK(!m_object.isSVGRoot());
     applyClipIfNecessary();
