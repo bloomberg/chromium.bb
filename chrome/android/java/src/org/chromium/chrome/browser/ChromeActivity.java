@@ -1036,8 +1036,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         final Activity mainActivity = this;
         WebContents webContents = currentTab.getWebContents();
 
-        boolean isOfflinePage = currentTab.isOfflinePage();
-        RecordHistogram.recordBooleanHistogram("OfflinePages.SharedPageWasOffline", isOfflinePage);
+        RecordHistogram.recordBooleanHistogram(
+                "OfflinePages.SharedPageWasOffline", currentTab.isOfflinePage());
         boolean canShareOfflinePage = OfflinePageBridge.isPageSharingEnabled();
 
         // Share an empty blockingUri in place of screenshot file. The file ready notification is
@@ -1047,7 +1047,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                 : ChromeFileProvider.generateUriAndBlockAccess(mainActivity);
         if (canShareOfflinePage) {
             OfflinePageUtils.shareOfflinePage(shareDirectly, true, mainActivity, null,
-                    currentTab.getUrl(), blockingUri, null, currentTab, isOfflinePage);
+                    blockingUri, null, currentTab);
         } else {
             ShareHelper.share(shareDirectly, true, mainActivity, currentTab.getTitle(), null,
                     currentTab.getUrl(), null, blockingUri, null);

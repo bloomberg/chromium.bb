@@ -73,12 +73,6 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
       int tab_id,
       const base::android::JavaParamRef<jobject>& j_callback_obj);
 
-  void GetPageByOfflineUrl(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jstring>& j_offline_url,
-      const base::android::JavaParamRef<jobject>& j_callback_obj);
-
   void SavePage(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,

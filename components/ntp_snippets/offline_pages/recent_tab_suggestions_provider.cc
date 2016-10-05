@@ -214,11 +214,10 @@ void RecentTabSuggestionsProvider::NotifyStatusChanged(
 
 ContentSuggestion RecentTabSuggestionsProvider::ConvertOfflinePage(
     const OfflinePageItem& offline_page) const {
-  // TODO(vitaliii): Make sure the URL is actually opened as an offline URL
-  // and not just as a downloaded file.
+  // TODO(vitaliii): Make sure the URL is opened in the existing tab.
   ContentSuggestion suggestion(provided_category_,
                                base::IntToString(offline_page.offline_id),
-                               offline_page.GetOfflineURL());
+                               offline_page.url);
 
   if (offline_page.title.empty()) {
     // TODO(vitaliii): Remove this fallback once the OfflinePageModel provides

@@ -309,17 +309,6 @@ public class OfflinePageBridge {
     }
 
     /**
-     * Get the offline page associated with the provided offline URL.
-     *
-     * @param offlineUrl URL pointing to the offline copy of the web page.
-     * @param callback callback to pass back the
-     * matching {@link OfflinePageItem} if found. Will pass back <code>null</code> if not.
-     */
-    public void getPageByOfflineUrl(String offlineUrl, Callback<OfflinePageItem> callback) {
-        nativeGetPageByOfflineUrl(mNativeOfflinePageBridge, offlineUrl, callback);
-    }
-
-    /**
      * Get the offline page associated with the provided offline ID.
      *
      * @param offlineId ID of the offline page.
@@ -548,18 +537,17 @@ public class OfflinePageBridge {
 
     @CalledByNative
     private static void createOfflinePageAndAddToList(List<OfflinePageItem> offlinePagesList,
-            String url, long offlineId, String clientNamespace, String clientId, String offlineUrl,
-            String filePath, long fileSize, long creationTime, int accessCount,
-            long lastAccessTimeMs) {
+            String url, long offlineId, String clientNamespace, String clientId, String filePath,
+            long fileSize, long creationTime, int accessCount, long lastAccessTimeMs) {
         offlinePagesList.add(createOfflinePageItem(url, offlineId, clientNamespace, clientId,
-                offlineUrl, filePath, fileSize, creationTime, accessCount, lastAccessTimeMs));
+                filePath, fileSize, creationTime, accessCount, lastAccessTimeMs));
     }
 
     @CalledByNative
     private static OfflinePageItem createOfflinePageItem(String url, long offlineId,
-            String clientNamespace, String clientId, String offlineUrl, String filePath,
-            long fileSize, long creationTime, int accessCount, long lastAccessTimeMs) {
-        return new OfflinePageItem(url, offlineId, clientNamespace, clientId, offlineUrl, filePath,
+            String clientNamespace, String clientId, String filePath, long fileSize,
+            long creationTime, int accessCount, long lastAccessTimeMs) {
+        return new OfflinePageItem(url, offlineId, clientNamespace, clientId, filePath,
                 fileSize, creationTime, accessCount, lastAccessTimeMs);
     }
 
@@ -597,8 +585,6 @@ public class OfflinePageBridge {
     private native void nativeSelectPageForOnlineUrl(
             long nativeOfflinePageBridge, String onlineUrl, int tabId,
             Callback<OfflinePageItem> callback);
-    private native void nativeGetPageByOfflineUrl(
-            long nativeOfflinePageBridge, String offlineUrl, Callback<OfflinePageItem> callback);
     private native void nativeSavePage(long nativeOfflinePageBridge, SavePageCallback callback,
             WebContents webContents, String clientNamespace, String clientId);
     private native void nativeSavePageLater(long nativeOfflinePageBridge, String url,

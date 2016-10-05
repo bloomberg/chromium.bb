@@ -51,11 +51,6 @@ class StubOfflinePageModel : public OfflinePageModel, public KeyedService {
       const SingleOfflinePageItemCallback& callback) override;
   const OfflinePageItem* MaybeGetPageByOfflineId(
       int64_t offline_id) const override;
-  void GetPageByOfflineURL(
-      const GURL& offline_url,
-      const SingleOfflinePageItemCallback& callback) override;
-  const OfflinePageItem* MaybeGetPageByOfflineURL(
-      const GURL& offline_url) const override;
   void GetPagesByOnlineURL(
       const GURL& online_url,
       const MultipleOfflinePageItemCallback& callback) override;

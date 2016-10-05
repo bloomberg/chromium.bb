@@ -21,8 +21,7 @@ const char kDownloadUIAdapterKey[] = "download-ui-adapter";
 
 DownloadUIAdapter::ItemInfo::ItemInfo(const OfflinePageItem& page)
     : ui_item(base::MakeUnique<DownloadUIItem>(page)),
-      offline_id(page.offline_id),
-      offline_url(page.GetOfflineURL()) {}
+      offline_id(page.offline_id) {}
 
 DownloadUIAdapter::ItemInfo::~ItemInfo() {}
 

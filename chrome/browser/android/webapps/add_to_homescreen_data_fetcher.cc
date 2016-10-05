@@ -38,21 +38,11 @@
 namespace {
 
 // Looks up the original, online URL of the site requested.  The URL from the
-// WebContents may be an offline page or a distilled article which is not
-// appropriate for a home screen shortcut.
+// WebContents may be a distilled article which is not appropriate for a home
+// screen shortcut.
 GURL GetShortcutUrl(content::BrowserContext* browser_context,
                     const GURL& actual_url) {
-  GURL original_url =
-      dom_distiller::url_utils::GetOriginalUrlFromDistillerUrl(actual_url);
-
-  // If URL points to an offline content, get original URL.
-  GURL online_url =
-      offline_pages::OfflinePageUtils::MaybeGetOnlineURLForOfflineURL(
-          browser_context, original_url);
-  if (online_url.is_valid())
-    return online_url;
-
-  return original_url;
+  return dom_distiller::url_utils::GetOriginalUrlFromDistillerUrl(actual_url);
 }
 
 InstallableParams ParamsToPerformInstallableCheck(int ideal_icon_size_in_dp,

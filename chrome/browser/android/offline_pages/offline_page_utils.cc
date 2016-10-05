@@ -26,35 +26,6 @@
 namespace offline_pages {
 namespace {
 
-// Returns an offline page that is stored as the |offline_url|.
-const OfflinePageItem* GetOfflinePageForOfflineURL(
-    content::BrowserContext* browser_context,
-    const GURL& offline_url) {
-  DCHECK(browser_context);
-
-  // Note that we first check if the url likely points to an offline page
-  // before calling GetPageByOfflineURL in order to avoid unnecessary lookup
-  // cost.
-  if (!OfflinePageUtils::MightBeOfflineURL(offline_url))
-    return nullptr;
-
-  OfflinePageModel* offline_page_model =
-      OfflinePageModelFactory::GetForBrowserContext(browser_context);
-  if (!offline_page_model)
-    return nullptr;
-
-  return offline_page_model->MaybeGetPageByOfflineURL(offline_url);
-}
-
-void OnGetPageByOfflineURLDone(
-    const base::Callback<void(const GURL&)>& callback,
-    const OfflinePageItem* item) {
-  GURL result_url;
-  if (item)
-    result_url = item->url;
-  callback.Run(result_url);
-}
-
 void OnGetPagesByOnlineURLDone(
     int tab_id,
     const base::Callback<void(const OfflinePageItem*)>& callback,
@@ -76,27 +47,6 @@ void OnGetPagesByOnlineURLDone(
 }  // namespace
 
 // static
-bool OfflinePageUtils::MightBeOfflineURL(const GURL& url) {
-  // It has to be a file URL ending with .mhtml extension.
-  return url.is_valid() && url.SchemeIsFile() &&
-         base::EndsWith(url.spec(),
-                        OfflinePageMHTMLArchiver::GetFileNameExtension(),
-                        base::CompareCase::INSENSITIVE_ASCII);
-}
-
-// static
-GURL OfflinePageUtils::MaybeGetOnlineURLForOfflineURL(
-    content::BrowserContext* browser_context,
-    const GURL& offline_url) {
-  const OfflinePageItem* offline_page =
-      GetOfflinePageForOfflineURL(browser_context, offline_url);
-  if (!offline_page)
-    return GURL();
-
-  return offline_page->url;
-}
-
-// static
 void OfflinePageUtils::SelectPageForOnlineURL(
     content::BrowserContext* browser_context,
     const GURL& online_url,
@@ -114,46 +64,6 @@ void OfflinePageUtils::SelectPageForOnlineURL(
       online_url, base::Bind(&OnGetPagesByOnlineURLDone, tab_id, callback));
 }
 
-// static
-void OfflinePageUtils::GetOnlineURLForOfflineURL(
-    content::BrowserContext* browser_context,
-    const GURL& offline_url,
-    const base::Callback<void(const GURL&)>& callback) {
-  OfflinePageModel* offline_page_model =
-      OfflinePageModelFactory::GetForBrowserContext(browser_context);
-  if (!offline_page_model) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&OnGetPageByOfflineURLDone, callback, nullptr));
-    return;
-  }
-
-  offline_page_model->GetPageByOfflineURL(
-      offline_url, base::Bind(&OnGetPageByOfflineURLDone, callback));
-}
-
-// static
-bool OfflinePageUtils::IsOfflinePage(content::BrowserContext* browser_context,
-                                     const GURL& offline_url) {
-  return GetOfflinePageForOfflineURL(browser_context, offline_url) != nullptr;
-}
-
-// static
-void OfflinePageUtils::MarkPageAccessed(
-    content::BrowserContext* browser_context, const GURL& offline_url) {
-  DCHECK(browser_context);
-
-  const OfflinePageItem* offline_page =
-      GetOfflinePageForOfflineURL(browser_context, offline_url);
-  if (!offline_page)
-    return;
-
-  OfflinePageModel* offline_page_model =
-      OfflinePageModelFactory::GetForBrowserContext(browser_context);
-  DCHECK(offline_page_model);
-  offline_page_model->MarkPageAccessed(offline_page->offline_id);
-}
-
-// static
 const OfflinePageItem* OfflinePageUtils::GetOfflinePageFromWebContents(
     content::WebContents* web_contents) {
   OfflinePageTabHelper* tab_helper =

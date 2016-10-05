@@ -56,9 +56,6 @@ struct OfflinePageItem {
 
   bool operator==(const OfflinePageItem& other) const;
 
-  // Gets a URL of the file under |file_path|.
-  GURL GetOfflineURL() const;
-
   // Returns whether the offline page is expired.
   bool IsExpired() const;
 

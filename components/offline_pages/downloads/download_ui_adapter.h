@@ -98,7 +98,6 @@ class DownloadUIAdapter : public OfflinePageModel::Observer,
     std::unique_ptr<DownloadUIItem> ui_item;
     // Additional cached data, not exposed to UI through DownloadUIItem.
     int64_t offline_id;
-    GURL offline_url;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(ItemInfo);

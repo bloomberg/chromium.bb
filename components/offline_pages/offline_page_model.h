@@ -141,20 +141,6 @@ class OfflinePageModel : public base::SupportsUserData {
   virtual const OfflinePageItem* MaybeGetPageByOfflineId(
       int64_t offline_id) const = 0;
 
-  // Returns the offline page that is stored under |offline_url|, if any.
-  virtual void GetPageByOfflineURL(
-      const GURL& offline_url,
-      const SingleOfflinePageItemCallback& callback) = 0;
-
-  // Returns an offline page that is stored as |offline_url|. A nullptr is
-  // returned if not found.
-  //
-  // This function is deprecated, and may return |nullptr| even if a page
-  // exists, depending on the implementation details of OfflinePageModel.
-  // Use |GetPageByOfflineURL| instead.
-  virtual const OfflinePageItem* MaybeGetPageByOfflineURL(
-      const GURL& offline_url) const = 0;
-
   // Returns the offline pages that are stored under |online_url|.
   virtual void GetPagesByOnlineURL(
       const GURL& online_url,

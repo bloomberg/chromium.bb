@@ -22,9 +22,6 @@ struct OfflinePageItem;
 
 class OfflinePageUtils {
  public:
-  // Returns true if |url| might point to an offline page.
-  static bool MightBeOfflineURL(const GURL& url);
-
   // Returns via callback an offline page saved for |online_url|, if any. The
   // page is chosen based on creation date; a more recently created offline
   // page will be preferred over an older one. The offline page captured from
@@ -35,26 +32,6 @@ class OfflinePageUtils {
       const GURL& online_url,
       int tab_id,
       const base::Callback<void(const OfflinePageItem*)>& callback);
-
-  // Gets an online URL of an offline page with |offline_url| if one exists.
-  // Deprecated.  Use |GetOnlineURLForOfflineURL|.
-  static GURL MaybeGetOnlineURLForOfflineURL(
-      content::BrowserContext* browser_context,
-      const GURL& offline_url);
-
-  static void GetOnlineURLForOfflineURL(
-      content::BrowserContext* browser_context,
-      const GURL& offline_url,
-      const base::Callback<void(const GURL&)>& callback);
-
-  // Checks whether |offline_url| points to an offline page.
-  // Deprecated.  Use something else.
-  static bool IsOfflinePage(content::BrowserContext* browser_context,
-                            const GURL& offline_url);
-
-  // Marks that the offline page related to the |offline_url| has been accessed.
-  static void MarkPageAccessed(content::BrowserContext* browser_context,
-                               const GURL& offline_url);
 
   // Gets the offline page corresponding to the given web contents.  The
   // returned pointer is owned by the web_contents and may be deleted by user

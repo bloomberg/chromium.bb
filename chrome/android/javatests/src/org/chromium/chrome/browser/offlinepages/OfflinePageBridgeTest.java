@@ -126,12 +126,6 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
         OfflinePageItem offlinePage = allPages.get(0);
         assertEquals("Offline pages count incorrect.", 1, allPages.size());
         assertEquals("Offline page item url incorrect.", mTestPage, offlinePage.getUrl());
-        assertTrue("Offline page item offline file url doesn't start properly.",
-                offlinePage.getOfflineUrl().startsWith("file:///"));
-        assertTrue("Offline page item offline file doesn't have the right name.",
-                offlinePage.getOfflineUrl().endsWith(".mhtml"));
-        assertTrue("Offline page item offline file doesn't have the right name.",
-                offlinePage.getOfflineUrl().contains("About"));
 
         // We don't care about the exact file size of the mhtml file:
         // - exact file size is not something that the end user sees or cares about
@@ -153,12 +147,6 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
         savePage(SavePageResult.SUCCESS, mTestPage);
         OfflinePageItem offlinePage = getPageByClientId(BOOKMARK_ID);
         assertEquals("Offline page item url incorrect.", mTestPage, offlinePage.getUrl());
-        assertTrue("Offline page item offline file url doesn't start properly.",
-                offlinePage.getOfflineUrl().startsWith("file:///"));
-        assertTrue("Offline page item offline file doesn't have the right name.",
-                offlinePage.getOfflineUrl().endsWith(".mhtml"));
-        assertTrue("Offline page item offline file doesn't have the right name.",
-                offlinePage.getOfflineUrl().contains("About"));
         assertNull("Offline page is not supposed to exist",
                 getPageByClientId(new ClientId(OfflinePageBridge.BOOKMARK_NAMESPACE, "-42")));
     }

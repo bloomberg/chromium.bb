@@ -142,9 +142,7 @@ class OfflinePageModelImplTest
 
   const OfflinePageItem* GetPageByOfflineId(int64_t offline_id);
 
-  MultipleOfflinePageItemResult GetPagesByOnlineURL(const GURL& offline_url);
-
-  const OfflinePageItem* GetPageByOfflineURL(const GURL& offline_url);
+  MultipleOfflinePageItemResult GetPagesByOnlineURL(const GURL& online_url);
 
   OfflinePageModelImpl* model() { return model_.get(); }
 
@@ -363,17 +361,6 @@ const OfflinePageItem* OfflinePageModelImplTest::GetPageByOfflineId(
   const OfflinePageItem* result = nullptr;
   model()->GetPageByOfflineId(
       offline_id,
-      base::Bind(&OfflinePageModelImplTest::OnGetSingleOfflinePageItemResult,
-                 AsWeakPtr(), base::Unretained(&result)));
-  PumpLoop();
-  return result;
-}
-
-const OfflinePageItem* OfflinePageModelImplTest::GetPageByOfflineURL(
-    const GURL& offline_url) {
-  const OfflinePageItem* result = nullptr;
-  model()->GetPageByOfflineURL(
-      offline_url,
       base::Bind(&OfflinePageModelImplTest::OnGetSingleOfflinePageItemResult,
                  AsWeakPtr(), base::Unretained(&result)));
   PumpLoop();
@@ -885,34 +872,6 @@ TEST_F(OfflinePageModelImplTest, GetPageByOfflineId) {
   EXPECT_EQ(kTestFileSize, page->file_size);
 
   page = GetPageByOfflineId(-42);
-  EXPECT_FALSE(page);
-}
-
-TEST_F(OfflinePageModelImplTest, GetPageByOfflineURL) {
-  SavePage(kTestUrl, kTestClientId1);
-  int64_t offline1 = last_save_offline_id();
-
-  OfflinePageTestStore* store = GetStore();
-  GURL offline_url = store->last_saved_page().GetOfflineURL();
-
-  SavePage(kTestUrl2, kTestClientId2);
-
-  GURL offline_url2 = store->last_saved_page().GetOfflineURL();
-  int64_t offline2 = last_save_offline_id();
-
-  const OfflinePageItem* page = GetPageByOfflineURL(offline_url2);
-  EXPECT_TRUE(page);
-  EXPECT_EQ(kTestUrl2, page->url);
-  EXPECT_EQ(kTestClientId2, page->client_id);
-  EXPECT_EQ(offline2, page->offline_id);
-
-  page = GetPageByOfflineURL(offline_url);
-  EXPECT_TRUE(page);
-  EXPECT_EQ(kTestUrl, page->url);
-  EXPECT_EQ(kTestClientId1, page->client_id);
-  EXPECT_EQ(offline1, page->offline_id);
-
-  page = GetPageByOfflineURL(GURL("http://foo"));
   EXPECT_FALSE(page);
 }
 

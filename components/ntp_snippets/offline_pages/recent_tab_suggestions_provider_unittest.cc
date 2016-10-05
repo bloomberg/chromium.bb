@@ -145,11 +145,11 @@ TEST_F(RecentTabSuggestionsProviderTest, ShouldConvertToSuggestions) {
       OnNewSuggestions(_, recent_tabs_category(),
                        UnorderedElementsAre(
                            Property(&ContentSuggestion::url,
-                                    GURL("file:///some/folder/test1.mhtml")),
+                                    GURL("http://dummy.com/1")),
                            Property(&ContentSuggestion::url,
-                                    GURL("file:///some/folder/test2.mhtml")),
+                                    GURL("http://dummy.com/2")),
                            Property(&ContentSuggestion::url,
-                                    GURL("file:///some/folder/test3.mhtml")))));
+                                    GURL("http://dummy.com/3")))));
   FireOfflinePageModelChanged(offline_pages);
 }
 
@@ -166,11 +166,11 @@ TEST_F(RecentTabSuggestionsProviderTest, ShouldSortByMostRecentlyVisited) {
       OnNewSuggestions(
           _, recent_tabs_category(),
           ElementsAre(Property(&ContentSuggestion::url,
-                               GURL("file:///some/folder/test3.mhtml")),
+                               GURL("http://dummy.com/3")),
                       Property(&ContentSuggestion::url,
-                               GURL("file:///some/folder/test1.mhtml")),
+                               GURL("http://dummy.com/1")),
                       Property(&ContentSuggestion::url,
-                               GURL("file:///some/folder/test2.mhtml")))));
+                               GURL("http://dummy.com/2")))));
   FireOfflinePageModelChanged(offline_pages);
 }
 
@@ -197,9 +197,9 @@ TEST_F(RecentTabSuggestionsProviderTest, ShouldDismiss) {
       OnNewSuggestions(_, recent_tabs_category(),
                        UnorderedElementsAre(
                            Property(&ContentSuggestion::url,
-                                    GURL("file:///some/folder/test1.mhtml")),
+                                    GURL("http://dummy.com/1")),
                            Property(&ContentSuggestion::url,
-                                    GURL("file:///some/folder/test4.mhtml")))));
+                                    GURL("http://dummy.com/4")))));
 
   FireOfflinePageModelChanged(model()->items());
   Mock::VerifyAndClearExpectations(observer());
@@ -212,9 +212,9 @@ TEST_F(RecentTabSuggestionsProviderTest, ShouldDismiss) {
   EXPECT_THAT(
       dismissed_suggestions,
       UnorderedElementsAre(Property(&ContentSuggestion::url,
-                                    GURL("file:///some/folder/test2.mhtml")),
+                                    GURL("http://dummy.com/2")),
                            Property(&ContentSuggestion::url,
-                                    GURL("file:///some/folder/test3.mhtml"))));
+                                    GURL("http://dummy.com/3"))));
 
   // Clear dismissed suggestions.
   provider()->ClearDismissedSuggestionsForDebugging(recent_tabs_category());

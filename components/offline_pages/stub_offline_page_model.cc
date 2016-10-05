@@ -46,13 +46,6 @@ const OfflinePageItem* StubOfflinePageModel::MaybeGetPageByOfflineId(
     int64_t offline_id) const {
   return nullptr;
 }
-void StubOfflinePageModel::GetPageByOfflineURL(
-    const GURL& offline_url,
-    const SingleOfflinePageItemCallback& callback) {}
-const OfflinePageItem* StubOfflinePageModel::MaybeGetPageByOfflineURL(
-    const GURL& offline_url) const {
-  return nullptr;
-}
 void StubOfflinePageModel::GetPagesByOnlineURL(
     const GURL& online_url,
     const MultipleOfflinePageItemCallback& callback) {}

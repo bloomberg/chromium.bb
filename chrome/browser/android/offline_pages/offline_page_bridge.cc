@@ -58,7 +58,6 @@ void ToJavaOfflinePageList(JNIEnv* env,
         offline_page.offline_id,
         ConvertUTF8ToJavaString(env, offline_page.client_id.name_space),
         ConvertUTF8ToJavaString(env, offline_page.client_id.id),
-        ConvertUTF8ToJavaString(env, offline_page.GetOfflineURL().spec()),
         ConvertUTF8ToJavaString(env, offline_page.file_path.value()),
         offline_page.file_size, offline_page.creation_time.ToJavaTime(),
         offline_page.access_count, offline_page.last_access_time.ToJavaTime());
@@ -73,7 +72,6 @@ ScopedJavaLocalRef<jobject> ToJavaOfflinePageItem(
       offline_page.offline_id,
       ConvertUTF8ToJavaString(env, offline_page.client_id.name_space),
       ConvertUTF8ToJavaString(env, offline_page.client_id.id),
-      ConvertUTF8ToJavaString(env, offline_page.GetOfflineURL().spec()),
       ConvertUTF8ToJavaString(env, offline_page.file_path.value()),
       offline_page.file_size, offline_page.creation_time.ToJavaTime(),
       offline_page.access_count, offline_page.last_access_time.ToJavaTime());
@@ -365,21 +363,6 @@ void OfflinePageBridge::SelectPageForOnlineUrl(
       browser_context_,
       GURL(ConvertJavaStringToUTF8(env, j_online_url)),
       tab_id,
-      base::Bind(&SingleOfflinePageItemCallback, j_callback_ref));
-}
-
-void OfflinePageBridge::GetPageByOfflineUrl(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& j_offline_url,
-    const JavaParamRef<jobject>& j_callback_obj) {
-  DCHECK(j_callback_obj);
-
-  ScopedJavaGlobalRef<jobject> j_callback_ref;
-  j_callback_ref.Reset(env, j_callback_obj);
-
-  offline_page_model_->GetPageByOfflineURL(
-      GURL(ConvertJavaStringToUTF8(env, j_offline_url)),
       base::Bind(&SingleOfflinePageItemCallback, j_callback_ref));
 }
 

@@ -4,8 +4,6 @@
 
 #include "components/offline_pages/offline_page_item.h"
 
-#include "net/base/filename_util.h"
-
 namespace offline_pages {
 
 ClientId::ClientId() : name_space(""), id("") {}
@@ -72,10 +70,6 @@ bool OfflinePageItem::operator==(const OfflinePageItem& other) const {
          access_count == other.access_count &&
          title == other.title &&
          flags == other.flags;
-}
-
-GURL OfflinePageItem::GetOfflineURL() const {
-  return net::FilePathToFileURL(file_path);
 }
 
 bool OfflinePageItem::IsExpired() const {

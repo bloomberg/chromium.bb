@@ -273,19 +273,16 @@ public class OfflinePageUtils {
      * @param mainActivity Activity that is used to access package manager.
      * @param text Text to be shared. If both |text| and |url| are supplied, they are concatenated
      *             with a space.
-     * @param onlineUrl Online URL associated with the offline page that is used to access the
-     *                  offline page file path.
      * @param screenshotUri Screenshot of the page to be shared.
      * @param callback Optional callback to be called when user makes a choice. Will not be called
      *                 if receiving a response when the user makes a choice is not supported (see
      *                 TargetChosenReceiver#isSupported()).
-     * @param currentTab Tab that is used to access offlineUrl and tile.
+     * @param currentTab The current tab for which sharing is being done.
      */
     public static void shareOfflinePage(final boolean shareDirectly, final boolean saveLastUsed,
-            final Activity mainActivity, final String text, final String onlineUrl,
-            final Uri screenshotUri, final ShareHelper.TargetChosenCallback callback,
-            final Tab currentTab, boolean isOfflinePage) {
-        final String offlineUrl = currentTab.getUrl();
+            final Activity mainActivity, final String text, final Uri screenshotUri,
+            final ShareHelper.TargetChosenCallback callback, final Tab currentTab) {
+        final String url = currentTab.getUrl();
         final String title = currentTab.getTitle();
         final OfflinePageBridge offlinePageBridge =
                 OfflinePageBridge.getForProfile(currentTab.getProfile());
@@ -295,21 +292,20 @@ public class OfflinePageUtils {
             return;
         }
 
-        Callback<OfflinePageItem> prepareForSharing = onGotOfflinePageItemToShare(shareDirectly,
-                saveLastUsed, mainActivity, title, text, onlineUrl, screenshotUri, callback);
-
-        if (isOfflinePage) {
+        OfflinePageItem offlinePage = currentTab.getOfflinePage();
+        if (offlinePage != null) {
             // If we're currently on offline page get the saved file directly.
-            offlinePageBridge.getPageByOfflineUrl(offlineUrl, prepareForSharing);
+            prepareFileAndShare(shareDirectly, saveLastUsed, mainActivity, title, text,
+                                url, screenshotUri, callback, offlinePage.getFilePath());
             return;
         }
 
         // If this is an online page, share the offline copy of it.
-        WebContents webContents = currentTab.getWebContents();
-        int tabId = currentTab.getId();
-
-        offlinePageBridge.selectPageForOnlineUrl(onlineUrl, tabId,
-                selectPageForOnlineUrlCallback(webContents, offlinePageBridge, prepareForSharing));
+        Callback<OfflinePageItem> prepareForSharing = onGotOfflinePageItemToShare(shareDirectly,
+                saveLastUsed, mainActivity, title, text, url, screenshotUri, callback);
+        offlinePageBridge.selectPageForOnlineUrl(url, currentTab.getId(),
+                selectPageForOnlineUrlCallback(currentTab.getWebContents(), offlinePageBridge,
+                        prepareForSharing));
     }
 
     /**

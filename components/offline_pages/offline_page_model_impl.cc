@@ -557,44 +557,6 @@ const OfflinePageItem* OfflinePageModelImpl::MaybeGetPageByOfflineId(
              : nullptr;
 }
 
-void OfflinePageModelImpl::GetPageByOfflineURL(
-    const GURL& offline_url,
-    const SingleOfflinePageItemCallback& callback) {
-  RunWhenLoaded(
-      base::Bind(&OfflinePageModelImpl::GetPageByOfflineURLWhenLoadDone,
-                 weak_ptr_factory_.GetWeakPtr(), offline_url, callback));
-}
-
-void OfflinePageModelImpl::GetPageByOfflineURLWhenLoadDone(
-    const GURL& offline_url,
-    const SingleOfflinePageItemCallback& callback) const {
-  // Getting pages by offline URL does not exclude expired pages, as the caller
-  // already holds the offline URL and simply needs to look up a corresponding
-  // online URL.
-  const OfflinePageItem* result = nullptr;
-
-  for (const auto& id_page_pair : offline_pages_) {
-    if (id_page_pair.second.GetOfflineURL() == offline_url) {
-      result = &id_page_pair.second;
-      break;
-    }
-  }
-
-  callback.Run(result);
-}
-
-const OfflinePageItem* OfflinePageModelImpl::MaybeGetPageByOfflineURL(
-    const GURL& offline_url) const {
-  // Getting pages by offline URL does not exclude expired pages, as the caller
-  // already holds the offline URL and simply needs to look up a corresponding
-  // online URL.
-  for (const auto& id_page_pair : offline_pages_) {
-    if (id_page_pair.second.GetOfflineURL() == offline_url)
-      return &(id_page_pair.second);
-  }
-  return nullptr;
-}
-
 void OfflinePageModelImpl::GetPagesByOnlineURL(
     const GURL& online_url,
     const MultipleOfflinePageItemCallback& callback) {
