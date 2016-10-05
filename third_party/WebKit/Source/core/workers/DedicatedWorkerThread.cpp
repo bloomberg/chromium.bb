@@ -1,3 +1,4 @@
+
 /*
  * Copyright (C) 2009 Google Inc. All rights reserved.
  *
@@ -54,7 +55,7 @@ DedicatedWorkerThread::DedicatedWorkerThread(
     : WorkerThread(std::move(workerLoaderProxy), workerObjectProxy),
       m_workerBackingThread(
           WorkerBackingThread::create("DedicatedWorker Thread",
-                                      BlinkGC::PerThreadHeapMode)),
+                                      BlinkGC::MainThreadHeapMode)),
       m_workerObjectProxy(workerObjectProxy),
       m_timeOrigin(timeOrigin) {}
 
