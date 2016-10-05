@@ -108,6 +108,12 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
 
     private ActionBarDrawerToggle mDrawerToggle;
 
+    /**
+     * Task to be run after the navigation drawer is closed. Can be null. This is used to run
+     * Help/Feedback tasks which require a screenshot with the drawer closed.
+     */
+    private Runnable mPendingDrawerCloseTask;
+
     private AccountSwitcher mAccountSwitcher;
 
     /** The currently-connected Client, if any. */
@@ -167,6 +173,44 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
         mProgressView.setVisibility(View.GONE);
     }
 
+    private void runPendingDrawerCloseTask() {
+        // Avoid potential recursion problems by null-ing the task first.
+        Runnable task = mPendingDrawerCloseTask;
+        mPendingDrawerCloseTask = null;
+        if (task != null) {
+            task.run();
+        }
+    }
+
+    private void closeDrawerThenRun(Runnable task) {
+        mPendingDrawerCloseTask = task;
+        if (mDrawerLayout.isDrawerOpen(Gravity.START)) {
+            mDrawerLayout.closeDrawer(Gravity.START);
+        } else {
+            runPendingDrawerCloseTask();
+        }
+    }
+
+    /** Closes any navigation drawer, then shows the Help screen. */
+    public void launchHelp(final HelpContext helpContext) {
+        closeDrawerThenRun(new Runnable() {
+            @Override
+            public void run() {
+                HelpSingleton.getInstance().launchHelp(Chromoting.this, helpContext);
+            }
+        });
+    }
+
+    /** Closes any navigation drawer, then shows the Feedback screen. */
+    public void launchFeedback() {
+        closeDrawerThenRun(new Runnable() {
+            @Override
+            public void run() {
+                HelpSingleton.getInstance().launchFeedback(Chromoting.this);
+            }
+        });
+    }
+
     /**
      * Called when the activity is first created. Loads the native library and requests an
      * authentication token from the system.
@@ -200,7 +244,13 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, toolbar,
-                R.string.open_navigation_drawer, R.string.close_navigation_drawer);
+                R.string.open_navigation_drawer, R.string.close_navigation_drawer) {
+            @Override
+            public void onDrawerClosed(View drawerView) {
+                super.onDrawerClosed(drawerView);
+                runPendingDrawerCloseTask();
+            }
+        };
         mDrawerLayout.addDrawerListener(mDrawerToggle);
 
         // Disable the hamburger icon animation. This is more complex than it ought to be.
@@ -440,7 +490,7 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
     /** Called when the user touches hyperlinked text. */
     @Override
     public void onClick(View view) {
-        HelpSingleton.getInstance().launchHelp(this, HelpContext.HOST_SETUP);
+        launchHelp(HelpContext.HOST_SETUP);
     }
 
     private void onDeleteHostClicked(int hostIndex) {

@@ -17,7 +17,6 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chromoting.help.HelpContext;
-import org.chromium.chromoting.help.HelpSingleton;
 
 /**
  * Describes the appearance and behavior of the navigation menu. This also implements
@@ -40,33 +39,30 @@ public class NavigationMenuAdapter extends ArrayAdapter<NavigationMenuAdapter.Na
         }
     }
 
-    public static ListView createNavigationMenu(final Activity activity) {
-        ListView navigationMenu = (ListView) activity.getLayoutInflater()
-                .inflate(R.layout.navigation_list, null);
+    public static ListView createNavigationMenu(final Chromoting chromoting) {
+        ListView navigationMenu =
+                (ListView) chromoting.getLayoutInflater().inflate(R.layout.navigation_list, null);
 
         NavigationMenuItem feedbackItem = new NavigationMenuItem(
-                activity.getResources().getString(R.string.actionbar_send_feedback),
-                getIcon(activity, R.drawable.ic_announcement),
-                new Runnable() {
+                chromoting.getResources().getString(R.string.actionbar_send_feedback),
+                getIcon(chromoting, R.drawable.ic_announcement), new Runnable() {
                     @Override
                     public void run() {
-                        HelpSingleton.getInstance().launchFeedback(activity);
+                        chromoting.launchFeedback();
                     }
                 });
 
         NavigationMenuItem helpItem = new NavigationMenuItem(
-                activity.getResources().getString(R.string.actionbar_help),
-                getIcon(activity, R.drawable.ic_help),
-                new Runnable() {
+                chromoting.getResources().getString(R.string.actionbar_help),
+                getIcon(chromoting, R.drawable.ic_help), new Runnable() {
                     @Override
                     public void run() {
-                        HelpSingleton.getInstance().launchHelp(activity,
-                                HelpContext.HOST_LIST);
+                        chromoting.launchHelp(HelpContext.HOST_LIST);
                     }
                 });
 
         NavigationMenuItem[] navigationMenuItems = { feedbackItem, helpItem };
-        NavigationMenuAdapter adapter = new NavigationMenuAdapter(activity, navigationMenuItems);
+        NavigationMenuAdapter adapter = new NavigationMenuAdapter(chromoting, navigationMenuItems);
         navigationMenu.setAdapter(adapter);
         navigationMenu.setOnItemClickListener(adapter);
         return navigationMenu;
