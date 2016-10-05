@@ -2,8 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from collections import OrderedDict
 import logging
+
+from collections import OrderedDict
 
 from webkitpy.common.host_mock import MockHost
 from webkitpy.common.system.filesystem_mock import MockFileSystem
@@ -13,6 +14,7 @@ from webkitpy.layout_tests.port.factory import PortFactory
 from webkitpy.layout_tests.port.test import LAYOUT_TEST_DIR
 from webkitpy.layout_tests.update_test_expectations import main
 from webkitpy.layout_tests.update_test_expectations import RemoveFlakesOMatic
+from webkitpy.tool.commands.flaky_tests import FlakyTests
 
 
 class FakeBotTestExpectations(object):
@@ -75,16 +77,27 @@ class FakePortFactory(PortFactory):
         return port
 
 
+class MockWebBrowser(object):
+
+    def __init__(self):
+        self.opened_url = None
+
+    def open(self, url):
+        self.opened_url = url
+
+
 class UpdateTestExpectationsTest(LoggingTestCase):
 
     def setUp(self):
         super(UpdateTestExpectationsTest, self).setUp()
+        self._mock_web_browser = MockWebBrowser()
         self._host = MockHost()
         self._port = self._host.port_factory.get('test', None)
         self._expectation_factory = FakeBotTestExpectationsFactory()
         self._flake_remover = RemoveFlakesOMatic(self._host,
                                                  self._port,
-                                                 self._expectation_factory)
+                                                 self._expectation_factory,
+                                                 self._mock_web_browser)
         self._port.configuration_specifier_macros_dict = {
             'mac': ['mac10.10'],
             'win': ['win7'],
@@ -92,6 +105,9 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         }
         filesystem = self._host.filesystem
         self._write_tests_into_filesystem(filesystem)
+
+    def tearDown(self):
+        super(UpdateTestExpectationsTest, self).tearDown()
 
     def _write_tests_into_filesystem(self, filesystem):
         test_list = ['test/a.html',
@@ -975,3 +991,40 @@ class UpdateTestExpectationsTest(LoggingTestCase):
 
         self.assertTrue(host.filesystem.isfile(test_expectation_path))
         self.assertEqual(host.filesystem.files[test_expectation_path], '')
+
+    def test_show_results(self):
+        """Tests that passing --show-results shows the removed results.
+
+        --show-results opens the removed tests in the layout dashboard using the default browser.
+        This tests mocks the webbrowser.open function and checks that it was called with the correct
+        url.
+        """
+        test_expectations_before = (
+            """# Remove this since it's passing all runs.
+            Bug(test) test/a.html [ Failure Pass ]
+            # Remove this since, although there's a failure, it's not a timeout.
+            Bug(test) test/b.html [ Pass Timeout ]
+            # Keep since we have both crashes and passes.
+            Bug(test) test/c.html [ Crash Pass ]""")
+
+        self._define_builders({
+            "WebKit Linux": {
+                "port_name": "linux-precise",
+                "specifiers": ['Precise', 'Release']
+            },
+        })
+        self._port.all_build_types = ('release',)
+        self._port.all_systems = (('precise', 'x86_64'),)
+
+        self._parse_expectations(test_expectations_before)
+        self._expectation_factory._all_results_by_builder = {
+            'WebKit Linux': {
+                "test/a.html": ["PASS", "PASS", "PASS"],
+                "test/b.html": ["PASS", "IMAGE", "PASS"],
+                "test/c.html": ["PASS", "CRASH", "PASS"],
+            }
+        }
+        self._flake_remover.show_removed_results()
+        self.assertEqual(
+            FlakyTests.FLAKINESS_DASHBOARD_URL % 'test/a.html,test/b.html',
+            self._mock_web_browser.opened_url)
