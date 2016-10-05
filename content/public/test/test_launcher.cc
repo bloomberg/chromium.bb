@@ -40,6 +40,10 @@
 #include "net/base/escape.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_POSIX)
+#include "base/files/file_descriptor_watcher_posix.h"
+#endif
+
 #if defined(OS_WIN)
 #include "base/base_switches.h"
 #include "content/common/sandbox_win.h"
@@ -537,6 +541,9 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
           "process mode).\n");
 
   base::MessageLoopForIO message_loop;
+#if defined(OS_POSIX)
+  base::FileDescriptorWatcher file_descriptor_watcher(&message_loop);
+#endif
 
   // Allow the |launcher_delegate| to modify |default_jobs|.
   launcher_delegate->AdjustDefaultParallelJobs(&default_jobs);
