@@ -42,17 +42,19 @@ enum GridTrackSizeType {
   FitContentTrackSizing
 };
 
-// This class represents a <track-size> from the spec. Althought there are 3 different types of
-// <track-size> there is always an equivalent minmax() representation that could represent any of
-// them. The only special case is fit-content(argument) which is similar to minmax(auto,
-// max-content) except that the track size is clamped at argument if it is greater than the auto
-// minimum. At the GridTrackSize level we don't need to worry about clamping so we treat that case
-// exactly as auto.
+// This class represents a <track-size> from the spec. Althought there are 3
+// different types of <track-size> there is always an equivalent minmax()
+// representation that could represent any of them. The only special case is
+// fit-content(argument) which is similar to minmax(auto, max-content) except
+// that the track size is clamped at argument if it is greater than the auto
+// minimum. At the GridTrackSize level we don't need to worry about clamping so
+// we treat that case exactly as auto.
 //
-// We're using a separate attribute to store fit-content argument even though we could directly use
-// m_maxTrackBreadth. The reason why we don't do it is because the maxTrackBreadh() call is a hot
-// spot, so adding a conditional statement there (to distinguish between fit-content and any other
-// case) was causing a severe performance drop.
+// We're using a separate attribute to store fit-content argument even though we
+// could directly use m_maxTrackBreadth. The reason why we don't do it is
+// because the maxTrackBreadh() call is a hot spot, so adding a conditional
+// statement there (to distinguish between fit-content and any other case) was
+// causing a severe performance drop.
 class GridTrackSize {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 

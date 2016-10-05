@@ -14,8 +14,10 @@ class StyleSelfAlignmentData {
   DISALLOW_NEW();
 
  public:
-  // Style data for Self-Aligment and Default-Alignment properties: align-{self, items}, justify-{self, items}.
-  // [ <self-position> && <overflow-position>? ] | [ legacy && [ left | right | center ] ]
+  // Style data for Self-Aligment and Default-Alignment properties: align-{self,
+  // items}, justify-{self, items}.
+  // [ <self-position> && <overflow-position>? ] | [ legacy && [ left | right |
+  // center ] ]
   StyleSelfAlignmentData(ItemPosition position,
                          OverflowAlignment overflow,
                          ItemPositionType positionType = NonLegacyPosition)
@@ -49,10 +51,10 @@ class StyleSelfAlignmentData {
   }
 
  private:
-  unsigned m_position : 4;  // ItemPosition
-  unsigned
-      m_positionType : 1;  // Whether or not alignment uses the 'legacy' keyword.
-  unsigned m_overflow : 2;  // OverflowAlignment
+  unsigned m_position : 4;      // ItemPosition
+  unsigned m_positionType : 1;  // Whether or not alignment uses the 'legacy'
+                                // keyword.
+  unsigned m_overflow : 2;      // OverflowAlignment
 };
 
 }  // namespace blink

@@ -67,9 +67,9 @@ class GridPosition {
     m_integerPosition = 0;
   }
 
-  // 'span' values cannot be negative, yet we reuse the <integer> position which can
-  // be. This means that we have to convert the span position to an integer, losing
-  // some precision here. It shouldn't be an issue in practice though.
+  // 'span' values cannot be negative, yet we reuse the <integer> position which
+  // can be. This means that we have to convert the span position to an integer,
+  // losing some precision here. It shouldn't be an issue in practice though.
   void setSpanPosition(int position, const AtomicString& namedGridLine) {
     m_type = SpanPosition;
     m_integerPosition = position;

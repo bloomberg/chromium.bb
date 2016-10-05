@@ -56,7 +56,8 @@ class BorderValue {
            m_colorIsCurrentColor == o.m_colorIsCurrentColor;
   }
 
-  // The default width is 3px, but if the style is none we compute a value of 0 (in ComputedStyle itself)
+  // The default width is 3px, but if the style is none we compute a value of 0
+  // (in ComputedStyle itself)
   bool visuallyEqual(const BorderValue& o) const {
     if (m_style == BorderStyleNone && o.m_style == BorderStyleNone)
       return true;

@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 1999 Antti Koivisto (koivisto@kde.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights
+ * reserved.
  * Copyright (C) 2011 Adobe Systems Incorporated. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
@@ -194,7 +195,8 @@ static StyleRecalcChange diffPseudoStyles(const ComputedStyle& oldStyle,
 StyleRecalcChange ComputedStyle::stylePropagationDiff(
     const ComputedStyle* oldStyle,
     const ComputedStyle* newStyle) {
-  // If the style has changed from display none or to display none, then the layout subtree needs to be reattached
+  // If the style has changed from display none or to display none, then the
+  // layout subtree needs to be reattached
   if ((!oldStyle && newStyle) || (oldStyle && !newStyle))
     return Reattach;
 
@@ -242,7 +244,9 @@ void ComputedStyle::propagateIndependentInheritedProperties(
 StyleSelfAlignmentData resolvedSelfAlignment(
     const StyleSelfAlignmentData& value,
     ItemPosition normalValueBehavior) {
-  // To avoid needing to copy the RareNonInheritedData, we repurpose the 'auto' flag to not just mean 'auto' prior to running the StyleAdjuster but also mean 'normal' after running it.
+  // To avoid needing to copy the RareNonInheritedData, we repurpose the 'auto'
+  // flag to not just mean 'auto' prior to running the StyleAdjuster but also
+  // mean 'normal' after running it.
   if (value.position() == ItemPositionNormal ||
       value.position() == ItemPositionAuto)
     return {normalValueBehavior, OverflowAlignmentDefault};
@@ -251,38 +255,44 @@ StyleSelfAlignmentData resolvedSelfAlignment(
 
 StyleSelfAlignmentData ComputedStyle::resolvedAlignItems(
     ItemPosition normalValueBehaviour) const {
-  // We will return the behaviour of 'normal' value if needed, which is specific of each layout model.
+  // We will return the behaviour of 'normal' value if needed, which is specific
+  // of each layout model.
   return resolvedSelfAlignment(alignItems(), normalValueBehaviour);
 }
 
 StyleSelfAlignmentData ComputedStyle::resolvedAlignSelf(
     ItemPosition normalValueBehaviour,
     const ComputedStyle* parentStyle) const {
-  // We will return the behaviour of 'normal' value if needed, which is specific of each layout model.
+  // We will return the behaviour of 'normal' value if needed, which is specific
+  // of each layout model.
   if (!parentStyle || alignSelfPosition() != ItemPositionAuto)
     return resolvedSelfAlignment(alignSelf(), normalValueBehaviour);
 
-  // We shouldn't need to resolve any 'auto' value in post-adjusment ComputedStyle, but some layout models
-  // can generate anonymous boxes that may need 'auto' value resolution during layout.
+  // We shouldn't need to resolve any 'auto' value in post-adjusment
+  // ComputedStyle, but some layout models can generate anonymous boxes that may
+  // need 'auto' value resolution during layout.
   // The 'auto' keyword computes to the parent's align-items computed value.
   return parentStyle->resolvedAlignItems(normalValueBehaviour);
 }
 
 StyleSelfAlignmentData ComputedStyle::resolvedJustifyItems(
     ItemPosition normalValueBehaviour) const {
-  // We will return the behaviour of 'normal' value if needed, which is specific of each layout model.
+  // We will return the behaviour of 'normal' value if needed, which is specific
+  // of each layout model.
   return resolvedSelfAlignment(justifyItems(), normalValueBehaviour);
 }
 
 StyleSelfAlignmentData ComputedStyle::resolvedJustifySelf(
     ItemPosition normalValueBehaviour,
     const ComputedStyle* parentStyle) const {
-  // We will return the behaviour of 'normal' value if needed, which is specific of each layout model.
+  // We will return the behaviour of 'normal' value if needed, which is specific
+  // of each layout model.
   if (!parentStyle || justifySelfPosition() != ItemPositionAuto)
     return resolvedSelfAlignment(justifySelf(), normalValueBehaviour);
 
-  // We shouldn't need to resolve any 'auto' value in post-adjusment ComputedStyle, but some layout models
-  // can generate anonymous boxes that may need 'auto' value resolution during layout.
+  // We shouldn't need to resolve any 'auto' value in post-adjusment
+  // ComputedStyle, but some layout models can generate anonymous boxes that may
+  // need 'auto' value resolution during layout.
   // The auto keyword computes to the parent's justify-items computed value.
   return parentStyle->resolvedJustifyItems(normalValueBehaviour);
 }
@@ -332,7 +342,8 @@ void ComputedStyle::inheritFrom(const ComputedStyle& inheritParent,
                                 IsAtShadowBoundary isAtShadowBoundary) {
   ComputedStyleBase::inheritFrom(inheritParent, isAtShadowBoundary);
   if (isAtShadowBoundary == AtShadowBoundary) {
-    // Even if surrounding content is user-editable, shadow DOM should act as a single unit, and not necessarily be editable
+    // Even if surrounding content is user-editable, shadow DOM should act as a
+    // single unit, and not necessarily be editable
     EUserModify currentUserModify = userModify();
     m_rareInheritedData = inheritParent.m_rareInheritedData;
     setUserModify(currentUserModify);
@@ -353,7 +364,8 @@ void ComputedStyle::copyNonInheritedFromCached(const ComputedStyle& other) {
   m_surround = other.m_surround;
   m_rareNonInheritedData = other.m_rareNonInheritedData;
 
-  // The flags are copied one-by-one because m_nonInheritedData.m_contains a bunch of stuff other than real style data.
+  // The flags are copied one-by-one because m_nonInheritedData.m_contains a
+  // bunch of stuff other than real style data.
   // See comments for each skipped flag below.
   m_nonInheritedData.m_effectiveDisplay =
       other.m_nonInheritedData.m_effectiveDisplay;
@@ -392,8 +404,8 @@ void ComputedStyle::copyNonInheritedFromCached(const ComputedStyle& other) {
   // The following flags are set during matching before we decide that we get a
   // match in the MatchedPropertiesCache which in turn calls this method. The
   // reason why we don't copy these flags is that they're already correctly set
-  // and that they may differ between elements which have the same set of matched
-  // properties. For instance, given the rule:
+  // and that they may differ between elements which have the same set of
+  // matched properties. For instance, given the rule:
   //
   // :-webkit-any(:hover, :focus) { background-color: green }"
   //
@@ -532,8 +544,9 @@ bool ComputedStyle::inheritedDataShared(const ComputedStyle& other) const {
 
 static bool dependenceOnContentHeightHasChanged(const ComputedStyle& a,
                                                 const ComputedStyle& b) {
-  // If top or bottom become auto/non-auto then it means we either have to solve height based
-  // on the content or stop doing so (http://www.w3.org/TR/CSS2/visudet.html#abs-non-replaced-height)
+  // If top or bottom become auto/non-auto then it means we either have to solve
+  // height based on the content or stop doing so
+  // (http://www.w3.org/TR/CSS2/visudet.html#abs-non-replaced-height)
   // - either way requires a layout.
   return a.logicalTop().isAuto() != b.logicalTop().isAuto() ||
          a.logicalBottom().isAuto() != b.logicalBottom().isAuto();
@@ -541,9 +554,9 @@ static bool dependenceOnContentHeightHasChanged(const ComputedStyle& a,
 
 StyleDifference ComputedStyle::visualInvalidationDiff(
     const ComputedStyle& other) const {
-  // Note, we use .get() on each DataRef below because DataRef::operator== will do a deep
-  // compare, which is duplicate work when we're going to compare each property inside
-  // this function anyway.
+  // Note, we use .get() on each DataRef below because DataRef::operator== will
+  // do a deep compare, which is duplicate work when we're going to compare each
+  // property inside this function anyway.
 
   StyleDifference diff;
   if (m_svgStyle.get() != other.m_svgStyle.get())
@@ -560,7 +573,8 @@ StyleDifference ComputedStyle::visualInvalidationDiff(
 
   if (!diff.needsFullLayout() &&
       m_surround->margin != other.m_surround->margin) {
-    // Relative-positioned elements collapse their margins so need a full layout.
+    // Relative-positioned elements collapse their margins so need a full
+    // layout.
     if (hasOutOfFlowPosition())
       diff.setNeedsPositionedMovementLayout();
     else
@@ -569,7 +583,8 @@ StyleDifference ComputedStyle::visualInvalidationDiff(
 
   if (!diff.needsFullLayout() && position() != StaticPosition &&
       m_surround->offset != other.m_surround->offset) {
-    // Optimize for the case where a positioned layer is moving but not changing size.
+    // Optimize for the case where a positioned layer is moving but not changing
+    // size.
     if (dependenceOnContentHeightHasChanged(*this, other))
       diff.setNeedsFullLayout();
     else
@@ -588,25 +603,29 @@ StyleDifference ComputedStyle::visualInvalidationDiff(
   if (diff.needsLayout() || diff.transformChanged())
     diff.setScrollAnchorDisablingPropertyChanged();
 
-  // Cursors are not checked, since they will be set appropriately in response to mouse events,
-  // so they don't need to cause any paint invalidation or layout.
+  // Cursors are not checked, since they will be set appropriately in response
+  // to mouse events, so they don't need to cause any paint invalidation or
+  // layout.
 
-  // Animations don't need to be checked either. We always set the new style on the layoutObject, so we will get a chance to fire off
-  // the resulting transition properly.
+  // Animations don't need to be checked either. We always set the new style on
+  // the layoutObject, so we will get a chance to fire off the resulting
+  // transition properly.
 
   return diff;
 }
 
 bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(
     const ComputedStyle& other) const {
-  // FIXME: Not all cases in this method need both full layout and paint invalidation.
+  // FIXME: Not all cases in this method need both full layout and paint
+  // invalidation.
   // Should move cases into diffNeedsFullLayout() if
   // - don't need paint invalidation at all;
-  // - or the layoutObject knows how to exactly invalidate paints caused by the layout change
-  //   instead of forced full paint invalidation.
+  // - or the layoutObject knows how to exactly invalidate paints caused by the
+  //   layout change instead of forced full paint invalidation.
 
   if (m_surround.get() != other.m_surround.get()) {
-    // If our border widths change, then we need to layout. Other changes to borders only necessitate a paint invalidation.
+    // If our border widths change, then we need to layout. Other changes to
+    // borders only necessitate a paint invalidation.
     if (borderLeftWidth() != other.borderLeftWidth() ||
         borderTopWidth() != other.borderTopWidth() ||
         borderBottomWidth() != other.borderBottomWidth() ||
@@ -663,7 +682,8 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(
             *other.m_rareNonInheritedData->m_multiCol.get())
       return true;
 
-    // If the counter directives change, trigger a relayout to re-calculate counter values and rebuild the counter node tree.
+    // If the counter directives change, trigger a relayout to re-calculate
+    // counter values and rebuild the counter node tree.
     const CounterDirectiveMap* mapA =
         m_rareNonInheritedData->m_counterDirectives.get();
     const CounterDirectiveMap* mapB =
@@ -671,16 +691,19 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(
     if (!(mapA == mapB || (mapA && mapB && *mapA == *mapB)))
       return true;
 
-    // We only need do layout for opacity changes if adding or losing opacity could trigger a change
+    // We only need do layout for opacity changes if adding or losing opacity
+    // could trigger a change
     // in us being a stacking context.
     if (isStackingContext() != other.isStackingContext() &&
         m_rareNonInheritedData->hasOpacity() !=
             other.m_rareNonInheritedData->hasOpacity()) {
-      // FIXME: We would like to use SimplifiedLayout here, but we can't quite do that yet.
-      // We need to make sure SimplifiedLayout can operate correctly on LayoutInlines (we will need
-      // to add a selfNeedsSimplifiedLayout bit in order to not get confused and taint every line).
-      // In addition we need to solve the floating object issue when layers come and go. Right now
-      // a full layout is necessary to keep floating object lists sane.
+      // FIXME: We would like to use SimplifiedLayout here, but we can't quite
+      // do that yet.  We need to make sure SimplifiedLayout can operate
+      // correctly on LayoutInlines (we will need to add a
+      // selfNeedsSimplifiedLayout bit in order to not get confused and taint
+      // every line).  In addition we need to solve the floating object issue
+      // when layers come and go. Right now a full layout is necessary to keep
+      // floating object lists sane.
       return true;
     }
   }
@@ -797,8 +820,8 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(
             other.m_nonInheritedData.m_tableLayout)
       return true;
 
-    // In the collapsing border model, 'hidden' suppresses other borders, while 'none'
-    // does not, so these style differences can be width differences.
+    // In the collapsing border model, 'hidden' suppresses other borders, while
+    // 'none' does not, so these style differences can be width differences.
     if (m_inheritedData.m_borderCollapse &&
         ((borderTopStyle() == BorderStyleHidden &&
           other.borderTopStyle() == BorderStyleNone) ||
@@ -833,7 +856,8 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(
       other.hasPseudoStyle(PseudoIdScrollbar))
     return true;
 
-  // Movement of non-static-positioned object is special cased in ComputedStyle::visualInvalidationDiff().
+  // Movement of non-static-positioned object is special cased in
+  // ComputedStyle::visualInvalidationDiff().
 
   return false;
 }
@@ -1216,8 +1240,8 @@ bool ComputedStyle::requireTransformOrigin(
       transform().operations();
 
   // transform-origin brackets the transform with translate operations.
-  // Optimize for the case where the only transform is a translation, since the transform-origin is irrelevant
-  // in that case.
+  // Optimize for the case where the only transform is a translation, since the
+  // transform-origin is irrelevant in that case.
   if (applyOrigin != IncludeTransformOrigin)
     return false;
 
@@ -1314,7 +1338,8 @@ void ComputedStyle::applyMotionPathTransform(
     TransformationMatrix& transform) const {
   const StyleMotionData& motionData =
       m_rareNonInheritedData->m_transform->m_motion;
-  // TODO(ericwilligers): crbug.com/638055 Apply offset-position and offset-anchor.
+  // TODO(ericwilligers): crbug.com/638055 Apply offset-position and
+  // offset-anchor.
   if (!motionData.m_path) {
     return;
   }
@@ -2002,8 +2027,8 @@ Color ComputedStyle::colorIncludingFallback(int colorProperty,
   if (!result.isCurrentColor())
     return result.getColor();
 
-  // FIXME: Treating styled borders with initial color differently causes problems
-  // See crbug.com/316559, crbug.com/276231
+  // FIXME: Treating styled borders with initial color differently causes
+  // problems, see crbug.com/316559, crbug.com/276231
   if (!visitedLink &&
       (borderStyle == BorderStyleInset || borderStyle == BorderStyleOutset ||
        borderStyle == BorderStyleRidge || borderStyle == BorderStyleGroove))
@@ -2018,16 +2043,19 @@ Color ComputedStyle::visitedDependentColor(int colorProperty) const {
 
   Color visitedColor = colorIncludingFallback(colorProperty, true);
 
-  // FIXME: Technically someone could explicitly specify the color transparent, but for now we'll just
-  // assume that if the background color is transparent that it wasn't set. Note that it's weird that
-  // we're returning unvisited info for a visited link, but given our restriction that the alpha values
-  // have to match, it makes more sense to return the unvisited background color if specified than it
-  // does to return black. This behavior matches what Firefox 4 does as well.
+  // FIXME: Technically someone could explicitly specify the color transparent,
+  // but for now we'll just assume that if the background color is transparent
+  // that it wasn't set. Note that it's weird that we're returning unvisited
+  // info for a visited link, but given our restriction that the alpha values
+  // have to match, it makes more sense to return the unvisited background color
+  // if specified than it does to return black. This behavior matches what
+  // Firefox 4 does as well.
   if (colorProperty == CSSPropertyBackgroundColor &&
       visitedColor == Color::transparent)
     return unvisitedColor;
 
-  // Take the alpha from the unvisited color, but get the RGB values from the visited color.
+  // Take the alpha from the unvisited color, but get the RGB values from the
+  // visited color.
   return Color(visitedColor.red(), visitedColor.green(), visitedColor.blue(),
                unvisitedColor.alpha());
 }
@@ -2237,7 +2265,8 @@ bool ComputedStyle::borderObscuresBackground() const {
   if (!hasBorder())
     return false;
 
-  // Bail if we have any border-image for now. We could look at the image alpha to improve this.
+  // Bail if we have any border-image for now. We could look at the image alpha
+  // to improve this.
   if (borderImage().image())
     return false;
 
@@ -2309,7 +2338,8 @@ Vector<GridTrackSize> ComputedStyle::initialGridAutoRows() {
 int adjustForAbsoluteZoom(int value, float zoomFactor) {
   if (zoomFactor == 1)
     return value;
-  // Needed because computeLengthInt truncates (rather than rounds) when scaling up.
+  // Needed because computeLengthInt truncates (rather than rounds) when scaling
+  // up.
   float fvalue = value;
   if (zoomFactor > 1) {
     if (value < 0)

@@ -164,8 +164,9 @@ FillLayer& FillLayer::operator=(const FillLayer& o) {
 }
 
 bool FillLayer::operator==(const FillLayer& o) const {
-  // We do not check the "isSet" booleans for each property, since those are only used during initial construction
-  // to propagate patterns into layers.  All layer comparisons happen after values have all been filled in anyway.
+  // We do not check the "isSet" booleans for each property, since those are
+  // only used during initial construction to propagate patterns into layers.
+  // All layer comparisons happen after values have all been filled in anyway.
   return dataEquivalent(m_image, o.m_image) && m_xPosition == o.m_xPosition &&
          m_yPosition == o.m_yPosition &&
          m_backgroundXOrigin == o.m_backgroundXOrigin &&
@@ -379,10 +380,11 @@ bool FillLayer::imageIsOpaque(const LayoutObject& layoutObject) const {
 }
 
 bool FillLayer::imageTilesLayer() const {
-  // Returns true if an image will be tiled such that it covers any sized rectangle.
-  // TODO(schenney) We could relax the repeat mode requirement if we also knew the rect we
-  // had to fill, and the portion of the image we need to use, and know that the latter
-  // covers the former
+  // Returns true if an image will be tiled such that it covers any sized
+  // rectangle.
+  // TODO(schenney) We could relax the repeat mode requirement if we also knew
+  // the rect we had to fill, and the portion of the image we need to use, and
+  // know that the latter covers the former.
   return (m_repeatX == RepeatFill || m_repeatX == RoundFill) &&
          (m_repeatY == RepeatFill || m_repeatY == RoundFill);
 }

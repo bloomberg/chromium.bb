@@ -330,14 +330,15 @@ class CORE_EXPORT FillLayer {
 
   unsigned m_type : 1;  // EFillLayerType
 
-  mutable unsigned
-      m_thisOrNextLayersClipMax : 2;  // EFillBox, maximum m_clip value from this to bottom layer
-  mutable unsigned
-      m_thisOrNextLayersUseContentBox : 1;  // True if any of this or subsequent layers has content-box clip or origin.
-  mutable unsigned
-      m_thisOrNextLayersHaveLocalAttachment : 1;  // True if any of this or subsequent layers has local attachment.
-  mutable unsigned
-      m_cachedPropertiesComputed : 1;  // Set once any of the above is accessed. The layers will be frozen thereafter.
+  // EFillBox, maximum m_clip value from this to bottom layer
+  mutable unsigned m_thisOrNextLayersClipMax : 2;
+  // True if any of this or subsequent layers has content-box clip or origin.
+  mutable unsigned m_thisOrNextLayersUseContentBox : 1;
+  // True if any of this or subsequent layers has local attachment.
+  mutable unsigned m_thisOrNextLayersHaveLocalAttachment : 1;
+  // Set once any of the above is accessed. The layers will be frozen
+  // thereafter.
+  mutable unsigned m_cachedPropertiesComputed : 1;
 };
 
 }  // namespace blink

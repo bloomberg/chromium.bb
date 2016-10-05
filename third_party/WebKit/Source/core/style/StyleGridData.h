@@ -10,17 +10,16 @@
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  *
- *  THIS SOFTWARE IS PROVIDED BY APPLE INC. AND ITS CONTRIBUTORS ``AS IS'' AND ANY
- *  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *  DISCLAIMED. IN NO EVENT SHALL APPLE INC. OR ITS CONTRIBUTORS BE LIABLE FOR ANY
- *  DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- *  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
- *  ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
+ * THIS SOFTWARE IS PROVIDED BY APPLE INC. AND ITS CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL APPLE INC. OR ITS CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef StyleGridData_h
@@ -92,8 +91,9 @@ class StyleGridData : public RefCounted<StyleGridData> {
   NamedGridLinesMap m_namedGridColumnLines;
   NamedGridLinesMap m_namedGridRowLines;
 
-  // In order to reconstruct the original named grid line order, we can't rely on NamedGridLinesMap
-  // as it loses the position if multiple grid lines are set on a single track.
+  // In order to reconstruct the original named grid line order, we can't rely
+  // on NamedGridLinesMap as it loses the position if multiple grid lines are
+  // set on a single track.
   OrderedNamedGridLines m_orderedNamedGridColumnLines;
   OrderedNamedGridLines m_orderedNamedGridRowLines;
 
@@ -108,8 +108,9 @@ class StyleGridData : public RefCounted<StyleGridData> {
   Vector<GridTrackSize> m_gridAutoColumns;
 
   NamedGridAreaMap m_namedGridArea;
-  // Because m_namedGridArea doesn't store the unnamed grid areas, we need to keep track
-  // of the explicit grid size defined by both named and unnamed grid areas.
+  // Because m_namedGridArea doesn't store the unnamed grid areas, we need to
+  // keep track of the explicit grid size defined by both named and unnamed grid
+  // areas.
   size_t m_namedGridAreaRowCount;
   size_t m_namedGridAreaColumnCount;
 

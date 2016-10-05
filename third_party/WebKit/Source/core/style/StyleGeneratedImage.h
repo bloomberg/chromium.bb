@@ -60,8 +60,8 @@ class CORE_EXPORT StyleGeneratedImage final : public StyleImage {
  private:
   StyleGeneratedImage(const CSSImageGeneratorValue&);
 
-  // TODO(sashab): Replace this with <const CSSImageGeneratorValue> once Member<>
-  // supports const types.
+  // TODO(sashab): Replace this with <const CSSImageGeneratorValue> once
+  // Member<> supports const types.
   Member<CSSImageGeneratorValue> m_imageGeneratorValue;
   const bool m_fixedSize;
 };

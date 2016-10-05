@@ -54,9 +54,9 @@ class StyleFetchedImageSet final : public StyleImage, private ResourceClient {
   CSSValue* cssValue() const override;
   CSSValue* computedCSSValue() const override;
 
-  // FIXME: This is used by StyleImage for equals comparison, but this implementation
-  // only looks at the image from the set that we have loaded. I'm not sure if that is
-  // meaningful enough or not.
+  // FIXME: This is used by StyleImage for equals comparison, but this
+  // implementation only looks at the image from the set that we have loaded.
+  // I'm not sure if that is meaningful enough or not.
   WrappedImagePtr data() const override;
 
   bool canRender() const override;

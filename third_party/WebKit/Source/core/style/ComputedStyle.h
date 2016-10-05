@@ -2,7 +2,8 @@
  * Copyright (C) 2000 Lars Knoll (knoll@kde.org)
  *           (C) 2000 Antti Koivisto (koivisto@kde.org)
  *           (C) 2000 Dirk Mueller (mueller@kde.org)
- * Copyright (C) 2003, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All
+ * rights reserved.
  * Copyright (C) 2006 Graham Dennis (graham.dennis@gmail.com)
  *
  * This library is free software; you can redistribute it and/or
@@ -142,23 +143,28 @@ typedef Vector<RefPtr<ComputedStyle>, 4> PseudoStyleCache;
 // such as ComputedStyleBase.cpp) and ComputedStyle will be removed.
 class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
                                   public RefCounted<ComputedStyle> {
-  friend class
-      AnimatedStyleBuilder;  // Used by Web Animations CSS. Sets the color styles
-  friend class
-      CSSAnimatableValueFactory;  // Used by Web Animations CSS. Gets visited and unvisited colors separately.
-  friend class
-      CSSPropertyEquality;         // Used by CSS animations. We can't allow them to animate based off visited colors.
-  friend class ApplyStyleCommand;  // Editing has to only reveal unvisited info.
-  friend class EditingStyle;       // Editing has to only reveal unvisited info.
-  friend class
-      ComputedStyleCSSValueMapping;  // Needs to be able to see visited and unvisited colors for devtools.
-  friend class StyleBuilderFunctions;  // Sets color styles
-  friend class
-      CachedUAStyle;  // Saves Border/Background information for later comparison.
-  friend class
-      ColorPropertyFunctions;  // Accesses visited and unvisited colors.
+  // Used by Web Animations CSS. Sets the color styles.
+  friend class AnimatedStyleBuilder;
+  // Used by Web Animations CSS. Gets visited and unvisited colors separately.
+  friend class CSSAnimatableValueFactory;
+  // Used by CSS animations. We can't allow them to animate based off visited
+  // colors.
+  friend class CSSPropertyEquality;
+  // Editing has to only reveal unvisited info.
+  friend class ApplyStyleCommand;
+  // Editing has to only reveal unvisited info.
+  friend class EditingStyle;
+  // Needs to be able to see visited and unvisited colors for devtools.
+  friend class ComputedStyleCSSValueMapping;
+  // Sets color styles
+  friend class StyleBuilderFunctions;
+  // Saves Border/Background information for later comparison.
+  friend class CachedUAStyle;
+  // Accesses visited and unvisited colors.
+  friend class ColorPropertyFunctions;
 
-  // FIXME: When we stop resolving currentColor at style time, these can be removed.
+  // FIXME: When we stop resolving currentColor at style time, these can be
+  // removed.
   friend class CSSToStyleMap;
   friend class FilterOperationResolver;
   friend class StyleBuilderConverter;
@@ -182,7 +188,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   DataRef<SVGComputedStyle> m_svgStyle;
 
-  // !START SYNC!: Keep this in sync with the copy constructor in ComputedStyle.cpp and implicitlyInherited() in StyleResolver.cpp
+  // !START SYNC!: Keep this in sync with the copy constructor in
+  // ComputedStyle.cpp and implicitlyInherited() in StyleResolver.cpp
 
   // inherit
   struct InheritedData {
@@ -232,8 +239,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     unsigned m_direction : 1;       // TextDirection
     unsigned m_whiteSpace : 3;      // EWhiteSpace
     unsigned m_borderCollapse : 1;  // EBorderCollapse
-    unsigned
-        m_boxDirection : 1;  // EBoxDirection (CSS3 box_direction property, flexible box layout module)
+    unsigned m_boxDirection : 1;  // EBoxDirection (CSS3 box_direction property,
+                                  // flexible box layout module)
     // 32 bits
 
     // non CSS2 inherited
@@ -294,7 +301,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     unsigned m_unicodeBidi : 3;       // EUnicodeBidi
 
     // This is set if we used viewport units when resolving a length.
-    // It is mutable so we can pass around const ComputedStyles to resolve lengths.
+    // It is mutable so we can pass around const ComputedStyles to resolve
+    // lengths.
     mutable unsigned m_hasViewportUnits : 1;
 
     // 32 bits
@@ -305,11 +313,11 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
     unsigned m_styleType : 6;  // PseudoId
     unsigned m_pseudoBits : 8;
-    unsigned
-        m_explicitInheritance : 1;  // Explicitly inherits a non-inherited property
-    unsigned
-        m_variableReference : 1;  // A non-inherited property references a variable or @apply is used.
-    unsigned m_unique : 1;  // Style can not be shared.
+    unsigned m_explicitInheritance : 1;  // Explicitly inherits a non-inherited
+                                         // property
+    unsigned m_variableReference : 1;  // A non-inherited property references a
+                                       // variable or @apply is used.
+    unsigned m_unique : 1;             // Style can not be shared.
 
     unsigned m_emptyState : 1;
 
@@ -336,15 +344,16 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     // clear which inherited properties have a flag stored and which don't.
     // Keep this list of fields in sync with:
     // - setBitDefaults()
-    // - The ComputedStyle setter, which must take an extra boolean parameter and set this
-    // - propagateIndependentInheritedProperties() in ComputedStyle.cpp
+    // - The ComputedStyle setter, which must take an extra boolean parameter
+    //   and set this - propagateIndependentInheritedProperties() in
+    //   ComputedStyle.cpp
     // - The compareEqual() methods in the corresponding class
     // InheritedFlags
     unsigned m_isPointerEventsInherited : 1;
     unsigned m_isVisibilityInherited : 1;
 
-    // If you add more style bits here, you will also need to update ComputedStyle::copyNonInheritedFromCached()
-    // 68 bits
+    // If you add more style bits here, you will also need to update
+    // ComputedStyle::copyNonInheritedFromCached() 68 bits
   } m_nonInheritedData;
 
   // !END SYNC!
@@ -850,7 +859,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     m_nonInheritedData.m_breakAfter = b;
   }
 
-  // break-before (shorthand for page-break-before and -webkit-column-break-before)
+  // break-before (shorthand for page-break-before and
+  // -webkit-column-break-before)
   static EBreak initialBreakBefore() { return BreakAuto; }
   EBreak breakBefore() const {
     return static_cast<EBreak>(m_nonInheritedData.m_breakBefore);
@@ -860,7 +870,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     m_nonInheritedData.m_breakBefore = b;
   }
 
-  // break-inside (shorthand for page-break-inside and -webkit-column-break-inside)
+  // break-inside (shorthand for page-break-inside and
+  // -webkit-column-break-inside)
   static EBreak initialBreakInside() { return BreakAuto; }
   EBreak breakInside() const {
     return static_cast<EBreak>(m_nonInheritedData.m_breakInside);
@@ -1074,7 +1085,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // -webkit-box-align
-  // For valid values of box-align see http://www.w3.org/TR/2009/WD-css3-flexbox-20090723/#alignment
+  // For valid values of box-align see
+  // http://www.w3.org/TR/2009/WD-css3-flexbox-20090723/#alignment
   static EBoxAlignment initialBoxAlign() { return BSTRETCH; }
   EBoxAlignment boxAlign() const {
     return static_cast<EBoxAlignment>(
@@ -1480,7 +1492,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // order (aka -webkit-order)
   static int initialOrder() { return 0; }
   int order() const { return m_rareNonInheritedData->m_order; }
-  // We restrict the smallest value to int min + 2 because we use int min and int min + 1 as special values in a hash set.
+  // We restrict the smallest value to int min + 2 because we use int min and
+  // int min + 1 as special values in a hash set.
   void setOrder(int o) {
     SET_VAR(m_rareNonInheritedData, m_order,
             max(std::numeric_limits<int>::min() + 2, o));
@@ -2513,8 +2526,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     return LayoutLocale::localeString(getFontDescription().locale());
   }
 
-  // FIXME: Remove letter-spacing/word-spacing and replace them with respective FontBuilder calls.
-  // letter-spacing
+  // FIXME: Remove letter-spacing/word-spacing and replace them with respective
+  // FontBuilder calls.  letter-spacing
   static float initialLetterWordSpacing() { return 0.0f; }
   float letterSpacing() const;
   void setLetterSpacing(float);
@@ -2789,10 +2802,11 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     SET_VAR(m_rareNonInheritedData, m_hasAuthorBorder, authorBorder);
   }
 
-  // A stacking context is painted atomically and defines a stacking order, whereas
-  // a containing stacking context defines in which order the stacking contexts
-  // below are painted.
-  // See CSS 2.1, Appendix E (https://www.w3.org/TR/CSS21/zindex.html) for more details.
+  // A stacking context is painted atomically and defines a stacking order,
+  // whereas a containing stacking context defines in which order the stacking
+  // contexts below are painted.
+  // See CSS 2.1, Appendix E (https://www.w3.org/TR/CSS21/zindex.html) for more
+  // details.
   bool isStackingContext() const {
     return m_rareNonInheritedData->m_isStackingContext;
   }
@@ -2800,7 +2814,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     SET_VAR(m_rareNonInheritedData, m_isStackingContext, b);
   }
 
-  // A unique style is one that has matches something that makes it impossible to share.
+  // A unique style is one that has matches something that makes it impossible
+  // to share.
   bool unique() const { return m_nonInheritedData.m_unique; }
   void setUnique() { m_nonInheritedData.m_unique = true; }
 
@@ -3441,7 +3456,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
   int outlineOutsetExtent() const;
   bool isOutlineEquivalent(const ComputedStyle* otherStyle) const {
-    // No other style, so we don't have an outline then we consider them to be the same.
+    // No other style, so we don't have an outline then we consider them to be
+    // the same.
     if (!otherStyle)
       return !hasOutline();
     return m_background->outline().visuallyEqual(
@@ -3563,7 +3579,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     return isHorizontalWritingMode() ? overflowY() : overflowX();
   }
 
-  // It's sufficient to just check one direction, since it's illegal to have visible on only one overflow value.
+  // It's sufficient to just check one direction, since it's illegal to have
+  // visible on only one overflow value.
   bool isOverflowVisible() const {
     DCHECK(overflowX() != OverflowVisible || overflowX() == overflowY());
     return overflowX() == OverflowVisible;
@@ -3637,27 +3654,30 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     return hasFilter() || hasBoxReflect();
   }
 
-  // Returns |true| if opacity should be considered to have non-initial value for the purpose
-  // of creating stacking contexts.
+  // Returns |true| if opacity should be considered to have non-initial value
+  // for the purpose of creating stacking contexts.
   bool hasNonInitialOpacity() const {
     return hasOpacity() || hasWillChangeOpacityHint() ||
            hasCurrentOpacityAnimation();
   }
 
-  // Returns whether this style contains any grouping property as defined by [css-transforms].
-  // The main purpose of this is to adjust the used value of transform-style property.
-  // Note: We currently don't include every grouping property on the spec to maintain
-  //       backward compatibility.
-  // [css-transforms] https://drafts.csswg.org/css-transforms/#grouping-property-values
+  // Returns whether this style contains any grouping property as defined by
+  // [css-transforms].  The main purpose of this is to adjust the used value of
+  // transform-style property.
+  // Note: We currently don't include every grouping property on the spec to
+  // maintain backward compatibility.  [css-transforms]
+  // https://drafts.csswg.org/css-transforms/#grouping-property-values
   bool hasGroupingProperty() const {
     return !isOverflowVisible() || hasFilterInducingProperty() ||
            hasNonInitialOpacity();
   }
 
-  // Return true if any transform related property (currently transform/motionPath, transformStyle3D, perspective,
-  // or will-change:transform) indicates that we are transforming. will-change:transform should result in
-  // the same rendering behavior as having a transform, including the creation of a containing block
-  // for fixed position descendants.
+  // Return true if any transform related property (currently
+  // transform/motionPath, transformStyle3D, perspective, or
+  // will-change:transform) indicates that we are transforming.
+  // will-change:transform should result in the same rendering behavior as
+  // having a transform, including the creation of a containing block for fixed
+  // position descendants.
   bool hasTransformRelatedProperty() const {
     return hasTransform() || preserves3D() || hasPerspective() ||
            hasWillChangeTransformHint();
@@ -3666,21 +3686,24 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // Paint utility functions.
   void addPaintImage(StyleImage*);
 
-  // FIXME: reflections should belong to this helper function but they are currently handled
-  // through their self-painting layers. So the layout code doesn't account for them.
+  // FIXME: reflections should belong to this helper function but they are
+  // currently handled through their self-painting layers. So the layout code
+  // doesn't account for them.
   bool hasVisualOverflowingEffect() const {
     return boxShadow() || hasBorderImageOutsets() || hasOutline();
   }
 
-  // Stacking contexts and positioned elements[1] are stacked (sorted in negZOrderList
+  // Stacking contexts and positioned elements[1] are stacked (sorted in
+  // negZOrderList
   // and posZOrderList) in their enclosing stacking contexts.
   //
-  // [1] According to CSS2.1, Appendix E.2.8 (https://www.w3.org/TR/CSS21/zindex.html),
-  // positioned elements with 'z-index: auto' are "treated as if it created a new
-  // stacking context" and z-ordered together with other elements with 'z-index: 0'.
-  // The difference of them from normal stacking contexts is that they don't determine
-  // the stacking of the elements underneath them.
-  // (Note: There are also other elements treated as stacking context during painting,
+  // [1] According to CSS2.1, Appendix E.2.8
+  // (https://www.w3.org/TR/CSS21/zindex.html),
+  // positioned elements with 'z-index: auto' are "treated as if it created a
+  // new stacking context" and z-ordered together with other elements with
+  // 'z-index: 0'.  The difference of them from normal stacking contexts is that
+  // they don't determine the stacking of the elements underneath them.  (Note:
+  // There are also other elements treated as stacking context during painting,
   // but not managed in stacks. See ObjectPainter::paintAllPhasesAtomically().)
   void updateIsStackingContext(bool isDocumentElement, bool isInTopLayer);
   bool isStacked() const {
@@ -3694,8 +3717,9 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   bool hasUniquePseudoStyle() const;
   bool hasPseudoElementStyle() const;
 
-  // Note: canContainAbsolutePositionObjects should return true if canContainFixedPositionObjects.
-  // We currently never use this value directly, always OR'ing it with canContainFixedPositionObjects.
+  // Note: canContainAbsolutePositionObjects should return true if
+  // canContainFixedPositionObjects.  We currently never use this value
+  // directly, always OR'ing it with canContainFixedPositionObjects.
   bool canContainAbsolutePositionObjects() const {
     return position() != StaticPosition;
   }
@@ -3751,9 +3775,9 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     return !isLeftToRightDirection() && isHorizontalWritingMode();
   }
   bool hasInlinePaginationAxis() const {
-    // If the pagination axis is parallel with the writing mode inline axis, columns may be laid
-    // out along the inline axis, just like for regular multicol. Otherwise, we need to lay out
-    // along the block axis.
+    // If the pagination axis is parallel with the writing mode inline axis,
+    // columns may be laid out along the inline axis, just like for regular
+    // multicol. Otherwise, we need to lay out along the block axis.
     if (isOverflowPaged())
       return (overflowY() == OverflowPagedX) == isHorizontalWritingMode();
     return false;
@@ -3808,7 +3832,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // Color utility functions.
-  // TODO(sashab): Rename this to just getColor(), and add a comment explaining how it works.
+  // TODO(sashab): Rename this to just getColor(), and add a comment explaining
+  // how it works.
   Color visitedDependentColor(int colorProperty) const;
 
   // -webkit-appearance utility functions.
@@ -3891,7 +3916,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
            display == EDisplay::TableCaption;
   }
 
-  // Color accessors are all private to make sure callers use visitedDependentColor instead to access them.
+  // Color accessors are all private to make sure callers use
+  // visitedDependentColor instead to access them.
   StyleColor borderLeftColor() const {
     return m_surround->border.left().color();
   }

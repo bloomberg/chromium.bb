@@ -467,7 +467,8 @@ class CORE_EXPORT SVGComputedStyle : public RefCounted<SVGComputedStyle> {
 
   // don't inherit
   struct NonInheritedFlags {
-    // 32 bit non-inherited, don't add to the struct, or the operator will break.
+    // 32 bit non-inherited, don't add to the struct, or the operator will
+    // break.
     bool operator==(const NonInheritedFlags& other) const {
       return niflags == other.niflags;
     }

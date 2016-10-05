@@ -2,7 +2,8 @@
  * Copyright (C) 2000 Lars Knoll (knoll@kde.org)
  *           (C) 2000 Antti Koivisto (koivisto@kde.org)
  *           (C) 2000 Dirk Mueller (mueller@kde.org)
- * Copyright (C) 2003, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights
+ * reserved.
  * Copyright (C) 2006 Graham Dennis (graham.dennis@gmail.com)
  *
  * This library is free software; you can redistribute it and/or
@@ -34,7 +35,8 @@ namespace blink {
 
 enum ShadowStyle { Normal, Inset };
 
-// This class holds information about shadows for the text-shadow and box-shadow properties.
+// This class holds information about shadows for the text-shadow and box-shadow
+// properties.
 class ShadowData {
   USING_FAST_MALLOC(ShadowData);
 
@@ -68,8 +70,8 @@ class ShadowData {
   // Outsets needed to adjust a source rectangle to the one cast by this
   // shadow.
   FloatRectOutsets rectOutsets() const {
-    // 3 * skBlurRadiusToSigma(blur()) is how Skia implements the radius of a blur. See also
-    // https://crbug.com/624175.
+    // 3 * skBlurRadiusToSigma(blur()) is how Skia implements the radius of a
+    // blur. See also https://crbug.com/624175.
     float blurAndSpread = ceil(3 * skBlurRadiusToSigma(blur())) + spread();
     return FloatRectOutsets(
         blurAndSpread - y() /* top */, blurAndSpread + x() /* right */,

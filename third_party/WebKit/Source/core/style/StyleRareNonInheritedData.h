@@ -73,9 +73,9 @@ enum PageSizeType {
   PAGE_SIZE_RESOLVED         // Size is fully resolved.
 };
 
-// This struct is for rarely used non-inherited CSS3, CSS2, and WebKit-specific properties.
-// By grouping them together, we save space, and only allocate this object when someone
-// actually uses one of these properties.
+// This struct is for rarely used non-inherited CSS3, CSS2, and WebKit-specific
+// properties.  By grouping them together, we save space, and only allocate this
+// object when someone actually uses one of these properties.
 // TODO(sashab): Move this into a private class on ComputedStyle, and remove
 // all methods on it, merging them into copy/creation methods on ComputedStyle
 // instead. Keep the allocation logic, only allocating a new object if needed.
@@ -181,9 +181,9 @@ class CORE_EXPORT StyleRareNonInheritedData
   unsigned m_transformStyle3D : 1;    // ETransformStyle3D
   unsigned m_backfaceVisibility : 1;  // EBackfaceVisibility
 
-  unsigned userDrag : 2;  // EUserDrag
-  unsigned
-      textOverflow : 1;  // Whether or not lines that spill out should be truncated with "..."
+  unsigned userDrag : 2;      // EUserDrag
+  unsigned textOverflow : 1;  // Whether or not lines that spill out should be
+                              // truncated with "..."
   unsigned marginBeforeCollapse : 2;  // EMarginCollapse
   unsigned marginAfterCollapse : 2;   // EMarginCollapse
   unsigned m_appearance : 6;          // EAppearance
@@ -211,26 +211,29 @@ class CORE_EXPORT StyleRareNonInheritedData
 
   unsigned m_contain : 4;  // Containment
 
-  // ScrollBehavior. 'scroll-behavior' has 2 accepted values, but ScrollBehavior has a third
-  // value (that can only be specified using CSSOM scroll APIs) so 2 bits are needed.
+  // ScrollBehavior. 'scroll-behavior' has 2 accepted values, but ScrollBehavior
+  // has a third value (that can only be specified using CSSOM scroll APIs) so 2
+  // bits are needed.
   unsigned m_scrollBehavior : 2;
 
   unsigned m_scrollSnapType : 2;  // ScrollSnapType
 
   // Plugins require accelerated compositing for reasons external to blink.
-  // In which case, we need to update the ComputedStyle on the LayoutEmbeddedObject,
-  // so store this bit so that the style actually changes when the plugin
-  // becomes composited.
+  // In which case, we need to update the ComputedStyle on the
+  // LayoutEmbeddedObject, so store this bit so that the style actually changes
+  // when the plugin becomes composited.
   unsigned m_requiresAcceleratedCompositingForExternalReasons : 1;
 
-  // Whether the transform (if it exists) is stored in the element's inline style.
+  // Whether the transform (if it exists) is stored in the element's inline
+  // style.
   unsigned m_hasInlineTransform : 1;
   unsigned m_resize : 2;  // EResize
   unsigned m_hasCompositorProxy : 1;
 
-  // Style adjustment for appearance is disabled when certain properties are set.
-  unsigned
-      m_hasAuthorBackground : 1;  // Whether there is a author-defined background.
+  // Style adjustment for appearance is disabled when certain properties are
+  // set.
+  unsigned m_hasAuthorBackground : 1;  // Whether there is a author-defined
+                                       // background.
   unsigned m_hasAuthorBorder : 1;  // Whether there is a author-defined border.
 
  private:

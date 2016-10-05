@@ -97,8 +97,9 @@ size_t NamedLineCollection::find(size_t line) {
     if (indexInFirstRepetition)
       return m_autoRepeatNamedLinesIndexes->find(indexInFirstRepetition);
 
-    // The line names defined in the last line are also present in the first line of the next
-    // repetition (if any). Same for the line names defined in the first line.
+    // The line names defined in the last line are also present in the first
+    // line of the next repetition (if any). Same for the line names defined in
+    // the first line.
     if (localIndex == m_autoRepeatTotalTracks)
       return m_autoRepeatNamedLinesIndexes->find(m_autoRepeatTrackListLength);
     size_t position =
@@ -168,13 +169,14 @@ static void initialAndFinalPositionsFromStyle(
   finalPosition = (direction == ForColumns) ? gridItem.style()->gridColumnEnd()
                                             : gridItem.style()->gridRowEnd();
 
-  // We must handle the placement error handling code here instead of in the StyleAdjuster because we don't want to
-  // overwrite the specified values.
+  // We must handle the placement error handling code here instead of in the
+  // StyleAdjuster because we don't want to overwrite the specified values.
   if (initialPosition.isSpan() && finalPosition.isSpan())
     finalPosition.setAutoPosition();
 
   if (gridItem.isOutOfFlowPositioned()) {
-    // Early detect the case of non existing named grid lines for positioned items.
+    // Early detect the case of non existing named grid lines for positioned
+    // items.
     if (initialPosition.isNamedGridArea() &&
         !NamedLineCollection::isValidNamedLineOrArea(
             initialPosition.namedGridLine(), gridContainerStyle,
@@ -188,7 +190,8 @@ static void initialAndFinalPositionsFromStyle(
       finalPosition.setAutoPosition();
   }
 
-  // If the grid item has an automatic position and a grid span for a named line in a given dimension, instead treat the grid span as one.
+  // If the grid item has an automatic position and a grid span for a named line
+  // in a given dimension, instead treat the grid span as one.
   if (initialPosition.isAuto() && finalPosition.isSpan() &&
       !finalPosition.namedGridLine().isNull())
     finalPosition.setSpanPosition(1, nullAtom);
@@ -203,7 +206,8 @@ static size_t lookAheadForNamedGridLine(int start,
                                         NamedLineCollection& linesCollection) {
   ASSERT(numberOfLines);
 
-  // Only implicit lines on the search direction are assumed to have the given name, so we can start to look from first line.
+  // Only implicit lines on the search direction are assumed to have the given
+  // name, so we can start to look from first line.
   // See: https://drafts.csswg.org/css-grid/#grid-placement-span-int
   size_t end = std::max(start, 0);
 
@@ -227,7 +231,8 @@ static int lookBackForNamedGridLine(int end,
                                     NamedLineCollection& linesCollection) {
   ASSERT(numberOfLines);
 
-  // Only implicit lines on the search direction are assumed to have the given name, so we can start to look from last line.
+  // Only implicit lines on the search direction are assumed to have the given
+  // name, so we can start to look from last line.
   // See: https://drafts.csswg.org/css-grid/#grid-placement-span-int
   int start = std::min(end, gridLastLine);
 
@@ -302,7 +307,8 @@ static GridSpan resolveNamedGridLinePositionAgainstOppositePosition(
     GridPositionSide side) {
   ASSERT(position.isSpan());
   ASSERT(!position.namedGridLine().isNull());
-  // Negative positions are not allowed per the specification and should have been handled during parsing.
+  // Negative positions are not allowed per the specification and should have
+  // been handled during parsing.
   ASSERT(position.spanPosition() > 0);
 
   size_t lastLine =
@@ -345,7 +351,8 @@ static GridSpan resolveGridPositionAgainstOppositePosition(
   ASSERT(position.spanPosition() > 0);
 
   if (!position.namedGridLine().isNull()) {
-    // span 2 'c' -> we need to find the appropriate grid line before / after our opposite position.
+    // span 2 'c' -> we need to find the appropriate grid line before / after
+    // our opposite position.
     return resolveNamedGridLinePositionAgainstOppositePosition(
         gridContainerStyle, oppositeLine, position, autoRepeatTracksCount,
         side);
@@ -362,7 +369,8 @@ size_t GridPositionsResolver::spanSizeForAutoPlacedItem(
   initialAndFinalPositionsFromStyle(gridContainerStyle, gridItem, direction,
                                     initialPosition, finalPosition);
 
-  // This method will only be used when both positions need to be resolved against the opposite one.
+  // This method will only be used when both positions need to be resolved
+  // against the opposite one.
   ASSERT(initialPosition.shouldBeResolvedAgainstOppositePosition() &&
          finalPosition.shouldBeResolvedAgainstOppositePosition());
 
@@ -420,9 +428,10 @@ static int resolveGridPositionFromStyle(const ComputedStyle& gridContainerStyle,
       return endOfTrack - resolvedPosition;
     }
     case NamedGridAreaPosition: {
-      // First attempt to match the grid area's edge to a named grid area: if there is a named line with the name
-      // ''<custom-ident>-start (for grid-*-start) / <custom-ident>-end'' (for grid-*-end), contributes the first such
-      // line to the grid item's placement.
+      // First attempt to match the grid area's edge to a named grid area: if
+      // there is a named line with the name ''<custom-ident>-start (for
+      // grid-*-start) / <custom-ident>-end'' (for grid-*-end), contributes the
+      // first such line to the grid item's placement.
       String namedGridLine = position.namedGridLine();
       ASSERT(!position.namedGridLine().isNull());
 
@@ -434,8 +443,8 @@ static int resolveGridPositionFromStyle(const ComputedStyle& gridContainerStyle,
       if (implicitLines.hasNamedLines())
         return implicitLines.firstPosition();
 
-      // Otherwise, if there is a named line with the specified name, contributes the first such line to the grid
-      // item's placement.
+      // Otherwise, if there is a named line with the specified name,
+      // contributes the first such line to the grid item's placement.
       NamedLineCollection explicitLines(gridContainerStyle, namedGridLine,
                                         directionFromSide(side), lastLine,
                                         autoRepeatTracksCount);
@@ -444,12 +453,14 @@ static int resolveGridPositionFromStyle(const ComputedStyle& gridContainerStyle,
 
       ASSERT(!NamedLineCollection::isValidNamedLineOrArea(
           namedGridLine, gridContainerStyle, side));
-      // If none of the above works specs mandate to assume that all the lines in the implicit grid have this name.
+      // If none of the above works specs mandate to assume that all the lines
+      // in the implicit grid have this name.
       return lastLine + 1;
     }
     case AutoPosition:
     case SpanPosition:
-      // 'auto' and span depend on the opposite position for resolution (e.g. grid-row: auto / 1 or grid-column: span 3 / "myHeader").
+      // 'auto' and span depend on the opposite position for resolution (e.g.
+      // grid-row: auto / 1 or grid-column: span 3 / "myHeader").
       ASSERT_NOT_REACHED();
       return 0;
   }
@@ -471,12 +482,14 @@ GridSpan GridPositionsResolver::resolveGridPositionsFromStyle(
 
   if (initialPosition.shouldBeResolvedAgainstOppositePosition() &&
       finalPosition.shouldBeResolvedAgainstOppositePosition()) {
-    // We can't get our grid positions without running the auto placement algorithm.
+    // We can't get our grid positions without running the auto placement
+    // algorithm.
     return GridSpan::indefiniteGridSpan();
   }
 
   if (initialPosition.shouldBeResolvedAgainstOppositePosition()) {
-    // Infer the position from the final position ('auto / 1' or 'span 2 / 3' case).
+    // Infer the position from the final position ('auto / 1' or 'span 2 / 3'
+    // case).
     int endLine = resolveGridPositionFromStyle(
         gridContainerStyle, finalPosition, finalSide, autoRepeatTracksCount);
     return resolveGridPositionAgainstOppositePosition(
@@ -485,7 +498,8 @@ GridSpan GridPositionsResolver::resolveGridPositionsFromStyle(
   }
 
   if (finalPosition.shouldBeResolvedAgainstOppositePosition()) {
-    // Infer our position from the initial position ('1 / auto' or '3 / span 2' case).
+    // Infer our position from the initial position ('1 / auto' or '3 / span 2'
+    // case).
     int startLine =
         resolveGridPositionFromStyle(gridContainerStyle, initialPosition,
                                      initialSide, autoRepeatTracksCount);

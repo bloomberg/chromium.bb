@@ -80,8 +80,8 @@ class BorderImageLength {
   }
 
  private:
-  // Ideally we would put the 2 following fields in a union, but Length has a constructor,
-  // a destructor and a copy assignment which isn't allowed.
+  // Ideally we would put the 2 following fields in a union, but Length has a
+  // constructor, a destructor and a copy assignment which isn't allowed.
   Length m_length;
   double m_number;
   enum { LengthType, NumberType } m_type;

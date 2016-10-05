@@ -129,11 +129,13 @@ StyleDifference SVGComputedStyle::diff(const SVGComputedStyle* other) const {
 
 bool SVGComputedStyle::diffNeedsLayoutAndPaintInvalidation(
     const SVGComputedStyle* other) const {
-  // If resources change, we need a relayout, as the presence of resources influences the paint invalidation rect.
+  // If resources change, we need a relayout, as the presence of resources
+  // influences the paint invalidation rect.
   if (resources != other->resources)
     return true;
 
-  // If markers change, we need a relayout, as marker boundaries are cached in LayoutSVGPath.
+  // If markers change, we need a relayout, as marker boundaries are cached in
+  // LayoutSVGPath.
   if (inheritedResources != other->inheritedResources)
     return true;
 
@@ -161,7 +163,8 @@ bool SVGComputedStyle::diffNeedsLayoutAndPaintInvalidation(
       other->svg_noninherited_flags.f.vectorEffect)
     return true;
 
-  // Some stroke properties, requires relayouts, as the cached stroke boundaries need to be recalculated.
+  // Some stroke properties, requires relayouts, as the cached stroke boundaries
+  // need to be recalculated.
   if (stroke.get() != other->stroke.get()) {
     if (stroke->width != other->stroke->width ||
         stroke->paintType != other->stroke->paintType ||
@@ -196,7 +199,8 @@ bool SVGComputedStyle::diffNeedsPaintInvalidation(
       return true;
   }
 
-  // If fill changes, we just need to issue paint invalidations. Fill boundaries are not influenced by this, only by the Path, that LayoutSVGPath contains.
+  // If fill changes, we just need to issue paint invalidations. Fill boundaries
+  // are not influenced by this, only by the Path, that LayoutSVGPath contains.
   if (fill.get() != other->fill.get()) {
     if (fill->paintType != other->fill->paintType ||
         fill->paintColor != other->fill->paintColor ||
@@ -205,7 +209,8 @@ bool SVGComputedStyle::diffNeedsPaintInvalidation(
       return true;
   }
 
-  // If gradient stops change, we just need to issue paint invalidations. Style updates are already handled through LayoutSVGGradientSTop.
+  // If gradient stops change, we just need to issue paint invalidations. Style
+  // updates are already handled through LayoutSVGGradientSTop.
   if (stops != other->stops)
     return true;
 

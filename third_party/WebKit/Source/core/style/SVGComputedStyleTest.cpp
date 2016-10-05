@@ -20,9 +20,9 @@ namespace blink {
     EXPECT_FALSE(svg1->diff(svg2.get()).hasDifference());       \
   }
 
-// This is not very useful for fields directly stored by values, because they can only be
-// compared by values. This macro mainly ensures that we update the comparisons and tests
-// when we change some field to RefPtr in the future.
+// This is not very useful for fields directly stored by values, because they
+// can only be compared by values. This macro mainly ensures that we update the
+// comparisons and tests when we change some field to RefPtr in the future.
 #define TEST_STYLE_VALUE_NO_DIFF(type, fieldName)                 \
   {                                                               \
     RefPtr<SVGComputedStyle> svg1 = SVGComputedStyle::create();   \

@@ -53,7 +53,8 @@ class NamedLineCollection {
   size_t m_autoRepeatTrackListLength;
 };
 
-// This is a utility class with all the code related to grid items positions resolution.
+// This is a utility class with all the code related to grid items positions
+// resolution.
 class GridPositionsResolver {
   DISALLOW_NEW();
 

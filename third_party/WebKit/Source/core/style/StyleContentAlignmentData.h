@@ -14,7 +14,8 @@ class StyleContentAlignmentData {
   DISALLOW_NEW();
 
  public:
-  // Style data for Content-Distribution properties: align-content, justify-content.
+  // Style data for Content-Distribution properties: align-content,
+  // justify-content.
   // <content-distribution> || [ <overflow-position>? && <content-position> ]
   StyleContentAlignmentData(
       ContentPosition position,
