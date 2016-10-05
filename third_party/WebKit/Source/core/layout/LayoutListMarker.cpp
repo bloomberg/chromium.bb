@@ -408,7 +408,7 @@ LayoutListMarker::ListStyleCategory LayoutListMarker::getListStyleCategory()
 
 bool LayoutListMarker::isInside() const {
   return m_listItem->notInList() ||
-         style()->listStylePosition() == ListStylePositionInside;
+         style()->listStylePosition() == EListStylePosition::Inside;
 }
 
 IntRect LayoutListMarker::getRelativeMarkerRect() const {

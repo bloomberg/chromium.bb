@@ -404,7 +404,7 @@ enum class EEmptyCells : unsigned { Show, Hide };
 
 enum class ECaptionSide : unsigned { Top, Bottom, Left, Right };
 
-enum EListStylePosition { ListStylePositionOutside, ListStylePositionInside };
+enum class EListStylePosition : unsigned { Outside, Inside };
 
 enum ECursor {
   // The following must match the order in CSSValueKeywords.in.

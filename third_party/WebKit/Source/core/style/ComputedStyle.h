@@ -354,7 +354,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     m_inheritedData.m_emptyCells = static_cast<unsigned>(initialEmptyCells());
     m_inheritedData.m_captionSide = static_cast<unsigned>(initialCaptionSide());
     m_inheritedData.m_listStyleType = initialListStyleType();
-    m_inheritedData.m_listStylePosition = initialListStylePosition();
+    m_inheritedData.m_listStylePosition =
+        static_cast<unsigned>(initialListStylePosition());
     m_inheritedData.m_textAlign = initialTextAlign();
     m_inheritedData.m_textTransform = initialTextTransform();
     m_inheritedData.m_textUnderline = false;
@@ -2118,13 +2119,13 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // list-style-position
   static EListStylePosition initialListStylePosition() {
-    return ListStylePositionOutside;
+    return EListStylePosition::Outside;
   }
   EListStylePosition listStylePosition() const {
     return static_cast<EListStylePosition>(m_inheritedData.m_listStylePosition);
   }
   void setListStylePosition(EListStylePosition v) {
-    m_inheritedData.m_listStylePosition = v;
+    m_inheritedData.m_listStylePosition = static_cast<unsigned>(v);
   }
 
   // list-style-image

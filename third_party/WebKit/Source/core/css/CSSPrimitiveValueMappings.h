@@ -1425,10 +1425,10 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EListStylePosition e)
     : CSSValue(IdentifierClass) {
   switch (e) {
-    case ListStylePositionOutside:
+    case EListStylePosition::Outside:
       m_valueID = CSSValueOutside;
       break;
-    case ListStylePositionInside:
+    case EListStylePosition::Inside:
       m_valueID = CSSValueInside;
       break;
   }
@@ -1438,15 +1438,15 @@ template <>
 inline EListStylePosition CSSIdentifierValue::convertTo() const {
   switch (m_valueID) {
     case CSSValueOutside:
-      return ListStylePositionOutside;
+      return EListStylePosition::Outside;
     case CSSValueInside:
-      return ListStylePositionInside;
+      return EListStylePosition::Inside;
     default:
       break;
   }
 
   ASSERT_NOT_REACHED();
-  return ListStylePositionOutside;
+  return EListStylePosition::Outside;
 }
 
 template <>
