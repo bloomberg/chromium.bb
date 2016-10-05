@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.ntp.cards;
 
+import android.annotation.SuppressLint;
 import android.graphics.Canvas;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.Adapter;
@@ -493,6 +494,8 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
      * Dismisses the item at the provided adapter position. Can also cause the dismissal of other
      * items or even entire sections.
      */
+    // TODO(crbug.com/635567): Fix this properly.
+    @SuppressLint("SwitchIntDef")
     public void dismissItem(int position) {
         int itemViewType = getItemViewType(position);
 
