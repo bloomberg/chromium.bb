@@ -437,6 +437,38 @@ components/rappor/rappor_parameters.h.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="ContentSettings.PermissionActions_Flash.Denied.Url2"
+    type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <owner>dominickn@chromium.org</owner>
+  <summary>
+    The domain for which a Flash permission prompt was Denied.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="ContentSettings.PermissionActions_Flash.Dismissed.Url2"
+    type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <owner>dominickn@chromium.org</owner>
+  <summary>
+    The domain for which a Flash permission prompt was Dismissed.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="ContentSettings.PermissionActions_Flash.Granted.Url2"
+    type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <owner>dominickn@chromium.org</owner>
+  <summary>
+    The domain for which a Flash permission prompt was Granted.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="ContentSettings.PermissionActions_Flash.Ignored.Url2"
+    type="LOW_FREQUENCY_ETLD_PLUS_ONE">
+  <owner>dominickn@chromium.org</owner>
+  <summary>
+    The domain for which a Flash permission prompt was Ignored.
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="ContentSettings.PermissionActions_Geolocation.Denied.Url"
     type="ETLD_PLUS_ONE">
   <owner>miguelg@chromium.org</owner>
