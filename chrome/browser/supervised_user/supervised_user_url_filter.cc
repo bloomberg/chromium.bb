@@ -22,12 +22,15 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/supervised_user/experimental/supervised_user_async_url_checker.h"
 #include "chrome/browser/supervised_user/experimental/supervised_user_blacklist.h"
+#include "components/google/core/browser/google_util.h"
 #include "components/policy/core/browser/url_blacklist_manager.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/url_matcher/url_matcher.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/base/escape.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
+#include "url/url_constants.h"
 
 using content::BrowserThread;
 using net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES;
@@ -179,16 +182,35 @@ LoadWhitelistsOnBlockingPoolThread(
   return builder.Build();
 }
 
+// Host/regex pattern for AMP Cache URLs.
+// See https://developers.google.com/amp/cache/overview#amp-cache-url-format
+// for a definition of the format of AMP Cache URLs.
+const char kAmpCacheHost[] = "cdn.ampproject.org";
+const char kAmpCachePathPattern[] = "/[a-z]/(s/)?(.*)";
+
+// Regex pattern for the path of Google AMP Viewer URLs.
+const char kGoogleAmpViewerPathPattern[] = "/amp/(s/)?(.*)";
+
+GURL BuildURL(bool is_https, const std::string& host_and_path) {
+  std::string scheme = is_https ? url::kHttpsScheme : url::kHttpScheme;
+  return GURL(scheme + "://" + host_and_path);
+}
+
 }  // namespace
 
 SupervisedUserURLFilter::SupervisedUserURLFilter()
     : default_behavior_(ALLOW),
       contents_(new Contents()),
       blacklist_(nullptr),
+      amp_cache_path_regex_(kAmpCachePathPattern),
+      google_amp_viewer_path_regex_(kGoogleAmpViewerPathPattern),
       blocking_task_runner_(
           BrowserThread::GetBlockingPool()
               ->GetTaskRunnerWithShutdownBehavior(
-                  base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN).get()) {
+                  base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)
+              .get()) {
+  DCHECK(amp_cache_path_regex_.ok());
+  DCHECK(google_amp_viewer_path_regex_.ok());
   // Detach from the current thread so we can be constructed on a different
   // thread than the one where we're used.
   DetachFromThread();
@@ -220,8 +242,8 @@ GURL SupervisedUserURLFilter::Normalize(const GURL& url) {
 
 // static
 bool SupervisedUserURLFilter::HasFilteredScheme(const GURL& url) {
-  for (size_t i = 0; i < arraysize(kFilteredSchemes); ++i) {
-    if (url.scheme() == kFilteredSchemes[i])
+  for (const char* scheme : kFilteredSchemes) {
+    if (url.scheme() == scheme)
       return true;
   }
   return false;
@@ -286,20 +308,24 @@ SupervisedUserURLFilter::GetFilteringBehaviorForURL(
     supervised_user_error_page::FilteringBehaviorReason* reason) const {
   DCHECK(CalledOnValidThread());
 
+  GURL effective_url = GetEmbeddedURL(url);
+  if (!effective_url.is_valid())
+    effective_url = url;
+
   *reason = supervised_user_error_page::MANUAL;
 
   // URLs with a non-standard scheme (e.g. chrome://) are always allowed.
-  if (!HasFilteredScheme(url))
+  if (!HasFilteredScheme(effective_url))
     return ALLOW;
 
   // Check manual overrides for the exact URL.
-  std::map<GURL, bool>::const_iterator url_it = url_map_.find(Normalize(url));
+  auto url_it = url_map_.find(Normalize(effective_url));
   if (url_it != url_map_.end())
     return url_it->second ? ALLOW : BLOCK;
 
   // Check manual overrides for the hostname.
-  std::string host = url.host();
-  std::map<std::string, bool>::const_iterator host_it = host_map_.find(host);
+  const std::string host = effective_url.host();
+  auto host_it = host_map_.find(host);
   if (host_it != host_map_.end())
     return host_it->second ? ALLOW : BLOCK;
 
@@ -314,7 +340,7 @@ SupervisedUserURLFilter::GetFilteringBehaviorForURL(
 
   // Check the list of URL patterns.
   std::set<URLMatcherConditionSet::ID> matching_ids =
-      contents_->url_matcher.MatchURL(url);
+      contents_->url_matcher.MatchURL(effective_url);
 
   if (!matching_ids.empty()) {
     *reason = supervised_user_error_page::WHITELIST;
@@ -322,14 +348,14 @@ SupervisedUserURLFilter::GetFilteringBehaviorForURL(
   }
 
   // Check the list of hostname hashes.
-  if (contents_->hostname_hashes.count(HostnameHash(url.host()))) {
+  if (contents_->hostname_hashes.count(HostnameHash(host))) {
     *reason = supervised_user_error_page::WHITELIST;
     return ALLOW;
   }
 
   // Check the static blacklist, unless the default is to block anyway.
-  if (!manual_only && default_behavior_ != BLOCK &&
-      blacklist_ && blacklist_->HasURL(url)) {
+  if (!manual_only && default_behavior_ != BLOCK && blacklist_ &&
+      blacklist_->HasURL(effective_url)) {
     *reason = supervised_user_error_page::BLACKLIST;
     return BLOCK;
   }
@@ -482,6 +508,38 @@ void SupervisedUserURLFilter::RemoveObserver(Observer* observer) const {
 void SupervisedUserURLFilter::SetBlockingTaskRunnerForTesting(
     const scoped_refptr<base::TaskRunner>& task_runner) {
   blocking_task_runner_ = task_runner;
+}
+
+GURL SupervisedUserURLFilter::GetEmbeddedURL(const GURL& url) const {
+  // Check for "cdn.ampproject.org" URLs.
+  if (url.host_piece() == kAmpCacheHost) {
+    std::string s;
+    std::string embedded;
+    if (re2::RE2::FullMatch(url.path(), amp_cache_path_regex_, &s, &embedded)) {
+      if (url.has_query())
+        embedded += "?" + url.query();
+      return BuildURL(!s.empty(), embedded);
+    }
+  }
+
+  // Check for "www.google.TLD/amp/" URLs.
+  if (google_util::IsGoogleDomainUrl(
+          url, google_util::DISALLOW_SUBDOMAIN,
+          google_util::DISALLOW_NON_STANDARD_PORTS)) {
+    std::string s;
+    std::string embedded;
+    if (re2::RE2::FullMatch(url.path(), google_amp_viewer_path_regex_, &s,
+                            &embedded)) {
+      // The embedded URL may be percent-encoded. Undo that.
+      embedded = net::UnescapeURLComponent(
+          embedded,
+          net::UnescapeRule::SPACES | net::UnescapeRule::PATH_SEPARATORS |
+              net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
+      return BuildURL(!s.empty(), embedded);
+    }
+  }
+
+  return GURL();
 }
 
 void SupervisedUserURLFilter::SetContents(std::unique_ptr<Contents> contents) {
