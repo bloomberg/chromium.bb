@@ -119,6 +119,14 @@ std::unique_ptr<content::WebContents> CastContentWindow::CreateWebContents(
   create_params.initial_size = display_size;
   content::WebContents* web_contents = content::WebContents::Create(
       create_params);
+
+#if defined(USE_AURA)
+  // Resize window
+  aura::Window* content_window = web_contents->GetNativeView();
+  content_window->SetBounds(gfx::Rect(display_size.width(),
+                                      display_size.height()));
+#endif
+
   content::WebContentsObserver::Observe(web_contents);
   return base::WrapUnique(web_contents);
 }
