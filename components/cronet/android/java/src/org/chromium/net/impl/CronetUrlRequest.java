@@ -4,8 +4,6 @@
 
 package org.chromium.net.impl;
 
-import android.os.SystemClock;
-import android.support.annotation.Nullable;
 import android.util.Log;
 
 import org.chromium.base.VisibleForTesting;
@@ -48,8 +46,6 @@ import javax.annotation.concurrent.GuardedBy;
 @JNIAdditionalImport(UrlRequest.class)
 @VisibleForTesting
 public final class CronetUrlRequest implements UrlRequest {
-    private static final RequestFinishedInfo.Metrics EMPTY_METRICS =
-            new CronetMetrics(null, null, null, null);
     private final boolean mAllowDirectExecutor;
 
     /* Native adapter object, owned by UrlRequest. */
@@ -62,9 +58,6 @@ public final class CronetUrlRequest implements UrlRequest {
     private boolean mWaitingOnRedirect = false;
     @GuardedBy("mUrlRequestAdapterLock")
     private boolean mWaitingOnRead = false;
-    @GuardedBy("mUrlRequestAdapterLock")
-    @Nullable
-    private final UrlRequestMetricsAccumulator mRequestMetricsAccumulator;
     @GuardedBy("mUrlRequestAdapterLock")
     private RequestFinishedInfo.Metrics mMetrics;
 
@@ -134,8 +127,7 @@ public final class CronetUrlRequest implements UrlRequest {
 
     CronetUrlRequest(CronetUrlRequestContext requestContext, String url, int priority,
             UrlRequest.Callback callback, Executor executor, Collection<Object> requestAnnotations,
-            boolean metricsCollectionEnabled, boolean disableCache,
-            boolean disableConnectionMigration, boolean allowDirectExecutor) {
+            boolean disableCache, boolean disableConnectionMigration, boolean allowDirectExecutor) {
         if (url == null) {
             throw new NullPointerException("URL is required");
         }
@@ -157,8 +149,6 @@ public final class CronetUrlRequest implements UrlRequest {
         mCallback = callback;
         mExecutor = executor;
         mRequestAnnotations = requestAnnotations;
-        mRequestMetricsAccumulator =
-                metricsCollectionEnabled ? new UrlRequestMetricsAccumulator() : null;
         mDisableCache = disableCache;
         mDisableConnectionMigration = disableConnectionMigration;
     }
@@ -262,9 +252,6 @@ public final class CronetUrlRequest implements UrlRequest {
      */
     @GuardedBy("mUrlRequestAdapterLock")
     private void startInternalLocked() {
-        if (mRequestMetricsAccumulator != null) {
-            mRequestMetricsAccumulator.onRequestStarted();
-        }
         nativeStart(mUrlRequestAdapter);
     }
 
@@ -428,9 +415,6 @@ public final class CronetUrlRequest implements UrlRequest {
             if (mUrlRequestAdapter == 0) {
                 return;
             }
-            if (mRequestMetricsAccumulator != null) {
-                mRequestMetricsAccumulator.onRequestFinished();
-            }
             nativeDestroy(mUrlRequestAdapter, sendOnCanceled);
             mRequestContext.onRequestDestroyed();
             mUrlRequestAdapter = 0;
@@ -556,9 +540,6 @@ public final class CronetUrlRequest implements UrlRequest {
                 synchronized (mUrlRequestAdapterLock) {
                     if (isDoneLocked()) {
                         return;
-                    }
-                    if (mRequestMetricsAccumulator != null) {
-                        mRequestMetricsAccumulator.onResponseStarted();
                     }
                     mWaitingOnRead = true;
                 }
@@ -727,40 +708,6 @@ public final class CronetUrlRequest implements UrlRequest {
         // TODO(mgersh): fill in real values for finishedReason and exception
         return new RequestFinishedInfo(mInitialUrl, mRequestAnnotations, mMetrics,
                 RequestFinishedInfo.SUCCEEDED, mResponseInfo, null);
-    }
-
-    private final class UrlRequestMetricsAccumulator {
-        @Nullable
-        private Long mRequestStartTime;
-        @Nullable
-        private Long mTtfbMs;
-        @Nullable
-        private Long mTotalTimeMs;
-
-        private RequestFinishedInfo.Metrics getRequestMetrics() {
-            return new CronetMetrics(mTtfbMs, mTotalTimeMs,
-                    null, // TODO(klm): Compute sentBytesCount.
-                    (mResponseInfo != null ? mResponseInfo.getReceivedBytesCount() : 0));
-        }
-
-        private void onRequestStarted() {
-            if (mRequestStartTime != null) {
-                throw new IllegalStateException("onRequestStarted called repeatedly");
-            }
-            mRequestStartTime = SystemClock.elapsedRealtime();
-        }
-
-        private void onRequestFinished() {
-            if (mRequestStartTime != null && mTotalTimeMs == null) {
-                mTotalTimeMs = SystemClock.elapsedRealtime() - mRequestStartTime;
-            }
-        }
-
-        private void onResponseStarted() {
-            if (mRequestStartTime != null && mTtfbMs == null) {
-                mTtfbMs = SystemClock.elapsedRealtime() - mRequestStartTime;
-            }
-        }
     }
 
     /** Enforces prohibition of direct execution. */

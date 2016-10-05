@@ -193,13 +193,8 @@ public class CronetUrlRequestContext extends CronetEngine {
             boolean disableConnectionMigration, boolean allowDirectExecutor) {
         synchronized (mLock) {
             checkHaveAdapter();
-            boolean metricsCollectionEnabled = false;
-            synchronized (mFinishedListenerLock) {
-                metricsCollectionEnabled = !mFinishedListenerList.isEmpty();
-            }
             return new CronetUrlRequest(this, url, priority, callback, executor, requestAnnotations,
-                    metricsCollectionEnabled, disableCache, disableConnectionMigration,
-                    allowDirectExecutor);
+                    disableCache, disableConnectionMigration, allowDirectExecutor);
         }
     }
 
