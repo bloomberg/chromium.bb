@@ -384,6 +384,14 @@
     ]
   },
 
+  "AlwaysOpenPdfExternally": {
+    "os": ["win", "linux", "mac"],
+    "test_policy": { "AlwaysOpenPdfExternally": true },
+    "pref_mappings": [
+      { "pref": "plugins.always_open_pdf_externally" }
+    ]
+  },
+
   "DisablePluginFinder": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DisablePluginFinder": true },

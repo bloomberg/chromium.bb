@@ -28,6 +28,7 @@
 #include "chrome/browser/plugins/plugin_prefs_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -58,6 +59,10 @@ bool IsComponentUpdatedPepperFlash(const base::FilePath& plugin) {
   }
 
   return false;
+}
+
+bool IsPDFViewerPlugin(const base::string16& plugin_name) {
+  return plugin_name == base::ASCIIToUTF16(ChromeContentClient::kPDFPluginName);
 }
 
 }  // namespace
@@ -225,15 +230,21 @@ void PluginPrefs::EnablePluginInternal(
 PluginPrefs::PolicyStatus PluginPrefs::PolicyStatusForPlugin(
     const base::string16& name) const {
   base::AutoLock auto_lock(lock_);
-  if (IsStringMatchedInSet(name, policy_enabled_plugin_patterns_)) {
-    return POLICY_ENABLED;
-  } else if (IsStringMatchedInSet(name, policy_disabled_plugin_patterns_) &&
-             !IsStringMatchedInSet(
-                 name, policy_disabled_plugin_exception_patterns_)) {
+
+  // Special handling for PDF based on its specific policy.
+  if (IsPDFViewerPlugin(name) && always_open_pdf_externally_)
     return POLICY_DISABLED;
-  } else {
-    return NO_POLICY;
+
+  if (IsStringMatchedInSet(name, policy_enabled_plugin_patterns_))
+    return POLICY_ENABLED;
+
+  if (IsStringMatchedInSet(name, policy_disabled_plugin_patterns_) &&
+      !IsStringMatchedInSet(
+          name, policy_disabled_plugin_exception_patterns_)) {
+    return POLICY_DISABLED;
   }
+
+  return NO_POLICY;
 }
 
 bool PluginPrefs::IsPluginEnabled(const content::WebPluginInfo& plugin) const {
@@ -283,6 +294,14 @@ void PluginPrefs::UpdatePatternsAndNotify(std::set<base::string16>* patterns,
                                           const std::string& pref_name) {
   base::AutoLock auto_lock(lock_);
   ListValueToStringSet(prefs_->GetList(pref_name.c_str()), patterns);
+
+  NotifyPluginStatusChanged();
+}
+
+void PluginPrefs::UpdatePdfPolicy(const std::string& pref_name) {
+  base::AutoLock auto_lock(lock_);
+  always_open_pdf_externally_ =
+      prefs_->GetBoolean(prefs::kPluginsAlwaysOpenPdfExternally);
 
   NotifyPluginStatusChanged();
 }
@@ -419,6 +438,8 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
       &policy_disabled_plugin_exception_patterns_);
   ListValueToStringSet(prefs_->GetList(prefs::kPluginsEnabledPlugins),
                        &policy_enabled_plugin_patterns_);
+  always_open_pdf_externally_ =
+      prefs_->GetBoolean(prefs::kPluginsAlwaysOpenPdfExternally);
 
   registrar_.Init(prefs_);
 
@@ -438,6 +459,9 @@ void PluginPrefs::SetPrefs(PrefService* prefs) {
                  base::Bind(&PluginPrefs::UpdatePatternsAndNotify,
                             base::Unretained(this),
                             &policy_enabled_plugin_patterns_));
+  registrar_.Add(prefs::kPluginsAlwaysOpenPdfExternally,
+                 base::Bind(&PluginPrefs::UpdatePdfPolicy,
+                 base::Unretained(this)));
 
   NotifyPluginStatusChanged();
 }
@@ -447,14 +471,15 @@ void PluginPrefs::ShutdownOnUIThread() {
   registrar_.RemoveAll();
 }
 
-PluginPrefs::PluginPrefs() : profile_(NULL),
+PluginPrefs::PluginPrefs() : always_open_pdf_externally_(false),
+                             profile_(NULL),
                              prefs_(NULL) {
 }
 
 PluginPrefs::~PluginPrefs() {
 }
 
-void PluginPrefs::SetPolicyEnforcedPluginPatterns(
+void PluginPrefs::SetPolicyEnforcedPluginPatternsForTests(
     const std::set<base::string16>& disabled_patterns,
     const std::set<base::string16>& disabled_exception_patterns,
     const std::set<base::string16>& enabled_patterns) {
@@ -462,6 +487,12 @@ void PluginPrefs::SetPolicyEnforcedPluginPatterns(
   policy_disabled_plugin_exception_patterns_ = disabled_exception_patterns;
   policy_enabled_plugin_patterns_ = enabled_patterns;
 }
+
+void PluginPrefs::SetAlwaysOpenPdfExternallyForTests(
+    bool always_open_pdf_externally) {
+  always_open_pdf_externally_ = always_open_pdf_externally;
+}
+
 
 void PluginPrefs::OnUpdatePreferences(
     const std::vector<content::WebPluginInfo>& plugins) {

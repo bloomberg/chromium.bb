@@ -138,7 +138,9 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
 
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
   should_open_pdf_in_system_reader_ =
-      prefs->GetBoolean(prefs::kOpenPdfDownloadInSystemReader);
+      prefs->GetBoolean(prefs::kOpenPdfDownloadInSystemReader) ||
+      prefs->GetBoolean(prefs::kPluginsAlwaysOpenPdfExternally);
+  disable_adobe_version_check_for_tests_ = false;
 #endif
 
   // If the download path is dangerous we forcefully reset it. But if we do
@@ -340,21 +342,25 @@ void DownloadPrefs::DisableAutoOpenBasedOnExtension(
 
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
 void DownloadPrefs::SetShouldOpenPdfInSystemReader(bool should_open) {
-  if (should_open_pdf_in_system_reader_ == should_open)
-    return;
-  should_open_pdf_in_system_reader_ = should_open;
+  should_open_pdf_in_system_reader_ = should_open ||
+     profile_->GetPrefs()->GetBoolean(prefs::kPluginsAlwaysOpenPdfExternally);
   profile_->GetPrefs()->SetBoolean(prefs::kOpenPdfDownloadInSystemReader,
                                    should_open);
 }
 
 bool DownloadPrefs::ShouldOpenPdfInSystemReader() const {
 #if defined(OS_WIN)
-  if (IsAdobeReaderDefaultPDFViewer() &&
+  if (!disable_adobe_version_check_for_tests_ &&
+      IsAdobeReaderDefaultPDFViewer() &&
       !DownloadTargetDeterminer::IsAdobeReaderUpToDate()) {
       return false;
   }
 #endif
   return should_open_pdf_in_system_reader_;
+}
+
+void DownloadPrefs::DisableAdobeVersionCheckForTests() {
+  disable_adobe_version_check_for_tests_ = true;
 }
 #endif
 

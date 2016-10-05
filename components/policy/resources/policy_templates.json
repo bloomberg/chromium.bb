@@ -137,7 +137,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 345
+#   For your editing convenience: highest ID currently used: 347
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -1361,6 +1361,23 @@
 
       If this policy is left not set any plugin that matches the patterns in the 'DisabledPlugins' will be locked disabled and the user won't be able to enable them.''',
       'label': '''List of exceptions to the list of disabled plugins''',
+    },
+    {
+      'name': 'AlwaysOpenPdfExternally',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.*:55-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 347,
+      'caption': '''Always Open PDF files externally''',
+      'tags': [],
+      'desc': '''Disables the internal PDF viewer in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. Instead it treats it as download and allows the user to open PDF files with the default application.
+
+      If this policy is left not set or disabled the PDF plugin will be used to open PDF files unless the user disables it.''',
     },
     {
       'name': 'DisablePluginFinder',

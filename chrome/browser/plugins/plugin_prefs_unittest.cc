@@ -65,8 +65,12 @@ class PluginPrefsTest : public ::testing::Test {
       const std::set<base::string16>& disabled,
       const std::set<base::string16>& disabled_exceptions,
       const std::set<base::string16>& enabled) {
-    plugin_prefs_->SetPolicyEnforcedPluginPatterns(
+    plugin_prefs_->SetPolicyEnforcedPluginPatternsForTests(
         disabled, disabled_exceptions, enabled);
+  }
+
+  void SetAlwaysOpenPdfExternally(bool value) {
+    plugin_prefs_->SetAlwaysOpenPdfExternallyForTests(value);
   }
 
  protected:
@@ -285,3 +289,15 @@ TEST_F(PluginPrefsTest, UnifiedPepperFlashState) {
 }
 
 #endif
+
+TEST_F(PluginPrefsTest, AlwaysOpenPdfExternally) {
+  EXPECT_EQ(PluginPrefs::NO_POLICY,
+            plugin_prefs_->PolicyStatusForPlugin(
+                base::ASCIIToUTF16(ChromeContentClient::kPDFPluginName)));
+
+  SetAlwaysOpenPdfExternally(true);
+
+  EXPECT_EQ(PluginPrefs::POLICY_DISABLED,
+            plugin_prefs_->PolicyStatusForPlugin(
+                base::ASCIIToUTF16(ChromeContentClient::kPDFPluginName)));
+}

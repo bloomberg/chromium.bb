@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/files/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "components/prefs/pref_member.h"
@@ -87,7 +88,11 @@ class DownloadPrefs {
   // Return whether the user prefers to open PDF downloads in the platform's
   // default reader.
   bool ShouldOpenPdfInSystemReader() const;
+
+  // Used by tests to disable version checks for Adobe.
+  void DisableAdobeVersionCheckForTests();
 #endif
+
 
   void ResetAutoOpen();
 
@@ -112,6 +117,7 @@ class DownloadPrefs {
 
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
   bool should_open_pdf_in_system_reader_;
+  bool disable_adobe_version_check_for_tests_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(DownloadPrefs);

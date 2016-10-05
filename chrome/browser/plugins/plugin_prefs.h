@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "chrome/browser/plugins/plugin_finder.h"
+#include "chrome/common/chrome_content_client.h"
 #include "components/keyed_service/core/refcounted_keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
@@ -107,11 +108,17 @@ class PluginPrefs : public RefcountedKeyedService {
   void UpdatePatternsAndNotify(std::set<base::string16>* patterns,
                                const std::string& pref_name);
 
+  // Callback for changes to the AlwaysOpenPdfExternally policy.
+  void UpdatePdfPolicy(const std::string& pref_name);
+
   // Allows unit tests to directly set enforced plugin patterns.
-  void SetPolicyEnforcedPluginPatterns(
+  void SetPolicyEnforcedPluginPatternsForTests(
       const std::set<base::string16>& disabled_patterns,
       const std::set<base::string16>& disabled_exception_patterns,
       const std::set<base::string16>& enabled_patterns);
+
+  // Allows unit tests to directly set the AlwaysOpenPdfExternally pref.
+  void SetAlwaysOpenPdfExternallyForTests(bool always_open_pdf_externally);
 
   // Callback for after the plugin groups have been loaded.
   void EnablePluginGroupInternal(
@@ -147,6 +154,7 @@ class PluginPrefs : public RefcountedKeyedService {
   std::set<base::string16> policy_disabled_plugin_patterns_;
   std::set<base::string16> policy_disabled_plugin_exception_patterns_;
   std::set<base::string16> policy_enabled_plugin_patterns_;
+  bool always_open_pdf_externally_;
 
   // Weak pointer, owns us. Only used as a notification source.
   Profile* profile_;

@@ -980,6 +980,10 @@ const char kPluginsDisabledPluginsExceptions[] =
 // List pref containing names of plugins that are enabled by policy.
 const char kPluginsEnabledPlugins[] = "plugins.plugins_enabled";
 
+// Whether Chrome should use its internal PDF viewer or not.
+const char kPluginsAlwaysOpenPdfExternally[] =
+    "plugins.always_open_pdf_externally";
+
 #if defined(ENABLE_PLUGINS)
 // Whether about:plugins is shown in the details mode or not.
 const char kPluginsShowDetails[] = "plugins.show_details";

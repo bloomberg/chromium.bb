@@ -329,6 +329,7 @@ extern const char kPluginsPluginsList[];
 extern const char kPluginsDisabledPlugins[];
 extern const char kPluginsDisabledPluginsExceptions[];
 extern const char kPluginsEnabledPlugins[];
+extern const char kPluginsAlwaysOpenPdfExternally[];
 #if defined(ENABLE_PLUGINS)
 extern const char kPluginsShowDetails[];
 #endif
