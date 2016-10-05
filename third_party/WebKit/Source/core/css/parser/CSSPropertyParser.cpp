@@ -2055,7 +2055,7 @@ static CSSValue* consumeCursor(CSSParserTokenRange& range,
 }
 
 static CSSValue* consumeAttr(CSSParserTokenRange args,
-                             CSSParserContext context) {
+                             const CSSParserContext& context) {
   if (args.peek().type() != IdentToken)
     return nullptr;
 
@@ -2107,7 +2107,7 @@ static CSSValue* consumeCounterContent(CSSParserTokenRange args,
 }
 
 static CSSValue* consumeContent(CSSParserTokenRange& range,
-                                CSSParserContext context) {
+                                const CSSParserContext& context) {
   if (identMatches<CSSValueNone, CSSValueNormal>(range.peek().id()))
     return consumeIdent(range);
 

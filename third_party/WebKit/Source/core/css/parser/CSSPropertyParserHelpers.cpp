@@ -1051,14 +1051,14 @@ static CSSValue* consumeLinearGradient(CSSParserTokenRange& args,
 }
 
 CSSValue* consumeImageOrNone(CSSParserTokenRange& range,
-                             CSSParserContext context) {
+                             const CSSParserContext& context) {
   if (range.peek().id() == CSSValueNone)
     return consumeIdent(range);
   return consumeImage(range, context);
 }
 
 static CSSValue* consumeCrossFade(CSSParserTokenRange& args,
-                                  CSSParserContext context) {
+                                  const CSSParserContext& context) {
   CSSValue* fromImageValue = consumeImageOrNone(args, context);
   if (!fromImageValue || !consumeCommaIncludingWhitespace(args))
     return nullptr;
@@ -1083,7 +1083,7 @@ static CSSValue* consumeCrossFade(CSSParserTokenRange& args,
 }
 
 static CSSValue* consumePaint(CSSParserTokenRange& args,
-                              CSSParserContext context) {
+                              const CSSParserContext& context) {
   DCHECK(RuntimeEnabledFeatures::cssPaintAPIEnabled());
 
   CSSCustomIdentValue* name = consumeCustomIdent(args);
@@ -1094,7 +1094,7 @@ static CSSValue* consumePaint(CSSParserTokenRange& args,
 }
 
 static CSSValue* consumeGeneratedImage(CSSParserTokenRange& range,
-                                       CSSParserContext context) {
+                                       const CSSParserContext& context) {
   CSSValueID id = range.peek().functionId();
   CSSParserTokenRange rangeCopy = range;
   CSSParserTokenRange args = consumeFunction(rangeCopy);
@@ -1204,7 +1204,7 @@ static bool isGeneratedImage(CSSValueID id) {
 }
 
 CSSValue* consumeImage(CSSParserTokenRange& range,
-                       CSSParserContext context,
+                       const CSSParserContext& context,
                        ConsumeGeneratedImage generatedImage) {
   AtomicString uri = consumeUrlAsStringView(range).toAtomicString();
   if (!uri.isNull())
