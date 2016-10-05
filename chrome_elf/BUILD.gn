@@ -5,6 +5,7 @@
 # Chrome elf targets (excepting tests) should only link in kernel32.
 # Please don't add dependencies on any other system libraries.
 
+import("//build/config/compiler/compiler.gni")
 import("//build/config/win/manifest.gni")
 import("//chrome/process_version_rc_template.gni")
 import("//testing/test.gni")
@@ -173,6 +174,13 @@ static_library("nt_registry") {
     "nt_registry/nt_registry.cc",
     "nt_registry/nt_registry.h",
   ]
+  if (is_official_build && full_wpo_on_official == true) {
+    # This library doen't build with WPO enabled due to a MSVC compiler bug.
+    # TODO(pennymac|sebmarchand): Remove this once MS has fixed this compiler
+    # bug: https://connect.microsoft.com/VisualStudio/feedback/details/3104499
+    configs -= [ "//build/config/compiler:default_optimization" ]
+    configs += [ "//build/config/compiler:optimize_no_wpo" ]
+  }
 
   libs = [ "kernel32.lib" ]
 }
