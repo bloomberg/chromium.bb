@@ -46,8 +46,11 @@ function test()
     {
         WebInspector.panels.sources._sourcesView.showOpenResourceDialog();
         var dialog = WebInspector.OpenResourceDialog._instanceForTest;
+        var keys = [];
         for (var i = 0; i < dialog.itemCount(); ++i)
-            InspectorTest.addResult(dialog.itemKeyAt(i));
+            keys.push(dialog.itemKeyAt(i));
+        keys.sort();
+        InspectorTest.addResult(keys.join("\n"));
         WebInspector.Dialog._instance.detach();
     }
 };

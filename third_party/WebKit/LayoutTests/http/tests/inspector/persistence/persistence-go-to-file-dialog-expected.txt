@@ -4,23 +4,23 @@ Verify that GoTo source dialog filters out mapped uiSourceCodes.
 Running: waitForUISourceCodes
 
 Running: goToSourceDialogBeforeBinding
-http://127.0.0.1:8000/inspector/persistence/persistence-go-to-file-dialog.html
-http://127.0.0.1:8000/inspector/inspector-test.js
+file:///var/www/inspector/persistence/resources/foo.js
 http://127.0.0.1:8000/inspector/debugger-test.js
-http://127.0.0.1:8000/inspector/workspace-test.js
+http://127.0.0.1:8000/inspector/inspector-test.js
 http://127.0.0.1:8000/inspector/isolated-filesystem-test.js
+http://127.0.0.1:8000/inspector/persistence/persistence-go-to-file-dialog.html
 http://127.0.0.1:8000/inspector/persistence/persistence-test.js
 http://127.0.0.1:8000/inspector/persistence/resources/foo.js
-file:///var/www/inspector/persistence/resources/foo.js
+http://127.0.0.1:8000/inspector/workspace-test.js
 
 Running: addFileSystemMapping
 
 Running: goToSourceAfterBinding
-http://127.0.0.1:8000/inspector/persistence/persistence-go-to-file-dialog.html
-http://127.0.0.1:8000/inspector/inspector-test.js
 http://127.0.0.1:8000/inspector/debugger-test.js
-http://127.0.0.1:8000/inspector/workspace-test.js
+http://127.0.0.1:8000/inspector/inspector-test.js
 http://127.0.0.1:8000/inspector/isolated-filesystem-test.js
+http://127.0.0.1:8000/inspector/persistence/persistence-go-to-file-dialog.html
 http://127.0.0.1:8000/inspector/persistence/persistence-test.js
 http://127.0.0.1:8000/inspector/persistence/resources/foo.js
+http://127.0.0.1:8000/inspector/workspace-test.js
 
