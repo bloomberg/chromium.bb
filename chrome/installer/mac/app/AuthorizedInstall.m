@@ -35,6 +35,8 @@
     return;
 
   FILE* file;
+// AuthorizationExecuteWithPrivileges is deprecated in macOS 10.7, but no good
+// replacement exists. https://crbug.com/593133.
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
   status = AuthorizationExecuteWithPrivileges(
