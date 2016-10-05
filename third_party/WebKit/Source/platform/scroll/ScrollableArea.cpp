@@ -178,28 +178,22 @@ ScrollResult ScrollableArea::userScroll(ScrollGranularity granularity,
 void ScrollableArea::setScrollPosition(const DoublePoint& position,
                                        ScrollType scrollType,
                                        ScrollBehavior behavior) {
-  DoublePoint clampedPosition = clampScrollPosition(position);
-  if (shouldUseIntegerScrollOffset())
-    clampedPosition = flooredIntPoint(clampedPosition);
-  if (clampedPosition == scrollPositionDouble())
-    return;
-
   if (behavior == ScrollBehaviorAuto)
     behavior = scrollBehaviorStyle();
 
   switch (scrollType) {
     case CompositorScroll:
-      scrollPositionChanged(clampedPosition, scrollType);
+      scrollPositionChanged(clampScrollPosition(position), scrollType);
       break;
     case AnchoringScroll:
-      scrollAnimator().adjustAnimationAndSetScrollPosition(clampedPosition,
+      scrollAnimator().adjustAnimationAndSetScrollPosition(position,
                                                            scrollType);
       break;
     case ProgrammaticScroll:
-      programmaticScrollHelper(clampedPosition, behavior);
+      programmaticScrollHelper(position, behavior);
       break;
     case UserScroll:
-      userScrollHelper(clampedPosition, behavior);
+      userScrollHelper(position, behavior);
       break;
     default:
       ASSERT_NOT_REACHED();

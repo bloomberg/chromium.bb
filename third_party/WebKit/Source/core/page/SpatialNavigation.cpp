@@ -244,22 +244,32 @@ bool scrollInDirection(Node* container, WebFocusType type) {
         frameView ? frameView->getHostWindow() : nullptr);
     switch (type) {
       case WebFocusTypeLeft:
-        dx = -pixelsPerLineStep;
+        dx = -std::min(pixelsPerLineStep,
+                       container->layoutBox()->scrollLeft().toInt());
         break;
       case WebFocusTypeRight:
         ASSERT(container->layoutBox()->scrollWidth() >
                (container->layoutBox()->scrollLeft() +
                 container->layoutBox()->clientWidth()));
-        dx = pixelsPerLineStep;
+        dx = std::min(pixelsPerLineStep,
+                      (container->layoutBox()->scrollWidth() -
+                       (container->layoutBox()->scrollLeft() +
+                        container->layoutBox()->clientWidth()))
+                          .toInt());
         break;
       case WebFocusTypeUp:
-        dy = -pixelsPerLineStep;
+        dy = -std::min(pixelsPerLineStep,
+                       container->layoutBox()->scrollTop().toInt());
         break;
       case WebFocusTypeDown:
         ASSERT(container->layoutBox()->scrollHeight() -
                (container->layoutBox()->scrollTop() +
                 container->layoutBox()->clientHeight()));
-        dy = pixelsPerLineStep;
+        dy = std::min(pixelsPerLineStep,
+                      (container->layoutBox()->scrollHeight() -
+                       (container->layoutBox()->scrollTop() +
+                        container->layoutBox()->clientHeight()))
+                          .toInt());
         break;
       default:
         ASSERT_NOT_REACHED();

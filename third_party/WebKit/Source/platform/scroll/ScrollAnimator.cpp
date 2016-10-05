@@ -190,18 +190,19 @@ bool ScrollAnimator::willAnimateToOffset(const FloatPoint& targetPos) {
 void ScrollAnimator::adjustAnimationAndSetScrollPosition(
     const DoublePoint& position,
     ScrollType scrollType) {
-  IntSize adjustment =
-      roundedIntPoint(position) -
+  DoublePoint adjustedPos = m_scrollableArea->clampScrollPosition(position);
+  IntSize actualAdjustment =
+      roundedIntPoint(adjustedPos) -
       roundedIntPoint(m_scrollableArea->scrollPositionDouble());
 
-  scrollPositionChanged(position, scrollType);
+  scrollPositionChanged(adjustedPos, scrollType);
 
   if (m_runState == RunState::Idle) {
-    adjustImplOnlyScrollOffsetAnimation(adjustment);
+    adjustImplOnlyScrollOffsetAnimation(actualAdjustment);
   } else if (hasRunningAnimation()) {
-    m_targetOffset += toFloatSize(adjustment);
+    m_targetOffset += toFloatSize(actualAdjustment);
     if (m_animationCurve) {
-      m_animationCurve->applyAdjustment(adjustment);
+      m_animationCurve->applyAdjustment(actualAdjustment);
       if (m_runState != RunState::RunningOnMainThread &&
           registerAndScheduleAnimation())
         m_runState = RunState::RunningOnCompositorButNeedsAdjustment;

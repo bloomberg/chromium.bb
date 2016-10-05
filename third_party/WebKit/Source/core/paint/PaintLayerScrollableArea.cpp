@@ -114,10 +114,9 @@ PaintLayerScrollableArea::PaintLayerScrollableArea(PaintLayer& layer)
     // We save and restore only the scrollOffset as the other scroll values are recalculated.
     Element* element = toElement(node);
     m_scrollOffset = element->savedLayerScrollOffset();
-    if (!m_scrollOffset.isZero()) {
+    if (!m_scrollOffset.isZero())
       scrollAnimator().setCurrentPosition(
           FloatPoint(m_scrollOffset.width(), m_scrollOffset.height()));
-    }
     element->setSavedLayerScrollOffset(IntSize());
   }
   updateResizerAreaSet();
@@ -149,10 +148,9 @@ void PaintLayerScrollableArea::dispose() {
   if (!box().documentBeingDestroyed()) {
     Node* node = box().node();
     // FIXME: Make setSavedLayerScrollOffset take DoubleSize. crbug.com/414283.
-    if (node && node->isElementNode()) {
+    if (node && node->isElementNode())
       toElement(node)->setSavedLayerScrollOffset(
           flooredIntSize(m_scrollOffset));
-    }
   }
 
   if (LocalFrame* frame = box().frame()) {
@@ -500,9 +498,8 @@ IntRect PaintLayerScrollableArea::visibleContentRect(
             : 0;
   }
 
-  // TODO(szager): Handle fractional scroll offsets correctly.
   return IntRect(
-      IntPoint(flooredIntSize(adjustedScrollOffset())),
+      IntPoint(scrollXOffset(), scrollYOffset()),
       IntSize(max(0, layer()->size().width() - verticalScrollbarWidth),
               max(0, layer()->size().height() - horizontalScrollbarHeight)));
 }
@@ -638,11 +635,17 @@ void PaintLayerScrollableArea::updateScrollDimensions() {
   updateScrollOrigin();
 }
 
-void PaintLayerScrollableArea::setScrollPositionUnconditionally(
-    const DoublePoint& position,
+void PaintLayerScrollableArea::scrollToPosition(
+    const DoublePoint& scrollPosition,
+    ScrollOffsetClamping clamp,
+    ScrollBehavior scrollBehavior,
     ScrollType scrollType) {
-  cancelScrollAnimation();
-  scrollPositionChanged(position, scrollType);
+  DoublePoint newScrollPosition = clamp == ScrollOffsetClamped
+                                      ? clampScrollPosition(scrollPosition)
+                                      : scrollPosition;
+  if (newScrollPosition != scrollPositionDouble())
+    ScrollableArea::setScrollPosition(newScrollPosition, scrollType,
+                                      scrollBehavior);
 }
 
 void PaintLayerScrollableArea::updateAfterLayout() {
@@ -803,13 +806,9 @@ void PaintLayerScrollableArea::clampScrollPositionsAfterLayout() {
   if (shouldPerformScrollAnchoring())
     m_scrollAnchor.restore();
 
-  if (scrollOriginChanged()) {
-    setScrollPositionUnconditionally(
-        clampScrollPosition(scrollPositionDouble()));
-  } else {
-    ScrollableArea::setScrollPosition(scrollPositionDouble(),
-                                      ProgrammaticScroll);
-  }
+  DoublePoint clamped = clampScrollPosition(scrollPositionDouble());
+  if (clamped != scrollPositionDouble() || scrollOriginChanged())
+    ScrollableArea::setScrollPosition(clamped, ProgrammaticScroll);
 
   setNeedsScrollPositionClamp(false);
   resetScrollOriginChanged();
@@ -1564,17 +1563,17 @@ LayoutRect PaintLayerScrollableArea::scrollIntoView(
 
   DoublePoint clampedScrollPosition = clampScrollPosition(
       scrollPositionDouble() + roundedIntSize(r.location()));
-  if (clampedScrollPosition == scrollPositionDouble()) {
+  if (clampedScrollPosition == scrollPositionDouble())
     return LayoutRect(
         box()
             .localToAbsoluteQuad(FloatQuad(FloatRect(intersection(
                                      layerBounds, localExposeRect))),
                                  UseTransforms)
             .boundingBox());
-  }
 
   DoubleSize oldScrollOffset = adjustedScrollOffset();
-  setScrollPosition(clampedScrollPosition, scrollType, ScrollBehaviorInstant);
+  scrollToPosition(clampedScrollPosition, ScrollOffsetUnclamped,
+                   ScrollBehaviorInstant, scrollType);
   DoubleSize scrollOffsetDifference = adjustedScrollOffset() - oldScrollOffset;
   localExposeRect.move(-LayoutSize(scrollOffsetDifference));
   return LayoutRect(

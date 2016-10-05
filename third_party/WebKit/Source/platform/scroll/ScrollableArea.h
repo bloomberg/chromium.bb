@@ -380,7 +380,7 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   // This function should be overriden by subclasses to perform the actual
   // scroll of the content.
-  virtual void setScrollOffset(const DoublePoint&, ScrollType) = 0;
+  virtual void setScrollOffset(const DoublePoint& offset, ScrollType) = 0;
 
   virtual int lineStep(ScrollbarOrientation) const;
   virtual int pageStep(ScrollbarOrientation) const;

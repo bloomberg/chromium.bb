@@ -3564,8 +3564,12 @@ int FrameView::scrollSize(ScrollbarOrientation orientation) const {
 
 void FrameView::setScrollOffset(const DoublePoint& offset,
                                 ScrollType scrollType) {
+  // TODO(skobes): We shouldn't have to clamp here; instead we should update callers
+  // ScrollableArea::scrollPositionChanged to only pass clamped offsets.
+  DoublePoint newPosition = clampScrollPosition(offset);
+
   DoublePoint oldPosition = m_scrollPosition;
-  DoubleSize scrollDelta = offset - oldPosition;
+  DoubleSize scrollDelta = newPosition - oldPosition;
   if (scrollDelta.isZero())
     return;
 
@@ -3574,7 +3578,7 @@ void FrameView::setScrollOffset(const DoublePoint& offset,
     ASSERT_NOT_REACHED();
   }
 
-  m_scrollPosition = offset;
+  m_scrollPosition = newPosition;
 
   if (!scrollbarsSuppressed())
     m_pendingScrollDelta += scrollDelta;

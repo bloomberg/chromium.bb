@@ -310,29 +310,50 @@ class CORE_EXPORT PaintLayerScrollableArea final
   ScrollBehavior scrollBehaviorStyle() const override;
   CompositorAnimationTimeline* compositorAnimationTimeline() const override;
 
+  double scrollXOffset() const {
+    return m_scrollOffset.width() + scrollOrigin().x();
+  }
+  double scrollYOffset() const {
+    return m_scrollOffset.height() + scrollOrigin().y();
+  }
+
   DoubleSize scrollOffset() const { return m_scrollOffset; }
 
   // FIXME: We shouldn't allow access to m_overflowRect outside this class.
   LayoutRect overflowRect() const { return m_overflowRect; }
 
+  void scrollToPosition(const DoublePoint& scrollPosition,
+                        ScrollOffsetClamping = ScrollOffsetUnclamped,
+                        ScrollBehavior = ScrollBehaviorInstant,
+                        ScrollType = ProgrammaticScroll);
+
   void scrollToOffset(const DoubleSize& scrollOffset,
+                      ScrollOffsetClamping clamp = ScrollOffsetUnclamped,
                       ScrollBehavior scrollBehavior = ScrollBehaviorInstant,
                       ScrollType scrollType = ProgrammaticScroll) {
-    ScrollableArea::setScrollPosition(-scrollOrigin() + scrollOffset,
-                                      scrollType, scrollBehavior);
+    scrollToPosition(-scrollOrigin() + scrollOffset, clamp, scrollBehavior,
+                     scrollType);
+  }
+
+  void scrollToXOffset(double x,
+                       ScrollOffsetClamping clamp = ScrollOffsetUnclamped,
+                       ScrollBehavior scrollBehavior = ScrollBehaviorInstant) {
+    scrollToOffset(DoubleSize(x, scrollYOffset()), clamp, scrollBehavior);
+  }
+
+  void scrollToYOffset(double y,
+                       ScrollOffsetClamping clamp = ScrollOffsetUnclamped,
+                       ScrollBehavior scrollBehavior = ScrollBehaviorInstant) {
+    scrollToOffset(DoubleSize(scrollXOffset(), y), clamp, scrollBehavior);
   }
 
   void setScrollPosition(
       const DoublePoint& position,
       ScrollType scrollType,
       ScrollBehavior scrollBehavior = ScrollBehaviorInstant) override {
-    scrollToOffset(toDoubleSize(position), scrollBehavior, scrollType);
+    scrollToOffset(toDoubleSize(position), ScrollOffsetClamped, scrollBehavior,
+                   scrollType);
   }
-
-  // This will set the scroll position without clamping, and it will do all
-  // post-update work even if the scroll position didn't change.
-  void setScrollPositionUnconditionally(const DoublePoint&,
-                                        ScrollType = ProgrammaticScroll);
 
   // TODO(szager): Actually run these after all of layout is finished.  Currently, they
   // run at the end of box()'es layout (or after all flexbox layout has finished) but while
@@ -375,7 +396,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
       OverlayScrollbarClipBehavior = IgnoreOverlayScrollbarSize) const;
 
   DoubleSize adjustedScrollOffset() const {
-    return toDoubleSize(DoublePoint(scrollOrigin()) + m_scrollOffset);
+    return DoubleSize(scrollXOffset(), scrollYOffset());
   }
 
   void positionOverflowControls();

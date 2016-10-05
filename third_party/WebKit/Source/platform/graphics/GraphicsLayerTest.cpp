@@ -184,8 +184,8 @@ class FakeScrollableArea : public GarbageCollectedFinalized<FakeScrollableArea>,
                     contentsSize().height() - visibleHeight());
   }
 
-  void setScrollOffset(const DoublePoint& offset, ScrollType) override {
-    m_scrollPosition = offset;
+  void setScrollOffset(const DoublePoint& scrollOffset, ScrollType) override {
+    m_scrollPosition = scrollOffset;
   }
   DoublePoint scrollPositionDouble() const override { return m_scrollPosition; }
   IntPoint scrollPosition() const override {
