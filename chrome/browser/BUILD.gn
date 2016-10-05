@@ -1283,7 +1283,6 @@ split_static_library("browser") {
     "//components/certificate_transparency",
     "//components/cloud_devices/common",
     "//components/component_updater",
-    "//components/content_settings/content/common",
     "//components/content_settings/core/browser",
     "//components/content_settings/core/common",
     "//components/contextual_search:browser",

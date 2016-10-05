@@ -16,6 +16,7 @@
 #include "chrome/common/web_application_info.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
 #include "content/public/common/top_controls_state.h"
 #include "content/public/common/webplugininfo.h"
@@ -26,6 +27,7 @@
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebWindowFeatures.h"
 #include "ui/base/window_open_disposition.h"
+#include "url/gurl.h"
 #include "url/ipc/url_param_traits.h"
 
 // Singly-included section for enums and custom IPC traits.
@@ -202,6 +204,10 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_WebUIJavaScript,
 IPC_MESSAGE_CONTROL1(ChromeViewMsg_SetContentSettingRules,
                      RendererContentSettingRules /* rules */)
 
+// Tells the render frame to load all blocked plugins with the given identifier.
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_LoadBlockedPlugins,
+                    std::string /* identifier */)
+
 // Tells the renderer to create a FieldTrial, and by using a 100% probability
 // for the FieldTrial, forces the FieldTrial to have assigned group name.
 IPC_MESSAGE_CONTROL2(ChromeViewMsg_SetFieldTrialGroup,
@@ -244,6 +250,17 @@ IPC_MESSAGE_ROUTED2(ChromeViewMsg_ChromeIdentityCheckResult,
 // incognito mode.
 IPC_MESSAGE_CONTROL1(ChromeViewMsg_SetIsIncognitoProcess,
                      bool /* is_incognito_processs */)
+
+// Sent in response to FrameHostMsg_DidBlockRunningInsecureContent.
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetAllowRunningInsecureContent,
+                    bool /* allowed */)
+
+IPC_MESSAGE_ROUTED0(ChromeViewMsg_ReloadFrame)
+
+// Tells the renderer whether or not a file system access has been allowed.
+IPC_MESSAGE_ROUTED2(ChromeViewMsg_RequestFileSystemAccessAsyncResponse,
+                    int  /* request_id */,
+                    bool /* allowed */)
 
 // Sent when the profile changes the kSafeBrowsingEnabled preference.
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetClientSidePhishingDetection,
@@ -301,6 +318,9 @@ IPC_MESSAGE_CONTROL0(ChromeViewHostMsg_ShowBrowserAccountManagementUI)
 
 // JavaScript related messages -----------------------------------------------
 
+// Tells the frame it is displaying an interstitial page.
+IPC_MESSAGE_ROUTED0(ChromeViewMsg_SetAsInterstitial)
+
 // Provides the renderer with the results of the browser's investigation into
 // why a recent main frame load failed (currently, just DNS probe result).
 // NetErrorHelper will receive this mesage and replace or update the error
@@ -341,12 +361,59 @@ IPC_MESSAGE_CONTROL5(ChromeViewHostMsg_UpdatedCacheStats,
                      uint64_t /* live_size */,
                      uint64_t /* dead_size */)
 
+// Tells the browser that content in the current page was blocked due to the
+// user's content settings.
+IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_ContentBlocked,
+                    ContentSettingsType /* type of blocked content */,
+                    base::string16 /* details on blocked content */)
+
+// Sent by the renderer process to check whether access to web databases is
+// granted by content settings.
+IPC_SYNC_MESSAGE_CONTROL5_1(ChromeViewHostMsg_AllowDatabase,
+                            int /* render_frame_id */,
+                            GURL /* origin_url */,
+                            GURL /* top origin url */,
+                            base::string16 /* database name */,
+                            base::string16 /* database display name */,
+                            bool /* allowed */)
+
+// Sent by the renderer process to check whether access to DOM Storage is
+// granted by content settings.
+IPC_SYNC_MESSAGE_CONTROL4_1(ChromeViewHostMsg_AllowDOMStorage,
+                            int /* render_frame_id */,
+                            GURL /* origin_url */,
+                            GURL /* top origin url */,
+                            bool /* if true local storage, otherwise session */,
+                            bool /* allowed */)
+
 // Sent by the renderer process to check whether access to FileSystem is
 // granted by content settings.
 IPC_SYNC_MESSAGE_CONTROL3_1(ChromeViewHostMsg_RequestFileSystemAccessSync,
                             int /* render_frame_id */,
                             GURL /* origin_url */,
                             GURL /* top origin url */,
+                            bool /* allowed */)
+
+// Sent by the renderer process when a keygen element is rendered onto the
+// current page.
+IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_DidUseKeygen,
+                    GURL /* origin_url */)
+
+// Sent by the renderer process to check whether access to FileSystem is
+// granted by content settings.
+IPC_MESSAGE_CONTROL4(ChromeViewHostMsg_RequestFileSystemAccessAsync,
+                    int /* render_frame_id */,
+                    int /* request_id */,
+                    GURL /* origin_url */,
+                    GURL /* top origin url */)
+
+// Sent by the renderer process to check whether access to Indexed DBis
+// granted by content settings.
+IPC_SYNC_MESSAGE_CONTROL4_1(ChromeViewHostMsg_AllowIndexedDB,
+                            int /* render_frame_id */,
+                            GURL /* origin_url */,
+                            GURL /* top origin url */,
+                            base::string16 /* database name */,
                             bool /* allowed */)
 
 // Return information about a plugin for the given URL and MIME type.
@@ -473,6 +540,10 @@ IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_BlockedUnauthorizedPlugin,
 // window.print() call which should cancel the prerender. The message is sent
 // only when the renderer is prerendering.
 IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_CancelPrerenderForPrinting)
+
+// Sent when the renderer was prevented from displaying insecure content in
+// a secure page by a security policy.  The page may appear incomplete.
+IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_DidBlockDisplayingInsecureContent)
 
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_DidGetWebApplicationInfo,
                     WebApplicationInfo)

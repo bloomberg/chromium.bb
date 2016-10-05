@@ -18,6 +18,9 @@ per-file nacl_loader.sb=rsesek@chromium.org
 per-file *_messages*.h=set noparent
 per-file *_messages*.h=file://ipc/SECURITY_OWNERS
 
+per-file *_param_traits*.*=set noparent
+per-file *_param_traits*.*=file://ipc/SECURITY_OWNERS
+
 # Changes to Mojo interfaces require a security review to avoid
 # introducing new sandbox escapes.
 per-file *.mojom=set noparent

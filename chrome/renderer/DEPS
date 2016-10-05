@@ -5,7 +5,6 @@ include_rules = [
   "+components/autofill/content/renderer",
   "+components/autofill/core/common",
   "+components/cdm/renderer",
-  "+components/content_settings/content/common",
   "+components/content_settings/core/common",
   "+components/contextual_search/renderer",
   "+components/crx_file",

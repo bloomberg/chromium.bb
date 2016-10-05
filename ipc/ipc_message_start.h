@@ -109,7 +109,6 @@ enum IPCMessageStart {
   CastCryptoMsgStart,
   CastChannelMsgStart,
   DataReductionProxyStart,
-  ContentSettingsMsgStart,
   ChromeAppBannerMsgStart,
   AttachmentBrokerMsgStart,
   RenderProcessMsgStart,

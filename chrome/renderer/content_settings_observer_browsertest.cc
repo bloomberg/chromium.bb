@@ -7,7 +7,6 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/content_settings_observer.h"
 #include "chrome/test/base/chrome_render_view_test.h"
-#include "components/content_settings/content/common/content_settings_messages.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "content/public/renderer/render_view.h"
 #include "ipc/ipc_message_macros.h"

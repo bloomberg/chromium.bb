@@ -481,7 +481,6 @@ split_static_library("ui") {
     "//components/bubble:bubble",
     "//components/certificate_reporting:cert_logger_proto",
     "//components/certificate_reporting:encrypted_cert_logger_proto",
-    "//components/content_settings/content/common",
     "//components/content_settings/core/browser",
     "//components/crash/content/app",
     "//components/crash/core/browser",
