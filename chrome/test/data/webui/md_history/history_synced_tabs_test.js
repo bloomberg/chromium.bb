@@ -339,6 +339,18 @@ cr.define('md_history.history_synced_tabs_test', function() {
         });
       });
 
+      test('show actions menu', function() {
+        setForeignSessions(
+            [createSession(
+                'Chromebook', [createWindow(['https://example.com'])])]);
+
+        return flush().then(function() {
+          var cards = getCards(element);
+          MockInteractions.tap(cards[0].$['menu-button']);
+          assertTrue(element.$.menu.getIfExists().menuOpen);
+        });
+      });
+
       test('show sign in promo', function() {
         element.signInState = false;
         return flush().then(function() {
