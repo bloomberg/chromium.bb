@@ -4,6 +4,8 @@
 
 #include "remoting/host/setup/daemon_controller_delegate_mac.h"
 
+#import <AppKit/AppKit.h>
+
 #include <CoreFoundation/CoreFoundation.h>
 #include <launch.h>
 #include <stdio.h>
@@ -21,6 +23,7 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_launch_data.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "remoting/host/constants_mac.h"
@@ -211,15 +214,10 @@ bool DaemonControllerDelegateMac::DoShowPreferencePane(
   }
   pane_path = pane_path.Append("PreferencePanes").Append(kPrefPaneFileName);
 
-  FSRef pane_path_ref;
-  if (!base::mac::FSRefFromPath(pane_path.value(), &pane_path_ref)) {
-    LOG(ERROR) << "Failed to create FSRef";
-    return false;
-  }
-  OSStatus status = LSOpenFSRef(&pane_path_ref, nullptr);
-  if (status != noErr) {
-    OSSTATUS_LOG(ERROR, status) << "LSOpenFSRef failed for path: "
-                                << pane_path.value();
+  bool success = [[NSWorkspace sharedWorkspace]
+      openFile:base::SysUTF8ToNSString(pane_path.value())];
+  if (!success) {
+    LOG(ERROR) << "Failed to open preferences pane: " << pane_path.value();
     return false;
   }
 
