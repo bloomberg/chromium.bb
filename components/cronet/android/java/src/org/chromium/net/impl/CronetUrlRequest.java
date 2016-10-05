@@ -83,6 +83,9 @@ public final class CronetUrlRequest implements UrlRequest {
     private String mInitialMethod;
     private final HeadersList mRequestHeaders = new HeadersList();
     private final Collection<Object> mRequestAnnotations;
+    @RequestFinishedInfo.FinishedReason
+    private int mFinishedReason;
+    private UrlRequestException mException;
     private final boolean mDisableCache;
     private final boolean mDisableConnectionMigration;
 
@@ -450,6 +453,7 @@ public final class CronetUrlRequest implements UrlRequest {
      * Fails the request with an exception. Can be called on any thread.
      */
     private void failWithException(final UrlRequestException exception) {
+        mException = exception;
         synchronized (mUrlRequestAdapterLock) {
             if (isDoneLocked()) {
                 return;
@@ -599,6 +603,7 @@ public final class CronetUrlRequest implements UrlRequest {
     @SuppressWarnings("unused")
     @CalledByNative
     private void onSucceeded(long receivedBytesCount) {
+        mFinishedReason = RequestFinishedInfo.SUCCEEDED;
         mResponseInfo.setReceivedBytesCount(mReceivedBytesCountFromRedirects + receivedBytesCount);
         Runnable task = new Runnable() {
             @Override
@@ -634,6 +639,7 @@ public final class CronetUrlRequest implements UrlRequest {
     @CalledByNative
     private void onError(int errorCode, int nativeError, int nativeQuicError, String errorString,
             long receivedBytesCount) {
+        mFinishedReason = RequestFinishedInfo.FAILED;
         if (mResponseInfo != null) {
             mResponseInfo.setReceivedBytesCount(
                     mReceivedBytesCountFromRedirects + receivedBytesCount);
@@ -653,6 +659,7 @@ public final class CronetUrlRequest implements UrlRequest {
     @SuppressWarnings("unused")
     @CalledByNative
     private void onCanceled() {
+        mFinishedReason = RequestFinishedInfo.CANCELED;
         Runnable task = new Runnable() {
             @Override
             public void run() {
@@ -706,8 +713,8 @@ public final class CronetUrlRequest implements UrlRequest {
 
     private RequestFinishedInfo getRequestFinishedInfo() {
         // TODO(mgersh): fill in real values for finishedReason and exception
-        return new RequestFinishedInfo(mInitialUrl, mRequestAnnotations, mMetrics,
-                RequestFinishedInfo.SUCCEEDED, mResponseInfo, null);
+        return new RequestFinishedInfo(mInitialUrl, mRequestAnnotations, mMetrics, mFinishedReason,
+                mResponseInfo, mException);
     }
 
     /** Enforces prohibition of direct execution. */

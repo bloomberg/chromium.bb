@@ -99,6 +99,8 @@ public class RequestFinishedInfoTest extends CronetTestBase {
         assertNotNull(requestInfo.getResponseInfo());
         assertEquals(newHashSet("request annotation", this), // Use sets for unordered comparison.
                 new HashSet<Object>(requestInfo.getAnnotations()));
+        assertEquals(RequestFinishedInfo.SUCCEEDED, requestInfo.getFinishedReason());
+        assertNull(requestInfo.getException());
         RequestFinishedInfo.Metrics metrics = requestInfo.getMetrics();
         assertNotNull("RequestFinishedInfo.getMetrics() must not be null", metrics);
         // Check old (deprecated) timing metrics
@@ -144,6 +146,8 @@ public class RequestFinishedInfoTest extends CronetTestBase {
         assertNotNull(requestInfo.getResponseInfo());
         assertEquals(newHashSet("request annotation", this), // Use sets for unordered comparison.
                 new HashSet<Object>(requestInfo.getAnnotations()));
+        assertEquals(RequestFinishedInfo.SUCCEEDED, requestInfo.getFinishedReason());
+        assertNull(requestInfo.getException());
         RequestFinishedInfo.Metrics metrics = requestInfo.getMetrics();
         assertNotNull("RequestFinishedInfo.getMetrics() must not be null", metrics);
         assertTrue(metrics.getTotalTimeMs() > 0);
@@ -189,6 +193,10 @@ public class RequestFinishedInfoTest extends CronetTestBase {
                 new HashSet<Object>(firstRequestInfo.getAnnotations()));
         assertEquals(newHashSet("request annotation", this),
                 new HashSet<Object>(secondRequestInfo.getAnnotations()));
+        assertEquals(RequestFinishedInfo.SUCCEEDED, firstRequestInfo.getFinishedReason());
+        assertEquals(RequestFinishedInfo.SUCCEEDED, secondRequestInfo.getFinishedReason());
+        assertNull(firstRequestInfo.getException());
+        assertNull(secondRequestInfo.getException());
         RequestFinishedInfo.Metrics firstMetrics = firstRequestInfo.getMetrics();
         assertNotNull("RequestFinishedInfo.getMetrics() must not be null", firstMetrics);
         assertTrue(firstMetrics.getTotalTimeMs() > 0);
@@ -229,6 +237,10 @@ public class RequestFinishedInfoTest extends CronetTestBase {
         assertNotNull("RequestFinishedInfo.Listener must be called", requestInfo);
         assertEquals(connectionRefusedUrl, requestInfo.getUrl());
         assertTrue(requestInfo.getAnnotations().isEmpty());
+        assertEquals(RequestFinishedInfo.FAILED, requestInfo.getFinishedReason());
+        assertNotNull(requestInfo.getException());
+        assertEquals(UrlRequestException.ERROR_CONNECTION_REFUSED,
+                requestInfo.getException().getErrorCode());
         RequestFinishedInfo.Metrics metrics = requestInfo.getMetrics();
         assertNotNull("RequestFinishedInfo.getMetrics() must not be null", metrics);
         // The failure is occasionally fast enough that time reported is 0, so just check for null
