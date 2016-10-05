@@ -104,6 +104,7 @@ content::WebUIDataSource* CreateProfilerHTMLSource() {
   source->SetJsonPath("strings.js");
   source->AddResourcePath("profiler.js", IDR_PROFILER_JS);
   source->SetDefaultResource(IDR_PROFILER_HTML);
+  source->DisableI18nAndUseGzipForAllPaths();
   return source;
 }
 
