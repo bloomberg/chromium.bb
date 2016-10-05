@@ -14,7 +14,7 @@ namespace chromeos {
 
 // Interface for printer discovery.  Constructs Printer objects from USB and
 // zeroconf (DNS-SD) printers.
-class PrinterDiscoverer {
+class CHROMEOS_EXPORT PrinterDiscoverer {
  public:
   // Interface for objects interested in detected printers.
   class Observer {

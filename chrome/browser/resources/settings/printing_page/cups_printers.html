@@ -15,7 +15,7 @@
         color: blue;
         text-decoration: underline;
       }
-      
+
       #message {
         display: flex;
         justify-content: center;
@@ -33,6 +33,15 @@
         text-align: center;
         width: 350px;
       }
+
+      #addPrinterErrorMessage {
+        display: flex;
+        justify-content: space-around;
+      }
+
+      #addPrinterErrorMessage a[is='action-link'] {
+        text-transform: uppercase;
+      }
     </style>
 
     <div class="settings-box first">
@@ -49,8 +58,14 @@
     </settings-cups-printers-list>
 
     <div id="message">
-      <div class="center" id="addPrinterMessage" hidden>
+      <div class="center" id="addPrinterDoneMessage" hidden>
         $i18n{printerAddedSuccessfulMessage}
+      </div>
+      <div class="center" id="addPrinterErrorMessage" hidden>
+        <span>$i18n{printerAddedFailedMessage}</span>
+        <a is="action-link" on-tap="onAddPrinterTap_" actionable>
+          $i18n{printerAddedTryAgainMessage}
+        </a>
       </div>
     </div>
   </template>

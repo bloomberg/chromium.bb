@@ -74,7 +74,7 @@ FakePrinterDiscoverer::FakePrinterDiscoverer()
 }
 
 void FakePrinterDiscoverer::EmitPrinters(size_t start, size_t end) {
-  if (!discovery_running_ || start >= printers_.size() || end > start)
+  if (!discovery_running_ || start >= printers_.size() || end < start)
     return;
 
   size_t clipped_start = std::max(static_cast<size_t>(0), start);

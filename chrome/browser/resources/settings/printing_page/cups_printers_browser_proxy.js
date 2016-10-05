@@ -62,6 +62,10 @@ cr.define('settings', function() {
      * @param {!CupsPrinterInfo} newPrinter
      */
     addCupsPrinter: function(newPrinter) {},
+
+    startDiscoveringPrinters: function() {},
+
+    stopDiscoveringPrinters: function() {},
   };
 
   /**
@@ -95,6 +99,16 @@ cr.define('settings', function() {
     /** @override */
     getCupsPrinterPPDPath: function() {
       return cr.sendWithPromise('selectPPDFile');
+    },
+
+    /** @override */
+    startDiscoveringPrinters: function() {
+      chrome.send('startDiscoveringPrinters');
+    },
+
+    /** @override */
+    stopDiscoveringPrinters: function() {
+      chrome.send('stopDiscoveringPrinters');
     },
   };
 

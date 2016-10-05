@@ -26,11 +26,20 @@ var AddPrinterDialogs = {
   MANUFACTURER: 'add-printer-manufacturer-model-dialog',
 };
 
+/**
+ * The maximum height of the discovered printers list when the searching spinner
+ * is not showing.
+ * @const {number}
+ */
+var kPrinterListFullHeight = 350;
+
 Polymer({
   is: 'add-printer-discovery-dialog',
 
+  behaviors: [WebUIListenerBehavior],
+
   properties: {
-    /** @type {!Array<!CupsPrinterInfo>} */
+    /** @type {!Array<!CupsPrinterInfo>|undefined} */
     discoveredPrinters: {
       type: Array,
     },
@@ -40,26 +49,69 @@ Polymer({
       type: Object,
       notify: true,
     },
+
+    discovering_: {
+      type: Boolean,
+      value: true,
+    },
   },
 
   /** @override */
   ready: function() {
-    // TODO(xdai): Get the discovered printer list after the API is ready.
+    settings.CupsPrintersBrowserProxyImpl.getInstance().
+        startDiscoveringPrinters();
+    this.addWebUIListener('on-printer-discovered',
+                          this.onPrinterDiscovered_.bind(this));
+    this.addWebUIListener('on-printer-discovery-done',
+                          this.onPrinterDiscoveryDone_.bind(this));
+    this.addWebUIListener('on-printer-discovery-failed',
+                          this.onPrinterDiscoveryDone_.bind(this));
+  },
+
+  /**
+   * @param {!Array<!CupsPrinterInfo>} printers
+   * @private
+   */
+  onPrinterDiscovered_: function(printers) {
+    this.discovering_ = true;
+    if (!this.discoveredPrinters) {
+      this.discoveredPrinters = printers;
+    } else {
+      for (var i = 0; i < printers.length; i++)
+        this.push('discoveredPrinters', printers[i]);
+    }
+  },
+
+  /** @private */
+  onPrinterDiscoveryDone_: function() {
+    this.discovering_ = false;
+    this.$$('add-printer-list').style.maxHeight = kPrinterListFullHeight + 'px';
+    this.$.noPrinterMessage.hidden = !!this.discoveredPrinters;
+  },
+
+  /** @private */
+  stopDiscoveringPrinters_: function() {
+    settings.CupsPrintersBrowserProxyImpl.getInstance().
+        stopDiscoveringPrinters();
+    this.discovering_ = false;
   },
 
   /** @private */
   switchToManualAddDialog_: function() {
+    this.stopDiscoveringPrinters_();
     this.$$('add-printer-dialog').close();
     this.fire('open-manually-add-printer-dialog');
   },
 
   /** @private */
   onCancelTap_: function() {
+    this.stopDiscoveringPrinters_();
     this.$$('add-printer-dialog').close();
   },
 
   /** @private */
   switchToConfiguringDialog_: function() {
+    this.stopDiscoveringPrinters_();
     this.$$('add-printer-dialog').close();
     this.fire('open-configuring-printer-dialog');
   },
@@ -329,8 +381,14 @@ Polymer({
   openConfiguringPrinterDialog_: function() {
     this.switchDialog_(this.currentDialog_, AddPrinterDialogs.CONFIGURING,
                        'showConfiguringDialog_');
-    settings.CupsPrintersBrowserProxyImpl.getInstance().
-        addCupsPrinter(this.newPrinter);
+    if (this.previousDialog_ == AddPrinterDialogs.DISCOVERY) {
+      settings.CupsPrintersBrowserProxyImpl.getInstance().
+          addCupsPrinter(this.selectedPrinter);
+    } else if (this.previousDialog_ == AddPrinterDialogs.MANUALLY ||
+               this.previousDialog_ == AddPrinterDialogs.MANUFACTURER) {
+      settings.CupsPrintersBrowserProxyImpl.getInstance().
+          addCupsPrinter(this.newPrinter);
+    }
   },
 
   /** @private */
@@ -398,9 +456,11 @@ Polymer({
     if (success)
       return;
 
-    if (this.previousDialog_ == AddPrinterDialogs.MANUFACTURER)
+    if (this.previousDialog_ == AddPrinterDialogs.MANUFACTURER) {
       this.setupFailed = true;
-    this.switchDialog_(this.currentDialog_, AddPrinterDialogs.MANUFACTURER,
-                       'showManufacturerDialog_');
+    } else if (this.previousDialog_ == AddPrinterDialogs.MANUALLY) {
+      this.switchDialog_(this.currentDialog_, AddPrinterDialogs.MANUFACTURER,
+                         'showManufacturerDialog_');
+    }
   },
 });

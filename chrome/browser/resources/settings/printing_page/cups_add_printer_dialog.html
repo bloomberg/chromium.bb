@@ -12,8 +12,31 @@
   <template>
     <style include="settings-shared">
       add-printer-list {
-        max-height: 350px;
+        max-height: 310px;
         overflow-y: auto;
+        position: absolute;
+        width: 100%;
+      }
+
+      .dialog-body .center {
+        display: flex;
+        justify-content: center;
+        position: absolute;
+        top: 50%;
+        width: 100%;
+      }
+
+      #searchSpinner {
+        position: absolute;
+        top: 80%;
+      }
+
+      #searchSpinner paper-spinner {
+        --paper-spinner-stroke-width: 2px;
+        -webkit-margin-end: 3px;
+        -webkit-margin-start: 20px;
+        height: 15px;
+        width: 15px;
       }
 
       #manuallyAddPrinterButton {
@@ -25,7 +48,13 @@
         <add-printer-list printers="[[discoveredPrinters]]"
             selected-printer="{{selectedPrinter}}">
         </add-printer-list>
-        <!-- TODO(xdai): Add the paper-spinner -->
+        <div class="center" id="noPrinterMessage" hidden>
+           $i18n{noPrinterNearbyMessage}
+        </div>
+        <div id="searchSpinner" hidden="[[!discovering_]]">
+          <paper-spinner active="[[discovering_]]"></paper-spinner>
+          <span>$i18n{searchingNearbyPrinters}</span>
+        </div>
       </div>
       <div class="dialog-buttons">
         <paper-button id="manuallyAddPrinterButton"

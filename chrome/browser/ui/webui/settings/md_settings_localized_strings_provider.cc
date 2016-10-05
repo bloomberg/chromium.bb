@@ -1124,7 +1124,15 @@ void AddPrintingStrings(content::WebUIDataSource* html_source) {
     {"selectDriverButtonText",
      IDS_SETTINGS_PRINTING_CUPS_PRINTER_BUTTON_SELECT_DRIVER},
     {"printerAddedSuccessfulMessage",
-     IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_MESSAGE},
+     IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_DONE_MESSAGE},
+    {"noPrinterNearbyMessage",
+     IDS_SETTINGS_PRINTING_CUPS_PRINTER_NO_PRINTER_NEARBY},
+    {"searchingNearbyPrinters",
+     IDS_SETTINGS_PRINTING_CUPS_PRINTER_SEARCHING_NEARBY_PRINTER},
+    {"printerAddedFailedMessage",
+     IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_ERROR_MESSAGE},
+    {"printerAddedTryAgainMessage",
+     IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_TRY_AGAIN_MESSAGE},
 #endif
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
