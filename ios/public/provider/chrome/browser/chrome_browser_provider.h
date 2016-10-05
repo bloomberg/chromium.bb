@@ -40,6 +40,7 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
+@protocol AppRatingPrompt;
 @protocol InfoBarViewProtocol;
 @protocol TextFieldStyling;
 @class UITextField;
@@ -114,6 +115,9 @@ class ChromeBrowserProvider {
   // Creates and returns a new styled text field with the given |frame|.
   virtual UITextField<TextFieldStyling>* CreateStyledTextField(
       CGRect frame) const NS_RETURNS_RETAINED;
+  // Creates and returns an app ratings prompt object.  Can return nil if app
+  // ratings prompts are not supported by the provider.
+  virtual id<AppRatingPrompt> CreateAppRatingPrompt() const NS_RETURNS_RETAINED;
 
   // Returns whether safe browsing is enabled. See the comment on
   // metrics_services_manager_client.h for details on |on_update_callback|.

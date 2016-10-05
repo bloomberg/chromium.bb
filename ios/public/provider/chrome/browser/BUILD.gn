@@ -21,6 +21,7 @@ source_set("browser") {
     "signin/signin_error_provider.mm",
     "signin/signin_resources_provider.h",
     "signin/signin_resources_provider.mm",
+    "ui/app_rating_prompt.h",
     "ui/default_ios_web_view_factory.h",
     "ui/default_ios_web_view_factory.mm",
     "ui/infobar_view_delegate.h",

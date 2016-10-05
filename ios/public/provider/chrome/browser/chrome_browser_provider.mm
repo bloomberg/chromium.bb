@@ -102,6 +102,10 @@ UITextField<TextFieldStyling>* ChromeBrowserProvider::CreateStyledTextField(
   return nil;
 }
 
+id<AppRatingPrompt> ChromeBrowserProvider::CreateAppRatingPrompt() const {
+  return nil;
+}
+
 bool ChromeBrowserProvider::IsSafeBrowsingEnabled(
     const base::Closure& on_update_callback) {
   return false;
