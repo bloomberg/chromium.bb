@@ -208,7 +208,8 @@ class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   }
   void setResourceBuffer(PassRefPtr<SharedBuffer>);
 
-  virtual void willFollowRedirect(ResourceRequest&, const ResourceResponse&);
+  virtual bool willFollowRedirect(const ResourceRequest&,
+                                  const ResourceResponse&);
 
   // Called when a redirect response was received but a decision has already
   // been made to not follow it.

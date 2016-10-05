@@ -204,7 +204,7 @@ class PingLoaderImpl : public GarbageCollectedFinalized<PingLoaderImpl>,
   void dispose();
 
   // WebURLLoaderClient
-  void willFollowRedirect(WebURLLoader*,
+  bool willFollowRedirect(WebURLLoader*,
                           WebURLRequest&,
                           const WebURLResponse&) override;
   void didReceiveResponse(WebURLLoader*, const WebURLResponse&) final;
@@ -288,18 +288,18 @@ void PingLoaderImpl::dispose() {
   m_keepAlive.clear();
 }
 
-void PingLoaderImpl::willFollowRedirect(
+bool PingLoaderImpl::willFollowRedirect(
     WebURLLoader*,
     WebURLRequest& passedNewRequest,
     const WebURLResponse& passedRedirectResponse) {
   if (!m_isBeacon)
-    return;
+    return true;
 
   // TODO(tyoshino): Check if setAllowStoredCredentials() should be called also
   // for non beacon cases.
   passedNewRequest.setAllowStoredCredentials(true);
   if (m_corsMode == NotCORSEnabled)
-    return;
+    return true;
 
   ResourceRequest& newRequest(passedNewRequest.toMutableResourceRequest());
   const ResourceResponse& redirectResponse(
@@ -322,12 +322,13 @@ void PingLoaderImpl::willFollowRedirect(
     }
     // Cancel the load and self destruct.
     dispose();
-    // Signal WebURLLoader that the redirect musn't be followed.
-    passedNewRequest = WebURLRequest();
-    return;
+
+    return false;
   }
   // FIXME: http://crbug.com/427429 is needed to correctly propagate updates of
   // Origin: following this successful redirect.
+
+  return true;
 }
 
 void PingLoaderImpl::didReceiveResponse(WebURLLoader*,

@@ -122,7 +122,14 @@ void ResourceLoader::cancel() {
                        m_resource->lastResourceRequest().url()));
 }
 
-void ResourceLoader::willFollowRedirect(
+void ResourceLoader::cancelForRedirectAccessCheckError(const KURL& newURL) {
+  m_resource->willNotFollowRedirect();
+
+  if (m_loader)
+    didFail(nullptr, ResourceError::cancelledDueToAccessCheckError(newURL));
+}
+
+bool ResourceLoader::willFollowRedirect(
     WebURLLoader*,
     WebURLRequest& passedNewRequest,
     const WebURLResponse& passedRedirectResponse) {
@@ -135,15 +142,31 @@ void ResourceLoader::willFollowRedirect(
   newRequest.setRedirectStatus(
       ResourceRequest::RedirectStatus::FollowedRedirect);
 
-  if (m_fetcher->willFollowRedirect(m_resource.get(), newRequest,
-                                    redirectResponse)) {
-    m_resource->willFollowRedirect(newRequest, redirectResponse);
-  } else {
-    m_resource->willNotFollowRedirect();
-    if (m_loader)
-      didFail(nullptr,
-              ResourceError::cancelledDueToAccessCheckError(newRequest.url()));
+  const KURL originalURL = newRequest.url();
+
+  if (!m_fetcher->willFollowRedirect(m_resource.get(), newRequest,
+                                     redirectResponse)) {
+    cancelForRedirectAccessCheckError(newRequest.url());
+    return false;
   }
+
+  // ResourceFetcher::willFollowRedirect() may rewrite the URL to
+  // something else not for rejecting redirect but for other reasons.
+  // E.g. WebFrameTestClient::willSendRequest() and
+  // RenderFrameImpl::willSendRequest(). We should reflect the
+  // rewriting but currently we cannot. So, return false to make the
+  // redirect fail.
+  if (newRequest.url() != originalURL) {
+    cancelForRedirectAccessCheckError(newRequest.url());
+    return false;
+  }
+
+  if (!m_resource->willFollowRedirect(newRequest, redirectResponse)) {
+    cancelForRedirectAccessCheckError(newRequest.url());
+    return false;
+  }
+
+  return true;
 }
 
 void ResourceLoader::didReceiveCachedMetadata(WebURLLoader*,

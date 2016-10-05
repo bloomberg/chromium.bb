@@ -84,7 +84,8 @@ class CORE_EXPORT RawResource final : public Resource {
     return !isLinkPreload();
   }
 
-  void willFollowRedirect(ResourceRequest&, const ResourceResponse&) override;
+  bool willFollowRedirect(const ResourceRequest&,
+                          const ResourceResponse&) override;
   void willNotFollowRedirect() override;
   void responseReceived(const ResourceResponse&,
                         std::unique_ptr<WebDataConsumerHandle>) override;
@@ -144,9 +145,11 @@ class CORE_EXPORT RawResourceClient : public ResourceClient {
   virtual void dataReceived(Resource*,
                             const char* /* data */,
                             size_t /* length */) {}
-  virtual void redirectReceived(Resource*,
-                                ResourceRequest&,
-                                const ResourceResponse&) {}
+  virtual bool redirectReceived(Resource*,
+                                const ResourceRequest&,
+                                const ResourceResponse&) {
+    return true;
+  }
   virtual void redirectBlocked() {}
   virtual void dataDownloaded(Resource*, int) {}
   virtual void didReceiveResourceTiming(Resource*, const ResourceTimingInfo&) {}

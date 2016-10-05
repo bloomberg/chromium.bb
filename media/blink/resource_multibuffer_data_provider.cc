@@ -168,7 +168,7 @@ void ResourceMultiBufferDataProvider::SetDeferred(bool deferred) {
 /////////////////////////////////////////////////////////////////////////////
 // WebURLLoaderClient implementation.
 
-void ResourceMultiBufferDataProvider::willFollowRedirect(
+bool ResourceMultiBufferDataProvider::willFollowRedirect(
     WebURLLoader* loader,
     WebURLRequest& newRequest,
     const WebURLResponse& redirectResponse) {
@@ -183,13 +183,14 @@ void ResourceMultiBufferDataProvider::willFollowRedirect(
       // We also allow the redirect if we don't have any data in the
       // cache, as that means that no dangerous data mixing can occur.
       if (url_data_->multibuffer()->map().empty() && fifo_.empty())
-        return;
+        return true;
 
       active_loader_ = nullptr;
       url_data_->Fail();
-      return;  // "this" may be deleted now.
+      return false;  // "this" may be deleted now.
     }
   }
+  return true;
 }
 
 void ResourceMultiBufferDataProvider::didSendData(

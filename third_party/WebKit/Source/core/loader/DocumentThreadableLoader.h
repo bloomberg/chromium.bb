@@ -108,8 +108,8 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
                         std::unique_ptr<WebDataConsumerHandle>) override;
   void setSerializedCachedMetadata(Resource*, const char*, size_t) override;
   void dataReceived(Resource*, const char* data, size_t dataLength) override;
-  void redirectReceived(Resource*,
-                        ResourceRequest&,
+  bool redirectReceived(Resource*,
+                        const ResourceRequest&,
                         const ResourceResponse&) override;
   void redirectBlocked() override;
   void dataDownloaded(Resource*, int) override;

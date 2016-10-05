@@ -45,7 +45,7 @@ class PepperURLLoaderHost : public ppapi::host::ResourceHost,
       ppapi::host::HostMessageContext* context) override;
 
   // blink::WebURLLoaderClient implementation.
-  void willFollowRedirect(blink::WebURLLoader* loader,
+  bool willFollowRedirect(blink::WebURLLoader* loader,
                           blink::WebURLRequest& new_request,
                           const blink::WebURLResponse& redir_response) override;
   void didSendData(blink::WebURLLoader* loader,

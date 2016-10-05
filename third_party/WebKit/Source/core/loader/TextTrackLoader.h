@@ -72,8 +72,8 @@ class TextTrackLoader final : public GarbageCollectedFinalized<TextTrackLoader>,
 
  private:
   // RawResourceClient
-  void redirectReceived(Resource*,
-                        ResourceRequest&,
+  bool redirectReceived(Resource*,
+                        const ResourceRequest&,
                         const ResourceResponse&) override;
   void dataReceived(Resource*, const char* data, size_t length) override;
   void notifyFinished(Resource*) override;

@@ -410,10 +410,11 @@ class ServeRequestsOnCompleteClient final
   void dataReceived(Resource*, const char*, size_t) override {
     ASSERT_TRUE(false);
   }
-  void redirectReceived(Resource*,
-                        ResourceRequest&,
+  bool redirectReceived(Resource*,
+                        const ResourceRequest&,
                         const ResourceResponse&) override {
-    ASSERT_TRUE(false);
+    ADD_FAILURE();
+    return true;
   }
   void dataDownloaded(Resource*, int) override { ASSERT_TRUE(false); }
   void didReceiveResourceTiming(Resource*, const ResourceTimingInfo&) override {

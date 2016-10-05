@@ -82,19 +82,16 @@ WebURLRequest WebURLLoaderMock::ServeRedirect(
 
   WeakPtr<WebURLLoaderMock> self = weak_factory_.createWeakPtr();
 
-  client_->willFollowRedirect(this, newRequest, redirectResponse);
+  bool follow = client_->willFollowRedirect(this, newRequest, redirectResponse);
+  if (!follow)
+    newRequest = WebURLRequest();
 
   // |this| might be deleted in willFollowRedirect().
   if (!self)
     return newRequest;
 
-  if (redirectURL != KURL(newRequest.url())) {
-    // Only follow the redirect if WebKit left the URL unmodified.
-    // We assume that WebKit only changes the URL to suppress a redirect, and we
-    // assume that it does so by setting it to be invalid.
-    DCHECK(!newRequest.url().isValid());
+  if (!follow)
     cancel();
-  }
 
   return newRequest;
 }

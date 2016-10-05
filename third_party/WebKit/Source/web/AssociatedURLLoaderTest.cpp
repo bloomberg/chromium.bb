@@ -118,7 +118,7 @@ class AssociatedURLLoaderTest : public ::testing::Test,
   }
 
   // WebURLLoaderClient implementation.
-  void willFollowRedirect(WebURLLoader* loader,
+  bool willFollowRedirect(WebURLLoader* loader,
                           WebURLRequest& newRequest,
                           const WebURLResponse& redirectResponse) override {
     m_willFollowRedirect = true;
@@ -132,6 +132,7 @@ class AssociatedURLLoaderTest : public ::testing::Test,
               redirectResponse.httpStatusCode());
     EXPECT_EQ(m_expectedRedirectResponse.mimeType(),
               redirectResponse.mimeType());
+    return true;
   }
 
   void didSendData(WebURLLoader* loader,

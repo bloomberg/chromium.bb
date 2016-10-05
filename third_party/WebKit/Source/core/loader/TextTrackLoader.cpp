@@ -62,18 +62,19 @@ void TextTrackLoader::cancelLoad() {
   clearResource();
 }
 
-void TextTrackLoader::redirectReceived(Resource* resource,
-                                       ResourceRequest& request,
+bool TextTrackLoader::redirectReceived(Resource* resource,
+                                       const ResourceRequest& request,
                                        const ResourceResponse&) {
   DCHECK_EQ(this->resource(), resource);
   if (resource->options().corsEnabled == IsCORSEnabled ||
       document().getSecurityOrigin()->canRequestNoSuborigin(request.url()))
-    return;
+    return true;
 
   corsPolicyPreventedLoad(document().getSecurityOrigin(), request.url());
   if (!m_cueLoadTimer.isActive())
     m_cueLoadTimer.startOneShot(0, BLINK_FROM_HERE);
   clearResource();
+  return false;
 }
 
 void TextTrackLoader::dataReceived(Resource* resource,

@@ -105,9 +105,10 @@ class AssociatedURLLoader::ClientAdapter final
                         double /*finishTime*/) override;
   void didFail(const ResourceError&) override;
   void didFailRedirectCheck() override;
+
   // DocumentThreadableLoaderClient
-  void willFollowRedirect(
-      ResourceRequest& /*newRequest*/,
+  bool willFollowRedirect(
+      const ResourceRequest& /*newRequest*/,
       const ResourceResponse& /*redirectResponse*/) override;
 
   // Sets an error to be reported back to the client, asychronously.
@@ -164,16 +165,16 @@ AssociatedURLLoader::ClientAdapter::ClientAdapter(
   DCHECK(m_client);
 }
 
-void AssociatedURLLoader::ClientAdapter::willFollowRedirect(
-    ResourceRequest& newRequest,
+bool AssociatedURLLoader::ClientAdapter::willFollowRedirect(
+    const ResourceRequest& newRequest,
     const ResourceResponse& redirectResponse) {
   if (!m_client)
-    return;
+    return true;
 
   WrappedResourceRequest wrappedNewRequest(newRequest);
   WrappedResourceResponse wrappedRedirectResponse(redirectResponse);
-  m_client->willFollowRedirect(m_loader, wrappedNewRequest,
-                               wrappedRedirectResponse);
+  return m_client->willFollowRedirect(m_loader, wrappedNewRequest,
+                                      wrappedRedirectResponse);
 }
 
 void AssociatedURLLoader::ClientAdapter::didSendData(

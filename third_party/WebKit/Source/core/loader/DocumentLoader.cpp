@@ -305,9 +305,9 @@ void DocumentLoader::finishedLoading(double finishTime) {
   clearMainResourceHandle();
 }
 
-void DocumentLoader::redirectReceived(
+bool DocumentLoader::redirectReceived(
     Resource* resource,
-    ResourceRequest& request,
+    const ResourceRequest& request,
     const ResourceResponse& redirectResponse) {
   DCHECK_EQ(resource, m_mainResource);
   DCHECK(!redirectResponse.isNull());
@@ -321,20 +321,22 @@ void DocumentLoader::redirectReceived(
   if (!redirectingOrigin->canDisplay(requestURL)) {
     FrameLoader::reportLocalLoadFailed(m_frame, requestURL.getString());
     m_fetcher->stopFetching();
-    return;
+    return false;
   }
   if (!frameLoader()->shouldContinueForNavigationPolicy(
           m_request, SubstituteData(), this, CheckContentSecurityPolicy,
           m_navigationType, NavigationPolicyCurrentTab,
           replacesCurrentHistoryItem(), isClientRedirect(), nullptr)) {
     m_fetcher->stopFetching();
-    return;
+    return false;
   }
 
   DCHECK(timing().fetchStart());
   appendRedirect(requestURL);
   didRedirect(redirectResponse.url(), requestURL);
   frameLoader()->client()->dispatchDidReceiveServerRedirectForProvisionalLoad();
+
+  return true;
 }
 
 static bool canShowMIMEType(const String& mimeType, LocalFrame* frame) {

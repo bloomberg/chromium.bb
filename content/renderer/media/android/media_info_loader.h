@@ -79,7 +79,7 @@ class CONTENT_EXPORT MediaInfoLoader : private blink::WebURLLoaderClient {
   friend class MediaInfoLoaderTest;
 
   // blink::WebURLLoaderClient implementation.
-  void willFollowRedirect(
+  bool willFollowRedirect(
       blink::WebURLLoader* loader,
       blink::WebURLRequest& newRequest,
       const blink::WebURLResponse& redirectResponse) override;

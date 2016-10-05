@@ -493,9 +493,9 @@ void DocumentThreadableLoader::clear() {
 // RawResource::didAddClient(), clearing |request| won't be propagated to
 // content::WebURLLoaderImpl. So, this loader must also get detached from the
 // resource by calling clearResource().
-void DocumentThreadableLoader::redirectReceived(
+bool DocumentThreadableLoader::redirectReceived(
     Resource* resource,
-    ResourceRequest& request,
+    const ResourceRequest& request,
     const ResourceResponse& redirectResponse) {
   DCHECK(m_client);
   DCHECK_EQ(resource, this->resource());
@@ -509,9 +509,7 @@ void DocumentThreadableLoader::redirectReceived(
     handlePreflightFailure(redirectResponse.url().getString(),
                            "Response for preflight is invalid (redirect)");
 
-    request = ResourceRequest();
-
-    return;
+    return false;
   }
 
   if (m_redirectMode == WebURLRequest::FetchRedirectModeManual) {
@@ -533,9 +531,7 @@ void DocumentThreadableLoader::redirectReceived(
       notifyFinished(resource);
     }
 
-    request = ResourceRequest();
-
-    return;
+    return false;
   }
 
   if (m_redirectMode == WebURLRequest::FetchRedirectModeError) {
@@ -543,26 +539,23 @@ void DocumentThreadableLoader::redirectReceived(
     clear();
     client->didFailRedirectCheck();
 
-    request = ResourceRequest();
-
-    return;
+    return false;
   }
 
   // Allow same origin requests to continue after allowing clients to audit the
   // redirect.
   if (isAllowedRedirect(request.url())) {
     if (m_client->isDocumentThreadableLoaderClient())
-      static_cast<DocumentThreadableLoaderClient*>(m_client)
+      return static_cast<DocumentThreadableLoaderClient*>(m_client)
           ->willFollowRedirect(request, redirectResponse);
-    return;
+    return true;
   }
 
   if (m_corsRedirectLimit <= 0) {
     ThreadableLoaderClient* client = m_client;
     clear();
     client->didFailRedirectCheck();
-    request = ResourceRequest();
-    return;
+    return false;
   }
 
   --m_corsRedirectLimit;
@@ -609,8 +602,7 @@ void DocumentThreadableLoader::redirectReceived(
     client->didFailAccessControlCheck(ResourceError(
         errorDomainBlinkInternal, 0, redirectResponse.url().getString(),
         accessControlErrorDescription));
-    request = ResourceRequest();
-    return;
+    return false;
   }
 
   // FIXME: consider combining this with CORS redirect handling performed by
@@ -644,17 +636,21 @@ void DocumentThreadableLoader::redirectReceived(
   m_referrerAfterRedirect =
       Referrer(request.httpReferrer(), request.getReferrerPolicy());
 
+  ResourceRequest crossOriginRequest(request);
+
   // Remove any headers that may have been added by the network layer that cause
   // access control to fail.
-  request.clearHTTPReferrer();
-  request.clearHTTPOrigin();
-  request.clearHTTPUserAgent();
+  crossOriginRequest.clearHTTPReferrer();
+  crossOriginRequest.clearHTTPOrigin();
+  crossOriginRequest.clearHTTPUserAgent();
   // Add any CORS simple request headers which we previously saved from the
   // original request.
   for (const auto& header : m_simpleRequestHeaders)
-    request.setHTTPHeaderField(header.key, header.value);
-  makeCrossOriginAccessRequest(request);
+    crossOriginRequest.setHTTPHeaderField(header.key, header.value);
+  makeCrossOriginAccessRequest(crossOriginRequest);
   // |this| may be dead here.
+
+  return false;
 }
 
 void DocumentThreadableLoader::redirectBlocked() {

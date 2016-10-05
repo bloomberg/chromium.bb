@@ -73,7 +73,7 @@ class CORE_EXPORT ResourceLoader final
   // A failed load is indicated by 1 didFail(), which can occur at any time
   // before didFinishLoading(), including synchronous inside one of the other
   // callbacks via ResourceLoader::cancel()
-  void willFollowRedirect(WebURLLoader*,
+  bool willFollowRedirect(WebURLLoader*,
                           WebURLRequest&,
                           const WebURLResponse& redirectResponse) override;
   void didSendData(WebURLLoader*,
@@ -103,6 +103,7 @@ class CORE_EXPORT ResourceLoader final
   // Assumes ResourceFetcher and Resource are non-null.
   ResourceLoader(ResourceFetcher*, Resource*);
 
+  void cancelForRedirectAccessCheckError(const KURL&);
   void requestSynchronously(const ResourceRequest&);
 
   std::unique_ptr<WebURLLoader> m_loader;

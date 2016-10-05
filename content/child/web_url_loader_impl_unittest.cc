@@ -139,7 +139,7 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
   ~TestWebURLLoaderClient() override {}
 
   // blink::WebURLLoaderClient implementation:
-  void willFollowRedirect(
+  bool willFollowRedirect(
       blink::WebURLLoader* loader,
       blink::WebURLRequest& newRequest,
       const blink::WebURLResponse& redirectResponse) override {
@@ -155,6 +155,8 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
 
     if (delete_on_receive_redirect_)
       loader_.reset();
+
+    return true;
   }
 
   void didSendData(blink::WebURLLoader* loader,

@@ -70,7 +70,9 @@ class MockRawResourceClient
                void(Resource*, const char*, size_t));
   MOCK_METHOD3(dataReceived, void(Resource*, const char*, size_t));
   MOCK_METHOD3(redirectReceived,
-               void(Resource*, ResourceRequest&, const ResourceResponse&));
+               bool(Resource*,
+                    const ResourceRequest&,
+                    const ResourceResponse&));
   MOCK_METHOD0(redirectBlocked, void());
   MOCK_METHOD2(dataDownloaded, void(Resource*, int));
   MOCK_METHOD2(didReceiveResourceTiming,
@@ -119,10 +121,11 @@ class DummyClient final : public GarbageCollectedFinalized<DummyClient>,
     m_data.append(data, length);
   }
 
-  void redirectReceived(Resource*,
-                        ResourceRequest&,
+  bool redirectReceived(Resource*,
+                        const ResourceRequest&,
                         const ResourceResponse&) override {
     ++m_numberOfRedirectsReceived;
+    return true;
   }
 
   bool called() { return m_called; }

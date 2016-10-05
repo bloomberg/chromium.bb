@@ -45,9 +45,11 @@ class DocumentThreadableLoaderClient : public ThreadableLoaderClient {
  public:
   bool isDocumentThreadableLoaderClient() final { return true; }
 
-  virtual void willFollowRedirect(
-      ResourceRequest& /*newRequest*/,
-      const ResourceResponse& /*redirectResponse*/) {}
+  virtual bool willFollowRedirect(
+      const ResourceRequest& /*newRequest*/,
+      const ResourceResponse& /*redirectResponse*/) {
+    return true;
+  }
 
  protected:
   DocumentThreadableLoaderClient() {}

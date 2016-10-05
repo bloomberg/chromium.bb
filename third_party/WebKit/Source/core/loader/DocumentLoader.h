@@ -211,8 +211,8 @@ class CORE_EXPORT DocumentLoader
 
   void finishedLoading(double finishTime);
   void cancelLoadAfterXFrameOptionsOrCSPDenied(const ResourceResponse&);
-  void redirectReceived(Resource*,
-                        ResourceRequest&,
+  bool redirectReceived(Resource*,
+                        const ResourceRequest&,
                         const ResourceResponse&) final;
   void responseReceived(Resource*,
                         const ResourceResponse&,

@@ -157,14 +157,22 @@ void RawResource::didAddClient(ResourceClient* c) {
   Resource::didAddClient(client);
 }
 
-void RawResource::willFollowRedirect(ResourceRequest& newRequest,
+bool RawResource::willFollowRedirect(const ResourceRequest& newRequest,
                                      const ResourceResponse& redirectResponse) {
-  Resource::willFollowRedirect(newRequest, redirectResponse);
+  bool follow = Resource::willFollowRedirect(newRequest, redirectResponse);
+  // The base class method takes a non const reference of a ResourceRequest
+  // and returns bool just for allowing RawResource to reject redirect. It
+  // must always return true.
+  DCHECK(follow);
 
   DCHECK(!redirectResponse.isNull());
   ResourceClientWalker<RawResourceClient> w(clients());
-  while (RawResourceClient* c = w.next())
-    c->redirectReceived(this, newRequest, redirectResponse);
+  while (RawResourceClient* c = w.next()) {
+    if (!c->redirectReceived(this, newRequest, redirectResponse))
+      follow = false;
+  }
+
+  return follow;
 }
 
 void RawResource::willNotFollowRedirect() {

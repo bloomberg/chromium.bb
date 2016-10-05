@@ -643,23 +643,23 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
           : blink::WebURLRequest::SkipServiceWorker::All,
       &new_request);
 
-  client_->willFollowRedirect(loader_, new_request, response);
-  request_ = new_request;
+  bool follow = client_->willFollowRedirect(loader_, new_request, response);
+  if (!follow) {
+    request_ = WebURLRequest();
 
-  // Only follow the redirect if WebKit left the URL unmodified.
-  if (redirect_info.new_url == GURL(new_request.url())) {
-    // First-party cookie logic moved from DocumentLoader in Blink to
-    // net::URLRequest in the browser. Assert that Blink didn't try to change it
-    // to something else.
-    DCHECK_EQ(redirect_info.new_first_party_for_cookies.spec(),
-              request_.firstPartyForCookies().string().utf8());
-    return true;
+    return false;
   }
 
-  // We assume that WebKit only changes the URL to suppress a redirect, and we
-  // assume that it does so by setting it to be invalid.
-  DCHECK(!new_request.url().isValid());
-  return false;
+  DCHECK(WebURL(redirect_info.new_url) == new_request.url());
+
+  request_ = new_request;
+
+  // First-party cookie logic moved from DocumentLoader in Blink to
+  // net::URLRequest in the browser. Assert that Blink didn't try to change it
+  // to something else.
+  DCHECK_EQ(redirect_info.new_first_party_for_cookies.spec(),
+            request_.firstPartyForCookies().string().utf8());
+  return true;
 }
 
 void WebURLLoaderImpl::Context::OnReceivedResponse(

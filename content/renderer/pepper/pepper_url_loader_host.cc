@@ -120,7 +120,7 @@ int32_t PepperURLLoaderHost::OnResourceMessageReceived(
   return PP_ERROR_FAILED;
 }
 
-void PepperURLLoaderHost::willFollowRedirect(
+bool PepperURLLoaderHost::willFollowRedirect(
     WebURLLoader* loader,
     WebURLRequest& new_request,
     const WebURLResponse& redirect_response) {
@@ -128,7 +128,11 @@ void PepperURLLoaderHost::willFollowRedirect(
   if (!request_data_.follow_redirects) {
     SaveResponse(redirect_response);
     SetDefersLoading(true);
+    // Defer the request and wait the plugin to audit the redirect. We
+    // shouldn't return false here as decision has been delegated to the
+    // plugin.
   }
+  return true;
 }
 
 void PepperURLLoaderHost::didSendData(

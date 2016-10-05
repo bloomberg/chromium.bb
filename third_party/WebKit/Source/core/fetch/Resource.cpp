@@ -549,11 +549,12 @@ void Resource::setRevalidatingRequest(const ResourceRequest& request) {
   m_status = NotStarted;
 }
 
-void Resource::willFollowRedirect(ResourceRequest& newRequest,
+bool Resource::willFollowRedirect(const ResourceRequest& newRequest,
                                   const ResourceResponse& redirectResponse) {
   if (m_isRevalidating)
     revalidationFailed();
   m_redirectChain.append(RedirectPair(newRequest, redirectResponse));
+  return true;
 }
 
 void Resource::setResponse(const ResourceResponse& response) {
