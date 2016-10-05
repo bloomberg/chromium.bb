@@ -38,6 +38,13 @@ class VrShellDelegate;
 class VrShellRenderer;
 struct VrGesture;
 
+enum UiAction {
+  HISTORY_BACK = 0,
+  HISTORY_FORWARD,
+  RELOAD,
+  ZOOM_OUT,
+  ZOOM_IN
+};
 
 class VrShell : public device::GvrDelegate {
  public:
@@ -98,6 +105,9 @@ class VrShell : public device::GvrDelegate {
   // Called from non-render thread to queue a callback onto the render thread.
   // The render thread checks for callbacks and processes them between frames.
   void QueueTask(base::Callback<void()>& callback);
+
+  // Perform a UI action triggered by the javascript API.
+  void DoUiAction(const UiAction action);
 
  private:
   virtual ~VrShell();

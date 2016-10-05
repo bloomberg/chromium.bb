@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/vr_shell/vr_shell_ui_message_handler.h"
 
 #include <memory>
+#include <string>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -51,5 +52,9 @@ void VrShellUIMessageHandler::HandleUpdateScene(const base::ListValue* args) {
 }
 
 void VrShellUIMessageHandler::HandleDoAction(const base::ListValue* args) {
-  NOTIMPLEMENTED();
+  int action;
+  CHECK(args->GetInteger(0, &action));
+  if (vr_shell_) {
+    vr_shell_->DoUiAction((vr_shell::UiAction) action);
+  }
 }

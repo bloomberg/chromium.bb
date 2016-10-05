@@ -755,6 +755,29 @@ void VrShell::HandleQueuedTasks() {
   }
 }
 
+void VrShell::DoUiAction(const UiAction action) {
+  content::NavigationController& controller =
+      content_cvc_->GetWebContents()->GetController();
+  switch (action) {
+    case HISTORY_BACK:
+      if (controller.CanGoBack())
+        controller.GoBack();
+      break;
+    case HISTORY_FORWARD:
+      if (controller.CanGoForward())
+        controller.GoForward();
+      break;
+    case RELOAD:
+      controller.Reload(false);
+      break;
+    case ZOOM_OUT:  // Not handled yet.
+    case ZOOM_IN:  // Not handled yet.
+      break;
+    default:
+      NOTREACHED();
+  }
+}
+
 // ----------------------------------------------------------------------------
 // Native JNI methods
 // ----------------------------------------------------------------------------

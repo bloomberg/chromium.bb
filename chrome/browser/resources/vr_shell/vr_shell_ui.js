@@ -69,6 +69,19 @@ var vrShellUi = (function() {
   });
 
   /**
+   * Enumeration of UI actions.
+   * @enum {number}
+   * @const
+   */
+  var UiAction = Object.freeze({
+    'HISTORY_BACK': 0,
+    'HISTORY_FORWARD': 1,
+    'RELOAD': 2,
+    'ZOOM_OUT': 3,
+    'ZOOM_IN': 4
+  });
+
+  /**
    * @type {number} Id generator.
    */
   var idIndex = 1;
@@ -167,11 +180,11 @@ var vrShellUi = (function() {
   function addControlButtons() {
     var buttons = [
         // Button text, UI action passed down to native.
-        ['<', 'HISTORY_BACK'],
-        ['>', 'HISTORY_FORWARD'],
-        ['R', 'RELOAD'],
-        ['-', 'ZOOM_OUT'],
-        ['+', 'ZOOM_IN']
+        ['<', UiAction.HISTORY_BACK],
+        ['>', UiAction.HISTORY_FORWARD],
+        ['R', UiAction.RELOAD],
+        ['-', UiAction.ZOOM_OUT],
+        ['+', UiAction.ZOOM_IN]
     ];
 
     var buttonWidth = 0.3;

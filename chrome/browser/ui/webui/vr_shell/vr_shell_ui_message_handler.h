@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_VR_SHELL_VR_SHELL_UI_MESSAGE_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_VR_SHELL_VR_SHELL_UI_MESSAGE_HANDLER_H_
 
-#include <string>
-
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/web_ui_message_handler.h"
