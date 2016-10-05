@@ -282,8 +282,7 @@ if [ $BAD_DIFF -ne 0 ] && [ -z "${IGNORE_DEPS_CHANGES:-}" ]; then
   echo
   echo "ERROR: Shared library dependencies changed!"
   echo "If this is intentional, please update:"
-  echo "chrome/installer/linux/debian/expected_deps_ia32"
-  echo "chrome/installer/linux/debian/expected_deps_x64"
+  echo "chrome/installer/linux/debian/expected_deps_$TARGETARCH"
   echo
   exit $BAD_DIFF
 fi

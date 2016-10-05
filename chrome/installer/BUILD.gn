@@ -4,10 +4,13 @@
 
 import("//build/config/chrome_build.gni")
 
+declare_args() {
+  enable_linux_installer = is_desktop_linux && is_chrome_branded
+}
+
 # Meta-target that forwards to the installer of the correct type (if any).
 group("installer") {
-  # We only make Linux installers for 64-bit desktop.
-  if (is_desktop_linux && is_chrome_branded && target_cpu == "x64") {
+  if (enable_linux_installer) {
     deps = [
       "//chrome/installer/linux",
     ]

@@ -13,7 +13,7 @@ if (current_cpu == "x86" || current_cpu == "x64") {
   import("//media/cdm/ppapi/cdm_paths.gni")
 }
 
-assert(is_linux && is_chrome_branded)
+assert(is_linux)
 
 # This target builds all "normal" Linux installers.
 #
@@ -72,7 +72,6 @@ copy("common_packaging_files") {
     "common/default-app-block.template",
     "common/default-app.template",
     "common/desktop.template",
-    "common/google-chrome/google-chrome.info",
     "common/installer.include",
     "common/postinst.include",
     "common/prerm.include",
@@ -83,6 +82,12 @@ copy("common_packaging_files") {
     "common/variables.include",
     "common/wrapper",
   ]
+
+  if (is_chrome_branded) {
+    sources += [ "common/google-chrome/google-chrome.info" ]
+  } else {
+    sources += [ "common/chromium-browser/chromium-browser.info" ]
+  }
 
   if (current_cpu == "x86") {
     sources += [ "//build/linux/bin/eu-strip" ]
@@ -224,20 +229,20 @@ template("linux_package") {
   ]
 
   if (current_cpu == "x86") {
-    packaging_files_binaries += [
-      "$root_out_dir/nacl_irt_x86_32.nexe",
-      "$root_out_dir/$widevine_cdm_path/libwidevinecdmadapter.so",
-      "$root_out_dir/$widevine_cdm_path/libwidevinecdm.so",
-    ]
+    packaging_files_binaries += [ "$root_out_dir/nacl_irt_x86_32.nexe" ]
   } else if (current_cpu == "x64") {
-    packaging_files_binaries += [
-      "$root_out_dir/nacl_irt_x86_64.nexe",
-      "$root_out_dir/$widevine_cdm_path/libwidevinecdmadapter.so",
-      "$root_out_dir/$widevine_cdm_path/libwidevinecdm.so",
-    ]
+    packaging_files_binaries += [ "$root_out_dir/nacl_irt_x86_64.nexe" ]
   } else if (current_cpu == "arm") {
     packaging_files_binaries += [ "$root_out_dir/nacl_irt_arm.nexe" ]
   }
+
+  if (is_chrome_branded) {
+    packaging_files_binaries += [
+      "$root_out_dir/$widevine_cdm_path/libwidevinecdmadapter.so",
+      "$root_out_dir/$widevine_cdm_path/libwidevinecdm.so",
+    ]
+  }
+
   if (is_asan) {
     packaging_files_binaries += [ "$root_out_dir/lib/libc++.so" ]
   }
