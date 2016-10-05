@@ -20,6 +20,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
+#include "content/public/common/screen_info.h"
 #include "jni/VrShell_jni.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
@@ -668,13 +669,6 @@ void VrShell::OnDomContentsLoaded() {
       SK_ColorTRANSPARENT);
 }
 
-void VrShell::SetUiTextureSize(int width, int height) {
-  // TODO(bshe): ui_text_width_ and ui_tex_height_ should be only used on render
-  // thread.
-  ui_tex_width_ = width;
-  ui_tex_height_ = height;
-}
-
 void VrShell::SetWebVrMode(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>& obj,
                            bool enabled) {
@@ -711,6 +705,12 @@ void VrShell::ContentSurfaceChanged(JNIEnv* env,
                                     jint height,
                                     const JavaParamRef<jobject>& surface) {
   content_compositor_->SurfaceChanged((int)width, (int)height, surface);
+  content::ScreenInfo result;
+  content_cvc_->GetWebContents()->GetRenderWidgetHostView()->
+      GetRenderWidgetHost()->GetScreenInfo(&result);
+  float dpr = result.device_scale_factor;
+  scene_.GetUiElementById(kBrowserUiElementId)->copy_rect =
+      { 0, 0, width / dpr, height / dpr };
 }
 
 void VrShell::UiSurfaceChanged(JNIEnv* env,
@@ -719,6 +719,11 @@ void VrShell::UiSurfaceChanged(JNIEnv* env,
                                jint height,
                                const JavaParamRef<jobject>& surface) {
   ui_compositor_->SurfaceChanged((int)width, (int)height, surface);
+  content::ScreenInfo result;
+  ui_cvc_->GetWebContents()->GetRenderWidgetHostView()->
+      GetRenderWidgetHost()->GetScreenInfo(&result);
+  ui_tex_width_ = width / result.device_scale_factor;
+  ui_tex_height_ = height / result.device_scale_factor;
 }
 
 UiScene* VrShell::GetScene() {

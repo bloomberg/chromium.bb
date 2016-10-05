@@ -36,13 +36,6 @@ void VrShellUIMessageHandler::HandleDomLoaded(const base::ListValue* args) {
     return;
 
   vr_shell_->OnDomContentsLoaded();
-
-  // TODO(bshe): Get size from native side directly.
-  CHECK_EQ(2u, args->GetSize());
-  int width, height;
-  CHECK(args->GetInteger(0, &width));
-  CHECK(args->GetInteger(1, &height));
-  vr_shell_->SetUiTextureSize(width, height);
 }
 
 void VrShellUIMessageHandler::HandleUpdateScene(const base::ListValue* args) {

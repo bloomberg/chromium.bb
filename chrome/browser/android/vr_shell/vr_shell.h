@@ -71,7 +71,6 @@ class VrShell : public device::GvrDelegate {
       const content::WebContents* web_contents);
   UiScene* GetScene();
   void OnDomContentsLoaded();
-  void SetUiTextureSize(int width, int height);
 
   // device::GvrDelegate implementation
   void SetWebVRSecureOrigin(bool secure_origin) override;

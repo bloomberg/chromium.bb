@@ -122,9 +122,9 @@ void VrInputManager::SendScrollEvent(int64_t time_ms,
 }
 
 void VrInputManager::SendMouseEvent(int64_t time_ms,
-                                        float x,
-                                        float y,
-                                        WebInputEvent::Type type) {
+                                    float x,
+                                    float y,
+                                    WebInputEvent::Type type) {
   WebMouseEvent result;
 
   result.type = type;

@@ -221,7 +221,7 @@ var vrShellUi = (function() {
   }
 
   function domLoaded() {
-    chrome.send('domLoaded', [window.innerWidth, window.innerHeight]);
+    chrome.send('domLoaded');
   }
 
   function addMesh(id, mesh) {
