@@ -505,6 +505,9 @@ void ContentSettingsHandler::GetLocalizedValues(
     {"keygenHeader", IDS_KEYGEN_HEADER},
     {"keygenAllow", IDS_KEYGEN_ALLOW_RADIO},
     {"keygenBlock", IDS_KEYGEN_DONOTALLOW_RADIO},
+    // PDF Plugin filter.
+    {"pdfTabLabel", IDS_PDF_TAB_LABEL},
+    {"pdfEnable", IDS_PDF_ENABLE_CHECKBOX},
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));

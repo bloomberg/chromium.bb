@@ -388,7 +388,12 @@
     "os": ["win", "linux", "mac"],
     "test_policy": { "AlwaysOpenPdfExternally": true },
     "pref_mappings": [
-      { "pref": "plugins.always_open_pdf_externally" }
+      { "pref": "plugins.always_open_pdf_externally",
+        "indicator_tests": [
+          { "policy": { "AlwaysOpenPdfExternally": false }},
+          { "policy": { "AlwaysOpenPdfExternally": true }}
+        ]
+      }
     ]
   },
 

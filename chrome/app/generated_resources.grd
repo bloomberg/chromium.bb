@@ -8212,6 +8212,12 @@ I don't think this site should be blocked!
       <message name="IDS_KEYGEN_DONOTALLOW_RADIO" desc="A radio button in the Content Settings dialog for preventing forms from using key generation on any site.">
         Do not allow any site to use key generation in forms (recommended)
       </message>
+      <message name="IDS_PDF_TAB_LABEL" desc="Label for the pdf plugin tab on Content Settings dialog">
+        PDF Documents
+      </message>
+      <message name="IDS_PDF_ENABLE_CHECKBOX" desc="A checkbox in the Content Settings dialog for forcing an external PDF viewer app in place of the internal PDF plugin.">
+        Open PDF files in the default PDF viewer application.
+      </message>
       <message name="IDS_HANDLERS_TAB_LABEL" desc="Label for Handlers tab on Content Settings dialog">
         Handlers
       </message>
