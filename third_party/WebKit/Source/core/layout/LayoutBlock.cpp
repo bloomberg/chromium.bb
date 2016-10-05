@@ -1289,12 +1289,12 @@ PositionWithAffinity LayoutBlock::positionForPoint(const LayoutPoint& point) {
       LayoutUnit childLogicalBottom =
           logicalTopForChild(*childBox) + logicalHeightForChild(*childBox);
       // We hit child if our click is above the bottom of its padding box (like IE6/7 and FF3).
-      if (isChildHitTestCandidate(childBox) &&
-          (pointInLogicalContents.y() < childLogicalBottom ||
-           (blocksAreFlipped &&
-            pointInLogicalContents.y() == childLogicalBottom)))
+      if (pointInLogicalContents.y() < childLogicalBottom ||
+          (blocksAreFlipped &&
+           pointInLogicalContents.y() == childLogicalBottom)) {
         return positionForPointRespectingEditingBoundaries(
             LineLayoutBox(childBox), pointInContents);
+      }
     }
   }
 
