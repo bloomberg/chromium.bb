@@ -327,10 +327,12 @@ public class TouchInputHandler {
         switch (inputMode) {
             case TRACKPAD:
                 setInputStrategy(new TrackpadInputStrategy(mRenderData, injector));
+                mDesktopCanvas.adjustViewportForSystemUi(true);
                 moveCursorToScreenCenter();
                 break;
 
             case TOUCH:
+                mDesktopCanvas.adjustViewportForSystemUi(false);
                 if (hostTouchCapability.isSupported()) {
                     setInputStrategy(new TouchInputStrategy(mRenderData, injector));
                 } else {
