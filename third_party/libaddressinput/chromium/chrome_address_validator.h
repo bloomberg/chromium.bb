@@ -135,11 +135,14 @@ class AddressValidator {
       size_t suggestion_limit,
       std::vector< ::i18n::addressinput::AddressData>* suggestions) const;
 
-  // Canonicalizes the administrative area in |address_data|. For example,
-  // "texas" changes to "TX". Returns true on success, otherwise leaves
-  // |address_data| alone and returns false.
-  virtual bool CanonicalizeAdministrativeArea(
+  // Normalizes the |address_data|. For example, "texas" changes to "TX".
+  // Returns true on success, otherwise leaves |address_data| alone and returns
+  // false.
+  virtual bool NormalizeAddress(
       ::i18n::addressinput::AddressData* address) const;
+
+  // Returns whether the rules associated with the |region_code| are loaded.
+  virtual bool AreRulesLoadedForRegion(const std::string& region_code);
 
  protected:
   // Constructor used only for MockAddressValidator.

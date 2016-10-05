@@ -24,6 +24,16 @@ public class AutofillTestHelper {
 
     public AutofillTestHelper() {
         registerDataObserver();
+        setNormalizationTimeoutForTesting();
+    }
+
+    void setNormalizationTimeoutForTesting() {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                PersonalDataManager.getInstance().setNormalizationTimeoutForTesting(1);
+            }
+        });
     }
 
     AutofillProfile getProfile(final String guid) throws ExecutionException {

@@ -620,38 +620,47 @@ TEST_F(AddressValidatorTest, SuggestionsAreCleared) {
   EXPECT_TRUE(suggestions.empty());
 }
 
-TEST_F(AddressValidatorTest, CanonicalizeUsAdminAreaName) {
+TEST_F(AddressValidatorTest, NormalizeUsAdminAreaName) {
   AddressData address;
   address.region_code = "US";
   address.administrative_area = "cALIFORNIa";
-  EXPECT_TRUE(validator_->CanonicalizeAdministrativeArea(&address));
+  EXPECT_TRUE(validator_->NormalizeAddress(&address));
   EXPECT_EQ("CA", address.administrative_area);
 }
 
-TEST_F(AddressValidatorTest, CanonicalizeUsAdminAreaKey) {
+TEST_F(AddressValidatorTest, NormalizeUsAdminAreaKey) {
   AddressData address;
   address.region_code = "US";
   address.administrative_area = "CA";
-  EXPECT_TRUE(validator_->CanonicalizeAdministrativeArea(&address));
+  EXPECT_TRUE(validator_->NormalizeAddress(&address));
   EXPECT_EQ("CA", address.administrative_area);
 }
 
-TEST_F(AddressValidatorTest, CanonicalizeJpAdminAreaKey) {
+TEST_F(AddressValidatorTest, NormalizeJpAdminAreaKey) {
   validator_->LoadRules("JP");
   AddressData address;
   address.region_code = "JP";
   address.administrative_area = "東京都";
-  EXPECT_TRUE(validator_->CanonicalizeAdministrativeArea(&address));
+  EXPECT_TRUE(validator_->NormalizeAddress(&address));
   EXPECT_EQ("東京都", address.administrative_area);
 }
 
-TEST_F(AddressValidatorTest, CanonicalizeJpAdminAreaLatinName) {
+TEST_F(AddressValidatorTest, NormalizeJpAdminAreaLatinName) {
   validator_->LoadRules("JP");
   AddressData address;
   address.region_code = "JP";
   address.administrative_area = "tOKYo";
-  EXPECT_TRUE(validator_->CanonicalizeAdministrativeArea(&address));
+  EXPECT_TRUE(validator_->NormalizeAddress(&address));
   EXPECT_EQ("TOKYO", address.administrative_area);
+}
+
+TEST_F(AddressValidatorTest, AreRulesLoadedForRegion_NotLoaded) {
+  EXPECT_FALSE(validator_->AreRulesLoadedForRegion("JP"));
+}
+
+TEST_F(AddressValidatorTest, AreRulesLoadedForRegion_Loaded) {
+  validator_->LoadRules("JP");
+  EXPECT_TRUE(validator_->AreRulesLoadedForRegion("JP"));
 }
 
 TEST_F(AddressValidatorTest, TokushimaSuggestionIsValid) {

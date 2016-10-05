@@ -27,6 +27,9 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_member.h"
 #include "components/webdata/common/web_data_service_consumer.h"
+#if defined(OS_ANDROID)
+#include "net/url_request/url_request_context_getter.h"
+#endif
 
 class AccountTrackerService;
 class Browser;
@@ -263,6 +266,20 @@ class PersonalDataManager : public KeyedService,
     NotifyPersonalDataChanged();
   }
 
+#if defined(OS_ANDROID)
+  // Sets the URL request context getter to be used when normalizing addresses
+  // with libaddressinput's address validator.
+  void SetURLRequestContextGetter(
+      net::URLRequestContextGetter* context_getter) {
+    context_getter_ = context_getter;
+  }
+
+  // Returns the class used to fetch the address validation rules.
+  net::URLRequestContextGetter* GetURLRequestContextGetter() const {
+    return context_getter_.get();
+  }
+#endif
+
  protected:
   // Only PersonalDataManagerFactory and certain tests can create instances of
   // PersonalDataManager.
@@ -495,6 +512,12 @@ class PersonalDataManager : public KeyedService,
   // Set to true if autofill profile deduplication is enabled and needs to be
   // performed on the next data refresh.
   bool is_autofill_profile_dedupe_pending_ = false;
+
+#if defined(OS_ANDROID)
+  // The context for the request to be used to fetch libaddressinput's address
+  // validation rules.
+  scoped_refptr<net::URLRequestContextGetter> context_getter_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(PersonalDataManager);
 };

@@ -112,17 +112,16 @@ AddressValidator::Status AddressValidator::GetSuggestions(
   return SUCCESS;
 }
 
-bool AddressValidator::CanonicalizeAdministrativeArea(
-    AddressData* address) const {
+bool AddressValidator::NormalizeAddress(AddressData* address) const {
   if (!supplier_->IsLoaded(address->region_code))
     return false;
 
-  // TODO: It would probably be beneficial to use the full canonicalization.
-  AddressData tmp(*address);
-  normalizer_->Normalize(&tmp);
-  address->administrative_area = tmp.administrative_area;
-
+  normalizer_->Normalize(address);
   return true;
+}
+
+bool AddressValidator::AreRulesLoadedForRegion(const std::string& region_code) {
+  return supplier_->IsLoaded(region_code);
 }
 
 AddressValidator::AddressValidator()

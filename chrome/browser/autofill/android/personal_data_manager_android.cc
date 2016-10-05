@@ -13,7 +13,6 @@
 #include "base/android/jni_string.h"
 #include "base/command_line.h"
 #include "base/format_macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -25,6 +24,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
+#include "components/autofill/core/browser/address_i18n.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_type.h"
@@ -40,6 +40,9 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/PersonalDataManager_jni.h"
+#include "third_party/libaddressinput/chromium/chrome_metadata_source.h"
+#include "third_party/libaddressinput/chromium/chrome_storage_impl.h"
+#include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
 
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF16ToJavaString;
@@ -263,13 +266,60 @@ class FullCardRequester : public payments::FullCardRequest::Delegate,
   DISALLOW_COPY_AND_ASSIGN(FullCardRequester);
 };
 
+// Self-deleting requester of address normalization.
+class AddressNormalizationRequester
+    : public PersonalDataManagerAndroid::Delegate,
+      public base::SupportsWeakPtr<AddressNormalizationRequester> {
+ public:
+  AddressNormalizationRequester(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& jdelegate,
+      const std::string& region_code,
+      const std::string& guid,
+      base::WeakPtr<PersonalDataManagerAndroid> personal_data_manager_android) {
+    jdelegate_.Reset(env, jdelegate);
+    region_code_ = region_code;
+    guid_ = guid;
+    personal_data_manager_android_ = personal_data_manager_android;
+    env_ = env;
+  }
+
+ private:
+  virtual ~AddressNormalizationRequester() {}
+
+  void OnRulesSuccessfullyLoaded() override {
+    if (personal_data_manager_android_) {
+      JNIEnv* env = base::android::AttachCurrentThread();
+      Java_NormalizedAddressRequestDelegate_onAddressNormalized(
+          env, jdelegate_, personal_data_manager_android_->NormalizeAddress(
+                               guid_, region_code_, env));
+    }
+
+    delete this;
+  }
+
+  ScopedJavaGlobalRef<jobject> jdelegate_;
+  std::string guid_;
+  std::string region_code_;
+  base::WeakPtr<PersonalDataManagerAndroid> personal_data_manager_android_;
+  JNIEnv* env_;
+
+  DISALLOW_COPY_AND_ASSIGN(AddressNormalizationRequester);
+};
+
 }  // namespace
 
-PersonalDataManagerAndroid::PersonalDataManagerAndroid(JNIEnv* env,
-                                                       jobject obj)
+PersonalDataManagerAndroid::PersonalDataManagerAndroid(JNIEnv* env, jobject obj)
     : weak_java_obj_(env, obj),
       personal_data_manager_(PersonalDataManagerFactory::GetForProfile(
-          ProfileManager::GetActiveUserProfile())) {
+          ProfileManager::GetActiveUserProfile())),
+      address_validator_(
+          std::unique_ptr<::i18n::addressinput::Source>(
+              new autofill::ChromeMetadataSource(
+                  I18N_ADDRESS_VALIDATION_DATA_URL,
+                  personal_data_manager_->GetURLRequestContextGetter())),
+          ValidationRulesStorageFactory::CreateStorage(),
+          this) {
   personal_data_manager_->AddObserver(this);
 }
 
@@ -601,6 +651,84 @@ jlong PersonalDataManagerAndroid::GetCurrentDateForTesting(
   return base::Time::Now().ToTimeT();
 }
 
+void PersonalDataManagerAndroid::LoadRulesForRegion(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& unused_obj,
+    const base::android::JavaParamRef<jstring>& jregion_code) {
+  address_validator_.LoadRules(ConvertJavaStringToUTF8(env, jregion_code));
+}
+
+void PersonalDataManagerAndroid::OnAddressValidationRulesLoaded(
+    const std::string& region_code,
+    bool success) {
+  // Check if an address normalization is pending.
+  std::map<std::string, Delegate*>::iterator it =
+      pending_normalization_.find(region_code);
+  if (it != pending_normalization_.end()) {
+    // The Delegate will self delete after normalizing.
+    it->second->OnRulesSuccessfullyLoaded();
+    pending_normalization_.erase(it);
+  }
+}
+
+jboolean PersonalDataManagerAndroid::StartAddressNormalization(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& unused_obj,
+    const JavaParamRef<jstring>& jguid,
+    const JavaParamRef<jstring>& jregion_code,
+    const JavaParamRef<jobject>& jdelegate) {
+  const std::string region_code = ConvertJavaStringToUTF8(env, jregion_code);
+  const std::string guid = ConvertJavaStringToUTF8(env, jguid);
+
+  Delegate* requester = new AddressNormalizationRequester(
+      env, jdelegate, region_code, guid, AsWeakPtr());
+
+  // Check if the rules are already loaded.
+  if (AreRulesLoadedForRegion(region_code)) {
+    requester->OnRulesSuccessfullyLoaded();
+    return false;
+  } else {
+    // Setup the variables so the profile gets normalized when the rules have
+    // finished loading.
+    pending_normalization_.insert(
+        std::pair<std::string, Delegate*>(region_code, requester));
+    return true;
+  }
+}
+
+ScopedJavaLocalRef<jobject> PersonalDataManagerAndroid::NormalizeAddress(
+    const std::string& guid,
+    const std::string& region_code,
+    JNIEnv* env) {
+  AutofillProfile* profile = personal_data_manager_->GetProfileByGUID(guid);
+
+  if (!profile || !AreRulesLoadedForRegion(region_code))
+    return nullptr;
+
+  // Create the AddressData from the profile.
+  ::i18n::addressinput::AddressData address_data =
+      *i18n::CreateAddressDataFromAutofillProfile(
+          *profile, personal_data_manager_->app_locale());
+
+  // Normalize the address.
+  if (address_validator_.NormalizeAddress(&address_data)) {
+    profile->SetRawInfo(ADDRESS_HOME_STATE,
+                        base::UTF8ToUTF16(address_data.administrative_area));
+    profile->SetRawInfo(ADDRESS_HOME_CITY,
+                        base::UTF8ToUTF16(address_data.locality));
+    profile->SetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY,
+                        base::UTF8ToUTF16(address_data.dependent_locality));
+  }
+
+  return CreateJavaProfileFromNative(env, *profile);
+}
+
+void PersonalDataManagerAndroid::CancelPendingAddressNormalization(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& unused_obj) {
+  pending_normalization_.clear();
+}
+
 ScopedJavaLocalRef<jobjectArray> PersonalDataManagerAndroid::GetProfileGUIDs(
     JNIEnv* env,
     const std::vector<AutofillProfile*>& profiles) {
@@ -652,6 +780,11 @@ ScopedJavaLocalRef<jobjectArray> PersonalDataManagerAndroid::GetProfileLabels(
       g_browser_process->GetApplicationLocale(), &labels);
 
   return base::android::ToJavaArrayOfStrings(env, labels);
+}
+
+bool PersonalDataManagerAndroid::AreRulesLoadedForRegion(
+    const std::string& region_code) {
+  return address_validator_.AreRulesLoadedForRegion(region_code);
 }
 
 // Returns whether the Autofill feature is enabled.

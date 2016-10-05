@@ -78,6 +78,8 @@ split_static_library("browser") {
     "autofill/personal_data_manager_factory.h",
     "autofill/risk_util.cc",
     "autofill/risk_util.h",
+    "autofill/validation_rules_storage_factory.cc",
+    "autofill/validation_rules_storage_factory.h",
     "background_sync/background_sync_controller_factory.cc",
     "background_sync/background_sync_controller_factory.h",
     "background_sync/background_sync_controller_impl.cc",
@@ -2533,10 +2535,7 @@ split_static_library("browser") {
       "//third_party/libaddressinput:util",
     ]
 
-    deps -= [
-      "//components/storage_monitor",
-      "//third_party/libaddressinput",
-    ]
+    deps -= [ "//components/storage_monitor" ]
     if (use_seccomp_bpf) {
       defines += [ "USE_SECCOMP_BPF" ]
       deps += [ "//sandbox/linux:seccomp_bpf" ]
@@ -2546,8 +2545,6 @@ split_static_library("browser") {
     sources += [
       "accessibility/invert_bubble_prefs.cc",
       "accessibility/invert_bubble_prefs.h",
-      "autofill/validation_rules_storage_factory.cc",
-      "autofill/validation_rules_storage_factory.h",
       "background/background_contents.cc",
       "background/background_contents.h",
       "banners/app_banner_infobar_delegate_desktop.cc",
