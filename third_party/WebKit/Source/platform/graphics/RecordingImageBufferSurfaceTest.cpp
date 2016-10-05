@@ -129,7 +129,8 @@ class RecordingImageBufferSurfaceTest : public Test {
 
   void testNonAnimatedCanvasUpdate() {
     m_testSurface->initializeCurrentFrame();
-    // acquire picture twice to simulate a static canvas: nothing drawn between updates
+    // Acquire picture twice to simulate a static canvas: nothing drawn between
+    // updates.
     m_fakeImageBufferClient->fakeDraw();
     m_testSurface->getPicture();
     m_testSurface->getPicture();

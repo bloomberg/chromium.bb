@@ -46,12 +46,14 @@ namespace ColorSpaceUtilities {
 const uint8_t* getConversionLUT(ColorSpace dstColorSpace,
                                 ColorSpace srcColorSpace = ColorSpaceDeviceRGB);
 
-// Convert a Color assumed to be in the |srcColorSpace| into the |dstColorSpace|.
+// Convert a Color assumed to be in the |srcColorSpace| into the
+// |dstColorSpace|.
 Color convertColor(const Color& srcColor,
                    ColorSpace dstColorSpace,
                    ColorSpace srcColorSpace = ColorSpaceDeviceRGB);
 
-// Create a color filter that will convert from |srcColorSpace| into |dstColorSpace|.
+// Create a color filter that will convert from |srcColorSpace| into
+// |dstColorSpace|.
 sk_sp<SkColorFilter> createColorSpaceFilter(ColorSpace srcColorSpace,
                                             ColorSpace dstColorSpace);
 

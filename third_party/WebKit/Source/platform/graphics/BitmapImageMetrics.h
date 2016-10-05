@@ -17,7 +17,8 @@ class PLATFORM_EXPORT BitmapImageMetrics {
   STATIC_ONLY(BitmapImageMetrics);
 
  public:
-  // Values synced with 'DecodedImageType' in src/tools/metrics/histograms/histograms.xml
+  // Values synced with 'DecodedImageType' in
+  // src/tools/metrics/histograms/histograms.xml
   enum DecodedImageType {
     ImageUnknown = 0,
     ImageJPEG = 1,

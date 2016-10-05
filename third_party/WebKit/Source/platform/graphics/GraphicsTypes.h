@@ -79,8 +79,8 @@ enum OpacityMode {
 
 enum AccelerationHint {
   PreferAcceleration,
-  // The PreferAccelerationAfterVisibilityChange hint suggests we should switch back to acceleration
-  // in the context of the canvas becoming visible again.
+  // The PreferAccelerationAfterVisibilityChange hint suggests we should switch
+  // back to acceleration in the context of the canvas becoming visible again.
   PreferAccelerationAfterVisibilityChange,
   PreferNoAcceleration,
 };
@@ -125,8 +125,8 @@ enum ImageInitializationMode {
   DoNotInitializeImagePixels,
 };
 
-// TODO(junov): crbug.com/453113 relocate ShadowMode to CanvasRenderingContext2DState.h once
-// GraphicsContext no longer uses it.
+// TODO(junov): crbug.com/453113 Relocate ShadowMode to
+// CanvasRenderingContext2DState.h once GraphicsContext no longer uses it.
 enum ShadowMode { DrawShadowAndForeground, DrawShadowOnly, DrawForegroundOnly };
 
 enum AntiAliasingMode { NotAntiAliased, AntiAliased };

@@ -54,9 +54,9 @@ sk_sp<SkPicture> ImageBufferSurface::getPicture() {
 }
 
 void ImageBufferSurface::clear() {
-  // Clear the background transparent or opaque, as required. It would be nice if this wasn't
-  // required, but the canvas is currently filled with the magic transparency
-  // color. Can we have another way to manage this?
+  // Clear the background transparent or opaque, as required. It would be nice
+  // if this wasn't required, but the canvas is currently filled with the magic
+  // transparency color. Can we have another way to manage this?
   if (isValid()) {
     if (m_opacityMode == Opaque) {
       canvas()->clear(SK_ColorBLACK);

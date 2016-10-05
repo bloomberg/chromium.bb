@@ -70,9 +70,10 @@ class PLATFORM_EXPORT ImageFrameGenerator final
 
   ~ImageFrameGenerator();
 
-  // Decodes and scales the specified frame at |index|. The dimensions and output
-  // format are given in SkImageInfo. Decoded pixels are written into |pixels| with
-  // a stride of |rowBytes|. Returns true if decoding was successful.
+  // Decodes and scales the specified frame at |index|. The dimensions and
+  // output format are given in SkImageInfo. Decoded pixels are written into
+  // |pixels| with a stride of |rowBytes|. Returns true if decoding was
+  // successful.
   bool decodeAndScale(SegmentReader*,
                       bool allDataReceived,
                       size_t index,
@@ -80,10 +81,11 @@ class PLATFORM_EXPORT ImageFrameGenerator final
                       void* pixels,
                       size_t rowBytes);
 
-  // Decodes YUV components directly into the provided memory planes.
-  // Must not be called unless getYUVComponentSizes has been called and returned true.
-  // YUV decoding does not currently support progressive decoding. In order to support it, ImageDecoder needs something
-  // analagous to its ImageFrame cache to hold partial planes, and the GPU code needs to handle them.
+  // Decodes YUV components directly into the provided memory planes. Must not
+  // be called unless getYUVComponentSizes has been called and returned true.
+  // YUV decoding does not currently support progressive decoding. In order to
+  // support it, ImageDecoder needs something analagous to its ImageFrame cache
+  // to hold partial planes, and the GPU code needs to handle them.
   bool decodeToYUV(SegmentReader*,
                    size_t index,
                    const SkISize componentSizes[3],
@@ -97,8 +99,9 @@ class PLATFORM_EXPORT ImageFrameGenerator final
 
   bool hasAlpha(size_t index);
 
-  // Must not be called unless the SkROBuffer has all the data.
-  // YUV decoding does not currently support progressive decoding. See comment above on decodeToYUV.
+  // Must not be called unless the SkROBuffer has all the data. YUV decoding
+  // does not currently support progressive decoding. See comment above on
+  // decodeToYUV().
   bool getYUVComponentSizes(SegmentReader*, SkYUVSizeInfo*);
 
  private:
@@ -106,7 +109,8 @@ class PLATFORM_EXPORT ImageFrameGenerator final
 
   friend class ImageFrameGeneratorTest;
   friend class DeferredImageDecoderTest;
-  // For testing. |factory| will overwrite the default ImageDecoder creation logic if |factory->create()| returns non-zero.
+  // For testing. |factory| will overwrite the default ImageDecoder creation
+  // logic if |factory->create()| returns non-zero.
   void setImageDecoderFactory(std::unique_ptr<ImageDecoderFactory> factory) {
     m_imageDecoderFactory = std::move(factory);
   }

@@ -55,9 +55,9 @@ AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
       m_syncToken(syncToken) {
   m_threadChecker.DetachFromThread();
 
-  // Note: In this case, m_image is not usable directly because it is not in the shared context.
-  // It is just used to hold a reference to the texture object in the origin context until the
-  // mailbox can be consumed.
+  // Note: In this case, m_image is not usable directly because it is not in the
+  // shared context. It is just used to hold a reference to the texture object
+  // in the origin context until the mailbox can be consumed.
 }
 
 AcceleratedStaticBitmapImage::~AcceleratedStaticBitmapImage() {
@@ -77,8 +77,8 @@ void AcceleratedStaticBitmapImage::copyToTexture(
   checkThread();
   if (!isValid())
     return;
-  // |destProvider| may not be the same context as the one used for |m_image| so we use a mailbox to
-  // generate a texture id for |destProvider| to access.
+  // |destProvider| may not be the same context as the one used for |m_image|,
+  // so we use a mailbox to generate a texture id for |destProvider| to access.
   ensureMailbox();
 
   // Get a texture id that |destProvider| knows about and copy from it.
@@ -88,7 +88,8 @@ void AcceleratedStaticBitmapImage::copyToTexture(
       destGL->CreateAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, m_mailbox.name);
   destGL->CopyTextureCHROMIUM(sourceTextureId, destTextureId, internalFormat,
                               destType, flipY, false, false);
-  // This drops the |destGL| context's reference on our |m_mailbox|, but it's still held alive by our SkImage.
+  // This drops the |destGL| context's reference on our |m_mailbox|, but it's
+  // still held alive by our SkImage.
   destGL->DeleteTextures(1, &sourceTextureId);
 }
 
@@ -121,8 +122,10 @@ bool AcceleratedStaticBitmapImage::isValid() {
   if (!SharedGpuContext::isValid())
     return false;  // Gpu context was lost
   if (imageBelongsToSharedContext() &&
-      m_sharedContextId != SharedGpuContext::contextId())
-    return false;  // Gpu context was lost an restored since resource was created
+      m_sharedContextId != SharedGpuContext::contextId()) {
+    // Gpu context was lost and restored since the resource was created.
+    return false;
+  }
   return true;
 }
 
@@ -169,8 +172,11 @@ void AcceleratedStaticBitmapImage::ensureMailbox() {
 
   gpu::gles2::GLES2Interface* sharedGL = SharedGpuContext::gl();
   GrContext* sharedGrContext = SharedGpuContext::gr();
-  if (!sharedGrContext)
-    return;  // Can happen if the context is lost, the SkImage won't be any good now anyway.
+  if (!sharedGrContext) {
+    // Can happen if the context is lost. The SkImage won't be any good now
+    // anyway.
+    return;
+  }
   GLuint imageTextureId =
       skia::GrBackendObjectToGrGLTextureInfo(m_image->getTextureHandle(true))
           ->fID;
@@ -193,9 +199,10 @@ void AcceleratedStaticBitmapImage::transfer() {
   checkThread();
   ensureMailbox();
   m_sharedContextId = SharedGpuContext::kNoSharedContext;
-  // If image thread is set, it means that the image has been consumed on the current thread,
-  // which may happen when we have chained transfers. When that is the case, we must not
-  // reset m_imageThread to ensure that releaseImage is called on the right thread.
+  // If |m_imageThread| is set, it means that the image has been consumed on the
+  // current thread, which may happen when we have chained transfers. When that
+  // is the case, we must not reset |m_imageThread|, so we ensure that
+  // releaseImage() is called on the right thread.
   if (!m_imageThread)
     m_imageThread = Platform::current()->currentThread();
   m_detachThreadAtNextCheck = true;

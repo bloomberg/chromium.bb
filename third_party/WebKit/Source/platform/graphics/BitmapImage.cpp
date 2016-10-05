@@ -135,8 +135,8 @@ sk_sp<SkImage> BitmapImage::decodeAndCacheFrame(size_t index) {
   if (m_frames.size() < numFrames)
     m_frames.grow(numFrames);
 
-  // We are caching frame snapshots.  This is OK even for partially decoded frames,
-  // as they are cleared by dataChanged() when new data arrives.
+  // We are caching frame snapshots.  This is OK even for partially decoded
+  // frames, as they are cleared by dataChanged() when new data arrives.
   sk_sp<SkImage> image = m_source.createFrameAtIndex(index);
   m_cachedFrame = image;
   m_cachedFrameIndex = index;
@@ -275,8 +275,9 @@ void BitmapImage::draw(
         orientation.transformFromDefault(adjustedDstRect.size())));
 
     if (orientation.usesWidthAsHeight()) {
-      // The destination rect will have it's width and height already reversed for the orientation of
-      // the image, as it was needed for page layout, so we need to reverse it back here.
+      // The destination rect will have its width and height already reversed
+      // for the orientation of the image, as it was needed for page layout, so
+      // we need to reverse it back here.
       adjustedDstRect =
           FloatRect(adjustedDstRect.x(), adjustedDstRect.y(),
                     adjustedDstRect.height(), adjustedDstRect.width());
@@ -384,8 +385,9 @@ bool BitmapImage::frameHasAlphaAtIndex(size_t index) {
 
 bool BitmapImage::currentFrameKnownToBeOpaque(MetadataMode metadataMode) {
   if (metadataMode == PreCacheMetadata) {
-    // frameHasAlphaAtIndex() conservatively returns false for uncached frames. To increase the
-    // chance of an accurate answer, pre-cache the current frame metadata.
+    // frameHasAlphaAtIndex() conservatively returns false for uncached frames.
+    // To increase the chance of an accurate answer, pre-cache the current frame
+    // metadata.
     frameAtIndex(currentFrame());
   }
   return !frameHasAlphaAtIndex(currentFrame());
@@ -529,8 +531,8 @@ void BitmapImage::startAnimation(CatchUpAnimation catchUpIfNecessary) {
 }
 
 void BitmapImage::stopAnimation() {
-  // This timer is used to animate all occurrences of this image.  Don't invalidate
-  // the timer unless all renderers have stopped drawing.
+  // This timer is used to animate all occurrences of this image.  Don't
+  // invalidate the timer unless all renderers have stopped drawing.
   m_frameTimer.reset();
 }
 
@@ -576,8 +578,9 @@ bool BitmapImage::internalAdvanceAnimation(AnimationAdvancement advancement) {
   // Stop the animation.
   stopAnimation();
 
-  // See if anyone is still paying attention to this animation.  If not, we don't
-  // advance and will remain suspended at the current frame until the animation is resumed.
+  // See if anyone is still paying attention to this animation.  If not, we
+  // don't advance, and will remain suspended at the current frame until the
+  // animation is resumed.
   if (advancement != SkipFramesToCatchUp &&
       getImageObserver()->shouldPauseAnimation(this))
     return false;

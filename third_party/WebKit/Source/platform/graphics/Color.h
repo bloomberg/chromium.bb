@@ -78,7 +78,8 @@ class PLATFORM_EXPORT Color {
   Color(RGBA32 color) : m_color(color) {}
   Color(int r, int g, int b) : m_color(makeRGB(r, g, b)) {}
   Color(int r, int g, int b, int a) : m_color(makeRGBA(r, g, b, a)) {}
-  // Color is currently limited to 32bit RGBA, perhaps some day we'll support better colors
+  // Color is currently limited to 32bit RGBA. Perhaps some day we'll support
+  // better colors.
   Color(float r, float g, float b, float a)
       : m_color(makeRGBA32FromFloats(r, g, b, a)) {}
   // Creates a new color from the specific CMYK and alpha values.
@@ -94,16 +95,16 @@ class PLATFORM_EXPORT Color {
     return Color(color);
   }
 
-  // Returns the color serialized according to HTML5
-  // - http://www.whatwg.org/specs/web-apps/current-work/#serialization-of-a-color
+  // Returns the color serialized according to HTML5:
+  // http://www.whatwg.org/specs/web-apps/current-work/#serialization-of-a-color
   String serialized() const;
 
-  // Returns the color serialized according to CSSOM
-  // - http://dev.w3.org/csswg/cssom/#serialize-a-css-component-value
+  // Returns the color serialized according to CSSOM:
+  // http://dev.w3.org/csswg/cssom/#serialize-a-css-component-value
   String serializedAsCSSComponentValue() const;
 
-  // Returns the color serialized as either #RRGGBB or #RRGGBBAA
-  // The latter format is not a valid CSS color, and should only be seen in DRT dumps.
+  // Returns the color serialized as either #RRGGBB or #RRGGBBAA. The latter
+  // format is not a valid CSS color, and should only be seen in DRT dumps.
   String nameForLayoutTreeAsText() const;
 
   // Returns whether parsing succeeded. The resulting Color is arbitrary
@@ -165,8 +166,9 @@ inline Color blend(const Color& from,
                    double progress,
                    bool blendPremultiplied = true) {
   if (blendPremultiplied) {
-    // Contrary to the name, RGBA32 actually stores ARGB, so we can initialize Color directly from premultipliedARGBFromColor().
-    // Also, premultipliedARGBFromColor() bails on zero alpha, so special-case that.
+    // Contrary to the name, RGBA32 actually stores ARGB, so we can initialize
+    // Color directly from premultipliedARGBFromColor(). Also,
+    // premultipliedARGBFromColor() bails on zero alpha, so special-case that.
     Color premultFrom = from.alpha() ? premultipliedARGBFromColor(from) : 0;
     Color premultTo = to.alpha() ? premultipliedARGBFromColor(to) : 0;
 

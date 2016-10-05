@@ -55,8 +55,8 @@
 namespace {
 enum {
   InvalidMailboxIndex = -1,
-  MaxCanvasAnimationBacklog =
-      2,  // Make sure the the GPU is never more than two animation frames behind.
+  MaxCanvasAnimationBacklog = 2,  // Make sure the the GPU is never more than
+                                  // two animation frames behind.
 };
 }  // namespace
 
@@ -205,14 +205,18 @@ bool Canvas2DLayerBridge::isAccelerated() const {
     return false;
   if (m_softwareRenderingWhileHidden)
     return false;
-  if (m_layer)  // We don't check m_surface, so this returns true if context was lost (m_surface is null) with restoration pending.
+  if (m_layer) {
+    // We don't check |m_surface|, so this returns true if context was lost
+    // (|m_surface| is null) with restoration pending.
     return true;
+  }
   if (m_surface)  // && !m_layer is implied
     return false;
 
-  // Whether or not to accelerate is not yet resolved, determine whether immediate presentation
-  // of the canvas would result in the canvas being accelerated. Presentation is assumed to be
-  // a 'PreferAcceleration' operation.
+  // Whether or not to accelerate is not yet resolved. Determine whether
+  // immediate presentation of the canvas would result in the canvas being
+  // accelerated. Presentation is assumed to be a 'PreferAcceleration'
+  // operation.
   return shouldAccelerate(PreferAcceleration);
 }
 
@@ -224,7 +228,8 @@ GLenum Canvas2DLayerBridge::getGLFilter() {
 bool Canvas2DLayerBridge::prepareIOSurfaceMailboxFromImage(
     SkImage* image,
     cc::TextureMailbox* outMailbox) {
-  // Need to flush skia's internal queue because texture is about to be accessed directly
+  // Need to flush skia's internal queue, because the texture is about to be
+  // accessed directly.
   GrContext* grContext = m_contextProvider->grContext();
   grContext->flush();
 
@@ -362,7 +367,8 @@ bool Canvas2DLayerBridge::prepareMailboxFromImage(
   GrContext* grContext = m_contextProvider->grContext();
   if (!grContext) {
     mailboxInfo.m_image = std::move(image);
-    return true;  // for testing: skip gl stuff when using a mock graphics context.
+    // For testing, skip GL stuff when using a mock graphics context.
+    return true;
   }
 
 #if USE_IOSURFACE_FOR_2D_CANVAS
@@ -379,7 +385,8 @@ bool Canvas2DLayerBridge::prepareMailboxFromImage(
   if (RuntimeEnabledFeatures::forceDisable2dCanvasCopyOnWriteEnabled())
     m_surface->notifyContentWillChange(SkSurface::kRetain_ContentChangeMode);
 
-  // Need to flush skia's internal queue because texture is about to be accessed directly
+  // Need to flush skia's internal queue, because the texture is about to be
+  // accessed directly.
   grContext->flush();
 
   // Because of texture sharing with the compositor, we must invalidate
@@ -783,7 +790,8 @@ gpu::gles2::GLES2Interface* Canvas2DLayerBridge::contextGL() {
   // the destruction of m_layer
   if (m_layer && m_accelerationMode != DisableAcceleration &&
       !m_destructionInProgress) {
-    // Call checkSurfaceValid to ensure rate limiter is disabled if context is lost.
+    // Call checkSurfaceValid to ensure the rate limiter is disabled if the
+    // context is lost.
     if (!checkSurfaceValid())
       return nullptr;
   }
@@ -839,8 +847,9 @@ bool Canvas2DLayerBridge::restoreSurface() {
     if (!m_surface)
       reportSurfaceCreationFailure();
 
-    // Current paradigm does support switching from accelerated to non-accelerated, which would be tricky
-    // due to changes to the layer tree, which can only happen at specific times during the document lifecycle.
+    // The current paradigm does not support switching from accelerated to
+    // non-accelerated, which would be tricky due to changes to the layer tree,
+    // which can only happen at specific times during the document lifecycle.
     // Therefore, we can only accept the restored surface if it is accelerated.
     if (surface && surfaceIsAccelerated) {
       m_surface = std::move(surface);
@@ -953,7 +962,8 @@ void Canvas2DLayerBridge::mailboxReleased(const gpu::Mailbox& mailbox,
   }
 
   if (!contextLost) {
-    // Invalidate texture state in case the compositor altered it since the copy-on-write.
+    // Invalidate texture state in case the compositor altered it since the
+    // copy-on-write.
     if (releasedMailboxInfo->m_image) {
 #if USE_IOSURFACE_FOR_2D_CANVAS
       DCHECK(!releasedMailboxInfo->m_imageInfo);
@@ -967,7 +977,8 @@ void Canvas2DLayerBridge::mailboxReleased(const gpu::Mailbox& mailbox,
           texture->abandon();
         } else {
           texture->textureParamsModified();
-          // Break the mailbox association to avoid leaking mailboxes every time skia recycles a texture.
+          // Break the mailbox association to avoid leaking mailboxes every time
+          // skia recycles a texture.
           gpu::gles2::GLES2Interface* gl = contextGL();
           if (gl)
             gl->ProduceTextureDirectCHROMIUM(

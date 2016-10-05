@@ -122,7 +122,8 @@ std::unique_ptr<Vector<char>> PictureSnapshot::replay(unsigned fromStep,
                                                       double scale) const {
   const SkIRect bounds = m_picture->cullRect().roundOut();
 
-  // TODO(fmalita): convert this to SkSurface/SkImage, drop the intermediate SkBitmap.
+  // TODO(fmalita): convert this to SkSurface/SkImage, drop the intermediate
+  // SkBitmap.
   SkBitmap bitmap;
   bitmap.allocPixels(
       SkImageInfo::MakeN32Premul(bounds.width(), bounds.height()));
@@ -130,8 +131,9 @@ std::unique_ptr<Vector<char>> PictureSnapshot::replay(unsigned fromStep,
   {
     ReplayingCanvas canvas(bitmap, fromStep, toStep);
     // Disable LCD text preemptively, because the picture opacity is unknown.
-    // The canonical API involves SkSurface props, but since we're not SkSurface-based
-    // at this point (see TODO above) we (ab)use saveLayer for this purpose.
+    // The canonical API involves SkSurface props, but since we're not
+    // SkSurface-based at this point (see TODO above) we (ab)use saveLayer for
+    // this purpose.
     SkAutoCanvasRestore autoRestore(&canvas, false);
     canvas.saveLayer(nullptr, nullptr);
 

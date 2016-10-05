@@ -94,9 +94,10 @@ enum {
 // These costs were estimated experimentally using the tools located in the
 // third_party/WebKit/Source/modules/canvas2d/performance_analysis directory.
 
-// The RenderingModeCostIndex enum is used to access the heuristic coefficients that correspond
-// to a given rendering mode. For exmaple, FillRectFixedCost[RecordingModeIndex] is the estimated
-// fixed cost for FillRect in recording mode.
+// The RenderingModeCostIndex enum is used to access the heuristic coefficients
+// that correspond to a given rendering mode. For exmaple,
+// FillRectFixedCost[RecordingModeIndex] is the estimated fixed cost for
+// FillRect in recording mode.
 enum RenderingModeCostIndex {
   RecordingModeIndex = 0,
   AcceleratedModeIndex = 1,
@@ -169,13 +170,17 @@ const float DrawSVGImageVariableCostPerArea[NumRederingModesCostIdexes] = {
 const float DrawPNGImageVariableCostPerArea[NumRederingModesCostIdexes] = {
     1.727e-06f, 0.0f};
 
-// Two conditions must be met before the isAccelerationOptimalForCanvasContent heuristics recommends
-// switching out of the accelerated mode.
-//   1. The difference in estimated cost per frame is larger than MinCostPerFrameImprovementToSuggestDisableAcceleration.
-//      This ensures that the overhead involved in a switch of rendering mode and the risk of making a wrong decision
-//      are justified by a large expected increased performance.
-//   2. The percent reduction in rendering cost is larger than MinPercentageImprovementToSuggestDisableAcceleration.
-//      This ensures that there is a high level of confidence that the performance would be improved in recording mode.
+// Two conditions must be met before the isAccelerationOptimalForCanvasContent
+// heuristics recommends switching out of the accelerated mode:
+//   1. The difference in estimated cost per frame is larger than
+//      MinCostPerFrameImprovementToSuggestDisableAcceleration. This ensures
+//      that the overhead involved in a switch of rendering mode and the risk of
+//      making a wrong decision are justified by a large expected increased
+//      performance.
+//   2. The percent reduction in rendering cost is larger than
+//      MinPercentageImprovementToSuggestDisableAcceleration. This ensures that
+//      there is a high level of confidence that the performance would be
+//      improved in recording mode.
 const float MinCostPerFrameImprovementToSuggestDisableAcceleration = 15.0f;
 const float MinPercentageImprovementToSuggestDisableAcceleration = 30.0f;
 

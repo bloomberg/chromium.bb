@@ -98,7 +98,8 @@ void Gradient::sortStopsIfNecessary() {
 }
 
 void Gradient::setSpreadMethod(GradientSpreadMethod spreadMethod) {
-  // FIXME: Should it become necessary, allow calls to this method after m_gradient has been set.
+  // FIXME: Should it become necessary, allow calls to this method after
+  // |m_gradient| has been set.
   DCHECK(!m_cachedShader);
 
   if (m_spreadMethod == spreadMethod)

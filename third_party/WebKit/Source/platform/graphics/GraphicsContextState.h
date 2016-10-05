@@ -117,7 +117,8 @@ class PLATFORM_EXPORT GraphicsContextState final {
   explicit GraphicsContextState(const GraphicsContextState&);
   GraphicsContextState& operator=(const GraphicsContextState&);
 
-  // This is mutable to enable dash path effect updates when the paint is fetched for use.
+  // This is mutable to enable dash path effect updates when the paint is
+  // fetched for use.
   mutable SkPaint m_strokePaint;
   SkPaint m_fillPaint;
 

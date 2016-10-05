@@ -39,10 +39,10 @@ static bool compatibleInfo(const SkImageInfo& src, const SkImageInfo& dst) {
   if (src == dst)
     return true;
 
-  // It is legal to write kOpaque_SkAlphaType pixels into a kPremul_SkAlphaType buffer.
-  // This can happen when DeferredImageDecoder allocates an kOpaque_SkAlphaType image
-  // generator based on cached frame info, while the ImageFrame-allocated dest bitmap
-  // stays kPremul_SkAlphaType.
+  // It is legal to write kOpaque_SkAlphaType pixels into a kPremul_SkAlphaType
+  // buffer. This can happen when DeferredImageDecoder allocates an
+  // kOpaque_SkAlphaType image generator based on cached frame info, while the
+  // ImageFrame-allocated dest bitmap stays kPremul_SkAlphaType.
   if (src.alphaType() == kOpaque_SkAlphaType &&
       dst.alphaType() == kPremul_SkAlphaType) {
     const SkImageInfo& tmp = src.makeAlphaType(kPremul_SkAlphaType);
@@ -52,8 +52,9 @@ static bool compatibleInfo(const SkImageInfo& src, const SkImageInfo& dst) {
   return false;
 }
 
-// Creates a SkPixelRef such that the memory for pixels is given by an external body.
-// This is used to write directly to the memory given by Skia during decoding.
+// Creates a SkPixelRef such that the memory for pixels is given by an external
+// body. This is used to write directly to the memory given by Skia during
+// decoding.
 class ExternalMemoryAllocator final : public SkBitmap::Allocator {
   USING_FAST_MALLOC(ExternalMemoryAllocator);
   WTF_MAKE_NONCOPYABLE(ExternalMemoryAllocator);
@@ -157,8 +158,9 @@ bool ImageFrameGenerator::decodeToYUV(SegmentReader* data,
                                       const SkISize componentSizes[3],
                                       void* planes[3],
                                       const size_t rowBytes[3]) {
-  // TODO (scroggo): The only interesting thing this uses from the ImageFrameGenerator is m_decodeFailed.
-  // Move this into DecodingImageGenerator, which is the only class that calls it.
+  // TODO (scroggo): The only interesting thing this uses from the
+  // ImageFrameGenerator is m_decodeFailed. Move this into
+  // DecodingImageGenerator, which is the only class that calls it.
   if (m_decodeFailed)
     return false;
 
@@ -173,7 +175,8 @@ bool ImageFrameGenerator::decodeToYUV(SegmentReader* data,
   std::unique_ptr<ImageDecoder> decoder =
       ImageDecoder::create(data, true, ImageDecoder::AlphaPremultiplied,
                            ImageDecoder::GammaAndColorProfileApplied);
-  // getYUVComponentSizes was already called and was successful, so ImageDecoder::create must succeed.
+  // getYUVComponentSizes was already called and was successful, so
+  // ImageDecoder::create must succeed.
   ASSERT(decoder);
 
   std::unique_ptr<ImagePlanes> imagePlanes =
@@ -367,7 +370,8 @@ bool ImageFrameGenerator::getYUVComponentSizes(SegmentReader* data,
   if (!decoder)
     return false;
 
-  // Setting a dummy ImagePlanes object signals to the decoder that we want to do YUV decoding.
+  // Setting a dummy ImagePlanes object signals to the decoder that we want to
+  // do YUV decoding.
   std::unique_ptr<ImagePlanes> dummyImagePlanes = wrapUnique(new ImagePlanes);
   decoder->setImagePlanes(std::move(dummyImagePlanes));
 

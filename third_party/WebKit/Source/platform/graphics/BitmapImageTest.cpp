@@ -102,12 +102,14 @@ class BitmapImageTest : public ::testing::Test {
   }
 
   size_t decodedSize() {
-    // In the context of this test, the following loop will give the correct result, but only because the test
-    // forces all frames to be decoded in loadImage() above. There is no general guarantee that frameDecodedSize()
-    // is up to date. Because of how multi frame images (like GIF) work, requesting one frame to be decoded may
-    // require other previous frames to be decoded as well. In those cases frameDecodedSize() wouldn't return the
-    // correct thing for the previous frame because the decoded size wouldn't have propagated upwards to the
-    // BitmapImage frame cache.
+    // In the context of this test, the following loop will give the correct
+    // result, but only because the test forces all frames to be decoded in
+    // loadImage() above. There is no general guarantee that frameDecodedSize()
+    // is up to date. Because of how multi frame images (like GIF) work,
+    // requesting one frame to be decoded may require other previous frames to
+    // be decoded as well. In those cases frameDecodedSize() wouldn't return the
+    // correct thing for the previous frame because the decoded size wouldn't
+    // have propagated upwards to the BitmapImage frame cache.
     size_t size = 0;
     for (size_t i = 0; i < decodedFramesCount(); ++i)
       size += frameDecodedSize(i);

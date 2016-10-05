@@ -22,7 +22,8 @@ ImagePattern::ImagePattern(PassRefPtr<Image> image, RepeatMode repeatMode)
     : Pattern(repeatMode), m_tileImage(image->imageForCurrentFrame()) {
   m_previousLocalMatrix.setIdentity();
   if (m_tileImage) {
-    // TODO(fmalita): mechanism to extract the actual SkImageInfo from an SkImage?
+    // TODO(fmalita): mechanism to extract the actual SkImageInfo from an
+    // SkImage?
     const SkImageInfo info = SkImageInfo::MakeN32Premul(
         m_tileImage->width() + (isRepeatX() ? 0 : 2),
         m_tileImage->height() + (isRepeatY() ? 0 : 2));

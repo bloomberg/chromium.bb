@@ -118,8 +118,9 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
 
   virtual PassRefPtr<SharedBuffer> data() { return m_encodedImageData; }
 
-  // Animation begins whenever someone draws the image, so startAnimation() is not normally called.
-  // It will automatically pause once all observers no longer want to render the image anywhere.
+  // Animation begins whenever someone draws the image, so startAnimation() is
+  // not normally called. It will automatically pause once all observers no
+  // longer want to render the image anywhere.
   enum CatchUpAnimation { DoNotCatchUp, CatchUp };
   virtual void startAnimation(CatchUpAnimation = CatchUp) {}
   virtual void resetAnimation() {}
@@ -144,7 +145,8 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
     return m_imageObserverDisabled ? nullptr : m_imageObserver;
   }
   void clearImageObserver() { m_imageObserver = nullptr; }
-  // Do not call setImageObserverDisabled() other than from ImageObserverDisabler to avoid interleaved accesses to |m_imageObserverDisabled|.
+  // To avoid interleaved accesses to |m_imageObserverDisabled|, do not call
+  // setImageObserverDisabled() other than from ImageObserverDisabler.
   void setImageObserverDisabled(bool disabled) {
     m_imageObserverDisabled = disabled;
   }
@@ -176,16 +178,17 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
 
   virtual bool applyShader(SkPaint&, const SkMatrix& localMatrix);
 
-  // Compute the tile which contains a given point (assuming a repeating tile grid).
-  // The point and returned value are in destination grid space.
+  // Compute the tile which contains a given point (assuming a repeating tile
+  // grid). The point and returned value are in destination grid space.
   static FloatRect computeTileContaining(const FloatPoint&,
                                          const FloatSize& tileSize,
                                          const FloatPoint& tilePhase,
                                          const FloatSize& tileSpacing);
 
-  // Compute the image subset which gets mapped onto dest, when the whole image is drawn into
-  // tile.  Assumes the tile contains dest.  The tile rect is in destination grid space while
-  // the return value is in image coordinate space.
+  // Compute the image subset which gets mapped onto |dest|, when the whole
+  // image is drawn into |tile|.  Assumes |tile| contains |dest|.  The tile rect
+  // is in destination grid space while the return value is in image coordinate
+  // space.
   static FloatRect computeSubsetForTile(const FloatRect& tile,
                                         const FloatRect& dest,
                                         const FloatSize& imageSize);
@@ -212,8 +215,8 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   // TODO(Oilpan): consider having Image on the Oilpan heap and
   // turn this into a Member<>.
   //
-  // The observer (an ImageResource) is an untraced member, with the ImageResource
-  // being responsible of clearing itself out.
+  // The observer (an ImageResource) is an untraced member, with the
+  // ImageResource being responsible for clearing itself out.
   UntracedMember<ImageObserver> m_imageObserver;
   bool m_imageObserverDisabled;
 };

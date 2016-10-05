@@ -103,7 +103,8 @@ TEST(DeferredImageDecoderTestWoPlatform, fragmentedSignature) {
                            buffer, false, ImageDecoder::AlphaPremultiplied,
                            ImageDecoder::GammaAndColorProfileIgnored));
 
-    // Append the rest of the data.  We should be able to sniff the signature now, even if segmented.
+    // Append the rest of the data.  We should be able to sniff the signature
+    // now, even if segmented.
     buffer->append<size_t>(data + 1, skData->size() - 1);
     EXPECT_TRUE(ImageDecoder::hasSufficientDataToSniffImageType(*buffer));
     std::unique_ptr<DeferredImageDecoder> decoder =

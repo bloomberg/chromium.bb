@@ -78,13 +78,16 @@ bool DecodingImageGenerator::onGetPixels(const SkImageInfo& info,
   TRACE_EVENT1("blink", "DecodingImageGenerator::getPixels", "frame index",
                static_cast<int>(m_frameIndex));
 
-  // Implementation doesn't support scaling yet so make sure we're not given a different size.
+  // Implementation doesn't support scaling yet, so make sure we're not given a
+  // different size.
   if (info.width() != getInfo().width() || info.height() != getInfo().height())
     return false;
 
   if (info.colorType() != getInfo().colorType()) {
-    // blink::ImageFrame may have changed the owning SkBitmap to kOpaque_SkAlphaType after fully decoding the image frame,
-    // so if we see a request for opaque, that is ok even if our initial alpha type was not opaque.
+    // blink::ImageFrame may have changed the owning SkBitmap to
+    // kOpaque_SkAlphaType after fully decoding the image frame, so if we see a
+    // request for opaque, that is ok even if our initial alpha type was not
+    // opaque.
     return false;
   }
 
@@ -99,7 +102,8 @@ bool DecodingImageGenerator::onGetPixels(const SkImageInfo& info,
 
 bool DecodingImageGenerator::onQueryYUV8(SkYUVSizeInfo* sizeInfo,
                                          SkYUVColorSpace* colorSpace) const {
-  // YUV decoding does not currently support progressive decoding. See comment in ImageFrameGenerator.h.
+  // YUV decoding does not currently support progressive decoding. See comment
+  // in ImageFrameGenerator.h.
   if (!m_canYUVDecode || !m_allDataReceived)
     return false;
 
@@ -114,7 +118,8 @@ bool DecodingImageGenerator::onQueryYUV8(SkYUVSizeInfo* sizeInfo,
 
 bool DecodingImageGenerator::onGetYUV8Planes(const SkYUVSizeInfo& sizeInfo,
                                              void* planes[3]) {
-  // YUV decoding does not currently support progressive decoding. See comment in ImageFrameGenerator.h.
+  // YUV decoding does not currently support progressive decoding. See comment
+  // in ImageFrameGenerator.h.
   ASSERT(m_canYUVDecode && m_allDataReceived);
 
   TRACE_EVENT1("blink", "DecodingImageGenerator::getYUV8Planes", "frame index",
@@ -132,8 +137,9 @@ bool DecodingImageGenerator::onGetYUV8Planes(const SkYUVSizeInfo& sizeInfo,
 SkImageGenerator* DecodingImageGenerator::create(SkData* data) {
   RefPtr<SegmentReader> segmentReader =
       SegmentReader::createFromSkData(sk_ref_sp(data));
-  // We just need the size of the image, so we have to temporarily create an ImageDecoder. Since
-  // we only need the size, it doesn't really matter about premul or not, or gamma settings.
+  // We just need the size of the image, so we have to temporarily create an
+  // ImageDecoder. Since we only need the size, the premul and gamma settings
+  // don't really matter.
   std::unique_ptr<ImageDecoder> decoder = ImageDecoder::create(
       segmentReader, true, ImageDecoder::AlphaPremultiplied,
       ImageDecoder::GammaAndColorProfileApplied);

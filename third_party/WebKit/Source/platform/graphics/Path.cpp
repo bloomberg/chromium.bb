@@ -83,7 +83,8 @@ bool Path::contains(const FloatPoint& point, WindRule rule) const {
   return m_path.contains(x, y);
 }
 
-// FIXME: this method ignores the CTM and may yield inaccurate results for large scales.
+// FIXME: this method ignores the CTM and may yield inaccurate results for large
+// scales.
 SkPath Path::strokePath(const StrokeData& strokeData) const {
   SkPaint paint;
   strokeData.setupPaint(&paint);
@@ -111,8 +112,8 @@ FloatRect pathBounds(const SkPath& path, Path::BoundsType boundsType) {
   SkRect bounds;
   if (boundsType == Path::BoundsType::Conservative ||
       !TightBounds(path, &bounds) ||
-      bounds
-          .isEmpty())  // workaround for https://bugs.chromium.org/p/skia/issues/detail?id=5555
+      // Workaround for https://bugs.chromium.org/p/skia/issues/detail?id=5555 .
+      bounds.isEmpty())
     return path.getBounds();
 
   DCHECK_EQ(boundsType, Path::BoundsType::Exact);
@@ -166,7 +167,8 @@ void Path::apply(void* info, PathApplierFunction function) const {
         pathElement.points = convertPathPoints(pathPoints, &pts[1], 3);
         break;
       case SkPath::kConic_Verb: {
-        // Approximate with quads.  Use two for now, increase if more precision is needed.
+        // Approximate with quads.  Use two for now, increase if more precision
+        // is needed.
         const int kPow2 = 1;
         const unsigned quadCount = 1 << kPow2;
         SkPoint quads[1 + 2 * quadCount];
@@ -387,12 +389,15 @@ void Path::addEllipse(const FloatPoint& p,
   SkScalar sweepDegrees = WebCoreFloatToSkScalar(sweep * 180 / piFloat);
   SkScalar s360 = SkIntToScalar(360);
 
-  // We can't use SkPath::addOval(), because addOval() makes new sub-path. addOval() calls moveTo() and close() internally.
+  // We can't use SkPath::addOval(), because addOval() makes a new sub-path.
+  // addOval() calls moveTo() and close() internally.
 
-  // Use s180, not s360, because SkPath::arcTo(oval, angle, s360, false) draws nothing.
+  // Use s180, not s360, because SkPath::arcTo(oval, angle, s360, false) draws
+  // nothing.
   SkScalar s180 = SkIntToScalar(180);
   if (SkScalarNearlyEqual(sweepDegrees, s360)) {
-    // SkPath::arcTo can't handle the sweepAngle that is equal to or greater than 2Pi.
+    // SkPath::arcTo can't handle the sweepAngle that is equal to or greater
+    // than 2Pi.
     m_path.arcTo(oval, startDegrees, s180, false);
     m_path.arcTo(oval, startDegrees + s180, s180, false);
     return;
@@ -466,10 +471,11 @@ void Path::addRoundedRect(const FloatRect& rect,
   FloatSize radius(roundingRadii);
   FloatSize halfSize(rect.width() / 2, rect.height() / 2);
 
-  // Apply the SVG corner radius constraints, per the rect section of the SVG shapes spec: if
-  // one of rx,ry is negative, then the other corner radius value is used. If both values are
-  // negative then rx = ry = 0. If rx is greater than half of the width of the rectangle
-  // then set rx to half of the width; ry is handled similarly.
+  // Apply the SVG corner radius constraints, per the rect section of the SVG
+  // shapes spec: if one of rx,ry is negative, then the other corner radius
+  // value is used. If both values are negative then rx = ry = 0. If rx is
+  // greater than half of the width of the rectangle then set rx to half of the
+  // width; ry is handled similarly.
 
   if (radius.width() < 0)
     radius.setWidth((radius.height() < 0) ? 0 : radius.height());
@@ -499,10 +505,11 @@ void Path::addRoundedRect(const FloatRect& rect,
       rect.height() < topLeftRadius.height() + bottomLeftRadius.height() ||
       rect.height() < topRightRadius.height() + bottomRightRadius.height()) {
     // If all the radii cannot be accommodated, return a rect.
-    // FIXME: is this an error scenario, given that it appears the code in FloatRoundedRect::constrainRadii()
-    // should be always called first? Should we assert that this code is not reached?
-    // This fallback is very bad, since it means that radii that are just barely too big due to rounding or snapping
-    // will get completely ignored.
+    // FIXME: Is this an error scenario, given that it appears the code in
+    // FloatRoundedRect::constrainRadii() should be always called first? Should
+    // we assert that this code is not reached? This fallback is very bad, since
+    // it means that radii that are just barely too big due to rounding or
+    // snapping will get completely ignored.
     addRect(rect);
     return;
   }

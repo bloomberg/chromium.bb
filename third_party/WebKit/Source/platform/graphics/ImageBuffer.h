@@ -140,10 +140,11 @@ class PLATFORM_EXPORT ImageBuffer {
   AffineTransform baseTransform() const { return AffineTransform(); }
   WebLayer* platformLayer() const;
 
-  // FIXME: current implementations of this method have the restriction that they only work
-  // with textures that are RGB or RGBA format, UNSIGNED_BYTE type and level 0, as specified in
+  // Destroys the TEXTURE_2D binding for the active texture unit of the passed
+  // context.
+  // FIXME: Current implementations of this method only work with textures that
+  // are RGB or RGBA format, UNSIGNED_BYTE type and level 0, as specified in
   // Extensions3D::canUseCopyTextureCHROMIUM().
-  // Destroys the TEXTURE_2D binding for the active texture unit of the passed context
   bool copyToPlatformTexture(gpu::gles2::GLES2Interface*,
                              GLuint texture,
                              GLenum internalFormat,
@@ -155,9 +156,9 @@ class PLATFORM_EXPORT ImageBuffer {
   bool copyRenderingResultsFromDrawingBuffer(DrawingBuffer*,
                                              SourceDrawingBuffer);
 
-  void flush(FlushReason);  // process deferred draw commands immediately
-  void flushGpu(
-      FlushReason);  // Like flush(), but flushes all the way down to the Gpu context if the surface is accelerated
+  void flush(FlushReason);     // Process deferred draw commands immediately.
+  void flushGpu(FlushReason);  // Like flush(), but flushes all the way down to
+                               // the GPU context if the surface is accelerated.
 
   void notifySurfaceInvalid();
 

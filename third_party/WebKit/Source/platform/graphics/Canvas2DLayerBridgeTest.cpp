@@ -161,9 +161,8 @@ class Canvas2DLayerBridgeTest : public Test {
           std::move(contextProvider), IntSize(300, 150), 0, NonOpaque,
           Canvas2DLayerBridge::EnableAcceleration, nullptr)));
       EXPECT_TRUE(bridge->checkSurfaceValid());
-      EXPECT_TRUE(
-          bridge
-              ->isAccelerated());  // We don't yet know that allocation will fail
+      EXPECT_TRUE(bridge->isAccelerated());  // We don't yet know that
+                                             // allocation will fail.
       // This will cause SkSurface_Gpu creation to fail without
       // Canvas2DLayerBridge otherwise detecting that anything was disabled.
       gr->abandonContext();
@@ -191,7 +190,8 @@ class Canvas2DLayerBridgeTest : public Test {
     EXPECT_EQ(genID, bridge->getOrCreateSurface()->generationID());
     bridge->canvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), paint);
     EXPECT_EQ(genID, bridge->getOrCreateSurface()->generationID());
-    // This results in the internal surface being torn down in response to the context loss.
+    // This results in the internal surface being torn down in response to the
+    // context loss.
     EXPECT_FALSE(bridge->checkSurfaceValid());
     EXPECT_EQ(nullptr, bridge->getOrCreateSurface());
     // The following passes by not crashing
@@ -207,12 +207,12 @@ class Canvas2DLayerBridgeTest : public Test {
         std::move(contextProvider), IntSize(300, 150), 0, NonOpaque,
         Canvas2DLayerBridge::ForceAccelerationForTesting, nullptr)));
 
-    // TODO(junov): The PrepareTextureMailbox() method will fail a DCHECK if we don't
-    // do this before calling it the first time when the context is lost.
+    // TODO(junov): The PrepareTextureMailbox() method will fail a DCHECK if we
+    // don't do this before calling it the first time when the context is lost.
     bridge->prepareSurfaceForPaintingIfNeeded();
 
-    // When the context is lost we are not sure if we should be producing GL frames for the
-    // compositor still or not, so fail to generate frames.
+    // When the context is lost we are not sure if we should still be producing
+    // GL frames for the compositor or not, so fail to generate frames.
     gl.setIsContextLost(true);
 
     cc::TextureMailbox textureMailbox;
@@ -255,13 +255,15 @@ class Canvas2DLayerBridgeTest : public Test {
             std::move(contextProvider), IntSize(300, 150), 0, NonOpaque,
             Canvas2DLayerBridge::ForceAccelerationForTesting, nullptr)));
         bridge->PrepareTextureMailbox(&textureMailbox, &releaseCallback);
-        // |bridge| goes out of scope and would normally be destroyed, but object is kept alive by self references.
+        // |bridge| goes out of scope and would normally be destroyed, but
+        // object is kept alive by self references.
       }
 
-      // Before fixing crbug.com/411864, the following line you cause a memory use after free
-      // that sometimes causes a crash in normal builds and crashes consistently with ASAN.
       // This should cause the bridge to be destroyed.
       bool lostResource = true;
+      // Before fixing crbug.com/411864, the following line would cause a memory
+      // use after free that sometimes caused a crash in normal builds and
+      // crashed consistently with ASAN.
       releaseCallback->Run(gpu::SyncToken(), lostResource);
     }
   }

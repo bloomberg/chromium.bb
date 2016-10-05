@@ -37,7 +37,8 @@ class FloatSize;
 // This enum intentionally matches the orientation values from the EXIF spec.
 // See JEITA CP-3451, page 18. http://www.exif.org/Exif2-2.PDF
 enum ImageOrientationEnum {
-  // "TopLeft" means that the 0 row starts at the Top, the 0 column starts at the Left.
+  // "TopLeft" means that the 0 row starts at the Top, the 0 column starts at
+  // the Left.
   OriginTopLeft = 1,      // default
   OriginTopRight = 2,     // mirror along y-axis
   OriginBottomRight = 3,  // 180 degree rotation
@@ -71,14 +72,15 @@ class PLATFORM_EXPORT ImageOrientation final {
   // ImageOrientationEnum currently matches EXIF values, however code outside
   // this function should never assume that.
   static ImageOrientation fromEXIFValue(int exifValue) {
-    // Values direct from images may be invalid, in which case we use the default.
+    // Values direct from images may be invalid, in which case we use the
+    // default.
     if (exifValue < OriginTopLeft || exifValue > OriginLeftBottom)
       return DefaultImageOrientation;
     return static_cast<ImageOrientationEnum>(exifValue);
   }
 
-  // This transform can be used for drawing an image according to the orientation.
-  // It should be used in a right-handed coordinate system.
+  // This transform can be used for drawing an image according to the
+  // orientation. It should be used in a right-handed coordinate system.
   AffineTransform transformFromDefault(const FloatSize& drawnSize) const;
 
   inline bool operator==(const ImageOrientation& other) const {

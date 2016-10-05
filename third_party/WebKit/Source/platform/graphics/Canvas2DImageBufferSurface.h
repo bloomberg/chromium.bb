@@ -37,7 +37,8 @@
 
 namespace blink {
 
-// This shim necessary because ImageBufferSurfaces are not allowed to be RefCounted
+// This shim is necessary because ImageBufferSurfaces are not allowed to be
+// RefCounted.
 class Canvas2DImageBufferSurface final : public ImageBufferSurface {
  public:
   Canvas2DImageBufferSurface(

@@ -31,13 +31,15 @@ const uint64_t CompositingReasonVideoOverlay = UINT64_C(1) << 12;
 const uint64_t CompositingReasonWillChangeCompositingHint = UINT64_C(1) << 13;
 const uint64_t CompositingReasonBackdropFilter = UINT64_C(1) << 14;
 
-// Overlap reasons that require knowing what's behind you in paint-order before knowing the answer
+// Overlap reasons that require knowing what's behind you in paint-order before
+// knowing the answer.
 const uint64_t CompositingReasonAssumedOverlap = UINT64_C(1) << 15;
 const uint64_t CompositingReasonOverlap = UINT64_C(1) << 16;
 const uint64_t CompositingReasonNegativeZIndexChildren = UINT64_C(1) << 17;
 const uint64_t CompositingReasonSquashingDisallowed = UINT64_C(1) << 18;
 
-// Subtree reasons that require knowing what the status of your subtree is before knowing the answer
+// Subtree reasons that require knowing what the status of your subtree is
+// before knowing the answer.
 const uint64_t CompositingReasonTransformWithCompositedDescendants = UINT64_C(1)
                                                                      << 19;
 const uint64_t CompositingReasonOpacityWithCompositedDescendants = UINT64_C(1)
@@ -61,8 +63,8 @@ const uint64_t CompositingReasonIsolateCompositedDescendants = UINT64_C(1)
 const uint64_t CompositingReasonPositionFixedWithCompositedDescendants =
     UINT64_C(1) << 30;
 
-// The root layer is a special case that may be forced to be a layer, but also it needs to be
-// a layer if anything else in the subtree is composited.
+// The root layer is a special case. It may be forced to be a layer, but it also
+// needs to be a layer if anything else in the subtree is composited.
 const uint64_t CompositingReasonRoot = UINT64_C(1) << 31;
 
 // CompositedLayerMapping internal hierarchy reasons
@@ -91,7 +93,8 @@ const uint64_t CompositingReasonInlineTransform = UINT64_C(1) << 48;
 
 const uint64_t CompositingReasonCompositorProxy = UINT64_C(1) << 49;
 
-// Various combinations of compositing reasons are defined here also, for more intutive and faster bitwise logic.
+// Various combinations of compositing reasons are defined here also, for more
+// intutive and faster bitwise logic.
 const uint64_t CompositingReasonComboAllDirectReasons =
     CompositingReason3DTransform | CompositingReasonVideo |
     CompositingReasonCanvas | CompositingReasonPlugin |
@@ -140,8 +143,11 @@ const uint64_t CompositingReasonComboReasonsThatRequireOwnBacking =
     CompositingReasonFilterWithCompositedDescendants |
     CompositingReasonBlendingWithCompositedDescendants |
     CompositingReasonIsolateCompositedDescendants |
-    CompositingReasonPreserve3DWith3DDescendants  // preserve-3d has to create backing store to ensure that 3d-transformed elements intersect.
-    | CompositingReasonBackdropFilter |
+    CompositingReasonPreserve3DWith3DDescendants |  // preserve-3d has to create
+                                                    // a backing store to ensure
+                                                    // that 3d-transformed
+                                                    // elements intersect.
+    CompositingReasonBackdropFilter |
     CompositingReasonPositionFixedWithCompositedDescendants;
 
 const uint64_t CompositingReasonComboSquashableReasons =
@@ -150,12 +156,14 @@ const uint64_t CompositingReasonComboSquashableReasons =
 
 typedef uint64_t CompositingReasons;
 
-// Any reasons other than overlap or assumed overlap will require the layer to be separately compositing.
+// Any reasons other than overlap or assumed overlap will require the layer to
+// be separately compositing.
 inline bool requiresCompositing(CompositingReasons reasons) {
   return reasons & ~CompositingReasonComboSquashableReasons;
 }
 
-// If the layer has overlap or assumed overlap, but no other reasons, then it should be squashed.
+// If the layer has overlap or assumed overlap, but no other reasons, then it
+// should be squashed.
 inline bool requiresSquashing(CompositingReasons reasons) {
   return !requiresCompositing(reasons) &&
          (reasons & CompositingReasonComboSquashableReasons);

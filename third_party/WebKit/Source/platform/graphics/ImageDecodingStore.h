@@ -52,9 +52,10 @@ class ImageFrameGenerator;
 //   A decoder object. It is used to decode raw data into bitmap images.
 //
 // ImageFrameGenerator
-//   This is a direct user of this cache. Responsible for generating bitmap images
-//   using an ImageDecoder. It contains encoded image data and is used to represent
-//   one image file. It is used to index image and decoder objects in the cache.
+//   This is a direct user of this cache. Responsible for generating bitmap
+//   images using an ImageDecoder. It contains encoded image data and is used to
+//   represent one image file. It is used to index image and decoder objects in
+//   the cache.
 //
 // THREAD SAFETY
 //
@@ -72,8 +73,9 @@ class PLATFORM_EXPORT ImageDecodingStore final {
 
   static ImageDecodingStore& instance();
 
-  // Access a cached decoder object. A decoder is indexed by origin (ImageFrameGenerator)
-  // and scaled size. Return true if the cached object is found.
+  // Accesses a cached decoder object. A decoder is indexed by origin
+  // (ImageFrameGenerator) and scaled size. Returns true if the cached object is
+  // found.
   bool lockDecoder(const ImageFrameGenerator*,
                    const SkISize& scaledSize,
                    ImageDecoder**);
@@ -120,8 +122,8 @@ class PLATFORM_EXPORT ImageDecodingStore final {
       ASSERT(m_useCount >= 0);
     }
 
-    // FIXME: getSafeSize() returns size in bytes truncated to a 32-bits integer.
-    //        Find a way to get the size in 64-bits.
+    // FIXME: getSafeSize() returns the size in bytes truncated to a 32-bit
+    // integer. Find a way to get the size in 64-bits.
     virtual size_t memoryUsageInBytes() const = 0;
     virtual CacheType type() const = 0;
 
@@ -201,8 +203,9 @@ class PLATFORM_EXPORT ImageDecodingStore final {
       const CacheEntry*,
       Vector<std::unique_ptr<CacheEntry>>* deletionList);
 
-  // Helper method to remove all cache entries associated with a ImageFraneGenerator.
-  // Ownership of cache entries is transferred to deletionList.
+  // Helper method to remove all cache entries associated with an
+  // ImageFrameGenerator. Ownership of the cache entries is transferred to
+  // |deletionList|.
   template <class U, class V>
   void removeCacheIndexedByGeneratorInternal(
       U* cacheMap,
@@ -220,7 +223,8 @@ class PLATFORM_EXPORT ImageDecodingStore final {
   // Tail of this list is the most recently used cache entry.
   DoublyLinkedList<CacheEntry> m_orderedCacheList;
 
-  // A lookup table for all decoder cache objects. Owns all decoder cache objects.
+  // A lookup table for all decoder cache objects. Owns all decoder cache
+  // objects.
   typedef HashMap<DecoderCacheKey, std::unique_ptr<DecoderCacheEntry>>
       DecoderCacheMap;
   DecoderCacheMap m_decoderCacheMap;

@@ -73,7 +73,8 @@ std::unique_ptr<DeferredImageDecoder> DeferredImageDecoder::create(
   std::unique_ptr<DeferredImageDecoder> decoder(
       new DeferredImageDecoder(std::move(actualDecoder)));
 
-  // Since we've just instantiated a fresh decoder, there's no need to reset its data.
+  // Since we've just instantiated a fresh decoder, there's no need to reset its
+  // data.
   decoder->setDataInternal(data.release(), dataComplete, false);
 
   return decoder;
@@ -262,7 +263,8 @@ void DeferredImageDecoder::activateLazyDecoding() {
   m_size = m_actualDecoder->size();
   m_hasHotSpot = m_actualDecoder->hotSpot(m_hotSpot);
   m_filenameExtension = m_actualDecoder->filenameExtension();
-  // JPEG images support YUV decoding: other decoders do not, WEBP could in future.
+  // JPEG images support YUV decoding; other decoders do not. (WebP could in the
+  // future.)
   m_canYUVDecode = RuntimeEnabledFeatures::decodeToYUVEnabled() &&
                    (m_filenameExtension == "jpg");
   m_hasColorProfile = m_actualDecoder->hasColorProfile();

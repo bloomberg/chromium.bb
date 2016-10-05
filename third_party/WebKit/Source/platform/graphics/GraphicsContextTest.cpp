@@ -86,7 +86,8 @@ TEST(GraphicsContextTest, pictureRecording) {
   context.fillRect(FloatRect(0, 0, 100, 100), opaque,
                    SkXfermode::kSrcOver_Mode);
   picture = context.endRecording();
-  // Make sure the opaque region was unaffected by the rect drawn during Picture recording.
+  // Make sure the opaque region was unaffected by the rect drawn during Picture
+  // recording.
   EXPECT_OPAQUE_PIXELS_ONLY_IN_RECT(bitmap, IntRect(0, 0, 50, 50))
 
   canvas.drawPicture(picture.get());
@@ -130,7 +131,8 @@ TEST(GraphicsContextTest, UnboundedDrawsAreClipped) {
   // Clip to the left edge of the opaque area.
   context.clip(IntRect(10, 10, 10, 40));
 
-  // Draw a path that gets clipped. This should destroy the opaque area but only inside the clip.
+  // Draw a path that gets clipped. This should destroy the opaque area, but
+  // only inside the clip.
   Path path;
   path.moveTo(FloatPoint(10, 10));
   path.addLineTo(FloatPoint(40, 40));

@@ -48,10 +48,10 @@ void CrossfadeGeneratedImage::drawCrossfade(SkCanvas* canvas,
   FloatRect toImageRect(FloatPoint(), FloatSize(m_toImage->size()));
   FloatRect destRect((FloatPoint()), FloatSize(m_crossfadeSize));
 
-  // TODO(junov): The various effects encoded into paint should probably be applied here
-  // instead of inside the layer.  This probably faulty behavior was maintained in order
-  // to preserve pre-existing behavior while refactoring this code.  This should be
-  // investigated further. crbug.com/472634
+  // TODO(junov): The various effects encoded into paint should probably be
+  // applied here instead of inside the layer.  This probably faulty behavior
+  // was maintained in order to preserve pre-existing behavior while refactoring
+  // this code.  This should be investigated further. crbug.com/472634
   SkPaint layerPaint;
   layerPaint.setXfermode(sk_ref_sp(paint.getXfermode()));
   SkAutoCanvasRestore ar(canvas, false);
@@ -62,9 +62,10 @@ void CrossfadeGeneratedImage::drawCrossfade(SkCanvas* canvas,
   int imageAlpha = clampedAlphaForBlending(1 - m_percentage);
   imagePaint.setAlpha(imageAlpha > 255 ? 255 : imageAlpha);
   imagePaint.setAntiAlias(paint.isAntiAlias());
-  // TODO(junov): This code should probably be propagating the RespectImageOrientationEnum
-  // form CrossfadeGeneratedImage::draw. Code was written this way during refactoring to
-  // avoid modifying existing behavior, but this warrants further investigation. crbug.com/472634
+  // TODO(junov): This code should probably be propagating the
+  // RespectImageOrientationEnum from CrossfadeGeneratedImage::draw(). Code was
+  // written this way during refactoring to avoid modifying existing behavior,
+  // but this warrants further investigation. crbug.com/472634
   m_fromImage->draw(canvas, imagePaint, destRect, fromImageRect,
                     DoNotRespectImageOrientation, clampMode);
   imagePaint.setXfermodeMode(SkXfermode::kPlus_Mode);

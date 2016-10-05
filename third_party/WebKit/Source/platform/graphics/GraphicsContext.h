@@ -70,8 +70,8 @@ class PLATFORM_EXPORT GraphicsContext {
  public:
   enum DisabledMode {
     NothingDisabled = 0,  // Run as normal.
-    FullyDisabled =
-        1  // Do absolutely minimal work to remove the cost of the context from performance tests.
+    FullyDisabled = 1     // Do absolutely minimal work to remove the cost of
+                          // the context from performance tests.
   };
 
   explicit GraphicsContext(PaintController&,
@@ -214,7 +214,8 @@ class PLATFORM_EXPORT GraphicsContext {
                       SkXfermode::Mode = SkXfermode::kSrcOver_Mode);
 
   // These methods write to the canvas.
-  // Also drawLine(const IntPoint& point1, const IntPoint& point2) and fillRoundedRect
+  // Also drawLine(const IntPoint& point1, const IntPoint& point2) and
+  // fillRoundedRect().
   void drawOval(const SkRect&, const SkPaint&);
   void drawPath(const SkPath&, const SkPaint&);
   void drawRect(const SkRect&, const SkPaint&);
@@ -271,8 +272,9 @@ class PLATFORM_EXPORT GraphicsContext {
                                  float width,
                                  DocumentMarkerLineStyle);
 
-  // beginLayer()/endLayer() behaves like save()/restore() for CTM and clip states.
-  // Apply SkXfermode::Mode when the layer is composited on the backdrop (i.e. endLayer()).
+  // beginLayer()/endLayer() behave like save()/restore() for CTM and clip
+  // states. Apply SkXfermode::Mode when the layer is composited on the backdrop
+  // (i.e. endLayer()).
   void beginLayer(float opacity = 1.0f,
                   SkXfermode::Mode = SkXfermode::kSrcOver_Mode,
                   const FloatRect* = 0,
@@ -280,13 +282,14 @@ class PLATFORM_EXPORT GraphicsContext {
                   sk_sp<SkImageFilter> = nullptr);
   void endLayer();
 
-  // Instead of being dispatched to the active canvas, draw commands following beginRecording()
-  // are stored in a display list that can be replayed at a later time. Pass in the bounding
-  // rectangle for the content in the list.
+  // Instead of being dispatched to the active canvas, draw commands following
+  // beginRecording() are stored in a display list that can be replayed at a
+  // later time. Pass in the bounding rectangle for the content in the list.
   void beginRecording(const FloatRect&);
-  // Returns a picture with any recorded draw commands since the prerequisite call to
-  // beginRecording().  The picture is guaranteed to be non-null (but not necessarily non-empty),
-  // even when the context is disabled.
+
+  // Returns a picture with any recorded draw commands since the prerequisite
+  // call to beginRecording().  The picture is guaranteed to be non-null (but
+  // not necessarily non-empty), even when the context is disabled.
   sk_sp<SkPicture> endRecording();
 
   void setShadow(const FloatSize& offset,
@@ -342,9 +345,10 @@ class PLATFORM_EXPORT GraphicsContext {
   // Sets target URL of a clickable area.
   void setURLForRect(const KURL&, const IntRect&);
 
-  // Sets destination of a URL fragment (in a URL pointing to the same web page) of a clickable area.
-  // When the area is clicked, the page should be scrolled to the location set by setURLDestinationLocation()
-  // for the destination whose name equals the fragment.
+  // Sets the destination of a clickable area of a URL fragment (in a URL
+  // pointing to the same web page). When the area is clicked, the page should
+  // be scrolled to the location set by setURLDestinationLocation() for the
+  // destination whose name is |name|.
   void setURLFragmentForRect(const String& name, const IntRect&);
 
   // Sets location of a URL destination (a.k.a. anchor) in the page.
@@ -356,8 +360,9 @@ class PLATFORM_EXPORT GraphicsContext {
                                           StrokeStyle);
 
   static int focusRingOutsetExtent(int offset, int width) {
-    // Unlike normal outlines (whole width is outside of the offset), focus rings are drawn with the
-    // center of the path aligned with the offset, so only half of the width is outside of the offset.
+    // Unlike normal outlines (whole width is outside of the offset), focus
+    // rings are drawn with the center of the path aligned with the offset, so
+    // only half of the width is outside of the offset.
     return focusRingOffset(offset) + (focusRingWidth(width) + 1) / 2;
   }
 
@@ -439,12 +444,14 @@ class PLATFORM_EXPORT GraphicsContext {
 
   PaintController& m_paintController;
 
-  // Paint states stack. Enables local drawing state change with save()/restore() calls.
-  // This state controls the appearance of drawn content.
+  // Paint states stack. The state controls the appearance of drawn content, so
+  // this stack enables local drawing state changes with save()/restore() calls.
   // We do not delete from this stack to avoid memory churn.
   Vector<std::unique_ptr<GraphicsContextState>> m_paintStateStack;
+
   // Current index on the stack. May not be the last thing on the stack.
   unsigned m_paintStateIndex;
+
   // Raw pointer to the current state.
   GraphicsContextState* m_paintState;
 

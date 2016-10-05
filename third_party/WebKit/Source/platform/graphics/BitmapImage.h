@@ -101,7 +101,9 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
  private:
   enum RepetitionCountStatus {
     Unknown,    // We haven't checked the source's repetition count.
-    Uncertain,  // We have a repetition count, but it might be wrong (some GIFs have a count after the image data, and will report "loop once" until all data has been decoded).
+    Uncertain,  // We have a repetition count, but it might be wrong (some GIFs
+                // have a count after the image data, and will report "loop
+                // once" until all data has been decoded).
     Certain     // The repetition count is known to be correct.
   };
 
@@ -149,13 +151,16 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
   // We start and stop animating lazily.  Animation starts when the image is
   // rendered, and automatically stops once no observer wants to render the
   // image.
-  int repetitionCount(
-      bool
-          imageKnownToBeComplete);  // |imageKnownToBeComplete| should be set if the caller knows the entire image has been decoded.
+
+  // |imageKnownToBeComplete| should be set if the caller knows the entire image
+  // has been decoded.
+  int repetitionCount(bool imageKnownToBeComplete);
+
   bool shouldAnimate();
   void startAnimation(CatchUpAnimation = CatchUp) override;
   void stopAnimation();
   void advanceAnimation(TimerBase*);
+
   // Advance the animation and let the next frame get scheduled without
   // catch-up logic. For large images with slow or heavily-loaded systems,
   // throwing away data as we go (see destroyDecodedData()) means we can spend
@@ -174,38 +179,41 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
   void notifyObserversOfAnimationAdvance(TimerBase*);
 
   ImageSource m_source;
-  mutable IntSize
-      m_size;  // The size to use for the overall image (will just be the size of the first image).
+  mutable IntSize m_size;  // The size to use for the overall image (will just
+                           // be the size of the first image).
   mutable IntSize m_sizeRespectingOrientation;
 
   size_t m_currentFrame;  // The index of the current frame of animation.
-  Vector<FrameData, 1>
-      m_frames;  // An array of the cached frames of the animation. We have to ref frames to pin them in the cache.
+  Vector<FrameData, 1> m_frames;  // An array of the cached frames of the
+                                  // animation. We have to ref frames to pin
+                                  // them in the cache.
 
   sk_sp<SkImage>
       m_cachedFrame;  // A cached copy of the most recently-accessed frame.
   size_t m_cachedFrameIndex;  // Index of the frame that is cached.
 
   std::unique_ptr<Timer<BitmapImage>> m_frameTimer;
-  int m_repetitionCount;  // How many total animation loops we should do.  This will be cAnimationNone if this image type is incapable of animation.
+  int m_repetitionCount;  // How many total animation loops we should do.  This
+                          // will be cAnimationNone if this image type is
+                          // incapable of animation.
   RepetitionCountStatus m_repetitionCountStatus;
-  int m_repetitionsComplete;  // How many repetitions we've finished.
-  double
-      m_desiredFrameStartTime;  // The system time at which we hope to see the next call to startAnimation().
+  int m_repetitionsComplete;       // How many repetitions we've finished.
+  double m_desiredFrameStartTime;  // The system time at which we hope to see
+                                   // the next call to startAnimation().
 
   size_t m_frameCount;
 
   ImageAnimationPolicy
       m_animationPolicy;  // Whether or not we can play animation.
 
-  bool
-      m_animationFinished : 1;  // Whether or not we've completed the entire animation.
+  bool m_animationFinished : 1;  // Whether we've completed the entire
+                                 // animation.
 
-  bool m_allDataReceived : 1;  // Whether or not we've received all our data.
-  mutable bool
-      m_haveSize : 1;  // Whether or not our |m_size| member variable has the final overall image size yet.
-  bool
-      m_sizeAvailable : 1;  // Whether or not we can obtain the size of the first image frame yet from ImageIO.
+  bool m_allDataReceived : 1;   // Whether we've received all our data.
+  mutable bool m_haveSize : 1;  // Whether our |m_size| member variable has the
+                                // final overall image size yet.
+  bool m_sizeAvailable : 1;     // Whether we can obtain the size of the first
+                                // image frame from ImageIO yet.
   mutable bool m_haveFrameCount : 1;
 };
 

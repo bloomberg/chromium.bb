@@ -75,7 +75,7 @@ void StrokeData::setupPaintDashPathEffect(SkPaint* paint, int length) const {
       case NoStroke:
       case SolidStroke:
       case DoubleStroke:
-      case WavyStroke:  // FIXME: https://code.google.com/p/chromium/issues/detail?id=229574
+      case WavyStroke:  // FIXME: https://crbug.com/229574
         paint->setPathEffect(0);
         return;
       case DashedStroke:

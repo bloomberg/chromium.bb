@@ -99,7 +99,8 @@ class PLATFORM_EXPORT GraphicsLayer : public WebLayerScrollClient,
   // Returns true if the child list changed.
   bool setChildren(const GraphicsLayerVector&);
 
-  // Add child layers. If the child is already parented, it will be removed from its old parent.
+  // Add child layers. If the child is already parented, it will be removed from
+  // its old parent.
   void addChild(GraphicsLayer*);
   void addChildBelow(GraphicsLayer*, GraphicsLayer* sibling);
 
@@ -116,7 +117,8 @@ class PLATFORM_EXPORT GraphicsLayer : public WebLayerScrollClient,
 
   enum ShouldSetNeedsDisplay { DontSetNeedsDisplay, SetNeedsDisplay };
 
-  // Offset is origin of the layoutObject minus origin of the graphics layer (so either zero or negative).
+  // The offset is the origin of the layoutObject minus the origin of the
+  // graphics layer (so either zero or negative).
   IntSize offsetFromLayoutObject() const {
     return flooredIntSize(m_offsetFromLayoutObject);
   }
@@ -124,15 +126,16 @@ class PLATFORM_EXPORT GraphicsLayer : public WebLayerScrollClient,
                                  ShouldSetNeedsDisplay = SetNeedsDisplay);
   LayoutSize offsetFromLayoutObjectWithSubpixelAccumulation() const;
 
-  // The double version is only used in |updateScrollingLayerGeometry()| for detecting
-  // scroll offset change at floating point precision.
+  // The double version is only used in updateScrollingLayerGeometry() for
+  // detecting a scroll offset change at floating point precision.
   DoubleSize offsetDoubleFromLayoutObject() const {
     return m_offsetFromLayoutObject;
   }
   void setOffsetDoubleFromLayoutObject(const DoubleSize&,
                                        ShouldSetNeedsDisplay = SetNeedsDisplay);
 
-  // The position of the layer (the location of its top-left corner in its parent)
+  // The position of the layer (the location of its top-left corner in its
+  // parent).
   const FloatPoint& position() const { return m_position; }
   void setPosition(const FloatPoint&);
 
@@ -161,8 +164,8 @@ class PLATFORM_EXPORT GraphicsLayer : public WebLayerScrollClient,
   void setClipParent(WebLayer*);
 
   // For special cases, e.g. drawing missing tiles on Android.
-  // The compositor should never paint this color in normal cases because the Layer
-  // will paint background by itself.
+  // The compositor should never paint this color in normal cases because the
+  // Layer will paint the background by itself.
   void setBackgroundColor(const Color&);
 
   // opaque means that we know the layer contents have no alpha
@@ -212,8 +215,9 @@ class PLATFORM_EXPORT GraphicsLayer : public WebLayerScrollClient,
 
   int paintCount() const { return m_paintCount; }
 
-  // Return a string with a human readable form of the layer tree, If debug is true
-  // pointers for the layers and timing data will be included in the returned string.
+  // Return a string with a human readable form of the layer tree. If debug is
+  // true, pointers for the layers and timing data will be included in the
+  // returned string.
   String layerTreeAsText(LayerTreeFlags = LayerTreeNormal) const;
 
   std::unique_ptr<JSONObject> layerTreeAsJSON(LayerTreeFlags) const;
@@ -363,8 +367,8 @@ class PLATFORM_EXPORT GraphicsLayer : public WebLayerScrollClient,
   GraphicsLayer* m_parent;
 
   GraphicsLayer* m_maskLayer;  // Reference to mask layer. We don't own this.
-  GraphicsLayer*
-      m_contentsClippingMaskLayer;  // Reference to clipping mask layer. We don't own this.
+  GraphicsLayer* m_contentsClippingMaskLayer;  // Reference to clipping mask
+                                               // layer. We don't own this.
 
   IntRect m_contentsRect;
 
@@ -373,10 +377,11 @@ class PLATFORM_EXPORT GraphicsLayer : public WebLayerScrollClient,
   std::unique_ptr<WebContentLayer> m_layer;
   std::unique_ptr<WebImageLayer> m_imageLayer;
   WebLayer* m_contentsLayer;
-  // We don't have ownership of m_contentsLayer, but we do want to know if a given layer is the
-  // same as our current layer in setContentsTo(). Since m_contentsLayer may be deleted at this point,
-  // we stash an ID away when we know m_contentsLayer is alive and use that for comparisons from that point
-  // on.
+  // We don't have ownership of m_contentsLayer, but we do want to know if a
+  // given layer is the same as our current layer in setContentsTo(). Since
+  // |m_contentsLayer| may be deleted at this point, we stash an ID away when we
+  // know |m_contentsLayer| is alive and use that for comparisons from that
+  // point on.
   int m_contentsLayerId;
 
   Vector<LinkHighlight*> m_linkHighlights;

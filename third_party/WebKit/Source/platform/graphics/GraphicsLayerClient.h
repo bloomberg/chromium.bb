@@ -77,7 +77,8 @@ class PLATFORM_EXPORT GraphicsLayerClient {
       const GraphicsLayer*,
       const IntRect& previousInterestRect) const = 0;
   virtual LayoutSize subpixelAccumulation() const { return LayoutSize(); }
-  // Returns whether the client needs to be repainted with respect to the given graphics layer.
+  // Returns whether the client needs to be repainted with respect to the given
+  // graphics layer.
   virtual bool needsRepaint(const GraphicsLayer&) const = 0;
   virtual void paintContents(const GraphicsLayer*,
                              GraphicsContext&,

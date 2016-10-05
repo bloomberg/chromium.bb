@@ -54,8 +54,8 @@ enum PathElementType {
 };
 
 // The points in the structure are the same as those that would be used with the
-// add... method. For example, a line returns the endpoint, while a cubic returns
-// two tangent points and the endpoint.
+// add... method. For example, a line returns the endpoint, while a cubic
+// returns two tangent points and the endpoint.
 struct PathElement {
   PathElementType type;
   FloatPoint* points;
@@ -92,12 +92,11 @@ class PLATFORM_EXPORT Path {
   FloatPoint pointAtLength(float length) const;
   void pointAndNormalAtLength(float length, FloatPoint&, float&) const;
 
-  // Helper for computing a sequence of positions and normals (normal angles) on a path.
-  // The best possible access pattern will be one where the |length| value is
-  // strictly increasing.
-  // For other access patterns, performance will vary depending on curvature
-  // and number of segments, but should never be worse than that of the
-  // state-less method on Path.
+  // Helper for computing a sequence of positions and normals (normal angles) on
+  // a path. The best possible access pattern will be one where the |length|
+  // value is strictly increasing. For other access patterns, performance will
+  // vary depending on curvature and number of segments, but should never be
+  // worse than that of the state-less method on Path.
   class PLATFORM_EXPORT PositionCalculator {
     WTF_MAKE_NONCOPYABLE(PositionCalculator);
     USING_FAST_MALLOC(PositionCalculator);
@@ -116,12 +115,15 @@ class PLATFORM_EXPORT Path {
   void clear();
   bool isEmpty() const;
   bool isClosed() const;
-  // Specify whether this path is volatile. Temporary paths that are discarded or
-  // modified after use should be marked as volatile. This is a hint to the device
-  // to not cache this path.
+
+  // Specify whether this path is volatile. Temporary paths that are discarded
+  // or modified after use should be marked as volatile. This is a hint to the
+  // device to not cache this path.
   void setIsVolatile(bool);
-  // Gets the current point of the current path, which is conceptually the final point reached by the path so far.
-  // Note the Path can be empty (isEmpty() == true) and still have a current point.
+
+  // Gets the current point of the current path, which is conceptually the final
+  // point reached by the path so far. Note the Path can be empty
+  // (isEmpty() == true) and still have a current point.
   bool hasCurrentPoint() const;
   FloatPoint currentPoint() const;
 
@@ -182,8 +184,10 @@ class PLATFORM_EXPORT Path {
 
   bool subtractPath(const Path&);
 
-  // Updates the path to the union (inclusive-or) of itself with the given argument.
+  // Updates the path to the union (inclusive-or) of itself with the given
+  // argument.
   bool unionPath(const Path& other);
+
   bool intersectPath(const Path& other);
 
  private:

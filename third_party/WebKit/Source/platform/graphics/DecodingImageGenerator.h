@@ -41,9 +41,9 @@ namespace blink {
 
 class ImageFrameGenerator;
 
-// Implements SkImageGenerator, used by SkPixelRef to populate a discardable memory
-// with a decoded image frame. ImageFrameGenerator does the actual decoding.
-//
+// Implements SkImageGenerator, used by SkPixelRef to populate a discardable
+// memory with a decoded image frame. ImageFrameGenerator does the actual
+// decoding.
 class PLATFORM_EXPORT DecodingImageGenerator final : public SkImageGenerator {
   USING_FAST_MALLOC(DecodingImageGenerator);
   WTF_MAKE_NONCOPYABLE(DecodingImageGenerator);
