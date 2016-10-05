@@ -104,7 +104,7 @@ def RunOnce(device, url, warmup, prerender_mode, delay_to_may_launch_url,
   device.StartActivity(launch_intent, blocking=True)
   match = None
   try:
-    match = logcat_monitor.WaitFor(result_line_re, timeout=10)
+    match = logcat_monitor.WaitFor(result_line_re, timeout=20)
   except device_errors.CommandTimeoutError as e:
     logging.warning('Timeout waiting for the result line')
   return match.group(1) if match is not None else None
