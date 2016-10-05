@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
@@ -11,6 +12,7 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -213,17 +215,23 @@ void ContentSettingBlockedImageModel::UpdateFromWebContents(
   int tooltip_id = image_details->blocked_tooltip_id;
   int explanation_id = image_details->blocked_explanatory_text_id;
 
-  // For plugins, don't show the animated explanation unless the plugin was
-  // blocked despite the user's content settings being set to allow it (e.g.
-  // due to auto-blocking NPAPI plugins).
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile);
   if (type == CONTENT_SETTINGS_TYPE_PLUGINS) {
     GURL url = web_contents->GetURL();
-    if (map->GetContentSetting(url, url, type, std::string()) !=
-        CONTENT_SETTING_ALLOW)
+    ContentSetting setting =
+        map->GetContentSetting(url, url, type, std::string());
+
+    // For plugins, show the animated explanation in these cases:
+    //  - The plugin is blocked despite the user having content setting ALLOW.
+    //  - The user has disabled Flash using BLOCK and HTML5 By Default feature.
+    bool show_explanation =
+        setting == CONTENT_SETTING_ALLOW ||
+        (setting == CONTENT_SETTING_BLOCK &&
+         base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins));
+    if (!show_explanation)
       explanation_id = 0;
   }
 

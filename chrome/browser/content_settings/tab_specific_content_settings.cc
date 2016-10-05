@@ -44,6 +44,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/content_constants.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
 #include "storage/common/fileapi/file_system_types.h"
@@ -678,6 +679,11 @@ void TabSpecificContentSettings::ClearCookieSpecificContentSettings() {
       chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
       content::Source<WebContents>(web_contents()),
       content::NotificationService::NoDetails());
+}
+
+void TabSpecificContentSettings::FlashDownloadBlocked() {
+  OnContentBlockedWithDetail(CONTENT_SETTINGS_TYPE_PLUGINS,
+                             base::UTF8ToUTF16(content::kFlashPluginName));
 }
 
 void TabSpecificContentSettings::SetDownloadsBlocked(bool blocked) {

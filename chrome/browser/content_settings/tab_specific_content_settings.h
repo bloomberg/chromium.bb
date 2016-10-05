@@ -178,6 +178,9 @@ class TabSpecificContentSettings
   // TODO(vabr): Only public for tests. Move to a test client.
   void ClearCookieSpecificContentSettings();
 
+  // Notifies that a Flash download has been blocked.
+  void FlashDownloadBlocked();
+
   // Changes the |content_blocked_| entry for popups.
   void SetPopupsBlocked(bool blocked);
 

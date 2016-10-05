@@ -81,7 +81,7 @@ TEST_F(FlashDownloadInterceptionTest, OnlyInterceptOnDetectContentSetting) {
       host_content_settings_map(), GURL(),
       GURL("https://get.adobe.com/flashplayer/"), true));
 
-  // ALLOW and BLOCK Settings
+  // No intercept on ALLOW.
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile());
   map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
@@ -89,13 +89,13 @@ TEST_F(FlashDownloadInterceptionTest, OnlyInterceptOnDetectContentSetting) {
   EXPECT_FALSE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
       host_content_settings_map(), GURL(),
       GURL("https://get.adobe.com/flashplayer/"), true));
+
+  // Intercept on both explicit DETECT and BLOCK.
   map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
                                 CONTENT_SETTING_BLOCK);
-  EXPECT_FALSE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
+  EXPECT_TRUE(FlashDownloadInterception::ShouldStopFlashDownloadAction(
       host_content_settings_map(), GURL(),
       GURL("https://get.adobe.com/flashplayer/"), true));
-
-  // Explicit DETECT
   map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
                                 CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
   EXPECT_TRUE(FlashDownloadInterception::ShouldStopFlashDownloadAction(

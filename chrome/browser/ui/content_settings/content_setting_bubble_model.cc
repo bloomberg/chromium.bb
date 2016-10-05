@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/collected_cookies_infobar_delegate.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model_delegate.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
@@ -188,9 +190,28 @@ void ContentSettingSimpleBubbleModel::OnManageLinkClicked() {
 }
 
 void ContentSettingSimpleBubbleModel::SetCustomLink() {
+  if (content_type() == CONTENT_SETTINGS_TYPE_PLUGINS) {
+    HostContentSettingsMap* map =
+        HostContentSettingsMapFactory::GetForProfile(profile());
+    GURL url = web_contents()->GetURL();
+    std::unique_ptr<base::Value> value = map->GetWebsiteSetting(
+        url, url, content_type(), std::string(), nullptr);
+    ContentSetting setting =
+        content_settings::ValueToContentSetting(value.get());
+
+    // When Flash has been hidden from the plugin list, it is impossible to
+    // dynamically load all the plugins on the page.
+    if (setting == CONTENT_SETTING_BLOCK &&
+        base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins)) {
+      return;
+    }
+
+    set_custom_link(l10n_util::GetStringUTF8(IDS_BLOCKED_PLUGINS_LOAD_ALL));
+    return;
+  }
+
   static const ContentSettingsTypeIdEntry kCustomIDs[] = {
     {CONTENT_SETTINGS_TYPE_COOKIES, IDS_BLOCKED_COOKIES_INFO},
-    {CONTENT_SETTINGS_TYPE_PLUGINS, IDS_BLOCKED_PLUGINS_LOAD_ALL},
     {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, IDS_ALLOW_INSECURE_CONTENT_BUTTON},
   };
   int custom_link_id =
@@ -369,7 +390,17 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
 
   set_setting_is_managed(setting_source != SETTING_SOURCE_USER &&
                          setting != CONTENT_SETTING_ASK);
-  set_radio_group_enabled(setting_source == SETTING_SOURCE_USER);
+
+  // When Flash has been hidden from the plugin list, it is impossible to
+  // dynamically load all the plugins on the page. Then the radio group would
+  // appear to do nothing. The user must go to Content Settings to enable Flash.
+  bool flash_hidden_from_plugin_list =
+      content_type() == CONTENT_SETTINGS_TYPE_PLUGINS &&
+      setting == CONTENT_SETTING_BLOCK &&
+      base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins);
+  set_radio_group_enabled(setting_source == SETTING_SOURCE_USER &&
+                          !flash_hidden_from_plugin_list);
+
   selected_item_ = radio_group.default_item;
   set_radio_group(radio_group);
 }

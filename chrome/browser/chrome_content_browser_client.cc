@@ -634,7 +634,8 @@ void HandleBlockedPopupOnUIThread(const BlockedWindowParams& params) {
 
 #if defined(ENABLE_PLUGINS)
 void HandleFlashDownloadActionOnUIThread(int render_process_id,
-                                         int render_frame_id) {
+                                         int render_frame_id,
+                                         const GURL& source_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderFrameHost* render_frame_host =
       RenderFrameHost::FromID(render_process_id, render_frame_id);
@@ -642,7 +643,8 @@ void HandleFlashDownloadActionOnUIThread(int render_process_id,
     return;
   WebContents* web_contents =
       WebContents::FromRenderFrameHost(render_frame_host);
-  FlashDownloadInterception::ShowRunFlashPrompt(web_contents);
+  FlashDownloadInterception::InterceptFlashDownloadNavigation(web_contents,
+                                                              source_url);
 }
 #endif  // defined(ENABLE_PLUGINS)
 
@@ -2315,7 +2317,7 @@ bool ChromeContentBrowserClient::CanCreateWindow(
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&HandleFlashDownloadActionOnUIThread, render_process_id,
-                   opener_render_frame_id));
+                   opener_render_frame_id, opener_top_level_frame_url));
     return false;
   }
 #endif

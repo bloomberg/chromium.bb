@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/plugins/plugin_utils.h"
 #include "chrome/browser/plugins/plugins_field_trial.h"
@@ -32,23 +33,42 @@ const char kFlashDownloadURL[] = "get.adobe.com/flash";
 void DoNothing(blink::mojom::PermissionStatus result) {}
 
 bool InterceptNavigation(
+    const GURL& source_url,
     content::WebContents* source,
     const navigation_interception::NavigationParams& params) {
-  FlashDownloadInterception::ShowRunFlashPrompt(source);
+  FlashDownloadInterception::InterceptFlashDownloadNavigation(source,
+                                                              source_url);
   return true;
 }
 
 }  // namespace
 
 // static
-void FlashDownloadInterception::ShowRunFlashPrompt(
-    content::WebContents* web_contents) {
+void FlashDownloadInterception::InterceptFlashDownloadNavigation(
+    content::WebContents* web_contents,
+    const GURL& source_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  PermissionManager* manager = PermissionManager::Get(
-      Profile::FromBrowserContext(web_contents->GetBrowserContext()));
-  manager->RequestPermission(
-      content::PermissionType::FLASH, web_contents->GetMainFrame(),
-      web_contents->GetLastCommittedURL(), true, base::Bind(&DoNothing));
+
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(profile);
+  ContentSetting flash_setting = PluginUtils::GetFlashPluginContentSetting(
+      host_content_settings_map, source_url, source_url, nullptr);
+  flash_setting = PluginsFieldTrial::EffectiveContentSetting(
+      CONTENT_SETTINGS_TYPE_PLUGINS, flash_setting);
+
+  if (flash_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT) {
+    PermissionManager* manager = PermissionManager::Get(profile);
+    manager->RequestPermission(
+        content::PermissionType::FLASH, web_contents->GetMainFrame(),
+        web_contents->GetLastCommittedURL(), true, base::Bind(&DoNothing));
+  } else if (flash_setting == CONTENT_SETTING_BLOCK) {
+    TabSpecificContentSettings::FromWebContents(web_contents)
+        ->FlashDownloadBlocked();
+  }
+
+  // If the content setting has been already changed, do nothing.
 }
 
 // static
@@ -73,7 +93,8 @@ bool FlashDownloadInterception::ShouldStopFlashDownloadAction(
   flash_setting = PluginsFieldTrial::EffectiveContentSetting(
       CONTENT_SETTINGS_TYPE_PLUGINS, flash_setting);
 
-  return flash_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT;
+  return flash_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT ||
+         flash_setting == CONTENT_SETTING_BLOCK;
 }
 
 // static
@@ -97,5 +118,5 @@ FlashDownloadInterception::MaybeCreateThrottleFor(NavigationHandle* handle) {
   }
 
   return base::MakeUnique<navigation_interception::InterceptNavigationThrottle>(
-      handle, base::Bind(&InterceptNavigation), true);
+      handle, base::Bind(&InterceptNavigation, source_url), true);
 }

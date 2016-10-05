@@ -448,7 +448,8 @@ void PluginObserver::OnOpenAboutPlugins() {
 void PluginObserver::OnShowFlashPermissionBubble() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  FlashDownloadInterception::ShowRunFlashPrompt(web_contents());
+  FlashDownloadInterception::InterceptFlashDownloadNavigation(
+      web_contents(), web_contents()->GetLastCommittedURL());
 }
 
 void PluginObserver::OnCouldNotLoadPlugin(const base::FilePath& plugin_path) {

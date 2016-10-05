@@ -7,6 +7,7 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -36,6 +38,12 @@ class ContentSettingBubbleModelTest : public ChromeRenderViewHostTestHarness {
  protected:
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
+
+    // Although this is redundant with the Field Trial testing configuration,
+    // the
+    // official builders don't use those, so enable it here.
+    feature_list.InitAndEnableFeature(features::kPreferHtmlOverPlugins);
+
     TabSpecificContentSettings::CreateForWebContents(web_contents());
     InfoBarService::CreateForWebContents(web_contents());
   }
@@ -68,6 +76,9 @@ class ContentSettingBubbleModelTest : public ChromeRenderViewHostTestHarness {
     PrefService* prefs = profile()->GetPrefs();
     return prefs->GetString(prefs::kDefaultVideoCaptureDevice);
   }
+
+ private:
+  base::test::ScopedFeatureList feature_list;
 };
 
 TEST_F(ContentSettingBubbleModelTest, ImageRadios) {
