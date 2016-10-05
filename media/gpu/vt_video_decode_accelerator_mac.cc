@@ -805,11 +805,18 @@ void VTVideoDecodeAccelerator::DecodeDone(Frame* frame) {
   DVLOG(3) << __func__ << "(" << frame->bitstream_id << ")";
   DCHECK(gpu_task_runner_->BelongsToCurrentThread());
 
-  DCHECK_EQ(1u, pending_frames_.count(frame->bitstream_id));
+  // pending_frames_.erase() will delete |frame|.
+  int32_t bitstream_id = frame->bitstream_id;
+  DCHECK_EQ(1u, pending_frames_.count(bitstream_id));
 
+  if (state_ == STATE_ERROR || state_ == STATE_DESTROYING) {
+    // Destroy() handles NotifyEndOfBitstreamBuffer().
+    pending_frames_.erase(bitstream_id);
+    return;
+  }
+
+  DCHECK_EQ(state_, STATE_DECODING);
   if (!frame->image.get()) {
-    // pending_frames_.erase() will delete |frame|.
-    int32_t bitstream_id = frame->bitstream_id;
     pending_frames_.erase(bitstream_id);
     assigned_bitstream_ids_.erase(bitstream_id);
     client_->NotifyEndOfBitstreamBuffer(bitstream_id);
@@ -817,8 +824,8 @@ void VTVideoDecodeAccelerator::DecodeDone(Frame* frame) {
   }
 
   Task task(TASK_FRAME);
-  task.frame = pending_frames_[frame->bitstream_id];
-  pending_frames_.erase(frame->bitstream_id);
+  task.frame = pending_frames_[bitstream_id];
+  pending_frames_.erase(bitstream_id);
   task_queue_.push(task);
   ProcessWorkQueues();
 }
@@ -1029,7 +1036,8 @@ bool VTVideoDecodeAccelerator::ProcessFrame(const Frame& frame) {
   bool resetting = !pending_flush_tasks_.empty() &&
                    pending_flush_tasks_.front() == TASK_RESET;
 
-  if (!resetting && frame.image.get()) {
+  if (!resetting) {
+    DCHECK(frame.image.get());
     // If the |image_size| has changed, request new picture buffers and then
     // wait for them.
     //
