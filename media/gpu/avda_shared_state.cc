@@ -19,7 +19,7 @@ AVDASharedState::AVDASharedState()
                              base::WaitableEvent::InitialState::NOT_SIGNALED),
 
       gl_matrix_{
-          1, 0, 1, 0,  // Default to a sane guess just in case we can't get the
+          1, 0, 0, 0,  // Default to a sane guess just in case we can't get the
           0, 1, 0, 0,  // matrix on the first call. Will be Y-flipped later.
           0, 0, 1, 0,  //
           0, 0, 0, 1,  // Comment preserves 4x4 formatting.
