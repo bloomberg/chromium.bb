@@ -138,8 +138,6 @@ const char* const kSafeManifestEntries[] = {
     // for whitelist.
     // emk::kAutomation,
 
-    // TODO(isandrk): Ask Mattias for comments on entries without a comment.
-    // See crbug.com/650672.
     "background",
 
     emk::kBackgroundPageLegacy,
