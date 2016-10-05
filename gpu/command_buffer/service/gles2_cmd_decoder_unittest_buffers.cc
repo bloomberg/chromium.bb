@@ -218,6 +218,117 @@ TEST_P(GLES2DecoderTest, MapBufferRangeUnmapBufferWriteSucceeds) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
+
+TEST_P(GLES3DecoderTest, FlushMappedBufferRangeSucceeds) {
+  const GLenum kTarget = GL_ELEMENT_ARRAY_BUFFER;
+  const GLintptr kMappedOffset = 10;
+  const GLsizeiptr kMappedSize = 64;
+  const GLintptr kFlushRangeOffset = 5;
+  const GLsizeiptr kFlushRangeSize = 32;
+  const GLsizeiptr kTotalSize = kMappedOffset + kMappedSize;
+  const GLbitfield kAccess = GL_MAP_WRITE_BIT | GL_MAP_FLUSH_EXPLICIT_BIT;
+  const GLbitfield kMappedAccess = kAccess | GL_MAP_READ_BIT;
+
+  uint32_t result_shm_id = kSharedMemoryId;
+  uint32_t result_shm_offset = kSharedMemoryOffset;
+  uint32_t data_shm_id = kSharedMemoryId;
+  // uint32_t is Result for both MapBufferRange and UnmapBuffer commands.
+  uint32_t data_shm_offset = kSharedMemoryOffset + sizeof(uint32_t);
+
+  typedef MapBufferRange::Result Result;
+  Result* result = GetSharedMemoryAs<Result*>();
+  int8_t* client_data = GetSharedMemoryAs<int8_t*>() + sizeof(uint32_t);
+
+  DoBindBuffer(kTarget, client_buffer_id_, kServiceBufferId);
+  Buffer* buffer = GetBuffer(client_buffer_id_);
+  EXPECT_TRUE(buffer != nullptr);
+  DoBufferData(kTarget, kTotalSize);
+  std::vector<int8_t> gpu_data(kTotalSize);
+  for (GLsizeiptr ii = 0; ii < kTotalSize; ++ii) {
+    gpu_data[ii] = static_cast<int8_t>(ii % 128);
+  }
+  DoBufferSubData(kTarget, 0, kTotalSize, &gpu_data[0]);
+
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_TRUE(buffer->shadowed());
+  const int8_t* shadow_data = reinterpret_cast<const int8_t*>(
+      buffer->GetRange(0, kTotalSize));
+  EXPECT_TRUE(shadow_data);
+  // Verify the shadow data is initialized.
+  for (GLsizeiptr ii = 0; ii < kTotalSize; ++ii) {
+    EXPECT_EQ(static_cast<int8_t>(ii % 128), shadow_data[ii]);
+  }
+
+  {  // MapBufferRange succeeds
+    EXPECT_CALL(*gl_, MapBufferRange(kTarget, kMappedOffset, kMappedSize,
+                                     kMappedAccess))
+        .WillOnce(Return(&gpu_data[kMappedOffset]))
+        .RetiresOnSaturation();
+
+    MapBufferRange cmd;
+    cmd.Init(kTarget, kMappedOffset, kMappedSize, kAccess,
+             data_shm_id, data_shm_offset,
+             result_shm_id, result_shm_offset);
+    *result = 0;
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+    EXPECT_EQ(1u, *result);
+    // Verify the buffer range from GPU is copied to client mem.
+    EXPECT_EQ(0, memcmp(&gpu_data[kMappedOffset], client_data, kMappedSize));
+  }
+
+  // Update the client mem, including data within and outside the flush range.
+  const int8_t kValue0 = 21;
+  memset(client_data, kValue0, kTotalSize);
+
+  {  // FlushMappedBufferRange succeeds
+    EXPECT_CALL(*gl_, FlushMappedBufferRange(kTarget, kFlushRangeOffset,
+                                             kFlushRangeSize))
+        .Times(1)
+        .RetiresOnSaturation();
+
+    FlushMappedBufferRange cmd;
+    cmd.Init(kTarget, kFlushRangeOffset, kFlushRangeSize);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+
+    // Verify the GPU mem and shadow data are both updated, but only within
+    // the flushed range.
+    for (GLsizeiptr ii = 0; ii < kTotalSize; ++ii) {
+      if (ii >= kMappedOffset + kFlushRangeOffset &&
+          ii < kMappedOffset + kFlushRangeOffset + kFlushRangeSize) {
+        EXPECT_EQ(kValue0, gpu_data[ii]);
+        EXPECT_EQ(kValue0, shadow_data[ii]);
+      } else {
+        EXPECT_EQ(static_cast<int8_t>(ii % 128), gpu_data[ii]);
+        EXPECT_EQ(static_cast<int8_t>(ii % 128), shadow_data[ii]);
+      }
+    }
+  }
+
+  {  // UnmapBuffer succeeds
+    EXPECT_CALL(*gl_, UnmapBuffer(kTarget))
+        .WillOnce(Return(GL_TRUE))
+        .RetiresOnSaturation();
+
+    UnmapBuffer cmd;
+    cmd.Init(kTarget);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+
+    // Verify no further update to the GPU mem and shadow data.
+    for (GLsizeiptr ii = 0; ii < kTotalSize; ++ii) {
+      if (ii >= kMappedOffset + kFlushRangeOffset &&
+          ii < kMappedOffset + kFlushRangeOffset + kFlushRangeSize) {
+        EXPECT_EQ(kValue0, gpu_data[ii]);
+        EXPECT_EQ(kValue0, shadow_data[ii]);
+      } else {
+        EXPECT_EQ(static_cast<int8_t>(ii % 128), gpu_data[ii]);
+        EXPECT_EQ(static_cast<int8_t>(ii % 128), shadow_data[ii]);
+      }
+    }
+  }
+
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
 TEST_P(GLES2DecoderTest, MapBufferRangeNotInitFails) {
   const GLenum kTarget = GL_ARRAY_BUFFER;
   const GLintptr kOffset = 10;
@@ -398,6 +509,9 @@ TEST_P(GLES2DecoderTest, MapBufferRangeBadSharedMemoryFails) {
   for (GLsizeiptr ii = 0; ii < kSize; ++ii) {
     data[ii] = static_cast<int8_t>(ii % 255);
   }
+
+  DoBindBuffer(kTarget, client_buffer_id_, kServiceBufferId);
+  DoBufferData(kTarget, kOffset + kSize);
 
   typedef MapBufferRange::Result Result;
   Result* result = GetSharedMemoryAs<Result*>();

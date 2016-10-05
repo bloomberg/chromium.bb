@@ -2414,6 +2414,14 @@ void UnmapBuffer(GLenum target) {
   }
 }
 
+void FlushMappedBufferRange(GLenum target, GLintptr offset, GLsizeiptr size) {
+  gles2::cmds::FlushMappedBufferRange* c =
+      GetCmdSpace<gles2::cmds::FlushMappedBufferRange>();
+  if (c) {
+    c->Init(target, offset, size);
+  }
+}
+
 void ResizeCHROMIUM(GLuint width,
                     GLuint height,
                     GLfloat scale_factor,

@@ -872,6 +872,10 @@ void* MapBufferRange(GLenum target,
 
 GLboolean UnmapBuffer(GLenum target) override;
 
+void FlushMappedBufferRange(GLenum target,
+                            GLintptr offset,
+                            GLsizeiptr size) override;
+
 void* MapTexSubImage2DCHROMIUM(GLenum target,
                                GLint level,
                                GLint xoffset,

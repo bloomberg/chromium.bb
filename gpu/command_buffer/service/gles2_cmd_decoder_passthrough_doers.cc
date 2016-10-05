@@ -711,6 +711,13 @@ error::Error GLES2DecoderPassthroughImpl::DoFlush() {
   return error::kNoError;
 }
 
+error::Error GLES2DecoderPassthroughImpl::DoFlushMappedBufferRange(
+    GLenum target,
+    GLintptr offset,
+    GLsizeiptr size) {
+  return error::kNoError;
+}
+
 error::Error GLES2DecoderPassthroughImpl::DoFramebufferRenderbuffer(
     GLenum target,
     GLenum attachment,

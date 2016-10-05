@@ -166,6 +166,25 @@ struct TexSubCoord3D {
   int depth;
 };
 
+// Check if all |ref| bits are set in |bits|.
+bool AllBitsSet(GLbitfield bits, GLbitfield ref) {
+  DCHECK_NE(0u, ref);
+  return ((bits & ref) == ref);
+}
+
+// Check if any of |ref| bits are set in |bits|.
+bool AnyBitsSet(GLbitfield bits, GLbitfield ref) {
+  DCHECK_NE(0u, ref);
+  return ((bits & ref) != 0);
+}
+
+// Check if any bits are set in |bits| other than the bits in |ref|.
+bool AnyOtherBitsSet(GLbitfield bits, GLbitfield ref) {
+  DCHECK_NE(0u, ref);
+  GLbitfield mask = ~ref;
+  return ((bits & mask) != 0);
+}
+
 }  // namespace
 
 class GLES2DecoderImpl;
@@ -1033,6 +1052,9 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   void DoMatrixLoadIdentityCHROMIUM(GLenum matrix_mode);
   void DoScheduleCALayerInUseQueryCHROMIUM(GLsizei count,
                                            const volatile GLuint* textures);
+
+  void DoFlushMappedBufferRange(
+      GLenum target, GLintptr offset, GLsizeiptr size);
 
   // Creates a Program for the given program.
   Program* CreateProgram(GLuint client_id, GLuint service_id) {
@@ -16831,36 +16853,9 @@ error::Error GLES2DecoderImpl::HandleMapBufferRange(
     *result = 0;
     return error::kInvalidArguments;
   }
-  int8_t* mem =
-      GetSharedMemoryAs<int8_t*>(data_shm_id, data_shm_offset, size);
-  if (!mem) {
-    return error::kOutOfBounds;
-  }
-
   if (!validators_->buffer_target.IsValid(target)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM(func_name, target, "target");
     return error::kNoError;
-  }
-
-  GLbitfield mask = GL_MAP_INVALIDATE_BUFFER_BIT;
-  if ((access & mask) == mask) {
-    // TODO(zmo): To be on the safe side, always map
-    // GL_MAP_INVALIDATE_BUFFER_BIT to GL_MAP_INVALIDATE_RANGE_BIT.
-    access = (access & ~GL_MAP_INVALIDATE_BUFFER_BIT);
-    access = (access | GL_MAP_INVALIDATE_RANGE_BIT);
-  }
-  // TODO(zmo): Always filter out GL_MAP_UNSYNCHRONIZED_BIT to get rid of
-  // undefined behaviors.
-  mask = GL_MAP_READ_BIT | GL_MAP_UNSYNCHRONIZED_BIT;
-  if ((access & mask) == mask) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION, func_name, "incompatible access bits");
-    return error::kNoError;
-  }
-  access = (access & ~GL_MAP_UNSYNCHRONIZED_BIT);
-  if ((access & GL_MAP_WRITE_BIT) == GL_MAP_WRITE_BIT &&
-      (access & GL_MAP_INVALIDATE_RANGE_BIT) == 0) {
-    access = (access | GL_MAP_READ_BIT);
   }
   Buffer* buffer = buffer_manager()->GetBufferInfoForTarget(&state_, target);
   if (!buffer) {
@@ -16871,10 +16866,61 @@ error::Error GLES2DecoderImpl::HandleMapBufferRange(
   if (buffer->GetMappedRange()) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION, func_name, "buffer is already mapped");
+    return error::kNoError;
+  }
+  if (size == 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name, "size is zero");
+    return error::kNoError;
   }
   if (!buffer->CheckRange(offset, size)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, func_name, "invalid range");
     return error::kNoError;
+  }
+  int8_t* mem =
+      GetSharedMemoryAs<int8_t*>(data_shm_id, data_shm_offset, size);
+  if (!mem) {
+    return error::kOutOfBounds;
+  }
+  if (AnyOtherBitsSet(access, (GL_MAP_READ_BIT |
+                               GL_MAP_WRITE_BIT |
+                               GL_MAP_INVALIDATE_RANGE_BIT |
+                               GL_MAP_INVALIDATE_BUFFER_BIT |
+                               GL_MAP_FLUSH_EXPLICIT_BIT |
+                               GL_MAP_UNSYNCHRONIZED_BIT))) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name, "invalid access bits");
+    return error::kNoError;
+  }
+  if (!AnyBitsSet(access, GL_MAP_READ_BIT | GL_MAP_WRITE_BIT)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
+        "neither MAP_READ_BIT nore MAP_WRITE_BIT is set");
+    return error::kNoError;
+  }
+  if (AllBitsSet(access, GL_MAP_READ_BIT) &&
+      AnyBitsSet(access, (GL_MAP_INVALIDATE_RANGE_BIT |
+                          GL_MAP_INVALIDATE_BUFFER_BIT |
+                          GL_MAP_UNSYNCHRONIZED_BIT))) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
+        "Incompatible access bits with MAP_READ_BIT");
+    return error::kNoError;
+  }
+  if (AllBitsSet(access, GL_MAP_FLUSH_EXPLICIT_BIT) &&
+      !AllBitsSet(access, GL_MAP_WRITE_BIT)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
+        "MAP_FLUSH_EXPLICIT_BIT set without MAP_WRITE_BIT");
+    return error::kNoError;
+  }
+  if (AllBitsSet(access, GL_MAP_INVALIDATE_BUFFER_BIT)) {
+    // To be on the safe side, always map GL_MAP_INVALIDATE_BUFFER_BIT to
+    // GL_MAP_INVALIDATE_RANGE_BIT.
+    access = (access & ~GL_MAP_INVALIDATE_BUFFER_BIT);
+    access = (access | GL_MAP_INVALIDATE_RANGE_BIT);
+  }
+  // Always filter out GL_MAP_UNSYNCHRONIZED_BIT to get rid of undefined
+  // behaviors.
+  access = (access & ~GL_MAP_UNSYNCHRONIZED_BIT);
+  if (AllBitsSet(access, GL_MAP_WRITE_BIT) &&
+      !AllBitsSet(access, GL_MAP_INVALIDATE_RANGE_BIT)) {
+    access = (access | GL_MAP_READ_BIT);
   }
   void* ptr = glMapBufferRange(target, offset, size, access);
   if (ptr == nullptr) {
@@ -16891,41 +16937,38 @@ error::Error GLES2DecoderImpl::HandleMapBufferRange(
 }
 
 error::Error GLES2DecoderImpl::HandleUnmapBuffer(
-    uint32_t immediate_data_size,
-    const volatile void* cmd_data) {
+    uint32_t immediate_data_size, const volatile void* cmd_data) {
   if (!unsafe_es3_apis_enabled()) {
     return error::kUnknownCommand;
   }
+  const char* func_name = "glUnmapBuffer";
+
   const volatile gles2::cmds::UnmapBuffer& c =
       *static_cast<const volatile gles2::cmds::UnmapBuffer*>(cmd_data);
   GLenum target = static_cast<GLenum>(c.target);
 
   if (!validators_->buffer_target.IsValid(target)) {
-    LOCAL_SET_GL_ERROR_INVALID_ENUM("glMapBufferRange", target, "target");
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(func_name, target, "target");
     return error::kNoError;
   }
 
   Buffer* buffer = buffer_manager()->GetBufferInfoForTarget(&state_, target);
   if (!buffer) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "UnmapBuffer", "no buffer bound");
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name, "no buffer bound");
     return error::kNoError;
   }
   const Buffer::MappedRange* mapped_range = buffer->GetMappedRange();
   if (!mapped_range) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "UnmapBuffer",
-                       "buffer is unmapped");
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name, "buffer is unmapped");
     return error::kNoError;
   }
-  if ((mapped_range->access & GL_MAP_WRITE_BIT) == 0 ||
-      (mapped_range->access & GL_MAP_FLUSH_EXPLICIT_BIT) ==
-           GL_MAP_FLUSH_EXPLICIT_BIT) {
+  if (!AllBitsSet(mapped_range->access, GL_MAP_WRITE_BIT) ||
+      AllBitsSet(mapped_range->access, GL_MAP_FLUSH_EXPLICIT_BIT)) {
     // If we don't need to write back, or explict flush is required, no copying
     // back is needed.
   } else {
     void* mem = mapped_range->GetShmPointer();
-    if (!mem) {
-      return error::kOutOfBounds;
-    }
+    DCHECK(mem);
     DCHECK(mapped_range->pointer);
     memcpy(mapped_range->pointer, mem, mapped_range->size);
     if (buffer->shadowed()) {
@@ -16942,13 +16985,57 @@ error::Error GLES2DecoderImpl::HandleUnmapBuffer(
     // TODO(zmo): We could redo the map / copy data / unmap to recover, but
     // the second unmap could still return GL_FALSE. For now, we simply lose
     // the contexts in the share group.
-    LOG(ERROR) << "glUnmapBuffer unexpectedly returned GL_FALSE";
+    LOG(ERROR) << func_name << " unexpectedly returned GL_FALSE";
     // Need to lose current context before broadcasting!
     MarkContextLost(error::kGuilty);
     group_->LoseContexts(error::kInnocent);
     return error::kLostContext;
   }
   return error::kNoError;
+}
+
+void GLES2DecoderImpl::DoFlushMappedBufferRange(
+    GLenum target, GLintptr offset, GLsizeiptr size) {
+  const char* func_name = "glFlushMappedBufferRange";
+  // |size| is validated in HandleFlushMappedBufferRange().
+  if (offset < 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, func_name, "offset < 0");
+    return;
+  }
+  Buffer* buffer = buffer_manager()->GetBufferInfoForTarget(&state_, target);
+  if (!buffer) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name, "no buffer bound");
+    return;
+  }
+  const Buffer::MappedRange* mapped_range = buffer->GetMappedRange();
+  if (!mapped_range) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name, "buffer is unmapped");
+    return;
+  }
+  if (!AllBitsSet(mapped_range->access, GL_MAP_FLUSH_EXPLICIT_BIT)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
+        "buffer is mapped without MAP_FLUSH_EXPLICIT_BIT flag");
+    return;
+  }
+  base::CheckedNumeric<int32_t> range_size = size;
+  range_size += offset;
+  if (!range_size.IsValid() ||
+      range_size.ValueOrDefault(0) > mapped_range->size) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, func_name,
+        "offset + size out of bounds");
+    return;
+  }
+  char* client_data = reinterpret_cast<char*>(mapped_range->GetShmPointer());
+  DCHECK(client_data);
+  char* gpu_data = reinterpret_cast<char*>(mapped_range->pointer);
+  DCHECK(gpu_data);
+  memcpy(gpu_data + offset, client_data + offset, size);
+  if (buffer->shadowed()) {
+    bool success = buffer->SetRange(
+        mapped_range->offset + offset, size, client_data + offset);
+    DCHECK(success);
+  }
+  glFlushMappedBufferRange(target, offset, size);
 }
 
 // Note that GL_LOST_CONTEXT is specific to GLES.

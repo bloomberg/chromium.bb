@@ -1820,6 +1820,13 @@ GLboolean GLES2TraceImplementation::UnmapBuffer(GLenum target) {
   return gl_->UnmapBuffer(target);
 }
 
+void GLES2TraceImplementation::FlushMappedBufferRange(GLenum target,
+                                                      GLintptr offset,
+                                                      GLsizeiptr size) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::FlushMappedBufferRange");
+  gl_->FlushMappedBufferRange(target, offset, size);
+}
+
 void* GLES2TraceImplementation::MapTexSubImage2DCHROMIUM(GLenum target,
                                                          GLint level,
                                                          GLint xoffset,

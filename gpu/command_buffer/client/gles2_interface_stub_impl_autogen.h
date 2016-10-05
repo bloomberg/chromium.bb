@@ -850,6 +850,9 @@ void* GLES2InterfaceStub::MapBufferRange(GLenum /* target */,
 GLboolean GLES2InterfaceStub::UnmapBuffer(GLenum /* target */) {
   return 0;
 }
+void GLES2InterfaceStub::FlushMappedBufferRange(GLenum /* target */,
+                                                GLintptr /* offset */,
+                                                GLsizeiptr /* size */) {}
 void* GLES2InterfaceStub::MapTexSubImage2DCHROMIUM(GLenum /* target */,
                                                    GLint /* level */,
                                                    GLint /* xoffset */,

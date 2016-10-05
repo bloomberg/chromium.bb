@@ -165,6 +165,9 @@ error::Error DoEnableVertexAttribArray(GLuint index);
 error::Error DoFenceSync(GLenum condition, GLbitfield flags, GLuint client_id);
 error::Error DoFinish();
 error::Error DoFlush();
+error::Error DoFlushMappedBufferRange(GLenum target,
+                                      GLintptr offset,
+                                      GLsizeiptr size);
 error::Error DoFramebufferRenderbuffer(GLenum target,
                                        GLenum attachment,
                                        GLenum renderbuffertarget,

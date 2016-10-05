@@ -1246,6 +1246,11 @@ void* GL_APIENTRY GLES2MapBufferRange(GLenum target,
 GLboolean GL_APIENTRY GLES2UnmapBuffer(GLenum target) {
   return gles2::GetGLContext()->UnmapBuffer(target);
 }
+void GL_APIENTRY GLES2FlushMappedBufferRange(GLenum target,
+                                             GLintptr offset,
+                                             GLsizeiptr size) {
+  gles2::GetGLContext()->FlushMappedBufferRange(target, offset, size);
+}
 void* GL_APIENTRY GLES2MapTexSubImage2DCHROMIUM(GLenum target,
                                                 GLint level,
                                                 GLint xoffset,
@@ -2656,6 +2661,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     },
     {
         "glUnmapBuffer", reinterpret_cast<GLES2FunctionPointer>(glUnmapBuffer),
+    },
+    {
+        "glFlushMappedBufferRange",
+        reinterpret_cast<GLES2FunctionPointer>(glFlushMappedBufferRange),
     },
     {
         "glMapTexSubImage2DCHROMIUM",

@@ -2870,6 +2870,12 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoFlush',
     'trace_level': 1,
   },
+  'FlushMappedBufferRange': {
+    'decoder_func': 'DoFlushMappedBufferRange',
+    'trace_level': 1,
+    'unit_test': False,
+    'unsafe': True,
+  },
   'FramebufferRenderbuffer': {
     'decoder_func': 'DoFramebufferRenderbuffer',
     'gl_test_func': 'glFramebufferRenderbufferEXT',
