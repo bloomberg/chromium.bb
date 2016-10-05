@@ -19,8 +19,8 @@ class PermissionDecisionAutoBlocker {
   static void RemoveCountsByUrl(Profile* profile,
                                 base::Callback<bool(const GURL& url)> filter);
 
-  // Returns the current number of dismisses recorded for |permission|
-  // type at |url|.
+  // Returns the current number of dismisses recorded for |permission| type at
+  // |url|.
   static int GetDismissCount(const GURL& url,
                              content::PermissionType permission,
                              Profile* profile);
@@ -31,15 +31,24 @@ class PermissionDecisionAutoBlocker {
                             content::PermissionType permission,
                             Profile* profile);
 
-  explicit PermissionDecisionAutoBlocker(Profile* profile);
+  // Records that a dismissal of a prompt for |permission| was made.
+  static int RecordDismiss(const GURL& url,
+                           content::PermissionType permission,
+                           Profile* profile);
 
   // Records that an ignore of a prompt for |permission| was made.
-  int RecordIgnore(const GURL& url, content::PermissionType permission);
+  static int RecordIgnore(const GURL& url,
+                          content::PermissionType permission,
+                          Profile* profile);
 
   // Records that a dismissal of a prompt for |permission| was made, and returns
   // true if this dismissal should be considered a block. False otherwise.
-  bool ShouldChangeDismissalToBlock(const GURL& url,
-                                    content::PermissionType permission);
+  static bool ShouldChangeDismissalToBlock(const GURL& url,
+                                           content::PermissionType permission,
+                                           Profile* profile);
+
+  // Updates the threshold to start blocking prompts from the field trial.
+  static void UpdateFromVariations();
 
  private:
   friend class PermissionContextBaseTests;
@@ -48,11 +57,7 @@ class PermissionDecisionAutoBlocker {
   static const char kPromptDismissCountKey[];
   static const char kPromptIgnoreCountKey[];
 
-  // Updates |prompt_dismissals_before_block_|.
-  void UpdateFromVariations();
-
-  Profile *profile_;
-  int prompt_dismissals_before_block_;
+  DISALLOW_IMPLICIT_CONSTRUCTORS(PermissionDecisionAutoBlocker);
 };
 
 #endif  // CHROME_BROWSER_PERMISSIONS_PERMISSION_DECISION_AUTO_BLOCKER_H_

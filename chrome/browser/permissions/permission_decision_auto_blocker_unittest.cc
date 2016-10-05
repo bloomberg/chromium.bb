@@ -36,15 +36,13 @@ class PermissionDecisionAutoBlockerUnitTest
   }
 
   int RecordDismiss(const GURL& url, content::PermissionType permission) {
-    PermissionDecisionAutoBlocker blocker(profile());
-    blocker.ShouldChangeDismissalToBlock(url, permission);
-    return PermissionDecisionAutoBlocker::GetDismissCount(
-        url, permission, profile());
+    return PermissionDecisionAutoBlocker::RecordDismiss(url, permission,
+                                                        profile());
   }
 
   int RecordIgnore(const GURL& url, content::PermissionType permission) {
-    return PermissionDecisionAutoBlocker(profile()).RecordIgnore(url,
-                                                                 permission);
+    return PermissionDecisionAutoBlocker::RecordIgnore(url, permission,
+                                                       profile());
   }
 };
 

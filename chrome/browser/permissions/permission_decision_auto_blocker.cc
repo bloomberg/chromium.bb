@@ -21,9 +21,9 @@
 
 namespace {
 
-// The default number of times that users may explicitly dismiss a permission
-// prompt from an origin before it is automatically blocked.
-const int kPromptDismissalsBeforeBlock = 3;
+// The number of times that users may explicitly dismiss a permission prompt
+// from an origin before it is automatically blocked.
+int g_prompt_dismissals_before_block = 3;
 
 std::unique_ptr<base::DictionaryValue> GetOriginDict(
     HostContentSettingsMap* settings,
@@ -140,37 +140,44 @@ int PermissionDecisionAutoBlocker::GetIgnoreCount(
   return GetActionCount(url, permission, kPromptIgnoreCountKey, profile);
 }
 
-PermissionDecisionAutoBlocker::PermissionDecisionAutoBlocker(Profile* profile)
-    : profile_(profile),
-      prompt_dismissals_before_block_(kPromptDismissalsBeforeBlock) {
-  UpdateFromVariations();
+// static
+int PermissionDecisionAutoBlocker::RecordDismiss(
+    const GURL& url,
+    content::PermissionType permission,
+    Profile* profile) {
+  return RecordActionInWebsiteSettings(url, permission, kPromptDismissCountKey,
+                                       profile);
 }
 
+// static
 int PermissionDecisionAutoBlocker::RecordIgnore(
     const GURL& url,
-    content::PermissionType permission) {
+    content::PermissionType permission,
+    Profile* profile) {
   return RecordActionInWebsiteSettings(url, permission, kPromptIgnoreCountKey,
-                                       profile_);
+                                       profile);
 }
 
+// static
 bool PermissionDecisionAutoBlocker::ShouldChangeDismissalToBlock(
     const GURL& url,
-    content::PermissionType permission) {
-  int current_dismissal_count = RecordActionInWebsiteSettings(
-      url, permission, kPromptDismissCountKey, profile_);
+    content::PermissionType permission,
+    Profile* profile) {
+  int current_dismissal_count = RecordDismiss(url, permission, profile);
 
   if (!base::FeatureList::IsEnabled(features::kBlockPromptsIfDismissedOften))
     return false;
 
-  return current_dismissal_count >= prompt_dismissals_before_block_;
+  return current_dismissal_count >= g_prompt_dismissals_before_block;
 }
 
+// static
 void PermissionDecisionAutoBlocker::UpdateFromVariations() {
   int prompt_dismissals = -1;
   std::string value = variations::GetVariationParamValueByFeature(
       features::kBlockPromptsIfDismissedOften, kPromptDismissCountKey);
 
-  // If converting the value fails, stick with the default value.
+  // If converting the value fails, stick with the current value.
   if (base::StringToInt(value, &prompt_dismissals) && prompt_dismissals > 0)
-    prompt_dismissals_before_block_ = prompt_dismissals;
+    g_prompt_dismissals_before_block = prompt_dismissals;
 }

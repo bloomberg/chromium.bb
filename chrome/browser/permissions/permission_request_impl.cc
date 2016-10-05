@@ -5,7 +5,6 @@
 #include "chrome/browser/permissions/permission_request_impl.h"
 
 #include "build/build_config.h"
-#include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/grit/generated_resources.h"

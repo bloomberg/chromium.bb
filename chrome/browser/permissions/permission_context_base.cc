@@ -48,7 +48,6 @@ PermissionContextBase::PermissionContextBase(
     const content::PermissionType permission_type,
     const ContentSettingsType content_settings_type)
     : profile_(profile),
-      decision_auto_blocker_(new PermissionDecisionAutoBlocker(profile)),
       permission_type_(permission_type),
       content_settings_type_(content_settings_type),
       weak_factory_(this) {
@@ -56,6 +55,7 @@ PermissionContextBase::PermissionContextBase(
   permission_queue_controller_.reset(new PermissionQueueController(
       profile_, permission_type_, content_settings_type_));
 #endif
+  PermissionDecisionAutoBlocker::UpdateFromVariations();
 }
 
 PermissionContextBase::~PermissionContextBase() {
@@ -238,8 +238,8 @@ void PermissionContextBase::PermissionDecided(
   // Check if we should convert a dismiss decision into a block decision. This
   // is gated on enabling the kBlockPromptsIfDismissedOften feature.
   if (content_setting == CONTENT_SETTING_DEFAULT &&
-      decision_auto_blocker_->ShouldChangeDismissalToBlock(requesting_origin,
-                                                           permission_type_)) {
+      PermissionDecisionAutoBlocker::ShouldChangeDismissalToBlock(
+          requesting_origin, permission_type_, profile_)) {
     persist = true;
     content_setting = CONTENT_SETTING_BLOCK;
   }

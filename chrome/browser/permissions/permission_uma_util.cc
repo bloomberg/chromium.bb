@@ -331,8 +331,8 @@ void PermissionUmaUtil::PermissionIgnored(
   // RecordPermission* methods need to be called before RecordIgnore in the
   // blocker because they record the number of prior ignore and dismiss values,
   // and we don't want to include the current ignore.
-  PermissionDecisionAutoBlocker(profile).RecordIgnore(requesting_origin,
-                                                      permission);
+  PermissionDecisionAutoBlocker::RecordIgnore(requesting_origin, permission,
+                                              profile);
 }
 
 void PermissionUmaUtil::PermissionRevoked(PermissionType permission,
