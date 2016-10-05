@@ -29,7 +29,7 @@ class FakeReflector : public ui::Reflector {
 }  // namespace
 
 SurfaceContextFactory::SurfaceContextFactory(ui::GpuService* gpu_service)
-    : next_surface_id_namespace_(1u), gpu_service_(gpu_service) {}
+    : next_sink_id_(1u), gpu_service_(gpu_service) {}
 
 SurfaceContextFactory::~SurfaceContextFactory() {}
 
@@ -90,7 +90,7 @@ cc::TaskGraphRunner* SurfaceContextFactory::GetTaskGraphRunner() {
 }
 
 cc::FrameSinkId SurfaceContextFactory::AllocateFrameSinkId() {
-  return cc::FrameSinkId(next_surface_id_namespace_++, 0);
+  return cc::FrameSinkId(0, next_sink_id_++);
 }
 
 cc::SurfaceManager* SurfaceContextFactory::GetSurfaceManager() {

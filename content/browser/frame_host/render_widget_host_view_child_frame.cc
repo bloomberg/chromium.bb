@@ -42,7 +42,9 @@ namespace content {
 RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
     RenderWidgetHost* widget_host)
     : host_(RenderWidgetHostImpl::From(widget_host)),
-      frame_sink_id_(AllocateFrameSinkId()),
+      frame_sink_id_(
+          base::checked_cast<uint32_t>(widget_host->GetProcess()->GetID()),
+          base::checked_cast<uint32_t>(widget_host->GetRoutingID())),
       next_surface_sequence_(1u),
       last_compositor_frame_sink_id_(0),
       current_surface_scale_factor_(1.f),

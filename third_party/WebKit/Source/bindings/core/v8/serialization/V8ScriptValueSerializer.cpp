@@ -261,6 +261,7 @@ bool V8ScriptValueSerializer::writeDOMObject(ScriptWrappable* wrappable,
     writeUint32(canvas->height());
     writeUint32(canvas->getAssociatedCanvasId());
     writeUint32(canvas->clientId());
+    writeUint32(canvas->sinkId());
     writeUint32(canvas->localId());
     writeUint64(canvas->nonce());
     return true;

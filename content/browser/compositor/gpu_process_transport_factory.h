@@ -107,7 +107,7 @@ class GpuProcessTransportFactory
   SharedVulkanContextProvider();
 
   std::unique_ptr<cc::SurfaceManager> surface_manager_;
-  uint32_t next_surface_client_id_ = 1u;
+  uint32_t next_sink_id_ = 1u;
 
 #if defined(OS_WIN)
   // Used by output surface, stored in PerCompositorData.

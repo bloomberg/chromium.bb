@@ -5,6 +5,7 @@
 #include "services/ui/ws/server_window_surface_manager.h"
 
 #include "services/ui/surfaces/display_compositor.h"
+#include "services/ui/ws/ids.h"
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/server_window_delegate.h"
 #include "services/ui/ws/server_window_surface.h"
@@ -39,8 +40,10 @@ void ServerWindowSurfaceManager::CreateSurface(
     mojom::SurfaceType surface_type,
     mojo::InterfaceRequest<mojom::Surface> request,
     mojom::SurfaceClientPtr client) {
-  std::unique_ptr<ServerWindowSurface> surface(
-      new ServerWindowSurface(this, std::move(request), std::move(client)));
+  cc::FrameSinkId frame_sink_id(WindowIdToTransportId(window_->id()),
+                                static_cast<uint32_t>(surface_type));
+  std::unique_ptr<ServerWindowSurface> surface(new ServerWindowSurface(
+      this, frame_sink_id, std::move(request), std::move(client)));
   type_to_surface_map_[surface_type] = std::move(surface);
 }
 

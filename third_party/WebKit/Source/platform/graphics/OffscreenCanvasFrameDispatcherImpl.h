@@ -21,11 +21,12 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
       WTF_NON_EXPORTED_BASE(
           public cc::mojom::blink::MojoCompositorFrameSinkClient) {
  public:
-  explicit OffscreenCanvasFrameDispatcherImpl(uint32_t clientId,
-                                              uint32_t localId,
-                                              uint64_t nonce,
-                                              int width,
-                                              int height);
+  OffscreenCanvasFrameDispatcherImpl(uint32_t clientId,
+                                     uint32_t sinkId,
+                                     uint32_t localId,
+                                     uint64_t nonce,
+                                     int width,
+                                     int height);
 
   // OffscreenCanvasFrameDispatcher implementation.
   ~OffscreenCanvasFrameDispatcherImpl() override {}

@@ -63,12 +63,17 @@ class CORE_EXPORT OffscreenCanvas final
 
   OffscreenCanvasFrameDispatcher* getOrCreateFrameDispatcher();
 
-  void setSurfaceId(uint32_t clientId, uint32_t localId, uint64_t nonce) {
+  void setSurfaceId(uint32_t clientId,
+                    uint32_t sinkId,
+                    uint32_t localId,
+                    uint64_t nonce) {
     m_clientId = clientId;
+    m_sinkId = sinkId;
     m_localId = localId;
     m_nonce = nonce;
   }
   uint32_t clientId() const { return m_clientId; }
+  uint32_t sinkId() const { return m_sinkId; }
   uint32_t localId() const { return m_localId; }
   uint64_t nonce() const { return m_nonce; }
 
@@ -115,6 +120,7 @@ class CORE_EXPORT OffscreenCanvas final
   // HTMLCanvasElement.transferControlToOffscreen(),
   // then the following members would remain as initialized zero values.
   uint32_t m_clientId = 0;
+  uint32_t m_sinkId = 0;
   uint32_t m_localId = 0;
   uint64_t m_nonce = 0;
 };

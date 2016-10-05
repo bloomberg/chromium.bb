@@ -33,6 +33,7 @@ class ServerWindowSurface : public mojom::Surface,
                             public cc::SurfaceFactoryClient {
  public:
   ServerWindowSurface(ServerWindowSurfaceManager* manager,
+                      const cc::FrameSinkId& frame_sink_id,
                       mojo::InterfaceRequest<mojom::Surface> request,
                       mojom::SurfaceClientPtr client);
 

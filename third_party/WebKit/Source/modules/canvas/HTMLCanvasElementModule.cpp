@@ -64,9 +64,9 @@ OffscreenCanvas* HTMLCanvasElementModule::transferControlToOffscreenInternal(
   if (bridge) {
     // If a bridge exists, it means canvas.createSurfaceLayer() has been called
     // and its SurfaceId has been populated as well.
-    // TODO(fsamuel): Plumb FrameSinkId into blink.
     offscreenCanvas->setSurfaceId(
         bridge->getSurfaceId().frame_sink_id().client_id(),
+        bridge->getSurfaceId().frame_sink_id().sink_id(),
         bridge->getSurfaceId().local_id(), bridge->getSurfaceId().nonce());
   }
   return offscreenCanvas;

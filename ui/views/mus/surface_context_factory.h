@@ -58,7 +58,7 @@ class VIEWS_MUS_EXPORT SurfaceContextFactory : public ui::ContextFactory {
   void RemoveObserver(ui::ContextFactoryObserver* observer) override {}
 
   cc::SurfaceManager surface_manager_;
-  uint32_t next_surface_id_namespace_;
+  uint32_t next_sink_id_;
   ui::RasterThreadHelper raster_thread_helper_;
   ui::GpuService* gpu_service_;
 

@@ -164,6 +164,7 @@ class CORE_EXPORT SerializedScriptValueWriter {
                                        uint32_t height,
                                        uint32_t canvasId,
                                        uint32_t clientId,
+                                       uint32_t sinkId,
                                        uint32_t localId,
                                        uint64_t nonce);
   void writeTransferredSharedArrayBuffer(uint32_t index);
@@ -639,6 +640,7 @@ class CORE_EXPORT ScriptValueDeserializer {
                                         uint32_t height,
                                         uint32_t canvasId,
                                         uint32_t clientId,
+                                        uint32_t sinkId,
                                         uint32_t localId,
                                         uint64_t nonce,
                                         v8::Local<v8::Value>*);

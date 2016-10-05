@@ -33,11 +33,12 @@ namespace blink {
 
 OffscreenCanvasFrameDispatcherImpl::OffscreenCanvasFrameDispatcherImpl(
     uint32_t clientId,
+    uint32_t sinkId,
     uint32_t localId,
     uint64_t nonce,
     int width,
     int height)
-    : m_surfaceId(cc::FrameSinkId(clientId, 0 /* sink_id */), localId, nonce),
+    : m_surfaceId(cc::FrameSinkId(clientId, sinkId), localId, nonce),
       m_width(width),
       m_height(height),
       m_nextResourceId(1u),

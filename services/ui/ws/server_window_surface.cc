@@ -19,13 +19,10 @@ namespace ws {
 
 ServerWindowSurface::ServerWindowSurface(
     ServerWindowSurfaceManager* manager,
+    const cc::FrameSinkId& frame_sink_id,
     mojo::InterfaceRequest<Surface> request,
     mojom::SurfaceClientPtr client)
-    : frame_sink_id_(manager->window()
-                         ->delegate()
-                         ->GetDisplayCompositor()
-                         ->GenerateNextClientId(),
-                     0),
+    : frame_sink_id_(frame_sink_id),
       manager_(manager),
       surface_id_allocator_(frame_sink_id_),
       surface_factory_(frame_sink_id_, manager_->GetSurfaceManager(), this),

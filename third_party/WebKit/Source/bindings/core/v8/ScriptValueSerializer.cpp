@@ -355,6 +355,7 @@ void SerializedScriptValueWriter::writeTransferredOffscreenCanvas(
     uint32_t height,
     uint32_t canvasId,
     uint32_t clientId,
+    uint32_t sinkId,
     uint32_t localId,
     uint64_t nonce) {
   append(OffscreenCanvasTransferTag);
@@ -362,6 +363,7 @@ void SerializedScriptValueWriter::writeTransferredOffscreenCanvas(
   doWriteUint32(height);
   doWriteUint32(canvasId);
   doWriteUint32(clientId);
+  doWriteUint32(sinkId);
   doWriteUint32(localId);
   doWriteUint64(nonce);
 }
@@ -1301,7 +1303,8 @@ ScriptValueSerializer::writeTransferredOffscreenCanvas(
   m_writer.writeTransferredOffscreenCanvas(
       offscreenCanvas->width(), offscreenCanvas->height(),
       offscreenCanvas->getAssociatedCanvasId(), offscreenCanvas->clientId(),
-      offscreenCanvas->localId(), offscreenCanvas->nonce());
+      offscreenCanvas->sinkId(), offscreenCanvas->localId(),
+      offscreenCanvas->nonce());
   return nullptr;
 }
 
@@ -1681,7 +1684,7 @@ bool SerializedScriptValueReader::readWithTag(
     case OffscreenCanvasTransferTag: {
       if (!m_version)
         return false;
-      uint32_t width, height, canvasId, clientId, localId;
+      uint32_t width, height, canvasId, clientId, sinkId, localId;
       uint64_t nonce;
       if (!doReadUint32(&width))
         return false;
@@ -1691,12 +1694,14 @@ bool SerializedScriptValueReader::readWithTag(
         return false;
       if (!doReadUint32(&clientId))
         return false;
+      if (!doReadUint32(&sinkId))
+        return false;
       if (!doReadUint32(&localId))
         return false;
       if (!doReadUint64(&nonce))
         return false;
       if (!deserializer.tryGetTransferredOffscreenCanvas(
-              width, height, canvasId, clientId, localId, nonce, value))
+              width, height, canvasId, clientId, sinkId, localId, nonce, value))
         return false;
       break;
     }
@@ -2545,12 +2550,13 @@ bool ScriptValueDeserializer::tryGetTransferredOffscreenCanvas(
     uint32_t height,
     uint32_t canvasId,
     uint32_t clientId,
+    uint32_t sinkId,
     uint32_t localId,
     uint64_t nonce,
     v8::Local<v8::Value>* object) {
   OffscreenCanvas* offscreenCanvas = OffscreenCanvas::create(width, height);
   offscreenCanvas->setAssociatedCanvasId(canvasId);
-  offscreenCanvas->setSurfaceId(clientId, localId, nonce);
+  offscreenCanvas->setSurfaceId(clientId, sinkId, localId, nonce);
   *object = toV8(offscreenCanvas, m_reader.getScriptState());
   if ((*object).IsEmpty())
     return false;

@@ -454,9 +454,17 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
       last_active_widget_process_id_(ChildProcessHost::kInvalidUniqueID),
       last_active_widget_routing_id_(MSG_ROUTING_NONE),
       weak_ptr_factory_(this) {
+  // GuestViews have two RenderWidgetHostViews and so we need to make sure
+  // we don't have FrameSinkId collisions.
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  delegated_frame_host_ = base::MakeUnique<DelegatedFrameHost>(
-      factory->GetContextFactory()->AllocateFrameSinkId(), this);
+  cc::FrameSinkId frame_sink_id =
+      is_guest_view_hack_
+          ? factory->GetContextFactory()->AllocateFrameSinkId()
+          : cc::FrameSinkId(
+                base::checked_cast<uint32_t>(host_->GetProcess()->GetID()),
+                base::checked_cast<uint32_t>(host_->GetRoutingID()));
+  delegated_frame_host_ =
+      base::MakeUnique<DelegatedFrameHost>(frame_sink_id, this);
 
   if (!is_guest_view_hack_)
     host_->SetView(this);
