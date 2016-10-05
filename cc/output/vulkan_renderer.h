@@ -7,7 +7,6 @@
 
 #include "cc/base/cc_export.h"
 #include "cc/output/direct_renderer.h"
-#include "cc/output/renderer.h"
 
 namespace cc {
 
