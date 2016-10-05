@@ -207,6 +207,11 @@ namespace {
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 void SetupSandbox(const base::CommandLine& parsed_command_line) {
   TRACE_EVENT0("startup", "SetupSandbox");
+  if (parsed_command_line.HasSwitch(switches::kNoZygote)) {
+    CHECK(parsed_command_line.HasSwitch(switches::kNoSandbox))
+        << "--no-sandbox should be used together with --no--zygote";
+    return;
+  }
 
   // Tickle the sandbox host and zygote host so they fork now.
   RenderSandboxHostLinux::GetInstance()->Init();

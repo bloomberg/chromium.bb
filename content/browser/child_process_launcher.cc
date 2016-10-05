@@ -259,7 +259,10 @@ void LaunchOnLauncherThread(const NotifyCallback& callback,
   // child termination.
 
 #if !defined(OS_MACOSX)
-  ZygoteHandle* zygote_handle = delegate->GetZygote();
+  ZygoteHandle* zygote_handle =
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoZygote)
+          ? delegate->GetZygote()
+          : nullptr;
   // If |zygote_handle| is null, a zygote should not be used.
   if (zygote_handle) {
     // This code runs on the PROCESS_LAUNCHER thread so race conditions are not
