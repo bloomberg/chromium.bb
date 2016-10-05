@@ -13,6 +13,7 @@ import org.chromium.android_webview.AwContentsClient.AwWebResourceRequest;
 import org.chromium.android_webview.ErrorCodeConversionHelper;
 import org.chromium.android_webview.test.util.AwTestTouchUtils;
 import org.chromium.android_webview.test.util.CommonResources;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.net.test.util.TestWebServer;
@@ -172,6 +173,7 @@ public class ClientOnReceivedError2Test extends AwTestBase {
 
     @SmallTest
     @Feature({"AndroidWebView"})
+    @DisabledTest(message = "crbug.com/652943")
     public void testUserGestureForIframeSubresource() throws Throwable {
         useDefaultTestAwContentsClient();
         startWebServer();
