@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 6
+// Next MinVersion: 7
 
 module arc.mojom;
 
@@ -171,6 +171,14 @@ struct BluetoothGattValue {
 
 const int8 kUnknownPower = 127;
 
+// Copied from Android Bluetooth package. See AdvertiseManager$AdvertiseNative
+// http://goo.gl/UnKC5N
+enum BluetoothAdvertisementType {
+  ADV_TYPE_CONNECTABLE = 0,
+  ADV_TYPE_SCANNABLE = 2,
+  ADV_TYPE_NON_CONNECTABLE = 3,
+};
+
 // Copy from Bluetooth Assigned Numbers Document, Generic Access Profile
 // https://www.bluetooth.com/specifications/assigned-numbers/generic-access-profile
 [Extensible]
@@ -201,6 +209,13 @@ union BluetoothAdvertisingData {
 struct BluetoothServiceData {
   uint16 uuid_16bit;
   array<uint8> data;
+};
+
+struct BluetoothAdvertisement {
+  BluetoothAdvertisementType type;
+  bool include_tx_power;
+  array<BluetoothAdvertisingData> data;
+  // Add more here as Chrome supports it.
 };
 
 [Extensible]
@@ -270,7 +285,7 @@ struct BluetoothCreateSdpRecordResult {
   uint32 service_handle;
 };
 
-// Next Method ID: 40
+// Next Method ID: 43
 interface BluetoothHost {
   EnableAdapter@0() => (BluetoothAdapterState state);
   DisableAdapter@1() => (BluetoothAdapterState state);
@@ -370,6 +385,15 @@ interface BluetoothHost {
       => (BluetoothCreateSdpRecordResult result);
   [MinVersion=5] RemoveSdpRecord@39(uint32 service_handle)
       => (BluetoothStatus status);
+
+  // Multi-advertisement functions
+  [MinVersion=6] ReserveAdvertisementHandle@40()
+      => (BluetoothGattStatus status, int32 adv_handle);
+  [MinVersion=6] BroadcastAdvertisement@41(int32 adv_handle,
+                                           BluetoothAdvertisement adv)
+      => (BluetoothGattStatus status);
+  [MinVersion=6] ReleaseAdvertisementHandle@42(int32 adv_handle)
+      => (BluetoothGattStatus status);
 };
 
 // Next Method ID: 18

@@ -55,11 +55,11 @@ void FakeBluetoothLEAdvertisingManagerClient::RegisterAdvertisement(
   if (iter == service_provider_map_.end()) {
     error_callback.Run(bluetooth_advertising_manager::kErrorInvalidArguments,
                        "Advertisement object not registered");
-  } else if (!currently_registered_.value().empty()) {
+  } else if (currently_registered_.size() >= kMaxBluezAdvertisements) {
     error_callback.Run(bluetooth_advertising_manager::kErrorFailed,
                        "Maximum advertisements reached");
   } else {
-    currently_registered_ = advertisement_object_path;
+    currently_registered_.push_back(advertisement_object_path);
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
   }
 }
@@ -76,16 +76,19 @@ void FakeBluetoothLEAdvertisingManagerClient::UnregisterAdvertisement(
     return;
   }
 
-  ServiceProviderMap::iterator iter =
-      service_provider_map_.find(advertisement_object_path);
-  if (iter == service_provider_map_.end()) {
+  auto service_iter = service_provider_map_.find(advertisement_object_path);
+  auto reg_iter =
+      std::find(currently_registered_.begin(), currently_registered_.end(),
+                advertisement_object_path);
+
+  if (service_iter == service_provider_map_.end()) {
     error_callback.Run(bluetooth_advertising_manager::kErrorDoesNotExist,
                        "Advertisement not registered");
-  } else if (advertisement_object_path != currently_registered_) {
+  } else if (reg_iter == currently_registered_.end()) {
     error_callback.Run(bluetooth_advertising_manager::kErrorDoesNotExist,
                        "Does not exist");
   } else {
-    currently_registered_ = dbus::ObjectPath("");
+    currently_registered_.erase(reg_iter);
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
   }
 }
