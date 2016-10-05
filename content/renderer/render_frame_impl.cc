@@ -3962,9 +3962,6 @@ void RenderFrameImpl::saveImageFromDataURL(const blink::WebString& data_url) {
 void RenderFrameImpl::willSendRequest(blink::WebLocalFrame* frame,
                                       blink::WebURLRequest& request) {
   DCHECK_EQ(frame_, frame);
-  // The request my be empty during tests.
-  if (request.url().isEmpty())
-    return;
 
   // Set the first party for cookies url if it has not been set yet (new
   // requests). This value will be updated during redirects, consistent with
