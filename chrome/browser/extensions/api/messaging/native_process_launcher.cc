@@ -13,8 +13,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_split.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/messaging/native_messaging_host_manifest.h"
@@ -29,12 +28,6 @@
 namespace extensions {
 
 namespace {
-
-#if defined(OS_WIN)
-// Name of the command line switch used to pass handle of the native view to
-// the native messaging host.
-const char kParentWindowSwitchName[] = "parent-window";
-#endif  // defined(OS_WIN)
 
 // Default implementation on NativeProcessLauncher interface.
 class NativeProcessLauncherImpl : public NativeProcessLauncher {
@@ -190,13 +183,16 @@ void NativeProcessLauncherImpl::Core::DoLaunchOnThreadPool(
   }
 
   base::CommandLine command_line(host_path);
+  // Note: The origin must be the first argument, so do not use AppendSwitch*
+  // hereafter because CommandLine inserts these switches before the other
+  // arguments.
   command_line.AppendArg(origin.spec());
 
   // Pass handle of the native view window to the native messaging host. This
   // way the host will be able to create properly focused UI windows.
 #if defined(OS_WIN)
-  command_line.AppendSwitchASCII(kParentWindowSwitchName,
-                                 base::Int64ToString(window_handle_));
+  command_line.AppendArg(
+      base::StringPrintf("--parent-window=%d", window_handle_));
 #endif  // !defined(OS_WIN)
 
   base::Process process;

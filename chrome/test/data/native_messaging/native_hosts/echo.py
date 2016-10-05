@@ -23,20 +23,19 @@ def WriteMessage(message):
 def Main():
   message_number = 0
 
-  caller_url = None
   parent_window = None
 
   if len(sys.argv) < 2:
     sys.stderr.write("URL of the calling application is not specified.\n")
     return 1
+  caller_url = sys.argv[1]
+
   # TODO(sergeyu): Use argparse module to parse the arguments (not available in
   # Python 2.6).
-  for arg in sys.argv[1:]:
+  for arg in sys.argv[2:]:
     if arg.startswith('--'):
       if arg.startswith('--parent-window='):
         parent_window = long(arg[len('--parent-window='):])
-    elif caller_url == None:
-      caller_url = arg
 
   # Verify that the process was started in the correct directory.
   cwd = os.getcwd()
