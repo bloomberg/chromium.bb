@@ -3168,13 +3168,13 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
         int[] locationOnScreen = new int[2];
         mContainerView.getLocationOnScreen(locationOnScreen);
 
-        float xPix = event.getX() + mRenderCoordinates.getScrollXPixInt() + mCurrentTouchOffsetX;
-        float yPix = event.getY() + mRenderCoordinates.getScrollYPixInt() + mCurrentTouchOffsetY;
+        float xPix = event.getX() + mCurrentTouchOffsetX;
+        float yPix = event.getY() + mCurrentTouchOffsetY;
 
-        int xCss = (int) mRenderCoordinates.fromPixToLocalCss(xPix);
-        int yCss = (int) mRenderCoordinates.fromPixToLocalCss(yPix);
-        int screenXCss = (int) mRenderCoordinates.fromPixToLocalCss(xPix + locationOnScreen[0]);
-        int screenYCss = (int) mRenderCoordinates.fromPixToLocalCss(yPix + locationOnScreen[1]);
+        int xCss = (int) mRenderCoordinates.fromPixToDip(xPix);
+        int yCss = (int) mRenderCoordinates.fromPixToDip(yPix);
+        int screenXCss = (int) mRenderCoordinates.fromPixToDip(xPix + locationOnScreen[0]);
+        int screenYCss = (int) mRenderCoordinates.fromPixToDip(yPix + locationOnScreen[1]);
 
         nativeOnDragEvent(mNativeContentViewCore, event.getAction(), xCss, yCss, screenXCss,
                 screenYCss, mimeTypes, content.toString());

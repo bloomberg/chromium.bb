@@ -3782,11 +3782,14 @@ HitTestResult WebViewImpl::coreHitTestResultAt(
   return hitTestResultForRootFramePos(pointInRootFrame);
 }
 
-void WebViewImpl::dragSourceEndedAt(const WebPoint& clientPoint,
+void WebViewImpl::dragSourceEndedAt(const WebPoint& pointInViewport,
                                     const WebPoint& screenPoint,
                                     WebDragOperation operation) {
+  WebPoint pointInRootFrame(
+      page()->frameHost().visualViewport().viewportToRootFrame(
+          pointInViewport));
   PlatformMouseEvent pme(
-      clientPoint, screenPoint, WebPointerProperties::Button::Left,
+      pointInRootFrame, screenPoint, WebPointerProperties::Button::Left,
       PlatformEvent::MouseMoved, 0, PlatformEvent::NoModifiers,
       PlatformMouseEvent::RealOrIndistinguishable,
       WTF::monotonicallyIncreasingTime());
@@ -3805,7 +3808,7 @@ void WebViewImpl::dragSourceSystemDragEnded() {
 
 WebDragOperation WebViewImpl::dragTargetDragEnter(
     const WebDragData& webDragData,
-    const WebPoint& clientPoint,
+    const WebPoint& pointInViewport,
     const WebPoint& screenPoint,
     WebDragOperationsMask operationsAllowed,
     int modifiers) {
@@ -3814,18 +3817,18 @@ WebDragOperation WebViewImpl::dragTargetDragEnter(
   m_currentDragData = DataObject::create(webDragData);
   m_operationsAllowed = operationsAllowed;
 
-  return dragTargetDragEnterOrOver(clientPoint, screenPoint, DragEnter,
+  return dragTargetDragEnterOrOver(pointInViewport, screenPoint, DragEnter,
                                    modifiers);
 }
 
 WebDragOperation WebViewImpl::dragTargetDragOver(
-    const WebPoint& clientPoint,
+    const WebPoint& pointInViewport,
     const WebPoint& screenPoint,
     WebDragOperationsMask operationsAllowed,
     int modifiers) {
   m_operationsAllowed = operationsAllowed;
 
-  return dragTargetDragEnterOrOver(clientPoint, screenPoint, DragOver,
+  return dragTargetDragEnterOrOver(pointInViewport, screenPoint, DragOver,
                                    modifiers);
 }
 
@@ -3844,9 +3847,13 @@ void WebViewImpl::dragTargetDragLeave() {
 }
 
 void WebViewImpl::dragTargetDrop(const WebDragData& webDragData,
-                                 const WebPoint& clientPoint,
+                                 const WebPoint& pointInViewport,
                                  const WebPoint& screenPoint,
                                  int modifiers) {
+  WebPoint pointInRootFrame(
+      page()->frameHost().visualViewport().viewportToRootFrame(
+          pointInViewport));
+
   DCHECK(m_currentDragData);
   m_currentDragData = DataObject::create(webDragData);
 
@@ -3868,7 +3875,7 @@ void WebViewImpl::dragTargetDrop(const WebDragData& webDragData,
   }
 
   m_currentDragData->setModifiers(modifiers);
-  DragData dragData(m_currentDragData.get(), clientPoint, screenPoint,
+  DragData dragData(m_currentDragData.get(), pointInRootFrame, screenPoint,
                     static_cast<DragOperation>(m_operationsAllowed));
 
   UserGestureIndicator gesture(DefinitelyProcessingNewUserGesture);
@@ -3905,14 +3912,18 @@ void WebViewImpl::removeSpellingMarkersUnderWords(
 }
 
 WebDragOperation WebViewImpl::dragTargetDragEnterOrOver(
-    const WebPoint& clientPoint,
+    const WebPoint& pointInViewport,
     const WebPoint& screenPoint,
     DragAction dragAction,
     int modifiers) {
   DCHECK(m_currentDragData);
 
+  WebPoint pointInRootFrame(
+      page()->frameHost().visualViewport().viewportToRootFrame(
+          pointInViewport));
+
   m_currentDragData->setModifiers(modifiers);
-  DragData dragData(m_currentDragData.get(), clientPoint, screenPoint,
+  DragData dragData(m_currentDragData.get(), pointInRootFrame, screenPoint,
                     static_cast<DragOperation>(m_operationsAllowed));
 
   DragSession dragSession;
