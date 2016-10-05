@@ -78,13 +78,13 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
 
   void updateIfNeededRecursive();
 
-  // Return true if this LayoutView is in "compositing mode" (i.e. has one or more
-  // composited Layers)
+  // Return true if this LayoutView is in "compositing mode" (i.e. has one or
+  // more composited Layers)
   bool inCompositingMode() const;
   // FIXME: Replace all callers with inCompositingMode and remove this function.
   bool staleInCompositingMode() const;
-  // This will make a compositing layer at the root automatically, and hook up to
-  // the native view/window system.
+  // This will make a compositing layer at the root automatically, and hook up
+  // to the native view/window system.
   void setCompositingModeEnabled(bool);
 
   // Returns true if the accelerated compositing is enabled
@@ -97,12 +97,14 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
   // Copy the accelerated compositing related flags from Settings
   void updateAcceleratedCompositingSettings();
 
-  // Used to indicate that a compositing update will be needed for the next frame that gets drawn.
+  // Used to indicate that a compositing update will be needed for the next
+  // frame that gets drawn.
   void setNeedsCompositingUpdate(CompositingUpdateType);
 
   void didLayout();
 
-  // Whether layer's compositedLayerMapping needs a GraphicsLayer to clip z-order children of the given Layer.
+  // Whether layer's compositedLayerMapping needs a GraphicsLayer to clip
+  // z-order children of the given Layer.
   bool clipsCompositingDescendants(const PaintLayer*) const;
 
   // Whether the given layer needs an extra 'contents' layer.
@@ -113,7 +115,8 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
   GraphicsLayer* fixedRootBackgroundLayer() const;
   void setNeedsUpdateFixedBackground() { m_needsUpdateFixedBackground = true; }
 
-  // Issue paint invalidations of the appropriate layers when the given Layer starts or stops being composited.
+  // Issue paint invalidations of the appropriate layers when the given Layer
+  // starts or stops being composited.
   void paintInvalidationOnCompositingChange(PaintLayer*);
 
   void fullyInvalidatePaint();
@@ -149,7 +152,8 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
   // Return true if the layers changed.
   static bool attachFrameContentLayersToIframeLayer(LayoutPart*);
 
-  // Update the geometry of the layers used for clipping and scrolling in frames.
+  // Update the geometry of the layers used for clipping and scrolling in
+  // frames.
   void frameViewDidChangeLocation(const IntPoint& contentsOffset);
   void frameViewDidChangeSize();
   void frameViewDidScroll();
@@ -187,8 +191,9 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
   // Whether the layer could ever be composited.
   bool canBeComposited(const PaintLayer*) const;
 
-  // FIXME: Move allocateOrClearCompositedLayerMapping to CompositingLayerAssigner once we've fixed
-  // the compositing chicken/egg issues.
+  // FIXME: Move allocateOrClearCompositedLayerMapping to
+  // CompositingLayerAssigner once we've fixed the compositing chicken/egg
+  // issues.
   bool allocateOrClearCompositedLayerMapping(
       PaintLayer*,
       CompositingStateTransitionType compositedLayerUpdate);
@@ -241,8 +246,9 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
 
   void applyOverlayFullscreenVideoAdjustmentIfNeeded();
 
-  // Checks the given graphics layer against the compositor's horizontal and vertical scrollbar
-  // graphics layers, returning the associated Scrollbar instance if any, else nullptr.
+  // Checks the given graphics layer against the compositor's horizontal and
+  // vertical scrollbar graphics layers, returning the associated Scrollbar
+  // instance if any, else nullptr.
   Scrollbar* graphicsLayerToScrollbar(const GraphicsLayer*) const;
 
   LayoutView& m_layoutView;

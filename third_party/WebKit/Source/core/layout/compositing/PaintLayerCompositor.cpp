@@ -130,7 +130,8 @@ void PaintLayerCompositor::enableCompositingModeIfNeeded() {
     return;
 
   if (rootShouldAlwaysComposite()) {
-    // FIXME: Is this needed? It was added in https://bugs.webkit.org/show_bug.cgi?id=26651.
+    // FIXME: Is this needed? It was added in
+    // https://bugs.webkit.org/show_bug.cgi?id=26651.
     // No tests fail if it's deleted.
     setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
     setCompositingModeEnabled(true);
@@ -184,10 +185,11 @@ static LayoutVideo* findFullscreenVideoLayoutObject(Document& document) {
 }
 
 // The descendant-dependent flags system is badly broken because we clean dirty
-// bits in upward tree walks, which means we need to call updateDescendantDependentFlags
-// at every node in the tree to fully clean all the dirty bits. While we'll in
-// the process of fixing this issue, updateDescendantDependentFlagsForEntireSubtree
-// provides a big hammer for actually cleaning all the dirty bits in a subtree.
+// bits in upward tree walks, which means we need to call
+// updateDescendantDependentFlags at every node in the tree to fully clean all
+// the dirty bits. While we'll in the process of fixing this issue,
+// updateDescendantDependentFlagsForEntireSubtree provides a big hammer for
+// actually cleaning all the dirty bits in a subtree.
 //
 // FIXME: Remove this function once the descendant-dependent flags system keeps
 // its dirty bits scoped to subtrees.
@@ -214,8 +216,9 @@ void PaintLayerCompositor::updateIfNeededRecursiveInternal() {
     if (!child->isLocalFrame())
       continue;
     LocalFrame* localFrame = toLocalFrame(child);
-    // It's possible for trusted Pepper plugins to force hit testing in situations where
-    // the frame tree is in an inconsistent state, such as in the middle of frame detach.
+    // It's possible for trusted Pepper plugins to force hit testing in
+    // situations where the frame tree is in an inconsistent state, such as in
+    // the middle of frame detach.
     // TODO(bbudge) Remove this check when trusted Pepper plugins are gone.
     if (localFrame->document()->isActive() &&
         !localFrame->contentLayoutItem().isNull())
@@ -230,8 +233,9 @@ void PaintLayerCompositor::updateIfNeededRecursiveInternal() {
 
   ScriptForbiddenScope forbidScript;
 
-  // FIXME: enableCompositingModeIfNeeded can trigger a CompositingUpdateRebuildTree,
-  // which asserts that it's not InCompositingUpdate.
+  // FIXME: enableCompositingModeIfNeeded can trigger a
+  // CompositingUpdateRebuildTree, which asserts that it's not
+  // InCompositingUpdate.
   enableCompositingModeIfNeeded();
 
   if (m_needsUpdateDescendantDependentFlags) {
@@ -322,11 +326,14 @@ void PaintLayerCompositor::applyOverlayFullscreenVideoAdjustmentIfNeeded() {
   GraphicsLayer* videoLayer =
       video->layer()->compositedLayerMapping()->mainGraphicsLayer();
 
-  // The fullscreen video has layer position equal to its enclosing frame's scroll position because fullscreen container is fixed-positioned.
-  // We should reset layer position here since we are going to reattach the layer at the very top level.
+  // The fullscreen video has layer position equal to its enclosing frame's
+  // scroll position because fullscreen container is fixed-positioned.
+  // We should reset layer position here since we are going to reattach the
+  // layer at the very top level.
   videoLayer->setPosition(IntPoint());
 
-  // Only steal fullscreen video layer and clear all other layers if we are the main frame.
+  // Only steal fullscreen video layer and clear all other layers if we are the
+  // main frame.
   if (!isLocalRoot)
     return;
 
@@ -353,10 +360,11 @@ void PaintLayerCompositor::updateWithoutAcceleratedCompositing(
 static void
 forceRecomputePaintInvalidationRectsIncludingNonCompositingDescendants(
     LayoutObject* layoutObject) {
-  // We clear the previous paint invalidation rect as it's wrong (paint invalidation container
-  // changed, ...). Forcing a full invalidation will make us recompute it. Also we are not
-  // changing the previous position from our paint invalidation container, which is fine as
-  // we want a full paint invalidation anyway.
+  // We clear the previous paint invalidation rect as it's wrong (paint
+  // invalidation container changed, ...). Forcing a full invalidation will make
+  // us recompute it. Also we are not changing the previous position from our
+  // paint invalidation container, which is fine as we want a full paint
+  // invalidation anyway.
   layoutObject->clearPreviousPaintInvalidationRects();
 
   for (LayoutObject* child = layoutObject->slowFirstChild(); child;
@@ -525,21 +533,24 @@ bool PaintLayerCompositor::allocateOrClearCompositedLayerMapping(
   bool compositedLayerMappingChanged = false;
 
   // FIXME: It would be nice to directly use the layer's compositing reason,
-  // but allocateOrClearCompositedLayerMapping also gets called without having updated compositing
-  // requirements fully.
+  // but allocateOrClearCompositedLayerMapping also gets called without having
+  // updated compositing requirements fully.
   switch (compositedLayerUpdate) {
     case AllocateOwnCompositedLayerMapping:
       ASSERT(!layer->hasCompositedLayerMapping());
       setCompositingModeEnabled(true);
 
-      // If we need to issue paint invalidations, do so before allocating the compositedLayerMapping and clearing out the groupedMapping.
+      // If we need to issue paint invalidations, do so before allocating the
+      // compositedLayerMapping and clearing out the groupedMapping.
       paintInvalidationOnCompositingChange(layer);
 
-      // If this layer was previously squashed, we need to remove its reference to a groupedMapping right away, so
-      // that computing paint invalidation rects will know the layer's correct compositingState.
-      // FIXME: do we need to also remove the layer from it's location in the squashing list of its groupedMapping?
-      // Need to create a test where a squashed layer pops into compositing. And also to cover all other
-      // sorts of compositingState transitions.
+      // If this layer was previously squashed, we need to remove its reference
+      // to a groupedMapping right away, so that computing paint invalidation
+      // rects will know the layer's correct compositingState.
+      // FIXME: do we need to also remove the layer from it's location in the
+      // squashing list of its groupedMapping?  Need to create a test where a
+      // squashed layer pops into compositing. And also to cover all other sorts
+      // of compositingState transitions.
       layer->setLostGroupedMapping(false);
       layer->setGroupedMapping(nullptr,
                                PaintLayer::InvalidateLayerAndRemoveFromMapping);
@@ -549,7 +560,8 @@ bool PaintLayerCompositor::allocateOrClearCompositedLayerMapping(
 
       restartAnimationOnCompositor(*layer->layoutObject());
 
-      // At this time, the ScrollingCoordinator only supports the top-level frame.
+      // At this time, the ScrollingCoordinator only supports the top-level
+      // frame.
       if (layer->isRootLayer() && m_layoutView.frame()->isLocalRoot()) {
         if (ScrollingCoordinator* scrollingCoordinator =
                 this->scrollingCoordinator())
@@ -558,7 +570,8 @@ bool PaintLayerCompositor::allocateOrClearCompositedLayerMapping(
       }
       break;
     case RemoveOwnCompositedLayerMapping:
-    // PutInSquashingLayer means you might have to remove the composited layer mapping first.
+    // PutInSquashingLayer means you might have to remove the composited layer
+    // mapping first.
     case PutInSquashingLayer:
       if (layer->hasCompositedLayerMapping()) {
         layer->clearCompositedLayerMapping();
@@ -582,8 +595,9 @@ bool PaintLayerCompositor::allocateOrClearCompositedLayerMapping(
   if (compositedLayerMappingChanged)
     layer->clipper().clearClipRectsIncludingDescendants(PaintingClipRects);
 
-  // If a fixed position layer gained/lost a compositedLayerMapping or the reason not compositing it changed,
-  // the scrolling coordinator needs to recalculate whether it can do fast scrolling.
+  // If a fixed position layer gained/lost a compositedLayerMapping or the
+  // reason not compositing it changed, the scrolling coordinator needs to
+  // recalculate whether it can do fast scrolling.
   if (compositedLayerMappingChanged) {
     if (ScrollingCoordinator* scrollingCoordinator =
             this->scrollingCoordinator())
@@ -596,16 +610,19 @@ bool PaintLayerCompositor::allocateOrClearCompositedLayerMapping(
 
 void PaintLayerCompositor::paintInvalidationOnCompositingChange(
     PaintLayer* layer) {
-  // If the layoutObject is not attached yet, no need to issue paint invalidations.
+  // If the layoutObject is not attached yet, no need to issue paint
+  // invalidations.
   if (layer->layoutObject() != &m_layoutView &&
       !layer->layoutObject()->parent())
     return;
 
   // For querying Layer::compositingState()
-  // Eager invalidation here is correct, since we are invalidating with respect to the previous frame's
-  // compositing state when changing the compositing backing of the layer.
+  // Eager invalidation here is correct, since we are invalidating with respect
+  // to the previous frame's compositing state when changing the compositing
+  // backing of the layer.
   DisableCompositingQueryAsserts disabler;
-  // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
+  // FIXME: We should not allow paint invalidation out of paint invalidation
+  // state. crbug.com/457415
   DisablePaintInvalidationStateAsserts paintInvalidationAssertisabler;
 
   ObjectPaintInvalidator(*layer->layoutObject())
@@ -685,8 +702,8 @@ void PaintLayerCompositor::rootFixedBackgroundsChanged() {
   //   + Scrollbars
   //
   // That is, it needs to be the first child of the frame clip, the sibling of
-  // the frame scroll layer. The compositor does not own the background layer, it
-  // just positions it (like the foreground layer).
+  // the frame scroll layer. The compositor does not own the background layer,
+  // it just positions it (like the foreground layer).
   if (GraphicsLayer* backgroundLayer = fixedRootBackgroundLayer())
     m_containerLayer->addChildBelow(backgroundLayer, m_scrollLayer.get());
 }
@@ -842,7 +859,8 @@ void PaintLayerCompositor::updateDirectCompositingReasons(PaintLayer* layer) {
 
 bool PaintLayerCompositor::canBeComposited(const PaintLayer* layer) const {
   FrameView* frameView = layer->layoutObject()->frameView();
-  // Elements within an invisible frame must not be composited because they are not drawn.
+  // Elements within an invisible frame must not be composited because they are
+  // not drawn.
   if (frameView && !frameView->isVisible())
     return false;
 
@@ -855,18 +873,19 @@ bool PaintLayerCompositor::canBeComposited(const PaintLayer* layer) const {
          !layer->layoutObject()->isLayoutFlowThread();
 }
 
-// Return true if the given layer is a stacking context and has compositing child
-// layers that it needs to clip. In this case we insert a clipping GraphicsLayer
-// into the hierarchy between this layer and its children in the z-order hierarchy.
+// Return true if the given layer is a stacking context and has compositing
+// child layers that it needs to clip. In this case we insert a clipping
+// GraphicsLayer into the hierarchy between this layer and its children in the
+// z-order hierarchy.
 bool PaintLayerCompositor::clipsCompositingDescendants(
     const PaintLayer* layer) const {
   return layer->hasCompositingDescendant() &&
          layer->layoutObject()->hasClipRelatedProperty();
 }
 
-// If an element has composited negative z-index children, those children paint in front of the
-// layer background, so we need an extra 'contents' layer for the foreground of the layer
-// object.
+// If an element has composited negative z-index children, those children paint
+// in front of the layer background, so we need an extra 'contents' layer for
+// the foreground of the layer object.
 bool PaintLayerCompositor::needsContentsCompositingLayer(
     const PaintLayer* layer) const {
   if (!layer->hasCompositingDescendant())
@@ -878,7 +897,8 @@ static void paintScrollbar(const GraphicsLayer* graphicsLayer,
                            const Scrollbar* scrollbar,
                            GraphicsContext& context,
                            const IntRect& clip) {
-  // Frame scrollbars are painted in the space of the containing frame, not the local space of the scrollbar.
+  // Frame scrollbars are painted in the space of the containing frame, not the
+  // local space of the scrollbar.
   const IntPoint& paintOffset = scrollbar->frameRect().location();
   IntRect transformedClip = clip;
   transformedClip.moveBy(paintOffset);
@@ -899,8 +919,9 @@ void PaintLayerCompositor::paintContents(const GraphicsLayer* graphicsLayer,
                                          GraphicsContext& context,
                                          GraphicsLayerPaintingPhase,
                                          const IntRect& interestRect) const {
-  // Note the composited scrollable area painted below is always associated with a frame. For
-  // painting non-frame ScrollableAreas, see CompositedLayerMapping::paintScrollableArea.
+  // Note the composited scrollable area painted below is always associated with
+  // a frame. For painting non-frame ScrollableAreas, see
+  // CompositedLayerMapping::paintScrollableArea.
 
   const Scrollbar* scrollbar = graphicsLayerToScrollbar(graphicsLayer);
   if (!scrollbar && graphicsLayer != layerForScrollCorner())
@@ -920,9 +941,9 @@ void PaintLayerCompositor::paintContents(const GraphicsLayer* graphicsLayer,
     FramePainter(*m_layoutView.frameView())
         .paintScrollCorner(pictureBuilder.context(), interestRect);
 
-  // Replay the painted scrollbar content with the GraphicsLayer backing as the DisplayItemClient
-  // in order for the resulting DrawingDisplayItem to produce the correct visualRect (i.e., the
-  // bounds of the involved GraphicsLayer).
+  // Replay the painted scrollbar content with the GraphicsLayer backing as the
+  // DisplayItemClient in order for the resulting DrawingDisplayItem to produce
+  // the correct visualRect (i.e., the bounds of the involved GraphicsLayer).
   DrawingRecorder drawingRecorder(context, *graphicsLayer,
                                   DisplayItem::kScrollbarCompositedScrollbar,
                                   layerBounds);
@@ -956,7 +977,8 @@ bool PaintLayerCompositor::needsFixedRootBackgroundLayer(
 }
 
 GraphicsLayer* PaintLayerCompositor::fixedRootBackgroundLayer() const {
-  // Get the fixed root background from the LayoutView layer's compositedLayerMapping.
+  // Get the fixed root background from the LayoutView layer's
+  // compositedLayerMapping.
   PaintLayer* viewLayer = m_layoutView.layer();
   if (!viewLayer)
     return nullptr;
@@ -1023,8 +1045,9 @@ bool PaintLayerCompositor::requiresScrollCornerLayer() const {
 
 void PaintLayerCompositor::updateOverflowControlsLayers() {
   GraphicsLayer* controlsParent = m_overflowControlsHostLayer.get();
-  // Main frame scrollbars should always be stuck to the sides of the screen (in overscroll and in pinch-zoom), so
-  // make the parent for the scrollbars be the viewport container layer.
+  // Main frame scrollbars should always be stuck to the sides of the screen (in
+  // overscroll and in pinch-zoom), so make the parent for the scrollbars be the
+  // viewport container layer.
   if (m_layoutView.frame()->isMainFrame()) {
     VisualViewport& visualViewport =
         m_layoutView.frameView()->page()->frameHost().visualViewport();
@@ -1213,8 +1236,9 @@ void PaintLayerCompositor::attachRootLayer(RootLayerAttachment attachment) {
       HTMLFrameOwnerElement* ownerElement =
           m_layoutView.document().localOwner();
       ASSERT(ownerElement);
-      // The layer will get hooked up via CompositedLayerMapping::updateGraphicsLayerConfiguration()
-      // for the frame's layoutObject in the parent document.
+      // The layer will get hooked up via
+      // CompositedLayerMapping::updateGraphicsLayerConfiguration() for the
+      // frame's layoutObject in the parent document.
       ownerElement->setNeedsCompositingUpdate();
       break;
     }
@@ -1229,8 +1253,9 @@ void PaintLayerCompositor::detachRootLayer() {
 
   switch (m_rootLayerAttachment) {
     case RootLayerAttachedViaEnclosingFrame: {
-      // The layer will get unhooked up via CompositedLayerMapping::updateGraphicsLayerConfiguration()
-      // for the frame's layoutObject in the parent document.
+      // The layer will get unhooked up via
+      // CompositedLayerMapping::updateGraphicsLayerConfiguration() for the
+      // frame's layoutObject in the parent document.
       if (m_overflowControlsHostLayer)
         m_overflowControlsHostLayer->removeFromParent();
       else

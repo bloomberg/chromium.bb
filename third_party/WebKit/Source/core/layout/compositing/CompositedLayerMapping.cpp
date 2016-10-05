@@ -162,7 +162,8 @@ static inline bool isAcceleratedContents(LayoutObject* layoutObject) {
          layoutObject->isVideo();
 }
 
-// Get the scrolling coordinator in a way that works inside CompositedLayerMapping's destructor.
+// Get the scrolling coordinator in a way that works inside
+// CompositedLayerMapping's destructor.
 static ScrollingCoordinator* scrollingCoordinatorFromLayer(PaintLayer& layer) {
   Page* page = layer.layoutObject()->frame()->page();
   return (!page) ? nullptr : page->scrollingCoordinator();
@@ -186,7 +187,8 @@ CompositedLayerMapping::~CompositedLayerMapping() {
   // Hits in compositing/squashing/squash-onto-nephew.html.
   DisableCompositingQueryAsserts disabler;
 
-  // Do not leave the destroyed pointer dangling on any Layers that painted to this mapping's squashing layer.
+  // Do not leave the destroyed pointer dangling on any Layers that painted to
+  // this mapping's squashing layer.
   for (size_t i = 0; i < m_squashedLayers.size(); ++i) {
     PaintLayer* oldSquashedLayer = m_squashedLayers[i].paintLayer;
     // Assert on incorrect mappings between layers and groups
@@ -259,8 +261,8 @@ void CompositedLayerMapping::updateOpacity(const ComputedStyle& style) {
 }
 
 void CompositedLayerMapping::updateTransform(const ComputedStyle& style) {
-  // FIXME: This could use m_owningLayer.transform(), but that currently has transform-origin
-  // baked into it, and we don't want that.
+  // FIXME: This could use m_owningLayer.transform(), but that currently has
+  // transform-origin baked into it, and we don't want that.
   TransformationMatrix t;
   if (m_owningLayer.hasTransformRelatedProperty()) {
     style.applyTransform(
@@ -344,8 +346,8 @@ void CompositedLayerMapping::updateIsRootForIsolatedGroup() {
 void CompositedLayerMapping::
     updateBackgroundPaintsOntoScrollingContentsLayer() {
   // We can only paint the background onto the scrolling contents layer if
-  // it would be visually correct and we are using composited scrolling meaning we
-  // have a scrolling contents layer to paint it into.
+  // it would be visually correct and we are using composited scrolling meaning
+  // we have a scrolling contents layer to paint it into.
   bool shouldPaintOntoScrollingContentsLayer =
       m_owningLayer.canPaintBackgroundOntoScrollingContentsLayer() &&
       m_owningLayer.getScrollableArea()->usesCompositedScrolling();
@@ -353,10 +355,10 @@ void CompositedLayerMapping::
       backgroundPaintsOntoScrollingContentsLayer()) {
     m_backgroundPaintsOntoScrollingContentsLayer =
         shouldPaintOntoScrollingContentsLayer;
-    // If the background is no longer painted onto the scrolling contents
-    // layer the scrolling contents layer needs to be updated. If it is
-    // going to be painted onto the scrolling contents layer this update
-    // will be triggered by LayoutBoxModelObject::setBackingNeedsPaintInvalidationInRect
+    // If the background is no longer painted onto the scrolling contents layer
+    // the scrolling contents layer needs to be updated. If it is going to be
+    // painted onto the scrolling contents layer this update will be triggered
+    // by LayoutBoxModelObject::setBackingNeedsPaintInvalidationInRect
     if (hasScrollingLayer() && !shouldPaintOntoScrollingContentsLayer)
       m_scrollingContentsLayer->setNeedsDisplay();
   }
@@ -364,7 +366,8 @@ void CompositedLayerMapping::
 
 void CompositedLayerMapping::updateContentsOpaque() {
   if (isAcceleratedCanvas(layoutObject())) {
-    // Determine whether the rendering context's external texture layer is opaque.
+    // Determine whether the rendering context's external texture layer is
+    // opaque.
     CanvasRenderingContext* context =
         toHTMLCanvasElement(layoutObject()->node())->renderingContext();
     if (!context->creationAttributes().alpha())
@@ -379,20 +382,22 @@ void CompositedLayerMapping::updateContentsOpaque() {
     m_backgroundLayer->setContentsOpaque(
         m_owningLayer.backgroundIsKnownToBeOpaqueInRect(compositedBounds()));
   } else {
-    // For non-root layers, background is painted by the scrolling contents layer if all backgrounds
-    // are background attachment local, otherwise background is painted by the primary graphics layer.
+    // For non-root layers, background is painted by the scrolling contents
+    // layer if all backgrounds are background attachment local, otherwise
+    // background is painted by the primary graphics layer.
     if (hasScrollingLayer() && m_backgroundPaintsOntoScrollingContentsLayer) {
-      // Backgrounds painted onto the foreground are clipped by the padding box rect.
-      // TODO(flackr): This should actually check the entire overflow rect within the
-      // scrolling contents layer but since we currently only trigger this for solid
-      // color backgrounds the answer will be the same.
+      // Backgrounds painted onto the foreground are clipped by the padding box
+      // rect.
+      // TODO(flackr): This should actually check the entire overflow rect
+      // within the scrolling contents layer but since we currently only trigger
+      // this for solid color backgrounds the answer will be the same.
       m_scrollingContentsLayer->setContentsOpaque(
           m_owningLayer.backgroundIsKnownToBeOpaqueInRect(
               toLayoutBox(layoutObject())->paddingBoxRect()));
 
-      // When we paint the background onto the scrolling contents layer we are going
-      // to leave a hole in the m_graphicsLayer where the background is so it is
-      // not opaque.
+      // When we paint the background onto the scrolling contents layer we are
+      // going to leave a hole in the m_graphicsLayer where the background is so
+      // it is not opaque.
       m_graphicsLayer->setContentsOpaque(false);
     } else {
       if (hasScrollingLayer())
@@ -406,7 +411,8 @@ void CompositedLayerMapping::updateContentsOpaque() {
 void CompositedLayerMapping::updateCompositedBounds() {
   ASSERT(m_owningLayer.compositor()->lifecycle().state() ==
          DocumentLifecycle::InCompositingUpdate);
-  // FIXME: if this is really needed for performance, it would be better to store it on Layer.
+  // FIXME: if this is really needed for performance, it would be better to
+  // store it on Layer.
   m_compositedBounds = m_owningLayer.boundingBoxForCompositing();
   m_contentOffsetInCompositingLayerDirty = true;
 }
@@ -417,7 +423,8 @@ void CompositedLayerMapping::updateAfterPartResize() {
             PaintLayerCompositor::frameContentsCompositor(
                 toLayoutPart(layoutObject()))) {
       innerCompositor->frameViewDidChangeSize();
-      // We can floor this point because our frameviews are always aligned to pixel boundaries.
+      // We can floor this point because our frameviews are always aligned to
+      // pixel boundaries.
       ASSERT(m_compositedBounds.location() ==
              flooredIntPoint(m_compositedBounds.location()));
       innerCompositor->frameViewDidChangeLocation(
@@ -427,8 +434,8 @@ void CompositedLayerMapping::updateAfterPartResize() {
 }
 
 void CompositedLayerMapping::updateCompositingReasons() {
-  // All other layers owned by this mapping will have the same compositing reason
-  // for their lifetime, so they are initialized only when created.
+  // All other layers owned by this mapping will have the same compositing
+  // reason for their lifetime, so they are initialized only when created.
   m_graphicsLayer->setCompositingReasons(m_owningLayer.getCompositingReasons());
   m_graphicsLayer->setSquashingDisallowedReasons(
       m_owningLayer.getSquashingDisallowedReasons());
@@ -482,8 +489,9 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration() {
   ASSERT(m_owningLayer.compositor()->lifecycle().state() ==
          DocumentLifecycle::InCompositingUpdate);
 
-  // Note carefully: here we assume that the compositing state of all descendants have been updated already,
-  // so it is legitimate to compute and cache the composited bounds for this layer.
+  // Note carefully: here we assume that the compositing state of all
+  // descendants have been updated already, so it is legitimate to compute and
+  // cache the composited bounds for this layer.
   updateCompositedBounds();
 
   PaintLayerCompositor* compositor = this->compositor();
@@ -517,10 +525,11 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration() {
 
   const PaintLayer* scrollParent = this->scrollParent();
 
-  // This is required because compositing layers are parented according to the z-order hierarchy, yet
-  // clipping goes down the layoutObject hierarchy. Thus, a PaintLayer can be clipped by a
-  // PaintLayer that is an ancestor in the layoutObject hierarchy, but a sibling in the z-order
-  // hierarchy. Further, that sibling need not be composited at all. In such scenarios, an ancestor
+  // This is required because compositing layers are parented according to the
+  // z-order hierarchy, yet clipping goes down the layoutObject hierarchy. Thus,
+  // a PaintLayer can be clipped by a PaintLayer that is an ancestor in the
+  // layoutObject hierarchy, but a sibling in the z-order hierarchy. Further,
+  // that sibling need not be composited at all. In such scenarios, an ancestor
   // clipping layer is necessary to apply the composited clip for this layer.
   bool needsAncestorClip =
       owningLayerClippedByLayerNotAboveCompositedAncestor(scrollParent) &&
@@ -572,8 +581,9 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration() {
   bool hasChildClippingLayer =
       compositor->clipsCompositingDescendants(&m_owningLayer) &&
       (hasClippingLayer() || hasScrollingLayer());
-  // If we have a border radius or clip path on a scrolling layer, we need a clipping mask to properly
-  // clip the scrolled contents, even if there are no composited descendants.
+  // If we have a border radius or clip path on a scrolling layer, we need a
+  // clipping mask to properly clip the scrolled contents, even if there are no
+  // composited descendants.
   bool hasClipPath = style.clipPath();
   bool needsChildClippingMask =
       (hasClipPath || style.hasBorderRadius()) &&
@@ -584,8 +594,8 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration() {
   bool shouldApplyChildClippingMaskOnContents = false;
   if (needsChildClippingMask) {
     if (hasClipPath) {
-      // Clip path clips the entire subtree, including scrollbars. It must be attached directly onto
-      // the main m_graphicsLayer.
+      // Clip path clips the entire subtree, including scrollbars. It must be
+      // attached directly onto the main m_graphicsLayer.
       layerToApplyChildClippingMask = m_graphicsLayer.get();
     } else if (hasClippingLayer()) {
       layerToApplyChildClippingMask = clippingLayer();
@@ -715,7 +725,8 @@ void CompositedLayerMapping::computeBoundsOfOwningLayer(
       offsetFromCompositedAncestor - snappedOffsetFromCompositedAncestor;
   m_owningLayer.setSubpixelAccumulation(subpixelAccumulation);
 
-  // Move the bounds by the subpixel accumulation so that it pixel-snaps relative to absolute pixels instead of local coordinates.
+  // Move the bounds by the subpixel accumulation so that it pixel-snaps
+  // relative to absolute pixels instead of local coordinates.
   localRawCompositingBounds.move(subpixelAccumulation);
   localBounds = pixelSnappedIntRect(localRawCompositingBounds);
 
@@ -776,23 +787,26 @@ void CompositedLayerMapping::updateSquashingLayerGeometry(
   }
 
   // The totalSquashBounds is positioned with respect to compositingContainer.
-  // But the squashingLayer needs to be positioned with respect to the graphicsLayerParent.
-  // The conversion between compositingContainer and the graphicsLayerParent is already computed
-  // as compositingContainerOffsetFromParentGraphicsLayer.
+  // But the squashingLayer needs to be positioned with respect to the
+  // graphicsLayerParent.  The conversion between compositingContainer and the
+  // graphicsLayerParent is already computed as
+  // compositingContainerOffsetFromParentGraphicsLayer.
   totalSquashBounds.moveBy(compositingContainerOffsetFromParentGraphicsLayer);
   const IntRect squashLayerBounds = enclosingIntRect(totalSquashBounds);
   const IntPoint squashLayerOrigin = squashLayerBounds.location();
   const LayoutSize squashLayerOriginInCompositingContainerSpace =
       squashLayerOrigin - compositingContainerOffsetFromParentGraphicsLayer;
 
-  // Now that the squashing bounds are known, we can convert the PaintLayer painting offsets
-  // from compositingContainer space to the squashing layer space.
+  // Now that the squashing bounds are known, we can convert the PaintLayer
+  // painting offsets from compositingContainer space to the squashing layer
+  // space.
   //
-  // The painting offset we want to compute for each squashed PaintLayer is essentially the
-  // position of the squashed PaintLayer described w.r.t. compositingContainer's origin.
-  // So we just need to convert that point from compositingContainer space to the squashing
-  // layer's space. This is done by subtracting squashLayerOriginInCompositingContainerSpace,
-  // but then the offset overall needs to be negated because that's the direction that the
+  // The painting offset we want to compute for each squashed PaintLayer is
+  // essentially the position of the squashed PaintLayer described w.r.t.
+  // compositingContainer's origin.  So we just need to convert that point from
+  // compositingContainer space to the squashing layer's space. This is done by
+  // subtracting squashLayerOriginInCompositingContainerSpace, but then the
+  // offset overall needs to be negated because that's the direction that the
   // painting code expects the offset to be.
   for (size_t i = 0; i < layers.size(); ++i) {
     const LayoutPoint squashedLayerOffsetFromTransformedAncestor =
@@ -809,7 +823,8 @@ void CompositedLayerMapping::updateSquashingLayerGeometry(
         offsetFromSquashLayerOrigin + newOffsetFromLayoutObject;
     if (layers[i].offsetFromLayoutObjectSet &&
         layers[i].offsetFromLayoutObject != newOffsetFromLayoutObject) {
-      // It is ok to issue paint invalidation here, because all of the geometry needed to correctly invalidate paint is computed by this point.
+      // It is ok to issue paint invalidation here, because all of the geometry
+      // needed to correctly invalidate paint is computed by this point.
       DisablePaintInvalidationStateAsserts disabler;
       ObjectPaintInvalidator(*layers[i].paintLayer->layoutObject())
           .invalidatePaintIncludingNonCompositingDescendants();
@@ -845,8 +860,8 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(
   ASSERT(m_owningLayer.compositor()->lifecycle().state() ==
          DocumentLifecycle::InCompositingUpdate);
 
-  // Set transform property, if it is not animating. We have to do this here because the transform
-  // is affected by the layer dimensions.
+  // Set transform property, if it is not animating. We have to do this here
+  // because the transform is affected by the layer dimensions.
   if (!layoutObject()->style()->isRunningTransformAnimationOnCompositor())
     updateTransform(layoutObject()->styleRef());
 
@@ -955,9 +970,10 @@ void CompositedLayerMapping::updateMainGraphicsLayerGeometry(
   if (oldSize != contentsSize)
     m_graphicsLayer->setSize(contentsSize);
 
-  // m_graphicsLayer is the corresponding GraphicsLayer for this PaintLayer and its non-compositing
-  // descendants. So, the visibility flag for m_graphicsLayer should be true if there are any
-  // non-compositing visible layers.
+  // m_graphicsLayer is the corresponding GraphicsLayer for this PaintLayer and
+  // its non-compositing descendants. So, the visibility flag for
+  // m_graphicsLayer should be true if there are any non-compositing visible
+  // layers.
   bool contentsVisible = m_owningLayer.hasVisibleContent() ||
                          hasVisibleNonCompositingDescendant(&m_owningLayer);
   m_graphicsLayer->setContentsVisible(contentsVisible);
@@ -973,8 +989,8 @@ void CompositedLayerMapping::computeGraphicsLayerParentLocation(
     IntPoint& graphicsLayerParentLocation) {
   if (compositingContainer &&
       compositingContainer->compositedLayerMapping()->hasClippingLayer()) {
-    // If the compositing ancestor has a layer to clip children, we parent in that, and therefore
-    // position relative to it.
+    // If the compositing ancestor has a layer to clip children, we parent in
+    // that, and therefore position relative to it.
     IntRect clippingBox =
         clipBox(toLayoutBox(compositingContainer->layoutObject()));
     graphicsLayerParentLocation =
@@ -983,8 +999,9 @@ void CompositedLayerMapping::computeGraphicsLayerParentLocation(
   } else if (compositingContainer &&
              compositingContainer->compositedLayerMapping()
                  ->childTransformLayer()) {
-    // Similarly, if the compositing ancestor has a child transform layer, we parent in that, and therefore
-    // position relative to it. It's already taken into account the contents offset, so we do not need to here.
+    // Similarly, if the compositing ancestor has a child transform layer, we
+    // parent in that, and therefore position relative to it. It's already taken
+    // into account the contents offset, so we do not need to here.
     graphicsLayerParentLocation =
         roundedIntPoint(compositingContainer->subpixelAccumulation());
   } else if (compositingContainer) {
@@ -1022,11 +1039,14 @@ void CompositedLayerMapping::updateAncestorClippingLayerGeometry(
       FloatPoint(parentClipRect.location() - graphicsLayerParentLocation));
   m_ancestorClippingLayer->setSize(FloatSize(parentClipRect.size()));
 
-  // backgroundRect is relative to compositingContainer, so subtract snappedOffsetFromCompositedAncestor.X/snappedOffsetFromCompositedAncestor.Y to get back to local coords.
+  // backgroundRect is relative to compositingContainer, so subtract
+  // snappedOffsetFromCompositedAncestor.X/snappedOffsetFromCompositedAncestor.Y
+  // to get back to local coords.
   m_ancestorClippingLayer->setOffsetFromLayoutObject(
       parentClipRect.location() - snappedOffsetFromCompositedAncestor);
 
-  // The primary layer is then parented in, and positioned relative to this clipping layer.
+  // The primary layer is then parented in, and positioned relative to this
+  // clipping layer.
   graphicsLayerParentLocation = parentClipRect.location();
 }
 
@@ -1037,9 +1057,10 @@ void CompositedLayerMapping::updateOverflowControlsHostLayerGeometry(
   if (!m_overflowControlsHostLayer)
     return;
 
-  // To position and clip the scrollbars correctly, m_overflowControlsHostLayer should match our
-  // border box rect, which is at the origin of our LayoutObject. Its position is computed in
-  // various ways depending on who its parent GraphicsLayer is going to be.
+  // To position and clip the scrollbars correctly, m_overflowControlsHostLayer
+  // should match our border box rect, which is at the origin of our
+  // LayoutObject. Its position is computed in various ways depending on who its
+  // parent GraphicsLayer is going to be.
   LayoutPoint hostLayerPosition;
 
   if (needsToReparentOverflowControls()) {
@@ -1047,8 +1068,9 @@ void CompositedLayerMapping::updateOverflowControlsHostLayerGeometry(
         compositingStackingContext->compositedLayerMapping();
     DCHECK(stackingCLM);
 
-    // Either m_overflowControlsHostLayer or m_overflowControlsAncestorClippingLayer (if it
-    // exists) will be a child of the main GraphicsLayer of the compositing stacking context.
+    // Either m_overflowControlsHostLayer or
+    // m_overflowControlsAncestorClippingLayer (if it exists) will be a child of
+    // the main GraphicsLayer of the compositing stacking context.
     IntSize stackingOffsetFromLayoutObject =
         stackingCLM->mainGraphicsLayer()->offsetFromLayoutObject();
 
@@ -1063,9 +1085,9 @@ void CompositedLayerMapping::updateOverflowControlsHostLayerGeometry(
       if (compositingStackingContext == compositingContainer) {
         position = m_ancestorClippingLayer->position();
       } else {
-        // graphicsLayerParentLocation is the location of m_ancestorClippingLayer
-        // relative to compositingContainer (including any offset from
-        // compositingContainer's m_childContainmentLayer).
+        // graphicsLayerParentLocation is the location of
+        // m_ancestorClippingLayer relative to compositingContainer (including
+        // any offset from compositingContainer's m_childContainmentLayer).
         LayoutPoint offset = LayoutPoint(graphicsLayerParentLocation);
         compositingContainer->convertToLayerCoords(compositingStackingContext,
                                                    offset);
@@ -1077,7 +1099,8 @@ void CompositedLayerMapping::updateOverflowControlsHostLayerGeometry(
       hostLayerPosition.move(
           -m_ancestorClippingLayer->offsetFromLayoutObject());
     } else {
-      // The controls are in the same 2D space as the compositing container, so we can map them into the space of the container.
+      // The controls are in the same 2D space as the compositing container, so
+      // we can map them into the space of the container.
       TransformState transformState(TransformState::ApplyTransformDirection,
                                     FloatPoint());
       m_owningLayer.layoutObject()->mapLocalToAncestor(
@@ -1162,7 +1185,8 @@ void CompositedLayerMapping::updateTransformGeometry(
   if (m_owningLayer.hasTransformRelatedProperty()) {
     const LayoutRect borderBox = toLayoutBox(layoutObject())->borderBoxRect();
 
-    // Get layout bounds in the coords of compositingContainer to match relativeCompositingBounds.
+    // Get layout bounds in the coords of compositingContainer to match
+    // relativeCompositingBounds.
     IntRect layerBounds = pixelSnappedIntRect(
         toLayoutPoint(m_owningLayer.subpixelAccumulation()), borderBox.size());
     layerBounds.moveBy(snappedOffsetFromCompositedAncestor);
@@ -1171,8 +1195,10 @@ void CompositedLayerMapping::updateTransformGeometry(
     FloatPoint3D transformOrigin =
         computeTransformOrigin(IntRect(IntPoint(), layerBounds.size()));
 
-    // |transformOrigin| is in the local space of this layer. layerBounds - relativeCompositingBounds converts to the space of the
-    // compositing bounds relative to the composited ancestor. This does not apply to the z direction, since the page is 2D.
+    // |transformOrigin| is in the local space of this layer.
+    // layerBounds - relativeCompositingBounds converts to the space of the
+    // compositing bounds relative to the composited ancestor. This does not
+    // apply to the z direction, since the page is 2D.
     FloatPoint3D compositedTransformOrigin(
         layerBounds.x() - relativeCompositingBounds.x() + transformOrigin.x(),
         layerBounds.y() - relativeCompositingBounds.y() + transformOrigin.y(),
@@ -1225,8 +1251,8 @@ void CompositedLayerMapping::updateScrollingLayerGeometry(
   DoubleSize scrollingContentsOffset(
       overflowClipRect.location().x() - adjustedScrollOffset.width(),
       overflowClipRect.location().y() - adjustedScrollOffset.height());
-  // The scroll offset change is compared using floating point so that fractional scroll offset
-  // change can be propagated to compositor.
+  // The scroll offset change is compared using floating point so that
+  // fractional scroll offset change can be propagated to compositor.
   if (scrollingContentsOffset != m_scrollingContentsOffset ||
       scrollSize != m_scrollingContentsLayer->size()) {
     bool coordinatorHandlesOffset =
@@ -1287,8 +1313,9 @@ void CompositedLayerMapping::updateForegroundLayerGeometry(
   m_foregroundLayer->setPosition(FloatPoint());
 
   if (hasClippingLayer()) {
-    // If we have a clipping layer (which clips descendants), then the foreground layer is a child of it,
-    // so that it gets correctly sorted with children. In that case, position relative to the clipping layer.
+    // If we have a clipping layer (which clips descendants), then the
+    // foreground layer is a child of it, so that it gets correctly sorted with
+    // children. In that case, position relative to the clipping layer.
     foregroundSize = FloatSize(clippingBox.size());
     foregroundOffset = toIntSize(clippingBox.location());
   } else if (m_childTransformLayer) {
@@ -1308,7 +1335,8 @@ void CompositedLayerMapping::updateForegroundLayerGeometry(
   }
   m_foregroundLayer->setOffsetFromLayoutObject(foregroundOffset);
 
-  // NOTE: there is some more configuring going on in updateScrollingLayerGeometry().
+  // NOTE: there is some more configuring going on in
+  // updateScrollingLayerGeometry().
 }
 
 void CompositedLayerMapping::updateBackgroundLayerGeometry(
@@ -1331,7 +1359,8 @@ void CompositedLayerMapping::updateBackgroundLayerGeometry(
 }
 
 void CompositedLayerMapping::registerScrollingLayers() {
-  // Register fixed position layers and their containers with the scrolling coordinator.
+  // Register fixed position layers and their containers with the scrolling
+  // coordinator.
   ScrollingCoordinator* scrollingCoordinator =
       scrollingCoordinatorFromLayer(m_owningLayer);
   if (!scrollingCoordinator)
@@ -1339,20 +1368,21 @@ void CompositedLayerMapping::registerScrollingLayers() {
 
   scrollingCoordinator->updateLayerPositionConstraint(&m_owningLayer);
 
-  // Page scale is applied as a transform on the root layout view layer. Because the scroll
-  // layer is further up in the hierarchy, we need to avoid marking the root layout view
-  // layer as a container.
+  // Page scale is applied as a transform on the root layout view layer. Because
+  // the scroll layer is further up in the hierarchy, we need to avoid marking
+  // the root layout view layer as a container.
   bool isContainer =
       m_owningLayer.layoutObject()->style()->canContainFixedPositionObjects() &&
       !m_owningLayer.isRootLayer();
-  // FIXME: we should make certain that childForSuperLayers will never be the m_squashingContainmentLayer here
+  // FIXME: we should make certain that childForSuperLayers will never be the
+  // m_squashingContainmentLayer here
   scrollingCoordinator->setLayerIsContainerForFixedPositionLayers(
       childForSuperlayers(), isContainer);
 }
 
 void CompositedLayerMapping::updateInternalHierarchy() {
-  // m_foregroundLayer has to be inserted in the correct order with child layers,
-  // so it's not inserted here.
+  // m_foregroundLayer has to be inserted in the correct order with child
+  // layers, so it's not inserted here.
   if (m_ancestorClippingLayer)
     m_ancestorClippingLayer->removeAllChildren();
 
@@ -1376,8 +1406,8 @@ void CompositedLayerMapping::updateInternalHierarchy() {
 
   // Now constructing the subtree for the overflow controls.
   bottomLayer = m_graphicsLayer.get();
-  // TODO(pdr): Ensure painting uses the correct GraphicsLayer when root layer scrolls is enabled.
-  // crbug.com/638719
+  // TODO(pdr): Ensure painting uses the correct GraphicsLayer when root layer
+  // scrolls is enabled.  crbug.com/638719
   if (m_isMainFrameLayoutViewLayer &&
       !RuntimeEnabledFeatures::slimmingPaintV2Enabled())
     bottomLayer = layoutObject()
@@ -1405,7 +1435,8 @@ void CompositedLayerMapping::updateInternalHierarchy() {
       m_squashingContainmentLayer->addChild(m_graphicsLayer.get());
       m_squashingContainmentLayer->addChild(m_squashingLayer.get());
     } else {
-      // The ancestor clipping layer is already set up and has m_graphicsLayer under it.
+      // The ancestor clipping layer is already set up and has m_graphicsLayer
+      // under it.
       m_ancestorClippingLayer->addChild(m_squashingLayer.get());
     }
   }
@@ -1451,17 +1482,27 @@ void CompositedLayerMapping::updateContentsOffsetInCompositingLayer(
   // our position = (desired position) - (inherited graphics layer offset).
   //
   // Precisely,
-  // Offset = snappedOffsetFromCompositedAncestor - offsetDueToAncestorGraphicsLayers (See code below)
-  //      = snappedOffsetFromCompositedAncestor - (m_graphicsLayer->position() + graphicsLayerParentLocation)
-  //      = snappedOffsetFromCompositedAncestor - (relativeCompositingBounds.location() - graphicsLayerParentLocation + graphicsLayerParentLocation) (See updateMainGraphicsLayerGeometry)
-  //      = snappedOffsetFromCompositedAncestor - relativeCompositingBounds.location()
-  //      = snappedOffsetFromCompositedAncestor - (pixelSnappedIntRect(contentBounds.location()) + snappedOffsetFromCompositedAncestor) (See computeBoundsOfOwningLayer)
+  // Offset = snappedOffsetFromCompositedAncestor -
+  //          offsetDueToAncestorGraphicsLayers (See code below)
+  //        = snappedOffsetFromCompositedAncestor -
+  //          (m_graphicsLayer->position() + graphicsLayerParentLocation)
+  //        = snappedOffsetFromCompositedAncestor -
+  //          (relativeCompositingBounds.location() -
+  //              graphicsLayerParentLocation +
+  //              graphicsLayerParentLocation)
+  //          (See updateMainGraphicsLayerGeometry)
+  //        = snappedOffsetFromCompositedAncestor -
+  //          relativeCompositingBounds.location()
+  //        = snappedOffsetFromCompositedAncestor -
+  //          (pixelSnappedIntRect(contentBounds.location()) +
+  //              snappedOffsetFromCompositedAncestor)
+  //          (See computeBoundsOfOwningLayer)
   //      = -pixelSnappedIntRect(contentBounds.location())
   //
-  // As you can see, we've ended up at the same spot (-contentBounds.location()),
-  // but by subtracting off our ancestor graphics layers positions, we can be
-  // sure we've accounted correctly for any pixel snapping due to ancestor
-  // graphics layers.
+  // As you can see, we've ended up at the same spot
+  // (-contentBounds.location()), but by subtracting off our ancestor graphics
+  // layers positions, we can be sure we've accounted correctly for any pixel
+  // snapping due to ancestor graphics layers.
   //
   // And drawing of composited children takes into account the subpixel
   // accumulation of this CLM already (through its own
@@ -1487,7 +1528,8 @@ void CompositedLayerMapping::updateDrawsContent() {
 
   if (m_scrollingLayer) {
     // m_scrollingLayer never has backing store.
-    // m_scrollingContentsLayer only needs backing store if the scrolled contents need to paint.
+    // m_scrollingContentsLayer only needs backing store if the scrolled
+    // contents need to paint.
     m_scrollingContentsAreEmpty =
         !m_owningLayer.hasVisibleContent() ||
         !(layoutObject()->styleRef().hasBackground() ||
@@ -1509,7 +1551,8 @@ void CompositedLayerMapping::updateDrawsContent() {
     }
   }
 
-  // FIXME: we could refine this to only allocate backings for one of these layers if possible.
+  // FIXME: we could refine this to only allocate backings for one of these
+  // layers if possible.
   if (m_foregroundLayer)
     m_foregroundLayer->setDrawsContent(hasPaintedContent);
 
@@ -1552,8 +1595,9 @@ bool CompositedLayerMapping::updateClippingLayers(bool needsAncestorClip,
   }
 
   if (needsDescendantClip) {
-    // We don't need a child containment layer if we're the main frame layout view
-    // layer. It's redundant as the frame clip above us will handle this clipping.
+    // We don't need a child containment layer if we're the main frame layout
+    // view layer. It's redundant as the frame clip above us will handle this
+    // clipping.
     if (!m_childContainmentLayer && !m_isMainFrameLayoutViewLayer) {
       m_childContainmentLayer =
           createGraphicsLayer(CompositingReasonLayerForDescendantClip);
@@ -1792,18 +1836,19 @@ struct UpdateRenderingContextFunctor {
 };
 
 void CompositedLayerMapping::updateRenderingContext() {
-  // All layers but the squashing layer (which contains 'alien' content) should be included in this
-  // rendering context.
+  // All layers but the squashing layer (which contains 'alien' content) should
+  // be included in this rendering context.
   int id = 0;
 
-  // NB, it is illegal at this point to query an ancestor's compositing state. Some compositing
-  // reasons depend on the compositing state of ancestors. So if we want a rendering context id
-  // for the context root, we cannot ask for the id of its associated WebLayer now; it may not have
-  // one yet. We could do a second past after doing the compositing updates to get these ids,
-  // but this would actually be harmful. We do not want to attach any semantic meaning to
-  // the context id other than the fact that they group a number of layers together for the
-  // sake of 3d sorting. So instead we will ask the compositor to vend us an arbitrary, but
-  // consistent id.
+  // NB, it is illegal at this point to query an ancestor's compositing state.
+  // Some compositing reasons depend on the compositing state of ancestors. So
+  // if we want a rendering context id for the context root, we cannot ask for
+  // the id of its associated WebLayer now; it may not have one yet. We could do
+  // a second past after doing the compositing updates to get these ids, but
+  // this would actually be harmful. We do not want to attach any semantic
+  // meaning to the context id other than the fact that they group a number of
+  // layers together for the sake of 3d sorting. So instead we will ask the
+  // compositor to vend us an arbitrary, but consistent id.
   if (PaintLayer* root = m_owningLayer.renderingContextRoot()) {
     if (Node* node = root->layoutObject()->node())
       id = static_cast<int>(PtrHash<Node>::hash(node));
@@ -1822,8 +1867,9 @@ struct UpdateShouldFlattenTransformFunctor {
 };
 
 void CompositedLayerMapping::updateShouldFlattenTransform() {
-  // All CLM-managed layers that could affect a descendant layer should update their
-  // should-flatten-transform value (the other layers' transforms don't matter here).
+  // All CLM-managed layers that could affect a descendant layer should update
+  // their should-flatten-transform value (the other layers' transforms don't
+  // matter here).
   UpdateShouldFlattenTransformFunctor functor = {
       !m_owningLayer.shouldPreserve3D()};
   ApplyToGraphicsLayersMode mode = ApplyToLayersAffectedByPreserve3D;
@@ -2042,7 +2088,8 @@ static void updateScrollParentForGraphicsLayer(
   if (!layer)
     return;
 
-  // Only the topmost layer has a scroll parent. All other layers have a null scroll parent.
+  // Only the topmost layer has a scroll parent. All other layers have a null
+  // scroll parent.
   if (layer != topmostLayer)
     scrollParent = 0;
 
@@ -2073,7 +2120,8 @@ static void updateClipParentForGraphicsLayer(
   if (!layer)
     return;
 
-  // Only the topmost layer has a scroll parent. All other layers have a null scroll parent.
+  // Only the topmost layer has a scroll parent. All other layers have a null
+  // scroll parent.
   if (layer != topmostLayer)
     clipParent = 0;
 
@@ -2250,8 +2298,9 @@ bool CompositedLayerMapping::containsPaintedContent() const {
     return false;
 
   LayoutObject* layoutObject = this->layoutObject();
-  // FIXME: we could optimize cases where the image, video or canvas is known to fill the border box entirely,
-  // and set background color on the layer in that case, instead of allocating backing store and painting.
+  // FIXME: we could optimize cases where the image, video or canvas is known to
+  // fill the border box entirely, and set background color on the layer in that
+  // case, instead of allocating backing store and painting.
   if (layoutObject->isVideo() &&
       toLayoutVideo(layoutObject)->shouldDisplayVideo())
     return m_owningLayer.hasBoxDecorationsOrBackground();
@@ -2356,9 +2405,10 @@ void CompositedLayerMapping::updateImageContents() {
   // Prevent double-drawing: https://bugs.webkit.org/show_bug.cgi?id=58632
   updateDrawsContent();
 
-  // Image animation is "lazy", in that it automatically stops unless someone is drawing
-  // the image. So we have to kick the animation each time; this has the downside that the
-  // image will keep animating, even if its layer is not visible.
+  // Image animation is "lazy", in that it automatically stops unless someone is
+  // drawing the image. So we have to kick the animation each time; this has the
+  // downside that the image will keep animating, even if its layer is not
+  // visible.
   image->startAnimation();
 }
 
@@ -2429,8 +2479,10 @@ void CompositedLayerMapping::setSublayers(
 
   parent->setChildren(sublayers);
 
-  // If we have scrollbars, but are not using composited scrolling, then parentForSublayers may return m_graphicsLayer.
-  // In that case, the above call to setChildren has clobbered the overflow controls host layer, so we need to reattach it.
+  // If we have scrollbars, but are not using composited scrolling, then
+  // parentForSublayers may return m_graphicsLayer.  In that case, the above
+  // call to setChildren has clobbered the overflow controls host layer, so we
+  // need to reattach it.
   if (needsOverflowControlsReattached)
     parent->addChild(overflowControlsContainer);
 }
@@ -2498,7 +2550,8 @@ void CompositedLayerMapping::setContentsNeedDisplayInRect(
     PaintInvalidationReason invalidationReason,
     const DisplayItemClient& client) {
   DCHECK(!m_owningLayer.layoutObject()->usesCompositedScrolling());
-  // TODO(wangxianzhu): Enable the following assert after paint invalidation for spv2 is ready.
+  // TODO(wangxianzhu): Enable the following assert after paint invalidation for
+  // spv2 is ready.
   // ASSERT(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
 
   SetContentsNeedsDisplayInRectFunctor functor = {
@@ -2513,7 +2566,8 @@ void CompositedLayerMapping::setNonScrollingContentsNeedDisplayInRect(
     PaintInvalidationReason invalidationReason,
     const DisplayItemClient& client) {
   DCHECK(m_owningLayer.layoutObject()->usesCompositedScrolling());
-  // TODO(wangxianzhu): Enable the following assert after paint invalidation for spv2 is ready.
+  // TODO(wangxianzhu): Enable the following assert after paint invalidation for
+  // spv2 is ready.
   // ASSERT(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
 
   SetContentsNeedsDisplayInRectFunctor functor = {
@@ -2528,7 +2582,8 @@ void CompositedLayerMapping::setScrollingContentsNeedDisplayInRect(
     PaintInvalidationReason invalidationReason,
     const DisplayItemClient& client) {
   DCHECK(m_owningLayer.layoutObject()->usesCompositedScrolling());
-  // TODO(wangxianzhu): Enable the following assert after paint invalidation for spv2 is ready.
+  // TODO(wangxianzhu): Enable the following assert after paint invalidation for
+  // spv2 is ready.
   // ASSERT(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
 
   SetContentsNeedsDisplayInRectFunctor functor = {
@@ -2569,10 +2624,13 @@ IntRect CompositedLayerMapping::localClipRectForSquashedLayer(
 
   const GraphicsLayerPaintInfo* ancestorPaintInfo =
       containingSquashedLayer(clippingContainer, layers, layers.size());
-  // Must be there, otherwise CompositingLayerAssigner::canSquashIntoCurrentSquashingOwner would have disallowed squashing.
+  // Must be there, otherwise
+  // CompositingLayerAssigner::canSquashIntoCurrentSquashingOwner would have
+  // disallowed squashing.
   ASSERT(ancestorPaintInfo);
 
-  // FIXME: this is a potential performance issue. We should consider caching these clip rects or otherwise optimizing.
+  // FIXME: this is a potential performance issue. We should consider caching
+  // these clip rects or otherwise optimizing.
   ClipRectsContext clipRectsContext(ancestorPaintInfo->paintLayer,
                                     UncachedClipRects);
   IntRect parentClipRect =
@@ -2642,9 +2700,11 @@ void CompositedLayerMapping::doPaintTask(
         paintInfo.paintLayer, LayoutRect(dirtyRect), GlobalPaintNormalPhase,
         paintInfo.paintLayer->subpixelAccumulation());
 
-    // PaintLayer::paintLayer assumes that the caller clips to the passed rect. Squashed layers need to do this clipping in software,
-    // since there is no graphics layer to clip them precisely. Furthermore, in some cases we squash layers that need clipping in software
-    // from clipping ancestors (see CompositedLayerMapping::localClipRectForSquashedLayer()).
+    // PaintLayer::paintLayer assumes that the caller clips to the passed rect.
+    // Squashed layers need to do this clipping in software, since there is no
+    // graphics layer to clip them precisely. Furthermore, in some cases we
+    // squash layers that need clipping in software from clipping ancestors (see
+    // CompositedLayerMapping::localClipRectForSquashedLayer()).
     // FIXME: Is it correct to clip to dirtyRect in slimming paint mode?
     // FIXME: Combine similar code here and LayerClipRecorder.
     dirtyRect.intersect(paintInfo.localClipRectForSquashedLayer);
@@ -2685,13 +2745,15 @@ IntRect CompositedLayerMapping::recomputeInterestRect(
   IntSize offsetFromAnchorLayoutObject;
   const LayoutBoxModelObject* anchorLayoutObject;
   if (graphicsLayer == m_squashingLayer.get()) {
-    // TODO(chrishtr): this is a speculative fix for crbug.com/561306. However, it should never be the case that
-    // m_squashingLayer exists yet m_squashedLayers.size() == 0. There must be a bug elsewhere.
+    // TODO(chrishtr): this is a speculative fix for crbug.com/561306. However,
+    // it should never be the case that m_squashingLayer exists,
+    // yet m_squashedLayers.size() == 0. There must be a bug elsewhere.
     if (m_squashedLayers.size() == 0)
       return IntRect();
-    // All squashed layers have the same clip and transform space, so we can use the first squashed layer's
-    // layoutObject to map the squashing layer's bounds into viewport space, with offsetFromAnchorLayoutObject
-    // to translate squashing layer's bounds into the first squashed layer's space.
+    // All squashed layers have the same clip and transform space, so we can use
+    // the first squashed layer's layoutObject to map the squashing layer's
+    // bounds into viewport space, with offsetFromAnchorLayoutObject to
+    // translate squashing layer's bounds into the first squashed layer's space.
     anchorLayoutObject = m_squashedLayers[0].paintLayer->layoutObject();
     offsetFromAnchorLayoutObject = m_squashedLayers[0].offsetFromLayoutObject;
   } else {
@@ -2702,11 +2764,13 @@ IntRect CompositedLayerMapping::recomputeInterestRect(
     adjustForCompositedScrolling(graphicsLayer, offsetFromAnchorLayoutObject);
   }
 
-  // Start with the bounds of the graphics layer in the space of the anchor LayoutObject.
+  // Start with the bounds of the graphics layer in the space of the anchor
+  // LayoutObject.
   FloatRect graphicsLayerBoundsInObjectSpace(graphicsLayerBounds);
   graphicsLayerBoundsInObjectSpace.move(offsetFromAnchorLayoutObject);
 
-  // Now map the bounds to its visible content rect in root view space, including applying clips along the way.
+  // Now map the bounds to its visible content rect in root view space,
+  // including applying clips along the way.
   LayoutRect graphicsLayerBoundsInRootViewSpace(
       graphicsLayerBoundsInObjectSpace);
   LayoutView* rootView = anchorLayoutObject->view();
@@ -2721,9 +2785,11 @@ IntRect CompositedLayerMapping::recomputeInterestRect(
 
   IntRect enclosingGraphicsLayerBounds(enclosingIntRect(graphicsLayerBounds));
 
-  // Map the visible content rect from root view space to local graphics layer space.
+  // Map the visible content rect from root view space to local graphics layer
+  // space.
   IntRect localInterestRect;
-  // If the visible content rect is empty, then it makes no sense to map it back since there is nothing to map.
+  // If the visible content rect is empty, then it makes no sense to map it back
+  // since there is nothing to map.
   if (!visibleContentRect.isEmpty()) {
     localInterestRect =
         anchorLayoutObject
@@ -2731,10 +2797,13 @@ IntRect CompositedLayerMapping::recomputeInterestRect(
                                   UseTransforms | TraverseDocumentBoundaries)
             .enclosingBoundingBox();
     localInterestRect.move(-offsetFromAnchorLayoutObject);
-    // TODO(chrishtr): the code below is a heuristic, instead we should detect and return whether the mapping failed.
-    // In some cases, absoluteToLocalQuad can fail to map back to the local space, due to passing through
-    // non-invertible transforms or floating-point accuracy issues. Examples include rotation near 90 degrees
-    // or perspective. In such cases, fall back to painting the first kPixelDistanceToRecord pixels in each direction.
+    // TODO(chrishtr): the code below is a heuristic, instead we should detect
+    // and return whether the mapping failed.  In some cases,
+    // absoluteToLocalQuad can fail to map back to the local space, due to
+    // passing through non-invertible transforms or floating-point accuracy
+    // issues. Examples include rotation near 90 degrees or perspective. In such
+    // cases, fall back to painting the first kPixelDistanceToRecord pixels in
+    // each direction.
     localInterestRect.intersect(enclosingGraphicsLayerBounds);
   }
   // Expand by interest rect padding amount.
@@ -2752,21 +2821,23 @@ bool CompositedLayerMapping::interestRectChangedEnoughToRepaint(
   if (previousInterestRect.isEmpty() && newInterestRect.isEmpty())
     return false;
 
-  // Repaint when going from empty to not-empty, to cover cases where the layer is
-  // painted for the first time, or otherwise becomes visible.
+  // Repaint when going from empty to not-empty, to cover cases where the layer
+  // is painted for the first time, or otherwise becomes visible.
   if (previousInterestRect.isEmpty())
     return true;
 
-  // Repaint if the new interest rect includes area outside of a skirt around the existing interest rect.
+  // Repaint if the new interest rect includes area outside of a skirt around
+  // the existing interest rect.
   IntRect expandedPreviousInterestRect(previousInterestRect);
   expandedPreviousInterestRect.inflate(kMinimumDistanceBeforeRepaint);
   if (!expandedPreviousInterestRect.contains(newInterestRect))
     return true;
 
-  // Even if the new interest rect doesn't include enough new area to satisfy the condition above,
-  // repaint anyway if it touches a layer edge not touched by the existing interest rect.
-  // Because it's impossible to expose more area in the direction, repainting cannot be deferred
-  // until the exposed new area satisfies the condition above.
+  // Even if the new interest rect doesn't include enough new area to satisfy
+  // the condition above, repaint anyway if it touches a layer edge not touched
+  // by the existing interest rect.  Because it's impossible to expose more area
+  // in the direction, repainting cannot be deferred until the exposed new area
+  // satisfies the condition above.
   if (newInterestRect.x() == 0 && previousInterestRect.x() != 0)
     return true;
   if (newInterestRect.y() == 0 && previousInterestRect.y() != 0)
@@ -2822,8 +2893,9 @@ void CompositedLayerMapping::adjustForCompositedScrolling(
     if (PaintLayerScrollableArea* scrollableArea =
             m_owningLayer.getScrollableArea()) {
       if (scrollableArea->usesCompositedScrolling()) {
-        // Note: this is just the scroll offset, *not* the "adjusted scroll offset". Scroll offset
-        // does not include the origin adjustment. That is instead baked already into offsetFromLayoutObject.
+        // Note: this is just the scroll offset, *not* the "adjusted scroll
+        // offset". Scroll offset does not include the origin adjustment. That
+        // is instead baked already into offsetFromLayoutObject.
         DoubleSize scrollOffset = scrollableArea->scrollOffset();
         offset.expand(-scrollOffset.width(), -scrollOffset.height());
       }
@@ -2843,7 +2915,8 @@ void CompositedLayerMapping::paintContents(
   DocumentLifecycle::AllowThrottlingScope allowThrottling(
       m_owningLayer.layoutObject()->document().lifecycle());
 #if ENABLE(ASSERT)
-  // FIXME: once the state machine is ready, this can be removed and we can refer to that instead.
+  // FIXME: once the state machine is ready, this can be removed and we can
+  // refer to that instead.
   if (Page* page = layoutObject()->frame()->page())
     page->setIsPainting(true);
 #endif
@@ -2898,7 +2971,8 @@ void CompositedLayerMapping::paintContents(
     adjustForCompositedScrolling(graphicsLayer,
                                  paintInfo.offsetFromLayoutObject);
 
-    // We have to use the same root as for hit testing, because both methods can compute and cache clipRects.
+    // We have to use the same root as for hit testing, because both methods can
+    // compute and cache clipRects.
     doPaintTask(paintInfo, *graphicsLayer, paintLayerFlags, context,
                 interestRect);
   } else if (graphicsLayer == m_squashingLayer.get()) {
@@ -2921,8 +2995,9 @@ void CompositedLayerMapping::paintScrollableArea(
     const GraphicsLayer* graphicsLayer,
     GraphicsContext& context,
     const IntRect& interestRect) const {
-  // Note the composited scrollable area painted here is never associated with a frame. For
-  // painting frame ScrollableAreas, see PaintLayerCompositor::paintContents.
+  // Note the composited scrollable area painted here is never associated with a
+  // frame. For painting frame ScrollableAreas, see
+  // PaintLayerCompositor::paintContents.
 
   if (DrawingRecorder::useCachedDrawingIfPossible(
           context, *graphicsLayer, DisplayItem::kScrollbarCompositedScrollbar))
@@ -2938,7 +3013,8 @@ void CompositedLayerMapping::paintScrollableArea(
     paintScrollbar(scrollableArea->verticalScrollbar(),
                    pictureBuilder.context(), interestRect);
   } else if (graphicsLayer == layerForScrollCorner()) {
-    // Note that scroll corners always paint into local space, whereas scrollbars paint in the space of their containing frame.
+    // Note that scroll corners always paint into local space, whereas
+    // scrollbars paint in the space of their containing frame.
     IntPoint scrollCornerAndResizerLocation =
         scrollableArea->scrollCornerAndResizerRect().location();
     CullRect cullRect(enclosingIntRect(interestRect));
@@ -2949,9 +3025,9 @@ void CompositedLayerMapping::paintScrollableArea(
         .paintResizer(pictureBuilder.context(), -scrollCornerAndResizerLocation,
                       cullRect);
   }
-  // Replay the painted scrollbar content with the GraphicsLayer backing as the DisplayItemClient
-  // in order for the resulting DrawingDisplayItem to produce the correct visualRect (i.e., the
-  // bounds of the involved GraphicsLayer).
+  // Replay the painted scrollbar content with the GraphicsLayer backing as the
+  // DisplayItemClient in order for the resulting DrawingDisplayItem to produce
+  // the correct visualRect (i.e., the bounds of the involved GraphicsLayer).
   DrawingRecorder drawingRecorder(context, *graphicsLayer,
                                   DisplayItem::kScrollbarCompositedScrollbar,
                                   layerBounds);
@@ -2977,26 +3053,29 @@ void CompositedLayerMapping::verifyNotPainting() {
 }
 #endif
 
-// Only used for performance benchmark testing. Intended to be a sufficiently-unique
-// element id name to allow picking out the target element for invalidation.
+// Only used for performance benchmark testing. Intended to be a
+// sufficiently-unique element id name to allow picking out the target element
+// for invalidation.
 static const char* kTestPaintInvalidationTargetName =
     "blinkPaintInvalidationTarget";
 
 void CompositedLayerMapping::invalidateTargetElementForTesting() {
-  // The below is an artificial construct formed intentionally to focus a microbenchmark on the cost of paint with a
-  // partial invalidation.
+  // The below is an artificial construct formed intentionally to focus a
+  // microbenchmark on the cost of paint with a partial invalidation.
   Element* targetElement =
       m_owningLayer.layoutObject()->document().getElementById(
           AtomicString(kTestPaintInvalidationTargetName));
-  // TODO(wkorman): If we don't find the expected target element, we could consider walking to the first leaf node so
-  // that the partial-invalidation benchmark mode still provides some value when running on generic pages.
+  // TODO(wkorman): If we don't find the expected target element, we could
+  // consider walking to the first leaf node so that the partial-invalidation
+  // benchmark mode still provides some value when running on generic pages.
   if (!targetElement)
     return;
   LayoutObject* targetObject = targetElement->layoutObject();
   if (!targetObject)
     return;
   targetObject->enclosingLayer()->setNeedsRepaint();
-  // TODO(wkorman): Consider revising the below to invalidate all non-compositing descendants as well.
+  // TODO(wkorman): Consider revising the below to invalidate all
+  // non-compositing descendants as well.
   targetObject->invalidateDisplayItemClients(PaintInvalidationForTesting);
 }
 
@@ -3037,7 +3116,8 @@ bool CompositedLayerMapping::updateSquashingLayerAssignment(
   // NOTE: composited bounds are updated elsewhere
   // NOTE: offsetFromLayoutObject is updated elsewhere
 
-  // Change tracking on squashing layers: at the first sign of something changed, just invalidate the layer.
+  // Change tracking on squashing layers: at the first sign of something
+  // changed, just invalidate the layer.
   // FIXME: Perhaps we can find a tighter more clever mechanism later.
   if (nextSquashedLayerIndex < m_squashedLayers.size()) {
     if (paintInfo.paintLayer ==
@@ -3047,8 +3127,9 @@ bool CompositedLayerMapping::updateSquashingLayerAssignment(
     // Must invalidate before adding the squashed layer to the mapping.
     compositor()->paintInvalidationOnCompositingChange(squashedLayer);
 
-    // If the layer which was previously at |nextSquashedLayerIndex| is not earlier in the grouped mapping, invalidate its current
-    // backing now, since it will move later or be removed from the squashing layer.
+    // If the layer which was previously at |nextSquashedLayerIndex| is not
+    // earlier in the grouped mapping, invalidate its current backing now, since
+    // it will move later or be removed from the squashing layer.
     invalidateLayerIfNoPrecedingEntry(nextSquashedLayerIndex);
 
     m_squashedLayers.insert(nextSquashedLayerIndex, paintInfo);
@@ -3096,9 +3177,10 @@ void CompositedLayerMapping::finishAccumulatingSquashingLayers(
     size_t nextSquashedLayerIndex,
     Vector<PaintLayer*>& layersNeedingPaintInvalidation) {
   if (nextSquashedLayerIndex < m_squashedLayers.size()) {
-    // Any additional squashed Layers in the array no longer belong here, but they might have been
-    // added already at an earlier index. Clear pointers on those that do not appear in the valid set
-    // before removing all the extra entries.
+    // Any additional squashed Layers in the array no longer belong here, but
+    // they might have been added already at an earlier index. Clear pointers on
+    // those that do not appear in the valid set before removing all the extra
+    // entries.
     for (size_t i = nextSquashedLayerIndex; i < m_squashedLayers.size(); ++i) {
       if (invalidateLayerIfNoPrecedingEntry(i))
         m_squashedLayers[i].paintLayer->setGroupedMapping(

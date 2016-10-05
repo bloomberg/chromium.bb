@@ -50,9 +50,10 @@ static bool shouldAppendLayer(const PaintLayer& layer) {
 }
 
 void GraphicsLayerTreeBuilder::rebuild(PaintLayer& layer, AncestorInfo info) {
-  // Make the layer compositing if necessary, and set up clipping and content layers.
-  // Note that we can only do work here that is independent of whether the descendant layers
-  // have been processed. computeCompositingRequirements() will already have done the paint invalidation if necessary.
+  // Make the layer compositing if necessary, and set up clipping and content
+  // layers.  Note that we can only do work here that is independent of whether
+  // the descendant layers have been processed. computeCompositingRequirements()
+  // will already have done the paint invalidation if necessary.
 
   layer.stackingNode()->updateLayerListsIfNeeded();
 
@@ -60,8 +61,9 @@ void GraphicsLayerTreeBuilder::rebuild(PaintLayer& layer, AncestorInfo info) {
   CompositedLayerMapping* currentCompositedLayerMapping =
       layer.compositedLayerMapping();
 
-  // If this layer has a compositedLayerMapping, then that is where we place subsequent children GraphicsLayers.
-  // Otherwise children continue to append to the child list of the enclosing layer.
+  // If this layer has a compositedLayerMapping, then that is where we place
+  // subsequent children GraphicsLayers.  Otherwise children continue to append
+  // to the child list of the enclosing layer.
   GraphicsLayerVector layerChildren;
   AncestorInfo infoForChildren(info);
   if (hasCompositedLayerMapping) {
@@ -79,7 +81,8 @@ void GraphicsLayerTreeBuilder::rebuild(PaintLayer& layer, AncestorInfo info) {
     while (PaintLayerStackingNode* curNode = iterator.next())
       rebuild(*curNode->layer(), infoForChildren);
 
-    // If a negative z-order child is compositing, we get a foreground layer which needs to get parented.
+    // If a negative z-order child is compositing, we get a foreground layer
+    // which needs to get parented.
     if (hasCompositedLayerMapping &&
         currentCompositedLayerMapping->foregroundLayer())
       infoForChildren.childLayersOfEnclosingCompositedLayer->append(

@@ -37,7 +37,8 @@ bool ResizeObserverController::skippedObservations() {
 
 void ResizeObserverController::deliverObservations() {
   m_observersChanged = false;
-  // Copy is needed because m_observers might get modified during deliverObservations.
+  // Copy is needed because m_observers might get modified during
+  // deliverObservations.
   HeapVector<Member<ResizeObserver>> observers;
   copyToVector(m_observers, observers);
 

@@ -68,23 +68,27 @@ class CompositingLayerAssigner {
         bool hasNewCompositedPaintLayerMapping,
         Vector<PaintLayer*>& layersNeedingPaintInvalidation);
 
-    // The most recent composited backing that the layer should squash onto if needed.
+    // The most recent composited backing that the layer should squash onto if
+    // needed.
     CompositedLayerMapping* mostRecentMapping;
     bool hasMostRecentMapping;
 
-    // Whether all Layers in the stacking subtree rooted at the most recent mapping's
-    // owning layer have had CompositedLayerMappings assigned. Layers cannot squash into a
-    // CompositedLayerMapping owned by a stacking ancestor, since this changes paint order.
+    // Whether all Layers in the stacking subtree rooted at the most recent
+    // mapping's owning layer have had CompositedLayerMappings assigned. Layers
+    // cannot squash into a CompositedLayerMapping owned by a stacking ancestor,
+    // since this changes paint order.
     bool haveAssignedBackingsToEntireSquashingLayerSubtree;
 
-    // Counter that tracks what index the next Layer would be if it gets squashed to the current squashing layer.
+    // Counter that tracks what index the next Layer would be if it gets
+    // squashed to the current squashing layer.
     size_t nextSquashedLayerIndex;
 
     // The absolute bounding rect of all the squashed layers.
     IntRect boundingRect;
 
-    // This is simply the sum of the areas of the squashed rects. This can be very skewed if the rects overlap,
-    // but should be close enough to drive a heuristic.
+    // This is simply the sum of the areas of the squashed rects. This can be
+    // very skewed if the rects overlap, but should be close enough to drive a
+    // heuristic.
     uint64_t totalAreaOfSquashedRects;
   };
 

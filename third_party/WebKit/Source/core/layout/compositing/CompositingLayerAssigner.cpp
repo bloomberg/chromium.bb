@@ -108,8 +108,8 @@ CompositingLayerAssigner::computeCompositedLayerUpdate(PaintLayer* layer) {
 
     if (!layer->subtreeIsInvisible() && m_compositor->canBeComposited(layer) &&
         requiresSquashing(layer->getCompositingReasons())) {
-      // We can't compute at this time whether the squashing layer update is a no-op,
-      // since that requires walking the paint layer tree.
+      // We can't compute at this time whether the squashing layer update is a
+      // no-op, since that requires walking the paint layer tree.
       update = PutInSquashingLayer;
     } else if (layer->groupedMapping() || layer->lostGroupedMapping()) {
       update = RemoveFromSquashingLayer;
@@ -130,10 +130,10 @@ CompositingLayerAssigner::getReasonsPreventingSquashing(
       squashingState.mostRecentMapping->owningLayer();
 
   // FIXME: this special case for video exists only to deal with corner cases
-  // where a LayoutVideo does not report that it needs to be directly composited.
-  // Video does not currently support sharing a backing, but this could be
-  // generalized in the future. The following layout tests fail if we permit the
-  // video to share a backing with other layers.
+  // where a LayoutVideo does not report that it needs to be directly
+  // composited.  Video does not currently support sharing a backing, but this
+  // could be generalized in the future. The following layout tests fail if we
+  // permit the video to share a backing with other layers.
   //
   // compositing/video/video-controls-layer-creation.html
   if (layer->layoutObject()->isVideo() ||
@@ -141,7 +141,8 @@ CompositingLayerAssigner::getReasonsPreventingSquashing(
     return SquashingDisallowedReasonSquashingVideoIsDisallowed;
 
   // Don't squash iframes, frames or plugins.
-  // FIXME: this is only necessary because there is frame code that assumes that composited frames are not squashed.
+  // FIXME: this is only necessary because there is frame code that assumes that
+  // composited frames are not squashed.
   if (layer->layoutObject()->isLayoutPart() ||
       squashingLayer.layoutObject()->isLayoutPart())
     return SquashingDisallowedReasonSquashingLayoutPartIsDisallowed;
@@ -153,14 +154,16 @@ CompositingLayerAssigner::getReasonsPreventingSquashing(
       squashingLayer.layoutObject()->style()->hasBlendMode())
     return SquashingDisallowedReasonSquashingBlendingIsDisallowed;
 
-  // FIXME: this is not efficient, since it walks up the tree. We should store these values on the CompositingInputsCache.
+  // FIXME: this is not efficient, since it walks up the tree. We should store
+  // these values on the CompositingInputsCache.
   if (layer->clippingContainer() != squashingLayer.clippingContainer() &&
       !squashingLayer.compositedLayerMapping()->containingSquashedLayer(
           layer->clippingContainer(), squashingState.nextSquashedLayerIndex))
     return SquashingDisallowedReasonClippingContainerMismatch;
 
-  // Composited descendants need to be clipped by a child containment graphics layer, which would not be available if the layer is
-  // squashed (and therefore has no CLM nor a child containment graphics layer).
+  // Composited descendants need to be clipped by a child containment graphics
+  // layer, which would not be available if the layer is squashed (and therefore
+  // has no CLM nor a child containment graphics layer).
   if (m_compositor->clipsCompositingDescendants(layer))
     return SquashingDisallowedReasonSquashedLayerClipsCompositingDescendants;
 
@@ -211,12 +214,16 @@ void CompositingLayerAssigner::updateSquashingAssignment(
     SquashingState& squashingState,
     const CompositingStateTransitionType compositedLayerUpdate,
     Vector<PaintLayer*>& layersNeedingPaintInvalidation) {
-  // NOTE: In the future as we generalize this, the background of this layer may need to be assigned to a different backing than
-  // the squashed PaintLayer's own primary contents. This would happen when we have a composited negative z-index element that needs
-  // to paint on top of the background, but below the layer's main contents. For now, because we always composite layers
-  // when they have a composited negative z-index child, such layers will never need squashing so it is not yet an issue.
+  // NOTE: In the future as we generalize this, the background of this layer may
+  // need to be assigned to a different backing than the squashed PaintLayer's
+  // own primary contents. This would happen when we have a composited negative
+  // z-index element that needs to paint on top of the background, but below the
+  // layer's main contents. For now, because we always composite layers when
+  // they have a composited negative z-index child, such layers will never need
+  // squashing so it is not yet an issue.
   if (compositedLayerUpdate == PutInSquashingLayer) {
-    // A layer that is squashed with other layers cannot have its own CompositedLayerMapping.
+    // A layer that is squashed with other layers cannot have its own
+    // CompositedLayerMapping.
     ASSERT(!layer->hasCompositedLayerMapping());
     ASSERT(squashingState.hasMostRecentMapping);
 
@@ -233,14 +240,16 @@ void CompositingLayerAssigner::updateSquashingAssignment(
 
     layer->clipper().clearClipRectsIncludingDescendants();
 
-    // Issue a paint invalidation, since |layer| may have been added to an already-existing squashing layer.
+    // Issue a paint invalidation, since |layer| may have been added to an
+    // already-existing squashing layer.
     TRACE_LAYER_INVALIDATION(
         layer, InspectorLayerInvalidationTrackingEvent::AddedToSquashingLayer);
     layersNeedingPaintInvalidation.append(layer);
     m_layersChanged = true;
   } else if (compositedLayerUpdate == RemoveFromSquashingLayer) {
     if (layer->groupedMapping()) {
-      // Before removing |layer| from an already-existing squashing layer that may have other content, issue a paint invalidation.
+      // Before removing |layer| from an already-existing squashing layer that
+      // may have other content, issue a paint invalidation.
       m_compositor->paintInvalidationOnCompositingChange(layer);
       layer->groupedMapping()->setNeedsGraphicsLayerUpdate(
           GraphicsLayerUpdateSubtree);
@@ -248,7 +257,8 @@ void CompositingLayerAssigner::updateSquashingAssignment(
                                PaintLayer::InvalidateLayerAndRemoveFromMapping);
     }
 
-    // If we need to issue paint invalidations, do so now that we've removed it from a squashed layer.
+    // If we need to issue paint invalidations, do so now that we've removed it
+    // from a squashed layer.
     TRACE_LAYER_INVALIDATION(
         layer,
         InspectorLayerInvalidationTrackingEvent::RemovedFromSquashingLayer);
@@ -318,7 +328,8 @@ void CompositingLayerAssigner::assignLayersToBackingsInternal(
                                      layersNeedingPaintInvalidation);
   }
 
-  // At this point, if the layer is to be separately composited, then its backing becomes the most recent in paint-order.
+  // At this point, if the layer is to be separately composited, then its
+  // backing becomes the most recent in paint-order.
   if (layer->compositingState() == PaintsIntoOwnBacking) {
     ASSERT(!requiresSquashing(layer->getCompositingReasons()));
     squashingState.updateSquashingStateForNewMapping(

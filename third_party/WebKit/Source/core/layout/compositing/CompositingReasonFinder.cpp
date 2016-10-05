@@ -99,7 +99,8 @@ CompositingReasonFinder::potentialCompositingReasonsFromStyle(
   if (style.hasCompositorProxy())
     reasons |= CompositingReasonCompositorProxy;
 
-  // If the implementation of createsGroup changes, we need to be aware of that in this part of code.
+  // If the implementation of createsGroup changes, we need to be aware of that
+  // in this part of code.
   ASSERT((layoutObject->isTransparent() || layoutObject->hasMask() ||
           layoutObject->hasFilterInducingProperty() || style.hasBlendMode()) ==
          layoutObject->createsGroup());
@@ -132,8 +133,9 @@ CompositingReasonFinder::potentialCompositingReasonsFromStyle(
 
 bool CompositingReasonFinder::requiresCompositingForTransform(
     LayoutObject* layoutObject) const {
-  // Note that we ask the layoutObject if it has a transform, because the style may have transforms,
-  // but the layoutObject may be an inline that doesn't support them.
+  // Note that we ask the layoutObject if it has a transform, because the style
+  // may have transforms, but the layoutObject may be an inline that doesn't
+  // support them.
   return layoutObject->hasTransformRelatedProperty() &&
          layoutObject->style()->has3DTransform();
 }
@@ -154,7 +156,8 @@ CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(
       directReasons |= CompositingReasonOverflowScrollingParent;
   }
 
-  // TODO(flackr): Rename functions and variables to include sticky position (i.e. ScrollDependentPosition rather than PositionFixed).
+  // TODO(flackr): Rename functions and variables to include sticky position
+  // (i.e. ScrollDependentPosition rather than PositionFixed).
   if (requiresCompositingForScrollDependentPosition(layer))
     directReasons |= CompositingReasonScrollDependentPosition;
 
@@ -184,8 +187,9 @@ bool CompositingReasonFinder::requiresCompositingForScrollDependentPosition(
            LayoutRect(layer->boundingBoxForCompositing())))) {
     return false;
   }
-  // Don't promote fixed position elements that are descendants of a non-view container, e.g. transformed elements.
-  // They will stay fixed wrt the container rather than the enclosing frame.
+  // Don't promote fixed position elements that are descendants of a non-view
+  // container, e.g. transformed elements.  They will stay fixed wrt the
+  // container rather than the enclosing frame.
   if (layer->scrollsWithViewport())
     return m_layoutView.frameView()->isScrollable();
   return layer->layoutObject()->style()->position() == StickyPosition &&

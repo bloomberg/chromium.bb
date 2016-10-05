@@ -23,7 +23,8 @@ class ResizeObserverEntry final : public GarbageCollected<ResizeObserverEntry>,
   ResizeObserverEntry(Element* target, const LayoutRect& contentRect);
 
   Element* target() const { return m_target; }
-  // FIXME(atotic): should return DOMRectReadOnly once https://crbug.com/388780 lands
+  // FIXME(atotic): should return DOMRectReadOnly once https://crbug.com/388780
+  // lands
   ClientRect* contentRect() const { return m_contentRect; }
 
   DECLARE_VIRTUAL_TRACE();

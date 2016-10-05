@@ -91,8 +91,8 @@ TEST_F(CompositedLayerMappingTest, TallLayerInterestRect) {
   PaintLayer* paintLayer =
       toLayoutBoxModelObject(element->layoutObject())->layer();
   ASSERT_TRUE(paintLayer->graphicsLayerBacking());
-  // Screen-space visible content rect is [8, 8, 200, 600]. Mapping back to local, adding 4000px in all directions, then
-  // clipping, yields this rect.
+  // Screen-space visible content rect is [8, 8, 200, 600]. Mapping back to
+  // local, adding 4000px in all directions, then clipping, yields this rect.
   EXPECT_RECT_EQ(IntRect(0, 0, 200, 4592),
                  recomputeInterestRect(paintLayer->graphicsLayerBacking()));
 }
@@ -133,8 +133,9 @@ TEST_F(CompositedLayerMappingTest, VerticalRightLeftWritingModeDocument) {
   PaintLayer* paintLayer = document().layoutViewItem().layer();
   ASSERT_TRUE(paintLayer->graphicsLayerBacking());
   ASSERT_TRUE(paintLayer->compositedLayerMapping());
-  // A scroll by -5000px is equivalent to a scroll by (10000 - 5000 - 800)px = 4200px in non-RTL mode. Expanding
-  // the resulting rect by 4000px in each direction yields this result.
+  // A scroll by -5000px is equivalent to a scroll by (10000 - 5000 - 800)px =
+  // 4200px in non-RTL mode. Expanding the resulting rect by 4000px in each
+  // direction yields this result.
   EXPECT_RECT_EQ(IntRect(200, 0, 8800, 600),
                  recomputeInterestRect(paintLayer->graphicsLayerBacking()));
 }
@@ -163,15 +164,18 @@ TEST_F(CompositedLayerMappingTest, RotatedInterestRectNear90Degrees) {
   PaintLayer* paintLayer =
       toLayoutBoxModelObject(element->layoutObject())->layer();
   ASSERT_TRUE(!!paintLayer->graphicsLayerBacking());
-  // Because the layer is rotated to almost 90 degrees, floating-point error leads to a reverse-projected rect that is much much larger
-  // than the original layer size in certain dimensions. In such cases, we often fall back to the 4000px interest rect padding amount.
+  // Because the layer is rotated to almost 90 degrees, floating-point error
+  // leads to a reverse-projected rect that is much much larger than the
+  // original layer size in certain dimensions. In such cases, we often fall
+  // back to the 4000px interest rect padding amount.
   EXPECT_RECT_EQ(IntRect(0, 0, 4000, 200),
                  recomputeInterestRect(paintLayer->graphicsLayerBacking()));
 }
 
 TEST_F(CompositedLayerMappingTest, 3D90DegRotatedTallInterestRect) {
-  // It's rotated 90 degrees about the X axis, which means its visual content rect is empty, and so the interest rect is the
-  // default (0, 0, 4000, 4000) intersected with the layer bounds.
+  // It's rotated 90 degrees about the X axis, which means its visual content
+  // rect is empty, and so the interest rect is the default (0, 0, 4000, 4000)
+  // intersected with the layer bounds.
   setBodyInnerHTML(
       "<div id='target' style='width: 200px; height: 10000px; will-change: "
       "transform; transform: rotateY(90deg)'></div>");
@@ -223,8 +227,9 @@ TEST_F(CompositedLayerMappingTest, WideLayerInterestRect) {
   PaintLayer* paintLayer =
       toLayoutBoxModelObject(element->layoutObject())->layer();
   ASSERT_TRUE(!!paintLayer->graphicsLayerBacking());
-  // Screen-space visible content rect is [8, 8, 800, 200] (the screen is 800x600).
-  // Mapping back to local, adding 4000px in all directions, then clipping, yields this rect.
+  // Screen-space visible content rect is [8, 8, 800, 200] (the screen is
+  // 800x600).  Mapping back to local, adding 4000px in all directions, then
+  // clipping, yields this rect.
   EXPECT_RECT_EQ(IntRect(0, 0, 4792, 200),
                  recomputeInterestRect(paintLayer->graphicsLayerBacking()));
 }
@@ -362,7 +367,8 @@ TEST_F(CompositedLayerMappingTest, InterestRectChangedEnoughToRepaintEmpty) {
   // Both empty means there is nothing to do.
   EXPECT_FALSE(
       interestRectChangedEnoughToRepaint(IntRect(), IntRect(), layerSize));
-  // Going from empty to non-empty means we must re-record because it could be the first frame after construction or Clear.
+  // Going from empty to non-empty means we must re-record because it could be
+  // the first frame after construction or Clear.
   EXPECT_TRUE(interestRectChangedEnoughToRepaint(IntRect(), IntRect(0, 0, 1, 1),
                                                  layerSize));
   // Going from non-empty to empty is not special-cased.
@@ -458,7 +464,8 @@ TEST_F(CompositedLayerMappingTest, InterestRectChangeOnViewportScroll) {
 
   document().view()->setScrollPosition(IntPoint(0, 300), ProgrammaticScroll);
   document().view()->updateAllLifecyclePhases();
-  // Still use the previous interest rect because the recomputed rect hasn't changed enough.
+  // Still use the previous interest rect because the recomputed rect hasn't
+  // changed enough.
   EXPECT_RECT_EQ(IntRect(0, 0, 800, 4900),
                  recomputeInterestRect(rootScrollingLayer));
   EXPECT_RECT_EQ(IntRect(0, 0, 800, 4600),
@@ -481,7 +488,8 @@ TEST_F(CompositedLayerMappingTest, InterestRectChangeOnViewportScroll) {
 
   document().view()->setScrollPosition(IntPoint(0, 9000), ProgrammaticScroll);
   document().view()->updateAllLifecyclePhases();
-  // Still use the previous interest rect because it contains the recomputed interest rect.
+  // Still use the previous interest rect because it contains the recomputed
+  // interest rect.
   EXPECT_RECT_EQ(IntRect(0, 5000, 800, 5000),
                  recomputeInterestRect(rootScrollingLayer));
   EXPECT_RECT_EQ(IntRect(0, 1400, 800, 8600),
@@ -541,7 +549,8 @@ TEST_F(CompositedLayerMappingTest, InterestRectChangeOnScroll) {
 
   scroller->setScrollTop(300);
   document().view()->updateAllLifecyclePhases();
-  // Still use the previous interest rect because the recomputed rect hasn't changed enough.
+  // Still use the previous interest rect because the recomputed rect hasn't
+  // changed enough.
   EXPECT_RECT_EQ(IntRect(0, 0, 400, 4900),
                  recomputeInterestRect(scrollingLayer));
   EXPECT_RECT_EQ(IntRect(0, 0, 400, 4600),
@@ -564,7 +573,8 @@ TEST_F(CompositedLayerMappingTest, InterestRectChangeOnScroll) {
 
   scroller->setScrollTop(9000);
   document().view()->updateAllLifecyclePhases();
-  // Still use the previous interest rect because it contains the recomputed interest rect.
+  // Still use the previous interest rect because it contains the recomputed
+  // interest rect.
   EXPECT_RECT_EQ(IntRect(0, 5000, 400, 5000),
                  recomputeInterestRect(scrollingLayer));
   EXPECT_RECT_EQ(IntRect(0, 1400, 400, 8600),
@@ -601,7 +611,8 @@ TEST_F(CompositedLayerMappingTest,
   scroller->setScrollTop(5400);
   document().view()->updateAllLifecyclePhases();
   scroller->setScrollTop(9400);
-  // The above code creates an interest rect bigger than the interest rect if recomputed now.
+  // The above code creates an interest rect bigger than the interest rect if
+  // recomputed now.
   document().view()->updateAllLifecyclePhases();
   EXPECT_RECT_EQ(IntRect(0, 5400, 400, 4600),
                  recomputeInterestRect(scrollingLayer));
@@ -641,7 +652,8 @@ TEST_F(CompositedLayerMappingTest,
                                                ->layoutBox()
                                                ->layer()
                                                ->groupedMapping();
-  // The squashing layer is at (-10000, 190, 10100, 100) in viewport coordinates.
+  // The squashing layer is at (-10000, 190, 10100, 100) in viewport
+  // coordinates.
   // The following rect is at (-4000, 190, 4100, 100) in viewport coordinates.
   EXPECT_RECT_EQ(IntRect(6000, 0, 4100, 100),
                  groupedMapping->computeInterestRect(
@@ -656,7 +668,8 @@ TEST_F(CompositedLayerMappingTest,
       "  <div style='position: relative; backface-visibility: hidden'>"
       "    <div style='position: absolute; top: -500px; width: 200px; height: "
       "700px; backface-visibility: hidden'></div>"
-      // Above overflow:hidden div and two composited layers make the squashing layer a child of an ancestor clipping layer.
+      // Above overflow:hidden div and two composited layers make the squashing
+      // layer a child of an ancestor clipping layer.
       "    <div id='squashed' style='height: 1000px; width: 10000px; right: 0; "
       "position: absolute'></div>"
       "  </div>"
@@ -735,7 +748,8 @@ TEST_F(CompositedLayerMappingTest, InterestRectOfScrolledIframe) {
 TEST_F(CompositedLayerMappingTest, InterestRectOfIframeWithContentBoxOffset) {
   document().setBaseURLOverride(KURL(ParsedURLString, "http://test.com"));
   document().frame()->settings()->setPreferCompositingToLCDTextEnabled(true);
-  // Set a 10px border in order to have a contentBoxOffset for the iframe element.
+  // Set a 10px border in order to have a contentBoxOffset for the iframe
+  // element.
   setBodyInnerHTML(
       "<style>body { margin: 0; } #frame { border: 10px solid black; } "
       "::-webkit-scrollbar { display: none; }</style>"
@@ -750,7 +764,8 @@ TEST_F(CompositedLayerMappingTest, InterestRectOfIframeWithContentBoxOffset) {
 
   document().view()->updateAllLifecyclePhases();
 
-  // Scroll 3000 pixels down to bring the scrollable area to somewhere in the middle.
+  // Scroll 3000 pixels down to bring the scrollable area to somewhere in the
+  // middle.
   frameDocument.view()->setScrollPosition(DoublePoint(0.0, 3000.0),
                                           ProgrammaticScroll);
   document().view()->updateAllLifecyclePhases();
@@ -788,15 +803,15 @@ TEST_F(CompositedLayerMappingTest, PromoteOpaqueFixedPosition) {
       toLayoutBoxModelObject(element->layoutObject())->layer();
   EXPECT_EQ(NotComposited, paintLayer->compositingState());
 
-  // The opaque fixed box should be promoted and be opaque so that text will be drawn
-  // with subpixel anti-aliasing.
+  // The opaque fixed box should be promoted and be opaque so that text will be
+  // drawn with subpixel anti-aliasing.
   element = document().getElementById("opaque");
   paintLayer = toLayoutBoxModelObject(element->layoutObject())->layer();
   EXPECT_EQ(PaintsIntoOwnBacking, paintLayer->compositingState());
   EXPECT_TRUE(paintLayer->graphicsLayerBacking()->contentsOpaque());
 
-  // The opaque fixed box with shadow should not be promoted because the layer will
-  // include the shadow which is not opaque.
+  // The opaque fixed box with shadow should not be promoted because the layer
+  // will include the shadow which is not opaque.
   element = document().getElementById("opaque-with-shadow");
   paintLayer = toLayoutBoxModelObject(element->layoutObject())->layer();
   EXPECT_EQ(NotComposited, paintLayer->compositingState());
@@ -864,9 +879,10 @@ TEST_F(CompositedLayerMappingTest,
       toLayoutBlock(getLayoutObjectByElementId("container"))->layer();
   EXPECT_TRUE(layer->canPaintBackgroundOntoScrollingContentsLayer());
 
-  // We currently don't use composited scrolling when the container has a border-radius
-  // so even though we can paint the background onto the scrolling contents layer we
-  // don't have a scrolling contents layer to paint into in this case.
+  // We currently don't use composited scrolling when the container has a
+  // border-radius so even though we can paint the background onto the scrolling
+  // contents layer we don't have a scrolling contents layer to paint into in
+  // this case.
   CompositedLayerMapping* mapping = layer->compositedLayerMapping();
   EXPECT_FALSE(mapping->hasScrollingLayer());
   EXPECT_FALSE(mapping->backgroundPaintsOntoScrollingContentsLayer());
@@ -954,8 +970,8 @@ TEST_F(CompositedLayerMappingTest, RootScrollerAncestorsNotClipped) {
   // need for an ancestor clipping layer.
   ASSERT_TRUE(mapping2->scrollingLayer());
 
-  // The third <div> should have a clipping layer since it's composited and clips
-  // composited children.
+  // The third <div> should have a clipping layer since it's composited and
+  // clips composited children.
   ASSERT_TRUE(mapping3->clippingLayer());
 
   // All scrolling and clipping layers should have masksToBounds set on them.
