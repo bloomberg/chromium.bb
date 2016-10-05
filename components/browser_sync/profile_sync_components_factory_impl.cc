@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_wallet_data_type_controller.h"
 #include "components/autofill/core/browser/webdata/autofill_data_type_controller.h"
@@ -35,11 +36,11 @@
 #include "components/sync/driver/glue/chrome_report_unrecoverable_error.h"
 #include "components/sync/driver/glue/sync_backend_host.h"
 #include "components/sync/driver/glue/sync_backend_host_impl.h"
+#include "components/sync/driver/model_type_controller.h"
 #include "components/sync/driver/proxy_data_type_controller.h"
 #include "components/sync/driver/sync_client.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/ui_data_type_controller.h"
-#include "components/sync/driver/ui_model_type_controller.h"
 #include "components/sync_bookmarks/bookmark_change_processor.h"
 #include "components/sync_bookmarks/bookmark_data_type_controller.h"
 #include "components/sync_bookmarks/bookmark_model_associator.h"
@@ -59,7 +60,7 @@ using syncer::DataTypeManagerObserver;
 using syncer::DeviceInfoDataTypeController;
 using syncer::ProxyDataTypeController;
 using syncer::UIDataTypeController;
-using syncer::UIModelTypeController;
+using syncer::ModelTypeController;
 using sync_sessions::SessionDataTypeController;
 
 namespace browser_sync {
@@ -149,9 +150,9 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
     // Use an error callback that always uploads a stacktrace if it can to help
     // get USS as stable as possible.
     sync_service->RegisterDataTypeController(
-        base::MakeUnique<UIModelTypeController>(
+        base::MakeUnique<ModelTypeController>(
             syncer::DEVICE_INFO, base::Bind(&base::debug::DumpWithoutCrashing),
-            sync_client_));
+            sync_client_, base::ThreadTaskRunnerHandle::Get()));
   } else {
     sync_service->RegisterDataTypeController(
         base::MakeUnique<DeviceInfoDataTypeController>(
@@ -264,8 +265,9 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
                                                  error_callback, sync_client_));
     } else {
       sync_service->RegisterDataTypeController(
-          base::MakeUnique<UIModelTypeController>(
-              syncer::PREFERENCES, error_callback, sync_client_));
+          base::MakeUnique<ModelTypeController>(
+              syncer::PREFERENCES, error_callback, sync_client_,
+              base::ThreadTaskRunnerHandle::Get()));
     }
   }
 

@@ -13,69 +13,13 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/sync/core/activation_context.h"
+#include "components/sync/core/model_type_processor_proxy.h"
 #include "components/sync/core/processor_entity_tracker.h"
 #include "components/sync/engine/commit_queue.h"
 #include "components/sync/protocol/proto_value_conversions.h"
 #include "components/sync/syncable/syncable_util.h"
 
 namespace syncer {
-
-namespace {
-
-class ModelTypeProcessorProxy : public ModelTypeProcessor {
- public:
-  ModelTypeProcessorProxy(
-      const base::WeakPtr<ModelTypeProcessor>& processor,
-      const scoped_refptr<base::SequencedTaskRunner>& processor_task_runner);
-  ~ModelTypeProcessorProxy() override;
-
-  void ConnectSync(std::unique_ptr<CommitQueue> worker) override;
-  void DisconnectSync() override;
-  void OnCommitCompleted(const sync_pb::ModelTypeState& type_state,
-                         const CommitResponseDataList& response_list) override;
-  void OnUpdateReceived(const sync_pb::ModelTypeState& type_state,
-                        const UpdateResponseDataList& updates) override;
-
- private:
-  base::WeakPtr<ModelTypeProcessor> processor_;
-  scoped_refptr<base::SequencedTaskRunner> processor_task_runner_;
-};
-
-ModelTypeProcessorProxy::ModelTypeProcessorProxy(
-    const base::WeakPtr<ModelTypeProcessor>& processor,
-    const scoped_refptr<base::SequencedTaskRunner>& processor_task_runner)
-    : processor_(processor), processor_task_runner_(processor_task_runner) {}
-
-ModelTypeProcessorProxy::~ModelTypeProcessorProxy() {}
-
-void ModelTypeProcessorProxy::ConnectSync(std::unique_ptr<CommitQueue> worker) {
-  processor_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ModelTypeProcessor::ConnectSync, processor_,
-                            base::Passed(std::move(worker))));
-}
-
-void ModelTypeProcessorProxy::DisconnectSync() {
-  processor_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ModelTypeProcessor::DisconnectSync, processor_));
-}
-
-void ModelTypeProcessorProxy::OnCommitCompleted(
-    const sync_pb::ModelTypeState& type_state,
-    const CommitResponseDataList& response_list) {
-  processor_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ModelTypeProcessor::OnCommitCompleted, processor_,
-                            type_state, response_list));
-}
-
-void ModelTypeProcessorProxy::OnUpdateReceived(
-    const sync_pb::ModelTypeState& type_state,
-    const UpdateResponseDataList& updates) {
-  processor_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ModelTypeProcessor::OnUpdateReceived, processor_,
-                            type_state, updates));
-}
-
-}  // namespace
 
 SharedModelTypeProcessor::SharedModelTypeProcessor(ModelType type,
                                                    ModelTypeService* service)

@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SYNC_DRIVER_NON_BLOCKING_DATA_TYPE_CONTROLLER_H_
-#define COMPONENTS_SYNC_DRIVER_NON_BLOCKING_DATA_TYPE_CONTROLLER_H_
+#ifndef COMPONENTS_SYNC_DRIVER_MODEL_TYPE_CONTROLLER_H_
+#define COMPONENTS_SYNC_DRIVER_MODEL_TYPE_CONTROLLER_H_
 
 #include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/data_type_controller.h"
 #include "components/sync/driver/sync_prefs.h"
@@ -19,17 +20,16 @@ namespace syncer {
 class SyncClient;
 struct ActivationContext;
 
-// Base class for DataType controllers for Unified Sync and Storage datatypes.
-// Derived types must implement the following methods:
-// - RunOnModelThread
-// - RunOnUIThread
-class NonBlockingDataTypeController : public DataTypeController {
+// DataTypeController implementation for Unified Sync and Storage model types.
+class ModelTypeController : public DataTypeController {
  public:
   // |dump_stack| is called when an unrecoverable error occurs.
-  NonBlockingDataTypeController(ModelType type,
-                                const base::Closure& dump_stack,
-                                SyncClient* sync_client);
-  ~NonBlockingDataTypeController() override;
+  ModelTypeController(
+      ModelType type,
+      const base::Closure& dump_stack,
+      SyncClient* sync_client,
+      const scoped_refptr<base::SingleThreadTaskRunner>& model_thread);
+  ~ModelTypeController() override;
 
   // DataTypeController implementation.
   bool ShouldLoadModelBeforeConfigure() const override;
@@ -48,12 +48,6 @@ class NonBlockingDataTypeController : public DataTypeController {
   State state() const override;
 
  protected:
-  // Posts the given task to the model thread, i.e. the thread the
-  // datatype lives on.  Return value: True if task posted successfully,
-  // false otherwise.
-  virtual bool RunOnModelThread(const tracked_objects::Location& from_here,
-                                const base::Closure& task) = 0;
-
   std::unique_ptr<DataTypeErrorHandler> CreateErrorHandler() override;
 
  private:
@@ -72,8 +66,11 @@ class NonBlockingDataTypeController : public DataTypeController {
       SyncError error,
       std::unique_ptr<ActivationContext> activation_context);
 
-  // Sync client
+  // The sync client, which provides access to this type's ModelTypeService.
   SyncClient* const sync_client_;
+
+  // The thread the model type lives on.
+  scoped_refptr<base::SingleThreadTaskRunner> model_thread_;
 
   // Sync prefs. Used for determinig if DisableSync should be called during call
   // to Stop().
@@ -95,9 +92,9 @@ class NonBlockingDataTypeController : public DataTypeController {
   // TODO(crbug.com/647505): Remove this once the DTM handles things better.
   bool activated_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(NonBlockingDataTypeController);
+  DISALLOW_COPY_AND_ASSIGN(ModelTypeController);
 };
 
 }  // namespace syncer
 
-#endif  // COMPONENTS_SYNC_DRIVER_NON_BLOCKING_DATA_TYPE_CONTROLLER_H_
+#endif  // COMPONENTS_SYNC_DRIVER_MODEL_TYPE_CONTROLLER_H_
