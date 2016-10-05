@@ -240,7 +240,7 @@ public final class RequestFinishedInfo {
 
         /**
          * Returns total bytes received over the network transport layer, or {@code null} if not
-         * collected.
+         * collected. Number of bytes does not include any previous redirects.
          */
         @Nullable
         public abstract Long getReceivedBytesCount();

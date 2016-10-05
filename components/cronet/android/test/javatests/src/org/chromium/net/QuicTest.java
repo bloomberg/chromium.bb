@@ -6,17 +6,21 @@ package org.chromium.net;
 
 import android.os.ConditionVariable;
 import android.test.suitebuilder.annotation.LargeTest;
+import android.test.suitebuilder.annotation.SmallTest;
+
+import org.json.JSONObject;
 
 import org.chromium.base.Log;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetTestBase.OnlyRunNativeCronet;
-import org.json.JSONObject;
+import org.chromium.net.MetricsTestUtil.TestRequestFinishedListener;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Date;
 import java.util.concurrent.Executors;
 
 /**
@@ -198,6 +202,61 @@ public class QuicTest extends CronetTestBase {
         // effective connection type is correctly set.
         assertTrue(mTestFramework.mCronetEngine.getEffectiveConnectionType()
                 != EffectiveConnectionType.TYPE_UNKNOWN);
+
+        mTestFramework.mCronetEngine.shutdown();
+    }
+
+    @SmallTest
+    @OnlyRunNativeCronet
+    @Feature({"Cronet"})
+    public void testMetricsWithQuic() throws Exception {
+        mTestFramework = startCronetTestFrameworkWithUrlAndCronetEngineBuilder(null, mBuilder);
+        TestRequestFinishedListener requestFinishedListener = new TestRequestFinishedListener();
+        mTestFramework.mCronetEngine.addRequestFinishedListener(requestFinishedListener);
+
+        String quicURL = QuicTestServer.getServerURL() + "/simple.txt";
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+
+        UrlRequest.Builder requestBuilder = new UrlRequest.Builder(
+                quicURL, callback, callback.getExecutor(), mTestFramework.mCronetEngine);
+        Date startTime = new Date();
+        requestBuilder.build().start();
+        callback.blockForDone();
+        requestFinishedListener.blockUntilDone();
+        Date endTime = new Date();
+
+        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+        assertEquals("quic/1+spdy/3", callback.mResponseInfo.getNegotiatedProtocol());
+
+        RequestFinishedInfo requestInfo = requestFinishedListener.getRequestInfo();
+        assertNotNull(requestInfo);
+        RequestFinishedInfo.Metrics metrics = requestInfo.getMetrics();
+        assertNotNull(metrics);
+
+        MetricsTestUtil.checkTimingMetrics(metrics, startTime, endTime);
+        MetricsTestUtil.checkHasConnectTiming(metrics, startTime, endTime, true);
+
+        // Second request should use the same connection and not have ConnectTiming numbers
+        callback = new TestUrlRequestCallback();
+        requestFinishedListener.reset();
+        requestBuilder = new UrlRequest.Builder(
+                quicURL, callback, callback.getExecutor(), mTestFramework.mCronetEngine);
+        startTime = new Date();
+        requestBuilder.build().start();
+        callback.blockForDone();
+        requestFinishedListener.blockUntilDone();
+        endTime = new Date();
+
+        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+        assertEquals("quic/1+spdy/3", callback.mResponseInfo.getNegotiatedProtocol());
+
+        requestInfo = requestFinishedListener.getRequestInfo();
+        assertNotNull(requestInfo);
+        metrics = requestInfo.getMetrics();
+        assertNotNull(metrics);
+
+        MetricsTestUtil.checkTimingMetrics(metrics, startTime, endTime);
+        MetricsTestUtil.checkNoConnectTiming(metrics);
 
         mTestFramework.mCronetEngine.shutdown();
     }

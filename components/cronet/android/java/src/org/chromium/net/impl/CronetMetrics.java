@@ -99,7 +99,8 @@ public final class CronetMetrics extends RequestFinishedInfo.Metrics {
         assert checkOrder(sslStartMs, sslEndMs);
         assert checkOrder(sendingStartMs, sendingEndMs);
         assert checkOrder(pushStartMs, pushEndMs);
-        assert checkOrder(responseStartMs, responseEndMs);
+        // responseEnd always exists, so just check that it's after start
+        assert responseEndMs >= responseStartMs;
         // Spot-check some of the other orderings
         assert dnsStartMs >= requestStartMs || dnsStartMs == -1;
         assert sendingStartMs >= requestStartMs || sendingStartMs == -1;

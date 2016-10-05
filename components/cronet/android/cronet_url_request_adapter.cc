@@ -33,6 +33,22 @@ using base::android::JavaParamRef;
 
 namespace cronet {
 
+namespace {
+
+// Converts timing metrics stored as TimeTicks into the format expected by the
+// Java layer: ms since Unix epoch, or -1 for null
+int64_t ConvertTime(const base::TimeTicks& ticks,
+                    const base::TimeTicks& start_ticks,
+                    const base::Time& start_time) {
+  if (ticks.is_null() || start_ticks.is_null()) {
+    return -1;
+  }
+  DCHECK(!start_time.is_null());
+  return (start_time + (ticks - start_ticks)).ToJavaTime();
+}
+
+}  // namespace
+
 // Explicitly register static JNI functions.
 bool CronetUrlRequestAdapterRegisterJni(JNIEnv* env) {
   return RegisterNativesImpl(env);
@@ -44,7 +60,8 @@ static jlong CreateRequestAdapter(JNIEnv* env,
                                   const JavaParamRef<jstring>& jurl_string,
                                   jint jpriority,
                                   jboolean jdisable_cache,
-                                  jboolean jdisable_connection_migration) {
+                                  jboolean jdisable_connection_migration,
+                                  jboolean jenable_metrics) {
   CronetURLRequestContextAdapter* context_adapter =
       reinterpret_cast<CronetURLRequestContextAdapter*>(
           jurl_request_context_adapter);
@@ -58,7 +75,7 @@ static jlong CreateRequestAdapter(JNIEnv* env,
   CronetURLRequestAdapter* adapter = new CronetURLRequestAdapter(
       context_adapter, env, jurl_request, url,
       static_cast<net::RequestPriority>(jpriority), jdisable_cache,
-      jdisable_connection_migration);
+      jdisable_connection_migration, jenable_metrics);
 
   return reinterpret_cast<jlong>(adapter);
 }
@@ -70,12 +87,14 @@ CronetURLRequestAdapter::CronetURLRequestAdapter(
     const GURL& url,
     net::RequestPriority priority,
     jboolean jdisable_cache,
-    jboolean jdisable_connection_migration)
+    jboolean jdisable_connection_migration,
+    jboolean jenable_metrics)
     : context_(context),
       initial_url_(url),
       initial_priority_(priority),
       initial_method_("GET"),
-      load_flags_(context->default_load_flags()) {
+      load_flags_(context->default_load_flags()),
+      enable_metrics_(jenable_metrics == JNI_TRUE) {
   DCHECK(!context_->IsOnNetworkThread());
   owner_.Reset(env, jurl_request);
   if (jdisable_cache == JNI_TRUE)
@@ -362,15 +381,16 @@ void CronetURLRequestAdapter::ReadDataOnNetworkThread(
 
 void CronetURLRequestAdapter::DestroyOnNetworkThread(bool send_on_canceled) {
   DCHECK(context_->IsOnNetworkThread());
+  JNIEnv* env = base::android::AttachCurrentThread();
   if (send_on_canceled) {
-    JNIEnv* env = base::android::AttachCurrentThread();
     cronet::Java_CronetUrlRequest_onCanceled(env, owner_.obj());
   }
+  MaybeReportMetrics(env);
   delete this;
 }
 
 void CronetURLRequestAdapter::ReportError(net::URLRequest* request,
-                                          int net_error) const {
+                                          int net_error) {
   DCHECK_NE(net::ERR_IO_PENDING, net_error);
   DCHECK_LT(net_error, 0);
   DCHECK_EQ(request, url_request_.get());
@@ -385,6 +405,33 @@ void CronetURLRequestAdapter::ReportError(net::URLRequest* request,
       net_error_details.quic_connection_error,
       ConvertUTF8ToJavaString(env, net::ErrorToString(net_error)).obj(),
       request->GetTotalReceivedBytes());
+}
+
+void CronetURLRequestAdapter::MaybeReportMetrics(JNIEnv* env) const {
+  if (!enable_metrics_) {
+    return;
+  }
+  net::LoadTimingInfo metrics;
+  url_request_->GetLoadTimingInfo(&metrics);
+  base::Time start_time = metrics.request_start_time;
+  base::TimeTicks start_ticks = metrics.request_start;
+  Java_CronetUrlRequest_onMetricsCollected(
+      env, owner_.obj(), ConvertTime(start_ticks, start_ticks, start_time),
+      ConvertTime(metrics.connect_timing.dns_start, start_ticks, start_time),
+      ConvertTime(metrics.connect_timing.dns_end, start_ticks, start_time),
+      ConvertTime(metrics.connect_timing.connect_start, start_ticks,
+                  start_time),
+      ConvertTime(metrics.connect_timing.connect_end, start_ticks, start_time),
+      ConvertTime(metrics.connect_timing.ssl_start, start_ticks, start_time),
+      ConvertTime(metrics.connect_timing.ssl_end, start_ticks, start_time),
+      ConvertTime(metrics.send_start, start_ticks, start_time),
+      ConvertTime(metrics.send_end, start_ticks, start_time),
+      ConvertTime(metrics.push_start, start_ticks, start_time),
+      ConvertTime(metrics.push_end, start_ticks, start_time),
+      ConvertTime(metrics.receive_headers_end, start_ticks, start_time),
+      ConvertTime(base::TimeTicks::Now(), start_ticks, start_time),
+      // TODO(mgersh): report total bytes sent
+      metrics.socket_reused, 0, url_request_->GetTotalReceivedBytes());
 }
 
 net::URLRequest* CronetURLRequestAdapter::GetURLRequestForTesting() {

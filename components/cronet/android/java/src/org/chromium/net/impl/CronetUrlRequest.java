@@ -65,6 +65,8 @@ public final class CronetUrlRequest implements UrlRequest {
     @GuardedBy("mUrlRequestAdapterLock")
     @Nullable
     private final UrlRequestMetricsAccumulator mRequestMetricsAccumulator;
+    @GuardedBy("mUrlRequestAdapterLock")
+    private RequestFinishedInfo.Metrics mMetrics;
 
     /*
      * Synchronize access to mUrlRequestAdapter, mStarted, mWaitingOnRedirect,
@@ -201,7 +203,8 @@ public final class CronetUrlRequest implements UrlRequest {
             try {
                 mUrlRequestAdapter =
                         nativeCreateRequestAdapter(mRequestContext.getUrlRequestContextAdapter(),
-                                mInitialUrl, mPriority, mDisableCache, mDisableConnectionMigration);
+                                mInitialUrl, mPriority, mDisableCache, mDisableConnectionMigration,
+                                mRequestContext.hasRequestFinishedListener());
                 mRequestContext.onRequestStarted();
                 if (mInitialMethod != null) {
                     if (!nativeSetHttpMethod(mUrlRequestAdapter, mInitialMethod)) {
@@ -429,7 +432,6 @@ public final class CronetUrlRequest implements UrlRequest {
                 mRequestMetricsAccumulator.onRequestFinished();
             }
             nativeDestroy(mUrlRequestAdapter, sendOnCanceled);
-            mRequestContext.reportFinished(getRequestFinishedInfo());
             mRequestContext.onRequestDestroyed();
             mUrlRequestAdapter = 0;
             if (mOnDestroyedCallbackForTesting != null) {
@@ -699,11 +701,31 @@ public final class CronetUrlRequest implements UrlRequest {
         postTaskToExecutor(task);
     }
 
+    /**
+     * Called by the native code to report metrics.
+     */
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void onMetricsCollected(long requestStartMs, long dnsStartMs, long dnsEndMs,
+            long connectStartMs, long connectEndMs, long sslStartMs, long sslEndMs,
+            long sendingStartMs, long sendingEndMs, long pushStartMs, long pushEndMs,
+            long responseStartMs, long responseEndMs, boolean socketReused, long sentBytesCount,
+            long receivedBytesCount) {
+        synchronized (mUrlRequestAdapterLock) {
+            if (mMetrics != null) {
+                throw new IllegalStateException("Metrics collection should only happen once.");
+            }
+            mMetrics = new CronetMetrics(requestStartMs, dnsStartMs, dnsEndMs, connectStartMs,
+                    connectEndMs, sslStartMs, sslEndMs, sendingStartMs, sendingEndMs, pushStartMs,
+                    pushEndMs, responseStartMs, responseEndMs, socketReused, sentBytesCount,
+                    receivedBytesCount);
+        }
+        mRequestContext.reportFinished(getRequestFinishedInfo());
+    }
+
     private RequestFinishedInfo getRequestFinishedInfo() {
         // TODO(mgersh): fill in real values for finishedReason and exception
-        return new RequestFinishedInfo(mInitialUrl, mRequestAnnotations,
-                (mRequestMetricsAccumulator != null ? mRequestMetricsAccumulator.getRequestMetrics()
-                                                    : EMPTY_METRICS),
+        return new RequestFinishedInfo(mInitialUrl, mRequestAnnotations, mMetrics,
                 RequestFinishedInfo.SUCCEEDED, mResponseInfo, null);
     }
 
@@ -751,7 +773,8 @@ public final class CronetUrlRequest implements UrlRequest {
     // Native methods are implemented in cronet_url_request_adapter.cc.
 
     private native long nativeCreateRequestAdapter(long urlRequestContextAdapter, String url,
-            int priority, boolean disableCache, boolean disableConnectionMigration);
+            int priority, boolean disableCache, boolean disableConnectionMigration,
+            boolean enableMetrics);
 
     @NativeClassQualifiedName("CronetURLRequestAdapter")
     private native boolean nativeSetHttpMethod(long nativePtr, String method);
