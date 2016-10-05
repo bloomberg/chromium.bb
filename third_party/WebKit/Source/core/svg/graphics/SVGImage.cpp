@@ -66,7 +66,8 @@ SVGImage::SVGImage(ImageObserver* observer)
 
 SVGImage::~SVGImage() {
   if (m_page) {
-    // Store m_page in a local variable, clearing m_page, so that SVGImageChromeClient knows we're destructed.
+    // Store m_page in a local variable, clearing m_page, so that
+    // SVGImageChromeClient knows we're destructed.
     Page* currentPage = m_page.release();
     // Break both the loader and view references to the frame
     currentPage->willBeDestroyed();
@@ -180,9 +181,9 @@ FloatSize SVGImage::concreteObjectSize(
 
   if (svg->preserveAspectRatio()->currentValue()->align() ==
       SVGPreserveAspectRatio::kSvgPreserveaspectratioNone) {
-    // TODO(davve): The intrinsic aspect ratio is not used to resolve a missing intrinsic width
-    // or height when preserveAspectRatio is none. It's unclear whether this is correct. See
-    // crbug.com/584172.
+    // TODO(davve): The intrinsic aspect ratio is not used to resolve a missing
+    // intrinsic width or height when preserveAspectRatio is none. It's unclear
+    // whether this is correct. See crbug.com/584172.
     return defaultObjectSize;
   }
 
@@ -207,9 +208,10 @@ FloatSize SVGImage::concreteObjectSize(
   }
 
   if (!intrinsicSizingInfo.aspectRatio.isEmpty()) {
-    // "A contain constraint is resolved by setting the concrete object size to the largest
-    //  rectangle that has the object's intrinsic aspect ratio and additionally has neither
-    //  width nor height larger than the constraint rectangle's width and height, respectively."
+    // "A contain constraint is resolved by setting the concrete object size to
+    //  the largest rectangle that has the object's intrinsic aspect ratio and
+    //  additionally has neither width nor height larger than the constraint
+    //  rectangle's width and height, respectively."
     float solutionWidth = resolveWidthForRatio(defaultObjectSize.height(),
                                                intrinsicSizingInfo.aspectRatio);
     if (solutionWidth <= defaultObjectSize.width())
@@ -233,7 +235,8 @@ void SVGImage::drawForContainer(SkCanvas* canvas,
   if (!m_page)
     return;
 
-  // Temporarily disable the image observer to prevent changeInRect() calls due re-laying out the image.
+  // Temporarily disable the image observer to prevent changeInRect() calls due
+  // re-laying out the image.
   ImageObserverDisabler imageObserverDisabler(this);
 
   IntSize roundedContainerSize = roundedIntSize(containerSize);
@@ -284,7 +287,8 @@ void SVGImage::drawPatternForContainer(GraphicsContext& context,
     DrawingRecorder patternPictureRecorder(
         patternPicture.context(), patternPicture, DisplayItem::Type::kSVGImage,
         spacedTile);
-    // When generating an expanded tile, make sure we don't draw into the spacing area.
+    // When generating an expanded tile, make sure we don't draw into the
+    // spacing area.
     if (tile != spacedTile)
       patternPicture.context().clip(tile);
     SkPaint paint;
@@ -379,8 +383,9 @@ void SVGImage::drawInternal(SkCanvas* canvas,
                               DisplayItem::kClipNodeImage,
                               enclosingIntRect(dstRect));
 
-    // We can only draw the entire frame, clipped to the rect we want. So compute where the top left
-    // of the image would be if we were drawing without clipping, and translate accordingly.
+    // We can only draw the entire frame, clipped to the rect we want. So
+    // compute where the top left of the image would be if we were drawing
+    // without clipping, and translate accordingly.
     FloatSize scale(dstRect.width() / srcRect.width(),
                     dstRect.height() / srcRect.height());
     FloatSize topLeftOffset(srcRect.location().x() * scale.width(),
@@ -597,9 +602,11 @@ Image::SizeAvailability SVGImage::dataChanged(bool allDataReceived) {
     loader.forceSandboxFlags(SandboxAll);
 
     frame->view()->setScrollbarsSuppressed(true);
-    frame->view()->setCanHaveScrollbars(
-        false);                           // SVG Images will always synthesize a viewBox, if it's not available, and thus never see scrollbars.
-    frame->view()->setTransparent(true);  // SVG Images are transparent.
+    // SVG Images will always synthesize a viewBox, if it's not available, and
+    // thus never see scrollbars.
+    frame->view()->setCanHaveScrollbars(false);
+    // SVG Images are transparent.
+    frame->view()->setTransparent(true);
 
     m_page = page;
 

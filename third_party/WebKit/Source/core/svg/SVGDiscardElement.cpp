@@ -42,7 +42,8 @@ inline SVGDiscardElement::SVGDiscardElement(Document& document)
 DEFINE_NODE_FACTORY(SVGDiscardElement)
 
 bool SVGDiscardElement::hasValidAttributeType() {
-  // Even if there is no targetElement, discard is still a valid animation as it has to delete itself.
+  // Even if there is no targetElement, discard is still a valid animation as it
+  // has to delete itself.
   return true;
 }
 

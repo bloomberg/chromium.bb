@@ -37,7 +37,8 @@
 
 namespace blink {
 
-// SVG Spec: http://www.w3.org/TR/SVG11/coords.html#InterfaceSVGAnimatedTransformList
+// SVG Spec:
+// http://www.w3.org/TR/SVG11/coords.html#InterfaceSVGAnimatedTransformList
 class SVGAnimatedTransformList final
     : public SVGAnimatedProperty<SVGTransformList>,
       public ScriptWrappable {

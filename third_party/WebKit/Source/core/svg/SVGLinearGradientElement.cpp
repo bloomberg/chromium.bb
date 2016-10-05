@@ -44,12 +44,14 @@ inline SVGLinearGradientElement::SVGLinearGradientElement(Document& document)
           SVGAnimatedLength::create(this,
                                     SVGNames::y2Attr,
                                     SVGLength::create(SVGLengthMode::Height))) {
-  // Spec: If the x1|y1|y2 attribute is not specified, the effect is as if a value of "0%" were specified.
+  // Spec: If the x1|y1|y2 attribute is not specified, the effect is as if a
+  // value of "0%" were specified.
   m_x1->setDefaultValueAsString("0%");
   m_y1->setDefaultValueAsString("0%");
   m_y2->setDefaultValueAsString("0%");
 
-  // Spec: If the x2 attribute is not specified, the effect is as if a value of "100%" were specified.
+  // Spec: If the x2 attribute is not specified, the effect is as if a value of
+  // "100%" were specified.
   m_x2->setDefaultValueAsString("100%");
 
   addToPropertyMap(m_x1);

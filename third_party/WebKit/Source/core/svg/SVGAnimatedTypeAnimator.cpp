@@ -70,9 +70,10 @@ SVGPropertyBase* SVGAnimatedTypeAnimator::createPropertyForAttributeAnimation(
     const String& value) const {
   // SVG DOM animVal animation code-path.
   if (m_type == AnimatedTransformList) {
-    // TransformList must be animated via <animateTransform>,
-    // and its {from,by,to} attribute values needs to be parsed w.r.t. its "type" attribute.
-    // Spec: http://www.w3.org/TR/SVG/single-page.html#animate-AnimateTransformElement
+    // TransformList must be animated via <animateTransform>, and its
+    // {from,by,to} attribute values needs to be parsed w.r.t. its "type"
+    // attribute.  Spec:
+    // http://www.w3.org/TR/SVG/single-page.html#animate-AnimateTransformElement
     DCHECK(m_animationElement);
     SVGTransformType transformType =
         toSVGAnimateTransformElement(m_animationElement)->transformType();

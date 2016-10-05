@@ -47,7 +47,8 @@ SVGGeometryElement::SVGGeometryElement(const QualifiedName& tagName,
 bool SVGGeometryElement::isPointInFill(SVGPointTearOff* point) const {
   document().updateStyleAndLayoutIgnorePendingStylesheets();
 
-  // FIXME: Eventually we should support isPointInFill for display:none elements.
+  // FIXME: Eventually we should support isPointInFill for display:none
+  // elements.
   if (!layoutObject() || !layoutObject()->isSVGShape())
     return false;
 
@@ -63,7 +64,8 @@ bool SVGGeometryElement::isPointInFill(SVGPointTearOff* point) const {
 bool SVGGeometryElement::isPointInStroke(SVGPointTearOff* point) const {
   document().updateStyleAndLayoutIgnorePendingStylesheets();
 
-  // FIXME: Eventually we should support isPointInStroke for display:none elements.
+  // FIXME: Eventually we should support isPointInStroke for display:none
+  // elements.
   if (!layoutObject() || !layoutObject()->isSVGShape())
     return false;
 

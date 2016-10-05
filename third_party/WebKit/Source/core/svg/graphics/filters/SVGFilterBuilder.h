@@ -37,8 +37,9 @@ class FloatRect;
 class LayoutObject;
 class SVGFilterElement;
 
-// A map from LayoutObject -> FilterEffect and FilterEffect -> dependent (downstream) FilterEffects ("reverse DAG").
-// Used during invalidations from changes to the primitives (graph nodes).
+// A map from LayoutObject -> FilterEffect and FilterEffect -> dependent
+// (downstream) FilterEffects ("reverse DAG").  Used during invalidations from
+// changes to the primitives (graph nodes).
 class SVGFilterGraphNodeMap final
     : public GarbageCollected<SVGFilterGraphNodeMap> {
  public:
@@ -55,7 +56,8 @@ class SVGFilterGraphNodeMap final
     return m_effectReferences.find(effect)->value;
   }
 
-  // Required to change the attributes of a filter during an svgAttributeChanged.
+  // Required to change the attributes of a filter during an
+  // svgAttributeChanged.
   inline FilterEffect* effectByRenderer(LayoutObject* object) {
     return m_effectRenderer.get(object);
   }

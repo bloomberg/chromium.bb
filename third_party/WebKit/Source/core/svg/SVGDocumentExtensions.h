@@ -50,7 +50,8 @@ class SVGDocumentExtensions
   void addTimeContainer(SVGSVGElement*);
   void removeTimeContainer(SVGSVGElement*);
 
-  // Records the SVG element as having a Web Animation on an SVG attribute that needs applying.
+  // Records the SVG element as having a Web Animation on an SVG attribute that
+  // needs applying.
   void addWebAnimationsPendingSVGElement(SVGElement&);
 
   void addResource(const AtomicString& id, LayoutSVGResourceContainer*);
@@ -84,26 +85,28 @@ class SVGDocumentExtensions
 
  private:
   Member<Document> m_document;
-  HeapHashSet<Member<SVGSVGElement>>
-      m_timeContainers;  // For SVG 1.2 support this will need to be made more general.
+  // For SVG 1.2 support this will need to be made more general.
+  HeapHashSet<Member<SVGSVGElement>> m_timeContainers;
   using SVGElementSet = HeapHashSet<Member<SVGElement>>;
   SVGElementSet m_webAnimationsPendingSVGElements;
   HashMap<AtomicString, LayoutSVGResourceContainer*> m_resources;
+  // Resources that are pending.
+  HeapHashMap<AtomicString, Member<SVGPendingElements>> m_pendingResources;
+  // Resources that are pending and scheduled for removal.
   HeapHashMap<AtomicString, Member<SVGPendingElements>>
-      m_pendingResources;  // Resources that are pending.
-  HeapHashMap<AtomicString, Member<SVGPendingElements>>
-      m_pendingResourcesForRemoval;  // Resources that are pending and scheduled for removal.
+      m_pendingResourcesForRemoval;
   SVGResourcesCache m_resourcesCache;
-  HeapHashSet<Member<SVGSVGElement>>
-      m_relativeLengthSVGRoots;  // Root SVG elements with relative length descendants.
+  // Root SVG elements with relative length descendants.
+  HeapHashSet<Member<SVGSVGElement>> m_relativeLengthSVGRoots;
   FloatPoint m_translate;
 #if ENABLE(ASSERT)
   bool m_inRelativeLengthSVGRootsInvalidation;
 #endif
 
  public:
-  // This HashMap contains a list of pending resources. Pending resources, are such
-  // which are referenced by any object in the SVG document, but do NOT exist yet.
+  // This HashMap contains a list of pending resources. Pending resources, are
+  // such which are referenced by any object in the SVG document, but do NOT
+  // exist yet.
   // For instance, dynamically build gradients / patterns / clippers...
   void addPendingResource(const AtomicString& id, Element*);
   bool hasPendingResource(const AtomicString& id) const;
@@ -115,7 +118,8 @@ class SVGDocumentExtensions
 
   void serviceAnimations();
 
-  // The following two functions are used for scheduling a pending resource to be removed.
+  // The following two functions are used for scheduling a pending resource to
+  // be removed.
   void markPendingResourcesForRemoval(const AtomicString&);
   Element* removeElementFromPendingResourcesForRemoval(const AtomicString&);
 

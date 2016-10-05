@@ -99,8 +99,9 @@ void SVGFEImageElement::buildPendingResource() {
       ASSERT(hasPendingResources());
     }
   } else if (target->isSVGElement()) {
-    // Register us with the target in the dependencies map. Any change of hrefElement
-    // that leads to relayout/repainting now informs us, so we can react to it.
+    // Register us with the target in the dependencies map. Any change of
+    // hrefElement that leads to relayout/repainting now informs us, so we can
+    // react to it.
     addReferenceTo(toSVGElement(target));
   }
 

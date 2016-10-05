@@ -128,8 +128,8 @@ bool SMILTimeContainer::hasPendingSynchronization() const {
 void SMILTimeContainer::notifyIntervalsChanged() {
   if (!isStarted())
     return;
-  // Schedule updateAnimations() to be called asynchronously so multiple intervals
-  // can change with updateAnimations() only called once at the end.
+  // Schedule updateAnimations() to be called asynchronously so multiple
+  // intervals can change with updateAnimations() only called once at the end.
   if (hasPendingSynchronization())
     return;
   cancelAnimationFrame();
@@ -173,13 +173,14 @@ void SMILTimeContainer::start() {
   if (!handleAnimationPolicy(RestartOnceTimerIfNotPaused))
     return;
 
-  // Sample the document timeline to get a time reference for the "presentation time".
+  // Sample the document timeline to get a time reference for the "presentation
+  // time".
   synchronizeToDocumentTimeline();
   m_started = true;
 
   // If the "presentation time" is non-zero, the timeline was modified via
-  // setElapsed() before the document began.
-  // In this case pass on 'seekToTime=true' to updateAnimations() to issue a seek.
+  // setElapsed() before the document began.  In this case pass on
+  // 'seekToTime=true' to updateAnimations() to issue a seek.
   SMILTime earliestFireTime =
       updateAnimations(m_presentationTime, m_presentationTime ? true : false);
   if (!canScheduleFrame(earliestFireTime))
@@ -359,7 +360,8 @@ struct PriorityCompare {
   PriorityCompare(double elapsed) : m_elapsed(elapsed) {}
   bool operator()(const Member<SVGSMILElement>& a,
                   const Member<SVGSMILElement>& b) {
-    // FIXME: This should also consider possible timing relations between the elements.
+    // FIXME: This should also consider possible timing relations between the
+    // elements.
     SMILTime aBegin = a->intervalBegin();
     SMILTime bBegin = b->intervalBegin();
     // Frozen elements need to be prioritized based on their previous interval.
@@ -425,8 +427,10 @@ SMILTime SMILTimeContainer::updateAnimations(double elapsed, bool seekToTime) {
   SMILTime earliestFireTime = SMILTime::unresolved();
 
 #if ENABLE(ASSERT)
-  // This boolean will catch any attempts to schedule/unschedule scheduledAnimations during this critical section.
-  // Similarly, any elements removed will unschedule themselves, so this will catch modification of animationsToApply.
+  // This boolean will catch any attempts to schedule/unschedule
+  // scheduledAnimations during this critical section.  Similarly, any elements
+  // removed will unschedule themselves, so this will catch modification of
+  // animationsToApply.
   m_preventScheduledAnimationsChanges = true;
 #endif
 
@@ -443,10 +447,10 @@ SMILTime SMILTimeContainer::updateAnimations(double elapsed, bool seekToTime) {
       continue;
     }
 
-    // Sort according to priority. Elements with later begin time have higher priority.
-    // In case of a tie, document order decides.
-    // FIXME: This should also consider timing relationships between the elements. Dependents
-    // have higher priority.
+    // Sort according to priority. Elements with later begin time have higher
+    // priority.  In case of a tie, document order decides.
+    // FIXME: This should also consider timing relationships between the
+    // elements. Dependents have higher priority.
     copyToVector(*entry.value, scheduledAnimationsInSameGroup);
     std::sort(scheduledAnimationsInSameGroup.begin(),
               scheduledAnimationsInSameGroup.end(), PriorityCompare(elapsed));
@@ -459,7 +463,8 @@ SMILTime SMILTimeContainer::updateAnimations(double elapsed, bool seekToTime) {
       ASSERT(animation->hasValidAttributeName());
       ASSERT(animation->hasValidAttributeType());
 
-      // This will calculate the contribution from the animation and update timing.
+      // This will calculate the contribution from the animation and update
+      // timing.
       if (animation->progress(elapsed, seekToTime)) {
         sandwich.append(animation);
       } else {

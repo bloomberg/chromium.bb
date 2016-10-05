@@ -124,7 +124,8 @@ void SVGNumberOptionalNumber::calculateAnimatedValue(
 
 float SVGNumberOptionalNumber::calculateDistance(SVGPropertyBase* other,
                                                  SVGElement*) {
-  // FIXME: Distance calculation is not possible for SVGNumberOptionalNumber right now. We need the distance for every single value.
+  // FIXME: Distance calculation is not possible for SVGNumberOptionalNumber
+  // right now. We need the distance for every single value.
   return -1;
 }
 

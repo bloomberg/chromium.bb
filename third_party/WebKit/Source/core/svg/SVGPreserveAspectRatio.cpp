@@ -237,7 +237,8 @@ void SVGPreserveAspectRatio::transformRect(FloatRect& destRect,
     }
     case SVGPreserveAspectRatio::kSvgMeetorsliceSlice: {
       float widthToHeightMultiplier = srcRect.height() / srcRect.width();
-      // if the destination height is less than the height of the image we'll be drawing
+      // If the destination height is less than the height of the image we'll be
+      // drawing.
       if (origDestHeight < origDestWidth * widthToHeightMultiplier) {
         float destToSrcMultiplier = srcRect.width() / destRect.width();
         srcRect.setHeight(destRect.height() * destToSrcMultiplier);
@@ -257,7 +258,8 @@ void SVGPreserveAspectRatio::transformRect(FloatRect& destRect,
             break;
         }
       }
-      // if the destination width is less than the width of the image we'll be drawing
+      // If the destination width is less than the width of the image we'll be
+      // drawing.
       if (origDestWidth < origDestHeight / widthToHeightMultiplier) {
         float destToSrcMultiplier = srcRect.height() / destRect.height();
         srcRect.setWidth(destRect.width() * destToSrcMultiplier);

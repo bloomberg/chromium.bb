@@ -95,7 +95,8 @@ TEST_F(SVGImageTest, TimelineSuspendAndResume) {
   // Fire the timer/trigger a frame update. Since the observer always returns
   // true for shouldPauseAnimation, this will result in the timeline being
   // suspended.
-  // TODO(alexclarke): Move over to using base::TimeDelta and base::TimeTicks so we can avoid computations like this.
+  // TODO(alexclarke): Move over to using base::TimeDelta and base::TimeTicks so
+  // we can avoid computations like this.
   testing::runDelayedTasks(1.0 + timer->nextFireInterval() * 1000.0);
   EXPECT_TRUE(chromeClient.isSuspended());
   EXPECT_FALSE(timer->isActive());
@@ -127,7 +128,8 @@ TEST_F(SVGImageTest, ResetAnimation) {
 
   // Fire the timer/trigger a frame update. The timeline will remain
   // suspended and no frame will be scheduled.
-  // TODO(alexclarke): Move over to using base::TimeDelta and base::TimeTicks so we can avoid computations like this.
+  // TODO(alexclarke): Move over to using base::TimeDelta and base::TimeTicks so
+  // we can avoid computations like this.
   testing::runDelayedTasks(1.0 + timer->nextFireInterval() * 1000.0);
   EXPECT_TRUE(chromeClient.isSuspended());
   EXPECT_FALSE(timer->isActive());

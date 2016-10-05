@@ -49,7 +49,8 @@ getStaticStringEntries<SVGLengthAdjustType>() {
 }
 
 // SVGTextContentElement's 'textLength' attribute needs special handling.
-// It should return getComputedTextLength() when textLength is not specified manually.
+// It should return getComputedTextLength() when textLength is not specified
+// manually.
 class SVGAnimatedTextLength final : public SVGAnimatedLength {
  public:
   static SVGAnimatedTextLength* create(SVGTextContentElement* contextElement) {

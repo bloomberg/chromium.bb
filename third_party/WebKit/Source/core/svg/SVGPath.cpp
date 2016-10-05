@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2004, 2005, 2006, 2007, 2008 Nikolas Zimmermann <zimmermann@kde.org>
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008 Nikolas Zimmermann
+ * <zimmermann@kde.org>
  * Copyright (C) 2004, 2005 Rob Buis <buis@kde.org>
  * Copyright (C) 2007 Eric Seidel <eric@webkit.org>
  * Copyright (C) Research In Motion Limited 2010. All rights reserved.
@@ -138,7 +139,8 @@ void SVGPath::calculateAnimatedValue(SVGAnimationElement* animationElement,
     fromStream = copy.get();
   }
 
-  // If the 'from' value is given and it's length doesn't match the 'to' value list length, fallback to a discrete animation.
+  // If the 'from' value is given and it's length doesn't match the 'to' value
+  // list length, fallback to a discrete animation.
   if (fromStream->size() != toStream.size() && fromStream->size()) {
     if (percentage < 0.5) {
       if (!isToAnimation) {

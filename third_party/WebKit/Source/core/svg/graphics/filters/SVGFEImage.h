@@ -68,7 +68,8 @@ class FEImage final : public FilterEffect {
 
   RefPtr<Image> m_image;
 
-  // m_treeScope will never be a dangling reference. See https://bugs.webkit.org/show_bug.cgi?id=99243
+  // m_treeScope will never be a dangling reference. See
+  // https://bugs.webkit.org/show_bug.cgi?id=99243
   Member<TreeScope> m_treeScope;
   String m_href;
   Member<SVGPreserveAspectRatio> m_preserveAspectRatio;

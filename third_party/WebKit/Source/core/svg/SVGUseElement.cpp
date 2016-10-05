@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2004, 2005, 2006, 2007, 2008 Nikolas Zimmermann <zimmermann@kde.org>
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008 Nikolas Zimmermann
+ * <zimmermann@kde.org>
  * Copyright (C) 2004, 2005, 2006, 2007 Rob Buis <buis@kde.org>
  * Copyright (C) Research In Motion Limited 2009-2010. All rights reserved.
  * Copyright (C) 2011 Torch Mobile (Beijing) Co. Ltd. All rights reserved.
@@ -111,7 +112,8 @@ static inline bool isWellFormedDocument(Document* document) {
 
 Node::InsertionNotificationRequest SVGUseElement::insertedInto(
     ContainerNode* rootParent) {
-  // This functions exists to assure assumptions made in the code regarding SVGElementInstance creation/destruction are satisfied.
+  // This functions exists to assure assumptions made in the code regarding
+  // SVGElementInstance creation/destruction are satisfied.
   SVGGraphicsElement::insertedInto(rootParent);
   if (!rootParent->isConnected())
     return InsertionDone;
@@ -258,10 +260,12 @@ void SVGUseElement::svgAttributeChanged(const QualifiedName& attrName) {
 }
 
 static bool isDisallowedElement(const Element& element) {
-  // Spec: "Any 'svg', 'symbol', 'g', graphics element or other 'use' is potentially a template object that can be re-used
-  // (i.e., "instanced") in the SVG document via a 'use' element."
-  // "Graphics Element" is defined as 'circle', 'ellipse', 'image', 'line', 'path', 'polygon', 'polyline', 'rect', 'text'
-  // Excluded are anything that is used by reference or that only make sense to appear once in a document.
+  // Spec: "Any 'svg', 'symbol', 'g', graphics element or other 'use' is
+  // potentially a template object that can be re-used (i.e., "instanced") in
+  // the SVG document via a 'use' element." "Graphics Element" is defined as
+  // 'circle', 'ellipse', 'image', 'line', 'path', 'polygon', 'polyline',
+  // 'rect', 'text' Excluded are anything that is used by reference or that only
+  // make sense to appear once in a document.
   if (!element.isSVGElement())
     return true;
 
@@ -372,7 +376,8 @@ static inline void removeDisallowedElementsFromSubtree(SVGElement& subtree) {
     if (isDisallowedElement(*element)) {
       Element* next =
           ElementTraversal::nextSkippingChildren(*element, &subtree);
-      // The subtree is not in document so this won't generate events that could mutate the tree.
+      // The subtree is not in document so this won't generate events that could
+      // mutate the tree.
       element->parentNode()->removeChild(element);
       element = next;
     } else {
@@ -421,9 +426,9 @@ void SVGUseElement::buildShadowAndInstanceTree(SVGElement& target) {
   ASSERT(!m_targetElementInstance);
   ASSERT(!m_needsShadowTreeRecreation);
 
-  // <use> creates a "user agent" shadow root. Do not build the shadow/instance tree for <use>
-  // elements living in a user agent shadow tree because they will get expanded in a second
-  // pass -- see expandUseElementsInShadowTree().
+  // <use> creates a "user agent" shadow root. Do not build the shadow/instance
+  // tree for <use> elements living in a user agent shadow tree because they
+  // will get expanded in a second pass -- see expandUseElementsInShadowTree().
   if (inUseShadowTree())
     return;
 
@@ -432,7 +437,8 @@ void SVGUseElement::buildShadowAndInstanceTree(SVGElement& target) {
     return;
 
   // Set up root SVG element in shadow tree.
-  // Clone the target subtree into the shadow tree, not handling <use> and <symbol> yet.
+  // Clone the target subtree into the shadow tree, not handling <use> and
+  // <symbol> yet.
   Element* instanceRoot = createInstanceTree(target);
   m_targetElementInstance = toSVGElement(instanceRoot);
   ShadowRoot* shadowTreeRootElement = userAgentShadowRoot();
@@ -511,9 +517,9 @@ SVGGraphicsElement* SVGUseElement::visibleTargetGraphicsElementForClipping()
   if (!style || style->visibility() != EVisibility::Visible)
     return nullptr;
 
-  // Spec: "If a <use> element is a child of a clipPath element, it must directly
-  // reference <path>, <text> or basic shapes elements. Indirect references are an
-  // error and the clipPath element must be ignored."
+  // Spec: "If a <use> element is a child of a clipPath element, it must
+  // directly reference <path>, <text> or basic shapes elements. Indirect
+  // references are an error and the clipPath element must be ignored."
   // http://dev.w3.org/fxtf/css-masking-1/#the-clip-path
   if (!isDirectReference(element)) {
     // Spec: Indirect references are an error (14.3.5)
@@ -586,10 +592,10 @@ bool SVGUseElement::expandUseElementsInShadowTree() {
   // Why expand the <use> elements in the shadow tree here, and not just
   // do this directly in buildShadowTree, if we encounter a <use> element?
   //
-  // Short answer: Because we may miss to expand some elements. For example, if a <symbol>
-  // contains <use> tags, we'd miss them. So once we're done with setting up the
-  // actual shadow tree (after the special case modification for svg/symbol) we have
-  // to walk it completely and expand all <use> elements.
+  // Short answer: Because we may miss to expand some elements. For example, if
+  // a <symbol> contains <use> tags, we'd miss them. So once we're done with
+  // setting up the actual shadow tree (after the special case modification for
+  // svg/symbol) we have to walk it completely and expand all <use> elements.
   ShadowRoot* shadowRoot = userAgentShadowRoot();
   for (SVGUseElement* use = Traversal<SVGUseElement>::firstWithin(*shadowRoot);
        use;) {

@@ -191,7 +191,9 @@ FloatPoint SVGLengthContext::resolvePoint(const SVGElement* context,
     return FloatPoint(x.value(lengthContext), y.value(lengthContext));
   }
 
-  // FIXME: valueAsPercentage() won't be correct for eg. cm units. They need to be resolved in user space and then be considered in objectBoundingBox space.
+  // FIXME: valueAsPercentage() won't be correct for eg. cm units. They need to
+  // be resolved in user space and then be considered in objectBoundingBox
+  // space.
   return FloatPoint(x.valueAsPercentage(), y.valueAsPercentage());
 }
 
@@ -204,7 +206,9 @@ float SVGLengthContext::resolveLength(const SVGElement* context,
     return x.value(lengthContext);
   }
 
-  // FIXME: valueAsPercentage() won't be correct for eg. cm units. They need to be resolved in user space and then be considered in objectBoundingBox space.
+  // FIXME: valueAsPercentage() won't be correct for eg. cm units. They need to
+  // be resolved in user space and then be considered in objectBoundingBox
+  // space.
   return x.valueAsPercentage();
 }
 
@@ -393,8 +397,9 @@ float SVGLengthContext::convertValueFromUserUnitsToEXS(float value) const {
   if (!style)
     return 0;
 
-  // Use of ceil allows a pixel match to the W3Cs expected output of coords-units-03-b.svg
-  // if this causes problems in real world cases maybe it would be best to remove this
+  // Use of ceil allows a pixel match to the W3Cs expected output of
+  // coords-units-03-b.svg, if this causes problems in real world cases maybe it
+  // would be best to remove this.
   float xHeight =
       ceilf(style->getFontMetrics().xHeight() / style->effectiveZoom());
   if (!xHeight)
@@ -408,8 +413,9 @@ float SVGLengthContext::convertValueFromEXSToUserUnits(float value) const {
   if (!style)
     return 0;
 
-  // Use of ceil allows a pixel match to the W3Cs expected output of coords-units-03-b.svg
-  // if this causes problems in real world cases maybe it would be best to remove this
+  // Use of ceil allows a pixel match to the W3Cs expected output of
+  // coords-units-03-b.svg, if this causes problems in real world cases maybe it
+  // would be best to remove this.
   return value *
          ceilf(style->getFontMetrics().xHeight() / style->effectiveZoom());
 }

@@ -33,9 +33,9 @@ static inline bool isValidRange(const FloatType& x) {
   return x >= -max && x <= max;
 }
 
-// We use this generic parseNumber function to allow the Path parsing code to work
-// at a higher precision internally, without any unnecessary runtime cost or code
-// complexity.
+// We use this generic parseNumber function to allow the Path parsing code to
+// work at a higher precision internally, without any unnecessary runtime cost
+// or code complexity.
 template <typename CharType, typename FloatType>
 static bool genericParseNumber(const CharType*& cursor,
                                const CharType* end,

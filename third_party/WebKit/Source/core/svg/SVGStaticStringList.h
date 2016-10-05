@@ -40,7 +40,8 @@ namespace blink {
 class SVGElement;
 
 // SVGStringList property implementations for SVGTests properties.
-// Inherits SVGAnimatedPropertyBase to enable XML attribute synchronization, but this is never animated.
+// Inherits SVGAnimatedPropertyBase to enable XML attribute synchronization, but
+// this is never animated.
 class SVGStaticStringList final : public SVGAnimatedPropertyBase {
  public:
   static SVGStaticStringList* create(SVGElement* contextElement,

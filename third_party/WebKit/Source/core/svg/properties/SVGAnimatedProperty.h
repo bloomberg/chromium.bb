@@ -160,8 +160,9 @@ template <typename Property,
 class SVGAnimatedProperty : public SVGAnimatedPropertyCommon<Property> {
  public:
   bool needsSynchronizeAttribute() override {
-    // DOM attribute synchronization is only needed if tear-off is being touched from javascript or the property is being animated.
-    // This prevents unnecessary attribute creation on target element.
+    // DOM attribute synchronization is only needed if tear-off is being touched
+    // from javascript or the property is being animated.  This prevents
+    // unnecessary attribute creation on target element.
     return m_baseValueUpdated || this->isAnimating();
   }
 
@@ -172,8 +173,8 @@ class SVGAnimatedProperty : public SVGAnimatedPropertyCommon<Property> {
 
   // SVGAnimated* DOM Spec implementations:
 
-  // baseVal()/setBaseVal()/animVal() are only to be used from SVG DOM implementation.
-  // Use currentValue() from C++ code.
+  // baseVal()/setBaseVal()/animVal() are only to be used from SVG DOM
+  // implementation.  Use currentValue() from C++ code.
   PrimitiveType baseVal() { return this->baseValue()->value(); }
 
   void setBaseVal(PrimitiveType value, ExceptionState& exceptionState) {
@@ -235,8 +236,9 @@ class SVGAnimatedProperty<Property, TearOffType, void>
   }
 
   bool needsSynchronizeAttribute() override {
-    // DOM attribute synchronization is only needed if tear-off is being touched from javascript or the property is being animated.
-    // This prevents unnecessary attribute creation on target element.
+    // DOM attribute synchronization is only needed if tear-off is being touched
+    // from javascript or the property is being animated.  This prevents
+    // unnecessary attribute creation on target element.
     return m_baseValTearOff || this->isAnimating();
   }
 
@@ -310,7 +312,8 @@ class SVGAnimatedProperty<Property, void, void>
   }
 
   bool needsSynchronizeAttribute() override {
-    // DOM attribute synchronization is only needed if the property is being animated.
+    // DOM attribute synchronization is only needed if the property is being
+    // animated.
     return this->isAnimating();
   }
 

@@ -217,8 +217,9 @@ void SVGSMILElement::buildPendingResource() {
       ASSERT(hasPendingResources());
     }
   } else {
-    // Register us with the target in the dependencies map. Any change of hrefElement
-    // that leads to relayout/repainting now informs us, so we can react to it.
+    // Register us with the target in the dependencies map. Any change of
+    // hrefElement that leads to relayout/repainting now informs us, so we can
+    // react to it.
     addReferenceTo(svgTarget);
   }
   connectEventBaseConditions();
@@ -295,7 +296,8 @@ Node::InsertionNotificationRequest SVGSMILElement::insertedInto(
   ASSERT(m_timeContainer);
   m_timeContainer->setDocumentOrderIndexesDirty();
 
-  // "If no attribute is present, the default begin value (an offset-value of 0) must be evaluated."
+  // "If no attribute is present, the default begin value (an offset-value of 0)
+  // must be evaluated."
   if (!fastHasAttribute(SVGNames::beginAttr))
     m_beginTimes.append(SMILTimeWithOrigin());
 
@@ -531,7 +533,8 @@ void SVGSMILElement::svgAttributeChanged(const QualifiedName& attrName) {
         this, fastGetAttribute(SVGNames::attributeNameAttr)));
   } else if (attrName.matches(SVGNames::hrefAttr) ||
              attrName.matches(XLinkNames::hrefAttr)) {
-    // TODO(fs): Could be smarter here when 'href' is specified and 'xlink:href' is changed.
+    // TODO(fs): Could be smarter here when 'href' is specified and 'xlink:href'
+    // is changed.
     SVGElement::InvalidationGuard invalidationGuard(this);
     buildPendingResource();
     if (m_targetElement)
@@ -661,7 +664,8 @@ void SVGSMILElement::setTargetElement(SVGElement* target) {
     disconnectSyncBaseConditions();
   }
 
-  // If the animation state is not Inactive, always reset to a clear state before leaving the old target element.
+  // If the animation state is not Inactive, always reset to a clear state
+  // before leaving the old target element.
   if (m_activeState != Inactive)
     endedActiveInterval();
 
@@ -795,7 +799,8 @@ SMILTime SVGSMILElement::findInstanceTime(BeginOrEnd beginOrEnd,
     return SMILTime::unresolved();
   const SMILTime& currentTime = list[indexOfResult].time();
 
-  // The special value "indefinite" does not yield an instance time in the begin list.
+  // The special value "indefinite" does not yield an instance time in the begin
+  // list.
   if (currentTime.isIndefinite() && beginOrEnd == Begin)
     return SMILTime::unresolved();
 
@@ -1010,26 +1015,32 @@ void SVGSMILElement::seekToIntervalCorrespondingToTime(SMILTime elapsed) {
   ASSERT(!m_isWaitingForFirstInterval);
   ASSERT(elapsed >= m_interval.begin);
 
-  // Manually seek from interval to interval, just as if the animation would run regulary.
+  // Manually seek from interval to interval, just as if the animation would run
+  // regulary.
   while (true) {
-    // Figure out the next value in the begin time list after the current interval begin.
+    // Figure out the next value in the begin time list after the current
+    // interval begin.
     SMILTime nextBegin = findInstanceTime(Begin, m_interval.begin, false);
 
-    // If the 'nextBegin' time is unresolved (eg. just one defined interval), we're done seeking.
+    // If the 'nextBegin' time is unresolved (eg. just one defined interval),
+    // we're done seeking.
     if (nextBegin.isUnresolved())
       return;
 
-    // If the 'nextBegin' time is larger than or equal to the current interval end time, we're done seeking.
-    // If the 'elapsed' time is smaller than the next begin interval time, we're done seeking.
+    // If the 'nextBegin' time is larger than or equal to the current interval
+    // end time, we're done seeking.  If the 'elapsed' time is smaller than the
+    // next begin interval time, we're done seeking.
     if (nextBegin < m_interval.end && elapsed >= nextBegin) {
-      // End current interval, and start a new interval from the 'nextBegin' time.
+      // End current interval, and start a new interval from the 'nextBegin'
+      // time.
       m_interval.end = nextBegin;
       if (!resolveNextInterval())
         break;
       continue;
     }
 
-    // If the desired 'elapsed' time is past the current interval, advance to the next.
+    // If the desired 'elapsed' time is past the current interval, advance to
+    // the next.
     if (elapsed >= m_interval.end) {
       if (!resolveNextInterval())
         break;
@@ -1078,11 +1089,13 @@ float SVGSMILElement::calculateAnimationPercentAndRepeat(
 
 SMILTime SVGSMILElement::calculateNextProgressTime(SMILTime elapsed) const {
   if (m_activeState == Active) {
-    // If duration is indefinite the value does not actually change over time. Same is true for <set>.
+    // If duration is indefinite the value does not actually change over time.
+    // Same is true for <set>.
     SMILTime simpleDuration = this->simpleDuration();
     if (simpleDuration.isIndefinite() || isSVGSetElement(*this)) {
       SMILTime repeatingDurationEnd = m_interval.begin + repeatingDuration();
-      // We are supposed to do freeze semantics when repeating ends, even if the element is still active.
+      // We are supposed to do freeze semantics when repeating ends, even if the
+      // element is still active.
       // Take care that we get a timer callback at that point.
       if (elapsed < repeatingDurationEnd &&
           repeatingDurationEnd < m_interval.end &&
@@ -1105,7 +1118,8 @@ SVGSMILElement::ActiveState SVGSMILElement::determineActiveState(
 }
 
 bool SVGSMILElement::isContributing(SMILTime elapsed) const {
-  // Animation does not contribute during the active time if it is past its repeating duration and has fill=remove.
+  // Animation does not contribute during the active time if it is past its
+  // repeating duration and has fill=remove.
   return (m_activeState == Active &&
           (fill() == FillFreeze ||
            elapsed <= m_interval.begin + repeatingDuration())) ||
@@ -1139,7 +1153,8 @@ bool SVGSMILElement::progress(SMILTime elapsed, bool seekToTime) {
     resolveFirstInterval();
   }
 
-  // This call may obtain a new interval -- never call calculateAnimationPercentAndRepeat() before!
+  // This call may obtain a new interval -- never call
+  // calculateAnimationPercentAndRepeat() before!
   if (seekToTime) {
     seekToIntervalCorrespondingToTime(elapsed);
     if (elapsed < m_interval.begin) {
@@ -1199,8 +1214,10 @@ bool SVGSMILElement::progress(SMILTime elapsed, bool seekToTime) {
 
 void SVGSMILElement::notifyDependentsIntervalChanged() {
   ASSERT(m_interval.begin.isFinite());
-  // |loopBreaker| is used to avoid infinite recursions which may be caused from:
-  // |notifyDependentsIntervalChanged| -> |createInstanceTimesFromSyncbase| -> |add{Begin,End}Time| -> |{begin,end}TimeChanged| -> |notifyDependentsIntervalChanged|
+  // |loopBreaker| is used to avoid infinite recursions which may be caused by:
+  // |notifyDependentsIntervalChanged| -> |createInstanceTimesFromSyncbase| ->
+  // |add{Begin,End}Time| -> |{begin,end}TimeChanged| ->
+  // |notifyDependentsIntervalChanged|
   //
   // As the set here records SVGSMILElements on the stack, it is acceptable to
   // use a HashSet of untraced heap references -- any conservative GC which
@@ -1216,14 +1233,15 @@ void SVGSMILElement::notifyDependentsIntervalChanged() {
 }
 
 void SVGSMILElement::createInstanceTimesFromSyncbase(SVGSMILElement* syncBase) {
-  // FIXME: To be really correct, this should handle updating exising interval by changing
-  // the associated times instead of creating new ones.
+  // FIXME: To be really correct, this should handle updating exising interval
+  // by changing the associated times instead of creating new ones.
   for (unsigned n = 0; n < m_conditions.size(); ++n) {
     Condition* condition = m_conditions[n].get();
     if (condition->getType() == Condition::Syncbase &&
         condition->syncBase() == syncBase) {
       ASSERT(condition->name() == "begin" || condition->name() == "end");
-      // No nested time containers in SVG, no need for crazy time space conversions. Phew!
+      // No nested time containers in SVG, no need for crazy time space
+      // conversions. Phew!
       SMILTime time = 0;
       if (condition->name() == "begin")
         time = syncBase->m_interval.begin + condition->offset();

@@ -85,7 +85,8 @@ class CORE_EXPORT SVGElement : public Element {
   bool instanceUpdatesBlocked() const;
   void setInstanceUpdatesBlocked(bool);
 
-  // Records the SVG element as having a Web Animation on an SVG attribute that needs applying.
+  // Records the SVG element as having a Web Animation on an SVG attribute that
+  // needs applying.
   void setWebAnimationsPending();
   void applyActiveWebAnimations();
 

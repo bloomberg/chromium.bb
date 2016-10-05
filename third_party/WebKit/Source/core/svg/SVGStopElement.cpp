@@ -62,9 +62,10 @@ bool SVGStopElement::layoutObjectIsNeeded(const ComputedStyle&) {
 Color SVGStopElement::stopColorIncludingOpacity() const {
   const ComputedStyle* style =
       layoutObject() ? layoutObject()->style() : nullptr;
-  // FIXME: This check for null style exists to address Bug WK 90814, a rare crash condition in
-  // which the layoutObject or style is null. This entire class is scheduled for removal (Bug WK 86941)
-  // and we will tolerate this null check until then.
+  // FIXME: This check for null style exists to address Bug WK 90814, a rare
+  // crash condition in which the layoutObject or style is null. This entire
+  // class is scheduled for removal (Bug WK 86941) and we will tolerate this
+  // null check until then.
   if (!style)
     return Color(Color::transparent);  // Transparent black.
 

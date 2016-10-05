@@ -166,7 +166,9 @@ void SVGLengthTearOff::setValueInSpecifiedUnits(
 }
 
 String SVGLengthTearOff::valueAsString() {
-  // TODO(shanmuga.m@samsung.com): Not all <length> properties have 0 (with no unit) as the default (lacuna) value, Need to return default value instead of 0
+  // TODO(shanmuga.m@samsung.com): Not all <length> properties have 0 (with no
+  // unit) as the default (lacuna) value. We need to return default value
+  // instead of 0.
   return hasExposedLengthUnit() ? target()->valueAsString() : String::number(0);
 }
 

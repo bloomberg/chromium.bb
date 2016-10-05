@@ -185,7 +185,8 @@ void SVGListPropertyHelper<Derived, ItemProperty>::clear() {
 template <typename Derived, typename ItemProperty>
 ItemProperty* SVGListPropertyHelper<Derived, ItemProperty>::initialize(
     ItemProperty* newItem) {
-  // Spec: Clears all existing current items from the list and re-initializes the list to hold the single item specified by the parameter.
+  // Spec: Clears all existing current items from the list and re-initializes
+  // the list to hold the single item specified by the parameter.
   clear();
   append(newItem);
   return newItem;
@@ -207,12 +208,15 @@ template <typename Derived, typename ItemProperty>
 ItemProperty* SVGListPropertyHelper<Derived, ItemProperty>::insertItemBefore(
     ItemProperty* newItem,
     size_t index) {
-  // Spec: If the index is greater than or equal to length, then the new item is appended to the end of the list.
+  // Spec: If the index is greater than or equal to length, then the new item is
+  // appended to the end of the list.
   if (index > m_values.size())
     index = m_values.size();
 
-  // Spec: Inserts a new item into the list at the specified position. The index of the item before which the new item is to be
-  // inserted. The first item is number 0. If the index is equal to 0, then the new item is inserted at the front of the list.
+  // Spec: Inserts a new item into the list at the specified position. The index
+  // of the item before which the new item is to be inserted. The first item is
+  // number 0. If the index is equal to 0, then the new item is inserted at the
+  // front of the list.
   m_values.insert(index, newItem);
   newItem->setOwnerList(this);
 
@@ -254,7 +258,8 @@ ItemProperty* SVGListPropertyHelper<Derived, ItemProperty>::replaceItem(
     return nullptr;
 
   if (m_values.isEmpty()) {
-    // 'newItem' already lived in our list, we removed it, and now we're empty, which means there's nothing to replace.
+    // 'newItem' already lived in our list, we removed it, and now we're empty,
+    // which means there's nothing to replace.
     exceptionState.throwDOMException(
         IndexSizeError,
         String::format("Failed to replace the provided item at index %zu.",
@@ -315,7 +320,8 @@ bool SVGListPropertyHelper<Derived, ItemProperty>::adjustFromToListValues(
   if (!toListSize)
     return false;
 
-  // If the 'from' value is given and it's length doesn't match the 'to' value list length, fallback to a discrete animation.
+  // If the 'from' value is given and it's length doesn't match the 'to' value
+  // list length, fallback to a discrete animation.
   size_t fromListSize = fromList->length();
   if (fromListSize != toListSize && fromListSize) {
     if (percentage < 0.5) {

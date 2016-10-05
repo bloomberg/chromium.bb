@@ -68,13 +68,15 @@ class SVGLength final : public SVGPropertyBase {
 
   const CSSPrimitiveValue* asCSSPrimitiveValue() const { return m_value.get(); }
 
-  // Resolves LengthTypePercentage into a normalized floating point number (full value is 1.0).
+  // Resolves LengthTypePercentage into a normalized floating point number (full
+  // value is 1.0).
   float valueAsPercentage() const;
 
   // Returns a number to be used as percentage (so full value is 100)
   float valueAsPercentage100() const;
 
-  // Scale the input value by this SVGLength. Higher precision than input * valueAsPercentage().
+  // Scale the input value by this SVGLength. Higher precision than input *
+  // valueAsPercentage().
   float scaleByPercentage(float) const;
 
   String valueAsString() const override;

@@ -194,14 +194,15 @@ Node::InsertionNotificationRequest SVGImageElement::insertedInto(
   if (!rootParent->isConnected())
     return InsertionDone;
 
-  // We can only resolve base URIs properly after tree insertion - hence, URI mutations while
-  // detached are deferred until this point.
+  // We can only resolve base URIs properly after tree insertion - hence, URI
+  // mutations while detached are deferred until this point.
   if (m_needsLoaderURIUpdate) {
     imageLoader().updateFromElement(ImageLoader::UpdateIgnorePreviousError);
     m_needsLoaderURIUpdate = false;
   } else {
-    // A previous loader update may have failed to actually fetch the image if the document
-    // was inactive. In that case, force a re-update (but don't clear previous errors).
+    // A previous loader update may have failed to actually fetch the image if
+    // the document was inactive. In that case, force a re-update (but don't
+    // clear previous errors).
     if (!imageLoader().image())
       imageLoader().updateFromElement();
   }

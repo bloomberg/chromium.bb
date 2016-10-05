@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2004, 2005, 2006, 2007, 2008 Nikolas Zimmermann <zimmermann@kde.org>
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008 Nikolas Zimmermann
+ * <zimmermann@kde.org>
  * Copyright (C) 2004, 2005, 2006, 2008 Rob Buis <buis@kde.org>
  * Copyright (C) 2008 Apple Inc. All rights reserved.
  * Copyright (C) 2008 Alp Toker <alp@atoker.com>
@@ -100,8 +101,9 @@ short SVGElement::tabIndex() const {
 void SVGElement::willRecalcStyle(StyleRecalcChange change) {
   if (!hasSVGRareData())
     return;
-  // If the style changes because of a regular property change (not induced by SMIL animations themselves)
-  // reset the "computed style without SMIL style properties", so the base value change gets reflected.
+  // If the style changes because of a regular property change (not induced by
+  // SMIL animations themselves) reset the "computed style without SMIL style
+  // properties", so the base value change gets reflected.
   if (change > NoChange || needsStyleRecalc())
     svgRareData()->setNeedsOverrideComputedStyleUpdate();
 }
@@ -119,15 +121,16 @@ void SVGElement::buildPendingResourcesIfNeeded() {
   // Mark pending resources as pending for removal.
   extensions.markPendingResourcesForRemoval(resourceId);
 
-  // Rebuild pending resources for each client of a pending resource that is being removed.
+  // Rebuild pending resources for each client of a pending resource that is
+  // being removed.
   while (
       Element* clientElement =
           extensions.removeElementFromPendingResourcesForRemoval(resourceId)) {
     ASSERT(clientElement->hasPendingResources());
     if (clientElement->hasPendingResources()) {
-      // FIXME: Ideally we'd always resolve pending resources async instead of inside
-      // insertedInto and svgAttributeChanged. For now we only do it for <use> since
-      // that would stamp out DOM.
+      // FIXME: Ideally we'd always resolve pending resources async instead of
+      // inside insertedInto and svgAttributeChanged. For now we only do it for
+      // <use> since that would stamp out DOM.
       if (isSVGUseElement(clientElement))
         toSVGUseElement(clientElement)->invalidateShadowTree();
       else
@@ -149,22 +152,25 @@ bool SVGElement::isOutermostSVGSVGElement() const {
   if (!isSVGSVGElement(*this))
     return false;
 
-  // Element may not be in the document, pretend we're outermost for viewport(), getCTM(), etc.
+  // Element may not be in the document, pretend we're outermost for viewport(),
+  // getCTM(), etc.
   if (!parentNode())
     return true;
 
-  // We act like an outermost SVG element, if we're a direct child of a <foreignObject> element.
+  // We act like an outermost SVG element, if we're a direct child of a
+  // <foreignObject> element.
   if (isSVGForeignObjectElement(*parentNode()))
     return true;
 
-  // If we're living in a shadow tree, we're a <svg> element that got created as replacement
-  // for a <symbol> element or a cloned <svg> element in the referenced tree. In that case
-  // we're always an inner <svg> element.
+  // If we're living in a shadow tree, we're a <svg> element that got created as
+  // replacement for a <symbol> element or a cloned <svg> element in the
+  // referenced tree. In that case we're always an inner <svg> element.
   if (inUseShadowTree() && parentOrShadowHostElement() &&
       parentOrShadowHostElement()->isSVGElement())
     return false;
 
-  // This is true whenever this is the outermost SVG, even if there are HTML elements outside it
+  // This is true whenever this is the outermost SVG, even if there are HTML
+  // elements outside it
   return !parentNode()->isSVGElement();
 }
 
@@ -181,8 +187,9 @@ void SVGElement::reportAttributeParsingError(SVGParsingError error,
 }
 
 String SVGElement::title() const {
-  // According to spec, we should not return titles when hovering over root <svg> elements (those
-  // <title> elements are the title of the document, not a tooltip) so we instantly return.
+  // According to spec, we should not return titles when hovering over root
+  // <svg> elements (those <title> elements are the title of the document, not a
+  // tooltip) so we instantly return.
   if (isOutermostSVGSVGElement())
     return String();
 
@@ -192,8 +199,8 @@ String SVGElement::title() const {
       return useTitle;
   }
 
-  // If we aren't an instance in a <use> or the <use> title was not found, then find the first
-  // <title> child of this element.
+  // If we aren't an instance in a <use> or the <use> title was not found, then
+  // find the first <title> child of this element.
   // If a title child was found, return the text contents.
   if (Element* titleElement = Traversal<SVGTitleElement>::firstChild(*this))
     return titleElement->innerText();
@@ -301,7 +308,8 @@ void SVGElement::clearAnimatedAttribute(const QualifiedName& attribute) {
 }
 
 AffineTransform SVGElement::localCoordinateSpaceTransform(CTMScope) const {
-  // To be overriden by SVGGraphicsElement (or as special case SVGTextElement and SVGPatternElement)
+  // To be overriden by SVGGraphicsElement (or as special case SVGTextElement
+  // and SVGPatternElement)
   return AffineTransform();
 }
 
@@ -317,9 +325,10 @@ void SVGElement::removedFrom(ContainerNode* rootParent) {
   bool wasInDocument = rootParent->isConnected();
 
   if (wasInDocument && hasRelativeLengths()) {
-    // The root of the subtree being removed should take itself out from its parent's relative
-    // length set. For the other nodes in the subtree we don't need to do anything: they will
-    // get their own removedFrom() notification and just clear their sets.
+    // The root of the subtree being removed should take itself out from its
+    // parent's relative length set. For the other nodes in the subtree we don't
+    // need to do anything: they will get their own removedFrom() notification
+    // and just clear their sets.
     if (rootParent->isSVGElement() && !parentNode()) {
       ASSERT(toSVGElement(rootParent)
                  ->m_elementsWithRelativeLengths.contains(this));
@@ -359,7 +368,8 @@ CSSPropertyID SVGElement::cssPropertyIdForSVGAttributeName(
   static HashMap<StringImpl*, CSSPropertyID>* propertyNameToIdMap = 0;
   if (!propertyNameToIdMap) {
     propertyNameToIdMap = new HashMap<StringImpl*, CSSPropertyID>;
-    // This is a list of all base CSS and SVG CSS properties which are exposed as SVG XML attributes
+    // This is a list of all base CSS and SVG CSS properties which are exposed
+    // as SVG XML attributes
     const QualifiedName* const attrNames[] = {
         &alignment_baselineAttr,
         &baseline_shiftAttr,
@@ -434,13 +444,15 @@ void SVGElement::updateRelativeLengthsInformation(bool clientHasRelativeLengths,
                                                   SVGElement* clientElement) {
   ASSERT(clientElement);
 
-  // If we're not yet in a document, this function will be called again from insertedInto(). Do nothing now.
+  // If we're not yet in a document, this function will be called again from
+  // insertedInto(). Do nothing now.
   if (!isConnected())
     return;
 
   // An element wants to notify us that its own relative lengths state changed.
-  // Register it in the relative length map, and register us in the parent relative length map.
-  // Register the parent in the grandparents map, etc. Repeat procedure until the root of the SVG tree.
+  // Register it in the relative length map, and register us in the parent
+  // relative length map.  Register the parent in the grandparents map, etc.
+  // Repeat procedure until the root of the SVG tree.
   for (Node& currentNode : NodeTraversal::inclusiveAncestorsOf(*this)) {
     if (!currentNode.isSVGElement())
       break;
@@ -453,7 +465,8 @@ void SVGElement::updateRelativeLengthsInformation(bool clientHasRelativeLengths,
     else
       currentElement.m_elementsWithRelativeLengths.remove(clientElement);
 
-    // If the relative length state hasn't changed, we can stop propagating the notification.
+    // If the relative length state hasn't changed, we can stop propagating the
+    // notification.
     if (hadRelativeLengths == currentElement.hasRelativeLengths())
       return;
 
@@ -512,8 +525,9 @@ SVGSVGElement* SVGElement::ownerSVGElement() const {
 }
 
 SVGElement* SVGElement::viewportElement() const {
-  // This function needs shadow tree support - as LayoutSVGContainer uses this function
-  // to determine the "overflow" property. <use> on <symbol> wouldn't work otherwhise.
+  // This function needs shadow tree support - as LayoutSVGContainer uses this
+  // function to determine the "overflow" property. <use> on <symbol> wouldn't
+  // work otherwhise.
   ContainerNode* n = parentOrShadowHostNode();
   while (n) {
     if (isSVGSVGElement(*n) || isSVGImageElement(*n) || isSVGSymbolElement(*n))
@@ -829,11 +843,13 @@ bool SVGElement::sendSVGLoadEventIfPossible() {
 }
 
 void SVGElement::sendSVGLoadEventToSelfAndAncestorChainIfPossible() {
-  // Let Document::implicitClose() dispatch the 'load' to the outermost SVG root.
+  // Let Document::implicitClose() dispatch the 'load' to the outermost SVG
+  // root.
   if (isOutermostSVGSVGElement())
     return;
 
-  // Save the next parent to dispatch to in case dispatching the event mutates the tree.
+  // Save the next parent to dispatch to in case dispatching the event mutates
+  // the tree.
   Element* parent = parentOrShadowHostElement();
   if (!sendSVGLoadEventIfPossible())
     return;
@@ -858,8 +874,9 @@ void SVGElement::attributeChanged(const QualifiedName& name,
   if (name == HTMLNames::idAttr)
     rebuildAllIncomingReferences();
 
-  // Changes to the style attribute are processed lazily (see Element::getAttribute() and related methods),
-  // so we don't want changes to the style attribute to result in extra work here.
+  // Changes to the style attribute are processed lazily (see
+  // Element::getAttribute() and related methods), so we don't want changes to
+  // the style attribute to result in extra work here.
   if (name == HTMLNames::styleAttr)
     return;
 
@@ -881,7 +898,8 @@ void SVGElement::svgAttributeChanged(const QualifiedName& attrName) {
 
   if (attrName == HTMLNames::idAttr) {
     LayoutObject* object = layoutObject();
-    // Notify resources about id changes, this is important as we cache resources by id in SVGDocumentExtensions
+    // Notify resources about id changes, this is important as we cache
+    // resources by id in SVGDocumentExtensions
     if (object && object->isSVGResourceContainer())
       toLayoutSVGResourceContainer(object)->idChanged();
     if (isConnected())
@@ -897,7 +915,8 @@ void SVGElement::svgAttributeBaseValChanged(const QualifiedName& attribute) {
   if (!hasSVGRareData() || svgRareData()->webAnimatedAttributes().isEmpty())
     return;
 
-  // TODO(alancutter): Only mark attributes as dirty if their animation depends on the underlying value.
+  // TODO(alancutter): Only mark attributes as dirty if their animation depends
+  // on the underlying value.
   svgRareData()->setWebAnimatedAttributesDirty(true);
   elementData()->m_animatedSVGAttributesAreDirty = true;
 }
@@ -919,7 +938,8 @@ void SVGElement::synchronizeAnimatedSVGAttribute(
   if (!elementData() || !elementData()->m_animatedSVGAttributesAreDirty)
     return;
 
-  // We const_cast here because we have deferred baseVal mutation animation updates to this point in time.
+  // We const_cast here because we have deferred baseVal mutation animation
+  // updates to this point in time.
   const_cast<SVGElement*>(this)->ensureAttributeAnimValUpdated();
 
   if (name == anyQName()) {
@@ -1172,7 +1192,8 @@ void SVGElement::rebuildAllIncomingReferences() {
 
   // Force rebuilding the |sourceElement| so it knows about this change.
   for (SVGElement* sourceElement : incomingReferencesSnapshot) {
-    // Before rebuilding |sourceElement| ensure it was not removed from under us.
+    // Before rebuilding |sourceElement| ensure it was not removed from under
+    // us.
     if (incomingReferences.contains(sourceElement))
       sourceElement->svgAttributeChanged(SVGNames::hrefAttr);
   }

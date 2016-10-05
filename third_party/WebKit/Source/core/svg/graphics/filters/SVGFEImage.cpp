@@ -109,7 +109,8 @@ FloatRect FEImage::mapInputs(const FloatRect&) const {
     SVGElement* contextNode = toSVGElement(layoutObject->node());
 
     if (contextNode->hasRelativeLengths()) {
-      // FIXME: This fixes relative lengths but breaks non-relative ones (see crbug/260709).
+      // FIXME: This fixes relative lengths but breaks non-relative ones (see
+      // crbug/260709).
       SVGLengthContext lengthContext(contextNode);
       FloatSize viewportSize;
       if (lengthContext.determineViewport(viewportSize)) {
@@ -166,8 +167,10 @@ sk_sp<SkImageFilter> FEImage::createImageFilterForLayoutObject(
     SVGLengthContext lengthContext(contextNode);
     FloatSize viewportSize;
 
-    // If we're referencing an element with percentage units, eg. <rect with="30%"> those values were resolved against the viewport.
-    // Build up a transformation that maps from the viewport space to the filter primitive subregion.
+    // If we're referencing an element with percentage units, eg. <rect
+    // with="30%"> those values were resolved against the viewport.  Build up a
+    // transformation that maps from the viewport space to the filter primitive
+    // subregion.
     if (lengthContext.determineViewport(viewportSize))
       transform =
           makeMapBetweenRects(FloatRect(FloatPoint(), viewportSize), dstRect);
@@ -191,10 +194,10 @@ sk_sp<SkImageFilter> FEImage::createImageFilter() {
 
   sk_sp<SkImage> image = m_image ? m_image->imageForCurrentFrame() : nullptr;
   if (!image) {
-    // "A href reference that is an empty image (zero width or zero height), that fails
-    // to download, is non-existent, or that cannot be displayed (e.g. because it is
-    // not in a supported image format) fills the filter primitive subregion with
-    // transparent black."
+    // "A href reference that is an empty image (zero width or zero height),
+    //  that fails to download, is non-existent, or that cannot be displayed
+    //  (e.g. because it is not in a supported image format) fills the filter
+    //  primitive subregion with transparent black."
     return createTransparentBlack();
   }
 

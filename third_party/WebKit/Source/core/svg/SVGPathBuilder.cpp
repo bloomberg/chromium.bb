@@ -30,8 +30,8 @@ namespace blink {
 FloatPoint SVGPathBuilder::smoothControl(bool isCompatibleSegment) const {
   // The control point is assumed to be the reflection of the control point on
   // the previous command relative to the current point. If there is no previous
-  // command or if the previous command was not a [quad/cubic], assume the control
-  // point is coincident with the current point.
+  // command or if the previous command was not a [quad/cubic], assume the
+  // control point is coincident with the current point.
   // [https://www.w3.org/TR/SVG/paths.html#PathDataCubicBezierCommands]
   // [https://www.w3.org/TR/SVG/paths.html#PathDataQuadraticBezierCommands]
   FloatPoint controlPoint = m_currentPoint;

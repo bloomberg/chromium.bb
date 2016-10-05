@@ -62,7 +62,8 @@ SVGParsingError buildByteStreamFromString(const String& d,
   if (d.isEmpty())
     return SVGParseStatus::NoError;
 
-  // The string length is typically a minor overestimate of eventual byte stream size, so it avoids us a lot of reallocs.
+  // The string length is typically a minor overestimate of eventual byte stream
+  // size, so it avoids us a lot of reallocs.
   result.reserveInitialCapacity(d.length());
 
   SVGPathByteStreamBuilder builder(result);

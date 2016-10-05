@@ -76,7 +76,8 @@ class SVGEnumerationBase : public SVGPropertyBase {
     return entries.last().first;
   }
 
-  // This is the maximum value that is exposed as an IDL constant on the relevant interface.
+  // This is the maximum value that is exposed as an IDL constant on the
+  // relevant interface.
   unsigned short maxExposedEnumValue() const { return m_maxExposed; }
 
  protected:

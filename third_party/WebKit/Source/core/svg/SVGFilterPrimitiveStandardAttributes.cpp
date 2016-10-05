@@ -51,11 +51,13 @@ SVGFilterPrimitiveStandardAttributes::SVGFilterPrimitiveStandardAttributes(
       m_result(SVGAnimatedString::create(this,
                                          SVGNames::resultAttr,
                                          SVGString::create())) {
-  // Spec: If the x/y attribute is not specified, the effect is as if a value of "0%" were specified.
+  // Spec: If the x/y attribute is not specified, the effect is as if a value of
+  // "0%" were specified.
   m_x->setDefaultValueAsString("0%");
   m_y->setDefaultValueAsString("0%");
 
-  // Spec: If the width/height attribute is not specified, the effect is as if a value of "100%" were specified.
+  // Spec: If the width/height attribute is not specified, the effect is as if a
+  // value of "100%" were specified.
   m_width->setDefaultValueAsString("100%");
   m_height->setDefaultValueAsString("100%");
 

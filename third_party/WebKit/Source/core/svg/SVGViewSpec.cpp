@@ -30,11 +30,13 @@
 namespace blink {
 
 SVGViewSpec::SVGViewSpec(SVGSVGElement* contextElement)
-    // Note: addToPropertyMap is not needed, as SVGViewSpec do not correspond to an element.
-    // Note: We make tear-offs' contextElement the target element of SVGViewSpec.
-    // This contextElement will be only used for keeping this alive from the tearoff.
-    // SVGSVGElement holds a strong-ref to this SVGViewSpec, so this is kept alive as:
-    // AnimatedProperty tearoff -(contextElement)-> SVGSVGElement -(RefPtr)-> SVGViewSpec.
+    // Note: addToPropertyMap is not needed, as SVGViewSpec do not correspond to
+    // an element.  We make tear-offs' contextElement the target element of
+    // SVGViewSpec.  This contextElement will be only used for keeping this
+    // alive from the tearoff.  SVGSVGElement holds a strong-ref to this
+    // SVGViewSpec, so this is kept alive as:
+    // AnimatedProperty tearoff -(contextElement)-> SVGSVGElement -(RefPtr)->
+    //    SVGViewSpec.
     : SVGFitToViewBox(contextElement, PropertyMapPolicySkip),
       m_contextElement(contextElement),
       m_transform(
@@ -46,7 +48,8 @@ SVGViewSpec::SVGViewSpec(SVGSVGElement* contextElement)
   viewBox()->setReadOnly();
   preserveAspectRatio()->setReadOnly();
   m_transform->setReadOnly();
-  // Note: addToPropertyMap is not needed, as SVGViewSpec do not correspond to an element.
+  // Note: addToPropertyMap is not needed, as SVGViewSpec do not correspond to
+  // an element.
 }
 
 DEFINE_TRACE(SVGViewSpec) {

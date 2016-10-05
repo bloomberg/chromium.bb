@@ -334,7 +334,8 @@ void SVGAngle::convertToSpecifiedUnits(SVGAngleType unitType) {
       }
       break;
     case kSvgAngletypeUnspecified:
-    // Spec: For angles, a unitless value is treated the same as if degrees were specified.
+    // Spec: For angles, a unitless value is treated the same as if degrees were
+    // specified.
     case kSvgAngletypeDeg:
       switch (unitType) {
         case kSvgAngletypeRad:
@@ -366,7 +367,8 @@ void SVGAngle::convertToSpecifiedUnits(SVGAngleType unitType) {
 void SVGAngle::add(SVGPropertyBase* other, SVGElement*) {
   SVGAngle* otherAngle = toSVGAngle(other);
 
-  // Only respect by animations, if from and by are both specified in angles (and not eg. 'auto').
+  // Only respect by animations, if from and by are both specified in angles
+  // (and not, for example, 'auto').
   if (orientType()->enumValue() != SVGMarkerOrientAngle ||
       otherAngle->orientType()->enumValue() != SVGMarkerOrientAngle)
     return;
@@ -410,7 +412,8 @@ void SVGAngle::calculateAnimatedValue(SVGAnimationElement* animationElement,
       orientType()->setEnumValue(fromOrientType);
       return;
 
-    // Regular from angle to angle animation, with all features like additive etc.
+    // Regular from angle to angle animation, with all features like additive
+    // etc.
     case SVGMarkerOrientAngle: {
       float animatedValue = value();
       SVGAngle* toAtEndOfDurationAngle = toSVGAngle(toAtEndOfDuration);

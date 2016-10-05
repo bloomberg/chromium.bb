@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2004, 2005, 2006, 2007, 2008 Nikolas Zimmermann <zimmermann@kde.org>
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008 Nikolas Zimmermann
+ * <zimmermann@kde.org>
  * Copyright (C) 2004, 2005, 2006, 2007 Rob Buis <buis@kde.org>
  * Copyright (C) Research In Motion Limited 2009-2010. All rights reserved.
  *
@@ -63,7 +64,8 @@ inline SVGMarkerElement::SVGMarkerElement(Document& document)
           this,
           SVGNames::markerUnitsAttr,
           SVGMarkerUnitsStrokeWidth)) {
-  // Spec: If the markerWidth/markerHeight attribute is not specified, the effect is as if a value of "3" were specified.
+  // Spec: If the markerWidth/markerHeight attribute is not specified, the
+  // effect is as if a value of "3" were specified.
   m_markerWidth->setDefaultValueAsString("3");
   m_markerHeight->setDefaultValueAsString("3");
 

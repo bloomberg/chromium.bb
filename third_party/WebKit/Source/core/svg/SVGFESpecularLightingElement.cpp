@@ -149,7 +149,8 @@ void SVGFESpecularLightingElement::lightElementAttributeChanged(
   if (SVGFELightElement::findLightElement(*this) != lightElement)
     return;
 
-  // The light element has different attribute names so attrName can identify the requested attribute.
+  // The light element has different attribute names so attrName can identify
+  // the requested attribute.
   primitiveAttributeChanged(attrName);
 }
 

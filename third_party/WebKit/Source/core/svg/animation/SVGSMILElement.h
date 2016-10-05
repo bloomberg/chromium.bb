@@ -181,8 +181,9 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   void beginListChanged(SMILTime eventTime);
   void endListChanged(SMILTime eventTime);
 
-  // This represents conditions on elements begin or end list that need to be resolved on runtime
-  // for example <animate begin="otherElement.begin + 8s; button.click" ... />
+  // This represents conditions on elements begin or end list that need to be
+  // resolved on runtime, for example
+  // <animate begin="otherElement.begin + 8s; button.click" ... />
   class Condition : public GarbageCollectedFinalized<Condition> {
    public:
     enum Type { EventBase, Syncbase, AccessKey };

@@ -306,7 +306,8 @@ void SVGSVGElement::svgAttributeChanged(const QualifiedName& attrName) {
   SVGGraphicsElement::svgAttributeChanged(attrName);
 }
 
-// FloatRect::intersects does not consider horizontal or vertical lines (because of isEmpty()).
+// FloatRect::intersects does not consider horizontal or vertical lines (because
+// of isEmpty()).
 static bool intersectsAllowingEmpty(const FloatRect& r1, const FloatRect& r2) {
   if (r1.width() < 0 || r1.height() < 0 || r2.width() < 0 || r2.height() < 0)
     return false;
@@ -315,8 +316,9 @@ static bool intersectsAllowingEmpty(const FloatRect& r1, const FloatRect& r2) {
          r2.y() < r1.maxY();
 }
 
-// One of the element types that can cause graphics to be drawn onto the target canvas.
-// Specifically: circle, ellipse, image, line, path, polygon, polyline, rect, text and use.
+// One of the element types that can cause graphics to be drawn onto the target
+// canvas.  Specifically: circle, ellipse, image, line, path, polygon, polyline,
+// rect, text and use.
 static bool isIntersectionOrEnclosureTarget(LayoutObject* layoutObject) {
   return layoutObject->isSVGShape() || layoutObject->isSVGText() ||
          layoutObject->isSVGImage() || isSVGUseElement(*layoutObject->node());
@@ -475,10 +477,11 @@ AffineTransform SVGSVGElement::localCoordinateSpaceTransform(
       FloatPoint location;
       float zoomFactor = 1;
 
-      // At the SVG/HTML boundary (aka LayoutSVGRoot), we apply the localToBorderBoxTransform
-      // to map an element from SVG viewport coordinates to CSS box coordinates.
-      // LayoutSVGRoot's localToAbsolute method expects CSS box coordinates.
-      // We also need to adjust for the zoom level factored into CSS coordinates (bug #96361).
+      // At the SVG/HTML boundary (aka LayoutSVGRoot), we apply the
+      // localToBorderBoxTransform to map an element from SVG viewport
+      // coordinates to CSS box coordinates.  LayoutSVGRoot's localToAbsolute
+      // method expects CSS box coordinates.  We also need to adjust for the
+      // zoom level factored into CSS coordinates (bug #96361).
       if (layoutObject->isSVGRoot()) {
         location = toLayoutSVGRoot(layoutObject)
                        ->localToBorderBoxTransform()
@@ -491,8 +494,9 @@ AffineTransform SVGSVGElement::localCoordinateSpaceTransform(
       location = layoutObject->localToAbsolute(location, UseTransforms);
       location.scale(zoomFactor, zoomFactor);
 
-      // Be careful here! localToBorderBoxTransform() included the x/y offset coming from the viewBoxToViewTransform(),
-      // so we have to subtract it here (original cause of bug #27183)
+      // Be careful here! localToBorderBoxTransform() included the x/y offset
+      // coming from the viewBoxToViewTransform(), so we have to subtract it
+      // here (original cause of bug #27183)
       transform.translate(location.x() - viewBoxTransform.e(),
                           location.y() - viewBoxTransform.f());
 
@@ -535,9 +539,10 @@ Node::InsertionNotificationRequest SVGSVGElement::insertedInto(
     if (RuntimeEnabledFeatures::smilEnabled()) {
       document().accessSVGExtensions().addTimeContainer(this);
 
-      // Animations are started at the end of document parsing and after firing the load event,
-      // but if we miss that train (deferred programmatic element insertion for example) we need
-      // to initialize the time container here.
+      // Animations are started at the end of document parsing and after firing
+      // the load event, but if we miss that train (deferred programmatic
+      // element insertion for example) we need to initialize the time container
+      // here.
       if (!document().parsing() && !document().processingLoadEvent() &&
           document().loadEventFinished() && !timeContainer()->isStarted())
         timeContainer()->start();
@@ -775,8 +780,9 @@ void SVGSVGElement::finishParsingChildren() {
   if (isOutermostSVGSVGElement())
     return;
 
-  // finishParsingChildren() is called when the close tag is reached for an element (e.g. </svg>)
-  // we send SVGLoad events here if we can, otherwise they'll be sent when any required loads finish
+  // finishParsingChildren() is called when the close tag is reached for an
+  // element (e.g. </svg>) we send SVGLoad events here if we can, otherwise
+  // they'll be sent when any required loads finish
   sendSVGLoadEventIfPossible();
 }
 

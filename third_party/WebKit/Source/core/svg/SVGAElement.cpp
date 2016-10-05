@@ -80,8 +80,9 @@ String SVGAElement::title() const {
 }
 
 void SVGAElement::svgAttributeChanged(const QualifiedName& attrName) {
-  // Unlike other SVG*Element classes, SVGAElement only listens to SVGURIReference changes
-  // as none of the other properties changes the linking behaviour for our <a> element.
+  // Unlike other SVG*Element classes, SVGAElement only listens to
+  // SVGURIReference changes as none of the other properties changes the linking
+  // behaviour for our <a> element.
   if (SVGURIReference::isKnownAttribute(attrName)) {
     SVGElement::InvalidationGuard invalidationGuard(this);
 
@@ -155,7 +156,8 @@ short SVGAElement::tabIndex() const {
 bool SVGAElement::supportsFocus() const {
   if (hasEditableStyle(*this))
     return SVGGraphicsElement::supportsFocus();
-  // If not a link we should still be able to focus the element if it has tabIndex.
+  // If not a link we should still be able to focus the element if it has
+  // tabIndex.
   return isLink() || SVGGraphicsElement::supportsFocus();
 }
 
@@ -163,7 +165,8 @@ bool SVGAElement::shouldHaveFocusAppearance() const {
   return !m_wasFocusedByMouse || SVGGraphicsElement::supportsFocus();
 }
 
-// TODO(lanwei): Will add the InputDeviceCapabilities when SVGAElement gets focus later, see https://crbug.com/476530.
+// TODO(lanwei): Will add the InputDeviceCapabilities when SVGAElement gets
+// focus later, see https://crbug.com/476530.
 void SVGAElement::dispatchFocusEvent(
     Element* oldFocusedElement,
     WebFocusType type,

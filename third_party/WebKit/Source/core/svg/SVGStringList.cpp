@@ -46,12 +46,15 @@ String SVGStringList::getItem(size_t index, ExceptionState& exceptionState) {
 }
 
 void SVGStringList::insertItemBefore(const String& newItem, size_t index) {
-  // Spec: If the index is greater than or equal to numberOfItems, then the new item is appended to the end of the list.
+  // Spec: If the index is greater than or equal to numberOfItems, then the new
+  // item is appended to the end of the list.
   if (index > m_values.size())
     index = m_values.size();
 
-  // Spec: Inserts a new item into the list at the specified position. The index of the item before which the new item is to be
-  // inserted. The first item is number 0. If the index is equal to 0, then the new item is inserted at the front of the list.
+  // Spec: Inserts a new item into the list at the specified position. The index
+  // of the item before which the new item is to be inserted. The first item is
+  // number 0. If the index is equal to 0, then the new item is inserted at the
+  // front of the list.
   m_values.insert(index, newItem);
 }
 

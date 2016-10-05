@@ -92,11 +92,13 @@ float SVGPathBlender::BlendState::blendAnimatedDimensonalFloat(
   float animValue =
       blend(from, m_fromIsAbsolute ? to + toValue : to - toValue, m_progress);
 
-  // If we're in the first half of the animation, we should use the type of the from segment.
+  // If we're in the first half of the animation, we should use the type of the
+  // from segment.
   if (m_isInFirstHalfOfAnimation)
     return animValue;
 
-  // Transform the animated point to the coordinate mode, needed for the current progress.
+  // Transform the animated point to the coordinate mode, needed for the current
+  // progress.
   float currentValue = blend(fromValue, toValue, m_progress);
   return !m_fromIsAbsolute ? animValue + currentValue
                            : animValue - currentValue;
@@ -128,11 +130,13 @@ FloatPoint SVGPathBlender::BlendState::blendAnimatedFloatPoint(
 
   animatedPoint = blendFloatPoint(fromPoint, animatedPoint, m_progress);
 
-  // If we're in the first half of the animation, we should use the type of the from segment.
+  // If we're in the first half of the animation, we should use the type of the
+  // from segment.
   if (m_isInFirstHalfOfAnimation)
     return animatedPoint;
 
-  // Transform the animated point to the coordinate mode, needed for the current progress.
+  // Transform the animated point to the coordinate mode, needed for the current
+  // progress.
   FloatPoint currentPoint =
       blendFloatPoint(m_fromCurrentPoint, m_toCurrentPoint, m_progress);
   if (!m_fromIsAbsolute)

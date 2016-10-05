@@ -30,7 +30,8 @@
 using namespace blink;
 
 SMILTime blink::operator*(const SMILTime& a, const SMILTime& b) {
-  // Equal operators have to be used instead of negation here to make NaN work as well.
+  // Equal operators have to be used instead of negation here to make NaN work
+  // as well.
   if (a.value() == 0 || b.value() == 0)
     return SMILTime(0);
   return a.value() * b.value();

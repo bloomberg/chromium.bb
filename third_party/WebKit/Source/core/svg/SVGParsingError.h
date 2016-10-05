@@ -103,8 +103,8 @@ class SVGParsingError {
   }
 
   unsigned m_status : 8;
-  unsigned m_locus
-      : kLocusBits;  // The locus (character index) of the error within the parsed string.
+  unsigned m_locus : kLocusBits;  // The locus (character index) of the error
+                                  // within the parsed string.
 };
 
 inline bool operator==(const SVGParsingError& error, SVGParseStatus status) {

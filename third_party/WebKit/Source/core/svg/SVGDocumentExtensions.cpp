@@ -99,7 +99,9 @@ void SVGDocumentExtensions::serviceAnimations() {
   SVGElementSet webAnimationsPendingSVGElements;
   webAnimationsPendingSVGElements.swap(m_webAnimationsPendingSVGElements);
 
-  // TODO(alancutter): Make SVG animation effect application a separate document lifecycle phase from servicing animations to be responsive to Javascript manipulation of exposed animation objects.
+  // TODO(alancutter): Make SVG animation effect application a separate document
+  // lifecycle phase from servicing animations to be responsive to Javascript
+  // manipulation of exposed animation objects.
   for (auto& svgElement : webAnimationsPendingSVGElements)
     svgElement->applyActiveWebAnimations();
 
@@ -107,10 +109,12 @@ void SVGDocumentExtensions::serviceAnimations() {
 }
 
 void SVGDocumentExtensions::startAnimations() {
-  // FIXME: Eventually every "Time Container" will need a way to latch on to some global timer
-  // starting animations for a document will do this "latching"
-  // FIXME: We hold a ref pointers to prevent a shadow tree from getting removed out from underneath us.
-  // In the future we should refactor the use-element to avoid this. See https://webkit.org/b/53704
+  // FIXME: Eventually every "Time Container" will need a way to latch on to
+  // some global timer starting animations for a document will do this
+  // "latching"
+  // FIXME: We hold a ref pointers to prevent a shadow tree from getting removed
+  // out from underneath us.  In the future we should refactor the use-element
+  // to avoid this. See https://webkit.org/b/53704
   HeapVector<Member<SVGSVGElement>> timeContainers;
   copyToVector(m_timeContainers, timeContainers);
   for (const auto& container : timeContainers) {
@@ -133,7 +137,8 @@ void SVGDocumentExtensions::dispatchSVGLoadEventToOutermostSVGElements() {
     if (!outerSVG->isOutermostSVGSVGElement())
       continue;
 
-    // don't dispatch the load event document is not wellformed (for XML/standalone svg)
+    // Don't dispatch the load event document is not wellformed (for
+    // XML/standalone svg).
     if (outerSVG->document().wellFormed() ||
         !outerSVG->document().isSVGDocument())
       outerSVG->sendSVGLoadEventIfPossible();
@@ -171,8 +176,9 @@ bool SVGDocumentExtensions::hasPendingResource(const AtomicString& id) const {
 }
 
 bool SVGDocumentExtensions::isElementPendingResources(Element* element) const {
-  // This algorithm takes time proportional to the number of pending resources and need not.
-  // If performance becomes an issue we can keep a counted set of elements and answer the question efficiently.
+  // This algorithm takes time proportional to the number of pending resources
+  // and need not.  If performance becomes an issue we can keep a counted set of
+  // elements and answer the question efficiently.
 
   ASSERT(element);
 
@@ -222,7 +228,8 @@ void SVGDocumentExtensions::removeElementFromPendingResources(
 
     clearHasPendingResourcesIfPossible(element);
 
-    // We use the removePendingResource function here because it deals with set lifetime correctly.
+    // We use the removePendingResource function here because it deals with set
+    // lifetime correctly.
     for (const AtomicString& id : toBeRemoved)
       removePendingResource(id);
   }
@@ -240,7 +247,8 @@ void SVGDocumentExtensions::removeElementFromPendingResources(
         toBeRemoved.append(entry.key);
     }
 
-    // We use the removePendingResourceForRemoval function here because it deals with set lifetime correctly.
+    // We use the removePendingResourceForRemoval function here because it deals
+    // with set lifetime correctly.
     for (const AtomicString& id : toBeRemoved)
       removePendingResourceForRemoval(id);
   }

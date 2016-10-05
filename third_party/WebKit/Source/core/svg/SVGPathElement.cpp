@@ -164,7 +164,8 @@ void SVGPathElement::collectStyleForPresentationAttribute(
   SVGAnimatedPropertyBase* property = propertyFromAttribute(name);
   if (property == m_path) {
     SVGAnimatedPath* path = this->path();
-    // If this is a <use> instance, return the referenced path to maximize geometry sharing.
+    // If this is a <use> instance, return the referenced path to maximize
+    // geometry sharing.
     if (const SVGElement* element = correspondingElement())
       path = toSVGPathElement(element)->path();
 
@@ -182,7 +183,8 @@ void SVGPathElement::collectStyleForPresentationAttribute(
 
 void SVGPathElement::invalidateMPathDependencies() {
   // <mpath> can only reference <path> but this dependency is not handled in
-  // markForLayoutAndParentResourceInvalidation so we update any mpath dependencies manually.
+  // markForLayoutAndParentResourceInvalidation so we update any mpath
+  // dependencies manually.
   if (SVGElementSet* dependencies = setOfIncomingReferences()) {
     for (SVGElement* element : *dependencies) {
       if (isSVGMPathElement(*element))

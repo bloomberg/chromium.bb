@@ -169,7 +169,8 @@ void SVGLengthList::calculateAnimatedValue(
 }
 
 float SVGLengthList::calculateDistance(SVGPropertyBase* to, SVGElement*) {
-  // FIXME: Distance calculation is not possible for SVGLengthList right now. We need the distance for every single value.
+  // FIXME: Distance calculation is not possible for SVGLengthList right now. We
+  // need the distance for every single value.
   return -1;
 }
 }  // namespace blink

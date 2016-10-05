@@ -104,7 +104,8 @@ void SVGLength::setUnitType(CSSPrimitiveValue::UnitType type) {
 }
 
 float SVGLength::valueAsPercentage() const {
-  // LengthTypePercentage is represented with 100% = 100.0. Good for accuracy but could eventually be changed.
+  // LengthTypePercentage is represented with 100% = 100.0. Good for accuracy
+  // but could eventually be changed.
   if (m_value->isPercentage()) {
     // Note: This division is a source of floating point inaccuracy.
     return m_value->getFloatValue() / 100;
@@ -114,7 +115,8 @@ float SVGLength::valueAsPercentage() const {
 }
 
 float SVGLength::valueAsPercentage100() const {
-  // LengthTypePercentage is represented with 100% = 100.0. Good for accuracy but could eventually be changed.
+  // LengthTypePercentage is represented with 100% = 100.0. Good for accuracy
+  // but could eventually be changed.
   if (m_value->isPercentage())
     return m_value->getFloatValue();
 
@@ -124,7 +126,8 @@ float SVGLength::valueAsPercentage100() const {
 float SVGLength::scaleByPercentage(float input) const {
   float result = input * m_value->getFloatValue();
   if (m_value->isPercentage()) {
-    // Delaying division by 100 as long as possible since it introduces floating point errors.
+    // Delaying division by 100 as long as possible since it introduces floating
+    // point errors.
     result = result / 100;
   }
   return result;
@@ -247,7 +250,8 @@ void SVGLength::calculateAnimatedValue(SVGAnimationElement* animationElement,
   ASSERT(unitMode() == lengthModeForAnimatedLengthAttribute(
                            animationElement->attributeName()));
 
-  // TODO(shanmuga.m): Construct a calc() expression if the units fall in different categories.
+  // TODO(shanmuga.m): Construct a calc() expression if the units fall in
+  // different categories.
   CSSPrimitiveValue::UnitType newUnit = CSSPrimitiveValue::UnitType::UserUnits;
   if (percentage < 0.5) {
     if (!fromLength->isCalculated())

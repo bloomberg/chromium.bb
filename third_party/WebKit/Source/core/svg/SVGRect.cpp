@@ -129,7 +129,8 @@ void SVGRect::calculateAnimatedValue(SVGAnimationElement* animationElement,
 
 float SVGRect::calculateDistance(SVGPropertyBase* to,
                                  SVGElement* contextElement) {
-  // FIXME: Distance calculation is not possible for SVGRect right now. We need the distance for every single value.
+  // FIXME: Distance calculation is not possible for SVGRect right now. We need
+  // the distance for every single value.
   return -1;
 }
 

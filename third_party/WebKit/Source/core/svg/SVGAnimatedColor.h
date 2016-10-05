@@ -39,7 +39,8 @@ namespace blink {
 class SVGAnimationElement;
 
 // StyleColor adaptor to SVGPropertyBase. This is only used for SMIL animations.
-// FIXME: WebAnimations: Replacable with AnimatableColor once SMIL animations are implemented in WebAnimations.
+// FIXME: WebAnimations: Replacable with AnimatableColor once SMIL animations
+// are implemented in WebAnimations.
 class SVGColorProperty final : public SVGPropertyBase {
  public:
   static SVGColorProperty* create(const String& colorString) {

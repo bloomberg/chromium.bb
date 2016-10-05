@@ -54,11 +54,13 @@ inline SVGMaskElement::SVGMaskElement(Document& document)
               this,
               SVGNames::maskContentUnitsAttr,
               SVGUnitTypes::kSvgUnitTypeUserspaceonuse)) {
-  // Spec: If the x/y attribute is not specified, the effect is as if a value of "-10%" were specified.
+  // Spec: If the x/y attribute is not specified, the effect is as if a value of
+  // "-10%" were specified.
   m_x->setDefaultValueAsString("-10%");
   m_y->setDefaultValueAsString("-10%");
 
-  // Spec: If the width/height attribute is not specified, the effect is as if a value of "120%" were specified.
+  // Spec: If the width/height attribute is not specified, the effect is as if a
+  // value of "120%" were specified.
   m_width->setDefaultValueAsString("120%");
   m_height->setDefaultValueAsString("120%");
 

@@ -63,7 +63,8 @@ void SVGEnumerationBase::setValue(unsigned short value) {
 SVGParsingError SVGEnumerationBase::setValueAsString(const String& string) {
   for (const auto& entry : m_entries) {
     if (string == entry.second) {
-      // 0 corresponds to _UNKNOWN enumeration values, and should not be settable.
+      // 0 corresponds to _UNKNOWN enumeration values, and should not be
+      // settable.
       ASSERT(entry.first);
       m_value = entry.first;
       notifyChange();

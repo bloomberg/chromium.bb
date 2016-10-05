@@ -51,12 +51,14 @@ class SVGPropertyBase : public GarbageCollectedFinalized<SVGPropertyBase> {
   virtual ~SVGPropertyBase() {}
 
   // FIXME: remove this in WebAnimations transition.
-  // This is used from SVGAnimatedNewPropertyAnimator for its animate-by-string implementation.
+  // This is used from SVGAnimatedNewPropertyAnimator for its animate-by-string
+  // implementation.
   virtual SVGPropertyBase* cloneForAnimation(const String&) const = 0;
 
   virtual String valueAsString() const = 0;
 
-  // FIXME: remove below and just have this inherit AnimatableValue in WebAnimations transition.
+  // FIXME: remove below and just have this inherit AnimatableValue in
+  // WebAnimations transition.
   virtual void add(SVGPropertyBase*, SVGElement*) = 0;
   virtual void calculateAnimatedValue(SVGAnimationElement*,
                                       float percentage,
@@ -84,9 +86,9 @@ class SVGPropertyBase : public GarbageCollectedFinalized<SVGPropertyBase> {
   SVGPropertyBase() : m_ownerList(nullptr) {}
 
  private:
-  // Oilpan: the back reference to the owner should be a Member, but this can create
-  // cycles when SVG properties meet the off-heap InterpolationValue hierarchy.
-  // Not tracing it is safe, albeit an undesirable state of affairs.
+  // Oilpan: the back reference to the owner should be a Member, but this can
+  // create cycles when SVG properties meet the off-heap InterpolationValue
+  // hierarchy.  Not tracing it is safe, albeit an undesirable state of affairs.
   // See http://crbug.com/528275 for the detail.
   UntracedMember<SVGPropertyBase> m_ownerList;
 };

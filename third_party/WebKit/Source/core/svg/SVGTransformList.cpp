@@ -355,9 +355,11 @@ void SVGTransformList::calculateAnimatedValue(
   ASSERT(animationElement);
   bool isToAnimation = animationElement->getAnimationMode() == ToAnimation;
 
-  // Spec: To animations provide specific functionality to get a smooth change from the underlying value to the
-  // 'to' attribute value, which conflicts mathematically with the requirement for additive transform animations
-  // to be post-multiplied. As a consequence, in SVG 1.1 the behavior of to animations for 'animateTransform' is undefined
+  // Spec: To animations provide specific functionality to get a smooth change
+  // from the underlying value to the 'to' attribute value, which conflicts
+  // mathematically with the requirement for additive transform animations to be
+  // post-multiplied. As a consequence, in SVG 1.1 the behavior of to animations
+  // for 'animateTransform' is undefined.
   // FIXME: This is not taken into account yet.
   SVGTransformList* fromList =
       isToAnimation ? this : toSVGTransformList(fromValue);
@@ -369,10 +371,12 @@ void SVGTransformList::calculateAnimatedValue(
   if (!toListSize)
     return;
 
-  // Get a reference to the from value before potentially cleaning it out (in the case of a To animation.)
+  // Get a reference to the from value before potentially cleaning it out (in
+  // the case of a To animation.)
   SVGTransform* toTransform = toList->at(0);
   SVGTransform* effectiveFrom = nullptr;
-  // If there's an existing 'from'/underlying value of the same type use that, else use a "zero transform".
+  // If there's an existing 'from'/underlying value of the same type use that,
+  // else use a "zero transform".
   if (fromList->length() &&
       fromList->at(0)->transformType() == toTransform->transformType())
     effectiveFrom = fromList->at(0);
@@ -380,7 +384,8 @@ void SVGTransformList::calculateAnimatedValue(
     effectiveFrom = SVGTransform::create(toTransform->transformType(),
                                          SVGTransform::ConstructZeroTransform);
 
-  // Never resize the animatedTransformList to the toList size, instead either clear the list or append to it.
+  // Never resize the animatedTransformList to the toList size, instead either
+  // clear the list or append to it.
   if (!isEmpty() && (!animationElement->isAdditive() || isToAnimation))
     clear();
 
@@ -403,8 +408,9 @@ void SVGTransformList::calculateAnimatedValue(
 
 float SVGTransformList::calculateDistance(SVGPropertyBase* toValue,
                                           SVGElement*) {
-  // FIXME: This is not correct in all cases. The spec demands that each component (translate x and y for example)
-  // is paced separately. To implement this we need to treat each component as individual animation everywhere.
+  // FIXME: This is not correct in all cases. The spec demands that each
+  // component (translate x and y for example) is paced separately. To implement
+  // this we need to treat each component as individual animation everywhere.
 
   SVGTransformList* toList = toSVGTransformList(toValue);
   if (isEmpty() || length() != toList->length())
@@ -415,8 +421,10 @@ float SVGTransformList::calculateDistance(SVGPropertyBase* toValue,
     return -1;
 
   // Spec: http://www.w3.org/TR/SVG/animate.html#complexDistances
-  // Paced animations assume a notion of distance between the various animation values defined by the 'to', 'from', 'by' and 'values' attributes.
-  // Distance is defined only for scalar types (such as <length>), colors and the subset of transformation types that are supported by 'animateTransform'.
+  // Paced animations assume a notion of distance between the various animation
+  // values defined by the 'to', 'from', 'by' and 'values' attributes.  Distance
+  // is defined only for scalar types (such as <length>), colors and the subset
+  // of transformation types that are supported by 'animateTransform'.
   return SVGTransformDistance(at(0), toList->at(0)).distance();
 }
 

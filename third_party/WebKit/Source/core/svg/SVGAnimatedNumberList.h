@@ -37,7 +37,8 @@
 
 namespace blink {
 
-// SVG Spec: http://www.w3.org/TR/SVG11/types.html#InterfaceSVGAnimatedNumberList
+// SVG Spec:
+// http://www.w3.org/TR/SVG11/types.html#InterfaceSVGAnimatedNumberList
 class SVGAnimatedNumberList final : public SVGAnimatedProperty<SVGNumberList>,
                                     public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();

@@ -49,17 +49,21 @@ class ListItemPropertyTraits {
       SVGElement* contextElement,
       const QualifiedName& attributeName) {
     // |newItem| is immutable, OR
-    // |newItem| belongs to a SVGElement, but it does not belong to an animated list
-    // (for example: "textElement.x.baseVal.appendItem(rectElement.width.baseVal)")
-    // Spec: If newItem is already in a list, then a new object is created with the same values as newItem and this item is inserted into the list.
+    // |newItem| belongs to a SVGElement, but it does not belong to an animated
+    // list, e.g. "textElement.x.baseVal.appendItem(rectElement.width.baseVal)"
+    // Spec: If newItem is already in a list, then a new object is created with
+    // the same values as newItem and this item is inserted into the list.
     // Otherwise, newItem itself is inserted into the list.
     if (newItem->isImmutable() || newItem->target()->ownerList() ||
         newItem->contextElement()) {
       // We have to copy the incoming |newItem|,
-      // Otherwise we'll end up having two tearoffs that operate on the same SVGProperty. Consider the example below:
-      // SVGRectElements SVGAnimatedLength 'width' property baseVal points to the same tear off object
-      // that's inserted into SVGTextElements SVGAnimatedLengthList 'x'. textElement.x.baseVal.getItem(0).value += 150 would
-      // mutate the rectElement width _and_ the textElement x list. That's obviously wrong, take care of that.
+      // Otherwise we'll end up having two tearoffs that operate on the same
+      // SVGProperty. Consider the example below: SVGRectElements
+      // SVGAnimatedLength 'width' property baseVal points to the same tear off
+      // object that's inserted into SVGTextElements SVGAnimatedLengthList 'x'.
+      // textElement.x.baseVal.getItem(0).value += 150 would mutate the
+      // rectElement width _and_ the textElement x list. That's obviously wrong,
+      // take care of that.
       return newItem->target()->clone();
     }
 

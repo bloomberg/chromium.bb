@@ -38,9 +38,10 @@
 namespace blink {
 
 // SVG Spec: http://www.w3.org/TR/SVG11/types.html <number-optional-number>
-// Unlike other SVGAnimated* class, this class is not exposed to Javascript directly,
-// while DOM attribute and SMIL animations operate on this class.
-// From Javascript, the two SVGAnimatedIntegers |firstInteger| and |secondInteger| are used.
+// Unlike other SVGAnimated* class, this class is not exposed to Javascript
+// directly, while DOM attribute and SMIL animations operate on this class.
+// From Javascript, the two SVGAnimatedIntegers |firstInteger| and
+// |secondInteger| are used.
 // For example, see SVGFEDropShadowElement::stdDeviation{X,Y}()
 class SVGAnimatedIntegerOptionalInteger
     : public SVGAnimatedPropertyCommon<SVGIntegerOptionalInteger> {

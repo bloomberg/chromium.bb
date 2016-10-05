@@ -48,12 +48,14 @@ inline SVGRadialGradientElement::SVGRadialGradientElement(Document& document)
       m_fr(SVGAnimatedLength::create(this,
                                      SVGNames::frAttr,
                                      SVGLength::create(SVGLengthMode::Other))) {
-  // Spec: If the cx/cy/r attribute is not specified, the effect is as if a value of "50%" were specified.
+  // Spec: If the cx/cy/r attribute is not specified, the effect is as if a
+  // value of "50%" were specified.
   m_cx->setDefaultValueAsString("50%");
   m_cy->setDefaultValueAsString("50%");
   m_r->setDefaultValueAsString("50%");
 
-  // SVG2-Draft Spec: If the fr attributed is not specified, the effect is as if a value of "0%" were specified.
+  // SVG2-Draft Spec: If the fr attributed is not specified, the effect is as if
+  // a value of "0%" were specified.
   m_fr->setDefaultValueAsString("0%");
 
   addToPropertyMap(m_cx);

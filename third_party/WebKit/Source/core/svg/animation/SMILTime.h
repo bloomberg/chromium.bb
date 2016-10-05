@@ -96,8 +96,9 @@ inline bool operator!=(const SMILTime& a, const SMILTime& b) {
   return !operator==(a, b);
 }
 
-// Ordering of SMILTimes has to follow: finite < indefinite (Inf) < unresolved (NaN). The first comparison is handled by IEEE754 but
-// NaN values must be checked explicitly to guarantee that unresolved is ordered correctly too.
+// Ordering of SMILTimes has to follow: finite < indefinite (Inf) < unresolved
+// (NaN). The first comparison is handled by IEEE754 but NaN values must be
+// checked explicitly to guarantee that unresolved is ordered correctly too.
 inline bool operator>(const SMILTime& a, const SMILTime& b) {
   return a.isUnresolved() || (a.value() > b.value());
 }
@@ -121,7 +122,8 @@ inline SMILTime operator+(const SMILTime& a, const SMILTime& b) {
 inline SMILTime operator-(const SMILTime& a, const SMILTime& b) {
   return a.value() - b.value();
 }
-// So multiplying times does not make too much sense but SMIL defines it for duration * repeatCount
+// So multiplying times does not make too much sense but SMIL defines it for
+// duration * repeatCount
 SMILTime operator*(const SMILTime&, const SMILTime&);
 
 inline bool operator!=(const SMILInterval& a, const SMILInterval& b) {

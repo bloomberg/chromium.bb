@@ -148,7 +148,8 @@ void SVGPointList::calculateAnimatedValue(
 }
 
 float SVGPointList::calculateDistance(SVGPropertyBase* to, SVGElement*) {
-  // FIXME: Distance calculation is not possible for SVGPointList right now. We need the distance for every single value.
+  // FIXME: Distance calculation is not possible for SVGPointList right now. We
+  // need the distance for every single value.
   return -1;
 }
 

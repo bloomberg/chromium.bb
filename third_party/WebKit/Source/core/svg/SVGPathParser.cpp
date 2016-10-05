@@ -168,18 +168,20 @@ void SVGPathNormalizer::emitSegment(const PathSegmentData& segment) {
 
 // This works by converting the SVG arc to "simple" beziers.
 // Partly adapted from Niko's code in kdelibs/kdecore/svgicons.
-// See also SVG implementation notes: http://www.w3.org/TR/SVG/implnote.html#ArcConversionEndpointToCenter
+// See also SVG implementation notes:
+// http://www.w3.org/TR/SVG/implnote.html#ArcConversionEndpointToCenter
 bool SVGPathNormalizer::decomposeArcToCubic(const FloatPoint& currentPoint,
                                             const PathSegmentData& arcSegment) {
-  // If rx = 0 or ry = 0 then this arc is treated as a straight line segment (a "lineto") joining the endpoints.
+  // If rx = 0 or ry = 0 then this arc is treated as a straight line segment (a
+  // "lineto") joining the endpoints.
   // http://www.w3.org/TR/SVG/implnote.html#ArcOutOfRangeParameters
   float rx = fabsf(arcSegment.arcRadii().x());
   float ry = fabsf(arcSegment.arcRadii().y());
   if (!rx || !ry)
     return false;
 
-  // If the current point and target point for the arc are identical, it should be treated as a zero length
-  // path. This ensures continuity in animations.
+  // If the current point and target point for the arc are identical, it should
+  // be treated as a zero length path. This ensures continuity in animations.
   if (arcSegment.targetPoint == currentPoint)
     return false;
 
@@ -239,8 +241,9 @@ bool SVGPathNormalizer::decomposeArcToCubic(const FloatPoint& currentPoint,
   pointTransform.rotate(angle);
   pointTransform.scale(rx, ry);
 
-  // Some results of atan2 on some platform implementations are not exact enough. So that we get more
-  // cubic curves than expected here. Adding 0.001f reduces the count of sgements to the correct count.
+  // Some results of atan2 on some platform implementations are not exact
+  // enough. So that we get more cubic curves than expected here. Adding 0.001f
+  // reduces the count of sgements to the correct count.
   int segments = ceilf(fabsf(thetaArc / (piOverTwoFloat + 0.001f)));
   for (int i = 0; i < segments; ++i) {
     float startTheta = theta1 + i * thetaArc / segments;

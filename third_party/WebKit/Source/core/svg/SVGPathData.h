@@ -56,7 +56,8 @@ static inline SVGPathSegType toAbsolutePathSegType(const SVGPathSegType type) {
 }
 
 static inline bool isAbsolutePathSegType(const SVGPathSegType type) {
-  // For commands with an ordinal >= PathSegMoveToAbs, and odd number => relative command.
+  // For commands with an ordinal >= PathSegMoveToAbs, and odd number =>
+  // relative command.
   return type < PathSegMoveToAbs || type % 2 == 0;
 }
 
