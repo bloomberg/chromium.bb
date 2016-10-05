@@ -18,13 +18,10 @@ import org.chromium.content.browser.ContentViewStatics;
  * AwBrowserContext instance, so at this point the class mostly exists for conceptual clarity.
  */
 public class AwBrowserContext {
-    private static final String HTTP_AUTH_DATABASE_FILE = "http_auth.db";
-
     private final SharedPreferences mSharedPreferences;
 
     private AwGeolocationPermissions mGeolocationPermissions;
     private AwFormDatabase mFormDatabase;
-    private HttpAuthDatabase mHttpAuthDatabase;
     private AwMessagePortService mMessagePortService;
     private AwMetricsServiceClient mMetricsServiceClient;
     private AwServiceWorkerController mServiceWorkerController;
@@ -48,13 +45,6 @@ public class AwBrowserContext {
             mFormDatabase = new AwFormDatabase();
         }
         return mFormDatabase;
-    }
-
-    public HttpAuthDatabase getHttpAuthDatabase(Context context) {
-        if (mHttpAuthDatabase == null) {
-            mHttpAuthDatabase = HttpAuthDatabase.newInstance(context, HTTP_AUTH_DATABASE_FILE);
-        }
-        return mHttpAuthDatabase;
     }
 
     public AwMessagePortService getMessagePortService() {

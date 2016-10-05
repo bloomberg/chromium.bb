@@ -41,11 +41,9 @@ import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwContentsStatics;
 import org.chromium.android_webview.AwCookieManager;
 import org.chromium.android_webview.AwDevToolsServer;
-import org.chromium.android_webview.AwGeolocationPermissions;
 import org.chromium.android_webview.AwNetworkChangeNotifierRegistrationPolicy;
 import org.chromium.android_webview.AwQuotaManagerBridge;
 import org.chromium.android_webview.AwResource;
-import org.chromium.android_webview.AwServiceWorkerController;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.HttpAuthDatabase;
 import org.chromium.android_webview.ResourcesContextWrapperFactory;
@@ -82,6 +80,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     private static final String CHROMIUM_PREFS_NAME = "WebViewChromiumPrefs";
     private static final String VERSION_CODE_PREF = "lastVersionCodeUsed";
     private static final String COMMAND_LINE_FILE = "/data/local/tmp/webview-command-line";
+    private static final String HTTP_AUTH_DATABASE_FILE = "http_auth.db";
 
     private class WebViewChromiumRunQueue {
         public WebViewChromiumRunQueue() {
@@ -409,6 +408,17 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                         TraceEvent.setATraceEnabled(enabled);
                     }
                 });
+
+        // Initialize thread-unsafe singletons.
+        AwBrowserContext awBrowserContext = getBrowserContextOnUiThread();
+        mGeolocationPermissions = new GeolocationPermissionsAdapter(
+                this, awBrowserContext.getGeolocationPermissions());
+        mWebStorage = new WebStorageAdapter(this, AwQuotaManagerBridge.getInstance());
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
+            mServiceWorkerController = new ServiceWorkerControllerAdapter(
+                    awBrowserContext.getServiceWorkerController());
+        }
+
         mStarted = true;
         mRunQueue.drainQueue();
     }
@@ -550,16 +560,6 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         synchronized (mLock) {
             if (mGeolocationPermissions == null) {
                 ensureChromiumStartedLocked(true);
-                AwGeolocationPermissions awGelocationPermissions = ThreadUtils.runningOnUiThread()
-                        ? getBrowserContextOnUiThread().getGeolocationPermissions()
-                        : runOnUiThreadBlocking(new Callable<AwGeolocationPermissions>() {
-                            @Override
-                            public AwGeolocationPermissions call() {
-                                return getBrowserContextOnUiThread().getGeolocationPermissions();
-                            }
-                        });
-                mGeolocationPermissions =
-                        new GeolocationPermissionsAdapter(this, awGelocationPermissions);
             }
         }
         return mGeolocationPermissions;
@@ -580,17 +580,6 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         synchronized (mLock) {
             if (mServiceWorkerController == null) {
                 ensureChromiumStartedLocked(true);
-                AwServiceWorkerController awServiceWorkerController =
-                        ThreadUtils.runningOnUiThread()
-                        ? getBrowserContextOnUiThread().getServiceWorkerController()
-                        : runOnUiThreadBlocking(new Callable<AwServiceWorkerController>() {
-                            @Override
-                            public AwServiceWorkerController call() {
-                                return getBrowserContextOnUiThread().getServiceWorkerController();
-                            }
-                        });
-                mServiceWorkerController =
-                        new ServiceWorkerControllerAdapter(awServiceWorkerController);
             }
         }
         return (ServiceWorkerController) mServiceWorkerController;
@@ -621,15 +610,6 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         synchronized (mLock) {
             if (mWebStorage == null) {
                 ensureChromiumStartedLocked(true);
-                AwQuotaManagerBridge awQuotaManager = ThreadUtils.runningOnUiThread()
-                        ? AwQuotaManagerBridge.getInstance()
-                        : runOnUiThreadBlocking(new Callable<AwQuotaManagerBridge>() {
-                            @Override
-                            public AwQuotaManagerBridge call() {
-                                return AwQuotaManagerBridge.getInstance();
-                            }
-                        });
-                mWebStorage = new WebStorageAdapter(this, awQuotaManager);
             }
         }
         return mWebStorage;
@@ -640,15 +620,8 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         synchronized (mLock) {
             if (mWebViewDatabase == null) {
                 ensureChromiumStartedLocked(true);
-                HttpAuthDatabase awDatabase = ThreadUtils.runningOnUiThread()
-                        ? getBrowserContextOnUiThread().getHttpAuthDatabase(context)
-                        : runOnUiThreadBlocking(new Callable<HttpAuthDatabase>() {
-                            @Override
-                            public HttpAuthDatabase call() {
-                                return getBrowserContextOnUiThread().getHttpAuthDatabase(context);
-                            }
-                        });
-                mWebViewDatabase = new WebViewDatabaseAdapter(this, awDatabase);
+                mWebViewDatabase = new WebViewDatabaseAdapter(
+                        this, HttpAuthDatabase.newInstance(context, HTTP_AUTH_DATABASE_FILE));
             }
         }
         return mWebViewDatabase;
