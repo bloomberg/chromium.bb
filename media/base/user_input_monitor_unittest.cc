@@ -15,6 +15,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkPoint.h"
 
+#if defined(OS_LINUX)
+#include "base/files/file_descriptor_watcher_posix.h"
+#endif
+
 namespace media {
 
 class MockMouseListener : public UserInputMonitor::MouseEventListener {
@@ -50,6 +54,7 @@ TEST(UserInputMonitorTest, KeyPressCounter) {
 TEST(UserInputMonitorTest, CreatePlatformSpecific) {
 #if defined(OS_LINUX)
   base::MessageLoopForIO message_loop;
+  base::FileDescriptorWatcher file_descriptor_watcher(&message_loop);
 #else
   base::MessageLoopForUI message_loop;
 #endif  // defined(OS_LINUX)

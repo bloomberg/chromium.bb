@@ -13,12 +13,12 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/files/file_descriptor_watcher_posix.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_pump_libevent.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "media/base/keyboard_event_counter.h"
@@ -38,8 +38,7 @@ namespace {
 // This is the actual implementation of event monitoring. It's separated from
 // UserInputMonitorLinux since it needs to be deleted on the IO thread.
 class UserInputMonitorLinuxCore
-    : public base::MessagePumpLibevent::Watcher,
-      public base::SupportsWeakPtr<UserInputMonitorLinuxCore>,
+    : public base::SupportsWeakPtr<UserInputMonitorLinuxCore>,
       public base::MessageLoop::DestructionObserver {
  public:
   enum EventType {
@@ -61,9 +60,7 @@ class UserInputMonitorLinuxCore
   void StopMonitor(EventType type);
 
  private:
-  // base::MessagePumpLibevent::Watcher interface.
-  void OnFileCanReadWithoutBlocking(int fd) override;
-  void OnFileCanWriteWithoutBlocking(int fd) override;
+  void OnXEvent();
 
   // Processes key and mouse events.
   void ProcessXEvent(xEvent* event);
@@ -76,7 +73,7 @@ class UserInputMonitorLinuxCore
   //
   // The following members should only be accessed on the IO thread.
   //
-  base::MessagePumpLibevent::FileDescriptorWatcher controller_;
+  std::unique_ptr<base::FileDescriptorWatcher::Controller> watch_controller_;
   Display* x_control_display_;
   Display* x_record_display_;
   XRecordRange* x_record_range_[2];
@@ -221,20 +218,12 @@ void UserInputMonitorLinuxCore::StartMonitor(EventType type) {
   }
 
   if (!x_record_range_[0] || !x_record_range_[1]) {
-    // Register OnFileCanReadWithoutBlocking() to be called every time there is
-    // something to read from |x_record_display_|.
-    base::MessageLoopForIO* message_loop = base::MessageLoopForIO::current();
-    int result =
-        message_loop->WatchFileDescriptor(ConnectionNumber(x_record_display_),
-                                          true,
-                                          base::MessageLoopForIO::WATCH_READ,
-                                          &controller_,
-                                          this);
-    if (!result) {
-      LOG(ERROR) << "Failed to create X record task.";
-      StopMonitor(type);
-      return;
-    }
+    // Register OnXEvent() to be called every time there is something to read
+    // from |x_record_display_|.
+    watch_controller_ = base::FileDescriptorWatcher::WatchReadable(
+        ConnectionNumber(x_record_display_),
+        base::Bind(&UserInputMonitorLinuxCore::OnXEvent,
+                   base::Unretained(this)));
 
     // Start observing message loop destruction if we start monitoring the first
     // event.
@@ -242,7 +231,7 @@ void UserInputMonitorLinuxCore::StartMonitor(EventType type) {
   }
 
   // Fetch pending events if any.
-  OnFileCanReadWithoutBlocking(ConnectionNumber(x_record_display_));
+  OnXEvent();
 }
 
 void UserInputMonitorLinuxCore::StopMonitor(EventType type) {
@@ -263,7 +252,7 @@ void UserInputMonitorLinuxCore::StopMonitor(EventType type) {
     XRecordFreeContext(x_record_display_, x_record_context_);
     x_record_context_ = 0;
 
-    controller_.StopWatchingFileDescriptor();
+    watch_controller_.reset();
   }
   if (x_record_display_) {
     XCloseDisplay(x_record_display_);
@@ -277,17 +266,13 @@ void UserInputMonitorLinuxCore::StopMonitor(EventType type) {
   base::MessageLoop::current()->RemoveDestructionObserver(this);
 }
 
-void UserInputMonitorLinuxCore::OnFileCanReadWithoutBlocking(int fd) {
+void UserInputMonitorLinuxCore::OnXEvent() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   XEvent event;
   // Fetch pending events if any.
   while (XPending(x_record_display_)) {
     XNextEvent(x_record_display_, &event);
   }
-}
-
-void UserInputMonitorLinuxCore::OnFileCanWriteWithoutBlocking(int fd) {
-  NOTREACHED();
 }
 
 void UserInputMonitorLinuxCore::ProcessXEvent(xEvent* event) {
