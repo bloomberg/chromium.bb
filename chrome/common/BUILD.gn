@@ -25,6 +25,7 @@ buildflag_header("features") {
   flags = [
     "ANDROID_JAVA_UI=$android_java_ui",
     "ENABLE_BACKGROUND=$enable_background",
+    "ENABLE_BASIC_PRINT_DIALOG=$enable_basic_print_dialog",
     "ENABLE_GOOGLE_NOW=$enable_google_now",
     "ENABLE_ONE_CLICK_SIGNIN=$enable_one_click_signin",
     "ENABLE_PACKAGE_MASH_SERVICES=$enable_package_mash_services",

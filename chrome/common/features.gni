@@ -30,6 +30,10 @@ declare_args() {
   # ChromeOS builds have this enabled by default.
   enable_hotwording = is_chrome_branded && is_chromeos
 
+  # Enable the printing system dialog for platforms that support printing
+  # and have a system dialog.
+  enable_basic_print_dialog = enable_basic_printing && !is_chromeos
+
   # Set to true to bundle all the mash related mojo services into chrome.
   # Specify --mash to chrome to have chrome start the mash environment.
   enable_package_mash_services = is_chromeos

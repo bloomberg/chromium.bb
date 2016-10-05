@@ -53,6 +53,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/content_restriction.h"
+#include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
@@ -252,7 +253,7 @@ bool IsShowingWebContentsModalDialog(Browser* browser) {
   return manager && manager->IsDialogActive();
 }
 
-#if defined(ENABLE_BASIC_PRINTING)
+#if BUILDFLAG(ENABLE_BASIC_PRINT_DIALOG)
 bool PrintPreviewShowing(const Browser* browser) {
 #if defined(ENABLE_PRINT_PREVIEW)
   WebContents* contents = browser->tab_strip_model()->GetActiveWebContents();
@@ -264,7 +265,7 @@ bool PrintPreviewShowing(const Browser* browser) {
   return false;
 #endif
 }
-#endif  // ENABLE_BASIC_PRINTING
+#endif  // BUILDFLAG(ENABLE_BASIC_PRINT_DIALOG)
 
 }  // namespace
 
@@ -901,12 +902,16 @@ void BasicPrint(Browser* browser) {
 }
 
 bool CanBasicPrint(Browser* browser) {
+#if BUILDFLAG(ENABLE_BASIC_PRINT_DIALOG)
   // If printing is not disabled via pref or policy, it is always possible to
   // advanced print when the print preview is visible.
   return browser->profile()->GetPrefs()->GetBoolean(prefs::kPrintingEnabled) &&
-      (PrintPreviewShowing(browser) || CanPrint(browser));
+         (PrintPreviewShowing(browser) || CanPrint(browser));
+#else
+  return false;  // The print dialog is disabled.
+#endif  // BUILDFLAG(ENABLE_BASIC_PRINT_DIALOG)
 }
-#endif  // ENABLE_BASIC_PRINTING
+#endif  // defined(ENABLE_BASIC_PRINTING)
 
 bool CanRouteMedia(Browser* browser) {
   // Do not allow user to open Media Router dialog when there is already an
