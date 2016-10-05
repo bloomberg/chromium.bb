@@ -20,24 +20,15 @@ Polymer({
     /**
      * @type {?Array<!ForeignSession>}
      */
-    sessionList: {
-      type: Array,
-      observer: 'updateSyncedDevices'
-    },
+    sessionList: {type: Array, observer: 'updateSyncedDevices'},
 
-    searchTerm: {
-      type: String,
-      observer: 'searchTermChanged'
-    },
+    searchTerm: {type: String, observer: 'searchTermChanged'},
 
     /**
      * An array of synced devices with synced tab data.
      * @type {!Array<!ForeignDeviceInternal>}
      */
-    syncedDevices_: {
-      type: Array,
-      value: function() { return []; }
-    },
+    syncedDevices_: {type: Array, value: function() { return []; }},
 
     /** @private */
     signInState: {
@@ -62,11 +53,17 @@ Polymer({
 
   listeners: {
     'toggle-menu': 'onToggleMenu_',
-    'scroll': 'onListScroll_'
+    'scroll': 'onListScroll_',
+    'update-focus-grid': 'updateFocusGrid_',
   },
+
+  /** @type {?cr.ui.FocusGrid} */
+  focusGrid_: null,
 
   /** @override */
   attached: function() {
+    this.focusGrid_ = new cr.ui.FocusGrid();
+
     // Update the sign in state.
     chrome.send('otherDevicesInitialized');
     md_history.BrowserService.getInstance().recordHistogram(
@@ -74,12 +71,16 @@ Polymer({
         SyncedTabsHistogram.LIMIT);
   },
 
+  /** @override */
+  detached: function() { this.focusGrid_.destroy(); },
+
   /** @return {HTMLElement} */
   getContentScrollTarget: function() { return this; },
 
   /**
    * @param {!ForeignSession} session
    * @return {!ForeignDeviceInternal}
+   * @private
    */
   createInternalDevice_: function(session) {
     var tabs = [];
@@ -123,16 +124,17 @@ Polymer({
     };
   },
 
-  onSignInTap_: function() {
-    chrome.send('startSignInFlow');
-  },
+  /** @private */
+  onSignInTap_: function() { chrome.send('startSignInFlow'); },
 
+  /** @private */
   onListScroll_: function() {
     var menu = this.$.menu.getIfExists();
     if (menu)
       menu.closeMenu();
   },
 
+  /** @private */
   onToggleMenu_: function(e) {
     var menu = /** @type {CrSharedMenuElement} */ this.$.menu.get();
     menu.toggleMenu(e.detail.target, e.detail.tag);
@@ -143,6 +145,7 @@ Polymer({
     }
   },
 
+  /** @private */
   onOpenAllTap_: function() {
     var menu = assert(this.$.menu.getIfExists());
     var browserService = md_history.BrowserService.getInstance();
@@ -154,6 +157,27 @@ Polymer({
     menu.closeMenu();
   },
 
+  /** @private */
+  updateFocusGrid_: function() {
+    if (!this.focusGrid_)
+      return;
+
+    this.focusGrid_.destroy();
+
+    this.debounce('updateFocusGrid', function() {
+      Polymer.dom(this.root)
+          .querySelectorAll('history-synced-device-card')
+          .reduce(
+              function(prev, cur) {
+                return prev.concat(cur.createFocusRows());
+              },
+              [])
+          .forEach(function(row) { this.focusGrid_.addRow(row); }.bind(this));
+      this.focusGrid_.ensureRowActive();
+    });
+  },
+
+  /** @private */
   onDeleteSessionTap_: function() {
     var menu = assert(this.$.menu.getIfExists());
     var browserService = md_history.BrowserService.getInstance();
@@ -165,9 +189,7 @@ Polymer({
   },
 
   /** @private */
-  clearDisplayedSyncedDevices_: function() {
-    this.syncedDevices_ = [];
-  },
+  clearDisplayedSyncedDevices_: function() { this.syncedDevices_ = []; },
 
   /**
    * Decide whether or not should display no synced tabs message.
@@ -234,31 +256,14 @@ Polymer({
         SyncedTabsHistogram.LIMIT);
     }
 
-    // First, update any existing devices that have changed.
-    var updateCount = Math.min(sessionList.length, this.syncedDevices_.length);
-    for (var i = 0; i < updateCount; i++) {
-      var oldDevice = this.syncedDevices_[i];
-      if (oldDevice.tag != sessionList[i].tag ||
-          oldDevice.timestamp != sessionList[i].timestamp) {
-        var device = this.createInternalDevice_(sessionList[i]);
-        if (device.tabs.length != 0)
-          this.splice('syncedDevices_', i, 1, device);
-      }
-    }
+    var devices = [];
+    sessionList.forEach(function(session) {
+      var device = this.createInternalDevice_(session);
+      if (device.tabs.length != 0)
+        devices.push(device);
+    }.bind(this));
 
-    if (sessionList.length >= this.syncedDevices_.length) {
-      // The list grew; append new items.
-      for (var i = updateCount; i < sessionList.length; i++) {
-        var device = this.createInternalDevice_(sessionList[i]);
-        if (device.tabs.length != 0)
-          this.push('syncedDevices_', device);
-      }
-    } else {
-      // The list shrank; remove deleted items.
-      this.splice(
-          'syncedDevices_', updateCount,
-          this.syncedDevices_.length - updateCount);
-    }
+    this.syncedDevices_ = devices;
   },
 
   /**
