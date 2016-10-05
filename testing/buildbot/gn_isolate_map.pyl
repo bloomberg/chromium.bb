@@ -391,6 +391,10 @@
     "label": "//components/cronet/android:cronet_package",
     "type": "additional_compile_target",
   },
+  "cronet_test": {
+    "label": "//components/cronet/ios:cronet_test",
+    "type": "raw",
+  },
   "cronet_test_instrumentation_apk": {
     "label": "//components/cronet/android:cronet_test_instrumentation_apk",
     "type": "additional_compile_target",
