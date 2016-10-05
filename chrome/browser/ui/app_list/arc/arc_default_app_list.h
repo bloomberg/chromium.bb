@@ -69,6 +69,11 @@ class ArcDefaultAppList {
 
   const AppInfoMap& app_map() const { return apps_; }
 
+  // Marks default apps as hidden for user, for example in case Arc is managed
+  // and disabled.
+  void set_hidden(bool hidden) { hidden_ = hidden; }
+  bool is_hidden() const { return hidden_; }
+
  private:
   // Defines mapping package name to uninstalled state.
   using PacakageMap = std::map<std::string, bool>;
@@ -79,6 +84,7 @@ class ArcDefaultAppList {
   // Unowned pointer.
   Delegate* const delegate_;
   content::BrowserContext* const context_;
+  bool hidden_ = true;
 
   AppInfoMap apps_;
   PacakageMap packages_;

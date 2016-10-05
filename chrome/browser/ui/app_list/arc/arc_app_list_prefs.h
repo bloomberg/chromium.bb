@@ -282,6 +282,9 @@ class ArcAppListPrefs
 
   void StartPrefs();
 
+  void UpdateDefaultAppsHiddenState();
+  void RegisterDefaultApps();
+
   // Returns list of packages from prefs. If |installed| is set to true then
   // returns currently installed packages. If not, returns list of packages that
   // where uninstalled. Note, we store uninstall packages only for packages of

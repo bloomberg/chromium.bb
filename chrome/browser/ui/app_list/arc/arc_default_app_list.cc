@@ -172,6 +172,8 @@ void ArcDefaultAppList::OnAppsReady(std::unique_ptr<AppInfoMap> apps) {
 
 const ArcDefaultAppList::AppInfo* ArcDefaultAppList::GetApp(
     const std::string& app_id) const {
+  if (hidden_)
+    return nullptr;
   const auto it = apps_.find(app_id);
   if (it == apps_.end())
     return nullptr;

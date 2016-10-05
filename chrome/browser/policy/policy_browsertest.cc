@@ -203,6 +203,8 @@
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ui/app_list/arc/arc_default_app_list.h"
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chromeos/audio/cras_audio_handler.h"
@@ -4131,10 +4133,38 @@ class ArcPolicyTest : public PolicyTest {
     command_line->AppendSwitch(chromeos::switches::kEnableArc);
   }
 
+  void SetArcEnabledByPolicy(bool enabled) {
+    PolicyMap policies;
+    policies.Set(key::kArcEnabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                 POLICY_SOURCE_CLOUD,
+                 base::WrapUnique(new base::FundamentalValue(enabled)),
+                 nullptr);
+    UpdateProviderPolicy(policies);
+    if (browser()) {
+      const PrefService* const prefs = browser()->profile()->GetPrefs();
+      EXPECT_EQ(prefs->GetBoolean(prefs::kArcEnabled), enabled);
+    }
+  }
+
  private:
   chromeos::FakeSessionManagerClient *fake_session_manager_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcPolicyTest);
+};
+
+class ArcPolicyDefaultAppTest : public ArcPolicyTest {
+ public:
+  ArcPolicyDefaultAppTest() {}
+  ~ArcPolicyDefaultAppTest() override {}
+
+ protected:
+  void SetUpInProcessBrowserTestFixture() override {
+    ArcDefaultAppList::UseTestAppsDirectory();
+    ArcPolicyTest::SetUpInProcessBrowserTestFixture();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ArcPolicyDefaultAppTest);
 };
 
 // Test ArcEnabled policy.
@@ -4142,29 +4172,47 @@ IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcEnabled) {
   SetUpTest();
 
   const PrefService* const pref = browser()->profile()->GetPrefs();
-  const arc::ArcBridgeService* const arc_bridge_service
-      = arc::ArcBridgeService::Get();
+  const arc::ArcBridgeService* const arc_bridge_service =
+      arc::ArcBridgeService::Get();
 
   // ARC is switched off by default.
   EXPECT_TRUE(arc_bridge_service->stopped());
   EXPECT_FALSE(pref->GetBoolean(prefs::kArcEnabled));
 
   // Enable ARC.
-  PolicyMap policies;
-  policies.Set(key::kArcEnabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-               POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::FundamentalValue(true)), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_TRUE(pref->GetBoolean(prefs::kArcEnabled));
+  SetArcEnabledByPolicy(true);
   EXPECT_TRUE(arc_bridge_service->ready());
 
   // Disable ARC.
-  policies.Set(key::kArcEnabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-               POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::FundamentalValue(false)), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_FALSE(pref->GetBoolean(prefs::kArcEnabled));
+  SetArcEnabledByPolicy(false);
   EXPECT_TRUE(arc_bridge_service->stopped());
+
+  TearDownTest();
+}
+
+// Test Arc default apps do not appear when Arc is disabled by policy.
+IN_PROC_BROWSER_TEST_F(ArcPolicyDefaultAppTest, DefaultApps) {
+  // Started disabled.
+  SetArcEnabledByPolicy(false);
+
+  SetUpTest();
+
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(browser()->profile());
+  ASSERT_NE(nullptr, prefs);
+
+  base::RunLoop run_loop;
+  prefs->SetDefaltAppsReadyCallback(run_loop.QuitClosure());
+  run_loop.Run();
+
+  EXPECT_TRUE(prefs->GetAppIds().empty());
+
+  // Enable Arc
+  SetArcEnabledByPolicy(true);
+  EXPECT_FALSE(prefs->GetAppIds().empty());
+
+  // Disable Arc again.
+  SetArcEnabledByPolicy(false);
+  EXPECT_TRUE(prefs->GetAppIds().empty());
 
   TearDownTest();
 }
