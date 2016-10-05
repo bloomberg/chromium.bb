@@ -88,6 +88,7 @@ typedef struct AV1Decoder {
   int need_resync;   // wait for key/intra-only frame.
   int hold_ref_buf;  // hold the reference buffer.
 #if CONFIG_ACCOUNTING
+  int acct_enabled;
   Accounting accounting;
 #endif
   size_t uncomp_hdr_size;       // Size of the uncompressed header

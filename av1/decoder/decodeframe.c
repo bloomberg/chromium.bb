@@ -1341,7 +1341,9 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
     pbi->total_tiles = tile_rows * tile_cols;
   }
 #if CONFIG_ACCOUNTING
-  aom_accounting_reset(&pbi->accounting);
+  if (pbi->acct_enabled) {
+    aom_accounting_reset(&pbi->accounting);
+  }
 #endif
   // Load all tile information into tile_data.
   for (tile_row = 0; tile_row < tile_rows; ++tile_row) {
@@ -1361,7 +1363,11 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
                           &tile_data->bit_reader, pbi->decrypt_cb,
                           pbi->decrypt_state);
 #if CONFIG_ACCOUNTING
-      tile_data->bit_reader.accounting = &pbi->accounting;
+      if (pbi->acct_enabled) {
+        tile_data->bit_reader.accounting = &pbi->accounting;
+      } else {
+        tile_data->bit_reader.accounting = NULL;
+      }
 #endif
       av1_init_macroblockd(cm, &tile_data->xd, tile_data->dqcoeff);
 #if CONFIG_PALETTE
@@ -1381,8 +1387,10 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
             pbi->inv_tile_order ? tile_cols - tile_col - 1 : tile_col;
         tile_data = pbi->tile_data + tile_cols * tile_row + col;
 #if CONFIG_ACCOUNTING
-        tile_data->bit_reader.accounting->last_tell_frac =
-            aom_reader_tell_frac(&tile_data->bit_reader);
+        if (pbi->acct_enabled) {
+          tile_data->bit_reader.accounting->last_tell_frac =
+              aom_reader_tell_frac(&tile_data->bit_reader);
+        }
 #endif
         av1_tile_set_col(&tile, tile_data->cm, col);
         av1_zero(tile_data->xd.left_context);

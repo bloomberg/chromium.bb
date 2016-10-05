@@ -127,6 +127,7 @@ AV1Decoder *av1_decoder_create(BufferPool *const pool) {
   aom_qm_init(cm);
 #endif
 #if CONFIG_ACCOUNTING
+  pbi->acct_enabled = 1;
   aom_accounting_init(&pbi->accounting);
 #endif
   cm->error.setjmp = 0;
