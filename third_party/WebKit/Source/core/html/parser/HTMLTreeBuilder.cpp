@@ -219,12 +219,10 @@ HTMLTreeBuilder::HTMLTreeBuilder(HTMLDocumentParser* parser,
                                  Document& document,
                                  ParserContentPolicy parserContentPolicy,
                                  const HTMLParserOptions& options)
-    : m_framesetOk(true)
+    : m_framesetOk(true),
 #if ENABLE(ASSERT)
-      ,
-      m_isAttached(true)
+      m_isAttached(true),
 #endif
-      ,
       m_tree(parser->reentryPermit(), document, parserContentPolicy),
       m_insertionMode(InitialMode),
       m_originalInsertionMode(InitialMode),

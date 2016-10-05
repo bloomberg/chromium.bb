@@ -145,12 +145,10 @@ class ParkThreadsScope final {
 
 ThreadState::ThreadState(BlinkGC::ThreadHeapMode threadHeapMode)
     : m_thread(currentThread()),
-      m_persistentRegion(wrapUnique(new PersistentRegion()))
+      m_persistentRegion(wrapUnique(new PersistentRegion())),
 #if OS(WIN) && COMPILER(MSVC)
-      ,
-      m_threadStackSize(0)
+      m_threadStackSize(0),
 #endif
-      ,
       m_startOfStack(
           reinterpret_cast<intptr_t*>(StackFrameDepth::getStackStart())),
       m_endOfStack(
@@ -172,16 +170,13 @@ ThreadState::ThreadState(BlinkGC::ThreadHeapMode threadHeapMode)
       m_threadLocalWeakCallbackStack(CallbackStack::create()),
       m_isolate(nullptr),
       m_traceDOMWrappers(nullptr),
-      m_invalidateDeadObjectsInWrappersMarkingDeque(nullptr)
+      m_invalidateDeadObjectsInWrappersMarkingDeque(nullptr),
 #if defined(ADDRESS_SANITIZER)
-      ,
-      m_asanFakeStack(__asan_get_current_fake_stack())
+      m_asanFakeStack(__asan_get_current_fake_stack()),
 #endif
 #if defined(LEAK_SANITIZER)
-      ,
-      m_disabledStaticPersistentsRegistration(0)
+      m_disabledStaticPersistentsRegistration(0),
 #endif
-      ,
       m_allocatedObjectSize(0),
       m_markedObjectSize(0),
       m_reportedMemoryToV8(0) {

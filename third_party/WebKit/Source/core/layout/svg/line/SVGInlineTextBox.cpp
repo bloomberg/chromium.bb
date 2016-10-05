@@ -180,15 +180,11 @@ TextRun SVGInlineTextBox::constructTextRun(
   RELEASE_ASSERT(!text.needsLayout());
 
   TextRun run(
-      static_cast<const LChar*>(
-          nullptr)  // characters, will be set below if non-zero.
-      ,
-      0  // length, will be set below if non-zero.
-      ,
-      0  // xPos, only relevant with allowTabs=true
-      ,
-      0  // padding, only relevant for justified text, not relevant for SVG
-      ,
+      // characters, will be set below if non-zero.
+      static_cast<const LChar*>(nullptr),
+      0,  // length, will be set below if non-zero.
+      0,  // xPos, only relevant with allowTabs=true
+      0,  // padding, only relevant for justified text, not relevant for SVG
       TextRun::AllowTrailingExpansion, direction(),
       dirOverride() ||
           style.rtlOrdering() == VisualOrder /* directionalOverride */);

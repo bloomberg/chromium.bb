@@ -230,13 +230,11 @@ LayoutObject::LayoutObject(Node* node)
       m_node(node),
       m_parent(nullptr),
       m_previous(nullptr),
-      m_next(nullptr)
+      m_next(nullptr),
 #if ENABLE(ASSERT)
-      ,
       m_hasAXObject(false),
-      m_setNeedsLayoutForbidden(false)
+      m_setNeedsLayoutForbidden(false),
 #endif
-      ,
       m_bitfields(node) {
   InstanceCounters::incrementCounter(InstanceCounters::LayoutObjectCounter);
   if (m_node)

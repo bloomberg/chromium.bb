@@ -118,12 +118,11 @@ HTMLInputElement::HTMLInputElement(Document& document,
       m_canReceiveDroppedFiles(false),
       m_shouldRevealPassword(false),
       m_needsToUpdateViewValue(true),
-      m_isPlaceholderVisible(false)
+      m_isPlaceholderVisible(false),
       // |m_inputType| is lazily created when constructed by the parser to avoid
       // constructing unnecessarily a text inputType and its shadow subtree, just
       // to destroy them when the |type| attribute gets set by the parser to
       // something else than 'text'.
-      ,
       m_inputType(createdByParser ? nullptr : InputType::createText(*this)),
       m_inputTypeView(m_inputType ? m_inputType->createView() : nullptr) {
   setHasCustomStyleCallbacks();

@@ -62,12 +62,10 @@ using namespace SVGNames;
 SVGElement::SVGElement(const QualifiedName& tagName,
                        Document& document,
                        ConstructionType constructionType)
-    : Element(tagName, &document, constructionType)
+    : Element(tagName, &document, constructionType),
 #if ENABLE(ASSERT)
-      ,
-      m_inRelativeLengthClientsInvalidation(false)
+      m_inRelativeLengthClientsInvalidation(false),
 #endif
-      ,
       m_SVGRareData(nullptr),
       m_className(SVGAnimatedString::create(this,
                                             HTMLNames::classAttr,

@@ -286,9 +286,8 @@ class PLATFORM_EXPORT GIFImageReader final {
   GIFImageReader(blink::GIFImageDecoder* client = 0)
       : m_client(client),
         m_state(GIFType),
-        m_bytesToConsume(
-            6)  // Number of bytes for GIF type, either "GIF87a" or "GIF89a".
-        ,
+        // Number of bytes for GIF type, either "GIF87a" or "GIF89a".
+        m_bytesToConsume(6),
         m_bytesRead(0),
         m_version(0),
         m_screenWidth(0),

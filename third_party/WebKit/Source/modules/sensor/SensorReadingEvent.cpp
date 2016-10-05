@@ -10,8 +10,7 @@ SensorReadingEvent::~SensorReadingEvent() = default;
 
 SensorReadingEvent::SensorReadingEvent(const AtomicString& eventType,
                                        SensorReading* reading)
-    : Event(eventType, false, false)  // Does not bubble and is not cancelable.
-      ,
+    : Event(eventType, false, false),  // Does not bubble and is not cancelable.
       m_reading(reading) {
   DCHECK(m_reading);
 }

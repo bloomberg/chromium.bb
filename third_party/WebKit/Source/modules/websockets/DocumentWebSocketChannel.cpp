@@ -137,8 +137,7 @@ DocumentWebSocketChannel::DocumentWebSocketChannel(
       m_document(document),
       m_sendingQuota(0),
       m_receivedDataSizeForFlowControl(
-          receivedDataSizeForFlowControlHighWaterMark * 2)  // initial quota
-      ,
+          receivedDataSizeForFlowControlHighWaterMark * 2),  // initial quota
       m_sentSizeOfTopMessage(0),
       m_locationAtConstruction(std::move(location)) {}
 

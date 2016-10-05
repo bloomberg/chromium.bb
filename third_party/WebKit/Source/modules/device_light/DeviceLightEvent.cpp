@@ -9,10 +9,8 @@ namespace blink {
 DeviceLightEvent::~DeviceLightEvent() {}
 
 DeviceLightEvent::DeviceLightEvent(const AtomicString& eventType, double value)
-    : Event(eventType,
-            true,
-            false)  // The DeviceLightEvent bubbles but is not cancelable.
-      ,
+    // The DeviceLightEvent bubbles but is not cancelable.
+    : Event(eventType, true, false),
       m_value(value) {}
 
 DeviceLightEvent::DeviceLightEvent(const AtomicString& eventType,

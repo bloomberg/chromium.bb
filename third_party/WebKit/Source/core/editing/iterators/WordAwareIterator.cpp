@@ -29,9 +29,8 @@
 namespace blink {
 
 WordAwareIterator::WordAwareIterator(const Position& start, const Position& end)
-    : m_didLookAhead(
-          true)  // So we consider the first chunk from the text iterator.
-      ,
+    // So we consider the first chunk from the text iterator.
+    : m_didLookAhead(true),
       m_textIterator(start, end) {
   advance();  // Get in position over the first chunk of text.
 }

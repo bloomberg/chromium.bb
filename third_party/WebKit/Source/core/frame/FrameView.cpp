@@ -168,12 +168,10 @@ FrameView::FrameView(LocalFrame* frame)
       m_topControlsViewportAdjustment(0),
       m_needsUpdateWidgetGeometries(false),
       m_needsUpdateViewportIntersection(true),
-      m_needsUpdateViewportIntersectionInSubtree(true)
+      m_needsUpdateViewportIntersectionInSubtree(true),
 #if ENABLE(ASSERT)
-      ,
-      m_hasBeenDisposed(false)
+      m_hasBeenDisposed(false),
 #endif
-      ,
       m_horizontalScrollbarMode(ScrollbarAuto),
       m_verticalScrollbarMode(ScrollbarAuto),
       m_horizontalScrollbarLock(false),

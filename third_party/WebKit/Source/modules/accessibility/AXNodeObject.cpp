@@ -71,12 +71,10 @@ using namespace HTMLNames;
 AXNodeObject::AXNodeObject(Node* node, AXObjectCacheImpl& axObjectCache)
     : AXObject(axObjectCache),
       m_ariaRole(UnknownRole),
-      m_childrenDirty(false)
+      m_childrenDirty(false),
 #if ENABLE(ASSERT)
-      ,
-      m_initialized(false)
+      m_initialized(false),
 #endif
-      ,
       m_node(node) {
 }
 

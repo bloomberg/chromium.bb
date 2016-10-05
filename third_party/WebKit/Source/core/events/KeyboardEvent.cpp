@@ -83,9 +83,8 @@ KeyboardEvent::KeyboardEvent(const WebKeyboardEvent& key, AbstractView* view)
           static_cast<PlatformEvent::Modifiers>(key.modifiers),
           key.timeStampSeconds,
           InputDeviceCapabilities::doesntFireTouchEventsSourceCapabilities()),
-      m_keyEvent(wrapUnique(new WebKeyboardEvent(key)))
-      // TODO: BUG482880 Fix this initialization to lazy initialization.
-      ,
+      m_keyEvent(wrapUnique(new WebKeyboardEvent(key))),
+      // TODO(crbug.com/482880): Fix this initialization to lazy initialization.
       m_code(Platform::current()->domCodeStringFromEnum(key.domCode)),
       m_key(Platform::current()->domKeyStringFromEnum(key.domKey)),
       m_location(keyLocationCode(key)) {

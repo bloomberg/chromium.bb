@@ -117,9 +117,8 @@ ScriptRunIterator::ScriptRunIterator(const UChar* text,
                                      const ScriptData* data)
     : m_text(text),
       m_length(length),
-      m_bracketsFixupDepth(0)
+      m_bracketsFixupDepth(0),
       // The initial value of m_aheadCharacter is not used.
-      ,
       m_aheadCharacter(0),
       m_aheadPos(0),
       m_commonPreferred(USCRIPT_COMMON),

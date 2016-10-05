@@ -64,10 +64,9 @@ StyleEngine::StyleEngine(Document& document)
       m_isMaster(!document.importsController() ||
                  document.importsController()->master() == &document),
       m_documentStyleSheetCollection(
-          DocumentStyleSheetCollection::create(document))
+          DocumentStyleSheetCollection::create(document)),
       // We don't need to create CSSFontSelector for imported document or
       // HTMLTemplateElement's document, because those documents have no frame.
-      ,
       m_fontSelector(document.frame() ? CSSFontSelector::create(&document)
                                       : nullptr) {
   if (m_fontSelector)

@@ -65,9 +65,8 @@ AnimationTimeline* AnimationTimeline::create(Document* document,
 
 AnimationTimeline::AnimationTimeline(Document* document, PlatformTiming* timing)
     : m_document(document),
-      m_zeroTime(
-          0)  // 0 is used by unit tests which cannot initialize from the loader
-      ,
+      // 0 is used by unit tests which cannot initialize from the loader
+      m_zeroTime(0),
       m_zeroTimeInitialized(false),
       m_outdatedAnimationCount(0),
       m_playbackRate(1),

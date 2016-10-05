@@ -74,14 +74,12 @@ MediaQueryEvaluator::MediaQueryEvaluator(const char* acceptedMediaType,
     : m_mediaType(acceptedMediaType), m_expectedResult(mediaFeatureResult) {}
 
 MediaQueryEvaluator::MediaQueryEvaluator(LocalFrame* frame)
-    : m_expectedResult(
-          false)  // Doesn't matter when we have m_frame and m_style.
-      ,
+    // Doesn't matter when we have m_frame and m_style.
+    : m_expectedResult(false),
       m_mediaValues(MediaValues::createDynamicIfFrameExists(frame)) {}
 
 MediaQueryEvaluator::MediaQueryEvaluator(const MediaValues& mediaValues)
-    : m_expectedResult(false)  // Doesn't matter when we have mediaValues.
-      ,
+    : m_expectedResult(false),  // Doesn't matter when we have mediaValues.
       m_mediaValues(mediaValues.copy()) {}
 
 MediaQueryEvaluator::~MediaQueryEvaluator() {}

@@ -37,8 +37,7 @@ DeviceOrientationEvent::DeviceOrientationEvent()
 DeviceOrientationEvent::DeviceOrientationEvent(
     const AtomicString& eventType,
     DeviceOrientationData* orientation)
-    : Event(eventType, false, false)  // Can't bubble, not cancelable
-      ,
+    : Event(eventType, false, false),  // Can't bubble, not cancelable
       m_orientation(orientation) {}
 
 void DeviceOrientationEvent::initDeviceOrientationEvent(

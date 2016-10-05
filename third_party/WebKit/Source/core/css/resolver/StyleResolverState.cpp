@@ -36,9 +36,8 @@ StyleResolverState::StyleResolverState(
     const ComputedStyle* parentStyle)
     : m_elementContext(elementContext),
       m_document(document),
-      m_style(nullptr)
+      m_style(nullptr),
       // TODO(jchaffraix): We should make m_parentStyle const (https://crbug.com/468152)
-      ,
       m_parentStyle(const_cast<ComputedStyle*>(parentStyle)),
       m_applyPropertyToRegularStyle(true),
       m_applyPropertyToVisitedLinkStyle(false),

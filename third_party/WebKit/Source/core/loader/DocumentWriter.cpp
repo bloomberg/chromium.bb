@@ -56,11 +56,10 @@ DocumentWriter::DocumentWriter(Document* document,
                                const AtomicString& mimeType,
                                const AtomicString& encoding)
     : m_document(document),
-      m_decoderBuilder(mimeType, encoding)
+      m_decoderBuilder(mimeType, encoding),
       // We grab a reference to the parser so that we'll always send data to the
       // original parser, even if the document acquires a new parser (e.g., via
       // document.open).
-      ,
       m_parser(m_document->implicitOpen(parserSyncPolicy)) {
   if (m_document->frame()) {
     if (FrameView* view = m_document->frame()->view())

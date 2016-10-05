@@ -287,12 +287,10 @@ static bool hasExplicitWidth(const LayoutBlock* block) {
 
 TextAutosizer::TextAutosizer(const Document* document)
     : m_document(document),
-      m_firstBlockToBeginLayout(nullptr)
+      m_firstBlockToBeginLayout(nullptr),
 #if ENABLE(ASSERT)
-      ,
-      m_blocksThatHaveBegunLayout()
+      m_blocksThatHaveBegunLayout(),
 #endif
-      ,
       m_superclusters(),
       m_clusterStack(),
       m_fingerprintMapper(),

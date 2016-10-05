@@ -43,12 +43,10 @@ namespace blink {
 TimerBase::TimerBase(WebTaskRunner* webTaskRunner)
     : m_nextFireTime(0),
       m_repeatInterval(0),
-      m_webTaskRunner(webTaskRunner->clone())
+      m_webTaskRunner(webTaskRunner->clone()),
 #if DCHECK_IS_ON()
-      ,
-      m_thread(currentThread())
+      m_thread(currentThread()),
 #endif
-      ,
       m_weakPtrFactory(this) {
   ASSERT(m_webTaskRunner);
 }

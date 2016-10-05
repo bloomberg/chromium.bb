@@ -59,14 +59,12 @@ GraphicsContext::GraphicsContext(PaintController& paintController,
     : m_canvas(nullptr),
       m_paintController(paintController),
       m_paintStateStack(),
-      m_paintStateIndex(0)
+      m_paintStateIndex(0),
 #if DCHECK_IS_ON()
-      ,
       m_layerCount(0),
       m_disableDestructionChecks(false),
-      m_inDrawingRecorder(false)
+      m_inDrawingRecorder(false),
 #endif
-      ,
       m_disabledState(disableContextOrPainting),
       m_deviceScaleFactor(1.0f),
       m_printing(false),

@@ -92,12 +92,10 @@ AXObjectCache* AXObjectCacheImpl::create(Document& document) {
 
 AXObjectCacheImpl::AXObjectCacheImpl(Document& document)
     : m_document(document),
-      m_modificationCount(0)
+      m_modificationCount(0),
 #if ENABLE(ASSERT)
-      ,
-      m_hasBeenDisposed(false)
+      m_hasBeenDisposed(false),
 #endif
-      ,
       m_notificationPostTimer(this,
                               &AXObjectCacheImpl::notificationPostTimerFired) {
 }

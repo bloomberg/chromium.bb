@@ -76,12 +76,11 @@ HTMLPlugInElement::HTMLPlugInElement(
     bool createdByParser,
     PreferPlugInsForImagesOption preferPlugInsForImagesOption)
     : HTMLFrameOwnerElement(tagName, doc),
-      m_isDelayingLoadEvent(false)
+      m_isDelayingLoadEvent(false),
       // m_needsWidgetUpdate(!createdByParser) allows HTMLObjectElement to delay
       // widget updates until after all children are parsed. For HTMLEmbedElement
       // this delay is unnecessary, but it is simpler to make both classes share
       // the same codepath in this class.
-      ,
       m_needsWidgetUpdate(!createdByParser),
       m_shouldPreferPlugInsForImages(preferPlugInsForImagesOption ==
                                      ShouldPreferPlugInsForImages) {}

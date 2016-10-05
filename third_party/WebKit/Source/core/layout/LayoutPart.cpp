@@ -39,10 +39,9 @@
 namespace blink {
 
 LayoutPart::LayoutPart(Element* element)
-    : LayoutReplaced(element)
+    : LayoutReplaced(element),
       // Reference counting is used to prevent the part from being destroyed
       // while inside the Widget code, which might not be able to handle that.
-      ,
       m_refCount(1) {
   ASSERT(element);
   frameView()->addPart(this);

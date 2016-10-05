@@ -899,9 +899,8 @@ Editor::Editor(LocalFrame& frame)
     : m_frame(&frame),
       m_undoStack(UndoStack::create()),
       m_preventRevealSelection(0),
-      m_shouldStartNewKillRingSequence(false)
+      m_shouldStartNewKillRingSequence(false),
       // This is off by default, since most editors want this behavior (this matches IE but not FF).
-      ,
       m_shouldStyleWithCSS(false),
       m_killRing(wrapUnique(new KillRing)),
       m_areMarkedTextMatchesHighlighted(false),

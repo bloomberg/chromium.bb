@@ -138,12 +138,10 @@ PaintLayer::PaintLayer(LayoutBoxModelObject* layoutObject)
       m_isVisibleContentDirty(true),
       m_hasVisibleContent(false),
       m_isVisibleDescendantDirty(false),
-      m_hasVisibleDescendant(false)
+      m_hasVisibleDescendant(false),
 #if ENABLE(ASSERT)
-      ,
-      m_needsPositionUpdate(true)
+      m_needsPositionUpdate(true),
 #endif
-      ,
       m_is3DTransformedDescendantDirty(true),
       m_has3DTransformedDescendant(false),
       m_containsDirtyOverlayScrollbars(false),

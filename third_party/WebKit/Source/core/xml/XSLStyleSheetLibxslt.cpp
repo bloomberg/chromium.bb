@@ -62,8 +62,7 @@ XSLStyleSheet::XSLStyleSheet(Node* parentNode,
       m_finalURL(finalURL),
       m_isDisabled(false),
       m_embedded(embedded),
-      m_processed(true)  // The root sheet starts off processed.
-      ,
+      m_processed(true),  // The root sheet starts off processed.
       m_stylesheetDoc(0),
       m_stylesheetDocTaken(false),
       m_compilationFailed(false),
@@ -80,8 +79,7 @@ XSLStyleSheet::XSLStyleSheet(Document* ownerDocument,
       m_finalURL(finalURL),
       m_isDisabled(false),
       m_embedded(embedded),
-      m_processed(true)  // The root sheet starts off processed.
-      ,
+      m_processed(true),  // The root sheet starts off processed.
       m_stylesheetDoc(0),
       m_stylesheetDocTaken(false),
       m_compilationFailed(false),

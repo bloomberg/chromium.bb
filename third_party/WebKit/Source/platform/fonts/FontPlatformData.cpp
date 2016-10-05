@@ -91,21 +91,17 @@ FontPlatformData::FontPlatformData(float size,
 }
 
 FontPlatformData::FontPlatformData(const FontPlatformData& source)
-    : m_typeface(source.m_typeface)
+    : m_typeface(source.m_typeface),
 #if !OS(WIN)
-      ,
-      m_family(source.m_family)
+      m_family(source.m_family),
 #endif
-      ,
       m_textSize(source.m_textSize),
       m_syntheticBold(source.m_syntheticBold),
       m_syntheticItalic(source.m_syntheticItalic),
-      m_orientation(source.m_orientation)
+      m_orientation(source.m_orientation),
 #if OS(LINUX) || OS(ANDROID)
-      ,
-      m_style(source.m_style)
+      m_style(source.m_style),
 #endif
-      ,
       m_harfBuzzFace(nullptr),
       m_isHashTableDeletedValue(false)
 #if OS(WIN)
@@ -118,23 +114,19 @@ FontPlatformData::FontPlatformData(const FontPlatformData& source)
 }
 
 FontPlatformData::FontPlatformData(const FontPlatformData& src, float textSize)
-    : m_typeface(src.m_typeface)
+    : m_typeface(src.m_typeface),
 #if !OS(WIN)
-      ,
-      m_family(src.m_family)
+      m_family(src.m_family),
 #endif
-      ,
       m_textSize(textSize),
       m_syntheticBold(src.m_syntheticBold),
       m_syntheticItalic(src.m_syntheticItalic),
-      m_orientation(src.m_orientation)
+      m_orientation(src.m_orientation),
 #if OS(LINUX) || OS(ANDROID)
-      ,
       m_style(FontRenderStyle::querySystem(m_family,
                                            m_textSize,
-                                           m_typeface->style()))
+                                           m_typeface->style())),
 #endif
-      ,
       m_harfBuzzFace(nullptr),
       m_isHashTableDeletedValue(false)
 #if OS(WIN)
@@ -155,23 +147,19 @@ FontPlatformData::FontPlatformData(sk_sp<SkTypeface> tf,
                                    bool syntheticBold,
                                    bool syntheticItalic,
                                    FontOrientation orientation)
-    : m_typeface(std::move(tf))
+    : m_typeface(std::move(tf)),
 #if !OS(WIN)
-      ,
-      m_family(family)
+      m_family(family),
 #endif
-      ,
       m_textSize(textSize),
       m_syntheticBold(syntheticBold),
       m_syntheticItalic(syntheticItalic),
-      m_orientation(orientation)
+      m_orientation(orientation),
 #if OS(LINUX) || OS(ANDROID)
-      ,
       m_style(FontRenderStyle::querySystem(m_family,
                                            m_textSize,
-                                           m_typeface->style()))
+                                           m_typeface->style())),
 #endif
-      ,
       m_isHashTableDeletedValue(false)
 #if OS(WIN)
       ,

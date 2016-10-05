@@ -75,9 +75,8 @@ SincResampler::SincResampler(double scaleFactor,
       m_kernelStorage(m_kernelSize * (m_numberOfKernelOffsets + 1)),
       m_virtualSourceIndex(0),
       m_blockSize(512),
-      m_inputBuffer(m_blockSize +
-                    m_kernelSize)  // See input buffer layout above.
-      ,
+      // See input buffer layout above.
+      m_inputBuffer(m_blockSize + m_kernelSize),
       m_source(nullptr),
       m_sourceFramesAvailable(0),
       m_sourceProvider(nullptr),

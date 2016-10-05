@@ -52,9 +52,8 @@ class DOMDataStore {
 
  public:
   DOMDataStore(v8::Isolate* isolate, bool isMainWorld)
-      : m_isMainWorld(isMainWorld)
+      : m_isMainWorld(isMainWorld),
         // We never use |m_wrapperMap| when it's the main world.
-        ,
         m_wrapperMap(wrapUnique(
             isMainWorld ? nullptr
                         : new DOMWrapperMap<ScriptWrappable>(isolate))) {}
