@@ -121,8 +121,8 @@ LocationBarViewMac::LocationBarViewMac(AutocompleteTextField* field,
           new ManagePasswordsDecoration(command_updater, this)),
       browser_(browser),
       location_bar_visible_(true),
-      should_show_secure_verbose_(false),
-      should_animate_security_verbose_(false),
+      should_show_secure_verbose_(true),
+      should_animate_security_verbose_(true),
       is_width_available_for_security_verbose_(false),
       weak_ptr_factory_(this) {
   ScopedVector<ContentSettingImageModel> models =
