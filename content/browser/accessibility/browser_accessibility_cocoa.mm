@@ -106,11 +106,6 @@ const int kAXResultsLimitNoLimit = -1;
 
 extern "C" {
 
-// See http://openradar.appspot.com/9896491. This SPI has been tested on 10.5,
-// 10.6, and 10.7. It allows accessibility clients to observe events posted on
-// this object.
-void NSAccessibilityUnregisterUniqueIdForUIElement(id element);
-
 // The following are private accessibility APIs required for cursor navigation
 // and text selection. VoiceOver started relying on them in Mac OS X 10.11.
 #if !defined(MAC_OS_X_VERSION_10_11) || \
@@ -617,8 +612,10 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
 }
 
 - (void)detach {
-  if (browserAccessibility_)
-    NSAccessibilityUnregisterUniqueIdForUIElement(self);
+  if (!browserAccessibility_)
+    return;
+  NSAccessibilityPostNotification(
+      self, NSAccessibilityUIElementDestroyedNotification);
   browserAccessibility_ = nullptr;
 }
 
@@ -2890,7 +2887,10 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
   return browserAccessibility_->GetId();
 }
 
-- (BOOL)accessibilityShouldUseUniqueId {
+- (BOOL)accessibilityNotifiesWhenDestroyed {
+  // Indicate that BrowserAccessibilityCocoa will post a notification when it's
+  // destroyed (see -detach). This allows VoiceOver to do some internal things
+  // more efficiently.
   return YES;
 }
 

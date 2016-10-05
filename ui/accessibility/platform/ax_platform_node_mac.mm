@@ -199,6 +199,7 @@ RoleMap BuildSubroleMap() {
 
 EventMap BuildEventMap() {
   const EventMapEntry events[] = {
+      {ui::AX_EVENT_FOCUS, NSAccessibilityFocusedUIElementChangedNotification},
       {ui::AX_EVENT_TEXT_CHANGED, NSAccessibilityTitleChangedNotification},
       {ui::AX_EVENT_VALUE_CHANGED, NSAccessibilityValueChangedNotification},
       {ui::AX_EVENT_TEXT_SELECTION_CHANGED,
@@ -212,7 +213,7 @@ EventMap BuildEventMap() {
   return event_map;
 }
 
-void NotifyMacEvent(NSView* target, ui::AXEvent event_type) {
+void NotifyMacEvent(AXPlatformNodeCocoa* target, ui::AXEvent event_type) {
   NSAccessibilityPostNotification(
       target, [AXPlatformNodeCocoa nativeNotificationFromAXEvent:event_type]);
 }
@@ -255,6 +256,10 @@ void NotifyMacEvent(NSView* target, ui::AXEvent event_type) {
 }
 
 - (void)detach {
+  if (!node_)
+    return;
+  NSAccessibilityPostNotification(
+      self, NSAccessibilityUIElementDestroyedNotification);
   node_ = nil;
 }
 
@@ -283,6 +288,14 @@ void NotifyMacEvent(NSView* target, ui::AXEvent event_type) {
       return [child accessibilityHitTest:point];
   }
   return NSAccessibilityUnignoredAncestor(self);
+}
+
+- (BOOL)accessibilityNotifiesWhenDestroyed {
+  return YES;
+}
+
+- (id)accessibilityFocusedUIElement {
+  return node_->GetDelegate()->GetFocus();
 }
 
 - (NSArray*)accessibilityActionNames {
@@ -553,22 +566,21 @@ gfx::NativeViewAccessible AXPlatformNodeMac::GetNativeViewAccessible() {
 }
 
 void AXPlatformNodeMac::NotifyAccessibilityEvent(ui::AXEvent event_type) {
-  NSView* target = GetDelegate()->GetTargetForNativeAccessibilityEvent();
-
+  GetNativeViewAccessible();
   // Add mappings between ui::AXEvent and NSAccessibility notifications using
   // the EventMap above. This switch contains exceptions to those mappings.
   switch (event_type) {
     case ui::AX_EVENT_TEXT_CHANGED:
       // If the view is a user-editable textfield, this should change the value.
       if (GetData().role == ui::AX_ROLE_TEXT_FIELD) {
-        NotifyMacEvent(target, ui::AX_EVENT_VALUE_CHANGED);
+        NotifyMacEvent(native_node_, ui::AX_EVENT_VALUE_CHANGED);
         return;
       }
       break;
     default:
       break;
   }
-  NotifyMacEvent(target, event_type);
+  NotifyMacEvent(native_node_, event_type);
 }
 
 int AXPlatformNodeMac::GetIndexInParent() {

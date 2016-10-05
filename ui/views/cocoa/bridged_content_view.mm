@@ -1362,4 +1362,10 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
   return [hostedView_->GetNativeViewAccessible() accessibilityHitTest:point];
 }
 
+- (id)accessibilityFocusedUIElement {
+  if (!hostedView_)
+    return nil;
+  return [hostedView_->GetNativeViewAccessible() accessibilityFocusedUIElement];
+}
+
 @end
