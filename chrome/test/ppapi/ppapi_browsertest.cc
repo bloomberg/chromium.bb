@@ -308,13 +308,6 @@ TEST_PPAPI_NACL_WITH_SSL_SERVER(TCPSocketPrivate)
 TEST_PPAPI_OUT_OF_PROCESS_WITH_SSL_SERVER(TCPSocketPrivateTrusted)
 
 // UDPSocket tests.
-// UDPSocket_Broadcast is disabled for OSX because it requires root
-// permissions on OSX 10.7+.
-#if defined(OS_MACOSX)
-#define MAYBE_UDPSocket_Broadcast DISABLED_UDPSocket_Broadcast
-#else
-#define MAYBE_UDPSocket_Broadcast UDPSocket_Broadcast
-#endif
 
 #define UDPSOCKET_TEST(_test) \
   IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, _test) { \
@@ -341,24 +334,18 @@ UDPSOCKET_TEST(UDPSocket_ReadWrite)
 UDPSOCKET_TEST(UDPSocket_SetOption)
 UDPSOCKET_TEST(UDPSocket_SetOption_1_0)
 UDPSOCKET_TEST(UDPSocket_SetOption_1_1)
-UDPSOCKET_TEST(MAYBE_UDPSocket_Broadcast)
+UDPSOCKET_TEST(UDPSocket_Broadcast)
 UDPSOCKET_TEST(UDPSocket_ParallelSend)
 UDPSOCKET_TEST(UDPSocket_Multicast)
 
 // UDPSocketPrivate tests.
-// UDPSocketPrivate_Broadcast is disabled for OSX because it requires root
-// permissions on OSX 10.7+.
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(UDPSocketPrivate_Connect)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(UDPSocketPrivate_ConnectFailure)
-#if !defined(OS_MACOSX)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(UDPSocketPrivate_Broadcast)
-#endif  // !defined(OS_MACOSX)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(UDPSocketPrivate_SetSocketFeatureErrors)
 TEST_PPAPI_NACL(UDPSocketPrivate_Connect)
 TEST_PPAPI_NACL(UDPSocketPrivate_ConnectFailure)
-#if !defined(OS_MACOSX)
 TEST_PPAPI_NACL(UDPSocketPrivate_Broadcast)
-#endif  // !defined(OS_MACOSX)
 TEST_PPAPI_NACL(UDPSocketPrivate_SetSocketFeatureErrors)
 
 // Disallowed socket tests.
