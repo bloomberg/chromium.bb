@@ -8,7 +8,7 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/dom/ElementRegistrationOptions.h"
+#include "core/dom/ElementDefinitionOptions.h"
 #include "core/dom/custom/CEReactionsScope.h"
 #include "core/dom/custom/CustomElementDefinition.h"
 #include "core/dom/custom/CustomElementDefinitionBuilder.h"
@@ -318,7 +318,7 @@ TEST_F(CustomElementRegistryTest, define_upgradesInDocumentElements) {
   NonThrowableExceptionState shouldNotThrow;
   {
     CEReactionsScope reactions;
-    registry().define("a-a", builder, ElementRegistrationOptions(),
+    registry().define("a-a", builder, ElementDefinitionOptions(),
                       shouldNotThrow);
   }
   LogUpgradeDefinition* definition =
@@ -361,7 +361,7 @@ TEST_F(CustomElementRegistryTest, attributeChangedCallback) {
   NonThrowableExceptionState shouldNotThrow;
   {
     CEReactionsScope reactions;
-    registry().define("a-a", builder, ElementRegistrationOptions(),
+    registry().define("a-a", builder, ElementDefinitionOptions(),
                       shouldNotThrow);
   }
   LogUpgradeDefinition* definition =
@@ -396,7 +396,7 @@ TEST_F(CustomElementRegistryTest, disconnectedCallback) {
   NonThrowableExceptionState shouldNotThrow;
   {
     CEReactionsScope reactions;
-    registry().define("a-a", builder, ElementRegistrationOptions(),
+    registry().define("a-a", builder, ElementDefinitionOptions(),
                       shouldNotThrow);
   }
   LogUpgradeDefinition* definition =
@@ -424,7 +424,7 @@ TEST_F(CustomElementRegistryTest, adoptedCallback) {
   NonThrowableExceptionState shouldNotThrow;
   {
     CEReactionsScope reactions;
-    registry().define("a-a", builder, ElementRegistrationOptions(),
+    registry().define("a-a", builder, ElementDefinitionOptions(),
                       shouldNotThrow);
   }
   LogUpgradeDefinition* definition =

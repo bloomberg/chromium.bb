@@ -10,7 +10,7 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/dom/ElementRegistrationOptions.h"
+#include "core/dom/ElementDefinitionOptions.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/custom/CEReactionsScope.h"
 #include "core/dom/custom/CustomElement.h"
@@ -32,6 +32,16 @@ static bool throwIfInvalidName(const AtomicString& name,
     return false;
   exceptionState.throwDOMException(
       SyntaxError, "\"" + name + "\" is not a valid custom element name");
+  return true;
+}
+
+// Returns true if |name| is valid.
+static bool throwIfValidName(const AtomicString& name,
+                             ExceptionState& exceptionState) {
+  if (!CustomElement::isValidName(name))
+    return false;
+  exceptionState.throwDOMException(
+      NotSupportedError, "\"" + name + "\" is a valid custom element name");
   return true;
 }
 
@@ -81,7 +91,7 @@ DEFINE_TRACE(CustomElementRegistry) {
 void CustomElementRegistry::define(ScriptState* scriptState,
                                    const AtomicString& name,
                                    const ScriptValue& constructor,
-                                   const ElementRegistrationOptions& options,
+                                   const ElementDefinitionOptions& options,
                                    ExceptionState& exceptionState) {
   ScriptCustomElementDefinitionBuilder builder(scriptState, this, constructor,
                                                exceptionState);
@@ -91,7 +101,7 @@ void CustomElementRegistry::define(ScriptState* scriptState,
 // http://w3c.github.io/webcomponents/spec/custom/#dfn-element-definition
 void CustomElementRegistry::define(const AtomicString& name,
                                    CustomElementDefinitionBuilder& builder,
-                                   const ElementRegistrationOptions& options,
+                                   const ElementDefinitionOptions& options,
                                    ExceptionState& exceptionState) {
   if (!builder.checkConstructorIntrinsics())
     return;
@@ -109,7 +119,16 @@ void CustomElementRegistry::define(const AtomicString& name,
   if (!builder.checkConstructorNotRegistered())
     return;
 
-  // TODO(dominicc): Implement steps 6-7 for customized built-in elements
+  // Step 7. customized built-in elements definition
+  // element interface extends option checks
+  if (RuntimeEnabledFeatures::customElementsBuiltinEnabled() &&
+      options.hasExtends()) {
+    // If element interface is valid custom element name, throw exception
+    if (throwIfValidName(AtomicString(options.extends()), exceptionState))
+      return;
+    // If element interface is undefined element, throw exception
+    // Set localname to extends
+  }
 
   // TODO(dominicc): Add a test where the prototype getter destroys
   // the context.

@@ -74,6 +74,7 @@ CSSTypedOM status=experimental
 CSSVariables2 status=experimental
 CSSViewport status=experimental
 CSSScrollSnapPoints status=test
+CustomElementsBuiltin status=test
 CustomElementsV1 status=stable
 CustomSchemeHandler depends_on=NavigatorContentUtils, status=experimental
 Database status=stable

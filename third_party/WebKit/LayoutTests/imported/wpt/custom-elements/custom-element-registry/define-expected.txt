@@ -42,9 +42,7 @@ PASS Element names: defining an element named font-face-name should throw a Synt
 PASS Element names: defining an element named missing-glyph should throw a SyntaxError 
 PASS If the name is already defined, should throw a NotSupportedError 
 PASS If the constructor is already defined, should throw a NotSupportedError 
-FAIL If extends is a-, should throw a NotSupportedError assert_throws: function "() =>  {
-        customElements.define('test-define-extend-valid-name', class {}, { extends: name });
-      }" did not throw
+PASS If extends is a-, should throw a NotSupportedError 
 PASS If extends is a-a, should throw a NotSupportedError 
 PASS If extends is aa-, should throw a NotSupportedError 
 PASS If extends is aa-a, should throw a NotSupportedError 

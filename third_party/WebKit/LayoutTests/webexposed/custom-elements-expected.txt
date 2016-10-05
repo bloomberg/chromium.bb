@@ -18,6 +18,7 @@ document.querySelector(":unresolved")
 span.getAttribute("is")
 type-extension
 
+PASS window.customElements.define("a-a", A, {extends: "b"}) did not throw exception.
 PASS successfullyParsed is true
 
 TEST COMPLETE

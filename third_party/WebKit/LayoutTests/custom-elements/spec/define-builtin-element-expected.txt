@@ -1,12 +1,5 @@
 This is a testharness.js-based test.
-FAIL Element interface for extends is not valid custom element name assert_throws: having valid custon element name element interface (a-a) for extends should throw a NotSupportedError function "() => {
-    try {
-      func.call(this);
-    } catch(e) {
-      exception = e;
-      throw e;
-    }
-  }" did not throw
+PASS Element interface for extends is not valid custom element name 
 FAIL Element interface for extends defined in specification assert_throws: having element interface for extends (bgsound) undefined in specs should throw a NotSupportedError function "() => {
     try {
       func.call(this);

@@ -20,7 +20,7 @@ class CustomElementDefinition;
 class CustomElementDefinitionBuilder;
 class CustomElementDescriptor;
 class Element;
-class ElementRegistrationOptions;
+class ElementDefinitionOptions;
 class ExceptionState;
 class LocalDOMWindow;
 class ScriptPromiseResolver;
@@ -42,12 +42,12 @@ class CORE_EXPORT CustomElementRegistry final
   void define(ScriptState*,
               const AtomicString& name,
               const ScriptValue& constructor,
-              const ElementRegistrationOptions&,
+              const ElementDefinitionOptions&,
               ExceptionState&);
 
   void define(const AtomicString& name,
               CustomElementDefinitionBuilder&,
-              const ElementRegistrationOptions&,
+              const ElementDefinitionOptions&,
               ExceptionState&);
 
   ScriptValue get(const AtomicString& name);

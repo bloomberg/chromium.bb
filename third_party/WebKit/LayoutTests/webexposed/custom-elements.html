@@ -22,5 +22,17 @@ div.remove();
 var span = document.createElement('span', 'type-extension');
 evalAndLogValue('span.getAttribute("is")');
 
+class A extends HTMLButtonElement {
+  constructor() {
+    super();
+  }
+}
+
+if (shouldNotThrow('window.customElements.define("a-a", A, {extends: "b"})')) {
+  if (window.internals) {
+    shouldBeTrue(window.internals.runtimeFlags.customElementsBuiltinEnabled);
+  }
+}
+
 successfullyParsed = true;
 </script>
