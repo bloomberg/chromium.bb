@@ -113,16 +113,16 @@ bool TabContentsSyncedTabDelegate::ProfileIsSupervised() const {
       ->IsSupervised();
 }
 
-const std::vector<const sessions::SerializedNavigationEntry*>*
+const std::vector<std::unique_ptr<const sessions::SerializedNavigationEntry>>*
 TabContentsSyncedTabDelegate::GetBlockedNavigations() const {
 #if defined(ENABLE_SUPERVISED_USERS)
   SupervisedUserNavigationObserver* navigation_observer =
       SupervisedUserNavigationObserver::FromWebContents(web_contents_);
   DCHECK(navigation_observer);
-  return navigation_observer->blocked_navigations();
+  return &navigation_observer->blocked_navigations();
 #else
   NOTREACHED();
-  return NULL;
+  return nullptr;
 #endif
 }
 

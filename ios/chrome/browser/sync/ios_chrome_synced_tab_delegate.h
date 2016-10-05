@@ -35,7 +35,7 @@ class IOSChromeSyncedTabDelegate
       int i,
       sessions::SerializedNavigationEntry* serialized_entry) const override;
   bool ProfileIsSupervised() const override;
-  const std::vector<const sessions::SerializedNavigationEntry*>*
+  const std::vector<std::unique_ptr<const sessions::SerializedNavigationEntry>>*
   GetBlockedNavigations() const override;
   bool IsPlaceholderTab() const override;
   int GetSyncId() const override;

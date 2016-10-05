@@ -564,19 +564,18 @@ class SyncedTabDelegateFake : public SyncedTabDelegate {
   std::string GetExtensionAppId() const override { return std::string(); }
   bool ProfileIsSupervised() const override { return is_supervised_; }
   void set_is_supervised(bool is_supervised) { is_supervised_ = is_supervised; }
-  const std::vector<const sessions::SerializedNavigationEntry*>*
+  const std::vector<std::unique_ptr<const sessions::SerializedNavigationEntry>>*
   GetBlockedNavigations() const override {
-    return &blocked_navigations_.get();
+    return &blocked_navigations_;
   }
   void set_blocked_navigations(
       std::vector<const content::NavigationEntry*>* navs) {
     for (auto* entry : *navs) {
-      std::unique_ptr<sessions::SerializedNavigationEntry> serialized_entry(
-          new sessions::SerializedNavigationEntry());
-      *serialized_entry =
-          sessions::ContentSerializedNavigationBuilder::FromNavigationEntry(
-              blocked_navigations_.size(), *entry);
-      blocked_navigations_.push_back(serialized_entry.release());
+      auto serialized_entry =
+          base::MakeUnique<sessions::SerializedNavigationEntry>(
+              sessions::ContentSerializedNavigationBuilder::FromNavigationEntry(
+                  blocked_navigations_.size(), *entry));
+      blocked_navigations_.push_back(std::move(serialized_entry));
     }
   }
   bool IsPlaceholderTab() const override { return true; }
@@ -599,8 +598,9 @@ class SyncedTabDelegateFake : public SyncedTabDelegate {
   int current_entry_index_;
   bool is_supervised_;
   int sync_id_;
-  ScopedVector<const sessions::SerializedNavigationEntry> blocked_navigations_;
-  ScopedVector<content::NavigationEntry> entries_;
+  std::vector<std::unique_ptr<const sessions::SerializedNavigationEntry>>
+      blocked_navigations_;
+  std::vector<std::unique_ptr<content::NavigationEntry>> entries_;
 };
 
 }  // namespace

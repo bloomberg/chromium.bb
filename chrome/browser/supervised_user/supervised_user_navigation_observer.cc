@@ -18,6 +18,7 @@
 #include "components/sessions/content/content_serialized_navigation_builder.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
 
 using base::Time;
 using content::NavigationEntry;
@@ -30,9 +31,9 @@ SupervisedUserNavigationObserver::~SupervisedUserNavigationObserver() {
 
 SupervisedUserNavigationObserver::SupervisedUserNavigationObserver(
     content::WebContents* web_contents)
-    : web_contents_(web_contents), weak_ptr_factory_(this) {
+    : content::WebContentsObserver(web_contents), weak_ptr_factory_(this) {
   Profile* profile =
-      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
   supervised_user_service_ =
       SupervisedUserServiceFactory::GetForProfile(profile);
   url_filter_ = supervised_user_service_->GetURLFilterForUIThread();
@@ -61,18 +62,43 @@ void SupervisedUserNavigationObserver::OnRequestBlocked(
   SupervisedUserInterstitial::Show(web_contents, url, reason, callback);
 }
 
+void SupervisedUserNavigationObserver::DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) {
+  // Only filter synchronous navigations (eg. pushState/popState); others will
+  // have been filtered by the ResourceThrottle.
+  if (!navigation_handle->IsSynchronousNavigation())
+    return;
+
+  if (!navigation_handle->IsInMainFrame())
+    return;
+
+  url_filter_->GetFilteringBehaviorForURLWithAsyncChecks(
+      web_contents()->GetLastCommittedURL(),
+      base::Bind(&SupervisedUserNavigationObserver::URLFilterCheckCallback,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 navigation_handle->GetURL()));
+}
+
+void SupervisedUserNavigationObserver::OnURLFilterChanged() {
+  url_filter_->GetFilteringBehaviorForURLWithAsyncChecks(
+      web_contents()->GetLastCommittedURL(),
+      base::Bind(&SupervisedUserNavigationObserver::URLFilterCheckCallback,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 web_contents()->GetLastCommittedURL()));
+}
+
 void SupervisedUserNavigationObserver::OnRequestBlockedInternal(
     const GURL& url) {
   Time timestamp = Time::Now();  // TODO(bauerb): Use SaneTime when available.
   // Create a history entry for the attempt and mark it as such.
   history::HistoryAddPageArgs add_page_args(
-      url, timestamp, history::ContextIDForWebContents(web_contents_), 0, url,
+      url, timestamp, history::ContextIDForWebContents(web_contents()), 0, url,
       history::RedirectList(), ui::PAGE_TRANSITION_BLOCKED,
       history::SOURCE_BROWSED, false, true);
 
   // Add the entry to the history database.
   Profile* profile =
-      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   history::HistoryService* history_service =
       HistoryServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::IMPLICIT_ACCESS);
@@ -81,24 +107,14 @@ void SupervisedUserNavigationObserver::OnRequestBlockedInternal(
   if (history_service)
     history_service->AddPage(add_page_args);
 
-  std::unique_ptr<NavigationEntry> entry(NavigationEntry::Create());
+  std::unique_ptr<NavigationEntry> entry = NavigationEntry::Create();
   entry->SetVirtualURL(url);
   entry->SetTimestamp(timestamp);
-  std::unique_ptr<sessions::SerializedNavigationEntry> serialized_entry(
-      new sessions::SerializedNavigationEntry());
-  *serialized_entry =
+  auto serialized_entry = base::MakeUnique<sessions::SerializedNavigationEntry>(
       sessions::ContentSerializedNavigationBuilder::FromNavigationEntry(
-          blocked_navigations_.size(), *entry);
-  blocked_navigations_.push_back(serialized_entry.release());
-  supervised_user_service_->DidBlockNavigation(web_contents_);
-}
-
-void SupervisedUserNavigationObserver::OnURLFilterChanged() {
-  url_filter_->GetFilteringBehaviorForURLWithAsyncChecks(
-      web_contents_->GetLastCommittedURL(),
-      base::Bind(&SupervisedUserNavigationObserver::URLFilterCheckCallback,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 web_contents_->GetLastCommittedURL()));
+          blocked_navigations_.size(), *entry));
+  blocked_navigations_.push_back(std::move(serialized_entry));
+  supervised_user_service_->DidBlockNavigation(web_contents());
 }
 
 void SupervisedUserNavigationObserver::URLFilterCheckCallback(
@@ -107,11 +123,11 @@ void SupervisedUserNavigationObserver::URLFilterCheckCallback(
     supervised_user_error_page::FilteringBehaviorReason reason,
     bool uncertain) {
   // If the page has been changed in the meantime, we can exit.
-  if (url != web_contents_->GetLastCommittedURL())
+  if (url != web_contents()->GetLastCommittedURL())
     return;
 
   if (behavior == SupervisedUserURLFilter::FilteringBehavior::BLOCK) {
-    SupervisedUserInterstitial::Show(web_contents_, url, reason,
+    SupervisedUserInterstitial::Show(web_contents(), url, reason,
                                      base::Callback<void(bool)>());
   }
 }

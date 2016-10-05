@@ -49,7 +49,7 @@ class SyncedTabDelegateAndroid : public sync_sessions::SyncedTabDelegate {
   void SetSyncId(int sync_id) override;
   bool ShouldSync(sync_sessions::SyncSessionsClient* sessions_client) override;
   bool ProfileIsSupervised() const override;
-  const std::vector<const sessions::SerializedNavigationEntry*>*
+  const std::vector<std::unique_ptr<const sessions::SerializedNavigationEntry>>*
   GetBlockedNavigations() const override;
 
   // Set the web contents for this tab. Also creates

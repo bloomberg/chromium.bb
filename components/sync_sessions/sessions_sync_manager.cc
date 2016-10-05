@@ -1053,8 +1053,8 @@ void SessionsSyncManager::SetSessionTabFromDelegate(
 
   if (is_supervised) {
     int offset = session_tab->navigations.size();
-    const std::vector<const SerializedNavigationEntry*>& blocked_navigations =
-        *tab_delegate.GetBlockedNavigations();
+    const std::vector<std::unique_ptr<const SerializedNavigationEntry>>&
+        blocked_navigations = *tab_delegate.GetBlockedNavigations();
     for (size_t i = 0; i < blocked_navigations.size(); ++i) {
       session_tab->navigations.push_back(*blocked_navigations[i]);
       session_tab->navigations.back().set_index(offset + i);

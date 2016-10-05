@@ -91,7 +91,7 @@ bool SyncedTabDelegateAndroid::ProfileIsSupervised() const {
   return tab_contents_delegate_->ProfileIsSupervised();
 }
 
-const std::vector<const sessions::SerializedNavigationEntry*>*
+const std::vector<std::unique_ptr<const sessions::SerializedNavigationEntry>>*
 SyncedTabDelegateAndroid::GetBlockedNavigations() const {
   return tab_contents_delegate_->GetBlockedNavigations();
 }

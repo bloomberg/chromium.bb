@@ -8,31 +8,33 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "chrome/browser/supervised_user/supervised_user_service_observer.h"
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "chrome/browser/supervised_user/supervised_users.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
 #include "components/supervised_user_error_page/supervised_user_error_page.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 class SupervisedUserService;
 
 namespace content {
 class NavigationEntry;
+class NavigationHandle;
 class WebContents;
 }
 
 class SupervisedUserNavigationObserver
     : public content::WebContentsUserData<SupervisedUserNavigationObserver>,
+      public content::WebContentsObserver,
       public SupervisedUserServiceObserver {
  public:
   ~SupervisedUserNavigationObserver() override;
 
-  const std::vector<const sessions::SerializedNavigationEntry*>*
+  const std::vector<std::unique_ptr<const sessions::SerializedNavigationEntry>>&
   blocked_navigations() const {
-    return &blocked_navigations_.get();
+    return blocked_navigations_;
   }
 
   // Called when a network request to |url| is blocked.
@@ -43,14 +45,12 @@ class SupervisedUserNavigationObserver
       supervised_user_error_page::FilteringBehaviorReason reason,
       const base::Callback<void(bool)>& callback);
 
+  // WebContentsObserver implementation.
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
+
   // SupervisedUserServiceObserver implementation.
   void OnURLFilterChanged() override;
-
-  void URLFilterCheckCallback(
-      const GURL& url,
-      SupervisedUserURLFilter::FilteringBehavior behavior,
-      supervised_user_error_page::FilteringBehaviorReason reason,
-      bool uncertain);
 
  private:
   friend class content::WebContentsUserData<SupervisedUserNavigationObserver>;
@@ -59,7 +59,11 @@ class SupervisedUserNavigationObserver
 
   void OnRequestBlockedInternal(const GURL& url);
 
-  content::WebContents* web_contents_;
+  void URLFilterCheckCallback(
+      const GURL& url,
+      SupervisedUserURLFilter::FilteringBehavior behavior,
+      supervised_user_error_page::FilteringBehaviorReason reason,
+      bool uncertain);
 
   // Owned by SupervisedUserService.
   const SupervisedUserURLFilter* url_filter_;
@@ -67,7 +71,8 @@ class SupervisedUserNavigationObserver
   // Owned by SupervisedUserServiceFactory (lifetime of Profile).
   SupervisedUserService* supervised_user_service_;
 
-  ScopedVector<const sessions::SerializedNavigationEntry> blocked_navigations_;
+  std::vector<std::unique_ptr<const sessions::SerializedNavigationEntry>>
+      blocked_navigations_;
 
   base::WeakPtrFactory<SupervisedUserNavigationObserver> weak_ptr_factory_;
 

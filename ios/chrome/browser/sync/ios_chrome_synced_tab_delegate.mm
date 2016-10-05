@@ -92,7 +92,7 @@ bool IOSChromeSyncedTabDelegate::ProfileIsSupervised() const {
   return false;
 }
 
-const std::vector<const sessions::SerializedNavigationEntry*>*
+const std::vector<std::unique_ptr<const sessions::SerializedNavigationEntry>>*
 IOSChromeSyncedTabDelegate::GetBlockedNavigations() const {
   NOTREACHED();
   return nullptr;

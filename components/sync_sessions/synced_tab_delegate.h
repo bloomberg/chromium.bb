@@ -48,7 +48,8 @@ class SyncedTabDelegate {
 
   // Supervised user related methods.
   virtual bool ProfileIsSupervised() const = 0;
-  virtual const std::vector<const sessions::SerializedNavigationEntry*>*
+  virtual const std::vector<
+      std::unique_ptr<const sessions::SerializedNavigationEntry>>*
   GetBlockedNavigations() const = 0;
 
   // Session sync related methods.
