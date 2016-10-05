@@ -21,6 +21,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/download_test_observer.h"
 #include "net/http/failing_http_transaction_factory.h"
 #include "net/http/http_cache.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -36,6 +37,10 @@ class PageLoadMetricsBrowserTest : public InProcessBrowserTest {
  protected:
   void NavigateToUntrackedUrl() {
     ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+  }
+
+  bool NoPageLoadMetricsRecorded() {
+    return histogram_tester_.GetTotalCountsForPrefix("PageLoad.").empty();
   }
 
   base::HistogramTester histogram_tester_;
@@ -58,11 +63,7 @@ void FailAllNetworkTransactions(net::URLRequestContextGetter* getter) {
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NoNavigation) {
   ASSERT_TRUE(embedded_test_server()->Start());
-
-  histogram_tester_.ExpectTotalCount(internal::kHistogramCommit, 0);
-  histogram_tester_.ExpectTotalCount(internal::kHistogramDomContentLoaded, 0);
-  histogram_tester_.ExpectTotalCount(internal::kHistogramLoad, 0);
-  histogram_tester_.ExpectTotalCount(internal::kHistogramFirstLayout, 0);
+  EXPECT_TRUE(NoPageLoadMetricsRecorded());
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NewPage) {
@@ -80,6 +81,10 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NewPage) {
       internal::kHistogramParseBlockedOnScriptLoad, 1);
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramParseBlockedOnScriptExecution, 1);
+
+  // Verify that NoPageLoadMetricsRecorded returns false when PageLoad metrics
+  // have been recorded.
+  EXPECT_FALSE(NoPageLoadMetricsRecorded());
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, SamePageNavigation) {
@@ -118,10 +123,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NonHtmlMainResource) {
   ui_test_utils::NavigateToURL(browser(),
                                embedded_test_server()->GetURL("/circle.svg"));
   NavigateToUntrackedUrl();
-
-  histogram_tester_.ExpectTotalCount(internal::kHistogramCommit, 0);
-  histogram_tester_.ExpectTotalCount(page_load_metrics::internal::kErrorEvents,
-                                     0);
+  EXPECT_TRUE(NoPageLoadMetricsRecorded());
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NonHttpOrHttpsUrl) {
@@ -129,10 +131,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NonHttpOrHttpsUrl) {
 
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIVersionURL));
   NavigateToUntrackedUrl();
-
-  histogram_tester_.ExpectTotalCount(internal::kHistogramCommit, 0);
-  histogram_tester_.ExpectTotalCount(page_load_metrics::internal::kErrorEvents,
-                                     0);
+  EXPECT_TRUE(NoPageLoadMetricsRecorded());
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, HttpErrorPage) {
@@ -141,10 +140,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, HttpErrorPage) {
   ui_test_utils::NavigateToURL(
       browser(), embedded_test_server()->GetURL("/page_load_metrics/404.html"));
   NavigateToUntrackedUrl();
-
-  histogram_tester_.ExpectTotalCount(internal::kHistogramCommit, 0);
-  histogram_tester_.ExpectTotalCount(page_load_metrics::internal::kErrorEvents,
-                                     0);
+  EXPECT_TRUE(NoPageLoadMetricsRecorded());
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, ChromeErrorPage) {
@@ -162,10 +158,32 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, ChromeErrorPage) {
   ui_test_utils::NavigateToURL(browser(),
                                embedded_test_server()->GetURL("/title1.html"));
   NavigateToUntrackedUrl();
+  EXPECT_TRUE(NoPageLoadMetricsRecorded());
+}
 
-  histogram_tester_.ExpectTotalCount(internal::kHistogramCommit, 0);
-  histogram_tester_.ExpectTotalCount(page_load_metrics::internal::kErrorEvents,
-                                     0);
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, Ignore204Pages) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/page204.html"));
+  NavigateToUntrackedUrl();
+  EXPECT_TRUE(NoPageLoadMetricsRecorded());
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, IgnoreDownloads) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  content::DownloadTestObserverTerminal downloads_observer(
+      content::BrowserContext::GetDownloadManager(browser()->profile()),
+      1,  // == wait_count (only waiting for "download-test3.gif").
+      content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
+
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/download-test3.gif"));
+  downloads_observer.WaitForFinished();
+
+  NavigateToUntrackedUrl();
+  EXPECT_TRUE(NoPageLoadMetricsRecorded());
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PreloadDocumentWrite) {

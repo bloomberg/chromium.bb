@@ -254,9 +254,7 @@ class PageLoadMetricsObserver {
                           const PageLoadExtraInfo& extra_info) {}
 
   // OnFailedProvisionalLoad is invoked for tracked page loads that did not
-  // commit, immediately before the observer is deleted. Note that provisional
-  // loads that result in downloads or 204s are aborted by the system, and are
-  // also included as failed provisional loads.
+  // commit, immediately before the observer is deleted.
   virtual void OnFailedProvisionalLoad(
       const FailedProvisionalLoadInfo& failed_provisional_load_info,
       const PageLoadExtraInfo& extra_info) {}

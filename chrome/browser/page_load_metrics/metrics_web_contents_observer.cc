@@ -848,6 +848,16 @@ void MetricsWebContentsObserver::DidFinishNavigation(
     return;
   }
 
+  // Ignore internally generated aborts for navigations with HTTP responses that
+  // don't commit, such as HTTP 204 responses and downloads.
+  if (!navigation_handle->HasCommitted() &&
+      navigation_handle->GetNetErrorCode() == net::ERR_ABORTED &&
+      navigation_handle->GetResponseHeaders()) {
+    if (finished_nav)
+      finished_nav->StopTracking();
+    return;
+  }
+
   const bool should_track =
       finished_nav && ShouldTrackNavigation(navigation_handle);
 
@@ -876,10 +886,7 @@ void MetricsWebContentsObserver::DidFinishNavigation(
 }
 
 // Handle a pre-commit error. Navigations that result in an error page will be
-// ignored. Note that downloads/204s will result in HasCommitted() returning
-// false.
-// TODO(csharrison): Track changes to NavigationHandle for signals when this is
-// the case (HTTP response headers).
+// ignored.
 void MetricsWebContentsObserver::HandleFailedNavigationForTrackedLoad(
     content::NavigationHandle* navigation_handle,
     std::unique_ptr<PageLoadTracker> tracker) {
@@ -892,8 +899,7 @@ void MetricsWebContentsObserver::HandleFailedNavigationForTrackedLoad(
   // pre-PlzNavigate, but afterwards it should represent the navigation stopped
   // by the user before it was ready to commit.
   // net::ERR_ABORTED: An aborted provisional load has error
-  // net::ERR_ABORTED. Note that this can come from some non user-initiated
-  // errors, such as downloads, or 204 responses. See crbug.com/542369.
+  // net::ERR_ABORTED.
   if ((error == net::OK) || (error == net::ERR_ABORTED)) {
     tracker->NotifyAbort(ABORT_OTHER, false, base::TimeTicks::Now(), true);
     aborted_provisional_loads_.push_back(std::move(tracker));
