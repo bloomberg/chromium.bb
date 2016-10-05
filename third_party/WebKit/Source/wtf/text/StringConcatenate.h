@@ -51,18 +51,16 @@ class StringTypeAdapter<char> {
   DISALLOW_NEW();
 
  public:
-  StringTypeAdapter<char>(char buffer) : m_buffer(buffer) {}
+  explicit StringTypeAdapter<char>(char buffer) : m_buffer(buffer) {}
 
-  unsigned length() { return 1; }
+  unsigned length() const { return 1; }
+  bool is8Bit() const { return true; }
 
-  bool is8Bit() { return true; }
-
-  void writeTo(LChar* destination) { *destination = m_buffer; }
-
-  void writeTo(UChar* destination) { *destination = m_buffer; }
+  void writeTo(LChar* destination) const { *destination = m_buffer; }
+  void writeTo(UChar* destination) const { *destination = m_buffer; }
 
  private:
-  unsigned char m_buffer;
+  const unsigned char m_buffer;
 };
 
 template <>
@@ -70,18 +68,16 @@ class StringTypeAdapter<LChar> {
   DISALLOW_NEW();
 
  public:
-  StringTypeAdapter<LChar>(LChar buffer) : m_buffer(buffer) {}
+  explicit StringTypeAdapter<LChar>(LChar buffer) : m_buffer(buffer) {}
 
-  unsigned length() { return 1; }
+  unsigned length() const { return 1; }
+  bool is8Bit() const { return true; }
 
-  bool is8Bit() { return true; }
-
-  void writeTo(LChar* destination) { *destination = m_buffer; }
-
-  void writeTo(UChar* destination) { *destination = m_buffer; }
+  void writeTo(LChar* destination) const { *destination = m_buffer; }
+  void writeTo(UChar* destination) const { *destination = m_buffer; }
 
  private:
-  LChar m_buffer;
+  const LChar m_buffer;
 };
 
 template <>
@@ -89,21 +85,20 @@ class StringTypeAdapter<UChar> {
   DISALLOW_NEW();
 
  public:
-  StringTypeAdapter<UChar>(UChar buffer) : m_buffer(buffer) {}
+  explicit StringTypeAdapter<UChar>(UChar buffer) : m_buffer(buffer) {}
 
-  unsigned length() { return 1; }
+  unsigned length() const { return 1; }
+  bool is8Bit() const { return m_buffer <= 0xff; }
 
-  bool is8Bit() { return m_buffer <= 0xff; }
-
-  void writeTo(LChar* destination) {
+  void writeTo(LChar* destination) const {
     ASSERT(is8Bit());
     *destination = static_cast<LChar>(m_buffer);
   }
 
-  void writeTo(UChar* destination) { *destination = m_buffer; }
+  void writeTo(UChar* destination) const { *destination = m_buffer; }
 
  private:
-  UChar m_buffer;
+  const UChar m_buffer;
 };
 
 template <>
@@ -111,16 +106,14 @@ class WTF_EXPORT StringTypeAdapter<char*> {
   DISALLOW_NEW();
 
  public:
-  StringTypeAdapter<char*>(char* buffer)
+  explicit StringTypeAdapter<char*>(char* buffer)
       : m_buffer(buffer), m_length(strlen(buffer)) {}
 
-  unsigned length() { return m_length; }
+  unsigned length() const { return m_length; }
+  bool is8Bit() const { return true; }
 
-  bool is8Bit() { return true; }
-
-  void writeTo(LChar* destination);
-
-  void writeTo(UChar* destination);
+  void writeTo(LChar* destination) const;
+  void writeTo(UChar* destination) const;
 
  private:
   const char* m_buffer;
@@ -132,19 +125,17 @@ class WTF_EXPORT StringTypeAdapter<LChar*> {
   DISALLOW_NEW();
 
  public:
-  StringTypeAdapter<LChar*>(LChar* buffer);
+  explicit StringTypeAdapter<LChar*>(LChar* buffer);
 
-  unsigned length() { return m_length; }
+  unsigned length() const { return m_length; }
+  bool is8Bit() const { return true; }
 
-  bool is8Bit() { return true; }
-
-  void writeTo(LChar* destination);
-
-  void writeTo(UChar* destination);
+  void writeTo(LChar* destination) const;
+  void writeTo(UChar* destination) const;
 
  private:
   const LChar* m_buffer;
-  unsigned m_length;
+  const unsigned m_length;
 };
 
 template <>
@@ -152,19 +143,17 @@ class WTF_EXPORT StringTypeAdapter<const UChar*> {
   DISALLOW_NEW();
 
  public:
-  StringTypeAdapter(const UChar* buffer);
+  explicit StringTypeAdapter(const UChar* buffer);
 
-  unsigned length() { return m_length; }
+  unsigned length() const { return m_length; }
+  bool is8Bit() const { return false; }
 
-  bool is8Bit() { return false; }
-
-  void writeTo(LChar*) { RELEASE_ASSERT(false); }
-
-  void writeTo(UChar* destination);
+  void writeTo(LChar*) const { RELEASE_ASSERT(false); }
+  void writeTo(UChar* destination) const;
 
  private:
   const UChar* m_buffer;
-  unsigned m_length;
+  const unsigned m_length;
 };
 
 template <>
@@ -172,19 +161,17 @@ class WTF_EXPORT StringTypeAdapter<const char*> {
   DISALLOW_NEW();
 
  public:
-  StringTypeAdapter<const char*>(const char* buffer);
+  explicit StringTypeAdapter<const char*>(const char* buffer);
 
-  unsigned length() { return m_length; }
+  unsigned length() const { return m_length; }
+  bool is8Bit() const { return true; }
 
-  bool is8Bit() { return true; }
-
-  void writeTo(LChar* destination);
-
-  void writeTo(UChar* destination);
+  void writeTo(LChar* destination) const;
+  void writeTo(UChar* destination) const;
 
  private:
   const char* m_buffer;
-  unsigned m_length;
+  const unsigned m_length;
 };
 
 template <>
@@ -192,19 +179,17 @@ class WTF_EXPORT StringTypeAdapter<const LChar*> {
   DISALLOW_NEW();
 
  public:
-  StringTypeAdapter<const LChar*>(const LChar* buffer);
+  explicit StringTypeAdapter<const LChar*>(const LChar* buffer);
 
-  unsigned length() { return m_length; }
+  unsigned length() const { return m_length; }
+  bool is8Bit() const { return true; }
 
-  bool is8Bit() { return true; }
-
-  void writeTo(LChar* destination);
-
-  void writeTo(UChar* destination);
+  void writeTo(LChar* destination) const;
+  void writeTo(UChar* destination) const;
 
  private:
   const LChar* m_buffer;
-  unsigned m_length;
+  const unsigned m_length;
 };
 
 template <>
@@ -212,16 +197,14 @@ class WTF_EXPORT StringTypeAdapter<Vector<char>> {
   DISALLOW_NEW();
 
  public:
-  StringTypeAdapter<Vector<char>>(const Vector<char>& buffer)
+  explicit StringTypeAdapter<Vector<char>>(const Vector<char>& buffer)
       : m_buffer(buffer) {}
 
-  size_t length() { return m_buffer.size(); }
+  size_t length() const { return m_buffer.size(); }
+  bool is8Bit() const { return true; }
 
-  bool is8Bit() { return true; }
-
-  void writeTo(LChar* destination);
-
-  void writeTo(UChar* destination);
+  void writeTo(LChar* destination) const;
+  void writeTo(UChar* destination) const;
 
  private:
   const Vector<char>& m_buffer;
@@ -232,16 +215,14 @@ class StringTypeAdapter<Vector<LChar>> {
   DISALLOW_NEW();
 
  public:
-  StringTypeAdapter<Vector<LChar>>(const Vector<LChar>& buffer)
+  explicit StringTypeAdapter<Vector<LChar>>(const Vector<LChar>& buffer)
       : m_buffer(buffer) {}
 
-  size_t length() { return m_buffer.size(); }
+  size_t length() const { return m_buffer.size(); }
+  bool is8Bit() const { return true; }
 
-  bool is8Bit() { return true; }
-
-  void writeTo(LChar* destination);
-
-  void writeTo(UChar* destination);
+  void writeTo(LChar* destination) const;
+  void writeTo(UChar* destination) const;
 
  private:
   const Vector<LChar>& m_buffer;
@@ -252,12 +233,13 @@ class WTF_EXPORT StringTypeAdapter<StringView> {
   DISALLOW_NEW();
 
  public:
-  StringTypeAdapter(const StringView& view) : m_view(view) {}
+  explicit StringTypeAdapter(const StringView& view) : m_view(view) {}
 
-  unsigned length() { return m_view.length(); }
-  bool is8Bit() { return m_view.is8Bit(); }
-  void writeTo(LChar* destination);
-  void writeTo(UChar* destination);
+  unsigned length() const { return m_view.length(); }
+  bool is8Bit() const { return m_view.is8Bit(); }
+
+  void writeTo(LChar* destination) const;
+  void writeTo(UChar* destination) const;
 
  private:
   const StringView m_view;
@@ -266,14 +248,14 @@ class WTF_EXPORT StringTypeAdapter<StringView> {
 template <>
 class StringTypeAdapter<String> : public StringTypeAdapter<StringView> {
  public:
-  StringTypeAdapter(const String& string)
+  explicit StringTypeAdapter(const String& string)
       : StringTypeAdapter<StringView>(string) {}
 };
 
 template <>
 class StringTypeAdapter<AtomicString> : public StringTypeAdapter<StringView> {
  public:
-  StringTypeAdapter(const AtomicString& string)
+  explicit StringTypeAdapter(const AtomicString& string)
       : StringTypeAdapter<StringView>(string) {}
 };
 
