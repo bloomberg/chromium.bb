@@ -60,8 +60,6 @@ public class WebappActivity extends FullScreenActivity {
 
     protected WebappInfo mWebappInfo;
 
-    private boolean mOldWebappCleanupStarted;
-
     private ViewGroup mSplashScreen;
     private WebappUrlBar mUrlBar;
 
@@ -126,7 +124,23 @@ public class WebappActivity extends FullScreenActivity {
     @Override
     public void preInflationStartup() {
         WebappInfo info = WebappInfo.create(getIntent());
-        if (info != null) mWebappInfo = info;
+
+        String id = "";
+        if (info != null) {
+            mWebappInfo = info;
+            id = info.id();
+        }
+
+        // Initialize the WebappRegistry and warm up the shared preferences for this web app. No-ops
+        // if the registry and this web app are already initialized. Must override Strict Mode to
+        // avoid a violation.
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        try {
+            WebappRegistry.getInstance();
+            WebappRegistry.warmUpSharedPrefsForId(id);
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
 
         ScreenOrientationProvider.lockOrientation((byte) mWebappInfo.orientation(), this);
         super.preInflationStartup();
@@ -195,13 +209,6 @@ public class WebappActivity extends FullScreenActivity {
             updateTaskDescription();
         }
         super.onResume();
-
-        // Kick off the old web app cleanup (if we haven't already) now that we have queued the
-        // current web app's storage to be opened.
-        if (!mOldWebappCleanupStarted) {
-            WebappRegistry.unregisterOldWebapps(System.currentTimeMillis());
-            mOldWebappCleanupStarted = true;
-        }
     }
 
     @Override
@@ -262,25 +269,20 @@ public class WebappActivity extends FullScreenActivity {
     }
 
     protected void initializeSplashScreenWidgets(final int backgroundColor) {
-        WebappRegistry.getWebappDataStorage(
-                mWebappInfo.id(), new WebappRegistry.FetchWebappDataStorageCallback() {
-                    @Override
-                    public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
-                        if (storage == null) {
-                            onStorageIsNull(backgroundColor);
-                            return;
-                        }
-                        updateStorage(storage);
+        WebappDataStorage storage =
+                WebappRegistry.getInstance().getWebappDataStorage(mWebappInfo.id());
+        if (storage == null) {
+            onStorageIsNull(backgroundColor);
+            return;
+        }
 
-                        // Retrieve the splash image if it exists.
-                        storage.getSplashScreenImage(new WebappDataStorage.FetchCallback<Bitmap>() {
-                            @Override
-                            public void onDataRetrieved(Bitmap splashImage) {
-                                initializeSplashScreenWidgets(backgroundColor, splashImage);
-                            }
-                        });
-                    }
-                });
+        updateStorage(storage);
+        storage.getSplashScreenImage(new WebappDataStorage.FetchCallback<Bitmap>() {
+            @Override
+            public void onDataRetrieved(Bitmap splashImage) {
+                initializeSplashScreenWidgets(backgroundColor, splashImage);
+            }
+        });
     }
 
     protected void onStorageIsNull(int backgroundColor) {}
