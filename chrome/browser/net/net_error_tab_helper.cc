@@ -52,13 +52,6 @@ namespace {
 static NetErrorTabHelper::TestingState testing_state_ =
     NetErrorTabHelper::TESTING_DEFAULT;
 
-// Returns whether |net_error| is a DNS-related error (and therefore whether
-// the tab helper should start a DNS probe after receiving it.)
-bool IsDnsError(int net_error) {
-  return net_error == net::ERR_NAME_NOT_RESOLVED ||
-         net_error == net::ERR_NAME_RESOLUTION_FAILED;
-}
-
 void OnDnsProbeFinishedOnIOThread(
     const base::Callback<void(DnsProbeStatus)>& callback,
     DnsProbeStatus result) {
@@ -126,7 +119,7 @@ void NetErrorTabHelper::DidFinishNavigation(
   if (!navigation_handle->IsInMainFrame())
     return;
 
-  if (IsDnsError(navigation_handle->GetNetErrorCode())) {
+  if (net::IsDnsError(navigation_handle->GetNetErrorCode())) {
     dns_error_active_ = true;
     OnMainFrameDnsError();
   }

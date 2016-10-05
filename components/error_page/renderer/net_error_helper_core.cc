@@ -126,12 +126,11 @@ base::TimeDelta GetAutoReloadTime(size_t reload_count) {
   return base::TimeDelta::FromMilliseconds(kDelaysMs[reload_count]);
 }
 
-// Returns whether |net_error| is a DNS-related error (and therefore whether
-// the tab helper should start a DNS probe after receiving it.)
-bool IsDnsError(const blink::WebURLError& error) {
-  return error.domain.utf8() == net::kErrorDomain &&
-         (error.reason == net::ERR_NAME_NOT_RESOLVED ||
-          error.reason == net::ERR_NAME_RESOLUTION_FAILED);
+// Returns whether |error| is a DNS-related error (and therefore whether
+// the tab helper should start a DNS probe after receiving it).
+bool IsBlinkDnsError(const blink::WebURLError& error) {
+  return (error.domain.utf8() == net::kErrorDomain) &&
+         net::IsDnsError(error.reason);
 }
 
 GURL SanitizeURL(const GURL& url) {
@@ -173,7 +172,7 @@ bool ShouldUseFixUrlServiceForError(const blink::WebURLError& error,
     *error_param = "http404";
     return true;
   }
-  if (IsDnsError(error)) {
+  if (IsBlinkDnsError(error)) {
     *error_param = "dnserror";
     return true;
   }
@@ -769,7 +768,7 @@ void NetErrorHelperCore::GetErrorHtmlForMainFrame(
     return;
   }
 
-  if (IsDnsError(pending_error_page_info->error)) {
+  if (IsBlinkDnsError(pending_error_page_info->error)) {
     // The last probe status needs to be reset if this is a DNS error.  This
     // means that if a DNS error page is committed but has not yet finished
     // loading, a DNS probe status scheduled to be sent to it may be thrown
