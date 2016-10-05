@@ -1,4 +1,6 @@
 include_rules = [
+  "+media/base",
   "+media/mojo",
   "+media/capture/video",
+  "+ui/gfx/geometry",
 ]

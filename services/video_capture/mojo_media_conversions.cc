@@ -6,37 +6,6 @@
 
 namespace video_capture {
 
-media::VideoCaptureFormat ConvertFromMojoToMedia(
-    mojom::VideoCaptureFormatPtr format) {
-  media::VideoCaptureFormat result;
-  result.pixel_format = ConvertFromMojoToMedia(format->pixel_format);
-  result.pixel_storage = ConvertFromMojoToMedia(format->pixel_storage);
-  result.frame_size.SetSize(format->frame_size.width(),
-                            format->frame_size.height());
-  result.frame_rate = format->frame_rate;
-  return result;
-}
-
-media::VideoPixelFormat ConvertFromMojoToMedia(
-    media::mojom::VideoFormat format) {
-  // Since there are static_asserts in place in
-  // media/mojo/common/media_type_converters.cc to guarantee equality of the
-  // underlying representations, we can simply static_cast to convert.
-  return static_cast<media::VideoPixelFormat>(format);
-}
-
-media::VideoPixelStorage ConvertFromMojoToMedia(
-    mojom::VideoPixelStorage storage) {
-  switch (storage) {
-    case mojom::VideoPixelStorage::CPU:
-      return media::PIXEL_STORAGE_CPU;
-    case mojom::VideoPixelStorage::GPUMEMORYBUFFER:
-      return media::PIXEL_STORAGE_GPUMEMORYBUFFER;
-  }
-  NOTREACHED();
-  return media::PIXEL_STORAGE_CPU;
-}
-
 media::ResolutionChangePolicy ConvertFromMojoToMedia(
     mojom::ResolutionChangePolicy policy) {
   switch (policy) {

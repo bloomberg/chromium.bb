@@ -31,7 +31,7 @@ class MockDeviceVideoCaptureServiceTest : public shell::test::ServiceTest {
   mojom::MockVideoCaptureDevicePtr mock_device_proxy_;
   mojom::VideoCaptureDeviceProxyPtr device_proxy_;
   mojom::VideoCaptureDeviceClientPtr mock_client_proxy_;
-  mojom::VideoCaptureFormatPtr requested_format_;
+  media::VideoCaptureFormat requested_format_;
 };
 
 }  // namespace video_capture

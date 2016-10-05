@@ -31,12 +31,10 @@ void MockDeviceVideoCaptureServiceTest::SetUp() {
       base::Bind([](mojom::DeviceAccessResultCode result_code) {}));
 
   // Start the mock device with an arbitrary format
-  gfx::Size requested_size(800, 600);
-  requested_format_ = mojom::VideoCaptureFormat::New();
-  requested_format_->frame_size = requested_size;
-  requested_format_->frame_rate = 15;
-  requested_format_->pixel_format = media::mojom::VideoFormat::I420;
-  requested_format_->pixel_storage = mojom::VideoPixelStorage::CPU;
+  requested_format_.frame_size = gfx::Size(800, 600);
+  requested_format_.frame_rate = 15;
+  requested_format_.pixel_format = media::PIXEL_FORMAT_I420;
+  requested_format_.pixel_storage = media::PIXEL_STORAGE_CPU;
   mock_client_ = base::MakeUnique<MockVideoCaptureDeviceClient>(
       mojo::GetProxy(&mock_client_proxy_));
 }

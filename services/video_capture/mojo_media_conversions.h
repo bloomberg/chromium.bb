@@ -15,12 +15,6 @@ namespace video_capture {
 // TODO(chfremer): Consider using Mojo type mapping instead of conversion
 // methods. https://crbug.com/642387
 
-media::VideoCaptureFormat ConvertFromMojoToMedia(
-    mojom::VideoCaptureFormatPtr format);
-media::VideoPixelFormat ConvertFromMojoToMedia(
-    media::mojom::VideoFormat format);
-media::VideoPixelStorage ConvertFromMojoToMedia(
-    mojom::VideoPixelStorage storage);
 media::ResolutionChangePolicy ConvertFromMojoToMedia(
     mojom::ResolutionChangePolicy policy);
 media::PowerLineFrequency ConvertFromMojoToMedia(

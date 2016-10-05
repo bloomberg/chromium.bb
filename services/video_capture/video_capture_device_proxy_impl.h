@@ -19,7 +19,7 @@ class VideoCaptureDeviceProxyImpl : public mojom::VideoCaptureDeviceProxy {
   ~VideoCaptureDeviceProxyImpl() override;
 
   // mojom::VideoCaptureDeviceProxy:
-  void Start(mojom::VideoCaptureFormatPtr requested_format,
+  void Start(const media::VideoCaptureFormat& requested_format,
              mojom::ResolutionChangePolicy resolution_change_policy,
              mojom::PowerLineFrequency power_line_frequency,
              mojom::VideoCaptureDeviceClientPtr client) override;

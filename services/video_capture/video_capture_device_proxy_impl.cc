@@ -19,12 +19,12 @@ VideoCaptureDeviceProxyImpl::~VideoCaptureDeviceProxyImpl() {
 }
 
 void VideoCaptureDeviceProxyImpl::Start(
-    mojom::VideoCaptureFormatPtr requested_format,
+    const media::VideoCaptureFormat& requested_format,
     mojom::ResolutionChangePolicy resolution_change_policy,
     mojom::PowerLineFrequency power_line_frequency,
     mojom::VideoCaptureDeviceClientPtr client) {
   media::VideoCaptureParams params;
-  params.requested_format = ConvertFromMojoToMedia(std::move(requested_format));
+  params.requested_format = requested_format;
   params.resolution_change_policy =
       ConvertFromMojoToMedia(resolution_change_policy);
   params.power_line_frequency = ConvertFromMojoToMedia(power_line_frequency);
