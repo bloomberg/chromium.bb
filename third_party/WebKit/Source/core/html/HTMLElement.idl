@@ -19,7 +19,7 @@
  */
 
 // https://html.spec.whatwg.org/#htmlelement
-[CustomConstructor]
+[HTMLConstructor]
 interface HTMLElement : Element {
     // metadata attributes
     [CEReactions, Reflect] attribute DOMString title;

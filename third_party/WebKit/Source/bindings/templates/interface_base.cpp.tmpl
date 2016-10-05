@@ -283,7 +283,7 @@ static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
            if parent_interface else
            'v8::Local<v8::FunctionTemplate>()' %}
     V8DOMConfiguration::initializeDOMInterfaceTemplate(isolate, interfaceTemplate, {{v8_class}}::wrapperTypeInfo.interfaceName, {{parent_interface_template}}, {{v8_class}}::internalFieldCount);
-    {% if constructors or has_custom_constructor or has_event_constructor %}
+    {% if constructors or has_custom_constructor or has_event_constructor or has_html_constructor %}
     interfaceTemplate->SetCallHandler({{v8_class}}::constructorCallback);
     interfaceTemplate->SetLength({{interface_length}});
     {% endif %}

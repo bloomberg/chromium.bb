@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/core/v8/V8HTMLElement.h"
-
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptCustomElementDefinition.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8BindingMacros.h"
 #include "bindings/core/v8/V8DOMWrapper.h"
+#include "bindings/core/v8/V8HTMLElement.h"
 #include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -20,7 +19,7 @@
 
 namespace blink {
 
-void V8HTMLElement::constructorCustom(
+void V8HTMLElement::HTMLConstructor(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   DCHECK(info.IsConstructCall());
 

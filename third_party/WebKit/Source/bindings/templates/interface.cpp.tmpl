@@ -648,7 +648,7 @@ void {{v8_class}}::visitDOMWrapper(v8::Isolate* isolate, ScriptWrappable* script
 
 {##############################################################################}
 {% block constructor_callback %}
-{% if constructors or has_custom_constructor or has_event_constructor %}
+{% if constructors or has_custom_constructor or has_event_constructor or has_html_constructor %}
 void {{v8_class}}::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     {% if measure_as %}
@@ -666,6 +666,8 @@ void {{v8_class}}::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>
 
     {% if has_custom_constructor %}
     {{v8_class}}::constructorCustom(info);
+    {% elif has_html_constructor %}
+    {{v8_class}}::HTMLConstructor(info);
     {% else %}
     {{cpp_class}}V8Internal::constructor(info);
     {% endif %}

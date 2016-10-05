@@ -291,10 +291,19 @@ def interface_context(interface, interfaces):
             number_of_required_arguments(constructor),
     } for constructor in interface.custom_constructors]
 
+    # [HTMLConstructor]
+    has_html_constructor = 'HTMLConstructor' in extended_attributes
+    # https://html.spec.whatwg.org/multipage/dom.html#html-element-constructors
+    if has_html_constructor:
+        if ('Constructor' in extended_attributes) or ('NoInterfaceObject' in extended_attributes):
+            raise Exception('[Constructor] and [NoInterfaceObject] MUST NOT be'
+                            ' specified with [HTMLConstructor]: '
+                            '%s' % interface.name)
+
     # [NamedConstructor]
     named_constructor = named_constructor_context(interface)
 
-    if constructors or custom_constructors or named_constructor:
+    if constructors or custom_constructors or has_html_constructor or named_constructor:
         if interface.is_partial:
             raise Exception('[Constructor] and [NamedConstructor] MUST NOT be'
                             ' specified on partial interface definitions: '
@@ -330,6 +339,7 @@ def interface_context(interface, interfaces):
     context.update({
         'constructors': constructors,
         'has_custom_constructor': bool(custom_constructors),
+        'has_html_constructor': has_html_constructor,
         'interface_length':
             interface_length(constructors + custom_constructors),
         'is_constructor_raises_exception': extended_attributes.get('RaisesException') == 'Constructor',  # [RaisesException=Constructor]
