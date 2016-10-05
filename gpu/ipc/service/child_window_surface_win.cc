@@ -14,9 +14,9 @@
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
-#include "ui/base/win/hidden_window.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/win/hwnd_util.h"
+#include "ui/gfx/win/window_impl.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface_egl.h"
@@ -84,21 +84,60 @@ void InitializeWindowClass() {
   }
 }
 
+// Hidden popup window  used as a parent for the child surface window.
+// Must be created and destroyed on the thread.
+class HiddenPopupWindow : public gfx::WindowImpl {
+ public:
+  static HWND Create() {
+    gfx::WindowImpl* window = new HiddenPopupWindow;
+
+    window->set_window_style(WS_POPUP);
+    window->set_window_ex_style(WS_EX_TOOLWINDOW);
+    window->Init(GetDesktopWindow(), gfx::Rect());
+    EnableWindow(window->hwnd(), FALSE);
+    // The |window| instance is now owned by the window user data.
+    DCHECK_EQ(window, gfx::GetWindowUserData(window->hwnd()));
+    return window->hwnd();
+  }
+
+  static void Destroy(HWND window) {
+    // This uses the fact that the window user data contains a pointer
+    // to gfx::WindowImpl instance.
+    gfx::WindowImpl* window_data =
+        reinterpret_cast<gfx::WindowImpl*>(gfx::GetWindowUserData(window));
+    DCHECK_EQ(window, window_data->hwnd());
+    DestroyWindow(window);
+    delete window_data;
+  }
+
+ private:
+  // Explicitly do nothing in Close. We do this as some external apps may get a
+  // handle to this window and attempt to close it.
+  void OnClose() {}
+
+  CR_BEGIN_MSG_MAP_EX(HiddenPopupWindow)
+    CR_MSG_WM_CLOSE(OnClose)
+  CR_END_MSG_MAP()
+};
+
 // This runs on the window owner thread.
-void CreateChildWindow(HWND hidden_window,
-                       const gfx::Size& size,
-                       base::WaitableEvent* event,
-                       SharedData* shared_data,
-                       HWND* result) {
+void CreateWindowsOnThread(const gfx::Size& size,
+                           base::WaitableEvent* event,
+                           SharedData* shared_data,
+                           HWND* child_window,
+                           HWND* parent_window) {
   InitializeWindowClass();
   DCHECK(g_window_class);
 
+  // Create hidden parent window on the current thread.
+  *parent_window = HiddenPopupWindow::Create();
+  // Create child window.
   HWND window = CreateWindowEx(
       WS_EX_NOPARENTNOTIFY, reinterpret_cast<wchar_t*>(g_window_class), L"",
       WS_CHILDWINDOW | WS_DISABLED | WS_VISIBLE, 0, 0, size.width(),
-      size.height(), hidden_window, NULL, NULL, NULL);
+      size.height(), *parent_window, NULL, NULL, NULL);
   CHECK(window);
-  *result = window;
+  *child_window = window;
   gfx::SetWindowUserData(window, shared_data);
   event->Signal();
 }
@@ -110,8 +149,9 @@ void DestroySharedData(std::unique_ptr<SharedData> shared_data) {
 }
 
 // This runs on the window owner thread.
-void DestroyWindowOnThread(HWND window) {
-  DestroyWindow(window);
+void DestroyWindowsOnThread(HWND child_window, HWND hidden_popup_window) {
+  DestroyWindow(child_window);
+  HiddenPopupWindow::Destroy(hidden_popup_window);
 }
 
 }  // namespace
@@ -174,9 +214,9 @@ bool ChildWindowSurfaceWin::InitializeNativeWindow() {
   GetClientRect(parent_window_, &window_rect);
 
   shared_data_->thread.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&CreateChildWindow, ui::GetHiddenWindow(),
-                            gfx::Rect(window_rect).size(), &event,
-                            shared_data_.get(), &window_));
+      FROM_HERE,
+      base::Bind(&CreateWindowsOnThread, gfx::Rect(window_rect).size(), &event,
+                 shared_data_.get(), &window_, &initial_parent_window_));
   event.Wait();
 
   manager_->delegate()->SendAcceleratedSurfaceCreatedChildWindow(parent_window_,
@@ -274,7 +314,8 @@ ChildWindowSurfaceWin::~ChildWindowSurfaceWin() {
     scoped_refptr<base::TaskRunner> task_runner =
         shared_data_->thread.task_runner();
     task_runner->PostTaskAndReply(
-        FROM_HERE, base::Bind(&DestroyWindowOnThread, window_),
+        FROM_HERE,
+        base::Bind(&DestroyWindowsOnThread, window_, initial_parent_window_),
         base::Bind(&DestroySharedData, base::Passed(std::move(shared_data_))));
   }
 }
