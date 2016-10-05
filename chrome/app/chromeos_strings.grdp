@@ -451,16 +451,16 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_ERROR_RENAMING" desc="Error message.">
     Unable to rename "<ph name="FILE_NAME">$1<ex>document.pdf</ex></ph>". <ph name="ERROR_MESSAGE">$2<ex>An error occurred (code: ABORT)</ex></ph>
   </message>
-  <message name="IDS_FILE_BROWSER_GET_INFO_BUTTON_LABEL" desc="Label for a context menu item which shows file's metadata.">
-    Get Info
+  <message name="IDS_FILE_BROWSER_GET_INFO_BUTTON_LABEL" desc="Context menu item that shows the currently-selected file's metadata.">
+    Get info
   </message>
-  <message name="IDS_FILE_BROWSER_RENAME_BUTTON_LABEL" desc="Button Label.">
+  <message name="IDS_FILE_BROWSER_RENAME_BUTTON_LABEL" desc="Context menu item that renames the currently-selected file.">
     Rename
   </message>
-  <message name="IDS_FILE_BROWSER_DELETE_BUTTON_LABEL" desc="Button Label.">
+  <message name="IDS_FILE_BROWSER_DELETE_BUTTON_LABEL" desc="Context menu item that deletes the currently-selected file(s).">
     Delete
   </message>
-  <message name="IDS_FILE_BROWSER_PASTE_BUTTON_LABEL" desc="Button Label.">
+  <message name="IDS_FILE_BROWSER_PASTE_BUTTON_LABEL" desc="Context menu item that pastes the file(s) in the clipboard.">
     Paste
   </message>
   <message name="IDS_FILE_BROWSER_REFRESH_BUTTON_LABEL" desc="Label for a button for refreshing the current directory.">
@@ -469,10 +469,10 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_PASTE_INTO_FOLDER_BUTTON_LABEL" desc="Menu item label, pasting files into the selected folder.">
     Paste into folder
   </message>
-  <message name="IDS_FILE_BROWSER_COPY_BUTTON_LABEL" desc="Button Label.">
+  <message name="IDS_FILE_BROWSER_COPY_BUTTON_LABEL" desc="Context menu item that copies the currently-selected file(s) to the clipboard.">
     Copy
   </message>
-  <message name="IDS_FILE_BROWSER_CUT_BUTTON_LABEL" desc="Button Label.">
+  <message name="IDS_FILE_BROWSER_CUT_BUTTON_LABEL" desc="Context menu item that cuts the currently-selected file(s) to the clipboard.">
     Cut
   </message>
   <message name="IDS_FILE_BROWSER_MORE_ACTIONS_BUTTON_LABEL" desc="Menu item label, showing dialog to choose extension to open selected files or directories.">
