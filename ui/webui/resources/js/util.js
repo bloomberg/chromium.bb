@@ -35,7 +35,7 @@ function getSVGElement(id) {
 function announceAccessibleMessage(msg) {
   var element = document.createElement('div');
   element.setAttribute('aria-live', 'polite');
-  element.style.position = 'relative';
+  element.style.position = 'fixed';
   element.style.left = '-9999px';
   element.style.height = '0px';
   element.innerText = msg;

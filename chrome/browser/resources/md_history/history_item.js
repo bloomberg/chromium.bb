@@ -289,18 +289,16 @@ cr.define('md_history', function() {
     },
 
     /**
-     * Generates the title for this history card.
      * @param {number} numberOfItems The number of items in the card.
+     * @param {string} historyDate Date of the current result.
      * @param {string} search The search term associated with these results.
+     * @return {string} The title for this history card.
      * @private
      */
     cardTitle_: function(numberOfItems, historyDate, search) {
       if (!search)
         return this.item.dateRelativeDay;
-
-      var resultId = numberOfItems == 1 ? 'searchResult' : 'searchResults';
-      return loadTimeData.getStringF('foundSearchResults', numberOfItems,
-          loadTimeData.getString(resultId), search);
+      return HistoryItem.searchResultsTitle(numberOfItems, search);
     },
   });
 
@@ -311,7 +309,6 @@ cr.define('md_history', function() {
    * @param {number} currentIndex
    * @param {string} searchedTerm
    * @return {boolean} Whether or not time gap separator is required.
-   * @private
    */
   HistoryItem.needsTimeGap = function(visits, currentIndex, searchedTerm) {
     if (currentIndex >= visits.length - 1 || visits.length == 0)
@@ -325,6 +322,17 @@ cr.define('md_history', function() {
 
     return currentItem.time - nextItem.time > BROWSING_GAP_TIME &&
         currentItem.dateRelativeDay == nextItem.dateRelativeDay;
+  };
+
+  /**
+   * @param {number} numberOfResults
+   * @param {string} searchTerm
+   * @return {string} The title for a page of search results.
+   */
+  HistoryItem.searchResultsTitle = function(numberOfResults, searchTerm) {
+    var resultId = numberOfResults == 1 ? 'searchResult' : 'searchResults';
+    return loadTimeData.getStringF('foundSearchResults', numberOfResults,
+        loadTimeData.getString(resultId), searchTerm);
   };
 
   return { HistoryItem: HistoryItem };
