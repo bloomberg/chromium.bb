@@ -286,6 +286,7 @@ crbug.com/445100 fast/block/float/marquee-shrink-to-avoid-floats.html [ Failure 
 crbug.com/636239 [ Win7 ] media/video-zoom-controls.html [ Failure ]
 
 crbug.com/652985 media/encrypted-media/encrypted-media-reset-src-after-setmediakeys.html [ Pass Crash ]
+crbug.com/653001 media/encrypted-media/encrypted-media-lifetime-reload.html [ Pass Crash ]
 
 crbug.com/548226 fast/events/pointerevents/mouse-pointer-event-properties.html [ Failure Pass ]
 
