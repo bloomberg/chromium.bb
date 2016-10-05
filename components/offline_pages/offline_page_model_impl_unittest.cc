@@ -45,6 +45,9 @@ const GURL kTestUrl2("http://other.page.com");
 const GURL kTestUrl3("http://test.xyz");
 const GURL kTestUrl4("http://page.net");
 const GURL kFileUrl("file:///foo");
+const GURL kTestUrlWithFragment("http://example.com#frag");
+const GURL kTestUrl2WithFragment("http://other.page.com#frag");
+const GURL kTestUrl2WithFragment2("http://other.page.com#frag2");
 const ClientId kTestClientId1(kTestClientNamespace, "1234");
 const ClientId kTestClientId2(kTestClientNamespace, "5678");
 const ClientId kTestClientId3(kTestClientNamespace, "42");
@@ -929,6 +932,27 @@ TEST_F(OfflinePageModelImplTest, GetPagesByOnlineURL) {
 
   pages = GetPagesByOnlineURL(GURL("http://foo"));
   EXPECT_EQ(0U, pages.size());
+}
+
+TEST_F(OfflinePageModelImplTest, GetPagesByOnlineURLWithFragment) {
+  SavePage(kTestUrl, kTestClientId1);
+  SavePage(kTestUrl2WithFragment, kTestClientId2);
+
+  MultipleOfflinePageItemResult pages =
+      GetPagesByOnlineURL(kTestUrlWithFragment);
+  EXPECT_EQ(1U, pages.size());
+  EXPECT_EQ(kTestUrl, pages[0].url);
+  EXPECT_EQ(kTestClientId1, pages[0].client_id);
+
+  pages = GetPagesByOnlineURL(kTestUrl2);
+  EXPECT_EQ(1U, pages.size());
+  EXPECT_EQ(kTestUrl2WithFragment, pages[0].url);
+  EXPECT_EQ(kTestClientId2, pages[0].client_id);
+
+  pages = GetPagesByOnlineURL(kTestUrl2WithFragment2);
+  EXPECT_EQ(1U, pages.size());
+  EXPECT_EQ(kTestUrl2WithFragment, pages[0].url);
+  EXPECT_EQ(kTestClientId2, pages[0].client_id);
 }
 
 TEST_F(OfflinePageModelImplTest, CheckPagesExistOffline) {

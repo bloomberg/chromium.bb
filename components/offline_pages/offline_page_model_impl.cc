@@ -608,9 +608,23 @@ void OfflinePageModelImpl::GetPagesByOnlineURLWhenLoadDone(
     const MultipleOfflinePageItemCallback& callback) const {
   std::vector<OfflinePageItem> result;
 
+  GURL::Replacements remove_params;
+  remove_params.ClearRef();
+
+  GURL online_url_without_fragment =
+        online_url.ReplaceComponents(remove_params);
+
   for (const auto& id_page_pair : offline_pages_) {
-    if (id_page_pair.second.url == online_url &&
-        !id_page_pair.second.IsExpired()) {
+    if (id_page_pair.second.IsExpired())
+      continue;
+    if (online_url == id_page_pair.second.url) {
+      result.push_back(id_page_pair.second);
+      continue;
+    }
+    // If the full URL does not match, try with the fragment identifier
+    // stripped.
+    if (online_url_without_fragment ==
+        id_page_pair.second.url.ReplaceComponents(remove_params)) {
       result.push_back(id_page_pair.second);
     }
   }
