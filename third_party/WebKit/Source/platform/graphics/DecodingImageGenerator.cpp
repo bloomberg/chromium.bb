@@ -27,10 +27,10 @@
 
 #include "platform/PlatformInstrumentation.h"
 #include "platform/SharedBuffer.h"
-#include "platform/TraceEvent.h"
 #include "platform/graphics/ImageFrameGenerator.h"
 #include "platform/image-decoders/ImageDecoder.h"
 #include "platform/image-decoders/SegmentReader.h"
+#include "platform/tracing/TraceEvent.h"
 #include "third_party/skia/include/core/SkData.h"
 #include <memory>
 

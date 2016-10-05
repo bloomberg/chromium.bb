@@ -4,7 +4,7 @@
 
 #include "platform/graphics/FirstPaintInvalidationTracking.h"
 
-#include "platform/TraceEvent.h"
+#include "platform/tracing/TraceEvent.h"
 
 namespace blink {
 

@@ -51,7 +51,7 @@
 #include "platform/ContentType.h"
 #include "platform/Histogram.h"
 #include "platform/MIMETypeRegistry.h"
-#include "platform/TraceEvent.h"
+#include "platform/tracing/TraceEvent.h"
 #include <memory>
 
 namespace blink {

@@ -35,7 +35,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
 #include "core/page/Page.h"
-#include "platform/TraceEvent.h"
+#include "platform/tracing/TraceEvent.h"
 
 namespace blink {
 

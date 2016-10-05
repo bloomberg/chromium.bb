@@ -4,7 +4,7 @@
 
 #include "core/dom/StyleChangeReason.h"
 
-#include "platform/TraceEvent.h"
+#include "platform/tracing/TraceEvent.h"
 #include "wtf/StaticConstructors.h"
 
 namespace blink {

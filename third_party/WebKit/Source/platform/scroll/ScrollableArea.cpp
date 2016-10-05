@@ -40,7 +40,7 @@
 #include "platform/scroll/ProgrammaticScrollAnimator.h"
 #include "platform/scroll/ScrollbarTheme.h"
 
-#include "platform/TraceEvent.h"
+#include "platform/tracing/TraceEvent.h"
 
 static const int kPixelsPerLineStep = 40;
 static const float kMinFractionToStepWhenPaging = 0.875f;

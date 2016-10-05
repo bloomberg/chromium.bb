@@ -6,7 +6,7 @@
 
 #include "bindings/core/v8/ScriptStreamer.h"
 #include "core/inspector/InspectorTraceEvents.h"
-#include "platform/TraceEvent.h"
+#include "platform/tracing/TraceEvent.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebTraceLocation.h"

@@ -40,7 +40,7 @@
 #include "core/inspector/ThreadDebugger.h"
 #include "platform/Histogram.h"
 #include "platform/ScriptForbiddenScope.h"
-#include "platform/TraceEvent.h"
+#include "platform/tracing/TraceEvent.h"
 #include "public/platform/Platform.h"
 #include "wtf/CurrentTime.h"
 

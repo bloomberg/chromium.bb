@@ -27,7 +27,7 @@
 
 #include "core/events/Event.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "platform/TraceEvent.h"
+#include "platform/tracing/TraceEvent.h"
 
 namespace blink {
 

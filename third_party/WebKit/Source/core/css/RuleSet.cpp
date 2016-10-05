@@ -37,8 +37,8 @@
 #include "core/css/StyleSheetContents.h"
 #include "core/html/track/TextTrackCue.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/TraceEvent.h"
 #include "platform/heap/HeapTerminatedArrayBuilder.h"
+#include "platform/tracing/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
 #include "wtf/TerminatedArrayBuilder.h"

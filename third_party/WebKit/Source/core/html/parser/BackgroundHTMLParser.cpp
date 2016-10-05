@@ -31,7 +31,7 @@
 #include "core/html/parser/XSSAuditor.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/Histogram.h"
-#include "platform/TraceEvent.h"
+#include "platform/tracing/TraceEvent.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTaskRunner.h"
 #include "wtf/CurrentTime.h"

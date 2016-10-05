@@ -32,8 +32,8 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/SharedBuffer.h"
-#include "platform/web_memory_allocator_dump.h"
-#include "platform/web_process_memory_dump.h"
+#include "platform/tracing/web_memory_allocator_dump.h"
+#include "platform/tracing/web_process_memory_dump.h"
 
 namespace blink {
 

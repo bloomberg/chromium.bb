@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/web_process_memory_dump.h"
+#include "platform/tracing/web_process_memory_dump.h"
 
 #include "base/memory/discardable_memory.h"
 #include "base/test/test_discardable_memory_allocator.h"
@@ -10,7 +10,7 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "base/values.h"
-#include "platform/web_memory_allocator_dump.h"
+#include "platform/tracing/web_memory_allocator_dump.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -20,7 +20,7 @@ namespace blink {
 // doesn't leak objects.
 TEST(WebProcessMemoryDumpTest, IntegrationTest) {
   std::unique_ptr<base::trace_event::TracedValue> traced_value(
-          new base::trace_event::TracedValue());
+      new base::trace_event::TracedValue());
 
   std::unique_ptr<WebProcessMemoryDump> wpmd1(new WebProcessMemoryDump());
   auto wmad1 = wpmd1->createMemoryAllocatorDump("1/1");

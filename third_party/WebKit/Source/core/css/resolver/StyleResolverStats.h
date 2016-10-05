@@ -31,8 +31,8 @@
 #ifndef StyleResolverStats_h
 #define StyleResolverStats_h
 
-#include "platform/TraceEvent.h"
-#include "platform/TracedValue.h"
+#include "platform/tracing/TraceEvent.h"
+#include "platform/tracing/TracedValue.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
 

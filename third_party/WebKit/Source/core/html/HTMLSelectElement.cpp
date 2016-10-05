@@ -69,8 +69,8 @@
 #include "core/page/SpatialNavigation.h"
 #include "platform/PlatformMouseEvent.h"
 #include "platform/PopupMenu.h"
-#include "platform/TraceEvent.h"
 #include "platform/text/PlatformLocale.h"
+#include "platform/tracing/TraceEvent.h"
 
 using namespace WTF::Unicode;
 

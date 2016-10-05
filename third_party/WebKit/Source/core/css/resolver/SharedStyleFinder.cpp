@@ -48,7 +48,7 @@
 #include "core/html/HTMLOptionElement.h"
 #include "core/style/ComputedStyle.h"
 #include "core/svg/SVGElement.h"
-#include "platform/TraceEvent.h"
+#include "platform/tracing/TraceEvent.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/AtomicString.h"
 

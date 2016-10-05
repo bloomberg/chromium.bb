@@ -26,9 +26,9 @@
 #include "platform/graphics/ImageFrameGenerator.h"
 
 #include "SkData.h"
-#include "platform/TraceEvent.h"
 #include "platform/graphics/ImageDecodingStore.h"
 #include "platform/image-decoders/ImageDecoder.h"
+#include "platform/tracing/TraceEvent.h"
 #include "third_party/skia/include/core/SkYUVSizeInfo.h"
 #include "wtf/PtrUtil.h"
 #include <memory>

@@ -33,7 +33,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "platform/Histogram.h"
-#include "platform/TraceEvent.h"
+#include "platform/tracing/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
 namespace blink {

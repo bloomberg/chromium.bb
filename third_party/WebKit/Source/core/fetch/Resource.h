@@ -35,7 +35,7 @@
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
 #include "platform/scheduler/CancellableTaskFactory.h"
-#include "platform/web_process_memory_dump.h"
+#include "platform/tracing/web_process_memory_dump.h"
 #include "public/platform/WebDataConsumerHandle.h"
 #include "wtf/Allocator.h"
 #include "wtf/HashCountedSet.h"

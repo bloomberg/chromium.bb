@@ -28,7 +28,7 @@
 #include "bindings/core/v8/V8ScriptRunner.h"
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
-#include "platform/TraceEvent.h"
+#include "platform/tracing/TraceEvent.h"
 
 namespace blink {
 

@@ -5,7 +5,7 @@
 #ifndef TracedLayoutObject_h
 #define TracedLayoutObject_h
 
-#include "platform/TracedValue.h"
+#include "platform/tracing/TracedValue.h"
 #include <memory>
 
 namespace blink {

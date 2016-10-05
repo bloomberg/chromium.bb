@@ -4,9 +4,9 @@
 
 #include "platform/MemoryCoordinator.h"
 
-#include "platform/TraceEvent.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/graphics/ImageDecodingStore.h"
+#include "platform/tracing/TraceEvent.h"
 #include "wtf/allocator/Partitions.h"
 
 namespace blink {

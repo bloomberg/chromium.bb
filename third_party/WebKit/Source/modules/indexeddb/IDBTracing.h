@@ -29,7 +29,7 @@
 #ifndef IDBTracing_h
 #define IDBTracing_h
 
-#include "platform/TraceEvent.h"
+#include "platform/tracing/TraceEvent.h"
 #define IDB_TRACE(a) TRACE_EVENT0("IndexedDB", (a));
 
 #endif  // IDBTracing_h

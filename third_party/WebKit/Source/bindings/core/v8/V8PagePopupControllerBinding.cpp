@@ -12,7 +12,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/page/PagePopupController.h"
 #include "core/page/PagePopupSupplement.h"
-#include "platform/TraceEvent.h"
+#include "platform/tracing/TraceEvent.h"
 
 namespace blink {
 

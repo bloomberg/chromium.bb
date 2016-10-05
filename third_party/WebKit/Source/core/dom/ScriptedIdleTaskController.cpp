@@ -9,7 +9,7 @@
 #include "core/dom/IdleRequestOptions.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "platform/Histogram.h"
-#include "platform/TraceEvent.h"
+#include "platform/tracing/TraceEvent.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebTraceLocation.h"

@@ -7,8 +7,8 @@
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
-#include "platform/TraceEvent.h"
 #include "platform/graphics/CompositorMutation.h"
+#include "platform/tracing/TraceEvent.h"
 
 namespace blink {
 

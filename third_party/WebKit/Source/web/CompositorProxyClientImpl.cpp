@@ -6,8 +6,8 @@
 
 #include "core/dom/CompositorProxy.h"
 #include "modules/compositorworker/CompositorWorkerGlobalScope.h"
-#include "platform/TraceEvent.h"
 #include "platform/graphics/CompositorMutableStateProvider.h"
+#include "platform/tracing/TraceEvent.h"
 #include "web/CompositorMutatorImpl.h"
 #include "wtf/CurrentTime.h"
 
