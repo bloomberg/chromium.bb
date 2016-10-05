@@ -1526,3 +1526,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest,
   DevToolsWindowTesting::CloseDevToolsWindowSync(window);
   content::WebUIControllerFactory::UnregisterFactoryForTesting(&test_factory);
 }
+
+// Tests scripts panel showing.
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestDevToolsSharedWorker) {
+  RunTest("testDevToolsSharedWorker", url::kAboutBlankURL);
+}
+
