@@ -1337,6 +1337,7 @@ class CORE_EXPORT UseCounter {
     DocumentCreateTouchMoreThanSevenArguments = 1612,
     EncryptedMediaCapabilityProvided = 1613,
     EncryptedMediaCapabilityNotProvided = 1614,
+    LongTaskObserver = 1615,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

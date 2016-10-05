@@ -7,9 +7,11 @@
 #include "core/InstrumentingAgents.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/frame/DOMWindow.h"
 #include "core/frame/Frame.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Location.h"
+#include "core/frame/UseCounter.h"
 #include "core/inspector/InspectedFrames.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
@@ -40,6 +42,8 @@ InspectorWebPerfAgent::~InspectorWebPerfAgent() {
 }
 
 void InspectorWebPerfAgent::enable() {
+  // Update usage count.
+  UseCounter::count(m_localFrame, UseCounter::LongTaskObserver);
   Platform::current()->currentThread()->addTaskTimeObserver(this);
   Platform::current()->currentThread()->addTaskObserver(this);
   m_localFrame->instrumentingAgents()->addInspectorWebPerfAgent(this);
