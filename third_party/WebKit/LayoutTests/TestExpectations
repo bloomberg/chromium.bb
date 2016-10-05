@@ -356,6 +356,7 @@ crbug.com/498539 [ Mac10.9 ] inspector/console/console-uncaught-exception.html [
 crbug.com/498539 [ Win7 ] inspector/console/console-dir-es6.html [ Failure Pass ]
 crbug.com/498539 [ Win7 ] inspector/elements/styles-4/styles-update-from-js.html [ Crash Pass ]
 crbug.com/652968 http/tests/inspector/network/network-columns-visible.html [ Pass Failure ]
+crbug.com/652982 http/tests/inspector/persistence/persistence-go-to-file-dialog.html [ Pass Failure ]
 
 crbug.com/596968 [ Win ] inspector-protocol/input/eventTimestamp.html [ Failure Pass ]
 
