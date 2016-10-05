@@ -1133,61 +1133,7 @@ void LayoutTableSection::layoutRows() {
       int rHeight =
           m_rowPos[rowIndex + cell->rowSpan()] - m_rowPos[rowIndex] - vspacing;
 
-      // Force percent height children to lay themselves out again.
-      // This will cause these children to grow to fill the cell.
-      // FIXME: There is still more work to do here to fully match WinIE (should
-      // it become necessary to do so).  In quirks mode, WinIE behaves like we
-      // do, but it will clip the cells that spill out of the table section.  In
-      // strict mode, Mozilla and WinIE both regrow the table to accommodate the
-      // new height of the cell (thus letting the percentages cause growth one
-      // time only).  We may also not be handling row-spanning cells correctly.
-      //
-      // Note also the oddity where replaced elements always flex, and yet blocks/tables do
-      // not necessarily flex.  WinIE is crazy and inconsistent, and we can't hope to
-      // match the behavior perfectly, but we'll continue to refine it as we discover new
-      // bugs. :)
-      bool cellChildrenFlex = false;
-      bool flexAllChildren = cell->style()->logicalHeight().isFixed() ||
-                             (!table()->style()->logicalHeight().isAuto() &&
-                              rHeight != cell->logicalHeight());
-
-      for (LayoutObject* child = cell->firstChild(); child;
-           child = child->nextSibling()) {
-        if (!child->isText() &&
-            child->style()->logicalHeight().isPercentOrCalc() &&
-            (flexAllChildren || shouldFlexCellChild(child)) &&
-            (!child->isTable() || toLayoutTable(child)->hasSections())) {
-          cellChildrenFlex = true;
-          break;
-        }
-      }
-
-      if (!cellChildrenFlex) {
-        if (TrackedLayoutBoxListHashSet* percentHeightDescendants =
-                cell->percentHeightDescendants()) {
-          for (auto* descendant : *percentHeightDescendants) {
-            if (flexAllChildren || shouldFlexCellChild(descendant)) {
-              cellChildrenFlex = true;
-              break;
-            }
-          }
-        }
-      }
-
-      if (cellChildrenFlex) {
-        // Alignment within a cell is based off the calculated
-        // height, which becomes irrelevant once the cell has
-        // been resized based off its percentage.
-        cell->setOverrideLogicalContentHeightFromRowHeight(LayoutUnit(rHeight));
-        cell->forceChildLayout();
-
-        // If the baseline moved, we may have to update the data for our row. Find out the new baseline.
-        if (cell->isBaselineAligned()) {
-          int baseline = cell->cellBaselinePosition();
-          if (baseline > cell->borderBefore() + cell->paddingBefore())
-            m_grid[r].baseline = std::max(m_grid[r].baseline, baseline);
-        }
-      }
+      relayoutCellIfFlexed(*cell, r, rHeight);
 
       SubtreeLayoutScope layouter(*cell);
       cell->computeIntrinsicPadding(rHeight, layouter);
@@ -1898,6 +1844,66 @@ void LayoutTableSection::setLogicalPositionForCell(
                    horizontalBorderSpacing));
 
   cell->setLogicalLocation(cellLocation);
+}
+
+void LayoutTableSection::relayoutCellIfFlexed(LayoutTableCell& cell,
+                                              int rowIndex,
+                                              int rowHeight) {
+  // Force percent height children to lay themselves out again.
+  // This will cause these children to grow to fill the cell.
+  // FIXME: There is still more work to do here to fully match WinIE (should
+  // it become necessary to do so).  In quirks mode, WinIE behaves like we
+  // do, but it will clip the cells that spill out of the table section.  In
+  // strict mode, Mozilla and WinIE both regrow the table to accommodate the
+  // new height of the cell (thus letting the percentages cause growth one
+  // time only).  We may also not be handling row-spanning cells correctly.
+  //
+  // Note also the oddity where replaced elements always flex, and yet
+  // blocks/tables do not necessarily flex. WinIE is crazy and inconsistent,
+  // and we can't hope to match the behavior perfectly, but we'll continue to
+  // refine it as we discover new bugs. :)
+  bool cellChildrenFlex = false;
+  bool flexAllChildren = cell.style()->logicalHeight().isFixed() ||
+                         (!table()->style()->logicalHeight().isAuto() &&
+                          rowHeight != cell.logicalHeight());
+
+  for (LayoutObject* child = cell.firstChild(); child;
+       child = child->nextSibling()) {
+    if (!child->isText() && child->style()->logicalHeight().isPercentOrCalc() &&
+        (flexAllChildren || shouldFlexCellChild(child)) &&
+        (!child->isTable() || toLayoutTable(child)->hasSections())) {
+      cellChildrenFlex = true;
+      break;
+    }
+  }
+
+  if (!cellChildrenFlex) {
+    if (TrackedLayoutBoxListHashSet* percentHeightDescendants =
+            cell.percentHeightDescendants()) {
+      for (auto* descendant : *percentHeightDescendants) {
+        if (flexAllChildren || shouldFlexCellChild(descendant)) {
+          cellChildrenFlex = true;
+          break;
+        }
+      }
+    }
+  }
+
+  if (!cellChildrenFlex)
+    return;
+
+  // Alignment within a cell is based off the calculated height, which becomes
+  // irrelevant once the cell has been resized based off its percentage.
+  cell.setOverrideLogicalContentHeightFromRowHeight(LayoutUnit(rowHeight));
+  cell.forceChildLayout();
+
+  // If the baseline moved, we may have to update the data for our row. Find
+  // out the new baseline.
+  if (cell.isBaselineAligned()) {
+    int baseline = cell.cellBaselinePosition();
+    if (baseline > cell.borderBefore() + cell.paddingBefore())
+      m_grid[rowIndex].baseline = std::max(m_grid[rowIndex].baseline, baseline);
+  }
 }
 
 bool LayoutTableSection::isRepeatingHeaderGroup() const {

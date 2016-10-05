@@ -409,6 +409,8 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
   void setLogicalPositionForCell(LayoutTableCell*,
                                  unsigned effectiveColumn) const;
 
+  void relayoutCellIfFlexed(LayoutTableCell&, int rowIndex, int rowHeight);
+
   // The representation of the rows and their cells (CellStruct).
   Vector<RowStruct> m_grid;
 
