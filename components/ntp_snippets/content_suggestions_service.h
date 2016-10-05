@@ -181,7 +181,7 @@ class ContentSuggestionsService : public KeyedService,
     ntp_snippets_service_ = ntp_snippets_service;
   }
 
-  UserClassifier* user_classifier() { return &user_classifier_;}
+  UserClassifier* user_classifier() { return &user_classifier_; }
 
  private:
   friend class ContentSuggestionsServiceTest;

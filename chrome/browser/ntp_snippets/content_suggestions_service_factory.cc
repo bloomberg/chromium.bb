@@ -150,7 +150,8 @@ void RegisterArticleProvider(SigninManagerBase* signin_manager,
       chrome::GetChannel() == version_info::Channel::STABLE;
   auto provider = base::MakeUnique<NTPSnippetsService>(
       service, service->category_factory(), pref_service, suggestions_service,
-      g_browser_process->GetApplicationLocale(), scheduler,
+      g_browser_process->GetApplicationLocale(), service->user_classifier(),
+      scheduler,
       base::MakeUnique<NTPSnippetsFetcher>(
           signin_manager, token_service, request_context, pref_service,
           category_factory, base::Bind(&safe_json::SafeJsonParser::Parse),

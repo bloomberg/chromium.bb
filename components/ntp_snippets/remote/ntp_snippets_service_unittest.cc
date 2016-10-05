@@ -33,6 +33,7 @@
 #include "components/ntp_snippets/remote/ntp_snippets_scheduler.h"
 #include "components/ntp_snippets/remote/ntp_snippets_test_utils.h"
 #include "components/ntp_snippets/switches.h"
+#include "components/ntp_snippets/user_classifier.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
@@ -349,6 +350,7 @@ class NTPSnippetsServiceTest : public ::testing::Test {
         fake_url_fetcher_factory_(
             /*default_factory=*/&failing_url_fetcher_factory_),
         test_url_(kTestContentSuggestionsServerWithAPIKey),
+        user_classifier_(/*pref_service=*/nullptr),
         image_fetcher_(nullptr) {
     NTPSnippetsService::RegisterProfilePrefs(utils_.pref_service()->registry());
     RequestThrottler::RegisterProfilePrefs(utils_.pref_service()->registry());
@@ -398,7 +400,7 @@ class NTPSnippetsServiceTest : public ::testing::Test {
     observer_ = base::MakeUnique<FakeContentSuggestionsProviderObserver>();
     return base::MakeUnique<NTPSnippetsService>(
         observer_.get(), &category_factory_, utils_.pref_service(), nullptr,
-        "fr", &scheduler_, std::move(snippets_fetcher),
+        "fr", &user_classifier_, &scheduler_, std::move(snippets_fetcher),
         std::move(image_fetcher), /*image_decoder=*/nullptr,
         base::MakeUnique<NTPSnippetsDatabase>(database_dir_.GetPath(),
                                               task_runner),
@@ -467,6 +469,7 @@ class NTPSnippetsServiceTest : public ::testing::Test {
   net::FakeURLFetcherFactory fake_url_fetcher_factory_;
   const GURL test_url_;
   std::unique_ptr<OAuth2TokenService> fake_token_service_;
+  UserClassifier user_classifier_;
   NiceMock<MockScheduler> scheduler_;
   std::unique_ptr<FakeContentSuggestionsProviderObserver> observer_;
   CategoryFactory category_factory_;

@@ -159,7 +159,8 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
         base::MakeUnique<NTPSnippetsService>(
             service.get(), service->category_factory(), prefs,
             suggestions_service,
-            GetApplicationContext()->GetApplicationLocale(), scheduler,
+            GetApplicationContext()->GetApplicationLocale(),
+            service->user_classifier(), scheduler,
             base::MakeUnique<NTPSnippetsFetcher>(
                 signin_manager, token_service, request_context, prefs,
                 service->category_factory(), base::Bind(&ParseJson),

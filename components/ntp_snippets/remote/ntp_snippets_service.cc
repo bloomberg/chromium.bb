@@ -9,8 +9,6 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/files/file_path.h"
-#include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
@@ -25,10 +23,11 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/image_fetcher/image_decoder.h"
 #include "components/image_fetcher/image_fetcher.h"
-#include "components/ntp_snippets/ntp_snippets_constants.h"
+#include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/remote/ntp_snippets_database.h"
 #include "components/ntp_snippets/switches.h"
+#include "components/ntp_snippets/user_classifier.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/suggestions/proto/suggestions.pb.h"
@@ -54,59 +53,57 @@ const int kMaxSnippetCount = 10;
 // Number of archived snippets we keep around in memory.
 const int kMaxArchivedSnippetCount = 200;
 
-// Default values for snippets fetching intervals - once per day only.
-const int kDefaultFetchingIntervalWifiSeconds = 0;
-const int kDefaultFetchingIntervalFallbackSeconds = 24 * 60 * 60;
+// Default values for fetching intervals, fallback and wifi.
+const double kDefaultFetchingIntervalRareNtpUser[] = {48.0, 24.0};
+const double kDefaultFetchingIntervalActiveNtpUser[] = {24.0, 6.0};
+const double kDefaultFetchingIntervalActiveSuggestionsConsumer[] = {24.0, 6.0};
 
 // Variation parameters than can override the default fetching intervals.
-const char kFetchingIntervalWifiParamName[] =
-    "fetching_interval_wifi_seconds";
-const char kFetchingIntervalFallbackParamName[] =
-    "fetching_interval_fallback_seconds";
+const char* kFetchingIntervalParamNameRareNtpUser[] = {
+    "fetching_interval_hours-fallback-rare_ntp_user",
+    "fetching_interval_hours-wifi-rare_ntp_user"};
+const char* kFetchingIntervalParamNameActiveNtpUser[] = {
+    "fetching_interval_hours-fallback-active_ntp_user",
+    "fetching_interval_hours-wifi-active_ntp_user"};
+const char* kFetchingIntervalParamNameActiveSuggestionsConsumer[] = {
+    "fetching_interval_hours-fallback-active_suggestions_consumer",
+    "fetching_interval_hours-wifi-active_suggestions_consumer"};
 
 const int kDefaultExpiryTimeMins = 3 * 24 * 60;
 
-base::TimeDelta GetFetchingInterval(const char* switch_name,
-                                    const char* param_name,
-                                    int default_value_seconds) {
-  int value_seconds = default_value_seconds;
+base::TimeDelta GetFetchingInterval(bool is_wifi,
+                                    UserClassifier::UserClass user_class) {
+  double value_hours = 0.0;
+
+  const int index = is_wifi ? 1 : 0;
+  const char* param_name = "";
+  switch (user_class) {
+    case UserClassifier::UserClass::RARE_NTP_USER:
+      value_hours = kDefaultFetchingIntervalRareNtpUser[index];
+      param_name = kFetchingIntervalParamNameRareNtpUser[index];
+      break;
+    case UserClassifier::UserClass::ACTIVE_NTP_USER:
+      value_hours = kDefaultFetchingIntervalActiveNtpUser[index];
+      param_name = kFetchingIntervalParamNameActiveNtpUser[index];
+      break;
+    case UserClassifier::UserClass::ACTIVE_SUGGESTIONS_CONSUMER:
+      value_hours = kDefaultFetchingIntervalActiveSuggestionsConsumer[index];
+      param_name = kFetchingIntervalParamNameActiveSuggestionsConsumer[index];
+      break;
+  }
 
   // The default value can be overridden by a variation parameter.
-  // TODO(treib,jkrcal): Use GetVariationParamValueByFeature and get rid of
-  // kStudyName, also in NTPSnippetsFetcher.
-  std::string param_value_str = variations::GetVariationParamValue(
-        ntp_snippets::kStudyName, param_name);
+  std::string param_value_str = variations::GetVariationParamValueByFeature(
+        ntp_snippets::kArticleSuggestionsFeature, param_name);
   if (!param_value_str.empty()) {
-    int param_value_seconds = 0;
-    if (base::StringToInt(param_value_str, &param_value_seconds))
-      value_seconds = param_value_seconds;
+    double param_value_hours = 0.0;
+    if (base::StringToDouble(param_value_str, &param_value_hours))
+      value_hours = param_value_hours;
     else
       LOG(WARNING) << "Invalid value for variation parameter " << param_name;
   }
 
-  // A value from the command line parameter overrides anything else.
-  const base::CommandLine& cmdline = *base::CommandLine::ForCurrentProcess();
-  if (cmdline.HasSwitch(switch_name)) {
-    std::string str = cmdline.GetSwitchValueASCII(switch_name);
-    int switch_value_seconds = 0;
-    if (base::StringToInt(str, &switch_value_seconds))
-      value_seconds = switch_value_seconds;
-    else
-      LOG(WARNING) << "Invalid value for switch " << switch_name;
-  }
-  return base::TimeDelta::FromSeconds(value_seconds);
-}
-
-base::TimeDelta GetFetchingIntervalWifi() {
-  return GetFetchingInterval(switches::kFetchingIntervalWifiSeconds,
-                             kFetchingIntervalWifiParamName,
-                             kDefaultFetchingIntervalWifiSeconds);
-}
-
-base::TimeDelta GetFetchingIntervalFallback() {
-  return GetFetchingInterval(switches::kFetchingIntervalFallbackSeconds,
-                             kFetchingIntervalFallbackParamName,
-                             kDefaultFetchingIntervalFallbackSeconds);
+  return base::TimeDelta::FromSecondsD(value_hours * 3600.0);
 }
 
 // Extracts the hosts from |suggestions| and returns them in a set.
@@ -182,6 +179,7 @@ NTPSnippetsService::NTPSnippetsService(
     PrefService* pref_service,
     SuggestionsService* suggestions_service,
     const std::string& application_language_code,
+    const UserClassifier* user_classifier,
     NTPSnippetsScheduler* scheduler,
     std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher,
     std::unique_ptr<ImageFetcher> image_fetcher,
@@ -195,6 +193,7 @@ NTPSnippetsService::NTPSnippetsService(
       articles_category_(
           category_factory->FromKnownCategory(KnownCategories::ARTICLES)),
       application_language_code_(application_language_code),
+      user_classifier_(user_classifier),
       scheduler_(scheduler),
       snippets_fetcher_(std::move(snippets_fetcher)),
       image_fetcher_(std::move(image_fetcher)),
@@ -283,8 +282,11 @@ void NTPSnippetsService::RescheduleFetching(bool force) {
     base::TimeDelta old_interval_fallback =
         base::TimeDelta::FromInternalValue(pref_service_->GetInt64(
             prefs::kSnippetBackgroundFetchingIntervalFallback));
-    base::TimeDelta interval_wifi = GetFetchingIntervalWifi();
-    base::TimeDelta interval_fallback = GetFetchingIntervalFallback();
+    UserClassifier::UserClass user_class = user_classifier_->GetUserClass();
+    base::TimeDelta interval_wifi =
+        GetFetchingInterval(/*is_wifi=*/true, user_class);
+    base::TimeDelta interval_fallback =
+        GetFetchingInterval(/*is_wifi=*/false, user_class);
     if (force || interval_wifi != old_interval_wifi ||
         interval_fallback != old_interval_fallback) {
       scheduler_->Schedule(interval_wifi, interval_fallback);
@@ -295,7 +297,7 @@ void NTPSnippetsService::RescheduleFetching(bool force) {
           interval_fallback.ToInternalValue());
     }
   } else {
-    // If we're NOT_INITED, we don't know whether to schedule or un-schedule.
+    // If we're NOT_INITED, we don't know whether to schedule or unschedule.
     // If |force| is false, all is well: We'll reschedule on the next state
     // change anyway. If it's true, then unschedule here, to make sure that the
     // next reschedule actually happens.
@@ -668,8 +670,6 @@ void NTPSnippetsService::ReplaceSnippets(Category category,
           snippet->publish_date() +
           base::TimeDelta::FromMinutes(kDefaultExpiryTimeMins));
     }
-
-    // TODO(treib): Prefetch and cache the snippet image. crbug.com/605870
   }
 
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(

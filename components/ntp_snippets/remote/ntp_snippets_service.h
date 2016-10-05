@@ -47,6 +47,7 @@ class SuggestionsProfile;
 namespace ntp_snippets {
 
 class NTPSnippetsDatabase;
+class UserClassifier;
 
 // Retrieves fresh content data (articles) from the server, stores them and
 // provides them as content suggestions.
@@ -73,6 +74,7 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
                      PrefService* pref_service,
                      suggestions::SuggestionsService* suggestions_service,
                      const std::string& application_language_code,
+                     const UserClassifier* user_classifier,
                      NTPSnippetsScheduler* scheduler,
                      std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher,
                      std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher,
@@ -335,6 +337,9 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
 
   // The ISO 639-1 code of the language used by the application.
   const std::string application_language_code_;
+
+  // Classifier that tells us how active the user is. Not owned.
+  const UserClassifier* user_classifier_;
 
   // Scheduler for fetching snippets. Not owned.
   NTPSnippetsScheduler* scheduler_;

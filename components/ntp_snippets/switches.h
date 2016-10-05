@@ -8,10 +8,6 @@
 namespace ntp_snippets {
 namespace switches {
 
-extern const char kFetchingIntervalWifiChargingSeconds[];
-extern const char kFetchingIntervalWifiSeconds[];
-extern const char kFetchingIntervalFallbackSeconds[];
-
 extern const char kDontRestrict[];
 extern const char kAddIncompleteSnippets[];
 
