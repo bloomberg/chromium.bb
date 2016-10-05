@@ -271,10 +271,10 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
   void WriteRegistrationDataInBatch(const RegistrationData& registration,
                                     leveldb::WriteBatch* batch);
 
-  // Reads resource records for |version_id| from the database. Returns OK if
+  // Reads resource records for |registration| from the database. Returns OK if
   // it's successfully read or not found in the database. Otherwise, returns an
   // error.
-  Status ReadResourceRecords(int64_t version_id,
+  Status ReadResourceRecords(const RegistrationData& registration,
                              std::vector<ResourceRecord>* resources);
 
   // Parses |serialized| as a ResourceRecord object and pushes it into |out|.

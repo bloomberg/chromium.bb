@@ -461,7 +461,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetRegistrationsForOrigin(
 
       if (opt_resources_list) {
         std::vector<ResourceRecord> resources;
-        status = ReadResourceRecords(registration.version_id, &resources);
+        status = ReadResourceRecords(registration, &resources);
         if (status != STATUS_OK) {
           registrations->clear();
           opt_resources_list->clear();
@@ -534,7 +534,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadRegistration(
   if (status != STATUS_OK)
     return status;
 
-  status = ReadResourceRecords(value.version_id, resources);
+  status = ReadResourceRecords(value, resources);
   if (status != STATUS_OK)
     return status;
 
@@ -1265,13 +1265,14 @@ void ServiceWorkerDatabase::WriteRegistrationDataInBatch(
 }
 
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadResourceRecords(
-    int64_t version_id,
+    const RegistrationData& registration,
     std::vector<ResourceRecord>* resources) {
   DCHECK(resources->empty());
 
   Status status = STATUS_OK;
-  const std::string prefix = CreateResourceRecordKeyPrefix(version_id);
-
+  bool has_main_resource = false;
+  const std::string prefix =
+      CreateResourceRecordKeyPrefix(registration.version_id);
   {
     std::unique_ptr<leveldb::Iterator> itr(
         db_->NewIterator(leveldb::ReadOptions()));
@@ -1291,8 +1292,20 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadResourceRecords(
         resources->clear();
         break;
       }
+
+      if (registration.script == resource.url) {
+        DCHECK(!has_main_resource);
+        has_main_resource = true;
+      }
+
       resources->push_back(resource);
     }
+  }
+
+  // |resources| should contain the main script.
+  if (!has_main_resource) {
+    resources->clear();
+    status = STATUS_ERROR_CORRUPTED;
   }
 
   HandleReadResult(FROM_HERE, status);
