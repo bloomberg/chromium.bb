@@ -150,9 +150,10 @@ SourceBuffer* MediaSource::addSourceBuffer(const String& type,
                                            ExceptionState& exceptionState) {
   BLINK_MSLOG << __func__ << " this=" << this << " type=" << type;
 
-  // 2.2 https://www.w3.org/TR/media-source/#widl-MediaSource-addSourceBuffer-SourceBuffer-DOMString-type/
+  // 2.2
+  // https://www.w3.org/TR/media-source/#widl-MediaSource-addSourceBuffer-SourceBuffer-DOMString-type/
   // 1. If type is an empty string then throw a TypeError exception
-  // and abort these steps.
+  //    and abort these steps.
   if (type.isEmpty()) {
     logAndThrowTypeError(exceptionState, "The type provided is empty");
     return 0;
@@ -184,14 +185,17 @@ SourceBuffer* MediaSource::addSourceBuffer(const String& type,
   if (!webSourceBuffer) {
     DCHECK(exceptionState.code() == NotSupportedError ||
            exceptionState.code() == QuotaExceededError);
-    // 2. If type contains a MIME type that is not supported ..., then throw a NotSupportedError exception and abort these steps.
-    // 3. If the user agent can't handle any more SourceBuffer objects then throw a QuotaExceededError exception and abort these steps
+    // 2. If type contains a MIME type that is not supported ..., then throw a
+    //    NotSupportedError exception and abort these steps.
+    // 3. If the user agent can't handle any more SourceBuffer objects then
+    //    throw a QuotaExceededError exception and abort these steps
     return 0;
   }
 
   SourceBuffer* buffer = SourceBuffer::create(std::move(webSourceBuffer), this,
                                               m_asyncEventQueue.get());
-  // 6. Add the new object to sourceBuffers and fire a addsourcebuffer on that object.
+  // 6. Add the new object to sourceBuffers and fire a addsourcebuffer on that
+  //    object.
   m_sourceBuffers->add(buffer);
 
   // 7. Return the new object to the caller.
@@ -204,10 +208,11 @@ void MediaSource::removeSourceBuffer(SourceBuffer* buffer,
                                      ExceptionState& exceptionState) {
   BLINK_MSLOG << __func__ << " this=" << this << " buffer=" << buffer;
 
-  // 2.2 https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-MediaSource-removeSourceBuffer-void-SourceBuffer-sourceBuffer
+  // 2.2
+  // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-MediaSource-removeSourceBuffer-void-SourceBuffer-sourceBuffer
 
   // 1. If sourceBuffer specifies an object that is not in sourceBuffers then
-  // throw a NotFoundError exception and abort these steps.
+  //    throw a NotFoundError exception and abort these steps.
   if (!m_sourceBuffers->length() || !m_sourceBuffers->contains(buffer)) {
     logAndThrowDOMException(
         exceptionState, NotFoundError,
@@ -218,15 +223,17 @@ void MediaSource::removeSourceBuffer(SourceBuffer* buffer,
   // Steps 2-8 are implemented by SourceBuffer::removedFromMediaSource.
   buffer->removedFromMediaSource();
 
-  // 9. If sourceBuffer is in activeSourceBuffers, then remove sourceBuffer from activeSourceBuffers ...
+  // 9. If sourceBuffer is in activeSourceBuffers, then remove sourceBuffer from
+  //    activeSourceBuffers ...
   m_activeSourceBuffers->remove(buffer);
 
-  // 10. Remove sourceBuffer from sourceBuffers and fire a removesourcebuffer event
-  // on that object.
+  // 10. Remove sourceBuffer from sourceBuffers and fire a removesourcebuffer
+  //     event on that object.
   m_sourceBuffers->remove(buffer);
 
   // 11. Destroy all resources for sourceBuffer.
-  // This should have been done already by SourceBuffer::removedFromMediaSource (steps 2-8) above.
+  //     This should have been done already by
+  //     SourceBuffer::removedFromMediaSource (steps 2-8) above.
 }
 
 void MediaSource::onReadyStateChange(const AtomicString& oldState,
@@ -283,8 +290,10 @@ bool MediaSource::isTypeSupported(const String& type) {
     return false;
   }
 
-  // Note: MediaSource.isTypeSupported() returning true implies that HTMLMediaElement.canPlayType() will return "maybe" or "probably"
-  // since it does not make sense for a MediaSource to support a type the HTMLMediaElement knows it cannot play.
+  // Note: MediaSource.isTypeSupported() returning true implies that
+  // HTMLMediaElement.canPlayType() will return "maybe" or "probably" since it
+  // does not make sense for a MediaSource to support a type the
+  // HTMLMediaElement knows it cannot play.
   if (HTMLMediaElement::supportsType(contentType) ==
       WebMimeRegistry::IsNotSupported) {
     BLINK_MSLOG << __func__ << "(" << type
@@ -292,9 +301,12 @@ bool MediaSource::isTypeSupported(const String& type) {
     return false;
   }
 
-  // 3. If type contains a media type or media subtype that the MediaSource does not support, then return false.
-  // 4. If type contains at a codec that the MediaSource does not support, then return false.
-  // 5. If the MediaSource does not support the specified combination of media type, media subtype, and codecs then return false.
+  // 3. If type contains a media type or media subtype that the MediaSource does
+  //    not support, then return false.
+  // 4. If type contains at a codec that the MediaSource does not support, then
+  //    return false.
+  // 5. If the MediaSource does not support the specified combination of media
+  //    type, media subtype, and codecs then return false.
   // 6. Return true.
   bool result = MIMETypeRegistry::isSupportedMediaSourceMIMEType(
       contentType.type(), codecs);
@@ -354,11 +366,13 @@ TimeRanges* MediaSource::buffered() const {
   for (size_t i = 0; i < m_activeSourceBuffers->length(); ++i)
     ranges[i] = m_activeSourceBuffers->item(i)->buffered(ASSERT_NO_EXCEPTION);
 
-  // 1. If activeSourceBuffers.length equals 0 then return an empty TimeRanges object and abort these steps.
+  // 1. If activeSourceBuffers.length equals 0 then return an empty TimeRanges
+  //    object and abort these steps.
   if (ranges.isEmpty())
     return TimeRanges::create();
 
-  // 2. Let active ranges be the ranges returned by buffered for each SourceBuffer object in activeSourceBuffers.
+  // 2. Let active ranges be the ranges returned by buffered for each
+  //    SourceBuffer object in activeSourceBuffers.
   // 3. Let highest end time be the largest range end time in the active ranges.
   double highestEndTime = -1;
   for (size_t i = 0; i < ranges.size(); ++i) {
@@ -372,23 +386,29 @@ TimeRanges* MediaSource::buffered() const {
   if (highestEndTime < 0)
     return TimeRanges::create();
 
-  // 4. Let intersection ranges equal a TimeRange object containing a single range from 0 to highest end time.
+  // 4. Let intersection ranges equal a TimeRange object containing a single
+  //    range from 0 to highest end time.
   TimeRanges* intersectionRanges = TimeRanges::create(0, highestEndTime);
 
-  // 5. For each SourceBuffer object in activeSourceBuffers run the following steps:
+  // 5. For each SourceBuffer object in activeSourceBuffers run the following
+  //    steps:
   bool ended = readyState() == endedKeyword();
   for (size_t i = 0; i < ranges.size(); ++i) {
-    // 5.1 Let source ranges equal the ranges returned by the buffered attribute on the current SourceBuffer.
+    // 5.1 Let source ranges equal the ranges returned by the buffered attribute
+    //     on the current SourceBuffer.
     TimeRanges* sourceRanges = ranges[i].get();
 
-    // 5.2 If readyState is "ended", then set the end time on the last range in source ranges to highest end time.
+    // 5.2 If readyState is "ended", then set the end time on the last range in
+    //     source ranges to highest end time.
     if (ended && sourceRanges->length())
       sourceRanges->add(
           sourceRanges->start(sourceRanges->length() - 1, ASSERT_NO_EXCEPTION),
           highestEndTime);
 
-    // 5.3 Let new intersection ranges equal the the intersection between the intersection ranges and the source ranges.
-    // 5.4 Replace the ranges in intersection ranges with the new intersection ranges.
+    // 5.3 Let new intersection ranges equal the the intersection between the
+    //     intersection ranges and the source ranges.
+    // 5.4 Replace the ranges in intersection ranges with the new intersection
+    //     ranges.
     intersectionRanges->intersectWith(sourceRanges);
   }
 
@@ -427,18 +447,20 @@ TimeRanges* MediaSource::seekable() const {
           std::max(m_liveSeekableRange->end(0, ASSERT_NO_EXCEPTION),
                    buffered->end(buffered->length() - 1, ASSERT_NO_EXCEPTION)));
     }
-    // 2. If the HTMLMediaElement.buffered attribute returns an empty TimeRanges object, then
-    //    return an empty TimeRanges object and abort these steps.
+    // 2. If the HTMLMediaElement.buffered attribute returns an empty TimeRanges
+    //    object, then return an empty TimeRanges object and abort these steps.
     if (buffered->length() == 0)
       return TimeRanges::create();
 
-    // 3. Return a single range with a start time of 0 and an end time equal to the highest end
-    //    time reported by the HTMLMediaElement.buffered attribute.
+    // 3. Return a single range with a start time of 0 and an end time equal to
+    //    the highest end time reported by the HTMLMediaElement.buffered
+    //    attribute.
     return TimeRanges::create(
         0, buffered->end(buffered->length() - 1, ASSERT_NO_EXCEPTION));
   }
 
-  // 3. Otherwise: Return a single range with a start time of 0 and an end time equal to duration.
+  // 3. Otherwise: Return a single range with a start time of 0 and an end time
+  //    equal to duration.
   return TimeRanges::create(0, sourceDuration);
 }
 
@@ -479,15 +501,16 @@ void MediaSource::setDuration(double duration, ExceptionState& exceptionState) {
     return;
   }
 
-  // 2. If the readyState attribute is not "open" then throw an InvalidStateError
-  // exception and abort these steps.
-  // 3. If the updating attribute equals true on any SourceBuffer in sourceBuffers,
-  // then throw an InvalidStateError exception and abort these steps.
+  // 2. If the readyState attribute is not "open" then throw an
+  //    InvalidStateError exception and abort these steps.
+  // 3. If the updating attribute equals true on any SourceBuffer in
+  //    sourceBuffers, then throw an InvalidStateError exception and abort these
+  //    steps.
   if (throwExceptionIfClosedOrUpdating(isOpen(), isUpdating(), exceptionState))
     return;
 
-  // 4. Run the duration change algorithm with new duration set to the value being
-  // assigned to this attribute.
+  // 4. Run the duration change algorithm with new duration set to the value
+  //    being assigned to this attribute.
   durationChangeAlgorithm(duration, exceptionState);
 }
 
@@ -547,11 +570,14 @@ void MediaSource::durationChangeAlgorithm(double newDuration,
                                        ASSERT_NO_EXCEPTION);
   }
 
-  // 5. If a user agent is unable to partially render audio frames or text cues that start before and end after the duration, then run the following steps:
-  // NOTE: Currently we assume that the media engine is able to render partial frames/cues. If a media
-  // engine gets added that doesn't support this, then we'll need to add logic to handle the substeps.
+  // 5. If a user agent is unable to partially render audio frames or text cues
+  //    that start before and end after the duration, then run the following steps:
+  //    NOTE: Currently we assume that the media engine is able to render
+  //    partial frames/cues. If a media engine gets added that doesn't support
+  //    this, then we'll need to add logic to handle the substeps.
 
-  // 6. Update the media controller duration to new duration and run the HTMLMediaElement duration change algorithm.
+  // 6. Update the media controller duration to new duration and run the
+  //    HTMLMediaElement duration change algorithm.
   m_attachedElement->durationChanged(newDuration, requestSeek);
 }
 
@@ -647,17 +673,20 @@ void MediaSource::clearLiveSeekableRange(ExceptionState& exceptionState) {
 void MediaSource::endOfStreamInternal(
     const WebMediaSource::EndOfStreamStatus eosStatus,
     ExceptionState& exceptionState) {
-  // 2.2 http://www.w3.org/TR/media-source/#widl-MediaSource-endOfStream-void-EndOfStreamError-error
+  // 2.2
+  // http://www.w3.org/TR/media-source/#widl-MediaSource-endOfStream-void-EndOfStreamError-error
   // 1. If the readyState attribute is not in the "open" state then throw an
-  // InvalidStateError exception and abort these steps.
-  // 2. If the updating attribute equals true on any SourceBuffer in sourceBuffers, then throw an
-  // InvalidStateError exception and abort these steps.
+  //    InvalidStateError exception and abort these steps.
+  // 2. If the updating attribute equals true on any SourceBuffer in
+  //    sourceBuffers, then throw an InvalidStateError exception and abort these
+  //    steps.
   if (throwExceptionIfClosedOrUpdating(isOpen(), isUpdating(), exceptionState))
     return;
 
   // 3. Run the end of stream algorithm with the error parameter set to error.
   //   1. Change the readyState attribute value to "ended".
-  //   2. Queue a task to fire a simple event named sourceended at the MediaSource.
+  //   2. Queue a task to fire a simple event named sourceended at the
+  //      MediaSource.
   setReadyState(endedKeyword());
 
   //   3. Do various steps based on |eosStatus|.
@@ -752,19 +781,21 @@ std::unique_ptr<WebSourceBuffer> MediaSource::createWebSourceBuffer(
       return wrapUnique(webSourceBuffer);
     case WebMediaSource::AddStatusNotSupported:
       DCHECK(!webSourceBuffer);
-      // 2.2 https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-MediaSource-addSourceBuffer-SourceBuffer-DOMString-type
-      // Step 2: If type contains a MIME type ... that is not supported with the types
-      // specified for the other SourceBuffer objects in sourceBuffers, then throw
-      // a NotSupportedError exception and abort these steps.
+      // 2.2
+      // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-MediaSource-addSourceBuffer-SourceBuffer-DOMString-type
+      // Step 2: If type contains a MIME type ... that is not supported with the
+      // types specified for the other SourceBuffer objects in sourceBuffers,
+      // then throw a NotSupportedError exception and abort these steps.
       logAndThrowDOMException(
           exceptionState, NotSupportedError,
           "The type provided ('" + type + "') is not supported.");
       return nullptr;
     case WebMediaSource::AddStatusReachedIdLimit:
       DCHECK(!webSourceBuffer);
-      // 2.2 https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-MediaSource-addSourceBuffer-SourceBuffer-DOMString-type
-      // Step 3: If the user agent can't handle any more SourceBuffer objects then throw
-      // a QuotaExceededError exception and abort these steps.
+      // 2.2
+      // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-MediaSource-addSourceBuffer-SourceBuffer-DOMString-type
+      // Step 3: If the user agent can't handle any more SourceBuffer objects
+      // then throw a QuotaExceededError exception and abort these steps.
       logAndThrowDOMException(exceptionState, QuotaExceededError,
                               "This MediaSource has reached the limit of "
                               "SourceBuffer objects it can handle. No "

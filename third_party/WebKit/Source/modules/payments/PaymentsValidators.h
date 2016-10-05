@@ -16,12 +16,15 @@ class MODULES_EXPORT PaymentsValidators final {
   STATIC_ONLY(PaymentsValidators);
 
  public:
-  // The most common identifiers are three-letter alphabetic codes as defined by [ISO4217] (for example, "USD" for US Dollars)
-  // however any string of at most 2048 characters is considered valid. Returns false if currency |code| is too long (greater than 2048).
+  // The most common identifiers are three-letter alphabetic codes as defined by
+  // [ISO4217] (for example, "USD" for US Dollars) however any string of at most
+  // 2048 characters is considered valid. Returns false if currency |code| is
+  // too long (greater than 2048).
   static bool isValidCurrencyCodeFormat(const String& code,
                                         String* optionalErrorMessage);
 
-  // Returns true if |amount| is a valid currency code as defined in ISO 20022 CurrencyAnd30Amount.
+  // Returns true if |amount| is a valid currency code as defined in ISO 20022
+  // CurrencyAnd30Amount.
   static bool isValidAmountFormat(const String& amount,
                                   String* optionalErrorMessage);
 

@@ -44,8 +44,8 @@ TrackDefaultList* TrackDefaultList::create(
     }
   }
 
-  // 2. Store a shallow copy of |trackDefaults| in this new object so the values can
-  //    be returned by the accessor methods.
+  // 2. Store a shallow copy of |trackDefaults| in this new object so the values
+  //    can be returned by the accessor methods.
   // This step is done in constructor initializer.
   return new TrackDefaultList(trackDefaults);
 }

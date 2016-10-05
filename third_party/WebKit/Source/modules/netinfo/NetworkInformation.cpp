@@ -55,8 +55,8 @@ NetworkInformation::~NetworkInformation() {
 }
 
 String NetworkInformation::type() const {
-  // m_type is only updated when listening for events, so ask networkStateNotifier
-  // if not listening (crbug.com/379841).
+  // m_type is only updated when listening for events, so ask
+  // networkStateNotifier if not listening (crbug.com/379841).
   if (!m_observing)
     return connectionTypeToString(networkStateNotifier().connectionType());
 

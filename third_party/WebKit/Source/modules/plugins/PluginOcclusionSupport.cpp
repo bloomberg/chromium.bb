@@ -41,7 +41,8 @@
 #include "platform/Widget.h"
 #include "wtf/HashSet.h"
 
-// This file provides a utility function to support rendering certain elements above plugins.
+// This file provides a utility function to support rendering certain elements
+// above plugins.
 
 namespace blink {
 
@@ -79,11 +80,11 @@ static bool iframeIsAbovePlugin(
           return false;
       }
 
-      // If the plugin does not have an explicit z-index it stacks behind the iframe.
-      // This is for maintaining compatibility with IE.
+      // If the plugin does not have an explicit z-index it stacks behind the
+      // iframe.  This is for maintaining compatibility with IE.
       if (!ro2->isPositioned()) {
-        // The 0'th elements of these LayoutObject arrays represent the plugin node and
-        // the iframe.
+        // The 0'th elements of these LayoutObject arrays represent the plugin
+        // node and the iframe.
         const LayoutObject* pluginLayoutObject = pluginZstack[0];
         const LayoutObject* iframeLayoutObject = iframeZstack[0];
 

@@ -171,12 +171,12 @@ struct TypeConverter<WTFArray<PaymentMethodDataPtr>,
 namespace blink {
 namespace {
 
-// If the website does not call complete() 60 seconds after show() has been resolved, then behave as if
-// the website called complete("fail").
+// If the website does not call complete() 60 seconds after show() has been
+// resolved, then behave as if the website called complete("fail").
 static const int completeTimeoutSeconds = 60;
 
-// Validates ShippingOption or PaymentItem, which happen to have identical fields,
-// except for "id", which is present only in ShippingOption.
+// Validates ShippingOption or PaymentItem, which happen to have identical
+// fields, except for "id", which is present only in ShippingOption.
 template <typename T>
 void validateShippingOptionOrPaymentItem(const T& item,
                                          ExceptionState& exceptionState) {

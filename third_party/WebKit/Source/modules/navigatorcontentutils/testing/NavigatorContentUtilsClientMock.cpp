@@ -26,7 +26,9 @@ NavigatorContentUtilsClient::CustomHandlersState
 NavigatorContentUtilsClientMock::isProtocolHandlerRegistered(
     const String& scheme,
     const KURL& url) {
-  // "declined" state is checked by NavigatorContentUtils::isProtocolHandlerRegistered() before calling this function.
+  // "declined" state is checked by
+  // NavigatorContentUtils::isProtocolHandlerRegistered() before calling this
+  // function.
   if (m_protocolMap.contains(scheme))
     return NavigatorContentUtilsClient::CustomHandlersRegistered;
 

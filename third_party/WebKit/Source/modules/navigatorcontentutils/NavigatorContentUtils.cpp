@@ -108,7 +108,8 @@ static bool verifyCustomHandlerScheme(const String& scheme,
   }
 
   if (scheme.startsWith("web+")) {
-    // The specification requires that the length of scheme is at least five characteres (including 'web+' prefix).
+    // The specification requires that the length of scheme is at least five
+    // characteres (including 'web+' prefix).
     if (scheme.length() >= 5)
       return true;
 

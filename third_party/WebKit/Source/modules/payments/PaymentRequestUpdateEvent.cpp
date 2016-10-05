@@ -15,8 +15,9 @@
 namespace blink {
 namespace {
 
-static const int abortTimeout =
-    60;  // Reject the payment request if the page does not resolve the promise from updateWith within 60 seconds.
+// Reject the payment request if the page does not resolve the promise from
+// updateWith within 60 seconds.
+static const int abortTimeout = 60;
 
 class UpdatePaymentDetailsFunction : public ScriptFunction {
  public:
