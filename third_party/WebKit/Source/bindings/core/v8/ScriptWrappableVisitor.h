@@ -30,15 +30,15 @@ class WrapperMarkingData {
                      const void* object)
       : m_traceWrappersCallback(traceWrappersCallback),
         m_heapObjectHeaderCallback(heapObjectHeaderCallback),
-        m_object(object) {
+        m_rawObjectPointer(object) {
     DCHECK(m_traceWrappersCallback);
     DCHECK(m_heapObjectHeaderCallback);
-    DCHECK(m_object);
+    DCHECK(m_rawObjectPointer);
   }
 
   inline void traceWrappers(WrapperVisitor* visitor) {
-    if (m_object) {
-      m_traceWrappersCallback(visitor, m_object);
+    if (m_rawObjectPointer) {
+      m_traceWrappersCallback(visitor, m_rawObjectPointer);
     }
   }
 
@@ -47,24 +47,30 @@ class WrapperMarkingData {
      * objects.
      */
   inline bool isWrapperHeaderMarked() {
-    return !m_object || heapObjectHeader()->isWrapperHeaderMarked();
+    return !m_rawObjectPointer || heapObjectHeader()->isWrapperHeaderMarked();
   }
+
+  /**
+     * Returns raw object pointer. Beware it doesn't necessarily point to the
+     * beginning of the object.
+     */
+  const void* rawObjectPointer() { return m_rawObjectPointer; }
 
  private:
   inline bool shouldBeInvalidated() {
-    return m_object && !heapObjectHeader()->isMarked();
+    return m_rawObjectPointer && !heapObjectHeader()->isMarked();
   }
 
-  inline void invalidate() { m_object = nullptr; }
+  inline void invalidate() { m_rawObjectPointer = nullptr; }
 
   inline const HeapObjectHeader* heapObjectHeader() {
-    DCHECK(m_object);
-    return m_heapObjectHeaderCallback(m_object);
+    DCHECK(m_rawObjectPointer);
+    return m_heapObjectHeaderCallback(m_rawObjectPointer);
   }
 
   void (*m_traceWrappersCallback)(const WrapperVisitor*, const void*);
   HeapObjectHeader* (*m_heapObjectHeaderCallback)(const void*);
-  const void* m_object;
+  const void* m_rawObjectPointer;
 };
 
 /**
@@ -140,6 +146,14 @@ class CORE_EXPORT ScriptWrappableVisitor : public WrapperVisitor,
      */
   void markWrappersInAllWorlds(const ScriptWrappable*) const override;
   void markWrappersInAllWorlds(const void*) const override {}
+
+  WTF::Deque<WrapperMarkingData>* getMarkingDeque() { return &m_markingDeque; }
+  WTF::Deque<WrapperMarkingData>* getVerifierDeque() {
+    return &m_verifierDeque;
+  }
+  WTF::Vector<HeapObjectHeader*>* getHeadersToUnmark() {
+    return &m_headersToUnmark;
+  }
 
  private:
   /**

@@ -215,6 +215,8 @@ source_set("testing") {
     "$blink_core_output_dir/testing/InternalSettingsGenerated.h",
     "testing/CallbackFunctionTest.cpp",
     "testing/CallbackFunctionTest.h",
+    "testing/DeathAwareScriptWrappable.cpp",
+    "testing/DeathAwareScriptWrappable.h",
     "testing/DictionaryTest.cpp",
     "testing/DictionaryTest.h",
     "testing/DummyPageHolder.cpp",
