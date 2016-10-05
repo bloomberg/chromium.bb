@@ -86,7 +86,7 @@ void RTCSessionDescriptionRequestImpl::requestFailed(const String& error) {
   clear();
 }
 
-void RTCSessionDescriptionRequestImpl::stop() {
+void RTCSessionDescriptionRequestImpl::contextDestroyed() {
   clear();
 }
 

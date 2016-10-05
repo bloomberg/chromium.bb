@@ -112,7 +112,7 @@ class MODULES_EXPORT BaseAudioContext : public EventTargetWithInlineData,
   }
 
   // Document notification
-  void stop() final;
+  void contextDestroyed() final;
   bool hasPendingActivity() const final;
 
   // Cannnot be called from the audio thread.

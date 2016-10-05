@@ -32,7 +32,6 @@
 #define DocumentWebSocketChannel_h
 
 #include "bindings/core/v8/SourceLocation.h"
-#include "core/dom/ContextLifecycleObserver.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/FileError.h"
 #include "modules/ModulesExport.h"
@@ -59,10 +58,7 @@ class WebSocketHandshakeRequest;
 // DOMWindow (i.e. works in the main thread).
 class MODULES_EXPORT DocumentWebSocketChannel final
     : public WebSocketChannel,
-      public WebSocketHandleClient,
-      public ContextLifecycleObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(DocumentWebSocketChannel);
-
+      public WebSocketHandleClient {
  public:
   // You can specify the source file and the line number information
   // explicitly by passing the last parameter.
@@ -171,6 +167,7 @@ class MODULES_EXPORT DocumentWebSocketChannel final
   Member<BlobLoader> m_blobLoader;
   HeapDeque<Member<Message>> m_messages;
   Vector<char> m_receivingMessageData;
+  Member<Document> m_document;
 
   bool m_receivingMessageTypeIsText;
   uint64_t m_sendingQuota;

@@ -39,7 +39,7 @@ class CORE_EXPORT InProcessWorkerBase : public AbstractWorker,
   void terminate();
 
   // ActiveDOMObject
-  void stop() override;
+  void contextDestroyed() override;
 
   // ScriptWrappable
   bool hasPendingActivity() const final;

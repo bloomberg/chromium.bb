@@ -114,7 +114,6 @@ KURL WorkerGlobalScope::completeURL(const String& url) const {
 
 void WorkerGlobalScope::dispose() {
   DCHECK(thread()->isCurrentThread());
-  stopActiveDOMObjects();
 
   // Event listeners would keep DOMWrapperWorld objects alive for too long.
   // Also, they have references to JS objects, which become dangling once Heap

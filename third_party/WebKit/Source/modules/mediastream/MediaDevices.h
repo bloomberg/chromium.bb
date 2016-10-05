@@ -47,7 +47,7 @@ class MODULES_EXPORT MediaDevices final : public EventTargetWithInlineData,
   bool hasPendingActivity() const override;
 
   // ActiveDOMObject overrides.
-  void stop() override;
+  void contextDestroyed() override;
   void suspend() override;
   void resume() override;
 

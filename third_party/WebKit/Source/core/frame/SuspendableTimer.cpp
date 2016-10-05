@@ -55,6 +55,10 @@ void SuspendableTimer::stop() {
   TimerBase::stop();
 }
 
+void SuspendableTimer::contextDestroyed() {
+  stop();
+}
+
 void SuspendableTimer::suspend() {
 #if ENABLE(ASSERT)
   ASSERT(!m_suspended);

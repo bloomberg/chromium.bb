@@ -153,7 +153,7 @@ bool MIDIPort::hasPendingActivity() const {
   return m_connection != ConnectionStateClosed;
 }
 
-void MIDIPort::stop() {
+void MIDIPort::contextDestroyed() {
   // Should be "closed" to assume there are no pending activities.
   m_connection = ConnectionStateClosed;
 }

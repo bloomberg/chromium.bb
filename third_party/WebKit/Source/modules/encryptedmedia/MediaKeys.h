@@ -96,7 +96,6 @@ class MediaKeys : public GarbageCollectedFinalized<MediaKeys>,
   // FIXME: This class could derive from ContextLifecycleObserver
   // again (http://crbug.com/483722).
   void contextDestroyed() override;
-  void stop() override;
 
   // ScriptWrappable implementation.
   bool hasPendingActivity() const final;

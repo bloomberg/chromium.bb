@@ -160,7 +160,7 @@ ExecutionContext* RTCDTMFSender::getExecutionContext() const {
   return ActiveDOMObject::getExecutionContext();
 }
 
-void RTCDTMFSender::stop() {
+void RTCDTMFSender::contextDestroyed() {
   m_stopped = true;
   m_handler->setClient(nullptr);
 }

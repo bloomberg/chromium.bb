@@ -552,12 +552,13 @@ void WorkerThread::prepareForShutdownOnWorkerThread() {
   m_inspectorTaskRunner->kill();
   workerReportingProxy().willDestroyWorkerGlobalScope();
   InspectorInstrumentation::allAsyncTasksCanceled(globalScope());
+
+  globalScope()->notifyContextDestroyed();
   globalScope()->dispose();
   if (m_workerInspectorController) {
     m_workerInspectorController->dispose();
     m_workerInspectorController.clear();
   }
-  globalScope()->notifyContextDestroyed();
   m_consoleMessageStorage.clear();
   workerBackingThread().backingThread().removeTaskObserver(
       m_microtaskRunner.get());

@@ -58,7 +58,7 @@ class BatteryManager final : public EventTargetWithInlineData,
   // ActiveDOMObject implementation.
   void suspend() override;
   void resume() override;
-  void stop() override;
+  void contextDestroyed() override;
 
   // ScriptWrappable implementation.
   bool hasPendingActivity() const final;

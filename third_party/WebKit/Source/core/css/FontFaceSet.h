@@ -102,7 +102,7 @@ class FontFaceSet final : public EventTargetWithInlineData,
   // ActiveDOMObject
   void suspend() override;
   void resume() override;
-  void stop() override;
+  void contextDestroyed() override;
 
   static FontFaceSet* from(Document&);
   static void didLayout(Document&);

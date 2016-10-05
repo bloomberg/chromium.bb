@@ -54,7 +54,7 @@ TEST(IDBRequestTest, EventsAfterStopping) {
   IDBRequest* request = IDBRequest::create(
       scope.getScriptState(), IDBAny::createUndefined(), transaction);
   EXPECT_EQ(request->readyState(), "pending");
-  scope.getExecutionContext()->stopActiveDOMObjects();
+  scope.getExecutionContext()->notifyContextDestroyed();
 
   // Ensure none of the following raise assertions in stopped state:
   request->onError(DOMException::create(AbortError, "Description goes here."));
@@ -85,7 +85,7 @@ TEST(IDBRequestTest, AbortErrorAfterAbort) {
 
   // Stop the request lest it be GCed and its destructor
   // finds the object in a pending state (and asserts.)
-  scope.getExecutionContext()->stopActiveDOMObjects();
+  scope.getExecutionContext()->notifyContextDestroyed();
 }
 
 TEST(IDBRequestTest, ConnectionsAfterStopping) {
@@ -104,7 +104,7 @@ TEST(IDBRequestTest, ConnectionsAfterStopping) {
         scope.getScriptState(), callbacks, transactionId, version);
     EXPECT_EQ(request->readyState(), "pending");
 
-    scope.getExecutionContext()->stopActiveDOMObjects();
+    scope.getExecutionContext()->notifyContextDestroyed();
     request->onUpgradeNeeded(oldVersion, std::move(backend), metadata,
                              WebIDBDataLossNone, String());
   }
@@ -116,7 +116,7 @@ TEST(IDBRequestTest, ConnectionsAfterStopping) {
         scope.getScriptState(), callbacks, transactionId, version);
     EXPECT_EQ(request->readyState(), "pending");
 
-    scope.getExecutionContext()->stopActiveDOMObjects();
+    scope.getExecutionContext()->notifyContextDestroyed();
     request->onSuccess(std::move(backend), metadata);
   }
 }

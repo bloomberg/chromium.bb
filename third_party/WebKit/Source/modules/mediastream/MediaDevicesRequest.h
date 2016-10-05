@@ -56,7 +56,7 @@ class MODULES_EXPORT MediaDevicesRequest final
   void succeed(const MediaDeviceInfoVector&);
 
   // ActiveDOMObject
-  void stop() override;
+  void contextDestroyed() override;
 
   DECLARE_VIRTUAL_TRACE();
 

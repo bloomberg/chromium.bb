@@ -179,7 +179,7 @@ TEST_F(ScriptPromiseResolverTest, stop) {
                  Function::createFunction(getScriptState(), &onRejected));
   }
 
-  getExecutionContext()->stopActiveDOMObjects();
+  getExecutionContext()->notifyContextDestroyed();
   {
     ScriptState::Scope scope(getScriptState());
     EXPECT_TRUE(resolver->promise().isEmpty());
@@ -263,7 +263,7 @@ TEST_F(ScriptPromiseResolverTest, keepAliveUntilStopped) {
       BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
   EXPECT_TRUE(ScriptPromiseResolverKeepAlive::isAlive());
 
-  getExecutionContext()->stopActiveDOMObjects();
+  getExecutionContext()->notifyContextDestroyed();
   ThreadState::current()->collectGarbage(
       BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
   EXPECT_FALSE(ScriptPromiseResolverKeepAlive::isAlive());
@@ -287,7 +287,7 @@ TEST_F(ScriptPromiseResolverTest, suspend) {
       BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
   EXPECT_TRUE(ScriptPromiseResolverKeepAlive::isAlive());
 
-  getExecutionContext()->stopActiveDOMObjects();
+  getExecutionContext()->notifyContextDestroyed();
   ThreadState::current()->collectGarbage(
       BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
   EXPECT_FALSE(ScriptPromiseResolverKeepAlive::isAlive());

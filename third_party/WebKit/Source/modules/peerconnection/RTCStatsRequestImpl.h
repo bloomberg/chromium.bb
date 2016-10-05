@@ -56,7 +56,7 @@ class RTCStatsRequestImpl final : public RTCStatsRequest,
   void requestSucceeded(RTCStatsResponseBase*) override;
 
   // ActiveDOMObject
-  void stop() override;
+  void contextDestroyed() override;
 
   DECLARE_VIRTUAL_TRACE();
 

@@ -187,7 +187,7 @@ class RTCPeerConnection final : public EventTargetWithInlineData,
   // ActiveDOMObject
   void suspend() override;
   void resume() override;
-  void stop() override;
+  void contextDestroyed() override;
 
   // ScriptWrappable
   // We keep the this object alive until either stopped or closed.

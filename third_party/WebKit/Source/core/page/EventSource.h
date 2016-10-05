@@ -89,7 +89,7 @@ class CORE_EXPORT EventSource final : public EventTargetWithInlineData,
   // Page::setDefersLoading() and it defers delivery of events from the
   // loader, and therefore the methods of this class for receiving
   // asynchronous events from the loader won't be invoked.
-  void stop() override;
+  void contextDestroyed() override;
 
   // ScriptWrappable
   bool hasPendingActivity() const final;

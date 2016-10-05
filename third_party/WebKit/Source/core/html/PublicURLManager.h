@@ -61,7 +61,7 @@ class PublicURLManager final
   void revoke(const String& uuid);
 
   // ActiveDOMObject interface.
-  void stop() override;
+  void contextDestroyed() override;
 
   DECLARE_VIRTUAL_TRACE();
 

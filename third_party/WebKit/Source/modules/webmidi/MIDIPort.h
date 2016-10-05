@@ -92,7 +92,7 @@ class MIDIPort : public EventTargetWithInlineData,
   bool hasPendingActivity() const final;
 
   // ActiveDOMObject
-  void stop() override;
+  void contextDestroyed() override;
 
  protected:
   MIDIPort(MIDIAccess*,

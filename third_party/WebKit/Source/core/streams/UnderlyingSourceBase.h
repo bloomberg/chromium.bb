@@ -46,7 +46,7 @@ class CORE_EXPORT UnderlyingSourceBase
   bool hasPendingActivity() const;
 
   // ActiveDOMObject
-  void stop() override;
+  void contextDestroyed() override;
 
  protected:
   explicit UnderlyingSourceBase(ScriptState* scriptState)

@@ -100,7 +100,7 @@ class MODULES_EXPORT MediaStreamTrack : public EventTargetWithInlineData,
   bool hasPendingActivity() const final;
 
   // ActiveDOMObject
-  void stop() override;
+  void contextDestroyed() override;
 
   std::unique_ptr<AudioSourceProvider> createWebAudioSource();
 

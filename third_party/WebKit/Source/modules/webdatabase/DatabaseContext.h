@@ -52,7 +52,6 @@ class DatabaseContext final : public GarbageCollectedFinalized<DatabaseContext>,
 
   // For life-cycle management (inherited from ActiveDOMObject):
   void contextDestroyed() override;
-  void stop() override;
 
   DatabaseContext* backend();
   DatabaseThread* databaseThread();

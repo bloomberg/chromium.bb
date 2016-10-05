@@ -105,7 +105,7 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
   bool hasPendingActivity() const final;
 
   // ActiveDOMObject implementation.
-  void stop() override { close(); }
+  void contextDestroyed() override { close(); }
 
   void setOnmessage(EventListener* listener) {
     setAttributeEventListener(EventTypeNames::message, listener);

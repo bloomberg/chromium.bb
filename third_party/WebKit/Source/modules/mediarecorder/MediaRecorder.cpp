@@ -314,7 +314,7 @@ void MediaRecorder::resume() {
   m_dispatchScheduledEventRunner->resume();
 }
 
-void MediaRecorder::stop() {
+void MediaRecorder::contextDestroyed() {
   if (m_stopped)
     return;
 

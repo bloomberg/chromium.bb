@@ -77,7 +77,7 @@ class CORE_EXPORT FileReader final : public EventTargetWithInlineData,
   void result(StringOrArrayBuffer& resultAttribute) const;
 
   // ActiveDOMObject
-  void stop() override;
+  void contextDestroyed() override;
 
   // ScriptWrappable
   bool hasPendingActivity() const final;

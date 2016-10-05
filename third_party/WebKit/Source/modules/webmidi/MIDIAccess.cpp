@@ -219,7 +219,7 @@ void MIDIAccess::sendMIDIData(unsigned portIndex,
   m_accessor->sendMIDIData(portIndex, data, length, timeStamp);
 }
 
-void MIDIAccess::stop() {
+void MIDIAccess::contextDestroyed() {
   m_accessor.reset();
 }
 

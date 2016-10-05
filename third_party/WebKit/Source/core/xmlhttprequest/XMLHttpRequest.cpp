@@ -1804,7 +1804,7 @@ void XMLHttpRequest::resume() {
   m_progressEventThrottle->resume();
 }
 
-void XMLHttpRequest::stop() {
+void XMLHttpRequest::contextDestroyed() {
   InspectorInstrumentation::didFailXHRLoading(getExecutionContext(), this, this,
                                               m_method, m_url);
   m_progressEventThrottle->stop();
@@ -1821,11 +1821,6 @@ bool XMLHttpRequest::hasPendingActivity() const {
   if (m_loader || m_responseDocumentParser)
     return true;
   return m_eventDispatchRecursionLevel > 0;
-}
-
-void XMLHttpRequest::contextDestroyed() {
-  DCHECK(!m_loader);
-  ActiveDOMObject::contextDestroyed();
 }
 
 const AtomicString& XMLHttpRequest::interfaceName() const {

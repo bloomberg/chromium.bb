@@ -361,7 +361,7 @@ void EventSource::abortConnectionAttempt() {
   dispatchEvent(Event::create(EventTypeNames::error));
 }
 
-void EventSource::stop() {
+void EventSource::contextDestroyed() {
   close();
 }
 

@@ -48,7 +48,7 @@ class MODULES_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
   ScriptPromise pull(ScriptState*) override;
   ScriptPromise cancel(ScriptState*, ScriptValue reason) override;
   bool hasPendingActivity() const override;
-  void stop() override;
+  void contextDestroyed() override;
 
   // BytesConsumer::Client
   void onStateChange() override;

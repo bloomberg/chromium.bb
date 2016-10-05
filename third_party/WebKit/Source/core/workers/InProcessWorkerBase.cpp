@@ -73,7 +73,7 @@ void InProcessWorkerBase::terminate() {
     m_contextProxy->terminateGlobalScope();
 }
 
-void InProcessWorkerBase::stop() {
+void InProcessWorkerBase::contextDestroyed() {
   terminate();
 }
 

@@ -374,7 +374,7 @@ const AtomicString& Notification::interfaceName() const {
   return EventTargetNames::Notification;
 }
 
-void Notification::stop() {
+void Notification::contextDestroyed() {
   notificationManager()->notifyDelegateDestroyed(this);
 
   m_state = State::Closed;

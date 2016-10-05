@@ -84,7 +84,7 @@ void RTCVoidRequestImpl::requestFailed(const String& error) {
   clear();
 }
 
-void RTCVoidRequestImpl::stop() {
+void RTCVoidRequestImpl::contextDestroyed() {
   clear();
 }
 

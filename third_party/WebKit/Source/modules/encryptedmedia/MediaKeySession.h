@@ -101,7 +101,7 @@ class MediaKeySession final
   bool hasPendingActivity() const final;
 
   // ActiveDOMObject
-  void stop() override;
+  void contextDestroyed() override;
 
   DECLARE_VIRTUAL_TRACE();
 

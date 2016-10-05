@@ -41,7 +41,7 @@ DOMTimer* DOMTimerCoordinator::removeTimeoutByID(int timeoutID) {
 
   DOMTimer* removedTimer = m_timers.take(timeoutID);
   if (removedTimer)
-    removedTimer->disposeTimer();
+    removedTimer->stop();
 
   return removedTimer;
 }

@@ -67,11 +67,6 @@ void ExecutionContext::resumeActiveDOMObjects() {
   notifyResumingActiveDOMObjects();
 }
 
-void ExecutionContext::stopActiveDOMObjects() {
-  m_activeDOMObjectsAreStopped = true;
-  notifyStoppingActiveDOMObjects();
-}
-
 void ExecutionContext::postSuspendableTask(
     std::unique_ptr<SuspendableTask> task) {
   m_suspendedTasks.append(std::move(task));
@@ -82,6 +77,8 @@ void ExecutionContext::postSuspendableTask(
 }
 
 void ExecutionContext::notifyContextDestroyed() {
+  m_activeDOMObjectsAreStopped = true;
+
   Deque<std::unique_ptr<SuspendableTask>> suspendedTasks;
   suspendedTasks.swap(m_suspendedTasks);
   for (Deque<std::unique_ptr<SuspendableTask>>::iterator it =

@@ -123,7 +123,7 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   bool hasPendingActivity() const final;
 
   // ActiveDOMObject
-  void stop() final;
+  void contextDestroyed() final;
 
   // EventTarget
   const AtomicString& interfaceName() const override;

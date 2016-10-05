@@ -51,7 +51,7 @@ class MockActiveDOMObject final
 
   MOCK_METHOD0(suspend, void());
   MOCK_METHOD0(resume, void());
-  MOCK_METHOD0(stop, void());
+  MOCK_METHOD0(contextDestroyed, void());
 };
 
 class ActiveDOMObjectTest : public ::testing::Test {
@@ -101,7 +101,7 @@ TEST_F(ActiveDOMObjectTest, MoveToSuspendedDocument) {
 TEST_F(ActiveDOMObjectTest, MoveToStoppedDocument) {
   destDocument().shutdown();
 
-  EXPECT_CALL(activeDOMObject(), stop());
+  EXPECT_CALL(activeDOMObject(), contextDestroyed());
   activeDOMObject().didMoveToNewExecutionContext(&destDocument());
 }
 

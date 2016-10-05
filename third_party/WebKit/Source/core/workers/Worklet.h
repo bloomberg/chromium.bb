@@ -38,7 +38,7 @@ class CORE_EXPORT Worklet : public GarbageCollectedFinalized<Worklet>,
   void notifyFinished(WorkletScriptLoader*);
 
   // ActiveDOMObject
-  void stop() final;
+  void contextDestroyed() final;
 
   DECLARE_VIRTUAL_TRACE();
 

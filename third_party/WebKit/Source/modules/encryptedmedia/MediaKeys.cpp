@@ -277,7 +277,9 @@ DEFINE_TRACE(MediaKeys) {
 }
 
 void MediaKeys::contextDestroyed() {
-  ActiveDOMObject::contextDestroyed();
+  if (m_timer.isActive())
+    m_timer.stop();
+  m_pendingActions.clear();
 
   // We don't need the CDM anymore. Only destroyed after all related
   // ActiveDOMObjects have been stopped.
@@ -292,14 +294,6 @@ bool MediaKeys::hasPendingActivity() const {
       << (m_reservedForMediaElement ? " m_reservedForMediaElement" : "");
 
   return !m_pendingActions.isEmpty() || m_reservedForMediaElement;
-}
-
-void MediaKeys::stop() {
-  ActiveDOMObject::stop();
-
-  if (m_timer.isActive())
-    m_timer.stop();
-  m_pendingActions.clear();
 }
 
 }  // namespace blink

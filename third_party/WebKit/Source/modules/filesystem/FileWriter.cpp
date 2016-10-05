@@ -65,14 +65,14 @@ FileWriter::FileWriter(ExecutionContext* context)
 FileWriter::~FileWriter() {
   ASSERT(!m_recursionDepth);
   if (m_readyState == kWriting)
-    stop();
+    contextDestroyed();
 }
 
 const AtomicString& FileWriter::interfaceName() const {
   return EventTargetNames::FileWriter;
 }
 
-void FileWriter::stop() {
+void FileWriter::contextDestroyed() {
   // Make sure we've actually got something to stop, and haven't already called abort().
   if (!writer() || m_readyState != kWriting)
     return;

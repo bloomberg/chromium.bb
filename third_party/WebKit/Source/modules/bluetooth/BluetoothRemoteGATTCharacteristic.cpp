@@ -73,7 +73,7 @@ void BluetoothRemoteGATTCharacteristic::dispatchCharacteristicValueChanged(
   dispatchEvent(Event::create(EventTypeNames::characteristicvaluechanged));
 }
 
-void BluetoothRemoteGATTCharacteristic::stop() {
+void BluetoothRemoteGATTCharacteristic::contextDestroyed() {
   notifyCharacteristicObjectRemoved();
 }
 

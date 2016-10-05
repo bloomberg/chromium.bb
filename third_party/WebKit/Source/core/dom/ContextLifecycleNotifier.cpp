@@ -62,25 +62,6 @@ void ContextLifecycleNotifier::notifySuspendingActiveDOMObjects() {
   }
 }
 
-void ContextLifecycleNotifier::notifyStoppingActiveDOMObjects() {
-  // Observers may be removed, but handled after iteration has completed.
-  AutoReset<IterationState> scope(&m_iterationState, AllowPendingRemoval);
-  ObserverSet observers;
-  m_observers.swap(observers);
-  for (ContextLifecycleObserver* observer : observers) {
-    if (observer->observerType() !=
-        ContextLifecycleObserver::ActiveDOMObjectType)
-      continue;
-    ActiveDOMObject* activeDOMObject = static_cast<ActiveDOMObject*>(observer);
-#if DCHECK_IS_ON()
-    DCHECK_EQ(activeDOMObject->getExecutionContext(), context());
-    DCHECK(activeDOMObject->suspendIfNeededCalled());
-#endif
-    activeDOMObject->stop();
-  }
-  removePending(observers);
-}
-
 unsigned ContextLifecycleNotifier::activeDOMObjectCount() const {
   DCHECK(!isIteratingOverObservers());
   unsigned activeDOMObjects = 0;

@@ -125,7 +125,6 @@ class MODULES_EXPORT DOMWebSocket : public EventTargetWithInlineData,
   void contextDestroyed() override;
   void suspend() override;
   void resume() override;
-  void stop() override;
 
   // ScriptWrappable functions.
   // Prevent this instance from being collected while it's not in CLOSED
@@ -168,7 +167,7 @@ class MODULES_EXPORT DOMWebSocket : public EventTargetWithInlineData,
 
     void suspend();
     void resume();
-    void stop();
+    void contextDestroyed();
 
     DECLARE_TRACE();
 

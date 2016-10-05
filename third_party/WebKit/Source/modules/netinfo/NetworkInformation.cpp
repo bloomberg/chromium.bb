@@ -125,7 +125,7 @@ bool NetworkInformation::hasPendingActivity() const {
   return m_observing;
 }
 
-void NetworkInformation::stop() {
+void NetworkInformation::contextDestroyed() {
   m_contextStopped = true;
   stopObserving();
 }

@@ -84,7 +84,7 @@ class CORE_EXPORT Stream final : public GarbageCollectedFinalized<Stream>,
   // FIXME: Implement suspend() and resume() when necessary.
   void suspend() override;
   void resume() override;
-  void stop() override;
+  void contextDestroyed() override;
 
   DECLARE_VIRTUAL_TRACE();
 

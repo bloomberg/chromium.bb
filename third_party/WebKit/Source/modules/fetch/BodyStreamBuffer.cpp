@@ -68,7 +68,7 @@ class BodyStreamBuffer::LoaderClient final
   }
 
  private:
-  void stop() override { m_buffer->stopLoading(); }
+  void contextDestroyed() override { m_buffer->stopLoading(); }
 
   Member<BodyStreamBuffer> m_buffer;
   Member<FetchDataLoader::Client> m_client;
@@ -235,9 +235,9 @@ bool BodyStreamBuffer::hasPendingActivity() const {
   return UnderlyingSourceBase::hasPendingActivity();
 }
 
-void BodyStreamBuffer::stop() {
+void BodyStreamBuffer::contextDestroyed() {
   cancelConsumer();
-  UnderlyingSourceBase::stop();
+  UnderlyingSourceBase::contextDestroyed();
 }
 
 bool BodyStreamBuffer::isStreamReadable() {

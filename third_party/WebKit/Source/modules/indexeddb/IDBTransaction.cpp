@@ -416,7 +416,7 @@ DispatchEventResult IDBTransaction::dispatchEventInternal(Event* event) {
   return dispatchResult;
 }
 
-void IDBTransaction::stop() {
+void IDBTransaction::contextDestroyed() {
   if (m_contextStopped)
     return;
 

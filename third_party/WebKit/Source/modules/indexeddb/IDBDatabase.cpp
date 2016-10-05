@@ -505,7 +505,7 @@ bool IDBDatabase::hasPendingActivity() const {
   return !m_closePending && hasEventListeners() && !m_contextStopped;
 }
 
-void IDBDatabase::stop() {
+void IDBDatabase::contextDestroyed() {
   m_contextStopped = true;
 
   // Immediately close the connection to the back end. Don't attempt a

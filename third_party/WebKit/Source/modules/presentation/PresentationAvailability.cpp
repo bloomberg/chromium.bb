@@ -18,8 +18,9 @@ namespace blink {
 namespace {
 
 WebPresentationClient* presentationClient(ExecutionContext* executionContext) {
-  ASSERT(executionContext && executionContext->isDocument());
-
+  if (!executionContext)
+    return nullptr;
+  DCHECK(executionContext->isDocument());
   Document* document = toDocument(executionContext);
   if (!document->frame())
     return nullptr;
@@ -94,7 +95,7 @@ void PresentationAvailability::suspend() {
   setState(State::Suspended);
 }
 
-void PresentationAvailability::stop() {
+void PresentationAvailability::contextDestroyed() {
   setState(State::Inactive);
 }
 

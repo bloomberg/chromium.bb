@@ -346,7 +346,7 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement,
   void defaultEventHandler(Event*) final;
 
   // ActiveDOMObject functions.
-  void stop() final;
+  void contextDestroyed() final;
 
   virtual void updateDisplayState() {}
 

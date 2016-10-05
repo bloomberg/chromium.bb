@@ -73,7 +73,7 @@ class FileWriter final : public EventTargetWithInlineData,
   void didFail(WebFileError) override;
 
   // ActiveDOMObject
-  void stop() override;
+  void contextDestroyed() override;
 
   // ScriptWrappable
   bool hasPendingActivity() const final;

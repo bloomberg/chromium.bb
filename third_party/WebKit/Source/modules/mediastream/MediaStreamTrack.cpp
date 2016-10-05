@@ -227,7 +227,7 @@ void MediaStreamTrack::propagateTrackEnded() {
   m_isIteratingRegisteredMediaStreams = false;
 }
 
-void MediaStreamTrack::stop() {
+void MediaStreamTrack::contextDestroyed() {
   m_stopped = true;
 }
 

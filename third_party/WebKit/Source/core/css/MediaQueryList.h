@@ -77,7 +77,7 @@ class CORE_EXPORT MediaQueryList final : public EventTargetWithInlineData,
   bool hasPendingActivity() const final;
 
   // From ActiveDOMObject
-  void stop() override;
+  void contextDestroyed() override;
 
   const AtomicString& interfaceName() const override;
   ExecutionContext* getExecutionContext() const override;

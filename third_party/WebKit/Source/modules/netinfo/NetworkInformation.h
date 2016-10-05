@@ -42,7 +42,7 @@ class NetworkInformation final
   bool hasPendingActivity() const final;
 
   // ActiveDOMObject overrides.
-  void stop() override;
+  void contextDestroyed() override;
 
   DECLARE_VIRTUAL_TRACE();
 

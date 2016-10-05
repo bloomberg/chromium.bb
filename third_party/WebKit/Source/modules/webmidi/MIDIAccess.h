@@ -91,7 +91,7 @@ class MIDIAccess final : public EventTargetWithInlineData,
   bool hasPendingActivity() const final;
 
   // ActiveDOMObject
-  void stop() override;
+  void contextDestroyed() override;
 
   // MIDIAccessorClient
   void didAddInputPort(const String& id,

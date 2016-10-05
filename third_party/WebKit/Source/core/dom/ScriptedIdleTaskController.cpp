@@ -185,7 +185,7 @@ void ScriptedIdleTaskController::runCallback(
   idleCallbackOverrunHistogram.count(overrunMillis);
 }
 
-void ScriptedIdleTaskController::stop() {
+void ScriptedIdleTaskController::contextDestroyed() {
   m_callbacks.clear();
 }
 

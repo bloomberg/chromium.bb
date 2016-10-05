@@ -73,7 +73,7 @@ class RTCDTMFSender final : public EventTargetWithInlineData,
   ExecutionContext* getExecutionContext() const override;
 
   // ActiveDOMObject
-  void stop() override;
+  void contextDestroyed() override;
 
   DECLARE_VIRTUAL_TRACE();
 

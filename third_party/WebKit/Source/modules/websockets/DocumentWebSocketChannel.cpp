@@ -106,7 +106,7 @@ DocumentWebSocketChannel::BlobLoader::BlobLoader(
     : m_channel(channel),
       m_loader(
           FileReaderLoader::create(FileReaderLoader::ReadAsArrayBuffer, this)) {
-  m_loader->start(channel->getExecutionContext(), std::move(blobDataHandle));
+  m_loader->start(channel->document(), std::move(blobDataHandle));
 }
 
 void DocumentWebSocketChannel::BlobLoader::cancel() {
@@ -131,10 +131,10 @@ DocumentWebSocketChannel::DocumentWebSocketChannel(
     WebSocketChannelClient* client,
     std::unique_ptr<SourceLocation> location,
     WebSocketHandle* handle)
-    : ContextLifecycleObserver(document),
-      m_handle(wrapUnique(handle ? handle : new WebSocketHandleImpl())),
+    : m_handle(wrapUnique(handle ? handle : new WebSocketHandleImpl())),
       m_client(client),
       m_identifier(createUniqueIdentifier()),
+      m_document(document),
       m_sendingQuota(0),
       m_receivedDataSizeForFlowControl(
           receivedDataSizeForFlowControlHighWaterMark * 2)  // initial quota
@@ -184,7 +184,7 @@ bool DocumentWebSocketChannel::connect(const KURL& url,
   } else {
     m_handle->initialize(Platform::current()->interfaceProvider());
   }
-  m_handle->connect(url, protocols, getExecutionContext()->getSecurityOrigin(),
+  m_handle->connect(url, protocols, document()->getSecurityOrigin(),
                     document()->firstPartyForCookies(), document()->userAgent(),
                     this);
 
@@ -290,7 +290,7 @@ void DocumentWebSocketChannel::fail(const String& reason,
                                                           m_identifier, reason);
   const String message = "WebSocket connection to '" + m_url.elidedString() +
                          "' failed: " + reason;
-  getExecutionContext()->addConsoleMessage(ConsoleMessage::create(
+  document()->addConsoleMessage(ConsoleMessage::create(
       JSMessageSource, level, message, std::move(location)));
 
   if (m_client)
@@ -447,10 +447,7 @@ void DocumentWebSocketChannel::handleDidClose(bool wasClean,
 }
 
 Document* DocumentWebSocketChannel::document() {
-  // This context is always a Document. See the constructor.
-  ExecutionContext* context = getExecutionContext();
-  DCHECK(context->isDocument());
-  return toDocument(context);
+  return m_document;
 }
 
 void DocumentWebSocketChannel::didConnect(WebSocketHandle* handle,
@@ -653,8 +650,8 @@ DEFINE_TRACE(DocumentWebSocketChannel) {
   visitor->trace(m_blobLoader);
   visitor->trace(m_messages);
   visitor->trace(m_client);
+  visitor->trace(m_document);
   WebSocketChannel::trace(visitor);
-  ContextLifecycleObserver::trace(visitor);
 }
 
 std::ostream& operator<<(std::ostream& ostream,

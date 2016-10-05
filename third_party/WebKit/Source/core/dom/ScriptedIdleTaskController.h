@@ -36,7 +36,7 @@ class ScriptedIdleTaskController
   void cancelCallback(CallbackId);
 
   // ActiveDOMObject interface.
-  void stop() override;
+  void contextDestroyed() override;
   void suspend() override;
   void resume() override;
 

@@ -374,7 +374,7 @@ bool IDBRequest::hasPendingActivity() const {
   return m_hasPendingActivity && !m_contextStopped;
 }
 
-void IDBRequest::stop() {
+void IDBRequest::contextDestroyed() {
   if (m_contextStopped)
     return;
 

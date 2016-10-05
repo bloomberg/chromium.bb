@@ -62,7 +62,7 @@ class PLATFORM_EXPORT TimerBase {
 
   // Timer cancellation is fast enough that you shouldn't have to worry
   // about it unless you're canceling tens of thousands of tasks.
-  void stop();
+  virtual void stop();
   bool isActive() const;
   const WebTraceLocation& location() const { return m_location; }
 

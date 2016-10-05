@@ -130,14 +130,6 @@ DEFINE_TRACE(DatabaseContext) {
 void DatabaseContext::contextDestroyed() {
   stopDatabases();
   DatabaseManager::manager().unregisterDatabaseContext(this);
-  ActiveDOMObject::contextDestroyed();
-}
-
-// stop() is from stopActiveDOMObjects() which indicates that the owner
-// LocalFrame is shutting down. Initiate the orderly shutdown by stopping the
-// associated databases.
-void DatabaseContext::stop() {
-  stopDatabases();
 }
 
 DatabaseContext* DatabaseContext::backend() {

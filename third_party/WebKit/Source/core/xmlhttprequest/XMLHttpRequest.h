@@ -104,7 +104,6 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   ExecutionContext* getExecutionContext() const override;
   void suspend() override;
   void resume() override;
-  void stop() override;
 
   // ScriptWrappable
   bool hasPendingActivity() const final;

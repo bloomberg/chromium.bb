@@ -48,7 +48,6 @@ class CORE_EXPORT ActiveDOMObject : public ContextLifecycleObserver {
   // which don't need special treatment can skip implementation.
   virtual void suspend();
   virtual void resume();
-  virtual void stop();
 
   void didMoveToNewExecutionContext(ExecutionContext*);
 

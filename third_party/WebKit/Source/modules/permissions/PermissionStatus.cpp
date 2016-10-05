@@ -79,7 +79,7 @@ void PermissionStatus::suspend() {
   stopListening();
 }
 
-void PermissionStatus::stop() {
+void PermissionStatus::contextDestroyed() {
   stopListening();
 }
 

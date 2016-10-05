@@ -183,7 +183,7 @@ bool MediaDevices::hasPendingActivity() const {
   return m_observing;
 }
 
-void MediaDevices::stop() {
+void MediaDevices::contextDestroyed() {
   if (m_stopped)
     return;
 

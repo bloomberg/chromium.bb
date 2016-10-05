@@ -2282,6 +2282,7 @@ void Document::shutdown() {
   // Don't allow script to run in the middle of detachLayoutTree() because a
   // detaching Document is not in a consistent state.
   ScriptForbiddenScope forbidScript;
+
   view()->dispose();
   m_markers->prepareForDestruction();
 
@@ -2296,8 +2297,6 @@ void Document::shutdown() {
         .client()
         ->sharedWorkerRepositoryClient()
         ->documentDetached(this);
-
-  stopActiveDOMObjects();
 
   // FIXME: consider using ActiveDOMObject.
   if (m_scriptedAnimationController)
@@ -2384,7 +2383,9 @@ void Document::shutdown() {
 
   m_lifecycle.advanceTo(DocumentLifecycle::Stopped);
 
-  // FIXME: Currently we call notifyContextDestroyed() only in
+  // TODO(haraken): Call contextDestroyed() before we start any disruptive
+  // operations.
+  // TODO(haraken): Currently we call notifyContextDestroyed() only in
   // Document::detachLayoutTree(), which means that we don't call
   // notifyContextDestroyed() for a document that doesn't get detached.
   // If such a document has any observer, the observer won't get
@@ -2392,11 +2393,11 @@ void Document::shutdown() {
   // created by DOMImplementation::createDocument().
   ExecutionContext::notifyContextDestroyed();
 
-  // This is required, as our LocalFrame might delete itself as soon as it
-  // detaches us. However, this violates Node::detachLayoutTree() semantics, as
-  // it's never possible to re-attach. Eventually Document::detachLayoutTree()
-  // should be renamed, or this setting of the frame to 0 could be made explicit
-  // in each of the callers of Document::detachLayoutTree().
+  // This is required, as our LocalFrame might delete itself as soon as it detaches
+  // us. However, this violates Node::detachLayoutTree() semantics, as it's never
+  // possible to re-attach. Eventually Document::detachLayoutTree() should be renamed,
+  // or this setting of the frame to 0 could be made explicit in each of the
+  // callers of Document::detachLayoutTree().
   m_frame = nullptr;
 }
 

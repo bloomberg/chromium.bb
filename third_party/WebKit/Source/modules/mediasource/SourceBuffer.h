@@ -111,7 +111,7 @@ class SourceBuffer final : public EventTargetWithInlineData,
   // ActiveDOMObject
   void suspend() override;
   void resume() override;
-  void stop() override;
+  void contextDestroyed() override;
 
   // EventTarget interface
   ExecutionContext* getExecutionContext() const override;

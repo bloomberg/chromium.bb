@@ -71,7 +71,7 @@ void MediaDevicesRequest::succeed(const MediaDeviceInfoVector& mediaDevices) {
   m_resolver->resolve(mediaDevices);
 }
 
-void MediaDevicesRequest::stop() {
+void MediaDevicesRequest::contextDestroyed() {
   m_controller.clear();
   m_resolver.clear();
 }

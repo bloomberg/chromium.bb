@@ -73,7 +73,7 @@ DOMWebSocket::EventQueue::EventQueue(EventTarget* target)
       m_resumeTimer(this, &EventQueue::resumeTimerFired) {}
 
 DOMWebSocket::EventQueue::~EventQueue() {
-  stop();
+  contextDestroyed();
 }
 
 void DOMWebSocket::EventQueue::dispatch(Event* event) {
@@ -112,7 +112,7 @@ void DOMWebSocket::EventQueue::resume() {
   m_resumeTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
-void DOMWebSocket::EventQueue::stop() {
+void DOMWebSocket::EventQueue::contextDestroyed() {
   if (m_state == Stopped)
     return;
 
@@ -655,9 +655,15 @@ ExecutionContext* DOMWebSocket::getExecutionContext() const {
 
 void DOMWebSocket::contextDestroyed() {
   NETWORK_DVLOG(1) << "WebSocket " << this << " contextDestroyed()";
-  DCHECK(!m_channel);
-  DCHECK_EQ(kClosed, m_state);
-  ActiveDOMObject::contextDestroyed();
+  m_eventQueue->contextDestroyed();
+  if (m_channel) {
+    m_channel->close(WebSocketChannel::CloseEventCodeGoingAway, String());
+    releaseChannel();
+  }
+  if (m_state != kClosed) {
+    m_state = kClosed;
+    logBinaryTypeChangesAfterOpen();
+  }
 }
 
 bool DOMWebSocket::hasPendingActivity() const {
@@ -670,18 +676,6 @@ void DOMWebSocket::suspend() {
 
 void DOMWebSocket::resume() {
   m_eventQueue->resume();
-}
-
-void DOMWebSocket::stop() {
-  m_eventQueue->stop();
-  if (m_channel) {
-    m_channel->close(WebSocketChannel::CloseEventCodeGoingAway, String());
-    releaseChannel();
-  }
-  if (m_state != kClosed) {
-    m_state = kClosed;
-    logBinaryTypeChangesAfterOpen();
-  }
 }
 
 void DOMWebSocket::didConnect(const String& subprotocol,

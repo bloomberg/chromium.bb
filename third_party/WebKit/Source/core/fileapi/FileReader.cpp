@@ -208,7 +208,7 @@ const AtomicString& FileReader::interfaceName() const {
   return EventTargetNames::FileReader;
 }
 
-void FileReader::stop() {
+void FileReader::contextDestroyed() {
   // The delayed abort task tidies up and advances to the DONE state.
   if (m_loadingState == LoadingStateAborted)
     return;

@@ -125,7 +125,7 @@ class MODULES_EXPORT Notification final : public EventTargetWithInlineData,
   const AtomicString& interfaceName() const override;
 
   // ActiveDOMObject interface.
-  void stop() override;
+  void contextDestroyed() override;
 
   // ScriptWrappable interface.
   bool hasPendingActivity() const final;

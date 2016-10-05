@@ -76,7 +76,7 @@ class MODULES_EXPORT MediaRecorder final : public EventTargetWithInlineData,
   // ActiveDOMObject
   void suspend() override;
   void resume() override;
-  void stop() override;
+  void contextDestroyed() override;
 
   // ScriptWrappable
   bool hasPendingActivity() const final { return !m_stopped; }

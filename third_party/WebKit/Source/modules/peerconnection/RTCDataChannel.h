@@ -108,7 +108,7 @@ class MODULES_EXPORT RTCDataChannel final
   // ActiveDOMObject
   void suspend() override;
   void resume() override;
-  void stop() override;
+  void contextDestroyed() override;
 
   // ScriptWrappable
   bool hasPendingActivity() const override;

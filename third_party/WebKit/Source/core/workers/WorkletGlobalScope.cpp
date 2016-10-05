@@ -27,8 +27,6 @@ WorkletGlobalScope::WorkletGlobalScope(
 WorkletGlobalScope::~WorkletGlobalScope() {}
 
 void WorkletGlobalScope::dispose() {
-  stopActiveDOMObjects();
-
   DCHECK(m_scriptController);
   m_scriptController->dispose();
   m_scriptController.clear();

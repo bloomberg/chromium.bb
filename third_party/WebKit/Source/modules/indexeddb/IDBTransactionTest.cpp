@@ -93,7 +93,7 @@ TEST(IDBTransactionTest, EnsureLifetime) {
 
   // This will generate an abort() call to the back end which is dropped by the fake proxy,
   // so an explicit onAbort call is made.
-  scope.getExecutionContext()->stopActiveDOMObjects();
+  scope.getExecutionContext()->notifyContextDestroyed();
   transaction->onAbort(DOMException::create(AbortError, "Aborted"));
   transaction.clear();
 
@@ -135,7 +135,7 @@ TEST(IDBTransactionTest, TransactionFinish) {
   EXPECT_EQ(1u, set.size());
 
   // Stop the context, so events don't get queued (which would keep the transaction alive).
-  scope.getExecutionContext()->stopActiveDOMObjects();
+  scope.getExecutionContext()->notifyContextDestroyed();
 
   // Fire an abort to make sure this doesn't free the transaction during use. The test
   // will not fail if it is, but ASAN would notice the error.

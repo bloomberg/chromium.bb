@@ -108,7 +108,7 @@ void BatteryManager::resume() {
   startUpdating();
 }
 
-void BatteryManager::stop() {
+void BatteryManager::contextDestroyed() {
   m_hasEventListener = false;
   m_batteryProperty.clear();
   stopUpdating();

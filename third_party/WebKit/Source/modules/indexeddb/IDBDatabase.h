@@ -111,7 +111,7 @@ class MODULES_EXPORT IDBDatabase final : public EventTargetWithInlineData,
   bool hasPendingActivity() const final;
 
   // ActiveDOMObject
-  void stop() override;
+  void contextDestroyed() override;
 
   // EventTarget
   const AtomicString& interfaceName() const override;

@@ -61,7 +61,7 @@ class BluetoothRemoteGATTCharacteristic final
   void dispatchCharacteristicValueChanged(const WebVector<uint8_t>&) override;
 
   // ActiveDOMObject interface.
-  void stop() override;
+  void contextDestroyed() override;
 
   // USING_PRE_FINALIZER interface.
   // Called before the object gets garbage collected.

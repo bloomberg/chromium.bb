@@ -52,7 +52,7 @@ class MODULES_EXPORT PresentationAvailability final
   // ActiveDOMObject implementation.
   void suspend() override;
   void resume() override;
-  void stop() override;
+  void contextDestroyed() override;
 
   // PageVisibilityObserver implementation.
   void pageVisibilityChanged() override;

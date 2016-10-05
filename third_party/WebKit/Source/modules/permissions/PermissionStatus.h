@@ -49,7 +49,7 @@ class PermissionStatus final : public EventTargetWithInlineData,
   // ActiveDOMObject implementation.
   void suspend() override;
   void resume() override;
-  void stop() override;
+  void contextDestroyed() override;
 
   String state() const;
   void permissionChanged(MojoPermissionStatus);

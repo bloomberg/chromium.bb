@@ -45,7 +45,6 @@ class CORE_EXPORT ContextLifecycleNotifier
  public:
   void notifyResumingActiveDOMObjects();
   void notifySuspendingActiveDOMObjects();
-  void notifyStoppingActiveDOMObjects();
 
   unsigned activeDOMObjectCount() const;
 

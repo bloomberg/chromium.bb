@@ -84,7 +84,7 @@ class ServiceWorkerRegistration final
   void dispose();
 
   // ActiveDOMObject overrides.
-  void stop() override;
+  void contextDestroyed() override;
 
   // A handle to the registration representation in the embedder.
   std::unique_ptr<WebServiceWorkerRegistration::Handle> m_handle;

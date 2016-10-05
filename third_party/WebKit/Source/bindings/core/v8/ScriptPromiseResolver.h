@@ -88,7 +88,7 @@ class CORE_EXPORT ScriptPromiseResolver
   // ActiveDOMObject implementation.
   void suspend() override;
   void resume() override;
-  void stop() override { detach(); }
+  void contextDestroyed() override { detach(); }
 
   // Calling this function makes the resolver release its internal resources.
   // That means the associated promise will never be resolved or rejected

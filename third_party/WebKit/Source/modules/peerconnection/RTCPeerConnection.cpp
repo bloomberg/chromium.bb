@@ -1354,7 +1354,7 @@ void RTCPeerConnection::didAddRemoteDataChannel(
 }
 
 void RTCPeerConnection::releasePeerConnectionHandler() {
-  stop();
+  contextDestroyed();
 }
 
 void RTCPeerConnection::closePeerConnection() {
@@ -1378,7 +1378,7 @@ void RTCPeerConnection::resume() {
   m_dispatchScheduledEventRunner->resume();
 }
 
-void RTCPeerConnection::stop() {
+void RTCPeerConnection::contextDestroyed() {
   if (m_stopped)
     return;
 

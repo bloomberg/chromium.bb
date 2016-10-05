@@ -57,7 +57,7 @@ class RTCVoidRequestImpl final : public RTCVoidRequest, public ActiveDOMObject {
   void requestFailed(const String& error) override;
 
   // ActiveDOMObject
-  void stop() override;
+  void contextDestroyed() override;
 
   DECLARE_VIRTUAL_TRACE();
 

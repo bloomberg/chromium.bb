@@ -117,7 +117,7 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   const AtomicString& interfaceName() const override;
   ExecutionContext* getExecutionContext() const override;
   bool hasPendingActivity() const final;
-  void stop() override;
+  void contextDestroyed() override;
 
   double playbackRate() const;
   void setPlaybackRate(double);

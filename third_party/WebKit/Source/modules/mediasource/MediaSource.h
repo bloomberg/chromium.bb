@@ -108,7 +108,7 @@ class MediaSource final : public EventTargetWithInlineData,
   bool hasPendingActivity() const final;
 
   // ActiveDOMObject interface
-  void stop() override;
+  void contextDestroyed() override;
 
   // URLRegistrable interface
   URLRegistry& registry() const override;

@@ -57,7 +57,7 @@ bool UnderlyingSourceBase::hasPendingActivity() const {
   return m_controller && m_controller->isActive() && m_isStreamLocked;
 }
 
-void UnderlyingSourceBase::stop() {
+void UnderlyingSourceBase::contextDestroyed() {
   if (m_controller) {
     m_controller->noteHasBeenCanceled();
     m_controller.clear();

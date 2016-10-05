@@ -63,13 +63,11 @@ void ActiveDOMObject::suspend() {}
 
 void ActiveDOMObject::resume() {}
 
-void ActiveDOMObject::stop() {}
-
 void ActiveDOMObject::didMoveToNewExecutionContext(ExecutionContext* context) {
   setContext(context);
 
   if (context->activeDOMObjectsAreStopped()) {
-    stop();
+    contextDestroyed();
     return;
   }
 

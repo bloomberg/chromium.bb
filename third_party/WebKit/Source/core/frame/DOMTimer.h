@@ -53,7 +53,7 @@ class CORE_EXPORT DOMTimer final : public GarbageCollectedFinalized<DOMTimer>,
   ~DOMTimer() override;
 
   // ActiveDOMObject
-  void stop() override;
+  void contextDestroyed() override;
 
   // Eager finalization is needed to promptly stop this Timer object.
   // Otherwise timer events might fire at an object that's slated for destruction
@@ -62,7 +62,7 @@ class CORE_EXPORT DOMTimer final : public GarbageCollectedFinalized<DOMTimer>,
   EAGERLY_FINALIZE();
   DECLARE_VIRTUAL_TRACE();
 
-  void disposeTimer();
+  void stop() override;
 
  private:
   friend class DOMTimerCoordinator;  // For create().

@@ -39,9 +39,11 @@ class CORE_EXPORT SuspendableTimer : public TimerBase, public ActiveDOMObject {
   ~SuspendableTimer() override;
 
   // ActiveDOMObject
-  void stop() override;
+  void contextDestroyed() override;
   void suspend() final;
   void resume() final;
+
+  void stop() override;
 
  private:
   void fired() override = 0;

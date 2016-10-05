@@ -191,7 +191,7 @@ void BaseAudioContext::uninitialize() {
   clear();
 }
 
-void BaseAudioContext::stop() {
+void BaseAudioContext::contextDestroyed() {
   uninitialize();
 }
 
