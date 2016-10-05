@@ -24,10 +24,10 @@
 #include "remoting/protocol/port_allocator_factory.h"
 #include "remoting/protocol/stream_message_pipe_adapter.h"
 #include "remoting/protocol/transport_context.h"
+#include "remoting/protocol/webrtc_audio_module.h"
 #include "remoting/protocol/webrtc_dummy_video_encoder.h"
 #include "third_party/webrtc/api/test/fakeconstraints.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
-#include "third_party/webrtc/modules/audio_device/include/fake_audio_device.h"
 
 using buzz::QName;
 using buzz::XmlElement;
@@ -146,8 +146,11 @@ class WebrtcTransport::PeerConnectionWrapper
       std::unique_ptr<cricket::PortAllocator> port_allocator,
       base::WeakPtr<WebrtcTransport> transport)
       : transport_(transport) {
+    scoped_refptr<WebrtcAudioModule> audio_module =
+        new rtc::RefCountedObject<WebrtcAudioModule>();
+
     peer_connection_factory_ = webrtc::CreatePeerConnectionFactory(
-        worker_thread, rtc::Thread::Current(), &fake_audio_device_module_,
+        worker_thread, rtc::Thread::Current(), audio_module.get(),
         encoder_factory.release(), nullptr);
 
     webrtc::FakeConstraints constraints;
@@ -208,7 +211,7 @@ class WebrtcTransport::PeerConnectionWrapper
   }
 
  private:
-  webrtc::FakeAudioDeviceModule fake_audio_device_module_;
+  scoped_refptr<WebrtcAudioModule> audio_module_;
   scoped_refptr<webrtc::PeerConnectionFactoryInterface>
       peer_connection_factory_;
   scoped_refptr<webrtc::PeerConnectionInterface> peer_connection_;

@@ -26,6 +26,7 @@ namespace protocol {
 
 class TransportContext;
 class MessagePipe;
+class WebrtcAudioModule;
 
 class WebrtcTransport : public Transport {
  public:

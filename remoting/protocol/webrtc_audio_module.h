@@ -1,0 +1,166 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef REMOTING_PROTOCOL_WEBRTC_AUDIO_MODULE_H_
+#define REMOTING_PROTOCOL_WEBRTC_AUDIO_MODULE_H_
+
+#include "base/memory/ref_counted.h"
+#include "base/synchronization/lock.h"
+#include "base/timer/timer.h"
+#include "third_party/webrtc/modules/audio_device/include/audio_device.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}  // namespace base
+
+namespace remoting {
+namespace protocol {
+
+class AudioStub;
+
+// Audio module passed to WebRTC. It doesn't access actual audio devices, but it
+// provides all functionality we need to ensure that audio streaming works
+// properly in WebRTC. Particularly it's responsible for calling AudioTransport
+// on regular intervals when playback is active. This ensures that all incoming
+// audio data is processed and passed to webrtc::AudioTrackSinkInterface
+// connected to the audio track.
+class WebrtcAudioModule : public webrtc::AudioDeviceModule {
+ public:
+  WebrtcAudioModule();
+  ~WebrtcAudioModule() override;
+
+  void SetAudioTaskRunner(
+      scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner);
+
+  // webrtc::AudioDeviceModule implementation.
+  int64_t TimeUntilNextProcess() override;
+  void Process() override;
+  int32_t ActiveAudioLayer(AudioLayer* audio_layer) const override;
+  ErrorCode LastError() const override;
+  int32_t RegisterEventObserver(
+      webrtc::AudioDeviceObserver* event_callback) override;
+  int32_t RegisterAudioCallback(
+      webrtc::AudioTransport* audio_callback) override;
+  int32_t Init() override;
+  int32_t Terminate() override;
+  bool Initialized() const override;
+  int16_t PlayoutDevices() override;
+  int16_t RecordingDevices() override;
+  int32_t PlayoutDeviceName(uint16_t index,
+                            char name[webrtc::kAdmMaxDeviceNameSize],
+                            char guid[webrtc::kAdmMaxGuidSize]) override;
+  int32_t RecordingDeviceName(uint16_t index,
+                              char name[webrtc::kAdmMaxDeviceNameSize],
+                              char guid[webrtc::kAdmMaxGuidSize]) override;
+  int32_t SetPlayoutDevice(uint16_t index) override;
+  int32_t SetPlayoutDevice(WindowsDeviceType device) override;
+  int32_t SetRecordingDevice(uint16_t index) override;
+  int32_t SetRecordingDevice(WindowsDeviceType device) override;
+  int32_t PlayoutIsAvailable(bool* available) override;
+  int32_t InitPlayout() override;
+  bool PlayoutIsInitialized() const override;
+  int32_t RecordingIsAvailable(bool* available) override;
+  int32_t InitRecording() override;
+  bool RecordingIsInitialized() const override;
+  int32_t StartPlayout() override;
+  int32_t StopPlayout() override;
+  bool Playing() const override;
+  int32_t StartRecording() override;
+  int32_t StopRecording() override;
+  bool Recording() const override;
+  int32_t SetAGC(bool enable) override;
+  bool AGC() const override;
+  int32_t SetWaveOutVolume(uint16_t volume_left,
+                           uint16_t volume_right) override;
+  int32_t WaveOutVolume(uint16_t* volume_left,
+                        uint16_t* volume_right) const override;
+  int32_t InitSpeaker() override;
+  bool SpeakerIsInitialized() const override;
+  int32_t InitMicrophone() override;
+  bool MicrophoneIsInitialized() const override;
+  int32_t SpeakerVolumeIsAvailable(bool* available) override;
+  int32_t SetSpeakerVolume(uint32_t volume) override;
+  int32_t SpeakerVolume(uint32_t* volume) const override;
+  int32_t MaxSpeakerVolume(uint32_t* max_volume) const override;
+  int32_t MinSpeakerVolume(uint32_t* min_volume) const override;
+  int32_t SpeakerVolumeStepSize(uint16_t* step_size) const override;
+  int32_t MicrophoneVolumeIsAvailable(bool* available) override;
+  int32_t SetMicrophoneVolume(uint32_t volume) override;
+  int32_t MicrophoneVolume(uint32_t* volume) const override;
+  int32_t MaxMicrophoneVolume(uint32_t* max_volume) const override;
+  int32_t MinMicrophoneVolume(uint32_t* min_volume) const override;
+  int32_t MicrophoneVolumeStepSize(uint16_t* step_size) const override;
+  int32_t SpeakerMuteIsAvailable(bool* available) override;
+  int32_t SetSpeakerMute(bool enable) override;
+  int32_t SpeakerMute(bool* enabled) const override;
+  int32_t MicrophoneMuteIsAvailable(bool* available) override;
+  int32_t SetMicrophoneMute(bool enable) override;
+  int32_t MicrophoneMute(bool* enabled) const override;
+  int32_t MicrophoneBoostIsAvailable(bool* available) override;
+  int32_t SetMicrophoneBoost(bool enable) override;
+  int32_t MicrophoneBoost(bool* enabled) const override;
+  int32_t StereoPlayoutIsAvailable(bool* available) const override;
+  int32_t SetStereoPlayout(bool enable) override;
+  int32_t StereoPlayout(bool* enabled) const override;
+  int32_t StereoRecordingIsAvailable(bool* available) const override;
+  int32_t SetStereoRecording(bool enable) override;
+  int32_t StereoRecording(bool* enabled) const override;
+  int32_t SetRecordingChannel(const ChannelType channel) override;
+  int32_t RecordingChannel(ChannelType* channel) const override;
+  int32_t SetPlayoutBuffer(const BufferType type, uint16_t size_ms) override;
+  int32_t PlayoutBuffer(BufferType* type, uint16_t* size_ms) const override;
+  int32_t PlayoutDelay(uint16_t* delay_ms) const override;
+  int32_t RecordingDelay(uint16_t* delay_ms) const override;
+  int32_t CPULoad(uint16_t* load) const override;
+  int32_t StartRawOutputFileRecording(
+      const char pcm_file_name_utf8[webrtc::kAdmMaxFileNameSize]) override;
+  int32_t StopRawOutputFileRecording() override;
+  int32_t StartRawInputFileRecording(
+      const char pcm_file_name_utf8[webrtc::kAdmMaxFileNameSize]) override;
+  int32_t StopRawInputFileRecording() override;
+  int32_t SetRecordingSampleRate(const uint32_t samples_per_sec) override;
+  int32_t RecordingSampleRate(uint32_t* samples_per_sec) const override;
+  int32_t SetPlayoutSampleRate(const uint32_t samples_per_sec) override;
+  int32_t PlayoutSampleRate(uint32_t* samples_per_sec) const override;
+  int32_t ResetAudioDevice() override;
+  int32_t SetLoudspeakerStatus(bool enable) override;
+  int32_t GetLoudspeakerStatus(bool* enabled) const override;
+  bool BuiltInAECIsAvailable() const override;
+  bool BuiltInAGCIsAvailable() const override;
+  bool BuiltInNSIsAvailable() const override;
+  int32_t EnableBuiltInAEC(bool enable) override;
+  int32_t EnableBuiltInAGC(bool enable) override;
+  int32_t EnableBuiltInNS(bool enable) override;
+
+// Only supported on iOS.
+#if defined(WEBRTC_IOS)
+  int GetPlayoutAudioParameters(AudioParameters* params) const override;
+  int GetRecordAudioParameters(AudioParameters* params) const override;
+#endif  // WEBRTC_IOS
+
+ private:
+  void StartPlayoutOnAudioThread();
+  void StopPlayoutOnAudioThread();
+
+  void PollFromSource();
+
+  scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner_;
+
+  // |lock_| must be locked when accessing |initialized_|, |playing_| and
+  // |audio_transport_|.
+  mutable base::Lock lock_;
+
+  bool initialized_ = false;
+  bool playing_ = false;
+  webrtc::AudioTransport* audio_transport_ = nullptr;
+
+  // Timer running on the |audio_task_runner_| that polls audio from
+  // |audio_transport_|.
+  base::RepeatingTimer poll_timer_;
+};
+
+}  // namespace protocol
+}  // namespace remoting
+
+#endif  // REMOTING_PROTOCOL_WEBRTC_AUDIO_MODULE_H_
