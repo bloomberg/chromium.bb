@@ -56,6 +56,7 @@
 #include "shared/helpers.h"
 #include "shared/image-loader.h"
 #include "gl-renderer.h"
+#include "weston-egl-ext.h"
 #include "pixman-renderer.h"
 #include "presentation-time-server-protocol.h"
 #include "linux-dmabuf.h"

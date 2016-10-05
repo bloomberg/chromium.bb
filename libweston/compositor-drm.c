@@ -52,6 +52,7 @@
 #include "shared/helpers.h"
 #include "shared/timespec-util.h"
 #include "gl-renderer.h"
+#include "weston-egl-ext.h"
 #include "pixman-renderer.h"
 #include "libbacklight.h"
 #include "libinput-seat.h"
