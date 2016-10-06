@@ -4,6 +4,8 @@
 
 package org.chromium.content_shell_apk;
 
+import android.content.Context;
+
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
@@ -19,15 +21,16 @@ public class ContentShellApplication extends ContentApplication {
     public static final String COMMAND_LINE_FILE = "/data/local/tmp/content-shell-command-line";
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "content_shell";
 
-    public ContentShellApplication() {
-        super();
+    @Override
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(base);
         ContextUtils.initApplicationContext(this);
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
-        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, this);
+        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
     }
 
     @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")

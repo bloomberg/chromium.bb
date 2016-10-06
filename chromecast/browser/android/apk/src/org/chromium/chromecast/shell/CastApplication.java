@@ -9,6 +9,7 @@ import android.os.Build;
 import android.util.Log;
 
 import org.chromium.base.CommandLine;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.content.app.ContentApplication;
 
@@ -27,13 +28,15 @@ public class CastApplication extends ContentApplication {
     private static final String COMMAND_LINE_FILE = "/data/local/tmp/castshell-command-line";
 
     @Override
-    public void onCreate() {
-        super.onCreate();
-        initializeApplicationParameters(this);
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(base);
+        ContextUtils.initApplicationContext(this);
     }
 
-    public static void initializeApplicationParameters(Context context) {
-        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, context);
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
     }
 
     @Override
