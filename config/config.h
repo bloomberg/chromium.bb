@@ -1,14 +1,13 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+/*
+ * Copyright (c) 2016 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
 
-// This is a stub config.h for libSRTP. It doesn't define anything besides
-// version number strings because the build is configured by libsrtp.gyp.
-
-#define PACKAGE_STRING "libsrtp 1.5.0"
-#define PACKAGE_VERSION "1.5.0"
-
-#if defined(_MSC_VER) && !defined(__cplusplus)
-  // Microsoft provides "inline" only for C++ code
-  #define inline __inline
-#endif
+/*
+ * This space intentionally left blank.
+ *
+ * All of the #defines have been moved to BUILD.gn. The libsrtp headers
+ * equate "building as a library" with HAS_CONFIG_H, so we need to leave that
+ * defined and this file needs to be here.
+ */

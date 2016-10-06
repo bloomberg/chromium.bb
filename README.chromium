@@ -1,6 +1,6 @@
 Name: libsrtp
 URL: https://github.com/cisco/libsrtp
-Version: 1.5.2
+Version: 2cbd85085037dc7bf2eda48d4cf62e2829056e2d
 License: 3-clause BSD
 License File: srtp/LICENSE
 Security Critical: Yes
@@ -10,20 +10,7 @@ Description:
   time communication. It's used with libjingle which
   provides the p2p session setup.
 
-  Libsrtp is distributed under the following BSD-based license, detailed info
-  in srtp/LICENSE.
-
 Local Modifications:
+  Removed many unused files, e.g. all non-OpenSSL cipher implementations.
 
-Added gyp support to __arm64__
-
-Use '_byteswap_*' functions to convert between host and network byte order on
-Windows.
-
-Initialized "failures" to 0 in replay_driver.c -- merges
-https://github.com/cisco/libsrtp/pull/138
-
-Renamed "mips" to "mips_value" in srtp_driver.c to fix MIPS build.
-
-Added bounds check at the top of srtp_validate_rtp_header -- merges
-https://github.com/cisco/libsrtp/pull/182
+  Patched in https://github.com/cisco/libsrtp/pull/209.
