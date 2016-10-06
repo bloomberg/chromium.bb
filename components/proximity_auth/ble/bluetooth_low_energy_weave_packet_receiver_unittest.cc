@@ -46,8 +46,9 @@ class ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest
       ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest);
 };
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
-       WellBehavingServerPacketsNoControlDataTest) {
+       DISABLED_WellBehavingServerPacketsNoControlDataTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
           ReceiverType::SERVER);
@@ -107,8 +108,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
   EXPECT_EQ(ReasonForClose::APPLICATION_ERROR, receiver->GetReasonForClose());
 }
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
-       WellBehavingServerPacketsWithFullControlDataTest) {
+       DISABLED_WellBehavingServerPacketsWithFullControlDataTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
           ReceiverType::SERVER);
@@ -173,8 +175,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
   EXPECT_EQ(ReasonForClose::CLOSE_WITHOUT_ERROR, receiver->GetReasonForClose());
 }
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
-       WellBehavingServerPacketsWithSomeControlDataTest) {
+       DISABLED_WellBehavingServerPacketsWithSomeControlDataTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
           ReceiverType::SERVER);
@@ -223,8 +226,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
   EXPECT_EQ(ReasonForClose::CLOSE_WITHOUT_ERROR, receiver->GetReasonForClose());
 }
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
-       WellBehavingClientPacketsNoControlDataTest) {
+       DISABLED_WellBehavingClientPacketsNoControlDataTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
           ReceiverType::CLIENT);
@@ -262,8 +266,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
   EXPECT_EQ(ReasonForClose::APPLICATION_ERROR, receiver->GetReasonForClose());
 }
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
-       WellBehavingClientPacketsWithFullControlDataTest) {
+       DISABLED_WellBehavingClientPacketsWithFullControlDataTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
           ReceiverType::CLIENT);
@@ -315,8 +320,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
   EXPECT_EQ(ReasonForClose::CLOSE_WITHOUT_ERROR, receiver->GetReasonForClose());
 }
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
-       WellBehavingClientPacketsWithSomeControlDataTest) {
+       DISABLED_WellBehavingClientPacketsWithSomeControlDataTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
           ReceiverType::CLIENT);
@@ -356,8 +362,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
   EXPECT_EQ(ReasonForClose::CLOSE_WITHOUT_ERROR, receiver->GetReasonForClose());
 }
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
-       LegacyCloseWithoutReasonTest) {
+       DISABLED_LegacyCloseWithoutReasonTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
           ReceiverType::SERVER);
@@ -380,8 +387,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
   EXPECT_EQ(ReasonForClose::UNKNOWN_ERROR, receiver->GetReasonForClose());
 }
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
-       OneBytePacketTest) {
+       DISABLED_OneBytePacketTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
           ReceiverType::CLIENT);
@@ -405,8 +413,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
   EXPECT_EQ("", receiver->GetDataMessage());
 }
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
-       EmptyPacketTest) {
+       DISABLED_EmptyPacketTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
           ReceiverType::CLIENT);
@@ -418,8 +427,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
   EXPECT_EQ(ReceiverError::EMPTY_PACKET, receiver->GetReceiverError());
 }
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
-       ServerReceivingConnectionResponseTest) {
+       DISABLED_ServerReceivingConnectionResponseTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
           ReceiverType::SERVER);
@@ -433,8 +443,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
-       ClientReceivingConnectionRequestTest) {
+       DISABLED_ClientReceivingConnectionRequestTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
           ReceiverType::CLIENT);
@@ -449,8 +460,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
-       ReceiveConnectionCloseInConnecting) {
+       DISABLED_ReceiveConnectionCloseInConnecting) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
           ReceiverType::SERVER);
@@ -468,8 +480,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
-       ReceiveDataInConnecting) {
+       DISABLED_ReceiveDataInConnecting) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
           ReceiverType::SERVER);
@@ -489,8 +502,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
-       ConnectionRequestTooSmallTest) {
+       DISABLED_ConnectionRequestTooSmallTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
           ReceiverType::SERVER);
@@ -504,8 +518,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
-       ConnectionRequestTooLargeTest) {
+       DISABLED_ConnectionRequestTooLargeTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
           ReceiverType::SERVER);
@@ -521,8 +536,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
-       ConnectionResponseTooSmallTest) {
+       DISABLED_ConnectionResponseTooSmallTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
           ReceiverType::CLIENT);
@@ -536,8 +552,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
-       ConnectionResponseTooLargeTest) {
+       DISABLED_ConnectionResponseTooLargeTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
           ReceiverType::CLIENT);
@@ -553,8 +570,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
-       ConnectionCloseTooLargeTest) {
+       DISABLED_ConnectionCloseTooLargeTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
           ReceiverType::SERVER);
@@ -578,8 +596,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
-       DataPacketTooLargeTest) {
+       DISABLED_DataPacketTooLargeTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
           ReceiverType::SERVER);
@@ -607,8 +626,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
-       FirstPacketNoFirstNorLastBitTest) {
+       DISABLED_FirstPacketNoFirstNorLastBitTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
           ReceiverType::SERVER);
@@ -636,8 +656,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
-       FirstPacketNoFirstYesLastBitTest) {
+       DISABLED_FirstPacketNoFirstYesLastBitTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
           ReceiverType::SERVER);
@@ -665,8 +686,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
-       NonFirstPacketYesFirstBitTest) {
+       DISABLED_NonFirstPacketYesFirstBitTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
           ReceiverType::SERVER);
@@ -705,8 +727,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
-       OutOfOrderPacketTest) {
+       DISABLED_OutOfOrderPacketTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
           ReceiverType::SERVER);
@@ -734,8 +757,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
-       InvalidVersionInConnectionRequestTest) {
+       DISABLED_InvalidVersionInConnectionRequestTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
           ReceiverType::SERVER);
@@ -753,8 +777,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
-       InvalidMaxPacketSizeInConnectionRequestTest) {
+       DISABLED_InvalidMaxPacketSizeInConnectionRequestTest) {
   const uint8_t kSmallMaxPacketSize = 19;
 
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
@@ -772,8 +797,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
-       InvalidSelectedVersionInConnectionResponseTest) {
+       DISABLED_InvalidSelectedVersionInConnectionResponseTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
           ReceiverType::CLIENT);
@@ -789,8 +815,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
-       InvalidSelectedMaxPacketSizeInConnectionResponseTest) {
+       DISABLED_InvalidSelectedMaxPacketSizeInConnectionResponseTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
           ReceiverType::CLIENT);
@@ -806,8 +833,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
-       UnrecognizedReasonForCloseInConnectionCloseTest) {
+       DISABLED_UnrecognizedReasonForCloseInConnectionCloseTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
           ReceiverType::CLIENT);
@@ -832,8 +860,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
-       UnrecognizedControlCommandBitTwoTest) {
+       DISABLED_UnrecognizedControlCommandBitTwoTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
           ReceiverType::SERVER);
@@ -857,8 +886,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
-       InvalidControlCommandBitThreeTest) {
+       DISABLED_InvalidControlCommandBitThreeTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
           ReceiverType::CLIENT);
@@ -877,8 +907,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
-       InvalidBitOneInDataPacketHeaderTest) {
+       DISABLED_InvalidBitOneInDataPacketHeaderTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
           ReceiverType::CLIENT);
@@ -904,8 +935,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
-       InvalidBitZeroInDataPacketHeaderTest) {
+       DISABLED_InvalidBitZeroInDataPacketHeaderTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
           ReceiverType::CLIENT);
@@ -931,8 +963,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
-       ReceivedPacketInErrorState) {
+       DISABLED_ReceivedPacketInErrorState) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
           ReceiverType::CLIENT);
@@ -951,8 +984,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
   EXPECT_EQ(ReceiverError::EMPTY_PACKET, receiver->GetReceiverError());
 }
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
-       ReceivedPacketInConnectionClosedStateTest) {
+       DISABLED_ReceivedPacketInConnectionClosedStateTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
           ReceiverType::SERVER);
@@ -989,8 +1023,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
             receiver->GetReceiverError());
 }
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketReceiverTest,
-       MultipleControlPacketTest) {
+       DISABLED_MultipleControlPacketTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketReceiver> receiver =
       BluetoothLowEnergyWeavePacketReceiver::Factory::NewInstance(
           ReceiverType::SERVER);

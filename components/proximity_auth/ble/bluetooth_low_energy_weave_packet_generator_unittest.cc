@@ -48,8 +48,9 @@ class ProximityAuthBluetoothLowEnergyWeavePacketGeneratorTest
       ProximityAuthBluetoothLowEnergyWeavePacketGeneratorTest);
 };
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketGeneratorTest,
-       CreateConnectionRequestTest) {
+       DISABLED_CreateConnectionRequestTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketGenerator> generator =
       BluetoothLowEnergyWeavePacketGenerator::Factory::NewInstance();
 
@@ -73,8 +74,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketGeneratorTest,
   EXPECT_EQ(expected, packet);
 }
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketGeneratorTest,
-       CreateConnectionResponseWithDefaultPacketSizeTest) {
+       DISABLED_CreateConnectionResponseWithDefaultPacketSizeTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketGenerator> generator =
       BluetoothLowEnergyWeavePacketGenerator::Factory::NewInstance();
 
@@ -93,8 +95,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketGeneratorTest,
   EXPECT_EQ(expected_default, packet);
 }
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketGeneratorTest,
-       CreateConnectionResponseWithSelectedPacketSizeTest) {
+       DISABLED_CreateConnectionResponseWithSelectedPacketSizeTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketGenerator> generator =
       BluetoothLowEnergyWeavePacketGenerator::Factory::NewInstance();
 
@@ -116,8 +119,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketGeneratorTest,
   EXPECT_EQ(expected_selected, packet);
 }
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketGeneratorTest,
-       CreateConnectionCloseTest) {
+       DISABLED_CreateConnectionCloseTest) {
   // Reason for close spec of uWeave.
   // 0x00: Close without error
   // 0x01: Unknown error
@@ -134,8 +138,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketGeneratorTest,
   TestConnectionCloseWithReason(ReasonForClose::APPLICATION_ERROR, 0x80);
 }
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketGeneratorTest,
-       EncodeDataMessageWithDefaultPacketSizeTest) {
+       DISABLED_EncodeDataMessageWithDefaultPacketSizeTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketGenerator> generator =
       BluetoothLowEnergyWeavePacketGenerator::Factory::NewInstance();
 
@@ -167,8 +172,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketGeneratorTest,
   EXPECT_EQ(expected, packets);
 }
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketGeneratorTest,
-       EncodeDataMessageWithSelectedPacketSizeTest) {
+       DISABLED_EncodeDataMessageWithSelectedPacketSizeTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketGenerator> generator =
       BluetoothLowEnergyWeavePacketGenerator::Factory::NewInstance();
 
@@ -219,8 +225,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketGeneratorTest,
   EXPECT_EQ(expected, packets);
 }
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketGeneratorTest,
-       PacketCounterForMixedPacketTypesTest) {
+       DISABLED_PacketCounterForMixedPacketTypesTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketGenerator> generator =
       BluetoothLowEnergyWeavePacketGenerator::Factory::NewInstance();
 
@@ -238,8 +245,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketGeneratorTest,
   EXPECT_EQ(2, GetCounterFromHeader(packet[0]));
 }
 
+// TODO(http://crbug.com/651246) this test is flaky.
 TEST_F(ProximityAuthBluetoothLowEnergyWeavePacketGeneratorTest,
-       PacketCounterWrappedAroundTest) {
+       DISABLED_PacketCounterWrappedAroundTest) {
   std::unique_ptr<BluetoothLowEnergyWeavePacketGenerator> generator =
       BluetoothLowEnergyWeavePacketGenerator::Factory::NewInstance();
 
