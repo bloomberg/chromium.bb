@@ -41,8 +41,6 @@ class PixelExpectations(GpuTestExpectations):
 
     self.Fail('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker',
               ['mac', ('nvidia', 0xfe9)], bug=652931)
-    self.Fail('Pixel_OffscreenCanvasWebGLSoftwareCompositing', bug=563852)
-    self.Fail('Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker', bug=563858)
 
     # TODO(kbr): flakily timing out on this configuration.
     self.Flaky('*', ['linux', 'intel', 'debug'], bug=648369)
