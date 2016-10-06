@@ -52,6 +52,9 @@ class WebrtcFrameSchedulerSimple : public WebrtcFrameScheduler {
   // Accumulator for capture and encoder delay history.
   RunningSamples frame_processing_delay_us_;
 
+  // Accumulator for updated region area in the previously encoded frames.
+  RunningSamples updated_region_area_;
+
   base::OneShotTimer capture_timer_;
 };
 

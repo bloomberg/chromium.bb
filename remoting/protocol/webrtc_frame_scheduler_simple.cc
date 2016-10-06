@@ -23,16 +23,40 @@ constexpr base::TimeDelta kTargetFrameInterval =
 // Target quantizer at which stop the encoding top-off.
 const int kTargetQuantizerForVp8TopOff = 30;
 
+const int64_t kPixelsPerMegapixel = 1000000;
+
 // Minimum target bitrate per megapixel. The value is chosen experimentally such
 // that when screen is not changing the codec converges to the target quantizer
 // above in less than 10 frames.
 const int kVp8MinimumTargetBitrateKbpsPerMegapixel = 2500;
 
+// Threshold in number of updated pixels used to detect "big" frames. These
+// frames update significant portion of the screen compared to the preceding
+// frames. For these frames min quantizer may need to be adjusted in order to
+// ensure that they get delivered to the client as soon as possible, in exchange
+// for lower-quality image.
+const int kBigFrameThresholdPixels = 300000;
+
+// Estimated size (in bytes per megapixel) of encoded frame at target quantizer
+// value (see kTargetQuantizerForVp8TopOff). Compression ratio varies depending
+// on the image, so this is just a rough estimate. It's used to predict when
+// encoded "big" frame may be too large to be delivered to the client quickly.
+const int kEstimatedBytesPerMegapixel = 100000;
+
+int64_t GetRegionArea(const webrtc::DesktopRegion& region) {
+  int64_t result = 0;
+  for (webrtc::DesktopRegion::Iterator r(region); !r.IsAtEnd(); r.Advance()) {
+    result += r.rect().width() * r.rect().height();
+  }
+  return result;
+}
+
 }  // namespace
 
 WebrtcFrameSchedulerSimple::WebrtcFrameSchedulerSimple()
     : pacing_bucket_(LeakyBucket::kUnlimitedDepth, 0),
-      frame_processing_delay_us_(kStatsWindow) {}
+      frame_processing_delay_us_(kStatsWindow),
+      updated_region_area_(kStatsWindow) {}
 WebrtcFrameSchedulerSimple::~WebrtcFrameSchedulerSimple() {}
 
 void WebrtcFrameSchedulerSimple::Start(const base::Closure& capture_callback) {
@@ -72,19 +96,37 @@ bool WebrtcFrameSchedulerSimple::GetEncoderFrameParams(
 
   // TODO(sergeyu): This logic is applicable only to VP8. Reconsider it for VP9.
   int minimum_bitrate =
-      static_cast<uint64_t>(kVp8MinimumTargetBitrateKbpsPerMegapixel) *
+      static_cast<int64_t>(kVp8MinimumTargetBitrateKbpsPerMegapixel) *
       frame.size().width() * frame.size().height() / 1000000LL;
   params_out->bitrate_kbps =
       std::max(minimum_bitrate, pacing_bucket_.rate() * 8 / 1000);
 
-  // TODO(sergeyu): Currently duration is always set to 1/15 of a second.
-  // Experiment with different values, and try changing it dynamically.
-  params_out->duration = base::TimeDelta::FromSeconds(1) / 15;
-
+  params_out->duration = kTargetFrameInterval;
   params_out->key_frame = key_frame_request_;
   key_frame_request_ = false;
 
   params_out->vpx_min_quantizer = 10;
+
+  int64_t updated_area = params_out->key_frame
+                             ? frame.size().width() * frame.size().height()
+                             : GetRegionArea(frame.updated_region());
+
+  // If bandwidth is being underutilized then libvpx is likely to choose the
+  // minimum allowed quantizer value, which means that encoded frame size may be
+  // significantly bigger than the bandwidth allows. Detect this case and set
+  // vpx_min_quantizer to 60. The quality will be topped off later.
+  if (updated_area - updated_region_area_.Max() > kBigFrameThresholdPixels) {
+    int expected_frame_size = updated_area *
+                              kEstimatedBytesPerMegapixel / kPixelsPerMegapixel;
+    base::TimeDelta expected_send_delay = base::TimeDelta::FromMicroseconds(
+        base::Time::kMicrosecondsPerSecond * expected_frame_size /
+        pacing_bucket_.rate());
+    if (expected_send_delay > kTargetFrameInterval)
+      params_out->vpx_min_quantizer = 60;
+  }
+
+  updated_region_area_.Record(updated_area);
+
   params_out->vpx_max_quantizer = 63;
 
   params_out->clear_active_map = !top_off_is_active_;
