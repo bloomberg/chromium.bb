@@ -25,7 +25,8 @@ bool Navigator::NavigateToPendingEntry(FrameTreeNode* frame_tree_node,
   return false;
 }
 
-bool Navigator::NavigateNewChildFrame(RenderFrameHostImpl* render_frame_host) {
+bool Navigator::NavigateNewChildFrame(RenderFrameHostImpl* render_frame_host,
+                                      const GURL& default_url) {
   return false;
 }
 

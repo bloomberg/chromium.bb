@@ -101,7 +101,10 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   // navigates it in the correct process. Returns false if the
   // FrameNavigationEntry can't be found or the navigation fails. This is only
   // used in OOPIF-enabled modes.
-  virtual bool NavigateNewChildFrame(RenderFrameHostImpl* render_frame_host);
+  // TODO(creis): Remove |default_url| once we have collected UMA stats on the
+  // cases that we use a different URL from history than the frame's src.
+  virtual bool NavigateNewChildFrame(RenderFrameHostImpl* render_frame_host,
+                                     const GURL& default_url);
 
   // Navigation requests -------------------------------------------------------
 
