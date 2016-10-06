@@ -257,13 +257,20 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   // several system-specific FormatTypes. For example, on Linux the CBF_TEXT
   // ObjectType maps to "text/plain", "STRING", and several other formats. On
   // windows it maps to CF_UNICODETEXT.
+  //
+  // The order below is the order in which data will be written to the
+  // clipboard, so more specific types must be listed before less specific
+  // types. For example, placing an image on the clipboard might cause the
+  // clipboard to contain a bitmap, HTML markup representing the image, a URL to
+  // the image, and the image's alt text. Having the types follow this order
+  // maximizes the amount of data that can be extracted by various programs.
   enum ObjectType {
-    CBF_TEXT,
+    CBF_SMBITMAP,  // Bitmap from shared memory.
     CBF_HTML,
     CBF_RTF,
     CBF_BOOKMARK,
+    CBF_TEXT,
     CBF_WEBKIT,
-    CBF_SMBITMAP,  // Bitmap from shared memory.
     CBF_DATA,      // Arbitrary block of bytes.
   };
 
@@ -274,16 +281,16 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   //
   // Key           Arguments    Type
   // -------------------------------------
-  // CBF_TEXT      text         char array
+  // CBF_SMBITMAP  bitmap       A pointer to a SkBitmap. The caller must ensure
+  //                            the SkBitmap remains live for the duration of
+  //                            the WriteObjects call.
   // CBF_HTML      html         char array
   //               url*         char array
   // CBF_RTF       data         byte array
   // CBF_BOOKMARK  html         char array
   //               url          char array
+  // CBF_TEXT      text         char array
   // CBF_WEBKIT    none         empty vector
-  // CBF_SMBITMAP  bitmap       A pointer to a SkBitmap. The caller must ensure
-  //                            the SkBitmap remains live for the duration of
-  //                            the WriteObjects call.
   // CBF_DATA      format       char array
   //               data         byte array
   typedef std::vector<char> ObjectMapParam;
