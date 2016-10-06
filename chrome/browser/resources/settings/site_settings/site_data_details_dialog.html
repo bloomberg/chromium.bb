@@ -1,44 +1,36 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu-light.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-listbox/paper-listbox.html">
 <link rel="import" href="/i18n_setup.html">
+<link rel="import" href="/md_select_css.html">
 <link rel="import" href="/settings_shared_css.html">
 
 <dom-module id="site-data-details-dialog">
   <template>
-    <style include="settings-shared">
+    <style include="settings-shared md-select">
       .picker-container {
-        display: flex;
+        flex: 1;
+        margin: auto;
       }
 
       .remove-button {
         margin: 0;
       }
-
-      paper-dropdown-menu-light {
-        align-self: center;
-      }
     </style>
     <dialog is="cr-dialog" id="dialog">
-      <div class="title">
-        [[title_]]
-      </div>
+      <div class="title">[[title_]]</div>
       <div class="body">
         <div class="layout horizontal" id="container">
-          <div class="flex picker-container">
-            <paper-dropdown-menu-light vertical-align="auto" no-label-float>
-              <paper-listbox id="picker" class="dropdown-content"
-                  attr-for-selected="picker-value"
-                  on-iron-activate="onItemSelected_">
+          <div class="picker-container">
+            <div class="md-select-wrapper">
+              <select id="picker" class="md-select" on-change="onItemSelected_">
                 <template is="dom-repeat" items="[[entries_]]">
-                  <button class="dropdown-item" role="option"
-                      picker-value$="[[item.id]]">
+                  <option value$="[[item.id]]">
                     [[getEntryDescription(item)]]
-                  </button>
+                  </option>
                 </template>
-              </paper-listbox>
-            </paper-dropdown-menu-light>
+              </select>
+              <span class="md-select-underline"></span>
+            </div>
           </div>
           <div class="button-container">
             <paper-button on-tap="onRemove_"
