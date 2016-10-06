@@ -33,8 +33,8 @@ namespace shell {
 
 namespace {
 
-const char kCatalogName[] = "mojo:catalog";
-const char kServiceManagerName[] = "mojo:shell";
+const char kCatalogName[] = "service:catalog";
+const char kServiceManagerName[] = "service:shell";
 const char kCapabilityClass_UserID[] = "shell:user_id";
 const char kCapabilityClass_ClientProcess[] = "shell:client_process";
 const char kCapabilityClass_InstanceName[] = "shell:instance_name";
@@ -326,7 +326,7 @@ class ServiceManager::Instance
         LOG(ERROR) << "Instance: " << identity_.name() << " attempting "
                    << "to register an instance for a process it created for "
                    << "target: " << target.name() << " without the "
-                   << "mojo:shell{client_process} capability class.";
+                   << "service:shell{client_process} capability class.";
         callback.Run(mojom::ConnectResult::ACCESS_DENIED,
                      mojom::kInheritUserID);
         return false;
@@ -375,7 +375,7 @@ class ServiceManager::Instance
       LOG(ERROR) << "Instance: " << identity_.name() << " attempting to "
                   << "connect to " << target.name() << " using Instance name: "
                   << target.instance() << " without the "
-                  << "mojo:shell{instance_name} capability class.";
+                  << "service:shell{instance_name} capability class.";
       callback.Run(mojom::ConnectResult::ACCESS_DENIED, mojom::kInheritUserID);
       return false;
 

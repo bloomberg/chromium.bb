@@ -307,14 +307,14 @@ void TaskViewer::Launch(uint32_t what, mojom::LaunchMode how) {
   }
 
   shell::mojom::ServiceManagerPtr service_manager;
-  connector()->ConnectToInterface("mojo:shell", &service_manager);
+  connector()->ConnectToInterface("service:shell", &service_manager);
 
   shell::mojom::ServiceManagerListenerPtr listener;
   shell::mojom::ServiceManagerListenerRequest request = GetProxy(&listener);
   service_manager->AddListener(std::move(listener));
 
   catalog::mojom::CatalogPtr catalog;
-  connector()->ConnectToInterface("mojo:catalog", &catalog);
+  connector()->ConnectToInterface("service:catalog", &catalog);
 
   TaskViewerContents* task_viewer = new TaskViewerContents(
       this, std::move(request), std::move(catalog));

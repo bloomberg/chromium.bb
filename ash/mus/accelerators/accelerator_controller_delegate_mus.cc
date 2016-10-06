@@ -53,7 +53,7 @@ bool AcceleratorControllerDelegateMus::HandlesAction(AcceleratorAction action) {
 #if defined(OS_CHROMEOS)
     case DEV_ADD_REMOVE_DISPLAY: {
       display::mojom::DisplayControllerPtr display_controller;
-      connector_->ConnectToInterface("mojo:ui", &display_controller);
+      connector_->ConnectToInterface("service:ui", &display_controller);
       display_controller->ToggleVirtualDisplay();
       return true;
     }
@@ -71,7 +71,7 @@ bool AcceleratorControllerDelegateMus::HandlesAction(AcceleratorAction action) {
       return false;
     case TOUCH_HUD_PROJECTION_TOGGLE: {
       mash::mojom::LaunchablePtr launchable;
-      connector_->ConnectToInterface("mojo:touch_hud", &launchable);
+      connector_->ConnectToInterface("service:touch_hud", &launchable);
       launchable->Launch(mash::mojom::kWindow,
                          mash::mojom::LaunchMode::DEFAULT);
       return true;

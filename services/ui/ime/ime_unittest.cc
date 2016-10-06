@@ -61,8 +61,8 @@ class IMEAppTest : public shell::test::ServiceTest {
   void SetUp() override {
     ServiceTest::SetUp();
     // test_ime_driver will register itself as the current IMEDriver.
-    connector()->Connect("mojo:test_ime_driver");
-    connector()->ConnectToInterface("mojo:ui", &ime_server_);
+    connector()->Connect("service:test_ime_driver");
+    connector()->ConnectToInterface("service:ui", &ime_server_);
   }
 
  protected:

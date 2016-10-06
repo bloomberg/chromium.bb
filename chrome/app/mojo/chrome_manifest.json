@@ -5,14 +5,14 @@
   "capabilities": {
     "required": {
       "*": { "classes": [ "app", "mash:launchable" ] },
-      "mojo:ash": {
+      "service:ash": {
         "interfaces": [
           "ash::mojom::ShelfController",
           "ash::mojom::SystemTray",
           "ash::mojom::WallpaperController"
         ]
       },
-      "mojo:accessibility_autoclick": {
+      "service:accessibility_autoclick": {
          "interfaces": [ "ash::autoclick::mojom::AutoclickController" ]
       }
     },

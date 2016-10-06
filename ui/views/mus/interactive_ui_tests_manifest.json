@@ -1,6 +1,6 @@
 {
   "manifest_version": 1,
-  "name": "mojo:views_mus_interactive_ui_tests",
+  "name": "service:views_mus_interactive_ui_tests",
   "display_name": "Views Mus Interactive UI Tests",
   "capabilities": {
     "required": {

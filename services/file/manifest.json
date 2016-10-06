@@ -1,6 +1,6 @@
 {
   "manifest_version": 1,
-  "name": "mojo:file",
+  "name": "service:file",
   "process-group": "browser",
   "display_name": "File Service",
   "capabilities": {

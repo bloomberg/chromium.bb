@@ -21,7 +21,7 @@ FilesTestBase::~FilesTestBase() {
 
 void FilesTestBase::SetUp() {
   ServiceTest::SetUp();
-  connector()->ConnectToInterface("mojo:filesystem", &files_);
+  connector()->ConnectToInterface("service:filesystem", &files_);
 }
 
 void FilesTestBase::GetTemporaryRoot(mojom::DirectoryPtr* directory) {

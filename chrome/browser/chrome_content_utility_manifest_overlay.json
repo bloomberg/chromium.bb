@@ -1,5 +1,5 @@
 {
-  "name": "exe:content_utility",
+  "name": "service:content_utility",
   "capabilities": {
     "provided": {
       "browser": [

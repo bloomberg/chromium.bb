@@ -27,7 +27,7 @@ void TestIMEApplication::OnStart(const shell::Identity& identity) {
                           GetProxy(&ime_driver_ptr));
 
   ui::mojom::IMERegistrarPtr ime_registrar;
-  connector()->ConnectToInterface("mojo:ui", &ime_registrar);
+  connector()->ConnectToInterface("service:ui", &ime_registrar);
   ime_registrar->RegisterDriver(std::move(ime_driver_ptr));
 }
 

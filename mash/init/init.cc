@@ -18,7 +18,7 @@ Init::Init() {}
 Init::~Init() {}
 
 void Init::OnStart(const shell::Identity& identity) {
-  connector()->Connect("mojo:ui");
+  connector()->Connect("service:ui");
   StartTracing();
   StartLogin();
 }
@@ -59,11 +59,11 @@ void Init::UserServiceQuit(const std::string& user_id) {
 }
 
 void Init::StartTracing() {
-  connector()->Connect("mojo:tracing");
+  connector()->Connect("service:tracing");
 }
 
 void Init::StartLogin() {
-  login_connection_ = connector()->Connect("mojo:login");
+  login_connection_ = connector()->Connect("service:login");
   mash::login::mojom::LoginPtr login;
   login_connection_->GetInterface(&login);
   login->ShowLoginUI();

@@ -343,7 +343,7 @@ if (use_aura) {
     type = "exe"
     name = "chrome"
     source = "mojo/chrome_manifest.json"
-    base_manifest = "${root_out_dir}/content_browser_manifest.json"
+    base_manifest = "${root_out_dir}/Packages/content_browser/manifest.json"
     base_deps = [ "//content/public/app:browser_manifest" ]
   }
 
@@ -351,7 +351,7 @@ if (use_aura) {
     type = "exe"
     name = "chrome_renderer"
     source = "mojo/chrome_renderer_manifest.json"
-    base_manifest = "${root_out_dir}/content_renderer_manifest.json"
+    base_manifest = "${root_out_dir}/Packages/content_renderer/manifest.json"
     base_deps = [ "//content/public/app:renderer_manifest" ]
   }
 

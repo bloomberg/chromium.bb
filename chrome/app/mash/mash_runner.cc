@@ -127,7 +127,7 @@ void MashRunner::RunMain() {
   service_->set_context(base::MakeUnique<shell::ServiceContext>(
       service_.get(),
       background_shell.CreateServiceRequest("exe:chrome_mash")));
-  service_->connector()->Connect("mojo:mash_session");
+  service_->connector()->Connect("service:mash_session");
   base::RunLoop().Run();
 }
 

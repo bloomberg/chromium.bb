@@ -1,6 +1,6 @@
 {
   "manifest_version":  1,
-  "name": "mojo:views_examples",
+  "name": "service:views_examples",
   "display_name": "Views Examples",
   "capabilities": {
     "provided": { "mash:launchable": [ "mash::mojom::Launchable" ] },

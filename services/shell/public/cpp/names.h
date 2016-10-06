@@ -9,31 +9,28 @@
 
 namespace shell {
 
-extern const char kNameType_Mojo[];
+extern const char kNameType_Service[];
 extern const char kNameType_Exe[];
 
-// Mojo services are identified by structured "names", of the form:
+// Services are identified by structured "names", of the form:
 //
 //    type:path.
 //
 // The type field tells the shell how to load the service. Two types are
 // recognized:
 //
-//  mojo
-//   Represents a service packaged as a .library, launched from the NativeRunner
-//   launch path. .library files are assumed to live alongside the executable
-//   hosting the service manager at a path matching <path>/<path>.library.
-//   .library files have a ServiceMain() entrypoint that receives a handle to a
-//   ServiceRequest that must be bound to enable further communication with the
-//   Service Manager.
+//  service
+//   A synthetic service name, which may be packaged as part of another service
+//   (via ServiceFactory) or as a standalone .library. .library files live
+//   within a directory hierarchy alongside the service manager executable.
 //
 //  exe
 //   Represents a native executable on the host platform, expected to live
-//   alongside the shell executable. Executables launched via this mechanism are
-//   passed a handle to the shell on the command line and are expected to bind
-//   a ServiceRequest enabling further communication with the Service Manager.
-//   The path component contains the executable name, minus any platform
-//   specific extension.
+//   alongside the service manager executable. Executables launched via this
+//   mechanism are passed a handle to the service manager on the command line
+//   and are expected to bind a ServiceRequest enabling further communication
+//   with the Service Manager. The path component contains the executable name,
+//   minus any platform specific extension.
 //
 // Other types may be supplied but are not recognized by any of the
 // NativeRunners, and as such custom loaders must be specified for such names.

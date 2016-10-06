@@ -123,7 +123,7 @@ void WindowTreeClient::ConnectViaWindowTreeFactory(
   client_id_ = 101;
 
   mojom::WindowTreeFactoryPtr factory;
-  connector->ConnectToInterface("mojo:ui", &factory);
+  connector->ConnectToInterface("service:ui", &factory);
   mojom::WindowTreePtr window_tree;
   factory->CreateWindowTree(GetProxy(&window_tree),
                             binding_.CreateInterfacePtrAndBind());
@@ -134,7 +134,7 @@ void WindowTreeClient::ConnectAsWindowManager(shell::Connector* connector) {
   DCHECK(window_manager_delegate_);
 
   mojom::WindowManagerWindowTreeFactoryPtr factory;
-  connector->ConnectToInterface("mojo:ui", &factory);
+  connector->ConnectToInterface("service:ui", &factory);
   mojom::WindowTreePtr window_tree;
   factory->CreateWindowTree(GetProxy(&window_tree),
                             binding_.CreateInterfacePtrAndBind());

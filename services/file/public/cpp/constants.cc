@@ -6,6 +6,6 @@
 
 namespace file {
 
-const char kFileServiceName[] = "mojo:file";
+const char kFileServiceName[] = "service:file";
 
 }  // namespace file

@@ -97,10 +97,12 @@ bool SystemTrayController::ConnectToSystemTrayClient() {
     return true;
 
   // Connect (or reconnect) to the interface.
-  if (WmShell::Get()->IsRunningInMash())
+  if (WmShell::Get()->IsRunningInMash()) {
     connector_->ConnectToInterface("exe:chrome", &system_tray_client_);
-  else
-    connector_->ConnectToInterface("exe:content_browser", &system_tray_client_);
+  } else {
+    connector_->ConnectToInterface("service:content_browser",
+                                   &system_tray_client_);
+  }
 
   // Handle chrome crashes by forcing a reconnect on the next request.
   system_tray_client_.set_connection_error_handler(base::Bind(

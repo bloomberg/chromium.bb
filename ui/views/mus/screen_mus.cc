@@ -41,7 +41,7 @@ ScreenMus::ScreenMus(ScreenMusDelegate* delegate)
 ScreenMus::~ScreenMus() {}
 
 void ScreenMus::Init(shell::Connector* connector) {
-  connector->ConnectToInterface("mojo:ui", &display_manager_);
+  connector->ConnectToInterface("service:ui", &display_manager_);
 
   display_manager_->AddObserver(
       display_manager_observer_binding_.CreateInterfacePtrAndBind());

@@ -1,6 +1,6 @@
 {
   "manifest_version":  1,
-  "name": "mojo:webtest",
+  "name": "service:webtest",
   "display_name": "Web Test",
   "capabilities": {
     "provided": { "mash:launchable": [ "mash::mojom::Launchable" ] },

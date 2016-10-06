@@ -20,13 +20,13 @@ namespace shell {
 
 namespace {
 
-const char kTestAppName[] = "mojo:lifecycle_unittest_app";
-const char kTestParentName[] = "mojo:lifecycle_unittest_parent";
+const char kTestAppName[] = "service:lifecycle_unittest_app";
+const char kTestParentName[] = "service:lifecycle_unittest_parent";
 const char kTestExeName[] = "exe:lifecycle_unittest_exe";
-const char kTestPackageName[] = "mojo:lifecycle_unittest_package";
-const char kTestPackageAppNameA[] = "mojo:lifecycle_unittest_package_app_a";
-const char kTestPackageAppNameB[] = "mojo:lifecycle_unittest_package_app_b";
-const char kTestName[] = "mojo:lifecycle_unittest";
+const char kTestPackageName[] = "service:lifecycle_unittest_package";
+const char kTestPackageAppNameA[] = "service:lifecycle_unittest_package_app_a";
+const char kTestPackageAppNameB[] = "service:lifecycle_unittest_package_app_b";
+const char kTestName[] = "service:lifecycle_unittest";
 
 void QuitLoop(base::RunLoop* loop) {
   loop->Quit();
@@ -191,7 +191,7 @@ class LifecycleTest : public test::ServiceTest {
  private:
   std::unique_ptr<InstanceState> TrackInstances() {
     mojom::ServiceManagerPtr service_manager;
-    connector()->ConnectToInterface("mojo:shell", &service_manager);
+    connector()->ConnectToInterface("service:shell", &service_manager);
     mojom::ServiceManagerListenerPtr listener;
     base::RunLoop loop;
     InstanceState* state = new InstanceState(GetProxy(&listener), &loop);

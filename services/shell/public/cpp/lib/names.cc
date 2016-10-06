@@ -9,7 +9,7 @@
 
 namespace shell {
 
-const char kNameType_Mojo[] = "mojo";
+const char kNameType_Service[] = "service";
 const char kNameType_Exe[] = "exe";
 
 bool IsValidName(const std::string& name) {

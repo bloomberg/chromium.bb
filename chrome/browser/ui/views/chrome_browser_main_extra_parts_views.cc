@@ -64,7 +64,7 @@ void ChromeBrowserMainExtraPartsViews::MojoShellConnectionStarted(
 
     input_device_client_.reset(new ui::InputDeviceClient());
     ui::mojom::InputDeviceServerPtr server;
-    connection->GetConnector()->ConnectToInterface("mojo:ui", &server);
+    connection->GetConnector()->ConnectToInterface("service:ui", &server);
     input_device_client_->Connect(std::move(server));
 
     window_manager_connection_ = views::WindowManagerConnection::Create(

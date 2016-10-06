@@ -1,5 +1,5 @@
 {
-  "name": "exe:content_renderer",
+  "name": "service:content_renderer",
   "capabilities": {
     "provided": {
       "browser": [

@@ -227,7 +227,7 @@ class MojoShellConnectionImpl::IOThreadContext
                  shell::InterfaceRegistry* registry) override {
     DCHECK(io_thread_checker_.CalledOnValidThread());
     std::string remote_app = remote_identity.name();
-    if (remote_app == "mojo:shell") {
+    if (remote_app == "service:shell") {
       // Only expose the SCF interface to the shell.
       registry->AddInterface<shell::mojom::ServiceFactory>(this);
       return true;
@@ -242,7 +242,7 @@ class MojoShellConnectionImpl::IOThreadContext
       }
     }
 
-    if (remote_identity.name() == "exe:content_browser" &&
+    if (remote_identity.name() == "service:content_browser" &&
         !has_browser_connection_) {
       has_browser_connection_ = true;
       registry->set_default_binder(default_browser_binder_);

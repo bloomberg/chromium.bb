@@ -4,7 +4,7 @@
   "display_name": "Video Capture Unittests",
   "capabilities": {
     "required": {
-      "mojo:video_capture": {
+      "service:video_capture": {
         "classes": [ "tests" ] }
     }
   }

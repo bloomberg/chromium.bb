@@ -27,12 +27,12 @@ namespace shell {
 
 namespace {
 
-const char kTestPackageName[] = "mojo:connect_test_package";
-const char kTestAppName[] = "mojo:connect_test_app";
-const char kTestAppAName[] = "mojo:connect_test_a";
-const char kTestAppBName[] = "mojo:connect_test_b";
-const char kTestClassAppName[] = "mojo:connect_test_class_app";
-const char kTestSingletonAppName[] = "mojo:connect_test_singleton_app";
+const char kTestPackageName[] = "service:connect_test_package";
+const char kTestAppName[] = "service:connect_test_app";
+const char kTestAppAName[] = "service:connect_test_a";
+const char kTestAppBName[] = "service:connect_test_b";
+const char kTestClassAppName[] = "service:connect_test_class_app";
+const char kTestSingletonAppName[] = "service:connect_test_singleton_app";
 const char kTestDriverName[] = "exe:connect_test_driver";
 
 void ReceiveOneString(std::string* out_string,
@@ -72,7 +72,7 @@ class ConnectTest : public test::ServiceTest,
                     public InterfaceFactory<test::mojom::ExposedInterface>,
                     public test::mojom::ExposedInterface {
  public:
-  ConnectTest() : ServiceTest("mojo:connect_unittests") {}
+  ConnectTest() : ServiceTest("service:connect_unittests") {}
   ~ConnectTest() override {}
 
  protected:

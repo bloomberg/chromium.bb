@@ -111,7 +111,7 @@ class UI : public views::WidgetDelegateView,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   void StartWindowManager(const shell::Identity& identity) {
-    mash_wm_connection_ = connector_->Connect("mojo:ash");
+    mash_wm_connection_ = connector_->Connect("service:ash");
     mash_wm_connection_->SetConnectionLostClosure(
         base::Bind(&UI::StartWindowManager, base::Unretained(this), identity));
     window_manager_connection_ =
@@ -140,8 +140,8 @@ class Login : public shell::Service,
   void LoginAs(const std::string& user_id) {
     user_access_manager_->SetActiveUser(user_id);
     mash::init::mojom::InitPtr init;
-    connector()->ConnectToInterface("mojo:mash_init", &init);
-    init->StartService("mojo:mash_session", user_id);
+    connector()->ConnectToInterface("service:mash_init", &init);
+    init->StartService("service:mash_session", user_id);
   }
 
  private:
@@ -153,7 +153,7 @@ class Login : public shell::Service,
     aura_init_.reset(
         new views::AuraInit(connector(), "views_mus_resources.pak"));
 
-    connector()->ConnectToInterface("mojo:ui", &user_access_manager_);
+    connector()->ConnectToInterface("service:ui", &user_access_manager_);
     user_access_manager_->SetActiveUser(identity.user_id());
   }
   bool OnConnect(const shell::Identity& remote_identity,

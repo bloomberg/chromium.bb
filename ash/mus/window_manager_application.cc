@@ -187,7 +187,7 @@ bool WindowManagerApplication::OnConnect(const shell::Identity& remote_identity,
   registry->AddInterface<mojom::ShelfController>(this);
   registry->AddInterface<mojom::WallpaperController>(this);
   registry->AddInterface<ui::mojom::AcceleratorRegistrar>(this);
-  if (remote_identity.name() == "mojo:mash_session") {
+  if (remote_identity.name() == "service:mash_session") {
     connector()->ConnectToInterface(remote_identity, &session_);
     session_->AddScreenlockStateListener(
         screenlock_state_listener_binding_.CreateInterfacePtrAndBind());

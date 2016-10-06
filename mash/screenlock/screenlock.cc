@@ -59,7 +59,7 @@ class ScreenlockView : public views::WidgetDelegateView,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
     DCHECK_EQ(sender, unlock_button_);
     mash::session::mojom::SessionPtr session;
-    connector_->ConnectToInterface("mojo:mash_session", &session);
+    connector_->ConnectToInterface("service:mash_session", &session);
     session->UnlockScreen();
   }
 
@@ -78,7 +78,7 @@ void Screenlock::OnStart(const shell::Identity& identity) {
   tracing_.Initialize(connector(), identity.name());
 
   mash::session::mojom::SessionPtr session;
-  connector()->ConnectToInterface("mojo:mash_session", &session);
+  connector()->ConnectToInterface("service:mash_session", &session);
   session->AddScreenlockStateListener(
       bindings_.CreateInterfacePtrAndBind(this));
 

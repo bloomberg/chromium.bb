@@ -176,7 +176,7 @@ void Context::Init(std::unique_ptr<InitParams> init_params) {
 
   std::unique_ptr<ConnectParams> params(new ConnectParams);
   params->set_source(CreateServiceManagerIdentity());
-  params->set_target(Identity("mojo:tracing", mojom::kRootUserID));
+  params->set_target(Identity("service:tracing", mojom::kRootUserID));
   params->set_remote_interfaces(mojo::GetProxy(&tracing_remote_interfaces));
   service_manager_->Connect(std::move(params));
 
@@ -239,7 +239,7 @@ void Context::RunCommandLineApplication() {
 #else
     std::string possible_app = args[i];
 #endif
-    if (GetNameType(possible_app) == "mojo") {
+    if (GetNameType(possible_app) == kNameType_Service) {
       Run(possible_app);
       break;
     }

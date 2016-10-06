@@ -1,6 +1,6 @@
 {
   "manifest_version": 1,
-  "name": "mojo:foo",
+  "name": "service:foo",
   "display_name": "Foo",
   "process-group": "bar",
   "capabilities": {
@@ -9,7 +9,7 @@
       "bar": ["mojo::Bork"]
     },
     "required": {
-      "mojo:bar": {
+      "service:bar": {
         "classes": ["a", "b"],
         "interfaces": ["mojo::Blork", "mojo::Blark"]
       }

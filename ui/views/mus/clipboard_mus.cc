@@ -46,7 +46,7 @@ ClipboardMus::ClipboardMus() {}
 ClipboardMus::~ClipboardMus() {}
 
 void ClipboardMus::Init(shell::Connector* connector) {
-  connector->ConnectToInterface("mojo:ui", &clipboard_);
+  connector->ConnectToInterface("service:ui", &clipboard_);
 }
 
 // TODO(erg): This isn't optimal. It would be better to move the entire

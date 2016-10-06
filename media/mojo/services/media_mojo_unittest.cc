@@ -73,7 +73,7 @@ class MediaServiceTest : public shell::test::ServiceTest {
   void SetUp() override {
     ServiceTest::SetUp();
 
-    connection_ = connector()->Connect("mojo:media");
+    connection_ = connector()->Connect("service:media");
     connection_->SetConnectionLostClosure(base::Bind(
         &MediaServiceTest::ConnectionClosed, base::Unretained(this)));
 

@@ -4,7 +4,7 @@
   "display_name": "Shell Unittest: Target",
   "capabilities": {
     "required": {
-      "mojo:shell_unittest": {
+      "service:shell_unittest": {
         "interfaces": [ "shell::test::mojom::CreateInstanceTest" ]
       }
     }

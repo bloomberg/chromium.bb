@@ -47,7 +47,7 @@ void OnEmbed(bool success) {
 TEST_F(WindowManagerTest, OpenWindow) {
   WindowTreeClientDelegate window_tree_delegate;
 
-  connector()->Connect("mojo:ash");
+  connector()->Connect("service:ash");
 
   // Connect to mus and create a new top level window. The request goes to
   // |ash|, but is async.

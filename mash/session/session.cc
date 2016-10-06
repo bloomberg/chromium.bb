@@ -45,7 +45,7 @@ void Session::Logout() {
   // TODO(beng): Notify connected listeners that login is happening, potentially
   // give them the option to stop it.
   mash::login::mojom::LoginPtr login;
-  connector()->ConnectToInterface("mojo:login", &login);
+  connector()->ConnectToInterface("service:login", &login);
   login->ShowLoginUI();
   // This kills the user environment.
   base::MessageLoop::current()->QuitWhenIdle();
@@ -53,7 +53,7 @@ void Session::Logout() {
 
 void Session::SwitchUser() {
   mash::login::mojom::LoginPtr login;
-  connector()->ConnectToInterface("mojo:login", &login);
+  connector()->ConnectToInterface("service:login", &login);
   login->SwitchUser();
 }
 
@@ -91,33 +91,33 @@ void Session::Create(const shell::Identity& remote_identity,
 
 void Session::StartWindowManager() {
   StartRestartableService(
-      "mojo:ash",
+      "service:ash",
       base::Bind(&Session::StartWindowManager,
                  base::Unretained(this)));
 }
 
 void Session::StartAppDriver() {
   StartRestartableService(
-      "mojo:app_driver",
+      "service:app_driver",
       base::Bind(&Session::StartAppDriver, base::Unretained(this)));
 }
 
 void Session::StartQuickLaunch() {
   StartRestartableService(
-      "mojo:quick_launch",
+      "service:quick_launch",
       base::Bind(&Session::StartQuickLaunch,
                  base::Unretained(this)));
 }
 
 void Session::StartScreenlock() {
   StartRestartableService(
-      "mojo:screenlock",
+      "service:screenlock",
       base::Bind(&Session::StartScreenlock,
                  base::Unretained(this)));
 }
 
 void Session::StopScreenlock() {
-  auto connection = connections_.find("mojo:screenlock");
+  auto connection = connections_.find("service:screenlock");
   DCHECK(connections_.end() != connection);
   connections_.erase(connection);
 }

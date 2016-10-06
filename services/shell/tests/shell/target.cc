@@ -25,7 +25,7 @@ class Target : public shell::Service {
   // shell::Service:
   void OnStart(const shell::Identity& identity) override {
     CreateInstanceTestPtr service;
-    connector()->ConnectToInterface("mojo:shell_unittest", &service);
+    connector()->ConnectToInterface("service:shell_unittest", &service);
     service->SetTargetIdentity(identity);
   }
 

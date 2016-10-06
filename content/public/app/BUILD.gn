@@ -167,7 +167,6 @@ if (is_component_build) {
 }
 
 service_manifest("browser_manifest") {
-  type = "exe"
   name = "content_browser"
   source = "mojo/content_browser_manifest.json"
   packaged_services = [
@@ -181,25 +180,21 @@ service_manifest("browser_manifest") {
 }
 
 service_manifest("gpu_manifest") {
-  type = "exe"
   name = "content_gpu"
   source = "mojo/content_gpu_manifest.json"
 }
 
 service_manifest("plugin_manifest") {
-  type = "exe"
   name = "content_plugin"
   source = "mojo/content_plugin_manifest.json"
 }
 
 service_manifest("renderer_manifest") {
-  type = "exe"
   name = "content_renderer"
   source = "mojo/content_renderer_manifest.json"
 }
 
 service_manifest("utility_manifest") {
-  type = "exe"
   name = "content_utility"
   source = "mojo/content_utility_manifest.json"
 }

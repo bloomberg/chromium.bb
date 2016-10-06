@@ -71,7 +71,7 @@ void ChromeMashShelfController::LaunchItem(const std::string& app_id) {
 void ChromeMashShelfController::Init() {
   shell::Connector* connector =
       content::MojoShellConnection::GetForProcess()->GetConnector();
-  connector->ConnectToInterface("mojo:ash", &shelf_controller_);
+  connector->ConnectToInterface("service:ash", &shelf_controller_);
 
   // Initialize shelf alignment and auto-hide behavior from preferences.
   for (const auto& display : display::Screen::GetScreen()->GetAllDisplays())

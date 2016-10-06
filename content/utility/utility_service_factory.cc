@@ -27,7 +27,7 @@ void UtilityServiceFactory::RegisterServices(ServiceMap* services) {
   MojoApplicationInfo service_info;
   service_info.application_factory =
       base::Bind(&media::CreateMojoMediaApplication);
-  services->insert(std::make_pair("mojo:media", service_info));
+  services->insert(std::make_pair("service:media", service_info));
 #endif
 }
 

@@ -115,7 +115,7 @@ void AppDriver::OnAccelerator(uint32_t id, std::unique_ptr<ui::Event> event) {
       {Accelerator::NewChromeIncognitoWindow,
        {mojom::kIncognitoWindow, "exe:chrome", LaunchMode::MAKE_NEW}},
       {Accelerator::ShowTaskManager,
-       {mojom::kWindow, "mojo:task_viewer", LaunchMode::DEFAULT}},
+       {mojom::kWindow, "service:task_viewer", LaunchMode::DEFAULT}},
   };
 
   const auto iter = options.find(static_cast<Accelerator>(id));
@@ -127,7 +127,7 @@ void AppDriver::OnAccelerator(uint32_t id, std::unique_ptr<ui::Event> event) {
 }
 
 void AppDriver::AddAccelerators() {
-  connector()->ConnectToInterface("mojo:catalog", &catalog_);
+  connector()->ConnectToInterface("service:catalog", &catalog_);
   catalog_->GetEntriesProvidingClass(
       "mus:window_manager", base::Bind(&AppDriver::OnAvailableCatalogEntries,
                                        weak_factory_.GetWeakPtr()));

@@ -53,7 +53,7 @@ mojom::ServicePtr InProcessNativeRunner::Start(
       FROM_HERE, app_completed_callback);
 
   DCHECK(!thread_);
-  std::string thread_name = "mojo:app_thread";
+  std::string thread_name = "Service Thread";
 #if defined(OS_WIN)
   thread_name = base::WideToUTF8(app_path_.BaseName().value());
 #endif

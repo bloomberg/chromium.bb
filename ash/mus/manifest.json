@@ -1,6 +1,6 @@
 {
   "manifest_version":  1,
-  "name": "mojo:ash",
+  "name": "service:ash",
   "display_name": "Ash Window Manager and Shell",
   "capabilities": {
     "provided": {
@@ -12,20 +12,21 @@
         "interfaces": [
           "ash::mojom::SystemTrayClient",
           "ash::mojom::WallpaperManager",
-          "app_list::mojom::AppListPresenter"
+          "app_list::mojom::AppListPresenter",
+          "keyboard::mojom::Keyboard"
         ]
       },
-      "mojo:mash_session": {
+      "service:mash_session": {
         "interfaces": [ "mash::session::mojom::Session" ]
       },
-      "mojo:ui": {
+      "service:ui": {
         "interfaces": [
           "display::mojom::DisplayController",
           "ui::mojom::AccessibilityManager",
           "ui::mojom::WindowManagerWindowTreeFactory"
         ]
       },
-      "mojo:touch_hud": {
+      "service:touch_hud": {
         "interfaces": [
           "mash::mojom::Launchable"
         ]

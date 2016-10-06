@@ -431,7 +431,7 @@ void CastContentBrowserClient::RegisterInProcessMojoApplications(
   app_info.application_factory =
       base::Bind(&CreateMojoMediaApplication, base::Unretained(this));
   app_info.application_task_runner = GetMediaTaskRunner();
-  apps->insert(std::make_pair("mojo:media", app_info));
+  apps->insert(std::make_pair("service:media", app_info));
 #endif
 }
 

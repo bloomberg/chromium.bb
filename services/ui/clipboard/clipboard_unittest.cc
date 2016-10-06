@@ -37,7 +37,7 @@ class ClipboardAppTest : public shell::test::ServiceTest {
   void SetUp() override {
     ServiceTest::SetUp();
 
-    connector()->ConnectToInterface("mojo:ui", &clipboard_);
+    connector()->ConnectToInterface("service:ui", &clipboard_);
     ASSERT_TRUE(clipboard_);
   }
 

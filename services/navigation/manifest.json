@@ -8,7 +8,7 @@
     },
     "required": {
       "*": { "classes": [ "app" ] },
-      "mojo:shell": { "classes": [ "shell:client_process", "shell:user_id", "shell:instance_name" ] }
+      "service:shell": { "classes": [ "shell:client_process", "shell:user_id", "shell:instance_name" ] }
     }
   }
 }

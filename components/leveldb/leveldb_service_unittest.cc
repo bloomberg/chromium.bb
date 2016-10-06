@@ -105,8 +105,8 @@ class LevelDBServiceTest : public shell::test::ServiceTest {
   // Overridden from mojo::test::ApplicationTestBase:
   void SetUp() override {
     ServiceTest::SetUp();
-    connector()->ConnectToInterface("mojo:filesystem", &files_);
-    connector()->ConnectToInterface("mojo:leveldb", &leveldb_);
+    connector()->ConnectToInterface("service:filesystem", &files_);
+    connector()->ConnectToInterface("service:leveldb", &leveldb_);
   }
 
   void TearDown() override {

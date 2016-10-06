@@ -14,7 +14,7 @@ MockDeviceVideoCaptureServiceTest::~MockDeviceVideoCaptureServiceTest() =
 
 void MockDeviceVideoCaptureServiceTest::SetUp() {
   ServiceTest::SetUp();
-  connector()->ConnectToInterface("mojo:video_capture", &service_);
+  connector()->ConnectToInterface("service:video_capture", &service_);
   service_->ConnectToMockDeviceFactory(mojo::GetProxy(&factory_));
 
   // Set up a mock device and add it to the factory

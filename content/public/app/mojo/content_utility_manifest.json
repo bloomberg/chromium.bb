@@ -1,7 +1,7 @@
 {
   "manifest_version":  1,
-  "name": "exe:content_utility",
-  "display_name": "Content Utility",
+  "name": "service:content_utility",
+  "display_name": "Content (utility process)",
   "capabilities": {
     "provided": {
       "browser": [

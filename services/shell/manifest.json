@@ -1,6 +1,6 @@
 {
   "manifest_version": 1,
-  "name": "mojo:shell",
+  "name": "service:shell",
   "display_name": "Service Manager",
   "capabilities": {
     "provided": {
@@ -23,7 +23,7 @@
       "shell:explicit_class": [ ]    
     },
     "required": {
-      "mojo:shell": { "classes": [ "shell:all_users" ] }
+      "service:shell": { "classes": [ "shell:all_users" ] }
     }
   }
 }

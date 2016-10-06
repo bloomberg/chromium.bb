@@ -192,7 +192,7 @@ void ShellContentBrowserClient::RegisterInProcessMojoApplications(
 #if (ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
   content::MojoApplicationInfo app_info;
   app_info.application_factory = base::Bind(&media::CreateMojoMediaApplication);
-  apps->insert(std::make_pair("mojo:media", app_info));
+  apps->insert(std::make_pair("service:media", app_info));
 #endif
 }
 

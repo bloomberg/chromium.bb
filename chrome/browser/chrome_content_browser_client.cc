@@ -3034,7 +3034,7 @@ void ChromeContentBrowserClient::RegisterInProcessMojoApplications(
 #if (ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
   content::MojoApplicationInfo app_info;
   app_info.application_factory = base::Bind(&media::CreateMojoMediaApplication);
-  apps->insert(std::make_pair("mojo:media", app_info));
+  apps->insert(std::make_pair("service:media", app_info));
 #endif
 #if defined(OS_CHROMEOS)
   content::MojoShellConnection::GetForProcess()->AddConnectionFilter(
@@ -3045,7 +3045,7 @@ void ChromeContentBrowserClient::RegisterInProcessMojoApplications(
 void ChromeContentBrowserClient::RegisterOutOfProcessMojoApplications(
       OutOfProcessMojoApplicationMap* apps) {
 #if defined(ENABLE_MOJO_MEDIA_IN_UTILITY_PROCESS)
-  apps->insert(std::make_pair("mojo:media",
+  apps->insert(std::make_pair("service:media",
                               base::ASCIIToUTF16("Media App")));
 #endif
 }

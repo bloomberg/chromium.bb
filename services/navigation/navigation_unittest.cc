@@ -23,7 +23,7 @@ class NavigationTest : public shell::test::ServiceTest,
  protected:
    void SetUp() override {
      shell::test::ServiceTest::SetUp();
-     window_manager_connection_ = connector()->Connect("mojo:test_wm");
+     window_manager_connection_ = connector()->Connect("service:test_wm");
    }
 
   mojom::ViewClientPtr GetViewClient() {

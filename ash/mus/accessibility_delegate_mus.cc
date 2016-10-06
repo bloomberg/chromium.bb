@@ -16,7 +16,7 @@ AccessibilityDelegateMus::~AccessibilityDelegateMus() {}
 ui::mojom::AccessibilityManager*
 AccessibilityDelegateMus::GetAccessibilityManager() {
   if (!accessibility_manager_ptr_.is_bound())
-    connector_->ConnectToInterface("mojo:ui", &accessibility_manager_ptr_);
+    connector_->ConnectToInterface("service:ui", &accessibility_manager_ptr_);
   return accessibility_manager_ptr_.get();
 }
 

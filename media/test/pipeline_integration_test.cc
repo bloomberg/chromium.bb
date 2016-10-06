@@ -688,7 +688,7 @@ class PipelineIntegrationTestHost : public shell::test::ServiceTest,
 
  protected:
   std::unique_ptr<Renderer> CreateRenderer() override {
-    connector()->ConnectToInterface("mojo:media", &media_service_factory_);
+    connector()->ConnectToInterface("service:media", &media_service_factory_);
 
     mojom::RendererPtr mojo_renderer;
     media_service_factory_->CreateRenderer(std::string(),

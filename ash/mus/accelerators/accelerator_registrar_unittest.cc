@@ -74,7 +74,7 @@ class AcceleratorRegistrarTest : public shell::test::ServiceTest {
 
  protected:
   void ConnectToRegistrar(AcceleratorRegistrarPtr* registrar) {
-    connector()->ConnectToInterface("mojo:ash", registrar);
+    connector()->ConnectToInterface("service:ash", registrar);
   }
 
  private:

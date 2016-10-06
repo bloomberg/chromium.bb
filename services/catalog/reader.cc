@@ -26,7 +26,7 @@ base::FilePath GetManifestPath(const base::FilePath& package_dir,
   // TODO(beng): think more about how this should be done for exe targets.
   std::string type = shell::GetNameType(name);
   std::string path = shell::GetNamePath(name);
-  if (type == shell::kNameType_Mojo) {
+  if (type == shell::kNameType_Service) {
     return package_dir.AppendASCII(kPackagesDirName).AppendASCII(
         path + "/manifest.json");
   }
@@ -39,7 +39,7 @@ base::FilePath GetManifestPath(const base::FilePath& package_dir,
 base::FilePath GetExecutablePath(const base::FilePath& package_dir,
                                  const std::string& name) {
   std::string type = shell::GetNameType(name);
-  if (type == shell::kNameType_Mojo) {
+  if (type == shell::kNameType_Service) {
     // It's still a mojo: URL, use the default mapping scheme.
     const std::string host = shell::GetNamePath(name);
     return package_dir.AppendASCII(host + "/" + host + ".library");
@@ -107,7 +107,8 @@ void ScanDir(
     // build (e.g. for applications that are packaged into others) and are not
     // valid standalone packages.
     base::FilePath package_path = GetExecutablePath(package_dir, entry->name());
-    if (entry->name() != "mojo:shell" && entry->name() != "mojo:catalog" &&
+    if (entry->name() != "service:shell" &&
+        entry->name() != "service:catalog" &&
         !base::PathExists(package_path)) {
       continue;
     }

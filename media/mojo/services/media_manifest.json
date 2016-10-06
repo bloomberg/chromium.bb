@@ -1,6 +1,6 @@
 {
   "manifest_version":  1,
-  "name": "mojo:media",
+  "name": "service:media",
   "process-group": "browser",
   "display_name": "Media Service",
   "capabilities": {

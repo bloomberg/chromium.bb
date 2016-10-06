@@ -4,7 +4,7 @@
   "display_name": "Filesystem Service Unittests",
   "capabilities": {
     "required": {
-      "mojo:filesystem": { "interfaces": [ "filesystem::mojom::FileSystem" ] }
+      "service:filesystem": { "interfaces": [ "filesystem::mojom::FileSystem" ] }
     }
   }
 }

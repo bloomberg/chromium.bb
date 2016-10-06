@@ -1,8 +1,8 @@
 {
   "manifest_version": 1,
-  "name": "exe:content_browser",
+  "name": "service:content_browser",
   "process-group": "browser",
-  "display_name": "Content Browser",
+  "display_name": "Content (browser process)",
   "capabilities": {
     // Remove this once http://crbug.com/632818 is fixed.
     "provided": {
@@ -37,27 +37,26 @@
       "*": { "classes": [ "app" ] },
 
       // In classic ash, the browser supplies ash interfaces to itself.
-      "exe:content_browser": { "classes": [ "ash" ] },
+      "service:content_browser": { "classes": [ "ash" ] },
+      "service:content_gpu": { "classes": [ "browser" ] },
+      "service:content_plugin": { "classes": [ "browser" ] },
+      "service:content_renderer": { "classes": [ "browser" ] },
+      "service:content_utility": { "classes": [ "browser" ] },
 
-      "exe:content_gpu": { "classes": [ "browser" ] },
-      "exe:content_plugin": { "classes": [ "browser" ] },
-      "exe:content_renderer": { "classes": [ "browser" ] },
-      "exe:content_utility": { "classes": [ "browser" ] },
-
-      "mojo:shell": {
+      "service:shell": {
         "classes": [
           "shell:client_process",
           "shell:instance_name",
           "shell:user_id"
         ]
       },
-      "mojo:file": {
+      "service:file": {
         "interfaces": [
-          "leveldb::mojom::LevelDBService",
-          "user_service::UserService"
+          "file::mojom::FileSystem",
+          "leveldb::mojom::LevelDBService"
         ]
       },
-      "mojo:media": { "interfaces": [ "media::mojom::MediaService" ] }
+      "service:media": { "interfaces": [ "media::mojom::MediaService" ] }
     }
   }
 }

@@ -39,7 +39,7 @@ class RemoteIteratorTest : public shell::test::ServiceTest {
   // Overridden from mojo::test::ApplicationTestBase:
   void SetUp() override {
     ServiceTest::SetUp();
-    connector()->ConnectToInterface("mojo:leveldb", &leveldb_);
+    connector()->ConnectToInterface("service:leveldb", &leveldb_);
 
     mojom::DatabaseError error;
     base::RunLoop run_loop;

@@ -31,16 +31,16 @@ class AppLaunchTest : public shell::test::ServiceTest {
 };
 
 TEST_F(AppLaunchTest, TestQuickLaunch) {
-  connector()->Connect("mojo:ash");
-  connector()->Connect("mojo:quick_launch");
+  connector()->Connect("service:ash");
+  connector()->Connect("service:quick_launch");
 
   ui::mojom::WindowServerTestPtr test_interface;
-  connector()->ConnectToInterface("mojo:ui", &test_interface);
+  connector()->ConnectToInterface("service:ui", &test_interface);
 
   base::RunLoop run_loop;
   bool success = false;
   test_interface->EnsureClientHasDrawnWindow(
-      "mojo:quick_launch",
+      "service:quick_launch",
       base::Bind(&RunCallback, &success, run_loop.QuitClosure()));
   run_loop.Run();
   EXPECT_TRUE(success);

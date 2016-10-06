@@ -1,6 +1,6 @@
 {
   "manifest_version":  1,
-  "name": "mojo:browser",
+  "name": "service:browser",
   "display_name": "Browser",
   "capabilities": {
     "provided": { "mash:launchable": [ "mash::mojom::Launchable" ] },

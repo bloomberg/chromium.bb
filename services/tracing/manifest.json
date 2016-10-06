@@ -1,16 +1,17 @@
 {
   "manifest_version":  1,
-  "name": "mojo:tracing",
+  "name": "service:tracing",
   "display_name": "Tracing Collector",
   "capabilities": {
     "provided": {
       "app": [
-        "tracing::TracingCollector",
-        "tracing::StartupPerformanceDataCollector"
+        "tracing::mojom::Factory",
+        "tracing::mojom::Collector",
+        "tracing::mojom::StartupPerformanceDataCollector"
       ]
     },
     "required": {
-      "mojo:shell": { "classes": [ "shell:all_users" ] }
+      "service:shell": { "classes": [ "shell:all_users" ] }
     }
   }
 }

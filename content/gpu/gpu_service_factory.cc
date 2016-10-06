@@ -22,7 +22,7 @@ void GpuServiceFactory::RegisterServices(ServiceMap* services) {
   service_info.application_factory =
       base::Bind(&media::CreateMojoMediaApplication);
   service_info.use_own_thread = true;
-  services->insert(std::make_pair("mojo:media", service_info));
+  services->insert(std::make_pair("service:media", service_info));
 #endif
 }
 

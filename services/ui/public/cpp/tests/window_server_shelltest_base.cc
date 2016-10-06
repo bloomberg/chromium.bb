@@ -18,7 +18,7 @@ namespace ui {
 
 namespace {
 
-const char kTestAppName[] = "mojo:mus_ws_unittests_app";
+const char kTestAppName[] = "service:mus_ws_unittests_app";
 
 class WindowServerServiceTestClient : public shell::test::ServiceTestClient {
  public:

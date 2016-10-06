@@ -1,10 +1,10 @@
 {
   "manifest_version":  1,
-  "name": "mojo:foo",
+  "name": "service:foo",
   "display_name": "Foo",
   "capabilities": {
     "required": {
-      "mojo:bar": {
+      "service:bar": {
         "interfaces": [ "*" ]
       }
     }

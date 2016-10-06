@@ -213,7 +213,7 @@ void SetWallpaper(const gfx::ImageSkia& image,
     shell::Connector* connector =
         content::MojoShellConnection::GetForProcess()->GetConnector();
     ash::mojom::WallpaperControllerPtr wallpaper_controller;
-    connector->ConnectToInterface("mojo:ash", &wallpaper_controller);
+    connector->ConnectToInterface("service:ash", &wallpaper_controller);
     wallpaper_controller->SetWallpaper(*image.bitmap(),
                                        WallpaperLayoutToMojo(layout));
     return;

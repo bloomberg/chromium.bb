@@ -830,7 +830,7 @@ void RenderFrameHostImpl::Create(
   media::mojom::MediaServicePtr media_service;
   shell::Connector* connector =
       MojoShellConnection::GetForProcess()->GetConnector();
-  connector->ConnectToInterface("mojo:media", &media_service);
+  connector->ConnectToInterface("service:media", &media_service);
   media_service->CreateServiceFactory(std::move(request),
                                       std::move(interfaces));
 }

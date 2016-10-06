@@ -1,6 +1,6 @@
 {
   "manifest_version":  1,
-  "name": "mojo:ui",
+  "name": "service:ui",
   "display_name": "UI Service",
   "capabilities": {
     "provided": {
@@ -24,9 +24,9 @@
       ]
     },
     "required": {
-      "mojo:ui": { "classes": [ "ozone" ] },
+      "service:ui": { "classes": [ "ozone" ] },
       "*": { "classes": [ "app" ] },
-      "mojo:shell": { "classes": [ "shell:all_users", "shell:explicit_class" ] }
+      "service:shell": { "classes": [ "shell:all_users", "shell:explicit_class" ] }
     }
   }
 }

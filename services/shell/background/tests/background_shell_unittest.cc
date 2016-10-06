@@ -18,7 +18,7 @@
 namespace shell {
 namespace {
 
-const char kTestName[] = "mojo:test-app";
+const char kTestName[] = "service:test-app";
 
 class ServiceImpl : public Service {
  public:
@@ -66,7 +66,7 @@ TEST(BackgroundShellTest, MAYBE_Basic) {
       &service, background_shell.CreateServiceRequest(kTestName));
   mojom::TestServicePtr test_service;
   service_context.connector()->ConnectToInterface(
-      "mojo:background_shell_test_app", &test_service);
+      "service:background_shell_test_app", &test_service);
   base::RunLoop run_loop;
   bool got_result = false;
   test_service->Test(base::Bind(&SetFlagAndRunClosure, &got_result,

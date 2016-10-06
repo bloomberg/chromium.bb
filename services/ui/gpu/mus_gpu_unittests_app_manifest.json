@@ -1,6 +1,6 @@
 {
   "manifest_version": 1,
-  "name": "mojo:mus_gpu_unittests_app",
+  "name": "service:mus_gpu_unittests_app",
   "display_name": "Mus GPU Unittests",
   "capabilities": {
     "required": {

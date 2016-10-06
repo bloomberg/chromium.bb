@@ -1,10 +1,10 @@
 {
   "manifest_version":  1,
-  "name": "mojo:mus_demo",
+  "name": "service:mus_demo",
   "display_name": "MUS Demo",
   "capabilities": {
     "required": {
-      "mojo:ui": {
+      "service:ui": {
         "interfaces": [ "ui::mojom::WindowManagerWindowTreeFactory"],
         "classes": [ "app" ]
       }

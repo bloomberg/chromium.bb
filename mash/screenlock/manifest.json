@@ -1,6 +1,6 @@
 {
   "manifest_version":  1,
-  "name": "mojo:screenlock",
+  "name": "service:screenlock",
   "display_name": "Screen Lock",
   "capabilities": {
     "required": {

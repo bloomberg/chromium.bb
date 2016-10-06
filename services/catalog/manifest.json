@@ -1,6 +1,6 @@
 {
   "manifest_version":  1,
-  "name": "mojo:catalog",
+  "name": "service:catalog",
   "display_name": "Application Resolver",
   "capabilities": {
     // Note, this section is provided for documentation only. Classes provided
@@ -10,7 +10,7 @@
       "app": [ "filesystem::mojom::Directory" ]
     },
     "required": {
-      "mojo:shell": { "classes": [ "shell:all_users", "shell:explicit_class" ] }
+      "service:shell": { "classes": [ "shell:all_users", "shell:explicit_class" ] }
     }
   }
 }

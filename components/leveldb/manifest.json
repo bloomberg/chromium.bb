@@ -1,6 +1,6 @@
 {
   "manifest_version":  1,
-  "name": "mojo:leveldb",
+  "name": "service:leveldb",
   "display_name": "LevelDB Service",
   "capabilities": {
     "required": {

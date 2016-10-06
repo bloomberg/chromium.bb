@@ -104,7 +104,7 @@ void Service::InitializeResources(shell::Connector* connector) {
 
   catalog::ResourceLoader loader;
   filesystem::mojom::DirectoryPtr directory;
-  connector->ConnectToInterface("mojo:catalog", &directory);
+  connector->ConnectToInterface("service:catalog", &directory);
   CHECK(loader.OpenFiles(std::move(directory), resource_paths));
 
   ui::RegisterPathProvider();

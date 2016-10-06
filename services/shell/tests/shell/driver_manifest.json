@@ -5,7 +5,7 @@
   "capabilities": {
     "required": {
       "exe:shell_unittest_target": { },
-      "mojo:shell": { "classes": [ "shell:client_process" ] }
+      "service:shell": { "classes": [ "shell:client_process" ] }
     }
   }
 }

@@ -59,7 +59,7 @@ void Provider::Initialize(shell::Connector* connector, const std::string& url) {
   base::PlatformThread::SetName(url);
 
   mojom::FactoryPtr factory;
-  connector->ConnectToInterface("mojo:tracing", &factory);
+  connector->ConnectToInterface("service:tracing", &factory);
   mojom::ProviderPtr provider;
   Bind(GetProxy(&provider));
   factory->CreateRecorder(std::move(provider));

@@ -1,20 +1,20 @@
 {
   "manifest_version": 1,
-  "name": "mojo:connect_test_app",
+  "name": "service:connect_test_app",
   "display_name": "Connect Test App",
   "capabilities": {
     "required": {
-      "mojo:connect_unittests": {
+      "service:connect_unittests": {
         "interfaces":  [ "shell::test::mojom::ExposedInterface" ]
       },
-      "mojo:connect_test_a": {
+      "service:connect_test_a": {
         "interfaces": [ "shell::test::mojom::ConnectTestService" ]
       },
-      "mojo:connect_test_class_app": {
+      "service:connect_test_class_app": {
         "classes": [ "class" ],
         "interfaces": [ "shell::test::mojom::ConnectTestService" ]
       },
-      "mojo:shell": { "classes": [ "shell:user_id" ] }
+      "service:shell": { "classes": [ "shell:user_id" ] }
     }
   }
 }

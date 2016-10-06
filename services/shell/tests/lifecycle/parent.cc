@@ -48,7 +48,7 @@ class Parent : public shell::Service,
 
   // Parent:
   void ConnectToChild(const ConnectToChildCallback& callback) override {
-    child_connection_ = connector()->Connect("mojo:lifecycle_unittest_app");
+    child_connection_ = connector()->Connect("service:lifecycle_unittest_app");
     shell::test::mojom::LifecycleControlPtr lifecycle;
     child_connection_->GetInterface(&lifecycle);
     {

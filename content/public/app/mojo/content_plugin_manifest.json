@@ -1,13 +1,13 @@
 {
   "manifest_version":  1,
-  "name": "exe:content_plugin",
-  "display_name": "Content Plugin",
+  "name": "service:content_plugin",
+  "display_name": "Content (plugin process)",
   "capabilities": {
     "provided": {
       "browser": [ "IPC::mojom::ChannelBootstrap" ]
     },
     "required": {
-      "exe:content_browser": {
+      "service:content_browser": {
         "classes": [
           "plugin"
         ]

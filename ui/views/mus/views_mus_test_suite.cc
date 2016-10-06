@@ -123,7 +123,7 @@ class ShellConnection {
 
     // ui/views/mus requires a WindowManager running, so launch test_wm.
     shell::Connector* connector = shell_connection_->connector();
-    connector->Connect("mojo:test_wm");
+    connector->Connect("service:test_wm");
     shell_connector_ = connector->Clone();
     shell_identity_ = shell_connection_->identity();
     wait->Signal();

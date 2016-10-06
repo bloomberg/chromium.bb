@@ -5,7 +5,7 @@
   "capabilities": {
     "required": {
       "*": { "classes": [ "app" ] },
-      "mojo:media": { "interfaces": [ "media::mojom::ServiceFactory" ] }
+      "service:media": { "interfaces": [ "media::mojom::ServiceFactory" ] }
     }
   }
 }

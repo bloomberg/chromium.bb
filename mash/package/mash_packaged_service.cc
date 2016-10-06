@@ -56,27 +56,27 @@ void MashPackagedService::CreateService(shell::mojom::ServiceRequest request,
 // Please see header file for details on adding new services.
 std::unique_ptr<shell::Service> MashPackagedService::CreateService(
     const std::string& name) {
-  if (name == "mojo:ash")
+  if (name == "service:ash")
     return base::WrapUnique(new ash::mus::WindowManagerApplication);
-  if (name == "mojo:accessibility_autoclick")
+  if (name == "service:accessibility_autoclick")
     return base::WrapUnique(new ash::autoclick::AutoclickApplication);
-  if (name == "mojo:touch_hud")
+  if (name == "service:touch_hud")
     return base::WrapUnique(new ash::touch_hud::TouchHudApplication);
-  if (name == "mojo:mash_session")
+  if (name == "service:mash_session")
     return base::WrapUnique(new mash::session::Session);
-  if (name == "mojo:ui")
+  if (name == "service:ui")
     return base::WrapUnique(new ui::Service);
-  if (name == "mojo:quick_launch")
+  if (name == "service:quick_launch")
     return base::WrapUnique(new mash::quick_launch::QuickLaunch);
-  if (name == "mojo:task_viewer")
+  if (name == "service:task_viewer")
     return base::WrapUnique(new mash::task_viewer::TaskViewer);
-  if (name == "mojo:test_ime_driver")
+  if (name == "service:test_ime_driver")
     return base::WrapUnique(new ui::test::TestIMEApplication);
 #if defined(OS_LINUX)
-  if (name == "mojo:font_service")
+  if (name == "service:font_service")
     return base::WrapUnique(new font_service::FontServiceApp);
 #endif
-  if (name == "mojo:app_driver")
+  if (name == "service:app_driver")
     return base::WrapUnique(new mash::app_driver::AppDriver);
   return nullptr;
 }

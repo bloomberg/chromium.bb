@@ -39,10 +39,10 @@ class MusDemoTest : public shell::test::ServiceTest {
 }  // namespace
 
 TEST_F(MusDemoTest, CheckMusDemoDraws) {
-  connector()->Connect("mojo:mus_demo");
+  connector()->Connect("service:mus_demo");
 
   ::ui::mojom::WindowServerTestPtr test_interface;
-  connector()->ConnectToInterface("mojo:ui", &test_interface);
+  connector()->ConnectToInterface("service:ui", &test_interface);
 
   base::RunLoop run_loop;
   bool success = false;

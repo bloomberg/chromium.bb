@@ -213,7 +213,7 @@ MojoShellContext::MojoShellContext() {
       { kPluginMojoApplicationName, IDR_MOJO_CONTENT_PLUGIN_MANIFEST },
       { kRendererMojoApplicationName, IDR_MOJO_CONTENT_RENDERER_MANIFEST },
       { kUtilityMojoApplicationName, IDR_MOJO_CONTENT_UTILITY_MANIFEST },
-      { "mojo:catalog", IDR_MOJO_CATALOG_MANIFEST },
+      { "service:catalog", IDR_MOJO_CATALOG_MANIFEST },
       { file::kFileServiceName, IDR_MOJO_FILE_MANIFEST }
     };
 
@@ -282,15 +282,15 @@ MojoShellContext::MojoShellContext() {
 
 #if (ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
   MojoShellConnection::GetForProcess()->AddServiceRequestHandler(
-      "mojo:media", base::Bind(&StartServiceInGpuProcess, "mojo:media"));
+      "service:media", base::Bind(&StartServiceInGpuProcess, "service:media"));
 #endif
 }
 
 MojoShellContext::~MojoShellContext() {
   // NOTE: The in-process ServiceManager MUST be destroyed before the browser
   // process-wide MojoShellConnection. Otherwise it's possible for the
-  // ServiceManager to receive connection requests for exe:content_browser which
-  // it may attempt to service by launching a new instance of the browser.
+  // ServiceManager to receive connection requests for service:content_browser
+  // which it may attempt to service by launching a new instance of the browser.
   if (in_process_context_)
     in_process_context_->ShutDown();
   if (MojoShellConnection::GetForProcess())

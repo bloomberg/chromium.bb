@@ -1,10 +1,10 @@
 {
   "manifest_version":  1,
-  "name": "mojo:shell_unittest",
+  "name": "service:shell_unittest",
   "display_name": "Shell Unittest",
   "capabilities": {
     "required": {
-      "mojo:shell": { "interfaces": [ "shell::mojom::ServiceManager" ] },
+      "service:shell": { "interfaces": [ "shell::mojom::ServiceManager" ] },
       "exe:shell_unittest_driver": {
         "interfaces": [ "shell::test::mojom::Driver" ]
       }

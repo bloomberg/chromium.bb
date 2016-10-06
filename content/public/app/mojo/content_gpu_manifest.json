@@ -1,7 +1,7 @@
 {
   "manifest_version":  1,
-  "name": "exe:content_gpu",
-  "display_name": "Content Gpu",
+  "name": "service:content_gpu",
+  "display_name": "Content (GPU process)",
   "capabilities": {
     "provided": {
       "browser": [
@@ -10,7 +10,7 @@
       ]
     },
     "required": {
-      "exe:content_browser": {
+      "service:content_browser": {
         "classes": [
           "gpu"
         ]

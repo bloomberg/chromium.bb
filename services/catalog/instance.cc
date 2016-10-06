@@ -63,7 +63,7 @@ void Instance::ResolveMojoName(const std::string& mojo_name,
   DCHECK(system_cache_);
 
   std::string type = shell::GetNameType(mojo_name);
-  if (type != shell::kNameType_Mojo && type != shell::kNameType_Exe) {
+  if (type != shell::kNameType_Service && type != shell::kNameType_Exe) {
     std::unique_ptr<Entry> entry(new Entry(mojo_name));
     shell::mojom::ResolveResultPtr result =
         shell::mojom::ResolveResult::From(*entry);

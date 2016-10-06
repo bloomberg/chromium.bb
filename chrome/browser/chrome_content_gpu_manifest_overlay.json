@@ -1,5 +1,5 @@
 {
-  "name": "exe:content_gpu",
+  "name": "service:content_gpu",
   "capabilities": {
     "provided": {
       "browser": [

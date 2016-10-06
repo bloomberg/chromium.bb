@@ -71,7 +71,7 @@ class ShellTest : public test::ServiceTest,
                   public mojom::ServiceManagerListener {
  public:
   ShellTest()
-      : test::ServiceTest("mojo:shell_unittest"),
+      : test::ServiceTest("service:shell_unittest"),
         service_(nullptr),
         binding_(this) {}
   ~ShellTest() override {}
@@ -91,7 +91,7 @@ class ShellTest : public test::ServiceTest,
 
   void AddListenerAndWaitForApplications() {
     mojom::ServiceManagerPtr service_manager;
-    connector()->ConnectToInterface("mojo:shell", &service_manager);
+    connector()->ConnectToInterface("service:shell", &service_manager);
 
     service_manager->AddListener(binding_.CreateInterfacePtrAndBind());
 
@@ -185,7 +185,7 @@ TEST_F(ShellTest, CreateInstance) {
 
   // 3. Validate that this test suite's name was received from the application
   //    manager.
-  EXPECT_TRUE(ContainsInstanceWithName("mojo:shell_unittest"));
+  EXPECT_TRUE(ContainsInstanceWithName("service:shell_unittest"));
 
   // 4. Validate that the right applications/processes were created.
   //    Note that the target process will be created even if the tests are

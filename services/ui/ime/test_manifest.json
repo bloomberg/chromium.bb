@@ -4,8 +4,8 @@
   "display_name": "IME Service Unittests",
   "capabilities": {
     "required": {
-      "mojo:ui": { "interfaces": [ "ui::mojom::IMEServer" ] },
-      "mojo:test_ime_driver": {}
+      "service:ui": { "interfaces": [ "ui::mojom::IMEServer" ] },
+      "service:test_ime_driver": {}
     }
   }
 }
