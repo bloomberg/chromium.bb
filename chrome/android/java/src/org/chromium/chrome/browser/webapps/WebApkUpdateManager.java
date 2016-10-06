@@ -13,6 +13,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.chrome.browser.webapps.WebappRegistry.FetchWebappDataStorageCallback;
 import org.chromium.webapk.lib.client.WebApkVersion;
 import org.chromium.webapk.lib.common.WebApkConstants;
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
@@ -66,24 +67,32 @@ public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
 
         mUpgradeDetector = new ManifestUpgradeDetector(tab, info, metadata, this);
 
-        WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorage(info.id());
-        if (forceUpgrade(storage)) mForceUpgrade = true;
+        WebappRegistry.FetchWebappDataStorageCallback callback =
+                new WebappRegistry.FetchWebappDataStorageCallback() {
+                    @Override
+                    public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
+                        if (forceUpgrade(storage)) {
+                            mForceUpgrade = true;
+                        }
 
-        // TODO(pkotwicz|hanxi): Request upgrade if ShellAPK version changes if
-        // ManifestUpgradeDetector cannot fetch the Web Manifest. For instance, the
-        // web developer may have removed the Web Manifest from their site.
-        // (http://crbug.com/639536)
+                        // TODO(pkotwicz|hanxi): Request upgrade if ShellAPK version changes if
+                        // ManifestUpgradeDetector cannot fetch the Web Manifest. For instance, the
+                        // web developer may have removed the Web Manifest from their site.
+                        // (http://crbug.com/639536)
 
-        long sinceLastCheckDuration = System.currentTimeMillis()
-                - storage.getLastCheckForWebManifestUpdateTime();
-        if (sinceLastCheckDuration > FULL_CHECK_UPDATE_INTERVAL || mForceUpgrade) {
-            if (mUpgradeDetector.start()) {
-                // crbug.com/636525. The timestamp of the last check for updated
-                // Web Manifest should be updated after the detector finds the
-                // Web Manifest, not when the detector is started.
-                storage.updateTimeOfLastCheckForUpdatedWebManifest();
-            }
-        }
+                        long sinceLastCheckDuration = System.currentTimeMillis()
+                                - storage.getLastCheckForWebManifestUpdateTime();
+                        if (sinceLastCheckDuration > FULL_CHECK_UPDATE_INTERVAL || mForceUpgrade) {
+                            if (mUpgradeDetector.start()) {
+                                // crbug.com/636525. The timestamp of the last check for updated
+                                // Web Manifest should be updated after the detector finds the
+                                // Web Manifest, not when the detector is started.
+                                storage.updateTimeOfLastCheckForUpdatedWebManifest();
+                            }
+                        }
+                    }
+        };
+        WebappRegistry.getWebappDataStorage(info.id(), callback);
     }
 
     @Override
@@ -151,12 +160,16 @@ public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
      */
     @CalledByNative
     private static void onBuiltWebApk(final boolean success, String webapkPackage) {
-        WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorage(
-                WebApkConstants.WEBAPK_ID_PREFIX + webapkPackage);
-        // Update the request time and result together. It prevents getting a
-        // correct request time but a result from the previous request.
-        storage.updateTimeOfLastWebApkUpdateRequestCompletion();
-        storage.updateDidLastWebApkUpdateRequestSucceed(success);
+        WebappRegistry.getWebappDataStorage(WebApkConstants.WEBAPK_ID_PREFIX + webapkPackage,
+                new FetchWebappDataStorageCallback() {
+                    @Override
+                    public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
+                        // Update the request time and result together. It prevents getting a
+                        // correct request time but a result from the previous request.
+                        storage.updateTimeOfLastWebApkUpdateRequestCompletion();
+                        storage.updateDidLastWebApkUpdateRequestSucceed(success);
+                    }
+                });
     }
 
     private static native void nativeUpdateAsync(String startUrl, String scope, String name,
