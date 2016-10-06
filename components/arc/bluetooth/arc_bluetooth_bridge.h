@@ -333,11 +333,11 @@ class ArcBluetoothBridge
  private:
   mojo::Array<mojom::BluetoothPropertyPtr> GetDeviceProperties(
       mojom::BluetoothPropertyType type,
-      device::BluetoothDevice* device) const;
+      const device::BluetoothDevice* device) const;
   mojo::Array<mojom::BluetoothPropertyPtr> GetAdapterProperties(
       mojom::BluetoothPropertyType type) const;
   mojo::Array<mojom::BluetoothAdvertisingDataPtr> GetAdvertisingData(
-      device::BluetoothDevice* device) const;
+      const device::BluetoothDevice* device) const;
 
   void SendCachedDevicesFound() const;
 
@@ -427,6 +427,8 @@ class ArcBluetoothBridge
   // Find the next free advertisement handle and put it in *adv_handle,
   // or return false if the advertisement map is full.
   bool GetAdvertisementHandle(int32_t* adv_handle);
+
+  void SendDevice(const device::BluetoothDevice* device) const;
 
   bool CalledOnValidThread();
 

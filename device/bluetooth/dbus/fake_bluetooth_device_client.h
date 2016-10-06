@@ -164,6 +164,10 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothDeviceClient
 
   void set_delay_start_discovery(bool value) { delay_start_discovery_ = value; }
 
+  // Updates the inquiry RSSI property of fake device with object path
+  // |object_path| to |rssi|, if the fake device exists.
+  void UpdateDeviceRSSI(const dbus::ObjectPath& object_path, int16_t rssi);
+
   static const char kTestPinCode[];
   static const int kTestPassKey;
 
@@ -280,9 +284,6 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothDeviceClient
   // If fake device with |object_path| exists, sets its inquiry RSSI property
   // to false and notifies that the property changed.
   void InvalidateDeviceRSSI(const dbus::ObjectPath& object_path);
-  // Updates the inquiry RSSI property of fake device with object path
-  // |object_path| to |rssi|, if the fake device exists.
-  void UpdateDeviceRSSI(const dbus::ObjectPath& object_path, int16_t rssi);
 
   void PinCodeCallback(const dbus::ObjectPath& object_path,
                        const base::Closure& callback,

@@ -312,8 +312,7 @@ void ArcBluetoothBridge::OnInstanceClosed() {
     bluetooth_adapter_->RemoveObserver(this);
 }
 
-void ArcBluetoothBridge::DeviceAdded(BluetoothAdapter* adapter,
-                                     BluetoothDevice* device) {
+void ArcBluetoothBridge::SendDevice(const BluetoothDevice* device) const {
   auto* bluetooth_instance =
       arc_bridge_service()->bluetooth()->GetInstanceForMethod("OnDeviceFound");
   if (!bluetooth_instance)
@@ -324,22 +323,29 @@ void ArcBluetoothBridge::DeviceAdded(BluetoothAdapter* adapter,
 
   bluetooth_instance->OnDeviceFound(std::move(properties));
 
-  auto* btle_instance = arc_bridge_service()->bluetooth()->GetInstanceForMethod(
-      "OnLEDeviceFound", kMinBtleVersion);
-  if (!btle_instance)
-    return;
 
   if (!(device->GetType() & device::BLUETOOTH_TRANSPORT_LE))
     return;
 
-  mojom::BluetoothAddressPtr addr =
-      mojom::BluetoothAddress::From(device->GetAddress());
   base::Optional<int8_t> rssi = device->GetInquiryRSSI();
-  mojo::Array<mojom::BluetoothAdvertisingDataPtr> adv_data =
-      GetAdvertisingData(device);
-  btle_instance->OnLEDeviceFound(std::move(addr),
-                                 rssi.value_or(mojom::kUnknownPower),
-                                 std::move(adv_data));
+  mojom::BluetoothAddressPtr addr;
+
+  // We only want to send updated advertise data to Android only when we are
+  // scanning which is checked by the validity of rssi. Here are the 2 cases
+  // that we don't want to send updated advertise data to Android.
+  // 1) Cached found device and 2) rssi became invalid when we stop scanning.
+  if (rssi.has_value()) {
+    auto* btle_instance =
+        arc_bridge_service()->bluetooth()->GetInstanceForMethod(
+            "OnLEDeviceFound", kMinBtleVersion);
+    if (!btle_instance)
+      return;
+    mojo::Array<mojom::BluetoothAdvertisingDataPtr> adv_data =
+        GetAdvertisingData(device);
+    addr = mojom::BluetoothAddress::From(device->GetAddress());
+    btle_instance->OnLEDeviceFound(std::move(addr), rssi.value(),
+                                   std::move(adv_data));
+  }
 
   if (!device->IsConnected())
     return;
@@ -348,8 +354,15 @@ void ArcBluetoothBridge::DeviceAdded(BluetoothAdapter* adapter,
   OnGattConnectStateChanged(std::move(addr), true);
 }
 
+void ArcBluetoothBridge::DeviceAdded(BluetoothAdapter* adapter,
+                                     BluetoothDevice* device) {
+  SendDevice(device);
+}
+
 void ArcBluetoothBridge::DeviceChanged(BluetoothAdapter* adapter,
                                        BluetoothDevice* device) {
+  SendDevice(device);
+
   if (!(device->GetType() & device::BLUETOOTH_TRANSPORT_LE))
     return;
 
@@ -1833,7 +1846,7 @@ void ArcBluetoothBridge::OnForgetError(mojom::BluetoothAddressPtr addr) const {
 
 mojo::Array<mojom::BluetoothPropertyPtr>
 ArcBluetoothBridge::GetDeviceProperties(mojom::BluetoothPropertyType type,
-                                        BluetoothDevice* device) const {
+                                        const BluetoothDevice* device) const {
   mojo::Array<mojom::BluetoothPropertyPtr> properties;
 
   if (!device) {
@@ -1854,10 +1867,12 @@ ArcBluetoothBridge::GetDeviceProperties(mojom::BluetoothPropertyType type,
   }
   if (type == mojom::BluetoothPropertyType::ALL ||
       type == mojom::BluetoothPropertyType::UUIDS) {
-    mojom::BluetoothPropertyPtr btp = mojom::BluetoothProperty::New();
     BluetoothDevice::UUIDSet uuids = device->GetUUIDs();
-    btp->set_uuids(std::vector<BluetoothUUID>(uuids.begin(), uuids.end()));
-    properties.push_back(std::move(btp));
+    if (uuids.size() > 0) {
+      mojom::BluetoothPropertyPtr btp = mojom::BluetoothProperty::New();
+      btp->set_uuids(std::vector<BluetoothUUID>(uuids.begin(), uuids.end()));
+      properties.push_back(std::move(btp));
+    }
   }
   if (type == mojom::BluetoothPropertyType::ALL ||
       type == mojom::BluetoothPropertyType::CLASS_OF_DEVICE) {
@@ -1880,10 +1895,12 @@ ArcBluetoothBridge::GetDeviceProperties(mojom::BluetoothPropertyType type,
   }
   if (type == mojom::BluetoothPropertyType::ALL ||
       type == mojom::BluetoothPropertyType::REMOTE_RSSI) {
-    mojom::BluetoothPropertyPtr btp = mojom::BluetoothProperty::New();
     base::Optional<int8_t> rssi = device->GetInquiryRSSI();
-    btp->set_remote_rssi(rssi.value_or(mojom::kUnknownPower));
-    properties.push_back(std::move(btp));
+    if (rssi.has_value()) {
+      mojom::BluetoothPropertyPtr btp = mojom::BluetoothProperty::New();
+      btp->set_remote_rssi(rssi.value());
+      properties.push_back(std::move(btp));
+    }
   }
   // TODO(smbarber): Add remote version info
 
@@ -1997,7 +2014,7 @@ ArcBluetoothBridge::GetAdapterProperties(
 // because Android does not support UUID 128 bits there.
 // TODO(crbug.com/618442) Make Chrome expose missing data.
 mojo::Array<mojom::BluetoothAdvertisingDataPtr>
-ArcBluetoothBridge::GetAdvertisingData(BluetoothDevice* device) const {
+ArcBluetoothBridge::GetAdvertisingData(const BluetoothDevice* device) const {
   mojo::Array<mojom::BluetoothAdvertisingDataPtr> advertising_data;
 
   // LocalName
@@ -2041,72 +2058,34 @@ ArcBluetoothBridge::GetAdvertisingData(BluetoothDevice* device) const {
 }
 
 void ArcBluetoothBridge::SendCachedDevicesFound() const {
-  // Send devices that have already been discovered, but aren't connected.
-  auto* bluetooth_instance =
-      arc_bridge_service()->bluetooth()->GetInstanceForMethod("OnDeviceFound");
-  if (!bluetooth_instance)
-    return;
-  auto* btle_instance = arc_bridge_service()->bluetooth()->GetInstanceForMethod(
-      "OnLEDeviceFound", kMinBtleVersion);
+  DCHECK(bluetooth_adapter_);
 
+  // Send devices that have already been discovered, but aren't connected.
   BluetoothAdapter::DeviceList devices = bluetooth_adapter_->GetDevices();
   for (auto* device : devices) {
     if (device->IsPaired())
       continue;
 
-    mojo::Array<mojom::BluetoothPropertyPtr> properties =
-        GetDeviceProperties(mojom::BluetoothPropertyType::ALL, device);
-
-    bluetooth_instance->OnDeviceFound(std::move(properties));
-
-    if (btle_instance) {
-      mojom::BluetoothAddressPtr addr =
-          mojom::BluetoothAddress::From(device->GetAddress());
-      base::Optional<int8_t> rssi = device->GetInquiryRSSI();
-      mojo::Array<mojom::BluetoothAdvertisingDataPtr> adv_data =
-          GetAdvertisingData(device);
-      btle_instance->OnLEDeviceFound(std::move(addr),
-                                     rssi.value_or(mojom::kUnknownPower),
-                                     std::move(adv_data));
-    }
+    SendDevice(device);
   }
 }
 
 void ArcBluetoothBridge::SendCachedPairedDevices() const {
   DCHECK(bluetooth_adapter_);
-  auto* bluetooth_instance =
-      arc_bridge_service()->bluetooth()->GetInstanceForMethod("OnDeviceFound");
-  if (!bluetooth_instance)
-    return;
-  auto* btle_instance = arc_bridge_service()->bluetooth()->GetInstanceForMethod(
-      "OnLEDeviceFound", kMinBtleVersion);
 
   BluetoothAdapter::DeviceList devices = bluetooth_adapter_->GetDevices();
   for (auto* device : devices) {
     if (!device->IsPaired())
       continue;
 
-    mojo::Array<mojom::BluetoothPropertyPtr> properties =
-        GetDeviceProperties(mojom::BluetoothPropertyType::ALL, device);
-
-    bluetooth_instance->OnDeviceFound(std::move(properties));
-
-    mojom::BluetoothAddressPtr addr =
-        mojom::BluetoothAddress::From(device->GetAddress());
-
-    if (btle_instance) {
-      base::Optional<int8_t> rssi = device->GetInquiryRSSI();
-      mojo::Array<mojom::BluetoothAdvertisingDataPtr> adv_data =
-          GetAdvertisingData(device);
-      btle_instance->OnLEDeviceFound(addr->Clone(),
-                                     rssi.value_or(mojom::kUnknownPower),
-                                     std::move(adv_data));
-    }
+    SendDevice(device);
 
     // OnBondStateChanged must be called with mojom::BluetoothBondState::BONDING
     // to make sure the bond state machine on Android is ready to take the
     // pair-done event. Otherwise the pair-done event will be dropped as an
     // invalid change of paired status.
+    mojom::BluetoothAddressPtr addr =
+        mojom::BluetoothAddress::From(device->GetAddress());
     OnPairing(addr->Clone());
     OnPairedDone(std::move(addr));
   }

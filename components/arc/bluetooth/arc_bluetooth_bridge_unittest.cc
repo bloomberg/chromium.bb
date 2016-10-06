@@ -25,6 +25,11 @@
 #include "mojo/public/cpp/bindings/array.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace {
+constexpr int16_t kTestRssi = -50;
+constexpr int16_t kTestRssi2 = -70;
+}
+
 namespace arc {
 
 constexpr int kFailureAdvHandle = -1;
@@ -50,6 +55,18 @@ class ArcBluetoothBridgeTest : public testing::Test {
         dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
     fake_bluetooth_gatt_characteristic_client->ExposeHeartRateCharacteristics(
         fake_bluetooth_gatt_service_client->GetHeartRateServicePath());
+
+    ChangeTestDeviceRssi(kTestRssi);
+  }
+
+  void ChangeTestDeviceRssi(uint16_t rssi) {
+    bluez::BluezDBusManager* dbus_manager = bluez::BluezDBusManager::Get();
+    auto* fake_bluetooth_device_client =
+        static_cast<bluez::FakeBluetoothDeviceClient*>(
+            dbus_manager->GetBluetoothDeviceClient());
+    fake_bluetooth_device_client->UpdateDeviceRSSI(
+        dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath),
+        rssi);
   }
 
   void OnAdapterInitialized(scoped_refptr<device::BluetoothAdapter> adapter) {
@@ -163,7 +180,7 @@ class ArcBluetoothBridgeTest : public testing::Test {
 TEST_F(ArcBluetoothBridgeTest, DeviceFound) {
   EXPECT_EQ(0u, fake_bluetooth_instance_->device_found_data().size());
   AddTestDevice();
-  EXPECT_EQ(1u, fake_bluetooth_instance_->device_found_data().size());
+  EXPECT_EQ(2u, fake_bluetooth_instance_->device_found_data().size());
   const mojo::Array<mojom::BluetoothPropertyPtr>& prop =
       fake_bluetooth_instance_->device_found_data().back();
 
@@ -187,19 +204,29 @@ TEST_F(ArcBluetoothBridgeTest, DeviceFound) {
   EXPECT_EQ(std::string(bluez::FakeBluetoothDeviceClient::kLowEnergyName),
             prop[5]->get_remote_friendly_name());
   EXPECT_TRUE(prop[6]->is_remote_rssi());
+  EXPECT_EQ(kTestRssi, prop[6]->get_remote_rssi());
+
+  ChangeTestDeviceRssi(kTestRssi2);
+  EXPECT_EQ(3u, fake_bluetooth_instance_->device_found_data().size());
+  const mojo::Array<mojom::BluetoothPropertyPtr>& prop2 =
+      fake_bluetooth_instance_->device_found_data().back();
+  EXPECT_EQ(7u, prop2.size());
+  EXPECT_TRUE(prop2[6]->is_remote_rssi());
+  EXPECT_EQ(kTestRssi2, prop2[6]->get_remote_rssi());
 }
 
 // Invoke OnDiscoveryStarted to send cached device to BT instance,
 // and check correctness of the Advertising data sent via arc bridge.
 TEST_F(ArcBluetoothBridgeTest, LEDeviceFound) {
-  EXPECT_EQ(0u, fake_bluetooth_instance_->device_found_data().size());
+  EXPECT_EQ(0u, fake_bluetooth_instance_->le_device_found_data().size());
   AddTestDevice();
   EXPECT_EQ(1u, fake_bluetooth_instance_->le_device_found_data().size());
 
-  const mojom::BluetoothAddressPtr& addr =
-      fake_bluetooth_instance_->le_device_found_data().back()->addr();
+  const auto& le_device_found_data =
+      fake_bluetooth_instance_->le_device_found_data().back();
+  const mojom::BluetoothAddressPtr& addr = le_device_found_data->addr();
   const mojo::Array<mojom::BluetoothAdvertisingDataPtr>& adv_data =
-      fake_bluetooth_instance_->le_device_found_data().back()->adv_data();
+      le_device_found_data->adv_data();
 
   EXPECT_EQ(std::string(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress),
             addr->To<std::string>());
@@ -213,6 +240,13 @@ TEST_F(ArcBluetoothBridgeTest, LEDeviceFound) {
   EXPECT_EQ(1u, adv_data[1]->get_service_uuids().size());
   EXPECT_EQ(bluez::FakeBluetoothGattServiceClient::kHeartRateServiceUUID,
             adv_data[1]->get_service_uuids()[0].canonical_value());
+
+  EXPECT_EQ(kTestRssi, le_device_found_data->rssi());
+
+  ChangeTestDeviceRssi(kTestRssi2);
+  EXPECT_EQ(2u, fake_bluetooth_instance_->le_device_found_data().size());
+  EXPECT_EQ(kTestRssi2,
+            fake_bluetooth_instance_->le_device_found_data().back()->rssi());
 }
 
 // Invoke GetGattDB and check correctness of the GattDB sent via arc bridge.
