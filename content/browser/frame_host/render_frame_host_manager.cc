@@ -1118,11 +1118,26 @@ bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
   if (IsRendererDebugURL(new_effective_url))
     return false;
 
+  // Transitions across BrowserContexts should always require a
+  // BrowsingInstance swap. For example, this can happen if an extension in a
+  // normal profile opens an incognito window with a web URL using
+  // chrome.windows.create().
+  //
+  // TODO(alexmos): This check should've been enforced earlier in the
+  // navigation, in chrome::Navigate().  Verify this, and then convert this to
+  // a CHECK and remove the fallback.
+  DCHECK_EQ(browser_context,
+            render_frame_host_->GetSiteInstance()->GetBrowserContext());
+  if (browser_context !=
+      render_frame_host_->GetSiteInstance()->GetBrowserContext()) {
+    return true;
+  }
+
   // For security, we should transition between processes when one is a Web UI
   // page and one isn't, or if the WebUI types differ.
   if (ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
           render_frame_host_->GetProcess()->GetID()) ||
-      WebUIControllerFactoryRegistry::GetInstance()->UseWebUIForURL(
+      WebUIControllerFactoryRegistry::GetInstance()->UseWebUIBindingsForURL(
           browser_context, current_effective_url)) {
     // If so, force a swap if destination is not an acceptable URL for Web UI.
     // Here, data URLs are never allowed.
@@ -1141,7 +1156,7 @@ bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
     }
   } else {
     // Force a swap if it's a Web UI URL.
-    if (WebUIControllerFactoryRegistry::GetInstance()->UseWebUIForURL(
+    if (WebUIControllerFactoryRegistry::GetInstance()->UseWebUIBindingsForURL(
             browser_context, new_effective_url)) {
       return true;
     }
@@ -1225,6 +1240,10 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
   // NavigationEntries.
   if (force_swap)
     CHECK_NE(new_instance, current_instance);
+
+  // Double-check that the new SiteInstance is associated with the right
+  // BrowserContext.
+  DCHECK_EQ(new_instance->GetBrowserContext(), browser_context);
 
   return new_instance;
 }

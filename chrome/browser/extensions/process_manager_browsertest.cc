@@ -89,6 +89,29 @@ std::string GetTextContent(content::RenderFrameHost* frame) {
   return result;
 }
 
+// Helper to send a postMessage from |sender| to |opener| via window.opener,
+// wait for a reply, and verify the response.  Defines its own message event
+// handlers.
+void VerifyPostMessageToOpener(content::RenderFrameHost* sender,
+                               content::RenderFrameHost* opener) {
+  EXPECT_TRUE(
+      ExecuteScript(opener,
+                    "window.addEventListener('message', function(event) {\n"
+                    "  event.source.postMessage(event.data, '*');\n"
+                    "});"));
+
+  EXPECT_TRUE(
+      ExecuteScript(sender,
+                    "window.addEventListener('message', function(event) {\n"
+                    "  window.domAutomationController.send(event.data);\n"
+                    "});"));
+
+  std::string result;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      sender, "opener.postMessage('foo', '*');", &result));
+  EXPECT_EQ("foo", result);
+}
+
 }  // namespace
 
 // Takes a snapshot of all frames upon construction. When Wait() is called, a
@@ -837,6 +860,103 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
               pm->GetRenderFrameHostsForExtension(extension->id()).size());
     EXPECT_EQ(3 + i, pm->GetAllFrames().size());
   }
+}
+
+// Verify that a web popup created via window.open from an extension page can
+// communicate with the extension page via window.opener.  See
+// https://crbug.com/590068.
+IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
+                       WebPopupFromExtensionMainFrameHasValidOpener) {
+  // Create a simple extension without a background page.
+  const Extension* extension = CreateExtension("Extension", false);
+  embedded_test_server()->ServeFilesFromDirectory(extension->path());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Navigate main tab to an extension page.
+  NavigateToURL(extension->GetResourceURL("empty.html"));
+  ProcessManager* pm = ProcessManager::Get(profile());
+  EXPECT_EQ(1u, pm->GetAllFrames().size());
+  EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(extension->id()).size());
+
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  content::RenderFrameHost* main_frame = tab->GetMainFrame();
+
+  // Open a new web popup from the extension tab.  The popup should go into a
+  // new process.
+  GURL popup_url(embedded_test_server()->GetURL("/empty.html"));
+  content::WebContents* popup = OpenPopup(main_frame, popup_url);
+  EXPECT_NE(popup, tab);
+  ASSERT_EQ(2, browser()->tab_strip_model()->count());
+  EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(extension->id()).size());
+  EXPECT_EQ(1u, pm->GetAllFrames().size());
+  EXPECT_NE(popup->GetRenderProcessHost(), main_frame->GetProcess());
+
+  // Ensure the popup's window.opener is defined.
+  bool is_opener_defined = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      popup, "window.domAutomationController.send(!!window.opener)",
+      &is_opener_defined));
+  EXPECT_TRUE(is_opener_defined);
+
+  // Verify that postMessage to window.opener works.
+  VerifyPostMessageToOpener(popup->GetMainFrame(), main_frame);
+}
+
+// Verify that a web popup created via window.open from an extension subframe
+// can communicate with the extension page via window.opener.  Similar to the
+// test above, but for subframes.  See https://crbug.com/590068.
+IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
+                       WebPopupFromExtensionSubframeHasValidOpener) {
+  // This test only makes sense if OOPIFs are enabled for extension subframes.
+  if (!IsIsolateExtensionsEnabled())
+    return;
+
+  // Create a simple extension without a background page.
+  const Extension* extension = CreateExtension("Extension", false);
+  embedded_test_server()->ServeFilesFromDirectory(extension->path());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Navigate main tab to a web page with a blank iframe.  There should be no
+  // extension frames yet.
+  NavigateToURL(embedded_test_server()->GetURL("/blank_iframe.html"));
+  ProcessManager* pm = ProcessManager::Get(profile());
+  EXPECT_EQ(0u, pm->GetAllFrames().size());
+  EXPECT_EQ(0u, pm->GetRenderFrameHostsForExtension(extension->id()).size());
+
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Navigate first subframe to an extension URL.
+  const GURL extension_url(extension->GetResourceURL("empty.html"));
+  EXPECT_TRUE(content::NavigateIframeToURL(tab, "frame0", extension_url));
+  EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(extension->id()).size());
+  EXPECT_EQ(1u, pm->GetAllFrames().size());
+
+  content::RenderFrameHost* main_frame = tab->GetMainFrame();
+  content::RenderFrameHost* extension_frame = ChildFrameAt(main_frame, 0);
+
+  // Open a new web popup from extension frame.  The popup should go into main
+  // frame's web process.
+  GURL popup_url(embedded_test_server()->GetURL("/empty.html"));
+  content::WebContents* popup = OpenPopup(extension_frame, popup_url);
+  EXPECT_NE(popup, tab);
+  ASSERT_EQ(2, browser()->tab_strip_model()->count());
+  EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(extension->id()).size());
+  EXPECT_EQ(1u, pm->GetAllFrames().size());
+  EXPECT_NE(popup->GetRenderProcessHost(), extension_frame->GetProcess());
+  EXPECT_EQ(popup->GetRenderProcessHost(), main_frame->GetProcess());
+
+  // Ensure the popup's window.opener is defined.
+  bool is_opener_defined = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      popup, "window.domAutomationController.send(!!window.opener)",
+      &is_opener_defined));
+  EXPECT_TRUE(is_opener_defined);
+
+  // Verify that postMessage to window.opener works.
+  VerifyPostMessageToOpener(popup->GetMainFrame(), extension_frame);
 }
 
 }  // namespace extensions
