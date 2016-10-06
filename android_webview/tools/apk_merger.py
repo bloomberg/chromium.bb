@@ -119,39 +119,19 @@ def CheckFilesExpected(actual_files, expected_files, component_build):
     raise ApkMergeFailure(
         "Files don't match expectations:\n%s" % '\n'.join(errors))
 
-def AddDiffFiles(diff_files, tmp_dir_32, tmp_apk, expected_files,
+
+def AddDiffFiles(diff_files, tmp_dir_32, out_zip, expected_files,
                  component_build, uncompress_shared_libraries):
   """ Insert files only present in 32-bit APK into 64-bit APK (tmp_apk). """
-  old_dir = os.getcwd()
-  # Move into 32-bit directory to make sure the files we insert have correct
-  # relative paths.
-  os.chdir(tmp_dir_32)
-  try:
-    for diff_file in diff_files:
-      if component_build and diff_file.endswith('.so'):
-        extra_flags = []
-        if uncompress_shared_libraries:
-          extra_flags = ['-0']
-      else:
-        extra_flags = expected_files[os.path.basename(diff_file)]
-      build_utils.CheckOutput(
-          [
-              'zip', '-r', '-X', '--no-dir-entries', tmp_apk, diff_file
-          ] + extra_flags)
-  except build_utils.CalledProcessError as e:
-    raise ApkMergeFailure(
-        'Failed to add file %s to APK: %s' % (diff_file, e.output))
-  finally:
-    # Move out of 32-bit directory when done
-    os.chdir(old_dir)
-
-
-def RemoveMetafiles(tmp_apk):
-  """ Remove all meta info to avoid certificate clashes """
-  try:
-    build_utils.CheckOutput(['zip', '-d', tmp_apk, 'META-INF/*'])
-  except build_utils.CalledProcessError as e:
-    raise ApkMergeFailure('Failed to delete Meta folder: ' + e.output)
+  for diff_file in diff_files:
+    if component_build and diff_file.endswith('.so'):
+      compress = not uncompress_shared_libraries
+    else:
+      compress = expected_files[os.path.basename(diff_file)]
+    build_utils.AddToZipHermetic(out_zip,
+                                 diff_file,
+                                 os.path.join(tmp_dir_32, diff_file),
+                                 compress=compress)
 
 
 def SignAndAlignApk(tmp_apk, signed_tmp_apk, new_apk, zipalign_path,
@@ -194,18 +174,13 @@ def GetSecondaryAbi(apk_zipfile, shared_library):
   return ret
 
 def MergeApk(args, tmp_apk, tmp_dir_32, tmp_dir_64):
-  # Expected files to copy from 32- to 64-bit APK together with an extra flag
-  # setting the compression level of the file
-  expected_files = {'snapshot_blob_32.bin': ['-0']}
+  # Expected files to copy from 32- to 64-bit APK together with whether to
+  # compress within the .apk.
+  expected_files = {'snapshot_blob_32.bin': False}
   if args.shared_library:
-    expected_files[args.shared_library] = []
-
+    expected_files[args.shared_library] = not args.uncompress_shared_libraries
   if args.debug:
-    expected_files['gdbserver'] = []
-  if args.uncompress_shared_libraries and args.shared_library:
-    expected_files[args.shared_library] += ['-0']
-
-  shutil.copyfile(args.apk_64bit, tmp_apk)
+    expected_files['gdbserver'] = True
 
   # need to unpack APKs to compare their contents
   UnpackApk(args.apk_64bit, tmp_dir_64)
@@ -229,10 +204,11 @@ def MergeApk(args, tmp_apk, tmp_dir_32, tmp_dir_64):
   # the 64-bit APK.
   CheckFilesExpected(diff_files, expected_files, args.component_build)
 
-  RemoveMetafiles(tmp_apk)
-
-  AddDiffFiles(diff_files, tmp_dir_32, tmp_apk, expected_files,
-               args.component_build, args.uncompress_shared_libraries)
+  with zipfile.ZipFile(tmp_apk, 'w') as out_zip:
+    build_utils.MergeZips(out_zip, [args.apk_64bit],
+                          exclude_patterns=['META-INF/*'])
+    AddDiffFiles(diff_files, tmp_dir_32, out_zip, expected_files,
+                 args.component_build, args.uncompress_shared_libraries)
 
 
 def main():
