@@ -29,7 +29,6 @@ class LayerTreeTestCompositorFrameSinkClient;
 class Proxy;
 class ProxyImpl;
 class ProxyMain;
-class RemoteChannelImplForTest;
 class TestContextProvider;
 class TestCompositorFrameSink;
 class TestGpuMemoryBufferManager;
@@ -138,7 +137,6 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   Proxy* proxy() const {
     return layer_tree_host_ ? layer_tree_host_->proxy() : NULL;
   }
-  Proxy* remote_client_proxy() const;
   TaskRunnerProvider* task_runner_provider() const;
   TaskGraphRunner* task_graph_runner() const {
     return task_graph_runner_.get();
@@ -147,7 +145,6 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
   LayerTreeHostInProcess* layer_tree_host();
   LayerTree* layer_tree() { return layer_tree_host()->GetLayerTree(); }
-  LayerTreeHost* remote_client_layer_tree_host();
   SharedBitmapManager* shared_bitmap_manager() const {
     return shared_bitmap_manager_.get();
   }
@@ -184,13 +181,6 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
   std::unique_ptr<LayerTreeHostClientForTesting> client_;
   std::unique_ptr<LayerTreeHostInProcess> layer_tree_host_;
-
-  // The LayerTreeHost created by the cc embedder on the client in remote mode.
-  std::unique_ptr<LayerTreeHostForTesting> remote_client_layer_tree_host_;
-
-  RemoteProtoChannelBridge remote_proto_channel_bridge_;
-
-  std::unique_ptr<ImageSerializationProcessor> image_serialization_processor_;
 
   bool beginning_ = false;
   bool end_when_begin_returns_ = false;
