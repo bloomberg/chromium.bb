@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TREES_SURFACE_SEQUENCE_GENERATOR_H_
-#define CC_TREES_SURFACE_SEQUENCE_GENERATOR_H_
+#ifndef CC_SURFACES_SURFACE_SEQUENCE_GENERATOR_H_
+#define CC_SURFACES_SURFACE_SEQUENCE_GENERATOR_H_
 
 #include <stdint.h>
 
 #include <tuple>
 
 #include "base/macros.h"
-#include "cc/base/cc_export.h"
 
 #include "cc/surfaces/frame_sink_id.h"
 
 namespace cc {
+
 struct SurfaceSequence;
 
 // Generates unique surface sequences for a surface client id.
-class CC_EXPORT SurfaceSequenceGenerator {
+class SurfaceSequenceGenerator {
  public:
   SurfaceSequenceGenerator();
   ~SurfaceSequenceGenerator();
@@ -38,4 +38,4 @@ class CC_EXPORT SurfaceSequenceGenerator {
 
 }  // namespace cc
 
-#endif  // CC_TREES_SURFACE_SEQUENCE_GENERATOR_H_
+#endif  // CC_SURFACES_SURFACE_SEQUENCE_GENERATOR_H_

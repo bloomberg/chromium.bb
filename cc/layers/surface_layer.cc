@@ -10,8 +10,8 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/layers/surface_layer_impl.h"
 #include "cc/output/swap_promise.h"
+#include "cc/surfaces/surface_sequence_generator.h"
 #include "cc/trees/layer_tree_host.h"
-#include "cc/trees/surface_sequence_generator.h"
 #include "cc/trees/swap_promise_manager.h"
 
 namespace cc {

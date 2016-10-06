@@ -10,9 +10,9 @@
 #include "cc/base/cc_export.h"
 #include "cc/blimp/remote_compositor_bridge_client.h"
 #include "cc/debug/layer_tree_debug_state.h"
+#include "cc/surfaces/surface_sequence_generator.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
-#include "cc/trees/surface_sequence_generator.h"
 #include "cc/trees/swap_promise_manager.h"
 
 namespace base {

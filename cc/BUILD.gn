@@ -559,8 +559,6 @@ component("cc") {
     "trees/scroll_node.h",
     "trees/single_thread_proxy.cc",
     "trees/single_thread_proxy.h",
-    "trees/surface_sequence_generator.cc",
-    "trees/surface_sequence_generator.h",
     "trees/swap_promise_manager.cc",
     "trees/swap_promise_manager.h",
     "trees/swap_promise_monitor.cc",
@@ -978,7 +976,6 @@ test("cc_unittests") {
     "trees/occlusion_unittest.cc",
     "trees/property_tree_unittest.cc",
     "trees/proxy_common_unittest.cc",
-    "trees/surface_sequence_generator_unittest.cc",
     "trees/swap_promise_manager_unittest.cc",
     "trees/tree_synchronizer_unittest.cc",
 
@@ -990,6 +987,7 @@ test("cc_unittests") {
     "surfaces/surface_factory_unittest.cc",
     "surfaces/surface_hittest_unittest.cc",
     "surfaces/surface_manager_unittest.cc",
+    "surfaces/surface_sequence_generator_unittest.cc",
     "surfaces/surface_unittest.cc",
     "surfaces/surfaces_pixeltest.cc",
 
