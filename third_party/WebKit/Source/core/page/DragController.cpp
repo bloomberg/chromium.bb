@@ -589,8 +589,12 @@ bool DragController::concludeEditDrag(DragData* dragData) {
               dragCaret.base()))
         return false;
 
-      innerFrame->selection().setSelection(createVisibleSelectionDeprecated(
-          range->startPosition(), range->endPosition()));
+      // TODO(xiaochengh): Use of updateStyleAndLayoutIgnorePendingStylesheets
+      // needs to be audited.  See http://crbug.com/590369 for more details.
+      innerFrame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
+      innerFrame->selection().setSelection(
+          createVisibleSelection(range->startPosition(), range->endPosition()));
       if (innerFrame->selection().isAvailable()) {
         DCHECK(m_documentUnderMouse);
         if (!innerFrame->editor().replaceSelectionAfterDraggingWithEvents(
