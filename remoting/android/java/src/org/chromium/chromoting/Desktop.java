@@ -5,6 +5,7 @@
 package org.chromium.chromoting;
 
 import android.annotation.SuppressLint;
+import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -25,6 +26,7 @@ import android.view.inputmethod.InputMethodManager;
 import org.chromium.chromoting.help.HelpContext;
 import org.chromium.chromoting.help.HelpSingleton;
 import org.chromium.chromoting.jni.Client;
+import org.chromium.ui.UiUtils;
 
 import java.util.List;
 
@@ -82,6 +84,14 @@ public class Desktop
             CapabilityManager.HostCapability.UNKNOWN;
 
     private DesktopView mRemoteHostDesktop;
+
+    /**
+     * Indicates whether the device is connected to a non-hidden physical qwerty keyboard. This is
+     * set by {@link Desktop#setKeyboardState(Configuration)}. DO NOT request a soft keyboard when a
+     * physical keyboard exists, otherwise the activity will enter an undefined state where the soft
+     * keyboard never shows up meanwhile request to hide status bar always fails.
+     */
+    private boolean mHasPhysicalKeyboard;
 
     /** Called when the activity is first created. */
     @Override
@@ -227,7 +237,22 @@ public class Desktop
         // Wait to set the input mode until after the default tinting has been applied.
         setInputMode(mInputMode);
 
+        // Keyboard state must be set after the keyboard icon has been added to the menu.
+        setKeyboardState(getResources().getConfiguration());
+
         return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration config) {
+        super.onConfigurationChanged(config);
+        setKeyboardState(config);
+    }
+
+    private void setKeyboardState(Configuration configuration) {
+        mHasPhysicalKeyboard = (configuration.keyboard == Configuration.KEYBOARD_QWERTY)
+                && (configuration.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO);
+        mToolbar.getMenu().findItem(R.id.actionbar_keyboard).setVisible(!mHasPhysicalKeyboard);
     }
 
     public Event<SystemUiVisibilityChangedEventParameter> onSystemUiVisibilityChanged() {
@@ -387,6 +412,15 @@ public class Desktop
             flags |= View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
         }
         return flags;
+    }
+
+    /**
+     * Shows the soft keyboard if no physical keyboard is attached.
+     */
+    public void showKeyboard() {
+        if (!mHasPhysicalKeyboard) {
+            UiUtils.showKeyboard(mRemoteHostDesktop);
+        }
     }
 
     public void showSystemUi() {

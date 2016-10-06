@@ -11,7 +11,6 @@ import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
-import android.view.inputmethod.InputMethodManager;
 
 import org.chromium.chromoting.jni.Client;
 
@@ -56,19 +55,6 @@ public final class DesktopView extends SurfaceView {
      */
     public void destroy() {
         mInputHandler.detachEventListeners();
-    }
-
-    // TODO(yuweih): move showActionBar and showKeyboard out of this class.
-    /** Shows the action bar. */
-    public final void showActionBar() {
-        mDesktop.showSystemUi();
-    }
-
-    /** Shows the software keyboard. */
-    public final void showKeyboard() {
-        InputMethodManager inputManager =
-                (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-        inputManager.showSoftInput(this, 0);
     }
 
     /** An {@link Event} which is triggered when user touches the screen. */
