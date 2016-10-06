@@ -70,7 +70,11 @@ class NodeRareData : public GarbageCollectedFinalized<NodeRareData>,
 
   void clearNodeLists() { m_nodeLists.clear(); }
   NodeListsNodeData* nodeLists() const { return m_nodeLists.get(); }
+  // ensureNodeLists() and a following NodeListsNodeData functions must be
+  // wrapped with a ThreadState::GCForbiddenScope in order to avoid an
+  // initialized m_nodeLists is cleared by NodeRareData::traceAfterDispatch().
   NodeListsNodeData& ensureNodeLists() {
+    DCHECK(ThreadState::current()->isGCForbidden());
     if (!m_nodeLists)
       m_nodeLists = NodeListsNodeData::create();
     return *m_nodeLists;

@@ -40,6 +40,8 @@ Node* ChildNodeList::traverseForwardToOffset(unsigned offset,
                                              Node& currentNode,
                                              unsigned& currentOffset) const {
   DCHECK_LT(currentOffset, offset);
+  DCHECK_EQ(ownerNode().childNodes(), this);
+  DCHECK_EQ(&ownerNode(), currentNode.parentNode());
   for (Node* next = currentNode.nextSibling(); next;
        next = next->nextSibling()) {
     if (++currentOffset == offset)
@@ -52,6 +54,8 @@ Node* ChildNodeList::traverseBackwardToOffset(unsigned offset,
                                               Node& currentNode,
                                               unsigned& currentOffset) const {
   DCHECK_GT(currentOffset, offset);
+  DCHECK_EQ(ownerNode().childNodes(), this);
+  DCHECK_EQ(&ownerNode(), currentNode.parentNode());
   for (Node* previous = currentNode.previousSibling(); previous;
        previous = previous->previousSibling()) {
     if (--currentOffset == offset)
