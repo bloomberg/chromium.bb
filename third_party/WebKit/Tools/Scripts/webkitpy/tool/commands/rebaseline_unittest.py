@@ -420,7 +420,7 @@ class TestRebaselineJson(BaseTestCase):
 
         self._write(self.mac_expectations_path, "Bug(x) userscripts/first-test.html [ Failure ]\n")
         self._write("userscripts/first-test.html", "Dummy test contents")
-        self.command._rebaseline(self.options(), {"userscripts/first-test.html": {Build("MOCK Win7"): ["txt", "png"]}})
+        self.command.rebaseline(self.options(), {"userscripts/first-test.html": {Build("MOCK Win7"): ["txt", "png"]}})
 
         self.assertEqual(self.tool.executive.calls, [])
 
@@ -428,7 +428,7 @@ class TestRebaselineJson(BaseTestCase):
         self._setup_mock_build_data()
 
         self._write("userscripts/first-test.html", "Dummy test contents")
-        self.command._rebaseline(self.options(), {"userscripts/first-test.html": {Build("MOCK Win7"): ["txt", "png"]}})
+        self.command.rebaseline(self.options(), {"userscripts/first-test.html": {Build("MOCK Win7"): ["txt", "png"]}})
 
         # Note that we have one run_in_parallel() call followed by a run_command()
         self.assertEqual(
@@ -446,7 +446,7 @@ class TestRebaselineJson(BaseTestCase):
         self._setup_mock_build_data()
 
         self._write("userscripts/first-test.html", "Dummy test contents")
-        self.command._rebaseline(self.options(), {"userscripts/first-test.html": {Build("MOCK Win7 (dbg)"): ["txt", "png"]}})
+        self.command.rebaseline(self.options(), {"userscripts/first-test.html": {Build("MOCK Win7 (dbg)"): ["txt", "png"]}})
 
         # Note that we have one run_in_parallel() call followed by a run_command()
         self.assertEqual(
@@ -463,7 +463,7 @@ class TestRebaselineJson(BaseTestCase):
     def test_no_optimize(self):
         self._setup_mock_build_data()
         self._write("userscripts/first-test.html", "Dummy test contents")
-        self.command._rebaseline(
+        self.command.rebaseline(
             self.options(optimize=False),
             {"userscripts/first-test.html": {Build("MOCK Win7"): ["txt", "png"]}})
 
@@ -480,7 +480,7 @@ class TestRebaselineJson(BaseTestCase):
     def test_results_directory(self):
         self._setup_mock_build_data()
         self._write("userscripts/first-test.html", "Dummy test contents")
-        self.command._rebaseline(
+        self.command.rebaseline(
             self.options(optimize=False, results_directory='/tmp'),
             {"userscripts/first-test.html": {Build("MOCK Win7"): ["txt", "png"]}})
 
@@ -522,7 +522,7 @@ class TestRebaselineJsonUpdatesExpectationsFiles(BaseTestCase):
         self._write("userscripts/first-test.html", "Dummy test contents")
         self._setup_mock_build_data()
 
-        self.command._rebaseline(
+        self.command.rebaseline(
             self.options(),
             {"userscripts/first-test.html": {Build("MOCK Mac10.11"): ["txt", "png"]}})
 
@@ -536,7 +536,7 @@ class TestRebaselineJsonUpdatesExpectationsFiles(BaseTestCase):
         self._write(self.mac_expectations_path, "Bug(x) userscripts/first-test.html [ Failure ]\n")
         self._write("userscripts/first-test.html", "Dummy test contents")
         self._setup_mock_build_data()
-        self.command._rebaseline(
+        self.command.rebaseline(
             self.options(),
             {"userscripts/first-test.html": {Build("MOCK Mac10.11"): ["txt", "png"]}})
         new_expectations = self._read(self.mac_expectations_path)
@@ -552,7 +552,7 @@ class TestRebaselineJsonUpdatesExpectationsFiles(BaseTestCase):
         self._write("userscripts/first-test.html", "Dummy test contents")
         self._setup_mock_build_data()
 
-        self.command._rebaseline(
+        self.command.rebaseline(
             self.options(),
             {"userscripts/first-test.html": {Build("MOCK Mac10.11"): ["txt", "png"]}})
 
@@ -572,7 +572,7 @@ class TestRebaselineJsonUpdatesExpectationsFiles(BaseTestCase):
         self._write("userscripts/first-test.html", "Dummy test contents")
         self._setup_mock_build_data()
 
-        self.command._rebaseline(
+        self.command.rebaseline(
             self.options(),
             {"userscripts/first-test.html": {Build("MOCK Mac10.11"): ["txt", "png"]}})
 
@@ -592,7 +592,7 @@ class TestRebaselineJsonUpdatesExpectationsFiles(BaseTestCase):
         self._write("userscripts/first-test.html", "Dummy test contents")
         self._setup_mock_build_data()
 
-        self.command._rebaseline(
+        self.command.rebaseline(
             self.options(),
             {"userscripts/first-test.html": {Build("MOCK Mac10.11"): ["txt", "png"]}})
 

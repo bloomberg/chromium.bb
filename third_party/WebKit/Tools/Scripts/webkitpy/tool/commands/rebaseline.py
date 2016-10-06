@@ -499,7 +499,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         change_set = self._extract_scm_changes(command_results)
 
         # TODO(qyearsley): Instead of updating the SCM state here, aggregate changes
-        # and update once in _rebaseline. See http://crbug.com/639410.
+        # and update once in rebaseline. See http://crbug.com/639410.
         if update_scm:
             if change_set.files_to_delete:
                 self._tool.scm().delete_list(change_set.files_to_delete)
@@ -508,7 +508,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
 
         return change_set.lines_to_remove
 
-    def _rebaseline(self, options, test_prefix_list, update_scm=True):
+    def rebaseline(self, options, test_prefix_list, update_scm=True):
         """Downloads new baselines in parallel, then updates expectations files
         and optimizes baselines.
 
@@ -589,7 +589,7 @@ class RebaselineJson(AbstractParallelRebaselineCommand):
 
     def execute(self, options, args, tool):
         self._tool = tool
-        self._rebaseline(options, json.loads(sys.stdin.read()))
+        self.rebaseline(options, json.loads(sys.stdin.read()))
 
 
 class RebaselineExpectations(AbstractParallelRebaselineCommand):
@@ -639,7 +639,7 @@ class RebaselineExpectations(AbstractParallelRebaselineCommand):
             _log.warning("Did not find any tests marked Rebaseline.")
             return
 
-        self._rebaseline(options, self._test_prefix_list)
+        self.rebaseline(options, self._test_prefix_list)
 
 
 class Rebaseline(AbstractParallelRebaselineCommand):
@@ -689,4 +689,4 @@ class Rebaseline(AbstractParallelRebaselineCommand):
         if options.verbose:
             _log.debug("rebaseline-json: " + str(test_prefix_list))
 
-        self._rebaseline(options, test_prefix_list)
+        self.rebaseline(options, test_prefix_list)

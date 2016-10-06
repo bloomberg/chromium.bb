@@ -161,14 +161,12 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         """Tests the list of commands that are invoked when rebaseline is called."""
         # First write test contents to the mock filesystem so that
         # fast/dom/prototype-taco.html is considered a real test to rebaseline.
-        # TODO(qyearsley): Change this to avoid accessing protected methods.
-        # pylint: disable=protected-access
         port = self.tool.port_factory.get('test-win-win7')
         self._write(
             port.host.filesystem.join(port.layout_tests_dir(), 'fast/dom/prototype-taco.html'),
             'test contents')
 
-        self.command._rebaseline(
+        self.command.rebaseline(
             self.command_options(issue=11112222),
             {"fast/dom/prototype-taco.html": {Build("MOCK Try Win", 5000): ["txt", "png"]}})
 

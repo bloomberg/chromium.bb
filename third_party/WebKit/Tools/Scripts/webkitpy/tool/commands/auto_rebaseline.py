@@ -259,7 +259,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
                 did_switch_branches = True
 
             if test_prefix_list:
-                self._rebaseline(options, test_prefix_list)
+                self.rebaseline(options, test_prefix_list)
 
             if options.dry_run:
                 return
