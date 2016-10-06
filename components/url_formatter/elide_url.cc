@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -125,6 +126,16 @@ bool ShouldShowScheme(base::StringPiece scheme,
   }
 
   return true;
+}
+
+// TODO(jshin): Come up with a way to show Bidi URLs 'safely' (e.g. wrap up
+// the entire url with {LSI, PDI} and individual domain labels with {FSI, PDI}).
+// See http://crbug.com/650760 . For now, fall back to punycode if there's a
+// strong RTL character.
+base::string16 HostForDisplay(base::StringPiece host_in_puny) {
+  base::string16 host = url_formatter::IDNToUnicode(host_in_puny);
+  return base::i18n::StringContainsStrongRTLChars(host) ?
+      base::ASCIIToUTF16(host_in_puny) : host;
 }
 
 }  // namespace
@@ -363,7 +374,7 @@ base::string16 FormatUrlForSecurityDisplay(const GURL& url,
   base::string16 result;
   if (ShouldShowScheme(scheme, scheme_display))
     result = base::UTF8ToUTF16(scheme) + scheme_separator;
-  result += base::UTF8ToUTF16(host);
+  result += HostForDisplay(host);
 
   const int port = origin.IntPort();
   const int default_port = url::DefaultPortForScheme(
@@ -389,7 +400,7 @@ base::string16 FormatOriginForSecurityDisplay(
   base::string16 result;
   if (ShouldShowScheme(scheme, scheme_display))
     result = base::UTF8ToUTF16(scheme) + scheme_separator;
-  result += base::UTF8ToUTF16(host);
+  result += HostForDisplay(host);
 
   int port = static_cast<int>(origin.port());
   const int default_port = url::DefaultPortForScheme(

@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/utf_offset_string_conversions.h"
 #include "net/base/escape.h"
 
@@ -133,7 +134,7 @@ void AppendFormattedHost(const GURL& url, base::string16* output);
 //
 // The input should be the canonicalized ASCII host name from GURL. This
 // function does NOT accept UTF-8!
-base::string16 IDNToUnicode(const std::string& host);
+base::string16 IDNToUnicode(base::StringPiece host);
 
 // If |text| starts with "www." it is removed, otherwise |text| is returned
 // unmodified.

@@ -29,7 +29,7 @@ namespace url_formatter {
 namespace {
 
 base::string16 IDNToUnicodeWithAdjustments(
-    const std::string& host,
+    base::StringPiece host,
     base::OffsetAdjuster::Adjustments* adjustments);
 bool IDNToUnicodeOneComponent(const base::char16* comp,
                               size_t comp_len,
@@ -192,8 +192,7 @@ base::string16 FormatViewSourceUrl(
 // TODO(brettw): We may want to skip this step in the case of file URLs to
 // allow unicode UNC hostnames regardless of encodings.
 base::string16 IDNToUnicodeWithAdjustments(
-    const std::string& host,
-    base::OffsetAdjuster::Adjustments* adjustments) {
+    base::StringPiece host, base::OffsetAdjuster::Adjustments* adjustments) {
   if (adjustments)
     adjustments->clear();
   // Convert the ASCII input to a base::string16 for ICU.
@@ -782,7 +781,7 @@ void AppendFormattedHost(const GURL& url, base::string16* output) {
       HostComponentTransform(), output, NULL, NULL);
 }
 
-base::string16 IDNToUnicode(const std::string& host) {
+base::string16 IDNToUnicode(base::StringPiece host) {
   return IDNToUnicodeWithAdjustments(host, nullptr);
 }
 

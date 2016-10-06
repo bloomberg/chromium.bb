@@ -258,8 +258,8 @@ const OriginTestData common_tests[] = {
      L"https://www.google.com", L"www.google.com", L"www.google.com"},
     {"Standard HTTP port, IDN Chinese",
      "http://\xe4\xb8\xad\xe5\x9b\xbd.icom.museum:80",
-     L"http://xn--fiqs8s.icom.museum", L"xn--fiqs8s.icom.museum",
-     L"http://xn--fiqs8s.icom.museum"},
+     L"http://\x4e2d\x56fd.icom.museum", L"\x4e2d\x56fd.icom.museum",
+     L"http://\x4e2d\x56fd.icom.museum"},
     {"HTTP URL, IDN Hebrew (RTL)",
      "http://"
      "\xd7\x90\xd7\x99\xd7\xa7\xd7\x95\xd7\xb4\xd7\x9d."

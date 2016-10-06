@@ -64,9 +64,11 @@ enum class SchemeDisplay {
 // other circumstances when people need to distinguish sites, origins, or
 // otherwise-simplified URLs from each other).
 //
-// Internationalized domain names (IDN) may be presented in Unicode if
-// they're regarded safe. See |url_formatter::FormatUrl| for more details on
-// the algorithm).
+// Internationalized domain names (IDN) will be presented in Unicode if
+// they're regarded safe except that domain names with RTL characters
+// will still be in ACE/punycode for now (http://crbug.com/650760).
+// See http://dev.chromium.org/developers/design-documents/idn-in-google-chrome
+// for details on the algorithm.
 //
 // - Omits the path for standard schemes, excepting file and filesystem.
 // - Omits the port if it is the default for the scheme.

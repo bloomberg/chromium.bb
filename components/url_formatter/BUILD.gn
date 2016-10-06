@@ -25,6 +25,7 @@ static_library("url_formatter") {
 
   deps = [
     "//base",
+    "//base:i18n",
     "//net",
     "//third_party/icu",
     "//url",
