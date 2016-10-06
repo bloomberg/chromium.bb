@@ -21,7 +21,6 @@
 #include "components/arc/instance_holder.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
-#include "device/bluetooth/bluetooth_advertisement.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "device/bluetooth/bluetooth_local_gatt_service.h"
@@ -274,17 +273,6 @@ class ArcBluetoothBridge
   void RemoveSdpRecord(uint32_t service_handle,
                        const RemoveSdpRecordCallback& callback) override;
 
-  // Set up or disable multiple advertising.
-  void ReserveAdvertisementHandle(
-      const ReserveAdvertisementHandleCallback& callback) override;
-  void BroadcastAdvertisement(
-      int32_t adv_handle,
-      std::unique_ptr<device::BluetoothAdvertisement::Data> advertisement,
-      const BroadcastAdvertisementCallback& callback) override;
-  void ReleaseAdvertisementHandle(
-      int32_t adv_handle,
-      const ReleaseAdvertisementHandleCallback& callback) override;
-
   // Chrome observer callbacks
   void OnPoweredOn(
       const base::Callback<void(mojom::BluetoothAdapterState)>& callback) const;
@@ -392,42 +380,6 @@ class ArcBluetoothBridge
   void OnSetAdapterProperty(mojom::BluetoothStatus success,
                             mojom::BluetoothPropertyPtr property);
 
-  // Callbacks for managing advertisements registered from the instance.
-
-  // Called when we have an open slot in the advertisement map and want to
-  // register the advertisement given by |data| for handle |adv_handle|.
-  void OnReadyToRegisterAdvertisement(
-      const BroadcastAdvertisementCallback& callback,
-      int32_t adv_handle,
-      std::unique_ptr<device::BluetoothAdvertisement::Data> data);
-  // Called when we've successfully registered a new advertisement for
-  // handle |adv_handle|.
-  void OnRegisterAdvertisementDone(
-      const BroadcastAdvertisementCallback& callback,
-      int32_t adv_handle,
-      scoped_refptr<device::BluetoothAdvertisement> advertisement);
-  // Called when the attempt to register an advertisement for handle
-  // |adv_handle| has failed. |adv_handle| remains reserved, but no
-  // advertisement is associated with it.
-  void OnRegisterAdvertisementError(
-      const BroadcastAdvertisementCallback& callback,
-      int32_t adv_handle,
-      device::BluetoothAdvertisement::ErrorCode error_code);
-  // Both of the following are called after we've tried to unregister
-  // the advertisement for |adv_handle|. Either way, we will no
-  // longer be broadcasting this advertisement, so in either case, the
-  // handle can be released.
-  void OnUnregisterAdvertisementDone(
-      const ReleaseAdvertisementHandleCallback& callback,
-      int32_t adv_handle);
-  void OnUnregisterAdvertisementError(
-      const ReleaseAdvertisementHandleCallback& callback,
-      int32_t adv_handle,
-      device::BluetoothAdvertisement::ErrorCode error_code);
-  // Find the next free advertisement handle and put it in *adv_handle,
-  // or return false if the advertisement map is full.
-  bool GetAdvertisementHandle(int32_t* adv_handle);
-
   bool CalledOnValidThread();
 
   mojo::Binding<mojom::BluetoothHost> binding_;
@@ -458,21 +410,6 @@ class ArcBluetoothBridge
   base::OneShotTimer discovery_off_timer_;
   // Timer to turn adapter discoverable off.
   base::OneShotTimer discoverable_off_timer_;
-
-  // Holds advertising data registered by the instance.
-  //
-  // When a handle is reserved, an entry is placed into the advertisements_
-  // map. This entry is not yet associated with a device::BluetoothAdvertisement
-  // because the instance hasn't sent us any advertising data yet, so its
-  // mapped value is nullptr until that happens. Thus we have three states for a
-  // handle:
-  // * unmapped -> free
-  // * mapped to nullptr -> reserved, awaiting data
-  // * mapped to a device::BluetoothAdvertisement -> in use, and the mapped
-  //   BluetoothAdvertisement is currently registered with the adapter.
-  enum { kMaxAdvertisements = 5 };
-  std::map<int32_t, scoped_refptr<device::BluetoothAdvertisement>>
-      advertisements_;
 
   base::ThreadChecker thread_checker_;
 

@@ -61,10 +61,6 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothLEAdvertisingManagerClient
   FakeBluetoothLEAdvertisementServiceProvider* GetAdvertisementServiceProvider(
       const std::string& uuid);
 
-  int currently_registered() { return currently_registered_.size(); }
-
-  enum : size_t { kMaxBluezAdvertisements = 5 };
-
  private:
   // Map of a D-Bus object path to the FakeBluetoothAdvertisementServiceProvider
   // registered for it; maintained by RegisterAdvertisementServiceProvider() and
@@ -75,8 +71,9 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothLEAdvertisingManagerClient
       ServiceProviderMap;
   ServiceProviderMap service_provider_map_;
 
-  // Holds currently registered advertisements.
-  std::vector<dbus::ObjectPath> currently_registered_;
+  // Holds the currently registered advertisement. If there is no advertisement
+  // registered, this path is empty.
+  dbus::ObjectPath currently_registered_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeBluetoothLEAdvertisingManagerClient);
 };
