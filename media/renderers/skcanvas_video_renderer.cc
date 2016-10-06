@@ -787,6 +787,7 @@ bool SkCanvasVideoRenderer::UpdateLastImage(
       auto* video_generator = new VideoImageGenerator(video_frame);
       last_image_ = SkImage::MakeFromGenerator(video_generator);
     }
+    CorrectLastImageDimensions(gfx::RectToSkIRect(video_frame->visible_rect()));
     if (!last_image_)  // Couldn't create the SkImage.
       return false;
     last_timestamp_ = video_frame->timestamp();
@@ -794,6 +795,21 @@ bool SkCanvasVideoRenderer::UpdateLastImage(
   last_image_deleting_timer_.Reset();
   DCHECK(!!last_image_);
   return true;
+}
+
+void SkCanvasVideoRenderer::CorrectLastImageDimensions(
+    const SkIRect& visible_rect) {
+  last_image_dimensions_for_testing_ = visible_rect.size();
+  if (!last_image_)
+    return;
+  if (last_image_->dimensions() != visible_rect.size() &&
+      last_image_->bounds().contains(visible_rect)) {
+    last_image_ = last_image_->makeSubset(visible_rect);
+  }
+}
+
+SkISize SkCanvasVideoRenderer::LastImageDimensionsForTesting() {
+  return last_image_dimensions_for_testing_;
 }
 
 }  // namespace media

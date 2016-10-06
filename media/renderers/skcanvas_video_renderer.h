@@ -99,6 +99,11 @@ class MEDIA_EXPORT SkCanvasVideoRenderer {
   // never be painted again, so we can release the resource.
   void ResetCache();
 
+  void CorrectLastImageDimensions(const SkIRect& visible_rect);
+
+  // Used for unit test.
+  SkISize LastImageDimensionsForTesting();
+
  private:
   // Update the cache holding the most-recently-painted frame. Returns false
   // if the image couldn't be updated.
@@ -114,6 +119,9 @@ class MEDIA_EXPORT SkCanvasVideoRenderer {
 
   // Used for DCHECKs to ensure method calls executed in the correct thread.
   base::ThreadChecker thread_checker_;
+
+  // Used for unit test.
+  SkISize last_image_dimensions_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(SkCanvasVideoRenderer);
 };

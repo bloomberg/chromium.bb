@@ -15,7 +15,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libyuv/include/libyuv/convert.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -546,4 +548,46 @@ TEST_F(SkCanvasVideoRendererTest, ContextLost) {
   renderer_.Paint(video_frame, &canvas, kNaturalRect, paint, VIDEO_ROTATION_90,
                   context_3d);
 }
+
+void EmptyCallback(const gpu::SyncToken& sync_token) {}
+
+TEST_F(SkCanvasVideoRendererTest, CorrectFrameSizeToVisibleRect) {
+  int fWidth{16}, fHeight{16};
+  SkImageInfo imInfo =
+      SkImageInfo::MakeN32(fWidth, fHeight, kOpaque_SkAlphaType);
+
+  sk_sp<const GrGLInterface> glInterface(GrGLCreateNullInterface());
+  sk_sp<GrContext> grContext(
+      GrContext::Create(kOpenGL_GrBackend,
+                        reinterpret_cast<GrBackendContext>(glInterface.get())));
+
+  sk_sp<SkSurface> skSurface =
+      SkSurface::MakeRenderTarget(grContext.get(), SkBudgeted::kYes, imInfo);
+  SkCanvas* canvas = skSurface->getCanvas();
+
+  TestGLES2Interface gles2;
+  Context3D context_3d(&gles2, grContext.get());
+  gfx::Size coded_size(fWidth, fHeight);
+  gfx::Size visible_size(fWidth / 2, fHeight / 2);
+
+  gpu::MailboxHolder mailbox_holders[VideoFrame::kMaxPlanes];
+  for (size_t i = 0; i < VideoFrame::kMaxPlanes; i++) {
+    mailbox_holders[i] = gpu::MailboxHolder(
+        gpu::Mailbox::Generate(), gpu::SyncToken(), GL_TEXTURE_RECTANGLE_ARB);
+  }
+
+  auto video_frame = VideoFrame::WrapNativeTextures(
+      PIXEL_FORMAT_I420, mailbox_holders, base::Bind(EmptyCallback), coded_size,
+      gfx::Rect(visible_size), visible_size,
+      base::TimeDelta::FromMilliseconds(4));
+
+  gfx::RectF visible_rect(visible_size.width(), visible_size.height());
+  SkPaint paint;
+  renderer_.Paint(video_frame, canvas, visible_rect, paint, VIDEO_ROTATION_0,
+                  context_3d);
+
+  EXPECT_EQ(fWidth / 2, renderer_.LastImageDimensionsForTesting().width());
+  EXPECT_EQ(fWidth / 2, renderer_.LastImageDimensionsForTesting().height());
+}
+
 }  // namespace media
