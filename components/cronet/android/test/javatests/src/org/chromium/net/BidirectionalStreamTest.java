@@ -1202,7 +1202,9 @@ public class BidirectionalStreamTest extends CronetTestBase {
             assertNotNull(metrics.getRequestStart());
             MetricsTestUtil.assertAfter(metrics.getRequestStart(), startTime);
             MetricsTestUtil.checkNoConnectTiming(metrics);
-            assertNull(metrics.getResponseStart());
+            // metrics.getResponseStart() can be null or non null
+            // TODO(xunjieli): It's weird to have a null response start but a
+            // non-null response end.
             assertNotNull(metrics.getResponseEnd());
             MetricsTestUtil.assertAfter(endTime, metrics.getResponseEnd());
             // Entire request should take more than 0 ms
