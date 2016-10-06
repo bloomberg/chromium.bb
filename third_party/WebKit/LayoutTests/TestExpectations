@@ -688,8 +688,6 @@ crbug.com/630342 virtual/mse-1mb-buffers/http/tests/media/media-source/stream_me
 crbug.com/630342 http/tests/media/media-source/stream_memory_tests/mediasource-appendbuffer-quota-exceeded-1mb-buffers.html [ Skip ]
 crbug.com/630342 http/tests/media/media-source/stream_memory_tests/mediasource-appendstream-quota-exceeded-1mb-buffers.html [ Skip ]
 
-crbug.com/633016 http/tests/media/media-source/mediasource-errors.html [ Failure Pass ]
-
 # On these platforms (all but Android) media tests don't currently use gpu-accelerated (proprietary) codecs, so no
 # benefit to running them again with gpu acceleration enabled.
 crbug.com/555703 [ Linux Mac Win ] virtual/media-gpu-accelerated [ Skip ]

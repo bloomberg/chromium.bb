@@ -424,22 +424,26 @@ std::string ChunkDemuxer::GetDisplayName() const {
   return "ChunkDemuxer";
 }
 
-void ChunkDemuxer::Initialize(
-    DemuxerHost* host,
-    const PipelineStatusCB& cb,
-    bool enable_text_tracks) {
+void ChunkDemuxer::Initialize(DemuxerHost* host,
+                              const PipelineStatusCB& init_cb,
+                              bool enable_text_tracks) {
   DVLOG(1) << "Init()";
 
   base::AutoLock auto_lock(lock_);
-
-  // The |init_cb_| must only be run after this method returns, so always post.
-  init_cb_ = BindToCurrentLoop(cb);
   if (state_ == SHUTDOWN) {
-    base::ResetAndReturn(&init_cb_).Run(DEMUXER_ERROR_COULD_NOT_OPEN);
+    // Init cb must only be run after this method returns, so post.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(init_cb, DEMUXER_ERROR_COULD_NOT_OPEN));
     return;
   }
+
   DCHECK_EQ(state_, WAITING_FOR_INIT);
   host_ = host;
+  // Do not post init_cb once this function returns because if there is an
+  // error after initialization, the error might be reported before init_cb
+  // has a chance to run. This is because ChunkDemuxer::ReportError_Locked
+  // directly calls DemuxerHost::OnDemuxerError: crbug.com/633016.
+  init_cb_ = init_cb;
   enable_text_ = enable_text_tracks;
 
   ChangeState_Locked(INITIALIZING);

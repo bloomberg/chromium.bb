@@ -149,6 +149,10 @@ static void OnSeekDone_OKExpected(bool* called, PipelineStatus status) {
 }
 
 class ChunkDemuxerTest : public ::testing::Test {
+ public:
+  // Public method because test cases use it directly.
+  MOCK_METHOD1(DemuxerInitialized, void(PipelineStatus));
+
  protected:
   enum CodecsIndex {
     AUDIO,
@@ -684,11 +688,6 @@ class ChunkDemuxerTest : public ::testing::Test {
     ASSERT_FALSE(AppendData(garbage_cluster.get(), garbage_cluster_size));
   }
 
-  void InitDoneCalled(PipelineStatus expected_status,
-                      PipelineStatus status) {
-    EXPECT_EQ(status, expected_status);
-  }
-
   PipelineStatusCB CreateInitDoneCB(const base::TimeDelta& expected_duration,
                                     PipelineStatus expected_status) {
     if (expected_duration != kNoTimestamp)
@@ -697,9 +696,9 @@ class ChunkDemuxerTest : public ::testing::Test {
   }
 
   PipelineStatusCB CreateInitDoneCB(PipelineStatus expected_status) {
-    return base::Bind(&ChunkDemuxerTest::InitDoneCalled,
-                      base::Unretained(this),
-                      expected_status);
+    EXPECT_CALL(*this, DemuxerInitialized(expected_status));
+    return base::Bind(&ChunkDemuxerTest::DemuxerInitialized,
+                      base::Unretained(this));
   }
 
   enum StreamFlags {
@@ -1571,13 +1570,11 @@ TEST_F(ChunkDemuxerTest, InitSegmentSetsNeedRandomAccessPointFlag) {
   CheckExpectedBuffers(text_stream, "25K 40K 80K 90K");
 }
 
-// Make sure that the demuxer reports an error if Shutdown()
-// is called before all the initialization segments are appended.
 TEST_F(ChunkDemuxerTest, Shutdown_BeforeAllInitSegmentsAppended) {
   EXPECT_CALL(*this, DemuxerOpened());
-  demuxer_->Initialize(
-      &host_, CreateInitDoneCB(
-          kDefaultDuration(), DEMUXER_ERROR_COULD_NOT_OPEN), true);
+  demuxer_->Initialize(&host_, base::Bind(&ChunkDemuxerTest::DemuxerInitialized,
+                                          base::Unretained(this)),
+                       true);
 
   EXPECT_EQ(AddId("audio", HAS_AUDIO), ChunkDemuxer::kOk);
   EXPECT_EQ(AddId("video", HAS_VIDEO), ChunkDemuxer::kOk);
@@ -1591,9 +1588,9 @@ TEST_F(ChunkDemuxerTest, Shutdown_BeforeAllInitSegmentsAppended) {
 
 TEST_F(ChunkDemuxerTest, Shutdown_BeforeAllInitSegmentsAppendedText) {
   EXPECT_CALL(*this, DemuxerOpened());
-  demuxer_->Initialize(
-      &host_, CreateInitDoneCB(
-          kDefaultDuration(), DEMUXER_ERROR_COULD_NOT_OPEN), true);
+  demuxer_->Initialize(&host_, base::Bind(&ChunkDemuxerTest::DemuxerInitialized,
+                                          base::Unretained(this)),
+                       true);
 
   EXPECT_EQ(AddId("audio", HAS_AUDIO), ChunkDemuxer::kOk);
   EXPECT_EQ(AddId("video_and_text", HAS_VIDEO), ChunkDemuxer::kOk);
@@ -1664,8 +1661,8 @@ TEST_F(ChunkDemuxerTest, AppendDataAfterSeek) {
 
 // Test that parsing errors are handled for clusters appended after init.
 TEST_F(ChunkDemuxerTest, ErrorWhileParsingClusterAfterInit) {
+  InSequence s;
   ASSERT_TRUE(InitDemuxer(HAS_AUDIO | HAS_VIDEO));
-  ASSERT_TRUE(AppendCluster(kDefaultFirstCluster()));
 
   EXPECT_MEDIA_LOG(StreamParsingFailed());
   EXPECT_CALL(host_, OnDemuxerError(CHUNK_DEMUXER_ERROR_APPEND_FAILED));
@@ -3110,7 +3107,9 @@ TEST_F(ChunkDemuxerTest, EndOfStreamStillSetAfterSeek) {
 
 TEST_F(ChunkDemuxerTest, GetBufferedRangesBeforeInitSegment) {
   EXPECT_CALL(*this, DemuxerOpened());
-  demuxer_->Initialize(&host_, CreateInitDoneCB(PIPELINE_OK), true);
+  demuxer_->Initialize(&host_, base::Bind(&ChunkDemuxerTest::DemuxerInitialized,
+                                          base::Unretained(this)),
+                       true);
   ASSERT_EQ(AddId("audio", HAS_AUDIO), ChunkDemuxer::kOk);
   ASSERT_EQ(AddId("video", HAS_VIDEO), ChunkDemuxer::kOk);
 

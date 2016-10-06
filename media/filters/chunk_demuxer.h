@@ -194,7 +194,7 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // |enable_text| Process inband text tracks in the normal way when true,
   //   otherwise ignore them.
   void Initialize(DemuxerHost* host,
-                  const PipelineStatusCB& cb,
+                  const PipelineStatusCB& init_cb,
                   bool enable_text_tracks) override;
   void Stop() override;
   void Seek(base::TimeDelta time, const PipelineStatusCB& cb) override;
