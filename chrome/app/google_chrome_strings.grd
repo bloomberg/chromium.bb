@@ -320,14 +320,9 @@ chromium_strings.grd. -->
           Welcome to Google Chrome
         </message>
       </if>
-      <if expr="not chromeos">
-        <message name="IDS_EXTERNAL_PROTOCOL_INFORMATION" desc="General information about what Chrome is trying to do when opening this external protocol">
-          Google Chrome needs to launch an external application to handle <ph name="SCHEME">$1<ex>acrobat:</ex></ph> links. The link requested is <ph name="PROTOLINK">$2<ex>acrobat:yourpdf</ex></ph>.
-        </message>
-      </if>
       <if expr="chromeos">
-        <message name="IDS_EXTERNAL_PROTOCOL_INFORMATION" desc="General information about what Chrome is trying to do when opening this external protocol">
-          Google Chrome OS does not support launching an external application to handle <ph name="SCHEME">$1<ex>acrobat:</ex></ph> links. The link requested is <ph name="PROTOLINK">$2<ex>acrobat:yourpdf</ex></ph>.
+        <message name="IDS_EXTERNAL_PROTOCOL_TITLE" desc="External Protocol Dialog Title">
+          Google Chrome OS cannot open this page.
         </message>
       </if>
       <!-- Strings used to warn that an OS is not supported -->

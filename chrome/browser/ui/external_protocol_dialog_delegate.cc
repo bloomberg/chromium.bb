@@ -4,16 +4,24 @@
 
 #include "chrome/browser/ui/external_protocol_dialog_delegate.h"
 
-#include <string>
-
-#include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread.h"
-#include "base/threading/thread_restrictions.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/text_elider.h"
+
+namespace {
+
+const size_t kMaxCommandSize = 32;
+
+base::string16 ElideCommandName(const base::string16& command_name) {
+  base::string16 elided_command;
+  gfx::ElideString(command_name, kMaxCommandSize, &elided_command);
+  return elided_command;
+}
+
+}  // namespace
 
 ExternalProtocolDialogDelegate::ExternalProtocolDialogDelegate(
     const GURL& url,
@@ -27,53 +35,44 @@ ExternalProtocolDialogDelegate::ExternalProtocolDialogDelegate(
 ExternalProtocolDialogDelegate::~ExternalProtocolDialogDelegate() {
 }
 
+base::string16 ExternalProtocolDialogDelegate::GetDialogButtonLabel(
+    ui::DialogButton button) const {
+  if (button == ui::DIALOG_BUTTON_OK) {
+    return l10n_util::GetStringFUTF16(IDS_EXTERNAL_PROTOCOL_OK_BUTTON_TEXT,
+                                      ElideCommandName(program_name_));
+  }
+  return l10n_util::GetStringUTF16(IDS_CANCEL);
+}
+
 base::string16 ExternalProtocolDialogDelegate::GetMessageText() const {
-  const size_t kMaxUrlWithoutSchemeSize = 256;
-  const size_t kMaxCommandSize = 256;
-  base::string16 elided_url_without_scheme;
-  base::string16 elided_command;
-  gfx::ElideString(base::ASCIIToUTF16(url().possibly_invalid_spec()),
-                  kMaxUrlWithoutSchemeSize, &elided_url_without_scheme);
-  gfx::ElideString(program_name_, kMaxCommandSize, &elided_command);
-
-  base::string16 message_text = l10n_util::GetStringFUTF16(
-      IDS_EXTERNAL_PROTOCOL_INFORMATION,
-      base::ASCIIToUTF16(url().scheme() + ":"),
-      elided_url_without_scheme) + base::ASCIIToUTF16("\n\n");
-
-  message_text += l10n_util::GetStringFUTF16(
-      IDS_EXTERNAL_PROTOCOL_APPLICATION_TO_LAUNCH,
-      elided_command) + base::ASCIIToUTF16("\n\n");
-
-  message_text += l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_WARNING);
-  return message_text;
+  return base::string16();
 }
 
 base::string16 ExternalProtocolDialogDelegate::GetCheckboxText() const {
-  return l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_CHECKBOX_TEXT);
+  return l10n_util::GetStringFUTF16(IDS_EXTERNAL_PROTOCOL_CHECKBOX_TEXT,
+                                    ElideCommandName(program_name_));
 }
 
 base::string16 ExternalProtocolDialogDelegate::GetTitleText() const {
-  return l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_TITLE);
+  return l10n_util::GetStringFUTF16(IDS_EXTERNAL_PROTOCOL_TITLE,
+                                    ElideCommandName(program_name_));
 }
 
-void ExternalProtocolDialogDelegate::DoAccept(
-    const GURL& url,
-    bool dont_block) const {
+void ExternalProtocolDialogDelegate::DoAccept(const GURL& url,
+                                              bool dont_block) const {
   if (dont_block) {
-      ExternalProtocolHandler::SetBlockState(
-          url.scheme(), ExternalProtocolHandler::DONT_BLOCK);
+    ExternalProtocolHandler::SetBlockState(url.scheme(),
+                                           ExternalProtocolHandler::DONT_BLOCK);
   }
 
   ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(
       url, render_process_host_id_, tab_contents_id_);
 }
 
-void ExternalProtocolDialogDelegate::DoCancel(
-    const GURL& url,
-    bool dont_block) const {
+void ExternalProtocolDialogDelegate::DoCancel(const GURL& url,
+                                              bool dont_block) const {
   if (dont_block) {
-      ExternalProtocolHandler::SetBlockState(
-          url.scheme(), ExternalProtocolHandler::BLOCK);
+    ExternalProtocolHandler::SetBlockState(url.scheme(),
+                                           ExternalProtocolHandler::BLOCK);
   }
 }

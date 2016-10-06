@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_PROTOCOL_DIALOG_DELEGATE_H_
 #define CHROME_BROWSER_UI_PROTOCOL_DIALOG_DELEGATE_H_
 
+#include "ui/base/ui_base_types.h"
 #include "url/gurl.h"
 
 // Interface implemented by objects that wish to show a dialog box Window for
@@ -26,6 +27,8 @@ class ProtocolDialogDelegate {
   // dialog is checked.
   virtual void DoCancel(const GURL& url, bool dont_block) const = 0;
 
+  virtual base::string16 GetDialogButtonLabel(
+      ui::DialogButton button) const = 0;
   virtual base::string16 GetMessageText() const = 0;
   virtual base::string16 GetCheckboxText() const = 0;
   virtual base::string16 GetTitleText() const = 0;

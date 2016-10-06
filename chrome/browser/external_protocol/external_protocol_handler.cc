@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
@@ -131,57 +132,6 @@ void OnDefaultProtocolClientWorkerFinished(
 }  // namespace
 
 // static
-void ExternalProtocolHandler::PrepopulateDictionary(
-    base::DictionaryValue* win_pref) {
-  static bool is_warm = false;
-  if (is_warm)
-    return;
-  is_warm = true;
-
-  static const char* const denied_schemes[] = {
-    "afp",
-    "data",
-    "disk",
-    "disks",
-    // ShellExecuting file:///C:/WINDOWS/system32/notepad.exe will simply
-    // execute the file specified!  Hopefully we won't see any "file" schemes
-    // because we think of file:// URLs as handled URLs, but better to be safe
-    // than to let an attacker format the user's hard drive.
-    "file",
-    "hcp",
-    "javascript",
-    "ms-help",
-    "nntp",
-    "shell",
-    "vbscript",
-    // view-source is a special case in chrome. When it comes through an
-    // iframe or a redirect, it looks like an external protocol, but we don't
-    // want to shellexecute it.
-    "view-source",
-    "vnd.ms.radio",
-  };
-
-  static const char* const allowed_schemes[] = {
-    "mailto",
-    "news",
-    "snews",
-  };
-
-  bool should_block;
-  for (size_t i = 0; i < arraysize(denied_schemes); ++i) {
-    if (!win_pref->GetBoolean(denied_schemes[i], &should_block)) {
-      win_pref->SetBoolean(denied_schemes[i], true);
-    }
-  }
-
-  for (size_t i = 0; i < arraysize(allowed_schemes); ++i) {
-    if (!win_pref->GetBoolean(allowed_schemes[i], &should_block)) {
-      win_pref->SetBoolean(allowed_schemes[i], false);
-    }
-  }
-}
-
-// static
 ExternalProtocolHandler::BlockState ExternalProtocolHandler::GetBlockState(
     const std::string& scheme) {
   // If we are being carpet bombed, block the request.
@@ -284,12 +234,69 @@ void ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(
 }
 
 // static
-void ExternalProtocolHandler::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterDictionaryPref(prefs::kExcludedSchemes);
-}
-
-// static
 void ExternalProtocolHandler::PermitLaunchUrl() {
   DCHECK(base::MessageLoopForUI::IsCurrent());
   g_accept_requests = true;
+}
+
+// static
+void ExternalProtocolHandler::PrepopulateDictionary(
+    base::DictionaryValue* win_pref) {
+  static bool is_warm = false;
+  if (is_warm)
+    return;
+  is_warm = true;
+
+  static const char* const denied_schemes[] = {
+    "afp",
+    "data",
+    "disk",
+    "disks",
+    // ShellExecuting file:///C:/WINDOWS/system32/notepad.exe will simply
+    // execute the file specified!  Hopefully we won't see any "file" schemes
+    // because we think of file:// URLs as handled URLs, but better to be safe
+    // than to let an attacker format the user's hard drive.
+    "file",
+    "hcp",
+    "javascript",
+    "ms-help",
+    "nntp",
+    "shell",
+    "vbscript",
+    // view-source is a special case in chrome. When it comes through an
+    // iframe or a redirect, it looks like an external protocol, but we don't
+    // want to shellexecute it.
+    "view-source",
+    "vnd.ms.radio",
+  };
+
+  static const char* const allowed_schemes[] = {
+    "mailto",
+    "news",
+    "snews",
+  };
+
+  bool should_block;
+  for (size_t i = 0; i < arraysize(denied_schemes); ++i) {
+    if (!win_pref->GetBoolean(denied_schemes[i], &should_block)) {
+      win_pref->SetBoolean(denied_schemes[i], true);
+    }
+  }
+
+  for (size_t i = 0; i < arraysize(allowed_schemes); ++i) {
+    if (!win_pref->GetBoolean(allowed_schemes[i], &should_block)) {
+      win_pref->SetBoolean(allowed_schemes[i], false);
+    }
+  }
+}
+
+// static
+void ExternalProtocolHandler::RecordMetrics(bool selected) {
+  UMA_HISTOGRAM_BOOLEAN("BrowserDialogs.ExternalProtocol.RememberCheckbox",
+                        selected);
+}
+
+// static
+void ExternalProtocolHandler::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterDictionaryPref(prefs::kExcludedSchemes);
 }

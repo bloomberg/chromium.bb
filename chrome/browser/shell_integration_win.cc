@@ -200,21 +200,28 @@ base::string16 GetAppForProtocolUsingAssocQuery(const GURL& url) {
 }
 
 base::string16 GetAppForProtocolUsingRegistry(const GURL& url) {
-  const base::string16 cmd_key_path =
-      base::ASCIIToUTF16(url.scheme() + "\\shell\\open\\command");
-  base::win::RegKey cmd_key(HKEY_CLASSES_ROOT,
-                            cmd_key_path.c_str(),
-                            KEY_READ);
-  base::string16 application_to_launch;
-  if (cmd_key.ReadValue(NULL, &application_to_launch) == ERROR_SUCCESS) {
-    const base::string16 url_spec =
-        base::ASCIIToUTF16(url.possibly_invalid_spec());
-    base::ReplaceSubstringsAfterOffset(&application_to_launch,
-                                       0,
-                                       L"%1",
-                                       url_spec);
-    return application_to_launch;
+  base::string16 command_to_launch;
+
+  // First, try and extract the application's display name.
+  base::string16 cmd_key_path = base::ASCIIToUTF16(url.scheme());
+  base::win::RegKey cmd_key_name(HKEY_CLASSES_ROOT, cmd_key_path.c_str(),
+                                 KEY_READ);
+  if (cmd_key_name.ReadValue(NULL, &command_to_launch) == ERROR_SUCCESS &&
+      !command_to_launch.empty()) {
+    return command_to_launch;
   }
+
+  // Otherwise, parse the command line in the registry, and return the basename
+  // of the program path if it exists.
+  cmd_key_path = base::ASCIIToUTF16(url.scheme() + "\\shell\\open\\command");
+  base::win::RegKey cmd_key_exe(HKEY_CLASSES_ROOT, cmd_key_path.c_str(),
+                                KEY_READ);
+  if (cmd_key_exe.ReadValue(NULL, &command_to_launch) == ERROR_SUCCESS) {
+    base::CommandLine command_line(
+        base::CommandLine::FromString(command_to_launch));
+    return command_line.GetProgram().BaseName().value();
+  }
+
   return base::string16();
 }
 

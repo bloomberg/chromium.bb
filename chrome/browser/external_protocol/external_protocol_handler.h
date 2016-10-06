@@ -67,6 +67,35 @@ class ExternalProtocolHandler {
                                     bool has_user_gesture,
                                     Delegate* delegate);
 
+  // Starts a url using the external protocol handler with the help
+  // of shellexecute. Should only be called if the protocol is whitelisted
+  // (checked in LaunchUrl) or if the user explicitly allows it. (By selecting
+  // "Launch Application" in an ExternalProtocolDialog.) It is assumed that the
+  // url has already been escaped, which happens in LaunchUrl.
+  // NOTE: You should Not call this function directly unless you are sure the
+  // url you have has been checked against the blacklist, and has been escaped.
+  // All calls to this function should originate in some way from LaunchUrl.
+  static void LaunchUrlWithoutSecurityCheck(const GURL& url,
+                                            int render_process_host_id,
+                                            int tab_contents_id);
+
+  // Allows LaunchUrl to proceed with launching an external protocol handler.
+  // This is typically triggered by a user gesture, but is also called for
+  // each extension API function. Note that each call to LaunchUrl resets
+  // the state to false (not allowed).
+  static void PermitLaunchUrl();
+
+  // Prepopulates the dictionary with known protocols to deny or allow, if
+  // preferences for them do not already exist.
+  static void PrepopulateDictionary(base::DictionaryValue* win_pref);
+
+  // Records an UMA metric for the state of the checkbox in the dialog, i.e.
+  // whether |selected| is true (checked) or false (unchecked).
+  static void RecordMetrics(bool selected);
+
+  // Register the ExcludedSchemes preference.
+  static void RegisterPrefs(PrefRegistrySimple* registry);
+
   // Creates and runs a External Protocol dialog box.
   // |url| - The url of the request.
   // |render_process_host_id| and |routing_id| are used by
@@ -82,31 +111,6 @@ class ExternalProtocolHandler {
                                         int routing_id,
                                         ui::PageTransition page_transition,
                                         bool has_user_gesture);
-
-  // Register the ExcludedSchemes preference.
-  static void RegisterPrefs(PrefRegistrySimple* registry);
-
-  // Starts a url using the external protocol handler with the help
-  // of shellexecute. Should only be called if the protocol is whitelisted
-  // (checked in LaunchUrl) or if the user explicitly allows it. (By selecting
-  // "Launch Application" in an ExternalProtocolDialog.) It is assumed that the
-  // url has already been escaped, which happens in LaunchUrl.
-  // NOTE: You should Not call this function directly unless you are sure the
-  // url you have has been checked against the blacklist, and has been escaped.
-  // All calls to this function should originate in some way from LaunchUrl.
-  static void LaunchUrlWithoutSecurityCheck(const GURL& url,
-                                            int render_process_host_id,
-                                            int tab_contents_id);
-
-  // Prepopulates the dictionary with known protocols to deny or allow, if
-  // preferences for them do not already exist.
-  static void PrepopulateDictionary(base::DictionaryValue* win_pref);
-
-  // Allows LaunchUrl to proceed with launching an external protocol handler.
-  // This is typically triggered by a user gesture, but is also called for
-  // each extension API function. Note that each call to LaunchUrl resets
-  // the state to false (not allowed).
-  static void PermitLaunchUrl();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExternalProtocolHandler);

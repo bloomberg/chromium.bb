@@ -4,14 +4,12 @@
 
 #include "chrome/browser/chromeos/external_protocol_dialog.h"
 
-#include "base/metrics/histogram_macros.h"
-#include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/arc/arc_external_protocol_dialog.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/text_elider.h"
@@ -75,10 +73,9 @@ void ExternalProtocolDialog::DeleteDelegate() {
 }
 
 bool ExternalProtocolDialog::Accept() {
-  if (message_box_view_->IsCheckBoxSelected()) {
-    ExternalProtocolHandler::SetBlockState(
-        scheme_, ExternalProtocolHandler::DONT_BLOCK);
-  }
+  ExternalProtocolHandler::RecordMetrics(
+      message_box_view_->IsCheckBoxSelected());
+
   // Returning true closes the dialog.
   return true;
 }
@@ -102,19 +99,9 @@ ExternalProtocolDialog::ExternalProtocolDialog(WebContents* web_contents,
                                                const GURL& url)
     : creation_time_(base::TimeTicks::Now()),
       scheme_(url.scheme()) {
-  const size_t kMaxUrlWithoutSchemeSize = 256;
-  base::string16 elided_url_without_scheme;
-  gfx::ElideString(base::ASCIIToUTF16(url.possibly_invalid_spec()),
-      kMaxUrlWithoutSchemeSize, &elided_url_without_scheme);
-
-  views::MessageBoxView::InitParams params(
-      l10n_util::GetStringFUTF16(IDS_EXTERNAL_PROTOCOL_INFORMATION,
-      base::ASCIIToUTF16(url.scheme() + ":"),
-      elided_url_without_scheme) + base::ASCIIToUTF16("\n\n"));
+  views::MessageBoxView::InitParams params((base::string16()));
   params.message_width = kMessageWidth;
   message_box_view_ = new views::MessageBoxView(params);
-  message_box_view_->SetCheckBoxLabel(
-      l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_CHECKBOX_TEXT));
 
   gfx::NativeWindow parent_window;
   if (web_contents) {

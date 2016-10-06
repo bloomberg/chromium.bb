@@ -11287,34 +11287,20 @@ I don't think this site should be blocked!
       </message>
 
       <!-- External Protocol Dialog -->
-      <message name="IDS_EXTERNAL_PROTOCOL_TITLE" desc="External Protocol Dialog Title">
-        External Protocol Request
-      </message>
       <if expr="not chromeos">
+        <message name="IDS_EXTERNAL_PROTOCOL_TITLE" desc="External Protocol Dialog Title">
+          Open <ph name="APPLICATION">$1<ex>Adobe Acrobat</ex></ph>?
+        </message>
         <message name="IDS_EXTERNAL_PROTOCOL_OK_BUTTON_TEXT" desc="Button in External Protocol Dialog that launches the application associated with the protocol">
-          Launch Application
+          Open <ph name="APPLICATION">$1<ex>Adobe Acrobat</ex></ph>
         </message>
-        <message name="IDS_EXTERNAL_PROTOCOL_CANCEL_BUTTON_TEXT" desc="Button in External Protocol Dialog that cancels the application launch">
-          Do Nothing
-        </message>
-        <message name="IDS_EXTERNAL_PROTOCOL_APPLICATION_TO_LAUNCH" desc="Information about the application being launched by the external protocol">
-The following application will be launched if you accept this request:
-
- <ph name="APPLICATION">$1<ex>C:\Program Files\Adobe\Reader 8.0\Reader\AcroRd32.exe /u "%1"</ex></ph>
-        </message>
-        <message name="IDS_EXTERNAL_PROTOCOL_WARNING" desc="Warn user about external protocols.">
-          If you did not initiate this request, it may represent an attempted attack on your system. Unless you took an explicit action to initiate this request, you should press Do Nothing.
-        </message>
-        <message name="IDS_EXTERNAL_PROTOCOL_CHECKBOX_TEXT" desc="Checkbox to remember users decision.">
-          Remember my choice for all links of this type.
+        <message name="IDS_EXTERNAL_PROTOCOL_CHECKBOX_TEXT" desc="Checkbox to remember the user's decision.">
+          Always open links for <ph name="APPLICATION">$1<ex>Adobe Acrobat</ex></ph>
         </message>
       </if>
       <if expr="chromeos">
         <message name="IDS_EXTERNAL_PROTOCOL_OK_BUTTON_TEXT" desc="Button in External Protocol Dialog that closes the dialog">
           Close
-        </message>
-        <message name="IDS_EXTERNAL_PROTOCOL_CHECKBOX_TEXT" desc="Checkbox to remember users decision.">
-          Never show the dialog again for all links of this type.
         </message>
       </if>
 
