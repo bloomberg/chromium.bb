@@ -79,3 +79,10 @@ class MacPortTest(port_testcase.PortTestCase):
 
     def test_path_to_image_diff(self):
         self.assertEqual(self.make_port()._path_to_image_diff(), '/mock-checkout/out/Release/image_diff')
+
+    def test_path_to_apache_config_file(self):
+        port = self.make_port()
+        port._apache_version = lambda: '2.2'  # pylint: disable=protected-access
+        self.assertEqual(
+            port.path_to_apache_config_file(),
+            '/mock-checkout/third_party/WebKit/LayoutTests/http/conf/apache2-httpd-2.2.conf')

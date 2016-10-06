@@ -76,6 +76,12 @@ class MockDRTPortTest(port_testcase.PortTestCase):
     def test_virtual_test_suites(self):
         pass
 
+    def test_path_to_apache_config_file(self):
+        pass
+
+    def test_skipped_directories_for_symbols(self):
+        pass
+
 
 class MockDRTTest(unittest.TestCase):
 

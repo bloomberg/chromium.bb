@@ -63,6 +63,9 @@ class _BrowserTestTestCaseMixin(object):
         port = self.make_port()
         self.assertEqual(port.virtual_test_suites(), [])
 
+    def test_path_to_apache_config_file(self):
+        pass
+
 
 class BrowserTestLinuxTest(_BrowserTestTestCaseMixin, port_testcase.PortTestCase):
     port_name = 'linux'

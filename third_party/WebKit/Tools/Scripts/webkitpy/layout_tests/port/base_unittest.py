@@ -33,6 +33,7 @@ import unittest
 from webkitpy.common.system.executive import ScriptError
 from webkitpy.common.system import executive_mock
 from webkitpy.common.system.filesystem_mock import MockFileSystem
+from webkitpy.common.system.platforminfo_mock import MockPlatformInfo
 from webkitpy.common.system.outputcapture import OutputCapture
 from webkitpy.common.system.executive_mock import MockExecutive2
 from webkitpy.common.system.systemhost import SystemHost
@@ -462,6 +463,30 @@ class PortTest(unittest.TestCase):
         # A results directory can be given as an option, and it is relative to current working directory.
         self.assertEqual(port.host.filesystem.cwd, '/')
         self.assertEqual(port.results_directory(), '/some-directory/results')
+
+    def _assert_config_file_for_platform(self, port, platform, config_file):
+        port.host.platform = MockPlatformInfo(os_name=platform)
+        self.assertEqual(port._apache_config_file_name_for_platform(), config_file)  # pylint: disable=protected-access
+
+    def _assert_config_file_for_linux_distribution(self, port, distribution, config_file):
+        port.host.platform = MockPlatformInfo(os_name='linux', linux_distribution=distribution)
+        self.assertEqual(port._apache_config_file_name_for_platform(), config_file)  # pylint: disable=protected-access
+
+    def test_apache_config_file_name_for_platform(self):
+        port = self.make_port()
+        # pylint: disable=protected-access
+        port._apache_version = lambda: '2.2'
+        self._assert_config_file_for_platform(port, 'cygwin', 'cygwin-httpd.conf')
+        self._assert_config_file_for_platform(port, 'linux', 'apache2-httpd-2.2.conf')
+        self._assert_config_file_for_linux_distribution(port, 'arch', 'arch-httpd-2.2.conf')
+        self._assert_config_file_for_linux_distribution(port, 'debian', 'debian-httpd-2.2.conf')
+        self._assert_config_file_for_linux_distribution(port, 'slackware', 'apache2-httpd-2.2.conf')
+        self._assert_config_file_for_linux_distribution(port, 'redhat', 'redhat-httpd-2.2.conf')
+
+        self._assert_config_file_for_platform(port, 'mac', 'apache2-httpd-2.2.conf')
+        # win32 isn't a supported sys.platform.  AppleWin/WinCairo/WinCE ports all use cygwin.
+        self._assert_config_file_for_platform(port, 'win32', 'apache2-httpd-2.2.conf')
+        self._assert_config_file_for_platform(port, 'barf', 'apache2-httpd-2.2.conf')
 
 
 class NaturalCompareTest(unittest.TestCase):

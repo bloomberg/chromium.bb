@@ -132,6 +132,15 @@ class AndroidPortTest(port_testcase.PortTestCase):
         self.assertEqual(self.make_port(options=optparse.Values({'configuration': 'Release'})).default_timeout_ms(), 10000)
         self.assertEqual(self.make_port(options=optparse.Values({'configuration': 'Debug'})).default_timeout_ms(), 10000)
 
+    def test_path_to_apache_config_file(self):
+        port = self.make_port()
+        port._host_port.path_to_apache_config_file = lambda: '/host/apache/conf'  # pylint: disable=protected-access
+        self.assertEqual(port.path_to_apache_config_file(), '/host/apache/conf')
+
+    def test_skipped_directories_for_symbols(self):
+        pass
+
+
 
 class ChromiumAndroidDriverTest(unittest.TestCase):
 

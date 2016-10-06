@@ -43,28 +43,6 @@ from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.port.base import Port
 
 
-# FIXME: get rid of this fixture
-class TestWebKitPort(Port):
-    port_name = "testwebkitport"
-
-    def __init__(self, port_name=None, symbols_string=None,
-                 expectations_file=None, skips_file=None, host=None, config=None,
-                 **kwargs):
-        port_name = port_name or TestWebKitPort.port_name
-        self.symbols_string = symbols_string  # Passing "" disables all staticly-detectable features.
-        host = host or MockSystemHost()
-        super(TestWebKitPort, self).__init__(host, port_name=port_name, **kwargs)
-
-    def all_test_configurations(self):
-        return [self.test_configuration()]
-
-    def _symbols_string(self):
-        return self.symbols_string
-
-    def _tests_for_disabled_features(self):
-        return ["accessibility", ]
-
-
 class FakePrinter(object):
 
     def write_update(self, msg):
@@ -82,7 +60,7 @@ class PortTestCase(unittest.TestCase):
     # Subclasses override this to point to their Port subclass.
     os_name = None
     os_version = None
-    port_maker = TestWebKitPort
+    port_maker = Port
     port_name = None
     full_port_name = None
 
@@ -91,8 +69,7 @@ class PortTestCase(unittest.TestCase):
         options = options or optparse.Values({'configuration': 'Release'})
         port_name = port_name or self.port_name
         port_name = self.port_maker.determine_full_port_name(host, options, port_name)
-        port = self.port_maker(host, port_name, options=options, **kwargs)
-        return port
+        return self.port_maker(host, port_name, options=options, **kwargs)
 
     def make_wdiff_available(self, port):
         port._wdiff_available = True
@@ -349,56 +326,31 @@ class PortTestCase(unittest.TestCase):
 
     def test_skipped_directories_for_symbols(self):
         # This first test confirms that the commonly found symbols result in the expected skipped directories.
-        symbols_string = " ".join(["fooSymbol"])
-        expected_directories = set([
-            "webaudio/codec-tests/mp3",
-            "webaudio/codec-tests/aac",
-        ])
+        port = self.make_port()
+        # pylint: disable=protected-access
+        port._symbols_string = lambda: "fooSymbol"
+        self.assertEqual(
+            set(port._skipped_tests_for_unsupported_features(test_list=['webaudio/codec-tests/mp3/foo.html'])),
+            set([
+                "webaudio/codec-tests/mp3",
+                "webaudio/codec-tests/aac",
+            ]))
 
-        result_directories = set(TestWebKitPort(symbols_string=symbols_string)._skipped_tests_for_unsupported_features(
-            test_list=['webaudio/codec-tests/mp3/foo.html']))
-        self.assertEqual(result_directories, expected_directories)
-
+        self.make_port()
         # Test that the nm string parsing actually works:
-        symbols_string = """
+        port._symbols_string = lambda: """
 000000000124f498 s __ZZN7WebCore13ff_mp3_decoder12replaceChildEPS0_S1_E19__PRETTY_FUNCTION__
 000000000124f500 s __ZZN7WebCore13ff_mp3_decoder13addChildAboveEPS0_S1_E19__PRETTY_FUNCTION__
 000000000124f670 s __ZZN7WebCore13ff_mp3_decoder13addChildBelowEPS0_S1_E19__PRETTY_FUNCTION__
 """
         # Note 'compositing' is not in the list of skipped directories (hence the parsing of GraphicsLayer worked):
-        expected_directories = set([
-            "webaudio/codec-tests/aac",
-        ])
-        result_directories = set(TestWebKitPort(symbols_string=symbols_string)._skipped_tests_for_unsupported_features(
-            test_list=['webaudio/codec-tests/mp3/foo.html']))
-        self.assertEqual(result_directories, expected_directories)
-
-    def _assert_config_file_for_platform(self, port, platform, config_file):
-        port.host.platform = MockPlatformInfo(os_name=platform)
-        self.assertEqual(port._apache_config_file_name_for_platform(), config_file)
-
-    def _assert_config_file_for_linux_distribution(self, port, distribution, config_file):
-        port.host.platform = MockPlatformInfo(os_name='linux', linux_distribution=distribution)
-        self.assertEqual(port._apache_config_file_name_for_platform(), config_file)
-
-    def test_apache_config_file_name_for_platform(self):
-        port = TestWebKitPort()
-        self._assert_config_file_for_platform(port, 'cygwin', 'cygwin-httpd.conf')
-
-        port._apache_version = lambda: '2.2'
-        self._assert_config_file_for_platform(port, 'linux', 'apache2-httpd-2.2.conf')
-        self._assert_config_file_for_linux_distribution(port, 'arch', 'arch-httpd-2.2.conf')
-        self._assert_config_file_for_linux_distribution(port, 'debian', 'debian-httpd-2.2.conf')
-        self._assert_config_file_for_linux_distribution(port, 'slackware', 'apache2-httpd-2.2.conf')
-        self._assert_config_file_for_linux_distribution(port, 'redhat', 'redhat-httpd-2.2.conf')
-
-        self._assert_config_file_for_platform(port, 'mac', 'apache2-httpd-2.2.conf')
-        # win32 isn't a supported sys.platform.  AppleWin/WinCairo/WinCE ports all use cygwin.
-        self._assert_config_file_for_platform(port, 'win32', 'apache2-httpd-2.2.conf')
-        self._assert_config_file_for_platform(port, 'barf', 'apache2-httpd-2.2.conf')
+        self.assertEqual(
+            set(port._skipped_tests_for_unsupported_features(test_list=['webaudio/codec-tests/mp3/foo.html'])),
+            set(["webaudio/codec-tests/aac"]))
 
     def test_path_to_apache_config_file(self):
-        port = TestWebKitPort()
+        # Specific behavior may vary by port, so unit test sub-classes may override this.
+        port = self.make_port()
 
         port.host.environ['WEBKIT_HTTP_SERVER_CONF_PATH'] = '/path/to/httpd.conf'
         self.assertRaises(IOError, port.path_to_apache_config_file)
@@ -406,10 +358,12 @@ class PortTestCase(unittest.TestCase):
         port.host.environ['WEBKIT_HTTP_SERVER_CONF_PATH'] = '/existing/httpd.conf'
         self.assertEqual(port.path_to_apache_config_file(), '/existing/httpd.conf')
 
-        # Mock out _apache_config_file_name_for_platform to avoid mocking platform info
+        # Mock out _apache_config_file_name_for_platform to avoid mocking platform info.
         port._apache_config_file_name_for_platform = lambda: 'httpd.conf'
         del port.host.environ['WEBKIT_HTTP_SERVER_CONF_PATH']
-        self.assertEqual(port.path_to_apache_config_file(), '/mock-checkout/third_party/WebKit/LayoutTests/http/conf/httpd.conf')
+        self.assertEqual(
+            port.path_to_apache_config_file(),
+            port.host.filesystem.join(port.layout_tests_dir(), 'http/conf/httpd.conf'))
 
         # Check that even if we mock out _apache_config_file_name, the environment variable takes precedence.
         port.host.environ['WEBKIT_HTTP_SERVER_CONF_PATH'] = '/existing/httpd.conf'

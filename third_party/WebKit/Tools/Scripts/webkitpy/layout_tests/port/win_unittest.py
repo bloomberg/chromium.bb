@@ -145,3 +145,8 @@ class WinPortTest(port_testcase.PortTestCase):
 
     def test_path_to_image_diff(self):
         self.assertEqual(self.make_port()._path_to_image_diff(), '/mock-checkout/out/Release/image_diff.exe')
+
+    def test_path_to_apache_config_file(self):
+        self.assertEqual(
+            self.make_port().path_to_apache_config_file(),
+            '/mock-checkout/third_party/WebKit/LayoutTests/http/conf/win-httpd.conf')

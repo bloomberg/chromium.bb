@@ -32,16 +32,13 @@ import unittest
 from webkitpy.common.system.systemhost_mock import MockSystemHost
 from webkitpy.layout_tests.port.base import Port
 from webkitpy.layout_tests.port.driver import Driver
-# FIXME: remove the dependency on TestWebKitPort
-from webkitpy.layout_tests.port.port_testcase import TestWebKitPort
 from webkitpy.layout_tests.port.server_process_mock import MockServerProcess
 
 
 class DriverTest(unittest.TestCase):
 
     def make_port(self):
-        port = Port(MockSystemHost(), 'test', optparse.Values({'configuration': 'Release'}))
-        return port
+        return Port(MockSystemHost(), 'test', optparse.Values({'configuration': 'Release'}))
 
     def _assert_wrapper(self, wrapper_string, expected_wrapper):
         wrapper = Driver(self.make_port(), None, pixel_tests=False)._command_wrapper(wrapper_string)
@@ -74,7 +71,7 @@ class DriverTest(unittest.TestCase):
         self.assertEqual(driver.uri_to_test('https://127.0.0.1:8443/bar.https.html'), 'http/tests/bar.https.html')
 
     def test_read_block(self):
-        port = TestWebKitPort()
+        port = self.make_port()
         driver = Driver(port, 0, pixel_tests=False)
         driver._server_process = MockServerProcess(lines=[
             'ActualHash: foobar',
@@ -90,7 +87,7 @@ class DriverTest(unittest.TestCase):
         driver._server_process = None
 
     def test_read_binary_block(self):
-        port = TestWebKitPort()
+        port = self.make_port()
         driver = Driver(port, 0, pixel_tests=True)
         driver._server_process = MockServerProcess(lines=[
             'ActualHash: actual',
@@ -108,7 +105,7 @@ class DriverTest(unittest.TestCase):
         driver._server_process = None
 
     def test_read_base64_block(self):
-        port = TestWebKitPort()
+        port = self.make_port()
         driver = Driver(port, 0, pixel_tests=True)
         driver._server_process = MockServerProcess(lines=[
             'ActualHash: actual',
@@ -126,7 +123,7 @@ class DriverTest(unittest.TestCase):
         self.assertEqual(content_block.decoded_content, '12345678\n')
 
     def test_no_timeout(self):
-        port = TestWebKitPort()
+        port = self.make_port()
         driver = Driver(port, 0, pixel_tests=True, no_timeout=True)
         cmd_line = driver.cmd_line(True, [])
         self.assertEqual(cmd_line[0], '/mock-checkout/out/Release/content_shell')
@@ -134,7 +131,7 @@ class DriverTest(unittest.TestCase):
         self.assertIn('--no-timeout', cmd_line)
 
     def test_check_for_driver_crash(self):
-        port = TestWebKitPort()
+        port = self.make_port()
         driver = Driver(port, 0, pixel_tests=True)
 
         class FakeServerProcess(object):
@@ -215,13 +212,13 @@ class DriverTest(unittest.TestCase):
         assert_crash(driver, '', True, 'FakeServerProcess', 1234)
 
     def test_creating_a_port_does_not_write_to_the_filesystem(self):
-        port = TestWebKitPort()
+        port = self.make_port()
         Driver(port, 0, pixel_tests=True)
         self.assertEqual(port.host.filesystem.written_files, {})
         self.assertIsNone(port.host.filesystem.last_tmpdir)
 
     def test_stop_cleans_up_properly(self):
-        port = TestWebKitPort()
+        port = self.make_port()
         port._server_process_constructor = MockServerProcess
         driver = Driver(port, 0, pixel_tests=True)
         driver.start(True, [], None)
@@ -231,7 +228,7 @@ class DriverTest(unittest.TestCase):
         self.assertFalse(port.host.filesystem.isdir(last_tmpdir))
 
     def test_two_starts_cleans_up_properly(self):
-        port = TestWebKitPort()
+        port = self.make_port()
         port._server_process_constructor = MockServerProcess
         driver = Driver(port, 0, pixel_tests=True)
         driver.start(True, [], None)
@@ -240,7 +237,7 @@ class DriverTest(unittest.TestCase):
         self.assertFalse(port.host.filesystem.isdir(last_tmpdir))
 
     def test_start_actually_starts(self):
-        port = TestWebKitPort()
+        port = self.make_port()
         port._server_process_constructor = MockServerProcess
         driver = Driver(port, 0, pixel_tests=True)
         driver.start(True, [], None)
