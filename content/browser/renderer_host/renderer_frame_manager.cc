@@ -103,7 +103,9 @@ RendererFrameManager::RendererFrameManager()
   // gets destroyed and the observer will remove itself.
   max_number_of_saved_frames_ =
 #if defined(OS_ANDROID)
-      1;
+      // If the amount of memory on the device is >= 3.5 GB, save up to 5
+      // frames.
+      base::SysInfo::AmountOfPhysicalMemoryMB() < 1024 * 3.5f ? 1 : 5;
 #else
       std::min(5, 2 + (base::SysInfo::AmountOfPhysicalMemoryMB() / 256));
 #endif
