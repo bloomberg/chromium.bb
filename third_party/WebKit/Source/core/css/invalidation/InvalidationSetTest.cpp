@@ -40,7 +40,8 @@ TEST(InvalidationSetTest, SubtreeInvalid_Combine_1) {
   ASSERT_TRUE(set1->isEmpty());
 }
 
-// No need to add HashSets from combining set when we already have wholeSubtreeInvalid.
+// No need to add HashSets from combining set when we already have
+// wholeSubtreeInvalid.
 TEST(InvalidationSetTest, SubtreeInvalid_Combine_2) {
   RefPtr<DescendantInvalidationSet> set1 = DescendantInvalidationSet::create();
   RefPtr<DescendantInvalidationSet> set2 = DescendantInvalidationSet::create();

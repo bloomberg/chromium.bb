@@ -225,7 +225,8 @@ bool StyleInvalidator::SiblingData::matchCurrentInvalidationSets(
   unsigned index = 0;
   while (index < m_invalidationEntries.size()) {
     if (m_elementIndex > m_invalidationEntries[index].m_invalidationLimit) {
-      // m_invalidationEntries[index] only applies to earlier siblings. Remove it.
+      // m_invalidationEntries[index] only applies to earlier siblings. Remove
+      // it.
       m_invalidationEntries[index] = m_invalidationEntries.last();
       m_invalidationEntries.removeLast();
       continue;
@@ -374,7 +375,8 @@ bool StyleInvalidator::invalidate(Element& element,
                                     StyleChangeReason::StyleInvalidator));
   } else if (recursionData.hasInvalidationSets() &&
              someChildrenNeedStyleRecalc) {
-    // Clone the ComputedStyle in order to preserve correct style sharing, if possible. Otherwise recalc style.
+    // Clone the ComputedStyle in order to preserve correct style sharing, if
+    // possible. Otherwise recalc style.
     if (LayoutObject* layoutObject = element.layoutObject()) {
       layoutObject->setStyleInternal(
           ComputedStyle::clone(layoutObject->styleRef()));

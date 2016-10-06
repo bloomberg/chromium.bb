@@ -54,7 +54,8 @@ static bool determineSelectorScopes(const CSSSelectorList& selectorList,
   for (const CSSSelector* selector = selectorList.first(); selector;
        selector = CSSSelectorList::next(*selector)) {
     const CSSSelector* scopeSelector = 0;
-    // This picks the widest scope, not the narrowest, to minimize the number of found scopes.
+    // This picks the widest scope, not the narrowest, to minimize the number of
+    // found scopes.
     for (const CSSSelector* current = selector; current;
          current = current->tagHistory()) {
       // Prefer ids over classes.
@@ -64,7 +65,8 @@ static bool determineSelectorScopes(const CSSSelectorList& selectorList,
                (!scopeSelector || scopeSelector->match() != CSSSelector::Id))
         scopeSelector = current;
       CSSSelector::RelationType relation = current->relation();
-      // FIXME: it would be better to use setNeedsStyleRecalc for all shadow hosts matching
+      // FIXME: it would be better to use setNeedsStyleRecalc for all shadow
+      // hosts matching
       // scopeSelector. Currently requests full style recalc.
       if (relation == CSSSelector::ShadowDeep ||
           relation == CSSSelector::ShadowPseudo)
@@ -90,20 +92,20 @@ static bool ruleAdditionMightRequireDocumentStyleRecalc(StyleRuleBase* rule) {
   // This function is conservative. We only return false when we know that
   // the added @rule can't require style recalcs.
   switch (rule->type()) {
-    case StyleRule::
-        Import:  // Whatever we import should do its own analysis, we don't need to invalidate the document here!
-    case StyleRule::
-        Page:  // Page rules apply only during printing, we force a full-recalc before printing.
+    case StyleRule::Import:  // Whatever we import should do its own analysis,
+                             // we don't need to invalidate the document here!
+    case StyleRule::Page:  // Page rules apply only during printing, we force a
+                           // full-recalc before printing.
       return false;
 
-    case StyleRule::
-        Media:  // If the media rule doesn't apply, we could avoid recalc.
-    case StyleRule::
-        FontFace:  // If the fonts aren't in use, we could avoid recalc.
-    case StyleRule::
-        Supports:  // If we evaluated the supports-clause we could avoid recalc.
-    case StyleRule::
-        Viewport:  // If the viewport doesn't match, we could avoid recalcing.
+    case StyleRule::Media:  // If the media rule doesn't apply, we could avoid
+                            // recalc.
+    case StyleRule::FontFace:  // If the fonts aren't in use, we could avoid
+                               // recalc.
+    case StyleRule::Supports:  // If we evaluated the supports-clause we could
+                               // avoid recalc.
+    case StyleRule::Viewport:  // If the viewport doesn't match, we could avoid
+                               // recalcing.
       return true;
 
     // These should all be impossible to reach:
@@ -120,9 +122,9 @@ static bool ruleAdditionMightRequireDocumentStyleRecalc(StyleRuleBase* rule) {
 
 void StyleSheetInvalidationAnalysis::analyzeStyleSheet(
     StyleSheetContents* styleSheetContents) {
-  // Updating the style on the shadow DOM for image fallback content can bring us here when imports
-  // are still getting loaded in the main document. Just need to exit early as we will return here
-  // when the imports finish loading.
+  // Updating the style on the shadow DOM for image fallback content can bring
+  // us here when imports are still getting loaded in the main document. Just
+  // need to exit early as we will return here when the imports finish loading.
   if (styleSheetContents->isLoading())
     return;
 

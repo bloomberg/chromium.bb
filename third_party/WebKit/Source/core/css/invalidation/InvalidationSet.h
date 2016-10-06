@@ -54,25 +54,31 @@ enum InvalidationType { InvalidateDescendants, InvalidateSiblings };
 // Some example invalidation sets:
 //
 // .z {}
-//   For class z we will have a DescendantInvalidationSet with invalidatesSelf (the element itself is invalidated).
+//   For class z we will have a DescendantInvalidationSet with invalidatesSelf
+//   (the element itself is invalidated).
 //
 // .y .z {}
 //   For class y we will have a DescendantInvalidationSet containing class z.
 //
 // .x ~ .z {}
-//   For class x we will have a SiblingInvalidationSet containing class z, with invalidatesSelf (the sibling itself is invalidated).
+//   For class x we will have a SiblingInvalidationSet containing class z, with
+//   invalidatesSelf (the sibling itself is invalidated).
 //
 // .w ~ .y .z {}
-//   For class w we will have a SiblingInvalidationSet containing class y, with the SiblingInvalidationSet havings siblingDescendants containing class z.
+//   For class w we will have a SiblingInvalidationSet containing class y, with
+//   the SiblingInvalidationSet havings siblingDescendants containing class z.
 //
 // .v * {}
-//   For class v we will have a DescendantInvalidationSet with wholeSubtreeInvalid.
+//   For class v we will have a DescendantInvalidationSet with
+//   wholeSubtreeInvalid.
 //
 // .u ~ * {}
-//   For class u we will have a SiblingInvalidationSet with wholeSubtreeInvalid and invalidatesSelf (for all siblings, the sibling itself is invalidated).
+//   For class u we will have a SiblingInvalidationSet with wholeSubtreeInvalid
+//   and invalidatesSelf (for all siblings, the sibling itself is invalidated).
 //
 // .t .v, .t ~ .z {}
-//   For class t we will have a SiblingInvalidationSet containing class z, with the SiblingInvalidationSet also holding descendants containing class v.
+//   For class t we will have a SiblingInvalidationSet containing class z, with
+//   the SiblingInvalidationSet also holding descendants containing class v.
 //
 // We avoid virtual functions to minimize space consumption.
 class CORE_EXPORT InvalidationSet {
@@ -187,13 +193,15 @@ class CORE_EXPORT InvalidationSet {
 
   unsigned m_type : 1;
 
-  // If true, all descendants might be invalidated, so a full subtree recalc is required.
+  // If true, all descendants might be invalidated, so a full subtree recalc is
+  // required.
   unsigned m_allDescendantsMightBeInvalid : 1;
 
   // If true, the element or sibling itself is invalid.
   unsigned m_invalidatesSelf : 1;
 
-  // If true, all descendants which are custom pseudo elements must be invalidated.
+  // If true, all descendants which are custom pseudo elements must be
+  // invalidated.
   unsigned m_customPseudoInvalid : 1;
 
   // If true, the invalidation must traverse into ShadowRoots with this set.

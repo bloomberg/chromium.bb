@@ -130,7 +130,8 @@ void InvalidationSet::combine(const InvalidationSet& other) {
   if (other.invalidatesSelf())
     setInvalidatesSelf();
 
-  // No longer bother combining data structures, since the whole subtree is deemed invalid.
+  // No longer bother combining data structures, since the whole subtree is
+  // deemed invalid.
   if (wholeSubtreeInvalid())
     return;
 
