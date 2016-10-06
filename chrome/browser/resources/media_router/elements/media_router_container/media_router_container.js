@@ -1286,7 +1286,7 @@ Polymer({
     var focusedSink =
         this.$$('#searchResults').itemForElement(focusedElem).sinkItem;
     setTimeout(function() {
-      var sinkListPaperMenu = this.$$('#sink-list');
+      var sinkListPaperMenu = this.$$('#sink-list-paper-menu');
       var sinks = sinkListPaperMenu.children;
       var sinkList = this.$$('#sinkList');
       for (var i = 0; i < sinks.length; i++) {
@@ -1377,7 +1377,6 @@ Polymer({
     var searchFinalTop = hasList ? list.offsetHeight - search.offsetHeight :
                                    deviceMissing.offsetHeight;
     resultsContainer.style['position'] = 'absolute';
-    resultsContainer.style['overflow-y'] = '';
 
     var duration =
         this.computeAnimationDuration_(searchFinalTop - searchInitialTop);
@@ -1860,7 +1859,6 @@ Polymer({
     resultsContainer.style['position'] = 'relative';
     resultsContainer.style['padding-top'] = resultsPaddingTop;
     resultsContainer.style['top'] = '';
-    resultsContainer.style['overflow-y'] = 'auto';
 
     view.style['overflow'] = '';
     view.style['padding-bottom'] = '';
@@ -2340,7 +2338,7 @@ Polymer({
       if (hasSearch && sinkList) {
         // This would need to be reset to '' if search could be disabled again,
         // but once it's enabled it can't be disabled again.
-        sinkList.style.paddingBottom = '0';
+        this.$$('#sink-list-paper-menu').style.paddingBottom = '0';
       }
       var sinkListPadding =
           sinkList ? this.computeElementVerticalPadding_(sinkList) : 0;

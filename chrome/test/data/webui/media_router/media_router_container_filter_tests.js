@@ -200,27 +200,29 @@ cr.define('media_router_container_filter', function() {
         container.allSinks = fakeSinkList;
         MockInteractions.tap(container.$$('#sink-search-icon'));
         setTimeout(function() {
-          var searchResults = container.$$('#search-results');
+          var searchResultsPaperMenu =
+              container.$$('#search-results-paper-menu');
           // Use the Polymer method for selecting (and focusing on) a sink
-          searchResults.selectIndex(focusIndex);
+          searchResultsPaperMenu.selectIndex(focusIndex);
           var itemInSearch =
-              searchResults.querySelectorAll('paper-item')[focusIndex];
+              searchResultsPaperMenu.querySelectorAll('paper-item')[focusIndex];
           // TODO(crbug.com/608551): This condition handles flakiness around
           // the search item getting focus earlier. If it doesn't get focus,
           // the logic that changes focus from a search item to a sink list
           // item obviously won't do anything.
           if (itemInSearch.focused) {
-            var selectedIndexInSearch = searchResults.selected;
+            var selectedIndexInSearch = searchResultsPaperMenu.selected;
             pressEscapeOnElement(itemInSearch);
             checkCurrentView(media_router.MediaRouterView.SINK_LIST);
             chainOnAnimationPromise(function() {
-              var sinkList = container.$$('#sink-list');
-              var item = sinkList.querySelectorAll('paper-item')[focusIndex];
+              var sinkListPaperMenu = container.$$('#sink-list-paper-menu');
+              var item =
+                  sinkListPaperMenu.querySelectorAll('paper-item')[focusIndex];
 
               // Check that the "focused" HTML attribute persists.
               assertTrue(item.focused);
               // Check that the "selected" Polymer attribute persists.
-              assertEquals(sinkList.selected, selectedIndexInSearch);
+              assertEquals(sinkListPaperMenu.selected, selectedIndexInSearch);
               done();
             });
           } else {
