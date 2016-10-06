@@ -176,7 +176,8 @@ TEST_F(FrameSelectionTest, InvalidatePreviousCaretAfterRemovingLastCharacter) {
   // Simulate to remove the last character.
   document().body()->removeChild(text);
   // This line is the objective of this test.
-  // As removing the last character, early previousCaret invalidation is executed.
+  // As removing the last character, early previousCaret invalidation is
+  // executed.
   EXPECT_FALSE(isPreviousCaretDirtyForTesting());
   document().updateStyleAndLayoutIgnorePendingStylesheets();
   selection().setCaretRectNeedsUpdate();

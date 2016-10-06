@@ -63,7 +63,8 @@ LayoutBlock* CaretBase::caretLayoutObject(Node* node) {
   if (!layoutObject)
     return nullptr;
 
-  // if caretNode is a block and caret is inside it then caret should be painted by that block
+  // if caretNode is a block and caret is inside it then caret should be painted
+  // by that block
   bool paintedByBlock =
       layoutObject->isLayoutBlock() && caretRendersInsideNode(node);
   // TODO(yoichio): This function is called at least
@@ -150,7 +151,8 @@ void CaretBase::invalidateLocalCaretRect(Node* node, const LayoutRect& rect) {
   LayoutRect inflatedRect = rect;
   inflatedRect.inflate(LayoutUnit(1));
 
-  // FIXME: We should not allow paint invalidation out of paint invalidation state. crbug.com/457415
+  // FIXME: We should not allow paint invalidation out of paint invalidation
+  // state. crbug.com/457415
   DisablePaintInvalidationStateAsserts disabler;
 
   m_visualRect =

@@ -175,7 +175,8 @@ PositionTemplate<Strategy>::parentAnchoredEquivalent() const {
   if (!m_anchorNode)
     return PositionTemplate<Strategy>();
 
-  // FIXME: This should only be necessary for legacy positions, but is also needed for positions before and after Tables
+  // FIXME: This should only be necessary for legacy positions, but is also
+  // needed for positions before and after Tables
   if (m_offset == 0 && !isAfterAnchorOrAfterChildren()) {
     if (Strategy::parent(*m_anchorNode) &&
         (Strategy::editingIgnoresContent(m_anchorNode.get()) ||
@@ -348,8 +349,8 @@ template <typename Strategy>
 bool PositionTemplate<Strategy>::atFirstEditingPositionForNode() const {
   if (isNull())
     return true;
-  // FIXME: Position before anchor shouldn't be considered as at the first editing position for node
-  // since that position resides outside of the node.
+  // FIXME: Position before anchor shouldn't be considered as at the first
+  // editing position for node since that position resides outside of the node.
   switch (m_anchorType) {
     case PositionAnchorType::OffsetInAnchor:
       return m_offset == 0;
@@ -400,10 +401,11 @@ bool PositionTemplate<Strategy>::atEndOfTree() const {
 template <typename Strategy>
 PositionTemplate<Strategy> PositionTemplate<Strategy>::inParentBeforeNode(
     const Node& node) {
-  // FIXME: This should DCHECK(node.parentNode())
-  // At least one caller currently hits this ASSERT though, which indicates
-  // that the caller is trying to make a position relative to a disconnected node (which is likely an error)
-  // Specifically, editing/deleting/delete-ligature-001.html crashes with DCHECK(node->parentNode())
+  // FIXME: This should DCHECK(node.parentNode()). At least one caller currently
+  // hits this DCHECK though, which indicates that the caller is trying to make
+  // a position relative to a disconnected node (which is likely an error)
+  // Specifically, editing/deleting/delete-ligature-001.html crashes with
+  // DCHECK(node->parentNode())
   return PositionTemplate<Strategy>(Strategy::parent(node),
                                     Strategy::index(node));
 }

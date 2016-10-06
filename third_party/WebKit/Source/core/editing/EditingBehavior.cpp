@@ -50,8 +50,8 @@ const unsigned OptionKey = AltKey;
 // Do not use this constant for anything but cursor movement commands. Keys
 // with cmd set have their |isSystemKey| bit set, so chances are the shortcut
 // will not be executed. Another, less important, reason is that shortcuts
-// defined in the layoutObject do not blink the menu item that they triggered. See
-// http://crbug.com/25856 and the bugs linked from there for details.
+// defined in the layoutObject do not blink the menu item that they triggered.
+// See http://crbug.com/25856 and the bugs linked from there for details.
 const unsigned CommandKey = MetaKey;
 #endif
 

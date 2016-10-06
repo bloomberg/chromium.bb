@@ -166,8 +166,8 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
       return *m_frame;
     }
 
-    // Returns target ranges for the command, currently only supports delete related commands.
-    // Used by InputEvent.
+    // Returns target ranges for the command, currently only supports delete
+    // related commands. Used by InputEvent.
     RangeVector* getTargetRanges() const;
 
     const EditorInternalCommand* m_command;
@@ -265,7 +265,8 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
                                      InsertMode,
                                      DragSourceType);
 
-  // Return false if frame was destroyed by event handler, should stop executing remaining actions.
+  // Return false if frame was destroyed by event handler, should stop executing
+  // remaining actions.
   bool deleteSelectionAfterDraggingWithEvents(
       Element* dragSource,
       DeleteMode,

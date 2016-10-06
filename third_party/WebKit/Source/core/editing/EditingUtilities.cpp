@@ -104,8 +104,8 @@ bool needsLayoutTreeUpdate(const PositionInFlatTree& position) {
   return needsLayoutTreeUpdateAlgorithm<PositionInFlatTree>(position);
 }
 
-// Atomic means that the node has no children, or has children which are ignored for the
-// purposes of editing.
+// Atomic means that the node has no children, or has children which are ignored
+// for the purposes of editing.
 bool isAtomicNode(const Node* node) {
   return node && (!node->hasChildren() || editingIgnoresContent(node));
 }
@@ -594,9 +594,9 @@ PositionTemplate<Strategy> firstEditablePositionAfterPositionInRootAlgorithm(
       !editablePosition.anchorNode()->isDescendantOf(&highestRoot))
     return PositionTemplate<Strategy>();
 
-  // If |editablePosition| has the non-editable child skipped, get the next sibling position.
-  // If not, we can't get the next paragraph in InsertListCommand::doApply's while loop.
-  // See http://crbug.com/571420
+  // If |editablePosition| has the non-editable child skipped, get the next
+  // sibling position. If not, we can't get the next paragraph in
+  // InsertListCommand::doApply's while loop. See http://crbug.com/571420
   if (nonEditableNode &&
       nonEditableNode->isDescendantOf(editablePosition.anchorNode()))
     editablePosition = nextVisuallyDistinctCandidate(editablePosition);
@@ -1260,8 +1260,9 @@ static Node* enclosingNodeOfTypeAlgorithm(const PositionTemplate<Strategy>& p,
   ContainerNode* const root =
       rule == CannotCrossEditingBoundary ? highestEditableRoot(p) : nullptr;
   for (Node* n = p.anchorNode(); n; n = Strategy::parent(*n)) {
-    // Don't return a non-editable node if the input position was editable, since
-    // the callers from editing will no doubt want to perform editing inside the returned node.
+    // Don't return a non-editable node if the input position was editable,
+    // since the callers from editing will no doubt want to perform editing
+    // inside the returned node.
     if (root && !hasEditableStyle(*n))
       continue;
     if (nodeIsOfType(n))
@@ -1370,11 +1371,13 @@ HTMLElement* enclosingList(Node* node) {
 Node* enclosingListChild(Node* node) {
   if (!node)
     return 0;
-  // Check for a list item element, or for a node whose parent is a list element. Such a node
-  // will appear visually as a list item (but without a list marker)
+  // Check for a list item element, or for a node whose parent is a list
+  // element. Such a node will appear visually as a list item (but without a
+  // list marker)
   ContainerNode* root = highestEditableRoot(firstPositionInOrBeforeNode(node));
 
-  // FIXME: This function is inappropriately named if it starts with node instead of node->parentNode()
+  // FIXME: This function is inappropriately named if it starts with node
+  // instead of node->parentNode()
   for (Node* n = node; n && n->parentNode(); n = n->parentNode()) {
     if (isHTMLLIElement(*n) ||
         (isHTMLListElement(n->parentNode()) && n != root))
@@ -1386,7 +1389,8 @@ Node* enclosingListChild(Node* node) {
   return 0;
 }
 
-// FIXME: This method should not need to call isStartOfParagraph/isEndOfParagraph
+// FIXME: This method should not need to call
+// isStartOfParagraph/isEndOfParagraph
 Node* enclosingEmptyListItem(const VisiblePosition& visiblePos) {
   DCHECK(visiblePos.isValid());
 
@@ -1423,8 +1427,8 @@ HTMLElement* outermostEnclosingList(Node* node, HTMLElement* rootList) {
   return list;
 }
 
-// Determines whether two positions are visibly next to each other (first then second)
-// while ignoring whitespaces and unrendered nodes
+// Determines whether two positions are visibly next to each other (first then
+// second) while ignoring whitespaces and unrendered nodes
 static bool isVisiblyAdjacent(const Position& first, const Position& second) {
   return createVisiblePositionDeprecated(first).deepEquivalent() ==
          createVisiblePositionDeprecated(mostBackwardCaretPosition(second))
@@ -1466,7 +1470,8 @@ bool isTableCell(const Node* node) {
 bool isEmptyTableCell(const Node* node) {
   // Returns true IFF the passed in node is one of:
   //   .) a table cell with no children,
-  //   .) a table cell with a single BR child, and which has no other child layoutObject, including :before and :after layoutObject
+  //   .) a table cell with a single BR child, and which has no other child
+  //      layoutObject, including :before and :after layoutObject
   //   .) the BR child of such a table cell
 
   // Find rendered node
@@ -1486,7 +1491,8 @@ bool isEmptyTableCell(const Node* node) {
   if (!layoutObject->isTableCell())
     return false;
 
-  // Check that the table cell contains no child layoutObjects except for perhaps a single <br>.
+  // Check that the table cell contains no child layoutObjects except for
+  // perhaps a single <br>.
   LayoutObject* childLayoutObject =
       toLayoutTableCell(layoutObject)->firstChild();
   if (!childLayoutObject)
@@ -1565,7 +1571,8 @@ bool isNodeRendered(const Node& node) {
   return layoutObject->style()->visibility() == EVisibility::Visible;
 }
 
-// return first preceding DOM position rendered at a different location, or "this"
+// return first preceding DOM position rendered at a different location, or
+// "this"
 static Position previousCharacterPosition(const Position& position,
                                           TextAffinity affinity) {
   if (position.isNull())
@@ -1767,10 +1774,10 @@ VisibleSelection selectionForParagraphIteration(
   VisiblePosition startOfSelection(newSelection.visibleStart());
   VisiblePosition endOfSelection(newSelection.visibleEnd());
 
-  // If the end of the selection to modify is just after a table, and
-  // if the start of the selection is inside that table, then the last paragraph
-  // that we'll want modify is the last one inside the table, not the table itself
-  // (a table is itself a paragraph).
+  // If the end of the selection to modify is just after a table, and if the
+  // start of the selection is inside that table, then the last paragraph that
+  // we'll want modify is the last one inside the table, not the table itself (a
+  // table is itself a paragraph).
   if (Element* table = tableElementJustBefore(endOfSelection)) {
     if (startOfSelection.deepEquivalent().anchorNode()->isDescendantOf(table))
       newSelection = createVisibleSelection(
@@ -1778,9 +1785,9 @@ VisibleSelection selectionForParagraphIteration(
           previousPositionOf(endOfSelection, CannotCrossEditingBoundary));
   }
 
-  // If the start of the selection to modify is just before a table,
-  // and if the end of the selection is inside that table, then the first paragraph
-  // we'll want to modify is the first one inside the table, not the paragraph
+  // If the start of the selection to modify is just before a table, and if the
+  // end of the selection is inside that table, then the first paragraph we'll
+  // want to modify is the first one inside the table, not the paragraph
   // containing the table itself.
   if (Element* table = tableElementJustAfter(startOfSelection)) {
     if (endOfSelection.deepEquivalent().anchorNode()->isDescendantOf(table))
@@ -1792,12 +1799,16 @@ VisibleSelection selectionForParagraphIteration(
   return newSelection;
 }
 
-// FIXME: indexForVisiblePosition and visiblePositionForIndex use TextIterators to convert between
-// VisiblePositions and indices. But TextIterator iteration using TextIteratorEmitsCharactersBetweenAllVisiblePositions
-// does not exactly match VisiblePosition iteration, so using them to preserve a selection during an editing
-// opertion is unreliable. TextIterator's TextIteratorEmitsCharactersBetweenAllVisiblePositions mode needs to be fixed,
-// or these functions need to be changed to iterate using actual VisiblePositions.
-// FIXME: Deploy these functions everywhere that TextIterators are used to convert between VisiblePositions and indices.
+// FIXME: indexForVisiblePosition and visiblePositionForIndex use TextIterators
+// to convert between VisiblePositions and indices. But TextIterator iteration
+// using TextIteratorEmitsCharactersBetweenAllVisiblePositions does not exactly
+// match VisiblePosition iteration, so using them to preserve a selection during
+// an editing opertion is unreliable. TextIterator's
+// TextIteratorEmitsCharactersBetweenAllVisiblePositions mode needs to be fixed,
+// or these functions need to be changed to iterate using actual
+// VisiblePositions.
+// FIXME: Deploy these functions everywhere that TextIterators are used to
+// convert between VisiblePositions and indices.
 int indexForVisiblePosition(const VisiblePosition& visiblePosition,
                             ContainerNode*& scope) {
   if (visiblePosition.isNull())
@@ -1879,8 +1890,9 @@ VisiblePosition visiblePositionForIndex(int index, ContainerNode* scope) {
   return createVisiblePosition(range.startPosition());
 }
 
-// Determines whether a node is inside a range or visibly starts and ends at the boundaries of the range.
-// Call this function to determine whether a node is visibly fit inside selectedRange
+// Determines whether a node is inside a range or visibly starts and ends at the
+// boundaries of the range. Call this function to determine whether a node is
+// visibly fit inside selectedRange
 bool isNodeVisiblyContainedWithin(Node& node, const Range& selectedRange) {
   if (selectedRange.isNodeFullyContained(node))
     return true;
@@ -1953,9 +1965,10 @@ bool isBlockFlowElement(const Node& node) {
 Position adjustedSelectionStartForStyleComputation(
     const VisibleSelection& selection) {
   // This function is used by range style computations to avoid bugs like:
-  // <rdar://problem/4017641> REGRESSION (Mail): you can only bold/unbold a selection starting from end of line once
-  // It is important to skip certain irrelevant content at the start of the selection, so we do not wind up
-  // with a spurious "mixed" style.
+  // <rdar://problem/4017641> REGRESSION (Mail): you can only bold/unbold a
+  // selection starting from end of line once
+  // It is important to skip certain irrelevant content at the start of the
+  // selection, so we do not wind up with a spurious "mixed" style.
 
   VisiblePosition visiblePosition = createVisiblePosition(selection.start());
   if (visiblePosition.isNull())

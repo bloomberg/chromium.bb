@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012 Apple Inc. All
+ * rights reserved.
  * Copyright (C) 2005 Alexey Proskuryakov.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -95,8 +96,8 @@ EphemeralRange PlainTextRange::createRangeFor(const ContainerNode& scope,
         start() >= docTextPosition && start() <= docTextPosition + len;
     bool foundEnd = end() >= docTextPosition && end() <= docTextPosition + len;
 
-    // Fix textRunRange->endPosition(), but only if foundStart || foundEnd, because it is only
-    // in those cases that textRunRange is used.
+    // Fix textRunRange->endPosition(), but only if foundStart || foundEnd,
+    // because it is only in those cases that textRunRange is used.
     if (foundEnd) {
       // FIXME: This is a workaround for the fact that the end of a run
       // is often at the wrong position for emitted '\n's or if the

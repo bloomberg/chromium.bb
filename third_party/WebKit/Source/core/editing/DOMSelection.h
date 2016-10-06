@@ -75,9 +75,9 @@ class CORE_EXPORT DOMSelection final : public GarbageCollected<DOMSelection>,
 
   // Mozilla Selection Object API
   // In Firefox, anchor/focus are the equal to the start/end of the selection,
-  // but reflect the direction in which the selection was made by the user. That does
-  // not mean that they are base/extent, since the base/extent don't reflect
-  // expansion.
+  // but reflect the direction in which the selection was made by the user. That
+  // does not mean that they are base/extent, since the base/extent don't
+  // reflect expansion.
   // These methods return the valid equivalents of internal editing positions.
   Node* anchorNode() const;
   int anchorOffset() const;

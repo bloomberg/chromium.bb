@@ -494,9 +494,11 @@ void DOMSelection::addRange(Range* newRange) {
     return;
   }
 
-  // FIXME: "Merge the ranges if they intersect" is Blink-specific behavior; other browsers supporting discontiguous
-  // selection (obviously) keep each Range added and return it in getRangeAt(). But it's unclear if we can really
-  // do the same, since we don't support discontiguous selection. Further discussions at
+  // FIXME: "Merge the ranges if they intersect" is Blink-specific behavior;
+  // other browsers supporting discontiguous selection (obviously) keep each
+  // Range added and return it in getRangeAt(). But it's unclear if we can
+  // really do the same, since we don't support discontiguous selection. Further
+  // discussions at
   // <https://code.google.com/p/chromium/issues/detail?id=353069>.
 
   Range* start = originalRange->compareBoundaryPoints(

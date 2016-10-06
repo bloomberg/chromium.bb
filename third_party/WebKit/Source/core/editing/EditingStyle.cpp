@@ -73,7 +73,8 @@ static const CSSPropertyID& textDecorationPropertyForEditing() {
 }
 
 // Editing style properties must be preserved during editing operation.
-// e.g. when a user inserts a new paragraph, all properties listed here must be copied to the new paragraph.
+// e.g. when a user inserts a new paragraph, all properties listed here must be
+// copied to the new paragraph.
 // NOTE: Use either allEditingProperties() or inheritableEditingProperties() to
 // respect runtime enabling of properties.
 static const CSSPropertyID staticEditingProperties[] = {
@@ -198,8 +199,8 @@ class HTMLElementEquivalent : public GarbageCollected<HTMLElementEquivalent> {
                         const HTMLQualifiedName& tagName);
   const CSSPropertyID m_propertyID;
   const Member<CSSIdentifierValue> m_identifierValue;
-  const HTMLQualifiedName*
-      m_tagName;  // We can store a pointer because HTML tag names are const global.
+  // We can store a pointer because HTML tag names are const global.
+  const HTMLQualifiedName* m_tagName;
 };
 
 HTMLElementEquivalent::HTMLElementEquivalent(CSSPropertyID id)
@@ -302,8 +303,8 @@ class HTMLAttributeEquivalent : public HTMLElementEquivalent {
                           const HTMLQualifiedName& tagName,
                           const QualifiedName& attrName);
   HTMLAttributeEquivalent(CSSPropertyID, const QualifiedName& attrName);
-  const QualifiedName&
-      m_attrName;  // We can store a reference because HTML attribute names are const global.
+  // We can store a reference because HTML attribute names are const global.
+  const QualifiedName& m_attrName;
 };
 
 HTMLAttributeEquivalent::HTMLAttributeEquivalent(
@@ -612,7 +613,8 @@ EditingStyle* EditingStyle::copy() const {
   return copy;
 }
 
-// This is the list of CSS properties that apply specially to block-level elements.
+// This is the list of CSS properties that apply specially to block-level
+// elements.
 static const CSSPropertyID staticBlockProperties[] = {
     CSSPropertyBreakAfter,
     CSSPropertyBreakBefore,
@@ -793,9 +795,10 @@ TriState EditingStyle::triStateOfStyle(
       CSSComputedStyleDeclaration* nodeStyle =
           CSSComputedStyleDeclaration::create(&node);
       if (nodeStyle) {
-        // If the selected element has <sub> or <sup> ancestor element, apply the corresponding
-        // style(vertical-align) to it so that document.queryCommandState() works with the style.
-        // See bug http://crbug.com/582225.
+        // If the selected element has <sub> or <sup> ancestor element, apply
+        // the corresponding style(vertical-align) to it so that
+        // document.queryCommandState() works with the style. See bug
+        // http://crbug.com/582225.
         if (m_isVerticalAlign &&
             getIdentifierValue(nodeStyle, CSSPropertyVerticalAlign) ==
                 CSSValueBaseline) {
@@ -806,8 +809,9 @@ TriState EditingStyle::triStateOfStyle(
                 verticalAlign->convertTo<EVerticalAlign>());
         }
 
-        // Pass EditingStyle::DoNotIgnoreTextOnlyProperties without checking if node.isTextNode()
-        // because the node can be an element node. See bug http://crbug.com/584939.
+        // Pass EditingStyle::DoNotIgnoreTextOnlyProperties without checking if
+        // node.isTextNode() because the node can be an element node. See bug
+        // http://crbug.com/584939.
         TriState nodeState = triStateOfStyle(
             nodeStyle, EditingStyle::DoNotIgnoreTextOnlyProperties);
         if (nodeIsStart) {
@@ -841,7 +845,8 @@ bool EditingStyle::conflictsWithInlineStyleOfElement(
   for (unsigned i = 0; i < propertyCount; ++i) {
     CSSPropertyID propertyID = m_mutableStyle->propertyAt(i).id();
 
-    // We don't override whitespace property of a tab span because that would collapse the tab into a space.
+    // We don't override whitespace property of a tab span because that would
+    // collapse the tab into a space.
     if (propertyID == CSSPropertyWhiteSpace && isTabHTMLSpanElement(element))
       continue;
 
@@ -950,8 +955,9 @@ htmlAttributeEquivalents() {
                       HTMLAttributeEquivalents,
                       (new HeapVector<Member<HTMLAttributeEquivalent>>));
   if (!HTMLAttributeEquivalents.size()) {
-    // elementIsStyledSpanOrHTMLEquivalent depends on the fact each HTMLAttriuteEquivalent matches exactly one attribute
-    // of exactly one element except dirAttr.
+    // elementIsStyledSpanOrHTMLEquivalent depends on the fact each
+    // HTMLAttriuteEquivalent matches exactly one attribute of exactly one
+    // element except dirAttr.
     HTMLAttributeEquivalents.append(HTMLAttributeEquivalent::create(
         CSSPropertyColor, HTMLNames::fontTag, HTMLNames::colorAttr));
     HTMLAttributeEquivalents.append(HTMLAttributeEquivalent::create(
@@ -992,7 +998,8 @@ bool EditingStyle::extractConflictingImplicitStyleOfAttributes(
     Vector<QualifiedName>& conflictingAttributes,
     ShouldExtractMatchingStyle shouldExtractMatchingStyle) const {
   DCHECK(element);
-  // HTMLAttributeEquivalent::addToStyle doesn't support unicode-bidi and direction properties
+  // HTMLAttributeEquivalent::addToStyle doesn't support unicode-bidi and
+  // direction properties
   if (extractedStyle)
     DCHECK_EQ(shouldPreserveWritingDirection, PreserveWritingDirection);
   if (!m_mutableStyle)
@@ -1004,7 +1011,8 @@ bool EditingStyle::extractConflictingImplicitStyleOfAttributes(
   for (const auto& attribute : HTMLAttributeEquivalents) {
     const HTMLAttributeEquivalent* equivalent = attribute.get();
 
-    // unicode-bidi and direction are pushed down separately so don't push down with other styles.
+    // unicode-bidi and direction are pushed down separately so don't push down
+    // with other styles.
     if (shouldPreserveWritingDirection == PreserveWritingDirection &&
         equivalent->attributeName() == HTMLNames::dirAttr)
       continue;
@@ -1050,8 +1058,10 @@ bool EditingStyle::elementIsStyledSpanOrHTMLEquivalent(
   }
 
   AttributeCollection attributes = element->attributes();
-  if (attributes.isEmpty())
-    return elementIsSpanOrElementEquivalent;  // span, b, etc... without any attributes
+  if (attributes.isEmpty()) {
+    // span, b, etc... without any attributes
+    return elementIsSpanOrElementEquivalent;
+  }
 
   unsigned matchedAttributes = 0;
   const HeapVector<Member<HTMLAttributeEquivalent>>& HTMLAttributeEquivalents =
@@ -1062,8 +1072,10 @@ bool EditingStyle::elementIsStyledSpanOrHTMLEquivalent(
       matchedAttributes++;
   }
 
-  if (!elementIsSpanOrElementEquivalent && !matchedAttributes)
-    return false;  // element is not a span, a html element equivalent, or font element.
+  if (!elementIsSpanOrElementEquivalent && !matchedAttributes) {
+    // element is not a span, a html element equivalent, or font element.
+    return false;
+  }
 
   if (element->getAttribute(HTMLNames::classAttr) == AppleStyleSpanClass)
     matchedAttributes++;
@@ -1090,8 +1102,9 @@ void EditingStyle::prepareToApplyAt(
   if (!m_mutableStyle)
     return;
 
-  // ReplaceSelectionCommand::handleStyleSpans() requires that this function only removes the editing style.
-  // If this function was modified in the future to delete all redundant properties, then add a boolean value to indicate
+  // ReplaceSelectionCommand::handleStyleSpans() requires that this function
+  // only removes the editing style. If this function was modified in the future
+  // to delete all redundant properties, then add a boolean value to indicate
   // which one of editingStyleAtPosition or computedStyle is called.
   EditingStyle* editingStyleAtPosition =
       EditingStyle::create(position, EditingPropertiesInEffect);
@@ -1243,7 +1256,8 @@ EditingStyle* EditingStyle::wrappingStyleForAnnotatedSerialization(
       firstPositionInOrBeforeNode(context), isMailHTMLBlockquoteElement,
       CanCrossEditingBoundary)));
 
-  // Call collapseTextDecorationProperties first or otherwise it'll copy the value over from in-effect to text-decorations.
+  // Call collapseTextDecorationProperties first or otherwise it'll copy the
+  // value over from in-effect to text-decorations.
   wrappingStyle->collapseTextDecorationProperties();
 
   return wrappingStyle;
@@ -1254,7 +1268,8 @@ EditingStyle* EditingStyle::wrappingStyleForSerialization(
   DCHECK(context);
   EditingStyle* wrappingStyle = EditingStyle::create();
 
-  // When not annotating for interchange, we only preserve inline style declarations.
+  // When not annotating for interchange, we only preserve inline style
+  // declarations.
   for (Node& node : NodeTraversal::inclusiveAncestorsOf(*context)) {
     if (node.isDocumentNode())
       break;
@@ -1311,8 +1326,8 @@ void EditingStyle::mergeStyle(const StylePropertySet* style,
                                     property.isImportant());
         continue;
       }
-      value =
-          nullptr;  // text-decoration: none is equivalent to not having the property
+      // text-decoration: none is equivalent to not having the property
+      value = nullptr;
     }
 
     if (mode == OverrideValues || (mode == DoNotOverrideValues && !value))
@@ -1340,8 +1355,8 @@ void EditingStyle::mergeStyleFromRules(Element* element) {
       styleFromMatchedRulesForElement(
           element,
           StyleResolver::AuthorCSSRules | StyleResolver::CrossOriginCSSRules);
-  // Styles from the inline style declaration, held in the variable "style", take precedence
-  // over those from matched rules.
+  // Styles from the inline style declaration, held in the variable "style",
+  // take precedence over those from matched rules.
   if (m_mutableStyle)
     styleFromMatchedRules->mergeAndOverrideOnConflict(m_mutableStyle.get());
 
@@ -1352,9 +1367,11 @@ void EditingStyle::mergeStyleFromRules(Element* element) {
 void EditingStyle::mergeStyleFromRulesForSerialization(Element* element) {
   mergeStyleFromRules(element);
 
-  // The property value, if it's a percentage, may not reflect the actual computed value.
+  // The property value, if it's a percentage, may not reflect the actual
+  // computed value.
   // For example: style="height: 1%; overflow: visible;" in quirksmode
-  // FIXME: There are others like this, see <rdar://problem/5195123> Slashdot copy/paste fidelity problem
+  // FIXME: There are others like this, see <rdar://problem/5195123> Slashdot
+  // copy/paste fidelity problem
   CSSComputedStyleDeclaration* computedStyleForElement =
       CSSComputedStyleDeclaration::create(element);
   MutableStylePropertySet* fromComputedStyle =
@@ -1401,7 +1418,8 @@ void EditingStyle::removeStyleFromRulesAndContext(Element* element,
   element->document().updateStyleAndLayoutIgnorePendingStylesheetsForNode(
       element);
 
-  // 1. Remove style from matched rules because style remain without repeating it in inline style declaration
+  // 1. Remove style from matched rules because style remain without repeating
+  // it in inline style declaration
   MutableStylePropertySet* styleFromMatchedRules =
       styleFromMatchedRulesForElement(element,
                                       StyleResolver::AllButEmptyCSSRules);
@@ -1426,8 +1444,9 @@ void EditingStyle::removeStyleFromRulesAndContext(Element* element,
         computedStyle->m_mutableStyle->ensureCSSStyleDeclaration());
   }
 
-  // 3. If this element is a span and has display: inline or float: none, remove them unless they are overriden by rules.
-  // These rules are added by serialization code to wrap text nodes.
+  // 3. If this element is a span and has display: inline or float: none, remove
+  // them unless they are overriden by rules. These rules are added by
+  // serialization code to wrap text nodes.
   if (isStyleSpanOrSpanWithOnlyStyleAttribute(element)) {
     if (!styleFromMatchedRules->getPropertyCSSValue(CSSPropertyDisplay) &&
         getIdentifierValue(m_mutableStyle.get(), CSSPropertyDisplay) ==
@@ -1518,10 +1537,13 @@ EditingStyle* EditingStyle::styleAtSelectionStart(
 
   Position position = adjustedSelectionStartForStyleComputation(selection);
 
-  // If the pos is at the end of a text node, then this node is not fully selected.
-  // Move it to the next deep equivalent position to avoid removing the style from this node.
-  // e.g. if pos was at Position("hello", 5) in <b>hello<div>world</div></b>, we want Position("world", 0) instead.
-  // We only do this for range because caret at Position("hello", 5) in <b>hello</b>world should give you font-weight: bold.
+  // If the pos is at the end of a text node, then this node is not fully
+  // selected. Move it to the next deep equivalent position to avoid removing
+  // the style from this node.
+  // e.g. if pos was at Position("hello", 5) in <b>hello<div>world</div></b>, we
+  // want Position("world", 0) instead.
+  // We only do this for range because caret at Position("hello", 5) in
+  // <b>hello</b>world should give you font-weight: bold.
   Node* positionNode = position.computeContainerNode();
   if (selection.isRange() && positionNode && positionNode->isTextNode() &&
       position.computeOffsetInContainerNode() ==
@@ -1537,23 +1559,25 @@ EditingStyle* EditingStyle::styleAtSelectionStart(
   style->mergeTypingStyle(&element->document());
 
   // If |element| has <sub> or <sup> ancestor element, apply the corresponding
-  // style(vertical-align) to it so that document.queryCommandState() works with the style.
-  // See bug http://crbug.com/582225.
+  // style(vertical-align) to it so that document.queryCommandState() works with
+  // the style. See bug http://crbug.com/582225.
   CSSValueID valueID =
       getIdentifierValue(styleToCheck, CSSPropertyVerticalAlign);
   if (valueID == CSSValueSub || valueID == CSSValueSuper) {
     CSSComputedStyleDeclaration* elementStyle =
         CSSComputedStyleDeclaration::create(element);
-    // Find the ancestor that has CSSValueSub or CSSValueSuper as the value of CSS vertical-align property.
+    // Find the ancestor that has CSSValueSub or CSSValueSuper as the value of
+    // CSS vertical-align property.
     if (getIdentifierValue(elementStyle, CSSPropertyVerticalAlign) ==
             CSSValueBaseline &&
         hasAncestorVerticalAlignStyle(*element, valueID))
       style->m_mutableStyle->setProperty(CSSPropertyVerticalAlign, valueID);
   }
 
-  // If background color is transparent, traverse parent nodes until we hit a different value or document root
-  // Also, if the selection is a range, ignore the background color at the start of selection,
-  // and find the background color of the common ancestor.
+  // If background color is transparent, traverse parent nodes until we hit a
+  // different value or document root Also, if the selection is a range, ignore
+  // the background color at the start of selection, and find the background
+  // color of the common ancestor.
   if (shouldUseBackgroundColorInEffect &&
       (selection.isRange() ||
        hasTransparentBackgroundColor(style->m_mutableStyle.get()))) {
@@ -1626,8 +1650,8 @@ WritingDirection EditingStyle::textDirectionForSelection(
   }
   DCHECK(node);
 
-  // The selection is either a caret with no typing attributes or a range in which no embedding is added, so just use the start position
-  // to decide.
+  // The selection is either a caret with no typing attributes or a range in
+  // which no embedding is added, so just use the start position to decide.
   Node* block = enclosingBlock(node);
   WritingDirection foundDirection = NaturalWritingDirection;
 
@@ -1666,7 +1690,8 @@ WritingDirection EditingStyle::textDirectionForSelection(
     if (foundDirection != NaturalWritingDirection)
       return NaturalWritingDirection;
 
-    // In the range case, make sure that the embedding element persists until the end of the range.
+    // In the range case, make sure that the embedding element persists until
+    // the end of the range.
     if (selection.isRange() && !end.anchorNode()->isDescendantOf(element))
       return NaturalWritingDirection;
 
@@ -1687,7 +1712,8 @@ static void reconcileTextDecorationProperties(MutableStylePropertySet* style) {
       style->getPropertyCSSValue(CSSPropertyWebkitTextDecorationsInEffect);
   const CSSValue* textDecoration =
       style->getPropertyCSSValue(textDecorationPropertyForEditing());
-  // We shouldn't have both text-decoration and -webkit-text-decorations-in-effect because that wouldn't make sense.
+  // We shouldn't have both text-decoration and
+  // -webkit-text-decorations-in-effect because that wouldn't make sense.
   DCHECK(!textDecorationsInEffect || !textDecoration);
   if (textDecorationsInEffect) {
     style->setProperty(textDecorationPropertyForEditing(),
@@ -1696,7 +1722,8 @@ static void reconcileTextDecorationProperties(MutableStylePropertySet* style) {
     textDecoration = textDecorationsInEffect;
   }
 
-  // If text-decoration is set to "none", remove the property because we don't want to add redundant "text-decoration: none".
+  // If text-decoration is set to "none", remove the property because we don't
+  // want to add redundant "text-decoration: none".
   if (textDecoration && !textDecoration->isValueList())
     style->removeProperty(textDecorationPropertyForEditing());
 }
@@ -1723,12 +1750,14 @@ StyleChange::StyleChange(EditingStyle* style, const Position& position)
   if (!document->frame()->editor().shouldStyleWithCSS())
     extractTextStyles(document, mutableStyle, computedStyle->isMonospaceFont());
 
-  // Changing the whitespace style in a tab span would collapse the tab into a space.
+  // Changing the whitespace style in a tab span would collapse the tab into a
+  // space.
   if (isTabHTMLSpanElementTextNode(position.anchorNode()) ||
       isTabHTMLSpanElement((position.anchorNode())))
     mutableStyle->removeProperty(CSSPropertyWhiteSpace);
 
-  // If unicode-bidi is present in mutableStyle and direction is not, then add direction to mutableStyle.
+  // If unicode-bidi is present in mutableStyle and direction is not, then add
+  // direction to mutableStyle.
   // FIXME: Shouldn't this be done in getPropertiesNotIn?
   if (mutableStyle->getPropertyCSSValue(CSSPropertyUnicodeBidi) &&
       !style->style()->getPropertyCSSValue(CSSPropertyDirection))
@@ -1769,8 +1798,10 @@ void StyleChange::extractTextStyles(Document* document,
     m_applyItalic = true;
   }
 
-  // Assuming reconcileTextDecorationProperties has been called, there should not be -webkit-text-decorations-in-effect
-  // Furthermore, text-decoration: none has been trimmed so that text-decoration property is always a CSSValueList.
+  // Assuming reconcileTextDecorationProperties has been called, there should
+  // not be -webkit-text-decorations-in-effect
+  // Furthermore, text-decoration: none has been trimmed so that text-decoration
+  // property is always a CSSValueList.
   const CSSValue* textDecoration =
       style->getPropertyCSSValue(textDecorationPropertyForEditing());
   if (textDecoration && textDecoration->isValueList()) {
@@ -1807,15 +1838,16 @@ void StyleChange::extractTextStyles(Document* document,
   }
 
   m_applyFontFace = style->getPropertyValue(CSSPropertyFontFamily);
-  // Remove double quotes for Outlook 2007 compatibility. See https://bugs.webkit.org/show_bug.cgi?id=79448
+  // Remove double quotes for Outlook 2007 compatibility. See
+  // https://bugs.webkit.org/show_bug.cgi?id=79448
   m_applyFontFace.replace('"', "");
   style->removeProperty(CSSPropertyFontFamily);
 
   if (const CSSValue* fontSize =
           style->getPropertyCSSValue(CSSPropertyFontSize)) {
     if (!fontSize->isPrimitiveValue() && !fontSize->isIdentifierValue()) {
-      style->removeProperty(
-          CSSPropertyFontSize);  // Can't make sense of the number. Put no font size.
+      // Can't make sense of the number. Put no font size.
+      style->removeProperty(CSSPropertyFontSize);
     } else if (int legacyFontSize = legacyFontSizeFromCSSValue(
                    document, fontSize, isMonospaceFont,
                    UseLegacyFontSizeOnlyIfPixelValuesMatch)) {
@@ -1847,8 +1879,9 @@ static bool fontWeightIsBold(const CSSValue* fontWeight) {
   if (!fontWeight->isIdentifierValue())
     return false;
 
-  // Because b tag can only bold text, there are only two states in plain html: bold and not bold.
-  // Collapse all other values to either one of these two states for editing purposes.
+  // Because b tag can only bold text, there are only two states in plain html:
+  // bold and not bold. Collapse all other values to either one of these two
+  // states for editing purposes.
   switch (toCSSIdentifierValue(fontWeight)->getValueID()) {
     case CSSValue100:
     case CSSValue200:
@@ -1960,7 +1993,8 @@ int legacyFontSizeFromCSSValue(Document* document,
           clampTo<int>(primitiveValue.getDoubleValue() * conversion);
       int legacyFontSize =
           FontSize::legacyFontSize(document, pixelFontSize, isMonospaceFont);
-      // Use legacy font size only if pixel value matches exactly to that of legacy font size.
+      // Use legacy font size only if pixel value matches exactly to that of
+      // legacy font size.
       if (mode == AlwaysUseLegacyFontSize ||
           FontSize::fontSizeForKeyword(document, legacyFontSize,
                                        isMonospaceFont) == pixelFontSize)

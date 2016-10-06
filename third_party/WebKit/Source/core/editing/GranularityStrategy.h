@@ -108,7 +108,8 @@ class DirectionGranularityStrategy final : public GranularityStrategy {
   // Current selection granularity being used.
   TextGranularity m_granularity;
 
-  // Horizontal offset in pixels in absolute coordinates applied to the extent point.
+  // Horizontal offset in pixels in absolute coordinates applied to the extent
+  // point.
   int m_offset;
 
   // This defines location of the offset-adjusted extent point (from the

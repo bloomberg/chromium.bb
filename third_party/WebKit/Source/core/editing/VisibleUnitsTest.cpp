@@ -1169,8 +1169,8 @@ TEST_F(VisibleUnitsTest, logicalEndOfLine) {
             logicalEndOfLine(createVisiblePositionInFlatTree(*two, 0))
                 .deepEquivalent());
 
-  // TODO(yosin) logicalEndOfLine(two, 1) -> (five, 5) is a broken result. We keep
-  // it as a marker for future change.
+  // TODO(yosin) logicalEndOfLine(two, 1) -> (five, 5) is a broken result. We
+  // keep it as a marker for future change.
   EXPECT_EQ(Position(five, 5),
             logicalEndOfLine(createVisiblePositionInDOMTree(*two, 1))
                 .deepEquivalent());

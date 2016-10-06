@@ -347,8 +347,8 @@ TEST_F(EditingUtilitiesTest, uncheckedPreviousNextOffset) {
   EXPECT_EQ(1, nextGraphemeBoundaryOf(node, 0));
   EXPECT_EQ(2, nextGraphemeBoundaryOf(node, 1));
   EXPECT_EQ(3, nextGraphemeBoundaryOf(node, 2));
-  setBodyContent(
-      "<p id='target'>a&#xAD;b</p>");  // U+00AD(SOFT HYPHEN) has Control property.
+  // U+00AD(SOFT HYPHEN) has Control property.
+  setBodyContent("<p id='target'>a&#xAD;b</p>");
   node = document().getElementById("target")->firstChild();
   EXPECT_EQ(2, previousGraphemeBoundaryOf(node, 3));
   EXPECT_EQ(1, previousGraphemeBoundaryOf(node, 2));
@@ -455,12 +455,13 @@ TEST_F(EditingUtilitiesTest, uncheckedPreviousNextOffset) {
 
   // Break other Hangul syllable combination. See test of GB999.
 
-  // GB8a: Don't break between regional indicator if there are even numbered regional indicator symbols before.
+  // GB8a: Don't break between regional indicator if there are even numbered
+  // regional indicator symbols before.
   // U+1F1FA is REGIONAL INDICATOR SYMBOL LETTER U.
   // U+1F1F8 is REGIONAL INDICATOR SYMBOL LETTER S.
   const std::string flag = "&#x1F1FA;&#x1F1F8;";  // US flag.
-  setBodyContent("<p id='target'>" + flag + flag + flag + flag +
-                 "a</p>");  // ^(RI RI)* RI x RI
+  // ^(RI RI)* RI x RI
+  setBodyContent("<p id='target'>" + flag + flag + flag + flag + "a</p>");
   node = document().getElementById("target")->firstChild();
   EXPECT_EQ(16, previousGraphemeBoundaryOf(node, 17));
   EXPECT_EQ(12, previousGraphemeBoundaryOf(node, 16));
@@ -473,9 +474,10 @@ TEST_F(EditingUtilitiesTest, uncheckedPreviousNextOffset) {
   EXPECT_EQ(16, nextGraphemeBoundaryOf(node, 12));
   EXPECT_EQ(17, nextGraphemeBoundaryOf(node, 16));
 
-  // GB8c: Don't break between regional indicator if there are even numbered regional indicator symbols before.
-  setBodyContent("<p id='target'>a" + flag + flag + flag + flag +
-                 "b</p>");  // [^RI] (RI RI)* RI x RI
+  // GB8c: Don't break between regional indicator if there are even numbered
+  // regional indicator symbols before.
+  // [^RI] (RI RI)* RI x RI
+  setBodyContent("<p id='target'>a" + flag + flag + flag + flag + "b</p>");
   node = document().getElementById("target")->firstChild();
   EXPECT_EQ(17, previousGraphemeBoundaryOf(node, 18));
   EXPECT_EQ(13, previousGraphemeBoundaryOf(node, 17));
@@ -548,7 +550,8 @@ TEST_F(EditingUtilitiesTest, uncheckedPreviousNextOffset) {
   EXPECT_EQ(2, nextGraphemeBoundaryOf(node, 1));
   EXPECT_EQ(3, nextGraphemeBoundaryOf(node, 2));
 
-  // Blink customization: Don't break before Japanese half-width katakana voiced marks.
+  // Blink customization: Don't break before Japanese half-width katakana voiced
+  // marks.
   setBodyContent("<p id='target'>a&#xFF76;&#xFF9E;b</p>");
   node = document().getElementById("target")->firstChild();
   EXPECT_EQ(3, previousGraphemeBoundaryOf(node, 4));
@@ -559,7 +562,8 @@ TEST_F(EditingUtilitiesTest, uncheckedPreviousNextOffset) {
   EXPECT_EQ(4, nextGraphemeBoundaryOf(node, 3));
 
   // Additional rule for IndicSyllabicCategory=Virama: Do not break after that.
-  // See http://www.unicode.org/Public/9.0.0/ucd/IndicSyllabicCategory-9.0.0d2.txt
+  // See
+  // http://www.unicode.org/Public/9.0.0/ucd/IndicSyllabicCategory-9.0.0d2.txt
   // U+0905 is DEVANAGARI LETTER A. This has Extend property.
   // U+094D is DEVANAGARI SIGN VIRAMA. This has Virama property.
   // U+0915 is DEVANAGARI LETTER KA.
@@ -573,8 +577,8 @@ TEST_F(EditingUtilitiesTest, uncheckedPreviousNextOffset) {
   EXPECT_EQ(5, nextGraphemeBoundaryOf(node, 4));
   // U+0E01 is THAI CHARACTER KO KAI
   // U+0E3A is THAI CHARACTER PHINTHU
-  // Should break after U+0E3A since U+0E3A has Virama property but not listed in
-  // IndicSyllabicCategory=Virama.
+  // Should break after U+0E3A since U+0E3A has Virama property but not listed
+  // in IndicSyllabicCategory=Virama.
   setBodyContent("<p id='target'>a&#x0E01;&#x0E3A;&#x0E01;b</p>");
   node = document().getElementById("target")->firstChild();
   EXPECT_EQ(4, previousGraphemeBoundaryOf(node, 5));
@@ -697,7 +701,8 @@ TEST_F(EditingUtilitiesTest, uncheckedPreviousNextOffset) {
   EXPECT_EQ(1, previousGraphemeBoundaryOf(node, 2));
   EXPECT_EQ(1, nextGraphemeBoundaryOf(node, 0));
 
-  // For GB10, if base emoji character is not E_Base or EBG, break happens before E_Modifier.
+  // For GB10, if base emoji character is not E_Base or EBG, break happens
+  // before E_Modifier.
   setBodyContent("<p id='target'>a&#x1F3FB;</p>");
   node = document().getElementById("target")->firstChild();
   EXPECT_EQ(1, previousGraphemeBoundaryOf(node, 3));
@@ -708,7 +713,8 @@ TEST_F(EditingUtilitiesTest, uncheckedPreviousNextOffset) {
   EXPECT_EQ(2, previousGraphemeBoundaryOf(node, 4));
   EXPECT_EQ(2, nextGraphemeBoundaryOf(node, 0));
 
-  // For GB11, if trailing character is not Glue_After_Zwj or EBG, break happens after ZWJ.
+  // For GB11, if trailing character is not Glue_After_Zwj or EBG, break happens
+  // after ZWJ.
   // U+1F5FA(WORLD MAP) doesn't have either Glue_After_Zwj or EBG.
   setBodyContent("<p id='target'>&#x200D;a</p>");
   node = document().getElementById("target")->firstChild();
@@ -824,8 +830,8 @@ TEST_F(EditingUtilitiesTest, previousPositionOf_Backspace_SurrogatePairs) {
             previousPositionOf(Position(node, 1),
                                PositionMoveType::BackwardDeletion));
 
-  setBodyContent(
-      "<p id='target'>&#x1F441;&#xD83D;&#x1F441;</p>");  // &#xD83D; is unpaired lead surrogate.
+  // &#xD83D; is unpaired lead surrogate.
+  setBodyContent("<p id='target'>&#x1F441;&#xD83D;&#x1F441;</p>");
   node = document().getElementById("target")->firstChild();
   EXPECT_EQ(Position(node, 3),
             previousPositionOf(Position(node, 5),
@@ -857,8 +863,8 @@ TEST_F(EditingUtilitiesTest, previousPositionOf_Backspace_SurrogatePairs) {
             previousPositionOf(Position(node, 1),
                                PositionMoveType::BackwardDeletion));
 
-  setBodyContent(
-      "<p id='target'>&#x1F441;&#xDC41;&#x1F441;</p>");  // &#xDC41; is unpaired trail surrogate.
+  // &#xDC41; is unpaired trail surrogate.
+  setBodyContent("<p id='target'>&#x1F441;&#xDC41;&#x1F441;</p>");
   node = document().getElementById("target")->firstChild();
   EXPECT_EQ(Position(node, 3),
             previousPositionOf(Position(node, 5),
@@ -870,8 +876,8 @@ TEST_F(EditingUtilitiesTest, previousPositionOf_Backspace_SurrogatePairs) {
             previousPositionOf(Position(node, 2),
                                PositionMoveType::BackwardDeletion));
 
-  setBodyContent(
-      "<p id='target'>a&#xDC41;a</p>");  // &#xDC41; is unpaired trail surrogate.
+  // &#xDC41; is unpaired trail surrogate.
+  setBodyContent("<p id='target'>a&#xDC41;a</p>");
   node = document().getElementById("target")->firstChild();
   EXPECT_EQ(Position(node, 2),
             previousPositionOf(Position(node, 3),

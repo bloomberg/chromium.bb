@@ -23,19 +23,20 @@
 
 namespace blink {
 
-// There are multiple editing details that are different on Windows than Macintosh.
-// We use a single switch for all of them. Some examples:
+// There are multiple editing details that are different on Windows than
+// Macintosh. We use a single switch for all of them. Some examples:
 //
-//    1) Clicking below the last line of an editable area puts the caret at the end
-//       of the last line on Mac, but in the middle of the last line on Windows.
-//    2) Pushing the down arrow key on the last line puts the caret at the end of the
-//       last line on Mac, but does nothing on Windows. A similar case exists on the
-//       top line.
+//    1) Clicking below the last line of an editable area puts the caret at the
+//       end of the last line on Mac, but in the middle of the last line on
+//       Windows.
+//    2) Pushing the down arrow key on the last line puts the caret at the end
+//       of the last line on Mac, but does nothing on Windows. A similar case
+//       exists on the top line.
 //
-// This setting is intended to control these sorts of behaviors. There are some other
-// behaviors with individual function calls on EditorClient (smart copy and paste and
-// selecting the space after a double click) that could be combined with this if
-// if possible in the future.
+// This setting is intended to control these sorts of behaviors. There are some
+// other behaviors with individual function calls on EditorClient (smart copy
+// and paste and selecting the space after a double click) that could be
+// combined with this if if possible in the future.
 enum EditingBehaviorType {
   EditingMacBehavior,
   EditingWindowsBehavior,

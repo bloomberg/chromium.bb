@@ -329,7 +329,8 @@ void FrameSelection::setSelectionAlgorithm(
   }
 
   if (!(options & DoNotUpdateAppearance)) {
-    // Hits in compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html
+    // Hits in
+    // compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html
     DisableCompositingQueryAsserts disabler;
     m_frameCaret->stopCaretBlinkTimer();
     updateAppearance();
@@ -450,8 +451,9 @@ void FrameSelection::nodeChildrenWillBeRemoved(ContainerNode& container) {
 }
 
 void FrameSelection::nodeWillBeRemoved(Node& node) {
-  // There can't be a selection inside a fragment, so if a fragment's node is being removed,
-  // the selection in the document that created the fragment needs no adjustment.
+  // There can't be a selection inside a fragment, so if a fragment's node is
+  // being removed, the selection in the document that created the fragment
+  // needs no adjustment.
   if (isNone() || !node.inActiveDocument())
     return;
 
@@ -501,10 +503,10 @@ void FrameSelection::respondToNodeModification(Node& node,
 
     clearLayoutTreeSelection = true;
   } else if (baseRemoved || extentRemoved) {
-    // The base and/or extent are about to be removed, but the start and end aren't.
-    // Change the base and extent to the start and end, but don't re-validate the
-    // selection, since doing so could move the start and end into the node
-    // that is about to be removed.
+    // The base and/or extent are about to be removed, but the start and end
+    // aren't. Change the base and extent to the start and end, but don't
+    // re-validate the selection, since doing so could move the start and end
+    // into the node that is about to be removed.
     if (selection().isBaseFirst())
       m_selectionEditor->setWithoutValidation(selection().start(),
                                               selection().end());
@@ -542,7 +544,8 @@ static Position updatePositionAfterAdoptingTextReplacement(
       !position.isOffsetInAnchor())
     return position;
 
-  // See: http://www.w3.org/TR/DOM-Level-2-Traversal-Range/ranges.html#Level-2-Range-Mutation
+  // See:
+  // http://www.w3.org/TR/DOM-Level-2-Traversal-Range/ranges.html#Level-2-Range-Mutation
   DCHECK_GE(position.offsetInContainerNode(), 0);
   unsigned positionOffset =
       static_cast<unsigned>(position.offsetInContainerNode());
@@ -555,9 +558,10 @@ static Position updatePositionAfterAdoptingTextReplacement(
   if (positionOffset > offset + oldLength)
     positionOffset = positionOffset - oldLength + newLength;
 
-  // Due to case folding (http://unicode.org/Public/UCD/latest/ucd/CaseFolding.txt),
-  // LayoutText length may be different from Text length.  A correct implementation
-  // would translate the LayoutText offset to a Text offset; this is just a safety
+  // Due to case folding
+  // (http://unicode.org/Public/UCD/latest/ucd/CaseFolding.txt), LayoutText
+  // length may be different from Text length.  A correct implementation would
+  // translate the LayoutText offset to a Text offset; this is just a safety
   // precaution to avoid offset values that run off the end of the Text.
   if (positionOffset > node->length())
     positionOffset = node->length();
@@ -571,7 +575,8 @@ void FrameSelection::didUpdateCharacterData(CharacterData* node,
                                             unsigned offset,
                                             unsigned oldLength,
                                             unsigned newLength) {
-  // The fragment check is a performance optimization. See http://trac.webkit.org/changeset/30062.
+  // The fragment check is a performance optimization. See
+  // http://trac.webkit.org/changeset/30062.
   if (isNone() || !node || !node->isConnected())
     return;
 
@@ -626,7 +631,8 @@ static Position updatePostionAfterAdoptingTextNodeSplit(
   if (!position.anchorNode() || position.anchorNode() != &oldNode ||
       !position.isOffsetInAnchor())
     return position;
-  // See: http://www.w3.org/TR/DOM-Level-2-Traversal-Range/ranges.html#Level-2-Range-Mutation
+  // See:
+  // http://www.w3.org/TR/DOM-Level-2-Traversal-Range/ranges.html#Level-2-Range-Mutation
   DCHECK_GE(position.offsetInContainerNode(), 0);
   unsigned positionOffset =
       static_cast<unsigned>(position.offsetInContainerNode());
@@ -670,7 +676,8 @@ void FrameSelection::updateSelectionIfNeeded(const Position& base,
 }
 
 void FrameSelection::didChangeFocus() {
-  // Hits in virtual/gpu/compositedscrolling/scrollbars/scrollbar-miss-mousemove-disabled.html
+  // Hits in
+  // virtual/gpu/compositedscrolling/scrollbars/scrollbar-miss-mousemove-disabled.html
   DisableCompositingQueryAsserts disabler;
   updateAppearance();
 }
@@ -844,10 +851,11 @@ bool FrameSelection::contains(const LayoutPoint& point) {
 }
 
 // Workaround for the fact that it's hard to delete a frame.
-// Call this after doing user-triggered selections to make it easy to delete the frame you entirely selected.
-// Can't do this implicitly as part of every setSelection call because in some contexts it might not be good
-// for the focus to move to another frame. So instead we call it from places where we are selecting with the
-// mouse or the keyboard after setting the selection.
+// Call this after doing user-triggered selections to make it easy to delete the
+// frame you entirely selected. Can't do this implicitly as part of every
+// setSelection call because in some contexts it might not be good for the focus
+// to move to another frame. So instead we call it from places where we are
+// selecting with the mouse or the keyboard after setting the selection.
 void FrameSelection::selectFrameElementInParentIfFullySelected() {
   // Find the parent frame; if there is none, then we have nothing to do.
   Frame* parent = m_frame->tree().parent();
@@ -857,7 +865,8 @@ void FrameSelection::selectFrameElementInParentIfFullySelected() {
   if (!page)
     return;
 
-  // Check if the selection contains the entire frame contents; if not, then there is nothing to do.
+  // Check if the selection contains the entire frame contents; if not, then
+  // there is nothing to do.
   if (!isRange())
     return;
 
@@ -874,7 +883,8 @@ void FrameSelection::selectFrameElementInParentIfFullySelected() {
   if (!parent->isLocalFrame())
     return;
 
-  // Get to the <iframe> or <frame> (or even <object>) element in the parent frame.
+  // Get to the <iframe> or <frame> (or even <object>) element in the parent
+  // frame.
   // FIXME: Doesn't work for OOPI.
   HTMLFrameOwnerElement* ownerElement = m_frame->deprecatedLocalOwner();
   if (!ownerElement)
@@ -887,7 +897,8 @@ void FrameSelection::selectFrameElementInParentIfFullySelected() {
   // needs to be audited.  See http://crbug.com/590369 for more details.
   ownerElementParent->document().updateStyleAndLayoutIgnorePendingStylesheets();
 
-  // This method's purpose is it to make it easier to select iframes (in order to delete them).  Don't do anything if the iframe isn't deletable.
+  // This method's purpose is it to make it easier to select iframes (in order
+  // to delete them).  Don't do anything if the iframe isn't deletable.
   if (!blink::hasEditableStyle(*ownerElementParent))
     return;
 
@@ -899,7 +910,8 @@ void FrameSelection::selectFrameElementInParentIfFullySelected() {
       Position(ownerElementParent, ownerElementNodeIndex + 1),
       VP_UPSTREAM_IF_POSSIBLE);
 
-  // Focus on the parent frame, and then select from before this element to after.
+  // Focus on the parent frame, and then select from before this element to
+  // after.
   VisibleSelection newSelection =
       createVisibleSelection(beforeOwnerElement, afterOwnerElement);
   page->focusController().setFocusedFrame(parent);
@@ -1109,8 +1121,8 @@ void FrameSelection::notifyLayoutObjectOfSelectionChange(
     textControl->selectionChanged(userTriggered == UserTriggered);
 }
 
-// Helper function that tells whether a particular node is an element that has an entire
-// LocalFrame and FrameView, a <frame>, <iframe>, or <object>.
+// Helper function that tells whether a particular node is an element that has
+// an entire LocalFrame and FrameView, a <frame>, <iframe>, or <object>.
 static bool isFrameElement(const Node* n) {
   if (!n)
     return false;
@@ -1138,9 +1150,10 @@ void FrameSelection::setFocusedNodeIfNeeded() {
     // Walk up the DOM tree to search for a node to focus.
     document().updateStyleAndLayoutTreeIgnorePendingStylesheets();
     while (target) {
-      // We don't want to set focus on a subframe when selecting in a parent frame,
-      // so add the !isFrameElement check here. There's probably a better way to make this
-      // work in the long term, but this is the safest fix at this time.
+      // We don't want to set focus on a subframe when selecting in a parent
+      // frame, so add the !isFrameElement check here. There's probably a better
+      // way to make this work in the long term, but this is the safest fix at
+      // this time.
       if (target->isMouseFocusable() && !isFrameElement(target)) {
         m_frame->page()->focusController().setFocusedElement(target, m_frame);
         return;
@@ -1160,7 +1173,8 @@ static String extractSelectedText(const FrameSelection& selection,
       selection.visibleSelection<EditingInFlatTreeStrategy>();
   const EphemeralRangeInFlatTree& range =
       visibleSelection.toNormalizedEphemeralRange();
-  // We remove '\0' characters because they are not visibly rendered to the user.
+  // We remove '\0' characters because they are not visibly rendered to the
+  // user.
   return plainText(range, behavior).replace(0, "");
 }
 
@@ -1231,9 +1245,11 @@ static HTMLFormElement* scanForForm(Node* start) {
   return 0;
 }
 
-// We look for either the form containing the current focus, or for one immediately after it
+// We look for either the form containing the current focus, or for one
+// immediately after it
 HTMLFormElement* FrameSelection::currentForm() const {
-  // Start looking either at the active (first responder) node, or where the selection is.
+  // Start looking either at the active (first responder) node, or where the
+  // selection is.
   Node* start = document().focusedElement();
   if (!start)
     start = this->start().anchorNode();

@@ -65,9 +65,11 @@ void dispatchCompositionEndEvent(LocalFrame& frame, const String& text) {
   target->dispatchEvent(event);
 }
 
-// Used to insert/replace text during composition update and confirm composition.
+// Used to insert/replace text during composition update and confirm
+// composition.
 // Procedure:
-//   1. Fire 'beforeinput' event for (TODO(chongz): deleted composed text) and inserted text
+//   1. Fire 'beforeinput' event for (TODO(chongz): deleted composed text) and
+//      inserted text
 //   2. Fire 'compositionupdate' event
 //   3. Fire TextEvent and modify DOM
 //   TODO(chongz): 4. Fire 'input' event
@@ -90,7 +92,8 @@ void insertTextDuringCompositionWithEvents(
   if (!target)
     return;
 
-  // TODO(chongz): Fire 'beforeinput' for the composed text being replaced/deleted.
+  // TODO(chongz): Fire 'beforeinput' for the composed text being
+  // replaced/deleted.
 
   // Only the last confirmed text is cancelable.
   InputEvent::EventCancelable beforeInputCancelable =
@@ -120,7 +123,8 @@ void insertTextDuringCompositionWithEvents(
                                 compositionType);
       break;
     case TypingCommand::TextCompositionType::TextCompositionConfirm:
-      // TODO(chongz): Use TypingCommand::insertText after TextEvent was removed. (Removed from spec since 2012)
+      // TODO(chongz): Use TypingCommand::insertText after TextEvent was
+      // removed. (Removed from spec since 2012)
       // See TextEvent.idl.
       frame.eventHandler().handleTextInputEvent(text, 0,
                                                 TextEventInputComposition);
@@ -168,8 +172,8 @@ void InputMethodController::selectComposition() const {
   if (range.isNull())
     return;
 
-  // The composition can start inside a composed character sequence, so we have to override checks.
-  // See <http://bugs.webkit.org/show_bug.cgi?id=15781>
+  // The composition can start inside a composed character sequence, so we have
+  // to override checks. See <http://bugs.webkit.org/show_bug.cgi?id=15781>
   VisibleSelection selection;
   selection.setWithoutValidation(range.startPosition(), range.endPosition());
   frame().selection().setSelection(selection, 0);
@@ -385,27 +389,28 @@ void InputMethodController::setComposition(
       createRangeForSelection(start, end, text.length());
 
   // Dispatch an appropriate composition event to the focused node.
-  // We check the composition status and choose an appropriate composition event since this
-  // function is used for three purposes:
+  // We check the composition status and choose an appropriate composition event
+  // since this function is used for three purposes:
   // 1. Starting a new composition.
-  //    Send a compositionstart and a compositionupdate event when this function creates
-  //    a new composition node, i.e.
-  //    !hasComposition() && !text.isEmpty().
+  //    Send a compositionstart and a compositionupdate event when this function
+  //    creates a new composition node, i.e. !hasComposition() &&
+  //    !text.isEmpty().
   //    Sending a compositionupdate event at this time ensures that at least one
   //    compositionupdate event is dispatched.
   // 2. Updating the existing composition node.
-  //    Send a compositionupdate event when this function updates the existing composition
-  //    node, i.e. hasComposition() && !text.isEmpty().
+  //    Send a compositionupdate event when this function updates the existing
+  //    composition node, i.e. hasComposition() && !text.isEmpty().
   // 3. Canceling the ongoing composition.
-  //    Send a compositionend event when function deletes the existing composition node, i.e.
-  //    !hasComposition() && test.isEmpty().
+  //    Send a compositionend event when function deletes the existing
+  //    composition node, i.e. !hasComposition() && test.isEmpty().
   if (text.isEmpty()) {
     if (hasComposition()) {
       Editor::RevealSelectionScope revealSelectionScope(&editor());
       replaceComposition(emptyString());
     } else {
-      // It's weird to call |setComposition()| with empty text outside composition, however some IME
-      // (e.g. Japanese IBus-Anthy) did this, so we simply delete selection without sending extra events.
+      // It's weird to call |setComposition()| with empty text outside
+      // composition, however some IME (e.g. Japanese IBus-Anthy) did this, so
+      // we simply delete selection without sending extra events.
       TypingCommand::deleteSelection(*frame().document(),
                                      TypingCommand::PreventSpellChecking);
     }
@@ -418,8 +423,9 @@ void InputMethodController::setComposition(
     return;
   }
 
-  // We should send a 'compositionstart' event only when the given text is not empty because this
-  // function doesn't create a composition node when the text is empty.
+  // We should send a 'compositionstart' event only when the given text is not
+  // empty because this function doesn't create a composition node when the text
+  // is empty.
   if (!hasComposition()) {
     target->dispatchEvent(
         CompositionEvent::create(EventTypeNames::compositionstart,

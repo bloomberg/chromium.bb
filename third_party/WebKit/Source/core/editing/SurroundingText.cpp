@@ -69,7 +69,8 @@ void SurroundingText::initialize(const Position& startPosition,
       endPosition, Position::lastPositionInNode(document->documentElement())
                        .parentAnchoredEquivalent(),
       TextIteratorStopsOnFormControls);
-  // FIXME: why do we stop going trough the text if we were not able to select something on the right?
+  // FIXME: why do we stop going trough the text if we were not able to select
+  // something on the right?
   if (!forwardIterator.atEnd())
     forwardIterator.advance(maxLength - halfMaxLength);
 

@@ -94,15 +94,20 @@ class CORE_TEMPLATE_CLASS_EXPORT PositionTemplate {
     return m_anchorType == PositionAnchorType::OffsetInAnchor;
   }
 
-  // These are always DOM compliant values.  Editing positions like [img, 0] (aka [img, before])
-  // will return img->parentNode() and img->nodeIndex() from these functions.
-  Node* computeContainerNode()
-      const;  // null for a before/after position anchored to a node with no parent
+  // These are always DOM compliant values.  Editing positions like [img, 0]
+  // (aka [img, before]) will return img->parentNode() and img->nodeIndex() from
+  // these functions.
 
-  int computeOffsetInContainerNode()
-      const;  // O(n) for before/after-anchored positions, O(1) for parent-anchored positions
-  PositionTemplate<Strategy> parentAnchoredEquivalent()
-      const;  // Convenience method for DOM positions that also fixes up some positions for editing
+  // null for a before/after position anchored to a node with no parent
+  Node* computeContainerNode() const;
+
+  // O(n) for before/after-anchored positions, O(1) for parent-anchored
+  // positions
+  int computeOffsetInContainerNode() const;
+
+  // Convenience method for DOM positions that also fixes up some positions for
+  // editing
+  PositionTemplate<Strategy> parentAnchoredEquivalent() const;
 
   // Returns |PositionIsAnchor| type |Position| which is compatible with
   // |RangeBoundaryPoint| as safe to pass |Range| constructor. Return value
@@ -127,7 +132,8 @@ class CORE_TEMPLATE_CLASS_EXPORT PositionTemplate {
   // anchor node.
   int computeEditingOffset() const;
 
-  // These are convenience methods which are smart about whether the position is neighbor anchored or parent anchored
+  // These are convenience methods which are smart about whether the position is
+  // neighbor anchored or parent anchored
   Node* computeNodeBeforePosition() const;
   Node* computeNodeAfterPosition() const;
 
@@ -204,9 +210,10 @@ class CORE_TEMPLATE_CLASS_EXPORT PositionTemplate {
   }
 
   Member<Node> m_anchorNode;
-  // m_offset can be the offset inside m_anchorNode, or if editingIgnoresContent(m_anchorNode)
-  // returns true, then other places in editing will treat m_offset == 0 as "before the anchor"
-  // and m_offset > 0 as "after the anchor node".  See parentAnchoredEquivalent for more info.
+  // m_offset can be the offset inside m_anchorNode, or if
+  // editingIgnoresContent(m_anchorNode) returns true, then other places in
+  // editing will treat m_offset == 0 as "before the anchor" and m_offset > 0 as
+  // "after the anchor node".  See parentAnchoredEquivalent for more info.
   int m_offset;
   PositionAnchorType m_anchorType;
 };
@@ -229,7 +236,8 @@ bool operator==(const PositionTemplate<Strategy>& a,
     return false;
 
   if (!a.isOffsetInAnchor()) {
-    // Note: |m_offset| only has meaning when |PositionAnchorType::OffsetInAnchor|.
+    // Note: |m_offset| only has meaning when
+    // |PositionAnchorType::OffsetInAnchor|.
     return true;
   }
 

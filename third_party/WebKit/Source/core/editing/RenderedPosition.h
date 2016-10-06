@@ -68,8 +68,8 @@ class RenderedPosition {
   bool atRightBoundaryOfBidiRun() const {
     return atRightBoundaryOfBidiRun(IgnoreBidiLevel, 0);
   }
-  // The following two functions return true only if the current position is at the end of the bidi run
-  // of the specified bidi embedding level.
+  // The following two functions return true only if the current position is at
+  // the end of the bidi run of the specified bidi embedding level.
   bool atLeftBoundaryOfBidiRun(unsigned char bidiLevelOfRun) const {
     return atLeftBoundaryOfBidiRun(MatchBidiLevel, bidiLevelOfRun);
   }

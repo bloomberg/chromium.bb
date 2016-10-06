@@ -74,7 +74,8 @@ class GranularityStrategyTest : public ::testing::Test {
   void testDirectionShrink();
   void testDirectionSwitchSide();
 
-  // Pixel coordinates of the positions for each letter within the text being tested.
+  // Pixel coordinates of the positions for each letter within the text being
+  // tested.
   Vector<IntPoint> m_letterPos;
   // Pixel coordinates of the middles of the words in the text being tested.
   // (y coordinate is based on y coordinates of m_letterPos)
@@ -323,9 +324,9 @@ void GranularityStrategyTest::setupFontSize(String str1,
   setupTextSpan(str1, str2, str3, selBegin, selEnd);
 }
 
-// Tests expanding selection on text "abcdef ghij kl mno^p|>qr stuvwi inm  mnii,"
-// (^ means base, | means extent, < means start, and > means end).
-// Text needs to be laid out on a single line with no rotation.
+// Tests expanding selection on text "abcdef ghij kl mno^p|>qr stuvwi inm mnii,"
+// (^ means base, | means extent, < means start, and > means end). Text needs to
+// be laid out on a single line with no rotation.
 void GranularityStrategyTest::testDirectionExpand() {
   // Expand selection using character granularity until the end of the word
   // is reached.
@@ -500,7 +501,8 @@ TEST_F(GranularityStrategyTest, Character) {
   Text* text = appendTextNode("Foo Bar Baz,");
   document().updateStyleAndLayout();
 
-  // "Foo B^a|>r Baz," (^ means base, | means extent, , < means start, and > means end).
+  // "Foo B^a|>r Baz," (^ means base, | means extent, , < means start, and >
+  // means end).
   selection().setSelection(
       createVisibleSelection(Position(text, 5), Position(text, 6)));
   EXPECT_EQ_SELECTED_TEXT("a");
@@ -518,7 +520,8 @@ TEST_F(GranularityStrategyTest, Character) {
 // same behavior as CharacterGranularityStrategy
 TEST_F(GranularityStrategyTest, DirectionRotate) {
   Text* text = setupRotate("Foo Bar Baz,");
-  // "Foo B^a|>r Baz," (^ means base, | means extent, , < means start, and > means end).
+  // "Foo B^a|>r Baz," (^ means base, | means extent, , < means start, and >
+  // means end).
   selection().setSelection(
       createVisibleSelection(Position(text, 5), Position(text, 6)));
   EXPECT_EQ_SELECTED_TEXT("a");
@@ -538,7 +541,8 @@ TEST_F(GranularityStrategyTest, DirectionRotate) {
 
 TEST_F(GranularityStrategyTest, DirectionExpandTranslateZ) {
   Text* text = setupTranslateZ("abcdef ghij kl mnopqr stuvwi inm mnii,");
-  // "abcdef ghij kl mno^p|>qr stuvwi inm  mnii," (^ means base, | means extent, < means start, and > means end).
+  // "abcdef ghij kl mno^p|>qr stuvwi inm  mnii," (^ means base, | means extent,
+  // < means start, and > means end).
   selection().setSelection(
       createVisibleSelection(Position(text, 18), Position(text, 19)));
   EXPECT_EQ_SELECTED_TEXT("p");
@@ -547,7 +551,8 @@ TEST_F(GranularityStrategyTest, DirectionExpandTranslateZ) {
 
 TEST_F(GranularityStrategyTest, DirectionExpandTransform) {
   Text* text = setupTransform("abcdef ghij kl mnopqr stuvwi inm mnii,");
-  // "abcdef ghij kl mno^p|>qr stuvwi inm  mnii," (^ means base, | means extent, < means start, and > means end).
+  // "abcdef ghij kl mno^p|>qr stuvwi inm  mnii," (^ means base, | means extent,
+  // < means start, and > means end).
   selection().setSelection(
       createVisibleSelection(Position(text, 18), Position(text, 19)));
   EXPECT_EQ_SELECTED_TEXT("p");
@@ -555,7 +560,8 @@ TEST_F(GranularityStrategyTest, DirectionExpandTransform) {
 }
 
 TEST_F(GranularityStrategyTest, DirectionExpandVerticalAlign) {
-  // "abcdef ghij kl mno^p|>qr stuvwi inm  mnii," (^ means base, | means extent, < means start, and > means end).
+  // "abcdef ghij kl mno^p|>qr stuvwi inm  mnii," (^ means base, | means extent,
+  // < means start, and > means end).
   setupVerticalAlign("abcdef ghij kl m", "nopq", "r stuvwi inm mnii,", 18, 19);
   EXPECT_EQ_SELECTED_TEXT("p");
   testDirectionExpand();
@@ -636,7 +642,8 @@ TEST_F(GranularityStrategyTest, DirectionSwitchSideWordGranularityThenShrink) {
 
   parseText(text);
 
-  // "abcd efgh ijkl mno^pqr|> iiin, abc" (^ means base, | means extent, < means start, and > means end).
+  // "abcd efgh ijkl mno^pqr|> iiin, abc" (^ means base, | means extent, < means
+  // start, and > means end).
   selection().setSelection(
       createVisibleSelection(Position(text, 18), Position(text, 21)));
   EXPECT_EQ_SELECTED_TEXT("pqr");

@@ -28,7 +28,11 @@ bool EditingAlgorithm<Traversal>::isEmptyNonEditableNodeInEditable(
     const Node* node) {
   // Editability is defined the DOM tree rather than the flat tree. For example:
   // DOM:
-  //   <host><span>unedittable</span><shadowroot><div ce><content /></div></shadowroot></host>
+  //   <host>
+  //     <span>unedittable</span>
+  //     <shadowroot><div ce><content /></div></shadowroot>
+  //   </host>
+  //
   // Flat Tree:
   //   <host><div ce><span1>unedittable</span></div></host>
   // e.g. editing/shadow/breaking-editing-boundaries.html

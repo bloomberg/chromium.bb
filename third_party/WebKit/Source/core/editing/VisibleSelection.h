@@ -207,8 +207,9 @@ class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
   // these are cached, can be recalculated by validate()
   SelectionType m_selectionType;  // None, Caret, Range
   bool m_baseIsFirst : 1;         // True if base is before the extent
-  bool
-      m_isDirectional : 1;  // Non-directional ignores m_baseIsFirst and selection always extends on shift + arrow key.
+  // Non-directional ignores m_baseIsFirst and selection always extends on shift
+  // + arrow key.
+  bool m_isDirectional : 1;
 
   TextGranularity m_granularity;
   // |updateIfNeeded()| uses |m_hasTrailingWhitespace| for word granularity.

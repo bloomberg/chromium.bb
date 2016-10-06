@@ -71,7 +71,8 @@ PositionIteratorAlgorithm<Strategy>::deprecatedComputePosition() const {
   if (m_nodeAfterPositionInAnchor) {
     DCHECK_EQ(Strategy::parent(*m_nodeAfterPositionInAnchor), m_anchorNode);
     DCHECK_NE(m_offsetsInAnchorNode[m_depthToAnchorNode], kInvalidOffset);
-    // FIXME: This check is inadaquete because any ancestor could be ignored by editing
+    // FIXME: This check is inadaquete because any ancestor could be ignored by
+    // editing
     if (Strategy::editingIgnoresContent(
             Strategy::parent(*m_nodeAfterPositionInAnchor)))
       return PositionTemplate<Strategy>::beforeNode(m_anchorNode);
@@ -103,7 +104,8 @@ PositionIteratorAlgorithm<Strategy>::computePosition() const {
     DCHECK_EQ(Strategy::parent(*m_nodeAfterPositionInAnchor), m_anchorNode);
     DCHECK_NE(m_offsetsInAnchorNode[m_depthToAnchorNode], kInvalidOffset);
     // TODO(yoichio): This should be equivalent to
-    // PositionTemplate<Strategy>(m_anchorNode, PositionAnchorType::BeforeAnchor);
+    // PositionTemplate<Strategy>(m_anchorNode,
+    // PositionAnchorType::BeforeAnchor);
     return PositionTemplate<Strategy>(
         m_anchorNode, m_offsetsInAnchorNode[m_depthToAnchorNode]);
   }

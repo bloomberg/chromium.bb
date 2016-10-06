@@ -77,8 +77,9 @@ inline static bool shouldStopBlinkingDueToTypingCommand(LocalFrame* frame) {
 }
 
 void FrameCaret::updateAppearance() {
-  // Paint a block cursor instead of a caret in overtype mode unless the caret is at the end of a line (in this case
-  // the FrameSelection will paint a blinking caret as usual).
+  // Paint a block cursor instead of a caret in overtype mode unless the caret
+  // is at the end of a line (in this case the FrameSelection will paint a
+  // blinking caret as usual).
   bool paintBlockCursor =
       m_shouldShowBlockCursor && isActive() &&
       !isLogicalEndOfLine(createVisiblePositionDeprecated(caretPosition()));

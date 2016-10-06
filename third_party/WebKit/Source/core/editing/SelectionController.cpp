@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights
+ * reserved.
  * Copyright (C) 2006 Alexey Proskuryakov (ap@webkit.org)
  * Copyright (C) 2012 Digia Plc. and/or its subsidiary(-ies)
  * Copyright (C) 2015 Google Inc. All rights reserved.
@@ -132,7 +133,8 @@ bool SelectionController::handleMousePressEventSingleClick(
   if (!(innerNode && innerNode->layoutObject() && m_mouseDownMayStartSelect))
     return false;
 
-  // Extend the selection if the Shift key is down, unless the click is in a link or image.
+  // Extend the selection if the Shift key is down, unless the click is in a
+  // link or image.
   bool extendSelection = isExtendingSelection(event);
 
   // Don't restart the selection when the mouse is pressed on an
@@ -193,7 +195,8 @@ bool SelectionController::handleMousePressEventSingleClick(
         innerNode, createVisibleSelection(visiblePos));
   }
 
-  // Updating the selection is considered side-effect of the event and so it doesn't impact the handled state.
+  // Updating the selection is considered side-effect of the event and so it
+  // doesn't impact the handled state.
   updateSelectionForMouseDownDispatchingSelectStart(innerNode, newSelection,
                                                     granularity);
   return false;
@@ -225,7 +228,8 @@ void SelectionController::updateSelectionForMouseDrag(
     return;
 
   // Restart the selection if this is the first mouse move. This work is usually
-  // done in handleMousePressEvent, but not if the mouse press was on an existing selection.
+  // done in handleMousePressEvent, but not if the mouse press was on an
+  // existing selection.
   VisibleSelectionInFlatTree newSelection =
       selection().visibleSelection<EditingInFlatTreeStrategy>();
 
@@ -271,7 +275,8 @@ void SelectionController::updateSelectionForMouseDrag(
           PositionInFlatTree::afterNode(rootUserSelectAllForMousePressNode),
           CanCrossEditingBoundary));
     } else {
-      // Reset base for user select all when base is inside user-select-all area and extent < base.
+      // Reset base for user select all when base is inside user-select-all area
+      // and extent < base.
       if (rootUserSelectAllForMousePressNode) {
         PositionInFlatTree eventPosition = toPositionInFlatTree(
             target->layoutObject()
@@ -658,7 +663,8 @@ bool SelectionController::handleMouseReleaseEvent(
   if (event.event().pointerProperties().button ==
           WebPointerProperties::Button::Middle &&
       !event.isOverLink()) {
-    // Ignore handled, since we want to paste to where the caret was placed anyway.
+    // Ignore handled, since we want to paste to where the caret was placed
+    // anyway.
     handled = handlePasteGlobalSelection(event.event()) || handled;
   }
 
@@ -747,11 +753,12 @@ void SelectionController::sendContextMenuEvent(
     const LayoutPoint& position) {
   if (!selection().isAvailable())
     return;
-  if (selection().contains(position) || mev.scrollbar()
-      // FIXME: In the editable case, word selection sometimes selects content that isn't underneath the mouse.
-      // If the selection is non-editable, we do word selection to make it easier to use the contextual menu items
-      // available for text selections.  But only if we're above text.
-      ||
+  if (selection().contains(position) || mev.scrollbar() ||
+      // FIXME: In the editable case, word selection sometimes selects content
+      // that isn't underneath the mouse.
+      // If the selection is non-editable, we do word selection to make it
+      // easier to use the contextual menu items available for text selections.
+      // But only if we're above text.
       !(selection().isContentEditable() ||
         (mev.innerNode() && mev.innerNode()->isTextNode())))
     return;

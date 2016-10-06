@@ -12,7 +12,8 @@ namespace blink {
 class Document;
 class Range;
 
-// We should restrict access to the unwanted version of |TraversalRange::end()| function.
+// We should restrict access to the unwanted version of |TraversalRange::end()|
+// function.
 template <class Iterator>
 class TraversalRangeNodes : private TraversalRange<Iterator> {
   STACK_ALLOCATED();

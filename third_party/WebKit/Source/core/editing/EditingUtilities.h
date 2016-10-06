@@ -134,12 +134,12 @@ Element* tableElementJustAfter(const VisiblePosition&);
 CORE_EXPORT Element* tableElementJustBefore(const VisiblePosition&);
 CORE_EXPORT Element* tableElementJustBefore(const VisiblePositionInFlatTree&);
 
-// Returns the next leaf node or nullptr if there are no more.
-// Delivers leaf nodes as if the whole DOM tree were a linear chain of its leaf nodes.
+// Returns the next leaf node or nullptr if there are no more. Delivers leaf
+// nodes as if the whole DOM tree were a linear chain of its leaf nodes.
 Node* nextAtomicLeafNode(const Node& start);
 
-// Returns the previous leaf node or nullptr if there are no more.
-// Delivers leaf nodes as if the whole DOM tree were a linear chain of its leaf nodes.
+// Returns the previous leaf node or nullptr if there are no more. Delivers leaf
+// nodes as if the whole DOM tree were a linear chain of its leaf nodes.
 Node* previousAtomicLeafNode(const Node& start);
 
 template <typename Strategy>
@@ -160,8 +160,9 @@ inline ContainerNode* parentCrossingShadowBoundaries<EditingInFlatTreeStrategy>(
 // FIXME: editingIgnoresContent, canHaveChildrenForEditing, and isAtomicNode
 // should be renamed to reflect its usage.
 
-// Returns true for nodes that either have no content, or have content that is ignored (skipped over) while editing.
-// There are no VisiblePositions inside these nodes.
+// Returns true for nodes that either have no content, or have content that is
+// ignored (skipped over) while editing. There are no VisiblePositions inside
+// these nodes.
 inline bool editingIgnoresContent(const Node* node) {
   return EditingStrategy::editingIgnoresContent(node);
 }
@@ -274,9 +275,9 @@ int comparePositions(const PositionWithAffinity&, const PositionWithAffinity&);
 
 // boolean functions on Position
 
-// FIXME: Both isEditablePosition and isRichlyEditablePosition rely on up-to-date
-// style to give proper results. They shouldn't update style by default, but
-// should make it clear that that is the contract.
+// FIXME: Both isEditablePosition and isRichlyEditablePosition rely on
+// up-to-date style to give proper results. They shouldn't update style by
+// default, but should make it clear that that is the contract.
 CORE_EXPORT bool isEditablePosition(const Position&);
 bool isEditablePosition(const PositionInFlatTree&);
 bool isRichlyEditablePosition(const Position&);
@@ -392,15 +393,19 @@ inline bool isWhitespace(UChar c) {
   return c == noBreakSpaceCharacter || c == ' ' || c == '\n' || c == '\t';
 }
 
-// FIXME: Can't really answer this question correctly without knowing the white-space mode.
+// FIXME: Can't really answer this question correctly without knowing the
+// white-space mode.
 inline bool isCollapsibleWhitespace(UChar c) {
   return c == ' ' || c == '\n';
 }
 
 inline bool isAmbiguousBoundaryCharacter(UChar character) {
-  // These are characters that can behave as word boundaries, but can appear within words.
-  // If they are just typed, i.e. if they are immediately followed by a caret, we want to delay text checking until the next character has been typed.
-  // FIXME: this is required until 6853027 is fixed and text checking can do this for us.
+  // These are characters that can behave as word boundaries, but can appear
+  // within words. If they are just typed, i.e. if they are immediately followed
+  // by a caret, we want to delay text checking until the next character has
+  // been typed.
+  // FIXME: this is required until 6853027 is fixed and text checking can do
+  // this for us.
   return character == '\'' || character == rightSingleQuotationMarkCharacter ||
          character == hebrewPunctuationGershayimCharacter;
 }

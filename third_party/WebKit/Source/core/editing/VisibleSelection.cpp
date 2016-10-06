@@ -561,11 +561,14 @@ void VisibleSelectionTemplate<Strategy>::setStartRespectingGranularity(
       break;
     case WordGranularity: {
       // General case: Select the word the caret is positioned inside of.
-      // If the caret is on the word boundary, select the word according to |wordSide|.
-      // Edge case: If the caret is after the last word in a soft-wrapped line or the last word in
-      // the document, select that last word (LeftWordIfOnBoundary).
-      // Edge case: If the caret is after the last word in a paragraph, select from the the end of the
-      // last word to the line break (also RightWordIfOnBoundary);
+      // If the caret is on the word boundary, select the word according to
+      // |wordSide|.
+      // Edge case: If the caret is after the last word in a soft-wrapped line
+      // or the last word in the document, select that last word
+      // (LeftWordIfOnBoundary).
+      // Edge case: If the caret is after the last word in a paragraph, select
+      // from the the end of the last word to the line break (also
+      // RightWordIfOnBoundary);
       const VisiblePositionTemplate<Strategy> visibleStart =
           createVisiblePosition(m_start, m_affinity);
       EWordSide side = RightWordIfOnBoundary;
@@ -871,15 +874,18 @@ void VisibleSelectionTemplate<
   Element* baseEditableAncestor =
       lowestEditableAncestor(m_base.computeContainerNode());
 
-  // The base, start and end are all in the same region.  No adjustment necessary.
+  // The base, start and end are all in the same region.  No adjustment
+  // necessary.
   if (baseRoot == startRoot && baseRoot == endRoot)
     return;
 
   // The selection is based in editable content.
   if (baseRoot) {
-    // If the start is outside the base's editable root, cap it at the start of that root.
-    // If the start is in non-editable content that is inside the base's editable root, put it
-    // at the first editable position after start inside the base's editable root.
+    // If the start is outside the base's editable root, cap it at the start of
+    // that root.
+    // If the start is in non-editable content that is inside the base's
+    // editable root, put it at the first editable position after start inside
+    // the base's editable root.
     if (startRoot != baseRoot) {
       const VisiblePositionTemplate<Strategy> first =
           firstEditableVisiblePositionAfterPositionInRoot(m_start, *baseRoot);
@@ -889,9 +895,10 @@ void VisibleSelectionTemplate<
         m_start = m_end;
       }
     }
-    // If the end is outside the base's editable root, cap it at the end of that root.
-    // If the end is in non-editable content that is inside the base's root, put it
-    // at the last editable position before the end inside the base's root.
+    // If the end is outside the base's editable root, cap it at the end of that
+    // root.
+    // If the end is in non-editable content that is inside the base's root, put
+    // it at the last editable position before the end inside the base's root.
     if (endRoot != baseRoot) {
       const VisiblePositionTemplate<Strategy> last =
           lastEditableVisiblePositionBeforePositionInRoot(m_end, *baseRoot);
@@ -901,11 +908,12 @@ void VisibleSelectionTemplate<
     }
     // The selection is based in non-editable content.
   } else {
-    // FIXME: Non-editable pieces inside editable content should be atomic, in the same way that editable
-    // pieces in non-editable content are atomic.
+    // FIXME: Non-editable pieces inside editable content should be atomic, in
+    // the same way that editable pieces in non-editable content are atomic.
 
-    // The selection ends in editable content or non-editable content inside a different editable ancestor,
-    // move backward until non-editable content inside the same lowest editable ancestor is reached.
+    // The selection ends in editable content or non-editable content inside a
+    // different editable ancestor, move backward until non-editable content
+    // inside the same lowest editable ancestor is reached.
     Element* endEditableAncestor =
         lowestEditableAncestor(m_end.computeContainerNode());
     if (endRoot || endEditableAncestor != baseEditableAncestor) {
@@ -941,8 +949,9 @@ void VisibleSelectionTemplate<
       m_end = previous.deepEquivalent();
     }
 
-    // The selection starts in editable content or non-editable content inside a different editable ancestor,
-    // move forward until non-editable content inside the same lowest editable ancestor is reached.
+    // The selection starts in editable content or non-editable content inside a
+    // different editable ancestor, move forward until non-editable content
+    // inside the same lowest editable ancestor is reached.
     Element* startEditableAncestor =
         lowestEditableAncestor(m_start.computeContainerNode());
     if (startRoot || startEditableAncestor != baseEditableAncestor) {

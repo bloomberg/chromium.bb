@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights
+ * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -88,9 +89,10 @@ void SelectionModifier::willBeModified(EAlteration alter,
   bool baseIsStart = true;
 
   if (m_selection.isDirectional()) {
-    // Make base and extent match start and end so we extend the user-visible selection.
-    // This only matters for cases where base and extend point to different positions than
-    // start and end (e.g. after a double-click to select a word).
+    // Make base and extent match start and end so we extend the user-visible
+    // selection. This only matters for cases where base and extend point to
+    // different positions than start and end (e.g. after a double-click to
+    // select a word).
     if (m_selection.isBaseFirst())
       baseIsStart = true;
     else
@@ -194,9 +196,10 @@ VisiblePosition SelectionModifier::modifyExtendingRight(
 
   // The difference between modifyExtendingRight and modifyExtendingForward is:
   // modifyExtendingForward always extends forward logically.
-  // modifyExtendingRight behaves the same as modifyExtendingForward except for extending character or word,
-  // it extends forward logically if the enclosing block is LTR direction,
-  // but it extends backward logically if the enclosing block is RTL direction.
+  // modifyExtendingRight behaves the same as modifyExtendingForward except for
+  // extending character or word, it extends forward logically if the enclosing
+  // block is LTR direction, but it extends backward logically if the enclosing
+  // block is RTL direction.
   switch (granularity) {
     case CharacterGranularity:
       if (directionOfEnclosingBlock() == LTR)
@@ -338,8 +341,9 @@ VisiblePosition SelectionModifier::modifyMovingForward(
           createVisiblePosition(m_selection.extent(), m_selection.affinity()));
       break;
     case LineGranularity: {
-      // down-arrowing from a range selection that ends at the start of a line needs
-      // to leave the selection at that line start (no need to call nextLinePosition!)
+      // down-arrowing from a range selection that ends at the start of a line
+      // needs to leave the selection at that line start (no need to call
+      // nextLinePosition!)
       pos = endForPlatform();
       if (!m_selection.isRange() || !isStartOfLine(pos))
         pos = nextLinePosition(
@@ -378,9 +382,10 @@ VisiblePosition SelectionModifier::modifyExtendingLeft(
 
   // The difference between modifyExtendingLeft and modifyExtendingBackward is:
   // modifyExtendingBackward always extends backward logically.
-  // modifyExtendingLeft behaves the same as modifyExtendingBackward except for extending character or word,
-  // it extends backward logically if the enclosing block is LTR direction,
-  // but it extends forward logically if the enclosing block is RTL direction.
+  // modifyExtendingLeft behaves the same as modifyExtendingBackward except for
+  // extending character or word, it extends backward logically if the enclosing
+  // block is LTR direction, but it extends forward logically if the enclosing
+  // block is RTL direction.
   switch (granularity) {
     case CharacterGranularity:
       if (directionOfEnclosingBlock() == LTR)
@@ -418,10 +423,10 @@ VisiblePosition SelectionModifier::modifyExtendingBackward(
   VisiblePosition pos =
       createVisiblePosition(m_selection.extent(), m_selection.affinity());
 
-  // Extending a selection backward by word or character from just after a table selects
-  // the table.  This "makes sense" from the user perspective, esp. when deleting.
-  // It was done here instead of in VisiblePosition because we want VPs to iterate
-  // over everything.
+  // Extending a selection backward by word or character from just after a table
+  // selects the table.  This "makes sense" from the user perspective, esp. when
+  // deleting. It was done here instead of in VisiblePosition because we want
+  // VPs to iterate over everything.
   switch (granularity) {
     case CharacterGranularity:
       pos = previousPositionOf(pos, CanSkipOverEditingBoundary);
@@ -630,8 +635,9 @@ bool SelectionModifier::modify(EAlteration alter,
 
   // Some of the above operations set an xPosForVerticalArrowNavigation.
   // Setting a selection will clear it, so save it to possibly restore later.
-  // Note: the START position type is arbitrary because it is unused, it would be
-  // the requested position type if there were no xPosForVerticalArrowNavigation set.
+  // Note: the START position type is arbitrary because it is unused, it would
+  // be the requested position type if there were no
+  // xPosForVerticalArrowNavigation set.
   LayoutUnit x = lineDirectionPointForBlockDirectionNavigation(START);
   m_selection.setIsDirectional(shouldAlwaysUseDirectionalSelection(frame()) ||
                                alter == FrameSelection::AlterationExtend);
@@ -651,10 +657,11 @@ bool SelectionModifier::modify(EAlteration alter,
                ->editor()
                .behavior()
                .shouldExtendSelectionByWordOrLineAcrossCaret()) {
-        // Don't let the selection go across the base position directly. Needed to match mac
-        // behavior when, for instance, word-selecting backwards starting with the caret in
-        // the middle of a word and then word-selecting forward, leaving the caret in the
-        // same place where it was, instead of directly selecting to the end of the word.
+        // Don't let the selection go across the base position directly. Needed
+        // to match mac behavior when, for instance, word-selecting backwards
+        // starting with the caret in the middle of a word and then
+        // word-selecting forward, leaving the caret in the same place where it
+        // was, instead of directly selecting to the end of the word.
         VisibleSelection newSelection = m_selection;
         newSelection.setExtent(position);
         if (m_selection.isBaseFirst() != newSelection.isBaseFirst())
@@ -800,9 +807,11 @@ static LayoutUnit lineDirectionPointForBlockDirectionNavigationOf(
   FloatPoint caretPoint =
       layoutObject->localToAbsolute(FloatPoint(localRect.location()));
   LayoutObject* containingBlock = layoutObject->containingBlock();
-  if (!containingBlock)
-    containingBlock =
-        layoutObject;  // Just use ourselves to determine the writing mode if we have no containing block.
+  if (!containingBlock) {
+    // Just use ourselves to determine the writing mode if we have no containing
+    // block.
+    containingBlock = layoutObject;
+  }
   return LayoutUnit(containingBlock->isHorizontalWritingMode()
                         ? caretPoint.x()
                         : caretPoint.y());
@@ -838,8 +847,9 @@ LayoutUnit SelectionModifier::lineDirectionPointForBlockDirectionNavigation(
   if (m_xPosForVerticalArrowNavigation == NoXPosForVerticalArrowNavigation()) {
     VisiblePosition visiblePosition =
         createVisiblePosition(pos, m_selection.affinity());
-    // VisiblePosition creation can fail here if a node containing the selection becomes visibility:hidden
-    // after the selection is created and before this function is called.
+    // VisiblePosition creation can fail here if a node containing the selection
+    // becomes visibility:hidden after the selection is created and before this
+    // function is called.
     x = lineDirectionPointForBlockDirectionNavigationOf(visiblePosition);
     m_xPosForVerticalArrowNavigation = x;
   } else {

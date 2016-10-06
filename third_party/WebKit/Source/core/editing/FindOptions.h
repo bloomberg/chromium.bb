@@ -31,8 +31,9 @@ namespace blink {
 enum FindOptionFlag {
   CaseInsensitive = 1 << 0,
   AtWordStarts = 1 << 1,
-  // When combined with AtWordStarts, accepts a match in the middle of a word if the match begins with
-  // an uppercase letter followed by a lowercase or non-letter. Accepts several other intra-word matches.
+  // When combined with AtWordStarts, accepts a match in the middle of a word if
+  // the match begins with an uppercase letter followed by a lowercase or
+  // non-letter. Accepts several other intra-word matches.
   TreatMedialCapitalAsWordStart = 1 << 2,
   Backwards = 1 << 3,
   WrapAround = 1 << 4,

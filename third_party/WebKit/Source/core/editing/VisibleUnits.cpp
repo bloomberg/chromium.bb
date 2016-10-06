@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights
+ * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -416,7 +417,8 @@ const InlineTextBox* CachedLogicallyOrderedLeafBoxes::previousTextBox(
 
   collectBoxes(root);
 
-  // If box is null, root is box's previous RootInlineBox, and previousBox is the last logical box in root.
+  // If box is null, root is box's previous RootInlineBox, and previousBox is
+  // the last logical box in root.
   int boxIndex = m_leafBoxes.size() - 1;
   if (box)
     boxIndex = boxIndexInLeaves(box) - 1;
@@ -437,8 +439,9 @@ const InlineTextBox* CachedLogicallyOrderedLeafBoxes::nextTextBox(
 
   collectBoxes(root);
 
-  // If box is null, root is box's next RootInlineBox, and nextBox is the first logical box in root.
-  // Otherwise, root is box's RootInlineBox, and nextBox is the next logical box in the same line.
+  // If box is null, root is box's next RootInlineBox, and nextBox is the first
+  // logical box in root. Otherwise, root is box's RootInlineBox, and nextBox is
+  // the next logical box in the same line.
   size_t nextBoxIndex = 0;
   if (box)
     nextBoxIndex = boxIndexInLeaves(box) + 1;
@@ -624,7 +627,8 @@ static bool isLogicalStartOfWord(TextBreakIterator* iter,
     return false;
 
   iter->following(position);
-  // isWordTextBreak returns true after moving across a word and false after moving across a punctuation/space.
+  // isWordTextBreak returns true after moving across a word and false after
+  // moving across a punctuation/space.
   return isWordTextBreak(iter);
 }
 
@@ -1184,8 +1188,9 @@ static PositionWithAffinityTemplate<Strategy> startPositionForLine(
     if (!startNode)
       return PositionWithAffinityTemplate<Strategy>();
   } else {
-    // Generated content (e.g. list markers and CSS :before and :after pseudoelements) have no corresponding DOM element,
-    // and so cannot be represented by a VisiblePosition. Use whatever follows instead.
+    // Generated content (e.g. list markers and CSS :before and :after
+    // pseudoelements) have no corresponding DOM element, and so cannot be
+    // represented by a VisiblePosition. Use whatever follows instead.
     startBox = rootBox->firstLeafChild();
     while (true) {
       if (!startBox)
@@ -1574,9 +1579,9 @@ VisiblePosition previousLinePosition(const VisiblePosition& visiblePosition,
     return createVisiblePosition(lineLayoutItem.positionForPoint(pointInLine));
   }
 
-  // Could not find a previous line. This means we must already be on the first line.
-  // Move to the start of the content in this block, which effectively moves us
-  // to the start of the line we're on.
+  // Could not find a previous line. This means we must already be on the first
+  // line. Move to the start of the content in this block, which effectively
+  // moves us to the start of the line we're on.
   Element* rootElement = hasEditableStyle(*node, editableType)
                              ? rootEditableElement(*node, editableType)
                              : node->document().documentElement();
@@ -1707,7 +1712,8 @@ static unsigned previousSentencePositionBoundary(
     unsigned,
     BoundarySearchContextAvailability,
     bool&) {
-  // FIXME: This is identical to startSentenceBoundary. I'm pretty sure that's not right.
+  // FIXME: This is identical to startSentenceBoundary. I'm pretty sure that's
+  // not right.
   TextBreakIterator* iterator = sentenceBreakIterator(characters, length);
   // FIXME: The following function can return -1; we don't handle that.
   return iterator->preceding(length);
@@ -1724,8 +1730,8 @@ static unsigned nextSentencePositionBoundary(const UChar* characters,
                                              unsigned,
                                              BoundarySearchContextAvailability,
                                              bool&) {
-  // FIXME: This is identical to endSentenceBoundary. This isn't right, it needs to
-  // move to the equivlant position in the following sentence.
+  // FIXME: This is identical to endSentenceBoundary. This isn't right, it needs
+  // to move to the equivlant position in the following sentence.
   TextBreakIterator* iterator = sentenceBreakIterator(characters, length);
   return iterator->following(0);
 }
@@ -1925,7 +1931,8 @@ static PositionTemplate<Strategy> endOfParagraphAlgorithm(
     if (layoutObject->isBR() || isEnclosingBlock(nextNodeItreator))
       break;
 
-    // FIXME: We avoid returning a position where the layoutObject can't accept the caret.
+    // FIXME: We avoid returning a position where the layoutObject can't accept
+    // the caret.
     if (layoutObject->isText() &&
         toLayoutText(layoutObject)->resolvedTextLength()) {
       SECURITY_DCHECK(nextNodeItreator->isTextNode());
@@ -2910,8 +2917,8 @@ static PositionTemplate<Strategy> mostBackwardCaretPosition(
   bool boundaryCrossed = false;
   for (; !currentPos.atStart(); currentPos.decrement()) {
     Node* currentNode = currentPos.node();
-    // Don't check for an editability change if we haven't moved to a different node,
-    // to avoid the expense of computing hasEditableStyle().
+    // Don't check for an editability change if we haven't moved to a different
+    // node, to avoid the expense of computing hasEditableStyle().
     if (currentNode != lastNode) {
       // Don't change editability.
       bool currentEditable = hasEditableStyle(*currentNode);
@@ -2923,8 +2930,9 @@ static PositionTemplate<Strategy> mostBackwardCaretPosition(
       lastNode = currentNode;
     }
 
-    // If we've moved to a position that is visually distinct, return the last saved position. There
-    // is code below that terminates early if we're *about* to move to a visually distinct position.
+    // If we've moved to a position that is visually distinct, return the last
+    // saved position. There is code below that terminates early if we're
+    // *about* to move to a visually distinct position.
     if (endsOfNodeAreVisuallyDistinctPositions(currentNode) &&
         currentNode != boundary)
       return lastVisible.deprecatedComputePosition();
@@ -2945,13 +2953,15 @@ static PositionTemplate<Strategy> mostBackwardCaretPosition(
     if (isStreamer<Strategy>(currentPos))
       lastVisible = currentPos;
 
-    // Don't move past a position that is visually distinct.  We could rely on code above to terminate and
-    // return lastVisible on the next iteration, but we terminate early to avoid doing a nodeIndex() call.
+    // Don't move past a position that is visually distinct.  We could rely on
+    // code above to terminate and return lastVisible on the next iteration, but
+    // we terminate early to avoid doing a nodeIndex() call.
     if (endsOfNodeAreVisuallyDistinctPositions(currentNode) &&
         currentPos.atStartOfNode())
       return lastVisible.deprecatedComputePosition();
 
-    // Return position after tables and nodes which have content that can be ignored.
+    // Return position after tables and nodes which have content that can be
+    // ignored.
     if (Strategy::editingIgnoresContent(currentNode) ||
         isDisplayInsideTable(currentNode)) {
       if (currentPos.atEndOfNode())
@@ -2964,9 +2974,10 @@ static PositionTemplate<Strategy> mostBackwardCaretPosition(
       LayoutText* const textLayoutObject = toLayoutText(layoutObject);
       const unsigned textStartOffset = textLayoutObject->textStartOffset();
       if (currentNode != startNode) {
-        // This assertion fires in layout tests in the case-transform.html test because
-        // of a mix-up between offsets in the text in the DOM tree with text in the
-        // layout tree which can have a different length due to case transformation.
+        // This assertion fires in layout tests in the case-transform.html test
+        // because of a mix-up between offsets in the text in the DOM tree with
+        // text in the layout tree which can have a different length due to case
+        // transformation.
         // Until we resolve that, disable this so we can run the layout tests!
         // DCHECK_GE(currentOffset, layoutObject->caretMaxOffset());
         return PositionTemplate<Strategy>(
@@ -3008,8 +3019,9 @@ static PositionTemplate<Strategy> mostBackwardCaretPosition(
         if (box == lastTextBox || textOffset != box->start() + box->len() + 1)
           continue;
 
-        // The text continues on the next line only if the last text box is not on this line and
-        // none of the boxes on this line have a larger start offset.
+        // The text continues on the next line only if the last text box is not
+        // on this line and none of the boxes on this line have a larger start
+        // offset.
 
         bool continuesOnNextLine = true;
         InlineBox* otherBox = box;
@@ -3079,8 +3091,8 @@ PositionTemplate<Strategy> mostForwardCaretPosition(
   bool boundaryCrossed = false;
   for (; !currentPos.atEnd(); currentPos.increment()) {
     Node* currentNode = currentPos.node();
-    // Don't check for an editability change if we haven't moved to a different node,
-    // to avoid the expense of computing hasEditableStyle().
+    // Don't check for an editability change if we haven't moved to a different
+    // node, to avoid the expense of computing hasEditableStyle().
     if (currentNode != lastNode) {
       // Don't change editability.
       bool currentEditable = hasEditableStyle(*currentNode);
@@ -3103,8 +3115,9 @@ PositionTemplate<Strategy> mostForwardCaretPosition(
         currentNode != boundary)
       return lastVisible.deprecatedComputePosition();
     // Do not move past a visually disinct position.
-    // Note: The first position after the last in a node whose ends are visually distinct
-    // positions will be [boundary->parentNode(), originalBlock->nodeIndex() + 1].
+    // Note: The first position after the last in a node whose ends are visually
+    // distinct positions will be [boundary->parentNode(),
+    // originalBlock->nodeIndex() + 1].
     if (boundary && Strategy::parent(*boundary) == currentNode)
       return lastVisible.deprecatedComputePosition();
 
@@ -3124,7 +3137,8 @@ PositionTemplate<Strategy> mostForwardCaretPosition(
     if (isStreamer<Strategy>(currentPos))
       lastVisible = currentPos;
 
-    // Return position before tables and nodes which have content that can be ignored.
+    // Return position before tables and nodes which have content that can be
+    // ignored.
     if (Strategy::editingIgnoresContent(currentNode) ||
         isDisplayInsideTable(currentNode)) {
       if (currentPos.offsetInLeafNode() <= layoutObject->caretMinOffset())
@@ -3160,8 +3174,9 @@ PositionTemplate<Strategy> mostForwardCaretPosition(
         if (box == lastTextBox || textOffset != box->start() + box->len())
           continue;
 
-        // The text continues on the next line only if the last text box is not on this line and
-        // none of the boxes on this line have a larger start offset.
+        // The text continues on the next line only if the last text box is not
+        // on this line and none of the boxes on this line have a larger start
+        // offset.
 
         bool continuesOnNextLine = true;
         InlineBox* otherBox = box;
@@ -3773,7 +3788,8 @@ static PositionTemplate<Strategy> rightVisuallyDistinctCandidate(
             continue;
         }
       } else {
-        // Trailing edge of a secondary run. Set to the leading edge of the entire run.
+        // Trailing edge of a secondary run. Set to the leading edge of the
+        // entire run.
         while (true) {
           while (InlineBox* prevBox = box->prevLeafChild()) {
             if (prevBox->bidiLevel() < level)

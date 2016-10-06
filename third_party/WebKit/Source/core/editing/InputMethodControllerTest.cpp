@@ -85,8 +85,8 @@ TEST_F(InputMethodControllerTest, BackspaceFromEndOfInput) {
   controller().extendSelectionAndDelete(1, 0);
   EXPECT_STREQ("foo", input->value().utf8().data());
 
-  input->setValue(String::fromUTF8(
-      "foo\xE0\xB8\x81\xE0\xB9\x89"));  // composed U+0E01 "ka kai" + U+0E49 "mai tho"
+  // composed U+0E01 "ka kai" + U+0E49 "mai tho"
+  input->setValue(String::fromUTF8("foo\xE0\xB8\x81\xE0\xB9\x89"));
   document().updateStyleAndLayout();
   controller().setEditableSelectionOffsets(PlainTextRange(4, 4));
   EXPECT_STREQ("foo\xE0\xB8\x81\xE0\xB9\x89", input->value().utf8().data());
@@ -261,7 +261,8 @@ TEST_F(InputMethodControllerTest, SetCompositionForInputWithNewCaretPositions) {
 
 TEST_F(InputMethodControllerTest,
        SetCompositionForContentEditableWithNewCaretPositions) {
-  // There are 7 nodes and 5+1+5+1+3+4+3 characters: "hello", '\n', "world", "\n", "012", "3456", "789".
+  // There are 7 nodes and 5+1+5+1+3+4+3 characters: "hello", '\n', "world",
+  // "\n", "012", "3456", "789".
   Element* div = insertHTMLElement(
       "<div id='sample' contenteditable='true'>"
       "hello"

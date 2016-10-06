@@ -78,8 +78,9 @@ class PositionIteratorAlgorithm {
   }
 
   Member<Node> m_anchorNode;
-  Member<Node>
-      m_nodeAfterPositionInAnchor;  // If this is non-null, Strategy::parent(*m_nodeAfterPositionInAnchor) == m_anchorNode;
+  // If this is non-null, Strategy::parent(*m_nodeAfterPositionInAnchor) ==
+  // m_anchorNode;
+  Member<Node> m_nodeAfterPositionInAnchor;
   int m_offsetInAnchor;
   size_t m_depthToAnchorNode;
   // If |m_nodeAfterPositionInAnchor| is not null,

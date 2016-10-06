@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights
+ * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -86,8 +87,8 @@ class CORE_EXPORT FrameSelection final
     DoNotClearStrategy = 1 << 5,
     DoNotAdjustInFlatTree = 1 << 6,
   };
-  typedef unsigned
-      SetSelectionOptions;  // Union of values in SetSelectionOption and EUserTriggered
+  // Union of values in SetSelectionOption and EUserTriggered
+  typedef unsigned SetSelectionOptions;
   static inline EUserTriggered selectionOptionsToUserTriggered(
       SetSelectionOptions options) {
     return static_cast<EUserTriggered>(options & UserTriggered);
@@ -150,7 +151,8 @@ class CORE_EXPORT FrameSelection final
   void selectAll();
   void clear();
 
-  // Call this after doing user-triggered selections to make it easy to delete the frame you entirely selected.
+  // Call this after doing user-triggered selections to make it easy to delete
+  // the frame you entirely selected.
   void selectFrameElementInParentIfFullySelected();
 
   bool contains(const LayoutPoint&);
@@ -188,7 +190,8 @@ class CORE_EXPORT FrameSelection final
   Position start() const { return selection().start(); }
   Position end() const { return selection().end(); }
 
-  // Return the layoutObject that is responsible for painting the caret (in the selection start node)
+  // Return the layoutObject that is responsible for painting the caret (in the
+  // selection start node)
   LayoutBlock* caretLayoutObject() const;
 
   // Bounds of (possibly transformed) caret in absolute coords
@@ -202,8 +205,9 @@ class CORE_EXPORT FrameSelection final
   bool isInPasswordField() const;
   bool isDirectional() const { return selection().isDirectional(); }
 
-  // If this FrameSelection has a logical range which is still valid, this function return its clone. Otherwise,
-  // the return value from underlying VisibleSelection's firstRange() is returned.
+  // If this FrameSelection has a logical range which is still valid, this
+  // function return its clone. Otherwise, the return value from underlying
+  // VisibleSelection's firstRange() is returned.
   Range* firstRange() const;
 
   void documentAttached(Document*);
@@ -356,7 +360,8 @@ class CORE_EXPORT FrameSelection final
 
   bool m_focused : 1;
 
-  // Controls text granularity used to adjust the selection's extent in moveRangeSelectionExtent.
+  // Controls text granularity used to adjust the selection's extent in
+  // moveRangeSelectionExtent.
   std::unique_ptr<GranularityStrategy> m_granularityStrategy;
 
   const Member<FrameCaret> m_frameCaret;

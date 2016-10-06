@@ -268,7 +268,8 @@ class StyleChange {
   String m_applyFontSize;
 };
 
-// FIXME: Remove these functions or make them non-global to discourage using CSSStyleDeclaration directly.
+// FIXME: Remove these functions or make them non-global to discourage using
+// CSSStyleDeclaration directly.
 CSSValueID getIdentifierValue(CSSStyleDeclaration*, CSSPropertyID);
 CSSValueID getIdentifierValue(StylePropertySet*, CSSPropertyID);
 
