@@ -627,22 +627,32 @@ TEST(KeyframedAnimationCurveTest, MaximumTargetScale) {
       CubicBezierTimingFunction::CreatePreset(
           CubicBezierTimingFunction::EaseType::EASE)));
 
+  EXPECT_TRUE(curve->MaximumTargetScale(true, &maximum_scale));
+  EXPECT_EQ(6.f, maximum_scale);
+
+  TransformOperations operations4;
+  operations4.AppendPerspective(3.f);
+  curve->AddKeyframe(TransformKeyframe::Create(
+      base::TimeDelta::FromSecondsD(4.f), operations4,
+      CubicBezierTimingFunction::CreatePreset(
+          CubicBezierTimingFunction::EaseType::EASE)));
+
   EXPECT_FALSE(curve->MaximumTargetScale(true, &maximum_scale));
 
   // The original scale is not used in computing the max.
   std::unique_ptr<KeyframedTransformAnimationCurve> curve2(
       KeyframedTransformAnimationCurve::Create());
 
-  TransformOperations operations4;
-  operations4.AppendScale(0.4f, 0.2f, 0.6f);
+  TransformOperations operations5;
+  operations5.AppendScale(0.4f, 0.2f, 0.6f);
   curve2->AddKeyframe(TransformKeyframe::Create(
-      base::TimeDelta(), operations4,
+      base::TimeDelta(), operations5,
       CubicBezierTimingFunction::CreatePreset(
           CubicBezierTimingFunction::EaseType::EASE)));
-  TransformOperations operations5;
-  operations5.AppendScale(0.5f, 0.3f, -0.8f);
+  TransformOperations operations6;
+  operations6.AppendScale(0.5f, 0.3f, -0.8f);
   curve2->AddKeyframe(TransformKeyframe::Create(
-      base::TimeDelta::FromSecondsD(1.f), operations5,
+      base::TimeDelta::FromSecondsD(1.f), operations6,
       CubicBezierTimingFunction::CreatePreset(
           CubicBezierTimingFunction::EaseType::EASE)));
 
@@ -684,7 +694,7 @@ TEST(KeyframedAnimationCurveTest, AnimationStartScale) {
       CubicBezierTimingFunction::CreatePreset(
           CubicBezierTimingFunction::EaseType::EASE)));
 
-  // Backward direction
+  // Forward direction
   EXPECT_TRUE(curve->AnimationStartScale(true, &start_scale));
   EXPECT_EQ(1.f, start_scale);
 
@@ -696,6 +706,16 @@ TEST(KeyframedAnimationCurveTest, AnimationStartScale) {
   operations3.AppendRotate(1.f, 0.f, 0.f, 90.f);
   curve->AddKeyframe(TransformKeyframe::Create(
       base::TimeDelta::FromSecondsD(3.f), operations3,
+      CubicBezierTimingFunction::CreatePreset(
+          CubicBezierTimingFunction::EaseType::EASE)));
+
+  EXPECT_TRUE(curve->AnimationStartScale(false, &start_scale));
+  EXPECT_EQ(1.f, start_scale);
+
+  TransformOperations operations4;
+  operations4.AppendPerspective(90.f);
+  curve->AddKeyframe(TransformKeyframe::Create(
+      base::TimeDelta::FromSecondsD(4.f), operations4,
       CubicBezierTimingFunction::CreatePreset(
           CubicBezierTimingFunction::EaseType::EASE)));
 

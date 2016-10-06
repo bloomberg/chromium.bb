@@ -2,12 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Needed on Windows to get |M_PI| from <cmath>
+#ifdef _WIN32
+#define _USE_MATH_DEFINES
+#endif
+
 #include "cc/animation/transform_operations.h"
 
 #include <stddef.h>
 
 #include <algorithm>
 
+#include "cc/base/math_util.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/geometry/box_f.h"
 #include "ui/gfx/geometry/vector3d_f.h"
@@ -125,31 +131,47 @@ bool TransformOperations::IsTranslation() const {
   return true;
 }
 
-bool TransformOperations::ScaleComponent(gfx::Vector3dF* scale) const {
-  *scale = gfx::Vector3dF(1.f, 1.f, 1.f);
-  bool has_scale_component = false;
+static SkMScalar TanDegrees(double degrees) {
+  double radians = degrees * M_PI / 180;
+  return SkDoubleToMScalar(std::tan(radians));
+}
+
+bool TransformOperations::ScaleComponent(SkMScalar* scale) const {
+  SkMScalar operations_scale = 1.f;
   for (size_t i = 0; i < operations_.size(); ++i) {
     switch (operations_[i].type) {
       case TransformOperation::TRANSFORM_OPERATION_IDENTITY:
       case TransformOperation::TRANSFORM_OPERATION_TRANSLATE:
-        continue;
-      case TransformOperation::TRANSFORM_OPERATION_MATRIX:
-        if (!operations_[i].matrix.IsIdentityOrTranslation())
-          return false;
-        continue;
       case TransformOperation::TRANSFORM_OPERATION_ROTATE:
-      case TransformOperation::TRANSFORM_OPERATION_SKEW:
+        continue;
+      case TransformOperation::TRANSFORM_OPERATION_MATRIX: {
+        if (operations_[i].matrix.HasPerspective())
+          return false;
+        gfx::Vector2dF scale_components =
+            MathUtil::ComputeTransform2dScaleComponents(operations_[i].matrix,
+                                                        1.f);
+        operations_scale *=
+            std::max(scale_components.x(), scale_components.y());
+        break;
+      }
+      case TransformOperation::TRANSFORM_OPERATION_SKEW: {
+        SkMScalar x_component = TanDegrees(operations_[i].skew.x);
+        SkMScalar y_component = TanDegrees(operations_[i].skew.y);
+        SkMScalar x_scale = std::sqrt(x_component * x_component + 1);
+        SkMScalar y_scale = std::sqrt(y_component * y_component + 1);
+        operations_scale *= std::max(x_scale, y_scale);
+        break;
+      }
       case TransformOperation::TRANSFORM_OPERATION_PERSPECTIVE:
         return false;
       case TransformOperation::TRANSFORM_OPERATION_SCALE:
-        if (has_scale_component)
-          return false;
-        has_scale_component = true;
-        scale->Scale(operations_[i].scale.x,
-                     operations_[i].scale.y,
-                     operations_[i].scale.z);
+        operations_scale *=
+            std::max(std::abs(operations_[i].scale.x),
+                     std::max(std::abs(operations_[i].scale.y),
+                              std::abs(operations_[i].scale.z)));
     }
   }
+  *scale = operations_scale;
   return true;
 }
 

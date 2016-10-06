@@ -408,17 +408,9 @@ bool KeyframedTransformAnimationCurve::AnimationStartScale(
     start_location = keyframes_.size() - 1;
   }
 
-  gfx::Vector3dF initial_target_scale;
-  if (!keyframes_[start_location]->Value().ScaleComponent(
-          &initial_target_scale))
-    return false;
-  float start_scale_for_segment =
-      fmax(std::abs(initial_target_scale.x()),
-           fmax(std::abs(initial_target_scale.y()),
-                std::abs(initial_target_scale.z())));
-  *start_scale = start_scale_for_segment;
-  return true;
+  return keyframes_[start_location]->Value().ScaleComponent(start_scale);
 }
+
 bool KeyframedTransformAnimationCurve::MaximumTargetScale(
     bool forward_direction,
     float* max_scale) const {
@@ -435,14 +427,10 @@ bool KeyframedTransformAnimationCurve::MaximumTargetScale(
   }
 
   for (size_t i = start; i < end; ++i) {
-    gfx::Vector3dF target_scale_for_segment;
+    float target_scale_for_segment = 0.f;
     if (!keyframes_[i]->Value().ScaleComponent(&target_scale_for_segment))
       return false;
-    float max_scale_for_segment =
-        fmax(std::abs(target_scale_for_segment.x()),
-             fmax(std::abs(target_scale_for_segment.y()),
-                  std::abs(target_scale_for_segment.z())));
-    *max_scale = fmax(*max_scale, max_scale_for_segment);
+    *max_scale = fmax(*max_scale, target_scale_for_segment);
   }
   return true;
 }
