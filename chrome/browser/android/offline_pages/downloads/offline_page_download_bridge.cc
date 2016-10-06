@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile_android.h"
 #include "components/offline_pages/background/request_coordinator.h"
 #include "components/offline_pages/client_namespace_constants.h"
+#include "components/offline_pages/client_policy_controller.h"
 #include "components/offline_pages/downloads/download_ui_item.h"
 #include "components/offline_pages/offline_page_feature.h"
 #include "components/offline_pages/offline_page_model.h"
@@ -70,12 +71,13 @@ ScopedJavaLocalRef<jobject> ToJavaOfflinePageDownloadItem(
 
 std::vector<int64_t> FilterRequestsByGuid(
     std::vector<std::unique_ptr<SavePageRequest>> requests,
-    const std::string& guid) {
+    const std::string& guid,
+    ClientPolicyController* policy_controller) {
   std::vector<int64_t> request_ids;
   for (const auto& request : requests) {
     if (request->client_id().id == guid &&
-        (request->client_id().name_space == kDownloadNamespace ||
-         request->client_id().name_space == kAsyncNamespace)) {
+        policy_controller->IsSupportedByDownload(
+            request->client_id().name_space)) {
       request_ids.push_back(request->request_id());
     }
   }
@@ -93,8 +95,8 @@ void CancelRequestsContinuation(
   RequestCoordinator* coordinator =
       RequestCoordinatorFactory::GetForBrowserContext(browser_context);
   if (coordinator) {
-    std::vector<int64_t> request_ids =
-        FilterRequestsByGuid(std::move(requests), guid);
+    std::vector<int64_t> request_ids = FilterRequestsByGuid(
+        std::move(requests), guid, coordinator->GetPolicyController());
     coordinator->RemoveRequests(request_ids,
                                 base::Bind(&CancelRequestCallback));
   } else {
@@ -109,7 +111,8 @@ void PauseRequestsContinuation(
   RequestCoordinator* coordinator =
       RequestCoordinatorFactory::GetForBrowserContext(browser_context);
   if (coordinator)
-    coordinator->PauseRequests(FilterRequestsByGuid(std::move(requests), guid));
+    coordinator->PauseRequests(FilterRequestsByGuid(
+        std::move(requests), guid, coordinator->GetPolicyController()));
   else
     LOG(WARNING) << "PauseRequestsContinuation has no valid coordinator.";
 }
@@ -121,8 +124,8 @@ void ResumeRequestsContinuation(
   RequestCoordinator* coordinator =
       RequestCoordinatorFactory::GetForBrowserContext(browser_context);
   if (coordinator)
-    coordinator->ResumeRequests(
-        FilterRequestsByGuid(std::move(requests), guid));
+    coordinator->ResumeRequests(FilterRequestsByGuid(
+        std::move(requests), guid, coordinator->GetPolicyController()));
   else
     LOG(WARNING) << "ResumeRequestsContinuation has no valid coordinator.";
 }

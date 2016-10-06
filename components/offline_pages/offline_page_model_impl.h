@@ -239,8 +239,8 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
   // Post task to clear storage.
   void PostClearStorageIfNeededTask();
 
-  // Check if |offline_page| is user-requested.
-  bool IsUserRequestedPage(const OfflinePageItem& offline_page) const;
+  // Check if |offline_page| should be removed on cache reset by user.
+  bool IsRemovedOnCacheReset(const OfflinePageItem& offline_page) const;
 
   void RunWhenLoaded(const base::Closure& job);
 

@@ -33,6 +33,7 @@ class Offliner;
 class RequestPicker;
 class SavePageRequest;
 class Scheduler;
+class ClientPolicyController;
 
 // Coordinates queueing and processing save page later requests.
 class RequestCoordinator : public KeyedService,
@@ -141,6 +142,8 @@ class RequestCoordinator : public KeyedService,
   Scheduler* scheduler() { return scheduler_.get(); }
 
   OfflinerPolicy* policy() { return policy_.get(); }
+
+  ClientPolicyController* GetPolicyController();
 
   // Returns the status of the most recent offlining.
   Offliner::RequestStatus last_offlining_status() {
@@ -298,6 +301,8 @@ class RequestCoordinator : public KeyedService,
   std::unique_ptr<RequestQueue> queue_;
   // Scheduler. Used to request a callback when network is available.  Owned.
   std::unique_ptr<Scheduler> scheduler_;
+  // Controller of client policies. Owned.
+  std::unique_ptr<ClientPolicyController> policy_controller_;
   // Unowned pointer to the Network Quality Estimator.
   net::NetworkQualityEstimator::NetworkQualityProvider*
       network_quality_estimator_;

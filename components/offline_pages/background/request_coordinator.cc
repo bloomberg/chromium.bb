@@ -17,6 +17,7 @@
 #include "components/offline_pages/background/offliner_policy.h"
 #include "components/offline_pages/background/request_picker.h"
 #include "components/offline_pages/background/save_page_request.h"
+#include "components/offline_pages/client_policy_controller.h"
 #include "components/offline_pages/offline_page_item.h"
 #include "components/offline_pages/offline_page_model.h"
 
@@ -92,6 +93,7 @@ RequestCoordinator::RequestCoordinator(
       factory_(std::move(factory)),
       queue_(std::move(queue)),
       scheduler_(std::move(scheduler)),
+      policy_controller_(new ClientPolicyController()),
       network_quality_estimator_(network_quality_estimator),
       active_request_(nullptr),
       last_offlining_status_(Offliner::RequestStatus::UNKNOWN),
@@ -599,6 +601,10 @@ void RequestCoordinator::GetOffliner() {
   if (!offliner_) {
     offliner_ = factory_->GetOffliner(policy_.get());
   }
+}
+
+ClientPolicyController* RequestCoordinator::GetPolicyController() {
+  return policy_controller_.get();
 }
 
 void RequestCoordinator::Shutdown() {

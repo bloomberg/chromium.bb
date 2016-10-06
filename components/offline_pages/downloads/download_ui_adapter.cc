@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/client_namespace_constants.h"
+#include "components/offline_pages/client_policy_controller.h"
 #include "components/offline_pages/downloads/download_ui_item.h"
 #include "components/offline_pages/offline_page_model.h"
 
@@ -207,10 +208,9 @@ void DownloadUIAdapter::OnDeletePagesDone(DeletePageResult result) {
   // TODO(dimich): Consider adding UMA to record user actions.
 }
 
-// static
 bool DownloadUIAdapter::IsVisibleInUI(const ClientId& client_id) {
   const std::string& name_space = client_id.name_space;
-  return (name_space == kAsyncNamespace || name_space == kDownloadNamespace) &&
+  return model_->GetPolicyController()->IsSupportedByDownload(name_space) &&
          base::IsValidGUID(client_id.id);
 }
 

@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "components/offline_pages/background/save_page_request.h"
 #include "components/offline_pages/client_namespace_constants.h"
+#include "components/offline_pages/client_policy_controller.h"
 #include "components/offline_pages/downloads/offline_page_download_notifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -112,6 +113,7 @@ class DownloadNotifyingObserverTest : public testing::Test {
  private:
   TestNotifier* notifier_;
   std::unique_ptr<DownloadNotifyingObserver> observer_;
+  std::unique_ptr<ClientPolicyController> policy_controller_;
 };
 
 DownloadNotifyingObserverTest::DownloadNotifyingObserverTest() {}
@@ -120,8 +122,10 @@ DownloadNotifyingObserverTest::~DownloadNotifyingObserverTest() {}
 
 void DownloadNotifyingObserverTest::SetUp() {
   std::unique_ptr<TestNotifier> notifier(new TestNotifier);
+  policy_controller_.reset(new ClientPolicyController());
   notifier_ = notifier.get();
-  observer_.reset(new DownloadNotifyingObserver(std::move(notifier)));
+  observer_.reset(new DownloadNotifyingObserver(std::move(notifier),
+                                                policy_controller_.get()));
 }
 
 TEST_F(DownloadNotifyingObserverTest, OnAdded) {

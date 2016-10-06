@@ -443,9 +443,10 @@ void OfflinePageModelImpl::DoDeleteCachedPagesByURLPredicate(
 
   std::vector<int64_t> offline_ids;
   for (const auto& id_page_pair : offline_pages_) {
-    if (!IsUserRequestedPage(id_page_pair.second) &&
-        predicate.Run(id_page_pair.second.url))
+    if (IsRemovedOnCacheReset(id_page_pair.second) &&
+        predicate.Run(id_page_pair.second.url)) {
       offline_ids.push_back(id_page_pair.first);
+    }
   }
   DoDeletePagesByOfflineId(offline_ids, callback);
 }
@@ -1034,10 +1035,10 @@ void OfflinePageModelImpl::PostClearStorageIfNeededTask() {
                                        weak_ptr_factory_.GetWeakPtr())));
 }
 
-bool OfflinePageModelImpl::IsUserRequestedPage(
+bool OfflinePageModelImpl::IsRemovedOnCacheReset(
     const OfflinePageItem& offline_page) const {
-  return (offline_page.client_id.name_space == kAsyncNamespace ||
-          offline_page.client_id.name_space == kDownloadNamespace);
+  return policy_controller_->IsRemovedOnCacheReset(
+      offline_page.client_id.name_space);
 }
 
 void OfflinePageModelImpl::RunWhenLoaded(const base::Closure& task) {

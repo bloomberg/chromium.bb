@@ -58,7 +58,7 @@ class DownloadUIAdapter : public OfflinePageModel::Observer,
 
   // Checks a client ID for proper namespace and ID format to be shown in the
   // Downloads Home UI.
-  static bool IsVisibleInUI(const ClientId& page);
+  bool IsVisibleInUI(const ClientId& page);
 
   // This adapter is potentially shared by UI elements, each of which adds
   // itself as an observer.

@@ -21,6 +21,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/offline_pages/client_namespace_constants.h"
+#include "components/offline_pages/client_policy_controller.h"
 #include "components/offline_pages/stub_offline_page_model.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -51,7 +52,8 @@ class MockOfflinePageModel : public StubOfflinePageModel {
  public:
   MockOfflinePageModel(base::TestMockTimeTaskRunner* task_runner)
       : observer_(nullptr),
-        task_runner_(task_runner) {
+        task_runner_(task_runner),
+        policy_controller_(new ClientPolicyController()) {
     adapter.reset(new DownloadUIAdapter(this));
     // Add one page.
     OfflinePageItem page(GURL(kTestUrl),
@@ -109,6 +111,10 @@ class MockOfflinePageModel : public StubOfflinePageModel {
     observer_->OfflinePageModelChanged(this);
   }
 
+  ClientPolicyController* GetPolicyController() override {
+    return policy_controller_.get();
+  }
+
   // Normally, OfflinePageModel owns this adapter, so lets test it this way.
   std::unique_ptr<DownloadUIAdapter> adapter;
 
@@ -117,6 +123,8 @@ class MockOfflinePageModel : public StubOfflinePageModel {
  private:
   OfflinePageModel::Observer* observer_;
   base::TestMockTimeTaskRunner* task_runner_;
+  // Normally owned by OfflinePageModel.
+  std::unique_ptr<ClientPolicyController> policy_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(MockOfflinePageModel);
 };
