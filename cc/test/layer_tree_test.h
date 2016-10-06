@@ -143,7 +143,8 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   }
   bool TestEnded() const { return ended_; }
 
-  LayerTreeHostInProcess* layer_tree_host();
+  LayerTreeHost* layer_tree_host();
+  LayerTreeHostInProcess* layer_tree_host_in_process();
   LayerTree* layer_tree() { return layer_tree_host()->GetLayerTree(); }
   SharedBitmapManager* shared_bitmap_manager() const {
     return shared_bitmap_manager_.get();

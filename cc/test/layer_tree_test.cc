@@ -832,10 +832,16 @@ TaskRunnerProvider* LayerTreeTest::task_runner_provider() const {
   return host->GetTaskRunnerProvider();
 }
 
-LayerTreeHostInProcess* LayerTreeTest::layer_tree_host() {
+LayerTreeHost* LayerTreeTest::layer_tree_host() {
   DCHECK(task_runner_provider()->IsMainThread() ||
          task_runner_provider()->IsMainThreadBlocked());
   return layer_tree_host_.get();
 }
 
+LayerTreeHostInProcess* LayerTreeTest::layer_tree_host_in_process() {
+  DCHECK(task_runner_provider()->IsMainThread() ||
+         task_runner_provider()->IsMainThreadBlocked());
+  DCHECK(!IsRemoteTest());
+  return layer_tree_host_.get();
+}
 }  // namespace cc
