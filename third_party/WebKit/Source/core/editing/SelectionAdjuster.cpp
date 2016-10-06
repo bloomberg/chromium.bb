@@ -208,7 +208,17 @@ void SelectionAdjuster::adjustSelectionInDOMTree(
   const Position& extent = toPositionInDOMTree(selectionInFlatTree.extent());
 
   if (isCrossingShadowBoundaries(selectionInFlatTree)) {
-    *selection = createVisibleSelectionDeprecated(base, extent);
+    DCHECK(base.document());
+
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    // This layout update call cannot be hoisted out of the |if|, otherwise it's
+    // going to cause performance regression (http://crbug.com/652301).
+    // TODO(yosin): Implement and apply lazy visible selection validation so
+    // that we don't need to update layout here.
+    base.document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
+    *selection = createVisibleSelection(base, extent);
     return;
   }
 
