@@ -411,7 +411,6 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
     private void updateGroups() {
         mGroups.clear();
         mGroups.add(mAboveTheFold);
-        // TODO(treib,bauerb): Preserve the order of categories we got from getCategories.
         mGroups.addAll(mSections.values());
         mGroups.add(mSigninPromo);
         if (hasVisibleBelowTheFoldItems()) {
