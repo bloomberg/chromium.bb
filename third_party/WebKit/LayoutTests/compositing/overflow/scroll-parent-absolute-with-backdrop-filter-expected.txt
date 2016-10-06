@@ -26,6 +26,14 @@
                   "drawsContent": true,
                   "children": [
                     {
+                      "name": "LayoutBlockFlow (positioned) DIV id='middle'",
+                      "bounds": [400, 400],
+                      "contentsOpaque": true,
+                      "drawsContent": true,
+                      "backgroundColor": "#008000",
+                      "hasClipParent": true
+                    },
+                    {
                       "name": "LayoutBlockFlow (relative positioned) DIV id='child'",
                       "bounds": [300, 300],
                       "contentsOpaque": true,

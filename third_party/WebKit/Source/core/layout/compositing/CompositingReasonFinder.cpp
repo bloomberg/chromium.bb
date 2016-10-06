@@ -41,8 +41,8 @@ CompositingReasons CompositingReasonFinder::directReasons(
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
     return CompositingReasonNone;
 
-  ASSERT(potentialCompositingReasonsFromStyle(layer->layoutObject()) ==
-         layer->potentialCompositingReasonsFromStyle());
+  DCHECK_EQ(potentialCompositingReasonsFromStyle(layer->layoutObject()),
+            layer->potentialCompositingReasonsFromStyle());
   CompositingReasons styleDeterminedDirectCompositingReasons =
       layer->potentialCompositingReasonsFromStyle() &
       CompositingReasonComboAllDirectStyleDeterminedReasons;
@@ -54,7 +54,7 @@ CompositingReasons CompositingReasonFinder::directReasons(
 // This information doesn't appear to be incorporated into CompositingReasons.
 bool CompositingReasonFinder::requiresCompositingForScrollableFrame() const {
   // Need this done first to determine overflow.
-  ASSERT(!m_layoutView.needsLayout());
+  DCHECK(!m_layoutView.needsLayout());
   if (isMainFrame())
     return false;
 
@@ -101,7 +101,7 @@ CompositingReasonFinder::potentialCompositingReasonsFromStyle(
 
   // If the implementation of createsGroup changes, we need to be aware of that
   // in this part of code.
-  ASSERT((layoutObject->isTransparent() || layoutObject->hasMask() ||
+  DCHECK((layoutObject->isTransparent() || layoutObject->hasMask() ||
           layoutObject->hasFilterInducingProperty() || style.hasBlendMode()) ==
          layoutObject->createsGroup());
 
@@ -127,7 +127,7 @@ CompositingReasonFinder::potentialCompositingReasonsFromStyle(
   if (layoutObject->hasReflection())
     reasons |= CompositingReasonReflectionWithCompositedDescendants;
 
-  ASSERT(!(reasons & ~CompositingReasonComboAllStyleDeterminedReasons));
+  DCHECK(!(reasons & ~CompositingReasonComboAllStyleDeterminedReasons));
   return reasons;
 }
 
@@ -144,6 +144,9 @@ CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(
     const PaintLayer* layer) const {
   CompositingReasons directReasons = CompositingReasonNone;
   LayoutObject* layoutObject = layer->layoutObject();
+
+  if (m_compositingTriggers & OverflowScrollTrigger && layer->clipParent())
+    directReasons |= CompositingReasonOutOfFlowClipping;
 
   if (layer->needsCompositedScrolling())
     directReasons |= CompositingReasonOverflowScrollingTouch;
@@ -163,7 +166,7 @@ CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(
 
   directReasons |= layoutObject->additionalCompositingReasons();
 
-  ASSERT(!(directReasons & CompositingReasonComboAllStyleDeterminedReasons));
+  DCHECK(!(directReasons & CompositingReasonComboAllStyleDeterminedReasons));
   return directReasons;
 }
 

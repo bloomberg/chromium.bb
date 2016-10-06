@@ -77,14 +77,14 @@ class CompositingRequirementsUpdater::OverlapMap {
   }
 
   void add(PaintLayer* layer, const IntRect& bounds) {
-    ASSERT(!layer->isRootLayer());
+    DCHECK(!layer->isRootLayer());
     if (bounds.isEmpty())
       return;
 
     // Layers do not contribute to overlap immediately--instead, they will
     // contribute to overlap as soon as they have been recursively processed
     // and popped off the stack.
-    ASSERT(m_overlapStack.size() >= 2);
+    DCHECK_GE(m_overlapStack.size(), 2ul);
     m_overlapStack[m_overlapStack.size() - 2].add(bounds);
   }
 
@@ -135,7 +135,7 @@ static bool requiresCompositingOrSquashing(CompositingReasons reasons) {
 #if ENABLE(ASSERT)
   bool fastAnswer = reasons != CompositingReasonNone;
   bool slowAnswer = requiresCompositing(reasons) || requiresSquashing(reasons);
-  ASSERT(fastAnswer == slowAnswer);
+  DCHECK_EQ(slowAnswer, fastAnswer);
 #endif
   return reasons != CompositingReasonNone;
 }
@@ -154,7 +154,7 @@ static CompositingReasons subtreeReasonsForCompositing(
                       CompositingReasonComboCompositedDescendants;
 
     if (layer->shouldIsolateCompositedDescendants()) {
-      ASSERT(layer->stackingNode()->isStackingContext());
+      DCHECK(layer->stackingNode()->isStackingContext());
       subtreeReasons |= CompositingReasonIsolateCompositedDescendants;
     }
 
@@ -172,9 +172,10 @@ static CompositingReasons subtreeReasonsForCompositing(
   // A layer with preserve-3d or perspective only needs to be composited if
   // there are descendant layers that will be affected by the preserve-3d or
   // perspective.
-  if (has3DTransformedDescendants)
+  if (has3DTransformedDescendants) {
     subtreeReasons |= layer->potentialCompositingReasonsFromStyle() &
                       CompositingReasonCombo3DDescendants;
+  }
 
   return subtreeReasons;
 }
@@ -296,11 +297,12 @@ void CompositingRequirementsUpdater::updateRecursive(
 
     // Remove irrelevant unclipped descendants in reverse order so our stored
     // indices remain valid.
-    for (size_t i = 0; i < unclippedDescendantsToRemove.size(); i++)
+    for (size_t i = 0; i < unclippedDescendantsToRemove.size(); i++) {
       unclippedDescendants.remove(unclippedDescendantsToRemove.at(
           unclippedDescendantsToRemove.size() - i - 1));
+    }
 
-    if (layer->clipParent()) {
+    if (reasonsToComposite & CompositingReasonOutOfFlowClipping) {
       // TODO(schenney): We only need to promote when the clipParent is not a
       // descendant of the ancestor scroller, which we do not check for here.
       // Hence we might be promoting needlessly.
@@ -312,10 +314,11 @@ void CompositingRequirementsUpdater::updateRecursive(
   absoluteDescendantBoundingBox = absBounds;
 
   if (currentRecursionData.m_testingOverlap &&
-      !requiresCompositingOrSquashing(directReasons))
+      !requiresCompositingOrSquashing(directReasons)) {
     overlapCompositingReason = overlapMap.overlapsLayers(absBounds)
                                    ? CompositingReasonOverlap
                                    : CompositingReasonNone;
+  }
 
   reasonsToComposite |= overlapCompositingReason;
 
@@ -384,7 +387,7 @@ void CompositingRequirementsUpdater::updateRecursive(
   }
 
   if (willHaveForegroundLayer) {
-    ASSERT(willBeCompositedOrSquashed);
+    DCHECK(willBeCompositedOrSquashed);
     // A foreground layer effectively is a new backing for all subsequent
     // children, so we don't need to test for overlap with anything behind this.
     // So, we can finish the previous context that was accumulating rects for
@@ -465,9 +468,10 @@ void CompositingRequirementsUpdater::updateRecursive(
       willBeCompositedOrSquashed = true;
     }
 
-    if (willBeCompositedOrSquashed)
+    if (willBeCompositedOrSquashed) {
       reasonsToComposite |= layer->potentialCompositingReasonsFromStyle() &
                             CompositingReasonInlineTransform;
+    }
 
     if (willBeCompositedOrSquashed &&
         layer->layoutObject()->style()->hasBlendMode())
