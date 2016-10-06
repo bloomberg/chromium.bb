@@ -12,7 +12,6 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetTestBase.OnlyRunNativeCronet;
-import org.chromium.net.MetricsTestUtil.TestExecutor;
 import org.chromium.net.MetricsTestUtil.TestRequestFinishedListener;
 import org.chromium.net.TestBidirectionalStreamCallback.FailureType;
 import org.chromium.net.TestBidirectionalStreamCallback.ResponseStep;
@@ -22,6 +21,7 @@ import java.nio.ByteBuffer;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -227,9 +227,7 @@ public class BidirectionalStreamTest extends CronetTestBase {
         callback.addWriteData("Test String".getBytes());
         callback.addWriteData("1234567890".getBytes());
         callback.addWriteData("woot!".getBytes());
-        TestExecutor testExecutor = new TestExecutor();
-        TestRequestFinishedListener requestFinishedListener =
-                new TestRequestFinishedListener(testExecutor);
+        TestRequestFinishedListener requestFinishedListener = new TestRequestFinishedListener();
         mTestFramework.mCronetEngine.addRequestFinishedListener(requestFinishedListener);
         // Create stream.
         BidirectionalStream stream = new BidirectionalStream
@@ -241,17 +239,24 @@ public class BidirectionalStreamTest extends CronetTestBase {
                                              .addRequestAnnotation(this)
                                              .addRequestAnnotation("request annotation")
                                              .build();
+        Date startTime = new Date();
         stream.start();
         callback.blockForDone();
-        testExecutor.runAllTasks();
         assertTrue(stream.isDone());
+        requestFinishedListener.blockUntilDone();
+        Date endTime = new Date();
         RequestFinishedInfo finishedInfo = requestFinishedListener.getRequestInfo();
         assertNotNull("RequestFinishedInfo.Listener must be called", finishedInfo);
+        RequestFinishedInfo.Metrics metrics = finishedInfo.getMetrics();
+        assertNotNull(metrics);
+        MetricsTestUtil.checkTimingMetrics(metrics, startTime, endTime);
+        MetricsTestUtil.checkHasConnectTiming(metrics, startTime, endTime, true);
+        assertTrue(metrics.getSentBytesCount() > 0);
+        assertTrue(metrics.getReceivedBytesCount() > 0);
         assertEquals(url, finishedInfo.getUrl());
         assertEquals(newHashSet("request annotation", this),
                 new HashSet<Object>(finishedInfo.getAnnotations()));
         assertNotNull(finishedInfo.getResponseInfo());
-        // TODO(xunjieli): Check other fields once metrics support is in crbug.com/648346.
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
         assertEquals("Test String1234567890woot!", callback.mResponseAsString);
         assertEquals("bar", callback.mResponseInfo.getAllHeaders().get("echo-foo").get(0));
@@ -1153,16 +1158,27 @@ public class BidirectionalStreamTest extends CronetTestBase {
 
     private void throwOrCancel(
             FailureType failureType, ResponseStep failureStep, boolean expectError) {
+        // Use a fresh CronetEngine each time so Http2 session is not reused.
+        CronetEngine.Builder builder = new CronetEngine.Builder(getContext());
+        builder.setMockCertVerifierForTesting(QuicTestServer.createMockCertVerifier());
+        mTestFramework = startCronetTestFrameworkWithUrlAndCronetEngineBuilder(null, builder);
         TestBidirectionalStreamCallback callback = new TestBidirectionalStreamCallback();
         callback.setFailure(failureType, failureStep);
-        BidirectionalStream.Builder builder =
+        TestRequestFinishedListener requestFinishedListener = new TestRequestFinishedListener();
+        mTestFramework.mCronetEngine.addRequestFinishedListener(requestFinishedListener);
+        BidirectionalStream.Builder streamBuilder =
                 new BidirectionalStream.Builder(Http2TestServer.getEchoMethodUrl(), callback,
                         callback.getExecutor(), mTestFramework.mCronetEngine);
-        BidirectionalStream stream = builder.setHttpMethod("GET").build();
+        BidirectionalStream stream = streamBuilder.setHttpMethod("GET").build();
+        Date startTime = new Date();
         stream.start();
         callback.blockForDone();
-        // assertEquals(callback.mResponseStep, failureStep);
         assertTrue(stream.isDone());
+        requestFinishedListener.blockUntilDone();
+        Date endTime = new Date();
+        RequestFinishedInfo finishedInfo = requestFinishedListener.getRequestInfo();
+        RequestFinishedInfo.Metrics metrics = finishedInfo.getMetrics();
+        assertNotNull(metrics);
         // Cancellation when stream is ready does not guarantee that
         // mResponseInfo is null because there might be a
         // onResponseHeadersReceived already queued in the executor.
@@ -1170,12 +1186,36 @@ public class BidirectionalStreamTest extends CronetTestBase {
         if (failureStep != ResponseStep.ON_STREAM_READY) {
             assertNotNull(callback.mResponseInfo);
         }
+        // Check metrics information.
+        if (failureStep == ResponseStep.ON_RESPONSE_STARTED
+                || failureStep == ResponseStep.ON_READ_COMPLETED
+                || failureStep == ResponseStep.ON_TRAILERS) {
+            // For steps after response headers are received, there will be
+            // connect timing metrics.
+            MetricsTestUtil.checkTimingMetrics(metrics, startTime, endTime);
+            MetricsTestUtil.checkHasConnectTiming(metrics, startTime, endTime, true);
+            assertTrue(metrics.getSentBytesCount() > 0);
+            assertTrue(metrics.getReceivedBytesCount() > 0);
+        } else if (failureStep == ResponseStep.ON_STREAM_READY) {
+            // onStreamReady() happens before response headers are received, so
+            // there is no connect timing metrics.
+            assertNotNull(metrics.getRequestStart());
+            MetricsTestUtil.assertAfter(metrics.getRequestStart(), startTime);
+            MetricsTestUtil.checkNoConnectTiming(metrics);
+            assertNull(metrics.getResponseStart());
+            assertNotNull(metrics.getResponseEnd());
+            MetricsTestUtil.assertAfter(endTime, metrics.getResponseEnd());
+            // Entire request should take more than 0 ms
+            assertTrue(
+                    metrics.getResponseEnd().getTime() - metrics.getRequestStart().getTime() > 0);
+        }
         assertEquals(expectError, callback.mError != null);
         assertEquals(expectError, callback.mOnErrorCalled);
         assertEquals(failureType == FailureType.CANCEL_SYNC
                         || failureType == FailureType.CANCEL_ASYNC
                         || failureType == FailureType.CANCEL_ASYNC_WITHOUT_PAUSE,
                 callback.mOnCanceledCalled);
+        mTestFramework.mCronetEngine.removeRequestFinishedListener(requestFinishedListener);
     }
 
     @SmallTest

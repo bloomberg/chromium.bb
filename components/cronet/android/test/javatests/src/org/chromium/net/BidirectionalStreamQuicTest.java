@@ -8,13 +8,14 @@ import static org.chromium.base.CollectionUtil.newHashSet;
 
 import android.test.suitebuilder.annotation.SmallTest;
 
-import org.chromium.base.test.util.Feature;
-import org.chromium.net.CronetTestBase.OnlyRunNativeCronet;
-import org.chromium.net.MetricsTestUtil.TestExecutor;
-import org.chromium.net.MetricsTestUtil.TestRequestFinishedListener;
 import org.json.JSONObject;
 
+import org.chromium.base.test.util.Feature;
+import org.chromium.net.CronetTestBase.OnlyRunNativeCronet;
+import org.chromium.net.MetricsTestUtil.TestRequestFinishedListener;
+
 import java.nio.ByteBuffer;
+import java.util.Date;
 import java.util.HashSet;
 
 /**
@@ -94,9 +95,7 @@ public class BidirectionalStreamQuicTest extends CronetTestBase {
         callback.addWriteData("Test String".getBytes());
         callback.addWriteData("1234567890".getBytes());
         callback.addWriteData("woot!".getBytes());
-        TestExecutor testExecutor = new TestExecutor();
-        TestRequestFinishedListener requestFinishedListener =
-                new TestRequestFinishedListener(testExecutor);
+        TestRequestFinishedListener requestFinishedListener = new TestRequestFinishedListener();
         mTestFramework.mCronetEngine.addRequestFinishedListener(requestFinishedListener);
         BidirectionalStream stream = new BidirectionalStream
                                              .Builder(quicURL, callback, callback.getExecutor(),
@@ -107,17 +106,24 @@ public class BidirectionalStreamQuicTest extends CronetTestBase {
                                              .addRequestAnnotation("request annotation")
                                              .addRequestAnnotation(this)
                                              .build();
+        Date startTime = new Date();
         stream.start();
         callback.blockForDone();
-        testExecutor.runAllTasks();
         assertTrue(stream.isDone());
+        requestFinishedListener.blockUntilDone();
+        Date endTime = new Date();
         RequestFinishedInfo finishedInfo = requestFinishedListener.getRequestInfo();
         assertNotNull("RequestFinishedInfo.Listener must be called", finishedInfo);
+        RequestFinishedInfo.Metrics metrics = finishedInfo.getMetrics();
+        assertNotNull(metrics);
+        MetricsTestUtil.checkTimingMetrics(metrics, startTime, endTime);
+        MetricsTestUtil.checkHasConnectTiming(metrics, startTime, endTime, true);
+        assertTrue(metrics.getSentBytesCount() > 0);
+        assertTrue(metrics.getReceivedBytesCount() > 0);
         assertEquals(quicURL, finishedInfo.getUrl());
         assertEquals(newHashSet("request annotation", this),
                 new HashSet<Object>(finishedInfo.getAnnotations()));
         assertNotNull(finishedInfo.getResponseInfo());
-        // TODO(xunjieli): Check other fields once metrics support is in crbug.com/648346.
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
         assertEquals("This is a simple text file served by QUIC.\n", callback.mResponseAsString);
         assertEquals("quic/1+spdy/3", callback.mResponseInfo.getNegotiatedProtocol());

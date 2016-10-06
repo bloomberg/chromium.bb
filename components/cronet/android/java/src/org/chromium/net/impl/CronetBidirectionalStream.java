@@ -86,6 +86,7 @@ public class CronetBidirectionalStream extends BidirectionalStream {
     private final String mRequestHeaders[];
     private final boolean mDelayRequestHeadersUntilFirstFlush;
     private final Collection<Object> mRequestAnnotations;
+
     /*
      * Synchronizes access to mNativeStream, mReadState and mWriteState.
      */
@@ -247,7 +248,8 @@ public class CronetBidirectionalStream extends BidirectionalStream {
             try {
                 mNativeStream = nativeCreateBidirectionalStream(
                         mRequestContext.getUrlRequestContextAdapter(),
-                        !mDelayRequestHeadersUntilFirstFlush);
+                        !mDelayRequestHeadersUntilFirstFlush,
+                        mRequestContext.hasRequestFinishedListener());
                 mRequestContext.onRequestStarted();
                 // Non-zero startResult means an argument error.
                 int startResult = nativeStart(mNativeStream, mInitialUrl, mInitialPriority,
@@ -619,6 +621,32 @@ public class CronetBidirectionalStream extends BidirectionalStream {
         });
     }
 
+    /**
+    * Called by the native code to report metrics just before the native adapter is destroyed.
+    */
+    @SuppressWarnings("unused")
+    @CalledByNative
+    private void onMetricsCollected(long requestStartMs, long dnsStartMs, long dnsEndMs,
+            long connectStartMs, long connectEndMs, long sslStartMs, long sslEndMs,
+            long sendingStartMs, long sendingEndMs, long pushStartMs, long pushEndMs,
+            long responseStartMs, long responseEndMs, boolean socketReused, long sentBytesCount,
+            long receivedBytesCount) {
+        synchronized (mNativeStreamLock) {
+            if (mMetrics != null) {
+                throw new IllegalStateException("Metrics collection should only happen once.");
+            }
+            mMetrics = new CronetMetrics(requestStartMs, dnsStartMs, dnsEndMs, connectStartMs,
+                    connectEndMs, sslStartMs, sslEndMs, sendingStartMs, sendingEndMs, pushStartMs,
+                    pushEndMs, responseStartMs, responseEndMs, socketReused, sentBytesCount,
+                    receivedBytesCount);
+            // TODO(xunjieli): Fill this with real values.
+            final RequestFinishedInfo requestFinishedInfo =
+                    new RequestFinishedInfo(mInitialUrl, mRequestAnnotations, mMetrics,
+                            RequestFinishedInfo.SUCCEEDED, mResponseInfo, null);
+            mRequestContext.reportFinished(requestFinishedInfo);
+        }
+    }
+
     @VisibleForTesting
     public void setOnDestroyedCallbackForTesting(Runnable onDestroyedCallbackForTesting) {
         mOnDestroyedCallbackForTesting = onDestroyedCallbackForTesting;
@@ -699,18 +727,11 @@ public class CronetBidirectionalStream extends BidirectionalStream {
             return;
         }
         nativeDestroy(mNativeStream, sendOnCanceled);
-        mRequestContext.reportFinished(getRequestFinishedInfo());
         mRequestContext.onRequestDestroyed();
         mNativeStream = 0;
         if (mOnDestroyedCallbackForTesting != null) {
             mOnDestroyedCallbackForTesting.run();
         }
-    }
-
-    private RequestFinishedInfo getRequestFinishedInfo() {
-        // TODO(xunjieli): Fill this with real values.
-        return new RequestFinishedInfo(mInitialUrl, mRequestAnnotations, mMetrics,
-                RequestFinishedInfo.SUCCEEDED, mResponseInfo, null);
     }
 
     /**
@@ -757,8 +778,8 @@ public class CronetBidirectionalStream extends BidirectionalStream {
     }
 
     // Native methods are implemented in cronet_bidirectional_stream_adapter.cc.
-    private native long nativeCreateBidirectionalStream(
-            long urlRequestContextAdapter, boolean sendRequestHeadersAutomatically);
+    private native long nativeCreateBidirectionalStream(long urlRequestContextAdapter,
+            boolean sendRequestHeadersAutomatically, boolean enableMetricsCollection);
 
     @NativeClassQualifiedName("CronetBidirectionalStreamAdapter")
     private native int nativeStart(long nativePtr, String url, int priority, String method,

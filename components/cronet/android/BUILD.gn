@@ -198,6 +198,8 @@ template("cronet_static_tmpl") {
       "//components/cronet/android/cronet_url_request_context_adapter.h",
       "//components/cronet/android/io_buffer_with_byte_buffer.cc",
       "//components/cronet/android/io_buffer_with_byte_buffer.h",
+      "//components/cronet/android/metrics_util.cc",
+      "//components/cronet/android/metrics_util.h",
       "//components/cronet/android/url_request_error.cc",
       "//components/cronet/android/url_request_error.h",
       "//components/cronet/histogram_manager.cc",

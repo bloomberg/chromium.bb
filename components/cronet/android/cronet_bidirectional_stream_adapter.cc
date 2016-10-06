@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "components/cronet/android/cronet_url_request_context_adapter.h"
 #include "components/cronet/android/io_buffer_with_byte_buffer.h"
+#include "components/cronet/android/metrics_util.h"
 #include "components/cronet/android/url_request_error.h"
 #include "jni/CronetBidirectionalStream_jni.h"
 #include "net/base/net_errors.h"
@@ -73,7 +74,8 @@ static jlong CreateBidirectionalStream(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jbidi_stream,
     jlong jurl_request_context_adapter,
-    jboolean jsend_request_headers_automatically) {
+    jboolean jsend_request_headers_automatically,
+    jboolean jenable_metrics) {
   CronetURLRequestContextAdapter* context_adapter =
       reinterpret_cast<CronetURLRequestContextAdapter*>(
           jurl_request_context_adapter);
@@ -81,7 +83,8 @@ static jlong CreateBidirectionalStream(
 
   CronetBidirectionalStreamAdapter* adapter =
       new CronetBidirectionalStreamAdapter(context_adapter, env, jbidi_stream,
-                                           jsend_request_headers_automatically);
+                                           jsend_request_headers_automatically,
+                                           jenable_metrics);
 
   return reinterpret_cast<jlong>(adapter);
 }
@@ -95,10 +98,12 @@ CronetBidirectionalStreamAdapter::CronetBidirectionalStreamAdapter(
     CronetURLRequestContextAdapter* context,
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jbidi_stream,
-    bool send_request_headers_automatically)
+    bool send_request_headers_automatically,
+    bool enable_metrics)
     : context_(context),
       owner_(env, jbidi_stream),
       send_request_headers_automatically_(send_request_headers_automatically),
+      enable_metrics_(enable_metrics),
       stream_failed_(false) {}
 
 CronetBidirectionalStreamAdapter::~CronetBidirectionalStreamAdapter() {
@@ -411,6 +416,7 @@ void CronetBidirectionalStreamAdapter::DestroyOnNetworkThread(
     JNIEnv* env = base::android::AttachCurrentThread();
     cronet::Java_CronetBidirectionalStream_onCanceled(env, owner_.obj());
   }
+  MaybeReportMetrics();
   delete this;
 }
 
@@ -426,6 +432,48 @@ CronetBidirectionalStreamAdapter::GetHeadersArray(
     headers.push_back(header.second.as_string());
   }
   return base::android::ToJavaArrayOfStrings(env, headers);
+}
+
+void CronetBidirectionalStreamAdapter::MaybeReportMetrics() {
+  if (!enable_metrics_)
+    return;
+
+  if (!bidi_stream_)
+    return;
+  net::LoadTimingInfo load_timing_info;
+  bidi_stream_->GetLoadTimingInfo(&load_timing_info);
+  JNIEnv* env = base::android::AttachCurrentThread();
+  base::Time start_time = load_timing_info.request_start_time;
+  base::TimeTicks start_ticks = load_timing_info.request_start;
+  cronet::Java_CronetBidirectionalStream_onMetricsCollected(
+      env, owner_.obj(),
+      metrics_util::ConvertTime(start_ticks, start_ticks, start_time),
+      metrics_util::ConvertTime(load_timing_info.connect_timing.dns_start,
+                                start_ticks, start_time),
+      metrics_util::ConvertTime(load_timing_info.connect_timing.dns_end,
+                                start_ticks, start_time),
+      metrics_util::ConvertTime(load_timing_info.connect_timing.connect_start,
+                                start_ticks, start_time),
+      metrics_util::ConvertTime(load_timing_info.connect_timing.connect_end,
+                                start_ticks, start_time),
+      metrics_util::ConvertTime(load_timing_info.connect_timing.ssl_start,
+                                start_ticks, start_time),
+      metrics_util::ConvertTime(load_timing_info.connect_timing.ssl_end,
+                                start_ticks, start_time),
+      metrics_util::ConvertTime(load_timing_info.send_start, start_ticks,
+                                start_time),
+      metrics_util::ConvertTime(load_timing_info.send_end, start_ticks,
+                                start_time),
+      metrics_util::ConvertTime(load_timing_info.push_start, start_ticks,
+                                start_time),
+      metrics_util::ConvertTime(load_timing_info.push_end, start_ticks,
+                                start_time),
+      metrics_util::ConvertTime(load_timing_info.receive_headers_end,
+                                start_ticks, start_time),
+      metrics_util::ConvertTime(base::TimeTicks::Now(), start_ticks,
+                                start_time),
+      load_timing_info.socket_reused, bidi_stream_->GetTotalSentBytes(),
+      bidi_stream_->GetTotalReceivedBytes());
 }
 
 }  // namespace cronet

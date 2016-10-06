@@ -71,7 +71,8 @@ class CronetBidirectionalStreamAdapter
       CronetURLRequestContextAdapter* context,
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jbidi_stream,
-      bool jsend_request_headers_automatically);
+      bool jsend_request_headers_automatically,
+      bool enable_metrics);
   ~CronetBidirectionalStreamAdapter() override;
 
   // Validates method and headers, initializes and starts the request. If
@@ -154,12 +155,15 @@ class CronetBidirectionalStreamAdapter
   base::android::ScopedJavaLocalRef<jobjectArray> GetHeadersArray(
       JNIEnv* env,
       const net::SpdyHeaderBlock& header_block);
-
+  // Helper method to report metrics to the Java layer.
+  void MaybeReportMetrics();
   CronetURLRequestContextAdapter* const context_;
 
   // Java object that owns this CronetBidirectionalStreamAdapter.
   base::android::ScopedJavaGlobalRef<jobject> owner_;
   const bool send_request_headers_automatically_;
+  // Whether metrics collection is enabled when |this| is created.
+  const bool enable_metrics_;
 
   scoped_refptr<IOBufferWithByteBuffer> read_buffer_;
   std::unique_ptr<PendingWriteData> pending_write_data_;

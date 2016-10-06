@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "components/cronet/android/cronet_url_request_context_adapter.h"
 #include "components/cronet/android/io_buffer_with_byte_buffer.h"
+#include "components/cronet/android/metrics_util.h"
 #include "components/cronet/android/url_request_error.h"
 #include "jni/CronetUrlRequest_jni.h"
 #include "net/base/load_flags.h"
@@ -35,18 +36,6 @@ using base::android::JavaParamRef;
 namespace cronet {
 
 namespace {
-
-// Converts timing metrics stored as TimeTicks into the format expected by the
-// Java layer: ms since Unix epoch, or -1 for null
-int64_t ConvertTime(const base::TimeTicks& ticks,
-                    const base::TimeTicks& start_ticks,
-                    const base::Time& start_time) {
-  if (ticks.is_null() || start_ticks.is_null()) {
-    return -1;
-  }
-  DCHECK(!start_time.is_null());
-  return (start_time + (ticks - start_ticks)).ToJavaTime();
-}
 
 // Returns the string representation of the HostPortPair of the proxy server
 // that was used to fetch the response.
@@ -421,20 +410,28 @@ void CronetURLRequestAdapter::MaybeReportMetrics(JNIEnv* env) const {
   base::Time start_time = metrics.request_start_time;
   base::TimeTicks start_ticks = metrics.request_start;
   Java_CronetUrlRequest_onMetricsCollected(
-      env, owner_.obj(), ConvertTime(start_ticks, start_ticks, start_time),
-      ConvertTime(metrics.connect_timing.dns_start, start_ticks, start_time),
-      ConvertTime(metrics.connect_timing.dns_end, start_ticks, start_time),
-      ConvertTime(metrics.connect_timing.connect_start, start_ticks,
-                  start_time),
-      ConvertTime(metrics.connect_timing.connect_end, start_ticks, start_time),
-      ConvertTime(metrics.connect_timing.ssl_start, start_ticks, start_time),
-      ConvertTime(metrics.connect_timing.ssl_end, start_ticks, start_time),
-      ConvertTime(metrics.send_start, start_ticks, start_time),
-      ConvertTime(metrics.send_end, start_ticks, start_time),
-      ConvertTime(metrics.push_start, start_ticks, start_time),
-      ConvertTime(metrics.push_end, start_ticks, start_time),
-      ConvertTime(metrics.receive_headers_end, start_ticks, start_time),
-      ConvertTime(base::TimeTicks::Now(), start_ticks, start_time),
+      env, owner_.obj(),
+      metrics_util::ConvertTime(start_ticks, start_ticks, start_time),
+      metrics_util::ConvertTime(metrics.connect_timing.dns_start, start_ticks,
+                                start_time),
+      metrics_util::ConvertTime(metrics.connect_timing.dns_end, start_ticks,
+                                start_time),
+      metrics_util::ConvertTime(metrics.connect_timing.connect_start,
+                                start_ticks, start_time),
+      metrics_util::ConvertTime(metrics.connect_timing.connect_end, start_ticks,
+                                start_time),
+      metrics_util::ConvertTime(metrics.connect_timing.ssl_start, start_ticks,
+                                start_time),
+      metrics_util::ConvertTime(metrics.connect_timing.ssl_end, start_ticks,
+                                start_time),
+      metrics_util::ConvertTime(metrics.send_start, start_ticks, start_time),
+      metrics_util::ConvertTime(metrics.send_end, start_ticks, start_time),
+      metrics_util::ConvertTime(metrics.push_start, start_ticks, start_time),
+      metrics_util::ConvertTime(metrics.push_end, start_ticks, start_time),
+      metrics_util::ConvertTime(metrics.receive_headers_end, start_ticks,
+                                start_time),
+      metrics_util::ConvertTime(base::TimeTicks::Now(), start_ticks,
+                                start_time),
       metrics.socket_reused, url_request_->GetTotalSentBytes(),
       url_request_->GetTotalReceivedBytes());
 }

@@ -47,25 +47,18 @@ public class MetricsTestUtil {
      * RequestFinishedInfo.Listener for testing, which saves the RequestFinishedInfo
      */
     public static class TestRequestFinishedListener extends RequestFinishedInfo.Listener {
+        private final ConditionVariable mBlock;
         private RequestFinishedInfo mRequestInfo;
-        private ConditionVariable mBlock;
-        private int mNumExpectedRequests = -1;
 
         // TODO(mgersh): it's weird that you can use either this constructor or blockUntilDone() but
         // not both. Either clean it up or document why it has to work this way.
         public TestRequestFinishedListener(Executor executor) {
             super(executor);
-        }
-
-        public TestRequestFinishedListener(int numExpectedRequests) {
-            super(Executors.newSingleThreadExecutor());
-            mNumExpectedRequests = numExpectedRequests;
             mBlock = new ConditionVariable();
         }
 
         public TestRequestFinishedListener() {
             super(Executors.newSingleThreadExecutor());
-            mNumExpectedRequests = 1;
             mBlock = new ConditionVariable();
         }
 
@@ -78,10 +71,7 @@ public class MetricsTestUtil {
             assertNull("onRequestFinished called repeatedly", mRequestInfo);
             assertNotNull(requestInfo);
             mRequestInfo = requestInfo;
-            mNumExpectedRequests--;
-            if (mNumExpectedRequests == 0) {
-                mBlock.open();
-            }
+            mBlock.open();
         }
 
         public void blockUntilDone() {
@@ -90,9 +80,16 @@ public class MetricsTestUtil {
 
         public void reset() {
             mBlock.close();
-            mNumExpectedRequests = 1;
             mRequestInfo = null;
         }
+    }
+
+    // Helper method to assert date2 is equals to or after date1.
+    // Some implementation of java.util.Date broke the symmetric property, so
+    // check both directions.
+    public static void assertAfter(Date date1, Date date2) {
+        assertTrue("date1: " + date1.getTime() + ", date2: " + date2.getTime(),
+                date1.after(date2) || date1.equals(date2) || date2.equals(date1));
     }
 
     /**
@@ -105,18 +102,15 @@ public class MetricsTestUtil {
     public static void checkTimingMetrics(
             RequestFinishedInfo.Metrics metrics, Date startTime, Date endTime) {
         assertNotNull(metrics.getRequestStart());
-        assertTrue(metrics.getRequestStart().after(startTime)
-                || metrics.getRequestStart().equals(startTime));
+        assertAfter(metrics.getRequestStart(), startTime);
         assertNotNull(metrics.getSendingStart());
-        assertTrue(metrics.getSendingStart().after(startTime)
-                || metrics.getSendingStart().equals(startTime));
+        assertAfter(metrics.getSendingStart(), startTime);
         assertNotNull(metrics.getSendingEnd());
         assertTrue(metrics.getSendingEnd().before(endTime));
         assertNotNull(metrics.getResponseStart());
         assertTrue(metrics.getResponseStart().after(startTime));
         assertNotNull(metrics.getResponseEnd());
-        assertTrue(metrics.getResponseEnd().before(endTime)
-                || metrics.getResponseEnd().equals(endTime));
+        assertAfter(endTime, metrics.getResponseEnd());
         // Entire request should take more than 0 ms
         assertTrue(metrics.getResponseEnd().getTime() - metrics.getRequestStart().getTime() > 0);
     }
@@ -128,19 +122,16 @@ public class MetricsTestUtil {
     public static void checkHasConnectTiming(
             RequestFinishedInfo.Metrics metrics, Date startTime, Date endTime, boolean isSsl) {
         assertNotNull(metrics.getDnsStart());
-        assertTrue(
-                metrics.getDnsStart().after(startTime) || metrics.getDnsStart().equals(startTime));
+        assertAfter(metrics.getDnsStart(), startTime);
         assertNotNull(metrics.getDnsEnd());
         assertTrue(metrics.getDnsEnd().before(endTime));
         assertNotNull(metrics.getConnectStart());
-        assertTrue(metrics.getConnectStart().after(startTime)
-                || metrics.getConnectStart().equals(startTime));
+        assertAfter(metrics.getConnectStart(), startTime);
         assertNotNull(metrics.getConnectEnd());
         assertTrue(metrics.getConnectEnd().before(endTime));
         if (isSsl) {
             assertNotNull(metrics.getSslStart());
-            assertTrue(metrics.getSslStart().after(startTime)
-                    || metrics.getSslStart().equals(startTime));
+            assertAfter(metrics.getSslStart(), startTime);
             assertNotNull(metrics.getSslEnd());
             assertTrue(metrics.getSslEnd().before(endTime));
         } else {
