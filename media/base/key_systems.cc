@@ -86,16 +86,6 @@ class ClearKeyProperties : public KeySystemProperties {
     // VP9 support is device dependent.
     SupportedCodecs codecs = EME_CODEC_WEBM_ALL;
 
-#if defined(OS_ANDROID)
-    // Temporarily disable VP9 support for Android.
-    // TODO(xhwang): Use mime_util.h to query VP9 support on Android.
-    codecs &= ~EME_CODEC_WEBM_VP9;
-
-    // Opus is not supported on Android yet. http://crbug.com/318436.
-    // TODO(sandersd): Check for platform support to set this bit.
-    codecs &= ~EME_CODEC_WEBM_OPUS;
-#endif  // defined(OS_ANDROID)
-
 #if defined(USE_PROPRIETARY_CODECS)
     codecs |= EME_CODEC_MP4_ALL;
 #endif  // defined(USE_PROPRIETARY_CODECS)
