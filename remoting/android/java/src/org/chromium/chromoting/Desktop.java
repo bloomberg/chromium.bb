@@ -18,6 +18,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnLayoutChangeListener;
 import android.view.View.OnTouchListener;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
 
 import org.chromium.chromoting.help.HelpContext;
@@ -48,6 +50,9 @@ public class Desktop
 
     /** The amount of time to wait to hide the ActionBar after user input is seen. */
     private static final int ACTIONBAR_AUTO_HIDE_DELAY_MS = 3000;
+
+    /** Duration for fade-in and fade-out animations for the ActionBar. */
+    private static final int ACTIONBAR_ANIMATION_DURATION_MS = 250;
 
     private final Event.Raisable<SystemUiVisibilityChangedEventParameter>
             mOnSystemUiVisibilityChanged = new Event.Raisable<>();
@@ -400,6 +405,10 @@ public class Desktop
 
     /** Shows the action bar without changing SystemUiVisibility. */
     private void showActionBar() {
+        Animation animation = AnimationUtils.loadAnimation(this, android.R.anim.fade_in);
+        animation.setDuration(ACTIONBAR_ANIMATION_DURATION_MS);
+        mToolbar.startAnimation(animation);
+
         getSupportActionBar().show();
         startActionBarAutoHideTimer();
     }
@@ -437,6 +446,10 @@ public class Desktop
 
     /** Hides the action bar without changing SystemUiVisibility. */
     private void hideActionBar() {
+        Animation animation = AnimationUtils.loadAnimation(this, android.R.anim.fade_out);
+        animation.setDuration(ACTIONBAR_ANIMATION_DURATION_MS);
+        mToolbar.startAnimation(animation);
+
         getSupportActionBar().hide();
         stopActionBarAutoHideTimer();
     }
