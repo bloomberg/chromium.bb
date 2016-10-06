@@ -4,27 +4,28 @@
 
 package org.chromium.chrome.browser.ntp.cards;
 
-import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.createDummySuggestions;
-import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.createInfo;
-import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.createSection;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyInt;
-import static org.mockito.Mockito.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
+
+import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.createDummySuggestions;
+import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.createInfo;
+import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.createSection;
+
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.annotation.Config;
 
 import java.util.List;
 
@@ -34,8 +35,10 @@ import java.util.List;
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class SuggestionsSectionTest {
-    /** Number of items in a section when there are no suggestions: header, status, progress. */
-    private static final int EMPTY_SECTION_COUNT = 3;
+    /**
+     * Number of items in a section when there are no suggestions: header, status, action, progress.
+     */
+    private static final int EMPTY_SECTION_COUNT = 4;
 
     @Test
     @Feature({"Ntp"})
@@ -44,31 +47,17 @@ public class SuggestionsSectionTest {
         List<SnippetArticle> snippets = createDummySuggestions(3);
         SuggestionsSection section;
 
-        // Part 1: ShowMoreButton = true.
-        section = new SuggestionsSection(42, createInfo(true, true), observerMock, null);
+        section = new SuggestionsSection(createInfo(42, true, true), observerMock);
         section.setStatus(CategoryStatus.AVAILABLE);
         assertNotNull(section.getActionItem());
 
-        // 1.1: Without snippets.
+        // Without snippets.
         assertEquals(-1, section.getDismissSiblingPosDelta(section.getActionItem()));
         assertEquals(1, section.getDismissSiblingPosDelta(section.getStatusItem()));
 
-        // 1.2: With snippets.
+        // With snippets.
         section.setSuggestions(snippets, CategoryStatus.AVAILABLE);
         assertEquals(0, section.getDismissSiblingPosDelta(section.getActionItem()));
-        assertEquals(0, section.getDismissSiblingPosDelta(section.getStatusItem()));
-        assertEquals(0, section.getDismissSiblingPosDelta(snippets.get(0)));
-
-        // Part 2: ShowMoreButton = false.
-        section = new SuggestionsSection(42, createInfo(false, true), observerMock, null);
-        section.setStatus(CategoryStatus.AVAILABLE);
-        assertNull(section.getActionItem());
-
-        // 2.1: Without snippets.
-        assertEquals(0, section.getDismissSiblingPosDelta(section.getStatusItem()));
-
-        // 2.2: With snippets.
-        section.setSuggestions(snippets, CategoryStatus.AVAILABLE);
         assertEquals(0, section.getDismissSiblingPosDelta(section.getStatusItem()));
         assertEquals(0, section.getDismissSiblingPosDelta(snippets.get(0)));
     }
@@ -96,7 +85,6 @@ public class SuggestionsSectionTest {
     @Feature({"Ntp"})
     public void testSetStatusNotification() {
         ItemGroup.Observer observerMock = mock(ItemGroup.Observer.class);
-        final int emptySectionCount = 3;
         final int suggestionCount = 5;
         List<SnippetArticle> snippets = createDummySuggestions(suggestionCount);
 
