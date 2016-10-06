@@ -4,6 +4,7 @@
 
 import("//build/config/chrome_build.gni")
 import("//build/config/features.gni")
+import("//build/toolchain/toolchain.gni")
 import("//components/policy/resources/policy_templates.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("//tools/grit/grit_rule.gni")
@@ -220,12 +221,20 @@ if (enable_configuration_policy) {
         "$target_gen_dir/$chrome_mac_bundle_id.manifest",
       ]
 
-      args = [
-               "plutil",
-               "-convert",
-               "xml1",
-             ] + rebase_path(sources, root_out_dir) + [ "-o" ] +
-             rebase_path(outputs, root_out_dir)
+      if (use_system_xcode) {
+        args = []
+      } else {
+        args = [
+          "--developer_dir",
+          hermetic_xcode_path,
+        ]
+      }
+      args += [
+                "plutil",
+                "-convert",
+                "xml1",
+              ] + rebase_path(sources, root_out_dir) + [ "-o" ] +
+              rebase_path(outputs, root_out_dir)
 
       deps = [
         ":policy_templates",

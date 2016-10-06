@@ -67,6 +67,15 @@ action("localizer_table") {
   outputs = [
     table_path,
   ]
-  args = [ rebase_path(table_path, root_build_dir) ] +
-         rebase_path(translated_xibs, root_build_dir)
+  args = [
+    "--output_path",
+    rebase_path(table_path, root_build_dir),
+  ]
+  if (!use_system_xcode) {
+    args += [
+      "--developer_dir",
+      hermetic_xcode_path,
+    ]
+  }
+  args += rebase_path(translated_xibs, root_build_dir)
 }

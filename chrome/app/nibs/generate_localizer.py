@@ -9,6 +9,9 @@
 # Extracts all the localizable strings that start with "^IDS" from the given
 # xib file, and then generates a localizer to process those strings.
 
+
+import argparse
+import logging
 import os
 import plistlib
 import subprocess
@@ -38,19 +41,19 @@ static const size_t kUIResourcesSize = arraysize(kUIResources);
 #endif  // CHROME_APP_NIBS_LOCALIZER_TABLE_H_
 '''
 
-def xib_localizable_strings(xib_path):
+def xib_localizable_strings(xib_path, xcode_path):
   """Runs ibtool to extract the localizable strings data from the xib."""
   # Take SDKROOT out of the environment passed to ibtool. ibtool itself has
   # no need for it, but when ibtool runs via xcrun and Xcode isn't aware of
   # the SDK in use, its presence causes an error.
+  ibtool_env = os.environ.copy()
   if 'SDKROOT' in os.environ:
-    ibtool_env = os.environ.copy()
     del ibtool_env['SDKROOT']
-  else:
-    ibtool_env = os.environ
+  if xcode_path:
+    ibtool_env['DEVELOPER_DIR'] = xcode_path
 
-  ibtool_cmd = subprocess.Popen(['xcrun', 'ibtool',
-                                 '--localizable-strings', xib_path],
+  command = ['xcrun', 'ibtool', '--localizable-strings', xib_path]
+  ibtool_cmd = subprocess.Popen(command,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                 env=ibtool_env)
   (cmd_out, cmd_err) = ibtool_cmd.communicate()
@@ -104,18 +107,23 @@ def Main(argv=None):
   global generate_localizer
   generate_localizer = os.path.basename(argv[0])
 
-  # Args
-  if len(argv) < 3:
-    sys.stderr.write('%s:0: error: Expected output file and then xibs\n' %
-                     generate_localizer);
-    return 1
-  output_path = argv[1];
-  xib_paths = argv[2:]
+  parser = argparse.ArgumentParser(
+      description='Generates a header file that localizes libs.')
+  parser.add_argument('--output_path', required=True,
+                      help='Path to output header file.')
+  parser.add_argument('--developer_dir', required=False,
+                      help='Path to Xcode.')
+  parser.add_argument('xibs', nargs='+',
+                      help='A list of xibs to localize')
+  args = parser.parse_args()
+
+  output_path = args.output_path
+  xib_paths = args.xibs
 
   full_constants_list = []
   for xib_path in xib_paths:
     # Run ibtool and convert to something Python can deal with
-    plist_string = xib_localizable_strings(xib_path)
+    plist_string = xib_localizable_strings(xib_path, args.developer_dir)
     if not plist_string:
       return 2
     plist = plistlib.readPlistFromString(plist_string)

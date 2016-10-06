@@ -11,6 +11,7 @@ import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
 import("//build/config/win/console_app.gni")
 import("//build/config/win/manifest.gni")
+import("//build/toolchain/toolchain.gni")
 import("//chrome/chrome_paks.gni")
 import("//chrome/common/features.gni")
 import("//chrome/process_version_rc_template.gni")
@@ -1055,6 +1056,14 @@ if (is_win) {
       args = [
         "--stamp",
         rebase_path(stamp_file, root_out_dir),
+      ]
+      if (!use_system_xcode) {
+        args += [
+          "--developer-dir",
+          hermetic_xcode_path,
+        ]
+      }
+      args += [
         "_ChromeMain",
         rebase_path(
             "$root_out_dir/$chrome_framework_name.framework/$chrome_framework_name",
