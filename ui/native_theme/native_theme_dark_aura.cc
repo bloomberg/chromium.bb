@@ -31,6 +31,12 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
       SkColorSetA(kResultsTableText, 0x80);
 
   switch (color_id) {
+    // Window
+    case kColorId_WindowBackground:
+    case kColorId_DialogBackground:
+    case kColorId_BubbleBackground:
+      return SK_ColorBLACK;
+
     // Button
     case kColorId_ButtonEnabledColor:
       return kButtonEnabledColor;
@@ -91,9 +97,6 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
       return NativeThemeAura::GetSystemColor(color_id);
 
     // Any other color is not defined and shouldn't be used in a dark theme.
-    case kColorId_WindowBackground:
-    case kColorId_DialogBackground:
-    case kColorId_BubbleBackground:
     case kColorId_UnfocusedBorderColor:
     case kColorId_ButtonDisabledColor:
     case kColorId_ButtonHoverColor:
