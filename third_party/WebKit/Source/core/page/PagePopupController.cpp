@@ -100,7 +100,7 @@ String PagePopupController::formatWeek(int year,
     return emptyString();
   DateComponents week;
   bool setWeekResult = week.setWeek(year, weekNumber);
-  ASSERT_UNUSED(setWeekResult, setWeekResult);
+  DCHECK(setWeekResult);
   String localizedWeek = m_popupClient->locale().formatDateTime(week);
   return m_popupClient->locale().queryString(
       WebLocalizedString::AXCalendarWeekDescription, localizedWeek,

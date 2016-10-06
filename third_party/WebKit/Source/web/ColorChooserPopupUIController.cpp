@@ -134,7 +134,7 @@ void ColorChooserPopupUIController::setValue(const String& value) {
   DCHECK(m_client);
   Color color;
   bool success = color.setFromString(value);
-  ASSERT_UNUSED(success, success);
+  DCHECK(success);
   m_client->didChooseColor(color);
 }
 

@@ -259,14 +259,13 @@ class PLATFORM_EXPORT SegmentedString {
   }
 
   void advanceAndASSERT(UChar expectedCharacter) {
-    ASSERT_UNUSED(expectedCharacter, currentChar() == expectedCharacter);
+    DCHECK_EQ(expectedCharacter, currentChar());
     advance();
   }
 
   void advanceAndASSERTIgnoringCase(UChar expectedCharacter) {
-    ASSERT_UNUSED(expectedCharacter,
-                  WTF::Unicode::foldCase(currentChar()) ==
-                      WTF::Unicode::foldCase(expectedCharacter));
+    DCHECK_EQ(WTF::Unicode::foldCase(currentChar()),
+              WTF::Unicode::foldCase(expectedCharacter));
     advance();
   }
 

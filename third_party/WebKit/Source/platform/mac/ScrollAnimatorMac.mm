@@ -485,8 +485,7 @@ class BlinkScrollbarPartAnimationTimer {
   if (!_scrollbar)
     return NSZeroPoint;
 
-  ASSERT_UNUSED(scrollerImp,
-                scrollerImp == scrollbarPainterForScrollbar(*_scrollbar));
+  DCHECK_EQ(scrollerImp, scrollbarPainterForScrollbar(*_scrollbar));
 
   return _scrollbar->convertFromContainingWidget(
       _scrollbar->getScrollableArea()->lastKnownMousePosition());

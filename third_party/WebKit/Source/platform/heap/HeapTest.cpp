@@ -5499,7 +5499,7 @@ class DeadBitTester {
     // GC.
     uintptr_t stackPtrValue = s_workerObjectPointer;
     s_workerObjectPointer = 0;
-    ASSERT_UNUSED(stackPtrValue, stackPtrValue);
+    DCHECK(stackPtrValue);
     conservativelyCollectGarbage();
 
     // Since the worker thread is not sweeping the worker object should
@@ -5800,7 +5800,7 @@ class RecursiveLockingTester {
     ThreadState::attachCurrentThread(BlinkGC::MainThreadHeapMode);
 
     DestructorLockingObject* dlo = DestructorLockingObject::create();
-    ASSERT_UNUSED(dlo, dlo);
+    DCHECK(dlo);
 
     // Wake up the main thread which is waiting for the worker to do its
     // allocation.

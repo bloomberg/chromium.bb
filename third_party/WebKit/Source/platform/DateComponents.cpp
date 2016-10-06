@@ -450,7 +450,7 @@ bool DateComponents::parseTime(const String& src,
           } else {  // digitsLength >= 3
             ok = toInt(src, index, 3, millisecond);
           }
-          ASSERT_UNUSED(ok, ok);
+          DCHECK(ok);
           index += digitsLength;
         }
       }

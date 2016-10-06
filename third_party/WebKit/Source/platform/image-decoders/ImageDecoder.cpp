@@ -314,13 +314,13 @@ namespace {
 const unsigned kIccColorProfileHeaderLength = 128;
 
 bool rgbColorProfile(const char* profileData, unsigned profileLength) {
-  ASSERT_UNUSED(profileLength, profileLength >= kIccColorProfileHeaderLength);
+  DCHECK_GE(profileLength, kIccColorProfileHeaderLength);
 
   return !memcmp(&profileData[16], "RGB ", 4);
 }
 
 bool inputDeviceColorProfile(const char* profileData, unsigned profileLength) {
-  ASSERT_UNUSED(profileLength, profileLength >= kIccColorProfileHeaderLength);
+  DCHECK_GE(profileLength, kIccColorProfileHeaderLength);
 
   return !memcmp(&profileData[12], "mntr", 4) ||
          !memcmp(&profileData[12], "scnr", 4);

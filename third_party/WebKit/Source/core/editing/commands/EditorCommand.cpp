@@ -1510,7 +1510,7 @@ static bool executePasteGlobalSelection(LocalFrame& frame,
     return false;
   if (!frame.editor().behavior().supportsGlobalSelection())
     return false;
-  ASSERT_UNUSED(source, source == CommandFromMenuOrKeyBinding);
+  DCHECK_EQ(source, CommandFromMenuOrKeyBinding);
 
   bool oldSelectionMode = Pasteboard::generalPasteboard()->isSelectionMode();
   Pasteboard::generalPasteboard()->setSelectionMode(true);

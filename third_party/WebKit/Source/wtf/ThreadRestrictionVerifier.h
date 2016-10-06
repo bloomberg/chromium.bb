@@ -88,7 +88,7 @@ class ThreadRestrictionVerifier {
     if (!m_shared)
       return;
 
-    ASSERT_UNUSED(previouslyShared, shared != previouslyShared);
+    DCHECK_NE(shared, previouslyShared);
     // Capture the current thread to verify that subsequent ref/deref happen on
     // this thread.
     m_owningThread = currentThread();

@@ -119,8 +119,8 @@ static CSSValueList* createPositionListForLayer(CSSPropertyID propertyID,
                                                 const ComputedStyle& style) {
   CSSValueList* positionList = CSSValueList::createSpaceSeparated();
   if (layer.isBackgroundXOriginSet()) {
-    ASSERT_UNUSED(propertyID, propertyID == CSSPropertyBackgroundPosition ||
-                                  propertyID == CSSPropertyWebkitMaskPosition);
+    DCHECK(propertyID == CSSPropertyBackgroundPosition ||
+           propertyID == CSSPropertyWebkitMaskPosition);
     positionList->append(
         *CSSIdentifierValue::create(layer.backgroundXOrigin()));
   }

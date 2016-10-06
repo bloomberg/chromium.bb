@@ -331,7 +331,7 @@ void CSSPrimitiveValue::accumulateLengthArray(CSSLengthArray& lengthArray,
 
   LengthUnitType lengthType;
   bool conversionSuccess = unitTypeToLengthUnitType(type(), lengthType);
-  ASSERT_UNUSED(conversionSuccess, conversionSuccess);
+  DCHECK(conversionSuccess);
   lengthArray.values[lengthType] +=
       m_value.num * conversionToCanonicalUnitsScaleFactor(type()) * multiplier;
   lengthArray.typeFlags.set(lengthType);

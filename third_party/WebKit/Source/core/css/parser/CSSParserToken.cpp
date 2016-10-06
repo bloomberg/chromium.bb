@@ -49,7 +49,7 @@ CSSParserToken::CSSParserToken(CSSParserTokenType type,
                                UChar32 start,
                                UChar32 end)
     : m_type(UnicodeRangeToken), m_blockType(NotBlock) {
-  ASSERT_UNUSED(type, type == UnicodeRangeToken);
+  DCHECK_EQ(type, UnicodeRangeToken);
   m_unicodeRange.start = start;
   m_unicodeRange.end = end;
 }

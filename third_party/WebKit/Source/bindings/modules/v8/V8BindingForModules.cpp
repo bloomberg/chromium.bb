@@ -417,7 +417,7 @@ static v8::Local<v8::Value> deserializeIDBValue(
       return v8::Local<v8::Value>();
     bool injected =
         injectV8KeyIntoV8Value(isolate, key, v8Value, value->keyPath());
-    ASSERT_UNUSED(injected, injected);
+    DCHECK(injected);
   }
 
   return v8Value;
@@ -619,7 +619,7 @@ void assertPrimaryKeyValidOrInjectable(ScriptState* scriptState,
 
   bool injected = injectV8KeyIntoV8Value(
       isolate, keyValue.v8Value(), scriptValue.v8Value(), value->keyPath());
-  ASSERT_UNUSED(injected, injected);
+  DCHECK(injected);
 }
 #endif
 

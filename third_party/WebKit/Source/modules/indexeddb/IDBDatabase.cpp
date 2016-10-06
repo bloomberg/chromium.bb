@@ -423,7 +423,7 @@ void IDBDatabase::closeConnection() {
   // closed before they could fire.
   for (size_t i = 0; i < m_enqueuedEvents.size(); ++i) {
     bool removed = eventQueue->cancelEvent(m_enqueuedEvents[i].get());
-    ASSERT_UNUSED(removed, removed);
+    DCHECK(removed);
   }
 }
 

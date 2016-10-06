@@ -64,9 +64,8 @@
 }
 
 - (void)systemColorsDidChange:(NSNotification*)unusedNotification {
-  ASSERT_UNUSED(unusedNotification,
-                [[unusedNotification name]
-                    isEqualToString:NSSystemColorsDidChangeNotification]);
+  DCHECK([[unusedNotification name]
+      isEqualToString:NSSystemColorsDidChangeNotification]);
   _theme->platformColorsDidChange();
 }
 

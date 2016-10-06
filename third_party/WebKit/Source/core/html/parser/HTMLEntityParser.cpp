@@ -135,7 +135,7 @@ static bool consumeNamedEntity(SegmentedString& source,
     const LChar* reference = HTMLEntityTable::entityString(*mostRecent);
     for (int i = 0; i < length; ++i) {
       cc = source.currentChar();
-      ASSERT_UNUSED(reference, cc == static_cast<UChar>(*reference++));
+      DCHECK_EQ(cc, static_cast<UChar>(*reference++));
       consumedCharacters.append(cc);
       source.advanceAndASSERT(cc);
       ASSERT(!source.isEmpty());

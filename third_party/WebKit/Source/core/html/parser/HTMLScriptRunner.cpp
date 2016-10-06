@@ -382,7 +382,7 @@ void HTMLScriptRunner::executeScriptsWaitingForLoad(Resource* resource) {
   TRACE_EVENT0("blink", "HTMLScriptRunner::executeScriptsWaitingForLoad");
   ASSERT(!isExecutingScript());
   ASSERT(hasParserBlockingScript());
-  ASSERT_UNUSED(resource, m_parserBlockingScript->resource() == resource);
+  DCHECK_EQ(resource, m_parserBlockingScript->resource());
   ASSERT(m_parserBlockingScript->isReady());
   executeParsingBlockingScripts();
 }

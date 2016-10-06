@@ -76,9 +76,8 @@ static void fontCacheRegisteredFontsChangedNotificationCallback(
     CFStringRef name,
     const void*,
     CFDictionaryRef) {
-  ASSERT_UNUSED(observer, observer == FontCache::fontCache());
-  ASSERT_UNUSED(
-      name, CFEqual(name, kCTFontManagerRegisteredFontsChangedNotification));
+  DCHECK_EQ(observer, FontCache::fontCache());
+  DCHECK(CFEqual(name, kCTFontManagerRegisteredFontsChangedNotification));
   invalidateFontCache();
 }
 

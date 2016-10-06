@@ -253,13 +253,13 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
   }
 
   const BorderValue& borderAdjoiningCellBefore(const LayoutTableCell* cell) {
-    ASSERT_UNUSED(cell, table()->cellAfter(cell) == this);
+    DCHECK_EQ(table()->cellAfter(cell), this);
     // FIXME: https://webkit.org/b/79272 - Add support for mixed directionality at the cell level.
     return style()->borderStart();
   }
 
   const BorderValue& borderAdjoiningCellAfter(const LayoutTableCell* cell) {
-    ASSERT_UNUSED(cell, table()->cellBefore(cell) == this);
+    DCHECK_EQ(table()->cellBefore(cell), this);
     // FIXME: https://webkit.org/b/79272 - Add support for mixed directionality at the cell level.
     return style()->borderEnd();
   }

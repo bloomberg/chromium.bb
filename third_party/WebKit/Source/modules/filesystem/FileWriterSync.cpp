@@ -87,8 +87,6 @@ void FileWriterSync::didWrite(long long bytes, bool complete) {
 #if DCHECK_IS_ON()
   DCHECK(!m_complete);
   m_complete = complete;
-#else
-  ASSERT_UNUSED(complete, complete);
 #endif
 }
 

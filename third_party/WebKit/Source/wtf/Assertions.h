@@ -183,13 +183,12 @@ class WTF_EXPORT ScopedLogger {
 #define NO_RETURN_DUE_TO_CRASH
 #endif
 
-// ASSERT, ASSERT_NOT_REACHED, ASSERT_UNUSED
+// ASSERT and ASSERT_NOT_REACHED
 //  These macros are compiled out of release builds.
 //  Expressions inside them are evaluated in debug builds only.
 //  They are deprecated. We should use:
 //    - DCHECK() for ASSERT()
 //    - NOTREACHED() for ASSERT_NOT_REACHED()
-//    - DCHECK() for ASSERT_UNUSED().
 #if OS(WIN)
 // FIXME: Change to use something other than ASSERT to avoid this conflict with
 // the underlying platform.
@@ -214,8 +213,6 @@ class WTF_EXPORT ScopedLogger {
     CRASH();                                                               \
   } while (0)
 
-#define ASSERT_UNUSED(variable, assertion) ASSERT(assertion)
-
 #define NO_RETURN_DUE_TO_ASSERT NO_RETURN_DUE_TO_CRASH
 
 #else
@@ -223,8 +220,6 @@ class WTF_EXPORT ScopedLogger {
 #define ASSERT(assertion) ((void)0)
 #define ASSERT_NOT_REACHED() ((void)0)
 #define NO_RETURN_DUE_TO_ASSERT
-
-#define ASSERT_UNUSED(variable, assertion) ((void)variable)
 
 #endif
 

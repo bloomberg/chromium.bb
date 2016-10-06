@@ -605,7 +605,7 @@ void LayoutTableSection::updateRowsHeightHavingOnlySpanningCells(
   const unsigned rowSpan = cell->rowSpan();
   const unsigned rowIndex = cell->rowIndex();
 
-  ASSERT_UNUSED(rowSpan, rowSpan == spanningRowsHeight.rowHeight.size());
+  DCHECK_EQ(rowSpan, spanningRowsHeight.rowHeight.size());
 
   for (unsigned row = 0; row < spanningRowsHeight.rowHeight.size(); row++) {
     unsigned actualRow = row + rowIndex;

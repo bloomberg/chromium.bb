@@ -66,7 +66,7 @@ EphemeralRangeTemplate<Strategy> CharacterIteratorAlgorithm<Strategy>::range()
   PositionTemplate<Strategy> endPosition =
       range.endPosition().parentAnchoredEquivalent();
   Node* node = startPosition.computeContainerNode();
-  ASSERT_UNUSED(endPosition, node == endPosition.computeContainerNode());
+  DCHECK_EQ(node, endPosition.computeContainerNode());
   int offset = startPosition.offsetInContainerNode() + m_runOffset;
   return EphemeralRangeTemplate<Strategy>(
       PositionTemplate<Strategy>(node, offset),

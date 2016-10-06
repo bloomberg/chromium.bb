@@ -248,7 +248,7 @@ void EventSource::didReceiveResponse(
     unsigned long,
     const ResourceResponse& response,
     std::unique_ptr<WebDataConsumerHandle> handle) {
-  ASSERT_UNUSED(handle, !handle);
+  DCHECK(!handle);
   DCHECK_EQ(kConnecting, m_state);
   DCHECK(m_loader);
 

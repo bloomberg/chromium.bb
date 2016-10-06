@@ -147,7 +147,7 @@ class CompositorWorkerThreadTest : public ::testing::Test {
         worker->globalScope()->scriptController();
     bool evaluateResult = scriptController->evaluate(
         ScriptSourceCode("var counter = 0; ++counter;"));
-    ASSERT_UNUSED(evaluateResult, evaluateResult);
+    DCHECK(evaluateResult);
     waitEvent->signal();
   }
 

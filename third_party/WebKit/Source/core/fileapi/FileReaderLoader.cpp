@@ -182,7 +182,7 @@ void FileReaderLoader::didReceiveResponse(
     unsigned long,
     const ResourceResponse& response,
     std::unique_ptr<WebDataConsumerHandle> handle) {
-  ASSERT_UNUSED(handle, !handle);
+  DCHECK(!handle);
   if (response.httpStatusCode() != 200) {
     failed(httpStatusCodeToErrorCode(response.httpStatusCode()));
     return;

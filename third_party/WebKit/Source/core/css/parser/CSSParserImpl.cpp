@@ -816,7 +816,7 @@ void CSSParserImpl::consumeDeclarationList(CSSParserTokenRange range,
                 ? ApplyRules
                 : NoRules;
         StyleRuleBase* rule = consumeAtRule(range, allowedRules);
-        ASSERT_UNUSED(rule, !rule);
+        DCHECK(!rule);
         break;
       }
       default:  // Parse error, unexpected token in declaration list

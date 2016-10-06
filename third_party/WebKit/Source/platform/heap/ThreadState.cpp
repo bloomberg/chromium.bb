@@ -241,7 +241,7 @@ size_t ThreadState::threadStackSize() {
   memset(&stackInfo, 0, sizeof(MEMORY_BASIC_INFORMATION));
   size_t resultSize =
       VirtualQuery(&stackInfo, &stackInfo, sizeof(MEMORY_BASIC_INFORMATION));
-  ASSERT_UNUSED(resultSize, resultSize >= sizeof(MEMORY_BASIC_INFORMATION));
+  DCHECK_GE(resultSize, sizeof(MEMORY_BASIC_INFORMATION));
   Address stackEnd = reinterpret_cast<Address>(stackInfo.AllocationBase);
 
   Address stackStart =

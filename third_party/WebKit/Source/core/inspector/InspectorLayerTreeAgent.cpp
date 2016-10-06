@@ -373,7 +373,7 @@ void InspectorLayerTreeAgent::makeSnapshot(ErrorString* errorString,
 
   *snapshotId = String::number(++s_lastSnapshotId);
   bool newEntry = m_snapshotById.add(*snapshotId, snapshot).isNewEntry;
-  ASSERT_UNUSED(newEntry, newEntry);
+  DCHECK(newEntry);
 }
 
 void InspectorLayerTreeAgent::loadSnapshot(
@@ -407,7 +407,7 @@ void InspectorLayerTreeAgent::loadSnapshot(
 
   *snapshotId = String::number(++s_lastSnapshotId);
   bool newEntry = m_snapshotById.add(*snapshotId, snapshot).isNewEntry;
-  ASSERT_UNUSED(newEntry, newEntry);
+  DCHECK(newEntry);
 }
 
 void InspectorLayerTreeAgent::releaseSnapshot(ErrorString* errorString,

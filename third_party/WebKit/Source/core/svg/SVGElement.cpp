@@ -790,7 +790,7 @@ void SVGElement::addedEventListener(
   for (SVGElement* element : instances) {
     bool result =
         element->Node::addEventListenerInternal(eventType, listener, options);
-    ASSERT_UNUSED(result, result);
+    DCHECK(result);
   }
 }
 

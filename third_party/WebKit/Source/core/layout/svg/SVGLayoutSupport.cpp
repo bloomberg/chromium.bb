@@ -198,7 +198,7 @@ const LayoutObject* SVGLayoutSupport::pushMappingToContainer(
     const LayoutObject* object,
     const LayoutBoxModelObject* ancestorToStopAt,
     LayoutGeometryMap& geometryMap) {
-  ASSERT_UNUSED(ancestorToStopAt, ancestorToStopAt != object);
+  DCHECK_NE(ancestorToStopAt, object);
 
   LayoutObject* parent = object->parent();
 

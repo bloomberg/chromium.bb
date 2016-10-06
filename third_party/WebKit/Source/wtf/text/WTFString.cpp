@@ -629,7 +629,7 @@ CString String::utf8(UTF8ConversionMode mode) const {
         convertLatin1ToUTF8(&characters, characters + length, &buffer,
                             buffer + bufferVector.size());
     // (length * 3) should be sufficient for any conversion
-    ASSERT_UNUSED(result, result != targetExhausted);
+    DCHECK_NE(result, targetExhausted);
   } else {
     const UChar* characters = this->characters16();
 

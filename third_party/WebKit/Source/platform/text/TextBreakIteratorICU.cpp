@@ -159,7 +159,7 @@ static UText* textClone(UText* destination,
                         const UText* source,
                         UBool deep,
                         UErrorCode* status) {
-  ASSERT_UNUSED(deep, !deep);
+  DCHECK(!deep);
   if (U_FAILURE(*status))
     return 0;
   int32_t extraSize = source->extraSize;
@@ -265,10 +265,8 @@ static void textLatin1MoveInPriorContext(UText* text,
                                          UBool forward) {
   ASSERT(text->chunkContents == text->q);
   ASSERT(forward ? nativeIndex < text->b : nativeIndex <= text->b);
-  ASSERT_UNUSED(nativeLength, forward ? nativeIndex < nativeLength
-                                      : nativeIndex <= nativeLength);
-  ASSERT_UNUSED(forward, forward ? nativeIndex < nativeLength
-                                 : nativeIndex <= nativeLength);
+  DCHECK(forward ? nativeIndex < nativeLength : nativeIndex <= nativeLength);
+  DCHECK(forward ? nativeIndex < nativeLength : nativeIndex <= nativeLength);
   text->chunkNativeStart = 0;
   text->chunkNativeLimit = text->b;
   text->chunkLength = text->b;
@@ -421,10 +419,8 @@ static void textUTF16MoveInPrimaryContext(UText* text,
                                           int64_t nativeLength,
                                           UBool forward) {
   ASSERT(text->chunkContents == text->p);
-  ASSERT_UNUSED(forward,
-                forward ? nativeIndex >= text->b : nativeIndex > text->b);
-  ASSERT_UNUSED(forward, forward ? nativeIndex < nativeLength
-                                 : nativeIndex <= nativeLength);
+  DCHECK(forward ? nativeIndex >= text->b : nativeIndex > text->b);
+  DCHECK(forward ? nativeIndex < nativeLength : nativeIndex <= nativeLength);
   text->chunkNativeStart = text->b;
   text->chunkNativeLimit = nativeLength;
   int64_t length = text->chunkNativeLimit - text->chunkNativeStart;
@@ -460,10 +456,8 @@ static void textUTF16MoveInPriorContext(UText* text,
                                         UBool forward) {
   ASSERT(text->chunkContents == text->q);
   ASSERT(forward ? nativeIndex < text->b : nativeIndex <= text->b);
-  ASSERT_UNUSED(nativeLength, forward ? nativeIndex < nativeLength
-                                      : nativeIndex <= nativeLength);
-  ASSERT_UNUSED(forward, forward ? nativeIndex < nativeLength
-                                 : nativeIndex <= nativeLength);
+  DCHECK(forward ? nativeIndex < nativeLength : nativeIndex <= nativeLength);
+  DCHECK(forward ? nativeIndex < nativeLength : nativeIndex <= nativeLength);
   text->chunkNativeStart = 0;
   text->chunkNativeLimit = text->b;
   text->chunkLength = text->b;

@@ -1352,7 +1352,7 @@ RGBA32 AXNodeObject::colorValue() const {
   // HTMLInputElement::value always returns a string parseable by Color.
   Color color;
   bool success = color.setFromString(input->value());
-  ASSERT_UNUSED(success, success);
+  DCHECK(success);
   return color.rgb();
 }
 

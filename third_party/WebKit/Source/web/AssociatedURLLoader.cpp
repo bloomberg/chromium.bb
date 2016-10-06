@@ -190,7 +190,7 @@ void AssociatedURLLoader::ClientAdapter::didReceiveResponse(
     unsigned long,
     const ResourceResponse& response,
     std::unique_ptr<WebDataConsumerHandle> handle) {
-  ASSERT_UNUSED(handle, !handle);
+  DCHECK(!handle);
   if (!m_client)
     return;
 
@@ -290,12 +290,10 @@ void AssociatedURLLoader::ClientAdapter::enableErrorNotifications() {
 }
 
 void AssociatedURLLoader::ClientAdapter::notifyError(TimerBase* timer) {
-  ASSERT_UNUSED(timer, timer == &m_errorTimer);
+  DCHECK_EQ(timer, &m_errorTimer);
 
-  if (!m_client)
-    return;
-
-  releaseClient()->didFail(m_loader, m_error);
+  if (m_client)
+    releaseClient()->didFail(m_loader, m_error);
   // |this| may be dead here.
 }
 

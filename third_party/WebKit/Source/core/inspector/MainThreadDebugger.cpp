@@ -326,7 +326,7 @@ v8::MaybeLocal<v8::Value> MainThreadDebugger::memoryInfo(
     v8::Isolate* isolate,
     v8::Local<v8::Context> context) {
   ExecutionContext* executionContext = toExecutionContext(context);
-  ASSERT_UNUSED(executionContext, executionContext);
+  DCHECK(executionContext);
   ASSERT(executionContext->isDocument());
   return toV8(MemoryInfo::create(), context->Global(), isolate);
 }

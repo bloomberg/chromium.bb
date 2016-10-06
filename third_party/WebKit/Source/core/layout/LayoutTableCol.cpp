@@ -178,17 +178,20 @@ const BorderValue& LayoutTableCol::borderAdjoiningCellEndBorder(
 
 const BorderValue& LayoutTableCol::borderAdjoiningCellBefore(
     const LayoutTableCell* cell) const {
-  ASSERT_UNUSED(cell, table()->colElementAtAbsoluteColumn(
-                                 cell->absoluteColumnIndex() + cell->colSpan())
-                              .innermostColOrColGroup() == this);
+  DCHECK_EQ(table()
+                ->colElementAtAbsoluteColumn(cell->absoluteColumnIndex() +
+                                             cell->colSpan())
+                .innermostColOrColGroup(),
+            this);
   return style()->borderStart();
 }
 
 const BorderValue& LayoutTableCol::borderAdjoiningCellAfter(
     const LayoutTableCell* cell) const {
-  ASSERT_UNUSED(
-      cell, table()->colElementAtAbsoluteColumn(cell->absoluteColumnIndex() - 1)
-                    .innermostColOrColGroup() == this);
+  DCHECK_EQ(table()
+                ->colElementAtAbsoluteColumn(cell->absoluteColumnIndex() - 1)
+                .innermostColOrColGroup(),
+            this);
   return style()->borderEnd();
 }
 

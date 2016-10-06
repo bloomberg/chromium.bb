@@ -541,7 +541,7 @@ void FloatingObjects::removePlacedObject(FloatingObject& floatingObject) {
   if (m_placedFloatsTree.isInitialized()) {
     bool removed =
         m_placedFloatsTree.remove(intervalForFloatingObject(floatingObject));
-    ASSERT_UNUSED(removed, removed);
+    DCHECK(removed);
   }
 
   floatingObject.setIsPlaced(false);

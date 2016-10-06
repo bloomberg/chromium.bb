@@ -119,7 +119,7 @@ void MediaStreamCenter::didCreateMediaStreamTrack(MediaStreamComponent* track) {
 std::unique_ptr<AudioSourceProvider>
 MediaStreamCenter::createWebAudioSourceFromMediaStreamTrack(
     MediaStreamComponent* track) {
-  ASSERT_UNUSED(track, track);
+  DCHECK(track);
   if (m_private)
     return MediaStreamWebAudioSource::create(
         wrapUnique(m_private->createWebAudioSourceFromMediaStreamTrack(track)));

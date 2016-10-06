@@ -105,7 +105,7 @@ MutexBase::MutexBase(bool recursive) {
       &attr, recursive ? PTHREAD_MUTEX_RECURSIVE : PTHREAD_MUTEX_NORMAL);
 
   int result = pthread_mutex_init(&m_mutex.m_internalMutex, &attr);
-  ASSERT_UNUSED(result, !result);
+  DCHECK_EQ(result, 0);
 #if ENABLE(ASSERT)
   m_mutex.m_recursionCount = 0;
 #endif
@@ -115,12 +115,12 @@ MutexBase::MutexBase(bool recursive) {
 
 MutexBase::~MutexBase() {
   int result = pthread_mutex_destroy(&m_mutex.m_internalMutex);
-  ASSERT_UNUSED(result, !result);
+  DCHECK_EQ(result, 0);
 }
 
 void MutexBase::lock() {
   int result = pthread_mutex_lock(&m_mutex.m_internalMutex);
-  ASSERT_UNUSED(result, !result);
+  DCHECK_EQ(result, 0);
 #if ENABLE(ASSERT)
   ++m_mutex.m_recursionCount;
 #endif
@@ -132,7 +132,7 @@ void MutexBase::unlock() {
   --m_mutex.m_recursionCount;
 #endif
   int result = pthread_mutex_unlock(&m_mutex.m_internalMutex);
-  ASSERT_UNUSED(result, !result);
+  DCHECK_EQ(result, 0);
 }
 
 // There is a separate tryLock implementation for the Mutex and the
@@ -184,7 +184,7 @@ ThreadCondition::~ThreadCondition() {
 void ThreadCondition::wait(MutexBase& mutex) {
   PlatformMutex& platformMutex = mutex.impl();
   int result = pthread_cond_wait(&m_condition, &platformMutex.m_internalMutex);
-  ASSERT_UNUSED(result, !result);
+  DCHECK_EQ(result, 0);
 #if ENABLE(ASSERT)
   ++platformMutex.m_recursionCount;
 #endif
@@ -217,12 +217,12 @@ bool ThreadCondition::timedWait(MutexBase& mutex, double absoluteTime) {
 
 void ThreadCondition::signal() {
   int result = pthread_cond_signal(&m_condition);
-  ASSERT_UNUSED(result, !result);
+  DCHECK_EQ(result, 0);
 }
 
 void ThreadCondition::broadcast() {
   int result = pthread_cond_broadcast(&m_condition);
-  ASSERT_UNUSED(result, !result);
+  DCHECK_EQ(result, 0);
 }
 
 #if ENABLE(ASSERT)

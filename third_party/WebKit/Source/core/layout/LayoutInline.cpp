@@ -278,7 +278,7 @@ LayoutRect LayoutInline::localCaretRect(InlineBox* inlineBox,
     return LayoutRect();
   }
 
-  ASSERT_UNUSED(inlineBox, !inlineBox);
+  DCHECK(!inlineBox);
 
   if (extraWidthToEndOfLine)
     *extraWidthToEndOfLine = LayoutUnit();

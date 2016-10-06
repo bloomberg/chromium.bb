@@ -117,7 +117,7 @@ static void normalizeCharacters(const TextRun& run,
     }
 
     U16_APPEND(destination, *destinationLength, length, character, error);
-    ASSERT_UNUSED(error, !error);
+    DCHECK(!error);
   }
 }
 
