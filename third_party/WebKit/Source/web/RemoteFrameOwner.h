@@ -40,6 +40,7 @@ class RemoteFrameOwner final
   int marginWidth() const override { return m_marginWidth; }
   int marginHeight() const override { return m_marginHeight; }
   bool allowFullscreen() const override { return m_allowFullscreen; }
+  AtomicString csp() const override { return m_csp; }
   const WebVector<WebPermissionType>& delegatedPermissions() const override {
     return m_delegatedPermissions;
   }
@@ -50,6 +51,7 @@ class RemoteFrameOwner final
   void setAllowFullscreen(bool allowFullscreen) {
     m_allowFullscreen = allowFullscreen;
   }
+  void setCsp(const WebString& csp) { m_csp = csp; }
   void setDelegatedpermissions(
       const WebVector<WebPermissionType>& delegatedPermissions) {
     m_delegatedPermissions = delegatedPermissions;
@@ -71,6 +73,7 @@ class RemoteFrameOwner final
   int m_marginWidth;
   int m_marginHeight;
   bool m_allowFullscreen;
+  WebString m_csp;
   WebVector<WebPermissionType> m_delegatedPermissions;
 };
 

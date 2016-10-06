@@ -18,7 +18,8 @@ RemoteFrameOwner::RemoteFrameOwner(
           static_cast<ScrollbarMode>(frameOwnerProperties.scrollingMode)),
       m_marginWidth(frameOwnerProperties.marginWidth),
       m_marginHeight(frameOwnerProperties.marginHeight),
-      m_allowFullscreen(frameOwnerProperties.allowFullscreen) {}
+      m_allowFullscreen(frameOwnerProperties.allowFullscreen),
+      m_csp(frameOwnerProperties.requiredCsp) {}
 
 DEFINE_TRACE(RemoteFrameOwner) {
   visitor->trace(m_frame);

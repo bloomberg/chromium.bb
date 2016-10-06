@@ -592,6 +592,23 @@ class SitePerProcessIgnoreCertErrorsBrowserTest
   }
 };
 
+// SitePerProcessEmbedderCSPEnforcementBrowserTest
+
+class SitePerProcessEmbedderCSPEnforcementBrowserTest
+    : public SitePerProcessBrowserTest {
+ public:
+  SitePerProcessEmbedderCSPEnforcementBrowserTest() {}
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    SitePerProcessBrowserTest::SetUpCommandLine(command_line);
+    // TODO(amalika): Remove this switch when the EmbedderCSPEnforcement becomes
+    // stable
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
+                                    "EmbedderCSPEnforcement");
+  }
+};
+
 double GetFrameDeviceScaleFactor(const ToRenderFrameHost& adapter) {
   double device_scale_factor;
   const char kGetFrameDeviceScaleFactor[] =
@@ -3110,6 +3127,63 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
     current_margin_width += 5;
     current_margin_height += 10;
+  }
+}
+
+// Verify that "csp" property on frame elements propagates to child frames
+// correctly. See  https://crbug.com/647588
+IN_PROC_BROWSER_TEST_F(SitePerProcessEmbedderCSPEnforcementBrowserTest,
+                       FrameOwnerPropertiesPropagationCSP) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/frame_owner_properties_csp.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  ASSERT_EQ(1u, root->child_count());
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   +--Site B ------- proxies for A\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.com/",
+      DepictFrameTree(root));
+
+  FrameTreeNode* child = root->child_at(0);
+
+  std::string csp;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      root,
+      "window.domAutomationController.send("
+      "document.getElementById('child-1').getAttribute('csp'));",
+      &csp));
+  EXPECT_EQ("object-src \'none\'", csp);
+
+  // Run the test over variety of parent/child cases.
+  GURL urls[] = {// Remote to remote.
+                 embedded_test_server()->GetURL("c.com", "/title2.html"),
+                 // Remote to local.
+                 embedded_test_server()->GetURL("a.com", "/title1.html"),
+                 // Local to remote.
+                 embedded_test_server()->GetURL("b.com", "/title2.html")};
+
+  std::vector<std::string> csp_values = {"default-src a.com",
+                                         "default-src b.com", "img-src c.com"};
+
+  // Before each navigation, we change the csp property of the frame.
+  // We then check whether that property is applied
+  // correctly after the navigation has completed.
+  for (size_t i = 0; i < arraysize(urls); ++i) {
+    // Change csp before navigating.
+    EXPECT_TRUE(ExecuteScript(
+        root,
+        base::StringPrintf("document.getElementById('child-1').setAttribute("
+                           "    'csp', '%s');",
+                           csp_values[i].c_str())));
+
+    NavigateFrameToURL(child, urls[i]);
+    EXPECT_EQ(csp_values[i], child->frame_owner_properties().required_csp);
+    // TODO(amalika): add checks that the CSP replication takes effect
   }
 }
 

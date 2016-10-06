@@ -5,6 +5,7 @@
 #ifndef WebFrameOwnerProperties_h
 #define WebFrameOwnerProperties_h
 
+#include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
 #include "public/platform/modules/permissions/WebPermissionType.h"
 #include <algorithm>
@@ -18,6 +19,7 @@ struct WebFrameOwnerProperties {
   int marginWidth;
   int marginHeight;
   bool allowFullscreen;
+  WebString requiredCsp;
   WebVector<WebPermissionType> delegatedPermissions;
 
   WebFrameOwnerProperties()
@@ -32,11 +34,13 @@ struct WebFrameOwnerProperties {
       int marginWidth,
       int marginHeight,
       bool allowFullscreen,
+      const WebString& requiredCsp,
       const WebVector<WebPermissionType>& delegatedPermissions)
       : scrollingMode(static_cast<ScrollingMode>(scrollingMode)),
         marginWidth(marginWidth),
         marginHeight(marginHeight),
         allowFullscreen(allowFullscreen),
+        requiredCsp(requiredCsp),
         delegatedPermissions(delegatedPermissions) {}
 #endif
 };

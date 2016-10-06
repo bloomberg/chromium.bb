@@ -73,6 +73,8 @@ class CORE_EXPORT HTMLIFrameElement final : public HTMLFrameElementBase {
 
   bool allowFullscreen() const override { return m_allowFullscreen; }
 
+  AtomicString csp() const override { return m_csp; }
+
   const WebVector<WebPermissionType>& delegatedPermissions() const override {
     return m_delegatedPermissions;
   }
