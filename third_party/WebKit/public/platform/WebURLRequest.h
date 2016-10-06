@@ -236,7 +236,7 @@ class WebURLRequest {
 
   // Adds an HTTP origin header if it is empty and the HTTP method of the
   // request requires it.
-  BLINK_PLATFORM_EXPORT void addHTTPOriginIfNeeded(const WebString& origin);
+  BLINK_PLATFORM_EXPORT void addHTTPOriginIfNeeded(const WebSecurityOrigin&);
 
   // True if the request was user initiated.
   BLINK_PLATFORM_EXPORT bool hasUserGesture() const;

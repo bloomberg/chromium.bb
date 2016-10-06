@@ -544,7 +544,7 @@ WebURLRequest CreateURLRequestForNavigation(
     if (!web_referrer.isEmpty()) {
       request.setHTTPReferrer(web_referrer, common_params.referrer.policy);
       request.addHTTPOriginIfNeeded(
-          WebString::fromUTF8(common_params.referrer.url.GetOrigin().spec()));
+          WebSecurityOrigin(url::Origin(common_params.referrer.url)));
     }
   }
 
@@ -4106,7 +4106,7 @@ void RenderFrameImpl::willSendRequest(blink::WebLocalFrame* frame,
 
   // Add an empty HTTP origin header for non GET methods if none is currently
   // present.
-  request.addHTTPOriginIfNeeded(WebString());
+  request.addHTTPOriginIfNeeded(WebSecurityOrigin::createUnique());
 
   // Attach |should_replace_current_entry| state to requests so that, should
   // this navigation later require a request transfer, all state is preserved
