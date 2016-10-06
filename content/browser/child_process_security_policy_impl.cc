@@ -796,6 +796,14 @@ bool ChildProcessSecurityPolicyImpl::HasPermissionsForFileSystemFile(
   if (!url.is_valid())
     return false;
 
+  // If |url.origin()| is not committable in this process, then this page
+  // should not be able to place content in that origin via the filesystem
+  // API either.
+  if (!CanCommitURL(child_id, url.origin())) {
+    UMA_HISTOGRAM_BOOLEAN("FileSystem.OriginFailedCanCommitURL", true);
+    return false;
+  }
+
   if (url.path().ReferencesParent())
     return false;
 
