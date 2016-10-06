@@ -283,6 +283,9 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   ScreenTrayItem* screen_capture_tray_item_;  // not owned
   ScreenTrayItem* screen_share_tray_item_;    // not owned
 
+  // TODO(oshima): Remove this when crbug.com/651242 is fixed.
+  bool activating_ = false;
+
   std::unique_ptr<KeyEventWatcher> key_event_watcher_;
 
   std::unique_ptr<ActivationObserver> activation_observer_;

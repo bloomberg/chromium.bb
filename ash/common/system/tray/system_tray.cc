@@ -421,6 +421,7 @@ bool SystemTray::IsMouseInNotificationBubble() const {
 bool SystemTray::CloseSystemBubble() const {
   if (!system_bubble_)
     return false;
+  CHECK(!activating_);
   system_bubble_->bubble()->Close();
   return true;
 }
@@ -795,7 +796,13 @@ void SystemTray::CloseBubble(const ui::KeyEvent& key_event) {
 void SystemTray::ActivateAndStartNavigation(const ui::KeyEvent& key_event) {
   if (!system_bubble_)
     return;
+  activating_ = true;
   ActivateBubble();
+  activating_ = false;
+  // TODO(oshima): This is to troubleshoot the issue crbug.com/651242. Remove
+  // once the root cause is fixed.
+  CHECK(system_bubble_) << " the bubble was deleted while activaing it";
+
   views::Widget* widget = GetSystemBubble()->bubble_view()->GetWidget();
   widget->GetFocusManager()->OnKeyEvent(key_event);
 }
@@ -848,6 +855,7 @@ bool SystemTray::PerformAction(const ui::Event& event) {
 }
 
 void SystemTray::CloseSystemBubbleAndDeactivateSystemTray() {
+  CHECK(!activating_);
   activation_observer_.reset();
   key_event_watcher_.reset();
   system_bubble_.reset();
