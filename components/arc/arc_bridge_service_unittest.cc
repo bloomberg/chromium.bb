@@ -58,14 +58,14 @@ class ArcBridgeTest : public testing::Test,
   static std::unique_ptr<ArcBridgeBootstrap> CreateSuspendedBootstrap() {
     auto bootstrap = base::MakeUnique<FakeArcBridgeBootstrap>();
     bootstrap->SuspendBoot();
-    return bootstrap;
+    return std::move(bootstrap);
   }
 
   static std::unique_ptr<ArcBridgeBootstrap> CreateBootFailureBootstrap(
       ArcBridgeService::StopReason reason) {
     auto bootstrap = base::MakeUnique<FakeArcBridgeBootstrap>();
     bootstrap->EnableBootFailureEmulation(reason);
-    return bootstrap;
+    return std::move(bootstrap);
   }
 
  private:
