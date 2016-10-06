@@ -24,6 +24,8 @@ source_set("mojo") {
   sources = [
     "adapter.cc",
     "adapter.h",
+    "adapter_factory.cc",
+    "adapter_factory.h",
   ]
 
   public_deps = [

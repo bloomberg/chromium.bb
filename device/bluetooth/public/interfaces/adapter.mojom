@@ -28,3 +28,8 @@ interface AdapterClient {
   // Called after the device hasn't been seen for 3 minutes.
   DeviceRemoved(DeviceInfo device);
 };
+
+interface AdapterFactory {
+  // Gets an Adapter interface. Returns null if Bluetooth is not supported.
+  GetAdapter() => (Adapter? adapter);
+};

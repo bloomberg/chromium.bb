@@ -33,9 +33,7 @@ AdapterClient.prototype = {
 };
 
 (function() {
-  var adapter = null;
-  var adapterClient = null;
-  var adapterClientHandle = null;
+  var adapter, adapterClient;
 
   /**
    * TODO: Move to shared location. See crbug.com/652361.
@@ -53,7 +51,8 @@ AdapterClient.prototype = {
 
   /**
    * Initializes Mojo proxies for page and Bluetooth services.
-   * @return {!Promise}
+   * @return {!Promise} resolves if adapter is acquired, rejects if Bluetooth
+   *     is not supported.
    */
   function initializeProxies() {
     return importModules([
@@ -67,22 +66,31 @@ AdapterClient.prototype = {
       AdapterClient.prototype.__proto__ =
           bluetoothAdapter.AdapterClient.stubClass.prototype;
 
-      // Create a message pipe and bind one end to client
-      // implementation.
-      adapterClient = new AdapterClient();
-      adapterClientHandle = connection.bindStubDerivedImpl(adapterClient);
+      var adapterFactory = connection.bindHandleToProxy(
+          frameInterfaces.getInterface(bluetoothAdapter.AdapterFactory.name),
+          bluetoothAdapter.AdapterFactory);
 
-      adapter = connection.bindHandleToProxy(
-          frameInterfaces.getInterface(bluetoothAdapter.Adapter.name),
-          bluetoothAdapter.Adapter);
+      // Get an Adapter service.
+      return adapterFactory.getAdapter().then(function(response) {
+          if (!response.adapter) {
+            throw new Error('Bluetooth Not Supported on this platform.');
+          }
 
-      adapter.setClient(adapterClientHandle);
+          adapter = connection.bindHandleToProxy(response.adapter,
+                                                 bluetoothAdapter.Adapter);
+
+          // Create a message pipe and bind one end to client
+          // implementation and the other to the Adapter service.
+          adapterClient = new AdapterClient();
+          adapter.setClient(connection.bindStubDerivedImpl(adapterClient));
+      });
     });
   }
 
   document.addEventListener('DOMContentLoaded', function() {
     initializeProxies()
       .then(function() { return adapter.getDevices(); })
-      .then(function(response) { console.log(response.devices); });
+      .then(function(response) { console.log(response.devices); })
+      .catch(function(error) { console.error(error); });
   });
 })();
