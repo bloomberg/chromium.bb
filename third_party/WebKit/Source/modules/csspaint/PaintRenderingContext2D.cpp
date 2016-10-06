@@ -67,11 +67,10 @@ void PaintRenderingContext2D::didDraw(const SkIRect& dirtyRect) {
 }
 
 void PaintRenderingContext2D::validateStateStack() const {
-#if ENABLE(ASSERT)
-  SkCanvas* skCanvas = existingDrawingCanvas();
-  if (skCanvas) {
-    ASSERT(static_cast<size_t>(skCanvas->getSaveCount()) ==
-           m_stateStack.size());
+#if DCHECK_IS_ON()
+  if (SkCanvas* skCanvas = existingDrawingCanvas()) {
+    DCHECK_EQ(static_cast<size_t>(skCanvas->getSaveCount()),
+              m_stateStack.size() + 1);
   }
 #endif
 }

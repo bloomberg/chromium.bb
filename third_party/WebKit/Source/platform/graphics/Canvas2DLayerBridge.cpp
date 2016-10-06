@@ -167,9 +167,14 @@ Canvas2DLayerBridge::~Canvas2DLayerBridge() {
 void Canvas2DLayerBridge::startRecording() {
   DCHECK(m_isDeferralEnabled);
   m_recorder = wrapUnique(new SkPictureRecorder);
-  m_recorder->beginRecording(m_size.width(), m_size.height(), nullptr);
+  SkCanvas* canvas =
+      m_recorder->beginRecording(m_size.width(), m_size.height(), nullptr);
+  // Always save an initial frame, to support resetting the top level matrix
+  // and clip.
+  canvas->save();
+
   if (m_imageBuffer) {
-    m_imageBuffer->resetCanvas(m_recorder->getRecordingCanvas());
+    m_imageBuffer->resetCanvas(canvas);
   }
   m_recordingPixelCount = 0;
 }
@@ -548,8 +553,13 @@ SkSurface* Canvas2DLayerBridge::getOrCreateSurface(AccelerationHint hint) {
       wantAcceleration ? m_contextProvider->grContext() : nullptr, m_size,
       m_msaaSampleCount, m_opacityMode, m_colorSpace, &surfaceIsAccelerated);
 
-  if (!m_surface)
+  if (m_surface) {
+    // Always save an initial frame, to support resetting the top level matrix
+    // and clip.
+    m_surface->getCanvas()->save();
+  } else {
     reportSurfaceCreationFailure();
+  }
 
   if (m_surface && surfaceIsAccelerated && !m_layer) {
     m_layer = wrapUnique(

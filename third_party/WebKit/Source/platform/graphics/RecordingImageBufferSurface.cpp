@@ -39,10 +39,14 @@ RecordingImageBufferSurface::~RecordingImageBufferSurface() {}
 void RecordingImageBufferSurface::initializeCurrentFrame() {
   static SkRTreeFactory rTreeFactory;
   m_currentFrame = wrapUnique(new SkPictureRecorder);
-  m_currentFrame->beginRecording(size().width(), size().height(),
-                                 &rTreeFactory);
+  SkCanvas* canvas = m_currentFrame->beginRecording(
+      size().width(), size().height(), &rTreeFactory);
+  // Always save an initial frame, to support resetting the top level matrix
+  // and clip.
+  canvas->save();
+
   if (m_imageBuffer) {
-    m_imageBuffer->resetCanvas(m_currentFrame->getRecordingCanvas());
+    m_imageBuffer->resetCanvas(canvas);
   }
   m_didRecordDrawCommandsInCurrentFrame = false;
   m_currentFrameHasExpensiveOp = false;
@@ -296,8 +300,10 @@ bool RecordingImageBufferSurface::finalizeFrameInternal(
   }
 
   if (m_fallbackFactory &&
-      m_currentFrame->getRecordingCanvas()->getSaveCount() >
+      m_currentFrame->getRecordingCanvas()->getSaveCount() - 1 >
           ExpensiveCanvasHeuristicParameters::ExpensiveRecordingStackDepth) {
+    // (getSaveCount() decremented to account  for the intial recording canvas
+    // save frame.)
     *fallbackReason = FallbackReasonRunawayStateStack;
     return false;
   }

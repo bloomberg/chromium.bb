@@ -52,6 +52,11 @@ UnacceleratedImageBufferSurface::UnacceleratedImageBufferSurface(
   m_surface =
       SkSurface::MakeRaster(info, Opaque == opacityMode ? 0 : &disableLCDProps);
 
+  // Always save an initial frame, to support resetting the top level matrix
+  // and clip.
+  if (m_surface)
+    m_surface->getCanvas()->save();
+
   if (initializationMode == InitializeImagePixels) {
     if (m_surface)
       clear();

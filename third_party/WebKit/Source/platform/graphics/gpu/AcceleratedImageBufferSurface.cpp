@@ -58,9 +58,13 @@ AcceleratedImageBufferSurface::AcceleratedImageBufferSurface(
   m_surface = SkSurface::MakeRenderTarget(
       grContext, SkBudgeted::kYes, info, 0 /* sampleCount */,
       Opaque == opacityMode ? nullptr : &disableLCDProps);
-  if (!m_surface.get())
+  if (!m_surface)
     return;
   clear();
+
+  // Always save an initial frame, to support resetting the top level matrix
+  // and clip.
+  m_surface->getCanvas()->save();
 }
 
 bool AcceleratedImageBufferSurface::isValid() const {

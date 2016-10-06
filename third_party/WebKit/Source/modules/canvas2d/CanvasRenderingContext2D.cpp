@@ -158,11 +158,16 @@ void CanvasRenderingContext2D::dispose() {
 }
 
 void CanvasRenderingContext2D::validateStateStack() const {
-#if ENABLE(ASSERT)
-  SkCanvas* skCanvas = canvas()->existingDrawingCanvas();
-  if (skCanvas && m_contextLostMode == NotLostContext) {
-    ASSERT(static_cast<size_t>(skCanvas->getSaveCount()) ==
-           m_stateStack.size());
+#if DCHECK_IS_ON()
+  if (SkCanvas* skCanvas = canvas()->existingDrawingCanvas()) {
+    // The canvas should always have an initial save frame, to support
+    // resetting the top level matrix and clip.
+    DCHECK_GT(skCanvas->getSaveCount(), 1);
+
+    if (m_contextLostMode == NotLostContext) {
+      DCHECK_EQ(static_cast<size_t>(skCanvas->getSaveCount()),
+                m_stateStack.size() + 1);
+    }
   }
 #endif
   CHECK(m_stateStack.first()
@@ -279,11 +284,18 @@ void CanvasRenderingContext2D::reset() {
   m_stateStack.resize(1);
   m_stateStack.first() = CanvasRenderingContext2DState::create();
   m_path.clear();
-  SkCanvas* c = canvas()->existingDrawingCanvas();
-  if (c) {
-    c->resetMatrix();
-    c->clipRect(SkRect::MakeWH(canvas()->width(), canvas()->height()),
-                SkRegion::kReplace_Op);
+  if (SkCanvas* c = canvas()->existingDrawingCanvas()) {
+    // The canvas should always have an initial/unbalanced save frame, which
+    // we use to reset the top level matrix and clip here.
+    DCHECK_EQ(c->getSaveCount(), 2);
+    c->restore();
+    c->save();
+    DCHECK(c->getTotalMatrix().isIdentity());
+#if DCHECK_IS_ON()
+    SkIRect clipBounds;
+    DCHECK(c->getClipDeviceBounds(&clipBounds));
+    DCHECK(clipBounds == c->imageInfo().bounds());
+#endif
   }
   validateStateStack();
 }
