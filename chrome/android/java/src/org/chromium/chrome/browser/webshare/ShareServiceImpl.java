@@ -27,7 +27,9 @@ import org.chromium.webshare.mojom.ShareService;
  */
 public class ShareServiceImpl implements ShareService {
     private final Activity mActivity;
-    private final boolean mIsIncognito;
+    // We no longer show a warning for incognito mode.
+    // TODO(mgiuca): Remove this code (https://crrev.com/420564, https://crbug.com/645007).
+    private static final boolean mIsIncognito = false;
 
     // These numbers are written to histograms. Keep in sync with WebShareMethod enum in
     // histograms.xml, and don't reuse or renumber entries (except for the _COUNT entry).
@@ -45,7 +47,6 @@ public class ShareServiceImpl implements ShareService {
 
     public ShareServiceImpl(@Nullable WebContents webContents) {
         mActivity = activityFromWebContents(webContents);
-        mIsIncognito = webContents.isIncognito();
     }
 
     @Override
