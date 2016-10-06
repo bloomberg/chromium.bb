@@ -55,7 +55,8 @@ class MockDeviceStatusCollector : public policy::DeviceStatusCollector {
             nullptr,
             policy::DeviceStatusCollector::VolumeInfoFetcher(),
             policy::DeviceStatusCollector::CPUStatisticsFetcher(),
-            policy::DeviceStatusCollector::CPUTempFetcher()) {}
+            policy::DeviceStatusCollector::CPUTempFetcher(),
+            policy::DeviceStatusCollector::AndroidStatusFetcher()) {}
 
   MOCK_METHOD1(GetDeviceAndSessionStatusAsync,
                void(const policy::DeviceStatusCollector::StatusCallback&));

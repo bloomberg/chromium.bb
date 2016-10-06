@@ -16,6 +16,7 @@
 #include "base/callback_list.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/system/version_loader.h"
 #include "components/policy/proto/device_management_backend.pb.h"
+#include "mojo/public/cpp/bindings/string.h"
 #include "ui/base/idle/idle.h"
 
 namespace chromeos {
@@ -68,6 +70,14 @@ class DeviceStatusCollector {
   using CPUTempFetcher =
       base::Callback<std::vector<enterprise_management::CPUTempInfo>()>;
 
+  // Passed into asynchronous mojo interface for communicating with Android.
+  using AndroidStatusReceiver =
+      base::Callback<void(mojo::String, mojo::String)>;
+  // Calls the enterprise reporting mojo interface, passing over the
+  // AndroidStatusReceiver.
+  using AndroidStatusFetcher =
+      base::Callback<bool(const AndroidStatusReceiver&)>;
+
   // Called in the UI thread after the device and session status have been
   // collected asynchronously in GetDeviceAndSessionStatusAsync. Null pointers
   // indicate errors or that device or session status reporting is disabled.
@@ -84,7 +94,8 @@ class DeviceStatusCollector {
       chromeos::system::StatisticsProvider* provider,
       const VolumeInfoFetcher& volume_info_fetcher,
       const CPUStatisticsFetcher& cpu_statistics_fetcher,
-      const CPUTempFetcher& cpu_temp_fetcher);
+      const CPUTempFetcher& cpu_temp_fetcher,
+      const AndroidStatusFetcher& android_status_fetcher);
   virtual ~DeviceStatusCollector();
 
   // Gathers device and session status information and calls the passed response
@@ -181,8 +192,11 @@ class DeviceStatusCollector {
   // Helpers for the various portions of SESSION STATUS. Return true if they
   // actually report any status. Functions that queue async queries take
   // a |GetStatusState| instance.
-  bool GetAccountStatus(
+  bool GetKioskSessionStatus(
       enterprise_management::SessionStatusReportRequest* status);
+  bool GetAndroidStatus(
+      enterprise_management::SessionStatusReportRequest* status,
+      const scoped_refptr<GetStatusState>& state);  // Queues async queries!
 
   // Update the cached values of the reporting settings.
   void UpdateReportingSettings();
@@ -230,6 +244,8 @@ class DeviceStatusCollector {
   // Callback invoked to fetch information about cpu temperature.
   CPUTempFetcher cpu_temp_fetcher_;
 
+  AndroidStatusFetcher android_status_fetcher_;
+
   chromeos::system::StatisticsProvider* const statistics_provider_;
 
   chromeos::CrosSettings* const cros_settings_;
@@ -245,7 +261,8 @@ class DeviceStatusCollector {
   bool report_network_interfaces_ = false;
   bool report_users_ = false;
   bool report_hardware_status_ = false;
-  bool report_session_status_ = false;
+  bool report_kiosk_session_status_ = false;
+  bool report_android_status_ = false;
   bool report_os_update_status_ = false;
   bool report_running_kiosk_app_ = false;
 

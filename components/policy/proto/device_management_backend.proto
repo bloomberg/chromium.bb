@@ -747,6 +747,13 @@ message AppStatus {
   optional string required_platform_version = 5;
 }
 
+message AndroidStatus {
+  // JSON string of ARC status report.
+  optional string status_payload = 1;
+  // DroidGuard response obtained from DroidGuard server.
+  optional string droid_guard_info = 2;
+}
+
 // Report current active session (a user on one device) level status.
 message SessionStatusReportRequest {
   // Installed apps for this user on this device.
@@ -768,6 +775,9 @@ message SessionStatusReportRequest {
 
   // Information about installed extensions for this user on this device.
   repeated AppStatus installed_extensions = 6;
+
+  // Information about ARC status.
+  optional AndroidStatus android_status = 7;
 }
 
 // Response from DMServer to update devices' status.

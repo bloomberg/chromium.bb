@@ -21,7 +21,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/ref_counted.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -48,6 +47,8 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/system/statistics_provider.h"
+#include "components/arc/arc_bridge_service.h"
+#include "components/arc/common/enterprise_reporting.mojom.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -216,6 +217,21 @@ std::vector<em::CPUTempInfo> ReadCPUTempInfo() {
   return contents;
 }
 
+bool ReadAndroidStatus(
+    const policy::DeviceStatusCollector::AndroidStatusReceiver& receiver) {
+  auto* const arc_service = arc::ArcBridgeService::Get();
+  if (!arc_service)
+    return false;
+  auto* const instance_holder = arc_service->enterprise_reporting();
+  if (!instance_holder)
+    return false;
+  auto* const instance = instance_holder->GetInstanceForMethod("GetStatus", 1);
+  if (!instance)
+    return false;
+  instance->GetStatus(receiver);
+  return true;
+}
+
 // Returns the DeviceLocalAccount associated with the current kiosk session.
 // Returns null if there is no active kiosk session, or if that kiosk
 // session has been removed from policy since the session started, in which
@@ -338,6 +354,13 @@ class GetStatusState : public base::RefCountedThreadSafe<GetStatusState> {
         base::Bind(&GetStatusState::OnCPUTempInfoReceived, this));
   }
 
+  bool FetchAndroidStatus(
+      const policy::DeviceStatusCollector::AndroidStatusFetcher&
+          android_status_fetcher) {
+    return android_status_fetcher.Run(
+        base::Bind(&GetStatusState::OnAndroidInfoReceived, this));
+  }
+
  private:
   friend class RefCountedThreadSafe<GetStatusState>;
 
@@ -366,6 +389,14 @@ class GetStatusState : public base::RefCountedThreadSafe<GetStatusState> {
       *device_status_->add_cpu_temp_info() = info;
   }
 
+  void OnAndroidInfoReceived(mojo::String status,
+                             mojo::String droid_guard_info) {
+    em::AndroidStatus* const android_status =
+        session_status_->mutable_android_status();
+    android_status->set_status_payload(status);
+    android_status->set_droid_guard_info(droid_guard_info);
+  }
+
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
   policy::DeviceStatusCollector::StatusCallback response_;
   std::unique_ptr<em::DeviceStatusReportRequest> device_status_ =
@@ -379,7 +410,8 @@ DeviceStatusCollector::DeviceStatusCollector(
     chromeos::system::StatisticsProvider* provider,
     const VolumeInfoFetcher& volume_info_fetcher,
     const CPUStatisticsFetcher& cpu_statistics_fetcher,
-    const CPUTempFetcher& cpu_temp_fetcher)
+    const CPUTempFetcher& cpu_temp_fetcher,
+    const AndroidStatusFetcher& android_status_fetcher)
     : max_stored_past_activity_days_(kMaxStoredPastActivityDays),
       max_stored_future_activity_days_(kMaxStoredFutureActivityDays),
       local_state_(local_state),
@@ -387,6 +419,7 @@ DeviceStatusCollector::DeviceStatusCollector(
       volume_info_fetcher_(volume_info_fetcher),
       cpu_statistics_fetcher_(cpu_statistics_fetcher),
       cpu_temp_fetcher_(cpu_temp_fetcher),
+      android_status_fetcher_(android_status_fetcher),
       statistics_provider_(provider),
       cros_settings_(chromeos::CrosSettings::Get()),
       task_runner_(nullptr),
@@ -404,6 +437,9 @@ DeviceStatusCollector::DeviceStatusCollector(
 
   if (cpu_temp_fetcher_.is_null())
     cpu_temp_fetcher_ = base::Bind(&ReadCPUTempInfo);
+
+  if (android_status_fetcher_.is_null())
+    android_status_fetcher_ = base::Bind(&ReadAndroidStatus);
 
   idle_poll_timer_.Start(FROM_HERE,
                          TimeDelta::FromSeconds(kIdlePollIntervalSeconds),
@@ -510,10 +546,13 @@ void DeviceStatusCollector::UpdateReportingSettings() {
     report_hardware_status_ = true;
   }
 
-  if (!cros_settings_->GetBoolean(
-          chromeos::kReportDeviceSessionStatus, &report_session_status_)) {
-    report_session_status_ = true;
+  if (!cros_settings_->GetBoolean(chromeos::kReportDeviceSessionStatus,
+                                  &report_kiosk_session_status_)) {
+    report_kiosk_session_status_ = true;
   }
+
+  // TODO(phweiss): Create policy to control this, and turn it on by default.
+  report_android_status_ = false;
 
   if (!report_hardware_status_) {
     ClearCachedResourceUsage();
@@ -1037,7 +1076,7 @@ void DeviceStatusCollector::GetDeviceAndSessionStatusAsync(
   // Gather device status (might queue some async queries)
   GetDeviceStatus(state);
 
-  // Gather device status (might queue some async queries)
+  // Gather session status (might queue some async queries)
   GetSessionStatus(state);
 
   // If there are no outstanding async queries, e.g. from GetHardwareStatus(),
@@ -1085,15 +1124,17 @@ void DeviceStatusCollector::GetSessionStatus(
   em::SessionStatusReportRequest* status = state->session_status();
   bool anything_reported = false;
 
-  if (report_session_status_)
-    anything_reported |= GetAccountStatus(status);
+  if (report_kiosk_session_status_)
+    anything_reported |= GetKioskSessionStatus(status);
+  if (report_android_status_)
+    anything_reported |= GetAndroidStatus(status, state);
 
   // Wipe pointer if we didn't actually add any data.
   if (!anything_reported)
     state->ResetSessionStatus();
 }
 
-bool DeviceStatusCollector::GetAccountStatus(
+bool DeviceStatusCollector::GetKioskSessionStatus(
     em::SessionStatusReportRequest* status) {
   std::unique_ptr<const DeviceLocalAccount> account =
       GetAutoLaunchedKioskSessionInfo();
@@ -1115,6 +1156,12 @@ bool DeviceStatusCollector::GetAccountStatus(
   }
 
   return true;
+}
+
+bool DeviceStatusCollector::GetAndroidStatus(
+    em::SessionStatusReportRequest* status,
+    const scoped_refptr<GetStatusState>& state) {
+  return state->FetchAndroidStatus(android_status_fetcher_);
 }
 
 std::string DeviceStatusCollector::GetAppVersion(

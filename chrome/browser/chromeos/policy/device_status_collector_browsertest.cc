@@ -14,6 +14,7 @@
 
 #include "base/bind.h"
 #include "base/environment.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -23,6 +24,7 @@
 #include "base/sys_info.h"
 #include "base/test/scoped_path_override.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_data.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
@@ -54,6 +56,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
+#include "mojo/public/cpp/bindings/string.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "storage/browser/fileapi/mount_points.h"
 #include "storage/common/fileapi/file_system_mount_option.h"
@@ -86,12 +89,15 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
       const policy::DeviceStatusCollector::VolumeInfoFetcher&
           volume_info_fetcher,
       const policy::DeviceStatusCollector::CPUStatisticsFetcher& cpu_fetcher,
-      const policy::DeviceStatusCollector::CPUTempFetcher& cpu_temp_fetcher)
+      const policy::DeviceStatusCollector::CPUTempFetcher& cpu_temp_fetcher,
+      const policy::DeviceStatusCollector::AndroidStatusFetcher&
+          android_status_fetcher)
       : policy::DeviceStatusCollector(local_state,
                                       provider,
                                       volume_info_fetcher,
                                       cpu_fetcher,
-                                      cpu_temp_fetcher) {
+                                      cpu_temp_fetcher,
+                                      android_status_fetcher) {
     // Set the baseline time to a fixed value (1 AM) to prevent test flakiness
     // due to a single activity period spanning two days.
     SetBaselineTime(Time::Now().LocalMidnight() + TimeDelta::FromHours(1));
@@ -212,6 +218,21 @@ std::vector<em::CPUTempInfo> GetEmptyCPUTempInfo() {
   return std::vector<em::CPUTempInfo>();
 }
 
+void CallAndroidStatusReceiver(
+    const policy::DeviceStatusCollector::AndroidStatusReceiver& receiver,
+    mojo::String status,
+    mojo::String droid_guard_info) {
+  receiver.Run(status, droid_guard_info);
+}
+
+bool GetEmptyAndroidStatus(
+    const policy::DeviceStatusCollector::AndroidStatusReceiver& receiver) {
+  // Post it to the thread because this call is expected to be asynchronous.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&CallAndroidStatusReceiver, receiver, "", ""));
+  return true;
+}
+
 std::vector<em::CPUTempInfo> GetFakeCPUTempInfo(
     const std::vector<em::CPUTempInfo>& cpu_temp_info) {
   return cpu_temp_info;
@@ -281,7 +302,8 @@ class DeviceStatusCollectorTest : public testing::Test {
 
     RestartStatusCollector(base::Bind(&GetEmptyVolumeInfo),
                            base::Bind(&GetEmptyCPUStatistics),
-                           base::Bind(&GetEmptyCPUTempInfo));
+                           base::Bind(&GetEmptyCPUTempInfo),
+                           base::Bind(&GetEmptyAndroidStatus));
 
     // Set up a fake local state for KioskAppManager.
     TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
@@ -326,11 +348,13 @@ class DeviceStatusCollectorTest : public testing::Test {
   void RestartStatusCollector(
       const policy::DeviceStatusCollector::VolumeInfoFetcher& volume_info,
       const policy::DeviceStatusCollector::CPUStatisticsFetcher& cpu_stats,
-      const policy::DeviceStatusCollector::CPUTempFetcher& cpu_temp_fetcher) {
+      const policy::DeviceStatusCollector::CPUTempFetcher& cpu_temp_fetcher,
+      const policy::DeviceStatusCollector::AndroidStatusFetcher&
+          android_status_fetcher) {
     std::vector<em::VolumeInfo> expected_volume_info;
     status_collector_.reset(new TestingDeviceStatusCollector(
         &prefs_, &fake_statistics_provider_, volume_info, cpu_stats,
-        cpu_temp_fetcher));
+        cpu_temp_fetcher, android_status_fetcher));
   }
 
   void GetStatus() {
@@ -521,7 +545,8 @@ TEST_F(DeviceStatusCollectorTest, StateKeptInPref) {
   // the results are stored in a pref.
   RestartStatusCollector(base::Bind(&GetEmptyVolumeInfo),
                          base::Bind(&GetEmptyCPUStatistics),
-                         base::Bind(&GetEmptyCPUTempInfo));
+                         base::Bind(&GetEmptyCPUTempInfo),
+                         base::Bind(&GetEmptyAndroidStatus));
   status_collector_->Simulate(test_states,
                               sizeof(test_states) / sizeof(ui::IdleState));
 
@@ -821,7 +846,8 @@ TEST_F(DeviceStatusCollectorTest, TestVolumeInfo) {
 
   RestartStatusCollector(base::Bind(&GetFakeVolumeInfo, expected_volume_info),
                          base::Bind(&GetEmptyCPUStatistics),
-                         base::Bind(&GetEmptyCPUTempInfo));
+                         base::Bind(&GetEmptyCPUTempInfo),
+                         base::Bind(&GetEmptyAndroidStatus));
   // Force finishing tasks posted by ctor of DeviceStatusCollector.
   content::BrowserThread::GetBlockingPool()->FlushForTesting();
   base::RunLoop().RunUntilIdle();
@@ -874,7 +900,8 @@ TEST_F(DeviceStatusCollectorTest, TestCPUSamples) {
   std::string full_cpu_usage("cpu  500 0 500 0 0 0 0");
   RestartStatusCollector(base::Bind(&GetEmptyVolumeInfo),
                          base::Bind(&GetFakeCPUStatistics, full_cpu_usage),
-                         base::Bind(&GetEmptyCPUTempInfo));
+                         base::Bind(&GetEmptyCPUTempInfo),
+                         base::Bind(&GetEmptyAndroidStatus));
   // Force finishing tasks posted by ctor of DeviceStatusCollector.
   content::BrowserThread::GetBlockingPool()->FlushForTesting();
   base::RunLoop().RunUntilIdle();
@@ -925,7 +952,8 @@ TEST_F(DeviceStatusCollectorTest, TestCPUTemp) {
 
   RestartStatusCollector(base::Bind(&GetEmptyVolumeInfo),
                          base::Bind(&GetEmptyCPUStatistics),
-                         base::Bind(&GetFakeCPUTempInfo, expected_temp_info));
+                         base::Bind(&GetFakeCPUTempInfo, expected_temp_info),
+                         base::Bind(&GetEmptyAndroidStatus));
   // Force finishing tasks posted by ctor of DeviceStatusCollector.
   content::BrowserThread::GetBlockingPool()->FlushForTesting();
   base::RunLoop().RunUntilIdle();
