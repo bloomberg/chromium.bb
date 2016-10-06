@@ -291,6 +291,7 @@ class CORE_EXPORT Document : public ContainerNode,
   Length viewportDefaultMinWidth() const { return m_viewportDefaultMinWidth; }
 
   String outgoingReferrer() const override;
+  ReferrerPolicy getReferrerPolicy() const override;
 
   void setDoctype(DocumentType*);
   DocumentType* doctype() const { return m_docType.get(); }

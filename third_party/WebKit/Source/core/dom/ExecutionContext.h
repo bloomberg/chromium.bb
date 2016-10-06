@@ -177,7 +177,7 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   void parseAndSetReferrerPolicy(const String& policies,
                                  bool supportLegacyKeywords = false);
   void setReferrerPolicy(ReferrerPolicy);
-  ReferrerPolicy getReferrerPolicy() const { return m_referrerPolicy; }
+  virtual ReferrerPolicy getReferrerPolicy() const { return m_referrerPolicy; }
 
  protected:
   ExecutionContext();
