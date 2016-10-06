@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.omnibox;
 
+import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
+
 import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -17,6 +19,7 @@ import android.view.inputmethod.BaseInputConnection;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -641,6 +644,7 @@ public class UrlBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     @SmallTest
     @Feature("Omnibox")
     @RetryOnFailure
+    @Restriction({RESTRICTION_TYPE_NON_LOW_END_DEVICE}) // crbug.com/635714
     public void testDelayedCompositionCorrectedWithAutocomplete()
             throws InterruptedException, ExecutionException {
         startMainActivityOnBlankPage();
