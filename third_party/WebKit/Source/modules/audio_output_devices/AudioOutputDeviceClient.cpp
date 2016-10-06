@@ -16,7 +16,7 @@ const char* AudioOutputDeviceClient::supplementName() {
 
 AudioOutputDeviceClient* AudioOutputDeviceClient::from(
     ExecutionContext* context) {
-  if (!context->isDocument())
+  if (!context || !context->isDocument())
     return nullptr;
 
   const Document* document = toDocument(context);
