@@ -12766,14 +12766,8 @@ Tell us what happened exactly before you got the profile error message:
       <message name="IDS_AUTO_SIGNIN_FIRST_RUN_TITLE_MANY_DEVICES" desc="The title of the dialog during the autosign-in first run experience for the Chrome syncing users.">
         Sign in easily across devices
       </message>
-      <message name="IDS_AUTO_SIGNIN_FIRST_RUN_TITLE_MANY_DEVICES_1" desc="The alternative title of the dialog during the autosign-in first run experience for the Chrome syncing users.">
-        Automatically sign in across devices
-      </message>
       <message name="IDS_AUTO_SIGNIN_FIRST_RUN_TITLE_LOCAL_DEVICE" desc="The title of the dialog during the autosign-in first run experience for the Chrome signed out users.">
         Sign in easily on this device
-      </message>
-      <message name="IDS_AUTO_SIGNIN_FIRST_RUN_TITLE_LOCAL_DEVICE_1" desc="The alternative title of the dialog during the autosign-in first run experience for the Chrome signed out users.">
-        Automatically sign in on this device
       </message>
       <message name="IDS_AUTO_SIGNIN_FIRST_RUN_SMART_LOCK_TEXT" desc="The text of the dialog during the autosign-in first run experience for the Chrome syncing users.">
         <ph name="PASSWORD_MANAGER_BRAND">$1<ex>Google Smart Lock</ex></ph> automatically signs you in to eligible sites and apps with passwords you saved.
