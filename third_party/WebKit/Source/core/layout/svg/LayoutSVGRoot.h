@@ -74,7 +74,8 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
     m_containerSize = containerSize;
   }
 
-  // localToBorderBoxTransform maps local SVG viewport coordinates to local CSS box coordinates.
+  // localToBorderBoxTransform maps local SVG viewport coordinates to local CSS
+  // box coordinates.
   const AffineTransform& localToBorderBoxTransform() const {
     return m_localToBorderBoxTransform;
   }

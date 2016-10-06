@@ -49,7 +49,8 @@ class LayoutSVGInlineText final : public LayoutText {
                                            float& scalingFactor,
                                            Font& scaledFont);
 
-  // Preserves floating point precision for the use in DRT. It knows how to round and does a better job than enclosingIntRect.
+  // Preserves floating point precision for the use in DRT. It knows how to
+  // round and does a better job than enclosingIntRect.
   FloatRect floatLinesBoundingBox() const;
 
   PassRefPtr<StringImpl> originalText() const override;

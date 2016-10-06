@@ -28,7 +28,8 @@ namespace blink {
 
 class Font;
 
-// Helper class used by SVGTextLayoutEngine to handle 'letter-spacing' and 'word-spacing'.
+// Helper class used by SVGTextLayoutEngine to handle 'letter-spacing' and
+// 'word-spacing'.
 class SVGTextLayoutEngineSpacing {
   STACK_ALLOCATED();
   WTF_MAKE_NONCOPYABLE(SVGTextLayoutEngineSpacing);

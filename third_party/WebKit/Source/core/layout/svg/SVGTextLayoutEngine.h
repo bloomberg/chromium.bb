@@ -39,11 +39,12 @@ class SVGTextMetrics;
 
 // SVGTextLayoutEngine performs the second layout phase for SVG text.
 //
-// The InlineBox tree was created, containing the text chunk information, necessary to apply
-// certain SVG specific text layout properties (text-length adjustments and text-anchor).
-// The second layout phase uses the SVGTextLayoutAttributes stored in the individual
-// LayoutSVGInlineText layoutObjects to compute the final positions for each character
-// which are stored in the SVGInlineTextBox objects.
+// The InlineBox tree was created, containing the text chunk information,
+// necessary to apply certain SVG specific text layout properties (text-length
+// adjustments and text-anchor).
+// The second layout phase uses the SVGTextLayoutAttributes stored in the
+// individual LayoutSVGInlineText layoutObjects to compute the final positions
+// for each character which are stored in the SVGInlineTextBox objects.
 
 class SVGTextLayoutEngine {
   STACK_ALLOCATED();

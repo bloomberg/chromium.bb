@@ -75,9 +75,10 @@ class LayoutSVGShape : public LayoutSVGModelObject {
   bool hasPath() const { return m_path.get(); }
   float dashScaleFactor() const;
 
-  // This method is sometimes (rarely) called with a null path and crashes. The code managing
-  // the path enforces the necessary invariants to ensure a valid path but somehow that fails.
-  // The assert and check for hasPath() are intended to detect and prevent crashes.
+  // This method is sometimes (rarely) called with a null path and crashes. The
+  // code managing the path enforces the necessary invariants to ensure a valid
+  // path but somehow that fails. The assert and check for hasPath() are
+  // intended to detect and prevent crashes.
   virtual bool isShapeEmpty() const {
     DCHECK(m_path);
     return !hasPath() || path().isEmpty();
@@ -153,9 +154,10 @@ class LayoutSVGShape : public LayoutSVGModelObject {
 
  private:
   AffineTransform m_localTransform;
-  // TODO(fmalita): the Path is now cached in SVGPath; while this additional cache is just a
-  // shallow copy, it certainly has a complexity/state management cost (plus allocation & storage
-  // overhead) - so we should look into removing it.
+  // TODO(fmalita): the Path is now cached in SVGPath; while this additional
+  // cache is just a shallow copy, it certainly has a complexity/state
+  // management cost (plus allocation & storage overhead) - so we should look
+  // into removing it.
   std::unique_ptr<Path> m_path;
   mutable std::unique_ptr<LayoutSVGShapeRareData> m_rareData;
 

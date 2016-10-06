@@ -36,12 +36,12 @@ class SVGFilterGraphNodeMap;
 class FilterData final : public GarbageCollected<FilterData> {
  public:
   /*
-     * The state transitions should follow the following:
-     * Initial -> RecordingContent -> ReadyToPaint -> PaintingFilter -> ReadyToPaint
-     *               |     ^                              |     ^
-     *               v     |                              v     |
-     *     RecordingContentCycleDetected            PaintingFilterCycle
-     */
+   * The state transitions should follow the following:
+   * Initial->RecordingContent->ReadyToPaint->PaintingFilter->ReadyToPaint
+   *              |     ^                       |     ^
+   *              v     |                       v     |
+   *     RecordingContentCycleDetected     PaintingFilterCycle
+   */
   enum FilterDataState {
     Initial,
     RecordingContent,

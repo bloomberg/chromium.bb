@@ -53,7 +53,8 @@ FloatRect LayoutSVGPath::hitTestStrokeBoundingBox() const {
   if (svgStyle.hasStroke())
     return m_strokeBoundingBox;
 
-  // Implementation of http://dev.w3.org/fxtf/css-masking-1/#compute-stroke-bounding-box
+  // Implementation of
+  // http://dev.w3.org/fxtf/css-masking-1/#compute-stroke-bounding-box
   // except that we ignore whether the stroke is none.
 
   FloatRect box = m_fillBoundingBox;

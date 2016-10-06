@@ -147,8 +147,9 @@ bool LayoutSVGModelObject::nodeAtPoint(HitTestResult&,
   return false;
 }
 
-// The SVG addOutlineRects() method adds rects in local coordinates so the default absoluteElementBoundingBoxRect()
-// returns incorrect values for SVG objects. Overriding this method provides access to the absolute bounds.
+// The SVG addOutlineRects() method adds rects in local coordinates so the
+// default absoluteElementBoundingBoxRect() returns incorrect values for SVG
+// objects. Overriding this method provides access to the absolute bounds.
 IntRect LayoutSVGModelObject::absoluteElementBoundingBoxRect() const {
   return localToAbsoluteQuad(
              FloatQuad(paintInvalidationRectInLocalSVGCoordinates()))

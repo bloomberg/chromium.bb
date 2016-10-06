@@ -52,10 +52,12 @@ SVGPaintServer LayoutSVGResourceGradient::preparePaintServer(
     const LayoutObject& object) {
   clearInvalidationMask();
 
-  // Be sure to synchronize all SVG properties on the gradientElement _before_ processing any further.
-  // Otherwhise the call to collectGradientAttributes() in createTileImage(), may cause the SVG DOM property
-  // synchronization to kick in, which causes removeAllClientsFromCache() to be called, which in turn deletes our
-  // GradientData object! Leaving out the line below will cause svg/dynamic-updates/SVG*GradientElement-svgdom* to crash.
+  // Be sure to synchronize all SVG properties on the gradientElement _before_
+  // processing any further. Otherwhise the call to collectGradientAttributes()
+  // in createTileImage(), may cause the SVG DOM property synchronization to
+  // kick in, which causes removeAllClientsFromCache() to be called, which in
+  // turn deletes our GradientData object! Leaving out the line below will cause
+  // svg/dynamic-updates/SVG*GradientElement-svgdom* to crash.
   SVGGradientElement* gradientElement = toSVGGradientElement(element());
   if (!gradientElement)
     return SVGPaintServer::invalid();
@@ -68,8 +70,9 @@ SVGPaintServer LayoutSVGResourceGradient::preparePaintServer(
     m_shouldCollectGradientAttributes = false;
   }
 
-  // Spec: When the geometry of the applicable element has no width or height and objectBoundingBox is specified,
-  // then the given effect (e.g. a gradient or a filter) will be ignored.
+  // Spec: When the geometry of the applicable element has no width or height
+  // and objectBoundingBox is specified, then the given effect (e.g. a gradient
+  // or a filter) will be ignored.
   FloatRect objectBoundingBox = object.objectBoundingBox();
   if (gradientUnits() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox &&
       objectBoundingBox.isEmpty())
@@ -84,7 +87,8 @@ SVGPaintServer LayoutSVGResourceGradient::preparePaintServer(
   if (!gradientData->gradient) {
     gradientData->gradient = buildGradient();
 
-    // We want the text bounding box applied to the gradient space transform now, so the gradient shader can use it.
+    // We want the text bounding box applied to the gradient space transform
+    // now, so the gradient shader can use it.
     if (gradientUnits() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox &&
         !objectBoundingBox.isEmpty()) {
       gradientData->userspaceTransform.translate(objectBoundingBox.x(),

@@ -65,7 +65,8 @@ void SVGResourcesCache::removeResourcesFromLayoutObject(LayoutObject* object) {
   if (!resources)
     return;
 
-  // Walk resources and unregister the layout object as a client of each resource.
+  // Walk resources and unregister the layout object as a client of each
+  // resource.
   HashSet<LayoutSVGResourceContainer*> resourceSet;
   resources->buildSetOfResources(resourceSet);
 
@@ -110,16 +111,17 @@ void SVGResourcesCache::clientStyleChanged(LayoutObject* layoutObject,
   if (!diff.hasDifference() || !layoutObject->parent())
     return;
 
-  // In this case the proper SVGFE*Element will decide whether the modified CSS properties require
+  // In this case the proper SVGFE*Element will decide whether the modified CSS
+  // properties require
   // a relayout or paintInvalidation.
   if (layoutObject->isSVGResourceFilterPrimitive() && !diff.needsLayout())
     return;
 
-  // Dynamic changes of CSS properties like 'clip-path' may require us to recompute the associated
-  // resources for a LayoutObject.
-  // TODO(fs): Avoid passing in a useless StyleDifference, but instead compare oldStyle/newStyle
-  // to see which resources changed to be able to selectively rebuild individual resources,
-  // instead of all of them.
+  // Dynamic changes of CSS properties like 'clip-path' may require us to
+  // recompute the associated resources for a LayoutObject.
+  // TODO(fs): Avoid passing in a useless StyleDifference, but instead compare
+  // oldStyle/newStyle to see which resources changed to be able to selectively
+  // rebuild individual resources, instead of all of them.
   if (layoutObjectCanHaveResources(layoutObject)) {
     SVGResourcesCache& cache = resourcesCache(layoutObject->document());
     cache.removeResourcesFromLayoutObject(layoutObject);

@@ -34,23 +34,32 @@ LayoutSVGBlock::LayoutSVGBlock(SVGElement* element)
     : LayoutBlockFlow(element) {}
 
 bool LayoutSVGBlock::allowsOverflowClip() const {
-  // LayoutSVGBlock, used by Layout(SVGText|ForeignObject), is not allowed to have overflow clip.
-  // LayoutBlock assumes a layer to be present when the overflow clip functionality is requested. Both
-  // Layout(SVGText|ForeignObject) return 'NoPaintLayer' on 'layerTypeRequired'. Fine for LayoutSVGText.
+  // LayoutSVGBlock, used by Layout(SVGText|ForeignObject), is not allowed to
+  // have overflow clip.
+  // LayoutBlock assumes a layer to be present when the overflow clip
+  // functionality is requested. Both Layout(SVGText|ForeignObject) return
+  // 'NoPaintLayer' on 'layerTypeRequired'.
+  // Fine for LayoutSVGText.
   //
-  // If we want to support overflow rules for <foreignObject> we can choose between two solutions:
+  // If we want to support overflow rules for <foreignObject> we can choose
+  // between two solutions:
   // a) make LayoutSVGForeignObject require layers and SVG layer aware
-  // b) refactor overflow logic out of Layer (as suggested by dhyatt), which is a large task
+  // b) refactor overflow logic out of Layer (as suggested by dhyatt), which is
+  //    a large task
   //
-  // Until this is resolved, disable overflow support. Opera/FF don't support it as well at the moment (Feb 2010).
+  // Until this is resolved, disable overflow support. Opera/FF don't support it
+  // as well at the moment (Feb 2010).
   //
-  // Note: This does NOT affect overflow handling on outer/inner <svg> elements - this is handled
-  // manually by LayoutSVGRoot - which owns the documents enclosing root layer and thus works fine.
+  // Note: This does NOT affect overflow handling on outer/inner <svg> elements
+  // - this is handled
+  // manually by LayoutSVGRoot - which owns the documents enclosing root layer
+  // and thus works fine.
   return false;
 }
 
 void LayoutSVGBlock::absoluteRects(Vector<IntRect>&, const LayoutPoint&) const {
-  // This code path should never be taken for SVG, as we're assuming useTransforms=true everywhere, absoluteQuads should be used.
+  // This code path should never be taken for SVG, as we're assuming
+  // useTransforms=true everywhere, absoluteQuads should be used.
   ASSERT_NOT_REACHED();
 }
 

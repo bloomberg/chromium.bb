@@ -71,12 +71,13 @@ class LayoutSVGResourcePattern final : public LayoutSVGResourcePaintServer {
     return m_attributesWrapper->attributes();
   }
 
-  // FIXME: we can almost do away with this per-object map, but not quite: the tile size can be
-  // relative to the client bounding box, and it gets captured in the cached Pattern shader.
-  // Hence, we need one Pattern shader per client. The display list OTOH is the same => we
-  // should be able to cache a single display list per LayoutSVGResourcePattern + one
-  // Pattern(shader) for each client -- this would avoid re-recording when multiple clients
-  // share the same pattern.
+  // FIXME: we can almost do away with this per-object map, but not quite: the
+  // tile size can be relative to the client bounding box, and it gets captured
+  // in the cached Pattern shader.
+  // Hence, we need one Pattern shader per client. The display list OTOH is the
+  // same => we should be able to cache a single display list per
+  // LayoutSVGResourcePattern + one Pattern(shader) for each client -- this
+  // would avoid re-recording when multiple clients share the same pattern.
   HashMap<const LayoutObject*, std::unique_ptr<PatternData>> m_patternMap;
 };
 

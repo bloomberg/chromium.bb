@@ -26,8 +26,8 @@ namespace blink {
 
 class SVGElement;
 
-// This class is for containers which are never drawn, but do need to support style
-// <defs>, <linearGradient>, <radialGradient> are all good examples
+// This class is for containers which are never drawn, but do need to support
+// style <defs>, <linearGradient>, <radialGradient> are all good examples
 class LayoutSVGHiddenContainer : public LayoutSVGContainer {
  public:
   explicit LayoutSVGHiddenContainer(SVGElement*);

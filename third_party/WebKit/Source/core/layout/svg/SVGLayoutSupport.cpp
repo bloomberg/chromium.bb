@@ -58,7 +58,8 @@ struct SearchCandidate {
 
 FloatRect SVGLayoutSupport::localOverflowRectForPaintInvalidation(
     const LayoutObject& object) {
-  // This doesn't apply to LayoutSVGRoot. Use LayoutSVGRoot::localOverflowRectForPaintInvalidation() instead.
+  // This doesn't apply to LayoutSVGRoot. Use
+  // LayoutSVGRoot::localOverflowRectForPaintInvalidation() instead.
   ASSERT(!object.isSVGRoot());
 
   // Return early for any cases where we don't actually paint
@@ -92,8 +93,9 @@ LayoutRect SVGLayoutSupport::transformPaintInvalidationRect(
   if (object.isSVGShape() && object.styleRef().svgStyle().hasStroke()) {
     if (float strokeWidthForHairlinePadding =
             toLayoutSVGShape(object).strokeWidth()) {
-      // For hairline strokes (stroke-width < 1 in device space), Skia rasterizes up to 0.4(9) off
-      // the stroke center. That means enclosingIntRect is not enough - we must also pad to 0.5.
+      // For hairline strokes (stroke-width < 1 in device space), Skia
+      // rasterizes up to 0.4(9) off the stroke center. That means
+      // enclosingIntRect is not enough - we must also pad to 0.5.
       // This is still fragile as it misses out on CC/DSF CTM components.
       const FloatSize strokeSize = rootTransform.mapSize(FloatSize(
           strokeWidthForHairlinePadding, strokeWidthForHairlinePadding));
@@ -101,7 +103,8 @@ LayoutRect SVGLayoutSupport::transformPaintInvalidationRect(
         float pad =
             0.5f - std::min(strokeSize.width(), strokeSize.height()) / 2;
         DCHECK_GT(pad, 0);
-        // Additionally, square/round caps can potentially introduce an outset <= 0.5
+        // Additionally, square/round caps can potentially introduce an outset
+        // <= 0.5
         if (object.styleRef().svgStyle().capStyle() != ButtCap)
           pad += 0.5f;
         adjustedRect.inflate(pad);
@@ -163,8 +166,9 @@ void SVGLayoutSupport::mapLocalToAncestor(const LayoutObject* object,
 
   LayoutObject* parent = object->parent();
 
-  // At the SVG/HTML boundary (aka LayoutSVGRoot), we apply the localToBorderBoxTransform
-  // to map an element from SVG viewport coordinates to CSS box coordinates.
+  // At the SVG/HTML boundary (aka LayoutSVGRoot), we apply the
+  // localToBorderBoxTransform to map an element from SVG viewport coordinates
+  // to CSS box coordinates.
   // LayoutSVGRoot's mapLocalToAncestor method expects CSS box coordinates.
   if (parent->isSVGRoot())
     transformState.applyTransform(
@@ -202,8 +206,9 @@ const LayoutObject* SVGLayoutSupport::pushMappingToContainer(
 
   LayoutObject* parent = object->parent();
 
-  // At the SVG/HTML boundary (aka LayoutSVGRoot), we apply the localToBorderBoxTransform
-  // to map an element from SVG viewport coordinates to CSS box coordinates.
+  // At the SVG/HTML boundary (aka LayoutSVGRoot), we apply the
+  // localToBorderBoxTransform to map an element from SVG viewport coordinates
+  // to CSS box coordinates.
   // LayoutSVGRoot's mapLocalToAncestor method expects CSS box coordinates.
   if (parent->isSVGRoot()) {
     TransformationMatrix matrix(object->localToSVGParentTransform());
@@ -216,7 +221,8 @@ const LayoutObject* SVGLayoutSupport::pushMappingToContainer(
   return parent;
 }
 
-// Update a bounding box taking into account the validity of the other bounding box.
+// Update a bounding box taking into account the validity of the other bounding
+// box.
 inline void SVGLayoutSupport::updateObjectBoundingBox(
     FloatRect& objectBoundingBox,
     bool& objectBoundingBoxValid,
@@ -248,9 +254,12 @@ void SVGLayoutSupport::computeContainerBoundingBoxes(
   objectBoundingBoxValid = false;
   strokeBoundingBox = FloatRect();
 
-  // When computing the strokeBoundingBox, we use the paintInvalidationRects of the container's children so that the container's stroke includes
-  // the resources applied to the children (such as clips and filters). This allows filters applied to containers to correctly bound
-  // the children, and also improves inlining of SVG content, as the stroke bound is used in that situation also.
+  // When computing the strokeBoundingBox, we use the paintInvalidationRects of
+  // the container's children so that the container's stroke includes the
+  // resources applied to the children (such as clips and filters). This allows
+  // filters applied to containers to correctly bound the children, and also
+  // improves inlining of SVG content, as the stroke bound is used in that
+  // situation also.
   for (LayoutObject* current = container->slowFirstChild(); current;
        current = current->nextSibling()) {
     if (current->isSVGHiddenContainer())
@@ -327,12 +336,14 @@ void SVGLayoutSupport::layoutChildren(LayoutObject* firstChild,
     }
 
     if (layoutSizeChanged) {
-      // When selfNeedsLayout is false and the layout size changed, we have to check whether this child uses relative lengths
+      // When selfNeedsLayout is false and the layout size changed, we have to
+      // check whether this child uses relative lengths
       if (SVGElement* element =
               child->node()->isSVGElement() ? toSVGElement(child->node()) : 0) {
         if (element->hasRelativeLengths()) {
           // FIXME: this should be done on invalidation, not during layout.
-          // When the layout size changed and when using relative values tell the LayoutSVGShape to update its shape object
+          // When the layout size changed and when using relative values tell
+          // the LayoutSVGShape to update its shape object
           if (child->isSVGShape()) {
             toLayoutSVGShape(child)->setNeedsShapeUpdate();
           } else if (child->isSVGText()) {
@@ -345,13 +356,15 @@ void SVGLayoutSupport::layoutChildren(LayoutObject* firstChild,
       }
     }
 
-    // Resource containers are nasty: they can invalidate clients outside the current SubtreeLayoutScope.
-    // Since they only care about viewport size changes (to resolve their relative lengths), we trigger
-    // their invalidation directly from SVGSVGElement::svgAttributeChange() or at a higher
-    // SubtreeLayoutScope (in LayoutView::layout()). We do not create a SubtreeLayoutScope for
-    // resources because their ability to reference each other leads to circular layout. We protect
-    // against that within the layout code for resources, but it causes assertions if we use a
-    // SubTreeLayoutScope for them.
+    // Resource containers are nasty: they can invalidate clients outside the
+    // current SubtreeLayoutScope.
+    // Since they only care about viewport size changes (to resolve their
+    // relative lengths), we trigger their invalidation directly from
+    // SVGSVGElement::svgAttributeChange() or at a higher SubtreeLayoutScope (in
+    // LayoutView::layout()). We do not create a SubtreeLayoutScope for
+    // resources because their ability to reference each other leads to circular
+    // layout. We protect against that within the layout code for resources, but
+    // it causes assertions if we use a SubTreeLayoutScope for them.
     if (child->isSVGResourceContainer()) {
       // Lay out any referenced resources before the child.
       layoutResourcesIfNeeded(child);
@@ -378,7 +391,8 @@ void SVGLayoutSupport::layoutResourcesIfNeeded(const LayoutObject* object) {
 }
 
 bool SVGLayoutSupport::isOverflowHidden(const LayoutObject* object) {
-  // LayoutSVGRoot should never query for overflow state - it should always clip itself to the initial viewport size.
+  // LayoutSVGRoot should never query for overflow state - it should always clip
+  // itself to the initial viewport size.
   ASSERT(!object->isDocumentElement());
 
   return object->style()->overflowX() == OverflowHidden ||
@@ -539,14 +553,15 @@ AffineTransform SVGLayoutSupport::deprecatedCalculateTransformToLayer(
 
   // Continue walking up the layer tree, accumulating CSS transforms.
   // FIXME: this queries layer compositing state - which is not
-  // supported during layout. Hence, the result may not include all CSS transforms.
+  // supported during layout. Hence, the result may not include all CSS
+  // transforms.
   PaintLayer* layer = layoutObject ? layoutObject->enclosingLayer() : 0;
   while (layer && layer->isAllowedToQueryCompositingState()) {
     // We can stop at compositing layers, to match the backing resolution.
-    // FIXME: should we be computing the transform to the nearest composited layer,
-    // or the nearest composited layer that does not paint into its ancestor?
-    // I think this is the nearest composited ancestor since we will inherit its
-    // transforms in the composited layer tree.
+    // FIXME: should we be computing the transform to the nearest composited
+    // layer, or the nearest composited layer that does not paint into its
+    // ancestor? I think this is the nearest composited ancestor since we will
+    // inherit its transforms in the composited layer tree.
     if (layer->compositingState() != NotComposited)
       break;
 
@@ -563,8 +578,9 @@ float SVGLayoutSupport::calculateScreenFontSizeScalingFactor(
     const LayoutObject* layoutObject) {
   ASSERT(layoutObject);
 
-  // FIXME: trying to compute a device space transform at record time is wrong. All clients
-  // should be updated to avoid relying on this information, and the method should be removed.
+  // FIXME: trying to compute a device space transform at record time is wrong.
+  // All clients should be updated to avoid relying on this information, and the
+  // method should be removed.
   AffineTransform ctm =
       deprecatedCalculateTransformToLayer(layoutObject) *
       SubtreeContentTransformScope::currentContentTransformation();
@@ -627,7 +643,8 @@ static SearchCandidate searchTreeForFindClosestLayoutSVGText(
                    compareCandidateDistance);
 
   // Find the closest LayoutSVGText in the sub-trees in |candidates|.
-  // If a LayoutSVGText is found that is strictly closer than any previous candidate, then end the search.
+  // If a LayoutSVGText is found that is strictly closer than any previous
+  // candidate, then end the search.
   for (const SearchCandidate& searchCandidate : candidates) {
     if (closestText.candidateDistance < searchCandidate.candidateDistance)
       break;

@@ -63,7 +63,8 @@ bool LayoutSVGResourceClipper::calculateClipContentPathIfNeeded() {
   if (!m_clipContentPath.isEmpty())
     return true;
 
-  // If the current clip-path gets clipped itself, we have to fallback to masking.
+  // If the current clip-path gets clipped itself, we have to fallback to
+  // masking.
   if (styleRef().clipPath())
     return false;
 
@@ -77,7 +78,8 @@ bool LayoutSVGResourceClipper::calculateClipContentPathIfNeeded() {
     LayoutObject* childLayoutObject = childElement->layoutObject();
     if (!childLayoutObject)
       continue;
-    // Only shapes or paths are supported for direct clipping. We need to fallback to masking for texts.
+    // Only shapes or paths are supported for direct clipping. We need to
+    // fallback to masking for texts.
     if (childLayoutObject->isSVGText()) {
       m_clipContentPath.clear();
       return false;
@@ -107,8 +109,9 @@ bool LayoutSVGResourceClipper::calculateClipContentPathIfNeeded() {
       continue;
     }
 
-    // Multiple shapes require PathOps. In some degenerate cases PathOps can exhibit quadratic
-    // behavior, so we cap the number of ops to a reasonable count.
+    // Multiple shapes require PathOps. In some degenerate cases PathOps can
+    // exhibit quadratic behavior, so we cap the number of ops to a reasonable
+    // count.
     const unsigned kMaxOps = 42;
     if (++opCount > kMaxOps) {
       m_clipContentPath.clear();
@@ -167,9 +170,10 @@ sk_sp<const SkPicture> LayoutSVGResourceClipper::createContentPicture() {
   if (m_clipContentPicture)
     return m_clipContentPicture;
 
-  // Using strokeBoundingBox (instead of paintInvalidationRectInLocalSVGCoordinates) to avoid the intersection
-  // with local clips/mask, which may yield incorrect results when mixing objectBoundingBox and
-  // userSpaceOnUse units (http://crbug.com/294900).
+  // Using strokeBoundingBox (instead of
+  // paintInvalidationRectInLocalSVGCoordinates) to avoid the intersection with
+  // local clips/mask, which may yield incorrect results when mixing
+  // objectBoundingBox and userSpaceOnUse units (http://crbug.com/294900).
   FloatRect bounds = strokeBoundingBox();
 
   SkPictureBuilder pictureBuilder(bounds, nullptr, nullptr);
@@ -207,7 +211,8 @@ sk_sp<const SkPicture> LayoutSVGResourceClipper::createContentPicture() {
     if (isUseElement)
       layoutObject = childElement->layoutObject();
 
-    // Switch to a paint behavior where all children of this <clipPath> will be laid out using special constraints:
+    // Switch to a paint behavior where all children of this <clipPath> will be
+    // laid out using special constraints:
     // - fill-opacity/stroke-opacity/opacity set to 1
     // - masker/filter not applied when laying out the children
     // - fill is set to the initial fill paint server (solid, black)
@@ -223,7 +228,8 @@ sk_sp<const SkPicture> LayoutSVGResourceClipper::createContentPicture() {
 }
 
 void LayoutSVGResourceClipper::calculateLocalClipBounds() {
-  // This is a rough heuristic to appraise the clip size and doesn't consider clip on clip.
+  // This is a rough heuristic to appraise the clip size and doesn't consider
+  // clip on clip.
   for (SVGElement* childElement = Traversal<SVGElement>::firstChild(*element());
        childElement;
        childElement = Traversal<SVGElement>::nextSibling(*childElement)) {

@@ -82,7 +82,8 @@ static SVGPaintDescription requestPaint(const LayoutObject& object,
   switch (paintType) {
     case SVG_PAINTTYPE_CURRENTCOLOR:
     case SVG_PAINTTYPE_URI_CURRENTCOLOR:
-      // The keyword `currentcolor` takes its value from the value of the `color` property on the same element.
+      // The keyword `currentcolor` takes its value from the value of the
+      // `color` property on the same element.
       color = style.visitedDependentColor(CSSPropertyColor);
       hasColor = true;
       break;
@@ -96,12 +97,14 @@ static SVGPaintDescription requestPaint(const LayoutObject& object,
   }
 
   if (style.insideLink() == InsideVisitedLink) {
-    // FIXME: This code doesn't support the uri component of the visited link paint, https://bugs.webkit.org/show_bug.cgi?id=70006
+    // FIXME: This code doesn't support the uri component of the visited link
+    // paint, https://bugs.webkit.org/show_bug.cgi?id=70006
     SVGPaintType visitedPaintType = applyToFill
                                         ? svgStyle.visitedLinkFillPaintType()
                                         : svgStyle.visitedLinkStrokePaintType();
 
-    // For SVG_PAINTTYPE_CURRENTCOLOR, 'color' already contains the 'visitedColor'.
+    // For SVG_PAINTTYPE_CURRENTCOLOR, 'color' already contains the
+    // 'visitedColor'.
     if (visitedPaintType < SVG_PAINTTYPE_URI_NONE &&
         visitedPaintType != SVG_PAINTTYPE_CURRENTCOLOR) {
       const Color& visitedColor = applyToFill
@@ -115,7 +118,8 @@ static SVGPaintDescription requestPaint(const LayoutObject& object,
 
   // If the primary resource is just a color, return immediately.
   if (paintType < SVG_PAINTTYPE_URI_NONE) {
-    // |paintType| will be either <current-color> or <rgb-color> here - both of which will have a color.
+    // |paintType| will be either <current-color> or <rgb-color> here - both of
+    // which will have a color.
     ASSERT(hasColor);
     return SVGPaintDescription(color);
   }
@@ -125,18 +129,20 @@ static SVGPaintDescription requestPaint(const LayoutObject& object,
           SVGResourcesCache::cachedResourcesForLayoutObject(&object))
     uriResource = applyToFill ? resources->fill() : resources->stroke();
 
-  // If the requested resource is not available, return the color resource or 'none'.
+  // If the requested resource is not available, return the color resource or
+  // 'none'.
   if (!uriResource) {
-    // The fallback is 'none'. (SVG2 say 'none' is implied when no fallback is specified.)
+    // The fallback is 'none'. (SVG2 say 'none' is implied when no fallback is
+    // specified.)
     if (paintType == SVG_PAINTTYPE_URI_NONE || !hasColor)
       return SVGPaintDescription();
 
     return SVGPaintDescription(color);
   }
 
-  // The paint server resource exists, though it may be invalid (pattern with width/height=0).
-  // Return the fallback color to our caller so it can use it, if
-  // preparePaintServer() on the resource container failed.
+  // The paint server resource exists, though it may be invalid (pattern with
+  // width/height=0). Return the fallback color to our caller so it can use it,
+  // if preparePaintServer() on the resource container failed.
   if (hasColor)
     return SVGPaintDescription(uriResource, color);
 

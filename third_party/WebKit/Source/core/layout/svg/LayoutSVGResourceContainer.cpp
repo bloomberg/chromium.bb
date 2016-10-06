@@ -48,8 +48,9 @@ LayoutSVGResourceContainer::LayoutSVGResourceContainer(SVGElement* node)
 LayoutSVGResourceContainer::~LayoutSVGResourceContainer() {}
 
 void LayoutSVGResourceContainer::layout() {
-  // FIXME: Investigate a way to detect and break resource layout dependency cycles early.
-  // Then we can remove this method altogether, and fall back onto LayoutSVGHiddenContainer::layout().
+  // FIXME: Investigate a way to detect and break resource layout dependency
+  // cycles early. Then we can remove this method altogether, and fall back onto
+  // LayoutSVGHiddenContainer::layout().
   ASSERT(needsLayout());
   if (m_isInLayout)
     return;
@@ -92,8 +93,8 @@ void LayoutSVGResourceContainer::detachAllClients() {
     // removal will be signaled after processing all the clients.)
     SVGResources* resources =
         SVGResourcesCache::cachedResourcesForLayoutObject(client);
-    ASSERT(
-        resources);  // Or else the client wouldn't be in the list in the first place.
+    // Or else the client wouldn't be in the list in the first place.
+    DCHECK(resources);
     resources->resourceDestroyed(this);
 
     // Add a pending resolution based on the id of the old resource.
@@ -240,7 +241,8 @@ void LayoutSVGResourceContainer::registerResource() {
     const ComputedStyle& style = layoutObject->styleRef();
 
     // If the client has a layer (is a non-SVGElement) we need to signal
-    // invalidation in the same way as is done in markAllResourceClientsForInvalidation above.
+    // invalidation in the same way as is done in
+    // markAllResourceClientsForInvalidation above.
     if (layoutObject->hasLayer() && resourceType() == FilterResourceType) {
       if (!style.hasFilter())
         continue;
@@ -285,10 +287,11 @@ static inline void removeFromCacheAndInvalidateDependencies(
   if (!dependencies)
     return;
 
-  // We allow cycles in SVGDocumentExtensions reference sets in order to avoid expensive
-  // reference graph adjustments on changes, so we need to break possible cycles here.
-  // This strong reference is safe, as it is guaranteed that this set will be emptied
-  // at the end of recursion.
+  // We allow cycles in SVGDocumentExtensions reference sets in order to avoid
+  // expensive reference graph adjustments on changes, so we need to break
+  // possible cycles here.
+  // This strong reference is safe, as it is guaranteed that this set will be
+  // emptied at the end of recursion.
   DEFINE_STATIC_LOCAL(SVGElementSet, invalidatingDependencies,
                       (new SVGElementSet));
 

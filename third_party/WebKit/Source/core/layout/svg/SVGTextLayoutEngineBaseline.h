@@ -34,7 +34,8 @@ class ComputedStyle;
 class SVGComputedStyle;
 class SVGTextMetrics;
 
-// Helper class used by SVGTextLayoutEngine to handle 'alignment-baseline' / 'dominant-baseline' and 'baseline-shift'.
+// Helper class used by SVGTextLayoutEngine to handle 'alignment-baseline' /
+// 'dominant-baseline' and 'baseline-shift'.
 class SVGTextLayoutEngineBaseline {
   STACK_ALLOCATED();
   WTF_MAKE_NONCOPYABLE(SVGTextLayoutEngineBaseline);
@@ -52,9 +53,10 @@ class SVGTextLayoutEngineBaseline {
 
   const Font& m_font;
 
-  // Everything we read from the m_font's font descriptor during layout is scaled by the effective
-  // zoom, as fonts always are in computed style. Since layout inside SVG takes place in unzoomed
-  // coordinates we have to compensate for zoom when reading values from the font descriptor.
+  // Everything we read from the m_font's font descriptor during layout is
+  // scaled by the effective zoom, as fonts always are in computed style. Since
+  // layout inside SVG takes place in unzoomed coordinates we have to compensate
+  // for zoom when reading values from the font descriptor.
   float m_effectiveZoom;
 };
 

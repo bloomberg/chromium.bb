@@ -47,27 +47,33 @@ static HashSet<AtomicString>& clipperFilterMaskerTags() {
   DEFINE_STATIC_LOCAL(
       HashSet<AtomicString>, s_tagList,
       ({
-          // "container elements": http://www.w3.org/TR/SVG11/intro.html#TermContainerElement
-          // "graphics elements" : http://www.w3.org/TR/SVG11/intro.html#TermGraphicsElement
+          // "container elements":
+          // http://www.w3.org/TR/SVG11/intro.html#TermContainerElement
+          // "graphics elements" :
+          // http://www.w3.org/TR/SVG11/intro.html#TermGraphicsElement
           aTag.localName(), circleTag.localName(), ellipseTag.localName(),
           gTag.localName(), imageTag.localName(), lineTag.localName(),
           markerTag.localName(), maskTag.localName(), pathTag.localName(),
           polygonTag.localName(), polylineTag.localName(), rectTag.localName(),
           svgTag.localName(), textTag.localName(), useTag.localName(),
-          // Not listed in the definitions is the clipPath element, the SVG spec says though:
-          // The "clipPath" element or any of its children can specify property "clip-path".
-          // So we have to add clipPathTag here, otherwhise clip-path on clipPath will fail.
-          // (Already mailed SVG WG, waiting for a solution)
+          // Not listed in the definitions is the clipPath element, the SVG spec
+          // says though:
+          // The "clipPath" element or any of its children can specify property
+          // "clip-path".
+          // So we have to add clipPathTag here, otherwhise clip-path on
+          // clipPath will fail. (Already mailed SVG WG, waiting for a solution)
           clipPathTag.localName(),
-          // Not listed in the definitions are the text content elements, though filter/clipper/masker on tspan/text/.. is allowed.
+          // Not listed in the definitions are the text content elements, though
+          // filter/clipper/masker on tspan/text/.. is allowed.
           // (Already mailed SVG WG, waiting for a solution)
           textPathTag.localName(), tspanTag.localName(),
-          // Not listed in the definitions is the foreignObject element, but clip-path
-          // is a supported attribute.
+          // Not listed in the definitions is the foreignObject element, but
+          // clip-path is a supported attribute.
           foreignObjectTag.localName(),
           // Elements that we ignore, as it doesn't make any sense.
           // defs, pattern, switch (FIXME: Mail SVG WG about these)
-          // symbol (is converted to a svg element, when referenced by use, we can safely ignore it.)
+          // symbol (is converted to a svg element, when referenced by use, we
+          // can safely ignore it.)
       }));
   return s_tagList;
 }

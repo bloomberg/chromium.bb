@@ -50,7 +50,8 @@ class SVGResourcesCache {
   // Called from all SVG layoutObjects removeChild() methods.
   static void clientWillBeRemovedFromTree(LayoutObject*);
 
-  // Called from all SVG layoutObjects destroy() methods - except for LayoutSVGResourceContainer.
+  // Called from all SVG layoutObjects destroy() methods - except for
+  // LayoutSVGResourceContainer.
   static void clientDestroyed(LayoutObject*);
 
   // Called from all SVG layoutObjects layout() methods.

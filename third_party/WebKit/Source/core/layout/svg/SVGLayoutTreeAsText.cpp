@@ -71,7 +71,8 @@
 
 namespace blink {
 
-/** class + iomanip to help streaming list separators, i.e. ", " in string "a, b, c, d"
+/** class + iomanip to help streaming list separators, i.e. ", " in string "a,
+ * b, c, d"
  * Can be used in cases where you don't know which item in the list is the first
  * one to be printed, but still want to avoid strings like ", b, c".
  */
@@ -404,7 +405,8 @@ static void writeLayoutSVGTextBox(TextStream& ts, const LayoutSVGText& text) {
                    LayoutPoint(text.location()),
                    LayoutSize(box->logicalWidth(), box->logicalHeight())));
 
-  // FIXME: Remove this hack, once the new text layout engine is completly landed. We want to preserve the old layout test results for now.
+  // FIXME: Remove this hack, once the new text layout engine is completly
+  // landed. We want to preserve the old layout test results for now.
   ts << " contains 1 chunk(s)";
 
   if (text.parent() && (text.parent()->resolveColor(CSSPropertyColor) !=
@@ -435,7 +437,8 @@ static inline void writeSVGInlineTextBox(TextStream& ts,
     unsigned startOffset = fragment.characterOffset;
     unsigned endOffset = fragment.characterOffset + fragment.length;
 
-    // FIXME: Remove this hack, once the new text layout engine is completly landed. We want to preserve the old layout test results for now.
+    // FIXME: Remove this hack, once the new text layout engine is completly
+    // landed. We want to preserve the old layout test results for now.
     ts << "chunk 1 ";
     ETextAnchor anchor = svgStyle.textAnchor();
     bool isVerticalText = !textLineLayout.style()->isHorizontalWritingMode();
@@ -569,8 +572,10 @@ void writeSVGResourceContainer(TextStream& ts,
     LayoutSVGResourcePattern* pattern =
         static_cast<LayoutSVGResourcePattern*>(resource);
 
-    // Dump final results that are used for layout. No use in asking SVGPatternElement for its patternUnits(), as it may
-    // link to other patterns using xlink:href, we need to build the full inheritance chain, aka. collectPatternProperties()
+    // Dump final results that are used for layout. No use in asking
+    // SVGPatternElement for its patternUnits(), as it may link to other
+    // patterns using xlink:href, we need to build the full inheritance chain,
+    // aka. collectPatternProperties()
     PatternAttributes attributes;
     toSVGPatternElement(pattern->element())
         ->collectPatternAttributes(attributes);
@@ -587,8 +592,10 @@ void writeSVGResourceContainer(TextStream& ts,
     LayoutSVGResourceLinearGradient* gradient =
         static_cast<LayoutSVGResourceLinearGradient*>(resource);
 
-    // Dump final results that are used for layout. No use in asking SVGGradientElement for its gradientUnits(), as it may
-    // link to other gradients using xlink:href, we need to build the full inheritance chain, aka. collectGradientProperties()
+    // Dump final results that are used for layout. No use in asking
+    // SVGGradientElement for its gradientUnits(), as it may link to other
+    // gradients using xlink:href, we need to build the full inheritance chain,
+    // aka. collectGradientProperties()
     LinearGradientAttributes attributes;
     toSVGLinearGradientElement(gradient->element())
         ->collectGradientAttributes(attributes);
@@ -602,8 +609,10 @@ void writeSVGResourceContainer(TextStream& ts,
     LayoutSVGResourceRadialGradient* gradient =
         toLayoutSVGResourceRadialGradient(resource);
 
-    // Dump final results that are used for layout. No use in asking SVGGradientElement for its gradientUnits(), as it may
-    // link to other gradients using xlink:href, we need to build the full inheritance chain, aka. collectGradientProperties()
+    // Dump final results that are used for layout. No use in asking
+    // SVGGradientElement for its gradientUnits(), as it may link to other
+    // gradients using xlink:href, we need to build the full inheritance chain,
+    // aka. collectGradientProperties()
     RadialGradientAttributes attributes;
     toSVGRadialGradientElement(gradient->element())
         ->collectGradientAttributes(attributes);
@@ -692,8 +701,10 @@ void writeResources(TextStream& ts, const LayoutObject& object, int indent) {
   const ComputedStyle& style = object.styleRef();
   const SVGComputedStyle& svgStyle = style.svgStyle();
 
-  // FIXME: We want to use SVGResourcesCache to determine which resources are present, instead of quering the resource <-> id cache.
-  // For now leave the DRT output as is, but later on we should change this so cycles are properly ignored in the DRT output.
+  // FIXME: We want to use SVGResourcesCache to determine which resources are
+  // present, instead of quering the resource <-> id cache.
+  // For now leave the DRT output as is, but later on we should change this so
+  // cycles are properly ignored in the DRT output.
   if (!svgStyle.maskerResource().isEmpty()) {
     if (LayoutSVGResourceMasker* masker =
             getLayoutSVGResourceById<LayoutSVGResourceMasker>(

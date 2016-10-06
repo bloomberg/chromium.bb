@@ -69,9 +69,10 @@ PatternData* LayoutSVGResourcePattern::patternForLayoutObject(
     const LayoutObject& object) {
   ASSERT(!m_shouldCollectPatternAttributes);
 
-  // FIXME: the double hash lookup is needed to guard against paint-time invalidation
-  // (painting animated images may trigger layout invals which delete our map entry).
-  // Hopefully that will be addressed at some point, and then we can optimize the lookup.
+  // FIXME: the double hash lookup is needed to guard against paint-time
+  // invalidation (painting animated images may trigger layout invals which
+  // delete our map entry). Hopefully that will be addressed at some point, and
+  // then we can optimize the lookup.
   if (PatternData* currentData = m_patternMap.get(&object))
     return currentData;
 
@@ -141,8 +142,9 @@ SVGPaintServer LayoutSVGResourcePattern::preparePaintServer(
     m_shouldCollectPatternAttributes = false;
   }
 
-  // Spec: When the geometry of the applicable element has no width or height and objectBoundingBox is specified,
-  // then the given effect (e.g. a gradient or a filter) will be ignored.
+  // Spec: When the geometry of the applicable element has no width or height
+  // and objectBoundingBox is specified, then the given effect (e.g. a gradient
+  // or a filter) will be ignored.
   FloatRect objectBoundingBox = object.objectBoundingBox();
   if (attributes().patternUnits() ==
           SVGUnitTypes::kSvgUnitTypeObjectboundingbox &&

@@ -72,7 +72,8 @@ class SVGPaintServer {
   Color m_color;
 };
 
-// If |SVGPaintDescription::hasFallback| is true, |SVGPaintDescription::color| is set to a fallback color.
+// If |SVGPaintDescription::hasFallback| is true, |SVGPaintDescription::color|
+// is set to a fallback color.
 struct SVGPaintDescription {
   STACK_ALLOCATED();
   SVGPaintDescription()

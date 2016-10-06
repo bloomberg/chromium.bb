@@ -85,7 +85,8 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
     ParentOnlyInvalidation = 1 << 3
   };
 
-  // Used from the invalidateClient/invalidateClients methods from classes, inheriting from us.
+  // Used from the invalidateClient/invalidateClients methods from classes,
+  // inheriting from us.
   void markAllClientsForInvalidation(InvalidationMode);
   void markAllResourceClientsForInvalidation();
   void markClientForInvalidation(LayoutObject*, InvalidationMode);
@@ -103,7 +104,8 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
   void registerResource();
 
   AtomicString m_id;
-  // Track global (markAllClientsForInvalidation) invals to avoid redundant crawls.
+  // Track global (markAllClientsForInvalidation) invals to avoid redundant
+  // crawls.
   unsigned m_invalidationMask : 8;
 
   unsigned m_registered : 1;

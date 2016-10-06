@@ -50,7 +50,8 @@ class CORE_EXPORT SVGLayoutSupport {
   STATIC_ONLY(SVGLayoutSupport);
 
  public:
-  // Shares child layouting code between LayoutSVGRoot/LayoutSVG(Hidden)Container
+  // Shares child layouting code between
+  // LayoutSVGRoot/LayoutSVG(Hidden)Container
   static void layoutChildren(LayoutObject*,
                              bool forceLayout,
                              bool screenScalingFactorChanged,
@@ -62,7 +63,8 @@ class CORE_EXPORT SVGLayoutSupport {
   // Helper function determining whether overflow is hidden.
   static bool isOverflowHidden(const LayoutObject*);
 
-  // Calculates the paintInvalidationRect in combination with filter, clipper and masker in local coordinates.
+  // Calculates the paintInvalidationRect in combination with filter, clipper
+  // and masker in local coordinates.
   static void intersectPaintInvalidationRectWithResources(const LayoutObject*,
                                                           FloatRect&);
 
@@ -88,7 +90,8 @@ class CORE_EXPORT SVGLayoutSupport {
       FloatRect& strokeBoundingBox,
       FloatRect& paintInvalidationBoundingBox);
 
-  // Important functions used by nearly all SVG layoutObjects centralizing coordinate transformations / paint invalidation rect calculations
+  // Important functions used by nearly all SVG layoutObjects centralizing
+  // coordinate transformations / paint invalidation rect calculations
   static FloatRect localOverflowRectForPaintInvalidation(const LayoutObject&);
   static LayoutRect clippedOverflowRectForPaintInvalidation(
       const LayoutObject&,
@@ -133,8 +136,8 @@ class CORE_EXPORT SVGLayoutSupport {
   // FIXME: These methods do not belong here.
   static const LayoutSVGRoot* findTreeRootObject(const LayoutObject*);
 
-  // Helper method for determining if a LayoutObject marked as text (isText()== true)
-  // can/will be laid out as part of a <text>.
+  // Helper method for determining if a LayoutObject marked as text (isText()==
+  // true) can/will be laid out as part of a <text>.
   static bool isLayoutableTextNode(const LayoutObject*);
 
   // Determines whether a svg node should isolate or not based on ComputedStyle.

@@ -36,7 +36,8 @@ LayoutSVGForeignObject::~LayoutSVGForeignObject() {}
 
 bool LayoutSVGForeignObject::isChildAllowed(LayoutObject* child,
                                             const ComputedStyle& style) const {
-  // Disallow arbitary SVG content. Only allow proper <svg xmlns="svgNS"> subdocuments.
+  // Disallow arbitary SVG content. Only allow proper <svg xmlns="svgNS">
+  // subdocuments.
   return !child->isSVG() || child->isSVGRoot();
 }
 
@@ -54,7 +55,8 @@ const AffineTransform& LayoutSVGForeignObject::localToSVGParentTransform()
 
 void LayoutSVGForeignObject::updateLogicalWidth() {
   // FIXME: Investigate in size rounding issues
-  // FIXME: Remove unnecessary rounding when layout is off ints: webkit.org/b/63656
+  // FIXME: Remove unnecessary rounding when layout is off ints:
+  // webkit.org/b/63656
   setWidth(LayoutUnit(static_cast<int>(roundf(m_viewport.width()))));
 }
 
@@ -63,7 +65,8 @@ void LayoutSVGForeignObject::computeLogicalHeight(
     LayoutUnit logicalTop,
     LogicalExtentComputedValues& computedValues) const {
   // FIXME: Investigate in size rounding issues
-  // FIXME: Remove unnecessary rounding when layout is off ints: webkit.org/b/63656
+  // FIXME: Remove unnecessary rounding when layout is off ints:
+  // webkit.org/b/63656
   // FIXME: Is this correct for vertical writing mode?
   computedValues.m_extent =
       LayoutUnit(static_cast<int>(roundf(m_viewport.height())));
@@ -100,11 +103,14 @@ void LayoutSVGForeignObject::layout() {
   if (!updateCachedBoundariesInParents)
     updateCachedBoundariesInParents = oldViewport != m_viewport;
 
-  // Set box origin to the foreignObject x/y translation, so positioned objects in XHTML content get correct
-  // positions. A regular LayoutBoxModelObject would pull this information from ComputedStyle - in SVG those
-  // properties are ignored for non <svg> elements, so we mimic what happens when specifying them through CSS.
+  // Set box origin to the foreignObject x/y translation, so positioned objects
+  // in XHTML content get correct positions. A regular LayoutBoxModelObject
+  // would pull this information from ComputedStyle - in SVG those properties
+  // are ignored for non <svg> elements, so we mimic what happens when
+  // specifying them through CSS.
 
-  // FIXME: Investigate in location rounding issues - only affects LayoutSVGForeignObject & LayoutSVGText
+  // FIXME: Investigate in location rounding issues - only affects
+  // LayoutSVGForeignObject & LayoutSVGText
   setLocation(roundedIntPoint(viewportLocation));
 
   bool layoutChanged = everHadLayout() && selfNeedsLayout();

@@ -79,7 +79,8 @@ const AffineTransform& LayoutSVGResourceMarker::localToSVGParentTransform()
       AffineTransform::translation(m_viewport.x(), m_viewport.y()) *
       viewportTransform();
   return m_localToParentTransform;
-  // If this class were ever given a localTransform(), then the above would read:
+  // If this class were ever given a localTransform(), then the above would
+  // read:
   // return viewportTranslation * localTransform() * viewportTransform();
 }
 

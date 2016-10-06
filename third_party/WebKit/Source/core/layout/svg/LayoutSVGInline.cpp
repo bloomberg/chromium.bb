@@ -149,8 +149,9 @@ void LayoutSVGInline::removeChild(LayoutObject* child) {
 
 void LayoutSVGInline::invalidateTreeIfNeeded(
     const PaintInvalidationState& paintInvalidationState) {
-  // TODO(wangxianzhu): Verify if the inherited LayoutBoxModelObject::invalidateTreeIfNeeded()
-  // is applicable here. If yes, remove this overriding method.
+  // TODO(wangxianzhu): Verify if the inherited
+  // LayoutBoxModelObject::invalidateTreeIfNeeded() is applicable here.
+  // If yes, remove this overriding method.
   LayoutObject::invalidateTreeIfNeeded(paintInvalidationState);
 }
 

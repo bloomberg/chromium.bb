@@ -204,9 +204,11 @@ bool LayoutSVGContainer::nodeAtFloatPoint(HitTestResult& result,
     }
   }
 
-  // pointer-events: bounding-box makes it possible for containers to be direct targets.
+  // pointer-events: bounding-box makes it possible for containers to be direct
+  // targets.
   if (style()->pointerEvents() == PE_BOUNDINGBOX) {
-    // Check for a valid bounding box because it will be invalid for empty containers.
+    // Check for a valid bounding box because it will be invalid for empty
+    // containers.
     if (isObjectBoundingBoxValid() &&
         objectBoundingBox().contains(localPoint)) {
       const LayoutPoint& localLayoutPoint = roundedLayoutPoint(localPoint);
@@ -216,7 +218,9 @@ bool LayoutSVGContainer::nodeAtFloatPoint(HitTestResult& result,
         return true;
     }
   }
-  // 16.4: "If there are no graphics elements whose relevant graphics content is under the pointer (i.e., there is no target element), the event is not dispatched."
+  // 16.4: "If there are no graphics elements whose relevant graphics content is
+  // under the pointer (i.e., there is no target element), the event is not
+  // dispatched."
   return false;
 }
 

@@ -96,7 +96,8 @@ class SVGMarkerData {
 
  private:
   float currentAngle(SVGMarkerType type) const {
-    // For details of this calculation, see: http://www.w3.org/TR/SVG/single-page.html#painting-MarkerElement
+    // For details of this calculation, see:
+    // http://www.w3.org/TR/SVG/single-page.html#painting-MarkerElement
     FloatPoint inSlope(m_inslopePoints[1] - m_inslopePoints[0]);
     FloatPoint outSlope(m_outslopePoints[1] - m_outslopePoints[0]);
 

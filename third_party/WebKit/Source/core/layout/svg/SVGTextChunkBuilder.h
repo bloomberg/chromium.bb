@@ -30,9 +30,13 @@ struct SVGTextFragment;
 
 // SVGTextChunkBuilder performs the third layout phase for SVG text.
 //
-// Phase one built the layout information from the SVG DOM stored in the LayoutSVGInlineText objects (SVGTextLayoutAttributes).
-// Phase two performed the actual per-character layout, computing the final positions for each character, stored in the SVGInlineTextBox objects (SVGTextFragment).
-// Phase three performs all modifications that have to be applied to each individual text chunk (text-anchor & textLength).
+// Phase one built the layout information from the SVG DOM stored in the
+// LayoutSVGInlineText objects (SVGTextLayoutAttributes).
+// Phase two performed the actual per-character layout, computing the final
+// positions for each character, stored in the SVGInlineTextBox objects
+// (SVGTextFragment).
+// Phase three performs all modifications that have to be applied to each
+// individual text chunk (text-anchor & textLength).
 
 class SVGTextChunkBuilder {
   STACK_ALLOCATED();

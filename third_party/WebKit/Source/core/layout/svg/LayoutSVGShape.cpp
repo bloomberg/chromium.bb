@@ -85,7 +85,8 @@ FloatRect LayoutSVGShape::hitTestStrokeBoundingBox() const {
   if (style()->svgStyle().hasStroke())
     return m_strokeBoundingBox;
 
-  // Implementation of http://dev.w3.org/fxtf/css-masking-1/#compute-stroke-bounding-box
+  // Implementation of
+  // http://dev.w3.org/fxtf/css-masking-1/#compute-stroke-bounding-box
   // for the <rect> / <ellipse> / <circle> case except that we ignore whether
   // the stroke is none.
 
@@ -214,7 +215,8 @@ Path* LayoutSVGShape::nonScalingStrokePath(
 AffineTransform LayoutSVGShape::nonScalingStrokeTransform() const {
   AffineTransform t = toSVGGraphicsElement(element())->getScreenCTM(
       SVGGraphicsElement::DisallowStyleUpdate);
-  // Width of non-scaling stroke is independent of translation, so zero it out here.
+  // Width of non-scaling stroke is independent of translation, so zero it out
+  // here.
   t.setE(0);
   t.setF(0);
   return t;

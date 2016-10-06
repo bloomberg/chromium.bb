@@ -129,7 +129,9 @@ class SVGResources {
   // clipper: 'container elements' and 'graphics elements'
   // filter:  'container elements' and 'graphics elements'
   // masker:  'container elements' and 'graphics elements'
-  // -> a, circle, defs, ellipse, glyph, g, image, line, marker, mask, missing-glyph, path, pattern, polygon, polyline, rect, svg, switch, symbol, text, use
+  // -> a, circle, defs, ellipse, glyph, g, image, line, marker, mask,
+  // missing-glyph, path, pattern, polygon, polyline, rect, svg, switch, symbol,
+  // text, use
   struct ClipperFilterMaskerData {
     USING_FAST_MALLOC(ClipperFilterMaskerData);
 
@@ -167,7 +169,8 @@ class SVGResources {
   // From SVG 1.1 2nd Edition
   // fill:       'shapes' and 'text content elements'
   // stroke:     'shapes' and 'text content elements'
-  // -> circle, ellipse, line, path, polygon, polyline, rect, text, textPath, tspan
+  // -> circle, ellipse, line, path, polygon, polyline, rect, text, textPath,
+  // tspan
   struct FillStrokeData {
     USING_FAST_MALLOC(FillStrokeData);
 

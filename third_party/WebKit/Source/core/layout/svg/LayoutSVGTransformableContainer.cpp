@@ -55,7 +55,8 @@ bool LayoutSVGTransformableContainer::isChildAllowed(
       return false;
   } else if (isSVGAElement(*element())) {
     // http://www.w3.org/2003/01/REC-SVG11-20030114-errata#linking-text-environment
-    // The 'a' element may contain any element that its parent may contain, except itself.
+    // The 'a' element may contain any element that its parent may contain,
+    // except itself.
     if (isSVGAElement(*child->node()))
       return false;
     if (parent() && parent()->isSVG())
@@ -73,9 +74,10 @@ SVGTransformChange LayoutSVGTransformableContainer::calculateLocalTransform() {
   SVGGraphicsElement* element = toSVGGraphicsElement(this->element());
   ASSERT(element);
 
-  // If we're either the layoutObject for a <use> element, or for any <g> element inside the shadow
-  // tree, that was created during the use/symbol/svg expansion in SVGUseElement. These containers
-  // need to respect the translations induced by their corresponding use elements x/y attributes.
+  // If we're either the layoutObject for a <use> element, or for any <g>
+  // element inside the shadow tree, that was created during the use/symbol/svg
+  // expansion in SVGUseElement. These containers need to respect the
+  // translations induced by their corresponding use elements x/y attributes.
   SVGUseElement* useElement = nullptr;
   if (isSVGUseElement(*element)) {
     useElement = toSVGUseElement(element);

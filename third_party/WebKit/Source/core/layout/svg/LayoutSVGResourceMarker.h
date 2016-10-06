@@ -39,7 +39,8 @@ class LayoutSVGResourceMarker final : public LayoutSVGResourceContainer {
   void removeClientFromCache(LayoutObject*,
                              bool markForInvalidation = true) override;
 
-  // Calculates marker boundaries, mapped to the target element's coordinate space
+  // Calculates marker boundaries, mapped to the target element's coordinate
+  // space.
   FloatRect markerBoundaries(const AffineTransform& markerTransformation) const;
 
   const AffineTransform& localToSVGParentTransform() const override;

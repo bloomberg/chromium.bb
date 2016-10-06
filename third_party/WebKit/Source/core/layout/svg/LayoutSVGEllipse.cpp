@@ -48,7 +48,8 @@ void LayoutSVGEllipse::updateShapeFromElement() {
 
   calculateRadiiAndCenter();
 
-  // Spec: "A negative value is an error. A value of zero disables rendering of the element."
+  // Spec: "A negative value is an error. A value of zero disables rendering of
+  // the element."
   if (m_radii.width() < 0 || m_radii.height() < 0)
     return;
 

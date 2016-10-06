@@ -117,8 +117,9 @@ void LayoutSVGText::subtreeChildWasAdded() {
   if (documentBeingDestroyed())
     return;
 
-  // The positioning elements cache depends on the size of each text layoutObject in the
-  // subtree. If this changes, clear the cache. It will be rebuilt on the next layout.
+  // The positioning elements cache depends on the size of each text
+  // layoutObject in the subtree. If this changes, clear the cache. It will be
+  // rebuilt on the next layout.
   invalidatePositioningValues(LayoutInvalidationReason::ChildChanged);
   setNeedsTextMetricsUpdate();
 }
@@ -129,8 +130,9 @@ void LayoutSVGText::subtreeChildWillBeRemoved() {
     return;
   }
 
-  // The positioning elements cache depends on the size of each text layoutObject in the
-  // subtree. If this changes, clear the cache. It will be rebuilt on the next layout.
+  // The positioning elements cache depends on the size of each text
+  // layoutObject in the subtree. If this changes, clear the cache. It will be
+  // rebuilt on the next layout.
   invalidatePositioningValues(LayoutInvalidationReason::ChildChanged);
   setNeedsTextMetricsUpdate();
 }
@@ -218,8 +220,9 @@ void LayoutSVGText::layout() {
 
   checkDescendantTextNodeConsistency(*this, m_descendantTextNodes);
 
-  // Reduced version of LayoutBlock::layoutBlock(), which only takes care of SVG text.
-  // All if branches that could cause early exit in LayoutBlocks layoutBlock() method are turned into assertions.
+  // Reduced version of LayoutBlock::layoutBlock(), which only takes care of SVG
+  // text. All if branches that could cause early exit in LayoutBlocks
+  // layoutBlock() method are turned into assertions.
   ASSERT(!isInline());
   ASSERT(!simplifiedLayout());
   ASSERT(!scrollsOverflow());
@@ -246,7 +249,8 @@ void LayoutSVGText::layout() {
 
   m_needsReordering = false;
 
-  // If we don't have any line boxes, then make sure the frame rect is still cleared.
+  // If we don't have any line boxes, then make sure the frame rect is still
+  // cleared.
   if (!firstLineBox())
     setFrameRect(LayoutRect());
 
@@ -396,7 +400,8 @@ void LayoutSVGText::removeChild(LayoutObject* child) {
 
 void LayoutSVGText::invalidateTreeIfNeeded(
     const PaintInvalidationState& paintInvalidationState) {
-  // TODO(wangxianzhu): Verify if the inherited LayoutBoxModelObject::invalidateTreeIfNeeded()
+  // TODO(wangxianzhu): Verify if the inherited
+  // LayoutBoxModelObject::invalidateTreeIfNeeded()
   // is applicable here. If yes, remove this overriding method.
   LayoutObject::invalidateTreeIfNeeded(paintInvalidationState);
 }

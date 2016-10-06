@@ -200,7 +200,8 @@ void LayoutSVGImage::imageChanged(WrappedImagePtr, const IntRect*) {
 void LayoutSVGImage::addOutlineRects(Vector<LayoutRect>& rects,
                                      const LayoutPoint&,
                                      IncludeBlockVisualOverflowOrNot) const {
-  // this is called from paint() after the localTransform has already been applied
+  // this is called from paint() after the localTransform has already been
+  // applied
   rects.append(LayoutRect(paintInvalidationRectInLocalSVGCoordinates()));
 }
 

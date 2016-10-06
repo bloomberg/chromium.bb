@@ -155,8 +155,9 @@ void SVGTextLayoutEngine::recordTextFragment(SVGInlineTextBox* textBox) {
 }
 
 void SVGTextLayoutEngine::beginTextPathLayout(SVGInlineFlowBox* flowBox) {
-  // Build text chunks for all <textPath> children, using the line layout algorithm.
-  // This is needeed as text-anchor is just an additional startOffset for text paths.
+  // Build text chunks for all <textPath> children, using the line layout
+  // algorithm. This is needeed as text-anchor is just an additional startOffset
+  // for text paths.
   SVGTextLayoutEngine lineLayout(m_descendantTextNodes);
   lineLayout.m_textLengthSpacingInEffect = m_textLengthSpacingInEffect;
   lineLayout.layoutCharactersInTextBoxes(flowBox);
@@ -277,8 +278,10 @@ void SVGTextLayoutEngine::layoutCharactersInTextBoxes(InlineFlowBox* start) {
 void SVGTextLayoutEngine::finishLayout() {
   m_visualMetricsIterator = SVGInlineTextMetricsIterator();
 
-  // After all text fragments are stored in their correpsonding SVGInlineTextBoxes, we can layout individual text chunks.
-  // Chunk layouting is only performed for line layout boxes, not for path layout, where it has already been done.
+  // After all text fragments are stored in their correpsonding
+  // SVGInlineTextBoxes, we can layout individual text chunks.
+  // Chunk layouting is only performed for line layout boxes, not for path
+  // layout, where it has already been done.
   SVGTextChunkBuilder chunkLayoutBuilder;
   chunkLayoutBuilder.processTextChunks(m_lineLayoutBoxes);
 
@@ -395,8 +398,9 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(
     // as starting a new text chunk.
     setCurrentTextPosition(data);
 
-    // When we've advanced to the box start offset, determine using the original x/y values,
-    // whether this character starts a new text chunk, before doing any further processing.
+    // When we've advanced to the box start offset, determine using the original
+    // x/y values, whether this character starts a new text chunk, before doing
+    // any further processing.
     if (m_visualMetricsIterator.characterOffset() == textBox->start())
       textBox->setStartsNewTextChunk(
           logicalTextNode->characterStartsNewTextChunk(
@@ -413,11 +417,12 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(
     fontOrientation = adjustOrientationForCharacterInMixedVertical(
         fontOrientation, currentCharacter);
 
-    // Calculate glyph advance.
-    // The shaping engine takes care of x/y orientation shifts for different fontOrientation values.
+    // Calculate glyph advance. The shaping engine takes care of x/y orientation
+    // shifts for different fontOrientation values.
     float glyphAdvance = visualMetrics.advance(fontOrientation);
 
-    // Calculate CSS 'letter-spacing' and 'word-spacing' for the character, if needed.
+    // Calculate CSS 'letter-spacing' and 'word-spacing' for the character, if
+    // needed.
     float spacing = spacingLayout.calculateCSSSpacing(currentCharacter);
 
     FloatPoint textPathShift;
@@ -454,7 +459,8 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(
 
       m_textPosition = position;
 
-      // For vertical text on path, the actual angle has to be rotated 90 degrees anti-clockwise, not the orientation angle!
+      // For vertical text on path, the actual angle has to be rotated 90
+      // degrees anti-clockwise, not the orientation angle!
       if (m_isVerticalText)
         angle -= 90;
     } else {
@@ -497,7 +503,8 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(
         m_currentTextFragment.transform.translate(textPathShift.x(),
                                                   textPathShift.y());
 
-      // For vertical text, always rotate by 90 degrees regardless of fontOrientation.
+      // For vertical text, always rotate by 90 degrees regardless of
+      // fontOrientation.
       // The shaping engine takes care of the necessary orientation.
       if (m_isVerticalText)
         m_currentTextFragment.transform.rotate(90);
@@ -509,10 +516,12 @@ void SVGTextLayoutEngine::layoutTextOnLineOrPath(
         m_currentTextFragment.lengthAdjustScale = m_textPathScaling;
     }
 
-    // Advance current text position after processing of the current character finished.
+    // Advance current text position after processing of the current character
+    // finished.
     advanceCurrentTextPosition(glyphAdvance + spacing);
 
-    // Apply CSS 'letter-spacing' and 'word-spacing' to the next character, if needed.
+    // Apply CSS 'letter-spacing' and 'word-spacing' to the next character, if
+    // needed.
     if (!m_inPathLayout && spacing)
       applySpacingToNextCharacter = true;
 

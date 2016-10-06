@@ -99,8 +99,9 @@ bool LayoutSVGRoot::isEmbeddedThroughFrameContainingSVGDocument() const {
   if (!frame)
     return false;
 
-  // If our frame has an owner layoutObject, we're embedded through eg. object/embed/iframe,
-  // but we only negotiate if we're in an SVG document inside a embedded object (object/embed).
+  // If our frame has an owner layoutObject, we're embedded through eg.
+  // object/embed/iframe, but we only negotiate if we're in an SVG document
+  // inside a embedded object (object/embed).
   if (frame->ownerLayoutItem().isNull() ||
       !frame->ownerLayoutItem().isEmbeddedObject())
     return false;
@@ -109,7 +110,9 @@ bool LayoutSVGRoot::isEmbeddedThroughFrameContainingSVGDocument() const {
 
 LayoutUnit LayoutSVGRoot::computeReplacedLogicalWidth(
     ShouldComputePreferred shouldComputePreferred) const {
-  // When we're embedded through SVGImage (border-image/background-image/<html:img>/...) we're forced to resize to a specific size.
+  // When we're embedded through SVGImage
+  // (border-image/background-image/<html:img>/...) we're forced to resize to a
+  // specific size.
   if (!m_containerSize.isEmpty())
     return LayoutUnit(m_containerSize.width());
 
@@ -121,7 +124,9 @@ LayoutUnit LayoutSVGRoot::computeReplacedLogicalWidth(
 
 LayoutUnit LayoutSVGRoot::computeReplacedLogicalHeight(
     LayoutUnit estimatedUsedWidth) const {
-  // When we're embedded through SVGImage (border-image/background-image/<html:img>/...) we're forced to resize to a specific size.
+  // When we're embedded through SVGImage
+  // (border-image/background-image/<html:img>/...) we're forced to resize to a
+  // specific size.
   if (!m_containerSize.isEmpty())
     return LayoutUnit(m_containerSize.height());
 
@@ -190,9 +195,10 @@ void LayoutSVGRoot::layout() {
 }
 
 bool LayoutSVGRoot::shouldApplyViewportClip() const {
-  // the outermost svg is clipped if auto, and svg document roots are always clipped
-  // When the svg is stand-alone (isDocumentElement() == true) the viewport clipping should always
-  // be applied, noting that the window scrollbars should be hidden if overflow=hidden.
+  // the outermost svg is clipped if auto, and svg document roots are always
+  // clipped. When the svg is stand-alone (isDocumentElement() == true) the
+  // viewport clipping should always be applied, noting that the window
+  // scrollbars should be hidden if overflow=hidden.
   return style()->overflowX() == OverflowHidden ||
          style()->overflowX() == OverflowAuto ||
          style()->overflowX() == OverflowScroll || this->isDocumentElement();
@@ -340,7 +346,8 @@ void LayoutSVGRoot::buildLocalToBorderBoxTransform() {
 }
 
 const AffineTransform& LayoutSVGRoot::localToSVGParentTransform() const {
-  // Slightly optimized version of m_localToParentTransform = AffineTransform::translation(x(), y()) * m_localToBorderBoxTransform;
+  // Slightly optimized version of m_localToParentTransform =
+  // AffineTransform::translation(x(), y()) * m_localToBorderBoxTransform;
   m_localToParentTransform = m_localToBorderBoxTransform;
   if (location().x())
     m_localToParentTransform.setE(m_localToParentTransform.e() +
@@ -352,32 +359,37 @@ const AffineTransform& LayoutSVGRoot::localToSVGParentTransform() const {
 }
 
 LayoutRect LayoutSVGRoot::localOverflowRectForPaintInvalidation() const {
-  // This is an open-coded aggregate of SVGLayoutSupport::localOverflowRectForPaintInvalidation,
-  // and LayoutReplaced::localOverflowRectForPaintInvalidation.
-  // The reason for this is to optimize/minimize the paint invalidation rect when the box is not "decorated"
-  // (does not have background/border/etc., see LayoutSVGRootTest.OverflowRectMappingWithViewportClipWithoutBorder).
+  // This is an open-coded aggregate of SVGLayoutSupport::
+  // localOverflowRectForPaintInvalidation, and LayoutReplaced::
+  // localOverflowRectForPaintInvalidation.
+  // The reason for this is to optimize/minimize the paint invalidation rect
+  // when the box is not "decorated" (does not have background/border/etc., see
+  // LayoutSVGRootTest.OverflowRectMappingWithViewportClipWithoutBorder).
 
   // Return early for any cases where we don't actually paint.
   if (style()->visibility() != EVisibility::Visible &&
       !enclosingLayer()->hasVisibleContent())
     return LayoutRect();
 
-  // Compute the paint invalidation rect of the content of the SVG in the border-box coordinate space.
+  // Compute the paint invalidation rect of the content of the SVG in the
+  // border-box coordinate space.
   FloatRect contentPaintInvalidationRect =
       paintInvalidationRectInLocalSVGCoordinates();
   contentPaintInvalidationRect =
       m_localToBorderBoxTransform.mapRect(contentPaintInvalidationRect);
 
-  // Apply initial viewport clip, overflow:visible content is added to visualOverflow
-  // but the most common case is that overflow is hidden, so always intersect.
+  // Apply initial viewport clip, overflow:visible content is added to
+  // visualOverflow but the most common case is that overflow is hidden, so
+  // always intersect.
   contentPaintInvalidationRect.intersect(pixelSnappedBorderBoxRect());
 
   LayoutRect paintInvalidationRect =
       enclosingLayoutRect(contentPaintInvalidationRect);
-  // If the box is decorated or is overflowing, extend it to include the border-box and overflow.
+  // If the box is decorated or is overflowing, extend it to include the
+  // border-box and overflow.
   if (m_hasBoxDecorationBackground || hasOverflowModel()) {
-    // The selectionRect can project outside of the overflowRect, so take their union
-    // for paint invalidation to avoid selection painting glitches.
+    // The selectionRect can project outside of the overflowRect, so take their
+    // union for paint invalidation to avoid selection painting glitches.
     LayoutRect decoratedPaintInvalidationRect =
         unionRect(localSelectionRect(), visualOverflowRect());
     paintInvalidationRect.unite(decoratedPaintInvalidationRect);
@@ -387,8 +399,9 @@ LayoutRect LayoutSVGRoot::localOverflowRectForPaintInvalidation() const {
 }
 
 // This method expects local CSS box coordinates.
-// Callers with local SVG viewport coordinates should first apply the localToBorderBoxTransform
-// to convert from SVG viewport coordinates to local CSS box coordinates.
+// Callers with local SVG viewport coordinates should first apply the
+// localToBorderBoxTransform to convert from SVG viewport coordinates to local
+// CSS box coordinates.
 void LayoutSVGRoot::mapLocalToAncestor(const LayoutBoxModelObject* ancestor,
                                        TransformState& transformState,
                                        MapCoordinatesFlags mode) const {
@@ -420,7 +433,8 @@ bool LayoutSVGRoot::nodeAtPoint(HitTestResult& result,
 
   // Only test SVG content if the point is in our content box, or in case we
   // don't clip to the viewport, the visual overflow rect.
-  // FIXME: This should be an intersection when rect-based hit tests are supported by nodeAtFloatPoint.
+  // FIXME: This should be an intersection when rect-based hit tests are
+  // supported by nodeAtFloatPoint.
   if (contentBoxRect().contains(pointInBorderBox) ||
       (!shouldApplyViewportClip() &&
        visualOverflowRect().contains(pointInBorderBox))) {
@@ -443,14 +457,19 @@ bool LayoutSVGRoot::nodeAtPoint(HitTestResult& result,
     }
   }
 
-  // If we didn't early exit above, we've just hit the container <svg> element. Unlike SVG 1.1, 2nd Edition allows container elements to be hit.
+  // If we didn't early exit above, we've just hit the container <svg> element.
+  // Unlike SVG 1.1, 2nd Edition allows container elements to be hit.
   if ((hitTestAction == HitTestBlockBackground ||
        hitTestAction == HitTestChildBlockBackground) &&
       visibleToHitTestRequest(result.hitTestRequest())) {
-    // Only return true here, if the last hit testing phase 'BlockBackground' (or 'ChildBlockBackground' - depending on context) is executed.
-    // If we'd return true in the 'Foreground' phase, hit testing would stop immediately. For SVG only trees this doesn't matter.
-    // Though when we have a <foreignObject> subtree we need to be able to detect hits on the background of a <div> element.
-    // If we'd return true here in the 'Foreground' phase, we are not able to detect these hits anymore.
+    // Only return true here, if the last hit testing phase 'BlockBackground'
+    // (or 'ChildBlockBackground' - depending on context) is executed.
+    // If we'd return true in the 'Foreground' phase, hit testing would stop
+    // immediately. For SVG only trees this doesn't matter.
+    // Though when we have a <foreignObject> subtree we need to be able to
+    // detect hits on the background of a <div> element.
+    // If we'd return true here in the 'Foreground' phase, we are not able to
+    // detect these hits anymore.
     LayoutRect boundsRect(accumulatedOffset + location(), size());
     if (locationInContainer.intersects(boundsRect)) {
       updateHitTestResult(result, pointInBorderBox);

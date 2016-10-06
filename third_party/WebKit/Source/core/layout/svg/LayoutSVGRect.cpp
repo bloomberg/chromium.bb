@@ -88,7 +88,8 @@ void LayoutSVGRect::updateShapeFromElement() {
 
 bool LayoutSVGRect::shapeDependentStrokeContains(const FloatPoint& point) {
   // The optimized code below does not support non-simple strokes so we need
-  // to fall back to LayoutSVGShape::shapeDependentStrokeContains in these cases.
+  // to fall back to LayoutSVGShape::shapeDependentStrokeContains in these
+  // cases.
   if (m_usePathFallback || !definitelyHasSimpleStroke()) {
     if (!hasPath())
       LayoutSVGShape::updateShapeFromElement();

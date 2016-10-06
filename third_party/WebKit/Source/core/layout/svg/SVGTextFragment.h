@@ -26,7 +26,8 @@
 
 namespace blink {
 
-// A SVGTextFragment describes a text fragment of a LayoutSVGInlineText which can be laid out at once.
+// A SVGTextFragment describes a text fragment of a LayoutSVGInlineText which
+// can be laid out at once.
 struct SVGTextFragment {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
   SVGTextFragment()
@@ -85,7 +86,8 @@ struct SVGTextFragment {
     return affectedByTextLength() || !transform.isIdentity();
   }
 
-  // The first laid out character starts at LayoutSVGInlineText::characters() + characterOffset.
+  // The first laid out character starts at LayoutSVGInlineText::characters() +
+  // characterOffset.
   unsigned characterOffset;
   unsigned metricsListOffset;
   unsigned length : 30;
@@ -99,11 +101,13 @@ struct SVGTextFragment {
 
   GlyphOverflow glyphOverflow;
 
-  // Includes rotation/glyph-orientation-(horizontal|vertical) transforms, as well as orientation related shifts
+  // Includes rotation/glyph-orientation-(horizontal|vertical) transforms, as
+  // well as orientation related shifts
   // (see SVGTextLayoutEngine, which builds this transformation).
   AffineTransform transform;
 
-  // Contains lengthAdjust related transformations, which are not allowd to influence the SVGTextQuery code.
+  // Contains lengthAdjust related transformations, which are not allowd to
+  // influence the SVGTextQuery code.
   float lengthAdjustScale;
   float lengthAdjustBias;
 

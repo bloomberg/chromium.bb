@@ -71,9 +71,10 @@ sk_sp<const SkPicture> LayoutSVGResourceMasker::createContentPicture(
 
   SubtreeContentTransformScope contentTransformScope(contentTransformation);
 
-  // Using strokeBoundingBox (instead of paintInvalidationRectInLocalCoordinates) to avoid the intersection
-  // with local clips/mask, which may yield incorrect results when mixing objectBoundingBox and
-  // userSpaceOnUse units (http://crbug.com/294900).
+  // Using strokeBoundingBox instead of paintInvalidationRectInLocalCoordinates
+  // to avoid the intersection with local clips/mask, which may yield incorrect
+  // results when mixing objectBoundingBox and userSpaceOnUse units.
+  // http://crbug.com/294900
   FloatRect bounds = strokeBoundingBox();
 
   SkPictureBuilder pictureBuilder(bounds, nullptr, &context);

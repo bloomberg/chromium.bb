@@ -199,7 +199,8 @@ void SVGTextChunkBuilder::handleTextChunk(BoxListConstIterator boxStart,
 
   bool isVerticalText = !style.isHorizontalWritingMode();
 
-  // Calculate absolute length of whole text chunk (starting from text box 'start', spanning 'length' text boxes).
+  // Calculate absolute length of whole text chunk (starting from text box
+  // 'start', spanning 'length' text boxes).
   ChunkLengthAccumulator lengthAccumulator(isVerticalText);
   lengthAccumulator.processRange(boxStart, boxEnd);
 
