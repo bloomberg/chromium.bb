@@ -87,11 +87,6 @@ public class ChromeLauncherActivity extends Activity
      */
     private static final int PARTNER_BROWSER_CUSTOMIZATIONS_TIMEOUT_MS = 10000;
 
-    /**
-     * Maximum delay for initial document activity launch.
-     */
-    private static final int INITIAL_DOCUMENT_ACTIVITY_LAUNCH_TIMEOUT_MS = 500;
-
     private static final LaunchMetrics.SparseHistogramSample sIntentFlagsHistogram =
             new LaunchMetrics.SparseHistogramSample("Launch.IntentFlags");
 
@@ -343,7 +338,7 @@ public class ChromeLauncherActivity extends Activity
     /**
      * Adds extras to the Intent that are needed by Herb.
      */
-    public static void updateHerbIntent(Context context, Intent newIntent, Uri uri) {
+    public static void updateHerbIntent(Context context, Intent newIntent) {
         // For Elderberry flavored Herbs that are to be launched in a separate task, add a random
         // UUID to try and prevent Android from refocusing/clobbering items that share the same
         // base intent.  If we do support refocusing of existing Herbs, we need to do it on the
@@ -376,10 +371,6 @@ public class ChromeLauncherActivity extends Activity
         }
 
         newIntent.putExtra(CustomTabsIntent.EXTRA_DEFAULT_SHARE_MENU_ITEM, true);
-        newIntent.putExtra(CustomTabIntentDataProvider.EXTRA_IS_OPENED_BY_CHROME, true);
-
-        // Mark this as a trusted Chrome Intent.
-        IntentHandler.addTrustedIntentExtras(newIntent, context);
     }
 
     /**
@@ -415,7 +406,19 @@ public class ChromeLauncherActivity extends Activity
             newIntent.setFlags(
                     newIntent.getFlags() & ~Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
         }
-        if (addHerbExtras) updateHerbIntent(context, newIntent, uri);
+
+        if (addHerbExtras) {
+            // TODO(tedchoc|mariakhomenko): Specifically not marking the intent is from Chrome via
+            //                              IntentHandler.addTrustedIntentExtras as it breaks the
+            //                              redirect logic for triggering instant apps.  See if
+            //                              this is better addressed in TabRedirectHandler long
+            //                              term.
+            newIntent.putExtra(CustomTabIntentDataProvider.EXTRA_IS_OPENED_BY_CHROME, true);
+        } else {
+            IntentUtils.safeRemoveExtra(
+                    intent, CustomTabIntentDataProvider.EXTRA_IS_OPENED_BY_CHROME);
+        }
+        if (addHerbExtras) updateHerbIntent(context, newIntent);
 
         return newIntent;
     }

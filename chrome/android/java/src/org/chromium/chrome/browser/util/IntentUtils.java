@@ -43,6 +43,18 @@ public class IntentUtils {
     }
 
     /**
+     * Just like {@link Intent#removeExtra(String)} but doesn't throw exceptions.
+     */
+    public static void safeRemoveExtra(Intent intent, String name) {
+        try {
+            intent.removeExtra(name);
+        } catch (Throwable t) {
+            // Catches un-parceling exceptions.
+            Log.e(TAG, "removeExtra failed on intent " + intent);
+        }
+    }
+
+    /**
      * Just like {@link Intent#getBooleanExtra(String, boolean)} but doesn't throw exceptions.
      */
     public static boolean safeGetBooleanExtra(Intent intent, String name, boolean defaultValue) {

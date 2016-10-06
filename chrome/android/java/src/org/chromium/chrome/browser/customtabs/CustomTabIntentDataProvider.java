@@ -446,7 +446,6 @@ public class CustomTabIntentDataProvider {
                 || TextUtils.equals(ChromeSwitches.HERB_FLAVOR_DISABLED, herbFlavor)) {
             return;
         }
-        if (!IntentHandler.isIntentChromeOrFirstParty(intent, context)) return;
 
         mIsOpenedByChrome = IntentUtils.safeGetBooleanExtra(
                 intent, EXTRA_IS_OPENED_BY_CHROME, false);
