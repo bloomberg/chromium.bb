@@ -902,6 +902,9 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kMediaDocumentDownloadButton)},
 #endif  // OS_ANDROID
 #if defined(ENABLE_PLUGINS)
+    {"prefer-html-over-flash", IDS_FLAGS_PREFER_HTML_OVER_PLUGINS_NAME,
+     IDS_FLAGS_PREFER_HTML_OVER_PLUGINS_DESCRIPTION, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kPreferHtmlOverPlugins)},
     {"allow-nacl-socket-api", IDS_FLAGS_ALLOW_NACL_SOCKET_API_NAME,
      IDS_FLAGS_ALLOW_NACL_SOCKET_API_DESCRIPTION, kOsDesktop,
      SINGLE_VALUE_TYPE_AND_VALUE(switches::kAllowNaClSocketAPI, "*")},
