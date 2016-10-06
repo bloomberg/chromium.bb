@@ -44,7 +44,7 @@ void WebrtcFrameSchedulerSimple::Pause(bool pause) {
   paused_ = pause;
   if (paused_) {
     capture_timer_.Stop();
-  } else if (!capture_callback_.is_null()) {
+  } else {
     ScheduleNextFrame(base::TimeTicks::Now());
   }
 }
@@ -112,8 +112,9 @@ void WebrtcFrameSchedulerSimple::OnFrameEncoded(
 }
 
 void WebrtcFrameSchedulerSimple::ScheduleNextFrame(base::TimeTicks now) {
-  // Don't capture frames when paused or target bitrate is 0.
-  if (paused_ || pacing_bucket_.rate() == 0)
+  // Don't capture frames when paused or target bitrate is 0 or there is
+  // no capture callback set.
+  if (paused_ || pacing_bucket_.rate() == 0 || capture_callback_.is_null())
     return;
 
   // If this is not the first frame then capture next frame after the previous
