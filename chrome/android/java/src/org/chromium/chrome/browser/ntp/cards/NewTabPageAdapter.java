@@ -69,7 +69,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
     private class ItemTouchCallbacks extends ItemTouchHelper.Callback {
         @Override
         public void onSwiped(ViewHolder viewHolder, int direction) {
-            mRecyclerView.onItemDismissStarted(viewHolder);
+            mRecyclerView.onItemDismissStarted(viewHolder.itemView);
             NewTabPageAdapter.this.dismissItem(viewHolder.getAdapterPosition());
         }
 
@@ -79,7 +79,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
             // not mean that the user went all the way and dismissed the item before releasing it.
             // We need to check that the item has been removed.
             if (viewHolder.getAdapterPosition() == RecyclerView.NO_POSITION) {
-                mRecyclerView.onItemDismissFinished(viewHolder);
+                mRecyclerView.onItemDismissFinished(viewHolder.itemView);
             }
 
             super.clearView(recyclerView, viewHolder);
@@ -364,10 +364,10 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
     }
 
     public int getFirstCardPosition() {
-        for (int i = 0; i < getItemCount(); ++i) {
-            if (CardViewHolder.isCard(getItemViewType(i))) return i;
-        }
-        return RecyclerView.NO_POSITION;
+        // TODO(mvanouwerkerk): Don't rely on getFirstHeaderPosition() here.
+        int firstHeaderPosition = getFirstHeaderPosition();
+        if (firstHeaderPosition == RecyclerView.NO_POSITION) return RecyclerView.NO_POSITION;
+        return firstHeaderPosition + 1;
     }
 
     public int getLastContentItemPosition() {
@@ -413,7 +413,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         mGroups.add(mAboveTheFold);
         mGroups.addAll(mSections.values());
         mGroups.add(mSigninPromo);
-        if (hasVisibleBelowTheFoldItems()) {
+        if (!mSections.isEmpty()) {
             mGroups.add(mFooter);
             mGroups.add(mBottomSpacer);
         }
@@ -429,7 +429,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
 
         notifyItemRangeRemoved(startPos, removedItems);
 
-        if (!hasVisibleBelowTheFoldItems()) {
+        if (mSections.isEmpty()) {
             mGroups.remove(mFooter);
             mGroups.remove(mBottomSpacer);
             notifyItemRangeRemoved(startPos + removedItems, 2);
@@ -555,13 +555,6 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
     private void dismissPromo() {
         // TODO(dgn): accessibility announcement.
         mSigninPromo.dismiss();
-
-        if (!hasVisibleBelowTheFoldItems()) {
-            int footerPosition = getLastContentItemPosition();
-            mGroups.remove(mFooter);
-            mGroups.remove(mBottomSpacer);
-            notifyItemRangeRemoved(footerPosition, 2);
-        }
     }
 
     /**
@@ -576,9 +569,9 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
     }
 
     /**
-     * Returns another view holder that should be dismissed at the same time as the provided one.
+     * Returns another view holder that should be dismissed as the same time as the provided one.
      */
-    public ViewHolder getDismissSibling(ViewHolder viewHolder) {
+    private ViewHolder getDismissSibling(ViewHolder viewHolder) {
         int swipePos = viewHolder.getAdapterPosition();
         ItemGroup group = getGroup(swipePos);
 
@@ -589,10 +582,6 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         if (siblingPosDelta == 0) return null;
 
         return mRecyclerView.findViewHolderForAdapterPosition(siblingPosDelta + swipePos);
-    }
-
-    private boolean hasVisibleBelowTheFoldItems() {
-        return !mSections.isEmpty() || mSigninPromo.isShown();
     }
 
     @VisibleForTesting
