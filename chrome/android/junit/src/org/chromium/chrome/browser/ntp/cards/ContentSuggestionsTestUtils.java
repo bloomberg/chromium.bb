@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.ntp.cards;
 
-import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 
@@ -26,15 +25,13 @@ public final class ContentSuggestionsTestUtils {
         return suggestions;
     }
 
-    public static SuggestionsCategoryInfo createInfo(
-            @CategoryInt int category, boolean moreButton, boolean showIfEmpty) {
+    public static SuggestionsCategoryInfo createInfo(boolean moreButton, boolean showIfEmpty) {
         return new SuggestionsCategoryInfo(
-                category, "", ContentSuggestionsCardLayout.FULL_CARD, moreButton, showIfEmpty);
+                "", ContentSuggestionsCardLayout.FULL_CARD, moreButton, showIfEmpty);
     }
 
     public static SuggestionsSection createSection(
             boolean moreButton, boolean showIfEmpty, ItemGroup.Observer observer) {
-        SuggestionsCategoryInfo info = createInfo(42, moreButton, showIfEmpty);
-        return new SuggestionsSection(info, observer);
+        return new SuggestionsSection(42, createInfo(moreButton, showIfEmpty), observer, null);
     }
 }

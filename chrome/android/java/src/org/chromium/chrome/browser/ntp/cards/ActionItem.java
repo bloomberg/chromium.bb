@@ -6,9 +6,11 @@ package org.chromium.chrome.browser.ntp.cards;
 
 import android.view.View;
 
+import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.UiConfig;
+import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 
 /**
  * Item that allows the user to perform an action on the NTP.
@@ -16,15 +18,15 @@ import org.chromium.chrome.browser.ntp.UiConfig;
 class ActionItem implements NewTabPageItem {
     private static final String TAG = "NtpCards";
 
-    private final SuggestionsCategoryInfo mCategoryInfo;
+    private final int mCategory;
 
     // The position (index) of this item within its section, for logging purposes.
     private int mPosition;
     private boolean mImpressionTracked = false;
     private boolean mDismissable;
 
-    public ActionItem(SuggestionsCategoryInfo categoryInfo) {
-        mCategoryInfo = categoryInfo;
+    public ActionItem(int category) {
+        mCategory = category;
     }
 
     @Override
@@ -43,19 +45,31 @@ class ActionItem implements NewTabPageItem {
     public static class ViewHolder extends CardViewHolder {
         private ActionItem mActionListItem;
 
-        public ViewHolder(final NewTabPageRecyclerView recyclerView,
-                final NewTabPageManager manager, UiConfig uiConfig) {
+
+        public ViewHolder(NewTabPageRecyclerView recyclerView, final NewTabPageManager manager,
+                UiConfig uiConfig) {
             super(R.layout.new_tab_page_action_card, recyclerView, uiConfig);
 
             itemView.findViewById(R.id.action_button)
                     .setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            int category = mActionListItem.mCategoryInfo.getCategory();
+                            int category = mActionListItem.mCategory;
                             manager.trackSnippetCategoryActionClick(
                                     category, mActionListItem.mPosition);
-                            mActionListItem.mCategoryInfo.performEmptyStateAction(
-                                    manager, recyclerView.getNewTabPageAdapter());
+                            if (category == KnownCategories.BOOKMARKS) {
+                                manager.navigateToBookmarks();
+                            } else if (category == KnownCategories.DOWNLOADS) {
+                                manager.navigateToDownloadManager();
+                            } else if (category == KnownCategories.FOREIGN_TABS) {
+                                manager.navigateToRecentTabs();
+                            } else {
+                                // TODO(pke): This should redirect to the C++ backend. Once it does,
+                                // change the condition in the SuggestionsSection constructor.
+                                Log.wtf(TAG,
+                                        "More action called on a dynamically added section: %d",
+                                        category);
+                            }
                         }
                     });
 
@@ -65,8 +79,7 @@ class ActionItem implements NewTabPageItem {
                     if (mActionListItem != null && !mActionListItem.mImpressionTracked) {
                         mActionListItem.mImpressionTracked = true;
                         manager.trackSnippetCategoryActionImpression(
-                                mActionListItem.mCategoryInfo.getCategory(),
-                                mActionListItem.mPosition);
+                                mActionListItem.mCategory, mActionListItem.mPosition);
                     }
                 }
             });
