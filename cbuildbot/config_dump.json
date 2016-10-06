@@ -9631,6 +9631,17 @@
             "chrome_internal"
         ]
     },
+    "gru-firmware": {
+        "_template": "firmware",
+        "boards": [
+            "gru"
+        ],
+        "manifest": "official.xml",
+        "useflags": [
+            "chrome_internal",
+            "chromeless_tty"
+        ]
+    },
     "gru-full": {
         "_template": "full",
         "boards": [

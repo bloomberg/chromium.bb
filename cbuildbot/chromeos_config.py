@@ -2634,6 +2634,7 @@ def _GetConfig(site_config, board_configs, hw_test_list):
       'gale',
       'glimmer',
       'gnawty',
+      'gru',
       'jecht',
       'kefka',
       'kevin',
