@@ -8,6 +8,7 @@
 #include <string>
 
 #include "ash/common/login_status.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
@@ -182,8 +183,12 @@ void TestSessionStateDelegate::SetActiveUserSessionStarted(
   }
 }
 
+// static
 void TestSessionStateDelegate::SetCanLockScreen(bool can_lock_screen) {
-  can_lock_screen_ = can_lock_screen;
+  CHECK(WmShell::HasInstance());
+  static_cast<ash::test::TestSessionStateDelegate*>(
+      WmShell::Get()->GetSessionStateDelegate())
+      ->can_lock_screen_ = can_lock_screen;
 }
 
 void TestSessionStateDelegate::SetShouldLockScreenBeforeSuspending(

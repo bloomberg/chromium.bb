@@ -12,8 +12,10 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/display_manager_test_api.h"
 #include "base/memory/ptr_util.h"
+#include "ui/aura/test/test_window_delegate.h"
 #include "ui/display/manager/display_layout.h"
 #include "ui/display/screen.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 namespace {
@@ -66,6 +68,17 @@ std::unique_ptr<WindowOwner> AshTestImplAura::CreateTestWindow(
           nullptr, type, shell_window_id, bounds_in_screen)));
 }
 
+std::unique_ptr<WindowOwner> AshTestImplAura::CreateToplevelTestWindow(
+    const gfx::Rect& bounds_in_screen,
+    int shell_window_id) {
+  aura::test::TestWindowDelegate* delegate =
+      aura::test::TestWindowDelegate::CreateSelfDestroyingDelegate();
+  return base::MakeUnique<WindowOwner>(WmWindowAura::Get(
+      ash_test_base_->CreateTestWindowInShellWithDelegateAndType(
+          delegate, ui::wm::WINDOW_TYPE_NORMAL, shell_window_id,
+          bounds_in_screen)));
+}
+
 display::Display AshTestImplAura::GetSecondaryDisplay() {
   return Shell::GetInstance()->display_manager()->GetSecondaryDisplay();
 }
@@ -77,6 +90,17 @@ bool AshTestImplAura::SetSecondaryDisplayPlacement(
       test::CreateDisplayLayout(Shell::GetInstance()->display_manager(),
                                 position, 0));
   return true;
+}
+
+void AshTestImplAura::ConfigureWidgetInitParamsForDisplay(
+    WmWindow* window,
+    views::Widget::InitParams* init_params) {
+  init_params->context = WmWindowAura::GetAuraWindow(window);
+}
+
+void AshTestImplAura::AddTransientChild(WmWindow* parent, WmWindow* window) {
+  ::wm::AddTransientChild(WmWindowAura::GetAuraWindow(parent),
+                          WmWindowAura::GetAuraWindow(window));
 }
 
 // static

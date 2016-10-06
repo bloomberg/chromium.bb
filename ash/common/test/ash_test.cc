@@ -5,8 +5,11 @@
 #include "ash/common/test/ash_test.h"
 
 #include "ash/common/test/ash_test_impl.h"
+#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ash/test/test_session_state_delegate.h"
+#include "base/run_loop.h"
 #include "ui/compositor/layer_type.h"
 #include "ui/display/display.h"
 
@@ -22,6 +25,14 @@ AshTest::AshTest() : test_impl_(AshTestImpl::Create()) {}
 
 AshTest::~AshTest() {}
 
+// static
+WmShelf* AshTest::GetPrimaryShelf() {
+  return WmShell::Get()
+      ->GetPrimaryRootWindow()
+      ->GetRootWindowController()
+      ->GetShelf();
+}
+
 bool AshTest::SupportsMultipleDisplays() const {
   return test_impl_->SupportsMultipleDisplays();
 }
@@ -34,6 +45,13 @@ std::unique_ptr<WindowOwner> AshTest::CreateTestWindow(const gfx::Rect& bounds,
                                                        ui::wm::WindowType type,
                                                        int shell_window_id) {
   return test_impl_->CreateTestWindow(bounds, type, shell_window_id);
+}
+
+std::unique_ptr<WindowOwner> AshTest::CreateToplevelTestWindow(
+    const gfx::Rect& bounds_in_screen,
+    int shell_window_id) {
+  return test_impl_->CreateToplevelTestWindow(bounds_in_screen,
+                                              shell_window_id);
 }
 
 std::unique_ptr<WindowOwner> AshTest::CreateChildWindow(WmWindow* parent,
@@ -57,6 +75,26 @@ bool AshTest::SetSecondaryDisplayPlacement(
     display::DisplayPlacement::Position position,
     int offset) {
   return test_impl_->SetSecondaryDisplayPlacement(position, offset);
+}
+
+void AshTest::ConfigureWidgetInitParamsForDisplay(
+    WmWindow* window,
+    views::Widget::InitParams* init_params) {
+  test_impl_->ConfigureWidgetInitParamsForDisplay(window, init_params);
+}
+
+void AshTest::ParentWindowInPrimaryRootWindow(WmWindow* window) {
+  window->SetParentUsingContext(WmShell::Get()->GetPrimaryRootWindow(),
+                                gfx::Rect());
+}
+
+void AshTest::AddTransientChild(WmWindow* parent, WmWindow* window) {
+  test_impl_->AddTransientChild(parent, window);
+}
+
+void AshTest::RunAllPendingInMessageLoop() {
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
 }
 
 void AshTest::SetUp() {

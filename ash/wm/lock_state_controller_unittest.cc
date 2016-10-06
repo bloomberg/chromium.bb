@@ -15,6 +15,7 @@
 #include "ash/test/test_lock_state_controller_delegate.h"
 #include "ash/test/test_screenshot_delegate.h"
 #include "ash/test/test_session_state_animator.h"
+#include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/wm/power_button_controller.h"
 #include "ash/wm/session_state_animator.h"
@@ -319,7 +320,7 @@ class LockStateControllerTest : public AshTestBase {
     lock_state_controller_->OnLoginStateChanged(status);
     SetUserLoggedIn(status != LoginStatus::NOT_LOGGED_IN);
     if (status == LoginStatus::GUEST)
-      SetCanLockScreen(false);
+      TestSessionStateDelegate::SetCanLockScreen(false);
     lock_state_controller_->OnLockStateChanged(false);
   }
 

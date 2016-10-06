@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "ash/mus/bridge/wm_window_mus_test_api.h"
 #include "ash/mus/root_window_controller.h"
 #include "ash/mus/test/wm_test_helper.h"
 #include "ash/mus/window_manager.h"
@@ -117,6 +118,8 @@ ui::Window* WmTestBase::CreateTestWindow(const gfx::Rect& bounds,
                            ->window_manager()
                            ->NewTopLevelWindow(&properties);
   window->SetVisible(true);
+  // Most tests expect a minimum size of 0x0.
+  WmWindowMusTestApi(WmWindowMus::Get(window)).set_use_empty_minimum_size(true);
   return window;
 }
 

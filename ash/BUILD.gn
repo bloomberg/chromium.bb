@@ -1025,7 +1025,9 @@ source_set("ash_with_aura_test_support") {
     ":test_support_common",
     "//base",
     "//skia",
+    "//ui/aura:test_support",
     "//ui/display",
+    "//ui/wm",
   ]
 }
 

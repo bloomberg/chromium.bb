@@ -327,11 +327,6 @@ void AshTestBase::SetUserLoggedIn(bool user_logged_in) {
       user_logged_in);
 }
 
-void AshTestBase::SetCanLockScreen(bool can_lock_screen) {
-  AshTestHelper::GetTestSessionStateDelegate()->SetCanLockScreen(
-      can_lock_screen);
-}
-
 void AshTestBase::SetShouldLockScreenBeforeSuspending(bool should_lock) {
   AshTestHelper::GetTestSessionStateDelegate()
       ->SetShouldLockScreenBeforeSuspending(should_lock);

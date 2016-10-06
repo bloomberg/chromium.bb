@@ -13,6 +13,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/manager/display_layout.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/views/widget/widget.h"
 #include "ui/wm/public/window_types.h"
 
 namespace display {
@@ -22,6 +23,7 @@ class Display;
 namespace ash {
 
 class AshTestImpl;
+class WmShelf;
 class WmWindow;
 
 // Wraps a WmWindow calling WmWindow::Destroy() from the destructor. WmWindow is
@@ -54,19 +56,30 @@ class AshTest : public testing::Test {
   AshTest();
   ~AshTest() override;
 
+  // Returns the WmShelf for the primary display.
+  static WmShelf* GetPrimaryShelf();
+
   bool SupportsMultipleDisplays() const;
 
   // Update the display configuration as given in |display_spec|.
   // See test::DisplayManagerTestApi::UpdateDisplay for more details.
   void UpdateDisplay(const std::string& display_spec);
 
-  // Creates a top level visible window in the appropriate container. If
-  // |bounds_in_screen| is empty the window is added to the primary root window,
-  // otherwise the window is added to the display matching |bounds_in_screen|.
-  // |shell_window_id| is the shell window id to give to the new window.
+  // Creates a visible window in the appropriate container. If
+  // |bounds_in_screen| is empty the window is added to the primary root
+  // window, otherwise the window is added to the display matching
+  // |bounds_in_screen|. |shell_window_id| is the shell window id to give to
+  // the new window.
   std::unique_ptr<WindowOwner> CreateTestWindow(
       const gfx::Rect& bounds_in_screen = gfx::Rect(),
       ui::wm::WindowType type = ui::wm::WINDOW_TYPE_NORMAL,
+      int shell_window_id = kShellWindowId_Invalid);
+
+  // Creates a visible top-level window. For aura a top-level window is a Window
+  // that has a delegate, see aura::Window::GetToplevelWindow() for more
+  // details.
+  std::unique_ptr<WindowOwner> CreateToplevelTestWindow(
+      const gfx::Rect& bounds_in_screen = gfx::Rect(),
       int shell_window_id = kShellWindowId_Invalid);
 
   // Creates a visible window parented to |parent| with the specified bounds and
@@ -86,6 +99,20 @@ class AshTest : public testing::Test {
   bool SetSecondaryDisplayPlacement(
       display::DisplayPlacement::Position position,
       int offset);
+
+  // Configures |init_params| so that the widget will be created on the same
+  // display as |window|.
+  void ConfigureWidgetInitParamsForDisplay(
+      WmWindow* window,
+      views::Widget::InitParams* init_params);
+
+  // Adds |window| to the appropriate container in the primary root window.
+  void ParentWindowInPrimaryRootWindow(WmWindow* window);
+
+  // Adds |window| as as a transient child of |parent|.
+  void AddTransientChild(WmWindow* parent, WmWindow* window);
+
+  void RunAllPendingInMessageLoop();
 
  protected:
   // testing::Test:

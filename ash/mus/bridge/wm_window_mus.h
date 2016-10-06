@@ -126,6 +126,8 @@ class WmWindowMus : public WmWindow, public ui::WindowObserver {
   void SetAppType(int app_type) const override;
   bool IsBubble() override;
   ui::Layer* GetLayer() override;
+  bool GetLayerTargetVisibility() override;
+  bool GetLayerVisible() override;
   display::Display GetDisplayNearestWindow() override;
   bool HasNonClientArea() override;
   int GetNonClientComponent(const gfx::Point& location) override;
@@ -199,6 +201,7 @@ class WmWindowMus : public WmWindow, public ui::WindowObserver {
   bool HasCapture() override;
   void ReleaseCapture() override;
   bool HasRestoreBounds() const override;
+  void SetPinned(bool trusted) override;
   void SetAlwaysOnTop(bool value) override;
   bool IsAlwaysOnTop() const override;
   void Hide() override;

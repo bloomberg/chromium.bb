@@ -165,7 +165,6 @@ class AshTestBase : public testing::Test {
   // is called.
   void SetSessionStarting();
   void SetUserLoggedIn(bool user_logged_in);
-  void SetCanLockScreen(bool can_lock_screen);
   void SetShouldLockScreenBeforeSuspending(bool should_lock);
   void SetUserAddingScreenRunning(bool user_adding_screen_running);
 

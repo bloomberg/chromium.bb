@@ -29,10 +29,17 @@ class AshTestImplMus : public AshTestImpl {
       const gfx::Rect& bounds_in_screen,
       ui::wm::WindowType type,
       int shell_window_id) override;
+  std::unique_ptr<WindowOwner> CreateToplevelTestWindow(
+      const gfx::Rect& bounds_in_screen,
+      int shell_window_id) override;
   display::Display GetSecondaryDisplay() override;
   bool SetSecondaryDisplayPlacement(
       display::DisplayPlacement::Position position,
       int offset) override;
+  void ConfigureWidgetInitParamsForDisplay(
+      WmWindow* window,
+      views::Widget::InitParams* init_params) override;
+  void AddTransientChild(WmWindow* parent, WmWindow* window) override;
 
  private:
   // TODO(sky): fold WmTestBase directly into this class when no more subclasses

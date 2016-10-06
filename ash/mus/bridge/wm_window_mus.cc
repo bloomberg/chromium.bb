@@ -247,9 +247,21 @@ bool WmWindowMus::IsBubble() {
 }
 
 ui::Layer* WmWindowMus::GetLayer() {
-  // TODO(sky): this function should be nuked entirely.
+  // TODO: http://crbug.com/652877.
   NOTIMPLEMENTED();
   return widget_ ? widget_->GetLayer() : nullptr;
+}
+
+bool WmWindowMus::GetLayerTargetVisibility() {
+  // TODO: http://crbug.com/652877.
+  NOTIMPLEMENTED();
+  return GetTargetVisibility();
+}
+
+bool WmWindowMus::GetLayerVisible() {
+  // TODO: http://crbug.com/652877.
+  NOTIMPLEMENTED();
+  return IsVisible();
 }
 
 display::Display WmWindowMus::GetDisplayNearestWindow() {
@@ -738,6 +750,11 @@ void WmWindowMus::StackChildAbove(WmWindow* child, WmWindow* target) {
 void WmWindowMus::StackChildBelow(WmWindow* child, WmWindow* target) {
   GetMusWindow(child)->Reorder(GetMusWindow(target),
                                ui::mojom::OrderDirection::BELOW);
+}
+
+void WmWindowMus::SetPinned(bool trusted) {
+  // http://crbug.com/622486.
+  NOTIMPLEMENTED();
 }
 
 void WmWindowMus::SetAlwaysOnTop(bool value) {

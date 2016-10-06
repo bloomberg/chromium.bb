@@ -65,6 +65,15 @@ std::unique_ptr<WindowOwner> AshTestImplMus::CreateTestWindow(
   return base::MakeUnique<WindowOwner>(window);
 }
 
+std::unique_ptr<WindowOwner> AshTestImplMus::CreateToplevelTestWindow(
+    const gfx::Rect& bounds_in_screen,
+    int shell_window_id) {
+  // For mus CreateTestWindow() creates top level windows (assuming
+  // WINDOW_TYPE_NORMAL).
+  return CreateTestWindow(bounds_in_screen, ui::wm::WINDOW_TYPE_NORMAL,
+                          shell_window_id);
+}
+
 display::Display AshTestImplMus::GetSecondaryDisplay() {
   return wm_test_base_->GetSecondaryDisplay();
 }
@@ -74,6 +83,20 @@ bool AshTestImplMus::SetSecondaryDisplayPlacement(
     int offset) {
   NOTIMPLEMENTED();
   return false;
+}
+
+void AshTestImplMus::ConfigureWidgetInitParamsForDisplay(
+    WmWindow* window,
+    views::Widget::InitParams* init_params) {
+  init_params
+      ->mus_properties[ui::mojom::WindowManager::kInitialDisplayId_Property] =
+      mojo::ConvertTo<std::vector<uint8_t>>(
+          WmWindowMus::GetMusWindow(window)->display_id());
+}
+
+void AshTestImplMus::AddTransientChild(WmWindow* parent, WmWindow* window) {
+  WmWindowMus::GetMusWindow(parent)->AddTransientWindow(
+      WmWindowMus::GetMusWindow(window));
 }
 
 }  // namespace mus

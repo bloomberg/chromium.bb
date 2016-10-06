@@ -43,10 +43,17 @@ class AshTestImpl {
       const gfx::Rect& bounds_in_screen,
       ui::wm::WindowType type,
       int shell_window_id) = 0;
+  virtual std::unique_ptr<WindowOwner> CreateToplevelTestWindow(
+      const gfx::Rect& bounds_in_screen,
+      int shell_window_id) = 0;
   virtual display::Display GetSecondaryDisplay() = 0;
   virtual bool SetSecondaryDisplayPlacement(
       display::DisplayPlacement::Position position,
       int offset) = 0;
+  virtual void ConfigureWidgetInitParamsForDisplay(
+      WmWindow* window,
+      views::Widget::InitParams* init_params) = 0;
+  virtual void AddTransientChild(WmWindow* parent, WmWindow* window) = 0;
 };
 
 }  // namespace ash

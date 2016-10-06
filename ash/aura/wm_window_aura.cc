@@ -199,6 +199,14 @@ ui::Layer* WmWindowAura::GetLayer() {
   return window_->layer();
 }
 
+bool WmWindowAura::GetLayerTargetVisibility() {
+  return GetLayer()->GetTargetVisibility();
+}
+
+bool WmWindowAura::GetLayerVisible() {
+  return GetLayer()->visible();
+}
+
 display::Display WmWindowAura::GetDisplayNearestWindow() {
   return display::Screen::GetScreen()->GetDisplayNearestWindow(window_);
 }
@@ -624,6 +632,10 @@ void WmWindowAura::StackChildAbove(WmWindow* child, WmWindow* target) {
 
 void WmWindowAura::StackChildBelow(WmWindow* child, WmWindow* target) {
   window_->StackChildBelow(GetAuraWindow(child), GetAuraWindow(target));
+}
+
+void WmWindowAura::SetPinned(bool trusted) {
+  wm::PinWindow(window_, trusted);
 }
 
 void WmWindowAura::SetAlwaysOnTop(bool value) {

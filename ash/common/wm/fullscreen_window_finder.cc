@@ -35,7 +35,7 @@ WmWindow* GetWindowForFullscreenMode(WmWindow* context) {
             ->GetChildren();
     for (auto iter = windows.rbegin(); iter != windows.rend(); ++iter) {
       if ((*iter)->GetWindowState()->IsUserPositionable() &&
-          (*iter)->GetLayer()->GetTargetVisibility()) {
+          (*iter)->GetLayerTargetVisibility()) {
         topmost_window = *iter;
         break;
       }

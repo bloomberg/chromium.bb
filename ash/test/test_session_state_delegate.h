@@ -70,7 +70,7 @@ class TestSessionStateDelegate : public SessionStateDelegate {
   // Updates the internal state that indicates whether the screen can be locked.
   // Locking will only actually be allowed when this value is |true| and there
   // is an active user.
-  void SetCanLockScreen(bool can_lock_screen);
+  static void SetCanLockScreen(bool can_lock_screen);
 
   // Updates |should_lock_screen_before_suspending_|.
   void SetShouldLockScreenBeforeSuspending(bool should_lock);

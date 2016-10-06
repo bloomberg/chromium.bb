@@ -94,8 +94,11 @@ class ASH_EXPORT WmWindow {
 
   virtual bool IsBubble() = 0;
 
-  // TODO(sky): seems like this shouldn't be exposed.
   virtual ui::Layer* GetLayer() = 0;
+
+  // TODO(sky): these are temporary until GetLayer() always returns non-null.
+  virtual bool GetLayerTargetVisibility() = 0;
+  virtual bool GetLayerVisible() = 0;
 
   virtual display::Display GetDisplayNearestWindow() = 0;
 
@@ -237,6 +240,9 @@ class ASH_EXPORT WmWindow {
   virtual void ReleaseCapture() = 0;
 
   virtual bool HasRestoreBounds() const = 0;
+
+  // See ScreenPinningController::SetPinnedWindow() for details.
+  virtual void SetPinned(bool trusted) = 0;
 
   virtual void SetAlwaysOnTop(bool value) = 0;
   virtual bool IsAlwaysOnTop() const = 0;

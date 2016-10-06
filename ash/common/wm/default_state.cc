@@ -735,7 +735,7 @@ void DefaultState::UpdateBoundsFromState(WindowState* window_state,
       window_state->Deactivate();
   } else if ((window->GetTargetVisibility() ||
               IsMinimizedWindowState(previous_state_type)) &&
-             !window->GetLayer()->visible()) {
+             !window->GetLayerVisible()) {
     // The layer may be hidden if the window was previously minimized. Make
     // sure it's visible.
     window->Show();
