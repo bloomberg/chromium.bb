@@ -64,8 +64,8 @@ HTMLImageElement* HTMLMapElement::imageElement() {
   for (unsigned i = 0; Element* curr = images->item(i); ++i) {
     DCHECK(isHTMLImageElement(curr));
 
-    // The HTMLImageElement's useMap() value includes the '#' symbol at the beginning,
-    // which has to be stripped off.
+    // The HTMLImageElement's useMap() value includes the '#' symbol at the
+    // beginning, which has to be stripped off.
     HTMLImageElement& imageElement = toHTMLImageElement(*curr);
     String useMapName =
         imageElement.getAttribute(usemapAttr).getString().substring(1);
@@ -80,7 +80,8 @@ void HTMLMapElement::parseAttribute(const QualifiedName& name,
                                     const AtomicString& oldValue,
                                     const AtomicString& value) {
   // FIXME: This logic seems wrong for XML documents.
-  // Either the id or name will be used depending on the order the attributes are parsed.
+  // Either the id or name will be used depending on the order the attributes
+  // are parsed.
 
   if (name == idAttr || name == nameAttr) {
     if (name == idAttr) {

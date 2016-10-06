@@ -96,10 +96,10 @@ void MediaFragmentURIParser::parseFragments() {
   unsigned end = fragmentString.length();
   while (offset < end) {
     // http://www.w3.org/2008/WebVideo/Fragments/WD-media-fragments-spec/#processing-name-value-components
-    // 1. Parse the octet string according to the namevalues syntax, yielding a list of
-    //    name-value pairs, where name and value are both octet string. In accordance
-    //    with RFC 3986, the name and value components must be parsed and separated before
-    //    percent-encoded octets are decoded.
+    // 1. Parse the octet string according to the namevalues syntax, yielding a
+    //    list of name-value pairs, where name and value are both octet string.
+    //    In accordance with RFC 3986, the name and value components must be
+    //    parsed and separated before percent-encoded octets are decoded.
     size_t parameterStart = offset;
     size_t parameterEnd = fragmentString.find('&', offset);
     if (parameterEnd == kNotFound)
@@ -112,9 +112,9 @@ void MediaFragmentURIParser::parseFragments() {
     }
 
     // 2. For each name-value pair:
-    //  a. Decode percent-encoded octets in name and value as defined by RFC 3986. If either
-    //     name or value are not valid percent-encoded strings, then remove the name-value pair
-    //     from the list.
+    //  a. Decode percent-encoded octets in name and value as defined by RFC
+    //     3986. If either name or value are not valid percent-encoded strings,
+    //     then remove the name-value pair from the list.
     String name = decodeURLEscapeSequences(
         fragmentString.substring(parameterStart, equalOffset - parameterStart));
     String value;
@@ -122,8 +122,9 @@ void MediaFragmentURIParser::parseFragments() {
       value = decodeURLEscapeSequences(fragmentString.substring(
           equalOffset + 1, parameterEnd - equalOffset - 1));
 
-    //  b. Convert name and value to Unicode strings by interpreting them as UTF-8. If either
-    //     name or value are not valid UTF-8 strings, then remove the name-value pair from the list.
+    //  b. Convert name and value to Unicode strings by interpreting them as
+    //     UTF-8. If either name or value are not valid UTF-8 strings, then
+    //     remove the name-value pair from the list.
     bool validUTF8 = true;
     if (!name.isEmpty()) {
       name = name.utf8(StrictUTF8Conversion).data();
@@ -156,16 +157,17 @@ void MediaFragmentURIParser::parseTimeFragment() {
     DCHECK(fragment.second.is8Bit());
 
     // http://www.w3.org/2008/WebVideo/Fragments/WD-media-fragments-spec/#naming-time
-    // Temporal clipping is denoted by the name t, and specified as an interval with a begin
-    // time and an end time
+    // Temporal clipping is denoted by the name t, and specified as an interval
+    // with a begin time and an end time
     if (fragment.first != "t")
       continue;
 
     // http://www.w3.org/2008/WebVideo/Fragments/WD-media-fragments-spec/#npt-time
-    // Temporal clipping can be specified either as Normal Play Time (npt) RFC 2326, as SMPTE timecodes,
-    // SMPTE, or as real-world clock time (clock) RFC 2326. Begin and end times are always specified
-    // in the same format. The format is specified by name, followed by a colon (:), with npt: being
-    // the default.
+    // Temporal clipping can be specified either as Normal Play Time (npt) RFC
+    // 2326, as SMPTE timecodes, SMPTE, or as real-world clock time (clock) RFC
+    // 2326. Begin and end times are always specified in the same format. The
+    // format is specified by name, followed by a colon (:), with npt: being the
+    // default.
 
     double start = std::numeric_limits<double>::quiet_NaN();
     double end = std::numeric_limits<double>::quiet_NaN();
@@ -175,12 +177,13 @@ void MediaFragmentURIParser::parseTimeFragment() {
       m_endTime = end;
       m_timeFormat = NormalPlayTime;
 
-      // Although we have a valid fragment, don't return yet because when a fragment dimensions
-      // occurs multiple times, only the last occurrence of that dimension is used:
+      // Although we have a valid fragment, don't return yet because when a
+      // fragment dimensions occurs multiple times, only the last occurrence of
+      // that dimension is used:
       // http://www.w3.org/2008/WebVideo/Fragments/WD-media-fragments-spec/#error-uri-general
-      // Multiple occurrences of the same dimension: only the last valid occurrence of a dimension
-      // (e.g., t=10 in #t=2&t=10) is interpreted, all previous occurrences (valid or invalid)
-      // SHOULD be ignored by the UA.
+      // Multiple occurrences of the same dimension: only the last valid
+      // occurrence of a dimension (e.g., t=10 in #t=2&t=10) is interpreted, all
+      // previous occurrences (valid or invalid) SHOULD be ignored by the UA.
     }
   }
   m_fragments.clear();
@@ -199,8 +202,8 @@ bool MediaFragmentURIParser::parseNPTFragment(const LChar* timeString,
     return false;
 
   // http://www.w3.org/2008/WebVideo/Fragments/WD-media-fragments-spec/#naming-time
-  // If a single number only is given, this corresponds to the begin time except if it is preceded
-  // by a comma that would in this case indicate the end time.
+  // If a single number only is given, this corresponds to the begin time except
+  // if it is preceded by a comma that would in this case indicate the end time.
   if (timeString[offset] == ',') {
     startTime = 0;
   } else {
@@ -250,8 +253,8 @@ bool MediaFragmentURIParser::parseNPTTime(const LChar* timeString,
   // specification of NPT RFC 2326.
   //
   // ; defined in RFC 2326
-  // npt-sec       = 1*DIGIT [ "." *DIGIT ]                     ; definitions taken
-  // npt-hhmmss    = npt-hh ":" npt-mm ":" npt-ss [ "." *DIGIT] ; from RFC 2326
+  // npt-sec       = 1*DIGIT [ "." *DIGIT ]
+  // npt-hhmmss    = npt-hh ":" npt-mm ":" npt-ss [ "." *DIGIT]
   // npt-mmss      = npt-mm ":" npt-ss [ "." *DIGIT]
   // npt-hh        =   1*DIGIT     ; any positive number
   // npt-mm        =   2DIGIT      ; 0-59

@@ -46,9 +46,9 @@ class DocumentWriter;
 class HTMLImportChild;
 class HTMLImportsController;
 
-// Owning imported Document lifetime. It also implements ResourceClient through ResourceOwner
-// to feed fetched bytes to the DocumentWriter of the imported document.
-// HTMLImportLoader is owned by HTMLImportsController.
+// Owning imported Document lifetime. It also implements ResourceClient through
+// ResourceOwner to feed fetched bytes to the DocumentWriter of the imported
+// document.  HTMLImportLoader is owned by HTMLImportsController.
 class HTMLImportLoader final
     : public GarbageCollectedFinalized<HTMLImportLoader>,
       public ResourceOwner<RawResource>,
@@ -111,7 +111,8 @@ class HTMLImportLoader final
 
   // DocumentParserClient
 
-  // Called after document parse is complete after DOMContentLoaded was dispatched.
+  // Called after document parse is complete after DOMContentLoaded was
+  // dispatched.
   void notifyParserStopped() override;
 
   State startWritingAndParsing(const ResourceResponse&);

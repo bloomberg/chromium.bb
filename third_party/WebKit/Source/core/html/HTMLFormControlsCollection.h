@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
- * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Apple Inc. All rights
+ * reserved.
  * Copyright (C) 2014 Samsung Electronics. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
@@ -34,8 +35,8 @@ namespace blink {
 class HTMLImageElement;
 class RadioNodeListOrElement;
 
-// This class is just a big hack to find form elements even in malformed HTML elements.
-// The famous <table><tr><form><td> problem.
+// This class is just a big hack to find form elements even in malformed HTML
+// elements.  The famous <table><tr><form><td> problem.
 
 class HTMLFormControlsCollection final : public HTMLCollection {
   DEFINE_WRAPPERTYPEINFO();

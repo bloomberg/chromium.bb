@@ -31,9 +31,10 @@ namespace blink {
 
 class HTMLFormElement;
 
-// Inheritance of FormAssociatedElement was used for NPAPI form association, but is still
-// kept here so that legacy APIs such as form attribute can keep working according to the spec.
-// See: https://html.spec.whatwg.org/multipage/embedded-content.html#the-object-element
+// Inheritance of FormAssociatedElement was used for NPAPI form association, but
+// is still kept here so that legacy APIs such as form attribute can keep
+// working according to the spec.  See:
+// https://html.spec.whatwg.org/multipage/embedded-content.html#the-object-element
 class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement,
                                             public FormAssociatedElement {
   DEFINE_WRAPPERTYPEINFO();
@@ -120,14 +121,15 @@ class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement,
   bool m_useFallbackContent : 1;
 };
 
-// Intentionally left unimplemented, template specialization needs to be provided for specific
-// return types.
+// Intentionally left unimplemented, template specialization needs to be
+// provided for specific return types.
 template <typename T>
 inline const T& toElement(const FormAssociatedElement&);
 template <typename T>
 inline const T* toElement(const FormAssociatedElement*);
 
-// Make toHTMLObjectElement() accept a FormAssociatedElement as input instead of a Node.
+// Make toHTMLObjectElement() accept a FormAssociatedElement as input instead of
+// a Node.
 template <>
 inline const HTMLObjectElement* toElement<HTMLObjectElement>(
     const FormAssociatedElement* element) {

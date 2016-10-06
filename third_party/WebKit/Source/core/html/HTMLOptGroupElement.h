@@ -61,7 +61,8 @@ class CORE_EXPORT HTMLOptGroupElement final : public HTMLElement {
   InsertionNotificationRequest insertedInto(ContainerNode*) override;
   void removedFrom(ContainerNode*) override;
 
-  // <optgroup> might not have a layoutObject so we manually manage a cached style.
+  // <optgroup> might not have a layoutObject so we manually manage a cached
+  // style.
   void updateNonComputedStyle();
   ComputedStyle* nonLayoutObjectComputedStyle() const override;
   PassRefPtr<ComputedStyle> customStyleForLayoutObject() override;

@@ -39,7 +39,8 @@ namespace blink {
 
 using namespace HTMLNames;
 
-// This function chooses the focused element when show() or showModal() is invoked, as described in their spec.
+// This function chooses the focused element when show() or showModal() is
+// invoked, as described in their spec.
 static void setFocusForDialog(HTMLDialogElement* dialog) {
   Element* focusableDescendant = 0;
   Node* next = 0;
@@ -166,8 +167,9 @@ void HTMLDialogElement::showModal(ExceptionState& exceptionState) {
   document().addToTopLayer(this);
   setBooleanAttribute(openAttr, true);
 
-  // Throw away the AX cache first, so the subsequent steps don't have a chance of queuing up
-  // AX events on objects that would be invalidated when the cache is thrown away.
+  // Throw away the AX cache first, so the subsequent steps don't have a chance
+  // of queuing up AX events on objects that would be invalidated when the cache
+  // is thrown away.
   inertSubtreesChanged(document());
 
   forceLayoutForCentering();
@@ -192,8 +194,9 @@ void HTMLDialogElement::setNotCentered() {
 
 bool HTMLDialogElement::isPresentationAttribute(
     const QualifiedName& name) const {
-  // FIXME: Workaround for <https://bugs.webkit.org/show_bug.cgi?id=91058>: modifying an attribute for which there is an attribute selector
-  // in html.css sometimes does not trigger a style recalc.
+  // FIXME: Workaround for <https://bugs.webkit.org/show_bug.cgi?id=91058>:
+  // modifying an attribute for which there is an attribute selector in html.css
+  // sometimes does not trigger a style recalc.
   if (name == openAttr)
     return true;
 

@@ -65,8 +65,8 @@ void HTMLTableColElement::parseAttribute(const QualifiedName& name,
     unsigned newSpan = 0;
     if (value.isEmpty() || !parseHTMLNonNegativeInteger(value, newSpan) ||
         newSpan < 1) {
-      // If the value of span is not a valid non-negative integer greater than zero,
-      // set it to 1.
+      // If the value of span is not a valid non-negative integer greater than
+      // zero, set it to 1.
       newSpan = 1;
     }
     m_span = newSpan;

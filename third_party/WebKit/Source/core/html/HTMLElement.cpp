@@ -2,7 +2,8 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  * Copyright (C) 2004-2008, 2013, 2014 Apple Inc. All rights reserved.
- * Copyright (C) 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2009 Torch Mobile Inc. All rights reserved.
+ * (http://www.torchmobile.com/)
  * Copyright (C) 2011 Motorola Mobility. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
@@ -124,7 +125,8 @@ String HTMLElement::nodeName() const {
 
   // FIXME: Would be nice to have an atomicstring lookup based off uppercase
   // chars that does not have to copy the string on a hit in the hash.
-  // FIXME: We should have a way to detect XHTML elements and replace the hasPrefix() check with it.
+  // FIXME: We should have a way to detect XHTML elements and replace the
+  // hasPrefix() check with it.
   if (document().isHTMLDocument()) {
     if (!tagQName().hasPrefix())
       return tagQName().localNameUpper();
@@ -156,7 +158,8 @@ bool HTMLElement::ieForbidsInsertHTML() const {
 static inline CSSValueID unicodeBidiAttributeForDirAuto(HTMLElement* element) {
   if (element->hasTagName(preTag) || element->hasTagName(textareaTag))
     return CSSValueWebkitPlaintext;
-  // FIXME: For bdo element, dir="auto" should result in "bidi-override isolate" but we don't support having multiple values in unicode-bidi yet.
+  // FIXME: For bdo element, dir="auto" should result in "bidi-override isolate"
+  // but we don't support having multiple values in unicode-bidi yet.
   // See https://bugs.webkit.org/show_bug.cgi?id=73164.
   return CSSValueWebkitIsolate;
 }
@@ -183,7 +186,8 @@ void HTMLElement::applyBorderAttributeToStyle(const AtomicString& value,
 void HTMLElement::mapLanguageAttributeToLocale(const AtomicString& value,
                                                MutableStylePropertySet* style) {
   if (!value.isEmpty()) {
-    // Have to quote so the locale id is treated as a string instead of as a CSS keyword.
+    // Have to quote so the locale id is treated as a string instead of as a CSS
+    // keyword.
     addPropertyToPresentationAttributeStyle(style, CSSPropertyWebkitLocale,
                                             serializeString(value));
 
@@ -501,9 +505,11 @@ void HTMLElement::setInnerText(const String& text,
     return;
   }
 
-  // FIXME: Do we need to be able to detect preserveNewline style even when there's no layoutObject?
-  // FIXME: Can the layoutObject be out of date here? Do we need to call updateStyleIfNeeded?
-  // For example, for the contents of textarea elements that are display:none?
+  // FIXME: Do we need to be able to detect preserveNewline style even when
+  // there's no layoutObject?
+  // FIXME: Can the layoutObject be out of date here? Do we need to call
+  // updateStyleIfNeeded?  For example, for the contents of textarea elements
+  // that are display:none?
   LayoutObject* r = layoutObject();
   if (r && r->style()->preserveNewline()) {
     if (!text.contains('\r')) {
@@ -719,9 +725,11 @@ void HTMLElement::setTranslate(bool enable) {
   setAttribute(translateAttr, enable ? "yes" : "no");
 }
 
-// Returns the conforming 'dir' value associated with the state the attribute is in (in its canonical case), if any,
-// or the empty string if the attribute is in a state that has no associated keyword value or if the attribute is
-// not in a defined state (e.g. the attribute is missing and there is no missing value default).
+// Returns the conforming 'dir' value associated with the state the attribute is
+// in (in its canonical case), if any, or the empty string if the attribute is
+// in a state that has no associated keyword value or if the attribute is not in
+// a defined state (e.g. the attribute is missing and there is no missing value
+// default).
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#limited-to-only-known-values
 static inline const AtomicString& toValidDirValue(const AtomicString& value) {
   DEFINE_STATIC_LOCAL(const AtomicString, ltrValue, ("ltr"));
@@ -896,8 +904,9 @@ void HTMLElement::adjustDirectionalityIfNeededAfterChildrenChanged(
 void HTMLElement::addHTMLLengthToStyle(MutableStylePropertySet* style,
                                        CSSPropertyID propertyID,
                                        const String& value) {
-  // FIXME: This function should not spin up the CSS parser, but should instead just figure out the correct
-  // length unit and make the appropriate parsed value.
+  // FIXME: This function should not spin up the CSS parser, but should instead
+  // just figure out the correct length unit and make the appropriate parsed
+  // value.
 
   // strip attribute garbage..
   StringImpl* v = value.impl();
@@ -936,7 +945,8 @@ void HTMLElement::addHTMLLengthToStyle(MutableStylePropertySet* style,
 static RGBA32 parseColorStringWithCrazyLegacyRules(const String& colorString) {
   // Per spec, only look at the first 128 digits of the string.
   const size_t maxColorLength = 128;
-  // We'll pad the buffer with two extra 0s later, so reserve two more than the max.
+  // We'll pad the buffer with two extra 0s later, so reserve two more than the
+  // max.
   Vector<char, maxColorLength + 2> digitBuffer;
 
   size_t i = 0;
@@ -945,7 +955,8 @@ static RGBA32 parseColorStringWithCrazyLegacyRules(const String& colorString) {
     i = 1;
 
   // Grab the first 128 characters, replacing non-hex characters with 0.
-  // Non-BMP characters are replaced with "00" due to them appearing as two "characters" in the String.
+  // Non-BMP characters are replaced with "00" due to them appearing as two
+  // "characters" in the String.
   for (; i < colorString.length() && digitBuffer.size() < maxColorLength; i++) {
     if (!isASCIIHexDigit(colorString[i]))
       digitBuffer.append('0');
@@ -965,14 +976,16 @@ static RGBA32 parseColorStringWithCrazyLegacyRules(const String& colorString) {
                    toASCIIHexValue(digitBuffer[1]),
                    toASCIIHexValue(digitBuffer[2]));
 
-  // Split the digits into three components, then search the last 8 digits of each component.
+  // Split the digits into three components, then search the last 8 digits of
+  // each component.
   DCHECK_GE(digitBuffer.size(), 6u);
   size_t componentLength = digitBuffer.size() / 3;
   size_t componentSearchWindowLength = min<size_t>(componentLength, 8);
   size_t redIndex = componentLength - componentSearchWindowLength;
   size_t greenIndex = componentLength * 2 - componentSearchWindowLength;
   size_t blueIndex = componentLength * 3 - componentSearchWindowLength;
-  // Skip digits until one of them is non-zero, or we've only got two digits left in the component.
+  // Skip digits until one of them is non-zero, or we've only got two digits
+  // left in the component.
   while (digitBuffer[redIndex] == '0' && digitBuffer[greenIndex] == '0' &&
          digitBuffer[blueIndex] == '0' && (componentLength - redIndex) > 2) {
     redIndex++;
@@ -997,7 +1010,8 @@ static RGBA32 parseColorStringWithCrazyLegacyRules(const String& colorString) {
 // Color parsing that matches HTML's "rules for parsing a legacy color value"
 bool HTMLElement::parseColorWithLegacyRules(const String& attributeValue,
                                             Color& parsedColor) {
-  // An empty string doesn't apply a color. (One containing only whitespace does, which is why this check occurs before stripping.)
+  // An empty string doesn't apply a color. (One containing only whitespace
+  // does, which is why this check occurs before stripping.)
   if (attributeValue.isEmpty())
     return false;
 
@@ -1007,8 +1021,10 @@ bool HTMLElement::parseColorWithLegacyRules(const String& attributeValue,
   if (equalIgnoringCase(colorString, "transparent"))
     return false;
 
-  // If the string is a 3/6-digit hex color or a named CSS color, use that. Apply legacy rules otherwise. Note color.setFromString()
-  // accepts 4/8-digit hex color, so restrict its use with length checks here to support legacy HTML attributes.
+  // If the string is a 3/6-digit hex color or a named CSS color, use that.
+  // Apply legacy rules otherwise. Note color.setFromString() accepts 4/8-digit
+  // hex color, so restrict its use with length checks here to support legacy
+  // HTML attributes.
 
   bool success = false;
   if ((colorString.length() == 4 || colorString.length() == 7) &&
@@ -1054,7 +1070,8 @@ HTMLMenuElement* HTMLElement::contextMenu() const {
 
   Element* element = treeScope().getElementById(contextMenuId);
   // Not checking if the menu element is of type "popup".
-  // Ignoring menu element type attribute is intentional according to the standard.
+  // Ignoring menu element type attribute is intentional according to the
+  // standard.
   return isHTMLMenuElement(element) ? toHTMLMenuElement(element) : nullptr;
 }
 
@@ -1066,10 +1083,11 @@ void HTMLElement::setContextMenu(HTMLMenuElement* contextMenu) {
 
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/infrastructure.html#reflecting-content-attributes-in-idl-attributes
   // On setting, if the given element has an id attribute, and has the same home
-  // subtree as the element of the attribute being set, and the given element is the
-  // first element in that home subtree whose ID is the value of that id attribute,
-  // then the content attribute must be set to the value of that id attribute.
-  // Otherwise, the content attribute must be set to the empty string.
+  // subtree as the element of the attribute being set, and the given element is
+  // the first element in that home subtree whose ID is the value of that id
+  // attribute, then the content attribute must be set to the value of that id
+  // attribute.  Otherwise, the content attribute must be set to the empty
+  // string.
   const AtomicString& contextMenuId(contextMenu->fastGetAttribute(idAttr));
 
   if (!contextMenuId.isNull() &&
@@ -1112,9 +1130,10 @@ void HTMLElement::handleKeypressEvent(KeyboardEvent* event) {
   if (!isSpatialNavigationEnabled(document().frame()) || !supportsFocus())
     return;
   document().updateStyleAndLayoutTree();
-  // if the element is a text form control (like <input type=text> or <textarea>)
-  // or has contentEditable attribute on, we should enter a space or newline
-  // even in spatial navigation mode instead of handling it as a "click" action.
+  // if the element is a text form control (like <input type=text> or
+  // <textarea>) or has contentEditable attribute on, we should enter a space or
+  // newline even in spatial navigation mode instead of handling it as a "click"
+  // action.
   if (isTextFormControl() || hasEditableStyle(*this))
     return;
   int charCode = event->charCode();

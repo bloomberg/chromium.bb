@@ -88,7 +88,8 @@ class CORE_EXPORT HTMLTableElement final : public HTMLElement {
   bool hasLegalLinkAttribute(const QualifiedName&) const override;
   const QualifiedName& subResourceAttributeName() const override;
 
-  // Used to obtain either a solid or outset border decl and to deal with the frame and rules attributes.
+  // Used to obtain either a solid or outset border decl and to deal with the
+  // frame and rules attributes.
   const StylePropertySet* additionalPresentationAttributeStyle() override;
 
   enum TableRules {
@@ -115,15 +116,19 @@ class CORE_EXPORT HTMLTableElement final : public HTMLElement {
 
   void setNeedsTableStyleRecalc() const;
 
-  bool
-      m_borderAttr;  // Sets a precise border width and creates an outset border for the table and for its cells.
-  bool
-      m_borderColorAttr;  // Overrides the outset border and makes it solid for the table and cells instead.
-  bool
-      m_frameAttr;  // Implies a thin border width if no border is set and then a certain set of solid/hidden borders based off the value.
-  TableRules
-      m_rulesAttr;  // Implies a thin border width, a collapsing border model, and all borders on the table becoming set to hidden (if frame/border
-                    // are present, to none otherwise).
+  // Sets a precise border width and creates an outset border for the table and
+  // for its cells.
+  bool m_borderAttr;
+  // Overrides the outset border and makes it solid for the table and cells
+  // instead.
+  bool m_borderColorAttr;
+  // Implies a thin border width if no border is set and then a certain set of
+  // solid/hidden borders based off the value.
+  bool m_frameAttr;
+  // Implies a thin border width, a collapsing border model, and all borders on
+  // the table becoming set to hidden (if frame/border are present, to none
+  // otherwise).
+  TableRules m_rulesAttr;
 
   unsigned short m_padding;
   Member<StylePropertySet> m_sharedCellStyle;

@@ -2,7 +2,8 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2010 Apple Inc. All rights
+ * reserved.
  *           (C) 2006 Alexey Proskuryakov (ap@nypop.com)
  *
  * This library is free software; you can redistribute it and/or
@@ -129,7 +130,8 @@ PassRefPtr<ComputedStyle> HTMLOptGroupElement::customStyleForLayoutObject() {
 String HTMLOptGroupElement::groupLabelText() const {
   String itemText = getAttribute(labelAttr);
 
-  // In WinIE, leading and trailing whitespace is ignored in options and optgroups. We match this behavior.
+  // In WinIE, leading and trailing whitespace is ignored in options and
+  // optgroups. We match this behavior.
   itemText = itemText.stripWhiteSpace();
   // We want to collapse our whitespace too.  This will match other browsers.
   itemText = itemText.simplifyWhiteSpace();

@@ -156,7 +156,8 @@ HTMLLinkElement* HTMLImportChild::link() const {
 }
 
 // Ensuring following invariants against the import tree:
-// - HTMLImportChild::firstImport() is the "first import" of the DFS order of the import tree.
+// - HTMLImportChild::firstImport() is the "first import" of the DFS order of
+//   the import tree.
 // - The "first import" manages all the children that is loaded by the document.
 void HTMLImportChild::normalize() {
   if (!loader()->isFirstImport(this) &&

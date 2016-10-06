@@ -36,7 +36,8 @@ namespace blink {
 
 namespace {
 
-// Adapt a double to the allowed range of a LayoutUnit and narrow it to float precision.
+// Adapt a double to the allowed range of a LayoutUnit and narrow it to float
+// precision.
 float clampCoordinate(double value) {
   return LayoutUnit(value).toFloat();
 }
@@ -110,11 +111,12 @@ Path HTMLAreaElement::getPath(const LayoutObject* containerObject) const {
   if (!containerObject)
     return Path();
 
-  // Always recompute for default shape because it depends on container object's size
-  // and is cheap.
+  // Always recompute for default shape because it depends on container object's
+  // size and is cheap.
   if (m_shape == Default) {
     Path path;
-    // No need to zoom because it is already applied in containerObject->borderBoxRect().
+    // No need to zoom because it is already applied in
+    // containerObject->borderBoxRect().
     if (containerObject->isBox())
       path.addRect(FloatRect(toLayoutBox(containerObject)->borderBoxRect()));
     m_path = nullptr;

@@ -2,7 +2,8 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2000 Stefan Schimanski (1Stein@gmx.de)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2011 Apple Inc. All rights
+ * reserved.
  * Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
  *
  * This library is free software; you can redistribute it and/or
@@ -74,7 +75,8 @@ DEFINE_TRACE(HTMLObjectElement) {
 }
 
 LayoutPart* HTMLObjectElement::existingLayoutPart() const {
-  return layoutPart();  // This will return 0 if the layoutObject is not a LayoutPart.
+  // This will return 0 if the layoutObject is not a LayoutPart.
+  return layoutPart();
 }
 
 bool HTMLObjectElement::isPresentationAttribute(
@@ -104,8 +106,9 @@ void HTMLObjectElement::parseAttribute(const QualifiedName& name,
     size_t pos = m_serviceType.find(";");
     if (pos != kNotFound)
       m_serviceType = m_serviceType.left(pos);
-    // TODO(schenney): crbug.com/572908 What is the right thing to do here? Should we
-    // suppress the reload stuff when a persistable widget-type is specified?
+    // TODO(schenney): crbug.com/572908 What is the right thing to do here?
+    // Should we suppress the reload stuff when a persistable widget-type is
+    // specified?
     reloadPluginOnAttributeChange(name);
     if (!layoutObject())
       requestPluginCreationWithoutLayoutObjectIfPossible();
@@ -129,8 +132,8 @@ void HTMLObjectElement::parseAttribute(const QualifiedName& name,
 
 static void mapDataParamToSrc(Vector<String>* paramNames,
                               Vector<String>* paramValues) {
-  // Some plugins don't understand the "data" attribute of the OBJECT tag (i.e. Real and WMP
-  // require "src" attribute).
+  // Some plugins don't understand the "data" attribute of the OBJECT tag (i.e.
+  // Real and WMP require "src" attribute).
   int srcIndex = -1, dataIndex = -1;
   for (unsigned i = 0; i < paramNames->size(); ++i) {
     if (equalIgnoringCase((*paramNames)[i], "src"))
@@ -145,7 +148,8 @@ static void mapDataParamToSrc(Vector<String>* paramNames,
   }
 }
 
-// TODO(schenney): crbug.com/572908 This function should not deal with url or serviceType!
+// TODO(schenney): crbug.com/572908 This function should not deal with url or
+// serviceType!
 void HTMLObjectElement::parametersForPlugin(Vector<String>& paramNames,
                                             Vector<String>& paramValues,
                                             String& url,
@@ -165,12 +169,14 @@ void HTMLObjectElement::parametersForPlugin(Vector<String>& paramNames,
     paramNames.append(p->name());
     paramValues.append(p->value());
 
-    // TODO(schenney): crbug.com/572908 url adjustment does not belong in this function.
+    // TODO(schenney): crbug.com/572908 url adjustment does not belong in this
+    // function.
     if (url.isEmpty() && urlParameter.isEmpty() &&
         (equalIgnoringCase(name, "src") || equalIgnoringCase(name, "movie") ||
          equalIgnoringCase(name, "code") || equalIgnoringCase(name, "url")))
       urlParameter = stripLeadingAndTrailingHTMLSpaces(p->value());
-    // TODO(schenney): crbug.com/572908 serviceType calculation does not belong in this function.
+    // TODO(schenney): crbug.com/572908 serviceType calculation does not belong
+    // in this function.
     if (serviceType.isEmpty() && equalIgnoringCase(name, "type")) {
       serviceType = p->value();
       size_t pos = serviceType.find(";");
@@ -179,11 +185,12 @@ void HTMLObjectElement::parametersForPlugin(Vector<String>& paramNames,
     }
   }
 
-  // When OBJECT is used for an applet via Sun's Java plugin, the CODEBASE attribute in the tag
-  // points to the Java plugin itself (an ActiveX component) while the actual applet CODEBASE is
-  // in a PARAM tag. See <http://java.sun.com/products/plugin/1.2/docs/tags.html>. This means
-  // we have to explicitly suppress the tag's CODEBASE attribute if there is none in a PARAM,
-  // else our Java plugin will misinterpret it. [4004531]
+  // When OBJECT is used for an applet via Sun's Java plugin, the CODEBASE
+  // attribute in the tag points to the Java plugin itself (an ActiveX
+  // component) while the actual applet CODEBASE is in a PARAM tag. See
+  // <http://java.sun.com/products/plugin/1.2/docs/tags.html>. This means we
+  // have to explicitly suppress the tag's CODEBASE attribute if there is none
+  // in a PARAM, else our Java plugin will misinterpret it. [4004531]
   String codebase;
   if (MIMETypeRegistry::isJavaAppletMIMEType(serviceType)) {
     codebase = "codebase";
@@ -191,7 +198,8 @@ void HTMLObjectElement::parametersForPlugin(Vector<String>& paramNames,
         codebase.impl());  // pretend we found it in a PARAM already
   }
 
-  // Turn the attributes of the <object> element into arrays, but don't override <param> values.
+  // Turn the attributes of the <object> element into arrays, but don't override
+  // <param> values.
   AttributeCollection attributes = this->attributes();
   for (const Attribute& attribute : attributes) {
     const AtomicString& name = attribute.name().localName();
@@ -217,7 +225,8 @@ void HTMLObjectElement::parametersForPlugin(Vector<String>& paramNames,
 
 bool HTMLObjectElement::hasFallbackContent() const {
   for (Node* child = firstChild(); child; child = child->nextSibling()) {
-    // Ignore whitespace-only text, and <param> tags, any other content is fallback content.
+    // Ignore whitespace-only text, and <param> tags, any other content is
+    // fallback content.
     if (child->isTextNode()) {
       if (!toText(child)->containsOnlyWhitespace())
         return true;
@@ -263,20 +272,22 @@ void HTMLObjectElement::reloadPluginOnAttributeChange(
     lazyReattachIfNeeded();
 }
 
-// TODO(schenney): crbug.com/572908 This should be unified with HTMLEmbedElement::updateWidget and
-// moved down into HTMLPluginElement.cpp
+// TODO(schenney): crbug.com/572908 This should be unified with
+// HTMLEmbedElement::updateWidget and moved down into HTMLPluginElement.cpp
 void HTMLObjectElement::updateWidgetInternal() {
   DCHECK(!layoutEmbeddedItem().showsUnavailablePluginIndicator());
   DCHECK(needsWidgetUpdate());
   setNeedsWidgetUpdate(false);
-  // TODO(schenney): crbug.com/572908 This should ASSERT isFinishedParsingChildren() instead.
+  // TODO(schenney): crbug.com/572908 This should ASSERT
+  // isFinishedParsingChildren() instead.
   if (!isFinishedParsingChildren()) {
     dispatchErrorEvent();
     return;
   }
 
-  // TODO(schenney): crbug.com/572908 I'm not sure it's ever possible to get into updateWidget during a
-  // removal, but just in case we should avoid loading the frame to prevent security bugs.
+  // TODO(schenney): crbug.com/572908 I'm not sure it's ever possible to get
+  // into updateWidget during a removal, but just in case we should avoid
+  // loading the frame to prevent security bugs.
   if (!SubframeLoadingDisabler::canLoadFrame(*this)) {
     dispatchErrorEvent();
     return;
@@ -285,7 +296,8 @@ void HTMLObjectElement::updateWidgetInternal() {
   String url = this->url();
   String serviceType = m_serviceType;
 
-  // TODO(schenney): crbug.com/572908 These should be joined into a PluginParameters class.
+  // TODO(schenney): crbug.com/572908 These should be joined into a
+  // PluginParameters class.
   Vector<String> paramNames;
   Vector<String> paramValues;
   parametersForPlugin(paramNames, paramValues, url, serviceType);
@@ -296,8 +308,8 @@ void HTMLObjectElement::updateWidgetInternal() {
     return;
   }
 
-  // TODO(schenney): crbug.com/572908 Is it possible to get here without a layoutObject
-  // now that we don't have beforeload events?
+  // TODO(schenney): crbug.com/572908 Is it possible to get here without a
+  // layoutObject now that we don't have beforeload events?
   if (!layoutObject())
     return;
 
@@ -351,8 +363,8 @@ const AtomicString HTMLObjectElement::imageSourceURL() const {
 
 // TODO(schenney): crbug.com/572908 Remove this hack.
 void HTMLObjectElement::reattachFallbackContent() {
-  // This can happen inside of attachLayoutTree() in the middle of a recalcStyle so we need to
-  // reattach synchronously here.
+  // This can happen inside of attachLayoutTree() in the middle of a recalcStyle
+  // so we need to reattach synchronously here.
   if (document().inStyleRecalc())
     reattachLayoutTree();
   else
@@ -366,12 +378,14 @@ void HTMLObjectElement::renderFallbackContent() {
   if (!isConnected())
     return;
 
-  // Before we give up and use fallback content, check to see if this is a MIME type issue.
+  // Before we give up and use fallback content, check to see if this is a MIME
+  // type issue.
   if (m_imageLoader && m_imageLoader->image() &&
       m_imageLoader->image()->getStatus() != Resource::LoadError) {
     m_serviceType = m_imageLoader->image()->response().mimeType();
     if (!isImageType()) {
-      // If we don't think we have an image type anymore, then clear the image from the loader.
+      // If we don't think we have an image type anymore, then clear the image
+      // from the loader.
       m_imageLoader->setImage(0);
       reattachFallbackContent();
       return;
@@ -380,7 +394,8 @@ void HTMLObjectElement::renderFallbackContent() {
 
   m_useFallbackContent = true;
 
-  // TODO(schenney): crbug.com/572908 Style gets recalculated which is suboptimal.
+  // TODO(schenney): crbug.com/572908 Style gets recalculated which is
+  // suboptimal.
   reattachFallbackContent();
 }
 

@@ -57,7 +57,8 @@ class CORE_EXPORT HTMLMediaSource : public URLRegistrable,
   // and helps enforce attachment to at most one element at a time.
   // If already attached, returns false. Otherwise, must be in
   // 'closed' state, and returns true to indicate attachment success.
-  // Reattachment allowed by first calling close() (even if already in 'closed').
+  // Reattachment allowed by first calling close() (even if already in
+  // 'closed').
   // Once attached, the source uses the element to synchronously service some
   // API operations like duration change that may need to initiate seek.
   virtual bool attachToElement(HTMLMediaElement*) = 0;

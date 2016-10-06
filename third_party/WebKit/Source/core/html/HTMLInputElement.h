@@ -72,13 +72,14 @@ class CORE_EXPORT HTMLInputElement : public HTMLTextFormControlElement {
   String validationMessage() const final;
   String validationSubMessage() const final;
 
-  // Returns the minimum value for type=date, number, or range.  Don't call this for other types.
+  // Returns the minimum value for type=date, number, or range.  Don't call this
+  // for other types.
   double minimum() const;
-  // Returns the maximum value for type=date, number, or range.  Don't call this for other types.
-  // This always returns a value which is >= minimum().
+  // Returns the maximum value for type=date, number, or range.  Don't call this
+  // for other types.  This always returns a value which is >= minimum().
   double maximum() const;
-  // Sets the "allowed value step" defined in the HTML spec to the specified double pointer.
-  // Returns false if there is no "allowed value step."
+  // Sets the "allowed value step" defined in the HTML spec to the specified
+  // double pointer.  Returns false if there is no "allowed value step."
   bool getAllowedValueStep(Decimal*) const;
   StepRange createStepRange(AnyStepHandling) const;
 
@@ -103,10 +104,12 @@ class CORE_EXPORT HTMLInputElement : public HTMLTextFormControlElement {
   void setChecked(bool, TextFieldEventBehavior = DispatchNoEvent);
   void dispatchChangeEventIfNeeded();
 
-  // 'indeterminate' is a state independent of the checked state that causes the control to draw in a way that hides the actual state.
+  // 'indeterminate' is a state independent of the checked state that causes the
+  // control to draw in a way that hides the actual state.
   bool indeterminate() const { return m_isIndeterminate; }
   void setIndeterminate(bool);
-  // shouldAppearChecked is used by the layout tree/CSS while checked() is used by JS to determine checked state
+  // shouldAppearChecked is used by the layout tree/CSS while checked() is used
+  // by JS to determine checked state
   bool shouldAppearChecked() const;
   bool shouldAppearIndeterminate() const override;
 
@@ -123,7 +126,8 @@ class CORE_EXPORT HTMLInputElement : public HTMLTextFormControlElement {
                 TextFieldEventBehavior = DispatchNoEvent) override;
   void setValueForUser(const String&);
   // Checks if the specified string would be a valid value.
-  // We should not call this for types with no string value such as CHECKBOX and RADIO.
+  // We should not call this for types with no string value such as CHECKBOX and
+  // RADIO.
   bool isValidValue(const String&) const;
   bool hasDirtyValue() const;
 
@@ -168,8 +172,9 @@ class CORE_EXPORT HTMLInputElement : public HTMLTextFormControlElement {
   void detachLayoutTree(const AttachContext& = AttachContext()) final;
   void updateFocusAppearance(SelectionBehaviorOnFocus) final;
 
-  // FIXME: For isActivatedSubmit and setActivatedSubmit, we should use the NVI-idiom here by making
-  // it private virtual in all classes and expose a public method in HTMLFormControlElement to call
+  // FIXME: For isActivatedSubmit and setActivatedSubmit, we should use the
+  // NVI-idiom here by making it private virtual in all classes and expose a
+  // public method in HTMLFormControlElement to call
   // the private virtual method.
   bool isActivatedSubmit() const final;
   void setActivatedSubmit(bool flag) final;
@@ -427,9 +432,10 @@ class CORE_EXPORT HTMLInputElement : public HTMLTextFormControlElement {
   unsigned m_isPlaceholderVisible : 1;
   Member<InputType> m_inputType;
   Member<InputTypeView> m_inputTypeView;
-  // The ImageLoader must be owned by this element because the loader code assumes
-  // that it lives as long as its owning element lives. If we move the loader into
-  // the ImageInput object we may delete the loader while this element lives on.
+  // The ImageLoader must be owned by this element because the loader code
+  // assumes that it lives as long as its owning element lives. If we move the
+  // loader into the ImageInput object we may delete the loader while this
+  // element lives on.
   Member<HTMLImageLoader> m_imageLoader;
   Member<ListAttributeTargetObserver> m_listAttributeTargetObserver;
 };

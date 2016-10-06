@@ -51,9 +51,9 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
 
   void disconnectContentFrame();
 
-  // Most subclasses use LayoutPart (either LayoutEmbeddedObject or LayoutIFrame)
-  // except for HTMLObjectElement and HTMLEmbedElement which may return any
-  // LayoutObject when using fallback content.
+  // Most subclasses use LayoutPart (either LayoutEmbeddedObject or
+  // LayoutIFrame) except for HTMLObjectElement and HTMLEmbedElement which may
+  // return any LayoutObject when using fallback content.
   LayoutPart* layoutPart() const;
 
   Document* getSVGDocument(ExceptionState&) const;

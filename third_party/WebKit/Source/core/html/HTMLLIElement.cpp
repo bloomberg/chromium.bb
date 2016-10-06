@@ -110,8 +110,9 @@ void HTMLLIElement::attachLayoutTree(const AttachContext& context) {
         listNode = current;
     }
 
-    // If we are not in a list, tell the layoutObject so it can position us inside.
-    // We don't want to change our style to say "inside" since that would affect nested nodes.
+    // If we are not in a list, tell the layoutObject so it can position us
+    // inside.  We don't want to change our style to say "inside" since that
+    // would affect nested nodes.
     if (!listNode)
       liLayoutItem.setNotInList(true);
 

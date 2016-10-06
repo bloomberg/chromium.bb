@@ -113,7 +113,8 @@ HTMLImportChild* HTMLImportsController::load(HTMLImport* parent,
   HTMLImportLoader* loader = createLoader();
   HTMLImportChild* child = createChild(request.url(), loader, parent, client);
   // We set resource after the import tree is built since
-  // Resource::addClient() immediately calls back to feed the bytes when the resource is cached.
+  // Resource::addClient() immediately calls back to feed the bytes when the
+  // resource is cached.
   loader->startLoading(resource);
   child->didStartLoading();
   return child;

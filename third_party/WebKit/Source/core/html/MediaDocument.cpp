@@ -145,11 +145,12 @@ void MediaDocumentParser::createDocumentStructure() {
   body->setAttribute(styleAttr, "margin: 0px;");
 
   HTMLDivElement* div = HTMLDivElement::create(*document());
-  // Style sheets for media controls are lazily loaded until a media element is encountered.
-  // As a result, elements encountered before the media element will not get the right
-  // style at first if we put the styles in mediacontrols.css. To solve this issue, set the
-  // styles inline so that they will be applied when the page loads.
-  // See w3c example on how to centering an element: https://www.w3.org/Style/Examples/007/center.en.html
+  // Style sheets for media controls are lazily loaded until a media element is
+  // encountered.  As a result, elements encountered before the media element
+  // will not get the right style at first if we put the styles in
+  // mediacontrols.css. To solve this issue, set the styles inline so that they
+  // will be applied when the page loads.  See w3c example on how to centering
+  // an element: https://www.w3.org/Style/Examples/007/center.en.html
   div->setAttribute(styleAttr,
                     "display: flex;"
                     "flex-direction: column;"
@@ -197,7 +198,8 @@ void MediaDocumentParser::createDocumentStructure() {
     recordDownloadMetric(MediaDocumentDownloadButtonShown);
   }
 
-  // According to https://html.spec.whatwg.org/multipage/browsers.html#read-media,
+  // According to
+  // https://html.spec.whatwg.org/multipage/browsers.html#read-media,
   // MediaDocument should have a single child which is the video element. Use
   // shadow root to hide all the elements we added here.
   ShadowRoot& shadowRoot = body->ensureUserAgentShadowRoot();

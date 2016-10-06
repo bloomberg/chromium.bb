@@ -72,7 +72,8 @@ class PluginDocumentParser : public RawDataDocumentParser {
 
 void PluginDocumentParser::createDocumentStructure() {
   // FIXME: Assert we have a loader to figure out why the original null checks
-  // and assert were added for the security bug in http://trac.webkit.org/changeset/87566
+  // and assert were added for the security bug in
+  // http://trac.webkit.org/changeset/87566
   DCHECK(document());
   RELEASE_ASSERT(document()->loader());
 
@@ -96,8 +97,11 @@ void PluginDocumentParser::createDocumentStructure() {
                      "background-color: rgb(38,38,38); height: 100%; width: "
                      "100%; overflow: hidden; margin: 0");
   rootElement->appendChild(body);
-  if (isStopped())
-    return;  // Possibly detached by a mutation event listener installed in runScriptsAtDocumentElementAvailable.
+  if (isStopped()) {
+    // Possibly detached by a mutation event listener installed in
+    // runScriptsAtDocumentElementAvailable.
+    return;
+  }
 
   m_embedElement = HTMLEmbedElement::create(*document());
   m_embedElement->setAttribute(widthAttr, "100%");
@@ -108,8 +112,11 @@ void PluginDocumentParser::createDocumentStructure() {
                                AtomicString(document()->url().getString()));
   m_embedElement->setAttribute(typeAttr, document()->loader()->mimeType());
   body->appendChild(m_embedElement);
-  if (isStopped())
-    return;  // Possibly detached by a mutation event listener installed in runScriptsAtDocumentElementAvailable.
+  if (isStopped()) {
+    // Possibly detached by a mutation event listener installed in
+    // runScriptsAtDocumentElementAvailable.
+    return;
+  }
 
   toPluginDocument(document())->setPluginNode(m_embedElement.get());
 
@@ -121,8 +128,11 @@ void PluginDocumentParser::createDocumentStructure() {
   // Focus the plugin here, as the line above is where the plugin is created.
   if (frame->isMainFrame()) {
     m_embedElement->focus();
-    if (isStopped())
-      return;  // Possibly detached by a focus event listener installed in runScriptsAtDocumentElementAvailable.
+    if (isStopped()) {
+      // Possibly detached by a mutation event listener installed in
+      // runScriptsAtDocumentElementAvailable.
+      return;
+    }
   }
 
   if (PluginView* view = pluginView())

@@ -300,14 +300,15 @@ class CORE_EXPORT HTMLCanvasElement final : public HTMLElement,
 
   bool m_originClean;
 
-  // It prevents HTMLCanvasElement::buffer() from continuously re-attempting to allocate an imageBuffer
-  // after the first attempt failed.
+  // It prevents HTMLCanvasElement::buffer() from continuously re-attempting to
+  // allocate an imageBuffer after the first attempt failed.
   mutable bool m_didFailToCreateImageBuffer;
   bool m_imageBufferIsClear;
   std::unique_ptr<ImageBuffer> m_imageBuffer;
 
-  mutable RefPtr<Image>
-      m_copiedImage;  // FIXME: This is temporary for platforms that have to copy the image buffer to render (and for CSSCanvasValue).
+  // FIXME: This is temporary for platforms that have to copy the image buffer
+  // to render (and for CSSCanvasValue).
+  mutable RefPtr<Image> m_copiedImage;
 
   // Used for OffscreenCanvas that controls this HTML canvas element
   std::unique_ptr<CanvasSurfaceLayerBridge> m_surfaceLayerBridge;

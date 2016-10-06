@@ -152,7 +152,8 @@ LayoutPart* HTMLFrameOwnerElement::layoutPart() const {
 }
 
 void HTMLFrameOwnerElement::setContentFrame(Frame& frame) {
-  // Make sure we will not end up with two frames referencing the same owner element.
+  // Make sure we will not end up with two frames referencing the same owner
+  // element.
   DCHECK(!m_contentFrame || m_contentFrame->owner() != this);
   // Disconnected frames should not be allowed to load.
   DCHECK(isConnected());

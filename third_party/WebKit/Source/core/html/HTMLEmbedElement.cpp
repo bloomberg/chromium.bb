@@ -2,7 +2,8 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2000 Stefan Schimanski (1Stein@gmx.de)
- * Copyright (C) 2004, 2005, 2006, 2008, 2009, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2008, 2009, 2011 Apple Inc. All rights
+ * reserved.
  * Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
  *
  * This library is free software; you can redistribute it and/or
@@ -106,9 +107,9 @@ void HTMLEmbedElement::parseAttribute(const QualifiedName& name,
     } else {
       requestPluginCreationWithoutLayoutObjectIfPossible();
     }
-  } else if (
-      name ==
-      codeAttr) {  // TODO(schenney): Remove this? It's not in the spec and we're not in the HTMLAppletElement hierarchy
+  } else if (name == codeAttr) {
+    // TODO(schenney): Remove this branch? It's not in the spec and we're not in the
+    // HTMLAppletElement hierarchy.
     m_url = stripLeadingAndTrailingHTMLSpaces(value);
   } else if (name == srcAttr) {
     m_url = stripLeadingAndTrailingHTMLSpaces(value);
@@ -151,7 +152,8 @@ void HTMLEmbedElement::updateWidgetInternal() {
   Vector<String> paramValues;
   parametersForPlugin(paramNames, paramValues);
 
-  // FIXME: Can we not have layoutObject here now that beforeload events are gone?
+  // FIXME: Can we not have layoutObject here now that beforeload events are
+  // gone?
   if (!layoutObject())
     return;
 

@@ -2,7 +2,8 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
- * Copyright (C) 2003, 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights
+ * reserved.
  * Copyright (C) 2009 Rob Buis (rwlbuis@gmail.com)
  * Copyright (C) 2011 Google Inc. All rights reserved.
  *
@@ -220,7 +221,8 @@ Node::InsertionNotificationRequest HTMLLinkElement::insertedInto(
 }
 
 void HTMLLinkElement::removedFrom(ContainerNode* insertionPoint) {
-  // Store the result of isConnected() here before Node::removedFrom(..) clears the flags.
+  // Store the result of isConnected() here before Node::removedFrom(..) clears
+  // the flags.
   bool wasConnected = isConnected();
   HTMLElement::removedFrom(insertionPoint);
   if (!insertionPoint->isConnected())
@@ -414,7 +416,8 @@ void LinkStyle::setCSSStyleSheet(
     const String& charset,
     const CSSStyleSheetResource* cachedStyleSheet) {
   if (!m_owner->isConnected()) {
-    // While the stylesheet is asynchronously loading, the owner can be disconnected from a document.
+    // While the stylesheet is asynchronously loading, the owner can be
+    // disconnected from a document.
     // In that case, cancel any processing on the loaded content.
     m_loading = false;
     removePendingSheet();
@@ -568,8 +571,8 @@ void LinkStyle::setDisabledState(bool disabled) {
   LinkStyle::DisabledState oldDisabledState = m_disabledState;
   m_disabledState = disabled ? Disabled : EnabledViaScript;
   if (oldDisabledState != m_disabledState) {
-    // If we change the disabled state while the sheet is still loading, then we have to
-    // perform three checks:
+    // If we change the disabled state while the sheet is still loading, then we
+    // have to perform three checks:
     if (styleSheetIsLoading()) {
       // Check #1: The sheet becomes disabled while loading.
       if (m_disabledState == Disabled)
@@ -581,10 +584,10 @@ void LinkStyle::setDisabledState(bool disabled) {
         addPendingSheet(Blocking);
 
       // Check #3: A main sheet becomes enabled while it was still loading and
-      // after it was disabled via script. It takes really terrible code to make this
-      // happen (a double toggle for no reason essentially). This happens on
-      // virtualplastic.net, which manages to do about 12 enable/disables on only 3
-      // sheets. :)
+      // after it was disabled via script. It takes really terrible code to make
+      // this happen (a double toggle for no reason essentially). This happens
+      // on virtualplastic.net, which manages to do about 12 enable/disables on
+      // only 3 sheets. :)
       if (!m_owner->relAttribute().isAlternate() &&
           m_disabledState == EnabledViaScript && oldDisabledState == Disabled)
         addPendingSheet(Blocking);
@@ -605,8 +608,9 @@ void LinkStyle::setDisabledState(bool disabled) {
 
 void LinkStyle::setCrossOriginStylesheetStatus(CSSStyleSheet* sheet) {
   if (m_fetchFollowingCORS && resource() && !resource()->errorOccurred()) {
-    // Record the security origin the CORS access check succeeded at, if cross origin.
-    // Only origins that are script accessible to it may access the stylesheet's rules.
+    // Record the security origin the CORS access check succeeded at, if cross
+    // origin.  Only origins that are script accessible to it may access the
+    // stylesheet's rules.
     sheet->setAllowRuleAccessFromOrigin(
         m_owner->document().getSecurityOrigin());
   }
@@ -665,14 +669,15 @@ void LinkStyle::process() {
       mediaQueryMatches = evaluator.eval(media);
     }
 
-    // Don't hold up layout tree construction and script execution on stylesheets
-    // that are not needed for the layout at the moment.
+    // Don't hold up layout tree construction and script execution on
+    // stylesheets that are not needed for the layout at the moment.
     bool blocking = mediaQueryMatches && !m_owner->isAlternate() &&
                     m_owner->isCreatedByParser();
     addPendingSheet(blocking ? Blocking : NonBlocking);
 
-    // Load stylesheets that are not needed for the layout immediately with low priority.
-    // When the link element is created by scripts, load the stylesheets asynchronously but in high priority.
+    // Load stylesheets that are not needed for the layout immediately with low
+    // priority.  When the link element is created by scripts, load the
+    // stylesheets asynchronously but in high priority.
     bool lowPriority = !mediaQueryMatches || m_owner->isAlternate();
     FetchRequest request = builder.build(lowPriority);
     CrossOriginAttributeValue crossOrigin = crossOriginAttributeValue(
@@ -692,8 +697,11 @@ void LinkStyle::process() {
     setResource(CSSStyleSheetResource::fetch(request, document().fetcher()));
 
     if (m_loading && !resource()) {
-      // The request may have been denied if (for example) the stylesheet is local and the document is remote, or if there was a Content Security Policy Failure.
-      // setCSSStyleSheet() can be called synchronuosly in setResource() and thus resource() is null and |m_loading| is false in such cases even if the request succeeds.
+      // The request may have been denied if (for example) the stylesheet is
+      // local and the document is remote, or if there was a Content Security
+      // Policy Failure.  setCSSStyleSheet() can be called synchronuosly in
+      // setResource() and thus resource() is null and |m_loading| is false in
+      // such cases even if the request succeeds.
       m_loading = false;
       removePendingSheet();
       notifyLoadedSheetAndAllCriticalSubresources(

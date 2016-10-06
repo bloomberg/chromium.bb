@@ -146,8 +146,8 @@ void HTMLDetailsElement::parseAttribute(const QualifiedName& name,
     else
       content->setInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
 
-    // Invalidate the LayoutDetailsMarker in order to turn the arrow signifying if the
-    // details element is open or closed.
+    // Invalidate the LayoutDetailsMarker in order to turn the arrow signifying
+    // if the details element is open or closed.
     Element* summary = findMainSummary();
     DCHECK(summary);
 

@@ -2,7 +2,8 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2000 Dirk Mueller (mueller@kde.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights
+ * reserved.
  * Copyright (C) 2009, 2010, 2011 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
@@ -49,7 +50,8 @@ enum TextFieldEventBehavior {
 class CORE_EXPORT HTMLTextFormControlElement
     : public HTMLFormControlElementWithState {
  public:
-  // Common flag for HTMLInputElement::tooLong(), HTMLTextAreaElement::tooLong(),
+  // Common flag for HTMLInputElement::tooLong(),
+  // HTMLTextAreaElement::tooLong(),
   // HTMLInputElement::tooShort() and HTMLTextAreaElement::tooShort().
   enum NeedsToCheckDirtyFlag { CheckDirtyFlag, IgnoreDirtyFlag };
 
@@ -172,13 +174,17 @@ class CORE_EXPORT HTMLTextFormControlElement
                          InputDeviceCapabilities* sourceCapabilities) final;
   void scheduleSelectEvent();
 
-  // Returns true if user-editable value is empty. Used to check placeholder visibility.
+  // Returns true if user-editable value is empty. Used to check placeholder
+  // visibility.
   virtual bool isEmptyValue() const = 0;
-  // Returns true if suggested value is empty. Used to check placeholder visibility.
+  // Returns true if suggested value is empty. Used to check placeholder
+  // visibility.
   virtual bool isEmptySuggestedValue() const { return true; }
-  // Called in dispatchFocusEvent(), after placeholder process, before calling parent's dispatchFocusEvent().
+  // Called in dispatchFocusEvent(), after placeholder process, before calling
+  // parent's dispatchFocusEvent().
   virtual void handleFocusEvent(Element* /* oldFocusedNode */, WebFocusType) {}
-  // Called in dispatchBlurEvent(), after placeholder process, before calling parent's dispatchBlurEvent().
+  // Called in dispatchBlurEvent(), after placeholder process, before calling
+  // parent's dispatchBlurEvent().
   virtual void handleBlurEvent() {}
 
   bool placeholderShouldBeVisible() const;

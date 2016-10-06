@@ -52,7 +52,8 @@ HTMLLabelElement* HTMLLabelElement::create(Document& document) {
 LabelableElement* HTMLLabelElement::control() const {
   const AtomicString& controlId = getAttribute(forAttr);
   if (controlId.isNull()) {
-    // Search the children and descendants of the label element for a form element.
+    // Search the children and descendants of the label element for a form
+    // element.
     // per http://dev.w3.org/html5/spec/Overview.html#the-label-element
     // the form element must be "labelable form-associated element".
     for (LabelableElement& element :

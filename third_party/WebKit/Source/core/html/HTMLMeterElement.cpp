@@ -153,8 +153,8 @@ HTMLMeterElement::GaugeRegion HTMLMeterElement::getGaugeRegion() const {
   }
 
   // The optimum range stays between high and low.
-  // According to the standard, <meter> never show GaugeRegionEvenLessGood in this case
-  // because the value is never less or greater than min or max.
+  // According to the standard, <meter> never show GaugeRegionEvenLessGood in
+  // this case because the value is never less or greater than min or max.
   if (lowValue <= theValue && theValue <= highValue)
     return GaugeRegionOptimum;
   return GaugeRegionSuboptimal;

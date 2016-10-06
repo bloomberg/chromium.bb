@@ -82,9 +82,9 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   short tabIndex() const override;
   AtomicString name() const;
 
-  // This method can be slow because this has to traverse the children of a shadow host.
-  // This method should be used only when m_assignedNodes is dirty.
-  // e.g. To detect a slotchange event in DOM mutations.
+  // This method can be slow because this has to traverse the children of a
+  // shadow host.  This method should be used only when m_assignedNodes is
+  // dirty.  e.g. To detect a slotchange event in DOM mutations.
   bool hasAssignedNodesSlow() const;
   bool findHostChildWithSameSlotName() const;
 

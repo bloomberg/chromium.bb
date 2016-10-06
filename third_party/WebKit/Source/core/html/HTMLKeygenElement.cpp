@@ -62,9 +62,10 @@ HTMLKeygenElement* HTMLKeygenElement::create(Document& document,
 
 LayoutObject* HTMLKeygenElement::createLayoutObject(
     const ComputedStyle& style) {
-  // TODO(mstensho): While it's harmful and meaningless to allow most display types on replaced
-  // content (e.g. table, table-row or flex), it would be useful to honor at least some of
-  // them. Table-cell (and maybe table-caption too), for instance. See crbug.com/335040
+  // TODO(mstensho): While it's harmful and meaningless to allow most display
+  // types on replaced content (e.g. table, table-row or flex), it would be
+  // useful to honor at least some of them. Table-cell (and maybe table-caption
+  // too), for instance. See crbug.com/335040
   return new LayoutBlockFlow(this);
 }
 

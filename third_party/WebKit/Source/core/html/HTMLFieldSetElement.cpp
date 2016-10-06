@@ -81,7 +81,8 @@ void HTMLFieldSetElement::invalidateDisabledStateUnder(Element& base) {
 }
 
 void HTMLFieldSetElement::disabledAttributeChanged() {
-  // This element must be updated before the style of nodes in its subtree gets recalculated.
+  // This element must be updated before the style of nodes in its subtree gets
+  // recalculated.
   HTMLFormControlElement::disabledAttributeChanged();
   invalidateDisabledStateUnder(*this);
 }

@@ -42,15 +42,16 @@ HTMLImageLoader::~HTMLImageLoader() {}
 void HTMLImageLoader::dispatchLoadEvent() {
   RESOURCE_LOADING_DVLOG(1) << "HTMLImageLoader::dispatchLoadEvent " << this;
 
-  // HTMLVideoElement uses this class to load the poster image, but it should not fire events for loading or failure.
+  // HTMLVideoElement uses this class to load the poster image, but it should
+  // not fire events for loading or failure.
   if (isHTMLVideoElement(*element()))
     return;
 
   bool errorOccurred = image()->errorOccurred();
-  if (isHTMLObjectElement(*element()) && !errorOccurred)
-    errorOccurred =
-        (image()->response().httpStatusCode() >=
-         400);  // An <object> considers a 404 to be an error and should fire onerror.
+  if (isHTMLObjectElement(*element()) && !errorOccurred) {
+    // An <object> considers a 404 to be an error and should fire onerror.
+    errorOccurred = (image()->response().httpStatusCode() >= 400);
+  }
   element()->dispatchEvent(Event::create(errorOccurred ? EventTypeNames::error
                                                        : EventTypeNames::load));
 }
@@ -63,7 +64,8 @@ static void loadFallbackContentForElement(Element* element) {
 }
 
 void HTMLImageLoader::noImageResourceToLoad() {
-  // FIXME: Use fallback content even when there is no alt-text. The only blocker is the large amount of rebaselining it requires.
+  // FIXME: Use fallback content even when there is no alt-text. The only
+  // blocker is the large amount of rebaselining it requires.
   if (!toHTMLElement(element())->altText().isEmpty())
     loadFallbackContentForElement(element());
 }

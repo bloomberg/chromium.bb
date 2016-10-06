@@ -72,8 +72,9 @@ void HTMLImageFallbackHelper::createAltTextShadowTree(Element& element) {
 PassRefPtr<ComputedStyle> HTMLImageFallbackHelper::customStyleForAltText(
     Element& element,
     PassRefPtr<ComputedStyle> newStyle) {
-  // If we have an author shadow root or have not created the UA shadow root yet, bail early. We can't
-  // use ensureUserAgentShadowRoot() here because that would alter the DOM tree during style recalc.
+  // If we have an author shadow root or have not created the UA shadow root
+  // yet, bail early. We can't use ensureUserAgentShadowRoot() here because that
+  // would alter the DOM tree during style recalc.
   if (element.authorShadowRoot() || !element.userAgentShadowRoot())
     return newStyle;
 
@@ -81,12 +82,14 @@ PassRefPtr<ComputedStyle> HTMLImageFallbackHelper::customStyleForAltText(
       element.userAgentShadowRoot()->getElementById("alttext-container");
   Element* brokenImage =
       element.userAgentShadowRoot()->getElementById("alttext-image");
-  // Input elements have a UA shadow root of their own. We may not have replaced it with fallback content yet.
+  // Input elements have a UA shadow root of their own. We may not have replaced
+  // it with fallback content yet.
   if (!placeHolder || !brokenImage)
     return newStyle;
 
   if (element.document().inQuirksMode()) {
-    // Mimic the behaviour of the image host by setting symmetric dimensions if only one dimension is specified.
+    // Mimic the behaviour of the image host by setting symmetric dimensions if
+    // only one dimension is specified.
     if (newStyle->width().isSpecifiedOrIntrinsic() &&
         newStyle->height().isAuto())
       newStyle->setHeight(newStyle->width());
@@ -100,7 +103,8 @@ PassRefPtr<ComputedStyle> HTMLImageFallbackHelper::customStyleForAltText(
     }
   }
 
-  // If the image has specified dimensions allow the alt-text container expand to fill them.
+  // If the image has specified dimensions allow the alt-text container expand
+  // to fill them.
   if (newStyle->width().isSpecifiedOrIntrinsic() &&
       newStyle->height().isSpecifiedOrIntrinsic()) {
     placeHolder->setInlineStyleProperty(
@@ -109,7 +113,8 @@ PassRefPtr<ComputedStyle> HTMLImageFallbackHelper::customStyleForAltText(
         CSSPropertyHeight, 100, CSSPrimitiveValue::UnitType::Percentage);
   }
 
-  // Make sure the broken image icon appears on the appropriate side of the image for the element's writing direction.
+  // Make sure the broken image icon appears on the appropriate side of the
+  // image for the element's writing direction.
   brokenImage->setInlineStyleProperty(
       CSSPropertyFloat,
       AtomicString(newStyle->direction() == LTR ? "left" : "right"));
@@ -121,7 +126,8 @@ PassRefPtr<ComputedStyle> HTMLImageFallbackHelper::customStyleForAltText(
       toHTMLElement(element).altText().isEmpty())
     newStyle->setDisplay(EDisplay::None);
 
-  // This preserves legacy behaviour originally defined when alt-text was managed by LayoutImage.
+  // This preserves legacy behaviour originally defined when alt-text was
+  // managed by LayoutImage.
   if (noImageSourceSpecified(element))
     brokenImage->setInlineStyleProperty(CSSPropertyDisplay, CSSValueNone);
   else

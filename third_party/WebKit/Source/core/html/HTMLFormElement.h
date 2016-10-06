@@ -2,7 +2,8 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2000 Dirk Mueller (mueller@kde.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights
+ * reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -153,7 +154,8 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
 
   RadioButtonGroupScope m_radioButtonGroupScope;
 
-  // Do not access m_associatedElements directly. Use associatedElements() instead.
+  // Do not access m_associatedElements directly. Use associatedElements()
+  // instead.
   FormAssociatedElement::List m_associatedElements;
   // Do not access m_imageElements directly. Use imageElements() instead.
   HeapVector<Member<HTMLImageElement>> m_imageElements;

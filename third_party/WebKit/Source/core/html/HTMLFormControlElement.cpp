@@ -216,7 +216,8 @@ static bool shouldAutofocusOnAttach(const HTMLFormControlElement* element) {
   if (!element->isAutofocusable())
     return false;
   if (element->document().isSandboxed(SandboxAutomaticFeatures)) {
-    // FIXME: This message should be moved off the console once a solution to https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
+    // FIXME: This message should be moved off the console once a solution to
+    // https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
     element->document().addConsoleMessage(ConsoleMessage::create(
         SecurityMessageSource, ErrorMessageLevel,
         "Blocked autofocusing on a form control because the form's frame is "
@@ -234,8 +235,8 @@ void HTMLFormControlElement::attachLayoutTree(const AttachContext& context) {
     return;
 
   // The call to updateFromElement() needs to go after the call through
-  // to the base class's attachLayoutTree() because that can sometimes do a close
-  // on the layoutObject.
+  // to the base class's attachLayoutTree() because that can sometimes do a
+  // close on the layoutObject.
   layoutObject()->updateFromElement();
 
   // FIXME: Autofocus handling should be moved to insertedInto according to
@@ -382,7 +383,8 @@ void HTMLFormControlElement::dispatchFocusEvent(
     InputDeviceCapabilities* sourceCapabilities) {
   if (type != WebFocusTypePage)
     m_wasFocusedByMouse = type == WebFocusTypeMouse;
-  // ContainerNode::handleStyleChangeOnFocusStateChange() will inform LayoutTheme about the focus state change.
+  // ContainerNode::handleStyleChangeOnFocusStateChange() will inform
+  // LayoutTheme about the focus state change.
   HTMLElement::dispatchFocusEvent(oldFocusedElement, type, sourceCapabilities);
 }
 
@@ -395,8 +397,9 @@ void HTMLFormControlElement::willCallDefaultEventHandler(const Event& event) {
   bool oldShouldHaveFocusAppearance = shouldHaveFocusAppearance();
   m_wasFocusedByMouse = false;
 
-  // Change of m_wasFocusByMouse may affect shouldHaveFocusAppearance() and LayoutTheme::isFocused().
-  // Inform LayoutTheme if shouldHaveFocusAppearance() changes.
+  // Change of m_wasFocusByMouse may affect shouldHaveFocusAppearance() and
+  // LayoutTheme::isFocused().  Inform LayoutTheme if
+  // shouldHaveFocusAppearance() changes.
   if (oldShouldHaveFocusAppearance != shouldHaveFocusAppearance() &&
       layoutObject())
     LayoutTheme::theme().controlStateChanged(*layoutObject(),
@@ -432,7 +435,8 @@ bool HTMLFormControlElement::willValidate() const {
 }
 
 void HTMLFormControlElement::setNeedsWillValidateCheck() {
-  // We need to recalculate willValidate immediately because willValidate change can causes style change.
+  // We need to recalculate willValidate immediately because willValidate change
+  // can causes style change.
   bool newWillValidate = recalcWillValidate();
   if (m_willValidateInitialized && m_willValidate == newWillValidate)
     return;

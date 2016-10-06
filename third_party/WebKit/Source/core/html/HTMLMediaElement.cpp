@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Apple Inc. All rights reserved.
+ * Copyright (C) 2007, 2008, 2009, 2010, 2011, 2012, 2013 Apple Inc. All rights
+ * reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -101,14 +102,14 @@
 #endif
 
 #ifndef LOG_MEDIA_EVENTS
-// Default to not logging events because so many are generated they can overwhelm the rest of
-// the logging.
+// Default to not logging events because so many are generated they can
+// overwhelm the rest of the logging.
 #define LOG_MEDIA_EVENTS 0
 #endif
 
 #ifndef LOG_CACHED_TIME_WARNINGS
-// Default to not logging warnings about excessive drift in the cached media time because it adds a
-// fair amount of overhead and logging.
+// Default to not logging warnings about excessive drift in the cached media
+// time because it adds a fair amount of overhead and logging.
 #define LOG_CACHED_TIME_WARNINGS 0
 #endif
 
@@ -241,7 +242,8 @@ bool canLoadURL(const KURL& url, const ContentType& contentType) {
   String contentMIMEType = contentType.type().lower();
   String contentTypeCodecs = contentType.parameter(codecs);
 
-  // If the MIME type is missing or is not meaningful, try to figure it out from the URL.
+  // If the MIME type is missing or is not meaningful, try to figure it out from
+  // the URL.
   if (contentMIMEType.isEmpty() ||
       contentMIMEType == "application/octet-stream" ||
       contentMIMEType == "text/plain") {
@@ -253,9 +255,10 @@ bool canLoadURL(const KURL& url, const ContentType& contentType) {
   if (contentMIMEType.isEmpty())
     return true;
 
-  // 4.8.10.3 MIME types - In the absence of a specification to the contrary, the MIME type "application/octet-stream"
-  // when used with parameters, e.g. "application/octet-stream;codecs=theora", is a type that the user agent knows
-  // it cannot render.
+  // 4.8.10.3 MIME types - In the absence of a specification to the contrary,
+  // the MIME type "application/octet-stream" when used with parameters, e.g.
+  // "application/octet-stream;codecs=theora", is a type that the user agent
+  // knows it cannot render.
   if (contentMIMEType != "application/octet-stream" ||
       contentTypeCodecs.isEmpty()) {
     WebMimeRegistry::SupportsType supported =
@@ -365,8 +368,9 @@ WebMimeRegistry::SupportsType HTMLMediaElement::supportsType(
   if (type.isEmpty())
     return WebMimeRegistry::IsNotSupported;
 
-  // 4.8.10.3 MIME types - The canPlayType(type) method must return the empty string if type is a type that the
-  // user agent knows it cannot render or is the type "application/octet-stream"
+  // 4.8.10.3 MIME types - The canPlayType(type) method must return the empty
+  // string if type is a type that the user agent knows it cannot render or is
+  // the type "application/octet-stream"
   if (type == "application/octet-stream")
     return WebMimeRegistry::IsNotSupported;
 
@@ -511,12 +515,12 @@ void HTMLMediaElement::didMoveToNewDocument(Document& oldDocument) {
 
   if (m_shouldDelayLoadEvent) {
     document().incrementLoadEventDelayCount();
-    // Note: Keeping the load event delay count increment on oldDocument that was added
-    // when m_shouldDelayLoadEvent was set so that destruction of m_webMediaPlayer can not
-    // cause load event dispatching in oldDocument.
+    // Note: Keeping the load event delay count increment on oldDocument that
+    // was added when m_shouldDelayLoadEvent was set so that destruction of
+    // m_webMediaPlayer can not cause load event dispatching in oldDocument.
   } else {
-    // Incrementing the load event delay count so that destruction of m_webMediaPlayer can not
-    // cause load event dispatching in oldDocument.
+    // Incrementing the load event delay count so that destruction of
+    // m_webMediaPlayer can not cause load event dispatching in oldDocument.
     oldDocument.incrementLoadEventDelayCount();
   }
 
@@ -525,15 +529,16 @@ void HTMLMediaElement::didMoveToNewDocument(Document& oldDocument) {
 
   // FIXME: This is a temporary fix to prevent this object from causing the
   // MediaPlayer to dereference LocalFrame and FrameLoader pointers from the
-  // previous document. This restarts the load, as if the src attribute had been set.
-  // A proper fix would provide a mechanism to allow this object to refresh
-  // the MediaPlayer's LocalFrame and FrameLoader references on
-  // document changes so that playback can be resumed properly.
+  // previous document. This restarts the load, as if the src attribute had been
+  // set.  A proper fix would provide a mechanism to allow this object to
+  // refresh the MediaPlayer's LocalFrame and FrameLoader references on document
+  // changes so that playback can be resumed properly.
   m_ignorePreloadNone = false;
   invokeLoadAlgorithm();
 
-  // Decrement the load event delay count on oldDocument now that m_webMediaPlayer has been destroyed
-  // and there is no risk of dispatching a load event from within the destructor.
+  // Decrement the load event delay count on oldDocument now that
+  // m_webMediaPlayer has been destroyed and there is no risk of dispatching a
+  // load event from within the destructor.
   oldDocument.decrementLoadEventDelayCount();
 
   ActiveDOMObject::didMoveToNewExecutionContext(&document());
@@ -544,7 +549,8 @@ bool HTMLMediaElement::supportsFocus() const {
   if (ownerDocument()->isMediaDocument())
     return false;
 
-  // If no controls specified, we should still be able to focus the element if it has tabIndex.
+  // If no controls specified, we should still be able to focus the element if
+  // it has tabIndex.
   return shouldShowControls() || HTMLElement::supportsFocus();
 }
 
@@ -648,7 +654,8 @@ void HTMLMediaElement::scheduleTextTrackResourceLoad() {
 }
 
 void HTMLMediaElement::scheduleNextSourceChild() {
-  // Schedule the timer to try the next <source> element WITHOUT resetting state ala invokeLoadAlgorithm.
+  // Schedule the timer to try the next <source> element WITHOUT resetting state
+  // ala invokeLoadAlgorithm.
   m_pendingActionFlags |= LoadMediaResource;
   m_loadTimer.startOneShot(0, BLINK_FROM_HERE);
 }
@@ -740,13 +747,15 @@ void HTMLMediaElement::invokeLoadAlgorithm() {
   stopPeriodicTimers();
   m_loadTimer.stop();
   cancelDeferredLoad();
-  // FIXME: Figure out appropriate place to reset LoadTextTrackResource if necessary and set m_pendingActionFlags to 0 here.
+  // FIXME: Figure out appropriate place to reset LoadTextTrackResource if
+  // necessary and set m_pendingActionFlags to 0 here.
   m_pendingActionFlags &= ~LoadMediaResource;
   m_sentStalledEvent = false;
   m_haveFiredLoadedData = false;
   m_displayMode = Unknown;
 
-  // 1 - Abort any already-running instance of the resource selection algorithm for this element.
+  // 1 - Abort any already-running instance of the resource selection algorithm
+  // for this element.
   m_loadState = WaitingForSource;
   m_currentSourceNode = nullptr;
 
@@ -773,25 +782,30 @@ void HTMLMediaElement::invokeLoadAlgorithm() {
   // 4 - Remove each task in pending tasks from its task queue.
   cancelPendingEventsAndCallbacks();
 
-  // 5 - If the media element's networkState is set to NETWORK_LOADING or NETWORK_IDLE, queue
-  // a task to fire a simple event named abort at the media element.
+  // 5 - If the media element's networkState is set to NETWORK_LOADING or
+  // NETWORK_IDLE, queue a task to fire a simple event named abort at the media
+  // element.
   if (m_networkState == kNetworkLoading || m_networkState == kNetworkIdle)
     scheduleEvent(EventTypeNames::abort);
 
   resetMediaPlayerAndMediaSource();
 
-  // 6 - If the media element's networkState is not set to NETWORK_EMPTY, then run these substeps
+  // 6 - If the media element's networkState is not set to NETWORK_EMPTY, then
+  // run these substeps
   if (m_networkState != kNetworkEmpty) {
-    // 4.1 - Queue a task to fire a simple event named emptied at the media element.
+    // 4.1 - Queue a task to fire a simple event named emptied at the media
+    // element.
     scheduleEvent(EventTypeNames::emptied);
 
-    // 4.2 - If a fetching process is in progress for the media element, the user agent should stop it.
+    // 4.2 - If a fetching process is in progress for the media element, the
+    // user agent should stop it.
     setNetworkState(kNetworkEmpty);
 
     // 4.4 - Forget the media element's media-resource-specific tracks.
     forgetResourceSpecificTracks();
 
-    // 4.5 - If readyState is not set to kHaveNothing, then set it to that state.
+    // 4.5 - If readyState is not set to kHaveNothing, then set it to that
+    // state.
     m_readyState = kHaveNothing;
     m_readyStateMaximum = kHaveNothing;
 
@@ -802,7 +816,8 @@ void HTMLMediaElement::invokeLoadAlgorithm() {
       // 4.6.1 - Set the paused attribute to true.
       m_paused = true;
 
-      // 4.6.2 - Take pending play promises and reject pending play promises with the result and an "AbortError" DOMException.
+      // 4.6.2 - Take pending play promises and reject pending play promises
+      // with the result and an "AbortError" DOMException.
       rejectPlayPromises(
           AbortError,
           "The play() request was interrupted by a new load request.");
@@ -813,11 +828,13 @@ void HTMLMediaElement::invokeLoadAlgorithm() {
 
     // 4.8 - Set the current playback position to 0.
     //       Set the official playback position to 0.
-    //       If this changed the official playback position, then queue a task to fire a simple event named timeupdate at the media element.
+    //       If this changed the official playback position, then queue a task
+    //       to fire a simple event named timeupdate at the media element.
     // FIXME: Add support for firing this event.
 
     // 4.9 - Set the initial playback position to 0.
-    // FIXME: Make this less subtle. The position only becomes 0 because the ready state is HAVE_NOTHING.
+    // FIXME: Make this less subtle. The position only becomes 0 because the
+    // ready state is HAVE_NOTHING.
     invalidateCachedTime();
 
     // 4.10 - Set the timeline offset to Not-a-Number (NaN).
@@ -834,7 +851,8 @@ void HTMLMediaElement::invokeLoadAlgorithm() {
                       UseCounter::HTMLMediaElementLoadNetworkEmptyNotPaused);
   }
 
-  // 7 - Set the playbackRate attribute to the value of the defaultPlaybackRate attribute.
+  // 7 - Set the playbackRate attribute to the value of the defaultPlaybackRate
+  // attribute.
   setPlaybackRate(defaultPlaybackRate());
 
   // 8 - Set the error attribute to null and the autoplaying flag to true.
@@ -844,7 +862,8 @@ void HTMLMediaElement::invokeLoadAlgorithm() {
   // 9 - Invoke the media element's resource selection algorithm.
   invokeResourceSelectionAlgorithm();
 
-  // 10 - Note: Playback of any previously playing media resource for this element stops.
+  // 10 - Note: Playback of any previously playing media resource for this
+  // element stops.
 }
 
 void HTMLMediaElement::invokeResourceSelectionAlgorithm() {
@@ -858,25 +877,29 @@ void HTMLMediaElement::invokeResourceSelectionAlgorithm() {
 
   m_playedTimeRanges = TimeRanges::create();
 
-  // FIXME: Investigate whether these can be moved into m_networkState != kNetworkEmpty block above
+  // FIXME: Investigate whether these can be moved into m_networkState !=
+  // kNetworkEmpty block above
   // so they are closer to the relevant spec steps.
   m_lastSeekTime = 0;
   m_duration = std::numeric_limits<double>::quiet_NaN();
 
-  // 3 - Set the media element's delaying-the-load-event flag to true (this delays the load event)
+  // 3 - Set the media element's delaying-the-load-event flag to true (this
+  // delays the load event)
   setShouldDelayLoadEvent(true);
   if (mediaControls())
     mediaControls()->reset();
 
-  // 4 - Await a stable state, allowing the task that invoked this algorithm to continue
-  // TODO(srirama.m): Remove scheduleNextSourceChild() and post a microtask instead.
-  // See http://crbug.com/593289 for more details.
+  // 4 - Await a stable state, allowing the task that invoked this algorithm to
+  // continue
+  // TODO(srirama.m): Remove scheduleNextSourceChild() and post a microtask
+  // instead.  See http://crbug.com/593289 for more details.
   scheduleNextSourceChild();
 }
 
 void HTMLMediaElement::loadInternal() {
-  // HTMLMediaElement::textTracksAreReady will need "... the text tracks whose mode was not in the
-  // disabled state when the element's resource selection algorithm last started".
+  // HTMLMediaElement::textTracksAreReady will need "... the text tracks whose
+  // mode was not in the disabled state when the element's resource selection
+  // algorithm last started".
   m_textTracksWhenResourceSelectionBegan.clear();
   if (m_textTracks) {
     for (unsigned i = 0; i < m_textTracks->length(); ++i) {
@@ -930,7 +953,8 @@ void HTMLMediaElement::selectMediaResource() {
   // 7 - Set the media element's networkState to NETWORK_LOADING.
   setNetworkState(kNetworkLoading);
 
-  // 8 - Queue a task to fire a simple event named loadstart at the media element.
+  // 8 - Queue a task to fire a simple event named loadstart at the media
+  // element.
   scheduleEvent(EventTypeNames::loadstart);
 
   // 9 - Run the appropriate steps...
@@ -969,7 +993,8 @@ void HTMLMediaElement::loadSourceFromAttribute() {
   m_loadState = LoadingFromSrcAttr;
   const AtomicString& srcValue = fastGetAttribute(srcAttr);
 
-  // If the src attribute's value is the empty string ... jump down to the failed step below
+  // If the src attribute's value is the empty string ... jump down to the
+  // failed step below
   if (srcValue.isEmpty()) {
     mediaLoadingFailed(WebMediaPlayer::NetworkStateFormatError);
     BLINK_MEDIA_LOG << "loadSourceFromAttribute(" << (void*)this
@@ -1026,8 +1051,9 @@ void HTMLMediaElement::loadResource(const WebMediaPlayerSource& source,
 
   m_autoplayHelper->loadingStarted();
 
-  // Set m_currentSrc *before* changing to the cache url, the fact that we are loading from the app
-  // cache is an internal detail not exposed through the media element API.
+  // Set m_currentSrc *before* changing to the cache url, the fact that we are
+  // loading from the app cache is an internal detail not exposed through the
+  // media element API.
   m_currentSrc = url;
 
   if (m_audioSourceNode)
@@ -1038,7 +1064,8 @@ void HTMLMediaElement::loadResource(const WebMediaPlayerSource& source,
 
   startProgressEventTimer();
 
-  // Reset display mode to force a recalculation of what to show because we are resetting the player.
+  // Reset display mode to force a recalculation of what to show because we are
+  // resetting the player.
   setDisplayMode(Unknown);
 
   setPlayerPreload();
@@ -1078,8 +1105,8 @@ void HTMLMediaElement::loadResource(const WebMediaPlayerSource& source,
     mediaLoadingFailed(WebMediaPlayer::NetworkStateFormatError);
   }
 
-  // If there is no poster to display, allow the media engine to render video frames as soon as
-  // they are available.
+  // If there is no poster to display, allow the media engine to render video
+  // frames as soon as they are available.
   updateDisplayState();
 
   if (layoutObject())
@@ -1134,7 +1161,8 @@ void HTMLMediaElement::startPlayerLoad(const KURL& playerProvidedUrl) {
 
   if (layoutObject())
     layoutObject()->setShouldDoFullPaintInvalidation();
-  // Make sure if we create/re-create the WebMediaPlayer that we update our wrapper.
+  // Make sure if we create/re-create the WebMediaPlayer that we update our
+  // wrapper.
   m_audioSourceProvider.wrap(m_webMediaPlayer->getAudioSourceProvider());
   m_webMediaPlayer->setVolume(effectiveMediaVolume());
 
@@ -1187,8 +1215,9 @@ void HTMLMediaElement::executeDeferredLoad() {
 
   // resource fetch algorithm step 3 - continued from deferLoad().
 
-  // 5. Wait for an implementation-defined event (e.g. the user requesting that the media element begin playback).
-  // This is assumed to be whatever 'event' ended up calling this method.
+  // 5. Wait for an implementation-defined event (e.g. the user requesting that
+  // the media element begin playback).  This is assumed to be whatever 'event'
+  // ended up calling this method.
   cancelDeferredLoad();
   // 6. Set the element's delaying-the-load-event flag back to true (this
   // delays the load event again, in case it hasn't been fired yet).
@@ -1237,9 +1266,10 @@ WebMediaPlayer::LoadType HTMLMediaElement::loadType() const {
 bool HTMLMediaElement::textTracksAreReady() const {
   // 4.8.10.12.1 Text track model
   // ...
-  // The text tracks of a media element are ready if all the text tracks whose mode was not
-  // in the disabled state when the element's resource selection algorithm last started now
-  // have a text track readiness state of loaded or failed to load.
+  // The text tracks of a media element are ready if all the text tracks whose
+  // mode was not in the disabled state when the element's resource selection
+  // algorithm last started now have a text track readiness state of loaded or
+  // failed to load.
   for (unsigned i = 0; i < m_textTracksWhenResourceSelectionBegan.size(); ++i) {
     if (m_textTracksWhenResourceSelectionBegan[i]->getReadinessState() ==
             TextTrack::Loading ||
@@ -1259,7 +1289,8 @@ void HTMLMediaElement::textTrackReadyStateChanged(TextTrack* track) {
   } else {
     // The track readiness state might have changed as a result of the user
     // clicking the captions button. In this case, a check whether all the
-    // resources have failed loading should be done in order to hide the CC button.
+    // resources have failed loading should be done in order to hide the CC
+    // button.
     if (mediaControls() &&
         track->getReadinessState() == TextTrack::FailedToLoad)
       mediaControls()->refreshClosedCaptionsButtonVisibility();
@@ -1267,7 +1298,8 @@ void HTMLMediaElement::textTrackReadyStateChanged(TextTrack* track) {
 }
 
 void HTMLMediaElement::textTrackModeChanged(TextTrack* track) {
-  // Mark this track as "configured" so configureTextTracks won't change the mode again.
+  // Mark this track as "configured" so configureTextTracks won't change the
+  // mode again.
   if (track->trackType() == TextTrack::TrackElement)
     track->setHasBeenConfigured(true);
 
@@ -1338,10 +1370,12 @@ void HTMLMediaElement::waitForSourceChange() {
   stopPeriodicTimers();
   m_loadState = WaitingForSource;
 
-  // 6.17 - Waiting: Set the element's networkState attribute to the NETWORK_NO_SOURCE value
+  // 6.17 - Waiting: Set the element's networkState attribute to the
+  // NETWORK_NO_SOURCE value
   setNetworkState(kNetworkNoSource);
 
-  // 6.18 - Set the element's delaying-the-load-event flag to false. This stops delaying the load event.
+  // 6.18 - Set the element's delaying-the-load-event flag to false. This stops
+  // delaying the load event.
   setShouldDelayLoadEvent(false);
 
   updateDisplayState();
@@ -1360,14 +1394,15 @@ void HTMLMediaElement::noneSupported() {
   // 4.8.13.5
   // The dedicated media source failure steps are the following steps:
 
-  // 1 - Set the error attribute to a new MediaError object whose code attribute is set to
-  // MEDIA_ERR_SRC_NOT_SUPPORTED.
+  // 1 - Set the error attribute to a new MediaError object whose code attribute
+  // is set to MEDIA_ERR_SRC_NOT_SUPPORTED.
   m_error = MediaError::create(MediaError::kMediaErrSrcNotSupported);
 
   // 2 - Forget the media element's media-resource-specific text tracks.
   forgetResourceSpecificTracks();
 
-  // 3 - Set the element's networkState attribute to the NETWORK_NO_SOURCE value.
+  // 3 - Set the element's networkState attribute to the NETWORK_NO_SOURCE
+  // value.
   setNetworkState(kNetworkNoSource);
 
   // 4 - Set the element's show poster flag to true.
@@ -1381,7 +1416,8 @@ void HTMLMediaElement::noneSupported() {
 
   closeMediaSource();
 
-  // 7 - Set the element's delaying-the-load-event flag to false. This stops delaying the load event.
+  // 7 - Set the element's delaying-the-load-event flag to false. This stops
+  // delaying the load event.
   setShouldDelayLoadEvent(false);
 
   if (layoutObject())
@@ -1397,8 +1433,8 @@ void HTMLMediaElement::mediaEngineError(MediaError* err) {
   stopPeriodicTimers();
   m_loadState = WaitingForSource;
 
-  // 2 - Set the error attribute to a new MediaError object whose code attribute is
-  // set to MEDIA_ERR_NETWORK/MEDIA_ERR_DECODE.
+  // 2 - Set the error attribute to a new MediaError object whose code attribute
+  // is set to MEDIA_ERR_NETWORK/MEDIA_ERR_DECODE.
   m_error = err;
 
   // 3 - Queue a task to fire a simple event named error at the media element.
@@ -1407,7 +1443,8 @@ void HTMLMediaElement::mediaEngineError(MediaError* err) {
   // 4 - Set the element's networkState attribute to the NETWORK_IDLE value.
   setNetworkState(kNetworkIdle);
 
-  // 5 - Set the element's delaying-the-load-event flag to false. This stops delaying the load event.
+  // 5 - Set the element's delaying-the-load-event flag to false. This stops
+  // delaying the load event.
   setShouldDelayLoadEvent(false);
 
   // 6 - Abort the overall resource selection algorithm.
@@ -1431,20 +1468,25 @@ void HTMLMediaElement::networkStateChanged() {
 void HTMLMediaElement::mediaLoadingFailed(WebMediaPlayer::NetworkState error) {
   stopPeriodicTimers();
 
-  // If we failed while trying to load a <source> element, the movie was never parsed, and there are more
-  // <source> children, schedule the next one
+  // If we failed while trying to load a <source> element, the movie was never
+  // parsed, and there are more <source> children, schedule the next one
   if (m_readyState < kHaveMetadata && m_loadState == LoadingFromSourceElement) {
     // resource selection algorithm
-    // Step 9.Otherwise.9 - Failed with elements: Queue a task, using the DOM manipulation task source, to fire a simple event named error at the candidate element.
+    // Step 9.Otherwise.9 - Failed with elements: Queue a task, using the DOM
+    // manipulation task source, to fire a simple event named error at the
+    // candidate element.
     if (m_currentSourceNode)
       m_currentSourceNode->scheduleErrorEvent();
     else
       BLINK_MEDIA_LOG << "mediaLoadingFailed(" << (void*)this
                       << ") - error event not sent, <source> was removed";
 
-    // 9.Otherwise.10 - Asynchronously await a stable state. The synchronous section consists of all the remaining steps of this algorithm until the algorithm says the synchronous section has ended.
+    // 9.Otherwise.10 - Asynchronously await a stable state. The synchronous
+    // section consists of all the remaining steps of this algorithm until the
+    // algorithm says the synchronous section has ended.
 
-    // 9.Otherwise.11 - Forget the media element's media-resource-specific tracks.
+    // 9.Otherwise.11 - Forget the media element's media-resource-specific
+    // tracks.
     forgetResourceSpecificTracks();
 
     if (havePotentialSourceChild()) {
@@ -1534,7 +1576,8 @@ void HTMLMediaElement::setReadyState(ReadyState state) {
                   << static_cast<int>(state) << ") - current state is "
                   << static_cast<int>(m_readyState);
 
-  // Set "wasPotentiallyPlaying" BEFORE updating m_readyState, potentiallyPlaying() uses it
+  // Set "wasPotentiallyPlaying" BEFORE updating m_readyState,
+  // potentiallyPlaying() uses it
   bool wasPotentiallyPlaying = potentiallyPlaying();
 
   ReadyState oldState = m_readyState;
@@ -1550,8 +1593,9 @@ void HTMLMediaElement::setReadyState(ReadyState state) {
   if (tracksAreReady) {
     m_readyState = newState;
   } else {
-    // If a media file has text tracks the readyState may not progress beyond kHaveFutureData until
-    // the text tracks are ready, regardless of the state of the media file.
+    // If a media file has text tracks the readyState may not progress beyond
+    // kHaveFutureData until the text tracks are ready, regardless of the state
+    // of the media file.
     if (newState <= kHaveMetadata)
       m_readyState = newState;
     else
@@ -1565,9 +1609,10 @@ void HTMLMediaElement::setReadyState(ReadyState state) {
     return;
 
   if (m_seeking) {
-    // 4.8.10.9, step 9 note: If the media element was potentially playing immediately before
-    // it started seeking, but seeking caused its readyState attribute to change to a value
-    // lower than kHaveFutureData, then a waiting will be fired at the element.
+    // 4.8.10.9, step 9 note: If the media element was potentially playing
+    // immediately before it started seeking, but seeking caused its readyState
+    // attribute to change to a value lower than kHaveFutureData, then a waiting
+    // will be fired at the element.
     if (wasPotentiallyPlaying && m_readyState < kHaveFutureData)
       scheduleEvent(EventTypeNames::waiting);
 
@@ -1745,32 +1790,37 @@ void HTMLMediaElement::seek(double time) {
   // Ignore preload none and start load if necessary.
   setIgnorePreloadNone();
 
-  // Get the current time before setting m_seeking, m_lastSeekTime is returned once it is set.
+  // Get the current time before setting m_seeking, m_lastSeekTime is returned
+  // once it is set.
   refreshCachedTime();
-  // This is needed to avoid getting default playback start position from currentTime().
+  // This is needed to avoid getting default playback start position from
+  // currentTime().
   double now = m_cachedTime;
 
-  // 3 - If the element's seeking IDL attribute is true, then another instance of this algorithm is
-  // already running. Abort that other instance of the algorithm without waiting for the step that
-  // it is running to complete.
+  // 3 - If the element's seeking IDL attribute is true, then another instance
+  // of this algorithm is already running. Abort that other instance of the
+  // algorithm without waiting for the step that it is running to complete.
   // Nothing specific to be done here.
 
   // 4 - Set the seeking IDL attribute to true.
-  // The flag will be cleared when the engine tells us the time has actually changed.
+  // The flag will be cleared when the engine tells us the time has actually
+  // changed.
   m_seeking = true;
 
-  // 6 - If the new playback position is later than the end of the media resource, then let it be the end
-  // of the media resource instead.
+  // 6 - If the new playback position is later than the end of the media
+  // resource, then let it be the end of the media resource instead.
   time = std::min(time, duration());
 
-  // 7 - If the new playback position is less than the earliest possible position, let it be that position instead.
+  // 7 - If the new playback position is less than the earliest possible
+  // position, let it be that position instead.
   time = std::max(time, 0.0);
 
-  // Ask the media engine for the time value in the movie's time scale before comparing with current time. This
-  // is necessary because if the seek time is not equal to currentTime but the delta is less than the movie's
-  // time scale, we will ask the media engine to "seek" to the current movie time, which may be a noop and
-  // not generate a timechanged callback. This means m_seeking will never be cleared and we will never
-  // fire a 'seeked' event.
+  // Ask the media engine for the time value in the movie's time scale before
+  // comparing with current time. This is necessary because if the seek time is
+  // not equal to currentTime but the delta is less than the movie's time scale,
+  // we will ask the media engine to "seek" to the current movie time, which may
+  // be a noop and not generate a timechanged callback. This means m_seeking
+  // will never be cleared and we will never fire a 'seeked' event.
   double mediaTime = webMediaPlayer()->mediaTimeForTimeValue(time);
   if (time != mediaTime) {
     BLINK_MEDIA_LOG << "seek(" << (void*)this << ", " << time
@@ -1778,10 +1828,12 @@ void HTMLMediaElement::seek(double time) {
     time = mediaTime;
   }
 
-  // 8 - If the (possibly now changed) new playback position is not in one of the ranges given in the
-  // seekable attribute, then let it be the position in one of the ranges given in the seekable attribute
-  // that is the nearest to the new playback position. ... If there are no ranges given in the seekable
-  // attribute then set the seeking IDL attribute to false and abort these steps.
+  // 8 - If the (possibly now changed) new playback position is not in one of
+  // the ranges given in the seekable attribute, then let it be the position in
+  // one of the ranges given in the seekable attribute that is the nearest to
+  // the new playback position. ... If there are no ranges given in the seekable
+  // attribute then set the seeking IDL attribute to false and abort these
+  // steps.
   TimeRanges* seekableRanges = seekable();
 
   if (!seekableRanges->length()) {
@@ -1801,8 +1853,8 @@ void HTMLMediaElement::seek(double time) {
   // 11 - Set the current playback position to the given new playback position.
   webMediaPlayer()->seek(time);
 
-  // 14-17 are handled, if necessary, when the engine signals a readystate change or otherwise
-  // satisfies seek completion and signals a time change.
+  // 14-17 are handled, if necessary, when the engine signals a readystate
+  // change or otherwise satisfies seek completion and signals a time change.
 }
 
 void HTMLMediaElement::finishSeek() {
@@ -1994,7 +2046,8 @@ void HTMLMediaElement::setPreload(const AtomicString& preload) {
 }
 
 WebMediaPlayer::Preload HTMLMediaElement::preloadType() const {
-  // Force preload to none for cellular connections or when data saver is explicitly set.
+  // Force preload to none for cellular connections or when data saver is
+  // explicitly set.
   if (networkStateNotifier().isCellularConnectionType() ||
       (document().settings() &&
        (document().settings()->dataSaverEnabled() ||
@@ -2332,8 +2385,8 @@ double HTMLMediaElement::effectiveMediaVolume() const {
   return m_volume;
 }
 
-// The spec says to fire periodic timeupdate events (those sent while playing) every
-// "15 to 250ms", we choose the slowest frequency
+// The spec says to fire periodic timeupdate events (those sent while playing)
+// every "15 to 250ms", we choose the slowest frequency
 static const double maxTimeupdateEventFrequency = 0.25;
 
 void HTMLMediaElement::startPlaybackProgressTimer() {
@@ -2352,7 +2405,8 @@ void HTMLMediaElement::playbackProgressTimerFired(TimerBase*) {
     if (!m_paused) {
       UseCounter::count(document(),
                         UseCounter::HTMLMediaElementPauseAtFragmentEnd);
-      // changes paused to true and fires a simple event named pause at the media element.
+      // changes paused to true and fires a simple event named pause at the
+      // media element.
       pauseInternal();
     }
   }
@@ -2518,32 +2572,38 @@ void HTMLMediaElement::removeVideoTrack(WebMediaPlayer::TrackId trackId) {
 
 void HTMLMediaElement::addTextTrack(WebInbandTextTrack* webTrack) {
   // 4.8.10.12.2 Sourcing in-band text tracks
-  // 1. Associate the relevant data with a new text track and its corresponding new TextTrack object.
+  // 1. Associate the relevant data with a new text track and its corresponding
+  // new TextTrack object.
   InbandTextTrack* textTrack = InbandTextTrack::create(webTrack);
 
-  // 2. Set the new text track's kind, label, and language based on the semantics of the relevant data,
-  // as defined by the relevant specification. If there is no label in that data, then the label must
-  // be set to the empty string.
-  // 3. Associate the text track list of cues with the rules for updating the text track rendering appropriate
-  // for the format in question.
-  // 4. If the new text track's kind is metadata, then set the text track in-band metadata track dispatch type
-  // as follows, based on the type of the media resource:
-  // 5. Populate the new text track's list of cues with the cues parsed so far, folllowing the guidelines for exposing
-  // cues, and begin updating it dynamically as necessary.
+  // 2. Set the new text track's kind, label, and language based on the
+  // semantics of the relevant data, as defined by the relevant specification.
+  // If there is no label in that data, then the label must be set to the empty
+  // string.
+  // 3. Associate the text track list of cues with the rules for updating the
+  // text track rendering appropriate for the format in question.
+  // 4. If the new text track's kind is metadata, then set the text track
+  // in-band metadata track dispatch type as follows, based on the type of the
+  // media resource:
+  // 5. Populate the new text track's list of cues with the cues parsed so far,
+  // folllowing the guidelines for exposing cues, and begin updating it
+  // dynamically as necessary.
   //   - Thess are all done by the media engine.
 
   // 6. Set the new text track's readiness state to loaded.
   textTrack->setReadinessState(TextTrack::Loaded);
 
-  // 7. Set the new text track's mode to the mode consistent with the user's preferences and the requirements of
-  // the relevant specification for the data.
+  // 7. Set the new text track's mode to the mode consistent with the user's
+  // preferences and the requirements of the relevant specification for the
+  // data.
   //  - This will happen in honorUserPreferencesForAutomaticTextTrackSelection()
   scheduleTextTrackResourceLoad();
 
   // 8. Add the new text track to the media element's list of text tracks.
-  // 9. Fire an event with the name addtrack, that does not bubble and is not cancelable, and that uses the TrackEvent
-  // interface, with the track attribute initialized to the text track's TextTrack object, at the media element's
-  // textTracks attribute's TextTrackList object.
+  // 9. Fire an event with the name addtrack, that does not bubble and is not
+  // cancelable, and that uses the TrackEvent interface, with the track
+  // attribute initialized to the text track's TextTrack object, at the media
+  // element's textTracks attribute's TextTrackList object.
   addTextTrack(textTrack);
 }
 
@@ -2551,8 +2611,8 @@ void HTMLMediaElement::removeTextTrack(WebInbandTextTrack* webTrack) {
   if (!m_textTracks)
     return;
 
-  // This cast is safe because we created the InbandTextTrack with the WebInbandTextTrack
-  // passed to mediaPlayerDidAddTextTrack.
+  // This cast is safe because we created the InbandTextTrack with the
+  // WebInbandTextTrack passed to mediaPlayerDidAddTextTrack.
   InbandTextTrack* textTrack =
       static_cast<InbandTextTrack*>(webTrack->client());
   if (!textTrack)
@@ -2579,9 +2639,9 @@ void HTMLMediaElement::removeTextTrack(TextTrack* track) {
 }
 
 void HTMLMediaElement::forgetResourceSpecificTracks() {
-  // Implements the "forget the media element's media-resource-specific tracks" algorithm.
-  // The order is explicitly specified as text, then audio, and finally video. Also
-  // 'removetrack' events should not be fired.
+  // Implements the "forget the media element's media-resource-specific tracks"
+  // algorithm.  The order is explicitly specified as text, then audio, and
+  // finally video.  Also 'removetrack' events should not be fired.
   if (m_textTracks) {
     TrackDisplayUpdateScope scope(this->cueTimeline());
     m_textTracks->removeAllInbandTracks();
@@ -2642,17 +2702,18 @@ TextTrackList* HTMLMediaElement::textTracks() {
 
 void HTMLMediaElement::didAddTrackElement(HTMLTrackElement* trackElement) {
   // 4.8.10.12.3 Sourcing out-of-band text tracks
-  // When a track element's parent element changes and the new parent is a media element,
-  // then the user agent must add the track element's corresponding text track to the
-  // media element's list of text tracks ... [continues in TextTrackList::append]
+  // When a track element's parent element changes and the new parent is a media
+  // element, then the user agent must add the track element's corresponding
+  // text track to the media element's list of text tracks ... [continues in
+  // TextTrackList::append]
   TextTrack* textTrack = trackElement->track();
   if (!textTrack)
     return;
 
   addTextTrack(textTrack);
 
-  // Do not schedule the track loading until parsing finishes so we don't start before all tracks
-  // in the markup have been added.
+  // Do not schedule the track loading until parsing finishes so we don't start
+  // before all tracks in the markup have been added.
   if (isFinishedParsingChildren())
     scheduleTextTrackResourceLoad();
 }
@@ -2672,9 +2733,9 @@ void HTMLMediaElement::didRemoveTrackElement(HTMLTrackElement* trackElement) {
     return;
 
   // 4.8.10.12.3 Sourcing out-of-band text tracks
-  // When a track element's parent element changes and the old parent was a media element,
-  // then the user agent must remove the track element's corresponding text track from the
-  // media element's list of text tracks.
+  // When a track element's parent element changes and the old parent was a
+  // media element, then the user agent must remove the track element's
+  // corresponding text track from the media element's list of text tracks.
   removeTextTrack(textTrack);
 
   size_t index = m_textTracksWhenResourceSelectionBegan.find(textTrack);
@@ -2707,8 +2768,8 @@ void HTMLMediaElement::honorUserPreferencesForAutomaticTextTrackSelection() {
 }
 
 bool HTMLMediaElement::havePotentialSourceChild() {
-  // Stash the current <source> node and next nodes so we can restore them after checking
-  // to see there is another potential.
+  // Stash the current <source> node and next nodes so we can restore them after
+  // checking to see there is another potential.
   HTMLSourceElement* currentSourceNode = m_currentSourceNode;
   Node* nextNode = m_nextChildNodeToConsider;
 
@@ -2722,7 +2783,8 @@ bool HTMLMediaElement::havePotentialSourceChild() {
 
 KURL HTMLMediaElement::selectNextSourceChild(ContentType* contentType,
                                              InvalidURLAction actionIfInvalid) {
-  // Don't log if this was just called to find out if there are any valid <source> elements.
+  // Don't log if this was just called to find out if there are any valid
+  // <source> elements.
   bool shouldLog = actionIfInvalid != DoNothing;
   if (shouldLog)
     BLINK_MEDIA_LOG << "selectNextSourceChild(" << (void*)this << ")";
@@ -2826,13 +2888,15 @@ void HTMLMediaElement::sourceWasAdded(HTMLSourceElement* source) {
   BLINK_MEDIA_LOG << "sourceWasAdded(" << (void*)this << ") - 'src' is "
                   << urlForLoggingMedia(url);
 
-  // We should only consider a <source> element when there is not src attribute at all.
+  // We should only consider a <source> element when there is not src attribute
+  // at all.
   if (fastHasAttribute(srcAttr))
     return;
 
-  // 4.8.8 - If a source element is inserted as a child of a media element that has no src
-  // attribute and whose networkState has the value NETWORK_EMPTY, the user agent must invoke
-  // the media element's resource selection algorithm.
+  // 4.8.8 - If a source element is inserted as a child of a media element that
+  // has no src attribute and whose networkState has the value NETWORK_EMPTY,
+  // the user agent must invoke the media element's resource selection
+  // algorithm.
   if (getNetworkState() == HTMLMediaElement::kNetworkEmpty) {
     invokeResourceSelectionAlgorithm();
     // Ignore current |m_nextChildNodeToConsider| and consider |source|.
@@ -2848,7 +2912,8 @@ void HTMLMediaElement::sourceWasAdded(HTMLSourceElement* source) {
     return;
   }
 
-  // Consider current |m_nextChildNodeToConsider| as it is already in the middle of processing.
+  // Consider current |m_nextChildNodeToConsider| as it is already in the middle
+  // of processing.
   if (m_nextChildNodeToConsider)
     return;
 
@@ -2856,10 +2921,11 @@ void HTMLMediaElement::sourceWasAdded(HTMLSourceElement* source) {
     return;
 
   // 4.8.9.5, resource selection algorithm, source elements section:
-  // 21. Wait until the node after pointer is a node other than the end of the list. (This step might wait forever.)
+  // 21. Wait until the node after pointer is a node other than the end of the
+  // list. (This step might wait forever.)
   // 22. Asynchronously await a stable state...
-  // 23. Set the element's delaying-the-load-event flag back to true (this delays the load event again, in case
-  // it hasn't been fired yet).
+  // 23. Set the element's delaying-the-load-event flag back to true (this
+  // delays the load event again, in case it hasn't been fired yet).
   setShouldDelayLoadEvent(true);
 
   // 24. Set the networkState back to NETWORK_LOADING.
@@ -2888,9 +2954,11 @@ void HTMLMediaElement::sourceWasRemoved(HTMLSourceElement* source) {
                     << ") - m_nextChildNodeToConsider set to "
                     << m_nextChildNodeToConsider.get();
   } else if (source == m_currentSourceNode) {
-    // Clear the current source node pointer, but don't change the movie as the spec says:
-    // 4.8.8 - Dynamically modifying a source element and its attribute when the element is already
-    // inserted in a video or audio element will have no effect.
+    // Clear the current source node pointer, but don't change the movie as the
+    // spec says:
+    // 4.8.8 - Dynamically modifying a source element and its attribute when the
+    // element is already inserted in a video or audio element will have no
+    // effect.
     m_currentSourceNode = nullptr;
     BLINK_MEDIA_LOG << "sourceWasRemoved(" << (void*)this
                     << ") - m_currentSourceNode set to 0";
@@ -2904,32 +2972,36 @@ void HTMLMediaElement::timeChanged() {
 
   invalidateCachedTime();
 
-  // 4.8.10.9 steps 12-14. Needed if no ReadyState change is associated with the seek.
+  // 4.8.10.9 steps 12-14. Needed if no ReadyState change is associated with the
+  // seek.
   if (m_seeking && m_readyState >= kHaveCurrentData &&
       !webMediaPlayer()->seeking())
     finishSeek();
 
-  // Always call scheduleTimeupdateEvent when the media engine reports a time discontinuity,
-  // it will only queue a 'timeupdate' event if we haven't already posted one at the current
-  // movie time.
+  // Always call scheduleTimeupdateEvent when the media engine reports a time
+  // discontinuity, it will only queue a 'timeupdate' event if we haven't
+  // already posted one at the current movie time.
   scheduleTimeupdateEvent(false);
 
   double now = currentTime();
   double dur = duration();
 
-  // When the current playback position reaches the end of the media resource when the direction of
-  // playback is forwards, then the user agent must follow these steps:
+  // When the current playback position reaches the end of the media resource
+  // when the direction of playback is forwards, then the user agent must follow
+  // these steps:
   if (!std::isnan(dur) && dur && now >= dur &&
       getDirectionOfPlayback() == Forward) {
     // If the media element has a loop attribute specified
     if (loop()) {
-      //  then seek to the earliest possible position of the media resource and abort these steps.
+      //  then seek to the earliest possible position of the media resource and
+      //  abort these steps.
       seek(0);
     } else {
-      // If the media element has still ended playback, and the direction of playback is still
-      // forwards, and paused is false,
+      // If the media element has still ended playback, and the direction of
+      // playback is still forwards, and paused is false,
       if (!m_paused) {
-        // changes paused to true and fires a simple event named pause at the media element.
+        // changes paused to true and fires a simple event named pause at the
+        // media element.
         m_paused = true;
         scheduleEvent(EventTypeNames::pause);
         scheduleRejectPlayPromises(AbortError);
@@ -3082,9 +3154,9 @@ TimeRanges* HTMLMediaElement::seekable() const {
 }
 
 bool HTMLMediaElement::potentiallyPlaying() const {
-  // "pausedToBuffer" means the media engine's rate is 0, but only because it had to stop playing
-  // when it ran out of buffered data. A movie in this state is "potentially playing", modulo the
-  // checks in couldPlayIfEnoughData().
+  // "pausedToBuffer" means the media engine's rate is 0, but only because it
+  // had to stop playing when it ran out of buffered data. A movie in this state
+  // is "potentially playing", modulo the checks in couldPlayIfEnoughData().
   bool pausedToBuffer =
       m_readyStateMaximum >= kHaveFutureData && m_readyState < kHaveFutureData;
   return (pausedToBuffer || m_readyState >= kHaveFutureData) &&
@@ -3107,15 +3179,16 @@ bool HTMLMediaElement::endedPlayback(LoopCondition loopCondition) const {
   if (m_readyState < kHaveMetadata)
     return false;
 
-  // and the current playback position is the end of the media resource and the direction
-  // of playback is forwards, Either the media element does not have a loop attribute specified,
+  // and the current playback position is the end of the media resource and the
+  // direction of playback is forwards, Either the media element does not have a
+  // loop attribute specified,
   double now = currentTime();
   if (getDirectionOfPlayback() == Forward)
     return dur > 0 && now >= dur &&
            (loopCondition == LoopCondition::Ignored || !loop());
 
-  // or the current playback position is the earliest possible position and the direction
-  // of playback is backwards
+  // or the current playback position is the earliest possible position and the
+  // direction of playback is backwards
   DCHECK_EQ(getDirectionOfPlayback(), Backward);
   return now <= 0;
 }
@@ -3143,8 +3216,9 @@ void HTMLMediaElement::updatePlayState() {
     invalidateCachedTime();
 
     if (!isPlaying) {
-      // Set rate, muted before calling play in case they were set before the media engine was setup.
-      // The media engine should just stash the rate and muted values since it isn't already playing.
+      // Set rate, muted before calling play in case they were set before the
+      // media engine was setup.  The media engine should just stash the rate
+      // and muted values since it isn't already playing.
       webMediaPlayer()->setRate(playbackRate());
       updateVolume();
       webMediaPlayer()->play();
@@ -3245,18 +3319,20 @@ void HTMLMediaElement::contextDestroyed() {
 
   stopPeriodicTimers();
 
-  // Ensure that hasPendingActivity() is not preventing garbage collection, since otherwise this
-  // media element will simply leak.
+  // Ensure that hasPendingActivity() is not preventing garbage collection,
+  // since otherwise this media element will simply leak.
   DCHECK(!hasPendingActivity());
 }
 
 bool HTMLMediaElement::hasPendingActivity() const {
-  // The delaying-the-load-event flag is set by resource selection algorithm when looking for a
-  // resource to load, before networkState has reached to kNetworkLoading.
+  // The delaying-the-load-event flag is set by resource selection algorithm
+  // when looking for a resource to load, before networkState has reached to
+  // kNetworkLoading.
   if (m_shouldDelayLoadEvent)
     return true;
 
-  // When networkState is kNetworkLoading, progress and stalled events may be fired.
+  // When networkState is kNetworkLoading, progress and stalled events may be
+  // fired.
   if (m_networkState == kNetworkLoading)
     return true;
 
@@ -3268,8 +3344,8 @@ bool HTMLMediaElement::hasPendingActivity() const {
   if (m_seeking)
     return true;
 
-  // When connected to a MediaSource, e.g. setting MediaSource.duration will cause a
-  // durationchange event to be fired.
+  // When connected to a MediaSource, e.g. setting MediaSource.duration will
+  // cause a durationchange event to be fired.
   if (m_mediaSource)
     return true;
 
@@ -3416,7 +3492,8 @@ void HTMLMediaElement::automaticTrackSelectionForUpdatedUserPreference() {
   m_processingPreferenceChange = false;
 
   // If a track is set to 'showing' post performing automatic track selection,
-  // set text tracks state to visible to update the CC button and display the track.
+  // set text tracks state to visible to update the CC button and display the
+  // track.
   m_textTracksVisible = m_textTracks->hasShowingTracks();
   updateTextTrackDisplay();
 }
@@ -3602,7 +3679,8 @@ void HTMLMediaElement::setWebLayer(WebLayer* webLayer) {
   if (webLayer == m_webLayer)
     return;
 
-  // If either of the layers is null we need to enable or disable compositing. This is done by triggering a style recalc.
+  // If either of the layers is null we need to enable or disable compositing.
+  // This is done by triggering a style recalc.
   if (!m_webLayer || !webLayer)
     setNeedsCompositingUpdate();
 
@@ -3670,12 +3748,14 @@ void HTMLMediaElement::createPlaceholderTracksIfNecessary() {
   if (!RuntimeEnabledFeatures::audioVideoTracksEnabled())
     return;
 
-  // Create a placeholder audio track if the player says it has audio but it didn't explicitly announce the tracks.
+  // Create a placeholder audio track if the player says it has audio but it
+  // didn't explicitly announce the tracks.
   if (hasAudio() && !audioTracks().length())
     addAudioTrack("audio", WebMediaPlayerClient::AudioTrackKindMain,
                   "Audio Track", "", true);
 
-  // Create a placeholder video track if the player says it has video but it didn't explicitly announce the tracks.
+  // Create a placeholder video track if the player says it has video but it
+  // didn't explicitly announce the tracks.
   if (hasVideo() && !videoTracks().length())
     addVideoTrack("video", WebMediaPlayerClient::VideoTrackKindMain,
                   "Video Track", "", true);
@@ -3881,9 +3961,10 @@ void HTMLMediaElement::onVisibilityChangedForAutoplay(bool isVisible) {
     updatePlayState();
   }
 
-  // TODO(zqzhang): There's still flaky leak if onVisibilityChangedForAutoplay() is never called.
-  // The leak comes from either ElementVisibilityObserver or IntersectionObserver. Should keep an eye on it.
-  // See https://crbug.com/627539
+  // TODO(zqzhang): There's still flaky leak if onVisibilityChangedForAutoplay()
+  // is never called.  The leak comes from either ElementVisibilityObserver or
+  // IntersectionObserver. Should keep an eye on it.  See
+  // https://crbug.com/627539
   m_autoplayVisibilityObserver->stop();
   m_autoplayVisibilityObserver = nullptr;
 }

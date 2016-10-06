@@ -2,7 +2,8 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2000 Dirk Mueller (mueller@kde.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights
+ * reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -38,9 +39,9 @@ enum CheckValidityEventBehavior {
   CheckValidityDispatchInvalidEvent
 };
 
-// HTMLFormControlElement is the default implementation of FormAssociatedElement,
-// and form-associated element implementations should use HTMLFormControlElement
-// unless there is a special reason.
+// HTMLFormControlElement is the default implementation of
+// FormAssociatedElement, and form-associated element implementations should use
+// HTMLFormControlElement unless there is a special reason.
 class CORE_EXPORT HTMLFormControlElement : public LabelableElement,
                                            public FormAssociatedElement {
   USING_GARBAGE_COLLECTED_MIXIN(HTMLFormControlElement);
@@ -110,7 +111,8 @@ class CORE_EXPORT HTMLFormControlElement : public LabelableElement,
   bool reportValidity();
   // This must be called only after the caller check the element is focusable.
   void showValidationMessage();
-  // This must be called when a validation constraint or control value is changed.
+  // This must be called when a validation constraint or control value is
+  // changed.
   void setNeedsValidityCheck();
   void setCustomValidity(const String&) final;
   void findCustomValidationMessageTextDirection(const String& message,

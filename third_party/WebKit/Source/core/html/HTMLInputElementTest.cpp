@@ -119,8 +119,10 @@ TEST_F(HTMLInputElementTest, NoAssertWhenMovedInNewDocument) {
   // Put the input element inside a document with frame.
   document.body()->appendChild(documentWithoutFrame->body()->firstChild());
 
-  // Remove the input element and all refs to it so it gets deleted before the document.
-  // The assert in |EventHandlerRegistry::updateEventHandlerTargets()| should not be triggered.
+  // Remove the input element and all refs to it so it gets deleted before the
+  // document.
+  // The assert in |EventHandlerRegistry::updateEventHandlerTargets()| should
+  // not be triggered.
   document.body()->removeChild(document.body()->firstChild());
 }
 

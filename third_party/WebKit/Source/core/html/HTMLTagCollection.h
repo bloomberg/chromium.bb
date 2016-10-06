@@ -30,7 +30,8 @@
 
 namespace blink {
 
-// Collection that limits to a particular tag and whose rootNode is in an HTMLDocument.
+// Collection that limits to a particular tag and whose rootNode is in an
+// HTMLDocument.
 class HTMLTagCollection final : public TagCollection {
  public:
   static HTMLTagCollection* create(ContainerNode& rootNode,
@@ -56,7 +57,8 @@ DEFINE_TYPE_CASTS(HTMLTagCollection,
 
 inline bool HTMLTagCollection::elementMatches(
     const Element& testElement) const {
-  // Implements http://dvcs.w3.org/hg/domcore/raw-file/tip/Overview.html#concept-getelementsbytagname
+  // Implements
+  // http://dvcs.w3.org/hg/domcore/raw-file/tip/Overview.html#concept-getelementsbytagname
   if (m_localName != starAtom) {
     const AtomicString& localName =
         testElement.isHTMLElement() ? m_loweredLocalName : m_localName;

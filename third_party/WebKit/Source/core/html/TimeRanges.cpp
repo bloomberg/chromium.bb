@@ -132,10 +132,11 @@ void TimeRanges::add(double start, double end) {
 
   // For each present range check if we need to:
   // - merge with the added range, in case we are overlapping or contiguous
-  // - Need to insert in place, we we are completely, not overlapping and not contiguous
-  // in between two ranges.
+  // - Need to insert in place, we we are completely, not overlapping and not
+  //   contiguous in between two ranges.
   //
-  // TODO: Given that we assume that ranges are correctly ordered, this could be optimized.
+  // TODO: Given that we assume that ranges are correctly ordered, this could be
+  // optimized.
 
   for (overlappingArcIndex = 0; overlappingArcIndex < m_ranges.size();
        overlappingArcIndex++) {
@@ -150,15 +151,16 @@ void TimeRanges::add(double start, double end) {
       // Check the case for which there is no more to do
       if (!overlappingArcIndex) {
         if (addedRange.isBeforeRange(m_ranges[0])) {
-          // First index, and we are completely before that range (and not contiguous, nor overlapping).
-          // We just need to be inserted here.
+          // First index, and we are completely before that range (and not
+          // contiguous, nor overlapping).  We just need to be inserted here.
           break;
         }
       } else {
         if (m_ranges[overlappingArcIndex - 1].isBeforeRange(addedRange) &&
             addedRange.isBeforeRange(m_ranges[overlappingArcIndex])) {
-          // We are exactly after the current previous range, and before the current range, while
-          // not overlapping with none of them. Insert here.
+          // We are exactly after the current previous range, and before the
+          // current range, while not overlapping with none of them. Insert
+          // here.
           break;
         }
       }

@@ -60,7 +60,8 @@ void HTMLMetaElement::parseContentAttribute(const String& content,
                                             bool viewportMetaZeroValuesQuirk) {
   bool hasInvalidSeparator = false;
 
-  // Tread lightly in this code -- it was specifically designed to mimic Win IE's parsing behavior.
+  // Tread lightly in this code -- it was specifically designed to mimic Win
+  // IE's parsing behavior.
   unsigned keyBegin, keyEnd;
   unsigned valueBegin, valueEnd;
 
@@ -92,7 +93,8 @@ void HTMLMetaElement::parseContentAttribute(const String& content,
       i++;
     }
 
-    // skip to first non-separator, but don't skip past a ',' or the end of the string
+    // Skip to first non-separator, but don't skip past a ',' or the end of the
+    // string.
     while (isSeparator(buffer[i])) {
       if (buffer[i] == ',' || i >= length)
         break;
@@ -241,7 +243,8 @@ bool HTMLMetaElement::parseViewportValueAsUserZoom(
     const String& valueString,
     bool& computedValueMatchesParsedValue) {
   // yes and no are used as keywords.
-  // Numbers >= 1, numbers <= -1, device-width and device-height are mapped to yes.
+  // Numbers >= 1, numbers <= -1, device-width and device-height are mapped to
+  // yes.
   // Numbers in the range <-1, 1>, and unknown values, are mapped to no.
 
   computedValueMatchesParsedValue = false;
@@ -385,7 +388,8 @@ void HTMLMetaElement::reportViewportWarning(Document* document,
   if (!replacement2.isNull())
     message.replace("%replacement2", replacement2);
 
-  // FIXME: This message should be moved off the console once a solution to https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
+  // FIXME: This message should be moved off the console once a solution to
+  // https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
   document->addConsoleMessage(ConsoleMessage::create(
       RenderingMessageSource, viewportErrorMessageLevel(errorCode), message));
 }
@@ -459,7 +463,8 @@ void HTMLMetaElement::process() {
   if (!isConnected())
     return;
 
-  // All below situations require a content attribute (which can be the empty string).
+  // All below situations require a content attribute (which can be the empty
+  // string).
   const AtomicString& contentValue = fastGetAttribute(contentAttr);
   if (contentValue.isNull())
     return;
@@ -484,8 +489,8 @@ void HTMLMetaElement::process() {
   }
 
   // Get the document to process the tag, but only if we're actually part of DOM
-  // tree (changing a meta tag while it's not in the tree shouldn't have any effect
-  // on the document).
+  // tree (changing a meta tag while it's not in the tree shouldn't have any
+  // effect on the document).
 
   const AtomicString& httpEquivValue = fastGetAttribute(http_equivAttr);
   if (httpEquivValue.isEmpty())

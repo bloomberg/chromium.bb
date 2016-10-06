@@ -130,7 +130,8 @@ String HTMLOptionElement::displayLabel() const {
 
   // FIXME: The following treats an element with the label attribute set to
   // the empty string the same as an element with no label attribute at all.
-  // Is that correct? If it is, then should the label function work the same way?
+  // Is that correct? If it is, then should the label function work the same
+  // way?
   if (text.isEmpty())
     text = collectOptionInnerText();
 
@@ -146,9 +147,9 @@ String HTMLOptionElement::text() const {
 
 void HTMLOptionElement::setText(const String& text,
                                 ExceptionState& exceptionState) {
-  // Changing the text causes a recalc of a select's items, which will reset the selected
-  // index to the first item if the select is single selection with a menu list. We attempt to
-  // preserve the selected item.
+  // Changing the text causes a recalc of a select's items, which will reset the
+  // selected index to the first item if the select is single selection with a
+  // menu list.  We attempt to preserve the selected item.
   HTMLSelectElement* select = ownerSelectElement();
   bool selectIsMenuList = select && select->usesMenuList();
   int oldSelectedIndex = selectIsMenuList ? select->selectedIndex() : -1;
@@ -170,7 +171,8 @@ void HTMLOptionElement::accessKeyAction(bool) {
 }
 
 int HTMLOptionElement::index() const {
-  // It would be faster to cache the index, but harder to get it right in all cases.
+  // It would be faster to cache the index, but harder to get it right in all
+  // cases.
 
   HTMLSelectElement* selectElement = ownerSelectElement();
   if (!selectElement)
@@ -274,9 +276,10 @@ void HTMLOptionElement::setSelectedState(bool selected) {
     select->invalidateSelectedItems();
 
     if (AXObjectCache* cache = document().existingAXObjectCache()) {
-      // If there is a layoutObject (most common), fire accessibility notifications
-      // only when it's a listbox (and not a menu list). If there's no layoutObject,
-      // fire them anyway just to be safe (to make sure the AX tree is in sync).
+      // If there is a layoutObject (most common), fire accessibility
+      // notifications only when it's a listbox (and not a menu list). If
+      // there's no layoutObject, fire them anyway just to be safe (to make sure
+      // the AX tree is in sync).
       if (!select->layoutObject() || select->layoutObject()->isListBox()) {
         cache->listboxOptionStateChanged(this);
         cache->listboxSelectedChildrenChanged(select);

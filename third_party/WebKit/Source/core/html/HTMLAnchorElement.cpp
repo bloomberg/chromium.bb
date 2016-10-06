@@ -2,7 +2,8 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2000 Simon Hausmann <hausmann@kde.org>
- * Copyright (C) 2003, 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2006, 2007, 2008, 2009, 2010 Apple Inc. All rights
+ * reserved.
  *           (C) 2006 Graham Dennis (graham.dennis@gmail.com)
  *
  * This library is free software; you can redistribute it and/or
@@ -132,7 +133,8 @@ DEFINE_TRACE(HTMLAnchorElement) {
 bool HTMLAnchorElement::supportsFocus() const {
   if (hasEditableStyle(*this))
     return HTMLElement::supportsFocus();
-  // If not a link we should still be able to focus the element if it has tabIndex.
+  // If not a link we should still be able to focus the element if it has
+  // tabIndex.
   return isLink() || HTMLElement::supportsFocus();
 }
 
@@ -394,8 +396,8 @@ void HTMLAnchorElement::handleClick(Event* event) {
   appendServerMapMousePosition(url, event);
   KURL completedURL = document().completeURL(url.toString());
 
-  // Schedule the ping before the frame load. Prerender in Chrome may kill the renderer as soon as the navigation is
-  // sent out.
+  // Schedule the ping before the frame load. Prerender in Chrome may kill the
+  // renderer as soon as the navigation is sent out.
   sendPings(completedURL);
 
   ResourceRequest request(completedURL);

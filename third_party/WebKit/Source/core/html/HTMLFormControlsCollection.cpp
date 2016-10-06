@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
- * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2010, 2011, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2010, 2011, 2012 Apple Inc. All
+ * rights reserved.
  * Copyright (C) 2014 Samsung Electronics. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
@@ -180,7 +181,8 @@ void HTMLFormControlsCollection::updateIdNameCache() const {
     }
   }
 
-  // Set the named item cache last as traversing the tree may cause cache invalidation.
+  // Set the named item cache last as traversing the tree may cause cache
+  // invalidation.
   setNamedItemCache(cache);
 }
 
@@ -210,10 +212,11 @@ void HTMLFormControlsCollection::namedGetter(
 
 void HTMLFormControlsCollection::supportedPropertyNames(Vector<String>& names) {
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#htmlformcontrolscollection-0:
-  // The supported property names consist of the non-empty values of all the id and name attributes
-  // of all the elements represented by the collection, in tree order, ignoring later duplicates,
-  // with the id of an element preceding its name if it contributes both, they differ from each
-  // other, and neither is the duplicate of an earlier entry.
+  // The supported property names consist of the non-empty values of all the id
+  // and name attributes of all the elements represented by the collection, in
+  // tree order, ignoring later duplicates, with the id of an element preceding
+  // its name if it contributes both, they differ from each other, and neither
+  // is the duplicate of an earlier entry.
   HashSet<AtomicString> existingNames;
   unsigned length = this->length();
   for (unsigned i = 0; i < length; ++i) {

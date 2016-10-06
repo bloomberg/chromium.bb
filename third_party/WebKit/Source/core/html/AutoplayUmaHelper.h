@@ -78,7 +78,8 @@ class AutoplayUmaHelper final : public EventListener {
 
   bool shouldListenToUnloadEvent() const;
 
-  // The autoplay source. Use AutoplaySource::NumberOfSources for invalid source.
+  // The autoplay source. Use AutoplaySource::NumberOfSources for invalid
+  // source.
   AutoplaySource m_source;
   // The media element this UMA helper is attached to. |m_element| owns |this|.
   Member<HTMLMediaElement> m_element;
@@ -89,8 +90,9 @@ class AutoplayUmaHelper final : public EventListener {
   Member<ElementVisibilityObserver> m_mutedVideoPlayMethodVisibilityObserver;
 
   // -----------------------------------------------------------------------
-  // Variables used for recording the duration of autoplay muted video playing offscreen.
-  // The variables are valid when |m_autoplayOffscrenVisibilityObserver| is non-null.
+  // Variables used for recording the duration of autoplay muted video playing
+  // offscreen.  The variables are valid when
+  // |m_autoplayOffscrenVisibilityObserver| is non-null.
   // The recording stops whenever the playback pauses or the page is unloaded.
 
   // The starting time of autoplaying muted video.
@@ -102,9 +104,9 @@ class AutoplayUmaHelper final : public EventListener {
   // Whether an autoplaying muted video is visible.
   bool m_isVisible;
 
-  // The observer is used to observer an autoplaying muted video changing it's visibility,
-  // which is used for offscreen duration UMA.
-  // The UMA is pending for recording as long as this observer is non-null.
+  // The observer is used to observer an autoplaying muted video changing it's
+  // visibility, which is used for offscreen duration UMA.  The UMA is pending
+  // for recording as long as this observer is non-null.
   Member<ElementVisibilityObserver>
       m_mutedVideoOffscreenDurationVisibilityObserver;
 };

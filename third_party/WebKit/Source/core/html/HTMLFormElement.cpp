@@ -2,7 +2,8 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009 Apple Inc. All rights
+ * reserved.
  *           (C) 2006 Alexey Proskuryakov (ap@nypop.com)
  *
  * This library is free software; you can redistribute it and/or
@@ -107,7 +108,8 @@ bool HTMLFormElement::layoutObjectIsNeeded(const ComputedStyle& style) {
   if (!node || !node->layoutObject())
     return HTMLElement::layoutObjectIsNeeded(style);
   LayoutObject* parentLayoutObject = node->layoutObject();
-  // FIXME: Shouldn't we also check for table caption (see |formIsTablePart| below).
+  // FIXME: Shouldn't we also check for table caption (see |formIsTablePart|
+  // below).
   // FIXME: This check is not correct for Shadow DOM.
   bool parentIsTableElementPart =
       (parentLayoutObject->isTable() && isHTMLTableElement(*node)) ||
@@ -400,7 +402,8 @@ void HTMLFormElement::scheduleFormSubmission(FormSubmission* submission) {
   if (submission->action().isEmpty())
     return;
   if (document().isSandboxed(SandboxForms)) {
-    // FIXME: This message should be moved off the console once a solution to https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
+    // FIXME: This message should be moved off the console once a solution to
+    // https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
     document().addConsoleMessage(ConsoleMessage::create(
         SecurityMessageSource, ErrorMessageLevel,
         "Blocked form submission to '" + submission->action().elidedString() +
@@ -481,8 +484,9 @@ void HTMLFormElement::parseAttribute(const QualifiedName& name,
     logUpdateAttributeIfIsolatedWorldAndInDocument("form", actionAttr, oldValue,
                                                    value);
 
-    // If we're not upgrading insecure requests, and the new action attribute is pointing to
-    // an insecure "action" location from a secure page it is marked as "passive" mixed content.
+    // If we're not upgrading insecure requests, and the new action attribute is
+    // pointing to an insecure "action" location from a secure page it is marked
+    // as "passive" mixed content.
     if (document().getInsecureRequestPolicy() & kUpgradeInsecureRequests)
       return;
     KURL actionURL = document().completeURL(m_attributes.action().isEmpty()
@@ -612,9 +616,10 @@ bool HTMLFormElement::noValidate() const {
   return fastHasAttribute(novalidateAttr);
 }
 
-// FIXME: This function should be removed because it does not do the same thing as the
-// JavaScript binding for action, which treats action as a URL attribute. Last time I
-// (Darin Adler) removed this, someone added it back, so I am leaving it in for now.
+// FIXME: This function should be removed because it does not do the same thing
+// as the JavaScript binding for action, which treats action as a URL attribute.
+// Last time I (Darin Adler) removed this, someone added it back, so I am
+// leaving it in for now.
 const AtomicString& HTMLFormElement::action() const {
   return getAttribute(actionAttr);
 }

@@ -133,7 +133,8 @@ void ImageDocumentParser::appendBytes(const char* data, size_t length) {
 
   if (document()->cachedImage()) {
     RELEASE_ASSERT(length <= std::numeric_limits<unsigned>::max());
-    // If decoding has already failed, there's no point in sending additional data to the ImageResource.
+    // If decoding has already failed, there's no point in sending additional
+    // data to the ImageResource.
     if (document()->cachedImage()->getStatus() != Resource::DecodeError)
       document()->cachedImage()->appendData(data, length);
   }
@@ -149,8 +150,9 @@ void ImageDocumentParser::finish() {
     cachedImage->setResponse(loader->response());
     cachedImage->finish(loader->timing().responseEnd());
 
-    // Report the natural image size in the page title, regardless of zoom level.
-    // At a zoom level of 1 the image is guaranteed to have an integer size.
+    // Report the natural image size in the page title, regardless of zoom
+    // level.  At a zoom level of 1 the image is guaranteed to have an integer
+    // size.
     IntSize size = flooredIntSize(
         cachedImage->imageSize(LayoutObject::shouldRespectImageOrientation(
                                    document()->imageElement()->layoutObject()),
@@ -366,10 +368,10 @@ void ImageDocument::windowSizeChanged() {
 
   if (m_shrinkToFitMode == Viewport) {
     // For huge images, minimum-scale=0.1 is still too big on small screens.
-    // Set max-width so that the image will shrink to fit the width of the screen when
-    // the scale is minimum.
-    // Don't shrink height to fit because we use width=device-width in viewport meta tag,
-    // and expect a full-width reading mode for normal-width-huge-height images.
+    // Set max-width so that the image will shrink to fit the width of the
+    // screen when the scale is minimum.  Don't shrink height to fit because we
+    // use width=device-width in viewport meta tag, and expect a full-width
+    // reading mode for normal-width-huge-height images.
     int viewportWidth = frame()->host()->visualViewport().size().width();
     m_imageElement->setInlineStyleProperty(CSSPropertyMaxWidth,
                                            viewportWidth * 10,
@@ -379,8 +381,8 @@ void ImageDocument::windowSizeChanged() {
 
   bool fitsInWindow = imageFitsInWindow();
 
-  // If the image has been explicitly zoomed in, restore the cursor if the image fits
-  // and set it to a zoom out cursor if the image doesn't fit
+  // If the image has been explicitly zoomed in, restore the cursor if the image
+  // fits and set it to a zoom out cursor if the image doesn't fit
   if (!m_shouldShrinkImage) {
     if (fitsInWindow)
       m_imageElement->removeInlineStyleProperty(CSSPropertyCursor);
@@ -391,8 +393,8 @@ void ImageDocument::windowSizeChanged() {
   }
 
   if (m_didShrinkImage) {
-    // If the window has been resized so that the image fits, restore the image size
-    // otherwise update the restored image size.
+    // If the window has been resized so that the image fits, restore the image
+    // size otherwise update the restored image size.
     if (fitsInWindow)
       restoreImageSize();
     else

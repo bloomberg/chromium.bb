@@ -57,7 +57,8 @@ void AutoplayUmaHelper::onAutoplayInitiated(AutoplaySource source) {
       ("Media.Video.Autoplay.Muted.Blocked", AutoplayBlockedReasonMax));
 
   // Autoplay already initiated
-  // TODO(zqzhang): how about having autoplay attribute and calling `play()` in the script?
+  // TODO(zqzhang): how about having autoplay attribute and calling `play()` in
+  // the script?
   if (m_source != AutoplaySource::NumberOfSources)
     return;
 
@@ -227,7 +228,8 @@ void AutoplayUmaHelper::maybeStopRecordingMutedVideoOffscreenDuration() {
         static_cast<int64_t>(monotonicallyIncreasingTimeMS()) -
         m_mutedVideoAutoplayOffscreenStartTimeMS;
 
-  // Since histograms uses int32_t, the duration needs to be limited to std::numeric_limits<int32_t>::max().
+  // Since histograms uses int32_t, the duration needs to be limited to
+  // std::numeric_limits<int32_t>::max().
   int32_t boundedTime = static_cast<int32_t>(
       std::min<int64_t>(m_mutedVideoAutoplayOffscreenDurationMS,
                         std::numeric_limits<int32_t>::max()));

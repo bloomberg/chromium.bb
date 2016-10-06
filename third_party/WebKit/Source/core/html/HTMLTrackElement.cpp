@@ -87,7 +87,8 @@ void HTMLTrackElement::parseAttribute(const QualifiedName& name,
       m_track->removeAllCues();
 
     // 4.8.10.12.3 Sourcing out-of-band text tracks
-    // As the kind, label, and srclang attributes are set, changed, or removed, the text track must update accordingly...
+    // As the kind, label, and srclang attributes are set, changed, or removed,
+    // the text track must update accordingly...
   } else if (name == kindAttr) {
     AtomicString lowerCaseValue = value.lower();
     // 'missing value default' ("subtitles")
@@ -136,26 +137,31 @@ bool HTMLTrackElement::isURLAttribute(const Attribute& attribute) const {
 void HTMLTrackElement::scheduleLoad() {
   DVLOG(TRACK_LOG_LEVEL) << "scheduleLoad";
 
-  // 1. If another occurrence of this algorithm is already running for this text track and its track element,
-  // abort these steps, letting that other algorithm take care of this element.
+  // 1. If another occurrence of this algorithm is already running for this text
+  // track and its track element, abort these steps, letting that other
+  // algorithm take care of this element.
   if (m_loadTimer.isActive())
     return;
 
-  // 2. If the text track's text track mode is not set to one of hidden or showing, abort these steps.
+  // 2. If the text track's text track mode is not set to one of hidden or
+  // showing, abort these steps.
   if (ensureTrack()->mode() != TextTrack::hiddenKeyword() &&
       ensureTrack()->mode() != TextTrack::showingKeyword())
     return;
 
-  // 3. If the text track's track element does not have a media element as a parent, abort these steps.
+  // 3. If the text track's track element does not have a media element as a
+  // parent, abort these steps.
   if (!mediaElement())
     return;
 
-  // 4. Run the remainder of these steps in parallel, allowing whatever caused these steps to run to continue.
+  // 4. Run the remainder of these steps in parallel, allowing whatever caused
+  // these steps to run to continue.
   m_loadTimer.startOneShot(0, BLINK_FROM_HERE);
 
-  // 5. Top: Await a stable state. The synchronous section consists of the following steps. (The steps in the
-  // synchronous section are marked with [X])
-  // FIXME: We use a timer to approximate a "stable state" - i.e. this is not 100% per spec.
+  // 5. Top: Await a stable state. The synchronous section consists of the
+  // following steps. (The steps in the synchronous section are marked with [X])
+  // FIXME: We use a timer to approximate a "stable state" - i.e. this is not
+  // 100% per spec.
 }
 
 void HTMLTrackElement::loadTimerFired(TimerBase*) {
@@ -167,14 +173,16 @@ void HTMLTrackElement::loadTimerFired(TimerBase*) {
   // 7. [X] Let URL be the track URL of the track element.
   KURL url = getNonEmptyURLAttribute(srcAttr);
 
-  // 8. [X] If the track element's parent is a media element then let CORS mode be the state of the parent media
-  // element's crossorigin content attribute. Otherwise, let CORS mode be No CORS.
+  // 8. [X] If the track element's parent is a media element then let CORS mode
+  // be the state of the parent media element's crossorigin content attribute.
+  // Otherwise, let CORS mode be No CORS.
   const AtomicString& corsMode = mediaElementCrossOriginAttribute();
 
   // 9. End the synchronous section, continuing the remaining steps in parallel.
 
-  // 10. If URL is not the empty string, perform a potentially CORS-enabled fetch of URL, with the mode being CORS
-  // mode, the origin being the origin of the track element's node document, and the default origin behaviour set to
+  // 10. If URL is not the empty string, perform a potentially CORS-enabled
+  // fetch of URL, with the mode being CORS mode, the origin being the origin of
+  // the track element's node document, and the default origin behaviour set to
   // fail.
   if (!canLoadUrl(url)) {
     didCompleteLoad(Failure);
@@ -186,7 +194,8 @@ void HTMLTrackElement::loadTimerFired(TimerBase*) {
     switch (m_loader->loadState()) {
       case TextTrackLoader::Idle:
       case TextTrackLoader::Loading:
-        // If loading of the resource from this URL is in progress, return early.
+        // If loading of the resource from this URL is in progress, return
+        // early.
         break;
       case TextTrackLoader::Finished:
         didCompleteLoad(Success);
@@ -230,29 +239,37 @@ bool HTMLTrackElement::canLoadUrl(const KURL& url) {
 void HTMLTrackElement::didCompleteLoad(LoadStatus status) {
   // 10. ... (continued)
 
-  // If the fetching algorithm fails for any reason (network error, the server returns an error code, a cross-origin
-  // check fails, etc), or if URL is the empty string, then queue a task to first change the text track readiness
-  // state to failed to load and then fire a simple event named error at the track element. This task must use the DOM
-  // manipulation task source.
+  // If the fetching algorithm fails for any reason (network error, the server
+  // returns an error code, a cross-origin check fails, etc), or if URL is the
+  // empty string, then queue a task to first change the text track readiness
+  // state to failed to load and then fire a simple event named error at the
+  // track element. This task must use the DOM manipulation task source.
   //
-  // (Note: We don't "queue a task" here because this method will only be called from a timer - m_loadTimer or
-  // TextTrackLoader::m_cueLoadTimer - which should be a reasonable, and hopefully non-observable, approximation of
-  // the spec text. I.e we could consider this to be run from the "networking task source".)
+  // (Note: We don't "queue a task" here because this method will only be called
+  // from a timer - m_loadTimer or TextTrackLoader::m_cueLoadTimer - which
+  // should be a reasonable, and hopefully non-observable, approximation of the
+  // spec text. I.e we could consider this to be run from the "networking task
+  // source".)
   //
-  // If the fetching algorithm does not fail, but the type of the resource is not a supported text track format, or
-  // the file was not successfully processed (e.g. the format in question is an XML format and the file contained a
-  // well-formedness error that the XML specification requires be detected and reported to the application), then the
-  // task that is queued by the networking task source in which the aforementioned problem is found must change the
-  // text track readiness state to failed to load and fire a simple event named error at the track element.
+  // If the fetching algorithm does not fail, but the type of the resource is
+  // not a supported text track format, or the file was not successfully
+  // processed (e.g. the format in question is an XML format and the file
+  // contained a well-formedness error that the XML specification requires be
+  // detected and reported to the application), then the task that is queued by
+  // the networking task source in which the aforementioned problem is found
+  // must change the text track readiness state to failed to load and fire a
+  // simple event named error at the track element.
   if (status == Failure) {
     setReadyState(kError);
     dispatchEvent(Event::create(EventTypeNames::error));
     return;
   }
 
-  // If the fetching algorithm does not fail, and the file was successfully processed, then the final task that is
-  // queued by the networking task source, after it has finished parsing the data, must change the text track
-  // readiness state to loaded, and fire a simple event named load at the track element.
+  // If the fetching algorithm does not fail, and the file was successfully
+  // processed, then the final task that is queued by the networking task
+  // source, after it has finished parsing the data, must change the text track
+  // readiness state to loaded, and fire a simple event named load at the track
+  // element.
   setReadyState(kLoaded);
   dispatchEvent(Event::create(EventTypeNames::load));
 }
@@ -284,7 +301,8 @@ void HTMLTrackElement::cueLoadingCompleted(TextTrackLoader* loader,
   didCompleteLoad(loadingFailed ? Failure : Success);
 }
 
-// NOTE: The values in the TextTrack::ReadinessState enum must stay in sync with those in HTMLTrackElement::ReadyState.
+// NOTE: The values in the TextTrack::ReadinessState enum must stay in sync with
+// those in HTMLTrackElement::ReadyState.
 static_assert(
     HTMLTrackElement::kNone ==
         static_cast<HTMLTrackElement::ReadyState>(TextTrack::NotLoaded),

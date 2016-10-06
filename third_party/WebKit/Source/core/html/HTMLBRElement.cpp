@@ -48,7 +48,8 @@ void HTMLBRElement::collectStyleForPresentationAttribute(
     MutableStylePropertySet* style) {
   if (name == clearAttr) {
     // If the string is empty, then don't add the clear property.
-    // <br clear> and <br clear=""> are just treated like <br> by Gecko, Mac IE, etc. -dwh
+    // <br clear> and <br clear=""> are just treated like <br> by Gecko, Mac IE,
+    // etc. -dwh
     if (!value.isEmpty()) {
       if (equalIgnoringCase(value, "all"))
         addPropertyToPresentationAttributeStyle(style, CSSPropertyClear,

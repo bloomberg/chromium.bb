@@ -609,7 +609,8 @@ void HTMLTextFormControlElement::selectionChanged(bool userTriggered) {
   if (!layoutObject() || !isTextFormControl())
     return;
 
-  // selectionStart() or selectionEnd() will return cached selection when this node doesn't have focus
+  // selectionStart() or selectionEnd() will return cached selection when this
+  // node doesn't have focus.
   cacheSelection(computeSelectionStart(), computeSelectionEnd(),
                  computeSelectionDirection());
 
@@ -732,8 +733,9 @@ static void getNextSoftBreak(RootInlineBox*& line,
 }
 
 String HTMLTextFormControlElement::valueWithHardLineBreaks() const {
-  // FIXME: It's not acceptable to ignore the HardWrap setting when there is no layoutObject.
-  // While we have no evidence this has ever been a practical problem, it would be best to fix it some day.
+  // FIXME: It's not acceptable to ignore the HardWrap setting when there is no
+  // layoutObject.  While we have no evidence this has ever been a practical
+  // problem, it would be best to fix it some day.
   HTMLElement* innerText = innerEditorElement();
   if (!innerText || !isTextFormControl())
     return value();

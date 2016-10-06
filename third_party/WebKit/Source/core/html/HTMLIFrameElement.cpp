@@ -81,8 +81,9 @@ void HTMLIFrameElement::collectStyleForPresentationAttribute(
   } else if (name == alignAttr) {
     applyAlignmentAttributeToStyle(value, style);
   } else if (name == frameborderAttr) {
-    // LocalFrame border doesn't really match the HTML4 spec definition for iframes. It simply adds
-    // a presentational hint that the border should be off if set to zero.
+    // LocalFrame border doesn't really match the HTML4 spec definition for
+    // iframes. It simply adds a presentational hint that the border should be
+    // off if set to zero.
     if (!value.toInt()) {
       // Add a rule that nulls out our border width.
       addPropertyToPresentationAttributeStyle(

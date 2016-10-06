@@ -62,9 +62,11 @@ LinkRelAttribute::LinkRelAttribute(const String& rel)
     } else if (equalIgnoringCase(linkType, "alternate")) {
       m_isAlternate = true;
     } else if (equalIgnoringCase(linkType, "icon")) {
-      // This also allows "shortcut icon" since we just ignore the non-standard "shortcut" token.
-      // FIXME: This doesn't really follow the spec that requires "shortcut icon" to be the
-      // entire string http://www.whatwg.org/specs/web-apps/current-work/multipage/links.html#rel-icon
+      // This also allows "shortcut icon" since we just ignore the non-standard
+      // "shortcut" token.
+      // FIXME: This doesn't really follow the spec that requires "shortcut
+      // icon" to be the entire string
+      // http://www.whatwg.org/specs/web-apps/current-work/multipage/links.html#rel-icon
       m_iconType = Favicon;
     } else if (equalIgnoringCase(linkType, "prefetch")) {
       m_isLinkPrefetch = true;
@@ -87,7 +89,8 @@ LinkRelAttribute::LinkRelAttribute(const String& rel)
     } else if (equalIgnoringCase(linkType, "serviceworker")) {
       m_isServiceWorker = true;
     }
-    // Adding or removing a value here requires you to update RelList::supportedTokens()
+    // Adding or removing a value here requires you to update
+    // RelList::supportedTokens()
   }
 }
 

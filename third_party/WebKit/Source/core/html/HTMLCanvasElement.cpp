@@ -258,9 +258,9 @@ CanvasRenderingContext* HTMLCanvasElement::getCanvasRenderingContext(
   if (!factory)
     return nullptr;
 
-  // FIXME - The code depends on the context not going away once created, to prevent JS from
-  // seeing a dangling pointer. So for now we will disallow the context from being changed
-  // once it is created.
+  // FIXME - The code depends on the context not going away once created, to
+  // prevent JS from seeing a dangling pointer. So for now we will disallow the
+  // context from being changed once it is created.
   if (m_context) {
     if (m_context->getContextType() == contextType)
       return m_context.get();
@@ -349,7 +349,8 @@ void HTMLCanvasElement::didFinalizeFrame() {
             ExpensiveCanvasHeuristicParameters::MinFramesBeforeSwitch &&
         !m_pendingRenderingModeSwitch) {
       if (!m_context->isAccelerationOptimalForCanvasContent()) {
-        // The switch must be done asynchronously in order to avoid switching during the paint invalidation step.
+        // The switch must be done asynchronously in order to avoid switching
+        // during the paint invalidation step.
         Platform::current()->currentThread()->getWebTaskRunner()->postTask(
             BLINK_FROM_HERE,
             WTF::bind(
@@ -396,8 +397,8 @@ void HTMLCanvasElement::doDeferredPaintInvalidation() {
       FloatRect mappedDirtyRect =
           mapRect(m_dirtyRect, srcRect, FloatRect(lb->contentBoxRect()));
       if (m_context->isAccelerated()) {
-        // Accelerated 2D canvases need the dirty rect to be expressed relative to the
-        // content box, as opposed to the layout box.
+        // Accelerated 2D canvases need the dirty rect to be expressed relative
+        // to the content box, as opposed to the layout box.
         mappedDirtyRect.move(-lb->contentBoxOffset());
       }
       m_imageBuffer->finalizeFrame(mappedDirtyRect);
@@ -431,8 +432,8 @@ void HTMLCanvasElement::reset() {
   IntSize oldSize = size();
   IntSize newSize(w, h);
 
-  // If the size of an existing buffer matches, we can just clear it instead of reallocating.
-  // This optimization is only done for 2D canvases for now.
+  // If the size of an existing buffer matches, we can just clear it instead of
+  // reallocating.  This optimization is only done for 2D canvases for now.
   if (hadImageBuffer && oldSize == newSize && m_context && m_context->is2d() &&
       !buffer()->isRecording()) {
     if (!m_imageBufferIsClear) {
@@ -504,7 +505,8 @@ void HTMLCanvasElement::notifyListenersCanvasChanged() {
 }
 
 void HTMLCanvasElement::paint(GraphicsContext& context, const LayoutRect& r) {
-  // FIXME: crbug.com/438240; there is a bug with the new CSS blending and compositing feature.
+  // FIXME: crbug.com/438240; there is a bug with the new CSS blending and
+  // compositing feature.
   if (!m_context)
     return;
 
@@ -625,7 +627,8 @@ String HTMLCanvasElement::toEncodingMimeType(const String& mimeType,
     toBlobCallbackImageFormatHistogram.count(imageFormat);
   }
 
-  // FIXME: Make isSupportedImageMIMETypeForEncoding threadsafe (to allow this method to be used on a worker thread).
+  // FIXME: Make isSupportedImageMIMETypeForEncoding threadsafe (to allow this
+  // method to be used on a worker thread).
   if (!MIMETypeRegistry::isSupportedImageMIMETypeForEncoding(lowercaseMimeType))
     lowercaseMimeType = DefaultMimeType;
   return lowercaseMimeType;
@@ -646,7 +649,8 @@ ImageData* HTMLCanvasElement::toImageData(SourceDrawingBuffer sourceBuffer,
                                           SnapshotReason reason) const {
   ImageData* imageData;
   if (is3D()) {
-    // Get non-premultiplied data because of inaccurate premultiplied alpha conversion of buffer()->toDataURL().
+    // Get non-premultiplied data because of inaccurate premultiplied alpha
+    // conversion of buffer()->toDataURL().
     imageData = m_context->paintRenderingResultsToImageData(sourceBuffer);
     if (imageData)
       return imageData;
@@ -871,8 +875,8 @@ bool HTMLCanvasElement::shouldAccelerate(const IntSize& size) const {
     return false;
 
   // The following is necessary for handling the special case of canvases in the
-  // dev tools overlay, which run in a process that supports accelerated 2d canvas
-  // but in a special compositing context that does not.
+  // dev tools overlay, which run in a process that supports accelerated 2d
+  // canvas but in a special compositing context that does not.
   if (layoutBox() && !layoutBox()->hasAcceleratedCompositing())
     return false;
 
@@ -1016,7 +1020,8 @@ HTMLCanvasElement::createUnacceleratedImageBufferSurface(
           CanvasMetrics::DisplayList2DCanvasImageBufferCreated);
       return std::move(surface);
     }
-    // We fallback to a non-display-list surface without recording a metric here.
+    // We fallback to a non-display-list surface without recording a metric
+    // here.
   }
 
   auto surfaceFactory = wrapUnique(new UnacceleratedSurfaceFactory());
@@ -1084,9 +1089,10 @@ void HTMLCanvasElement::createImageBufferInternal(
   }
 
   m_imageBuffer->setClient(this);
-  // Enabling MSAA overrides a request to disable antialiasing. This is true regardless of whether the
-  // rendering mode is accelerated or not. For consistency, we don't want to apply AA in accelerated
-  // canvases but not in unaccelerated canvases.
+  // Enabling MSAA overrides a request to disable antialiasing. This is true
+  // regardless of whether the rendering mode is accelerated or not. For
+  // consistency, we don't want to apply AA in accelerated canvases but not in
+  // unaccelerated canvases.
   if (!msaaSampleCount && document().settings() &&
       !document().settings()->antialiased2dCanvasEnabled())
     m_context->setShouldAntialias(false);
@@ -1140,7 +1146,8 @@ void HTMLCanvasElement::updateExternallyAllocatedMemory() const {
       checkedExternallyAllocatedMemory.ValueOrDefault(
           std::numeric_limits<intptr_t>::max());
 
-  // Subtracting two intptr_t that are known to be positive will never underflow.
+  // Subtracting two intptr_t that are known to be positive will never
+  // underflow.
   v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
       externallyAllocatedMemory - m_externallyAllocatedMemory);
   m_externallyAllocatedMemory = externallyAllocatedMemory;
@@ -1283,8 +1290,8 @@ PassRefPtr<Image> HTMLCanvasElement::getSourceImageForCanvas(
   sk_sp<SkImage> skImage;
   if (m_context->is3d()) {
     // Because WebGL sources always require making a copy of the back buffer, we
-    // use paintRenderingResultsToCanvas instead of getImage in order to keep a cached
-    // copy of the backing in the canvas's ImageBuffer.
+    // use paintRenderingResultsToCanvas instead of getImage in order to keep a
+    // cached copy of the backing in the canvas's ImageBuffer.
     renderingContext()->paintRenderingResultsToCanvas(BackBuffer);
     skImage = hasImageBuffer()
                   ? buffer()->newSkImageSnapshot(hint, reason)
@@ -1352,10 +1359,12 @@ bool HTMLCanvasElement::isSupportedInteractiveCanvasFallback(
   if (!element.isDescendantOf(this))
     return false;
 
-  // An element is a supported interactive canvas fallback element if it is one of the following:
+  // An element is a supported interactive canvas fallback element if it is one
+  // of the following:
   // https://html.spec.whatwg.org/multipage/scripting.html#supported-interactive-canvas-fallback-element
 
-  // An a element that represents a hyperlink and that does not have any img descendants.
+  // An a element that represents a hyperlink and that does not have any img
+  // descendants.
   if (isHTMLAnchorElement(element))
     return !Traversal<HTMLImageElement>::firstWithin(element);
 
@@ -1363,8 +1372,9 @@ bool HTMLCanvasElement::isSupportedInteractiveCanvasFallback(
   if (isHTMLButtonElement(element))
     return true;
 
-  // An input element whose type attribute is in one of the Checkbox or Radio Button states.
-  // An input element that is a button but its type attribute is not in the Image Button state.
+  // An input element whose type attribute is in one of the Checkbox or Radio
+  // Button states.  An input element that is a button but its type attribute is
+  // not in the Image Button state.
   if (isHTMLInputElement(element)) {
     const HTMLInputElement& inputElement = toHTMLInputElement(element);
     if (inputElement.type() == InputTypeNames::checkbox ||
@@ -1373,14 +1383,16 @@ bool HTMLCanvasElement::isSupportedInteractiveCanvasFallback(
       return true;
   }
 
-  // A select element with a multiple attribute or a display size greater than 1.
+  // A select element with a "multiple" attribute or with a display size greater
+  // than 1.
   if (isHTMLSelectElement(element)) {
     const HTMLSelectElement& selectElement = toHTMLSelectElement(element);
     if (selectElement.multiple() || selectElement.size() > 1)
       return true;
   }
 
-  // An option element that is in a list of options of a select element with a multiple attribute or a display size greater than 1.
+  // An option element that is in a list of options of a select element with a
+  // "multiple" attribute or with a display size greater than 1.
   if (isHTMLOptionElement(element) && element.parentNode() &&
       isHTMLSelectElement(*element.parentNode())) {
     const HTMLSelectElement& selectElement =
@@ -1389,11 +1401,13 @@ bool HTMLCanvasElement::isSupportedInteractiveCanvasFallback(
       return true;
   }
 
-  // An element that would not be interactive content except for having the tabindex attribute specified.
+  // An element that would not be interactive content except for having the
+  // tabindex attribute specified.
   if (element.fastHasAttribute(HTMLNames::tabindexAttr))
     return true;
 
-  // A non-interactive table, caption, thead, tbody, tfoot, tr, td, or th element.
+  // A non-interactive table, caption, thead, tbody, tfoot, tr, td, or th
+  // element.
   if (isHTMLTableElement(element) ||
       element.hasTagName(HTMLNames::captionTag) ||
       element.hasTagName(HTMLNames::theadTag) ||

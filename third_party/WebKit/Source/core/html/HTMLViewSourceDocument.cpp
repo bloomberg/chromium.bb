@@ -73,8 +73,8 @@ void HTMLViewSourceDocument::createContainingTable() {
   HTMLBodyElement* body = HTMLBodyElement::create(*this);
   html->parserAppendChild(body);
 
-  // Create a line gutter div that can be used to make sure the gutter extends down the height of the whole
-  // document.
+  // Create a line gutter div that can be used to make sure the gutter extends
+  // down the height of the whole document.
   HTMLDivElement* div = HTMLDivElement::create(*this);
   div->setAttribute(classAttr, "line-gutter-backdrop");
   body->parserAppendChild(div);
@@ -203,7 +203,8 @@ void HTMLViewSourceDocument::addLine(const AtomicString& className) {
   HTMLTableRowElement* trow = HTMLTableRowElement::create(*this);
   m_tbody->parserAppendChild(trow);
 
-  // Create a cell that will hold the line number (it is generated in the stylesheet using counters).
+  // Create a cell that will hold the line number (it is generated in the
+  // stylesheet using counters).
   HTMLTableCellElement* td = HTMLTableCellElement::create(tdTag, *this);
   td->setAttribute(classAttr, "line-number");
   td->setIntegralAttribute(valueAttr, ++m_lineNumber);

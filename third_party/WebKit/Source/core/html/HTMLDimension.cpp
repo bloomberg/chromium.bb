@@ -43,12 +43,14 @@ static HTMLDimension parseDimension(const CharacterType* characters,
   HTMLDimension::HTMLDimensionType type = HTMLDimension::Absolute;
   double value = 0.;
 
-  // HTML5's split removes leading and trailing spaces so we need to skip the leading spaces here.
+  // HTML5's split removes leading and trailing spaces so we need to skip the
+  // leading spaces here.
   while (lastParsedIndex < endOfCurrentToken &&
          isASCIISpace((characters[lastParsedIndex])))
     ++lastParsedIndex;
 
-  // This is Step 5.5. in the algorithm. Going to the last step would make the code less readable.
+  // This is Step 5.5. in the algorithm. Going to the last step would make the
+  // code less readable.
   if (lastParsedIndex >= endOfCurrentToken)
     return HTMLDimension(value, HTMLDimension::Relative);
 
@@ -125,7 +127,8 @@ Vector<HTMLDimension> parseListOfDimensions(const String& input) {
   if (trimmedString.isEmpty())
     return Vector<HTMLDimension>();
 
-  // Step 3. To avoid String copies, we just look for commas instead of splitting.
+  // Step 3. To avoid String copies, we just look for commas instead of
+  // splitting.
   Vector<HTMLDimension> parsedDimensions;
   size_t lastParsedIndex = 0;
   while (true) {

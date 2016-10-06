@@ -38,10 +38,13 @@ HTMLOptionsCollection::HTMLOptionsCollection(ContainerNode& select)
 }
 
 void HTMLOptionsCollection::supportedPropertyNames(Vector<String>& names) {
-  // As per http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#htmloptionscollection:
-  // The supported property names consist of the non-empty values of all the id and name attributes of all the elements
-  // represented by the collection, in tree order, ignoring later duplicates, with the id of an element preceding its
-  // name if it contributes both, they differ from each other, and neither is the duplicate of an earlier entry.
+  // As per
+  // http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#htmloptionscollection:
+  // The supported property names consist of the non-empty values of all the id
+  // and name attributes of all the elements represented by the collection, in
+  // tree order, ignoring later duplicates, with the id of an element preceding
+  // its name if it contributes both, they differ from each other, and neither
+  // is the duplicate of an earlier entry.
   HashSet<AtomicString> existingNames;
   unsigned length = this->length();
   for (unsigned i = 0; i < length; ++i) {
@@ -106,7 +109,8 @@ void HTMLOptionsCollection::namedGetter(const AtomicString& name,
     return;
   }
 
-  // FIXME: The spec and Firefox do not return a NodeList. They always return the first matching Element.
+  // FIXME: The spec and Firefox do not return a NodeList. They always return
+  // the first matching Element.
   returnValue.setNodeList(StaticElementList::adopt(namedItems));
 }
 

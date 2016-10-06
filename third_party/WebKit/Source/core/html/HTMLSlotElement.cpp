@@ -131,7 +131,8 @@ void HTMLSlotElement::appendDistributedNodesFrom(const HTMLSlotElement& other) {
 }
 
 void HTMLSlotElement::clearDistribution() {
-  // TODO(hayato): Figure out when to call lazyReattachDistributedNodesIfNeeded()
+  // TODO(hayato): Figure out when to call
+  // lazyReattachDistributedNodesIfNeeded()
   m_assignedNodes.clear();
   m_distributedNodes.clear();
   m_distributedIndices.clear();
@@ -220,7 +221,8 @@ Node::InsertionNotificationRequest HTMLSlotElement::insertedInto(
     DCHECK(root->owner());
     root->owner()->setNeedsDistributionRecalc();
     // Relevant DOM Standard: https://dom.spec.whatwg.org/#concept-node-insert
-    // - 6.4:  Run assign slotables for a tree with node's tree and a set containing each inclusive descendant of node that is a slot.
+    // - 6.4:  Run assign slotables for a tree with node's tree and a set
+    // containing each inclusive descendant of node that is a slot.
     if (root->isV1() && !wasInShadowTreeBeforeInserted(*this, *insertionPoint))
       root->ensureSlotAssignment().slotAdded(*this);
   }
@@ -243,8 +245,12 @@ static ShadowRoot* containingShadowRootBeforeRemoved(
 void HTMLSlotElement::removedFrom(ContainerNode* insertionPoint) {
   // `removedFrom` is called after the node is removed from the tree.
   // That means:
-  // 1. If this slot is still in a tree scope, it means the slot has been in a shadow tree. An inclusive shadow-including ancestor of the shadow host was originally removed from its parent.
-  // 2. Or (this slot is now not in a tree scope), this slot's inclusive ancestor was orginally removed from its parent (== insertion point). This slot and the originally removed node was in the same tree.
+  // 1. If this slot is still in a tree scope, it means the slot has been in a
+  // shadow tree. An inclusive shadow-including ancestor of the shadow host was
+  // originally removed from its parent.
+  // 2. Or (this slot is now not in a tree scope), this slot's inclusive
+  // ancestor was orginally removed from its parent (== insertion point). This
+  // slot and the originally removed node was in the same tree.
 
   ShadowRoot* root = containingShadowRootBeforeRemoved(*this, *insertionPoint);
   if (root) {
@@ -252,7 +258,8 @@ void HTMLSlotElement::removedFrom(ContainerNode* insertionPoint) {
       rootOwner->setNeedsDistributionRecalc();
   }
 
-  // Since this insertion point is no longer visible from the shadow subtree, it need to clean itself up.
+  // Since this insertion point is no longer visible from the shadow subtree, it
+  // need to clean itself up.
   clearDistribution();
 
   if (root && root->isV1() && root == insertionPoint->treeScope().rootNode()) {
@@ -310,7 +317,8 @@ void HTMLSlotElement::enqueueSlotChangeEvent() {
   DCHECK(root);
   DCHECK(root->isV1());
   root->owner()->setNeedsDistributionRecalc();
-  // Check slotchange recursively since this slotchange may cause another slotchange.
+  // Check slotchange recursively since this slotchange may cause another
+  // slotchange.
   checkSlotChange();
 }
 

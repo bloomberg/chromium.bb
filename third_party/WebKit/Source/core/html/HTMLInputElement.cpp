@@ -2,11 +2,13 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All
+ * rights reserved.
  *           (C) 2006 Alexey Proskuryakov (ap@nypop.com)
  * Copyright (C) 2007 Samuel Weinig (sam@webkit.org)
  * Copyright (C) 2010 Google Inc. All rights reserved.
- * Copyright (C) 2008 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2008 Torch Mobile Inc. All rights reserved.
+ * (http://www.torchmobile.com/)
  * Copyright (C) 2012 Samsung Electronics. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
@@ -120,9 +122,9 @@ HTMLInputElement::HTMLInputElement(Document& document,
       m_needsToUpdateViewValue(true),
       m_isPlaceholderVisible(false),
       // |m_inputType| is lazily created when constructed by the parser to avoid
-      // constructing unnecessarily a text inputType and its shadow subtree, just
-      // to destroy them when the |type| attribute gets set by the parser to
-      // something else than 'text'.
+      // constructing unnecessarily a text inputType and its shadow subtree,
+      // just to destroy them when the |type| attribute gets set by the parser
+      // to something else than 'text'.
       m_inputType(createdByParser ? nullptr : InputType::createText(*this)),
       m_inputTypeView(m_inputType ? m_inputType->createView() : nullptr) {
   setHasCustomStyleCallbacks();
@@ -319,8 +321,9 @@ void HTMLInputElement::updateFocusAppearance(
     if (layoutObject())
       layoutObject()->scrollRectToVisible(boundingBox());
     if (document().frame()) {
-      // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-      // needs to be audited.  See http://crbug.com/590369 for more details.
+      // TODO(xiaochengh): The use of
+      // updateStyleAndLayoutIgnorePendingStylesheets needs to be audited.  See
+      // http://crbug.com/590369 for more details.
       document().updateStyleAndLayoutIgnorePendingStylesheets();
 
       document().frame()->selection().revealSelection();
@@ -480,7 +483,8 @@ void HTMLInputElement::updateType() {
 
 void HTMLInputElement::subtreeHasChanged() {
   m_inputTypeView->subtreeHasChanged();
-  // When typing in an input field, childrenChanged is not called, so we need to force the directionality check.
+  // When typing in an input field, childrenChanged is not called, so we need to
+  // force the directionality check.
   calculateAndAdjustDirectionality();
 }
 
@@ -682,7 +686,8 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name,
   } else if (name == typeAttr) {
     updateType();
   } else if (name == valueAttr) {
-    // We only need to setChanged if the form is looking at the default value right now.
+    // We only need to setChanged if the form is looking at the default value
+    // right now.
     if (!hasDirtyValue()) {
       updatePlaceholderVisibility();
       setNeedsStyleRecalc(
@@ -727,7 +732,8 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name,
   } else if (name == usemapAttr || name == accesskeyAttr) {
     // FIXME: ignore for the moment
   } else if (name == onsearchAttr) {
-    // Search field and slider attributes all just cause updateFromElement to be called through style recalcing.
+    // Search field and slider attributes all just cause updateFromElement to be
+    // called through style recalcing.
     setAttributeEventListener(
         EventTypeNames::search,
         createAttributeEventListener(this, name, value, eventParameterName()));
@@ -1042,8 +1048,8 @@ void HTMLInputElement::setValue(const String& value,
 
   setLastChangeWasNotUserEdit();
   m_needsToUpdateViewValue = true;
-  m_suggestedValue =
-      String();  // Prevent TextFieldInputType::setValue from using the suggested value.
+  // Prevent TextFieldInputType::setValue from using the suggested value.
+  m_suggestedValue = String();
 
   m_inputType->setValue(sanitizedValue, valueChanged, eventBehavior);
   m_inputTypeView->didSetValue(sanitizedValue, valueChanged);
@@ -1126,7 +1132,8 @@ void HTMLInputElement::setValueFromRenderer(const String& value) {
   m_hasDirtyValue = true;
   m_needsToUpdateViewValue = false;
 
-  // Input event is fired by the Node::defaultEventHandler for editable controls.
+  // Input event is fired by the Node::defaultEventHandler for editable
+  // controls.
   if (!isTextField())
     dispatchInputEvent();
   notifyFormStateChanged();
@@ -1177,8 +1184,9 @@ void HTMLInputElement::defaultEventHandler(Event* evt) {
       return;
   }
 
-  // Call the base event handler before any of our own event handling for almost all events in text fields.
-  // Makes editing keyboard handling take precedence over the keydown and keypress handling in this function.
+  // Call the base event handler before any of our own event handling for almost
+  // all events in text fields.  Makes editing keyboard handling take precedence
+  // over the keydown and keypress handling in this function.
   bool callBaseClassEarly =
       isTextField() && (evt->type() == EventTypeNames::keydown ||
                         evt->type() == EventTypeNames::keypress);
@@ -1188,10 +1196,12 @@ void HTMLInputElement::defaultEventHandler(Event* evt) {
       return;
   }
 
-  // DOMActivate events cause the input to be "activated" - in the case of image and submit inputs, this means
-  // actually submitting the form. For reset inputs, the form is reset. These events are sent when the user clicks
-  // on the element, or presses enter while it is the active element. JavaScript code wishing to activate the element
-  // must dispatch a DOMActivate event - a click event will not do the job.
+  // DOMActivate events cause the input to be "activated" - in the case of image
+  // and submit inputs, this means actually submitting the form. For reset
+  // inputs, the form is reset. These events are sent when the user clicks on
+  // the element, or presses enter while it is the active element. JavaScript
+  // code wishing to activate the element must dispatch a DOMActivate event - a
+  // click event will not do the job.
   if (evt->type() == EventTypeNames::DOMActivate) {
     m_inputTypeView->handleDOMActivateEvent(evt);
     if (evt->defaultHandled())
@@ -1224,7 +1234,8 @@ void HTMLInputElement::defaultEventHandler(Event* evt) {
       dispatchFormControlChangeEvent();
 
     HTMLFormElement* formForSubmission = m_inputTypeView->formForSubmission();
-    // Form may never have been present, or may have been destroyed by code responding to the change event.
+    // Form may never have been present, or may have been destroyed by code
+    // responding to the change event.
     if (formForSubmission)
       formForSubmission->submitImplicitly(evt, canTriggerImplicitSubmission());
 
@@ -1249,7 +1260,8 @@ void HTMLInputElement::defaultEventHandler(Event* evt) {
 }
 
 bool HTMLInputElement::willRespondToMouseClickEvents() {
-  // FIXME: Consider implementing willRespondToMouseClickEvents() in InputType if more accurate results are necessary.
+  // FIXME: Consider implementing willRespondToMouseClickEvents() in InputType
+  // if more accurate results are necessary.
   if (!isDisabledFormControl())
     return true;
 

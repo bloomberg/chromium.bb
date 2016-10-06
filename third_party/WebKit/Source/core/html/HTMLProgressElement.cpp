@@ -112,7 +112,8 @@ double HTMLProgressElement::max() const {
 }
 
 void HTMLProgressElement::setMax(double max) {
-  // FIXME: The specification says we should ignore the input value if it is inferior or equal to 0.
+  // FIXME: The specification says we should ignore the input value if it is
+  // inferior or equal to 0.
   setFloatingPointAttribute(maxAttr, max > 0 ? max : 1);
 }
 

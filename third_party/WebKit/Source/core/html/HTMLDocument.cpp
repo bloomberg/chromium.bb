@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
- * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008 Apple Inc. All rights
+ * reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -33,7 +34,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  *
  * Alternatively, the document type parsing portions of this file may be used
  * under the terms of either the Mozilla Public License Version 1.1, found at
@@ -88,10 +89,10 @@ const AtomicString& HTMLDocument::bodyAttributeValue(
 void HTMLDocument::setBodyAttribute(const QualifiedName& name,
                                     const AtomicString& value) {
   if (HTMLBodyElement* body = htmlBodyElement()) {
-    // FIXME: This check is apparently for benchmarks that set the same value repeatedly.
-    // It's not clear what benchmarks though, it's also not clear why we don't avoid
-    // causing a style recalc when setting the same value to a presentational attribute
-    // in the common case.
+    // FIXME: This check is apparently for benchmarks that set the same value
+    // repeatedly.  It's not clear what benchmarks though, it's also not clear
+    // why we don't avoid causing a style recalc when setting the same value to
+    // a presentational attribute in the common case.
     if (body->fastGetAttribute(name) != value)
       body->setAttribute(name, value);
   }
@@ -181,8 +182,9 @@ void HTMLDocument::removeExtraNamedItem(const AtomicString& name) {
 }
 
 static HashSet<StringImpl*>* createHtmlCaseInsensitiveAttributesSet() {
-  // This is the list of attributes in HTML 4.01 with values marked as "[CI]" or case-insensitive
-  // Mozilla treats all other values as case-sensitive, thus so do we.
+  // This is the list of attributes in HTML 4.01 with values marked as "[CI]" or
+  // case-insensitive.  Mozilla treats all other values as case-sensitive, thus
+  // so do we.
   HashSet<StringImpl*>* attrSet = new HashSet<StringImpl*>;
 
   const QualifiedName* caseInsensitiveAttributes[] = {

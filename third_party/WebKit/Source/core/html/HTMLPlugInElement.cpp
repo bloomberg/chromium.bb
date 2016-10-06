@@ -78,9 +78,9 @@ HTMLPlugInElement::HTMLPlugInElement(
     : HTMLFrameOwnerElement(tagName, doc),
       m_isDelayingLoadEvent(false),
       // m_needsWidgetUpdate(!createdByParser) allows HTMLObjectElement to delay
-      // widget updates until after all children are parsed. For HTMLEmbedElement
-      // this delay is unnecessary, but it is simpler to make both classes share
-      // the same codepath in this class.
+      // widget updates until after all children are parsed. For
+      // HTMLEmbedElement this delay is unnecessary, but it is simpler to make
+      // both classes share the same codepath in this class.
       m_needsWidgetUpdate(!createdByParser),
       m_shouldPreferPlugInsForImages(preferPlugInsForImagesOption ==
                                      ShouldPreferPlugInsForImages) {}
@@ -541,9 +541,11 @@ bool HTMLPlugInElement::loadPlugin(const KURL& url,
   }
 
   document().setContainsPlugins();
-  // TODO(esprehn): WebPluginContainerImpl::setWebLayer also schedules a compositing update, do we need both?
+  // TODO(esprehn): WebPluginContainerImpl::setWebLayer also schedules a
+  // compositing update, do we need both?
   setNeedsCompositingUpdate();
-  // Make sure any input event handlers introduced by the plugin are taken into account.
+  // Make sure any input event handlers introduced by the plugin are taken into
+  // account.
   if (Page* page = document().frame()->page()) {
     if (ScrollingCoordinator* scrollingCoordinator =
             page->scrollingCoordinator())

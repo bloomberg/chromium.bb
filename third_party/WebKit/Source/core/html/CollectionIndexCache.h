@@ -155,7 +155,8 @@ CollectionIndexCache<Collection, NodeType>::nodeBeforeCachedNode(
   unsigned currentIndex = cachedNodeIndex();
   DCHECK_GT(currentIndex, index);
 
-  // Determine if we should traverse from the beginning of the collection instead of the cached node.
+  // Determine if we should traverse from the beginning of the collection
+  // instead of the cached node.
   bool firstIsCloser = index < currentIndex - index;
   if (firstIsCloser || !collection.canTraverseBackward()) {
     NodeType* firstNode = collection.traverseToFirst();
@@ -182,7 +183,8 @@ CollectionIndexCache<Collection, NodeType>::nodeAfterCachedNode(
   unsigned currentIndex = cachedNodeIndex();
   DCHECK_LT(currentIndex, index);
 
-  // Determine if we should traverse from the end of the collection instead of the cached node.
+  // Determine if we should traverse from the end of the collection instead of
+  // the cached node.
   bool lastIsCloser = isCachedNodeCountValid() &&
                       cachedNodeCount() - index < index - currentIndex;
   if (lastIsCloser && collection.canTraverseBackward()) {

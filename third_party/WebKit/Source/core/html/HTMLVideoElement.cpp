@@ -120,7 +120,8 @@ void HTMLVideoElement::parseAttribute(const QualifiedName& name,
     // In case the poster attribute is set after playback, don't update the
     // display state, post playback the correct state will be picked up.
     if (getDisplayMode() < Video || !hasAvailableVideoFrame()) {
-      // Force a poster recalc by setting m_displayMode to Unknown directly before calling updateDisplayState.
+      // Force a poster recalc by setting m_displayMode to Unknown directly
+      // before calling updateDisplayState.
       HTMLMediaElement::setDisplayMode(Unknown);
       updateDisplayState();
     }
@@ -169,10 +170,10 @@ void HTMLVideoElement::setDisplayMode(DisplayMode mode) {
   KURL poster = posterImageURL();
 
   if (!poster.isEmpty()) {
-    // We have a poster path, but only show it until the user triggers display by playing or seeking and the
-    // media engine has something to display.
-    // Don't show the poster if there is a seek operation or
-    // the video has restarted because of loop attribute
+    // We have a poster path, but only show it until the user triggers display
+    // by playing or seeking and the media engine has something to display.
+    // Don't show the poster if there is a seek operation or the video has
+    // restarted because of loop attribute
     if (mode == Video && oldMode == Poster && !hasAvailableVideoFrame())
       return;
   }
@@ -300,7 +301,8 @@ PassRefPtr<Image> HTMLVideoElement::getSourceImageForCanvas(
   }
 
   IntSize intrinsicSize(videoWidth(), videoHeight());
-  // FIXME: Not sure if we dhould we be doing anything with the AccelerationHint argument here?
+  // FIXME: Not sure if we dhould we be doing anything with the AccelerationHint
+  // argument here?
   std::unique_ptr<ImageBuffer> imageBuffer = ImageBuffer::create(intrinsicSize);
   if (!imageBuffer) {
     *status = InvalidSourceImageStatus;

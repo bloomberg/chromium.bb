@@ -66,7 +66,8 @@ class CORE_EXPORT HTMLFieldSetElement final : public HTMLFormControlElement {
   void refreshElementsIfNeeded() const;
 
   mutable FormAssociatedElement::List m_associatedElements;
-  // When dom tree is modified, we have to refresh the m_associatedElements array.
+  // When dom tree is modified, we have to refresh the m_associatedElements
+  // array.
   mutable uint64_t m_documentVersion;
 };
 

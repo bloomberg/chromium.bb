@@ -66,9 +66,10 @@ bool HTMLBaseElement::isURLAttribute(const Attribute& attribute) const {
 }
 
 KURL HTMLBaseElement::href() const {
-  // This does not use the getURLAttribute function because that will resolve relative to the document's base URL;
-  // base elements like this one can be used to set that base URL. Thus we need to resolve relative to the document's
-  // URL and ignore the base URL.
+  // This does not use the getURLAttribute function because that will resolve
+  // relative to the document's base URL; base elements like this one can be
+  // used to set that base URL. Thus we need to resolve relative to the
+  // document's URL and ignore the base URL.
 
   const AtomicString& attributeValue = fastGetAttribute(hrefAttr);
   if (attributeValue.isNull())

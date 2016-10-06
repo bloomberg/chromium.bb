@@ -192,7 +192,8 @@ inline bool Node::hasTagName(const HTMLQualifiedName& name) const {
   return isHTMLElement() && toHTMLElement(*this).hasTagName(name);
 }
 
-// Functor used to match HTMLElements with a specific HTML tag when using the ElementTraversal API.
+// Functor used to match HTMLElements with a specific HTML tag when using the
+// ElementTraversal API.
 class HasHTMLTagName {
   STACK_ALLOCATED();
 
@@ -207,8 +208,9 @@ class HasHTMLTagName {
   const HTMLQualifiedName& m_tagName;
 };
 
-// This requires isHTML*Element(const Element&) and isHTML*Element(const HTMLElement&).
-// When the input element is an HTMLElement, we don't need to check the namespace URI, just the local name.
+// This requires isHTML*Element(const Element&) and isHTML*Element(const
+// HTMLElement&).  When the input element is an HTMLElement, we don't need to
+// check the namespace URI, just the local name.
 #define DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(thisType)                \
   inline bool is##thisType(const thisType* element);                         \
   inline bool is##thisType(const thisType& element);                         \

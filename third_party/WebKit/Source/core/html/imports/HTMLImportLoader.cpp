@@ -87,8 +87,9 @@ void HTMLImportLoader::dataReceived(Resource*,
 }
 
 void HTMLImportLoader::notifyFinished(Resource* resource) {
-  // The writer instance indicates that a part of the document can be already loaded.
-  // We don't take such a case as an error because the partially-loaded document has been visible from script at this point.
+  // The writer instance indicates that a part of the document can be already
+  // loaded.  We don't take such a case as an error because the partially-loaded
+  // document has been visible from script at this point.
   if (resource->loadFailedOrCanceled() && !m_writer) {
     setState(StateError);
     return;
@@ -141,7 +142,8 @@ void HTMLImportLoader::setState(State state) {
       writer->end();
   }
 
-  // Since DocumentWriter::end() can let setState() reenter, we shouldn't refer to m_state here.
+  // Since DocumentWriter::end() can let setState() reenter, we shouldn't refer
+  // to m_state here.
   if (state == StateLoaded)
     m_document->setReadyState(Document::Complete);
   if (state == StateLoaded || state == StateError)

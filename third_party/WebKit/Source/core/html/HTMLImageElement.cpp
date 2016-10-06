@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
- * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2004, 2005, 2006, 2007, 2008, 2010 Apple Inc. All rights
+ * reserved.
  * Copyright (C) 2010 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
@@ -507,13 +508,15 @@ int HTMLImageElement::naturalHeight() const {
 
 const String& HTMLImageElement::currentSrc() const {
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/edits.html#dom-img-currentsrc
-  // The currentSrc IDL attribute must return the img element's current request's current URL.
+  // The currentSrc IDL attribute must return the img element's current
+  // request's current URL.
 
   // Return the picked URL string in case of load error.
   if (imageLoader().hadError())
     return m_bestFitImageURL;
-  // Initially, the pending request turns into current request when it is either available or broken.
-  // We use the image's dimensions as a proxy to it being in any of these states.
+  // Initially, the pending request turns into current request when it is either
+  // available or broken.  We use the image's dimensions as a proxy to it being
+  // in any of these states.
   if (!imageLoader().image() || !imageLoader().image()->getImage() ||
       !imageLoader().image()->getImage()->width())
     return emptyAtom;
@@ -595,7 +598,8 @@ bool HTMLImageElement::isServerMap() const {
 
   const AtomicString& usemap = fastGetAttribute(usemapAttr);
 
-  // If the usemap attribute starts with '#', it refers to a map element in the document.
+  // If the usemap attribute starts with '#', it refers to a map element in the
+  // document.
   if (usemap[0] == '#')
     return false;
 
@@ -715,8 +719,8 @@ FetchRequest::ResourceWidth HTMLImageElement::getResourceWidth() {
 
 float HTMLImageElement::sourceSize(Element& element) {
   float value;
-  // We don't care here if the sizes attribute exists, so we ignore the return value.
-  // If it doesn't exist, we just return the default.
+  // We don't care here if the sizes attribute exists, so we ignore the return
+  // value.  If it doesn't exist, we just return the default.
   sourceSizeValue(element, document(), value);
   return value;
 }
@@ -768,7 +772,8 @@ void HTMLImageElement::selectSourceURL(
   }
   imageLoader().updateFromElement(behavior, m_referrerPolicy);
 
-  // Images such as data: uri's can return immediately and may already have errored out.
+  // Images such as data: uri's can return immediately and may already have
+  // errored out.
   bool imageHasLoaded = imageLoader().image() &&
                         !imageLoader().image()->isLoading() &&
                         !imageLoader().image()->errorOccurred();
@@ -827,8 +832,8 @@ void HTMLImageElement::ensurePrimaryContent() {
 }
 
 void HTMLImageElement::reattachFallbackContent() {
-  // This can happen inside of attachLayoutTree() in the middle of a recalcStyle so we need to
-  // reattach synchronously here.
+  // This can happen inside of attachLayoutTree() in the middle of a recalcStyle
+  // so we need to reattach synchronously here.
   if (document().inStyleRecalc())
     reattachLayoutTree();
   else

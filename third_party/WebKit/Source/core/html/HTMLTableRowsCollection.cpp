@@ -39,8 +39,9 @@ using namespace HTMLNames;
 
 static inline bool isInSection(HTMLTableRowElement& row,
                                const HTMLQualifiedName& sectionTag) {
-  // Because we know that the parent is a table or a section, it's safe to cast it to an HTMLElement
-  // giving us access to the faster hasTagName overload from that class.
+  // Because we know that the parent is a table or a section, it's safe to cast
+  // it to an HTMLElement giving us access to the faster hasTagName overload
+  // from that class.
   return toHTMLElement(row.parentNode())->hasTagName(sectionTag);
 }
 
@@ -55,7 +56,8 @@ HTMLTableRowElement* HTMLTableRowsCollection::rowAfter(
       return row;
   }
 
-  // If still looking at head sections, find the first row in the next head section.
+  // If still looking at head sections, find the first row in the next head
+  // section.
   HTMLElement* child = 0;
   if (!previous)
     child = Traversal<HTMLElement>::firstChild(table);
@@ -69,7 +71,8 @@ HTMLTableRowElement* HTMLTableRowsCollection::rowAfter(
     }
   }
 
-  // If still looking at top level and bodies, find the next row in top level or the first in the next body section.
+  // If still looking at top level and bodies, find the next row in top level or
+  // the first in the next body section.
   if (!previous || isInSection(*previous, theadTag))
     child = Traversal<HTMLElement>::firstChild(table);
   else if (previous->parentNode() == table)
@@ -135,9 +138,9 @@ HTMLTableRowElement* HTMLTableRowsCollection::lastRow(HTMLTableElement& table) {
   return nullptr;
 }
 
-// Must call get() on the table in case that argument is compiled before dereferencing the
-// table to get at the collection cache. Order of argument evaluation is undefined and can
-// differ between compilers.
+// Must call get() on the table in case that argument is compiled before
+// dereferencing the table to get at the collection cache. Order of argument
+// evaluation is undefined and can differ between compilers.
 HTMLTableRowsCollection::HTMLTableRowsCollection(ContainerNode& table)
     : HTMLCollection(table, TableRows, OverridesItemAfter) {
   DCHECK(isHTMLTableElement(table));
