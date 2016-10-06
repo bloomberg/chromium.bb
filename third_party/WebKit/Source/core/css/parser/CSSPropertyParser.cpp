@@ -1597,17 +1597,48 @@ static CSSValue* consumeOffsetRotation(CSSParserTokenRange& range) {
   return list;
 }
 
-CSSValue* consumeOffsetPosition(CSSParserTokenRange& range,
-                                CSSParserMode cssParserMode) {
+static CSSValue* consumeOffsetAnchor(CSSParserTokenRange& range,
+                                     CSSParserMode cssParserMode) {
   CSSValueID id = range.peek().id();
   if (id == CSSValueAuto)
     return consumeIdent(range);
   return consumePosition(range, cssParserMode, UnitlessQuirk::Forbid);
 }
 
+static CSSValue* consumeOffsetPosition(CSSParserTokenRange& range,
+                                       CSSParserMode cssParserMode,
+                                       UseCounter* useCounter) {
+  CSSValueID id = range.peek().id();
+  if (id == CSSValueAuto)
+    return consumeIdent(range);
+  CSSValue* value =
+      consumePosition(range, cssParserMode, UnitlessQuirk::Forbid);
+
+  // Count when we receive a valid position other than 'auto'.
+  if (useCounter && value && value->isValuePair())
+    useCounter->count(UseCounter::CSSOffsetInEffect);
+  return value;
+}
+
+static CSSValue* consumeOffsetPath(CSSParserTokenRange& range,
+                                   UseCounter* useCounter,
+                                   bool isMotionPath) {
+  CSSValue* value = consumePathOrNone(range);
+
+  // Count when we receive a valid path other than 'none'.
+  if (useCounter && value && !value->isIdentifierValue()) {
+    if (isMotionPath)
+      useCounter->count(UseCounter::CSSMotionInEffect);
+    else
+      useCounter->count(UseCounter::CSSOffsetInEffect);
+  }
+  return value;
+}
+
 // offset: <offset-path> <offset-distance> <offset-rotation>
 bool CSSPropertyParser::consumeOffsetShorthand(bool important) {
-  const CSSValue* offsetPath = consumePathOrNone(m_range);
+  const CSSValue* offsetPath =
+      consumeOffsetPath(m_range, m_context.useCounter(), false);
   const CSSValue* offsetDistance =
       consumeLengthOrPercent(m_range, m_context.mode(), ValueRangeAll);
   const CSSValue* offsetRotation = consumeOffsetRotation(m_range);
@@ -3567,11 +3598,17 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyTextDecorationLine:
       return consumeTextDecorationLine(m_range);
     case CSSPropertyOffsetAnchor:
+      return consumeOffsetAnchor(m_range, m_context.mode());
     case CSSPropertyOffsetPosition:
-      return consumeOffsetPosition(m_range, m_context.mode());
+      return consumeOffsetPosition(m_range, m_context.mode(),
+                                   m_context.useCounter());
     case CSSPropertyD:
-    case CSSPropertyOffsetPath:
       return consumePathOrNone(m_range);
+    case CSSPropertyOffsetPath:
+      return consumeOffsetPath(
+          m_range, m_context.useCounter(),
+          currentShorthand == CSSPropertyMotion ||
+              unresolvedProperty == CSSPropertyAliasMotionPath);
     case CSSPropertyOffsetDistance:
       return consumeLengthOrPercent(m_range, m_context.mode(), ValueRangeAll);
     case CSSPropertyOffsetRotation:

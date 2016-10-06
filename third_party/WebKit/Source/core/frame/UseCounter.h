@@ -1338,6 +1338,8 @@ class CORE_EXPORT UseCounter {
     EncryptedMediaCapabilityProvided = 1613,
     EncryptedMediaCapabilityNotProvided = 1614,
     LongTaskObserver = 1615,
+    CSSMotionInEffect = 1616,
+    CSSOffsetInEffect = 1617,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
