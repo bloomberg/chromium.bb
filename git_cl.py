@@ -4607,44 +4607,44 @@ def CMDtree(parser, args):
 
 
 def CMDtry(parser, args):
-  """Triggers try jobs through BuildBucket."""
-  group = optparse.OptionGroup(parser, "Try job options")
+  '''Triggers try jobs through BuildBucket.'''
+  group = optparse.OptionGroup(parser, 'Try job options')
   group.add_option(
-      "-b", "--bot", action="append",
-      help=("IMPORTANT: specify ONE builder per --bot flag. Use it multiple "
-            "times to specify multiple builders. ex: "
-            "'-b win_rel -b win_layout'. See "
-            "the try server waterfall for the builders name and the tests "
-            "available."))
+      '-b', '--bot', action='append',
+      help=('IMPORTANT: specify ONE builder per --bot flag. Use it multiple '
+            'times to specify multiple builders. ex: '
+            '"-b win_rel -b win_layout". See '
+            'the try server waterfall for the builders name and the tests '
+            'available.'))
   group.add_option(
-      "-m", "--master", default='',
-      help=("Specify a try master where to run the tries."))
+      '-m', '--master', default='',
+      help=('Specify a try master where to run the tries.'))
   group.add_option(
-      "-r", "--revision",
-      help="Revision to use for the try job; default: the "
-           "revision will be determined by the try server; see "
-           "its waterfall for more info")
+      '-r', '--revision',
+      help='Revision to use for the try job; default: the '
+           'revision will be determined by the try server; see '
+           'its waterfall for more info')
   group.add_option(
-      "-c", "--clobber", action="store_true", default=False,
-      help="Force a clobber before building; e.g. don't do an "
-           "incremental build")
+      '-c', '--clobber', action='store_true', default=False,
+      help='Force a clobber before building; e.g. don\'t do an '
+           'incremental build')
   group.add_option(
-      "--project",
-      help="Override which project to use. Projects are defined "
-           "server-side to define what default bot set to use")
+      '--project',
+      help='Override which project to use. Projects are defined '
+           'server-side to define what default bot set to use')
   group.add_option(
-      "-p", "--property", dest="properties", action="append", default=[],
-      help="Specify generic properties in the form -p key1=value1 -p "
-           "key2=value2 etc (buildbucket only). The value will be treated as "
-           "json if decodable, or as string otherwise.")
+      '-p', '--property', dest='properties', action='append', default=[],
+      help='Specify generic properties in the form -p key1=value1 -p '
+           'key2=value2 etc (buildbucket only). The value will be treated as '
+           'json if decodable, or as string otherwise.')
   group.add_option(
-      "-n", "--name", help="Try job name; default to current branch name")
+      '-n', '--name', help='Try job name; default to current branch name')
   group.add_option(
-      "--use-rietveld", action="store_true", default=False,
-      help="Use Rietveld to trigger try jobs.")
+      '--use-rietveld', action='store_true', default=False,
+      help='Use Rietveld to trigger try jobs.')
   group.add_option(
-      "--buildbucket-host", default='cr-buildbucket.appspot.com',
-      help="Host of buildbucket. The default host is %default.")
+      '--buildbucket-host', default='cr-buildbucket.appspot.com',
+      help='Host of buildbucket. The default host is %default.')
   parser.add_option_group(group)
   auth.add_auth_options(parser)
   options, args = parser.parse_args(args)
@@ -4813,17 +4813,18 @@ def CMDtry(parser, args):
 
 
 def CMDtry_results(parser, args):
-  group = optparse.OptionGroup(parser, "Try job results options")
+  """Prints info about try jobs associated with current CL."""
+  group = optparse.OptionGroup(parser, 'Try job results options')
   group.add_option(
-      "-p", "--patchset", type=int, help="patchset number if not current.")
+      '-p', '--patchset', type=int, help='patchset number if not current.')
   group.add_option(
-      "--print-master", action='store_true', help="print master name as well.")
+      '--print-master', action='store_true', help='print master name as well.')
   group.add_option(
-      "--color", action='store_true', default=setup_color.IS_TTY,
-      help="force color output, useful when piping output.")
+      '--color', action='store_true', default=setup_color.IS_TTY,
+      help='force color output, useful when piping output.')
   group.add_option(
-      "--buildbucket-host", default='cr-buildbucket.appspot.com',
-      help="Host of buildbucket. The default host is %default.")
+      '--buildbucket-host', default='cr-buildbucket.appspot.com',
+      help='Host of buildbucket. The default host is %default.')
   group.add_option(
       '--json', help='Path of JSON output file to write try job results to.')
   parser.add_option_group(group)
