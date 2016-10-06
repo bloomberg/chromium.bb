@@ -691,14 +691,20 @@ void PaintLayerScrollableArea::updateAfterLayout() {
 
   // We need to layout again if scrollbars are added or removed by
   // overflow:auto, or by changing between native and custom.
+  DCHECK(box().frame()->settings());
   bool horizontalScrollbarShouldChange =
-      (box().hasAutoHorizontalScrollbar() &&
-       (hasHorizontalScrollbar() != shouldHaveAutoHorizontalScrollbar)) ||
-      (box().style()->overflowX() == OverflowScroll && !horizontalScrollbar());
+      ((box().hasAutoHorizontalScrollbar() &&
+        (hasHorizontalScrollbar() != shouldHaveAutoHorizontalScrollbar)) ||
+       (box().style()->overflowX() == OverflowScroll &&
+        !horizontalScrollbar())) &&
+      (!box().frame()->settings()->hideScrollbars() ||
+       hasHorizontalScrollbar());
   bool verticalScrollbarShouldChange =
-      (box().hasAutoVerticalScrollbar() &&
-       (hasVerticalScrollbar() != shouldHaveAutoVerticalScrollbar)) ||
-      (box().style()->overflowY() == OverflowScroll && !verticalScrollbar());
+      ((box().hasAutoVerticalScrollbar() &&
+        (hasVerticalScrollbar() != shouldHaveAutoVerticalScrollbar)) ||
+       (box().style()->overflowY() == OverflowScroll &&
+        !verticalScrollbar())) &&
+      (!box().frame()->settings()->hideScrollbars() || hasVerticalScrollbar());
   bool scrollbarsWillChange =
       !scrollbarsAreFrozen && !visualViewportSuppliesScrollbars() &&
       (horizontalScrollbarShouldChange || verticalScrollbarShouldChange);
@@ -938,15 +944,13 @@ void PaintLayerScrollableArea::updateAfterStyleChange(
 
   // With overflow: scroll, scrollbars are always visible but may be disabled.
   // When switching to another value, we need to re-enable them (see bug 11985).
-  if (needsHorizontalScrollbar && oldStyle &&
+  if (hasHorizontalScrollbar() && oldStyle &&
       oldStyle->overflowX() == OverflowScroll && overflowX != OverflowScroll) {
-    ASSERT(hasHorizontalScrollbar());
     horizontalScrollbar()->setEnabled(true);
   }
 
-  if (needsVerticalScrollbar && oldStyle &&
+  if (hasVerticalScrollbar() && oldStyle &&
       oldStyle->overflowY() == OverflowScroll && overflowY != OverflowScroll) {
-    ASSERT(hasVerticalScrollbar());
     verticalScrollbar()->setEnabled(true);
   }
 
