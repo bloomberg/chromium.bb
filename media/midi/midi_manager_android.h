@@ -53,6 +53,9 @@ class MidiManagerAndroid final : public MidiManager,
   void OnInitialized(JNIEnv* env,
                      const base::android::JavaParamRef<jobject>& caller,
                      const base::android::JavaParamRef<jobjectArray>& devices);
+  void OnInitializationFailed(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& caller);
   void OnAttached(JNIEnv* env,
                   const base::android::JavaParamRef<jobject>& caller,
                   const base::android::JavaParamRef<jobject>& device);

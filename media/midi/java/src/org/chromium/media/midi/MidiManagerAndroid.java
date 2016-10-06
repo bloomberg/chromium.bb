@@ -28,9 +28,9 @@ import java.util.Set;
 @TargetApi(Build.VERSION_CODES.M)
 class MidiManagerAndroid {
     /**
-     * Set true while this instance is being initialized.
+     * Set true when this instance is successfully initialized.
      */
-    private boolean mIsInitializing = true;
+    private boolean mIsInitialized = false;
     /**
      * The devices held by this manager.
      */
@@ -52,12 +52,12 @@ class MidiManagerAndroid {
      */
     private final long mNativeManagerPointer;
 
-    @CalledByNative
     /**
      * A creation function called by C++.
      * @param context
      * @param nativeManagerPointer The native pointer to a media::midi::MidiManagerAndroid object.
      */
+    @CalledByNative
     static MidiManagerAndroid create(Context context, long nativeManagerPointer) {
         return new MidiManagerAndroid(context, nativeManagerPointer);
     }
@@ -66,7 +66,7 @@ class MidiManagerAndroid {
      * @param context
      * @param nativeManagerPointer The native pointer to a media::midi::MidiManagerAndroid object.
      */
-    MidiManagerAndroid(Context context, long nativeManagerPointer) {
+    private MidiManagerAndroid(Context context, long nativeManagerPointer) {
         assert ThreadUtils.runningOnUiThread();
 
         mManager = (MidiManager) context.getSystemService(Context.MIDI_SERVICE);
@@ -80,6 +80,15 @@ class MidiManagerAndroid {
      */
     @CalledByNative
     void initialize() {
+        if (mManager == null) {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    nativeOnInitializationFailed(mNativeManagerPointer);
+                }
+            });
+            return;
+        }
         mManager.registerDeviceCallback(new MidiManager.DeviceCallback() {
             @Override
             public void onDeviceAdded(MidiDeviceInfo device) {
@@ -100,10 +109,10 @@ class MidiManagerAndroid {
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                if (mPendingDevices.isEmpty() && mIsInitializing) {
+                if (mPendingDevices.isEmpty() && !mIsInitialized) {
                     nativeOnInitialized(
                             mNativeManagerPointer, mDevices.toArray(new MidiDeviceAndroid[0]));
-                    mIsInitializing = false;
+                    mIsInitialized = true;
                 }
             }
         });
@@ -123,7 +132,7 @@ class MidiManagerAndroid {
      * @param info the attached device information.
      */
     private void onDeviceAdded(final MidiDeviceInfo info) {
-        if (mIsInitializing) {
+        if (!mIsInitialized) {
             mPendingDevices.add(info);
         }
         openDevice(info);
@@ -147,18 +156,19 @@ class MidiManagerAndroid {
         if (device != null) {
             MidiDeviceAndroid xdevice = new MidiDeviceAndroid(device);
             mDevices.add(xdevice);
-            if (!mIsInitializing) {
+            if (mIsInitialized) {
                 nativeOnAttached(mNativeManagerPointer, xdevice);
             }
         }
-        if (mIsInitializing && mPendingDevices.isEmpty()) {
+        if (!mIsInitialized && mPendingDevices.isEmpty()) {
             nativeOnInitialized(mNativeManagerPointer, mDevices.toArray(new MidiDeviceAndroid[0]));
-            mIsInitializing = false;
+            mIsInitialized = true;
         }
     }
 
     static native void nativeOnInitialized(
             long nativeMidiManagerAndroid, MidiDeviceAndroid[] devices);
+    static native void nativeOnInitializationFailed(long nativeMidiManagerAndroid);
     static native void nativeOnAttached(long nativeMidiManagerAndroid, MidiDeviceAndroid device);
     static native void nativeOnDetached(long nativeMidiManagerAndroid, MidiDeviceAndroid device);
 }

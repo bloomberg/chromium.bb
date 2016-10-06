@@ -113,6 +113,12 @@ void MidiManagerAndroid::OnInitialized(
   CompleteInitialization(Result::OK);
 }
 
+void MidiManagerAndroid::OnInitializationFailed(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& caller) {
+  CompleteInitialization(Result::INITIALIZATION_ERROR);
+}
+
 void MidiManagerAndroid::OnAttached(JNIEnv* env,
                                     const JavaParamRef<jobject>& caller,
                                     const JavaParamRef<jobject>& raw_device) {
