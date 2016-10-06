@@ -16,12 +16,17 @@ namespace scheduler {
 // This class tracks thread load level, i.e. percentage of wall time spent
 // running tasks.
 // In order to avoid bias it reports load level at regular intervals.
+// Every |reporting_interval_| time units, it reports the average thread load
+// level computed using a sliding window of width |reporting_interval_|.
 class BLINK_PLATFORM_EXPORT ThreadLoadTracker {
  public:
   // Callback is called with (current_time, load_level) parameters.
   using Callback = base::Callback<void(base::TimeTicks, double)>;
 
-  ThreadLoadTracker(base::TimeTicks now, const Callback& callback);
+  ThreadLoadTracker(base::TimeTicks now,
+                    const Callback& callback,
+                    base::TimeDelta reporting_interval,
+                    base::TimeDelta waiting_period);
   ~ThreadLoadTracker();
 
   void Pause(base::TimeTicks now);
@@ -47,16 +52,20 @@ class BLINK_PLATFORM_EXPORT ThreadLoadTracker {
   // |time_| is the last timestamp LoadTracker knows about.
   base::TimeTicks time_;
   base::TimeTicks next_reporting_time_;
+  // Total period for which this LoadTracker was active. Needed to discard
+  // first |waiting_period_| time.
+  base::TimeDelta total_active_time_;
 
   ThreadState thread_state_;
   base::TimeTicks last_state_change_time_;
 
-  base::TimeDelta total_time_;
-  base::TimeDelta total_runtime_;
-
   // Start reporting values after |waiting_period_|.
   base::TimeDelta waiting_period_;
   base::TimeDelta reporting_interval_;
+
+  // Recorded run time in window
+  // [next_reporting_time - reporting_interval, next_reporting_time].
+  base::TimeDelta run_time_inside_window_;
 
   Callback callback_;
 

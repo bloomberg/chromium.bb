@@ -41,6 +41,10 @@ const double kFastCompositingIdleTimeThreshold = .2;
 // We do not throttle anything while audio is played and shortly after that.
 constexpr base::TimeDelta kThrottlingDelayAfterAudioIsPlayed =
     base::TimeDelta::FromSeconds(5);
+constexpr base::TimeDelta kThreadLoadTrackerReportingInterval =
+    base::TimeDelta::FromMinutes(1);
+constexpr base::TimeDelta kThreadLoadTrackerWaitingPeriodBeforeReporting =
+    base::TimeDelta::FromMinutes(2);
 
 void ReportForegroundRendererTaskLoad(base::TimeTicks time, double load) {
   int load_percentage = static_cast<int>(load * 100);
@@ -157,10 +161,14 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
                           kShortIdlePeriodDurationPercentile),
       background_main_thread_load_tracker(
           now,
-          base::Bind(&ReportBackgroundRendererTaskLoad)),
+          base::Bind(&ReportBackgroundRendererTaskLoad),
+          kThreadLoadTrackerReportingInterval,
+          kThreadLoadTrackerWaitingPeriodBeforeReporting),
       foreground_main_thread_load_tracker(
           now,
-          base::Bind(&ReportForegroundRendererTaskLoad)),
+          base::Bind(&ReportForegroundRendererTaskLoad),
+          kThreadLoadTrackerReportingInterval,
+          kThreadLoadTrackerWaitingPeriodBeforeReporting),
       current_use_case(UseCase::NONE),
       timer_queue_suspend_count(0),
       navigation_task_expected_count(0),

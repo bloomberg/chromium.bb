@@ -9,24 +9,18 @@
 namespace blink {
 namespace scheduler {
 
-namespace {
-
-const int kLoadReportingIntervalInSeconds = 1;
-const int kWaitingPeriodBeforeReportingInSeconds = 10;
-
-}  // namespace
-
 ThreadLoadTracker::ThreadLoadTracker(base::TimeTicks now,
-                                     const Callback& callback)
+                                     const Callback& callback,
+                                     base::TimeDelta reporting_interval,
+                                     base::TimeDelta waiting_period)
     : time_(now),
-      next_reporting_time_(now),
       thread_state_(ThreadState::ACTIVE),
       last_state_change_time_(now),
-      waiting_period_(
-          base::TimeDelta::FromSeconds(kWaitingPeriodBeforeReportingInSeconds)),
-      reporting_interval_(
-          base::TimeDelta::FromSeconds(kLoadReportingIntervalInSeconds)),
-      callback_(callback) {}
+      waiting_period_(waiting_period),
+      reporting_interval_(reporting_interval),
+      callback_(callback) {
+  next_reporting_time_ = now + waiting_period_;
+}
 
 ThreadLoadTracker::~ThreadLoadTracker() {}
 
@@ -40,6 +34,9 @@ void ThreadLoadTracker::Resume(base::TimeTicks now) {
   Advance(now, TaskState::IDLE);
   thread_state_ = ThreadState::ACTIVE;
   last_state_change_time_ = now;
+
+  next_reporting_time_ = now + reporting_interval_;
+  run_time_inside_window_ = base::TimeDelta();
 }
 
 void ThreadLoadTracker::RecordTaskTime(base::TimeTicks start_time,
@@ -55,53 +52,72 @@ void ThreadLoadTracker::RecordIdle(base::TimeTicks now) {
   Advance(now, TaskState::IDLE);
 }
 
+namespace {
+
+// Calculates length of intersection of two time intervals.
+base::TimeDelta Intersection(base::TimeTicks left1,
+                             base::TimeTicks right1,
+                             base::TimeTicks left2,
+                             base::TimeTicks right2) {
+  DCHECK_LT(left1, right1);
+  DCHECK_LT(left2, right2);
+  base::TimeTicks left = std::max(left1, left2);
+  base::TimeTicks right = std::min(right1, right2);
+
+  if (left <= right)
+    return right - left;
+
+  return base::TimeDelta();
+}
+
+}  // namespace
+
 void ThreadLoadTracker::Advance(base::TimeTicks now, TaskState task_state) {
   // This function advances |time_| to now and calls |callback_|
   // when appropriate.
-  if (time_ > now) {
-    return;
-  }
+  DCHECK_LE(time_, now);
 
   if (thread_state_ == ThreadState::PAUSED) {
     // If the load tracker is paused, bail out early.
     time_ = now;
-    next_reporting_time_ = now + reporting_interval_;
     return;
   }
 
   while (time_ < now) {
-    // Forward time_ to the earliest of following:
+    // Advance time_ to the earliest of following:
     // a) time to call |callback_|
     // b) requested time to forward (|now|).
     base::TimeTicks next_current_time = std::min(next_reporting_time_, now);
 
     base::TimeDelta delta = next_current_time - time_;
 
-    // Forward time and recalculate |total_time_| and |total_runtime_|.
-    if (thread_state_ == ThreadState::ACTIVE) {
-      total_time_ += delta;
-      if (task_state == TaskState::TASK_RUNNING) {
-        total_runtime_ += delta;
-      }
+    // Keep a running total of the time spent running tasks within the window
+    // and the total time.
+    total_active_time_ += delta;
+    if (task_state == TaskState::TASK_RUNNING) {
+      run_time_inside_window_ +=
+          Intersection(next_reporting_time_ - reporting_interval_,
+                       next_reporting_time_, time_, time_ + delta);
     }
+
     time_ = next_current_time;
 
     if (time_ == next_reporting_time_) {
       // Call |callback_| if need and update next callback time.
       if (thread_state_ == ThreadState::ACTIVE &&
-          total_time_ >= waiting_period_) {
+          total_active_time_ >= waiting_period_) {
         callback_.Run(time_, Load());
+        DCHECK_EQ(thread_state_, ThreadState::ACTIVE);
       }
       next_reporting_time_ += reporting_interval_;
+      run_time_inside_window_ = base::TimeDelta();
     }
   }
 }
 
 double ThreadLoadTracker::Load() {
-  if (total_time_.is_zero()) {
-    return 0;
-  }
-  return total_runtime_.InSecondsF() / total_time_.InSecondsF();
+  return run_time_inside_window_.InSecondsF() /
+         reporting_interval_.InSecondsF();
 }
 
 }  // namespace scheduler
