@@ -801,9 +801,6 @@ bool SSLClientSocketImpl::GetSSLInfo(SSLInfo* ssl_info) {
   if (!SSL_get_secure_renegotiation_support(ssl_))
     ssl_info->connection_status |= SSL_CONNECTION_NO_RENEGOTIATION_EXTENSION;
 
-  if (ssl_config_.version_fallback)
-    ssl_info->connection_status |= SSL_CONNECTION_VERSION_FALLBACK;
-
   ssl_info->handshake_type = SSL_session_reused(ssl_)
                                  ? SSLInfo::HANDSHAKE_RESUME
                                  : SSLInfo::HANDSHAKE_FULL;
@@ -976,8 +973,6 @@ int SSLClientSocketImpl::Init() {
 
   mode.ConfigureFlag(SSL_MODE_ENABLE_FALSE_START,
                      ssl_config_.false_start_enabled);
-
-  mode.ConfigureFlag(SSL_MODE_SEND_FALLBACK_SCSV, ssl_config_.version_fallback);
 
   SSL_set_mode(ssl_, mode.set_mask);
   SSL_clear_mode(ssl_, mode.clear_mask);
@@ -1162,11 +1157,6 @@ int SSLClientSocketImpl::DoHandshake() {
 int SSLClientSocketImpl::DoHandshakeComplete(int result) {
   if (result < 0)
     return result;
-
-  if (ssl_config_.version_fallback &&
-      ssl_config_.version_max < ssl_config_.version_fallback_min) {
-    return ERR_SSL_FALLBACK_BEYOND_MINIMUM_VERSION;
-  }
 
   // DHE is offered on the deprecated cipher fallback and then rejected
   // afterwards. This is to aid in diagnosing connection failures because a
@@ -2035,26 +2025,6 @@ std::string SSLClientSocketImpl::GetSessionCacheKey() const {
   std::string result = host_and_port_.ToString();
   result.append("/");
   result.append(ssl_session_cache_shard_);
-
-  // Shard the session cache based on maximum protocol version. This causes
-  // fallback connections to use a separate session cache.
-  result.append("/");
-  switch (ssl_config_.version_max) {
-    case SSL_PROTOCOL_VERSION_TLS1:
-      result.append("tls1");
-      break;
-    case SSL_PROTOCOL_VERSION_TLS1_1:
-      result.append("tls1.1");
-      break;
-    case SSL_PROTOCOL_VERSION_TLS1_2:
-      result.append("tls1.2");
-      break;
-    case SSL_PROTOCOL_VERSION_TLS1_3:
-      result.append("tls1.3");
-      break;
-    default:
-      NOTREACHED();
-  }
 
   result.append("/");
   if (ssl_config_.deprecated_cipher_suites_enabled)

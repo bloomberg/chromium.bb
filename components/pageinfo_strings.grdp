@@ -27,9 +27,6 @@
   <message name="IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTION_DETAILS_AEAD" desc="This message gives details of the cryptographic primitives used to protect the HTTPS connection. It should be translated in a similar manner as IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTION_DETAILS">
     The connection is encrypted and authenticated using <ph name="CIPHER">$1<ex>AES_128_GCM</ex></ph> and uses <ph name="KX">$2<ex>RSA</ex></ph> as the key exchange mechanism.
   </message>
-  <message name="IDS_PAGE_INFO_SECURITY_TAB_FALLBACK_MESSAGE" desc="This message is displayed when the first secure connection to a site failed and Chrome retried with an older protocol.">
-    The connection had to be retried using an older version of the TLS or SSL protocol. This typically means that the server is using very old software and may have other security issues.
-  </message>
   <message name="IDS_PAGE_INFO_SECURITY_TAB_INSECURE_IDENTITY" desc="The text of the identity section when the page is not secure.">
     The identity of this website has not been verified.
   </message>

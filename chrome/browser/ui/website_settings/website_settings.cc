@@ -659,14 +659,6 @@ void WebsiteSettings::Init(
       site_connection_status_ = SITE_CONNECTION_STATUS_ENCRYPTED_ERROR;
     }
 
-    const bool did_fallback = (security_info.connection_status &
-                               net::SSL_CONNECTION_VERSION_FALLBACK) != 0;
-    if (did_fallback) {
-      site_connection_details_ += ASCIIToUTF16("\n\n");
-      site_connection_details_ += l10n_util::GetStringUTF16(
-          IDS_PAGE_INFO_SECURITY_TAB_FALLBACK_MESSAGE);
-    }
-
     if (no_renegotiation) {
       site_connection_details_ += ASCIIToUTF16("\n\n");
       site_connection_details_ += l10n_util::GetStringUTF16(

@@ -8767,15 +8767,6 @@ class HTTPSFallbackTest : public testing::Test {
     base::RunLoop().Run();
   }
 
-  void ExpectConnection(int version) {
-    EXPECT_EQ(1, delegate_.response_started_count());
-    EXPECT_NE(0, delegate_.bytes_received());
-    EXPECT_EQ(version, SSLConnectionStatusToVersion(
-        request_->ssl_info().connection_status));
-    EXPECT_TRUE(request_->ssl_info().connection_status &
-                SSL_CONNECTION_VERSION_FALLBACK);
-  }
-
   void ExpectFailure(int error) {
     EXPECT_EQ(1, delegate_.response_started_count());
     EXPECT_EQ(error, delegate_.request_status());
