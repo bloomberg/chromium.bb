@@ -100,7 +100,7 @@ HTMLFormControlElement* buttonToActivate(const HTMLFormElement& form) {
 // Returns true if the selected state of all the options matches the default
 // selected state.
 bool isSelectInDefaultState(const HTMLSelectElement& select) {
-  if (select.multiple() || select.size() > 1) {
+  if (select.isMultiple() || select.size() > 1) {
     for (const auto& optionElement : select.optionList()) {
       if (optionElement->selected() !=
           optionElement->fastHasAttribute(selectedAttr))

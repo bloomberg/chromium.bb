@@ -420,7 +420,7 @@ AccessibilityRole AXNodeObject::nativeAccessibilityRoleIgnoringAria() const {
 
   if (isHTMLSelectElement(*getNode())) {
     HTMLSelectElement& selectElement = toHTMLSelectElement(*getNode());
-    return selectElement.multiple() ? ListBoxRole : PopUpButtonRole;
+    return selectElement.isMultiple() ? ListBoxRole : PopUpButtonRole;
   }
 
   if (isHTMLTextAreaElement(*getNode()))
@@ -884,7 +884,7 @@ bool AXNodeObject::isMultiSelectable() const {
     return false;
 
   return isHTMLSelectElement(getNode()) &&
-         toHTMLSelectElement(*getNode()).multiple();
+         toHTMLSelectElement(*getNode()).isMultiple();
 }
 
 bool AXNodeObject::isNativeCheckboxOrRadio() const {
@@ -1524,7 +1524,7 @@ String AXNodeObject::stringValue() const {
       if (!overriddenDescription.isNull())
         return overriddenDescription;
     }
-    if (!selectElement.multiple())
+    if (!selectElement.isMultiple())
       return selectElement.value();
     return String();
   }

@@ -74,7 +74,7 @@ class CORE_EXPORT HTMLSelectElement final
 
   unsigned size() const { return m_size; }
   void setSize(unsigned);
-  bool multiple() const { return m_multiple; }
+  bool isMultiple() const { return m_isMultiple; }
 
   bool usesMenuList() const;
 
@@ -294,7 +294,7 @@ class CORE_EXPORT HTMLSelectElement final
   Member<HTMLOptionElement> m_activeSelectionEnd;
   Member<HTMLOptionElement> m_optionToScrollTo;
   Member<HTMLOptionElement> m_suggestedOption;
-  bool m_multiple;
+  bool m_isMultiple;
   bool m_activeSelectionState;
   mutable bool m_shouldRecalcListItems;
   bool m_isAutofilledByPreview;

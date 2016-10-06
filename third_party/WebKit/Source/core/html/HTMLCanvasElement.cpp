@@ -1387,7 +1387,7 @@ bool HTMLCanvasElement::isSupportedInteractiveCanvasFallback(
   // than 1.
   if (isHTMLSelectElement(element)) {
     const HTMLSelectElement& selectElement = toHTMLSelectElement(element);
-    if (selectElement.multiple() || selectElement.size() > 1)
+    if (selectElement.isMultiple() || selectElement.size() > 1)
       return true;
   }
 
@@ -1397,7 +1397,7 @@ bool HTMLCanvasElement::isSupportedInteractiveCanvasFallback(
       isHTMLSelectElement(*element.parentNode())) {
     const HTMLSelectElement& selectElement =
         toHTMLSelectElement(*element.parentNode());
-    if (selectElement.multiple() || selectElement.size() > 1)
+    if (selectElement.isMultiple() || selectElement.size() > 1)
       return true;
   }
 

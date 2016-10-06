@@ -90,7 +90,7 @@ HTMLSelectElement::HTMLSelectElement(Document& document, HTMLFormElement* form)
       m_typeAhead(this),
       m_size(0),
       m_lastOnChangeOption(nullptr),
-      m_multiple(false),
+      m_isMultiple(false),
       m_activeSelectionState(false),
       m_shouldRecalcListItems(false),
       m_isAutofilledByPreview(false),
@@ -117,7 +117,7 @@ HTMLSelectElement::~HTMLSelectElement() {}
 const AtomicString& HTMLSelectElement::formControlType() const {
   DEFINE_STATIC_LOCAL(const AtomicString, selectMultiple, ("select-multiple"));
   DEFINE_STATIC_LOCAL(const AtomicString, selectOne, ("select-one"));
-  return m_multiple ? selectMultiple : selectOne;
+  return m_isMultiple ? selectMultiple : selectOne;
 }
 
 bool HTMLSelectElement::hasPlaceholderLabelOption() const {
@@ -136,7 +136,7 @@ bool HTMLSelectElement::hasPlaceholderLabelOption() const {
   //
   // Finally, if size() == 0 and non-multiple, the display size can be assumed
   // as 1.
-  if (multiple() || size() > 1)
+  if (isMultiple() || size() > 1)
     return false;
 
   // TODO(tkent): This function is called in CSS selector matching. Using
@@ -181,7 +181,7 @@ String HTMLSelectElement::defaultToolTip() const {
 void HTMLSelectElement::selectMultipleOptionsByPopup(
     const Vector<int>& listIndices) {
   DCHECK(usesMenuList());
-  DCHECK(multiple());
+  DCHECK(isMultiple());
   for (size_t i = 0; i < listIndices.size(); ++i) {
     bool addSelectionIfNotFirst = i > 0;
     if (HTMLOptionElement* option = optionAtListIndex(listIndices[i]))
@@ -196,7 +196,7 @@ bool HTMLSelectElement::usesMenuList() const {
   if (LayoutTheme::theme().delegatesMenuListRendering())
     return true;
 
-  return !m_multiple && m_size <= 1;
+  return !m_isMultiple && m_size <= 1;
 }
 
 int HTMLSelectElement::activeSelectionEndListIndex() const {
@@ -565,7 +565,7 @@ HTMLOptionElement* HTMLSelectElement::nextSelectableOptionPageAway(
 
 void HTMLSelectElement::selectAll() {
   DCHECK(!usesMenuList());
-  if (!layoutObject() || !m_multiple)
+  if (!layoutObject() || !m_isMultiple)
     return;
 
   // Save the selection so it can be compared to the new selectAll selection
@@ -623,7 +623,7 @@ void HTMLSelectElement::setActiveSelectionEnd(HTMLOptionElement* option) {
 void HTMLSelectElement::updateListBoxSelection(bool deselectOtherOptions,
                                                bool scroll) {
   DCHECK(layoutObject());
-  DCHECK(layoutObject()->isListBox() || m_multiple);
+  DCHECK(layoutObject()->isListBox() || m_isMultiple);
 
   int activeSelectionAnchorIndex =
       m_activeSelectionAnchor ? m_activeSelectionAnchor->index() : -1;
@@ -658,7 +658,7 @@ void HTMLSelectElement::updateListBoxSelection(bool deselectOtherOptions,
 }
 
 void HTMLSelectElement::listBoxOnChange() {
-  DCHECK(!usesMenuList() || m_multiple);
+  DCHECK(!usesMenuList() || m_isMultiple);
 
   const ListItems& items = listItems();
 
@@ -809,7 +809,7 @@ void HTMLSelectElement::recalcListItems() const {
 
 void HTMLSelectElement::resetToDefaultSelection(ResetReason reason) {
   // https://html.spec.whatwg.org/multipage/forms.html#ask-for-a-reset
-  if (multiple())
+  if (isMultiple())
     return;
   HTMLOptionElement* firstEnabledOption = nullptr;
   HTMLOptionElement* lastSelectedOption = nullptr;
@@ -932,9 +932,9 @@ void HTMLSelectElement::optionSelectionStateChanged(HTMLOptionElement* option,
                                                     bool optionIsSelected) {
   DCHECK_EQ(option->ownerSelectElement(), this);
   if (optionIsSelected)
-    selectOption(option, multiple() ? 0 : DeselectOtherOptions);
-  else if (!usesMenuList() || multiple())
-    selectOption(nullptr, multiple() ? 0 : DeselectOtherOptions);
+    selectOption(option, isMultiple() ? 0 : DeselectOtherOptions);
+  else if (!usesMenuList() || isMultiple())
+    selectOption(nullptr, isMultiple() ? 0 : DeselectOtherOptions);
   else
     selectOption(nextSelectableOption(nullptr), DeselectOtherOptions);
 }
@@ -944,7 +944,7 @@ void HTMLSelectElement::optionInserted(HTMLOptionElement& option,
   DCHECK_EQ(option.ownerSelectElement(), this);
   setRecalcListItems();
   if (optionIsSelected) {
-    selectOption(&option, multiple() ? 0 : DeselectOtherOptions);
+    selectOption(&option, isMultiple() ? 0 : DeselectOtherOptions);
   } else {
     // No need to reset if we already have a selected option.
     if (!m_lastOnChangeOption)
@@ -1012,9 +1012,10 @@ void HTMLSelectElement::selectOption(HTMLOptionElement* element,
   // because setActiveSelectionAnchorIndex() stores OPTION's selection state.
   if (element) {
     // setActiveSelectionAnchor is O(N).
-    if (!m_activeSelectionAnchor || !multiple() || flags & DeselectOtherOptions)
+    if (!m_activeSelectionAnchor || !isMultiple() ||
+        flags & DeselectOtherOptions)
       setActiveSelectionAnchor(element);
-    if (!m_activeSelectionEnd || !multiple() || flags & DeselectOtherOptions)
+    if (!m_activeSelectionEnd || !isMultiple() || flags & DeselectOtherOptions)
       setActiveSelectionEnd(element);
   }
 
@@ -1084,7 +1085,7 @@ void HTMLSelectElement::dispatchBlurEvent(
 
 void HTMLSelectElement::deselectItemsWithoutValidation(
     HTMLOptionElement* excludeElement) {
-  if (!multiple() && usesMenuList() && m_lastOnChangeOption &&
+  if (!isMultiple() && usesMenuList() && m_lastOnChangeOption &&
       m_lastOnChangeOption != excludeElement) {
     m_lastOnChangeOption->setSelectedState(false);
     return;
@@ -1107,7 +1108,7 @@ FormControlState HTMLSelectElement::saveFormControlState() const {
       continue;
     state.append(option->value());
     state.append(String::number(i));
-    if (!multiple())
+    if (!isMultiple())
       break;
   }
   return state;
@@ -1139,7 +1140,7 @@ void HTMLSelectElement::restoreFormControlState(const FormControlState& state) {
 
   // The saved state should have at least one value and an index.
   DCHECK_GE(state.valueSize(), 2u);
-  if (!multiple()) {
+  if (!isMultiple()) {
     size_t index = state[1].toUInt();
     if (index < itemsSize && isHTMLOptionElement(items[index]) &&
         toHTMLOptionElement(items[index])->value() == state[0]) {
@@ -1181,14 +1182,14 @@ void HTMLSelectElement::restoreFormControlState(const FormControlState& state) {
 }
 
 void HTMLSelectElement::parseMultipleAttribute(const AtomicString& value) {
-  bool oldMultiple = m_multiple;
+  bool oldMultiple = m_isMultiple;
   HTMLOptionElement* oldSelectedOption = selectedOption();
-  m_multiple = !value.isNull();
+  m_isMultiple = !value.isNull();
   setNeedsValidityCheck();
   lazyReattachIfAttached();
   // Restore selectedIndex after changing the multiple flag to preserve
   // selection as single-line and multi-line has different defaults.
-  if (oldMultiple != m_multiple) {
+  if (oldMultiple != m_isMultiple) {
     // Preserving the first selection is compatible with Firefox and
     // WebKit. However Edge seems to "ask for a reset" simply.  As of 2016
     // March, the HTML specification says nothing about this.
@@ -1388,8 +1389,8 @@ void HTMLSelectElement::updateSelectedState(HTMLOptionElement* clickedOption,
 
   m_activeSelectionState = true;
 
-  bool shiftSelect = m_multiple && shift;
-  bool multiSelect = m_multiple && multi && !shift;
+  bool shiftSelect = m_isMultiple && shift;
+  bool multiSelect = m_isMultiple && multi && !shift;
 
   // Keep track of whether an active selection (like during drag selection),
   // should select or deselect.
@@ -1520,7 +1521,7 @@ void HTMLSelectElement::listBoxDefaultEventHandler(Event* event) {
 
     if (HTMLOptionElement* option = eventTargetOption(*mouseEvent)) {
       if (!isDisabledFormControl()) {
-        if (m_multiple) {
+        if (m_isMultiple) {
           // Only extend selection if there is something selected.
           if (!m_activeSelectionAnchor)
             return;
@@ -1613,14 +1614,16 @@ void HTMLSelectElement::listBoxDefaultEventHandler(Event* event) {
 
       setActiveSelectionEnd(endOption);
 
-      bool selectNewItem = !m_multiple || toKeyboardEvent(event)->shiftKey() ||
+      bool selectNewItem = !m_isMultiple ||
+                           toKeyboardEvent(event)->shiftKey() ||
                            !isSpatialNavigationEnabled(document().frame());
       if (selectNewItem)
         m_activeSelectionState = true;
       // If the anchor is unitialized, or if we're going to deselect all
       // other options, then set the anchor index equal to the end index.
       bool deselectOthers =
-          !m_multiple || (!toKeyboardEvent(event)->shiftKey() && selectNewItem);
+          !m_isMultiple ||
+          (!toKeyboardEvent(event)->shiftKey() && selectNewItem);
       if (!m_activeSelectionAnchor || deselectOthers) {
         if (deselectOthers)
           deselectItemsWithoutValidation();
@@ -1647,7 +1650,7 @@ void HTMLSelectElement::listBoxDefaultEventHandler(Event* event) {
       if (form())
         form()->submitImplicitly(event, false);
       event->setDefaultHandled();
-    } else if (m_multiple && keyCode == ' ' &&
+    } else if (m_isMultiple && keyCode == ' ' &&
                isSpatialNavigationEnabled(document().frame())) {
       // Use space to toggle selection change.
       m_activeSelectionState = !m_activeSelectionState;
@@ -1738,7 +1741,7 @@ void HTMLSelectElement::selectOptionByAccessKey(HTMLOptionElement* option) {
   // If this index is already selected, unselect. otherwise update the
   // selected index.
   SelectOptionFlags flags =
-      DispatchInputAndChangeEvent | (multiple() ? 0 : DeselectOtherOptions);
+      DispatchInputAndChangeEvent | (isMultiple() ? 0 : DeselectOtherOptions);
   if (option->selected()) {
     if (usesMenuList())
       selectOption(nullptr, flags);
@@ -1880,8 +1883,8 @@ HTMLOptionElement* HTMLSelectElement::optionToBeShown() const {
     return option;
   if (m_suggestedOption)
     return m_suggestedOption;
-  // TODO(tkent): We should not call optionToBeShown() in multiple() case.
-  if (multiple())
+  // TODO(tkent): We should not call optionToBeShown() in isMultiple() case.
+  if (isMultiple())
     return selectedOption();
   DCHECK_EQ(selectedOption(), m_lastOnChangeOption);
   return m_lastOnChangeOption;

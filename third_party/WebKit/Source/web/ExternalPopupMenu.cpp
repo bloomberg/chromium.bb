@@ -206,7 +206,7 @@ void ExternalPopupMenu::didAcceptIndices(const WebVector<int>& indices) {
 
   if (indices.size() == 0) {
     ownerElement->selectOptionByPopup(-1);
-  } else if (!ownerElement->multiple()) {
+  } else if (!ownerElement->isMultiple()) {
     ownerElement->selectOptionByPopup(
         toPopupMenuItemIndex(indices[indices.size() - 1], *ownerElement));
   } else {
@@ -264,7 +264,7 @@ void ExternalPopupMenu::getPopupMenuInfo(WebPopupMenuInfo& info,
   info.selectedIndex = toExternalPopupMenuItemIndex(
       ownerElement.selectedListIndex(), ownerElement);
   info.rightAligned = menuStyle.direction() == RTL;
-  info.allowMultipleSelection = ownerElement.multiple();
+  info.allowMultipleSelection = ownerElement.isMultiple();
   if (count < itemCount)
     items.shrink(count);
   info.items = items;

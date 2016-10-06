@@ -178,7 +178,7 @@ void LayoutMenuList::updateFromElement() {
   String text = emptyString();
   m_optionStyle.clear();
 
-  if (select->multiple()) {
+  if (select->isMultiple()) {
     unsigned selectedCount = 0;
     HTMLOptionElement* selectedOptionElement = nullptr;
     for (const auto& option : select->optionList()) {
