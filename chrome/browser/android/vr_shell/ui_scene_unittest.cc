@@ -4,9 +4,15 @@
 
 #include "chrome/browser/android/vr_shell/ui_scene.h"
 
+#define _USE_MATH_DEFINES  // For M_PI in MSVC.
+#include <cmath>
 #include <vector>
 
+#include "base/values.h"
+#include "chrome/browser/android/vr_shell/animation.h"
+#include "chrome/browser/android/vr_shell/easing.h"
 #include "chrome/browser/android/vr_shell/ui_elements.h"
+#include "chrome/browser/android/vr_shell/vr_math.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #define TOLERANCE 0.0001
