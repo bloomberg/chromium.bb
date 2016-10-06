@@ -26,8 +26,7 @@ import org.chromium.chrome.browser.util.ViewUtils;
  *
  * Specific behaviors added to the cards:
  *
- * - Cards can shrink and fade their appearance so that they can be made peeking above the screen
- *   limit.
+ * - Cards can peek above the fold if there is enough space.
  *
  * - When peeking, tapping on cards will make them request a scroll up (see
  *   {@link NewTabPageRecyclerView#scrollToFirstCard()}). Tap events in non-peeking state will be
