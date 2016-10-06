@@ -3,7 +3,7 @@
   "capabilities": {
     "provided": {
       "browser": [
-        "content::mojom::TestMojoService"
+        "content::mojom::TestService"
       ]
     }
   }

@@ -33,7 +33,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_content_client_initializer.h"
-#include "content/public/test/test_mojo_shell_context.h"
+#include "content/public/test/test_service_manager_context.h"
 #include "content/renderer/render_process_impl.h"
 #include "content/test/mock_render_process.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -177,7 +177,7 @@ class RenderThreadImplBrowserTest : public testing::Test {
 
     InitializeMojo();
     ipc_support_.reset(new mojo::edk::test::ScopedIPCSupport(io_task_runner));
-    shell_context_.reset(new TestMojoShellContext);
+    shell_context_.reset(new TestServiceManagerContext);
     child_connection_.reset(new MojoChildConnection(
         kRendererMojoApplicationName, "test", mojo::edk::GenerateRandomToken(),
         MojoShellConnection::GetForProcess()->GetConnector(), io_task_runner));
@@ -228,7 +228,7 @@ class RenderThreadImplBrowserTest : public testing::Test {
 
   std::unique_ptr<TestBrowserThreadBundle> browser_threads_;
   std::unique_ptr<mojo::edk::test::ScopedIPCSupport> ipc_support_;
-  std::unique_ptr<TestMojoShellContext> shell_context_;
+  std::unique_ptr<TestServiceManagerContext> shell_context_;
   std::unique_ptr<MojoChildConnection> child_connection_;
   std::unique_ptr<DummyListener> dummy_listener_;
   std::unique_ptr<IPC::ChannelProxy> channel_;

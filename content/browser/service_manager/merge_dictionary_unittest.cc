@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/ptr_util.h"
-#include "content/browser/mojo/merge_dictionary.h"
+#include "content/browser/service_manager/merge_dictionary.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {

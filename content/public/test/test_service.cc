@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/test/test_mojo_app.h"
+#include "content/public/test/test_service.h"
 
 #include <utility>
 
@@ -13,47 +13,46 @@
 
 namespace content {
 
-const char kTestMojoAppUrl[] = "system:content_mojo_test";
+const char kTestServiceUrl[] = "system:content_test_service";
 
-TestMojoApp::TestMojoApp() : service_binding_(this) {
+TestService::TestService() : service_binding_(this) {
 }
 
-TestMojoApp::~TestMojoApp() {
+TestService::~TestService() {
 }
 
-bool TestMojoApp::OnConnect(const shell::Identity& remote_identity,
+bool TestService::OnConnect(const shell::Identity& remote_identity,
                             shell::InterfaceRegistry* registry) {
   requestor_name_ = remote_identity.name();
-  registry->AddInterface<mojom::TestMojoService>(this);
+  registry->AddInterface<mojom::TestService>(this);
   return true;
 }
 
-void TestMojoApp::Create(
-    const shell::Identity& remote_identity,
-    mojo::InterfaceRequest<mojom::TestMojoService> request) {
+void TestService::Create(const shell::Identity& remote_identity,
+                         mojom::TestServiceRequest request) {
   DCHECK(!service_binding_.is_bound());
   service_binding_.Bind(std::move(request));
 }
 
-void TestMojoApp::DoSomething(const DoSomethingCallback& callback) {
+void TestService::DoSomething(const DoSomethingCallback& callback) {
   callback.Run();
   base::MessageLoop::current()->QuitWhenIdle();
 }
 
-void TestMojoApp::DoTerminateProcess(
+void TestService::DoTerminateProcess(
     const DoTerminateProcessCallback& callback) {
   NOTREACHED();
 }
 
-void TestMojoApp::CreateFolder(const CreateFolderCallback& callback) {
+void TestService::CreateFolder(const CreateFolderCallback& callback) {
   NOTREACHED();
 }
 
-void TestMojoApp::GetRequestorName(const GetRequestorNameCallback& callback) {
+void TestService::GetRequestorName(const GetRequestorNameCallback& callback) {
   callback.Run(requestor_name_);
 }
 
-void TestMojoApp::CreateSharedBuffer(
+void TestService::CreateSharedBuffer(
     const std::string& message,
     const CreateSharedBufferCallback& callback) {
   NOTREACHED();

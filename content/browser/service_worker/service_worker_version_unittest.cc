@@ -21,7 +21,7 @@
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "content/public/test/test_mojo_service.mojom.h"
+#include "content/public/test/test_service.mojom.h"
 #include "content/public/test/test_utils.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/shell/public/cpp/interface_registry.h"
@@ -160,10 +160,10 @@ base::Time GetYesterday() {
          base::TimeDelta::FromSeconds(1);
 }
 
-class TestMojoServiceImpl : public mojom::TestMojoService {
+class TestServiceImpl : public mojom::TestService {
  public:
-  static void Create(mojo::InterfaceRequest<mojom::TestMojoService> request) {
-    mojo::MakeStrongBinding(base::WrapUnique(new TestMojoServiceImpl),
+  static void Create(mojo::InterfaceRequest<mojom::TestService> request) {
+    mojo::MakeStrongBinding(base::WrapUnique(new TestServiceImpl),
                             std::move(request));
   }
 
@@ -189,7 +189,7 @@ class TestMojoServiceImpl : public mojom::TestMojoService {
   }
 
  private:
-  explicit TestMojoServiceImpl() {}
+  explicit TestServiceImpl() {}
 };
 
 }  // namespace
@@ -375,7 +375,7 @@ class MessageReceiverMojoTestService : public MessageReceiver {
   ~MessageReceiverMojoTestService() override {}
 
   void OnSetupMojo(int thread_id, shell::InterfaceRegistry* registry) override {
-    registry->AddInterface(base::Bind(&TestMojoServiceImpl::Create));
+    registry->AddInterface(base::Bind(&TestServiceImpl::Create));
   }
 
  private:
@@ -1204,8 +1204,8 @@ TEST_F(ServiceWorkerVersionWithMojoTest, MojoService) {
   int request_id = version_->StartRequest(
       ServiceWorkerMetrics::EventType::SYNC,
       CreateReceiverOnCurrentThread(&status, runner->QuitClosure()));
-  base::WeakPtr<mojom::TestMojoService> service =
-      version_->GetMojoServiceForRequest<mojom::TestMojoService>(request_id);
+  base::WeakPtr<mojom::TestService> service =
+      version_->GetMojoServiceForRequest<mojom::TestService>(request_id);
   service->DoSomething(runner->QuitClosure());
   runner->Run();
 
@@ -1230,8 +1230,8 @@ TEST_F(ServiceWorkerVersionTest, NonExistentMojoService) {
   int request_id = version_->StartRequest(
       ServiceWorkerMetrics::EventType::SYNC,
       CreateReceiverOnCurrentThread(&status, runner->QuitClosure()));
-  base::WeakPtr<mojom::TestMojoService> service =
-      version_->GetMojoServiceForRequest<mojom::TestMojoService>(request_id);
+  base::WeakPtr<mojom::TestService> service =
+      version_->GetMojoServiceForRequest<mojom::TestService>(request_id);
   service->DoSomething(runner->QuitClosure());
   runner->Run();
 

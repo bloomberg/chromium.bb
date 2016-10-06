@@ -92,16 +92,16 @@ static_library("test_support") {
     "../public/test/test_file_system_options.h",
     "../public/test/test_launcher.cc",
     "../public/test/test_launcher.h",
-    "../public/test/test_mojo_app.cc",
-    "../public/test/test_mojo_app.h",
-    "../public/test/test_mojo_shell_context.cc",
-    "../public/test/test_mojo_shell_context.h",
     "../public/test/test_navigation_observer.cc",
     "../public/test/test_navigation_observer.h",
     "../public/test/test_notification_tracker.cc",
     "../public/test/test_notification_tracker.h",
     "../public/test/test_renderer_host.cc",
     "../public/test/test_renderer_host.h",
+    "../public/test/test_service.cc",
+    "../public/test/test_service.h",
+    "../public/test/test_service_manager_context.cc",
+    "../public/test/test_service_manager_context.h",
     "../public/test/test_synchronous_compositor_android.cc",
     "../public/test/test_synchronous_compositor_android.h",
     "../public/test/test_utils.cc",
@@ -422,7 +422,7 @@ static_library("browsertest_support") {
 
 mojom("content_test_mojo_bindings") {
   sources = [
-    "../public/test/test_mojo_service.mojom",
+    "../public/test/test_service.mojom",
     "test_browser_associated_interfaces.mojom",
   ]
 }
@@ -1121,7 +1121,6 @@ test("content_unittests") {
     "../browser/memory/memory_monitor_win_unittest.cc",
     "../browser/memory/test_memory_monitor.cc",
     "../browser/memory/test_memory_monitor.h",
-    "../browser/mojo/merge_dictionary_unittest.cc",
     "../browser/net/quota_policy_cookie_store_unittest.cc",
     "../browser/notification_service_impl_unittest.cc",
     "../browser/notifications/notification_database_data_unittest.cc",
@@ -1189,6 +1188,7 @@ test("content_unittests") {
     "../browser/renderer_host/render_widget_host_view_mac_unittest.mm",
     "../browser/renderer_host/text_input_client_mac_unittest.mm",
     "../browser/resolve_proxy_msg_helper_unittest.cc",
+    "../browser/service_manager/merge_dictionary_unittest.cc",
     "../browser/service_worker/embedded_worker_instance_unittest.cc",
     "../browser/service_worker/link_header_support_unittest.cc",
     "../browser/service_worker/service_worker_cache_writer_unittest.cc",

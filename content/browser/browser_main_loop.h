@@ -76,9 +76,9 @@ class BrowserOnlineStateObserver;
 class BrowserThreadImpl;
 class LoaderDelegateImpl;
 class MediaStreamManager;
-class MojoShellContext;
 class ResourceDispatcherHostImpl;
 class SaveFileManager;
+class ServiceManagerContext;
 class SpeechRecognitionManagerImpl;
 class StartupTaskRunner;
 struct MainFunctionParams;
@@ -278,7 +278,7 @@ class CONTENT_EXPORT BrowserMainLoop {
 
   // Members initialized in |BrowserThreadsStarted()| --------------------------
   std::unique_ptr<base::Thread> indexed_db_thread_;
-  std::unique_ptr<MojoShellContext> mojo_shell_context_;
+  std::unique_ptr<ServiceManagerContext> service_manager_context_;
   std::unique_ptr<mojo::edk::ScopedIPCSupport> mojo_ipc_support_;
 
   // |user_input_monitor_| has to outlive |audio_manager_|, so declared first.

@@ -10,8 +10,8 @@
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/process/process.h"
-#include "content/public/test/test_mojo_app.h"
-#include "content/public/test/test_mojo_service.mojom.h"
+#include "content/public/test/test_service.h"
+#include "content/public/test/test_service.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "services/shell/public/cpp/interface_registry.h"
@@ -20,14 +20,14 @@ namespace content {
 
 namespace {
 
-class TestMojoServiceImpl : public mojom::TestMojoService {
+class TestServiceImpl : public mojom::TestService {
  public:
-  static void Create(mojo::InterfaceRequest<mojom::TestMojoService> request) {
-    mojo::MakeStrongBinding(base::WrapUnique(new TestMojoServiceImpl),
+  static void Create(mojom::TestServiceRequest request) {
+    mojo::MakeStrongBinding(base::WrapUnique(new TestServiceImpl),
                             std::move(request));
   }
 
-  // mojom::TestMojoService implementation:
+  // mojom::TestService implementation:
   void DoSomething(const DoSomethingCallback& callback) override {
     callback.Run();
   }
@@ -61,14 +61,14 @@ class TestMojoServiceImpl : public mojom::TestMojoService {
   }
 
  private:
-  explicit TestMojoServiceImpl() {}
+  explicit TestServiceImpl() {}
 
-  DISALLOW_COPY_AND_ASSIGN(TestMojoServiceImpl);
+  DISALLOW_COPY_AND_ASSIGN(TestServiceImpl);
 };
 
-std::unique_ptr<shell::Service> CreateTestApp(
+std::unique_ptr<shell::Service> CreateTestService(
     const base::Closure& quit_closure) {
-  return std::unique_ptr<shell::Service>(new TestMojoApp);
+  return std::unique_ptr<shell::Service>(new TestService);
 }
 
 }  // namespace
@@ -79,13 +79,13 @@ ShellContentUtilityClient::~ShellContentUtilityClient() {
 void ShellContentUtilityClient::RegisterMojoApplications(
     StaticMojoApplicationMap* apps) {
   MojoApplicationInfo app_info;
-  app_info.application_factory = base::Bind(&CreateTestApp);
-  apps->insert(std::make_pair(kTestMojoAppUrl, app_info));
+  app_info.application_factory = base::Bind(&CreateTestService);
+  apps->insert(std::make_pair(kTestServiceUrl, app_info));
 }
 
 void ShellContentUtilityClient::ExposeInterfacesToBrowser(
     shell::InterfaceRegistry* registry) {
-  registry->AddInterface(base::Bind(&TestMojoServiceImpl::Create));
+  registry->AddInterface(base::Bind(&TestServiceImpl::Create));
 }
 
 }  // namespace content

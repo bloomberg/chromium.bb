@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_MOJO_MOJO_SHELL_CONTEXT_H_
-#define CONTENT_BROWSER_MOJO_MOJO_SHELL_CONTEXT_H_
+#ifndef CONTENT_BROWSER_SERVICE_MANAGER_SERVICE_MANAGER_CONTEXT_H_
+#define CONTENT_BROWSER_SERVICE_MANAGER_SERVICE_MANAGER_CONTEXT_H_
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -15,13 +15,13 @@ class Connector;
 
 namespace content {
 
-// MojoShellContext manages the browser's connection to the ServiceManager,
-// hosting a new in-process ServiceManager if the browser was not launched from
-// an external one.
-class CONTENT_EXPORT MojoShellContext {
+// ServiceManagerContext manages the browser's connection to the ServiceManager,
+// hosting a new in-process ServiceManagerContext if the browser was not
+// launched from an external one.
+class CONTENT_EXPORT ServiceManagerContext {
  public:
-  MojoShellContext();
-  ~MojoShellContext();
+  ServiceManagerContext();
+  ~ServiceManagerContext();
 
   // Returns a shell::Connector that can be used on the IO thread.
   static shell::Connector* GetConnectorForIOThread();
@@ -31,9 +31,9 @@ class CONTENT_EXPORT MojoShellContext {
 
   scoped_refptr<InProcessServiceManagerContext> in_process_context_;
 
-  DISALLOW_COPY_AND_ASSIGN(MojoShellContext);
+  DISALLOW_COPY_AND_ASSIGN(ServiceManagerContext);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_MOJO_MOJO_SHELL_CONTEXT_H_
+#endif  // CONTENT_BROWSER_SERVICE_MANAGER_SERVICE_MANAGER_CONTEXT_H_

@@ -26,7 +26,7 @@
 #include "content/public/common/service_names.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
-#include "content/public/test/test_mojo_app.h"
+#include "content/public/test/test_service.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_browser_main_parts.h"
@@ -198,8 +198,8 @@ void ShellContentBrowserClient::RegisterInProcessMojoApplications(
 
 void ShellContentBrowserClient::RegisterOutOfProcessMojoApplications(
       OutOfProcessMojoApplicationMap* apps) {
-  apps->insert(std::make_pair(kTestMojoAppUrl,
-                              base::UTF8ToUTF16("Test Mojo App")));
+  apps->insert(std::make_pair(kTestServiceUrl,
+                              base::UTF8ToUTF16("Test Service")));
 }
 
 std::unique_ptr<base::Value>

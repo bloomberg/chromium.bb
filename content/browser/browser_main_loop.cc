@@ -56,10 +56,10 @@
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader_delegate_impl.h"
 #include "content/browser/media/media_internals.h"
-#include "content/browser/mojo/mojo_shell_context.h"
 #include "content/browser/net/browser_online_state_observer.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/browser/service_manager/service_manager_context.h"
 #include "content/browser/speech/speech_recognition_manager_impl.h"
 #include "content/browser/startup_task_runner.h"
 #include "content/browser/utility_process_host_impl.h"
@@ -1067,7 +1067,7 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
 #endif
 
   // Shutdown Mojo shell and IPC.
-  mojo_shell_context_.reset();
+  service_manager_context_.reset();
   mojo_ipc_support_.reset();
 
   // Must be size_t so we can subtract from it.
@@ -1471,7 +1471,7 @@ void BrowserMainLoop::InitializeMojo() {
       BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::IO)
           ->task_runner()));
 
-  mojo_shell_context_.reset(new MojoShellContext);
+  service_manager_context_.reset(new ServiceManagerContext);
 #if defined(OS_MACOSX)
   mojo::edk::SetMachPortProvider(MachBroker::GetInstance());
 #endif  // defined(OS_MACOSX)

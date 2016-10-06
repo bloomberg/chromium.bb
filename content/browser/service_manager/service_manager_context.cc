@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/mojo/mojo_shell_context.h"
+#include "content/browser/service_manager/service_manager_context.h"
 
 #include <memory>
 #include <string>
@@ -15,7 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "content/browser/gpu/gpu_process_host.h"
-#include "content/browser/mojo/merge_dictionary.h"
+#include "content/browser/service_manager/merge_dictionary.h"
 #include "content/common/mojo/mojo_shell_connection_impl.h"
 #include "content/grit/content_resources.h"
 #include "content/public/browser/browser_thread.h"
@@ -132,7 +132,7 @@ class BuiltinManifestProvider : public catalog::ManifestProvider {
 }  // namespace
 
 // State which lives on the IO thread and drives the ServiceManager.
-class MojoShellContext::InProcessServiceManagerContext
+class ServiceManagerContext::InProcessServiceManagerContext
     : public base::RefCountedThreadSafe<InProcessServiceManagerContext> {
  public:
   InProcessServiceManagerContext() {}
@@ -195,7 +195,7 @@ class MojoShellContext::InProcessServiceManagerContext
   DISALLOW_COPY_AND_ASSIGN(InProcessServiceManagerContext);
 };
 
-MojoShellContext::MojoShellContext() {
+ServiceManagerContext::ServiceManagerContext() {
   shell::mojom::ServiceRequest request;
   if (shell::ShellIsRemote()) {
     mojo::edk::SetParentPipeHandleFromCommandLine();
@@ -251,8 +251,9 @@ MojoShellContext::MojoShellContext() {
                                                              entry.second);
   }
 
-  // This is safe to assign directly from any thread, because MojoShellContext
-  // must be constructed before anyone can call GetConnectorForIOThread().
+  // This is safe to assign directly from any thread, because
+  // ServiceManagerContext must be constructed before anyone can call
+  // GetConnectorForIOThread().
   g_io_thread_connector.Get() =
       MojoShellConnection::GetForProcess()->GetConnector()->Clone();
 
@@ -286,7 +287,7 @@ MojoShellContext::MojoShellContext() {
 #endif
 }
 
-MojoShellContext::~MojoShellContext() {
+ServiceManagerContext::~ServiceManagerContext() {
   // NOTE: The in-process ServiceManager MUST be destroyed before the browser
   // process-wide MojoShellConnection. Otherwise it's possible for the
   // ServiceManager to receive connection requests for service:content_browser
@@ -300,7 +301,7 @@ MojoShellContext::~MojoShellContext() {
 }
 
 // static
-shell::Connector* MojoShellContext::GetConnectorForIOThread() {
+shell::Connector* ServiceManagerContext::GetConnectorForIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   return g_io_thread_connector.Get().get();
 }

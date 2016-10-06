@@ -27,8 +27,8 @@
 #include "content/browser/histogram_message_filter.h"
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/memory/memory_message_filter.h"
-#include "content/browser/mojo/mojo_shell_context.h"
 #include "content/browser/profiler_message_filter.h"
+#include "content/browser/service_manager/service_manager_context.h"
 #include "content/browser/tracing/trace_message_filter.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/child_process_messages.h"
@@ -177,7 +177,7 @@ BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     child_connection_.reset(new MojoChildConnection(
         service_name, base::StringPrintf("%d", data_.id), child_token_,
-        MojoShellContext::GetConnectorForIOThread(),
+        ServiceManagerContext::GetConnectorForIOThread(),
         base::ThreadTaskRunnerHandle::Get()));
   }
 
