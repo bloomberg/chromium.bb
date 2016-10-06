@@ -713,7 +713,8 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property,
     case CSSPropertyTransform: {
       const TransformOperations& operations =
           toAnimatableTransform(value)->transformOperations();
-      // FIXME: This normalization (handling of 'none') should be performed at input in AnimatableValueFactory.
+      // FIXME: This normalization (handling of 'none') should be performed at
+      // input in AnimatableValueFactory.
       if (operations.size() == 0) {
         style->setTransform(TransformOperations(true));
         return;

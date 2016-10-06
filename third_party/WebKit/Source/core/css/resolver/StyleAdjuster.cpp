@@ -2,10 +2,12 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 2004-2005 Allan Sandfeld Jensen (kde@carewolf.com)
  * Copyright (C) 2006, 2007 Nicholas Shanks (webkit@nickshanks.com)
- * Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 Apple Inc. All rights reserved.
+ * Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 Apple Inc.
+ * All rights reserved.
  * Copyright (C) 2007 Alexey Proskuryakov <ap@webkit.org>
  * Copyright (C) 2007, 2008 Eric Seidel <eric@webkit.org>
- * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved.
+ * (http://www.torchmobile.com/)
  * Copyright (c) 2011, Code Aurora Forum. All rights reserved.
  * Copyright (C) Research In Motion Limited 2011. All rights reserved.
  * Copyright (C) 2013 Google Inc. All rights reserved.
@@ -145,20 +147,20 @@ static void adjustStyleForFirstLetter(ComputedStyle& style) {
 
 void StyleAdjuster::adjustStyleForAlignment(ComputedStyle& style,
                                             const ComputedStyle& parentStyle) {
-  // To avoid needing to copy the RareNonInheritedData, we repurpose the 'auto' flag
-  // to not just mean 'auto' prior to running the StyleAdjuster but also mean 'normal'
-  // after running it.
+  // To avoid needing to copy the RareNonInheritedData, we repurpose the 'auto'
+  // flag to not just mean 'auto' prior to running the StyleAdjuster but also
+  // mean 'normal' after running it.
 
-  // If the inherited value of justify-items includes the 'legacy' keyword, 'auto'
-  // computes to the the inherited value.
-  // Otherwise, 'auto' computes to 'normal'.
+  // If the inherited value of justify-items includes the 'legacy' keyword,
+  // 'auto' computes to the the inherited value.  Otherwise, 'auto' computes to
+  // 'normal'.
   if (style.justifyItemsPosition() == ItemPositionAuto) {
     if (parentStyle.justifyItemsPositionType() == LegacyPosition)
       style.setJustifyItems(parentStyle.justifyItems());
   }
 
-  // The 'auto' keyword computes the computed value of justify-items on the parent (minus
-  // any legacy keywords), or 'normal' if the box has no parent.
+  // The 'auto' keyword computes the computed value of justify-items on the
+  // parent (minus any legacy keywords), or 'normal' if the box has no parent.
   if (style.justifySelfPosition() == ItemPositionAuto) {
     if (parentStyle.justifyItemsPositionType() == LegacyPosition)
       style.setJustifySelfPosition(parentStyle.justifyItemsPosition());
@@ -176,7 +178,8 @@ void StyleAdjuster::adjustStyleForAlignment(ComputedStyle& style,
 
 static void adjustStyleForHTMLElement(ComputedStyle& style,
                                       HTMLElement& element) {
-  // <div> and <span> are the most common elements on the web, we skip all the work for them.
+  // <div> and <span> are the most common elements on the web, we skip all the
+  // work for them.
   if (isHTMLDivElement(element) || isHTMLSpanElement(element))
     return;
 
@@ -194,7 +197,8 @@ static void adjustStyleForHTMLElement(ComputedStyle& style,
   }
 
   if (isHTMLTableElement(element)) {
-    // Tables never support the -webkit-* values for text-align and will reset back to the default.
+    // Tables never support the -webkit-* values for text-align and will reset
+    // back to the default.
     if (style.textAlign() == WEBKIT_LEFT ||
         style.textAlign() == WEBKIT_CENTER || style.textAlign() == WEBKIT_RIGHT)
       style.setTextAlign(TASTART);
@@ -202,8 +206,9 @@ static void adjustStyleForHTMLElement(ComputedStyle& style,
   }
 
   if (isHTMLFrameElement(element) || isHTMLFrameSetElement(element)) {
-    // Frames and framesets never honor position:relative or position:absolute. This is necessary to
-    // fix a crash where a site tries to position these objects. They also never honor display.
+    // Frames and framesets never honor position:relative or position:absolute.
+    // This is necessary to fix a crash where a site tries to position these
+    // objects. They also never honor display.
     style.setPosition(StaticPosition);
     style.setDisplay(EDisplay::Block);
     return;
@@ -218,7 +223,8 @@ static void adjustStyleForHTMLElement(ComputedStyle& style,
   }
 
   if (isHTMLRTElement(element)) {
-    // Ruby text does not support float or position. This might change with evolution of the specification.
+    // Ruby text does not support float or position. This might change with
+    // evolution of the specification.
     style.setPosition(StaticPosition);
     style.setFloating(EFloat::None);
     return;
@@ -255,17 +261,18 @@ static void adjustOverflow(ComputedStyle& style) {
 
   if (style.display() == EDisplay::Table ||
       style.display() == EDisplay::InlineTable) {
-    // Tables only support overflow:hidden and overflow:visible and ignore anything else,
-    // see http://dev.w3.org/csswg/css2/visufx.html#overflow. As a table is not a block
-    // container box the rules for resolving conflicting x and y values in CSS Overflow Module
-    // Level 3 do not apply. Arguably overflow-x and overflow-y aren't allowed on tables but
-    // all UAs allow it.
+    // Tables only support overflow:hidden and overflow:visible and ignore
+    // anything else, see http://dev.w3.org/csswg/css2/visufx.html#overflow. As
+    // a table is not a block container box the rules for resolving conflicting
+    // x and y values in CSS Overflow Module Level 3 do not apply. Arguably
+    // overflow-x and overflow-y aren't allowed on tables but all UAs allow it.
     if (style.overflowX() != OverflowHidden)
       style.setOverflowX(OverflowVisible);
     if (style.overflowY() != OverflowHidden)
       style.setOverflowY(OverflowVisible);
-    // If we are left with conflicting overflow values for the x and y axes on a table then resolve
-    // both to OverflowVisible. This is interoperable behaviour but is not specced anywhere.
+    // If we are left with conflicting overflow values for the x and y axes on a
+    // table then resolve both to OverflowVisible. This is interoperable
+    // behaviour but is not specced anywhere.
     if (style.overflowX() == OverflowVisible)
       style.setOverflowY(OverflowVisible);
     else if (style.overflowY() == OverflowVisible)
@@ -273,9 +280,10 @@ static void adjustOverflow(ComputedStyle& style) {
   } else if (style.overflowX() == OverflowVisible &&
              style.overflowY() != OverflowVisible) {
     // If either overflow value is not visible, change to auto.
-    // FIXME: Once we implement pagination controls, overflow-x should default to hidden
-    // if overflow-y is set to -webkit-paged-x or -webkit-page-y. For now, we'll let it
-    // default to auto so we can at least scroll through the pages.
+    // FIXME: Once we implement pagination controls, overflow-x should default
+    // to hidden if overflow-y is set to -webkit-paged-x or -webkit-page-y. For
+    // now, we'll let it default to auto so we can at least scroll through the
+    // pages.
     style.setOverflowX(OverflowAuto);
   } else if (style.overflowY() == OverflowVisible &&
              style.overflowX() != OverflowVisible) {
@@ -295,16 +303,17 @@ static void adjustStyleForDisplay(ComputedStyle& style,
   if (style.display() == EDisplay::Block && !style.isFloating())
     return;
 
-  // FIXME: Don't support this mutation for pseudo styles like first-letter or first-line, since it's not completely
-  // clear how that should work.
+  // FIXME: Don't support this mutation for pseudo styles like first-letter or
+  // first-line, since it's not completely clear how that should work.
   if (style.display() == EDisplay::Inline &&
       style.styleType() == PseudoIdNone &&
       style.getWritingMode() != parentStyle.getWritingMode())
     style.setDisplay(EDisplay::InlineBlock);
 
-  // After performing the display mutation, check table rows. We do not honor position: relative table rows or cells.
-  // This has been established for position: relative in CSS2.1 (and caused a crash in containingBlock()
-  // on some sites).
+  // After performing the display mutation, check table rows. We do not honor
+  // position: relative table rows or cells.  This has been established for
+  // position: relative in CSS2.1 (and caused a crash in containingBlock() on
+  // some sites).
   if ((style.display() == EDisplay::TableHeaderGroup ||
        style.display() == EDisplay::TableRowGroup ||
        style.display() == EDisplay::TableFooterGroup ||
@@ -312,15 +321,18 @@ static void adjustStyleForDisplay(ComputedStyle& style,
       style.position() == RelativePosition)
     style.setPosition(StaticPosition);
 
-  // Cannot support position: sticky for table columns and column groups because current code is only doing
-  // background painting through columns / column groups
+  // Cannot support position: sticky for table columns and column groups because
+  // current code is only doing background painting through columns / column
+  // groups.
   if ((style.display() == EDisplay::TableColumnGroup ||
        style.display() == EDisplay::TableColumn) &&
       style.position() == StickyPosition)
     style.setPosition(StaticPosition);
 
-  // writing-mode does not apply to table row groups, table column groups, table rows, and table columns.
-  // FIXME: Table cells should be allowed to be perpendicular or flipped with respect to the table, though.
+  // writing-mode does not apply to table row groups, table column groups, table
+  // rows, and table columns.
+  // FIXME: Table cells should be allowed to be perpendicular or flipped with
+  // respect to the table, though.
   if (style.display() == EDisplay::TableColumn ||
       style.display() == EDisplay::TableColumnGroup ||
       style.display() == EDisplay::TableFooterGroup ||
@@ -330,8 +342,8 @@ static void adjustStyleForDisplay(ComputedStyle& style,
       style.display() == EDisplay::TableCell)
     style.setWritingMode(parentStyle.getWritingMode());
 
-  // FIXME: Since we don't support block-flow on flexible boxes yet, disallow setting
-  // of block-flow to anything other than TopToBottomWritingMode.
+  // FIXME: Since we don't support block-flow on flexible boxes yet, disallow
+  // setting of block-flow to anything other than TopToBottomWritingMode.
   // https://bugs.webkit.org/show_bug.cgi?id=46418 - Flexible box support.
   if (style.getWritingMode() != TopToBottomWritingMode &&
       (style.display() == EDisplay::Box ||
@@ -342,8 +354,9 @@ static void adjustStyleForDisplay(ComputedStyle& style,
     style.setFloating(EFloat::None);
     style.setDisplay(equivalentBlockDisplay(style.display()));
 
-    // We want to count vertical percentage paddings/margins on flex items because our current
-    // behavior is different from the spec and we want to gather compatibility data.
+    // We want to count vertical percentage paddings/margins on flex items
+    // because our current behavior is different from the spec and we want to
+    // gather compatibility data.
     if (style.paddingBefore().isPercentOrCalc() ||
         style.paddingAfter().isPercentOrCalc())
       UseCounter::count(document, UseCounter::FlexboxPercentagePaddingVertical);
@@ -360,25 +373,27 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style,
     if (element && element->isHTMLElement())
       adjustStyleForHTMLElement(style, toHTMLElement(*element));
 
-    // Per the spec, position 'static' and 'relative' in the top layer compute to 'absolute'.
+    // Per the spec, position 'static' and 'relative' in the top layer compute
+    // to 'absolute'.
     if (isInTopLayer(element, style) && (style.position() == StaticPosition ||
                                          style.position() == RelativePosition))
       style.setPosition(AbsolutePosition);
 
-    // Absolute/fixed positioned elements, floating elements and the document element need block-like outside display.
+    // Absolute/fixed positioned elements, floating elements and the document
+    // element need block-like outside display.
     if (style.hasOutOfFlowPosition() || style.isFloating() ||
         (element && element->document().documentElement() == element))
       style.setDisplay(equivalentBlockDisplay(style.display()));
 
-    // We don't adjust the first letter style earlier because we may change the display setting in
-    // adjustStyeForTagName() above.
+    // We don't adjust the first letter style earlier because we may change the
+    // display setting in adjustStyeForTagName() above.
     adjustStyleForFirstLetter(style);
 
     adjustStyleForDisplay(style, parentStyle,
                           element ? &element->document() : 0);
 
-    // Paint containment forces a block formatting context, so we must coerce from inline.
-    // https://drafts.csswg.org/css-containment/#containment-paint
+    // Paint containment forces a block formatting context, so we must coerce
+    // from inline.  https://drafts.csswg.org/css-containment/#containment-paint
     if (style.containsPaint() && style.display() == EDisplay::Inline)
       style.setDisplay(EDisplay::Block);
   } else {
@@ -409,7 +424,8 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style,
     style.restoreParentTextDecorations(parentStyle);
   style.applyTextDecorations();
 
-  // Cull out any useless layers and also repeat patterns into additional layers.
+  // Cull out any useless layers and also repeat patterns into additional
+  // layers.
   style.adjustBackgroundLayers();
   style.adjustMaskLayers();
 
@@ -417,7 +433,8 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style,
   if (style.hasAppearance())
     LayoutTheme::theme().adjustStyle(style, element);
 
-  // If we have first-letter pseudo style, transitions, or animations, do not share this style.
+  // If we have first-letter pseudo style, transitions, or animations, do not
+  // share this style.
   if (style.hasPseudoStyle(PseudoIdFirstLetter) || style.transitions() ||
       style.animations())
     style.setUnique();
@@ -426,7 +443,8 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style,
 
   bool isSVGElement = element && element->isSVGElement();
   if (isSVGElement) {
-    // Only the root <svg> element in an SVG document fragment tree honors css position
+    // Only the root <svg> element in an SVG document fragment tree honors css
+    // position.
     if (!(isSVGSVGElement(*element) && element->parentNode() &&
           !element->parentNode()->isSVGElement()))
       style.setPosition(ComputedStyle::initialPosition());

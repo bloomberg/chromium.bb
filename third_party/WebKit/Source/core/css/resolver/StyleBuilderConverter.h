@@ -223,10 +223,11 @@ T StyleBuilderConverter::convertLineWidth(StyleResolverState& state,
     return 0;
   }
   const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
-  // FIXME: We are moving to use the full page zoom implementation to handle high-dpi.
-  // In that case specyfing a border-width of less than 1px would result in a border that is one device pixel thick.
-  // With this change that would instead be rounded up to 2 device pixels.
-  // Consider clamping it to device pixels or zoom adjusted CSS pixels instead of raw CSS pixels.
+  // FIXME: We are moving to use the full page zoom implementation to handle
+  // high-dpi.  In that case specyfing a border-width of less than 1px would
+  // result in a border that is one device pixel thick.  With this change that
+  // would instead be rounded up to 2 device pixels.  Consider clamping it to
+  // device pixels or zoom adjusted CSS pixels instead of raw CSS pixels.
   // Reference crbug.com/485650 and crbug.com/382483
   double result =
       primitiveValue.computeLength<double>(state.cssToLengthConversionData());

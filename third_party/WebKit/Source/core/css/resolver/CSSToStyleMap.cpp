@@ -2,10 +2,12 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 2004-2005 Allan Sandfeld Jensen (kde@carewolf.com)
  * Copyright (C) 2006, 2007 Nicholas Shanks (webkit@nickshanks.com)
- * Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012 Apple Inc. All
+ * rights reserved.
  * Copyright (C) 2007 Alexey Proskuryakov <ap@webkit.org>
  * Copyright (C) 2007, 2008 Eric Seidel <eric@webkit.org>
- * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved.
+ * (http://www.torchmobile.com/)
  * Copyright (c) 2011, Code Aurora Forum. All rights reserved.
  * Copyright (C) Research In Motion Limited 2011. All rights reserved.
  *
@@ -470,7 +472,8 @@ void CSSToStyleMap::mapNinePieceImage(StyleResolverState& state,
                                       CSSPropertyID property,
                                       const CSSValue& value,
                                       NinePieceImage& image) {
-  // If we're not a value list, then we are "none" and don't need to alter the empty image at all.
+  // If we're not a value list, then we are "none" and don't need to alter the
+  // empty image at all.
   if (!value.isValueList())
     return;
 
@@ -515,9 +518,9 @@ void CSSToStyleMap::mapNinePieceImage(StyleResolverState& state,
   }
 
   if (property == CSSPropertyWebkitBorderImage) {
-    // We have to preserve the legacy behavior of -webkit-border-image and make the border slices
-    // also set the border widths. We don't need to worry about percentages, since we don't even support
-    // those on real borders yet.
+    // We have to preserve the legacy behavior of -webkit-border-image and make
+    // the border slices also set the border widths. We don't need to worry
+    // about percentages, since we don't even support those on real borders yet.
     if (image.borderSlices().top().isLength() &&
         image.borderSlices().top().length().isFixed())
       state.style()->setBorderTopWidth(

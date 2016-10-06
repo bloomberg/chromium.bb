@@ -2,10 +2,12 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 2004-2005 Allan Sandfeld Jensen (kde@carewolf.com)
  * Copyright (C) 2006, 2007 Nicholas Shanks (webkit@nickshanks.com)
- * Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 Apple Inc. All rights reserved.
+ * Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 Apple Inc.
+ * All rights reserved.
  * Copyright (C) 2007 Alexey Proskuryakov <ap@webkit.org>
  * Copyright (C) 2007, 2008 Eric Seidel <eric@webkit.org>
- * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved.
+ * (http://www.torchmobile.com/)
  * Copyright (c) 2011, Code Aurora Forum. All rights reserved.
  * Copyright (C) Research In Motion Limited 2011. All rights reserved.
  * Copyright (C) 2013 Google Inc. All rights reserved.
@@ -130,8 +132,9 @@ bool SharedStyleFinder::sharingCandidateHasIdenticalStyleAffectingAttributes(
       candidate.fastGetAttribute(langAttr))
     return false;
 
-  // These two checks must be here since RuleSet has a special case to allow style sharing between elements
-  // with type and readonly attributes whereas other attribute selectors prevent sharing.
+  // These two checks must be here since RuleSet has a special case to allow
+  // style sharing between elements with type and readonly attributes whereas
+  // other attribute selectors prevent sharing.
   if (typeAttributeValue(element()) != typeAttributeValue(candidate))
     return false;
   if (element().fastGetAttribute(readonlyAttr) !=
@@ -143,7 +146,8 @@ bool SharedStyleFinder::sharingCandidateHasIdenticalStyleAffectingAttributes(
         classNamesAffectedByRules(candidate.classNames()))
       return false;
   } else if (candidate.hasClass()) {
-    // SVG elements require a (slow!) getAttribute comparision because "class" is an animatable attribute for SVG.
+    // SVG elements require a (slow!) getAttribute comparision because "class"
+    // is an animatable attribute for SVG.
     if (element().isSVGElement()) {
       if (element().getAttribute(classAttr) !=
           candidate.getAttribute(classAttr))
@@ -159,9 +163,9 @@ bool SharedStyleFinder::sharingCandidateHasIdenticalStyleAffectingAttributes(
       candidate.presentationAttributeStyle())
     return false;
 
-  // FIXME: Consider removing this, it's unlikely we'll have so many progress elements
-  // that sharing the style makes sense. Instead we should just not support style sharing
-  // for them.
+  // FIXME: Consider removing this, it's unlikely we'll have so many progress
+  // elements that sharing the style makes sense. Instead we should just not
+  // support style sharing for them.
   if (isHTMLProgressElement(element())) {
     if (element().shouldAppearIndeterminate() !=
         candidate.shouldAppearIndeterminate())
@@ -264,7 +268,8 @@ bool SharedStyleFinder::canShareStyleWithElement(Element& candidate) const {
            toHTMLOptionElement(element()).spatialNavigationFocused()))
     return false;
 
-  // FIXME: This line is surprisingly hot, we may wish to inline hasDirectionAuto into StyleResolver.
+  // FIXME: This line is surprisingly hot, we may wish to inline
+  // hasDirectionAuto into StyleResolver.
   if (candidate.isHTMLElement() && toHTMLElement(candidate).hasDirectionAuto())
     return false;
 
@@ -374,7 +379,8 @@ ComputedStyle* SharedStyleFinder::findSharedStyle() {
     return nullptr;
   }
 
-  // Tracking child index requires unique style for each node. This may get set by the sibling rule match above.
+  // Tracking child index requires unique style for each node. This may get set
+  // by the sibling rule match above.
   if (!element().parentElementOrShadowRoot()->childrenSupportStyleSharing()) {
     INCREMENT_STYLE_STATS_COUNTER(document().styleEngine(),
                                   sharedStyleRejectedByParent, 1);

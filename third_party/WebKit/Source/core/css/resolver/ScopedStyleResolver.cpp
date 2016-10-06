@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
- * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc.
+ * All rights reserved.
  * Copyright (C) 2012 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -65,7 +66,8 @@ void ScopedStyleResolver::addKeyframeRules(const RuleSet& ruleSet) {
 }
 
 void ScopedStyleResolver::addFontFaceRules(const RuleSet& ruleSet) {
-  // FIXME(BUG 72461): We don't add @font-face rules of scoped style sheets for the moment.
+  // FIXME(BUG 72461): We don't add @font-face rules of scoped style sheets for
+  // the moment.
   if (!treeScope().rootNode().isDocumentNode())
     return;
 
@@ -234,7 +236,8 @@ void ScopedStyleResolver::collectMatchingTreeBoundaryCrossingRules(
 }
 
 void ScopedStyleResolver::matchPageRules(PageRuleCollector& collector) {
-  // Only consider the global author RuleSet for @page rules, as per the HTML5 spec.
+  // Only consider the global author RuleSet for @page rules, as per the HTML5
+  // spec.
   ASSERT(m_scope->rootNode().isDocumentNode());
   for (size_t i = 0; i < m_authorStyleSheets.size(); ++i)
     collector.matchPageRules(&m_authorStyleSheets[i]->contents()->ruleSet());

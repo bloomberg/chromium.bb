@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
- * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc.
+ * All rights reserved.
  * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
@@ -113,7 +114,8 @@ class CORE_EXPORT FontBuilder {
                             const FontDescription::FamilyDescription&);
   void setSize(FontDescription&, const FontDescription::Size&);
   void updateOrientation(FontDescription&, const ComputedStyle&);
-  // This function fixes up the default font size if it detects that the current generic font family has changed. -dwh
+  // This function fixes up the default font size if it detects that the current
+  // generic font family has changed. -dwh
   void checkForGenericFamilyChange(const FontDescription&, FontDescription&);
   void updateSpecifiedSize(FontDescription&, const ComputedStyle&);
   void updateComputedSize(FontDescription&, const ComputedStyle&);

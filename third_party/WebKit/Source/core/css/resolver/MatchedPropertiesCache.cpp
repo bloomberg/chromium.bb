@@ -2,10 +2,12 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 2004-2005 Allan Sandfeld Jensen (kde@carewolf.com)
  * Copyright (C) 2006, 2007 Nicholas Shanks (webkit@nickshanks.com)
- * Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 Apple Inc. All rights reserved.
+ * Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 Apple Inc.
+ * All rights reserved.
  * Copyright (C) 2007 Alexey Proskuryakov <ap@webkit.org>
  * Copyright (C) 2007, 2008 Eric Seidel <eric@webkit.org>
- * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved.
+ * (http://www.torchmobile.com/)
  * Copyright (c) 2011, Code Aurora Forum. All rights reserved.
  * Copyright (C) Research In Motion Limited 2011. All rights reserved.
  * Copyright (C) 2013 Google Inc. All rights reserved.
@@ -39,8 +41,9 @@ void CachedMatchedProperties::set(const ComputedStyle& style,
                                   const MatchedPropertiesVector& properties) {
   matchedProperties.appendVector(properties);
 
-  // Note that we don't cache the original ComputedStyle instance. It may be further modified.
-  // The ComputedStyle in the cache is really just a holder for the substructures and never used as-is.
+  // Note that we don't cache the original ComputedStyle instance. It may be
+  // further modified.  The ComputedStyle in the cache is really just a holder
+  // for the substructures and never used as-is.
   this->computedStyle = ComputedStyle::clone(style);
   this->parentComputedStyle = ComputedStyle::clone(parentStyle);
 }

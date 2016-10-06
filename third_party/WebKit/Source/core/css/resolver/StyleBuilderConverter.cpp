@@ -142,7 +142,8 @@ PassRefPtr<ClipPathOperation> StyleBuilderConverter::convertClipPath(
     AtomicString fragmentIdentifier;
     if (resolver.isLocal())
       fragmentIdentifier = resolver.fragmentIdentifier();
-    // TODO(fs): Doesn't work with forward or external SVG references (crbug.com/391604, crbug.com/109212, ...)
+    // TODO(fs): Doesn't work with forward or external SVG references
+    // (crbug.com/391604, crbug.com/109212, ...)
     return ReferenceClipPathOperation::create(toCSSURIValue(value).value(),
                                               fragmentIdentifier);
   }
@@ -532,7 +533,8 @@ GridAutoFlow StyleBuilderConverter::convertGridAutoFlow(StyleResolverState&,
 GridPosition StyleBuilderConverter::convertGridPosition(StyleResolverState&,
                                                         const CSSValue& value) {
   // We accept the specification's grammar:
-  // 'auto' | [ <integer> || <custom-ident> ] | [ span && [ <integer> || <custom-ident> ] ] | <custom-ident>
+  // 'auto' | [ <integer> || <custom-ident> ] |
+  // [ span && [ <integer> || <custom-ident> ] ] | <custom-ident>
 
   GridPosition position;
 
@@ -552,7 +554,8 @@ GridPosition StyleBuilderConverter::convertGridPosition(StyleResolverState&,
   ASSERT(values.length());
 
   bool isSpanPosition = false;
-  // The specification makes the <integer> optional, in which case it default to '1'.
+  // The specification makes the <integer> optional, in which case it default to
+  // '1'.
   int gridLineNumber = 1;
   AtomicString gridLineName;
 
@@ -687,8 +690,8 @@ void StyleBuilderConverter::convertGridTrackList(
     trackSizes.append(convertGridTrackSize(state, *currValue));
   }
 
-  // The parser should have rejected any <track-list> without any <track-size> as
-  // this is not conformant to the syntax.
+  // The parser should have rejected any <track-list> without any <track-size>
+  // as this is not conformant to the syntax.
   ASSERT(!trackSizes.isEmpty() || !autoRepeatTrackSizes.isEmpty());
 }
 
@@ -1262,7 +1265,8 @@ PassRefPtr<StylePath> StyleBuilderConverter::convertPathOrNone(
 const CSSValue& StyleBuilderConverter::convertRegisteredPropertyValue(
     const StyleResolverState& state,
     const CSSValue& value) {
-  // TODO(timloh): Images and transform-function values can also contain lengths.
+  // TODO(timloh): Images and transform-function values can also contain
+  // lengths.
   if (value.isValueList()) {
     CSSValueList* newList = CSSValueList::createSpaceSeparated();
     for (const CSSValue* innerValue : toCSSValueList(value))

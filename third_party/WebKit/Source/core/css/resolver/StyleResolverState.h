@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
- * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc.
+ * All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -53,8 +54,9 @@ class CORE_EXPORT StyleResolverState {
   StyleResolverState(Document&, Element*, const ComputedStyle* parentStyle = 0);
   ~StyleResolverState();
 
-  // In FontFaceSet and CanvasRenderingContext2D, we don't have an element to grab the document from.
-  // This is why we have to store the document separately.
+  // In FontFaceSet and CanvasRenderingContext2D, we don't have an element to
+  // grab the document from.  This is why we have to store the document
+  // separately.
   Document& document() const { return *m_document; }
   // These are all just pass-through methods to ElementResolveContext.
   Element* element() const { return m_elementContext.element(); }
@@ -105,10 +107,11 @@ class CORE_EXPORT StyleResolverState {
   ComputedStyle* parentStyle() { return m_parentStyle.get(); }
 
   // FIXME: These are effectively side-channel "out parameters" for the various
-  // map functions. When we map from CSS to style objects we use this state object
-  // to track various meta-data about that mapping (e.g. if it's cache-able).
-  // We need to move this data off of StyleResolverState and closer to the
-  // objects it applies to. Possibly separating (immutable) inputs from (mutable) outputs.
+  // map functions. When we map from CSS to style objects we use this state
+  // object to track various meta-data about that mapping (e.g. if it's
+  // cache-able).  We need to move this data off of StyleResolverState and
+  // closer to the objects it applies to. Possibly separating (immutable) inputs
+  // from (mutable) outputs.
   void setApplyPropertyToRegularStyle(bool isApply) {
     m_applyPropertyToRegularStyle = isApply;
   }
@@ -148,11 +151,11 @@ class CORE_EXPORT StyleResolverState {
 
   FontBuilder& fontBuilder() { return m_fontBuilder; }
   const FontBuilder& fontBuilder() const { return m_fontBuilder; }
-  // FIXME: These exist as a primitive way to track mutations to font-related properties
-  // on a ComputedStyle. As designed, these are very error-prone, as some callers
-  // set these directly on the ComputedStyle w/o telling us. Presumably we'll
-  // want to design a better wrapper around ComputedStyle for tracking these mutations
-  // and separate it from StyleResolverState.
+  // FIXME: These exist as a primitive way to track mutations to font-related
+  // properties on a ComputedStyle. As designed, these are very error-prone, as
+  // some callers set these directly on the ComputedStyle w/o telling us.
+  // Presumably we'll want to design a better wrapper around ComputedStyle for
+  // tracking these mutations and separate it from StyleResolverState.
   const FontDescription& parentFontDescription() const {
     return m_parentStyle->getFontDescription();
   }

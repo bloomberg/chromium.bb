@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
- * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc.
+ * All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -73,7 +74,8 @@ using StyleSharingList = HeapDeque<Member<Element>, styleSharingListSize>;
 using ActiveInterpolationsMap =
     HashMap<PropertyHandle, Vector<RefPtr<Interpolation>, 1>>;
 
-// This class selects a ComputedStyle for a given element based on a collection of stylesheets.
+// This class selects a ComputedStyle for a given element based on a collection
+// of stylesheets.
 class CORE_EXPORT StyleResolver final
     : public GarbageCollectedFinalized<StyleResolver> {
   WTF_MAKE_NONCOPYABLE(StyleResolver);
@@ -108,7 +110,8 @@ class CORE_EXPORT StyleResolver final
 
   static PassRefPtr<ComputedStyle> styleForDocument(Document&);
 
-  // FIXME: It could be better to call appendAuthorStyleSheets() directly after we factor StyleResolver further.
+  // FIXME: It could be better to call appendAuthorStyleSheets() directly after
+  // we factor StyleResolver further.
   // https://bugs.webkit.org/show_bug.cgi?id=108890
   void appendAuthorStyleSheets(const HeapVector<Member<CSSStyleSheet>>&);
   void resetAuthorStyle(TreeScope&);
@@ -130,7 +133,8 @@ class CORE_EXPORT StyleResolver final
   StyleRuleKeyframes* findKeyframesRule(const Element*,
                                         const AtomicString& animationName);
 
-  // These methods will give back the set of rules that matched for a given element (or a pseudo-element).
+  // These methods will give back the set of rules that matched for a given
+  // element (or a pseudo-element).
   enum CSSRuleFilter {
     UAAndUserCSSRules = 1 << 1,
     AuthorCSSRules = 1 << 2,
@@ -282,8 +286,9 @@ class CORE_EXPORT StyleResolver final
 
   HeapListHashSet<Member<CSSStyleSheet>, 16> m_pendingStyleSheets;
 
-  // FIXME: The entire logic of collecting features on StyleResolver, as well as transferring them
-  // between various parts of machinery smells wrong. This needs to be better somehow.
+  // FIXME: The entire logic of collecting features on StyleResolver, as well as
+  // transferring them between various parts of machinery smells wrong. This
+  // needs to be better somehow.
   RuleFeatureSet m_features;
   Member<RuleSet> m_siblingRuleSet;
   Member<RuleSet> m_uncommonAttributeRuleSet;

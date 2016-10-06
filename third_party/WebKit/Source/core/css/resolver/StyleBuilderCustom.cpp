@@ -3,10 +3,12 @@
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 2004-2005 Allan Sandfeld Jensen (kde@carewolf.com)
  * Copyright (C) 2006, 2007 Nicholas Shanks (webkit@nickshanks.com)
- * Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 Apple Inc. All rights reserved.
+ * Copyright (C) 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013 Apple Inc.
+ * All rights reserved.
  * Copyright (C) 2007 Alexey Proskuryakov <ap@webkit.org>
  * Copyright (C) 2007, 2008 Eric Seidel <eric@webkit.org>
- * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved. (http://www.torchmobile.com/)
+ * Copyright (C) 2008, 2009 Torch Mobile Inc. All rights reserved.
+ * (http://www.torchmobile.com/)
  * Copyright (c) 2011, Code Aurora Forum. All rights reserved.
  * Copyright (C) Research In Motion Limited 2011. All rights reserved.
  * Redistribution and use in source and binary forms, with or without
@@ -129,18 +131,16 @@ void StyleBuilder::applyProperty(CSSPropertyID id,
   bool isInitial = value.isInitialValue() ||
                    (!state.parentNode() && value.isInheritedValue());
 
-  DCHECK(!isInherit ||
-         !isInitial);  // isInherit -> !isInitial && isInitial -> !isInherit
-  DCHECK(
-      !isInherit ||
-      (state.parentNode() &&
-       state
-           .parentStyle()));  // isInherit -> (state.parentNode() && state.parentStyle())
+  // isInherit => !isInitial && isInitial => !isInherit
+  DCHECK(!isInherit || !isInitial);
+  // isInherit => (state.parentNode() && state.parentStyle())
+  DCHECK(!isInherit || (state.parentNode() && state.parentStyle()));
 
   if (!state.applyPropertyToRegularStyle() &&
       (!state.applyPropertyToVisitedLinkStyle() ||
        !isValidVisitedLinkProperty(id))) {
-    // Limit the properties that can be applied to only the ones honored by :visited.
+    // Limit the properties that can be applied to only the ones honored by
+    // :visited.
     return;
   }
 
@@ -228,7 +228,8 @@ void StyleBuilderFunctions::applyValueCSSPropertyCursor(
                   cursorElement->href()->currentValue()->value()))
             image.clearImageResource();
 
-          // Set the hot spot if it wasn't specified in the CSS but is specified in the SVG.
+          // Set the hot spot if it wasn't specified in the CSS but is specified
+          // in the SVG.
           if (!hotSpotSpecified) {
             hotSpotSpecified = true;
             SVGLengthContext lengthContext(0);
@@ -497,7 +498,8 @@ void StyleBuilderFunctions::applyValueCSSPropertyTextAlign(
     const CSSValue& value) {
   if (value.isIdentifierValue() &&
       toCSSIdentifierValue(value).getValueID() != CSSValueWebkitMatchParent) {
-    // Special case for th elements - UA stylesheet text-align does not apply if parent's computed value for text-align is not its initial value
+    // Special case for th elements - UA stylesheet text-align does not apply if
+    // parent's computed value for text-align is not its initial value
     // https://html.spec.whatwg.org/multipage/rendering.html#tables-2
     const CSSIdentifierValue& identValue = toCSSIdentifierValue(value);
     if (identValue.getValueID() == CSSValueInternalCenter &&
@@ -590,7 +592,8 @@ void StyleBuilderFunctions::applyValueCSSPropertyVerticalAlign(
 }
 
 static void resetEffectiveZoom(StyleResolverState& state) {
-  // Reset the zoom in effect. This allows the setZoom method to accurately compute a new zoom in effect.
+  // Reset the zoom in effect. This allows the setZoom method to accurately
+  // compute a new zoom in effect.
   state.setEffectiveZoom(state.parentStyle()
                              ? state.parentStyle()->effectiveZoom()
                              : ComputedStyle::initialZoom());
@@ -770,8 +773,8 @@ void StyleBuilderFunctions::applyInitialCSSPropertyContent(
 
 void StyleBuilderFunctions::applyInheritCSSPropertyContent(
     StyleResolverState&) {
-  // FIXME: In CSS3, it will be possible to inherit content. In CSS2 it is not. This
-  // note is a reminder that eventually "inherit" needs to be supported.
+  // FIXME: In CSS3, it will be possible to inherit content. In CSS2 it is not.
+  // This note is a reminder that eventually "inherit" needs to be supported.
 }
 
 void StyleBuilderFunctions::applyValueCSSPropertyContent(

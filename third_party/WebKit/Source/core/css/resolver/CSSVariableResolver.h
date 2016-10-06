@@ -47,23 +47,26 @@ class CSSVariableResolver {
       CSSPropertyID,
       const CSSVariableReferenceValue&);
 
-  // These return false if we encounter a reference to an invalid variable with no fallback
+  // These return false if we encounter a reference to an invalid variable with
+  // no fallback.
 
-  // Resolves a range which may contain var() references or @apply rules
+  // Resolves a range which may contain var() references or @apply rules.
   bool resolveTokenRange(CSSParserTokenRange, Vector<CSSParserToken>& result);
-  // Resolves the fallback (if present) of a var() reference, starting from the comma
+  // Resolves the fallback (if present) of a var() reference, starting from the
+  // comma.
   bool resolveFallback(CSSParserTokenRange, Vector<CSSParserToken>& result);
-  // Resolves the contents of a var() reference
+  // Resolves the contents of a var() reference.
   bool resolveVariableReference(CSSParserTokenRange,
                                 Vector<CSSParserToken>& result);
-  // Consumes and resolves an @apply rule
+  // Consumes and resolves an @apply rule.
   void resolveApplyAtRule(CSSParserTokenRange&, Vector<CSSParserToken>& result);
 
-  // These return null if the custom property is invalid
+  // These return null if the custom property is invalid.
 
-  // Returns the CSSVariableData for a custom property, resolving and storing it if necessary
+  // Returns the CSSVariableData for a custom property, resolving and storing it
+  // if necessary.
   CSSVariableData* valueForCustomProperty(AtomicString name);
-  // Resolves the CSSVariableData from a custom property declaration
+  // Resolves the CSSVariableData from a custom property declaration.
   PassRefPtr<CSSVariableData> resolveCustomProperty(AtomicString name,
                                                     const CSSVariableData&);
 

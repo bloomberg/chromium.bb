@@ -95,8 +95,9 @@ PassRefPtr<CSSVariableData> CSSVariableResolver::resolveCustomProperty(
   bool success = resolveTokenRange(variableData.tokens(), tokens);
   m_variablesSeen.remove(name);
 
-  // The old variable data holds onto the backing string the new resolved CSSVariableData
-  // relies on. Ensure it will live beyond us overwriting the RefPtr in StyleInheritedVariables.
+  // The old variable data holds onto the backing string the new resolved
+  // CSSVariableData relies on. Ensure it will live beyond us overwriting the
+  // RefPtr in StyleInheritedVariables.
   ASSERT(variableData.refCount() > 1);
 
   if (!success || !m_cycleStartPoints.isEmpty()) {
@@ -212,7 +213,8 @@ const CSSValue* CSSVariableResolver::resolvePendingSubstitutions(
 
   const CSSValue* value = propertyCache.get(id);
   if (!value) {
-    // TODO(timloh): We shouldn't retry this for all longhands if the shorthand ends up invalid
+    // TODO(timloh): We shouldn't retry this for all longhands if the shorthand
+    // ends up invalid.
     CSSVariableReferenceValue* shorthandValue = pendingValue.shorthandValue();
     CSSPropertyID shorthandPropertyId = pendingValue.shorthandPropertyId();
 

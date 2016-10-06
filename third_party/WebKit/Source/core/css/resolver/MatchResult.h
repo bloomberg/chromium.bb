@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
- * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc.
+ * All rights reserved.
  * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
@@ -49,7 +50,8 @@ struct CORE_EXPORT MatchedProperties {
       unsigned linkMatchType : 2;
       unsigned whitelistType : 2;
     } m_types;
-    // Used to make sure all memory is zero-initialized since we compute the hash over the bytes of this object.
+    // Used to make sure all memory is zero-initialized since we compute the
+    // hash over the bytes of this object.
     void* possiblyPaddedMember;
   };
 };
@@ -62,10 +64,11 @@ namespace blink {
 
 using MatchedPropertiesVector = HeapVector<MatchedProperties, 64>;
 
-// MatchedPropertiesRange is used to represent a subset of the matched properties from
-// a given origin, for instance UA rules, author rules, or a shadow tree scope. This is
-// needed because rules from different origins are applied in the opposite order for
-// !important rules, yet in the same order as for normal rules within the same origin.
+// MatchedPropertiesRange is used to represent a subset of the matched
+// properties from a given origin, for instance UA rules, author rules, or a
+// shadow tree scope.  This is needed because rules from different origins are
+// applied in the opposite order for !important rules, yet in the same order as
+// for normal rules within the same origin.
 
 class MatchedPropertiesRange {
  public:

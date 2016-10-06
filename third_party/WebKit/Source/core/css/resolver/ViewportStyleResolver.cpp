@@ -217,7 +217,8 @@ Length ViewportStyleResolver::viewportLengthValue(CSSPropertyID id) const {
   const CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
   ComputedStyle* documentStyle = m_document->mutableComputedStyle();
 
-  // If we have viewport units the conversion will mark the document style as having viewport units.
+  // If we have viewport units the conversion will mark the document style as
+  // having viewport units.
   bool documentStyleHasViewportUnits = documentStyle->hasViewportUnits();
   documentStyle->setHasViewportUnits(false);
 

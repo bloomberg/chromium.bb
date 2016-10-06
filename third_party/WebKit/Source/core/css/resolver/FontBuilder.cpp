@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
- * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc.
+ * All rights reserved.
  * Copyright (C) 2013 Google Inc. All rights reserved.
  * Copyright (C) 2015 Collabora Ltd. All rights reserved.
  *
@@ -208,8 +209,8 @@ void FontBuilder::setSize(FontDescription& fontDescription,
 
   set(PropertySetFlag::Size);
 
-  // Overly large font sizes will cause crashes on some platforms (such as Windows).
-  // Cap font size here to make sure that doesn't happen.
+  // Overly large font sizes will cause crashes on some platforms (such as
+  // Windows).  Cap font size here to make sure that doesn't happen.
   specifiedSize = std::min(maximumAllowedFontSize, specifiedSize);
 
   fontDescription.setKeywordSize(size.keyword);
@@ -311,8 +312,9 @@ void FontBuilder::updateAdjustedSize(FontDescription& fontDescription,
     return;
 
   // We need to create a temporal Font to get xHeight of a primary font.
-  // The aspect value is based on the xHeight of the font for the computed font size,
-  // so we need to reset the adjustedSize to computedSize. See FontDescription::effectiveFontSize.
+  // The aspect value is based on the xHeight of the font for the computed font
+  // size, so we need to reset the adjustedSize to computedSize. See
+  // FontDescription::effectiveFontSize.
   fontDescription.setAdjustedSize(fontDescription.computedSize());
 
   Font font(fontDescription);
